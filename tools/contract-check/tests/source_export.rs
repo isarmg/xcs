@@ -99,6 +99,14 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
     assert!(
         fixture
             .0
+            .join(
+                "tools/contract-check/tests/fixtures/merge-tags-backup/file-merge-tag-history.json"
+            )
+            .is_file()
+    );
+    assert!(
+        fixture
+            .0
             .join("tests/evidence/merge-tags-backup/README.md")
             .is_file()
     );

@@ -1,0 +1,31 @@
+# 真实浏览器冒烟测试
+
+独立 Rust 工具，直接调用本机 ChromeDriver 的 W3C WebDriver / Chrome DevTools 协议；不引入 Python、Node 或业务 JavaScript，不模拟 API、不替换页面资源。少量浏览器端脚本仅观察未捕获错误和已渲染历史条目。
+
+## 依赖与运行
+
+需要 Linux、项目固定 Rust 工具链、匹配的官方 Chrome / ChromeDriver、PATH 中的 `kill`。Chrome 保持默认沙箱，不添加 `--no-sandbox`。GitHub Ubuntu runner 使用已安装的匹配版本；其他环境从官方 Chrome for Testing 下载同版本浏览器与驱动。浏览器或驱动缺失、沙箱禁止启动、页面加载失败均返回非零，不跳过测试。
+
+先按 `web/README.md` 构建真实 `web/dist`，并构建 CLI：
+
+```sh
+cargo build --locked --target-dir target/native -p xcs-cli
+export CHROME_BIN="$(command -v google-chrome)"
+export CHROMEDRIVER="$(command -v chromedriver)"
+cargo run --locked --manifest-path tools/browser-smoke/Cargo.toml -- \
+  --xcs "$PWD/target/native/debug/xcs" --web-dir "$PWD/web/dist"
+```
+
+`CHROME_BIN` 可省略，ChromeDriver 会自动发现浏览器；`CHROMEDRIVER` 默认为 PATH 中的 `chromedriver`。这些变量接受可执行文件完整路径，不接受命令参数。Cargo 单测只验证测试工具自身，不能替代上面的浏览器命令。
+
+## 验收范围
+
+1. 用随机临时密码创建独立三目录开发池，启动真实 XCS 服务；浏览器登录后必须看到三个磁盘目录。
+2. 在 P01 上传 UTF-8 文件，等待目录实际发布。
+3. 打开文件详情与版本历史，触发真实浏览器下载并逐字节比对内容。
+4. 在操作历史中确认该文件出现。
+5. 注销并刷新，仍然必须呈现匿名登录页；检查未捕获异常、JavaScript 严重错误、意外 HTTP 错误以及登录、磁盘、历史、注销和 WASM 的成功网络响应。
+
+所有数据放在权限受限的临时目录，密码只经 0600 临时文件初始化、不进入命令行。XCS 仅监听 127.0.0.1；驱动仅允许本机连接。服务、驱动与 Chrome 在同一测试进程生命周期内创建，并通过独立进程组在正常结束和失败时清理；不会修改用户的浏览器配置、现有池或真实磁盘。浏览器配置由 ChromeDriver 为新会话临时创建。失败会输出服务和驱动日志；临时数据自动删除。
+
+这是小范围贯通测试，不等同于生产磁盘、真实 Samba、原生六平台或完整 UI 回归验收。CI 的 browser-smoke job 必须执行真实浏览器命令，不能将工具编译或单测当作 E2E 通过。

@@ -154,6 +154,7 @@ fn ignore_generated_data_without_hiding_sources_or_fixed_fixtures() {
         "demos/branch-system/Cargo.lock",
         "integrations/smb/Cargo.lock",
         "tools/contract-check/Cargo.lock",
+        "tools/contract-check/tests/fixtures/merge-tags-backup/file-merge-tag-history.json",
         ".cargo/config.toml",
         "rust-toolchain.toml",
         "AGENTS.md",

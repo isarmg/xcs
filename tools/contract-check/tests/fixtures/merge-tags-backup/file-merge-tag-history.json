@@ -1,0 +1,371 @@
+{
+  "branches": [
+    {
+      "alias_of": null,
+      "branch_id": "br_26eff82e9b76437798d16225ead44117",
+      "branch_kind": "file",
+      "content_state": "AVAILABLE",
+      "current": true,
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "file_node_id": "fmeta_ce8670c5cfc44729be49030d0a744f26",
+      "fork_commit_id": "commit_b56405114be947419ba9cba1cbbd82db",
+      "generation": "5",
+      "head_commit_id": "commit_e8869b3092554f9bb3b1828a4c025bdc",
+      "history_tree_id": "history_e5d1c6665b0a4cbf9d876018c7d339dc",
+      "inherited": false,
+      "materialized": true,
+      "name": "left",
+      "node_id": "fmeta_ce8670c5cfc44729be49030d0a744f26",
+      "own_version_id": "ver_f3345057fba5431b933a3c24697f5d0b",
+      "pending_file_versions": {},
+      "read_only": false,
+      "source_version_id": null,
+      "state": "active",
+      "version_id": "ver_f3345057fba5431b933a3c24697f5d0b",
+      "visible_content_state": "AVAILABLE"
+    },
+    {
+      "alias_of": "br_26eff82e9b76437798d16225ead44117",
+      "branch_id": "br_82e33982e6474b4f8ae972ee7600f1d4",
+      "branch_kind": "file",
+      "content_state": "AVAILABLE",
+      "current": false,
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "fork_commit_id": "commit_b56405114be947419ba9cba1cbbd82db",
+      "generation": "3",
+      "head_commit_id": "commit_5f4ba0feec534d0aadc4b0ad00beeb27",
+      "history_tree_id": "history_e5d1c6665b0a4cbf9d876018c7d339dc",
+      "inherited": false,
+      "materialized": true,
+      "name": "right",
+      "node_id": "ver_27d9c9fc19c742cab91f65a1454918d0",
+      "own_version_id": "ver_27d9c9fc19c742cab91f65a1454918d0",
+      "pending_file_versions": {},
+      "read_only": true,
+      "source_version_id": null,
+      "state": "merged",
+      "version_id": "ver_27d9c9fc19c742cab91f65a1454918d0",
+      "visible_content_state": "AVAILABLE"
+    },
+    {
+      "alias_of": null,
+      "branch_id": "br_a7b470560b19411889e0ca2bbf671232",
+      "branch_kind": "file",
+      "content_state": "AVAILABLE",
+      "current": false,
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "fork_commit_id": "commit_b56405114be947419ba9cba1cbbd82db",
+      "generation": "1",
+      "head_commit_id": "commit_cf0d548f3b234650bb93c07b2e972b96",
+      "history_tree_id": "history_e5d1c6665b0a4cbf9d876018c7d339dc",
+      "inherited": false,
+      "materialized": true,
+      "name": "main",
+      "node_id": "ver_f3345057fba5431b933a3c24697f5d0b",
+      "own_version_id": "ver_f3345057fba5431b933a3c24697f5d0b",
+      "pending_file_versions": {},
+      "read_only": false,
+      "source_version_id": null,
+      "state": "active",
+      "version_id": "ver_f3345057fba5431b933a3c24697f5d0b",
+      "visible_content_state": "AVAILABLE"
+    }
+  ],
+  "content_state": "AVAILABLE",
+  "current_node_id": "fmeta_ce8670c5cfc44729be49030d0a744f26",
+  "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+  "inherited": false,
+  "materialized": true,
+  "merges": [
+    {
+      "chosen_node_id": "fmeta_8a3c50d631d146908f9ac68ec1a7217e",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "history_tree_id": "history_e5d1c6665b0a4cbf9d876018c7d339dc",
+      "input_branch_ids": [
+        "br_26eff82e9b76437798d16225ead44117",
+        "br_82e33982e6474b4f8ae972ee7600f1d4"
+      ],
+      "input_node_ids": [
+        "ver_9429cd978dba40d19ba44c3c038fe71b",
+        "ver_27d9c9fc19c742cab91f65a1454918d0"
+      ],
+      "merge_id": "fmerge_274591fc3b1047cf926649d8b090de24",
+      "operation_id": "op_50ab7ba810de4f499ad6adbd428563fd",
+      "parent_node_ids": [
+        "fmeta_8a3c50d631d146908f9ac68ec1a7217e",
+        "ver_27d9c9fc19c742cab91f65a1454918d0",
+        "ver_9429cd978dba40d19ba44c3c038fe71b"
+      ],
+      "result_node_id": "fmeta_ce8670c5cfc44729be49030d0a744f26",
+      "reused_node": false,
+      "sequence": "15",
+      "surviving_branch_id": "br_26eff82e9b76437798d16225ead44117"
+    }
+  ],
+  "node_id": "fmeta_ce8670c5cfc44729be49030d0a744f26",
+  "nodes": [
+    {
+      "author": "admin",
+      "branch_id": "br_26eff82e9b76437798d16225ead44117",
+      "content_hash": "2f6b57bb5845222f19903673b902c2ccd9217e4d3bc7b6bd47ac7c411fce24e7",
+      "content_state": "AVAILABLE",
+      "created_at": "1792422458",
+      "current": true,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "kind": "merge",
+      "legacy": false,
+      "message": "",
+      "node_id": "fmeta_ce8670c5cfc44729be49030d0a744f26",
+      "note": "",
+      "operation_id": "op_50ab7ba810de4f499ad6adbd428563fd",
+      "parent_node_ids": [
+        "fmeta_8a3c50d631d146908f9ac68ec1a7217e",
+        "ver_27d9c9fc19c742cab91f65a1454918d0",
+        "ver_9429cd978dba40d19ba44c3c038fe71b"
+      ],
+      "path": "report.txt",
+      "previous_path": null,
+      "sequence": "15",
+      "size": "9",
+      "storage_name": "v000001_20261019T150736Z_2f6b57bb.txt",
+      "tags": [
+        "work",
+        "已审核"
+      ],
+      "version_id": "ver_f3345057fba5431b933a3c24697f5d0b"
+    },
+    {
+      "branch_id": "br_82e33982e6474b4f8ae972ee7600f1d4",
+      "content_hash": "77c5d273841ca0ba7d8fc8dabe5f5c58264a0845db8869f75c0e3547d46fb954",
+      "content_state": "AVAILABLE",
+      "created_at": "2026-10-19T15:07:37Z",
+      "current": false,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "kind": "content",
+      "legacy": false,
+      "message": "Upload renamed.txt",
+      "node_id": "ver_27d9c9fc19c742cab91f65a1454918d0",
+      "note": "",
+      "parent_node_ids": [
+        "ver_f3345057fba5431b933a3c24697f5d0b"
+      ],
+      "path": "renamed.txt",
+      "previous_path": null,
+      "sequence": "14",
+      "size": "10",
+      "source_version_ids": [
+        "ver_f3345057fba5431b933a3c24697f5d0b"
+      ],
+      "storage_name": "v000003_20261019T150737Z_77c5d273.txt",
+      "tags": [],
+      "version_id": "ver_27d9c9fc19c742cab91f65a1454918d0"
+    },
+    {
+      "author": "admin",
+      "branch_id": "br_26eff82e9b76437798d16225ead44117",
+      "content_hash": "2f6b57bb5845222f19903673b902c2ccd9217e4d3bc7b6bd47ac7c411fce24e7",
+      "content_state": "AVAILABLE",
+      "created_at": "1792422457",
+      "current": false,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "kind": "tags",
+      "legacy": false,
+      "message": "",
+      "node_id": "fmeta_bbb4f668edbe4640a32127e509c9c725",
+      "note": "",
+      "operation_id": "op_d4f515e6f8f6429b879d2a2296e4033d",
+      "parent_node_ids": [
+        "fmeta_8a3c50d631d146908f9ac68ec1a7217e"
+      ],
+      "path": "report.txt",
+      "previous_path": null,
+      "sequence": "12",
+      "size": "9",
+      "storage_name": "v000001_20261019T150736Z_2f6b57bb.txt",
+      "tags": [
+        "已审核",
+        "归档"
+      ],
+      "version_id": "ver_f3345057fba5431b933a3c24697f5d0b"
+    },
+    {
+      "branch_id": null,
+      "content_hash": "49fb11d543076a1cb4f678679362b73d48a683d94d78144d9b397adbd6453940",
+      "content_state": "AVAILABLE",
+      "created_at": "2026-10-19T15:07:37Z",
+      "current": false,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "kind": "content",
+      "legacy": false,
+      "message": "Upload renamed.txt",
+      "node_id": "ver_9429cd978dba40d19ba44c3c038fe71b",
+      "note": "",
+      "parent_node_ids": [
+        "fnode_35f8e2c4c19547ce9a0b2391401afb5f"
+      ],
+      "path": "renamed.txt",
+      "previous_path": null,
+      "sequence": "11",
+      "size": "9",
+      "source_version_ids": [
+        "ver_f3345057fba5431b933a3c24697f5d0b"
+      ],
+      "storage_name": "v000002_20261019T150737Z_49fb11d5.txt",
+      "tags": [
+        "work",
+        "已审核"
+      ],
+      "version_id": "ver_9429cd978dba40d19ba44c3c038fe71b"
+    },
+    {
+      "author": "admin",
+      "branch_id": "br_26eff82e9b76437798d16225ead44117",
+      "content_hash": "2f6b57bb5845222f19903673b902c2ccd9217e4d3bc7b6bd47ac7c411fce24e7",
+      "content_state": "AVAILABLE",
+      "created_at": "1792422457",
+      "current": false,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "kind": "rename",
+      "legacy": false,
+      "message": "",
+      "node_id": "fnode_35f8e2c4c19547ce9a0b2391401afb5f",
+      "note": "",
+      "operation_id": "op_8e4227d9c2cb4a3c872f1b91647d847e",
+      "parent_node_ids": [
+        "fmeta_8a3c50d631d146908f9ac68ec1a7217e"
+      ],
+      "path": "renamed.txt",
+      "previous_path": "report.txt",
+      "sequence": "10",
+      "size": "9",
+      "storage_name": "v000001_20261019T150736Z_2f6b57bb.txt",
+      "tags": [
+        "work",
+        "已审核"
+      ],
+      "version_id": "ver_f3345057fba5431b933a3c24697f5d0b"
+    },
+    {
+      "author": "admin",
+      "branch_id": "br_26eff82e9b76437798d16225ead44117",
+      "content_hash": "2f6b57bb5845222f19903673b902c2ccd9217e4d3bc7b6bd47ac7c411fce24e7",
+      "content_state": "AVAILABLE",
+      "created_at": "1792422456",
+      "current": false,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "kind": "tags",
+      "legacy": false,
+      "message": "",
+      "node_id": "fmeta_8a3c50d631d146908f9ac68ec1a7217e",
+      "note": "独立标签备注",
+      "operation_id": "op_c628254fc111409594cf7029fe07f26d",
+      "parent_node_ids": [
+        "ver_f3345057fba5431b933a3c24697f5d0b"
+      ],
+      "path": "report.txt",
+      "previous_path": null,
+      "sequence": "8",
+      "size": "9",
+      "storage_name": "v000001_20261019T150736Z_2f6b57bb.txt",
+      "tags": [
+        "work",
+        "已审核"
+      ],
+      "version_id": "ver_f3345057fba5431b933a3c24697f5d0b"
+    },
+    {
+      "branch_id": "br_26eff82e9b76437798d16225ead44117",
+      "content_hash": "2f6b57bb5845222f19903673b902c2ccd9217e4d3bc7b6bd47ac7c411fce24e7",
+      "content_state": "AVAILABLE",
+      "created_at": "2026-10-19T15:07:36Z",
+      "current": false,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "kind": "content",
+      "legacy": false,
+      "message": "Upload report.txt",
+      "node_id": "ver_f3345057fba5431b933a3c24697f5d0b",
+      "note": "",
+      "parent_node_ids": [],
+      "path": "report.txt",
+      "previous_path": null,
+      "sequence": "4",
+      "size": "9",
+      "source_version_ids": [],
+      "storage_name": "v000001_20261019T150736Z_2f6b57bb.txt",
+      "tags": [],
+      "version_id": "ver_f3345057fba5431b933a3c24697f5d0b"
+    }
+  ],
+  "note": "",
+  "own_version_id": "ver_f3345057fba5431b933a3c24697f5d0b",
+  "path": "renamed.txt",
+  "repository_id": "repo_212e3841ba1c49e0a565c7a97b393a98",
+  "selected_branch_id": "br_26eff82e9b76437798d16225ead44117",
+  "source_version_id": null,
+  "version_id": "ver_f3345057fba5431b933a3c24697f5d0b",
+  "versions": [
+    {
+      "branch_id": "br_82e33982e6474b4f8ae972ee7600f1d4",
+      "content_hash": "77c5d273841ca0ba7d8fc8dabe5f5c58264a0845db8869f75c0e3547d46fb954",
+      "content_state": "AVAILABLE",
+      "created_at": "2026-10-19T15:07:37Z",
+      "current": false,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "legacy": false,
+      "message": "Upload renamed.txt",
+      "note": "",
+      "sequence": "14",
+      "size": "10",
+      "source_version_ids": [
+        "ver_f3345057fba5431b933a3c24697f5d0b"
+      ],
+      "storage_name": "v000003_20261019T150737Z_77c5d273.txt",
+      "version_id": "ver_27d9c9fc19c742cab91f65a1454918d0"
+    },
+    {
+      "branch_id": null,
+      "content_hash": "49fb11d543076a1cb4f678679362b73d48a683d94d78144d9b397adbd6453940",
+      "content_state": "AVAILABLE",
+      "created_at": "2026-10-19T15:07:37Z",
+      "current": false,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "legacy": false,
+      "message": "Upload renamed.txt",
+      "note": "",
+      "sequence": "11",
+      "size": "9",
+      "source_version_ids": [
+        "ver_f3345057fba5431b933a3c24697f5d0b"
+      ],
+      "storage_name": "v000002_20261019T150737Z_49fb11d5.txt",
+      "version_id": "ver_9429cd978dba40d19ba44c3c038fe71b"
+    },
+    {
+      "branch_id": "br_26eff82e9b76437798d16225ead44117",
+      "content_hash": "2f6b57bb5845222f19903673b902c2ccd9217e4d3bc7b6bd47ac7c411fce24e7",
+      "content_state": "AVAILABLE",
+      "created_at": "2026-10-19T15:07:36Z",
+      "current": true,
+      "download_name": "renamed.txt",
+      "file_id": "file_15b663355b9f44e484bfd9a4415c6a14",
+      "legacy": false,
+      "message": "Upload report.txt",
+      "note": "",
+      "sequence": "4",
+      "size": "9",
+      "source_version_ids": [],
+      "storage_name": "v000001_20261019T150736Z_2f6b57bb.txt",
+      "version_id": "ver_f3345057fba5431b933a3c24697f5d0b"
+    }
+  ],
+  "visible_content_state": "AVAILABLE"
+}

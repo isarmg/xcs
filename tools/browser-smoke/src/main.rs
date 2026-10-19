@@ -1,0 +1,477 @@
+//! Real Chrome/WebDriver smoke test; no mock server or generated application JS.
+use serde_json::{Value, json};
+use std::{
+    env,
+    error::Error,
+    fs::{self, File, OpenOptions},
+    io::{Read, Write},
+    net::{TcpListener, TcpStream},
+    os::unix::{
+        fs::{DirBuilderExt, OpenOptionsExt},
+        process::CommandExt,
+    },
+    path::{Path, PathBuf},
+    process::{Child, Command, Stdio},
+    thread,
+    time::{Duration, Instant},
+};
+type Result<T> = std::result::Result<T, Box<dyn Error>>;
+const ELEMENT: &str = "element-6066-11e4-a52e-4f735466cecf";
+
+// Each process owns a new group, so failed browser startup cannot leave Chrome children behind.
+struct Process(Child);
+impl Drop for Process {
+    fn drop(&mut self) {
+        let group = format!("-{}", self.0.id());
+        let _ = Command::new("kill")
+            .args(["-TERM", "--", &group])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+        thread::sleep(Duration::from_millis(100));
+        let _ = Command::new("kill")
+            .args(["-KILL", "--", &group])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+fn spawn(command: &mut Command, log: &Path) -> Result<Process> {
+    let output = File::create(log)?;
+    Ok(Process(
+        command
+            .process_group(0)
+            .stdin(Stdio::null())
+            .stdout(output.try_clone()?)
+            .stderr(output)
+            .spawn()?,
+    ))
+}
+fn port() -> Result<u16> {
+    Ok(TcpListener::bind("127.0.0.1:0")?.local_addr()?.port())
+}
+
+// ChromeDriver speaks HTTP/1.1 with Content-Length. Keep this tiny client local-only.
+fn http(port: u16, method: &str, path: &str, body: Option<Value>) -> Result<(u16, Vec<u8>)> {
+    let mut stream = TcpStream::connect_timeout(
+        &format!("127.0.0.1:{port}").parse()?,
+        Duration::from_secs(2),
+    )?;
+    stream.set_read_timeout(Some(Duration::from_secs(60)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(10)))?;
+    let body = body.map(|v| v.to_string()).unwrap_or_default();
+    write!(
+        stream,
+        "{method} {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        body.len()
+    )?;
+    let mut response = Vec::new();
+    stream.read_to_end(&mut response)?;
+    decode_http(&response)
+}
+fn decode_http(response: &[u8]) -> Result<(u16, Vec<u8>)> {
+    let boundary = response
+        .windows(4)
+        .position(|s| s == b"\r\n\r\n")
+        .ok_or("invalid HTTP response")?;
+    let headers = std::str::from_utf8(&response[..boundary])?;
+    let status = headers
+        .split_whitespace()
+        .nth(1)
+        .ok_or("missing HTTP status")?
+        .parse()?;
+    if headers
+        .to_ascii_lowercase()
+        .contains("transfer-encoding: chunked")
+    {
+        return Err("unexpected chunked WebDriver response".into());
+    }
+    Ok((status, response[boundary + 4..].to_vec()))
+}
+fn wait_for<T>(label: &str, mut check: impl FnMut() -> Result<T>) -> Result<T> {
+    let deadline = Instant::now() + Duration::from_secs(40);
+    loop {
+        match check() {
+            Ok(value) => return Ok(value),
+            Err(error) if Instant::now() >= deadline => {
+                return Err(format!("timed out waiting for {label}: {error}").into());
+            }
+            Err(_) => thread::sleep(Duration::from_millis(150)),
+        }
+    }
+}
+struct Browser {
+    port: u16,
+    session: String,
+}
+impl Browser {
+    fn command(&self, method: &str, path: &str, body: Option<Value>) -> Result<Value> {
+        let (status, bytes) = http(
+            self.port,
+            method,
+            &format!("/session/{}{path}", self.session),
+            body,
+        )?;
+        let response: Value = serde_json::from_slice(&bytes)?;
+        if status >= 400 || response["value"]["error"].is_string() {
+            return Err(format!("WebDriver {method} {path}: {}", response["value"]).into());
+        }
+        Ok(response["value"].clone())
+    }
+    fn element(&self, using: &str, selector: &str) -> Result<String> {
+        wait_for(selector, || {
+            let v = self.command(
+                "POST",
+                "/element",
+                Some(json!({"using":using,"value":selector})),
+            )?;
+            Ok(v[ELEMENT].as_str().ok_or("missing element id")?.to_owned())
+        })
+    }
+    fn css(&self, selector: &str) -> Result<String> {
+        self.element("css selector", selector)
+    }
+    fn button(&self, en: &str, zh: &str) -> Result<String> {
+        self.element("xpath", &format!("//button[normalize-space(.)='{en}' or normalize-space(.)='{zh}' or @aria-label='{en}' or @aria-label='{zh}']"))
+    }
+    fn click(&self, element: &str) -> Result<()> {
+        wait_for("enabled clickable element", || {
+            self.command(
+                "POST",
+                &format!("/element/{element}/click"),
+                Some(json!({})),
+            )
+        })?;
+        Ok(())
+    }
+    fn keys(&self, element: &str, text: &str) -> Result<()> {
+        self.command(
+            "POST",
+            &format!("/element/{element}/value"),
+            Some(json!({"text":text})),
+        )?;
+        Ok(())
+    }
+    fn cdp(&self, cmd: &str, params: Value) -> Result<Value> {
+        self.command(
+            "POST",
+            "/goog/cdp/execute",
+            Some(json!({"cmd":cmd,"params":params})),
+        )
+    }
+    fn script(&self, script: &str) -> Result<Value> {
+        self.command(
+            "POST",
+            "/execute/sync",
+            Some(json!({"script":script,"args":[]})),
+        )
+    }
+}
+impl Drop for Browser {
+    fn drop(&mut self) {
+        let _ = self.command("DELETE", "", None);
+    }
+}
+
+fn exercise(browser: &Browser, origin: &str, password: &str, temp: &Path) -> Result<()> {
+    // Observation only. No fetch interception, synthetic responses or application state injection.
+    browser.cdp("Page.addScriptToEvaluateOnNewDocument", json!({"source":"window.__xcsSmokeErrors=[];addEventListener('error',e=>window.__xcsSmokeErrors.push(String(e.message)));addEventListener('unhandledrejection',e=>window.__xcsSmokeErrors.push(String(e.reason)));"}))?;
+    browser.command("POST", "/url", Some(json!({"url":origin})))?;
+    browser.keys(
+        &browser.css("input[autocomplete='username']")?,
+        "smoke-admin",
+    )?;
+    browser.keys(
+        &browser.css("input[autocomplete='current-password']")?,
+        password,
+    )?;
+    browser.click(&browser.button("Sign in", "登录")?)?;
+    let disk = browser.css(".xcs-disk-entry[data-slot='P01']:not([disabled])")?;
+    let disks = browser.command(
+        "POST",
+        "/elements",
+        Some(json!({"using":"css selector","value":".xcs-disk-entry"})),
+    )?;
+    if disks.as_array().map(Vec::len) != Some(3) {
+        return Err("expected exactly three development disk directories".into());
+    }
+    println!("PASS login and three real disk directories");
+    browser.click(&disk)?;
+    let upload = browser.button("Upload files", "上传文件")?;
+    wait_for("writable disk", || {
+        if browser.command("GET", &format!("/element/{upload}/enabled"), None)? == true {
+            Ok(())
+        } else {
+            Err("upload disabled".into())
+        }
+    })?;
+    let payload =
+        b"XCS real browser smoke: complete file content\nUTF-8: \xe6\xb5\x8b\xe8\xaf\x95\n";
+    let input = temp.join("browser-smoke.txt");
+    fs::write(&input, payload)?;
+    browser.keys(
+        &browser.css("input[type='file']")?,
+        input.to_str().ok_or("non-UTF8 temp path")?,
+    )?;
+    let file = browser.element(
+        "xpath",
+        "//button[contains(@class,'xcs-file-name')][normalize-space(.)='browser-smoke.txt']",
+    )?;
+    println!("PASS browser file upload and directory publication");
+    browser.click(&file)?;
+    browser.css(".xcs-entry-version-history")?;
+    browser.click(&browser.button("Download", "下载")?)?;
+    let downloaded = temp.join("downloads/browser-smoke.txt");
+    wait_for("verified byte-for-byte browser download", || {
+        if fs::read(&downloaded)? == payload {
+            Ok(())
+        } else {
+            Err("download content differs".into())
+        }
+    })?;
+    println!("PASS file details, version history and byte-identical download");
+    browser.click(&browser.button("History", "历史记录")?)?;
+    wait_for("uploaded file in activity history", || {
+        if browser.script("return Array.from(document.querySelectorAll('.xcs-history-path')).some(e=>e.textContent.includes('browser-smoke.txt'))")? == true { Ok(()) } else { Err("history missing uploaded file".into()) }
+    })?;
+    browser.click(&browser.button("Sign out", "退出")?)?;
+    browser.css("input[autocomplete='current-password']")?;
+    if browser.script("return window.__xcsSmokeErrors")? != json!([]) {
+        return Err("uncaught error before logout/reload".into());
+    }
+    // Reload exercises server-side session revocation, rather than merely a UI reset.
+    browser.command("POST", "/refresh", Some(json!({})))?;
+    browser.css("input[autocomplete='current-password']")?;
+    println!("PASS history, logout and anonymous reload");
+    let errors = browser.script("return window.__xcsSmokeErrors")?;
+    if errors != json!([]) {
+        return Err(format!("uncaught browser errors: {errors}").into());
+    }
+    let logs = browser.command("POST", "/log", Some(json!({"type":"browser"})))?;
+    for entry in logs.as_array().ok_or("invalid browser log")? {
+        if entry["level"] == "SEVERE" && entry["source"] == "javascript" {
+            return Err(format!("browser JavaScript error: {}", entry["message"]).into());
+        }
+    }
+    let logs = browser.command("POST", "/log", Some(json!({"type":"performance"})))?;
+    let mut responses = Vec::new();
+    for entry in logs.as_array().ok_or("invalid performance log")? {
+        let event: Value = serde_json::from_str(
+            entry["message"]
+                .as_str()
+                .ok_or("missing network log message")?,
+        )?;
+        if event["message"]["method"] == "Network.responseReceived" {
+            let r = &event["message"]["params"]["response"];
+            let url = r["url"].as_str().unwrap_or_default();
+            let status = r["status"].as_f64().unwrap_or(0.0) as u64;
+            if url.starts_with(origin) {
+                if status >= 400
+                    && !(url.ends_with("/v1/auth/me") && status == 401)
+                    && !(url.ends_with("/favicon.ico") && status == 404)
+                {
+                    return Err(format!("unexpected HTTP {status}: {url}").into());
+                }
+                responses.push((url.to_owned(), status));
+            }
+        }
+    }
+    for route in [
+        "/v1/auth/login",
+        "/v1/file-manager/disks",
+        "/v1/file-manager/history",
+        "/v1/auth/logout",
+    ] {
+        if !responses
+            .iter()
+            .any(|(url, status)| url.ends_with(route) && (200..300).contains(status))
+        {
+            return Err(format!("no successful real browser response for {route}").into());
+        }
+    }
+    if !responses
+        .iter()
+        .any(|(url, status)| url.contains(".wasm") && *status == 200)
+    {
+        return Err("browser did not load the built WASM bundle".into());
+    }
+    println!("PASS uncaught-error and real HTTP/WASM response checks");
+    Ok(())
+}
+
+fn run() -> Result<()> {
+    let mut args = env::args().skip(1);
+    let mut xcs = PathBuf::from("target/native/debug/xcs");
+    let mut web = PathBuf::from("web/dist");
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--xcs" => xcs = args.next().ok_or("--xcs requires a path")?.into(),
+            "--web-dir" => web = args.next().ok_or("--web-dir requires a path")?.into(),
+            _ => {
+                return Err(format!(
+                    "unknown argument {arg}; usage: xcs-browser-smoke [--xcs PATH] [--web-dir PATH]"
+                )
+                .into());
+            }
+        }
+    }
+    let xcs = xcs.canonicalize()?;
+    let web = web.canonicalize()?;
+    if !web.join("index.html").is_file() {
+        return Err("build the real web/dist before running this test".into());
+    }
+    let temp = tempfile::Builder::new()
+        .prefix("xcs-browser-smoke-")
+        .tempdir()?;
+    let root = temp.path();
+    let pool = root.join("pool");
+    let password_file = root.join("password");
+    let mut entropy = [0u8; 24];
+    File::open("/dev/urandom")?.read_exact(&mut entropy)?;
+    let password: String = entropy.iter().map(|b| format!("{b:02x}")).collect();
+    OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&password_file)?
+        .write_all(password.as_bytes())?;
+    let disks: Vec<_> = ["P01", "B01", "C01"]
+        .iter()
+        .map(|name| root.join(name))
+        .collect();
+    for disk in &disks {
+        fs::DirBuilder::new().mode(0o700).create(disk)?;
+    }
+    let init = Command::new(&xcs)
+        .arg("--root")
+        .arg(&pool)
+        .args(["init", "--username", "smoke-admin", "--password-file"])
+        .arg(&password_file)
+        .arg("--development-disks")
+        .args(&disks)
+        .output()?;
+    if !init.status.success() {
+        return Err(format!(
+            "development pool init failed: {}",
+            String::from_utf8_lossy(&init.stderr)
+        )
+        .into());
+    }
+    fs::remove_file(password_file)?;
+    let server_port = port()?;
+    let driver_port = port()?;
+    let origin = format!("http://127.0.0.1:{server_port}");
+    let server_log = root.join("server.log");
+    let driver_log = root.join("driver.log");
+    let _server = spawn(
+        Command::new(xcs)
+            .arg("--root")
+            .arg(pool)
+            .args([
+                "serve",
+                "--listen",
+                &format!("127.0.0.1:{server_port}"),
+                "--web-dir",
+            ])
+            .arg(web),
+        &server_log,
+    )?;
+    let result = (|| -> Result<()> {
+        wait_for("loopback XCS server", || {
+            let (status, _) = http(server_port, "GET", "/", None)?;
+            if status == 200 {
+                Ok(())
+            } else {
+                Err(format!("HTTP {status}").into())
+            }
+        })?;
+        let driver = env::var_os("CHROMEDRIVER").unwrap_or_else(|| "chromedriver".into());
+        let _driver = spawn(
+            Command::new(driver).args([
+                format!("--port={driver_port}"),
+                "--allowed-ips=127.0.0.1".into(),
+            ]),
+            &driver_log,
+        )?;
+        wait_for("loopback ChromeDriver", || {
+            let (status, _) = http(driver_port, "GET", "/status", None)?;
+            if status == 200 {
+                Ok(())
+            } else {
+                Err("driver not ready".into())
+            }
+        })?;
+        let downloads = root.join("downloads");
+        fs::create_dir(&downloads)?;
+        let mut chrome = json!({"args":["--headless=new","--disable-dev-shm-usage","--window-size=1280,900"],"prefs":{"download.default_directory":downloads,"download.prompt_for_download":false}});
+        if let Some(binary) = env::var_os("CHROME_BIN") {
+            chrome["binary"] = binary.to_string_lossy().into_owned().into();
+        }
+        let (status, body) = http(
+            driver_port,
+            "POST",
+            "/session",
+            Some(
+                json!({"capabilities":{"alwaysMatch":{"browserName":"chrome","goog:chromeOptions":chrome,"goog:loggingPrefs":{"browser":"ALL","performance":"ALL"}}}}),
+            ),
+        )?;
+        let response: Value = serde_json::from_slice(&body)?;
+        if status >= 400 {
+            return Err(format!("Chrome startup failed (never skipped): {response}").into());
+        }
+        let browser = Browser {
+            port: driver_port,
+            session: response["value"]["sessionId"]
+                .as_str()
+                .ok_or("missing WebDriver session")?
+                .to_owned(),
+        };
+        browser.cdp(
+            "Browser.setDownloadBehavior",
+            json!({"behavior":"allow","downloadPath":downloads}),
+        )?;
+        exercise(&browser, &origin, &password, root)
+    })();
+    if result.is_err() {
+        for (name, path) in [("XCS", server_log), ("ChromeDriver", driver_log)] {
+            if let Ok(log) = fs::read_to_string(path) {
+                eprintln!("--- {name} log ---\n{log}");
+            }
+        }
+    }
+    result
+}
+fn main() {
+    if let Err(error) = run() {
+        eprintln!("browser smoke FAILED: {error}");
+        std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn webdriver_http_keeps_binary_body_and_status() {
+        let (status, body) =
+            decode_http(b"HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\n\x00\xff\x01").unwrap();
+        assert_eq!(status, 200);
+        assert_eq!(body, [0, 255, 1]);
+        assert_eq!(
+            decode_http(b"HTTP/1.1 500 Error\r\nContent-Length: 2\r\n\r\n{}")
+                .unwrap()
+                .0,
+            500
+        );
+    }
+    #[test]
+    fn malformed_or_unsupported_http_fails_closed() {
+        assert!(decode_http(b"not HTTP").is_err());
+        assert!(decode_http(b"HTTP/1.1 nope\r\n\r\n{}").is_err());
+        assert!(
+            decode_http(b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n").is_err()
+        );
+    }
+}

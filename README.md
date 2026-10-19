@@ -57,6 +57,8 @@ cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- check
 
 首次构建需要取得锁文件中的依赖；缓存齐全后可使用 `--offline`。本机 Unix 套接字和所有权隔离测试需要相应系统能力，不能把隔离环境拒绝执行当作业务测试通过。
 
+[持续集成说明](docs/21-ci.md)列出根工作区之外的独立测试、正式 WASM 构建、三桌面宿主检查与浏览器烟测，以及 SDK 和真机验证边界。
+
 ## 阅读路线
 
 先看[分支过程演示](demos/branch-system/index.html)、[自由操作页](demos/branch-system/playground.html)或 [Markdown 图片实例](demos/branch-system/examples.md)，再查[分支系统运作逻辑详解](docs/design/branch-system-logic.md)。图中父节点在下、子节点在上。三个边界已按用户意见确定：完整记录目录组成、公共文件分支自动命名、显式选择已有分支后写入该分支。对应核心、接口、Web 与验证范围见[本次分支实现记录](docs/reports/branch-system-implementation.md)。

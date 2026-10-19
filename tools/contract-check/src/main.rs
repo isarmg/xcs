@@ -1193,8 +1193,9 @@ mod tests {
         let mut invalid = body;
         invalid["version_id"] = meta.into();
         assert!(!node.is_valid(&invalid));
-        let evidence = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../tests/evidence/merge-tags-backup/api/wire");
+        // Reviewed response fixtures are source inputs, not optional local evidence.
+        let fixtures =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/merge-tags-backup");
         for (route, name) in [
             (
                 "/v1/file-manager/files/{file}/history",
@@ -1226,7 +1227,8 @@ mod tests {
             ),
             ("/v1/file-manager/disks", "backup-route-disks.json"),
         ] {
-            let wire = read(&evidence.join(name)).unwrap();
+            let wire = read(&fixtures.join(name))
+                .unwrap_or_else(|error| panic!("required response fixture {name}: {error}"));
             let mut schema = api.clone();
             schema["allOf"] = json!([
                 api["paths"][route]["get"]["responses"]["200"]["content"]["application/json"]["schema"]

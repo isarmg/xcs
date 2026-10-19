@@ -1,0 +1,40 @@
+{
+  "disks": [
+    {
+      "available_bytes": "5216112640",
+      "level": 1,
+      "online": true,
+      "simulation": true,
+      "slot_id": "P01",
+      "used_bytes": "25",
+      "writable": false
+    },
+    {
+      "available_bytes": "5216112640",
+      "level": 2,
+      "online": true,
+      "simulation": true,
+      "slot_id": "B01",
+      "used_bytes": "25",
+      "writable": false
+    },
+    {
+      "available_bytes": "5216112640",
+      "level": 1,
+      "online": true,
+      "simulation": true,
+      "slot_id": "P02",
+      "used_bytes": "14",
+      "writable": false
+    },
+    {
+      "available_bytes": "5216112640",
+      "level": 2,
+      "online": true,
+      "simulation": true,
+      "slot_id": "B02",
+      "used_bytes": "14",
+      "writable": false
+    }
+  ]
+}
