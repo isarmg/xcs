@@ -23,6 +23,18 @@ impl Credentials {
         self.token = token;
         self.csrf = csrf;
     }
+    fn replace_if_current(
+        &mut self,
+        generation: u64,
+        token: Option<String>,
+        csrf: Option<String>,
+    ) -> bool {
+        if self.generation != generation {
+            return false;
+        }
+        self.replace(token, csrf);
+        true
+    }
     fn revoke(&mut self, generation: u64) -> bool {
         if self.generation != generation {
             return false;
@@ -406,6 +418,7 @@ pub async fn request(method: &str, path: &str, body: Option<Value>) -> Result<Va
 }
 
 pub async fn login(endpoint: &str, username: &str, password: &str) -> Result<Value, Error> {
+    let generation = CREDENTIALS.with(|saved| saved.borrow().generation);
     let result = if native() {
         invoke(
             "connect",
@@ -433,12 +446,16 @@ pub async fn login(endpoint: &str, username: &str, password: &str) -> Result<Val
                 )
             })?
             .to_owned();
-        CREDENTIALS.with(|saved| {
-            saved.borrow_mut().replace(
+        let accepted = CREDENTIALS.with(|saved| {
+            saved.borrow_mut().replace_if_current(
+                generation,
                 Some(token),
                 result["csrf_token"].as_str().map(str::to_owned),
             )
         });
+        if !accepted {
+            return Err(session_changed());
+        }
     }
     Ok(result)
 }
@@ -696,6 +713,19 @@ pub async fn open_version(version: &str, name: &str) -> Result<Option<String>, E
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn late_login_cannot_restore_cleared_or_replace_newer_credentials() {
+        let mut saved = Credentials::default();
+        let request_generation = saved.generation;
+        saved.replace(None, None);
+        assert!(!saved.replace_if_current(request_generation, Some("late".into()), None));
+        assert!(saved.token.is_none());
+        let current = saved.generation;
+        assert!(saved.replace_if_current(current, Some("new".into()), Some("csrf".into())));
+        assert!(!saved.replace_if_current(current, Some("late".into()), None));
+        assert_eq!(saved.token.as_deref(), Some("new"));
+        assert_eq!(saved.csrf.as_deref(), Some("csrf"));
+    }
     #[test]
     fn an_old_unauthorized_response_cannot_revoke_a_new_login() {
         let mut saved = Credentials::default();

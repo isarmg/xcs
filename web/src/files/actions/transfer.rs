@@ -125,10 +125,10 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
         }
     }
     state.update(|s| {
-        s.files.uploads.retain(|row| row.status.pending());
-        s.files
-            .uploads
-            .extend(queue.iter().map(|(_, row)| row.clone()));
+        append_uploads(
+            &mut s.files.uploads,
+            queue.iter().map(|(_, row)| row.clone()),
+        );
     });
     let epoch = snapshot.session_epoch;
     spawn_local(async move {
@@ -209,6 +209,11 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
             }
         }
     });
+}
+// Receipts (especially failed staged uploads) remain until the user explicitly
+// clears them. Starting another upload must not erase recovery information.
+fn append_uploads(uploads: &mut Vec<UploadRow>, rows: impl IntoIterator<Item = UploadRow>) {
+    uploads.extend(rows);
 }
 /// A lost save response stops the queue, without rewriting the original
 /// operation's unknown state or any file that has already been published.
@@ -303,6 +308,28 @@ pub(crate) fn download(state: RwSignal<State>, entry: Value) {
 mod tests {
     use super::*;
 
+    #[test]
+    fn starting_another_upload_retains_failed_staging_and_completed_receipts() {
+        let mut uploads = vec![
+            UploadRow {
+                operation_id: "failed".into(),
+                workspace: "retained-workspace".into(),
+                message: "network interrupted".into(),
+                status: SaveStatus::Rejected,
+                ..Default::default()
+            },
+            UploadRow {
+                status: SaveStatus::Published,
+                ..Default::default()
+            },
+        ];
+        append_uploads(&mut uploads, [UploadRow::default()]);
+        assert_eq!(uploads.len(), 3);
+        assert_eq!(uploads[0].workspace, "retained-workspace");
+        assert_eq!(uploads[0].message, "network interrupted");
+        assert_eq!(uploads[1].status, SaveStatus::Published);
+        assert_eq!(uploads[2].status, SaveStatus::Waiting);
+    }
     fn pending_model() -> Model {
         Model {
             directory: "reports".into(),

@@ -68,7 +68,6 @@ pub(crate) fn set_notice(state: RwSignal<State>, notice: String) {
 pub fn app() -> impl IntoView {
     let state = RwSignal::new(State {
         page: "files".into(),
-        restoring: true,
         ..Default::default()
     });
     restore_session(state);
@@ -92,14 +91,16 @@ pub fn app() -> impl IntoView {
     let login_failure = Memo::new(move |_| state.with(|s| s.login_failure.clone()));
     let endpoint = RwSignal::new("https://".to_owned());
     let on_login = Callback::new(move |credentials: LoginCredentials| {
+        let Some(epoch) = state.try_update(begin_login).flatten() else {
+            return;
+        };
         let address = endpoint.get_untracked();
-        state.update(|s| {
-            s.busy += 1;
-            s.session_epoch += 1;
-            s.login_failure = None;
-        });
         spawn_local(async move {
-            match api::login(&address, &credentials.username, &credentials.password).await {
+            let result = api::login(&address, &credentials.username, &credentials.password).await;
+            if !state.with_untracked(|s| s.session_epoch == epoch && !s.logout_pending) {
+                return;
+            }
+            match result {
                 Ok(value) => {
                     state.update(|s| {
                         let busy = s.busy;
@@ -200,14 +201,36 @@ fn session_view(state: &State) -> SessionView {
             .and_then(|e| e.request_id.clone()),
     }
 }
+// Session transitions own an epoch before their first asynchronous step.
+// Disable duplicate submissions at the action boundary as well as in the view.
+fn begin_login(state: &mut State) -> Option<u64> {
+    if state.busy > 0 || state.restoring || state.logout_pending {
+        return None;
+    }
+    state.busy = 1;
+    state.session_epoch += 1;
+    state.login_failure = None;
+    Some(state.session_epoch)
+}
+fn begin_restore(state: &mut State) -> Option<u64> {
+    if state.busy > 0 || state.restoring || state.logout_pending {
+        return None;
+    }
+    state.restoring = true;
+    state.session_epoch += 1;
+    state.session_failure = None;
+    Some(state.session_epoch)
+}
 fn restore_session(state: RwSignal<State>) {
-    state.update(|s| {
-        s.restoring = true;
-        s.session_epoch += 1;
-        s.session_failure = None;
-    });
+    let Some(epoch) = state.try_update(begin_restore).flatten() else {
+        return;
+    };
     spawn_local(async move {
-        match api::restore().await {
+        let result = api::restore().await;
+        if !state.with_untracked(|s| s.session_epoch == epoch && !s.logout_pending) {
+            return;
+        }
+        match result {
             Ok(value) => {
                 state.update(|s| {
                     s.authenticated = true;
@@ -234,8 +257,13 @@ fn logout(state: RwSignal<State>) {
         s.logout_pending = true;
         s.session_epoch += 1;
     });
+    let epoch = state.with_untracked(|s| s.session_epoch);
     spawn_local(async move {
-        match api::request("POST", "/v1/auth/logout", Some(json!({}))).await {
+        let result = api::request("POST", "/v1/auth/logout", Some(json!({}))).await;
+        if !state.with_untracked(|s| s.session_epoch == epoch && s.logout_pending) {
+            return;
+        }
+        match result {
             Ok(_) => {
                 end_session(state, String::new());
             }
@@ -266,6 +294,9 @@ fn account(state: RwSignal<State>) -> impl IntoView {
     let pending = Memo::new(move |_| state.with(|s| s.password_pending));
     let failure = Memo::new(move |_| state.with(|s| s.password_failure.clone()));
     let change = Callback::new(move |credentials: PasswordChange| {
+        if state.with_untracked(|s| !s.authenticated || s.password_pending || s.logout_pending) {
+            return;
+        }
         state.update(|s| {
             s.password_pending = true;
             s.password_failure = None;
@@ -321,6 +352,24 @@ fn reject_password_change(state: &mut State, error: &api::Error) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn session_transitions_reject_duplicate_and_overlapping_submissions() {
+        let mut state = State::default();
+        assert_eq!(begin_restore(&mut state), Some(1));
+        assert_eq!(begin_restore(&mut state), None);
+        assert_eq!(begin_login(&mut state), None);
+        assert_eq!(state.session_epoch, 1);
+        state.restoring = false;
+        assert_eq!(begin_login(&mut state), Some(2));
+        assert_eq!(begin_login(&mut state), None);
+        assert_eq!(begin_restore(&mut state), None);
+        assert_eq!(state.busy, 1);
+        state.busy = 0;
+        state.logout_pending = true;
+        assert_eq!(begin_login(&mut state), None);
+        assert_eq!(begin_restore(&mut state), None);
+        assert_eq!(state.session_epoch, 2);
+    }
     #[test]
     fn content_and_account_completion_require_the_original_active_session() {
         Owner::new().with(|| {

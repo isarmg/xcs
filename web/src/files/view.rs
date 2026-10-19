@@ -102,8 +102,9 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
         })
     });
 
-    let mutation_disabled =
-        Signal::derive(move || state.with(|s| !s.files.writable || actions::pending(s)));
+    let mutation_disabled = Signal::derive(move || {
+        state.with(|s| !s.files.writable || s.files.loading || actions::pending(s))
+    });
     let batch_disabled =
         Signal::derive(move || state.with(|s| !batch::available(&s.files) || actions::pending(s)));
     view! {

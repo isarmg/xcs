@@ -88,7 +88,23 @@ impl Model {
                 }
             });
         if let Some(entry) = matched {
-            self.selected = Some(entry.clone());
+            let content_changed = ["file_id", "version_id", "node_id", "selected_branch_id"]
+                .iter()
+                .any(|key| selected[*key] != entry[*key]);
+            let changed = content_changed || selected["path"] != entry["path"];
+            let entry = entry.clone();
+            if changed {
+                // A refreshed branch or renamed logical path invalidates both
+                // visible content and in-flight reads of the previous context.
+                if content_changed {
+                    self.file_history = Value::Null;
+                }
+                self.history_loading = false;
+                self.history_generation += 1;
+                self.checked_nodes.clear();
+                self.close_overlays();
+            }
+            self.selected = Some(entry);
         } else {
             self.clear_selection();
         }
@@ -433,6 +449,32 @@ mod tests {
     use super::*;
 
     #[test]
+    fn refreshed_selection_invalidates_old_history_and_preview_only_when_context_changes() {
+        let original = serde_json::json!({"entry_id":"entry", "file_id":"file", "path":"a.txt", "version_id":"v1", "selected_branch_id":"main"});
+        let mut model = Model {
+            selected: Some(original.clone()),
+            entries: vec![original.clone()],
+            file_history: serde_json::json!({"selected_branch_id":"main"}),
+            preview: Some(("a.txt".into(), "old content".into())),
+            history_loading: true,
+            ..Default::default()
+        };
+        model.reconcile_selection();
+        assert!(model.preview.is_some());
+        assert_eq!(model.history_generation, 0);
+        model.entries[0]["selected_branch_id"] = "draft".into();
+        model.entries[0]["version_id"] = "v2".into();
+        model.checked_nodes.insert("old-node".into());
+        model.reconcile_selection();
+        assert_eq!(model.selected.as_ref().unwrap()["version_id"], "v2");
+        assert!(model.preview.is_none());
+        assert!(model.file_history.is_null());
+        assert!(!model.history_loading);
+        assert!(model.checked_nodes.is_empty());
+        assert_eq!(model.history_generation, 1);
+        assert_eq!(model.preview_generation, 1);
+    }
+    #[test]
     fn backup_context_never_guesses_a_primary_alias_from_its_prefix() {
         let model = Model {
             repository_id: "wrong-listing-repo".into(),
@@ -483,14 +525,16 @@ mod tests {
         model.selected = Some(serde_json::json!({"read_only":true}));
         assert!(selected_entry_read_only(&model));
     }
-    const PROTECTED: &str = include_str!("../../../tests/evidence/api/save-operation.json");
-    const DEGRADED: &str = include_str!("../../../tests/evidence/api/degraded-save-operation.json");
-    const DAMAGE: &str =
-        include_str!("../../../tests/evidence/api/damaged-published-save-operation.json");
+    const DEGRADED: &str = include_str!("fixtures/degraded-save-operation.json");
+    const DAMAGE: &str = include_str!("fixtures/damaged-published-save-operation.json");
     #[test]
     fn publication_protection_is_not_rewritten_by_later_damage() {
-        let good: Value = serde_json::from_str(PROTECTED).unwrap();
         let damage: Value = serde_json::from_str(DAMAGE).unwrap();
+        // Derive a healthy comparison from this real receipt, changing only
+        // current health. Frozen publication evidence must give the same label.
+        let mut good = damage.clone();
+        good["current_health"]["state"] = "HEALTHY".into();
+        assert_eq!(good["result"], damage["result"]);
         assert_eq!(operation_status(&good), SaveStatus::Published);
         assert_eq!(operation_status(&damage), SaveStatus::Published);
     }
@@ -648,6 +692,10 @@ mod tests {
         model.reconcile_selection();
         assert_eq!(model.selected.unwrap()["name"], "new.txt");
         assert_eq!(model.file_history["versions"][0]["version_id"], "v1");
+        assert_eq!(
+            model.history_generation, 1,
+            "old path responses are invalidated"
+        );
     }
     #[test]
     fn file_context_uses_the_logical_alias_instead_of_the_container_owner() {

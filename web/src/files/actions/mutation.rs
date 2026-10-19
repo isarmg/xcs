@@ -11,7 +11,7 @@ use xcs_web::{i18n::t, prelude::*};
 
 pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: String) {
     let snapshot = state.get_untracked();
-    if !snapshot.files.writable || pending(&snapshot) {
+    if !snapshot.files.writable || snapshot.files.loading || pending(&snapshot) {
         return;
     }
     let mut body = match action {
@@ -57,7 +57,7 @@ pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: S
     });
 }
 pub(crate) fn directory_branch(state: RwSignal<State>, path: String, name: String, select: bool) {
-    if state.with_untracked(|s| !s.files.writable || pending(s)) {
+    if state.with_untracked(|s| !s.files.writable || s.files.loading || pending(s)) {
         return;
     }
     let operation_id = api::operation_id();
@@ -233,7 +233,8 @@ pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note:
         Some(version) => ("versions", version),
         None => ("files", file),
     };
-    if id.is_empty() || state.with_untracked(|s| !s.files.writable || pending(s)) {
+    if id.is_empty() || state.with_untracked(|s| !s.files.writable || s.files.loading || pending(s))
+    {
         return;
     }
     let operation_id = api::operation_id();
@@ -338,7 +339,7 @@ pub(crate) fn select_branch(state: RwSignal<State>, branch: String) {
     file_mutation(state, &file, "select", json!({"branch_id":branch}));
 }
 fn file_mutation(state: RwSignal<State>, file: &str, action: &str, mut body: Value) {
-    if state.with_untracked(|s| !s.files.writable || pending(s)) {
+    if state.with_untracked(|s| !s.files.writable || s.files.loading || pending(s)) {
         return;
     }
     let id = api::operation_id();
@@ -376,4 +377,27 @@ fn file_mutation(state: RwSignal<State>, file: &str, action: &str, mut body: Val
         }
         state.update(|s| s.files.mutation_pending = false);
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn refreshed_or_navigating_directories_block_writes_at_the_action_boundary() {
+        Owner::new().with(|| {
+            let state = RwSignal::new(State::default());
+            state.update(|s| {
+                s.files.writable = true;
+                s.files.loading = true;
+                s.files.selected = Some(json!({"file_id":"file"}));
+            });
+            // These must return before generating IDs or spawning browser work.
+            namespace(state, NamespaceAction::CreateDirectory, "new".into());
+            directory_branch(state, "folder".into(), "draft".into(), false);
+            update_note(state, None, "note".into());
+            select_branch(state, "other".into());
+            assert!(!state.with_untracked(|s| s.files.mutation_pending));
+        });
+    }
 }
