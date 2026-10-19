@@ -12,9 +12,14 @@ impl Capture<'_> {
         thread::sleep(Duration::from_millis(250));
         let encoded = self.browser.command("GET", "/screenshot", None)?;
         let png = STANDARD.decode(encoded.as_str().ok_or("missing screenshot")?)?;
+        if png.len() < 24 || !png.starts_with(b"\x89PNG\r\n\x1a\n") {
+            return Err("invalid PNG screenshot".into());
+        }
+        let width = u32::from_be_bytes(png[16..20].try_into()?);
+        let height = u32::from_be_bytes(png[20..24].try_into()?);
         fs::write(self.dir.join(format!("{name}.png")), png)?;
         let controls = self.browser.script("return Array.from(document.querySelectorAll('button,input,.xcs-version-node,.xcs-file-preview')).map(e=>{const r=e.getBoundingClientRect();return {text:e.innerText||e.getAttribute('aria-label')||'',x:r.x,y:r.y,width:r.width,height:r.height}}).filter(r=>r.width>0&&r.height>0&&r.y<innerHeight&&r.y+r.height>0)")?;
-        self.events.push(json!({"kind":"screenshot","file":format!("{name}.png"),"elapsed_ms":self.started.elapsed().as_millis(),"controls":controls}));
+        self.events.push(json!({"kind":"screenshot","pixel_width":width,"pixel_height":height,"file":format!("{name}.png"),"elapsed_ms":self.started.elapsed().as_millis(),"controls":controls}));
         fs::write(
             self.dir.join("capture.json"),
             serde_json::to_vec_pretty(&self.events)?,
@@ -84,7 +89,19 @@ pub(super) fn run(browser: &Browser, temp: &Path, dir: &Path) -> Result<()> {
     fs::create_dir_all(dir)?;
     browser.cdp(
         "Emulation.setDeviceMetricsOverride",
-        json!({"width":1920,"height":1080,"deviceScaleFactor":1,"mobile":false}),
+        json!({"width":1920,"height":1080,"deviceScaleFactor":3,"mobile":false}),
+    )?;
+    let viewport = browser.script(
+        "return {width:innerWidth,height:innerHeight,deviceScaleFactor:devicePixelRatio}",
+    )?;
+    fs::write(
+        dir.join("viewport.json"),
+        serde_json::to_vec_pretty(&json!({
+            "viewport_css_pixels": viewport,
+            "expected_screenshot_pixels": {"width":5760,"height":3240},
+            "coordinate_units":"CSS pixels; multiply capture.json control coordinates by deviceScaleFactor to crop original PNG pixels",
+            "source":"Chrome WebDriver screenshot, no image resizing or composition"
+        }))?,
     )?;
     let mut c = Capture {
         browser,

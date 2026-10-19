@@ -38,4 +38,4 @@ CI 通过 `XCS_SMOKE_SCREENSHOT` 传递路径，浏览器验收成功后将图�
 
 ## 可选宣传素材采集
 
-设置 `XCS_DEMO_CAPTURE=artifacts/demo-capture` 可额外通过真实界面生成合成的 `活动方案.txt`：预算 8、10、12 万元三个正文版本，从 8 万历史节点创建“精简方案”，切换并逐字核验继承正文，再写入 6 万并切回“主方案”核验仍为 12 万。使用 1920×1080 实际浏览器视口，逐步保存原始 PNG、控件坐标和操作时间到 `capture.json`；全部成功后才写 `verification.txt`。不设置此变量时不执行该流程。CI 的 `xcs-demo-capture` artifact 可含失败前的局部素材，只有 `verification.txt` 与成功日志证明完整流程通过。
+设置 `XCS_DEMO_CAPTURE=artifacts/demo-capture` 可额外通过真实界面生成合成的 `活动方案.txt`：预算 8、10、12 万元三个正文版本，从 8 万历史节点创建“精简方案”，切换并逐字核验继承正文，再写入 6 万并切回“主方案”核验仍为 12 万。使用 1920×1080 CSS 像素的实际浏览器视口和 DPR 3（原始 PNG 为 5760×3240），逐步保存原始 PNG、控件坐标和操作时间到 `capture.json`；`viewport.json` 记录视口及像素比例，裁切原图时控件 CSS 坐标需乘 DPR；全部成功后才写 `verification.txt`。不设置此变量时不执行该流程。CI 的 `xcs-demo-capture` artifact 可含失败前的局部素材，只有 `verification.txt` 与成功日志证明完整流程通过。
