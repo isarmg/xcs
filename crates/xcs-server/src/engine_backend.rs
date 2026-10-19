@@ -616,7 +616,11 @@ impl Backend for EngineBackend {
                 keys(&input, &["repository_id", "path", "operation_id"])?;
                 let repo = field(&input, "repository_id")?;
                 authorize(identity, repository(&engine, repo)?, true, false)?;
-                let path = field(&input, "path")?;
+                // The empty path explicitly identifies the repository root.
+                let path = input
+                    .get("path")
+                    .and_then(Value::as_str)
+                    .ok_or_else(|| ApiError::invalid("path must be a string"))?;
                 if !path.is_empty() {
                     xcs_naming::validate_path(path).map_err(ApiError::invalid)?;
                 }

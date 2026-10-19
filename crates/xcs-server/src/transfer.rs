@@ -2,7 +2,7 @@
 //!
 //! The backend owns storage authorization and publication. This boundary owns
 //! request limits, byte ranges, staging progress and the read-lease lifetime.
-use crate::{ApiError, AppState, Content, auth::Identity, auth_primitives, call, lock, uploads};
+use crate::{ApiError, AppState, Content, auth::Identity, auth_primitives, lock, uploads};
 use axum::{
     Json,
     body::Body,
@@ -43,7 +43,7 @@ pub(crate) async fn upload_status(
     let owner = identity.clone();
     let ws = workspace.clone();
     let item_id = item.clone();
-    match tokio::task::spawn_blocking(move || {
+    let published = match tokio::task::spawn_blocking(move || {
         backend.call(
             "upload_status",
             &owner,
@@ -53,10 +53,10 @@ pub(crate) async fn upload_status(
     .await
     .map_err(ApiError::invalid)?
     {
-        Ok(status) => return Ok(Json(status)),
-        Err(error) if error.status == 404 => {}
+        Ok(status) => Ok(status),
+        Err(error) if error.status == 404 => Err(error),
         Err(error) => return Err(error),
-    }
+    };
     let root = state.config.spool_dir.clone();
     let ws = workspace.clone();
     let item_id = item.clone();
@@ -67,15 +67,21 @@ pub(crate) async fn upload_status(
         if record.principal != identity.principal && !identity.admin {
             return Err(ApiError::forbidden());
         }
-        return Ok(Json(uploads::status(&record)));
+        // A replacement can be durably receiving while the engine still owns
+        // the previous completed generation. Do not report that old content as
+        // the current upload. Equal/newer engine generations remain authoritative,
+        // including their sealed manifest and completed publication state.
+        let published_generation = published
+            .as_ref()
+            .ok()
+            .and_then(|status| status.get("upload_generation"))
+            .and_then(Value::as_str)
+            .and_then(|generation| xcs_contract::parse_u64_decimal(generation).ok());
+        if published_generation.is_none_or(|generation| record.generation > generation) {
+            return Ok(Json(uploads::status(&record)));
+        }
     }
-    call(
-        state,
-        identity,
-        "upload_status",
-        json!({"workspace_id":workspace,"item_id":item}),
-    )
-    .await
+    published.map(Json)
 }
 
 #[derive(Deserialize)]

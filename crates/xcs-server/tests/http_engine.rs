@@ -3430,3 +3430,160 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
     }
     capture_wire("file-path-history.json", &written);
 }
+
+#[tokio::test]
+async fn interrupted_new_upload_generation_reports_its_own_durable_progress() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let token = login(&app, "admin", "integration-test-password").await;
+    let repo = success(
+        &app,
+        &token,
+        "POST",
+        "/v1/repositories",
+        Some(json!({
+            "name":"Upload generations", "primary_slot_id":"P01", "target_copies":3,
+            "operation_id":new_id("op")
+        })),
+    )
+    .await;
+    let workspace = success(
+        &app,
+        &token,
+        "POST",
+        "/v1/workspaces",
+        Some(json!({
+            "branch_id":repo["main_branch_id"]
+        })),
+    )
+    .await;
+    let ws = workspace["workspace_id"].as_str().unwrap();
+    let item = new_id("entry");
+    upload(&app, &token, ws, &item, "file.txt", b"original").await;
+    let bytes = b"replacement bytes";
+    for complete in [false, true] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("PUT")
+                    .uri(format!(
+                        "/v1/workspaces/{ws}/files/{item}/content?path=file.txt"
+                    ))
+                    .header("authorization", format!("Bearer {token}"))
+                    .header("x-xcs-logical-size", bytes.len().to_string())
+                    .header("x-xcs-content-hash", blake3::hash(bytes).to_hex().as_str())
+                    .header("x-xcs-upload-generation", "2")
+                    .body(Body::from(if complete {
+                        bytes.to_vec()
+                    } else {
+                        bytes[..5].to_vec()
+                    }))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            if complete {
+                StatusCode::OK
+            } else {
+                StatusCode::BAD_REQUEST
+            }
+        );
+        let status = success(
+            &app,
+            &token,
+            "GET",
+            &format!("/v1/workspaces/{ws}/files/{item}/upload-status"),
+            None,
+        )
+        .await;
+        assert_eq!(status["upload_generation"], "2");
+        assert_eq!(
+            status["state"],
+            if complete { "COMPLETE" } else { "RECEIVING" }
+        );
+        assert_eq!(status["logical_size"], bytes.len().to_string());
+        assert_eq!(
+            status["content_hash"],
+            blake3::hash(bytes).to_hex().as_str()
+        );
+        assert_eq!(
+            status["durable_ranges"][0]["length"],
+            if complete {
+                bytes.len().to_string()
+            } else {
+                "5".into()
+            }
+        );
+    }
+    success(
+        &app,
+        &token,
+        "POST",
+        &format!("/v1/workspaces/{ws}/seal"),
+        Some(json!({})),
+    )
+    .await;
+    let status = success(
+        &app,
+        &token,
+        "GET",
+        &format!("/v1/workspaces/{ws}/files/{item}/upload-status"),
+        None,
+    )
+    .await;
+    assert_eq!(status["upload_generation"], "2");
+    assert_eq!(status["state"], "SEALED");
+    assert!(status["sealed_manifest_hash"].is_string());
+}
+
+#[tokio::test]
+async fn directory_scope_initialization_accepts_root_but_requires_a_string_path() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let token = login(&app, "admin", "integration-test-password").await;
+    let repo = success(
+        &app,
+        &token,
+        "POST",
+        "/v1/repositories",
+        Some(json!({
+            "name":"Root scope", "primary_slot_id":"P01", "target_copies":3,
+            "operation_id":new_id("op")
+        })),
+    )
+    .await;
+    let endpoint = format!(
+        "/v1/repositories/{}/directory-scopes",
+        repo["repository_id"].as_str().unwrap()
+    );
+    for path in [
+        None,
+        Some(Value::Null),
+        Some(json!(12)),
+        Some(json!("../outside")),
+    ] {
+        let mut body = json!({"operation_id":new_id("op")});
+        if let Some(path) = path {
+            body["path"] = path;
+        }
+        assert_eq!(
+            send(&app, Some(&token), "POST", &endpoint, Some(body))
+                .await
+                .0,
+            StatusCode::BAD_REQUEST
+        );
+    }
+    let initialized = success(
+        &app,
+        &token,
+        "POST",
+        &endpoint,
+        Some(json!({"path":"", "operation_id":new_id("op")})),
+    )
+    .await;
+    assert_eq!(initialized["state"], "completed");
+    assert!(initialized["result"]["directory_branch_id"].is_string());
+}
