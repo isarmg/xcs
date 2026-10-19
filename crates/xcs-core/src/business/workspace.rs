@@ -673,9 +673,12 @@ impl Engine {
                         if let Some(destination) = &operation.destination { validate_directory_selection(state, &w, destination)?; }
                         let key = xcs_naming::path_key(&operation.path);
                         let prefix = format!("{key}/");
+                        // A same-name replacement is not the entry this workspace
+                        // opened. In particular, every directory has an empty
+                        // version_id, so path/content alone cannot fence it.
                         let selected = |entries: &[Entry]| entries.iter()
                             .filter(|entry| entry.lookup_key == key || entry.lookup_key.starts_with(&prefix))
-                            .map(|entry| (entry.path.clone(), entry.version_id.clone())).collect::<Vec<_>>();
+                            .map(|entry| (entry.entry_id.clone(), entry.file_id.clone(), entry.kind.clone(), entry.path.clone(), entry.version_id.clone())).collect::<Vec<_>>();
                         if selected(&current.entries) != selected(&base.entries) {
                             return Err(Error::new("NAMESPACE_CONFLICT", "namespace changed after the workspace began"));
                         }
