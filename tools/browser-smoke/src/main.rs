@@ -67,29 +67,63 @@ fn http(port: u16, method: &str, path: &str, body: Option<Value>) -> Result<(u16
         "{method} {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
         body.len()
     )?;
-    let mut response = Vec::new();
-    stream.read_to_end(&mut response)?;
-    decode_http(&response)
+    read_http(&mut stream)
 }
-fn decode_http(response: &[u8]) -> Result<(u16, Vec<u8>)> {
-    let boundary = response
-        .windows(4)
-        .position(|s| s == b"\r\n\r\n")
-        .ok_or("invalid HTTP response")?;
-    let headers = std::str::from_utf8(&response[..boundary])?;
-    let status = headers
-        .split_whitespace()
-        .nth(1)
-        .ok_or("missing HTTP status")?
-        .parse()?;
-    if headers
-        .to_ascii_lowercase()
-        .contains("transfer-encoding: chunked")
-    {
-        return Err("unexpected chunked WebDriver response".into());
+
+// HTTP framing, not socket EOF, marks the end of a response. ChromeDriver keeps
+// its socket open even when the request asks for Connection: close.
+fn read_http(reader: &mut impl Read) -> Result<(u16, Vec<u8>)> {
+    const MAX_HEADERS: usize = 64 * 1024;
+    const MAX_BODY: usize = 64 * 1024 * 1024;
+    let mut header = Vec::new();
+    while !header.ends_with(b"\r\n\r\n") {
+        if header.len() >= MAX_HEADERS {
+            return Err("HTTP headers exceed size limit".into());
+        }
+        let mut byte = [0];
+        reader.read_exact(&mut byte)?;
+        header.push(byte[0]);
     }
-    Ok((status, response[boundary + 4..].to_vec()))
+    let header = std::str::from_utf8(&header)?;
+    let mut lines = header.split("\r\n");
+    let mut status_line = lines
+        .next()
+        .ok_or("missing HTTP status")?
+        .split_whitespace();
+    if !matches!(status_line.next(), Some("HTTP/1.1" | "HTTP/1.0")) {
+        return Err("invalid HTTP version".into());
+    }
+    let status: u16 = status_line.next().ok_or("missing HTTP status")?.parse()?;
+    let mut content_length = None;
+    for line in lines.filter(|line| !line.is_empty()) {
+        let (name, value) = line.split_once(':').ok_or("malformed HTTP header")?;
+        if name.eq_ignore_ascii_case("transfer-encoding") {
+            return Err("unsupported transfer-encoding in local HTTP response".into());
+        }
+        if name.eq_ignore_ascii_case("content-length") {
+            let length: usize = value.trim().parse()?;
+            if content_length.replace(length).is_some() {
+                return Err("duplicate HTTP Content-Length".into());
+            }
+        }
+    }
+    let length = match content_length {
+        Some(length) => length,
+        None if status == 204 || status == 304 => 0,
+        None => return Err("local HTTP response requires Content-Length".into()),
+    };
+    if length > MAX_BODY {
+        return Err("HTTP response body exceeds size limit".into());
+    }
+    let mut body = vec![0; length];
+    reader.read_exact(&mut body)?;
+    Ok((status, body))
 }
+#[cfg(test)]
+fn decode_http(response: &[u8]) -> Result<(u16, Vec<u8>)> {
+    read_http(&mut std::io::Cursor::new(response))
+}
+
 fn wait_for<T>(label: &str, mut check: impl FnMut() -> Result<T>) -> Result<T> {
     let deadline = Instant::now() + Duration::from_secs(40);
     loop {
@@ -472,6 +506,47 @@ mod tests {
         assert!(decode_http(b"HTTP/1.1 nope\r\n\r\n{}").is_err());
         assert!(
             decode_http(b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n").is_err()
+        );
+    }
+    #[test]
+    fn content_length_completes_without_waiting_for_keep_alive_eof() {
+        // Like a live keep-alive socket: partial reads are possible; reading past
+        // the complete response would block instead of returning EOF.
+        struct KeepAlive(std::io::Cursor<Vec<u8>>);
+        impl Read for KeepAlive {
+            fn read(&mut self, output: &mut [u8]) -> std::io::Result<usize> {
+                if self.0.position() == self.0.get_ref().len() as u64 {
+                    return Err(std::io::ErrorKind::WouldBlock.into());
+                }
+                let limit = output.len().min(3);
+                self.0.read(&mut output[..limit])
+            }
+        }
+        let response = b"HTTP/1.1 200 OK\r\ncontent-length: 14\r\nConnection: keep-alive\r\n\r\n{\"value\":true}";
+        let mut socket = KeepAlive(std::io::Cursor::new(response.to_vec()));
+        let (status, body) = read_http(&mut socket).unwrap();
+        assert_eq!(status, 200);
+        assert_eq!(body, br#"{"value":true}"#);
+    }
+    #[test]
+    fn framing_rejects_truncated_missing_duplicate_or_excessive_lengths() {
+        for response in [
+            &b"HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\n{}"[..],
+            &b"HTTP/1.1 200 OK\r\n\r\n{}"[..],
+            &b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nContent-Length: 2\r\n\r\n{}"[..],
+            &b"HTTP/1.1 200 OK\r\nContent-Length: 999999999\r\n\r\n"[..],
+        ] {
+            assert!(decode_http(response).is_err());
+        }
+        assert_eq!(
+            decode_http(b"HTTP/1.1 204 No Content\r\n\r\n").unwrap(),
+            (204, vec![])
+        );
+        assert_eq!(
+            decode_http(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}next response")
+                .unwrap()
+                .1,
+            b"{}"
         );
     }
 }
