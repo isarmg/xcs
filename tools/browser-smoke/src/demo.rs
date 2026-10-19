@@ -26,6 +26,10 @@ impl Capture<'_> {
             .browser
             .command("GET", &format!("/element/{element}/rect"), None)?;
         self.events.push(json!({"kind":"click","label":label,"rect":rect,"elapsed_ms":self.started.elapsed().as_millis()}));
+        fs::write(
+            self.dir.join("capture.json"),
+            serde_json::to_vec_pretty(&self.events)?,
+        )?;
         self.browser.click(element)
     }
     fn preview(&mut self, budget: &str, name: &str) -> Result<()> {
@@ -118,8 +122,9 @@ pub(super) fn run(browser: &Browser, temp: &Path, dir: &Path) -> Result<()> {
         "主分支改名",
     )?;
     let rename = browser.css("input[aria-label='重命名文件分支']")?;
-    browser.command("POST", &format!("/element/{rename}/clear"), Some(json!({})))?;
-    browser.keys(&rename, "主方案\u{e007}")?;
+    // WebDriver Element Clear blurs the field, which correctly cancels this
+    // inline editor and detaches it. Use ordinary Ctrl+A typing without blur.
+    browser.keys(&rename, "\u{e009}a\u{e000}主方案\u{e007}")?;
     browser.element(
         "xpath",
         "//button[@role='combobox' and contains(.,'主方案')]",
