@@ -1428,11 +1428,8 @@ pub(crate) fn store_history_manifests_bounded(
     let mut hashes = BTreeMap::new();
     for id in state.histories.keys() {
         let manifest = HistoryManifest::from_state(state, id)?;
-        encode_metadata(&manifest, maximum)?;
-        let hash = object_hash("history-manifest", &manifest)?;
-        for disk in members {
-            store_object(disk, "history-manifest", &manifest)?;
-        }
+        let hash =
+            store_object_replicas_bounded(members, "history-manifest", &manifest, maximum)?;
         hashes.insert(id.clone(), hash);
     }
     Ok(hashes)
