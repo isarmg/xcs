@@ -138,15 +138,37 @@ impl Bridge {
                 status: 0,
             });
         }
+        let route = path.split('?').next().unwrap_or(path);
+        // Authentication must go through connect so tokens remain in Rust and
+        // the installed session participates in connection generation checks.
+        if route == "/v1/auth/login" {
+            return Err(BridgeError {
+                code: "NATIVE_LOGIN_REQUIRED".into(),
+                message: "Use the native connection command to sign in".into(),
+                retryable: false,
+                status: 0,
+            });
+        }
         let (client, revision) = self.snapshot().await?;
-        let result = client.request(method, path, body).await;
+        let mut result = client.request(method, path, body).await;
+        if route == "/v1/auth/me"
+            && let Ok(Value::Object(value)) = &mut result
+        {
+            // Native requests use the Rust-held bearer, never cookie CSRF.
+            value.remove("token");
+            value.remove("csrf_token");
+        }
         let mut connection = self.connection.write().await;
         if !connection.current(revision) {
             return Err(session_changed());
         }
-        if path == "/v1/auth/logout"
+        // A failed logout is unconfirmed: keep the credential so the locked
+        // UI can retry revocation. An explicit 401 confirms it is already invalid.
+        if (method == "POST"
+            && route == "/v1/auth/logout"
+            && (result.is_ok() || matches!(&result, Err(Error::Api { status: 401, .. }))))
             || (method == "POST"
-                && path == "/v1/auth/password"
+                && route == "/v1/auth/password"
                 && result.as_ref().is_ok_and(|value| {
                     value["changed"] == true && value["reauthentication_required"] == true
                 }))
@@ -224,6 +246,15 @@ impl Bridge {
                 .to_owned();
             let path = target.to_owned();
             let actual = tokio::task::spawn_blocking(move || -> Result<String, std::io::Error> {
+                // Reject directories, provider special files, and redirected cache
+                // entries before opening: a FIFO could otherwise block forever.
+                let metadata = std::fs::symlink_metadata(&path)?;
+                if !metadata.is_file() || metadata.file_type().is_symlink() {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        "cache entry must be a regular file",
+                    ));
+                }
                 let mut file = std::fs::File::open(path)?;
                 let mut hasher = blake3::Hasher::new();
                 std::io::copy(&mut file, &mut hasher)?;

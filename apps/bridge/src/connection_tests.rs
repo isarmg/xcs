@@ -127,3 +127,157 @@ async fn an_old_cache_verification_error_is_isolated_from_the_new_session() {
     );
     server.await.unwrap();
 }
+
+async fn logout_server(
+    statuses: Vec<&'static str>,
+) -> (String, tokio::task::JoinHandle<Vec<String>>) {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let endpoint = format!("http://{}", listener.local_addr().unwrap());
+    let server = tokio::spawn(async move {
+        let mut requests = Vec::new();
+        for status in statuses {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut headers = Vec::new();
+            while !headers.ends_with(b"\r\n\r\n") {
+                headers.push(stream.read_u8().await.unwrap());
+                assert!(headers.len() < 8192);
+            }
+            requests.push(String::from_utf8(headers).unwrap());
+            stream
+                .write_all(
+                    format!(
+                        "HTTP/1.1 {status}\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{{}}"
+                    )
+                    .as_bytes(),
+                )
+                .await
+                .unwrap();
+        }
+        requests
+    });
+    (endpoint, server)
+}
+
+async fn connected_bridge(endpoint: &str) -> Bridge {
+    let bridge = Bridge::default();
+    let mut client = Client::connect(endpoint).unwrap();
+    client.set_token(Some("test-session".into()));
+    {
+        let mut state = bridge.connection.write().await;
+        let attempt = state.begin();
+        assert!(state.install(attempt, client));
+    }
+    bridge
+}
+
+#[tokio::test]
+async fn failed_logout_can_retry_with_the_same_credential_then_revokes_pending_login() {
+    let (endpoint, server) = logout_server(vec!["503 Service Unavailable", "200 OK"]).await;
+    let bridge = connected_bridge(&endpoint).await;
+    let (_, revision) = bridge.snapshot().await.unwrap();
+    let pending_login = bridge.connection.write().await.begin();
+    assert!(
+        bridge
+            .request("POST", "/v1/auth/logout", None)
+            .await
+            .is_err()
+    );
+    assert!(bridge.connection.read().await.current(revision));
+    bridge
+        .request("POST", "/v1/auth/logout?source=app", None)
+        .await
+        .unwrap();
+    assert_eq!(bridge.snapshot().await.err().unwrap().code, "NOT_CONNECTED");
+    assert!(
+        !bridge
+            .connection
+            .write()
+            .await
+            .install(pending_login, client("stale.example"))
+    );
+    let requests = server.await.unwrap();
+    assert_eq!(requests.len(), 2);
+    for request in requests {
+        assert!(
+            request
+                .to_lowercase()
+                .contains("authorization: bearer test-session\r\n")
+        );
+    }
+}
+
+#[tokio::test]
+async fn rejected_logout_method_does_not_drop_session() {
+    let (endpoint, server) = logout_server(vec!["405 Method Not Allowed"]).await;
+    let bridge = connected_bridge(&endpoint).await;
+    assert!(
+        bridge
+            .request("GET", "/v1/auth/logout", None)
+            .await
+            .is_err()
+    );
+    assert!(bridge.snapshot().await.is_ok());
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn logout_unauthorized_confirms_session_is_already_invalid() {
+    let (endpoint, server) = logout_server(vec!["401 Unauthorized"]).await;
+    let bridge = connected_bridge(&endpoint).await;
+    assert_eq!(
+        bridge
+            .request("POST", "/v1/auth/logout", None)
+            .await
+            .unwrap_err()
+            .status,
+        401
+    );
+    assert!(bridge.snapshot().await.is_err());
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn generic_login_cannot_return_credentials_or_create_an_untracked_session() {
+    let bridge = Bridge::default();
+    for route in ["/v1/auth/login", "/v1/auth/login?source=app"] {
+        assert_eq!(
+            bridge.request("POST", route, None).await.unwrap_err().code,
+            "NATIVE_LOGIN_REQUIRED"
+        );
+    }
+}
+
+#[tokio::test]
+async fn restored_native_session_does_not_expose_credentials_to_webview() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let bridge = connected_bridge(&format!("http://{}", listener.local_addr().unwrap())).await;
+    let server = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let mut headers = Vec::new();
+        while !headers.ends_with(b"\r\n\r\n") {
+            headers.push(stream.read_u8().await.unwrap());
+        }
+        let body = json!({"principal":"alice","admin":false,"repositories":["repo"],"csrf_token":"secret-csrf","token":"secret-bearer"}).to_string();
+        stream
+            .write_all(
+                format!(
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                )
+                .as_bytes(),
+            )
+            .await
+            .unwrap();
+    });
+    let result = bridge
+        .request("GET", "/v1/auth/me?source=app", None)
+        .await
+        .unwrap();
+    assert_eq!(
+        result,
+        json!({"principal":"alice","admin":false,"repositories":["repo"]})
+    );
+    assert!(bridge.snapshot().await.is_ok());
+    server.await.unwrap();
+}

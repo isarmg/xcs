@@ -87,6 +87,21 @@ pub fn prepare_cache_target(
     ] {
         private_directory(&path)?;
     }
+    // A cache collision is reusable only for an ordinary file. In particular,
+    // never follow a leaf symlink or let verification block on a FIFO/device.
+    match std::fs::symlink_metadata(&target) {
+        Ok(metadata) if !metadata.is_file() || metadata.file_type().is_symlink() => {
+            return Err(BridgeError {
+                code: "CACHE_SCOPE".into(),
+                message: "Cache entry must be a regular file".into(),
+                retryable: false,
+                status: 0,
+            });
+        }
+        Ok(_) => (),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => (),
+        Err(error) => return Err(xcs_client::Error::Io(error).into()),
+    }
     Ok(target)
 }
 
@@ -159,3 +174,50 @@ mod tests {
 
 #[cfg(test)]
 mod import_tests;
+
+#[cfg(test)]
+mod entry_tests {
+    use super::*;
+    const VERSION: &str = "ver_0123456789abcdef0123456789abcdef";
+
+    #[test]
+    fn only_regular_existing_entries_are_reusable() {
+        let root = tempfile::tempdir().unwrap();
+        let target = prepare_cache_target(root.path(), VERSION, "file.txt").unwrap();
+        std::fs::create_dir(&target).unwrap();
+        assert_eq!(
+            prepare_cache_target(root.path(), VERSION, "file.txt")
+                .unwrap_err()
+                .code,
+            "CACHE_SCOPE"
+        );
+        std::fs::remove_dir(&target).unwrap();
+        std::fs::write(&target, b"verified later").unwrap();
+        assert_eq!(
+            prepare_cache_target(root.path(), VERSION, "file.txt").unwrap(),
+            target
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn leaf_symlinks_are_rejected_even_inside_cache_or_when_dangling() {
+        use std::os::unix::fs::symlink;
+        let root = tempfile::tempdir().unwrap();
+        let target = prepare_cache_target(root.path(), VERSION, "file.txt").unwrap();
+        let other = root.path().join("other");
+        for exists in [false, true] {
+            if exists {
+                std::fs::write(&other, b"other").unwrap();
+            }
+            symlink(&other, &target).unwrap();
+            assert_eq!(
+                prepare_cache_target(root.path(), VERSION, "file.txt")
+                    .unwrap_err()
+                    .code,
+                "CACHE_SCOPE"
+            );
+            std::fs::remove_file(&target).unwrap();
+        }
+    }
+}
