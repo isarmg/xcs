@@ -37,11 +37,11 @@ cargo run --locked --manifest-path apps/host/Cargo.toml
 
 ## 验证状态
 
-[2026-10-19 的 CI](https://github.com/isarmg/xcs/actions/runs/39276866908) 已通过 Linux、Windows、macOS 的桥接测试与宿主编译检查。共享界面已在真实 Chrome 中完成登录、上传、版本详情、下载比对和注销测试。
+[2026-10-19 的 CI](https://github.com/isarmg/xcs/actions/runs/39276866908) 已通过 Linux、Windows、macOS 的桥接测试与宿主编译检查。共享界面已在真实 Chrome 中完成登录、上传、版本详情、下载比对和注销测试。[5bf569e 的发布演练](https://github.com/isarmg/xcs/actions/runs/39276920875) 已完成 Linux、Windows、macOS 打包和产物校验，未公开 Release。
 
 | 范围 | 当前状态 | 下一步 |
 | --- | --- | --- |
-| Linux、Windows、macOS | 桥接测试与宿主 `cargo check` | 发行打包、安装、原生 WebView 交互和系统文件交接 |
+| Linux、Windows、macOS | 桥接测试、宿主 `cargo check` 与上述提交的发行打包 | 安装、原生 WebView 交互和系统文件交接 |
 | Android | 文件选择及 content URI 适配源码 | SDK/NDK 构建、文件提供方、后台生命周期及真机 |
 | iOS/iPadOS | 文件选择及安全范围资源释放源码 | Xcode 构建、签名、后台生命周期、iPad 多窗口及真机 |
 

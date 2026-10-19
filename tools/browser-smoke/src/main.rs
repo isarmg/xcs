@@ -1,4 +1,5 @@
 //! Real Chrome/WebDriver smoke test; no mock server or generated application JS.
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use serde_json::{Value, json};
 use std::{
     env,
@@ -209,10 +210,21 @@ impl Drop for Browser {
     }
 }
 
-fn exercise(browser: &Browser, origin: &str, password: &str, temp: &Path) -> Result<()> {
+fn exercise(
+    browser: &Browser,
+    origin: &str,
+    password: &str,
+    temp: &Path,
+    screenshot: Option<&Path>,
+) -> Result<()> {
     // Observation only. No fetch interception, synthetic responses or application state injection.
     browser.cdp("Page.addScriptToEvaluateOnNewDocument", json!({"source":"window.__xcsSmokeErrors=[];addEventListener('error',e=>window.__xcsSmokeErrors.push(String(e.message)));addEventListener('unhandledrejection',e=>window.__xcsSmokeErrors.push(String(e.reason)));"}))?;
-    browser.command("POST", "/url", Some(json!({"url":origin})))?;
+    let url = if screenshot.is_some() {
+        format!("{origin}/?lang=zh-CN")
+    } else {
+        origin.to_owned()
+    };
+    browser.command("POST", "/url", Some(json!({"url":url})))?;
     browser.keys(
         &browser.css("input[autocomplete='username']")?,
         "smoke-admin",
@@ -254,6 +266,61 @@ fn exercise(browser: &Browser, origin: &str, password: &str, temp: &Path) -> Res
         "//button[contains(@class,'xcs-file-name')][normalize-space(.)='browser-smoke.txt']",
     )?;
     println!("PASS browser file upload and directory publication");
+    if let Some(path) = screenshot {
+        // Small, public demo fixtures go through the same real browser upload flow.
+        // No DOM edits, fake responses, or user data are used for the screenshot.
+        for (name, content) in [
+            (
+                "项目说明.md",
+                "# 示例项目\n这些文件仅用于展示 XCS 文件管理界面。\n",
+            ),
+            (
+                "备份计划.txt",
+                "示例计划：主盘 P01 → 备份盘 B01 → 归档盘 C01。\n",
+            ),
+            (
+                "容量记录.csv",
+                "盘位,用途\nP01,主存储\nB01,备份\nC01,归档\n",
+            ),
+        ] {
+            let fixture = temp.join(name);
+            fs::write(&fixture, content)?;
+            browser.keys(
+                &browser.css("input[type='file']")?,
+                fixture.to_str().ok_or("non-UTF8 fixture path")?,
+            )?;
+            browser.element(
+                "xpath",
+                &format!("//button[contains(@class,'xcs-file-name')][normalize-space(.)='{name}']"),
+            )?;
+        }
+        wait_for("loaded screenshot fonts", || {
+            if browser.script("return document.fonts.status === 'loaded'")? == true {
+                Ok(())
+            } else {
+                Err("fonts still loading".into())
+            }
+        })?;
+        let encoded = browser.command("GET", "/screenshot", None)?;
+        let png = STANDARD.decode(encoded.as_str().ok_or("missing screenshot data")?)?;
+        if !png.starts_with(b"\x89PNG\r\n\x1a\n") {
+            return Err("WebDriver screenshot is not a PNG".into());
+        }
+        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(path, png)?;
+        println!("PASS real browser screenshot saved to {}", path.display());
+    }
+    // Demo uploads may rerender the table; resolve the original smoke file again.
+    let file = if screenshot.is_some() {
+        browser.element(
+            "xpath",
+            "//button[contains(@class,'xcs-file-name')][normalize-space(.)='browser-smoke.txt']",
+        )?
+    } else {
+        file
+    };
     browser.click(&file)?;
     browser.css(".xcs-entry-version-history")?;
     browser.click(&browser.button("Download", "下载")?)?;
@@ -339,13 +406,17 @@ fn run() -> Result<()> {
     let mut args = env::args().skip(1);
     let mut xcs = PathBuf::from("target/native/debug/xcs");
     let mut web = PathBuf::from("web/dist");
+    let mut screenshot: Option<PathBuf> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--xcs" => xcs = args.next().ok_or("--xcs requires a path")?.into(),
             "--web-dir" => web = args.next().ok_or("--web-dir requires a path")?.into(),
+            "--screenshot" => {
+                screenshot = Some(args.next().ok_or("--screenshot requires a path")?.into());
+            }
             _ => {
                 return Err(format!(
-                    "unknown argument {arg}; usage: xcs-browser-smoke [--xcs PATH] [--web-dir PATH]"
+                    "unknown argument {arg}; usage: xcs-browser-smoke [--xcs PATH] [--web-dir PATH] [--screenshot PNG]"
                 )
                 .into());
             }
@@ -439,7 +510,12 @@ fn run() -> Result<()> {
         })?;
         let downloads = root.join("downloads");
         fs::create_dir(&downloads)?;
-        let mut chrome = json!({"args":["--headless=new","--disable-dev-shm-usage","--window-size=1280,900"],"prefs":{"download.default_directory":downloads,"download.prompt_for_download":false}});
+        let window_size = if screenshot.is_some() {
+            "--window-size=1440,1000"
+        } else {
+            "--window-size=1280,900"
+        };
+        let mut chrome = json!({"args":["--headless=new","--disable-dev-shm-usage",window_size],"prefs":{"download.default_directory":downloads,"download.prompt_for_download":false}});
         if let Some(binary) = env::var_os("CHROME_BIN") {
             chrome["binary"] = binary.to_string_lossy().into_owned().into();
         }
@@ -466,7 +542,7 @@ fn run() -> Result<()> {
             "Browser.setDownloadBehavior",
             json!({"behavior":"allow","downloadPath":downloads}),
         )?;
-        exercise(&browser, &origin, &password, root)
+        exercise(&browser, &origin, &password, root, screenshot.as_deref())
     })();
     if result.is_err() {
         for (name, path) in [("XCS", server_log), ("ChromeDriver", driver_log)] {

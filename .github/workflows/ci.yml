@@ -168,5 +168,18 @@ jobs:
           test "$chrome_major" = "$driver_major"
           echo "CHROME_BIN=$chrome" >> "$GITHUB_ENV"
           echo "CHROMEDRIVER=$driver" >> "$GITHUB_ENV"
+      - name: Install CJK fonts for the Chinese screenshot
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y fonts-noto-cjk
       - name: Run browser smoke against the real server and WASM app
+        env:
+          XCS_SMOKE_SCREENSHOT: artifacts/web-file-manager.png
         run: bash .github/scripts/check.sh browser-smoke
+      - name: Retain real Web file manager screenshot
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-screenshot
+          path: artifacts/web-file-manager.png
+          if-no-files-found: error
+          retention-days: 7

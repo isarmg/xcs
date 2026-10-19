@@ -18,6 +18,12 @@ cargo run --locked --manifest-path tools/browser-smoke/Cargo.toml -- \
 
 `CHROME_BIN` 可省略，ChromeDriver 会自动发现浏览器；`CHROMEDRIVER` 默认为 PATH 中的 `chromedriver`。这些变量接受可执行文件完整路径，不接受命令参数。Cargo 单测只验证测试工具自身，不能替代上面的浏览器命令。
 
+## 真实页面截图
+
+可添加 `--screenshot artifacts/web-file-manager.png`：使用产品现有中文语言参数，在真实上传完成后保存 Chrome WebDriver 返回的原始 PNG。截图额外上传三个纯合成示例文件，不修改页面 DOM、主题或 API 响应；原有下载、历史和注销验收仍完整执行。截图中使用独立临时开发池，不包含用户文件或凭据。
+
+CI 通过 `XCS_SMOKE_SCREENSHOT` 传递路径，浏览器验收成功后将图片保存为 `web-screenshot` artifact。README 展示图从该 artifact 原样取用。
+
 ## 验收范围
 
 1. 用随机临时密码创建独立三目录开发池，启动真实 XCS 服务；浏览器登录后必须看到三个磁盘目录。

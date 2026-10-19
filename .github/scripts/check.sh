@@ -55,8 +55,12 @@ case "${1:-}" in
   browser-smoke)
     cargo build --locked --package xcs-cli
     cargo test --locked --manifest-path tools/browser-smoke/Cargo.toml
+    screenshot_args=()
+    if [[ -n "${XCS_SMOKE_SCREENSHOT:-}" ]]; then
+      screenshot_args=(--screenshot "$XCS_SMOKE_SCREENSHOT")
+    fi
     cargo run --locked --manifest-path tools/browser-smoke/Cargo.toml -- \
-      --xcs "$PWD/target/native/debug/xcs" --web-dir "$PWD/web/dist"
+      --xcs "$PWD/target/native/debug/xcs" --web-dir "$PWD/web/dist" "${screenshot_args[@]}"
     ;;
   *)
     echo 'Usage: check.sh {workspace|apps|web|contracts|build-tools|demo|smb-protocol|web-production|desktop-host|browser-smoke}' >&2
