@@ -2,9 +2,7 @@ use crate::{disk::*, *};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
-    fs::OpenOptions,
     io::{Read, Write},
-    os::unix::fs::OpenOptionsExt,
     path::{Path, PathBuf},
 };
 pub(crate) const MAX_FRAME: usize = 16 * 1024 * 1024;
@@ -213,12 +211,7 @@ pub(crate) fn append(
     h.update(&header);
     h.update(&bytes);
     let digest = h.finalize();
-    let mut file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .append(true)
-        .mode(0o600)
-        .open(&path)?;
+    let mut file = open_append_regular(&path)?;
     if scanned.torn_tail {
         file.set_len(scanned.valid_bytes)?;
         file.sync_all()?;

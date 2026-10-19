@@ -2391,3 +2391,66 @@ fn directory_branch_inherits_frozen_parents_and_overrides_only_written_files_aft
     inspect(&engine);
     assert_eq!(engine.state().file_selections, selected);
 }
+
+#[test]
+fn workspace_commit_rejects_bytes_changed_after_upload_sealing() {
+    use std::os::unix::fs::PermissionsExt;
+
+    for changed in [b"evil".as_slice(), b"changed length".as_slice()] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        let staged = engine
+            .stage_bytes(&workspace.workspace_id, "file.txt", b"good")
+            .unwrap();
+        fs::set_permissions(&staged.source_path, fs::Permissions::from_mode(0o600)).unwrap();
+        fs::write(&staged.source_path, changed).unwrap();
+        let sequence = engine.state().sequence;
+        let operation = new_id("op");
+        let request = CommitRequest {
+            workspace_id: workspace.workspace_id.clone(),
+            operation_id: operation.clone(),
+            principal: "admin".into(),
+            expected_head: workspace.base_head.clone(),
+            fencing_token: workspace.fencing_token,
+            message: "save".into(),
+            request_digest: None,
+        };
+        let error = engine.commit_workspace(request.clone()).unwrap_err();
+        assert_eq!(error.code(), "CHECKSUM_MISMATCH");
+        assert_eq!(engine.state().sequence, sequence);
+        assert!(!engine.state().operations.contains_key(&operation));
+        assert!(engine.list_tree(&repo.main_branch_id).unwrap().is_empty());
+        assert_eq!(
+            engine.workspace(&workspace.workspace_id).unwrap().state,
+            "open"
+        );
+
+        // Failure did not consume the operation or publish a different request.
+        fs::write(&staged.source_path, b"good").unwrap();
+        engine.commit_workspace(request).unwrap();
+        let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+        assert_eq!(bytes(&engine, &entries[0].version_id), b"good");
+        drop(engine);
+        let reopened = Engine::open(&fixture.root).unwrap();
+        assert_eq!(bytes(&reopened, &entries[0].version_id), b"good");
+    }
+}
+
+#[test]
+fn journal_append_rejects_dangling_symlink_without_creating_its_target() {
+    let fixture = Fixture::new();
+    let disk = &fixture.config.disks[0];
+    let log = crate::journal::log_path(disk);
+    crate::disk::private_dir(log.parent().unwrap()).unwrap();
+    let outside = fixture.temp.path().join("outside-journal.bin");
+    std::os::unix::fs::symlink(&outside, &log).unwrap();
+    let error =
+        crate::journal::append(disk, "PREPARE", 1, &"a".repeat(64), &"b".repeat(64)).unwrap_err();
+    assert_eq!(error.code(), "UNSAFE_PATH");
+    assert!(!outside.exists());
+    assert!(fs::symlink_metadata(&log).unwrap().file_type().is_symlink());
+}

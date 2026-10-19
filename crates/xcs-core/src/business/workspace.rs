@@ -712,6 +712,9 @@ impl Engine {
                         state, pending, &branch.history_tree_id, &file_id, &file.path,
                         &file.source_path, &primary, copies, source_ids.clone(), pending_source.is_some(),
                     )?;
+                    if version.logical_size != file.size || version.content_hash != file.content_hash {
+                        return Err(Error::new("CHECKSUM_MISMATCH", "workspace source changed after sealing"));
+                    }
                     if let Some(node)=file_context.as_ref().and_then(|c|c.node_id.as_ref()) {
                         file_paths::source_node(state,&file_id,source_ids.first().map(String::as_str).unwrap_or(""),node)?;
                         state.file_node_parents.insert(version.version_id.clone(),vec![node.clone()]);

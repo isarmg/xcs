@@ -8,7 +8,7 @@ use std::{
 };
 use xcs_platform::fs_safety::{
     AtomicFile, EntryName, PrivateDirectory, RelativePath,
-    linux::{MountPolicy, OpenAt2Root},
+    linux::{MountPolicy, OpenAt2Root, SingleLinkRequirement},
 };
 
 fn fs_error(e: xcs_platform::fs_safety::Error) -> Error {
@@ -113,6 +113,38 @@ pub(crate) fn open_regular(path: &Path) -> Result<File> {
     )
     .map_err(fs_error)?;
     root.open_file(&name, false).map_err(fs_error)
+}
+/// Open a journal relative to its verified parent, without following a leaf symlink.
+pub(crate) fn open_append_regular(path: &Path) -> Result<File> {
+    let path = absolute_path(path)?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| Error::new("UNSAFE_PATH", "missing file parent"))?;
+    let root = OpenAt2Root::open(parent, MountPolicy::SameMount).map_err(fs_error)?;
+    let name = EntryName::new(
+        path.file_name()
+            .ok_or_else(|| Error::new("UNSAFE_PATH", "missing file name"))?,
+    )
+    .map_err(fs_error)?;
+    let file = File::from(
+        rustix::fs::openat2(
+            root.directory(),
+            name.as_os_str(),
+            rustix::fs::OFlags::CREATE
+                | rustix::fs::OFlags::WRONLY
+                | rustix::fs::OFlags::APPEND
+                | rustix::fs::OFlags::NOFOLLOW
+                | rustix::fs::OFlags::NONBLOCK
+                | rustix::fs::OFlags::CLOEXEC,
+            rustix::fs::Mode::from_raw_mode(0o600),
+            rustix::fs::ResolveFlags::BENEATH
+                | rustix::fs::ResolveFlags::NO_SYMLINKS
+                | rustix::fs::ResolveFlags::NO_XDEV,
+        )
+        .map_err(|e| fs_error(xcs_platform::fs_safety::Error::Io(e.into())))?,
+    );
+    SingleLinkRequirement::check(&file).map_err(fs_error)?;
+    Ok(file)
 }
 pub(crate) fn read_bytes(path: &Path, maximum: usize) -> Result<Vec<u8>> {
     let mut f = open_regular(path)?;
