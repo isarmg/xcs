@@ -18,6 +18,8 @@ case "${1:-}" in
     cargo run --locked --manifest-path tools/contract-check/Cargo.toml -- --root .
     ;;
   build-tools)
+    cargo test --locked --manifest-path tools/release-tools/Cargo.toml
+    bash .github/scripts/tests/release-publish.sh
     cargo test --locked --manifest-path tools/web-build/Cargo.toml
     cargo test --locked --manifest-path tools/unicode-build/Cargo.toml
     cargo run --locked --manifest-path tools/unicode-build/Cargo.toml -- --check

@@ -57,7 +57,7 @@ cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- check
 
 首次构建需要取得锁文件中的依赖；缓存齐全后可使用 `--offline`。本机 Unix 套接字和所有权隔离测试需要相应系统能力，不能把隔离环境拒绝执行当作业务测试通过。
 
-[持续集成说明](docs/21-ci.md)列出根工作区之外的独立测试、正式 WASM 构建、三桌面宿主检查与浏览器烟测，以及 SDK 和真机验证边界。
+[持续集成说明](docs/21-ci.md)列出根工作区之外的独立测试、正式 WASM 构建、三桌面宿主检查与浏览器烟测，以及 SDK 和真机验证边界。 标签自动发布、下载校验与安装方式见[发布说明](docs/release.md)。
 
 ## 阅读路线
 
