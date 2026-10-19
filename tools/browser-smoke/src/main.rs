@@ -16,6 +16,8 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+mod demo;
+
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 const ELEMENT: &str = "element-6066-11e4-a52e-4f735466cecf";
 
@@ -219,7 +221,8 @@ fn exercise(
 ) -> Result<()> {
     // Observation only. No fetch interception, synthetic responses or application state injection.
     browser.cdp("Page.addScriptToEvaluateOnNewDocument", json!({"source":"window.__xcsSmokeErrors=[];addEventListener('error',e=>window.__xcsSmokeErrors.push(String(e.message)));addEventListener('unhandledrejection',e=>window.__xcsSmokeErrors.push(String(e.reason)));"}))?;
-    let url = if screenshot.is_some() {
+    let demo_capture = env::var_os("XCS_DEMO_CAPTURE").map(PathBuf::from);
+    let url = if screenshot.is_some() || demo_capture.is_some() {
         format!("{origin}/?lang=zh-CN")
     } else {
         origin.to_owned()
@@ -253,6 +256,9 @@ fn exercise(
             Err("upload disabled".into())
         }
     })?;
+    if let Some(dir) = demo_capture {
+        demo::run(browser, temp, &dir)?;
+    }
     let payload =
         b"XCS real browser smoke: complete file content\nUTF-8: \xe6\xb5\x8b\xe8\xaf\x95\n";
     let input = temp.join("browser-smoke.txt");

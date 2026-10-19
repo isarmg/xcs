@@ -175,6 +175,7 @@ jobs:
       - name: Run browser smoke against the real server and WASM app
         env:
           XCS_SMOKE_SCREENSHOT: artifacts/web-file-manager.png
+          XCS_DEMO_CAPTURE: artifacts/demo-capture
         run: bash .github/scripts/check.sh browser-smoke
       - name: Retain real Web file manager screenshot
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -182,4 +183,13 @@ jobs:
           name: web-screenshot
           path: artifacts/web-file-manager.png
           if-no-files-found: error
+          retention-days: 7
+
+      - name: Retain verified real Web demonstration frames
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: xcs-demo-capture
+          path: artifacts/demo-capture/
+          if-no-files-found: warn
           retention-days: 7
