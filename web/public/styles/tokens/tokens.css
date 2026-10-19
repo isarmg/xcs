@@ -1,0 +1,25 @@
+:root {
+  --xcs-font-ui: "XcsUI", ui-monospace, monospace;
+  --xcs-font-mono: "XcsUI", ui-monospace, monospace;
+  --xcs-font-size-body: 1rem;
+  --xcs-line-height-body: 1.5;
+  --xcs-blue-500: #3b82f6;
+  --xcs-blue-600: #2563eb;
+  --xcs-gray-50: #fafafa;
+  --xcs-gray-100: #f4f4f5;
+  --xcs-gray-900: #18181b;
+  --xcs-red-600: #dc2626;
+  --xcs-space-1: 4px;
+  --xcs-space-2: 8px;
+  --xcs-space-3: 12px;
+  --xcs-space-4: 16px;
+  --xcs-space-6: 24px;
+  --xcs-space-8: 32px;
+  --xcs-content-spacing: var(--xcs-space-4);
+  --xcs-action-primary: var(--xcs-blue-600);
+  --xcs-text-link: var(--xcs-blue-600);
+  --xcs-bg-page: var(--xcs-gray-50);
+  --xcs-bg-panel: #ffffff;
+  --xcs-text-primary: var(--xcs-gray-900);
+  --xcs-text-danger: var(--xcs-red-600);
+}

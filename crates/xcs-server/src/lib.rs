@@ -1,0 +1,1143 @@
+//! xcs HTTP boundary. Storage semantics stay in the synchronous core backend.
+pub mod auth;
+pub mod auth_primitives;
+#[cfg(feature = "core")]
+pub mod engine_backend;
+mod file_manager;
+mod http_auth;
+pub mod smb_rpc;
+mod telemetry;
+mod transfer;
+mod uploads;
+mod web_assets;
+
+use auth::{AuthStore, Identity};
+use axum::{
+    Json, Router,
+    extract::{DefaultBodyLimit, Path as RoutePath, Query, Request, State},
+    http::{HeaderValue, StatusCode, header},
+    middleware::{self, Next},
+    response::{IntoResponse, Response},
+    routing::{get, patch, post, put},
+};
+use http_auth::{account_upsert, accounts, authorize, change_password, login, logout, me};
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use std::{
+    collections::{BTreeMap, HashMap},
+    net::SocketAddr,
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
+};
+use transfer::{checksums, content, upload, upload_status, workspace_content};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApiError {
+    pub code: String,
+    pub message: String,
+    pub retryable: bool,
+    pub request_id: String,
+    #[serde(skip)]
+    pub status: u16,
+}
+impl ApiError {
+    pub fn new(status: u16, code: impl Into<String>, message: impl Into<String>) -> Self {
+        Self {
+            status,
+            code: code.into(),
+            message: message.into(),
+            retryable: (status >= 500 && status != 501) || status == 429,
+            request_id: xcs_contract::new_id("req"),
+        }
+    }
+    pub fn invalid(error: impl std::fmt::Display) -> Self {
+        Self::new(400, "INVALID_REQUEST", error.to_string())
+    }
+    pub fn io(error: std::io::Error) -> Self {
+        tracing::error!(%error, "local I/O failed");
+        Self::new(500, "IO_ERROR", "local storage operation failed")
+    }
+    pub fn unauthorized() -> Self {
+        Self::new(
+            401,
+            "UNAUTHORIZED",
+            "authentication required or session expired",
+        )
+    }
+    pub fn forbidden() -> Self {
+        Self::new(403, "FORBIDDEN", "permission denied")
+    }
+    pub fn conflict(code: &str, message: &str) -> Self {
+        Self::new(409, code, message)
+    }
+    pub fn limit(message: &str) -> Self {
+        Self::new(429, "RESOURCE_LIMIT_EXCEEDED", message)
+    }
+    pub fn unsupported() -> Self {
+        Self::new(
+            501,
+            "UNSUPPORTED_OPERATION",
+            "operation is not supported by this build",
+        )
+    }
+}
+impl std::fmt::Display for ApiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.code, self.message)
+    }
+}
+impl std::error::Error for ApiError {}
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        let status = StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        (status, Json(json!({"error":self}))).into_response()
+    }
+}
+
+/// A successful content open must hold its core read lease until the body drops.
+pub struct Content {
+    pub file: std::fs::File,
+    pub size: u64,
+    pub hash: String,
+    pub lease: Box<dyn Send + Sync>,
+    pub download_name: Option<String>,
+}
+pub trait Backend: Send + Sync {
+    fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError>;
+    fn upload(
+        &self,
+        identity: &Identity,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        source: &Path,
+    ) -> Result<Value, ApiError>;
+    fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError>;
+    fn upload_generation(
+        &self,
+        identity: &Identity,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        source: &Path,
+        _generation: u64,
+    ) -> Result<Value, ApiError> {
+        self.upload(identity, workspace, item, path, source)
+    }
+    fn workspace_content(
+        &self,
+        _identity: &Identity,
+        _workspace: &str,
+        _item: &str,
+    ) -> Result<Content, ApiError> {
+        Err(ApiError::unsupported())
+    }
+    fn checksums(&self, _identity: &Identity, _version: &str) -> Result<Vec<u8>, ApiError> {
+        Err(ApiError::unsupported())
+    }
+}
+
+/// Re-check current account status even for trusted local protocol adapters.
+struct AuthorizedBackend {
+    backend: Arc<dyn Backend>,
+    auth: Arc<Mutex<AuthStore>>,
+}
+impl AuthorizedBackend {
+    fn current(&self, identity: &Identity) -> Result<Identity, ApiError> {
+        lock(&self.auth)?.identity_for_principal(&identity.principal)
+    }
+}
+impl Backend for AuthorizedBackend {
+    fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError> {
+        if matches!(action, "capabilities" | "ready") {
+            self.backend.call(action, identity, input)
+        } else {
+            self.backend.call(action, &self.current(identity)?, input)
+        }
+    }
+    fn upload(
+        &self,
+        identity: &Identity,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        source: &Path,
+    ) -> Result<Value, ApiError> {
+        self.backend
+            .upload(&self.current(identity)?, workspace, item, path, source)
+    }
+    fn upload_generation(
+        &self,
+        identity: &Identity,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        source: &Path,
+        generation: u64,
+    ) -> Result<Value, ApiError> {
+        self.backend.upload_generation(
+            &self.current(identity)?,
+            workspace,
+            item,
+            path,
+            source,
+            generation,
+        )
+    }
+    fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
+        self.backend.content(&self.current(identity)?, version)
+    }
+    fn workspace_content(
+        &self,
+        identity: &Identity,
+        workspace: &str,
+        item: &str,
+    ) -> Result<Content, ApiError> {
+        self.backend
+            .workspace_content(&self.current(identity)?, workspace, item)
+    }
+    fn checksums(&self, identity: &Identity, version: &str) -> Result<Vec<u8>, ApiError> {
+        self.backend.checksums(&self.current(identity)?, version)
+    }
+}
+
+#[derive(Clone)]
+pub struct SmbConfig {
+    pub socket: PathBuf,
+    pub allowed_uid: u32,
+    pub users: BTreeMap<String, String>,
+}
+#[derive(Clone)]
+pub struct ServerConfig {
+    pub listen: SocketAddr,
+    /// Required when TLS terminates upstream. It is compared exactly; forwarded headers are ignored.
+    pub external_origin: Option<String>,
+    pub spool_dir: PathBuf,
+    pub web_dir: Option<PathBuf>,
+    pub max_upload_bytes: u64,
+    pub smb: Option<SmbConfig>,
+}
+impl ServerConfig {
+    pub fn loopback(root: &Path) -> Self {
+        Self {
+            listen: "127.0.0.1:7400".parse().unwrap(),
+            external_origin: None,
+            spool_dir: root.join("api-spool"),
+            web_dir: None,
+            max_upload_bytes: 1024 * 1024 * 1024,
+            smb: None,
+        }
+    }
+    fn prepare_spool(&self) -> Result<(), ApiError> {
+        std::fs::create_dir_all(&self.spool_dir).map_err(ApiError::io)?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&self.spool_dir, std::fs::Permissions::from_mode(0o700))
+                .map_err(ApiError::io)?;
+        }
+        Ok(())
+    }
+    fn secure_cookie(&self) -> bool {
+        self.external_origin
+            .as_ref()
+            .is_some_and(|origin| origin.starts_with("https://"))
+    }
+    fn validate(&self) -> Result<(), ApiError> {
+        if !self.listen.ip().is_loopback() {
+            return Err(ApiError::invalid(
+                "API must listen on loopback; publish through a TLS terminator",
+            ));
+        }
+        if self.max_upload_bytes == 0 {
+            return Err(ApiError::invalid("upload limit must be positive"));
+        }
+        if self.smb.as_ref().is_some_and(|smb| smb.users.is_empty()) {
+            return Err(ApiError::invalid(
+                "SMB requires explicit authenticated-user mappings",
+            ));
+        }
+        if let Some(origin) = &self.external_origin {
+            let parsed = url::Url::parse(origin).map_err(ApiError::invalid)?;
+            if parsed.scheme() != "https"
+                || parsed.host_str().is_none()
+                || !parsed.username().is_empty()
+                || parsed.password().is_some()
+                || parsed.path() != "/"
+                || parsed.query().is_some()
+                || parsed.fragment().is_some()
+                || origin.ends_with('/')
+            {
+                return Err(ApiError::invalid(
+                    "external origin must be an HTTPS origin without trailing slash",
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone)]
+struct AppState {
+    backend: Arc<dyn Backend>,
+    auth: Arc<Mutex<AuthStore>>,
+    config: ServerConfig,
+    attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
+    password_slots: Arc<tokio::sync::Semaphore>,
+    upload_slots: Arc<tokio::sync::Semaphore>,
+    upload_claims: Arc<Mutex<std::collections::BTreeSet<String>>>,
+    static_etags: Arc<BTreeMap<String, String>>,
+    telemetry: Arc<telemetry::Telemetry>,
+}
+fn lock<T>(value: &Mutex<T>) -> Result<std::sync::MutexGuard<'_, T>, ApiError> {
+    value
+        .lock()
+        .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "service state requires restart"))
+}
+
+pub fn router(
+    backend: Arc<dyn Backend>,
+    auth: AuthStore,
+    config: ServerConfig,
+) -> Result<Router, ApiError> {
+    config.validate()?;
+    config.prepare_spool()?;
+    let telemetry = telemetry::Telemetry::start(
+        backend.clone(),
+        &config
+            .spool_dir
+            .parent()
+            .ok_or_else(|| ApiError::invalid("spool directory requires a parent"))?
+            .join("telemetry-cache"),
+    )?;
+    let auth = Arc::new(Mutex::new(auth));
+    let backend = Arc::new(AuthorizedBackend {
+        backend,
+        auth: auth.clone(),
+    });
+    router_shared(backend, auth, config, telemetry)
+}
+fn router_shared(
+    backend: Arc<dyn Backend>,
+    auth: Arc<Mutex<AuthStore>>,
+    config: ServerConfig,
+    telemetry: Arc<telemetry::Telemetry>,
+) -> Result<Router, ApiError> {
+    config.validate()?;
+    let state = AppState {
+        backend,
+        auth,
+        telemetry,
+        config: config.clone(),
+        attempts: Arc::new(Mutex::new(HashMap::new())),
+        password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
+        upload_slots: Arc::new(tokio::sync::Semaphore::new(8)),
+        upload_claims: Arc::new(Mutex::new(Default::default())),
+        static_etags: Arc::new(match &config.web_dir {
+            Some(root) => web_assets::static_etags(root)?,
+            None => BTreeMap::new(),
+        }),
+    };
+    let protected = Router::new()
+        .merge(file_manager::routes())
+        .route("/v1/system/status", get(telemetry::status))
+        .route("/v1/system/history", get(telemetry::history))
+        .route("/v1/auth/me", get(me))
+        .route("/v1/auth/logout", post(logout))
+        .route("/v1/auth/password", post(change_password))
+        .route("/v1/admin/accounts", get(accounts).post(account_upsert))
+        .route(
+            "/v1/repositories",
+            get(repositories).post(create_repository),
+        )
+        .route("/v1/repositories/{repo}", get(repository))
+        .route("/v1/repositories/{repo}/grants", put(grants))
+        .route(
+            "/v1/repositories/{repo}/smb-binding",
+            get(smb_binding).put(update_smb_binding),
+        )
+        .route(
+            "/v1/repositories/{repo}/default-branch",
+            get(default_branch).put(update_default_branch),
+        )
+        .route(
+            "/v1/repositories/{repo}/directory-scopes",
+            post(initialize_directory_scope),
+        )
+        .route(
+            "/v1/repositories/{repo}/directory-branches",
+            get(directory_branch_scopes),
+        )
+        .route(
+            "/v1/repositories/{repo}/directory-branches/{id}",
+            patch(rename_directory_branch),
+        )
+        .route(
+            "/v1/repositories/{repo}/branches",
+            get(branches).post(create_branch),
+        )
+        .route("/v1/branches/{branch}/tree", get(tree))
+        .route("/v1/branches/{branch}", get(branch_info))
+        .route("/v1/branches/{branch}/resolve", post(resolve))
+        .route("/v1/branches/{branch}/write-sessions", post(write_session))
+        .route("/v1/branches/{branch}/archive", post(archive))
+        .route("/v1/workspaces", post(workspace))
+        .route("/v1/workspaces/{workspace}", get(workspace_info))
+        .route(
+            "/v1/workspaces/{workspace}/files/{item}/content",
+            put(upload).get(workspace_content).head(workspace_content),
+        )
+        .route(
+            "/v1/workspaces/{workspace}/files/{item}/upload-status",
+            get(upload_status),
+        )
+        .route(
+            "/v1/workspaces/{workspace}/namespace-operations",
+            post(namespace),
+        )
+        .route("/v1/workspaces/{workspace}/commit", post(commit))
+        .route("/v1/workspaces/{workspace}/seal", post(seal))
+        .route("/v1/workspaces/{workspace}/abort", post(abort))
+        .route("/v1/operations/{operation}", get(operation))
+        .route("/v1/versions/{version}/content", get(content).head(content))
+        .route("/v1/versions/{version}", get(version))
+        .route("/v1/versions/{version}/placement", get(placement))
+        .route("/v1/versions/{version}/checksums", get(checksums))
+        .route("/v1/files/{file}/history", get(history))
+        .route("/v1/commits/{commit}", get(commit_info))
+        .route("/v1/history-trees/{history}/graph", get(graph))
+        .route("/v1/history-trees/{history}/merge-links", post(merge_link))
+        .route("/v1/history-trees/{history}/purge-plans", post(purge_plan))
+        .route("/v1/history-trees/{history}/split-plans", post(split_plan))
+        .route(
+            "/v1/history-trees/{history}/historical-save-plans",
+            post(historical_save_plan),
+        )
+        .route("/v1/plans/{plan}/commit", post(plan_commit))
+        .route("/v1/plans/{plan}", get(plan_info))
+        .route("/v1/plans/{plan}/cancel", post(plan_cancel))
+        .route("/v1/admin/disks", get(disks).post(register_disk))
+        .route("/v1/admin/check", get(check))
+        .route("/v1/backup-topologies/{topology}", get(topology))
+        .route("/v1/policies/{policy}", get(policy).put(update_policy))
+        .route(
+            "/v1/primary-placement-rules/{rule}",
+            get(placement_rule).put(update_placement_rule),
+        )
+        .route("/v1/events", get(events))
+        .route("/v1/compare", post(compare))
+        .route_layer(middleware::from_fn_with_state(state.clone(), authorize));
+    let mut app = Router::new()
+        .merge(protected)
+        .route(
+            "/healthz",
+            get(|| async { Json(json!({"status":"alive"})) }),
+        )
+        .route("/readyz", get(ready))
+        .route("/v1/capabilities", get(capabilities))
+        .route("/v1/auth/login", post(login))
+        .fallback(web_assets::not_found);
+    if let Some(web_dir) = config.web_dir {
+        app = app.fallback_service(web_assets::fallback(web_dir));
+    }
+    Ok(app
+        .layer(DefaultBodyLimit::disable())
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            web_assets::static_validation,
+        ))
+        .layer(middleware::from_fn(security_headers))
+        .with_state(state))
+}
+
+pub async fn serve(
+    backend: Arc<dyn Backend>,
+    auth: AuthStore,
+    config: ServerConfig,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    config.validate()?;
+    config.prepare_spool()?;
+    let listener = tokio::net::TcpListener::bind(config.listen).await?;
+    let telemetry = telemetry::Telemetry::start(
+        backend.clone(),
+        &config
+            .spool_dir
+            .parent()
+            .ok_or_else(|| ApiError::invalid("spool directory requires a parent"))?
+            .join("telemetry-cache"),
+    )?;
+    let auth = Arc::new(Mutex::new(auth));
+    let backend: Arc<dyn Backend> = Arc::new(AuthorizedBackend {
+        backend,
+        auth: auth.clone(),
+    });
+    let smb = config.smb.clone();
+    let mut identities = BTreeMap::new();
+    if let Some(smb) = &smb {
+        for (alias, principal) in &smb.users {
+            identities.insert(
+                alias.clone(),
+                lock(&auth)?.identity_for_principal(principal)?,
+            );
+        }
+        let parent = smb
+            .socket
+            .parent()
+            .ok_or("SMB socket needs a parent directory")?;
+        if !parent.exists() {
+            std::fs::create_dir_all(parent)?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(parent, std::fs::Permissions::from_mode(0o700))?;
+            }
+        }
+    }
+    let app = router_shared(backend.clone(), auth, config, telemetry)?;
+    let http = async move {
+        axum::serve(
+            listener,
+            app.into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .with_graceful_shutdown(shutdown())
+        .await
+    };
+    if let Some(smb) = smb {
+        tokio::select! {result=http=>result?,result=smb_rpc::serve(&smb.socket,smb.allowed_uid,identities,backend)=>result?}
+    } else {
+        http.await?;
+    }
+    Ok(())
+}
+async fn shutdown() {
+    #[cfg(unix)]
+    {
+        match tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+            Ok(mut term) => {
+                tokio::select! {_=tokio::signal::ctrl_c()=>{},_=term.recv()=>{}}
+            }
+            Err(_) => {
+                let _ = tokio::signal::ctrl_c().await;
+            }
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = tokio::signal::ctrl_c().await;
+    }
+}
+
+async fn security_headers(request: Request, next: Next) -> Response {
+    let sensitive = request.uri().path().starts_with("/v1/")
+        || matches!(request.uri().path(), "/healthz" | "/readyz");
+    let mut response = next.run(request).await;
+    let headers = response.headers_mut();
+    headers.insert(
+        "x-content-type-options",
+        HeaderValue::from_static("nosniff"),
+    );
+    headers.insert("referrer-policy", HeaderValue::from_static("no-referrer"));
+    headers.insert("x-frame-options", HeaderValue::from_static("DENY"));
+    headers.insert(
+        header::CACHE_CONTROL,
+        HeaderValue::from_static(if sensitive { "no-store" } else { "no-cache" }),
+    );
+    headers.insert("content-security-policy", HeaderValue::from_static("default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"));
+    response
+}
+
+async fn call(
+    state: AppState,
+    identity: Identity,
+    action: &'static str,
+    input: Value,
+) -> Result<Json<Value>, ApiError> {
+    tokio::task::spawn_blocking(move || state.backend.call(action, &identity, input))
+        .await
+        .map_err(ApiError::invalid)?
+        .map(Json)
+}
+async fn json_body(request: Request) -> Result<Value, ApiError> {
+    let bytes = axum::body::to_bytes(request.into_body(), 1024 * 1024)
+        .await
+        .map_err(ApiError::invalid)?;
+    if bytes.is_empty() {
+        Ok(json!({}))
+    } else {
+        xcs_contract::strict_json(&bytes).map_err(ApiError::invalid)
+    }
+}
+fn with_id(mut body: Value, key: &str, id: String) -> Result<Value, ApiError> {
+    let object = body
+        .as_object_mut()
+        .ok_or_else(|| ApiError::invalid("expected JSON object"))?;
+    if object
+        .get(key)
+        .is_some_and(|value| value.as_str() != Some(&id))
+    {
+        return Err(ApiError::invalid("path and body identity disagree"));
+    }
+    object.insert(key.into(), id.into());
+    Ok(body)
+}
+
+macro_rules! list_handler { ($name:ident, $action:literal) => { async fn $name(State(state): State<AppState>, axum::Extension(identity): axum::Extension<Identity>, Query(query): Query<BTreeMap<String,String>>) -> Result<Json<Value>, ApiError> { call(state,identity,$action,json!({"query":query})).await } }; }
+macro_rules! read_handler { ($name:ident, $action:literal, $id:literal) => { async fn $name(State(state): State<AppState>, axum::Extension(identity): axum::Extension<Identity>, RoutePath(id): RoutePath<String>, Query(query): Query<BTreeMap<String,String>>) -> Result<Json<Value>, ApiError> { let mut input=json!({"query":query}); input[$id]=id.into(); call(state,identity,$action,input).await } }; }
+macro_rules! post_handler {
+    ($name:ident, $action:literal) => {
+        async fn $name(
+            State(state): State<AppState>,
+            axum::Extension(identity): axum::Extension<Identity>,
+            request: Request,
+        ) -> Result<Json<Value>, ApiError> {
+            call(state, identity, $action, json_body(request).await?).await
+        }
+    };
+}
+macro_rules! id_post_handler {
+    ($name:ident, $action:literal, $id:literal) => {
+        async fn $name(
+            State(state): State<AppState>,
+            axum::Extension(identity): axum::Extension<Identity>,
+            RoutePath(id): RoutePath<String>,
+            request: Request,
+        ) -> Result<Json<Value>, ApiError> {
+            call(
+                state,
+                identity,
+                $action,
+                with_id(json_body(request).await?, $id, id)?,
+            )
+            .await
+        }
+    };
+}
+list_handler!(repositories, "repositories");
+list_handler!(disks, "disks");
+list_handler!(events, "events");
+list_handler!(check, "check");
+read_handler!(repository, "repository", "repository_id");
+read_handler!(smb_binding, "smb_binding", "repository_id");
+read_handler!(default_branch, "default_branch", "repository_id");
+read_handler!(branches, "branches", "repository_id");
+read_handler!(branch_info, "branch", "branch_id");
+read_handler!(tree, "tree", "branch_id");
+read_handler!(operation, "operation", "operation_id");
+read_handler!(version, "version", "version_id");
+read_handler!(placement, "placement", "version_id");
+read_handler!(history, "history", "file_id");
+read_handler!(commit_info, "commit", "commit_id");
+read_handler!(graph, "graph", "history_tree_id");
+read_handler!(topology, "topology", "topology_id");
+read_handler!(workspace_info, "workspace", "workspace_id");
+read_handler!(plan_info, "plan", "plan_id");
+read_handler!(policy, "policy", "policy_id");
+read_handler!(placement_rule, "placement_rule", "rule_id");
+read_handler!(
+    directory_branch_scopes,
+    "directory_branch_scopes",
+    "repository_id"
+);
+post_handler!(create_repository, "create_repository");
+post_handler!(workspace, "create_workspace");
+post_handler!(register_disk, "register_disk");
+post_handler!(compare, "compare");
+id_post_handler!(create_branch, "create_branch", "repository_id");
+id_post_handler!(resolve, "resolve", "branch_id");
+id_post_handler!(grants, "set_grants", "repository_id");
+id_post_handler!(update_smb_binding, "update_smb_binding", "repository_id");
+id_post_handler!(
+    initialize_directory_scope,
+    "initialize_directory_scope",
+    "repository_id"
+);
+id_post_handler!(
+    update_default_branch,
+    "update_default_branch",
+    "repository_id"
+);
+async fn rename_directory_branch(
+    State(state): State<AppState>,
+    axum::Extension(identity): axum::Extension<Identity>,
+    RoutePath((repo, id)): RoutePath<(String, String)>,
+    request: Request,
+) -> Result<Json<Value>, ApiError> {
+    let input = with_id(json_body(request).await?, "repository_id", repo)?;
+    let input = with_id(input, "directory_branch_id", id)?;
+    call(state, identity, "rename_directory_branch", input).await
+}
+id_post_handler!(write_session, "write_session", "branch_id");
+id_post_handler!(archive, "archive", "branch_id");
+id_post_handler!(namespace, "namespace", "workspace_id");
+id_post_handler!(commit, "commit_workspace", "workspace_id");
+id_post_handler!(seal, "seal_workspace", "workspace_id");
+id_post_handler!(abort, "abort_workspace", "workspace_id");
+id_post_handler!(merge_link, "merge_link", "history_tree_id");
+id_post_handler!(purge_plan, "purge_plan", "history_tree_id");
+id_post_handler!(split_plan, "split_plan", "history_tree_id");
+id_post_handler!(
+    historical_save_plan,
+    "historical_save_plan",
+    "history_tree_id"
+);
+id_post_handler!(update_policy, "update_policy", "policy_id");
+id_post_handler!(update_placement_rule, "update_placement_rule", "rule_id");
+id_post_handler!(plan_commit, "plan_commit", "plan_id");
+id_post_handler!(plan_cancel, "plan_cancel", "plan_id");
+
+async fn ready(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
+    let identity = Identity {
+        principal: "health".into(),
+        admin: false,
+        repositories: Default::default(),
+    };
+    call(state, identity, "ready", json!({})).await
+}
+async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
+    let identity = Identity {
+        principal: "anonymous".into(),
+        admin: false,
+        repositories: Default::default(),
+    };
+    let limit = state.config.max_upload_bytes;
+    let Json(mut value) = call(state, identity, "capabilities", json!({})).await?;
+    let core_limit = value
+        .get("max_upload_bytes")
+        .and_then(Value::as_str)
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(limit);
+    value["max_upload_bytes"] = limit.min(core_limit).to_string().into();
+    Ok(Json(value))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::body::{Body, Bytes};
+    use std::time::Duration;
+    use tower::ServiceExt;
+    struct TestBackend {
+        path: PathBuf,
+    }
+    impl Backend for TestBackend {
+        fn call(
+            &self,
+            action: &str,
+            _identity: &Identity,
+            _input: Value,
+        ) -> Result<Value, ApiError> {
+            match action {
+                "capabilities"
+                | "upload_authorize"
+                | "workspace_authorize"
+                | "create_repository" => Ok(json!({"accepted":true})),
+                _ => Err(ApiError::unsupported()),
+            }
+        }
+        fn upload(
+            &self,
+            _identity: &Identity,
+            workspace: &str,
+            item: &str,
+            path: &str,
+            source: &Path,
+        ) -> Result<Value, ApiError> {
+            let bytes = std::fs::read(source).map_err(ApiError::io)?;
+            Ok(
+                json!({"workspace_id":workspace,"item_id":item,"path":path,"size":bytes.len().to_string(),"content_hash":blake3::hash(&bytes).to_hex().to_string()}),
+            )
+        }
+        fn content(&self, _identity: &Identity, _version: &str) -> Result<Content, ApiError> {
+            Ok(Content {
+                file: std::fs::File::open(&self.path).map_err(ApiError::io)?,
+                size: 10,
+                hash: blake3::hash(b"0123456789").to_hex().to_string(),
+                lease: Box::new(()),
+                download_name: None,
+            })
+        }
+    }
+    fn application(root: &Path) -> Router {
+        application_config(root, ServerConfig::loopback(root))
+    }
+    fn application_config(root: &Path, config: ServerConfig) -> Router {
+        std::fs::write(root.join("content"), b"0123456789").unwrap();
+        let auth = AuthStore::initialize(root, "admin", "a-long-test-password").unwrap();
+        router(
+            Arc::new(TestBackend {
+                path: root.join("content"),
+            }),
+            auth,
+            config,
+        )
+        .unwrap()
+    }
+
+    #[tokio::test]
+    async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope() {
+        let root = tempfile::tempdir().unwrap();
+        let assets = root.path().join("web");
+        std::fs::create_dir_all(assets.join("v1")).unwrap();
+        std::fs::write(assets.join("index.html"), b"<html>fixture</html>").unwrap();
+        std::fs::write(assets.join("v1/unknown"), b"must never be an API response").unwrap();
+        let mut config = ServerConfig::loopback(root.path());
+        config.web_dir = Some(assets);
+        let app = application_config(root.path(), config);
+        for path in ["/v1/unknown", "/v1/missing", "/missing.css"] {
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .uri(path)
+                        .header(header::IF_NONE_MATCH, "*")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::NOT_FOUND, "{path}");
+            assert_eq!(response.headers()[header::CONTENT_TYPE], "application/json");
+            if path.starts_with("/v1/") {
+                assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+            }
+            let error: Value = serde_json::from_slice(
+                &axum::body::to_bytes(response.into_body(), 8192)
+                    .await
+                    .unwrap(),
+            )
+            .unwrap();
+            assert_eq!(error["error"]["code"], "NOT_FOUND");
+        }
+        let response = app
+            .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(
+            response.headers()[header::CONTENT_TYPE]
+                .to_str()
+                .unwrap()
+                .starts_with("text/html")
+        );
+        assert_eq!(
+            axum::body::to_bytes(response.into_body(), 8192)
+                .await
+                .unwrap(),
+            "<html>fixture</html>"
+        );
+    }
+    #[test]
+    fn router_prepares_a_fresh_nested_spool_before_monitor_cache_initialization() {
+        let root = tempfile::tempdir().unwrap();
+        let nested = root.path().join("fresh/nested/system");
+        let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+        let app = router(
+            Arc::new(TestBackend {
+                path: root.path().join("content"),
+            }),
+            auth,
+            ServerConfig::loopback(&nested),
+        );
+        assert!(
+            app.is_ok(),
+            "fresh nested spool must initialize before telemetry"
+        );
+        assert!(nested.join("api-spool").is_dir());
+        assert!(nested.join("telemetry-cache").is_dir());
+    }
+
+    #[test]
+    fn an_unwritable_monitor_cache_does_not_prevent_the_business_router_starting() {
+        let root = tempfile::tempdir().unwrap();
+        let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+        // A preexisting ordinary file deterministically prevents cache writes,
+        // including when tests run as root and chmod would not deny access.
+        std::fs::write(root.path().join("telemetry-cache"), b"keep this file").unwrap();
+        let app = router(
+            Arc::new(TestBackend {
+                path: root.path().join("content"),
+            }),
+            auth,
+            ServerConfig::loopback(root.path()),
+        );
+        assert!(
+            app.is_ok(),
+            "optional monitoring persistence must not stop business routes"
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("telemetry-cache")).unwrap(),
+            b"keep this file"
+        );
+    }
+
+    async fn authenticated(app: &Router) -> (String, String, String) {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/auth/login")
+                    .header("content-type", "application/json")
+                    .body(Body::from(
+                        r#"{"username":"admin","password":"a-long-test-password"}"#,
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let cookie = response.headers()[header::SET_COOKIE]
+            .to_str()
+            .unwrap()
+            .split(';')
+            .next()
+            .unwrap()
+            .to_owned();
+        let body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(response.into_body(), 8192)
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        (
+            body["token"].as_str().unwrap().into(),
+            body["csrf_token"].as_str().unwrap().into(),
+            cookie,
+        )
+    }
+
+    #[tokio::test]
+    async fn cookie_mutations_require_csrf_and_foreign_origins_are_rejected() {
+        let root = tempfile::tempdir().unwrap();
+        let app = application(root.path());
+        let (token, csrf, cookie) = authenticated(&app).await;
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/repositories")
+                    .header("cookie", &cookie)
+                    .header("host", "127.0.0.1:7400")
+                    .header("origin", "http://127.0.0.1:7400")
+                    .body(Body::from("{}"))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/repositories")
+                    .header("cookie", &cookie)
+                    .header("x-csrf-token", csrf)
+                    .header("host", "127.0.0.1:7400")
+                    .header("origin", "http://127.0.0.1:7400")
+                    .body(Body::from("{}"))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/v1/auth/me")
+                    .header("authorization", format!("Bearer {token}"))
+                    .header("origin", "https://foreign.invalid")
+                    .header("host", "127.0.0.1:7400")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    }
+
+    #[tokio::test]
+    async fn authenticated_range_download_returns_exact_immutable_bytes() {
+        let root = tempfile::tempdir().unwrap();
+        let app = application(root.path());
+        let (token, _, _) = authenticated(&app).await;
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/v1/versions/test/content")
+                    .header("authorization", format!("Bearer {token}"))
+                    .header("range", "bytes=2-5")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::PARTIAL_CONTENT);
+        assert_eq!(response.headers()[header::CONTENT_RANGE], "bytes 2-5/10");
+        assert_eq!(
+            axum::body::to_bytes(response.into_body(), 8192)
+                .await
+                .unwrap(),
+            "2345"
+        );
+    }
+
+    #[tokio::test]
+    async fn interrupted_upload_retains_durable_bytes_and_rejects_different_retry() {
+        let root = tempfile::tempdir().unwrap();
+        let app = application(root.path());
+        let (token, _, _) = authenticated(&app).await;
+        let stream = futures_util::stream::iter([
+            Ok(Bytes::from_static(b"original")),
+            Err(std::io::Error::other("connection interrupted")),
+        ]);
+        let request = Request::builder()
+            .method("PUT")
+            .uri("/v1/workspaces/ws/files/item/content?path=file")
+            .header("authorization", format!("Bearer {token}"))
+            .header("x-xcs-logical-size", "20")
+            .header("x-xcs-content-hash", "0".repeat(64))
+            .body(Body::from_stream(stream))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        let record = uploads::load(&root.path().join("api-spool"), "ws", "item")
+            .unwrap()
+            .unwrap();
+        assert_eq!(record.persisted_bytes, 8);
+        assert_eq!(
+            std::fs::read(root.path().join("api-spool").join(&record.data_file)).unwrap(),
+            b"original"
+        );
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("PUT")
+                    .uri("/v1/workspaces/ws/files/item/content?path=file")
+                    .header("authorization", format!("Bearer {token}"))
+                    .header("x-xcs-logical-size", "20")
+                    .header("x-xcs-content-hash", "0".repeat(64))
+                    .body(Body::from("different retry data"))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::CONFLICT);
+        assert_eq!(
+            uploads::load(&root.path().join("api-spool"), "ws", "item")
+                .unwrap()
+                .unwrap()
+                .data_file,
+            record.data_file
+        );
+    }
+
+    #[tokio::test]
+    async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_durable() {
+        struct BlockingUpload {
+            delegate: TestBackend,
+            started: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
+            gate: Arc<(Mutex<bool>, std::sync::Condvar)>,
+        }
+        impl Backend for BlockingUpload {
+            fn call(
+                &self,
+                action: &str,
+                identity: &Identity,
+                input: Value,
+            ) -> Result<Value, ApiError> {
+                self.delegate.call(action, identity, input)
+            }
+            fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
+                self.delegate.content(identity, version)
+            }
+            fn upload(
+                &self,
+                identity: &Identity,
+                workspace: &str,
+                item: &str,
+                path: &str,
+                source: &Path,
+            ) -> Result<Value, ApiError> {
+                if let Some(started) = self.started.lock().unwrap().take() {
+                    let _ = started.send(());
+                }
+                let (ready, wake) = &*self.gate;
+                let mut ready = ready.lock().unwrap();
+                while !*ready {
+                    ready = wake.wait(ready).unwrap();
+                }
+                self.delegate
+                    .upload(identity, workspace, item, path, source)
+            }
+        }
+        struct Release(Arc<(Mutex<bool>, std::sync::Condvar)>);
+        impl Drop for Release {
+            fn drop(&mut self) {
+                *self.0.0.lock().unwrap() = true;
+                self.0.1.notify_all();
+            }
+        }
+        let root = tempfile::tempdir().unwrap();
+        let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+        let (started, started_rx) = tokio::sync::oneshot::channel();
+        let gate = Arc::new((Mutex::new(false), std::sync::Condvar::new()));
+        let release = Release(gate.clone());
+        let app = router(
+            Arc::new(BlockingUpload {
+                delegate: TestBackend {
+                    path: root.path().join("content"),
+                },
+                started: Mutex::new(Some(started)),
+                gate,
+            }),
+            auth,
+            ServerConfig::loopback(root.path()),
+        )
+        .unwrap();
+        let (token, _, _) = authenticated(&app).await;
+        let request = || {
+            Request::builder()
+                .method("PUT")
+                .uri("/v1/workspaces/ws/files/item/content?path=file")
+                .header("authorization", format!("Bearer {token}"))
+                .header("x-xcs-logical-size", "4")
+                .header(
+                    "x-xcs-content-hash",
+                    blake3::hash(b"body").to_hex().to_string(),
+                )
+                .body(Body::from("body"))
+                .unwrap()
+        };
+        let pending = tokio::spawn(app.clone().oneshot(request()));
+        tokio::time::timeout(Duration::from_secs(5), started_rx)
+            .await
+            .unwrap()
+            .unwrap();
+        pending.abort();
+        assert!(pending.await.unwrap_err().is_cancelled());
+        let retry = app.clone().oneshot(request()).await.unwrap();
+        assert_eq!(retry.status(), StatusCode::CONFLICT);
+        let error: Value =
+            serde_json::from_slice(&axum::body::to_bytes(retry.into_body(), 8192).await.unwrap())
+                .unwrap();
+        assert_eq!(error["error"]["code"], "FILE_WRITE_BUSY");
+        drop(release);
+        tokio::time::timeout(Duration::from_secs(5), async {
+            loop {
+                if uploads::load(&root.path().join("api-spool"), "ws", "item")
+                    .unwrap()
+                    .unwrap()
+                    .state
+                    == "complete"
+                {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(5)).await;
+            }
+        })
+        .await
+        .unwrap();
+    }
+}

@@ -1,0 +1,2451 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "XCS V2 核心字段契约草案",
+  "description": "设计附件；只覆盖列出的对象，不是完整盘格式或业务实现。",
+  "$defs": {
+    "UInt64": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]{0,18}|1[0-7][0-9]{18}|18[0-3][0-9]{17}|184[0-3][0-9]{16}|1844[0-5][0-9]{15}|18446[0-6][0-9]{14}|184467[0-3][0-9]{13}|1844674[0-3][0-9]{12}|184467440[0-6][0-9]{10}|1844674407[0-2][0-9]{9}|18446744073[0-6][0-9]{8}|1844674407370[0-8][0-9]{6}|18446744073709[0-4][0-9]{5}|184467440737095[0-4][0-9]{4}|1844674407370955[0-0][0-9]{3}|18446744073709551[0-5][0-9]{2}|184467440737095516[0-0][0-9]{1}|1844674407370955161[0-4]|18446744073709551615)(?![\\s\\S])"
+    },
+    "Hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+    },
+    "SlotId": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}(?![\\s\\S])"
+    },
+    "ChunkSize": {
+      "type": "integer",
+      "enum": [
+        65536,
+        262144,
+        1048576,
+        4194304
+      ]
+    },
+    "OperationId": {
+      "type": "string",
+      "pattern": "^op_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "WorkspaceId": {
+      "type": "string",
+      "pattern": "^ws_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "RepositoryId": {
+      "type": "string",
+      "pattern": "^repo_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "BranchId": {
+      "type": "string",
+      "pattern": "^br_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "CommitId": {
+      "type": "string",
+      "pattern": "^commit_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "VersionId": {
+      "type": "string",
+      "pattern": "^ver_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "HistoryId": {
+      "type": "string",
+      "pattern": "^history_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "FileId": {
+      "type": "string",
+      "pattern": "^file_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "DiskId": {
+      "type": "string",
+      "pattern": "^disk_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "PoolId": {
+      "type": "string",
+      "pattern": "^pool_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "RecoveryId": {
+      "type": "string",
+      "pattern": "^recovery_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "RequestId": {
+      "type": "string",
+      "pattern": "^req_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "Version": {
+      "type": "object",
+      "properties": {
+        "format_version": {
+          "const": 2
+        },
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "version_id": {
+          "$ref": "#/$defs/VersionId"
+        },
+        "file_id": {
+          "$ref": "#/$defs/FileId"
+        },
+        "creation_primary_slot_id": {
+          "$ref": "#/$defs/SlotId"
+        },
+        "logical_size": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "version_sequence": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "content_hash": {
+          "$ref": "#/$defs/Hash"
+        },
+        "checksum_chunk_bytes": {
+          "$ref": "#/$defs/ChunkSize"
+        },
+        "checksum_manifest_hash": {
+          "$ref": "#/$defs/Hash"
+        },
+        "creation_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_version_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VersionId"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "created_as_full_checkpoint": {
+          "type": "boolean"
+        },
+        "storage_name": {
+          "type": "string",
+          "pattern": "^v[0-9]{6,}_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{8}(\\..+)?$"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "format_version",
+        "history_tree_id",
+        "version_id",
+        "file_id",
+        "creation_primary_slot_id",
+        "logical_size",
+        "version_sequence",
+        "content_hash",
+        "checksum_chunk_bytes",
+        "checksum_manifest_hash",
+        "creation_name",
+        "source_version_ids",
+        "created_as_full_checkpoint"
+      ],
+      "additionalProperties": false,
+      "description": "字段草案；完整 PortableNameV2、实体关系及物理证据需另行验证。"
+    },
+    "PlacementRequest": {
+      "type": "object",
+      "properties": {
+        "primary_slot_id": {
+          "$ref": "#/$defs/SlotId"
+        },
+        "target_copies": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "primary_slot_id",
+        "target_copies"
+      ],
+      "additionalProperties": false
+    },
+    "CommitBody": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/WorkspaceId"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/RepositoryId"
+        },
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "expected_head": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "fencing_token": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "requested_protection": {
+          "const": "strict"
+        },
+        "file_placement": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^entry_[0-9a-f]{32}(?![\\s\\S])"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/PlacementRequest"
+          }
+        },
+        "expected_topology_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "sealed_manifest_hash": {
+          "$ref": "#/$defs/Hash"
+        }
+      },
+      "required": [
+        "operation_id",
+        "workspace_id",
+        "repository_id",
+        "branch_id",
+        "expected_head",
+        "fencing_token",
+        "message",
+        "requested_protection",
+        "file_placement",
+        "expected_topology_generation",
+        "sealed_manifest_hash"
+      ],
+      "additionalProperties": false
+    },
+    "CommitRequest": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/WorkspaceId"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/RepositoryId"
+        },
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "expected_head": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "fencing_token": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "requested_protection": {
+          "const": "strict"
+        },
+        "file_placement": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^entry_[0-9a-f]{32}(?![\\s\\S])"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/PlacementRequest"
+          }
+        },
+        "expected_topology_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "sealed_manifest_hash": {
+          "$ref": "#/$defs/Hash"
+        },
+        "request_digest": {
+          "$ref": "#/$defs/Hash"
+        }
+      },
+      "required": [
+        "operation_id",
+        "workspace_id",
+        "repository_id",
+        "branch_id",
+        "expected_head",
+        "fencing_token",
+        "message",
+        "requested_protection",
+        "file_placement",
+        "expected_topology_generation",
+        "sealed_manifest_hash",
+        "request_digest"
+      ],
+      "additionalProperties": false
+    },
+    "RequestEnvelope": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "const": "POST"
+        },
+        "route": {
+          "const": "/v1/workspaces/{workspace}/commit"
+        },
+        "path_parameters": {
+          "type": "object",
+          "properties": {
+            "workspace": {
+              "$ref": "#/$defs/WorkspaceId"
+            }
+          },
+          "required": [
+            "workspace"
+          ],
+          "additionalProperties": false
+        },
+        "query": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "body": {
+          "$ref": "#/$defs/CommitBody"
+        }
+      },
+      "required": [
+        "method",
+        "route",
+        "path_parameters",
+        "query",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "SlotConfirmation": {
+      "type": "object",
+      "properties": {
+        "slot_id": {
+          "$ref": "#/$defs/SlotId"
+        },
+        "copy_level": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "disk_id": {
+          "$ref": "#/$defs/DiskId"
+        },
+        "binding_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "state": {
+          "enum": [
+            "COMPLETE_VERIFIED",
+            "UNAVAILABLE"
+          ]
+        }
+      },
+      "required": [
+        "slot_id",
+        "copy_level",
+        "disk_id",
+        "binding_generation",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "VersionProtection": {
+      "type": "object",
+      "properties": {
+        "version_id": {
+          "$ref": "#/$defs/VersionId"
+        },
+        "primary_slot_id": {
+          "$ref": "#/$defs/SlotId"
+        },
+        "target_copies": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "required_slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SlotId"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "topology_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SlotConfirmation"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "version_id",
+        "primary_slot_id",
+        "target_copies",
+        "required_slots",
+        "topology_generation",
+        "slots"
+      ],
+      "additionalProperties": false
+    },
+    "SaveResult": {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "enum": [
+            "COMMITTED_AND_PROTECTED",
+            "COMMITTED_DEGRADED"
+          ]
+        },
+        "commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "branch_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "publication_sequence": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "membership_epoch": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "protection_at_publish": {
+          "enum": [
+            "TARGET_MET",
+            "BELOW_TARGET"
+          ]
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/VersionProtection"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "outcome",
+        "commit_id",
+        "branch_id",
+        "branch_generation",
+        "publication_sequence",
+        "membership_epoch",
+        "protection_at_publish",
+        "versions"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "COMMITTED_AND_PROTECTED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "protection_at_publish": {
+                "const": "TARGET_MET"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "protection_at_publish": {
+                "const": "BELOW_TARGET"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*(?![\\s\\S])"
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "request_id": {
+          "$ref": "#/$defs/RequestId"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retryable",
+        "request_id"
+      ],
+      "additionalProperties": false
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "$ref": "#/$defs/Error"
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "CurrentHealth": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "enum": [
+            "HEALTHY",
+            "DEGRADED",
+            "UNAVAILABLE",
+            "UNKNOWN"
+          ]
+        },
+        "checked_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "state",
+        "checked_at"
+      ],
+      "additionalProperties": false
+    },
+    "SaveOperation": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "operation_kind": {
+          "const": "content_save"
+        },
+        "request_digest": {
+          "$ref": "#/$defs/Hash"
+        },
+        "state": {
+          "enum": [
+            "processing",
+            "in_doubt",
+            "completed",
+            "failed"
+          ]
+        },
+        "commit_state": {
+          "enum": [
+            "STAGING",
+            "SEALED",
+            "PREPARED",
+            "DECIDING",
+            "DECIDED",
+            "PROTECTED",
+            "PUBLISHED",
+            "ACKED",
+            "RECOVERING",
+            "RECOVERY_REQUIRED",
+            "IN_DOUBT",
+            "PUBLISHED_DEGRADED",
+            "ABORTED"
+          ]
+        },
+        "result": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/SaveResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Error"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "current_health": {
+          "$ref": "#/$defs/CurrentHealth"
+        }
+      },
+      "required": [
+        "operation_id",
+        "operation_kind",
+        "request_digest",
+        "state",
+        "commit_state",
+        "result",
+        "error",
+        "current_health"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "completed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "$ref": "#/$defs/SaveResult"
+              },
+              "error": {
+                "type": "null"
+              },
+              "commit_state": {
+                "enum": [
+                  "PUBLISHED",
+                  "ACKED",
+                  "PUBLISHED_DEGRADED"
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "result": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "failed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "error": {
+                "$ref": "#/$defs/Error"
+              },
+              "commit_state": {
+                "const": "ABORTED"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "error": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "processing"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "commit_state": {
+                "enum": [
+                  "STAGING",
+                  "SEALED",
+                  "PREPARED",
+                  "DECIDING",
+                  "DECIDED",
+                  "PROTECTED",
+                  "RECOVERING"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "in_doubt"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "commit_state": {
+                "enum": [
+                  "IN_DOUBT",
+                  "RECOVERY_REQUIRED"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "commit_state": {
+                "const": "PUBLISHED_DEGRADED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SaveResult"
+                  },
+                  {
+                    "properties": {
+                      "outcome": {
+                        "const": "COMMITTED_DEGRADED"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "MemberReceipt": {
+      "type": "object",
+      "properties": {
+        "disk_id": {
+          "$ref": "#/$defs/DiskId"
+        },
+        "record_hash": {
+          "$ref": "#/$defs/Hash"
+        },
+        "member_record_sequence": {
+          "$ref": "#/$defs/UInt64"
+        }
+      },
+      "required": [
+        "disk_id",
+        "record_hash",
+        "member_record_sequence"
+      ],
+      "additionalProperties": false
+    },
+    "ContentReceipt": {
+      "type": "object",
+      "properties": {
+        "version_id": {
+          "$ref": "#/$defs/VersionId"
+        },
+        "slot_id": {
+          "$ref": "#/$defs/SlotId"
+        },
+        "disk_id": {
+          "$ref": "#/$defs/DiskId"
+        },
+        "binding_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "proof_hash": {
+          "$ref": "#/$defs/Hash"
+        }
+      },
+      "required": [
+        "version_id",
+        "slot_id",
+        "disk_id",
+        "binding_generation",
+        "proof_hash"
+      ],
+      "additionalProperties": false
+    },
+    "Publication": {
+      "type": "object",
+      "properties": {
+        "format_version": {
+          "const": 2
+        },
+        "record_type": {
+          "const": "PUBLICATION"
+        },
+        "pool_id": {
+          "$ref": "#/$defs/PoolId"
+        },
+        "membership_epoch": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "writer_epoch": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "decision_slot": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "request_digest": {
+          "$ref": "#/$defs/Hash"
+        },
+        "candidate_hash": {
+          "$ref": "#/$defs/Hash"
+        },
+        "finalize_receipts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MemberReceipt"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "content_proofs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContentReceipt"
+          },
+          "minItems": 0
+        },
+        "public_changes_hash": {
+          "$ref": "#/$defs/Hash"
+        },
+        "evidence_kind": {
+          "enum": [
+            "NORMAL",
+            "RECOVERY_DEGRADED"
+          ]
+        },
+        "result": {
+          "$ref": "#/$defs/SaveResult"
+        },
+        "recovery_id": {
+          "$ref": "#/$defs/RecoveryId"
+        },
+        "recovery_evidence_hash": {
+          "$ref": "#/$defs/Hash"
+        }
+      },
+      "required": [
+        "format_version",
+        "record_type",
+        "pool_id",
+        "membership_epoch",
+        "writer_epoch",
+        "decision_slot",
+        "operation_id",
+        "request_digest",
+        "candidate_hash",
+        "finalize_receipts",
+        "content_proofs",
+        "public_changes_hash",
+        "evidence_kind",
+        "result"
+      ],
+      "additionalProperties": false,
+      "description": "仅描述 content_save 发布记录的字段草案；回执列表展示展开语义，生产日志须按第08章使用分页清单。此 schema 不证明 I/O、成员身份或同步真实。",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "evidence_kind": {
+                "const": "NORMAL"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "recovery_id"
+                  ]
+                },
+                {
+                  "required": [
+                    "recovery_evidence_hash"
+                  ]
+                }
+              ]
+            },
+            "properties": {
+              "result": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SaveResult"
+                  },
+                  {
+                    "properties": {
+                      "outcome": {
+                        "const": "COMMITTED_AND_PROTECTED"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "else": {
+            "required": [
+              "recovery_id",
+              "recovery_evidence_hash"
+            ],
+            "properties": {
+              "result": {
+                "allOf": [
+                  {
+                    "$ref": "#/$defs/SaveResult"
+                  },
+                  {
+                    "properties": {
+                      "outcome": {
+                        "const": "COMMITTED_DEGRADED"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ReceivedRange": {
+      "type": "object",
+      "properties": {
+        "offset": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "length": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "content_hash": {
+          "$ref": "#/$defs/Hash"
+        }
+      },
+      "required": [
+        "offset",
+        "length",
+        "content_hash"
+      ],
+      "additionalProperties": false
+    },
+    "UploadStatus": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "$ref": "#/$defs/WorkspaceId"
+        },
+        "item_id": {
+          "type": "string",
+          "pattern": "^entry_[0-9a-f]{32}(?![\\s\\S])"
+        },
+        "upload_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "logical_size": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "content_hash": {
+          "$ref": "#/$defs/Hash"
+        },
+        "state": {
+          "enum": [
+            "RECEIVING",
+            "COMPLETE",
+            "SEALED"
+          ]
+        },
+        "durable_ranges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReceivedRange"
+          },
+          "minItems": 0
+        },
+        "sealed_manifest_hash": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "workspace_id",
+        "item_id",
+        "upload_generation",
+        "logical_size",
+        "content_hash",
+        "state",
+        "durable_ranges",
+        "sealed_manifest_hash"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "SEALED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "sealed_manifest_hash": {
+                "$ref": "#/$defs/Hash"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "sealed_manifest_hash": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "PendingFileVersions": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/FileId"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/VersionId"
+      },
+      "description": "未拥有正文的file_id及创建时冻结的父version_id。读取继承父版本，首次实际写入后才成为自己的FULL。Branch/Commit空映射省略以保持旧规范字节；活跃继承关系固定父正文直到不再需要。"
+    },
+    "Branch": {
+      "type": "object",
+      "properties": {
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head_commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "fork_commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "branch_kind": {
+          "enum": [
+            "file",
+            "full"
+          ]
+        },
+        "file_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pending_file_versions": {
+          "$ref": "#/$defs/PendingFileVersions"
+        },
+        "generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "archived",
+            "migrated",
+            "merged"
+          ]
+        },
+        "file_node_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileNodeId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "branch_id",
+        "history_tree_id",
+        "name",
+        "head_commit_id",
+        "fork_commit_id",
+        "branch_kind",
+        "generation",
+        "state"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "branch_kind": {
+                "const": "file"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "file_id"
+            ],
+            "properties": {
+              "file_id": {
+                "$ref": "#/$defs/FileId"
+              }
+            }
+          }
+        }
+      ],
+      "description": "持久分支归属记录。pending_file_versions可省略且默认为空；创建只登记记录和冻结来源，不创建占位文件，未写入文件继承冻结父版本。首次写入产生自己的FULL并移除该文件映射。读取继承不等于复制或拥有父正文。"
+    },
+    "FileBranchView": {
+      "type": "object",
+      "properties": {
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head_commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "fork_commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "branch_kind": {
+          "const": "file"
+        },
+        "file_id": {
+          "$ref": "#/$defs/FileId"
+        },
+        "pending_file_versions": {
+          "$ref": "#/$defs/PendingFileVersions"
+        },
+        "generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "state": {
+          "enum": [
+            "active",
+            "archived",
+            "migrated",
+            "merged"
+          ]
+        },
+        "version_id": {
+          "$ref": "#/$defs/VersionId"
+        },
+        "source_version_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VersionId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "materialized": {
+          "type": "boolean"
+        },
+        "content_state": {
+          "enum": [
+            "PENDING",
+            "LIVE",
+            "AVAILABLE",
+            "PURGED",
+            "MIGRATED",
+            "UNAVAILABLE"
+          ]
+        },
+        "current": {
+          "type": "boolean"
+        },
+        "inherited": {
+          "type": "boolean"
+        },
+        "own_version_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VersionId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "visible_content_state": {
+          "enum": [
+            "LIVE",
+            "AVAILABLE",
+            "PURGED",
+            "MIGRATED",
+            "UNAVAILABLE"
+          ]
+        },
+        "file_node_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileNodeId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "node_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileNodeId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "read_only": {
+          "type": "boolean"
+        },
+        "alias_of": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BranchId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "branch_id",
+        "history_tree_id",
+        "name",
+        "head_commit_id",
+        "fork_commit_id",
+        "branch_kind",
+        "generation",
+        "state",
+        "file_id",
+        "version_id",
+        "source_version_id",
+        "materialized",
+        "content_state",
+        "current",
+        "inherited",
+        "own_version_id",
+        "visible_content_state"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "materialized": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "pending_file_versions"
+            ],
+            "properties": {
+              "inherited": {
+                "const": true
+              },
+              "own_version_id": {
+                "type": "null"
+              },
+              "version_id": {
+                "$ref": "#/$defs/VersionId"
+              },
+              "source_version_id": {
+                "$ref": "#/$defs/VersionId"
+              },
+              "content_state": {
+                "const": "PENDING"
+              },
+              "pending_file_versions": {
+                "minProperties": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "inherited": {
+                "const": false
+              },
+              "own_version_id": {
+                "$ref": "#/$defs/VersionId"
+              },
+              "version_id": {
+                "$ref": "#/$defs/VersionId"
+              },
+              "source_version_id": {
+                "type": "null"
+              },
+              "content_state": {
+                "not": {
+                  "const": "PENDING"
+                }
+              },
+              "pending_file_versions": {
+                "maxProperties": 0
+              }
+            }
+          }
+        }
+      ],
+      "description": "文件分支归属与可见内容分开：未写入materialized=false/inherited=true，version_id为冻结父版本、own_version_id=null，content_state=PENDING只表示归属，visible_content_state表示父内容实际状态；写后own与visible ID相同。"
+    },
+    "EntryId": {
+      "type": "string",
+      "pattern": "^entry_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "TreeId": {
+      "type": "string",
+      "pattern": "^tree_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "Entry": {
+      "type": "object",
+      "properties": {
+        "entry_id": {
+          "$ref": "#/$defs/EntryId"
+        },
+        "path": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "lookup_key": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "file",
+            "directory"
+          ]
+        },
+        "file_id": {
+          "type": "string"
+        },
+        "version_id": {
+          "type": "string"
+        },
+        "size": {
+          "$ref": "#/$defs/UInt64"
+        }
+      },
+      "required": [
+        "entry_id",
+        "path",
+        "name",
+        "lookup_key",
+        "kind",
+        "file_id",
+        "version_id",
+        "size"
+      ],
+      "additionalProperties": false,
+      "description": "泛型Entry保持version_id字符串。文件为当前可见的真实版本（未写分支为冻结父版本），目录可为空字符串；不把继承投影清空为零大小。归属由独立pending映射表示。"
+    },
+    "Commit": {
+      "type": "object",
+      "properties": {
+        "commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "parent_commit_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CommitId"
+          },
+          "maxItems": 1,
+          "uniqueItems": true
+        },
+        "tree_id": {
+          "$ref": "#/$defs/TreeId"
+        },
+        "sequence": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "author": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Entry"
+          }
+        },
+        "pending_file_versions": {
+          "$ref": "#/$defs/PendingFileVersions"
+        },
+        "provenance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "commit_id",
+        "history_tree_id",
+        "kind",
+        "parent_commit_ids",
+        "tree_id",
+        "sequence",
+        "operation_id",
+        "author",
+        "message",
+        "entries",
+        "provenance"
+      ],
+      "additionalProperties": false,
+      "description": "不可变目录快照。pending_file_versions固定当时尚未拥有正文的文件及其继承父版本；分支首写后读旧快照仍显示原父版本。空map省略以保持旧规范字节；文件Entry引用可见真实版本。"
+    },
+    "DirectoryBranchId": {
+      "type": "string",
+      "pattern": "^dbr_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "DirectoryTreeId": {
+      "type": "string",
+      "pattern": "^dtree_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "DirectoryId": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RepositoryId"
+        },
+        {
+          "$ref": "#/$defs/EntryId"
+        }
+      ]
+    },
+    "DirectoryReference": {
+      "type": "object",
+      "properties": {
+        "directory_branch_id": {
+          "$ref": "#/$defs/DirectoryBranchId"
+        },
+        "tree_id": {
+          "$ref": "#/$defs/DirectoryTreeId"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "directory_branch_id",
+        "tree_id"
+      ]
+    },
+    "DirectoryBranch": {
+      "type": "object",
+      "properties": {
+        "directory_branch_id": {
+          "$ref": "#/$defs/DirectoryBranchId"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/RepositoryId"
+        },
+        "directory_id": {
+          "$ref": "#/$defs/DirectoryId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 128
+        },
+        "parent_branch_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DirectoryBranchId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "head_tree_id": {
+          "$ref": "#/$defs/DirectoryTreeId"
+        },
+        "materialized": {
+          "type": "boolean"
+        },
+        "commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "path": {
+          "type": "string"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Entry"
+          }
+        },
+        "file_branches": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/FileId"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/BranchId"
+          },
+          "description": "按文件身份的兼容索引；同一身份有多个逻辑别名时，以精确路径file_contexts为准。"
+        },
+        "inherited_files": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/FileId"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/DirectoryBranchId"
+          }
+        },
+        "directory_refs": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/EntryId"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/DirectoryReference"
+          }
+        },
+        "sequence": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "file_contexts": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/FileContext"
+          },
+          "description": "键是规范化的仓库相对逻辑路径，随子树冻结。"
+        }
+      },
+      "additionalProperties": false,
+      "description": "稳定命名目录分支。登记直接引用父子树，不新建文件分支或占位文件。继承写入意图和子目录精确引用随快照固定；真实变更追加子树，分支身份不变。",
+      "required": [
+        "directory_branch_id",
+        "repository_id",
+        "directory_id",
+        "path",
+        "name",
+        "parent_branch_id",
+        "head_tree_id",
+        "commit_id",
+        "entries",
+        "file_branches",
+        "materialized",
+        "sequence"
+      ]
+    },
+    "DirectoryTree": {
+      "type": "object",
+      "properties": {
+        "tree_id": {
+          "$ref": "#/$defs/DirectoryTreeId"
+        },
+        "directory_branch_id": {
+          "$ref": "#/$defs/DirectoryBranchId"
+        },
+        "parent_tree_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DirectoryTreeId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "path": {
+          "type": "string"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Entry"
+          }
+        },
+        "file_branches": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/FileId"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/BranchId"
+          },
+          "description": "按文件身份的兼容索引；同一身份有多个逻辑别名时，以精确路径file_contexts为准。"
+        },
+        "inherited_files": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/FileId"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/DirectoryBranchId"
+          }
+        },
+        "directory_refs": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/EntryId"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/DirectoryReference"
+          }
+        },
+        "sequence": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "file_contexts": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/FileContext"
+          },
+          "description": "键是规范化的仓库相对逻辑路径，随子树冻结。"
+        }
+      },
+      "additionalProperties": false,
+      "description": "不可变目录子树。完整成员、名称、层级及精确文件版本与子目录节点，不跟随公开分支可变HEAD；目录不拥有私有文件节点。",
+      "required": [
+        "tree_id",
+        "directory_branch_id",
+        "parent_tree_id",
+        "commit_id",
+        "path",
+        "entries",
+        "file_branches",
+        "sequence"
+      ]
+    },
+    "DirectoryNamespaceSource": {
+      "type": "object",
+      "properties": {
+        "directory_branch_id": {
+          "$ref": "#/$defs/DirectoryBranchId"
+        },
+        "expected_tree_id": {
+          "$ref": "#/$defs/DirectoryTreeId"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entry_id": {
+          "$ref": "#/$defs/EntryId"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "directory_branch_id",
+        "expected_tree_id",
+        "path",
+        "entry_id"
+      ]
+    },
+    "DirectoryNamespaceTarget": {
+      "type": "object",
+      "properties": {
+        "directory_branch_id": {
+          "$ref": "#/$defs/DirectoryBranchId"
+        },
+        "expected_tree_id": {
+          "$ref": "#/$defs/DirectoryTreeId"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "directory_branch_id",
+        "expected_tree_id",
+        "path"
+      ]
+    },
+    "DirectoryNamespaceItem": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/DirectoryNamespaceSource"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DirectoryNamespaceTarget"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "source"
+      ]
+    },
+    "DirectoryNamespaceBatch": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "move",
+            "copy",
+            "delete",
+            "rename"
+          ]
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/DirectoryNamespaceItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "一批显式分支映射；实际发布再统一校验树依据、条目身份、路径归属、目标碰撞与权限。",
+      "required": [
+        "kind",
+        "items"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "delete"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "items": {
+                "items": {
+                  "properties": {
+                    "target": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "items": {
+                "items": {
+                  "required": [
+                    "target"
+                  ],
+                  "properties": {
+                    "target": {
+                      "$ref": "#/$defs/DirectoryNamespaceTarget"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "FileContext": {
+      "type": "object",
+      "properties": {
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "inherited_from": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DirectoryBranchId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selection_generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "node_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileNodeId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "branch_id",
+        "inherited_from"
+      ],
+      "additionalProperties": false,
+      "description": "精确逻辑路径的写入目标与继承意图；同文件多个别名可选择不同公开分支/节点，不能以全局file_id选择覆盖。selection_generation用于切换后写会话隔离。"
+    },
+    "FilePathNodeId": {
+      "type": "string",
+      "pattern": "^fnode_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "FileNodeId": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VersionId"
+        },
+        {
+          "$ref": "#/$defs/FilePathNodeId"
+        },
+        {
+          "$ref": "#/$defs/FileMetadataNodeId"
+        }
+      ]
+    },
+    "FilePathNode": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "$ref": "#/$defs/FilePathNodeId"
+        },
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "file_id": {
+          "$ref": "#/$defs/FileId"
+        },
+        "version_id": {
+          "$ref": "#/$defs/VersionId"
+        },
+        "parent_node_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/FileNodeId"
+          }
+        },
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "previous_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation_id": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "author": {
+          "type": "string"
+        },
+        "sequence": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "created_at": {
+          "$ref": "#/$defs/UInt64"
+        }
+      },
+      "required": [
+        "node_id",
+        "history_tree_id",
+        "file_id",
+        "version_id",
+        "parent_node_ids",
+        "branch_id",
+        "path",
+        "previous_path",
+        "operation_id",
+        "author",
+        "sequence",
+        "created_at"
+      ],
+      "additionalProperties": false,
+      "description": "重命名形成的不可变文件路径节点。version_id复用真实正文，parent_node_ids连接内容或路径节点；创建路径节点不增加FileVersion或复制正文。"
+    },
+    "FileHistoryNode": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "$ref": "#/$defs/FileNodeId"
+        },
+        "version_id": {
+          "$ref": "#/$defs/VersionId"
+        },
+        "file_id": {
+          "$ref": "#/$defs/FileId"
+        },
+        "kind": {
+          "enum": [
+            "content",
+            "rename",
+            "tags",
+            "merge"
+          ]
+        },
+        "parent_node_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/FileNodeId"
+          }
+        },
+        "path": {
+          "type": "string"
+        },
+        "previous_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sequence": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "current": {
+          "type": "boolean"
+        },
+        "size": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "content_hash": {
+          "$ref": "#/$defs/Hash"
+        },
+        "download_name": {
+          "type": "string"
+        },
+        "storage_name": {
+          "type": "string"
+        },
+        "legacy": {
+          "type": "boolean"
+        },
+        "branch_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BranchId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_version_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/VersionId"
+          }
+        },
+        "tags": {
+          "$ref": "#/$defs/FileNodeTags"
+        }
+      },
+      "required": [
+        "node_id",
+        "version_id",
+        "file_id",
+        "kind",
+        "parent_node_ids",
+        "path",
+        "previous_path",
+        "note",
+        "created_at",
+        "sequence",
+        "current"
+      ],
+      "additionalProperties": true,
+      "description": "统一不可变文件节点图：content实际正文，rename路径节点，tags/merge元数据节点。后三者复用version_id正文；parent_node_ids含安全的混合图边。tags为每个节点有效继承标签，旧source_version_ids仅表示正文谱系。",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "content"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "node_id": {
+                "$ref": "#/$defs/VersionId"
+              },
+              "previous_path": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "rename"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "node_id": {
+                "$ref": "#/$defs/FilePathNodeId"
+              },
+              "previous_path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "parent_node_ids": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "tags",
+                  "merge"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "node_id": {
+                "$ref": "#/$defs/FileMetadataNodeId"
+              },
+              "previous_path": {
+                "type": "null"
+              },
+              "parent_node_ids": {
+                "minItems": 1
+              }
+            },
+            "required": [
+              "tags"
+            ]
+          }
+        }
+      ]
+    },
+    "FileMetadataNodeId": {
+      "type": "string",
+      "pattern": "^fmeta_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "FileMergeId": {
+      "type": "string",
+      "pattern": "^fmerge_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "FileNodeTags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "x-maxUtf8Bytes": 128,
+        "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*(?![\\s\\S])",
+        "description": "标签必须trim前后相同，非空，无Unicode控制字符，最多128个UTF-8字节。"
+      },
+      "maxItems": 16,
+      "uniqueItems": true
+    },
+    "FileMergeInput": {
+      "type": "object",
+      "properties": {
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "expected_node_id": {
+          "$ref": "#/$defs/FileNodeId"
+        }
+      },
+      "required": [
+        "branch_id",
+        "expected_node_id"
+      ],
+      "additionalProperties": false
+    },
+    "FileTagTarget": {
+      "type": "object",
+      "properties": {
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "source_node_id": {
+          "$ref": "#/$defs/FileNodeId"
+        },
+        "expected_node_id": {
+          "$ref": "#/$defs/FileNodeId"
+        }
+      },
+      "required": [
+        "branch_id",
+        "source_node_id",
+        "expected_node_id"
+      ],
+      "additionalProperties": false
+    },
+    "FileMetadataNode": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "$ref": "#/$defs/FileMetadataNodeId"
+        },
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "file_id": {
+          "$ref": "#/$defs/FileId"
+        },
+        "version_id": {
+          "$ref": "#/$defs/VersionId"
+        },
+        "parent_node_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FileNodeId"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "kind": {
+          "enum": [
+            "tags",
+            "merge"
+          ]
+        },
+        "tags": {
+          "$ref": "#/$defs/FileNodeTags"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "author": {
+          "type": "string"
+        },
+        "sequence": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "created_at": {
+          "$ref": "#/$defs/UInt64"
+        }
+      },
+      "required": [
+        "node_id",
+        "history_tree_id",
+        "file_id",
+        "version_id",
+        "parent_node_ids",
+        "branch_id",
+        "kind",
+        "tags",
+        "operation_id",
+        "author",
+        "sequence",
+        "created_at"
+      ],
+      "additionalProperties": false,
+      "description": "不可变标签或合并元数据子节点，复用真实正文和proof，不新增FileVersion。标签是节点快照，后续普通子节点继承第一父节点。"
+    },
+    "FileBranchMerge": {
+      "type": "object",
+      "properties": {
+        "merge_id": {
+          "$ref": "#/$defs/FileMergeId"
+        },
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "file_id": {
+          "$ref": "#/$defs/FileId"
+        },
+        "input_branch_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BranchId"
+          },
+          "minItems": 2,
+          "uniqueItems": true
+        },
+        "input_node_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FileNodeId"
+          },
+          "minItems": 2
+        },
+        "chosen_node_id": {
+          "$ref": "#/$defs/FileNodeId"
+        },
+        "result_node_id": {
+          "$ref": "#/$defs/FileNodeId"
+        },
+        "surviving_branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "reused_node": {
+          "type": "boolean"
+        },
+        "parent_node_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FileNodeId"
+          },
+          "uniqueItems": true
+        },
+        "operation_id": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "sequence": {
+          "$ref": "#/$defs/UInt64"
+        }
+      },
+      "required": [
+        "merge_id",
+        "history_tree_id",
+        "file_id",
+        "input_branch_ids",
+        "input_node_ids",
+        "chosen_node_id",
+        "result_node_id",
+        "surviving_branch_id",
+        "reused_node",
+        "parent_node_ids",
+        "operation_id",
+        "sequence"
+      ],
+      "additionalProperties": false,
+      "description": "独立合并来源记录保存全部参与分支和原head。复用结果节点时parent_node_ids仅记录不会成环的附加边，其余来源仍保留在input_node_ids。"
+    },
+    "PolicyId": {
+      "type": "string",
+      "pattern": "^policy_[0-9a-f]{32}(?![\\s\\S])"
+    },
+    "BackupPrefixes": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/SlotId"
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "备份slot到用户选择的相对scope逻辑前缀，空字符串表示目标盘根；物理根不参与命名。"
+    },
+    "ProtectionPolicy": {
+      "type": "object",
+      "properties": {
+        "policy_id": {
+          "$ref": "#/$defs/PolicyId"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/RepositoryId"
+        },
+        "path_prefix": {
+          "type": "string"
+        },
+        "target_copies": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "scope_directory_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DirectoryId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope_file_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "backup_prefixes": {
+          "$ref": "#/$defs/BackupPrefixes"
+        },
+        "generation": {
+          "$ref": "#/$defs/UInt64"
+        }
+      },
+      "required": [
+        "policy_id",
+        "repository_id",
+        "path_prefix",
+        "target_copies",
+        "generation"
+      ],
+      "additionalProperties": false,
+      "description": "文件/目录稳定身份的保护规则。旧path_prefix规则可没有scope身份，新增配置绑定其中一种稳定scope；总份数包含主盘。空前缀映射默认省略。"
+    },
+    "FileMetadataNodes": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/FileMetadataNodeId"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/FileMetadataNode"
+      }
+    },
+    "FileBranchMerges": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/FileMergeId"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/FileBranchMerge"
+      }
+    },
+    "FileBranchAliases": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/BranchId"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/BranchId"
+      }
+    },
+    "FileBackupPaths": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/FileId"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": {
+          "$ref": "#/$defs/SlotId"
+        },
+        "additionalProperties": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "FileBackupPolicies": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/FileId"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/PolicyId"
+      }
+    },
+    "FileFeatureStateFields": {
+      "type": "object",
+      "properties": {
+        "file_metadata_nodes": {
+          "$ref": "#/$defs/FileMetadataNodes"
+        },
+        "file_branch_merges": {
+          "$ref": "#/$defs/FileBranchMerges"
+        },
+        "file_branch_aliases": {
+          "$ref": "#/$defs/FileBranchAliases"
+        },
+        "file_backup_paths": {
+          "$ref": "#/$defs/FileBackupPaths"
+        },
+        "file_backup_policies": {
+          "$ref": "#/$defs/FileBackupPolicies"
+        }
+      },
+      "additionalProperties": true,
+      "description": "State及HistoryManifest新增字段的受检投影；各映射省略时默认为空。不声称覆盖完整状态或恢复包。"
+    }
+  }
+}

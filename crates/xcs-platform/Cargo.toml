@@ -1,0 +1,31 @@
+[package]
+name = "xcs-platform"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+license = "Apache-2.0"
+description = "XCS filesystem durability, SQLite index, and credential primitives"
+
+[dependencies]
+xcs-auth.workspace = true
+blake3 = "1"
+futures-executor = "0.3"
+getrandom = "0.4"
+libc = "0.2"
+libsqlite3-sys = { version = "=0.37.0", features = ["bundled"] }
+rustix = { version = "1.1.5", features = ["fs", "process"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.11.0"
+sqlx = { version = "=0.9.0", default-features = false, features = ["runtime-tokio", "sqlite-bundled"] }
+tempfile = "3"
+thiserror = "2"
+tokio = { version = "1.53.2", features = ["fs", "rt-multi-thread", "macros", "sync", "time"] }
+zeroize = "1.8"
+
+[lints.rust]
+unsafe_code = "deny"
+unsafe_op_in_unsafe_fn = "deny"
+
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"

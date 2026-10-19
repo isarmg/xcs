@@ -1,0 +1,1598 @@
+{
+  "description": "合成测试数据，不是实际持久化回执；内容、清单、JCS 和摘要值为固定向量。",
+  "positive": [
+    {
+      "name": "version",
+      "schema": "Version",
+      "layer": "schema",
+      "value": {
+        "format_version": 2,
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "version_id": "ver_00000000000000000000000000000001",
+        "file_id": "file_00000000000000000000000000000001",
+        "creation_primary_slot_id": "P01",
+        "logical_size": "3",
+        "version_sequence": "1",
+        "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+        "checksum_chunk_bytes": 262144,
+        "checksum_manifest_hash": "da98550ac023517eadc8f5c2f8f8e7df071948d1e93817a1e2705330f28ed279",
+        "creation_name": "报告.txt",
+        "source_version_ids": [],
+        "created_as_full_checkpoint": false
+      }
+    },
+    {
+      "name": "commit-request",
+      "schema": "CommitRequest",
+      "layer": "schema",
+      "value": {
+        "operation_id": "op_00000000000000000000000000000001",
+        "workspace_id": "ws_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "branch_id": "br_00000000000000000000000000000001",
+        "expected_head": "commit_00000000000000000000000000000001",
+        "fencing_token": "1",
+        "message": "保存报告",
+        "requested_protection": "strict",
+        "file_placement": {
+          "entry_00000000000000000000000000000001": {
+            "primary_slot_id": "P01",
+            "target_copies": 1
+          }
+        },
+        "expected_topology_generation": "1",
+        "sealed_manifest_hash": "5ad98e350184ff09100068667be7528497fdbd198fcd0e74d2bf4a9b7bf71b7d",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f"
+      }
+    },
+    {
+      "name": "envelope",
+      "schema": "RequestEnvelope",
+      "layer": "schema",
+      "value": {
+        "method": "POST",
+        "route": "/v1/workspaces/{workspace}/commit",
+        "path_parameters": {
+          "workspace": "ws_00000000000000000000000000000001"
+        },
+        "query": {},
+        "body": {
+          "operation_id": "op_00000000000000000000000000000001",
+          "workspace_id": "ws_00000000000000000000000000000001",
+          "repository_id": "repo_00000000000000000000000000000001",
+          "branch_id": "br_00000000000000000000000000000001",
+          "expected_head": "commit_00000000000000000000000000000001",
+          "fencing_token": "1",
+          "message": "保存报告",
+          "requested_protection": "strict",
+          "file_placement": {
+            "entry_00000000000000000000000000000001": {
+              "primary_slot_id": "P01",
+              "target_copies": 1
+            }
+          },
+          "expected_topology_generation": "1",
+          "sealed_manifest_hash": "5ad98e350184ff09100068667be7528497fdbd198fcd0e74d2bf4a9b7bf71b7d"
+        }
+      }
+    },
+    {
+      "name": "completed",
+      "schema": "SaveOperation",
+      "layer": "schema",
+      "value": {
+        "operation_id": "op_00000000000000000000000000000001",
+        "operation_kind": "content_save",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "state": "completed",
+        "commit_state": "PUBLISHED",
+        "result": {
+          "outcome": "COMMITTED_AND_PROTECTED",
+          "commit_id": "commit_00000000000000000000000000000002",
+          "branch_id": "br_00000000000000000000000000000001",
+          "branch_generation": "2",
+          "publication_sequence": "7",
+          "membership_epoch": "1",
+          "protection_at_publish": "TARGET_MET",
+          "versions": [
+            {
+              "version_id": "ver_00000000000000000000000000000001",
+              "primary_slot_id": "P01",
+              "target_copies": 1,
+              "required_slots": [
+                "P01"
+              ],
+              "topology_generation": "1",
+              "slots": [
+                {
+                  "slot_id": "P01",
+                  "copy_level": 1,
+                  "disk_id": "disk_00000000000000000000000000000001",
+                  "binding_generation": "1",
+                  "state": "COMPLETE_VERIFIED"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "current_health": {
+          "state": "HEALTHY",
+          "checked_at": "2026-10-18T00:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "publication",
+      "schema": "Publication",
+      "layer": "schema",
+      "value": {
+        "format_version": 2,
+        "record_type": "PUBLICATION",
+        "pool_id": "pool_00000000000000000000000000000001",
+        "membership_epoch": "1",
+        "writer_epoch": "1",
+        "decision_slot": "7",
+        "operation_id": "op_00000000000000000000000000000001",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "candidate_hash": "0042693315c9905c90a88445148eb2b6c69eb041f117afea734863408f89ed5d",
+        "finalize_receipts": [
+          {
+            "disk_id": "disk_00000000000000000000000000000001",
+            "record_hash": "4cf548ceca4e740307b4540a40350db7bc6883a7aad22863ca3ade15e582a070",
+            "member_record_sequence": "1"
+          },
+          {
+            "disk_id": "disk_00000000000000000000000000000002",
+            "record_hash": "d8aee490c6dd709cd6ee0944ef46e21a913c01281beee2a67392b162f283f5f9",
+            "member_record_sequence": "2"
+          },
+          {
+            "disk_id": "disk_00000000000000000000000000000003",
+            "record_hash": "28456f7282e1a543a37b6ab8c1a55e3d7246840705f557dee23d6a501c1a006b",
+            "member_record_sequence": "3"
+          }
+        ],
+        "content_proofs": [
+          {
+            "version_id": "ver_00000000000000000000000000000001",
+            "slot_id": "P01",
+            "disk_id": "disk_00000000000000000000000000000001",
+            "binding_generation": "1",
+            "proof_hash": "c2238d1db8808df07a8c6f69a78305471a51428bcd5a2e46d901c96c167a1f04"
+          }
+        ],
+        "public_changes_hash": "a4ccc607c21385df41c7d78ba5a4f3122e3ce12989a40f4b27060a90a05a24d9",
+        "evidence_kind": "NORMAL",
+        "result": {
+          "outcome": "COMMITTED_AND_PROTECTED",
+          "commit_id": "commit_00000000000000000000000000000002",
+          "branch_id": "br_00000000000000000000000000000001",
+          "branch_generation": "2",
+          "publication_sequence": "7",
+          "membership_epoch": "1",
+          "protection_at_publish": "TARGET_MET",
+          "versions": [
+            {
+              "version_id": "ver_00000000000000000000000000000001",
+              "primary_slot_id": "P01",
+              "target_copies": 1,
+              "required_slots": [
+                "P01"
+              ],
+              "topology_generation": "1",
+              "slots": [
+                {
+                  "slot_id": "P01",
+                  "copy_level": 1,
+                  "disk_id": "disk_00000000000000000000000000000001",
+                  "binding_generation": "1",
+                  "state": "COMPLETE_VERIFIED"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "upload",
+      "schema": "UploadStatus",
+      "layer": "schema",
+      "value": {
+        "workspace_id": "ws_00000000000000000000000000000001",
+        "item_id": "entry_00000000000000000000000000000001",
+        "upload_generation": "1",
+        "logical_size": "3",
+        "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+        "state": "COMPLETE",
+        "durable_ranges": [
+          {
+            "offset": "0",
+            "length": "3",
+            "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"
+          }
+        ],
+        "sealed_manifest_hash": null
+      }
+    },
+    {
+      "name": "config",
+      "schema": "config",
+      "layer": "schema",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 3,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "full",
+          "materialize_all_files_on_create": true,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "workspaces_per_account": 32,
+          "uploads_per_account": 4,
+          "uploads_per_pool": 16,
+          "staging_bytes_per_account": "107374182400",
+          "staging_bytes_per_pool": "536870912000",
+          "handles_per_session": 256,
+          "handles_per_pool": 4096,
+          "queued_tasks_per_pool": 128,
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      }
+    },
+    {
+      "name": "u64-max",
+      "schema": "UInt64",
+      "layer": "schema",
+      "value": "18446744073709551615"
+    },
+    {
+      "name": "u64-zero",
+      "schema": "UInt64",
+      "layer": "schema",
+      "value": "0"
+    },
+    {
+      "name": "historical-success-current-loss",
+      "schema": "SaveOperation",
+      "layer": "schema",
+      "value": {
+        "operation_id": "op_00000000000000000000000000000001",
+        "operation_kind": "content_save",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "state": "completed",
+        "commit_state": "PUBLISHED",
+        "result": {
+          "outcome": "COMMITTED_AND_PROTECTED",
+          "commit_id": "commit_00000000000000000000000000000002",
+          "branch_id": "br_00000000000000000000000000000001",
+          "branch_generation": "2",
+          "publication_sequence": "7",
+          "membership_epoch": "1",
+          "protection_at_publish": "TARGET_MET",
+          "versions": [
+            {
+              "version_id": "ver_00000000000000000000000000000001",
+              "primary_slot_id": "P01",
+              "target_copies": 1,
+              "required_slots": [
+                "P01"
+              ],
+              "topology_generation": "1",
+              "slots": [
+                {
+                  "slot_id": "P01",
+                  "copy_level": 1,
+                  "disk_id": "disk_00000000000000000000000000000001",
+                  "binding_generation": "1",
+                  "state": "COMPLETE_VERIFIED"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "current_health": {
+          "state": "UNAVAILABLE",
+          "checked_at": "2026-10-18T00:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "accepted-not-completed",
+      "schema": "SaveOperation",
+      "layer": "schema",
+      "value": {
+        "operation_id": "op_00000000000000000000000000000001",
+        "operation_kind": "content_save",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "state": "processing",
+        "commit_state": "STAGING",
+        "result": null,
+        "error": null,
+        "current_health": {
+          "state": "HEALTHY",
+          "checked_at": "2026-10-18T00:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "degraded-recovery",
+      "schema": "Publication",
+      "layer": "schema",
+      "value": {
+        "format_version": 2,
+        "record_type": "PUBLICATION",
+        "pool_id": "pool_00000000000000000000000000000001",
+        "membership_epoch": "1",
+        "writer_epoch": "1",
+        "decision_slot": "7",
+        "operation_id": "op_00000000000000000000000000000001",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "candidate_hash": "0042693315c9905c90a88445148eb2b6c69eb041f117afea734863408f89ed5d",
+        "finalize_receipts": [
+          {
+            "disk_id": "disk_00000000000000000000000000000001",
+            "record_hash": "4cf548ceca4e740307b4540a40350db7bc6883a7aad22863ca3ade15e582a070",
+            "member_record_sequence": "1"
+          },
+          {
+            "disk_id": "disk_00000000000000000000000000000002",
+            "record_hash": "d8aee490c6dd709cd6ee0944ef46e21a913c01281beee2a67392b162f283f5f9",
+            "member_record_sequence": "2"
+          },
+          {
+            "disk_id": "disk_00000000000000000000000000000003",
+            "record_hash": "28456f7282e1a543a37b6ab8c1a55e3d7246840705f557dee23d6a501c1a006b",
+            "member_record_sequence": "3"
+          }
+        ],
+        "content_proofs": [],
+        "public_changes_hash": "a4ccc607c21385df41c7d78ba5a4f3122e3ce12989a40f4b27060a90a05a24d9",
+        "evidence_kind": "RECOVERY_DEGRADED",
+        "result": {
+          "outcome": "COMMITTED_DEGRADED",
+          "commit_id": "commit_00000000000000000000000000000002",
+          "branch_id": "br_00000000000000000000000000000001",
+          "branch_generation": "2",
+          "publication_sequence": "7",
+          "membership_epoch": "1",
+          "protection_at_publish": "BELOW_TARGET",
+          "versions": [
+            {
+              "version_id": "ver_00000000000000000000000000000001",
+              "primary_slot_id": "P01",
+              "target_copies": 1,
+              "required_slots": [
+                "P01"
+              ],
+              "topology_generation": "1",
+              "slots": [
+                {
+                  "slot_id": "P01",
+                  "copy_level": 1,
+                  "disk_id": "disk_00000000000000000000000000000001",
+                  "binding_generation": "1",
+                  "state": "UNAVAILABLE"
+                }
+              ]
+            }
+          ]
+        },
+        "recovery_id": "recovery_00000000000000000000000000000001",
+        "recovery_evidence_hash": "a4dd771893f54c01b5d4b81daba1406dea5271b3a5a3b3922e116511c6382e42"
+      }
+    },
+    {
+      "name": "legacy-branch-without-pending-map",
+      "schema": "Branch",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000001",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "main",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "full",
+        "generation": "1",
+        "state": "active"
+      }
+    },
+    {
+      "name": "unwritten-file-branch",
+      "schema": "Branch",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001"
+        }
+      }
+    },
+    {
+      "name": "unwritten-legacy-directory-branch",
+      "schema": "Branch",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000001",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "目录兼容占位",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "full",
+        "generation": "1",
+        "state": "active",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001",
+          "file_00000000000000000000000000000002": "ver_00000000000000000000000000000002"
+        }
+      }
+    },
+    {
+      "name": "unwritten-file-branch-view",
+      "schema": "FileBranchView",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001"
+        },
+        "version_id": "ver_00000000000000000000000000000001",
+        "source_version_id": "ver_00000000000000000000000000000001",
+        "materialized": false,
+        "content_state": "PENDING",
+        "current": true,
+        "own_version_id": null,
+        "inherited": true,
+        "visible_content_state": "AVAILABLE"
+      }
+    },
+    {
+      "name": "legacy-commit-without-pending-map",
+      "schema": "Commit",
+      "layer": "schema",
+      "value": {
+        "commit_id": "commit_00000000000000000000000000000001",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "kind": "content",
+        "parent_commit_ids": [],
+        "tree_id": "tree_00000000000000000000000000000001",
+        "sequence": "1",
+        "operation_id": "op_00000000000000000000000000000001",
+        "author": "alice",
+        "message": "legacy snapshot",
+        "entries": [
+          {
+            "entry_id": "entry_00000000000000000000000000000001",
+            "path": "a.txt",
+            "name": "a.txt",
+            "lookup_key": "a.txt",
+            "kind": "file",
+            "file_id": "file_00000000000000000000000000000001",
+            "version_id": "ver_00000000000000000000000000000001",
+            "size": "3"
+          }
+        ],
+        "provenance": null
+      }
+    },
+    {
+      "name": "unwritten-commit-snapshot",
+      "schema": "Commit",
+      "layer": "schema",
+      "value": {
+        "commit_id": "commit_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "kind": "file_branch_pending",
+        "parent_commit_ids": [
+          "commit_00000000000000000000000000000001"
+        ],
+        "tree_id": "tree_00000000000000000000000000000001",
+        "sequence": "2",
+        "operation_id": "op_00000000000000000000000000000001",
+        "author": "alice",
+        "message": "legacy snapshot",
+        "entries": [
+          {
+            "entry_id": "entry_00000000000000000000000000000001",
+            "path": "a.txt",
+            "name": "a.txt",
+            "lookup_key": "a.txt",
+            "kind": "file",
+            "file_id": "file_00000000000000000000000000000001",
+            "version_id": "ver_00000000000000000000000000000001",
+            "size": "3"
+          }
+        ],
+        "provenance": null,
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001"
+        }
+      }
+    },
+    {
+      "name": "materialized-file-branch-view",
+      "schema": "FileBranchView",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "version_id": "ver_00000000000000000000000000000003",
+        "source_version_id": null,
+        "materialized": true,
+        "content_state": "AVAILABLE",
+        "current": true,
+        "own_version_id": "ver_00000000000000000000000000000003",
+        "inherited": false,
+        "visible_content_state": "AVAILABLE"
+      }
+    }
+  ],
+  "negative": [
+    {
+      "name": "u64-overflow",
+      "schema": "UInt64",
+      "layer": "schema",
+      "value": "18446744073709551616"
+    },
+    {
+      "name": "u64-leading-zero",
+      "schema": "UInt64",
+      "layer": "schema",
+      "value": "01"
+    },
+    {
+      "name": "u64-number",
+      "schema": "UInt64",
+      "layer": "schema",
+      "value": 1
+    },
+    {
+      "name": "u64-negative",
+      "schema": "UInt64",
+      "layer": "schema",
+      "value": "-1"
+    },
+    {
+      "name": "wrong-id-prefix",
+      "schema": "Version",
+      "layer": "schema",
+      "value": {
+        "format_version": 2,
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "version_id": "file_00000000000000000000000000000001",
+        "file_id": "file_00000000000000000000000000000001",
+        "creation_primary_slot_id": "P01",
+        "logical_size": "3",
+        "version_sequence": "1",
+        "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+        "checksum_chunk_bytes": 262144,
+        "checksum_manifest_hash": "da98550ac023517eadc8f5c2f8f8e7df071948d1e93817a1e2705330f28ed279",
+        "creation_name": "报告.txt",
+        "source_version_ids": [],
+        "created_as_full_checkpoint": false
+      }
+    },
+    {
+      "name": "unknown-field",
+      "schema": "Version",
+      "layer": "schema",
+      "value": {
+        "format_version": 2,
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "version_id": "ver_00000000000000000000000000000001",
+        "file_id": "file_00000000000000000000000000000001",
+        "creation_primary_slot_id": "P01",
+        "logical_size": "3",
+        "version_sequence": "1",
+        "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+        "checksum_chunk_bytes": 262144,
+        "checksum_manifest_hash": "da98550ac023517eadc8f5c2f8f8e7df071948d1e93817a1e2705330f28ed279",
+        "creation_name": "报告.txt",
+        "source_version_ids": [],
+        "created_as_full_checkpoint": false,
+        "unrecognized_required_feature": true
+      }
+    },
+    {
+      "name": "missing-sealed-manifest",
+      "schema": "CommitRequest",
+      "layer": "schema",
+      "value": {
+        "operation_id": "op_00000000000000000000000000000001",
+        "workspace_id": "ws_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "branch_id": "br_00000000000000000000000000000001",
+        "expected_head": "commit_00000000000000000000000000000001",
+        "fencing_token": "1",
+        "message": "保存报告",
+        "requested_protection": "strict",
+        "file_placement": {
+          "entry_00000000000000000000000000000001": {
+            "primary_slot_id": "P01",
+            "target_copies": 1
+          }
+        },
+        "expected_topology_generation": "1",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f"
+      }
+    },
+    {
+      "name": "completed-without-result",
+      "schema": "SaveOperation",
+      "layer": "schema",
+      "value": {
+        "operation_id": "op_00000000000000000000000000000001",
+        "operation_kind": "content_save",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "state": "completed",
+        "commit_state": "PUBLISHED",
+        "result": null,
+        "error": null,
+        "current_health": {
+          "state": "HEALTHY",
+          "checked_at": "2026-10-18T00:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "success-without-protection",
+      "schema": "SaveOperation",
+      "layer": "schema",
+      "value": {
+        "operation_id": "op_00000000000000000000000000000001",
+        "operation_kind": "content_save",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "state": "completed",
+        "commit_state": "PUBLISHED",
+        "result": {
+          "outcome": "COMMITTED_AND_PROTECTED",
+          "commit_id": "commit_00000000000000000000000000000002",
+          "branch_id": "br_00000000000000000000000000000001",
+          "branch_generation": "2",
+          "publication_sequence": "7",
+          "membership_epoch": "1",
+          "protection_at_publish": "BELOW_TARGET",
+          "versions": [
+            {
+              "version_id": "ver_00000000000000000000000000000001",
+              "primary_slot_id": "P01",
+              "target_copies": 1,
+              "required_slots": [
+                "P01"
+              ],
+              "topology_generation": "1",
+              "slots": [
+                {
+                  "slot_id": "P01",
+                  "copy_level": 1,
+                  "disk_id": "disk_00000000000000000000000000000001",
+                  "binding_generation": "1",
+                  "state": "COMPLETE_VERIFIED"
+                }
+              ]
+            }
+          ]
+        },
+        "error": null,
+        "current_health": {
+          "state": "HEALTHY",
+          "checked_at": "2026-10-18T00:00:00Z"
+        }
+      }
+    },
+    {
+      "name": "degraded-config",
+      "schema": "config",
+      "layer": "schema",
+      "value": {
+        "metadata": {
+          "replica_members": 2,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 3,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "full",
+          "materialize_all_files_on_create": true,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "workspaces_per_account": 32,
+          "uploads_per_account": 4,
+          "uploads_per_pool": 16,
+          "staging_bytes_per_account": "107374182400",
+          "staging_bytes_per_pool": "536870912000",
+          "handles_per_session": 256,
+          "handles_per_pool": 4096,
+          "queued_tasks_per_pool": 128,
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      }
+    },
+    {
+      "name": "rewrite-config",
+      "schema": "config",
+      "layer": "schema",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 3,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "full",
+          "materialize_all_files_on_create": true,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": true
+        },
+        "resource_limits": {
+          "workspaces_per_account": 32,
+          "uploads_per_account": 4,
+          "uploads_per_pool": 16,
+          "staging_bytes_per_account": "107374182400",
+          "staging_bytes_per_pool": "536870912000",
+          "handles_per_session": 256,
+          "handles_per_pool": 4096,
+          "queued_tasks_per_pool": 128,
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      }
+    },
+    {
+      "name": "cross-limit",
+      "schema": "config",
+      "layer": "semantic",
+      "value": {
+        "metadata": {
+          "replica_members": 3,
+          "decision_members": 2,
+          "recovery_evidence_members": 2,
+          "publish_after_all_members": true,
+          "acknowledge_after_all_members": true,
+          "max_inflight_decision_slots": 1,
+          "require_fenced_membership_change": true,
+          "allow_automatic_degraded_writes": false,
+          "sqlite_role": "rebuildable-index",
+          "application_log": true
+        },
+        "storage": {
+          "minimum_disks_for_protected_write": 3,
+          "allow_cross_version_reflink": false,
+          "allow_content_hardlinks": false,
+          "allow_implicit_content_deduplication": false,
+          "allow_cross_tree_dependencies": false
+        },
+        "branches": {
+          "creation_mode": "full",
+          "materialize_all_files_on_create": true,
+          "merge_behavior": "link-only",
+          "merge_creates_content_version": false,
+          "merge_updates_branch_head": false,
+          "allow_history_rewrite": false
+        },
+        "resource_limits": {
+          "workspaces_per_account": 32,
+          "uploads_per_account": 17,
+          "uploads_per_pool": 16,
+          "staging_bytes_per_account": "107374182400",
+          "staging_bytes_per_pool": "536870912000",
+          "handles_per_session": 256,
+          "handles_per_pool": 4096,
+          "queued_tasks_per_pool": 128,
+          "default_page_items": 200,
+          "maximum_page_items": 1000,
+          "page_snapshot_ttl_seconds": 900,
+          "event_retention_days": 7,
+          "event_retention_bytes": "1073741824",
+          "workspace_reminder_days": 7
+        },
+        "observability": {
+          "decision_warning_seconds": 30,
+          "decision_critical_seconds": 120,
+          "queue_warning_seconds": 30
+        }
+      }
+    },
+    {
+      "name": "same-physical-member",
+      "schema": "Publication",
+      "layer": "semantic",
+      "value": {
+        "format_version": 2,
+        "record_type": "PUBLICATION",
+        "pool_id": "pool_00000000000000000000000000000001",
+        "membership_epoch": "1",
+        "writer_epoch": "1",
+        "decision_slot": "7",
+        "operation_id": "op_00000000000000000000000000000001",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "candidate_hash": "0042693315c9905c90a88445148eb2b6c69eb041f117afea734863408f89ed5d",
+        "finalize_receipts": [
+          {
+            "disk_id": "disk_00000000000000000000000000000001",
+            "record_hash": "4cf548ceca4e740307b4540a40350db7bc6883a7aad22863ca3ade15e582a070",
+            "member_record_sequence": "1"
+          },
+          {
+            "disk_id": "disk_00000000000000000000000000000001",
+            "record_hash": "d8aee490c6dd709cd6ee0944ef46e21a913c01281beee2a67392b162f283f5f9",
+            "member_record_sequence": "2"
+          },
+          {
+            "disk_id": "disk_00000000000000000000000000000003",
+            "record_hash": "28456f7282e1a543a37b6ab8c1a55e3d7246840705f557dee23d6a501c1a006b",
+            "member_record_sequence": "3"
+          }
+        ],
+        "content_proofs": [
+          {
+            "version_id": "ver_00000000000000000000000000000001",
+            "slot_id": "P01",
+            "disk_id": "disk_00000000000000000000000000000001",
+            "binding_generation": "1",
+            "proof_hash": "c2238d1db8808df07a8c6f69a78305471a51428bcd5a2e46d901c96c167a1f04"
+          }
+        ],
+        "public_changes_hash": "a4ccc607c21385df41c7d78ba5a4f3122e3ce12989a40f4b27060a90a05a24d9",
+        "evidence_kind": "NORMAL",
+        "result": {
+          "outcome": "COMMITTED_AND_PROTECTED",
+          "commit_id": "commit_00000000000000000000000000000002",
+          "branch_id": "br_00000000000000000000000000000001",
+          "branch_generation": "2",
+          "publication_sequence": "7",
+          "membership_epoch": "1",
+          "protection_at_publish": "TARGET_MET",
+          "versions": [
+            {
+              "version_id": "ver_00000000000000000000000000000001",
+              "primary_slot_id": "P01",
+              "target_copies": 1,
+              "required_slots": [
+                "P01"
+              ],
+              "topology_generation": "1",
+              "slots": [
+                {
+                  "slot_id": "P01",
+                  "copy_level": 1,
+                  "disk_id": "disk_00000000000000000000000000000001",
+                  "binding_generation": "1",
+                  "state": "COMPLETE_VERIFIED"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "missing-slot-proof",
+      "schema": "Publication",
+      "layer": "semantic",
+      "value": {
+        "format_version": 2,
+        "record_type": "PUBLICATION",
+        "pool_id": "pool_00000000000000000000000000000001",
+        "membership_epoch": "1",
+        "writer_epoch": "1",
+        "decision_slot": "7",
+        "operation_id": "op_00000000000000000000000000000001",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f",
+        "candidate_hash": "0042693315c9905c90a88445148eb2b6c69eb041f117afea734863408f89ed5d",
+        "finalize_receipts": [
+          {
+            "disk_id": "disk_00000000000000000000000000000001",
+            "record_hash": "4cf548ceca4e740307b4540a40350db7bc6883a7aad22863ca3ade15e582a070",
+            "member_record_sequence": "1"
+          },
+          {
+            "disk_id": "disk_00000000000000000000000000000002",
+            "record_hash": "d8aee490c6dd709cd6ee0944ef46e21a913c01281beee2a67392b162f283f5f9",
+            "member_record_sequence": "2"
+          },
+          {
+            "disk_id": "disk_00000000000000000000000000000003",
+            "record_hash": "28456f7282e1a543a37b6ab8c1a55e3d7246840705f557dee23d6a501c1a006b",
+            "member_record_sequence": "3"
+          }
+        ],
+        "content_proofs": [],
+        "public_changes_hash": "a4ccc607c21385df41c7d78ba5a4f3122e3ce12989a40f4b27060a90a05a24d9",
+        "evidence_kind": "NORMAL",
+        "result": {
+          "outcome": "COMMITTED_AND_PROTECTED",
+          "commit_id": "commit_00000000000000000000000000000002",
+          "branch_id": "br_00000000000000000000000000000001",
+          "branch_generation": "2",
+          "publication_sequence": "7",
+          "membership_epoch": "1",
+          "protection_at_publish": "TARGET_MET",
+          "versions": [
+            {
+              "version_id": "ver_00000000000000000000000000000001",
+              "primary_slot_id": "P01",
+              "target_copies": 1,
+              "required_slots": [
+                "P01"
+              ],
+              "topology_generation": "1",
+              "slots": [
+                {
+                  "slot_id": "P01",
+                  "copy_level": 1,
+                  "disk_id": "disk_00000000000000000000000000000001",
+                  "binding_generation": "1",
+                  "state": "COMPLETE_VERIFIED"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "upload-out-of-bounds",
+      "schema": "UploadStatus",
+      "layer": "semantic",
+      "value": {
+        "workspace_id": "ws_00000000000000000000000000000001",
+        "item_id": "entry_00000000000000000000000000000001",
+        "upload_generation": "1",
+        "logical_size": "3",
+        "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+        "state": "COMPLETE",
+        "durable_ranges": [
+          {
+            "offset": "0",
+            "length": "4",
+            "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"
+          }
+        ],
+        "sealed_manifest_hash": null
+      }
+    },
+    {
+      "name": "complete-with-missing-bytes",
+      "schema": "UploadStatus",
+      "layer": "semantic",
+      "value": {
+        "workspace_id": "ws_00000000000000000000000000000001",
+        "item_id": "entry_00000000000000000000000000000001",
+        "upload_generation": "1",
+        "logical_size": "3",
+        "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+        "state": "COMPLETE",
+        "durable_ranges": [],
+        "sealed_manifest_hash": null
+      }
+    },
+    {
+      "name": "u64-trailing-newline",
+      "schema": "UInt64",
+      "layer": "schema",
+      "value": "1\n"
+    },
+    {
+      "name": "id-trailing-newline",
+      "schema": "Version",
+      "layer": "schema",
+      "value": {
+        "format_version": 2,
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "version_id": "ver_00000000000000000000000000000001\n",
+        "file_id": "file_00000000000000000000000000000001",
+        "creation_primary_slot_id": "P01",
+        "logical_size": "3",
+        "version_sequence": "1",
+        "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+        "checksum_chunk_bytes": 262144,
+        "checksum_manifest_hash": "da98550ac023517eadc8f5c2f8f8e7df071948d1e93817a1e2705330f28ed279",
+        "creation_name": "报告.txt",
+        "source_version_ids": [],
+        "created_as_full_checkpoint": false
+      }
+    },
+    {
+      "name": "changed-request-same-digest",
+      "schema": "CommitRequest",
+      "layer": "semantic",
+      "value": {
+        "operation_id": "op_00000000000000000000000000000001",
+        "workspace_id": "ws_00000000000000000000000000000001",
+        "repository_id": "repo_00000000000000000000000000000001",
+        "branch_id": "br_00000000000000000000000000000001",
+        "expected_head": "commit_00000000000000000000000000000001",
+        "fencing_token": "1",
+        "message": "changed input",
+        "requested_protection": "strict",
+        "file_placement": {
+          "entry_00000000000000000000000000000001": {
+            "primary_slot_id": "P01",
+            "target_copies": 1
+          }
+        },
+        "expected_topology_generation": "1",
+        "sealed_manifest_hash": "5ad98e350184ff09100068667be7528497fdbd198fcd0e74d2bf4a9b7bf71b7d",
+        "request_digest": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f"
+      }
+    },
+    {
+      "name": "pending-key-must-be-file-id",
+      "schema": "Branch",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "not-a-file": "ver_00000000000000000000000000000001"
+        }
+      }
+    },
+    {
+      "name": "pending-value-must-be-version-id",
+      "schema": "Branch",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "not-a-version"
+        }
+      }
+    },
+    {
+      "name": "pending-map-cannot-be-null",
+      "schema": "Branch",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": null
+      }
+    },
+    {
+      "name": "pending-map-must-match-file-scope",
+      "schema": "Branch",
+      "layer": "semantic",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000002": "ver_00000000000000000000000000000002"
+        }
+      }
+    },
+    {
+      "name": "inherited-view-source-must-match-record",
+      "schema": "FileBranchView",
+      "layer": "semantic",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001"
+        },
+        "version_id": "ver_00000000000000000000000000000001",
+        "source_version_id": "ver_00000000000000000000000000000002",
+        "materialized": false,
+        "content_state": "PENDING",
+        "current": true,
+        "own_version_id": null,
+        "inherited": true,
+        "visible_content_state": "AVAILABLE"
+      }
+    },
+    {
+      "name": "inherited-view-cannot-claim-parent-as-own",
+      "schema": "FileBranchView",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001"
+        },
+        "version_id": "ver_00000000000000000000000000000001",
+        "source_version_id": "ver_00000000000000000000000000000001",
+        "materialized": false,
+        "content_state": "PENDING",
+        "current": true,
+        "own_version_id": "ver_00000000000000000000000000000001",
+        "inherited": true,
+        "visible_content_state": "AVAILABLE"
+      }
+    },
+    {
+      "name": "snapshot-pending-key-must-be-file-id",
+      "schema": "Commit",
+      "layer": "schema",
+      "value": {
+        "commit_id": "commit_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "kind": "file_branch_pending",
+        "parent_commit_ids": [
+          "commit_00000000000000000000000000000001"
+        ],
+        "tree_id": "tree_00000000000000000000000000000001",
+        "sequence": "2",
+        "operation_id": "op_00000000000000000000000000000001",
+        "author": "alice",
+        "message": "legacy snapshot",
+        "entries": [
+          {
+            "entry_id": "entry_00000000000000000000000000000001",
+            "path": "a.txt",
+            "name": "a.txt",
+            "lookup_key": "a.txt",
+            "kind": "file",
+            "file_id": "file_00000000000000000000000000000001",
+            "version_id": "ver_00000000000000000000000000000001",
+            "size": "3"
+          }
+        ],
+        "provenance": null,
+        "pending_file_versions": {
+          "bad": "ver_00000000000000000000000000000001"
+        }
+      }
+    },
+    {
+      "name": "snapshot-pending-source-must-match-entry",
+      "schema": "Commit",
+      "layer": "semantic",
+      "value": {
+        "commit_id": "commit_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "kind": "file_branch_pending",
+        "parent_commit_ids": [
+          "commit_00000000000000000000000000000001"
+        ],
+        "tree_id": "tree_00000000000000000000000000000001",
+        "sequence": "2",
+        "operation_id": "op_00000000000000000000000000000001",
+        "author": "alice",
+        "message": "legacy snapshot",
+        "entries": [
+          {
+            "entry_id": "entry_00000000000000000000000000000001",
+            "path": "a.txt",
+            "name": "a.txt",
+            "lookup_key": "a.txt",
+            "kind": "file",
+            "file_id": "file_00000000000000000000000000000001",
+            "version_id": "ver_00000000000000000000000000000001",
+            "size": "3"
+          }
+        ],
+        "provenance": null,
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000002"
+        }
+      }
+    },
+    {
+      "name": "snapshot-pending-file-must-be-in-entries",
+      "schema": "Commit",
+      "layer": "semantic",
+      "value": {
+        "commit_id": "commit_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "kind": "file_branch_pending",
+        "parent_commit_ids": [
+          "commit_00000000000000000000000000000001"
+        ],
+        "tree_id": "tree_00000000000000000000000000000001",
+        "sequence": "2",
+        "operation_id": "op_00000000000000000000000000000001",
+        "author": "alice",
+        "message": "legacy snapshot",
+        "entries": [
+          {
+            "entry_id": "entry_00000000000000000000000000000001",
+            "path": "a.txt",
+            "name": "a.txt",
+            "lookup_key": "a.txt",
+            "kind": "file",
+            "file_id": "file_00000000000000000000000000000001",
+            "version_id": "ver_00000000000000000000000000000001",
+            "size": "3"
+          }
+        ],
+        "provenance": null,
+        "pending_file_versions": {
+          "file_00000000000000000000000000000002": "ver_00000000000000000000000000000001"
+        }
+      }
+    },
+    {
+      "name": "snapshot-persistent-entry-cannot-be-empty-version",
+      "schema": "Commit",
+      "layer": "semantic",
+      "value": {
+        "commit_id": "commit_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "kind": "file_branch_pending",
+        "parent_commit_ids": [
+          "commit_00000000000000000000000000000001"
+        ],
+        "tree_id": "tree_00000000000000000000000000000001",
+        "sequence": "2",
+        "operation_id": "op_00000000000000000000000000000001",
+        "author": "alice",
+        "message": "legacy snapshot",
+        "entries": [
+          {
+            "entry_id": "entry_00000000000000000000000000000001",
+            "path": "a.txt",
+            "name": "a.txt",
+            "lookup_key": "a.txt",
+            "kind": "file",
+            "file_id": "file_00000000000000000000000000000001",
+            "version_id": "",
+            "size": "3"
+          }
+        ],
+        "provenance": null,
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001"
+        }
+      }
+    },
+    {
+      "name": "inherited-visible-version-must-match-parent",
+      "schema": "FileBranchView",
+      "layer": "semantic",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001"
+        },
+        "version_id": "ver_00000000000000000000000000000009",
+        "source_version_id": "ver_00000000000000000000000000000001",
+        "materialized": false,
+        "content_state": "PENDING",
+        "current": true,
+        "own_version_id": null,
+        "inherited": true,
+        "visible_content_state": "AVAILABLE"
+      }
+    },
+    {
+      "name": "owned-version-must-match-visible-version",
+      "schema": "FileBranchView",
+      "layer": "semantic",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "version_id": "ver_00000000000000000000000000000003",
+        "source_version_id": null,
+        "materialized": true,
+        "content_state": "AVAILABLE",
+        "current": true,
+        "own_version_id": "ver_00000000000000000000000000000009",
+        "inherited": false,
+        "visible_content_state": "AVAILABLE"
+      }
+    },
+    {
+      "name": "inherited-view-cannot-use-null-visible-version",
+      "schema": "FileBranchView",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "pending_file_versions": {
+          "file_00000000000000000000000000000001": "ver_00000000000000000000000000000001"
+        },
+        "version_id": null,
+        "source_version_id": "ver_00000000000000000000000000000001",
+        "materialized": false,
+        "content_state": "PENDING",
+        "current": true,
+        "own_version_id": null,
+        "inherited": true,
+        "visible_content_state": "AVAILABLE"
+      }
+    },
+    {
+      "name": "materialized-view-cannot-remain-inherited",
+      "schema": "FileBranchView",
+      "layer": "schema",
+      "value": {
+        "branch_id": "br_00000000000000000000000000000002",
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "name": "待写入",
+        "head_commit_id": "commit_00000000000000000000000000000001",
+        "fork_commit_id": "commit_00000000000000000000000000000001",
+        "branch_kind": "file",
+        "generation": "1",
+        "state": "active",
+        "file_id": "file_00000000000000000000000000000001",
+        "version_id": "ver_00000000000000000000000000000003",
+        "source_version_id": null,
+        "materialized": true,
+        "content_state": "AVAILABLE",
+        "current": true,
+        "own_version_id": "ver_00000000000000000000000000000003",
+        "inherited": true,
+        "visible_content_state": "AVAILABLE"
+      }
+    }
+  ],
+  "canonical": [
+    {
+      "name": "version-jcs",
+      "value": {
+        "format_version": 2,
+        "history_tree_id": "history_00000000000000000000000000000001",
+        "version_id": "ver_00000000000000000000000000000001",
+        "file_id": "file_00000000000000000000000000000001",
+        "creation_primary_slot_id": "P01",
+        "logical_size": "3",
+        "version_sequence": "1",
+        "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+        "checksum_chunk_bytes": 262144,
+        "checksum_manifest_hash": "da98550ac023517eadc8f5c2f8f8e7df071948d1e93817a1e2705330f28ed279",
+        "creation_name": "报告.txt",
+        "source_version_ids": [],
+        "created_as_full_checkpoint": false
+      },
+      "prefix_hex": "7863733a76657273696f6e3a763200",
+      "canonical_utf8_hex": "7b22636865636b73756d5f6368756e6b5f6279746573223a3236323134342c22636865636b73756d5f6d616e69666573745f68617368223a2264613938353530616330323335313765616463386635633266386638653764663037313934386431653933383137613165323730353333306632386564323739222c22636f6e74656e745f68617368223a2236343337623361633338343635313333666662363362373532373361386462353438633535383436356437396462303366643335396336636435626439643835222c22637265617465645f61735f66756c6c5f636865636b706f696e74223a66616c73652c226372656174696f6e5f6e616d65223a22e68aa5e5918a2e747874222c226372656174696f6e5f7072696d6172795f736c6f745f6964223a22503031222c2266696c655f6964223a2266696c655f3030303030303030303030303030303030303030303030303030303030303031222c22666f726d61745f76657273696f6e223a322c22686973746f72795f747265655f6964223a22686973746f72795f3030303030303030303030303030303030303030303030303030303030303031222c226c6f676963616c5f73697a65223a2233222c22736f757263655f76657273696f6e5f696473223a5b5d2c2276657273696f6e5f6964223a227665725f3030303030303030303030303030303030303030303030303030303030303031222c2276657273696f6e5f73657175656e6365223a2231227d",
+      "blake3": "0dfa2265c89ec5f6310c12b6abf6ceaa30425e6bf68bf776b85d2c59a995e490"
+    },
+    {
+      "name": "request-jcs",
+      "value": {
+        "method": "POST",
+        "route": "/v1/workspaces/{workspace}/commit",
+        "path_parameters": {
+          "workspace": "ws_00000000000000000000000000000001"
+        },
+        "query": {},
+        "body": {
+          "operation_id": "op_00000000000000000000000000000001",
+          "workspace_id": "ws_00000000000000000000000000000001",
+          "repository_id": "repo_00000000000000000000000000000001",
+          "branch_id": "br_00000000000000000000000000000001",
+          "expected_head": "commit_00000000000000000000000000000001",
+          "fencing_token": "1",
+          "message": "保存报告",
+          "requested_protection": "strict",
+          "file_placement": {
+            "entry_00000000000000000000000000000001": {
+              "primary_slot_id": "P01",
+              "target_copies": 1
+            }
+          },
+          "expected_topology_generation": "1",
+          "sealed_manifest_hash": "5ad98e350184ff09100068667be7528497fdbd198fcd0e74d2bf4a9b7bf71b7d"
+        }
+      },
+      "prefix_hex": "7863733a726571756573743a763200",
+      "canonical_utf8_hex": "7b22626f6479223a7b226272616e63685f6964223a2262725f3030303030303030303030303030303030303030303030303030303030303031222c2265787065637465645f68656164223a22636f6d6d69745f3030303030303030303030303030303030303030303030303030303030303031222c2265787065637465645f746f706f6c6f67795f67656e65726174696f6e223a2231222c2266656e63696e675f746f6b656e223a2231222c2266696c655f706c6163656d656e74223a7b22656e7472795f3030303030303030303030303030303030303030303030303030303030303031223a7b227072696d6172795f736c6f745f6964223a22503031222c227461726765745f636f70696573223a317d7d2c226d657373616765223a22e4bf9de5ad98e68aa5e5918a222c226f7065726174696f6e5f6964223a226f705f3030303030303030303030303030303030303030303030303030303030303031222c227265706f7369746f72795f6964223a227265706f5f3030303030303030303030303030303030303030303030303030303030303031222c227265717565737465645f70726f74656374696f6e223a22737472696374222c227365616c65645f6d616e69666573745f68617368223a2235616439386533353031383466663039313030303638363637626537353238343937666462643139386663643065373464326266346139623762663731623764222c22776f726b73706163655f6964223a2277735f3030303030303030303030303030303030303030303030303030303030303031227d2c226d6574686f64223a22504f5354222c22706174685f706172616d6574657273223a7b22776f726b7370616365223a2277735f3030303030303030303030303030303030303030303030303030303030303031227d2c227175657279223a7b7d2c22726f757465223a222f76312f776f726b7370616365732f7b776f726b73706163657d2f636f6d6d6974227d",
+      "blake3": "ee0784b7d876e39b2587c82fc458130d28d61821af85b6cedd67bca9748e835f"
+    },
+    {
+      "name": "utf16-key-order",
+      "value": {
+        "": "bmp",
+        "😀": "astral",
+        "size": "18446744073709551615"
+      },
+      "prefix_hex": "7863733a766563746f723a763200",
+      "canonical_utf8_hex": "7b2273697a65223a223138343436373434303733373039353531363135222c22f09f9880223a2261737472616c222c22ee8080223a22626d70227d",
+      "blake3": "a7e9033ba6840eb88ddbe53b5d21a06acd72c6c185aff3c8d388ca4a8002fad8"
+    }
+  ],
+  "binary": [
+    {
+      "name": "abc",
+      "content_hex": "616263",
+      "content_hash": "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+      "manifest_hex": "58435343484b32000200010000000400030000000000000001000000000000006437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85",
+      "manifest_hash": "da98550ac023517eadc8f5c2f8f8e7df071948d1e93817a1e2705330f28ed279"
+    },
+    {
+      "name": "empty",
+      "content_hex": "",
+      "content_hash": "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+      "manifest_hex": "58435343484b3200020001000000040000000000000000000000000000000000",
+      "manifest_hash": "fdd39b8e242ffe86b946903a27bbfe1eff48d6cec9f74876b30bfb4a38fbad2a"
+    }
+  ],
+  "strict_json_negative": [
+    {
+      "name": "duplicate-field",
+      "text": "{\"a\":1,\"a\":2}"
+    },
+    {
+      "name": "lone-surrogate",
+      "text": "{\"a\":\"\\ud800\"}"
+    },
+    {
+      "name": "float-disallowed",
+      "text": "{\"a\":1.5}"
+    },
+    {
+      "name": "nan-disallowed",
+      "text": "{\"a\":NaN}"
+    },
+    {
+      "name": "bom-disallowed",
+      "text": "﻿{\"a\":1}"
+    }
+  ]
+}

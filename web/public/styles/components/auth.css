@@ -1,0 +1,122 @@
+/* Authentication keeps its established physical sizes and six-row layout.
+ * Business geometry in geometry.css never targets this shell. */
+.xcs-auth-shell { display: grid; place-items: center; min-height: 100dvh; padding: 1rem; box-sizing: border-box; color: var(--xcs-text-primary,#18181b); background: var(--xcs-bg-page,#fafafa); font-family: var(--xcs-font-ui,monospace); line-height: var(--xcs-line-height-body,1.5); --xcs-contour-control: 27px; --xcs-contour-panel: 42px; --xcs-contour-notification: 48px; --xcs-contour-dialog: 54px; }
+.xcs-auth-language { position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; }
+.xcs-auth-content { display: grid; justify-items: center; gap: 1rem; width: min(28rem,100%); }
+.xcs-auth-card { width: min(28rem,100%); padding: 1.5rem; box-sizing: border-box; background: var(--xcs-bg-panel,#fff); border: 1px solid currentColor; border-radius: 0; --xcs-contour-extent: var(--xcs-contour-notification); }
+.xcs-auth-shell :is(.xcs-button,.xcs-input) { --xcs-contour-extent: var(--xcs-contour-control); }
+html:not([data-xcs-appearance]), html[data-xcs-appearance="content-blocks"] {
+  /* The existing semantic labels, inputs and submit handler remain untouched.
+   * Grid places their children in the original six rows, including the error row. */
+  .xcs-auth-shell { padding: 24px; font-size: 1rem; }
+  .xcs-auth-card { width: min(380px, 100%); border: 0; border-radius: 0; }
+  .xcs-login-controls { display: flex; align-items: center; gap: 8px; }
+  .xcs-login-controls > button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 8px; line-height: 1; }
+  .xcs-login-controls svg { width: var(--xcs-header-icon-size, 1em); height: var(--xcs-header-icon-size, 1em); }
+  &[data-xcs-theme="light"] :is(.xcs-auth-card, .xcs-login-controls) {
+    --xcs-text-primary: #000;
+    --xcs-text-link: #000;
+    --xcs-action-primary: #000;
+    --xcs-block-muted: #000;
+    color: var(--xcs-text-primary);
+  }
+
+  .xcs-auth-card:has(> form) {
+    position: relative;
+    container-type: inline-size;
+    aspect-ratio: 3 / 2;
+    min-height: 18rem;
+    padding: 0;
+    border-radius: 0;
+  }
+  .xcs-auth-card:has(> form .xcs-error) { aspect-ratio: auto; height: auto; }
+  .xcs-auth-card:has(> form) > .xcs-product-identity,
+  .xcs-auth-card > form > h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .xcs-auth-card > form {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(44px, auto) auto minmax(44px, auto) minmax(1.5em, auto) minmax(44px, auto);
+    padding: 1rem 1.5rem;
+    font-size: max(1rem, calc(100cqw / 18));
+    font-weight: 400;
+    line-height: 1.5;
+  }
+  .xcs-auth-card > form :is(label, span, input, button) { font: inherit; }
+  .xcs-auth-card .xcs-form-field { display: contents; }
+  .xcs-auth-card .xcs-form-field > span { display: flex; align-items: center; gap: 1ch; color: var(--xcs-block-muted); }
+  .xcs-auth-card .xcs-form-field:has([name="username"]) > span { grid-row: 1; }
+  .xcs-auth-card [name="username"] { grid-row: 2; }
+  .xcs-auth-card .xcs-form-field:has([name="password"]) > span { grid-row: 3; }
+  .xcs-auth-card [name="password"] { grid-row: 4; }
+  .xcs-auth-card .xcs-input {
+    align-self: center;
+    min-height: 44px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+  }
+  .xcs-auth-card .xcs-input:focus { border-bottom-color: var(--xcs-focus); outline: 0; }
+  .xcs-auth-card .xcs-error {
+    grid-row: 5;
+    align-self: stretch;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+    overflow: auto;
+  }
+  .xcs-auth-card .xcs-error .xcs-request-id { font-size: inherit; }
+  .xcs-auth-card > form > button {
+    grid-row: 6;
+    justify-self: start;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 1ch;
+    padding: 0;
+    min-height: 44px;
+    height: 100%;
+    border-radius: 0;
+    font-size: inherit;
+  }
+  @media (max-width: 26rem), (max-height: 30rem) {
+    .xcs-auth-shell { padding: 1rem; }
+    .xcs-auth-card:has(> form) { aspect-ratio: auto; min-height: 0; }
+    .xcs-auth-card > form { padding: 1rem 1.25rem; }
+  }
+  .xcs-auth-card .xcs-form-field > span::before,
+  .xcs-auth-card > form > button::before {
+    content: "";
+    width: 1em;
+    height: 1em;
+    flex: 0 0 1em;
+    background: currentColor;
+    mask: var(--xcs-block-icon) center / contain no-repeat;
+  }
+  .xcs-auth-card .xcs-form-field:has([name="username"]) > span {
+    --xcs-block-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.4'%3E%3Crect x='1' y='1' width='22' height='22' rx='5'/%3E%3Ccircle cx='12' cy='9' r='3'/%3E%3Cpath d='M6 19v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2'/%3E%3C/svg%3E");
+  }
+  .xcs-auth-card .xcs-form-field:has([name="password"]) > span {
+    --xcs-block-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.4'%3E%3Crect x='1' y='1' width='22' height='22' rx='5'/%3E%3Crect x='6' y='11' width='12' height='8' rx='1'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E");
+  }
+  .xcs-auth-card > form > button {
+    --xcs-block-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.4'%3E%3Crect x='1' y='1' width='22' height='22' rx='5'/%3E%3Cpath d='M13 6h5v12h-5M4 12h10m-4-4 4 4-4 4'/%3E%3C/svg%3E");
+  }
+  .xcs-auth-shell :is(h1, h2, h3, p, label, span, input, button, strong, small, code, .xcs-error, .xcs-request-id) { font-size: inherit; }
+
+
+  .xcs-auth-card:is([data-xcs-contour-state="clip"], [data-xcs-contour-state="paint"]) > form { padding-inline: max(calc(5.5556% - 100cqh / 24), var(--xcs-contour-text-inset, 26px)); }
+  .xcs-auth-card .xcs-input, .xcs-auth-card .xcs-error, .xcs-auth-card > form > button { --xcs-contour-extent: 0px; }
+  @media (forced-colors: active) { .xcs-auth-card { border: 1px solid CanvasText; } .xcs-auth-card .xcs-input { border-bottom-color: ButtonText; } }
+}

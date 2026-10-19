@@ -1,0 +1,18 @@
+:root[data-xcs-theme="dark"] {
+  --xcs-bg-page: #09090b;
+  --xcs-bg-panel: #18181b;
+  --xcs-text-primary: #fafafa;
+  --xcs-text-danger: #f87171;
+  --xcs-text-link: #60a5fa;
+}
+
+/* Native documents follow the system preference unless the application has selected a theme. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-xcs-theme]) {
+    --xcs-bg-page: #09090b;
+    --xcs-bg-panel: #18181b;
+    --xcs-text-primary: #fafafa;
+    --xcs-text-danger: #f87171;
+    --xcs-text-link: #60a5fa;
+  }
+}

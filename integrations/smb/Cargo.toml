@@ -1,0 +1,24 @@
+[package]
+name = "xcs-smb"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+description = "XCS local Samba bridge protocol and file descriptor transport"
+
+[workspace]
+members = ["vfs"]
+resolver = "2"
+
+[dependencies]
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+xcs-contract = { path = "../../crates/xcs-contract" }
+
+[profile.dev]
+debug = 0
+incremental = false
+
+[profile.test]
+debug = 0
+incremental = false

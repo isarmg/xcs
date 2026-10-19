@@ -1,0 +1,50 @@
+/* Demo layout only. Row sizes, inputs, palettes and Apple G4 contours come
+ * from the shared Web runtime; no separate copy of the geometry tokens. */
+.xcs-demo { --xcs-demo-node-width: 306px; }
+.xcs-demo .xcs-demo-nav { padding-inline: var(--xcs-content-spacing); border-bottom: 1px solid var(--xcs-block-border); }
+.xcs-demo a { color: inherit; text-underline-offset: .25em; }
+.xcs-demo-nav a { text-decoration: none; }
+.xcs-demo [aria-current="page"] { text-decoration: underline; }
+.xcs-demo-main { padding: 0 var(--xcs-content-spacing) var(--xcs-content-spacing); }
+.xcs-demo .xcs-demo-controls { display: grid; grid-template-columns: minmax(180px,1fr) minmax(180px,1fr) auto; align-items: end; }
+.xcs-demo-process-toolbar > .xcs-select { flex: 0 1 420px; }
+.xcs-demo .xcs-demo-steps { display: flex; flex-wrap: wrap; padding: 0; }
+.xcs-demo .xcs-demo-steps [aria-pressed="true"] { color: var(--xcs-text-primary); text-decoration: underline; text-underline-offset: .25em; }
+.xcs-demo .xcs-demo-field { display: grid; grid-template-columns: minmax(10rem, 1fr) minmax(0,3fr); align-items: center; }
+.xcs-demo .xcs-demo-operation { padding: 0; }
+.xcs-demo-operation > .xcs-select { max-width: 44rem; }
+.xcs-demo .xcs-demo-command-buttons { justify-content: end; }
+.xcs-demo .xcs-demo-merge-choices { margin: 0; padding: 0; border: 0; display: flex; flex-wrap: wrap; }
+.xcs-demo-merge-choices input { margin-inline-end: .5em; }
+.xcs-demo-file-row { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr); align-items: stretch; width: 100%; margin: 0; padding: 0; border: 0; border-bottom: 1px solid var(--xcs-block-border); background: transparent; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.xcs-demo-file-row:last-child { border-bottom: 0; }
+.xcs-demo-file-heading { color: var(--xcs-block-muted); cursor: default; }
+.xcs-demo-file-row:not(.xcs-demo-file-heading):hover { background: var(--xcs-bg-page); }
+.xcs-demo-file-row[aria-pressed="true"] > :first-child { text-decoration: underline; text-underline-offset: .25em; }
+.xcs-demo .xcs-demo-file-row > .xcs-row { display: flex; align-items: center; gap: .5em; }
+.xcs-demo-icon { width: 1em; height: 1em; flex-shrink: 0; }
+.xcs-demo-trees { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); column-gap: var(--xcs-block-gap); }
+.xcs-demo .xcs-demo-canvas { overflow: auto; max-height: 640px; overscroll-behavior: contain; }
+.xcs-demo-graph { display: block; max-width: none; color: var(--xcs-block-muted); }
+.xcs-demo-edge { stroke: currentColor; stroke-width: 1.5; fill: none; }
+.xcs-demo .xcs-demo-node { display: grid; grid-template-rows: repeat(3,var(--xcs-compact-row-height)); width: 100%; height: 100%; text-align: start; cursor: pointer; color: var(--xcs-text-primary); font: inherit; }
+.xcs-demo .xcs-demo-node .xcs-row { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-block: 0; line-height: var(--xcs-compact-row-height); }
+.xcs-demo .xcs-demo-node[data-new="true"] { background: #e4f3e9; border-color: #47926a; }
+.xcs-demo .xcs-demo-node[aria-pressed="true"] { border-color: #4879b4; }
+.xcs-demo [data-new="true"] { animation: xcs-demo-arrive .28s ease-out; }
+.xcs-demo-log { margin-block-start: var(--xcs-block-gap); }
+html[data-xcs-theme="dark"] .xcs-demo .xcs-demo-node[data-new="true"] { background: #193d2d; }
+@keyframes xcs-demo-arrive { from { opacity: .35; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .xcs-demo [data-new="true"] { animation: none; } }
+@media (max-width: 1100px) {
+  .xcs-demo-trees { grid-template-columns: minmax(0,1fr); }
+  .xcs-demo .xcs-demo-controls { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .xcs-demo-command-buttons { grid-column: 1 / -1; }
+}
+@media (max-width: 540px) {
+  .xcs-demo .xcs-demo-controls { grid-template-columns: minmax(0,1fr); }
+  .xcs-demo .xcs-demo-command-buttons { justify-content: start; }
+  .xcs-demo .xcs-demo-field { grid-template-columns: minmax(0,1fr); }
+  .xcs-demo-file-row { grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); }
+  .xcs-demo-file-row > :last-child { display: none; }
+}

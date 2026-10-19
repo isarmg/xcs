@@ -1,0 +1,37 @@
+:where(button,input,select,textarea) { font: inherit; }
+:where(button,[href],input,select,textarea,[tabindex]):focus-visible { outline: 3px solid var(--xcs-focus,#2563eb); outline-offset: 3px; }
+:root :is(input,select,textarea,[role=combobox]):focus { outline: 0; }
+.xcs-button,.xcs-input { min-height: 44px; border: 1px solid currentColor; border-radius: 0; padding: .5rem .8rem; color: inherit; background: var(--xcs-bg-panel,#fff); }
+.xcs-button { cursor: pointer; touch-action: manipulation; }
+.xcs-button:disabled { opacity: .6; cursor: not-allowed; }
+.xcs-danger,.xcs-error { color: var(--xcs-text-danger,#b91c1c); }
+.xcs-input { width: 100%; box-sizing: border-box; }
+.xcs-form-field { display: grid; gap: .4rem; margin-block: 1rem; }
+.xcs-dialog { width: min(36rem,calc(100% - 3rem)); max-height: calc(100dvh - 3rem); overflow: auto; padding: 1rem; border: 0; border-radius: 0; color: var(--xcs-text-primary,#18181b); background: var(--xcs-bg-panel,#fff); --xcs-contour-extent: var(--xcs-contour-dialog); }
+.xcs-dialog::backdrop { background: rgb(0 0 0 / .6); }
+.xcs-dialog-heading { justify-content: space-between; }
+.xcs-dialog-heading h2 { margin: 0; }
+.xcs-actions { justify-content: flex-end; }
+.xcs-table-scroll { max-width: 100%; overflow: auto; }
+.xcs-table { width: 100%; border-collapse: collapse; }
+.xcs-error,.xcs-empty,.xcs-loading { padding: 1rem; overflow-wrap: anywhere; }
+.xcs-error { border: 1px solid currentColor; border-radius: 0; }
+.xcs-request-id { font-size: inherit; overflow-wrap: anywhere; }
+.xcs-request-id code { font-family: var(--xcs-font-mono,monospace); user-select: all; }
+.xcs-toast-stack { margin: 1rem; display: grid; gap: var(--xcs-block-gap); min-width: 0; }
+.xcs-toast { justify-content: space-between; border: 0; border-radius: 0; background: var(--xcs-bg-panel,#fff); overflow-wrap: anywhere; --xcs-contour-extent: var(--xcs-contour-notification); }
+.xcs-app-shell { min-height: 100dvh; color: var(--xcs-text-primary,#18181b); background: var(--xcs-bg-page,#fafafa); font-family: var(--xcs-font-ui,monospace); font-size: var(--xcs-compact-font-size); line-height: var(--xcs-line-height-body,1.5); }
+.xcs-app-shell small { font-size: inherit; }
+.xcs-status { color: var(--xcs-block-muted); }
+.xcs-inline-feedback > .xcs-error { flex: 1 1 0; }
+.xcs-application-boot { display: grid; place-items: center; min-height: 100dvh; color: var(--xcs-text-primary,#18181b); background: var(--xcs-bg-page,#fafafa); }
+.xcs-application-boot::after { content: ""; width: 1.25rem; height: 1.25rem; border: .15rem solid currentColor; border-inline-end-color: transparent; border-radius: 50%; animation: xcs-application-boot-spin .8s linear infinite; }
+@keyframes xcs-application-boot-spin { to { transform: rotate(360deg); } }
+.xcs-page-header { padding: 0 var(--xcs-content-spacing,var(--xcs-space-4,16px)); }
+.xcs-product-identity { display: flex; align-items: center; margin: 0; white-space: nowrap; }
+.xcs-shell-layout { display: grid; grid-template-columns: minmax(0,1fr); }
+.xcs-shell-main { padding: var(--xcs-content-spacing,var(--xcs-space-4,16px)); padding-block-start: 0; min-width: 0; }
+.xcs-skip-link { position: absolute; top: -10rem; inset-inline-start: 1rem; z-index: 30; padding: 1rem; background: var(--xcs-bg-panel,#fff); color: inherit; }
+.xcs-skip-link:focus { top: .5rem; }
+@media(forced-colors:active) { :where(button,[href],input,select,textarea,[tabindex]):focus-visible { outline-color: Highlight; } .xcs-button:disabled { color: GrayText; opacity: 1; } .xcs-app-shell .xcs-frame { border-color: CanvasText; } }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important;transition-duration:.001ms!important;animation-duration:.001ms!important; } }

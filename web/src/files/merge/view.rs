@@ -1,0 +1,138 @@
+use super::*;
+use xcs_web::components::{Select, SelectOption};
+pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
+    let open = Memo::new(move |_| state.with(|s| s.files.merge.is_some()));
+    let branches = Memo::new(move |_| {
+        state.with(|s| {
+            s.files
+                .merge
+                .as_ref()
+                .map(|draft| draft.branches.clone())
+                .unwrap_or_default()
+        })
+    });
+    let disabled = Signal::derive(move || state.with(|s| !s.files.writable || actions::pending(s)));
+    let result_options = Signal::derive(move || {
+        state.with(|s| {
+            s.files
+                .merge
+                .as_ref()
+                .map(|draft| {
+                    draft
+                        .nodes
+                        .iter()
+                        .enumerate()
+                        .map(|(index, node)| {
+                            SelectOption::new(history_node_id(node), node_label(node, index))
+                        })
+                        .collect()
+                })
+                .unwrap_or_default()
+        })
+    });
+    let survivor_options = Signal::derive(move || {
+        state.with(|s| {
+            s.files
+                .merge
+                .as_ref()
+                .map(|draft| {
+                    draft
+                        .branches
+                        .iter()
+                        .filter(|branch| draft.selected.contains(&branch_id(branch)))
+                        .map(|branch| SelectOption::new(branch_id(branch), text(branch, &["name"])))
+                        .collect()
+                })
+                .unwrap_or_default()
+        })
+    });
+    let result = Signal::derive(move || {
+        state.with(|s| {
+            s.files
+                .merge
+                .as_ref()
+                .map(|draft| draft.chosen.clone())
+                .unwrap_or_default()
+        })
+    });
+    let survivor = Signal::derive(move || {
+        state.with(|s| {
+            s.files
+                .merge
+                .as_ref()
+                .map(|draft| draft.survivor.clone())
+                .unwrap_or_default()
+        })
+    });
+    view! {<Show when=move ||open.get()><section class="xcs-frame xcs-stack xcs-merge-review" aria-label=t("合并文件分支","Merge file branches")>
+        <div class="xcs-file-toolbar xcs-flow"><h3 class="xcs-row">{t("合并文件分支","Merge file branches")}</h3><button class="xcs-button" disabled=move ||disabled.get() on:click=move |_|{state.update(|s|s.files.merge=None);review::reset(state,review::Kind::Merge);}>{t("取消","Cancel")}</button></div>
+        <p class="xcs-row">{t("选择参与分支和结果节点，再明确选择保留分支。其他分支保持原样，正文直接复用。","Select input branches and a result node, then explicitly choose the surviving branch. Other branches stay unchanged and content is reused.")}</p>
+        <fieldset class="xcs-review-choices"><legend class="xcs-row">{t("参与分支","Input branches")}</legend>{move ||branches.get().into_iter().map(move |branch|{let id=branch_id(&branch);let checked_id=id.clone();view!{<label class="xcs-batch-check xcs-row"><input type="checkbox" disabled=move ||disabled.get() prop:checked=move ||state.with(|s|s.files.merge.as_ref().is_some_and(|draft|draft.selected.contains(&checked_id))) on:change=move |event|{let checked=event_target_checked(&event);update(state,|draft|{if checked{draft.selected.insert(id.clone());}else{draft.selected.remove(&id);if draft.survivor==id{draft.survivor.clear();}}});}/><span>{text(&branch,&["name"])}</span></label>}}).collect_view()}</fieldset>
+        <div class="xcs-file-toolbar xcs-flow"><Select label=t("结果节点（可选此文件任一节点）","Result node (any node of this file)") options=result_options value=result disabled=disabled on_change=Callback::new(move |value:String|update(state,|draft|draft.chosen=value))/><Select label=t("合并后保留的分支","Surviving branch") options=survivor_options value=survivor disabled=disabled on_change=Callback::new(move |value:String|update(state,|draft|draft.survivor=value))/></div>
+        <p class="xcs-row xcs-inline-error" role="status">{move ||state.with(|s|review::error_text(s,review::Kind::Merge))}</p>
+        <button class="xcs-button" disabled=move ||disabled.get() on:click=move |_|submit(state)>{t("确认合并所选分支","Confirm merge of selected branches")}</button>
+    </section></Show>}
+}
+
+/// The acyclic tree may deliberately omit an edge when reusing an ancestor.
+/// Preserve all inputs in a separate provenance list instead of inventing
+/// another content node or hiding the source branch history.
+pub(crate) fn history(state: RwSignal<State>) -> impl IntoView {
+    let records = Memo::new(move |_| {
+        state.with(|s| {
+            let history = &s.files.file_history;
+            history["merges"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|record| {
+                    let branch_name = |id: &str| {
+                        history["branches"]
+                            .as_array()
+                            .into_iter()
+                            .flatten()
+                            .find(|branch| branch["branch_id"] == id)
+                            .map(|branch| text(branch, &["name"]))
+                            .filter(|name| !name.is_empty())
+                            .unwrap_or_else(|| t("历史分支", "Historical branch"))
+                    };
+                    let node_name = |id: &str| {
+                        history_nodes(history)
+                            .iter()
+                            .enumerate()
+                            .find(|(_, node)| history_node_id(node) == id)
+                            .map(|(index, node)| node_label(node, index))
+                            .unwrap_or_else(|| t("历史节点", "Historical node"))
+                    };
+                    let inputs = record["input_branch_ids"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .enumerate()
+                        .map(|(index, id)| {
+                            let node = record["input_node_ids"][index].as_str().unwrap_or_default();
+                            format!(
+                                "{} ({})",
+                                branch_name(id.as_str().unwrap_or_default()),
+                                node_name(node)
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join(" / ");
+                    let survivor =
+                        branch_name(record["surviving_branch_id"].as_str().unwrap_or_default());
+                    let chosen = node_name(record["chosen_node_id"].as_str().unwrap_or_default());
+                    let result = node_name(record["result_node_id"].as_str().unwrap_or_default());
+                    (
+                        inputs,
+                        survivor,
+                        chosen,
+                        result,
+                        record["reused_node"] == true,
+                    )
+                })
+                .collect::<Vec<_>>()
+        })
+    });
+    view! {<Show when=move ||!records.get().is_empty()><section class="xcs-merge-history xcs-stack" aria-label=t("合并来源记录","Merge provenance")><h3 class="xcs-row">{t("合并来源记录","Merge provenance")}</h3>{move ||records.get().into_iter().map(|(inputs,survivor,chosen,result,reused)|view!{<div class="xcs-frame xcs-stack"><p class="xcs-row">{format!("{}: {inputs}",t("参与分支及依据节点","Input branches and base nodes"))}</p><p class="xcs-row">{format!("{}: {chosen} → {result}",t("选定内容及结果","Chosen content and result"))}</p><p class="xcs-row">{format!("{}: {survivor} · {}",t("保留分支","Surviving branch"),if reused{t("复用已有节点；所有来源在此保留，树只显示无环连线。","Reused an existing node; all sources are recorded here and the tree shows only acyclic edges.")}else{t("新建合并节点，正文与标签采用所选内容。","Added a merge node using the chosen content and tags.")})}</p></div>}).collect_view()}</section></Show>}
+}

@@ -1,0 +1,27 @@
+.xcs-monitor-range { flex: 0 0 8rem; min-width: 0; max-width: 100%; }
+.xcs-monitor-range .xcs-select-label { position: absolute; width: 1px; height: 1px; min-height: 0; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* Keep four equal slots even when the final row contains a single metric. */
+.xcs-metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--xcs-block-gap); min-width: 0; }
+.xcs-metric-card { display: flex; flex-direction: column; align-items: stretch; aspect-ratio: 3 / 2; gap: 0; min-height: 0; }
+.xcs-metric-card :is(h2, h3, p) { margin: 0; font: inherit; }
+.xcs-metric-heading { display: flex; align-items: center; gap: .5em; flex: 0 0 auto; }
+.xcs-metric-title { display: inline-flex; align-items: center; gap: .5em; flex: 1 1 auto; min-width: 0; }
+.xcs-metric-title > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xcs-metric-title > svg { display: block; width: 1em; height: 1em; flex: 0 0 1em; color: var(--xcs-text-link); }
+.xcs-metric-heading > :is(h2, h3) { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xcs-metric-icon, .xcs-metric-heading > svg { display: block; width: 1em; height: 1em; flex: 0 0 1em; color: var(--xcs-text-link); }
+.xcs-metric-icon > svg { display: block; width: 100%; height: 100%; }
+.xcs-metric-current { display: inline-flex; align-items: baseline; justify-content: flex-end; gap: .2em; flex: 0 0 auto; min-width: 0; margin-inline-start: auto; white-space: nowrap; }
+.xcs-metric-card strong { font: inherit; }
+.xcs-metric-unit, .xcs-metric-subtitle, .xcs-metric-card small { color: var(--xcs-block-muted); font-size: inherit; }
+.xcs-metric-subtitle { display: flex; align-items: center; flex: 0 0 auto; max-width: 100%; overflow: hidden; }
+.xcs-metric-subtitle > span { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xcs-metric-chart { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; }
+.xcs-metric-chart > svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-height: none; overflow: visible; font: inherit; }
+.xcs-chart-grid { fill: none; stroke: var(--xcs-block-border); stroke-width: 1; }
+.xcs-chart-line { fill: none; stroke: var(--xcs-text-link); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.xcs-chart-dot { fill: var(--xcs-text-link); stroke: none; }
+.xcs-chart-label { fill: var(--xcs-block-muted); font: inherit; }
+.xcs-chart-empty { display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 100%; min-width: 0; margin: 0; padding: .5em; color: var(--xcs-block-muted); font: inherit; text-align: center; overflow-wrap: anywhere; }
+.xcs-metric-card[data-available=false] { color: var(--xcs-block-muted); }
+@media (max-width: 48rem) { .xcs-metric-grid { grid-template-columns: minmax(0, 1fr); } }

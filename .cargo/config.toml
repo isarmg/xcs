@@ -1,0 +1,6 @@
+[build]
+target-dir = "target/native"
+jobs = 4
+
+[net]
+retry = 2

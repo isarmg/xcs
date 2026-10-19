@@ -1,0 +1,40 @@
+.xcs-select { display: block; min-width: 0; width: 100%; --xcs-select-row-height: var(--xcs-compact-row-height); }
+.xcs-select-label { display: block; color: var(--xcs-block-muted); }
+.xcs-select-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  text-align: start; cursor: pointer; min-width: 0;
+  --xcs-contour-extent: calc(var(--xcs-select-row-height, 36px) / 2);
+  --xcs-contour-mode: clip;
+}
+.xcs-select-trigger.xcs-input { border: var(--xcs-control-border-width) solid var(--xcs-block-border); background: var(--xcs-bg-panel); text-decoration: none; }
+.xcs-select-trigger:disabled { opacity: .6; cursor: not-allowed; }
+:root .xcs-select .xcs-select-trigger:focus-visible { outline: 2px solid var(--xcs-focus, Highlight); outline-offset: 3px; }
+.xcs-select-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xcs-select-trigger .xcs-select-arrow { display: block; flex: none; width: 1em; height: 1em; fill: none; transform-origin: center; }
+.xcs-select-trigger[aria-expanded=true] .xcs-select-arrow { transform: rotate(90deg); }
+.xcs-select-panel {
+  position: fixed; inset: auto; margin: 0; padding: 0; box-sizing: border-box;
+  min-width: 0; max-width: calc(100vw - 16px); overflow: auto; overscroll-behavior: contain;
+  color: var(--xcs-text-primary, #18181b); background: var(--xcs-bg-panel, #fff);
+  border: 1px solid var(--xcs-block-border, currentColor); font: inherit; font-size: var(--xcs-compact-font-size);
+  --xcs-contour-extent: var(--xcs-contour-panel, 18px);
+  --xcs-contour-mode: clip;
+  --xcs-contour-foreground: 1;
+}
+/* Hidden popovers cannot be measured. Reveal a newly opened panel only once
+ * its shared contour and shadow are painted, including the first frame. */
+.xcs-select-panel:popover-open:not([data-xcs-contour-state=clip]):not([data-xcs-contour-reason=forced-colors]) { visibility: hidden; }
+.xcs-select-option {
+  display: block; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  --xcs-contour-extent: 0px;
+}
+.xcs-select-option[data-active=true] { background: var(--xcs-bg-page, #edf2f7); color: var(--xcs-text-primary, #18181b); }
+.xcs-select-option[aria-selected=true] { font-weight: 700; }
+.xcs-select-option[aria-disabled=true] { opacity: .5; cursor: not-allowed; }
+.xcs-select-empty { color: var(--xcs-block-muted); }
+@media (forced-colors: active) {
+  :root .xcs-select .xcs-select-trigger:focus-visible { outline-color: Highlight; }
+  .xcs-select-trigger, .xcs-select-panel { color: ButtonText; background: Canvas; border: 1px solid ButtonText; }
+  .xcs-select-option[data-active=true] { background: Highlight; color: HighlightText; }
+  .xcs-select-option[aria-disabled=true] { color: GrayText; opacity: 1; }
+}

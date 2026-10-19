@@ -1,0 +1,92 @@
+/* File-specific behavior and placement. Shared roles own surface/row geometry. */
+.xcs-breadcrumb { flex: 1; font-size: 1em; overflow-wrap: anywhere; padding: 0; }
+.xcs-breadcrumb > a { color: var(--xcs-text-link); text-decoration: none; }
+.xcs-breadcrumb > a:hover { text-decoration: underline; }
+.xcs-breadcrumb svg { width: 1em; height: 1em; flex: 0 0 1em; fill: none; }
+.xcs-breadcrumb > span { display: inline-flex; align-items: center; min-height: var(--xcs-compact-row-height); padding-inline: .25em; }
+.xcs-file-toolbar :is(.xcs-button,.xcs-inline-input,.xcs-branch-name) { max-width: 100%; }
+.xcs-file-toolbar:has(> .xcs-select) { align-items: flex-end; }
+.xcs-file-toolbar:has(> .xcs-select) > p { flex: 1 1 0; }
+.xcs-inline-note > .xcs-button:disabled { opacity: 1; cursor: default; }
+.xcs-inline-hint { color: var(--xcs-block-muted); }
+.xcs-inline-error,.xcs-branch-error { color: var(--xcs-text-danger); }
+.xcs-inline-edit > .xcs-inline-input,.xcs-inline-branch > .xcs-branch-name { flex: 0 1 16rem; width: min(16rem,100%); }
+.xcs-file-search { display: flex; flex: 0 1 20rem; align-items: center; box-sizing: border-box; min-width: min(14rem,100%); max-width: 100%; margin: 0; padding: 0 var(--xcs-list-content-inset); }
+.xcs-file-search .xcs-input { flex: 1; }
+.xcs-file-list-panel { --xcs-file-row-height: var(--xcs-compact-row-height); --xcs-file-icon-size: 1em; }
+.xcs-file-list-panel .xcs-table-scroll { min-width: 0; width: 100%; margin: 0; padding: 0; border: 0; background: transparent; --xcs-contour-extent: 0px; }
+.xcs-file-table { width: 100%; border-collapse: collapse; text-align: start; }
+.xcs-file-table :is(th,td) { box-sizing: border-box; height: var(--xcs-file-row-height); padding: 0 var(--xcs-list-content-inset); border-block-end: var(--xcs-control-border-width) solid var(--xcs-block-border); font: inherit; font-weight: 400; text-align: inherit; vertical-align: middle; }
+.xcs-file-table th { color: var(--xcs-block-muted); white-space: nowrap; }
+.xcs-file-table td { white-space: nowrap; }
+.xcs-file-table tbody tr:last-child > td { border-block-end: 0; }
+.xcs-app-shell .xcs-file-table tbody .xcs-button { min-height: calc(var(--xcs-file-row-height) - 2px); height: calc(var(--xcs-file-row-height) - 2px); padding: 0; font-size: inherit; white-space: nowrap; }
+.xcs-file-list-panel .xcs-entry-actions { flex-wrap: nowrap; }
+.xcs-file-table td:first-child { min-width: 10rem; overflow-wrap: anywhere; }
+.xcs-file-table tbody tr:hover,.xcs-file-table tr[aria-selected=true] { background: var(--xcs-bg-page); }
+.xcs-disk-table tbody tr[data-online=true] { cursor: pointer; }
+.xcs-file-name { width: 100%; max-width: min(24rem,100%); }
+.xcs-file-name > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xcs-file-name svg { flex: 0 0 auto; width: var(--xcs-file-icon-size,1em); height: var(--xcs-file-icon-size,1em); }
+.xcs-file-icon--folder { color: var(--xcs-text-link); }
+.xcs-file-icon--file { color: var(--xcs-text-primary); }
+.xcs-entry-navigation > .xcs-button { flex-shrink: 0; }
+.xcs-entry-navigation > :not(.xcs-button) { min-width: 0; overflow-wrap: anywhere; }
+.xcs-entry-content .xcs-input { width: 100%; }
+.xcs-version-tree-scroll { container-type: inline-size; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; }
+.xcs-version-tree-canvas { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--xcs-block-gap); box-sizing: border-box; width: max-content; min-width: 100%; padding: 0 var(--xcs-block-gap); }
+.xcs-version-tree-level { position: relative; z-index: 1; display: flex; justify-content: center; align-items: flex-start; gap: var(--xcs-block-gap); box-sizing: border-box; width: max-content; min-width: calc(100% - var(--xcs-compact-row-height)); }
+.xcs-version-node { flex: 0 0 min(21rem,max(1px,calc(100cqw - var(--xcs-compact-row-height)))); width: min(21rem,max(1px,calc(100cqw - var(--xcs-compact-row-height)))); }
+.xcs-version-date { display: flex; align-items: center; gap: .5em; color: var(--xcs-block-muted); }
+.xcs-version-current { flex: 0 0 auto; white-space: nowrap; }
+.xcs-version-date time { font: inherit; overflow-wrap: anywhere; }
+.xcs-app-shell .xcs-version-note-row:has(> .xcs-inline-input) { display: grid; grid-template-columns: minmax(0,1fr); padding: 0; }
+.xcs-version-note-row > .xcs-inline-input { width: 100%; }
+.xcs-version-note-row > :is(.xcs-inline-hint,.xcs-inline-error) { display: block; }
+.xcs-version-actions { align-items: flex-start; }
+.xcs-version-actions .xcs-inline-branch { flex: 0 1 auto; }
+.xcs-version-node .xcs-version-actions .xcs-branch-name { flex: 0 1 100%; width: 100%; }
+.xcs-version-tree-links { position: absolute; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; color: var(--xcs-block-muted); overflow: visible; pointer-events: none; }
+.xcs-version-tree-edge { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.xcs-version-tree-links marker path { fill: currentColor; stroke: none; }
+.xcs-file-properties { display: grid; grid-template-columns: max-content minmax(0,1fr); align-items: stretch; gap: 0; margin: 0; }
+.xcs-file-properties > div { display: contents; }
+.xcs-file-properties :is(dt,dd) { display: flex; align-items: center; }
+.xcs-file-properties dt { color: var(--xcs-block-muted); }
+.xcs-file-preview { max-width: 100%; max-height: 60vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: var(--xcs-list-content-inset); background: var(--xcs-bg-page); font: var(--xcs-compact-font-size)/1.6 var(--xcs-font-mono); }
+.xcs-file-empty { margin: 0; padding: var(--xcs-block-gap); color: var(--xcs-block-muted); text-align: center; }
+.xcs-file-manager .xcs-select,.xcs-entry-page .xcs-select { max-width: min(24rem,100%); }
+@media (max-width: 36rem) {
+  .xcs-file-table :is(th,td) { min-width: 0; }
+  .xcs-file-toolbar { align-items: stretch; }
+  .xcs-file-toolbar > .xcs-file-search { flex-basis: 100%; padding-inline: 0; }
+  .xcs-file-toolbar > .xcs-select { flex-basis: 100%; }
+  .xcs-file-toolbar:has(> .xcs-select) > p { flex-basis: 100%; }
+  /* The explanation occupies a full row after the select on phones. Its own
+   * row height already separates the control from the following list. */
+  .xcs-file-toolbar:has(> .xcs-select) + .xcs-surface { margin-block-start: 0; }
+}
+@media (forced-colors: active) { .xcs-file-table tr[aria-selected=true] { outline: 1px solid Highlight; } }
+/* Batch selection reuses compact rows and shared frame geometry. */
+.xcs-app-shell .xcs-file-check,.xcs-app-shell .xcs-file-select-name { gap: .5em; }
+.xcs-file-check input,.xcs-entry-checkbox,.xcs-batch-check input { flex: 0 0 1em; width: 1em; height: 1em; margin: 0; accent-color: var(--xcs-text-link); }
+.xcs-app-shell .xcs-file-select-name { flex-wrap: nowrap; }
+.xcs-file-select-name .xcs-file-name { flex: 1 1 0; }
+.xcs-batch-scopes { display: flex; flex-wrap: wrap; min-width: 0; margin: 0; padding: 0; border: 0; }
+.xcs-batch-scopes legend { width: 100%; }
+.xcs-batch-check { display: inline-flex; align-items: center; gap: .5em; }
+.xcs-batch-entry > .xcs-input,.xcs-batch-destination > .xcs-input { flex: 0 1 20rem; max-width: 100%; }
+.xcs-batch-entry > span { flex: 0 1 20rem; }
+.xcs-batch-editor > .xcs-inline-error:empty { display: none; }
+.xcs-review-choices { display: flex; flex-wrap: wrap; min-width: 0; margin: 0; padding: 0; border: 0; }
+.xcs-review-choices legend { width: 100%; }
+.xcs-merge-review > .xcs-inline-error:empty { display: none; }
+/* Node chips retain inherited labels without introducing another card row. */
+.xcs-version-note-row,.xcs-node-tags { display: flex; align-items: center; flex-wrap: wrap; min-width: 0; }
+.xcs-app-shell .xcs-node-tag { display: inline-flex; align-items: center; width: auto; max-width: 100%; height: auto; min-height: var(--xcs-compact-row-height); border: var(--xcs-control-border-width) solid var(--xcs-block-border); background: var(--xcs-bg-page); overflow-wrap: anywhere; }
+.xcs-app-shell .xcs-version-note-row:has(.xcs-node-tag) { padding-block: 0; }
+.xcs-app-shell .xcs-tag-choice { padding: 0; }
+.xcs-tag-choice[aria-pressed=true] .xcs-node-tag { border-color: var(--xcs-focus); text-decoration: underline; text-underline-offset: .2em; }
+.xcs-node-checkbox { flex: 0 0 1em; width: 1em; height: 1em; margin: 0; accent-color: var(--xcs-text-link); }
+.xcs-tag-review > .xcs-inline-error:empty { display: none; }
+.xcs-backup-review > .xcs-inline-error:empty { display: none; }

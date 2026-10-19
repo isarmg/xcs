@@ -1,0 +1,8 @@
+.xcs-activity-list { display: grid; grid-template-columns: minmax(0,1fr); gap: 0; list-style: none; padding: 0; margin: 0; }
+.xcs-activity-list > li { display: grid; gap: 0; min-width: 0; padding: 0; border-block-end: var(--xcs-control-border-width) solid var(--xcs-block-border); }
+.xcs-activity-list > li:last-child { border-block-end: 0; }
+.xcs-activity-list > li > :is(strong,span,p,time) { display: flex; align-items: center; }
+.xcs-activity-list time { color: var(--xcs-block-muted); }
+.xcs-history-toolbar > .xcs-select { flex: 0 1 24rem; max-width: 100%; }
+.xcs-history-row > .xcs-history-path { flex: 1 1 16rem; }
+.xcs-history-row > :is(.xcs-history-action,time,.xcs-history-principal) { flex: 0 1 auto; max-width: 100%; }

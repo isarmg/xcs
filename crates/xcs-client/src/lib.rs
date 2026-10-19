@@ -1,0 +1,386 @@
+//! Shared native client. Redirects are disabled and plain HTTP is restricted to loopback.
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use std::time::Duration;
+
+mod response;
+mod transfer;
+use response::decode;
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("invalid server address: {0}")]
+    Address(String),
+    #[error("{code}: {message}")]
+    Api {
+        status: u16,
+        code: String,
+        message: String,
+        retryable: bool,
+    },
+    #[error("transport failed: {0}")]
+    Transport(#[from] reqwest::Error),
+    #[error("local file operation failed: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("invalid response: {0}")]
+    Response(String),
+}
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Session {
+    pub token: String,
+    pub csrf_token: String,
+    pub principal: String,
+    pub admin: bool,
+    #[serde(with = "xcs_contract::u64_string")]
+    pub expires_at: u64,
+}
+impl std::fmt::Debug for Session {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("Session")
+            .field("principal", &self.principal)
+            .field("admin", &self.admin)
+            .field("expires_at", &self.expires_at)
+            .finish_non_exhaustive()
+    }
+}
+
+#[derive(Clone)]
+pub struct Client {
+    client: reqwest::Client,
+    base: url::Url,
+    token: Option<String>,
+}
+impl Client {
+    pub fn connect(address: &str) -> Result<Self, Error> {
+        let base = url::Url::parse(address).map_err(|error| Error::Address(error.to_string()))?;
+        let loopback = base.host_str().is_some_and(|host| {
+            host == "localhost" || host == "127.0.0.1" || host == "[::1]" || host == "::1"
+        });
+        if !matches!(base.scheme(), "https" | "http")
+            || (base.scheme() == "http" && !loopback)
+            || base.host_str().is_none()
+            || !base.username().is_empty()
+            || base.password().is_some()
+            || base.query().is_some()
+            || base.fragment().is_some()
+            || base.path() != "/"
+        {
+            return Err(Error::Address("use an HTTPS origin, or HTTP on loopback; paths, credentials and query strings are prohibited".into()));
+        }
+        let client = reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            .connect_timeout(Duration::from_secs(10))
+            .timeout(Duration::from_secs(3600))
+            .build()?;
+        Ok(Self {
+            client,
+            base,
+            token: None,
+        })
+    }
+    pub fn set_token(&mut self, token: Option<String>) {
+        self.token = token;
+    }
+    pub fn origin(&self) -> &str {
+        self.base.as_str()
+    }
+    fn url(&self, path: &str) -> Result<url::Url, Error> {
+        xcs_contract::validate_api_path(path).map_err(|error| Error::Address(error.message))?;
+        let url = self
+            .base
+            .join(path)
+            .map_err(|error| Error::Address(error.to_string()))?;
+        if url.origin() != self.base.origin() || !url.path().starts_with("/v1/") {
+            return Err(Error::Address("API route changed origin".into()));
+        }
+        Ok(url)
+    }
+    fn builder(
+        &self,
+        method: reqwest::Method,
+        path: &str,
+    ) -> Result<reqwest::RequestBuilder, Error> {
+        let mut builder = self.client.request(method, self.url(path)?);
+        if let Some(token) = &self.token {
+            builder = builder.bearer_auth(token);
+        }
+        Ok(builder)
+    }
+    pub async fn login(&mut self, username: &str, password: &str) -> Result<Session, Error> {
+        let value = self
+            .request(
+                "POST",
+                "/v1/auth/login",
+                Some(&json!({"username":username,"password":password})),
+            )
+            .await?;
+        let session: Session =
+            serde_json::from_value(value).map_err(|error| Error::Response(error.to_string()))?;
+        self.token = Some(session.token.clone());
+        Ok(session)
+    }
+    pub async fn logout(&mut self) -> Result<(), Error> {
+        self.request("POST", "/v1/auth/logout", Some(&json!({})))
+            .await?;
+        self.token = None;
+        Ok(())
+    }
+    /// Freeze the workspace, bind the public envelope digest, and commit exactly that manifest.
+    pub async fn commit_workspace(
+        &self,
+        workspace: &str,
+        operation_id: &str,
+        message: &str,
+        expected_head: Option<&str>,
+    ) -> Result<Value, Error> {
+        let body = self
+            .prepare_commit(workspace, operation_id, message, expected_head)
+            .await?;
+        self.commit_prepared(&body).await
+    }
+    pub async fn prepare_commit(
+        &self,
+        workspace: &str,
+        operation_id: &str,
+        message: &str,
+        expected_head: Option<&str>,
+    ) -> Result<Value, Error> {
+        let mut body = self
+            .request(
+                "POST",
+                &format!("/v1/workspaces/{}/seal", segment(workspace)),
+                Some(&json!({})),
+            )
+            .await?;
+        if !body.is_object() || body["workspace_id"].as_str() != Some(workspace) {
+            return Err(Error::Response(
+                "seal response has an invalid workspace identity".into(),
+            ));
+        }
+        body["operation_id"] = operation_id.into();
+        body["message"] = message.into();
+        if let Some(head) = expected_head {
+            body["expected_head"] = head.into();
+        }
+        let digest = xcs_contract::request_digest(
+            "POST",
+            "/v1/workspaces/{workspace}/commit",
+            json!({"workspace":workspace}),
+            json!({}),
+            &body,
+        )
+        .map_err(|error| Error::Response(error.to_string()))?;
+        body["request_digest"] = digest.into();
+        Ok(body)
+    }
+    pub async fn commit_prepared(&self, body: &Value) -> Result<Value, Error> {
+        let workspace = body
+            .get("workspace_id")
+            .and_then(Value::as_str)
+            .ok_or_else(|| Error::Response("prepared request has no workspace identity".into()))?;
+        self.request(
+            "POST",
+            &format!("/v1/workspaces/{}/commit", segment(workspace)),
+            Some(body),
+        )
+        .await
+    }
+    /// Inspect frozen directory compositions without changing the shared default.
+    pub async fn directory_branches(
+        &self,
+        repository: &str,
+        path: Option<&str>,
+    ) -> Result<Value, Error> {
+        let mut route = format!(
+            "/v1/repositories/{}/directory-branches",
+            segment(repository)
+        );
+        if let Some(path) = path {
+            route.push_str("?path=");
+            route.push_str(&segment(path));
+        }
+        self.request("GET", &route, None).await
+    }
+
+    /// Submit explicit source/target branch mappings as one idempotent operation.
+    pub async fn directory_namespace_batch(
+        &self,
+        slot: &str,
+        request: &xcs_contract::DirectoryNamespaceBatch,
+        operation_id: &str,
+    ) -> Result<Value, Error> {
+        let mut body =
+            serde_json::to_value(request).map_err(|error| Error::Response(error.to_string()))?;
+        body["operation_id"] = operation_id.into();
+        self.request(
+            "POST",
+            &format!("/v1/file-manager/disks/{}/namespace-batch", segment(slot)),
+            Some(&body),
+        )
+        .await
+    }
+    /// Rename a public file branch label without changing content or selection.
+    pub async fn rename_file_branch(
+        &self,
+        file: &str,
+        branch: &str,
+        name: &str,
+        operation_id: &str,
+    ) -> Result<Value, Error> {
+        self.request(
+            "PATCH",
+            &format!(
+                "/v1/file-manager/files/{}/branches/{}",
+                segment(file),
+                segment(branch)
+            ),
+            Some(&json!({"name":name,"operation_id":operation_id})),
+        )
+        .await
+    }
+    pub async fn create_file_branch_from_node(
+        &self,
+        file: &str,
+        version: &str,
+        node: &str,
+        name: &str,
+        operation_id: &str,
+    ) -> Result<Value, Error> {
+        self.request("POST",&format!("/v1/file-manager/files/{}/branches",segment(file)),
+            Some(&json!({"source_version_id":version,"source_node_id":node,"name":name,"operation_id":operation_id}))).await
+    }
+    pub async fn set_file_path_note(
+        &self,
+        file: &str,
+        node: &str,
+        note: &str,
+        operation_id: &str,
+    ) -> Result<Value, Error> {
+        self.request(
+            "PATCH",
+            &format!(
+                "/v1/file-manager/files/{}/nodes/{}",
+                segment(file),
+                segment(node)
+            ),
+            Some(&json!({"note":note,"operation_id":operation_id})),
+        )
+        .await
+    }
+    /// Merge reviewed public file-branch heads into one explicitly owned result.
+    pub async fn merge_file_branches(
+        &self,
+        file: &str,
+        inputs: &[xcs_contract::FileMergeInput],
+        chosen_node: &str,
+        surviving_branch: &str,
+        operation_id: &str,
+    ) -> Result<Value, Error> {
+        self.request("POST", &format!("/v1/file-manager/files/{}/merge", segment(file)),
+            Some(&json!({"inputs":inputs,"chosen_node_id":chosen_node,"surviving_branch_id":surviving_branch,"confirmed":true,"operation_id":operation_id}))).await
+    }
+    pub async fn update_file_node_tags(
+        &self,
+        file: &str,
+        targets: &[xcs_contract::FileTagTarget],
+        add: &[String],
+        remove: &[String],
+        operation_id: &str,
+    ) -> Result<Value, Error> {
+        self.request(
+            "POST",
+            &format!("/v1/file-manager/files/{}/tags", segment(file)),
+            Some(&json!({"targets":targets,"add":add,"remove":remove,"operation_id":operation_id})),
+        )
+        .await
+    }
+    pub async fn backup_configuration(&self, repository: &str, path: &str) -> Result<Value, Error> {
+        self.request(
+            "GET",
+            &format!(
+                "/v1/repositories/{}/backup-configuration?path={}",
+                segment(repository),
+                segment(path)
+            ),
+            None,
+        )
+        .await
+    }
+    pub async fn configure_backups(
+        &self,
+        repository: &str,
+        path: &str,
+        target_copies: u32,
+        backup_prefixes: &std::collections::BTreeMap<String, String>,
+        expected_generation: u64,
+        expected_scope_id: &str,
+        operation_id: &str,
+    ) -> Result<Value, Error> {
+        self.request("PUT", &format!("/v1/repositories/{}/backup-configuration",segment(repository)),
+            Some(&json!({"path":path,"target_copies":target_copies,"backup_prefixes":backup_prefixes,"expected_generation":expected_generation.to_string(),"expected_scope_id":expected_scope_id,"operation_id":operation_id}))).await
+    }
+    pub async fn request(
+        &self,
+        method: &str,
+        path: &str,
+        body: Option<&Value>,
+    ) -> Result<Value, Error> {
+        let method = reqwest::Method::from_bytes(method.as_bytes())
+            .map_err(|error| Error::Address(error.to_string()))?;
+        let mut request = self.builder(method, path)?;
+        if let Some(body) = body {
+            request = request.json(body);
+        }
+        decode(request.send().await?).await
+    }
+}
+
+pub fn segment(value: &str) -> String {
+    url::form_urlencoded::byte_serialize(value.as_bytes())
+        .collect::<String>()
+        .replace('+', "%20")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn plaintext_remote_and_credential_urls_are_rejected() {
+        assert!(Client::connect("http://example.org").is_err());
+        assert!(Client::connect("https://name:secret@example.org").is_err());
+        assert!(Client::connect("http://127.0.0.1:7400").is_ok());
+        assert!(Client::connect("https://example.org").is_ok());
+    }
+    #[test]
+    fn route_segments_cannot_escape_scope() {
+        assert_eq!(segment("a/b?x=1"), "a%2Fb%3Fx%3D1");
+        let client = Client::connect("https://example.org").unwrap();
+        for route in [
+            "/v1/%2e%2e/private",
+            "/v1/.%2E/private",
+            "/v1/a\t/../private",
+            "/v1/a%2fb",
+        ] {
+            assert!(client.url(route).is_err(), "accepted {route:?}");
+        }
+        assert!(client.url("/v1/files?path=a/../b").is_ok());
+    }
+    #[test]
+    fn session_debug_never_prints_credentials() {
+        let session = Session {
+            token: "private-bearer".into(),
+            csrf_token: "private-csrf".into(),
+            principal: "alice".into(),
+            admin: false,
+            expires_at: 10,
+        };
+        let debug = format!("{session:?}");
+        assert!(!debug.contains(&session.token));
+        assert!(!debug.contains(&session.csrf_token));
+        assert!(debug.contains("alice"));
+    }
+}
+
+#[cfg(test)]
+mod transfer_tests;

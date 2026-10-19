@@ -1,0 +1,57 @@
+/* Appearance owns palette and visual state. Dimensions live in geometry.css. */
+html:not([data-xcs-appearance]), html[data-xcs-appearance="content-blocks"] {
+  color-scheme: light;
+  --xcs-bg-page: #fff;
+  --xcs-bg-panel: #f2f2f2;
+  --xcs-text-primary: #1f1f1f;
+  --xcs-text-link: #444;
+  --xcs-action-primary: #444;
+  --xcs-text-danger: #a73d46;
+  --xcs-focus: #444;
+  --xcs-block-muted: #5f5f5f;
+  --xcs-block-border: #e3e3e3;
+  --xcs-content-spacing: var(--xcs-space-4,16px);
+  color: var(--xcs-text-primary);
+  background: var(--xcs-bg-page);
+  &[data-xcs-theme="dark"] {
+    color-scheme: dark;
+    --xcs-bg-page: #151a1d;
+    --xcs-bg-panel: #252c31;
+    --xcs-text-primary: #edf2f4;
+    --xcs-text-link: #5fa8c8;
+    --xcs-action-primary: #5fa8c8;
+    --xcs-text-danger: #ff8a92;
+    --xcs-focus: #5fa8c8;
+    --xcs-block-muted: #a4b0b7;
+    --xcs-block-border: #354047;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:not([data-xcs-theme="light"]):not([data-xcs-theme="dark"]) {
+      color-scheme: dark;
+      --xcs-bg-page: #151a1d;
+      --xcs-bg-panel: #252c31;
+      --xcs-text-primary: #edf2f4;
+      --xcs-text-link: #5fa8c8;
+      --xcs-action-primary: #5fa8c8;
+      --xcs-text-danger: #ff8a92;
+      --xcs-focus: #5fa8c8;
+      --xcs-block-muted: #a4b0b7;
+      --xcs-block-border: #354047;
+    }
+  }
+  .xcs-button { border: 0; background: transparent; color: var(--xcs-text-link); font-weight: 400; }
+  .xcs-button:hover { text-decoration: underline; }
+  .xcs-button:disabled:hover { text-decoration: none; }
+  .xcs-input { border-color: var(--xcs-block-border); background: transparent; }
+  .xcs-error,.xcs-empty,.xcs-loading { border: 0; border-radius: 0; background: var(--xcs-bg-panel); --xcs-contour-extent: var(--xcs-contour-notification); }
+  .xcs-app-shell :is(.xcs-empty,.xcs-loading) { display: flex; align-items: center; }
+  .xcs-header-actions { max-width: 100%; margin-inline-start: auto; flex-shrink: 0; }
+  .xcs-header-navigation-slot { flex: 1 1 20rem; min-width: 0; }
+  .xcs-header-navigation { flex: 1 1 18rem; }
+  .xcs-header-navigation :is(a,button) { flex-shrink: 0; max-width: 100%; }
+  .xcs-header-navigation a { color: inherit; text-decoration: none; --xcs-contour-extent: 0px; }
+  .xcs-header-actions svg { width: var(--xcs-header-icon-size,1em); height: var(--xcs-header-icon-size,1em); }
+  &:not([data-xcs-selection="custom"]) .xcs-header-navigation [aria-current="page"] { text-decoration: underline; text-underline-offset: .25em; }
+  &:not([data-xcs-selection="custom"]) .xcs-button[aria-pressed="true"] { background: transparent; color: var(--xcs-text-primary); text-decoration: underline; text-underline-offset: .25em; text-decoration-thickness: 1px; }
+  @media (forced-colors: active) { :is(button,input,select,a):focus-visible { outline: 2px solid Highlight; outline-offset: 2px; } .xcs-dialog { border: 1px solid CanvasText; } }
+}
