@@ -1,0 +1,429 @@
+{
+  "schema_version": 3,
+  "variant": "animation-led",
+  "title": "XCS：一份文件的几种走法",
+  "duration": 54,
+  "fps": 30,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "audio": "none",
+  "file_name": "活动方案.txt",
+  "old_body": "预算：8万元",
+  "intermediate_body": "预算：10万元",
+  "main_body": "预算：12万元",
+  "branch_name": "精简方案",
+  "branch_body": "预算：6万元",
+  "scenes": [
+    {
+      "id": "a01",
+      "start": 0,
+      "end": 3,
+      "kind": "document_origin",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "活动方案.txt",
+        "预算：8万元"
+      ],
+      "action": "同一份完整文档居中，预算8万元清楚可读；活动、地点两行组成真实正文。光标选中8，为下一次改动预备。",
+      "transition": "文件对象paper-main首次出现，此后不消失重建。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a02",
+      "start": 3,
+      "end": 6,
+      "kind": "history_write10",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "预算：10万元"
+      ],
+      "action": "工作正文8变10。写入完成时，8万元完整旧页缩小留在左后方，当前完整页为10万元。不是只留下“8”数字节点。",
+      "transition": "8页后移与10页展开同时进行，沿同一水平基线。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a03",
+      "start": 6,
+      "end": 9,
+      "kind": "history_write12",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "预算：12万元"
+      ],
+      "action": "当前10变12，10万元完整旧页留在8页右侧，当前12在前景。历史页仍保留文件名、三行正文的小预览。",
+      "transition": "10旧页缩退，12当前页接位；旧8始终存在。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a04",
+      "start": 9,
+      "end": 12,
+      "kind": "history_select8",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "预算：8万元"
+      ],
+      "action": "焦点沿已经形成的完整历史页移回8万，8页轻微抬起；当前12留在右前景，不被改回8。",
+      "transition": "镜头平移而非换场；选中旧8由轻微抬升和边缘强调表达。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a05",
+      "start": 12,
+      "end": 15,
+      "kind": "fork_reference",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "精简方案"
+      ],
+      "action": "从被选旧8的下边缘延伸一条细连接，指向新出现的空分支位置；空位置只有精简方案名字和输入光标，没有正文纸页。",
+      "transition": "旧8位置固定，引用线随空位移开而展开，不冒出整张副本。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a06",
+      "start": 15,
+      "end": 18,
+      "kind": "fork_inherits",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "精简方案"
+      ],
+      "action": "空位的细连接仍回到旧8，旧8正文被聚焦，说明此时读的是原来那页。当前12继续留在右侧。不得生成第二张8万元完整页。",
+      "transition": "沿引用路径缓慢靠近旧8预算，再回到空分支的输入光标；不显示解释句。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a07",
+      "start": 18,
+      "end": 21,
+      "kind": "branch_edit",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "预算：8万元",
+        "预算：6万元"
+      ],
+      "action": "在空分支位置仅显示一行临时编辑行“预算：8万元”，选中8改为6；不显示完整文件外形，不修改历史8页。",
+      "transition": "预算行由旧8内容的取景放大接入临时编辑行，完整旧8原页一直保留。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a08",
+      "start": 21,
+      "end": 24,
+      "kind": "branch_write",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "预算：6万元"
+      ],
+      "action": "临时编辑完成；仅此时，包含活动、预算6万、地点的完整新文档展开到分支位置。历史8和当前12都不变。",
+      "transition": "临时单行扩展为新完整正文的过程明确，首张自有文件在本段生成。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a09",
+      "start": 24,
+      "end": 27,
+      "kind": "branch_settle",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "精简方案",
+        "预算：6万元"
+      ],
+      "action": "新6万完整页稳定进入精简方案位置，连接仍回到历史8；主12完整页保持原位置。镜头拉回，同时看见起点与两条路线。",
+      "transition": "文件尺度连续，不用保存成功大字、勾号或按钮解释。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a10",
+      "start": 27,
+      "end": 30,
+      "kind": "compare_main",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "主方案",
+        "预算：12万元"
+      ],
+      "action": "主12稍向前展开，精简6保持旁边可见。视线读到主12未变，当前历史关系不再增加节点。",
+      "transition": "左/右布局连续展开，不重新摆一张比较卡。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a11",
+      "start": 30,
+      "end": 33,
+      "kind": "compare_branch",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "精简方案",
+        "预算：6万元"
+      ],
+      "action": "精简6向前展开，主12退半步但不消失；两份完整正文同时可见，预算数值位置相同。",
+      "transition": "只做深度与尺度的小变化，两个对象始终存在。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a12",
+      "start": 33,
+      "end": 36,
+      "kind": "compare_hold",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "主方案",
+        "精简方案",
+        "预算：12万元",
+        "预算：6万元"
+      ],
+      "action": "两份正文并排对齐，文件名相同、分支名不同；随后6万文件成为下段移动的焦点。",
+      "transition": "主12保留为背景留样，6页略向下移，为进入主盘的运动准备。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a13",
+      "start": 36,
+      "end": 39,
+      "kind": "storage_primary",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "主盘"
+      ],
+      "action": "同一张6万完整页缩入主盘物体内部，仍能看见完整正文缩略。盘从页的下方缓慢出现，不让文件跳到另一个场景。",
+      "transition": "镜头跟随6页运动，主12淡退但不切屏，主盘围绕文件进入画面。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a14",
+      "start": 39,
+      "end": 42,
+      "kind": "storage_copy",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "备份盘"
+      ],
+      "action": "第二块盘在旁边展开。将同一6万版本的一份完整副本移入备份盘；副本仍带活动、预算、地点全文，不以碎片或差量表示。",
+      "transition": "主盘原页保持不动，第二份从同一内容源展开并连续移动到另一盘。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a15",
+      "start": 42,
+      "end": 45,
+      "kind": "storage_compare",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "主盘",
+        "备份盘",
+        "预算：6万元"
+      ],
+      "action": "两盘各自展开内部文件的小窗口，看到相同6万正文；两个窗口属于盘内文件，不是新的分支。",
+      "transition": "盘物体位置稳定，内部文件通过展开/收回显露，不另外画流程图。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a16",
+      "start": 45,
+      "end": 48,
+      "kind": "storage_to_evidence",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [],
+      "action": "两盘小幅拉开，显示不同存放位置。选择6万文件从盘中展开，沿其正文坐标进入真实结果画面，为下一段证据准备。",
+      "transition": "通过文件轮廓和预算行位置匹配到真实截图区域，无硬切、无假产品复制进度。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a17",
+      "start": 48,
+      "end": 51,
+      "kind": "real_evidence",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "活动方案.txt",
+        "预算：12万元",
+        "预算：6万元"
+      ],
+      "action": "只使用已经实际读取过的主12/精简6结果截图，3秒内清楚展示对应正文，不展开控件或按钮教程。实际读到的内容是证据，不是备份两份完成的证据。",
+      "transition": "动画文档轮廓与实图正文对位，实图在对象内部逐渐显露，第三秒沿相同位置收回。",
+      "source_type": "verified_result_stills",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    },
+    {
+      "id": "a18",
+      "start": 51,
+      "end": 54,
+      "kind": "ending",
+      "caption": "",
+      "render_caption": false,
+      "on_screen_text": [
+        "主方案",
+        "精简方案",
+        "预算：12万元",
+        "预算：6万元"
+      ],
+      "action": "同一主12与精简6文件从真实结果位置连续回到并排，保留两种方案。最后1.4秒留给阅读，直接结束。",
+      "transition": "不另加片尾标题、口号页或新的画面。",
+      "source_type": "concept_animation",
+      "persistent_objects": [
+        "file-identity-activity",
+        "history8",
+        "history10",
+        "main12",
+        "branch6"
+      ]
+    }
+  ],
+  "caption_policy": {
+    "render_by_default": false,
+    "persistent_subtitle_bar": false
+  },
+  "global_rules": [
+    "同一文档对象贯穿；不用角色替代文件，不复制参考视频的角色、配色资产或素材。",
+    "不硬切、不闪白、不切黑；靠对象运动、轮廓与正文位置匹配连接。",
+    "不放角落注释、常驻品牌、解释字幕或重复标题。",
+    "不绘制仿真产品操作界面；实图只有48–51秒结果证据。",
+    "创建分支只出现空引用位置；直到首次写入6才出现分支自己的完整文档。",
+    "历史8与10保持不变，主12与精简6同时存在。",
+    "两个物理盘内是同一6万版本的完整副本，不是主12和精简6分别作备份。"
+  ],
+  "provenance_notes": {
+    "0_48": "文件版本、分支及两盘位置的概念动画；不是产品实录或实际复制完成证明。",
+    "48_51": "已经核对内容的实际XCS结果截图，只证明主12和精简6正文能读到。",
+    "51_54": "动画对象收束；并排是剪辑表达，非产品内置双栏界面。"
+  }
+}

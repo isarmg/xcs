@@ -1,0 +1,18 @@
+{
+  "repository": "isarmg/xcs",
+  "commit": "1af6965781fb3675cf252b86081d18dec6732a59",
+  "run_id": 39292491848,
+  "artifact_id": 12207385192,
+  "artifact": "xcs-demo-capture",
+  "browser_job_conclusion": "success",
+  "included_files": {
+    "12-branch-6-preview.png": {
+      "sha256": "e2d69086923cf603012d362dc53b5054ac2890258089f45caffabf8277e55fe7",
+      "bytes": 391454
+    },
+    "14-main-still-12-preview.png": {
+      "sha256": "29e165d9828a7ff7ad2030253adcf61a3ecc4a13c2c67c222ab5f5cc29943a6e",
+      "bytes": 389923
+    }
+  }
+}

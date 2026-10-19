@@ -1,69 +1,36 @@
 # XCS 中文解释动画
 
-当前正在按反馈重做：[v2 连续动作短样片](README-v2.md)。以下为第一版的制作记录与重建方法。
+当前版：54秒、1920×1080、30 fps、无配音。同一份活动方案从8→10→12留下历史；从旧8建立精简方案，首次写入6，主12与精简6并存，再演示完整文件分开存放。
 
-220 秒（3 分 40 秒）、12 个场景，从文件混乱的痛点出发，说明完整版本、冻结引用、分支首次写入、目录组合、显式合并、逐盘备份与恢复边界。使用概念动画与真实 Web 画面说明项目的核心流程。
+## 重建
 
-## 素材与源码
-
-- `story-timed.json`：最终 220 秒时间轴和真实口播逐句字幕时间，默认重建使用此文件。
-- `story.json`：同一终版时间轴的文案源（不附逐句口播时间）。
-- `STORYBOARD.md`：逐场视觉说明。
-- `NARRATION.md`：完整中文旁白稿。
-- `render.py`：Pillow 场景图、NumPy 原创环境配乐、ffmpeg 视频编码。
-- `../../docs/images/web-file-manager.png`：项目本地实例的真实 Web 截图；演示文件为合成数据。视频仅裁切截图上部，以提高可读性，未伪造界面。
-- `voice.py` / `VOICE.md`：本地中文合成旁白生成与模型许可说明。最终成片含合成旁白。
-- `captions.zh-CN.srt`：33 句可编辑字幕，按真实口播时码导出；MP4 同时保留烧录字幕。
-- `export_subtitles.py`：从最终时间轴重建 SRT。
-
-图形与配乐均通过代码原创生成，无外部音乐或图标素材。中文字体使用系统 Noto Sans CJK（SIL Open Font License），字体未复制进仓库。截图和项目界面的许可遵循项目原有许可。
-
-## 环境
-
-此目录是独立的视频制作工具，使用 Python，不参与 Rust 产品构建。
-
-Python 3.10+，`ffmpeg` / `ffprobe`（系统软件），系统 Noto Sans CJK Regular/Bold TTC 字体（默认 `/usr/share/fonts/opentype/noto`）。
+需要 Python 3.10+、ffmpeg/ffprobe、系统 Noto Sans CJK Regular/Bold 字体。以下命令从仓库根目录运行：
 
 ```sh
 python -m pip install -r media/intro-video/requirements.txt
-# 先输出各场中点帧与总览图（不生成视频）
-python media/intro-video/render.py --out ../xcs-video-output --width 1280 --preview
-# 成片：1920×1080 / 30 fps / 220 秒（3 分 40 秒），带原创轻量背景配乐
-python media/intro-video/render.py --out ../xcs-video-output
+python media/intro-video/render_v3_animation.py --render --out ../xcs-video-output/v3/final
 ```
 
-输出目录必须在 Git 仓库之外。`--width 960` 可用于快速预览；`--duration 10` 可用于编码测试。终渲染会拒绝缺少真实截图的情况。视频采用 RGB 帧经标准输入直接交给 ffmpeg 编码，不产生海量帧文件。仅保留 12 张预览 JPEG 与 contact sheet。
+默认读取随源码保存的真实截图。省略 `--render` 生成关键帧；`--duration 27 --width 1280` 可输出前半段预览。视频与检查结果保存在仓库外。
 
-旁白标准化至 -18 LUFS，配乐降至 18% 后混音并限制峰值；先检查音画时长一致。配乐混入已对齐的 220 秒（3 分 40 秒）旁白（可选；旁白生成成功后使用）：
+## 测试与检查
 
 ```sh
-python media/intro-video/mux_voice.py \
-  --video ../xcs-video-output/xcs-explainer-zh.mp4 \
-  --voice ../xcs-video-output/voice/narration.wav \
-  --out ../xcs-video-output/xcs-explainer-zh-narrated.mp4
+(cd media/intro-video && python -m unittest test_render_v3_animation.py)
+python media/intro-video/qa_v3.py \
+  --video ../xcs-video-output/v3/final/xcs-v3-content-silent.mp4 \
+  --out ../xcs-video-output/v3/final/qa
 ```
 
-音视频、模型、虚拟环境及临时产物不提交 GitHub。`.gitignore` 排除常见媒体与渲染缓存；仍应在提交前检查暂存区。
+检查包括实际解码、黑帧、帧数、分镜边界前后帧及ffprobe信息。静态帧和指标用于技术检查，节奏仍需连续观看评价。
 
-## 检查
+## 素材与制作源
 
-```sh
-cd media/intro-video
-python -m unittest -v test_render.py
-```
+原创机制动画配合经真实Chrome/XCS流程验证的正文截图；两盘为存放位置示意。截图使用合成文件数据，原始PNG及采集来源、验证记录保存在 `assets/capture/`。字体遵循 Noto Sans CJK 的 SIL Open Font License。
 
-测试检查时间轴连续性、场景渲染、字幕/步骤容量及动画变化。交付前另用 ffprobe 检查分辨率/帧率/时长，并从编码后视频解码首、中、尾画面进行目视检查。
+- `story-v3.json`、`redesign-v3.md`：54秒分镜与对象衔接
+- `render_v3_animation.py`：连续文档、引用、首次写入与存放动画
+- `render.py`：共用画布、中文排版及颜色工具
+- `qa_v3.py`、`test_render_v3_animation.py`：解码检查与单元测试
 
-合成旁白采用自然语速时，可根据实际音频扩展场景，再通过 `--story /path/to/story-timed.json` 重渲染。`duration` 与各场 `start` / `end` 使用更新后的秒数；每场可增加 `caption_timings: [{"start": 0.4, "end": 4.2, "text": "逐句字幕"}]`，时间为全片绝对秒数。这样字幕按实际口播切换，而非平均分配。静音间隔保留上一句。
-
-从 `voice.py` 的实际逐句报告附加字幕时间：
-
-```sh
-python media/intro-video/align_captions.py --story /path/to/approved-story.json \
-  --report ../xcs-video-output/voice/voice-report.json \
-  --out ../xcs-video-output/story-timed.json
-python media/intro-video/render.py --story ../xcs-video-output/story-timed.json \
-  --out ../xcs-video-output/final
-```
-
-此工具不自行更改场景时长；任何语音超出场景的情况都会明确报错，先调整已批准的时间轴再渲染。
+历史制作记录：[V1](README-v1.md) · [V2](README-v2.md)
