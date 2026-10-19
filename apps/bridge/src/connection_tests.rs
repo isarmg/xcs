@@ -310,6 +310,10 @@ async fn envelope_server(
                 "{headers}{}",
                 String::from_utf8(request_body).unwrap()
             ));
+            if status == 0 {
+                // Drop the connection after reading the request, before any response.
+                continue;
+            }
             let body = body.to_string();
             stream.write_all(format!("HTTP/1.1 {status} Test\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len()).as_bytes()).await.unwrap();
         }
@@ -463,4 +467,158 @@ async fn password_change_revokes_connection_only_after_confirmed_reauthenticatio
             .install(pending, client("stale.example"))
     );
     assert_eq!(server.await.unwrap().len(), 2);
+}
+
+#[tokio::test]
+async fn native_seal_failures_never_report_a_submitted_commit() {
+    for (status, body, code) in [
+        (
+            503,
+            json!({"error":{"code":"UNAVAILABLE","message":"seal failed","retryable":true}}),
+            "UNAVAILABLE",
+        ),
+        (0, json!({}), "TRANSPORT_ERROR"),
+        (
+            200,
+            json!({"workspace_id":"different_workspace"}),
+            "INVALID_RESPONSE",
+        ),
+    ] {
+        let (endpoint, server) = envelope_server(vec![(status, body)]).await;
+        let bridge = connected_bridge(&endpoint).await;
+        let failure = bridge
+            .commit_workspace("workspace_test", "operation_test", "save", "head_test")
+            .await
+            .unwrap_err();
+        assert!(!failure.commit_attempted);
+        assert_eq!(failure.error.code, code);
+        let encoded = serde_json::to_value(&failure).unwrap();
+        assert_eq!(encoded["commit_attempted"], false);
+        assert_eq!(encoded["code"], code);
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 1);
+        assert!(requests[0].starts_with("POST /v1/workspaces/workspace_test/seal HTTP/1.1"));
+    }
+    let failure = Bridge::default()
+        .commit_workspace("workspace_test", "operation_test", "save", "")
+        .await
+        .unwrap_err();
+    assert!(!failure.commit_attempted);
+    assert_eq!(failure.error.code, "NOT_CONNECTED");
+}
+
+#[tokio::test]
+async fn native_commit_preserves_digest_identity_and_publication_recovery() {
+    for (status, response) in [
+        (0, json!({})),
+        (
+            503,
+            json!({"error":{"code":"UNAVAILABLE","message":"commit unavailable","retryable":true}}),
+        ),
+        (
+            200,
+            json!({"operation_id":"operation_test","state":"SUCCEEDED"}),
+        ),
+    ] {
+        let sealed = json!({"workspace_id":"workspace_test", "manifest_hash":"manifest_test", "fencing_token":"1"});
+        let (endpoint, server) =
+            envelope_server(vec![(200, sealed.clone()), (status, response.clone())]).await;
+        let bridge = connected_bridge(&endpoint).await;
+        let result = bridge
+            .commit_workspace("workspace_test", "operation_test", "save", "head_test")
+            .await;
+        if status == 200 {
+            assert_eq!(result.unwrap(), response);
+        } else {
+            let failure = result.unwrap_err();
+            assert!(failure.commit_attempted);
+            assert_eq!(
+                serde_json::to_value(failure).unwrap()["commit_attempted"],
+                true
+            );
+        }
+        let requests = server.await.unwrap();
+        assert_eq!(requests.len(), 2);
+        assert!(requests[0].starts_with("POST /v1/workspaces/workspace_test/seal HTTP/1.1"));
+        assert!(requests[1].starts_with("POST /v1/workspaces/workspace_test/commit HTTP/1.1"));
+        for request in &requests {
+            assert!(
+                request
+                    .to_lowercase()
+                    .contains("authorization: bearer test-session\r\n")
+            );
+        }
+        let body: Value =
+            serde_json::from_str(requests[1].split_once("\r\n\r\n").unwrap().1).unwrap();
+        assert_eq!(body["workspace_id"], sealed["workspace_id"]);
+        assert_eq!(body["manifest_hash"], sealed["manifest_hash"]);
+        assert_eq!(body["operation_id"], "operation_test");
+        assert_eq!(body["expected_head"], "head_test");
+        assert_eq!(body["message"], "save");
+        let digest = xcs_contract::request_digest(
+            "POST",
+            "/v1/workspaces/{workspace}/commit",
+            json!({"workspace":"workspace_test"}),
+            json!({}),
+            &body,
+        )
+        .unwrap();
+        assert_eq!(body["request_digest"], digest);
+    }
+}
+
+#[tokio::test]
+async fn replacing_the_native_session_during_seal_does_not_submit_commit() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let bridge =
+        Arc::new(connected_bridge(&format!("http://{}", listener.local_addr().unwrap())).await);
+    let (sent, received) = oneshot::channel();
+    let (release, wait) = oneshot::channel();
+    let server = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let mut headers = Vec::new();
+        while !headers.ends_with(b"\r\n\r\n") {
+            headers.push(stream.read_u8().await.unwrap());
+            assert!(headers.len() < 8192);
+        }
+        assert!(
+            String::from_utf8(headers)
+                .unwrap()
+                .starts_with("POST /v1/workspaces/workspace_test/seal HTTP/1.1")
+        );
+        sent.send(()).unwrap();
+        wait.await.unwrap();
+        let body = json!({"workspace_id":"workspace_test"}).to_string();
+        stream
+            .write_all(
+                format!(
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                )
+                .as_bytes(),
+            )
+            .await
+            .unwrap();
+    });
+    let caller = bridge.clone();
+    let request = tokio::spawn(async move {
+        caller
+            .commit_workspace("workspace_test", "operation_test", "save", "")
+            .await
+    });
+    received.await.unwrap();
+    {
+        let mut state = bridge.connection.write().await;
+        let attempt = state.begin();
+        assert!(state.install(attempt, client("new.example")));
+    }
+    release.send(()).unwrap();
+    let failure = request.await.unwrap().unwrap_err();
+    assert_eq!(failure.error.code, "SESSION_CHANGED");
+    assert!(!failure.commit_attempted);
+    assert_eq!(
+        bridge.snapshot().await.unwrap().0.origin(),
+        "https://new.example/"
+    );
+    server.await.unwrap();
 }

@@ -334,6 +334,7 @@ mod tests {
                     retryable: true,
                     status,
                     request_id: None,
+                    commit_attempted: None,
                 },
             );
             assert_eq!(row.status, SaveStatus::Rejected);

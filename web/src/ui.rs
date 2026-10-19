@@ -427,6 +427,7 @@ mod tests {
                 status: 403,
                 retryable: false,
                 request_id: Some("req_test".into()),
+                commit_attempted: None,
             },
         );
         assert!(state.authenticated);

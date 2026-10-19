@@ -97,6 +97,7 @@ pub(super) fn decode(status: u16, bytes: &[u8]) -> Result<Value, Error> {
             retryable: item["retryable"].as_bool().unwrap_or(false),
             status,
             request_id: item["request_id"].as_str().map(str::to_owned),
+            commit_attempted: None,
         });
     }
     Ok(value)

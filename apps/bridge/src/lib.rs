@@ -16,6 +16,28 @@ pub struct BridgeError {
     pub retryable: bool,
     pub status: u16,
 }
+/// Publication-stage evidence for the combined native seal/commit command.
+#[derive(Clone, Debug, Serialize)]
+pub struct CommitError {
+    #[serde(flatten)]
+    pub error: BridgeError,
+    pub commit_attempted: bool,
+}
+impl CommitError {
+    fn before_commit(error: impl Into<BridgeError>) -> Self {
+        Self {
+            error: error.into(),
+            commit_attempted: false,
+        }
+    }
+    fn after_commit(error: impl Into<BridgeError>) -> Self {
+        Self {
+            error: error.into(),
+            commit_attempted: true,
+        }
+    }
+}
+
 impl From<Error> for BridgeError {
     fn from(error: Error) -> Self {
         match error {
@@ -202,10 +224,10 @@ impl Bridge {
         operation_id: &str,
         message: &str,
         expected_head: &str,
-    ) -> Result<Value, BridgeError> {
-        let (client, revision) = self.snapshot().await?;
-        let result = client
-            .commit_workspace(
+    ) -> Result<Value, CommitError> {
+        let (client, revision) = self.snapshot().await.map_err(CommitError::before_commit)?;
+        let prepared = client
+            .prepare_commit(
                 workspace,
                 operation_id,
                 message,
@@ -216,8 +238,15 @@ impl Bridge {
                 },
             )
             .await;
-        self.ensure_current(revision).await?;
-        result.map_err(Into::into)
+        self.ensure_current(revision)
+            .await
+            .map_err(CommitError::before_commit)?;
+        let body = prepared.map_err(CommitError::before_commit)?;
+        let result = client.commit_prepared(&body).await;
+        self.ensure_current(revision)
+            .await
+            .map_err(CommitError::after_commit)?;
+        result.map_err(CommitError::after_commit)
     }
 
     /// Reusing an opened cache entry always verifies it against the immutable

@@ -52,6 +52,7 @@ pub struct Error {
     pub retryable: bool,
     pub status: u16,
     pub request_id: Option<String>,
+    pub commit_attempted: Option<bool>,
 }
 
 impl Error {
@@ -97,6 +98,7 @@ fn error(code: &str, message: impl Into<String>) -> Error {
         retryable: false,
         status: 0,
         request_id: None,
+        commit_attempted: None,
     }
 }
 
@@ -221,6 +223,9 @@ fn js_error(value: JsValue) -> Error {
                     .ok()
                     .and_then(|v| v.as_f64())
                     .unwrap_or(0.0) as u16,
+                commit_attempted: Reflect::get(&value, &"commit_attempted".into())
+                    .ok()
+                    .and_then(|value| value.as_bool()),
                 request_id: Reflect::get(&value, &"request_id".into())
                     .ok()
                     .and_then(|id| id.as_string()),
@@ -480,10 +485,13 @@ pub async fn commit_workspace(
     on_commit: impl FnOnce(),
 ) -> Result<Value, Error> {
     if native() {
-        // The native bridge owns sealing and committing as one IPC call. Its
-        // error cannot tell us whether publication was attempted.
-        on_commit();
-        return invoke("commit_workspace",json!({"workspace":workspace,"operationId":operation_id,"message":message,"expectedHead":expected_head})).await;
+        let result = invoke("commit_workspace",json!({"workspace":workspace,"operationId":operation_id,"message":message,"expectedHead":expected_head})).await;
+        // Only explicit native evidence can rule out publication. IPC failures
+        // without stage information must retain conservative recovery behavior.
+        if native_commit_attempted(&result) {
+            on_commit();
+        }
+        return result;
     }
     let mut body = request(
         "POST",
@@ -515,6 +523,10 @@ pub async fn commit_workspace(
     )
     .await
 }
+fn native_commit_attempted(result: &Result<Value, Error>) -> bool {
+    !matches!(result, Err(error) if error.commit_attempted == Some(false))
+}
+
 fn error_from_contract(value: xcs_contract::Error) -> Error {
     Error {
         code: value.code,
@@ -522,6 +534,7 @@ fn error_from_contract(value: xcs_contract::Error) -> Error {
         retryable: value.retryable,
         status: 0,
         request_id: None,
+        commit_attempted: None,
     }
 }
 
@@ -720,6 +733,17 @@ pub async fn open_version(version: &str, name: &str) -> Result<Option<String>, E
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn native_publication_evidence_is_explicit_and_missing_ipc_evidence_is_unknown() {
+        let mut failure = error("TRANSPORT_ERROR", "connection lost");
+        assert!(native_commit_attempted(&Err(failure.clone())));
+        failure.commit_attempted = Some(false);
+        assert!(!native_commit_attempted(&Err(failure.clone())));
+        failure.commit_attempted = Some(true);
+        assert!(native_commit_attempted(&Err(failure)));
+        assert!(native_commit_attempted(&Ok(json!({"state":"SUCCEEDED"}))));
+    }
+
     #[test]
     fn late_login_cannot_restore_cleared_or_replace_newer_credentials() {
         let mut saved = Credentials::default();

@@ -3,7 +3,7 @@ use tauri::{Manager, State};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_opener::OpenerExt;
-use xcs_app_bridge::{Bridge, BridgeError};
+use xcs_app_bridge::{Bridge, BridgeError, CommitError};
 
 fn local_error(code: &str, error: impl std::fmt::Display) -> BridgeError {
     BridgeError {
@@ -105,7 +105,7 @@ async fn commit_workspace(
     operation_id: String,
     message: String,
     expected_head: String,
-) -> Result<Value, BridgeError> {
+) -> Result<Value, CommitError> {
     bridge
         .commit_workspace(&workspace, &operation_id, &message, &expected_head)
         .await
