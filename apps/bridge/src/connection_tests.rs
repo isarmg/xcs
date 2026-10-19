@@ -281,3 +281,186 @@ async fn restored_native_session_does_not_expose_credentials_to_webview() {
     assert!(bridge.snapshot().await.is_ok());
     server.await.unwrap();
 }
+
+async fn envelope_server(
+    responses: Vec<(u16, Value)>,
+) -> (String, tokio::task::JoinHandle<Vec<String>>) {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let endpoint = format!("http://{}", listener.local_addr().unwrap());
+    let server = tokio::spawn(async move {
+        let mut requests = Vec::new();
+        for (status, body) in responses {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut headers = Vec::new();
+            while !headers.ends_with(b"\r\n\r\n") {
+                headers.push(stream.read_u8().await.unwrap());
+                assert!(headers.len() < 8192);
+            }
+            let headers = String::from_utf8(headers).unwrap();
+            let length = headers
+                .lines()
+                .filter_map(|line| line.split_once(':'))
+                .find(|(name, _)| name.eq_ignore_ascii_case("content-length"))
+                .map(|(_, value)| value.trim().parse::<usize>().unwrap())
+                .unwrap_or(0);
+            assert!(length < 8192);
+            let mut request_body = vec![0; length];
+            stream.read_exact(&mut request_body).await.unwrap();
+            requests.push(format!(
+                "{headers}{}",
+                String::from_utf8(request_body).unwrap()
+            ));
+            let body = body.to_string();
+            stream.write_all(format!("HTTP/1.1 {status} Test\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len()).as_bytes()).await.unwrap();
+        }
+        requests
+    });
+    (endpoint, server)
+}
+
+#[tokio::test]
+async fn real_login_keeps_secrets_native_and_failed_reauthentication_preserves_session() {
+    let (endpoint, server) = envelope_server(vec![
+        (200, json!({"token":"native-bearer", "csrf_token":"native-csrf", "principal":"alice", "admin":false, "expires_at":"9007199254740993"})),
+        (401, json!({"error":{"code":"INVALID_CREDENTIALS","message":"invalid login","retryable":false}})),
+        (200, json!({"ok":true})),
+    ]).await;
+    let bridge = Bridge::default();
+    assert_eq!(
+        bridge
+            .connect(&endpoint, "alice", "synthetic-password")
+            .await
+            .unwrap(),
+        json!({"principal":"alice","admin":false,"expires_at":"9007199254740993"})
+    );
+    let (_, revision) = bridge.snapshot().await.unwrap();
+    let error = bridge
+        .connect(&endpoint, "alice", "wrong-password")
+        .await
+        .unwrap_err();
+    assert_eq!(error.code, "INVALID_CREDENTIALS");
+    assert_eq!(error.status, 401);
+    assert!(bridge.connection.read().await.current(revision));
+    assert_eq!(
+        bridge
+            .request("GET", "/v1/system/status", None)
+            .await
+            .unwrap(),
+        json!({"ok":true})
+    );
+    let requests = server.await.unwrap();
+    for request in &requests[..2] {
+        assert!(request.starts_with("POST /v1/auth/login HTTP/1.1\r\n"));
+        assert!(!request.to_lowercase().contains("authorization:"));
+    }
+    assert!(requests[0].contains("synthetic-password"));
+    assert!(
+        requests[2]
+            .to_lowercase()
+            .contains("authorization: bearer native-bearer\r\n")
+    );
+    assert!(!requests[2].contains("native-csrf"));
+}
+
+#[tokio::test]
+async fn expired_session_errors_survive_request_upload_and_download_boundaries() {
+    let envelope = json!({"error":{"code":"SESSION_EXPIRED","message":"sign in again","retryable":false,"request_id":"req_expired"}});
+    let (endpoint, server) = envelope_server(vec![
+        (401, envelope.clone()),
+        (401, envelope.clone()),
+        (401, envelope),
+    ])
+    .await;
+    let bridge = connected_bridge(&endpoint).await;
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source");
+    std::fs::write(&source, b"upload source").unwrap();
+    let errors = [
+        bridge
+            .request("GET", "/v1/system/status", None)
+            .await
+            .unwrap_err(),
+        bridge
+            .upload("workspace_test", "item_test", "file", &source)
+            .await
+            .unwrap_err(),
+        bridge
+            .download("version_test", &directory.path().join("download"))
+            .await
+            .unwrap_err(),
+    ];
+    for error in errors {
+        assert_eq!(error.status, 401);
+        assert_eq!(error.code, "SESSION_EXPIRED");
+        assert_eq!(error.message, "sign in again (request req_expired)");
+        assert!(!error.retryable);
+    }
+    assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 1);
+    assert_eq!(std::fs::read(source).unwrap(), b"upload source");
+    for request in server.await.unwrap() {
+        assert!(
+            request
+                .to_lowercase()
+                .contains("authorization: bearer test-session\r\n")
+        );
+    }
+}
+
+#[tokio::test]
+async fn forbidden_resource_keeps_the_session_and_preserves_error_envelope() {
+    let (endpoint, server) = envelope_server(vec![
+        (403, json!({"error":{"code":"FORBIDDEN","message":"repository denied","retryable":false,"request_id":"req_denied"}})),
+        (200, json!({"ok":true})),
+    ]).await;
+    let bridge = connected_bridge(&endpoint).await;
+    let (_, revision) = bridge.snapshot().await.unwrap();
+    let error = bridge
+        .request("GET", "/v1/repositories/private", None)
+        .await
+        .unwrap_err();
+    assert_eq!(error.status, 403);
+    assert_eq!(error.code, "FORBIDDEN");
+    assert_eq!(error.message, "repository denied (request req_denied)");
+    assert!(!error.retryable);
+    assert!(bridge.connection.read().await.current(revision));
+    bridge
+        .request("GET", "/v1/system/status", None)
+        .await
+        .unwrap();
+    assert_eq!(server.await.unwrap().len(), 2);
+}
+
+#[tokio::test]
+async fn password_change_revokes_connection_only_after_confirmed_reauthentication_requirement() {
+    let (endpoint, server) = envelope_server(vec![
+        (
+            200,
+            json!({"changed":false,"reauthentication_required":true}),
+        ),
+        (
+            200,
+            json!({"changed":true,"reauthentication_required":true}),
+        ),
+    ])
+    .await;
+    let bridge = connected_bridge(&endpoint).await;
+    bridge
+        .request("POST", "/v1/auth/password", Some(&json!({})))
+        .await
+        .unwrap();
+    assert!(bridge.snapshot().await.is_ok());
+    let pending = bridge.connection.write().await.begin();
+    bridge
+        .request("POST", "/v1/auth/password?source=app", Some(&json!({})))
+        .await
+        .unwrap();
+    assert_eq!(bridge.snapshot().await.err().unwrap().code, "NOT_CONNECTED");
+    assert!(
+        !bridge
+            .connection
+            .write()
+            .await
+            .install(pending, client("stale.example"))
+    );
+    assert_eq!(server.await.unwrap().len(), 2);
+}

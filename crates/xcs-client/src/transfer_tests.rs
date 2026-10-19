@@ -165,3 +165,206 @@ async fn a_malformed_seal_response_is_an_error_instead_of_a_panic_or_cross_works
         server.await.unwrap();
     }
 }
+
+#[tokio::test]
+async fn truncated_download_removes_partial_file() {
+    let mut response = content_headers(b"a complete file");
+    response.extend(b"a partial");
+    let (client, server) = reply(response).await;
+    let directory = tempfile::tempdir().unwrap();
+    assert!(matches!(
+        client
+            .download_file("version_test", &directory.path().join("file"))
+            .await,
+        Err(Error::Transport(_))
+    ));
+    assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 0);
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn cancelling_an_in_progress_download_removes_its_private_tempfile() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let client = Client::connect(&format!("http://{}", listener.local_addr().unwrap())).unwrap();
+    let (release, wait) = oneshot::channel::<()>();
+    let server = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        request_headers(&mut stream).await;
+        stream
+            .write_all(&content_headers(b"unfinished download"))
+            .await
+            .unwrap();
+        stream.write_all(b"unfin").await.unwrap();
+        let _ = wait.await;
+    });
+    let directory = tempfile::tempdir().unwrap();
+    let target = directory.path().join("file");
+    let download = tokio::spawn(async move { client.download_file("version_test", &target).await });
+    // Wait for bytes on disk, rather than guessing when the transfer started.
+    tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        loop {
+            if std::fs::read_dir(directory.path())
+                .unwrap()
+                .any(|entry| entry.unwrap().metadata().unwrap().len() > 0)
+            {
+                break;
+            }
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .expect("download never wrote its partial file");
+    download.abort();
+    assert!(download.await.unwrap_err().is_cancelled());
+    assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 0);
+    drop(release);
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn existing_destination_is_preserved_before_any_network_request() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let client = Client::connect(&format!("http://{}", listener.local_addr().unwrap())).unwrap();
+    let directory = tempfile::tempdir().unwrap();
+    let target = directory.path().join("file");
+    std::fs::write(&target, b"keep me").unwrap();
+    assert!(
+        matches!(client.download_file("version_test", &target).await,
+        Err(Error::Io(error)) if error.kind() == std::io::ErrorKind::AlreadyExists)
+    );
+    assert_eq!(std::fs::read(&target).unwrap(), b"keep me");
+    assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 1);
+    assert!(
+        tokio::time::timeout(std::time::Duration::from_millis(50), listener.accept())
+            .await
+            .is_err()
+    );
+}
+
+#[tokio::test]
+async fn missing_or_weak_integrity_headers_never_publish_downloads() {
+    for headers in [
+        "Content-Length: 4\r\n".to_owned(),
+        format!(
+            "Content-Length: 4\r\nETag: W/\"{}\"\r\n",
+            blake3::hash(b"file")
+        ),
+        "Content-Length: 4\r\nETag: \"not-a-hash\"\r\n".to_owned(),
+        format!("ETag: \"{}\"\r\n", blake3::hash(b"file")),
+    ] {
+        let (client, server) = reply(
+            format!("HTTP/1.1 200 OK\r\n{headers}Connection: close\r\n\r\nfile").into_bytes(),
+        )
+        .await;
+        let directory = tempfile::tempdir().unwrap();
+        assert!(matches!(
+            client
+                .download_file("version_test", &directory.path().join("file"))
+                .await,
+            Err(Error::Response(_))
+        ));
+        assert_eq!(std::fs::read_dir(directory.path()).unwrap().count(), 0);
+        server.await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn upload_sends_raw_bytes_with_matching_length_hash_and_bearer() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let mut client =
+        Client::connect(&format!("http://{}", listener.local_addr().unwrap())).unwrap();
+    client.set_token(Some("synthetic-token".into()));
+    let content = b"\0binary\xff\r\nbytes";
+    let source = tempfile::NamedTempFile::new().unwrap();
+    std::fs::write(source.path(), content).unwrap();
+    let server = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let mut headers = Vec::new();
+        while !headers.ends_with(b"\r\n\r\n") {
+            headers.push(stream.read_u8().await.unwrap());
+            assert!(headers.len() < 8192);
+        }
+        let headers = String::from_utf8(headers).unwrap().to_lowercase();
+        assert!(headers.starts_with("put /v1/workspaces/workspace_test/files/item_test/content?path=folder%2fa+b.bin http/1.1\r\n"));
+        for header in [
+            "authorization: bearer synthetic-token".to_owned(),
+            "content-type: application/octet-stream".to_owned(),
+            format!("content-length: {}", content.len()),
+            format!("x-xcs-logical-size: {}", content.len()),
+            format!("x-xcs-content-hash: {}", blake3::hash(content)),
+            "x-xcs-upload-generation: 1".to_owned(),
+        ] {
+            assert!(
+                headers.contains(&format!("{header}\r\n")),
+                "missing {header}"
+            );
+        }
+        let mut body = vec![0; content.len()];
+        stream.read_exact(&mut body).await.unwrap();
+        assert_eq!(body, content);
+        stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 15\r\nConnection: close\r\n\r\n{\"staged\":true}").await.unwrap();
+    });
+    // The envelope is checked as well as the request wire format.
+    assert_eq!(
+        client
+            .upload_file(
+                "workspace_test",
+                "item_test",
+                "folder/a b.bin",
+                source.path()
+            )
+            .await
+            .unwrap(),
+        serde_json::json!({"staged":true})
+    );
+    server.await.unwrap();
+}
+
+#[tokio::test]
+async fn upload_integrity_rejections_preserve_server_error_details() {
+    for code in ["SIZE_MISMATCH", "CHECKSUM_MISMATCH"] {
+        let body = serde_json::json!({"error":{"code":code,"message":"upload rejected","retryable":false,"request_id":"req_synthetic"}}).to_string();
+        let (client, server) = reply(format!("HTTP/1.1 422 Unprocessable Entity\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len()).into_bytes()).await;
+        let source = tempfile::NamedTempFile::new().unwrap();
+        std::fs::write(source.path(), b"source is preserved").unwrap();
+        assert!(
+            matches!(client.upload_file("workspace_test", "item_test", "file", source.path()).await,
+            Err(Error::Api {status:422, code:actual, message, retryable:false})
+            if actual == code && message == "upload rejected (request req_synthetic)")
+        );
+        assert_eq!(
+            std::fs::read(source.path()).unwrap(),
+            b"source is preserved"
+        );
+        server.await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn interrupted_upload_is_a_transport_error_and_preserves_source() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let client = Client::connect(&format!("http://{}", listener.local_addr().unwrap())).unwrap();
+    let source = tempfile::NamedTempFile::new().unwrap();
+    let content = vec![0x5a; 1024 * 1024];
+    std::fs::write(source.path(), &content).unwrap();
+    let server = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let mut headers = Vec::new();
+        while !headers.ends_with(b"\r\n\r\n") {
+            headers.push(stream.read_u8().await.unwrap());
+            assert!(headers.len() < 8192);
+        }
+        let mut prefix = [0; 16];
+        stream.read_exact(&mut prefix).await.unwrap();
+        assert_eq!(prefix, [0x5a; 16]);
+        // Close before consuming the body or producing any response.
+    });
+    assert!(matches!(
+        client
+            .upload_file("workspace_test", "item_test", "file", source.path())
+            .await,
+        Err(Error::Transport(_))
+    ));
+    assert_eq!(std::fs::read(source.path()).unwrap(), content);
+    server.await.unwrap();
+}

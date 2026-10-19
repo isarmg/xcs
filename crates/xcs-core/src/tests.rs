@@ -2454,3 +2454,231 @@ fn journal_append_rejects_dangling_symlink_without_creating_its_target() {
     assert!(!outside.exists());
     assert!(fs::symlink_metadata(&log).unwrap().file_type().is_symlink());
 }
+
+#[test]
+fn sealed_batch_checksum_failure_rolls_back_all_files_and_retries_after_restart() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    for path in ["first.txt", "second.txt"] {
+        engine
+            .stage_bytes(&workspace.workspace_id, path, path.as_bytes())
+            .unwrap();
+    }
+    engine
+        .seal_workspace(&workspace.workspace_id, "admin")
+        .unwrap();
+    // Corrupt the last item in execution order, after another file has already
+    // been composed into the transaction's private candidate state.
+    let staged = engine
+        .workspace(&workspace.workspace_id)
+        .unwrap()
+        .files
+        .values()
+        .last()
+        .unwrap()
+        .clone();
+    fs::set_permissions(&staged.source_path, fs::Permissions::from_mode(0o600)).unwrap();
+    fs::write(&staged.source_path, b"corrupted").unwrap();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: workspace.base_head,
+        fencing_token: workspace.fencing_token,
+        message: "atomic sealed batch".into(),
+        request_digest: None,
+    };
+    let before = canonical_json(engine.state()).unwrap();
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap_err().code(),
+        "CHECKSUM_MISMATCH"
+    );
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
+    assert!(!engine.is_read_only());
+    drop(engine);
+
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "sealed"
+    );
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap_err().code(),
+        "CHECKSUM_MISMATCH"
+    );
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
+    fs::write(&staged.source_path, staged.path.as_bytes()).unwrap();
+    let result = engine.commit_workspace(request.clone()).unwrap();
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap().commit_id,
+        result.commit_id
+    );
+    assert_eq!(engine.state().versions.len(), 2);
+    drop(engine);
+
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(
+        engine.commit_workspace(request).unwrap().commit_id,
+        result.commit_id
+    );
+    let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(entries.len(), 2);
+    for entry in entries {
+        assert_eq!(bytes(&engine, &entry.version_id), entry.path.as_bytes());
+    }
+    assert_eq!(engine.state().versions.len(), 2);
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "committed"
+    );
+}
+
+#[test]
+fn accepted_batch_recovers_without_staged_sources_and_replays_exactly_once() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let first = engine
+        .stage_bytes(&workspace.workspace_id, "first.txt", b"first")
+        .unwrap();
+    let second = engine
+        .stage_bytes(&workspace.workspace_id, "second.txt", b"second")
+        .unwrap();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: workspace.base_head,
+        fencing_token: workspace.fencing_token,
+        message: "recover full batch".into(),
+        request_digest: None,
+    };
+    engine.inject_fault_once("after_accept_1");
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap_err().code(),
+        "IN_DOUBT"
+    );
+    assert!(engine.list_tree(&repo.main_branch_id).unwrap().is_empty());
+    assert!(engine.state().versions.is_empty());
+    // Once accepted, recovery must use prepared durable payloads, not require
+    // uploads that the client may already have lost.
+    fs::remove_file(first.source_path).unwrap();
+    fs::remove_file(second.source_path).unwrap();
+    drop(engine);
+
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    let result = engine.operation(&request.operation_id).unwrap();
+    assert_eq!(result.commit_state, "PUBLISHED");
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "committed"
+    );
+    let sequence = engine.state().sequence;
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap().commit_id,
+        result.commit_id
+    );
+    assert_eq!(engine.state().sequence, sequence);
+    let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(entries.len(), 2);
+    assert_eq!(bytes(&engine, &entries[0].version_id), b"first");
+    assert_eq!(bytes(&engine, &entries[1].version_id), b"second");
+    assert_eq!(engine.state().versions.len(), 2);
+    drop(engine);
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(
+        engine.commit_workspace(request).unwrap().commit_id,
+        result.commit_id
+    );
+    assert_eq!(engine.state().sequence, sequence);
+    assert_eq!(engine.state().versions.len(), 2);
+}
+
+#[test]
+fn unchanged_save_recovery_persists_operation_without_creating_content_history() {
+    for (fault, accepted) in [("after_prepare_1", false), ("after_accept_1", true)] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        let original = save(&mut engine, &repo.main_branch_id, "file.txt", b"unchanged");
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        engine
+            .stage_bytes(&workspace.workspace_id, "file.txt", b"unchanged")
+            .unwrap();
+        let request = CommitRequest {
+            workspace_id: workspace.workspace_id.clone(),
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "same bytes".into(),
+            request_digest: None,
+        };
+        let commits = engine.state().commits.len();
+        let versions = engine.state().versions.len();
+        let generation = engine.state().branches[&repo.main_branch_id].generation;
+        engine.inject_fault_once(fault);
+        assert_eq!(
+            engine.commit_workspace(request.clone()).unwrap_err().code(),
+            if accepted {
+                "IN_DOUBT"
+            } else {
+                "INJECTED_FAILURE"
+            },
+            "{fault}"
+        );
+        assert_eq!(engine.is_read_only(), accepted);
+        drop(engine);
+
+        let mut engine = Engine::open(&fixture.root).unwrap();
+        assert_eq!(
+            engine
+                .state()
+                .operations
+                .contains_key(&request.operation_id),
+            accepted,
+            "{fault}"
+        );
+        let result = engine.commit_workspace(request.clone()).unwrap();
+        assert_eq!(result.commit_id, original.commit_id);
+        assert_eq!(result.result["no_change"], true);
+        let sequence = engine.state().sequence;
+        assert_eq!(
+            engine.commit_workspace(request.clone()).unwrap().commit_id,
+            result.commit_id
+        );
+        assert_eq!(engine.state().sequence, sequence);
+        assert_eq!(engine.state().commits.len(), commits);
+        assert_eq!(engine.state().versions.len(), versions);
+        assert_eq!(
+            engine.state().branches[&repo.main_branch_id].generation,
+            generation
+        );
+        drop(engine);
+
+        let mut engine = Engine::open(&fixture.root).unwrap();
+        assert_eq!(
+            engine.commit_workspace(request).unwrap().commit_id,
+            original.commit_id
+        );
+        assert_eq!(engine.state().sequence, sequence);
+        assert_eq!(engine.state().commits.len(), commits);
+        assert_eq!(engine.state().versions.len(), versions);
+        assert_eq!(
+            engine.workspace(&workspace.workspace_id).unwrap().state,
+            "committed"
+        );
+    }
+}
