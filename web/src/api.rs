@@ -477,8 +477,12 @@ pub async fn commit_workspace(
     operation_id: &str,
     message: &str,
     expected_head: &str,
+    on_commit: impl FnOnce(),
 ) -> Result<Value, Error> {
     if native() {
+        // The native bridge owns sealing and committing as one IPC call. Its
+        // error cannot tell us whether publication was attempted.
+        on_commit();
         return invoke("commit_workspace",json!({"workspace":workspace,"operationId":operation_id,"message":message,"expectedHead":expected_head})).await;
     }
     let mut body = request(
@@ -501,6 +505,9 @@ pub async fn commit_workspace(
     )
     .map_err(|error| error_from_contract(error))?;
     body["request_digest"] = digest.into();
+    // A failed seal (including a lost seal response) has not submitted this
+    // operation ID. Only publication errors require querying that operation.
+    on_commit();
     request(
         "POST",
         &format!("/v1/workspaces/{}/commit", segment(workspace)),

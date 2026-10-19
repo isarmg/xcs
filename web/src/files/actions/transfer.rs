@@ -139,6 +139,7 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
             let id = row.operation_id.clone();
             update_upload(state, &id, |row| row.status = SaveStatus::Uploading);
             let request = write_session_body(&row);
+            let mut commit_attempted = false;
             let result = async {
                 let session = api::request(
                     "POST",
@@ -169,6 +170,7 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
                     &id,
                     &format!("Upload {}", row.name),
                     &expected_head,
+                    || commit_attempted = true,
                 )
                 .await
             }
@@ -179,20 +181,8 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
             match result {
                 Ok(value) => apply_upload_result(state, &id, value),
                 Err(error) => {
-                    let unknown = state.with_untracked(|s| {
-                        s.files
-                            .uploads
-                            .iter()
-                            .find(|row| row.operation_id == id)
-                            .is_some_and(|row| row.status == SaveStatus::Saving)
-                    }) && (error.status == 0 || error.status >= 500);
                     update_upload(state, &id, |row| {
-                        row.status = if unknown {
-                            SaveStatus::Unknown
-                        } else {
-                            SaveStatus::Rejected
-                        };
-                        row.message = error.to_string();
+                        apply_upload_error(row, commit_attempted, &error);
                     });
                     fail(state, error);
                 }
@@ -210,6 +200,22 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
         }
     });
 }
+// Saving includes sealing, but an operation exists only after commit is sent.
+// A malformed/truncated successful HTTP response is also unconfirmed: the
+// server may already have published it. Only a definite client error rejects it.
+fn upload_error_status(commit_attempted: bool, http_status: u16) -> SaveStatus {
+    if commit_attempted && !(400..500).contains(&http_status) {
+        SaveStatus::Unknown
+    } else {
+        SaveStatus::Rejected
+    }
+}
+
+fn apply_upload_error(row: &mut UploadRow, commit_attempted: bool, error: &api::Error) {
+    row.status = upload_error_status(commit_attempted, error.status);
+    row.message = error.to_string();
+}
+
 // Receipts (especially failed staged uploads) remain until the user explicitly
 // clears them. Starting another upload must not erase recovery information.
 fn append_uploads(uploads: &mut Vec<UploadRow>, rows: impl IntoIterator<Item = UploadRow>) {
@@ -307,6 +313,47 @@ pub(crate) fn download(state: RwSignal<State>, entry: Value) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn seal_failures_do_not_poll_an_operation_that_was_never_submitted() {
+        // Uploading has finished and the row says Saving while seal is running.
+        // Even a successful seal whose response was lost never sends commit.
+        for status in [0, 200, 400, 409, 500, 503] {
+            let mut row = UploadRow {
+                status: SaveStatus::Saving,
+                workspace: "retained-workspace".into(),
+                expected_head: "base-head".into(),
+                ..Default::default()
+            };
+            apply_upload_error(
+                &mut row,
+                false,
+                &api::Error {
+                    code: "SEAL_FAILED".into(),
+                    message: "Seal response lost".into(),
+                    retryable: true,
+                    status,
+                    request_id: None,
+                },
+            );
+            assert_eq!(row.status, SaveStatus::Rejected);
+            assert!(!row.status.pending());
+            assert!(row.message.contains("Seal response lost"));
+            assert_eq!(row.workspace, "retained-workspace");
+            assert_eq!(row.expected_head, "base-head");
+        }
+    }
+
+    #[test]
+    fn only_attempted_commits_with_uncertain_results_block_the_upload_queue() {
+        for status in [0, 200, 201, 500, 503] {
+            assert_eq!(upload_error_status(true, status), SaveStatus::Unknown);
+            assert!(upload_error_status(true, status).pending());
+        }
+        for status in [400, 401, 403, 409, 422] {
+            assert_eq!(upload_error_status(true, status), SaveStatus::Rejected);
+        }
+    }
 
     #[test]
     fn starting_another_upload_retains_failed_staging_and_completed_receipts() {

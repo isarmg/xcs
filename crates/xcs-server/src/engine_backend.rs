@@ -80,6 +80,8 @@ fn error(error: xcs_core::Error) -> ApiError {
             "HEAD_CONFLICT"
             | "BRANCH_NOT_ACTIVE"
             | "FENCED"
+            | "LEASE_EXPIRED"
+            | "UPLOAD_GENERATION_CONFLICT"
             | "FILE_CONFLICT"
             | "FILE_BRANCH_CONFLICT"
             | "DIRECTORY_BRANCH_CONFLICT"
@@ -368,6 +370,19 @@ fn authorize(
 mod authorization_tests {
     use super::*;
     use std::collections::BTreeSet;
+
+    #[test]
+    fn upload_generation_and_lease_errors_preserve_conflict_status() {
+        for (core_code, api_code) in [
+            ("STALE_UPLOAD_GENERATION", "UPLOAD_GENERATION_CONFLICT"),
+            ("UPLOAD_GENERATION_CONFLICT", "UPLOAD_GENERATION_CONFLICT"),
+            ("FENCING_TOKEN_EXPIRED", "LEASE_EXPIRED"),
+        ] {
+            let error = error(xcs_core::Error::new(core_code, "retry needs new state"));
+            assert_eq!(error.status, 409, "{core_code}");
+            assert_eq!(error.code, api_code);
+        }
+    }
 
     #[test]
     fn split_repository_accepts_independent_account_admission_and_still_requires_its_own_acl() {

@@ -3432,6 +3432,109 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
 }
 
 #[tokio::test]
+async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
+    let root = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        root.path().join("d1"),
+        root.path().join("d2"),
+        root.path().join("d3"),
+    ]);
+    let backend = Arc::new(EngineBackend::new(
+        Engine::initialize(&root.path().join("system"), config).unwrap(),
+    ));
+    let auth = backend
+        .protect_auth(
+            AuthStore::initialize(
+                &root.path().join("system"),
+                "admin",
+                "integration-test-password",
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    let app = xcs_server::router(
+        backend.clone(),
+        auth,
+        ServerConfig::loopback(&root.path().join("system")),
+    )
+    .unwrap();
+    let token = login(&app, "admin", "integration-test-password").await;
+    let repo = success(
+        &app,
+        &token,
+        "POST",
+        "/v1/repositories",
+        Some(json!({
+            "name":"Cross-entry uploads", "primary_slot_id":"P01", "target_copies":1,
+            "operation_id":new_id("op")
+        })),
+    )
+    .await;
+    let workspace = success(
+        &app,
+        &token,
+        "POST",
+        "/v1/workspaces",
+        Some(json!({
+            "branch_id":repo["main_branch_id"]
+        })),
+    )
+    .await;
+    let ws = workspace["workspace_id"].as_str().unwrap();
+    let item = new_id("entry");
+    let source = root.path().join("source");
+    std::fs::write(&source, b"original").unwrap();
+    // A different adapter can stage directly in the engine without HTTP spool
+    // metadata. The engine's conflict must keep the same public HTTP semantics.
+    backend
+        .upload_generation(
+            &Identity {
+                principal: "admin".into(),
+                admin: true,
+                repositories: Default::default(),
+            },
+            ws,
+            &item,
+            "file.txt",
+            &source,
+            2,
+        )
+        .unwrap();
+    for generation in [1, 2] {
+        let bytes = b"different";
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("PUT")
+                    .uri(format!(
+                        "/v1/workspaces/{ws}/files/{item}/content?path=file.txt"
+                    ))
+                    .header("authorization", format!("Bearer {token}"))
+                    .header("x-xcs-logical-size", bytes.len().to_string())
+                    .header("x-xcs-content-hash", blake3::hash(bytes).to_hex().as_str())
+                    .header("x-xcs-upload-generation", generation.to_string())
+                    .body(Body::from(bytes.to_vec()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            StatusCode::CONFLICT,
+            "generation {generation}"
+        );
+        let body: Value = serde_json::from_slice(
+            &axum::body::to_bytes(response.into_body(), 8192)
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(body["error"]["code"], "UPLOAD_GENERATION_CONFLICT");
+    }
+}
+
+#[tokio::test]
 async fn interrupted_new_upload_generation_reports_its_own_durable_progress() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
