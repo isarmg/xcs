@@ -1,6 +1,6 @@
 # 分支引用、目录子树与首次内容写入
 
-实现讨论记录：2026-10-19。[总目录](../../README.md) · [当前分支规则](../06-history-and-branches.md#s06-02) · [完整逻辑](../design/branch-system-logic.md) · [实际图形实例](../../demos/branch-system/examples.md)
+实现讨论记录：2026-10-19。[文档目录](../README.md) · [当前分支规则](../06-history-and-branches.md#s06-02) · [完整逻辑](../design/branch-system-logic.md) · [实际图形实例](../../demos/branch-system/examples.md)
 
 本文保留实现过程中的字段、缓存及恢复讨论，不作为最新语义已经实现的证明。创建目录分支直接引用父子树、首次写入才为文件建立公共分支，以及跨目录跟踪移交和批量作用范围，以[最新逻辑](../design/branch-system-logic.md#s23)为准；实现与规范需分别验收。
 

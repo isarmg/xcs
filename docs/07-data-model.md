@@ -1,6 +1,6 @@
 # 07 数据模型、身份与索引
 
-[总目录](../README.md) · [上一章：版本、分支引用、合并连线与树拆分](06-history-and-branches.md) · [下一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md)
+[文档目录](README.md) · [上一章：版本、分支引用、合并连线与树拆分](06-history-and-branches.md) · [下一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md)
 
 <a id="s07"></a>
 
@@ -104,4 +104,4 @@ SQLite 丢失或损坏后，由有效检查点、应用日志和不可变元数�
 
 ---
 
-[总目录](../README.md) · [上一章：版本、分支引用、合并连线与树拆分](06-history-and-branches.md) · [下一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md)
+[文档目录](README.md) · [上一章：版本、分支引用、合并连线与树拆分](06-history-and-branches.md) · [下一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md)

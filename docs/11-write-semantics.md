@@ -1,6 +1,6 @@
 # 11 文件写入与保存语义
 
-[总目录](../README.md) · [上一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md) · [下一章：读取、完整性与缓存一致性](12-reading-and-cache.md)
+[文档目录](README.md) · [上一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md) · [下一章：读取、完整性与缓存一致性](12-reading-and-cache.md)
 
 <a id="s11"></a>
 
@@ -184,4 +184,4 @@ Samba 的 SMB2/3 FLUSH 使用异步处理。[S04] 桥接需验证异步同步回
 
 ---
 
-[总目录](../README.md) · [上一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md) · [下一章：读取、完整性与缓存一致性](12-reading-and-cache.md)
+[文档目录](README.md) · [上一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md) · [下一章：读取、完整性与缓存一致性](12-reading-and-cache.md)

@@ -1,50 +1,48 @@
-# xcs 原生 App
+# XCS 原生 App
 
-`bridge/` 是独立可测的 Rust 原生业务边界，复用本项目 `xcs-client`。`host/` 是 Tauri 2 宿主，使用与 Web 相同的 `web/dist`，提供 Linux、Windows、macOS、Android、iOS/iPadOS 的统一源码入口；平台包由各自工具链构建。
+App 使用 Tauri 2 宿主和共享的 Rust/WASM 界面。`bridge/` 负责会话、文件传输和缓存，`host/` 负责窗口、文件选择与系统打开。文件业务通过 XCS API 访问，与 SMB 入口分开。
 
-## 原生职责
+## 使用与实现
 
-- 会话令牌仅保留在 Rust 内存，登录结果传给 WebView 时移除令牌；日志不输出凭据。通用 API 请求不能绕过原生连接命令登录，恢复会话也不向 WebView 返回 CSRF 凭据。退出失败时保留凭据供锁定界面重试服务器注销；确认成功或服务器明确返回 401 后才清除，同时使在途登录失效。连接尝试与活动会话代次分别管理，失败登录保留原连接，旧登录/退出/传输/缓存校验结果不能覆盖新会话。
-- 公共登录、账户、页面壳、主题和对话框均由项目内 `web/runtime` 提供。自助改密确认成功后同时清除 Rust 内存会话并返回登录；密码错误保留当前连接。
-- JSON 请求严格限制到所连接服务器的 `/v1/`，共享客户端禁止远程明文 HTTP、URL 凭据和重定向。
-- 原生文件选择使用官方 dialog 插件；Android content URI 与 iOS 安全范围文件通过官方 fs 插件解析句柄，Rust 流式导入私有暂存目录；iOS 句柄使用结束后释放安全范围资源。
-- 文件上传、封存/JCS 提交与校验下载使用 Rust 客户端，文件字节不走 IPC。导入临时文件由 `StagedImport` 跨后台复制与异步返回持有，读取失败或调用取消会清理；只有成功接收选择结果后才保留，成功上传后再清理。
-- 固定版本保存到 `versions/<version_id>/<当前文件名>` 缓存，完整保留合法 240 字节文件名，不再拼版本前缀而超长。初次下载与复用共享路径校验；只有目标已存在时才尝试复用，再次打开前重新校验。缓存子目录和现有缓存文件拒绝符号链接，现有条目必须是普通文件（拒绝目录和特殊设备，避免校验阻塞）；Unix 新子目录为 0700、文件为 0600；旧版缓存不会自动删除或迁移。外部编辑形成的本地变化需要重新上传工作区并提交。
-- 系统打开仅允许应用缓存内的已验证文件；使用官方 opener 插件。主窗口的自定义命令有明确权限清单，未授权远程页面不能调用。
+- 登录信息由 Rust 桥接层管理。注销成功或服务器确认会话失效后清除凭据；网络失败时保留重试注销的能力。切换会话后，旧请求不会覆盖新会话状态。
+- 界面、主题和公共组件来自 `web/runtime`，与浏览器版本共用。远程服务器使用 HTTPS；HTTP 仅用于本机开发。
+- 文件通过原生句柄流式上传和下载，不经过 WebView IPC 传递正文。取消或失败的导入会清理临时文件，下载完成后核对大小与摘要。
+- 下载缓存按版本保存，系统打开前重新校验。外部编辑后的内容需要重新上传并提交，不会自动回写服务器。
+- 文件选择、系统打开和移动端文件提供方由官方 Tauri 插件衔接；本项目的业务与适配逻辑采用 Rust。
 
-官方插件可包含平台 Java/Kotlin/Swift 等代码；本项目维护的宿主、适配、界面与业务逻辑全部为 Rust。
+会话代次实现在 `bridge/src/connection.rs`，缓存和导入生命周期实现在 `bridge/src/cache.rs`。缓存只接纳普通文件，拒绝符号链接和特殊设备；Unix 缓存目录和文件分别使用 `0700`、`0600`。
 
-`bridge/src/connection.rs` 负责连接尝试及会话代次，`cache.rs` 负责缓存身份和导入临时文件；宿主只处理文件提供方、权限与系统打开，不重新定义这些规则。
+## 构建与运行
 
-## 构建与检查
-
-先构建 Web，并生成应用图标：
+以下命令在仓库根目录执行。先安装仓库指定的 Rust 工具链及平台依赖，再构建共享界面和图标：
 
 ```sh
-cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- build --product-root .
-cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- icons --product-root .
-cargo test --locked --offline --manifest-path apps/Cargo.toml
-cargo check --locked --offline --manifest-path apps/host/Cargo.toml
-cargo run --locked --offline --manifest-path apps/host/Cargo.toml
+rustup target add wasm32-unknown-unknown
+bash .github/scripts/check.sh web-production
+cargo run --locked --manifest-path tools/web-build/Cargo.toml -- icons --product-root .
+cargo test --locked --manifest-path apps/Cargo.toml
+cargo check --locked --manifest-path apps/host/Cargo.toml
+cargo run --locked --manifest-path apps/host/Cargo.toml
 ```
 
-Linux 需要 GTK 3、WebKitGTK 4.1、libsoup 3 等开发库。Windows 需要 WebView2 和对应 Rust/C++ 链接工具；Apple 平台需要 Xcode 与签名配置；Android 需要 Android SDK/NDK。使用 Tauri CLI 的 `android init` / `ios init` 生成对应原生工程，再在各平台运行 `android build` / `ios build`。生成的第三方宿主工程不承载自写业务逻辑。
+首次构建需要联网获取锁定依赖；依赖齐全后，Cargo 命令可加 `--offline`。正式 Web 构建脚本会提前获取依赖并安装匹配的 wasm-bindgen CLI。
 
-本次环境使用项目 `target/sysroot` 局部提取 Linux SDK，未向系统安装或升级软件。对应检查可设置：
+- Linux：GTK 3、WebKitGTK 4.1、libsoup 3 等开发库及相应运行库。
+- Windows：Rust MSVC 工具链、Visual Studio C++ 构建工具和 WebView2。
+- macOS：Xcode 命令行工具；签名和公证另需开发者配置。
+- Android：Android SDK/NDK，通过 Tauri CLI 生成并构建 Android 宿主。
+- iOS/iPadOS：Xcode，通过 Tauri CLI 生成 iOS 宿主，并在目标设备上验证权限、签名与文件交接。
 
-```sh
-PKG_CONFIG_PATH="$PWD/target/sysroot/usr/lib/x86_64-linux-gnu/pkgconfig:$PWD/target/sysroot/usr/share/pkgconfig" cargo check --locked --offline --manifest-path apps/host/Cargo.toml
-```
+平台依赖见 [Tauri 官方说明](https://v2.tauri.app/start/prerequisites/)，安装包构建见[发布说明](../docs/release.md)。
 
-完整平台运行、后台持续传输、系统文件关联回传、签名与分发应在各平台 SDK 和设备上验收。源码入口和 Linux 检查不能代替六平台实测。
+## 验证状态
 
-| 平台 | 当前验证范围 | 尚需平台验证 |
+[2026-10-19 的 CI](https://github.com/isarmg/xcs/actions/runs/39276866908) 已通过 Linux、Windows、macOS 的桥接测试与宿主编译检查。共享界面已在真实 Chrome 中完成登录、上传、版本详情、下载比对和注销测试。
+
+| 范围 | 当前状态 | 下一步 |
 | --- | --- | --- |
-| Linux | Rust 原生桥接测试；Tauri 使用局部 GTK/WebKit SDK 的检查与可执行文件链接构建通过 | 宿主交互、系统文件选择/关联编辑器、打包 |
-| Windows | 统一 Rust 源码入口 | WebView2、链接、安装包与系统交接 |
-| macOS | 统一 Rust 源码入口 | Xcode、签名、打包与系统交接 |
-| Android | Rust 文件选择及 content URI 适配源码 | SDK/NDK、文件提供方、后台生命周期和真机 |
-| iOS | Rust 文件选择及安全范围资源释放源码 | Xcode、签名、后台生命周期和真机 |
-| iPadOS | 复用 iOS 宿主与窄屏/宽屏 Web 界面 | iPad 真机、多窗口及系统交接 |
+| Linux、Windows、macOS | 桥接测试与宿主 `cargo check` | 发行打包、安装、原生 WebView 交互和系统文件交接 |
+| Android | 文件选择及 content URI 适配源码 | SDK/NDK 构建、文件提供方、后台生命周期及真机 |
+| iOS/iPadOS | 文件选择及安全范围资源释放源码 | Xcode 构建、签名、后台生命周期、iPad 多窗口及真机 |
 
-局部提取的 WebKit 运行库仍把 helper 进程定位到系统绝对路径，当前环境的 Xvfb 启动探针因此未完成运行验证。此处只记录实际检查和链接结果；标准 Linux 发行环境仍应安装完整运行依赖并执行交互验收。
+编译检查与浏览器测试分别验证构建和共享界面；原生宿主交互、移动端及实际安装按平台单独验收。历史 Linux 局部 SDK 构建记录见[实现报告](../docs/reports/implementation.md)。

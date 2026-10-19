@@ -1,6 +1,6 @@
 # 06 版本、分支引用、合并连线与树拆分
 
-[总目录](../README.md) · [上一章：统一命名与路径规范](05-naming-and-paths.md) · [下一章：数据模型、身份与索引](07-data-model.md)
+[文档目录](README.md) · [上一章：统一命名与路径规范](05-naming-and-paths.md) · [下一章：数据模型、身份与索引](07-data-model.md)
 
 <a id="s06"></a>
 
@@ -200,6 +200,6 @@ flowchart LR
 
 ---
 
-[总目录](../README.md) · [上一章：统一命名与路径规范](05-naming-and-paths.md) · [下一章：数据模型、身份与索引](07-data-model.md)
+[文档目录](README.md) · [上一章：统一命名与路径规范](05-naming-and-paths.md) · [下一章：数据模型、身份与索引](07-data-model.md)
 
 最新确认的文件／文件夹改名规则：增加目录子树，并为每个受影响文件增加公开的文件路径节点；节点引用原正文，不生成新 FULL。后续实际写入接在该路径节点之后。路径节点可独立备注或作为创建文件分支的来源，分支标签改名仍不增加节点。见[详细规则](design/branch-system-logic.md#s15)与[实例 23](../demos/branch-system/reference/23-rename-path-nodes.png)。

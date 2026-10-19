@@ -1,6 +1,6 @@
 # 08 全量存储、盘格式与单盘恢复
 
-[总目录](../README.md) · [上一章：数据模型、身份与索引](07-data-model.md) · [下一章：用户指定的分层备份拓扑](09-backup-topology.md)
+[文档目录](README.md) · [上一章：数据模型、身份与索引](07-data-model.md) · [下一章：用户指定的分层备份拓扑](09-backup-topology.md)
 
 <a id="s08"></a>
 
@@ -165,4 +165,4 @@
 
 ---
 
-[总目录](../README.md) · [上一章：数据模型、身份与索引](07-data-model.md) · [下一章：用户指定的分层备份拓扑](09-backup-topology.md)
+[文档目录](README.md) · [上一章：数据模型、身份与索引](07-data-model.md) · [下一章：用户指定的分层备份拓扑](09-backup-topology.md)

@@ -1,6 +1,6 @@
 # 12 读取、完整性与缓存一致性
 
-[总目录](../README.md) · [上一章：文件写入与保存语义](11-write-semantics.md) · [下一章：历史内容清除与安全回收](13-retention-and-deletion.md)
+[文档目录](README.md) · [上一章：文件写入与保存语义](11-write-semantics.md) · [下一章：历史内容清除与安全回收](13-retention-and-deletion.md)
 
 <a id="s12"></a>
 
@@ -118,4 +118,4 @@ App 断网时可读取已有且获准使用的固定版本缓存。SMB 连接中
 
 ---
 
-[总目录](../README.md) · [上一章：文件写入与保存语义](11-write-semantics.md) · [下一章：历史内容清除与安全回收](13-retention-and-deletion.md)
+[文档目录](README.md) · [上一章：文件写入与保存语义](11-write-semantics.md) · [下一章：历史内容清除与安全回收](13-retention-and-deletion.md)

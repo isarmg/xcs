@@ -6,7 +6,7 @@
 
 Release 自己执行锁定测试、契约检查、正式 Web 构建、浏览器冒烟及三个桌面打包任务，不依赖另一个可能尚未完成的 CI。全部成功、资产集合校验通过才进入发布。仅发布任务持有 `contents: write`；不添加持久密钥。先创建草稿并上传全部资产，下载校验 SHA-256，再公开。中途失败保持草稿；重新运行可续传同一源码的本工作流草稿，拒绝修改已经公开的 Release。标签移动会阻止公开发布。公开后如需修复，应发布新版本，不覆盖旧包。
 
-`workflow_dispatch` 只演练同样的构建与验证，生成 Actions 的 `release-complete` artifact，永远不创建标签或 Release。可从 Actions → Release → Run workflow 选择待验证分支。首次标签发布前应先让这项演练成功。工作流失败不代表产物可安装，不能把仅做过静态检查的 YAML 当作实机验收。
+`workflow_dispatch` 只演练同样的构建与验证，生成 Actions 的 `release-complete` artifact，永远不创建标签或 Release。可从 Actions → Release → Run workflow 选择待验证分支。首次标签发布前应先让这项演练成功。构建成功后，安装和运行仍需按目标平台验收。
 
 预发布标签自动标为 prerelease。预发布不更新 Latest；正式版交由 GitHub 默认规则判定 Latest，不强制把旧标签指定为最新版本。
 
@@ -21,7 +21,7 @@ Release 自己执行锁定测试、契约检查、正式 Web 构建、浏览器�
 - `xcs-app-VERSION-aarch64-apple-darwin.app.tar.gz`：macOS Apple Silicon 的 `.app` 目录归档。当前不提供 Intel Mac 包。
 - `INSTALL.md`、`BUILD.txt`、`SHA256SUMS`：安装/重建步骤、源码提交与工具版本、所有其他资产的 SHA-256。
 
-桌面包没有开发者证书签名，macOS 未公证，系统可能阻止运行。这些是供测试验证的产物，尚不代表商店分发或签名安装体验；不建议关闭系统安全机制。Android、iOS、iPadOS 没有冒充可安装包的占位文件；它们仍需 SDK、生成宿主工程、签名和真机验收。此流程不发布 Samba VFS 二进制模块。
+桌面包没有开发者证书签名，macOS 未公证，系统可能阻止运行。这些是供测试验证的产物，尚不代表商店分发或签名安装体验；不建议关闭系统安全机制。当前不生成 Android、iOS、iPadOS 安装包；这些平台仍需 SDK、生成宿主工程、签名和真机验收。此流程不发布 Samba VFS 二进制模块。
 
 ## 下载、校验与安装
 

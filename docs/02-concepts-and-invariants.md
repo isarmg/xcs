@@ -1,6 +1,6 @@
 # 02 术语、对象与核心不变量
 
-[总目录](../README.md) · [上一章：需求与系统边界](01-requirements.md) · [下一章：总体架构与模块边界](03-architecture.md)
+[文档目录](README.md) · [上一章：需求与系统边界](01-requirements.md) · [下一章：总体架构与模块边界](03-architecture.md)
 
 <a id="s02"></a>
 
@@ -95,4 +95,4 @@ I22 目录分支递归批量操作各文件的独立分支，一次决定和发�
 
 ---
 
-[总目录](../README.md) · [上一章：需求与系统边界](01-requirements.md) · [下一章：总体架构与模块边界](03-architecture.md)
+[文档目录](README.md) · [上一章：需求与系统边界](01-requirements.md) · [下一章：总体架构与模块边界](03-architecture.md)

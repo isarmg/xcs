@@ -1,6 +1,6 @@
 # 21 配置规范与默认值
 
-[总目录](../README.md) · [上一章：工程结构与依赖约束](20-engineering.md) · [下一章：验收标准与证明材料](22-acceptance.md)
+[文档目录](README.md) · [上一章：工程结构与依赖约束](20-engineering.md) · [下一章：验收标准与证明材料](22-acceptance.md)
 
 <a id="s21"></a>
 
@@ -340,4 +340,4 @@ queue_warning_seconds = 30
 
 ---
 
-[总目录](../README.md) · [上一章：工程结构与依赖约束](20-engineering.md) · [下一章：验收标准与证明材料](22-acceptance.md)
+[文档目录](README.md) · [上一章：工程结构与依赖约束](20-engineering.md) · [下一章：验收标准与证明材料](22-acceptance.md)

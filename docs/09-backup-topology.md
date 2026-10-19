@@ -1,6 +1,6 @@
 # 09 用户指定的分层备份拓扑
 
-[总目录](../README.md) · [上一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md) · [下一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md)
+[文档目录](README.md) · [上一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md) · [下一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md)
 
 <a id="s09"></a>
 
@@ -181,4 +181,4 @@ required_slots(v) = route(v)[1:r(v)]
 
 ---
 
-[总目录](../README.md) · [上一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md) · [下一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md)
+[文档目录](README.md) · [上一章：全量存储、盘格式与单盘恢复](08-full-storage-and-disk-format.md) · [下一章：事务、持久化与崩溃恢复](10-transactions-and-recovery.md)

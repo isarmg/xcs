@@ -1,6 +1,6 @@
 # 18 故障处理与降级行为
 
-[总目录](../README.md) · [上一章：初始化、启停与硬盘维护](17-lifecycle-and-maintenance.md) · [下一章：容量、配额与性能预算](19-capacity-and-performance.md)
+[文档目录](README.md) · [上一章：初始化、启停与硬盘维护](17-lifecycle-and-maintenance.md) · [下一章：容量、配额与性能预算](19-capacity-and-performance.md)
 
 <a id="s18"></a>
 
@@ -64,4 +64,4 @@
 
 ---
 
-[总目录](../README.md) · [上一章：初始化、启停与硬盘维护](17-lifecycle-and-maintenance.md) · [下一章：容量、配额与性能预算](19-capacity-and-performance.md)
+[文档目录](README.md) · [上一章：初始化、启停与硬盘维护](17-lifecycle-and-maintenance.md) · [下一章：容量、配额与性能预算](19-capacity-and-performance.md)

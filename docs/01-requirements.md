@@ -1,6 +1,6 @@
 # 01 需求与系统边界
 
-[总目录](../README.md) · [下一章：术语、对象与核心不变量](02-concepts-and-invariants.md)
+[文档目录](README.md) · [下一章：术语、对象与核心不变量](02-concepts-and-invariants.md)
 
 <a id="s01"></a>
 
@@ -126,4 +126,4 @@ R01～R17 是完整规范要求，实现范围及验证证据见[实现报告](r
 
 ---
 
-[总目录](../README.md) · [下一章：术语、对象与核心不变量](02-concepts-and-invariants.md)
+[文档目录](README.md) · [下一章：术语、对象与核心不变量](02-concepts-and-invariants.md)

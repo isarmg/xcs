@@ -1,6 +1,6 @@
 # 20 工程结构与依赖约束
 
-[总目录](../README.md) · [上一章：容量、配额与性能预算](19-capacity-and-performance.md) · [下一章：配置规范与默认值](21-configuration.md)
+[文档目录](README.md) · [上一章：容量、配额与性能预算](19-capacity-and-performance.md) · [下一章：配置规范与默认值](21-configuration.md)
 
 <a id="s20"></a>
 
@@ -70,7 +70,9 @@ xcs/
 ├── tools/
 │   ├── contract-check/          # xcs-contract-check 契约校验
 │   ├── web-build/               # xcs-web-build WASM、资源与图标构建
-│   └── unicode-build/           # xcs-unicode-build 固定 Unicode 表重现
+│   ├── unicode-build/           # xcs-unicode-build 固定 Unicode 表重现
+│   ├── browser-smoke/           # Rust WebDriver 浏览器烟测
+│   └── release-tools/           # 发布版本校验
 ├── demos/branch-system/          # 演示内容、代码、图示与检查材料
 │   ├── src/                    # 无存储 I/O 的模型、视图、场景及图形
 │   │   └── bin/                # build / serve / reference 三个 Cargo 工具入口
@@ -80,6 +82,9 @@ xcs/
 ├── tests/                       # 跨模块验证说明与脱敏证据
 ├── docs/
 │   ├── README.md               # 文档导航
+│   ├── getting-started.md      # 本地运行
+│   ├── 21-ci.md                # 持续集成
+│   ├── release.md              # 发布与安装
 │   ├── 01-…25-*.md             # 编号规范手册
 │   ├── design/                 # 分支、合并、标签和备份等专题规则
 │   ├── reports/                # 实现、重构和讨论报告
@@ -186,4 +191,4 @@ Rust 版本由根 `rust-toolchain.toml` 指定。原生工作区使用根 `Cargo
 
 ---
 
-[总目录](../README.md) · [上一章：容量、配额与性能预算](19-capacity-and-performance.md) · [下一章：配置规范与默认值](21-configuration.md)
+[文档目录](README.md) · [上一章：容量、配额与性能预算](19-capacity-and-performance.md) · [下一章：配置规范与默认值](21-configuration.md)

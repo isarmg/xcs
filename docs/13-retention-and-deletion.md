@@ -1,6 +1,6 @@
 # 13 历史内容清除与安全回收
 
-[总目录](../README.md) · [上一章：读取、完整性与缓存一致性](12-reading-and-cache.md) · [下一章：身份、权限与运行隔离](14-security-and-permissions.md)
+[文档目录](README.md) · [上一章：读取、完整性与缓存一致性](12-reading-and-cache.md) · [下一章：身份、权限与运行隔离](14-security-and-permissions.md)
 
 <a id="s13"></a>
 
@@ -108,4 +108,4 @@ PREVIEW -> CHECK_REFERENCES -> READY
 
 ---
 
-[总目录](../README.md) · [上一章：读取、完整性与缓存一致性](12-reading-and-cache.md) · [下一章：身份、权限与运行隔离](14-security-and-permissions.md)
+[文档目录](README.md) · [上一章：读取、完整性与缓存一致性](12-reading-and-cache.md) · [下一章：身份、权限与运行隔离](14-security-and-permissions.md)

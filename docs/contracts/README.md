@@ -1,6 +1,6 @@
 # 核心契约附件
 
-[总目录](../../README.md) · [盘格式](../08-full-storage-and-disk-format.md#s08-06) · [API](../15-api-and-errors.md#s15-10) · [状态登记](../23-delivery-and-decisions.md#s23-05)
+[文档目录](../README.md) · [盘格式](../08-full-storage-and-disk-format.md#s08-06) · [API](../15-api-and-errors.md#s15-10) · [状态登记](../23-delivery-and-decisions.md#s23-05)
 
 本附件为 `0.1.0-draft`，用于使部分规范可以执行字段与向量校验。仓库已有核心、服务端和客户端实现；本附件的覆盖仍限于下表，不表示完整 API 或盘格式已冻结，也不替代实际 I/O 和平台验收。
 

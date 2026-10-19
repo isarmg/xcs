@@ -1,6 +1,6 @@
 # 16 App、网页与命令行界面
 
-[总目录](../README.md) · [上一章：API、操作结果与错误契约](15-api-and-errors.md) · [下一章：初始化、启停与硬盘维护](17-lifecycle-and-maintenance.md)
+[文档目录](README.md) · [上一章：API、操作结果与错误契约](15-api-and-errors.md) · [下一章：初始化、启停与硬盘维护](17-lifecycle-and-maintenance.md)
 
 <a id="s16"></a>
 
@@ -98,4 +98,4 @@ xcs plan commit plan-split-example --expected-digest digest-example
 
 ---
 
-[总目录](../README.md) · [上一章：API、操作结果与错误契约](15-api-and-errors.md) · [下一章：初始化、启停与硬盘维护](17-lifecycle-and-maintenance.md)
+[文档目录](README.md) · [上一章：API、操作结果与错误契约](15-api-and-errors.md) · [下一章：初始化、启停与硬盘维护](17-lifecycle-and-maintenance.md)

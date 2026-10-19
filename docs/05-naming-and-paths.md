@@ -1,6 +1,6 @@
 # 05 统一命名与路径规范
 
-[总目录](../README.md) · [上一章：六平台客户端与访问入口](04-platforms-and-access.md) · [下一章：版本、分支引用、合并连线与树拆分](06-history-and-branches.md)
+[文档目录](README.md) · [上一章：六平台客户端与访问入口](04-platforms-and-access.md) · [下一章：版本、分支引用、合并连线与树拆分](06-history-and-branches.md)
 
 <a id="s05"></a>
 
@@ -170,4 +170,4 @@ Web/App 显示原名称、原因、位置和修复提示；CLI 返回非零退�
 
 ---
 
-[总目录](../README.md) · [上一章：六平台客户端与访问入口](04-platforms-and-access.md) · [下一章：版本、分支引用、合并连线与树拆分](06-history-and-branches.md)
+[文档目录](README.md) · [上一章：六平台客户端与访问入口](04-platforms-and-access.md) · [下一章：版本、分支引用、合并连线与树拆分](06-history-and-branches.md)

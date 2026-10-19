@@ -1,6 +1,6 @@
 # 22 验收标准与证明材料
 
-[总目录](../README.md) · [上一章：配置规范与默认值](21-configuration.md) · [下一章：交付路线、设计决策与验证边界](23-delivery-and-decisions.md)
+[文档目录](README.md) · [上一章：配置规范与默认值](21-configuration.md) · [下一章：交付路线、设计决策与验证边界](23-delivery-and-decisions.md)
 
 <a id="s22"></a>
 
@@ -278,4 +278,4 @@ G01—G05针对旧 `MergeLink` 关系标记，G06—G10针对真正推进归属�
 
 ---
 
-[总目录](../README.md) · [上一章：配置规范与默认值](21-configuration.md) · [下一章：交付路线、设计决策与验证边界](23-delivery-and-decisions.md)
+[文档目录](README.md) · [上一章：配置规范与默认值](21-configuration.md) · [下一章：交付路线、设计决策与验证边界](23-delivery-and-decisions.md)

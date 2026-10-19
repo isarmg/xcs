@@ -1,6 +1,6 @@
 # 03 总体架构与模块边界
 
-[总目录](../README.md) · [上一章：术语、对象与核心不变量](02-concepts-and-invariants.md) · [下一章：六平台客户端与访问入口](04-platforms-and-access.md)
+[文档目录](README.md) · [上一章：术语、对象与核心不变量](02-concepts-and-invariants.md) · [下一章：六平台客户端与访问入口](04-platforms-and-access.md)
 
 <a id="s03"></a>
 
@@ -109,7 +109,7 @@ App 经业务 API 接入，SMB 经 Samba 和服务端桥接接入；两条路径
 
 ## 3.2 接入与持盘边界
 
-采用 Samba 承担 SMB 协议服务，通过受控业务桥接将基础文件操作送入 Storage Core。桥接拟采用 Samba VFS 扩展和受保护本机接口，须先用样机验证目标 Samba 版本的回调与错误传播。这里需要实现业务对接，但不重写 SMB 协议、不开发客户端虚拟盘，客户端无需本系统自研挂载。[S03][S04]
+采用 Samba 承担 SMB 协议服务，通过受控业务桥接将基础文件操作送入 Storage Core。桥接采用 Samba VFS 扩展和受保护本机接口；目标 SDK 与已验证路径见[SMB 桥接说明](../integrations/smb/README.md)。其他版本及完整应用操作矩阵仍需单独验证。这里需要实现业务对接，但不重写 SMB 协议、不开发客户端虚拟盘，客户端无需本系统自研挂载。[S03][S04]
 
 SMB 共享绑定 `(repository_id, history_tree_id, main_branch_id, share_generation)`，只展示该主分支当前文件。分支、历史图、清除、拆分、备份和磁盘管理通过 App、Web 或 CLI 访问；不得借可写隐藏目录或特殊文件名触发。
 
@@ -127,14 +127,14 @@ SMB 服务及 API 网关不直接共享版本对象目录。Storage Daemon 仍�
 | --- | --- | --- |
 | 服务端 | Rust Storage Daemon | 一个有效写协调器；可并行准备数据，按事务顺序发布 |
 | 独立 SMB 接入 | Samba / SMB 3 系列 | 共享主分支基础文件，独立于 App 接入，服务端统一执行业务规则；不启用 SMB1 |
-| SMB 业务桥接 | Samba VFS 扩展到受控核心接口 | 拟定集成边界；须验证完整操作路径，不能只监听文件变化事后补版本 |
+| SMB 业务桥接 | Samba VFS 扩展到受控核心接口 | 同步执行核心业务操作；完整操作路径按目标 SDK 验证 |
 | 本机内部通信 | Unix Domain Socket | 受信服务身份和受限用户代理，不接受任意身份自报 |
 | App / Web / 远程 CLI | HTTPS，优先 HTTP/2 | HTTP/3 为可选扩展，不改变保存语义 |
 | 各端 App | 本项目自行实现的 App 和共享客户端核心 | 自行实现连接、认证、界面、文件操作、缓存、任务及错误展示，通过业务 API 访问 |
 | 桌面 App | 自研 Linux、Windows、macOS 独立安装客户端 | 文件与高级管理功能均经统一业务 API 访问 |
 | 移动 App | 自研 Android、iOS、iPadOS 客户端 | 提供相同业务功能，通过业务 API 访问，界面及后台任务按系统适配 |
 | 每盘文件系统 | 独立 Btrfs | 保持数据校验；恢复环境兼容性独立验收 |
-| 内容格式 | 仅 FULL 普通文件 | 每个内容版本及全量分支起点独立完整；连线只存元数据 |
+| 内容格式 | 仅 FULL 普通文件 | 每个新写内容版本独立完整；分支创建引用冻结父版本，首次写入才生成自有 FULL |
 | 元数据 | 三成员应用日志与检查点 | 两成员决定、三成员保护后正常发布 |
 | 索引 | SQLite，可重建 | 不将 SQLite WAL 当成跨盘事务 |
 | 校验 | BLAKE3 整文件与分段清单 | 范围验证和全文件验证分别执行 |
@@ -146,4 +146,4 @@ SMB 服务及 API 网关不直接共享版本对象目录。Storage Daemon 仍�
 
 ---
 
-[总目录](../README.md) · [上一章：术语、对象与核心不变量](02-concepts-and-invariants.md) · [下一章：六平台客户端与访问入口](04-platforms-and-access.md)
+[文档目录](README.md) · [上一章：术语、对象与核心不变量](02-concepts-and-invariants.md) · [下一章：六平台客户端与访问入口](04-platforms-and-access.md)

@@ -1,6 +1,6 @@
 # 15 API、操作结果与错误契约
 
-[总目录](../README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：App、网页与命令行界面](16-client-interfaces.md)
+[文档目录](README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：App、网页与命令行界面](16-client-interfaces.md)
 
 <a id="s15"></a>
 
@@ -284,4 +284,4 @@ HTTP 状态描述本次调用，operation 的终态描述原业务请求，二�
 
 ---
 
-[总目录](../README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：App、网页与命令行界面](16-client-interfaces.md)
+[文档目录](README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：App、网页与命令行界面](16-client-interfaces.md)

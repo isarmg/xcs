@@ -2,7 +2,17 @@
 
 [项目入口](../README.md) · [工程结构](20-engineering.md) · [过程演示](../demos/branch-system/index.html)
 
-编号 01—25 的文件是连续的产品规范手册，保留稳定的章节路径。专题设计、实现报告和模板分别归档，机器可读契约仍由 `contracts/` 唯一维护。
+本目录集中提供使用、开发和设计资料。编号 01—25 的手册定义产品目标与规则；实现范围和测试结果见交付状态及报告。机器可读契约统一放在 `contracts/`。
+
+## 从这里开始
+
+- 本地开发：[运行服务与检查](getting-started.md) → [工程结构](20-engineering.md)
+- 日常使用：[操作手册](25-operation-manual.md) → [配置](21-configuration.md)
+- 理解设计：[总体架构](03-architecture.md) → [分支逻辑](design/branch-system-logic.md) → [图形实例](../demos/branch-system/examples.md)
+- 构建与分发：[持续集成](21-ci.md) → [发布与安装](release.md)
+- 核对进度：[交付状态](23-delivery-and-decisions.md#s23-05) → [实现与检查报告](reports/README.md)
+
+## 完整索引
 
 | 内容 | 位置与入口 |
 | --- | --- |
@@ -18,3 +28,7 @@
 | 演示、图示及其测试 | [demos/branch-system/](../demos/branch-system/README.md)，统一存放在独立演示目录 |
 
 新增规范按主题放入本目录；具体实现证据放入报告或对应测试材料，避免与领域规则混写。项目源码、构建缓存与运行池的边界见[工程约定](20-engineering.md)。
+
+## 规范用语
+
+“必须”“不得”表示强制要求；“应”表示默认应满足的要求；“可以”表示允许的能力。领域规范定义行为，操作手册说明使用顺序，报告记录指定执行时点的证据。示例中的 ID、设备名称和配置用于说明规则，部署时应核对实际命令和配置支持情况。
