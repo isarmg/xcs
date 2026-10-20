@@ -205,6 +205,11 @@ pub(crate) async fn run(args: Args) -> Result<()> {
             upstream,
             metadata_member,
         } => {
+            // These paths are part of the JSON draft and success receipt.
+            // Validate before preserving a backup or changing either file.
+            if config.to_str().is_none() || path.to_str().is_none() {
+                return Err("configuration and disk paths must be valid UTF-8 for JSON output; the draft was not changed".into());
+            }
             if root.join("auth.json").exists() {
                 return Err("disk registration modifies only an uninitialized configuration draft; live migration requires a protected topology plan".into());
             }
@@ -244,12 +249,18 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                 binding_generation: 1,
                 capacity_bytes: None,
             });
-            let backup = config.with_extension("json.before-registration");
-            if backup.symlink_metadata().is_ok() {
-                private_io::replace_private(&backup, &original)?;
+            let backup = registration_backup(&config)?;
+            let backup_result = if backup.symlink_metadata().is_ok() {
+                private_io::replace_private(&backup, &original)
             } else {
-                private_io::write_new(&backup, &original)?;
-            }
+                private_io::write_new(&backup, &original)
+            };
+            backup_result.map_err(|error| {
+                format!(
+                    "cannot preserve configuration backup {} (the draft was not changed): {error}",
+                    backup.display()
+                )
+            })?;
             private_io::replace_private(&config, &serde_json::to_vec_pretty(&draft)?)?;
             print(
                 json!({"slot_id":slot,"draft":config,"backup":backup,"live_binding_changed":false}),
@@ -260,6 +271,17 @@ pub(crate) async fn run(args: Args) -> Result<()> {
         }
         command => local_operation(&root, &args.principal, command),
     }
+}
+
+fn registration_backup(config: &Path) -> Result<std::path::PathBuf> {
+    let mut name = config
+        .file_name()
+        .ok_or("configuration draft must have a file name")?
+        .to_os_string();
+    // Preserve the complete name: config.json and config.draft must never
+    // share a recovery file. Keep non-UTF8 path bytes intact.
+    name.push(".before-registration");
+    Ok(config.with_file_name(name))
 }
 
 fn local_operation(root: &Path, principal: &str, command: Command) -> Result<()> {
@@ -575,6 +597,119 @@ mod tests {
             original
         );
     }
+    #[tokio::test]
+    async fn different_configuration_extensions_keep_independent_registration_backups() {
+        let root = tempfile::tempdir().unwrap();
+        let draft = Config::development([
+            root.path().join("p"),
+            root.path().join("b"),
+            root.path().join("c"),
+        ]);
+        let first = root.path().join("config.json");
+        let second = root.path().join("config.draft");
+        let original = serde_json::to_vec(&draft).unwrap();
+        private_io::write_new(&first, &original).unwrap();
+        let mut other = draft.clone();
+        other.pool_id = zxs_core::new_id("pool");
+        let other_original = serde_json::to_vec(&other).unwrap();
+        private_io::write_new(&second, &other_original).unwrap();
+        run(registration(root.path(), first)).await.unwrap();
+        run(registration(root.path(), second)).await.unwrap();
+        assert_eq!(
+            std::fs::read(root.path().join("config.json.before-registration")).unwrap(),
+            original
+        );
+        assert_eq!(
+            std::fs::read(root.path().join("config.draft.before-registration")).unwrap(),
+            other_original
+        );
+    }
+
+    #[test]
+    fn registration_backup_preserves_the_complete_native_file_name() {
+        use std::os::unix::ffi::{OsStrExt, OsStringExt};
+        for name in ["config", "config.json", "config.draft", ".config"] {
+            assert_eq!(
+                registration_backup(Path::new(name)).unwrap(),
+                Path::new(&format!("{name}.before-registration"))
+            );
+        }
+        let name = std::ffi::OsString::from_vec(b"config-\xff.json".to_vec());
+        assert_eq!(
+            registration_backup(Path::new(&name))
+                .unwrap()
+                .as_os_str()
+                .as_bytes(),
+            b"config-\xff.json.before-registration"
+        );
+        assert!(registration_backup(Path::new("/")).is_err());
+    }
+
+    #[tokio::test]
+    async fn oversized_backup_name_fails_without_changing_the_draft() {
+        let root = tempfile::tempdir().unwrap();
+        let draft = Config::development([
+            root.path().join("p"),
+            root.path().join("b"),
+            root.path().join("c"),
+        ]);
+        let path = root.path().join("c".repeat(250));
+        let original = serde_json::to_vec(&draft).unwrap();
+        private_io::write_new(&path, &original).unwrap();
+        let error = run(registration(root.path(), path.clone()))
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("draft was not changed"));
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+        assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 1);
+    }
+
+    #[tokio::test]
+    async fn non_utf8_registration_path_is_rejected_before_any_write() {
+        use std::os::unix::ffi::OsStringExt;
+        let root = tempfile::tempdir().unwrap();
+        let draft = Config::development([
+            root.path().join("p"),
+            root.path().join("b"),
+            root.path().join("c"),
+        ]);
+        let path = root
+            .path()
+            .join(std::ffi::OsString::from_vec(b"config-\xff.json".to_vec()));
+        let original = serde_json::to_vec(&draft).unwrap();
+        private_io::write_new(&path, &original).unwrap();
+        let error = run(registration(root.path(), path.clone()))
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("valid UTF-8"));
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+        assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 1);
+    }
+
+    #[tokio::test]
+    async fn repeated_registration_keeps_the_immediately_previous_draft() {
+        let root = tempfile::tempdir().unwrap();
+        let draft = Config::development([
+            root.path().join("p"),
+            root.path().join("b"),
+            root.path().join("c"),
+        ]);
+        let path = root.path().join("config.json");
+        private_io::write_new(&path, &serde_json::to_vec(&draft).unwrap()).unwrap();
+        run(registration(root.path(), path.clone())).await.unwrap();
+        let previous = std::fs::read(&path).unwrap();
+        let mut args = registration(root.path(), path.clone());
+        if let Command::RegisterDisk { slot, path, .. } = &mut args.command {
+            *slot = "D02".into();
+            *path = root.path().join("fifth");
+        }
+        run(args).await.unwrap();
+        assert_eq!(
+            std::fs::read(registration_backup(&path).unwrap()).unwrap(),
+            previous
+        );
+    }
+
     #[tokio::test]
     async fn invalid_upstream_level_is_an_error_and_never_modifies_the_draft() {
         let root = tempfile::tempdir().unwrap();
