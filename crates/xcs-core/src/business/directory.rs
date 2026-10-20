@@ -100,13 +100,12 @@ pub(crate) fn rebase_entries(entries: &[Entry], from: &str, to: &str) -> Result<
                 ));
             }
             let mut e = e.clone();
-            e.path = if to.is_empty() {
+            let path = if to.is_empty() {
                 suffix
             } else {
                 format!("{to}/{suffix}")
             };
-            e.name = e.path.rsplit('/').next().unwrap_or("").into();
-            e.lookup_key = xcs_naming::path_key(&e.path);
+            namespace::relocate_entry(&mut e, path)?;
             Ok(e)
         })
         .collect()
@@ -487,8 +486,7 @@ pub(crate) fn namespace_locations(
                 "rename",
                 moved.lookup_key != source,
             );
-            moved.path = path;
-            moved.lookup_key = xcs_naming::path_key(&moved.path);
+            namespace::relocate_entry(&mut moved, path)?;
             renamed = true;
         }
         if !deleted {

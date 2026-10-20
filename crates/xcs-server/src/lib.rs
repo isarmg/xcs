@@ -96,12 +96,83 @@ impl IntoResponse for ApiError {
 
 /// A successful content open must hold its core read lease until the body drops.
 pub struct Content {
+    pub fallback_files: Vec<std::fs::File>,
+    pub checksum_manifest: Option<xcs_contract::ChecksumManifest>,
     pub file: std::fs::File,
     pub size: u64,
     pub hash: String,
     pub lease: Box<dyn Send + Sync>,
     pub download_name: Option<String>,
 }
+impl Content {
+    /// Raw descriptor consumers require a fully verified replica before handoff.
+    /// Range consumers instead verify each emitted chunk from the same buffer.
+    pub fn fully_verified(mut self) -> Result<Self, ApiError> {
+        let Some(manifest) = self.checksum_manifest.as_ref() else {
+            return Ok(self);
+        };
+        loop {
+            if verify_content_file(&mut self.file, manifest, self.size, &self.hash).is_ok() {
+                self.checksum_manifest = None;
+                self.fallback_files.clear();
+                return Ok(self);
+            }
+            let Some(next) = self.fallback_files.pop() else {
+                return Err(ApiError::new(
+                    503,
+                    "CONTENT_UNAVAILABLE",
+                    "no fully verified content replica is available",
+                ));
+            };
+            self.file = next;
+        }
+    }
+}
+
+fn verify_content_file(
+    file: &mut std::fs::File,
+    manifest: &xcs_contract::ChecksumManifest,
+    size: u64,
+    hash: &str,
+) -> std::io::Result<()> {
+    use std::io::{Read, Seek, SeekFrom};
+    let corrupt = || {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "content verification failed",
+        )
+    };
+    if !xcs_contract::SUPPORTED_CHECKSUM_CHUNK_BYTES.contains(&manifest.chunk_bytes)
+        || manifest.logical_size != size
+        || file.metadata()?.len() != size
+        || manifest.chunks.len() as u64 != size.div_ceil(manifest.chunk_bytes as u64)
+    {
+        return Err(corrupt());
+    }
+    file.seek(SeekFrom::Start(0))?;
+    let mut whole = blake3::Hasher::new();
+    let mut remaining = size;
+    let mut buffer = vec![0; manifest.chunk_bytes as usize];
+    for expected in &manifest.chunks {
+        let length = remaining.min(manifest.chunk_bytes as u64) as usize;
+        file.read_exact(&mut buffer[..length])?;
+        if blake3::hash(&buffer[..length]).as_bytes() != expected {
+            return Err(corrupt());
+        }
+        whole.update(&buffer[..length]);
+        remaining -= length as u64;
+    }
+    let mut extra = [0u8; 1];
+    if file.read(&mut extra)? != 0
+        || file.metadata()?.len() != size
+        || whole.finalize().to_hex().as_str() != hash
+    {
+        return Err(corrupt());
+    }
+    file.seek(SeekFrom::Start(0))?;
+    Ok(())
+}
+
 pub trait Backend: Send + Sync {
     fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError>;
     fn upload(
@@ -113,6 +184,10 @@ pub trait Backend: Send + Sync {
         source: &Path,
     ) -> Result<Value, ApiError>;
     fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError>;
+    /// Range streaming verifies each emitted chunk; raw descriptor callers use content.
+    fn range_content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
+        self.content(identity, version)
+    }
     fn upload_generation(
         &self,
         identity: &Identity,
@@ -186,6 +261,10 @@ impl Backend for AuthorizedBackend {
     }
     fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
         self.backend.content(&self.current(identity)?, version)
+    }
+    fn range_content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
+        self.backend
+            .range_content(&self.current(identity)?, version)
     }
     fn workspace_content(
         &self,
@@ -285,6 +364,7 @@ struct AppState {
     attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
     password_slots: Arc<tokio::sync::Semaphore>,
     upload_slots: Arc<tokio::sync::Semaphore>,
+    read_slots: Arc<tokio::sync::Semaphore>,
     upload_claims: Arc<Mutex<std::collections::BTreeSet<String>>>,
     static_etags: Arc<BTreeMap<String, String>>,
     telemetry: Arc<telemetry::Telemetry>,
@@ -332,6 +412,7 @@ fn router_shared(
         attempts: Arc::new(Mutex::new(HashMap::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
         upload_slots: Arc::new(tokio::sync::Semaphore::new(8)),
+        read_slots: Arc::new(tokio::sync::Semaphore::new(8)),
         upload_claims: Arc::new(Mutex::new(Default::default())),
         static_etags: Arc::new(match &config.web_dir {
             Some(root) => web_assets::static_etags(root)?,
@@ -749,6 +830,8 @@ mod tests {
         }
         fn content(&self, _identity: &Identity, _version: &str) -> Result<Content, ApiError> {
             Ok(Content {
+                checksum_manifest: None,
+                fallback_files: Vec::new(),
                 file: std::fs::File::open(&self.path).map_err(ApiError::io)?,
                 size: 10,
                 hash: blake3::hash(b"0123456789").to_hex().to_string(),

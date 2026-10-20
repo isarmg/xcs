@@ -368,3 +368,37 @@ async fn interrupted_upload_is_a_transport_error_and_preserves_source() {
     assert_eq!(std::fs::read(source.path()).unwrap(), content);
     server.await.unwrap();
 }
+
+#[tokio::test]
+async fn response_adapter_enforces_shared_duplicate_key_and_status_rules() {
+    for status in [200, 409, 503] {
+        let body = br#"{"error":{"code":"first","co\u0064e":"second"}}"#;
+        let mut response = format!(
+            "HTTP/1.1 {status} Test\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            body.len()
+        )
+        .into_bytes();
+        response.extend_from_slice(body);
+        let (client, server) = reply(response).await;
+        let expected = xcs_contract::client_protocol::decode_response(status, body).unwrap_err();
+        match client
+            .request("GET", "/v1/system/status", None)
+            .await
+            .unwrap_err()
+        {
+            Error::Api {
+                status,
+                code,
+                message,
+                retryable,
+            } => {
+                assert_eq!(status, expected.status);
+                assert_eq!(code, expected.code);
+                assert_eq!(message, expected.message);
+                assert_eq!(retryable, expected.retryable);
+            }
+            error => panic!("lost protocol status: {error}"),
+        }
+        server.await.unwrap();
+    }
+}

@@ -11,6 +11,7 @@ mod config;
 mod index;
 mod publication;
 mod reads;
+pub use reads::{ContentReadPlan, RangeContent, WorkspaceReadPlan};
 mod recovery;
 mod workspace_storage;
 use config::{acquire_locks, validate_config};

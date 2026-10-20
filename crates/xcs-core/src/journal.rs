@@ -3,7 +3,9 @@ use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
     io::{Read, Write},
+    os::unix::fs::MetadataExt,
     path::{Path, PathBuf},
+    sync::{Mutex, OnceLock},
 };
 pub(crate) const MAX_FRAME: usize = 16 * 1024 * 1024;
 
@@ -59,7 +61,13 @@ pub(crate) struct Scan {
 pub(crate) fn log_path(d: &DiskConfig) -> PathBuf {
     d.root.join("metadata/application-log/journal.bin")
 }
+#[cfg(test)]
+thread_local! {
+    static SCAN_COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
 pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
+    #[cfg(test)]
+    SCAN_COUNT.with(|count| count.set(count.get() + 1));
     let path = log_path(d);
     if !path.exists() {
         return Ok(Scan {
@@ -151,6 +159,40 @@ pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
     }
     Ok(out)
 }
+// A process-local optimization, never a recovery authority. Keep only the current
+// decision slot per journal; older receipt retries deliberately use a full scan.
+// Device/inode plus ctime detect replacement, truncation and same-size rewrites
+// (including writers that restore mtime). Restart always verifies from byte zero.
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct FileStamp {
+    dev: u64,
+    ino: u64,
+    len: u64,
+    mtime: (i64, i64),
+    ctime: (i64, i64),
+}
+impl FileStamp {
+    fn of(file: &std::fs::File) -> Result<Self> {
+        let m = file.metadata()?;
+        Ok(Self {
+            dev: m.dev(),
+            ino: m.ino(),
+            len: m.len(),
+            mtime: (m.mtime(), m.mtime_nsec()),
+            ctime: (m.ctime(), m.ctime_nsec()),
+        })
+    }
+}
+struct VerifiedTail {
+    stamp: FileStamp,
+    records: Vec<(Record, String)>,
+}
+const MAX_CACHED_JOURNALS: usize = 64;
+fn tails() -> &'static Mutex<BTreeMap<PathBuf, VerifiedTail>> {
+    static TAILS: OnceLock<Mutex<BTreeMap<PathBuf, VerifiedTail>>> = OnceLock::new();
+    TAILS.get_or_init(|| Mutex::new(BTreeMap::new()))
+}
+
 pub(crate) fn append(
     d: &DiskConfig,
     kind: &str,
@@ -160,19 +202,54 @@ pub(crate) fn append(
 ) -> Result<Receipt> {
     let path = log_path(d);
     private_dir(path.parent().expect("log parent"))?;
-    let scanned = scan(d)?;
+    // Serialize cache lookup and append together. A failed operation removes its
+    // entry before touching disk, so retries must verify any partial write.
+    let mut tails = tails()
+        .lock()
+        .map_err(|_| Error::new("RECOVERY_REQUIRED", "journal cache lock poisoned"))?;
+    let cached = tails.remove(&path);
+    let mut file = open_append_regular(&path)?;
+    let before = FileStamp::of(&file)?;
+    let scanned = match cached {
+        Some(tail)
+            if tail.stamp == before
+                && tail
+                    .records
+                    .last()
+                    .is_some_and(|(r, _)| sequence >= r.sequence) =>
+        {
+            Scan {
+                records: tail.records,
+                valid_bytes: before.len,
+                torn_tail: false,
+            }
+        }
+        _ => scan(d)?,
+    };
+    // Reject concurrent replacement/modification while scanning. Engine locks
+    // serialize supported writers; this also catches accidental outside writes.
+    if FileStamp::of(&file)? != before || FileStamp::of(&open_regular(&path)?)? != before {
+        return Err(Error::new(
+            "RECOVERY_REQUIRED",
+            "journal changed during verification",
+        ));
+    }
     if let Some((record, hash)) = scanned.records.iter().find(|(r, _)| {
         r.sequence == sequence
             && r.record_type == kind
             && r.candidate_hash == candidate
             && r.object_hash == object
     }) {
-        return Ok(Receipt {
+        let receipt = Receipt {
             disk_id: d.disk_id.clone(),
             slot_id: d.slot_id.clone(),
             frame_hash: hash.clone(),
             record: record.clone(),
-        });
+        };
+        if !scanned.torn_tail {
+            cache_tail(&mut tails, path, before, scanned.records);
+        }
+        return Ok(receipt);
     }
     if scanned
         .records
@@ -182,6 +259,16 @@ pub(crate) fn append(
         return Err(Error::new(
             "LOG_FORK",
             "two candidates occupy one decision slot",
+        ));
+    }
+    if scanned
+        .records
+        .last()
+        .is_some_and(|(r, _)| r.sequence > sequence)
+    {
+        return Err(Error::new(
+            "LOG_FORK",
+            "cannot append an older decision slot",
         ));
     }
     let record = Record {
@@ -211,7 +298,6 @@ pub(crate) fn append(
     h.update(&header);
     h.update(&bytes);
     let digest = h.finalize();
-    let mut file = open_append_regular(&path)?;
     if scanned.torn_tail {
         file.set_len(scanned.valid_bytes)?;
         file.sync_all()?;
@@ -221,6 +307,18 @@ pub(crate) fn append(
     file.write_all(digest.as_bytes())?;
     file.sync_all()?;
     sync_dir(path.parent().expect("log parent"))?;
+    let stamp = FileStamp::of(&file)?;
+    if stamp.len != scanned.valid_bytes + header.len() as u64 + bytes.len() as u64 + 32
+        || FileStamp::of(&open_regular(&path)?)? != stamp
+    {
+        return Err(Error::new(
+            "RECOVERY_REQUIRED",
+            "journal changed during append",
+        ));
+    }
+    let mut records = scanned.records;
+    records.push((record.clone(), digest.to_hex().to_string()));
+    cache_tail(&mut tails, path, stamp, records);
     Ok(Receipt {
         disk_id: d.disk_id.clone(),
         slot_id: d.slot_id.clone(),
@@ -228,6 +326,40 @@ pub(crate) fn append(
         record,
     })
 }
+fn cache_tail(
+    tails: &mut BTreeMap<PathBuf, VerifiedTail>,
+    path: PathBuf,
+    stamp: FileStamp,
+    mut records: Vec<(Record, String)>,
+) {
+    if let Some((last, _)) = records.last() {
+        let sequence = last.sequence;
+        records.retain(|(r, _)| r.sequence == sequence);
+    }
+    // A malformed workload may place arbitrarily many records in one slot.
+    // Do not retain an unbounded receipt set in that case.
+    let retained_bytes = records
+        .iter()
+        .map(|(r, hash)| {
+            r.record_type.len()
+                + r.candidate_hash.len()
+                + r.object_hash.len()
+                + r.previous_frame_hash.len()
+                + hash.len()
+        })
+        .sum::<usize>();
+    if records.len() > 64 || retained_bytes > 64 * 1024 {
+        return;
+    }
+    // Do not retain the allocation of a full historical scan.
+    records.shrink_to_fit();
+    // Bound cache size across unrelated engines; eviction only costs a rescan.
+    if tails.len() >= MAX_CACHED_JOURNALS {
+        tails.pop_first();
+    }
+    tails.insert(path, VerifiedTail { stamp, records });
+}
+
 pub(crate) fn object_path(d: &DiskConfig, kind: &str, hash: &str) -> PathBuf {
     d.root
         .join("metadata/objects")
@@ -809,5 +941,149 @@ mod replication_tests {
                 .unwrap_err();
         assert_eq!(error.code(), "RESOURCE_LIMIT");
         assert!(config.disks.iter().all(|disk| !disk.root.exists()));
+    }
+}
+
+#[cfg(test)]
+mod tail_cache_tests {
+    use super::*;
+    use std::io::{Seek, SeekFrom};
+
+    fn disk(temp: &tempfile::TempDir) -> DiskConfig {
+        Config::development([
+            temp.path().join("one"),
+            temp.path().join("two"),
+            temp.path().join("three"),
+        ])
+        .disks
+        .remove(0)
+    }
+    fn put(d: &DiskConfig, kind: &str, sequence: u64) -> Receipt {
+        append(
+            d,
+            kind,
+            sequence,
+            &format!("{sequence:064x}"),
+            &"b".repeat(64),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn latest_receipts_are_idempotent_and_old_retries_rescan() {
+        let temp = tempfile::tempdir().unwrap();
+        let d = disk(&temp);
+        let first = put(&d, "PREPARE", 1);
+        let latest = put(&d, "ACCEPT", 1);
+        assert_eq!(put(&d, "PREPARE", 1).frame_hash, first.frame_hash);
+        assert_eq!(put(&d, "ACCEPT", 1).frame_hash, latest.frame_hash);
+        put(&d, "PREPARE", 2);
+        let len = std::fs::metadata(log_path(&d)).unwrap().len();
+        assert_eq!(put(&d, "PREPARE", 1).frame_hash, first.frame_hash);
+        assert_eq!(std::fs::metadata(log_path(&d)).unwrap().len(), len);
+        assert_eq!(scan(&d).unwrap().records.len(), 3);
+        assert_eq!(
+            append(&d, "FINALIZE", 1, &format!("{:064x}", 1), &"b".repeat(64))
+                .unwrap_err()
+                .code,
+            "LOG_FORK"
+        );
+    }
+
+    #[test]
+    fn cached_append_detects_same_length_prefix_corruption() {
+        let temp = tempfile::tempdir().unwrap();
+        let d = disk(&temp);
+        put(&d, "PREPARE", 1);
+        put(&d, "PREPARE", 2);
+        let path = log_path(&d);
+        let old = std::fs::metadata(&path).unwrap();
+        let mut file = std::fs::OpenOptions::new().write(true).open(&path).unwrap();
+        file.seek(SeekFrom::Start(20)).unwrap();
+        file.write_all(b"!").unwrap();
+        file.set_times(std::fs::FileTimes::new().set_modified(old.modified().unwrap()))
+            .unwrap();
+        file.sync_all().unwrap();
+        assert_eq!(
+            append(&d, "ACCEPT", 2, &format!("{:064x}", 2), &"b".repeat(64))
+                .unwrap_err()
+                .code,
+            "LOG_CORRUPT"
+        );
+    }
+
+    #[test]
+    fn cached_append_repairs_torn_external_tail() {
+        let temp = tempfile::tempdir().unwrap();
+        let d = disk(&temp);
+        put(&d, "PREPARE", 1);
+        let mut file = std::fs::OpenOptions::new()
+            .append(true)
+            .open(log_path(&d))
+            .unwrap();
+        file.write_all(b"XCSLO").unwrap();
+        file.sync_all().unwrap();
+        put(&d, "ACCEPT", 1);
+        let scanned = scan(&d).unwrap();
+        assert!(!scanned.torn_tail);
+        assert_eq!(scanned.records.len(), 2);
+    }
+
+    #[test]
+    fn replacement_and_truncation_invalidate_cached_receipts() {
+        let temp = tempfile::tempdir().unwrap();
+        let d = disk(&temp);
+        put(&d, "PREPARE", 1);
+        let old = put(&d, "ACCEPT", 1);
+        let path = log_path(&d);
+        std::fs::rename(&path, path.with_extension("old")).unwrap();
+        let fresh = put(&d, "ACCEPT", 1);
+        assert_ne!(fresh.frame_hash, old.frame_hash);
+        assert_eq!(scan(&d).unwrap().records.len(), 1);
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&path)
+            .unwrap()
+            .set_len(0)
+            .unwrap();
+        put(&d, "PREPARE", 2);
+        let scanned = scan(&d).unwrap();
+        assert_eq!(scanned.records.len(), 1);
+        assert_eq!(scanned.records[0].0.sequence, 2);
+    }
+
+    #[test]
+    fn cold_append_revalidates_chain_and_cache_retains_only_latest_slot() {
+        // Keep this key after ordinary .tmp* fixtures in deterministic eviction
+        // order, so unrelated parallel tests cannot evict this measured tail.
+        let temp = tempfile::Builder::new()
+            .prefix("zzzz-tail-")
+            .tempdir()
+            .unwrap();
+        let d = disk(&temp);
+        let before = SCAN_COUNT.with(|count| count.get());
+        for sequence in 1..=40 {
+            put(&d, "PREPARE", sequence);
+            put(&d, "ACCEPT", sequence);
+        }
+        assert_eq!(
+            SCAN_COUNT.with(|count| count.get()) - before,
+            1,
+            "ordinary appends must scan only the initial cold journal"
+        );
+        {
+            let mut cache = tails().lock().unwrap();
+            let tail = cache.remove(&log_path(&d)).unwrap();
+            assert_eq!(tail.records.len(), 2);
+            assert_eq!(tail.records.capacity(), 2);
+            assert!(tail.records.iter().all(|(r, _)| r.sequence == 40));
+        }
+        put(&d, "FINALIZE", 40);
+        assert_eq!(
+            SCAN_COUNT.with(|count| count.get()) - before,
+            2,
+            "evicted/cold state must verify the full journal again"
+        );
+        assert_eq!(scan(&d).unwrap().records.len(), 81);
     }
 }

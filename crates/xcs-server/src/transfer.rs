@@ -455,6 +455,11 @@ pub(crate) async fn content(
     method: Method,
     headers: HeaderMap,
 ) -> Result<Response, ApiError> {
+    let permit = state
+        .read_slots
+        .clone()
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("download capacity reached"))?;
     let content = tokio::task::spawn_blocking(move || {
         if query.repository_id.is_some() != query.path.is_some() {
             return Err(ApiError::invalid(
@@ -481,10 +486,11 @@ pub(crate) async fn content(
         } else {
             None
         };
-        let mut content = state.backend.content(&identity, &version)?;
+        let mut content = state.backend.range_content(&identity, &version)?;
         if logical_name.is_some() {
             content.download_name = logical_name;
         }
+        content.lease = Box::new((content.lease, permit));
         Ok(content)
     })
     .await
@@ -498,10 +504,17 @@ pub(crate) async fn workspace_content(
     method: Method,
     headers: HeaderMap,
 ) -> Result<Response, ApiError> {
+    let permit = state
+        .read_slots
+        .clone()
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("download capacity reached"))?;
     let content = tokio::task::spawn_blocking(move || {
-        state
+        let mut content = state
             .backend
-            .workspace_content(&identity, &workspace, &item)
+            .workspace_content(&identity, &workspace, &item)?;
+        content.lease = Box::new((content.lease, permit));
+        Ok::<_, ApiError>(content)
     })
     .await
     .map_err(ApiError::invalid)??;
@@ -512,9 +525,17 @@ pub(crate) async fn checksums(
     axum::Extension(identity): axum::Extension<Identity>,
     RoutePath(version): RoutePath<String>,
 ) -> Result<Response, ApiError> {
-    let bytes = tokio::task::spawn_blocking(move || state.backend.checksums(&identity, &version))
-        .await
-        .map_err(ApiError::invalid)??;
+    let permit = state
+        .read_slots
+        .clone()
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("download capacity reached"))?;
+    let bytes = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        state.backend.checksums(&identity, &version)
+    })
+    .await
+    .map_err(ApiError::invalid)??;
     Ok(([(header::CONTENT_TYPE, "application/octet-stream")], bytes).into_response())
 }
 fn content_response(
@@ -522,6 +543,7 @@ fn content_response(
     method: Method,
     headers: HeaderMap,
 ) -> Result<Response, ApiError> {
+    let manifest = content.checksum_manifest;
     let download_name = content.download_name;
     let mut file = content.file;
     let size = content.size;
@@ -557,10 +579,26 @@ fn content_response(
     } else {
         (StatusCode::OK, 0, size)
     };
-    file.seek(SeekFrom::Start(start)).map_err(ApiError::io)?;
+
     let body = if method == Method::HEAD {
         Body::empty()
+    } else if let Some(manifest) = manifest {
+        let reader = VerifiedRange::new(file, content.fallback_files, manifest, start, length)?;
+        // One bounded chunk per blocking job. The state, lease and admission
+        // permit travel with that job, including after HTTP cancellation.
+        let stream =
+            futures_util::stream::try_unfold((reader, lease), |(mut reader, lease)| async move {
+                tokio::task::spawn_blocking(move || {
+                    reader.next_chunk().map(|chunk| {
+                        chunk.map(|chunk| (bytes::Bytes::from(chunk), (reader, lease)))
+                    })
+                })
+                .await
+                .map_err(std::io::Error::other)?
+            });
+        Body::from_stream(stream)
     } else {
+        file.seek(SeekFrom::Start(start)).map_err(ApiError::io)?;
         let stream = ReaderStream::new(tokio::io::AsyncReadExt::take(
             tokio::fs::File::from_std(file),
             length,
@@ -623,6 +661,76 @@ fn content_response(
     Ok(response)
 }
 
+/// Reads the entire authenticated chunk into a private buffer and exposes only
+/// verified bytes from that same buffer. Never verify then reread the payload.
+struct VerifiedRange<R> {
+    file: R,
+    fallbacks: Vec<R>,
+    manifest: xcs_contract::ChecksumManifest,
+    position: u64,
+    end: u64,
+}
+impl<R: std::io::Read + Seek> VerifiedRange<R> {
+    fn new(
+        file: R,
+        fallbacks: Vec<R>,
+        manifest: xcs_contract::ChecksumManifest,
+        start: u64,
+        length: u64,
+    ) -> Result<Self, ApiError> {
+        let end = start
+            .checked_add(length)
+            .filter(|end| *end <= manifest.logical_size)
+            .ok_or_else(|| ApiError::invalid("range exceeds authenticated size"))?;
+        if !xcs_contract::SUPPORTED_CHECKSUM_CHUNK_BYTES.contains(&manifest.chunk_bytes)
+            || manifest.chunks.len() as u64
+                != manifest.logical_size.div_ceil(manifest.chunk_bytes as u64)
+        {
+            return Err(ApiError::invalid("invalid checksum manifest"));
+        }
+        Ok(Self {
+            file,
+            fallbacks,
+            manifest,
+            position: start,
+            end,
+        })
+    }
+    fn next_chunk(&mut self) -> std::io::Result<Option<Vec<u8>>> {
+        if self.position == self.end {
+            return Ok(None);
+        }
+        let chunk_bytes = self.manifest.chunk_bytes as u64;
+        let index = self.position / chunk_bytes;
+        let base = index * chunk_bytes;
+        let count = chunk_bytes.min(self.manifest.logical_size - base) as usize;
+        let mut buffer = vec![0; count];
+        let expected = &self.manifest.chunks[index as usize];
+        let mut verified = false;
+        for file in std::iter::once(&mut self.file).chain(self.fallbacks.iter_mut()) {
+            if file.seek(SeekFrom::Start(base)).is_ok()
+                && file.read_exact(&mut buffer).is_ok()
+                && blake3::hash(&buffer).as_bytes() == expected
+            {
+                verified = true;
+                break;
+            }
+        }
+        if !verified {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "CHECKSUM_MISMATCH: no replica has a verified payload chunk",
+            ));
+        }
+        let from = (self.position - base) as usize;
+        let to = (self.end - base).min(count as u64) as usize;
+        self.position = base + to as u64;
+        buffer.truncate(to);
+        buffer.drain(..from);
+        Ok(Some(buffer))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -630,6 +738,95 @@ mod tests {
         Arc,
         atomic::{AtomicUsize, Ordering},
     };
+
+    struct CountingReader {
+        inner: std::io::Cursor<Vec<u8>>,
+        bytes: Arc<AtomicUsize>,
+    }
+    impl std::io::Read for CountingReader {
+        fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+            let n = std::io::Read::read(&mut self.inner, buffer)?;
+            self.bytes.fetch_add(n, Ordering::SeqCst);
+            Ok(n)
+        }
+    }
+    impl Seek for CountingReader {
+        fn seek(&mut self, position: SeekFrom) -> std::io::Result<u64> {
+            self.inner.seek(position)
+        }
+    }
+    fn counted(bytes: Vec<u8>, count: Arc<AtomicUsize>) -> CountingReader {
+        CountingReader {
+            inner: std::io::Cursor::new(bytes),
+            bytes: count,
+        }
+    }
+    fn manifest(bytes: &[u8]) -> xcs_contract::ChecksumManifest {
+        xcs_contract::ChecksumManifest {
+            chunk_bytes: 65536,
+            logical_size: bytes.len() as u64,
+            chunks: bytes
+                .chunks(65536)
+                .map(|chunk| *blake3::hash(chunk).as_bytes())
+                .collect(),
+        }
+    }
+    #[test]
+    fn verified_ranges_read_only_touched_chunks_and_fallback_without_exposing_corruption() {
+        let bytes = vec![42; 65536 * 4 + 7];
+        let count = Arc::new(AtomicUsize::new(0));
+        let mut reader = VerifiedRange::new(
+            counted(bytes.clone(), count.clone()),
+            vec![],
+            manifest(&bytes),
+            65535,
+            2,
+        )
+        .unwrap();
+        assert_eq!(reader.next_chunk().unwrap().unwrap(), [42]);
+        assert_eq!(reader.next_chunk().unwrap().unwrap(), [42]);
+        assert!(reader.next_chunk().unwrap().is_none());
+        assert_eq!(count.load(Ordering::SeqCst), 2 * 65536);
+        let mut corrupt = bytes.clone();
+        corrupt[65536] = 0;
+        let bad_count = Arc::new(AtomicUsize::new(0));
+        let good_count = Arc::new(AtomicUsize::new(0));
+        let mut reader = VerifiedRange::new(
+            counted(corrupt.clone(), bad_count.clone()),
+            vec![counted(bytes.clone(), good_count.clone())],
+            manifest(&bytes),
+            65537,
+            1,
+        )
+        .unwrap();
+        assert_eq!(reader.next_chunk().unwrap().unwrap(), [42]);
+        assert_eq!(bad_count.load(Ordering::SeqCst), 65536);
+        assert_eq!(good_count.load(Ordering::SeqCst), 65536);
+        let mut reader = VerifiedRange::new(
+            counted(corrupt, Arc::default()),
+            vec![],
+            manifest(&bytes),
+            65537,
+            1,
+        )
+        .unwrap();
+        assert_eq!(
+            reader.next_chunk().unwrap_err().kind(),
+            std::io::ErrorKind::InvalidData
+        );
+        // A short tail checks only actual remaining bytes, not a padded chunk.
+        let tail_count = Arc::new(AtomicUsize::new(0));
+        let mut reader = VerifiedRange::new(
+            counted(bytes.clone(), tail_count.clone()),
+            vec![],
+            manifest(&bytes),
+            (bytes.len() - 1) as u64,
+            1,
+        )
+        .unwrap();
+        assert_eq!(reader.next_chunk().unwrap().unwrap(), [42]);
+        assert_eq!(tail_count.load(Ordering::SeqCst), 7);
+    }
 
     struct ReadLease(Arc<AtomicUsize>);
     impl Drop for ReadLease {
@@ -641,11 +838,40 @@ mod tests {
         let mut file = tempfile::tempfile().unwrap();
         std::io::Write::write_all(&mut file, b"0123456789").unwrap();
         Content {
+            checksum_manifest: None,
+            fallback_files: Vec::new(),
             file,
             size: 10,
             hash: "hash".into(),
             lease: Box::new(ReadLease(lease)),
             download_name: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn verified_stream_preserves_lease_and_admission_until_consumption_or_drop() {
+        for consume in [true, false] {
+            let slots = Arc::new(tokio::sync::Semaphore::new(1));
+            let permit = slots.clone().try_acquire_owned().unwrap();
+            let dropped = Arc::new(AtomicUsize::new(0));
+            let mut content = content(dropped.clone());
+            content.checksum_manifest = Some(manifest(b"0123456789"));
+            content.lease = Box::new((content.lease, permit));
+            let response = content_response(content, Method::GET, HeaderMap::new()).unwrap();
+            assert_eq!(dropped.load(Ordering::SeqCst), 0);
+            assert_eq!(slots.available_permits(), 0);
+            if consume {
+                assert_eq!(
+                    axum::body::to_bytes(response.into_body(), 8192)
+                        .await
+                        .unwrap(),
+                    "0123456789"
+                );
+            } else {
+                drop(response);
+            }
+            assert_eq!(dropped.load(Ordering::SeqCst), 1);
+            assert_eq!(slots.available_permits(), 1);
         }
     }
 

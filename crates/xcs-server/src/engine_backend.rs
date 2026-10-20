@@ -3,7 +3,9 @@ use crate::{ApiError, Backend, Content, auth::Identity};
 use serde::Serialize;
 use serde_json::{Value, json};
 use std::{path::Path, sync::Mutex};
-use xcs_core::{CommitRequest, Engine, Grants, NamespaceOperation, Repository};
+use xcs_core::{Engine, Grants, NamespaceOperation, Repository};
+pub mod application;
+use application::Application;
 mod file_manager;
 
 pub struct EngineBackend {
@@ -338,6 +340,32 @@ fn authorize(
     write: bool,
     manage: bool,
 ) -> Result<(), ApiError> {
+    authorize_access(
+        identity,
+        repo,
+        if manage {
+            RepositoryAccess::Manage
+        } else if write {
+            RepositoryAccess::Write
+        } else {
+            RepositoryAccess::Read
+        },
+    )
+}
+
+/// Account admission and ACL evaluation shared by all transports and commands.
+#[derive(Debug, Clone, Copy)]
+pub enum RepositoryAccess {
+    Read,
+    Write,
+    Manage,
+}
+
+pub fn authorize_access(
+    identity: &Identity,
+    repo: &Repository,
+    access: RepositoryAccess,
+) -> Result<(), ApiError> {
     if identity.admin {
         return Ok(());
     }
@@ -350,14 +378,17 @@ fn authorize(
         return Err(ApiError::forbidden());
     }
     let grants = &repo.grants;
-    let allowed = if manage {
-        grants.manage.contains(&identity.principal)
-    } else if write {
-        grants.write.contains(&identity.principal) || grants.manage.contains(&identity.principal)
-    } else {
-        grants.read.contains(&identity.principal)
-            || grants.write.contains(&identity.principal)
-            || grants.manage.contains(&identity.principal)
+    let allowed = match access {
+        RepositoryAccess::Manage => grants.manage.contains(&identity.principal),
+        RepositoryAccess::Write => {
+            grants.write.contains(&identity.principal)
+                || grants.manage.contains(&identity.principal)
+        }
+        RepositoryAccess::Read => {
+            grants.read.contains(&identity.principal)
+                || grants.write.contains(&identity.principal)
+                || grants.manage.contains(&identity.principal)
+        }
     };
     if allowed {
         Ok(())
@@ -992,7 +1023,6 @@ impl Backend for EngineBackend {
             "namespace" => {
                 keys(&input, &["workspace_id", "kind", "path", "destination"])?;
                 let workspace = field(&input, "workspace_id")?;
-                workspace_authorize(&engine, identity, workspace)?;
                 let change = NamespaceOperation {
                     kind: field(&input, "kind")?.into(),
                     path: field(&input, "path")?.into(),
@@ -1001,11 +1031,12 @@ impl Backend for EngineBackend {
                         .and_then(Value::as_str)
                         .map(str::to_owned),
                 };
-                sanitized(
-                    engine
-                        .namespace_operation(workspace, change)
-                        .map_err(error)?,
-                )
+                sanitized(Application::new(&mut engine, identity).stage_namespace(
+                    application::StageNamespace {
+                        workspace_id: workspace.into(),
+                        change,
+                    },
+                )?)
             }
             "seal_workspace" => {
                 keys(&input, &["workspace_id"])?;
@@ -1047,33 +1078,39 @@ impl Backend for EngineBackend {
                         ],
                     )?;
                 }
-                let workspace =
-                    workspace_authorize(&engine, identity, field(&input, "workspace_id")?)?;
-                let fencing_token =
-                    xcs_contract::parse_u64_decimal(field(&input, "fencing_token")?)
-                        .map_err(ApiError::invalid)?;
-                let request = CommitRequest {
-                    workspace_id: workspace.workspace_id,
-                    operation_id: operation(&input)?.into(),
-                    principal: identity.principal.clone(),
-                    expected_head: field(&input, "expected_head")?.into(),
-                    fencing_token,
-                    message: input
-                        .get("message")
-                        .and_then(Value::as_str)
-                        .unwrap_or("")
-                        .into(),
-                    request_digest: input
-                        .get("request_digest")
-                        .and_then(Value::as_str)
-                        .map(str::to_owned),
-                };
+                // Keep strict string presence checks at the compatibility wire edge.
+                for key in [
+                    "workspace_id",
+                    "operation_id",
+                    "expected_head",
+                    "fencing_token",
+                ] {
+                    field(&input, key)?;
+                }
                 let result = if action == "commit_workspace" {
-                    engine
-                        .commit_workspace_wire(request, input)
-                        .map_err(error)?
+                    let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                    Application::new(&mut engine, identity).commit_workspace_public(command)?
                 } else {
-                    engine.commit_workspace(request).map_err(error)?
+                    let command = application::CommitWorkspace {
+                        workspace_id: field(&input, "workspace_id")?.into(),
+                        operation_id: operation(&input)?.into(),
+                        expected_head: field(&input, "expected_head")?.into(),
+                        fencing_token: xcs_contract::parse_u64_decimal(field(
+                            &input,
+                            "fencing_token",
+                        )?)
+                        .map_err(ApiError::invalid)?,
+                        message: input
+                            .get("message")
+                            .and_then(Value::as_str)
+                            .unwrap_or("")
+                            .into(),
+                        request_digest: input
+                            .get("request_digest")
+                            .and_then(Value::as_str)
+                            .map(str::to_owned),
+                    };
+                    Application::new(&mut engine, identity).commit_workspace(command)?
                 };
                 operation_wire(&engine, result)
             }
@@ -1087,84 +1124,33 @@ impl Backend for EngineBackend {
                 Ok(json!({"workspace_id":id,"state":"aborted"}))
             }
             "create_branch" => {
-                keys(
-                    &input,
-                    &["repository_id", "source_commit_id", "name", "operation_id"],
-                )?;
-                let repo = repository(&engine, field(&input, "repository_id")?)?;
-                authorize(identity, repo, true, true)?;
-                let source = field(&input, "source_commit_id")?;
-                if engine
-                    .state()
-                    .commits
-                    .get(source)
-                    .is_none_or(|commit| commit.history_tree_id != repo.history_tree_id)
-                {
-                    return Err(ApiError::new(
-                        404,
-                        "HISTORY_NODE_NOT_FOUND",
-                        "source commit is outside the repository",
-                    ));
+                for key in ["repository_id", "source_commit_id", "name", "operation_id"] {
+                    field(&input, key)?;
                 }
-                let branch = engine
-                    .create_branch(
-                        source,
-                        field(&input, "name")?,
-                        &identity.principal,
-                        operation(&input)?,
-                    )
-                    .map_err(error)?;
+                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let branch = Application::new(&mut engine, identity).create_branch(command)?;
                 branch_wire(&engine, &branch)
             }
             "archive" => {
-                keys(&input, &["branch_id", "operation_id"])?;
-                let branch = field(&input, "branch_id")?;
-                authorize(identity, repo_for_branch(&engine, branch)?, true, true)?;
-                encode(
-                    engine
-                        .archive_branch(branch, &identity.principal, operation(&input)?)
-                        .map_err(error)?,
-                )
+                for key in ["branch_id", "operation_id"] {
+                    field(&input, key)?;
+                }
+                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                encode(Application::new(&mut engine, identity).archive_branch(command)?)
             }
             "merge_link" => {
-                keys(
-                    &input,
-                    &[
-                        "history_tree_id",
-                        "source_branch_id",
-                        "source_commit_id",
-                        "target_branch_id",
-                        "target_commit_id",
-                        "operation_id",
-                    ],
-                )?;
-                authorize(
-                    identity,
-                    repo_for_history(&engine, field(&input, "history_tree_id")?)?,
-                    true,
-                    true,
-                )?;
-                let source = field(&input, "source_branch_id")?;
-                let target = field(&input, "target_branch_id")?;
-                if repo_for_branch(&engine, source)?.history_tree_id
-                    != field(&input, "history_tree_id")?
-                    || repo_for_branch(&engine, target)?.history_tree_id
-                        != field(&input, "history_tree_id")?
-                {
-                    return Err(ApiError::forbidden());
+                for key in [
+                    "history_tree_id",
+                    "source_branch_id",
+                    "source_commit_id",
+                    "target_branch_id",
+                    "target_commit_id",
+                    "operation_id",
+                ] {
+                    field(&input, key)?;
                 }
-                encode(
-                    engine
-                        .add_merge_link(
-                            source,
-                            field(&input, "source_commit_id")?,
-                            target,
-                            field(&input, "target_commit_id")?,
-                            &identity.principal,
-                            operation(&input)?,
-                        )
-                        .map_err(error)?,
-                )
+                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                encode(Application::new(&mut engine, identity).merge_link(command)?)
             }
             "history" => {
                 let file = field(&input, "file_id")?;
@@ -1278,37 +1264,11 @@ impl Backend for EngineBackend {
                 )
             }
             "plan_commit" => {
-                keys(&input, &["plan_id", "operation_id", "plan_digest"])?;
-                let plan = engine.plan(field(&input, "plan_id")?).map_err(error)?;
-                if plan.principal != identity.principal && !identity.admin {
-                    return Err(ApiError::forbidden());
+                for key in ["plan_id", "operation_id", "plan_digest"] {
+                    field(&input, key)?;
                 }
-                if field(&input, "plan_digest")? != plan.digest {
-                    return Err(ApiError::conflict(
-                        if plan.kind == "split" {
-                            "SPLIT_PLAN_STALE"
-                        } else {
-                            "PLAN_STALE"
-                        },
-                        "plan digest does not match",
-                    ));
-                }
-                let history = field(&plan.input, "history_tree_id")?;
-                authorize(
-                    identity,
-                    repo_for_history(&engine, history)?,
-                    true,
-                    plan.kind != "historical_save",
-                )?;
-                encode(
-                    engine
-                        .commit_plan(
-                            field(&input, "plan_id")?,
-                            &identity.principal,
-                            operation(&input)?,
-                        )
-                        .map_err(error)?,
-                )
+                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                encode(Application::new(&mut engine, identity).commit_plan(command)?)
             }
             "policy" => {
                 let policy = engine
@@ -1520,6 +1480,9 @@ impl Backend for EngineBackend {
         )
     }
     fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
+        self.range_content(identity, version)?.fully_verified()
+    }
+    fn range_content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
         let engine = self
             .engine
             .lock()
@@ -1535,7 +1498,7 @@ impl Backend for EngineBackend {
             false,
             false,
         )?;
-        let content = engine.open_content(version).map_err(error)?;
+        let plan = engine.prepare_content(version).map_err(error)?;
         let repo = repo_for_history(&engine, &record.history_tree_id)?;
         let entries = engine.list_tree(&repo.main_branch_id).unwrap_or_default();
         let preferred = engine
@@ -1558,7 +1521,11 @@ impl Backend for EngineBackend {
             .map(|entry| entry.name.clone())
             .or_else(|| engine.state().file_names.get(&record.file_id).cloned())
             .unwrap_or_else(|| record.creation_name.clone());
+        drop(engine);
+        let content = plan.open().map_err(error)?;
         Ok(Content {
+            checksum_manifest: Some(content.manifest),
+            fallback_files: content.fallback_files,
             file: content.file,
             size: content.size,
             hash: content.content_hash,
@@ -1577,10 +1544,14 @@ impl Backend for EngineBackend {
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
         let workspace_record = workspace_authorize(&engine, identity, workspace)?;
-        let opened = engine
-            .open_workspace_content(workspace, item, &workspace_record.principal)
+        let plan = engine
+            .prepare_workspace_content(workspace, item, &workspace_record.principal)
             .map_err(error)?;
+        drop(engine);
+        let opened = plan.open().map_err(error)?;
         Ok(Content {
+            checksum_manifest: None,
+            fallback_files: Vec::new(),
             file: opened.file,
             size: opened.size,
             hash: opened.content_hash,
@@ -1604,6 +1575,8 @@ impl Backend for EngineBackend {
             false,
             false,
         )?;
-        engine.read_checksums(version).map_err(error)
+        let plan = engine.prepare_content(version).map_err(error)?;
+        drop(engine);
+        plan.checksums().map_err(error)
     }
 }

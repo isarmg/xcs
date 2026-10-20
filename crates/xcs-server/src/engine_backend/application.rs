@@ -1,0 +1,585 @@
+//! Typed, transport-independent mutation boundary.
+//!
+//! HTTP and SMB decode their envelopes before entering this service. Account
+//! admission, repository ACLs and workspace ownership are checked here, before
+//! delegating durable state changes to the core. Results remain domain records;
+//! presentation/redaction belongs to the transport adapter.
+use super::{
+    RepositoryAccess, authorize_access, error, repo_for_branch, repo_for_history, repository,
+    workspace_authorize,
+};
+use crate::{ApiError, auth::Identity};
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use xcs_core::{CommitRequest, Engine, NamespaceOperation};
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct CommitWorkspace {
+    pub workspace_id: String,
+    pub operation_id: String,
+    pub expected_head: String,
+    pub fencing_token: u64,
+    pub message: String,
+    pub request_digest: Option<String>,
+}
+
+/// The frozen public envelope uses decimal strings deliberately: their exact
+/// spelling participates in the canonical request digest and binding checks.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PublicCommitWorkspace {
+    pub workspace_id: String,
+    pub operation_id: String,
+    pub repository_id: String,
+    pub branch_id: String,
+    pub expected_head: String,
+    pub fencing_token: String,
+    pub message: String,
+    pub requested_protection: String,
+    pub file_placement: BTreeMap<String, FilePlacement>,
+    pub expected_topology_generation: String,
+    pub sealed_manifest_hash: String,
+    pub request_digest: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct FilePlacement {
+    pub primary_slot_id: String,
+    pub target_copies: u32,
+}
+
+pub struct StageNamespace {
+    pub workspace_id: String,
+    pub change: NamespaceOperation,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CreateBranch {
+    pub repository_id: String,
+    pub source_commit_id: String,
+    pub name: String,
+    pub operation_id: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchiveBranch {
+    pub branch_id: String,
+    pub operation_id: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MergeLink {
+    pub history_tree_id: String,
+    pub source_branch_id: String,
+    pub source_commit_id: String,
+    pub target_branch_id: String,
+    pub target_commit_id: String,
+    pub operation_id: String,
+}
+
+pub struct NamespaceBatch {
+    pub slot_id: String,
+    pub request: xcs_contract::DirectoryNamespaceBatch,
+    pub operation_id: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CommitPlan {
+    pub plan_id: String,
+    pub operation_id: String,
+    pub plan_digest: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct FileLocation {
+    pub repository_id: String,
+    pub path: String,
+}
+
+pub struct MergeFileBranches {
+    pub file_id: String,
+    pub inputs: Vec<xcs_contract::FileMergeInput>,
+    pub chosen_node_id: String,
+    pub surviving_branch_id: String,
+    pub confirmed: bool,
+    pub location: Option<FileLocation>,
+    pub operation_id: String,
+}
+
+/// This service borrows a locked engine. It has no transport, JSON dispatch, or
+/// caller-supplied principal; the authenticated identity is bound at creation.
+pub struct Application<'a> {
+    engine: &'a mut Engine,
+    identity: &'a Identity,
+}
+
+impl<'a> Application<'a> {
+    pub fn new(engine: &'a mut Engine, identity: &'a Identity) -> Self {
+        Self { engine, identity }
+    }
+
+    fn commit_request(&self, command: CommitWorkspace) -> Result<CommitRequest, ApiError> {
+        workspace_authorize(self.engine, self.identity, &command.workspace_id)?;
+        Ok(CommitRequest {
+            workspace_id: command.workspace_id,
+            operation_id: command.operation_id,
+            principal: self.identity.principal.clone(),
+            expected_head: command.expected_head,
+            fencing_token: command.fencing_token,
+            message: command.message,
+            request_digest: command.request_digest,
+        })
+    }
+
+    pub fn commit_workspace(
+        &mut self,
+        command: CommitWorkspace,
+    ) -> Result<xcs_core::OperationResult, ApiError> {
+        let request = self.commit_request(command)?;
+        self.engine.commit_workspace(request).map_err(error)
+    }
+
+    pub fn commit_workspace_public(
+        &mut self,
+        command: PublicCommitWorkspace,
+    ) -> Result<xcs_core::OperationResult, ApiError> {
+        let fencing_token =
+            xcs_contract::parse_u64_decimal(&command.fencing_token).map_err(ApiError::invalid)?;
+        let body = serde_json::to_value(&command).map_err(ApiError::invalid)?;
+        let request = self.commit_request(CommitWorkspace {
+            workspace_id: command.workspace_id,
+            operation_id: command.operation_id,
+            expected_head: command.expected_head,
+            fencing_token,
+            message: command.message,
+            request_digest: Some(command.request_digest),
+        })?;
+        self.engine
+            .commit_workspace_wire(request, body)
+            .map_err(error)
+    }
+
+    pub fn stage_namespace(
+        &mut self,
+        command: StageNamespace,
+    ) -> Result<xcs_core::Workspace, ApiError> {
+        workspace_authorize(self.engine, self.identity, &command.workspace_id)?;
+        self.engine
+            .namespace_operation(&command.workspace_id, command.change)
+            .map_err(error)
+    }
+
+    pub fn create_branch(
+        &mut self,
+        command: CreateBranch,
+    ) -> Result<xcs_contract::Branch, ApiError> {
+        let repo = repository(self.engine, &command.repository_id)?;
+        authorize_access(self.identity, repo, RepositoryAccess::Manage)?;
+        if self
+            .engine
+            .state()
+            .commits
+            .get(&command.source_commit_id)
+            .is_none_or(|commit| commit.history_tree_id != repo.history_tree_id)
+        {
+            return Err(ApiError::new(
+                404,
+                "HISTORY_NODE_NOT_FOUND",
+                "source commit is outside the repository",
+            ));
+        }
+        self.engine
+            .create_branch(
+                &command.source_commit_id,
+                &command.name,
+                &self.identity.principal,
+                &command.operation_id,
+            )
+            .map_err(error)
+    }
+
+    pub fn archive_branch(
+        &mut self,
+        command: ArchiveBranch,
+    ) -> Result<xcs_core::OperationResult, ApiError> {
+        authorize_access(
+            self.identity,
+            repo_for_branch(self.engine, &command.branch_id)?,
+            RepositoryAccess::Manage,
+        )?;
+        self.engine
+            .archive_branch(
+                &command.branch_id,
+                &self.identity.principal,
+                &command.operation_id,
+            )
+            .map_err(error)
+    }
+
+    pub fn merge_link(&mut self, command: MergeLink) -> Result<xcs_contract::MergeLink, ApiError> {
+        authorize_access(
+            self.identity,
+            repo_for_history(self.engine, &command.history_tree_id)?,
+            RepositoryAccess::Manage,
+        )?;
+        for branch in [&command.source_branch_id, &command.target_branch_id] {
+            if repo_for_branch(self.engine, branch)?.history_tree_id != command.history_tree_id {
+                return Err(ApiError::forbidden());
+            }
+        }
+        self.engine
+            .add_merge_link(
+                &command.source_branch_id,
+                &command.source_commit_id,
+                &command.target_branch_id,
+                &command.target_commit_id,
+                &self.identity.principal,
+                &command.operation_id,
+            )
+            .map_err(error)
+    }
+
+    pub fn namespace_batch(
+        &mut self,
+        command: NamespaceBatch,
+    ) -> Result<xcs_core::OperationResult, ApiError> {
+        let disk = self
+            .engine
+            .config()
+            .disks
+            .iter()
+            .find(|disk| disk.slot_id == command.slot_id)
+            .ok_or_else(|| ApiError::new(404, "DISK_NOT_FOUND", "disk not found"))?;
+        if disk.level != 1 {
+            return Err(ApiError::new(
+                403,
+                "DISK_READ_ONLY",
+                "backup disks are read only",
+            ));
+        }
+        let mut repository_id = None;
+        for item in &command.request.items {
+            for branch_id in std::iter::once(item.source.directory_branch_id.as_str()).chain(
+                item.target
+                    .iter()
+                    .map(|target| target.directory_branch_id.as_str()),
+            ) {
+                let branch = self
+                    .engine
+                    .state()
+                    .directory_branches
+                    .get(branch_id)
+                    .ok_or_else(|| {
+                        ApiError::new(
+                            404,
+                            "DIRECTORY_BRANCH_NOT_FOUND",
+                            "directory branch missing",
+                        )
+                    })?;
+                let repo = repository(self.engine, &branch.repository_id)?;
+                authorize_access(self.identity, repo, RepositoryAccess::Write)?;
+                if repo.primary_slot_id != command.slot_id {
+                    return Err(ApiError::invalid(
+                        "batch branches must belong to this primary disk",
+                    ));
+                }
+                if repository_id
+                    .as_ref()
+                    .is_some_and(|id| id != &repo.repository_id)
+                {
+                    return Err(ApiError::invalid(
+                        "batch branches must belong to one repository",
+                    ));
+                }
+                repository_id = Some(repo.repository_id.clone());
+            }
+        }
+        let repository_id =
+            repository_id.ok_or_else(|| ApiError::invalid("batch items cannot be empty"))?;
+        self.engine
+            .directory_namespace_batch(
+                &repository_id,
+                &command.request,
+                &self.identity.principal,
+                &command.operation_id,
+            )
+            .map_err(error)
+    }
+
+    pub(crate) fn authorize_file_location(
+        &self,
+        file: &str,
+        location: Option<&FileLocation>,
+    ) -> Result<(), ApiError> {
+        let version = self
+            .engine
+            .state()
+            .versions
+            .values()
+            .find(|version| version.file_id == file)
+            .ok_or_else(|| ApiError::new(404, "FILE_NOT_FOUND", "file not found"))?;
+        let repo = repo_for_history(self.engine, &version.history_tree_id)?;
+        authorize_access(self.identity, repo, RepositoryAccess::Write)?;
+        if let Some(location) = location {
+            xcs_naming::validate_path(&location.path).map_err(ApiError::invalid)?;
+            if location.repository_id != repo.repository_id
+                || !self
+                    .engine
+                    .list_tree(&repo.main_branch_id)
+                    .map_err(error)?
+                    .iter()
+                    .any(|entry| {
+                        entry.kind == "file"
+                            && entry.file_id == file
+                            && entry.lookup_key == xcs_naming::path_key(&location.path)
+                    })
+            {
+                return Err(ApiError::new(
+                    404,
+                    "FILE_NOT_FOUND",
+                    "file is not present at this logical path",
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    pub fn merge_file_branches(
+        &mut self,
+        command: MergeFileBranches,
+    ) -> Result<xcs_core::OperationResult, ApiError> {
+        self.authorize_file_location(&command.file_id, command.location.as_ref())?;
+        if !command.confirmed {
+            return Err(ApiError::invalid(
+                "confirm the chosen result and surviving branch before merging",
+            ));
+        }
+        self.engine
+            .merge_file_branches(
+                &command.file_id,
+                &command.inputs,
+                &command.chosen_node_id,
+                &command.surviving_branch_id,
+                &self.identity.principal,
+                &command.operation_id,
+            )
+            .map_err(error)
+    }
+
+    /// Destructive purge/clear and split plans retain owner, digest and ACL
+    /// checks at execution time, even when prepared by a different adapter.
+    pub fn commit_plan(
+        &mut self,
+        command: CommitPlan,
+    ) -> Result<xcs_core::OperationResult, ApiError> {
+        let plan = self.engine.plan(&command.plan_id).map_err(error)?;
+        if plan.principal != self.identity.principal && !self.identity.admin {
+            return Err(ApiError::forbidden());
+        }
+        if command.plan_digest != plan.digest {
+            return Err(ApiError::conflict(
+                if plan.kind == "split" {
+                    "SPLIT_PLAN_STALE"
+                } else {
+                    "PLAN_STALE"
+                },
+                "plan digest does not match",
+            ));
+        }
+        let history = super::field(&plan.input, "history_tree_id")?;
+        authorize_access(
+            self.identity,
+            repo_for_history(self.engine, history)?,
+            if plan.kind == "historical_save" {
+                RepositoryAccess::Write
+            } else {
+                RepositoryAccess::Manage
+            },
+        )?;
+        self.engine
+            .commit_plan(
+                &command.plan_id,
+                &self.identity.principal,
+                &command.operation_id,
+            )
+            .map_err(error)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Backend, engine_backend::EngineBackend};
+    use serde_json::json;
+    use std::collections::BTreeSet;
+    use xcs_contract::{Config, new_id};
+
+    fn fixture() -> (tempfile::TempDir, Engine, xcs_core::Repository, Identity) {
+        let root = tempfile::tempdir().unwrap();
+        let config = Config::development([
+            root.path().join("d1"),
+            root.path().join("d2"),
+            root.path().join("d3"),
+        ]);
+        let mut engine = Engine::initialize(&root.path().join("system"), config).unwrap();
+        let repo = engine
+            .create_repository("Application", "P01", 3, "owner", &new_id("op"))
+            .unwrap();
+        let identity = Identity {
+            principal: "owner".into(),
+            admin: false,
+            repositories: BTreeSet::from([repo.repository_id.clone()]),
+        };
+        (root, engine, repo, identity)
+    }
+
+    #[test]
+    fn public_commit_roundtrip_preserves_canonical_envelope_and_executes() {
+        let (_root, mut engine, repo, identity) = fixture();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, &identity.principal)
+            .unwrap();
+        Application::new(&mut engine, &identity)
+            .stage_namespace(StageNamespace {
+                workspace_id: workspace.workspace_id.clone(),
+                change: NamespaceOperation {
+                    kind: "mkdir".into(),
+                    path: "Folder".into(),
+                    destination: None,
+                },
+            })
+            .unwrap();
+        let mut body = engine
+            .seal_workspace(&workspace.workspace_id, &identity.principal)
+            .unwrap();
+        body["request_digest"] = xcs_core::commit_request_digest(&workspace.workspace_id, &body)
+            .unwrap()
+            .into();
+        let command: PublicCommitWorkspace = serde_json::from_value(body.clone()).unwrap();
+        assert_eq!(serde_json::to_value(&command).unwrap(), body);
+        let result = Application::new(&mut engine, &identity)
+            .commit_workspace_public(command.clone())
+            .unwrap();
+        let replay = Application::new(&mut engine, &identity)
+            .commit_workspace_public(command)
+            .unwrap();
+        assert_eq!(replay.commit_id, result.commit_id);
+        assert!(
+            engine
+                .list_tree(&repo.main_branch_id)
+                .unwrap()
+                .iter()
+                .any(|entry| entry.path == "Folder")
+        );
+    }
+
+    #[test]
+    fn workspace_ownership_and_account_admission_apply_to_typed_and_wire_paths() {
+        let (_root, mut engine, repo, owner) = fixture();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, &owner.principal)
+            .unwrap();
+        let intruder = Identity {
+            principal: "intruder".into(),
+            ..owner.clone()
+        };
+        let result = Application::new(&mut engine, &intruder).stage_namespace(StageNamespace {
+            workspace_id: workspace.workspace_id.clone(),
+            change: NamespaceOperation {
+                kind: "mkdir".into(),
+                path: "TypedDenied".into(),
+                destination: None,
+            },
+        });
+        assert_eq!(result.unwrap_err().code, "FORBIDDEN");
+        let unadmitted_owner = Identity {
+            repositories: BTreeSet::new(),
+            ..owner.clone()
+        };
+        let result =
+            Application::new(&mut engine, &unadmitted_owner).commit_workspace(CommitWorkspace {
+                workspace_id: workspace.workspace_id.clone(),
+                operation_id: new_id("op"),
+                expected_head: workspace.base_head.clone(),
+                fencing_token: workspace.fencing_token,
+                message: String::new(),
+                request_digest: None,
+            });
+        assert_eq!(result.unwrap_err().code, "FORBIDDEN");
+        let backend = EngineBackend::new(engine);
+        for identity in [&intruder, &unadmitted_owner] {
+            let result = backend.call(
+                "namespace",
+                identity,
+                json!({"workspace_id":workspace.workspace_id,
+                "kind":"mkdir", "path":"WireDenied"}),
+            );
+            assert_eq!(result.unwrap_err().code, "FORBIDDEN");
+        }
+        let engine = backend.engine.lock().unwrap();
+        assert!(
+            engine
+                .workspace(&workspace.workspace_id)
+                .unwrap()
+                .namespace_operations
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn public_commit_decode_rejects_unknown_missing_and_numeric_decimal_fields() {
+        let body = json!({"workspace_id":"ws", "operation_id":"op", "repository_id":"repo", "branch_id":"branch",
+            "expected_head":"head", "fencing_token":"1", "message":"", "requested_protection":"strict",
+            "file_placement":{}, "expected_topology_generation":"1", "sealed_manifest_hash":"hash", "request_digest":"digest"});
+        assert!(serde_json::from_value::<PublicCommitWorkspace>(body.clone()).is_ok());
+        for field in [
+            "workspace_id",
+            "operation_id",
+            "expected_head",
+            "message",
+            "request_digest",
+        ] {
+            let mut missing = body.clone();
+            missing.as_object_mut().unwrap().remove(field);
+            assert!(
+                serde_json::from_value::<PublicCommitWorkspace>(missing).is_err(),
+                "{field}"
+            );
+        }
+        for field in ["fencing_token", "expected_topology_generation"] {
+            let mut numeric = body.clone();
+            numeric[field] = json!(1);
+            assert!(
+                serde_json::from_value::<PublicCommitWorkspace>(numeric).is_err(),
+                "{field}"
+            );
+        }
+        let mut extra = body;
+        extra["principal"] = "someone-else".into();
+        assert!(serde_json::from_value::<PublicCommitWorkspace>(extra).is_err());
+    }
+
+    #[test]
+    fn typed_branch_requires_manage_and_rejects_cross_repository_source() {
+        let (_root, mut engine, repo, owner) = fixture();
+        let other = engine
+            .create_repository("Other", "P01", 3, &owner.principal, &new_id("op"))
+            .unwrap();
+        let source = engine.state().branches[&other.main_branch_id]
+            .head_commit_id
+            .clone();
+        let result = Application::new(&mut engine, &owner).create_branch(CreateBranch {
+            repository_id: repo.repository_id,
+            source_commit_id: source,
+            name: "Cross scope".into(),
+            operation_id: new_id("op"),
+        });
+        assert_eq!(result.unwrap_err().code, "HISTORY_NODE_NOT_FOUND");
+    }
+}

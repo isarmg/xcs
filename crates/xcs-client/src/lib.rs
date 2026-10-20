@@ -146,34 +146,23 @@ impl Client {
         message: &str,
         expected_head: Option<&str>,
     ) -> Result<Value, Error> {
-        let mut body = self
+        let body = self
             .request(
                 "POST",
                 &format!("/v1/workspaces/{}/seal", segment(workspace)),
                 Some(&json!({})),
             )
             .await?;
-        if !body.is_object() || body["workspace_id"].as_str() != Some(workspace) {
-            return Err(Error::Response(
-                "seal response has an invalid workspace identity".into(),
-            ));
-        }
-        body["operation_id"] = operation_id.into();
-        body["message"] = message.into();
-        if let Some(head) = expected_head {
-            body["expected_head"] = head.into();
-        }
-        let digest = xcs_contract::request_digest(
-            "POST",
-            "/v1/workspaces/{workspace}/commit",
-            json!({"workspace":workspace}),
-            json!({}),
-            &body,
+        xcs_contract::client_protocol::prepare_commit(
+            body,
+            workspace,
+            operation_id,
+            message,
+            expected_head,
         )
-        .map_err(|error| Error::Response(error.to_string()))?;
-        body["request_digest"] = digest.into();
-        Ok(body)
+        .map_err(|error| Error::Response(error.to_string()))
     }
+
     pub async fn commit_prepared(&self, body: &Value) -> Result<Value, Error> {
         let workspace = body
             .get("workspace_id")

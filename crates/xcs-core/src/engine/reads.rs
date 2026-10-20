@@ -120,12 +120,12 @@ impl Engine {
             },
         })
     }
-    pub fn open_workspace_content(
+    pub fn prepare_workspace_content(
         &self,
         workspace: &str,
         item: &str,
         principal: &str,
-    ) -> Result<OpenedContent> {
+    ) -> Result<WorkspaceReadPlan> {
         let w = self.workspace(workspace)?;
         if w.principal != principal {
             return Err(Error::new(
@@ -138,24 +138,7 @@ impl Engine {
             .files
             .get(item)
             .ok_or_else(|| Error::new("ITEM_NOT_FOUND", "workspace item not found"))?;
-        let mut file = open_regular(&staged.source_path)?;
-        let mut h = blake3::Hasher::new();
-        let mut buf = [0u8; 65536];
-        loop {
-            let n = file.read(&mut buf)?;
-            if n == 0 {
-                break;
-            }
-            h.update(&buf[..n]);
-        }
-        if h.finalize().to_hex().as_str() != staged.content_hash {
-            return Err(Error::new(
-                "CHECKSUM_MISMATCH",
-                "workspace full file was modified outside the engine",
-            ));
-        }
-        use std::io::{Seek, SeekFrom};
-        file.seek(SeekFrom::Start(0))?;
+        let file = open_regular(&staged.source_path)?;
         let key = staged
             .base_version_id
             .clone()
@@ -166,7 +149,7 @@ impl Engine {
             .map_err(|_| Error::new("INTERNAL_ERROR", "read lease lock poisoned"))?
             .entry(key.clone())
             .or_default() += 1;
-        Ok(OpenedContent {
+        Ok(WorkspaceReadPlan(OpenedContent {
             file,
             size: staged.size,
             content_hash: staged.content_hash.clone(),
@@ -174,7 +157,16 @@ impl Engine {
                 version: key,
                 reads: Arc::clone(&self.reads),
             },
-        })
+        }))
+    }
+    pub fn open_workspace_content(
+        &self,
+        workspace: &str,
+        item: &str,
+        principal: &str,
+    ) -> Result<OpenedContent> {
+        self.prepare_workspace_content(workspace, item, principal)?
+            .open()
     }
     pub fn read_checksums(&self, version: &str) -> Result<Vec<u8>> {
         let (_, _, directory) = self.verified_replica(version)?;
@@ -211,5 +203,169 @@ impl Engine {
             }
         }
         Ok(result)
+    }
+}
+
+/// A metadata-only snapshot acquired while the caller serializes Engine access.
+/// The lease is acquired before releasing that lock, so purge cannot remove the
+/// selected version while publication evidence and payload handles are opened.
+pub struct ContentReadPlan {
+    config: Config,
+    disks: Vec<DiskConfig>,
+    version: FileVersion,
+    lease: ReadLease,
+}
+
+pub struct RangeContent {
+    pub fallback_files: Vec<std::fs::File>,
+    pub file: std::fs::File,
+    pub size: u64,
+    pub content_hash: String,
+    pub manifest: ChecksumManifest,
+    pub lease: ReadLease,
+}
+
+impl Engine {
+    /// Does no filesystem access and reads no payload bytes.
+    pub fn prepare_content(&self, version_id: &str) -> Result<ContentReadPlan> {
+        if self
+            .state
+            .content_states
+            .get(version_id)
+            .is_some_and(|s| s != "AVAILABLE")
+        {
+            return Err(Error::new(
+                "CONTENT_PURGED",
+                "version content is no longer available in this history",
+            ));
+        }
+        let version = self
+            .state
+            .versions
+            .get(version_id)
+            .ok_or_else(|| Error::new("VERSION_NOT_FOUND", "version does not exist"))?
+            .clone();
+        let placement = self
+            .state
+            .placements
+            .get(version_id)
+            .ok_or_else(|| Error::new("PLACEMENT_NOT_FOUND", "version placement missing"))?;
+        let disks = placement
+            .route_slot_ids
+            .iter()
+            .map(|slot| self.disk(slot).cloned())
+            .collect::<Result<Vec<_>>>()?;
+        *self
+            .reads
+            .lock()
+            .map_err(|_| Error::new("INTERNAL_ERROR", "read lease lock poisoned"))?
+            .entry(version_id.into())
+            .or_default() += 1;
+        Ok(ContentReadPlan {
+            config: self.config.clone(),
+            disks,
+            version,
+            lease: ReadLease {
+                version: version_id.into(),
+                reads: Arc::clone(&self.reads),
+            },
+        })
+    }
+}
+
+impl ContentReadPlan {
+    fn authenticated_replicas(&self) -> Result<Vec<(std::fs::File, Vec<u8>, ChecksumManifest)>> {
+        let mut replicas = Vec::new();
+        for disk in &self.disks {
+            let candidate = (|| {
+                validate_seal(&self.config, disk)?;
+                let dir = version_dir(
+                    disk,
+                    &self.version.history_tree_id,
+                    &self.version.version_id,
+                );
+                verify_local_publication(&dir, &self.version)?;
+                let checks = read_bytes(&dir.join("checksums.bin"), MAX_CHECKSUM_MANIFEST)?;
+                if blake3::hash(&checks).to_hex().as_str() != self.version.checksum_manifest_hash {
+                    return Err(Error::new(
+                        "CHECKSUM_MISMATCH",
+                        "checksum manifest digest differs",
+                    ));
+                }
+                let manifest = ChecksumManifest::decode(&checks)?;
+                if manifest.logical_size != self.version.logical_size
+                    || manifest.chunk_bytes != self.version.checksum_chunk_bytes
+                {
+                    return Err(Error::new(
+                        "CHECKSUM_MISMATCH",
+                        "checksum header differs from version",
+                    ));
+                }
+                let file = open_regular(&crate::container_storage::content_path(
+                    &dir,
+                    &self.version,
+                )?)?;
+                if file.metadata()?.len() != self.version.logical_size {
+                    return Err(Error::new("CHECKSUM_MISMATCH", "payload length differs"));
+                }
+                Ok((file, checks, manifest))
+            })();
+            if let Ok(candidate) = candidate {
+                replicas.push(candidate);
+            }
+        }
+        if replicas.is_empty() {
+            Err(Error::new(
+                "CONTENT_UNAVAILABLE",
+                "no authenticated replica is available",
+            ))
+        } else {
+            Ok(replicas)
+        }
+    }
+    /// Authenticate the checksum manifest without reading the payload. Consumers
+    /// must verify each complete checksum chunk before exposing any of its bytes.
+    pub fn open(self) -> Result<RangeContent> {
+        let mut replicas = self.authenticated_replicas()?.into_iter();
+        let (file, _, manifest) = replicas.next().expect("nonempty replicas");
+        let fallback_files = replicas.map(|(file, _, _)| file).collect();
+        Ok(RangeContent {
+            fallback_files,
+            file,
+            size: self.version.logical_size,
+            content_hash: self.version.content_hash,
+            manifest,
+            lease: self.lease,
+        })
+    }
+    pub fn checksums(self) -> Result<Vec<u8>> {
+        self.authenticated_replicas()
+            .map(|replicas| replicas.into_iter().next().expect("nonempty replicas").1)
+    }
+}
+
+/// Holds the exact staged inode across workspace changes; hashing happens after
+/// releasing the engine lock, and replacement cannot redirect this handle.
+pub struct WorkspaceReadPlan(OpenedContent);
+impl WorkspaceReadPlan {
+    pub fn open(mut self) -> Result<OpenedContent> {
+        let mut hash = blake3::Hasher::new();
+        let mut buffer = [0; 65536];
+        loop {
+            let count = self.0.file.read(&mut buffer)?;
+            if count == 0 {
+                break;
+            }
+            hash.update(&buffer[..count]);
+        }
+        if hash.finalize().to_hex().as_str() != self.0.content_hash {
+            return Err(Error::new(
+                "CHECKSUM_MISMATCH",
+                "workspace full file was modified outside the engine",
+            ));
+        }
+        use std::io::{Seek, SeekFrom};
+        self.0.file.seek(SeekFrom::Start(0))?;
+        Ok(self.0)
     }
 }

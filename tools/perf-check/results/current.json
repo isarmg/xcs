@@ -1,0 +1,96 @@
+{
+  "checks": {
+    "held_read_during_save": true,
+    "historical_version_after_save": true,
+    "integrity_check": true,
+    "range_bytes_correct": true,
+    "restart_state_equality": true
+  },
+  "copies": 3,
+  "history_limit": 64,
+  "large_range": {
+    "file_bytes": 4194304,
+    "first_open_read_us": 6155,
+    "range_bytes": 64,
+    "repeated_open_read_16_us": 87966
+  },
+  "mode": "Development",
+  "physical_redundancy_evidence": false,
+  "samples": [
+    {
+      "disk": {
+        "application_log_bytes_all_members": 8232,
+        "file_bytes": 182517,
+        "files": 128,
+        "metadata_object_bytes_all_members": 85146
+      },
+      "history_versions": 1,
+      "range_open_read_8_us": 18575,
+      "restart_us": 20252,
+      "save_us": 28989,
+      "sqlite_entity_writes": {
+        "deletes": 0,
+        "entity_json_bytes_written": 3297,
+        "inserts": 9,
+        "updates": 2
+      }
+    },
+    {
+      "disk": {
+        "application_log_bytes_all_members": 70068,
+        "file_bytes": 3635754,
+        "files": 1058,
+        "metadata_object_bytes_all_members": 2663124
+      },
+      "history_versions": 16,
+      "range_open_read_8_us": 19315,
+      "restart_us": 489418,
+      "save_us": 75088,
+      "sqlite_entity_writes": {
+        "deletes": 0,
+        "entity_json_bytes_written": 3318,
+        "inserts": 7,
+        "updates": 2
+      }
+    },
+    {
+      "disk": {
+        "application_log_bytes_all_members": 136116,
+        "file_bytes": 11006106,
+        "files": 2050,
+        "metadata_object_bytes_all_members": 9112068
+      },
+      "history_versions": 32,
+      "range_open_read_8_us": 20663,
+      "restart_us": 1290183,
+      "save_us": 78071,
+      "sqlite_entity_writes": {
+        "deletes": 0,
+        "entity_json_bytes_written": 3318,
+        "inserts": 7,
+        "updates": 2
+      }
+    },
+    {
+      "disk": {
+        "application_log_bytes_all_members": 268212,
+        "file_bytes": 37218682,
+        "files": 4034,
+        "metadata_object_bytes_all_members": 33465444
+      },
+      "history_versions": 64,
+      "range_open_read_8_us": 26900,
+      "restart_us": 5207059,
+      "save_us": 152561,
+      "sqlite_entity_writes": {
+        "deletes": 0,
+        "entity_json_bytes_written": 3318,
+        "inserts": 7,
+        "updates": 2
+      }
+    }
+  ],
+  "schema_version": 1,
+  "small_file_bytes": 1024,
+  "timings_are_gates": false
+}

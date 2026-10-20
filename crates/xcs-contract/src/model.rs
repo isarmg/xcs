@@ -96,7 +96,7 @@ impl Grants {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Repository {
     pub repository_id: String,
@@ -126,7 +126,7 @@ fn is_false(value: &bool) -> bool {
 fn enabled() -> bool {
     true
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct HistoryTree {
     pub history_tree_id: String,
@@ -138,7 +138,7 @@ pub struct HistoryTree {
     pub state: String,
     pub provenance: Option<String>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Branch {
     pub branch_id: String,
@@ -163,7 +163,7 @@ pub struct Branch {
 /// A directory view composes shared file branches at frozen content versions.
 /// It owns neither private file branches nor payloads. Edits advance its
 /// immutable subtree head without changing the named branch identity.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct DirectoryBranch {
     pub directory_branch_id: String,
@@ -188,7 +188,7 @@ pub struct DirectoryBranch {
     #[serde(with = "crate::u64_string")]
     pub sequence: u64,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct DirectoryTree {
     pub tree_id: String,
@@ -211,7 +211,7 @@ pub struct DirectoryTree {
 }
 /// An immutable namespace event in a public file's history. The body remains
 /// the referenced real FileVersion; a rename creates no payload or fake FULL.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct FilePathNode {
     pub node_id: String,
@@ -232,7 +232,7 @@ pub struct FilePathNode {
 
 /// An immutable metadata revision. Its body is an existing verified FULL;
 /// metadata edits never manufacture a content version or alter its proof.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct FileMetadataNode {
     pub node_id: String,
@@ -254,7 +254,7 @@ pub struct FileMetadataNode {
 /// Merge provenance is separate from immutable content/path parent proofs.
 /// Reusing an existing head records every input even when an ancestry edge
 /// must be omitted to keep the displayed history acyclic.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct FileBranchMerge {
     pub merge_id: String,
@@ -336,7 +336,7 @@ pub struct DirectoryNamespaceTarget {
     pub path: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Entry {
     pub entry_id: String,
@@ -349,7 +349,7 @@ pub struct Entry {
     #[serde(with = "crate::u64_string")]
     pub size: u64,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Commit {
     pub commit_id: String,
@@ -369,7 +369,7 @@ pub struct Commit {
     pub pending_file_versions: BTreeMap<String, String>,
     pub provenance: Option<String>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct FileVersion {
     pub format_version: u32,
@@ -392,7 +392,7 @@ pub struct FileVersion {
     pub source_version_ids: Vec<String>,
     pub created_as_full_checkpoint: bool,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Placement {
     pub version_id: String,
@@ -404,7 +404,7 @@ pub struct Placement {
     #[serde(with = "crate::u64_string_map")]
     pub binding_generations: BTreeMap<String, u64>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct MergeLink {
     pub merge_link_id: String,
@@ -418,7 +418,7 @@ pub struct MergeLink {
 }
 /// Audit-only edge across a split boundary. External identifiers are provenance,
 /// never traversed as live commits or branches of this history.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct HistoryBoundary {
     pub boundary_id: String,
@@ -506,7 +506,7 @@ pub struct CommitRequest {
     #[serde(default)]
     pub request_digest: Option<String>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct OperationResult {
     pub operation_id: String,
@@ -522,7 +522,7 @@ pub struct OperationResult {
     pub sequence: u64,
     pub result: serde_json::Value,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Plan {
     pub plan_id: String,
@@ -534,7 +534,7 @@ pub struct Plan {
     pub input: serde_json::Value,
     pub state: String,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct PlacementRule {
     pub rule_id: String,
@@ -544,7 +544,7 @@ pub struct PlacementRule {
     #[serde(with = "crate::u64_string")]
     pub generation: u64,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct ProtectionPolicy {
     pub policy_id: String,
@@ -560,7 +560,7 @@ pub struct ProtectionPolicy {
     #[serde(with = "crate::u64_string")]
     pub generation: u64,
 }
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct State {
     #[serde(with = "crate::u64_string")]
@@ -647,7 +647,7 @@ pub struct State {
     #[serde(with = "crate::u64_string")]
     pub topology_generation: u64,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Event {
     #[serde(with = "crate::u64_string")]

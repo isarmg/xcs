@@ -1,57 +1,31 @@
-//! Bounded JSON envelopes with HTTP status preserved for non-JSON failures.
+//! Native HTTP streaming adapter for the shared client protocol.
 use super::Error;
 use futures_util::StreamExt;
 use serde_json::Value;
+use xcs_contract::client_protocol::{self, MAX_RESPONSE_BYTES, ResponseError};
+
+fn protocol_error(error: ResponseError) -> Error {
+    Error::Api {
+        status: error.status,
+        code: error.code,
+        message: match error.request_id {
+            Some(request_id) => format!("{} (request {request_id})", error.message),
+            None => error.message,
+        },
+        retryable: error.retryable,
+    }
+}
 
 pub(super) async fn decode(response: reqwest::Response) -> Result<Value, Error> {
-    let status = response.status();
+    let status = response.status().as_u16();
     let mut stream = response.bytes_stream();
     let mut bytes = Vec::new();
     while let Some(chunk) = stream.next().await {
         let chunk = chunk?;
-        if bytes.len() + chunk.len() > 8 * 1024 * 1024 {
-            return Err(Error::Response("JSON response exceeds client limit".into()));
+        if chunk.len() > MAX_RESPONSE_BYTES.saturating_sub(bytes.len()) {
+            return Err(protocol_error(client_protocol::response_too_large(status)));
         }
         bytes.extend_from_slice(&chunk);
     }
-    if bytes.is_empty() && status.is_success() {
-        return Ok(Value::Null);
-    }
-    let value: Value = match serde_json::from_slice(&bytes) {
-        Ok(value) => value,
-        Err(_) if !status.is_success() => {
-            return Err(Error::Api {
-                status: status.as_u16(),
-                code: "HTTP_ERROR".into(),
-                message: format!(
-                    "server returned HTTP {} without a JSON error envelope",
-                    status.as_u16()
-                ),
-                retryable: status.is_server_error() || status.as_u16() == 429,
-            });
-        }
-        Err(_) => {
-            return Err(Error::Response(format!(
-                "server returned non-JSON HTTP {}",
-                status.as_u16()
-            )));
-        }
-    };
-    if !status.is_success() {
-        let error = &value["error"];
-        let message = error["message"]
-            .as_str()
-            .unwrap_or("server rejected request");
-        let message = match error["request_id"].as_str() {
-            Some(request_id) => format!("{message} (request {request_id})"),
-            None => message.to_owned(),
-        };
-        return Err(Error::Api {
-            status: status.as_u16(),
-            code: error["code"].as_str().unwrap_or("HTTP_ERROR").into(),
-            message,
-            retryable: error["retryable"].as_bool().unwrap_or(false),
-        });
-    }
-    Ok(value)
+    client_protocol::decode_response(status, &bytes).map_err(protocol_error)
 }

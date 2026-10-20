@@ -2,6 +2,19 @@
 use super::*;
 use std::collections::BTreeMap;
 
+/// Change only the display location of an existing entry. Stable entry/file/
+/// version identities and content metadata survive moves, case-only renames,
+/// and directory rebasing. Validate first so failure leaves the entry intact.
+pub(crate) fn relocate_entry(entry: &mut Entry, path: String) -> Result<()> {
+    xcs_naming::validate_path(&path)?;
+    let name = path.rsplit('/').next().unwrap_or("").to_owned();
+    let lookup_key = xcs_naming::path_key(&path);
+    entry.path = path;
+    entry.name = name;
+    entry.lookup_key = lookup_key;
+    Ok(())
+}
+
 pub(crate) fn sorted(entries: &mut [Entry]) {
     entries.sort_by(|a, b| a.lookup_key.as_bytes().cmp(b.lookup_key.as_bytes()));
 }
@@ -18,9 +31,7 @@ pub(crate) fn validate_entries(entries: &mut Vec<Entry>, maximum: usize) -> Resu
     }
 
     for e in entries.iter_mut() {
-        xcs_naming::validate_path(&e.path)?;
-        e.name = e.path.rsplit('/').next().unwrap_or("").into();
-        e.lookup_key = xcs_naming::path_key(&e.path);
+        relocate_entry(e, e.path.clone())?;
     }
     // Build once after normalization; parent validation must not scan the
     // complete directory for every entry (up to max_entries per commit).
@@ -193,8 +204,8 @@ pub(crate) fn apply_namespace(entries: &mut Vec<Entry>, op: &NamespaceOperation)
             // display components rather than slicing by a different spelling.
             let depth = original.path.split('/').count();
             for entry in entries.iter_mut() {
-                if entry.lookup_key == key {
-                    entry.path = target.clone();
+                let path = if entry.lookup_key == key {
+                    target.clone()
                 } else if is_descendant(&entry.lookup_key, &key) {
                     let suffix = entry
                         .path
@@ -203,11 +214,11 @@ pub(crate) fn apply_namespace(entries: &mut Vec<Entry>, op: &NamespaceOperation)
                         .ok_or_else(|| {
                             Error::new("STATE_INVALID", "entry path and lookup depth differ")
                         })?;
-                    entry.path = format!("{target}/{suffix}");
+                    format!("{target}/{suffix}")
                 } else {
                     continue;
-                }
-                entry.lookup_key = xcs_naming::path_key(&entry.path);
+                };
+                relocate_entry(entry, path)?;
             }
         }
         _ => {
@@ -243,6 +254,44 @@ mod tests {
             },
             size: 0,
         }
+    }
+
+    #[test]
+    fn relocating_entry_updates_path_fields_without_changing_identity_or_body() {
+        let mut file = entry("Old/Document.txt", "file");
+        file.size = 123;
+        let original = file.clone();
+        for path in ["Straße/文档.txt", "STRASSE/文档.txt", "STRASSE/文档.txt"] {
+            relocate_entry(&mut file, path.into()).unwrap();
+            assert_eq!(file.path, path);
+            assert_eq!(file.name, "文档.txt");
+            assert_eq!(file.lookup_key, xcs_naming::path_key(path));
+            assert_eq!(file.entry_id, original.entry_id);
+            assert_eq!(file.file_id, original.file_id);
+            assert_eq!(file.version_id, original.version_id);
+            assert_eq!(file.kind, original.kind);
+            assert_eq!(file.size, original.size);
+        }
+        let before = serde_json::to_value(&file).unwrap();
+        assert!(relocate_entry(&mut file, "../escape".into()).is_err());
+        assert_eq!(serde_json::to_value(&file).unwrap(), before);
+    }
+
+    #[test]
+    fn rebasing_directory_preserves_identity_and_uses_component_depth() {
+        let original = entry("STRASSE/文档.txt", "file");
+        let rebased =
+            super::super::directory::rebase_entries(&[original.clone()], "Straße", "Moved")
+                .unwrap();
+        assert_eq!(rebased[0].path, "Moved/文档.txt");
+        assert_eq!(rebased[0].name, "文档.txt");
+        assert_eq!(
+            rebased[0].lookup_key,
+            xcs_naming::path_key("Moved/文档.txt")
+        );
+        assert_eq!(rebased[0].entry_id, original.entry_id);
+        assert_eq!(rebased[0].file_id, original.file_id);
+        assert_eq!(rebased[0].version_id, original.version_id);
     }
 
     #[test]

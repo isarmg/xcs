@@ -59,7 +59,7 @@ impl Error {
     /// After a mutation request, only a client-error response proves rejection.
     /// A malformed success response can follow a completed publication.
     pub(crate) fn mutation_outcome_unknown(&self) -> bool {
-        !(400..500).contains(&self.status)
+        xcs_contract::client_protocol::mutation_outcome_unknown(self.status)
     }
 
     fn with_status(mut self, status: u16) -> Self {
@@ -390,20 +390,24 @@ async fn decode(fetched: Fetched) -> Result<Value, Error> {
         .ok()
         .flatten()
         .and_then(|v| v.parse::<u64>().ok())
-        .is_some_and(|v| v > 16 * 1024 * 1024)
+        .is_some_and(|v| v > xcs_contract::client_protocol::MAX_RESPONSE_BYTES as u64)
     {
-        return Err(error(
-            "RESPONSE_TOO_LARGE",
-            t(
-                "响应超过界面安全上限，请缩小查询范围",
-                "The response is too large. Narrow the query.",
-            ),
-        )
-        .with_status(status));
+        return Err(response::from_protocol(
+            xcs_contract::client_protocol::response_too_large(status),
+        ));
     }
-    let bytes = read_body(&fetched.response, 16 * 1024 * 1024)
-        .await
-        .map_err(|error| error.with_status(status))?;
+    let bytes = read_body(
+        &fetched.response,
+        xcs_contract::client_protocol::MAX_RESPONSE_BYTES,
+    )
+    .await
+    .map_err(|error| {
+        if error.code == "RESPONSE_TOO_LARGE" {
+            response::from_protocol(xcs_contract::client_protocol::response_too_large(status))
+        } else {
+            error.with_status(status)
+        }
+    })?;
     response::decode(status, &bytes)
 }
 
@@ -499,26 +503,20 @@ pub async fn commit_workspace(
         }
         return result;
     }
-    let mut body = request(
+    let body = request(
         "POST",
         &format!("/v1/workspaces/{}/seal", segment(workspace)),
         Some(json!({})),
     )
     .await?;
-    body["operation_id"] = operation_id.into();
-    body["message"] = message.into();
-    if !expected_head.is_empty() {
-        body["expected_head"] = expected_head.into();
-    }
-    let digest = xcs_contract::request_digest(
-        "POST",
-        "/v1/workspaces/{workspace}/commit",
-        json!({"workspace":workspace}),
-        json!({}),
-        &body,
+    let body = xcs_contract::client_protocol::prepare_commit(
+        body,
+        workspace,
+        operation_id,
+        message,
+        Some(expected_head),
     )
-    .map_err(|error| error_from_contract(error))?;
-    body["request_digest"] = digest.into();
+    .map_err(error_from_contract)?;
     // A failed seal (including a lost seal response) has not submitted this
     // operation ID. Only publication errors require querying that operation.
     on_commit();
@@ -530,7 +528,12 @@ pub async fn commit_workspace(
     .await
 }
 fn native_commit_attempted(result: &Result<Value, Error>) -> bool {
-    !matches!(result, Err(error) if error.commit_attempted == Some(false))
+    xcs_contract::client_protocol::publication_attempted(
+        result
+            .as_ref()
+            .err()
+            .and_then(|error| error.commit_attempted),
+    )
 }
 
 fn error_from_contract(value: xcs_contract::Error) -> Error {

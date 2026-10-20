@@ -15,7 +15,9 @@ mod repair;
 mod wire;
 pub use degraded_recovery::RecoveryPlan;
 pub use disk::{offline_check, offline_export};
-pub use engine::{Engine, OpenedContent, ReadLease};
+pub use engine::{
+    ContentReadPlan, Engine, OpenedContent, RangeContent, ReadLease, WorkspaceReadPlan,
+};
 pub use historical_save::HistoricalSaveOptions;
 pub use history_package::{HistoryManifest, HistoryPackageReport, offline_check_history_package};
 pub use wire::{commit_request_digest, manifest_hash as workspace_manifest_hash};

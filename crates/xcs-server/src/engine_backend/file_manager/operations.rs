@@ -1,13 +1,7 @@
 //! Strict wire requests for node adoption, inherited tags and backup policy.
 use super::*;
 
-fn file_context(
-    engine: &Engine,
-    identity: &Identity,
-    input: &Value,
-    file: &str,
-) -> Result<(), ApiError> {
-    let repo = file_repo(engine, identity, file, true)?;
+fn location(input: &Value) -> Result<Option<application::FileLocation>, ApiError> {
     let requested_repo = input.get("repository_id");
     let requested_path = input.get("path");
     if requested_repo.is_some() != requested_path.is_some() {
@@ -15,28 +9,13 @@ fn file_context(
             "repository_id and path must be supplied together",
         ));
     }
-    if requested_repo.is_some() {
-        let path = field(input, "path")?;
-        xcs_naming::validate_path(path).map_err(ApiError::invalid)?;
-        if field(input, "repository_id")? != repo.repository_id
-            || !engine
-                .list_tree(&repo.main_branch_id)
-                .map_err(error)?
-                .iter()
-                .any(|entry| {
-                    entry.kind == "file"
-                        && entry.file_id == file
-                        && entry.lookup_key == xcs_naming::path_key(path)
-                })
-        {
-            return Err(ApiError::new(
-                404,
-                "FILE_NOT_FOUND",
-                "file is not present at this logical path",
-            ));
-        }
+    if requested_repo.is_none() {
+        return Ok(None);
     }
-    Ok(())
+    Ok(Some(application::FileLocation {
+        repository_id: field(input, "repository_id")?.into(),
+        path: field(input, "path")?.into(),
+    }))
 }
 
 pub(super) fn call(
@@ -61,12 +40,6 @@ pub(super) fn call(
                 ],
             )?;
             let file = field(input, "file_id")?;
-            file_context(engine, identity, input, file)?;
-            if input.get("confirmed").and_then(Value::as_bool) != Some(true) {
-                return Err(ApiError::invalid(
-                    "confirm the chosen result and surviving branch before merging",
-                ));
-            }
             let inputs: Vec<xcs_contract::FileMergeInput> = serde_json::from_value(
                 input
                     .get("inputs")
@@ -74,16 +47,17 @@ pub(super) fn call(
                     .ok_or_else(|| ApiError::invalid("inputs are required"))?,
             )
             .map_err(ApiError::invalid)?;
-            let result = engine
-                .merge_file_branches(
-                    file,
-                    &inputs,
-                    field(input, "chosen_node_id")?,
-                    field(input, "surviving_branch_id")?,
-                    &identity.principal,
-                    operation(input)?,
-                )
-                .map_err(error)?;
+            let result = Application::new(engine, identity).merge_file_branches(
+                application::MergeFileBranches {
+                    file_id: file.into(),
+                    inputs,
+                    chosen_node_id: field(input, "chosen_node_id")?.into(),
+                    surviving_branch_id: field(input, "surviving_branch_id")?.into(),
+                    confirmed: input.get("confirmed").and_then(Value::as_bool) == Some(true),
+                    location: location(input)?,
+                    operation_id: operation(input)?.into(),
+                },
+            )?;
             operation_wire(engine, result)
         }
         "file_manager_tags" => {
@@ -100,7 +74,8 @@ pub(super) fn call(
                 ],
             )?;
             let file = field(input, "file_id")?;
-            file_context(engine, identity, input, file)?;
+            Application::new(engine, identity)
+                .authorize_file_location(file, location(input)?.as_ref())?;
             let targets: Vec<xcs_contract::FileTagTarget> = serde_json::from_value(
                 input
                     .get("targets")

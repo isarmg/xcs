@@ -2682,3 +2682,152 @@ fn unchanged_save_recovery_persists_operation_without_creating_content_history()
         );
     }
 }
+
+#[test]
+fn content_read_plan_pins_before_io_and_authenticates_manifest_outside_engine() {
+    let f = Fixture::new();
+    let mut engine = f.initialize();
+    let repo = repository(&mut engine, 2);
+    save(&mut engine, &repo.main_branch_id, "range", &[7; 65536]);
+    let version_id = engine.list_tree(&repo.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    save(&mut engine, &repo.main_branch_id, "range", b"new version");
+    let plan = engine.prepare_content(&version_id).unwrap();
+    assert_eq!(
+        engine
+            .create_purge_plan(&repo.history_tree_id, vec![version_id.clone()], "admin")
+            .unwrap_err()
+            .code(),
+        "CONTENT_PINNED"
+    );
+    // The plan owns its snapshot, so unrelated metadata work can run before any
+    // disk verification; no borrow or Engine mutex is retained.
+    engine
+        .create_repository("second", "P01", 1, "admin", &new_id("op"))
+        .unwrap();
+    let version = engine.state.versions[&version_id].clone();
+    let placement = engine.state.placements[&version_id].clone();
+    let first = engine.disk(&placement.route_slot_ids[0]).unwrap();
+    let dir = disk::version_dir(first, &version.history_tree_id, &version_id);
+    fs::write(dir.join("checksums.bin"), b"bad manifest").unwrap();
+    let opened = plan.open().unwrap(); // authenticated second replica
+    assert_eq!(opened.manifest.logical_size, 65536);
+    assert_eq!(opened.file.metadata().unwrap().len(), 65536);
+    drop(opened);
+    assert!(
+        engine
+            .create_purge_plan(&repo.history_tree_id, vec![version_id.clone()], "admin")
+            .is_ok()
+    );
+    // All disks gone: plan construction still succeeds, proving it performs no
+    // payload, manifest, publication or disk identity reads under the lock.
+    for slot in &placement.route_slot_ids {
+        let disk = engine.disk(slot).unwrap();
+        fs::remove_dir_all(disk::version_dir(
+            disk,
+            &version.history_tree_id,
+            &version_id,
+        ))
+        .unwrap();
+    }
+    let plan = engine.prepare_content(&version_id).unwrap();
+    assert!(plan.open().is_err());
+    assert!(!engine.reads.lock().unwrap().contains_key(&version_id));
+}
+
+#[test]
+fn shared_client_prepares_real_seal_without_losing_frozen_head() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    for expected_override in [None, Some("")] {
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        engine
+            .stage_bytes(
+                &workspace.workspace_id,
+                "prepared.txt",
+                b"prepared from a real seal",
+            )
+            .unwrap();
+        let seal = engine
+            .seal_workspace(&workspace.workspace_id, "admin")
+            .unwrap();
+        let operation_id = new_id("op");
+        let body = xcs_contract::client_protocol::prepare_commit(
+            seal,
+            &workspace.workspace_id,
+            &operation_id,
+            "shared client",
+            expected_override,
+        )
+        .unwrap();
+        assert_eq!(body["expected_head"], workspace.base_head);
+        assert_eq!(
+            body["request_digest"],
+            commit_request_digest(&workspace.workspace_id, &body).unwrap()
+        );
+        let request = CommitRequest {
+            workspace_id: workspace.workspace_id.clone(),
+            operation_id,
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "shared client".into(),
+            request_digest: Some(body["request_digest"].as_str().unwrap().into()),
+        };
+        let committed = engine
+            .commit_workspace_wire(request.clone(), body.clone())
+            .unwrap();
+        assert_eq!(
+            engine
+                .commit_workspace_wire(request, body)
+                .unwrap()
+                .commit_id,
+            committed.commit_id
+        );
+    }
+    drop(engine);
+    let engine = Engine::open(&fixture.root).unwrap();
+    let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(
+        bytes(&engine, &entries[0].version_id),
+        b"prepared from a real seal"
+    );
+}
+
+#[test]
+fn workspace_read_plan_pins_exact_inode_before_unlocked_verification() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let staged = engine
+        .stage_bytes(&workspace.workspace_id, "staged", b"original")
+        .unwrap();
+    let plan = engine
+        .prepare_workspace_content(&workspace.workspace_id, &staged.item_id, "admin")
+        .unwrap();
+    let replacement = staged.source_path.with_extension("replacement");
+    fs::write(&replacement, b"modified").unwrap();
+    fs::rename(replacement, &staged.source_path).unwrap();
+    let mut opened = plan.open().unwrap();
+    let mut bytes = Vec::new();
+    opened.file.read_to_end(&mut bytes).unwrap();
+    assert_eq!(bytes, b"original");
+    drop(opened);
+    assert_eq!(
+        engine
+            .prepare_workspace_content(&workspace.workspace_id, &staged.item_id, "admin")
+            .unwrap()
+            .open()
+            .err()
+            .unwrap()
+            .code(),
+        "CHECKSUM_MISMATCH"
+    );
+}

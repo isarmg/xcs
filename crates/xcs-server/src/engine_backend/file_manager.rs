@@ -705,63 +705,17 @@ pub(super) fn call(
         "file_manager_namespace_batch" => {
             keys(&input, &["slot_id", "kind", "items", "operation_id"])?;
             let slot = field(&input, "slot_id")?;
-            if disk(engine, slot)?.level != 1 {
-                return Err(ApiError::new(
-                    403,
-                    "DISK_READ_ONLY",
-                    "backup disks are read only",
-                ));
-            }
             let request: xcs_contract::DirectoryNamespaceBatch = serde_json::from_value(json!({
                 "kind":input.get("kind"), "items":input.get("items")
             }))
             .map_err(ApiError::invalid)?;
-            let mut repository_id = None;
-            for item in &request.items {
-                for branch_id in std::iter::once(item.source.directory_branch_id.as_str()).chain(
-                    item.target
-                        .iter()
-                        .map(|target| target.directory_branch_id.as_str()),
-                ) {
-                    let branch = engine
-                        .state()
-                        .directory_branches
-                        .get(branch_id)
-                        .ok_or_else(|| {
-                            ApiError::new(
-                                404,
-                                "DIRECTORY_BRANCH_NOT_FOUND",
-                                "directory branch missing",
-                            )
-                        })?;
-                    let repo = repository(engine, &branch.repository_id)?;
-                    authorize(identity, repo, true, false)?;
-                    if repo.primary_slot_id != slot {
-                        return Err(ApiError::invalid(
-                            "batch branches must belong to this primary disk",
-                        ));
-                    }
-                    if repository_id
-                        .as_ref()
-                        .is_some_and(|id| id != &repo.repository_id)
-                    {
-                        return Err(ApiError::invalid(
-                            "batch branches must belong to one repository",
-                        ));
-                    }
-                    repository_id = Some(repo.repository_id.clone());
-                }
-            }
-            let repository_id =
-                repository_id.ok_or_else(|| ApiError::invalid("batch items cannot be empty"))?;
-            let result = engine
-                .directory_namespace_batch(
-                    &repository_id,
-                    &request,
-                    &identity.principal,
-                    operation(&input)?,
-                )
-                .map_err(error)?;
+            let result = Application::new(engine, identity).namespace_batch(
+                application::NamespaceBatch {
+                    slot_id: slot.into(),
+                    request,
+                    operation_id: operation(&input)?.into(),
+                },
+            )?;
             operation_wire(engine, result)
         }
         "file_manager_file_history" => file_history(engine, identity, &input),

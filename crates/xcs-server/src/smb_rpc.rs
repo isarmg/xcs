@@ -2021,4 +2021,58 @@ mod tests {
         assert!(!socket.exists());
         drop(stream);
     }
+    fn immutable_fixture_payloads(root: &Path) -> Vec<PathBuf> {
+        fn visit(root: &Path, found: &mut Vec<PathBuf>) {
+            for entry in fs::read_dir(root).unwrap() {
+                let path = entry.unwrap().path();
+                if path.is_dir() {
+                    visit(&path, found);
+                } else if path
+                    .components()
+                    .any(|part| part.as_os_str() == "file-containers")
+                    && fs::read(&path).unwrap() == b"old"
+                {
+                    found.push(path);
+                }
+            }
+        }
+        let mut found = Vec::new();
+        visit(root, &mut found);
+        found.sort();
+        found
+    }
+
+    #[test]
+    fn raw_fd_and_writer_copy_reject_corruption_and_use_verified_fallback() {
+        for writable in [false, true] {
+            let (temp, shared, _backend, branch) = fixture();
+            let payloads = immutable_fixture_payloads(temp.path());
+            assert_eq!(payloads.len(), 3);
+            // Corrupt the primary specifically, leaving the backup replicas valid.
+            let primary = payloads
+                .iter()
+                .find(|path| path.starts_with(temp.path().join("p")))
+                .unwrap();
+            fs::set_permissions(primary, fs::Permissions::from_mode(0o600)).unwrap();
+            fs::write(primary, b"bad").unwrap();
+            let mut active = session(shared.clone(), &branch);
+            let (opened, file) = open_file(&mut active, writable);
+            let mut bytes = [0u8; 3];
+            file.read_exact_at(&mut bytes, 0).unwrap();
+            assert_eq!(
+                &bytes, b"old",
+                "raw FD or writer copy exposed corrupted bytes"
+            );
+            active.close(opened.handle, true).unwrap();
+            drop(active);
+            for path in payloads {
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+                fs::write(path, b"bad").unwrap();
+            }
+            let mut denied = session(shared, &branch);
+            let result = denied.open("report.txt".into(), writable, false, false, false, false);
+            assert!(matches!(result, Err(ref error) if error.code == "CONTENT_UNAVAILABLE"));
+            assert!(denied.handles.is_empty(), "corrupt descriptor was admitted");
+        }
+    }
 }

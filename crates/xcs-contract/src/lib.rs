@@ -1,6 +1,7 @@
 //! Portable XCS wire and disk contracts. No server or platform dependencies.
 #![forbid(unsafe_code)]
 pub mod api_path;
+pub mod client_protocol;
 pub mod encoding;
 mod integer_json;
 pub mod model;

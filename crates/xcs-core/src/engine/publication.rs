@@ -123,9 +123,9 @@ impl Engine {
             )
             .retryable());
         }
-        self.state = next;
+        let previous = std::mem::replace(&mut self.state, next);
         self.snapshot = Some(candidate.snapshot_hash);
-        self.rebuild_index()?;
+        self.update_index(&previous)?;
         self.blocked = false;
         Ok(())
     }
