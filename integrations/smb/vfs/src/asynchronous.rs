@@ -43,7 +43,7 @@ fn pool() -> io::Result<&'static mpsc::SyncSender<Work>> {
         for index in 0..2 {
             let receiver = receiver.clone();
             if std::thread::Builder::new()
-                .name(format!("xcs-smb-io-{index}"))
+                .name(format!("zxs-smb-io-{index}"))
                 .spawn(move || {
                     loop {
                         let work = match receiver.lock() {
@@ -62,7 +62,7 @@ fn pool() -> io::Result<&'static mpsc::SyncSender<Work>> {
                                 completion,
                             },
                             Err(error) => {
-                                eprintln!("xcs SMB async: {error}");
+                                eprintln!("zxs SMB async: {error}");
                                 Outcome {
                                     error: error_errno(&error),
                                     completion: Completion::done(-1),
@@ -168,8 +168,8 @@ unsafe extern "C" fn completed(
         };
         (*state).error = error;
         // Unregister before closing the watched descriptor, as tevent requires.
-        sdk::_talloc_free(fd.cast(), c"xcs Rust VFS completion".as_ptr());
-        sdk::_tevent_req_done(request, c"xcs Rust VFS completion".as_ptr());
+        sdk::_talloc_free(fd.cast(), c"zxs Rust VFS completion".as_ptr());
+        sdk::_tevent_req_done(request, c"zxs Rust VFS completion".as_ptr());
     }
 }
 
@@ -186,9 +186,9 @@ pub(super) unsafe fn send(
             mem_ctx,
             (&mut state as *mut *mut State).cast(),
             std::mem::size_of::<State>(),
-            c"xcs_async_state".as_ptr(),
-            c"xcs_async_send".as_ptr(),
-            c"xcs Rust VFS".as_ptr(),
+            c"zxs_async_state".as_ptr(),
+            c"zxs_async_send".as_ptr(),
+            c"zxs Rust VFS".as_ptr(),
         )
     };
     if request.is_null() {
@@ -228,8 +228,8 @@ pub(super) unsafe fn send(
                 sdk::TEVENT_FD_READ as u16,
                 Some(completed),
                 state.cast(),
-                c"xcs_async_completed".as_ptr(),
-                c"xcs Rust VFS".as_ptr(),
+                c"zxs_async_completed".as_ptr(),
+                c"zxs Rust VFS".as_ptr(),
             )
         };
         if watcher.is_null() {
@@ -252,10 +252,10 @@ pub(super) unsafe fn send(
     if let Err(error) = prepared {
         unsafe {
             if !watcher.is_null() {
-                sdk::_talloc_free(watcher.cast(), c"xcs Rust VFS queue failure".as_ptr());
+                sdk::_talloc_free(watcher.cast(), c"zxs Rust VFS queue failure".as_ptr());
             }
             (*state).error = error_errno(&error);
-            sdk::_tevent_req_done(request, c"xcs Rust VFS queue failure".as_ptr());
+            sdk::_tevent_req_done(request, c"zxs Rust VFS queue failure".as_ptr());
             return sdk::tevent_req_post(request, event);
         }
     }
@@ -328,14 +328,14 @@ mod tests {
             assert_eq!(bytes, [0; 4]);
             release.send(()).unwrap();
             while sdk::tevent_req_is_in_progress(request) {
-                assert_eq!(sdk::_tevent_loop_once(event, c"xcs SDK test".as_ptr()), 0);
+                assert_eq!(sdk::_tevent_loop_once(event, c"zxs SDK test".as_ptr()), 0);
             }
             let mut aio: sdk::vfs_aio_state = std::mem::zeroed();
             assert_eq!(recv(request, &mut aio), 4);
             assert_eq!(aio.error, 0);
             assert_eq!(bytes, [1, 2, 3, 4]);
-            sdk::_talloc_free(request.cast(), c"xcs SDK test".as_ptr());
-            sdk::_talloc_free(event.cast(), c"xcs SDK test".as_ptr());
+            sdk::_talloc_free(request.cast(), c"zxs SDK test".as_ptr());
+            sdk::_talloc_free(event.cast(), c"zxs SDK test".as_ptr());
         }
     }
     #[test]
@@ -365,8 +365,8 @@ mod tests {
             );
             assert!(!request.is_null());
             ready.recv_timeout(Duration::from_secs(5)).unwrap();
-            sdk::_talloc_free(request.cast(), c"xcs SDK cancellation test".as_ptr());
-            sdk::_talloc_free(event.cast(), c"xcs SDK cancellation test".as_ptr());
+            sdk::_talloc_free(request.cast(), c"zxs SDK cancellation test".as_ptr());
+            sdk::_talloc_free(event.cast(), c"zxs SDK cancellation test".as_ptr());
             release.send(()).unwrap();
             done.recv_timeout(Duration::from_secs(5)).unwrap();
             assert_eq!(destination, [0; 4]);

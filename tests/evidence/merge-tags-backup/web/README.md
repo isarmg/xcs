@@ -22,7 +22,7 @@
 | [复杂历史树回归](regression-tree/browser-result.json) | 两场各3种几何状态；父下子上、跨层绕行、文本编辑和改变宽度后的等粗正交圆角线 |
 | [候选回执](candidate.json)、[资源与源码清单](build-manifest.json) | 152个输入与当前源码逐项一致，资源摘要逐项一致；既有公共几何、登录和选择器源码与上次候选一致 |
 
-候选位置为 `/tmp/xcs-web-merge-tags-candidate/web/dist`，WASM SHA-256为 `2491cb2a7a0abf2413b8c19c4f7a288393ffdccfbfa2080a302e8d6e6f4433d2`。新功能实际请求摘录保存在 [wire/](wire/)。截图在本目录及各回归子目录。
+候选位置为 当时的临时测试目录或日志，WASM SHA-256为 `2491cb2a7a0abf2413b8c19c4f7a288393ffdccfbfa2080a302e8d6e6f4433d2`。新功能实际请求摘录保存在 [wire/](wire/)。截图在本目录及各回归子目录。
 
 浏览器API全部由本地夹具响应；测试证明页面交互、发布恢复、请求契约和真实WASM显示几何，**不代表实际服务端合并、物理副本或SMB验收**。服务端证据由对应核心/API/存储测试提供。Web子任务没有替换项目 `web/dist` 或重启真实预览服务。
 
@@ -36,4 +36,4 @@ node tests/evidence/merge-tags-backup/web/browser-probe.mjs
 node tests/evidence/merge-tags-backup/web/backup-browse-probe.mjs
 ```
 
-浏览器探针默认读取上述隔离候选。可用 `XCS_BROWSER_DIST`、`XCS_WEB_EVIDENCE` 和 `XCS_PLAYWRIGHT_MODULE` 指定其他位置。复杂树探针为 `regression-tree-probe.mjs`，使用回环静态服务，需设置 `XCS_PRODUCT_ROOT`、`XCS_PREVIEW_URL`、`XCS_TREE_EVIDENCE` 和 `XCS_PLAYWRIGHT_MODULE`；详见其顶部环境变量。
+浏览器探针默认读取上述隔离候选。可用 `ZXS_BROWSER_DIST`、`ZXS_WEB_EVIDENCE` 和 `ZXS_PLAYWRIGHT_MODULE` 指定其他位置。复杂树探针为 `regression-tree-probe.mjs`，使用回环静态服务，需设置 `ZXS_PRODUCT_ROOT`、`ZXS_PREVIEW_URL`、`ZXS_TREE_EVIDENCE` 和 `ZXS_PLAYWRIGHT_MODULE`；详见其顶部环境变量。

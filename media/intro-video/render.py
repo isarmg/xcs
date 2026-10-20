@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""XCS original explainer: Pillow scene graph -> ffmpeg rawvideo, no frame dump."""
+"""ZXS original explainer: Pillow scene graph -> ffmpeg rawvideo, no frame dump."""
 import argparse, json, math, os, re, subprocess, wave
 from pathlib import Path
 from functools import lru_cache
@@ -64,7 +64,7 @@ def caption_parts(text):
 def render(story,t,w=1280,h=720,screenshot=None):
     scenes=story['scenes']; sc=next((s for s in scenes if s['start']<=t<s['end']),scenes[-1]); i=scenes.index(sc)
     u=t-sc['start']; dur=sc['end']-sc['start']; p=u/dur; c=Canvas(w,h)
-    c.text(48,25,'XCS',22,BLUE,True); c.text(108,29,'文件 · 版本 · 分层备份',14,MUTED)
+    c.text(48,25,'ZXS',22,BLUE,True); c.text(108,29,'文件 · 版本 · 分层备份',14,MUTED)
     c.text(1232,29,f'{i+1:02d} / {len(scenes):02d}',14,MUTED,anchor='mt')
     title=sc['title']; c.text(64,76,title,38 if len(title)<=26 else 31,bold=True)
     c.text(66,133,sc.get('subtitle',''),19,MUTED)
@@ -80,7 +80,7 @@ def render(story,t,w=1280,h=720,screenshot=None):
             c.card(80+j*400,225+dy,320,150,label,sub,BLUE if p>j/3 else '#a1a1aa')
             c.text(240+j*400,405,['时间','关系','位置'][j],30,BLUE,True,anchor='mt')
     elif kind=='solution':
-        c.card(470,235,340,160,'XCS 统一管理','一台 Linux 服务端',BLUE)
+        c.card(470,235,340,160,'ZXS 统一管理','一台 Linux 服务端',BLUE)
         labels=[('文件入口',80,260),('完整版本',960,210),('分层备份',960,360)]
         for label,x,y in labels:
             c.card(x,y,240,100,label,'')
@@ -204,7 +204,7 @@ def main():
     if args.preview: return
     if any(s['kind']=='web' for s in story['scenes']) and not args.screenshot.exists(): raise SystemExit('Final render requires real screenshot; capture project web UI first.')
     duration=args.duration or story['duration']; wav=args.out/'original-score.wav'; music(wav,duration)
-    dest=args.out/'xcs-explainer-zh.mp4'
+    dest=args.out/'zxs-explainer-zh.mp4'
     cmd=['ffmpeg','-hide_banner','-loglevel','error','-y','-f','rawvideo','-vcodec','rawvideo','-pix_fmt','rgb24','-s',f'{w}x{h}','-r',str(args.fps),'-i','-','-i',str(wav),'-c:v','libx264','-preset','veryfast','-crf','20','-pix_fmt','yuv420p','-c:a','aac','-b:a','160k','-shortest','-movflags','+faststart',str(dest)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
     try:

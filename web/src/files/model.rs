@@ -1,6 +1,6 @@
 use serde_json::Value;
 use std::collections::BTreeSet;
-use xcs_web::i18n::t;
+use zxs_web::i18n::t;
 
 #[derive(Clone, Default)]
 pub(crate) struct Model {
@@ -216,7 +216,7 @@ pub(crate) fn breadcrumbs(path: &str) -> Vec<(String, String)> {
     result
 }
 pub(crate) fn valid_name(name: &str) -> bool {
-    xcs_naming::validate_name(name).is_ok()
+    zxs_naming::validate_name(name).is_ok()
 }
 pub(crate) fn file_kind(value: &Value) -> bool {
     value["kind"] == "file"

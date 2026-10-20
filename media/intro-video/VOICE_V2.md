@@ -19,10 +19,10 @@
 依赖安装参见 `VOICE.md`。输入使用 `story-v2.json` 的 `scenes[].narration`，也支持 `sentences` 数组（字符串或 `{ "text": "一句话。" }`）。
 
 ```sh
-../xcs-video-output/voice-venv/bin/python media/intro-video/voice_v2.py \
+../zxs-video-output/voice-venv/bin/python media/intro-video/voice_v2.py \
   --script media/intro-video/story-v2.json \
-  --output ../xcs-video-output/voice-v2 \
-  --cache ../xcs-video-output/voice/model-cache
+  --output ../zxs-video-output/voice-v2 \
+  --cache ../zxs-video-output/voice/model-cache
 ```
 
 输出两份 WAV 和 `audition-report.json`，含实际时长、逐句字幕切点、语速、信号检查与脚本哈希。仅源码提交 Git；音频、权重、缓存留在仓库外。
@@ -39,8 +39,8 @@
 模型给每句添加了约 0.25 秒前空白和 0.65 秒后空白。`trim_voice_v2.py` 只剪两端低声能区域：以 10ms 窗口 RMS ≤ -50dBFS 判定，首尾各保留 60ms，额外句间间隔仍为 60ms。保留全部句内停顿，不改变语速或音高；原 WAV 保留。
 
 ```sh
-../xcs-video-output/voice-venv/bin/python media/intro-video/trim_voice_v2.py \
-  --directory ../xcs-video-output/voice-v2
+../zxs-video-output/voice-venv/bin/python media/intro-video/trim_voice_v2.py \
+  --directory ../zxs-video-output/voice-v2
 ```
 
 | 候选 | 裁剪前 | 裁剪后 | 低声能占比，前→后 |

@@ -229,7 +229,7 @@ HTTP 202 或任务已受理只表示操作登记，不表示正常保存成功�
 
 核心以 `(pool_id, principal_id, operation_id)` 登记操作；目标作用域属于请求摘要，改变目标不能另建同 ID 操作。客户端只能查询当前获授权的操作，幂等索引命中不绕过授权。登记作为独立的短控制事务，按第 10 章完成三成员保护、发布及操作账本更新后再返回 202；该事务完成即释放槽位，不能在整个上传期间占住未收敛槽位，也不表示稍后保存内容的业务候选已 ACCEPT。登记失败或响应未知时，以相同 ID 查询或重试；明确未登记才可报告未受理。
 
-JSON 变更请求摘要为 `BLAKE3("xcs:request:v2" + NUL + JCS(envelope))`。envelope 固定包含 `method`、`route`、`path_parameters`、`query` 和 `body`；method 大写，route 使用契约中的路径模板，路径参数单独传入，query 仅包含 schema 定义的有业务意义参数。body 排除唯一的顶层 `request_digest`；operation_id、目标、前置条件、fencing_token、计划摘要、工作清单摘要及全部已接纳扩展都参与计算。身份由已认证通道绑定；认证令牌、请求跟踪 ID、网络超时和重试次数不进入摘要。拒绝未知字段和重复字段后再计算，不自行填充会随环境变化的默认值。
+JSON 变更请求摘要为 `BLAKE3("zxs:request:v2" + NUL + JCS(envelope))`。envelope 固定包含 `method`、`route`、`path_parameters`、`query` 和 `body`；method 大写，route 使用契约中的路径模板，路径参数单独传入，query 仅包含 schema 定义的有业务意义参数。body 排除唯一的顶层 `request_digest`；operation_id、目标、前置条件、fencing_token、计划摘要、工作清单摘要及全部已接纳扩展都参与计算。身份由已认证通道绑定；认证令牌、请求跟踪 ID、网络超时和重试次数不进入摘要。拒绝未知字段和重复字段后再计算，不自行填充会随环境变化的默认值。
 
 内容提交必须绑定不可变 `sealed_manifest_hash`，覆盖每项最终长度、内容哈希、上传代际和命名空间操作顺序。相同工作区 ID 下字节变化必须产生新清单和新操作，不能沿用已登记请求指向可变工作区。流式内容的摘要绑定目标、上传代际、偏移、长度和内容哈希，不将二进制流强行表示成 JSON。
 

@@ -13,7 +13,7 @@ use crate::{
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 use wasm_bindgen::{JsCast, closure::Closure};
-use xcs_web::{html, i18n::t, prelude::*};
+use zxs_web::{html, i18n::t, prelude::*};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Version {
@@ -417,7 +417,7 @@ fn measure(root: &web_sys::Element, layout: &Layout) -> Geometry {
         .flat_map(|(depth, ids)| ids.iter().map(move |id| (id.as_str(), depth)))
         .collect::<BTreeMap<_, _>>();
     let mut boxes = BTreeMap::new();
-    if let Ok(nodes) = root.query_selector_all(".xcs-version-node[data-version-id]") {
+    if let Ok(nodes) = root.query_selector_all(".zxs-version-node[data-version-id]") {
         for index in 0..nodes.length() {
             if let Some(element) = nodes
                 .item(index)
@@ -477,7 +477,7 @@ fn observe(root: NodeRef<html::Div>, layout: Memo<Layout>, geometry: RwSignal<Ge
                 if let (Some(scroll), Ok(Some(first_tip))) = (
                     update_root.parent_element(),
                     update_root.query_selector(
-                        ".xcs-version-tree-level[data-version-depth=\"0\"] .xcs-version-node",
+                        ".zxs-version-tree-level[data-version-depth=\"0\"] .zxs-version-node",
                     ),
                 ) {
                     let rect = first_tip.get_bounding_client_rect();
@@ -512,7 +512,7 @@ fn observe(root: NodeRef<html::Div>, layout: Memo<Layout>, geometry: RwSignal<Ge
             let resize = resize.clone();
             let element = element.clone();
             move || {
-                if let Ok(nodes) = element.query_selector_all(".xcs-version-node") {
+                if let Ok(nodes) = element.query_selector_all(".zxs-version-node") {
                     for index in 0..nodes.length() {
                         if let Some(node) = nodes
                             .item(index)
@@ -569,18 +569,18 @@ pub(super) fn view(state: RwSignal<State>) -> impl IntoView {
     let root = NodeRef::<html::Div>::new();
     observe(root, tree, geometry);
     view! {
-        <div class="xcs-version-tree-scroll" aria-label=t("文件版本树","File version tree")>
-            <div class="xcs-version-tree-canvas" node_ref=root>
-                <svg class="xcs-version-tree-links" aria-hidden="true" focusable="false"
+        <div class="zxs-version-tree-scroll" aria-label=t("文件版本树","File version tree")>
+            <div class="zxs-version-tree-canvas" node_ref=root>
+                <svg class="zxs-version-tree-links" aria-hidden="true" focusable="false"
                     viewBox=move ||geometry.with(|g|format!("0 0 {} {}",g.width.max(1.),g.height.max(1.))) preserveAspectRatio="none">
-                    <defs><marker id="xcs-version-arrow" class="xcs-version-tree-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z"/></marker></defs>
+                    <defs><marker id="zxs-version-arrow" class="zxs-version-tree-arrow" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L8,4 L0,8 Z"/></marker></defs>
                     <For each=move ||geometry.with(|g|g.paths.clone()) key=|edge|(edge.0.clone(),edge.1.clone()) children=move |(parent,child,_)| {
                         let key=StoredValue::new((parent.clone(),child.clone()));
-                        view!{<path class="xcs-version-tree-edge" data-parent-version=parent data-child-version=child d=move ||geometry.with(|g|g.paths.iter().find(|edge|key.with_value(|key|edge.0==key.0&&edge.1==key.1)).map(|edge|edge.2.clone()).unwrap_or_default()) marker-end="url(#xcs-version-arrow)" stroke-dasharray="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>}
+                        view!{<path class="zxs-version-tree-edge" data-parent-version=parent data-child-version=child d=move ||geometry.with(|g|g.paths.iter().find(|edge|key.with_value(|key|edge.0==key.0&&edge.1==key.1)).map(|edge|edge.2.clone()).unwrap_or_default()) marker-end="url(#zxs-version-arrow)" stroke-dasharray="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>}
                     }/>
                 </svg>
                 <For each=move ||tree.with(|tree|tree.levels.iter().enumerate().map(|(depth,ids)|(depth,ids.clone())).collect::<Vec<_>>()) key=|level|level.0 children=move |(depth,_)| {
-                    view!{<div class="xcs-version-tree-level" data-version-depth=depth.to_string()>
+                    view!{<div class="zxs-version-tree-level" data-version-depth=depth.to_string()>
                         <For each=move ||tree.with(|tree|tree.levels.get(depth).cloned().unwrap_or_default()) key=|id|id.clone() children=move |id|node(state,id)/>
                     </div>}
                 }/>
@@ -614,18 +614,18 @@ fn node(state: RwSignal<State>, version_id: String) -> impl IntoView {
     });
     let (note, edit) = inline::version_note(state, note_target, id.get_value(), disabled);
     view! {
-        <article class="xcs-content-panel xcs-version-node xcs-frame xcs-stack xcs-stack--flush" data-version-id=id.get_value() data-node-id=id.get_value() data-body-version-id=move ||version.with(|node|text(node,&["version_id"])) data-node-kind=move ||version.with(|node|text(node,&["kind"]))
+        <article class="zxs-content-panel zxs-version-node zxs-frame zxs-stack zxs-stack--flush" data-version-id=id.get_value() data-node-id=id.get_value() data-body-version-id=move ||version.with(|node|text(node,&["version_id"])) data-node-kind=move ||version.with(|node|text(node,&["kind"]))
             aria-label=move ||version.with(|v|if v["current"]==true{if inherited.get(){t("继承的父版本","Inherited parent version")}else{t("当前版本","Current version")}}else{t("历史版本","Historical version")})>
-            <div class="xcs-version-date xcs-row" title=id.get_value()>
-                <Show when=move ||can_modify.get()><input class="xcs-node-checkbox" type="checkbox" aria-label=t("选择此节点","Select this node") disabled=move ||disabled.get()||state.with(|s|s.files.tag_edit.is_some()) prop:checked=move ||state.with(|s|s.files.checked_nodes.contains(&id.get_value())) on:change=move |event|super::tags::toggle(state,id.get_value(),event_target_checked(&event))/></Show>
+            <div class="zxs-version-date zxs-row" title=id.get_value()>
+                <Show when=move ||can_modify.get()><input class="zxs-node-checkbox" type="checkbox" aria-label=t("选择此节点","Select this node") disabled=move ||disabled.get()||state.with(|s|s.files.tag_edit.is_some()) prop:checked=move ||state.with(|s|s.files.checked_nodes.contains(&id.get_value())) on:change=move |event|super::tags::toggle(state,id.get_value(),event_target_checked(&event))/></Show>
                 <time>{move ||version.with(|v|v["created_at"].as_str().map(|value|if value.contains('T'){format::timestamp(value)}else{format::timestamp_seconds(value)}).unwrap_or_else(||t("未记录时间","Time not recorded")))}</time>
-                <Show when=move ||version.with(|v|v["current"]==true)><span class="xcs-version-current">{move ||if inherited.get(){t("继承的父版本","Inherited parent version")}else{t("当前","Current")}}</span></Show>
+                <Show when=move ||version.with(|v|v["current"]==true)><span class="zxs-version-current">{move ||if inherited.get(){t("继承的父版本","Inherited parent version")}else{t("当前","Current")}}</span></Show>
             </div>
             {note}
-            <div class="xcs-version-actions xcs-flow xcs-flow--start">
+            <div class="zxs-version-actions zxs-flow zxs-flow--start">
                 {edit}
-                <Show when=move ||can_modify.get() fallback=move ||view!{<span class="xcs-row">{t("只读","Read only")}</span>}>
-                <button class="xcs-button" disabled=move ||disabled.get() on:click=move |_|super::tags::edit_node(state,id.get_value())>{t("编辑标签","Edit tags")}</button>
+                <Show when=move ||can_modify.get() fallback=move ||view!{<span class="zxs-row">{t("只读","Read only")}</span>}>
+                <button class="zxs-button" disabled=move ||disabled.get() on:click=move |_|super::tags::edit_node(state,id.get_value())>{t("编辑标签","Edit tags")}</button>
                 {branch::control(state,t("创建分支","Create branch"),branch::Target::HistoryNode(id.get_value()),disabled)}
                 </Show>
             </div>

@@ -1,31 +1,31 @@
 /* Shared business geometry. Compose these roles with domain classes instead of
  * copying dimensions into a page selector. The authentication shell is separate. */
-@property --xcs-contour-extent { syntax: "<length-percentage>"; inherits: false; initial-value: 0px; }
-@property --xcs-contour-mode { syntax: "*"; inherits: false; initial-value: paint; }
+@property --zxs-contour-extent { syntax: "<length-percentage>"; inherits: false; initial-value: 0px; }
+@property --zxs-contour-mode { syntax: "*"; inherits: false; initial-value: paint; }
 :root {
-  --xcs-compact-row-height: 36px;
-  --xcs-row-font-ratio: .4;
-  --xcs-compact-font-size: calc(var(--xcs-compact-row-height) * var(--xcs-row-font-ratio));
-  --xcs-block-gap: calc(var(--xcs-compact-row-height) / 2);
-  --xcs-list-content-inset: calc((var(--xcs-compact-row-height) - var(--xcs-compact-font-size)) / 2);
-  --xcs-input-row-height: 44px;
-  --xcs-control-border-width: 1px;
-  --xcs-contour-control: calc(var(--xcs-compact-row-height) / 2);
-  --xcs-contour-panel: var(--xcs-contour-control);
-  --xcs-contour-notification: var(--xcs-contour-control);
-  --xcs-contour-dialog: var(--xcs-contour-control);
-  --xcs-contour-text-inset: 26px;
+  --zxs-compact-row-height: 36px;
+  --zxs-row-font-ratio: .4;
+  --zxs-compact-font-size: calc(var(--zxs-compact-row-height) * var(--zxs-row-font-ratio));
+  --zxs-block-gap: calc(var(--zxs-compact-row-height) / 2);
+  --zxs-list-content-inset: calc((var(--zxs-compact-row-height) - var(--zxs-compact-font-size)) / 2);
+  --zxs-input-row-height: 44px;
+  --zxs-control-border-width: 1px;
+  --zxs-contour-control: calc(var(--zxs-compact-row-height) / 2);
+  --zxs-contour-panel: var(--zxs-contour-control);
+  --zxs-contour-notification: var(--zxs-contour-control);
+  --zxs-contour-dialog: var(--zxs-contour-control);
+  --zxs-contour-text-inset: 26px;
 }
-.xcs-app-shell .xcs-stack {
+.zxs-app-shell .zxs-stack {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
   min-width: 0;
   gap: 0;
 }
-.xcs-app-shell .xcs-stack > * { min-width: 0; margin-block: 0; }
-.xcs-app-shell .xcs-stack--flush { gap: 0; }
-.xcs-app-shell .xcs-flow {
+.zxs-app-shell .zxs-stack > * { min-width: 0; margin-block: 0; }
+.zxs-app-shell .zxs-stack--flush { gap: 0; }
+.zxs-app-shell .zxs-flow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -34,41 +34,41 @@
   column-gap: 0;
   margin-block: 0;
 }
-.xcs-app-shell .xcs-flow--inline { display: inline-flex; max-width: 100%; }
-.xcs-app-shell .xcs-flow--start { align-items: flex-start; }
-.xcs-app-shell .xcs-flow--end { align-items: flex-end; }
-.xcs-app-shell .xcs-flow--stretch { align-items: stretch; }
-.xcs-app-shell .xcs-frame {
-  --xcs-row-border: var(--xcs-control-border-width);
-  --xcs-contour-extent: var(--xcs-contour-panel);
-  --xcs-contour-mode: clip;
-  --xcs-contour-foreground: 1;
+.zxs-app-shell .zxs-flow--inline { display: inline-flex; max-width: 100%; }
+.zxs-app-shell .zxs-flow--start { align-items: flex-start; }
+.zxs-app-shell .zxs-flow--end { align-items: flex-end; }
+.zxs-app-shell .zxs-flow--stretch { align-items: stretch; }
+.zxs-app-shell .zxs-frame {
+  --zxs-row-border: var(--zxs-control-border-width);
+  --zxs-contour-extent: var(--zxs-contour-panel);
+  --zxs-contour-mode: clip;
+  --zxs-contour-foreground: 1;
   box-sizing: border-box;
   min-width: 0;
   margin: 0;
   padding: 0;
-  border: var(--xcs-control-border-width) solid var(--xcs-block-border);
+  border: var(--zxs-control-border-width) solid var(--zxs-block-border);
   border-radius: 0;
-  background: var(--xcs-bg-panel);
+  background: var(--zxs-bg-panel);
   overflow-wrap: anywhere;
 }
-.xcs-app-shell .xcs-frame--inset { padding-inline: calc(var(--xcs-list-content-inset) - var(--xcs-control-border-width)); }
-.xcs-app-shell :is(.xcs-row, .xcs-button) {
-  --xcs-control-height: var(--xcs-compact-row-height);
-  --xcs-control-content-size: 1em;
-  --xcs-control-content-inset: calc((var(--xcs-control-height) - var(--xcs-control-content-size)) / 2);
+.zxs-app-shell .zxs-frame--inset { padding-inline: calc(var(--zxs-list-content-inset) - var(--zxs-control-border-width)); }
+.zxs-app-shell :is(.zxs-row, .zxs-button) {
+  --zxs-control-height: var(--zxs-compact-row-height);
+  --zxs-control-content-size: 1em;
+  --zxs-control-content-inset: calc((var(--zxs-control-height) - var(--zxs-control-content-size)) / 2);
   box-sizing: border-box;
   min-width: 0;
-  min-height: var(--xcs-control-height);
+  min-height: var(--zxs-control-height);
   margin-block: 0;
-  padding-block: max(0px, calc((var(--xcs-control-height) - 1lh) / 2));
-  padding-inline: calc(var(--xcs-control-content-inset) - var(--xcs-row-border, 0px));
+  padding-block: max(0px, calc((var(--zxs-control-height) - 1lh) / 2));
+  padding-inline: calc(var(--zxs-control-content-inset) - var(--zxs-row-border, 0px));
   font: inherit;
-  font-size: calc(var(--xcs-control-height) * var(--xcs-row-font-ratio));
+  font-size: calc(var(--zxs-control-height) * var(--zxs-row-font-ratio));
   overflow-wrap: anywhere;
 }
-.xcs-app-shell .xcs-button {
-  --xcs-contour-extent: calc(var(--xcs-control-height) / 2);
+.zxs-app-shell .zxs-button {
+  --zxs-contour-extent: calc(var(--zxs-control-height) / 2);
   display: inline-flex;
   align-items: center;
   gap: .5em;
@@ -76,41 +76,41 @@
   text-align: start;
   white-space: normal;
 }
-.xcs-app-shell .xcs-row--flush { padding: 0; }
-.xcs-app-shell .xcs-row--center { display: flex; align-items: center; padding-block: 0; }
-.xcs-app-shell .xcs-row--option { height: var(--xcs-control-height); padding-block: 0; line-height: var(--xcs-control-height); }
-.xcs-app-shell .xcs-input {
-  --xcs-control-height: var(--xcs-input-row-height);
-  --xcs-control-content-inset: calc((var(--xcs-control-height) - 1em) / 2);
-  --xcs-contour-extent: calc(var(--xcs-control-height) / 2);
+.zxs-app-shell .zxs-row--flush { padding: 0; }
+.zxs-app-shell .zxs-row--center { display: flex; align-items: center; padding-block: 0; }
+.zxs-app-shell .zxs-row--option { height: var(--zxs-control-height); padding-block: 0; line-height: var(--zxs-control-height); }
+.zxs-app-shell .zxs-input {
+  --zxs-control-height: var(--zxs-input-row-height);
+  --zxs-control-content-inset: calc((var(--zxs-control-height) - 1em) / 2);
+  --zxs-contour-extent: calc(var(--zxs-control-height) / 2);
   box-sizing: border-box;
   min-width: 0;
-  min-height: var(--xcs-control-height);
-  height: var(--xcs-control-height);
+  min-height: var(--zxs-control-height);
+  height: var(--zxs-control-height);
   padding-block: 0;
-  padding-inline: calc(var(--xcs-control-content-inset) - var(--xcs-control-border-width));
+  padding-inline: calc(var(--zxs-control-content-inset) - var(--zxs-control-border-width));
   font: inherit;
-  font-size: calc(var(--xcs-control-height) * var(--xcs-row-font-ratio));
+  font-size: calc(var(--zxs-control-height) * var(--zxs-row-font-ratio));
 }
-.xcs-app-shell .xcs-input--compact { --xcs-control-height: var(--xcs-compact-row-height); }
-.xcs-app-shell textarea.xcs-input {
+.zxs-app-shell .zxs-input--compact { --zxs-control-height: var(--zxs-compact-row-height); }
+.zxs-app-shell textarea.zxs-input {
   height: auto;
-  padding-block: max(0px, calc((var(--xcs-control-height) - 1lh) / 2 - var(--xcs-control-border-width)));
+  padding-block: max(0px, calc((var(--zxs-control-height) - 1lh) / 2 - var(--zxs-control-border-width)));
 }
-.xcs-app-shell .xcs-input--underline {
-  --xcs-contour-extent: 0px;
+.zxs-app-shell .zxs-input--underline {
+  --zxs-contour-extent: 0px;
   border: 0;
-  border-bottom: var(--xcs-control-border-width) solid var(--xcs-block-border);
-  padding-inline: calc(var(--xcs-control-content-inset) - var(--xcs-row-border, 0px));
+  border-bottom: var(--zxs-control-border-width) solid var(--zxs-block-border);
+  padding-inline: calc(var(--zxs-control-content-inset) - var(--zxs-row-border, 0px));
   background: transparent;
 }
-.xcs-app-shell .xcs-input--underline:focus { border-bottom-color: var(--xcs-focus); outline: 0; }
-.xcs-app-shell .xcs-control-group--comfortable .xcs-button {
-  --xcs-control-height: var(--xcs-input-row-height);
+.zxs-app-shell .zxs-input--underline:focus { border-bottom-color: var(--zxs-focus); outline: 0; }
+.zxs-app-shell .zxs-control-group--comfortable .zxs-button {
+  --zxs-control-height: var(--zxs-input-row-height);
   justify-content: center;
   flex-shrink: 0;
-  min-width: var(--xcs-control-height);
-  height: var(--xcs-control-height);
+  min-width: var(--zxs-control-height);
+  height: var(--zxs-control-height);
   padding: 0 8px;
   line-height: 1;
   white-space: nowrap;
@@ -118,6 +118,6 @@
 /* Rows already provide their own text clearance. Only two directly adjacent
  * painted surfaces need separation; labels or explanatory rows break the pair.
  * Surface roles describe a transparent wrapper's painted start/end boundary. */
-:where(.xcs-app-shell .xcs-stack) > :is(.xcs-frame, .xcs-surface, .xcs-surface-end) + :is(.xcs-frame, .xcs-surface, .xcs-surface-start) {
-  margin-block-start: var(--xcs-block-gap);
+:where(.zxs-app-shell .zxs-stack) > :is(.zxs-frame, .zxs-surface, .zxs-surface-end) + :is(.zxs-frame, .zxs-surface, .zxs-surface-start) {
+  margin-block-start: var(--zxs-block-gap);
 }

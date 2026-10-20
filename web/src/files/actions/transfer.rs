@@ -10,7 +10,7 @@ use crate::{
 };
 use serde_json::{Value, json};
 use wasm_bindgen_futures::spawn_local;
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::{i18n::t, prelude::*};
 
 pub(crate) fn upload_files(state: RwSignal<State>, files: Option<web_sys::FileList>) {
     queue_uploads(state, files, false);

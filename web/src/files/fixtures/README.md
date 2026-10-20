@@ -1,13 +1,13 @@
 # Publication receipt regression fixtures
 
 These complete API responses were captured on 2026-10-19 from synthetic temporary
-three-disk Engine test pools by the existing `xcs-server` HTTP Engine tests:
+three-disk Engine test pools by the existing `zxs-server` HTTP Engine tests:
 
 - `damage_after_normal_publication_keeps_original_target_met_in_save_wire`
 - `recovered_permanent_loss_returns_degraded_save_wire_with_frozen_unavailable_slots`
 
-Set `XCS_TEST_WIRE_EVIDENCE_DIR` to an output directory and run
-`cargo test -p xcs-server --test http_engine save_wire` to regenerate them.
+Set `ZXS_TEST_WIRE_EVIDENCE_DIR` to an output directory and run
+`cargo test -p zxs-server --test http_engine save_wire` to regenerate them.
 The IDs and timestamps describe synthetic test data; no credentials are included.
 These files retain the complete, unchanged responses. The UI unit test derives a
 healthy comparison in memory by changing only `current_health.state`; that

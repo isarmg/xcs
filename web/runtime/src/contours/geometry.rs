@@ -1,4 +1,4 @@
-//! XCS's G4 curvature profile and error-bounded SVG tessellation.
+//! ZXS's G4 curvature profile and error-bounded SVG tessellation.
 //! Analytic curvature bounds control each parallel-curve interpolation budget;
 //! the emitted SVG chords themselves do not have G4 geometric continuity.
 use super::profile as source;
@@ -708,7 +708,7 @@ mod tests {
 
     #[test]
     fn source_curvature_formula_normalizes_the_requested_corner_extent() {
-        assert_eq!(PROFILE, "xcs-g4");
+        assert_eq!(PROFILE, "zxs-g4");
         assert_eq!(CIRCULAR_ARC_RATIO, 0.4);
         assert_eq!(TRANSITION_PARAMETER, 0.375);
         let diagonal = profile(0.5).unwrap();

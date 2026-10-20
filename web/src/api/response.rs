@@ -3,10 +3,10 @@ use super::Error;
 use serde_json::Value;
 
 pub(super) fn decode(status: u16, bytes: &[u8]) -> Result<Value, Error> {
-    xcs_contract::client_protocol::decode_response(status, bytes).map_err(from_protocol)
+    zxs_contract::client_protocol::decode_response(status, bytes).map_err(from_protocol)
 }
 
-pub(super) fn from_protocol(error: xcs_contract::client_protocol::ResponseError) -> Error {
+pub(super) fn from_protocol(error: zxs_contract::client_protocol::ResponseError) -> Error {
     Error {
         status: error.status,
         code: error.code,
@@ -41,7 +41,7 @@ mod tests {
         assert_eq!(value["cpu"]["logical_count"].as_u64(), Some(8));
         assert_eq!(value["memory"]["total_bytes"], u64::MAX.to_string());
         // This response-only exception must not weaken persisted/write JSON.
-        assert!(xcs_contract::strict_json(bytes).is_err());
+        assert!(zxs_contract::strict_json(bytes).is_err());
     }
 
     #[test]

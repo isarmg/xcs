@@ -1,12 +1,12 @@
-//! Browser presentation, theme, locale, contours and startup lifecycle for XCS.
-extern crate self as xcs_web;
+//! Browser presentation, theme, locale, contours and startup lifecycle for ZXS.
+extern crate self as zxs_web;
 
 pub mod components;
 pub mod contours;
 pub mod i18n;
 pub mod startup;
 pub mod theme;
-pub use xcs_web_core::*;
+pub use zxs_web_core::*;
 
 use wasm_bindgen::JsValue;
 
@@ -36,7 +36,7 @@ mod browser {
     use std::{cell::RefCell, rc::Rc};
     use wasm_bindgen::JsCast;
     use wasm_bindgen_futures::JsFuture;
-    use xcs_web_core::prelude::IntoAny;
+    use zxs_web_core::prelude::IntoAny;
 
     thread_local! {
         static STARTED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
@@ -88,8 +88,8 @@ mod browser {
                 let html = document
                     .document_element()
                     .ok_or_else(|| JsValue::from_str("Browser document root is missing"))?;
-                html.set_attribute("data-xcs-appearance", "content-blocks")?;
-                html.set_attribute("data-xcs-selection", "underline")?;
+                html.set_attribute("data-zxs-appearance", "content-blocks")?;
+                html.set_attribute("data-zxs-selection", "underline")?;
                 let contours = contours::start(&document)?;
                 let window = document
                     .default_view()
@@ -143,8 +143,8 @@ mod browser {
         });
         let fonts = async {
             let fonts = document.fonts();
-            let regular = fonts.load("16px \"XcsUI\"");
-            let bold = fonts.load("bold 16px \"XcsUI\"");
+            let regular = fonts.load("16px \"ZxsUI\"");
+            let bold = fonts.load("bold 16px \"ZxsUI\"");
             let (regular, bold) =
                 futures::try_join!(JsFuture::from(regular), JsFuture::from(bold))?;
             if js_sys::Array::from(&regular).length() == 0

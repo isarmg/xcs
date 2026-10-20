@@ -8,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
     sync::{Arc, Mutex, OnceLock},
 };
-use xcs_smb::{
+use zxs_smb::{
     client::{Client, error_errno},
     protocol::{OpenResult, Request},
 };
@@ -75,7 +75,7 @@ fn guarded(work: impl FnOnce() -> std::io::Result<i32>) -> i32 {
     match std::panic::catch_unwind(std::panic::AssertUnwindSafe(work)) {
         Ok(Ok(value)) => value,
         Ok(Err(error)) => {
-            eprintln!("xcs SMB: {error}");
+            eprintln!("zxs SMB: {error}");
             errno(error_errno(&error));
             -1
         }
@@ -202,7 +202,7 @@ unsafe extern "C" fn connect(
         let socket = unsafe {
             text(sdk::lp_parm_const_string(
                 service,
-                c"xcs".as_ptr(),
+                c"zxs".as_ptr(),
                 c"socket".as_ptr(),
                 std::ptr::null(),
             ))
@@ -210,7 +210,7 @@ unsafe extern "C" fn connect(
         let repository = unsafe {
             text(sdk::lp_parm_const_string(
                 service,
-                c"xcs".as_ptr(),
+                c"zxs".as_ptr(),
                 c"repository".as_ptr(),
                 std::ptr::null(),
             ))
@@ -340,7 +340,7 @@ unsafe extern "C" fn pwrite(
     match result {
         Ok(Ok(result)) => result,
         Ok(Err(error)) => {
-            eprintln!("xcs SMB write: {error}");
+            eprintln!("zxs SMB write: {error}");
             errno(error_errno(&error));
             -1
         }
@@ -1123,7 +1123,7 @@ pub unsafe extern "C" fn samba_init_module() -> sdk::NTSTATUS {
         functions.offload_write_send_fn = Some(deny_offload_write);
         functions
     });
-    unsafe { sdk::smb_register_vfs(51, c"xcs".as_ptr(), functions) }
+    unsafe { sdk::smb_register_vfs(51, c"zxs".as_ptr(), functions) }
 }
 
 #[cfg(test)]

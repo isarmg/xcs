@@ -2,7 +2,7 @@ use std::sync::{
     Arc,
     atomic::{AtomicBool, Ordering},
 };
-use xcs_web::prelude::*;
+use zxs_web::prelude::*;
 
 #[derive(Default)]
 struct Transfer {

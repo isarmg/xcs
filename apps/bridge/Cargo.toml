@@ -1,16 +1,16 @@
 [package]
-name = "xcs-app-bridge"
+name = "zxs-app-bridge"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-xcs-client = { path = "../../crates/xcs-client" }
+zxs-client = { path = "../../crates/zxs-client" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["sync", "fs"] }
 blake3 = "1.8.7"
-xcs-contract = { path = "../../crates/xcs-contract" }
-xcs-naming = { path = "../../crates/xcs-naming" }
+zxs-contract = { path = "../../crates/zxs-contract" }
+zxs-naming = { path = "../../crates/zxs-naming" }
 tempfile = "3"
 
 [dev-dependencies]

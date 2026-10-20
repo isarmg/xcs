@@ -1,5 +1,5 @@
 //! Node-scoped inherited labels. The editor borrows the chip/pressed-choice
-//! interaction of the referenced tag toolbar, with XCS geometry and publication.
+//! interaction of the referenced tag toolbar, with ZXS geometry and publication.
 use super::{
     actions, merge,
     model::{history_node_id, history_nodes, selected_branch},
@@ -11,7 +11,7 @@ use crate::{
 };
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::{i18n::t, prelude::*};
 mod view;
 pub(crate) use view::{chips, view};
 
@@ -43,7 +43,7 @@ fn tags(node: &Value) -> BTreeSet<String> {
         .collect()
 }
 fn valid_tag(value: &str) -> bool {
-    xcs_contract::validate_tag(value).is_ok()
+    zxs_contract::validate_tag(value).is_ok()
 }
 fn result_tags(
     node: &Value,
@@ -236,7 +236,7 @@ fn request(draft: &Draft) -> Result<Value, String> {
             ));
         }
         let projected = result_tags(node, &draft.add, &draft.remove);
-        if projected.len() > xcs_contract::MAX_FILE_TAGS {
+        if projected.len() > zxs_contract::MAX_FILE_TAGS {
             return Err(t(
                 "每个节点最多16个标签。",
                 "Each node can have at most 16 tags.",
@@ -310,7 +310,7 @@ mod tests {
 
     #[test]
     fn one_invalid_tag_target_blocks_the_entire_batch() {
-        let labels = (0..xcs_contract::MAX_FILE_TAGS)
+        let labels = (0..zxs_contract::MAX_FILE_TAGS)
             .map(|index| format!("tag-{index}"))
             .collect::<Vec<_>>();
         let mut draft = Draft {

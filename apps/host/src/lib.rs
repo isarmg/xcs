@@ -3,7 +3,7 @@ use tauri::{Manager, State};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_opener::OpenerExt;
-use xcs_app_bridge::{Bridge, BridgeError, CommitError};
+use zxs_app_bridge::{Bridge, BridgeError, CommitError};
 
 fn local_error(code: &str, error: impl std::fmt::Display) -> BridgeError {
     BridgeError {
@@ -65,7 +65,7 @@ async fn choose_file(app: tauri::AppHandle) -> Result<Value, BridgeError> {
             app: app.clone(),
             file: file.clone(),
         };
-        let staged = xcs_app_bridge::stage_import(&directory, &mut source)?;
+        let staged = zxs_app_bridge::stage_import(&directory, &mut source)?;
         Ok::<_, BridgeError>((staged, name))
     })
     .await
@@ -154,7 +154,7 @@ async fn download_file(
         .path()
         .app_cache_dir()
         .map_err(|error| local_error("CACHE_DIRECTORY", error))?;
-    let target = xcs_app_bridge::prepare_cache_target(&directory, &version, &name)?;
+    let target = zxs_app_bridge::prepare_cache_target(&directory, &version, &name)?;
     bridge.download(&version, &target).await
 }
 
@@ -173,7 +173,7 @@ async fn open_cached_file(
                     .path()
                     .app_cache_dir()
                     .map_err(|error| local_error("CACHE_DIRECTORY", error))?;
-                let path = xcs_app_bridge::cache_target(&cache, &version, &name)?;
+                let path = zxs_app_bridge::cache_target(&cache, &version, &name)?;
                 let real = path
                     .canonicalize()
                     .map_err(|error| local_error("CACHE_ENTRY", error))?;
@@ -215,5 +215,5 @@ pub fn run() {
             open_cached_file
         ])
         .run(tauri::generate_context!())
-        .expect("xcs application runtime failed");
+        .expect("zxs application runtime failed");
 }

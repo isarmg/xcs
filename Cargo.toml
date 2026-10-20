@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["crates/xcs-auth", "crates/xcs-contract", "crates/xcs-naming", "crates/xcs-platform", "crates/xcs-core", "crates/xcs-server", "crates/xcs-client", "crates/xcs-cli"]
-exclude = ["demos/branch-system", "web", "apps", "integrations/smb", "vendor/web/xcs-web-core", "vendor/web/xcs-web-macro", "vendor/dependencies/unicode-normalization-0.1.24", "tools/web-build", "tools/contract-check", "tools/unicode-build"]
+members = ["crates/zxs-auth", "crates/zxs-contract", "crates/zxs-naming", "crates/zxs-platform", "crates/zxs-core", "crates/zxs-server", "crates/zxs-client", "crates/zxs-cli"]
+exclude = ["demos/branch-system", "web", "apps", "integrations/smb", "vendor/web/zxs-web-core", "vendor/web/zxs-web-macro", "vendor/dependencies/unicode-normalization-0.1.24", "tools/web-build", "tools/contract-check", "tools/unicode-build"]
 
 [workspace.package]
 version = "0.1.0"
@@ -10,13 +10,13 @@ rust-version = "1.99"
 license = "Apache-2.0"
 
 [workspace.dependencies]
-xcs-auth = { path = "crates/xcs-auth" }
-xcs-contract = { path = "crates/xcs-contract" }
-xcs-naming = { path = "crates/xcs-naming" }
-xcs-platform = { path = "crates/xcs-platform" }
-xcs-core = { path = "crates/xcs-core" }
-xcs-client = { path = "crates/xcs-client" }
-xcs-server = { path = "crates/xcs-server" }
+zxs-auth = { path = "crates/zxs-auth" }
+zxs-contract = { path = "crates/zxs-contract" }
+zxs-naming = { path = "crates/zxs-naming" }
+zxs-platform = { path = "crates/zxs-platform" }
+zxs-core = { path = "crates/zxs-core" }
+zxs-client = { path = "crates/zxs-client" }
+zxs-server = { path = "crates/zxs-server" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

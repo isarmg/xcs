@@ -7,7 +7,7 @@
 ```sh
 cargo test --workspace --locked --offline --target-dir target/native
 cargo test --locked --offline --manifest-path tools/contract-check/Cargo.toml --target-dir target/native
-cargo test --locked --offline --manifest-path integrations/smb/Cargo.toml -p xcs-smb --target-dir target/native
+cargo test --locked --offline --manifest-path integrations/smb/Cargo.toml -p zxs-smb --target-dir target/native
 cargo run --locked --offline --manifest-path tools/unicode-build/Cargo.toml -- --check
 cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- check --product-root .
 ```

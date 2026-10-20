@@ -1,4 +1,4 @@
-# XCS 标签发布与安装
+# ZXS 标签发布与安装
 
 ## 触发与失败边界
 
@@ -10,17 +10,17 @@ Release 自己执行锁定测试、契约检查、正式 Web 构建、浏览器�
 
 预发布标签自动标为 prerelease。预发布不更新 Latest；正式版交由 GitHub 默认规则判定 Latest，不强制把旧标签指定为最新版本。
 
-2026-10-19 已完成一次[只构建演练](https://github.com/isarmg/xcs/actions/runs/39276920875)，对应提交 `5bf569e`：三桌面包、Linux CLI/服务端及 Web 归档生成成功，全部 SHA-256 核验通过，发布任务按预期跳过。此记录只对应该提交，不代表后续源码已打包或已完成实际安装验收。
+2026-10-19 已完成一次[只构建演练](https://github.com/isarmg/zxs/actions/runs/39276920875)，对应提交 `5bf569e`：三桌面包、Linux CLI/服务端及 Web 归档生成成功，全部 SHA-256 核验通过，发布任务按预期跳过。此记录只对应该提交，不代表后续源码已打包或已完成实际安装验收。
 
 ## 发布资产
 
 将下列 `VERSION` 替换为标签去掉 `v` 的版本：
 
-- `xcs-VERSION-x86_64-unknown-linux-gnu.tar.gz`：Linux x86_64 的 `xcs`，同时提供 CLI 与 `xcs serve` 服务端子命令。不存在另一个独立 `xcs-server` 可执行文件。
-- `xcs-web-VERSION.tar.gz`：生产静态目录及 `build-manifest.json`。
-- `xcs-app-VERSION-x86_64-unknown-linux-gnu.deb`：Ubuntu 24.04 构建的 Linux 桌面包。
-- `xcs-app-VERSION-x86_64-pc-windows-msvc-setup.exe`：Windows x86_64 NSIS 安装包。
-- `xcs-app-VERSION-aarch64-apple-darwin.app.tar.gz`：macOS Apple Silicon 的 `.app` 目录归档。当前不提供 Intel Mac 包。
+- `zxs-VERSION-x86_64-unknown-linux-gnu.tar.gz`：Linux x86_64 的 `zxs`，同时提供 CLI 与 `zxs serve` 服务端子命令。不存在另一个独立 `zxs-server` 可执行文件。
+- `zxs-web-VERSION.tar.gz`：生产静态目录及 `build-manifest.json`。
+- `zxs-app-VERSION-x86_64-unknown-linux-gnu.deb`：Ubuntu 24.04 构建的 Linux 桌面包。
+- `zxs-app-VERSION-x86_64-pc-windows-msvc-setup.exe`：Windows x86_64 NSIS 安装包。
+- `zxs-app-VERSION-aarch64-apple-darwin.app.tar.gz`：macOS Apple Silicon 的 `.app` 目录归档。当前不提供 Intel Mac 包。
 - `INSTALL.md`、`BUILD.txt`、`SHA256SUMS`：安装/重建步骤、源码提交与工具版本、所有其他资产的 SHA-256。
 
 桌面包没有开发者证书签名，macOS 未公证，系统可能阻止运行。这些是供测试验证的产物，尚不代表商店分发或签名安装体验；不建议关闭系统安全机制。当前不生成 Android、iOS、iPadOS 安装包；这些平台仍需 SDK、生成宿主工程、签名和真机验收。此流程不发布 Samba VFS 二进制模块。
@@ -34,14 +34,14 @@ Linux CLI/服务端示例：
 ```sh
 VERSION=0.1.0
 sha256sum --check --ignore-missing SHA256SUMS
-tar -xzf "xcs-$VERSION-x86_64-unknown-linux-gnu.tar.gz"
-./xcs --help
-./xcs serve --help
+tar -xzf "zxs-$VERSION-x86_64-unknown-linux-gnu.tar.gz"
+./zxs --help
+./zxs serve --help
 ```
 
-二进制在 Ubuntu 24.04 构建，依赖其兼容的 GNU libc/运行库，不承诺适用于旧发行版。按 `serve --help` 及仓库运维手册准备数据目录、设备与身份配置，勿直接把测试服务暴露到公网。可将 Web 归档解压到专用静态目录，按 `xcs serve --help` 的 Web 目录选项关联；不要在已有数据目录中直接覆盖解压。
+二进制在 Ubuntu 24.04 构建，依赖其兼容的 GNU libc/运行库，不承诺适用于旧发行版。按 `serve --help` 及仓库运维手册准备数据目录、设备与身份配置，勿直接把测试服务暴露到公网。可将 Web 归档解压到专用静态目录，按 `zxs serve --help` 的 Web 目录选项关联；不要在已有数据目录中直接覆盖解压。
 
-Linux 桌面通过 `sudo apt install ./xcs-app-VERSION-x86_64-unknown-linux-gnu.deb` 安装并解决 WebKitGTK 等依赖。Windows 运行对应 NSIS 安装包，需要 WebView2。macOS 解压 `.app` 归档；正式面向普通用户分发前需要开发者签名和公证。桌面启动、系统文件交接和真实设备行为仍须各平台验收。
+Linux 桌面通过 `sudo apt install ./zxs-app-VERSION-x86_64-unknown-linux-gnu.deb` 安装并解决 WebKitGTK 等依赖。Windows 运行对应 NSIS 安装包，需要 WebView2。macOS 解压 `.app` 归档；正式面向普通用户分发前需要开发者签名和公证。桌面启动、系统文件交接和真实设备行为仍须各平台验收。
 
 ## 重建与版本固定
 
@@ -52,7 +52,7 @@ rustup show active-toolchain
 rustup target add wasm32-unknown-unknown
 cargo run --locked --manifest-path tools/release-tools/Cargo.toml -- v0.1.0
 bash .github/scripts/check.sh web-production
-cargo build --locked --release --package xcs-cli
+cargo build --locked --release --package zxs-cli
 # 原生目标机器上，先安装相应官方 Tauri 系统依赖：
 RELEASE_VERSION=0.1.0 RELEASE_TARGET=x86_64-unknown-linux-gnu RELEASE_BUNDLE=deb \
   bash .github/scripts/release-desktop.sh

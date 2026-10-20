@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "XCS 核心接口草案",
+    "title": "ZXS 核心接口草案",
     "version": "0.1.0-draft",
     "description": "覆盖核心内容保存契约及已实现的路径文件管理、文件容器、独立文件分支、目录文件分支批量事务；其他未列出的管理接口仍不代表全面冻结。"
   },
@@ -161,7 +161,7 @@
         ],
         "responses": {
           "200": {
-            "description": "XCSCHK2 清单，格式见第08章。",
+            "description": "ZXSCHK2 清单，格式见第08章。",
             "content": {
               "application/octet-stream": {
                 "schema": {

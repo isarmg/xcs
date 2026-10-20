@@ -1,20 +1,20 @@
 [package]
-name = "xcs-web-app"
+name = "zxs-web-app"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 
 [workspace]
 members = ["runtime"]
-exclude = ["../vendor/web/xcs-web-core", "../vendor/web/xcs-web-macro"]
+exclude = ["../vendor/web/zxs-web-core", "../vendor/web/zxs-web-macro"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-xcs-web = { path = "runtime" }
-xcs-contract = { path = "../crates/xcs-contract" }
-xcs-naming = { path = "../crates/xcs-naming" }
+zxs-web = { path = "runtime" }
+zxs-contract = { path = "../crates/zxs-contract" }
+zxs-naming = { path = "../crates/zxs-naming" }
 getrandom = { version = "0.4", features = ["wasm_js"] }
 uuid = { version = "1", features = ["js"] }
 serde = { version = "1", features = ["derive"] }

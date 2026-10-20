@@ -35,7 +35,7 @@ fn main() -> Result<()> {
     let lock_path = web.join(".build-lock");
     let _lock = BuildLock { path:lock_path.clone(), _file:fs::OpenOptions::new().write(true).create_new(true).open(&lock_path).context("another Web build is running (remove a stale web/.build-lock only after confirming its process exited)")? };
     let inputs_before = source_inventory(&root)?;
-    let target = std::env::var_os("XCS_WEB_TARGET_DIR")
+    let target = std::env::var_os("ZXS_WEB_TARGET_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| root.join("target/web"));
     let mut cargo = Command::new("cargo");
@@ -43,7 +43,7 @@ fn main() -> Result<()> {
         "build" => "build",
         "check" => "check",
         "test" => "test",
-        _ => bail!("usage: xcs-web-build build|check|test [--product-root DIR]"),
+        _ => bail!("usage: zxs-web-build build|check|test [--product-root DIR]"),
     });
     cargo
         .args(["--locked", "--offline", "--manifest-path"])
@@ -64,13 +64,13 @@ fn main() -> Result<()> {
     if command != "build" {
         return Ok(());
     }
-    let bindgen = std::env::var_os("XCS_WEB_BINDGEN")
+    let bindgen = std::env::var_os("ZXS_WEB_BINDGEN")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("wasm-bindgen"));
     let version = Command::new(&bindgen)
         .arg("--version")
         .output()
-        .context("wasm-bindgen CLI 0.2.129 is required (XCS_WEB_BINDGEN may point to it)")?;
+        .context("wasm-bindgen CLI 0.2.129 is required (ZXS_WEB_BINDGEN may point to it)")?;
     if !version.status.success()
         || String::from_utf8_lossy(&version.stdout).trim() != "wasm-bindgen 0.2.129"
     {
@@ -83,19 +83,19 @@ fn main() -> Result<()> {
     }
     fs::create_dir_all(staging.join("pkg"))?;
     let status = Command::new(bindgen)
-        .args(["--target", "web", "--no-typescript", "--out-name", "xcs"])
+        .args(["--target", "web", "--no-typescript", "--out-name", "zxs"])
         .arg("--out-dir")
         .arg(staging.join("pkg"))
-        .arg(target.join("wasm32-unknown-unknown/release/xcs_web_app.wasm"))
+        .arg(target.join("wasm32-unknown-unknown/release/zxs_web_app.wasm"))
         .status()?;
     if !status.success() {
         bail!("wasm-bindgen failed");
     }
-    fs::copy(web.join("styles.css"), staging.join("xcs.css"))?;
+    fs::copy(web.join("styles.css"), staging.join("zxs.css"))?;
     copy_tree(&web.join("public"), &staging)?;
     fs::write(staging.join("boot.js"), bootstrap::loader())?;
     fs::write(staging.join("index.html"), bootstrap::index())?;
-    let wasm = staging.join("pkg/xcs_bg.wasm");
+    let wasm = staging.join("pkg/zxs_bg.wasm");
     let mut gzip = flate2::GzBuilder::new()
         .mtime(0)
         .write(Vec::new(), flate2::Compression::best());
@@ -110,7 +110,7 @@ fn main() -> Result<()> {
     fs::write(
         staging.join("build-manifest.json"),
         serde_json::to_vec_pretty(
-            &serde_json::json!({"format_version":1,"runtime":"xcs-web","files":inventory,"inputs":inputs_after,"target":"wasm32-unknown-unknown","wasm_bindgen":"0.2.129"}),
+            &serde_json::json!({"format_version":1,"runtime":"zxs-web","files":inventory,"inputs":inputs_after,"target":"wasm32-unknown-unknown","wasm_bindgen":"0.2.129"}),
         )?,
     )?;
     let dist = web.join("dist");
@@ -137,7 +137,7 @@ fn main() -> Result<()> {
     }
     println!(
         "{}",
-        serde_json::json!({"event":"built","dist":dist,"runtime":"xcs-web"})
+        serde_json::json!({"event":"built","dist":dist,"runtime":"zxs-web"})
     );
     Ok(())
 }
@@ -158,8 +158,8 @@ fn source_inventory(root: &Path) -> Result<BTreeMap<String, String>> {
         "web/public",
         "vendor/web",
         "vendor/dependencies/unicode-normalization-0.1.24",
-        "crates/xcs-contract",
-        "crates/xcs-naming",
+        "crates/zxs-contract",
+        "crates/zxs-naming",
         "tools/web-build/src",
     ] {
         inventory_tree(root, &root.join(path), &mut inventory)?;
@@ -250,7 +250,7 @@ mod tests {
         fn new() -> Self {
             static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
             let path = std::env::temp_dir().join(format!(
-                "xcs-build-inputs-{}-{}-{}",
+                "zxs-build-inputs-{}-{}-{}",
                 std::process::id(),
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)

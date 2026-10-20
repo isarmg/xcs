@@ -2,7 +2,7 @@
 use super::{Metric, State};
 use serde_json::Value;
 use wasm_bindgen::{JsCast, closure::Closure};
-use xcs_web::{html, i18n::t, prelude::*};
+use zxs_web::{html, i18n::t, prelude::*};
 
 #[derive(Debug)]
 struct Plot {
@@ -136,7 +136,7 @@ pub(super) fn view(state: RwSignal<State>, metric: Metric) -> impl IntoView {
     let label = metric.label();
     let aria_label = format!("{} {}", label, t("历史图表", "history chart"));
     let metric = StoredValue::new(metric);
-    view! {<div class="xcs-metric-chart" node_ref=root aria-label=aria_label>
+    view! {<div class="zxs-metric-chart" node_ref=root aria-label=aria_label>
         {move ||{
             let (width,height)=dimensions.get();
             let (history,loading,loaded,range)=state.with(|s|(s.monitor.history.clone(),s.monitor.history_loading,s.monitor.history_loaded,s.monitor.range.clone()));
@@ -144,15 +144,15 @@ pub(super) fn view(state: RwSignal<State>, metric: Metric) -> impl IntoView {
             let to=milliseconds(&history["to"]).unwrap_or(0.)/1000.;let from=milliseconds(&history["from"]).unwrap_or(0.)/1000.;
             let interval=history["interval_seconds"].as_f64().unwrap_or(5.);
             let plot=plot(&points,from,to,interval,width,height,metric.with_value(Metric::is_power));
-            if plot.paths.is_empty()&&plot.dots.is_empty(){return view!{<p class="xcs-chart-empty">{if loading&&!loaded{t("正在读取历史…","Loading history…")}else{t("暂无可用历史","No available history yet")}}</p>}.into_any();}
+            if plot.paths.is_empty()&&plot.dots.is_empty(){return view!{<p class="zxs-chart-empty">{if loading&&!loaded{t("正在读取历史…","Loading history…")}else{t("暂无可用历史","No available history yet")}}</p>}.into_any();}
             let axis_y=(height-4.).max(14.4);
             view!{<svg viewBox=format!("0 0 {width} {height}") preserveAspectRatio="none" role="img" aria-label=format!("{} · {}",label,range)>
                 <title>{format!("{} · {} · {}",label,range,t("空缺表示未采样或不可用，不表示零。","Gaps indicate missing or unavailable samples, not zero."))}</title>
-                <path class="xcs-chart-grid" d=format!("M{} {}H{}M{} {}H{}",plot.left,plot.top,plot.right,plot.left,plot.bottom,plot.right)/>
-                <text class="xcs-chart-label" x="0" y=(plot.top+5.).to_string()>{axis_max(plot.maximum)}</text>{(height>=42.).then(||view!{<text class="xcs-chart-label" x="0" y=plot.bottom.to_string()>"0"</text>})}
-                {(height>=70.).then(||view!{<text class="xcs-chart-label" x=plot.left.to_string() y=axis_y.to_string()>{format!("−{range}")}</text><text class="xcs-chart-label" x=plot.right.to_string() y=axis_y.to_string() text-anchor="end">{t("现在","Now")}</text>})}
-                {plot.paths.into_iter().map(|path|view!{<path class="xcs-chart-line" d=path/>}).collect_view()}
-                {plot.dots.into_iter().map(|(x,y)|view!{<circle class="xcs-chart-dot" cx=x.to_string() cy=y.to_string() r="2"/>}).collect_view()}
+                <path class="zxs-chart-grid" d=format!("M{} {}H{}M{} {}H{}",plot.left,plot.top,plot.right,plot.left,plot.bottom,plot.right)/>
+                <text class="zxs-chart-label" x="0" y=(plot.top+5.).to_string()>{axis_max(plot.maximum)}</text>{(height>=42.).then(||view!{<text class="zxs-chart-label" x="0" y=plot.bottom.to_string()>"0"</text>})}
+                {(height>=70.).then(||view!{<text class="zxs-chart-label" x=plot.left.to_string() y=axis_y.to_string()>{format!("−{range}")}</text><text class="zxs-chart-label" x=plot.right.to_string() y=axis_y.to_string() text-anchor="end">{t("现在","Now")}</text>})}
+                {plot.paths.into_iter().map(|path|view!{<path class="zxs-chart-line" d=path/>}).collect_view()}
+                {plot.dots.into_iter().map(|(x,y)|view!{<circle class="zxs-chart-dot" cx=x.to_string() cy=y.to_string() r="2"/>}).collect_view()}
             </svg>}.into_any()
         }}
     </div>}

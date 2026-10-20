@@ -1,5 +1,5 @@
 //! Rebuild the branch-system SVGs, standalone viewer and Markdown image index.
-//! cargo run --manifest-path demos/branch-system/Cargo.toml --bin xcs-demo-reference
+//! cargo run --manifest-path demos/branch-system/Cargo.toml --bin zxs-demo-reference
 use std::{fmt::Write as _, fs, path::Path};
 #[path = "../entry.rs"]
 mod entry;

@@ -1,6 +1,6 @@
-# XCS 原生 App
+# ZXS 原生 App
 
-App 使用 Tauri 2 宿主和共享的 Rust/WASM 界面。`bridge/` 负责会话、文件传输和缓存，`host/` 负责窗口、文件选择与系统打开。文件业务通过 XCS API 访问，与 SMB 入口分开。
+App 使用 Tauri 2 宿主和共享的 Rust/WASM 界面。`bridge/` 负责会话、文件传输和缓存，`host/` 负责窗口、文件选择与系统打开。文件业务通过 ZXS API 访问，与 SMB 入口分开。
 
 ## 使用与实现
 
@@ -37,7 +37,7 @@ cargo run --locked --manifest-path apps/host/Cargo.toml
 
 ## 验证状态
 
-[2026-10-19 的 CI](https://github.com/isarmg/xcs/actions/runs/39276866908) 已通过 Linux、Windows、macOS 的桥接测试与宿主编译检查。共享界面已在真实 Chrome 中完成登录、上传、版本详情、下载比对和注销测试。[5bf569e 的发布演练](https://github.com/isarmg/xcs/actions/runs/39276920875) 已完成 Linux、Windows、macOS 打包和产物校验，未公开 Release。
+[2026-10-19 的 CI](https://github.com/isarmg/zxs/actions/runs/39276866908) 已通过 Linux、Windows、macOS 的桥接测试与宿主编译检查。共享界面已在真实 Chrome 中完成登录、上传、版本详情、下载比对和注销测试。[5bf569e 的发布演练](https://github.com/isarmg/zxs/actions/runs/39276920875) 已完成 Linux、Windows、macOS 打包和产物校验，未公开 Release。
 
 | 范围 | 当前状态 | 下一步 |
 | --- | --- | --- |

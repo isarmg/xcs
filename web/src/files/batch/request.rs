@@ -151,7 +151,7 @@ pub(super) fn request(draft: &Draft) -> Result<Value, String> {
     Ok(json!({"kind":draft.kind.wire(),"items":items}))
 }
 fn validate_name(name: &str) -> Result<(), String> {
-    if name.len() <= xcs_contract::MAX_NOTE_BYTES && valid_name(name) {
+    if name.len() <= zxs_contract::MAX_NOTE_BYTES && valid_name(name) {
         Ok(())
     } else {
         Err(t(

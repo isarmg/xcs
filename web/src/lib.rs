@@ -10,5 +10,5 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-    xcs_web::mount("root", ui::app)
+    zxs_web::mount("root", ui::app)
 }

@@ -938,7 +938,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
 
 [[package]]
-name = "xcs-contract"
+name = "zxs-contract"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -949,7 +949,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-contract-check"
+name = "zxs-contract-check"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -960,7 +960,7 @@ dependencies = [
  "serde_json",
  "toml",
  "walkdir",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]

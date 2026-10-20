@@ -10,5 +10,5 @@ fn main() {
             "commit_workspace",
         ]),
     ))
-    .expect("xcs application permissions could not be generated");
+    .expect("zxs application permissions could not be generated");
 }

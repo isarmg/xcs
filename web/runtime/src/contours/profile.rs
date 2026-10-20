@@ -1,12 +1,12 @@
 //! Arc-length curvature construction from “给矩形倒圆角 (2)”, G4 section.
 //!
 //! This is a transition / circle / reflected-transition curve, not a Bézier
-//! fit or an Apple API. The retained circular-angle ratio p = 0.4 is XCS's
+//! fit or an Apple API. The retained circular-angle ratio p = 0.4 is ZXS's
 //! selected appearance; the article does not specify an Apple default.
 
 use std::f64::consts::PI;
 
-pub const PROFILE: &str = "xcs-g4";
+pub const PROFILE: &str = "zxs-g4";
 pub const CIRCULAR_ARC_RATIO: f64 = 0.4;
 /// K = A ∫₀¹(cos θ(u) + sin θ(u)) du + cos(A/2) - sin(A/2).
 /// Thus a unit corner extent has circle radius 1/K.

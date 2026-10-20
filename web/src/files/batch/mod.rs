@@ -11,7 +11,7 @@ use crate::{
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 use wasm_bindgen_futures::spawn_local;
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::{i18n::t, prelude::*};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Kind {

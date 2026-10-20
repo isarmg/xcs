@@ -9,11 +9,11 @@
 先按 `web/README.md` 构建真实 `web/dist`，并构建 CLI：
 
 ```sh
-cargo build --locked --target-dir target/native -p xcs-cli
+cargo build --locked --target-dir target/native -p zxs-cli
 export CHROME_BIN="$(command -v google-chrome)"
 export CHROMEDRIVER="$(command -v chromedriver)"
 cargo run --locked --manifest-path tools/browser-smoke/Cargo.toml -- \
-  --xcs "$PWD/target/native/debug/xcs" --web-dir "$PWD/web/dist"
+  --zxs "$PWD/target/native/debug/zxs" --web-dir "$PWD/web/dist"
 ```
 
 `CHROME_BIN` 可省略，ChromeDriver 会自动发现浏览器；`CHROMEDRIVER` 默认为 PATH 中的 `chromedriver`。这些变量接受可执行文件完整路径，不接受命令参数。Cargo 单测只验证测试工具自身，不能替代上面的浏览器命令。
@@ -22,20 +22,20 @@ cargo run --locked --manifest-path tools/browser-smoke/Cargo.toml -- \
 
 可添加 `--screenshot artifacts/web-file-manager.png`：使用产品现有中文语言参数，在真实上传完成后保存 Chrome WebDriver 返回的原始 PNG。截图额外上传三个纯合成示例文件，不修改页面 DOM、主题或 API 响应；原有下载、历史和注销验收仍完整执行。截图中使用独立临时开发池，不包含用户文件或凭据。
 
-CI 通过 `XCS_SMOKE_SCREENSHOT` 传递路径，浏览器验收成功后将图片保存为 `web-screenshot` artifact。README 展示图从该 artifact 原样取用。
+CI 通过 `ZXS_SMOKE_SCREENSHOT` 传递路径，浏览器验收成功后将图片保存为 `web-screenshot` artifact。README 展示图从该 artifact 原样取用。
 
 ## 验收范围
 
-1. 用随机临时密码创建独立三目录开发池，启动真实 XCS 服务；浏览器登录后必须看到三个磁盘目录。
+1. 用随机临时密码创建独立三目录开发池，启动真实 ZXS 服务；浏览器登录后必须看到三个磁盘目录。
 2. 在 P01 上传 UTF-8 文件，等待目录实际发布。
 3. 打开文件详情与版本历史，触发真实浏览器下载并逐字节比对内容。
 4. 在操作历史中确认该文件出现。
 5. 注销并刷新，仍然必须呈现匿名登录页；检查未捕获异常、JavaScript 严重错误、意外 HTTP 错误以及登录、磁盘、历史、注销和 WASM 的成功网络响应。
 
-所有数据放在权限受限的临时目录，密码只经 0600 临时文件初始化、不进入命令行。XCS 仅监听 127.0.0.1；驱动仅允许本机连接。服务、驱动与 Chrome 在同一测试进程生命周期内创建，并通过独立进程组在正常结束和失败时清理；不会修改用户的浏览器配置、现有池或真实磁盘。浏览器配置由 ChromeDriver 为新会话临时创建。失败会输出服务和驱动日志；临时数据自动删除。
+所有数据放在权限受限的临时目录，密码只经 0600 临时文件初始化、不进入命令行。ZXS 仅监听 127.0.0.1；驱动仅允许本机连接。服务、驱动与 Chrome 在同一测试进程生命周期内创建，并通过独立进程组在正常结束和失败时清理；不会修改用户的浏览器配置、现有池或真实磁盘。浏览器配置由 ChromeDriver 为新会话临时创建。失败会输出服务和驱动日志；临时数据自动删除。
 
 这是小范围贯通测试，不等同于生产磁盘、真实 Samba、原生六平台或完整 UI 回归验收。CI 的 browser-smoke job 必须执行真实浏览器命令，不能将工具编译或单测当作 E2E 通过。
 
 ## 可选宣传素材采集
 
-设置 `XCS_DEMO_CAPTURE=artifacts/demo-capture` 可额外通过真实界面生成合成的 `活动方案.txt`：预算 8、10、12 万元三个正文版本，从 8 万历史节点创建“精简方案”，切换并逐字核验继承正文，再写入 6 万并切回“主方案”核验仍为 12 万。使用 1920×1080 CSS 像素的实际浏览器视口和 DPR 3（原始 PNG 为 5760×3240），逐步保存原始 PNG、控件坐标和操作时间到 `capture.json`；`viewport.json` 记录视口及像素比例，裁切原图时控件 CSS 坐标需乘 DPR；全部成功后才写 `verification.txt`。不设置此变量时不执行该流程。CI 的 `xcs-demo-capture` artifact 可含失败前的局部素材，只有 `verification.txt` 与成功日志证明完整流程通过。
+设置 `ZXS_DEMO_CAPTURE=artifacts/demo-capture` 可额外通过真实界面生成合成的 `活动方案.txt`：预算 8、10、12 万元三个正文版本，从 8 万历史节点创建“精简方案”，切换并逐字核验继承正文，再写入 6 万并切回“主方案”核验仍为 12 万。使用 1920×1080 CSS 像素的实际浏览器视口和 DPR 3（原始 PNG 为 5760×3240），逐步保存原始 PNG、控件坐标和操作时间到 `capture.json`；`viewport.json` 记录视口及像素比例，裁切原图时控件 CSS 坐标需乘 DPR；全部成功后才写 `verification.txt`。不设置此变量时不执行该流程。CI 的 `zxs-demo-capture` artifact 可含失败前的局部素材，只有 `verification.txt` 与成功日志证明完整流程通过。

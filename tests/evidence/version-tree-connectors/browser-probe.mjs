@@ -5,10 +5,10 @@ import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 
-const {chromium}=await import(process.env.XCS_PLAYWRIGHT_MODULE||'playwright');
-const root=resolve(process.env.XCS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
-const base=process.env.XCS_PREVIEW_URL||'http://127.0.0.1:17401';
-const output=resolve(process.env.XCS_TREE_EVIDENCE||`${root}/tests/evidence/version-tree-connectors`);
+const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
+const root=resolve(process.env.ZXS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
+const base=process.env.ZXS_PREVIEW_URL||'http://127.0.0.1:17401';
+const output=resolve(process.env.ZXS_TREE_EVIDENCE||`${root}/tests/evidence/version-tree-connectors`);
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const scenes=[];
 const records=[
@@ -24,15 +24,15 @@ const expectedEdges=records.flatMap(version=>version.source_version_ids.map(pare
 await mkdir(output,{recursive:true});
 
 async function inspect(page,label) {
-  await page.waitForFunction(expected=>document.querySelectorAll('.xcs-version-tree-edge[d^="M"]').length===expected,expectedEdges.length);
+  await page.waitForFunction(expected=>document.querySelectorAll('.zxs-version-tree-edge[d^="M"]').length===expected,expectedEdges.length);
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   const geometry=await page.evaluate(()=>{
-    const canvas=document.querySelector('.xcs-version-tree-canvas'),frame=canvas.getBoundingClientRect();
-    const nodes=[...canvas.querySelectorAll('.xcs-version-node')].map(node=>{
+    const canvas=document.querySelector('.zxs-version-tree-canvas'),frame=canvas.getBoundingClientRect();
+    const nodes=[...canvas.querySelectorAll('.zxs-version-node')].map(node=>{
       const rect=node.getBoundingClientRect();
       return {id:node.dataset.versionId,left:rect.left-frame.left,right:rect.right-frame.left,top:rect.top-frame.top,bottom:rect.bottom-frame.top};
     });
-    const edges=[...canvas.querySelectorAll('.xcs-version-tree-edge')].map(edge=>{
+    const edges=[...canvas.querySelectorAll('.zxs-version-tree-edge')].map(edge=>{
       const style=getComputedStyle(edge),length=edge.getTotalLength(),points=[];
       for(let distance=0;distance<length;distance+=.75){const point=edge.getPointAtLength(distance);points.push([point.x,point.y]);}
       const end=edge.getPointAtLength(length);points.push([end.x,end.y]);
@@ -56,7 +56,7 @@ async function inspect(page,label) {
     assert.equal(edge.cap,'round');
     assert.equal(edge.join,'round');
     assert.equal(edge.vector,'non-scaling-stroke');
-    assert.equal(edge.marker,'url(#xcs-version-arrow)');
+    assert.equal(edge.marker,'url(#zxs-version-arrow)');
     const tokens=edge.d.match(/[A-Za-z]|[-+]?(?:\d*\.\d+|\d+)(?:e[-+]?\d+)?/g);
     let x,y;
     for(let index=0;index<tokens.length;){
@@ -92,7 +92,7 @@ try{
     const key=`${language}-${theme}-${width}`,state={key,checks:[],unexpected:[],pageErrors:[],wasm:[]};
     const context=await browser.newContext({viewport:{width,height:1100},colorScheme:theme}),page=await context.newPage(),pending=[];
     const labels=language==='zh'?{edit:'编辑备注',note:'版本备注'}:{edit:'Edit note',note:'Version note'};
-    await page.addInitScript(theme=>localStorage.setItem('xcs-theme',theme),theme);
+    await page.addInitScript(theme=>localStorage.setItem('zxs-theme',theme),theme);
     page.on('pageerror',error=>state.pageErrors.push(error.message));
     page.on('response',response=>{
       const path=new URL(response.url()).pathname;
@@ -111,15 +111,15 @@ try{
     });
     try{
       await page.goto(`${base}/?lang=${language}`);
-      await page.locator('html[data-xcs-ready="true"]').waitFor();
-      await page.locator('.xcs-disk-entry[data-slot="P01"]').click();
+      await page.locator('html[data-zxs-ready="true"]').waitFor();
+      await page.locator('.zxs-disk-entry[data-slot="P01"]').click();
       await page.getByRole('button',{name:'routes.txt',exact:true}).click();
       state.checks.push(await inspect(page,`default-${key}`));
       await page.screenshot({path:`${output}/default-${key}.png`,fullPage:true});
-      await page.locator('.xcs-version-node[data-version-id="right"]').getByRole('button',{name:labels.edit,exact:true}).click();
-      await page.locator('.xcs-version-node[data-version-id="right"] input').waitFor();
+      await page.locator('.zxs-version-node[data-version-id="right"]').getByRole('button',{name:labels.edit,exact:true}).click();
+      await page.locator('.zxs-version-node[data-version-id="right"] input').waitFor();
       state.checks.push(await inspect(page,`editing-${key}`));
-      await page.locator('.xcs-version-node[data-version-id="right"] input').press('Escape');
+      await page.locator('.zxs-version-node[data-version-id="right"] input').press('Escape');
       await page.setViewportSize({width:width-40,height:1100});
       state.checks.push(await inspect(page,`resized-${key}`));
       await page.screenshot({path:`${output}/resized-${key}.png`,fullPage:true});

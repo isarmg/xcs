@@ -1,6 +1,6 @@
 # Architecture workload probe
 
-This is a non-destructive **Development-mode simulation**, never proof of physical disk independence, failure durability, or production throughput. Each run creates a private tempfile pool, three simulated member directories and a system directory. It accepts no target directory or device argument, never opens a raw device, and removes only its own tempfile tree on exit. It does not change an existing XCS pool.
+This is a non-destructive **Development-mode simulation**, never proof of physical disk independence, failure durability, or production throughput. Each run creates a private tempfile pool, three simulated member directories and a system directory. It accepts no target directory or device argument, never opens a raw device, and removes only its own tempfile tree on exit. It does not change an existing ZXS pool.
 
 ## Reproduce
 
@@ -13,7 +13,7 @@ python3 tools/perf-check/compare.py tools/perf-check/results/baseline-92cd662.js
 
 The positional argument is the number of retained one-file saves (4–4096). Default is 64. Run identical counts, dependency lockfiles, build profiles, machines and filesystem conditions for comparisons. For larger sweeps use 64, 256 and 1024, allowing substantial time and space: historical metadata is still retained and startup recovery still scans durable evidence. Timings include fsync and are highly sensitive to shared-machine load, cache warmth and filesystem implementation. They are deliberately not pass/fail gates.
 
-To reproduce the baseline, archive commit `92cd662` into a fresh scratch directory and copy this complete `tools/perf-check` directory into the archive. Run its manifest against those baseline crates with the same lockfile and profile. Do not replace the live checkout or copy simulated pool files between revisions. Each report is generated from a newly initialized pool. UUIDs and timestamps vary, so metadata byte sizes are descriptive rather than byte-for-byte golden fixtures.
+To reproduce the historical baseline, archive commit `92cd662` into a fresh scratch directory and copy `tools/perf-check` from commit `728358018330027e67a4db5d389d32b42cc0c192` (the pre-rename harness) into that archive. Do not use the renamed harness against the old crate paths. Run its manifest against those baseline crates with the historical lockfile and profile. Do not replace the live checkout or copy simulated pool files between revisions. Each report is generated from a newly initialized pool. UUIDs and timestamps vary, so metadata byte sizes are descriptive rather than byte-for-byte golden fixtures.
 
 ## Workload and checks
 

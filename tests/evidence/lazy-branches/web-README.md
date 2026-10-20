@@ -16,14 +16,14 @@
 
 ```sh
 cargo test --locked --offline --manifest-path web/Cargo.toml --workspace
-XCS_WEB_BINDGEN=/absolute/path/wasm-bindgen cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- build --product-root .
+ZXS_WEB_BINDGEN=/absolute/path/wasm-bindgen cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- build --product-root .
 python3 -m http.server 17401 --bind 127.0.0.1 --directory web/dist
 ```
 
 在另一个终端执行：
 
 ```sh
-XCS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs XCS_PREVIEW_URL=http://127.0.0.1:17401 node tests/evidence/lazy-branches/web-probe.mjs
+ZXS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs ZXS_PREVIEW_URL=http://127.0.0.1:17401 node tests/evidence/lazy-branches/web-probe.mjs
 ```
 
 验证结束后关闭临时静态服务。此验收不涉及浏览器过度缩放补偿，不构成六平台实机、物理盘故障或发行验证。

@@ -2,14 +2,14 @@ use crate::{i18n::t, prelude::*};
 #[component]
 pub fn LoadingState() -> impl IntoView {
     View::new(
-        xcs_web::html::div()
+        zxs_web::html::div()
             .child(
                 #[allow(unused_braces)]
                 {
                     IntoRender::into_render({ t("正在加载…", "Loading…") })
                 },
             )
-            .class("xcs-loading xcs-row")
+            .class("zxs-loading zxs-row")
             .role("status")
             .aria_live("polite"),
     )
@@ -17,14 +17,14 @@ pub fn LoadingState() -> impl IntoView {
 #[component]
 pub fn EmptyState(message: String) -> impl IntoView {
     View::new(
-        xcs_web::html::div()
+        zxs_web::html::div()
             .child(
                 #[allow(unused_braces)]
                 {
                     IntoRender::into_render(message)
                 },
             )
-            .class("xcs-empty xcs-row"),
+            .class("zxs-empty zxs-row"),
     )
 }
 #[component]
@@ -33,30 +33,30 @@ pub fn ErrorState(
     #[prop(optional_no_strip)] request_id: Option<String>,
 ) -> impl IntoView {
     View::new(
-        xcs_web::html::div()
+        zxs_web::html::div()
             .child((
                 IntoRender::into_render(message),
                 IntoRender::into_render({
                     request_id.filter(|v| super::safe_request_id(v)).map(|id| {
                         View::new(
-                            xcs_web::html::p()
+                            zxs_web::html::p()
                                 .child((
                                     IntoRender::into_render({
                                         t("请求标识：", "Request ID: ")
                                     }),
-                                    xcs_web::html::code().child(
+                                    zxs_web::html::code().child(
                                         #[allow(unused_braces)]
                                         {
                                             IntoRender::into_render({ id })
                                         },
                                     ),
                                 ))
-                                .class("xcs-request-id"),
+                                .class("zxs-request-id"),
                         )
                     })
                 }),
             ))
-            .class("xcs-error xcs-row")
+            .class("zxs-error zxs-row")
             .role("alert"),
     )
 }

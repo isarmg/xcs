@@ -18,7 +18,7 @@ pub fn notify(message: String) {
     };
     let init = web_sys::CustomEventInit::new();
     init.set_detail(&wasm_bindgen::JsValue::from_str(&message));
-    if let Ok(event) = web_sys::CustomEvent::new_with_event_init_dict("xcs-notify", &init) {
+    if let Ok(event) = web_sys::CustomEvent::new_with_event_init_dict("zxs-notify", &init) {
         let _ = window.dispatch_event(&event);
     }
 }

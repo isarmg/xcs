@@ -2491,7 +2491,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
-name = "xcs-auth"
+name = "zxs-auth"
 version = "0.1.0"
 dependencies = [
  "argon2",
@@ -2505,7 +2505,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-cli"
+name = "zxs-cli"
 version = "0.1.0"
 dependencies = [
  "clap",
@@ -2515,14 +2515,14 @@ dependencies = [
  "tempfile",
  "tokio",
  "tracing-subscriber",
- "xcs-client",
- "xcs-core",
- "xcs-platform",
- "xcs-server",
+ "zxs-client",
+ "zxs-core",
+ "zxs-platform",
+ "zxs-server",
 ]
 
 [[package]]
-name = "xcs-client"
+name = "zxs-client"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -2535,11 +2535,11 @@ dependencies = [
  "tokio",
  "tokio-util",
  "url",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]
-name = "xcs-contract"
+name = "zxs-contract"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -2550,7 +2550,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-core"
+name = "zxs-core"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -2560,21 +2560,21 @@ dependencies = [
  "sqlx",
  "tempfile",
  "time",
- "xcs-contract",
- "xcs-naming",
- "xcs-platform",
+ "zxs-contract",
+ "zxs-naming",
+ "zxs-platform",
 ]
 
 [[package]]
-name = "xcs-naming"
+name = "zxs-naming"
 version = "0.1.0"
 dependencies = [
  "unicode-normalization",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]
-name = "xcs-platform"
+name = "zxs-platform"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -2590,12 +2590,12 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
- "xcs-auth",
+ "zxs-auth",
  "zeroize",
 ]
 
 [[package]]
-name = "xcs-server"
+name = "zxs-server"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -2616,21 +2616,21 @@ dependencies = [
  "tower-http",
  "tracing",
  "url",
- "xcs-auth",
- "xcs-contract",
- "xcs-core",
- "xcs-naming",
- "xcs-smb",
+ "zxs-auth",
+ "zxs-contract",
+ "zxs-core",
+ "zxs-naming",
+ "zxs-smb",
 ]
 
 [[package]]
-name = "xcs-smb"
+name = "zxs-smb"
 version = "0.1.0"
 dependencies = [
  "libc",
  "serde",
  "serde_json",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]

@@ -1,8 +1,8 @@
-# XCS Web 与共享 App 界面
+# ZXS Web 与共享 App 界面
 
-`src/` 是 Rust/WASM CSR 应用，`runtime/` 提供公共组件和浏览器运行环境，`../vendor/web/xcs-web-core`、`xcs-web-macro` 是项目维护的 CSR 引擎及过程宏。自有包、DOM 标记、缓存键和配置统一使用 XCS 命名；外部依赖保留真实包名，来源说明集中在 README。
+`src/` 是 Rust/WASM CSR 应用，`runtime/` 提供公共组件和浏览器运行环境，`../vendor/web/zxs-web-core`、`zxs-web-macro` 是项目维护的 CSR 引擎及过程宏。自有包、DOM 标记、缓存键和配置统一使用 ZXS 命名；外部依赖保留真实包名，来源说明集中在 README。
 
-浏览器与 App 共用界面。浏览器请求同源 `/v1/`；App 通过 Rust IPC 调用 `xcs-client`，文件内容由原生传输处理。构建与运行均不依赖兄弟项目目录。
+浏览器与 App 共用界面。浏览器请求同源 `/v1/`；App 通过 Rust IPC 调用 `zxs-client`，文件内容由原生传输处理。构建与运行均不依赖兄弟项目目录。
 
 ## 页面与操作
 
@@ -17,7 +17,7 @@
 - **保存**：选择上传文件后逐文件完成上传、封存、规范摘要校验和提交。详情的“写入当前分支”将所选本地内容写入当前受管文件；本地文件名不同也保留受管文件的原路径和名称。上传队列在开始时固定文件路径及所选分支，不因后续浏览状态变化写到其它分支。新建、改名、删除、分支和备注动作也通过服务端事务发布；界面不要求手动操作工作区或再次点击提交。多文件上传逐项保存，不声称整个上传队列是一个原子事务。
 - **结果确认**：上传与保存区区分等待、上传中、保存中、发布完成、降级及结果未知。未确认的保存保留操作 ID 并查询原操作，后续排队文件停止上传；不会把网络失败直接显示为保存成功。发布时保护与后续健康变化分别处理。
 - **预览、下载与备注**：文本预览及下载核对完整内容散列；内容下载采用文件当前名称。文件备注、正文版本备注与路径节点备注分别保存，每项最多 128 UTF-8 字节，禁止换行与控制字符。历史节点第三行点击编辑备注后，第二行原位切换为下划线输入；Enter 保存、空值清除、输入法组合期间不提交，Esc 或失焦取消。新建目录、改名和分支也采用同一原位规则；新名称在 Web 中限制 128 字节，原通用路径协议和已有长名称保持兼容。旧备注完整显示，不静默截断。删除在页面内审阅所选条目及分支后提交，不弹出确认窗口；文本预览保留只读窗口。路径节点未填写备注时第二行显示“改名 旧路径 → 新路径”，编辑器读取真实备注；从路径节点创建分支会同时提交正文版本与来源节点。文件预览、下载始终使用正文版本 ID 及所选逻辑名称，位于详情上方，历史树不再增加内部文件名、大小或预览下载行；版本内名和内容状态仍保留在历史 API 中。
-- **状态**：管理员查看真实 CPU 使用率、CPU 功耗、内存、各盘容量与功耗，每 5 秒刷新。带图标的卡片顶部是实时值，下方是真实历史折线；范围为 1min/30min/1h/24h/1month，最后一项代表最近 30 天。所有卡片为 3:2，桌面固定四列，末行仍保持单列宽度，手机每行一张。后台每 5 秒独立采样，分钟历史缓存保留 31 天，重启恢复。缺失采样断线，缺失传感器显示不可用；功耗不根据使用率或 TDP 推算。目录模拟盘容量可能相同且没有独立功耗，不能作为独立物理盘相加。数据来源和缓存边界见[监测实现](../crates/xcs-server/src/telemetry/README.md)。
+- **状态**：管理员查看真实 CPU 使用率、CPU 功耗、内存、各盘容量与功耗，每 5 秒刷新。带图标的卡片顶部是实时值，下方是真实历史折线；范围为 1min/30min/1h/24h/1month，最后一项代表最近 30 天。所有卡片为 3:2，桌面固定四列，末行仍保持单列宽度，手机每行一张。后台每 5 秒独立采样，分钟历史缓存保留 31 天，重启恢复。缺失采样断线，缺失传感器显示不可用；功耗不根据使用率或 TDP 推算。目录模拟盘容量可能相同且没有独立功耗，不能作为独立物理盘相加。数据来源和缓存边界见[监测实现](../crates/zxs-server/src/telemetry/README.md)。
 - **历史记录**：展示最近已提交的文件操作及时间、路径和主体，可以按硬盘筛选；文件自身的版本、分支和备注在文件详情中查看。文件操作历史与状态页的监测历史分别保存。
 - **账户与显示**：登录、退出、HttpOnly Cookie 会话恢复、CSRF、自助改密、错误反馈、主题及中英文切换。用户名只读；改密成功后重新登录。公共及业务文案统一调用语言接口，切换语言通过 `lang` 参数重新加载并恢复会话。
 
@@ -60,19 +60,19 @@ histories/<history-id>/file-containers/<file-id>/<当前文件名>/versions/
 | `public/styles/components/base.css`、`content-blocks.css`、`auth.css` | 分别负责组件行为、外观配色、保持独立尺寸的登录布局 |
 | `public/styles/components/` 其余文件 | 页面专属列布局、排序表现和图表外观，不重复定义业务行几何 |
 | `public/styles/tokens/`、`styles.css` | 明暗令牌、无障碍和样式入口 |
-| `../crates/xcs-server/src/telemetry/` | CPU/内存/功耗采样、31 天缓存及有界历史聚合；磁盘容量由核心提供 |
-| `../crates/xcs-core/src/container_storage.rs` | 普通正文路径、容器改名、版本名称及派生缓存 |
+| `../crates/zxs-server/src/telemetry/` | CPU/内存/功耗采样、31 天缓存及有界历史聚合；磁盘容量由核心提供 |
+| `../crates/zxs-core/src/container_storage.rs` | 普通正文路径、容器改名、版本名称及派生缓存 |
 | `../tools/web-build/src/` | Rust 构建、通用启动器与资源清单 |
 
 公共组件只通过 Signal/Callback 接收状态与动作，不导入存储业务或旧管理员接口。自定义 `Select` 实际使用原选择器触发器、箭头和顶层弹层样式，Rust 实现方向键、输入跳转、Enter/空格、Escape/Tab、焦点、禁用项及外点关闭，不再依赖原生菜单外观。登录标签、输入和按钮统一字号与字重，窄屏和大字时由内容撑高。
 
-新增页面先组合共享布局角色，不增加页面级尺寸覆盖：`.xcs-stack` 和 `.xcs-flow` 排列内容，默认不另加外部间距；`.xcs-row` 管理字盒留白，`.xcs-frame` 管理灰色边框与 G4 表面。透明包装仅在其边界紧贴可见框时使用 `.xcs-surface-start/end` 或 `.xcs-surface`，由公共规则分开直接接触的框；中间已有标签或说明行时不重复加距。普通输入保持 44px；搜索、账户和下拉框显式采用 `.xcs-input--compact`，原位输入再组合 `.xcs-input--underline`。登录规则只在 `.xcs-auth-shell` 内生效。完整用法见[公共样式](public/styles/README.md)。
+新增页面先组合共享布局角色，不增加页面级尺寸覆盖：`.zxs-stack` 和 `.zxs-flow` 排列内容，默认不另加外部间距；`.zxs-row` 管理字盒留白，`.zxs-frame` 管理灰色边框与 G4 表面。透明包装仅在其边界紧贴可见框时使用 `.zxs-surface-start/end` 或 `.zxs-surface`，由公共规则分开直接接触的框；中间已有标签或说明行时不重复加距。普通输入保持 44px；搜索、账户和下拉框显式采用 `.zxs-input--compact`，原位输入再组合 `.zxs-input--underline`。登录规则只在 `.zxs-auth-shell` 内生效。完整用法见[公共样式](public/styles/README.md)。
 
-请求路径与备注校验复用 `xcs-contract`：浏览器和 App 使用相同的 `/v1/` 路径边界，备注使用同一 128 字节单行规则。目录读取和历史读取保留请求代次隔离；下载反馈、改密反馈也必须属于原有有效会话，登出或重新登录后的旧响应不能改写新会话。
+请求路径与备注校验复用 `zxs-contract`：浏览器和 App 使用相同的 `/v1/` 路径边界，备注使用同一 128 字节单行规则。目录读取和历史读取保留请求代次隔离；下载反馈、改密反馈也必须属于原有有效会话，登出或重新登录后的旧响应不能改写新会话。
 
-轮廓使用 `data-xcs-contour-*` / `--xcs-contour-*`，主题和语言偏好键为 `xcs-theme` / `xcs-language`。产品逻辑与轮廓为 Rust；WASM 绑定和 WASM 加载前的通用失败处理由 Rust 构建工具生成，不维护自写业务 JS/TS。
+轮廓使用 `data-zxs-contour-*` / `--zxs-contour-*`，主题和语言偏好键为 `zxs-theme` / `zxs-language`。产品逻辑与轮廓为 Rust；WASM 绑定和 WASM 加载前的通用失败处理由 Rust 构建工具生成，不维护自写业务 JS/TS。
 
-本界面复用项目所有者提供的 `/mnt/sarmg.org/xcss/web/` 公共页面、组件、明暗令牌与连续轮廓；文件浏览排序、图标及工具栏表现选取自 `/mnt/sarmg.org/xczs/`，节点标签选取其中 `web/xcss-web/src/tags.rs` 的标签片与可访问按压选择交互并改为节点级原子请求，格式化与状态展示选取自 `/mnt/sarmg.org/xsos/`，最小主机采样选取自 `/mnt/sarmg.org/xsoc/` 后独立定制。上述目录仅是来源说明，不是运行时或构建输入。
+本界面复用项目所有者提供的 `/mnt/sarmg.org/zxss/web/` 公共页面、组件、明暗令牌与连续轮廓；文件浏览排序、图标及工具栏表现选取自 `/mnt/sarmg.org/xczs/`，节点标签选取其中 `web/zxss-web/src/tags.rs` 的标签片与可访问按压选择交互并改为节点级原子请求，格式化与状态展示选取自 `/mnt/sarmg.org/xsos/`，最小主机采样选取自 `/mnt/sarmg.org/xsoc/` 后独立定制。上述目录仅是来源说明，不是运行时或构建输入。
 
 ## 构建与验证边界
 
@@ -84,6 +84,6 @@ cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- check
 cargo test --locked --offline --manifest-path web/Cargo.toml --workspace
 ```
 
-`XCS_WEB_BINDGEN` 指定 CLI 路径，`XCS_WEB_TARGET_DIR` 指定浏览器 target 目录。默认输出 `web/dist`，包含 WASM、生成绑定与通用启动模块、CSS、字体、确定性 gzip 和 `build-manifest.json`。服务使用 `--web-dir /absolute/path/web/dist` 提供资源；运行标记为 `data-xcs-runtime="xcs-web"` 与 `data-xcs-ready="true"`，需验证 WASM MIME、gzip、ETag、nosniff 与 CSP。
+`ZXS_WEB_BINDGEN` 指定 CLI 路径，`ZXS_WEB_TARGET_DIR` 指定浏览器 target 目录。默认输出 `web/dist`，包含 WASM、生成绑定与通用启动模块、CSS、字体、确定性 gzip 和 `build-manifest.json`。服务使用 `--web-dir /absolute/path/web/dist` 提供资源；运行标记为 `data-zxs-runtime="zxs-web"` 与 `data-zxs-ready="true"`，需验证 WASM MIME、gzip、ETag、nosniff 与 CSP。
 
 当前父版本继承与首次写入的实际 WASM 验证见[继承分支验收](../tests/evidence/inherited-branches/web-README.md)；公共间距的验证见[间距修正验收](../tests/evidence/spacing-correction/README.md)，此前全项目重构记录见[维护性优化验收](../tests/evidence/maintainability/README.md)。早期文件管理功能验证保留在[Web 验收证据](../tests/evidence/web/README.md)，整体边界见[实现报告](../docs/reports/implementation.md)。构建成功不能替代真实浏览器、六平台 App、物理盘故障或发行验收；开发目录模拟盘也不构成物理冗余证据。

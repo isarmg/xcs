@@ -69,8 +69,8 @@ fn inputs(root: &Path) -> Result<BTreeMap<String, String>> {
         "web/styles.css",
         "vendor/web",
         "vendor/dependencies/unicode-normalization-0.1.24",
-        "crates/xcs-contract",
-        "crates/xcs-naming",
+        "crates/zxs-contract",
+        "crates/zxs-naming",
         "tools/web-build/src/bootstrap.rs",
     ] {
         inventory(root, &root.join(input), &mut out)?;
@@ -83,7 +83,7 @@ fn main() -> Result<()> {
     let publish = match std::env::args().skip(1).collect::<Vec<_>>().as_slice() {
         [] => None,
         [flag] if flag == "--publish-web" => Some(root.join("web/dist/demo")),
-        _ => return Err("usage: xcs-demo-build [--publish-web]".into()),
+        _ => return Err("usage: zxs-demo-build [--publish-web]".into()),
     };
     let lock = demo.join(".build-lock");
     let _handle = fs::OpenOptions::new()
@@ -117,7 +117,7 @@ fn main() -> Result<()> {
     if !status.success() {
         return Err("demo WASM build failed".into());
     }
-    let bindgen = std::env::var_os("XCS_WEB_BINDGEN")
+    let bindgen = std::env::var_os("ZXS_WEB_BINDGEN")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("wasm-bindgen"));
     let version = Command::new(&bindgen).arg("--version").output()?;
@@ -140,11 +140,11 @@ fn main() -> Result<()> {
             "web",
             "--no-typescript",
             "--out-name",
-            "xcs",
+            "zxs",
             "--out-dir",
         ])
         .arg(stage.join("pkg"))
-        .arg(target.join("wasm32-unknown-unknown/release/xcs_branch_demo.wasm"))
+        .arg(target.join("wasm32-unknown-unknown/release/zxs_branch_demo.wasm"))
         .status()?
         .success()
     {
@@ -153,7 +153,7 @@ fn main() -> Result<()> {
     for (source, destination) in [
         (root.join("web/public/styles"), stage.join("styles")),
         (root.join("web/public/fonts"), stage.join("fonts")),
-        (root.join("web/styles.css"), stage.join("xcs.css")),
+        (root.join("web/styles.css"), stage.join("zxs.css")),
         (demo.join("styles.css"), stage.join("demo.css")),
         (demo.join("reference"), stage.join("reference")),
         (demo.join("examples.md"), stage.join("examples.md")),
@@ -166,8 +166,8 @@ fn main() -> Result<()> {
     let mut gzip = flate2::GzBuilder::new()
         .mtime(0)
         .write(Vec::new(), flate2::Compression::best());
-    gzip.write_all(&fs::read(stage.join("pkg/xcs_bg.wasm"))?)?;
-    fs::write(stage.join("pkg/xcs_bg.wasm.gz"), gzip.finish()?)?;
+    gzip.write_all(&fs::read(stage.join("pkg/zxs_bg.wasm"))?)?;
+    fs::write(stage.join("pkg/zxs_bg.wasm.gz"), gzip.finish()?)?;
     let after = inputs(root)?;
     if before != after {
         return Err("demo inputs changed during build; retry".into());
@@ -177,7 +177,7 @@ fn main() -> Result<()> {
     fs::write(
         stage.join("build-manifest.json"),
         serde_json::to_vec_pretty(
-            &serde_json::json!({"format_version":1,"runtime":"xcs-web","target":"wasm32-unknown-unknown","inputs":after,"files":files}),
+            &serde_json::json!({"format_version":1,"runtime":"zxs-web","target":"wasm32-unknown-unknown","inputs":after,"files":files}),
         )?,
     )?;
     let dist = demo.join("dist");

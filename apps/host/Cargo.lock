@@ -5164,7 +5164,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-app"
+name = "zxs-app"
 version = "0.1.0"
 dependencies = [
  "serde_json",
@@ -5174,11 +5174,11 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-opener",
  "tokio",
- "xcs-app-bridge",
+ "zxs-app-bridge",
 ]
 
 [[package]]
-name = "xcs-app-bridge"
+name = "zxs-app-bridge"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -5186,13 +5186,13 @@ dependencies = [
  "serde_json",
  "tempfile",
  "tokio",
- "xcs-client",
- "xcs-contract",
- "xcs-naming",
+ "zxs-client",
+ "zxs-contract",
+ "zxs-naming",
 ]
 
 [[package]]
-name = "xcs-client"
+name = "zxs-client"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -5205,11 +5205,11 @@ dependencies = [
  "tokio",
  "tokio-util",
  "url",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]
-name = "xcs-contract"
+name = "zxs-contract"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -5220,11 +5220,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-naming"
+name = "zxs-naming"
 version = "0.1.0"
 dependencies = [
  "unicode-normalization",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]

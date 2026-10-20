@@ -1,7 +1,7 @@
 /* A resource failure must be readable without the application fonts or WASM. */
-html[data-xcs-startup="failed"] body { visibility: visible !important; }
-html[data-xcs-startup="failed"] body > :not(#xcs-startup-error) { display: none !important; }
-#xcs-startup-error {
+html[data-zxs-startup="failed"] body { visibility: visible !important; }
+html[data-zxs-startup="failed"] body > :not(#zxs-startup-error) { display: none !important; }
+#zxs-startup-error {
   box-sizing: border-box;
   max-width: 42rem;
   margin: 4rem auto;
@@ -10,8 +10,8 @@ html[data-xcs-startup="failed"] body > :not(#xcs-startup-error) { display: none 
   color: CanvasText;
   line-height: 1.6;
 }
-#xcs-startup-error, #xcs-startup-error * { font-family: system-ui, sans-serif !important; }
-#xcs-startup-error h1 { font-size: 1.5rem; }
-#xcs-startup-error button { padding: .5rem 1rem; cursor: pointer; }
-#xcs-startup-error button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-@media (max-width: 40rem) { #xcs-startup-error { margin: 1rem; padding: 1rem; } }
+#zxs-startup-error, #zxs-startup-error * { font-family: system-ui, sans-serif !important; }
+#zxs-startup-error h1 { font-size: 1.5rem; }
+#zxs-startup-error button { padding: .5rem 1rem; cursor: pointer; }
+#zxs-startup-error button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+@media (max-width: 40rem) { #zxs-startup-error { margin: 1rem; padding: 1rem; } }

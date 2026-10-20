@@ -82,15 +82,15 @@ pub fn Select(
     #[prop(default=Signal::derive(|| false))] disabled: Signal<bool>,
     #[prop(default=t("请选择", "Choose an option"))] placeholder: String,
 ) -> impl IntoView {
-    let id = format!("xcs-select-{}", SEQUENCE.fetch_add(1, Ordering::Relaxed));
+    let id = format!("zxs-select-{}", SEQUENCE.fetch_add(1, Ordering::Relaxed));
     let list_id = StoredValue::new(format!("{id}-list"));
     let label_id = StoredValue::new(format!("{id}-label"));
     let control_id = StoredValue::new(id);
     let label = StoredValue::new(label);
     let placeholder = StoredValue::new(placeholder);
-    let root = NodeRef::<xcs_web::html::Div>::new();
-    let trigger = NodeRef::<xcs_web::html::Button>::new();
-    let panel = NodeRef::<xcs_web::html::Div>::new();
+    let root = NodeRef::<zxs_web::html::Div>::new();
+    let trigger = NodeRef::<zxs_web::html::Button>::new();
+    let panel = NodeRef::<zxs_web::html::Div>::new();
     let open = RwSignal::new(false);
     let active = RwSignal::new(None::<usize>);
     let prefix = StoredValue::new((String::new(), 0.0f64));
@@ -221,9 +221,9 @@ pub fn Select(
         }
     });
     view! {
-        <div class="xcs-select" node_ref=root>
-            <label class="xcs-select-label xcs-row" id=label_id.get_value() for=control_id.get_value()>{label.get_value()}</label>
-            <button class="xcs-input xcs-select-trigger xcs-input--compact" type="button" node_ref=trigger
+        <div class="zxs-select" node_ref=root>
+            <label class="zxs-select-label zxs-row" id=label_id.get_value() for=control_id.get_value()>{label.get_value()}</label>
+            <button class="zxs-input zxs-select-trigger zxs-input--compact" type="button" node_ref=trigger
                 id=control_id.get_value() role="combobox" aria-haspopup="listbox"
                 aria-labelledby=label_id.get_value() aria-controls=list_id.get_value()
                 aria-expanded=move || open.get().to_string()
@@ -265,17 +265,17 @@ pub fn Select(
                         _ => {}
                     }
                 }>
-                <span class="xcs-select-value">{move || options.get().iter().find(|item| item.value == value.get()).map(|item| item.label.clone()).unwrap_or_else(|| placeholder.get_value())}</span>
-                <svg class="xcs-select-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+                <span class="zxs-select-value">{move || options.get().iter().find(|item| item.value == value.get()).map(|item| item.label.clone()).unwrap_or_else(|| placeholder.get_value())}</span>
+                <svg class="zxs-select-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
             </button>
-            <div class="xcs-select-panel xcs-frame" node_ref=panel id=list_id.get_value() role="listbox" popover="manual" aria-labelledby=label_id.get_value()>
+            <div class="zxs-select-panel zxs-frame" node_ref=panel id=list_id.get_value() role="listbox" popover="manual" aria-labelledby=label_id.get_value()>
                 {move || {
                     let entries = options.get();
-                    if entries.is_empty() { return view! { <div class="xcs-select-empty xcs-row" role="status">{t("没有可用选项", "No options available")}</div> }.into_any(); }
+                    if entries.is_empty() { return view! { <div class="zxs-select-empty zxs-row" role="status">{t("没有可用选项", "No options available")}</div> }.into_any(); }
                     entries.into_iter().enumerate().map(move |(index, option)| {
                         let option_value = option.value.clone();
                         view! {
-                            <div class="xcs-select-option xcs-row xcs-row--option" id=format!("{}-{index}", list_id.get_value()) role="option"
+                            <div class="zxs-select-option zxs-row zxs-row--option" id=format!("{}-{index}", list_id.get_value()) role="option"
                                 aria-selected=move || (value.get() == option_value).to_string()
                                 aria-disabled=option.disabled.to_string()
                                 data-active=move || (active.get() == Some(index)).to_string()

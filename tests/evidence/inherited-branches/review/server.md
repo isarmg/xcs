@@ -23,11 +23,11 @@ The obsolete BRANCH_PENDING_CONTENT error, read prohibition, empty-base write lo
 
 All tests use temporary fixture data. No real runtime/user directory or existing service was read or modified by this agent.
 
-- HTTP integration: 12/12 passed, /tmp/xcs-inherited-branch-http.log.
-- SMB server: 12/12 passed on host, /tmp/xcs-inherited-branch-smb-host.log.
-- SMB protocol/client: 6/6 passed on host, /tmp/xcs-inherited-branch-smb-client-host.log.
-- Three permanent cross-review regressions: 3/3 passed, /tmp/xcs-inherited-branch-regressions.log.
-- Server without core feature: check passed, /tmp/xcs-inherited-branch-no-core.log.
+- HTTP integration: 12/12 passed, the historical temporary test directory/log
+- SMB server: 12/12 passed on host, the historical temporary test directory/log
+- SMB protocol/client: 6/6 passed on host, the historical temporary test directory/log
+- Three permanent cross-review regressions: 3/3 passed, the historical temporary test directory/log
+- Server without core feature: check passed, the historical temporary test directory/log
 
 HTTP coverage includes recursive branching of three files, all-parent reads after selection, a first write to A yielding A-own plus B/C-inherited, successful downloads of all three immutable parents, sibling isolation, unchanged version counts before writes, first-write ancestry, abort/restart, own-version flags, explicit historical parent views and selection fencing. SMB coverage checks parent read descriptors, a private parent write copy, untouched open/close, modified abort, a one-byte edit yielding Xld from old, immutable parent reads afterward, and explicit zero-byte truncation. The core range regression now expects XOURCE_BYTES when a stable inherited file is edited at offset zero, while selection changes are still rejected before range staging; historical ranges and split-main delegation also pass.
 

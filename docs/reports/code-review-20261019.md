@@ -10,11 +10,11 @@
 
 | 范围 | 入口与逻辑 |
 | --- | --- |
-| `xcs-contract` / `xcs-naming` | 严格编码、全宽整数、ID/摘要/校验块、备注及 API 路径；固定 Unicode 的显示拼写与规范化身份 |
-| `xcs-auth` / `xcs-platform` | 可移植认证算法；Linux 目录句柄、原子发布、私密凭据、SQLite 安全与投影 |
-| `xcs-core` | 授权单写者 → 业务克隆状态 → 大小/路线预检 → 正文与证明发布 → 可见状态；恢复与维护只接受验证后的原候选 |
-| `xcs-server` | origin/CSRF/身份准入 → 重新授权 backend → Engine；上传保留跨异步取消的所有权，响应持有读取租约 |
-| `xcs-client` / CLI | 同源 API → 上传封存 → 公开摘要 → 原操作提交/查询；CLI 将本地管理、远程请求和私密文件持久化分开 |
+| `zxs-contract` / `zxs-naming` | 严格编码、全宽整数、ID/摘要/校验块、备注及 API 路径；固定 Unicode 的显示拼写与规范化身份 |
+| `zxs-auth` / `zxs-platform` | 可移植认证算法；Linux 目录句柄、原子发布、私密凭据、SQLite 安全与投影 |
+| `zxs-core` | 授权单写者 → 业务克隆状态 → 大小/路线预检 → 正文与证明发布 → 可见状态；恢复与维护只接受验证后的原候选 |
+| `zxs-server` | origin/CSRF/身份准入 → 重新授权 backend → Engine；上传保留跨异步取消的所有权，响应持有读取租约 |
+| `zxs-client` / CLI | 同源 API → 上传封存 → 公开摘要 → 原操作提交/查询；CLI 将本地管理、远程请求和私密文件持久化分开 |
 | Web / `web/runtime` | API 与会话代次 → 页面状态 → 共享组件/几何角色 → Rust G4 控制器；读取、事务、回执和传输动作分开 |
 | 原生 App | WebView 只传结构化结果 → Rust 会话/传输/缓存 → 文件提供方与系统打开；凭据与字节不经 WebView IPC |
 | SMB 协议 / VFS | 受信任 Unix peer → 固定身份 RPC → 核心授权；FD 所有权、工作文件、FLUSH/CLOSE 与异步回调生命周期 |
@@ -23,8 +23,8 @@
 
 ## 结构调整
 
-- **唯一认证算法**：新增可移植 `xcs-auth`，替代服务端与平台中两份相同实现；原公开路径继续兼容导出，未把 Linux 平台依赖带入可移植 server 构建。
-- **核心职责**：Engine 从一个 1560 行文件拆为协调入口及 `config/publication/recovery/reads/index/workspace_storage`；命名空间和祖先遍历各有共享实现。[核心模块地图](../../crates/xcs-core/README.md)说明权威数据和可重建投影。
+- **唯一认证算法**：新增可移植 `zxs-auth`，替代服务端与平台中两份相同实现；原公开路径继续兼容导出，未把 Linux 平台依赖带入可移植 server 构建。
+- **核心职责**：Engine 从一个 1560 行文件拆为协调入口及 `config/publication/recovery/reads/index/workspace_storage`；命名空间和祖先遍历各有共享实现。[核心模块地图](../../crates/zxs-core/README.md)说明权威数据和可重建投影。
 - **传输与准入**：server 的 `http_auth/transfer/web_assets` 分别维护认证准入、内容生命周期和静态资源边界；客户端 `response/transfer` 分离错误解码与字节传输。
 - **命令与原生边界**：CLI 的参数、本地/远程操作、凭据、待提交材料和私密 IO 分模块；App 的 `connection/cache` 统一连接代次、缓存身份和导入交接。
 - **Web 动作**：`files/actions` 拆为 `browse/mutation/operation/transfer`；共享几何与登录样式独立，业务页面不再复制尺寸补丁。
@@ -56,13 +56,13 @@
 
 | 需要修改 | 唯一职责位置与使用方式 |
 | --- | --- |
-| 页面行高、字号比例、块/换行间距、首字内缩、边框、G4 范围 | [`geometry.css`](../../web/public/styles/components/geometry.css)：页面组合 `xcs-stack/xcs-flow/xcs-row/xcs-frame` 和输入角色；业务 CSS 只保留列、截断、表格和图表布局 |
+| 页面行高、字号比例、块/换行间距、首字内缩、边框、G4 范围 | [`geometry.css`](../../web/public/styles/components/geometry.css)：页面组合 `zxs-stack/zxs-flow/zxs-row/zxs-frame` 和输入角色；业务 CSS 只保留列、截断、表格和图表布局 |
 | 登录样式 | `auth.css` 独立于业务几何；公共业务 token 改变不影响既定登录尺寸 |
-| 新写入备注 | `xcs_contract::{MAX_NOTE_BYTES,validate_note}`；空串清空、按 UTF-8 字节检查、不改旧材料 |
-| API 路径 | `xcs_contract::validate_api_path`；Web/原生复用，查询值不当路径校验 |
-| 密码、令牌、CSRF 基础规则 | `xcs-auth`；会话持久化与账户授权仍由 server 负责 |
-| 名称、路径身份 | `xcs-naming`；禁止另造 lowercase/raw-prefix 规则 |
-| 校验块集合 | `xcs_contract::SUPPORTED_CHECKSUM_CHUNK_BYTES` |
+| 新写入备注 | `zxs_contract::{MAX_NOTE_BYTES,validate_note}`；空串清空、按 UTF-8 字节检查、不改旧材料 |
+| API 路径 | `zxs_contract::validate_api_path`；Web/原生复用，查询值不当路径校验 |
+| 密码、令牌、CSRF 基础规则 | `zxs-auth`；会话持久化与账户授权仍由 server 负责 |
+| 名称、路径身份 | `zxs-naming`；禁止另造 lowercase/raw-prefix 规则 |
+| 校验块集合 | `zxs_contract::SUPPORTED_CHECKSUM_CHUNK_BYTES` |
 | App 缓存与导入 | `apps/bridge/src/cache.rs`；宿主不再重复生成目标路径或管理临时复制清理 |
 | CLI 私密材料 | `credentials/pending/private_io`；不在各命令重新实现读取和发布 |
 
@@ -74,4 +74,4 @@
 
 最终命令、测试输出、源文件摘要、实际候选资源与浏览器截图集中于[本轮检查记录](../../tests/evidence/maintainability/README.md)，各领域审读记录保存在其 `review/` 子目录。临时本机端口、开发模式目录及 SDK 库测试分别标注；没有使用用户业务写入来制造测试结果。
 
-仍需独立验收：真实 Btrfs/物理盘掉电和移除矩阵、跨平台 SMB 编辑器与认证部署、Windows/Apple/移动设备及签名分发、Tauri 真实宿主交互。历史恢复仍验证已发布材料，没有以不可信 checkpoint 换取启动速度，也没有做性能基准。旧缓存不自动迁移或删除。默认数据目录 `xcs-data/` 与 Web 临时构建目录已加入 Git 忽略，不删除或移动现有材料。本轮未提交、推送或发布远程环境。
+仍需独立验收：真实 Btrfs/物理盘掉电和移除矩阵、跨平台 SMB 编辑器与认证部署、Windows/Apple/移动设备及签名分发、Tauri 真实宿主交互。历史恢复仍验证已发布材料，没有以不可信 checkpoint 换取启动速度，也没有做性能基准。旧缓存不自动迁移或删除。默认数据目录 `zxs-data/` 与 Web 临时构建目录已加入 Git 忽略，不删除或移动现有材料。本轮未提交、推送或发布远程环境。

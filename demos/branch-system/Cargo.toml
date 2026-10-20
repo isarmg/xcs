@@ -1,5 +1,5 @@
 [package]
-name = "xcs-branch-demo"
+name = "zxs-branch-demo"
 version = "0.1.0"
 edition = "2024"
 publish = false
@@ -11,21 +11,21 @@ autobins = false
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "xcs-demo-build"
+name = "zxs-demo-build"
 path = "src/bin/build.rs"
 
 [[bin]]
-name = "xcs-demo-serve"
+name = "zxs-demo-serve"
 path = "src/bin/serve.rs"
 
 [[bin]]
-name = "xcs-demo-reference"
+name = "zxs-demo-reference"
 path = "src/bin/reference.rs"
 
 [dependencies]
-xcs-web = { path = "../../web/runtime" }
-xcs-contract = { path = "../../crates/xcs-contract" }
-xcs-naming = { path = "../../crates/xcs-naming" }
+zxs-web = { path = "../../web/runtime" }
+zxs-contract = { path = "../../crates/zxs-contract" }
+zxs-naming = { path = "../../crates/zxs-naming" }
 getrandom = { version = "0.4", features = ["wasm_js"] }
 uuid = { version = "1", features = ["js"] }
 wasm-bindgen = "=0.2.129"

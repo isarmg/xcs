@@ -40,7 +40,7 @@
 
 验收脚本为 [browser-probe.mjs](./browser-probe.mjs)，独立轮廓数值参考为 [g4-reference.mjs](./g4-reference.mjs)。只测试正常桌面及手机窗口，不测试或补偿浏览器过度缩放。
 
-最终布局只读脚本为 [browser-layout-probe.mjs](./browser-layout-probe.mjs)。脚本只允许独立 7401，使用 `XCS_TREE_SEED` 指定临时种子 JSON；密码从其 `password_file` 内部读取，不写入验收产物。
+最终布局只读脚本为 [browser-layout-probe.mjs](./browser-layout-probe.mjs)。脚本只允许独立 7401，使用 `ZXS_TREE_SEED` 指定临时种子 JSON；密码从其 `password_file` 内部读取，不写入验收产物。
 
 ## 日常预览最终确认
 

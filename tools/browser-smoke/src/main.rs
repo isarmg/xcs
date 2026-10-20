@@ -220,8 +220,8 @@ fn exercise(
     screenshot: Option<&Path>,
 ) -> Result<()> {
     // Observation only. No fetch interception, synthetic responses or application state injection.
-    browser.cdp("Page.addScriptToEvaluateOnNewDocument", json!({"source":"window.__xcsSmokeErrors=[];addEventListener('error',e=>window.__xcsSmokeErrors.push(String(e.message)));addEventListener('unhandledrejection',e=>window.__xcsSmokeErrors.push(String(e.reason)));"}))?;
-    let demo_capture = env::var_os("XCS_DEMO_CAPTURE").map(PathBuf::from);
+    browser.cdp("Page.addScriptToEvaluateOnNewDocument", json!({"source":"window.__zxsSmokeErrors=[];addEventListener('error',e=>window.__zxsSmokeErrors.push(String(e.message)));addEventListener('unhandledrejection',e=>window.__zxsSmokeErrors.push(String(e.reason)));"}))?;
+    let demo_capture = env::var_os("ZXS_DEMO_CAPTURE").map(PathBuf::from);
     let url = if screenshot.is_some() || demo_capture.is_some() {
         format!("{origin}/?lang=zh-CN")
     } else {
@@ -237,11 +237,11 @@ fn exercise(
         password,
     )?;
     browser.click(&browser.button("Sign in", "登录")?)?;
-    let disk = browser.css(".xcs-disk-entry[data-slot='P01']:not([disabled])")?;
+    let disk = browser.css(".zxs-disk-entry[data-slot='P01']:not([disabled])")?;
     let disks = browser.command(
         "POST",
         "/elements",
-        Some(json!({"using":"css selector","value":".xcs-disk-entry"})),
+        Some(json!({"using":"css selector","value":".zxs-disk-entry"})),
     )?;
     if disks.as_array().map(Vec::len) != Some(3) {
         return Err("expected exactly three development disk directories".into());
@@ -260,7 +260,7 @@ fn exercise(
         demo::run(browser, temp, &dir)?;
     }
     let payload =
-        b"XCS real browser smoke: complete file content\nUTF-8: \xe6\xb5\x8b\xe8\xaf\x95\n";
+        b"ZXS real browser smoke: complete file content\nUTF-8: \xe6\xb5\x8b\xe8\xaf\x95\n";
     let input = temp.join("browser-smoke.txt");
     fs::write(&input, payload)?;
     browser.keys(
@@ -269,7 +269,7 @@ fn exercise(
     )?;
     let file = browser.element(
         "xpath",
-        "//button[contains(@class,'xcs-file-name')][normalize-space(.)='browser-smoke.txt']",
+        "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
     )?;
     println!("PASS browser file upload and directory publication");
     if let Some(path) = screenshot {
@@ -278,7 +278,7 @@ fn exercise(
         for (name, content) in [
             (
                 "项目说明.md",
-                "# 示例项目\n这些文件仅用于展示 XCS 文件管理界面。\n",
+                "# 示例项目\n这些文件仅用于展示 ZXS 文件管理界面。\n",
             ),
             (
                 "备份计划.txt",
@@ -297,7 +297,7 @@ fn exercise(
             )?;
             browser.element(
                 "xpath",
-                &format!("//button[contains(@class,'xcs-file-name')][normalize-space(.)='{name}']"),
+                &format!("//button[contains(@class,'zxs-file-name')][normalize-space(.)='{name}']"),
             )?;
         }
         wait_for("loaded screenshot fonts", || {
@@ -322,13 +322,13 @@ fn exercise(
     let file = if screenshot.is_some() {
         browser.element(
             "xpath",
-            "//button[contains(@class,'xcs-file-name')][normalize-space(.)='browser-smoke.txt']",
+            "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
         )?
     } else {
         file
     };
     browser.click(&file)?;
-    browser.css(".xcs-entry-version-history")?;
+    browser.css(".zxs-entry-version-history")?;
     browser.click(&browser.button("Download", "下载")?)?;
     let downloaded = temp.join("downloads/browser-smoke.txt");
     wait_for("verified byte-for-byte browser download", || {
@@ -341,18 +341,18 @@ fn exercise(
     println!("PASS file details, version history and byte-identical download");
     browser.click(&browser.button("History", "历史记录")?)?;
     wait_for("uploaded file in activity history", || {
-        if browser.script("return Array.from(document.querySelectorAll('.xcs-history-path')).some(e=>e.textContent.includes('browser-smoke.txt'))")? == true { Ok(()) } else { Err("history missing uploaded file".into()) }
+        if browser.script("return Array.from(document.querySelectorAll('.zxs-history-path')).some(e=>e.textContent.includes('browser-smoke.txt'))")? == true { Ok(()) } else { Err("history missing uploaded file".into()) }
     })?;
     browser.click(&browser.button("Sign out", "退出")?)?;
     browser.css("input[autocomplete='current-password']")?;
-    if browser.script("return window.__xcsSmokeErrors")? != json!([]) {
+    if browser.script("return window.__zxsSmokeErrors")? != json!([]) {
         return Err("uncaught error before logout/reload".into());
     }
     // Reload exercises server-side session revocation, rather than merely a UI reset.
     browser.command("POST", "/refresh", Some(json!({})))?;
     browser.css("input[autocomplete='current-password']")?;
     println!("PASS history, logout and anonymous reload");
-    let errors = browser.script("return window.__xcsSmokeErrors")?;
+    let errors = browser.script("return window.__zxsSmokeErrors")?;
     if errors != json!([]) {
         return Err(format!("uncaught browser errors: {errors}").into());
     }
@@ -410,31 +410,31 @@ fn exercise(
 
 fn run() -> Result<()> {
     let mut args = env::args().skip(1);
-    let mut xcs = PathBuf::from("target/native/debug/xcs");
+    let mut zxs = PathBuf::from("target/native/debug/zxs");
     let mut web = PathBuf::from("web/dist");
     let mut screenshot: Option<PathBuf> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--xcs" => xcs = args.next().ok_or("--xcs requires a path")?.into(),
+            "--zxs" => zxs = args.next().ok_or("--zxs requires a path")?.into(),
             "--web-dir" => web = args.next().ok_or("--web-dir requires a path")?.into(),
             "--screenshot" => {
                 screenshot = Some(args.next().ok_or("--screenshot requires a path")?.into());
             }
             _ => {
                 return Err(format!(
-                    "unknown argument {arg}; usage: xcs-browser-smoke [--xcs PATH] [--web-dir PATH] [--screenshot PNG]"
+                    "unknown argument {arg}; usage: zxs-browser-smoke [--zxs PATH] [--web-dir PATH] [--screenshot PNG]"
                 )
                 .into());
             }
         }
     }
-    let xcs = xcs.canonicalize()?;
+    let zxs = zxs.canonicalize()?;
     let web = web.canonicalize()?;
     if !web.join("index.html").is_file() {
         return Err("build the real web/dist before running this test".into());
     }
     let temp = tempfile::Builder::new()
-        .prefix("xcs-browser-smoke-")
+        .prefix("zxs-browser-smoke-")
         .tempdir()?;
     let root = temp.path();
     let pool = root.join("pool");
@@ -455,7 +455,7 @@ fn run() -> Result<()> {
     for disk in &disks {
         fs::DirBuilder::new().mode(0o700).create(disk)?;
     }
-    let init = Command::new(&xcs)
+    let init = Command::new(&zxs)
         .arg("--root")
         .arg(&pool)
         .args(["init", "--username", "smoke-admin", "--password-file"])
@@ -477,7 +477,7 @@ fn run() -> Result<()> {
     let server_log = root.join("server.log");
     let driver_log = root.join("driver.log");
     let _server = spawn(
-        Command::new(xcs)
+        Command::new(zxs)
             .arg("--root")
             .arg(pool)
             .args([
@@ -490,7 +490,7 @@ fn run() -> Result<()> {
         &server_log,
     )?;
     let result = (|| -> Result<()> {
-        wait_for("loopback XCS server", || {
+        wait_for("loopback ZXS server", || {
             let (status, _) = http(server_port, "GET", "/", None)?;
             if status == 200 {
                 Ok(())
@@ -551,7 +551,7 @@ fn run() -> Result<()> {
         exercise(&browser, &origin, &password, root, screenshot.as_deref())
     })();
     if result.is_err() {
-        for (name, path) in [("XCS", server_log), ("ChromeDriver", driver_log)] {
+        for (name, path) in [("ZXS", server_log), ("ChromeDriver", driver_log)] {
             if let Ok(log) = fs::read_to_string(path) {
                 eprintln!("--- {name} log ---\n{log}");
             }

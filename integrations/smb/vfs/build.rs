@@ -1,7 +1,7 @@
 fn main() {
-    println!("cargo:rerun-if-env-changed=XCS_SMB_SDK_SOURCE");
-    println!("cargo:rerun-if-env-changed=XCS_SMB_SDK_BUILD");
-    println!("cargo:rerun-if-env-changed=XCS_SMB_SDK_CLANG_ARGS_JSON");
+    println!("cargo:rerun-if-env-changed=ZXS_SMB_SDK_SOURCE");
+    println!("cargo:rerun-if-env-changed=ZXS_SMB_SDK_BUILD");
+    println!("cargo:rerun-if-env-changed=ZXS_SMB_SDK_CLANG_ARGS_JSON");
     #[cfg(feature = "smb-sdk")]
     build_sdk();
 }
@@ -10,11 +10,11 @@ fn main() {
 fn build_sdk() {
     use std::{env, fs, path::PathBuf};
     let source =
-        PathBuf::from(env::var_os("XCS_SMB_SDK_SOURCE").expect(
-            "smb-sdk requires the configured target 4.23.0 source tree in XCS_SMB_SDK_SOURCE",
+        PathBuf::from(env::var_os("ZXS_SMB_SDK_SOURCE").expect(
+            "smb-sdk requires the configured target 4.23.0 source tree in ZXS_SMB_SDK_SOURCE",
         ));
     let build = PathBuf::from(
-        env::var_os("XCS_SMB_SDK_BUILD")
+        env::var_os("ZXS_SMB_SDK_BUILD")
             .unwrap_or_else(|| source.join("bin/default").into_os_string()),
     );
     let version = fs::read_to_string(source.join("VERSION")).expect("SDK VERSION file missing");
@@ -39,7 +39,7 @@ fn build_sdk() {
         "configure the target SDK first; generated include/config.h is required"
     );
     let mut generator=bindgen::Builder::default()
-        .header_contents("xcs-vfs-wrapper.h", "#include \"includes.h\"\n#include \"smbd/smbd.h\"\n#include \"smbd/globals.h\"\n")
+        .header_contents("zxs-vfs-wrapper.h", "#include \"includes.h\"\n#include \"smbd/smbd.h\"\n#include \"smbd/globals.h\"\n")
         .derive_default(true)
         .generate_comments(false)
         .layout_tests(false)
@@ -75,9 +75,9 @@ fn build_sdk() {
             build.join(library).display()
         );
     }
-    if let Ok(extra) = env::var("XCS_SMB_SDK_CLANG_ARGS_JSON") {
+    if let Ok(extra) = env::var("ZXS_SMB_SDK_CLANG_ARGS_JSON") {
         let arguments: Vec<String> = serde_json::from_str(&extra)
-            .expect("XCS_SMB_SDK_CLANG_ARGS_JSON must be a JSON array of clang arguments");
+            .expect("ZXS_SMB_SDK_CLANG_ARGS_JSON must be a JSON array of clang arguments");
         generator = generator.clang_args(arguments);
     }
     generator

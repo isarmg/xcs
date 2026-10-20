@@ -102,7 +102,7 @@ fn main() -> Result<()> {
     let port = match args.as_slice() {
         [] => 7401,
         [flag, value] if flag == "--port" => value.parse::<u16>()?,
-        _ => return Err("usage: xcs-demo-serve [--port PORT]".into()),
+        _ => return Err("usage: zxs-demo-serve [--port PORT]".into()),
     };
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("dist")
@@ -112,7 +112,7 @@ fn main() -> Result<()> {
     }
     let listener = TcpListener::bind(("127.0.0.1", port))?;
     println!(
-        "XCS process demo: http://127.0.0.1:{port}/\nXCS playground: http://127.0.0.1:{port}/playground.html"
+        "ZXS process demo: http://127.0.0.1:{port}/\nZXS playground: http://127.0.0.1:{port}/playground.html"
     );
     for stream in listener.incoming() {
         let stream = stream?;

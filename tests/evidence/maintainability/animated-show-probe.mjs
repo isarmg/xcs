@@ -5,9 +5,9 @@ import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 
-const {chromium}=await import(process.env.XCS_PLAYWRIGHT_MODULE||'playwright');
-const root=resolve(process.env.XCS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
-const fixture=resolve(process.env.XCS_ANIMATED_FIXTURE||'/tmp/xcs-animated-show-fixture/dist');
+const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
+const root=resolve(process.env.ZXS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
+const fixture=resolve(process.env.ZXS_ANIMATED_FIXTURE||'/tmp/zxs-animated-show-fixture/dist');
 const result={passed:false,independentFixture:true,productionRoutesUnchanged:true,pageErrors:[],consoleErrors:[],resources:[]};
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.wasm':'application/wasm'};
 const server=createServer(async(request,response)=>{
@@ -39,7 +39,7 @@ try{
   assert.ok(result.repeatedFalseThenShow.childPresent,'an overwritten old timer must not hide the newly shown child');
   result.repeatedFalseThenUnmount=await page.evaluate(async()=>{
     const start=performance.now(),wait=ms=>new Promise(done=>setTimeout(done,ms));
-    document.getElementById('hide').click();await wait(50);document.getElementById('repeat').click();await new Promise(done=>requestAnimationFrame(done));window.xcsFixture.unmount();await wait(250);
+    document.getElementById('hide').click();await wait(50);document.getElementById('repeat').click();await new Promise(done=>requestAnimationFrame(done));window.zxsFixture.unmount();await wait(250);
     const element=document.getElementById('fixture');return{elapsed:performance.now()-start,childElementCount:element.childElementCount,text:element.textContent.trim(),childPresent:!!document.getElementById('animated-child')};
   });
   assert.equal(result.repeatedFalseThenUnmount.childElementCount,0);assert.equal(result.repeatedFalseThenUnmount.text,'');assert.equal(result.repeatedFalseThenUnmount.childPresent,false);

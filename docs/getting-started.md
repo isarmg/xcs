@@ -8,11 +8,11 @@
 需要 `rust-toolchain.toml` 指定的 Rust 1.99.0。先构建服务与 CLI；密码从权限为 `0600` 的私人文件或标准输入读取，至少 12 字节。
 
 ```sh
-cargo build --locked --target-dir target/native -p xcs-cli
-target/native/debug/xcs --root "$PWD/runtime/pool" init \
+cargo build --locked --target-dir target/native -p zxs-cli
+target/native/debug/zxs --root "$PWD/runtime/pool" init \
   --development-disks "$PWD/runtime/disks/P01" "$PWD/runtime/disks/B01" "$PWD/runtime/disks/C01" \
-  --username admin --password-file /secure/path/xcs-password
-target/native/debug/xcs --root "$PWD/runtime/pool" serve --listen 127.0.0.1:7400
+  --username admin --password-file /secure/path/zxs-password
+target/native/debug/zxs --root "$PWD/runtime/pool" serve --listen 127.0.0.1:7400
 ```
 
 `--development-disks` 明确使用目录模拟三个物理设备，仅用于开发。生产配置必须使用三个独立物理设备上的单设备 Btrfs，启动时核对盘位与物理身份。服务运行时，CLI 使用 `--server http://127.0.0.1:7400` 访问同一核心；直接打开本地池的第二写者会被拒绝。默认服务仅监听本机，外部访问配置 HTTPS 反向代理和正确的外部 origin。

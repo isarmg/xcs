@@ -14,10 +14,10 @@
 
 ```sh
 python media/intro-video/render_v2.py \
-  --out ../xcs-video-output/v2-final-sample \
+  --out ../zxs-video-output/v2-final-sample \
   --voice-report media/intro-video/voice-v2-timings.json \
   --voice-id zm_010 \
-  --audio ../xcs-video-output/voice-v2/audition-zm_010-trimmed.wav
+  --audio ../zxs-video-output/voice-v2/audition-zm_010-trimmed.wav
 ```
 
 `story-v2.json` 的 28 秒时标是动作编排模板，最终依照每句语音的实际时长线性映射对应动作段，不改变句内语音。最终默认 1920×1080、30fps、H.264/AAC，含烧录字幕。输出视频与关键帧必须放在仓库外。

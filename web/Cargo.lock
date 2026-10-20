@@ -1025,7 +1025,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-contract"
+name = "zxs-contract"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -1036,15 +1036,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-naming"
+name = "zxs-naming"
 version = "0.1.0"
 dependencies = [
  "unicode-normalization",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]
-name = "xcs-web"
+name = "zxs-web"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
@@ -1058,11 +1058,11 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "xcs-web-core",
+ "zxs-web-core",
 ]
 
 [[package]]
-name = "xcs-web-app"
+name = "zxs-web-app"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -1076,13 +1076,13 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "xcs-contract",
- "xcs-naming",
- "xcs-web",
+ "zxs-contract",
+ "zxs-naming",
+ "zxs-web",
 ]
 
 [[package]]
-name = "xcs-web-core"
+name = "zxs-web-core"
 version = "0.8.19"
 dependencies = [
  "any_spawner",
@@ -1107,11 +1107,11 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "xcs-web-macro",
+ "zxs-web-macro",
 ]
 
 [[package]]
-name = "xcs-web-macro"
+name = "zxs-web-macro"
 version = "0.8.19"
 dependencies = [
  "attribute-derive",

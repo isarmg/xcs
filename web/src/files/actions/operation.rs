@@ -10,7 +10,7 @@ use crate::{
 };
 use serde_json::{Value, json};
 use wasm_bindgen_futures::spawn_local;
-use xcs_web::prelude::*;
+use zxs_web::prelude::*;
 
 /// A successful HTTP response is not a receipt unless it names our operation.
 /// Keep the original ID pollable when a proxy returns empty/unrelated JSON.

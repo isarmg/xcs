@@ -1,5 +1,5 @@
 [package]
-name = "xcs-contract-check"
+name = "zxs-contract-check"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
@@ -15,7 +15,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.8.23"
 walkdir = "2"
-xcs-contract = { path = "../../crates/xcs-contract" }
+zxs-contract = { path = "../../crates/zxs-contract" }
 
 [profile.dev]
 debug = 0

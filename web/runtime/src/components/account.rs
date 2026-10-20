@@ -8,10 +8,10 @@ pub fn AccountPage(
     remote_failure: Signal<Option<super::Feedback>>,
     on_submit: Callback<super::PasswordChange>,
 ) -> impl IntoView {
-    let username = NodeRef::<xcs_web::html::Input>::new();
-    let current = NodeRef::<xcs_web::html::Input>::new();
-    let new_password = NodeRef::<xcs_web::html::Input>::new();
-    let confirmation = NodeRef::<xcs_web::html::Input>::new();
+    let username = NodeRef::<zxs_web::html::Input>::new();
+    let current = NodeRef::<zxs_web::html::Input>::new();
+    let new_password = NodeRef::<zxs_web::html::Input>::new();
+    let confirmation = NodeRef::<zxs_web::html::Input>::new();
     let failure = RwSignal::new(None::<String>);
     let initial = username_value.get_untracked();
     Effect::new(move |_| {
@@ -27,21 +27,21 @@ pub fn AccountPage(
         }
     });
     View::new(
-    xcs_web::html::section()
+    zxs_web::html::section()
         .child(
             #[allow(unused_braces)]
             {
-                xcs_web::html::div()
+                zxs_web::html::div()
                     .child(
                         #[allow(unused_braces)]
                         {
-                            xcs_web::html::form()
+                            zxs_web::html::form()
                                 .child((
-                                    xcs_web::html::div()
+                                    zxs_web::html::div()
                                         .child((
-                                            xcs_web::html::label()
+                                            zxs_web::html::label()
                                                 .child((
-                                                    xcs_web::html::span().class("xcs-row xcs-row--center")
+                                                    zxs_web::html::span().class("zxs-row zxs-row--center")
                                                         .child(
                                                             #[allow(unused_braces)]
                                                             {
@@ -50,12 +50,12 @@ pub fn AccountPage(
                                                                 })
                                                             },
                                                         ),
-                                                    xcs_web::html::input()
-                                                        .class("xcs-input xcs-input--compact")
+                                                    zxs_web::html::input()
+                                                        .class("zxs-input zxs-input--compact")
                                                         .node_ref(username)
                                                         .name("username")
                                                         .value(
-                                                            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(
+                                                            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(
                                                                 initial,
                                                             ),
                                                         )
@@ -64,13 +64,13 @@ pub fn AccountPage(
                                                         .minlength("3")
                                                         .maxlength("64")
                                                         .readonly(
-                                                            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(true),
+                                                            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(true),
                                                         ),
                                                 ))
-                                                .class("xcs-form-field"),
-                                            xcs_web::html::label()
+                                                .class("zxs-form-field"),
+                                            zxs_web::html::label()
                                                 .child((
-                                                    xcs_web::html::span().class("xcs-row xcs-row--center")
+                                                    zxs_web::html::span().class("zxs-row zxs-row--center")
                                                         .child(
                                                             #[allow(unused_braces)]
                                                             {
@@ -79,8 +79,8 @@ pub fn AccountPage(
                                                                 })
                                                             },
                                                         ),
-                                                    xcs_web::html::input()
-                                                        .class("xcs-input xcs-input--compact")
+                                                    zxs_web::html::input()
+                                                        .class("zxs-input zxs-input--compact")
                                                         .node_ref(current)
                                                         .name("current_password")
                                                         .r#type("password")
@@ -88,14 +88,14 @@ pub fn AccountPage(
                                                         .required(true)
                                                         .maxlength("1024")
                                                         .readonly(
-                                                            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
+                                                            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
                                                             pending.get()),
                                                         ),
                                                 ))
-                                                .class("xcs-form-field"),
-                                            xcs_web::html::label()
+                                                .class("zxs-form-field"),
+                                            zxs_web::html::label()
                                                 .child((
-                                                    xcs_web::html::span().class("xcs-row xcs-row--center")
+                                                    zxs_web::html::span().class("zxs-row zxs-row--center")
                                                         .child(
                                                             #[allow(unused_braces)]
                                                             {
@@ -104,22 +104,22 @@ pub fn AccountPage(
                                                                 })
                                                             },
                                                         ),
-                                                    xcs_web::html::input()
-                                                        .class("xcs-input xcs-input--compact")
+                                                    zxs_web::html::input()
+                                                        .class("zxs-input zxs-input--compact")
                                                         .node_ref(new_password)
                                                         .name("new_password")
                                                         .r#type("password")
                                                         .autocomplete("new-password")
                                                         .maxlength("1024")
                                                         .readonly(
-                                                            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
+                                                            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
                                                             pending.get()),
                                                         ),
                                                 ))
-                                                .class("xcs-form-field"),
-                                            xcs_web::html::label()
+                                                .class("zxs-form-field"),
+                                            zxs_web::html::label()
                                                 .child((
-                                                    xcs_web::html::span().class("xcs-row xcs-row--center")
+                                                    zxs_web::html::span().class("zxs-row zxs-row--center")
                                                         .child(
                                                             #[allow(unused_braces)]
                                                             {
@@ -128,21 +128,21 @@ pub fn AccountPage(
                                                                 })
                                                             },
                                                         ),
-                                                    xcs_web::html::input()
-                                                        .class("xcs-input xcs-input--compact")
+                                                    zxs_web::html::input()
+                                                        .class("zxs-input zxs-input--compact")
                                                         .node_ref(confirmation)
                                                         .name("confirm_password")
                                                         .r#type("password")
                                                         .autocomplete("new-password")
                                                         .maxlength("1024")
                                                         .readonly(
-                                                            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
+                                                            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
                                                             pending.get()),
                                                         ),
                                                 ))
-                                                .class("xcs-form-field"),
+                                                .class("zxs-form-field"),
                                         ))
-                                        .class("xcs-account-fields"),
+                                        .class("zxs-account-fields"),
                                     IntoRender::into_render({
                                         move || {
                                             failure
@@ -164,11 +164,11 @@ pub fn AccountPage(
                                                 })
                                         }
                                     }),
-                                    xcs_web::html::div()
+                                    zxs_web::html::div()
                                         .child(
                                             #[allow(unused_braces)]
                                             {
-                                                xcs_web::html::button()
+                                                zxs_web::html::button()
                                                     .child(
                                                         #[allow(unused_braces)]
                                                         {
@@ -183,28 +183,28 @@ pub fn AccountPage(
                                                             })
                                                         },
                                                     )
-                                                    .class("xcs-button")
+                                                    .class("zxs-button")
                                                     .r#type("submit")
                                                     .disabled(
-                                                        ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
+                                                        ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
                                                         pending.get()),
                                                     )
                                             },
                                         )
-                                        .class("xcs-actions xcs-flow"),
+                                        .class("zxs-actions zxs-flow"),
                                 ))
-                                .class("xcs-account-form xcs-stack")
+                                .class("zxs-account-form zxs-stack")
                                 .novalidate(true)
                                 .aria_busy(
-                                    ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
+                                    ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
                                     pending.get().to_string()),
                                 )
                                 .on(
-                                    xcs_web::ev::input,
+                                    zxs_web::ev::input,
                                     move |_| failure.set(None),
                                 )
                                 .on(
-                                    xcs_web::ev::submit,
+                                    zxs_web::ev::submit,
                                     move |event| {
                                         event.prevent_default();
                                         if pending.get_untracked() {
@@ -229,12 +229,12 @@ pub fn AccountPage(
                                 )
                         },
                     )
-                    .class("xcs-content-panel xcs-frame xcs-stack")
+                    .class("zxs-content-panel zxs-frame zxs-stack")
             },
         )
-        .class("xcs-content-stack xcs-account-page xcs-stack")
+        .class("zxs-content-stack zxs-account-page zxs-stack")
         .aria_label(
-            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(
+            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(
                 t("账号设置", "Account settings"),
             ),
         ),

@@ -1,12 +1,12 @@
 [package]
-name = "xcs-web"
+name = "zxs-web"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
-description = "xcs browser mounting, themes and locale"
+description = "zxs browser mounting, themes and locale"
 
 [dependencies]
-xcs-web-core = { path = "../../vendor/web/xcs-web-core", default-features = false, features = ["csr"] }
+zxs-web-core = { path = "../../vendor/web/zxs-web-core", default-features = false, features = ["csr"] }
 console_error_panic_hook = "0.1"
 gloo-events = "0.2"
 gloo-timers = { version = "0.3", features = ["futures"] }

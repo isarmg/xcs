@@ -7,8 +7,8 @@ use crate::{
 };
 use serde_json::Value;
 use wasm_bindgen_futures::spawn_local;
-use xcs_web::components::{EmptyState, ErrorState, Feedback, LoadingState, Select, SelectOption};
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::components::{EmptyState, ErrorState, Feedback, LoadingState, Select, SelectOption};
+use zxs_web::{i18n::t, prelude::*};
 
 const RANGES: [&str; 5] = ["1min", "30min", "1h", "24h", "1month"];
 
@@ -302,9 +302,9 @@ fn metric_card(state: RwSignal<State>, metric: Metric) -> impl IntoView {
         state.with(|s| metric.with_value(|metric| metric.subtitle(&s.monitor.snapshot)))
     });
     view! {
-        <article class="xcs-content-panel xcs-metric-card xcs-frame xcs-frame--inset" data-metric=metric.get_value().key() aria-label=aria_label>
-            <header class="xcs-metric-heading xcs-row xcs-row--flush"><span class="xcs-metric-title"><FileIcon name=icon/><span>{label}</span></span><strong class="xcs-metric-current" aria-live="off">{move ||state.with(|s|metric.with_value(|metric|metric.current(&s.monitor.snapshot)))}</strong></header>
-            <p class="xcs-metric-subtitle xcs-row xcs-row--flush" title=move ||subtitle.get()><span>{move ||subtitle.get()}</span></p>
+        <article class="zxs-content-panel zxs-metric-card zxs-frame zxs-frame--inset" data-metric=metric.get_value().key() aria-label=aria_label>
+            <header class="zxs-metric-heading zxs-row zxs-row--flush"><span class="zxs-metric-title"><FileIcon name=icon/><span>{label}</span></span><strong class="zxs-metric-current" aria-live="off">{move ||state.with(|s|metric.with_value(|metric|metric.current(&s.monitor.snapshot)))}</strong></header>
+            <p class="zxs-metric-subtitle zxs-row zxs-row--flush" title=move ||subtitle.get()><span>{move ||subtitle.get()}</span></p>
             {chart::view(state,metric.get_value())}
         </article>
     }
@@ -319,14 +319,14 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     });
     let available_metrics = Memo::new(move |_| state.with(|s| metrics(&s.monitor.snapshot)));
     view! {
-        <section class="xcs-content-stack xcs-monitor-page xcs-stack">
+        <section class="zxs-content-stack zxs-monitor-page zxs-stack">
             <Show when=move ||state.with(|s|s.admin) fallback=||view!{<EmptyState message=t("系统状态仅向管理员开放。","System status is available to administrators.")/>}>
-                <div class="xcs-monitor-toolbar xcs-flow xcs-surface-end"><p class="xcs-row">{t("每 5 秒刷新 CPU、内存和硬盘状态。","CPU, memory and disk status refresh every 5 seconds.")}</p><div class="xcs-monitor-range"><Select label=t("历史范围","History range") options=options value=range on_change=Callback::new(move |range|select_range(state,range))/></div></div>
+                <div class="zxs-monitor-toolbar zxs-flow zxs-surface-end"><p class="zxs-row">{t("每 5 秒刷新 CPU、内存和硬盘状态。","CPU, memory and disk status refresh every 5 seconds.")}</p><div class="zxs-monitor-range"><Select label=t("历史范围","History range") options=options value=range on_change=Callback::new(move |range|select_range(state,range))/></div></div>
                 {move ||state.with(|s|s.monitor.failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
                 {move ||state.with(|s|s.monitor.history_failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
                 <Show when=move ||state.with(|s|s.monitor.loading&&!s.monitor.loaded)><LoadingState/></Show>
-                <div class="xcs-metric-grid xcs-surface-start"><For each=move ||available_metrics.get() key=Metric::key children=move |metric|metric_card(state,metric)/></div>
-                <p class="xcs-metric-timestamp xcs-row">{move ||state.with(|s|format!("{}: {}",t("采样时间","Sampled at"),s.monitor.snapshot["collected_at"].as_str().map(format::timestamp).unwrap_or_else(||t("不可用","Unavailable"))))}</p>
+                <div class="zxs-metric-grid zxs-surface-start"><For each=move ||available_metrics.get() key=Metric::key children=move |metric|metric_card(state,metric)/></div>
+                <p class="zxs-metric-timestamp zxs-row">{move ||state.with(|s|format!("{}: {}",t("采样时间","Sampled at"),s.monitor.snapshot["collected_at"].as_str().map(format::timestamp).unwrap_or_else(||t("不可用","Unavailable"))))}</p>
             </Show>
         </section>
     }

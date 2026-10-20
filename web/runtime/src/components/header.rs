@@ -9,8 +9,8 @@ use gloo_events::EventListener;
 use wasm_bindgen::JsCast;
 #[derive(Clone, Copy)]
 pub(super) struct HeaderTargets {
-    pub(super) actions: NodeRef<xcs_web::html::Div>,
-    pub(super) navigation: NodeRef<xcs_web::html::Div>,
+    pub(super) actions: NodeRef<zxs_web::html::Div>,
+    pub(super) navigation: NodeRef<zxs_web::html::Div>,
 }
 
 #[component]
@@ -35,7 +35,7 @@ pub fn HeaderActions(children: ChildrenFn) -> impl IntoView {
                                 },
                             )
                             .children({
-                                ::xcs_web::children::ToChildren::to_children(move || {
+                                ::zxs_web::children::ToChildren::to_children(move || {
                                     IntoRender::into_render(children())
                                 })
                             })
@@ -73,17 +73,17 @@ pub fn HeaderNavigation(
                                 },
                             )
                             .children({
-                                ::xcs_web::children::ToChildren::to_children(move || {
-                                    xcs_web::html::nav()
+                                ::zxs_web::children::ToChildren::to_children(move || {
+                                    zxs_web::html::nav()
                             .child(
                                 #[allow(unused_braces)]
                                 {
                                     IntoRender::into_render(children())
                                 },
                             )
-                            .class("xcs-header-navigation xcs-flow")
+                            .class("zxs-header-navigation zxs-flow")
                             .aria_label(
-                                ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(
+                                ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(
                                     label.get_value(),
                                 ),
                             )
@@ -102,25 +102,25 @@ pub fn HeaderNavigation(
 pub fn ThemeToggle() -> impl IntoView {
     let current = RwSignal::new(theme::current());
     if let Some(window) = web_sys::window() {
-        let listener = EventListener::new(&window, "xcs-theme-change", move |_| {
+        let listener = EventListener::new(&window, "zxs-theme-change", move |_| {
             let _ = current.try_set(theme::current());
         });
         let listener = send_wrapper::SendWrapper::new(listener);
         on_cleanup(move || drop(listener));
     }
     View::new(
-    xcs_web::html::button()
+    zxs_web::html::button()
         .child(
             #[allow(unused_braces)]
             {
-                xcs_web::svg::svg()
+                zxs_web::svg::svg()
                     .child(
                         #[allow(unused_braces)]
                         {
-                            xcs_web::svg::path()
+                            zxs_web::svg::path()
                                 .attr(
                                     "d",
-                                    ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
+                                    ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move ||
                                     {
                                         if current.get() == "light" {
                                             "M20.8 13A9 9 0 0 1 11 3.2 9 9 0 1 0 20.8 13Z"
@@ -140,10 +140,10 @@ pub fn ThemeToggle() -> impl IntoView {
                     .attr("stroke-width", "1.7")
             },
         )
-        .class("xcs-button")
+        .class("zxs-button")
         .r#type("button")
         .title(
-            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move || {
+            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move || {
                 if current.get() == "light" {
                     t("切换到深色模式", "Switch to dark mode")
                 } else {
@@ -152,7 +152,7 @@ pub fn ThemeToggle() -> impl IntoView {
             }),
         )
         .aria_label(
-            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move || {
+            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move || {
                 if current.get() == "light" {
                     t("切换到深色模式", "Switch to dark mode")
                 } else {
@@ -160,7 +160,7 @@ pub fn ThemeToggle() -> impl IntoView {
                 }
             }),
         )
-        .on(xcs_web::ev::click, move |_| theme::toggle()),
+        .on(zxs_web::ev::click, move |_| theme::toggle()),
 )
 }
 
@@ -168,15 +168,15 @@ pub fn ThemeToggle() -> impl IntoView {
 pub fn LanguageToggle() -> impl IntoView {
     let label = t("切换为英文", "Switch to Chinese");
     View::new(
-    xcs_web::html::button()
+    zxs_web::html::button()
         .child(
             #[allow(unused_braces)]
             {
-                xcs_web::svg::svg()
+                zxs_web::svg::svg()
                     .child(
                         #[allow(unused_braces)]
                         {
-                            xcs_web::svg::path()
+                            zxs_web::svg::path()
                                 .attr(
                                     "d",
                                     "M3 5h12M9 3v2M6 5c0 5 4 9 8 11M13 5c0 5-4 9-9 12m10 4 4-10 4 10m-6.5-4h5",
@@ -192,14 +192,14 @@ pub fn LanguageToggle() -> impl IntoView {
                     .attr("stroke-width", "1.7")
             },
         )
-        .class("xcs-button")
+        .class("zxs-button")
         .r#type("button")
         .aria_label(
-            ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(
+            ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(
                 label.clone(),
             ),
         )
-        .title(::xcs_web::prelude::IntoAttributeValue::into_attribute_value(label))
-        .on(xcs_web::ev::click, move |_| switch_language()),
+        .title(::zxs_web::prelude::IntoAttributeValue::into_attribute_value(label))
+        .on(zxs_web::ev::click, move |_| switch_language()),
 )
 }

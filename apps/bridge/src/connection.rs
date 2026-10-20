@@ -1,6 +1,6 @@
 //! Connection attempts and active sessions have separate identities: a failed
 //! login keeps the old connection, and stale completions cannot replace it.
-use xcs_client::Client;
+use zxs_client::Client;
 
 #[derive(Default)]
 pub(super) struct Connection {

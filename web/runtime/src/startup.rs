@@ -1,7 +1,7 @@
 //! Startup has one terminal outcome. Resource completion cannot revive a failed page.
 pub const TIMEOUT_MS: u32 = 30_000;
-pub const READY_EVENT: &str = "xcs-startup-ready";
-pub const FAILED_EVENT: &str = "xcs-startup-failed";
+pub const READY_EVENT: &str = "zxs-startup-ready";
+pub const FAILED_EVENT: &str = "zxs-startup-failed";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Phase {
@@ -35,7 +35,7 @@ mod browser {
             .ok_or_else(|| JsValue::from_str("Browser document root is missing"))
     }
     fn phase(root: &Element) -> Result<Phase, JsValue> {
-        Phase::from_attribute(root.get_attribute("data-xcs-startup").as_deref())
+        Phase::from_attribute(root.get_attribute("data-zxs-startup").as_deref())
             .ok_or_else(|| JsValue::from_str("Invalid application startup state"))
     }
     pub fn begin(document: &Document) -> Result<(), JsValue> {
@@ -43,8 +43,8 @@ mod browser {
         if phase(&root)? != Phase::Pending {
             return Err(JsValue::from_str("Application startup is already settled"));
         }
-        root.set_attribute("data-xcs-startup", "pending")?;
-        root.set_attribute("data-xcs-fonts", "pending")?;
+        root.set_attribute("data-zxs-startup", "pending")?;
+        root.set_attribute("data-zxs-fonts", "pending")?;
         Ok(())
     }
     pub fn ensure_pending(document: &Document) -> Result<(), JsValue> {
@@ -59,10 +59,10 @@ mod browser {
         if phase(&root)?.settle(Phase::Ready).is_none() {
             return Err(JsValue::from_str("Application startup is already settled"));
         }
-        root.set_attribute("data-xcs-fonts", "ready")?;
-        root.set_attribute("data-xcs-runtime", "xcs-web")?;
-        root.set_attribute("data-xcs-ready", "true")?;
-        root.set_attribute("data-xcs-startup", "ready")?;
+        root.set_attribute("data-zxs-fonts", "ready")?;
+        root.set_attribute("data-zxs-runtime", "zxs-web")?;
+        root.set_attribute("data-zxs-ready", "true")?;
+        root.set_attribute("data-zxs-startup", "ready")?;
         document.dispatch_event(&Event::new(READY_EVENT)?)?;
         // A synchronous listener may reject startup and publish its failure page.
         if phase(&root)? == Phase::Failed {
@@ -76,10 +76,10 @@ mod browser {
         if current.settle(Phase::Failed).is_none() {
             return;
         }
-        let _ = root.set_attribute("data-xcs-startup", "failed");
-        let _ = root.set_attribute("data-xcs-fonts", "failed");
-        let _ = root.remove_attribute("data-xcs-runtime");
-        let _ = root.remove_attribute("data-xcs-ready");
+        let _ = root.set_attribute("data-zxs-startup", "failed");
+        let _ = root.set_attribute("data-zxs-fonts", "failed");
+        let _ = root.remove_attribute("data-zxs-runtime");
+        let _ = root.remove_attribute("data-zxs-ready");
         web_sys::console::error_2(&JsValue::from_str("Application startup failed"), error);
         if let Ok(event) = Event::new(FAILED_EVENT) {
             let _ = document.dispatch_event(&event);

@@ -120,9 +120,9 @@ fn register_properties(view: &Window) -> Result<(), JsValue> {
         &JsValue::from_str("registerProperty"),
     )?)?;
     for (name, syntax, initial) in [
-        ("--xcs-contour-extent", "<length-percentage>", "0px"),
-        ("--xcs-contour-mode", "*", "paint"),
-        ("--xcs-contour-foreground", "<number>", "0"),
+        ("--zxs-contour-extent", "<length-percentage>", "0px"),
+        ("--zxs-contour-mode", "*", "paint"),
+        ("--zxs-contour-foreground", "<number>", "0"),
     ] {
         let options = js_sys::Object::new();
         for (key, value) in [
@@ -386,7 +386,7 @@ impl Inner {
                         if owned_paint_property(&property) && state.index(&node).is_some() {
                             return;
                         }
-                        if property == "--xcs-contour-extent" {
+                        if property == "--zxs-contour-extent" {
                             if matches!(kind, EventKind::AnimationStart) {
                                 if let Some((_, count)) =
                                     state.active.iter_mut().find(|(target, _)| *target == node)
@@ -552,8 +552,8 @@ impl Record {
             saved: BTreeMap::new(),
             pending: BTreeMap::new(),
             transition_dirty: true,
-            original_state: node.get_attribute("data-xcs-contour-state"),
-            original_reason: node.get_attribute("data-xcs-contour-reason"),
+            original_state: node.get_attribute("data-zxs-contour-state"),
+            original_reason: node.get_attribute("data-zxs-contour-reason"),
             decoration: None,
             foreground: None,
             restored_style: None,
@@ -576,11 +576,11 @@ impl Record {
         Ok(())
     }
     fn mark(&self, status: &str, reason: Option<&str>) -> Result<(), JsValue> {
-        self.node.set_attribute("data-xcs-contour-state", status)?;
+        self.node.set_attribute("data-zxs-contour-state", status)?;
         if let Some(reason) = reason {
-            self.node.set_attribute("data-xcs-contour-reason", reason)?;
+            self.node.set_attribute("data-zxs-contour-reason", reason)?;
         } else {
-            self.node.remove_attribute("data-xcs-contour-reason")?;
+            self.node.remove_attribute("data-zxs-contour-reason")?;
         }
         Ok(())
     }
@@ -672,8 +672,8 @@ fn restore(
             child.remove();
         }
         for (name, value) in [
-            ("data-xcs-contour-state", &record.original_state),
-            ("data-xcs-contour-reason", &record.original_reason),
+            ("data-zxs-contour-state", &record.original_state),
+            ("data-zxs-contour-reason", &record.original_reason),
         ] {
             if let Some(value) = value {
                 record.node.set_attribute(name, value)?;
@@ -901,7 +901,7 @@ impl State {
             // HTMLElement even when their constructor belongs to another realm.
             let node = node.unchecked_into::<Element>();
             if node.namespace_uri().as_deref() != Some("http://www.w3.org/1999/xhtml")
-                || node.has_attribute("data-xcs-contour-decoration")
+                || node.has_attribute("data-zxs-contour-decoration")
             {
                 continue;
             }
@@ -911,8 +911,8 @@ impl State {
             };
             if number(
                 &node
-                    .get_attribute("data-xcs-contour-extent")
-                    .unwrap_or(live.get_property_value("--xcs-contour-extent")?),
+                    .get_attribute("data-zxs-contour-extent")
+                    .unwrap_or(live.get_property_value("--zxs-contour-extent")?),
             ) <= 0.0
             {
                 continue;
@@ -989,11 +989,11 @@ impl State {
             visible,
         } = candidate;
         let raw = node
-            .get_attribute("data-xcs-contour-extent")
-            .unwrap_or_else(|| css.get("--xcs-contour-extent").trim().to_owned());
+            .get_attribute("data-zxs-contour-extent")
+            .unwrap_or_else(|| css.get("--zxs-contour-extent").trim().to_owned());
         let mode = node
-            .get_attribute("data-xcs-contour")
-            .unwrap_or_else(|| css.get("--xcs-contour-mode").trim().to_owned());
+            .get_attribute("data-zxs-contour")
+            .unwrap_or_else(|| css.get("--zxs-contour-mode").trim().to_owned());
         if mode == "none" || number(&raw) <= 0.0 {
             return Ok(());
         }
@@ -1007,7 +1007,7 @@ impl State {
                 return Ok(());
             }};
         }
-        if number(css.get("--xcs-contour-foreground")) > 0.0 && !visible {
+        if number(css.get("--zxs-contour-foreground")) > 0.0 && !visible {
             fallback!("not-visible");
         }
         if inner.forced.matches() {
@@ -1053,7 +1053,7 @@ impl State {
             || ["hidden", "clip"].contains(&css.get("overflow-x"))
             || ["hidden", "clip"].contains(&css.get("overflow-y"));
         let border_width = number(css.get("border-top-width"));
-        let foreground = number(css.get("--xcs-contour-foreground")) > 0.0
+        let foreground = number(css.get("--zxs-contour-foreground")) > 0.0
             && clipping
             && border_width > 0.0
             && !replaced
@@ -1117,7 +1117,7 @@ impl State {
                     .document
                     .create_element_ns(Some("http://www.w3.org/2000/svg"), "svg")?
                     .unchecked_into::<SvgsvgElement>();
-                child.set_attribute("data-xcs-contour-decoration", "foreground")?;
+                child.set_attribute("data-zxs-contour-decoration", "foreground")?;
                 child.set_attribute("aria-hidden", "true")?;
                 child.set_attribute("focusable", "false")?;
                 let path = inner
@@ -1156,7 +1156,7 @@ impl State {
                     .document
                     .create_element("div")?
                     .unchecked_into::<HtmlElement>();
-                child.set_attribute("data-xcs-contour-decoration", "")?;
+                child.set_attribute("data-zxs-contour-decoration", "")?;
                 child.set_attribute("aria-hidden", "true")?;
                 record.decoration = Some(child);
             }

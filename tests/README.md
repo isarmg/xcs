@@ -1,17 +1,17 @@
-# XCS 验证体系
+# ZXS 验证体系
 
 测试按实际边界放置，不建立与实现重复的第二套业务规则。
 
 | 位置 | 范围 |
 | --- | --- |
-| `crates/xcs-contract/src/encoding.rs` | 严格 JSON、JCS、二进制校验清单及公开固定向量 |
-| `crates/xcs-naming/src/` | 固定 Unicode、跨平台名称和路径预算 |
-| `crates/xcs-auth/src/` | 两端共用的密码、令牌和 CSRF 原语及准入规则 |
-| `crates/xcs-client/src/` | 真实本机 HTTP 下的流式校验下载、无覆盖发布和错误语义 |
-| `crates/xcs-platform/src/` | 目录句柄、链接拒绝、原子落盘、SQLite 和凭据基础 |
-| `crates/xcs-core/src/` | 随模块维护真实文件、三成员日志、断点恢复、授权、独立历史包及容量拒绝回归 |
-| `crates/xcs-server/tests/` | 实际存储核心和 HTTP 请求的贯通验证 |
-| `crates/xcs-server/src/smb_rpc.rs` | 本机套接字、FD 转交、句柄、读租约及保存边界 |
+| `crates/zxs-contract/src/encoding.rs` | 严格 JSON、JCS、二进制校验清单及公开固定向量 |
+| `crates/zxs-naming/src/` | 固定 Unicode、跨平台名称和路径预算 |
+| `crates/zxs-auth/src/` | 两端共用的密码、令牌和 CSRF 原语及准入规则 |
+| `crates/zxs-client/src/` | 真实本机 HTTP 下的流式校验下载、无覆盖发布和错误语义 |
+| `crates/zxs-platform/src/` | 目录句柄、链接拒绝、原子落盘、SQLite 和凭据基础 |
+| `crates/zxs-core/src/` | 随模块维护真实文件、三成员日志、断点恢复、授权、独立历史包及容量拒绝回归 |
+| `crates/zxs-server/tests/` | 实际存储核心和 HTTP 请求的贯通验证 |
+| `crates/zxs-server/src/smb_rpc.rs` | 本机套接字、FD 转交、句柄、读租约及保存边界 |
 | `integrations/smb/src/` | 受限帧协议和 SCM_RIGHTS 实测 |
 | `integrations/smb/vfs/src/asynchronous.rs` | 真实 SDK 事件库下的异步完成和取消生命期 |
 | `web/runtime/tests/` | CSR 状态与生命周期 |

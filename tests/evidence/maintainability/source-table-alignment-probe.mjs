@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 
-const { chromium } = await import(process.env.XCS_PLAYWRIGHT_MODULE || 'playwright');
-const root = resolve(process.env.XCS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url)));
+const { chromium } = await import(process.env.ZXS_PLAYWRIGHT_MODULE || 'playwright');
+const root = resolve(process.env.ZXS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url)));
 const source = await readFile(`${root}/tests/evidence/maintainability/browser-probe.mjs`, 'utf8');
 // Exercise the same assertion as the real candidate, rather than a weaker copy.
 const helper = source.match(/  async function fileRows\(name\) \{[\s\S]*?\n  \}(?=\n  async function loginKnownUser)/)?.[0];
@@ -23,14 +23,14 @@ try {
   for (const compact of [36, 40]) {
     for (const kind of ['disk', 'files']) {
       const geometry = { compact, comfortable: compact === 36 ? 44 : 50, ratio: .4 };
-      const dom = `<section class="xcs-app-shell">
-        <div class="xcs-file-list-panel xcs-frame"><div class="xcs-table-scroll">
-          <table class="xcs-file-table">
+      const dom = `<section class="zxs-app-shell">
+        <div class="zxs-file-list-panel zxs-frame"><div class="zxs-table-scroll">
+          <table class="zxs-file-table">
             <thead><tr><th>名称</th><th>${kind === 'disk' ? '访问权限' : '类型'}</th><th>大小</th><th>操作</th></tr></thead>
             <tbody><tr>
-              <td><button class="xcs-button xcs-file-name"><svg viewBox="0 0 24 24"></svg><span>${kind === 'disk' ? 'P01' : '说明.md'}</span></button></td>
+              <td><button class="zxs-button zxs-file-name"><svg viewBox="0 0 24 24"></svg><span>${kind === 'disk' ? 'P01' : '说明.md'}</span></button></td>
               <td>${kind === 'disk' ? '可读写' : '文件'}</td><td>128 B</td>
-              <td><div class="xcs-entry-actions xcs-flow"><button class="xcs-button">详情</button></div></td>
+              <td><div class="zxs-entry-actions zxs-flow"><button class="zxs-button">详情</button></div></td>
             </tr></tbody>
           </table>
         </div></div>
@@ -40,8 +40,8 @@ try {
         // Removing only the inherited alignment recreates the observed UA regression.
         const css = styles.replace(/text-align:\s*inherit\s*;/g, '');
         await page.setContent(`<style>${css}
-          :root { --xcs-compact-row-height:${compact}px; --xcs-input-row-height:${geometry.comfortable}px; }
-          ${fixed ? '.xcs-file-table :is(th,td) { text-align:inherit; }' : ''}
+          :root { --zxs-compact-row-height:${compact}px; --zxs-input-row-height:${geometry.comfortable}px; }
+          ${fixed ? '.zxs-file-table :is(th,td) { text-align:inherit; }' : ''}
         </style>${dom}`);
         let failure;
         try {

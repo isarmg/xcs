@@ -7,8 +7,8 @@ use crate::{
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use wasm_bindgen_futures::spawn_local;
-use xcs_web::components::{LoadingState, Select, SelectOption};
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::components::{LoadingState, Select, SelectOption};
+use zxs_web::{i18n::t, prelude::*};
 
 #[derive(Clone)]
 pub(crate) struct Draft {
@@ -169,7 +169,7 @@ fn target_slots(configuration: &Value, target: u32) -> Vec<String> {
         .collect()
 }
 fn valid_prefix(prefix: &str) -> bool {
-    prefix.len() <= 768 && (prefix.is_empty() || xcs_naming::validate_path(prefix).is_ok())
+    prefix.len() <= 768 && (prefix.is_empty() || zxs_naming::validate_path(prefix).is_ok())
 }
 fn request(draft: &Draft) -> Result<Value, String> {
     if draft.loading || !draft.can_manage {
@@ -300,20 +300,20 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                 .unwrap_or_default()
         })
     });
-    view! {<Show when=move ||open.get()><section class="xcs-frame xcs-stack xcs-backup-review" aria-label=t("备份保护设置","Backup protection settings")>
-        <div class="xcs-file-toolbar xcs-flow"><h3 class="xcs-row">{t("备份保护设置","Backup protection settings")}</h3><button class="xcs-button" disabled=move ||state.with(actions::pending) on:click=move |_|{state.update(|s|s.files.backup=None);review::reset(state,review::Kind::Backup);}>{t("关闭","Close")}</button></div>
-        <p class="xcs-row">{move ||state.with(|s|s.files.backup.as_ref().map(|draft|if draft.path.is_empty(){"/".into()}else{draft.path.clone()}).unwrap_or_default())}</p>
+    view! {<Show when=move ||open.get()><section class="zxs-frame zxs-stack zxs-backup-review" aria-label=t("备份保护设置","Backup protection settings")>
+        <div class="zxs-file-toolbar zxs-flow"><h3 class="zxs-row">{t("备份保护设置","Backup protection settings")}</h3><button class="zxs-button" disabled=move ||state.with(actions::pending) on:click=move |_|{state.update(|s|s.files.backup=None);review::reset(state,review::Kind::Backup);}>{t("关闭","Close")}</button></div>
+        <p class="zxs-row">{move ||state.with(|s|s.files.backup.as_ref().map(|draft|if draft.path.is_empty(){"/".into()}else{draft.path.clone()}).unwrap_or_default())}</p>
         <Show when=move ||state.with(|s|s.files.backup.as_ref().is_some_and(|draft|draft.loading))><LoadingState/></Show>
         <Show when=move ||state.with(|s|s.files.backup.as_ref().is_some_and(|draft|!draft.loading&&!draft.configuration.is_null()))>
-            <p class="xcs-row">{t("为每个备份硬盘分别设置逻辑前缀；文件使用前缀加文件名，文件夹使用前缀加目录内相对路径。主盘路径保持原样。","Set a separate logical prefix for each backup disk. Files append their name; folders append paths relative to the selected folder. Primary paths stay unchanged.")}</p>
-            <Show when=move ||state.with(|s|s.files.backup.as_ref().is_some_and(|draft|draft.configuration["inherited"]==true))><p class="xcs-row">{t("当前继承上级规则；保存后将为此范围单独设置。","This scope currently inherits its parent’s rule. Saving creates a rule for this scope.")}</p></Show>
-            <div class="xcs-file-toolbar xcs-flow"><Select label=t("目标份数","Target copy count") options=options value=target disabled=disabled on_change=Callback::new(move |value:String|state.update(|s|if let Some(draft)=s.files.backup.as_mut(){draft.target=value.parse().unwrap_or(0);}))/></div>
-            {move ||slots.get().into_iter().map(move |slot|{let read=slot.clone();let write=slot.clone();let label=format!("{slot} {}",t("备份前缀","backup prefix"));view!{<label class="xcs-file-toolbar xcs-flow"><span class="xcs-row">{label.clone()}</span><input class="xcs-input xcs-input--compact xcs-input--underline" aria-label=label data-max-bytes="768" disabled=move ||disabled.get() prop:value=move ||state.with(|s|s.files.backup.as_ref().and_then(|draft|draft.prefixes.get(&read)).cloned().unwrap_or_default()) on:input=move |event|state.update(|s|if let Some(draft)=s.files.backup.as_mut(){draft.prefixes.insert(write.clone(),event_target_value(&event));})/></label>}}).collect_view()}
-            <div class="xcs-stack">{move ||paths.get().into_iter().map(|(slot,path)|view!{<p class="xcs-row">{format!("{slot} / {path}")}</p>}).collect_view()}</div>
-            <Show when=move ||state.with(|s|s.files.backup.as_ref().is_some_and(|draft|!draft.can_manage))><p class="xcs-row">{t("此备份策略仅可查看。","This backup configuration is read only.")}</p></Show>
-            <button class="xcs-button" disabled=move ||disabled.get() on:click=move |_|submit(state)>{t("保存备份设置","Save backup settings")}</button>
+            <p class="zxs-row">{t("为每个备份硬盘分别设置逻辑前缀；文件使用前缀加文件名，文件夹使用前缀加目录内相对路径。主盘路径保持原样。","Set a separate logical prefix for each backup disk. Files append their name; folders append paths relative to the selected folder. Primary paths stay unchanged.")}</p>
+            <Show when=move ||state.with(|s|s.files.backup.as_ref().is_some_and(|draft|draft.configuration["inherited"]==true))><p class="zxs-row">{t("当前继承上级规则；保存后将为此范围单独设置。","This scope currently inherits its parent’s rule. Saving creates a rule for this scope.")}</p></Show>
+            <div class="zxs-file-toolbar zxs-flow"><Select label=t("目标份数","Target copy count") options=options value=target disabled=disabled on_change=Callback::new(move |value:String|state.update(|s|if let Some(draft)=s.files.backup.as_mut(){draft.target=value.parse().unwrap_or(0);}))/></div>
+            {move ||slots.get().into_iter().map(move |slot|{let read=slot.clone();let write=slot.clone();let label=format!("{slot} {}",t("备份前缀","backup prefix"));view!{<label class="zxs-file-toolbar zxs-flow"><span class="zxs-row">{label.clone()}</span><input class="zxs-input zxs-input--compact zxs-input--underline" aria-label=label data-max-bytes="768" disabled=move ||disabled.get() prop:value=move ||state.with(|s|s.files.backup.as_ref().and_then(|draft|draft.prefixes.get(&read)).cloned().unwrap_or_default()) on:input=move |event|state.update(|s|if let Some(draft)=s.files.backup.as_mut(){draft.prefixes.insert(write.clone(),event_target_value(&event));})/></label>}}).collect_view()}
+            <div class="zxs-stack">{move ||paths.get().into_iter().map(|(slot,path)|view!{<p class="zxs-row">{format!("{slot} / {path}")}</p>}).collect_view()}</div>
+            <Show when=move ||state.with(|s|s.files.backup.as_ref().is_some_and(|draft|!draft.can_manage))><p class="zxs-row">{t("此备份策略仅可查看。","This backup configuration is read only.")}</p></Show>
+            <button class="zxs-button" disabled=move ||disabled.get() on:click=move |_|submit(state)>{t("保存备份设置","Save backup settings")}</button>
         </Show>
-        <p class="xcs-row xcs-inline-error" role="status">{move ||state.with(|s|review::error_text(s,review::Kind::Backup))}</p>
+        <p class="zxs-row zxs-inline-error" role="status">{move ||state.with(|s|review::error_text(s,review::Kind::Backup))}</p>
     </section></Show>}
 }
 #[cfg(test)]

@@ -36,12 +36,12 @@
 
 ```sh
 cargo test --manifest-path web/Cargo.toml --locked --offline --workspace
-XCS_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
-XCS_BROWSER_DIST=/absolute/path/to/candidate/web/dist \
+ZXS_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
+ZXS_BROWSER_DIST=/absolute/path/to/candidate/web/dist \
 node tests/evidence/branch-operations/web-browser-probe.mjs
-XCS_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
-XCS_BROWSER_DIST=/absolute/path/to/candidate/web/dist \
+ZXS_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
+ZXS_BROWSER_DIST=/absolute/path/to/candidate/web/dist \
 node tests/evidence/branch-operations/web-path-nodes-probe.mjs
 ```
 
-可用 `XCS_BRANCH_WEB_EVIDENCE` 指定新输出目录。树和目录探针分别复用 `tests/evidence/version-tree-connectors/browser-probe.mjs` 与 `tests/evidence/directory-compositions/browser-probe.mjs`；通过 `XCS_PREVIEW_URL` 指向隔离静态服务，`XCS_PRODUCT_ROOT` 指向相应候选根，再用 `XCS_TREE_EVIDENCE`／`XCS_DIRECTORY_EVIDENCE` 指定输出目录。Playwright 是测试工具，不是产品构建或运行依赖。
+可用 `ZXS_BRANCH_WEB_EVIDENCE` 指定新输出目录。树和目录探针分别复用 `tests/evidence/version-tree-connectors/browser-probe.mjs` 与 `tests/evidence/directory-compositions/browser-probe.mjs`；通过 `ZXS_PREVIEW_URL` 指向隔离静态服务，`ZXS_PRODUCT_ROOT` 指向相应候选根，再用 `ZXS_TREE_EVIDENCE`／`ZXS_DIRECTORY_EVIDENCE` 指定输出目录。Playwright 是测试工具，不是产品构建或运行依赖。

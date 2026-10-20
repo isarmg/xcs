@@ -30,14 +30,14 @@
 
 ```sh
 cargo test --locked --offline --manifest-path web/Cargo.toml --workspace
-XCS_WEB_BINDGEN=/absolute/path/wasm-bindgen cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- build --product-root .
+ZXS_WEB_BINDGEN=/absolute/path/wasm-bindgen cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml -- build --product-root .
 python3 -m http.server 17401 --bind 127.0.0.1 --directory web/dist
 ```
 
 另一个终端运行：
 
 ```sh
-XCS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs XCS_PREVIEW_URL=http://127.0.0.1:17401 node tests/evidence/inherited-branches/web-probe.mjs
+ZXS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs ZXS_PREVIEW_URL=http://127.0.0.1:17401 node tests/evidence/inherited-branches/web-probe.mjs
 ```
 
 结束后关闭临时静态服务器。

@@ -555,7 +555,7 @@ async fn native_commit_preserves_digest_identity_and_publication_recovery() {
         assert_eq!(body["operation_id"], "operation_test");
         assert_eq!(body["expected_head"], "head_test");
         assert_eq!(body["message"], "save");
-        let digest = xcs_contract::request_digest(
+        let digest = zxs_contract::request_digest(
             "POST",
             "/v1/workspaces/{workspace}/commit",
             json!({"workspace":"workspace_test"}),

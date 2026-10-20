@@ -7,8 +7,8 @@ pub fn LoginPage(
     remote_failure: Signal<Option<super::Feedback>>,
     on_submit: Callback<super::LoginCredentials>,
 ) -> impl IntoView {
-    let username = NodeRef::<xcs_web::html::Input>::new();
-    let password = NodeRef::<xcs_web::html::Input>::new();
+    let username = NodeRef::<zxs_web::html::Input>::new();
+    let password = NodeRef::<zxs_web::html::Input>::new();
     let failure = RwSignal::new(None::<(String, Option<String>)>);
     Effect::new(move |_| {
         if let Some(error) = remote_failure.get() {
@@ -25,46 +25,46 @@ pub fn LoginPage(
         }
     });
     View::new(
-        xcs_web::html::form()
+        zxs_web::html::form()
             .child((
-                xcs_web::html::h1().child(
+                zxs_web::html::h1().child(
                     #[allow(unused_braces)]
                     {
                         IntoRender::into_render({ t("登录", "Sign in") })
                     },
                 ),
-                xcs_web::html::label()
+                zxs_web::html::label()
                     .child((
-                        xcs_web::html::span().child(
+                        zxs_web::html::span().child(
                             #[allow(unused_braces)]
                             {
                                 IntoRender::into_render({ t("用户名", "Username") })
                             },
                         ),
-                        xcs_web::html::input()
-                            .class("xcs-input")
+                        zxs_web::html::input()
+                            .class("zxs-input")
                             .node_ref(username)
                             .name("username")
                             .autocomplete("username")
                             .required(true)
                             .maxlength("64")
                             .readonly(
-                                ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(
+                                ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(
                                     move || pending.get(),
                                 ),
                             ),
                     ))
-                    .class("xcs-form-field"),
-                xcs_web::html::label()
+                    .class("zxs-form-field"),
+                zxs_web::html::label()
                     .child((
-                        xcs_web::html::span().child(
+                        zxs_web::html::span().child(
                             #[allow(unused_braces)]
                             {
                                 IntoRender::into_render({ t("密码", "Password") })
                             },
                         ),
-                        xcs_web::html::input()
-                            .class("xcs-input")
+                        zxs_web::html::input()
+                            .class("zxs-input")
                             .node_ref(password)
                             .name("password")
                             .r#type("password")
@@ -72,12 +72,12 @@ pub fn LoginPage(
                             .required(true)
                             .maxlength("1024")
                             .readonly(
-                                ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(
+                                ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(
                                     move || pending.get(),
                                 ),
                             ),
                     ))
-                    .class("xcs-form-field"),
+                    .class("zxs-form-field"),
                 IntoRender::into_render({
                     move || {
                         failure.get().map(|(message, id)| {
@@ -114,7 +114,7 @@ pub fn LoginPage(
                         })
                     }
                 }),
-                xcs_web::html::button()
+                zxs_web::html::button()
                     .child(
                         #[allow(unused_braces)]
                         {
@@ -129,22 +129,22 @@ pub fn LoginPage(
                             })
                         },
                     )
-                    .class("xcs-button")
+                    .class("zxs-button")
                     .r#type("submit")
                     .disabled(
-                        ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move || {
+                        ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move || {
                             pending.get()
                         }),
                     ),
             ))
             .novalidate(true)
             .aria_busy(
-                ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(move || {
+                ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(move || {
                     pending.get().to_string()
                 }),
             )
-            .on(xcs_web::ev::input, move |_| failure.set(None))
-            .on(xcs_web::ev::submit, move |event| {
+            .on(zxs_web::ev::input, move |_| failure.set(None))
+            .on(zxs_web::ev::submit, move |event| {
                 event.prevent_default();
                 if pending.get_untracked() {
                     return;

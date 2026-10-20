@@ -1,6 +1,6 @@
 # Rust 契约校验器
 
-`xcs-contract-check` 是独立 Cargo workspace，复用本项目 `xcs-contract` 的严格 JSON、整数编码、JCS、BLAKE3 域分离和校验清单解码。没有并行维护的其他语言规则。
+`zxs-contract-check` 是独立 Cargo workspace，复用本项目 `zxs-contract` 的严格 JSON、整数编码、JCS、BLAKE3 域分离和校验清单解码。没有并行维护的其他语言规则。
 
 ```sh
 CARGO_INCREMENTAL=0 cargo run --manifest-path tools/contract-check/Cargo.toml \
@@ -9,7 +9,7 @@ CARGO_INCREMENTAL=0 cargo test --manifest-path tools/contract-check/Cargo.toml \
   --locked --offline --target-dir target/native
 ```
 
-也可传入 `-- --root /absolute/path/to/xcs` 检查指定副本。成功输出 JSON 范围报告，失败退出码为 1。首次构建仍需要已经缓存或预先获取锁文件中的依赖。
+也可传入 `-- --root /absolute/path/to/zxs` 检查指定副本。成功输出 JSON 范围报告，失败退出码为 1。首次构建仍需要已经缓存或预先获取锁文件中的依赖。
 
 检查内容：
 

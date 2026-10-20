@@ -19,7 +19,7 @@
 执行方式（需要已安装 Chromium 的 Playwright；依赖路径可按本机配置）：
 
 ```sh
-XCS_PLAYWRIGHT_MODULE=/mnt/sarmg.org/xcss/node_modules/playwright/index.mjs node tests/evidence/spacing-correction/source-spacing-probe.mjs
+ZXS_PLAYWRIGHT_MODULE=/mnt/sarmg.org/zxss/node_modules/playwright/index.mjs node tests/evidence/spacing-correction/source-spacing-probe.mjs
 ```
 
 未增加浏览器大幅缩放适配逻辑；上述均为正常视口尺寸验证。静态夹具不运行 Rust/WASM 轮廓绘制器，不能替代以下真实应用检查。
@@ -40,9 +40,9 @@ Web workspace 本轮 74 项测试通过，格式检查和生产构建通过；�
 活动浏览器脚本仍位于 `../maintainability/browser-probe.mjs`，已纠正固定间距断言。复现本轮独立输出目录：
 
 ```sh
-XCS_PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs \
-XCS_MAINT_EVIDENCE="$PWD/tests/evidence/spacing-correction/browser" \
+ZXS_PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs \
+ZXS_MAINT_EVIDENCE="$PWD/tests/evidence/spacing-correction/browser" \
 node tests/evidence/maintainability/browser-probe.mjs
 ```
 
-服务、演示只读数据及认证前置条件沿用原脚本；脚本不生成或修改演示文件。`XCS_MAINT_EVIDENCE` 避免覆盖历史候选的结果。
+服务、演示只读数据及认证前置条件沿用原脚本；脚本不生成或修改演示文件。`ZXS_MAINT_EVIDENCE` 避免覆盖历史候选的结果。

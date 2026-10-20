@@ -1390,7 +1390,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
-name = "xcs-auth"
+name = "zxs-auth"
 version = "0.1.0"
 dependencies = [
  "argon2",
@@ -1404,7 +1404,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-contract"
+name = "zxs-contract"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -1415,7 +1415,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-core"
+name = "zxs-core"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -1425,32 +1425,32 @@ dependencies = [
  "sqlx",
  "tempfile",
  "time",
- "xcs-contract",
- "xcs-naming",
- "xcs-platform",
+ "zxs-contract",
+ "zxs-naming",
+ "zxs-platform",
 ]
 
 [[package]]
-name = "xcs-naming"
+name = "zxs-naming"
 version = "0.1.0"
 dependencies = [
  "unicode-normalization",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]
-name = "xcs-perf-check"
+name = "zxs-perf-check"
 version = "0.1.0"
 dependencies = [
  "serde_json",
  "sqlx",
  "tempfile",
- "xcs-core",
- "xcs-platform",
+ "zxs-core",
+ "zxs-platform",
 ]
 
 [[package]]
-name = "xcs-platform"
+name = "zxs-platform"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -1466,7 +1466,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
- "xcs-auth",
+ "zxs-auth",
  "zeroize",
 ]
 

@@ -4,8 +4,8 @@ use crate::{
 };
 use serde_json::Value;
 use wasm_bindgen_futures::spawn_local;
-use xcs_web::components::{EmptyState, ErrorState, Feedback, LoadingState, Select, SelectOption};
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::components::{EmptyState, ErrorState, Feedback, LoadingState, Select, SelectOption};
+use zxs_web::{i18n::t, prelude::*};
 
 #[derive(Clone, Default)]
 pub(crate) struct Model {
@@ -110,16 +110,16 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                 .collect::<Vec<_>>()
         })
     });
-    view! {<section class="xcs-content-stack xcs-history-page xcs-stack">
-        <p class="xcs-row">{t("显示最近 200 条已提交的文件操作。选择文件可查看它的版本和分支。","The latest 200 committed file operations are shown. Select a file to view its versions and branches.")}</p>
-        <div class="xcs-history-toolbar xcs-flow xcs-flow--end xcs-surface-end"><Select label=t("硬盘","Disk") options=options value=selected on_change=Callback::new(move |disk:String|state.update(|s|s.activity.disk=disk))/></div>
+    view! {<section class="zxs-content-stack zxs-history-page zxs-stack">
+        <p class="zxs-row">{t("显示最近 200 条已提交的文件操作。选择文件可查看它的版本和分支。","The latest 200 committed file operations are shown. Select a file to view its versions and branches.")}</p>
+        <div class="zxs-history-toolbar zxs-flow zxs-flow--end zxs-surface-end"><Select label=t("硬盘","Disk") options=options value=selected on_change=Callback::new(move |disk:String|state.update(|s|s.activity.disk=disk))/></div>
         <Show when=move ||state.with(|s|s.activity.loading&&!s.activity.loaded)><LoadingState/></Show>
         {move ||state.with(|s|s.activity.failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})}
-        <Show when=move || !visible_events.get().is_empty()><div class="xcs-content-panel xcs-history-list-panel xcs-frame xcs-stack xcs-stack--flush"><ul class="xcs-activity-list xcs-history-list" aria-label=t("文件操作记录","File operation history")>{move ||{
+        <Show when=move || !visible_events.get().is_empty()><div class="zxs-content-panel zxs-history-list-panel zxs-frame zxs-stack zxs-stack--flush"><ul class="zxs-activity-list zxs-history-list" aria-label=t("文件操作记录","File operation history")>{move ||{
             visible_events.get().into_iter().map(|event|{
                 let time=event["timestamp"].as_str().map(|value|if value.contains('T'){format::timestamp(value)}else{format::timestamp_seconds(value)}).unwrap_or_else(||t("未记录时间","Time not recorded"));
                 let path=text(&event,&["path","display_path"]);let slot=text(&event,&["slot_id"]);let principal=text(&event,&["principal"]);
-                view!{<li class="xcs-history-row xcs-flow xcs-flow--stretch"><span class="xcs-history-action xcs-row">{action_label(&text(&event,&["action"]))}</span><span class="xcs-history-path xcs-row">{if slot.is_empty(){path}else{format!("{slot}/{path}")}}</span><time class="xcs-row">{time}</time><span class="xcs-history-principal xcs-row">{if principal.is_empty(){"–".into()}else{principal}}</span></li>}
+                view!{<li class="zxs-history-row zxs-flow zxs-flow--stretch"><span class="zxs-history-action zxs-row">{action_label(&text(&event,&["action"]))}</span><span class="zxs-history-path zxs-row">{if slot.is_empty(){path}else{format!("{slot}/{path}")}}</span><time class="zxs-row">{time}</time><span class="zxs-history-principal zxs-row">{if principal.is_empty(){"–".into()}else{principal}}</span></li>}
             }).collect_view()
         }}</ul></div></Show>
         <Show when=move ||state.with(|s|s.activity.loaded)&&visible_events.get().is_empty()><EmptyState message=t("尚无文件操作记录。","No file operations have been recorded.")/></Show>

@@ -1310,7 +1310,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
-name = "xcs-app-bridge"
+name = "zxs-app-bridge"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -1318,13 +1318,13 @@ dependencies = [
  "serde_json",
  "tempfile",
  "tokio",
- "xcs-client",
- "xcs-contract",
- "xcs-naming",
+ "zxs-client",
+ "zxs-contract",
+ "zxs-naming",
 ]
 
 [[package]]
-name = "xcs-client"
+name = "zxs-client"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -1337,11 +1337,11 @@ dependencies = [
  "tokio",
  "tokio-util",
  "url",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]
-name = "xcs-contract"
+name = "zxs-contract"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -1352,11 +1352,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-naming"
+name = "zxs-naming"
 version = "0.1.0"
 dependencies = [
  "unicode-normalization",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]

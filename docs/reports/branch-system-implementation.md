@@ -31,20 +31,20 @@
 
 | 位置 | 职责 |
 | --- | --- |
-| `crates/xcs-contract/src/model.rs` | 不可变目录子树、精确子目录引用、按路径的 `FileContext` 和批量请求 |
-| `crates/xcs-core/src/business/directory.rs` | 组合恢复、继承首写、祖先子树及路径上下文 |
-| `crates/xcs-core/src/business/batch.rs` | 冻结依据校验、显式映射、复制身份、整批发布及回执 |
-| `crates/xcs-core/src/business/file.rs`、`file_metadata.rs`、`file_paths.rs` | 公共文件分支、定向内容发布、分支名称和不可变路径节点 |
-| `crates/xcs-core/src/business/file_nodes.rs`、`file_merges.rs`、`file_tags.rs`、`file_publication.rs` | 公共节点解析、标签继承、合并来源与只读别名、按精确引用统一发布 |
-| `crates/xcs-core/src/protection/backup_paths.rs` | 稳定策略范围、每盘前缀、子策略优先、既有正文回填和代数检查 |
-| `crates/xcs-core/src/business/workspace.rs` | 工作区范围、暂存、选择冲突和自己的首写后续保存 |
-| `crates/xcs-core/src/container_storage.rs` | 单一真实容器、路径迁移、旧格式解析及缓存投影 |
-| `crates/xcs-core/src/history_package.rs`、`maintenance.rs` | 历史包、引用验证、恢复及冻结正文保留 |
-| `crates/xcs-server/src/engine_backend/file_manager.rs` | 授权、路径上下文、批量 API 和操作审计 |
-| `crates/xcs-server/src/engine_backend/file_manager/backup_namespace.rs` | 按备份逻辑前缀的只读浏览、授权过滤、固定正文和历史容器，不反向猜主盘路径 |
+| `crates/zxs-contract/src/model.rs` | 不可变目录子树、精确子目录引用、按路径的 `FileContext` 和批量请求 |
+| `crates/zxs-core/src/business/directory.rs` | 组合恢复、继承首写、祖先子树及路径上下文 |
+| `crates/zxs-core/src/business/batch.rs` | 冻结依据校验、显式映射、复制身份、整批发布及回执 |
+| `crates/zxs-core/src/business/file.rs`、`file_metadata.rs`、`file_paths.rs` | 公共文件分支、定向内容发布、分支名称和不可变路径节点 |
+| `crates/zxs-core/src/business/file_nodes.rs`、`file_merges.rs`、`file_tags.rs`、`file_publication.rs` | 公共节点解析、标签继承、合并来源与只读别名、按精确引用统一发布 |
+| `crates/zxs-core/src/protection/backup_paths.rs` | 稳定策略范围、每盘前缀、子策略优先、既有正文回填和代数检查 |
+| `crates/zxs-core/src/business/workspace.rs` | 工作区范围、暂存、选择冲突和自己的首写后续保存 |
+| `crates/zxs-core/src/container_storage.rs` | 单一真实容器、路径迁移、旧格式解析及缓存投影 |
+| `crates/zxs-core/src/history_package.rs`、`maintenance.rs` | 历史包、引用验证、恢复及冻结正文保留 |
+| `crates/zxs-server/src/engine_backend/file_manager.rs` | 授权、路径上下文、批量 API 和操作审计 |
+| `crates/zxs-server/src/engine_backend/file_manager/backup_namespace.rs` | 按备份逻辑前缀的只读浏览、授权过滤、固定正文和历史容器，不反向猜主盘路径 |
 | `web/src/files/batch/` | 草稿、纯请求校验、请求生命周期和显示分离 |
 
-路径、标签及合并元数据节点与正文版本分开存储，历史树统一显示；节点引用真实正文，不创建假正文版本，后续写入通过节点父边衔接历史，原正文的内容证明不重写。节点备注独立保存，最多 128 UTF-8 字节。标签校验和容量上限统一放在 `xcs-contract`，核心、历史包读取和 Web 共用。
+路径、标签及合并元数据节点与正文版本分开存储，历史树统一显示；节点引用真实正文，不创建假正文版本，后续写入通过节点父边衔接历史，原正文的内容证明不重写。节点备注独立保存，最多 128 UTF-8 字节。标签校验和容量上限统一放在 `zxs-contract`，核心、历史包读取和 Web 共用。
 
 目录与文件的旧单身份映射仅保留为兼容缓存；多个路径的选择以 `FileContext` 为准。历史快照保存自己的路径上下文，恢复时不追踪公共分支后来移动的 HEAD。
 

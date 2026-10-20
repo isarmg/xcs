@@ -7,17 +7,17 @@ sha=$(git rev-parse HEAD)
 remote_sha=$(gh api "repos/$GH_REPO/commits/$RELEASE_TAG" --jq .sha)
 test "$sha" = "$remote_sha"
 (cd release-assets && sha256sum --check SHA256SUMS)
-marker="<!-- xcs-release-source:$sha -->"
+marker="<!-- zxs-release-source:$sha -->"
 notes=$(mktemp)
 existing=$(mktemp)
 trap 'rm -f "$notes" "$existing"' EXIT
 cat > "$notes" <<EOF
 $marker
-XCS $RELEASE_TAG
+ZXS $RELEASE_TAG
 
 All portable tests, contract checks, production WASM/browser smoke, and the three desktop builds passed for $sha.
 
-- Linux x86_64 server/CLI: one xcs binary; the server is the xcs serve subcommand.
+- Linux x86_64 server/CLI: one zxs binary; the server is the zxs serve subcommand.
 - Production Web static assets, including the build manifest.
 - Desktop: Linux x86_64 .deb, Windows x86_64 NSIS installer, macOS Apple Silicon .app archive.
 - Desktop packages are unsigned; macOS is not notarized. Operating systems may block installation. No security bypass is prescribed.
@@ -37,7 +37,7 @@ else
   fi
   flags=()
   if [[ "$RELEASE_PRERELEASE" == true ]]; then flags+=(--prerelease); fi
-  gh release create "$RELEASE_TAG" --verify-tag --draft --title "XCS $RELEASE_TAG" \
+  gh release create "$RELEASE_TAG" --verify-tag --draft --title "ZXS $RELEASE_TAG" \
     --notes-file "$notes" "${flags[@]}"
 fi
 gh release upload "$RELEASE_TAG" release-assets/* --clobber

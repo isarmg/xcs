@@ -1,3 +1,3 @@
-Real Chrome / XCS server / production WASM. Synthetic data only.
+Real Chrome / ZXS server / production WASM. Synthetic data only.
 Verified byte-exact previews: main 8 -> 10 -> 12; branch inherited 8; branch written 6; main remains 12.
 All changes made via WebDriver UI controls; no DOM or API response substitution.

@@ -36,7 +36,7 @@ def main():
     else:
         sentences = script["sentences"]
         texts = [s if isinstance(s, str) else s["text"] for s in sentences]
-    english = {"XCS": "ˈɛks sˈi ˈɛs", "Web": "wˈɛb", "B": "bˈi"}
+    english = {"ZXS": "ˈɛks sˈi ˈɛs", "Web": "wˈɛb", "B": "bˈi"}
     def pronounce(text):
         if text not in english:
             raise ValueError(f"Review pronunciation for {text!r}")

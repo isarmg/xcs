@@ -6,18 +6,18 @@
 
 ```sh
 cargo test --locked --offline --manifest-path demos/branch-system/Cargo.toml --target-dir target/web-native
-XCS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs node demos/branch-system/tests/browser.mjs
+ZXS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs node demos/branch-system/tests/browser.mjs
 ```
 
 静态参考图可单独验证：
 
 ```sh
-XCS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs node demos/branch-system/tests/reference.mjs
+ZXS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs node demos/branch-system/tests/reference.mjs
 ```
 
 该命令重绘 27 张 PNG 并验证 81 次离线切换；更新图片后应重建演示发行包。
 
-独立 Rust 预览服务可补测（先构建 `xcs-demo-serve`）：
+独立 Rust 预览服务可补测（先构建 `zxs-demo-serve`）：
 
 ```sh
 node demos/branch-system/tests/serve.mjs
@@ -25,6 +25,6 @@ node demos/branch-system/tests/serve.mjs
 
 [只读预览服务检查](evidence/server-result.json)核对两个页面、HEAD、WASM MIME、安全策略、路径限制和拒绝写请求。
 
-默认访问 `http://127.0.0.1:7400/demo/`，`XCS_DEMO_URL` 可改为独立只读演示服务地址，例如 `http://127.0.0.1:7401/`。
+默认访问 `http://127.0.0.1:7400/demo/`，`ZXS_DEMO_URL` 可改为独立只读演示服务地址，例如 `http://127.0.0.1:7401/`。
 
 [浏览器结果](evidence/browser-result.json)记录过程逐步推进、播放/暂停、接续操作、首写、标签、合并、只读别名、改名、移动、复制、删除、撤销/重做、未选分支冻结、独立备份前缀、三种屏宽及静态参考切换。检查实际 WASM 的 SHA-256、源清单、严格 CSP 与启动标记，禁止访问业务 API 或发出修改请求。[Rust 测试日志](evidence/rust-tests.log)与[构建日志](evidence/build.log)保留在同一目录。这些验证只证明独立演示行为，不能代替生产存储验收。

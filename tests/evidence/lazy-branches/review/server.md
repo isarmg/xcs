@@ -14,10 +14,10 @@
 
 All tests use tempfile fixtures; no production/runtime data or live service was read or changed.
 
-- CARGO_TARGET_DIR=target/native cargo check --locked --offline -p xcs-server: passed.
+- CARGO_TARGET_DIR=target/native cargo check --locked --offline -p zxs-server: passed.
 - Same command --no-default-features: passed.
-- HTTP integration suite: 12 passed, /tmp/xcs-lazy-branch-http.log. Extended scenarios prove creation adds no version, idempotency, pending API tree/resolve/download metadata, selection, backup visibility, abort, reopen/recovery and first-write lineage, recursive per-file materialization and sibling isolation.
-- Host SMB server suite: 12 passed, /tmp/xcs-lazy-branch-smb-host.log. The first sandbox run had one Unix socket permission failure; it was rerun successfully on the host. Two new tests exercise no-read/no-open-close materialization, abort, actual first-write bytes and explicit empty truncate.
-- Host SMB protocol/client suite: 6 passed, /tmp/xcs-lazy-branch-smb-client-host.log; existing remote-error framed test now also validates pending-content errno and diagnostics.
+- HTTP integration suite: 12 passed, the historical temporary test directory/log Extended scenarios prove creation adds no version, idempotency, pending API tree/resolve/download metadata, selection, backup visibility, abort, reopen/recovery and first-write lineage, recursive per-file materialization and sibling isolation.
+- Host SMB server suite: 12 passed, the historical temporary test directory/log The first sandbox run had one Unix socket permission failure; it was rerun successfully on the host. Two new tests exercise no-read/no-open-close materialization, abort, actual first-write bytes and explicit empty truncate.
+- Host SMB protocol/client suite: 6 passed, the historical temporary test directory/log existing remote-error framed test now also validates pending-content errno and diagnostics.
 
-Final reruns after Commit snapshot markers: HTTP 12/12, SMB server 12/12 host, SMB client 6/6 host, three new core regressions 3/3, no-core server check passed. Logs and resolved cross-review findings are enumerated in /tmp/xcs-lazy-branch-cross-review.md. No smbd session, release, platform device or performance claim is made.
+Final reruns after Commit snapshot markers: HTTP 12/12, SMB server 12/12 host, SMB client 6/6 host, three new core regressions 3/3, no-core server check passed. Logs and resolved cross-review findings are enumerated in the historical temporary test directory/log No smbd session, release, platform device or performance claim is made.

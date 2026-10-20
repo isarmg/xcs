@@ -6,7 +6,7 @@ The Development workload is not physical redundancy evidence. Execute this plan 
 
 1. Obtain the owner's approval for each dedicated test device, system volume, controller and fault-injection method. Record stable serial/WWN, physical topology, mountpoints, capacity, firmware, filesystem and power-loss-protection/cache settings. Confirm no production/customer data, backups or unrelated mounts use them.
 2. Use three genuinely independent physical member devices plus an independently managed system volume. Three partitions, loopbacks, directories or virtual disks on one physical drive do not qualify. Record shared power/controller failure domains explicitly.
-3. Back up anything required outside the approved disposable equipment. Provide a supervised stop/recovery plan. Verify XCS production identity checks accept independent devices and reject aliases/duplicate physical devices. Initialization itself requires separate approval; do not reuse the Development fixtures as production evidence.
+3. Back up anything required outside the approved disposable equipment. Provide a supervised stop/recovery plan. Verify ZXS production identity checks accept independent devices and reject aliases/duplicate physical devices. Initialization itself requires separate approval; do not reuse the Development fixtures as production evidence.
 4. Pin repository revision, Rust/build profile, OS/kernel/filesystem versions and workload seed. Capture logs with secrets removed. Record successful client acknowledgments externally before faults.
 
 ## Fault matrix

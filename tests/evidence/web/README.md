@@ -4,11 +4,11 @@
 
 2026-10-18，Rust 1.99.0、wasm-bindgen 0.2.129、Chromium，Linux x86_64。
 
-浏览器加载项目构建的真实 `web/dist`，连接本地真实 xcs-server 的 `/v1/`，未拦截或伪造接口响应。服务端使用开发模拟磁盘 P01 → B01 → C01；记录不证明物理盘断电恢复或六平台原生 App 实测。
+浏览器加载项目构建的真实 `web/dist`，连接本地真实 zxs-server 的 `/v1/`，未拦截或伪造接口响应。服务端使用开发模拟磁盘 P01 → B01 → C01；记录不证明物理盘断电恢复或六平台原生 App 实测。
 
 | 验收 | 结果 |
 | --- | --- |
-| WASM release、独立 CSR 引擎 | 构建通过；浏览器出现 `data-xcs-runtime="xcs-web"`、`data-xcs-ready="true"` |
+| WASM release、独立 CSR 引擎 | 构建通过；浏览器出现 `data-zxs-runtime="zxs-web"`、`data-zxs-ready="true"` |
 | Rust Web workspace | 37 项测试通过：22 项运行环境（启动终态、语言和连续轮廓）、3 项组件属性、2 项响应式生命周期、10 项应用（原保存结果/迁移分支/路径约束，以及普通用户身份、壳状态稳定、改密失败保留会话和封存工作） |
 | 复用页面与视觉 | 公共 AppShell、LoginPage、AccountPage、Header、通知与 Dialog 已接入；登录卡居中且比例 3:2，两字重字体实际解码，3 个连续轮廓实际绘制 |
 | 登录、建仓、同工作区建目录并上传 | 真实 HTTP 通过，文件 66 字节，含中文路径 |
@@ -38,4 +38,4 @@
 
 浏览器业务测试使用单独初始化的临时开发池；7400 用户预览池只执行就绪、资源校验和新建探测会话的登录/退出，原管理员密码和用户数据保持不变。三成员改密恢复、最大长度 JSON 转义与 CSRF 边界另见[服务端测试](../native/server-ui-tests.txt)。
 
-重新验收时，先按 `web/README.md` 构建，再以 `xcs --root ROOT serve --listen 127.0.0.1:PORT --web-dir ABSOLUTE_DIST` 启动服务，通过浏览器完成上表操作。初始化开发池的参数见根项目文档。验收登录信息应放在仓库外的限制权限文件中；不应将运行时凭据写入证据。
+重新验收时，先按 `web/README.md` 构建，再以 `zxs --root ROOT serve --listen 127.0.0.1:PORT --web-dir ABSOLUTE_DIST` 启动服务，通过浏览器完成上表操作。初始化开发池的参数见根项目文档。验收登录信息应放在仓库外的限制权限文件中；不应将运行时凭据写入证据。

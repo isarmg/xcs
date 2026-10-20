@@ -6,10 +6,10 @@ import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 
-const {chromium} = await import(process.env.XCS_PLAYWRIGHT_MODULE || 'playwright');
-const root = resolve(process.env.XCS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url)));
-const base = process.env.XCS_PREVIEW_URL || 'http://127.0.0.1:7400';
-const output = resolve(process.env.XCS_BRANCH_EVIDENCE || `${root}/tests/evidence/lazy-branches`);
+const {chromium} = await import(process.env.ZXS_PLAYWRIGHT_MODULE || 'playwright');
+const root = resolve(process.env.ZXS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url)));
+const base = process.env.ZXS_PREVIEW_URL || 'http://127.0.0.1:7400';
+const output = resolve(process.env.ZXS_BRANCH_EVIDENCE || `${root}/tests/evidence/lazy-branches`);
 const emptyHash = 'af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262';
 const texts = {
   zh: {branch:'创建分支', branchName:'分支名称', current:'当前分支', pending:'待写入', preview:'预览', download:'下载', currentCreate:'从当前内容创建分支', write:'写入当前分支'},
@@ -28,7 +28,7 @@ async function scenario(language,width,theme) {
   const state = {key,checks:[],mockRequests:[],unexpected:[],pageErrors:[],assets:[],contentReads:0};
   const reads = [];
   let selected = 'main', draft = null, written = false;
-  await page.addInitScript(theme => localStorage.setItem('xcs-theme',theme),theme);
+  await page.addInitScript(theme => localStorage.setItem('zxs-theme',theme),theme);
   page.on('pageerror',error=>state.pageErrors.push(error.message));
   page.on('response',response=>{
     const path = new URL(response.url()).pathname;
@@ -92,43 +92,43 @@ async function scenario(language,width,theme) {
   });
   try {
     await page.goto(`${base}/?lang=${language}`);
-    await page.locator('html[data-xcs-ready="true"]').waitFor();
-    await page.locator('.xcs-disk-entry[data-slot="P01"]').click();
+    await page.locator('html[data-zxs-ready="true"]').waitFor();
+    await page.locator('.zxs-disk-entry[data-slot="P01"]').click();
     await page.getByRole('button',{name:'report.txt',exact:true}).click();
-    await page.locator('.xcs-version-node[data-version-id="source"]').waitFor();
-    assert.equal(await page.locator('.xcs-version-node').count(),1);
-    await page.locator('.xcs-version-node').getByRole('button',{name:labels.branch,exact:true}).click();
+    await page.locator('.zxs-version-node[data-version-id="source"]').waitFor();
+    assert.equal(await page.locator('.zxs-version-node').count(),1);
+    await page.locator('.zxs-version-node').getByRole('button',{name:labels.branch,exact:true}).click();
     const editor=page.getByRole('textbox',{name:labels.branchName,exact:true});
     await editor.fill('draft-empty');
     await editor.press('Enter');
     const select=page.getByRole('combobox',{name:labels.current,exact:true});
-    await page.waitForFunction(()=>document.querySelector('.xcs-file-branches [role="combobox"]')?.disabled===false);
+    await page.waitForFunction(()=>document.querySelector('.zxs-file-branches [role="combobox"]')?.disabled===false);
     await select.click();
     await page.getByRole('option',{name:`draft-empty · ${labels.pending}`,exact:true}).click();
-    await page.waitForFunction(label=>document.querySelector('.xcs-file-branches [role="combobox"]')?.textContent?.includes(label),labels.pending);
+    await page.waitForFunction(label=>document.querySelector('.zxs-file-branches [role="combobox"]')?.textContent?.includes(label),labels.pending);
     assert.ok(await page.getByRole('button',{name:labels.preview,exact:true}).isDisabled());
     assert.ok(await page.getByRole('button',{name:labels.download,exact:true}).isDisabled());
     assert.ok(await page.getByRole('button',{name:labels.currentCreate,exact:true}).isDisabled());
-    assert.equal(await page.locator('.xcs-version-node').count(),1);
-    assert.equal(await page.locator('.xcs-version-current').count(),0);
-    assert.ok(await page.locator('.xcs-version-node[data-version-id="source"]').getByRole('button',{name:labels.branch,exact:true}).isEnabled());
+    assert.equal(await page.locator('.zxs-version-node').count(),1);
+    assert.equal(await page.locator('.zxs-version-current').count(),0);
+    assert.ok(await page.locator('.zxs-version-node[data-version-id="source"]').getByRole('button',{name:labels.branch,exact:true}).isEnabled());
     assert.equal(state.contentReads,0);
     state.checks.push('Created branch stores no content, pending selection cannot read its source, and no placeholder tree node is invented');
     await page.screenshot({path:`${output}/pending-${key}.png`,fullPage:true});
 
     await page.getByRole('button',{name:labels.write,exact:true}).waitFor({state:'visible'});
     assert.ok(await page.getByRole('button',{name:labels.write,exact:true}).isEnabled());
-    await page.locator('.xcs-entry-content input[type="file"]').setInputFiles({name:'different-local-name.bin',mimeType:'application/octet-stream',buffer:Buffer.alloc(0)});
-    await page.locator('.xcs-version-node[data-version-id="first-write"]').waitFor();
-    assert.equal(await page.locator('.xcs-version-node').count(),2);
+    await page.locator('.zxs-entry-content input[type="file"]').setInputFiles({name:'different-local-name.bin',mimeType:'application/octet-stream',buffer:Buffer.alloc(0)});
+    await page.locator('.zxs-version-node[data-version-id="first-write"]').waitFor();
+    assert.equal(await page.locator('.zxs-version-node').count(),2);
     assert.equal(await page.getByRole('button',{name:labels.preview,exact:true}).isEnabled(),true);
     assert.equal(await page.getByRole('button',{name:labels.download,exact:true}).isEnabled(),true);
     assert.equal(await page.getByRole('button',{name:labels.currentCreate,exact:true}).isEnabled(),true);
     assert.equal((await select.innerText()).includes(labels.pending),false);
-    assert.equal(await page.locator('.xcs-file-heading h2').innerText(),'report.txt');
-    const order=await page.locator('.xcs-version-node').evaluateAll(nodes=>nodes.map(node=>node.dataset.versionId));
+    assert.equal(await page.locator('.zxs-file-heading h2').innerText(),'report.txt');
+    const order=await page.locator('.zxs-version-node').evaluateAll(nodes=>nodes.map(node=>node.dataset.versionId));
     assert.deepEqual(order,['first-write','source']);
-    const edge=page.locator('.xcs-version-tree-edge[data-parent-version="source"][data-child-version="first-write"]');
+    const edge=page.locator('.zxs-version-tree-edge[data-parent-version="source"][data-child-version="first-write"]');
     // A straight vertical SVG stroke has a zero-width geometry box; Playwright's
     // generic visibility predicate is unsuitable for deciding if it is drawn.
     await edge.waitFor({state:'attached'});

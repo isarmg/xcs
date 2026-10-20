@@ -3,7 +3,7 @@ use wasm_bindgen::JsCast;
 /// Native modal semantics retain focus containment and background inertness.
 #[component]
 pub fn Dialog(title: String, close: Callback<()>, children: ChildrenFn) -> impl IntoView {
-    let dialog = NodeRef::<xcs_web::html::Dialog>::new();
+    let dialog = NodeRef::<zxs_web::html::Dialog>::new();
     let previous = send_wrapper::SendWrapper::new(
         web_sys::window()
             .and_then(|w| w.document())
@@ -13,7 +13,7 @@ pub fn Dialog(title: String, close: Callback<()>, children: ChildrenFn) -> impl 
     Effect::new(move |_| {
         if let Some(dialog) = dialog.get() {
             let _ = dialog.show_modal();
-            if let Ok(Some(element)) = dialog.query_selector("[data-xcs-initial-focus]")
+            if let Ok(Some(element)) = dialog.query_selector("[data-zxs-initial-focus]")
                 && let Ok(element) = element.dyn_into::<web_sys::HtmlElement>()
             {
                 let _ = element.focus();
@@ -31,48 +31,48 @@ pub fn Dialog(title: String, close: Callback<()>, children: ChildrenFn) -> impl 
         }
     });
     View::new(
-        xcs_web::html::dialog()
+        zxs_web::html::dialog()
             .child((
-                xcs_web::html::div()
+                zxs_web::html::div()
                     .child((
-                        xcs_web::html::h2().child(
+                        zxs_web::html::h2().child(
                             #[allow(unused_braces)]
                             {
                                 IntoRender::into_render({ title.clone() })
                             },
                         ),
-                        xcs_web::html::button()
+                        zxs_web::html::button()
                             .child(
                                 #[allow(unused_braces)]
                                 {
                                     "×"
                                 },
                             )
-                            .class("xcs-button")
+                            .class("zxs-button")
                             .r#type("button")
                             .aria_label(
-                                ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(t(
+                                ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(t(
                                     "关闭对话框",
                                     "Close dialog",
                                 )),
                             )
-                            .on(xcs_web::ev::click, move |_| close.run(())),
+                            .on(zxs_web::ev::click, move |_| close.run(())),
                     ))
-                    .class("xcs-dialog-heading xcs-flow"),
+                    .class("zxs-dialog-heading zxs-flow"),
                 IntoRender::into_render(children()),
             ))
-            .class("xcs-dialog")
+            .class("zxs-dialog")
             .node_ref(dialog)
-            .aria_label(::xcs_web::prelude::IntoAttributeValue::into_attribute_value(title.clone()))
+            .aria_label(::zxs_web::prelude::IntoAttributeValue::into_attribute_value(title.clone()))
             .tabindex("-1")
             .on(
-                xcs_web::ev::Custom::new("cancel"),
+                zxs_web::ev::Custom::new("cancel"),
                 move |event: web_sys::Event| {
                     event.prevent_default();
                     close.run(());
                 },
             )
-            .on(xcs_web::ev::keydown, move |event| {
+            .on(zxs_web::ev::keydown, move |event| {
                 if event.key() != "Tab" {
                     return;
                 }

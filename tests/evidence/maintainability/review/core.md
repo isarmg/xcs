@@ -1,9 +1,9 @@
 # Core / contract / naming review
 
 ## Scope and coverage
-- crates/xcs-core: lib, engine, business(mod/file/history/namespace/repository/workspace), disk, journal, container_storage, historical_save, history_package, maintenance, metadata_budget, protection, repair, degraded_recovery, wire, tests.
-- crates/xcs-contract: lib, encoding, integer_json, model.
-- crates/xcs-naming: lib, README, fixed Unicode table/data boundaries.
+- crates/zxs-core: lib, engine, business(mod/file/history/namespace/repository/workspace), disk, journal, container_storage, historical_save, history_package, maintenance, metadata_budget, protection, repair, degraded_recovery, wire, tests.
+- crates/zxs-contract: lib, encoding, integer_json, model.
+- crates/zxs-naming: lib, README, fixed Unicode table/data boundaries.
 - Initial size: 26 Rust source files, 15,681 lines including 2,410 generated Unicode table lines.
 - No runtime data, real disks, service, protocol or disk format changes authorized by this slice.
 
@@ -28,15 +28,15 @@
 - Upload base/IS_DIRECTORY validation moved before immutable copy. full_copy streaming maximum is min(file cap, remaining retained workspace quota); range offset/id constraints checked before copying old content.
 - Direct namespace updates now reject inactive directory branches with BRANCH_NOT_ACTIVE.
 - Engine::plan now verifies requested plan id and object_hash(plan.input) for all kinds, so purge/split cannot execute locally modified input with an old preview digest.
-- Shared xcs_contract::{validate_note,MAX_NOTE_BYTES} validates new128-byte UTF-8/control-free/empty-clears notes; core uses it. Historical package4096 reader bound explicitly named and preserved.
+- Shared zxs_contract::{validate_note,MAX_NOTE_BYTES} validates new128-byte UTF-8/control-free/empty-clears notes; core uses it. Historical package4096 reader bound explicitly named and preserved.
 - Shared SUPPORTED_CHECKSUM_CHUNK_BYTES used by checksum encoder, core config, history package reader.
-- New crates/xcs-core/README.md covers responsibility map, authority/projections, publish sequence, extension points and test boundary.
+- New crates/zxs-core/README.md covers responsibility map, authority/projections, publish sequence, extension points and test boundary.
 
 ## Validation
 - Before fix: directory_rename_follows_normalized_ancestry test reproduced PARENT_NOT_DIRECTORY with A/a descendants.
-- Final cargo test --locked --offline -p xcs-core -p xcs-contract -p xcs-naming --lib: core56 + contract8 + naming3 =67 passed, zero failed. Contract includes root's two api_path tests.
+- Final cargo test --locked --offline -p zxs-core -p zxs-contract -p zxs-naming --lib: core56 + contract8 + naming3 =67 passed, zero failed. Contract includes root's two api_path tests.
 - Added9 tests across core+contract: normalized raw-prefix mismatch (ASCII/German/Greek), reverse long ancestry, detached cycles, real file branch+directory rename+restart closure, upload failure leaves no immutable generation and valid same-id retry, inactive namespace unchanged, indexed comparison order/case rename, modified plan digest/id rejection, shared note boundary. (Core baseline48→56 =8, contract notes1; ancestry has2.)
-- Final cargo check --locked --offline -p xcs-core -p xcs-contract -p xcs-naming passed after all edits without warnings.
+- Final cargo check --locked --offline -p zxs-core -p zxs-contract -p zxs-naming passed after all edits without warnings.
 - rustfmt applied only owned Rust files; no root Cargo/server/Web edits.
 
 ## Ownership

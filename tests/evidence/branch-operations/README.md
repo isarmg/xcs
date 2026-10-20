@@ -9,7 +9,7 @@
 | 材料 | 实际范围 |
 | --- | --- |
 | [完整 Rust 工作区](native-workspace.log) | 临时存储池、工作区、保护与恢复、按路径的别名、HTTP、权限和 Unix 描述符 |
-| [Linux 构建](native-build.log) | `cargo build --locked --offline -p xcs-cli` |
+| [Linux 构建](native-build.log) | `cargo build --locked --offline -p zxs-cli` |
 | [公共核心集成](api/core-alias-tests.txt) | 共享文件夹复制、别名规范位置改名、无操作不加子树、双路径上下文、非当前根分支局部删除、128 字节公开分支改名、冲突回滚 |
 | [API 与 SMB](api/README.md) | 真实临时核心、HTTP 与本机桥接协议；含合成操作回执 |
 | [机器契约](api/contract-tests.txt) | schema、OpenAPI、引用链接与补充语义 |

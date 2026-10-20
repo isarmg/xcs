@@ -1,0 +1,8 @@
+[package]
+name = "zxs-naming"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+[dependencies]
+zxs-contract.workspace = true
+unicode-normalization = { path = "../../vendor/dependencies/unicode-normalization-0.1.24", version = "=0.1.24" }

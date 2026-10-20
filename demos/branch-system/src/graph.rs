@@ -191,7 +191,7 @@ fn draw(cards: Vec<Card>, prefix: &str, label: &str) -> Drawing {
     let width = max_columns * 342 + edges.len() * 12 + 24;
     let height = (max + 1) * 162;
     let mut html = format!(
-        r#"<svg class="xcs-demo-graph" viewBox="0 0 {width} {height}" width="{width}" height="{height}" role="group" aria-label="{label}"><defs><marker id="xcs-demo-arrow-{prefix}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>"#
+        r#"<svg class="zxs-demo-graph" viewBox="0 0 {width} {height}" width="{width}" height="{height}" role="group" aria-label="{label}"><defs><marker id="zxs-demo-arrow-{prefix}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>"#
     );
     for (index, (parent, child)) in edges.iter().enumerate() {
         let (px, py) = positions[parent];
@@ -219,15 +219,15 @@ fn draw(cards: Vec<Card>, prefix: &str, label: &str) -> Drawing {
                 end - r
             )
         };
-        write!(html,r#"<path class="xcs-demo-edge" d="{route}" data-parent="{parent}" data-child="{child}" marker-end="url(#xcs-demo-arrow-{prefix})"/>"#).unwrap();
+        write!(html,r#"<path class="zxs-demo-edge" d="{route}" data-parent="{parent}" data-child="{child}" marker-end="url(#zxs-demo-arrow-{prefix})"/>"#).unwrap();
     }
     for card in cards {
         let (x, y) = positions[&card.id];
-        write!(html,r#"<foreignObject x="{x}" y="{y}" width="306" height="108"><button xmlns="http://www.w3.org/1999/xhtml" type="button" class="xcs-frame xcs-demo-node" data-demo-node="{}" data-demo-kind="{prefix}" data-new="{}" aria-pressed="{}" aria-label="{}">"#,card.id,card.new,card.selected,escape(&card.rows.join("；"))).unwrap();
+        write!(html,r#"<foreignObject x="{x}" y="{y}" width="306" height="108"><button xmlns="http://www.w3.org/1999/xhtml" type="button" class="zxs-frame zxs-demo-node" data-demo-node="{}" data-demo-kind="{prefix}" data-new="{}" aria-pressed="{}" aria-label="{}">"#,card.id,card.new,card.selected,escape(&card.rows.join("；"))).unwrap();
         for row in card.rows {
             write!(
                 html,
-                r#"<span class="xcs-row" title="{}">{}</span>"#,
+                r#"<span class="zxs-row" title="{}">{}</span>"#,
                 escape(&row),
                 escape(&row)
             )

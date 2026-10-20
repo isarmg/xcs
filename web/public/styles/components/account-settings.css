@@ -1,12 +1,12 @@
 /* Account-specific column placement; shared roles own every control dimension. */
-.xcs-header-actions .xcs-account-entry,
-.xcs-header-actions .xcs-account-entry:hover { text-decoration: none; }
-.xcs-account-page > .xcs-content-panel { width: min(100%,36rem); }
-.xcs-account-fields { display: grid; grid-template-columns: max-content minmax(0,1fr); align-items: center; min-width: 0; gap: var(--xcs-block-gap) 0; }
-.xcs-account-form .xcs-form-field { display: contents; margin: 0; }
-.xcs-account-form .xcs-form-field > span { display: flex; align-items: center; }
-.xcs-account-form > .xcs-actions { justify-content: flex-start; }
+.zxs-header-actions .zxs-account-entry,
+.zxs-header-actions .zxs-account-entry:hover { text-decoration: none; }
+.zxs-account-page > .zxs-content-panel { width: min(100%,36rem); }
+.zxs-account-fields { display: grid; grid-template-columns: max-content minmax(0,1fr); align-items: center; min-width: 0; gap: var(--zxs-block-gap) 0; }
+.zxs-account-form .zxs-form-field { display: contents; margin: 0; }
+.zxs-account-form .zxs-form-field > span { display: flex; align-items: center; }
+.zxs-account-form > .zxs-actions { justify-content: flex-start; }
 @media (max-width: 48rem) {
-  .xcs-account-fields { grid-template-columns: minmax(0,1fr); gap: 0; }
-  .xcs-account-form .xcs-form-field { display: grid; grid-template-columns: minmax(0,1fr); min-width: 0; gap: 0; }
+  .zxs-account-fields { grid-template-columns: minmax(0,1fr); gap: 0; }
+  .zxs-account-form .zxs-form-field { display: grid; grid-template-columns: minmax(0,1fr); min-width: 0; gap: 0; }
 }

@@ -1,5 +1,5 @@
 use core::num::NonZeroUsize;
-use xcs_web::prelude::*;
+use zxs_web::prelude::*;
 
 #[derive(PartialEq, Debug)]
 struct UserInfo {

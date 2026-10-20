@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-const {chromium}=await import(process.env.XCS_PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
 const root=resolve(fileURLToPath(new URL('../../../',import.meta.url)));
 const directory=resolve(root,'docs/diagrams/branch-system');
 const output=resolve(root,'tests/evidence/merge-tags-backup');

@@ -15,7 +15,7 @@
 | 检查 | 结果与证据 |
 | --- | --- |
 | 原生全工作区 | **239 项通过**，含核心 74、服务端 52 和实际路由 HTTP 集成 12；见 [完整日志](native-workspace.log) |
-| Linux 预览二进制 | `cargo build --locked --offline -p xcs-cli` 通过；见 [构建日志](native-build.log) |
+| Linux 预览二进制 | `cargo build --locked --offline -p zxs-cli` 通过；见 [构建日志](native-build.log) |
 | SMB 服务端及客户端 | 服务端 12 项包含在原生工作区结果中；独立桥接客户端 6 项通过，见 [服务端日志](smb-server-tests.log)、[客户端日志](smb-client-tests.log) |
 | 存储专项 | 容器 6、历史包 4、维护 7，共 17 项通过，属于核心测试子集；见 [专项日志](storage-tests.log) |
 | Web | 84 项 Rust 测试、生产 WASM 构建和两场浏览器共 10 组行为通过；见 [Web 说明](web-README.md) |

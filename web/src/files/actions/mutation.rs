@@ -11,7 +11,7 @@ use crate::{
 };
 use serde_json::{Value, json};
 use wasm_bindgen_futures::spawn_local;
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::{i18n::t, prelude::*};
 
 pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: String) {
     let snapshot = state.get_untracked();
@@ -146,7 +146,7 @@ pub(crate) fn rename_directory_branch(
 ) {
     if repository.is_empty()
         || branch_id.is_empty()
-        || name.len() > xcs_contract::MAX_NOTE_BYTES
+        || name.len() > zxs_contract::MAX_NOTE_BYTES
         || !crate::files::model::valid_name(&name)
     {
         return;
@@ -170,7 +170,7 @@ pub(crate) fn rename_file_branch(
 ) {
     if file.is_empty()
         || branch_id.is_empty()
-        || name.len() > xcs_contract::MAX_NOTE_BYTES
+        || name.len() > zxs_contract::MAX_NOTE_BYTES
         || !crate::files::model::valid_name(&name)
     {
         return;
@@ -226,7 +226,7 @@ fn record_mutation(
 }
 
 pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note: String) {
-    if xcs_contract::validate_note(&note).is_err() {
+    if zxs_contract::validate_note(&note).is_err() {
         return;
     }
     let file = state.with_untracked(|s| {
@@ -285,7 +285,7 @@ pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note:
 }
 
 pub(crate) fn update_node_note(state: RwSignal<State>, node: String, note: String) {
-    if node.is_empty() || xcs_contract::validate_note(&note).is_err() {
+    if node.is_empty() || zxs_contract::validate_note(&note).is_err() {
         return;
     }
     let file = state.with_untracked(|s| {

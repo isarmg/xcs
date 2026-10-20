@@ -1,5 +1,5 @@
 {
-  "repository": "isarmg/xcs",
+  "repository": "isarmg/zxs",
   "commit": "1af6965781fb3675cf252b86081d18dec6732a59",
   "run_id": 39292491848,
   "artifact_id": 12207385192,
@@ -14,5 +14,6 @@
       "sha256": "29e165d9828a7ff7ad2030253adcf61a3ecc4a13c2c67c222ab5f5cc29943a6e",
       "bytes": 389923
     }
-  }
+  },
+  "provenance_note": "Historical pre-rename artifact; its original name, run, commit and checksums are retained unchanged."
 }

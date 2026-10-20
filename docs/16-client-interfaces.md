@@ -49,48 +49,48 @@
 
 ```bash
 # 查看服务端配置的独立 SMB 共享。
-xcs smb shares --repository personal
+zxs smb shares --repository personal
 
 # 从历史提交元数据创建引用分支，不复制来源正文。
-xcs branch create plan-a --repository personal --from-commit commit-example-0012
+zxs branch create plan-a --repository personal --from-commit commit-example-0012
 
 # 查看历史并比较两个提交，不修改分支。
-xcs history --repository personal --branch main --path '文档/报告.docx'
-xcs compare --repository personal --left commit-example-0012 --right commit-example-0015
+zxs history --repository personal --branch main --path '文档/报告.docx'
+zxs compare --repository personal --left commit-example-0012 --right commit-example-0015
 
 # 超时后查询原操作状态。
-xcs operation status op-example-0007
+zxs operation status op-example-0007
 
 # 从历史节点另存新分支，只有工作区实际写入的文件生成 FULL。
-xcs history save preview --history history-example --from-commit commit-example-0012 --new-branch recovered-work --workspace ws-example-recovery
+zxs history save preview --history history-example --from-commit commit-example-0012 --new-branch recovered-work --workspace ws-example-recovery
 
 # 查看硬盘和副本健康状态。
-xcs disk list
-xcs replica status --repository personal
+zxs disk list
+zxs replica status --repository personal
 
 # 查看用户指定的级别与来源映射。
-xcs backup-topology show topology-example
+zxs backup-topology show topology-example
 
 # 预览来源分配，并以已确认计划的摘要执行。
-xcs backup-topology preview --target-slot B01 --level 2 --sources P01,P02
-xcs plan commit plan-topology-example --expected-digest digest-example
+zxs backup-topology preview --target-slot B01 --level 2 --sources P01,P02
+zxs plan commit plan-topology-example --expected-digest digest-example
 
 # 指定目录后续新版本的一级盘位。
-xcs primary-rule preview --history history-example --path / --primary-slot P01
+zxs primary-rule preview --history history-example --path / --primary-slot P01
 
 # 为既定盘位更换物理盘，保留来源职责。
-xcs slot replace preview --slot B01 --new-disk disk-example-replacement
+zxs slot replace preview --slot B01 --new-disk disk-example-replacement
 
 # 仅记录两个指定版本的关系线，不保存文件或推进分支。
-xcs merge link --history history-example --from-branch plan-a --from-commit commit-example-a2 --to-branch main --to-commit commit-example-0012
+zxs merge link --history history-example --from-branch plan-a --from-commit commit-example-a2 --to-branch main --to-commit commit-example-0012
 
 # 检查活动引用后清除历史内容，保留历史节点。
-xcs history purge preview --history history-example --versions version-example-001
-xcs plan commit plan-purge-example --expected-digest digest-example
+zxs history purge preview --history history-example --versions version-example-001
+zxs plan commit plan-purge-example --expected-digest digest-example
 
 # 按选定节点及其实际后代拆分为独立历史树。
-xcs tree split preview --history history-example --at commit-example-0012 --new-name independent-tree
-xcs plan commit plan-split-example --expected-digest digest-example
+zxs tree split preview --history history-example --at commit-example-0012 --new-name independent-tree
+zxs plan commit plan-split-example --expected-digest digest-example
 
 ```
 

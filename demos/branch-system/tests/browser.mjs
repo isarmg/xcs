@@ -4,11 +4,11 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
-const {chromium}=await import(process.env.XCS_PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
 const demo=resolve(fileURLToPath(new URL('../',import.meta.url)));
 const root=resolve(demo,'../..');
 const evidence=resolve(demo,'tests/evidence');await mkdir(evidence,{recursive:true});
-const base=process.env.XCS_DEMO_URL||'http://127.0.0.1:7400/demo/';
+const base=process.env.ZXS_DEMO_URL||'http://127.0.0.1:7400/demo/';
 const manifest=JSON.parse(await readFile(resolve(demo,'dist/build-manifest.json'),'utf8'));
 const hash=data=>createHash('sha256').update(data).digest('hex');
 for(const [path,expected]of Object.entries(manifest.inputs))assert.equal(hash(await readFile(resolve(root,path))),expected,`source receipt: ${path}`);
@@ -22,22 +22,22 @@ try {
     const req=route.request();if(new URL(req.url()).pathname.startsWith('/v1')||!['GET','HEAD'].includes(req.method())){business.push({method:req.method(),url:req.url()});return route.abort();}
     return route.continue();
   });
-  const wasmPromise=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pkg/xcs_bg.wasm'));
+  const wasmPromise=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pkg/zxs_bg.wasm'));
   const response=await page.goto(base);assert.equal(response.status(),200);
   assert.ok(response.headers()['content-security-policy'].includes("style-src 'self'"));
-  await page.waitForFunction(()=>document.documentElement.getAttribute('data-xcs-ready')==='true');
+  await page.waitForFunction(()=>document.documentElement.getAttribute('data-zxs-ready')==='true');
   const wasm=await wasmPromise;assert.match(wasm.headers()['content-type'],/^application\/wasm/);
-  assert.equal(hash(await wasm.body()),manifest.files['pkg/xcs_bg.wasm']);result.served_wasm_sha256=manifest.files['pkg/xcs_bg.wasm'];
-  assert.equal(await page.locator('html').getAttribute('data-xcs-runtime'),'xcs-web');
+  assert.equal(hash(await wasm.body()),manifest.files['pkg/zxs_bg.wasm']);result.served_wasm_sha256=manifest.files['pkg/zxs_bg.wasm'];
+  assert.equal(await page.locator('html').getAttribute('data-zxs-runtime'),'zxs-web');
   async function choose(label,value){await page.getByRole('combobox',{name:label,exact:true}).click();await page.getByRole('option',{name:value,exact:typeof value==='string'}).click();}
   async function count(which){return Number((await page.locator(`[data-demo-count="${which}"]`).innerText()).match(/\d+/)[0]);}
   async function graphCheck(){
-    const graphs=await page.locator('.xcs-demo-graph').evaluateAll(svgs=>svgs.map(svg=>{
+    const graphs=await page.locator('.zxs-demo-graph').evaluateAll(svgs=>svgs.map(svg=>{
       const nodes=new Map([...svg.querySelectorAll('foreignObject')].map(f=>[f.querySelector('[data-demo-node]').dataset.demoNode,{y:Number(f.getAttribute('y')),h:Number(f.getAttribute('height'))}]));
       return [...svg.querySelectorAll('[data-parent]')].map(p=>({parent:nodes.get(p.dataset.parent),child:nodes.get(p.dataset.child),d:p.getAttribute('d')}));
     }));
     for(const edges of graphs)for(const e of edges){assert.ok(e.parent.y>=e.child.y+e.child.h+18);assert.ok(!/[CLQS]/.test(e.d),'orthogonal lines and round arcs only');}
-    assert.equal(await page.locator('.xcs-demo-node').evaluateAll(nodes=>nodes.every(n=>n.querySelectorAll(':scope > .xcs-row').length===3)),true);
+    assert.equal(await page.locator('.zxs-demo-node').evaluateAll(nodes=>nodes.every(n=>n.querySelectorAll(':scope > .zxs-row').length===3)),true);
   }
   const scenes=[
     ['文件分支：登记 → 切换 → 首写',4,3],['目录分支：按文件逐个首写',5,4],['子目录分支与 SMB 默认组合',5,3],['改名、移动、复制与删除',6,3],
@@ -55,10 +55,10 @@ try {
   await page.waitForFunction(()=>document.querySelector('[data-demo-step="description"]').textContent.trim().startsWith('1 /'));
   await page.getByRole('button',{name:'暂停',exact:true}).click();const paused=await page.locator('[data-demo-step="description"]').innerText();await page.waitForTimeout(2600);assert.equal(await page.locator('[data-demo-step="description"]').innerText(),paused);
   await page.getByRole('button',{name:'下一步',exact:true}).click();
-  await page.getByRole('link',{name:'从这一步自行操作 →'}).click();await page.waitForFunction(()=>document.documentElement.getAttribute('data-xcs-ready')==='true');
+  await page.getByRole('link',{name:'从这一步自行操作 →'}).click();await page.waitForFunction(()=>document.documentElement.getAttribute('data-zxs-ready')==='true');
   assert.match(page.url(),/playground.html\?scenario=file&step=2/);assert.equal(await count('bodies'),2);assert.match(await page.locator('[data-demo-path="A/报告.txt"]').innerText(),/审阅/);
   await page.getByRole('button',{name:'重置演示',exact:true}).click();
-  const input=()=>page.locator('[data-xcs-demo-input="value"]');
+  const input=()=>page.locator('[data-zxs-demo-input="value"]');
   const submit=()=>page.getByRole('button',{name:'执行操作',exact:true}).click();
   async function op(value){await choose('操作',value);}
   await op('登记文件分支');await input().fill('审阅');await submit();assert.equal(await count('bodies'),2);assert.equal(await count('files'),2);result.free_operations.push('register without body');
@@ -82,7 +82,7 @@ try {
   await page.locator('[data-demo-path="A/报告.txt"]').click();await op('写入文件');await input().fill('<img src=x onerror=alert(1)>');await submit();assert.equal(await page.locator('img').count(),0);assert.ok((await page.locator('main').innerText()).includes('<img src=x onerror=alert(1)>'));result.free_operations.push('escaped user content');
   for(const [width,height]of [[1440,1000],[800,1000],[390,844]]){
     await page.setViewportSize({width,height});await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,`page overflow ${width}`);
-    const canvases=await page.locator('.xcs-demo-canvas').evaluateAll(es=>es.map(e=>({width:e.clientWidth,scroll:e.scrollWidth})));assert.ok(canvases.every(c=>c.width<=width));
+    const canvases=await page.locator('.zxs-demo-canvas').evaluateAll(es=>es.map(e=>({width:e.clientWidth,scroll:e.scrollWidth})));assert.ok(canvases.every(c=>c.width<=width));
     await page.screenshot({path:resolve(evidence,`playground-${width}.png`),fullPage:true});result.viewports.push({width,height,internal_tree_scroll:true});
   }
   await page.getByRole('link',{name:'静态图示',exact:true}).click();assert.equal(await page.locator('.cases label').count(),27);assert.equal(await page.locator('.panel:visible').count(),1);

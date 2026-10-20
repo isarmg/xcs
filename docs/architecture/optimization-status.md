@@ -6,7 +6,7 @@ production fault certification or constant-time operations.
 ## Implemented
 
 - Web and native bridge share commit preparation, response parsing, size limits,
-  and mutation-outcome rules in `xcs-contract::client_protocol`.
+  and mutation-outcome rules in `zxs-contract::client_protocol`.
 - The server uses typed application commands for high-risk business mutations.
   Namespace relocation centralizes identity-preserving path/name updates.
 - SQLite projection updates only changed entities inside a transaction. The

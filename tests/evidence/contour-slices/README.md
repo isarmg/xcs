@@ -14,6 +14,6 @@
 - 每组原始结果见 [matrix-results.json](matrix-results.json)。
 - [横向前后对比](before-after-wide.png)；[纵向前后对比](before-after-tall.png)。
 
-该记录验证绘制算法的浏览器像素结果；部署后的应用验证由主流程另行记录。临时探针保存在 `/tmp/xcs-contour-{probe,percentage,matrix,evidence}.mjs`，产品中没有新增维护的 JavaScript。
+该记录验证绘制算法的浏览器像素结果；部署后的应用验证由主流程另行记录。临时探针保存在 当时的临时测试目录或日志，产品中没有新增维护的 JavaScript。
 
 对应 Rust 回归：`contours::paint::tests::fractional_compact_slices_keep_the_centre_strip_in_both_axes`。渲染器绘制相关 9 项单测通过，Web workspace 的 wasm32 检查通过。

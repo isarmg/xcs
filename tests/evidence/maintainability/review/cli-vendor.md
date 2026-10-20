@@ -2,7 +2,7 @@
 
 ## Scope and method
 
-This is the second delegated scope after the server/platform/shared-auth review recorded in `/tmp/xcs-review-server-platform.md`. Read the original 1,041-line CLI entry, its manifest and README, all 24 Rust source files plus two build scripts under `vendor/web`, and the manifests/module READMEs. The original vendor Rust scope was about 7,423 lines, including extensive API examples and generated-code tests/documentation.
+This is the second delegated scope after the server/platform/shared-auth review recorded in the historical temporary test directory/log. Read the original 1,041-line CLI entry, its manifest and README, all 24 Rust source files plus two build scripts under `vendor/web`, and the manifests/module READMEs. The original vendor Rust scope was about 7,423 lines, including extensive API examples and generated-code tests/documentation.
 
 Reviewed actual command dispatch, local/HTTP differences, credential and retry-file ownership, macro token generation, reactive ownership/cleanup and DOM mounting. No real `runtime`, user storage pool, secret file or existing service was opened or modified. CLI tests use temporary directories, randomly generated fixture credentials and one disposable loopback HTTP fixture; the independent Web framework fixture has no production route or product behavior.
 
@@ -19,9 +19,9 @@ flowchart LR
   REMOTE --> PENDING
   CREDS --> IO[private_io: descriptor-anchored complete file publication]
   PENDING --> IO
-  IO --> PLATFORM[xcs-platform fd safety]
-  REMOTE --> CLIENT[xcs-client API and transport]
-  LOCAL --> CORE[xcs-core Engine and storage authority]
+  IO --> PLATFORM[zxs-platform fd safety]
+  REMOTE --> CLIENT[zxs-client API and transport]
+  LOCAL --> CORE[zxs-core Engine and storage authority]
 ```
 
 The old main module combined argument grammar, all local and HTTP commands, credential checks and several subtly different private-file writers. The entry is now 38 lines; each concern has a named module. Local and remote command names, option grammar and business operation order remain compatible. Existing u64 output intended for JSON wire/display now consistently uses decimal strings for login expiry and topology generation. There is no new storage format or migration.
@@ -41,8 +41,8 @@ The old main module combined argument grammar, all local and HTTP commands, cred
 
 | File | Reviewed responsibility / result |
 | --- | --- |
-| `crates/xcs-cli/Cargo.toml` | Existing dependencies, new reuse of `xcs-platform` and `rustix`; `tempfile` only for regression fixtures. |
-| `crates/xcs-cli/README.md` | Commands, local/remote trust boundaries, private secret files, retry persistence; updated responsibility map and actual file guarantees. |
+| `crates/zxs-cli/Cargo.toml` | Existing dependencies, new reuse of `zxs-platform` and `rustix`; `tempfile` only for regression fixtures. |
+| `crates/zxs-cli/README.md` | Commands, local/remote trust boundaries, private secret files, retry persistence; updated responsibility map and actual file guarantees. |
 | `src/args.rs` | Entire unchanged Clap grammar extracted from original entry; global flags and all local/remote command variants. |
 | `src/main.rs` | Process logging, JSON output helper, operation ID helper and local/remote dispatch only. |
 | `src/local.rs` | Initialization/auth ordering; serve setup; configuration generation/registration; local Engine commands; export/restore/maintenance/plan paths; checked level and complete draft publication corrections. |
@@ -63,7 +63,7 @@ The old main module combined argument grammar, all local and HTTP commands, cred
 | File(s), under `vendor/web` | Reviewed responsibility / result |
 | --- | --- |
 | root/core/macro READMEs and both Cargo manifests | Internal facade/dependency naming, active CSR features and upstream origin; directed native regression command documented. |
-| `xcs-web-core/build.rs`, `xcs-web-macro/build.rs` | Build cfg and feature gating; retained. |
+| `zxs-web-core/build.rs`, `zxs-web-macro/build.rs` | Build cfg and feature gating; retained. |
 | `core/src/lib.rs` | Public exports and feature gates; current business is CSR. |
 | `core/src/animated_show.rs` | Condition scheduling and cleanup; timeout ownership bug corrected and independently exercised in browser. |
 | `core/src/attribute_interceptor.rs` | Attribute capture/forwarding and child view construction; no demonstrated defect found. |
@@ -88,25 +88,25 @@ The old main module combined argument grammar, all local and HTTP commands, cred
 | `macro/src/view/slot_helper.rs` | Named/default slots, duplicate handling and slot child collection; no demonstrated defect found. |
 | `macro/src/view/utils.rs` | Tag-to-runtime naming and HTML/SVG/MathML helper lookups; retained. |
 
-In this table, `core/src` abbreviates `xcs-web-core/src` and `macro/src` abbreviates `xcs-web-macro/src`. No vendor code was deleted solely because an inactive upstream-compatible generic/feature path was not used by today's product. No unverified new framework behavior was added to production pages.
+In this table, `core/src` abbreviates `zxs-web-core/src` and `macro/src` abbreviates `zxs-web-macro/src`. No vendor code was deleted solely because an inactive upstream-compatible generic/feature path was not used by today's product. No unverified new framework behavior was added to production pages.
 
 ## Verification and evidence
 
 ### CLI
 
-- `cargo test --locked --offline -p xcs-cli`: final host run passed **15 tests**, zero failures/ignored and no warnings; `/tmp/xcs-cli-final-tests-host.log`. Host syscall access was needed only for disposable loopback TCP and root ownership fixture operations, not real service access.
+- `cargo test --locked --offline -p zxs-cli`: final host run passed **15 tests**, zero failures/ignored and no warnings; the historical temporary test directory/log. Host syscall access was needed only for disposable loopback TCP and root ownership fixture operations, not real service access.
 - The tests cover private-file ownership and 0400/0600 modes; symlink/hardlink/non-file rejection; byte limits; held parent after path rebinding; atomic no-clobber output and cleanup; exactly one concurrent writer winning with complete content; success cleanup preserving a reused temporary name; explicit draft replacement; strict pending directory policy; exact configuration backup; overflow failure with no writes; unsafe init input with no storage initialization; expiry precision and secret-free output; failed token publication revoking its own new fixture session.
-- `cargo fmt -p xcs-cli --check`: passed.
-- `cargo check --locked --offline -p xcs-cli`: passed, no warnings.
+- `cargo fmt -p zxs-cli --check`: passed.
+- `cargo check --locked --offline -p zxs-cli`: passed, no warnings.
 
 ### Vendor native tests
 
-- `cargo test --locked --offline --manifest-path web/Cargo.toml -p xcs-web-core -p xcs-web-macro --lib`: **4 passed** (one actual mutable children closure, three RSX macro token-generation regressions), zero failures/ignored and no warnings; `/tmp/xcs-vendor-final-tests.log`.
+- `cargo test --locked --offline --manifest-path web/Cargo.toml -p zxs-web-core -p zxs-web-macro --lib`: **4 passed** (one actual mutable children closure, three RSX macro token-generation regressions), zero failures/ignored and no warnings; the historical temporary test directory/log.
 - The four changed vendor files were individually rustfmt checked/formatted; no mass formatting of unrelated vendor source.
 
 ### Independent actual Rust/WASM browser regression
 
-- Created and built `/tmp/xcs-animated-show-fixture`, with Rust source importing the current runtime and changed vendor component, its own WASM module and generated JS bindings. No production route or application behavior was changed for the fixture.
+- Created and built the historical temporary test directory/log, with Rust source importing the current runtime and changed vendor component, its own WASM module and generated JS bindings. No production route or application behavior was changed for the fixture.
 - Fixture WASM loaded HTTP 200 as `application/wasm`, SHA-256 `6def2bfe3e5220efaa2cdf0dfd7593939b86ad1818a8689c375c391b92044725`.
 - Browser sequence one: hide at 0.8 ms, repeated false notification at 51.7 ms, show at 102.2 ms; at 352.4 ms the child remained present, beyond both previous hide deadlines.
 - Browser sequence two: hide, repeated false notification, unmount; after 305.2 ms the mount target had zero children, empty text and no child element.

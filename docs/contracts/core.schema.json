@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "XCS V2 核心字段契约草案",
+  "title": "ZXS V2 核心字段契约草案",
   "description": "设计附件；只覆盖列出的对象，不是完整盘格式或业务实现。",
   "$defs": {
     "UInt64": {

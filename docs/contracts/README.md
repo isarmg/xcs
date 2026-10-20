@@ -12,7 +12,7 @@
 | [openapi.json](openapi.json) | 保存、结果查询、版本/校验/内容/上传状态、文件管理（含零正文分支创建、冻结父版本与自有版本分开的继承投影、目录批量分支、共同分支交集和128字节单行备注）及管理员系统状态、真实功耗和监测历史 | 认证签发刷新、工作区创建/上传写接口、分页/事件及其余拟定管理接口 |
 | [config-constraints.schema.json](config-constraints.schema.json) | 第 21 章关键常量、资源上限和告警字段的受检投影 | 完整部署配置、物理身份、拓扑和启动状态验证 |
 | [vectors.json](vectors.json) | 正反字段样例、分支映射键/值和文件作用域拒绝、旧 Branch / Commit 编码兼容、规范字节与 BLAKE3、空文件和短文件分段清单 | 跨 Rust/Web/离线工具的一致实现及断电恢复 |
-| [xcs-contract-check](../../tools/contract-check/README.md) | Rust 实现的 schema/OpenAPI 有效性、两者定义一致性、固定向量、配置投影、文档本地链接和 JSON/TOML 语法校验 | 模型检查、平台测试、网络端点行为和性能 |
+| [zxs-contract-check](../../tools/contract-check/README.md) | Rust 实现的 schema/OpenAPI 有效性、两者定义一致性、固定向量、配置投影、文档本地链接和 JSON/TOML 语法校验 | 模型检查、平台测试、网络端点行为和性能 |
 
 PUBLICATION 中回执使用合成身份与摘要；通过字段或覆盖集合检查不证明磁盘曾同步。展开清单只是字段语义，生产日志须使用有界分页引用并保留完整证明闭包。成功保存后当前健康变为不可用的样例，只验证这两个维度可以分别表达，不模拟真实故障。
 

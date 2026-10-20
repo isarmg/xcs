@@ -1,8 +1,8 @@
-# XCS 文件存储系统
+# ZXS 文件存储系统
 
-XCS 是面向独立硬盘管理的文件存储项目，由一台 Linux 服务端统一管理文件、历史版本和分层备份，提供 Web、CLI、原生 App 与独立 SMB 访问入口。
+ZXS 是面向独立硬盘管理的文件存储项目，由一台 Linux 服务端统一管理文件、历史版本和分层备份，提供 Web、CLI、原生 App 与独立 SMB 访问入口。
 
-![XCS Web 中文文件管理页面](docs/images/web-file-manager.png)
+![ZXS Web 中文文件管理页面](docs/images/web-file-manager.png)
 
 *真实运行截图：独立开发池中的合成演示数据，展示文件上传后的中文 Web 界面。*
 

@@ -15,11 +15,11 @@ Server DTOs and audit events use per-snapshot pending markers as well as current
 
 All payloads were temporary fixtures; no runtime directory, user data or existing service was read or modified.
 
-- HTTP integration: 12 passed, /tmp/xcs-lazy-branch-http-final.log.
-- SMB server: 12 passed on host, /tmp/xcs-lazy-branch-smb-final-host.log.
-- SMB protocol/client: 6 passed on host, /tmp/xcs-lazy-branch-smb-client-final-host.log. Sandbox socket/SCM_RIGHTS denial was rerun on host; it is not counted as a sandbox pass.
-- Three new permanent cross-review regressions: 3 passed, /tmp/xcs-lazy-crossreview/permanent-tests-final.log.
-- Server without core feature: check passed, /tmp/xcs-lazy-branch-no-core-final.log.
-- Independent Engine API probe after the first two fixes: /tmp/xcs-lazy-crossreview/result-current.log. It confirms early selection rejection and a visible materialized main after the split case. The later permanent tests cover the final Commit marker implementation.
+- HTTP integration: 12 passed, the historical temporary test directory/log
+- SMB server: 12 passed on host, the historical temporary test directory/log
+- SMB protocol/client: 6 passed on host, the historical temporary test directory/log Sandbox socket/SCM_RIGHTS denial was rerun on host; it is not counted as a sandbox pass.
+- Three new permanent cross-review regressions: 3 passed, the historical temporary test directory/log
+- Server without core feature: check passed, the historical temporary test directory/log
+- Independent Engine API probe after the first two fixes: the historical temporary test directory/log It confirms early selection rejection and a visible materialized main after the split case. The later permanent tests cover the final Commit marker implementation.
 
 Normal staged writes of identical or empty bytes still create the first real version because pending status bypasses the ordinary unchanged-content shortcut. Pure registration, selecting pending branches, opening/closing an untouched SMB write handle, aborted staging and unrelated file edits do not create content versions for the pending file. Metadata keeps source identity for lineage; reading an already existing source version by its own authorized version ID remains an ordinary history read.

@@ -67,7 +67,7 @@ def main():
         for i,t in enumerate(times):
             im=frame(t,a.width);im.save(a.out/f'key-{i+1:02}-{t}.png');im.thumbnail((640,360));x=i%3*640;y=i//3*390;sheet.paste(im,(x,y));d.text((x+10,y+368),f'{t:.2f}s',fill='black')
         sheet.save(a.out/'six-keyframes.jpg',quality=95);return
-    dest=a.out/'xcs-branch.mp4'
+    dest=a.out/'zxs-branch.mp4'
     p=subprocess.Popen(['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{a.width}x{round(a.width*9/16)}','-r','30','-i','-','-c:v','libx264','-preset','veryfast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(dest)],stdin=subprocess.PIPE)
     for i in range(round(DURATION*30)):p.stdin.write(frame(i/30,a.width).tobytes())
     p.stdin.close()

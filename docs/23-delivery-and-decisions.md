@@ -89,7 +89,7 @@ Samba VFS 的目标版本、操作覆盖、同步及关闭错误传播、SMB 租
 | Samba 与六平台能力 | 目标 SDK/平台边界分别记录 | 本机 RPC/FD、目标 SDK 的 VFS 编译加载及官方 SMB3 客户端用例已验证；CI 覆盖 Web/WASM、Chrome 烟测与三桌面宿主检查，另有 Linux 宿主链接记录；原生交互及移动平台仍待验收 | [App 矩阵](../apps/README.md)、[SMB 边界](../integrations/smb/README.md)及真实互操作材料 |
 | 配置约束、资源与性能预算 | 已实现部分硬限制，SLO 未冻结 | 固定路由满盘拒绝、第二写者拒绝、上传/工作区/条目上限及部分恢复测试通过 | 补细粒度配额、迁移换盘、安全卸载、资源压力与性能基准 |
 
-2026-10-19，提交 `5bf569e` 的 [CI 运行 39276866908](https://github.com/isarmg/xcs/actions/runs/39276866908) 共 12 个 job 通过：7 组测试、正式 Web/WASM 构建、Chrome 烟测及 Linux/Windows/macOS 宿主检查。该结果不包含桌面安装包或正式 Release；发布构建范围见[发布说明](release.md)。
+2026-10-19，提交 `5bf569e` 的 [CI 运行 39276866908](https://github.com/isarmg/zxs/actions/runs/39276866908) 共 12 个 job 通过：7 组测试、正式 Web/WASM 构建、Chrome 烟测及 Linux/Windows/macOS 宿主检查。该结果不包含桌面安装包或正式 Release；发布构建范围见[发布说明](release.md)。
 
 每项结果使用[验证报告模板](templates/validation-report-template.md)，至少记录需求/不变量/用例 ID、设计修订、代码与工具版本、输入、目标、结果、原始证据位置和限制。失败、未执行和不适用分别登记；不适用必须有能力范围依据。证据缺失保持待验证，不能用“文档规定必须”代替执行结果。
 

@@ -1,0 +1,21 @@
+[package]
+name = "zxs-client"
+version = "0.1.0"
+edition = "2024"
+license.workspace = true
+
+[dependencies]
+reqwest = { version = "0.12.28", default-features = false, features = ["json", "rustls-tls", "stream"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1.53.2", features = ["fs", "io-util"] }
+tokio-util = { version = "0.7", features = ["io"] }
+futures-util = "0.3"
+url = "2"
+blake3 = "1.8.7"
+zxs-contract = { path = "../zxs-contract" }
+tempfile = "3"
+
+[dev-dependencies]
+tokio = { version = "1.53.2", features = ["macros", "rt-multi-thread", "net", "io-util", "sync", "time"] }

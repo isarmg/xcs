@@ -12,7 +12,7 @@ cargo install tauri-cli --version '=2.12.2' --locked
 # and the repository's target/native Cargo configuration.
 (cd apps/host && cargo tauri build --ci --no-sign --target "$RELEASE_TARGET" --bundles "$RELEASE_BUNDLE" -- --locked)
 mkdir -p release-assets
-base="xcs-app-${RELEASE_VERSION}-${RELEASE_TARGET}"
+base="zxs-app-${RELEASE_VERSION}-${RELEASE_TARGET}"
 bundle="$CARGO_TARGET_DIR/$RELEASE_TARGET/release/bundle"
 case "$RELEASE_BUNDLE" in
   deb)
@@ -26,8 +26,8 @@ case "$RELEASE_BUNDLE" in
     cp "${files[0]}" "release-assets/$base-setup.exe"
     ;;
   app)
-    test -d "$bundle/macos/xcs.app"
-    tar -czf "release-assets/$base.app.tar.gz" -C "$bundle/macos" xcs.app
+    test -d "$bundle/macos/zxs.app"
+    tar -czf "release-assets/$base.app.tar.gz" -C "$bundle/macos" zxs.app
     ;;
   *) echo 'Unsupported bundle' >&2; exit 2 ;;
 esac

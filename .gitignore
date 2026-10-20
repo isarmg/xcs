@@ -48,7 +48,7 @@ target/
 
 # 本地运行池、待提交数据与临时文件。web/runtime/ 是源码，必须保留。
 /runtime/
-/xcs-data/
+/zxs-data/
 /logs/
 /tmp/
 /.tmp/

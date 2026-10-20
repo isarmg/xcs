@@ -1,9 +1,9 @@
 # Native client and App review
 
-Reviewed crates/xcs-client, apps/bridge, apps/host source and manifests, CLI entry/read/write call sites (CLI deep refactor delegated), and cross-checked common API boundary with Web.
+Reviewed crates/zxs-client, apps/bridge, apps/host source and manifests, CLI entry/read/write call sites (CLI deep refactor delegated), and cross-checked common API boundary with Web.
 
 Implemented:
-- Shared xcs_contract::validate_api_path prevents native URL normalization of percent-encoded dot segments from leaving /v1; preserves query values and rejects controls/encoded separators. Native URL origin and final path are checked again.
+- Shared zxs_contract::validate_api_path prevents native URL normalization of percent-encoded dot segments from leaving /v1; preserves query values and rejects controls/encoded separators. Native URL origin and final path are checked again.
 - Client transfer and response handling separated from connection/session/commit interface. Downloads use private NamedTempFile/TempPath cleanup and atomic persist_noclobber, removing empty destination reservation and rename race. Static temporary prefix also fixes valid 240-byte destination names. Actual length and immutable hash are checked before publication. Session Debug redacts bearer and CSRF.
 - Empty successful HTTP responses (including HEAD/204) return null; non-JSON HTTP failures retain HTTP status and retryability instead of becoming status-zero parsing errors.
 - Native Bridge separates login attempt ids from active session revisions. Failed login retains old session; superseded login cannot attach after disconnect/newer intent; stale logout/password/transfer/commit/cache verification results cannot mutate or report into the new connection. Superseded successful login's token is revoked best-effort.

@@ -1,4 +1,4 @@
-use xcs_web::prelude::*;
+use zxs_web::prelude::*;
 #[component]
 pub fn FileIcon(name: &'static str) -> impl IntoView {
     let path = match name {
@@ -25,18 +25,18 @@ pub fn FileIcon(name: &'static str) -> impl IntoView {
         _ => "M5 3h9l5 5v13H5V3m9 0v6h5",
     };
     let icon_class = match name {
-        "folder" => "xcs-file-icon xcs-file-icon--folder",
-        "file" => "xcs-file-icon xcs-file-icon--file",
-        _ => "xcs-file-icon",
+        "folder" => "zxs-file-icon zxs-file-icon--folder",
+        "file" => "zxs-file-icon zxs-file-icon--file",
+        _ => "zxs-file-icon",
     };
     View::new(
-        xcs_web::svg::svg()
+        zxs_web::svg::svg()
             .child(
                 #[allow(unused_braces)]
                 {
-                    xcs_web::svg::path().attr(
+                    zxs_web::svg::path().attr(
                         "d",
-                        ::xcs_web::prelude::IntoAttributeValue::into_attribute_value(path),
+                        ::zxs_web::prelude::IntoAttributeValue::into_attribute_value(path),
                     )
                 },
             )

@@ -10,7 +10,7 @@ impl StagedImport {
     pub fn keep(self) -> Result<PathBuf, BridgeError> {
         self.0
             .keep()
-            .map_err(|error| xcs_client::Error::Io(error.error).into())
+            .map_err(|error| zxs_client::Error::Io(error.error).into())
     }
 }
 
@@ -19,15 +19,15 @@ pub fn stage_import(
     source: &mut impl std::io::Read,
 ) -> Result<StagedImport, BridgeError> {
     if let Some(parent) = directory.parent() {
-        std::fs::create_dir_all(parent).map_err(xcs_client::Error::Io)?;
+        std::fs::create_dir_all(parent).map_err(zxs_client::Error::Io)?;
     }
     private_directory(directory)?;
     let mut file = tempfile::Builder::new()
         .prefix("import-")
         .tempfile_in(directory)
-        .map_err(xcs_client::Error::Io)?;
-    std::io::copy(source, file.as_file_mut()).map_err(xcs_client::Error::Io)?;
-    file.as_file().sync_all().map_err(xcs_client::Error::Io)?;
+        .map_err(zxs_client::Error::Io)?;
+    std::io::copy(source, file.as_file_mut()).map_err(zxs_client::Error::Io)?;
+    file.as_file().sync_all().map_err(zxs_client::Error::Io)?;
     Ok(StagedImport(file.into_temp_path()))
 }
 
@@ -41,9 +41,9 @@ fn private_directory(path: &Path) -> Result<(), BridgeError> {
     match builder.create(path) {
         Ok(()) => (),
         Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => (),
-        Err(error) => return Err(xcs_client::Error::Io(error).into()),
+        Err(error) => return Err(zxs_client::Error::Io(error).into()),
     }
-    let metadata = std::fs::symlink_metadata(path).map_err(xcs_client::Error::Io)?;
+    let metadata = std::fs::symlink_metadata(path).map_err(zxs_client::Error::Io)?;
     if !metadata.is_dir() || metadata.file_type().is_symlink() {
         return Err(BridgeError {
             code: "CACHE_SCOPE".into(),
@@ -56,13 +56,13 @@ fn private_directory(path: &Path) -> Result<(), BridgeError> {
 }
 
 pub fn cache_target(directory: &Path, version: &str, name: &str) -> Result<PathBuf, BridgeError> {
-    xcs_contract::validate_id(version, "ver").map_err(|error| BridgeError {
+    zxs_contract::validate_id(version, "ver").map_err(|error| BridgeError {
         code: "INVALID_VERSION".into(),
         message: error.message,
         retryable: false,
         status: 0,
     })?;
-    xcs_naming::validate_name(name).map_err(|error| BridgeError {
+    zxs_naming::validate_name(name).map_err(|error| BridgeError {
         code: "INVALID_FILENAME".into(),
         message: error.message,
         retryable: false,
@@ -78,8 +78,8 @@ pub fn prepare_cache_target(
     name: &str,
 ) -> Result<PathBuf, BridgeError> {
     cache_target(directory, version, name)?;
-    std::fs::create_dir_all(directory).map_err(xcs_client::Error::Io)?;
-    let directory = directory.canonicalize().map_err(xcs_client::Error::Io)?;
+    std::fs::create_dir_all(directory).map_err(zxs_client::Error::Io)?;
+    let directory = directory.canonicalize().map_err(zxs_client::Error::Io)?;
     let target = cache_target(&directory, version, name)?;
     for path in [
         directory.join("versions"),
@@ -100,7 +100,7 @@ pub fn prepare_cache_target(
         }
         Ok(_) => (),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => (),
-        Err(error) => return Err(xcs_client::Error::Io(error).into()),
+        Err(error) => return Err(zxs_client::Error::Io(error).into()),
     }
     Ok(target)
 }

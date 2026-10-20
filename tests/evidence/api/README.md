@@ -6,15 +6,15 @@
 
 | 命令或测试 | 实测结果 |
 | --- | --- |
-| `cargo test -p xcs-server -p xcs-client -p xcs-cli --offline -- --skip smb_rpc::tests` | 初轮 client 2 项、server 非 SMB 单元测试 22 项、HTTP 4 项通过；CLI 编译通过，无单元测试。之后新增的 1 项授权及 2 项 Backend 回归分别列于下方 |
-| `cargo test -p xcs-server --test http_engine --offline` | 扩展后的 6 项通过（4 项 HTTP + 2 项真实 EngineBackend 发布证据） |
-| `cargo test -p xcs-core historical_save::tests --offline` | 2 项通过 |
-| `cargo test -p xcs-server --offline authorization_tests --lib` | 1 项通过：拆分仓库的新账号范围或原范围可准入，仍须新仓库 ACL |
-| `cargo check -p xcs-cli --offline` | 通过 |
+| `cargo test -p zxs-server -p zxs-client -p zxs-cli --offline -- --skip smb_rpc::tests` | 初轮 client 2 项、server 非 SMB 单元测试 22 项、HTTP 4 项通过；CLI 编译通过，无单元测试。之后新增的 1 项授权及 2 项 Backend 回归分别列于下方 |
+| `cargo test -p zxs-server --test http_engine --offline` | 扩展后的 6 项通过（4 项 HTTP + 2 项真实 EngineBackend 发布证据） |
+| `cargo test -p zxs-core historical_save::tests --offline` | 2 项通过 |
+| `cargo test -p zxs-server --offline authorization_tests --lib` | 1 项通过：拆分仓库的新账号范围或原范围可准入，仍须新仓库 ACL |
+| `cargo check -p zxs-cli --offline` | 通过 |
 
 构建使用 `CARGO_TARGET_DIR=target/native CARGO_INCREMENTAL=0`。SMB RPC 测试由集成模块单独记录，不把这里跳过的测试计为通过。最终工程全量测试由根项目记录。
 
-`crates/xcs-server/tests/http_engine.rs` 的 6 个用例均使用真实 Engine 和三个数据目录，不使用业务 mock。4 项 HTTP 用例通过 Router 请求完整 Axum 路由和持久认证；另 2 项直接检查 EngineBackend 的公开操作响应：
+`crates/zxs-server/tests/http_engine.rs` 的 6 个用例均使用真实 Engine 和三个数据目录，不使用业务 mock。4 项 HTTP 用例通过 Router 请求完整 Axum 路由和持久认证；另 2 项直接检查 EngineBackend 的公开操作响应：
 
 | 用例 | 验证结果 |
 | --- | --- |

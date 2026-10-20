@@ -11,7 +11,7 @@ use crate::{
 };
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::{i18n::t, prelude::*};
 mod view;
 pub(crate) use view::{history, view};
 

@@ -1,6 +1,6 @@
 use super::actions;
 use crate::ui::State;
-use xcs_web::{html, i18n::t, prelude::*};
+use zxs_web::{html, i18n::t, prelude::*};
 
 #[derive(Clone)]
 pub(super) enum Target {
@@ -78,7 +78,7 @@ fn branch_name(value: &str) -> Name {
         Name::Empty
     } else if !controls
         && value.len() <= super::inline::MAX_TEXT_BYTES
-        && xcs_naming::validate_name(value).is_ok()
+        && zxs_naming::validate_name(value).is_ok()
     {
         Name::Valid(value.to_owned())
     } else {
@@ -121,14 +121,14 @@ pub(super) fn control(
     });
 
     view! {
-        <span class="xcs-inline-branch xcs-flow xcs-flow--inline">
+        <span class="zxs-inline-branch zxs-flow zxs-flow--inline">
             {move || if editing.get() {
                 // Each edit receives its own ref so focus also works when a
                 // cancelled editor is opened again.
                 let input = NodeRef::<html::Input>::new();
                 input.on_load(|input| { let _ = input.focus(); });
                 view! {
-                    <input class="xcs-branch-name xcs-input xcs-input--compact xcs-input--underline" node_ref=input type="text"
+                    <input class="zxs-branch-name zxs-input zxs-input--compact zxs-input--underline" node_ref=input type="text"
                         aria-label=t("分支名称","Branch name")
                         aria-invalid=move || error.get().to_string()
                         title=t("最多 128 个 UTF-8 字节。","Up to 128 UTF-8 bytes.") data-max-bytes="128" autocomplete="off"
@@ -166,14 +166,14 @@ pub(super) fn control(
                 }.into_any()
             } else {
                 view! {
-                    <button class="xcs-button" type="button" disabled=move || disabled.get()
+                    <button class="zxs-button" type="button" disabled=move || disabled.get()
                         on:click=move |_| { value.set(String::new()); error.set(false); editing.set(true); }>
                         {label.get_value()}
                     </button>
                 }.into_any()
             }}
             <Show when=move ||error.get()>
-                <span class="xcs-branch-error xcs-row" role="status">{t("分支名称无效，最多 128 个 UTF-8 字节。","Invalid branch name. Use at most 128 UTF-8 bytes.")}</span>
+                <span class="zxs-branch-error zxs-row" role="status">{t("分支名称无效，最多 128 个 UTF-8 字节。","Invalid branch name. Use at most 128 UTF-8 bytes.")}</span>
             </Show>
         </span>
     }

@@ -29,7 +29,7 @@ case "$1 $2" in
     elif [[ "$MODE" == public ]]; then
       echo '{"isDraft":false,"body":""}'
     elif [[ "$MODE" == resume ]]; then
-      printf '{"isDraft":true,"body":"<!-- xcs-release-source:%s -->"}\n' "$MOCK_SHA"
+      printf '{"isDraft":true,"body":"<!-- zxs-release-source:%s -->"}\n' "$MOCK_SHA"
     else exit 1; fi ;;
   'release create') touch "$MOCK_ROOT/created" ;;
   'release upload') cp "$MOCK_ROOT"/release-assets/* "$MOCK_ROOT/remote/" ;;

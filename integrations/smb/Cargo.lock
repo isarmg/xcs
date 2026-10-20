@@ -495,7 +495,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5"
 
 [[package]]
-name = "xcs-contract"
+name = "zxs-contract"
 version = "0.1.0"
 dependencies = [
  "blake3",
@@ -506,24 +506,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "xcs-smb"
+name = "zxs-smb"
 version = "0.1.0"
 dependencies = [
  "libc",
  "serde",
  "serde_json",
- "xcs-contract",
+ "zxs-contract",
 ]
 
 [[package]]
-name = "xcs-smb-vfs"
+name = "zxs-smb-vfs"
 version = "0.1.0"
 dependencies = [
  "bindgen",
  "blake3",
  "libc",
  "serde_json",
- "xcs-smb",
+ "zxs-smb",
 ]
 
 [[package]]

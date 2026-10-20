@@ -36,7 +36,7 @@ def paper(c,x,y,value,branch,filename,width=760,highlight=False,editing=False,st
 
 def frame(t,story,w=1920,caption_visible=True):
     c=Canvas(w,round(w*9/16));c.box((0,0,1280,720),'#f5f7fb',r=0)
-    c.text(43,27,'XCS',24,BLUE,True);c.text(118,32,story['disclosure'],16,MUTED)
+    c.text(43,27,'ZXS',24,BLUE,True);c.text(118,32,story['disclosure'],16,MUTED)
     scenes=story['scenes'];idx=min(8,int(t/3));sc=scenes[idx];fn=story['file_name']
     before=scenes[0]['body_before'].split('：')[1];wrong=scenes[0]['body_after'].split('：')[1];changed=scenes[5]['body_after'].split('：')[1]
     labels=[(0,'改错以后，原来的内容还在吗？'),(3,'打开历史，选改动前的版本'),(6,'旧内容，实际打开看'),(9,'从这个旧版，另开一个方案'),(12,'进入方案 B，起点没有改变'),(15,'改好文件，上传到方案 B'),(18,'保存完成，出现 B 自己的版本'),(21,'切回主方案，检查内容'),(24,'再切到 B，检查两边都保留')]
@@ -129,7 +129,7 @@ def main():
     for n,im in enumerate(thumbs):sheet.paste(im,(n%3*640,n//3*360))
     sheet.save(a.out/'contact-sheet-v2.jpg',quality=95)
     if a.frames_only:return
-    tag=a.voice_id or 'silent';dest=a.out/f'xcs-v2-action-sample-{tag}.mp4';w=a.width;h=round(w*9/16);frames=math.ceil(duration*a.fps);duration=frames/a.fps
+    tag=a.voice_id or 'silent';dest=a.out/f'zxs-v2-action-sample-{tag}.mp4';w=a.width;h=round(w*9/16);frames=math.ceil(duration*a.fps);duration=frames/a.fps
     cmd=['ffmpeg','-hide_banner','-loglevel','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{w}x{h}','-r',str(a.fps),'-i','-']
     if a.audio:cmd+=['-i',str(a.audio),'-af',f'adelay={round(a.lead*1000)},loudnorm=I=-18:TP=-1.5:LRA=11,apad','-c:a','aac','-b:a','160k','-ar','48000']
     cmd+=['-c:v','libx264','-preset','veryfast','-crf','19','-pix_fmt','yuv420p','-t',str(duration),'-movflags','+faststart',str(dest)]

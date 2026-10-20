@@ -12,15 +12,15 @@ use crate::{
     ui::{State, list, text},
 };
 use serde_json::Value;
-use xcs_web::components::{EmptyState, LoadingState, Select, SelectOption};
-use xcs_web::{html, i18n::t, prelude::*};
+use zxs_web::components::{EmptyState, LoadingState, Select, SelectOption};
+use zxs_web::{html, i18n::t, prelude::*};
 
 pub(crate) fn page(state: RwSignal<State>) -> impl IntoView {
     let selected = detail_selection(state);
     view! {
-        <section class="xcs-content-stack xcs-entry-page xcs-stack">
-            <nav class="xcs-entry-navigation xcs-flow" aria-label=t("详情导航","Details navigation")>
-                <button class="xcs-button" on:click=move |_|state.update(|s|{s.files.close_overlays();s.page="files".into();})><FileIcon name="back"/>{t("返回文件列表","Back to files")}</button>
+        <section class="zxs-content-stack zxs-entry-page zxs-stack">
+            <nav class="zxs-entry-navigation zxs-flow" aria-label=t("详情导航","Details navigation")>
+                <button class="zxs-button" on:click=move |_|state.update(|s|{s.files.close_overlays();s.page="files".into();})><FileIcon name="back"/>{t("返回文件列表","Back to files")}</button>
                 <span>{move ||state.with(|s|join_path(&s.files.slot,&s.files.directory))}</span>
             </nav>
             {move ||match selected.get() {
@@ -111,32 +111,32 @@ fn entry_view(state: RwSignal<State>, entry: Value) -> impl IntoView {
             })
     });
     view! {
-        <article class="xcs-content-panel xcs-entry-content xcs-frame xcs-stack" aria-label=t("文件详情","File details")>
-            <div class="xcs-file-heading xcs-flow"><h2 class="xcs-row">{name}</h2><div class="xcs-entry-actions xcs-flow">
-                {(!is_file).then(move ||view!{<button class="xcs-button" on:click=move |_|actions::go_directory(state,open_path.clone())><FileIcon name="folder"/>{t("打开文件夹","Open folder")}</button>})}
+        <article class="zxs-content-panel zxs-entry-content zxs-frame zxs-stack" aria-label=t("文件详情","File details")>
+            <div class="zxs-file-heading zxs-flow"><h2 class="zxs-row">{name}</h2><div class="zxs-entry-actions zxs-flow">
+                {(!is_file).then(move ||view!{<button class="zxs-button" on:click=move |_|actions::go_directory(state,open_path.clone())><FileIcon name="folder"/>{t("打开文件夹","Open folder")}</button>})}
                 <Show when=move ||can_modify.get()>{inline::control(state,t("重命名","Rename"),Some("rename"),inline::Target::RenameEntry(rename_entry.clone()),mutation_disabled)}</Show>
-                <button class="xcs-button" disabled=move ||state.with(|s|actions::pending(s)||super::model::file_context(&s.files,&backup_entry).is_none()) on:click=move |_|if let Some(entry)=state.with_untracked(|s|s.files.selected.clone()){backup::start_entry(state,entry);}>{t("备份设置","Backup settings")}</button>
-                <Show when=move ||can_modify.get()><button class="xcs-button" disabled=move ||mutation_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Delete,Some(delete_entry.get_value()))><FileIcon name="delete"/>{t("删除","Delete")}</button></Show>
+                <button class="zxs-button" disabled=move ||state.with(|s|actions::pending(s)||super::model::file_context(&s.files,&backup_entry).is_none()) on:click=move |_|if let Some(entry)=state.with_untracked(|s|s.files.selected.clone()){backup::start_entry(state,entry);}>{t("备份设置","Backup settings")}</button>
+                <Show when=move ||can_modify.get()><button class="zxs-button" disabled=move ||mutation_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Delete,Some(delete_entry.get_value()))><FileIcon name="delete"/>{t("删除","Delete")}</button></Show>
             </div></div>
             {backup::view(state)}
-            <dl class="xcs-file-properties"><div><dt class="xcs-row">{t("位置","Location")}</dt><dd class="xcs-row">{join_path(&state.with_untracked(|s|s.files.slot.clone()),&text(&entry,&["path"]))}</dd></div><div><dt class="xcs-row">{t("类型","Type")}</dt><dd class="xcs-row">{if is_file{t("文件","File")}else{t("文件夹","Folder")}}</dd></div></dl>
-            {(!is_file).then(move ||view!{<Show when=move ||can_modify.get()><section class="xcs-entry-section xcs-stack xcs-stack--flush"><h3 class="xcs-row">{t("目录分支","Folder branches")}</h3><p class="xcs-row">{t("目录分支记录此目录及子目录的文件分支组合，不创建目录私有的文件分支。修改只在当前分支追加子树节点；切换恢复所选组合，未写入的文件继续显示父版本，目录外文件保持不变。","A folder branch records the shared file branch combination in this folder and its subfolders. Changes append subtree nodes within the current branch. Switching restores the selected combination; unwritten files inherit their parent versions and files outside the folder are unchanged.")}</p><div class="xcs-file-toolbar xcs-flow">{branch::control(state,t("创建目录分支","Create folder branch"),branch::Target::Directory{path:folder_path.clone(),select:false},mutation_disabled)}{branch::control(state,t("切换目录分支","Switch folder branch"),branch::Target::Directory{path:folder_select_path.clone(),select:true},mutation_disabled)}</div><p class="xcs-row">{t("目录分支合并待确认，暂不提供操作。","Folder branch merging awaits confirmation.")}</p></section></Show>})}
+            <dl class="zxs-file-properties"><div><dt class="zxs-row">{t("位置","Location")}</dt><dd class="zxs-row">{join_path(&state.with_untracked(|s|s.files.slot.clone()),&text(&entry,&["path"]))}</dd></div><div><dt class="zxs-row">{t("类型","Type")}</dt><dd class="zxs-row">{if is_file{t("文件","File")}else{t("文件夹","Folder")}}</dd></div></dl>
+            {(!is_file).then(move ||view!{<Show when=move ||can_modify.get()><section class="zxs-entry-section zxs-stack zxs-stack--flush"><h3 class="zxs-row">{t("目录分支","Folder branches")}</h3><p class="zxs-row">{t("目录分支记录此目录及子目录的文件分支组合，不创建目录私有的文件分支。修改只在当前分支追加子树节点；切换恢复所选组合，未写入的文件继续显示父版本，目录外文件保持不变。","A folder branch records the shared file branch combination in this folder and its subfolders. Changes append subtree nodes within the current branch. Switching restores the selected combination; unwritten files inherit their parent versions and files outside the folder are unchanged.")}</p><div class="zxs-file-toolbar zxs-flow">{branch::control(state,t("创建目录分支","Create folder branch"),branch::Target::Directory{path:folder_path.clone(),select:false},mutation_disabled)}{branch::control(state,t("切换目录分支","Switch folder branch"),branch::Target::Directory{path:folder_select_path.clone(),select:true},mutation_disabled)}</div><p class="zxs-row">{t("目录分支合并待确认，暂不提供操作。","Folder branch merging awaits confirmation.")}</p></section></Show>})}
             {is_file.then(move ||view! {
-                <section class="xcs-entry-section xcs-stack xcs-stack--flush"><h3 class="xcs-row">{t("文件备注","File note")}</h3><Show when=move ||can_modify.get() fallback=move ||view!{<p class="xcs-row">{move ||state.with(|s|text(&s.files.file_history,&["note"]))}</p>}>{inline::control(state,t("编辑文件备注","Edit file note"),None,inline::Target::FileNote,note_disabled)}</Show></section>
-                <div class="xcs-file-toolbar xcs-flow"><button class="xcs-button" disabled=move ||!content_ready.get() on:click=move |_|actions::preview(state,preview_entry.clone())>{t("预览","Preview")}</button><button class="xcs-button" disabled=move ||!content_ready.get() on:click=move |_|actions::download(state,download_entry.clone())><FileIcon name="download"/>{t("下载","Download")}</button><Show when=move ||can_modify.get()><button class="xcs-button" disabled=move ||upload_disabled.get() on:click=move |_|{if let Some(input)=file_input.get_untracked(){input.click();}}><FileIcon name="upload"/>{t("写入当前分支","Write to current branch")}</button><input node_ref=file_input hidden type="file" on:change=move |_|{if let Some(input)=file_input.get_untracked(){actions::upload_contents(state,input.files());input.set_value("");}}/></Show></div>
-                <Show when=move ||inherited.get()><p class="xcs-row" role="status">{t("此分支尚未写入，正在显示父版本，可预览和下载；写入后才保存本分支自己的版本。","This unwritten branch is displaying its parent version, available for preview and download. Writing creates this branch’s own version.")}</p></Show>
-                <Show when=move ||can_modify.get()><section class="xcs-entry-section xcs-file-branches xcs-stack xcs-stack--flush"><h3 class="xcs-row">{t("文件分支","File branches")}</h3><p class="xcs-row">{t("创建时只登记分支并引用父节点，不创建占位文件或复制正文。首次写入后形成自己的版本；切换只更新当前目录的文件引用。","Creating a branch only registers a reference to its parent node, without placeholders or copied content. The first write creates its own version; switching updates only this folder’s file reference.")}</p>
-                    <div class="xcs-file-toolbar xcs-flow"><Select label=t("当前分支","Current branch") options=options value=value disabled=disabled placeholder=t("主版本","Main") on_change=Callback::new(move |branch:String|actions::select_branch(state,branch))/>
+                <section class="zxs-entry-section zxs-stack zxs-stack--flush"><h3 class="zxs-row">{t("文件备注","File note")}</h3><Show when=move ||can_modify.get() fallback=move ||view!{<p class="zxs-row">{move ||state.with(|s|text(&s.files.file_history,&["note"]))}</p>}>{inline::control(state,t("编辑文件备注","Edit file note"),None,inline::Target::FileNote,note_disabled)}</Show></section>
+                <div class="zxs-file-toolbar zxs-flow"><button class="zxs-button" disabled=move ||!content_ready.get() on:click=move |_|actions::preview(state,preview_entry.clone())>{t("预览","Preview")}</button><button class="zxs-button" disabled=move ||!content_ready.get() on:click=move |_|actions::download(state,download_entry.clone())><FileIcon name="download"/>{t("下载","Download")}</button><Show when=move ||can_modify.get()><button class="zxs-button" disabled=move ||upload_disabled.get() on:click=move |_|{if let Some(input)=file_input.get_untracked(){input.click();}}><FileIcon name="upload"/>{t("写入当前分支","Write to current branch")}</button><input node_ref=file_input hidden type="file" on:change=move |_|{if let Some(input)=file_input.get_untracked(){actions::upload_contents(state,input.files());input.set_value("");}}/></Show></div>
+                <Show when=move ||inherited.get()><p class="zxs-row" role="status">{t("此分支尚未写入，正在显示父版本，可预览和下载；写入后才保存本分支自己的版本。","This unwritten branch is displaying its parent version, available for preview and download. Writing creates this branch’s own version.")}</p></Show>
+                <Show when=move ||can_modify.get()><section class="zxs-entry-section zxs-file-branches zxs-stack zxs-stack--flush"><h3 class="zxs-row">{t("文件分支","File branches")}</h3><p class="zxs-row">{t("创建时只登记分支并引用父节点，不创建占位文件或复制正文。首次写入后形成自己的版本；切换只更新当前目录的文件引用。","Creating a branch only registers a reference to its parent node, without placeholders or copied content. The first write creates its own version; switching updates only this folder’s file reference.")}</p>
+                    <div class="zxs-file-toolbar zxs-flow"><Select label=t("当前分支","Current branch") options=options value=value disabled=disabled placeholder=t("主版本","Main") on_change=Callback::new(move |branch:String|actions::select_branch(state,branch))/>
                         {move ||rename_branch.get().map(|(file,branch_id,name)|inline::control(state,t("重命名文件分支","Rename file branch"),Some("rename"),inline::Target::RenameFileBranch{file,branch_id,name},disabled))}
                     </div>
-                    <div class="xcs-file-toolbar xcs-flow">{branch::control(state,t("从当前内容创建分支","Branch from current content"),branch::Target::CurrentFileVersion,current_branch_disabled)}<button class="xcs-button" disabled=move ||merge_disabled.get() on:click=move |_|merge::start(state)>{t("合并文件分支","Merge file branches")}</button></div>
+                    <div class="zxs-file-toolbar zxs-flow">{branch::control(state,t("从当前内容创建分支","Branch from current content"),branch::Target::CurrentFileVersion,current_branch_disabled)}<button class="zxs-button" disabled=move ||merge_disabled.get() on:click=move |_|merge::start(state)>{t("合并文件分支","Merge file branches")}</button></div>
                     {merge::view(state)}
                 </section></Show>
-                <section class="xcs-entry-section xcs-entry-version-history xcs-stack"><h3 class="xcs-row">{t("版本历史","Version history")}</h3><Show when=move ||state.with(|s|s.files.history_loading)><LoadingState/></Show>
+                <section class="zxs-entry-section zxs-entry-version-history zxs-stack"><h3 class="zxs-row">{t("版本历史","Version history")}</h3><Show when=move ||state.with(|s|s.files.history_loading)><LoadingState/></Show>
                     <Show when=move ||can_modify.get()>{tags::view(state)}</Show>
                     {version_tree::view(state)}
                     {merge::history(state)}
-                    <Show when=move ||state.with(|s|!s.files.history_loading&&history_nodes(&s.files.file_history).is_empty())><p class="xcs-row">{t("尚无版本记录。","No versions have been recorded.")}</p></Show>
+                    <Show when=move ||state.with(|s|!s.files.history_loading&&history_nodes(&s.files.file_history).is_empty())><p class="zxs-row">{t("尚无版本记录。","No versions have been recorded.")}</p></Show>
                 </section>
             })}
         </article>

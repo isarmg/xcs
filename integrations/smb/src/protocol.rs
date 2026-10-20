@@ -10,7 +10,7 @@ use std::{
     time::Duration,
 };
 
-pub const PROTOCOL: &str = "xcs-smb-rpc.v1";
+pub const PROTOCOL: &str = "zxs-smb-rpc.v1";
 pub const MAX_FRAME_BYTES: usize = 8 * 1024 * 1024;
 
 pub fn effective_uid() -> u32 {
@@ -35,23 +35,23 @@ pub enum Request {
         write_through: bool,
     },
     Dirty {
-        #[serde(with = "xcs_contract::u64_string")]
+        #[serde(with = "zxs_contract::u64_string")]
         handle: u64,
     },
     AuthorizeRead {
-        #[serde(with = "xcs_contract::u64_string")]
+        #[serde(with = "zxs_contract::u64_string")]
         handle: u64,
     },
     Flush {
-        #[serde(with = "xcs_contract::u64_string")]
+        #[serde(with = "zxs_contract::u64_string")]
         handle: u64,
     },
     Close {
-        #[serde(with = "xcs_contract::u64_string")]
+        #[serde(with = "zxs_contract::u64_string")]
         handle: u64,
     },
     Abort {
-        #[serde(with = "xcs_contract::u64_string")]
+        #[serde(with = "zxs_contract::u64_string")]
         handle: u64,
     },
     Stat {
@@ -88,11 +88,11 @@ pub struct OpenResult {
     pub entry_id: String,
     pub kind: String,
     pub path: String,
-    #[serde(with = "xcs_contract::u64_string")]
+    #[serde(with = "zxs_contract::u64_string")]
     pub handle: u64,
-    #[serde(with = "xcs_contract::u64_string")]
+    #[serde(with = "zxs_contract::u64_string")]
     pub size: u64,
-    #[serde(with = "xcs_contract::u64_string")]
+    #[serde(with = "zxs_contract::u64_string")]
     pub max_file_bytes: u64,
     pub version_id: Option<String>,
     pub workspace_id: Option<String>,
@@ -248,7 +248,7 @@ impl FrameStream {
         }
         let mut payload = vec![0u8; length];
         self.0.read_exact(&mut payload)?;
-        let value = xcs_contract::decode_strict(&payload).map_err(io::Error::other)?;
+        let value = zxs_contract::decode_strict(&payload).map_err(io::Error::other)?;
         Ok((value, descriptor))
     }
 }

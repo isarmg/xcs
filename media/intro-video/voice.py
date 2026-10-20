@@ -37,7 +37,7 @@ def main():
     torch.manual_seed(42)
     # Only these English tokens occur in the frozen Mandarin script. Explicit
     # phonemes avoid a second English model and keep acronyms intelligible.
-    english = {"XCS": "ˈɛks sˈi ˈɛs", "Web": "wˈɛb", "FULL": "fˈʊl"}
+    english = {"ZXS": "ˈɛks sˈi ˈɛs", "Web": "wˈɛb", "FULL": "fˈʊl"}
     def en_callable(text):
         if text not in english:
             raise ValueError(f"Add a reviewed English pronunciation: {text!r}")

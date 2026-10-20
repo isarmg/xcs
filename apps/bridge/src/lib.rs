@@ -4,7 +4,7 @@ use serde::Serialize;
 use serde_json::{Value, json};
 use std::path::Path;
 use tokio::sync::RwLock;
-use xcs_client::{Client, Error};
+use zxs_client::{Client, Error};
 mod cache;
 mod connection;
 pub use cache::{StagedImport, cache_target, prepare_cache_target, stage_import};
@@ -100,7 +100,7 @@ fn session_changed() -> BridgeError {
         status: 0,
     }
 }
-fn public_session(session: &xcs_client::Session) -> Value {
+fn public_session(session: &zxs_client::Session) -> Value {
     json!({"principal":session.principal,"admin":session.admin,"expires_at":session.expires_at.to_string()})
 }
 
@@ -258,7 +258,7 @@ impl Bridge {
             let metadata = client
                 .request(
                     "GET",
-                    &format!("/v1/versions/{}", xcs_client::segment(version)),
+                    &format!("/v1/versions/{}", zxs_client::segment(version)),
                     None,
                 )
                 .await?;
@@ -321,7 +321,7 @@ mod tests {
     use super::*;
     #[test]
     fn ipc_session_does_not_expose_bearer_or_csrf_credentials() {
-        let session = xcs_client::Session {
+        let session = zxs_client::Session {
             token: "private-bearer-token".into(),
             csrf_token: "private-csrf-token".into(),
             principal: "alice".into(),

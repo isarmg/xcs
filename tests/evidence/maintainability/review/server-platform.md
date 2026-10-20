@@ -2,7 +2,7 @@
 
 ## Scope and reading
 
-Reviewed the server and platform production modules, their in-module regression tests, integration tests, manifests and module READMEs; initial source scope was about 16,002 Rust lines across server/platform. The audit followed actual call paths (HTTP admission -> account state -> authorized backend -> core; payload and index publication), not only lint output. New shared authentication sources were copied from the previously identical platform/server primitive implementation. No actual runtime/xcs-data/user pool was read or mutated and no service was started, stopped or restarted.
+Reviewed the server and platform production modules, their in-module regression tests, integration tests, manifests and module READMEs; initial source scope was about 16,002 Rust lines across server/platform. The audit followed actual call paths (HTTP admission -> account state -> authorized backend -> core; payload and index publication), not only lint output. New shared authentication sources were copied from the previously identical platform/server primitive implementation. No actual runtime/zxs-data/user pool was read or mutated and no service was started, stopped or restarted.
 
 ## Responsibility graph
 
@@ -10,7 +10,7 @@ Reviewed the server and platform production modules, their in-module regression 
 flowchart LR
   HTTP[HTTP router] --> HA[http_auth: origin, CSRF, rate limits]
   HA --> AS[auth: account/session persistence]
-  AS --> AUTH[xcs-auth: credential algorithms]
+  AS --> AUTH[zxs-auth: credential algorithms]
   HA --> AB[AuthorizedBackend: recheck principal]
   HTTP --> TR[transfer: streaming and admission ownership]
   TR --> UP[uploads: bounded durable progress]
@@ -18,7 +18,7 @@ flowchart LR
   HTTP --> WA[web_assets: static admission and API namespace]
   SMB[Samba local RPC] --> AB
   AB --> EB[EngineBackend: ACL and wire adaptation]
-  EB --> CORE[xcs-core Engine: storage transaction truth]
+  EB --> CORE[zxs-core Engine: storage transaction truth]
   CORE --> PL[platform: descriptor IO, payload, SQLite index]
   PL --> AUTH
   TEL[telemetry: fixed read-only monitoring action] --> EB
@@ -26,7 +26,7 @@ flowchart LR
 
 ## Fixed findings and evidence
 
-1. **Duplicated credential algorithm source.** `server/auth_primitives.rs` and `platform/admin_auth/mod.rs` were both 1,263 lines and differed only in module documentation. Added independent portable `xcs-auth`; both old public paths re-export it. Removed unused direct cryptographic dependencies from both adapters. Root workspace membership/dependency and lockfile updated. Hash policy, token/CSRF domain constants, serialization and storage format are unchanged; the original 13 primitive tests now run once in xcs-auth.
+1. **Duplicated credential algorithm source.** `server/auth_primitives.rs` and `platform/admin_auth/mod.rs` were both 1,263 lines and differed only in module documentation. Added independent portable `zxs-auth`; both old public paths re-export it. Removed unused direct cryptographic dependencies from both adapters. Root workspace membership/dependency and lockfile updated. Hash policy, token/CSRF domain constants, serialization and storage format are unchanged; the original 13 primitive tests now run once in zxs-auth.
 2. **Upload cancellation released write ownership before blocking work stopped.** A cancelled HTTP future dropped its per-item claim and semaphore permit while `spawn_blocking` continued publication; a retry could enter concurrently. New shared `UploadAdmission` is retained by blocking progress-persistence tasks and by the publication/status completion closure. The final complete record is persisted within that same task. The regression blocks a backend publication, aborts the HTTP task, verifies a retry receives `FILE_WRITE_BUSY`, then releases it and verifies durable complete status.
 3. **Queued account mutation bypassed recovery block.** `upsert_account` lacked `require_available`; after an uncertain auth backup, a previously admitted queued mutation could modify the in-memory account map. Added the availability check before any work; existing backup-failure test now verifies rejected mutation and identical snapshots.
 4. **Range/HEAD inconsistencies.** Missing hyphen returned 400 while other invalid ranges returned 416; `u64::parse` admitted leading plus signs, duplicate Range lacked size evidence, and direct HEAD error responses carried JSON content. All malformed/duplicate/unsatisfiable ranges now use 416 plus `Content-Range: bytes */size` and accept-ranges. HEAD body is empty, valid HEAD content length remains accurate. Tests cover u64 limits, suffix/open/clamped reads, stale If-Range, malformed/duplicate ranges, and download lease lifetime for full consumption and cancellation.
@@ -40,21 +40,21 @@ flowchart LR
 ## Structure and documentation
 
 - Extracted HTTP auth admission/endpoints to `server/http_auth.rs`, byte transport to `server/transfer.rs`, static admission/validators to `server/web_assets.rs`. `lib.rs` concentrates routing/configuration/shared state and backend wiring; tests retain public boundary coverage.
-- Authentication implementation is in xcs-auth/src/lib.rs, original tests in tests.rs, with compatibility exports at existing paths.
+- Authentication implementation is in zxs-auth/src/lib.rs, original tests in tests.rs, with compatibility exports at existing paths.
 - Rewrote the previously compressed file-history mapping into explicit passes and named intermediate values.
 - Updated server/platform READMEs with module ownership, shared auth dependency, cancellation semantics, Range/HEAD and API namespace rules. Removed a stale fixed integration-test count from server README.
 
 ## Verification
 
-- `cargo check --offline -p xcs-auth -p xcs-server -p xcs-platform`: passed after shared crate extraction.
+- `cargo check --offline -p zxs-auth -p zxs-server -p zxs-platform`: passed after shared crate extraction.
 - Earlier complete run passed 13 auth + 53 platform + 46 server + 12 real Engine HTTP + 1 telemetry integration = 125 tests, before the final rate/list/static additions.
 - After rate additions, server lib 48 tests passed; SMB normalized-list regression separately passed.
-- Final sandbox full run: auth passed; platform 50 passed / 3 failed because the sandbox rejected existing FIFO creation and ownership fixture syscalls (EPERM/EINVAL), not because assertions about changed code failed. The identical command was rerun with the required host syscall access and passed all tests; raw log `/tmp/xcs-server-platform-final-tests-host.log`.
-- Final command: `cargo test --locked --offline -p xcs-auth -p xcs-platform -p xcs-server`.
+- Final sandbox full run: auth passed; platform 50 passed / 3 failed because the sandbox rejected existing FIFO creation and ownership fixture syscalls (EPERM/EINVAL), not because assertions about changed code failed. The identical command was rerun with the required host syscall access and passed all tests; raw log the historical temporary test directory/log.
+- Final command: `cargo test --locked --offline -p zxs-auth -p zxs-platform -p zxs-server`.
 - **Final host full run passed: 13 auth + 53 platform + 50 server + 12 real Engine HTTP + 1 telemetry = 129 tests, zero failed/ignored and no warnings.** The latest static namespace, canonicalized List and account rate-limit tests all ran in this result.
-- `cargo check --locked --offline -p xcs-server --no-default-features`: passed, no warnings. The existing core-only disk sensor exports/helpers are now correctly cfg-gated rather than producing dead-code/unused-import warnings in that build.
-- `cargo fmt -p xcs-auth -p xcs-server -p xcs-platform --check`: passed.
-- `cargo test --locked --offline -p xcs-server --no-default-features --lib`: passed 39 tests, zero failed/ignored and no warnings; raw log `/tmp/xcs-server-no-core-tests.log`.
+- `cargo check --locked --offline -p zxs-server --no-default-features`: passed, no warnings. The existing core-only disk sensor exports/helpers are now correctly cfg-gated rather than producing dead-code/unused-import warnings in that build.
+- `cargo fmt -p zxs-auth -p zxs-server -p zxs-platform --check`: passed.
+- `cargo test --locked --offline -p zxs-server --no-default-features --lib`: passed 39 tests, zero failed/ignored and no warnings; raw log the historical temporary test directory/log.
 - Raw native regression output is retained for the root's consolidated evidence; it contains fixture/test names only, no real credentials or runtime state.
 
 ## Limits of evidence
@@ -66,47 +66,47 @@ flowchart LR
 
 ## File coverage inventory
 
-- `crates/xcs-auth/Cargo.toml` (17 lines)
-- `crates/xcs-auth/README.md` (7 lines)
-- `crates/xcs-auth/src/lib.rs` (678 lines)
-- `crates/xcs-auth/src/tests.rs` (586 lines)
-- `crates/xcs-platform/Cargo.toml` (31 lines)
-- `crates/xcs-platform/README.md` (28 lines)
-- `crates/xcs-platform/src/admin_auth/mod.rs` (5 lines)
-- `crates/xcs-platform/src/error/fixtures/error-envelope.json` (71 lines)
-- `crates/xcs-platform/src/error/mod.rs` (415 lines)
-- `crates/xcs-platform/src/fs_safety/linux.rs` (217 lines)
-- `crates/xcs-platform/src/fs_safety/mod.rs` (657 lines)
-- `crates/xcs-platform/src/fs_safety/unix.rs` (838 lines)
-- `crates/xcs-platform/src/lib.rs` (19 lines)
-- `crates/xcs-platform/src/payload.rs` (286 lines)
-- `crates/xcs-platform/src/schema_identity/fixtures/schema-fingerprint-v1.json` (28 lines)
-- `crates/xcs-platform/src/schema_identity/mod.rs` (677 lines)
-- `crates/xcs-platform/src/secret/mod.rs` (97 lines)
-- `crates/xcs-platform/src/sqlite/blocking.rs` (125 lines)
-- `crates/xcs-platform/src/sqlite/mod.rs` (568 lines)
-- `crates/xcs-platform/src/sqlite/native_limits.rs` (230 lines)
-- `crates/xcs-platform/src/sqlite/native_security.rs` (110 lines)
-- `crates/xcs-platform/src/sqlite/tests.rs` (429 lines)
-- `crates/xcs-platform/src/sqlite/trusted_ddl.rs` (191 lines)
-- `crates/xcs-platform/src/sqlite/validation_snapshot.rs` (782 lines)
-- `crates/xcs-server/Cargo.toml` (36 lines)
-- `crates/xcs-server/README.md` (112 lines)
-- `crates/xcs-server/src/auth.rs` (641 lines)
-- `crates/xcs-server/src/auth_primitives.rs` (5 lines)
-- `crates/xcs-server/src/engine_backend/file_manager.rs` (798 lines)
-- `crates/xcs-server/src/engine_backend.rs` (1344 lines)
-- `crates/xcs-server/src/file_manager.rs` (73 lines)
-- `crates/xcs-server/src/http_auth.rs` (426 lines)
-- `crates/xcs-server/src/lib.rs` (1101 lines)
-- `crates/xcs-server/src/smb_rpc.rs` (1474 lines)
-- `crates/xcs-server/src/telemetry/README.md` (51 lines)
-- `crates/xcs-server/src/telemetry/history.rs` (737 lines)
-- `crates/xcs-server/src/telemetry/mod.rs` (395 lines)
-- `crates/xcs-server/src/telemetry/power.rs` (328 lines)
-- `crates/xcs-server/src/telemetry/statistics.rs` (120 lines)
-- `crates/xcs-server/src/transfer.rs` (712 lines)
-- `crates/xcs-server/src/uploads.rs` (266 lines)
-- `crates/xcs-server/src/web_assets.rs` (129 lines)
-- `crates/xcs-server/tests/http_engine.rs` (1734 lines)
-- `crates/xcs-server/tests/telemetry_status.rs` (225 lines)
+- `crates/zxs-auth/Cargo.toml` (17 lines)
+- `crates/zxs-auth/README.md` (7 lines)
+- `crates/zxs-auth/src/lib.rs` (678 lines)
+- `crates/zxs-auth/src/tests.rs` (586 lines)
+- `crates/zxs-platform/Cargo.toml` (31 lines)
+- `crates/zxs-platform/README.md` (28 lines)
+- `crates/zxs-platform/src/admin_auth/mod.rs` (5 lines)
+- `crates/zxs-platform/src/error/fixtures/error-envelope.json` (71 lines)
+- `crates/zxs-platform/src/error/mod.rs` (415 lines)
+- `crates/zxs-platform/src/fs_safety/linux.rs` (217 lines)
+- `crates/zxs-platform/src/fs_safety/mod.rs` (657 lines)
+- `crates/zxs-platform/src/fs_safety/unix.rs` (838 lines)
+- `crates/zxs-platform/src/lib.rs` (19 lines)
+- `crates/zxs-platform/src/payload.rs` (286 lines)
+- `crates/zxs-platform/src/schema_identity/fixtures/schema-fingerprint-v1.json` (28 lines)
+- `crates/zxs-platform/src/schema_identity/mod.rs` (677 lines)
+- `crates/zxs-platform/src/secret/mod.rs` (97 lines)
+- `crates/zxs-platform/src/sqlite/blocking.rs` (125 lines)
+- `crates/zxs-platform/src/sqlite/mod.rs` (568 lines)
+- `crates/zxs-platform/src/sqlite/native_limits.rs` (230 lines)
+- `crates/zxs-platform/src/sqlite/native_security.rs` (110 lines)
+- `crates/zxs-platform/src/sqlite/tests.rs` (429 lines)
+- `crates/zxs-platform/src/sqlite/trusted_ddl.rs` (191 lines)
+- `crates/zxs-platform/src/sqlite/validation_snapshot.rs` (782 lines)
+- `crates/zxs-server/Cargo.toml` (36 lines)
+- `crates/zxs-server/README.md` (112 lines)
+- `crates/zxs-server/src/auth.rs` (641 lines)
+- `crates/zxs-server/src/auth_primitives.rs` (5 lines)
+- `crates/zxs-server/src/engine_backend/file_manager.rs` (798 lines)
+- `crates/zxs-server/src/engine_backend.rs` (1344 lines)
+- `crates/zxs-server/src/file_manager.rs` (73 lines)
+- `crates/zxs-server/src/http_auth.rs` (426 lines)
+- `crates/zxs-server/src/lib.rs` (1101 lines)
+- `crates/zxs-server/src/smb_rpc.rs` (1474 lines)
+- `crates/zxs-server/src/telemetry/README.md` (51 lines)
+- `crates/zxs-server/src/telemetry/history.rs` (737 lines)
+- `crates/zxs-server/src/telemetry/mod.rs` (395 lines)
+- `crates/zxs-server/src/telemetry/power.rs` (328 lines)
+- `crates/zxs-server/src/telemetry/statistics.rs` (120 lines)
+- `crates/zxs-server/src/transfer.rs` (712 lines)
+- `crates/zxs-server/src/uploads.rs` (266 lines)
+- `crates/zxs-server/src/web_assets.rs` (129 lines)
+- `crates/zxs-server/tests/http_engine.rs` (1734 lines)
+- `crates/zxs-server/tests/telemetry_status.rs` (225 lines)

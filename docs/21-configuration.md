@@ -17,7 +17,7 @@
 
 ## 21.1 配置示例
 
-以下 TOML 定义完整目标配置，不是现有进程直接读取的配置或可直接部署的 smb.conf。当前服务读取严格 JSON `Config`，可用 `xcs config-template --production --disks <三个绝对路径> --output <file>` 生成带随机池/盘 ID 的模板，再审查后传给 `xcs --root <state> init --config <file> --username <name>`；模板命令不访问、挂载或初始化设备。实际已接受字段、CLI 和限制见[服务端说明](../crates/xcs-server/README.md)与[实现报告](reports/implementation.md)。
+以下 TOML 定义完整目标配置，不是现有进程直接读取的配置或可直接部署的 smb.conf。当前服务读取严格 JSON `Config`，可用 `zxs config-template --production --disks <三个绝对路径> --output <file>` 生成带随机池/盘 ID 的模板，再审查后传给 `zxs --root <state> init --config <file> --username <name>`；模板命令不访问、挂载或初始化设备。实际已接受字段、CLI 和限制见[服务端说明](../crates/zxs-server/README.md)与[实现报告](reports/implementation.md)。
 
 Samba 配置由经版本验收的部署模板另行生成。设备清单通过登记工具产生，不在示例中填写真实设备路径。
 
@@ -26,7 +26,7 @@ Samba 配置由经版本验收的部署模板另行生成。设备清单通过�
 ```toml
 [server]
 mode = "single-writer"
-local_socket = "/run/xcs/service.sock"
+local_socket = "/run/zxs/service.sock"
 remote_transport = "https"
 http2 = true
 http3 = false

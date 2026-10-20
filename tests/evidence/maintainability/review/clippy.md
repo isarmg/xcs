@@ -1,7 +1,7 @@
 # Final native Clippy review
 
 Command: cargo clippy --locked --offline --workspace --all-targets
-Exit code:0. Full log:/tmp/xcs-review-clippy.log. No source edits or allow attributes added.
+Exit code:0. Full log:the historical temporary test directory/log No source edits or allow attributes added.
 
 ## Actual bug / correctness diagnostics
 None emitted. No correctness, await_holding_lock or suspicious_open_options diagnostics. This does not prove bug absence.

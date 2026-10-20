@@ -1,14 +1,14 @@
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
-const {chromium}=await import(process.env.XCS_PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { verifyPath } from './g4-reference.mjs';
-const root = resolve(process.env.XCS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url))),
-  base = process.env.XCS_PREVIEW_URL || process.env.XCS_BROWSER_BASE || 'http://127.0.0.1:7400',
-  output = resolve(process.env.XCS_MAINT_EVIDENCE || `${root}/tests/evidence/maintainability`);
-const tokenCss = '\n:root { --xcs-compact-row-height:40px; --xcs-input-row-height:50px; }\n';
+const root = resolve(process.env.ZXS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url))),
+  base = process.env.ZXS_PREVIEW_URL || process.env.ZXS_BROWSER_BASE || 'http://127.0.0.1:7400',
+  output = resolve(process.env.ZXS_MAINT_EVIDENCE || `${root}/tests/evidence/maintainability`);
+const tokenCss = '\n:root { --zxs-compact-row-height:40px; --zxs-input-row-height:50px; }\n';
 async function candidateCss(directory, prefix = '') {
   const paths = [];
   for (const entry of await readdir(directory, {
@@ -19,9 +19,9 @@ async function candidateCss(directory, prefix = '') {
   }
   return paths;
 }
-const expectedResources = [...(await candidateCss(root + '/web/dist')), '/pkg/xcs_bg.wasm'].sort();
+const expectedResources = [...(await candidateCss(root + '/web/dist')), '/pkg/zxs_bg.wasm'].sort();
 const password = (await readFile((await readFile(`${root}/runtime/web-preview/password-file`, 'utf8')).trim(), 'utf8')).trim();
-const seed = JSON.parse(await readFile(process.env.XCS_BROWSER_SEED || '/tmp/xcs-demo-seed/result.json', 'utf8')),
+const seed = JSON.parse(await readFile(process.env.ZXS_BROWSER_SEED || '/tmp/zxs-demo-seed/result.json', 'utf8')),
   fixtureFile = seed.files.find(f => f.path.endsWith('/说明.md'));
 assert.ok(fixtureFile);
 const fileId = fixtureFile.file_id,
@@ -123,17 +123,17 @@ async function scene(language, theme, width) {
   await page.addInitScript(({
     theme
   }) => {
-    localStorage.setItem('xcs-theme', theme);
-    window.__xcsPaintBlobs = new Map();
+    localStorage.setItem('zxs-theme', theme);
+    window.__zxsPaintBlobs = new Map();
     const old = URL.createObjectURL.bind(URL);
     URL.createObjectURL = blob => {
       const url = old(blob);
-      window.__xcsPaintBlobs.set(url, blob);
+      window.__zxsPaintBlobs.set(url, blob);
       return url;
     };
-    window.__xcsCspViolations = [];
-    window.__xcsCsp = window.__xcsCspViolations;
-    document.addEventListener('securitypolicyviolation', e => window.__xcsCspViolations.push({
+    window.__zxsCspViolations = [];
+    window.__zxsCsp = window.__zxsCspViolations;
+    document.addEventListener('securitypolicyviolation', e => window.__zxsCspViolations.push({
       directive: e.effectiveDirective,
       blockedURI: e.blockedURI
     }));
@@ -219,7 +219,7 @@ async function scene(language, theme, width) {
         contentType: 'application/json',
         body: JSON.stringify({
           error: {
-            code: 'XCS_STALE_READ',
+            code: 'ZXS_STALE_READ',
             message: 'Synthetic old-session response',
             retryable: false
           }
@@ -258,7 +258,7 @@ async function scene(language, theme, width) {
           contentType: 'application/json',
           body: JSON.stringify({
             error: {
-              code: 'XCS_LAYOUT_MOCK',
+              code: 'ZXS_LAYOUT_MOCK',
               message: language === 'zh' ? '只读页面验收：请求已拦截，真实密码未修改。' : 'Read-only UI acceptance: request intercepted; the real password was not changed.',
               retryable: false
             }
@@ -274,7 +274,7 @@ async function scene(language, theme, width) {
         contentType: 'application/json',
         body: JSON.stringify({
           error: {
-            code: 'XCS_LAYOUT_GUARD',
+            code: 'ZXS_LAYOUT_GUARD',
             message: 'Unexpected write blocked',
             retryable: false
           }
@@ -315,7 +315,7 @@ async function scene(language, theme, width) {
       throw e;
     }
   }
-  const menu = name => page.locator('.xcs-header-navigation').getByRole('button', {
+  const menu = name => page.locator('.zxs-header-navigation').getByRole('button', {
       name,
       exact: true
     }),
@@ -333,13 +333,13 @@ async function scene(language, theme, width) {
     return r.json();
   }
   async function loginAppearance() {
-    const appearance = await page.locator('.xcs-auth-card').evaluate(card => {
+    const appearance = await page.locator('.zxs-auth-card').evaluate(card => {
       const form = card.querySelector(':scope > form');
-      const scope = card.closest('.xcs-auth-shell');
+      const scope = card.closest('.zxs-auth-shell');
       const scopeStyle = getComputedStyle(scope);
       const cardRect = card.getBoundingClientRect();
       const formRect = form.getBoundingClientRect();
-      const controls = [...form.querySelectorAll('input,button,.xcs-error')].map(element => {
+      const controls = [...form.querySelectorAll('input,button,.zxs-error')].map(element => {
         const bounds = element.getBoundingClientRect();
         return {
           tag: element.tagName,
@@ -361,11 +361,11 @@ async function scene(language, theme, width) {
         clientHeight: form.clientHeight,
         scrollHeight: form.scrollHeight,
         formFont: parseFloat(getComputedStyle(form).fontSize),
-        textSizes: [...form.querySelectorAll('h1,label,span,input,button,.xcs-error,.xcs-request-id,code')].map(element => parseFloat(getComputedStyle(element).fontSize)),
+        textSizes: [...form.querySelectorAll('h1,label,span,input,button,.zxs-error,.zxs-request-id,code')].map(element => parseFloat(getComputedStyle(element).fontSize)),
         controls,
-        outerControlFonts: [...scope.querySelectorAll('.xcs-login-controls button')].map(button => getComputedStyle(button).fontSize),
-        tokens: ['control', 'panel', 'notification', 'dialog'].map(name => scopeStyle.getPropertyValue(`--xcs-contour-${name}`).trim()),
-        cardExtent: getComputedStyle(card).getPropertyValue('--xcs-contour-extent').trim(),
+        outerControlFonts: [...scope.querySelectorAll('.zxs-login-controls button')].map(button => getComputedStyle(button).fontSize),
+        tokens: ['control', 'panel', 'notification', 'dialog'].map(name => scopeStyle.getPropertyValue(`--zxs-contour-${name}`).trim()),
+        cardExtent: getComputedStyle(card).getPropertyValue('--zxs-contour-extent').trim(),
         documentWidth: document.documentElement.scrollWidth,
         viewport: innerWidth
       };
@@ -397,7 +397,7 @@ async function scene(language, theme, width) {
           s = getComputedStyle(e);
         return b.width > 1 && b.height > 1 && s.display !== 'none' && s.visibility !== 'hidden' && (!e.closest('dialog') || e.closest('dialog').open);
       };
-      const nodes = [...document.querySelectorAll(authPage ? '.xcs-auth-shell *' : '.xcs-app-shell *,dialog *, .xcs-select-panel:popover-open *')].filter(e => vis(e) && ([...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) || e.matches('input,textarea')));
+      const nodes = [...document.querySelectorAll(authPage ? '.zxs-auth-shell *' : '.zxs-app-shell *,dialog *, .zxs-select-panel:popover-open *')].filter(e => vis(e) && ([...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) || e.matches('input,textarea')));
       const typography = nodes.map(e => {
         const s = getComputedStyle(e),
           b = e.getBoundingClientRect();
@@ -422,7 +422,7 @@ async function scene(language, theme, width) {
           lineHeight: s.lineHeight,
           height: b.height,
           width: b.width,
-          extent: parseFloat(s.getPropertyValue('--xcs-contour-extent')) || 0,
+          extent: parseFloat(s.getPropertyValue('--zxs-contour-extent')) || 0,
           padding: {
             left: s.paddingLeft,
             right: s.paddingRight,
@@ -432,7 +432,7 @@ async function scene(language, theme, width) {
           border: [s.borderTopWidth, s.borderRightWidth, s.borderBottomWidth, s.borderLeftWidth],
           align: s.alignItems,
           verticalAlign: s.verticalAlign,
-          expectedFont: authPage ? null : e.matches('input.xcs-input:not(.xcs-input--compact), textarea.xcs-input:not(.xcs-input--compact)') ? geometry.comfortable * .4 : geometry.compact * .4,
+          expectedFont: authPage ? null : e.matches('input.zxs-input:not(.zxs-input--compact), textarea.zxs-input:not(.zxs-input--compact)') ? geometry.comfortable * .4 : geometry.compact * .4,
           scrollWidth: e.scrollWidth,
           clientWidth: e.clientWidth,
           scrollHeight: e.scrollHeight,
@@ -440,14 +440,14 @@ async function scene(language, theme, width) {
         };
       });
       const contours = [];
-      for (const e of [...document.querySelectorAll('[data-xcs-contour-state]')].filter(vis)) {
+      for (const e of [...document.querySelectorAll('[data-zxs-contour-state]')].filter(vis)) {
         const s = getComputedStyle(e),
           b = e.getBoundingClientRect(),
-          extent = parseFloat(s.getPropertyValue('--xcs-contour-extent'));
+          extent = parseFloat(s.getPropertyValue('--zxs-contour-extent'));
         if (!extent) continue;
         let path, source, sourceSvg;
-        const fg = e.querySelector(':scope > [data-xcs-contour-decoration=foreground] path'),
-          decor = e.querySelector(':scope > [data-xcs-contour-decoration=""]'),
+        const fg = e.querySelector(':scope > [data-zxs-contour-decoration=foreground] path'),
+          decor = e.querySelector(':scope > [data-zxs-contour-decoration=""]'),
           clip = (decor ? getComputedStyle(decor).clipPath : s.clipPath).match(/^path\("(.*)"\)$/);
         if (clip) {
           path = clip[1];
@@ -458,7 +458,7 @@ async function scene(language, theme, width) {
         }
         if (!path) for (const image of [s.borderImageSource, s.backgroundImage, s.maskImage]) {
           for (const match of image.matchAll(/url\("?([^"\)]+)"?\)/g)) {
-            const blob = window.__xcsPaintBlobs.get(match[1]);
+            const blob = window.__zxsPaintBlobs.get(match[1]);
             if (!blob) continue;
             const doc = new DOMParser().parseFromString(await blob.text(), 'image/svg+xml');
             path = (doc.querySelector('clipPath#inside>path') || doc.querySelector('path'))?.getAttribute('d');
@@ -484,9 +484,9 @@ async function scene(language, theme, width) {
           path,
           source,
           sourceSvg,
-          state: e.dataset.xcsContourState,
-          reason: e.dataset.xcsContourReason,
-          borderToken: s.getPropertyValue('--xcs-block-border').trim(),
+          state: e.dataset.zxsContourState,
+          reason: e.dataset.zxsContourReason,
+          borderToken: s.getPropertyValue('--zxs-block-border').trim(),
           foreground: fs ? {
             fill: fs.fill,
             fillRule: fs.fillRule,
@@ -499,7 +499,7 @@ async function scene(language, theme, width) {
           }
         });
       }
-      const headerControls = [...document.querySelectorAll('.xcs-header-actions button')].filter(vis).map(e => {
+      const headerControls = [...document.querySelectorAll('.zxs-header-actions button')].filter(vis).map(e => {
         const s = getComputedStyle(e),
           b = e.getBoundingClientRect(),
           svg = e.querySelector('svg')?.getBoundingClientRect();
@@ -507,7 +507,7 @@ async function scene(language, theme, width) {
           label: e.getAttribute('aria-label'),
           height: b.height,
           font: parseFloat(s.fontSize),
-          extent: parseFloat(s.getPropertyValue('--xcs-contour-extent')),
+          extent: parseFloat(s.getPropertyValue('--zxs-contour-extent')),
           icon: svg ? {
             width: svg.width,
             height: svg.height
@@ -516,14 +516,14 @@ async function scene(language, theme, width) {
       });
       return {
         headerControls,
-        runtime: document.documentElement.dataset.xcsRuntime,
-        ready: document.documentElement.dataset.xcsReady,
-        theme: document.documentElement.dataset.xcsTheme,
+        runtime: document.documentElement.dataset.zxsRuntime,
+        ready: document.documentElement.dataset.zxsReady,
+        theme: document.documentElement.dataset.zxsTheme,
         viewport: innerWidth,
         documentWidth: document.documentElement.scrollWidth,
         typography,
         contours,
-        csp: window.__xcsCspViolations || []
+        csp: window.__zxsCspViolations || []
       };
     }, {
       authPage,
@@ -582,7 +582,7 @@ async function scene(language, theme, width) {
       ...data
     });
     await writeFile(`${output}/inventory-${name}-${key}.json`, JSON.stringify(data, null, 2) + '\n');
-    assert.equal(data.runtime, 'xcs-web');
+    assert.equal(data.runtime, 'zxs-web');
     assert.equal(data.ready, 'true');
     assert.equal(data.theme, theme);
     assert.ok(data.documentWidth <= data.viewport, `${name}: horizontal document overflow ${data.documentWidth}>${data.viewport}`);
@@ -604,23 +604,23 @@ async function scene(language, theme, width) {
   }
   async function statusLayout(name) {
     await settle();
-    await page.waitForFunction(() => [...document.querySelectorAll('.xcs-metric-chart>svg')].every(s => {
+    await page.waitForFunction(() => [...document.querySelectorAll('.zxs-metric-chart>svg')].every(s => {
       const b = s.parentElement.getBoundingClientRect(),
         v = s.viewBox.baseVal;
       return Math.abs(v.width - b.width) < .5 && Math.abs(v.height - b.height) < .5;
     }));
-    const m = await page.locator('.xcs-metric-grid').evaluate(grid => {
+    const m = await page.locator('.zxs-metric-grid').evaluate(grid => {
       const g = getComputedStyle(grid);
       return {
         viewport: innerWidth,
         document: document.documentElement.scrollWidth,
         columns: g.gridTemplateColumns.split(/\s+/).length,
-        cards: [...grid.querySelectorAll('.xcs-metric-card')].map(card => {
+        cards: [...grid.querySelectorAll('.zxs-metric-card')].map(card => {
           const c = card.getBoundingClientRect(),
-            chart = card.querySelector('.xcs-metric-chart'),
+            chart = card.querySelector('.zxs-metric-chart'),
             s = chart?.querySelector('svg'),
             b = chart?.getBoundingClientRect();
-          const labels = s ? [...s.querySelectorAll('.xcs-chart-label')].map(e => {
+          const labels = s ? [...s.querySelectorAll('.zxs-chart-label')].map(e => {
             const r = e.getBoundingClientRect();
             return {
               text: e.textContent,
@@ -637,22 +637,22 @@ async function scene(language, theme, width) {
             width: c.width,
             height: c.height,
             font: parseFloat(getComputedStyle(card).fontSize),
-            extent: parseFloat(getComputedStyle(card).getPropertyValue('--xcs-contour-extent')),
+            extent: parseFloat(getComputedStyle(card).getPropertyValue('--zxs-contour-extent')),
             scrollWidth: card.scrollWidth,
             clientWidth: card.clientWidth,
             chart: b ? {
               width: b.width,
               height: b.height,
               svgNS: s?.namespaceURI,
-              gridFill: s?.querySelector('.xcs-chart-grid') ? getComputedStyle(s.querySelector('.xcs-chart-grid')).fill : null,
-              gridD: s?.querySelector('.xcs-chart-grid')?.getAttribute('d'),
-              paths: s ? [...s.querySelectorAll('.xcs-chart-line')].map(e => ({
+              gridFill: s?.querySelector('.zxs-chart-grid') ? getComputedStyle(s.querySelector('.zxs-chart-grid')).fill : null,
+              gridD: s?.querySelector('.zxs-chart-grid')?.getAttribute('d'),
+              paths: s ? [...s.querySelectorAll('.zxs-chart-line')].map(e => ({
                 namespace: e.namespaceURI,
                 d: e.getAttribute('d'),
                 fill: getComputedStyle(e).fill,
                 stroke: getComputedStyle(e).stroke
               })) : [],
-              dots: s ? [...s.querySelectorAll('.xcs-chart-dot')].map(e => ({
+              dots: s ? [...s.querySelectorAll('.zxs-chart-dot')].map(e => ({
                 namespace: e.namespaceURI,
                 cx: e.getAttribute('cx'),
                 cy: e.getAttribute('cy'),
@@ -715,9 +715,9 @@ async function scene(language, theme, width) {
     checkRows = true
   } = {}) {
     const data = await page.evaluate(() => {
-      const root = document.querySelector('.xcs-version-tree-canvas'),
+      const root = document.querySelector('.zxs-version-tree-canvas'),
         scroll = root.parentElement,
-        svg = root.querySelector('svg.xcs-version-tree-links'),
+        svg = root.querySelector('svg.zxs-version-tree-links'),
         r = root.getBoundingClientRect();
       const rect = e => {
         const b = e.getBoundingClientRect();
@@ -730,11 +730,11 @@ async function scene(language, theme, width) {
           right: b.right - r.x
         };
       };
-      const nodes = [...root.querySelectorAll('.xcs-version-node')].map(e => ({
+      const nodes = [...root.querySelectorAll('.zxs-version-node')].map(e => ({
         id: e.dataset.versionId,
         depth: Number(e.closest('[data-version-depth]').dataset.versionDepth),
         ...rect(e),
-        children: [...e.children].filter(x => !x.hasAttribute('data-xcs-contour-decoration')).map(c => ({
+        children: [...e.children].filter(x => !x.hasAttribute('data-zxs-contour-decoration')).map(c => ({
           cls: c.className,
           tag: c.tagName,
           ...rect(c),
@@ -748,12 +748,12 @@ async function scene(language, theme, width) {
           font: parseFloat(getComputedStyle(b).fontSize)
         })),
         text: e.textContent,
-        extent: parseFloat(getComputedStyle(e).getPropertyValue('--xcs-contour-extent')),
+        extent: parseFloat(getComputedStyle(e).getPropertyValue('--zxs-contour-extent')),
         border: getComputedStyle(e).borderTopWidth,
-        current: e.querySelector('.xcs-version-current')?.textContent || null,
-        currentInDate: !!e.querySelector('.xcs-version-date .xcs-version-current')
+        current: e.querySelector('.zxs-version-current')?.textContent || null,
+        currentInDate: !!e.querySelector('.zxs-version-date .zxs-version-current')
       }));
-      const edges = [...svg.querySelectorAll('.xcs-version-tree-edge')].map(e => {
+      const edges = [...svg.querySelectorAll('.zxs-version-tree-edge')].map(e => {
         const n = e.getTotalLength();
         return {
           parent: e.dataset.parentVersion,
@@ -801,7 +801,7 @@ async function scene(language, theme, width) {
           d: arrow.getAttribute('d'),
           refX: marker.getAttribute('refX')
         },
-        csp: window.__xcsCsp
+        csp: window.__zxsCsp
       };
     });
     if (expectedIds) assert.deepEqual(data.nodes.map(n => n.id).sort(), [...expectedIds].sort(), `${name}: API versions and UI nodes`);
@@ -820,9 +820,9 @@ async function scene(language, theme, width) {
     assert.deepEqual(data.csp, []);
     for (const n of data.nodes) {
       assert.equal(n.children.length, 3, `${name}: node must have three logical rows`);
-      assert.ok(n.children[0].cls.includes('xcs-version-date'));
-      assert.ok(n.children[1].cls.includes('xcs-version-note-row'));
-      assert.ok(n.children[2].cls.includes('xcs-version-actions'));
+      assert.ok(n.children[0].cls.includes('zxs-version-date'));
+      assert.ok(n.children[1].cls.includes('zxs-version-note-row'));
+      assert.ok(n.children[2].cls.includes('zxs-version-actions'));
       assert.equal(n.extent, geometry.compact / 2);
       assert.equal(n.border, '1px');
       if (checkRows) {
@@ -840,7 +840,7 @@ async function scene(language, theme, width) {
       assert.equal(edge.fill, 'none');
       assert.notEqual(edge.stroke, 'none');
       assert.notEqual(edge.stroke, 'rgb(0, 0, 0)');
-      assert.equal(edge.marker, 'url(#xcs-version-arrow)');
+      assert.equal(edge.marker, 'url(#zxs-version-arrow)');
       assert.ok(!/NaN|Infinity/.test(edge.d));
       const parent = data.nodes.find(n => n.id === edge.parent),
         child = data.nodes.find(n => n.id === edge.child),
@@ -874,12 +874,12 @@ async function scene(language, theme, width) {
     throw failure;
   }
   async function flexGaps(name) {
-    const selectors = ['.xcs-page-header', '.xcs-header-brand-navigation', '.xcs-header-navigation', '.xcs-header-actions', '.xcs-breadcrumb', '.xcs-file-toolbar', '.xcs-entry-navigation', '.xcs-file-heading', '.xcs-entry-actions', '.xcs-version-actions', '.xcs-account-form>.xcs-actions', '.xcs-monitor-toolbar', '.xcs-history-toolbar'];
+    const selectors = ['.zxs-page-header', '.zxs-header-brand-navigation', '.zxs-header-navigation', '.zxs-header-actions', '.zxs-breadcrumb', '.zxs-file-toolbar', '.zxs-entry-navigation', '.zxs-file-heading', '.zxs-entry-actions', '.zxs-version-actions', '.zxs-account-form>.zxs-actions', '.zxs-monitor-toolbar', '.zxs-history-toolbar'];
     const records = await page.evaluate(selectors => selectors.flatMap(selector => [...document.querySelectorAll(selector)].filter(e => e.getBoundingClientRect().width > 0).map(e => {
       const s = getComputedStyle(e),
         children = [...e.children].filter(c => {
           const b = c.getBoundingClientRect();
-          return b.width > 0 && b.height > 0 && !c.hasAttribute('data-xcs-contour-decoration') && getComputedStyle(c).position !== 'absolute';
+          return b.width > 0 && b.height > 0 && !c.hasAttribute('data-zxs-contour-decoration') && getComputedStyle(c).position !== 'absolute';
         }).map(c => {
           const b = c.getBoundingClientRect();
           return {
@@ -935,23 +935,23 @@ async function scene(language, theme, width) {
       const visible = e => {
         const b = e.getBoundingClientRect(), s = getComputedStyle(e);
         return b.width > 0 && b.height > 0 && s.display !== 'none' && s.visibility !== 'hidden'
-          && !['absolute', 'fixed'].includes(s.position) && !e.hasAttribute('data-xcs-contour-decoration');
+          && !['absolute', 'fixed'].includes(s.position) && !e.hasAttribute('data-zxs-contour-decoration');
       };
       const rect = e => {
         const b = e.getBoundingClientRect();
         return { top: b.top, bottom: b.bottom, left: b.left, right: b.right };
       };
-      const painted = '.xcs-frame,.xcs-input:not(.xcs-input--underline)';
+      const painted = '.zxs-frame,.zxs-input:not(.zxs-input--underline)';
       return selectors.flatMap(selector => [...document.querySelectorAll(selector)].filter(visible).map(e => {
         const children = [...e.children].filter(visible).map(c => ({
           cls: String(c.className),
           ...rect(c),
           marginTop: parseFloat(getComputedStyle(c).marginTop),
-          surfacePair: c.matches(':is(.xcs-frame,.xcs-surface,.xcs-surface-end) + :is(.xcs-frame,.xcs-surface,.xcs-surface-start)'),
+          surfacePair: c.matches(':is(.zxs-frame,.zxs-surface,.zxs-surface-end) + :is(.zxs-frame,.zxs-surface,.zxs-surface-start)'),
           // On phones a full explanatory row already separates the branch select
           // from the list; adding another half-row would count that clearance twice.
           phoneExplanation: matchMedia('(max-width:36rem)').matches
-            && c.matches('.xcs-file-toolbar:has(> .xcs-select) + .xcs-surface'),
+            && c.matches('.zxs-file-toolbar:has(> .zxs-select) + .zxs-surface'),
           paints: [...(c.matches(painted) ? [c] : []), ...c.querySelectorAll(painted)].filter(visible).map(rect)
         }));
         return {
@@ -1061,17 +1061,17 @@ async function scene(language, theme, width) {
     return records;
   }
   async function detailGeometry(name) {
-    const data = await page.locator('.xcs-entry-content').evaluate(panel => {
+    const data = await page.locator('.zxs-entry-content').evaluate(panel => {
       const s = getComputedStyle(panel),
         b = panel.getBoundingClientRect(),
-        dl = panel.querySelector('.xcs-file-properties');
+        dl = panel.querySelector('.zxs-file-properties');
       return {
         padding: [s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft],
         border: [s.borderTopWidth, s.borderRightWidth, s.borderBottomWidth, s.borderLeftWidth],
-        extent: parseFloat(s.getPropertyValue('--xcs-contour-extent')),
+        extent: parseFloat(s.getPropertyValue('--zxs-contour-extent')),
         font: parseFloat(s.fontSize),
         propertiesGap: getComputedStyle(dl).rowGap,
-        sections: [...panel.querySelectorAll('.xcs-entry-section')].map(e => ({
+        sections: [...panel.querySelectorAll('.zxs-entry-section')].map(e => ({
           cls: e.className,
           gap: getComputedStyle(e).rowGap
         })),
@@ -1089,15 +1089,15 @@ async function scene(language, theme, width) {
       name,
       ...data
     });
-    await rowRecords(name, ['.xcs-entry-content > .xcs-file-heading > h2', '.xcs-entry-content > .xcs-file-heading .xcs-entry-actions > .xcs-button', '.xcs-version-date', '.xcs-version-note-row:not(:has(input))', '.xcs-version-actions .xcs-button', '.xcs-file-properties dt', '.xcs-file-properties dd', '.xcs-entry-section > h3', '.xcs-entry-section > p', '.xcs-entry-section .xcs-select-label', '.xcs-entry-content > .xcs-file-toolbar > button', '.xcs-entry-content .xcs-inline-edit > button', '.xcs-entry-content .xcs-entry-section .xcs-inline-branch > button']);
-    if (await page.locator('.xcs-entry-section .xcs-select-trigger').count()) await rowRecords(name + '-branch-trigger', ['.xcs-entry-section .xcs-select-trigger'], {
+    await rowRecords(name, ['.zxs-entry-content > .zxs-file-heading > h2', '.zxs-entry-content > .zxs-file-heading .zxs-entry-actions > .zxs-button', '.zxs-version-date', '.zxs-version-note-row:not(:has(input))', '.zxs-version-actions .zxs-button', '.zxs-file-properties dt', '.zxs-file-properties dd', '.zxs-entry-section > h3', '.zxs-entry-section > p', '.zxs-entry-section .zxs-select-label', '.zxs-entry-content > .zxs-file-toolbar > button', '.zxs-entry-content .zxs-inline-edit > button', '.zxs-entry-content .zxs-entry-section .zxs-inline-branch > button']);
+    if (await page.locator('.zxs-entry-section .zxs-select-trigger').count()) await rowRecords(name + '-branch-trigger', ['.zxs-entry-section .zxs-select-trigger'], {
       exact: true
     });
-    await blockGaps(name, ['.xcs-entry-page', '.xcs-entry-content', '.xcs-entry-version-history']);
+    await blockGaps(name, ['.zxs-entry-page', '.zxs-entry-content', '.zxs-entry-version-history']);
   }
   async function historyGeometry(name) {
-    await page.locator('.xcs-history-list-panel').waitFor();
-    const data = await page.locator('.xcs-history-list-panel').evaluate(panel => {
+    await page.locator('.zxs-history-list-panel').waitFor();
+    const data = await page.locator('.zxs-history-list-panel').evaluate(panel => {
       const b = panel.getBoundingClientRect(),
         s = getComputedStyle(panel),
         list = panel.querySelector('ul');
@@ -1107,7 +1107,7 @@ async function scene(language, theme, width) {
         panel: {
           padding: [s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft],
           border: [s.borderTopWidth, s.borderRightWidth, s.borderBottomWidth, s.borderLeftWidth],
-          extent: parseFloat(s.getPropertyValue('--xcs-contour-extent'))
+          extent: parseFloat(s.getPropertyValue('--zxs-contour-extent'))
         },
         list: {
           gap: getComputedStyle(list).rowGap,
@@ -1181,14 +1181,14 @@ async function scene(language, theme, width) {
       name,
       ...data
     });
-    await rowRecords(name + '-headers', ['.xcs-history-page > p', '.xcs-history-toolbar .xcs-select-label'], {
+    await rowRecords(name + '-headers', ['.zxs-history-page > p', '.zxs-history-toolbar .zxs-select-label'], {
       padding: 10.8
     });
-    await rowRecords(name + '-trigger', ['.xcs-history-toolbar .xcs-select-trigger'], {
+    await rowRecords(name + '-trigger', ['.zxs-history-toolbar .zxs-select-trigger'], {
       padding: 9.8,
       exact: true
     });
-    await blockGaps(name, ['.xcs-history-page']);
+    await blockGaps(name, ['.zxs-history-page']);
     return data;
   }
   function version(id, parents, day, note = '', current = false) {
@@ -1201,7 +1201,7 @@ async function scene(language, theme, width) {
       current
     };
   }
-  const nodeById = id => page.locator(`.xcs-version-node[data-version-id=${JSON.stringify(id)}]`);
+  const nodeById = id => page.locator(`.zxs-version-node[data-version-id=${JSON.stringify(id)}]`);
   async function refreshDetails() {
     const response = page.waitForResponse(r => new URL(r.url()).pathname === historyPath && r.ok());
     await page.getByRole('button', {
@@ -1253,32 +1253,32 @@ async function scene(language, theme, width) {
           height: b.height,
           width: b.width,
           font: parseFloat(s.fontSize),
-          extent: parseFloat(s.getPropertyValue('--xcs-contour-extent')) || 0,
+          extent: parseFloat(s.getPropertyValue('--zxs-contour-extent')) || 0,
           border: parseFloat(s.borderLeftWidth),
           paddingLeft: parseFloat(s.paddingLeft),
-          rowBorder: parseFloat(s.getPropertyValue('--xcs-row-border')) || 0,
+          rowBorder: parseFloat(s.getPropertyValue('--zxs-row-border')) || 0,
           rowGap: parseFloat(s.rowGap),
           columnGap: parseFloat(s.columnGap)
         };
       };
       const choose = s => [...document.querySelectorAll(s)].filter(visible);
       return {
-        missingPanels: choose('.xcs-app-shell .xcs-content-panel').filter(e => !e.classList.contains('xcs-frame')).map(box),
-        missingStacks: choose('.xcs-app-shell .xcs-content-stack').filter(e => !e.classList.contains('xcs-stack')).map(box),
-        missingCompacts: choose('.xcs-file-search input,.xcs-account-page input,.xcs-select-trigger').filter(e => !e.classList.contains('xcs-input--compact')).map(box),
-        missingUnderlines: choose('input.xcs-inline-input,input.xcs-branch-name').filter(e => !e.classList.contains('xcs-input--underline')).map(box),
-        frames: choose('.xcs-app-shell .xcs-frame').map(box),
-        stacks: choose('.xcs-app-shell .xcs-stack').map(box),
-        flows: choose('.xcs-app-shell .xcs-flow').map(box),
-        rows: choose('.xcs-app-shell .xcs-row').map(box),
-        inputs: choose('.xcs-app-shell .xcs-input').map(e => ({
+        missingPanels: choose('.zxs-app-shell .zxs-content-panel').filter(e => !e.classList.contains('zxs-frame')).map(box),
+        missingStacks: choose('.zxs-app-shell .zxs-content-stack').filter(e => !e.classList.contains('zxs-stack')).map(box),
+        missingCompacts: choose('.zxs-file-search input,.zxs-account-page input,.zxs-select-trigger').filter(e => !e.classList.contains('zxs-input--compact')).map(box),
+        missingUnderlines: choose('input.zxs-inline-input,input.zxs-branch-name').filter(e => !e.classList.contains('zxs-input--underline')).map(box),
+        frames: choose('.zxs-app-shell .zxs-frame').map(box),
+        stacks: choose('.zxs-app-shell .zxs-stack').map(box),
+        flows: choose('.zxs-app-shell .zxs-flow').map(box),
+        rows: choose('.zxs-app-shell .zxs-row').map(box),
+        inputs: choose('.zxs-app-shell .zxs-input').map(e => ({
           ...box(e),
-          compact: e.classList.contains('xcs-input--compact'),
-          underline: e.classList.contains('xcs-input--underline')
+          compact: e.classList.contains('zxs-input--compact'),
+          underline: e.classList.contains('zxs-input--underline')
         })),
-        noticeContainers: document.querySelectorAll('.xcs-app-shell .xcs-status').length,
-        errorContainers: document.querySelectorAll('.xcs-app-shell .xcs-error-center').length,
-        mainVisibleChildren: choose('.xcs-shell-main > *:not([data-xcs-contour-decoration])').map(box),
+        noticeContainers: document.querySelectorAll('.zxs-app-shell .zxs-status').length,
+        errorContainers: document.querySelectorAll('.zxs-app-shell .zxs-error-center').length,
+        mainVisibleChildren: choose('.zxs-shell-main > *:not([data-zxs-contour-decoration])').map(box),
         pageWidth: document.documentElement.scrollWidth,
         viewport: innerWidth,
         geometry
@@ -1324,28 +1324,28 @@ async function scene(language, theme, width) {
       name,
       ...data
     });
-    await blockGaps(name + '-shared-stacks', ['.xcs-app-shell .xcs-stack']);
+    await blockGaps(name + '-shared-stacks', ['.zxs-app-shell .zxs-stack']);
     return data;
   }
   async function ordinaryInput(name) {
     await page.evaluate(() => {
       const input = document.createElement('input');
-      input.className = 'xcs-input';
-      input.setAttribute('data-xcs-probe', 'ordinary-input');
+      input.className = 'zxs-input';
+      input.setAttribute('data-zxs-probe', 'ordinary-input');
       input.setAttribute('aria-label', 'Ordinary component geometry probe');
       input.value = 'component probe';
-      document.querySelector('.xcs-shell-main > .xcs-content-stack').append(input);
+      document.querySelector('.zxs-shell-main > .zxs-content-stack').append(input);
     });
     try {
       await settle();
-      await eventually(async () => (await page.locator('[data-xcs-probe=ordinary-input]').getAttribute('data-xcs-contour-state')) !== null, 'ordinary component receives the actual Rust contour');
-      const value = await page.locator('[data-xcs-probe=ordinary-input]').evaluate(e => {
+      await eventually(async () => (await page.locator('[data-zxs-probe=ordinary-input]').getAttribute('data-zxs-contour-state')) !== null, 'ordinary component receives the actual Rust contour');
+      const value = await page.locator('[data-zxs-probe=ordinary-input]').evaluate(e => {
         const s = getComputedStyle(e);
         return {
           height: e.getBoundingClientRect().height,
           font: parseFloat(s.fontSize),
           padding: parseFloat(s.paddingLeft),
-          extent: parseFloat(s.getPropertyValue('--xcs-contour-extent'))
+          extent: parseFloat(s.getPropertyValue('--zxs-contour-extent'))
         };
       });
       assert.equal(value.height, geometry.comfortable);
@@ -1359,19 +1359,19 @@ async function scene(language, theme, width) {
       });
       await snapshot(name);
     } finally {
-      await page.locator('[data-xcs-probe=ordinary-input]').evaluate(e => e.remove());
+      await page.locator('[data-zxs-probe=ordinary-input]').evaluate(e => e.remove());
     }
   }
   async function inspectSelect(name, selector) {
     const trigger = page.locator(selector).first();
     await trigger.click();
-    const panel = page.locator('.xcs-select-panel:popover-open');
+    const panel = page.locator('.zxs-select-panel:popover-open');
     await panel.waitFor();
     await page.keyboard.press('ArrowDown');
     await settle();
-    const options = await panel.locator('.xcs-select-option').evaluateAll(elements => elements.map(e => {
+    const options = await panel.locator('.zxs-select-option').evaluateAll(elements => elements.map(e => {
       const s = getComputedStyle(e);
-      return { height: e.getBoundingClientRect().height, font: parseFloat(s.fontSize), paddingLeft: parseFloat(s.paddingLeft), extent: parseFloat(s.getPropertyValue('--xcs-contour-extent')) };
+      return { height: e.getBoundingClientRect().height, font: parseFloat(s.fontSize), paddingLeft: parseFloat(s.paddingLeft), extent: parseFloat(s.getPropertyValue('--zxs-contour-extent')) };
     }));
     assert.ok(options.length > 0);
     for (const option of options) {
@@ -1388,10 +1388,10 @@ async function scene(language, theme, width) {
     await panel.waitFor({ state: 'hidden' });
   }
   async function accountGeometry(name) {
-    const data = await page.locator('.xcs-account-page').evaluate(page => {
-      const panel = page.querySelector('.xcs-content-panel'),
+    const data = await page.locator('.zxs-account-page').evaluate(page => {
+      const panel = page.querySelector('.zxs-content-panel'),
         form = page.querySelector('form'),
-        fields = page.querySelector('.xcs-account-fields');
+        fields = page.querySelector('.zxs-account-fields');
       const box = e => {
         const b = e.getBoundingClientRect(),
           s = getComputedStyle(e);
@@ -1403,7 +1403,7 @@ async function scene(language, theme, width) {
           width: b.width,
           height: b.height,
           font: parseFloat(s.fontSize),
-          extent: parseFloat(s.getPropertyValue('--xcs-contour-extent')),
+          extent: parseFloat(s.getPropertyValue('--zxs-contour-extent')),
           padLeft: parseFloat(s.paddingLeft),
           border: [s.borderTopWidth, s.borderRightWidth, s.borderBottomWidth, s.borderLeftWidth],
           display: s.display,
@@ -1425,7 +1425,7 @@ async function scene(language, theme, width) {
           input: box(label.querySelector('input'))
         })),
         save: box(page.querySelector('button')),
-        error: page.querySelector('.xcs-error') ? box(page.querySelector('.xcs-error')) : null
+        error: page.querySelector('.zxs-error') ? box(page.querySelector('.zxs-error')) : null
       };
     });
     const h = geometry.compact,
@@ -1465,8 +1465,8 @@ async function scene(language, theme, width) {
     return data;
   }
   async function fileRows(name) {
-    const data = await page.locator('.xcs-file-list-panel').evaluate(panel => {
-      const scroll = panel.querySelector('.xcs-table-scroll'),
+    const data = await page.locator('.zxs-file-list-panel').evaluate(panel => {
+      const scroll = panel.querySelector('.zxs-table-scroll'),
         table = scroll.querySelector('table');
       return {
         viewport: innerWidth,
@@ -1493,7 +1493,7 @@ async function scene(language, theme, width) {
             textStart = range.getBoundingClientRect().left - bounds.left;
             break;
           }
-          const icon = cell.querySelector('.xcs-file-name > svg'),
+          const icon = cell.querySelector('.zxs-file-name > svg'),
             iconOffset = icon ? icon.getBoundingClientRect().width + (parseFloat(getComputedStyle(icon.parentElement).columnGap) || 0) : 0,
             contentStart = parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
           return {
@@ -1539,7 +1539,7 @@ async function scene(language, theme, width) {
       name: t.login,
       exact: true
     }).click();
-    await page.locator('.xcs-disk-entry').first().waitFor({
+    await page.locator('.zxs-disk-entry').first().waitFor({
       timeout: 60000
     });
     await Promise.allSettled(assetReads);
@@ -1578,21 +1578,21 @@ async function scene(language, theme, width) {
       await fileRows('disks');
       await snapshot('disks');
     });
-    await page.locator('.xcs-disk-entry[data-slot=P01]').click();
-    await page.locator('.xcs-file-table tbody').getByRole('button', {
+    await page.locator('.zxs-disk-entry[data-slot=P01]').click();
+    await page.locator('.zxs-file-table tbody').getByRole('button', {
       name: seed.folder,
       exact: true
     }).click();
     await check('file-toolbar-list-and-single-source-row-geometry', async () => {
       await sharedRoles('files');
       await flexGaps('files');
-      await blockGaps('files', ['.xcs-file-manager']);
+      await blockGaps('files', ['.zxs-file-manager']);
       await fileRows('files');
       await ordinaryInput('ordinary-input-default');
       await snapshot('files');
       await shot('files');
     });
-    await page.locator('.xcs-file-table tbody tr').filter({
+    await page.locator('.zxs-file-table tbody tr').filter({
       has: page.getByRole('button', {
         name: '代码',
         exact: true
@@ -1612,7 +1612,7 @@ async function scene(language, theme, width) {
       name: language === 'zh' ? '返回文件列表' : 'Back to files',
       exact: true
     }).click();
-    await page.locator('.xcs-file-table tbody tr').filter({
+    await page.locator('.zxs-file-table tbody tr').filter({
       has: page.getByRole('button', {
         name: '说明.md',
         exact: true
@@ -1621,7 +1621,7 @@ async function scene(language, theme, width) {
       name: t.details,
       exact: true
     }).click();
-    await page.locator('.xcs-version-node').first().waitFor();
+    await page.locator('.zxs-version-node').first().waitFor();
     await check('real-file-details-latest-first-real-parent-arrows', async () => {
       const h = await getReal(historyPath);
       state.realVersionMetadata = h.versions.map(v => ({
@@ -1654,23 +1654,23 @@ async function scene(language, theme, width) {
       await shot('file-details-tree');
     });
     await check('inline-edit-limit-ime-and-cancel-no-business-post', async () => {
-      const article = page.locator('.xcs-entry-content'),
+      const article = page.locator('.zxs-entry-content'),
         edit = article.getByRole('button', {
           name: language === 'zh' ? '编辑文件备注' : 'Edit file note',
           exact: true
         });
       await edit.click();
-      const fileInput = article.locator('section > .xcs-inline-edit input.xcs-inline-input');
+      const fileInput = article.locator('section > .zxs-inline-edit input.zxs-inline-input');
       await fileInput.fill('cancelled-ui-probe');
       await sharedRoles('file-note-edit');
       await fileInput.press('Escape');
-      assert.equal(await article.locator('input.xcs-inline-input').count(), 0);
+      assert.equal(await article.locator('input.zxs-inline-input').count(), 0);
       const n = nodeById('left');
       await n.getByRole('button', {
         name: t.edit,
         exact: true
       }).click();
-      const input = n.locator('input.xcs-inline-input');
+      const input = n.locator('input.zxs-inline-input');
       await input.fill('a'.repeat(129));
       await input.press('Enter');
       assert.equal(await input.getAttribute('aria-invalid'), 'true');
@@ -1688,10 +1688,10 @@ async function scene(language, theme, width) {
         name: t.branch,
         exact: true
       }).click();
-      const branchInput = page.locator('.xcs-version-actions input.xcs-branch-name');
+      const branchInput = page.locator('.zxs-version-actions input.zxs-branch-name');
       await branchInput.fill('cancelled-branch');
       await sharedRoles('version-branch-edit');
-      await page.locator('.xcs-entry-navigation button').first().focus();
+      await page.locator('.zxs-entry-navigation button').first().focus();
       await eventually(async () => (await branchInput.count()) === 0, 'blur cancels branch input');
       assert.equal(state.mockWrites.length, 0);
       assert.equal(state.unexpectedWrites.length, 0);
@@ -1699,11 +1699,11 @@ async function scene(language, theme, width) {
     });
     await menu(t.history).click();
     await check('real-history-list-shared-frames-and-wrapped-rows', async () => {
-      await page.locator('.xcs-history-list-panel').waitFor();
-      await eventually(async () => !(await page.locator('.xcs-history-page .xcs-loading').count()), 'history completes');
+      await page.locator('.zxs-history-list-panel').waitFor();
+      await eventually(async () => !(await page.locator('.zxs-history-page .zxs-loading').count()), 'history completes');
       await sharedRoles('history-real');
       await historyGeometry('history-real');
-      await inspectSelect('history-select-default', '.xcs-history-toolbar .xcs-select-trigger');
+      await inspectSelect('history-select-default', '.zxs-history-toolbar .zxs-select-trigger');
       await snapshot('history-real');
       await page.screenshot({
         path: `${output}/history-real-${key}.png`,
@@ -1753,10 +1753,10 @@ async function scene(language, theme, width) {
         exact: true
       }).click();
       await response;
-      await page.locator('.xcs-history-page .xcs-empty').waitFor();
-      assert.equal(await page.locator('.xcs-history-list-panel').count(), 0);
+      await page.locator('.zxs-history-page .zxs-empty').waitFor();
+      assert.equal(await page.locator('.zxs-history-list-panel').count(), 0);
       await sharedRoles('history-empty');
-      await rowRecords('empty-history', ['.xcs-history-page .xcs-empty'], {
+      await rowRecords('empty-history', ['.zxs-history-page .zxs-empty'], {
         padding: 10.8
       });
       await snapshot('history-empty');
@@ -1764,21 +1764,21 @@ async function scene(language, theme, width) {
       mockEvents = null;
     });
     await menu(t.status).click();
-    await page.locator('.xcs-metric-card').nth(8).waitFor();
+    await page.locator('.zxs-metric-card').nth(8).waitFor();
     await check('monitor-surface-clearance-card-grid-and-unframed-footer', async () => {
       await sharedRoles('status');
-      await rowRecords('sampled-at', ['.xcs-metric-timestamp'], {
+      await rowRecords('sampled-at', ['.zxs-metric-timestamp'], {
         padding: 10.8,
         exact: width >= 800
       });
-      await rowRecords('status-card-rows', ['.xcs-metric-heading', '.xcs-metric-subtitle'], {
+      await rowRecords('status-card-rows', ['.zxs-metric-heading', '.zxs-metric-subtitle'], {
         padding: 0,
         exact: true
       });
-      await blockGaps('status', ['.xcs-monitor-page']);
+      await blockGaps('status', ['.zxs-monitor-page']);
       await statusLayout('current-status');
       await flexGaps('status');
-      const gaps = await page.locator('.xcs-metric-grid').evaluate(e => ({
+      const gaps = await page.locator('.zxs-metric-grid').evaluate(e => ({
         row: parseFloat(getComputedStyle(e).rowGap),
         column: parseFloat(getComputedStyle(e).columnGap)
       }));
@@ -1794,22 +1794,22 @@ async function scene(language, theme, width) {
       name: t.account,
       exact: true
     }).click();
-    await page.locator('.xcs-account-page').waitFor();
+    await page.locator('.zxs-account-page').waitFor();
     await check('account-compact-width-labels-inputs-and-mobile-groups', async () => {
       await sharedRoles('account');
       await accountGeometry('account');
-      await blockGaps('account-outer', ['.xcs-shell-main > .xcs-content-stack']);
+      await blockGaps('account-outer', ['.zxs-shell-main > .zxs-content-stack']);
       await snapshot('account');
       await shot('account');
     });
     await check('account-local-errors-and-intercepted-dummy-password', async () => {
-      const account = page.locator('.xcs-account-page'),
+      const account = page.locator('.zxs-account-page'),
         form = account.locator('form');
       await account.getByRole('button', {
         name: t.save,
         exact: true
       }).click();
-      await account.locator('.xcs-error').waitFor();
+      await account.locator('.zxs-error').waitFor();
       assert.equal(state.mockWrites.length, 0);
       await accountGeometry('local-empty-error');
       await account.getByLabel(t.current, {
@@ -1825,7 +1825,7 @@ async function scene(language, theme, width) {
         name: t.save,
         exact: true
       }).click();
-      await account.locator('.xcs-error').waitFor();
+      await account.locator('.zxs-error').waitFor();
       assert.equal(state.mockWrites.length, 0);
       await accountGeometry('local-mismatch-error');
       await account.getByLabel(t.confirm, {
@@ -1853,7 +1853,7 @@ async function scene(language, theme, width) {
       await accountGeometry('pending');
       await snapshot('account-pending');
       plan.release();
-      await account.getByText(/XCS_LAYOUT_MOCK/).waitFor();
+      await account.getByText(/ZXS_LAYOUT_MOCK/).waitFor();
       await eventually(async () => (await form.getAttribute('aria-busy')) === 'false', 'pending clears after mock failure');
       assert.ok((await account.locator('input[type=password]').evaluateAll(es => es.map(e => e.readOnly))).every(v => !v));
       await sharedRoles('account-error');
@@ -1870,12 +1870,12 @@ async function scene(language, theme, width) {
         ratio: .4
       };
       await page.reload();
-      await page.locator('.xcs-disk-entry').first().waitFor();
+      await page.locator('.zxs-disk-entry').first().waitFor();
       await sharedRoles('token-disks');
       await fileRows('token-disks');
       await snapshot('token-disks');
-      await page.locator('.xcs-disk-entry[data-slot=P01]').click();
-      await page.locator('.xcs-file-table tbody').getByRole('button', {
+      await page.locator('.zxs-disk-entry[data-slot=P01]').click();
+      await page.locator('.zxs-file-table tbody').getByRole('button', {
         name: seed.folder,
         exact: true
       }).click();
@@ -1883,7 +1883,7 @@ async function scene(language, theme, width) {
       await flexGaps('token-files');
       await fileRows('token-files');
       await ordinaryInput('ordinary-input-token');
-      await page.locator('.xcs-file-table tbody tr').filter({
+      await page.locator('.zxs-file-table tbody tr').filter({
         has: page.getByRole('button', {
           name: '说明.md',
           exact: true
@@ -1892,7 +1892,7 @@ async function scene(language, theme, width) {
         name: t.details,
         exact: true
       }).click();
-      await page.locator('.xcs-version-node').first().waitFor();
+      await page.locator('.zxs-version-node').first().waitFor();
       mockHistory = state.treeFixture;
       await refreshDetails();
       await sharedRoles('token-details');
@@ -1901,16 +1901,16 @@ async function scene(language, theme, width) {
       await shot('token-details');
       mockHistory = null;
       await menu(t.history).click();
-      await page.locator('.xcs-history-list-panel').waitFor();
+      await page.locator('.zxs-history-list-panel').waitFor();
       await sharedRoles('token-history');
       await flexGaps('token-history');
-      await inspectSelect('history-select-token', '.xcs-history-toolbar .xcs-select-trigger');
+      await inspectSelect('history-select-token', '.zxs-history-toolbar .zxs-select-trigger');
       await snapshot('token-history');
       await menu(t.status).click();
-      await page.locator('.xcs-metric-card').nth(8).waitFor();
+      await page.locator('.zxs-metric-card').nth(8).waitFor();
       await sharedRoles('token-status');
       await flexGaps('token-status');
-      const tokenMetricGap = await page.locator('.xcs-metric-grid').evaluate(e => [getComputedStyle(e).rowGap, getComputedStyle(e).columnGap]);
+      const tokenMetricGap = await page.locator('.zxs-metric-grid').evaluate(e => [getComputedStyle(e).rowGap, getComputedStyle(e).columnGap]);
       assert.deepEqual(tokenMetricGap, ['20px', '20px']);
       await snapshot('token-status');
       await shot('token-status');
@@ -1918,7 +1918,7 @@ async function scene(language, theme, width) {
         name: t.account,
         exact: true
       }).click();
-      await page.locator('.xcs-account-page').waitFor();
+      await page.locator('.zxs-account-page').waitFor();
       await sharedRoles('token-account');
       await accountGeometry('token-account');
       await snapshot('token-account');
@@ -1938,7 +1938,7 @@ async function scene(language, theme, width) {
     });
     await check('old-401-after-new-login-cannot-clear-new-credentials', async () => {
       await menu(t.history).click();
-      await page.locator('.xcs-history-list-panel').waitFor();
+      await page.locator('.zxs-history-list-panel').waitFor();
       const plan = {
         path: '/v1/file-manager/history',
         captured: false
@@ -1960,8 +1960,8 @@ async function scene(language, theme, width) {
       plan.release();
       await (await response).finished();
       await settle();
-      assert.equal(await page.locator('.xcs-app-shell').count(), 1);
-      assert.equal(await page.locator('.xcs-auth-shell').count(), 0);
+      assert.equal(await page.locator('.zxs-app-shell').count(), 1);
+      assert.equal(await page.locator('.zxs-auth-shell').count(), 0);
       await sharedRoles('late-401-new-session');
       await snapshot('late-401-new-session');
       // This real logout proves the new CSRF/TOKEN survived; a stale clear would
@@ -1977,7 +1977,7 @@ async function scene(language, theme, width) {
       state.unexpectedConsoleErrors = state.consoleErrors.filter(message => !/Failed to load resource:.*status(?: of)? (?:400|401)\b/.test(message));
       assert.deepEqual(state.unexpectedConsoleErrors, []);
       assert.deepEqual(state.unexpectedWrites, []);
-      assert.deepEqual(await page.evaluate(() => window.__xcsCspViolations), []);
+      assert.deepEqual(await page.evaluate(() => window.__zxsCspViolations), []);
       assert.deepEqual(state.assetReadErrors || [], []);
       const baselinePaths = new Set(state.assets.filter(a => !a.testTokenOverride).map(a => a.path));
       assert.deepEqual([...baselinePaths].sort(), expectedResources, 'every candidate CSS file and WASM must have actually been requested');
@@ -2046,7 +2046,7 @@ async function scene(language, theme, width) {
   }));
 }
 try {
-  for (const [language, theme, width] of process.env.XCS_MAINT_SCENES ? JSON.parse(process.env.XCS_MAINT_SCENES) : [['zh', 'light', 1440], ['zh', 'dark', 390], ['en', 'light', 800], ['en', 'dark', 320]]) await scene(language, theme, width);
+  for (const [language, theme, width] of process.env.ZXS_MAINT_SCENES ? JSON.parse(process.env.ZXS_MAINT_SCENES) : [['zh', 'light', 1440], ['zh', 'dark', 390], ['en', 'light', 800], ['en', 'dark', 320]]) await scene(language, theme, width);
 } finally {
   await browser.close();
 }

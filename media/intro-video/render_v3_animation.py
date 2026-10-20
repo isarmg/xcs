@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Object-led XCS explanation. Original paper/storage animation plus real evidence."""
+"""Object-led ZXS explanation. Original paper/storage animation plus real evidence."""
 import argparse,json,math,subprocess
 from pathlib import Path
 from functools import lru_cache
@@ -181,7 +181,7 @@ def main():
         for i,(t,im) in enumerate(thumbs):x=i%4*480;y=i//4*300;sheet.paste(im,(x,y));d.text((x+8,y+276),str(t),fill='black')
         sheet.save(a.out/'object-contact.jpg',quality=95);return
     if not (a.capture/'verification.txt').exists():raise RuntimeError('Missing verified real-capture evidence')
-    dest=a.out/('object-motion-preview.mp4' if a.duration<DURATION else 'xcs-v3-content-silent.mp4')
+    dest=a.out/('object-motion-preview.mp4' if a.duration<DURATION else 'zxs-v3-content-silent.mp4')
     cmd=['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{a.width}x{round(a.width*9/16)}','-r','30','-i','-','-c:v','libx264','-preset','veryfast','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(dest)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
     for i in range(round(a.duration*30)):

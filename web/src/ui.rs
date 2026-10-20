@@ -1,11 +1,11 @@
 use crate::{api, files, history, icons::FileIcon, monitor};
 use serde_json::{Value, json};
 use wasm_bindgen_futures::spawn_local;
-use xcs_web::components::{
+use zxs_web::components::{
     AccountPage, AppShell, ErrorState, Feedback, HeaderActions, HeaderNavigation, LoginCredentials,
     LoginPage, PasswordChange, SessionPhase, SessionView,
 };
-use xcs_web::{i18n::t, prelude::*};
+use zxs_web::{i18n::t, prelude::*};
 
 #[derive(Clone, Default)]
 pub(crate) struct State {
@@ -127,15 +127,15 @@ pub fn app() -> impl IntoView {
     );
     let options: ChildrenFn = ToChildren::to_children(move || {
         api::native().then(|| view! {
-        <label class="xcs-form-field"><span>{t("服务器地址","Server address")}</span><input class="xcs-input" type="url" prop:value=move ||endpoint.get() on:input=move |event|endpoint.set(event_target_value(&event))/></label>
+        <label class="zxs-form-field"><span>{t("服务器地址","Server address")}</span><input class="zxs-input" type="url" prop:value=move ||endpoint.get() on:input=move |event|endpoint.set(event_target_value(&event))/></label>
     })
     });
     view! {
-        <AppShell product="xcs" session=session.into() pending_logout=logout_pending.into() on_logout=Callback::new(move |_|logout(state)) on_account=Callback::new(move |_|navigate(state,"account")) on_restore=Callback::new(move |_|restore_session(state)) login=login connection_options=options>
+        <AppShell product="zxs" session=session.into() pending_logout=logout_pending.into() on_logout=Callback::new(move |_|logout(state)) on_account=Callback::new(move |_|navigate(state,"account")) on_restore=Callback::new(move |_|restore_session(state)) login=login connection_options=options>
             {workspace(state)}
-            <Show when=move ||state.with(|s|!s.notice.is_empty())><p class="xcs-status xcs-row" role="status" aria-live="polite">{move ||state.with(|s|s.notice.clone())}</p></Show>
-            <Show when=move ||state.with(|s|!s.errors.is_empty())><aside class="xcs-error-center xcs-stack" aria-label=t("请求错误","Request errors")>{move ||state.with(|s|s.errors.clone()).into_iter().enumerate().map(move |(index,error)|view! {
-                <div class="xcs-inline-feedback xcs-flow"><ErrorState message=error.message request_id=error.request_id/><button class="xcs-button" aria-label=t("关闭错误提示","Dismiss error") on:click=move |_|state.update(|s|{if index<s.errors.len(){s.errors.remove(index);}})>"×"</button></div>
+            <Show when=move ||state.with(|s|!s.notice.is_empty())><p class="zxs-status zxs-row" role="status" aria-live="polite">{move ||state.with(|s|s.notice.clone())}</p></Show>
+            <Show when=move ||state.with(|s|!s.errors.is_empty())><aside class="zxs-error-center zxs-stack" aria-label=t("请求错误","Request errors")>{move ||state.with(|s|s.errors.clone()).into_iter().enumerate().map(move |(index,error)|view! {
+                <div class="zxs-inline-feedback zxs-flow"><ErrorState message=error.message request_id=error.request_id/><button class="zxs-button" aria-label=t("关闭错误提示","Dismiss error") on:click=move |_|state.update(|s|{if index<s.errors.len(){s.errors.remove(index);}})>"×"</button></div>
             }).collect_view()}</aside></Show>
         </AppShell>
     }
@@ -156,14 +156,14 @@ fn workspace(state: RwSignal<State>) -> impl IntoView {
     view! {
         <HeaderNavigation label=t("主导航","Main navigation")>
             {[ ("files",t("文件","Files")), ("details",t("详情","Details")), ("status",t("状态","Status")), ("history",t("历史记录","History")) ].into_iter().map(move |(page,title)|view! {
-                <button class="xcs-button" aria-current=move ||(state.with(|s|s.page==page)).then_some("page") on:click=move |_|navigate(state,page)>{title}</button>
+                <button class="zxs-button" aria-current=move ||(state.with(|s|s.page==page)).then_some("page") on:click=move |_|navigate(state,page)>{title}</button>
             }).collect_view()}
         </HeaderNavigation>
-        <HeaderActions><div class="xcs-header-tools xcs-flow">
+        <HeaderActions><div class="zxs-header-tools zxs-flow">
             <Show when=move ||state.with(|s|matches!(s.page.as_str(),"files"|"details"|"status"|"history"))>
-                <button class="xcs-button xcs-header-refresh" type="button" aria-label=t("刷新","Refresh") title=t("刷新","Refresh") disabled=move ||state.with(|s|match s.page.as_str(){"files"=>s.files.loading||s.files.loading_disks,"details"=>s.files.loading||s.files.history_loading||s.files.selected.is_none(),"status"=>s.monitor.loading||!s.admin,"history"=>s.activity.loading,_=>true}) on:click=move |_|match state.with_untracked(|s|s.page.clone()).as_str(){"files"|"details"=>if state.with_untracked(|s|s.files.slot.is_empty()){files::load_disks(state)}else{files::load_entries(state)},"status"=>monitor::load(state),"history"=>history::load(state),_=>{}}><FileIcon name="refresh"/></button>
+                <button class="zxs-button zxs-header-refresh" type="button" aria-label=t("刷新","Refresh") title=t("刷新","Refresh") disabled=move ||state.with(|s|match s.page.as_str(){"files"=>s.files.loading||s.files.loading_disks,"details"=>s.files.loading||s.files.history_loading||s.files.selected.is_none(),"status"=>s.monitor.loading||!s.admin,"history"=>s.activity.loading,_=>true}) on:click=move |_|match state.with_untracked(|s|s.page.clone()).as_str(){"files"|"details"=>if state.with_untracked(|s|s.files.slot.is_empty()){files::load_disks(state)}else{files::load_entries(state)},"status"=>monitor::load(state),"history"=>history::load(state),_=>{}}><FileIcon name="refresh"/></button>
             </Show>
-            <span class="xcs-session-identity">{move ||state.with(|s|s.principal.clone())}</span>
+            <span class="zxs-session-identity">{move ||state.with(|s|s.principal.clone())}</span>
         </div></HeaderActions>
         {move ||match page.get().as_str() { "details"=>files::details(state).into_any(),"status"=>monitor::view(state).into_any(),"history"=>history::view(state).into_any(),"account"=>account(state).into_any(),_=>files::view(state).into_any() }}
         {files::overlays(state)}
@@ -342,7 +342,7 @@ fn account(state: RwSignal<State>) -> impl IntoView {
             }
         });
     });
-    view! { <section class="xcs-content-stack xcs-stack"><p class="xcs-row">{t("修改密码后，该账号的全部会话将失效。","Changing the password signs this account out on all devices.")}</p><AccountPage username_value=username.into() pending=pending.into() remote_failure=failure.into() on_submit=change/></section> }
+    view! { <section class="zxs-content-stack zxs-stack"><p class="zxs-row">{t("修改密码后，该账号的全部会话将失效。","Changing the password signs this account out on all devices.")}</p><AccountPage username_value=username.into() pending=pending.into() remote_failure=failure.into() on_submit=change/></section> }
 }
 fn reject_password_change(state: &mut State, error: &api::Error) {
     state.password_pending = false;

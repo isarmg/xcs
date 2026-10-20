@@ -1,18 +1,18 @@
-:root[data-xcs-theme="dark"] {
-  --xcs-bg-page: #09090b;
-  --xcs-bg-panel: #18181b;
-  --xcs-text-primary: #fafafa;
-  --xcs-text-danger: #f87171;
-  --xcs-text-link: #60a5fa;
+:root[data-zxs-theme="dark"] {
+  --zxs-bg-page: #09090b;
+  --zxs-bg-panel: #18181b;
+  --zxs-text-primary: #fafafa;
+  --zxs-text-danger: #f87171;
+  --zxs-text-link: #60a5fa;
 }
 
 /* Native documents follow the system preference unless the application has selected a theme. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-xcs-theme]) {
-    --xcs-bg-page: #09090b;
-    --xcs-bg-panel: #18181b;
-    --xcs-text-primary: #fafafa;
-    --xcs-text-danger: #f87171;
-    --xcs-text-link: #60a5fa;
+  :root:not([data-zxs-theme]) {
+    --zxs-bg-page: #09090b;
+    --zxs-bg-panel: #18181b;
+    --zxs-text-primary: #fafafa;
+    --zxs-text-danger: #f87171;
+    --zxs-text-link: #60a5fa;
   }
 }

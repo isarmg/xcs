@@ -12,7 +12,7 @@
 
 ```sh
 cargo test --workspace --locked --offline --target-dir target/native
-cargo build --locked --offline --target-dir target/native -p xcs-cli
+cargo build --locked --offline --target-dir target/native -p zxs-cli
 cargo test --workspace --locked --offline --manifest-path web/Cargo.toml --target-dir target/web
 cargo test --locked --offline --manifest-path apps/Cargo.toml --target-dir target/apps
 cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml --target-dir target/web-tools -- build --product-root .
@@ -20,7 +20,7 @@ cargo run --locked --offline --manifest-path tools/web-build/Cargo.toml --target
 cargo run --locked --offline --manifest-path tools/contract-check/Cargo.toml --target-dir target/native
 ```
 
-构建时 `XCS_WEB_BINDGEN` 指向已安装的 0.2.129 CLI。原生 socket/权限及 localhost 浏览器验证使用具备本机能力的执行环境。运行中的静态目录更新前停止服务，最终资源完成后再重启，使内容与 ETag 清单一致。
+构建时 `ZXS_WEB_BINDGEN` 指向已安装的 0.2.129 CLI。原生 socket/权限及 localhost 浏览器验证使用具备本机能力的执行环境。运行中的静态目录更新前停止服务，最终资源完成后再重启，使内容与 ETag 清单一致。
 
 [原生测试](native-tests.txt)、[CLI 构建](native-build.txt)、[Web 测试](web-tests.txt)、[Web 构建](web-build.txt)、[原生桥接](app-bridge-tests.txt)、[Linux 链接](linux-host-build.txt)、[最终构建清单](build-manifest.json)。
 

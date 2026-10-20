@@ -1,0 +1,1037 @@
+//! Frozen directory compositions over public file branches and immutable nodes.
+use super::*;
+use serde_json::{Value, json};
+use std::collections::{BTreeMap, BTreeSet};
+
+pub(crate) fn context_key(repository: &str, path: &str) -> String {
+    format!("{repository}/{}", zxs_naming::path_key(path))
+}
+pub(crate) fn context_at(state: &State, repository: &str, path: &str) -> Option<FileContext> {
+    if let Some(context) = state.file_contexts.get(&context_key(repository, path)) {
+        return Some(context.clone());
+    }
+    let repo = state.repositories.get(repository)?;
+    let commit = state
+        .commits
+        .get(&state.branches.get(&repo.main_branch_id)?.head_commit_id)?;
+    let entry = find(&commit.entries, path).filter(|e| e.kind == "file")?;
+    let branch = state
+        .file_selections
+        .get(&entry.file_id)
+        .cloned()
+        .unwrap_or_else(|| repo.main_branch_id.clone());
+    Some(FileContext {
+        node_id: state
+            .branches
+            .get(&branch)
+            .and_then(|b| b.file_node_id.clone()),
+        selection_generation: 0,
+        branch_id: branch,
+        inherited_from: state.file_write_origins.get(&entry.file_id).cloned(),
+    })
+}
+pub(crate) fn branch_context_at(state: &State, namespace: &str, path: &str) -> Option<FileContext> {
+    let branch = state.branches.get(namespace)?;
+    if let Some(repo) = state
+        .repositories
+        .values()
+        .find(|r| r.main_branch_id == namespace)
+    {
+        context_at(state, &repo.repository_id, path)
+    } else {
+        Some(FileContext {
+            node_id: branch.file_node_id.clone(),
+            selection_generation: 0,
+            branch_id: branch.branch_id.clone(),
+            inherited_from: None,
+        })
+    }
+}
+
+pub(crate) fn scope(
+    state: &State,
+    repository: &str,
+    path: &str,
+) -> Result<(String, Vec<Entry>, String)> {
+    if !path.is_empty() {
+        zxs_naming::validate_path(path)?;
+    }
+    let repo = state
+        .repositories
+        .get(repository)
+        .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "directory repository missing"))?;
+    let branch = &state.branches[&repo.main_branch_id];
+    let commit = &state.commits[&branch.head_commit_id];
+    let key = zxs_naming::path_key(path);
+    let id = if key.is_empty() {
+        repository.to_owned()
+    } else {
+        commit
+            .entries
+            .iter()
+            .find(|e| e.kind == "directory" && e.lookup_key == key)
+            .ok_or_else(|| Error::new("DIRECTORY_NOT_FOUND", "directory missing"))?
+            .entry_id
+            .clone()
+    };
+    let entries = commit
+        .entries
+        .iter()
+        .filter(|e| key.is_empty() || namespace::is_descendant(&e.lookup_key, &key))
+        .cloned()
+        .collect();
+    Ok((id, entries, commit.commit_id.clone()))
+}
+
+pub(crate) fn rebase_entries(entries: &[Entry], from: &str, to: &str) -> Result<Vec<Entry>> {
+    let depth = if from.is_empty() {
+        0
+    } else {
+        from.split('/').count()
+    };
+    entries
+        .iter()
+        .map(|e| {
+            let suffix = e.path.split('/').skip(depth).collect::<Vec<_>>().join("/");
+            if suffix.is_empty() {
+                return Err(Error::new(
+                    "STATE_INVALID",
+                    "directory snapshot contains its own root",
+                ));
+            }
+            let mut e = e.clone();
+            let path = if to.is_empty() {
+                suffix
+            } else {
+                format!("{to}/{suffix}")
+            };
+            namespace::relocate_entry(&mut e, path)?;
+            Ok(e)
+        })
+        .collect()
+}
+
+fn snapshot(state: &mut State, repository: &str, path: &str) -> Result<String> {
+    let (directory_id, entries, commit_id) = scope(state, repository, path)?;
+    let current = state.commits[&commit_id].clone();
+    let mut files = BTreeMap::new();
+    for e in entries.iter().filter(|e| e.kind == "file") {
+        files.insert(
+            e.file_id.clone(),
+            file::ensure_shared_file_branch(state, &current, e)?,
+        );
+    }
+    let file_contexts = entries
+        .iter()
+        .filter(|e| e.kind == "file")
+        .map(|e| {
+            let context = context_at(state, repository, &e.path).unwrap_or_else(|| FileContext {
+                node_id: None,
+                selection_generation: 0,
+                branch_id: files[&e.file_id].clone(),
+                inherited_from: None,
+            });
+            state
+                .file_contexts
+                .insert(context_key(repository, &e.path), context.clone());
+            (e.lookup_key.clone(), context)
+        })
+        .collect::<BTreeMap<_, _>>();
+    let inherited_files = state
+        .file_write_origins
+        .iter()
+        .filter(|(id, _)| files.contains_key(*id))
+        .map(|(id, origin)| (id.clone(), origin.clone()))
+        .collect();
+    let directory_refs = entries
+        .iter()
+        .filter(|e| e.kind == "directory")
+        .filter_map(|e| {
+            let branch = state.directory_selections.get(&e.entry_id)?;
+            let tree = state
+                .directory_tree_selections
+                .get(&e.entry_id)
+                .or_else(|| {
+                    state
+                        .directory_branches
+                        .get(branch)
+                        .map(|b| &b.head_tree_id)
+                })?;
+            Some((
+                e.entry_id.clone(),
+                DirectoryReference {
+                    directory_branch_id: branch.clone(),
+                    tree_id: tree.clone(),
+                },
+            ))
+        })
+        .collect::<BTreeMap<_, _>>();
+    let previous = state.directory_selections.get(&directory_id).cloned();
+    let id = previous.clone().unwrap_or_else(|| new_id("dbr"));
+    let parent_tree_id = state
+        .directory_tree_selections
+        .get(&directory_id)
+        .cloned()
+        .or_else(|| {
+            previous.as_ref().and_then(|id| {
+                state
+                    .directory_branches
+                    .get(id)
+                    .map(|b| b.head_tree_id.clone())
+            })
+        });
+    // One operation can touch several siblings. Publish a single consolidated
+    // node for this scope, and no node for a byte-for-byte identical view.
+    if let Some(old) = parent_tree_id
+        .as_ref()
+        .and_then(|id| state.directory_trees.get(id))
+    {
+        if old.path == path
+            && canonical_json(&old.entries)? == canonical_json(&entries)?
+            && old.file_contexts == file_contexts
+            && old.file_branches == files
+            && old.inherited_files == inherited_files
+            && old.directory_refs == directory_refs
+        {
+            return Ok(id);
+        }
+    }
+    let tree_id = new_id("dtree");
+    state.directory_trees.insert(
+        tree_id.clone(),
+        DirectoryTree {
+            tree_id: tree_id.clone(),
+            directory_branch_id: id.clone(),
+            parent_tree_id,
+            commit_id: commit_id.clone(),
+            path: path.into(),
+            entries: entries.clone(),
+            file_contexts: file_contexts.clone(),
+            file_branches: files.clone(),
+            inherited_files: inherited_files.clone(),
+            directory_refs: directory_refs.clone(),
+            sequence: state.sequence,
+        },
+    );
+    if let Some(target) = state.directory_branches.get_mut(&id) {
+        target.head_tree_id = tree_id.clone();
+        target.commit_id = commit_id;
+        target.path = path.into();
+        target.entries = entries;
+        target.file_contexts = file_contexts;
+        target.file_branches = files;
+        target.inherited_files = inherited_files;
+        target.directory_refs = directory_refs;
+        target.materialized = true;
+        target.sequence = state.sequence;
+    } else {
+        state.directory_branches.insert(
+            id.clone(),
+            DirectoryBranch {
+                directory_branch_id: id.clone(),
+                repository_id: repository.into(),
+                directory_id: directory_id.clone(),
+                path: path.into(),
+                name: "main".into(),
+                parent_branch_id: None,
+                head_tree_id: tree_id.clone(),
+                commit_id,
+                entries,
+                file_contexts,
+                file_branches: files,
+                inherited_files,
+                directory_refs,
+                materialized: true,
+                sequence: state.sequence,
+            },
+        );
+    }
+    state
+        .directory_selections
+        .insert(directory_id.clone(), id.clone());
+    state
+        .directory_tree_selections
+        .insert(directory_id, tree_id);
+    Ok(id)
+}
+
+pub(crate) fn snapshot_pending(state: &State, entries: &[Entry]) -> BTreeMap<String, String> {
+    entries
+        .iter()
+        .filter(|e| e.kind == "file")
+        .filter_map(|e| {
+            let context = state
+                .repositories
+                .values()
+                .find(|r| {
+                    state
+                        .versions
+                        .get(&e.version_id)
+                        .is_some_and(|v| v.history_tree_id == r.history_tree_id)
+                })
+                .and_then(|r| context_at(state, &r.repository_id, &e.path));
+            context.and_then(|c| {
+                if c.inherited_from.is_some()
+                    || state
+                        .branches
+                        .get(&c.branch_id)
+                        .is_some_and(|b| b.pending_file_versions.contains_key(&e.file_id))
+                {
+                    Some((e.file_id.clone(), e.version_id.clone()))
+                } else {
+                    None
+                }
+            })
+        })
+        .collect()
+}
+
+/// Namespace mutations change physical ownership; selecting an alias does not.
+pub(crate) fn set_namespace_location(
+    state: &mut State,
+    file: &Entry,
+    source: &str,
+    destination: &str,
+    kind: &str,
+    is_directory: bool,
+) {
+    let old = state
+        .file_locations
+        .get(&file.file_id)
+        .cloned()
+        .unwrap_or_else(|| file.path.clone());
+    let path = namespace_location(old, file, source, destination, kind, is_directory);
+    state.file_names.insert(
+        file.file_id.clone(),
+        path.rsplit('/').next().unwrap_or("").into(),
+    );
+    state.file_locations.insert(file.file_id.clone(), path);
+}
+
+fn namespace_location(
+    old: String,
+    file: &Entry,
+    source: &str,
+    destination: &str,
+    kind: &str,
+    is_directory: bool,
+) -> String {
+    let same_parent = zxs_naming::path_key(source.rsplit_once('/').map(|v| v.0).unwrap_or(""))
+        == zxs_naming::path_key(destination.rsplit_once('/').map(|v| v.0).unwrap_or(""));
+    if kind == "rename" && same_parent {
+        if is_directory {
+            let key = zxs_naming::path_key(source);
+            let owner = zxs_naming::path_key(&old);
+            if namespace::is_descendant(&owner, &key) {
+                let depth = source.split('/').count();
+                format!(
+                    "{destination}/{}",
+                    old.split('/').skip(depth).collect::<Vec<_>>().join("/")
+                )
+            } else {
+                old
+            }
+        } else {
+            let name = destination.rsplit('/').next().unwrap_or(destination);
+            old.rsplit_once('/')
+                .map(|(parent, _)| format!("{parent}/{name}"))
+                .unwrap_or_else(|| name.into())
+        }
+    } else {
+        let depth = source.split('/').count();
+        let suffix = file
+            .path
+            .split('/')
+            .skip(depth)
+            .collect::<Vec<_>>()
+            .join("/");
+        if suffix.is_empty() {
+            destination.into()
+        } else {
+            format!("{destination}/{suffix}")
+        }
+    }
+}
+
+/// Prepare real directory identities before changing their display path, so
+/// rename produces a child subtree even for empty directories.
+pub(crate) fn prepare_renamed_directories(
+    state: &mut State,
+    repository: &str,
+    before: &[Entry],
+    changes: &[NamespaceOperation],
+) -> Result<Vec<String>> {
+    let mut renamed = Vec::new();
+    let mut old_paths = Vec::new();
+    for dir in before.iter().filter(|entry| entry.kind == "directory") {
+        let mut path = dir.path.clone();
+        for change in changes.iter().filter(|change| change.kind == "rename") {
+            if let Some(destination) = &change.destination {
+                if let Some(next) = renamed_path(&path, &change.path, destination) {
+                    path = next;
+                }
+            }
+        }
+        if path != dir.path {
+            old_paths.push(dir.path.clone());
+            renamed.push(format!("{path}/"));
+        }
+    }
+    old_paths.sort_by_key(|p| std::cmp::Reverse(p.split('/').count()));
+    old_paths.dedup();
+    for path in old_paths {
+        let (id, _, _) = scope(state, repository, &path)?;
+        if !state.directory_selections.contains_key(&id) {
+            snapshot(state, repository, &path)?;
+        }
+    }
+    Ok(renamed)
+}
+
+/// Batch mappings name entries in their original frozen scopes, not the output
+/// of earlier mappings. Keep that contract separate from ordered workspaces.
+pub(crate) fn prepare_independent_renamed_directories(
+    state: &mut State,
+    repository: &str,
+    before: &[Entry],
+    changes: &[NamespaceOperation],
+) -> Result<Vec<String>> {
+    let mut renamed = Vec::new();
+    for change in changes {
+        renamed.extend(prepare_renamed_directories(
+            state,
+            repository,
+            before,
+            std::slice::from_ref(change),
+        )?);
+    }
+    Ok(renamed)
+}
+
+/// Follow a path through an ordered rename without slicing normalized UTF-8.
+fn renamed_path(path: &str, source: &str, destination: &str) -> Option<String> {
+    let key = zxs_naming::path_key(path);
+    let source_key = zxs_naming::path_key(source);
+    if key == source_key {
+        return Some(destination.into());
+    }
+    if !namespace::is_descendant(&key, &source_key) {
+        return None;
+    }
+    let suffix = path
+        .split('/')
+        .skip(source.split('/').count())
+        .collect::<Vec<_>>()
+        .join("/");
+    Some(format!("{destination}/{suffix}"))
+}
+
+pub(crate) fn namespace_locations(
+    state: &mut State,
+    repository: &str,
+    before: &[Entry],
+    after: &[Entry],
+    changes: &[NamespaceOperation],
+    principal: &str,
+    operation: &str,
+) -> Result<()> {
+    let original_contexts = before
+        .iter()
+        .filter(|e| e.kind == "file")
+        .filter_map(|e| {
+            context_at(state, repository, &e.path).map(|c| (context_key(repository, &e.path), c))
+        })
+        .collect::<BTreeMap<_, _>>();
+    let mut physical_outcomes = BTreeMap::<String, String>::new();
+    let mut contexts = BTreeMap::new();
+    for old in before.iter().filter(|e| e.kind == "file") {
+        // Replay each entry's path independently. Looking only at the first
+        // rename loses chained moves; matching by file ID alone confuses aliases.
+        let mut moved = old.clone();
+        let mut renamed = false;
+        let mut deleted = false;
+        let mut physical_path = state
+            .file_locations
+            .get(&old.file_id)
+            .cloned()
+            .unwrap_or_else(|| old.path.clone());
+        let original_physical_path = physical_path.clone();
+        for change in changes {
+            let source = zxs_naming::path_key(&change.path);
+            if (change.kind == "delete" && moved.lookup_key == source)
+                || (change.kind == "delete_tree"
+                    && (moved.lookup_key == source
+                        || namespace::is_descendant(&moved.lookup_key, &source)))
+            {
+                deleted = true;
+                break;
+            }
+            if change.kind != "rename" {
+                continue;
+            }
+            let Some(destination) = &change.destination else {
+                continue;
+            };
+            let Some(path) = renamed_path(&moved.path, &change.path, destination) else {
+                continue;
+            };
+            if path == moved.path {
+                continue;
+            }
+            physical_path = namespace_location(
+                physical_path,
+                &moved,
+                &change.path,
+                destination,
+                "rename",
+                moved.lookup_key != source,
+            );
+            namespace::relocate_entry(&mut moved, path)?;
+            renamed = true;
+        }
+        if !deleted {
+            if let Some(current) = find(after, &moved.path).filter(|e| {
+                e.kind == "file" && e.entry_id == old.entry_id && e.file_id == old.file_id
+            }) {
+                let context = original_contexts
+                    .get(&context_key(repository, &old.path))
+                    .cloned();
+                let context = if current.path != old.path {
+                    Some(file_paths::rename_node(
+                        state, repository, old, current, context, principal, operation,
+                    )?)
+                } else {
+                    state
+                        .file_contexts
+                        .get(&context_key(repository, &old.path))
+                        .cloned()
+                };
+                if let Some(context) = context {
+                    contexts.insert(context_key(repository, &current.path), context);
+                }
+                // Renaming a non-owning alias directory does not propose a
+                // competing physical location. Compare net outcomes so a
+                // temporary move followed by its reversal is also a no-op.
+                if renamed && physical_path != original_physical_path {
+                    let outcome = physical_path;
+                    if let Some(previous) =
+                        physical_outcomes.insert(old.file_id.clone(), outcome.clone())
+                    {
+                        if zxs_naming::path_key(&previous) != zxs_naming::path_key(&outcome) {
+                            return Err(Error::new(
+                                "BATCH_MAPPING_CONFLICT",
+                                "namespace changes give one physical file incompatible names or locations",
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for (file, path) in physical_outcomes {
+        state
+            .file_names
+            .insert(file.clone(), path.rsplit('/').next().unwrap_or("").into());
+        state.file_locations.insert(file, path);
+    }
+    // Remove old keys together before installing new keys, so a path swap
+    // cannot erase the context already installed for the other file.
+    for old in before.iter().filter(|e| e.kind == "file") {
+        state
+            .file_contexts
+            .remove(&context_key(repository, &old.path));
+    }
+    state.file_contexts.extend(contexts);
+    let live = after
+        .iter()
+        .filter(|e| e.kind == "file")
+        .map(|e| e.file_id.as_str())
+        .collect::<BTreeSet<_>>();
+    for old in before
+        .iter()
+        .filter(|e| e.kind == "file" && !live.contains(e.file_id.as_str()))
+    {
+        state.file_selections.remove(&old.file_id);
+        state.file_write_origins.remove(&old.file_id);
+    }
+    Ok(())
+}
+
+pub(crate) fn unwritten_source_at<'a>(
+    state: &'a State,
+    branch: &str,
+    path: &str,
+) -> Option<&'a str> {
+    if branch_context_at(state, branch, path)?
+        .inherited_from
+        .is_none()
+    {
+        return None;
+    }
+    find(
+        &state
+            .commits
+            .get(&state.branches.get(branch)?.head_commit_id)?
+            .entries,
+        path,
+    )
+    .map(|e| e.version_id.as_str())
+}
+
+/// Fork inherited file intent only at the first actual save. An explicit file
+/// selection removes the intent and continues the selected public branch.
+pub(crate) fn prepare_file_write(
+    engine: &Engine,
+    state: &mut State,
+    branch: &str,
+    file_id: &str,
+    path: &str,
+    principal: &str,
+    operation: &str,
+) -> Result<()> {
+    if !state
+        .repositories
+        .values()
+        .any(|r| r.main_branch_id == branch)
+    {
+        return Ok(());
+    }
+    let repository = state
+        .repositories
+        .values()
+        .find(|r| r.main_branch_id == branch)
+        .expect("namespace checked")
+        .repository_id
+        .clone();
+    let Some(origin) = context_at(state, &repository, path).and_then(|c| c.inherited_from) else {
+        return Ok(());
+    };
+    let original = state.commits[&state.branches[branch].head_commit_id]
+        .entries
+        .iter()
+        .find(|e| e.lookup_key == zxs_naming::path_key(path) && e.kind == "file")
+        .cloned()
+        .ok_or_else(|| Error::new("FILE_NOT_FOUND", "inherited file missing"))?;
+    let origin_name = state
+        .directory_branches
+        .get(&origin)
+        .ok_or_else(|| Error::new("STATE_INVALID", "inherited directory origin missing"))?
+        .name
+        .clone();
+    let unique = |name: &str| {
+        !state.branches.values().any(|b| {
+            b.file_id.as_deref() == Some(file_id)
+                && zxs_naming::lookup_key(&b.name) == zxs_naming::lookup_key(name)
+        })
+    };
+    let mut number = 0u64;
+    let name = loop {
+        let suffix = if number == 0 {
+            String::new()
+        } else {
+            format!("-{number}")
+        };
+        let limit = 128 - suffix.len();
+        let mut end = origin_name.len().min(limit);
+        while !origin_name.is_char_boundary(end) {
+            end -= 1;
+        }
+        let candidate = format!("{}{suffix}", &origin_name[..end]);
+        if zxs_naming::lookup_key(&candidate) != "main" && unique(&candidate) {
+            break candidate;
+        }
+        number = number
+            .checked_add(1)
+            .ok_or_else(|| Error::new("RESOURCE_LIMIT", "file branch name exhausted"))?;
+    };
+    let result = file::create_file_branch_change(
+        engine,
+        state,
+        file_id,
+        &original.version_id,
+        &name,
+        principal,
+        operation,
+    )?;
+    let id = result["branch_id"]
+        .as_str()
+        .ok_or_else(|| Error::new("STATE_INVALID", "file fork receipt missing"))?;
+    let inherited_node = context_at(state, &repository, path).and_then(|c| c.node_id);
+    state
+        .branches
+        .get_mut(id)
+        .expect("created file branch")
+        .file_node_id = inherited_node.clone();
+    state.file_selections.insert(file_id.into(), id.into());
+    state.file_write_origins.remove(file_id);
+    state.file_contexts.insert(
+        context_key(&repository, path),
+        FileContext {
+            node_id: inherited_node.clone(),
+            selection_generation: 0,
+            branch_id: id.into(),
+            inherited_from: None,
+        },
+    );
+    Ok(())
+}
+
+pub(crate) fn record_directory_edits(
+    state: &mut State,
+    repository: &str,
+    changed_paths: &[String],
+    exclude: Option<&str>,
+) -> Result<Vec<String>> {
+    let repo = &state.repositories[repository];
+    if !repo.file_manager_root
+        && !state
+            .directory_branches
+            .values()
+            .any(|b| b.repository_id == repository)
+        && !state.file_selections.values().any(|id| {
+            state
+                .branches
+                .get(id)
+                .is_some_and(|b| b.history_tree_id == repo.history_tree_id)
+        })
+    {
+        return Ok(Vec::new());
+    }
+    let mut paths = BTreeSet::new();
+    for path in changed_paths {
+        paths.insert(String::new());
+        let parts = path.split('/').collect::<Vec<_>>();
+        for end in 1..parts.len() {
+            paths.insert(parts[..end].join("/"));
+        }
+    }
+    let mut paths = paths.into_iter().collect::<Vec<_>>();
+    paths.sort_by_key(|p| std::cmp::Reverse(p.split('/').count()));
+    let mut result = Vec::new();
+    for path in paths {
+        if exclude.is_some_and(|key| zxs_naming::path_key(&path) == key) {
+            continue;
+        }
+        match scope(state, repository, &path) {
+            Err(e) if e.code() == "DIRECTORY_NOT_FOUND" => continue,
+            Err(e) => return Err(e),
+            Ok(_) => result.push(snapshot(state, repository, &path)?),
+        }
+    }
+    Ok(result)
+}
+
+/// Replace the complete namespace and all frozen descendant references. Merely
+/// selecting a directory never advances the selected branch's immutable head.
+pub(crate) fn select_change(
+    state: &mut State,
+    repository: &str,
+    branch_id: &str,
+    principal: &str,
+    operation: &str,
+) -> Result<Value> {
+    let selected = state
+        .directory_branches
+        .get(branch_id)
+        .cloned()
+        .filter(|b| b.repository_id == repository)
+        .ok_or_else(|| {
+            Error::new(
+                "DIRECTORY_BRANCH_NOT_FOUND",
+                "directory composition missing",
+            )
+        })?;
+    let repo = state.repositories[repository].clone();
+    let main = state.branches[&repo.main_branch_id].clone();
+    let previous = state.commits[&main.head_commit_id].clone();
+    let path = if selected.directory_id == repository {
+        String::new()
+    } else {
+        previous
+            .entries
+            .iter()
+            .find(|e| e.entry_id == selected.directory_id && e.kind == "directory")
+            .ok_or_else(|| Error::new("DIRECTORY_NOT_FOUND", "directory no longer exists"))?
+            .path
+            .clone()
+    };
+    let (_, old_entries, _) = scope(state, repository, &path)?;
+    let restored = rebase_entries(&selected.entries, &selected.path, &path)?;
+    let selected_contexts = selected
+        .entries
+        .iter()
+        .zip(&restored)
+        .filter(|(_, e)| e.kind == "file")
+        .map(|(old, e)| {
+            let context = selected
+                .file_contexts
+                .get(&old.lookup_key)
+                .cloned()
+                .unwrap_or_else(|| FileContext {
+                    node_id: None,
+                    selection_generation: 0,
+                    branch_id: selected.file_branches[&e.file_id].clone(),
+                    inherited_from: selected.inherited_files.get(&e.file_id).cloned(),
+                });
+            (context_key(repository, &e.path), context)
+        })
+        .collect::<BTreeMap<_, _>>();
+    let contexts_match = selected_contexts
+        .iter()
+        .all(|(key, value)| state.file_contexts.get(key) == Some(value));
+    if state
+        .directory_selections
+        .get(&selected.directory_id)
+        .is_some_and(|id| id == branch_id)
+        && state.directory_tree_selections.get(&selected.directory_id)
+            == Some(&selected.head_tree_id)
+        && contexts_match
+        && canonical_json(&old_entries)? == canonical_json(&restored)?
+    {
+        return Ok(
+            json!({"directory_branch_id":branch_id,"branch_id":repo.main_branch_id,"commit_id":previous.commit_id,"no_change":true,"count":selected.file_branches.len().to_string()}),
+        );
+    }
+    for e in old_entries.iter().filter(|e| e.kind == "file") {
+        state
+            .file_contexts
+            .remove(&context_key(repository, &e.path));
+    }
+    state.file_contexts.extend(selected_contexts);
+    let old_ids = old_entries
+        .iter()
+        .filter(|e| e.kind == "directory")
+        .map(|e| e.entry_id.clone())
+        .collect::<Vec<_>>();
+    for id in old_ids {
+        state.directory_selections.remove(&id);
+        state.directory_tree_selections.remove(&id);
+    }
+    for e in old_entries.iter().filter(|e| e.kind == "file") {
+        state.file_write_origins.remove(&e.file_id);
+        state.file_selections.remove(&e.file_id);
+    }
+    for (file, branch) in &selected.file_branches {
+        if !state
+            .branches
+            .get(branch)
+            .is_some_and(|b| b.file_id.as_deref() == Some(file) && b.state == "active")
+        {
+            return Err(Error::new(
+                "FILE_BRANCH_NOT_FOUND",
+                "snapshot references an unavailable public file branch",
+            ));
+        }
+        state.file_selections.insert(file.clone(), branch.clone());
+    }
+    state
+        .file_write_origins
+        .extend(selected.inherited_files.clone());
+    for (id, reference) in &selected.directory_refs {
+        state
+            .directory_selections
+            .insert(id.clone(), reference.directory_branch_id.clone());
+        state
+            .directory_tree_selections
+            .insert(id.clone(), reference.tree_id.clone());
+    }
+    state
+        .directory_selections
+        .insert(selected.directory_id.clone(), branch_id.into());
+    state
+        .directory_tree_selections
+        .insert(selected.directory_id.clone(), selected.head_tree_id.clone());
+    let key = zxs_naming::path_key(&path);
+    let mut entries = previous.entries.clone();
+    entries.retain(|e| !key.is_empty() && !namespace::is_descendant(&e.lookup_key, &key));
+    entries.extend(restored);
+    validate_entries(&mut entries, usize::MAX)?;
+
+    let pending = snapshot_pending(state, &entries);
+    let commit_id = new_id("commit");
+    state.commits.insert(
+        commit_id.clone(),
+        Commit {
+            commit_id: commit_id.clone(),
+            history_tree_id: repo.history_tree_id.clone(),
+            kind: "directory_selection".into(),
+            parent_commit_ids: vec![previous.commit_id],
+            tree_id: new_id("tree"),
+            sequence: state.sequence,
+            operation_id: operation.into(),
+            author: principal.into(),
+            message: format!("Select directory branch {}", selected.name),
+            entries,
+            pending_file_versions: pending,
+            provenance: Some(selected.commit_id.clone()),
+        },
+    );
+    let target = state
+        .branches
+        .get_mut(&repo.main_branch_id)
+        .expect("checked");
+    target.head_commit_id = commit_id.clone();
+    target.generation += 1;
+    let generation = state
+        .directory_selection_generations
+        .entry(selected.directory_id.clone())
+        .or_default();
+    *generation = generation
+        .checked_add(1)
+        .ok_or_else(|| Error::new("RESOURCE_LIMIT", "directory selection generation exhausted"))?;
+    let changed = if path.is_empty() {
+        Vec::new()
+    } else {
+        vec![path.clone()]
+    };
+    let parents = record_directory_edits(state, repository, &changed, Some(&key))?;
+    Ok(
+        json!({"directory_branch_id":branch_id,"branch_id":repo.main_branch_id,"commit_id":commit_id,"history_tree_id":repo.history_tree_id,"path":path,"name":selected.name,"head_tree_id":selected.head_tree_id,"count":selected.file_branches.len().to_string(),"selected":true,"directory_branch_ids":parents}),
+    )
+}
+
+impl Engine {
+    pub fn file_context(&self, repository: &str, path: &str) -> Option<FileContext> {
+        context_at(&self.state, repository, path)
+    }
+    /// Explicitly initialize a directory's baseline identity. Used by old
+    /// namespaces which predate composed views; registration copies no data.
+    pub fn initialize_directory_scope(
+        &mut self,
+        repository: &str,
+        path: &str,
+        principal: &str,
+        operation: &str,
+    ) -> Result<OperationResult> {
+        self.mutate("directory.scope.initialize",principal,operation,json!({"repository_id":repository,"path":path}),|engine,state,_|{
+            let repo=state.repositories.get(repository).ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository missing"))?;engine.require_grant(repo,principal,"write")?;
+            let (id,_,_)=scope(state,repository,path)?;
+            let branch=if let Some(id)=state.directory_selections.get(&id){id.clone()}else{snapshot(state,repository,path)?};
+            Ok(json!({"directory_branch_id":branch,"head_tree_id":state.directory_tree_selections[&id]}))
+        })
+    }
+    pub fn create_directory_branches(
+        &mut self,
+        repository: &str,
+        path: &str,
+        name: &str,
+        principal: &str,
+        operation: &str,
+    ) -> Result<OperationResult> {
+        validate_branch_name(name)?;
+        self.mutate("directory.branches.create",principal,operation,json!({"repository_id":repository,"path":path,"name":name}),|engine,state,_|{
+            let repo=state.repositories.get(repository).cloned().ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository missing"))?;engine.require_grant(&repo,principal,"write")?;
+            let (directory_id,_,_)=scope(state,repository,path)?;
+            if !state.directory_selections.contains_key(&directory_id){snapshot(state,repository,path)?;}
+            if state.directory_branches.values().any(|b|b.directory_id==directory_id&&zxs_naming::lookup_key(&b.name)==zxs_naming::lookup_key(name)){return Err(Error::new("NAME_COLLISION","directory branch name already exists"));}
+            let parent=state.directory_selections[&directory_id].clone();let parent_tree=state.directory_tree_selections.get(&directory_id).cloned().unwrap_or_else(||state.directory_branches[&parent].head_tree_id.clone());
+            let tree=state.directory_trees[&parent_tree].clone();let id=new_id("dbr");
+            let inherited_files=tree.file_branches.keys().map(|file|(file.clone(),id.clone())).collect();
+            let branch=DirectoryBranch{directory_branch_id:id.clone(),repository_id:repository.into(),directory_id,path:tree.path.clone(),name:name.into(),parent_branch_id:Some(parent),head_tree_id:parent_tree,commit_id:tree.commit_id,entries:tree.entries.clone(),file_contexts:tree.entries.iter().filter(|e|e.kind=="file").map(|e|(e.lookup_key.clone(),FileContext {node_id:tree.file_contexts.get(&e.lookup_key).and_then(|c|c.node_id.clone()),selection_generation:0,branch_id:tree.file_contexts.get(&e.lookup_key).map(|c|c.branch_id.clone()).unwrap_or_else(||tree.file_branches[&e.file_id].clone()),inherited_from:Some(id.clone())})).collect(),file_branches:tree.file_branches,inherited_files,directory_refs:tree.directory_refs,materialized:false,sequence:state.sequence};
+            let files=branch.entries.iter().filter(|e|e.kind=="file").map(|e|json!({"file_id":e.file_id,"branch_id":branch.file_branches[&e.file_id],"path":e.path,"version_id":e.version_id})).collect::<Vec<_>>();
+            let tree_id=branch.head_tree_id.clone();state.directory_branches.insert(id.clone(),branch);
+            Ok(json!({"directory_branch_id":id,"history_tree_id":repo.history_tree_id,"path":path,"name":name,"branches":files,"copied_files":"0","placeholder_files":"0","count":files.len().to_string(),"materialized":false,"head_tree_id":tree_id,"selected":false}))
+        })
+    }
+    pub fn select_directory_branches(
+        &mut self,
+        repository: &str,
+        path: &str,
+        name: &str,
+        principal: &str,
+        operation: &str,
+    ) -> Result<OperationResult> {
+        validate_branch_name(name)?;
+        self.mutate(
+            "directory.branches.select",
+            principal,
+            operation,
+            json!({"repository_id":repository,"path":path,"name":name}),
+            |engine, state, _| {
+                let repo = state
+                    .repositories
+                    .get(repository)
+                    .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
+                engine.require_grant(repo, principal, "write")?;
+                let (id, _, _) = scope(state, repository, path)?;
+                let selected = state
+                    .directory_branches
+                    .values()
+                    .find(|b| {
+                        b.directory_id == id
+                            && zxs_naming::lookup_key(&b.name) == zxs_naming::lookup_key(name)
+                    })
+                    .map(|b| b.directory_branch_id.clone())
+                    .ok_or_else(|| {
+                        Error::new("DIRECTORY_BRANCH_NOT_FOUND", "directory branch missing")
+                    })?;
+                select_change(state, repository, &selected, principal, operation)
+            },
+        )
+    }
+    pub fn directory_branches(&self, repository: &str, path: &str) -> Result<Vec<Value>> {
+        let (id, _, _) = scope(&self.state, repository, path)?;
+        let selected = self.state.directory_selections.get(&id);
+        let mut branches = self
+            .state
+            .directory_branches
+            .values()
+            .filter(|b| b.repository_id == repository && b.directory_id == id)
+            .collect::<Vec<_>>();
+        branches.sort_by_key(|b| {
+            (
+                std::cmp::Reverse(b.sequence),
+                b.directory_branch_id.as_str(),
+            )
+        });
+        Ok(branches.into_iter().map(|b|json!({"directory_branch_id":b.directory_branch_id,"name":b.name,"path":path,"current":selected==Some(&b.directory_branch_id),"materialized":b.materialized,"head_tree_id":b.head_tree_id,"file_count":b.file_branches.len().to_string(),"parent_branch_id":b.parent_branch_id})).collect())
+    }
+    pub fn select_default_directory_branch(
+        &mut self,
+        repository: &str,
+        branch: &str,
+        principal: &str,
+        operation: &str,
+    ) -> Result<OperationResult> {
+        self.mutate(
+            "directory.default.select",
+            principal,
+            operation,
+            json!({"repository_id":repository,"directory_branch_id":branch}),
+            |engine, state, _| {
+                let repo = state
+                    .repositories
+                    .get(repository)
+                    .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
+                engine.require_grant(repo, principal, "write")?;
+                if !state
+                    .directory_branches
+                    .get(branch)
+                    .is_some_and(|b| b.repository_id == repository && b.directory_id == repository)
+                {
+                    return Err(Error::new(
+                        "DIRECTORY_BRANCH_SCOPE",
+                        "default requires a root composition",
+                    ));
+                }
+                select_change(state, repository, branch, principal, operation)
+            },
+        )
+    }
+    pub fn rename_directory_branch(
+        &mut self,
+        repository: &str,
+        branch: &str,
+        name: &str,
+        principal: &str,
+        operation: &str,
+    ) -> Result<OperationResult> {
+        validate_branch_name(name)?;
+        self.mutate("directory.branch.rename",principal,operation,json!({"repository_id":repository,"directory_branch_id":branch,"name":name}),|engine,state,_|{
+            let repo=state.repositories.get(repository).ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository missing"))?;engine.require_grant(repo,principal,"write")?;
+            let current=state.directory_branches.get(branch).filter(|b|b.repository_id==repository).ok_or_else(||Error::new("DIRECTORY_BRANCH_NOT_FOUND","directory branch missing"))?;
+            if state.directory_branches.values().any(|b|b.directory_id==current.directory_id&&b.directory_branch_id!=branch&&zxs_naming::lookup_key(&b.name)==zxs_naming::lookup_key(name)){return Err(Error::new("NAME_COLLISION","directory branch name exists"));}
+            state.directory_branches.get_mut(branch).expect("checked").name=name.into();let target=&state.directory_branches[branch];Ok(json!({"directory_branch_id":branch,"name":name,"path":target.path,"head_tree_id":target.head_tree_id}))
+        })
+    }
+}

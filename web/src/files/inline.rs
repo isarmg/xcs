@@ -5,10 +5,10 @@ use crate::{
     ui::{State, list, text},
 };
 use serde_json::Value;
-use xcs_web::{html, i18n::t, prelude::*};
+use zxs_web::{html, i18n::t, prelude::*};
 
 // The UI applies the shared metadata byte bound to newly entered names too.
-pub(super) const MAX_TEXT_BYTES: usize = xcs_contract::MAX_NOTE_BYTES;
+pub(super) const MAX_TEXT_BYTES: usize = zxs_contract::MAX_NOTE_BYTES;
 
 #[derive(Clone)]
 pub(super) enum Target {
@@ -129,7 +129,7 @@ enum Edit {
 }
 
 pub(super) fn valid_note(value: &str) -> bool {
-    xcs_contract::validate_note(value).is_ok()
+    zxs_contract::validate_note(value).is_ok()
 }
 
 fn edit_value(value: &str, note: bool) -> Edit {
@@ -238,7 +238,7 @@ fn editor_input(editor: Editor) -> impl IntoView {
         input.select();
     });
     view! {
-        <input class="xcs-inline-input xcs-input xcs-input--compact xcs-input--underline" node_ref=input type="text"
+        <input class="zxs-inline-input zxs-input zxs-input--compact zxs-input--underline" node_ref=input type="text"
             aria-label=editor.label.get_value() aria-invalid=move ||editor.error.get().to_string()
             title=t("最多 128 个 UTF-8 字节；Enter 保存，Esc 或点击其他位置取消。","Up to 128 UTF-8 bytes. Enter saves; Escape or clicking elsewhere cancels.")
             data-max-bytes="128" autocomplete="off" autocapitalize="none" spellcheck="false"
@@ -253,9 +253,9 @@ fn editor_input(editor: Editor) -> impl IntoView {
                     _=>{}
                 }
             }/>
-        <span class="xcs-inline-hint xcs-row" aria-live="polite">{move ||format!("{}/128 {}",editor.value.with(|value|value.len()),t("字节","bytes"))}</span>
+        <span class="zxs-inline-hint zxs-row" aria-live="polite">{move ||format!("{}/128 {}",editor.value.with(|value|value.len()),t("字节","bytes"))}</span>
         <Show when=move ||editor.error.get()>
-            <span class="xcs-inline-error xcs-row" role="status">{if editor.note{t("备注最多 128 个 UTF-8 字节，不能包含换行或控制字符。","Notes must be at most 128 UTF-8 bytes without line breaks or control characters.")}else{t("名称无效，最多 128 个 UTF-8 字节。","Invalid name. Use at most 128 UTF-8 bytes.")}}</span>
+            <span class="zxs-inline-error zxs-row" role="status">{if editor.note{t("备注最多 128 个 UTF-8 字节，不能包含换行或控制字符。","Notes must be at most 128 UTF-8 bytes without line breaks or control characters.")}else{t("名称无效，最多 128 个 UTF-8 字节。","Invalid name. Use at most 128 UTF-8 bytes.")}}</span>
         </Show>
     }
 }
@@ -269,12 +269,12 @@ pub(super) fn control(
 ) -> impl IntoView {
     let editor = Editor::new(state, label, target, disabled);
     view! {
-        <span class="xcs-inline-edit xcs-flow xcs-flow--inline" class:xcs-inline-note=editor.note>
+        <span class="zxs-inline-edit zxs-flow zxs-flow--inline" class:zxs-inline-note=editor.note>
             {move ||if editor.editing.get() {
                 editor_input(editor).into_any()
             } else {
                 view! {
-                    <button class="xcs-button" type="button" aria-label=editor.label.get_value()
+                    <button class="zxs-button" type="button" aria-label=editor.label.get_value()
                         disabled=move ||editor.disabled.get() on:click=move |_|editor.start()>
                         {icon.map(|name|view!{<FileIcon name=name/>})}
                         {move ||if editor.note {
@@ -298,11 +298,11 @@ pub(super) fn version_note(
 ) -> (impl IntoView, impl IntoView) {
     let editor = Editor::new(state, t("编辑备注", "Edit note"), target, disabled);
     let note = view! {
-        <div class="xcs-version-note-row xcs-row" class:xcs-inline-note=move ||editor.editing.get()>
+        <div class="zxs-version-note-row zxs-row" class:zxs-inline-note=move ||editor.editing.get()>
             {move ||if editor.editing.get() {
                 editor_input(editor).into_any()
             } else {
-                view!{<span class="xcs-version-note">{move ||{
+                view!{<span class="zxs-version-note">{move ||{
                     state.with(|s|editor.target.get_value().display(s))
                 }}</span>{super::tags::chips(state,node_id.clone())}}.into_any()
             }}
@@ -312,7 +312,7 @@ pub(super) fn version_note(
         state.with(|s| s.files.writable && !super::model::selected_entry_read_only(&s.files))
     });
     let action = view! {
-        <Show when=move ||can_modify.get()><button class="xcs-button xcs-version-note-action" type="button"
+        <Show when=move ||can_modify.get()><button class="zxs-button zxs-version-note-action" type="button"
             disabled=move ||editor.disabled.get()||editor.editing.get()
             on:click=move |_|editor.start()>{t("编辑备注","Edit note")}</button></Show>
     };

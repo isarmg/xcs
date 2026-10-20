@@ -193,10 +193,10 @@ fn name(value: &str) -> Result<()> {
     if value.len() > 128 {
         return Err("名称最多 128 字节".into());
     }
-    xcs_naming::validate_name(value).map_err(|e| e.message)
+    zxs_naming::validate_name(value).map_err(|e| e.message)
 }
 fn path_parts(path: &str) -> Result<(&str, &str)> {
-    xcs_naming::validate_path(path).map_err(|e| e.message)?;
+    zxs_naming::validate_path(path).map_err(|e| e.message)?;
     Ok(path.rsplit_once('/').unwrap_or(("", path)))
 }
 impl Default for Workspace {
@@ -349,7 +349,7 @@ impl Workspace {
         if path.is_empty() {
             return Ok(ctx);
         }
-        xcs_naming::validate_path(path).map_err(|e| e.message)?;
+        zxs_naming::validate_path(path).map_err(|e| e.message)?;
         for component in path.split('/') {
             let Entry::Folder {
                 directory,
@@ -595,7 +595,7 @@ impl Workspace {
                 name(&new)?;
                 let (file, _, node) = self.file_at(&path)?;
                 if self.file_branches.keys().any(|(f, n)| {
-                    *f == file && xcs_naming::lookup_key(n) == xcs_naming::lookup_key(&new)
+                    *f == file && zxs_naming::lookup_key(n) == zxs_naming::lookup_key(&new)
                 }) {
                     return Err("同名文件分支已存在".into());
                 }
@@ -630,7 +630,7 @@ impl Workspace {
                 name(&new)?;
                 let ctx = self.context(&path)?;
                 if self.directory_branches.keys().any(|(d, n)| {
-                    *d == ctx.directory && xcs_naming::lookup_key(n) == xcs_naming::lookup_key(&new)
+                    *d == ctx.directory && zxs_naming::lookup_key(n) == zxs_naming::lookup_key(&new)
                 }) {
                     return Err("同名目录分支已存在".into());
                 }
@@ -720,7 +720,7 @@ impl Workspace {
                 let mut entries = self.entries(&ctx);
                 if entries
                     .keys()
-                    .any(|n| xcs_naming::lookup_key(n) == xcs_naming::lookup_key(&new))
+                    .any(|n| zxs_naming::lookup_key(n) == zxs_naming::lookup_key(&new))
                 {
                     return Err("目标名称已存在".into());
                 }
@@ -743,11 +743,11 @@ impl Workspace {
                 Ok(format!("当前分支移除 {path}；旧子树及其他分支仍保留"))
             }
             Action::Tags { path, source, tags } => {
-                if tags.len() > xcs_contract::MAX_FILE_TAGS {
+                if tags.len() > zxs_contract::MAX_FILE_TAGS {
                     return Err("最多 16 个标签".into());
                 }
                 for tag in &tags {
-                    xcs_contract::validate_tag(tag).map_err(|e| e.message)?;
+                    zxs_contract::validate_tag(tag).map_err(|e| e.message)?;
                 }
                 let (file, branch, current) = self.file_at(&path)?;
                 self.writable(file, &branch)?;
@@ -783,7 +783,7 @@ impl Workspace {
             Action::Note { path, source, text } => {
                 let (file, branch, _) = self.file_at(&path)?;
                 self.writable(file, &branch)?;
-                xcs_contract::validate_note(&text).map_err(|e| e.message)?;
+                zxs_contract::validate_note(&text).map_err(|e| e.message)?;
                 let node = self
                     .files
                     .get_mut(&source)
@@ -892,7 +892,7 @@ impl Workspace {
                     return Err("演示有 P01 / B01 / C01 三个盘位，请指定相应前缀".into());
                 }
                 for prefix in &prefixes {
-                    xcs_naming::validate_path(prefix).map_err(|e| e.message)?;
+                    zxs_naming::validate_path(prefix).map_err(|e| e.message)?;
                 }
                 self.protection.retain(|p| p.path != path);
                 self.protection.push(Protection {
@@ -1025,7 +1025,7 @@ impl Workspace {
         if self
             .entries(&self.context(parent)?)
             .keys()
-            .any(|n| xcs_naming::lookup_key(n) == xcs_naming::lookup_key(base))
+            .any(|n| zxs_naming::lookup_key(n) == zxs_naming::lookup_key(base))
         {
             return Err("目标已存在同名条目".into());
         }

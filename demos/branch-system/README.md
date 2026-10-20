@@ -1,4 +1,4 @@
-# XCS 分支演示
+# ZXS 分支演示
 
 [过程演示](index.html) · [自由操作](playground.html) · [27 个静态参考图](reference/index.html) · [图片实例索引](examples.md) · [项目规则](../../docs/design/branch-system-logic.md)
 
@@ -33,27 +33,27 @@
 
 ```sh
 cargo test --locked --offline --manifest-path demos/branch-system/Cargo.toml --lib --target-dir target/web-native
-cargo run --locked --offline --manifest-path demos/branch-system/Cargo.toml --bin xcs-demo-build --target-dir target/web-native
+cargo run --locked --offline --manifest-path demos/branch-system/Cargo.toml --bin zxs-demo-build --target-dir target/web-native
 ```
 
-使用 Rust 工具链与 wasm-bindgen 0.2.129；业务、交互和图形全部为 Rust，JavaScript 仅有公共生成加载器和 wasm-bindgen 生成绑定。构建前后核对输入 SHA-256，`dist/build-manifest.json` 记录输入和发行资源。浏览器须通过 HTTP 打开 WASM 页面；`reference/index.html` 是可直接打开的无脚本静态页面。`XCS_WEB_BINDGEN` 可指定匹配版本的 CLI 路径。
+使用 Rust 工具链与 wasm-bindgen 0.2.129；业务、交互和图形全部为 Rust，JavaScript 仅有公共生成加载器和 wasm-bindgen 生成绑定。构建前后核对输入 SHA-256，`dist/build-manifest.json` 记录输入和发行资源。浏览器须通过 HTTP 打开 WASM 页面；`reference/index.html` 是可直接打开的无脚本静态页面。`ZXS_WEB_BINDGEN` 可指定匹配版本的 CLI 路径。
 
 独立启动只读演示服务（默认 `127.0.0.1:7401`）：
 
 ```sh
-cargo run --locked --offline --manifest-path demos/branch-system/Cargo.toml --bin xcs-demo-serve --target-dir target/web-native
+cargo run --locked --offline --manifest-path demos/branch-system/Cargo.toml --bin zxs-demo-serve --target-dir target/web-native
 ```
 
 将 `dist/` 作为静态站点根目录后，`/` 为过程演示，`/playground.html` 为自由操作。已有本项目 Web 发行目录时，可以发布到其 `/demo/` 子目录：
 
 ```sh
-cargo run --locked --offline --manifest-path demos/branch-system/Cargo.toml --bin xcs-demo-build --target-dir target/web-native -- --publish-web
+cargo run --locked --offline --manifest-path demos/branch-system/Cargo.toml --bin zxs-demo-build --target-dir target/web-native -- --publish-web
 ```
 
 该命令只替换 `web/dist/demo/`，不重启存储服务或修改业务数据。重新构建主 Web 会生成全新发行目录，应随后再次发布演示。文档图片可单独重建：
 
 ```sh
-cargo run --locked --offline --manifest-path demos/branch-system/Cargo.toml --bin xcs-demo-reference --target-dir target/web-native
+cargo run --locked --offline --manifest-path demos/branch-system/Cargo.toml --bin zxs-demo-reference --target-dir target/web-native
 ```
 
 浏览器验证命令及结果见 [测试说明](tests/README.md)。此前演示截图、静态图检查代码与结果一并归档在 `tests/history/`；当前检查位于 `tests/browser.mjs` 和 `tests/reference.mjs`。

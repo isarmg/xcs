@@ -1,0 +1,45 @@
+[Unit]
+Description=ZXS full-file storage API
+Documentation=file:/opt/zxs/README.md
+After=local-fs.target network.target
+RequiresMountsFor=/srv/zxs/disks/P01 /srv/zxs/disks/B01 /srv/zxs/disks/C01
+
+[Service]
+Type=simple
+User=zxs
+Group=zxs
+UMask=0077
+StateDirectory=zxs
+StateDirectoryMode=0700
+RuntimeDirectory=zxs
+RuntimeDirectoryMode=0700
+WorkingDirectory=/var/lib/zxs
+ExecStartPre=/usr/bin/test -f /var/lib/zxs/state/config.json
+ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state serve --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web
+KillSignal=SIGINT
+TimeoutStopSec=60
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateMounts=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/zxs /run/zxs /srv/zxs/disks/P01 /srv/zxs/disks/B01 /srv/zxs/disks/C01
+DevicePolicy=closed
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

@@ -40,9 +40,9 @@ pub(super) fn snapshot(css: &web_sys::CssStyleDeclaration) -> CssSnapshot {
         "outline-style",
         "outline-width",
         "outline-offset",
-        "--xcs-contour-extent",
-        "--xcs-contour-mode",
-        "--xcs-contour-foreground",
+        "--zxs-contour-extent",
+        "--zxs-contour-mode",
+        "--zxs-contour-foreground",
     ] {
         result.values.insert(
             property.into(),
@@ -576,7 +576,7 @@ mod tests {
             "box-shadow-x",
             "filter",
             "opacity",
-            "--xcs-contour-extent",
+            "--zxs-contour-extent",
         ] {
             assert!(!owned_paint_property(property));
         }

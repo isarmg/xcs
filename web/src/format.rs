@@ -1,5 +1,5 @@
 use serde_json::Value;
-use xcs_web::i18n::t;
+use zxs_web::i18n::t;
 
 pub fn bytes(value: u64) -> String {
     if value < 1024 {
@@ -57,7 +57,7 @@ pub fn timestamp(v: &str) -> String {
     let _ = js_sys::Reflect::set(&opts, &"hourCycle".into(), &"h23".into());
     format!(
         "{} UTC",
-        date.to_locale_string(&xcs_web::i18n::locale(), &opts)
+        date.to_locale_string(&zxs_web::i18n::locale(), &opts)
             .as_string()
             .unwrap_or_default()
     )

@@ -54,7 +54,7 @@ fn resolve() -> String {
         return value.into();
     }
     if let Ok(Some(storage)) = window.local_storage()
-        && let Ok(Some(value)) = storage.get_item("xcs-language")
+        && let Ok(Some(value)) = storage.get_item("zxs-language")
         && let Some(value) = supported(&value)
     {
         return value.into();
@@ -102,7 +102,7 @@ pub fn initialize() {
             .is_some()
         && let Ok(Some(storage)) = window.local_storage()
     {
-        let _ = storage.set_item("xcs-language", &locale());
+        let _ = storage.set_item("zxs-language", &locale());
     }
 }
 

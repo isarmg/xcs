@@ -1,4 +1,4 @@
-# XCS 实现与验证记录
+# ZXS 实现与验证记录
 
 初始记录日期：2026-10-18；分支记录与首次写入语义更新于 2026-10-19。Rust 工具链为 `rustc 1.99.0 (b940084d7 2026-09-28)`；详细包版本由各工作区 `Cargo.lock` 固定。本记录区分代码实现、实际执行和完整产品验收，不替代第 22 章。
 
@@ -8,13 +8,13 @@
 
 | 模块 | 实际行为 |
 | --- | --- |
-| `xcs-contract` | 稳定 ID、严格十进制 u64、拒绝重复键的严格 JSON、整数 JCS、用途隔离 BLAKE3、公开请求摘要和 XCSCHK2 清单 |
-| `xcs-naming` | 固定 Unicode 16.0.0 的 NFC、完整 case folding、字符类别、默认忽略字符、Windows 保留名与路径长度/深度校验 |
-| `xcs-auth` | 供服务端和平台凭据共用的可移植密码、令牌、CSRF 算法及准入规则 |
-| `xcs-platform` | 安全目录句柄、openat2、单链接文件、原子发布、SQLite WAL/FULL/defensive、脱敏凭据与管理认证基础 |
-| `xcs-core` | 单写者、仓库和工作区、完整版本、固定逐级路由、三成员日志、不可变状态分页、发布闭包、索引重建、读租约、原子历史保存、分支、关系线、独立树拆分、历史恢复包、未来版本策略和内容墓碑 |
-| `xcs-server` | Axum API、Argon2id、只持久化摘要的会话、撤销与 CSRF、同源边界、上传代际与中断保留、Range/校验清单、SMB 本机 RPC |
-| `xcs-client` / `xcs-cli` | 认证远程管理、流式传输和 BLAKE3 核验、本地离线检查/导出、系统目录丢失恢复及原操作重试 |
+| `zxs-contract` | 稳定 ID、严格十进制 u64、拒绝重复键的严格 JSON、整数 JCS、用途隔离 BLAKE3、公开请求摘要和 ZXSCHK2 清单 |
+| `zxs-naming` | 固定 Unicode 16.0.0 的 NFC、完整 case folding、字符类别、默认忽略字符、Windows 保留名与路径长度/深度校验 |
+| `zxs-auth` | 供服务端和平台凭据共用的可移植密码、令牌、CSRF 算法及准入规则 |
+| `zxs-platform` | 安全目录句柄、openat2、单链接文件、原子发布、SQLite WAL/FULL/defensive、脱敏凭据与管理认证基础 |
+| `zxs-core` | 单写者、仓库和工作区、完整版本、固定逐级路由、三成员日志、不可变状态分页、发布闭包、索引重建、读租约、原子历史保存、分支、关系线、独立树拆分、历史恢复包、未来版本策略和内容墓碑 |
+| `zxs-server` | Axum API、Argon2id、只持久化摘要的会话、撤销与 CSRF、同源边界、上传代际与中断保留、Range/校验清单、SMB 本机 RPC |
+| `zxs-client` / `zxs-cli` | 认证远程管理、流式传输和 BLAKE3 核验、本地离线检查/导出、系统目录丢失恢复及原操作重试 |
 | Web / App | Rust/WASM 统一界面、Rust 原生传输和系统文件桥接、Tauri 宿主、组件范围和实际平台限制见组件 README |
 | SMB 桥接 | 受限身份映射、Unix FD 转交、私有工作文件、有界异步读写、FLUSH/最后 CLOSE 核心提交和故障保留；实际 SDK 与客户端用例见组件 README |
 
@@ -44,7 +44,7 @@
 
 监控的临时百分比允许有限小数，Web 使用独立严格响应解析器；写请求、磁盘对象和 JCS 仍禁止浮点。已修复原先误用整数解析器导致合法 CPU JSON 报错的问题，HTTP 错误保留真实状态。连续轮廓的紧凑 SVG 使用百分比源切片，避免奇数尺寸下数值取整吞掉中间填充条；真实页面、横纵像素回归及旧验收漏检说明见[修复记录](../../tests/evidence/contour-response/README.md)。
 
-2026-10-19 的公共轮廓更新为 Rust `xcs-g4` 曲率积分构造；单行上下两角各占行高一半，在侧边中点相接，字号最终统一为行高的 2/5。多行容器沿用单行角范围。原文来源、数值误差界及实际 SVG 验收见 [G4 记录](../../tests/evidence/apple-g4/README.md)，当前各菜单和共享组件的一致性检查见[检查记录](../../tests/evidence/ui-consistency/README.md)。
+2026-10-19 的公共轮廓更新为 Rust `zxs-g4` 曲率积分构造；单行上下两角各占行高一半，在侧边中点相接，字号最终统一为行高的 2/5。多行容器沿用单行角范围。原文来源、数值误差界及实际 SVG 验收见 [G4 记录](../../tests/evidence/apple-g4/README.md)，当前各菜单和共享组件的一致性检查见[检查记录](../../tests/evidence/ui-consistency/README.md)。
 
 本轮进一步对核心、API/平台、共享契约、CLI/原生客户端、App、SMB、CSR 引擎和构建工具完成审读与维护性重构；调用链、具体缺陷与回归、共享布局的唯一修改位置，以及尚需平台实测的边界集中在[代码审查与优化记录](code-review-20261019.md)。
 

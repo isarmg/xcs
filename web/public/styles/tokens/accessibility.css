@@ -1,5 +1,5 @@
 /* 可单独导入的键盘、减弱动态效果和高对比度基础规则。 */
-.xcs-visually-hidden {
+.zxs-visually-hidden {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -11,15 +11,15 @@
   border: 0 !important;
 }
 
-[data-xcs-scope] :where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid var(--xcs-action-primary, Highlight);
+[data-zxs-scope] :where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--zxs-action-primary, Highlight);
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-xcs-scope] *,
-  [data-xcs-scope] *::before,
-  [data-xcs-scope] *::after {
+  [data-zxs-scope] *,
+  [data-zxs-scope] *::before,
+  [data-zxs-scope] *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -28,7 +28,7 @@
 }
 
 @media (forced-colors: active) {
-  [data-xcs-scope] :where(a, button, input, select, textarea):focus-visible {
+  [data-zxs-scope] :where(a, button, input, select, textarea):focus-visible {
     outline-color: Highlight;
     forced-color-adjust: auto;
   }

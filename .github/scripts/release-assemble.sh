@@ -3,10 +3,10 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 : "${RELEASE_VERSION:?}"
 v="$RELEASE_VERSION"
-expected=("xcs-$v-x86_64-unknown-linux-gnu.tar.gz" "xcs-web-$v.tar.gz"
-  "xcs-app-$v-x86_64-unknown-linux-gnu.deb"
-  "xcs-app-$v-x86_64-pc-windows-msvc-setup.exe"
-  "xcs-app-$v-aarch64-apple-darwin.app.tar.gz")
+expected=("zxs-$v-x86_64-unknown-linux-gnu.tar.gz" "zxs-web-$v.tar.gz"
+  "zxs-app-$v-x86_64-unknown-linux-gnu.deb"
+  "zxs-app-$v-x86_64-pc-windows-msvc-setup.exe"
+  "zxs-app-$v-aarch64-apple-darwin.app.tar.gz")
 test "$(find release-assets -mindepth 1 -maxdepth 1 -type f | wc -l)" = 5
 for asset in "${expected[@]}"; do test -s "release-assets/$asset"; done
 cp docs/release.md release-assets/INSTALL.md

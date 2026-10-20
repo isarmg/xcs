@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{RequestCredentials, RequestInit, RequestMode, RequestRedirect, Response};
-use xcs_web::i18n::t;
+use zxs_web::i18n::t;
 
 mod response;
 
@@ -59,7 +59,7 @@ impl Error {
     /// After a mutation request, only a client-error response proves rejection.
     /// A malformed success response can follow a completed publication.
     pub(crate) fn mutation_outcome_unknown(&self) -> bool {
-        xcs_contract::client_protocol::mutation_outcome_unknown(self.status)
+        zxs_contract::client_protocol::mutation_outcome_unknown(self.status)
     }
 
     fn with_status(mut self, status: u16) -> Self {
@@ -166,7 +166,7 @@ pub fn segment(value: &str) -> String {
 }
 
 fn validate_path(path: &str) -> Result<(), Error> {
-    xcs_contract::validate_api_path(path).map_err(|_| {
+    zxs_contract::validate_api_path(path).map_err(|_| {
         error(
             "INVALID_API_PATH",
             t(
@@ -291,16 +291,16 @@ async fn fetch(
         })?);
         request
             .headers()
-            .set("X-XCS-Logical-Size", &bytes.length().to_string())
+            .set("X-ZXS-Logical-Size", &bytes.length().to_string())
             .map_err(js_error)?;
         request
             .headers()
-            .set("X-XCS-Upload-Generation", "1")
+            .set("X-ZXS-Upload-Generation", "1")
             .map_err(js_error)?;
         request
             .headers()
             .set(
-                "X-XCS-Content-Hash",
+                "X-ZXS-Content-Hash",
                 &blake3::hash(&bytes.to_vec()).to_hex(),
             )
             .map_err(js_error)?;
@@ -390,20 +390,20 @@ async fn decode(fetched: Fetched) -> Result<Value, Error> {
         .ok()
         .flatten()
         .and_then(|v| v.parse::<u64>().ok())
-        .is_some_and(|v| v > xcs_contract::client_protocol::MAX_RESPONSE_BYTES as u64)
+        .is_some_and(|v| v > zxs_contract::client_protocol::MAX_RESPONSE_BYTES as u64)
     {
         return Err(response::from_protocol(
-            xcs_contract::client_protocol::response_too_large(status),
+            zxs_contract::client_protocol::response_too_large(status),
         ));
     }
     let bytes = read_body(
         &fetched.response,
-        xcs_contract::client_protocol::MAX_RESPONSE_BYTES,
+        zxs_contract::client_protocol::MAX_RESPONSE_BYTES,
     )
     .await
     .map_err(|error| {
         if error.code == "RESPONSE_TOO_LARGE" {
-            response::from_protocol(xcs_contract::client_protocol::response_too_large(status))
+            response::from_protocol(zxs_contract::client_protocol::response_too_large(status))
         } else {
             error.with_status(status)
         }
@@ -509,7 +509,7 @@ pub async fn commit_workspace(
         Some(json!({})),
     )
     .await?;
-    let body = xcs_contract::client_protocol::prepare_commit(
+    let body = zxs_contract::client_protocol::prepare_commit(
         body,
         workspace,
         operation_id,
@@ -528,7 +528,7 @@ pub async fn commit_workspace(
     .await
 }
 fn native_commit_attempted(result: &Result<Value, Error>) -> bool {
-    xcs_contract::client_protocol::publication_attempted(
+    zxs_contract::client_protocol::publication_attempted(
         result
             .as_ref()
             .err()
@@ -536,7 +536,7 @@ fn native_commit_attempted(result: &Result<Value, Error>) -> bool {
     )
 }
 
-fn error_from_contract(value: xcs_contract::Error) -> Error {
+fn error_from_contract(value: zxs_contract::Error) -> Error {
     Error {
         code: value.code,
         message: value.message,

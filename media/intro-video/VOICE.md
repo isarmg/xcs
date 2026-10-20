@@ -15,10 +15,10 @@
 在仓库外建立虚拟环境与输出目录。例如：
 
 ```sh
-python -m venv ../xcs-video-output/voice-venv
-../xcs-video-output/voice-venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
-../xcs-video-output/voice-venv/bin/pip install 'kokoro==0.9.4' 'misaki[zh]==0.9.4' soundfile 'transformers==4.57.6' 'huggingface-hub<1'
-../xcs-video-output/voice-venv/bin/python media/intro-video/voice.py --story media/intro-video/story-timed.json --output ../xcs-video-output/voice
+python -m venv ../zxs-video-output/voice-venv
+../zxs-video-output/voice-venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+../zxs-video-output/voice-venv/bin/pip install 'kokoro==0.9.4' 'misaki[zh]==0.9.4' soundfile 'transformers==4.57.6' 'huggingface-hub<1'
+../zxs-video-output/voice-venv/bin/python media/intro-video/voice.py --story media/intro-video/story-timed.json --output ../zxs-video-output/voice
 ```
 
 首跑从官方 Hugging Face 模型仓库下载权重和声音；之后可复用本地缓存。

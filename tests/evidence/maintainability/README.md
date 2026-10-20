@@ -69,13 +69,13 @@
 
 ```sh
 node --check tests/evidence/maintainability/browser-probe.mjs
-XCS_PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node tests/evidence/maintainability/browser-probe.mjs
+ZXS_PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node tests/evidence/maintainability/browser-probe.mjs
 ```
 
-项目根默认由脚本相对位置解析，也可用 `XCS_PRODUCT_ROOT` 指定；服务默认 `http://127.0.0.1:7400`，`XCS_PREVIEW_URL` 可指定本地候选地址。演示记录默认 `/tmp/xcs-demo-seed/result.json`，可用 `XCS_BROWSER_SEED` 指定，前置是已有只读可访问的演示目录和文件；脚本不会生成或修改演示文件。`XCS_MAINT_SCENES` 可指定需要复测的场次。Playwright 默认按已安装包 `playwright` 导入，或通过 `XCS_PLAYWRIGHT_MODULE` 指定工具模块；不是产品构建或运行依赖。
+项目根默认由脚本相对位置解析，也可用 `ZXS_PRODUCT_ROOT` 指定；服务默认 `http://127.0.0.1:7400`，`ZXS_PREVIEW_URL` 可指定本地候选地址。演示记录默认 `/tmp/zxs-demo-seed/result.json`，可用 `ZXS_BROWSER_SEED` 指定，前置是已有只读可访问的演示目录和文件；脚本不会生成或修改演示文件。`ZXS_MAINT_SCENES` 可指定需要复测的场次。Playwright 默认按已安装包 `playwright` 导入，或通过 `ZXS_PLAYWRIGHT_MODULE` 指定工具模块；不是产品构建或运行依赖。
 
-本机此次用 `XCS_PLAYWRIGHT_MODULE=/mnt/sarmg.org/xcss/node_modules/playwright/index.mjs` 指定已安装的工具模块，其余路径与服务使用上述默认值。脚本本身不依赖该工作区位置。每次运行会将 `result.json`／`summary.json` 写为本次选择的场次；分批执行时须按对应分场结果合并，不能把单批汇总当成完整四场。
+本机此次用 `ZXS_PLAYWRIGHT_MODULE=/mnt/sarmg.org/zxss/node_modules/playwright/index.mjs` 指定已安装的工具模块，其余路径与服务使用上述默认值。脚本本身不依赖该工作区位置。每次运行会将 `result.json`／`summary.json` 写为本次选择的场次；分批执行时须按对应分场结果合并，不能把单批汇总当成完整四场。
 
-同目录的三套源码夹具也采用项目根推断及 `XCS_PRODUCT_ROOT`／`XCS_PLAYWRIGHT_MODULE` 参数。归档的 20 场通过结果来自相同 DOM／CSS 逻辑，之后仅参数化路径，没有因此声明额外运行次数。
+同目录的三套源码夹具也采用项目根推断及 `ZXS_PRODUCT_ROOT`／`ZXS_PLAYWRIGHT_MODULE` 参数。归档的 20 场通过结果来自相同 DOM／CSS 逻辑，之后仅参数化路径，没有因此声明额外运行次数。
 
 不覆盖浏览器过大缩放，也没有为此添加产品补偿逻辑。浏览器验收不表示六平台 App 实机验收或物理盘故障验收已经完成。

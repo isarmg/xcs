@@ -14,13 +14,13 @@ pub fn current() -> String {
     };
     if let Some(document) = window.document()
         && let Some(root) = document.document_element()
-        && let Some(value) = root.get_attribute("data-xcs-theme")
+        && let Some(value) = root.get_attribute("data-zxs-theme")
         && (value == "light" || value == "dark")
     {
         return value;
     }
     if let Ok(Some(storage)) = window.local_storage()
-        && let Ok(Some(value)) = storage.get_item("xcs-theme")
+        && let Ok(Some(value)) = storage.get_item("zxs-theme")
         && (value == "light" || value == "dark")
     {
         return value;
@@ -43,7 +43,7 @@ fn apply(value: &str) {
         .and_then(|w| w.document())
         .and_then(|d| d.document_element())
     {
-        let _ = root.set_attribute("data-xcs-theme", value);
+        let _ = root.set_attribute("data-zxs-theme", value);
     }
 }
 
@@ -58,7 +58,7 @@ pub fn initialize() {
         .local_storage()
         .ok()
         .flatten()
-        .and_then(|storage| storage.get_item("xcs-theme").ok().flatten())
+        .and_then(|storage| storage.get_item("zxs-theme").ok().flatten())
         .filter(|value| value == "light" || value == "dark");
     MANUAL.with(|manual| manual.set(saved.is_some()));
     let query = window
@@ -94,7 +94,7 @@ pub fn toggle() {
     MANUAL.with(|manual| manual.set(true));
     if let Some(window) = web_sys::window() {
         if let Ok(Some(storage)) = window.local_storage() {
-            let _ = storage.set_item("xcs-theme", next);
+            let _ = storage.set_item("zxs-theme", next);
         }
         apply(next);
         changed();
@@ -103,7 +103,7 @@ pub fn toggle() {
 
 fn changed() {
     if let Some(window) = web_sys::window()
-        && let Ok(event) = web_sys::Event::new("xcs-theme-change")
+        && let Ok(event) = web_sys::Event::new("zxs-theme-change")
     {
         let _ = window.dispatch_event(&event);
     }

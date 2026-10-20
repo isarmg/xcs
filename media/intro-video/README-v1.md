@@ -27,9 +27,9 @@ Python 3.10+，`ffmpeg` / `ffprobe`（系统软件），系统 Noto Sans CJK Reg
 ```sh
 python -m pip install -r media/intro-video/requirements.txt
 # 先输出各场中点帧与总览图（不生成视频）
-python media/intro-video/render.py --out ../xcs-video-output --width 1280 --preview
+python media/intro-video/render.py --out ../zxs-video-output --width 1280 --preview
 # 成片：1920×1080 / 30 fps / 220 秒（3 分 40 秒），带原创轻量背景配乐
-python media/intro-video/render.py --out ../xcs-video-output
+python media/intro-video/render.py --out ../zxs-video-output
 ```
 
 输出目录必须在 Git 仓库之外。`--width 960` 可用于快速预览；`--duration 10` 可用于编码测试。终渲染会拒绝缺少真实截图的情况。视频采用 RGB 帧经标准输入直接交给 ffmpeg 编码，不产生海量帧文件。仅保留 12 张预览 JPEG 与 contact sheet。
@@ -38,9 +38,9 @@ python media/intro-video/render.py --out ../xcs-video-output
 
 ```sh
 python media/intro-video/mux_voice.py \
-  --video ../xcs-video-output/xcs-explainer-zh.mp4 \
-  --voice ../xcs-video-output/voice/narration.wav \
-  --out ../xcs-video-output/xcs-explainer-zh-narrated.mp4
+  --video ../zxs-video-output/zxs-explainer-zh.mp4 \
+  --voice ../zxs-video-output/voice/narration.wav \
+  --out ../zxs-video-output/zxs-explainer-zh-narrated.mp4
 ```
 
 音视频、模型、虚拟环境及临时产物不提交 GitHub。`.gitignore` 排除常见媒体与渲染缓存；仍应在提交前检查暂存区。
@@ -60,10 +60,10 @@ python -m unittest -v test_render.py
 
 ```sh
 python media/intro-video/align_captions.py --story /path/to/approved-story.json \
-  --report ../xcs-video-output/voice/voice-report.json \
-  --out ../xcs-video-output/story-timed.json
-python media/intro-video/render.py --story ../xcs-video-output/story-timed.json \
-  --out ../xcs-video-output/final
+  --report ../zxs-video-output/voice/voice-report.json \
+  --out ../zxs-video-output/story-timed.json
+python media/intro-video/render.py --story ../zxs-video-output/story-timed.json \
+  --out ../zxs-video-output/final
 ```
 
 此工具不自行更改场景时长；任何语音超出场景的情况都会明确报错，先调整已批准的时间轴再渲染。

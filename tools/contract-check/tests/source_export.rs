@@ -31,7 +31,7 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
         .unwrap()
         .as_nanos();
     let destination =
-        std::env::temp_dir().join(format!("xcs-source-export-{}-{nonce}", std::process::id()));
+        std::env::temp_dir().join(format!("zxs-source-export-{}-{nonce}", std::process::id()));
     fs::create_dir(&destination).unwrap();
     let fixture = Fixture(destination);
     let files = git(&root)
@@ -128,7 +128,7 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
             .join("demos/branch-system/tests/evidence/browser-result.json")
             .exists()
     );
-    let result = Command::new(env!("CARGO_BIN_EXE_xcs-contract-check"))
+    let result = Command::new(env!("CARGO_BIN_EXE_zxs-contract-check"))
         .arg("--root")
         .arg(&fixture.0)
         .output()
@@ -151,7 +151,7 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
         "[Required source](missing-required-source.rs)\n",
     )
     .unwrap();
-    let failure = Command::new(env!("CARGO_BIN_EXE_xcs-contract-check"))
+    let failure = Command::new(env!("CARGO_BIN_EXE_zxs-contract-check"))
         .arg("--root")
         .arg(&fixture.0)
         .output()
