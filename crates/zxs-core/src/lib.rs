@@ -12,6 +12,7 @@ mod journal;
 mod maintenance;
 mod metadata_budget;
 mod protection;
+mod publication_evidence;
 mod repair;
 mod wire;
 pub use business::{PreparedUpload, UploadPreparation};

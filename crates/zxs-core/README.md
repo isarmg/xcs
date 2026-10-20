@@ -9,6 +9,7 @@
 | `engine/publication.rs` | 正文准备、精确元数据预检、持久决定与发布屏障 |
 | `engine/recovery.rs` | 仅沿已验证发布前缀回放，协调未完成决定 |
 | `engine/reads.rs` | 副本验证、读租约、导出、磁盘容量与状态 |
+| `publication_evidence.rs` | 只读选择精确摘要的对象、完整快照及发布 seal；查询不执行磁盘修复 |
 | `engine/workspace_storage.rs` | 工作区清单的双位置持久化与重启协调 |
 | `engine/index.rs` | 可重建 SQLite 投影 |
 | `business/` | 仓库、命名空间、上传、文件分支、目录批量分支与历史查询 |

@@ -1509,25 +1509,40 @@ impl Engine {
         let manifest = HistoryManifest::from_state(&self.state, history)?;
         let hash = object_hash("history-manifest", &manifest)?;
         let mut proof = None;
-        for disk in self.members() {
-            if validate_seal(&self.config, &disk).is_err() {
-                continue;
-            }
-            for (record, _) in scan(&disk)?
+        let members = self.trusted_evidence_members();
+        for disk in &members {
+            for (record, _) in scan(disk)?
                 .records
                 .into_iter()
                 .rev()
                 .filter(|(r, _)| r.record_type == "PUBLICATION")
             {
-                let candidate: Candidate = load_object(&disk, "candidate", &record.candidate_hash)?;
+                let candidate: Candidate = crate::publication_evidence::verified_object(
+                    &members,
+                    "candidate",
+                    &record.candidate_hash,
+                )?;
+                if candidate.pool_id != self.config.pool_id || candidate.sequence != record.sequence
+                {
+                    return Err(Error::new(
+                        "PUBLICATION_INVALID",
+                        "candidate differs from journal or pool",
+                    ));
+                }
                 if candidate.history_manifest_hashes.get(history) != Some(&hash) {
                     continue;
                 }
-                let publication: Publication =
-                    load_object(&disk, "publication", &record.object_hash)?;
+                let publication: Publication = crate::publication_evidence::verified_object(
+                    &members,
+                    "publication",
+                    &record.object_hash,
+                )?;
                 let publication_seal: PublicationSeal =
-                    read_json(&publication_seal_path(&disk, &record.candidate_hash))?;
-                verify_publication_seal(&candidate, &publication, &publication_seal)?;
+                    crate::publication_evidence::verified_publication_seal(
+                        &members,
+                        &candidate,
+                        &publication,
+                    )?;
                 proof = Some(PackageProof {
                     format_version: 2,
                     manifest_hash: hash.clone(),

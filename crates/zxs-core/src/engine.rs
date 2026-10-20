@@ -1,3 +1,4 @@
+use crate::publication_evidence::{verified_object, verified_snapshot};
 use crate::{disk::*, journal::*, *};
 use serde_json::json;
 use std::{
@@ -308,25 +309,11 @@ impl Engine {
         if let Some(owner) = self.state.operation_principals.get(id) {
             return Some(owner.clone());
         }
-        for d in self.members() {
-            if let Ok(scan) = scan(&d) {
-                for (r, _) in scan
-                    .records
-                    .iter()
-                    .rev()
-                    .filter(|(r, _)| matches!(r.record_type.as_str(), "ACCEPT" | "PUBLICATION"))
-                {
-                    if let Ok(c) = load_object::<Candidate>(&d, "candidate", &r.candidate_hash) {
-                        if c.operation_id == id {
-                            if let Ok(s) = load_snapshot(&d, &c.snapshot_hash) {
-                                return s.operation_principals.get(id).cloned();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        None
+        self.pending_operation_state(id)
+            .ok()?
+            .operation_principals
+            .get(id)
+            .cloned()
     }
     pub fn operation(&self, id: &str) -> Result<OperationResult> {
         if let Some(mut op) = self.state.operations.get(id).cloned() {
@@ -352,24 +339,35 @@ impl Engine {
             }
             return Ok(op);
         }
-        for d in self.config.disks.iter().filter(|d| d.metadata_member) {
-            if let Ok(scan) = scan(d) {
-                for (record, _) in scan
-                    .records
-                    .iter()
-                    .rev()
-                    .filter(|(r, _)| matches!(r.record_type.as_str(), "ACCEPT" | "PUBLICATION"))
-                {
-                    if let Ok(c) = load_object::<Candidate>(d, "candidate", &record.candidate_hash)
+        let state = self.pending_operation_state(id)?;
+        let mut operation = state
+            .operations
+            .get(id)
+            .cloned()
+            .ok_or_else(|| Error::new("OPERATION_NOT_FOUND", "operation is not registered"))?;
+        operation.commit_state = "IN_DOUBT".into();
+        operation.protection_at_publish = "UNCONFIRMED".into();
+        operation.current_health = "RECOVERING".into();
+        Ok(operation)
+    }
+    /// Owners and pending results must be derived from the same accepted,
+    /// hash-bound state. Merely finding prepared metadata is not a decision.
+    fn pending_operation_state(&self, id: &str) -> Result<State> {
+        let members = self.trusted_evidence_members();
+        for disk in &members {
+            if let Ok(scan) = scan(disk) {
+                for (record, _) in scan.records.iter().rev().filter(|(record, _)| {
+                    matches!(record.record_type.as_str(), "ACCEPT" | "PUBLICATION")
+                }) {
+                    if let Ok(candidate) =
+                        verified_object::<Candidate>(&members, "candidate", &record.candidate_hash)
                     {
-                        if c.operation_id == id {
-                            let state = load_snapshot(d, &c.snapshot_hash)?;
-                            if let Some(mut op) = state.operations.get(id).cloned() {
-                                op.commit_state = "IN_DOUBT".into();
-                                op.protection_at_publish = "UNCONFIRMED".into();
-                                op.current_health = "RECOVERING".into();
-                                return Ok(op);
-                            }
+                        if candidate.operation_id == id
+                            && candidate.pool_id == self.config.pool_id
+                            && candidate.sequence == record.sequence
+                        {
+                            return verified_snapshot(&members, &candidate.snapshot_hash)
+                                .map(|(state, _)| state);
                         }
                     }
                 }
@@ -393,6 +391,12 @@ impl Engine {
             ));
         }
         Ok(())
+    }
+    pub(crate) fn trusted_evidence_members(&self) -> Vec<DiskConfig> {
+        self.members()
+            .into_iter()
+            .filter(|disk| validate_seal(&self.config, disk).is_ok())
+            .collect()
     }
     pub(crate) fn members(&self) -> Vec<DiskConfig> {
         let mut members = self

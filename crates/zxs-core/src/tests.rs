@@ -3492,3 +3492,142 @@ fn detached_commit_rechecks_lease_expiry_at_finish() {
     assert!(!engine.state.operations.contains_key(&request.operation_id));
     assert!(engine.require_write().is_ok());
 }
+
+#[test]
+fn pending_operation_reads_exact_snapshot_replica_without_repair() {
+    for kind in ["snapshot", "candidate", "state-page"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let operation = new_id("op");
+        engine.inject_fault_once("after_accept_1");
+        assert!(
+            engine
+                .create_repository("pending", "P01", 3, "admin", &operation)
+                .is_err()
+        );
+        let members = engine.members();
+        let (source, record) = members
+            .iter()
+            .find_map(|disk| {
+                crate::journal::scan(disk)
+                    .unwrap()
+                    .records
+                    .into_iter()
+                    .find(|(record, _)| record.record_type == "ACCEPT")
+                    .map(|(record, _)| (disk, record))
+            })
+            .unwrap();
+        let candidate: crate::journal::Candidate =
+            crate::journal::load_object(source, "candidate", &record.candidate_hash).unwrap();
+        let hash = match kind {
+            "candidate" => record.candidate_hash.clone(),
+            "snapshot" => candidate.snapshot_hash.clone(),
+            _ => {
+                let snapshot: crate::journal::Snapshot =
+                    crate::journal::load_object(source, "snapshot", &candidate.snapshot_hash)
+                        .unwrap();
+                snapshot.pages["operation_principals"][0].clone()
+            }
+        };
+        let path = crate::journal::object_path(source, kind, &hash);
+        fs::write(&path, b"broken").unwrap();
+        let result = engine.operation(&operation).unwrap();
+        assert_eq!(result.commit_state, "IN_DOUBT");
+        assert_eq!(engine.operation_owner(&operation).as_deref(), Some("admin"));
+        assert_eq!(fs::read(&path).unwrap(), b"broken");
+        for disk in &members {
+            fs::write(crate::journal::object_path(disk, kind, &hash), b"broken").unwrap();
+        }
+        assert!(engine.operation(&operation).is_err());
+        assert_eq!(engine.operation_owner(&operation), None);
+    }
+}
+#[test]
+fn history_export_reads_exact_evidence_replicas_without_repair() {
+    for kind in ["candidate", "publication", "seal"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        let members = engine.members();
+        let record = crate::journal::scan(&members[0])
+            .unwrap()
+            .records
+            .into_iter()
+            .rev()
+            .find(|(record, _)| record.record_type == "PUBLICATION")
+            .unwrap()
+            .0;
+        let path_for = |disk: &DiskConfig| match kind {
+            "candidate" => crate::journal::object_path(disk, kind, &record.candidate_hash),
+            "publication" => crate::journal::object_path(disk, kind, &record.object_hash),
+            _ => crate::journal::publication_seal_path(disk, &record.candidate_hash),
+        };
+        let path = path_for(&members[0]);
+        let mut damaged: serde_json::Value =
+            serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        if kind == "seal" {
+            damaged["receipts"] = serde_json::json!([]);
+        } else if kind == "candidate" {
+            damaged["request_digest"] = serde_json::json!("wrong digest");
+        } else {
+            damaged["candidate_hash"] = serde_json::json!("0".repeat(64));
+        }
+        let damaged = serde_json::to_vec(&damaged).unwrap();
+        // A wrong but parseable majority must never defeat the one exact copy.
+        for disk in &members[..2] {
+            fs::write(path_for(disk), &damaged).unwrap();
+        }
+        let destination = fixture.root.join("export");
+        engine
+            .export_history_package(&repo.history_tree_id, &destination, "admin")
+            .unwrap();
+        offline_check_history_package(&destination).unwrap();
+        assert_eq!(fs::read(&path).unwrap(), damaged);
+        for disk in &members {
+            fs::write(path_for(disk), &damaged).unwrap();
+        }
+        assert!(
+            engine
+                .export_history_package(
+                    &repo.history_tree_id,
+                    &fixture.root.join("rejected"),
+                    "admin"
+                )
+                .is_err()
+        );
+    }
+}
+
+#[test]
+fn pending_operation_requires_a_trusted_decision_not_prepared_objects() {
+    for fault in ["after_prepare_3", "after_accept_1"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let operation = new_id("op");
+        engine.inject_fault_once(fault);
+        assert!(
+            engine
+                .create_repository("pending", "P01", 3, "admin", &operation)
+                .is_err()
+        );
+        if fault == "after_accept_1" {
+            let disk = engine
+                .members()
+                .into_iter()
+                .find(|disk| {
+                    crate::journal::scan(disk)
+                        .unwrap()
+                        .records
+                        .iter()
+                        .any(|(record, _)| record.record_type == "ACCEPT")
+                })
+                .unwrap();
+            fs::write(disk.root.join("disk.json"), b"untrusted").unwrap();
+        }
+        assert_eq!(
+            engine.operation(&operation).unwrap_err().code(),
+            "OPERATION_NOT_FOUND"
+        );
+        assert_eq!(engine.operation_owner(&operation), None);
+    }
+}

@@ -1,5 +1,6 @@
 //! Replay the verified publication prefix and reconcile pending decisions.
 use super::Engine;
+use crate::publication_evidence::{verified_object, verified_publication_seal, verified_snapshot};
 use crate::{disk::*, journal::*, *};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -200,12 +201,7 @@ impl Engine {
                 // A PUBLICATION object or a single frame is not the complete
                 // barrier. Preserve the old visible state until all three
                 // synchronized receipts can be checked after restart.
-                let sealed = online
-                    .iter()
-                    .filter_map(|d| {
-                        read_json::<PublicationSeal>(&publication_seal_path(d, &hash)).ok()
-                    })
-                    .any(|seal| verify_publication_seal(&candidate, &p, &seal).is_ok());
+                let sealed = verified_publication_seal(&online, &candidate, &p).is_ok();
                 if !sealed {
                     self.blocked = true;
                     break;
@@ -237,25 +233,6 @@ impl Engine {
         }
         Ok(())
     }
-}
-
-// The journal supplies the authoritative digest. A replica is usable only if
-// its decoded object matches that exact digest, never by majority agreement.
-fn verified_object<T: serde::Serialize + serde::de::DeserializeOwned>(
-    members: &[DiskConfig],
-    kind: &str,
-    hash: &str,
-) -> Result<T> {
-    let mut first_error = None;
-    for member in members {
-        match load_object(member, kind, hash) {
-            Ok(value) => return Ok(value),
-            Err(error) => {
-                first_error.get_or_insert(error);
-            }
-        }
-    }
-    Err(first_error.unwrap_or_else(|| Error::new("RECOVERY_REQUIRED", "no trusted object replica")))
 }
 
 fn repair_object_copies<T: serde::Serialize>(
@@ -293,23 +270,6 @@ fn repair_object_copies<T: serde::Serialize>(
     Ok(())
 }
 
-// A candidate binds one snapshot root. Try only replicas of that exact root;
-// never substitute a different state or advance past a failed dependency.
-fn verified_snapshot(members: &[DiskConfig], hash: &str) -> Result<(State, DiskConfig)> {
-    let mut first_error = None;
-    for member in members {
-        match load_snapshot(member, hash) {
-            Ok(state) => return Ok((state, member.clone())),
-            Err(error) => {
-                if first_error.is_none() {
-                    first_error = Some(error);
-                }
-            }
-        }
-    }
-    Err(first_error
-        .unwrap_or_else(|| Error::new("RECOVERY_REQUIRED", "no trusted snapshot replica")))
-}
 // Optimization only: bound hash storage independently of retained history.
 // Once full, uncached pages still receive the complete verification/repair.
 const MAX_REPAIRED_PAGES: usize = 16_384;
