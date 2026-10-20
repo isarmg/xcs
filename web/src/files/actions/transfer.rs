@@ -12,13 +12,89 @@ use serde_json::{Value, json};
 use wasm_bindgen_futures::spawn_local;
 use zxs_web::{i18n::t, prelude::*};
 
-pub(crate) fn upload_files(state: RwSignal<State>, files: Option<web_sys::FileList>) {
-    queue_uploads(state, files, false);
+// Capture the destination before either system picker opens. Navigation or a
+// branch/session change invalidates a late result instead of retargeting it.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct PickerContext {
+    epoch: u64,
+    generation: u64,
+    history_generation: u64,
+    slot: String,
+    directory: String,
+    selected: Option<Value>,
+    branch: String,
+    entries: Vec<Value>,
+    directory_branches: Vec<Value>,
+    replace: bool,
 }
-/// A replacement uses the managed file's identity and current branch, regardless
-/// of the local filename. It shares the ordinary upload/publication transaction.
-pub(crate) fn upload_contents(state: RwSignal<State>, files: Option<web_sys::FileList>) {
-    queue_uploads(state, files, true);
+impl PickerContext {
+    fn capture(state: &State, replace: bool) -> Self {
+        let model = &state.files;
+        Self {
+            epoch: state.session_epoch,
+            generation: model.generation,
+            history_generation: model.history_generation,
+            slot: model.slot.clone(),
+            directory: model.directory.clone(),
+            selected: model.selected.clone(),
+            branch: selected_branch(model),
+            entries: model.entries.clone(),
+            directory_branches: model.directory_branches.clone(),
+            replace,
+        }
+    }
+    fn current(&self, state: &State) -> bool {
+        state.authenticated && !state.logout_pending && *self == Self::capture(state, self.replace)
+    }
+}
+/// Returns true only when the view should open its browser file input.
+pub(crate) fn pick_upload(state: RwSignal<State>, replace: bool) -> bool {
+    let snapshot = state.get_untracked();
+    if !snapshot.authenticated
+        || snapshot.logout_pending
+        || !snapshot.files.writable
+        || snapshot.files.loading
+        || pending(&snapshot)
+        || (replace && snapshot.files.history_loading)
+    {
+        return false;
+    }
+    let context = PickerContext::capture(&snapshot, replace);
+    state.update(|s| s.files.upload_picker = Some(context.clone()));
+    if !api::native() {
+        return true;
+    }
+    spawn_local(async move {
+        let result = api::choose_files(!replace).await;
+        let active = state.with_untracked(|s| s.files.upload_picker.as_ref() == Some(&context));
+        if active {
+            state.update(|s| s.files.upload_picker = None);
+        }
+        if !active || !state.with_untracked(|s| context.current(s)) {
+            return;
+        }
+        match result {
+            Ok(sources) => queue_uploads(state, sources, context),
+            Err(error) => fail(state, error),
+        }
+    });
+    false
+}
+pub(crate) fn cancel_picker(state: RwSignal<State>) {
+    state.update(|s| s.files.upload_picker = None);
+}
+pub(crate) fn upload_files(state: RwSignal<State>, files: Option<web_sys::FileList>) {
+    let context = state.with_untracked(|s| s.files.upload_picker.clone());
+    cancel_picker(state);
+    let Some(context) = context else {
+        return;
+    };
+    let sources = files
+        .into_iter()
+        .flat_map(|files| (0..files.length()).filter_map(move |i| files.get(i)))
+        .map(api::UploadSource::Browser)
+        .collect();
+    queue_uploads(state, sources, context);
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -75,18 +151,22 @@ fn write_session_body(row: &UploadRow) -> Value {
     }
     request
 }
-fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, replace_selected: bool) {
-    let Some(files) = files else {
-        return;
-    };
+fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, context: PickerContext) {
     let snapshot = state.get_untracked();
-    if !snapshot.files.writable || snapshot.files.loading || pending(&snapshot) {
+    if !context.current(&snapshot)
+        || !snapshot.files.writable
+        || snapshot.files.loading
+        || pending(&snapshot)
+    {
         return;
     }
-    if replace_selected && (files.length() != 1 || snapshot.files.history_loading) {
+    if sources.is_empty() {
         return;
     }
-    if files.length() > 128 {
+    if context.replace && (sources.len() != 1 || snapshot.files.history_loading) {
+        return;
+    }
+    if sources.len() > 128 {
         set_notice(
             state,
             t(
@@ -97,32 +177,34 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
         return;
     }
     let mut queue = Vec::new();
-    for index in 0..files.length() {
-        if let Some(file) = files.get(index) {
-            let Some(target) = upload_target(&snapshot.files, &file.name(), replace_selected)
-            else {
-                set_notice(
-                    state,
-                    t("上传文件名无效。", "An upload filename is invalid."),
-                );
-                return;
-            };
-            let id = api::operation_id();
-            if id.is_empty() {
-                return;
-            }
-            queue.push((
-                file,
-                UploadRow {
-                    operation_id: id,
-                    name: target.name,
-                    slot: snapshot.files.slot.clone(),
-                    path: target.path,
-                    branch_id: target.branch_id,
-                    ..Default::default()
-                },
-            ));
+    for source in sources {
+        // Validate the entire queue before creating any server workspace.
+        if let Err(error) = source.preflight() {
+            fail(state, error);
+            return;
         }
+        let Some(target) = upload_target(&snapshot.files, &source.name(), context.replace) else {
+            set_notice(
+                state,
+                t("上传文件名无效。", "An upload filename is invalid."),
+            );
+            return;
+        };
+        let id = api::operation_id();
+        if id.is_empty() {
+            return;
+        }
+        queue.push((
+            source,
+            UploadRow {
+                operation_id: id,
+                name: target.name,
+                slot: snapshot.files.slot.clone(),
+                path: target.path,
+                branch_id: target.branch_id,
+                ..Default::default()
+            },
+        ));
     }
     state.update(|s| {
         append_uploads(
@@ -132,7 +214,7 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
     });
     let epoch = snapshot.session_epoch;
     spawn_local(async move {
-        for (file, row) in queue {
+        for (source, row) in queue {
             if !current_session(state, epoch) {
                 return;
             }
@@ -160,7 +242,7 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
                     row.workspace = workspace.clone();
                     row.expected_head = expected_head.clone();
                 });
-                api::upload(&workspace, &api::entry_id(), &path, file).await?;
+                api::upload(&workspace, &api::entry_id(), &path, source).await?;
                 if !current_session(state, epoch) {
                     return Err(api::session_changed());
                 }
@@ -183,6 +265,12 @@ fn queue_uploads(state: RwSignal<State>, files: Option<web_sys::FileList>, repla
                 Err(error) => {
                     update_upload(state, &id, |row| {
                         apply_upload_error(row, commit_attempted, &error);
+                        if !commit_attempted {
+                            row.message.push_str(&t(
+                                " 请重新选择文件后重试。",
+                                " Select the file again before retrying.",
+                            ));
+                        }
                     });
                     fail(state, error);
                 }
@@ -314,6 +402,43 @@ pub(crate) fn download(state: RwSignal<State>, entry: Value) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn picker_result_cannot_move_to_a_new_session_location_or_branch() {
+        let state = State {
+            authenticated: true,
+            session_epoch: 5,
+            files: Model {
+                slot: "disk".into(),
+                directory: "folder".into(),
+                selected: Some(
+                    json!({"name":"file","path":"folder/file","selected_branch_id":"main"}),
+                ),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let context = PickerContext::capture(&state, true);
+        assert!(context.current(&state));
+        let mut changed = state.clone();
+        changed.session_epoch += 1;
+        assert!(!context.current(&changed));
+        let mut changed = state.clone();
+        changed.files.directory = "another".into();
+        assert!(!context.current(&changed));
+        let mut changed = state.clone();
+        changed.files.slot = "another".into();
+        assert!(!context.current(&changed));
+        let mut changed = state.clone();
+        changed.files.selected.as_mut().unwrap()["selected_branch_id"] = "other".into();
+        assert!(!context.current(&changed));
+        let mut changed = state.clone();
+        changed.logout_pending = true;
+        assert!(!context.current(&changed));
+        let mut changed = state.clone();
+        changed.files.history_generation += 1;
+        assert!(!context.current(&changed));
+    }
 
     #[test]
     fn unrelated_upload_receipts_keep_recovery_data_and_stop_the_queue() {

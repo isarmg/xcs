@@ -114,8 +114,8 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
             {move ||breadcrumbs(&state.with(|s|s.files.directory.clone())).into_iter().map(move |(name,path)|view!{<span aria-hidden="true">"/"</span><button class="zxs-button" on:click=move |_|actions::go_directory(state,path.clone())>{name}</button>}).collect_view()}
         </nav>
         <div class="zxs-file-toolbar zxs-flow">
-            <button class="zxs-button" disabled=move ||state.with(|s|!s.files.writable||s.files.loading||actions::pending(s)) on:click=move |_|{if let Some(input)=file_input.get_untracked(){input.click();}}><FileIcon name="upload"/>{t("上传文件","Upload files")}</button>
-            <input node_ref=file_input hidden type="file" multiple on:change=move |_|{if let Some(input)=file_input.get_untracked(){actions::upload_files(state,input.files());input.set_value("");}}/>
+            <button class="zxs-button" disabled=move ||state.with(|s|!s.files.writable||s.files.loading||actions::pending(s)) on:click=move |_|{if actions::pick_upload(state,false){if let Some(input)=file_input.get_untracked(){input.click();}}}><FileIcon name="upload"/>{t("上传文件","Upload files")}</button>
+            <input node_ref=file_input hidden type="file" on:cancel=move |_: web_sys::Event|actions::cancel_picker(state) multiple on:change=move |_|{if let Some(input)=file_input.get_untracked(){actions::upload_files(state,input.files());input.set_value("");}}/>
             {inline::control(state,t("新建文件夹","New folder"),Some("create"),inline::Target::CreateDirectory,mutation_disabled)}
             <button class="zxs-button" disabled=move ||batch_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Move,None)>{t("移动","Move")}</button>
             <button class="zxs-button" disabled=move ||batch_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Copy,None)>{t("复制","Copy")}</button>

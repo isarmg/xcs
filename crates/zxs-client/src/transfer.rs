@@ -6,6 +6,16 @@ use std::path::Path;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 use tokio_util::io::ReaderStream;
 
+/// A hashed, rewound upload ready for dispatch. Preparing does not send bytes.
+pub struct PreparedUpload {
+    request: reqwest::RequestBuilder,
+}
+impl PreparedUpload {
+    pub async fn send(self) -> Result<Value, Error> {
+        decode(self.request.send().await?).await
+    }
+}
+
 impl Client {
     pub async fn upload_file(
         &self,
@@ -14,6 +24,17 @@ impl Client {
         path: &str,
         source: &Path,
     ) -> Result<Value, Error> {
+        self.upload_open_file(
+            workspace,
+            item,
+            path,
+            Self::open_upload_source(source).await?,
+        )
+        .await
+    }
+
+    /// Open and validate the selected descriptor before handing it to a native picker registry.
+    pub async fn open_upload_source(source: &Path) -> Result<tokio::fs::File, Error> {
         let mut options = tokio::fs::OpenOptions::new();
         options.read(true);
         #[cfg(unix)]
@@ -22,13 +43,44 @@ impl Client {
         // pre-open path check that could race a replacement). O_NONBLOCK has
         // no effect on regular-file reads and local symlinks remain supported.
         options.custom_flags(rustix::fs::OFlags::NONBLOCK.bits() as i32);
-        let mut file = options.open(source).await?;
+        let file = options.open(source).await?;
         let metadata = file.metadata().await?;
         if !metadata.is_file() {
             return Err(Error::Response(
                 "upload source must be a regular file".into(),
             ));
         }
+        Ok(file)
+    }
+
+    /// Stream an already selected descriptor without reopening its original path.
+    /// Ownership prevents shared seek offsets or concurrent reuse by native callers.
+    pub async fn upload_open_file(
+        &self,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        file: tokio::fs::File,
+    ) -> Result<Value, Error> {
+        self.prepare_file_upload(workspace, item, path, file)
+            .await?
+            .send()
+            .await
+    }
+    pub async fn prepare_file_upload(
+        &self,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        mut file: tokio::fs::File,
+    ) -> Result<PreparedUpload, Error> {
+        let metadata = file.metadata().await?;
+        if !metadata.is_file() {
+            return Err(Error::Response(
+                "upload source must be a regular file".into(),
+            ));
+        }
+        file.seek(std::io::SeekFrom::Start(0)).await?;
         let mut hasher = blake3::Hasher::new();
         let mut buffer = vec![0_u8; 256 * 1024];
         loop {
@@ -58,7 +110,7 @@ impl Client {
         if let Some(token) = &self.token {
             request = request.bearer_auth(token);
         }
-        decode(request.send().await?).await
+        Ok(PreparedUpload { request })
     }
     /// Publish only a complete verified file, without replacing any existing
     /// destination. The temporary path owns cleanup on errors and cancellation.

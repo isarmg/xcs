@@ -569,20 +569,28 @@ fn error_from_contract(value: zxs_contract::Error) -> Error {
     }
 }
 
+mod upload_source;
+pub use upload_source::UploadSource;
+pub(crate) use upload_source::choose_files;
+
 pub async fn upload(
     workspace: &str,
     item: &str,
     path: &str,
-    file: web_sys::File,
+    source: UploadSource,
 ) -> Result<Value, Error> {
-    // Buffer a bounded browser file. Native Apps stream directly from disk.
-    if file.size() > 64.0 * 1024.0 * 1024.0 {
+    source.preflight()?;
+    let file = match source {
+        UploadSource::Native(source) => {
+            return upload_source::upload_native(workspace, item, path, &source.id, invoke).await;
+        }
+        UploadSource::Browser(file) => file,
+    };
+    // Never send a browser buffer through the WebView's fetch transport.
+    if native() {
         return Err(error(
-            "BROWSER_UPLOAD_LIMIT",
-            t(
-                "网页单次上传上限 64 MiB；大文件请使用 App 或 CLI",
-                "Browser uploads are limited to 64 MiB per file. Use the app or CLI for larger files.",
-            ),
+            "NATIVE_SOURCE_REQUIRED",
+            "Select the file again using the native picker.",
         ));
     }
     let generation = credential_generation();

@@ -34,6 +34,7 @@ pub(crate) struct Model {
     pub preview: Option<(String, String)>,
     pub preview_generation: u64,
     pub uploads: Vec<UploadRow>,
+    pub upload_picker: Option<super::actions::PickerContext>,
     pub operations: Vec<Value>,
     pub polling_operations: Vec<String>,
     pub mutation_pending: bool,

@@ -6,6 +6,7 @@ use std::time::Duration;
 mod response;
 mod transfer;
 use response::decode;
+pub use transfer::PreparedUpload;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

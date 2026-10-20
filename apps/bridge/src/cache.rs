@@ -7,6 +7,10 @@ use std::path::{Path, PathBuf};
 /// If the caller disappears, the returned value is dropped and the file removed.
 pub struct StagedImport(tempfile::TempPath);
 impl StagedImport {
+    pub(crate) fn path(&self) -> &Path {
+        &self.0
+    }
+
     pub fn keep(self) -> Result<PathBuf, BridgeError> {
         self.0
             .keep()

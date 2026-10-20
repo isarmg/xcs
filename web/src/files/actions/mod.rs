@@ -11,7 +11,9 @@ pub(crate) use mutation::{
     select_branch, select_default_branch, update_node_note, update_note,
 };
 pub(crate) use operation::{poll, record_operation, record_receipt};
-pub(crate) use transfer::{download, preview, upload_contents, upload_files};
+pub(crate) use transfer::{
+    PickerContext, cancel_picker, download, pick_upload, preview, upload_files,
+};
 
 use super::model::{SaveStatus, operation_status};
 use crate::{api, ui::State};
@@ -20,7 +22,8 @@ fn disk_path(slot: &str) -> String {
     format!("/v1/file-manager/disks/{}", api::segment(slot))
 }
 pub(crate) fn pending(state: &State) -> bool {
-    state.files.mutation_pending
+    state.files.upload_picker.is_some()
+        || state.files.mutation_pending
         || state.files.uploads.iter().any(|row| row.status.pending())
         || state
             .files

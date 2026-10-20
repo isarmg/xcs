@@ -7,7 +7,9 @@ use tokio::sync::RwLock;
 use zxs_client::{Client, Error};
 mod cache;
 mod connection;
+mod sources;
 pub use cache::{StagedImport, cache_target, prepare_cache_target, stage_import};
+pub use sources::{PickedSource, Selection};
 
 #[derive(Clone, Debug, Serialize)]
 pub struct BridgeError {
@@ -107,6 +109,7 @@ fn public_session(session: &zxs_client::Session) -> Value {
 #[derive(Default)]
 pub struct Bridge {
     connection: RwLock<connection::Connection>,
+    sources: std::sync::Mutex<sources::Sources>,
 }
 impl Bridge {
     pub async fn connect(
@@ -121,11 +124,14 @@ impl Bridge {
         let result = public_session(&session);
         // The session is committed only after successful authentication. Neither
         // password nor token is returned to the WebView or persisted to disk.
-        let installed = self
-            .connection
-            .write()
-            .await
-            .install(attempt, client.clone());
+        let installed = {
+            let mut connection = self.connection.write().await;
+            let installed = connection.install(attempt, client.clone());
+            if installed {
+                self.sources.lock().unwrap().clear();
+            }
+            installed
+        };
         if !installed {
             let _ = client.logout().await;
             return Err(session_changed());
@@ -136,11 +142,16 @@ impl Bridge {
         self.connection
             .read()
             .await
-            .snapshot()
+            .work_snapshot()
             .ok_or_else(disconnected)
     }
-    async fn ensure_current(&self, revision: u64) -> Result<(), BridgeError> {
-        if self.connection.read().await.current(revision) {
+    /// Captures the generation for native work such as file selection. Logout
+    /// invalidates this generation immediately, even if revocation later fails.
+    pub async fn work_revision(&self) -> Result<u64, BridgeError> {
+        self.snapshot().await.map(|(_, epoch)| epoch)
+    }
+    pub(crate) async fn ensure_current(&self, epoch: u64) -> Result<(), BridgeError> {
+        if self.connection.read().await.work_current(epoch) {
             Ok(())
         } else {
             Err(session_changed())
@@ -171,7 +182,15 @@ impl Bridge {
                 status: 0,
             });
         }
-        let (client, revision) = self.snapshot().await?;
+        let logout = method == "POST" && route == "/v1/auth/logout";
+        let (client, revision) = if logout {
+            let mut connection = self.connection.write().await;
+            let snapshot = connection.begin_logout().ok_or_else(disconnected)?;
+            self.sources.lock().unwrap().clear();
+            snapshot
+        } else {
+            self.snapshot().await?
+        };
         let mut result = client.request(method, path, body).await;
         if route == "/v1/auth/me"
             && let Ok(Value::Object(value)) = &mut result
@@ -181,7 +200,11 @@ impl Bridge {
             value.remove("csrf_token");
         }
         let mut connection = self.connection.write().await;
-        if !connection.current(revision) {
+        if !(if logout {
+            connection.current(revision)
+        } else {
+            connection.work_current(revision)
+        }) {
             return Err(session_changed());
         }
         // A failed logout is unconfirmed: keep the credential so the locked
@@ -195,7 +218,9 @@ impl Bridge {
                     value["changed"] == true && value["reauthentication_required"] == true
                 }))
         {
-            connection.clear_if(revision);
+            // The identity check above is performed under this same write lock.
+            connection.clear();
+            self.sources.lock().unwrap().clear();
         }
         result.map_err(Into::into)
     }
@@ -207,9 +232,12 @@ impl Bridge {
         source: &Path,
     ) -> Result<Value, BridgeError> {
         let (client, revision) = self.snapshot().await?;
-        let result = client.upload_file(workspace, item, path, source).await;
+        let source = Client::open_upload_source(source).await?;
+        let prepared = client
+            .prepare_file_upload(workspace, item, path, source)
+            .await;
         self.ensure_current(revision).await?;
-        result.map_err(Into::into)
+        self.send_prepared_upload(revision, prepared?).await
     }
     pub async fn download(&self, version: &str, target: &Path) -> Result<Value, BridgeError> {
         let (client, revision) = self.snapshot().await?;
@@ -312,7 +340,9 @@ impl Bridge {
         result
     }
     pub async fn disconnect(&self) {
-        self.connection.write().await.clear();
+        let mut connection = self.connection.write().await;
+        connection.clear();
+        self.sources.lock().unwrap().clear();
     }
 }
 

@@ -622,3 +622,106 @@ async fn replacing_the_native_session_during_seal_does_not_submit_commit() {
     );
     server.await.unwrap();
 }
+
+#[test]
+fn logout_fences_existing_work_without_disabling_fresh_explicit_work() {
+    let mut state = connection::Connection::default();
+    let attempt = state.begin();
+    assert!(state.install(attempt, client("old.example")));
+    let (_, credential_revision) = state.snapshot().unwrap();
+    let (_, old_work) = state.work_snapshot().unwrap();
+    let pending_login = state.begin();
+    let (_, logout_revision) = state.begin_logout().unwrap();
+    assert_eq!(logout_revision, credential_revision);
+    assert!(state.current(credential_revision));
+    assert!(!state.work_current(old_work));
+    let (_, fresh_work) = state.work_snapshot().unwrap();
+    assert!(state.work_current(fresh_work));
+    assert!(!state.install(pending_login, client("stale.example")));
+    state.begin_logout();
+    assert!(!state.work_current(fresh_work));
+    assert!(state.current(credential_revision));
+}
+
+async fn read_request(stream: &mut tokio::net::TcpStream) -> String {
+    let mut bytes = Vec::new();
+    while !bytes.ends_with(b"\r\n\r\n") {
+        bytes.push(stream.read_u8().await.unwrap());
+        assert!(bytes.len() < 8192);
+    }
+    let headers = String::from_utf8(bytes).unwrap();
+    let length = headers
+        .lines()
+        .filter_map(|line| line.split_once(':'))
+        .find(|(name, _)| name.eq_ignore_ascii_case("content-length"))
+        .map(|(_, value)| value.trim().parse::<usize>().unwrap())
+        .unwrap_or(0);
+    assert!(length < 8192);
+    let mut body = vec![0; length];
+    stream.read_exact(&mut body).await.unwrap();
+    headers
+}
+
+#[tokio::test]
+async fn starting_logout_during_seal_fences_commit_before_logout_responds() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let bridge =
+        Arc::new(connected_bridge(&format!("http://{}", listener.local_addr().unwrap())).await);
+    let (sealed, seal_seen) = oneshot::channel();
+    let (logging_out, logout_seen) = oneshot::channel();
+    let (release_logout, wait_logout) = oneshot::channel();
+    let server = tokio::spawn(async move {
+        let (mut seal, _) = listener.accept().await.unwrap();
+        assert!(
+            read_request(&mut seal)
+                .await
+                .starts_with("POST /v1/workspaces/workspace_test/seal HTTP/1.1")
+        );
+        sealed.send(()).unwrap();
+        let (mut logout, _) = listener.accept().await.unwrap();
+        assert!(
+            read_request(&mut logout)
+                .await
+                .starts_with("POST /v1/auth/logout HTTP/1.1")
+        );
+        logging_out.send(()).unwrap();
+        let body = json!({"workspace_id":"workspace_test", "manifest_hash":"manifest_test", "fencing_token":"1"}).to_string();
+        seal.write_all(
+            format!(
+                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len()
+            )
+            .as_bytes(),
+        )
+        .await
+        .unwrap();
+        // The logout response stays blocked until the commit caller has stopped.
+        // Any publication request in this interval is a regression.
+        tokio::select! {
+            _ = listener.accept() => panic!("publication continued after logout started"),
+            result = wait_logout => result.unwrap(),
+        }
+        logout.write_all(b"HTTP/1.1 503 Service Unavailable\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}").await.unwrap();
+    });
+    let caller = bridge.clone();
+    let commit = tokio::spawn(async move {
+        caller
+            .commit_workspace("workspace_test", "operation_test", "save", "")
+            .await
+    });
+    seal_seen.await.unwrap();
+    let caller = bridge.clone();
+    let logout = tokio::spawn(async move { caller.request("POST", "/v1/auth/logout", None).await });
+    logout_seen.await.unwrap();
+    let failure = tokio::time::timeout(std::time::Duration::from_secs(5), commit)
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap_err();
+    assert_eq!(failure.error.code, "SESSION_CHANGED");
+    assert!(!failure.commit_attempted);
+    release_logout.send(()).unwrap();
+    assert_eq!(logout.await.unwrap().unwrap_err().status, 503);
+    assert!(bridge.snapshot().await.is_ok());
+    server.await.unwrap();
+}
