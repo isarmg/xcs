@@ -13,7 +13,7 @@ cargo build --locked --target-dir target/native -p zxs-cli
 export CHROME_BIN="$(command -v google-chrome)"
 export CHROMEDRIVER="$(command -v chromedriver)"
 cargo run --locked --manifest-path tools/browser-smoke/Cargo.toml -- \
-  --zxs "$PWD/target/native/debug/zxs" --web-dir "$PWD/web/dist"
+  --cli-bin "$PWD/target/native/debug/zxs" --web-dir "$PWD/web/dist"
 ```
 
 `CHROME_BIN` 可省略，ChromeDriver 会自动发现浏览器；`CHROMEDRIVER` 默认为 PATH 中的 `chromedriver`。这些变量接受可执行文件完整路径，不接受命令参数。Cargo 单测只验证测试工具自身，不能替代上面的浏览器命令。

@@ -410,25 +410,25 @@ fn exercise(
 
 fn run() -> Result<()> {
     let mut args = env::args().skip(1);
-    let mut zxs = PathBuf::from("target/native/debug/zxs");
+    let mut cli_binary = PathBuf::from("target/native/debug/zxs");
     let mut web = PathBuf::from("web/dist");
     let mut screenshot: Option<PathBuf> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
-            "--zxs" => zxs = args.next().ok_or("--zxs requires a path")?.into(),
+            "--cli-bin" => cli_binary = args.next().ok_or("--cli-bin requires a path")?.into(),
             "--web-dir" => web = args.next().ok_or("--web-dir requires a path")?.into(),
             "--screenshot" => {
                 screenshot = Some(args.next().ok_or("--screenshot requires a path")?.into());
             }
             _ => {
                 return Err(format!(
-                    "unknown argument {arg}; usage: zxs-browser-smoke [--zxs PATH] [--web-dir PATH] [--screenshot PNG]"
+                    "unknown argument {arg}; usage: zxs-browser-smoke [--cli-bin PATH] [--web-dir PATH] [--screenshot PNG]"
                 )
                 .into());
             }
         }
     }
-    let zxs = zxs.canonicalize()?;
+    let cli_binary = cli_binary.canonicalize()?;
     let web = web.canonicalize()?;
     if !web.join("index.html").is_file() {
         return Err("build the real web/dist before running this test".into());
@@ -455,7 +455,7 @@ fn run() -> Result<()> {
     for disk in &disks {
         fs::DirBuilder::new().mode(0o700).create(disk)?;
     }
-    let init = Command::new(&zxs)
+    let init = Command::new(&cli_binary)
         .arg("--root")
         .arg(&pool)
         .args(["init", "--username", "smoke-admin", "--password-file"])
@@ -477,7 +477,7 @@ fn run() -> Result<()> {
     let server_log = root.join("server.log");
     let driver_log = root.join("driver.log");
     let _server = spawn(
-        Command::new(zxs)
+        Command::new(cli_binary)
             .arg("--root")
             .arg(pool)
             .args([

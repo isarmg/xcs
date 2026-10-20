@@ -60,7 +60,7 @@ case "${1:-}" in
       screenshot_args=(--screenshot "$ZXS_SMOKE_SCREENSHOT")
     fi
     cargo run --locked --manifest-path tools/browser-smoke/Cargo.toml -- \
-      --zxs "$PWD/target/native/debug/zxs" --web-dir "$PWD/web/dist" "${screenshot_args[@]}"
+      --cli-bin "$PWD/target/native/debug/zxs" --web-dir "$PWD/web/dist" "${screenshot_args[@]}"
     ;;
   *)
     echo 'Usage: check.sh {workspace|apps|web|contracts|build-tools|demo|smb-protocol|web-production|desktop-host|browser-smoke}' >&2

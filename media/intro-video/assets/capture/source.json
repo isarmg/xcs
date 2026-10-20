@@ -1,19 +1,18 @@
 {
   "repository": "isarmg/zxs",
-  "commit": "1af6965781fb3675cf252b86081d18dec6732a59",
-  "run_id": 39292491848,
-  "artifact_id": 12207385192,
-  "artifact": "xcs-demo-capture",
+  "commit": "3eca684d4046f8d5b4de1a7c5ffcae9ea008b85d",
+  "run_id": 39372982814,
+  "artifact_id": 12241904067,
+  "artifact": "zxs-demo-capture",
   "browser_job_conclusion": "success",
   "included_files": {
     "12-branch-6-preview.png": {
-      "sha256": "e2d69086923cf603012d362dc53b5054ac2890258089f45caffabf8277e55fe7",
-      "bytes": 391454
+      "sha256": "240e634c06f30f87f1ca4451cd5b21d48654ec195a8bb755e7a7e804ca5ca6dc",
+      "bytes": 392675
     },
     "14-main-still-12-preview.png": {
-      "sha256": "29e165d9828a7ff7ad2030253adcf61a3ecc4a13c2c67c222ab5f5cc29943a6e",
-      "bytes": 389923
+      "sha256": "f4a10e121ccddd730b6b35ce7a344c21b41a47fd653fd8be43b3797de8d37c16",
+      "bytes": 391193
     }
-  },
-  "provenance_note": "Historical pre-rename artifact; its original name, run, commit and checksums are retained unchanged."
+  }
 }
