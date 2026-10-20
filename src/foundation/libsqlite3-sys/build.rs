@@ -383,10 +383,7 @@ impl From<HeaderLocation> for String {
 }
 
 mod build_linked {
-    #[cfg(feature = "vcpkg")]
-    extern crate vcpkg;
-
-    use super::{bindings, env_prefix, is_compiler, lib_name, win_target, HeaderLocation};
+    use super::{bindings, env_prefix, lib_name, win_target, HeaderLocation};
     use std::env;
     use std::path::Path;
 
@@ -426,9 +423,6 @@ mod build_linked {
         println!("cargo:rerun-if-env-changed={}_INCLUDE_DIR", env_prefix());
         println!("cargo:rerun-if-env-changed={}_LIB_DIR", env_prefix());
         println!("cargo:rerun-if-env-changed={}_STATIC", env_prefix());
-        if cfg!(feature = "vcpkg") && is_compiler("msvc") {
-            println!("cargo:rerun-if-env-changed=VCPKGRS_DYNAMIC");
-        }
 
         // dependents can access `DEP_SQLITE3_LINK_TARGET` (`sqlite3` being the
         // `links=` value in our Cargo.toml) to get this value. This might be
@@ -455,10 +449,6 @@ mod build_linked {
             return HeaderLocation::FromEnvironment;
         }
 
-        if let Some(header) = try_vcpkg() {
-            return header;
-        }
-
         // See if pkg-config can do everything for us.
         if let Ok(mut lib) = pkg_config::Config::new()
             .atleast_version("3.34.1")
@@ -481,19 +471,6 @@ mod build_linked {
         }
     }
 
-    fn try_vcpkg() -> Option<HeaderLocation> {
-        if cfg!(feature = "vcpkg") && is_compiler("msvc") {
-            // See if vcpkg can find it.
-            if let Ok(mut lib) = vcpkg::Config::new().probe(lib_name()) {
-                if let Some(header) = lib.include_paths.pop() {
-                    return Some(HeaderLocation::FromPath(header.to_string_lossy().into()));
-                }
-            }
-            None
-        } else {
-            None
-        }
-    }
 }
 
 #[cfg(not(feature = "buildtime_bindgen"))]

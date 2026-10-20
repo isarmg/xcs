@@ -1,4 +1,10 @@
 fn main() {
+    assert!(
+        std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("linux")
+            && std::env::var("CARGO_CFG_TARGET_ARCH").as_deref() == Ok("x86_64")
+            && std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").as_deref() == Ok("64"),
+        "the loadable ZXS VFS module requires Linux amd64 (64-bit x86_64)"
+    );
     println!("cargo:rerun-if-env-changed=ZXS_SMB_SDK_SOURCE");
     println!("cargo:rerun-if-env-changed=ZXS_SMB_SDK_BUILD");
     println!("cargo:rerun-if-env-changed=ZXS_SMB_SDK_CLANG_ARGS_JSON");

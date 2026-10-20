@@ -43,6 +43,8 @@ case "${1:-}" in
   foundation)
     # Focused regressions for maintained foundation changes. Do not restore
     # retired upstream dev dependencies or run unrelated upstream test suites.
+    # All preserved Linux ABI features, not only today's enabled dependency set.
+    python3 .github/scripts/check-linux-uapi.py
     cargo test --locked --offline --lib -p password-hash
     # An external workspace package cannot receive --features directly. Its
     # actual storage-client consumer enables compiled_data in the shared graph.

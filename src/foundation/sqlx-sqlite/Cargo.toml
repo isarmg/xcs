@@ -95,7 +95,6 @@ path = "../futures-util"
 version = ">=0.30.1, <0.38.0"
 features = [
     "pkg-config",
-    "vcpkg",
 ]
 default-features = false
 path = "../libsqlite3-sys"

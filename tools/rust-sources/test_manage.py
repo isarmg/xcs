@@ -84,6 +84,37 @@ class SourcePolicy(unittest.TestCase):
         with patch.object(manager, "cargo_metadata", return_value=self.metadata):
             self.verify(metadata=True)
 
+    def test_native_target_policy_rejects_arm64_even_after_refresh(self):
+        self.policy["workspaces"][0]["targets"].append("aarch64-unknown-linux-gnu")
+        self.write_json(manager.POLICY, self.policy)
+        with self.assertRaisesRegex(ValueError, "unsupported workspace target"):
+            self.refresh()
+
+    def test_native_profile_cannot_advertise_web_or_other_native_targets(self):
+        for target in (manager.WEB_TARGET, "aarch64-unknown-linux-gnu", "x86_64-unknown-linux-musl"):
+            with self.subTest(target=target):
+                self.policy["profiles"][0]["targets"] = [target]
+                with self.assertRaisesRegex(ValueError, "unsupported profile target"):
+                    manager.verify_target_policy(self.policy)
+
+    def test_web_target_is_separate_from_native_platform_support(self):
+        self.policy["workspaces"][0]["targets"].append(manager.WEB_TARGET)
+        self.policy["profiles"].append(dict(id="web", targets=[manager.WEB_TARGET]))
+        manager.verify_target_policy(self.policy)
+        self.policy["profiles"][-1]["targets"] = [manager.NATIVE_TARGET]
+        with self.assertRaisesRegex(ValueError, "unsupported profile target"):
+            manager.verify_target_policy(self.policy)
+
+    def test_target_coverage_cannot_advertise_unused_platforms(self):
+        self.policy["workspaces"][0]["targets"].append(manager.WEB_TARGET)
+        with self.assertRaisesRegex(ValueError, "workspace/profile target coverage drift"):
+            manager.verify_target_policy(self.policy)
+
+    def test_profile_target_cannot_be_duplicated(self):
+        self.policy["profiles"][0]["targets"] *= 2
+        with self.assertRaisesRegex(ValueError, "unsupported profile target"):
+            manager.verify_target_policy(self.policy)
+
     def test_refresh_descriptions_is_idempotent_and_preserves_original_receipts(self):
         package = self.catalog["packages"]["src/foundation/mini"]
         package["changes"] = "See crates/zxs-naming/README.md."

@@ -18,6 +18,8 @@ ORIGINS = "compliance/provenance/origins.json"
 DOC = "docs/THIRD_PARTY_RUST_SOURCES.md"
 POLICY = "tools/rust-sources/workspaces.json"
 REGISTRY = "registry+https://github.com/rust-lang/crates.io-index"
+NATIVE_TARGET = "x86_64-unknown-linux-gnu"
+WEB_TARGET = "wasm32-unknown-unknown"
 HEX = re.compile(r"[0-9a-f]{64}")
 DESCRIPTION_PATHS = (
     ("tools/zxs-bindgen/PROVENANCE.json", "compliance/provenance/packages/zxs-bindgen-0.2.129/PROVENANCE.json"),
@@ -94,6 +96,7 @@ def structure(root, policy):
     """No nested Git roots, Cargo workspaces, registry edges, or package locks."""
     if [workspace["manifest"] for workspace in policy["workspaces"]] != ["Cargo.toml"]:
         raise ValueError("exactly one root Cargo workspace is required")
+    verify_target_policy(policy)
     if manifests(root) != {"Cargo.toml"}:
         raise ValueError("nested/independent Cargo workspace")
     skipped = {".git", "target", "build", "runtime", "zxs-data", "xcs-data", ".agents", ".aws", ".codex"}
@@ -162,6 +165,22 @@ def structure(root, policy):
                     if not (target / "Cargo.toml").is_file():
                         raise ValueError(f"missing local dependency: {relative} {name}")
     verify_feature_edges(root)
+
+
+def verify_target_policy(policy):
+    """The maintained native platform is Linux amd64; WASM is Web-only."""
+    workspace_targets = policy["workspaces"][0]["targets"]
+    if (not workspace_targets or len(set(workspace_targets)) != len(workspace_targets)
+            or set(workspace_targets) - {NATIVE_TARGET, WEB_TARGET}):
+        raise ValueError("unsupported workspace target: only Linux amd64 and Web WASM are maintained")
+    selected = set()
+    for profile in policy.get("profiles", []):
+        expected = WEB_TARGET if profile["id"] == "web" else NATIVE_TARGET
+        if profile["targets"] != [expected]:
+            raise ValueError(f"unsupported profile target: {profile['id']} requires {expected}")
+        selected.add(expected)
+    if policy.get("profiles") and selected != set(workspace_targets):
+        raise ValueError("workspace/profile target coverage drift")
 
 
 def verify_feature_edges(root):

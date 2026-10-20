@@ -1256,7 +1256,6 @@ version = "0.37.0"
 dependencies = [
  "cc",
  "pkg-config",
- "vcpkg",
 ]
 
 [[package]]
@@ -2589,10 +2588,6 @@ dependencies = [
  "outref",
  "vsimd",
 ]
-
-[[package]]
-name = "vcpkg"
-version = "0.2.15"
 
 [[package]]
 name = "version_check"

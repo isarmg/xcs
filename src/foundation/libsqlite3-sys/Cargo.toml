@@ -25,7 +25,7 @@ license = "MIT"
 repository = "https://github.com/rusqlite/rusqlite"
 
 [features]
-buildtime_bindgen = ["bindgen", "pkg-config", "vcpkg"]
+buildtime_bindgen = ["bindgen", "pkg-config"]
 bundled = ["cc", "bundled_bindings"]
 bundled-sqlcipher = ["bundled"]
 bundled-sqlcipher-vendored-openssl = ["bundled-sqlcipher"]
@@ -35,7 +35,7 @@ column_metadata = []
 default = ["min_sqlite_version_3_34_1"]
 in_gecko = []
 loadable_extension = ["prettyplease", "quote", "syn"]
-min_sqlite_version_3_34_1 = ["pkg-config", "vcpkg"]
+min_sqlite_version_3_34_1 = ["pkg-config"]
 preupdate_hook = ["buildtime_bindgen"]
 session = ["preupdate_hook", "buildtime_bindgen"]
 sqlcipher = []
@@ -84,8 +84,3 @@ features = [
 ]
 optional = true
 path = "../syn-2.0.119"
-
-[build-dependencies.vcpkg]
-version = "0.2.15"
-optional = true
-path = "../vcpkg"

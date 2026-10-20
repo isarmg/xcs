@@ -5,9 +5,13 @@
 //! The storage engine owns ACCEPT, FINALIZE, PUBLICATION, and recovery.
 #![deny(unsafe_code, unsafe_op_in_unsafe_fn)]
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(all(
+    target_os = "linux",
+    target_arch = "x86_64",
+    target_pointer_width = "64"
+)))]
 compile_error!(
-    "platform-io is the Linux server foundation; portable clients must use storage-contract"
+    "platform-io requires Linux amd64 (64-bit x86_64); browser clients must use storage-contract"
 );
 
 pub mod error;

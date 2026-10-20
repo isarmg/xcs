@@ -106,7 +106,8 @@ class SuiteCoverageTests(unittest.TestCase):
         ))
 
     def test_foundation_runs_only_selected_library_regressions(self):
-        password, idna, helpers = self.suite("foundation")
+        uapi, password, idna, helpers = self.suite("foundation")
+        self.assertEqual(uapi, {"tool": "python3", "args": [".github/scripts/check-linux-uapi.py"]})
         for call in (password, idna, helpers):
             self.assertEqual(call["tool"], "cargo")
             self.assertEqual(call["args"][0], "test")
