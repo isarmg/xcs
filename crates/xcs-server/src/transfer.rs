@@ -359,7 +359,9 @@ pub(crate) async fn upload(
         record.state = "complete".into();
         uploads::persist(&spool, &record)?;
         if let Some(previous) = previous {
-            if previous.data_file != record.data_file {
+            // Older generations have a retained record that still owns their
+            // bytes. Only a same-generation retry supersedes its spool file.
+            if previous.generation == record.generation && previous.data_file != record.data_file {
                 let _ = std::fs::remove_file(spool.join(previous.data_file));
             }
         }

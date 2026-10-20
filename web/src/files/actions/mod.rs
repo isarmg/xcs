@@ -10,7 +10,7 @@ pub(crate) use mutation::{
     create_branch, directory_branch, namespace, rename_directory_branch, rename_file_branch,
     select_branch, select_default_branch, update_node_note, update_note,
 };
-pub(crate) use operation::{poll, record_operation};
+pub(crate) use operation::{poll, record_operation, record_receipt};
 pub(crate) use transfer::{download, preview, upload_contents, upload_files};
 
 use super::model::{SaveStatus, operation_status};

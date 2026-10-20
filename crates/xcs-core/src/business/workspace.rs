@@ -8,6 +8,30 @@ use std::{
     path::Path,
 };
 
+fn upload_fingerprint(path: &Path, maximum: u64) -> Result<(u64, String)> {
+    let mut input = open_regular(path)?;
+    let mut digest = blake3::Hasher::new();
+    let mut size = 0u64;
+    let mut buffer = [0u8; 65536];
+    loop {
+        let n = input.read(&mut buffer)?;
+        if n == 0 {
+            break;
+        }
+        size = size
+            .checked_add(n as u64)
+            .ok_or_else(|| Error::new("RESOURCE_LIMIT", "upload length overflow"))?;
+        if size > maximum {
+            return Err(Error::new(
+                "RESOURCE_LIMIT",
+                "upload grew beyond file budget",
+            ));
+        }
+        digest.update(&buffer[..n]);
+    }
+    Ok((size, digest.finalize().to_hex().to_string()))
+}
+
 fn validate_directory_selection(state: &State, workspace: &Workspace, path: &str) -> Result<()> {
     let branch = state
         .branches
@@ -332,27 +356,8 @@ impl Engine {
                 ));
             }
             if generation == old.dirty_generation {
-                let mut input = open_regular(source)?;
-                let mut digest = blake3::Hasher::new();
-                let mut copied = 0u64;
-                let mut buffer = [0u8; 65536];
-                loop {
-                    let n = input.read(&mut buffer)?;
-                    if n == 0 {
-                        break;
-                    }
-                    copied = copied
-                        .checked_add(n as u64)
-                        .ok_or_else(|| Error::new("RESOURCE_LIMIT", "upload length overflow"))?;
-                    if copied > self.config.max_file_bytes {
-                        return Err(Error::new(
-                            "RESOURCE_LIMIT",
-                            "upload grew beyond file budget",
-                        ));
-                    }
-                    digest.update(&buffer[..n]);
-                }
-                if copied == old.size && digest.finalize().to_hex().as_str() == old.content_hash {
+                let (size, hash) = upload_fingerprint(source, self.config.max_file_bytes)?;
+                if size == old.size && hash == old.content_hash {
                     return Ok(old.clone());
                 }
                 return Err(Error::new(
@@ -376,25 +381,48 @@ impl Engine {
                 })?;
             }
         }
-        if retained.saturating_add(expected) > self.config.max_workspace_bytes {
-            return Err(Error::new(
-                "RESOURCE_LIMIT",
-                "new upload and all retained generations exceed the workspace byte budget",
-            ));
-        }
-        let target = self
-            .workspace_data_directory(&w)?
-            .join(format!("{item}-{generation}.full"));
-        let (size, hash, _) = full_copy(
-            source,
-            &target,
-            self.config.checksum_chunk_bytes,
-            // The source can grow after metadata() admission. Enforce both
-            // quotas while streaming, before full_copy publishes its target.
-            self.config
-                .max_file_bytes
-                .min(self.config.max_workspace_bytes.saturating_sub(retained)),
-        )?;
+        let target = directory.join(format!("{item}-{generation}.full"));
+        // Publishing the immutable bytes can succeed before manifest persistence
+        // fails. Recover that generation by checking both complete files, without
+        // overwriting it or charging its already-retained bytes a second time.
+        let (size, hash) = if target.try_exists()? {
+            let existing = upload_fingerprint(&target, self.config.max_file_bytes)?;
+            let incoming = upload_fingerprint(source, self.config.max_file_bytes)?;
+            if existing != incoming {
+                return Err(Error::new(
+                    "UPLOAD_GENERATION_CONFLICT",
+                    "one upload generation cannot name different bytes",
+                ));
+            }
+            if retained > self.config.max_workspace_bytes {
+                return Err(Error::new(
+                    "RESOURCE_LIMIT",
+                    "retained generations exceed the workspace byte budget",
+                ));
+            }
+            // Retry the directory durability step too, in case the original
+            // full_copy failed after rename but before its directory sync.
+            sync_dir(&directory)?;
+            existing
+        } else {
+            if retained.saturating_add(expected) > self.config.max_workspace_bytes {
+                return Err(Error::new(
+                    "RESOURCE_LIMIT",
+                    "new upload and all retained generations exceed the workspace byte budget",
+                ));
+            }
+            let (size, hash, _) = full_copy(
+                source,
+                &target,
+                self.config.checksum_chunk_bytes,
+                // The source can grow after metadata() admission. Enforce both
+                // quotas while streaming, before full_copy publishes its target.
+                self.config
+                    .max_file_bytes
+                    .min(self.config.max_workspace_bytes.saturating_sub(retained)),
+            )?;
+            (size, hash)
+        };
         let staged = StagedFile {
             item_id: item.into(),
             path: path.into(),

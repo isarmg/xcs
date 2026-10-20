@@ -1,8 +1,12 @@
 //! Namespace, branch and note transactions; writes never bypass the pending-save gate.
-use super::{disk_path, operation::record_operation, pending};
+use super::{
+    disk_path,
+    operation::{record_operation, record_receipt},
+    pending,
+};
 use crate::{
     api,
-    files::model::{NamespaceAction, SaveStatus, join_path, operation_status},
+    files::model::{NamespaceAction, SaveStatus, join_path},
     ui::{State, current_session, fail, set_notice, text},
 };
 use serde_json::{Value, json};
@@ -45,9 +49,11 @@ pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: S
             return;
         }
         match result {
-            Ok(value) => record_operation(state, value),
+            Ok(value) => {
+                record_receipt(state, &id, value);
+            }
             Err(error) => {
-                if error.status == 0 || error.status >= 500 {
+                if error.mutation_outcome_unknown() {
                     record_operation(state, json!({"operation_id":id,"state":"in_doubt"}));
                 }
                 fail(state, error);
@@ -85,8 +91,7 @@ pub(crate) fn directory_branch(state: RwSignal<State>, path: String, name: Strin
         }
         match result {
             Ok(value) => {
-                let status = operation_status(&value);
-                record_operation(state, value);
+                let status = record_receipt(state, &operation_id, value);
                 if matches!(status, SaveStatus::Published | SaveStatus::Degraded) {
                     set_notice(
                         state,
@@ -105,7 +110,7 @@ pub(crate) fn directory_branch(state: RwSignal<State>, path: String, name: Strin
                 }
             }
             Err(error) => {
-                if error.status == 0 || error.status >= 500 {
+                if error.mutation_outcome_unknown() {
                     record_operation(
                         state,
                         json!({"operation_id":operation_id,"state":"in_doubt"}),
@@ -203,9 +208,11 @@ fn record_mutation(
             return;
         }
         match result {
-            Ok(value) => record_operation(state, value),
+            Ok(value) => {
+                record_receipt(state, &operation_id, value);
+            }
             Err(error) => {
-                if error.status == 0 || error.status >= 500 {
+                if error.mutation_outcome_unknown() {
                     record_operation(
                         state,
                         json!({"operation_id":operation_id,"state":"in_doubt"}),
@@ -260,9 +267,11 @@ pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note:
             return;
         }
         match result {
-            Ok(value) => record_operation(state, value),
+            Ok(value) => {
+                record_receipt(state, &operation_id, value);
+            }
             Err(error) => {
-                if error.status == 0 || error.status >= 500 {
+                if error.mutation_outcome_unknown() {
                     record_operation(
                         state,
                         json!({"operation_id":operation_id,"state":"in_doubt"}),
@@ -367,9 +376,11 @@ fn file_mutation(state: RwSignal<State>, file: &str, action: &str, mut body: Val
             return;
         }
         match result {
-            Ok(value) => record_operation(state, value),
+            Ok(value) => {
+                record_receipt(state, &id, value);
+            }
             Err(error) => {
-                if error.status == 0 || error.status >= 500 {
+                if error.mutation_outcome_unknown() {
                     record_operation(state, json!({"operation_id":id,"state":"in_doubt"}));
                 }
                 fail(state, error);

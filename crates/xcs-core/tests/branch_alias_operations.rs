@@ -677,3 +677,329 @@ fn workspace_conflicting_alias_names_reject_the_complete_namespace_decision() {
         .abort_workspace(&workspace.workspace_id, "admin")
         .unwrap();
 }
+
+#[test]
+fn chained_workspace_directory_renames_keep_context_and_physical_owner() {
+    let mut p = Pool::new();
+    p.save("a/child/report.txt", b"original");
+    let draft = p.register("a", "draft");
+    p.select("a", "draft");
+    let original = p.current_entry("a/child/report.txt");
+    let context = p
+        .engine
+        .file_context(&p.repo.repository_id, &original.path)
+        .unwrap();
+    let workspace = p
+        .engine
+        .create_workspace(&p.repo.main_branch_id, "admin")
+        .unwrap();
+    for (path, destination) in [("a", "temporary"), ("temporary", "final")] {
+        p.engine
+            .namespace_operation(
+                &workspace.workspace_id,
+                NamespaceOperation {
+                    kind: "rename".into(),
+                    path: path.into(),
+                    destination: Some(destination.into()),
+                },
+            )
+            .unwrap();
+    }
+    p.commit(workspace);
+    let renamed = p.current_entry("final/child/report.txt");
+    assert_eq!(renamed.entry_id, original.entry_id);
+    let updated = p
+        .engine
+        .file_context(&p.repo.repository_id, &renamed.path)
+        .unwrap();
+    assert_eq!(updated.branch_id, context.branch_id);
+    assert_eq!(updated.inherited_from, context.inherited_from);
+    assert_eq!(
+        p.engine.state().file_locations[&original.file_id],
+        renamed.path
+    );
+    assert_eq!(p.branch(&draft).path, "final");
+    assert!(updated.node_id.is_some());
+    assert_eq!(p.bytes(&original.version_id), b"original");
+    let repo = p.repo.repository_id.clone();
+    p.reopen(|engine| {
+        assert_eq!(engine.file_context(&repo, &renamed.path).unwrap(), updated);
+        assert_eq!(
+            engine.state().file_locations[&original.file_id],
+            renamed.path
+        );
+    });
+}
+
+#[test]
+fn workspace_path_swap_preserves_each_files_exact_branch_context() {
+    let mut p = Pool::new();
+    p.save("a.txt", b"a");
+    p.save("b.txt", b"b");
+    p.register("", "draft");
+    p.select("", "draft");
+    let a = p.current_entry("a.txt");
+    let b = p.current_entry("b.txt");
+    let ca = p
+        .engine
+        .file_context(&p.repo.repository_id, "a.txt")
+        .unwrap();
+    let cb = p
+        .engine
+        .file_context(&p.repo.repository_id, "b.txt")
+        .unwrap();
+    let workspace = p
+        .engine
+        .create_workspace(&p.repo.main_branch_id, "admin")
+        .unwrap();
+    for (path, destination) in [
+        ("a.txt", "temporary.txt"),
+        ("b.txt", "a.txt"),
+        ("temporary.txt", "b.txt"),
+    ] {
+        p.engine
+            .namespace_operation(
+                &workspace.workspace_id,
+                NamespaceOperation {
+                    kind: "rename".into(),
+                    path: path.into(),
+                    destination: Some(destination.into()),
+                },
+            )
+            .unwrap();
+    }
+    p.commit(workspace);
+    for (original, context, path) in [(a, ca, "b.txt"), (b, cb, "a.txt")] {
+        let current = p.current_entry(path);
+        assert_eq!(current.file_id, original.file_id);
+        let updated = p.engine.file_context(&p.repo.repository_id, path).unwrap();
+        assert_eq!(updated.branch_id, context.branch_id);
+        assert_eq!(updated.inherited_from, context.inherited_from);
+        assert_eq!(p.engine.state().file_locations[&original.file_id], path);
+        let node = &p.engine.state().file_path_nodes[updated.node_id.as_ref().unwrap()];
+        assert_eq!(node.file_id, original.file_id);
+        assert_eq!(node.path, path);
+    }
+    p.reopen(|_| {});
+}
+
+#[test]
+fn workspace_delete_then_replace_path_keeps_surviving_files_context() {
+    let mut p = Pool::new();
+    p.save("a.txt", b"retired");
+    p.save("b.txt", b"surviving");
+    p.register("", "draft");
+    p.select("", "draft");
+    let retired = p.current_entry("a.txt");
+    let survivor = p.current_entry("b.txt");
+    let context = p
+        .engine
+        .file_context(&p.repo.repository_id, "b.txt")
+        .unwrap();
+    let workspace = p
+        .engine
+        .create_workspace(&p.repo.main_branch_id, "admin")
+        .unwrap();
+    for change in [
+        NamespaceOperation {
+            kind: "delete".into(),
+            path: "a.txt".into(),
+            destination: None,
+        },
+        NamespaceOperation {
+            kind: "rename".into(),
+            path: "b.txt".into(),
+            destination: Some("a.txt".into()),
+        },
+    ] {
+        p.engine
+            .namespace_operation(&workspace.workspace_id, change)
+            .unwrap();
+    }
+    p.commit(workspace);
+    assert_eq!(p.current_entry("a.txt").file_id, survivor.file_id);
+    let updated = p
+        .engine
+        .file_context(&p.repo.repository_id, "a.txt")
+        .unwrap();
+    assert_eq!(updated.branch_id, context.branch_id);
+    assert_eq!(updated.inherited_from, context.inherited_from);
+    assert!(
+        p.engine
+            .file_context(&p.repo.repository_id, "b.txt")
+            .is_none()
+    );
+    assert!(
+        !p.engine
+            .state()
+            .file_selections
+            .contains_key(&retired.file_id)
+    );
+    assert_eq!(p.bytes(&survivor.version_id), b"surviving");
+    let repo = p.repo.repository_id.clone();
+    p.reopen(|engine| assert_eq!(engine.file_context(&repo, "a.txt").unwrap(), updated));
+}
+
+#[test]
+fn chained_alias_renames_preserve_distinct_contexts_and_one_physical_owner() {
+    let mut p = Pool::new();
+    let (_, _, original) = selected_aliases(&mut p);
+    let contexts = ["a/report.txt", "b/report.txt"]
+        .map(|path| p.engine.file_context(&p.repo.repository_id, path).unwrap());
+    let workspace = p
+        .engine
+        .create_workspace(&p.repo.main_branch_id, "admin")
+        .unwrap();
+    for (path, destination) in [
+        ("a/report.txt", "a/temporary.txt"),
+        ("a/temporary.txt", "a/final.txt"),
+        ("b/report.txt", "b/temporary.txt"),
+        ("b/temporary.txt", "b/final.txt"),
+    ] {
+        p.engine
+            .namespace_operation(
+                &workspace.workspace_id,
+                NamespaceOperation {
+                    kind: "rename".into(),
+                    path: path.into(),
+                    destination: Some(destination.into()),
+                },
+            )
+            .unwrap();
+    }
+    p.commit(workspace);
+    for (path, before) in ["a/final.txt", "b/final.txt"].into_iter().zip(contexts) {
+        let context = p.engine.file_context(&p.repo.repository_id, path).unwrap();
+        assert_eq!(context.branch_id, before.branch_id);
+        assert_eq!(context.inherited_from, before.inherited_from);
+        assert_eq!(p.current_entry(path).file_id, original.file_id);
+        assert_eq!(
+            p.engine.state().file_path_nodes[context.node_id.as_ref().unwrap()].path,
+            path
+        );
+    }
+    assert_eq!(
+        p.engine.state().file_locations[&original.file_id],
+        "b/final.txt"
+    );
+    assert!(p.payload(&original.file_id, &original.version_id).is_file());
+    assert_eq!(p.bytes(&original.version_id), b"original");
+    p.reopen(|engine| {
+        assert_eq!(
+            engine.state().file_locations[&original.file_id],
+            "b/final.txt"
+        )
+    });
+}
+
+#[test]
+fn renaming_both_alias_directories_moves_only_the_actual_physical_owner() {
+    for (source, owner) in [("a", "b"), ("b", "a")] {
+        let mut p = Pool::new();
+        p.save(&format!("{source}/report.txt"), b"original");
+        p.save(&format!("{owner}/stay.txt"), b"sibling");
+        let moved = p.register(source, "moved");
+        p.register(source, "retained");
+        let target = p.register(owner, "target");
+        let original = p.current_entry(&format!("{source}/report.txt"));
+        p.batch(
+            "move",
+            vec![p.mapping(
+                &moved,
+                &original.path,
+                &target,
+                &format!("{owner}/report.txt"),
+            )],
+        );
+        p.select(source, "retained");
+        p.select(owner, "target");
+        let workspace = p
+            .engine
+            .create_workspace(&p.repo.main_branch_id, "admin")
+            .unwrap();
+        for (path, destination) in [("a", "aa"), ("b", "bb")] {
+            p.engine
+                .namespace_operation(
+                    &workspace.workspace_id,
+                    NamespaceOperation {
+                        kind: "rename".into(),
+                        path: path.into(),
+                        destination: Some(destination.into()),
+                    },
+                )
+                .unwrap();
+        }
+        p.commit(workspace);
+        assert_eq!(p.current_entry("aa/report.txt").file_id, original.file_id);
+        assert_eq!(p.current_entry("bb/report.txt").file_id, original.file_id);
+        assert_eq!(
+            p.engine.state().file_locations[&original.file_id],
+            format!("{owner}{owner}/report.txt")
+        );
+        assert_eq!(p.bytes(&original.version_id), b"original");
+        p.reopen(|engine| {
+            assert_eq!(
+                engine.state().file_locations[&original.file_id],
+                format!("{owner}{owner}/report.txt")
+            )
+        });
+    }
+}
+
+#[test]
+fn exact_no_op_rename_of_stale_alias_preserves_physical_name() {
+    let mut p = Pool::new();
+    let (_, _, original) = selected_aliases(&mut p);
+    p.engine
+        .file_namespace(
+            &p.repo.repository_id,
+            NamespaceOperation {
+                kind: "rename".into(),
+                path: "a/report.txt".into(),
+                destination: Some("a/new.txt".into()),
+            },
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    assert_eq!(
+        p.engine.state().file_locations[&original.file_id],
+        "b/new.txt"
+    );
+    let before = p
+        .engine
+        .file_context(&p.repo.repository_id, "b/report.txt")
+        .unwrap();
+    let workspace = p
+        .engine
+        .create_workspace(&p.repo.main_branch_id, "admin")
+        .unwrap();
+    p.engine
+        .namespace_operation(
+            &workspace.workspace_id,
+            NamespaceOperation {
+                kind: "rename".into(),
+                path: "b/report.txt".into(),
+                destination: Some("b/report.txt".into()),
+            },
+        )
+        .unwrap();
+    p.commit(workspace);
+    assert_eq!(
+        p.engine.state().file_locations[&original.file_id],
+        "b/new.txt"
+    );
+    assert_eq!(
+        p.engine
+            .file_context(&p.repo.repository_id, "b/report.txt")
+            .unwrap(),
+        before
+    );
+    assert_eq!(p.bytes(&original.version_id), b"original");
+    p.reopen(|engine| {
+        assert_eq!(
+            engine.state().file_locations[&original.file_id],
+            "b/new.txt"
+        )
+    });
+}

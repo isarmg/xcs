@@ -1034,6 +1034,61 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn successful_new_generation_preserves_old_bytes_and_retry_cleans_up_only_its_own() {
+        let root = tempfile::tempdir().unwrap();
+        let app = application(root.path());
+        let (token, _, _) = authenticated(&app).await;
+        let spool = root.path().join("api-spool");
+        let mut records = Vec::new();
+        for (generation, bytes) in [(1, "original"), (2, "replacement"), (2, "replacement")] {
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method("PUT")
+                        .uri("/v1/workspaces/ws/files/item/content?path=file")
+                        .header("authorization", format!("Bearer {token}"))
+                        .header("x-xcs-logical-size", bytes.len().to_string())
+                        .header(
+                            "x-xcs-content-hash",
+                            blake3::hash(bytes.as_bytes()).to_hex().as_str(),
+                        )
+                        .header("x-xcs-upload-generation", generation.to_string())
+                        .body(Body::from(bytes))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::OK);
+            records.push(uploads::load(&spool, "ws", "item").unwrap().unwrap());
+            assert_eq!(
+                std::fs::read(spool.join(&records[0].data_file)).unwrap(),
+                b"original"
+            );
+        }
+        assert!(!spool.join(&records[1].data_file).exists());
+        assert_eq!(
+            std::fs::read(spool.join(&records[2].data_file)).unwrap(),
+            b"replacement"
+        );
+        let retained = std::fs::read_dir(&spool)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .filter(|path| {
+                path.file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .starts_with("retained-")
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(retained.len(), 1);
+        let retained: uploads::UploadRecord =
+            serde_json::from_slice(&std::fs::read(&retained[0]).unwrap()).unwrap();
+        assert_eq!(retained.generation, 1);
+        assert_eq!(retained.data_file, records[0].data_file);
+    }
+
+    #[tokio::test]
     async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_durable() {
         struct BlockingUpload {
             delegate: TestBackend,

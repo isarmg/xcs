@@ -8,9 +8,26 @@ use crate::{
     files::model::{SaveStatus, operation_status, publication_notice},
     ui::{State, current_session, fail, text},
 };
-use serde_json::Value;
+use serde_json::{Value, json};
 use wasm_bindgen_futures::spawn_local;
 use xcs_web::prelude::*;
+
+/// A successful HTTP response is not a receipt unless it names our operation.
+/// Keep the original ID pollable when a proxy returns empty/unrelated JSON.
+pub(crate) fn record_receipt(state: RwSignal<State>, id: &str, value: Value) -> SaveStatus {
+    let value = receipt(id, value);
+    let status = operation_status(&value);
+    record_operation(state, value);
+    status
+}
+fn receipt(id: &str, value: Value) -> Value {
+    let item = value.get("operation").unwrap_or(&value);
+    if item["operation_id"].as_str() == Some(id) {
+        value
+    } else {
+        json!({"operation_id":id,"state":"in_doubt"})
+    }
+}
 
 pub(crate) fn record_operation(state: RwSignal<State>, value: Value) {
     let item = value.get("operation").unwrap_or(&value).clone();
@@ -86,7 +103,9 @@ pub(crate) fn poll(state: RwSignal<State>) {
                 return;
             }
             match result {
-                Ok(value) => record_operation(state, value),
+                Ok(value) => {
+                    record_receipt(state, &id, value);
+                }
                 Err(error) => {
                     if error.status == 401 {
                         fail(state, error)
@@ -95,5 +114,58 @@ pub(crate) fn poll(state: RwSignal<State>) {
             }
             state.update(|s| s.files.polling_operations.retain(|item| item != &id));
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn missing_or_unrelated_receipts_keep_the_original_mutation_pending() {
+        Owner::new().with(|| {
+            for response in [
+                Value::Null,
+                json!({}),
+                json!({"state":"SUCCEEDED"}),
+                json!({"operation_id":"other","state":"SUCCEEDED"}),
+                json!({"operation":{"operation_id":"other","state":"SUCCEEDED"}}),
+            ] {
+                let state = RwSignal::new(State::default());
+                assert_eq!(
+                    record_receipt(state, "original", response),
+                    SaveStatus::Unknown
+                );
+                state.with_untracked(|s| {
+                    assert!(super::super::pending(s));
+                    assert_eq!(s.files.operations.len(), 1);
+                    assert_eq!(s.files.operations[0]["operation_id"], "original");
+                });
+                // A subsequent poll settles the same ID, rather than creating
+                // another operation or leaving a permanent phantom lock.
+                assert_eq!(
+                    record_receipt(
+                        state,
+                        "original",
+                        json!({
+                            "operation_id":"original", "state":"SUCCEEDED"
+                        })
+                    ),
+                    SaveStatus::Published
+                );
+                state.with_untracked(|s| {
+                    assert!(!super::super::pending(s));
+                    assert_eq!(s.files.operations.len(), 1);
+                });
+            }
+        });
+    }
+
+    #[test]
+    fn matching_wrapped_receipts_preserve_rejection_and_publication_evidence() {
+        for status in ["REJECTED", "PUBLISHED", "PUBLISHED_DEGRADED", "IN_DOUBT"] {
+            let value = json!({"operation":{"operation_id":"original","commit_state":status}});
+            assert_eq!(receipt("original", value.clone()), value);
+        }
     }
 }

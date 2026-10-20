@@ -241,7 +241,7 @@ fn apply(
             })
         })
         .collect::<Vec<_>>();
-    let renamed_directories = directory::prepare_renamed_directories(
+    let renamed_directories = directory::prepare_independent_renamed_directories(
         state,
         repository,
         &current.entries,

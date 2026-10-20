@@ -109,9 +109,11 @@ pub(crate) fn submit(
             return;
         }
         match result {
-            Ok(value) => actions::record_operation(state, value),
+            Ok(value) => {
+                actions::record_receipt(state, &id, value);
+            }
             Err(error) => {
-                let unknown = error.status == 0 || error.status >= 500;
+                let unknown = error.mutation_outcome_unknown();
                 if unknown {
                     actions::record_operation(state, json!({"operation_id":id,"state":"in_doubt"}));
                 }

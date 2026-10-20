@@ -56,6 +56,12 @@ pub struct Error {
 }
 
 impl Error {
+    /// After a mutation request, only a client-error response proves rejection.
+    /// A malformed success response can follow a completed publication.
+    pub(crate) fn mutation_outcome_unknown(&self) -> bool {
+        !(400..500).contains(&self.status)
+    }
+
     fn with_status(mut self, status: u16) -> Self {
         self.status = status;
         self

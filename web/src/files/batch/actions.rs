@@ -295,8 +295,7 @@ pub(super) fn initialize_scope(state: RwSignal<State>, destination: bool) {
         }
         match result {
             Ok(value) => {
-                let status = crate::files::model::operation_status(&value);
-                file_actions::record_operation(state, value);
+                let status = file_actions::record_receipt(state, &operation_id, value);
                 if matches!(
                     status,
                     crate::files::model::SaveStatus::Published
@@ -350,7 +349,7 @@ pub(super) fn initialize_scope(state: RwSignal<State>, destination: bool) {
                 }
             }
             Err(error) => {
-                if error.status == 0 || error.status >= 500 {
+                if error.mutation_outcome_unknown() {
                     file_actions::record_operation(
                         state,
                         json!({"operation_id":operation_id,"state":"in_doubt"}),
@@ -416,9 +415,11 @@ pub(super) fn submit(state: RwSignal<State>) {
             return;
         }
         match result {
-            Ok(value) => file_actions::record_operation(state, value),
+            Ok(value) => {
+                file_actions::record_receipt(state, &id, value);
+            }
             Err(error) => {
-                if error.status == 0 || error.status >= 500 {
+                if error.mutation_outcome_unknown() {
                     file_actions::record_operation(
                         state,
                         json!({"operation_id":id,"state":"in_doubt"}),
@@ -427,7 +428,7 @@ pub(super) fn submit(state: RwSignal<State>) {
                 if same_draft(state, &draft_id) {
                     update(state, |draft| {
                         draft.error = error.to_string();
-                        if error.status != 0 && error.status < 500 {
+                        if !error.mutation_outcome_unknown() {
                             draft.submitted_operation = None;
                         }
                     });

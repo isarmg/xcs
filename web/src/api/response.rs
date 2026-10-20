@@ -108,6 +108,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn mutation_decode_failures_are_uncertain_except_for_explicit_client_errors() {
+        for status in [200, 201, 202, 204, 302, 500, 503] {
+            let error = decode(status, b"<html>upstream response lost</html>").unwrap_err();
+            assert!(error.mutation_outcome_unknown(), "status {status}");
+        }
+        for status in [400, 401, 403, 404, 409, 422, 429] {
+            let error = decode(status, b"invalid JSON").unwrap_err();
+            assert!(!error.mutation_outcome_unknown(), "status {status}");
+        }
+    }
+
+    #[test]
     fn real_cpu_response_decimals_and_full_width_byte_strings_are_accepted() {
         let bytes = br#"{"cpu":{"usage_percent":8.899999618530273,"logical_count":8},"memory":{"total_bytes":"18446744073709551615"},"disks":[]}"#;
         let value = decode(200, bytes).unwrap();

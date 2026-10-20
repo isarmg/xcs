@@ -301,9 +301,25 @@ pub(crate) fn set_namespace_location(
         .get(&file.file_id)
         .cloned()
         .unwrap_or_else(|| file.path.clone());
+    let path = namespace_location(old, file, source, destination, kind, is_directory);
+    state.file_names.insert(
+        file.file_id.clone(),
+        path.rsplit('/').next().unwrap_or("").into(),
+    );
+    state.file_locations.insert(file.file_id.clone(), path);
+}
+
+fn namespace_location(
+    old: String,
+    file: &Entry,
+    source: &str,
+    destination: &str,
+    kind: &str,
+    is_directory: bool,
+) -> String {
     let same_parent = xcs_naming::path_key(source.rsplit_once('/').map(|v| v.0).unwrap_or(""))
         == xcs_naming::path_key(destination.rsplit_once('/').map(|v| v.0).unwrap_or(""));
-    let path = if kind == "rename" && same_parent {
+    if kind == "rename" && same_parent {
         if is_directory {
             let key = xcs_naming::path_key(source);
             let owner = xcs_naming::path_key(&old);
@@ -335,12 +351,7 @@ pub(crate) fn set_namespace_location(
         } else {
             format!("{destination}/{suffix}")
         }
-    };
-    state.file_names.insert(
-        file.file_id.clone(),
-        path.rsplit('/').next().unwrap_or("").into(),
-    );
-    state.file_locations.insert(file.file_id.clone(), path);
+    }
 }
 
 /// Prepare real directory identities before changing their display path, so
@@ -353,31 +364,18 @@ pub(crate) fn prepare_renamed_directories(
 ) -> Result<Vec<String>> {
     let mut renamed = Vec::new();
     let mut old_paths = Vec::new();
-    for change in changes.iter().filter(|c| c.kind == "rename") {
-        let key = xcs_naming::path_key(&change.path);
-        let Some(destination) = &change.destination else {
-            continue;
-        };
-        for dir in before.iter().filter(|e| {
-            e.kind == "directory"
-                && (e.lookup_key == key || namespace::is_descendant(&e.lookup_key, &key))
-        }) {
-            let depth = change.path.split('/').count();
-            let suffix = dir
-                .path
-                .split('/')
-                .skip(depth)
-                .collect::<Vec<_>>()
-                .join("/");
-            let target = if suffix.is_empty() {
-                destination.clone()
-            } else {
-                format!("{destination}/{suffix}")
-            };
-            if target != dir.path {
-                old_paths.push(dir.path.clone());
-                renamed.push(format!("{target}/"));
+    for dir in before.iter().filter(|entry| entry.kind == "directory") {
+        let mut path = dir.path.clone();
+        for change in changes.iter().filter(|change| change.kind == "rename") {
+            if let Some(destination) = &change.destination {
+                if let Some(next) = renamed_path(&path, &change.path, destination) {
+                    path = next;
+                }
             }
+        }
+        if path != dir.path {
+            old_paths.push(dir.path.clone());
+            renamed.push(format!("{path}/"));
         }
     }
     old_paths.sort_by_key(|p| std::cmp::Reverse(p.split('/').count()));
@@ -391,6 +389,44 @@ pub(crate) fn prepare_renamed_directories(
     Ok(renamed)
 }
 
+/// Batch mappings name entries in their original frozen scopes, not the output
+/// of earlier mappings. Keep that contract separate from ordered workspaces.
+pub(crate) fn prepare_independent_renamed_directories(
+    state: &mut State,
+    repository: &str,
+    before: &[Entry],
+    changes: &[NamespaceOperation],
+) -> Result<Vec<String>> {
+    let mut renamed = Vec::new();
+    for change in changes {
+        renamed.extend(prepare_renamed_directories(
+            state,
+            repository,
+            before,
+            std::slice::from_ref(change),
+        )?);
+    }
+    Ok(renamed)
+}
+
+/// Follow a path through an ordered rename without slicing normalized UTF-8.
+fn renamed_path(path: &str, source: &str, destination: &str) -> Option<String> {
+    let key = xcs_naming::path_key(path);
+    let source_key = xcs_naming::path_key(source);
+    if key == source_key {
+        return Some(destination.into());
+    }
+    if !namespace::is_descendant(&key, &source_key) {
+        return None;
+    }
+    let suffix = path
+        .split('/')
+        .skip(source.split('/').count())
+        .collect::<Vec<_>>()
+        .join("/");
+    Some(format!("{destination}/{suffix}"))
+}
+
 pub(crate) fn namespace_locations(
     state: &mut State,
     repository: &str,
@@ -400,7 +436,6 @@ pub(crate) fn namespace_locations(
     principal: &str,
     operation: &str,
 ) -> Result<()> {
-    let mut physical_outcomes = BTreeMap::<String, String>::new();
     let original_contexts = before
         .iter()
         .filter(|e| e.kind == "file")
@@ -408,29 +443,79 @@ pub(crate) fn namespace_locations(
             context_at(state, repository, &e.path).map(|c| (context_key(repository, &e.path), c))
         })
         .collect::<BTreeMap<_, _>>();
+    let mut physical_outcomes = BTreeMap::<String, String>::new();
+    let mut contexts = BTreeMap::new();
     for old in before.iter().filter(|e| e.kind == "file") {
-        let unchanged = after.iter().find(|e| {
-            e.kind == "file" && e.file_id == old.file_id && e.lookup_key == old.lookup_key
-        });
-        if let Some(current) = unchanged {
-            if current.path != old.path {
-                if let Some(change) = changes.iter().find(|op| {
-                    op.kind == "rename"
-                        && (xcs_naming::path_key(&op.path) == old.lookup_key
-                            || namespace::is_descendant(
-                                &old.lookup_key,
-                                &xcs_naming::path_key(&op.path),
-                            ))
-                }) {
-                    set_namespace_location(
-                        state,
-                        old,
-                        &change.path,
-                        change.destination.as_deref().unwrap_or(&current.path),
-                        "rename",
-                        find(before, &change.path).is_some_and(|e| e.kind == "directory"),
-                    );
-                    let outcome = state.file_locations[&old.file_id].clone();
+        // Replay each entry's path independently. Looking only at the first
+        // rename loses chained moves; matching by file ID alone confuses aliases.
+        let mut moved = old.clone();
+        let mut renamed = false;
+        let mut deleted = false;
+        let mut physical_path = state
+            .file_locations
+            .get(&old.file_id)
+            .cloned()
+            .unwrap_or_else(|| old.path.clone());
+        let original_physical_path = physical_path.clone();
+        for change in changes {
+            let source = xcs_naming::path_key(&change.path);
+            if (change.kind == "delete" && moved.lookup_key == source)
+                || (change.kind == "delete_tree"
+                    && (moved.lookup_key == source
+                        || namespace::is_descendant(&moved.lookup_key, &source)))
+            {
+                deleted = true;
+                break;
+            }
+            if change.kind != "rename" {
+                continue;
+            }
+            let Some(destination) = &change.destination else {
+                continue;
+            };
+            let Some(path) = renamed_path(&moved.path, &change.path, destination) else {
+                continue;
+            };
+            if path == moved.path {
+                continue;
+            }
+            physical_path = namespace_location(
+                physical_path,
+                &moved,
+                &change.path,
+                destination,
+                "rename",
+                moved.lookup_key != source,
+            );
+            moved.path = path;
+            moved.lookup_key = xcs_naming::path_key(&moved.path);
+            renamed = true;
+        }
+        if !deleted {
+            if let Some(current) = find(after, &moved.path).filter(|e| {
+                e.kind == "file" && e.entry_id == old.entry_id && e.file_id == old.file_id
+            }) {
+                let context = original_contexts
+                    .get(&context_key(repository, &old.path))
+                    .cloned();
+                let context = if current.path != old.path {
+                    Some(file_paths::rename_node(
+                        state, repository, old, current, context, principal, operation,
+                    )?)
+                } else {
+                    state
+                        .file_contexts
+                        .get(&context_key(repository, &old.path))
+                        .cloned()
+                };
+                if let Some(context) = context {
+                    contexts.insert(context_key(repository, &current.path), context);
+                }
+                // Renaming a non-owning alias directory does not propose a
+                // competing physical location. Compare net outcomes so a
+                // temporary move followed by its reversal is also a no-op.
+                if renamed && physical_path != original_physical_path {
+                    let outcome = physical_path;
                     if let Some(previous) =
                         physical_outcomes.insert(old.file_id.clone(), outcome.clone())
                     {
@@ -443,94 +528,22 @@ pub(crate) fn namespace_locations(
                     }
                 }
             }
-            if current.path != old.path {
-                let context = file_paths::rename_node(
-                    state,
-                    repository,
-                    old,
-                    current,
-                    original_contexts
-                        .get(&context_key(repository, &old.path))
-                        .cloned(),
-                    principal,
-                    operation,
-                )?;
-                state
-                    .file_contexts
-                    .insert(context_key(repository, &current.path), context);
-            }
-            continue;
         }
+    }
+    for (file, path) in physical_outcomes {
+        state
+            .file_names
+            .insert(file.clone(), path.rsplit('/').next().unwrap_or("").into());
+        state.file_locations.insert(file, path);
+    }
+    // Remove old keys together before installing new keys, so a path swap
+    // cannot erase the context already installed for the other file.
+    for old in before.iter().filter(|e| e.kind == "file") {
         state
             .file_contexts
             .remove(&context_key(repository, &old.path));
-        let change = changes.iter().find(|op| {
-            op.kind == "rename"
-                && (xcs_naming::path_key(&op.path) == old.lookup_key
-                    || namespace::is_descendant(&old.lookup_key, &xcs_naming::path_key(&op.path)))
-        });
-        let moved = change.and_then(|op| {
-            let dest = op.destination.as_deref()?;
-            let depth = op.path.split('/').count();
-            let suffix = old
-                .path
-                .split('/')
-                .skip(depth)
-                .collect::<Vec<_>>()
-                .join("/");
-            let path = if suffix.is_empty() {
-                dest.into()
-            } else {
-                format!("{dest}/{suffix}")
-            };
-            find(after, &path).filter(|e| e.kind == "file" && e.file_id == old.file_id)
-        });
-        if let Some(current) = moved {
-            let context = file_paths::rename_node(
-                state,
-                repository,
-                old,
-                current,
-                original_contexts
-                    .get(&context_key(repository, &old.path))
-                    .cloned(),
-                principal,
-                operation,
-            )?;
-            state
-                .file_contexts
-                .insert(context_key(repository, &current.path), context);
-
-            if let Some(change) = changes.iter().find(|op| {
-                op.kind == "rename"
-                    && (xcs_naming::path_key(&op.path) == old.lookup_key
-                        || namespace::is_descendant(
-                            &old.lookup_key,
-                            &xcs_naming::path_key(&op.path),
-                        ))
-            }) {
-                set_namespace_location(
-                    state,
-                    old,
-                    &change.path,
-                    change.destination.as_deref().unwrap_or(&current.path),
-                    "rename",
-                    find(before, &change.path).is_some_and(|e| e.kind == "directory"),
-                );
-                let outcome = state.file_locations[&old.file_id].clone();
-                if let Some(previous) =
-                    physical_outcomes.insert(old.file_id.clone(), outcome.clone())
-                {
-                    if xcs_naming::path_key(&previous) != xcs_naming::path_key(&outcome) {
-                        return Err(Error::new(
-                            "BATCH_MAPPING_CONFLICT",
-                            "namespace changes give one physical file incompatible names or locations",
-                        ));
-                    }
-                }
-            }
-        }
     }
+    state.file_contexts.extend(contexts);
     let live = after
         .iter()
         .filter(|e| e.kind == "file")
