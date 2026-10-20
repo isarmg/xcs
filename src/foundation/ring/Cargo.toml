@@ -8,55 +8,28 @@ version = "0.17.14"
 build = "build.rs"
 links = "ring_core_0_17_14_"
 include = [
-    "LICENSE",
-    "LICENSE-other-bits",
-    "LICENSE-BoringSSL",
-    "src/polyfill/once_cell/LICENSE-APACHE",
-    "src/polyfill/once_cell/LICENSE-MIT",
     "Cargo.toml",
     "pregenerated/*",
-    "benches/*.rs",
     "build.rs",
-    "crypto/chacha/asm/chacha-armv4.pl",
-    "crypto/chacha/asm/chacha-armv8.pl",
-    "crypto/chacha/asm/chacha-x86.pl",
     "crypto/chacha/asm/chacha-x86_64.pl",
     "crypto/constant_time_test.c",
     "crypto/cpu_intel.c",
     "crypto/crypto.c",
-    "crypto/curve25519/asm/x25519-asm-arm.S",
     "crypto/curve25519/curve25519.c",
     "crypto/curve25519/curve25519_64_adx.c",
     "crypto/curve25519/curve25519_tables.h",
     "crypto/curve25519/internal.h",
     "crypto/fipsmodule/aes/aes_nohw.c",
     "crypto/fipsmodule/aes/asm/aes-gcm-avx2-x86_64.pl",
-    "crypto/fipsmodule/aes/asm/aesni-x86.pl",
     "crypto/fipsmodule/aes/asm/aesni-gcm-x86_64.pl",
     "crypto/fipsmodule/aes/asm/aesni-x86_64.pl",
-    "crypto/fipsmodule/aes/asm/aesv8-armx.pl",
-    "crypto/fipsmodule/aes/asm/aesv8-gcm-armv8.pl",
-    "crypto/fipsmodule/aes/asm/ghash-armv4.pl",
-    "crypto/fipsmodule/aes/asm/ghash-neon-armv8.pl",
-    "crypto/fipsmodule/aes/asm/ghash-x86.pl",
     "crypto/fipsmodule/aes/asm/ghash-x86_64.pl",
-    "crypto/fipsmodule/aes/asm/ghashv8-armx.pl",
-    "crypto/fipsmodule/aes/asm/bsaes-armv7.pl",
-    "crypto/fipsmodule/aes/asm/bsaes-x86_64.pl",
-    "crypto/fipsmodule/aes/asm/vsaes-armv7.pl",
-    "crypto/fipsmodule/aes/asm/vpaes-armv7.pl",
-    "crypto/fipsmodule/aes/asm/vpaes-armv8.pl",
-    "crypto/fipsmodule/aes/asm/vpaes-x86.pl",
     "crypto/fipsmodule/aes/asm/vpaes-x86_64.pl",
-    "crypto/fipsmodule/bn/asm/armv4-mont.pl",
-    "crypto/fipsmodule/bn/asm/armv8-mont.pl",
-    "crypto/fipsmodule/bn/asm/x86-mont.pl",
     "crypto/fipsmodule/bn/asm/x86_64-mont.pl",
     "crypto/fipsmodule/bn/asm/x86_64-mont5.pl",
     "crypto/fipsmodule/bn/internal.h",
     "crypto/fipsmodule/bn/montgomery.c",
     "crypto/fipsmodule/bn/montgomery_inv.c",
-    "crypto/fipsmodule/ec/asm/p256-armv8-asm.pl",
     "crypto/fipsmodule/ec/asm/p256-x86_64-asm.pl",
     "crypto/fipsmodule/ec/ecp_nistz.c",
     "crypto/fipsmodule/ec/ecp_nistz.h",
@@ -72,9 +45,6 @@ include = [
     "crypto/fipsmodule/ec/p256_table.h",
     "crypto/fipsmodule/ec/util.h",
     "crypto/fipsmodule/ecdsa/ecdsa_verify_tests.txt",
-    "crypto/fipsmodule/sha/asm/sha256-armv4.pl",
-    "crypto/fipsmodule/sha/asm/sha512-armv4.pl",
-    "crypto/fipsmodule/sha/asm/sha512-armv8.pl",
     "crypto/fipsmodule/sha/asm/sha512-x86_64.pl",
     "crypto/internal.h",
     "crypto/limbs/limbs.c",
@@ -87,11 +57,7 @@ include = [
     "crypto/perlasm/x86nasm.pl",
     "crypto/perlasm/x86_64-xlate.pl",
     "crypto/poly1305/poly1305.c",
-    "crypto/poly1305/poly1305_arm.c",
-    "crypto/poly1305/poly1305_arm_asm.S",
-    "crypto/cipher/asm/chacha20_poly1305_armv8.pl",
     "crypto/cipher/asm/chacha20_poly1305_x86_64.pl",
-    "examples/**/*.rs",
     "include/ring-core/aes.h",
     "include/ring-core/asm_base.h",
     "include/ring-core/base.h",
@@ -128,7 +94,6 @@ include = [
     "third_party/fiat/p256_32.h",
     "third_party/fiat/p256_64.h",
     "third_party/fiat/p256_64_msvc.h",
-    "third_party/fiat/LICENSE",
 ]
 autolib = false
 autobins = false
@@ -155,14 +120,9 @@ repository = "https://github.com/briansmith/ring"
 alloc = []
 default = ["alloc", "dev_urandom_fallback"]
 dev_urandom_fallback = []
-less-safe-getrandom-custom-or-rdrand = []
-less-safe-getrandom-espidf = []
 slow_tests = []
 std = ["alloc"]
 test_logging = []
-unstable-testing-arm-no-hw = []
-unstable-testing-arm-no-neon = []
-wasm32_unknown_unknown_js = ["getrandom/js"]
 
 [lib]
 name = "ring"
@@ -186,15 +146,7 @@ version = "1.2.8"
 default-features = false
 path = "../cc"
 
-[target.'cfg(all(all(target_arch = "aarch64", target_endian = "little"), target_vendor = "apple", any(target_os = "ios", target_os = "macos", target_os = "tvos", target_os = "visionos", target_os = "watchos")))'.dependencies.libc]
-version = "0.2.155"
-default-features = false
-path = "../libc"
-
-[target.'cfg(all(any(all(target_arch = "aarch64", target_endian = "little"), all(target_arch = "arm", target_endian = "little")), any(target_os = "android", target_os = "linux")))'.dependencies.libc]
-version = "0.2.148"
-default-features = false
-path = "../libc"
+# Only Linux amd64 is supported; upstream target metadata is retained in provenance.
 
 # Exact upstream tests; restoration evidence is kept in supplemental provenance.
 [target.'cfg(all(target_os = "linux", target_arch = "x86_64"))'.dev-dependencies.libc]

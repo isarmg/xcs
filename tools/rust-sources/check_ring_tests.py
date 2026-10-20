@@ -7,6 +7,7 @@ copies the registered repository workspace before adding ring's development mark
 """
 import argparse
 import hashlib
+import io
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -15,6 +16,7 @@ import shutil
 import subprocess
 import tempfile
 import tomllib
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 RING = Path('src/foundation/ring')
@@ -22,6 +24,9 @@ PROOF = Path('compliance/provenance/supplemental/ring-0.17.14-test-materials.jso
 OVERLAP = Path('compliance/provenance/supplemental/ring-0.17.14-original-overlap.json')
 STYLE = Path('compliance/provenance/supplemental/ring-0.17.14-style-patches.json')
 COMMIT = '2723abbca9e83347d82b056d5b239c6604f786df'
+TARGET = Path('compliance/provenance/supplemental/ring-0.17.14-linux-amd64-target.json')
+TARGET_SHA256 = 'dad19ddfdd538ef971c275a61101fab798b23ec7edcdcf1494cd4401383f1d80'
+RETIRED_ARCHIVE = Path('compliance/provenance/supplemental/ring-0.17.14-linux-amd64-retired.zip')
 
 
 def object_hash(kind, content):
@@ -36,6 +41,111 @@ def checked_path(root, relative):
     if not result.resolve().is_relative_to(root.resolve()) or result.is_symlink():
         raise ValueError(f'material escaped source tree: {relative}')
     return result
+
+
+def check_content(content, record):
+    if len(content) != record['bytes'] or hashlib.sha256(content).hexdigest() != record['sha256']:
+        raise ValueError(f'target source hash/size mismatch: {record["path"]}')
+
+
+def read_retired_archive(content, record, deleted):
+    """Read only authenticated, bounded historical bytes; never extract files."""
+    check_content(content, record)
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        members = archive.infolist()
+        if (len(members) != record['members'] or len(members) != len(deleted)
+                or {member.filename for member in members} != set(deleted)):
+            raise ValueError('retired archive member inventory changed')
+        if sum(member.file_size for member in members) != record['uncompressed_bytes']:
+            raise ValueError('retired archive total uncompressed size changed')
+        result = {}
+        for member in members:
+            path = PurePosixPath(member.filename)
+            if (path.is_absolute() or '..' in path.parts or str(path) != member.filename
+                    or '\\' in member.filename
+                    or member.is_dir() or member.external_attr >> 16 != 0o100644
+                    or member.flag_bits & 1 or member.compress_type != zipfile.ZIP_DEFLATED):
+                raise ValueError(f'unsafe retired archive member: {member.filename}')
+            expected = deleted[member.filename]
+            if member.file_size != expected['bytes']:
+                raise ValueError(f'retired archive member size changed: {member.filename}')
+            with archive.open(member) as stream:
+                data = stream.read(expected['bytes'] + 1)
+                if stream.read(1):
+                    raise ValueError(f'retired archive member exceeds limit: {member.filename}')
+            check_content(data, expected)
+            if object_hash('blob', data) != expected['blob']:
+                raise ValueError(f'retired archive Git blob changed: {member.filename}')
+            result[member.filename] = data
+    return result
+
+
+def target_sources(root):
+    """Check current sources first; return a narrowly scoped historical view."""
+    content = checked_path(root, str(TARGET)).read_bytes()
+    if hashlib.sha256(content).hexdigest() != TARGET_SHA256:
+        raise ValueError('immutable target-pruning proof changed')
+    record = json.loads(content)
+    if (record['schema_version'] != 1 or record['archive']['path'] != str(RETIRED_ARCHIVE)
+            or record['archive']['members'] != 116
+            or record['archive']['uncompressed_bytes'] != 3845917):
+        raise ValueError('unexpected target-pruning identity')
+    for path, digest in record['historical_proofs'].items():
+        if hashlib.sha256(checked_path(root, path).read_bytes()).hexdigest() != digest:
+            raise ValueError(f'immutable historical proof changed: {path}')
+    deleted = {entry['path']: entry for entry in record['deleted']}
+    retained = {entry['path']: entry for entry in record['retained']}
+    if (len(deleted) != 116 or len(deleted) != len(record['deleted'])
+            or len(retained) != 331 or len(retained) != len(record['retained'])
+            or set(deleted) & set(retained)):
+        raise ValueError('unexpected target-pruning source inventory')
+    source_root = checked_path(root, str(RING))
+    paths = list(source_root.rglob('*'))
+    if any(path.is_symlink() for path in paths):
+        raise ValueError('symlink in current ring source tree')
+    actual = {path.relative_to(source_root).as_posix() for path in paths if path.is_file()}
+    if actual != set(retained) | {'build.rs'}:
+        raise ValueError('current ring source inventory changed')
+    for path, entry in retained.items():
+        check_content(checked_path(source_root, path).read_bytes(), entry)
+    for path in deleted:
+        if checked_path(source_root, path).exists():
+            raise ValueError(f'retired source reappeared: {path}')
+    patch = record['build_patch']
+    before = checked_path(source_root, 'build.rs').read_bytes()
+    check_content(before, patch['after'])
+    for replacement in reversed(patch['replacements']):
+        old, new = replacement['old'].encode(), replacement['new'].encode()
+        if not new or before.count(new) != 1:
+            raise ValueError('target build patch is not uniquely reversible')
+        before = before.replace(new, old)
+    check_content(before, patch['before'])
+    archive = checked_path(root, str(RETIRED_ARCHIVE))
+    # Bound compressed input before allocation as well as each decompressed member.
+    if archive.stat().st_size != record['archive']['bytes']:
+        raise ValueError('retired archive compressed size changed')
+    retired = read_retired_archive(archive.read_bytes(), record['archive'], deleted)
+    retired['build.rs'] = before
+    patches = record['source_patches']
+    if (len(patches) != 3 or {patch['path'] for patch in patches}
+            != {'Cargo.toml', 'src/lib.rs', 'src/rand.rs'}):
+        raise ValueError('unexpected target metadata patch source set')
+    for patch in patches:
+        path = patch['path']
+        before = checked_path(source_root, path).read_bytes()
+        check_content(before, patch['after'])
+        if object_hash('blob', before) != patch['after']['blob']:
+            raise ValueError(f'target metadata after blob changed: {path}')
+        for replacement in reversed(patch['replacements']):
+            old, new = replacement['old'].encode(), replacement['new'].encode()
+            if not new or before.count(new) != 1:
+                raise ValueError(f'target metadata patch is not uniquely reversible: {path}')
+            before = before.replace(new, old)
+        check_content(before, patch['before'])
+        if object_hash('blob', before) != patch['before']['blob']:
+            raise ValueError(f'target metadata before blob changed: {path}')
+        retired[path] = before
+    return {str(RING / path): data for path, data in retired.items()}
 
 
 def historical_sources(root):
@@ -78,8 +188,17 @@ def historical_sources(root):
                 raise ValueError(f'style patch {label} hash mismatch: {path}')
         baseline[str(RING / path)] = before
 
+    # This view is only for historical evidence, never for the current build.
+    # target_sources first authenticates all live files and rejects missing ones.
+    retired = target_sources(root)
+
     def read(relative):
-        return baseline[str(relative)] if str(relative) in baseline else checked_path(root, str(relative)).read_bytes()
+        path = str(relative)
+        if path in baseline:
+            return baseline[path]
+        if path in retired:
+            return retired[path]
+        return checked_path(root, path).read_bytes()
     return read
 
 
@@ -238,7 +357,7 @@ def main():
     if os.environ.get('CARGO_BUILD_TARGET') not in (None, 'x86_64-unknown-linux-gnu'):
         raise SystemExit('A cross-target override would invalidate the GNU amd64 execution matrix.')
     if os.environ.get('RING_PREGENERATE_ASM') is not None:
-        raise SystemExit('Unset RING_PREGENERATE_ASM: the all-platform packaging flow is not a test mode.')
+        raise SystemExit('Unset RING_PREGENERATE_ASM: the Linux amd64 packaging flow is not a test mode.')
     target_dir = Path(os.environ.get('CARGO_TARGET_DIR', ROOT / 'target')).resolve() / 'ring-regression'
     if args.mode in ('packaged', 'both'):
         if (ROOT / RING / '.git').exists():

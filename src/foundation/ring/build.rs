@@ -68,12 +68,6 @@ const RING_SRCS: &[(&[&str], &str)] = &[
 
     (&[X86_64, X86], "crypto/cpu_intel.c"),
 
-    (&[X86], "crypto/fipsmodule/aes/asm/aesni-x86.pl"),
-    (&[X86], "crypto/fipsmodule/aes/asm/ghash-x86.pl"),
-    (&[X86], "crypto/fipsmodule/aes/asm/vpaes-x86.pl"),
-    (&[X86], "crypto/fipsmodule/bn/asm/x86-mont.pl"),
-    (&[X86], "crypto/chacha/asm/chacha-x86.pl"),
-
     (&[X86_64], "crypto/chacha/asm/chacha-x86_64.pl"),
     (&[X86_64], "crypto/curve25519/curve25519_64_adx.c"),
     (&[X86_64], "crypto/fipsmodule/aes/asm/aes-gcm-avx2-x86_64.pl"),
@@ -90,35 +84,12 @@ const RING_SRCS: &[(&[&str], &str)] = &[
     (&[X86_64], "third_party/fiat/asm/fiat_curve25519_adx_square.S"),
 
     (&[AARCH64, X86_64], "crypto/fipsmodule/ec/p256-nistz.c"),
-
-    (&[ARM], "crypto/fipsmodule/aes/asm/bsaes-armv7.pl"),
-    (&[ARM], "crypto/fipsmodule/aes/asm/ghash-armv4.pl"),
-    (&[ARM], "crypto/fipsmodule/aes/asm/vpaes-armv7.pl"),
-    (&[ARM], "crypto/fipsmodule/bn/asm/armv4-mont.pl"),
-    (&[ARM], "crypto/chacha/asm/chacha-armv4.pl"),
-    (&[ARM], "crypto/curve25519/asm/x25519-asm-arm.S"),
-    (&[ARM], "crypto/poly1305/poly1305_arm.c"),
-    (&[ARM], "crypto/poly1305/poly1305_arm_asm.S"),
-    (&[ARM], "crypto/fipsmodule/sha/asm/sha256-armv4.pl"),
-    (&[ARM], "crypto/fipsmodule/sha/asm/sha512-armv4.pl"),
-
-    (&[AARCH64], "crypto/chacha/asm/chacha-armv8.pl"),
-    (&[AARCH64], "crypto/cipher/asm/chacha20_poly1305_armv8.pl"),
-    (&[AARCH64], "crypto/fipsmodule/aes/asm/aesv8-armx.pl"),
-    (&[AARCH64], "crypto/fipsmodule/aes/asm/aesv8-gcm-armv8.pl"),
-    (&[AARCH64], "crypto/fipsmodule/aes/asm/ghash-neon-armv8.pl"),
-    (&[AARCH64], "crypto/fipsmodule/aes/asm/ghashv8-armx.pl"),
-    (&[AARCH64], "crypto/fipsmodule/aes/asm/vpaes-armv8.pl"),
-    (&[AARCH64], "crypto/fipsmodule/bn/asm/armv8-mont.pl"),
-    (&[AARCH64], "crypto/fipsmodule/ec/asm/p256-armv8-asm.pl"),
-    (&[AARCH64], SHA512_ARMV8),
 ];
 
 const SHA256_X86_64: &str = "crypto/fipsmodule/sha/asm/sha256-x86_64.pl";
 const SHA512_X86_64: &str = "crypto/fipsmodule/sha/asm/sha512-x86_64.pl";
 
-const SHA256_ARMV8: &str = "crypto/fipsmodule/sha/asm/sha256-armv8.pl";
-const SHA512_ARMV8: &str = "crypto/fipsmodule/sha/asm/sha512-armv8.pl";
+// ARM generator dispatch was retired; shared translators remain unchanged.
 
 const RING_TEST_SRCS: &[&str] = &[("crypto/constant_time_test.c")];
 
@@ -169,58 +140,11 @@ fn cpp_flags(compiler: &cc::Tool) -> &'static [&'static str] {
 
 // None means "any OS" or "any target". The first match in sequence order is
 // taken.
-const ASM_TARGETS: &[AsmTarget] = &[
-    AsmTarget {
-        oss: LINUX_ABI,
-        arch: AARCH64,
-        perlasm_format: "linux64",
-    },
-    AsmTarget {
-        oss: LINUX_ABI,
-        arch: ARM,
-        perlasm_format: "linux32",
-    },
-    AsmTarget {
-        oss: LINUX_ABI,
-        arch: X86,
-        perlasm_format: "elf",
-    },
-    AsmTarget {
-        oss: LINUX_ABI,
-        arch: X86_64,
-        perlasm_format: "elf",
-    },
-    AsmTarget {
-        oss: &["horizon"],
-        arch: ARM,
-        perlasm_format: "linux32",
-    },
-    AsmTarget {
-        oss: APPLE_ABI,
-        arch: AARCH64,
-        perlasm_format: "ios64",
-    },
-    AsmTarget {
-        oss: APPLE_ABI,
-        arch: X86_64,
-        perlasm_format: "macosx",
-    },
-    AsmTarget {
-        oss: &[WINDOWS],
-        arch: X86,
-        perlasm_format: WIN32N,
-    },
-    AsmTarget {
-        oss: &[WINDOWS],
-        arch: X86_64,
-        perlasm_format: NASM,
-    },
-    AsmTarget {
-        oss: &[WINDOWS],
-        arch: AARCH64,
-        perlasm_format: "win64",
-    },
-];
+const ASM_TARGETS: &[AsmTarget] = &[AsmTarget {
+    oss: &["linux"],
+    arch: X86_64,
+    perlasm_format: "elf",
+}];
 
 struct AsmTarget {
     /// Operating systems.
@@ -239,22 +163,7 @@ impl AsmTarget {
     }
 }
 
-/// Operating systems that have the same ABI as Linux on every architecture
-/// mentioned in `ASM_TARGETS`.
-const LINUX_ABI: &[&str] = &[
-    "android",
-    "dragonfly",
-    "freebsd",
-    "fuchsia",
-    "haiku",
-    "hurd",
-    "illumos",
-    "netbsd",
-    "openbsd",
-    "linux",
-    "redox",
-    "solaris",
-];
+// Only the Linux x86_64 assembly target is supported.
 
 const WIN32N: &str = "win32n";
 const NASM: &str = "nasm";
@@ -266,6 +175,13 @@ const APPLE_ABI: &[&str] = &["ios", "macos", "tvos", "visionos", "watchos"];
 const WINDOWS: &str = "windows";
 
 fn main() {
+    assert!(
+        env::var("CARGO_CFG_TARGET_ARCH").as_deref() == Some("x86_64")
+            && env::var("CARGO_CFG_TARGET_OS").as_deref() == Some("linux")
+            && env::var("CARGO_CFG_TARGET_POINTER_WIDTH").as_deref() == Some("64")
+            && env::var("CARGO_CFG_TARGET_ENDIAN").as_deref() == Some("little"),
+        "this internal ring build supports only little-endian Linux x86_64"
+    );
     // Avoid assuming the working directory is the same is the $CARGO_MANIFEST_DIR so that toolchains
     // which may assume other working directories can still build this code.
     let c_root_dir = PathBuf::from(
@@ -683,7 +599,7 @@ fn perlasm_src_dsts(out_dir: &Path, asm_target: &AsmTarget) -> Vec<(PathBuf, Pat
             }
         };
         maybe_synthesize(SHA512_X86_64, SHA256_X86_64);
-        maybe_synthesize(SHA512_ARMV8, SHA256_ARMV8);
+        // SHA-256 uses the retained x86_64 SHA-512 generator above.
     }
 
     src_dsts
