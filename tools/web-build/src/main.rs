@@ -38,6 +38,9 @@ fn main() -> Result<()> {
     let target = std::env::var_os("ZXS_WEB_TARGET_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| root.join("target/web"));
+    // Keep an explicitly relative output override relative to the caller, even
+    // though Cargo itself must run at the inventoried product root.
+    let target = std::path::absolute(target)?;
     let mut cargo = Command::new("cargo");
     cargo.arg(match command.as_str() {
         "build" => "build",
@@ -46,6 +49,9 @@ fn main() -> Result<()> {
         _ => bail!("usage: zxs-web-build build|check|test [--product-root DIR]"),
     });
     cargo
+        // Cargo discovers repository configuration and toolchains from its cwd,
+        // not from --manifest-path. Use the same root that we inventory.
+        .current_dir(&root)
         .args(["--locked", "--offline", "--manifest-path"])
         .arg(web.join("Cargo.toml"))
         .arg("--target-dir")
@@ -166,6 +172,8 @@ fn source_inventory(root: &Path) -> Result<BTreeMap<String, String>> {
     }
     for path in [
         "Cargo.toml",
+        "rust-toolchain.toml",
+        ".cargo/config.toml",
         "web/Cargo.toml",
         "web/Cargo.lock",
         "web/styles.css",
@@ -265,6 +273,42 @@ mod tests {
     impl Drop for Fixture {
         fn drop(&mut self) {
             let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn inventory_tracks_cargo_configuration_and_toolchain() {
+        let fixture = Fixture::new();
+        for directory in [
+            "web/src",
+            "web/runtime",
+            "web/public",
+            "vendor/web",
+            "vendor/dependencies/unicode-normalization-0.1.24",
+            "crates/zxs-contract",
+            "crates/zxs-naming",
+            "tools/web-build/src",
+            ".cargo",
+        ] {
+            fs::create_dir_all(fixture.0.join(directory)).unwrap();
+        }
+        for file in [
+            "Cargo.toml",
+            "web/Cargo.toml",
+            "web/Cargo.lock",
+            "web/styles.css",
+            "tools/web-build/Cargo.toml",
+            "tools/web-build/Cargo.lock",
+            "rust-toolchain.toml",
+            ".cargo/config.toml",
+        ] {
+            fs::write(fixture.0.join(file), "initial").unwrap();
+        }
+        for file in ["rust-toolchain.toml", ".cargo/config.toml"] {
+            let before = source_inventory(&fixture.0).unwrap();
+            fs::write(fixture.0.join(file), "changed").unwrap();
+            let after = source_inventory(&fixture.0).unwrap();
+            assert_ne!(before, after, "{file} must invalidate the build inventory");
         }
     }
 

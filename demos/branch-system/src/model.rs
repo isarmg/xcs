@@ -189,8 +189,9 @@ pub enum Action {
         prefixes: Vec<String>,
     },
 }
+const MAX_NAME_BYTES: usize = 128;
 fn name(value: &str) -> Result<()> {
-    if value.len() > 128 {
+    if value.len() > MAX_NAME_BYTES {
         return Err("名称最多 128 字节".into());
     }
     zxs_naming::validate_name(value).map_err(|e| e.message)
@@ -569,25 +570,35 @@ impl Workspace {
         source: Id,
         branch: String,
         lazy: Option<String>,
-    ) -> String {
+    ) -> Result<String> {
         let Some(intent) = lazy else {
-            return branch;
+            return Ok(branch);
         };
-        let mut name = intent.clone();
-        let mut suffix = 2;
-        while self.file_branches.contains_key(&(file, name.clone())) {
-            name = format!("{intent}-{suffix}");
+        let mut effective = intent.clone();
+        let mut suffix = 2usize;
+        while self.file_branches.keys().any(|(f, existing)| {
+            *f == file && zxs_naming::lookup_key(existing) == zxs_naming::lookup_key(&effective)
+        }) {
+            let ending = format!("-{suffix}");
+            let mut end = intent.len().min(MAX_NAME_BYTES - ending.len());
+            while !intent.is_char_boundary(end) {
+                end -= 1;
+            }
+            // Reserve the full suffix on every attempt (including 9 -> 10),
+            // without changing the inherited directory's original intent.
+            effective = format!("{}{ending}", &intent[..end]);
             suffix += 1;
         }
+        name(&effective)?;
         self.file_branches.insert(
-            (file, name.clone()),
+            (file, effective.clone()),
             FileBranch {
                 head: source,
                 pending: true,
                 alias: None,
             },
         );
-        name
+        Ok(effective)
     }
     fn execute(&mut self, action: Action) -> Result<String> {
         match action {
@@ -682,7 +693,7 @@ impl Workspace {
                 else {
                     return Err("只能写入文件".into());
                 };
-                let branch = self.effective_branch(file, source, branch, lazy);
+                let branch = self.effective_branch(file, source, branch, lazy)?;
                 self.writable(file, &branch)?;
                 let node = self.child(
                     source,

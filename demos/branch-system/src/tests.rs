@@ -454,3 +454,87 @@ fn note_edits_enforce_byte_limit_without_creating_a_node() {
     );
     assert!(s.files[&source].note.is_empty());
 }
+
+#[test]
+fn lazy_branch_names_use_the_same_lookup_keys_as_explicit_branches() {
+    for (existing, intent, expected) in [
+        ("REVIEW", "review", "review-3"),
+        ("Straße", "STRASSE", "STRASSE-3"),
+    ] {
+        let mut s = Workspace::seed();
+        create(&mut s, existing);
+        create(&mut s, &format!("{existing}-2"));
+        action(
+            &mut s,
+            Action::CreateDirectoryBranch {
+                path: "".into(),
+                name: intent.into(),
+            },
+        );
+        action(
+            &mut s,
+            Action::SwitchDirectoryBranch {
+                path: "".into(),
+                name: intent.into(),
+            },
+        );
+        write(&mut s, "new content");
+        let (file, branch, _) = s.file_at("A/报告.txt").unwrap();
+        assert_eq!(branch, expected);
+        let keys: Vec<_> = s
+            .file_branches
+            .keys()
+            .filter(|(f, _)| *f == file)
+            .map(|(_, name)| zxs_naming::lookup_key(name))
+            .collect();
+        assert_eq!(keys.len(), keys.iter().collect::<BTreeSet<_>>().len());
+    }
+}
+
+#[test]
+fn lazy_branch_suffixes_respect_utf8_name_budget_and_keep_parent_intent() {
+    for intent in ["a".repeat(128), "界".repeat(42) + "é"] {
+        let mut s = Workspace::seed();
+        let (file, _, source) = s.file_at("A/报告.txt").unwrap();
+        create(&mut s, &intent.to_uppercase());
+        for suffix in 2..=9 {
+            let stem = if intent.is_ascii() {
+                "a".repeat(126)
+            } else {
+                "界".repeat(42)
+            };
+            create(&mut s, &format!("{stem}-{suffix}"));
+        }
+        action(
+            &mut s,
+            Action::CreateDirectoryBranch {
+                path: "".into(),
+                name: intent.clone(),
+            },
+        );
+        action(
+            &mut s,
+            Action::SwitchDirectoryBranch {
+                path: "".into(),
+                name: intent.clone(),
+            },
+        );
+        write(&mut s, "new content");
+        let (_, branch, _) = s.file_at("A/报告.txt").unwrap();
+        assert!(
+            branch.len() <= 128,
+            "generated branch exceeds name budget: {}",
+            branch.len()
+        );
+        zxs_naming::validate_name(&branch).unwrap();
+        let stem = if intent.is_ascii() {
+            "a".repeat(125)
+        } else {
+            "界".repeat(41)
+        };
+        assert_eq!(branch, format!("{stem}-10"));
+        assert_eq!(s.active, intent);
+        assert!(s.directory_branches.contains_key(&(0, intent.clone())));
+        assert_eq!(s.branch_node(file, &intent.to_uppercase()).unwrap(), source);
+    }
+}

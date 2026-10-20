@@ -52,27 +52,29 @@ fn inventory(base: &Path, path: &Path, files: &mut BTreeMap<String, String>) -> 
     }
     Ok(())
 }
+const INPUTS: &[&str] = &[
+    "Cargo.toml",
+    "rust-toolchain.toml",
+    ".cargo/config.toml",
+    "demos/branch-system/src",
+    "demos/branch-system/reference",
+    "demos/branch-system/examples.md",
+    "demos/branch-system/styles.css",
+    "demos/branch-system/Cargo.toml",
+    "demos/branch-system/Cargo.lock",
+    "web/runtime",
+    "web/public/styles",
+    "web/public/fonts",
+    "web/styles.css",
+    "vendor/web",
+    "vendor/dependencies/unicode-normalization-0.1.24",
+    "crates/zxs-contract",
+    "crates/zxs-naming",
+    "tools/web-build/src/bootstrap.rs",
+];
 fn inputs(root: &Path) -> Result<BTreeMap<String, String>> {
     let mut out = BTreeMap::new();
-    for input in [
-        "Cargo.toml",
-        "rust-toolchain.toml",
-        "demos/branch-system/src",
-        "demos/branch-system/reference",
-        "demos/branch-system/examples.md",
-        "demos/branch-system/styles.css",
-        "demos/branch-system/Cargo.toml",
-        "demos/branch-system/Cargo.lock",
-        "web/runtime",
-        "web/public/styles",
-        "web/public/fonts",
-        "web/styles.css",
-        "vendor/web",
-        "vendor/dependencies/unicode-normalization-0.1.24",
-        "crates/zxs-contract",
-        "crates/zxs-naming",
-        "tools/web-build/src/bootstrap.rs",
-    ] {
+    for input in INPUTS {
         inventory(root, &root.join(input), &mut out)?;
     }
     Ok(out)
@@ -100,6 +102,8 @@ fn main() -> Result<()> {
     let before = inputs(root)?;
     let target = root.join("target/web");
     let status = Command::new("cargo")
+        // Match configuration discovery to the inventoried repository root.
+        .current_dir(root)
         .args([
             "build",
             "--locked",
@@ -242,4 +246,40 @@ fn main() -> Result<()> {
     }
     println!("Demo built: {} (guided + playground)", dist.display());
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn inventory_tracks_cargo_configuration() {
+        let root = std::env::temp_dir().join(format!(
+            "zxs-demo-inputs-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir_all(&root).unwrap();
+        struct Cleanup(PathBuf);
+        impl Drop for Cleanup {
+            fn drop(&mut self) {
+                let _ = fs::remove_dir_all(&self.0);
+            }
+        }
+        let _cleanup = Cleanup(root.clone());
+        for input in INPUTS.iter().copied().chain([".cargo/config.toml"]) {
+            let path = root.join(input);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(path, "initial").unwrap();
+        }
+        let before = inputs(&root).unwrap();
+        fs::write(root.join(".cargo/config.toml"), "changed").unwrap();
+        assert_ne!(
+            before,
+            inputs(&root).unwrap(),
+            "Cargo configuration must invalidate the demo inventory"
+        );
+    }
 }
