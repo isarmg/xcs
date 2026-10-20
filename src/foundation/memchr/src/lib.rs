@@ -131,8 +131,9 @@ implementation in the standard library, even if only for searching on UTF-8?
 The reason is that the implementation details for using SIMD in the standard
 library haven't quite been worked out yet.
 
-**NOTE:** Currently, only `x86_64`, `wasm32` and `aarch64` targets have vector
-accelerated implementations of `memchr` (and friends) and `memmem`.
+**NOTE:** This maintained source provides vector-accelerated implementations
+for Linux amd64 (`x86_64`) and browser `wasm32` with `simd128`. Generic
+implementations remain available when SIMD is unavailable.
 
 # Crate features
 
@@ -178,7 +179,6 @@ Originally, this crate was literally just a safe wrapper function around the
     not(any(
         all(target_arch = "x86_64", target_feature = "sse2"),
         all(target_arch = "wasm32", target_feature = "simd128"),
-        target_arch = "aarch64",
     )),
     allow(dead_code)
 )]

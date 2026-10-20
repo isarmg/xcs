@@ -61,12 +61,6 @@ cfg_os_poll! {
     pub use self::unix::*;
 }
 
-#[cfg(all(target_os = "wasi", target_env = "p1"))]
-cfg_os_poll! {
-    mod wasip1;
-    pub(crate) use self::wasip1::*;
-}
-
 cfg_not_os_poll! {
     mod shell;
     pub(crate) use self::shell::*;

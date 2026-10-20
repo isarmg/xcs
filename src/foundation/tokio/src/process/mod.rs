@@ -235,10 +235,6 @@ pub(crate) mod unix {
     pub(crate) use super::imp::*;
 }
 
-#[path = "windows.rs"]
-#[cfg(windows)]
-mod imp;
-
 mod kill;
 
 use crate::io::{AsyncRead, AsyncWrite, ReadBuf};

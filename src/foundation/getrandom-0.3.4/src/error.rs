@@ -166,10 +166,6 @@ impl Error {
             ))]
             Error::NO_RDRAND => "RDRAND: instruction not supported",
 
-            #[cfg(getrandom_backend = "rndr")]
-            Error::RNDR_FAILURE => "RNDR: Could not generate a random number",
-            #[cfg(getrandom_backend = "rndr")]
-            Error::RNDR_NOT_AVAILABLE => "RNDR: Register not supported",
             _ => return None,
         };
         Some(desc)

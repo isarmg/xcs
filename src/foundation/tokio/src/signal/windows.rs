@@ -5,19 +5,15 @@
 //! notifications. These events are listened for via the `SetConsoleCtrlHandler`
 //! function which receives the corresponding `windows_sys` event type.
 
-#![cfg(any(windows, docsrs))]
+// Retain the upstream documentation surface, not a Windows runtime backend.
+#![cfg(docsrs)]
 #![cfg_attr(docsrs, doc(cfg(all(windows, feature = "signal"))))]
 
 use crate::signal::RxFuture;
 use std::io;
 use std::task::{Context, Poll};
 
-#[cfg(windows)]
-#[path = "windows/sys.rs"]
-mod imp;
-
 // For building documentation on Unix machines when the `docsrs` flag is set.
-#[cfg(not(windows))]
 #[path = "windows/stub.rs"]
 mod imp;
 

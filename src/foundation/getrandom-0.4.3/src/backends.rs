@@ -20,15 +20,14 @@ cfg_if! {
     } else if #[cfg(getrandom_backend = "rdrand")] {
         mod rdrand;
         pub use rdrand::*;
-    } else if #[cfg(getrandom_backend = "rndr")] {
-        mod rndr;
-        pub use rndr::*;
-    } else if #[cfg(getrandom_backend = "efi_rng")] {
-        mod efi_rng;
-        pub use efi_rng::*;
-    } else if #[cfg(getrandom_backend = "windows_legacy")] {
-        mod windows_legacy;
-        pub use windows_legacy::*;
+    } else if #[cfg(any(
+        getrandom_backend = "rndr",
+        getrandom_backend = "efi_rng",
+        getrandom_backend = "windows_legacy",
+    ))] {
+        compile_error!("this getrandom backend was retired: only Linux amd64 and browser WebAssembly backends are retained");
+        mod unsupported;
+        pub use unsupported::*;
     } else if #[cfg(getrandom_backend = "unsupported")] {
         mod unsupported;
         pub use unsupported::*;
@@ -38,9 +37,6 @@ cfg_if! {
     } else if #[cfg(all(target_os = "linux", target_env = ""))] {
         mod linux_raw;
         pub use linux_raw::*;
-    } else if #[cfg(target_os = "espidf")] {
-        mod esp_idf;
-        pub use esp_idf::*;
     } else if #[cfg(any(
         target_os = "haiku",
         target_os = "redox",
@@ -49,14 +45,6 @@ cfg_if! {
     ))] {
         mod use_file;
         pub use use_file::*;
-    } else if #[cfg(any(
-        target_os = "macos",
-        target_os = "openbsd",
-        target_os = "vita",
-        target_os = "emscripten",
-    ))] {
-        mod getentropy;
-        pub use getentropy::*;
     } else if #[cfg(any(
         // Rust supports Android API level 19 (KitKat) [0] and the next upgrade targets
         // level 21 (Lollipop) [1], while `getrandom(2)` was added only in
@@ -119,51 +107,9 @@ cfg_if! {
     ))] {
         mod getrandom;
         pub use getrandom::*;
-    } else if #[cfg(target_os = "solaris")] {
-        mod solaris;
-        pub use solaris::*;
-    } else if #[cfg(target_os = "netbsd")] {
-        mod netbsd;
-        pub use netbsd::*;
-    } else if #[cfg(target_os = "fuchsia")] {
-        mod fuchsia;
-        pub use fuchsia::*;
-    } else if #[cfg(any(
-        target_os = "ios",
-        target_os = "visionos",
-        target_os = "watchos",
-        target_os = "tvos",
-    ))] {
-        mod apple_other;
-        pub use apple_other::*;
-    } else if #[cfg(all(target_arch = "wasm32", target_os = "wasi"))] {
-        cfg_if! {
-            if #[cfg(target_env = "p1")] {
-                mod wasi_p1;
-                pub use wasi_p1::*;
-            } else {
-                mod wasi_p2_3;
-                pub use wasi_p2_3::*;
-            }
-        }
-    } else if #[cfg(target_os = "hermit")] {
-        mod hermit;
-        pub use hermit::*;
     } else if #[cfg(all(target_arch = "x86_64", target_os = "motor"))] {
         mod rdrand;
         pub use rdrand::*;
-    } else if #[cfg(target_os = "vxworks")] {
-        mod vxworks;
-        pub use vxworks::*;
-    } else if #[cfg(target_os = "solid_asp3")] {
-        mod solid;
-        pub use solid::*;
-    } else if #[cfg(all(windows, target_vendor = "win7"))] {
-        mod windows_legacy;
-        pub use windows_legacy::*;
-    } else if #[cfg(windows)] {
-        mod windows;
-        pub use windows::*;
     } else if #[cfg(all(target_arch = "x86_64", target_env = "sgx"))] {
         mod rdrand;
         pub use rdrand::*;

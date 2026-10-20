@@ -48,7 +48,10 @@ case "${1:-}" in
     python3 tools/rust-sources/check_libc_abi.py
     python3 .github/scripts/check-linux-syscalls.py
     python3 .github/scripts/check-linux-system-backends.py
-    cargo test --locked --offline --lib -p socket2 -p mio
+    python3 .github/scripts/check-linux-parking.py
+    python3 .github/scripts/check-linux-search-process.py
+    python3 .github/scripts/check-linux-random-backends.py
+    cargo test --locked --offline --lib -p socket2 -p mio -p parking_lot_core
     python3 tools/rust-sources/check_ring_tests.py
     cargo test --locked --offline --lib -p password-hash
     # An external workspace package cannot receive --features directly. Its

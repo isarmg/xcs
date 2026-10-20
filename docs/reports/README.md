@@ -4,6 +4,7 @@
 
 | 报告 | 范围 |
 | --- | --- |
+| [Linux amd64 runtime 最终收敛](linux-amd64-runtime-final-20261020.md) | 60 平台实现退役、熵源显式拒绝、Linux/Web 源码等价与严格离线消费者；保留 docsrs 壳和已知环境限制 |
 | [ring 上游回归材料恢复](ring-test-restoration-20261020.md) | 精确 commit/blob 溯源、34 库向量与完整集成/CAVP 入口、唯一工作区离线回归矩阵 |
 | [Linux amd64 基础源码第二批收敛](linux-amd64-foundation-second-20261020.md) | rustix/libc 架构与 OS 分派、选中源码等价、GNU ABI 和双后端回归；ring 只读生成证据与完整回归缺口 |
 | [Linux amd64 基础源码收敛](linux-amd64-foundation-20261020.md) | 原生平台边界、MSVC 构建依赖退役、Linux UAPI 架构裁剪、未来 API 保留与离线回归 |

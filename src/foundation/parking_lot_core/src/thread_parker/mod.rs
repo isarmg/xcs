@@ -57,15 +57,6 @@ cfg_if! {
     } else if #[cfg(unix)] {
         #[path = "unix.rs"]
         mod imp;
-    } else if #[cfg(windows)] {
-        #[path = "windows/mod.rs"]
-        mod imp;
-    } else if #[cfg(target_os = "redox")] {
-        #[path = "redox.rs"]
-        mod imp;
-    } else if #[cfg(all(target_env = "sgx", target_vendor = "fortanix"))] {
-        #[path = "sgx.rs"]
-        mod imp;
     } else if #[cfg(all(
         feature = "nightly",
         target_family = "wasm",

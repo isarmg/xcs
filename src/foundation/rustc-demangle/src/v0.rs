@@ -1288,6 +1288,7 @@ impl<'a, 'b, 's> Printer<'a, 'b, 's> {
 
 #[cfg(test)]
 mod tests {
+    use std::panic;
     use std::prelude::v1::*;
 
     macro_rules! t {

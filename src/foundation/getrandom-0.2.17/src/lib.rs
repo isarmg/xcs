@@ -238,26 +238,6 @@ cfg_if! {
     if #[cfg(any(target_os = "haiku", target_os = "redox", target_os = "nto", target_os = "aix"))] {
         mod util_libc;
         #[path = "use_file.rs"] mod imp;
-    } else if #[cfg(any(
-        target_os = "macos",
-        target_os = "openbsd",
-        target_os = "vita",
-        target_os = "emscripten",
-    ))] {
-        mod util_libc;
-        #[path = "getentropy.rs"] mod imp;
-    } else if #[cfg(any(
-        target_os = "dragonfly",
-        target_os = "freebsd",
-        target_os = "hurd",
-        target_os = "illumos",
-        // Check for target_arch = "arm" to only include the 3DS. Does not
-        // include the Nintendo Switch (which is target_arch = "aarch64").
-        all(target_os = "horizon", target_arch = "arm"),
-        target_os = "cygwin",
-    ))] {
-        mod util_libc;
-        #[path = "getrandom.rs"] mod imp;
     } else if #[cfg(all(
         not(feature = "linux_disable_fallback"),
         any(
@@ -305,29 +285,6 @@ cfg_if! {
     } else if #[cfg(any(target_os = "android", target_os = "linux"))] {
         mod util_libc;
         #[path = "linux_android.rs"] mod imp;
-    } else if #[cfg(target_os = "solaris")] {
-        mod util_libc;
-        #[path = "solaris.rs"] mod imp;
-    } else if #[cfg(target_os = "netbsd")] {
-        mod util_libc;
-        #[path = "netbsd.rs"] mod imp;
-    } else if #[cfg(target_os = "fuchsia")] {
-        #[path = "fuchsia.rs"] mod imp;
-    } else if #[cfg(any(target_os = "ios", target_os = "visionos", target_os = "watchos", target_os = "tvos"))] {
-        #[path = "apple-other.rs"] mod imp;
-    } else if #[cfg(all(target_arch = "wasm32", target_os = "wasi"))] {
-        #[path = "wasi.rs"] mod imp;
-    } else if #[cfg(target_os = "hermit")] {
-        #[path = "hermit.rs"] mod imp;
-    } else if #[cfg(target_os = "vxworks")] {
-        mod util_libc;
-        #[path = "vxworks.rs"] mod imp;
-    } else if #[cfg(target_os = "solid_asp3")] {
-        #[path = "solid.rs"] mod imp;
-    } else if #[cfg(target_os = "espidf")] {
-        #[path = "espidf.rs"] mod imp;
-    } else if #[cfg(windows)] {
-        #[path = "windows.rs"] mod imp;
     } else if #[cfg(all(target_arch = "x86_64", target_env = "sgx"))] {
         mod lazy;
         #[path = "rdrand.rs"] mod imp;

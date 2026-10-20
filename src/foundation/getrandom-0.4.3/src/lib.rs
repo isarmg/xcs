@@ -9,7 +9,6 @@
 )]
 #![doc = include_str!("../../../../docs/upstream/getrandom-0.4.3/README.md")]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![cfg_attr(getrandom_backend = "efi_rng", feature(uefi_std))]
 #![cfg_attr(getrandom_backend = "extern_impl", feature(extern_item_impls))]
 
 #[macro_use]

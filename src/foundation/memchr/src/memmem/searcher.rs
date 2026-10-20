@@ -3,8 +3,6 @@ use crate::arch::all::{
     rabinkarp, twoway,
 };
 
-#[cfg(target_arch = "aarch64")]
-use crate::arch::aarch64::neon::packedpair as neon;
 #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
 use crate::arch::wasm32::simd128::packedpair as simd128;
 #[cfg(all(target_arch = "x86_64", target_feature = "sse2"))]
@@ -129,30 +127,9 @@ impl Searcher {
                 Searcher::twoway(needle, rabinkarp, prestrat)
             }
         }
-        #[cfg(target_arch = "aarch64")]
-        {
-            if let Some(pp) = neon::Finder::with_pair(needle, pair) {
-                if do_packed_search(needle) {
-                    trace!("building aarch64 neon substring searcher");
-                    let kind = SearcherKind { neon: pp };
-                    Searcher { call: searcher_kind_neon, kind, rabinkarp }
-                } else if prefilter.is_none() {
-                    Searcher::twoway(needle, rabinkarp, None)
-                } else {
-                    let prestrat = Prefilter::neon(pp, needle);
-                    Searcher::twoway(needle, rabinkarp, Some(prestrat))
-                }
-            } else if prefilter.is_none() {
-                Searcher::twoway(needle, rabinkarp, None)
-            } else {
-                let prestrat = Prefilter::fallback(ranker, pair, needle);
-                Searcher::twoway(needle, rabinkarp, prestrat)
-            }
-        }
         #[cfg(not(any(
             all(target_arch = "x86_64", target_feature = "sse2"),
-            all(target_arch = "wasm32", target_feature = "simd128"),
-            target_arch = "aarch64"
+            all(target_arch = "wasm32", target_feature = "simd128")
         )))]
         {
             if prefilter.is_none() {
@@ -253,8 +230,6 @@ union SearcherKind {
     avx2: crate::arch::x86_64::avx2::packedpair::Finder,
     #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
     simd128: crate::arch::wasm32::simd128::packedpair::Finder,
-    #[cfg(target_arch = "aarch64")]
-    neon: crate::arch::aarch64::neon::packedpair::Finder,
 }
 
 /// A two-way substring searcher with a prefilter.
@@ -408,27 +383,6 @@ unsafe fn searcher_kind_simd128(
     needle: &[u8],
 ) -> Option<usize> {
     let finder = &searcher.kind.simd128;
-    if haystack.len() < finder.min_haystack_len() {
-        searcher.rabinkarp.find(haystack, needle)
-    } else {
-        finder.find(haystack, needle)
-    }
-}
-
-/// Reads from the `neon` field of `SearcherKind` to execute the aarch64 neon
-/// vectorized substring search implementation.
-///
-/// # Safety
-///
-/// Callers must ensure that the `searcher.kind.neon` union field is set.
-#[cfg(target_arch = "aarch64")]
-unsafe fn searcher_kind_neon(
-    searcher: &Searcher,
-    _prestate: &mut PrefilterState,
-    haystack: &[u8],
-    needle: &[u8],
-) -> Option<usize> {
-    let finder = &searcher.kind.neon;
     if haystack.len() < finder.min_haystack_len() {
         searcher.rabinkarp.find(haystack, needle)
     } else {
@@ -683,21 +637,6 @@ impl Prefilter {
         }
     }
 
-    /// Return a prefilter using a aarch64 neon vector algorithm.
-    #[cfg(target_arch = "aarch64")]
-    #[inline]
-    fn neon(finder: neon::Finder, needle: &[u8]) -> Prefilter {
-        trace!("building aarch64 neon prefilter");
-        let rarest_offset = finder.pair().index1();
-        let rarest_byte = needle[usize::from(rarest_offset)];
-        Prefilter {
-            call: prefilter_kind_neon,
-            kind: PrefilterKind { neon: finder },
-            rarest_byte,
-            rarest_offset,
-        }
-    }
-
     /// Return a *candidate* position for a match.
     ///
     /// When this returns an offset, it implies that a match could begin at
@@ -761,8 +700,6 @@ union PrefilterKind {
     avx2: crate::arch::x86_64::avx2::packedpair::Finder,
     #[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
     simd128: crate::arch::wasm32::simd128::packedpair::Finder,
-    #[cfg(target_arch = "aarch64")]
-    neon: crate::arch::aarch64::neon::packedpair::Finder,
 }
 
 /// The type of a prefilter function.
@@ -837,25 +774,6 @@ unsafe fn prefilter_kind_simd128(
     haystack: &[u8],
 ) -> Option<usize> {
     let finder = &strat.kind.simd128;
-    if haystack.len() < finder.min_haystack_len() {
-        strat.find_simple(haystack)
-    } else {
-        finder.find_prefilter(haystack)
-    }
-}
-
-/// Reads from the `neon` field of `PrefilterKind` to execute the aarch64 neon
-/// prefilter.
-///
-/// # Safety
-///
-/// Callers must ensure that the `strat.kind.neon` union field is set.
-#[cfg(target_arch = "aarch64")]
-unsafe fn prefilter_kind_neon(
-    strat: &Prefilter,
-    haystack: &[u8],
-) -> Option<usize> {
-    let finder = &strat.kind.neon;
     if haystack.len() < finder.min_haystack_len() {
         strat.find_simple(haystack)
     } else {

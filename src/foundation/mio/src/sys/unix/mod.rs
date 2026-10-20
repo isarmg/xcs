@@ -24,24 +24,6 @@ cfg_os_poll! {
             target_os = "redox",
         )
     ), path = "selector/epoll.rs")]
-    #[cfg_attr(all(
-        not(mio_unsupported_force_poll_poll),
-        any(
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "ios",
-            target_os = "macos",
-            target_os = "netbsd",
-            target_os = "openbsd",
-            target_os = "tvos",
-            target_os = "visionos",
-            target_os = "watchos",
-        )
-    ), path = "selector/kqueue.rs")]
-    #[cfg_attr(all(
-        not(mio_unsupported_force_poll_poll),
-        target_os = "solaris",
-    ), path = "selector/event_ports.rs")]
     #[cfg_attr(any(
         mio_unsupported_force_poll_poll,
         target_os = "aix",
@@ -72,22 +54,6 @@ cfg_os_poll! {
             target_os = "linux",
         )
     ), path = "waker/eventfd.rs")]
-    #[cfg_attr(all(
-        not(mio_unsupported_force_waker_pipe),
-        not(mio_unsupported_force_poll_poll), // `kqueue(2)` based waker doesn't work with `poll(2)`.
-        any(
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "ios",
-            target_os = "macos",
-            target_os = "netbsd",
-            target_os = "openbsd",
-            target_os = "solaris",
-            target_os = "tvos",
-            target_os = "visionos",
-            target_os = "watchos",
-        )
-    ), path = "waker/selector.rs")]
     #[cfg_attr(any(
         // NOTE: also add to the list for the `pipe` module below.
         mio_unsupported_force_waker_pipe,
@@ -116,10 +82,7 @@ cfg_os_poll! {
         target_os = "cygwin",
         all(target_os = "wasi", target_env = "p1")
     ), path = "waker/pipe.rs")]
-    #[cfg_attr(any(target_os = "horizon", all(target_os = "wasi", not(target_env = "p1"))), path = "waker/single_threaded.rs")]
     mod waker;
-    #[cfg(all(not(mio_unsupported_force_poll_poll), target_os = "solaris"))]
-    pub(crate) use self::waker::Waker;
     // NOTE: the `Waker` type is expected in the selector module as the
     // `poll(2)` implementation needs to do some special stuff.
 
