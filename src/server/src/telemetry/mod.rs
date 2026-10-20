@@ -129,8 +129,8 @@ fn memory_status(total: u64, available: u64) -> MemoryStatus {
 }
 
 pub(crate) struct Telemetry {
-    // This private handle only executes the fixed, read-only monitor_disks
-    // action; HTTP and protocol adapters retain AuthorizedBackend normally.
+    // This private handle invokes only the capability-gated, read-only sampler.
+    // HTTP and protocol adapters retain AuthorizedBackend normally.
     backend: Arc<dyn Backend>,
     sampler: Mutex<SystemSampler>,
     history: Mutex<HistoryStore>,
@@ -182,14 +182,9 @@ impl Telemetry {
     }
 
     fn collect(&self) -> Result<Sample, ApiError> {
-        let identity = Identity {
-            principal: "zxs-system-telemetry".into(),
-            admin: true,
-            repositories: Default::default(),
-        };
         let disks = self
             .backend
-            .call(crate::BackendAction::MonitorDisks, &identity, json!({}))?;
+            .observe_disks(&crate::InternalDiskObservation(()))?;
         let disks = serde_json::from_value::<Vec<DiskStatus>>(disks["disks"].clone())
             .map_err(|_| unavailable("disk sampling is unavailable"))?;
         let (cpu, memory) = self
@@ -247,9 +242,10 @@ pub(crate) async fn status(
     State(state): State<AppState>,
     Extension(identity): Extension<Identity>,
 ) -> Result<Json<Value>, ApiError> {
-    identity.require_admin()?;
     tokio::task::spawn_blocking(move || {
+        require_current_administrator(&state.auth, &identity)?;
         state.telemetry.current().and_then(|status| {
+            require_current_administrator(&state.auth, &identity)?;
             serde_json::to_value(status)
                 .map(Json)
                 .map_err(|_| unavailable("host sampling is unavailable"))
@@ -287,14 +283,24 @@ pub(crate) async fn history(
     Extension(identity): Extension<Identity>,
     Query(query): Query<HistoryQuery>,
 ) -> Result<Json<Value>, ApiError> {
-    identity.require_admin()?;
-    let (seconds, interval) = range_parameters(&query.range)?;
     tokio::task::spawn_blocking(move || {
+        require_current_administrator(&state.auth, &identity)?;
+        let (seconds, interval) = range_parameters(&query.range)?;
         let to = time::OffsetDateTime::now_utc().unix_timestamp();
         let from = to - seconds;
         let samples = state.telemetry.history.lock().map_err(|_| unavailable("history sampling is unavailable"))?.samples(from, to, interval);
+        require_current_administrator(&state.auth, &identity)?;
         Ok(Json(json!({"range": query.range, "interval_seconds": interval, "from": timestamp(from)?, "to": timestamp(to)?, "samples": samples})))
     }).await.map_err(|_| unavailable("history sampling was interrupted"))?
+}
+
+fn require_current_administrator(
+    auth: &Mutex<crate::auth::AuthStore>,
+    identity: &Identity,
+) -> Result<(), ApiError> {
+    crate::lock(auth)?
+        .identity_for_principal(&identity.principal)?
+        .require_admin()
 }
 
 #[cfg(test)]
@@ -336,11 +342,13 @@ mod tests {
     impl Backend for MonitorBackend {
         fn call(
             &self,
-            action: crate::BackendAction,
+            _: crate::BackendAction,
             _identity: &Identity,
             _input: Value,
         ) -> Result<Value, ApiError> {
-            assert_eq!(action, crate::BackendAction::MonitorDisks);
+            panic!("private monitoring must not forge a user identity")
+        }
+        fn observe_disks(&self, _: &crate::InternalDiskObservation) -> Result<Value, ApiError> {
             Ok(json!({"disks":[]}))
         }
         fn upload(
@@ -394,5 +402,40 @@ mod tests {
         }
         assert!(range_parameters("1year").is_err());
         assert!(range_parameters("../1h").is_err());
+    }
+
+    #[test]
+    fn monitoring_rechecks_current_administrator_instead_of_captured_role() {
+        let root = tempfile::tempdir().unwrap();
+        let mut auth =
+            crate::auth::AuthStore::initialize(root.path(), "admin", "monitor-test-password")
+                .unwrap();
+        auth.upsert_account(
+            "monitor",
+            Some("monitor-test-password"),
+            true,
+            Default::default(),
+            false,
+        )
+        .unwrap();
+        let captured = auth.identity_for_principal("monitor").unwrap();
+        let auth = Mutex::new(auth);
+        assert!(require_current_administrator(&auth, &captured).is_ok());
+        for disabled in [false, true] {
+            auth.lock()
+                .unwrap()
+                .upsert_account("monitor", None, false, Default::default(), disabled)
+                .unwrap();
+            assert_eq!(
+                require_current_administrator(&auth, &captured)
+                    .unwrap_err()
+                    .code,
+                if disabled {
+                    "UNAUTHORIZED"
+                } else {
+                    "FORBIDDEN"
+                }
+            );
+        }
     }
 }

@@ -6,6 +6,9 @@ use std::{
 };
 use storage_engine::{CommitRequest, Config, Engine};
 
+#[path = "close_tests.rs"]
+mod close_tests;
+
 struct LostCommitReply {
     inner: EngineBackend,
     fail: AtomicBool,
@@ -1010,14 +1013,16 @@ fn external_same_file_change_rejects_rebase_and_preserves_work_bytes() {
         one.dirty(opened.handle).unwrap_err().code,
         "FILE_VERSION_CONFLICT"
     );
-    assert_eq!(
-        one.close(opened.handle, false).unwrap_err().code,
-        "WORKSPACE_REBASE_REQUIRED"
-    );
     let pending = match &one.handles[&opened.handle] {
         Handle::Write(writer) => writer.source.clone(),
         _ => panic!("write handle missing"),
     };
+    assert_eq!(
+        one.close(opened.handle, false).unwrap_err().code,
+        "WORKSPACE_REBASE_REQUIRED"
+    );
+    assert!(!one.handles.contains_key(&opened.handle));
+    assert!(one.writer_locks.is_empty());
     drop(one);
     assert_eq!(fs::read(pending).unwrap(), b"end");
 }

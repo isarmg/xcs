@@ -136,6 +136,9 @@ pub(crate) async fn run(args: Args) -> Result<()> {
             trusted_proxy_ips,
             web_dir,
             max_upload_bytes,
+            http_spool_bytes_per_account,
+            http_spool_bytes_total,
+            http_spool_recovery_reserve_bytes,
             smb_socket,
             smb_peer_uid,
             smb_user,
@@ -149,6 +152,11 @@ pub(crate) async fn run(args: Args) -> Result<()> {
             config.trusted_proxy_ips = trusted_proxy_ips;
             config.web_dir = web_dir;
             config.max_upload_bytes = max_upload_bytes;
+            config.http_spool_limits = storage_server::SpoolLimits {
+                bytes_per_account: http_spool_bytes_per_account,
+                bytes_total: http_spool_bytes_total,
+                recovery_reserve_bytes: http_spool_recovery_reserve_bytes,
+            };
             if let Some(socket) = smb_socket {
                 let allowed_uid =
                     smb_peer_uid.ok_or("--smb-peer-uid is required with --smb-socket")?;

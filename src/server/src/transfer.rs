@@ -18,7 +18,6 @@ use std::{
     path::Path,
     sync::Arc,
 };
-use tokio::io::AsyncWriteExt;
 use tokio_util::io::ReaderStream;
 
 pub(crate) async fn upload_status(
@@ -99,18 +98,17 @@ struct UploadAdmission {
 
 async fn persist_upload(
     root: &Path,
-    file: &tokio::fs::File,
     record: &uploads::UploadRecord,
     admission: &Arc<UploadAdmission>,
     staged: &Arc<uploads::StagedFile>,
 ) -> Result<(), ApiError> {
-    file.sync_all().await.map_err(ApiError::io)?;
     let root = root.to_owned();
     let record = record.clone();
     let admission = admission.clone();
     let staged = staged.clone();
     tokio::task::spawn_blocking(move || {
         let _admission = admission;
+        staged.sync()?;
         uploads::persist_staged(&root, &record, &staged)
     })
     .await
@@ -246,24 +244,30 @@ pub(crate) async fn upload(
             .map_err(ApiError::invalid)??;
         }
     }
-    let data_file = format!(
-        "upload-{}.data",
-        authentication::random_token().map_err(ApiError::invalid)?
-    );
+    let retry = previous
+        .as_ref()
+        .filter(|previous| previous.generation == generation);
+    let data_file = match retry {
+        Some(previous) => previous.data_file.clone(),
+        None => format!(
+            "upload-{}.data",
+            authentication::random_token().map_err(ApiError::invalid)?
+        ),
+    };
     let path = spool.join(&data_file);
     let create_path = path.clone();
-    let superseded = previous
-        .as_ref()
-        .filter(|previous| previous.generation == generation)
-        .map(|previous| spool.join(&previous.data_file));
     let create_admission = admission.clone();
-    let (file, staged_file) = tokio::task::spawn_blocking(move || {
+    let budget = state.spool_budget.clone();
+    let principal = identity.principal.clone();
+    let name = data_file.clone();
+    let retry = retry.is_some();
+    let staged_file = tokio::task::spawn_blocking(move || {
         let _admission = create_admission;
-        uploads::StagedFile::create(create_path, superseded)
+        let reservation = budget.reserve(&principal, &name, expected_length)?;
+        uploads::StagedFile::open_budgeted(create_path, retry, reservation)
     })
     .await
     .map_err(ApiError::invalid)??;
-    let mut file = tokio::fs::File::from_std(file);
     let mut record = uploads::UploadRecord {
         workspace_id: workspace.clone(),
         item_id: item.clone(),
@@ -285,8 +289,11 @@ pub(crate) async fn upload(
         let previous = previous.clone();
         let ownership = (admission.clone(), staged_file.clone());
         tokio::task::spawn_blocking(move || {
-            let _ownership = ownership;
-            uploads::retain_generation(&root, &previous)
+            let result = uploads::retain_generation(&root, &previous);
+            if result.is_err() {
+                ownership.1.block_admission();
+            }
+            result
         })
         .await
         .map_err(ApiError::invalid)??;
@@ -295,7 +302,7 @@ pub(crate) async fn upload(
         .as_ref()
         .is_none_or(|previous| generation > previous.generation)
     {
-        persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
+        persist_upload(&spool, &record, &admission, &staged_file).await?;
     }
     let mut stream = request.into_body().into_data_stream();
     let mut length = 0u64;
@@ -308,7 +315,7 @@ pub(crate) async fn upload(
                 if prefix.as_ref().is_none_or(|prefix| prefix.complete()) {
                     record.persisted_bytes = length;
                     record.persisted_hash = hash.clone().finalize().to_hex().to_string();
-                    persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
+                    persist_upload(&spool, &record, &admission, &staged_file).await?;
                 }
                 return Err(ApiError::invalid(format!(
                     "upload interrupted; durable work data is retained: {error}"
@@ -325,6 +332,9 @@ pub(crate) async fn upload(
                 "received more bytes than declared; original upload is retained",
             ));
         }
+        let skipped = prefix.as_ref().map_or(0, |existing| {
+            existing.remaining().min(chunk.len() as u64) as usize
+        });
         if let Some(mut existing) = prefix.take() {
             let bytes = chunk.clone();
             let ownership = (admission.clone(), staged_file.clone());
@@ -339,13 +349,23 @@ pub(crate) async fn upload(
             .map_err(ApiError::invalid)??;
         }
         hash.update(&chunk);
-        file.write_all(&chunk).await.map_err(ApiError::io)?;
+        if skipped < chunk.len() {
+            let bytes = chunk.slice(skipped..);
+            let staged = staged_file.clone();
+            let ownership = admission.clone();
+            tokio::task::spawn_blocking(move || {
+                let _admission = ownership;
+                staged.write(&bytes)
+            })
+            .await
+            .map_err(ApiError::invalid)??;
+        }
         if length.saturating_sub(last_persisted) >= 1024 * 1024
             && prefix.as_ref().is_none_or(|prefix| prefix.complete())
         {
             record.persisted_bytes = length;
             record.persisted_hash = hash.clone().finalize().to_hex().to_string();
-            persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
+            persist_upload(&spool, &record, &admission, &staged_file).await?;
             last_persisted = length;
         }
     }
@@ -358,7 +378,7 @@ pub(crate) async fn upload(
     }
     record.persisted_bytes = length;
     record.persisted_hash = hash.clone().finalize().to_hex().to_string();
-    persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
+    persist_upload(&spool, &record, &admission, &staged_file).await?;
     if length != expected_length {
         return Err(ApiError::new(
             400,
@@ -369,7 +389,7 @@ pub(crate) async fn upload(
     let actual_hash = hash.finalize().to_hex().to_string();
     if expected_hash.is_some_and(|expected| expected != actual_hash) {
         record.state = "checksum_mismatch".into();
-        persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
+        persist_upload(&spool, &record, &admission, &staged_file).await?;
         return Err(ApiError::new(
             400,
             "CHECKSUM_MISMATCH",
@@ -377,7 +397,6 @@ pub(crate) async fn upload(
         ));
     }
     record.content_hash = Some(actual_hash);
-    drop(file);
     let backend = state.backend.clone();
     let owner = identity.clone();
     let ws = workspace.clone();

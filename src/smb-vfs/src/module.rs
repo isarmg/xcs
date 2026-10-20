@@ -544,9 +544,7 @@ unsafe extern "C" fn close(
         // event-loop thread and does not escape the callback.
         let context = unsafe { context(handle) }?;
         let opened = context.files.remove(&(fsp as usize)).ok_or_else(bad)?;
-        close_opened(opened, |handle| {
-            context.client.call(Request::Close { handle }).map(|_| ())
-        })
+        close_opened(opened, |request| context.client.call(request).map(|_| ()))
     })
 }
 

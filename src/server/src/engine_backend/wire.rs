@@ -268,10 +268,7 @@ fn redact(value: &mut Value) {
         _ => {}
     }
 }
-pub(super) fn operation_wire(
-    _engine: &Engine,
-    op: storage_engine::OperationResult,
-) -> Result<Value, ApiError> {
+pub(super) fn operation_wire(op: storage_engine::OperationResult) -> Result<Value, ApiError> {
     let health = match op.current_health.as_str() {
         "HEALTHY" | "DEGRADED" | "UNAVAILABLE" | "UNKNOWN" => op.current_health.as_str(),
         _ => "UNKNOWN",

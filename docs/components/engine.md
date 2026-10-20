@@ -38,6 +38,7 @@ SQLite、容器 container.json 及当前名称是可重建投影，不能替代�
 - 新写入备注调用 `storage_contract::validate_note`，最多 `MAX_NOTE_BYTES = 128` UTF-8 字节，空串清空，拒绝控制字符。历史包读取明确保留旧 4096 字节上限，不隐式重写旧证明。
 - 校验块大小由 `storage_contract::SUPPORTED_CHECKSUM_CHUNK_BYTES` 统一提供，编码器、配置和历史包使用同一集合。
 - 新业务操作在 `business/` 或相应维护模块组合状态，经 `mutate` / `mutate_digest` 发布；不得自行写日志、提交 SQLite、改写既有版本正文。
+- 目录分支选择按替换子树后完整仓库树检查 `Config.max_entries`，目录和文件均计入；单个冻结子树合法不代表与当前兄弟子树组合后仍合法。超额返回 `RESOURCE_LIMIT`，不改变选择、提交、代际、操作记录或发布日志；根目录选择替换整棵树，不叠加旧树条目。
 - 新上传检查放在不可变代次复制之前，流式复制同时受到文件额度和剩余工作区额度约束。失败应保留已接受代次，避免留下一个没有清单引用、又阻止合法重试的代次。
 - 工作区提交重试共用当前读/写权限、所属主体及已发布请求摘要校验。原生请求使用相同冻结输入重算摘要后，从系统盘/数据盘寻找完全匹配的请求；不接受另一份可解码请求。恢复仅凭完整请求绑定协调工作区状态，wire 正文也双位置持久化；缺少旧正文证据时保留原工作区状态，不猜测或清除暂存字节。
 
@@ -45,7 +46,8 @@ SQLite、容器 container.json 及当前名称是可重建投影，不能替代�
 
 ```sh
 cargo test --locked --offline -p storage-engine -p storage-contract -p name-policy --lib
+cargo test --locked --offline -p storage-engine --test directory_selection_limits
 cargo check --locked --offline -p storage-engine
 ```
 
-测试覆盖发布屏障、幂等、恢复、读租约、兼容树拆分及完整包恢复。新分支回归检查无正文复制或空 stub、真实空首写、缓存/改名/旧 inode、来源清除、目录组合和不可变子树闭包、共享文件身份、选择代际、目录 head 固定与历史清理；含目录组合的旧拆分明确拒绝。所有 fixture 使用临时目录，不代表物理设备故障或发行验收。
+测试覆盖发布屏障、幂等、恢复、读租约、兼容树拆分及完整包恢复。新分支回归检查无正文复制或空 stub、真实空首写、缓存/改名/旧 inode、来源清除、目录组合和不可变子树闭包、共享文件身份、选择代际、目录 head 固定与历史清理；含目录组合的旧拆分明确拒绝。目录额度回归覆盖两个合法四条目状态组合为六条目时的原子拒绝、释放额度后同操作 ID 重试，以及根组合在额度边界切换并重启恢复。所有 fixture 使用临时目录，不代表物理设备故障或发行验收。

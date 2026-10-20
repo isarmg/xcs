@@ -112,6 +112,7 @@ impl Session {
             Request::Dirty { handle } => self.dirty(handle)?,
             Request::Flush { handle } => self.flush(handle)?,
             Request::Close { handle } => self.close(handle, false)?,
+            Request::Detach { handle } => self.detach(handle)?,
             Request::Abort { handle } => self.close(handle, true)?,
             Request::Stat { path } => {
                 if path.is_empty() || path == "." {

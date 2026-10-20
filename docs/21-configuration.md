@@ -340,3 +340,13 @@ queue_warning_seconds = 30
 ---
 
 [文档目录](README.md) · [上一章：工程结构与依赖约束](20-engineering.md) · [下一章：验收标准与证明材料](22-acceptance.md)
+
+### HTTP 暂存的可执行配置入口
+
+当前 `zxs serve` 接受下列独立参数（十进制字节数）：
+
+- `--http-spool-bytes-per-account`：默认 `107374182400`，即 100 GiB。
+- `--http-spool-bytes-total`：默认 `536870912000`，即 500 GiB。
+- `--http-spool-recovery-reserve-bytes`：默认 `1073741824`，即 1 GiB。
+
+它们映射到 `ServerConfig.http_spool_limits`，只约束 HTTP `api-spool`。`--max-upload-bytes` 仍限制单次上传；核心工作区及 SMB 的预算独立。上文完整设计配置中的跨入口全池参数不能仅因存在于示例中就视为全部已接入运行时。启动会盘点留存数据并持有独占目录锁；不得让多个服务实例同时使用同一 spool。详见[HTTP 暂存预算与恢复](components/server.md#http-spool-budget)。

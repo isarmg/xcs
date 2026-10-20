@@ -5,7 +5,6 @@ use std::{
     fs::{self, OpenOptions},
     io::{Read, Write},
     path::{Path, PathBuf},
-    sync::atomic::{AtomicBool, Ordering},
 };
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -88,48 +87,59 @@ pub(crate) fn load(
         Err(error) => Err(ApiError::io(error)),
     }
 }
-/// An unreferenced request file is disposable. Once a durable record is renamed
-/// into place it owns these bytes, even if the following directory sync fails.
-/// Blocking persistence jobs share this guard, so cancellation cannot delete a
-/// file just before the job publishes its record.
+/// Every filesystem task shares this owner. Cancellation cannot settle its
+/// reservation while a blocking write or metadata publication is still running.
+/// Retained files are never deleted merely because an HTTP request ended.
 pub(crate) struct StagedFile {
-    path: PathBuf,
-    referenced: AtomicBool,
-    superseded: Option<PathBuf>,
-    superseded_removed: AtomicBool,
+    writer: std::sync::Mutex<fs::File>,
+    // Dropped after the writer; settlement inventories the actual file length.
+    reservation: crate::spool_budget::Reservation,
 }
 impl StagedFile {
-    pub fn create(
+    pub fn open_budgeted(
         path: PathBuf,
-        superseded: Option<PathBuf>,
-    ) -> Result<(fs::File, std::sync::Arc<Self>), ApiError> {
+        retry: bool,
+        reservation: crate::spool_budget::Reservation,
+    ) -> Result<std::sync::Arc<Self>, ApiError> {
+        reservation.persist_owner()?;
         let mut options = OpenOptions::new();
-        options.create_new(true).write(true);
+        options.append(true);
+        if !retry {
+            options.create_new(true);
+        }
         #[cfg(unix)]
         {
             use std::os::unix::fs::OpenOptionsExt;
-            options.mode(0o600);
+            options
+                .mode(0o600)
+                .custom_flags(rustix::fs::OFlags::NOFOLLOW.bits() as i32);
         }
-        let file = options.open(&path).map_err(ApiError::io)?;
-        Ok((
-            file,
-            std::sync::Arc::new(Self {
-                path,
-                referenced: AtomicBool::new(false),
-                superseded,
-                superseded_removed: AtomicBool::new(false),
-            }),
-        ))
+        let writer = options.open(&path).map_err(ApiError::io)?;
+        if !writer.metadata().map_err(ApiError::io)?.is_file() {
+            return Err(ApiError::new(
+                500,
+                "UPLOAD_STATE_INVALID",
+                "upload source is not a regular file",
+            ));
+        }
+        Ok(std::sync::Arc::new(Self {
+            writer: std::sync::Mutex::new(writer),
+            reservation,
+        }))
     }
-}
-impl Drop for StagedFile {
-    fn drop(&mut self) {
-        if !self.referenced.load(Ordering::Acquire)
-            && let Err(error) = fs::remove_file(&self.path)
-            && error.kind() != std::io::ErrorKind::NotFound
-        {
-            tracing::warn!(%error, "unreferenced upload cleanup failed");
-        }
+    pub fn write(&self, bytes: &[u8]) -> Result<(), ApiError> {
+        let mut writer = crate::lock(&self.writer)?;
+        self.reservation.check_headroom(
+            writer.metadata().map_err(ApiError::io)?.len(),
+            bytes.len() as u64,
+        )?;
+        writer.write_all(bytes).map_err(ApiError::io)
+    }
+    pub fn sync(&self) -> Result<(), ApiError> {
+        crate::lock(&self.writer)?.sync_all().map_err(ApiError::io)
+    }
+    pub fn block_admission(&self) {
+        self.reservation.block_admission();
     }
 }
 pub(crate) fn persist_staged(
@@ -150,23 +160,13 @@ fn persist_staged_with_sync(
     staged: &StagedFile,
     sync: impl FnOnce() -> Result<(), ApiError>,
 ) -> Result<(), ApiError> {
-    persist_inner(
-        root,
-        record,
-        || staged.referenced.store(true, Ordering::Release),
-        sync,
-    )?;
-    // Only after the new data and metadata are durable may a same-generation
-    // predecessor lose its last reference. Older generations are never listed.
-    if let Some(previous) = &staged.superseded
-        && !staged.superseded_removed.swap(true, Ordering::AcqRel)
-        && let Err(error) = fs::remove_file(previous)
-        && error.kind() != std::io::ErrorKind::NotFound
-    {
-        staged.superseded_removed.store(false, Ordering::Release);
-        tracing::warn!(%error, "superseded upload cleanup failed");
+    let result = persist_inner(root, record, || {}, sync);
+    if result.is_err() {
+        // A failed cleanup or directory sync can leave extra/uncertain metadata.
+        // No fresh upload may assume that this evidence consumes no capacity.
+        staged.block_admission();
     }
-    Ok(())
+    result
 }
 #[cfg(test)]
 pub(crate) fn persist(root: &Path, record: &UploadRecord) -> Result<(), ApiError> {
@@ -178,10 +178,23 @@ fn persist_inner(
     published: impl FnOnce(),
     sync: impl FnOnce() -> Result<(), ApiError>,
 ) -> Result<(), ApiError> {
-    let name = key(&record.workspace_id, &record.item_id);
-    let target = root.join(format!("{name}.json"));
+    let name = format!("{}.json", key(&record.workspace_id, &record.item_id));
+    persist_at(root, &name, record, published, sync)
+}
+fn persist_at(
+    root: &Path,
+    name: &str,
+    record: &UploadRecord,
+    published: impl FnOnce(),
+    sync: impl FnOnce() -> Result<(), ApiError>,
+) -> Result<(), ApiError> {
+    let bytes = serde_json::to_vec(record).map_err(ApiError::invalid)?;
+    if bytes.len() > 16384 {
+        return Err(ApiError::invalid("upload metadata exceeds limit"));
+    }
+    let target = root.join(name);
     let temporary = root.join(format!(
-        "{name}.json.tmp-{}",
+        "{name}.tmp-{}",
         authentication::random_token().map_err(ApiError::invalid)?
     ));
     let mut options = OpenOptions::new();
@@ -193,8 +206,7 @@ fn persist_inner(
     }
     let mut file = options.open(&temporary).map_err(ApiError::io)?;
     let result = (|| {
-        file.write_all(&serde_json::to_vec(record).map_err(ApiError::invalid)?)
-            .map_err(ApiError::io)?;
+        file.write_all(&bytes).map_err(ApiError::io)?;
         file.sync_all().map_err(ApiError::io)?;
         fs::rename(&temporary, target).map_err(ApiError::io)?;
         published();
@@ -209,26 +221,13 @@ pub(crate) fn status(record: &UploadRecord) -> serde_json::Value {
     serde_json::json!({"workspace_id":record.workspace_id,"item_id":record.item_id,"upload_generation":record.generation.to_string(),"logical_size":record.logical_size.to_string(),"content_hash":record.content_hash,"state":if record.state=="complete"{"COMPLETE"}else{"RECEIVING"},"durable_ranges":if record.persisted_bytes>0{vec![serde_json::json!({"offset":"0","length":record.persisted_bytes.to_string(),"content_hash":record.persisted_hash})]}else{vec![]},"sealed_manifest_hash":null})
 }
 pub(crate) fn retain_generation(root: &Path, record: &UploadRecord) -> Result<(), ApiError> {
-    let path = root.join(format!(
+    let name = format!(
         "retained-{}-{}-{}.json",
         key(&record.workspace_id, &record.item_id),
         record.generation,
-        authentication::random_token().map_err(ApiError::invalid)?
-    ));
-    let mut options = OpenOptions::new();
-    options.create_new(true).write(true);
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::OpenOptionsExt;
-        options.mode(0o600);
-    }
-    let mut file = options.open(path).map_err(ApiError::io)?;
-    file.write_all(&serde_json::to_vec(record).map_err(ApiError::invalid)?)
-        .map_err(ApiError::io)?;
-    file.sync_all().map_err(ApiError::io)?;
-    fs::File::open(root)
-        .and_then(|file| file.sync_all())
-        .map_err(ApiError::io)
+        blake3::hash(record.data_file.as_bytes()).to_hex()
+    );
+    persist_at(root, &name, record, || {}, || sync_directory(root))
 }
 pub(crate) struct ExistingPrefix {
     file: fs::File,
@@ -236,21 +235,22 @@ pub(crate) struct ExistingPrefix {
 }
 impl ExistingPrefix {
     pub fn open(root: &Path, record: &UploadRecord) -> Result<Option<Self>, ApiError> {
-        if record.persisted_bytes == 0 {
-            return Ok(None);
-        }
         let file = fs::File::open(root.join(&record.data_file)).map_err(ApiError::io)?;
-        if file.metadata().map_err(ApiError::io)?.len() < record.persisted_bytes {
+        let length = file.metadata().map_err(ApiError::io)?.len();
+        if length < record.persisted_bytes || length > record.logical_size {
             return Err(ApiError::new(
                 500,
                 "UPLOAD_STATE_INVALID",
                 "persisted upload data is missing",
             ));
         }
-        Ok(Some(Self {
+        Ok((length > 0).then_some(Self {
             file,
-            remaining: record.persisted_bytes,
+            remaining: length,
         }))
+    }
+    pub fn remaining(&self) -> u64 {
+        self.remaining
     }
     pub fn check(&mut self, bytes: &[u8]) -> Result<(), ApiError> {
         let length = bytes
@@ -286,37 +286,44 @@ impl Drop for Claim {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn test_budget(root: &Path) -> std::sync::Arc<crate::spool_budget::SpoolBudget> {
+        crate::spool_budget::SpoolBudget::recover(
+            root,
+            crate::SpoolLimits {
+                bytes_per_account: 4 * crate::spool_budget::METADATA_ALLOWANCE,
+                bytes_total: 4 * crate::spool_budget::METADATA_ALLOWANCE,
+                recovery_reserve_bytes: 1,
+            },
+        )
+        .unwrap()
+    }
     #[test]
-    fn staging_guard_preserves_referenced_files_and_cleans_up_unpublished_files() {
+    fn staging_guard_preserves_unpublished_bytes_until_and_after_last_job() {
         let root = tempfile::tempdir().unwrap();
+        let budget = test_budget(root.path());
         let path = root.path().join("unpublished.data");
-        let (file, guard) = StagedFile::create(path.clone(), None).unwrap();
+        let reservation = budget.reserve("alice", "unpublished.data", 10).unwrap();
+        let guard = StagedFile::open_budgeted(path.clone(), false, reservation).unwrap();
         let running_job = guard.clone();
         drop(guard);
-        assert!(path.exists(), "an outstanding blocking job owns staging");
-        drop(file);
+        assert!(budget.reserve("alice", "unpublished.data", 10).is_err());
+        running_job.write(b"partial").unwrap();
         drop(running_job);
-        assert!(!path.exists());
-        let path = root.path().join("published.data");
-        let (file, guard) = StagedFile::create(path.clone(), None).unwrap();
-        guard.referenced.store(true, Ordering::Release);
-        drop(file);
-        drop(guard);
-        assert!(path.exists());
-        // Failed exclusive creation must never assume ownership of existing data.
-        assert!(StagedFile::create(path.clone(), None).is_err());
-        assert!(path.exists());
+        assert_eq!(fs::read(path).unwrap(), b"partial");
+        assert!(budget.reserve("alice", "unpublished.data", 10).is_ok());
     }
 
     #[test]
-    fn uncertain_directory_sync_preserves_both_old_and_new_data() {
+    fn uncertain_directory_sync_retains_bytes_and_blocks_fresh_admission_until_inventory() {
         let root = tempfile::tempdir().unwrap();
         let previous = root.path().join("previous.data");
         fs::write(&previous, b"previous").unwrap();
+        let budget = test_budget(root.path());
         let path = root.path().join("new.data");
-        let (mut file, guard) = StagedFile::create(path.clone(), Some(previous.clone())).unwrap();
-        file.write_all(b"new bytes").unwrap();
-        file.sync_all().unwrap();
+        let reservation = budget.reserve("alice", "new.data", 9).unwrap();
+        let guard = StagedFile::open_budgeted(path.clone(), false, reservation).unwrap();
+        guard.write(b"new bytes").unwrap();
+        guard.sync().unwrap();
         let record = UploadRecord {
             workspace_id: "ws".into(),
             item_id: "item".into(),
@@ -330,22 +337,27 @@ mod tests {
             state: "incomplete".into(),
             data_file: "new.data".into(),
         };
-        let result = persist_staged_with_sync(root.path(), &record, &guard, || {
-            Err(ApiError::io(std::io::Error::other(
-                "injected directory sync failure",
-            )))
-        });
-        assert!(result.is_err());
+        assert!(
+            persist_staged_with_sync(root.path(), &record, &guard, || {
+                Err(ApiError::io(std::io::Error::other(
+                    "injected directory sync failure",
+                )))
+            })
+            .is_err()
+        );
         assert_eq!(
             load(root.path(), "ws", "item").unwrap().unwrap().data_file,
             "new.data"
         );
-        drop(file);
         drop(guard);
-        assert_eq!(fs::read(path).unwrap(), b"new bytes");
-        assert_eq!(fs::read(previous).unwrap(), b"previous");
-        // The old file is intentionally unindexed uncertainty evidence. A later
-        // request must not guess which record a real crash would have retained.
+        assert_eq!(fs::read(&path).unwrap(), b"new bytes");
+        assert_eq!(fs::read(&previous).unwrap(), b"previous");
+        assert!(budget.reserve("bob", "next.data", 1).is_err());
+        drop(budget);
+        let budget = test_budget(root.path());
+        assert!(budget.reserve("alice", "new.data", 9).is_ok());
+        assert_eq!(fs::read(&path).unwrap(), b"new bytes");
+        assert_eq!(fs::read(&previous).unwrap(), b"previous");
     }
 
     #[test]

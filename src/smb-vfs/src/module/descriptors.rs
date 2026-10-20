@@ -1,8 +1,11 @@
 //! Owned descriptor snapshots and close/save ordering.
 use super::{Open, bad, context, sdk};
-use smb_protocol::{client::Client, protocol::OpenResult};
+use smb_protocol::{
+    client::{Client, close_descriptor},
+    protocol::{OpenResult, Request},
+};
 use std::{
-    os::fd::{FromRawFd, IntoRawFd, OwnedFd},
+    os::fd::{FromRawFd, OwnedFd},
     sync::{Arc, Mutex},
 };
 
@@ -42,24 +45,12 @@ pub(super) unsafe fn snapshot(
 }
 pub(super) fn close_opened(
     opened: Open,
-    save: impl FnOnce(u64) -> std::io::Result<()>,
+    finish: impl FnOnce(Request) -> std::io::Result<()>,
 ) -> std::io::Result<i32> {
     // SAFETY: removing Open from Context transfers its sole local descriptor
     // ownership here. Guard it before any fallible lock/save operation, because
     // it is no longer available to free_context on an early return or unwind.
     let descriptor = unsafe { OwnedFd::from_raw_fd(opened.fd) };
-    let _guard = opened
-        .io
-        .lock()
-        .map_err(|_| std::io::Error::from_raw_os_error(libc::EIO))?;
-    let saved = save(opened.info.handle);
-    // Preserve the callback's existing close-error reporting on the normal path.
-    // SAFETY: into_raw_fd transfers the sole local ownership to this close call; no owner will
-    // close this descriptor again.
-    let closed = unsafe { libc::close(descriptor.into_raw_fd()) };
-    saved?;
-    if closed < 0 {
-        return Err(std::io::Error::last_os_error());
-    }
+    close_descriptor(opened.info.handle, descriptor, &opened.io, finish)?;
     Ok(0)
 }

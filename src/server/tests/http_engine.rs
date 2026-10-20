@@ -186,6 +186,7 @@ async fn pool_upload_limit_is_checked_before_creating_spooled_bytes() {
     assert_eq!(
         std::fs::read_dir(root.path().join("system/api-spool"))
             .unwrap()
+            .filter(|entry| entry.as_ref().unwrap().file_name() != ".budget.lock")
             .count(),
         0
     );

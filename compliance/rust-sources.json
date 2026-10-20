@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "lockfiles_sha256": {
-    "Cargo.lock": "9b4ad8144d7c7d7954ddb1d56c419ff51c1049d1b21ad7d490c5f596481afd1e"
+    "Cargo.lock": "7d8c774b8bf0b780608353b3247cf9df90f242e9e90291569bc6efda91b70197"
   },
   "manifests_sha256": {
     "Cargo.toml": "607e56969ab30400af4c004f8d5adcf1260875e5be8c530bea7a443ea32415e0",
@@ -352,7 +352,7 @@
     "src/macros/Cargo.toml": "d53b22dedc5a87f5ad70b022f35acda7a1a651158ef347037ca52f3a992078ec",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "f6e10e7eaa2d5c169e73603e8b2190dd05e4ca5d7344cc6396dd459470787bd6",
-    "src/server/Cargo.toml": "9bc83227b86d46dd2e3608c34659eab61f6810d3fc04b15caa1e97cabac196dc",
+    "src/server/Cargo.toml": "4f8c63e496c8a9317d1453f70fe72a6cbd712f250007e6a04e06ee87902f6c06",
     "src/smb-vfs/Cargo.toml": "c7fc43147f9d0389699fea5f89387225d1f822785c09aebd449330cf9672b1d1",
     "src/smb/Cargo.toml": "0e88dc6915ba28eb7ac3327627165fad1a08bf533056c4481e6974de535b835a",
     "src/web/Cargo.toml": "4f9349cf4ed85a4878663c0fe37b8e968a16ceac7a69fdd65fb5e000ebccd95d",

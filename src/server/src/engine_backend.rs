@@ -6,7 +6,9 @@ use storage_engine::{Engine, Grants, NamespaceOperation, Repository};
 pub mod application;
 use application::Application;
 mod content;
+mod disk_monitor;
 mod file_manager;
+mod operations;
 mod read_projection;
 mod wire;
 use wire::{
@@ -18,6 +20,8 @@ pub struct EngineBackend {
     engine: Mutex<Engine>,
     #[cfg(test)]
     commit_preparation_hook: Mutex<Option<std::sync::Arc<dyn Fn() + Send + Sync>>>,
+    #[cfg(test)]
+    operation_health_hook: Mutex<Option<std::sync::Arc<dyn Fn() + Send + Sync>>>,
 }
 impl EngineBackend {
     pub fn new(engine: Engine) -> Self {
@@ -25,6 +29,8 @@ impl EngineBackend {
             engine: Mutex::new(engine),
             #[cfg(test)]
             commit_preparation_hook: Mutex::new(None),
+            #[cfg(test)]
+            operation_health_hook: Mutex::new(None),
         }
     }
     pub fn protect_auth(
@@ -149,8 +155,9 @@ fn workspace_authorize(
     Ok(workspace)
 }
 
-/// Reauthorize after the unlocked copy against the current protected account
-/// snapshot, not the Identity captured before account revocation could publish.
+/// Refresh account admission while holding the engine lock, before capturing a
+/// read plan or publishing a mutation, and again after unlocked preparation.
+/// Account publication takes auth -> engine; never acquire auth in this path.
 fn current_protected_identity(engine: &Engine, identity: &Identity) -> Result<Identity, ApiError> {
     match engine.auth_state() {
         Some(snapshot) => {
@@ -182,6 +189,16 @@ impl Backend for EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
+        let current = if matches!(
+            action,
+            crate::BackendAction::Capabilities | crate::BackendAction::Ready
+        ) {
+            // These probes are intentionally available without an account.
+            identity.clone()
+        } else {
+            current_protected_identity(&engine, identity)?
+        };
+        let identity = &current;
         match action {
             crate::BackendAction::FileManagerDisks => {
                 let access = file_manager::disk_access(&engine, identity);
@@ -218,21 +235,7 @@ impl Backend for EngineBackend {
                 identity.require_admin()?;
                 let observation = engine.prepare_disk_observation();
                 drop(engine);
-                let mut disks = Vec::new();
-                for disk in observation.status().map_err(error)? {
-                    let capacity = observation.capacity(&disk.slot_id).ok();
-                    let (power_watts, power_unavailable_reason) = crate::telemetry::disk_power(
-                        &disk.physical_device,
-                        disk.simulation,
-                        disk.online,
-                    );
-                    let usage_percent = capacity
-                        .filter(|capacity| capacity.0 > 0)
-                        .map(|capacity| capacity.2 as f64 / capacity.0 as f64 * 100.0);
-                    disks.push(json!({"id":disk.slot_id,"name":disk.slot_id,"online":disk.online,"read_only":disk.level!=1,"simulation":disk.simulation,
-                        "total_bytes":capacity.map(|c|c.0.to_string()),"available_bytes":capacity.map(|c|c.1.to_string()),"used_bytes":capacity.map(|c|c.2.to_string()),"usage_percent":usage_percent,"power_watts":power_watts,"power_unavailable_reason":power_unavailable_reason}));
-                }
-                Ok(json!({"disks":disks}))
+                disk_monitor::observe(observation)
             }
             crate::BackendAction::Capabilities => Ok(
                 json!({"name_policy":"PortableName","path_policy":"PortablePath","unicode_data_version":"16.0.0","supported_save_modes":["full"],"full_only":true,"full_branches":false,"branch_creation":"record-until-write","branch_content":"inherit-parent-until-first-write","file_branches":true,"branch_scope":"file","directory_branches":true,"directory_branch_creation":"inherit-directory-tree","directory_subtrees":true,"namespace_batch":true,"smb_default_branch":"selected-root-directory","file_manager":true,"historical_save_creates_branch":true,"merge_behavior":"explicit-file-node-adoption","file_branch_merge":true,"directory_branch_merge":false,"directory_merge_status":"design-pending","file_node_tags":true,"backup_configuration":true,"range_upload":false,"complete_upload":true,"max_upload_bytes":engine.config().max_file_bytes.to_string(),"authentication":"session-bearer-or-cookie","platforms":{"web":true,"smb":true},"operations":["repositories","tree","workspace","commit","history","graph","branch","merge-link","file-branch-merge","file-node-tags","backup-configuration","purge-plan","split-plan","version-range-read","file-manager","file-branches","file-branch-rename","file-path-nodes","directory-branches","directory-subtrees","namespace-batch","default-branch","file-notes","system-status"]}),
@@ -342,7 +345,7 @@ impl Backend for EngineBackend {
                 let result = engine
                     .initialize_directory_scope(repo, path, &identity.principal, operation(&input)?)
                     .map_err(error)?;
-                operation_wire(&engine, result)
+                operation_wire(result)
             }
             crate::BackendAction::UpdateDefaultBranch => {
                 keys(
@@ -359,7 +362,7 @@ impl Backend for EngineBackend {
                         operation(&input)?,
                     )
                     .map_err(error)?;
-                operation_wire(&engine, result)
+                operation_wire(result)
             }
             crate::BackendAction::RenameDirectoryBranch => {
                 keys(
@@ -382,7 +385,7 @@ impl Backend for EngineBackend {
                         operation(&input)?,
                     )
                     .map_err(error)?;
-                operation_wire(&engine, result)
+                operation_wire(result)
             }
             crate::BackendAction::UpdateSmbBinding => {
                 identity.require_admin()?;
@@ -417,7 +420,7 @@ impl Backend for EngineBackend {
                         operation(&input)?,
                     )
                     .map_err(error)?;
-                operation_wire(&engine, result)
+                operation_wire(result)
             }
             crate::BackendAction::SetGrants => {
                 keys(&input, &["repository_id", "grants", "operation_id"])?;
@@ -798,7 +801,7 @@ impl Backend for EngineBackend {
                 let current = current_protected_identity(&engine, identity)?;
                 let result = Application::new(&mut engine, &current)
                     .finish_workspace_commit(&workspace_id, prepared)?;
-                operation_wire(&engine, result)
+                operation_wire(result)
             }
             crate::BackendAction::AbortWorkspace => {
                 keys(&input, &["workspace_id"])?;
@@ -905,18 +908,30 @@ impl Backend for EngineBackend {
             }
             crate::BackendAction::Operation => {
                 let operation_id = field(&input, "operation_id")?;
-                let operation = engine.operation(operation_id).map_err(error)?;
+                // Reject foreign owners before loading even the pending result
+                // pages. Unknown/pending operations never trigger payload I/O.
                 if !identity.admin
-                    && engine.operation_owner(operation_id).as_deref() != Some(&identity.principal)
+                    && let Some(owner) = engine.operation_owner(operation_id)
+                    && owner != identity.principal
                 {
                     return Err(ApiError::forbidden());
                 }
-                if let Some(history) = &operation.history_tree_id {
-                    authorize(identity, repo_for_history(&engine, history)?, false, false)?;
-                } else {
-                    identity.require_admin()?;
+                let record = engine.operation_record(operation_id).map_err(error)?;
+                operations::authorize_record(&engine, identity, &record)?;
+                let plan = engine.prepare_operation_health(record);
+                drop(engine);
+                #[cfg(test)]
+                if let Some(hook) = self.operation_health_hook.lock().unwrap().clone() {
+                    hook();
                 }
-                operation_wire(&engine, operation)
+                let record = plan.check();
+                let engine = self.engine.lock().map_err(|_| {
+                    ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart")
+                })?;
+                let current = current_protected_identity(&engine, identity)?;
+                operations::authorize_record(&engine, &current, &record)?;
+                drop(engine);
+                operation_wire(record.into_result())
             }
             crate::BackendAction::PurgePlan => {
                 keys(&input, &["history_tree_id", "version_ids"])?;
@@ -1005,7 +1020,7 @@ impl Backend for EngineBackend {
                 let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
                 let result =
                     Application::new(&mut engine, identity).update_protection_policy(command)?;
-                operation_wire(&engine, result)
+                operation_wire(result)
             }
             crate::BackendAction::UpdatePlacementRule => {
                 keys(
@@ -1026,7 +1041,7 @@ impl Backend for EngineBackend {
                 let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
                 let result =
                     Application::new(&mut engine, identity).update_placement_rule(command)?;
-                operation_wire(&engine, result)
+                operation_wire(result)
             }
             crate::BackendAction::Check => {
                 identity.require_admin()?;
@@ -1108,8 +1123,9 @@ impl Backend for EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
-        let current = workspace_authorize(&engine, identity, workspace)?;
-        let generation = current
+        let current = current_protected_identity(&engine, identity)?;
+        let workspace_record = workspace_authorize(&engine, &current, workspace)?;
+        let generation = workspace_record
             .files
             .get(_item)
             .map(|file| file.dirty_generation.checked_add(1))
@@ -1144,7 +1160,8 @@ impl Backend for EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
-        workspace_authorize(&engine, identity, workspace)?;
+        let current = current_protected_identity(&engine, identity)?;
+        workspace_authorize(&engine, &current, workspace)?;
         let plan = engine
             .prepare_upload(workspace, item, path, source, generation)
             .map_err(error)?;
@@ -1174,7 +1191,18 @@ impl Backend for EngineBackend {
     fn checksums(&self, identity: &Identity, version: &str) -> Result<Vec<u8>, ApiError> {
         self.read_version_checksums(identity, version)
     }
+    fn observe_disks(&self, _: &crate::InternalDiskObservation) -> Result<Value, ApiError> {
+        let observation = {
+            let engine = self.engine.lock().map_err(|_| {
+                ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart")
+            })?;
+            engine.prepare_disk_observation()
+        };
+        disk_monitor::observe(observation)
+    }
 }
 
 #[cfg(test)]
 mod authorization_tests;
+#[cfg(test)]
+mod revocation_tests;

@@ -2142,6 +2142,7 @@ dependencies = [
  "futures-util",
  "http",
  "name-policy",
+ "rustix",
  "serde",
  "serde_json",
  "smb-protocol",

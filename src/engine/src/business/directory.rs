@@ -794,6 +794,7 @@ pub(crate) fn select_change(
     branch_id: &str,
     principal: &str,
     operation: &str,
+    max_entries: usize,
 ) -> Result<Value> {
     let selected = state
         .directory_branches
@@ -902,6 +903,15 @@ pub(crate) fn select_change(
             json!({"directory_branch_id":branch_id,"branch_id":repo.main_branch_id,"commit_id":previous.commit_id,"no_change":true,"count":selected.file_branches.len().to_string()}),
         );
     }
+    // A frozen subtree can fit by itself while exceeding the repository budget
+    // when combined with the currently selected siblings. Check the complete
+    // replacement before changing any selections or publishing a commit.
+    let key = name_policy::path_key(&path);
+    let mut entries = previous.entries.clone();
+    entries.retain(|e| !key.is_empty() && !namespace::is_descendant(&e.lookup_key, &key));
+    entries.extend(restored);
+    validate_entries(&mut entries, max_entries)?;
+
     for e in old_entries.iter().filter(|e| e.kind == "file") {
         state
             .file_contexts
@@ -939,12 +949,6 @@ pub(crate) fn select_change(
     state
         .directory_tree_selections
         .insert(selected.directory_id.clone(), selected.head_tree_id.clone());
-    let key = name_policy::path_key(&path);
-    let mut entries = previous.entries.clone();
-    entries.retain(|e| !key.is_empty() && !namespace::is_descendant(&e.lookup_key, &key));
-    entries.extend(restored);
-    validate_entries(&mut entries, usize::MAX)?;
-
     let pending = snapshot_pending(state, &entries);
     let commit_id = new_id("commit");
     state.commits.insert(
@@ -1150,7 +1154,14 @@ impl Engine {
                     .ok_or_else(|| {
                         Error::new("DIRECTORY_BRANCH_NOT_FOUND", "directory branch missing")
                     })?;
-                select_change(state, repository, &selected, principal, operation)
+                select_change(
+                    state,
+                    repository,
+                    &selected,
+                    principal,
+                    operation,
+                    engine.config.max_entries,
+                )
             },
         )
     }
@@ -1199,7 +1210,14 @@ impl Engine {
                         "default requires a root composition",
                     ));
                 }
-                select_change(state, repository, branch, principal, operation)
+                select_change(
+                    state,
+                    repository,
+                    branch,
+                    principal,
+                    operation,
+                    engine.config.max_entries,
+                )
             },
         )
     }

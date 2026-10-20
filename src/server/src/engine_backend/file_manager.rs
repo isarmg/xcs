@@ -624,7 +624,7 @@ pub(super) fn call(
                 )
             }
             .map_err(error)?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerWriteSession => {
             keys(&input, &["slot_id", "path", "branch_id"])?;
@@ -718,7 +718,7 @@ pub(super) fn call(
                     operation(&input)?,
                 )
                 .map_err(error)?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerNamespaceBatch => {
             keys(&input, &["slot_id", "kind", "items", "operation_id"])?;
@@ -735,7 +735,7 @@ pub(super) fn call(
                     operation_id: operation(&input)?.into(),
                 },
             )?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerFileHistory => file_history(engine, identity, &input),
         crate::BackendAction::FileManagerDownloadContext => {
@@ -814,7 +814,7 @@ pub(super) fn call(
                     operation(&input)?,
                 )
                 .map_err(error)?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerBranch => {
             keys(
@@ -854,7 +854,7 @@ pub(super) fn call(
                 )
             }
             .map_err(error)?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerNodeNote => {
             keys(&input, &["file_id", "node_id", "note", "operation_id"])?;
@@ -873,7 +873,7 @@ pub(super) fn call(
                     operation(&input)?,
                 )
                 .map_err(error)?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerSelect => {
             keys(
@@ -935,7 +935,7 @@ pub(super) fn call(
                 )
             }
             .map_err(error)?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerRenameBranch => {
             keys(&input, &["file_id", "branch_id", "name", "operation_id"])?;
@@ -950,7 +950,7 @@ pub(super) fn call(
                     operation(&input)?,
                 )
                 .map_err(error)?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerHistory => {
             let mut events = BTreeMap::new();

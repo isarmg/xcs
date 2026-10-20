@@ -58,7 +58,7 @@ pub(super) fn call(
                     operation_id: operation(input)?.into(),
                 },
             )?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerTags => {
             keys(
@@ -102,7 +102,7 @@ pub(super) fn call(
                     operation(input)?,
                 )
                 .map_err(error)?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         crate::BackendAction::FileManagerBackupConfiguration => {
             let repo = field(input, "repository_id")?;
@@ -162,7 +162,7 @@ pub(super) fn call(
                     }
                     _ => error(failure),
                 })?;
-            operation_wire(engine, result)
+            operation_wire(result)
         }
         _ => Err(ApiError::new(404, "NOT_FOUND", "operation not found")),
     }

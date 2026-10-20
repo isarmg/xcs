@@ -3,7 +3,10 @@ use serde_json::Value;
 use std::{
     io,
     net::Shutdown,
-    os::{fd::OwnedFd, unix::net::UnixStream},
+    os::{
+        fd::{IntoRawFd, OwnedFd},
+        unix::net::UnixStream,
+    },
     path::Path,
     sync::{Arc, Mutex},
 };
@@ -81,6 +84,42 @@ pub fn error_errno(error: &io::Error) -> i32 {
                 .map(|remote| remote.errno)
         })
         .unwrap_or(libc::EIO)
+}
+
+/// Finish an already-removed VFS handle and always release its local descriptor.
+///
+/// Close is terminal even when publication fails. If a worker poisoned the I/O
+/// lock, detach instead: neither publishing suspect bytes nor aborting/deleting
+/// them is safe. The guard still serializes against outstanding FD users.
+pub fn close_descriptor(
+    handle: u64,
+    descriptor: OwnedFd,
+    io_lock: &Mutex<()>,
+    finish: impl FnOnce(Request) -> io::Result<()>,
+) -> io::Result<()> {
+    let (guard, poisoned) = match io_lock.lock() {
+        Ok(guard) => (guard, false),
+        Err(error) => (error.into_inner(), true),
+    };
+    let request = if poisoned {
+        Request::Detach { handle }
+    } else {
+        Request::Close { handle }
+    };
+    let saved = finish(request);
+    // SAFETY: into_raw_fd transfers the sole ownership to close. Do not retry a
+    // failed close: the numeric descriptor may already have been reused.
+    let closed = unsafe { libc::close(descriptor.into_raw_fd()) };
+    let close_error = (closed < 0).then(io::Error::last_os_error);
+    drop(guard);
+    saved?;
+    if poisoned {
+        return Err(io::Error::from_raw_os_error(libc::EIO));
+    }
+    match close_error {
+        Some(error) => Err(error),
+        None => Ok(()),
+    }
 }
 
 impl Client {
@@ -167,6 +206,47 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn terminal_close_releases_descriptor_on_business_error_poison_or_unwind() {
+        use std::io::Read;
+        for mode in ["business_error", "poison", "unwind"] {
+            let (descriptor, mut peer) = UnixStream::pair().unwrap();
+            peer.set_read_timeout(Some(std::time::Duration::from_secs(1)))
+                .unwrap();
+            let lock = Mutex::new(());
+            if mode == "poison" {
+                let _ = std::panic::catch_unwind(|| {
+                    let _guard = lock.lock().unwrap();
+                    panic!("injected I/O worker failure");
+                });
+            }
+            let result = std::panic::catch_unwind(|| {
+                close_descriptor(7, descriptor.into(), &lock, |request| {
+                    if mode == "poison" {
+                        assert!(matches!(request, Request::Detach { handle: 7 }));
+                        Ok(())
+                    } else {
+                        assert!(matches!(request, Request::Close { handle: 7 }));
+                        assert_ne!(mode, "unwind", "injected close callback panic");
+                        Err(io::ErrorKind::PermissionDenied.into())
+                    }
+                })
+            });
+            if mode == "unwind" {
+                assert!(result.is_err());
+            } else {
+                let error = result.unwrap().unwrap_err();
+                if mode == "poison" {
+                    assert_eq!(error.raw_os_error(), Some(libc::EIO));
+                } else {
+                    assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+                }
+            }
+            assert_eq!(peer.read(&mut [0; 1]).unwrap(), 0, "descriptor leaked");
+        }
+    }
+
     #[test]
     fn remote_error_retains_operation_and_filesystem_errno() {
         for (code, message, errno, retryable, operation) in [

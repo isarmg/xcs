@@ -19,8 +19,8 @@ pub use business::{PreparedUpload, UploadPreparation};
 pub use degraded_recovery::RecoveryPlan;
 pub use disk::{offline_check, offline_export};
 pub use engine::{
-    ContentReadPlan, DiskObservationPlan, Engine, OpenedContent, RangeContent, ReadLease,
-    WorkspaceReadPlan,
+    ContentReadPlan, DiskObservationPlan, Engine, OpenedContent, OperationReadPlan,
+    OperationRecord, RangeContent, ReadLease, WorkspaceReadPlan,
 };
 pub use historical_save::HistoricalSaveOptions;
 pub use history_package::{HistoryManifest, HistoryPackageReport, offline_check_history_package};

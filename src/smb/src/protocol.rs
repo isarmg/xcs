@@ -50,6 +50,11 @@ pub enum Request {
         #[serde(with = "storage_contract::u64_string")]
         handle: u64,
     },
+    /// Release a handle without publishing or discarding its retained work.
+    Detach {
+        #[serde(with = "storage_contract::u64_string")]
+        handle: u64,
+    },
     Abort {
         #[serde(with = "storage_contract::u64_string")]
         handle: u64,

@@ -1,5 +1,4 @@
-use crate::publication_evidence::{verified_object, verified_snapshot};
-use crate::{disk::*, journal::*, *};
+use crate::{disk::*, *};
 use serde_json::json;
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -11,7 +10,9 @@ use std::{
 mod config;
 mod index;
 mod observations;
+mod operations;
 pub use observations::DiskObservationPlan;
+pub use operations::{OperationReadPlan, OperationRecord};
 mod publication;
 pub(crate) use publication::DetachedPublication;
 mod workspace_commit;
@@ -304,77 +305,6 @@ impl Engine {
             .get(id)
             .cloned()
             .ok_or_else(|| Error::new("WORKSPACE_NOT_FOUND", "workspace does not exist"))
-    }
-    pub fn operation_owner(&self, id: &str) -> Option<String> {
-        if let Some(owner) = self.state.operation_principals.get(id) {
-            return Some(owner.clone());
-        }
-        self.pending_operation_state(id)
-            .ok()?
-            .operation_principals
-            .get(id)
-            .cloned()
-    }
-    pub fn operation(&self, id: &str) -> Result<OperationResult> {
-        if let Some(mut op) = self.state.operations.get(id).cloned() {
-            if let Some(commit) = op
-                .commit_id
-                .as_ref()
-                .and_then(|c| self.state.commits.get(c))
-            {
-                let health = commit
-                    .entries
-                    .iter()
-                    .filter(|e| e.kind == "file")
-                    .map(|e| {
-                        self.version_health(&e.version_id)
-                            .unwrap_or_else(|_| "UNAVAILABLE".into())
-                    })
-                    .collect::<Vec<_>>();
-                if health.iter().any(|s| s == "UNAVAILABLE" || s == "PURGED") {
-                    op.current_health = "UNAVAILABLE".into();
-                } else if health.iter().any(|s| s == "DEGRADED") {
-                    op.current_health = "DEGRADED".into();
-                }
-            }
-            return Ok(op);
-        }
-        let state = self.pending_operation_state(id)?;
-        let mut operation = state
-            .operations
-            .get(id)
-            .cloned()
-            .ok_or_else(|| Error::new("OPERATION_NOT_FOUND", "operation is not registered"))?;
-        operation.commit_state = storage_contract::CommitState::InDoubt;
-        operation.protection_at_publish = storage_contract::ProtectionAtPublish::Unconfirmed;
-        operation.current_health = "RECOVERING".into();
-        Ok(operation)
-    }
-    /// Owners and pending results must be derived from the same accepted,
-    /// hash-bound state. Merely finding prepared metadata is not a decision.
-    fn pending_operation_state(&self, id: &str) -> Result<State> {
-        let members = self.trusted_evidence_members();
-        for disk in &members {
-            if let Ok(scan) = scan(disk) {
-                for (record, _) in scan.records.iter().rev().filter(|(record, _)| {
-                    matches!(record.record_type.as_str(), "ACCEPT" | "PUBLICATION")
-                }) {
-                    if let Ok(candidate) =
-                        verified_object::<Candidate>(&members, "candidate", &record.candidate_hash)
-                        && candidate.operation_id == id
-                        && candidate.pool_id == self.config.pool_id
-                        && candidate.sequence == record.sequence
-                    {
-                        return verified_snapshot(&members, &candidate.snapshot_hash)
-                            .map(|(state, _)| state);
-                    }
-                }
-            }
-        }
-        Err(Error::new(
-            "OPERATION_NOT_FOUND",
-            "operation is not registered",
-        ))
     }
     /// Deterministic injection only, never enabled by network or environment input.
     pub fn inject_fault_once(&mut self, point: &str) {

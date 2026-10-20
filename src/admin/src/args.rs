@@ -122,6 +122,14 @@ pub(crate) enum Command {
         web_dir: Option<PathBuf>,
         #[arg(long, default_value_t = 1_073_741_824)]
         max_upload_bytes: u64,
+        /// HTTP spool quota only, including retained generations and metadata allowance.
+        #[arg(long, default_value_t = 107_374_182_400)]
+        http_spool_bytes_per_account: u64,
+        #[arg(long, default_value_t = 536_870_912_000)]
+        http_spool_bytes_total: u64,
+        /// Keep this filesystem headroom outside new upload reservations.
+        #[arg(long, default_value_t = 1_073_741_824)]
+        http_spool_recovery_reserve_bytes: u64,
         #[arg(long)]
         smb_socket: Option<PathBuf>,
         #[arg(long, requires = "smb_socket")]

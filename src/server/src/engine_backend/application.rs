@@ -1013,7 +1013,8 @@ mod tests {
                 .unwrap();
                 let mut auth = backend.protect_auth(auth).unwrap();
                 // A request can retain an Identity captured before revocation.
-                // Finish must refresh it even though concurrent auth writes are fenced.
+                // Reject it before preparing bytes, even though concurrent auth
+                // writes would also be fenced once preparation has started.
                 if let Some(disabled) = revoke {
                     auth.upsert_account(
                         "owner",
@@ -1027,6 +1028,27 @@ mod tests {
                         disabled,
                     )
                     .unwrap();
+                    let result = backend.call(
+                        if public {
+                            crate::BackendAction::CommitWorkspace
+                        } else {
+                            crate::BackendAction::CommitWorkspaceInternal
+                        },
+                        &owner,
+                        input,
+                    );
+                    assert_eq!(
+                        result.unwrap_err().code,
+                        if disabled {
+                            "UNAUTHORIZED"
+                        } else {
+                            "FORBIDDEN"
+                        }
+                    );
+                    let engine = backend.engine.lock().unwrap();
+                    assert!(!engine.state().operations.contains_key(&operation));
+                    assert!(engine.list_tree(&repo.main_branch_id).unwrap().is_empty());
+                    continue;
                 }
                 let (started_tx, started_rx) = mpsc::channel();
                 let (release_tx, release_rx) = mpsc::channel();
@@ -1081,21 +1103,8 @@ mod tests {
                 release_tx.send(()).unwrap();
                 let result = writer.join().unwrap();
                 let engine = backend.engine.lock().unwrap();
-                if let Some(disabled) = revoke {
-                    assert_eq!(
-                        result.unwrap_err().code,
-                        if disabled {
-                            "UNAUTHORIZED"
-                        } else {
-                            "FORBIDDEN"
-                        }
-                    );
-                    assert!(!engine.state().operations.contains_key(&operation));
-                    assert!(engine.list_tree(&repo.main_branch_id).unwrap().is_empty());
-                } else {
-                    assert!(result.is_ok(), "{result:?}");
-                    assert!(engine.state().operations.contains_key(&operation));
-                }
+                assert!(result.is_ok(), "{result:?}");
+                assert!(engine.state().operations.contains_key(&operation));
             }
         }
     }

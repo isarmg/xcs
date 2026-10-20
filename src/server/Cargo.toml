@@ -27,6 +27,7 @@ time = { version = "0.3.55", features = ["formatting"], path = "../foundation/ti
 url = {version = "2", path = "../foundation/url"}
 storage-engine = { path = "../engine", optional = true }
 storage-contract = { path = "../contract" }
+rustix.workspace = true
 name-policy = { path = "../naming" }
 smb-protocol = { path = "../smb" }
 tempfile.workspace = true

@@ -1,5 +1,8 @@
 //! Authorized content read plans and their unlocked I/O execution.
-use super::{EngineBackend, authorize, error, repo_for_history, workspace_authorize};
+use super::{
+    EngineBackend, authorize, current_protected_identity, error, repo_for_history,
+    workspace_authorize,
+};
 use crate::{ApiError, Content, auth::Identity};
 
 impl EngineBackend {
@@ -12,13 +15,14 @@ impl EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
+        let current = current_protected_identity(&engine, identity)?;
         let record = engine
             .state()
             .versions
             .get(version)
             .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "version not found"))?;
         authorize(
-            identity,
+            &current,
             repo_for_history(&engine, &record.history_tree_id)?,
             false,
             false,
@@ -68,7 +72,8 @@ impl EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
-        let workspace_record = workspace_authorize(&engine, identity, workspace)?;
+        let current = current_protected_identity(&engine, identity)?;
+        let workspace_record = workspace_authorize(&engine, &current, workspace)?;
         let plan = engine
             .prepare_workspace_content(workspace, item, &workspace_record.principal)
             .map_err(error)?;
@@ -93,13 +98,14 @@ impl EngineBackend {
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
+        let current = current_protected_identity(&engine, identity)?;
         let record = engine
             .state()
             .versions
             .get(version)
             .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "version not found"))?;
         authorize(
-            identity,
+            &current,
             repo_for_history(&engine, &record.history_tree_id)?,
             false,
             false,

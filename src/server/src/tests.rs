@@ -412,7 +412,7 @@ async fn interrupted_upload_retains_durable_bytes_and_rejects_different_retry() 
 }
 
 #[tokio::test]
-async fn durable_retry_progress_replaces_only_the_same_generation_predecessor() {
+async fn durable_retry_progress_appends_without_copying_the_same_generation() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
@@ -537,7 +537,7 @@ async fn unpublished_retry_cleanup_covers_short_long_and_cancelled_bodies() {
 }
 
 #[tokio::test]
-async fn successful_new_generation_preserves_old_bytes_and_retry_cleans_up_only_its_own() {
+async fn successful_new_generation_preserves_old_bytes_and_retry_reuses_its_file() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
@@ -569,7 +569,7 @@ async fn successful_new_generation_preserves_old_bytes_and_retry_cleans_up_only_
             b"original"
         );
     }
-    assert!(!spool.join(&records[1].data_file).exists());
+    assert_eq!(records[1].data_file, records[2].data_file);
     assert_eq!(
         std::fs::read(spool.join(&records[2].data_file)).unwrap(),
         b"replacement"
@@ -698,3 +698,6 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
     .await
     .unwrap();
 }
+
+#[path = "tests/spool_budget.rs"]
+mod spool_budget_tests;

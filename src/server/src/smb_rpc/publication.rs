@@ -6,6 +6,15 @@ pub(super) fn recovery_record(
     principal: &str,
     branch: &str,
 ) -> Result<(), ApiError> {
+    write_recovery_record(writer, principal, branch, None)
+}
+
+fn write_recovery_record(
+    writer: &Writer,
+    principal: &str,
+    branch: &str,
+    detached: Option<(&ApiError, bool)>,
+) -> Result<(), ApiError> {
     let parent = writer
         .source
         .parent()
@@ -13,7 +22,26 @@ pub(super) fn recovery_record(
     // `published` describes the last reconciled operation, not all bytes
     // currently reachable through the live writable descriptor. Recovery must
     // reconcile these bytes even when no Dirty request was received.
-    let value = json!({"format":"smb-protocol-work","principal":principal,"branch_id":branch,"path":writer.path,"item_id":writer.item_id,"source_path":writer.source,"workspace_id":writer.workspace.workspace_id,"expected_head":writer.workspace.base_head,"fencing_token":writer.workspace.fencing_token.to_string(),"operation_id":writer.operation_id,"dirty":writer.dirty,"published":writer.committed,"descriptor_changes_unconfirmed":true});
+    let mut value = json!({
+        "format": "smb-protocol-work",
+        "principal": principal,
+        "branch_id": branch,
+        "path": writer.path,
+        "item_id": writer.item_id,
+        "source_path": writer.source,
+        "workspace_id": writer.workspace.workspace_id,
+        "expected_head": writer.workspace.base_head,
+        "fencing_token": writer.workspace.fencing_token.to_string(),
+        "operation_id": writer.operation_id,
+        "dirty": writer.dirty,
+        "published": writer.committed,
+        "descriptor_changes_unconfirmed": true,
+        "handle_state": if detached.is_some() { "detached" } else { "active" }
+    });
+    if let Some((error, synced)) = detached {
+        value["detach_error"] = json!({"code": error.code, "message": error.message});
+        value["retained_bytes_synced"] = json!(synced);
+    }
     let mut temporary = tempfile::Builder::new()
         .prefix(".smb-work-")
         .tempfile_in(parent)
@@ -28,6 +56,28 @@ pub(super) fn recovery_record(
     File::open(parent)
         .and_then(|directory| directory.sync_all())
         .map_err(ApiError::io)
+}
+
+fn retain_detached(writer: &Writer, principal: &str, branch: &str, reason: &ApiError) {
+    // A Close error must not leave an unreachable active writer. Try to make
+    // its latest bytes and detached state durable, but even on an I/O failure
+    // keep the pre-existing source/record and release the live reservation.
+    let synced = match writer.file.sync_all() {
+        Ok(()) => true,
+        Err(error) => {
+            tracing::warn!(
+                %error, operation_id = %writer.operation_id,
+                source = %writer.source.display(), "detached SMB bytes could not be synced"
+            );
+            false
+        }
+    };
+    if let Err(error) = write_recovery_record(writer, principal, branch, Some((reason, synced))) {
+        tracing::warn!(
+            %error, operation_id = %writer.operation_id,
+            source = %writer.source.display(), "detached SMB recovery record could not be refreshed"
+        );
+    }
 }
 
 pub(super) fn cleanup_writer(writer: &Writer) {
@@ -253,28 +303,71 @@ impl Session {
             &writer.path,
             &writer.source,
         )?;
-        let result=self.shared.backend.call(crate::BackendAction::CommitWorkspaceInternal,&self.identity,json!({"workspace_id":writer.workspace.workspace_id,"operation_id":writer.operation_id,"expected_head":writer.workspace.base_head,"fencing_token":writer.workspace.fencing_token.to_string(),"message":"SMB full-file save"}))?;
+        let result = self.shared.backend.call(
+            crate::BackendAction::CommitWorkspaceInternal,
+            &self.identity,
+            json!({
+                "workspace_id": writer.workspace.workspace_id,
+                "operation_id": writer.operation_id,
+                "expected_head": writer.workspace.base_head,
+                "fencing_token": writer.workspace.fencing_token.to_string(),
+                "message": "SMB full-file save"
+            }),
+        )?;
         finish_publication(&self.shared, &self.identity, &self.branch, writer, result)
     }
+
+    /// Unlike Flush, Close always consumes the handle. A failed publication
+    /// becomes retained detached work, not a lock with no VFS owner.
     pub(super) fn close(&mut self, handle: u64, abort: bool) -> Result<Value, ApiError> {
         if !self.handles.contains_key(&handle) {
             return Err(ApiError::new(404, "NOT_FOUND", "SMB handle missing"));
         }
-        if !abort {
-            self.flush(handle)?;
-        }
-        if let Some(Handle::Write(writer)) = self.handles.get(&handle)
-            && !writer.committed
-        {
-            self.call(
-                crate::BackendAction::AbortWorkspace,
-                json!({"workspace_id":writer.workspace.workspace_id}),
-            )?;
-        }
+        let saved = (|| {
+            if !abort {
+                self.flush(handle)?;
+            }
+            if let Some(Handle::Write(writer)) = self.handles.get(&handle)
+                && !writer.committed
+            {
+                self.call(
+                    crate::BackendAction::AbortWorkspace,
+                    json!({"workspace_id":writer.workspace.workspace_id}),
+                )?;
+            }
+            Ok(())
+        })();
         if let Some(Handle::Write(writer)) = self.handles.remove(&handle) {
-            cleanup_writer(&writer);
+            match &saved {
+                Ok(()) => cleanup_writer(&writer),
+                Err(error) => {
+                    retain_detached(&writer, &self.identity.principal, &self.branch, error);
+                }
+            }
             self.release_paths(&[name_policy::path_key(&writer.path)]);
         }
+        saved?;
         Ok(json!({"closed":true,"aborted":abort}))
+    }
+
+    /// Used when a local worker failed before Close could safely attempt a save.
+    /// Detach is not Abort: no backend mutation, source deletion or new operation.
+    pub(super) fn detach(&mut self, handle: u64) -> Result<Value, ApiError> {
+        let entry = self
+            .handles
+            .remove(&handle)
+            .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "SMB handle missing"))?;
+        let mut result = json!({"closed":true,"detached":true});
+        if let Handle::Write(writer) = entry {
+            let reason = ApiError::new(
+                503,
+                "RECOVERY_REQUIRED",
+                "SMB handle detached without saving; retained work requires reconciliation",
+            );
+            retain_detached(&writer, &self.identity.principal, &self.branch, &reason);
+            self.release_paths(&[name_policy::path_key(&writer.path)]);
+            result["operation_id"] = json!(writer.operation_id);
+        }
+        Ok(result)
     }
 }

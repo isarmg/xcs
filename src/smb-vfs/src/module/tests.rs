@@ -45,10 +45,14 @@ fn removed_open_descriptor_is_closed_on_poisoned_lock_and_remote_save_failure() 
             writable: true,
             io: lock,
         };
-        let error = close_opened(opened, |handle| {
-            assert!(!poisoned, "a poisoned I/O lock cannot save content");
-            assert_eq!(handle, 7);
-            Err(std::io::ErrorKind::PermissionDenied.into())
+        let error = close_opened(opened, |request| {
+            if poisoned {
+                assert!(matches!(request, Request::Detach { handle: 7 }));
+                Ok(())
+            } else {
+                assert!(matches!(request, Request::Close { handle: 7 }));
+                Err(std::io::ErrorKind::PermissionDenied.into())
+            }
         })
         .unwrap_err();
         if poisoned {

@@ -5,7 +5,9 @@ pub mod engine_backend;
 mod file_manager;
 mod http_auth;
 pub mod smb_rpc;
+mod spool_budget;
 mod telemetry;
+pub use spool_budget::SpoolLimits;
 mod transfer;
 mod uploads;
 mod web_assets;
@@ -175,6 +177,12 @@ fn verify_content_file(
     Ok(())
 }
 
+/// Capability for the service's private, read-only disk sampler.
+///
+/// External adapters may implement the observation hook, but cannot construct
+/// this request. It is not a user identity and has no public dispatch action.
+pub struct InternalDiskObservation(());
+
 pub trait Backend: Send + Sync {
     fn call(
         &self,
@@ -216,6 +224,11 @@ pub trait Backend: Send + Sync {
         Err(ApiError::unsupported())
     }
     fn checksums(&self, _identity: &Identity, _version: &str) -> Result<Vec<u8>, ApiError> {
+        Err(ApiError::unsupported())
+    }
+    /// Internal monitoring only. Protocol requests must use authenticated
+    /// actions instead; support is opt-in and never derived from an identity.
+    fn observe_disks(&self, _: &InternalDiskObservation) -> Result<Value, ApiError> {
         Err(ApiError::unsupported())
     }
 }
@@ -312,6 +325,8 @@ pub struct ServerConfig {
     pub spool_dir: PathBuf,
     pub web_dir: Option<PathBuf>,
     pub max_upload_bytes: u64,
+    /// HTTP spool only; independent of engine workspace and SMB storage.
+    pub http_spool_limits: SpoolLimits,
     pub smb: Option<SmbConfig>,
 }
 impl ServerConfig {
@@ -323,6 +338,7 @@ impl ServerConfig {
             spool_dir: root.join("api-spool"),
             web_dir: None,
             max_upload_bytes: 1024 * 1024 * 1024,
+            http_spool_limits: SpoolLimits::default(),
             smb: None,
         }
     }
@@ -355,6 +371,7 @@ impl ServerConfig {
                 "trusted proxies must be exact loopback IPs and require an HTTPS external origin",
             ));
         }
+        self.http_spool_limits.validate()?;
         if self.max_upload_bytes == 0 {
             return Err(ApiError::invalid("upload limit must be positive"));
         }
@@ -394,6 +411,7 @@ struct AppState {
     upload_slots: Arc<tokio::sync::Semaphore>,
     read_slots: Arc<tokio::sync::Semaphore>,
     upload_claims: Arc<Mutex<std::collections::BTreeSet<String>>>,
+    spool_budget: Arc<spool_budget::SpoolBudget>,
     static_etags: Arc<BTreeMap<String, String>>,
     telemetry: Arc<telemetry::Telemetry>,
 }
@@ -437,6 +455,10 @@ fn router_shared(
         auth,
         telemetry,
         config: config.clone(),
+        spool_budget: spool_budget::SpoolBudget::recover(
+            &config.spool_dir,
+            config.http_spool_limits.clone(),
+        )?,
         attempts: Arc::new(Mutex::new(HashMap::new())),
         pending_logins: Arc::new(Mutex::new(std::collections::HashSet::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),

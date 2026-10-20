@@ -179,7 +179,7 @@ impl Engine {
 /// The lease is acquired before releasing that lock, so purge cannot remove the
 /// selected version while publication evidence and payload handles are opened.
 pub struct ContentReadPlan {
-    config: Config,
+    config: Arc<Config>,
     disks: Vec<DiskConfig>,
     version: FileVersion,
     lease: ReadLease,
@@ -197,6 +197,14 @@ pub struct RangeContent {
 impl Engine {
     /// Does no filesystem access and reads no payload bytes.
     pub fn prepare_content(&self, version_id: &str) -> Result<ContentReadPlan> {
+        self.prepare_content_with_config(version_id, Arc::new(self.config.clone()))
+    }
+
+    pub(super) fn prepare_content_with_config(
+        &self,
+        version_id: &str,
+        config: Arc<Config>,
+    ) -> Result<ContentReadPlan> {
         if self
             .state
             .content_states
@@ -231,7 +239,7 @@ impl Engine {
             .entry(version_id.into())
             .or_default() += 1;
         Ok(ContentReadPlan {
-            config: self.config.clone(),
+            config,
             disks,
             version,
             lease: ReadLease {
@@ -243,6 +251,32 @@ impl Engine {
 }
 
 impl ContentReadPlan {
+    /// A fresh, complete verification, never a cached protection assertion.
+    /// Keep the plan (and therefore its read lease) alive for the entire scan.
+    pub(super) fn health(&self, target_copies: u32) -> &'static str {
+        let healthy = self
+            .disks
+            .iter()
+            .filter(|disk| {
+                let directory = version_dir(
+                    disk,
+                    &self.version.history_tree_id,
+                    &self.version.version_id,
+                );
+                validate_seal(&self.config, disk).is_ok()
+                    && verify_local_publication(&directory, &self.version).is_ok()
+                    && verify_payload(&directory, &self.version).is_ok()
+            })
+            .count();
+        if healthy == 0 {
+            "UNAVAILABLE"
+        } else if healthy < target_copies as usize {
+            "DEGRADED"
+        } else {
+            "HEALTHY"
+        }
+    }
+
     fn authenticated_replicas(&self) -> Result<Vec<(std::fs::File, Vec<u8>, ChecksumManifest)>> {
         let mut replicas = Vec::new();
         for disk in &self.disks {
