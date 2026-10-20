@@ -40,3 +40,11 @@ CI 通过 `ZXS_SMOKE_SCREENSHOT` 传递路径，浏览器验收成功后将图�
 ## 可选宣传素材采集
 
 设置 `ZXS_DEMO_CAPTURE=artifacts/demo-capture` 可额外通过真实界面生成合成的 `活动方案.txt`：预算 8、10、12 万元三个正文版本，从 8 万历史节点创建“精简方案”，切换并逐字核验继承正文，再写入 6 万并切回“主方案”核验仍为 12 万。使用 1920×1080 CSS 像素的实际浏览器视口和 DPR 3（原始 PNG 为 5760×3240），逐步保存原始 PNG、控件坐标和操作时间到 `capture.json`；`viewport.json` 记录视口及像素比例，裁切原图时控件 CSS 坐标需乘 DPR；全部成功后才写 `verification.txt`。不设置此变量时不执行该流程。CI 的 `zxs-demo-capture` artifact 可含失败前的局部素材，只有 `verification.txt` 与成功日志证明完整流程通过。
+
+## 六平台共享 UI 视口预览
+
+设置 `ZXS_PLATFORM_PREVIEWS=artifacts/platform-previews` 可保存 Linux (1366×900)、Windows (1440×960)、macOS (1512×982)、Android (412×915)、iOS (390×844)、iPadOS (1024×1366) 六个 CSS 视口的原始 Chrome PNG，命名为 `平台-shared-ui-preview.png`。每张均为真实生产 WASM、真实临时服务上的传输任务页，不伪装操作系统窗口，不覆盖 User-Agent，也不代表对应原生 WebView、触控设备或应用商店构建已验收。手机截图保留正常滚动，不为在一屏塞入全部记录而缩小公共行高。
+
+传输验收不依赖截图开关：通过真实文件选择器选取合成文件，验证发布成功任务、超过 64 MiB 的真实本地预检失败任务、状态筛选、六视口无横向溢出、长中文名称/目标路径自然换行，以及真实 Tab 键焦点。另一个真实上传的原始 Response 在返回给 WASM 前暂缓交付，使截图包含真实 `uploading` 状态；不修改内容字节、状态码、头或应用状态。截图后恢复交付并等待真实 `published`，失败时也释放响应并清理视口设置。所有截图来自同一会话和同一批任务。
+
+`source.json` 记录来源 commit、工作区是否有改动、实际 Chrome 版本、实际视口、DPR、状态和非原生预览标签。只有真实浏览器任务成功才能说明验收通过；工具的编译/单测不能产生或替代这六张截图。原有文件选择器拦截、无障碍和跨会话下载隔离测试仍执行。

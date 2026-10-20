@@ -19,6 +19,7 @@ use std::{
 mod accessibility;
 mod demo;
 mod diagnostics;
+mod platform_previews;
 mod session_delivery;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -300,7 +301,8 @@ fn exercise(
 ) -> Result<()> {
     diagnostics::install(browser)?;
     let demo_capture = env::var_os("ZXS_DEMO_CAPTURE").map(PathBuf::from);
-    let url = if screenshot.is_some() || demo_capture.is_some() {
+    let platform_previews = env::var_os("ZXS_PLATFORM_PREVIEWS").map(PathBuf::from);
+    let url = if screenshot.is_some() || demo_capture.is_some() || platform_previews.is_some() {
         format!("{origin}/?lang=zh-CN")
     } else {
         origin.to_owned()
@@ -342,7 +344,7 @@ fn exercise(
     let input = temp.join("browser-smoke.txt");
     fs::write(&input, payload)?;
     browser.upload_file(&input, false)?;
-    let file = browser.element(
+    browser.element(
         "xpath",
         "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
     )?;
@@ -390,14 +392,13 @@ fn exercise(
         fs::write(path, png)?;
         println!("PASS real browser screenshot saved to {}", path.display());
     }
-    // Demo uploads may rerender the table; resolve the original smoke file again.
-    let file = if screenshot.is_some() {
+    platform_previews::run(browser, temp, platform_previews.as_deref())?;
+    // Transfer fixtures rerender the table; resolve the original smoke file again.
+    let file = {
         browser.element(
             "xpath",
             "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
         )?
-    } else {
-        file
     };
     browser.click(&file)?;
     browser.css(".zxs-entry-version-history")?;

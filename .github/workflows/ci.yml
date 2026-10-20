@@ -176,6 +176,7 @@ jobs:
         env:
           ZXS_SMOKE_SCREENSHOT: artifacts/web-file-manager.png
           ZXS_DEMO_CAPTURE: artifacts/demo-capture
+          ZXS_PLATFORM_PREVIEWS: artifacts/platform-previews
         run: bash .github/scripts/check.sh browser-smoke
       - name: Retain real Web file manager screenshot
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -191,5 +192,14 @@ jobs:
         with:
           name: zxs-demo-capture
           path: artifacts/demo-capture/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Retain six shared app layout previews
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: platform-previews
+          path: artifacts/platform-previews/
           if-no-files-found: warn
           retention-days: 7

@@ -9,6 +9,7 @@
 - `components/file-manager.css`：磁盘目录入口、可换行面包屑、工具栏、文件列表、文件详情和文件分支历史。磁盘不作为分支选择器。
 - `components/history.css`：已提交文件操作的紧凑列表、硬盘筛选及正常窄屏下的分行。
 - `components/system-status.css`：CPU、内存、磁盘容量及可用功耗采样的实时信息与历史折线图；状态卡统一为 3:2，桌面固定四列，最后一行不足四个仍占单列尺寸，手机每行一个。
+- `components/transfers.css`：本次登录的传输任务、状态筛选和可展开操作详情；复用公共 row/frame/stack，长文件名与路径自然换行，手机属性单列，页面壳保留设备安全区。
 - `startup.css`：资源加载失败时的可读错误视图，使用 `data-zxs-startup="failed"` 和 `#zxs-startup-error`。
 
 连续轮廓统一使用 `--zxs-contour-*`、`data-zxs-contour-*` 和 `.zxs-contour-*`。CSS 声明轮廓范围，Rust 控制器负责实际绘制及裁切；没有控制器时保留可用的方形表面，不用普通 `border-radius` 模拟连续轮廓。`Select` 使用复制的触发器、箭头、选项及弹层样式；弹层在顶层显示并等待轮廓绘制，避免被文件详情容器裁切。
