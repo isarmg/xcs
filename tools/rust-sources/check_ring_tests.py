@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RING = Path('src/foundation/ring')
 PROOF = Path('compliance/provenance/supplemental/ring-0.17.14-test-materials.json')
 OVERLAP = Path('compliance/provenance/supplemental/ring-0.17.14-original-overlap.json')
+STYLE = Path('compliance/provenance/supplemental/ring-0.17.14-style-patches.json')
 COMMIT = '2723abbca9e83347d82b056d5b239c6604f786df'
 
 
@@ -37,7 +38,53 @@ def checked_path(root, relative):
     return result
 
 
+def historical_sources(root):
+    """Authenticate current style edits, then reconstruct the immutable baseline."""
+    record = json.loads((root / STYLE).read_text())
+    allowed = {
+        'tests/hmac_tests.rs': ('    assert_eq!("Key { algorithm: SHA256 }", format!("{:?}", &key));\n\n    let ctx = hmac::Context::with_key(&key);\n    assert_eq!("Context { algorithm: SHA256 }", format!("{:?}", &ctx));', '    assert_eq!("Key { algorithm: SHA256 }", format!("{:?}", key));\n\n    let ctx = hmac::Context::with_key(&key);\n    assert_eq!("Context { algorithm: SHA256 }", format!("{:?}", ctx));'),
+        'cavp/tests/shavs.rs': ('msg.truncate(0);', 'msg.clear();'),
+        'tests/aead_tests.rs': ('in_out.truncate(0);', 'in_out.clear();'),
+        'tests/agreement_tests.rs': ('format!("{:?}", &private_key)', 'format!("{:?}", private_key)'),
+        'src/testutil.rs': ('current_section.truncate(0);', 'current_section.clear();'),
+        'src/aead/aes/ffi.rs': ('    ///      that corresponds to `f`.', '    ///     that corresponds to `f`.'),
+    }
+    if record['schema_version'] != 1 or record['upstream_commit'] != COMMIT:
+        raise ValueError('unexpected style patch identity')
+    if set(record['historical_proofs']) != {str(PROOF), str(OVERLAP)}:
+        raise ValueError('style patch historical proof set changed')
+    for path, digest in record['historical_proofs'].items():
+        if hashlib.sha256(checked_path(root, path).read_bytes()).hexdigest() != digest:
+            raise ValueError('immutable historical proof changed')
+    patches = record['patches']
+    if len(patches) != len(allowed) or {p['path'] for p in patches} != set(allowed):
+        raise ValueError('style patch source set changed')
+    baseline = {}
+    for patch in patches:
+        path = patch['path']
+        if (patch['old'], patch['new']) != allowed[path]:
+            raise ValueError(f'unapproved style transformation: {path}')
+        current = checked_path(root / RING, path).read_bytes()
+        old, new = patch['old'].encode(), patch['new'].encode()
+        if current.count(new) != 1:
+            raise ValueError(f'style replacement is not unique: {path}')
+        before = current.replace(new, old)
+        if before.count(old) != 1 or before.replace(old, new) != current:
+            raise ValueError(f'style patch is not reversible: {path}')
+        for label, content in [('before', before), ('after', current)]:
+            if (len(content) != patch[label + '_bytes']
+                    or hashlib.sha256(content).hexdigest() != patch[label + '_sha256']
+                    or object_hash('blob', content) != patch[label + '_blob']):
+                raise ValueError(f'style patch {label} hash mismatch: {path}')
+        baseline[str(RING / path)] = before
+
+    def read(relative):
+        return baseline[str(relative)] if str(relative) in baseline else checked_path(root, str(relative)).read_bytes()
+    return read
+
+
 def verify(root=ROOT):
+    historical = historical_sources(root)
     proof = json.loads((root / PROOF).read_text())
     if proof['repository'] != 'https://github.com/briansmith/ring' or proof['commit'] != COMMIT:
         raise ValueError('unexpected upstream repository or commit')
@@ -66,7 +113,7 @@ def verify(root=ROOT):
             raise ValueError(f'duplicate material: {path}')
         seen.add(path)
         destination = entry.get('destination', (RING / path).as_posix())
-        content = checked_path(root, destination).read_bytes()
+        content = historical(destination)
         expected_url = f'https://github.com/briansmith/ring/blob/{COMMIT}/{path}'
         if (entry['commit'] != COMMIT or entry['origin_url'] != expected_url
                 or len(content) != entry['bytes'] or len(content) != entries[path]['size']
@@ -76,7 +123,7 @@ def verify(root=ROOT):
         if not entry['associated_sources']:
             raise ValueError(f'material has no associated test source: {path}')
         for source in entry['associated_sources']:
-            content = checked_path(root / RING, source['path']).read_bytes()
+            content = historical(RING / source['path'])
             if hashlib.sha256(content).hexdigest() != source['sha256']:
                 raise ValueError(f'associated test source mismatch: {source["path"]}')
     originals = json.loads((root / 'compliance/provenance/packages/ring-0.17.14/cargo-checksum.json.txt').read_text())['files']
@@ -86,7 +133,7 @@ def verify(root=ROOT):
     for row in audit['records']:
         path = row['path']
         content = (row['original_content'].encode() if 'original_content' in row
-                   else checked_path(root, row['original_path']).read_bytes())
+                   else historical(row['original_path']))
         if (hashlib.sha256(content).hexdigest() != originals[path]
                 or row['recorded_sha256'] != originals[path]
                 or object_hash('blob', content) != row['original_blob']):
@@ -98,13 +145,13 @@ def verify(root=ROOT):
         if upstream and path != 'Cargo.toml' and row['original_blob'] != upstream['sha']:
             raise ValueError(f'unexplained original/upstream mismatch: {path}')
     for source in proof['test_sources']:
-        content = checked_path(root / RING, source['path']).read_bytes()
+        content = historical(RING / source['path'])
         if (hashlib.sha256(content).hexdigest() != source['sha256']
                 or source['sha256'] != originals[source['path']]
                 or object_hash('blob', content) != source['blob'] or source['blob'] != entries[source['path']]['sha']):
             raise ValueError(f'original integration source mismatch: {source["path"]}')
     for source in proof['implementation_sources']:
-        content = checked_path(root / RING, source['path']).read_bytes()
+        content = historical(RING / source['path'])
         if hashlib.sha256(content).hexdigest() != source['sha256']:
             raise ValueError(f'restoration changed an existing implementation: {source["path"]}')
     manifest = tomllib.loads((root / RING / 'Cargo.toml').read_text())

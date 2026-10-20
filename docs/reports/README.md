@@ -26,3 +26,5 @@
 报告保留对应执行时点的证据，当前规则以[专题设计](../design/README.md)及编号手册为准。验收日志、截图与收据继续保留在原证据目录，便于回查。
 
 - [Linux amd64 系统与网络后端精简](linux-amd64-system-backends-20261020.md)：sysinfo/socket2/mio 互斥平台后端退役、实际选择与消费者回归证据。
+
+- [ring Clippy 成员诊断窄修复](ring-style-diagnostics-20261020.md)

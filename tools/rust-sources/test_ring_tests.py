@@ -27,14 +27,60 @@ class RingMaterials(unittest.TestCase):
         self.assertIn('Unsigned', proof['commit_verification'])
 
     def mutate_proof(self, mutate, error):
+        historical = checker.historical_sources(checker.ROOT)
         proof = json.loads((checker.ROOT / checker.PROOF).read_text())
         mutate(proof)
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / 'proof.json'
             path.write_text(json.dumps(proof))
-            with mock.patch.object(checker, 'PROOF', path):
+            with mock.patch.object(checker, 'PROOF', path), mock.patch.object(checker, 'historical_sources', return_value=historical):
                 with self.assertRaisesRegex(ValueError, error):
                     self.verify()
+
+    def mutate_style(self, mutate, error):
+        record = json.loads((checker.ROOT / checker.STYLE).read_text())
+        mutate(record)
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'style.json'
+            path.write_text(json.dumps(record))
+            with mock.patch.object(checker, 'STYLE', path):
+                with self.assertRaisesRegex(ValueError, error):
+                    self.verify()
+
+    def test_style_patches_reconstruct_original_sources(self):
+        historical = checker.historical_sources(checker.ROOT)
+        for patch in json.loads((checker.ROOT / checker.STYLE).read_text())['patches']:
+            before = historical(checker.RING / patch['path'])
+            current = (checker.ROOT / checker.RING / patch['path']).read_bytes()
+            self.assertNotEqual(before, current)
+            self.assertEqual(before.replace(patch['old'].encode(), patch['new'].encode()), current)
+
+    def test_style_rejects_extra_source(self):
+        self.mutate_style(lambda r: r['patches'].append(r['patches'][0]), 'source set changed')
+
+    def test_style_rejects_arbitrary_transformation(self):
+        self.mutate_style(lambda r: r['patches'][0].update(new='unsafe {}'), 'unapproved style')
+
+    def test_style_rejects_before_and_after_hash_drift(self):
+        for label in ('before', 'after'):
+            with self.subTest(label=label):
+                self.mutate_style(lambda r: r['patches'][0].update({label + '_sha256': '0' * 64}), 'hash mismatch')
+
+    def test_style_rejects_unrecorded_current_source_change(self):
+        original = checker.checked_path
+        with tempfile.TemporaryDirectory() as temporary:
+            altered = Path(temporary) / 'testutil.rs'
+            altered.write_bytes((checker.ROOT / checker.RING / 'src/testutil.rs').read_bytes() + b'// unrecorded\n')
+            def checked(root, relative):
+                if root == checker.ROOT / checker.RING and relative == 'src/testutil.rs':
+                    return altered
+                return original(root, relative)
+            with mock.patch.object(checker, 'checked_path', side_effect=checked):
+                with self.assertRaisesRegex(ValueError, 'hash mismatch'):
+                    self.verify()
+
+    def test_style_rejects_historical_proof_drift(self):
+        self.mutate_style(lambda r: r['historical_proofs'].update({str(checker.PROOF): '0' * 64}), 'immutable historical proof')
 
     def test_rejects_commit_drift(self):
         self.mutate_proof(lambda p: p.update(commit='0' * 40), 'unexpected upstream')
