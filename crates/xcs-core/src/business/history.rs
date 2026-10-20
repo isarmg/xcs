@@ -72,6 +72,11 @@ impl Engine {
         Ok(commit.entries.clone())
     }
     pub fn file_history(&self, file_id: &str) -> Result<Vec<FileVersion>> {
+        if self.history_index_is_selective(file_id)
+            && let Some(versions) = self.indexed_file_history(file_id)
+        {
+            return Ok(versions);
+        }
         let mut versions = self
             .state
             .versions

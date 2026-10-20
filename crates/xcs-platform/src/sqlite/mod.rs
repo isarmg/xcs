@@ -243,6 +243,36 @@ pub async fn open_index_connection(
     Ok(connection)
 }
 
+/// Best-effort candidate reads must not hold the engine mutex for the normal
+/// writer busy budget. Preserve defensive/WAL/FULL policy, never create a file.
+pub async fn open_index_read_connection(database_path: &Path) -> Result<SqliteConnection, Error> {
+    let options = index_connect_options(database_path, false)
+        .read_only(true)
+        .busy_timeout(Duration::from_millis(20));
+    let mut connection = SqliteConnection::connect_with(&options).await?;
+    let initialized = async {
+        enable_defensive(&mut connection)
+            .await
+            .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
+        apply_connection_limits(
+            &mut connection,
+            ConnectionLimits::new(64 * 1024)
+                .with_max_sql_bytes(16 * 1024)
+                .with_max_vm_operations(10_000)
+                .with_max_bind_parameters(16),
+        )
+        .await
+        .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
+        Ok::<_, sqlx::Error>(())
+    }
+    .await;
+    if let Err(error) = initialized {
+        let _ = connection.close().await;
+        return Err(pool_connect_error(error));
+    }
+    Ok(connection)
+}
+
 fn pool_connect_error(error: sqlx::Error) -> Error {
     if let sqlx::Error::Io(source) = error {
         let kind = source.kind();

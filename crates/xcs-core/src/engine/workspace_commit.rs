@@ -109,6 +109,7 @@ impl Engine {
             upload_preparations: self.upload_preparations.clone(),
             // The frozen view may plan writes; only the live Engine is fenced.
             commit_preparation: Arc::new(AtomicBool::new(false)),
+            history_query_proof: std::sync::Mutex::new(super::index::QueryProof::default()),
             _locks: locks,
             fault: None,
         };

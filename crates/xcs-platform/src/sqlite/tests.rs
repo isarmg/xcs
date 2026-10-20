@@ -5,6 +5,61 @@ fn test_identity(schema_sha256: String) -> Result<SchemaIdentity, SchemaIdentity
 }
 
 #[tokio::test]
+async fn candidate_reader_is_read_only_bounded_and_never_creates_a_database()
+-> Result<(), Box<dyn std::error::Error>> {
+    let directory = tempfile::tempdir()?;
+    let missing = directory.path().join("missing.sqlite");
+    assert!(open_index_read_connection(&missing).await.is_err());
+    assert!(!missing.exists());
+
+    let path = directory.path().join("index.sqlite");
+    let mut writer = open_index_connection(&path, true, None).await?;
+    sqlx::query("CREATE TABLE items(id INTEGER PRIMARY KEY)")
+        .execute(&mut writer)
+        .await?;
+    sqlx::query("INSERT INTO items VALUES(7)")
+        .execute(&mut writer)
+        .await?;
+    writer.close().await?;
+
+    let mut reader = open_index_read_connection(&path).await?;
+    let mode: String = sqlx::query_scalar("PRAGMA journal_mode")
+        .fetch_one(&mut reader)
+        .await?;
+    let synchronous: i64 = sqlx::query_scalar("PRAGMA synchronous")
+        .fetch_one(&mut reader)
+        .await?;
+    let busy: i64 = sqlx::query_scalar("PRAGMA busy_timeout")
+        .fetch_one(&mut reader)
+        .await?;
+    let foreign_keys: i64 = sqlx::query_scalar("PRAGMA foreign_keys")
+        .fetch_one(&mut reader)
+        .await?;
+    assert_eq!(mode, "wal");
+    assert_eq!(synchronous, 2);
+    assert_eq!(busy, 20);
+    assert_eq!(foreign_keys, 1);
+    assert!(
+        sqlx::query("DELETE FROM items")
+            .execute(&mut reader)
+            .await
+            .is_err()
+    );
+    assert!(
+        sqlx::query_scalar::<_, Vec<u8>>("SELECT zeroblob(65537)")
+            .fetch_one(&mut reader)
+            .await
+            .is_err()
+    );
+    let retained: i64 = sqlx::query_scalar("SELECT id FROM items")
+        .fetch_one(&mut reader)
+        .await?;
+    assert_eq!(retained, 7);
+    reader.close().await?;
+    Ok(())
+}
+
+#[tokio::test]
 async fn explicit_creation_applies_pragmas_to_every_connection_and_reopens()
 -> Result<(), Box<dyn std::error::Error>> {
     let directory = tempfile::tempdir()?;

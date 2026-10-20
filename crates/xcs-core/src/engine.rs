@@ -33,6 +33,7 @@ pub struct Engine {
     pub(crate) reads: Arc<Mutex<BTreeMap<String, usize>>>,
     pub(crate) upload_preparations: Arc<Mutex<BTreeSet<String>>>,
     commit_preparation: Arc<std::sync::atomic::AtomicBool>,
+    history_query_proof: Mutex<index::QueryProof>,
     _locks: Vec<File>,
     pub(crate) fault: Option<String>,
 }
@@ -150,6 +151,7 @@ impl Engine {
             reads: Arc::new(Mutex::new(BTreeMap::new())),
             upload_preparations: Arc::new(Mutex::new(BTreeSet::new())),
             commit_preparation: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            history_query_proof: Mutex::new(index::QueryProof::default()),
             _locks: locks,
             fault: None,
         };
@@ -182,6 +184,7 @@ impl Engine {
             reads: Arc::new(Mutex::new(BTreeMap::new())),
             upload_preparations: Arc::new(Mutex::new(BTreeSet::new())),
             commit_preparation: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            history_query_proof: Mutex::new(index::QueryProof::default()),
             _locks: locks,
             fault: None,
         };

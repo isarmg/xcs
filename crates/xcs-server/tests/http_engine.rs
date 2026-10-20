@@ -805,6 +805,21 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
     let history = success(&app, &reader, "GET", &history_path, None).await;
     let versions = history["versions"].as_array().unwrap();
     assert_eq!(versions.len(), 3);
+    assert!(
+        versions.windows(2).all(|pair| {
+            pair[0]["sequence"]
+                .as_str()
+                .unwrap()
+                .parse::<u64>()
+                .unwrap()
+                > pair[1]["sequence"]
+                    .as_str()
+                    .unwrap()
+                    .parse::<u64>()
+                    .unwrap()
+        }),
+        "HTTP history remains newest first, independent of candidate-index order"
+    );
     let parent_ids = |id: &str| {
         versions
             .iter()
@@ -897,6 +912,29 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         success(&app, &reader, "GET", &history_path, None).await,
         history
     );
+
+    // This small store uses the scan path. An unavailable query cache must not
+    // change API compatibility or ACLs. Large-store indexed fallback is covered
+    // by the core routing/corruption tests, not by this fixture.
+    let outsider = login(&app, "tree-outsider", "tree-outsider-test-password").await;
+    let index = root.path().join("system/index.sqlite");
+    let saved_index = root.path().join("system/index.saved");
+    std::fs::rename(&index, &saved_index).unwrap();
+    std::fs::create_dir(&index).unwrap();
+    assert_eq!(
+        success(&app, &reader, "GET", &history_path, None).await,
+        history,
+        "an unavailable cache must preserve scan-path versions, order, and edges"
+    );
+    assert_eq!(
+        send(&app, Some(&outsider), "GET", &history_path, None)
+            .await
+            .0,
+        StatusCode::FORBIDDEN,
+        "an unavailable cache must not bypass repository read permission"
+    );
+    std::fs::remove_dir(&index).unwrap();
+    std::fs::rename(&saved_index, &index).unwrap();
 }
 
 #[tokio::test]
@@ -2969,6 +3007,19 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
     assert_ne!(a["selected_branch_id"], b["selected_branch_id"]);
     assert_eq!(a["inherited"], true);
     assert_eq!(b["inherited"], false);
+    let index = root.path().join("system/index.sqlite");
+    let saved_index = root.path().join("system/index.saved");
+    std::fs::rename(&index, &saved_index).unwrap();
+    std::fs::create_dir(&index).unwrap();
+    for (path, expected) in [("a/report.txt", &a), ("b/report.txt", &b)] {
+        assert_eq!(
+            &success(&app, &token, "GET", &history_route(path), None).await,
+            expected,
+            "the small-store scan must retain alias selection with an unavailable cache"
+        );
+    }
+    std::fs::remove_dir(&index).unwrap();
+    std::fs::rename(&saved_index, &index).unwrap();
     assert_eq!(
         manager_scope(&app, &token, repo, &n).await["head_tree_id"],
         a_before["head_tree_id"],

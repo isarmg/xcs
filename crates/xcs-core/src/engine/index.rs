@@ -7,8 +7,25 @@
 use super::Engine;
 use crate::*;
 use serde::Serialize;
-use sqlx::{Connection, Executor};
+use sqlx::{Connection, Executor, Row};
 use std::{collections::BTreeMap, path::Path};
+
+const HISTORY_INDEX_MIN_VERSIONS: usize = 300_000;
+const HISTORY_INDEX_MAX_CANDIDATES: usize = 100;
+
+const CURRENT_STATE_TABLE: &str = "CREATE TABLE current_state(singleton INTEGER PRIMARY KEY CHECK(singleton=1),sequence TEXT NOT NULL)";
+const HISTORY_TABLE: &str = "CREATE TABLE file_history_versions(version_id TEXT PRIMARY KEY COLLATE BINARY,file_id TEXT NOT NULL,history_tree_id TEXT NOT NULL,version_sequence_key BLOB NOT NULL CHECK(typeof(version_sequence_key)='blob' AND length(version_sequence_key)=8))";
+const HISTORY_INDEX: &str = "CREATE INDEX file_history_lookup ON file_history_versions(file_id,version_sequence_key,version_id)";
+
+/// Trusted completeness evidence, never loaded from the disposable database.
+#[derive(Default)]
+pub(super) struct QueryProof {
+    sequence: u64,
+    counts: BTreeMap<String, usize>,
+    healthy: bool,
+    #[cfg(test)]
+    indexed_reads: usize,
+}
 
 const SCHEMA: &str = "CREATE TABLE current_state(singleton INTEGER PRIMARY KEY CHECK(singleton=1),sequence TEXT NOT NULL);CREATE TABLE entities(kind TEXT NOT NULL,id TEXT NOT NULL,json BLOB NOT NULL,PRIMARY KEY(kind,id));";
 
@@ -188,8 +205,18 @@ impl Delta {
     }
 }
 
+#[cfg(test)]
 fn project(path: &Path, before: Option<&State>, after: &State) -> Result<IndexWork> {
     let delta = Delta::between(before, after)?;
+    project_delta(path, before, after, &delta)
+}
+
+fn project_delta(
+    path: &Path,
+    before: Option<&State>,
+    after: &State,
+    delta: &Delta,
+) -> Result<IndexWork> {
     let work = delta.work();
     let result = xcs_platform::sqlite::block_on_sqlite_connection(async {
         let mut c = xcs_platform::sqlite::open_index_connection(path, before.is_none(), None)
@@ -197,6 +224,22 @@ fn project(path: &Path, before: Option<&State>, after: &State) -> Result<IndexWo
             .map_err(|e| e.to_string())?;
         let mut tx = c.begin().await.map_err(|e| e.to_string())?;
         if let Some(before) = before {
+            // This runs after durable publication. Never evaluate a cache-supplied
+            // view while checking the marker, even if a reader already disabled
+            // its candidate path; a definite error retains write blocking/recovery.
+            let marker =
+                sqlx::query("SELECT type,sql FROM sqlite_schema WHERE name='current_state'")
+                    .fetch_one(&mut *tx)
+                    .await
+                    .map_err(|e| e.to_string())?;
+            if marker.try_get::<String, _>(0).map_err(|e| e.to_string())? != "table"
+                || marker.try_get::<String, _>(1).map_err(|e| e.to_string())? != CURRENT_STATE_TABLE
+            {
+                return Err(
+                    "projection marker schema mismatch; reopen to rebuild from durable evidence"
+                        .into(),
+                );
+            }
             let sequence: Option<String> =
                 sqlx::query_scalar("SELECT sequence FROM current_state WHERE singleton=1")
                     .fetch_optional(&mut *tx)
@@ -209,12 +252,37 @@ fn project(path: &Path, before: Option<&State>, after: &State) -> Result<IndexWo
             }
         } else {
             // Transactional replacement also migrates the legacy snapshot table.
-            tx.execute("DROP TABLE IF EXISTS current_state;DROP TABLE IF EXISTS entities;")
+            // A damaged cache may have substituted views for our tables.
+            for (name, drop_view) in [
+                ("current_state", "DROP VIEW current_state"),
+                ("entities", "DROP VIEW entities"),
+                ("file_history_versions", "DROP VIEW file_history_versions"),
+            ] {
+                let kind: Option<String> =
+                    sqlx::query_scalar("SELECT type FROM sqlite_schema WHERE name=?")
+                        .bind(name)
+                        .fetch_optional(&mut *tx)
+                        .await
+                        .map_err(|e| e.to_string())?;
+                if kind.as_deref() == Some("view") {
+                    tx.execute(drop_view).await.map_err(|e| e.to_string())?;
+                }
+            }
+            tx.execute("DROP TABLE IF EXISTS current_state;DROP TABLE IF EXISTS entities;DROP TABLE IF EXISTS file_history_versions;")
                 .await
                 .map_err(|e| e.to_string())?;
             tx.execute(SCHEMA).await.map_err(|e| e.to_string())?;
+            tx.execute(HISTORY_TABLE).await.map_err(|e| e.to_string())?;
+            tx.execute(HISTORY_INDEX).await.map_err(|e| e.to_string())?;
         }
         for (kind, id) in &delta.deletes {
+            if *kind == "versions" {
+                sqlx::query("DELETE FROM file_history_versions WHERE version_id=?")
+                    .bind(id)
+                    .execute(&mut *tx)
+                    .await
+                    .map_err(|e| e.to_string())?;
+            }
             sqlx::query("DELETE FROM entities WHERE kind=? AND id=?")
                 .bind(kind)
                 .bind(id)
@@ -223,6 +291,12 @@ fn project(path: &Path, before: Option<&State>, after: &State) -> Result<IndexWo
                 .map_err(|e| e.to_string())?;
         }
         for (kind, id, data) in &delta.upserts {
+            if *kind == "versions" {
+                let v = &after.versions[id];
+                sqlx::query("INSERT INTO file_history_versions VALUES(?,?,?,?) ON CONFLICT(version_id) DO UPDATE SET file_id=excluded.file_id,history_tree_id=excluded.history_tree_id,version_sequence_key=excluded.version_sequence_key")
+                    .bind(id).bind(&v.file_id).bind(&v.history_tree_id).bind(v.version_sequence.to_be_bytes().as_slice())
+                    .execute(&mut *tx).await.map_err(|e| e.to_string())?;
+            }
             sqlx::query("INSERT INTO entities(kind,id,json) VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET json=excluded.json")
                 .bind(kind).bind(id).bind(data).execute(&mut *tx).await.map_err(|e| e.to_string())?;
         }
@@ -238,10 +312,150 @@ fn project(path: &Path, before: Option<&State>, after: &State) -> Result<IndexWo
 
 impl Engine {
     pub(crate) fn rebuild_index(&self) -> Result<()> {
-        project(&self.root.join("index.sqlite"), None, &self.state).map(|_| ())
+        let mut proof = self.history_query_proof.lock().unwrap();
+        proof.healthy = false;
+        let delta = Delta::between(None, &self.state)?;
+        project_delta(&self.root.join("index.sqlite"), None, &self.state, &delta)?;
+        proof.counts.clear();
+        for v in self.state.versions.values() {
+            *proof.counts.entry(v.file_id.clone()).or_default() += 1;
+        }
+        proof.sequence = self.state.sequence;
+        proof.healthy = true;
+        Ok(())
     }
     pub(crate) fn update_index(&self, previous: &State) -> Result<()> {
-        project(&self.root.join("index.sqlite"), Some(previous), &self.state).map(|_| ())
+        let delta = Delta::between(Some(previous), &self.state)?;
+        let mut proof = self.history_query_proof.lock().unwrap();
+        if let Err(error) = project_delta(
+            &self.root.join("index.sqlite"),
+            Some(previous),
+            &self.state,
+            &delta,
+        ) {
+            proof.healthy = false;
+            return Err(error);
+        }
+        if proof.healthy && proof.sequence == previous.sequence {
+            // Reuse the changed-version delta, including replacements/moves.
+            for id in delta
+                .deletes
+                .iter()
+                .filter(|(kind, _)| *kind == "versions")
+                .map(|(_, id)| id)
+                .chain(
+                    delta
+                        .upserts
+                        .iter()
+                        .filter(|(kind, _, _)| *kind == "versions")
+                        .map(|(_, id, _)| id),
+                )
+            {
+                if let Some(old) = previous.versions.get(id) {
+                    let count = proof
+                        .counts
+                        .get_mut(&old.file_id)
+                        .expect("trusted version count");
+                    *count -= 1;
+                    if *count == 0 {
+                        proof.counts.remove(&old.file_id);
+                    }
+                }
+                if let Some(new) = self.state.versions.get(id) {
+                    *proof.counts.entry(new.file_id.clone()).or_default() += 1;
+                }
+            }
+            proof.sequence = self.state.sequence;
+        } else {
+            proof.healthy = false;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn history_index_is_selective(&self, file_id: &str) -> bool {
+        // Connection/validation costs dominate small maps and large result sets.
+        // Conservative measured threshold; this is not an API response limit.
+        self.state.versions.len() >= HISTORY_INDEX_MIN_VERSIONS
+            && self.history_query_proof.lock().is_ok_and(|proof| {
+                proof.healthy
+                    && proof.counts.get(file_id).copied().unwrap_or(0)
+                        <= HISTORY_INDEX_MAX_CANDIDATES
+            })
+    }
+
+    /// Candidate selection only. Every field comes from State, never SQLite JSON.
+    pub(crate) fn indexed_file_history(&self, file_id: &str) -> Option<Vec<FileVersion>> {
+        let mut proof = self.history_query_proof.lock().ok()?;
+        if !proof.healthy || proof.sequence != self.state.sequence {
+            return None;
+        }
+        let expected = proof.counts.get(file_id).copied().unwrap_or(0);
+        let limit = i64::try_from(expected).ok()?.checked_add(1)?;
+        let result = xcs_platform::sqlite::block_on_sqlite_connection(async {
+            let mut c =
+                xcs_platform::sqlite::open_index_read_connection(&self.root.join("index.sqlite"))
+                    .await
+                    .map_err(|e| e.to_string())?;
+            let result = async {
+                let mut tx = c.begin().await.map_err(|e| e.to_string())?;
+                // Attest all queried objects before evaluating their contents: in
+                // particular, a cache must not substitute an expensive view.
+                for (name, kind, ddl) in [
+                    ("current_state", "table", CURRENT_STATE_TABLE),
+                    ("file_history_versions", "table", HISTORY_TABLE),
+                    ("file_history_lookup", "index", HISTORY_INDEX),
+                ] {
+                    let actual = sqlx::query("SELECT type,sql FROM sqlite_schema WHERE name=?")
+                        .bind(name).fetch_one(&mut *tx).await.map_err(|e| e.to_string())?;
+                    if actual.try_get::<String, _>(0).map_err(|e| e.to_string())? != kind
+                        || actual.try_get::<String, _>(1).map_err(|e| e.to_string())? != ddl {
+                        return Err("query schema mismatch".into());
+                    }
+                }
+                let sequence: String = sqlx::query_scalar("SELECT sequence FROM current_state WHERE singleton=1")
+                    .fetch_one(&mut *tx).await.map_err(|e| e.to_string())?;
+                if sequence != self.state.sequence.to_string() { return Err("stale sequence".into()); }
+                let rows = sqlx::query("SELECT version_id,file_id,history_tree_id,version_sequence_key FROM file_history_versions INDEXED BY file_history_lookup WHERE file_id=? ORDER BY version_sequence_key,version_id LIMIT ?")
+                    .bind(file_id).bind(limit).fetch_all(&mut *tx).await.map_err(|e| e.to_string())?;
+                if rows.len() != expected { return Err("incomplete candidate set".into()); }
+                let mut versions = Vec::with_capacity(expected);
+                let mut prior: Option<(u64, String)> = None;
+                for row in rows {
+                    let id: String = row.try_get(0).map_err(|e| e.to_string())?;
+                    let file: String = row.try_get(1).map_err(|e| e.to_string())?;
+                    let history: String = row.try_get(2).map_err(|e| e.to_string())?;
+                    let key: Vec<u8> = row.try_get(3).map_err(|e| e.to_string())?;
+                    let v = self.state.versions.get(&id).ok_or("unknown candidate")?;
+                    if file != file_id || v.file_id != file || v.history_tree_id != history || v.version_id != id || key != v.version_sequence.to_be_bytes() {
+                        return Err("invalid candidate".into());
+                    }
+                    let order = (v.version_sequence, id);
+                    if prior.as_ref().is_some_and(|p| p >= &order) { return Err("invalid candidate order".into()); }
+                    prior = Some(order);
+                    versions.push(v.clone());
+                }
+                tx.commit().await.map_err(|e| e.to_string())?;
+                Ok::<_, String>(versions)
+            }.await;
+            let closed = c.close().await.map_err(|e| e.to_string());
+            match (result, closed) {
+                (Ok(v), Ok(())) => Ok(v),
+                (Err(e), _) | (_, Err(e)) => Err(e),
+            }
+        });
+        match result {
+            Ok(versions) => {
+                #[cfg(test)]
+                {
+                    proof.indexed_reads += 1;
+                }
+                Some(versions)
+            }
+            Err(_) => {
+                proof.healthy = false;
+                None
+            }
+        }
     }
 }
 
@@ -249,6 +463,329 @@ impl Engine {
 mod tests {
     use super::*;
     use sqlx::Row;
+
+    fn version(id: &str, file: &str, sequence: u64) -> FileVersion {
+        FileVersion {
+            format_version: 2,
+            history_tree_id: "history".into(),
+            version_id: id.into(),
+            file_id: file.into(),
+            creation_primary_slot_id: "P01".into(),
+            logical_size: 0,
+            version_sequence: sequence,
+            content_hash: "hash".into(),
+            checksum_chunk_bytes: 1,
+            checksum_manifest_hash: "manifest".into(),
+            creation_name: "name".into(),
+            storage_name: None,
+            created_at: None,
+            source_version_ids: vec![],
+            created_as_full_checkpoint: true,
+        }
+    }
+    fn engine(temp: &tempfile::TempDir) -> Engine {
+        Engine::initialize(
+            &temp.path().join("state"),
+            Config::development([
+                temp.path().join("p"),
+                temp.path().join("b"),
+                temp.path().join("t"),
+            ]),
+        )
+        .unwrap()
+    }
+    fn scan(engine: &Engine, file: &str) -> Vec<FileVersion> {
+        let mut versions: Vec<_> = engine
+            .state
+            .versions
+            .values()
+            .filter(|v| v.file_id == file)
+            .cloned()
+            .collect();
+        versions.sort_by_key(|v| v.version_sequence);
+        versions
+    }
+    fn populate(engine: &mut Engine) {
+        for (id, seq) in [
+            ("z", 0),
+            ("b", u64::MAX),
+            ("a", u64::MAX),
+            ("c", 1 << 63),
+            ("d", (1 << 63) - 1),
+        ] {
+            engine
+                .state
+                .versions
+                .insert(id.into(), version(id, "file", seq));
+        }
+        for n in 0..2000 {
+            let id = format!("other_{n}");
+            engine
+                .state
+                .versions
+                .insert(id.clone(), version(&id, "unrelated", n));
+        }
+        engine.rebuild_index().unwrap();
+    }
+
+    #[test]
+    fn indexed_history_matches_scan_with_unsigned_extremes_ties_and_scoped_query() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut engine = engine(&temp);
+        populate(&mut engine);
+        assert_eq!(
+            engine.indexed_file_history("file"),
+            Some(scan(&engine, "file"))
+        );
+        assert_eq!(engine.indexed_file_history("absent"), Some(vec![]));
+        let path = engine.root.join("index.sqlite");
+        xcs_platform::sqlite::block_on_sqlite_connection(async {
+            let mut c = xcs_platform::sqlite::open_index_read_connection(&path)
+                .await
+                .unwrap();
+            let plans = sqlx::query("EXPLAIN QUERY PLAN SELECT version_id,file_id,history_tree_id,version_sequence_key FROM file_history_versions INDEXED BY file_history_lookup WHERE file_id=? ORDER BY version_sequence_key,version_id LIMIT ?")
+                .bind("file").bind(6i64).fetch_all(&mut c).await.unwrap();
+            let detail: String = plans[0].get(3);
+            assert!(
+                detail.contains(
+                    "SEARCH file_history_versions USING INDEX file_history_lookup (file_id=?)"
+                ),
+                "{detail}"
+            );
+            assert!(
+                !plans
+                    .iter()
+                    .any(|r| r.get::<String, _>(3).contains("TEMP B-TREE"))
+            );
+            c.close().await.unwrap();
+        });
+    }
+
+    #[test]
+    fn history_delta_handles_deletes_replacements_and_identity_moves() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut engine = engine(&temp);
+        populate(&mut engine);
+        let previous = engine.state.clone();
+        engine.state.sequence += 1;
+        engine.state.versions.remove("z");
+        engine
+            .state
+            .versions
+            .insert("a".into(), version("a", "moved", 2));
+        engine
+            .state
+            .versions
+            .insert("new".into(), version("new", "file", 5));
+        engine.state.versions.get_mut("b").unwrap().history_tree_id = "changed".into();
+        engine.update_index(&previous).unwrap();
+        for file in ["file", "moved", "unrelated", "missing"] {
+            assert_eq!(engine.indexed_file_history(file), Some(scan(&engine, file)));
+        }
+    }
+
+    #[test]
+    fn malformed_or_incomplete_index_falls_back_and_latches_until_rebuild() {
+        for statement in [
+            "DELETE FROM file_history_versions WHERE version_id='a'",
+            "UPDATE current_state SET sequence='999'",
+            "DROP TABLE current_state;CREATE VIEW current_state AS WITH RECURSIVE bounded(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM bounded WHERE n<10000) SELECT 1 AS singleton, CAST(sum(n)*0 AS TEXT) AS sequence FROM bounded",
+            "UPDATE file_history_versions SET file_id='file' WHERE version_id='other_0'",
+            "UPDATE file_history_versions SET history_tree_id='forged' WHERE version_id='a'",
+            "UPDATE file_history_versions SET version_sequence_key=X'0000000000000001' WHERE version_id='a'",
+            "PRAGMA ignore_check_constraints=ON;UPDATE file_history_versions SET version_sequence_key=X'01' WHERE version_id='a'",
+            "UPDATE file_history_versions SET history_tree_id=hex(zeroblob(100000)) WHERE version_id='a'",
+            "DROP TABLE file_history_versions",
+            "DROP INDEX file_history_lookup",
+        ] {
+            let temp = tempfile::tempdir().unwrap();
+            let mut engine = engine(&temp);
+            populate(&mut engine);
+            sql(&engine.root.join("index.sqlite"), statement);
+            assert!(engine.indexed_file_history("file").is_none(), "{statement}");
+            assert_eq!(
+                engine.file_history("file").unwrap(),
+                scan(&engine, "file"),
+                "{statement}"
+            );
+            assert!(
+                !engine.history_query_proof.lock().unwrap().healthy,
+                "{statement}"
+            );
+            assert!(engine.indexed_file_history("file").is_none());
+            engine.rebuild_index().unwrap();
+            assert_eq!(
+                engine.indexed_file_history("file"),
+                Some(scan(&engine, "file"))
+            );
+        }
+    }
+
+    #[test]
+    fn history_missing_database_and_untrusted_snapshot_fall_back() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut engine = engine(&temp);
+        populate(&mut engine);
+        std::fs::remove_file(engine.root.join("index.sqlite")).unwrap();
+        assert!(engine.indexed_file_history("file").is_none());
+        assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+        assert!(!engine.root.join("index.sqlite").exists());
+        assert!(!engine.history_query_proof.lock().unwrap().healthy);
+        *engine.history_query_proof.lock().unwrap() = QueryProof::default();
+        assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+    }
+
+    #[test]
+    fn typed_history_write_failure_rolls_back_all_projection_rows_and_proof() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut engine = engine(&temp);
+        populate(&mut engine);
+        let path = engine.root.join("index.sqlite");
+        let baseline = rows(&path);
+        sql(
+            &path,
+            "CREATE TRIGGER fail_history BEFORE INSERT ON file_history_versions BEGIN SELECT RAISE(ABORT,'fail');END;",
+        );
+        let previous = engine.state.clone();
+        engine.state.sequence += 1;
+        engine
+            .state
+            .versions
+            .insert("new".into(), version("new", "file", 1));
+        assert!(engine.update_index(&previous).is_err());
+        assert_eq!(rows(&path), baseline);
+        assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+        assert!(!engine.history_query_proof.lock().unwrap().healthy);
+    }
+
+    #[test]
+    fn busy_history_read_has_short_budget_and_latches() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut engine = engine(&temp);
+        populate(&mut engine);
+        let path = engine.root.join("index.sqlite");
+        let (ready_tx, ready_rx) = std::sync::mpsc::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            xcs_platform::sqlite::block_on_sqlite_connection(async {
+                let mut c = xcs_platform::sqlite::open_index_connection(&path, false, None)
+                    .await
+                    .unwrap();
+                c.execute("PRAGMA journal_mode=DELETE;BEGIN EXCLUSIVE")
+                    .await
+                    .unwrap();
+                ready_tx.send(()).unwrap();
+                release_rx.recv().unwrap();
+                c.execute("ROLLBACK").await.unwrap();
+                c.close().await.unwrap();
+            });
+        });
+        ready_rx.recv().unwrap();
+        let start = std::time::Instant::now();
+        assert!(engine.indexed_file_history("file").is_none());
+        assert!(start.elapsed() < std::time::Duration::from_secs(1));
+        assert!(!engine.history_query_proof.lock().unwrap().healthy);
+        let start = std::time::Instant::now();
+        for _ in 0..100 {
+            assert!(engine.indexed_file_history("file").is_none());
+        }
+        assert!(start.elapsed() < std::time::Duration::from_millis(100));
+        release_tx.send(()).unwrap();
+        worker.join().unwrap();
+        assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+    }
+
+    #[test]
+    fn successful_delta_does_not_clear_unhealthy_latch() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut engine = engine(&temp);
+        populate(&mut engine);
+        sql(
+            &engine.root.join("index.sqlite"),
+            "DELETE FROM file_history_versions WHERE version_id='a'",
+        );
+        assert!(engine.indexed_file_history("file").is_none());
+        let previous = engine.state.clone();
+        engine.state.sequence += 1;
+        engine
+            .state
+            .file_notes
+            .insert("file".into(), "changed".into());
+        engine.update_index(&previous).unwrap();
+        assert!(engine.indexed_file_history("file").is_none());
+        assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+        engine.rebuild_index().unwrap();
+        assert_eq!(
+            engine.indexed_file_history("file"),
+            Some(scan(&engine, "file"))
+        );
+    }
+
+    #[test]
+    fn actual_history_route_uses_index_only_for_large_selective_stores() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut engine = engine(&temp);
+        populate(&mut engine);
+        assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+        assert_eq!(engine.history_query_proof.lock().unwrap().indexed_reads, 0);
+        for n in engine.state.versions.len()..HISTORY_INDEX_MIN_VERSIONS {
+            let id = format!("large_{n}");
+            engine
+                .state
+                .versions
+                .insert(id.clone(), version(&id, "unrelated", n as u64));
+        }
+        engine.rebuild_index().unwrap();
+        assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+        assert_eq!(engine.history_query_proof.lock().unwrap().indexed_reads, 1);
+        assert!(!engine.history_index_is_selective("unrelated"));
+        sql(
+            &engine.root.join("index.sqlite"),
+            "DELETE FROM file_history_versions WHERE version_id='a'",
+        );
+        assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+        assert!(!engine.history_query_proof.lock().unwrap().healthy);
+    }
+
+    #[test]
+    #[ignore = "manual latency measurement"]
+    fn measure_history_candidate_latency() {
+        for (count, selected) in [
+            (10, 5),
+            (1000, 5),
+            (10_000, 5),
+            (100_000, 5),
+            (100_000, 100),
+            (100_000, 1000),
+            (300_000, 5),
+            (300_000, 100),
+            (300_000, 1000),
+        ] {
+            let temp = tempfile::tempdir().unwrap();
+            let mut engine = engine(&temp);
+            for n in 0..count {
+                let id = format!("v_{n:08}");
+                engine.state.versions.insert(
+                    id.clone(),
+                    version(&id, if n < selected { "file" } else { "other" }, n),
+                );
+            }
+            engine.rebuild_index().unwrap();
+            let start = std::time::Instant::now();
+            for _ in 0..20 {
+                std::hint::black_box(scan(&engine, "file"));
+            }
+            let scan_time = start.elapsed() / 20;
+            let start = std::time::Instant::now();
+            for _ in 0..20 {
+                assert!(std::hint::black_box(engine.indexed_file_history("file")).is_some());
+            }
+            eprintln!(
+                "versions={count} selected={selected} scan={scan_time:?} indexed={:?}",
+                start.elapsed() / 20
+            );
+        }
+    }
 
     fn rows(path: &Path) -> (String, Vec<(String, String, Vec<u8>)>) {
         xcs_platform::sqlite::block_on_sqlite_connection(async {
@@ -442,6 +979,41 @@ mod tests {
         assert!(rebuilt.1.iter().any(|(_, id, _)| id == "second"));
         assert!(project(&path, Some(&previous), &next).is_err());
         assert_eq!(rows(&path), rebuilt);
+    }
+
+    #[test]
+    fn publication_rejects_substituted_marker_view_and_reopen_recovers() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut engine = engine(&temp);
+        let root = engine.root.clone();
+        // The view returns the correct old marker, so value-only checking would
+        // accept it. Keep evaluation finite even if schema validation regresses.
+        sql(
+            &root.join("index.sqlite"),
+            "DROP TABLE current_state;CREATE VIEW current_state AS WITH RECURSIVE bounded(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM bounded WHERE n<10000) SELECT 1 AS singleton, CAST(sum(n)*0 AS TEXT) AS sequence FROM bounded",
+        );
+        assert!(engine.indexed_file_history("absent").is_none());
+        assert!(!engine.history_query_proof.lock().unwrap().healthy);
+        let operation = new_id("op");
+        let error = engine
+            .create_repository("published", "P01", 1, "admin", &operation)
+            .unwrap_err();
+        assert_eq!(error.code, "INDEX_REBUILD_FAILED");
+        assert!(
+            error
+                .to_string()
+                .contains("projection marker schema mismatch")
+        );
+        assert!(engine.is_read_only());
+        assert!(engine.state.operations.contains_key(&operation));
+        assert!(!engine.history_query_proof.lock().unwrap().healthy);
+        let published = engine.state.clone();
+        drop(engine);
+        let engine = Engine::open(&root).unwrap();
+        assert!(!engine.is_read_only());
+        assert_eq!(engine.state, published);
+        assert_eq!(projected_state(&root.join("index.sqlite")), published);
+        assert!(engine.history_query_proof.lock().unwrap().healthy);
     }
 
     #[test]
