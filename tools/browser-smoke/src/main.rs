@@ -18,6 +18,7 @@ use std::{
 };
 mod accessibility;
 mod demo;
+mod diagnostics;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 const ELEMENT: &str = "element-6066-11e4-a52e-4f735466cecf";
@@ -207,16 +208,20 @@ impl Browser {
                 Err("upload entry point disabled".into())
             }
         })?;
+        diagnostics::upload_snapshot(self, "before-button-click");
         self.click(&button)?;
+        diagnostics::upload_snapshot(self, "after-button-click");
         let selector = if replace {
             ".zxs-entry-content input[type='file']"
         } else {
             "input[type='file']"
         };
-        self.keys(
+        let result = self.keys(
             &self.css(selector)?,
             file.to_str().ok_or("non-UTF8 upload fixture path")?,
-        )
+        );
+        diagnostics::upload_snapshot(self, "after-file-selection");
+        result
     }
     fn cdp(&self, cmd: &str, params: Value) -> Result<Value> {
         self.command(
@@ -246,8 +251,7 @@ fn exercise(
     temp: &Path,
     screenshot: Option<&Path>,
 ) -> Result<()> {
-    // Observation only. No fetch interception, synthetic responses or application state injection.
-    browser.cdp("Page.addScriptToEvaluateOnNewDocument", json!({"source":"window.__zxsSmokeErrors=[];addEventListener('error',e=>window.__zxsSmokeErrors.push(String(e.message)));addEventListener('unhandledrejection',e=>window.__zxsSmokeErrors.push(String(e.reason)));"}))?;
+    diagnostics::install(browser)?;
     let demo_capture = env::var_os("ZXS_DEMO_CAPTURE").map(PathBuf::from);
     let url = if screenshot.is_some() || demo_capture.is_some() {
         format!("{origin}/?lang=zh-CN")
@@ -570,7 +574,15 @@ fn run() -> Result<()> {
             "Browser.setDownloadBehavior",
             json!({"behavior":"allow","downloadPath":downloads}),
         )?;
-        exercise(&browser, &origin, &password, root, screenshot.as_deref())
+        let result = exercise(&browser, &origin, &password, root, screenshot.as_deref());
+        if result.is_err() {
+            let diagnostics_dir = env::var_os("ZXS_DEMO_CAPTURE")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| PathBuf::from("artifacts/browser-smoke"))
+                .join("diagnostics");
+            diagnostics::failure(&browser, &diagnostics_dir, &password);
+        }
+        result
     })();
     if result.is_err() {
         for (name, path) in [("ZXS", server_log), ("ChromeDriver", driver_log)] {
