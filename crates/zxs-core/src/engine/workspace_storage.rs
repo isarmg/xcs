@@ -17,6 +17,86 @@ impl Engine {
             true,
         )
     }
+    /// Match the exact requested receipt, never the first decodable JSON file.
+    /// Its digest and owner are independently bound to the published operation
+    /// by validate_workspace_commit_replay before this redundant storage lookup.
+    pub(crate) fn require_saved_workspace_request(
+        &self,
+        workspace: &Workspace,
+        request: &CommitRequest,
+    ) -> Result<()> {
+        let expected = canonical_json(request)?;
+        let local = self
+            .root
+            .join("workspaces")
+            .join(&workspace.workspace_id)
+            .join("commit-request.json");
+        let matches = |path: &std::path::Path| -> Result<bool> {
+            match read_json::<CommitRequest>(path) {
+                Ok(saved) => Ok(canonical_json(&saved)? == expected),
+                Err(error) if error.code() == "UNSAFE_PATH" => Err(error),
+                Err(_) => Ok(false),
+            }
+        };
+        if matches(&local)? {
+            return Ok(());
+        }
+        let data = self
+            .workspace_data_directory(workspace)?
+            .join("commit-request.json");
+        if matches(&data)? {
+            return Ok(());
+        }
+        Err(Error::new(
+            "RECOVERY_REQUIRED",
+            "no exact saved workspace commit request is available",
+        ))
+    }
+
+    fn saved_request_digest_matches(
+        &self,
+        workspace: &Workspace,
+        request: &CommitRequest,
+        directories: &[PathBuf],
+    ) -> bool {
+        let Some(operation) = self.state.operations.get(&request.operation_id) else {
+            return false;
+        };
+        if crate::business::native_commit_digest(workspace, request)
+            .is_ok_and(|digest| digest == operation.request_digest)
+        {
+            return true;
+        }
+        // Completion advances the live fence, but the wire manifest commits
+        // to the original request fence. Only restore that fence for hashing;
+        // files, namespace operations, branch and base must remain unchanged.
+        let mut frozen = workspace.clone();
+        frozen.fencing_token = request.fencing_token;
+        let Ok(manifest) = crate::wire::manifest_hash(&frozen) else {
+            return false;
+        };
+        // Wire requests use a different envelope. Verify the original body,
+        // not merely its caller-supplied digest string. Missing legacy body
+        // copies leave the workspace untouched rather than guessing its state.
+        directories.iter().any(|directory| {
+            let Ok(body) = read_json::<serde_json::Value>(&directory.join("wire-request.json"))
+            else {
+                return false;
+            };
+            body["operation_id"].as_str() == Some(request.operation_id.as_str())
+                && body["workspace_id"].as_str() == Some(workspace.workspace_id.as_str())
+                && body["branch_id"].as_str() == Some(workspace.branch_id.as_str())
+                && body["expected_head"].as_str() == Some(request.expected_head.as_str())
+                && body["fencing_token"].as_str()
+                    == Some(request.fencing_token.to_string().as_str())
+                && body["message"].as_str() == Some(request.message.as_str())
+                && body["request_digest"].as_str() == Some(operation.request_digest.as_str())
+                && body["sealed_manifest_hash"].as_str() == Some(manifest.as_str())
+                && crate::wire::commit_request_digest(&workspace.workspace_id, &body)
+                    .is_ok_and(|digest| digest == operation.request_digest)
+        })
+    }
+
     pub(crate) fn workspace_data_directory(&self, w: &Workspace) -> Result<PathBuf> {
         let repo = self.repository_for_branch(&w.branch_id)?;
         let disk = self.disk(&repo.primary_slot_id)?;
@@ -66,25 +146,28 @@ impl Engine {
                         .join(&w.workspace_id)
                         .join("commit-request.json");
                     let data = e.path().join("commit-request.json");
-                    let request = if local.exists() {
-                        read_json::<CommitRequest>(&local).ok()
-                    } else if data.exists() {
-                        read_json::<CommitRequest>(&data).ok()
-                    } else {
-                        None
-                    };
+                    // A request from another workspace (or a corrupt preferred
+                    // copy) must never close this workspace's unsubmitted bytes.
+                    let directories = [
+                        local.parent().expect("workspace request parent").to_owned(),
+                        data.parent().expect("workspace request parent").to_owned(),
+                    ];
+                    let request = [local, data].iter().find_map(|path| {
+                        read_json::<CommitRequest>(path).ok().filter(|request| {
+                            self.workspace_request_matches_operation(&w, request)
+                                && self.saved_request_digest_matches(&w, request, &directories)
+                        })
+                    });
                     if let Some(request) = request {
-                        if self.state.operations.contains_key(&request.operation_id) {
-                            w.state = "committed".into();
-                            w.fencing_token = w.fencing_token.max(
-                                request.fencing_token.checked_add(1).ok_or_else(|| {
+                        w.state = "committed".into();
+                        w.fencing_token =
+                            w.fencing_token
+                                .max(request.fencing_token.checked_add(1).ok_or_else(|| {
                                     Error::new(
                                         "RECOVERY_REQUIRED",
                                         "workspace fencing generation exhausted",
                                     )
-                                })?,
-                            );
-                        }
+                                })?);
                     }
                     if self
                         .workspaces

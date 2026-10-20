@@ -67,6 +67,68 @@ impl Engine {
         self.require_grant(repository, principal, "write")
     }
 
+    /// Structural binding also used during restart, before live authorization
+    /// applies. Recovery completes accepted work even after permission changes.
+    pub(crate) fn workspace_request_matches_operation(
+        &self,
+        workspace: &Workspace,
+        request: &CommitRequest,
+    ) -> bool {
+        self.state
+            .operations
+            .get(&request.operation_id)
+            .is_some_and(|operation| {
+                operation.kind == "workspace.commit"
+                    && workspace.workspace_id == request.workspace_id
+                    && workspace.principal == request.principal
+                    && workspace.base_head == request.expected_head
+                    && operation.branch_id.as_deref() == Some(workspace.branch_id.as_str())
+                    && self.state.operation_principals.get(&request.operation_id)
+                        == Some(&request.principal)
+                    && request
+                        .request_digest
+                        .as_deref()
+                        .is_none_or(|digest| digest == operation.request_digest)
+            })
+    }
+
+    /// One authority boundary for synchronous, wire and detached receipt replay.
+    /// A published operation remains historical fact, but possession of its ID
+    /// does not grant access after the caller's current permissions are revoked.
+    pub(crate) fn validate_workspace_commit_replay(
+        &self,
+        request: &CommitRequest,
+        digest: &str,
+    ) -> Result<Workspace> {
+        let workspace = self.workspace(&request.workspace_id)?;
+        if workspace.principal != request.principal {
+            return Err(Error::new(
+                "PERMISSION_DENIED",
+                "workspace belongs to another principal",
+            ));
+        }
+        self.require_workspace_commit_access(&workspace, &request.principal, true)?;
+        let existing = self
+            .state
+            .operations
+            .get(&request.operation_id)
+            .ok_or_else(|| {
+                Error::new(
+                    "OPERATION_NOT_FOUND",
+                    "published workspace operation is absent",
+                )
+            })?;
+        if !self.workspace_request_matches_operation(&workspace, request)
+            || existing.request_digest != digest
+        {
+            return Err(Error::new(
+                "IDEMPOTENCY_KEY_REUSED",
+                "commit retry differs from the published request",
+            ));
+        }
+        Ok(workspace)
+    }
+
     /// Capture authorization and metadata under the Engine mutex. No payload
     /// bytes are read here. execute() owns all expensive planning/copy/hash work.
     pub fn prepare_workspace_commit(
@@ -155,20 +217,12 @@ impl Engine {
         if workspace.principal != prepared.request.principal {
             return Err(Error::new("PERMISSION_DENIED", "workspace owner changed"));
         }
-        if let Some(existing) = self.state.operations.get(&prepared.request.operation_id) {
-            self.require_workspace_commit_access(&workspace, &prepared.request.principal, true)?;
-            if existing.request_digest != prepared.expected_digest
-                || self
-                    .state
-                    .operation_principals
-                    .get(&prepared.request.operation_id)
-                    != Some(&prepared.request.principal)
-            {
-                return Err(Error::new(
-                    "IDEMPOTENCY_KEY_REUSED",
-                    "operation id is bound to different input",
-                ));
-            }
+        if self
+            .state
+            .operations
+            .contains_key(&prepared.request.operation_id)
+        {
+            self.validate_workspace_commit_replay(&prepared.request, &prepared.expected_digest)?;
             return self.operation(&prepared.request.operation_id);
         }
         self.require_write()?;

@@ -124,17 +124,9 @@ impl Engine {
                     "completed wire request differs from its registered digest",
                 ));
             }
-            let workspace = self.workspace(&request.workspace_id)?;
-            self.require_workspace_commit_access(&workspace, &request.principal, true)?;
-            return Ok(crate::business::WorkspaceMutation {
-                mutation: crate::engine::MutationPlan::Existing(
-                    self.operation(&request.operation_id)?,
-                ),
-                workspace,
-                request,
-                wire: None,
-            });
         }
+        // Replay skips live topology/manifest preconditions, never immutable
+        // binding between the authenticated request and its original body.
         let w = self.workspace(&request.workspace_id)?;
         let repo = self.repository_for_branch(&w.branch_id)?;
         if text(&body, "operation_id")? != request.operation_id
@@ -149,6 +141,17 @@ impl Engine {
                 "REQUEST_BINDING_MISMATCH",
                 "wire request differs from authenticated workspace input",
             ));
+        }
+        if self.state.operations.contains_key(&request.operation_id) {
+            let workspace = self.validate_workspace_commit_replay(&request, &wire_digest)?;
+            return Ok(crate::business::WorkspaceMutation {
+                mutation: crate::engine::MutationPlan::Existing(
+                    self.operation(&request.operation_id)?,
+                ),
+                workspace,
+                request,
+                wire: None,
+            });
         }
         if text(&body, "requested_protection")? != "strict" {
             return Err(Error::new(

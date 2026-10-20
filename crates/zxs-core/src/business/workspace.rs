@@ -200,6 +200,32 @@ pub(crate) struct WorkspaceMutation {
     pub wire: Option<crate::wire::WireCommit>,
 }
 
+// The native request envelope is shared by first publication and receipt replay.
+// Workspace state/fencing may advance after publication; the sealed files and
+// namespace input remain frozen and must still reproduce the original digest.
+fn workspace_commit_input(
+    workspace: &Workspace,
+    request: &CommitRequest,
+) -> Result<serde_json::Value> {
+    let sealed = object_hash(
+        "workspace",
+        &json!({"workspace_id":workspace.workspace_id,"base_head":workspace.base_head,"files":workspace.files.values().map(|f|json!({"item_id":f.item_id,"path":f.path,"hash":f.content_hash,"size":f.size.to_string(),"generation":f.dirty_generation.to_string()})).collect::<Vec<_>>(),"namespace_operations":workspace.namespace_operations}),
+    )?;
+    let mut request = request.clone();
+    request.request_digest = None;
+    Ok(json!({"request":request,"sealed_manifest_hash":sealed}))
+}
+
+pub(crate) fn native_commit_digest(
+    workspace: &Workspace,
+    request: &CommitRequest,
+) -> Result<String> {
+    object_hash(
+        "request",
+        &json!({"kind":"workspace.commit","principal":request.principal,"body":workspace_commit_input(workspace, request)?}),
+    )
+}
+
 fn validate_directory_selection(state: &State, workspace: &Workspace, path: &str) -> Result<()> {
     let branch = state
         .branches
@@ -836,29 +862,17 @@ impl Engine {
         request: CommitRequest,
         wire: Option<crate::wire::WireCommit>,
     ) -> Result<WorkspaceMutation> {
-        if let Some(op) = self.state.operations.get(&request.operation_id).cloned() {
-            // Retry always reuses the exact sealed request saved with the workspace.
-            let p = self
-                .root
-                .join("workspaces")
-                .join(&request.workspace_id)
-                .join("commit-request.json");
-            let saved: CommitRequest = read_json(&p)?;
-            if canonical_json(&saved)? == canonical_json(&request)?
-                && self.operation_owner(&request.operation_id).as_deref()
-                    == Some(&request.principal)
-            {
-                return Ok(WorkspaceMutation {
-                    mutation: MutationPlan::Existing(self.operation(&op.operation_id)?),
-                    workspace: self.workspace(&request.workspace_id)?,
-                    request,
-                    wire,
-                });
-            }
-            return Err(Error::new(
-                "IDEMPOTENCY_KEY_REUSED",
-                "commit retry differs from sealed request",
-            ));
+        if self.state.operations.contains_key(&request.operation_id) {
+            let workspace = self.workspace(&request.workspace_id)?;
+            let digest = native_commit_digest(&workspace, &request)?;
+            let workspace = self.validate_workspace_commit_replay(&request, &digest)?;
+            self.require_saved_workspace_request(&workspace, &request)?;
+            return Ok(WorkspaceMutation {
+                mutation: MutationPlan::Existing(self.operation(&request.operation_id)?),
+                workspace,
+                request,
+                wire,
+            });
         }
         let w = self.workspace(&request.workspace_id)?;
         if w.purpose == "historical_branch" {
@@ -895,16 +909,10 @@ impl Engine {
                 "request does not identify the workspace base",
             ));
         }
-        let sealed = object_hash(
-            "workspace",
-            &json!({"workspace_id":w.workspace_id,"base_head":w.base_head,"files":w.files.values().map(|f|json!({"item_id":f.item_id,"path":f.path,"hash":f.content_hash,"size":f.size.to_string(),"generation":f.dirty_generation.to_string()})).collect::<Vec<_>>(),"namespace_operations":w.namespace_operations}),
-        )?;
-        let mut digest_request = request.clone();
-        digest_request.request_digest = None;
-        let input = wire
-            .as_ref()
-            .map(|v| v.body.clone())
-            .unwrap_or_else(|| json!({"request":digest_request,"sealed_manifest_hash":sealed}));
+        let input = match &wire {
+            Some(wire) => wire.body.clone(),
+            None => workspace_commit_input(&w, &request)?,
+        };
         let digest = if let Some(wire) = &wire {
             wire.digest.clone()
         } else {
@@ -1089,15 +1097,12 @@ impl Engine {
             true,
         )?;
         if let Some(wire) = wire {
-            write_json(
-                &self
-                    .root
-                    .join("workspaces")
-                    .join(&w.workspace_id)
-                    .join("wire-request.json"),
-                &wire.body,
-                true,
-            )?;
+            for directory in [
+                self.root.join("workspaces").join(&w.workspace_id),
+                self.workspace_data_directory(w)?,
+            ] {
+                write_json(&directory.join("wire-request.json"), &wire.body, true)?;
+            }
         }
         Ok(())
     }
