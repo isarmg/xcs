@@ -1,0 +1,75 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+rust-version = "1.67.0"
+name = "flate2"
+version = "1.1.10"
+authors = [
+    "Alex Crichton <alex@alexcrichton.com>",
+    "Josh Triplett <josh@joshtriplett.org>",
+]
+build = false
+exclude = [".*"]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = """
+DEFLATE compression and decompression exposed as Read/BufRead/Write streams.
+Supports miniz_oxide and multiple zlib implementations. Supports zlib, gzip,
+and raw deflate streams.
+"""
+homepage = "https://github.com/rust-lang/flate2-rs"
+documentation = "https://docs.rs/flate2"
+readme = "../../../docs/upstream/flate2-1.1.10/README.md"
+keywords = [
+    "gzip",
+    "deflate",
+    "zlib",
+    "zlib-ng",
+    "encoding",
+]
+categories = [
+    "compression",
+    "api-bindings",
+]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rust-lang/flate2-rs"
+
+[features]
+any_c_zlib = ["any_zlib"]
+any_impl = []
+any_zlib = ["any_impl"]
+cloudflare_zlib = ["zlib"]
+default = ["rust_backend", "runtime_detection"]
+miniz-sys = ["rust_backend"]
+miniz_oxide = ["any_impl", "dep:miniz_oxide", "dep:crc32fast"]
+runtime_detection = ["crc32fast?/std"]
+rust_backend = ["miniz_oxide", "any_impl"]
+zlib = ["any_c_zlib", "dep:crc32fast"]
+zlib-default = ["any_c_zlib", "dep:crc32fast"]
+zlib-ng = ["any_c_zlib", "dep:crc32fast"]
+zlib-ng-compat = ["zlib", "dep:crc32fast"]
+
+[lib]
+name = "flate2"
+path = "src/lib.rs"
+
+[dependencies.crc32fast]
+version = "1.2.0"
+optional = true
+default-features = false
+path = "../crc32fast"
+
+[dependencies.miniz_oxide]
+version = "0.9.0"
+features = ["simd"]
+optional = true
+path = "../miniz_oxide"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(flate2_unstable_nightly_alloc_io)"]

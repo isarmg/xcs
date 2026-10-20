@@ -1,0 +1,101 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.85.0"
+name = "referencing"
+version = "0.58.6"
+authors = ["Dmitry Dygalo <dmitry@dygalo.dev>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "An implementation-agnostic JSON reference resolution library for Rust."
+readme = "../../../docs/upstream/referencing-0.58.6/README.md"
+license = "MIT"
+repository = "https://github.com/Stranger6667/jsonschema"
+resolver = "3"
+
+[features]
+default = []
+retrieve-async = ["dep:async-trait", "dep:futures"]
+
+[lib]
+name = "referencing"
+path = "src/lib.rs"
+
+[dependencies.ahash]
+version = "0.8"
+features = ["serde"]
+path = "../ahash"
+
+[dependencies.async-trait]
+version = "0.1.86"
+optional = true
+path = "../async-trait"
+
+[dependencies.fluent-uri]
+version = "0.4.1"
+features = ["serde"]
+path = "../fluent-uri"
+
+[dependencies.futures]
+version = "0.3.31"
+optional = true
+path = "../futures"
+
+[dependencies.hashbrown]
+version = "0.17"
+features = ["equivalent"]
+path = "../hashbrown-0.17.1"
+
+[dependencies.itoa]
+version = "1"
+path = "../itoa"
+
+[dependencies.micromap]
+version = "0.3.0"
+path = "../micromap"
+
+[dependencies.parking_lot]
+version = "0.12.3"
+path = "../parking_lot"
+
+[dependencies.percent-encoding]
+version = "2.3.1"
+path = "../percent-encoding"
+
+[dependencies.serde_json]
+version = "1"
+path = "../serde_json"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies.getrandom]
+version = "0.3.4"
+features = ["wasm_js"]
+path = "../getrandom-0.3.4"
+
+[lints.clippy]
+dbg_macro = "warn"
+empty_drop = "warn"
+empty_structs_with_brackets = "warn"
+exit = "warn"
+get_unwrap = "warn"
+module_name_repetitions = "allow"
+print_stderr = "warn"
+print_stdout = "warn"
+rc_buffer = "warn"
+rc_mutex = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+similar_names = "allow"
+too_many_arguments = "allow"
+too_many_lines = "allow"
+
+[lints.clippy.pedantic]
+level = "warn"
+priority = -2
+
+[lints.rust]
+unreachable_pub = "warn"
+unsafe_code = "warn"

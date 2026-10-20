@@ -1,0 +1,60 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.68"
+name = "fluent-uri"
+version = "0.4.1"
+authors = ["Scallop Ye <yescallop@gmail.com>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "A generic URI/IRI handling library compliant with RFC 3986/3987."
+documentation = "https://docs.rs/fluent-uri"
+readme = "../../../docs/upstream/fluent-uri-0.4.1/README.md"
+keywords = [
+    "builder",
+    "parser",
+    "uri",
+    "iri",
+]
+categories = [
+    "encoding",
+    "parser-implementations",
+]
+license = "MIT"
+repository = "https://github.com/yescallop/fluent-uri-rs"
+
+[features]
+alloc = ["borrow-or-share/alloc", "serde?/alloc"]
+default = ["std"]
+impl-error = []
+net = []
+std = ["alloc", "impl-error"]
+
+[lib]
+name = "fluent_uri"
+path = "src/lib.rs"
+
+[dependencies.borrow-or-share]
+version = "0.2.4"
+default-features = false
+path = "../borrow-or-share"
+
+[dependencies.ref-cast]
+version = "1.0"
+path = "../ref-cast"
+
+[dependencies.serde]
+version = "1.0"
+optional = true
+default-features = false
+path = "../serde"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(fluent_uri_unstable, fuzzing)"]

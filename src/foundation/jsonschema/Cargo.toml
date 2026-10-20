@@ -1,0 +1,192 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.85.0"
+name = "jsonschema"
+version = "0.58.6"
+authors = ["Dmitry Dygalo <dmitry@dygalo.dev>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "JSON schema validaton library"
+readme = "../../../docs/upstream/jsonschema-0.58.6/README.md"
+keywords = [
+    "jsonschema",
+    "validation",
+]
+categories = ["web-programming"]
+license = "MIT"
+repository = "https://github.com/Stranger6667/jsonschema"
+resolver = "3"
+
+[features]
+arbitrary-precision = ["serde_json/arbitrary_precision", "dep:num-bigint", "jsonschema-value/arbitrary-precision"]
+conformance = ["jsonschema-value/conformance"]
+default = ["resolve-http", "resolve-file", "tls-aws-lc-rs", "idna"]
+idna = ["dep:idna"]
+jsonb = ["jsonschema-value/jsonb"]
+macros = ["jsonschema-value/macros"]
+magnus = ["jsonschema-value/magnus"]
+pyo3 = ["jsonschema-value/pyo3"]
+resolve-async = ["referencing/retrieve-async", "dep:async-trait", "dep:tokio"]
+resolve-file = []
+resolve-http = ["dep:rustls"]
+tls-aws-lc-rs = ["rustls/aws-lc-rs"]
+tls-ring = ["rustls/ring"]
+
+[lib]
+name = "jsonschema"
+path = "src/lib.rs"
+
+[dependencies.ahash]
+version = "0.8"
+features = ["serde"]
+path = "../ahash"
+
+[dependencies.async-trait]
+version = "0.1.86"
+optional = true
+path = "../async-trait"
+
+[dependencies.bytecount]
+version = "0.6"
+features = ["runtime-dispatch-simd"]
+path = "../bytecount"
+
+[dependencies.data-encoding]
+version = "2.9"
+path = "../data-encoding"
+
+[dependencies.email_address]
+version = "0.2.9"
+path = "../email_address"
+
+[dependencies.fancy-regex]
+version = "0.19"
+path = "../fancy-regex"
+
+[dependencies.fraction]
+version = "0.17"
+features = ["with-bigint"]
+default-features = false
+path = "../fraction"
+
+[dependencies.idna]
+version = "1.0.2"
+optional = true
+path = "../idna"
+
+[dependencies.itoa]
+version = "1"
+path = "../itoa"
+
+[dependencies.jsonschema-regex]
+version = "0.58.6"
+path = "../jsonschema-regex"
+
+[dependencies.jsonschema-value]
+version = "0.58.6"
+path = "../jsonschema-value"
+
+[dependencies.num-bigint]
+version = "0.4"
+optional = true
+path = "../num-bigint"
+
+[dependencies.num-cmp]
+version = "0.1"
+path = "../num-cmp"
+
+[dependencies.num-traits]
+version = "0.2.19"
+path = "../num-traits"
+
+[dependencies.percent-encoding]
+version = "2.3"
+path = "../percent-encoding"
+
+[dependencies.referencing]
+version = "0.58.6"
+path = "../referencing"
+
+[dependencies.regex]
+version = "1.11.1"
+path = "../regex"
+
+[dependencies.serde]
+version = "1.0"
+features = ["derive"]
+path = "../serde"
+
+[dependencies.serde_json]
+version = "1"
+features = ["float_roundtrip"]
+path = "../serde_json"
+
+[dependencies.strum]
+version = "0.28.0"
+features = ["derive"]
+path = "../strum"
+
+[dependencies.tokio]
+version = "1"
+features = ["rt"]
+optional = true
+default-features = false
+path = "../tokio"
+
+[dependencies.unicode-general-category]
+version = "1.1"
+path = "../unicode-general-category"
+
+[dependencies.uuid-simd]
+version = "0.8"
+features = [
+    "std",
+    "detect",
+]
+default-features = false
+path = "../uuid-simd"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.rustls]
+version = "0.23"
+features = [
+    "std",
+    "tls12",
+]
+optional = true
+default-features = false
+path = "../rustls"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies.getrandom]
+version = "0.3.4"
+features = ["wasm_js"]
+path = "../getrandom-0.3.4"
+
+[lints.clippy]
+dbg_macro = "warn"
+empty_drop = "warn"
+empty_structs_with_brackets = "warn"
+exit = "warn"
+get_unwrap = "warn"
+module_name_repetitions = "allow"
+print_stderr = "warn"
+print_stdout = "warn"
+rc_buffer = "warn"
+rc_mutex = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+similar_names = "allow"
+too_many_arguments = "allow"
+too_many_lines = "allow"
+
+[lints.clippy.pedantic]
+level = "warn"
+priority = -2
+
+[lints.rust]
+unreachable_pub = "warn"
+unsafe_code = "warn"

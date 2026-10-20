@@ -1,0 +1,25 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+name = "email_address"
+version = "0.2.9"
+authors = ["Simon Johnston <johnstonskj@gmail.com>"]
+publish = true
+description = "A Rust crate providing an implementation of an RFC-compliant `EmailAddress` newtype. "
+documentation = "https://docs.rs/email_address/"
+readme = "../../../docs/upstream/email_address-0.2.9/README.md"
+license = "MIT"
+repository = "https://github.com/johnstonskj/rust-email_address.git"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[dependencies.serde]
+version = "1.0"
+optional = true
+path = "../serde"
+
+[features]
+default = ["serde_support"]
+serde_support = ["serde"]

@@ -1,0 +1,229 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.94.0"
+name = "sqlx-core"
+version = "0.9.0"
+authors = [
+    "Ryan Leckey <leckey.ryan@gmail.com>",
+    "Austin Bonander <austin.bonander@gmail.com>",
+    "Chloe Ross <orangesnowfox@gmail.com>",
+    "Daniel Akhterov <akhterovd@gmail.com>",
+]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Core of SQLx, the rust SQL toolkit. Not intended to be used directly."
+readme = false
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/launchbadge/sqlx"
+
+[features]
+_rt-async-global-executor = ["_rt-async-io", "_rt-async-task"]
+_rt-async-io = []
+_rt-async-std = ["_rt-async-io"]
+_rt-async-task = []
+_rt-smol = ["_rt-async-io", "_rt-async-task"]
+_rt-tokio = ["tokio", "tokio-stream"]
+_tls-native-tls = []
+_tls-none = []
+_tls-rustls = ["rustls"]
+_tls-rustls-aws-lc-rs = ["_tls-rustls", "rustls/aws-lc-rs", "webpki-roots"]
+_tls-rustls-ring-native-roots = ["_tls-rustls", "rustls/ring"]
+_tls-rustls-ring-webpki = ["_tls-rustls", "rustls/ring", "webpki-roots"]
+_unstable-doc = ["sqlx-toml"]
+any = []
+default = []
+json = ["serde", "serde_json"]
+migrate = ["sha2", "crc"]
+offline = ["serde", "either/serde"]
+sqlx-toml = ["serde", "toml/parse"]
+
+[lib]
+name = "sqlx_core"
+path = "src/lib.rs"
+
+[dependencies.base64]
+version = "0.22.1"
+features = ["alloc"]
+default-features = false
+path = "../base64-0.22.1"
+
+[dependencies.bit-vec]
+version = "0.8"
+optional = true
+path = "../bit-vec"
+
+[dependencies.bytes]
+version = "1.2.0"
+path = "../bytes"
+
+[dependencies.cfg-if]
+version = "1.0.0"
+path = "../cfg-if"
+
+[dependencies.crc]
+version = "3"
+optional = true
+path = "../crc"
+
+[dependencies.crossbeam-queue]
+version = "0.3.2"
+path = "../crossbeam-queue"
+
+[dependencies.either]
+version = "1.6.1"
+path = "../either"
+
+[dependencies.event-listener]
+version = "5.2.0"
+path = "../event-listener"
+
+[dependencies.futures-core]
+version = "0.3.32"
+default-features = false
+path = "../futures-core"
+
+[dependencies.futures-intrusive]
+version = "0.5.0"
+path = "../futures-intrusive"
+
+[dependencies.futures-io]
+version = "0.3.32"
+path = "../futures-io"
+
+[dependencies.futures-util]
+version = "0.3.32"
+features = [
+    "alloc",
+    "sink",
+    "io",
+]
+default-features = false
+path = "../futures-util"
+
+[dependencies.hashbrown]
+version = "0.16.0"
+path = "../hashbrown-0.16.1"
+
+[dependencies.hashlink]
+version = "0.11.0"
+path = "../hashlink"
+
+[dependencies.indexmap]
+version = "2.0"
+path = "../indexmap"
+
+[dependencies.ipnet]
+version = "2.3.0"
+optional = true
+path = "../ipnet"
+
+[dependencies.log]
+version = "0.4.18"
+default-features = false
+path = "../log"
+
+[dependencies.memchr]
+version = "2.5.0"
+default-features = false
+path = "../memchr"
+
+[dependencies.percent-encoding]
+version = "2.3.0"
+path = "../percent-encoding"
+
+[dependencies.rustls]
+version = "0.23.24"
+features = [
+    "std",
+    "tls12",
+]
+optional = true
+default-features = false
+path = "../rustls"
+
+[dependencies.serde]
+version = "1.0.219"
+features = [
+    "derive",
+    "rc",
+]
+optional = true
+path = "../serde"
+
+[dependencies.serde_json]
+version = "1.0.142"
+features = ["raw_value"]
+optional = true
+path = "../serde_json"
+
+[dependencies.sha2]
+version = "0.10.0"
+optional = true
+default-features = false
+path = "../sha2-0.10.9"
+
+[dependencies.smallvec]
+version = "1.13.1"
+path = "../smallvec"
+
+[dependencies.thiserror]
+version = "2.0.18"
+features = ["std"]
+default-features = false
+path = "../thiserror"
+
+[dependencies.tokio]
+version = "1.25.0"
+features = [
+    "time",
+    "net",
+    "sync",
+    "fs",
+    "io-util",
+    "rt",
+]
+optional = true
+default-features = false
+path = "../tokio"
+
+[dependencies.tokio-stream]
+version = "0.1.8"
+features = ["fs"]
+optional = true
+path = "../tokio-stream"
+
+[dependencies.toml]
+version = "0.8.16"
+optional = true
+path = "../toml"
+
+[dependencies.tracing]
+version = "0.1.37"
+features = ["log"]
+path = "../tracing"
+
+[dependencies.url]
+version = "2.2.2"
+path = "../url"
+
+[dependencies.uuid]
+version = "1.12.1"
+optional = true
+path = "../uuid"
+
+[dependencies.webpki-roots]
+version = "1"
+optional = true
+path = "../webpki-roots"
+
+[lints.clippy]
+cast_possible_truncation = "deny"
+cast_possible_wrap = "deny"
+cast_sign_loss = "deny"
+disallowed_methods = "deny"

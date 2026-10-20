@@ -1,0 +1,29 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+rust-version = "1.48.0"
+name = "base64"
+version = "0.22.1"
+authors = ["Marshall Pierce <marshall@mpierce.org>"]
+description = "encodes and decodes base64 as bytes or utf8"
+documentation = "https://docs.rs/base64"
+readme = "../../../docs/upstream/base64-0.22.1/README.md"
+keywords = [
+    "base64",
+    "utf8",
+    "encode",
+    "decode",
+    "no_std",
+]
+categories = ["encoding"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/marshallpierce/rust-base64"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[features]
+alloc = []
+default = ["std"]
+std = ["alloc"]

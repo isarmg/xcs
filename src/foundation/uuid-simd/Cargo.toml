@@ -1,0 +1,44 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.63"
+name = "uuid-simd"
+version = "0.8.0"
+description = "SIMD-accelerated UUID operations"
+readme = "../../../docs/upstream/uuid-simd-0.8.0/README.md"
+keywords = [
+    "uuid",
+    "guid",
+    "simd",
+]
+categories = [
+    "no-std",
+    "parser-implementations",
+]
+license = "MIT"
+repository = "https://github.com/Nugine/simd"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[dependencies.outref]
+version = "0.5.0"
+path = "../outref"
+
+[dependencies.uuid]
+version = "1.2.2"
+optional = true
+path = "../uuid"
+
+[dependencies.vsimd]
+version = "0.8.0"
+path = "../vsimd"
+
+[features]
+alloc = ["vsimd/alloc"]
+default = ["std", "detect", "uuid"]
+detect = ["vsimd/detect"]
+std = ["alloc", "vsimd/std"]
+unstable = ["vsimd/unstable"]
+

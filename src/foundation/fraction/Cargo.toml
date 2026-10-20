@@ -1,0 +1,69 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2015"
+rust-version = "1.70"
+name = "fraction"
+version = "0.17.0"
+authors = ["dnsl48 <dnsl48@gmail.com>"]
+build = false
+exclude = ["src/tests/division/*"]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Lossless fractions and decimals; drop-in float replacement"
+homepage = "https://github.com/dnsl48/fraction.git"
+documentation = "https://docs.rs/fraction/"
+readme = "../../../docs/upstream/fraction-0.17.0/README.md"
+keywords = [
+    "fraction",
+    "decimal",
+    "float",
+    "numeric",
+]
+categories = ["data-structures"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/dnsl48/fraction.git"
+
+[features]
+default = ["with-bigint", "with-decimal", "with-dynaint"]
+with-approx = ["with-bigint"]
+with-bigint = ["num/num-bigint", "num/std", "num-bigint"]
+with-decimal = []
+with-dynaint = []
+with-juniper-support = []
+with-postgres-support = ["bytes"]
+with-serde-support = ["serde", "serde_derive", "num/serde"]
+with-unicode = []
+
+[lib]
+name = "fraction"
+path = "src/lib.rs"
+
+[dependencies.bytes]
+version = "1"
+optional = true
+path = "../bytes"
+
+[dependencies.num]
+version = "0.4.3"
+default-features = false
+path = "../num"
+
+[dependencies.num-bigint]
+version = "0.4.8"
+optional = true
+path = "../num-bigint"
+
+[dependencies.serde]
+version = "1"
+optional = true
+path = "../serde"
+
+[dependencies.serde_derive]
+version = "1"
+optional = true
+path = "../serde_derive"
+

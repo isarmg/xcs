@@ -1,0 +1,95 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.70"
+name = "jiff"
+version = "0.2.38"
+authors = ["Andrew Gallant <jamslam@gmail.com>"]
+build = false
+include = [
+    "/src/**/*.rs",
+    "/tests/lib.rs",
+    "/*.md",
+    "COPYING",
+    "LICENSE-MIT",
+    "UNLICENSE",
+]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = """
+A date-time library that encourages you to jump into the pit of success.
+
+This library is heavily inspired by the Temporal project.
+"""
+documentation = "https://docs.rs/jiff"
+readme = "../../../docs/upstream/jiff-0.2.38/README.md"
+keywords = [
+    "date",
+    "time",
+    "calendar",
+    "zone",
+    "duration",
+]
+categories = [
+    "date-and-time",
+    "no-std",
+]
+license = "Unlicense OR MIT"
+repository = "https://github.com/BurntSushi/jiff"
+
+[features]
+alloc = ["jcore/alloc", "serde_core?/alloc"]
+arbitrary = ["jcore/arbitrary", "std"]
+default = ["std", "tz-system", "tz-fat", "tzdb-bundle-platform", "tzdb-zoneinfo", "tzdb-concatenated", "perf-inline"]
+js = ["dep:wasm-bindgen", "dep:js-sys"]
+logging = ["dep:log", "jcore/logging"]
+perf-inline = []
+serde = ["dep:serde_core"]
+std = ["alloc", "jcore/std", "log?/std", "serde_core?/std"]
+tz-fat = ["jcore/tz-fat"]
+tz-system = ["std"]
+tzdb-bundle-always = ["alloc"]
+tzdb-bundle-platform = ["alloc"]
+tzdb-concatenated = ["std"]
+tzdb-zoneinfo = ["std"]
+
+[lib]
+name = "jiff"
+path = "src/lib.rs"
+
+[dependencies.jcore]
+version = "0.1.0"
+default-features = false
+package = "jiff-core"
+path = "../jiff-core"
+
+[dependencies.log]
+version = "0.4.21"
+optional = true
+default-features = false
+path = "../log"
+
+[dependencies.serde_core]
+version = "1.0.221"
+optional = true
+default-features = false
+path = "../serde_core"
+
+[target.'cfg(all(any(target_arch = "wasm32", target_arch = "wasm64"), target_os = "unknown"))'.dependencies.js-sys]
+version = "0.3.50"
+optional = true
+path = "../js-sys"
+
+[target.'cfg(all(any(target_arch = "wasm32", target_arch = "wasm64"), target_os = "unknown"))'.dependencies.wasm-bindgen]
+version = "0.2.70"
+optional = true
+path = "../wasm-bindgen"
+
+[lints.rust.unexpected_cfgs]
+level = "allow"
+priority = 0
+check-cfg = ["cfg(docsrs_jiff)"]

@@ -1,0 +1,57 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.70"
+name = "jiff-core"
+version = "0.1.1"
+authors = ["Andrew Gallant <jamslam@gmail.com>"]
+build = false
+include = [
+    "/src/**/*.rs",
+    "COPYING",
+    "LICENSE-MIT",
+    "UNLICENSE",
+]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Low level datetime primitives for the Jiff library."
+homepage = "https://github.com/BurntSushi/jiff/tree/master/crates/jiff-core"
+documentation = "https://docs.rs/jiff-core"
+readme = "../../../docs/upstream/jiff-core-0.1.1/README.md"
+keywords = [
+    "date",
+    "time",
+    "civil",
+    "timestamp",
+]
+categories = ["date-and-time"]
+license = "Unlicense OR MIT"
+repository = "https://github.com/BurntSushi/jiff"
+
+[features]
+alloc = []
+arbitrary = ["std"]
+default = ["std", "tz-fat"]
+logging = ["dep:log"]
+std = ["alloc", "log?/std"]
+tz-fat = []
+
+[lib]
+name = "jiff_core"
+path = "src/lib.rs"
+bench = false
+
+[dependencies.log]
+version = "0.4.21"
+optional = true
+default-features = false
+path = "../log"
+
+[lints.rust.unexpected_cfgs]
+level = "allow"
+priority = 0
+check-cfg = ["cfg(docsrs_jiff)"]
