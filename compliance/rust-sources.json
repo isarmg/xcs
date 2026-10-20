@@ -1,13 +1,13 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "lockfiles_sha256": {
-    "Cargo.lock": "e9b34410d3e21923685f81062b738ef79d703711cd6fe25c8f6844a029b77293"
+    "Cargo.lock": "27fb8c9fee1a43d12b7ef7104205b731d55e8be0b85ad757046b41460dd9f8a9"
   },
   "manifests_sha256": {
     "Cargo.toml": "6079ee1ce3bdccdba31bb917fb80d916fbaebf8e9fffd893670b67dc086da9c3",
     "src/admin/Cargo.toml": "9173f744515badcb32162049439b3126c492e72a1b69b296f21ac4e711e5e7a9",
     "src/auth/Cargo.toml": "639cd40bf74f14658d60047c68866cee831f28de04a0297b63debaf0a974df0a",
-    "src/client/Cargo.toml": "7cc20e203d7ab2266a02a9691f714880b133a58b1ab69a44390dd7a1ab8643e2",
+    "src/client/Cargo.toml": "0fded7708e8bde75385bbf2ba54891375546521119f494717789d01199fdf5b6",
     "src/contract/Cargo.toml": "137efe70893b3f3e7c09bba1a36a5bd27daefef190b2dbbf07afdf809b05677a",
     "src/engine/Cargo.toml": "64bad92c9cadd376675bc21137cbae0227d198050cb89b51457ed289c1b1b7c4",
     "src/foundation/adler2/Cargo.toml": "6fe5eda8f0c1ccf3225d155f562cb523cf25488e37a34984e856ced9f2dcff1c",
@@ -237,7 +237,7 @@
     "src/foundation/rustc_version/Cargo.toml": "bda6f086fdbff4dca48102e6f9f6c597b66a243b00c8681427acc615a43fdf91",
     "src/foundation/rustix/Cargo.toml": "01d304a409d13c0c7ff7b578e5df2edd0e60bdf02a068b5ecd26c61be2658cb8",
     "src/foundation/rustls-pki-types/Cargo.toml": "15d861929cbf74b6d62d3b96393838fa05d97cc092e7e4ebe2e6c089624fcdb1",
-    "src/foundation/rustls-webpki/Cargo.toml": "15f9e4f135e639123faee2f6f2f1e94805c278c455feb8911cb5afb92deacd32",
+    "src/foundation/rustls-webpki/Cargo.toml": "c458316c514704512744182403f378af437e697453b3108acda2e217a4652f93",
     "src/foundation/rustls/Cargo.toml": "655395f275d51fe335f55c1a05cf6143771062774862715c184df13528493ee2",
     "src/foundation/rustversion/Cargo.toml": "9249b48982e3bc0add712bb704fe2641ab11f6af228340085379b7ef512248b0",
     "src/foundation/ryu/Cargo.toml": "3c23ab8489e6f020b06c3a9d6c20b7a0a3acba10279426a29ec32d2f3c77503c",
@@ -334,7 +334,7 @@
     "src/foundation/wasm-encoder/Cargo.toml": "e1d54f6793283fc8d13eae42277dd7a843884d8de6be845d08478f9789a90b86",
     "src/foundation/wasmparser/Cargo.toml": "3297d055b1aad3621a2da1c3b8f87ceba96281d05bfc5139aee219f067207438",
     "src/foundation/web-sys/Cargo.toml": "2a4eceddedbfe936a4d82101d5a5197da0398755a4dd8b01d6fd316524dc9470",
-    "src/foundation/webpki-roots/Cargo.toml": "3b1b1882b54048d570511c1006960e03215356d118d81e086bd4159166f1abbd",
+    "src/foundation/webpki-roots/Cargo.toml": "655e506d8dbfec7d359a53129c0da03b84ecf68f31bbfa09ee1a56f4aaf59644",
     "src/foundation/winnow/Cargo.toml": "def4ba55649b411890969079243811f764a4c9fdb5ffd32028d92bd2e570a1f0",
     "src/foundation/writeable/Cargo.toml": "e4568e1888afbe6af344da9132182809403f0aed0e56e907eb84050888b920a7",
     "src/foundation/yoke-derive/Cargo.toml": "585d6cfd320426e27bd45e58443cb2d6e6c669fbdb9f33074fcfad0f01558814",
@@ -735,6 +735,7 @@
     "vendor/rust/rustls-0.23.46": "d3456a84871123f5dd5aa804d84de477a5a2d6f2443cffb64cc6dae9fa46cb4e",
     "vendor/rust/rustls-pki-types-1.15.1": "afe245061e1a2faa9abd19d2a3e8b938e88cf43d40fdf3384cba6fc15e58700f",
     "vendor/rust/rustls-webpki-0.103.15": "15e4e452518a80bdde79dce514694de4f82c6a211f00ef8b1ea6115fbbd577ea",
+    "vendor/rust/rustls-webpki-0.103.16": "183e0887fd5b3804f00ddfa4b3898773278e602c98b6cb1cdf33b2f03ddc84bf",
     "vendor/rust/rustversion-1.0.23": "e3d19ce9ab2f50f6e42340930a67fa253996f4fe8a7e6c712d45e3b1e2dfecae",
     "vendor/rust/ryu-1.0.23": "928f2d1b24abb8528e612251ce581cff2241c5019232475f346811257ea0acd9",
     "vendor/rust/same-file-1.0.6": "227ba9a1736da232a594d7e96e2b981bef764d85ac4d353d885da7e4af05aa6a",
@@ -837,6 +838,7 @@
     "vendor/rust/wasmparser-0.245.1": "c2a981e8a0139ad0ec04a654b18338ddd93110f6c0a8c35366cf513ed424a9b8",
     "vendor/rust/web-sys-0.3.106": "0bc0e4655c16c1fbc28a4f1b1cf04ef2d55de5886384fcf4a33c63708c546adc",
     "vendor/rust/web-time-1.1.0": "e0f781a4234dffde78126e00ce21b94c034dafe189df7b352592edce1b6cffb9",
+    "vendor/rust/webpki-roots-1.0.10": "735519b3cbf05e800de14728fb6f7628fef1d116042586f21c242aa52689e895",
     "vendor/rust/webpki-roots-1.0.9": "937d748efdc531939be41e3f6c64af478c58edc68bbbfd49543c05b6fdfc9f2a",
     "vendor/rust/winapi-0.3.9": "a4b53b8bdcb59afd83782cc6b14d32ce31b36cae13daa57e47f991e777a85685",
     "vendor/rust/winapi-i686-pc-windows-gnu-0.4.0": "146d53c5494f1b4c4c6121cc6ee39b05e0afb73bdc8271e92834ca445f6f2aa9",
@@ -893,7 +895,7 @@
     "vendor/web/zxs-web-core": "40a8fa17ccce7e3ac0f748ce5d76dedc3d8cd29cc8af9ca37ef19d5bd582df1c",
     "vendor/web/zxs-web-macro": "1f6b0ad8a9ac0ec3310cb65537b4d85032f15787bbd3d2a72133ee93462573c9"
   },
-  "origins_sha256": "1853ac3d62bdde42593648ca771410ac9ba8425fb6e8f39313a0f08ab1bea402",
+  "origins_sha256": "55267be7777c4c3403f0518a1d4f56b69d299258a39c79c222d54537af07680e",
   "packages": {
     "src/foundation/adler2": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -13403,11 +13405,11 @@
       "version": "1.15.1"
     },
     "src/foundation/rustls-webpki": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；上游发布包升级：Official 0.103.16 security patch upgrade for RUSTSEC-2026-0382 / CVE-2026-111943; vulnerable original identity retained as superseded, not audited as active code.",
       "description": "Web PKI X.509 Certificate Verification.",
       "directory": "src/foundation/rustls-webpki",
       "files_sha256": {
-        "Cargo.toml": "15f9e4f135e639123faee2f6f2f1e94805c278c455feb8911cb5afb92deacd32",
+        "Cargo.toml": "c458316c514704512744182403f378af437e697453b3108acda2e217a4652f93",
         "src/alg_tests.rs": "c8019d1bed0d034d9f82dc90b6a9e1ae4d5a63707fe71febfc36d3c324e0c69e",
         "src/aws_lc_rs_algs.rs": "dc61a889c73d63d630d0aa6cec07d11d0db5a7a08609966c88635a21f280e9e5",
         "src/cert.rs": "1a4da3c745a72f61e8e95f222fc5847cb4779a4de524f4d6d09ae1d25b27c001",
@@ -13416,9 +13418,17 @@
         "src/data/alg-rsa-pkcs1-sha256-absent-params.der": "269462d02de5597c547cc473cefb4471ee93d836c75d272a0e5a36863e96d228",
         "src/data/alg-rsa-pkcs1-sha384-absent-params.der": "dc7e012a12d034dd581de85ad49913a020df7c8a684213f03629c1fd53dcf14f",
         "src/data/alg-rsa-pkcs1-sha512-absent-params.der": "1c9021c531e93720d2539bd989fbd9f6ce34d24aa0b694c376a87c0a1ba9dd29",
+        "src/data/distrusted/EMDVTLSCAG3B.spki.der": "2d5f988ee3ceaf696845a34299ca3e05816429cdb5de92427889533175f97b95",
+        "src/data/distrusted/EMDVTLSCAG3C.spki.der": "616e9a92539c40f454813f7fb8ae4a6db719498495215774f02d8b8b5a615d36",
+        "src/data/distrusted/EMEVTLSCAG3B.spki.der": "bdf5ab18303069ebc3e3ddbb0fc0613693acef01b2fb7be1a0624aab60fbff0d",
+        "src/data/distrusted/EMEVTLSCAG3C.spki.der": "b941c7577b918f7b9a9374aff3b02d8eda92545c86adb5b5268d1e121fe58ce2",
+        "src/data/distrusted/EMOVCSCAG3B.spki.der": "e8263cea915a92109a29fb497105dceeeb58fa099c2552c4082aff1e1a9a33b2",
+        "src/data/distrusted/EMOVCSCAG3C.spki.der": "09f75d128061fcdc6d31d8317ce3fe0aea4dab2c66777ce548858dd23f763ce7",
+        "src/data/distrusted/EMOVTLSCAG3B.spki.der": "7f09de2d155cc9fbc2dc4585f2c134ea3fc04ea9d9b3e31fa2d6bf9fdc0a02a2",
+        "src/data/distrusted/EMOVTLSCAG3C.spki.der": "6fc13706463e00b2cd2ae357f86de2441e59d501e322c7a02a531a9871e450f6",
         "src/der.rs": "ed693c0410cb8e89e586de76682841156dc3825f9a4181ac7f425232d8640da0",
-        "src/end_entity.rs": "dcd6176df075627bbd38881bb1b729462721ecb53e7968d56b116a8532043c42",
-        "src/error.rs": "6d79c7ec3b9063e156670c4db7155eb04cdf67b82ea384bc33c1f2c7109a32fc",
+        "src/end_entity.rs": "4a7036833722eb82d608b64d473ff63942cbad4b432eb83984fa3861a01e5655",
+        "src/error.rs": "761c1133b486f0bc4b4dc00c94fc75089d26d9879b2d35fc25e846b8c18286cc",
         "src/lib.rs": "023aba3c54f86edd30046ff390da3b84b3af3987fbacfd3ca3c9e5415e7c9217",
         "src/ring_algs.rs": "f6b17aa2e26442b6c940c5bf4b8e431a9e74152ba8b0573a3f74b99a73ba5412",
         "src/rpk_entity.rs": "29a59f4c5123fca851ff6b8a6a7f3120f2890df90d3169367f611dc05f31ed3b",
@@ -13428,31 +13438,31 @@
         "src/subject_name/mod.rs": "4415187af1bb98ac076d5a0e8b5f224f173bae006629bd35bb465cd0f11e7130",
         "src/time.rs": "e92721be14ac2f99b4a9a28125947307bbb1f87136b64e2b51ea07644fafa7a6",
         "src/trust_anchor.rs": "5a4a54b4525b710bfadb4c35f041700e965b51631d4b9b8d9842c157f057b5b1",
-        "src/verify_cert.rs": "235986cb11713f256caea24f29fece0c767896bf4a6de35764205cf1adb5fed9",
+        "src/verify_cert.rs": "73e60395e81a8c2ac7c276ee49bd501208876855fd820d83c386ce29f376c4d8",
         "src/x509.rs": "3c12557b2430268e0155094883e119414bd2e94776d757bfe5c38a3c3490958e"
       },
       "license": "ISC",
       "license_materials": [
-        "compliance/licenses/upstream/rustls-webpki-0.103.15/LICENSE"
+        "compliance/licenses/upstream/rustls-webpki-0.103.16/LICENSE"
       ],
       "merged_into": "无；通过统一内部源码源接入",
       "name": "rustls-webpki",
-      "origin_directory": "vendor/rust/rustls-webpki-0.103.15",
+      "origin_directory": "vendor/rust/rustls-webpki-0.103.16",
       "repository": "https://github.com/rustls/webpki",
       "status": "内部维护源码",
       "upstream": {
-        "archive_sha256": "f3c3cf1d8b1e7d4927e2d154c3fcb02979afb9939629c62cd9048d4f07b60ac2",
-        "archive_url": "https://static.crates.io/crates/rustls-webpki/rustls-webpki-0.103.15.crate",
+        "archive_sha256": "4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281",
+        "archive_url": "https://static.crates.io/crates/rustls-webpki/rustls-webpki-0.103.16.crate",
         "name": "rustls-webpki",
-        "version": "0.103.15"
+        "version": "0.103.16"
       },
       "vcs": {
         "git": {
-          "sha1": "c14836d8de33c0ad0ac7dcb28fe9aade20831a4d"
+          "sha1": "8ecdcc76f56b68fda67a6adf7976f5eed5006a4c"
         },
         "path_in_vcs": ""
       },
-      "version": "0.103.15"
+      "version": "0.103.16"
     },
     "src/foundation/rustversion": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -21117,12 +21127,12 @@
       "version": "0.3.106"
     },
     "src/foundation/webpki-roots": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；上游发布包升级：Official 1.0.10 security patch upgrade for RUSTSEC-2026-0381 / CVE-2026-111943; vulnerable original identity retained as superseded, not audited as active code.",
       "description": "Mozilla's CA root certificates for use with webpki",
       "directory": "src/foundation/webpki-roots",
       "files_sha256": {
-        "Cargo.toml": "3b1b1882b54048d570511c1006960e03215356d118d81e086bd4159166f1abbd",
-        "src/lib.rs": "581232b6fb8d5b8df315d34c798099ee759cb4930ffed77c331e7b38fed82b15",
+        "Cargo.toml": "655e506d8dbfec7d359a53129c0da03b84ecf68f31bbfa09ee1a56f4aaf59644",
+        "src/lib.rs": "3575e50b19f48e368b254e25abfacb300264d3728d12c89363306695c537e62a",
         "tests/codegen.rs": "06afca3127ffc684836406544e44ccfbb7cd0ae7ae15102c42bc62d076765ecd",
         "tests/data/tubitak/inter.der": "bf32da954571659aaf715c13ee703e3643dfcbaeee2d82110ca68eb57cb67ce0",
         "tests/data/tubitak/root.der": "46edc3689046d53a453fb3104ab80dcaec658b2660ea1629dd7e867990648716",
@@ -21131,26 +21141,26 @@
       },
       "license": "CDLA-Permissive-2.0",
       "license_materials": [
-        "compliance/licenses/upstream/webpki-roots-1.0.9/LICENSE"
+        "compliance/licenses/upstream/webpki-roots-1.0.10/LICENSE"
       ],
       "merged_into": "无；通过统一内部源码源接入",
       "name": "webpki-roots",
-      "origin_directory": "vendor/rust/webpki-roots-1.0.9",
+      "origin_directory": "vendor/rust/webpki-roots-1.0.10",
       "repository": "https://github.com/rustls/webpki-roots",
       "status": "内部维护源码",
       "upstream": {
-        "archive_sha256": "7dcd9d09a39985f5344844e66b0c530a33843579125f23e21e9f0f220850f22a",
-        "archive_url": "https://static.crates.io/crates/webpki-roots/webpki-roots-1.0.9.crate",
+        "archive_sha256": "1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9",
+        "archive_url": "https://static.crates.io/crates/webpki-roots/webpki-roots-1.0.10.crate",
         "name": "webpki-roots",
-        "version": "1.0.9"
+        "version": "1.0.10"
       },
       "vcs": {
         "git": {
-          "sha1": "0a553dbc8b3f18ea05c4f881cffa3f2d005d0d30"
+          "sha1": "70760478b9d3ea729b22faa0b5324da38a297c1c"
         },
         "path_in_vcs": "webpki-roots"
       },
-      "version": "1.0.9"
+      "version": "1.0.10"
     },
     "src/foundation/winnow": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -22700,6 +22710,7 @@
     "compliance/licenses/upstream/rustls-pki-types-1.15.1/LICENSE-APACHE": "45fd05c4865e7c350b98ad7ac50e1b15462d49af4a91e9b0c9dd933dc9a69742",
     "compliance/licenses/upstream/rustls-pki-types-1.15.1/LICENSE-MIT": "9117d922e667125508dde62b02c1f57ed22f5ad21eb536aa2e2d99e1c796e639",
     "compliance/licenses/upstream/rustls-webpki-0.103.15/LICENSE": "5b698ca13897be3afdb7174256fa1574f8c6892b8bea1a66dd6469d3fe27885a",
+    "compliance/licenses/upstream/rustls-webpki-0.103.16/LICENSE": "5b698ca13897be3afdb7174256fa1574f8c6892b8bea1a66dd6469d3fe27885a",
     "compliance/licenses/upstream/rustversion-1.0.23/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
     "compliance/licenses/upstream/rustversion-1.0.23/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
     "compliance/licenses/upstream/ryu-1.0.23/LICENSE-APACHE": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
@@ -22877,6 +22888,7 @@
     "compliance/licenses/upstream/web-sys-0.3.106/LICENSE-MIT": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
     "compliance/licenses/upstream/web-time-1.1.0/LICENSE-APACHE": "54a744942eb3fa63a74d8d359989ed6962c04f3f10ff20cfa08ff8aa7efbe4e6",
     "compliance/licenses/upstream/web-time-1.1.0/LICENSE-MIT": "f428305bbf2e70fbd807af0f3c7ac1b7acfb95311640f451e9d2e48db6d7e96b",
+    "compliance/licenses/upstream/webpki-roots-1.0.10/LICENSE": "e271993808fec50ab29350b39539cdec611a9103f827e0aa26d61da70e2d33f8",
     "compliance/licenses/upstream/webpki-roots-1.0.9/LICENSE": "e271993808fec50ab29350b39539cdec611a9103f827e0aa26d61da70e2d33f8",
     "compliance/licenses/upstream/winapi-0.3.9/LICENSE-APACHE": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
     "compliance/licenses/upstream/winapi-0.3.9/LICENSE-MIT": "ce7bc3499fee93d5022ef430d5e4201e79a6d9154f3974e42f41349f0569e09b",
@@ -23465,7 +23477,7 @@
     "compliance/provenance/merged-components/vendor/web/zxs-web-core/Cargo.toml.txt": "8d893574a8f08f87bddad5443bff82c7640f5dd34a74dbe1f919a76400181fa4",
     "compliance/provenance/merged-components/vendor/web/zxs-web-core/README.md": "5a22efb04cfa9cef41afb32626f8e9637f8284ce71397a6f06aac22bdb64d52e",
     "compliance/provenance/merged-components/vendor/web/zxs-web-core/src/lib.rs": "498acdebfbb39557a40cbb0b28c1dfbd3175ad939795a0421b0fa2dbe8ff609c",
-    "compliance/provenance/origins.json": "1853ac3d62bdde42593648ca771410ac9ba8425fb6e8f39313a0f08ab1bea402",
+    "compliance/provenance/origins.json": "55267be7777c4c3403f0518a1d4f56b69d299258a39c79c222d54537af07680e",
     "compliance/provenance/packages/adler2-2.0.1/Cargo.lock.txt": "3e44ced212a9e7ddc0a5450bcebb48ec67f32a058529856458efa36415554e53",
     "compliance/provenance/packages/adler2-2.0.1/Cargo.toml.orig.txt": "077df9094ac86443a4d05305f74782bd237c1f15fa39640463e4c62e9e4a310a",
     "compliance/provenance/packages/adler2-2.0.1/cargo-checksum.json.txt": "1fea7b818407db360ba16278b91e5488d7b78c4e411dd29a2b35a85a6f08026e",
@@ -24630,6 +24642,12 @@
     "compliance/provenance/packages/rustls-webpki-0.103.15/Cargo.toml.orig.txt": "f57b511d8fce387593d81ca3774684b1df0ca2ace691460cf09c4533ae345cfe",
     "compliance/provenance/packages/rustls-webpki-0.103.15/cargo-checksum.json.txt": "7bc7ad1e15a75e9a8fe4451d3b265a8afb710544dcb0ff85989b9ce2b29bdd8c",
     "compliance/provenance/packages/rustls-webpki-0.103.15/cargo_vcs_info.json.txt": "7539174f032b1bb75a55896e3952e2cbff2f751edb51ec289abe4e3e80a06f95",
+    "compliance/provenance/packages/rustls-webpki-0.103.16/Cargo.lock.txt": "9fef3d6a24035b2f8f7ee2b3f8f86f85453d1cfe7f75e1a61e608b94f4d52ed6",
+    "compliance/provenance/packages/rustls-webpki-0.103.16/Cargo.toml.orig.txt": "d2264fd4cf50e851dfd8a5d1a9f24cc4518f8205520c92707d2a8613ef4cdd88",
+    "compliance/provenance/packages/rustls-webpki-0.103.16/Cargo.toml.txt": "5b759da0e12ee54e9b3ee5e0d3fac82e0ecee11317d464f9dfbb53e9d73d0948",
+    "compliance/provenance/packages/rustls-webpki-0.103.16/cargo-checksum.json.txt": "e9c4072e4c1dc1860385fb9ddb19b040df6c3bcde0fbb73c765db5e2f0745e9f",
+    "compliance/provenance/packages/rustls-webpki-0.103.16/cargo_vcs_info.json.txt": "deb653f04dc9dd00de94b3a46895b708e2782fdf83e72db9be5cdc4f778aadc2",
+    "compliance/provenance/packages/rustls-webpki-0.103.16/registry-index.json": "302f2fd71af0bbdc6bb72896d8cb92e77def845443d73b41a9d974a275c8b04f",
     "compliance/provenance/packages/rustversion-1.0.23/Cargo.lock.txt": "1112abcf0225a742208d7b0337d470a5b6cef7e887100bda96d6b32105ddec5e",
     "compliance/provenance/packages/rustversion-1.0.23/Cargo.toml.orig.txt": "aea407b728196dfc09352d170f2e65204da583a9899c3b6377a6c63daa056ecf",
     "compliance/provenance/packages/rustversion-1.0.23/cargo-checksum.json.txt": "8957958047990aa6a3490af1063cc8068f998742641acf95001a485e353b784c",
@@ -25104,6 +25122,12 @@
     "compliance/provenance/packages/web-time-1.1.0/Cargo.toml.orig.txt": "51f7932cb07fd83b04aac16a4a679549c1955df8df5d7c402b5051fb99bd5040",
     "compliance/provenance/packages/web-time-1.1.0/cargo-checksum.json.txt": "d05b27641143c8ab6f2839d14350cad05539dc3fbf6df5d66d50b6dab1b28a4b",
     "compliance/provenance/packages/web-time-1.1.0/cargo_vcs_info.json.txt": "b9e243f2443aa9de12bdd174d2814ca9f4daa89b54e021e884bd4575f2bbc39f",
+    "compliance/provenance/packages/webpki-roots-1.0.10/Cargo.lock.txt": "203685df50fd3a219bf263bd15351ae60cbf98b6302a79347a7fe29b215acd33",
+    "compliance/provenance/packages/webpki-roots-1.0.10/Cargo.toml.orig.txt": "436dcc7f61613b03a58d409527ae2982e75eb696ca9bdf84d20e43df7d41234f",
+    "compliance/provenance/packages/webpki-roots-1.0.10/Cargo.toml.txt": "de646fd479c785c735b30fa970d95d0b883688b9edc817aed5e6a6a3eac39013",
+    "compliance/provenance/packages/webpki-roots-1.0.10/cargo-checksum.json.txt": "7189096df1813dfd75ef38501fb3ca693a643244e747d2bc055ce55515de5dc1",
+    "compliance/provenance/packages/webpki-roots-1.0.10/cargo_vcs_info.json.txt": "64bb2a5153f5b1e4474b28fdcbc116451c654592c70b5b5f0cdaece43409a359",
+    "compliance/provenance/packages/webpki-roots-1.0.10/registry-index.json": "fd559d3d84f827c7690af0ac6d0fb41eee03a1236d1275ba57734c39840a5c08",
     "compliance/provenance/packages/webpki-roots-1.0.9/Cargo.lock.txt": "06344cee218ea63aa3347918e469d8360fb736840ec9d080a186c9e5c72b3e96",
     "compliance/provenance/packages/webpki-roots-1.0.9/Cargo.toml.orig.txt": "1c85ac4ecfc28ebb6f1be161fb190617c51b7d8c6568a251ae6e66cfa7b2396d",
     "compliance/provenance/packages/webpki-roots-1.0.9/cargo-checksum.json.txt": "88e3195551d1d0d54d1d2caade95291cafd0967bc58eb2732aff02f9910e1a20",
@@ -25846,6 +25870,7 @@
     "docs/upstream/rustls-pki-types-1.15.1/README.md": "52ab92f5b204b89f9ad02b778ca2b6ad6d32c7f94916e1917dae4e95569d0b92",
     "docs/upstream/rustls-pki-types-1.15.1/src/data/README.md": "a20436d042d01819b65817bde6872147da740ac726016bdd6121a3f773b8ceb3",
     "docs/upstream/rustls-webpki-0.103.15/README.md": "084c37ee4b35887c813373cb98f3712e20d42e238cd16b59bd90dd8ae870dbf2",
+    "docs/upstream/rustls-webpki-0.103.16/README.md": "084c37ee4b35887c813373cb98f3712e20d42e238cd16b59bd90dd8ae870dbf2",
     "docs/upstream/rustversion-1.0.23/README.md": "913d04d158843566991845cc9d76e24610bf31f5a99e55115023ccc0b16ff1e7",
     "docs/upstream/ryu-1.0.23/README.md": "e9eb0ceb34ff12f11acaab161d374f585543bbe6a9e827b34ace5c1b41844821",
     "docs/upstream/same-file-1.0.6/README.md": "70c109d9c89b4479016142f2a4ad6963b6fe5793bcdd997add3d3af3d2baf36b",
@@ -26015,6 +26040,7 @@
     "docs/upstream/web-sys-0.3.106/README.md": "c888e287963554399d5dfccda4198adf7d2066378bf3a66911f54bc143d22164",
     "docs/upstream/web-time-1.1.0/CHANGELOG.md": "7f05140dd8c3a99a6a8f05a8a707038a424eb3e3e9c048b037e45a5fb03b4bdf",
     "docs/upstream/web-time-1.1.0/README.md": "a097c46f254121cb860554e83ea6b5b5f110890260c56feb44b2c870e774715e",
+    "docs/upstream/webpki-roots-1.0.10/README.md": "3f785bbd28b6628dadc4203a9368b729453aaa65df454e54a0c2f8a7a42395f5",
     "docs/upstream/webpki-roots-1.0.9/README.md": "3f785bbd28b6628dadc4203a9368b729453aaa65df454e54a0c2f8a7a42395f5",
     "docs/upstream/winapi-0.3.9/README.md": "00b1b016c128806ebf40e8648cbbf984baffc2eb90160fa47293fb4d4835c3f0",
     "docs/upstream/winapi-util-0.1.11/README.md": "a7f54a0abf91365baa51097afe72f4ed0156ef2152cf22800c280af24357dd9a",
@@ -27228,6 +27254,7 @@
         "src/foundation/rustls-webpki": {
           "features": [
             "alloc",
+            "default",
             "ring",
             "std"
           ],
@@ -40989,7 +41016,115 @@
     "src/foundation/zerocopy-derive": "91195d6147dd2e484bcf210ebe2606a24ec4f8481a4eff805387f6f5dd3ffcc0",
     "src/foundation/zlib-rs": "608642d27ee66035c4c43754b7fd936c1f147e1f873e94db614ff4ca2056e52f"
   },
-  "schema": 3,
+  "schema": 4,
+  "superseded": {
+    "vendor/rust/rustls-webpki-0.103.15": {
+      "package": {
+        "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+        "description": "Web PKI X.509 Certificate Verification.",
+        "directory": "src/foundation/rustls-webpki",
+        "files_sha256": {
+          "Cargo.toml": "15f9e4f135e639123faee2f6f2f1e94805c278c455feb8911cb5afb92deacd32",
+          "src/alg_tests.rs": "c8019d1bed0d034d9f82dc90b6a9e1ae4d5a63707fe71febfc36d3c324e0c69e",
+          "src/aws_lc_rs_algs.rs": "dc61a889c73d63d630d0aa6cec07d11d0db5a7a08609966c88635a21f280e9e5",
+          "src/cert.rs": "1a4da3c745a72f61e8e95f222fc5847cb4779a4de524f4d6d09ae1d25b27c001",
+          "src/crl/mod.rs": "6b59ca00ed53c0883ce13a36880636a1c41053013c9ced732859b0c1b3d60ff3",
+          "src/crl/types.rs": "ea3670be5fcf0baa6903b7438f24c2b578569b81326bc9a0a56d1b2687f1ba52",
+          "src/data/alg-rsa-pkcs1-sha256-absent-params.der": "269462d02de5597c547cc473cefb4471ee93d836c75d272a0e5a36863e96d228",
+          "src/data/alg-rsa-pkcs1-sha384-absent-params.der": "dc7e012a12d034dd581de85ad49913a020df7c8a684213f03629c1fd53dcf14f",
+          "src/data/alg-rsa-pkcs1-sha512-absent-params.der": "1c9021c531e93720d2539bd989fbd9f6ce34d24aa0b694c376a87c0a1ba9dd29",
+          "src/der.rs": "ed693c0410cb8e89e586de76682841156dc3825f9a4181ac7f425232d8640da0",
+          "src/end_entity.rs": "dcd6176df075627bbd38881bb1b729462721ecb53e7968d56b116a8532043c42",
+          "src/error.rs": "6d79c7ec3b9063e156670c4db7155eb04cdf67b82ea384bc33c1f2c7109a32fc",
+          "src/lib.rs": "023aba3c54f86edd30046ff390da3b84b3af3987fbacfd3ca3c9e5415e7c9217",
+          "src/ring_algs.rs": "f6b17aa2e26442b6c940c5bf4b8e431a9e74152ba8b0573a3f74b99a73ba5412",
+          "src/rpk_entity.rs": "29a59f4c5123fca851ff6b8a6a7f3120f2890df90d3169367f611dc05f31ed3b",
+          "src/signed_data.rs": "9edbc160fd6ec158bbcc67e408c2bc09078142c4feee3ce6e8dae6b7da806fe0",
+          "src/subject_name/dns_name.rs": "c5989e0e46973d8d6a3e94608aad7964089f25599c1f326a6ac30f85204c8328",
+          "src/subject_name/ip_address.rs": "e76e24bfb15d367732fccd4cc0ebae3bb3970d4a209b7c30a67263ab14200185",
+          "src/subject_name/mod.rs": "4415187af1bb98ac076d5a0e8b5f224f173bae006629bd35bb465cd0f11e7130",
+          "src/time.rs": "e92721be14ac2f99b4a9a28125947307bbb1f87136b64e2b51ea07644fafa7a6",
+          "src/trust_anchor.rs": "5a4a54b4525b710bfadb4c35f041700e965b51631d4b9b8d9842c157f057b5b1",
+          "src/verify_cert.rs": "235986cb11713f256caea24f29fece0c767896bf4a6de35764205cf1adb5fed9",
+          "src/x509.rs": "3c12557b2430268e0155094883e119414bd2e94776d757bfe5c38a3c3490958e"
+        },
+        "license": "ISC",
+        "license_materials": [
+          "compliance/licenses/upstream/rustls-webpki-0.103.15/LICENSE"
+        ],
+        "merged_into": "无；通过统一内部源码源接入",
+        "name": "rustls-webpki",
+        "origin_directory": "vendor/rust/rustls-webpki-0.103.15",
+        "repository": "https://github.com/rustls/webpki",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "f3c3cf1d8b1e7d4927e2d154c3fcb02979afb9939629c62cd9048d4f07b60ac2",
+          "archive_url": "https://static.crates.io/crates/rustls-webpki/rustls-webpki-0.103.15.crate",
+          "name": "rustls-webpki",
+          "version": "0.103.15"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "c14836d8de33c0ad0ac7dcb28fe9aade20831a4d"
+          },
+          "path_in_vcs": ""
+        },
+        "version": "0.103.15"
+      },
+      "reason": "Official 0.103.16 security patch upgrade for RUSTSEC-2026-0382 / CVE-2026-111943; vulnerable original identity retained as superseded, not audited as active code.",
+      "source_prefixes": [
+        "src/"
+      ],
+      "successor_origin_directory": "vendor/rust/rustls-webpki-0.103.16"
+    },
+    "vendor/rust/webpki-roots-1.0.9": {
+      "package": {
+        "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+        "description": "Mozilla's CA root certificates for use with webpki",
+        "directory": "src/foundation/webpki-roots",
+        "files_sha256": {
+          "Cargo.toml": "3b1b1882b54048d570511c1006960e03215356d118d81e086bd4159166f1abbd",
+          "src/lib.rs": "581232b6fb8d5b8df315d34c798099ee759cb4930ffed77c331e7b38fed82b15",
+          "tests/codegen.rs": "06afca3127ffc684836406544e44ccfbb7cd0ae7ae15102c42bc62d076765ecd",
+          "tests/data/tubitak/inter.der": "bf32da954571659aaf715c13ee703e3643dfcbaeee2d82110ca68eb57cb67ce0",
+          "tests/data/tubitak/root.der": "46edc3689046d53a453fb3104ab80dcaec658b2660ea1629dd7e867990648716",
+          "tests/data/tubitak/subj.der": "8f0d491077ddc360e7416620af2cf4a8a4010e5b6f5a6d0f557f4f2499a38029",
+          "tests/verify.rs": "ef69aafbd92ba96b74325569025b44b04b021d526217ef69e7c3d46d83414632"
+        },
+        "license": "CDLA-Permissive-2.0",
+        "license_materials": [
+          "compliance/licenses/upstream/webpki-roots-1.0.9/LICENSE"
+        ],
+        "merged_into": "无；通过统一内部源码源接入",
+        "name": "webpki-roots",
+        "origin_directory": "vendor/rust/webpki-roots-1.0.9",
+        "repository": "https://github.com/rustls/webpki-roots",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "7dcd9d09a39985f5344844e66b0c530a33843579125f23e21e9f0f220850f22a",
+          "archive_url": "https://static.crates.io/crates/webpki-roots/webpki-roots-1.0.9.crate",
+          "name": "webpki-roots",
+          "version": "1.0.9"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "0a553dbc8b3f18ea05c4f881cffa3f2d005d0d30"
+          },
+          "path_in_vcs": "webpki-roots"
+        },
+        "version": "1.0.9"
+      },
+      "reason": "Official 1.0.10 security patch upgrade for RUSTSEC-2026-0381 / CVE-2026-111943; vulnerable original identity retained as superseded, not audited as active code.",
+      "source_prefixes": [
+        "src/"
+      ],
+      "successor_origin_directory": "vendor/rust/webpki-roots-1.0.10"
+    }
+  },
+  "superseded_records_sha256": {
+    "vendor/rust/rustls-webpki-0.103.15": "c135f78400cf97844c0a76e3ce88372689c67eb1e9a1de177ab44fccac3eca04",
+    "vendor/rust/webpki-roots-1.0.9": "ab27e4eff55798d801493547b9c28844c0861a692161807856a626437a709c7b"
+  },
   "upstream_identities": [
     {
       "archive_sha256": "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa",
@@ -43429,6 +43564,18 @@
       "maintained_name": "zxs-web-macro",
       "name": "leptos_macro",
       "version": "0.8.19"
+    },
+    {
+      "archive_sha256": "4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281",
+      "archive_url": "https://static.crates.io/crates/rustls-webpki/rustls-webpki-0.103.16.crate",
+      "name": "rustls-webpki",
+      "version": "0.103.16"
+    },
+    {
+      "archive_sha256": "1c1c8e20c8a38fc7d65abfe74eb7280e4aa667e8eec8bc84996d2874810748d9",
+      "archive_url": "https://static.crates.io/crates/webpki-roots/webpki-roots-1.0.10.crate",
+      "name": "webpki-roots",
+      "version": "1.0.10"
     }
   ]
 }

@@ -4,7 +4,7 @@
 edition = "2021"
 rust-version = "1.71"
 name = "rustls-webpki"
-version = "0.103.15"
+version = "0.103.16"
 build = false
 include = [
     "Cargo.toml",
@@ -42,7 +42,7 @@ autoexamples = false
 autotests = false
 autobenches = false
 description = "Web PKI X.509 Certificate Verification."
-readme = "../../../docs/upstream/rustls-webpki-0.103.15/README.md"
+readme = "../../../docs/upstream/rustls-webpki-0.103.16/README.md"
 categories = [
     "cryptography",
     "no-std",

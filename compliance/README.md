@@ -34,3 +34,7 @@
 - `erased@0.1.2`（`60eebad28ab2578a6322199099b8a07035438008`）。
 
 原始说明见 [`provenance/shared/vendor/rust-notices/provenance.json`](provenance/shared/vendor/rust-notices/provenance.json)。发布材料必须携带本目录中的实际许可、版权和通知，并如实列出尚未关闭事项；许可证声明本身不构成维护状态、安全审计或性能验收证据。
+
+## 安全补丁升级
+
+同一路径的真实上游升级通过显式升级计划导入；当前清单中的 `superseded` 保存被替换活动包的完整收据和新来源关系。历史来源与中央材料保持不可变，活动审计只匹配实际保留的版本。首次应用见 [2026-10 emSign TLS 安全更新](../docs/security/TLS_EMSIGN_2026.md)。

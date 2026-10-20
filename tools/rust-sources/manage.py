@@ -494,7 +494,123 @@ def retirement_plan(root, previous, plan, records, policy):
     return packages, retired
 
 
-def refresh(root, retire_plan=None):
+def upgrade_source_prefixes(root, item):
+    prefixes = item.get("source_prefixes")
+    if (not isinstance(prefixes, list) or not prefixes
+            or any(not isinstance(prefix, str) or not prefix.endswith("/") for prefix in prefixes)
+            or len(set(prefixes)) != len(prefixes)):
+        raise ValueError("source upgrade requires explicit nonempty source_prefixes")
+    for prefix in prefixes:
+        safe_path(root, prefix[:-1])
+        if any(prefix != other and prefix.startswith(other) for other in prefixes):
+            raise ValueError("overlapping source upgrade prefixes")
+    return tuple(prefixes)
+
+
+def superseded_sources(root, catalog, records, check_manifests=True):
+    """Preserve prior source receipts and immutable same-path upgrade chains."""
+    superseded = catalog.get("superseded", {})
+    if (not isinstance(superseded, dict)
+            or (superseded and catalog.get("schema", 0) < 4)
+            or (catalog.get("schema", 0) >= 4
+                and not {"superseded", "superseded_records_sha256"} <= catalog.keys())):
+        raise ValueError("invalid superseded source inventory")
+    if origin_hashes(superseded) != catalog.get("superseded_records_sha256", {}):
+        raise ValueError("immutable superseded source receipt drift")
+    successors = set()
+    for origin, receipt in superseded.items():
+        package = receipt["package"]
+        relative = package["directory"]
+        successor = receipt["successor_origin_directory"]
+        if (origin != package["origin_directory"] or not relative.startswith("src/foundation/")
+                or not isinstance(receipt.get("reason"), str) or not receipt["reason"].strip()
+                or not package.get("files_sha256")
+                or any(not HEX.fullmatch(value) for value in package["files_sha256"].values())):
+            raise ValueError(f"incomplete superseded source receipt: {origin}")
+        safe_path(root, relative)
+        upgrade_source_prefixes(root, receipt)
+        match_origin(package, records)
+        record = records.get(successor)
+        if (record is None or successor == origin or successor in successors
+                or record["upstream"]["name"] != package["upstream"]["name"]
+                or record["upstream"]["version"] == package["upstream"]["version"]):
+            raise ValueError(f"invalid superseded source successor: {origin}")
+        successors.add(successor)
+        # Direct links never change on later upgrades. Follow the chain to the
+        # current receipt, including an explicit eventual retirement.
+        seen = {origin}
+        while successor in superseded:
+            if successor in seen:
+                raise ValueError(f"cyclic superseded source history: {origin}")
+            seen.add(successor)
+            next_receipt = superseded[successor]
+            if next_receipt["package"]["directory"] != relative:
+                raise ValueError(f"superseded source path drift: {origin}")
+            successor = next_receipt["successor_origin_directory"]
+        current = catalog["packages"].get(relative) or catalog.get("retired", {}).get(relative)
+        if current is None or current["origin_directory"] != successor:
+            raise ValueError(f"superseded source has no current successor: {origin}")
+        match_origin(current, records)
+        if current["version"] != current["upstream"]["version"]:
+            raise ValueError(f"upgraded source version drift: {relative}")
+        if check_manifests and relative in catalog["packages"]:
+            manifest = tomllib.loads((safe_path(root, relative) / "Cargo.toml").read_text(encoding="utf-8"))["package"]
+            if manifest["name"] != current["name"] or manifest["version"] != current["version"]:
+                raise ValueError(f"upgraded source manifest identity drift: {relative}")
+    return superseded
+
+
+def upgrade_plan(root, previous, plan, records):
+    """Only an exact reviewed plan may change an active upstream identity."""
+    packages = dict(previous["packages"])
+    superseded = dict(superseded_sources(root, previous, records, check_manifests=False))
+    if plan is None:
+        return packages, superseded
+    if not isinstance(plan, dict) or plan.get("schema") != 1 or not isinstance(plan.get("packages"), list):
+        raise ValueError("invalid explicit source upgrade plan")
+    seen = set()
+    for item in plan["packages"]:
+        relative = item["directory"]
+        if relative in seen:
+            raise ValueError(f"duplicate source upgrade: {relative}")
+        seen.add(relative)
+        before = packages.get(relative)
+        if before is None or item.get("package") != before:
+            raise ValueError(f"upgrade plan does not match last source receipt: {relative}")
+        prior_origin = match_origin(before, records)["origin_directory"]
+        successor = item["successor_origin_directory"]
+        record = records.get(successor)
+        if (not relative.startswith("src/foundation/") or prior_origin in superseded
+                or record is None or successor in previous.get("origin_records_sha256", {})
+                or record["upstream"]["name"] != before["upstream"]["name"]
+                or record["upstream"]["version"] == before["upstream"]["version"]):
+            raise ValueError(f"upgrade requires a new same-package origin: {relative}")
+        if not isinstance(item.get("reason"), str) or not item["reason"].strip():
+            raise ValueError(f"source upgrade requires a reason: {relative}")
+        manifest = tomllib.loads((safe_path(root, relative) / "Cargo.toml").read_text(encoding="utf-8"))["package"]
+        if manifest["name"] != before["name"] or manifest["version"] != record["upstream"]["version"]:
+            raise ValueError(f"upgrade manifest does not match successor identity: {relative}")
+        prefixes = upgrade_source_prefixes(root, item)
+        expected = {path: value for path, value in record["original_files_sha256"].items()
+                    if path.startswith(prefixes)}
+        actual = {path: value for path, value in files(safe_path(root, relative)).items()
+                  if path.startswith(prefixes)}
+        if (any(not any(path.startswith(prefix) for path in expected) for prefix in prefixes)
+                or actual != expected):
+            raise ValueError(f"upgraded source differs from successor release: {relative}")
+        superseded[prior_origin] = dict(package=before, successor_origin_directory=successor,
+                                       reason=item["reason"], source_prefixes=list(prefixes))
+        package = dict(before, origin_directory=successor, upstream=record["upstream"])
+        for key in ("vcs", "license", "repository"):
+            package.pop(key, None)
+            if key in record:
+                package[key] = record[key]
+        package["changes"] = before.get("changes", "") + "；上游发布包升级：" + item["reason"]
+        packages[relative] = package
+    return packages, superseded
+
+
+def refresh(root, retire_plan=None, upgrade_plan_data=None):
     policy = read_json(root / POLICY)
     structure(root, policy)
     previous = read_json(root / CATALOG)
@@ -511,7 +627,8 @@ def refresh(root, retire_plan=None):
             continue
         if material.get(path) != expected:
             raise ValueError(f"immutable original material drift: {path}")
-    active, retired = retirement_plan(root, previous, retire_plan, records, policy)
+    active, superseded = upgrade_plan(root, previous, upgrade_plan_data, records)
+    active, retired = retirement_plan(root, dict(previous, packages=active), retire_plan, records, policy)
     actual = source_directories(root, policy)
     if actual != set(active):
         raise ValueError(f"unregistered source directories: {sorted(actual ^ set(active))}")
@@ -543,20 +660,22 @@ def refresh(root, retire_plan=None):
             if key in merged:
                 merged[key] = current_description(merged[key])
         merges.append(merged)
-    catalog = dict(schema=3, policy_sha256=digest((root / POLICY).read_bytes()),
+    catalog = dict(schema=4, policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
                    lockfiles_sha256={"Cargo.lock": digest((root / "Cargo.lock").read_bytes())},
                    origins_sha256=digest((root / ORIGINS).read_bytes()), origin_records_sha256=hashes,
                    provenance_sha256=material, packages=packages, resolutions=resolutions(root, policy, [merge["directory"] for merge in merges]),
                    upstream_identities=[record["upstream"] for record in records.values()], merges=merges,
-                   retired=retired, retired_records_sha256=origin_hashes(retired))
+                   retired=retired, retired_records_sha256=origin_hashes(retired),
+                   superseded=superseded, superseded_records_sha256=origin_hashes(superseded))
     retired_sources(root, catalog, records)
+    superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
     verify_retained_closure(catalog, policy)
     (root / CATALOG).write_text(json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (root / DOC).write_text(document(catalog, policy), encoding="utf-8", newline="\n")
-    print(f"Recorded {len(packages)} active source trees, {len(retired)} retired sources and {len(catalog['resolutions'])} root-workspace closure profiles.")
+    print(f"Recorded {len(packages)} active source trees, {len(retired)} retired and {len(superseded)} superseded sources and {len(catalog['resolutions'])} root-workspace closure profiles.")
 
 
 def cell(value):
@@ -569,6 +688,7 @@ def document(catalog, policy):
              "精确来源及原始逐文件摘要见 compliance/provenance/origins.json；当前源码逐文件摘要、单锁文件及各目标闭包见 compliance/rust-sources.json；法律材料统一见 compliance/NOTICE.md 和 compliance/licenses。集中管理不改变各上游许可，也不把改造代码全部重新许可为根项目许可。", "",
              "runtime 是 normal 边可达的运行候选；compile 包括 build/proc-macro 子图及维护工具。元数据闭包与解析 features 不等于最终链接代码、实际浏览器/SMB 验收或安全审计。每个活动源码身份必须至少进入一个受支持入口/目标闭包，未使用身份只能显式退役并保留来源证据。工具链及既有 Samba/SQLite/系统 SDK 管理边界保持独立。", "",
              "修改后显式执行 `python3 tools/rust-sources/manage.py refresh`，审查源码、来源清单与文档差异，再执行 `python3 tools/rust-sources/manage.py verify --metadata`；verify 不接受新哈希。删除依赖必须另提供经复核的 `refresh --retire-plan PLAN.json`，保存已移除实现的最后源码摘要及原因；普通 refresh 拒绝意外丢失目录或改写退役记录。原始身份与法律材料继续保存，不因退役而删除。原始发布包重建工具只向仓库外独立复核目录输出，不覆盖活动源码。", "",
+             "同目录上游升级必须追加新的原始发布包及集中材料，并使用经复核的 `refresh --upgrade-plan PLAN.json`。计划 schema 为 1，packages 每项包含 directory、与上次活动记录完全相同的 package、successor_origin_directory、reason 及非空 source_prefixes（例如 `[\"src/\"]`）。升级时逐文件校验这些完整前缀下的源码与新发布包完全一致，不能仅提升版本号；路径清单、缺失、新增和内容差异均拒绝。schema 4 的 superseded 以旧 origin_directory 为键，保留原 package、后继来源、原因和已校验前缀，superseded_records_sha256 固定其摘要。连续升级保留不可改写的直接后继链，最终指向同目录的当前身份或显式退役记录。升级后有意的本地源码修改仍需常规 refresh，不改写上游原始收据。", "",
              "## 单工作区入口与解析目标", "", "| 入口闭包 | 用途 | 目标 |", "| --- | --- | --- |"]
     if policy.get("verification_members"):
         lines[2] += (" 基础库验证成员 " + "、".join(policy["verification_members"])
@@ -594,6 +714,14 @@ def document(catalog, policy):
         usage = [f"{item.get('profile', 'workspace')}@{item['target']} ({'+'.join(item['packages'][merged['directory']]['roles'])})"
                  for item in catalog["resolutions"] if merged["directory"] in item["packages"]]
         lines.append(f"- `{upstream['name']}@{upstream['version']}` → `{merged['directory']}`；{merged.get('changes', '')}；实际闭包：{', '.join(usage) or '未选中'}；法律材料：{', '.join(merged.get('license_materials', []))}。")
+    lines += ["", "## 已升级替换的历史来源", "",
+              "以下旧发布包已在同一源码目录由后继身份替换，不再作为当前实现参与公告扫描。完整旧活动记录、原始摘要及法律材料保留，不能把历史来源伪装成当前源码或反复改写升级链。当前活动及合并实现仍全部扫描，不设公告豁免。", "",
+              "| 原始身份 | 源码目录 | 直接后继来源 | 升级原因 | 导入校验前缀 |", "| --- | --- | --- | --- | --- |"]
+    for _, receipt in sorted(catalog.get("superseded", {}).items()):
+        package = receipt["package"]
+        upstream = package["upstream"]
+        lines.append("| " + " | ".join(map(cell, [f"{upstream['name']}@{upstream['version']}", package["directory"],
+                     receipt["successor_origin_directory"], receipt["reason"], ", ".join(receipt["source_prefixes"])])) + " |")
     lines += ["", "## 已移除的非目标平台与可选实现", "",
               "以下实现已从活动源码及依赖声明中移除，不参与构建或当前依赖公告扫描。最后源码摘要、移除原因与原始来源仍在 JSON retired 中，原始材料继续保留。重新引入必须经过显式来源登记，不能悄悄恢复目录。", "",
               "| 原始身份 | 原目录 | 移除原因 | 最后文件数 / 字节 |", "| --- | --- | --- | --- |"]
@@ -602,7 +730,7 @@ def document(catalog, policy):
         lines.append("| " + " | ".join(map(cell, [f"{upstream['name']}@{upstream['version']}", relative,
                      retired["reason"], f"{retired['file_count']} / {retired['bytes']}"])) + " |")
     lines += ["", "## 完整性、安全与验收", "",
-              f"共 {len(catalog['packages'])} 个活动源码树、{len(catalog.get('retired', {}))} 个已移除来源，{len(catalog['resolutions'])} 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。", "",
+              f"共 {len(catalog['packages'])} 个活动源码树、{len(catalog.get('retired', {}))} 个已移除来源、{len(catalog.get('superseded', {}))} 个已升级替换来源，{len(catalog['resolutions'])} 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。", "",
               "`.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口闭包。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。", ""]
     return "\n".join(lines)
 
@@ -611,8 +739,9 @@ def verify_origin_coverage(catalog, records):
     covered = [package["origin_directory"] for package in catalog["packages"].values()]
     covered.extend(merge["origin_directory"] for merge in catalog.get("merges", []))
     covered.extend(package["origin_directory"] for package in catalog.get("retired", {}).values())
+    covered.extend(receipt["package"]["origin_directory"] for receipt in catalog.get("superseded", {}).values())
     if len(set(covered)) != len(covered) or set(covered) != set(records):
-        raise ValueError("historical active/merged/retired source coverage drift")
+        raise ValueError("historical active/merged/retired/superseded source coverage drift")
 
 
 def verify_retained_closure(catalog, policy):
@@ -660,6 +789,7 @@ def verify(root, metadata=False):
         if files(safe_path(root, merge["directory"])) != merge["files_sha256"]:
             raise ValueError(f"merged source content drift: {merge['directory']}")
     retired_sources(root, catalog, records)
+    superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
     verify_retained_closure(catalog, policy)
     expected = {(entry["manifest"], entry["id"], entry["target"]) for entry in entries(policy)}
@@ -673,7 +803,7 @@ def verify(root, metadata=False):
         raise ValueError("third-party documentation out of sync")
     if metadata and resolutions(root, policy, [merge["directory"] for merge in catalog.get("merges", [])]) != catalog["resolutions"]:
         raise ValueError("closure resolution/features drift")
-    print(f"Verified {len(catalog['packages'])} active source trees, {len(catalog.get('retired', {}))} retired sources, immutable upstream provenance and one root workspace/lock.")
+    print(f"Verified {len(catalog['packages'])} active source trees, {len(catalog.get('retired', {}))} retired and {len(catalog.get('superseded', {}))} superseded sources, immutable upstream provenance and one root workspace/lock.")
 
 
 def main():
@@ -681,11 +811,13 @@ def main():
     parser.add_argument("command", choices=("refresh", "verify"))
     parser.add_argument("--metadata", action="store_true")
     parser.add_argument("--retire-plan", type=Path, help="explicit reviewed removal plan; refresh only")
+    parser.add_argument("--upgrade-plan", type=Path, help="explicit reviewed upstream replacement plan; refresh only")
     arguments = parser.parse_args()
     try:
-        if arguments.retire_plan and arguments.command != "refresh":
-            raise ValueError("--retire-plan is only accepted by refresh")
-        (refresh(ROOT, read_json(arguments.retire_plan) if arguments.retire_plan else None)
+        if (arguments.retire_plan or arguments.upgrade_plan) and arguments.command != "refresh":
+            raise ValueError("--retire-plan and --upgrade-plan are only accepted by refresh")
+        (refresh(ROOT, read_json(arguments.retire_plan) if arguments.retire_plan else None,
+                 read_json(arguments.upgrade_plan) if arguments.upgrade_plan else None)
          if arguments.command == "refresh" else verify(ROOT, arguments.metadata))
     except (ValueError, OSError, KeyError, TypeError) as error:
         print(f"Rust source check failed: {error}", file=sys.stderr)

@@ -84,6 +84,31 @@ class AdvisoryGate(unittest.TestCase):
                        upstream_identities=[active, removed])
         self.assertEqual([package["name"] for package in audit.identities(catalog)], ["retained"])
 
+    def test_upgrades_scan_current_identity_without_historical_or_local_exemptions(self):
+        old = dict(name="mini", version="1.0.0", archive_sha256="a" * 64)
+        current = dict(name="mini", version="1.1.0", archive_sha256="b" * 64)
+        merged = dict(name="merged", version="2.0.0", archive_sha256="c" * 64)
+        catalog = dict(schema=4, packages={"src/foundation/mini": dict(name="local-name", upstream=current)},
+                       merges=[dict(upstream=merged)], upstream_identities=[old, current, merged],
+                       superseded={"old/mini": dict(package=dict(upstream=old), successor_origin_directory="new/mini")})
+        self.assertEqual([(package["name"], package["version"]) for package in audit.identities(catalog)],
+                         [("merged", "2.0.0"), ("mini", "1.1.0")])
+
+    def test_upgraded_source_scans_new_identity_without_advisory_exemption(self):
+        old = dict(name="rustls-webpki", version="0.103.15", archive_sha256="a" * 64)
+        new = dict(name="rustls-webpki", version="0.103.16", archive_sha256="b" * 64)
+        catalog = dict(schema=4, packages={"src/foundation/rustls-webpki": dict(upstream=new)},
+                       merges=[], superseded={"old": {"package": dict(upstream=old)}},
+                       upstream_identities=[old, new])
+        self.assertEqual([(package["name"], package["version"]) for package in audit.identities(catalog)],
+                         [("rustls-webpki", "0.103.16")])
+        # A future finding against the upgraded identity still fails normally.
+        self.report["vulnerabilities"] = dict(found=True, count=1, list=[
+            {"package": {"name": "rustls-webpki", "version": "0.103.16"},
+             "advisory": {"id": "RUSTSEC-TEST"}}])
+        with self.assertRaisesRegex(ValueError, "unresolved advisory"):
+            self.check(1)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -23,3 +23,7 @@ rustix.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1.53.2", features = ["macros", "rt-multi-thread", "net", "io-util", "sync", "time"], path = "../foundation/tokio"}
+rustls-webpki = { version = "0.103.16", features = ["ring"], path = "../foundation/rustls-webpki" }
+rustls-pki-types = { version = "1", path = "../foundation/rustls-pki-types" }
+webpki-roots = { version = "1.0.10", path = "../foundation/webpki-roots" }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"], path = "../foundation/rustls" }

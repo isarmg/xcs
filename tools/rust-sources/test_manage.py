@@ -1,5 +1,6 @@
 """Single-workspace, local-edge and immutable-origin policy regressions."""
 from contextlib import redirect_stdout
+from copy import deepcopy
 import importlib.util
 import io
 import json
@@ -70,9 +71,9 @@ class SourcePolicy(unittest.TestCase):
         self.write_json(manager.CATALOG, self.catalog)
         (self.root / manager.DOC).write_text(manager.document(self.catalog, self.policy))
 
-    def refresh(self):
+    def refresh(self, **options):
         with patch.object(manager, "cargo_metadata", return_value=self.metadata), redirect_stdout(io.StringIO()):
-            manager.refresh(self.root)
+            manager.refresh(self.root, **options)
         self.catalog = manager.read_json(self.root / manager.CATALOG)
 
     def verify(self, **options):
@@ -253,6 +254,205 @@ class SourcePolicy(unittest.TestCase):
             '[package]\nname = "app"\nversion = "1.0.0"\n[dependencies]\nmini = { path = "../foundation/mini" }\n')
         with self.assertRaisesRegex(ValueError, "missing local dependency"):
             manager.refresh(self.root, plan)
+
+    def upgrade_mini(self, version="1.1.0"):
+        before = deepcopy(self.catalog["packages"]["src/foundation/mini"])
+        upstream = dict(name="mini", version=version,
+                        archive_url=f"https://static.crates.io/crates/mini/mini-{version}.crate",
+                        archive_sha256=manager.digest(version.encode()))
+        origin = self.origin(f"releases/mini-{version}", upstream)
+        source = {"src/lib.rs": f'pub const VERSION: &str = "{version}";\n',
+                  "src/helper.rs": "pub fn helper() {}\n"}
+        origin["original_files_sha256"] = {path: manager.digest(data.encode()) for path, data in source.items()}
+        origin["vcs"] = {"git": {"sha1": "new-release"}}
+        self.origin_records.append(origin)
+        self.write_json(manager.ORIGINS, dict(packages=self.origin_records))
+        (self.source / "src").mkdir(exist_ok=True)
+        (self.source / "lib.rs").unlink(missing_ok=True)
+        for path, data in source.items():
+            (self.source / path).write_text(data)
+        (self.source / "Cargo.toml").write_text(f'[package]\nname = "mini"\nversion = "{version}"\n')
+        lock = self.root / "Cargo.lock"
+        lock.write_text(lock.read_text().replace(f'name = "mini"\nversion = "{before["version"]}"',
+                                                f'name = "mini"\nversion = "{version}"'))
+        return dict(schema=1, packages=[dict(directory="src/foundation/mini", package=before,
+                    successor_origin_directory=origin["origin_directory"], reason="official security fix",
+                    source_prefixes=["src/"])])
+
+    def test_upgrade_preserves_exact_history_and_refresh_is_idempotent(self):
+        plan = self.upgrade_mini()
+        before = deepcopy(plan["packages"][0]["package"])
+        prior_hashes = deepcopy(self.catalog["origin_records_sha256"])
+        self.refresh(upgrade_plan_data=plan)
+        self.verify()
+        receipt = self.catalog["superseded"]["old/mini"]
+        self.assertEqual(receipt["package"], before)
+        self.assertEqual(receipt["source_prefixes"], ["src/"])
+        current = self.catalog["packages"]["src/foundation/mini"]
+        self.assertEqual(current["origin_directory"], "releases/mini-1.1.0")
+        self.assertEqual(current["upstream"]["version"], "1.1.0")
+        self.assertEqual(current["vcs"], {"git": {"sha1": "new-release"}})
+        self.assertTrue(prior_hashes.items() <= self.catalog["origin_records_sha256"].items())
+        document = (self.root / manager.DOC).read_text()
+        self.assertIn("mini@1.0.0", document)
+        self.assertIn("mini@1.1.0", document)
+        first = (self.root / manager.CATALOG).read_bytes()
+        self.refresh()
+        self.verify()
+        self.assertEqual((self.root / manager.CATALOG).read_bytes(), first)
+
+    def test_new_origin_requires_explicit_upgrade_plan(self):
+        self.upgrade_mini()
+        with self.assertRaisesRegex(ValueError, "source coverage drift"):
+            self.refresh()
+
+    def test_upgrade_rejects_altered_prior_receipt_and_repeated_plan(self):
+        plan = self.upgrade_mini()
+        altered = deepcopy(plan)
+        altered["packages"][0]["package"]["description"] = "rewritten history"
+        with self.assertRaisesRegex(ValueError, "last source receipt"):
+            self.refresh(upgrade_plan_data=altered)
+        self.refresh(upgrade_plan_data=plan)
+        with self.assertRaisesRegex(ValueError, "last source receipt"):
+            self.refresh(upgrade_plan_data=plan)
+
+    def test_upgrade_requires_new_same_package_origin_and_new_version(self):
+        plan = self.upgrade_mini()
+        item = plan["packages"][0]
+        new_key = item["successor_origin_directory"]
+        for successor in ("missing", "old/mini", "old/normalization"):
+            with self.subTest(successor=successor):
+                item["successor_origin_directory"] = successor
+                with self.assertRaisesRegex(ValueError, "new same-package origin"):
+                    self.refresh(upgrade_plan_data=plan)
+        item["successor_origin_directory"] = new_key
+        for upstream in (dict(self.upstream), dict(self.merged_upstream)):
+            with self.subTest(upstream=upstream):
+                self.origin_records[-1]["upstream"] = upstream
+                self.write_json(manager.ORIGINS, dict(packages=self.origin_records))
+                with self.assertRaisesRegex(ValueError, "new same-package origin"):
+                    self.refresh(upgrade_plan_data=plan)
+
+    def test_upgrade_rejects_duplicate_paths_and_empty_reason(self):
+        plan = self.upgrade_mini()
+        duplicate = deepcopy(plan)
+        duplicate["packages"] *= 2
+        with self.assertRaisesRegex(ValueError, "duplicate source upgrade"):
+            self.refresh(upgrade_plan_data=duplicate)
+        plan["packages"][0]["reason"] = "  "
+        with self.assertRaisesRegex(ValueError, "requires a reason"):
+            self.refresh(upgrade_plan_data=plan)
+
+    def test_upgrade_requires_manifest_to_match_successor_version_and_local_name(self):
+        plan = self.upgrade_mini()
+        for name, version in (("mini", "1.0.0"), ("another", "1.1.0")):
+            with self.subTest(name=name, version=version):
+                (self.source / "Cargo.toml").write_text(f'[package]\nname = "{name}"\nversion = "{version}"\n')
+                with self.assertRaisesRegex(ValueError, "manifest does not match successor"):
+                    self.refresh(upgrade_plan_data=plan)
+
+    def test_upgrade_requires_safe_explicit_complete_source_prefixes(self):
+        plan = self.upgrade_mini()
+        for prefixes in (None, [], ["src"], ["../"], ["/src/"], ["src/", "src/"], ["src/", "src/nested/"]):
+            with self.subTest(prefixes=prefixes):
+                plan["packages"][0]["source_prefixes"] = prefixes
+                with self.assertRaises(ValueError):
+                    self.refresh(upgrade_plan_data=plan)
+        plan["packages"][0]["source_prefixes"] = ["missing/"]
+        with self.assertRaisesRegex(ValueError, "differs from successor release"):
+            self.refresh(upgrade_plan_data=plan)
+
+    def test_upgrade_rejects_missing_modified_and_extra_release_source(self):
+        plan = self.upgrade_mini()
+        path = self.source / "src/helper.rs"
+        original = path.read_bytes()
+        path.unlink()
+        with self.assertRaisesRegex(ValueError, "differs from successor release"):
+            self.refresh(upgrade_plan_data=plan)
+        path.write_text("not the official fix\n")
+        with self.assertRaisesRegex(ValueError, "differs from successor release"):
+            self.refresh(upgrade_plan_data=plan)
+        path.write_bytes(original)
+        (self.source / "src/extra.rs").write_text("unreviewed code\n")
+        with self.assertRaisesRegex(ValueError, "differs from successor release"):
+            self.refresh(upgrade_plan_data=plan)
+
+    def test_upgrade_does_not_allow_rebaselining_prior_origin_or_legal_material(self):
+        plan = self.upgrade_mini()
+        self.origin_records[0]["original_files_sha256"]["lib.rs"] = "d" * 64
+        self.write_json(manager.ORIGINS, dict(packages=self.origin_records))
+        with self.assertRaisesRegex(ValueError, "immutable historical origin"):
+            self.refresh(upgrade_plan_data=plan)
+        self.origin_records[0]["original_files_sha256"]["lib.rs"] = "c" * 64
+        self.write_json(manager.ORIGINS, dict(packages=self.origin_records))
+        (self.root / "compliance/licenses/upstream/mini/LICENSE").write_text("rewritten license\n")
+        with self.assertRaisesRegex(ValueError, "immutable original material"):
+            self.refresh(upgrade_plan_data=plan)
+
+    def test_superseded_receipts_cannot_change_during_refresh(self):
+        self.refresh(upgrade_plan_data=self.upgrade_mini())
+        self.catalog["superseded"]["old/mini"]["reason"] = "rewritten history"
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "immutable superseded source receipt"):
+            self.refresh()
+
+    def test_upgraded_source_may_be_edited_but_cannot_be_silently_reversioned(self):
+        self.refresh(upgrade_plan_data=self.upgrade_mini())
+        before = deepcopy(self.catalog["superseded"])
+        (self.source / "src/lib.rs").write_text("deliberate local patch\n")
+        self.refresh()
+        self.verify()
+        self.assertEqual(self.catalog["superseded"], before)
+        (self.source / "Cargo.toml").write_text('[package]\nname="mini"\nversion="1.0.0"\n')
+        with self.assertRaisesRegex(ValueError, "upgraded source version drift"):
+            self.refresh()
+
+    def test_successive_upgrades_preserve_old_links_and_allow_eventual_retirement(self):
+        self.refresh(upgrade_plan_data=self.upgrade_mini())
+        first_receipt = deepcopy(self.catalog["superseded"]["old/mini"])
+        first_hash = self.catalog["superseded_records_sha256"]["old/mini"]
+        self.refresh(upgrade_plan_data=self.upgrade_mini("1.2.0"))
+        self.verify()
+        self.assertEqual(self.catalog["superseded"]["old/mini"], first_receipt)
+        self.assertEqual(self.catalog["superseded_records_sha256"]["old/mini"], first_hash)
+        self.assertEqual(set(self.catalog["superseded"]), {"old/mini", "releases/mini-1.1.0"})
+        self.refresh(retire_plan=self.retire_mini())
+        self.verify()
+        self.refresh()
+        self.verify()
+
+    def test_superseded_successors_cannot_point_to_missing_wrong_path_or_cyclic_history(self):
+        self.refresh(upgrade_plan_data=self.upgrade_mini())
+        self.refresh(upgrade_plan_data=self.upgrade_mini("1.2.0"))
+        original = deepcopy(self.catalog)
+        for successor, expected in (("missing", "invalid superseded source successor|no current successor"),
+                                    ("old/mini", "cyclic superseded source history")):
+            with self.subTest(successor=successor):
+                self.catalog = deepcopy(original)
+                self.catalog["superseded"]["releases/mini-1.1.0"]["successor_origin_directory"] = successor
+                self.catalog["superseded_records_sha256"] = manager.origin_hashes(self.catalog["superseded"])
+                self.save_catalog()
+                with self.assertRaisesRegex(ValueError, expected):
+                    self.verify()
+        self.catalog = deepcopy(original)
+        self.catalog["superseded"]["releases/mini-1.1.0"]["package"]["directory"] = "src/foundation/other"
+        self.catalog["superseded_records_sha256"] = manager.origin_hashes(self.catalog["superseded"])
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "superseded source path drift"):
+            self.verify()
+
+    def test_superseded_origins_must_be_unique_and_cover_all_history(self):
+        self.refresh(upgrade_plan_data=self.upgrade_mini())
+        original = deepcopy(self.catalog)
+        self.catalog["superseded"] = {}
+        self.catalog["superseded_records_sha256"] = {}
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "source coverage drift"):
+            self.verify()
+        self.catalog = original
+        self.catalog["merges"].append(deepcopy(self.catalog["superseded"]["old/mini"]["package"]))
+        with self.assertRaisesRegex(ValueError, "source coverage drift"):
+            manager.verify_origin_coverage(self.catalog, manager.origins(self.root))
 
     def test_source_link_is_rejected_even_with_target_inside_repository(self):
         (self.source / "alias.rs").symlink_to("lib.rs")
