@@ -41,6 +41,15 @@ class AdvisoryGate(unittest.TestCase):
                     self.check()
                 self.report["settings"][field] = []
 
+    def test_severity_threshold_cannot_hide_lower_cvss_findings(self):
+        for threshold in ("low", "medium", "high", "critical", 0):
+            with self.subTest(threshold=threshold):
+                self.report["settings"]["severity"] = threshold
+                with self.assertRaisesRegex(ValueError, "severity"):
+                    self.check()
+        self.report["settings"]["severity"] = None
+        self.check()
+
     def test_missing_package_or_database_coverage_fails(self):
         self.report["lockfile"]["dependency-count"] = 0
         with self.assertRaisesRegex(ValueError, "coverage"):

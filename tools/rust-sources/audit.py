@@ -48,6 +48,8 @@ def classify(report, lockfile, scanner_status):
     settings = report["settings"]
     if settings["ignore"] or settings.get("target_arch") or settings.get("target_os"):
         raise ValueError("advisory ignores or target exclusions are forbidden")
+    if settings.get("severity") is not None:
+        raise ValueError("advisory severity thresholds are forbidden")
     if set(settings["informational_warnings"]) != {"unmaintained", "unsound", "notice"}:
         raise ValueError("informational advisory categories were disabled")
     findings = list(report["vulnerabilities"]["list"])
