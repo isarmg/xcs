@@ -234,64 +234,17 @@ pub use core::ffi::c_void;
 #[allow(unused_imports)] // needed while the module is empty on some platforms
 pub use new::*;
 
+// Maintained product scope: native Linux amd64. The browser's wasm32 target
+// keeps the upstream empty libc surface; it does not gain a native libc ABI.
+#[cfg(not(any(
+    all(target_os = "linux", target_arch = "x86_64", target_pointer_width = "64"),
+    all(target_arch = "wasm32", target_os = "unknown", target_pointer_width = "32",
+        target_env = ""),
+)))]
+compile_error!("foundation libc supports Linux amd64 and the empty wasm32-unknown-unknown surface only");
+
 cfg_if! {
-    if #[cfg(windows)] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod windows;
-        pub use crate::windows::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "fuchsia")] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod fuchsia;
-        pub use crate::fuchsia::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "switch")] {
-        mod primitives;
-        pub use primitives::*;
-
-        mod switch;
-        pub use switch::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "psp")] {
-        mod primitives;
-        pub use primitives::*;
-
-        mod psp;
-        pub use crate::psp::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "vxworks")] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod vxworks;
-        pub use crate::vxworks::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "qurt")] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod qurt;
-        pub use crate::qurt::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "solid_asp3")] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod solid;
-        pub use crate::solid::*;
-
-        prelude!();
-    } else if #[cfg(unix)] {
+    if #[cfg(target_os = "linux")] {
         mod primitives;
         pub use crate::primitives::*;
 
@@ -299,63 +252,5 @@ cfg_if! {
         pub use crate::unix::*;
 
         prelude!();
-    } else if #[cfg(target_os = "helenos")] {
-        mod primitives;
-        pub use primitives::*;
-
-        mod helenos;
-        pub use self::helenos::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "hermit")] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod hermit;
-        pub use crate::hermit::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "teeos")] {
-        mod primitives;
-        pub use primitives::*;
-
-        mod teeos;
-        pub use teeos::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "trusty")] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod trusty;
-        pub use crate::trusty::*;
-
-        prelude!();
-    } else if #[cfg(all(target_env = "sgx", target_vendor = "fortanix"))] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod sgx;
-        pub use crate::sgx::*;
-
-        prelude!();
-    } else if #[cfg(any(target_env = "wasi", target_os = "wasi"))] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod wasi;
-        pub use crate::wasi::*;
-
-        prelude!();
-    } else if #[cfg(target_os = "xous")] {
-        mod primitives;
-        pub use crate::primitives::*;
-
-        mod xous;
-        pub use crate::xous::*;
-
-        prelude!();
-    } else {
-        // non-supported targets: empty...
     }
 }

@@ -107,9 +107,7 @@
 #![cfg_attr(all(feature = "alloc", alloc_c_string), feature(alloc_c_string))]
 #![cfg_attr(all(feature = "alloc", alloc_ffi), feature(alloc_ffi))]
 #![cfg_attr(not(feature = "std"), no_std)]
-
-
-#![cfg_attr(any(core_intrinsics), feature (core_intrinsics))]
+#![cfg_attr(any(core_intrinsics), feature(core_intrinsics))]
 #![cfg_attr(
     all(
         asm_experimental_arch,
@@ -151,7 +149,13 @@
     feature(wasip2)
 )]
 
-
+// The maintained native source set is Linux amd64 LP64. Web code is separate.
+#[cfg(not(all(
+    target_os = "linux",
+    target_arch = "x86_64",
+    target_pointer_width = "64"
+)))]
+compile_error!("rustix supports only Linux amd64 with 64-bit pointers");
 
 #[cfg(all(feature = "alloc"))]
 extern crate alloc;

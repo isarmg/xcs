@@ -21,49 +21,11 @@
 // We'll use as many arguments as syscalls need.
 #![allow(clippy::too_many_arguments)]
 
-// These functions always use the machine's syscall instruction, even when it
-// isn't the fastest option available.
-#[cfg_attr(target_arch = "aarch64", path = "aarch64.rs")]
-#[cfg_attr(all(target_arch = "arm", not(thumb_mode)), path = "arm.rs")]
-#[cfg_attr(all(target_arch = "arm", thumb_mode), path = "thumb.rs")]
-#[cfg_attr(target_arch = "mips", path = "mips.rs")]
-#[cfg_attr(target_arch = "mips32r6", path = "mips32r6.rs")]
-#[cfg_attr(target_arch = "mips64", path = "mips64.rs")]
-#[cfg_attr(target_arch = "mips64r6", path = "mips64r6.rs")]
-#[cfg_attr(target_arch = "powerpc", path = "powerpc.rs")]
-#[cfg_attr(target_arch = "powerpc64", path = "powerpc64.rs")]
-#[cfg_attr(target_arch = "riscv64", path = "riscv64.rs")]
-#[cfg_attr(target_arch = "s390x", path = "s390x.rs")]
-#[cfg_attr(target_arch = "x86", path = "x86.rs")]
-#[cfg_attr(target_arch = "x86_64", path = "x86_64.rs")]
+// Linux amd64 uses the syscall instruction directly. Keep the implementation
+// byte-identical to the upstream source; target rejection lives in build.rs.
+#[path = "x86_64.rs"]
 pub(in crate::backend) mod asm;
-
-// On most architectures, the architecture syscall instruction is fast, so use
-// it directly.
-#[cfg(any(
-    target_arch = "arm",
-    target_arch = "aarch64",
-    target_arch = "mips",
-    target_arch = "mips32r6",
-    target_arch = "mips64",
-    target_arch = "mips64r6",
-    target_arch = "powerpc",
-    target_arch = "powerpc64",
-    target_arch = "riscv64",
-    target_arch = "s390x",
-    target_arch = "x86_64",
-))]
 pub(in crate::backend) use self::asm as choose;
-
-// On 32-bit x86, use vDSO wrappers for all syscalls. We could use the
-// architecture syscall instruction (`int 0x80`), but the vDSO
-// `__kernel_vsyscall` mechanism is much faster.
-#[cfg(target_arch = "x86")]
-pub(in crate::backend) use super::vdso_wrappers::x86_via_vdso as choose;
-
-// This would be the code for always using `int 0x80` on 32-bit x86.
-//#[cfg(target_arch = "x86")]
-//pub(in crate::backend) use self::asm as choose;
 
 // Macros for invoking system calls.
 //

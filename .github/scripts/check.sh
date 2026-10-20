@@ -45,6 +45,8 @@ case "${1:-}" in
     # retired upstream dev dependencies or run unrelated upstream test suites.
     # All preserved Linux ABI features, not only today's enabled dependency set.
     python3 .github/scripts/check-linux-uapi.py
+    python3 tools/rust-sources/check_libc_abi.py
+    python3 .github/scripts/check-linux-syscalls.py
     cargo test --locked --offline --lib -p password-hash
     # An external workspace package cannot receive --features directly. Its
     # actual storage-client consumer enables compiled_data in the shared graph.

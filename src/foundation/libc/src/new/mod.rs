@@ -16,170 +16,32 @@
 
 mod common;
 
-/* The `pub(crate) use ...` statements are commented while the modules are empty */
-
-// Platform libraries and combined platform+libc
-//
-// Not supported or not needed:
-// * amdhsa
-// * cuda
-// * lynxos178
-// * managarm
-// * motor
-// * none
-// * psp
-// * psx
-// * uefi
-// * unknown
-// * vexos
-// * zkvm
-//
-// Combined to target_vendor = "apple"
-// * ios
-// * macos
-// * tvos
-// * visionos
-// * watchos
+// Platform libraries: Linux UAPI, including the shared amd64 ABI surface.
 cfg_if! {
-    if #[cfg(target_os = "aix")] {
-        mod aix;
-        pub(crate) use aix::*;
-    } else if #[cfg(target_os = "android")] {
-        mod bionic_libc;
-        pub(crate) use bionic_libc::*;
-    } else if #[cfg(target_vendor = "apple")] {
-        mod apple;
-        pub(crate) use apple::*;
-    } else if #[cfg(target_os = "cygwin")] {
-        mod cygwin;
-        pub(crate) use cygwin::*;
-    } else if #[cfg(target_os = "dragonfly")] {
-        mod dragonfly;
-        pub(crate) use dragonfly::*;
-    } else if #[cfg(target_os = "emscripten")] {
-        mod emscripten;
-        pub use emscripten::sched::*;
-        pub(crate) use emscripten::*;
-    } else if #[cfg(target_os = "espidf")] {
-        mod espidf;
-        // pub(crate) use espidf::*;
-    } else if #[cfg(target_os = "freebsd")] {
-        mod freebsd;
-        pub(crate) use freebsd::*;
-    } else if #[cfg(target_os = "fuchsia")] {
-        mod fuchsia;
-        pub(crate) use fuchsia::*;
-    } else if #[cfg(target_os = "haiku")] {
-        mod haiku;
-        pub(crate) use haiku::*;
-    } else if #[cfg(target_os = "helenos")] {
-        mod helenos;
-        pub(crate) use helenos::*;
-    } else if #[cfg(target_os = "hermit")] {
-        mod hermit_abi;
-        // pub(crate) use hermit_abi::*;
-    } else if #[cfg(target_os = "horizon")] {
-        mod horizon;
-        // pub(crate) use horizon::*;
-    } else if #[cfg(target_os = "hurd")] {
-        mod hurd;
-        // pub(crate) use hurd::*;
-    } else if #[cfg(target_os = "illumos")] {
-        mod illumos;
-        pub(crate) use illumos::*;
-    } else if #[cfg(target_os = "l4re")] {
-        mod l4re;
-        // pub(crate) use l4re::*;
-    } else if #[cfg(target_os = "linux")] {
+    if #[cfg(target_os = "linux")] {
         mod linux_uapi;
         pub(crate) use linux_uapi::*;
-    } else if #[cfg(target_os = "netbsd")] {
-        mod netbsd;
-        pub(crate) use netbsd::*;
-    } else if #[cfg(any(target_os = "nto", target_os = "qnx"))] {
-        mod nto;
-        pub(crate) use nto::*;
-    } else if #[cfg(target_os = "nuttx")] {
-        mod nuttx;
-        pub(crate) use nuttx::*;
-    } else if #[cfg(target_os = "openbsd")] {
-        mod openbsd;
-        pub(crate) use openbsd::*;
-    } else if #[cfg(target_os = "qurt")] {
-        pub mod qurt;
-    } else if #[cfg(target_os = "redox")] {
-        mod redox;
-        // pub(crate) use redox::*;
-    } else if #[cfg(target_os = "rtems")] {
-        mod rtems;
-        // pub(crate) use rtems::*;
-    } else if #[cfg(target_os = "solaris")] {
-        mod solaris;
-        pub(crate) use solaris::*;
-    } else if #[cfg(target_os = "solid_asp3")] {
-        mod solid;
-        // pub(crate) use solid::*;
-    } else if #[cfg(target_os = "teeos")] {
-        mod teeos;
-        // pub(crate) use teeos::*;
-    } else if #[cfg(target_os = "trusty")] {
-        mod trusty;
-        // pub(crate) use trusty::*;
-    } else if #[cfg(target_os = "vita")] {
-        mod vita;
-        // pub(crate) use vita::*;
-    } else if #[cfg(target_os = "vxworks")] {
-        mod vxworks;
-        pub(crate) use vxworks::*;
-    } else if #[cfg(target_os = "wasi")] {
-        mod wasi;
-        // pub(crate) use wasi::*;
-    } else if #[cfg(target_os = "windows")] {
-        mod ucrt;
-        // pub(crate) use ucrt::*;
-    } else if #[cfg(target_os = "xous")] {
-        mod xous;
-        // pub(crate) use xous::*;
     }
 }
 
-// Multi-platform libc
+// Keep alternate Linux amd64 libcs as future, not yet validated product ABIs.
 cfg_if! {
-    // FIXME(vxworks): vxworks sets `target_env = "gnu"` but maybe shouldn't.
-    if #[cfg(all(
-        target_family = "unix",
-        target_env = "gnu",
-        not(target_os = "vxworks")
-    ))] {
+    if #[cfg(all(target_os = "linux", target_env = "gnu"))] {
         mod glibc;
         pub(crate) use glibc::*;
-    } else if #[cfg(any(target_env = "musl", target_env = "ohos"))] {
-        // OhOS also uses the musl libc
+    } else if #[cfg(all(target_os = "linux", any(target_env = "musl", target_env = "ohos")))] {
         mod musl;
         pub use musl::sched::*;
         pub(crate) use musl::*;
-    } else if #[cfg(target_env = "newlib")] {
-        mod newlib;
-        pub(crate) use newlib::*;
-    } else if #[cfg(target_env = "relibc")] {
-        mod relibc;
-        pub(crate) use relibc::*;
-    } else if #[cfg(target_env = "sgx")] {
-        mod sgx;
-        // pub(crate) use sgx::*;
-    } else if #[cfg(target_env = "uclibc")] {
+    } else if #[cfg(all(target_os = "linux", target_env = "uclibc"))] {
         mod uclibc;
         pub(crate) use uclibc::*;
     }
 }
 
-// Per-OS headers we export
+// Per-OS headers we export.
 cfg_if! {
-    if #[cfg(target_os = "android")] {
-        use bionic_libc::kernel_uapi::linux;
-        pub use linux::types::*;
-        pub use sys::socket::*;
-    } else if #[cfg(target_os = "linux")] {
+    if #[cfg(target_os = "linux")] {
         pub use asm::socket::*;
         pub use linux::can::bcm::*;
         pub use linux::can::error::*;
@@ -211,81 +73,20 @@ cfg_if! {
             socket::*,
             sysdeps::linux::common::bits::siginfo::*,
         };
-    } else if #[cfg(target_vendor = "apple")] {
-        #[cfg(target_os = "macos")]
-        pub use net::bpf::*;
-        pub use netinet::tcp::*;
-        #[cfg(target_os = "macos")]
-        pub use netinet6::in6_var::*;
-        pub use pthread_::introspection::*;
-        pub use pthread_::pthread_spis::*;
-        pub use pthread_::spawn::*;
-        pub use pthread_::stack_np::*;
-        pub use signal::*;
-        pub use sys::ioccom::*;
-        pub use sys::sockio::*;
-        pub use sys::ttycom::*;
-    } else if #[cfg(target_os = "l4re")] {
-        pub use l4re::packet::*;
-    } else if #[cfg(target_os = "netbsd")] {
-        pub use net::if_::*;
-        pub use sys::file::*;
-        pub use sys::ipc::*;
-        pub use sys::socket::*;
-        pub use sys::statvfs::*;
-        pub use sys::time::*;
-        pub use sys::timex::*;
-        pub use sys::types::*;
-        pub use utmp_::*;
-        pub use utmpx_::*;
-    } else if #[cfg(target_os = "openbsd")] {
-        pub use sys::ipc::*;
-        pub use sys::sensors::*;
-        pub use sys::sysctl::*;
-    } else if #[cfg(any(target_os = "nto", target_os = "qnx"))] {
-        pub use net::bpf::*;
-        pub use net::if_::*;
-    } else if #[cfg(target_os = "freebsd")] {
-        pub use net::dlt::*;
-        // FIXME(1.0,remove): these bindings should be left in a public submodule.
-        pub use net::if_mib::*;
-        pub use net::route::*;
-        pub use netinet6::in6_var::*;
-        pub use sys::elf_common::*;
-        pub use sys::file::*;
-        pub use sys::ioccom::*;
-        pub use sys::socket::*;
-    } else if #[cfg(target_os = "helenos")] {
-        pub use abi::errno::*;
-        pub use bits::*;
-        pub use dirent_mod::*;
-        pub use errno::*;
-        pub use fibril_synch::*;
-        pub use inet::dnsr::*;
-        pub use inet::tcp::*;
-        pub use stdlib::*;
-        pub use vfs::vfs::*;
     }
 }
 
-// Per-env headers we export
+// Per-env headers we export.
 cfg_if! {
-    if #[cfg(any(target_env = "musl", target_env = "ohos"))] {
+    if #[cfg(all(target_os = "linux", any(target_env = "musl", target_env = "ohos")))] {
         pub use signal::*;
         pub use sys::socket::*;
     }
 }
 
-// Per-family headers we export
+// Per-family headers we export.
 cfg_if! {
-    if #[cfg(all(target_family = "unix", not(target_os = "qurt")))] {
-        // FIXME(pthread): eventually all platforms should use this module
-        #[cfg(any(
-            target_os = "android",
-            target_os = "emscripten",
-            target_os = "l4re",
-            target_os = "linux"
-        ))]
+    if #[cfg(target_os = "linux")] {
         pub use pthread::*;
         pub use unistd::*;
     }

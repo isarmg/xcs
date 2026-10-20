@@ -169,6 +169,15 @@ fn main() {
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
     let target_abi = env::var("CARGO_CFG_TARGET_ABI").unwrap_or_default();
 
+    // Reject unsupported targets before any platform discovery or ABI selection.
+    // musl/uclibc sources are retained, but GNU is the validated product ABI.
+    assert!(
+        supported_target(&target_os, &target_arch, &target_ptr_width, &target_env),
+        "foundation libc supports Linux amd64 and the empty \
+         wasm32-unknown-unknown surface only; got {target_arch}/{target_os}/\
+         {target_env}/{target_ptr_width}-bit"
+    );
+
     // FIXME(msrv): Once the MSRV is 1.78, use `cfg(target_abi)` directly instead
     // of translating its values. `target_abi` cannot be used directly in cfg
     // expressions on the current MSRV.
@@ -384,6 +393,11 @@ fn main() {
     for cfg in cfgs {
         set_cfg(cfg);
     }
+}
+
+fn supported_target(os: &str, arch: &str, pointer_width: &str, env: &str) -> bool {
+    (os == "linux" && arch == "x86_64" && pointer_width == "64")
+        || (os == "unknown" && arch == "wasm32" && pointer_width == "32" && env.is_empty())
 }
 
 /// Run `rustc --version` and capture the output, adjusting arguments as needed if `clippy-driver`

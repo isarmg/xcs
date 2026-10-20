@@ -5,7 +5,7 @@
 以下命令在仓库根目录执行，用目录模拟数据盘来验证开发流程。生产部署见[初始化与维护](17-lifecycle-and-maintenance.md)及[配置规范](21-configuration.md)。
 
 
-需要 `rust-toolchain.toml` 指定的 Rust 1.99.0。先构建服务与 CLI；密码从权限为 `0600` 的私人文件或标准输入读取，至少 12 字节。
+需要 Linux amd64 构建宿主和 `rust-toolchain.toml` 指定的 Rust 1.99.0，当前验收目标为 `x86_64-unknown-linux-gnu`。Web 的 `wasm32-unknown-unknown` 目标不扩展原生平台支持范围。先构建服务与 CLI；密码从权限为 `0600` 的私人文件或标准输入读取，至少 12 字节。
 
 ```sh
 cargo build --locked --offline --target-dir target/native -p storage-admin

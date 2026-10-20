@@ -10,23 +10,20 @@ fn main() {
     // the rustc version.
     println!("cargo:rerun-if-changed=build.rs");
 
-    // Gather target information.
+    // Native platform support is Linux amd64 LP64. Keep the libc backend for
+    // use-libc and Miri, including future GNU/musl/uclibc ABI configurations.
+    // Browser wasm uses separate components and never compiles this crate.
     let arch = var("CARGO_CFG_TARGET_ARCH").unwrap();
-    let env = var("CARGO_CFG_TARGET_ENV").unwrap();
-    let abi = var("CARGO_CFG_TARGET_ABI");
-    let inline_asm_name = format!("{}/{}.rs", ASM_PATH, arch);
-    let inline_asm_name_present = std::fs::metadata(inline_asm_name).is_ok();
     let os = var("CARGO_CFG_TARGET_OS").unwrap();
     let pointer_width = var("CARGO_CFG_TARGET_POINTER_WIDTH").unwrap();
-    let endian = var("CARGO_CFG_TARGET_ENDIAN").unwrap();
-
-    // Check for special target variants.
-    let is_x32 = arch == "x86_64" && pointer_width == "32";
-    let is_arm64_ilp32 = arch == "aarch64" && pointer_width == "32";
-    let is_powerpc64be = arch == "powerpc64" && endian == "big";
-    let is_mipseb = (arch == "mips" || arch == "mips32r6") && endian == "big";
-    let is_mips64eb = arch.contains("mips64") && endian == "big";
-    let is_unsupported_abi = is_x32 || is_arm64_ilp32 || is_powerpc64be || is_mipseb || is_mips64eb;
+    assert!(
+        supports_target(&os, &arch, &pointer_width),
+        "rustix supports only Linux amd64 with 64-bit pointers"
+    );
+    assert!(
+        std::path::Path::new(ASM_PATH).join("x86_64.rs").is_file(),
+        "the maintained Linux amd64 syscall implementation is missing"
+    );
 
     // Check for `--features=use-libc`. This allows crate users to enable the
     // libc backend.
@@ -86,31 +83,11 @@ fn main() {
         use_feature("rustc_diagnostics")
     }
 
-    // WASI support can utilize wasi_ext if present.
-    if os == "wasi" {
-        use_feature_or_nothing("wasi_ext");
-        use_feature_or_nothing("wasip2");
-    }
-
-    // If the libc backend is requested, or if we're not on a platform for
-    // which we have linux_raw support, use the libc backend.
-    //
-    // For now Android uses the libc backend; in theory it could use the
-    // linux_raw backend, but to do that we'll need to figure out how to
-    // install the toolchain for it.
-    let libc = feature_use_libc
-        || cfg_use_libc
-        || os != "linux"
-        || !inline_asm_name_present
-        || is_unsupported_abi
-        || miri
-        || ((arch == "powerpc"
-            || arch == "powerpc64"
-            || arch == "s390x"
-            || arch.starts_with("mips"))
-            && !rustix_use_experimental_asm);
+    // The native assembly implementation is fixed, but users and Miri may
+    // select the retained libc backend exactly as before.
+    let libc = feature_use_libc || cfg_use_libc || miri;
     if libc {
-        if (os == "linux" || os == "android") && !cfg_no_linux_raw {
+        if !cfg_no_linux_raw {
             use_feature("linux_raw_dep");
         }
 
@@ -125,60 +102,9 @@ fn main() {
         }
     }
 
-    // Detect whether the compiler requires us to use thumb mode on ARM.
-    if arch == "arm" && use_thumb_mode() {
-        use_feature("thumb_mode");
-    }
-
-    // Rust's libc crate groups some OS's together which have similar APIs;
-    // create similarly-named features to make `cfg` tests more concise.
-    let freebsdlike = os == "freebsd" || os == "dragonfly";
-    if freebsdlike {
-        use_feature("freebsdlike");
-    }
-    let netbsdlike = os == "openbsd" || os == "netbsd";
-    if netbsdlike {
-        use_feature("netbsdlike");
-    }
-    let apple = os == "macos" || os == "ios" || os == "tvos" || os == "visionos" || os == "watchos";
-    if apple {
-        use_feature("apple");
-    }
-    if os == "linux" || os == "l4re" || os == "android" || os == "emscripten" {
-        use_feature("linux_like");
-    }
-    if os == "solaris" || os == "illumos" {
-        use_feature("solarish");
-    }
-    if apple || freebsdlike || netbsdlike {
-        use_feature("bsd");
-    }
-
-    // Add some additional common target combinations.
-
-    // Android and "regular" Linux both use the Linux kernel.
-    if os == "android" || os == "linux" {
-        use_feature("linux_kernel");
-    }
-
-    // These platforms have a 32-bit `time_t`.
-    if libc
-        && (arch == "arm"
-            || arch == "powerpc"
-            || arch == "mips"
-            || arch == "sparc"
-            || arch == "x86"
-            || (arch == "aarch64" && os == "linux" && abi == Ok("ilp32".to_string())))
-        && (apple
-            || os == "android"
-            || (os == "freebsd" && arch == "x86")
-            || os == "haiku"
-            || env == "gnu"
-            || (env == "musl" && arch == "x86")
-            || (arch == "aarch64" && os == "linux" && abi == Ok("ilp32".to_string())))
-    {
-        use_feature("fix_y2038");
-    }
+    // Both retained backends target the same Linux kernel/API family.
+    use_feature("linux_like");
+    use_feature("linux_kernel");
 
     println!("cargo:rerun-if-env-changed=CARGO_CFG_RUSTIX_USE_EXPERIMENTAL_ASM");
     println!("cargo:rerun-if-env-changed=CARGO_CFG_RUSTIX_USE_LIBC");
@@ -195,15 +121,32 @@ fn main() {
     let _ = std::fs::remove_file(probe_file());
 }
 
-fn use_thumb_mode() -> bool {
-    // In thumb mode, r7 is reserved.
-    !can_compile("pub unsafe fn f() { core::arch::asm!(\"udf #16\", in(\"r7\") 0); }")
-}
-
 fn has_lower_upper_exp_for_non_zero() -> bool {
     // LowerExp/UpperExp for NonZero* were added in Rust 1.84.
     // <https://doc.rust-lang.org/stable/std/fmt/trait.LowerExp.html#impl-LowerExp-for-NonZero%3CT%3E>
     can_compile("fn a(x: &core::num::NonZeroI32, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result { core::fmt::LowerExp::fmt(x, f) }")
+}
+
+fn supports_target(os: &str, arch: &str, pointer_width: &str) -> bool {
+    os == "linux" && arch == "x86_64" && pointer_width == "64"
+}
+
+#[cfg(test)]
+mod platform_tests {
+    #[test]
+    fn native_scope_is_linux_amd64_lp64_not_a_libc_vendor() {
+        assert!(super::supports_target("linux", "x86_64", "64"));
+        for (os, arch, width) in [
+            ("linux", "aarch64", "64"),
+            ("linux", "x86", "32"),
+            ("linux", "x86_64", "32"),
+            ("windows", "x86_64", "64"),
+            ("macos", "x86_64", "64"),
+            ("unknown", "wasm32", "32"),
+        ] {
+            assert!(!super::supports_target(os, arch, width));
+        }
+    }
 }
 
 fn use_feature_or_nothing(feature: &str) {

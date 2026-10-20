@@ -2277,23 +2277,11 @@ cfg_if! {
 }
 
 cfg_if! {
-    if #[cfg(target_os = "emscripten")] {
-        mod emscripten;
-        pub use self::emscripten::*;
-    } else if #[cfg(target_os = "linux")] {
+    if #[cfg(target_os = "linux")] {
         mod linux;
         pub use self::linux::*;
+        // This shared file contains Linux ABI declarations, despite its name.
         mod linux_l4re_shared;
         pub use self::linux_l4re_shared::*;
-    } else if #[cfg(target_os = "l4re")] {
-        mod l4re;
-        pub use self::l4re::*;
-        mod linux_l4re_shared;
-        pub use self::linux_l4re_shared::*;
-    } else if #[cfg(target_os = "android")] {
-        mod android;
-        pub use self::android::*;
-    } else {
-        // Unknown target_os
     }
 }

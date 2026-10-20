@@ -2515,51 +2515,8 @@ extern "C" {
 }
 
 cfg_if! {
-    if #[cfg(target_env = "newlib")] {
-        mod newlib;
-        pub use self::newlib::*;
-    } else if #[cfg(any(
-        target_os = "linux",
-        target_os = "l4re",
-        target_os = "android",
-        target_os = "emscripten"
-    ))] {
+    if #[cfg(target_os = "linux")] {
         mod linux_like;
         pub use self::linux_like::*;
-    } else if #[cfg(any(
-        target_vendor = "apple",
-        target_os = "freebsd",
-        target_os = "dragonfly",
-        target_os = "openbsd",
-        target_os = "netbsd"
-    ))] {
-        mod bsd;
-        pub use self::bsd::*;
-    } else if #[cfg(any(target_os = "solaris", target_os = "illumos"))] {
-        mod solarish;
-        pub use self::solarish::*;
-    } else if #[cfg(target_os = "haiku")] {
-        mod haiku;
-        pub use self::haiku::*;
-    } else if #[cfg(target_os = "redox")] {
-        mod redox;
-        pub use self::redox::*;
-    } else if #[cfg(target_os = "cygwin")] {
-        mod cygwin;
-        pub use self::cygwin::*;
-    } else if #[cfg(any(target_os = "nto", target_os = "qnx"))] {
-        mod nto;
-        pub use self::nto::*;
-    } else if #[cfg(target_os = "aix")] {
-        mod aix;
-        pub use self::aix::*;
-    } else if #[cfg(target_os = "hurd")] {
-        mod hurd;
-        pub use self::hurd::*;
-    } else if #[cfg(target_os = "nuttx")] {
-        mod nuttx;
-        pub use self::nuttx::*;
-    } else {
-        // Unknown target_os
     }
 }
