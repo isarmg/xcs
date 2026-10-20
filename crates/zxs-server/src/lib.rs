@@ -1067,6 +1067,84 @@ mod tests {
         );
     }
 
+    #[tokio::test(flavor = "current_thread")]
+    async fn authentication_lock_wait_does_not_block_the_async_executor() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        let root = tempfile::tempdir().unwrap();
+        let mut auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+        let token = auth.login("admin", "a-long-test-password").unwrap().token;
+        let (started, waiting) = tokio::sync::oneshot::channel();
+        let started = Mutex::new(Some(started));
+        let (release, released) = std::sync::mpsc::channel();
+        let released = Mutex::new(released);
+        let armed = Arc::new(AtomicBool::new(false));
+        let timed_out = Arc::new(AtomicBool::new(false));
+        let (hook_armed, hook_timeout) = (armed.clone(), timed_out.clone());
+        auth.attach_backup(Arc::new(move |_| {
+            if hook_armed.load(Ordering::SeqCst)
+                && let Some(started) = started.lock().unwrap().take()
+            {
+                let _ = started.send(());
+                if released
+                    .lock()
+                    .unwrap()
+                    .recv_timeout(Duration::from_secs(2))
+                    .is_err()
+                {
+                    hook_timeout.store(true, Ordering::SeqCst);
+                }
+            }
+            Ok(())
+        }))
+        .unwrap();
+        armed.store(true, Ordering::SeqCst);
+        let app = router(
+            Arc::new(TestBackend {
+                path: root.path().join("unused"),
+            }),
+            auth,
+            ServerConfig::loopback(root.path()),
+        )
+        .unwrap();
+        let login_app = app.clone();
+        let login = tokio::spawn(async move {
+            login_app
+                .oneshot(
+                    Request::builder()
+                        .method("POST")
+                        .uri("/v1/auth/login")
+                        .body(Body::from(
+                            r#"{"username":"admin","password":"a-long-test-password"}"#,
+                        ))
+                        .unwrap(),
+                )
+                .await
+                .unwrap()
+        });
+        waiting.await.unwrap();
+        let release_task = tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(20)).await;
+            release.send(()).unwrap();
+        });
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/v1/auth/me")
+                    .header("authorization", format!("Bearer {token}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        release_task.await.unwrap();
+        assert_eq!(login.await.unwrap().status(), StatusCode::OK);
+        assert!(
+            !timed_out.load(Ordering::SeqCst),
+            "authentication starved the timer that releases its blocking backup"
+        );
+    }
+
     #[tokio::test]
     async fn interrupted_upload_retains_durable_bytes_and_rejects_different_retry() {
         let root = tempfile::tempdir().unwrap();
@@ -1115,6 +1193,143 @@ mod tests {
                 .data_file,
             record.data_file
         );
+        let data_files = std::fs::read_dir(root.path().join("api-spool"))
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .filter(|path| {
+                path.extension()
+                    .is_some_and(|extension| extension == "data")
+            })
+            .count();
+        assert_eq!(
+            data_files, 1,
+            "conflicting retries must remove their unreferenced staging file"
+        );
+    }
+
+    #[tokio::test]
+    async fn durable_retry_progress_replaces_only_the_same_generation_predecessor() {
+        let root = tempfile::tempdir().unwrap();
+        let app = application(root.path());
+        let (token, _, _) = authenticated(&app).await;
+        let spool = root.path().join("api-spool");
+        for content in ["original", "original plus", "original plus more"] {
+            let stream = futures_util::stream::iter([
+                Ok(Bytes::copy_from_slice(content.as_bytes())),
+                Err(std::io::Error::other("interrupted")),
+            ]);
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method("PUT")
+                        .uri("/v1/workspaces/ws/files/item/content?path=file")
+                        .header("authorization", format!("Bearer {token}"))
+                        .header("x-zxs-logical-size", "30")
+                        .header("x-zxs-content-hash", "0".repeat(64))
+                        .body(Body::from_stream(stream))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+            let current = uploads::load(&spool, "ws", "item").unwrap().unwrap();
+            assert_eq!(
+                std::fs::read(spool.join(current.data_file)).unwrap(),
+                content.as_bytes()
+            );
+            assert_eq!(
+                std::fs::read_dir(&spool)
+                    .unwrap()
+                    .map(|entry| entry.unwrap().path())
+                    .filter(|path| path
+                        .extension()
+                        .is_some_and(|extension| extension == "data"))
+                    .count(),
+                1
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn unpublished_retry_cleanup_covers_short_long_and_cancelled_bodies() {
+        let root = tempfile::tempdir().unwrap();
+        let app = application(root.path());
+        let (token, _, _) = authenticated(&app).await;
+        let bytes = vec![42u8; 2 * 1024 * 1024];
+        let hash = blake3::hash(&bytes).to_hex().to_string();
+        let request = |body| {
+            Request::builder()
+                .method("PUT")
+                .uri("/v1/workspaces/ws/files/item/content?path=file")
+                .header("authorization", format!("Bearer {token}"))
+                .header("x-zxs-logical-size", bytes.len().to_string())
+                .header("x-zxs-content-hash", &hash)
+                .body(body)
+                .unwrap()
+        };
+        assert_eq!(
+            app.clone()
+                .oneshot(request(Body::from(bytes.clone())))
+                .await
+                .unwrap()
+                .status(),
+            StatusCode::OK
+        );
+        let spool = root.path().join("api-spool");
+        let original = uploads::load(&spool, "ws", "item").unwrap().unwrap();
+        // A retry must not supersede old progress until it has checked all of it.
+        for body in [
+            Body::from(vec![42u8; 1024]),
+            Body::from(vec![42u8; bytes.len() + 1]),
+            Body::from_stream(futures_util::stream::iter([
+                Ok(Bytes::from(vec![42u8; 1024])),
+                Err(std::io::Error::other("interrupted")),
+            ])),
+        ] {
+            assert!(
+                !app.clone()
+                    .oneshot(request(body))
+                    .await
+                    .unwrap()
+                    .status()
+                    .is_success()
+            );
+        }
+        let (sent, received) = tokio::sync::oneshot::channel();
+        let stream = futures_util::stream::once(async move {
+            let _ = sent.send(());
+            Ok::<_, std::io::Error>(Bytes::from(vec![42u8; 1024]))
+        });
+        let stream = futures_util::StreamExt::chain(stream, futures_util::stream::pending());
+        let retry_app = app.clone();
+        let retry_request = request(Body::from_stream(stream));
+        let retry = tokio::spawn(async move { retry_app.oneshot(retry_request).await });
+        received.await.unwrap();
+        retry.abort();
+        let _ = retry.await;
+        // Cancellation may leave a running prefix-check job holding the guard.
+        tokio::time::timeout(Duration::from_secs(2), async {
+            loop {
+                let files = std::fs::read_dir(&spool)
+                    .unwrap()
+                    .map(|entry| entry.unwrap().path())
+                    .filter(|path| {
+                        path.extension()
+                            .is_some_and(|extension| extension == "data")
+                    })
+                    .count();
+                if files == 1 {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .unwrap();
+        let current = uploads::load(&spool, "ws", "item").unwrap().unwrap();
+        assert_eq!(current.data_file, original.data_file);
+        assert_eq!(std::fs::read(spool.join(current.data_file)).unwrap(), bytes);
     }
 
     #[tokio::test]

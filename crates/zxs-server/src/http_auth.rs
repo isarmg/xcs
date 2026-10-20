@@ -159,7 +159,11 @@ pub(crate) async fn authorize(
             return Err(ApiError::forbidden());
         }
     }
-    let identity = lock(&state.auth)?.authenticate(&token)?;
+    let auth = state.auth.clone();
+    let credential = token.clone();
+    let identity = tokio::task::spawn_blocking(move || lock(&auth)?.authenticate(&credential))
+        .await
+        .map_err(ApiError::invalid)??;
     request.extensions_mut().insert(identity);
     request.extensions_mut().insert(SessionToken(token));
     Ok(next.run(request).await)
@@ -306,7 +310,16 @@ pub(crate) async fn accounts(
     axum::Extension(identity): axum::Extension<Identity>,
 ) -> Result<Json<Value>, ApiError> {
     identity.require_admin()?;
-    Ok(Json(json!({"accounts":lock(&state.auth)?.list_accounts()})))
+    let auth = state.auth.clone();
+    let accounts = tokio::task::spawn_blocking(move || {
+        let auth = lock(&auth)?;
+        auth.identity_for_principal(&identity.principal)?
+            .require_admin()?;
+        Ok::<_, ApiError>(auth.list_accounts())
+    })
+    .await
+    .map_err(ApiError::invalid)??;
+    Ok(Json(json!({"accounts": accounts})))
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -340,7 +353,10 @@ pub(crate) async fn account_upsert(
         .map_err(|_| ApiError::limit("password verification is busy"))?;
     tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        lock(&auth)?.upsert_account(
+        let mut auth = lock(&auth)?;
+        auth.identity_for_principal(&identity.principal)?
+            .require_admin()?;
+        auth.upsert_account(
             &body.username,
             body.password.as_deref(),
             body.admin,

@@ -102,14 +102,16 @@ async fn persist_upload(
     file: &tokio::fs::File,
     record: &uploads::UploadRecord,
     admission: &Arc<UploadAdmission>,
+    staged: &Arc<uploads::StagedFile>,
 ) -> Result<(), ApiError> {
     file.sync_all().await.map_err(ApiError::io)?;
     let root = root.to_owned();
     let record = record.clone();
     let admission = admission.clone();
+    let staged = staged.clone();
     tokio::task::spawn_blocking(move || {
         let _admission = admission;
-        uploads::persist(&root, &record)
+        uploads::persist_staged(&root, &record, &staged)
     })
     .await
     .map_err(ApiError::invalid)?
@@ -233,7 +235,15 @@ pub(crate) async fn upload(
                     "length or content hash changed; explicitly start a newer upload generation",
                 ));
             }
-            prefix = uploads::ExistingPrefix::open(&spool, previous)?;
+            let root = spool.clone();
+            let previous = previous.clone();
+            let ownership = admission.clone();
+            prefix = tokio::task::spawn_blocking(move || {
+                let _ownership = ownership;
+                uploads::ExistingPrefix::open(&root, &previous)
+            })
+            .await
+            .map_err(ApiError::invalid)??;
         }
     }
     let data_file = format!(
@@ -241,13 +251,19 @@ pub(crate) async fn upload(
         auth_primitives::random_token().map_err(ApiError::invalid)?
     );
     let path = spool.join(&data_file);
-    let mut options = tokio::fs::OpenOptions::new();
-    options.create_new(true).write(true);
-    #[cfg(unix)]
-    {
-        options.mode(0o600);
-    }
-    let mut file = options.open(&path).await.map_err(ApiError::io)?;
+    let create_path = path.clone();
+    let superseded = previous
+        .as_ref()
+        .filter(|previous| previous.generation == generation)
+        .map(|previous| spool.join(&previous.data_file));
+    let create_admission = admission.clone();
+    let (file, staged_file) = tokio::task::spawn_blocking(move || {
+        let _admission = create_admission;
+        uploads::StagedFile::create(create_path, superseded)
+    })
+    .await
+    .map_err(ApiError::invalid)??;
+    let mut file = tokio::fs::File::from_std(file);
     let mut record = uploads::UploadRecord {
         workspace_id: workspace.clone(),
         item_id: item.clone(),
@@ -265,13 +281,21 @@ pub(crate) async fn upload(
         .as_ref()
         .filter(|previous| generation > previous.generation)
     {
-        uploads::retain_generation(&spool, previous)?;
+        let root = spool.clone();
+        let previous = previous.clone();
+        let ownership = (admission.clone(), staged_file.clone());
+        tokio::task::spawn_blocking(move || {
+            let _ownership = ownership;
+            uploads::retain_generation(&root, &previous)
+        })
+        .await
+        .map_err(ApiError::invalid)??;
     }
     if previous
         .as_ref()
         .is_none_or(|previous| generation > previous.generation)
     {
-        persist_upload(&spool, &file, &record, &admission).await?;
+        persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
     }
     let mut stream = request.into_body().into_data_stream();
     let mut length = 0u64;
@@ -284,7 +308,7 @@ pub(crate) async fn upload(
                 if prefix.as_ref().is_none_or(|prefix| prefix.complete()) {
                     record.persisted_bytes = length;
                     record.persisted_hash = hash.clone().finalize().to_hex().to_string();
-                    persist_upload(&spool, &file, &record, &admission).await?;
+                    persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
                 }
                 return Err(ApiError::invalid(format!(
                     "upload interrupted; durable work data is retained: {error}"
@@ -301,8 +325,18 @@ pub(crate) async fn upload(
                 "received more bytes than declared; original upload is retained",
             ));
         }
-        if let Some(prefix) = &mut prefix {
-            prefix.check(&chunk)?;
+        if let Some(mut existing) = prefix.take() {
+            let bytes = chunk.clone();
+            let ownership = (admission.clone(), staged_file.clone());
+            prefix = tokio::task::spawn_blocking(move || {
+                let _ownership = ownership;
+                existing.check(&bytes)?;
+                // Only retries pay this blocking boundary, and only until the
+                // durable prefix is consumed. Fresh uploads create no read jobs.
+                Ok::<_, ApiError>((!existing.complete()).then_some(existing))
+            })
+            .await
+            .map_err(ApiError::invalid)??;
         }
         hash.update(&chunk);
         file.write_all(&chunk).await.map_err(ApiError::io)?;
@@ -311,7 +345,7 @@ pub(crate) async fn upload(
         {
             record.persisted_bytes = length;
             record.persisted_hash = hash.clone().finalize().to_hex().to_string();
-            persist_upload(&spool, &file, &record, &admission).await?;
+            persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
             last_persisted = length;
         }
     }
@@ -324,7 +358,7 @@ pub(crate) async fn upload(
     }
     record.persisted_bytes = length;
     record.persisted_hash = hash.clone().finalize().to_hex().to_string();
-    persist_upload(&spool, &file, &record, &admission).await?;
+    persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
     if length != expected_length {
         return Err(ApiError::new(
             400,
@@ -335,7 +369,7 @@ pub(crate) async fn upload(
     let actual_hash = hash.finalize().to_hex().to_string();
     if expected_hash.is_some_and(|expected| expected != actual_hash) {
         record.state = "checksum_mismatch".into();
-        persist_upload(&spool, &file, &record, &admission).await?;
+        persist_upload(&spool, &file, &record, &admission, &staged_file).await?;
         return Err(ApiError::new(
             400,
             "CHECKSUM_MISMATCH",
@@ -357,14 +391,7 @@ pub(crate) async fn upload(
         let staged =
             backend.upload_generation(&owner, &ws, &item_id, &logical_path, &path, generation)?;
         record.state = "complete".into();
-        uploads::persist(&spool, &record)?;
-        if let Some(previous) = previous {
-            // Older generations have a retained record that still owns their
-            // bytes. Only a same-generation retry supersedes its spool file.
-            if previous.generation == record.generation && previous.data_file != record.data_file {
-                let _ = std::fs::remove_file(spool.join(previous.data_file));
-            }
-        }
+        uploads::persist_staged(&spool, &record, &staged_file)?;
         Ok::<_, ApiError>(staged)
     })
     .await

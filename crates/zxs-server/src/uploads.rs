@@ -4,7 +4,8 @@ use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, OpenOptions},
     io::{Read, Write},
-    path::Path,
+    path::{Path, PathBuf},
+    sync::atomic::{AtomicBool, Ordering},
 };
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -87,7 +88,96 @@ pub(crate) fn load(
         Err(error) => Err(ApiError::io(error)),
     }
 }
+/// An unreferenced request file is disposable. Once a durable record is renamed
+/// into place it owns these bytes, even if the following directory sync fails.
+/// Blocking persistence jobs share this guard, so cancellation cannot delete a
+/// file just before the job publishes its record.
+pub(crate) struct StagedFile {
+    path: PathBuf,
+    referenced: AtomicBool,
+    superseded: Option<PathBuf>,
+    superseded_removed: AtomicBool,
+}
+impl StagedFile {
+    pub fn create(
+        path: PathBuf,
+        superseded: Option<PathBuf>,
+    ) -> Result<(fs::File, std::sync::Arc<Self>), ApiError> {
+        let mut options = OpenOptions::new();
+        options.create_new(true).write(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.mode(0o600);
+        }
+        let file = options.open(&path).map_err(ApiError::io)?;
+        Ok((
+            file,
+            std::sync::Arc::new(Self {
+                path,
+                referenced: AtomicBool::new(false),
+                superseded,
+                superseded_removed: AtomicBool::new(false),
+            }),
+        ))
+    }
+}
+impl Drop for StagedFile {
+    fn drop(&mut self) {
+        if !self.referenced.load(Ordering::Acquire)
+            && let Err(error) = fs::remove_file(&self.path)
+            && error.kind() != std::io::ErrorKind::NotFound
+        {
+            tracing::warn!(%error, "unreferenced upload cleanup failed");
+        }
+    }
+}
+pub(crate) fn persist_staged(
+    root: &Path,
+    record: &UploadRecord,
+    staged: &StagedFile,
+) -> Result<(), ApiError> {
+    persist_staged_with_sync(root, record, staged, || sync_directory(root))
+}
+fn sync_directory(root: &Path) -> Result<(), ApiError> {
+    fs::File::open(root)
+        .and_then(|file| file.sync_all())
+        .map_err(ApiError::io)
+}
+fn persist_staged_with_sync(
+    root: &Path,
+    record: &UploadRecord,
+    staged: &StagedFile,
+    sync: impl FnOnce() -> Result<(), ApiError>,
+) -> Result<(), ApiError> {
+    persist_inner(
+        root,
+        record,
+        || staged.referenced.store(true, Ordering::Release),
+        sync,
+    )?;
+    // Only after the new data and metadata are durable may a same-generation
+    // predecessor lose its last reference. Older generations are never listed.
+    if let Some(previous) = &staged.superseded
+        && !staged.superseded_removed.swap(true, Ordering::AcqRel)
+        && let Err(error) = fs::remove_file(previous)
+        && error.kind() != std::io::ErrorKind::NotFound
+    {
+        staged.superseded_removed.store(false, Ordering::Release);
+        tracing::warn!(%error, "superseded upload cleanup failed");
+    }
+    Ok(())
+}
+#[cfg(test)]
 pub(crate) fn persist(root: &Path, record: &UploadRecord) -> Result<(), ApiError> {
+    persist_inner(root, record, || {}, || sync_directory(root))
+}
+fn persist_inner(
+    root: &Path,
+    record: &UploadRecord,
+    published: impl FnOnce(),
+    sync: impl FnOnce() -> Result<(), ApiError>,
+) -> Result<(), ApiError> {
     let name = key(&record.workspace_id, &record.item_id);
     let target = root.join(format!("{name}.json"));
     let temporary = root.join(format!(
@@ -107,9 +197,8 @@ pub(crate) fn persist(root: &Path, record: &UploadRecord) -> Result<(), ApiError
             .map_err(ApiError::io)?;
         file.sync_all().map_err(ApiError::io)?;
         fs::rename(&temporary, target).map_err(ApiError::io)?;
-        fs::File::open(root)
-            .and_then(|file| file.sync_all())
-            .map_err(ApiError::io)
+        published();
+        sync()
     })();
     if result.is_err() {
         let _ = fs::remove_file(temporary);
@@ -197,6 +286,68 @@ impl Drop for Claim {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn staging_guard_preserves_referenced_files_and_cleans_up_unpublished_files() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("unpublished.data");
+        let (file, guard) = StagedFile::create(path.clone(), None).unwrap();
+        let running_job = guard.clone();
+        drop(guard);
+        assert!(path.exists(), "an outstanding blocking job owns staging");
+        drop(file);
+        drop(running_job);
+        assert!(!path.exists());
+        let path = root.path().join("published.data");
+        let (file, guard) = StagedFile::create(path.clone(), None).unwrap();
+        guard.referenced.store(true, Ordering::Release);
+        drop(file);
+        drop(guard);
+        assert!(path.exists());
+        // Failed exclusive creation must never assume ownership of existing data.
+        assert!(StagedFile::create(path.clone(), None).is_err());
+        assert!(path.exists());
+    }
+
+    #[test]
+    fn uncertain_directory_sync_preserves_both_old_and_new_data() {
+        let root = tempfile::tempdir().unwrap();
+        let previous = root.path().join("previous.data");
+        fs::write(&previous, b"previous").unwrap();
+        let path = root.path().join("new.data");
+        let (mut file, guard) = StagedFile::create(path.clone(), Some(previous.clone())).unwrap();
+        file.write_all(b"new bytes").unwrap();
+        file.sync_all().unwrap();
+        let record = UploadRecord {
+            workspace_id: "ws".into(),
+            item_id: "item".into(),
+            principal: "alice".into(),
+            path: "file".into(),
+            generation: 1,
+            logical_size: 9,
+            content_hash: Some(blake3::hash(b"new bytes").to_hex().to_string()),
+            persisted_bytes: 9,
+            persisted_hash: blake3::hash(b"new bytes").to_hex().to_string(),
+            state: "incomplete".into(),
+            data_file: "new.data".into(),
+        };
+        let result = persist_staged_with_sync(root.path(), &record, &guard, || {
+            Err(ApiError::io(std::io::Error::other(
+                "injected directory sync failure",
+            )))
+        });
+        assert!(result.is_err());
+        assert_eq!(
+            load(root.path(), "ws", "item").unwrap().unwrap().data_file,
+            "new.data"
+        );
+        drop(file);
+        drop(guard);
+        assert_eq!(fs::read(path).unwrap(), b"new bytes");
+        assert_eq!(fs::read(previous).unwrap(), b"previous");
+        // The old file is intentionally unindexed uncertainty evidence. A later
+        // request must not guess which record a real crash would have retained.
+    }
+
     #[test]
     fn interrupted_upload_retains_and_checks_its_persisted_prefix() {
         let dir = tempfile::tempdir().unwrap();
