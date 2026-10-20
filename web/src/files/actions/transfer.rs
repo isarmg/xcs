@@ -10,7 +10,7 @@ use crate::{
     ui::{State, current_session, fail, set_notice, text},
 };
 use serde_json::{Value, json};
-use wasm_bindgen_futures::spawn_local;
+use zxs_web::tasks::spawn_local;
 use zxs_web::{i18n::t, prelude::*};
 
 // Capture the destination before either system picker opens. Navigation or a
@@ -65,9 +65,13 @@ pub(crate) fn pick_upload(state: RwSignal<State>, replace: bool) -> bool {
     if !api::native() {
         return true;
     }
-    spawn_local(async move {
+    // Consume late native selections so unused one-shot handles are released,
+    // even after root cleanup. Never read disposed UI state on completion.
+    wasm_bindgen_futures::spawn_local(async move {
         let result = api::choose_files(!replace).await;
-        let active = state.with_untracked(|s| s.files.upload_picker.as_ref() == Some(&context));
+        let active = state
+            .try_with_untracked(|s| s.files.upload_picker.as_ref() == Some(&context))
+            .unwrap_or(false);
         if active {
             state.update(|s| s.files.upload_picker = None);
         }
@@ -281,7 +285,7 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
         );
     });
     let epoch = snapshot.session_epoch;
-    spawn_local(async move {
+    let task = async move {
         for (source, row) in queue {
             if !current_session(state, epoch) {
                 return;
@@ -325,7 +329,16 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
                     &expected_head,
                     || {
                         commit_attempted = true;
-                        update_upload(state, &id, |row| row.commit_attempted = true);
+                        state.try_update(|s| {
+                            if let Some(row) = s
+                                .transfers
+                                .rows
+                                .iter_mut()
+                                .find(|row| row.operation_id == id)
+                            {
+                                row.commit_attempted = true;
+                            }
+                        });
                     },
                 )
                 .await
@@ -360,8 +373,17 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
                 break;
             }
         }
-    });
+    };
+    if api::native() {
+        // Keep an in-flight one-shot source alive until the host consumes it.
+        // Every await is followed by a disposal-safe current_session check;
+        // the commit receipt callback also uses a non-panicking signal update.
+        wasm_bindgen_futures::spawn_local(task);
+    } else {
+        spawn_local(task);
+    }
 }
+
 // Saving includes sealing, but an operation exists only after commit is sent.
 // A malformed/truncated successful HTTP response is also unconfirmed: the
 // server may already have published it. Only a definite client error rejects it.

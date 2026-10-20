@@ -10,8 +10,8 @@ use crate::{
 };
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
-use wasm_bindgen_futures::spawn_local;
 use zxs_web::prelude::*;
+use zxs_web::tasks::spawn_local;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) enum Kind {

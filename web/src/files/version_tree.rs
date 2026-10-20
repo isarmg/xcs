@@ -422,22 +422,20 @@ fn measure(root: &web_sys::Element, layout: &Layout) -> Geometry {
             if let Some(element) = nodes
                 .item(index)
                 .and_then(|node| node.dyn_into::<web_sys::Element>().ok())
+                && let Some(id) = element.get_attribute("data-version-id")
+                && let Some(&depth) = depths.get(id.as_str())
             {
-                if let Some(id) = element.get_attribute("data-version-id") {
-                    if let Some(&depth) = depths.get(id.as_str()) {
-                        let rect = element.get_bounding_client_rect();
-                        boxes.insert(
-                            id,
-                            NodeBounds {
-                                left: rect.left() - bounds.left(),
-                                right: rect.right() - bounds.left(),
-                                top: rect.top() - bounds.top(),
-                                bottom: rect.bottom() - bounds.top(),
-                                depth,
-                            },
-                        );
-                    }
-                }
+                let rect = element.get_bounding_client_rect();
+                boxes.insert(
+                    id,
+                    NodeBounds {
+                        left: rect.left() - bounds.left(),
+                        right: rect.right() - bounds.left(),
+                        top: rect.top() - bounds.top(),
+                        bottom: rect.bottom() - bounds.top(),
+                        depth,
+                    },
+                );
             }
         }
     }
@@ -473,28 +471,28 @@ fn observe(root: NodeRef<html::Div>, layout: Memo<Layout>, geometry: RwSignal<Ge
             // A wide tree initially reveals its newest tip rather than an empty
             // left corner. This belongs to this mounted tree only: refreshes, note
             // edits and later resizes never take the user's scroll position.
-            if !initially_centered.get() {
-                if let (Some(scroll), Ok(Some(first_tip))) = (
+            if !initially_centered.get()
+                && let (Some(scroll), Ok(Some(first_tip))) = (
                     update_root.parent_element(),
                     update_root.query_selector(
                         ".zxs-version-tree-level[data-version-depth=\"0\"] .zxs-version-node",
                     ),
-                ) {
-                    let rect = first_tip.get_bounding_client_rect();
-                    let viewport = scroll.client_width();
-                    if rect.width() > 0. && rect.height() > 0. && viewport > 0 {
-                        let frame = scroll.get_bounding_client_rect();
-                        let center = rect.left() - frame.left()
-                            + f64::from(scroll.scroll_left())
-                            + rect.width() / 2.;
-                        let maximum = (scroll.scroll_width() - viewport).max(0);
-                        scroll.set_scroll_left(
-                            (center - f64::from(viewport) / 2.)
-                                .clamp(0., f64::from(maximum))
-                                .round() as i32,
-                        );
-                        initially_centered.set(true);
-                    }
+                )
+            {
+                let rect = first_tip.get_bounding_client_rect();
+                let viewport = scroll.client_width();
+                if rect.width() > 0. && rect.height() > 0. && viewport > 0 {
+                    let frame = scroll.get_bounding_client_rect();
+                    let center = rect.left() - frame.left()
+                        + f64::from(scroll.scroll_left())
+                        + rect.width() / 2.;
+                    let maximum = (scroll.scroll_width() - viewport).max(0);
+                    scroll.set_scroll_left(
+                        (center - f64::from(viewport) / 2.)
+                            .clamp(0., f64::from(maximum))
+                            .round() as i32,
+                    );
+                    initially_centered.set(true);
                 }
             }
         };

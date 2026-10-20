@@ -9,8 +9,8 @@ use crate::{
     ui::{State, current_session, fail, text},
 };
 use serde_json::{Value, json};
-use wasm_bindgen_futures::spawn_local;
 use zxs_web::prelude::*;
+use zxs_web::tasks::spawn_local;
 
 /// A successful HTTP response is not a receipt unless it names our operation.
 /// Keep the original ID pollable when a proxy returns empty/unrelated JSON.

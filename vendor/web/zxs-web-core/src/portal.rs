@@ -37,18 +37,7 @@ where
         "Portal use_shadow=true requires the `shadow-dom` feature on zxs_web"
     );
 
-    if cfg!(target_arch = "wasm32") && {
-        #[cfg(feature = "full")]
-        {
-            Owner::current_shared_context()
-                .map(|sc| sc.is_browser())
-                .unwrap_or(true)
-        }
-        #[cfg(not(feature = "full"))]
-        {
-            true
-        }
-    } {
+    if cfg!(target_arch = "wasm32") {
         use send_wrapper::SendWrapper;
         use wasm_bindgen::JsCast;
 

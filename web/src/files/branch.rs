@@ -154,11 +154,10 @@ pub(super) fn control(
                                     // Capture the value before closing: removing the
                                     // input can fire blur and clear its local text.
                                     editing.set(false); value.set(String::new()); error.set(false);
-                                    if !disabled.get_untracked() {
-                                        if let Name::Valid(name) = name {
+                                    if !disabled.get_untracked()
+                                        && let Name::Valid(name) = name {
                                             target.get_value().submit(state, name);
                                         }
-                                    }
                                 }
                                 _ => {}
                             }

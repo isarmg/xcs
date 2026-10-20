@@ -7,7 +7,7 @@
 | `zxs-web-core` | 响应式所有权、DOM 构建、组件、控制流与挂载；项目已移除服务端渲染、服务器函数、hydration 和服务器表单依赖入口 |
 | `zxs-web-macro` | `view!`、组件与属性过程宏，生成统一 `zxs_web` 路径 |
 
-本地包、Rust 路径、DOM 标记和调试环境变量采用 zxs 命名。`reactive_graph`、`tachys`、`leptos_dom`、`leptos_hot_reload` 等外部 Cargo 依赖保留其真实包名，不复制外部仓库来构建产品。
+本地包、Rust 路径、DOM 标记和调试环境变量采用 zxs 命名。`reactive_graph`、`tachys`、`leptos_dom`、`leptos_hot_reload` 及其 Leptos 配套依赖已纳入 [dependencies](dependencies/README.md) 自行维护，保留真实包名和锁定版本。所有框架内部依赖直接指向仓库内路径，应用与 demo 使用同一份源码；不依赖消费者 workspace 的 patch 配置。
 
 第三方基础来自 [Leptos 0.8.19](https://github.com/leptos-rs/leptos)。原始 MIT 版权和许可全文分别集中保留在 [core README](zxs-web-core/README.md) 与 [macro README](zxs-web-macro/README.md)。字体来源和完整许可通知保留在 [字体 README](../../web/public/fonts/README.md)。
 

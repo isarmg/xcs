@@ -10,7 +10,7 @@ use crate::{
     ui::{State, current_session, fail, set_notice, text},
 };
 use serde_json::{Value, json};
-use wasm_bindgen_futures::spawn_local;
+use zxs_web::tasks::spawn_local;
 use zxs_web::{i18n::t, prelude::*};
 
 pub(crate) fn namespace(state: RwSignal<State>, action: NamespaceAction, name: String) {
@@ -355,16 +355,16 @@ fn file_mutation(state: RwSignal<State>, file: &str, action: &str, mut body: Val
     if id.is_empty() {
         return;
     }
-    if action == "select" {
-        if let Some((repository, path)) = state.with_untracked(|s| {
+    if action == "select"
+        && let Some((repository, path)) = state.with_untracked(|s| {
             s.files
                 .selected
                 .as_ref()
                 .and_then(|entry| crate::files::model::file_context(&s.files, entry))
-        }) {
-            body["repository_id"] = repository.into();
-            body["path"] = path.into();
-        }
+        })
+    {
+        body["repository_id"] = repository.into();
+        body["path"] = path.into();
     }
     body["operation_id"] = id.clone().into();
     let endpoint = format!("/v1/file-manager/files/{}/{action}", api::segment(file));

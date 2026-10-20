@@ -28,7 +28,7 @@ convert_case = "0.11"
 convert_case_extras = "0.2"
 html-escape = "0.2"
 itertools = "0.14"
-leptos_hot_reload = "0.8.7"
+leptos_hot_reload = { path = "../dependencies/leptos_hot_reload-0.8.7", version = "0.8.7" }
 prettyplease = "0.3"
 proc-macro2 = "1"
 quote = "1"

@@ -73,27 +73,26 @@ impl Target {
         if !value.is_empty() {
             return value;
         }
-        if let Self::NodeNote(id) = self {
-            if let Some(node) = super::model::history_nodes(&state.files.file_history)
+        if let Self::NodeNote(id) = self
+            && let Some(node) = super::model::history_nodes(&state.files.file_history)
                 .iter()
                 .find(|node| super::model::history_node_id(node) == *id)
-            {
-                match node["kind"].as_str().unwrap_or_default() {
-                    "tags" => return t("标签变化", "Tags changed"),
-                    "merge" => return t("合并分支", "Merged branches"),
-                    _ => {}
-                }
-                let previous = text(node, &["previous_path"]);
-                let path = text(node, &["path"]);
-                let action = if previous.rsplit_once('/').map(|(parent, _)| parent)
-                    == path.rsplit_once('/').map(|(parent, _)| parent)
-                {
-                    t("改名", "Renamed")
-                } else {
-                    t("路径变化", "Path changed")
-                };
-                return format!("{action} {previous} → {path}");
+        {
+            match node["kind"].as_str().unwrap_or_default() {
+                "tags" => return t("标签变化", "Tags changed"),
+                "merge" => return t("合并分支", "Merged branches"),
+                _ => {}
             }
+            let previous = text(node, &["previous_path"]);
+            let path = text(node, &["path"]);
+            let action = if previous.rsplit_once('/').map(|(parent, _)| parent)
+                == path.rsplit_once('/').map(|(parent, _)| parent)
+            {
+                t("改名", "Renamed")
+            } else {
+                t("路径变化", "Path changed")
+            };
+            return format!("{action} {previous} → {path}");
         }
         t("无备注", "No note")
     }
@@ -223,10 +222,10 @@ impl Editor {
             return;
         }
         self.cancel();
-        if !self.disabled.get_untracked() {
-            if let Edit::Save(value) = edit {
-                self.target.get_value().submit(self.state, value);
-            }
+        if !self.disabled.get_untracked()
+            && let Edit::Save(value) = edit
+        {
+            self.target.get_value().submit(self.state, value);
         }
     }
 }

@@ -5,8 +5,8 @@ use crate::{
     ui::{State, current_session, fail, list, text},
 };
 use serde_json::Value;
-use wasm_bindgen_futures::spawn_local;
 use zxs_web::prelude::*;
+use zxs_web::tasks::spawn_local;
 
 pub(crate) fn load_disks(state: RwSignal<State>) {
     if state.with_untracked(|s| s.files.loading_disks) {

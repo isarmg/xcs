@@ -19,6 +19,7 @@ use std::{
 mod accessibility;
 mod demo;
 mod diagnostics;
+mod lifecycle;
 mod platform_previews;
 mod session_delivery;
 
@@ -500,6 +501,7 @@ fn exercise(
         return Err("browser did not load the built WASM bundle".into());
     }
     println!("PASS uncaught-error and real HTTP/WASM response checks");
+    lifecycle::run(browser, origin)?;
     Ok(())
 }
 

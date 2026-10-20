@@ -310,6 +310,18 @@ mod tests {
             let after = source_inventory(&fixture.0).unwrap();
             assert_ne!(before, after, "{file} must invalidate the build inventory");
         }
+        let dependency = fixture
+            .0
+            .join("vendor/web/dependencies/reactive_graph/src/lib.rs");
+        fs::create_dir_all(dependency.parent().unwrap()).unwrap();
+        fs::write(&dependency, "upstream").unwrap();
+        let before = source_inventory(&fixture.0).unwrap();
+        fs::write(&dependency, "project customization").unwrap();
+        assert_ne!(
+            before,
+            source_inventory(&fixture.0).unwrap(),
+            "Nested framework dependency changes must invalidate production assets"
+        );
     }
 
     #[test]

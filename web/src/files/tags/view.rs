@@ -47,13 +47,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
             s.files
                 .tag_edit
                 .as_ref()
-                .map(|draft| {
-                    draft
-                        .nodes
-                        .iter()
-                        .flat_map(|node| tags(node))
-                        .collect::<BTreeSet<_>>()
-                })
+                .map(|draft| draft.nodes.iter().flat_map(tags).collect::<BTreeSet<_>>())
                 .unwrap_or_default()
         })
     });

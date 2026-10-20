@@ -180,13 +180,13 @@ pub fn entry_id() -> String {
 
 fn fresh_id(prefix: &str) -> String {
     let mut bytes = [0u8; 16];
-    if let Some(crypto) = web_sys::window().and_then(|w| w.crypto().ok()) {
-        if crypto.get_random_values_with_u8_array(&mut bytes).is_ok() {
-            return format!(
-                "{prefix}_{}",
-                bytes.iter().map(|b| format!("{b:02x}")).collect::<String>()
-            );
-        }
+    if let Some(crypto) = web_sys::window().and_then(|w| w.crypto().ok())
+        && crypto.get_random_values_with_u8_array(&mut bytes).is_ok()
+    {
+        return format!(
+            "{prefix}_{}",
+            bytes.iter().map(|b| format!("{b:02x}")).collect::<String>()
+        );
     }
     // The server rejects empty operation IDs. Do not silently substitute weak IDs.
     String::new()
@@ -246,37 +246,36 @@ pub async fn invoke(command: &str, args: Value) -> Result<Value, Error> {
 }
 
 fn js_error(value: JsValue) -> Error {
-    if let Ok(code) = Reflect::get(&value, &"code".into()) {
-        if let Some(code) = code.as_string() {
-            return Error {
-                code,
-                message: Reflect::get(&value, &"message".into())
-                    .ok()
-                    .and_then(|v| v.as_string())
-                    .unwrap_or_else(|| t("系统操作失败", "The system operation failed").into()),
-                retryable: Reflect::get(&value, &"retryable".into())
-                    .ok()
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false),
-                status: Reflect::get(&value, &"status".into())
-                    .ok()
-                    .and_then(|v| v.as_f64())
-                    .unwrap_or(0.0) as u16,
-                commit_attempted: Reflect::get(&value, &"commit_attempted".into())
-                    .ok()
-                    .and_then(|value| value.as_bool()),
-                request_id: Reflect::get(&value, &"request_id".into())
-                    .ok()
-                    .and_then(|id| id.as_string()),
-            };
-        }
+    if let Ok(code) = Reflect::get(&value, &"code".into())
+        && let Some(code) = code.as_string()
+    {
+        return Error {
+            code,
+            message: Reflect::get(&value, &"message".into())
+                .ok()
+                .and_then(|v| v.as_string())
+                .unwrap_or_else(|| t("系统操作失败", "The system operation failed")),
+            retryable: Reflect::get(&value, &"retryable".into())
+                .ok()
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false),
+            status: Reflect::get(&value, &"status".into())
+                .ok()
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0) as u16,
+            commit_attempted: Reflect::get(&value, &"commit_attempted".into())
+                .ok()
+                .and_then(|value| value.as_bool()),
+            request_id: Reflect::get(&value, &"request_id".into())
+                .ok()
+                .and_then(|id| id.as_string()),
+        };
     }
     let message = value.as_string().unwrap_or_else(|| {
         t(
             "网络中断或系统操作失败；保存结果可能需要查询",
             "The connection was interrupted. Check whether the save completed.",
         )
-        .into()
     });
     error("TRANSPORT_ERROR", message)
 }
@@ -345,13 +344,13 @@ async fn fetch(
             .set("Authorization", &format!("Bearer {token}"))
             .map_err(js_error)?;
     }
-    if !matches!(method, "GET" | "HEAD") {
-        if let Some(token) = credentials.csrf.as_ref() {
-            request
-                .headers()
-                .set("X-CSRF-Token", &token)
-                .map_err(js_error)?;
-        }
+    if !matches!(method, "GET" | "HEAD")
+        && let Some(token) = credentials.csrf.as_ref()
+    {
+        request
+            .headers()
+            .set("X-CSRF-Token", token)
+            .map_err(js_error)?;
     }
     let timer = gloo_timers::callback::Timeout::new(120_000, move || controller.abort());
     let window = web_sys::window().ok_or_else(|| {

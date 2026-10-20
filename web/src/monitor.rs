@@ -6,8 +6,8 @@ use crate::{
     ui::{State, current_session, fail, feedback, list},
 };
 use serde_json::Value;
-use wasm_bindgen_futures::spawn_local;
 use zxs_web::components::{EmptyState, ErrorState, Feedback, LoadingState, Select, SelectOption};
+use zxs_web::tasks::spawn_local;
 use zxs_web::{i18n::t, prelude::*};
 
 const RANGES: [&str; 5] = ["1min", "30min", "1h", "24h", "1month"];

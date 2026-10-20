@@ -10,7 +10,7 @@ use crate::{
 };
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
-use wasm_bindgen_futures::spawn_local;
+use zxs_web::tasks::spawn_local;
 use zxs_web::{i18n::t, prelude::*};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

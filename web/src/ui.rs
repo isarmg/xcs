@@ -1,10 +1,10 @@
 use crate::{api, files, history, icons::FileIcon, monitor};
 use serde_json::{Value, json};
-use wasm_bindgen_futures::spawn_local;
 use zxs_web::components::{
     AccountPage, AppShell, ErrorState, Feedback, HeaderActions, HeaderNavigation, LoginCredentials,
     LoginPage, PasswordChange, SessionPhase, SessionView,
 };
+use zxs_web::tasks::spawn_local;
 use zxs_web::{i18n::t, prelude::*};
 
 #[derive(Clone, Default)]
@@ -31,7 +31,9 @@ pub(crate) struct State {
 }
 
 pub(crate) fn current_session(state: RwSignal<State>, epoch: u64) -> bool {
-    state.with_untracked(|s| s.authenticated && !s.logout_pending && s.session_epoch == epoch)
+    state
+        .try_with_untracked(|s| s.authenticated && !s.logout_pending && s.session_epoch == epoch)
+        .unwrap_or(false)
 }
 
 pub(crate) fn list(value: &Value, key: &str) -> Vec<Value> {
@@ -265,9 +267,13 @@ fn logout(state: RwSignal<State>) {
     let Some(epoch) = state.try_update(begin_logout).flatten() else {
         return;
     };
-    spawn_local(async move {
+    // Finish the requested logout even if the UI is disposed while it is pending.
+    wasm_bindgen_futures::spawn_local(async move {
         let result = api::request("POST", "/v1/auth/logout", Some(json!({}))).await;
-        if !state.with_untracked(|s| s.session_epoch == epoch && s.logout_pending) {
+        if !state
+            .try_with_untracked(|s| s.session_epoch == epoch && s.logout_pending)
+            .unwrap_or(false)
+        {
             return;
         }
         match result {
@@ -403,6 +409,21 @@ mod tests {
                 assert!(s.transfers.rows.is_empty());
             });
         });
+    }
+    #[test]
+    fn detached_completion_rejects_a_disposed_root() {
+        let owner = Owner::new();
+        let state = owner.with(|| {
+            RwSignal::new(State {
+                authenticated: true,
+                session_epoch: 4,
+                ..Default::default()
+            })
+        });
+        assert!(current_session(state, 4));
+        owner.cleanup();
+        assert!(!current_session(state, 4));
+        assert_eq!(state.try_with_untracked(|s| s.logout_pending), None);
     }
     #[test]
     fn logout_clears_transfer_metadata_before_the_network_result() {

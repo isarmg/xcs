@@ -271,6 +271,10 @@ mod tests {
         let _cleanup = Cleanup(root.clone());
         for input in INPUTS.iter().copied().chain([".cargo/config.toml"]) {
             let path = root.join(input);
+            if input == "vendor/web" {
+                fs::create_dir_all(&path).unwrap();
+                continue;
+            }
             fs::create_dir_all(path.parent().unwrap()).unwrap();
             fs::write(path, "initial").unwrap();
         }
@@ -280,6 +284,16 @@ mod tests {
             before,
             inputs(&root).unwrap(),
             "Cargo configuration must invalidate the demo inventory"
+        );
+        let dependency = root.join("vendor/web/dependencies/reactive_graph/src/lib.rs");
+        fs::create_dir_all(dependency.parent().unwrap()).unwrap();
+        fs::write(&dependency, "upstream").unwrap();
+        let before = inputs(&root).unwrap();
+        fs::write(&dependency, "project customization").unwrap();
+        assert_ne!(
+            before,
+            inputs(&root).unwrap(),
+            "Nested framework dependency changes must invalidate demo assets"
         );
     }
 }

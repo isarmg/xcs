@@ -88,6 +88,7 @@ where
         }
     }
 }
+#[cfg(any(target_arch = "wasm32", test))]
 async fn release_sources<F, Fut>(ids: Vec<String>, call: F) -> Result<Value, Error>
 where
     F: FnOnce(&'static str, Value) -> Fut,

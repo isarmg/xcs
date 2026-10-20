@@ -1589,21 +1589,28 @@ fn is_ambiguous_element(tag: &str) -> bool {
 }
 
 fn parse_event(event_name: &str) -> (String, EventNameOptions) {
-    let undelegated = event_name.contains(":undelegated");
-    let targeted = event_name.contains(":target");
-    let captured = event_name.contains(":capture");
-    let event_name = event_name
-        .replace(":undelegated", "")
-        .replace(":target", "")
-        .replace(":capture", "");
-    (
-        event_name,
-        EventNameOptions {
-            undelegated,
-            targeted,
-            captured,
-        },
-    )
+    // Modifiers are whole colon-separated segments, not substrings. In
+    // particular, custom events such as `dialog:targetChanged` must retain
+    // their exact event name and must not silently enable targeted handlers.
+    let mut options = EventNameOptions {
+        undelegated: false,
+        targeted: false,
+        captured: false,
+    };
+    let mut segments = event_name.split(':');
+    let mut name = segments.next().unwrap_or_default().to_owned();
+    for segment in segments {
+        match segment {
+            "undelegated" => options.undelegated = true,
+            "target" => options.targeted = true,
+            "capture" => options.captured = true,
+            other => {
+                name.push(':');
+                name.push_str(other);
+            }
+        }
+    }
+    (name, options)
 }
 
 /// Escapes Rust keywords that are also HTML attribute names
@@ -2026,5 +2033,57 @@ mod attribute_order_tests {
             .map(|tokens| tokens.to_string())
             .collect::<Vec<_>>();
         assert_eq!(after, before);
+    }
+}
+
+#[cfg(test)]
+mod event_modifier_tests {
+    use super::*;
+
+    #[test]
+    fn exact_modifiers_work_in_any_order() {
+        for event in [
+            "click:target:capture:undelegated",
+            "click:undelegated:target:capture",
+        ] {
+            let (name, options) = parse_event(event);
+            assert_eq!(name, "click");
+            assert!(options.targeted && options.captured && options.undelegated);
+            assert!(!parse_event_name(event).unwrap().1);
+        }
+    }
+
+    #[test]
+    fn custom_event_segments_are_not_partial_modifiers() {
+        for event in [
+            "dialog:targetChanged",
+            "dialog:capturecomplete",
+            "dialog:undelegateddone",
+        ] {
+            let (name, options) = parse_event(event);
+            assert_eq!(name, event);
+            assert!(!options.targeted && !options.captured && !options.undelegated);
+            let (tokens, custom, _) = parse_event_name(event).unwrap();
+            assert!(custom);
+            assert_eq!(
+                tokens.to_string(),
+                quote! { Custom::new(#event) }.to_string()
+            );
+        }
+    }
+
+    #[test]
+    fn exact_modifier_does_not_erase_similar_custom_segment() {
+        let (name, options) = parse_event("dialog:targetChanged:capture");
+        assert_eq!(name, "dialog:targetChanged");
+        assert!(options.captured);
+        assert!(!options.targeted);
+    }
+
+    #[test]
+    fn bare_custom_event_named_like_modifier_is_preserved() {
+        let (name, options) = parse_event("capture");
+        assert_eq!(name, "capture");
+        assert!(!options.captured);
     }
 }

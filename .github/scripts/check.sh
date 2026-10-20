@@ -11,7 +11,10 @@ case "${1:-}" in
     cargo test --locked --manifest-path apps/Cargo.toml --workspace
     ;;
   web)
+    python3 tools/vendor-leptos/vendor.py verify
+    python3 -m unittest discover -s tools/vendor-leptos -p 'test_*.py'
     cargo test --locked --manifest-path web/Cargo.toml --workspace
+    cargo test --locked --manifest-path web/Cargo.toml -p zxs-web-core -p zxs-web-macro --lib
     ;;
   contracts)
     cargo test --locked --manifest-path tools/contract-check/Cargo.toml
@@ -32,6 +35,7 @@ case "${1:-}" in
     cargo test --locked --manifest-path integrations/smb/Cargo.toml --package zxs-smb
     ;;
   web-production)
+    python3 tools/vendor-leptos/vendor.py verify
     # The production builder deliberately invokes Cargo offline. A clean CI
     # runner must fetch the locked Web dependencies before calling it.
     cargo fetch --locked --manifest-path web/Cargo.toml
