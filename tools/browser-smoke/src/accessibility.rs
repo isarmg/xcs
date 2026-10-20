@@ -5,8 +5,7 @@ pub(super) fn run(browser: &Browser) -> Result<()> {
     let original_theme = browser.script("return document.documentElement.dataset.zxsTheme")?;
     let result = check(browser);
     // Restore even on failure; these are isolated smoke-test browser settings.
-    let cleanup = browser
-        .script("document.getElementById('zxs-smoke-decoration-fault')?.remove(); return true");
+    let cleanup = restore_decoration(browser);
     let media_cleanup = browser.cdp("Emulation.setEmulatedMedia", json!({"features":[]}));
     let theme_cleanup = select_theme(browser, original_theme.as_str().unwrap_or("light"));
     result?;
@@ -17,6 +16,25 @@ pub(super) fn run(browser: &Browser) -> Result<()> {
         "PASS real input keyboard focus and Select contour fallback visibility in light/dark and forced colors"
     );
     Ok(())
+}
+
+fn restore_decoration(browser: &Browser) -> Result<()> {
+    let restored = browser.script(
+        "const saved=window.__zxsSmokeDecorationFault;\
+         if(!saved)return true;\
+         const style=saved.panel.style;\
+         if(saved.value)style.setProperty('box-shadow',saved.value,saved.priority);\
+         else style.removeProperty('box-shadow');\
+         const restored=style.getPropertyValue('box-shadow')===saved.value && \
+             style.getPropertyPriority('box-shadow')===saved.priority;\
+         if(restored)delete window.__zxsSmokeDecorationFault;\
+         return restored",
+    )?;
+    if restored == true {
+        Ok(())
+    } else {
+        Err("could not restore the original inline box-shadow declaration".into())
+    }
 }
 
 fn select_theme(browser: &Browser, theme: &str) -> Result<()> {
@@ -74,20 +92,35 @@ fn check(browser: &Browser) -> Result<()> {
             browser.keys(&trigger, "\u{e00c}")?; // Escape.
 
             if forced == "none" {
-                // Unsupported decoration is a supported square fallback. Inject
-                // only CSS, let the real controller choose its own state, then
-                // remove the rule before any further business/screenshot work.
-                browser.script(
-                    "const s=document.createElement('style');s.id='zxs-smoke-decoration-fault';\
-                     s.textContent='.zxs-select-panel{box-shadow:inset 0 0 1px black!important}';\
-                     document.head.appendChild(s);return true",
-                )?;
                 browser.click(&trigger)?;
-                visible_menu(browser, true, theme, "unsupported inset shadow")?;
-                browser.keys(&trigger, "\u{e00c}")?;
-                browser.script(
-                    "document.getElementById('zxs-smoke-decoration-fault').remove();return true",
+                visible_menu(browser, false, theme, "before decoration injection")?;
+                // The controller owns an inline !important shadow declaration.
+                // A stylesheet rule cannot override it. Preserve its exact
+                // value/priority and prove the inline fault reaches computed
+                // style before waiting for the real controller's fallback.
+                let injected = browser.script(
+                    "if(window.__zxsSmokeDecorationFault)throw new Error('decoration fault already active');\
+                     const panel=document.querySelector('.zxs-history-toolbar .zxs-select-panel:popover-open');\
+                     if(!panel)throw new Error('open history Select is missing');\
+                     window.__zxsSmokeDecorationFault={panel,\
+                         value:panel.style.getPropertyValue('box-shadow'),\
+                         priority:panel.style.getPropertyPriority('box-shadow')};\
+                     panel.style.setProperty('box-shadow','inset 0 0 1px black','important');\
+                     return getComputedStyle(panel).boxShadow",
                 )?;
+                if !injected
+                    .as_str()
+                    .is_some_and(|shadow| shadow.split_whitespace().any(|token| token == "inset"))
+                {
+                    return Err(format!(
+                        "decoration fault did not reach computed box-shadow: {injected}"
+                    )
+                    .into());
+                }
+                visible_menu(browser, true, theme, "unsupported inset shadow")?;
+                restore_decoration(browser)?;
+                visible_menu(browser, false, theme, "after decoration restoration")?;
+                browser.keys(&trigger, "\u{e00c}")?;
             }
         }
     }
@@ -103,10 +136,21 @@ fn visible_menu(browser: &Browser, fallback: bool, theme: &str, mode: &str) -> R
                      visible:s.visibility==='visible'&&s.display!=='none'&&r.width>0&&r.height>0}",
         )?;
         let expected = if fallback { "fallback" } else { "clip" };
-        if state["state"] == expected && state["visible"] == true {
+        let expected_reason = match mode {
+            "unsupported inset shadow" => Some("inset-or-unsupported-shadow"),
+            "active" => Some("forced-colors"),
+            _ => None,
+        };
+        if state["state"] == expected
+            && state["visible"] == true
+            && expected_reason.is_none_or(|reason| state["reason"] == reason)
+        {
             Ok(())
         } else {
-            Err(format!("Select {theme}/{mode}: expected visible {expected}, got {state}").into())
+            Err(format!(
+                "Select {theme}/{mode}: expected visible {expected} ({expected_reason:?}), got {state}"
+            )
+            .into())
         }
     })
 }
