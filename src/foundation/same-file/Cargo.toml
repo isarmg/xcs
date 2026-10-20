@@ -1,0 +1,18 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+name = "same-file"
+version = "1.0.6"
+authors = ["Andrew Gallant <jamslam@gmail.com>"]
+exclude = ["/.github"]
+description = "A simple crate for determining whether two file paths point to the same file.\n"
+homepage = "https://github.com/BurntSushi/same-file"
+documentation = "https://docs.rs/same-file"
+readme = "../../../docs/upstream/same-file-1.0.6/README.md"
+keywords = ["same", "file", "equal", "inode"]
+license = "Unlicense/MIT"
+repository = "https://github.com/BurntSushi/same-file"
+autotests = false
+autobenches = false
+autoexamples = false

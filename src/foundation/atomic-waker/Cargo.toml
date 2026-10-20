@@ -1,0 +1,32 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+rust-version = "1.36"
+name = "atomic-waker"
+version = "1.1.2"
+authors = [
+    "Stjepan Glavina <stjepang@gmail.com>",
+    "Contributors to futures-rs",
+]
+exclude = ["/.*"]
+description = "A synchronization primitive for task wakeup"
+readme = "../../../docs/upstream/atomic-waker-1.1.2/README.md"
+keywords = [
+    "waker",
+    "notify",
+    "wake",
+    "futures",
+    "async",
+]
+categories = [
+    "asynchronous",
+    "concurrency",
+]
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/smol-rs/atomic-waker"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[features]

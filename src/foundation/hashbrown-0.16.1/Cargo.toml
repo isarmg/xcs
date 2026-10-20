@@ -1,0 +1,77 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.65.0"
+name = "hashbrown"
+version = "0.16.1"
+authors = ["Amanieu d'Antras <amanieu@gmail.com>"]
+build = false
+exclude = [
+    ".github",
+    "/ci/*",
+]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "A Rust port of Google's SwissTable hash map"
+readme = "../../../docs/upstream/hashbrown-0.16.1/README.md"
+keywords = [
+    "hash",
+    "no_std",
+    "hashmap",
+    "swisstable",
+]
+categories = [
+    "data-structures",
+    "no-std",
+]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rust-lang/hashbrown"
+
+[features]
+default = ["default-hasher", "inline-more", "allocator-api2", "equivalent", "raw-entry"]
+default-hasher = ["dep:foldhash"]
+inline-more = []
+nightly = ["foldhash?/nightly"]
+raw-entry = []
+rustc-dep-of-std = ["nightly", "rustc-internal-api"]
+rustc-internal-api = []
+serde = ["dep:serde_core"]
+
+[lib]
+name = "hashbrown"
+path = "src/lib.rs"
+
+[dependencies.allocator-api2]
+version = "0.2.9"
+features = ["alloc"]
+optional = true
+default-features = false
+path = "../allocator-api2"
+
+[dependencies.equivalent]
+version = "1.0"
+optional = true
+default-features = false
+path = "../equivalent"
+
+[dependencies.foldhash]
+version = "0.2.0"
+optional = true
+default-features = false
+path = "../foldhash"
+
+[dependencies.rayon]
+version = "1.9.0"
+optional = true
+path = "../rayon"
+
+[dependencies.serde_core]
+version = "1.0.221"
+optional = true
+default-features = false
+path = "../serde_core"
+

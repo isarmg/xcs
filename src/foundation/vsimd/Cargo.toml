@@ -1,0 +1,23 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.63"
+name = "vsimd"
+version = "0.8.0"
+description = "SIMD utilities"
+readme = "../../../docs/upstream/vsimd-0.8.0/README.md"
+keywords = ["simd"]
+categories = ["no-std"]
+license = "MIT"
+repository = "https://github.com/Nugine/simd"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[features]
+alloc = []
+detect = ["std"]
+std = ["alloc"]
+unstable = []
+

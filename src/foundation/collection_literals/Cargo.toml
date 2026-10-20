@@ -1,0 +1,42 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+name = "collection_literals"
+version = "1.0.3"
+build = false
+include = [
+    "/src/",
+    "/tests/",
+    "/README.md",
+    "/LICENSE",
+]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Easy-to-use macros for initializing any collection"
+readme = "../../../docs/upstream/collection_literals-1.0.3/README.md"
+keywords = [
+    "literal",
+    "macro",
+    "hashmap",
+    "collection",
+    "maplit",
+]
+categories = ["rust-patterns"]
+license = "MIT"
+repository = "https://github.com/staedoix/collection_literals"
+
+[badges.maintenance]
+status = "passively-maintained"
+
+[lib]
+name = "collection_literals"
+path = "src/lib.rs"
+
+[dependencies]
+
+[lints.rust]
+unsafe_code = "forbid"

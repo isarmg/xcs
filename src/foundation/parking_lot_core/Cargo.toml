@@ -1,0 +1,46 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.71.0"
+name = "parking_lot_core"
+version = "0.9.12"
+authors = ["Amanieu d'Antras <amanieu@gmail.com>"]
+build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "An advanced API for creating custom synchronization primitives."
+readme = false
+keywords = [
+    "mutex",
+    "condvar",
+    "rwlock",
+    "once",
+    "thread",
+]
+categories = ["concurrency"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Amanieu/parking_lot"
+
+[features]
+deadlock_detection = []
+nightly = []
+
+[lib]
+name = "parking_lot_core"
+path = "src/lib.rs"
+
+[dependencies.cfg-if]
+version = "1.0.0"
+path = "../cfg-if"
+
+[dependencies.smallvec]
+version = "1.6.1"
+path = "../smallvec"
+
+[target."cfg(unix)".dependencies.libc]
+version = "0.2.95"
+path = "../libc"

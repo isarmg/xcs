@@ -1,0 +1,30 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.63.0"
+name = "outref"
+version = "0.5.2"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Out reference"
+readme = "../../../docs/upstream/outref-0.5.2/README.md"
+keywords = [
+    "write-only",
+    "reference",
+    "slice",
+]
+categories = [
+    "no-std",
+    "rust-patterns",
+]
+license = "MIT"
+repository = "https://github.com/Nugine/outref"
+
+[lib]
+name = "outref"
+path = "src/lib.rs"
