@@ -36,16 +36,21 @@ cargo run --locked --manifest-path apps/host/Cargo.toml
 
 平台依赖见 [Tauri 官方说明](https://v2.tauri.app/start/prerequisites/)，安装包构建见[发布说明](../docs/release.md)。
 
-## 验证状态
+## 六个平台与验证状态
 
-[2026-10-19 的 CI](https://github.com/isarmg/zxs/actions/runs/39276866908) 已通过 Linux、Windows、macOS 的桥接测试与宿主编译检查。共享界面已在真实 Chrome 中完成登录、上传、版本详情、下载比对和注销测试。[5bf569e 的发布演练](https://github.com/isarmg/zxs/actions/runs/39276920875) 已完成 Linux、Windows、macOS 打包和产物校验，未公开 Release。
+[92f30df 的 CI（39389754286）](https://github.com/isarmg/zxs/actions/runs/39389754286) 已通过 Linux、Windows、macOS 的桥接测试与宿主编译检查。此证据只对应该提交，不自动覆盖之后的工作区改动，也不是原生设备交互验收。
 
-| 范围 | 当前状态 | 下一步 |
+[5bf569e 的历史发布演练](https://github.com/isarmg/zxs/actions/runs/39276920875) 已完成 Linux、Windows、macOS 打包和产物校验，未公开 Release；它不是当前提交的发行产物。
+
+| 平台 | 已有实现 / 证据 | 尚需完成的验收 |
 | --- | --- | --- |
-| Linux、Windows、macOS | 桥接测试、宿主 `cargo check` 与上述提交的发行打包 | 安装、原生 WebView 交互和系统文件交接 |
-| Android | 文件选择源码；缺少可靠文件名的 content URI 明确拒绝 | 提供方 DISPLAY_NAME 适配、SDK/NDK 构建、后台生命周期及真机 |
-| iOS/iPadOS | 文件 URL 命名与安全范围资源清理源码（含打开失败） | Xcode 构建、签名、后台生命周期、iPad 多窗口及真机 |
+| Linux | 共享界面、原生选择/打开、桥接测试与宿主 CI 编译 | 安装、真实 WebKitGTK 窗口、系统文件交接 |
+| Windows | 共享界面、原生选择/打开、桥接测试与宿主 CI 编译 | 安装、WebView2、高 DPI、系统文件交接 |
+| macOS | 共享界面、原生选择/打开、桥接测试与宿主 CI 编译 | 安装、WKWebView、签名/公证、系统文件交接 |
+| Android | 共享界面和移动入口源码；content URI 明确拒绝 | 自有 DISPLAY_NAME 适配、SDK/NDK 构建、系统栏/键盘、生命周期、真机文件交接 |
+| iOS | 共享界面、文件 URL 命名及 scoped-access 清理源码 | Xcode 构建、签名、Files 提供方、safe area/键盘、生命周期、真机 |
+| iPadOS | 复用 iOS 宿主及共享界面，不是独立桌面宿主 | iPad 设备构建、分屏/旋转/键盘、Files 提供方；多窗口仍未实现 |
 
-编译检查与浏览器测试分别验证构建和共享界面；原生宿主交互、移动端及实际安装按平台单独验收。历史 Linux 局部 SDK 构建记录见[实现报告](../docs/reports/implementation.md)。
+具体窗口、权限和文件交接边界见[六平台能力与验收矩阵](../docs/design/app-platform-matrix.md)。六种视口的共享 UI 页面或截图只证明布局，不能替代六个平台的原生构建及设备验收。
 
-本轮上传边界改造已通过桥接与共享界面测试；当前环境缺少 GLib/GTK 开发库，新的宿主编译和真实系统文件选择/打开仍待平台 CI 与设备验收。上述历史 CI 结果不代表这次改动已通过原生宿主验证。
+本地环境缺少 GLib/GTK 开发库，不重复安装或绕过平台依赖；桥接测试可独立执行。Android/iOS 生成工程未纳入当前仓库，没有移动 SDK/设备的验证结果。历史 Linux 局部 SDK 构建记录见[实现报告](../docs/reports/implementation.md)。

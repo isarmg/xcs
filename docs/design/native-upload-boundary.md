@@ -59,3 +59,8 @@ Offline cache opening and durable upload recovery across application restart are
 not implemented by this transport change. Logout is not a cache-deletion action.
 
 The iOS cleanup rule follows [Apple’s scoped-resource documentation](https://developer.apple.com/documentation/Foundation/NSURL/stopAccessingSecurityScopedResource%28%29): releases balance acquired access; a release without access is a no-op. Provider cleanup is installed before the fallible open and tested independently of the native GUI SDK.
+
+For the per-platform implementation and device acceptance gates, see the
+[six-platform capability matrix](app-platform-matrix.md). The Android
+DISPLAY_NAME route is a future project-owned adapter, not a third-party plugin
+patch or an implemented provider capability.
