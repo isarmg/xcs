@@ -11,11 +11,32 @@ struct LostCommitReply {
     fail: AtomicBool,
     uploads: AtomicUsize,
     revoked: AtomicBool,
+    change_before_workspace: AtomicBool,
 }
 impl Backend for LostCommitReply {
     fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError> {
         if action == "version" && self.revoked.load(Ordering::SeqCst) {
             return Err(ApiError::forbidden());
+        }
+        if action == "create_workspace"
+            && self.change_before_workspace.swap(false, Ordering::SeqCst)
+        {
+            let workspace: Workspace =
+                serde_json::from_value(self.inner.call(action, identity, input.clone())?).unwrap();
+            let source = tempfile::NamedTempFile::new().unwrap();
+            fs::write(source.path(), b"new").unwrap();
+            self.inner.upload(
+                identity,
+                &workspace.workspace_id,
+                &new_id("entry"),
+                "report.txt",
+                source.path(),
+            )?;
+            self.inner.call("commit_workspace_internal", identity, json!({
+                "workspace_id":workspace.workspace_id,"operation_id":new_id("op"),
+                "expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),
+                "message":"concurrent update during SMB open"
+            }))?;
         }
         let value = self.inner.call(action, identity, input)?;
         if action == "commit_workspace_internal" && self.fail.swap(false, Ordering::SeqCst) {
@@ -85,6 +106,7 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
         fail: AtomicBool::new(false),
         uploads: AtomicUsize::new(0),
         revoked: AtomicBool::new(false),
+        change_before_workspace: AtomicBool::new(false),
     });
     let shared = Arc::new(Shared {
         backend: backend.clone(),
@@ -1091,5 +1113,110 @@ fn raw_fd_and_writer_copy_reject_corruption_and_use_verified_fallback() {
         let result = denied.open("report.txt".into(), writable, false, false, false, false);
         assert!(matches!(result, Err(ref error) if error.code == "CONTENT_UNAVAILABLE"));
         assert!(denied.handles.is_empty(), "corrupt descriptor was admitted");
+    }
+}
+
+#[test]
+fn writable_open_rejects_entry_changed_before_workspace_snapshot() {
+    for (truncate, create, exclusive, missing) in [
+        (false, false, false, false),
+        (true, false, false, false),
+        (false, true, false, false),
+        (false, true, true, true),
+    ] {
+        let (_temp, shared, backend, branch) = fixture();
+        let mut client = session(shared.clone(), &branch);
+        if missing {
+            client
+                .dispatch(Request::Namespace {
+                    kind: "delete".into(),
+                    path: "report.txt".into(),
+                    destination: None,
+                    replace: false,
+                })
+                .unwrap();
+        }
+        backend
+            .change_before_workspace
+            .store(true, Ordering::SeqCst);
+        let result = client.open(
+            "report.txt".into(),
+            true,
+            create,
+            truncate,
+            exclusive,
+            false,
+        );
+        assert!(
+            result.is_err(),
+            "stale entry must not be copied or truncated under a newer workspace baseline"
+        );
+        assert_eq!(result.unwrap_err().code, "FILE_VERSION_CONFLICT");
+        assert!(client.handles.is_empty());
+        assert!(client.writer_locks.is_empty());
+        let entry = client.find("report.txt").unwrap().unwrap();
+        let content = backend
+            .content(&client.identity, &entry.version_id)
+            .unwrap();
+        let mut bytes = [0; 3];
+        content.file.read_exact_at(&mut bytes, 0).unwrap();
+        assert_eq!(&bytes, b"new");
+    }
+}
+
+#[test]
+fn disconnect_before_dirty_delivery_retains_unacknowledged_fd_bytes() {
+    for published in [false, true] {
+        let (_temp, shared, _backend, branch) = fixture();
+        let mut client = session(shared.clone(), &branch);
+        let (opened, file) = open_file(&mut client, true);
+        if published {
+            file.write_all_at(b"one", 0).unwrap();
+            client.dirty(opened.handle).unwrap();
+            client.flush(opened.handle).unwrap();
+        }
+        let source = match &client.handles[&opened.handle] {
+            Handle::Write(writer) => writer.source.clone(),
+            _ => unreachable!(),
+        };
+        file.write_all_at(b"two", 0).unwrap();
+        // The descriptor changed, but the connection died before Dirty arrived.
+        drop(client);
+        assert!(
+            source.is_file(),
+            "unacknowledged FD bytes must survive disconnect"
+        );
+        assert_eq!(fs::read(&source).unwrap(), b"two");
+        let record: Value =
+            serde_json::from_slice(&fs::read(source.with_extension("work.json")).unwrap()).unwrap();
+        assert_eq!(record["descriptor_changes_unconfirmed"], true);
+        assert_eq!(record["published"], published);
+        assert_eq!(record["dirty"], false);
+        assert!(shared.file_writers.lock().unwrap().is_empty());
+    }
+}
+
+#[test]
+fn unchanged_writable_close_cleans_up_but_disconnect_remains_uncertain() {
+    for disconnect in [false, true] {
+        let (_temp, shared, backend, branch) = fixture();
+        let mut client = session(shared, &branch);
+        let before = client.find("report.txt").unwrap().unwrap();
+        let (opened, _file) = open_file(&mut client, true);
+        let source = match &client.handles[&opened.handle] {
+            Handle::Write(writer) => writer.source.clone(),
+            _ => unreachable!(),
+        };
+        if !disconnect {
+            client.close(opened.handle, false).unwrap();
+            assert_eq!(
+                client.find("report.txt").unwrap().unwrap().version_id,
+                before.version_id
+            );
+        }
+        drop(client);
+        assert_eq!(source.exists(), disconnect);
+        assert_eq!(source.with_extension("work.json").exists(), disconnect);
+        assert_eq!(backend.uploads.load(Ordering::SeqCst), 0);
     }
 }

@@ -18,23 +18,11 @@ impl Drop for Session {
                 writers.remove(&(self.branch.clone(), path.clone()));
             }
         }
-        // Dirty writer source files are deliberately retained on a disconnect.
-        // The client did not receive a successful save. Operators can recover
-        // these private files; silently committing or deleting them is forbidden.
-        for handle in self.handles.values() {
-            if let Handle::Write(writer) = handle {
-                if !writer.dirty {
-                    cleanup_writer(writer);
-                    if !writer.committed {
-                        let _ = self.shared.backend.call(
-                            "abort_workspace",
-                            &self.identity,
-                            json!({"workspace_id":writer.workspace.workspace_id}),
-                        );
-                    }
-                }
-            }
-        }
+        // Every live writer has handed out a mutable FD. The peer can have
+        // changed it before a Dirty request reached us, including after a
+        // successful Flush. A disconnect therefore cannot prove clean bytes.
+        // Retain both data and the recovery record without hashing in Drop or
+        // publishing a new generation. Explicit successful Close still cleans up.
     }
 }
 

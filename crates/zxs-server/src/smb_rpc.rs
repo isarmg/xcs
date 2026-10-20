@@ -23,7 +23,7 @@ mod handles;
 mod publication;
 mod session;
 mod transport;
-use publication::{cleanup_writer, recovery_record};
+use publication::recovery_record;
 use session::Session;
 #[cfg(all(test, feature = "core"))]
 use transport::run_connection;

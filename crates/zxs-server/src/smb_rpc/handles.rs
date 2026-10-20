@@ -82,6 +82,34 @@ impl Session {
             let result = (|| {
                 let workspace = self.workspace()?;
                 pending_workspace = Some(workspace.workspace_id.clone());
+                // Bind the observed file to the workspace's immutable baseline.
+                // An HTTP writer can commit between find() and workspace creation,
+                // even while this session owns the SMB-only path reservation.
+                let snapshot = self.call(
+                    "tree",
+                    json!({
+                        "branch_id":self.branch,"query":{"commit_id":workspace.base_head}
+                    }),
+                )?;
+                let entries: Vec<Entry> = serde_json::from_value(snapshot["entries"].clone())
+                    .map_err(ApiError::invalid)?;
+                let baseline = entries
+                    .iter()
+                    .find(|entry| entry.lookup_key == zxs_naming::path_key(&path));
+                let identity = |entry: &Entry| {
+                    (
+                        entry.entry_id.clone(),
+                        entry.version_id.clone(),
+                        entry.path.clone(),
+                        entry.kind.clone(),
+                    )
+                };
+                if existing.as_ref().map(identity) != baseline.map(identity) {
+                    return Err(ApiError::conflict(
+                        "FILE_VERSION_CONFLICT",
+                        "the file changed while its write handle was opening; reopen it",
+                    ));
+                }
                 let temp = tempfile::Builder::new()
                     .prefix(&format!("{}-", workspace.workspace_id))
                     .tempfile_in(&self.shared.spool)
