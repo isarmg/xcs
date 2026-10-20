@@ -1,5 +1,9 @@
 # Recorded architecture probe: 2026-10-20
 
+For the later snapshot-encoding/object-layout comparison, see the
+[64/256-save report](20261020-snapshot-pages/README.md). It demonstrates correctness,
+not an overall elapsed-time or peak-memory improvement.
+
 For the subsequent retained-history optimization and its equal-size comparisons,
 see [the second-pass report](growth-pass.md). The reports below are retained as
 the earlier baseline; they have not been overwritten with newer results.

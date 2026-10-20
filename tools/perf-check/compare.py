@@ -12,11 +12,17 @@ with open(a.baseline) as f:
     old = json.load(f)
 with open(a.current) as f:
     new = json.load(f)
-for key in ("schema_version", "mode", "history_limit", "small_file_bytes", "copies"):
+for key in ("mode", "history_limit", "small_file_bytes", "copies"):
     assert old[key] == new[key], f"incompatible report parameter: {key}"
 assert old["mode"] == "Development"
 assert not old["physical_redundancy_evidence"] and not new["physical_redundancy_evidence"]
-assert all(old["checks"].values()) and all(new["checks"].values())
+required_checks = (
+    "restart_state_equality", "range_bytes_correct", "held_read_during_save",
+    "historical_version_after_save", "integrity_check",
+)
+for report in (old, new):
+    assert all(report["checks"][key] is True for key in required_checks), "correctness check failed"
+    assert report["samples"], "missing samples"
 assert [s["history_versions"] for s in old["samples"]] == [s["history_versions"] for s in new["samples"]]
 print("Development simulation; timing ratios are observations, never gates.")
 for before, after in zip(old["samples"], new["samples"]):

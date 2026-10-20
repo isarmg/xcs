@@ -10,7 +10,7 @@ use std::{
     time::Duration,
 };
 
-pub const PROTOCOL: &str = "zxs-smb-rpc.v1";
+pub const PROTOCOL: &str = "zxs-smb-rpc";
 pub const MAX_FRAME_BYTES: usize = 8 * 1024 * 1024;
 
 pub fn effective_uid() -> u32 {

@@ -4,8 +4,6 @@ use super::model::{
     Model, history_node_id, history_nodes, inherited_content, materialized, visible_content,
 };
 use super::{actions, branch, inline};
-#[cfg(test)]
-use crate::ui::list;
 use crate::{
     format,
     ui::{State, text},
@@ -32,7 +30,7 @@ fn metadata(records: &[Value], file_id: &str) -> Vec<Version> {
     let mut versions = records
         .iter()
         .filter_map(|record| {
-            let id = history_node_id(record);
+            let id = record["node_id"].as_str().unwrap_or_default().to_owned();
             let owner = text(record, &["file_id"]);
             if id.is_empty()
                 || !(materialized(record)
@@ -45,7 +43,6 @@ fn metadata(records: &[Value], file_id: &str) -> Vec<Version> {
             let mut parents = record
                 .get("parent_node_ids")
                 .and_then(Value::as_array)
-                .or_else(|| record.get("source_version_ids").and_then(Value::as_array))
                 .into_iter()
                 .flatten()
                 .filter_map(Value::as_str)
@@ -57,7 +54,6 @@ fn metadata(records: &[Value], file_id: &str) -> Vec<Version> {
             let created = record["created_at"]
                 .as_str()
                 .map(str::to_owned)
-                .or_else(|| record["created_at"].as_u64().map(|v| v.to_string()))
                 .unwrap_or_default();
             Some(Version {
                 id,
@@ -635,6 +631,19 @@ fn node(state: RwSignal<State>, version_id: String) -> impl IntoView {
 mod tests {
     use super::*;
     #[test]
+    fn obsolete_body_version_graph_fields_are_not_interpreted_as_nodes() {
+        let records = vec![
+            serde_json::json!({"file_id":"file","version_id":"old","created_at":"1","source_version_ids":[]}),
+            serde_json::json!({"file_id":"file","node_id":"new","version_id":"body","created_at":2,"source_version_ids":["old"]}),
+        ];
+        let parsed = metadata(&records, "file");
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[0].id, "new");
+        assert!(parsed[0].parents.is_empty());
+        assert!(parsed[0].created.is_empty());
+    }
+
+    #[test]
     fn rename_nodes_reuse_body_versions_but_keep_their_own_ancestry() {
         let records = vec![
             serde_json::json!({"file_id":"file","node_id":"ver-one","version_id":"ver-one","parent_node_ids":[],"kind":"content","created_at":"1"}),
@@ -754,7 +763,7 @@ mod tests {
         assert_eq!(layout(&reversed), tree);
     }
     #[test]
-    fn mixed_legacy_dates_keep_a_total_stable_order_and_unknown_dates_are_last() {
+    fn mixed_node_timestamp_formats_keep_a_total_stable_order_and_unknown_dates_are_last() {
         let versions = [
             v("two", 2, &[]),
             v("ten", 10, &[]),
@@ -942,9 +951,9 @@ mod tests {
     #[test]
     fn metadata_ignores_notes_current_markers_and_foreign_file_records() {
         let mut records = vec![
-            serde_json::json!({"file_id":"selected","version_id":"a","created_at":"1","source_version_ids":[],"note":"initial"}),
-            serde_json::json!({"file_id":"other","version_id":"foreign","created_at":"0"}),
-            serde_json::json!({"file_id":"selected","version_id":"b","created_at":"2","source_version_ids":["foreign","a","a",null]}),
+            serde_json::json!({"file_id":"selected","node_id":"a","version_id":"a","created_at":"1","parent_node_ids":[],"note":"initial"}),
+            serde_json::json!({"file_id":"other","node_id":"foreign","version_id":"foreign","created_at":"0"}),
+            serde_json::json!({"file_id":"selected","node_id":"b","version_id":"b","created_at":"2","parent_node_ids":["foreign","a","a",null]}),
         ];
         let before = metadata(&records, "selected");
         records[0]["note"] = "typing stays mounted".into();
@@ -957,10 +966,10 @@ mod tests {
     #[test]
     fn placeholder_records_never_create_tree_nodes_or_source_aliases() {
         let records = vec![
-            serde_json::json!({"file_id":"selected","version_id":"source","created_at":"1"}),
+            serde_json::json!({"file_id":"selected","node_id":"source","version_id":"source","created_at":"1"}),
             serde_json::json!({"file_id":"selected","branch_id":"pending","materialized":false,"content_state":"PENDING","version_id":null,"source_version_id":"source"}),
-            serde_json::json!({"file_id":"selected","version_id":"not-real","materialized":false,"source_version_ids":["source"]}),
-            serde_json::json!({"file_id":"selected","version_id":"first-write","materialized":true,"created_at":"2","size":"0","source_version_ids":["source"]}),
+            serde_json::json!({"file_id":"selected","node_id":"not-real","version_id":"not-real","materialized":false,"parent_node_ids":["source"]}),
+            serde_json::json!({"file_id":"selected","node_id":"first-write","version_id":"first-write","materialized":true,"created_at":"2","size":"0","parent_node_ids":["source"]}),
         ];
         let tree = layout(&metadata(&records, "selected"));
         assert_eq!(
@@ -972,13 +981,13 @@ mod tests {
     #[test]
     fn inherited_current_markers_do_not_change_real_version_identity_or_ancestry() {
         let versions = vec![
-            serde_json::json!({"file_id":"file","version_id":"parent","created_at":"1","current":true}),
+            serde_json::json!({"file_id":"file","node_id":"parent","version_id":"parent","created_at":"1","current":true}),
         ];
         let mut model = Model {
-            file_history: serde_json::json!({"version_id":"parent","materialized":false,"inherited":true,"own_version_id":null,"source_version_id":"parent","versions":versions}),
+            file_history: serde_json::json!({"node_id":"parent","version_id":"parent","materialized":false,"inherited":true,"own_version_id":null,"source_version_id":"parent","nodes":versions}),
             ..Default::default()
         };
-        let before = metadata(&list(&model.file_history, "versions"), "file");
+        let before = metadata(&history_nodes(&model.file_history), "file");
         assert!(inherited_current(&model, "parent"));
         assert!(!inherited_current(&model, "other"));
         model.file_history["materialized"] = true.into();
@@ -986,7 +995,7 @@ mod tests {
         model.file_history["own_version_id"] = "parent".into();
         assert!(!inherited_current(&model, "parent"));
         assert_eq!(
-            metadata(&list(&model.file_history, "versions"), "file"),
+            metadata(&history_nodes(&model.file_history), "file"),
             before
         );
         assert_eq!(layout(&before).levels, vec![vec!["parent"]]);

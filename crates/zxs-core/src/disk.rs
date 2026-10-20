@@ -53,12 +53,11 @@ fn absolute_path(path: &Path) -> Result<PathBuf> {
 
 pub(crate) const MAX_METADATA: usize = 64 * 1024 * 1024;
 // A 1 TiB file with the smallest supported 64 KiB checksum chunks needs
-// 512 MiB plus its 32-byte header. Keep this separate from JSON metadata.
-pub(crate) const MAX_CHECKSUM_MANIFEST: usize = 512 * 1024 * 1024 + 32;
+// 512 MiB plus its fixed checksum header. Keep this separate from JSON metadata.
+pub(crate) const MAX_CHECKSUM_MANIFEST: usize = 512 * 1024 * 1024 + CHECKSUM_HEADER_BYTES;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct DiskSeal {
-    pub format_version: u32,
     pub pool_id: String,
     pub disk_id: String,
     pub slot_id: String,
@@ -389,7 +388,6 @@ pub(crate) fn identity(config: &Config, disk: &DiskConfig) -> Result<DiskSeal> {
         production_device(&disk.root)?
     };
     Ok(DiskSeal {
-        format_version: 2,
         pool_id: config.pool_id.clone(),
         disk_id: disk.disk_id.clone(),
         slot_id: disk.slot_id.clone(),
@@ -519,8 +517,7 @@ fn production_device(root: &Path) -> Result<(String, String)> {
 pub(crate) fn validate_seal(config: &Config, disk: &DiskConfig) -> Result<DiskSeal> {
     let stored: DiskSeal = read_json(&disk.root.join("disk.json"))?;
     let live = identity(config, disk)?;
-    if stored.format_version != 2
-        || stored.pool_id != live.pool_id
+    if stored.pool_id != live.pool_id
         || stored.disk_id != live.disk_id
         || stored.slot_id != live.slot_id
         || stored.binding_generation != live.binding_generation
@@ -542,10 +539,7 @@ pub(crate) fn available(root: &Path) -> Result<u64> {
 }
 
 pub fn offline_check(root: &Path) -> Result<CheckReport> {
-    let seal: DiskSeal = read_json(&root.join("disk.json"))?;
-    if seal.format_version != 2 {
-        return Err(Error::new("FORMAT_UNSUPPORTED", "unsupported disk format"));
-    }
+    let _seal: DiskSeal = read_json(&root.join("disk.json"))?;
     let mut report = CheckReport {
         checked_versions: 0,
         healthy_replicas: 0,
@@ -601,10 +595,7 @@ pub fn offline_check(root: &Path) -> Result<CheckReport> {
 }
 pub fn offline_export(root: &Path, version_id: &str, destination: &Path) -> Result<()> {
     validate_id(version_id, "ver")?;
-    let seal: DiskSeal = read_json(&root.join("disk.json"))?;
-    if seal.format_version != 2 {
-        return Err(Error::new("FORMAT_UNSUPPORTED", "unsupported disk format"));
-    }
+    let _seal: DiskSeal = read_json(&root.join("disk.json"))?;
     for h in fs::read_dir(root.join("histories"))? {
         let h = h?;
         if !h.file_type()?.is_dir() {

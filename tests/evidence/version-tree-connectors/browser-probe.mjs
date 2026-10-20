@@ -103,13 +103,13 @@ try{
       if(path.endsWith('.wasm'))pending.push((async()=>{const body=await response.body();state.wasm.push({path,status:response.status(),sha256:createHash('sha256').update(body).digest('hex'),matchesCandidate:body.equals(await readFile(`${root}/web/dist${path}`))});})());
     });
     const entry={entry_id:'fixture-entry',file_id:'fixture-file',kind:'file',name:'routes.txt',path:'routes.txt',version_id:'merge',materialized:true,inherited:false,own_version_id:'merge',selected_branch_id:'main',size:'0'};
-    await page.route('**/v1/**',async route=>{
+    await page.route('**/api/**',async route=>{
       const request=route.request(),path=new URL(request.url()).pathname;
       let body;
-      if(request.method()==='GET'&&path==='/v1/auth/me')body={principal:'fixture-user',admin:false,csrf_token:'fixture-only'};
-      else if(request.method()==='GET'&&path==='/v1/file-manager/disks')body={disks:[{slot_id:'P01',online:true,writable:true,available_bytes:'4096'}]};
-      else if(request.method()==='GET'&&path==='/v1/file-manager/disks/P01/entries')body={entries:[entry],writable:true,directory_branches:[],directory_branches_supported:true,directory_file_count:'1'};
-      else if(request.method()==='GET'&&path==='/v1/file-manager/files/fixture-file/history')body={...entry,note:'',versions:records,branches:[{branch_id:'main',name:'main',current:true,version_id:'merge',materialized:true}]};
+      if(request.method()==='GET'&&path==='/api/auth/me')body={principal:'fixture-user',admin:false,csrf_token:'fixture-only'};
+      else if(request.method()==='GET'&&path==='/api/file-manager/disks')body={disks:[{slot_id:'P01',online:true,writable:true,available_bytes:'4096'}]};
+      else if(request.method()==='GET'&&path==='/api/file-manager/disks/P01/entries')body={entries:[entry],writable:true,directory_branches:[],directory_branches_supported:true,directory_file_count:'1'};
+      else if(request.method()==='GET'&&path==='/api/file-manager/files/fixture-file/history')body={...entry,note:'',versions:records,branches:[{branch_id:'main',name:'main',current:true,version_id:'merge',materialized:true}]};
       else{state.unexpected.push({method:request.method(),path});body={code:'UNEXPECTED_FIXTURE_API',message:'Every API request is intercepted'};}
       return route.fulfill({status:state.unexpected.length?500:200,contentType:'application/json',body:JSON.stringify(body)});
     });

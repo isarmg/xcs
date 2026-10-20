@@ -8,7 +8,7 @@
 
 | 模块 | 实际行为 |
 | --- | --- |
-| `zxs-contract` | 稳定 ID、严格十进制 u64、拒绝重复键的严格 JSON、整数 JCS、用途隔离 BLAKE3、公开请求摘要和 ZXSCHK2 清单 |
+| `zxs-contract` | 稳定 ID、严格十进制 u64、拒绝重复键的严格 JSON、整数 JCS、用途隔离 BLAKE3、公开请求摘要和 ZXSCHKS 清单 |
 | `zxs-naming` | 固定 Unicode 16.0.0 的 NFC、完整 case folding、字符类别、默认忽略字符、Windows 保留名与路径长度/深度校验 |
 | `zxs-auth` | 供服务端和平台凭据共用的可移植密码、令牌、CSRF 算法及准入规则 |
 | `zxs-platform` | 安全目录句柄、openat2、单链接文件、原子发布、SQLite WAL/FULL/defensive、脱敏凭据与管理认证基础 |

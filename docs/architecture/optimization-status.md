@@ -31,7 +31,7 @@ production fault certification or constant-time operations.
   snapshot page boundaries, reuses invocation-local page repairs and container
   projections, and avoids duplicate canonical serialization.
 - Event arrays now use ordered, validated snapshot pages rather than one scalar
-  root field. Existing scalar-event snapshots remain readable. Duplicate or
+  root field. Scalar-event or missing-event snapshots are rejected without migration. Duplicate or
   discontinuous event indexes and ambiguous scalar/page representations fail
   validation instead of silently losing or reordering events.
 - Publication prepares bounded immutable snapshot and history-manifest bytes
@@ -41,13 +41,18 @@ production fault certification or constant-time operations.
 - Snapshot encoding borrows typed state entries page by page instead of creating
   an intermediate JSON tree for the complete State. An exhaustive field
   declaration prevents silent omissions; differential tests retain the exact
-  v2 descriptor, canonical object bytes and hashes. The temporary page builder
+  current descriptor, canonical object bytes and hashes. The temporary page builder
   buffers at most 128 top-level entries, while final encoded objects remain
   retained until installation.
-- New immutable object hashes use a two-hex-digit directory prefix. Verified
-  legacy flat objects are reused, not moved or duplicated. Duplicate locations
-  must agree; discovery, repair, checkpoint verification and performance
-  inventory cover both layouts.
+- Immutable object hashes use a two-hex-digit directory prefix. Flat-layout
+  objects are unsupported and are never reused, migrated or deleted. Lookup
+  rejects a flat object at the requested address; inventory rejects non-shard
+  entries. Exact current-format dependency repair remains enabled.
+- History roots now support a bounded paged radix graph, with exact candidate-root
+  binding across publication, read-only evidence selection, recovery and
+  independent packages. Only the current paged-root shape is accepted; obsolete flat roots are not
+  migrated or rewritten. A serialized synthetic codec test crosses the
+  actual 64 MiB flat-object ceiling; it is not an end-to-end throughput result.
 
 ## Deliberate limits
 
@@ -60,6 +65,11 @@ Event paging removes the previous single event-array object bottleneck, not all
 metadata limits: page references, individual pages and publication proofs remain
 bounded. No operation or event evidence is expired, and no historical objects
 are garbage-collected by this optimization.
+
+The paged history graph does not remove complete logical-history projection or
+State cloning. Single entities, candidate root maps, snapshot page-reference
+vectors and proof envelopes still have limits. See
+[the format decision](../adr/0004-paged-history-manifests.md).
 
 Concurrent namespace relocation must not race detached pathname-based payload
 installation. Write admission is therefore conservatively fenced during a

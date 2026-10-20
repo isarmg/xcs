@@ -23,49 +23,49 @@ macro_rules! id_post_handler {
 
 pub(crate) fn routes() -> Router<AppState> {
     Router::new()
-        .route("/v1/file-manager/disks", get(disks))
-        .route("/v1/file-manager/disks/{slot}/entries", get(entries))
+        .route("/api/file-manager/disks", get(disks))
+        .route("/api/file-manager/disks/{slot}/entries", get(entries))
         .route(
-            "/v1/file-manager/disks/{slot}/write-sessions",
+            "/api/file-manager/disks/{slot}/write-sessions",
             post(write_session),
         )
-        .route("/v1/file-manager/disks/{slot}/namespace", post(namespace))
+        .route("/api/file-manager/disks/{slot}/namespace", post(namespace))
         .route(
-            "/v1/file-manager/disks/{slot}/namespace-batch",
+            "/api/file-manager/disks/{slot}/namespace-batch",
             post(namespace_batch),
         )
         .route(
-            "/v1/file-manager/disks/{slot}/directory-branches",
+            "/api/file-manager/disks/{slot}/directory-branches",
             post(directory_branches),
         )
         .route(
-            "/v1/file-manager/disks/{slot}/directory-select",
+            "/api/file-manager/disks/{slot}/directory-select",
             post(directory_select),
         )
-        .route("/v1/file-manager/files/{file}/history", get(file_history))
-        .route("/v1/file-manager/files/{file}/branches", post(branch))
+        .route("/api/file-manager/files/{file}/history", get(file_history))
+        .route("/api/file-manager/files/{file}/branches", post(branch))
         .route(
-            "/v1/file-manager/files/{file}/branches/{branch}",
+            "/api/file-manager/files/{file}/branches/{branch}",
             patch(rename_file_branch),
         )
-        .route("/v1/file-manager/files/{file}/select", post(select))
-        .route("/v1/file-manager/files/{file}/merge", post(merge))
-        .route("/v1/file-manager/files/{file}/tags", post(tags))
+        .route("/api/file-manager/files/{file}/select", post(select))
+        .route("/api/file-manager/files/{file}/merge", post(merge))
+        .route("/api/file-manager/files/{file}/tags", post(tags))
         .route(
-            "/v1/repositories/{repository}/backup-configuration",
+            "/api/repositories/{repository}/backup-configuration",
             get(backup_configuration).put(configure_backups),
         )
         .route(
-            "/v1/file-manager/files/{file}/nodes/{node}",
+            "/api/file-manager/files/{file}/nodes/{node}",
             patch(node_note),
         )
-        .route("/v1/file-manager/history", get(history))
+        .route("/api/file-manager/history", get(history))
         .route(
-            "/v1/file-manager/files/{file}/metadata",
+            "/api/file-manager/files/{file}/metadata",
             post(file_metadata),
         )
         .route(
-            "/v1/file-manager/versions/{version}/metadata",
+            "/api/file-manager/versions/{version}/metadata",
             post(version_metadata),
         )
 }

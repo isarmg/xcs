@@ -243,7 +243,10 @@ impl Engine {
                     .get_mut(id)
                     .ok_or_else(|| Error::new("BRANCH_NOT_FOUND", "branch missing"))?;
                 b.state = "archived".into();
-                b.generation += 1;
+                b.generation = b
+                    .generation
+                    .checked_add(1)
+                    .ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
                 Ok(json!({"branch_id":id,"history_tree_id":b.history_tree_id}))
             },
         )

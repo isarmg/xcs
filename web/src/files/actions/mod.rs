@@ -19,7 +19,7 @@ use super::model::{SaveStatus, operation_status};
 use crate::{api, ui::State};
 
 fn disk_path(slot: &str) -> String {
-    format!("/v1/file-manager/disks/{}", api::segment(slot))
+    format!("/api/file-manager/disks/{}", api::segment(slot))
 }
 pub(crate) fn pending(state: &State) -> bool {
     state.files.upload_picker.is_some()

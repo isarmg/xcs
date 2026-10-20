@@ -45,3 +45,6 @@ mod composition_tests;
 
 #[cfg(test)]
 mod file_paths_tests;
+
+#[cfg(test)]
+mod reference_corruption_tests;

@@ -339,7 +339,6 @@ mod tests {
             })
             .unwrap();
         let candidate = Candidate {
-            format_version: 2,
             pool_id: engine.config.pool_id.clone(),
             sequence: engine.state.sequence,
             transaction_id: new_id("tx"),

@@ -1,6 +1,8 @@
 //! Replay the verified publication prefix and reconcile pending decisions.
 use super::Engine;
-use crate::publication_evidence::{verified_object, verified_publication_seal, verified_snapshot};
+use crate::publication_evidence::{
+    repair_object_copies, verified_object, verified_publication_seal, verified_snapshot,
+};
 use crate::{disk::*, journal::*, *};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -72,6 +74,7 @@ impl Engine {
         // in this invocation need not be decoded and compared again for each
         // historical root that references them. Never persist this evidence.
         let mut repaired_pages = BTreeSet::new();
+        let mut repaired_histories = BTreeSet::new();
         for (_seq, candidates) in records {
             let active = candidates
                 .into_iter()
@@ -122,6 +125,8 @@ impl Engine {
                     let seal: PublicationSeal = read_json(&publication_seal_path(d, &hash))?;
                     verify_publication_seal(&candidate, publication, &seal)?;
                 }
+                // Checkpoint coverage never substitutes for candidate-bound graph verification.
+                crate::history_package::bound_history_objects(&online, &candidate, None)?;
                 if candidate.sequence == checkpoint.sequence {
                     if hash != checkpoint.candidate_hash
                         || candidate.snapshot_hash != checkpoint.snapshot_hash
@@ -142,11 +147,25 @@ impl Engine {
                 continue;
             }
             let (mut next, snapshot_source) = verified_snapshot(&online, &candidate.snapshot_hash)?;
+            let history_objects =
+                crate::history_package::bound_history_objects(&online, &candidate, Some(&next))?;
             if publication.is_none() && !complete_unpublished {
                 self.blocked = true;
                 break;
             }
             if publication.is_none() && complete_unpublished && online.len() == 3 {
+                let result = next
+                    .operations
+                    .get(&candidate.operation_id)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "candidate result is absent"))?;
+                crate::metadata_budget::preflight_bound_publication(
+                    self,
+                    &candidate,
+                    result,
+                    &next,
+                    None,
+                    MAX_METADATA,
+                )?;
                 self.repair_pending_payloads(&candidate)?;
             }
             if online.len() == 3 {
@@ -162,15 +181,11 @@ impl Engine {
                 // installed on every member. Re-encoding State here duplicates
                 // that work and can create unrelated roots when the writer's
                 // page partitioning has changed since this snapshot was saved.
-                let manifests = crate::history_package::store_history_manifests(&members, &next)?;
-                if !candidate.history_manifest_hashes.is_empty()
-                    && manifests != candidate.history_manifest_hashes
-                {
-                    return Err(Error::new(
-                        "OBJECT_CORRUPT",
-                        "history recovery manifest differs from candidate",
-                    ));
-                }
+                crate::history_package::repair_history_objects(
+                    &members,
+                    &history_objects,
+                    &mut repaired_histories,
+                )?;
                 repair_object_copies(&members, "candidate", &hash, &candidate)?;
                 if let Some(publication) = &publication {
                     repair_object_copies(
@@ -233,46 +248,6 @@ impl Engine {
         }
         Ok(())
     }
-}
-
-fn repair_object_copies<T: serde::Serialize>(
-    members: &[DiskConfig],
-    kind: &str,
-    hash: &str,
-    value: &T,
-) -> Result<()> {
-    if object_hash(kind, value)? != hash {
-        return Err(Error::new("OBJECT_CORRUPT", "repair object digest differs"));
-    }
-    let bytes = encode_metadata(value, MAX_METADATA)?;
-    for member in members {
-        let mut paths = existing_object_paths(member, kind, hash)?;
-        if paths.is_empty() {
-            paths.push(object_path(member, kind, hash));
-        }
-        for path in paths {
-            match std::fs::symlink_metadata(&path) {
-                Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => {
-                    // Never replace an unsafe entry, even if a healthy replica exists.
-                    open_regular(&path)?;
-                    if read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice()) {
-                        write_atomic(&path, &bytes, true)?;
-                    }
-                }
-                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                    write_atomic(&path, &bytes, false)?;
-                }
-                Err(e) => return Err(e.into()),
-                Ok(_) => {
-                    return Err(Error::new(
-                        "UNSAFE_PATH",
-                        "object repair target is not a regular file",
-                    ));
-                }
-            }
-        }
-    }
-    Ok(())
 }
 
 // Optimization only: bound hash storage independently of retained history.
@@ -482,7 +457,7 @@ mod tests {
     }
 
     #[test]
-    fn recovery_repairs_both_flat_and_sharded_duplicates_from_exact_replica() {
+    fn recovery_rejects_flat_objects_without_repair_or_deletion() {
         let temp = tempfile::tempdir().unwrap();
         let root = temp.path().join("system");
         let config = Config::development([
@@ -511,8 +486,11 @@ mod tests {
         std::fs::write(&flat, b"{}").unwrap();
         assert!(load_object::<Candidate>(&members[0], "candidate", &hash).is_err());
         drop(engine);
-        assert_eq!(Engine::open(&root).unwrap().state.repositories.len(), 1);
-        assert_eq!(std::fs::read(flat).unwrap(), expected);
+        assert_eq!(
+            Engine::open(&root).err().unwrap().code(),
+            "FORMAT_UNSUPPORTED"
+        );
+        assert_eq!(std::fs::read(flat).unwrap(), b"{}");
         assert_eq!(
             std::fs::read(object_path(&members[0], "candidate", &hash)).unwrap(),
             expected
@@ -549,7 +527,7 @@ mod tests {
     }
 
     #[test]
-    fn bound_snapshot_repair_preserves_legacy_page_layout() {
+    fn bound_snapshot_repair_preserves_alternate_page_partition() {
         let temp = tempfile::tempdir().unwrap();
         let config = Config::development([
             temp.path().join("a"),
@@ -567,8 +545,8 @@ mod tests {
         let value = serde_json::to_value(&state).unwrap();
         let mut pages = BTreeMap::new();
         let mut scalars = serde_json::Map::new();
-        // Original v2 writer used fixed 128-entry pages; readers must not
-        // replace its root with the current content-defined partitioning.
+        // Page partitioning is not a version discriminator. Repair must retain
+        // the bound root rather than regenerate content-defined boundaries.
         for (field, value) in value.as_object().unwrap() {
             if let Some(map) = value.as_object() {
                 let entries = map.iter().collect::<Vec<_>>();
@@ -585,17 +563,18 @@ mod tests {
                 scalars.insert(field.clone(), value.clone());
             }
         }
-        let legacy = Snapshot {
-            format_version: 2,
+        scalars.remove("events");
+        pages.insert("events".into(), Vec::new());
+        let alternate = Snapshot {
             sequence: state.sequence,
             pages,
             scalars,
         };
-        let hash = store_object(&members[0], "snapshot", &legacy).unwrap();
+        let hash = store_object(&members[0], "snapshot", &alternate).unwrap();
         let modern_hash = store_snapshot(&[], &state).unwrap();
         assert_ne!(
             hash, modern_hash,
-            "fixture must distinguish old/new page layouts"
+            "fixture must distinguish alternate/current page partitions"
         );
         engine.repair_bound_snapshot(&hash).unwrap();
         for member in &members {

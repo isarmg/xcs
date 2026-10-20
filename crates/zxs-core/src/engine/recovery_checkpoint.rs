@@ -17,7 +17,6 @@ use std::{
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub(super) struct Checkpoint {
-    format_version: u32,
     config_hash: String,
     pub sequence: u64,
     pub candidate_hash: String,
@@ -407,8 +406,7 @@ pub(super) fn load(
         let envelope: Envelope =
             decode_strict(&read_bytes(&path(d), MAX_CHECKPOINT_BYTES).ok()?).ok()?;
         let checkpoint = envelope.checkpoint;
-        if checkpoint.format_version != 2
-            || checkpoint.config_hash != object_hash("replay-config", &engine.config).ok()?
+        if checkpoint.config_hash != object_hash("replay-config", &engine.config).ok()?
             || checkpoint.tips.len() != members.len()
             || !checkpoint
                 .tips
@@ -504,7 +502,6 @@ pub(super) fn save(engine: &Engine) -> Result<()> {
         return Ok(());
     };
     let checkpoint = Checkpoint {
-        format_version: 2,
         config_hash: object_hash("replay-config", &engine.config)?,
         sequence,
         candidate_hash,

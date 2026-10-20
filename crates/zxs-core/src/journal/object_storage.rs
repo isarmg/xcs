@@ -1,5 +1,5 @@
-//! Additive hash-prefix layout. Flat historical objects remain untouched and
-//! readable; coexistence never gives either pathname authority over the other.
+//! Hash-prefix object layout. Unsupported flat objects fail closed; readers
+//! never migrate, delete, reuse, or accept them as current-format evidence.
 use super::*;
 use std::{collections::BTreeSet, fs};
 
@@ -77,7 +77,18 @@ pub(crate) fn existing_object_paths(
     validate(kind, hash)?;
     let mut paths = Vec::new();
     if let Some(directory) = kind_directory(d, kind)? {
-        add_existing(flat_path(d, kind, hash), &mut paths)?;
+        // Reject old-format evidence rather than silently creating a second
+        // representation or treating an unsupported object as absent.
+        match fs::symlink_metadata(flat_path(d, kind, hash)) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => (),
+            Err(error) => return Err(error.into()),
+            Ok(_) => {
+                return Err(Error::new(
+                    "FORMAT_UNSUPPORTED",
+                    "flat metadata object layout is unsupported",
+                ));
+            }
+        }
         if directory_exists(&directory.join(&hash[..2]))? {
             add_existing(object_path(d, kind, hash), &mut paths)?;
         }
@@ -86,18 +97,10 @@ pub(crate) fn existing_object_paths(
 }
 pub(super) fn read_object_bytes(d: &DiskConfig, kind: &str, hash: &str) -> Result<Vec<u8>> {
     let paths = existing_object_paths(d, kind, hash)?;
-    let mut bytes = None;
-    for path in paths {
-        let candidate = read_bytes(&path, MAX_METADATA)?;
-        if bytes.as_ref().is_some_and(|old| old != &candidate) {
-            return Err(Error::new(
-                "OBJECT_COLLISION",
-                "flat and sharded immutable objects differ",
-            ));
-        }
-        bytes = Some(candidate);
-    }
-    bytes.ok_or_else(|| Error::new("OBJECT_CORRUPT", "immutable object is missing"))
+    let path = paths
+        .first()
+        .ok_or_else(|| Error::new("OBJECT_CORRUPT", "immutable object is missing"))?;
+    read_bytes(path, MAX_METADATA)
 }
 pub(super) fn write_object_bytes(
     d: &DiskConfig,
@@ -114,7 +117,7 @@ pub(super) fn write_object_bytes(
             ));
         }
     }
-    // Reuse an existing flat object rather than copying retained history.
+    // New objects are installed only at their current hash-prefix address.
     if paths.is_empty() {
         write_atomic(&object_path(d, kind, hash), bytes, false)?;
     }
@@ -149,7 +152,10 @@ pub(crate) fn list_object_hashes(d: &DiskConfig, kind: &str) -> Result<BTreeSet<
                 hashes.insert(hash);
             }
         } else {
-            hashes.insert(inventory_hash(&entry.path())?);
+            return Err(Error::new(
+                "FORMAT_UNSUPPORTED",
+                "expected a metadata object hash-prefix directory",
+            ));
         }
     }
     Ok(hashes)
@@ -177,61 +183,69 @@ mod tests {
         ])
     }
     #[test]
-    fn flat_history_and_new_shards_preserve_hashes_and_bytes() {
+    fn current_shards_preserve_hashes_and_reject_conflicting_bytes() {
         let temp = tempfile::tempdir().unwrap();
         let config = config(&temp);
         let disk = &config.disks[0];
-        let old = json!({"retained": "历史"});
-        let hash = object_hash("publication", &old).unwrap();
-        let flat = flat_path(disk, "publication", &hash);
-        write_json(&flat, &old, false).unwrap();
-        let bytes = fs::read(&flat).unwrap();
-        assert_eq!(
-            load_object::<Value>(disk, "publication", &hash).unwrap(),
-            old
-        );
-        assert_eq!(store_object(disk, "publication", &old).unwrap(), hash);
-        assert!(!object_path(disk, "publication", &hash).exists());
-        let new = json!({"retained": "new"});
-        let new_hash = store_object(disk, "publication", &new).unwrap();
-        assert_eq!(new_hash, object_hash("publication", &new).unwrap());
-        assert_eq!(
-            fs::read(object_path(disk, "publication", &new_hash)).unwrap(),
-            canonical_json(&new).unwrap()
-        );
-        assert_eq!(fs::read(flat).unwrap(), bytes);
-        assert_eq!(
-            list_object_hashes(disk, "publication").unwrap(),
-            BTreeSet::from([hash, new_hash])
-        );
-    }
-    #[test]
-    fn duplicate_layouts_never_mask_corruption_or_collisions() {
-        let temp = tempfile::tempdir().unwrap();
-        let config = config(&temp);
-        let disk = &config.disks[0];
-        let value = json!({"v": 1});
+        let value = json!({"retained": "历史"});
         let hash = store_object(disk, "publication", &value).unwrap();
-        let flat = flat_path(disk, "publication", &hash);
-        write_json(&flat, &value, false).unwrap();
+        let path = object_path(disk, "publication", &hash);
+        assert_eq!(fs::read(&path).unwrap(), canonical_json(&value).unwrap());
         assert_eq!(
             load_object::<Value>(disk, "publication", &hash).unwrap(),
             value
         );
-        fs::write(&flat, b"broken").unwrap();
+        assert_eq!(store_object(disk, "publication", &value).unwrap(), hash);
+        assert_eq!(
+            list_object_hashes(disk, "publication").unwrap(),
+            BTreeSet::from([hash.clone()])
+        );
+        fs::write(&path, b"broken").unwrap();
         assert!(load_object::<Value>(disk, "publication", &hash).is_err());
         assert!(store_object(disk, "publication", &value).is_err());
-        fs::write(&flat, canonical_json(&value).unwrap()).unwrap();
-        fs::write(object_path(disk, "publication", &hash), b"broken").unwrap();
-        assert!(load_object::<Value>(disk, "publication", &hash).is_err());
-        assert!(store_object(disk, "publication", &value).is_err());
-        fs::remove_file(flat).unwrap();
-        write_atomic(&object_path(disk, "publication", &hash), b"{}", true).unwrap();
-        assert!(load_object::<Value>(disk, "publication", &hash).is_err());
+        assert_eq!(fs::read(&path).unwrap(), b"broken");
         for invalid in ["../outside", "é", &"A".repeat(64)] {
             assert!(load_object::<Value>(disk, "publication", invalid).is_err());
         }
         assert!(load_object::<Value>(disk, "../outside", &hash).is_err());
+    }
+
+    #[test]
+    fn flat_objects_are_rejected_without_migration_or_deletion() {
+        for sharded_copy in [false, true] {
+            let temp = tempfile::tempdir().unwrap();
+            let config = config(&temp);
+            let disk = &config.disks[0];
+            let value = json!({"retained": "old format"});
+            let hash = object_hash("publication", &value).unwrap();
+            if sharded_copy {
+                store_object(disk, "publication", &value).unwrap();
+            }
+            let flat = flat_path(disk, "publication", &hash);
+            write_json(&flat, &value, false).unwrap();
+            let bytes = fs::read(&flat).unwrap();
+            assert_eq!(
+                load_object::<Value>(disk, "publication", &hash)
+                    .unwrap_err()
+                    .code(),
+                "FORMAT_UNSUPPORTED"
+            );
+            assert_eq!(
+                store_object(disk, "publication", &value)
+                    .unwrap_err()
+                    .code(),
+                "FORMAT_UNSUPPORTED"
+            );
+            assert_eq!(
+                list_object_hashes(disk, "publication").unwrap_err().code(),
+                "FORMAT_UNSUPPORTED"
+            );
+            assert_eq!(fs::read(flat).unwrap(), bytes);
+            assert_eq!(
+                object_path(disk, "publication", &hash).exists(),
+                sharded_copy
+            );
+        }
     }
     #[test]
     fn inventory_rejects_wrong_shards_and_symlink_fallbacks() {

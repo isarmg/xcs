@@ -313,7 +313,6 @@ mod projection_tests {
             state.versions.insert(
                 id.into(),
                 FileVersion {
-                    format_version: 2,
                     history_tree_id: "history".into(),
                     version_id: id.into(),
                     file_id: "file".into(),
@@ -324,8 +323,8 @@ mod projection_tests {
                     checksum_chunk_bytes: 262144,
                     checksum_manifest_hash: "0".repeat(64),
                     creation_name: "body".into(),
-                    storage_name: None,
-                    created_at: None,
+                    storage_name: "v000001_20261020T000000Z_00000000.txt".into(),
+                    created_at: "2026-10-20T00:00:00Z".into(),
                     source_version_ids: parents.into_iter().map(str::to_owned).collect(),
                     created_as_full_checkpoint: true,
                 },

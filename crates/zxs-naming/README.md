@@ -1,6 +1,6 @@
 # ZXS 命名策略
 
-`PortableNameV2` 与 `PortablePathV1` 在服务器、WASM 和 CLI 使用同一实现。Unicode 数据固定为 16.0.0；不得随宿主机更新。`src/unicode16.rs` 是数据表，`data/` 保存对应原始输入。
+`PortableName` 与 `PortablePath` 在服务器、WASM 和 CLI 使用同一实现。Unicode 数据固定为 16.0.0；不得随宿主机更新。`src/unicode16.rs` 是数据表，`data/` 保存对应原始输入。
 
 表由本项目的 [Rust 生成器](../../tools/unicode-build/README.md)重现；默认检查输入 SHA-256 与输出逐字节相等，修改必须显式执行 `--write`。
 

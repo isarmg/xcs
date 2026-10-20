@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "ZXS V2 核心字段契约草案",
+  "title": "ZXS 核心字段契约草案",
   "description": "设计附件；只覆盖列出的对象，不是完整盘格式或业务实现。",
   "$defs": {
     "UInt64": {
@@ -75,9 +75,6 @@
     "Version": {
       "type": "object",
       "properties": {
-        "format_version": {
-          "const": 2
-        },
         "history_tree_id": {
           "$ref": "#/$defs/HistoryId"
         },
@@ -130,7 +127,6 @@
         }
       },
       "required": [
-        "format_version",
         "history_tree_id",
         "version_id",
         "file_id",
@@ -142,10 +138,12 @@
         "checksum_manifest_hash",
         "creation_name",
         "source_version_ids",
-        "created_as_full_checkpoint"
+        "created_as_full_checkpoint",
+        "storage_name",
+        "created_at"
       ],
       "additionalProperties": false,
-      "description": "字段草案；完整 PortableNameV2、实体关系及物理证据需另行验证。"
+      "description": "字段草案；完整 PortableName、实体关系及物理证据需另行验证。"
     },
     "PlacementRequest": {
       "type": "object",
@@ -297,7 +295,7 @@
           "const": "POST"
         },
         "route": {
-          "const": "/v1/workspaces/{workspace}/commit"
+          "const": "/api/workspaces/{workspace}/commit"
         },
         "path_parameters": {
           "type": "object",
@@ -793,9 +791,6 @@
     "Publication": {
       "type": "object",
       "properties": {
-        "format_version": {
-          "const": 2
-        },
         "record_type": {
           "const": "PUBLICATION"
         },
@@ -856,7 +851,6 @@
         }
       },
       "required": [
-        "format_version",
         "record_type",
         "pool_id",
         "membership_epoch",
@@ -1979,10 +1973,7 @@
           "type": "string"
         },
         "created_at": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": "string"
         },
         "sequence": {
           "$ref": "#/$defs/UInt64"
@@ -2001,9 +1992,6 @@
         },
         "storage_name": {
           "type": "string"
-        },
-        "legacy": {
-          "type": "boolean"
         },
         "branch_id": {
           "anyOf": [
@@ -2446,6 +2434,345 @@
       },
       "additionalProperties": true,
       "description": "State及HistoryManifest新增字段的受检投影；各映射省略时默认为空。不声称覆盖完整状态或恢复包。"
+    },
+    "HistoryGraphReference": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "state-page",
+            "history-index"
+          ]
+        },
+        "hash": {
+          "$ref": "#/$defs/Hash"
+        }
+      },
+      "required": [
+        "kind",
+        "hash"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryIndex": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{0,63}(?![\\s\\S])"
+        },
+        "children": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 16,
+          "propertyNames": {
+            "pattern": "^[0-9a-f](?![\\s\\S])"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/HistoryGraphReference"
+          }
+        }
+      },
+      "required": [
+        "prefix",
+        "children"
+      ],
+      "additionalProperties": false,
+      "description": "实体键UTF-8字节的BLAKE3摘要按十六进制分路；prefix须匹配引用位置，子引用哈希和实际实体归属由核心验证。"
+    },
+    "HistoryLeaf": {
+      "type": "object",
+      "maxProperties": 128,
+      "additionalProperties": true,
+      "description": "state-page域普通实体映射。多实体规范编码最多64KiB；单实体页可至64MiB。字节上限、非根空页拒绝和各字段实体语义由核心检查，JSON Schema不验证图闭包。"
+    },
+    "HistoryRepository": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "$ref": "#/$defs/RepositoryId"
+        },
+        "name": {
+          "type": "string"
+        },
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "main_branch_id": {
+          "$ref": "#/$defs/BranchId"
+        },
+        "primary_slot_id": {
+          "$ref": "#/$defs/SlotId"
+        },
+        "target_copies": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "name_policy": {
+          "type": "string"
+        },
+        "unicode_version": {
+          "type": "string"
+        },
+        "grants": {
+          "type": "object",
+          "properties": {
+            "read": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "write": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "manage": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "read",
+            "write",
+            "manage"
+          ],
+          "additionalProperties": false
+        },
+        "account_scope_repository_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RepositoryId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "smb_enabled": {
+          "type": "boolean"
+        },
+        "file_manager_root": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "repository_id",
+        "name",
+        "history_tree_id",
+        "main_branch_id",
+        "primary_slot_id",
+        "target_copies",
+        "name_policy",
+        "unicode_version",
+        "grants"
+      ],
+      "additionalProperties": false,
+      "description": "根中仓库对象的读取字段形状；命名策略、保护份数和授权语义由核心另行验证。"
+    },
+    "HistoryIdentity": {
+      "type": "object",
+      "properties": {
+        "history_tree_id": {
+          "$ref": "#/$defs/HistoryId"
+        },
+        "repository_id": {
+          "$ref": "#/$defs/RepositoryId"
+        },
+        "root_commit_id": {
+          "$ref": "#/$defs/CommitId"
+        },
+        "main_branch_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BranchId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generation": {
+          "$ref": "#/$defs/UInt64"
+        },
+        "state": {
+          "type": "string"
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "history_tree_id",
+        "repository_id",
+        "root_commit_id",
+        "main_branch_id",
+        "generation",
+        "state",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "PagedHistoryRoot": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "$ref": "#/$defs/HistoryRepository"
+        },
+        "history": {
+          "$ref": "#/$defs/HistoryIdentity"
+        },
+        "maps": {
+          "type": "object",
+          "properties": {
+            "branches": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_selections": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "directory_branches": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "directory_trees": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_write_origins": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_contexts": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_path_nodes": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_metadata_nodes": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_branch_merges": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_branch_aliases": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_node_parents": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_path_notes": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "directory_tree_selections": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_locations": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_backup_paths": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_backup_policies": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "directory_selections": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "directory_selection_generations": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_selection_generations": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_notes": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "version_notes": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "file_names": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "commits": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "versions": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "placements": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "merge_links": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "boundary_marks": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "content_states": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "placement_rules": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            },
+            "protection_policies": {
+              "$ref": "#/$defs/HistoryGraphReference"
+            }
+          },
+          "required": [
+            "branches",
+            "file_selections",
+            "directory_branches",
+            "directory_trees",
+            "file_write_origins",
+            "file_contexts",
+            "file_path_nodes",
+            "file_metadata_nodes",
+            "file_branch_merges",
+            "file_branch_aliases",
+            "file_node_parents",
+            "file_path_notes",
+            "directory_tree_selections",
+            "file_locations",
+            "file_backup_paths",
+            "file_backup_policies",
+            "directory_selections",
+            "directory_selection_generations",
+            "file_selection_generations",
+            "file_notes",
+            "version_notes",
+            "file_names",
+            "commits",
+            "versions",
+            "placements",
+            "merge_links",
+            "boundary_marks",
+            "content_states",
+            "placement_rules",
+            "protection_policies"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "repository",
+        "history",
+        "maps"
+      ],
+      "additionalProperties": false,
+      "description": "当前分页历史根，位于history-manifest域；候选直接绑定此根摘要。根不带格式代际字段，展开逻辑HistoryManifest不是根的替代身份。"
     }
   }
 }

@@ -92,7 +92,7 @@ impl Client {
             .base
             .join(path)
             .map_err(|error| Error::Address(error.to_string()))?;
-        if url.origin() != self.base.origin() || !url.path().starts_with("/v1/") {
+        if url.origin() != self.base.origin() || !url.path().starts_with("/api/") {
             return Err(Error::Address("API route changed origin".into()));
         }
         Ok(url)
@@ -112,7 +112,7 @@ impl Client {
         let value = self
             .request(
                 "POST",
-                "/v1/auth/login",
+                "/api/auth/login",
                 Some(&json!({"username":username,"password":password})),
             )
             .await?;
@@ -122,7 +122,7 @@ impl Client {
         Ok(session)
     }
     pub async fn logout(&mut self) -> Result<(), Error> {
-        self.request("POST", "/v1/auth/logout", Some(&json!({})))
+        self.request("POST", "/api/auth/logout", Some(&json!({})))
             .await?;
         self.token = None;
         Ok(())
@@ -150,7 +150,7 @@ impl Client {
         let body = self
             .request(
                 "POST",
-                &format!("/v1/workspaces/{}/seal", segment(workspace)),
+                &format!("/api/workspaces/{}/seal", segment(workspace)),
                 Some(&json!({})),
             )
             .await?;
@@ -171,7 +171,7 @@ impl Client {
             .ok_or_else(|| Error::Response("prepared request has no workspace identity".into()))?;
         self.request(
             "POST",
-            &format!("/v1/workspaces/{}/commit", segment(workspace)),
+            &format!("/api/workspaces/{}/commit", segment(workspace)),
             Some(body),
         )
         .await
@@ -183,7 +183,7 @@ impl Client {
         path: Option<&str>,
     ) -> Result<Value, Error> {
         let mut route = format!(
-            "/v1/repositories/{}/directory-branches",
+            "/api/repositories/{}/directory-branches",
             segment(repository)
         );
         if let Some(path) = path {
@@ -205,7 +205,7 @@ impl Client {
         body["operation_id"] = operation_id.into();
         self.request(
             "POST",
-            &format!("/v1/file-manager/disks/{}/namespace-batch", segment(slot)),
+            &format!("/api/file-manager/disks/{}/namespace-batch", segment(slot)),
             Some(&body),
         )
         .await
@@ -221,7 +221,7 @@ impl Client {
         self.request(
             "PATCH",
             &format!(
-                "/v1/file-manager/files/{}/branches/{}",
+                "/api/file-manager/files/{}/branches/{}",
                 segment(file),
                 segment(branch)
             ),
@@ -237,7 +237,7 @@ impl Client {
         name: &str,
         operation_id: &str,
     ) -> Result<Value, Error> {
-        self.request("POST",&format!("/v1/file-manager/files/{}/branches",segment(file)),
+        self.request("POST",&format!("/api/file-manager/files/{}/branches",segment(file)),
             Some(&json!({"source_version_id":version,"source_node_id":node,"name":name,"operation_id":operation_id}))).await
     }
     pub async fn set_file_path_note(
@@ -250,7 +250,7 @@ impl Client {
         self.request(
             "PATCH",
             &format!(
-                "/v1/file-manager/files/{}/nodes/{}",
+                "/api/file-manager/files/{}/nodes/{}",
                 segment(file),
                 segment(node)
             ),
@@ -267,7 +267,7 @@ impl Client {
         surviving_branch: &str,
         operation_id: &str,
     ) -> Result<Value, Error> {
-        self.request("POST", &format!("/v1/file-manager/files/{}/merge", segment(file)),
+        self.request("POST", &format!("/api/file-manager/files/{}/merge", segment(file)),
             Some(&json!({"inputs":inputs,"chosen_node_id":chosen_node,"surviving_branch_id":surviving_branch,"confirmed":true,"operation_id":operation_id}))).await
     }
     pub async fn update_file_node_tags(
@@ -280,7 +280,7 @@ impl Client {
     ) -> Result<Value, Error> {
         self.request(
             "POST",
-            &format!("/v1/file-manager/files/{}/tags", segment(file)),
+            &format!("/api/file-manager/files/{}/tags", segment(file)),
             Some(&json!({"targets":targets,"add":add,"remove":remove,"operation_id":operation_id})),
         )
         .await
@@ -289,7 +289,7 @@ impl Client {
         self.request(
             "GET",
             &format!(
-                "/v1/repositories/{}/backup-configuration?path={}",
+                "/api/repositories/{}/backup-configuration?path={}",
                 segment(repository),
                 segment(path)
             ),
@@ -311,7 +311,7 @@ impl Client {
         expected_scope_id: &str,
         operation_id: &str,
     ) -> Result<Value, Error> {
-        self.request("PUT", &format!("/v1/repositories/{}/backup-configuration",segment(repository)),
+        self.request("PUT", &format!("/api/repositories/{}/backup-configuration",segment(repository)),
             Some(&json!({"path":path,"target_copies":target_copies,"backup_prefixes":backup_prefixes,"expected_generation":expected_generation.to_string(),"expected_scope_id":expected_scope_id,"operation_id":operation_id}))).await
     }
     pub async fn request(
@@ -351,14 +351,14 @@ mod tests {
         assert_eq!(segment("a/b?x=1"), "a%2Fb%3Fx%3D1");
         let client = Client::connect("https://example.org").unwrap();
         for route in [
-            "/v1/%2e%2e/private",
-            "/v1/.%2E/private",
-            "/v1/a\t/../private",
-            "/v1/a%2fb",
+            "/api/%2e%2e/private",
+            "/api/.%2E/private",
+            "/api/a\t/../private",
+            "/api/a%2fb",
         ] {
             assert!(client.url(route).is_err(), "accepted {route:?}");
         }
-        assert!(client.url("/v1/files?path=a/../b").is_ok());
+        assert!(client.url("/api/files?path=a/../b").is_ok());
     }
     #[test]
     fn session_debug_never_prints_credentials() {

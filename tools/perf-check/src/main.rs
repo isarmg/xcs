@@ -214,7 +214,7 @@ fn main() -> Result<()> {
     println!(
         "{}",
         serde_json::to_string_pretty(
-            &json!({"schema_version":1,"mode":"Development","physical_redundancy_evidence":false,"timings_are_gates":false,"history_limit":history,"small_file_bytes":1024,"copies":3,"samples":samples,"large_range":{"file_bytes":big.len(),"range_bytes":64,"first_open_read_us":cold_us,"repeated_open_read_16_us":warm_us},"checks":{"restart_state_equality":true,"range_bytes_correct":true,"held_read_during_save":true,"historical_version_after_save":true,"integrity_check":true}})
+            &json!({"mode":"Development","physical_redundancy_evidence":false,"timings_are_gates":false,"history_limit":history,"small_file_bytes":1024,"copies":3,"samples":samples,"large_range":{"file_bytes":big.len(),"range_bytes":64,"first_open_read_us":cold_us,"repeated_open_read_16_us":warm_us},"checks":{"restart_state_equality":true,"range_bytes_correct":true,"held_read_during_save":true,"historical_version_after_save":true,"integrity_check":true}})
         )?
     );
     Ok(())

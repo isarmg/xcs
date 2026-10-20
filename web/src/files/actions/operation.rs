@@ -67,7 +67,7 @@ pub(crate) fn check_upload(state: RwSignal<State>, id: &str) {
     spawn_local(async move {
         let result = api::request(
             "GET",
-            &format!("/v1/operations/{}", api::segment(&id)),
+            &format!("/api/operations/{}", api::segment(&id)),
             None,
         )
         .await;
@@ -109,7 +109,7 @@ pub(crate) fn poll(state: RwSignal<State>) {
         spawn_local(async move {
             let result = api::request(
                 "GET",
-                &format!("/v1/operations/{}", api::segment(&id)),
+                &format!("/api/operations/{}", api::segment(&id)),
                 None,
             )
             .await;

@@ -11,7 +11,7 @@
     }
   ],
   "paths": {
-    "/v1/workspaces/{workspace}/commit": {
+    "/api/workspaces/{workspace}/commit": {
       "post": {
         "operationId": "commitWorkspace",
         "description": "提交已封存清单；只描述内容保存草案，不包含其他拟定管理操作。",
@@ -69,7 +69,7 @@
         }
       }
     },
-    "/v1/operations/{operation}": {
+    "/api/operations/{operation}": {
       "get": {
         "operationId": "getContentSaveOperation",
         "description": "本附件只覆盖 content_save 结果变体，其他操作类型待补。",
@@ -107,7 +107,7 @@
         }
       }
     },
-    "/v1/versions/{version}": {
+    "/api/versions/{version}": {
       "get": {
         "operationId": "getVersion",
         "description": "按当前授权和域状态返回不可变版本描述；PURGED 元数据仍可查看，内容及校验清单另受清除屏障约束。",
@@ -145,7 +145,7 @@
         }
       }
     },
-    "/v1/versions/{version}/checksums": {
+    "/api/versions/{version}/checksums": {
       "get": {
         "operationId": "getChecksums",
         "description": "完整清单；先核验当前授权和内容状态，客户端按版本摘要验证。",
@@ -161,7 +161,7 @@
         ],
         "responses": {
           "200": {
-            "description": "ZXSCHK2 清单，格式见第08章。",
+            "description": "ZXSCHKS 清单，格式见第08章。",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -184,7 +184,7 @@
         }
       }
     },
-    "/v1/versions/{version}/content": {
+    "/api/versions/{version}/content": {
       "get": {
         "operationId": "getContent",
         "description": "固定版本单范围读取；不执行改变字节偏移的编码转换。repository_id/path成对指定逻辑别名，验证此路径当前条目属于该版本的文件身份，以此视图名称生成Content-Disposition。省略时采用兼容默认名称；历史正文仍以稳定版本ID读取，不使用storage_name作为下载名。",
@@ -410,7 +410,7 @@
         }
       }
     },
-    "/v1/workspaces/{workspace}/files/{item}/upload-status": {
+    "/api/workspaces/{workspace}/files/{item}/upload-status": {
       "get": {
         "operationId": "getUploadStatus",
         "description": "返回已持久化的完整上传范围；范围修改能力的基线组合清单待补。",
@@ -457,10 +457,10 @@
         }
       }
     },
-    "/v1/file-manager/disks": {
+    "/api/file-manager/disks": {
       "get": {
         "operationId": "listFileManagerDisks",
-        "description": "按账号权限返回受控磁盘目录入口。writable表示存在可写命名空间；根创建权限仍独立检查。used_bytes为托管版本逻辑占用，真实文件系统容量由/v1/system/status采样。",
+        "description": "按账号权限返回受控磁盘目录入口。writable表示存在可写命名空间；根创建权限仍独立检查。used_bytes为托管版本逻辑占用，真实文件系统容量由/api/system/status采样。",
         "parameters": [],
         "responses": {
           "200": {
@@ -533,7 +533,7 @@
         }
       }
     },
-    "/v1/file-manager/disks/{slot}/entries": {
+    "/api/file-manager/disks/{slot}/entries": {
       "get": {
         "operationId": "listFileManagerEntries",
         "description": "主盘列出当前命名空间；备份盘按授权过滤后，使用每个文件已配置的该slot用户逻辑路径直接浏览，不强制P01前缀。备份条目只读，不提供目录分支操作；优先显示实际在该槽AVAILABLE的当前正文，否则显示该槽最新AVAILABLE正文。backup.version_id是固定读取依据，不得被主盘当前head替换；主路径改名不改变用户备份路径。无live alias时historical_only=true、repository_path=null，历史和下载仍按稳定file/version授权。未配置用户路径的旧容器保留primary/repository前缀兼容。",
@@ -552,7 +552,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+              "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
             }
           }
         ],
@@ -569,7 +569,7 @@
                     },
                     "path": {
                       "type": "string",
-                      "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                      "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                     },
                     "writable": {
                       "type": "boolean"
@@ -587,7 +587,7 @@
                           },
                           "path": {
                             "type": "string",
-                            "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                            "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                           },
                           "kind": {
                             "enum": [
@@ -1049,7 +1049,7 @@
         }
       }
     },
-    "/v1/file-manager/disks/{slot}/write-sessions": {
+    "/api/file-manager/disks/{slot}/write-sessions": {
       "post": {
         "operationId": "createFileManagerWriteSession",
         "description": "按显示路径创建工作区；自动绑定该文件当前选中分支。上传必须用返回relative_path，随后复用上传、seal及commit协议显式保存。仅创建工作区不发布文件内容。",
@@ -1106,11 +1106,11 @@
                     },
                     "relative_path": {
                       "type": "string",
-                      "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                      "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                     },
                     "display_path": {
                       "type": "string",
-                      "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                      "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                     }
                   },
                   "additionalProperties": true,
@@ -1157,7 +1157,7 @@
                 "properties": {
                   "path": {
                     "type": "string",
-                    "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                    "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                   },
                   "branch_id": {
                     "$ref": "#/components/schemas/BranchId"
@@ -1173,7 +1173,7 @@
         }
       }
     },
-    "/v1/file-manager/disks/{slot}/namespace": {
+    "/api/file-manager/disks/{slot}/namespace": {
       "post": {
         "operationId": "mutateFileManagerNamespace",
         "description": "创建目录、重命名容器或目录、删除逻辑项。改名会更新容器当前名及真实容器目录，历史版本内名和正文不变；删除保留版本历史及容器最后名称。",
@@ -1279,13 +1279,13 @@
                   },
                   "path": {
                     "type": "string",
-                    "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                    "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                   },
                   "destination": {
                     "anyOf": [
                       {
                         "type": "string",
-                        "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                        "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                       },
                       {
                         "type": "null"
@@ -1308,7 +1308,7 @@
         }
       }
     },
-    "/v1/file-manager/disks/{slot}/directory-branches": {
+    "/api/file-manager/disks/{slot}/directory-branches": {
       "post": {
         "operationId": "createDirectoryBranch",
         "description": "登记一个命名目录分支，直接引用父目录子树及其冻结文件/子目录节点。不提前创建文件分支，不复制正文，不创建占位文件，也不自动选择。首次实际写入继承文件才创建公共文件分支及FULL；之后的组成变化只追加子树，保留目录分支身份。",
@@ -1362,7 +1362,7 @@
                         },
                         "path": {
                           "type": "string",
-                          "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                          "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                         },
                         "name": {
                           "type": "string"
@@ -1513,7 +1513,7 @@
                 "properties": {
                   "path": {
                     "type": "string",
-                    "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                    "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                   },
                   "name": {
                     "type": "string",
@@ -1535,7 +1535,7 @@
         }
       }
     },
-    "/v1/file-manager/disks/{slot}/directory-select": {
+    "/api/file-manager/disks/{slot}/directory-select": {
       "post": {
         "operationId": "selectDirectoryBranch",
         "description": "按目录分支名称选择完整冻结子树，恢复成员、名称、层级及精确文件/子目录节点；不要求后代具有同名文件分支。子目录选择为父目录追加组成子树，不产生假的文件内容节点。",
@@ -1653,7 +1653,7 @@
                 "properties": {
                   "path": {
                     "type": "string",
-                    "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                    "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                   },
                   "name": {
                     "type": "string",
@@ -1675,7 +1675,7 @@
         }
       }
     },
-    "/v1/file-manager/files/{file}/history": {
+    "/api/file-manager/files/{file}/history": {
       "get": {
         "operationId": "getFileContainerHistory",
         "description": "返回真实版本树和独立分支归属。尚未写入的分支继承父真实version_id，own_version_id=null，不新增虚假版本；current可指可见父版本。首次写入FULL才按真实source_version_ids接入版本树。文件已删除无当前条目时不返回当前内容投影字段。 repository_id与path必须一起提供，用精确逻辑路径解析此文件别名当前节点及分支；省略时优先实际归属路径，无法命中时采用确定的现存别名。不会把其他别名的分支或新HEAD当作此路径的当前节点。 nodes为统一图；versions继续只包含真实正文版本。重命名节点复用正文，node_id与version_id不可混用；当前节点按精确逻辑路径上下文判断。",
@@ -1721,7 +1721,7 @@
                       "anyOf": [
                         {
                           "type": "string",
-                          "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                          "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                         },
                         {
                           "type": "null"
@@ -1773,14 +1773,7 @@
                             ]
                           },
                           "created_at": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                            "type": "string"
                           },
                           "message": {
                             "type": "string"
@@ -1810,9 +1803,6 @@
                           },
                           "storage_name": {
                             "type": "string"
-                          },
-                          "legacy": {
-                            "type": "boolean"
                           }
                         },
                         "additionalProperties": false,
@@ -1830,10 +1820,9 @@
                           "content_hash",
                           "note",
                           "download_name",
-                          "storage_name",
-                          "legacy"
+                          "storage_name"
                         ],
-                        "description": "新版本created_at为RFC3339 UTC；旧记录可为秒数字符串或null。storage_name为不可变内部版本文件名；download_name使用当前所选视图中的逻辑名称（无当前条目时保留实体容器最后名）。legacy=true表示兼容旧版本物理布局。 source_version_ids提供真实内容谱系，响应排序不代表父子关系；普通保存连接实际前版，从待写入分支首次保存连接登记的源版；登记分支记录不增加本数组节点。"
+                        "description": "created_at为RFC3339 UTC字符串。storage_name为不可变内部版本文件名；download_name使用当前所选视图中的逻辑名称（无当前条目时保留实体容器最后名）。source_version_ids提供真实内容谱系，响应排序不代表父子关系；普通保存连接实际前版，从待写入分支首次保存连接登记的源版；登记分支记录不增加本数组节点。"
                       }
                     },
                     "branches": {
@@ -2011,7 +2000,7 @@
         }
       }
     },
-    "/v1/file-manager/files/{file}/branches": {
+    "/api/file-manager/files/{file}/branches": {
       "post": {
         "operationId": "createIndependentFileBranch",
         "description": "从同文件、同授权历史的source_version_id登记独立公共文件分支，直接引用冻结父版本，不复制正文、不创建占位文件、不新增FileVersion，也不自动选择。首次实际写入含空文件或相同字节才产生自己的FULL。 可同时提供source_node_id保留具体路径节点作为分支来源；它必须属于此文件并引用source_version_id正文，登记本身仍不新增节点。",
@@ -2191,7 +2180,7 @@
         }
       }
     },
-    "/v1/file-manager/files/{file}/select": {
+    "/api/file-manager/files/{file}/select": {
       "post": {
         "operationId": "selectIndependentFileBranch",
         "description": "选择本文件active分支，只改变本文件选择。尚未写入的分支读取创建时冻结父版本，可读时正常预览下载；首次实际写入才拥有自己的FULL。父内容已清除或不可用时如实显示，不用别的版本代替。 提供成对repository_id/path时，仅切换该逻辑别名的公开分支引用，其他路径不变；不提供保留旧客户端兼容选择规则。",
@@ -2320,7 +2309,7 @@
         }
       }
     },
-    "/v1/file-manager/files/{file}/metadata": {
+    "/api/file-manager/files/{file}/metadata": {
       "post": {
         "operationId": "updateFileContainerNote",
         "description": "更新文件容器备注，要求本文件写权限。备注随备份、重启及历史包恢复保留，不修改版本正文。",
@@ -2438,7 +2427,7 @@
         }
       }
     },
-    "/v1/file-manager/versions/{version}/metadata": {
+    "/api/file-manager/versions/{version}/metadata": {
       "post": {
         "operationId": "updateFileVersionNote",
         "description": "更新指定不可变版本的备注，要求所属文件写权限；备注属于控制元数据，不修改版本字节、存储内名或校验值。",
@@ -2556,7 +2545,7 @@
         }
       }
     },
-    "/v1/file-manager/history": {
+    "/api/file-manager/history": {
       "get": {
         "operationId": "listFileManagerHistory",
         "description": "返回账号可读范围内最近200条已提交文件操作，按审计sequence倒序有界保留；不包含认证秘密。旧时间缺失为null。目录批量操作展开成实际受影响文件的记录，内部同步提交不重复显示。",
@@ -2595,7 +2584,7 @@
                           },
                           "path": {
                             "type": "string",
-                            "description": "受PortablePathV1约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
+                            "description": "受PortablePath约束的磁盘相对路径；空字符串表示当前磁盘根目录。不得传系统绝对路径。"
                           },
                           "action": {
                             "type": "string"
@@ -2797,7 +2786,7 @@
         }
       }
     },
-    "/v1/system/status": {
+    "/api/system/status": {
       "get": {
         "operationId": "getSystemStatus",
         "description": "仅管理员可读取本机CPU、内存及已注册磁盘状态和可读取的真实功耗。CPU使用率和RAPL功耗首次只建立基线，未获得有效间隔时为null。CPU功耗来自package能量差/真实单调时间；磁盘功耗只来自经磁盘归属核对的hwmon功率传感器，不能用TDP或使用率估算。响应不含进程、网络、GPU、系统绝对路径、传感器路径或物理设备身份；监测不会创建文件操作历史。",
@@ -3078,7 +3067,7 @@
         }
       }
     },
-    "/v1/system/history": {
+    "/api/system/history": {
       "get": {
         "operationId": "getSystemHistory",
         "description": "仅管理员读取独立的主机监测历史，与文件操作历史分离。从服务启动起每5秒后台采样，无需浏览器保持打开；最近1小时保留5秒点，长期最多保留31天分钟点。1month表示最近30×24小时。返回桶内真实观测的均值，各指标按自身有效观察次数聚合；缺失值为null，空桶不补造采样、不补0。范围按1min/30min/1h/24h/1month分别使用5/5/10/240/7200秒时间桶，最多361个点。缓存为可重建私有数据；触及预算可缩短可用历史，普通缓存I/O失败以内存继续采样，不能声称已有完整保留期。响应不含系统路径、设备身份或内部缓存统计。未知查询字段被拒绝。",
@@ -3142,7 +3131,7 @@
                       "type": "array",
                       "maxItems": 361,
                       "items": {
-                        "$ref": "#/paths/~1v1~1system~1status/get/responses/200/content/application~1json/schema"
+                        "$ref": "#/paths/~1api~1system~1status/get/responses/200/content/application~1json/schema"
                       },
                       "description": "按采样时间升序排列；允许空数组。未采样或不可用不能解释成零。"
                     }
@@ -3217,7 +3206,7 @@
         }
       }
     },
-    "/v1/file-manager/disks/{slot}/namespace-batch": {
+    "/api/file-manager/disks/{slot}/namespace-batch": {
       "post": {
         "operationId": "applyDirectoryBranchBatch",
         "description": "显式源目录分支到目标目录分支的移动/复制/删除/重命名映射，path为仓库相对路径且target.path含最终名称。每项依据不可变expected_tree_id及entry_id，所有分支必须属于同一仓库与此一级盘。统一预检、整批原子发布；每个受影响分支只形成一个后续子树，未选分支保持原样。移动保留身份并移交实际存储归属，复制创建独立身份，删除保留仍被引用的材料。目标冲突或过期树返回409，不跳项。幂等重试不重复复制。",
@@ -3405,7 +3394,7 @@
         }
       }
     },
-    "/v1/repositories/{repo}/directory-branches": {
+    "/api/repositories/{repo}/directory-branches": {
       "get": {
         "operationId": "listDirectoryBranchScopes",
         "description": "读取稳定目录作用域及其分支完整冻结条目，不切换默认分支。省略path返回仓库所有作用域；显式空path仅根。目录即使在当前投影中不存在，历史作用域仍可查询。",
@@ -3572,7 +3561,7 @@
         }
       }
     },
-    "/v1/repositories/{repo}/default-branch": {
+    "/api/repositories/{repo}/default-branch": {
       "get": {
         "operationId": "getDefaultDirectoryBranch",
         "description": "读取共享SMB默认根目录分支及稳定namespace_branch_id。",
@@ -3755,7 +3744,7 @@
         }
       }
     },
-    "/v1/repositories/{repo}/directory-branches/{id}": {
+    "/api/repositories/{repo}/directory-branches/{id}": {
       "patch": {
         "operationId": "renameDirectoryBranch",
         "description": "修改目录分支标签，最多128 UTF-8字节；身份和内容子树不变，与文件/文件夹名称修改不同。",
@@ -3878,7 +3867,7 @@
         }
       }
     },
-    "/v1/repositories/{repo}/directory-scopes": {
+    "/api/repositories/{repo}/directory-scopes": {
       "post": {
         "operationId": "initializeDirectoryScope",
         "description": "显式登记已有目录的基线组成，以便批量选择稳定分支；不复制正文、不切换已有选择。GET不隐式创建状态。",
@@ -3992,10 +3981,10 @@
         }
       }
     },
-    "/v1/file-manager/files/{file}/branches/{branch}": {
+    "/api/file-manager/files/{file}/branches/{branch}": {
       "patch": {
         "operationId": "renamePublicFileBranch",
-        "description": "修改指定文件的公共分支标签，最多128 UTF-8字节，名称按PortableNameV2校验且在同文件内按规范化键唯一。只改变标签，不新增版本、提交、目录子树或选择；自动生成的P2文件分支也可独立改名。",
+        "description": "修改指定文件的公共分支标签，最多128 UTF-8字节，名称按PortableName校验且在同文件内按规范化键唯一。只改变标签，不新增版本、提交、目录子树或选择；自动生成的P2文件分支也可独立改名。",
         "parameters": [
           {
             "name": "file",
@@ -4126,7 +4115,7 @@
         }
       }
     },
-    "/v1/file-manager/files/{file}/nodes/{node}": {
+    "/api/file-manager/files/{file}/nodes/{node}": {
       "patch": {
         "operationId": "setFileMetadataNodeNote",
         "description": "设置或清空路径/标签/合并节点的独立备注，最多128 UTF-8字节；不改所复用的正文版本备注，不新增节点或目录子树。",
@@ -4259,7 +4248,7 @@
         }
       }
     },
-    "/v1/file-manager/files/{file}/merge": {
+    "/api/file-manager/files/{file}/merge": {
       "post": {
         "operationId": "mergeFileBranches",
         "description": "用户明确确认结果节点与归属分支后，原子采用同文件任一历史节点的正文。chosen是参与head时直接复用该节点，否则生成合并元数据子节点；不复制正文。来源全部保存在独立merge记录，跳过会形成环的附加箭头。仅推进引用参与公共分支的目录分支，其余保持冻结；被合并分支转只读历史别名。目录分支合并待用户确认，暂不实现且无写接口。",
@@ -4414,7 +4403,7 @@
         }
       }
     },
-    "/v1/file-manager/files/{file}/tags": {
+    "/api/file-manager/files/{file}/tags": {
       "post": {
         "operationId": "updateFileNodeTags",
         "description": "对显式源节点批量增加/删除标签，全部branch head基线先验证。每个变化目标生成复用正文的metadata child，继承源标签再应用增量；原节点不变。只有source恰为当前分支/目录引用才推进该引用；历史源仅新增子节点。最多16标签，每个128 UTF-8字节，无控制字符，去重，任一目标失败整笔不发布。标签不算首次正文写入。",
@@ -4585,7 +4574,7 @@
         }
       }
     },
-    "/v1/repositories/{repo}/backup-configuration": {
+    "/api/repositories/{repo}/backup-configuration": {
       "get": {
         "operationId": "getScopeBackupConfiguration",
         "description": "只读查询文件/目录有效备份策略、逻辑前缀、路由与代数；不创建目录scope或策略。",
@@ -4951,9 +4940,6 @@
       "Version": {
         "type": "object",
         "properties": {
-          "format_version": {
-            "const": 2
-          },
           "history_tree_id": {
             "$ref": "#/components/schemas/HistoryId"
           },
@@ -5006,7 +4992,6 @@
           }
         },
         "required": [
-          "format_version",
           "history_tree_id",
           "version_id",
           "file_id",
@@ -5018,10 +5003,12 @@
           "checksum_manifest_hash",
           "creation_name",
           "source_version_ids",
-          "created_as_full_checkpoint"
+          "created_as_full_checkpoint",
+          "storage_name",
+          "created_at"
         ],
         "additionalProperties": false,
-        "description": "字段草案；完整 PortableNameV2、实体关系及物理证据需另行验证。"
+        "description": "字段草案；完整 PortableName、实体关系及物理证据需另行验证。"
       },
       "PlacementRequest": {
         "type": "object",
@@ -5173,7 +5160,7 @@
             "const": "POST"
           },
           "route": {
-            "const": "/v1/workspaces/{workspace}/commit"
+            "const": "/api/workspaces/{workspace}/commit"
           },
           "path_parameters": {
             "type": "object",
@@ -5669,9 +5656,6 @@
       "Publication": {
         "type": "object",
         "properties": {
-          "format_version": {
-            "const": 2
-          },
           "record_type": {
             "const": "PUBLICATION"
           },
@@ -5732,7 +5716,6 @@
           }
         },
         "required": [
-          "format_version",
           "record_type",
           "pool_id",
           "membership_epoch",
@@ -6855,10 +6838,7 @@
             "type": "string"
           },
           "created_at": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string"
           },
           "sequence": {
             "$ref": "#/components/schemas/UInt64"
@@ -6877,9 +6857,6 @@
           },
           "storage_name": {
             "type": "string"
-          },
-          "legacy": {
-            "type": "boolean"
           },
           "branch_id": {
             "anyOf": [
@@ -7322,6 +7299,345 @@
         },
         "additionalProperties": true,
         "description": "State及HistoryManifest新增字段的受检投影；各映射省略时默认为空。不声称覆盖完整状态或恢复包。"
+      },
+      "HistoryGraphReference": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "state-page",
+              "history-index"
+            ]
+          },
+          "hash": {
+            "$ref": "#/components/schemas/Hash"
+          }
+        },
+        "required": [
+          "kind",
+          "hash"
+        ],
+        "additionalProperties": false
+      },
+      "HistoryIndex": {
+        "type": "object",
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{0,63}(?![\\s\\S])"
+          },
+          "children": {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 16,
+            "propertyNames": {
+              "pattern": "^[0-9a-f](?![\\s\\S])"
+            },
+            "additionalProperties": {
+              "$ref": "#/components/schemas/HistoryGraphReference"
+            }
+          }
+        },
+        "required": [
+          "prefix",
+          "children"
+        ],
+        "additionalProperties": false,
+        "description": "实体键UTF-8字节的BLAKE3摘要按十六进制分路；prefix须匹配引用位置，子引用哈希和实际实体归属由核心验证。"
+      },
+      "HistoryLeaf": {
+        "type": "object",
+        "maxProperties": 128,
+        "additionalProperties": true,
+        "description": "state-page域普通实体映射。多实体规范编码最多64KiB；单实体页可至64MiB。字节上限、非根空页拒绝和各字段实体语义由核心检查，JSON Schema不验证图闭包。"
+      },
+      "HistoryRepository": {
+        "type": "object",
+        "properties": {
+          "repository_id": {
+            "$ref": "#/components/schemas/RepositoryId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "history_tree_id": {
+            "$ref": "#/components/schemas/HistoryId"
+          },
+          "main_branch_id": {
+            "$ref": "#/components/schemas/BranchId"
+          },
+          "primary_slot_id": {
+            "$ref": "#/components/schemas/SlotId"
+          },
+          "target_copies": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "name_policy": {
+            "type": "string"
+          },
+          "unicode_version": {
+            "type": "string"
+          },
+          "grants": {
+            "type": "object",
+            "properties": {
+              "read": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              },
+              "write": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              },
+              "manage": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "read",
+              "write",
+              "manage"
+            ],
+            "additionalProperties": false
+          },
+          "account_scope_repository_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RepositoryId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "smb_enabled": {
+            "type": "boolean"
+          },
+          "file_manager_root": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "repository_id",
+          "name",
+          "history_tree_id",
+          "main_branch_id",
+          "primary_slot_id",
+          "target_copies",
+          "name_policy",
+          "unicode_version",
+          "grants"
+        ],
+        "additionalProperties": false,
+        "description": "根中仓库对象的读取字段形状；命名策略、保护份数和授权语义由核心另行验证。"
+      },
+      "HistoryIdentity": {
+        "type": "object",
+        "properties": {
+          "history_tree_id": {
+            "$ref": "#/components/schemas/HistoryId"
+          },
+          "repository_id": {
+            "$ref": "#/components/schemas/RepositoryId"
+          },
+          "root_commit_id": {
+            "$ref": "#/components/schemas/CommitId"
+          },
+          "main_branch_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BranchId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "generation": {
+            "$ref": "#/components/schemas/UInt64"
+          },
+          "state": {
+            "type": "string"
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "history_tree_id",
+          "repository_id",
+          "root_commit_id",
+          "main_branch_id",
+          "generation",
+          "state",
+          "provenance"
+        ],
+        "additionalProperties": false
+      },
+      "PagedHistoryRoot": {
+        "type": "object",
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/HistoryRepository"
+          },
+          "history": {
+            "$ref": "#/components/schemas/HistoryIdentity"
+          },
+          "maps": {
+            "type": "object",
+            "properties": {
+              "branches": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_selections": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "directory_branches": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "directory_trees": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_write_origins": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_contexts": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_path_nodes": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_metadata_nodes": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_branch_merges": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_branch_aliases": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_node_parents": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_path_notes": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "directory_tree_selections": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_locations": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_backup_paths": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_backup_policies": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "directory_selections": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "directory_selection_generations": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_selection_generations": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_notes": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "version_notes": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "file_names": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "commits": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "versions": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "placements": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "merge_links": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "boundary_marks": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "content_states": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "placement_rules": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              },
+              "protection_policies": {
+                "$ref": "#/components/schemas/HistoryGraphReference"
+              }
+            },
+            "required": [
+              "branches",
+              "file_selections",
+              "directory_branches",
+              "directory_trees",
+              "file_write_origins",
+              "file_contexts",
+              "file_path_nodes",
+              "file_metadata_nodes",
+              "file_branch_merges",
+              "file_branch_aliases",
+              "file_node_parents",
+              "file_path_notes",
+              "directory_tree_selections",
+              "file_locations",
+              "file_backup_paths",
+              "file_backup_policies",
+              "directory_selections",
+              "directory_selection_generations",
+              "file_selection_generations",
+              "file_notes",
+              "version_notes",
+              "file_names",
+              "commits",
+              "versions",
+              "placements",
+              "merge_links",
+              "boundary_marks",
+              "content_states",
+              "placement_rules",
+              "protection_policies"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "repository",
+          "history",
+          "maps"
+        ],
+        "additionalProperties": false,
+        "description": "当前分页历史根，位于history-manifest域；候选直接绑定此根摘要。根不带格式代际字段，展开逻辑HistoryManifest不是根的替代身份。"
       }
     }
   }

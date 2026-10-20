@@ -25,11 +25,7 @@ fn fixture_payload(version_directory: &Path, state: &zxs_contract::State) -> std
     let version: zxs_contract::FileVersion =
         serde_json::from_slice(&std::fs::read(version_directory.join("version.json")).unwrap())
             .unwrap();
-    let Some(storage_name) = version.storage_name else {
-        return version_directory
-            .join("content")
-            .join(version.creation_name);
-    };
+    let storage_name = version.storage_name;
     let history = version_directory.parent().unwrap().parent().unwrap();
     let stable = history.join("file-containers").join(&version.file_id);
     let named = if let Some(location) = state.file_locations.get(&version.file_id) {
@@ -150,7 +146,7 @@ async fn pool_upload_limit_is_checked_before_creating_spooled_bytes() {
         &app,
         &token,
         "POST",
-        "/v1/repositories",
+        "/api/repositories",
         Some(json!({
             "name":"Small limit", "primary_slot_id":"P01", "target_copies":1,
             "operation_id":new_id("op")
@@ -161,7 +157,7 @@ async fn pool_upload_limit_is_checked_before_creating_spooled_bytes() {
         &app,
         &token,
         "POST",
-        "/v1/workspaces",
+        "/api/workspaces",
         Some(json!({"branch_id":repo["main_branch_id"]})),
     )
     .await;
@@ -171,7 +167,7 @@ async fn pool_upload_limit_is_checked_before_creating_spooled_bytes() {
             Request::builder()
                 .method("PUT")
                 .uri(format!(
-                    "/v1/workspaces/{}/files/{}/content?path=large.txt",
+                    "/api/workspaces/{}/files/{}/content?path=large.txt",
                     workspace["workspace_id"].as_str().unwrap(),
                     new_id("entry")
                 ))
@@ -196,7 +192,7 @@ async fn login(app: &Router, name: &str, password: &str) -> String {
         app,
         None,
         "POST",
-        "/v1/auth/login",
+        "/api/auth/login",
         Some(json!({"username":name,"password":password})),
     )
     .await;
@@ -212,7 +208,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
         &app,
         None,
         "POST",
-        "/v1/auth/login",
+        "/api/auth/login",
         Some(json!({
             "username":"admin", "password":"integration-test-password"
         })),
@@ -229,7 +225,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
     ] {
         let mut request = Request::builder()
             .method("POST")
-            .uri("/v1/auth/password")
+            .uri("/api/auth/password")
             .header("host", "127.0.0.1:7400")
             .header("origin", origin)
             .header("cookie", &cookie)
@@ -256,7 +252,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
             &app,
             Some(token),
             "POST",
-            "/v1/auth/password",
+            "/api/auth/password",
             Some(escalated)
         )
         .await
@@ -268,7 +264,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
         .oneshot(
             Request::builder()
                 .method("POST")
-                .uri("/v1/auth/password")
+                .uri("/api/auth/password")
                 .header("host", "127.0.0.1:7400")
                 .header("origin", "http://127.0.0.1:7400")
                 .header("cookie", &cookie)
@@ -287,7 +283,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
             .contains("Max-Age=0")
     );
     assert_eq!(
-        send(&app, Some(token), "GET", "/v1/auth/me", None).await.0,
+        send(&app, Some(token), "GET", "/api/auth/me", None).await.0,
         StatusCode::UNAUTHORIZED
     );
     drop(app);
@@ -309,7 +305,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
             &app,
             None,
             "POST",
-            "/v1/auth/login",
+            "/api/auth/login",
             Some(json!({"username":"admin", "password":"integration-test-password"}))
         )
         .await
@@ -345,7 +341,7 @@ async fn maximum_password_change_accepts_escaped_json_and_rejects_errors_without
         &app,
         None,
         "POST",
-        "/v1/auth/login",
+        "/api/auth/login",
         Some(json!({"username":"admin", "password":current_password})),
     )
     .await;
@@ -356,7 +352,7 @@ async fn maximum_password_change_accepts_escaped_json_and_rejects_errors_without
     let request = || {
         Request::builder()
             .method("POST")
-            .uri("/v1/auth/password")
+            .uri("/api/auth/password")
             .header("host", "127.0.0.1:7400")
             .header("origin", "http://127.0.0.1:7400")
             .header("cookie", &cookie)
@@ -381,7 +377,7 @@ async fn maximum_password_change_accepts_escaped_json_and_rejects_errors_without
     assert_eq!(rejected.status(), StatusCode::FORBIDDEN);
     assert!(!rejected.headers().contains_key("set-cookie"));
     assert_eq!(
-        send(&app, Some(token), "GET", "/v1/auth/me", None).await.0,
+        send(&app, Some(token), "GET", "/api/auth/me", None).await.0,
         StatusCode::OK
     );
 
@@ -400,7 +396,7 @@ async fn maximum_password_change_accepts_escaped_json_and_rejects_errors_without
         .unwrap();
     assert_eq!(changed.status(), StatusCode::OK);
     assert_eq!(
-        send(&app, Some(token), "GET", "/v1/auth/me", None).await.0,
+        send(&app, Some(token), "GET", "/api/auth/me", None).await.0,
         StatusCode::UNAUTHORIZED
     );
     assert_eq!(
@@ -408,7 +404,7 @@ async fn maximum_password_change_accepts_escaped_json_and_rejects_errors_without
             &app,
             None,
             "POST",
-            "/v1/auth/login",
+            "/api/auth/login",
             Some(json!({"username":"admin", "password":new_password}))
         )
         .await
@@ -434,7 +430,7 @@ async fn upload(
             Request::builder()
                 .method("PUT")
                 .uri(format!(
-                    "/v1/workspaces/{workspace}/files/{item}/content?{query}"
+                    "/api/workspaces/{workspace}/files/{item}/content?{query}"
                 ))
                 .header("authorization", format!("Bearer {token}"))
                 .header("x-zxs-logical-size", bytes.len().to_string())
@@ -459,7 +455,7 @@ async fn version_bytes(app: &Router, token: &str, version: &str) -> Vec<u8> {
         .clone()
         .oneshot(
             Request::builder()
-                .uri(format!("/v1/versions/{version}/content"))
+                .uri(format!("/api/versions/{version}/content"))
                 .header("authorization", format!("Bearer {token}"))
                 .body(Body::empty())
                 .unwrap(),
@@ -478,7 +474,7 @@ async fn manager_upload(app: &Router, token: &str, path: &str, bytes: &[u8]) -> 
         app,
         token,
         "POST",
-        "/v1/file-manager/disks/P01/write-sessions",
+        "/api/file-manager/disks/P01/write-sessions",
         Some(json!({"path":path})),
     )
     .await;
@@ -496,14 +492,14 @@ async fn manager_upload(app: &Router, token: &str, path: &str, bytes: &[u8]) -> 
         app,
         token,
         "POST",
-        &format!("/v1/workspaces/{id}/seal"),
+        &format!("/api/workspaces/{id}/seal"),
         Some(json!({})),
     )
     .await;
     body["message"] = format!("Upload {path}").into();
     body["request_digest"] = request_digest(
         "POST",
-        "/v1/workspaces/{workspace}/commit",
+        "/api/workspaces/{workspace}/commit",
         json!({"workspace":id}),
         json!({}),
         &body,
@@ -514,7 +510,7 @@ async fn manager_upload(app: &Router, token: &str, path: &str, bytes: &[u8]) -> 
         app,
         token,
         "POST",
-        &format!("/v1/workspaces/{id}/commit"),
+        &format!("/api/workspaces/{id}/commit"),
         Some(body),
     )
     .await
@@ -530,7 +526,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -541,20 +537,20 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         &app,
         &token,
         "POST",
-        "/v1/admin/accounts",
+        "/api/admin/accounts",
         Some(
             json!({"username":"reader","password":"read-only-test-password","repositories":[repo]}),
         ),
     )
     .await;
-    success(&app,&token,"PUT",&format!("/v1/repositories/{repo}/grants"),Some(json!({"grants":{"read":["reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
+    success(&app,&token,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
     let reader = login(&app, "reader", "read-only-test-password").await;
     assert_eq!(
         send(
             &app,
             Some(&reader),
             "POST",
-            &format!("/v1/file-manager/files/{file}/metadata"),
+            &format!("/api/file-manager/files/{file}/metadata"),
             Some(json!({"note":"cannot edit","operation_id":new_id("op")}))
         )
         .await
@@ -564,8 +560,8 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
     // Both metadata endpoints count UTF-8 bytes, reject every control character,
     // and accept an empty note as a deletion of the stored metadata.
     for endpoint in [
-        format!("/v1/file-manager/files/{file}/metadata"),
-        format!("/v1/file-manager/versions/{version}/metadata"),
+        format!("/api/file-manager/files/{file}/metadata"),
+        format!("/api/file-manager/versions/{version}/metadata"),
     ] {
         for note in [
             "a".repeat(128),
@@ -611,7 +607,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         &app,
         &token,
         "POST",
-        &format!("/v1/file-manager/files/{file}/metadata"),
+        &format!("/api/file-manager/files/{file}/metadata"),
         Some(metadata.clone()),
     )
     .await;
@@ -620,7 +616,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
             &app,
             &token,
             "POST",
-            &format!("/v1/file-manager/files/{file}/metadata"),
+            &format!("/api/file-manager/files/{file}/metadata"),
             Some(metadata)
         )
         .await["result"],
@@ -630,16 +626,16 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         &app,
         &token,
         "POST",
-        &format!("/v1/file-manager/versions/{version}/metadata"),
+        &format!("/api/file-manager/versions/{version}/metadata"),
         Some(json!({"note":"historical note","operation_id":new_id("op")})),
     )
     .await;
-    success(&app,&token,"POST","/v1/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"original.txt","destination":"改名后的文件.txt","operation_id":new_id("op")}))).await;
+    success(&app,&token,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"original.txt","destination":"改名后的文件.txt","operation_id":new_id("op")}))).await;
     let history = success(
         &app,
         &reader,
         "GET",
-        &format!("/v1/file-manager/files/{file}/history"),
+        &format!("/api/file-manager/files/{file}/history"),
         None,
     )
     .await;
@@ -651,13 +647,13 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
             .unwrap()
             .starts_with("v000001_")
     );
-    assert_eq!(history["versions"][0]["legacy"], false);
+    assert!(history["versions"][0].get("legacy").is_none());
     assert_eq!(history["versions"][0]["download_name"], "改名后的文件.txt");
     let response = app
         .clone()
         .oneshot(
             Request::builder()
-                .uri(format!("/v1/versions/{version}/content"))
+                .uri(format!("/api/versions/{version}/content"))
                 .header("authorization", format!("Bearer {reader}"))
                 .body(Body::empty())
                 .unwrap(),
@@ -678,7 +674,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         &app,
         &token,
         "POST",
-        "/v1/file-manager/disks/P01/namespace",
+        "/api/file-manager/disks/P01/namespace",
         Some(json!({"kind":"delete","path":"改名后的文件.txt","operation_id":new_id("op")})),
     )
     .await;
@@ -686,7 +682,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         &app,
         &reader,
         "GET",
-        &format!("/v1/file-manager/files/{file}/history"),
+        &format!("/api/file-manager/files/{file}/history"),
         None,
     )
     .await;
@@ -710,7 +706,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
         &app,
         &token,
         "GET",
-        &format!("/v1/file-manager/files/{file}/history"),
+        &format!("/api/file-manager/files/{file}/history"),
         None,
     )
     .await;
@@ -729,7 +725,7 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         &app,
         &admin,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -745,7 +741,7 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         .find(|entry| entry["name"] == "sibling.txt")
         .unwrap();
     let repo = listing["context"]["repository_id"].as_str().unwrap();
-    let history_path = format!("/v1/file-manager/files/{file}/history");
+    let history_path = format!("/api/file-manager/files/{file}/history");
 
     manager_upload(&app, &admin, "tree.txt", b"second main content").await;
     let main = success(&app, &admin, "GET", &history_path, None).await;
@@ -763,7 +759,7 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         &app,
         &admin,
         "POST",
-        &format!("/v1/file-manager/files/{file}/branches"),
+        &format!("/api/file-manager/files/{file}/branches"),
         Some(json!({"source_version_id":original,"name":"from-first","operation_id":new_id("op")})),
     )
     .await;
@@ -787,22 +783,30 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         &app,
         &admin,
         "POST",
-        &format!("/v1/file-manager/files/{file}/select"),
+        &format!("/api/file-manager/files/{file}/select"),
         Some(json!({"branch_id":branch_id,"operation_id":new_id("op")})),
     )
     .await;
     manager_upload(&app, &admin, "tree.txt", b"new branch content").await;
 
     success(
-        &app, &admin, "POST", "/v1/admin/accounts",
+        &app, &admin, "POST", "/api/admin/accounts",
         Some(json!({"username":"tree-reader","password":"tree-reader-test-password","repositories":[repo]})),
     ).await;
     success(
-        &app, &admin, "PUT", &format!("/v1/repositories/{repo}/grants"),
+        &app, &admin, "PUT", &format!("/api/repositories/{repo}/grants"),
         Some(json!({"grants":{"read":["tree-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")})),
     ).await;
     let reader = login(&app, "tree-reader", "tree-reader-test-password").await;
     let history = success(&app, &reader, "GET", &history_path, None).await;
+    let nodes = history["nodes"].as_array().unwrap();
+    assert_eq!(nodes.len(), 3);
+    for node in nodes {
+        assert!(node["node_id"].as_str().is_some_and(|id| !id.is_empty()));
+        assert!(node["parent_node_ids"].as_array().is_some());
+        assert!(node["created_at"].is_string());
+        assert!(node.get("legacy").is_none());
+    }
     let versions = history["versions"].as_array().unwrap();
     assert_eq!(versions.len(), 3);
     assert!(
@@ -852,7 +856,7 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         &reader,
         "GET",
         &format!(
-            "/v1/file-manager/files/{}/history",
+            "/api/file-manager/files/{}/history",
             sibling["file_id"].as_str().unwrap()
         ),
         None,
@@ -869,11 +873,11 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
     );
     for (path, body) in [
         (
-            format!("/v1/file-manager/files/{file}/metadata"),
+            format!("/api/file-manager/files/{file}/metadata"),
             json!({"note":"forbidden","operation_id":new_id("op")}),
         ),
         (
-            format!("/v1/file-manager/files/{file}/branches"),
+            format!("/api/file-manager/files/{file}/branches"),
             json!({"source_version_id":original,"name":"forbidden","operation_id":new_id("op")}),
         ),
     ] {
@@ -883,7 +887,7 @@ async fn file_history_exposes_durable_content_edges_and_preserves_read_permissio
         );
     }
     success(
-        &app, &admin, "POST", "/v1/admin/accounts",
+        &app, &admin, "POST", "/api/admin/accounts",
         Some(json!({"username":"tree-outsider","password":"tree-outsider-test-password","repositories":[]})),
     ).await;
     let outsider = login(&app, "tree-outsider", "tree-outsider-test-password").await;
@@ -942,16 +946,16 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let token = login(&app, "admin", "integration-test-password").await;
-    let capabilities = success(&app, &token, "GET", "/v1/capabilities", None).await;
+    let capabilities = success(&app, &token, "GET", "/api/capabilities", None).await;
     assert_eq!(capabilities["full_branches"], false);
     assert_eq!(capabilities["branch_creation"], "record-until-write");
     assert_eq!(
-        send(&app, None, "GET", "/v1/file-manager/disks", None)
+        send(&app, None, "GET", "/api/file-manager/disks", None)
             .await
             .0,
         StatusCode::UNAUTHORIZED
     );
-    let disks = success(&app, &token, "GET", "/v1/file-manager/disks", None).await;
+    let disks = success(&app, &token, "GET", "/api/file-manager/disks", None).await;
     assert_eq!(disks["disks"][0]["slot_id"], "P01");
     assert_eq!(disks["disks"][0]["writable"], true);
     assert_eq!(disks["disks"][1]["writable"], false);
@@ -960,7 +964,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
             &app,
             &token,
             "GET",
-            "/v1/file-manager/disks/P01/entries",
+            "/api/file-manager/disks/P01/entries",
             None
         )
         .await["entries"]
@@ -973,7 +977,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        "/v1/file-manager/disks/P01/namespace",
+        "/api/file-manager/disks/P01/namespace",
         Some(mkdir.clone()),
     )
     .await;
@@ -982,7 +986,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
             &app,
             &token,
             "POST",
-            "/v1/file-manager/disks/P01/namespace",
+            "/api/file-manager/disks/P01/namespace",
             Some(mkdir)
         )
         .await["result"],
@@ -994,7 +998,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=documents",
+        "/api/file-manager/disks/P01/entries?path=documents",
         None,
     )
     .await;
@@ -1006,7 +1010,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
     let file = one["file_id"].as_str().unwrap();
     let create_body =
         json!({"source_version_id":one["version_id"],"name":"draft","operation_id":new_id("op")});
-    let create_path = format!("/v1/file-manager/files/{file}/branches");
+    let create_path = format!("/api/file-manager/files/{file}/branches");
     let branch = success(
         &app,
         &token,
@@ -1022,7 +1026,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         branch["result"]
     );
     let branch_id = branch["result"]["branch_id"].as_str().unwrap();
-    let history_path = format!("/v1/file-manager/files/{file}/history");
+    let history_path = format!("/api/file-manager/files/{file}/history");
     let pending_history = success(&app, &token, "GET", &history_path, None).await;
     assert_eq!(pending_history["versions"].as_array().unwrap().len(), 1);
     let pending_branch = pending_history["branches"]
@@ -1041,7 +1045,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "GET",
-        &format!("/v1/branches/{branch_id}"),
+        &format!("/api/branches/{branch_id}"),
         None,
     )
     .await;
@@ -1057,7 +1061,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
             &app,
             &token,
             "GET",
-            &format!("/v1/branches/{branch_id}/{suffix}"),
+            &format!("/api/branches/{branch_id}/{suffix}"),
             None,
         )
         .await;
@@ -1074,7 +1078,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        &format!("/v1/branches/{branch_id}/resolve"),
+        &format!("/api/branches/{branch_id}/resolve"),
         Some(json!({"path":"documents/one.txt"})),
     )
     .await;
@@ -1088,7 +1092,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        "/v1/workspaces",
+        "/api/workspaces",
         Some(json!({"branch_id":entries["context"]["branch_id"]})),
     )
     .await;
@@ -1106,7 +1110,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        &format!("/v1/file-manager/files/{file}/select"),
+        &format!("/api/file-manager/files/{file}/select"),
         Some(json!({"branch_id":branch_id,"operation_id":new_id("op")})),
     )
     .await;
@@ -1114,14 +1118,14 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        &format!("/v1/workspaces/{stale_id}/seal"),
+        &format!("/api/workspaces/{stale_id}/seal"),
         Some(json!({})),
     )
     .await;
     stale_commit["message"] = "must not follow a changed selected branch".into();
     stale_commit["request_digest"] = request_digest(
         "POST",
-        "/v1/workspaces/{workspace}/commit",
+        "/api/workspaces/{workspace}/commit",
         json!({"workspace":stale_id}),
         json!({}),
         &stale_commit,
@@ -1132,7 +1136,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         Some(&token),
         "POST",
-        &format!("/v1/workspaces/{stale_id}/commit"),
+        &format!("/api/workspaces/{stale_id}/commit"),
         Some(stale_commit),
     )
     .await;
@@ -1142,7 +1146,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        &format!("/v1/workspaces/{stale_id}/abort"),
+        &format!("/api/workspaces/{stale_id}/abort"),
         Some(json!({})),
     )
     .await;
@@ -1150,7 +1154,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=documents",
+        "/api/file-manager/disks/P01/entries?path=documents",
         None,
     )
     .await;
@@ -1171,7 +1175,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/B01/entries?path=P01%2Fdocuments",
+        "/api/file-manager/disks/B01/entries?path=P01%2Fdocuments",
         None,
     )
     .await;
@@ -1194,7 +1198,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        "/v1/file-manager/disks/P01/write-sessions",
+        "/api/file-manager/disks/P01/write-sessions",
         Some(json!({"path":"documents/one.txt"})),
     )
     .await;
@@ -1203,7 +1207,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &token,
         "POST",
         &format!(
-            "/v1/workspaces/{}/abort",
+            "/api/workspaces/{}/abort",
             untouched["workspace_id"].as_str().unwrap()
         ),
         Some(json!({})),
@@ -1234,7 +1238,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=documents",
+        "/api/file-manager/disks/P01/entries?path=documents",
         None,
     )
     .await;
@@ -1251,7 +1255,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "GET",
-        &format!("/v1/file-manager/files/{file}/history"),
+        &format!("/api/file-manager/files/{file}/history"),
         None,
     )
     .await;
@@ -1276,7 +1280,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "GET",
-        &format!("/v1/branches/{branch_id}/tree?commit_id={pending_commit}"),
+        &format!("/api/branches/{branch_id}/tree?commit_id={pending_commit}"),
         None,
     )
     .await;
@@ -1296,7 +1300,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        &format!("/v1/branches/{branch_id}/resolve"),
+        &format!("/api/branches/{branch_id}/resolve"),
         Some(json!({"path":"documents/one.txt","commit_id":pending_commit})),
     )
     .await;
@@ -1309,7 +1313,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        &format!("/v1/branches/{branch_id}/resolve"),
+        &format!("/api/branches/{branch_id}/resolve"),
         Some(json!({"path":"documents/one.txt","commit_id":real_source_commit})),
     )
     .await;
@@ -1327,7 +1331,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
             &app,
             Some(&token),
             "POST",
-            "/v1/file-manager/disks/B01/write-sessions",
+            "/api/file-manager/disks/B01/write-sessions",
             Some(json!({"path":"P01/documents/one.txt"}))
         )
         .await
@@ -1338,7 +1342,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/B01/entries?path=P01%2Fdocuments",
+        "/api/file-manager/disks/B01/entries?path=P01%2Fdocuments",
         None,
     )
     .await;
@@ -1349,14 +1353,14 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
             &app,
             Some(&token),
             "GET",
-            "/v1/file-manager/disks/P01/entries?path=..%2F..",
+            "/api/file-manager/disks/P01/entries?path=..%2F..",
             None
         )
         .await
         .0,
         StatusCode::BAD_REQUEST
     );
-    let events = success(&app, &token, "GET", "/v1/file-manager/history", None).await;
+    let events = success(&app, &token, "GET", "/api/file-manager/history", None).await;
     assert!(
         events["events"]
             .as_array()
@@ -1380,7 +1384,7 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        "/v1/file-manager/disks/P01/namespace",
+        "/api/file-manager/disks/P01/namespace",
         Some(rename),
     )
     .await;
@@ -1388,11 +1392,11 @@ async fn file_manager_exposes_disk_directories_and_independent_file_branches() {
         &app,
         &token,
         "POST",
-        "/v1/file-manager/disks/P01/namespace",
+        "/api/file-manager/disks/P01/namespace",
         Some(json!({"kind":"delete","path":"documents/renamed.txt","operation_id":new_id("op")})),
     )
     .await;
-    let events = success(&app, &token, "GET", "/v1/file-manager/history", None).await;
+    let events = success(&app, &token, "GET", "/api/file-manager/history", None).await;
     assert!(
         events["events"]
             .as_array()
@@ -1415,7 +1419,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=folder",
+        "/api/file-manager/disks/P01/entries?path=folder",
         None,
     )
     .await;
@@ -1423,7 +1427,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=folder%2Fnested",
+        "/api/file-manager/disks/P01/entries?path=folder%2Fnested",
         None,
     )
     .await;
@@ -1449,7 +1453,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -1465,7 +1469,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "POST",
-        "/v1/file-manager/disks/P01/directory-branches",
+        "/api/file-manager/disks/P01/directory-branches",
         Some(body.clone()),
     )
     .await;
@@ -1479,7 +1483,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
             &app,
             &token,
             "POST",
-            "/v1/file-manager/disks/P01/directory-branches",
+            "/api/file-manager/disks/P01/directory-branches",
             Some(body)
         )
         .await["result"],
@@ -1489,7 +1493,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=folder",
+        "/api/file-manager/disks/P01/entries?path=folder",
         None,
     )
     .await;
@@ -1507,7 +1511,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "POST",
-        "/v1/file-manager/disks/P01/directory-select",
+        "/api/file-manager/disks/P01/directory-select",
         Some(json!({"path":"folder","name":"draft","operation_id":new_id("op")})),
     )
     .await;
@@ -1515,7 +1519,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=folder",
+        "/api/file-manager/disks/P01/entries?path=folder",
         None,
     )
     .await;
@@ -1548,7 +1552,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
             &token,
             "GET",
             &format!(
-                "/v1/file-manager/files/{}/history",
+                "/api/file-manager/files/{}/history",
                 parent["file_id"].as_str().unwrap()
             ),
             None,
@@ -1583,7 +1587,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=folder%2Fnested",
+        "/api/file-manager/disks/P01/entries?path=folder%2Fnested",
         None,
     )
     .await;
@@ -1602,7 +1606,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &token,
         "GET",
         &format!(
-            "/v1/file-manager/files/{}/history",
+            "/api/file-manager/files/{}/history",
             pending_b["file_id"].as_str().unwrap()
         ),
         None,
@@ -1614,7 +1618,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &token,
         "GET",
         &format!(
-            "/v1/file-manager/files/{}/history",
+            "/api/file-manager/files/{}/history",
             pending_a["file_id"].as_str().unwrap()
         ),
         None,
@@ -1625,7 +1629,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=folder",
+        "/api/file-manager/disks/P01/entries?path=folder",
         None,
     )
     .await;
@@ -1677,7 +1681,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -1695,7 +1699,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "POST",
-        "/v1/file-manager/disks/P01/directory-select",
+        "/api/file-manager/disks/P01/directory-select",
         Some(json!({
             "path":"folder","name":"main","operation_id":new_id("op")
         })),
@@ -1705,7 +1709,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=folder",
+        "/api/file-manager/disks/P01/entries?path=folder",
         None,
     )
     .await;
@@ -1731,19 +1735,19 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
             &app,
             Some(&token),
             "POST",
-            "/v1/file-manager/disks/B01/directory-branches",
+            "/api/file-manager/disks/B01/directory-branches",
             Some(json!({"path":"P01/folder","name":"readonly","operation_id":new_id("op")}))
         )
         .await
         .0,
         StatusCode::FORBIDDEN
     );
-    success(&app,&token,"POST","/v1/repositories",Some(json!({"name":"Earlier collection","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
+    success(&app,&token,"POST","/api/repositories",Some(json!({"name":"Earlier collection","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
     let listing = success(
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -1753,7 +1757,7 @@ async fn directory_branches_compose_shared_files_and_refuse_partial_selection() 
             &app,
             Some(&token),
             "POST",
-            "/v1/file-manager/disks/P01/directory-branches",
+            "/api/file-manager/disks/P01/directory-branches",
             Some(json!({"path":"","name":"root partial forbidden","operation_id":new_id("op")}))
         )
         .await
@@ -1767,13 +1771,13 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let token = login(&app, "admin", "integration-test-password").await;
-    let repo=success(&app,&token,"POST","/v1/repositories",Some(json!({"name":"HTTP repository","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
+    let repo=success(&app,&token,"POST","/api/repositories",Some(json!({"name":"HTTP repository","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
     let branch = repo["main_branch_id"].as_str().unwrap();
     let workspace = success(
         &app,
         &token,
         "POST",
-        "/v1/workspaces",
+        "/api/workspaces",
         Some(json!({"branch_id":branch})),
     )
     .await;
@@ -1782,7 +1786,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         &app,
         &token,
         "POST",
-        &format!("/v1/workspaces/{ws}/namespace-operations"),
+        &format!("/api/workspaces/{ws}/namespace-operations"),
         Some(json!({"kind":"mkdir","path":"documents","destination":null})),
     )
     .await;
@@ -1793,7 +1797,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         &app,
         &token,
         "GET",
-        &format!("/v1/workspaces/{ws}/files/{item}/upload-status"),
+        &format!("/api/workspaces/{ws}/files/{item}/upload-status"),
         None,
     )
     .await;
@@ -1806,14 +1810,14 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         &app,
         &token,
         "POST",
-        &format!("/v1/workspaces/{ws}/seal"),
+        &format!("/api/workspaces/{ws}/seal"),
         Some(json!({})),
     )
     .await;
     body["message"] = "Save a complete file".into();
     let digest = request_digest(
         "POST",
-        "/v1/workspaces/{workspace}/commit",
+        "/api/workspaces/{workspace}/commit",
         json!({"workspace":ws}),
         json!({}),
         &body,
@@ -1824,7 +1828,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         &app,
         &token,
         "GET",
-        &format!("/v1/workspaces/{ws}/files/{item}/upload-status"),
+        &format!("/api/workspaces/{ws}/files/{item}/upload-status"),
         None,
     )
     .await;
@@ -1834,7 +1838,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         &app,
         &token,
         "POST",
-        &format!("/v1/workspaces/{ws}/commit"),
+        &format!("/api/workspaces/{ws}/commit"),
         Some(body.clone()),
     )
     .await;
@@ -1850,7 +1854,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         &app,
         &token,
         "POST",
-        &format!("/v1/workspaces/{ws}/commit"),
+        &format!("/api/workspaces/{ws}/commit"),
         Some(body.clone()),
     )
     .await;
@@ -1860,7 +1864,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         &app,
         Some(&token),
         "POST",
-        &format!("/v1/workspaces/{ws}/commit"),
+        &format!("/api/workspaces/{ws}/commit"),
         Some(body),
     )
     .await;
@@ -1872,7 +1876,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         .clone()
         .oneshot(
             Request::builder()
-                .uri(format!("/v1/versions/{version}/content"))
+                .uri(format!("/api/versions/{version}/content"))
                 .header("authorization", format!("Bearer {token}"))
                 .header("range", "bytes=2-9")
                 .body(Body::empty())
@@ -1891,7 +1895,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         .clone()
         .oneshot(
             Request::builder()
-                .uri(format!("/v1/versions/{version}/checksums"))
+                .uri(format!("/api/versions/{version}/checksums"))
                 .header("authorization", format!("Bearer {token}"))
                 .body(Body::empty())
                 .unwrap(),
@@ -1912,20 +1916,20 @@ async fn repository_permissions_apply_to_direct_content_graph_and_write_paths() 
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let admin = login(&app, "admin", "integration-test-password").await;
-    let repo=success(&app,&admin,"POST","/v1/repositories",Some(json!({"name":"Private repository","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
-    success(&app,&admin,"POST","/v1/admin/accounts",Some(json!({"username":"reader","password":"reader-test-password","admin":false,"repositories":[],"disabled":false}))).await;
+    let repo=success(&app,&admin,"POST","/api/repositories",Some(json!({"name":"Private repository","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"reader","password":"reader-test-password","admin":false,"repositories":[],"disabled":false}))).await;
     let reader = login(&app, "reader", "reader-test-password").await;
     for path in [
         format!(
-            "/v1/repositories/{}",
+            "/api/repositories/{}",
             repo["repository_id"].as_str().unwrap()
         ),
         format!(
-            "/v1/branches/{}/tree",
+            "/api/branches/{}/tree",
             repo["main_branch_id"].as_str().unwrap()
         ),
         format!(
-            "/v1/history-trees/{}/graph",
+            "/api/history-trees/{}/graph",
             repo["history_tree_id"].as_str().unwrap()
         ),
     ] {
@@ -1939,7 +1943,7 @@ async fn repository_permissions_apply_to_direct_content_graph_and_write_paths() 
             &app,
             Some(&reader),
             "POST",
-            "/v1/workspaces",
+            "/api/workspaces",
             Some(json!({"branch_id":repo["main_branch_id"]}))
         )
         .await
@@ -1947,14 +1951,14 @@ async fn repository_permissions_apply_to_direct_content_graph_and_write_paths() 
         StatusCode::FORBIDDEN
     );
     assert_eq!(
-        send(&app, Some(&reader), "GET", "/v1/admin/accounts", None)
+        send(&app, Some(&reader), "GET", "/api/admin/accounts", None)
             .await
             .0,
         StatusCode::FORBIDDEN
     );
-    success(&app,&admin,"POST","/v1/admin/accounts",Some(json!({"username":"reader","password":null,"admin":false,"repositories":[],"disabled":true}))).await;
+    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"reader","password":null,"admin":false,"repositories":[],"disabled":true}))).await;
     assert_eq!(
-        send(&app, Some(&reader), "GET", "/v1/auth/me", None)
+        send(&app, Some(&reader), "GET", "/api/auth/me", None)
             .await
             .0,
         StatusCode::UNAUTHORIZED
@@ -1970,7 +1974,7 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
         &app,
         &token,
         "POST",
-        "/v1/repositories",
+        "/api/repositories",
         Some(json!({
             "name":"Historical HTTP", "primary_slot_id":"P01", "target_copies":1,
             "operation_id":new_id("op")
@@ -1980,10 +1984,17 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
     let repository = repo["repository_id"].as_str().unwrap();
     let branch = repo["main_branch_id"].as_str().unwrap();
     let history = repo["history_tree_id"].as_str().unwrap();
-    let original = success(&app, &token, "GET", &format!("/v1/branches/{branch}"), None).await;
+    let original = success(
+        &app,
+        &token,
+        "GET",
+        &format!("/api/branches/{branch}"),
+        None,
+    )
+    .await;
     let source = original["head_commit_id"].as_str().unwrap();
     let policy = new_id("policy");
-    let policy_path = format!("/v1/policies/{policy}");
+    let policy_path = format!("/api/policies/{policy}");
     let policy_body = json!({"repository_id":repository,"path_prefix":"","target_copies":3,
         "expected_generation":"0","operation_id":new_id("op")});
     success(&app, &token, "PUT", &policy_path, Some(policy_body.clone())).await;
@@ -2000,7 +2011,7 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
         StatusCode::CONFLICT
     );
     let rule = new_id("rule");
-    let rule_path = format!("/v1/primary-placement-rules/{rule}");
+    let rule_path = format!("/api/primary-placement-rules/{rule}");
     success(
         &app,
         &token,
@@ -2020,7 +2031,7 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
         &app,
         &token,
         "POST",
-        "/v1/workspaces",
+        "/api/workspaces",
         Some(json!({
             "branch_id":branch, "source_commit_id":source
         })),
@@ -2040,7 +2051,7 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
         &app,
         &token,
         "POST",
-        &format!("/v1/history-trees/{history}/historical-save-plans"),
+        &format!("/api/history-trees/{history}/historical-save-plans"),
         Some(json!({
             "source_commit_id":source,"name":"Independent historical branch","workspace_id":ws,
             "primary_slot_id":null,"target_copies":null
@@ -2054,7 +2065,7 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
         &app,
         &token,
         "POST",
-        &format!("/v1/plans/{plan_id}/commit"),
+        &format!("/api/plans/{plan_id}/commit"),
         Some(body.clone()),
     )
     .await;
@@ -2064,14 +2075,21 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
             &app,
             &token,
             "POST",
-            &format!("/v1/plans/{plan_id}/commit"),
+            &format!("/api/plans/{plan_id}/commit"),
             Some(body)
         )
         .await,
         result
     );
     assert_eq!(
-        success(&app, &token, "GET", &format!("/v1/branches/{branch}"), None).await["head_commit_id"],
+        success(
+            &app,
+            &token,
+            "GET",
+            &format!("/api/branches/{branch}"),
+            None
+        )
+        .await["head_commit_id"],
         source
     );
     let independent = result["result"]["branch_id"].as_str().unwrap();
@@ -2079,7 +2097,7 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
         &app,
         &token,
         "GET",
-        &format!("/v1/branches/{independent}/tree"),
+        &format!("/api/branches/{independent}/tree"),
         None,
     )
     .await;
@@ -2088,12 +2106,12 @@ async fn historical_plan_publishes_atomically_and_management_rules_use_generatio
         &app,
         &token,
         "GET",
-        &format!("/v1/versions/{version}/placement"),
+        &format!("/api/versions/{version}/placement"),
         None,
     )
     .await;
     assert_eq!(placement["target_copies"], 3);
-    let binding_path = format!("/v1/repositories/{repository}/smb-binding");
+    let binding_path = format!("/api/repositories/{repository}/smb-binding");
     let binding = success(&app, &token, "GET", &binding_path, None).await;
     success(&app, &token, "PUT", &binding_path, Some(json!({
         "branch_id":independent,"enabled":true,"expected_history_generation":binding["history_generation"],
@@ -2329,7 +2347,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         &app,
         &admin,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -2345,13 +2363,13 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         .find(|e| e["name"] == "one.txt")
         .unwrap()
         .clone();
-    let api = format!("/v1/repositories/{repository}/default-branch");
+    let api = format!("/api/repositories/{repository}/default-branch");
     let initial = success(&app, &admin, "GET", &api, None).await;
     let frozen_registration = success(
         &app,
         &admin,
         "POST",
-        "/v1/file-manager/disks/P01/directory-branches",
+        "/api/file-manager/disks/P01/directory-branches",
         Some(json!({
             "path":"","name":"frozen","operation_id":new_id("op")
         })),
@@ -2373,7 +2391,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         &app,
         &admin,
         "GET",
-        &format!("/v1/branches/{namespace}/tree"),
+        &format!("/api/branches/{namespace}/tree"),
         None,
     )
     .await;
@@ -2384,10 +2402,10 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         .find(|entry| entry["name"] == "one.txt")
         .unwrap()["version_id"]
         .clone();
-    success(&app, &admin, "POST", "/v1/admin/accounts", Some(json!({
+    success(&app, &admin, "POST", "/api/admin/accounts", Some(json!({
         "username":"view-writer","password":"view-writer-test-password","repositories":[repository]
     }))).await;
-    success(&app, &admin, "PUT", &format!("/v1/repositories/{repository}/grants"), Some(json!({
+    success(&app, &admin, "PUT", &format!("/api/repositories/{repository}/grants"), Some(json!({
         "grants":{"read":["view-writer"],"write":["view-writer"],"manage":["admin"]},"operation_id":new_id("op")
     }))).await;
     let writer = login(&app, "view-writer", "view-writer-test-password").await;
@@ -2409,7 +2427,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     let current = success(&app, &writer, "GET", &api, None).await;
     assert_eq!(current["directory_branch_id"], frozen);
     assert_eq!(current["namespace_branch_id"], namespace);
-    let tree_path = format!("/v1/branches/{namespace}/tree");
+    let tree_path = format!("/api/branches/{namespace}/tree");
     let tree = success(&app, &writer, "GET", &tree_path, None).await;
     let visible = tree["entries"]
         .as_array()
@@ -2442,7 +2460,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         &app,
         Some(&writer),
         "POST",
-        "/v1/file-manager/disks/P01/write-sessions",
+        "/api/file-manager/disks/P01/write-sessions",
         Some(json!({
             "path":"one.txt","branch_id":namespace
         })),
@@ -2454,7 +2472,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         &app,
         &writer,
         "POST",
-        "/v1/file-manager/disks/P01/write-sessions",
+        "/api/file-manager/disks/P01/write-sessions",
         Some(json!({
             "path":"one.txt","branch_id":original["selected_branch_id"]
         })),
@@ -2467,7 +2485,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         &writer,
         "POST",
         &format!(
-            "/v1/workspaces/{}/abort",
+            "/api/workspaces/{}/abort",
             workspace["workspace_id"].as_str().unwrap()
         ),
         Some(json!({})),
@@ -2477,7 +2495,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         &app,
         &writer,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=folder",
+        "/api/file-manager/disks/P01/entries?path=folder",
         None,
     )
     .await;
@@ -2501,7 +2519,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         &writer,
         "GET",
         &format!(
-            "/v1/file-manager/files/{}/history",
+            "/api/file-manager/files/{}/history",
             original["file_id"].as_str().unwrap()
         ),
         None,
@@ -2526,7 +2544,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     )
     .await;
 
-    let rename_api = format!("/v1/repositories/{repository}/directory-branches/{frozen}");
+    let rename_api = format!("/api/repositories/{repository}/directory-branches/{frozen}");
     let renamed = success(
         &app,
         &writer,
@@ -2542,7 +2560,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         success(&app, &writer, "GET", &api, None).await["name"],
         "saved view"
     );
-    let audit = success(&app, &writer, "GET", "/v1/file-manager/history", None).await;
+    let audit = success(&app, &writer, "GET", "/api/file-manager/history", None).await;
     for action in [
         "directory.branches.create",
         "directory.default.select",
@@ -2580,7 +2598,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
     assert_eq!(listing["default_branch_scope"], true);
     assert_eq!(nested["default_branch_scope"], false);
 
-    success(&app, &admin, "PUT", &format!("/v1/repositories/{repository}/grants"), Some(json!({
+    success(&app, &admin, "PUT", &format!("/api/repositories/{repository}/grants"), Some(json!({
         "grants":{"read":["view-writer"],"write":[],"manage":["admin"]},"operation_id":new_id("op")
     }))).await;
     assert_eq!(
@@ -2599,7 +2617,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         .0,
         StatusCode::FORBIDDEN
     );
-    let empty = success(&app, &admin, "POST", "/v1/repositories", Some(json!({
+    let empty = success(&app, &admin, "POST", "/api/repositories", Some(json!({
         "name":"Empty view","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")
     }))).await;
     let empty_id = empty["repository_id"].as_str().unwrap();
@@ -2607,7 +2625,7 @@ async fn default_directory_branch_is_shared_authorized_and_persistent() {
         &app,
         &admin,
         "GET",
-        &format!("/v1/repositories/{empty_id}/default-branch"),
+        &format!("/api/repositories/{empty_id}/default-branch"),
         None,
     )
     .await;
@@ -2645,7 +2663,7 @@ async fn manager_directory_branch(app: &Router, token: &str, path: &str, name: &
         app,
         token,
         "POST",
-        "/v1/file-manager/disks/P01/directory-branches",
+        "/api/file-manager/disks/P01/directory-branches",
         Some(json!({
             "path":path,"name":name,"operation_id":new_id("op")
         })),
@@ -2661,7 +2679,7 @@ async fn manager_scope(app: &Router, token: &str, repo: &str, branch: &str) -> V
         app,
         token,
         "GET",
-        &format!("/v1/repositories/{repo}/directory-branches"),
+        &format!("/api/repositories/{repo}/directory-branches"),
         None,
     )
     .await["directory_branches"]
@@ -2697,7 +2715,7 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -2725,7 +2743,7 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
         &app,
         &token,
         "GET",
-        &format!("/v1/repositories/{repo}/default-branch"),
+        &format!("/api/repositories/{repo}/default-branch"),
         None,
     )
     .await;
@@ -2733,7 +2751,7 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
         {"source":manager_batch_source(&m,"a/report.txt"),"target":manager_batch_target(&l,"b/report.txt")},
         {"source":manager_batch_source(&n,"a/report.txt"),"target":manager_batch_target(&p,"b/report.txt")}
     ]});
-    let route = "/v1/file-manager/disks/P01/namespace-batch";
+    let route = "/api/file-manager/disks/P01/namespace-batch";
     let moved = success(&app, &token, "POST", route, Some(request.clone())).await;
     let repeated = success(&app, &token, "POST", route, Some(request.clone())).await;
     assert_eq!(repeated["operation_id"], moved["operation_id"]);
@@ -2779,7 +2797,7 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
             &app,
             &token,
             "GET",
-            &format!("/v1/repositories/{repo}/default-branch"),
+            &format!("/api/repositories/{repo}/default-branch"),
             None
         )
         .await["directory_branch_id"],
@@ -2888,7 +2906,7 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
             &app,
             &token,
             "GET",
-            &format!("/v1/repositories/{repo}/directory-branches?path=b"),
+            &format!("/api/repositories/{repo}/directory-branches?path=b"),
             None
         )
         .await["directory_branches"]
@@ -2901,15 +2919,15 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
         &app,
         Some(&token),
         "POST",
-        "/v1/file-manager/disks/B01/namespace-batch",
+        "/api/file-manager/disks/B01/namespace-batch",
         Some(request),
     )
     .await;
     assert_eq!(readonly.0, StatusCode::FORBIDDEN);
-    success(&app,&token,"POST","/v1/admin/accounts",Some(json!({
+    success(&app,&token,"POST","/api/admin/accounts",Some(json!({
         "username":"branch-reader","password":"branch-reader-test-password","repositories":[repo]
     }))).await;
-    success(&app,&token,"PUT",&format!("/v1/repositories/{repo}/grants"),Some(json!({
+    success(&app,&token,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({
         "grants":{"read":["branch-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")
     }))).await;
     let reader = login(&app, "branch-reader", "branch-reader-test-password").await;
@@ -2929,7 +2947,7 @@ async fn branch_namespace_batch_preserves_unselected_views_and_is_idempotent() {
         manager_scope(&app, &token, repo, &b_p).await["head_tree_id"],
         visible["head_tree_id"]
     );
-    let audit = success(&app, &token, "GET", "/v1/file-manager/history", None).await;
+    let audit = success(&app, &token, "GET", "/api/file-manager/history", None).await;
     for action in [
         "directory.namespace.move",
         "directory.namespace.copy",
@@ -2959,7 +2977,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=a",
+        "/api/file-manager/disks/P01/entries?path=a",
         None,
     )
     .await;
@@ -2977,7 +2995,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
     let l = manager_directory_branch(&app, &token, "b", "l").await;
     let m0 = manager_scope(&app, &token, repo, &m).await;
     let l0 = manager_scope(&app, &token, repo, &l).await;
-    success(&app,&token,"POST","/v1/file-manager/disks/P01/namespace-batch",Some(json!({"kind":"move","operation_id":new_id("op"),"items":[{
+    success(&app,&token,"POST","/api/file-manager/disks/P01/namespace-batch",Some(json!({"kind":"move","operation_id":new_id("op"),"items":[{
         "source":manager_batch_source(&m0,"a/report.txt"),"target":manager_batch_target(&l0,"b/report.txt")
     }]}))).await;
     for (path, name) in [("a", "n"), ("b", "l")] {
@@ -2985,7 +3003,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
             &app,
             &token,
             "POST",
-            "/v1/file-manager/disks/P01/directory-select",
+            "/api/file-manager/disks/P01/directory-select",
             Some(json!({"path":path,"name":name,"operation_id":new_id("op")})),
         )
         .await;
@@ -2993,7 +3011,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
     let a_before = manager_scope(&app, &token, repo, &n).await;
     let file = original["file_id"].as_str().unwrap();
     let history_route = |path: &str| {
-        format!("/v1/file-manager/files/{file}/history?repository_id={repo}&path={path}")
+        format!("/api/file-manager/files/{file}/history?repository_id={repo}&path={path}")
     };
     assert_eq!(
         success(&app, &token, "GET", &history_route("a/report.txt"), None).await["version_id"],
@@ -3033,7 +3051,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
         version_bytes(&app, &token, b["version_id"].as_str().unwrap()).await,
         b"written in b"
     );
-    success(&app,&token,"POST",&format!("/v1/file-manager/files/{file}/select"),Some(json!({
+    success(&app,&token,"POST",&format!("/api/file-manager/files/{file}/select"),Some(json!({
         "repository_id":repo,"path":"a/report.txt","branch_id":b["selected_branch_id"],"operation_id":new_id("op")
     }))).await;
     assert_eq!(
@@ -3057,7 +3075,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
         StatusCode::NOT_FOUND
     );
     let a_scope = manager_scope(&app, &token, repo, &n).await;
-    success(&app,&token,"POST","/v1/file-manager/disks/P01/namespace-batch",Some(json!({"kind":"rename","operation_id":new_id("op"),"items":[{
+    success(&app,&token,"POST","/api/file-manager/disks/P01/namespace-batch",Some(json!({"kind":"rename","operation_id":new_id("op"),"items":[{
         "source":manager_batch_source(&a_scope,"a/report.txt"),"target":manager_batch_target(&a_scope,"a/archive.txt")
     }]}))).await;
     for (path, name) in [
@@ -3065,7 +3083,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
         ("b/report.txt", "report.txt"),
     ] {
         let uri = format!(
-            "/v1/versions/{}/content?repository_id={repo}&path={path}",
+            "/api/versions/{}/content?repository_id={repo}&path={path}",
             original["version_id"].as_str().unwrap()
         );
         let response = app
@@ -3096,7 +3114,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
         );
     }
     let mismatched = format!(
-        "/v1/versions/{}/content?repository_id={repo}&path=b/stay.txt",
+        "/api/versions/{}/content?repository_id={repo}&path=b/stay.txt",
         original["version_id"].as_str().unwrap()
     );
     assert_eq!(
@@ -3115,7 +3133,7 @@ async fn public_file_branch_label_patch_preserves_content_and_directory_nodes() 
         &app,
         &admin,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -3127,14 +3145,14 @@ async fn public_file_branch_label_patch_preserves_content_and_directory_nodes() 
         .unwrap();
     let id = file["file_id"].as_str().unwrap();
     let repo = listing["context"]["repository_id"].as_str().unwrap();
-    let created=success(&app,&admin,"POST",&format!("/v1/file-manager/files/{id}/branches"),Some(json!({"source_version_id":file["version_id"],"name":"draft","operation_id":new_id("op")}))).await;
+    let created=success(&app,&admin,"POST",&format!("/api/file-manager/files/{id}/branches"),Some(json!({"source_version_id":file["version_id"],"name":"draft","operation_id":new_id("op")}))).await;
     let branch = created["result"]["branch_id"].as_str().unwrap();
-    let route = format!("/v1/file-manager/files/{id}/branches/{branch}");
+    let route = format!("/api/file-manager/files/{id}/branches/{branch}");
     let scopes = success(
         &app,
         &admin,
         "GET",
-        &format!("/v1/repositories/{repo}/directory-branches"),
+        &format!("/api/repositories/{repo}/directory-branches"),
         None,
     )
     .await;
@@ -3142,7 +3160,7 @@ async fn public_file_branch_label_patch_preserves_content_and_directory_nodes() 
         &app,
         &admin,
         "GET",
-        &format!("/v1/file-manager/files/{id}/history"),
+        &format!("/api/file-manager/files/{id}/history"),
         None,
     )
     .await;
@@ -3157,7 +3175,7 @@ async fn public_file_branch_label_patch_preserves_content_and_directory_nodes() 
         &app,
         &admin,
         "GET",
-        &format!("/v1/file-manager/files/{id}/history"),
+        &format!("/api/file-manager/files/{id}/history"),
         None,
     )
     .await;
@@ -3175,7 +3193,7 @@ async fn public_file_branch_label_patch_preserves_content_and_directory_nodes() 
             &app,
             &admin,
             "GET",
-            &format!("/v1/repositories/{repo}/directory-branches"),
+            &format!("/api/repositories/{repo}/directory-branches"),
             None
         )
         .await,
@@ -3207,8 +3225,8 @@ async fn public_file_branch_label_patch_preserves_content_and_directory_nodes() 
         .0,
         StatusCode::BAD_REQUEST
     );
-    success(&app,&admin,"POST","/v1/admin/accounts",Some(json!({"username":"label-reader","password":"label-reader-test-password","repositories":[repo]}))).await;
-    success(&app,&admin,"PUT",&format!("/v1/repositories/{repo}/grants"),Some(json!({"grants":{"read":["label-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"label-reader","password":"label-reader-test-password","repositories":[repo]}))).await;
+    success(&app,&admin,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["label-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
     let reader = login(&app, "label-reader", "label-reader-test-password").await;
     assert_eq!(
         send(
@@ -3222,7 +3240,7 @@ async fn public_file_branch_label_patch_preserves_content_and_directory_nodes() 
         .0,
         StatusCode::FORBIDDEN
     );
-    let audit = success(&app, &admin, "GET", "/v1/file-manager/history", None).await;
+    let audit = success(&app, &admin, "GET", "/api/file-manager/history", None).await;
     assert!(
         audit["events"]
             .as_array()
@@ -3245,7 +3263,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
         &app,
         &admin,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=documents",
+        "/api/file-manager/disks/P01/entries?path=documents",
         None,
     )
     .await;
@@ -3258,11 +3276,11 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
     let file = one["file_id"].as_str().unwrap();
     let body = one["version_id"].as_str().unwrap();
     let repo = listing["context"]["repository_id"].as_str().unwrap();
-    let history_route = format!("/v1/file-manager/files/{file}/history");
+    let history_route = format!("/api/file-manager/files/{file}/history");
     let before = success(&app, &admin, "GET", &history_route, None).await;
     assert_eq!(before["nodes"].as_array().unwrap().len(), 1);
     assert_eq!(before["node_id"], body);
-    success(&app,&admin,"POST","/v1/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"documents","destination":"archive","operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"documents","destination":"archive","operation_id":new_id("op")}))).await;
     let after = success(
         &app,
         &admin,
@@ -3296,7 +3314,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
         &app,
         &admin,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=archive/nested",
+        "/api/file-manager/disks/P01/entries?path=archive/nested",
         None,
     )
     .await;
@@ -3309,7 +3327,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
         &app,
         &admin,
         "GET",
-        &format!("/v1/file-manager/files/{two_file}/history"),
+        &format!("/api/file-manager/files/{two_file}/history"),
         None,
     )
     .await;
@@ -3320,11 +3338,11 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
         &app,
         &admin,
         "GET",
-        &format!("/v1/repositories/{repo}/directory-branches"),
+        &format!("/api/repositories/{repo}/directory-branches"),
         None,
     )
     .await;
-    let note_route = format!("/v1/file-manager/files/{file}/nodes/{node}");
+    let note_route = format!("/api/file-manager/files/{file}/nodes/{node}");
     success(
         &app,
         &admin,
@@ -3337,7 +3355,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
         &app,
         &admin,
         "POST",
-        &format!("/v1/file-manager/versions/{body}/metadata"),
+        &format!("/api/file-manager/versions/{body}/metadata"),
         Some(json!({"note":"正文备注","operation_id":new_id("op")})),
     )
     .await;
@@ -3365,7 +3383,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
             &app,
             &admin,
             "GET",
-            &format!("/v1/repositories/{repo}/directory-branches"),
+            &format!("/api/repositories/{repo}/directory-branches"),
             None
         )
         .await,
@@ -3386,7 +3404,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
             StatusCode::BAD_REQUEST
         );
     }
-    let wrong_note = format!("/v1/file-manager/files/{file}/nodes/{two_node}");
+    let wrong_note = format!("/api/file-manager/files/{file}/nodes/{two_node}");
     assert_eq!(
         send(
             &app,
@@ -3399,7 +3417,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
         .0,
         StatusCode::NOT_FOUND
     );
-    let branch_route = format!("/v1/file-manager/files/{file}/branches");
+    let branch_route = format!("/api/file-manager/files/{file}/branches");
     assert_eq!(send(&app,Some(&admin),"POST",&branch_route,Some(json!({"source_version_id":body,"source_node_id":two_node,"name":"foreign","operation_id":new_id("op")}))).await.0,StatusCode::NOT_FOUND);
     let branch=success(&app,&admin,"POST",&branch_route,Some(json!({"source_version_id":body,"source_node_id":node,"name":"from-path","operation_id":new_id("op")}))).await;
     let branch_id = branch["result"]["branch_id"].as_str().unwrap();
@@ -3413,7 +3431,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
             .iter()
             .any(|branch| branch["branch_id"] == branch_id && branch["file_node_id"] == node)
     );
-    success(&app,&admin,"POST",&format!("/v1/file-manager/files/{file}/select"),Some(json!({"repository_id":repo,"path":"archive/one.txt","branch_id":branch_id,"operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST",&format!("/api/file-manager/files/{file}/select"),Some(json!({"repository_id":repo,"path":"archive/one.txt","branch_id":branch_id,"operation_id":new_id("op")}))).await;
     assert_eq!(
         success(&app, &admin, "GET", &history_route, None).await["node_id"],
         node
@@ -3447,8 +3465,8 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
     );
     success(&app,&admin,"POST",&branch_route,Some(json!({"source_version_id":current_body,"source_node_id":current_body,"name":"content-source","operation_id":new_id("op")}))).await;
     assert_eq!(send(&app,Some(&admin),"POST",&branch_route,Some(json!({"source_version_id":current_body,"source_node_id":node,"name":"mismatched-body","operation_id":new_id("op")}))).await.0,StatusCode::NOT_FOUND);
-    success(&app,&admin,"POST","/v1/admin/accounts",Some(json!({"username":"path-reader","password":"path-reader-test-password","repositories":[repo]}))).await;
-    success(&app,&admin,"PUT",&format!("/v1/repositories/{repo}/grants"),Some(json!({"grants":{"read":["path-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"path-reader","password":"path-reader-test-password","repositories":[repo]}))).await;
+    success(&app,&admin,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["path-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
     let reader = login(&app, "path-reader", "path-reader-test-password").await;
     assert_eq!(
         send(
@@ -3469,7 +3487,7 @@ async fn rename_nodes_reuse_bodies_and_preserve_graph_parents_notes_and_branch_s
             .len(),
         3
     );
-    let audit = success(&app, &admin, "GET", "/v1/file-manager/history", None).await;
+    let audit = success(&app, &admin, "GET", "/api/file-manager/history", None).await;
     for action in ["file.path.rename", "file.path.metadata"] {
         assert!(
             audit["events"]
@@ -3514,7 +3532,7 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
         &app,
         &token,
         "POST",
-        "/v1/repositories",
+        "/api/repositories",
         Some(json!({
             "name":"Cross-entry uploads", "primary_slot_id":"P01", "target_copies":1,
             "operation_id":new_id("op")
@@ -3525,7 +3543,7 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
         &app,
         &token,
         "POST",
-        "/v1/workspaces",
+        "/api/workspaces",
         Some(json!({
             "branch_id":repo["main_branch_id"]
         })),
@@ -3559,7 +3577,7 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
                 Request::builder()
                     .method("PUT")
                     .uri(format!(
-                        "/v1/workspaces/{ws}/files/{item}/content?path=file.txt"
+                        "/api/workspaces/{ws}/files/{item}/content?path=file.txt"
                     ))
                     .header("authorization", format!("Bearer {token}"))
                     .header("x-zxs-logical-size", bytes.len().to_string())
@@ -3594,7 +3612,7 @@ async fn interrupted_new_upload_generation_reports_its_own_durable_progress() {
         &app,
         &token,
         "POST",
-        "/v1/repositories",
+        "/api/repositories",
         Some(json!({
             "name":"Upload generations", "primary_slot_id":"P01", "target_copies":3,
             "operation_id":new_id("op")
@@ -3605,7 +3623,7 @@ async fn interrupted_new_upload_generation_reports_its_own_durable_progress() {
         &app,
         &token,
         "POST",
-        "/v1/workspaces",
+        "/api/workspaces",
         Some(json!({
             "branch_id":repo["main_branch_id"]
         })),
@@ -3622,7 +3640,7 @@ async fn interrupted_new_upload_generation_reports_its_own_durable_progress() {
                 Request::builder()
                     .method("PUT")
                     .uri(format!(
-                        "/v1/workspaces/{ws}/files/{item}/content?path=file.txt"
+                        "/api/workspaces/{ws}/files/{item}/content?path=file.txt"
                     ))
                     .header("authorization", format!("Bearer {token}"))
                     .header("x-zxs-logical-size", bytes.len().to_string())
@@ -3649,7 +3667,7 @@ async fn interrupted_new_upload_generation_reports_its_own_durable_progress() {
             &app,
             &token,
             "GET",
-            &format!("/v1/workspaces/{ws}/files/{item}/upload-status"),
+            &format!("/api/workspaces/{ws}/files/{item}/upload-status"),
             None,
         )
         .await;
@@ -3676,7 +3694,7 @@ async fn interrupted_new_upload_generation_reports_its_own_durable_progress() {
         &app,
         &token,
         "POST",
-        &format!("/v1/workspaces/{ws}/seal"),
+        &format!("/api/workspaces/{ws}/seal"),
         Some(json!({})),
     )
     .await;
@@ -3684,7 +3702,7 @@ async fn interrupted_new_upload_generation_reports_its_own_durable_progress() {
         &app,
         &token,
         "GET",
-        &format!("/v1/workspaces/{ws}/files/{item}/upload-status"),
+        &format!("/api/workspaces/{ws}/files/{item}/upload-status"),
         None,
     )
     .await;
@@ -3702,7 +3720,7 @@ async fn directory_scope_initialization_accepts_root_but_requires_a_string_path(
         &app,
         &token,
         "POST",
-        "/v1/repositories",
+        "/api/repositories",
         Some(json!({
             "name":"Root scope", "primary_slot_id":"P01", "target_copies":3,
             "operation_id":new_id("op")
@@ -3710,7 +3728,7 @@ async fn directory_scope_initialization_accepts_root_but_requires_a_string_path(
     )
     .await;
     let endpoint = format!(
-        "/v1/repositories/{}/directory-scopes",
+        "/api/repositories/{}/directory-scopes",
         repo["repository_id"].as_str().unwrap()
     );
     for path in [

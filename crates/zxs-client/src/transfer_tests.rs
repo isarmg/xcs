@@ -120,7 +120,7 @@ async fn empty_success_envelopes_and_non_json_http_errors_keep_their_meaning() {
         reply(b"HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n".to_vec()).await;
     assert!(
         client
-            .request("POST", "/v1/auth/logout", None)
+            .request("POST", "/api/auth/logout", None)
             .await
             .unwrap()
             .is_null()
@@ -128,7 +128,7 @@ async fn empty_success_envelopes_and_non_json_http_errors_keep_their_meaning() {
     server.await.unwrap();
     let (client, server) = reply(b"HTTP/1.1 503 Service Unavailable\r\nContent-Length: 7\r\nConnection: close\r\n\r\nblocked".to_vec()).await;
     assert!(matches!(
-        client.request("GET", "/v1/system/status", None).await,
+        client.request("GET", "/api/system/status", None).await,
         Err(Error::Api {
             status: 503,
             retryable: true,
@@ -140,7 +140,7 @@ async fn empty_success_envelopes_and_non_json_http_errors_keep_their_meaning() {
         reply(b"HTTP/1.1 200 OK\r\nContent-Length: 42\r\nConnection: close\r\n\r\n".to_vec()).await;
     assert!(
         client
-            .request("HEAD", "/v1/system/status", None)
+            .request("HEAD", "/api/system/status", None)
             .await
             .unwrap()
             .is_null()
@@ -285,7 +285,7 @@ async fn upload_sends_raw_bytes_with_matching_length_hash_and_bearer() {
             assert!(headers.len() < 8192);
         }
         let headers = String::from_utf8(headers).unwrap().to_lowercase();
-        assert!(headers.starts_with("put /v1/workspaces/workspace_test/files/item_test/content?path=folder%2fa+b.bin http/1.1\r\n"));
+        assert!(headers.starts_with("put /api/workspaces/workspace_test/files/item_test/content?path=folder%2fa+b.bin http/1.1\r\n"));
         for header in [
             "authorization: bearer synthetic-token".to_owned(),
             "content-type: application/octet-stream".to_owned(),
@@ -382,7 +382,7 @@ async fn response_adapter_enforces_shared_duplicate_key_and_status_rules() {
         let (client, server) = reply(response).await;
         let expected = zxs_contract::client_protocol::decode_response(status, body).unwrap_err();
         match client
-            .request("GET", "/v1/system/status", None)
+            .request("GET", "/api/system/status", None)
             .await
             .unwrap_err()
         {

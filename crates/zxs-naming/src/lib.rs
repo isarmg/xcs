@@ -1,10 +1,10 @@
-//! PortableNameV2 / PortablePathV1 with fixed Unicode 16.0 data.
+//! PortableName / PortablePath with fixed Unicode 16.0 data.
 #![forbid(unsafe_code)]
 use unicode_normalization::UnicodeNormalization;
 use zxs_contract::{Error, Result};
 mod unicode16;
 pub const UNICODE_VERSION: &str = "16.0.0";
-pub const NAME_POLICY: &str = "PortableNameV2";
+pub const NAME_POLICY: &str = "PortableName";
 fn in_ranges(cp: u32, ranges: &[(u32, u32)]) -> bool {
     let i = ranges.partition_point(|(_, end)| *end < cp);
     ranges

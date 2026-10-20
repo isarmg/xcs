@@ -35,7 +35,7 @@ async fn reserve_api_namespace(request: Request, next: Next) -> Response {
 }
 
 fn is_api_path(path: &str) -> bool {
-    path == "/v1" || path.starts_with("/v1/")
+    path == "/api" || path.starts_with("/api/")
 }
 
 pub(crate) fn static_etags(root: &Path) -> Result<BTreeMap<String, String>, ApiError> {

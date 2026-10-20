@@ -1,4 +1,4 @@
-//! Frozen upload manifests and the public v2 request digest envelope.
+//! Frozen upload manifests and the public request digest envelope.
 use crate::{disk::*, *};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
@@ -18,7 +18,7 @@ pub fn manifest_hash(w: &Workspace) -> Result<String> {
 pub fn commit_request_digest(workspace: &str, body: &Value) -> Result<String> {
     request_digest(
         "POST",
-        "/v1/workspaces/{workspace}/commit",
+        "/api/workspaces/{workspace}/commit",
         json!({"workspace":workspace}),
         json!({}),
         body,

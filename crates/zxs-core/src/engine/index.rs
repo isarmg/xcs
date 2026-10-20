@@ -614,7 +614,6 @@ mod tests {
 
     fn version(id: &str, file: &str, sequence: u64) -> FileVersion {
         FileVersion {
-            format_version: 2,
             history_tree_id: "history".into(),
             version_id: id.into(),
             file_id: file.into(),
@@ -625,8 +624,8 @@ mod tests {
             checksum_chunk_bytes: 1,
             checksum_manifest_hash: "manifest".into(),
             creation_name: "name".into(),
-            storage_name: None,
-            created_at: None,
+            storage_name: "v000001_20261020T000000Z_00000000.txt".into(),
+            created_at: "2026-10-20T00:00:00Z".into(),
             source_version_ids: vec![],
             created_as_full_checkpoint: true,
         }

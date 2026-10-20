@@ -26,6 +26,7 @@ fn receipt(
 /// sequence numbers are this candidate's actual decimal strings, and member/slot
 /// identifiers, page references, result fields and recovery records are real.
 /// The returned bound is exact for the persisted proof JSON shapes.
+#[cfg(test)]
 pub(crate) fn preflight_publication(
     engine: &Engine,
     candidate: &Candidate,
@@ -36,7 +37,41 @@ pub(crate) fn preflight_publication(
 ) -> Result<usize> {
     preflight_publication_prepared(engine, candidate, result, state, recovery, maximum, None)
 }
+/// Recovery sizes tombstones using the candidate's exact stored snapshot graph.
+pub(crate) fn preflight_bound_publication(
+    engine: &Engine,
+    candidate: &Candidate,
+    result: &OperationResult,
+    state: &State,
+    recovery: Option<RecoveryProof>,
+    maximum: usize,
+) -> Result<usize> {
+    preflight_inner(
+        engine, candidate, result, state, recovery, maximum, None, true,
+    )
+}
 pub(crate) fn preflight_publication_prepared(
+    engine: &Engine,
+    candidate: &Candidate,
+    result: &OperationResult,
+    state: &State,
+    recovery: Option<RecoveryProof>,
+    maximum: usize,
+    prepared_snapshot: Option<&Snapshot>,
+) -> Result<usize> {
+    preflight_inner(
+        engine,
+        candidate,
+        result,
+        state,
+        recovery,
+        maximum,
+        prepared_snapshot,
+        false,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn preflight_inner(
     engine: &Engine,
     candidate: &Candidate,
     result: &OperationResult,
@@ -44,6 +79,7 @@ pub(crate) fn preflight_publication_prepared(
     mut recovery: Option<RecoveryProof>,
     maximum: usize,
     prepared_snapshot: Option<&Snapshot>,
+    bound_snapshot: bool,
 ) -> Result<usize> {
     let mut largest = 0usize;
     let mut check = |bytes: Vec<u8>| {
@@ -143,18 +179,15 @@ pub(crate) fn preflight_publication_prepared(
         .values()
         .any(|status| matches!(status.as_str(), "PURGED" | "MIGRATED"))
     {
-        // A decided pre-upgrade candidate may bind legacy fixed-count pages.
-        // Degraded recovery repairs its exact dependencies before preflight;
-        // never re-partition that root when sizing its offline tombstones.
-        let recovery_disk = if publication.recovery.is_some() {
-            Some(members.first().ok_or_else(|| {
-                Error::new("RECOVERY_REQUIRED", "recovery metadata member missing")
-            })?)
-        } else {
-            None
-        };
-        let snapshot = if let Some(disk) = recovery_disk {
-            load_object(disk, "snapshot", &candidate.snapshot_hash)?
+        // Decided candidates retain their original snapshot partitioning. Read
+        // each exact dependency without repair so preflight precedes mutation.
+        let recovering = bound_snapshot || publication.recovery.is_some();
+        let snapshot = if recovering {
+            crate::publication_evidence::verified_object(
+                &members,
+                "snapshot",
+                &candidate.snapshot_hash,
+            )?
         } else if let Some(snapshot) = prepared_snapshot {
             snapshot.clone()
         } else {
@@ -166,14 +199,16 @@ pub(crate) fn preflight_publication_prepared(
             .ok_or_else(|| Error::new("STATE_INVALID", "content states are not a map"))?;
         let pages: Box<
             dyn Iterator<Item = Result<serde_json::Map<String, serde_json::Value>>> + '_,
-        > = if let Some(disk) = recovery_disk {
+        > = if recovering {
             Box::new(
                 snapshot
                     .pages
                     .get("content_states")
                     .into_iter()
                     .flatten()
-                    .map(|hash| load_object(disk, "state-page", hash)),
+                    .map(|hash| {
+                        crate::publication_evidence::verified_object(&members, "state-page", hash)
+                    }),
             )
         } else {
             Box::new(state_pages(states).map(Ok))

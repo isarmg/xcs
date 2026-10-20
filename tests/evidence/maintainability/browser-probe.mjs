@@ -29,7 +29,7 @@ const seed = JSON.parse(await readFile(requiredInput('ZXS_BROWSER_SEED'), 'utf8'
   fixtureFile = seed.files.find(f => f.path.endsWith('/说明.md'));
 assert.ok(fixtureFile);
 const fileId = fixtureFile.file_id,
-  historyPath = `/v1/file-manager/files/${fileId}/history`;
+  historyPath = `/api/file-manager/files/${fileId}/history`;
 const browser = await chromium.launch({
     headless: true,
     args: ['--no-sandbox']
@@ -149,14 +149,14 @@ async function scene(language, theme, width) {
     if (e.type() === 'error') state.consoleErrors.push(e.text());
   });
   page.on('request', r => {
-    if (new URL(r.url()).pathname === '/v1/auth/login') loginInFlight = true;
+    if (new URL(r.url()).pathname === '/api/auth/login') loginInFlight = true;
   });
   for (const event of ['requestfinished', 'requestfailed']) page.on(event, r => {
-    if (new URL(r.url()).pathname === '/v1/auth/login') loginInFlight = false;
+    if (new URL(r.url()).pathname === '/api/auth/login') loginInFlight = false;
   });
   page.on('response', r => {
     const path = new URL(r.url()).pathname;
-    if (path === '/v1/auth/login' && r.ok()) assetReads.push(r.json().then(v => {
+    if (path === '/api/auth/login' && r.ok()) assetReads.push(r.json().then(v => {
       auth = v;
     }).catch(e => {
       state.authReadError = clean(e);
@@ -201,7 +201,7 @@ async function scene(language, theme, width) {
       body: (await readFile(root + '/web/dist/styles/components/geometry.css', 'utf8')) + tokenCss
     });
   });
-  await page.route('**/v1/**', async route => {
+  await page.route('**/api/**', async route => {
     const r = route.request(),
       path = new URL(r.url()).pathname;
     if (r.method() === 'GET' && holdGetPlan && path === holdGetPlan.path) {
@@ -230,7 +230,7 @@ async function scene(language, theme, width) {
         })
       });
     }
-    if (r.method() === 'GET' && path === '/v1/file-manager/history' && mockEvents) return route.fulfill({
+    if (r.method() === 'GET' && path === '/api/file-manager/history' && mockEvents) return route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify(mockEvents)
@@ -240,8 +240,8 @@ async function scene(language, theme, width) {
       contentType: 'application/json',
       body: JSON.stringify(mockHistory)
     });
-    if (!['GET', 'HEAD'].includes(r.method()) && !['/v1/auth/login', '/v1/auth/logout'].includes(path)) {
-      if (path === '/v1/auth/password' && passwordPlan) {
+    if (!['GET', 'HEAD'].includes(r.method()) && !['/api/auth/login', '/api/auth/logout'].includes(path)) {
+      if (path === '/api/auth/password' && passwordPlan) {
         const plan = passwordPlan;
         passwordPlan = null;
         const body = r.postDataJSON();
@@ -1549,7 +1549,7 @@ async function scene(language, theme, width) {
     await Promise.allSettled(assetReads);
   }
   async function uiLogout() {
-    const response = page.waitForResponse(r => new URL(r.url()).pathname === '/v1/auth/logout');
+    const response = page.waitForResponse(r => new URL(r.url()).pathname === '/api/auth/logout');
     await page.getByRole('button', {
       name: t.logout,
       exact: true
@@ -1736,7 +1736,7 @@ async function scene(language, theme, width) {
           principal: ''
         }]
       };
-      let response = page.waitForResponse(r => new URL(r.url()).pathname === '/v1/file-manager/history' && r.ok());
+      let response = page.waitForResponse(r => new URL(r.url()).pathname === '/api/file-manager/history' && r.ok());
       await page.getByRole('button', {
         name: t.refresh,
         exact: true
@@ -1751,7 +1751,7 @@ async function scene(language, theme, width) {
       mockEvents = {
         events: []
       };
-      response = page.waitForResponse(r => new URL(r.url()).pathname === '/v1/file-manager/history' && r.ok());
+      response = page.waitForResponse(r => new URL(r.url()).pathname === '/api/file-manager/history' && r.ok());
       await page.getByRole('button', {
         name: t.refresh,
         exact: true
@@ -1944,7 +1944,7 @@ async function scene(language, theme, width) {
       await menu(t.history).click();
       await page.locator('.zxs-history-list-panel').waitFor();
       const plan = {
-        path: '/v1/file-manager/history',
+        path: '/api/file-manager/history',
         captured: false
       };
       holdGetPlan = plan;
@@ -2004,7 +2004,7 @@ async function scene(language, theme, width) {
     for (const release of held) release();
     await Promise.allSettled(assetReads);
     if (loginInFlight) try {
-      await page.waitForResponse(r => new URL(r.url()).pathname === '/v1/auth/login', {
+      await page.waitForResponse(r => new URL(r.url()).pathname === '/api/auth/login', {
         timeout: 60000
       });
     } catch {
@@ -2022,7 +2022,7 @@ async function scene(language, theme, width) {
       state.uiLogoutFailure = clean(e);
     }
     if (!state.loggedOut && auth?.token) try {
-      const r = await context.request.post(base + '/v1/auth/logout', {
+      const r = await context.request.post(base + '/api/auth/logout', {
         headers: {
           Authorization: `Bearer ${auth.token}`
         },

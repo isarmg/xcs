@@ -56,7 +56,7 @@ fn sequence(name: &str) -> Result<u64> {
     Ok(value)
 }
 
-fn validate_version(version: &FileVersion) -> Result<()> {
+pub(crate) fn validate_version(version: &FileVersion) -> Result<()> {
     validate_id(&version.file_id, "file")?;
     validate_id(&version.history_tree_id, "history")?;
     validate_id(&version.version_id, "ver")?;
@@ -69,19 +69,20 @@ fn validate_version(version: &FileVersion) -> Result<()> {
     {
         return Err(invalid("version content digest is invalid"));
     }
-    if let Some(name) = &version.storage_name {
-        sequence(name)?;
-        let digest = name
-            .splitn(3, '_')
-            .nth(2)
-            .and_then(|value| value.split('.').next())
-            .unwrap_or("");
-        if digest != &version.content_hash[..8] {
-            return Err(invalid(
-                "version storage name does not identify its content digest",
-            ));
-        }
+    let name = &version.storage_name;
+    sequence(name)?;
+    let digest = name
+        .splitn(3, '_')
+        .nth(2)
+        .and_then(|value| value.split('.').next())
+        .unwrap_or("");
+    if digest != &version.content_hash[..8] {
+        return Err(invalid(
+            "version storage name does not identify its content digest",
+        ));
     }
+    OffsetDateTime::parse(&version.created_at, &Rfc3339)
+        .map_err(|_| invalid("version creation time is not RFC3339"))?;
     Ok(())
 }
 
@@ -102,21 +103,15 @@ pub(crate) fn version_identity(
         return Err(invalid("content digest is invalid"));
     }
     let mut maximum = 0;
-    let mut count = 0u64;
     for version in state
         .versions
         .values()
         .filter(|version| version.file_id == file_id)
     {
-        count = count
-            .checked_add(1)
-            .ok_or_else(|| Error::new("RESOURCE_LIMIT", "file version count exhausted"))?;
-        if let Some(name) = &version.storage_name {
-            maximum = maximum.max(sequence(name)?);
-        }
+        validate_version(version)?;
+        maximum = maximum.max(sequence(&version.storage_name)?);
     }
     let number = maximum
-        .max(count)
         .checked_add(1)
         .ok_or_else(|| Error::new("RESOURCE_LIMIT", "file version sequence exhausted"))?;
     let now = OffsetDateTime::now_utc()
@@ -190,6 +185,24 @@ fn marker_matches(path: &Path, file_id: &str) -> Result<bool> {
     Ok(true)
 }
 
+// Unsupported on-disk layouts are never migrated or cleaned automatically.
+// Inspect metadata only; preserve all old bytes, including empty placeholders.
+fn reject_unsupported_container(named: &Path) -> Result<()> {
+    for name in ["pending-branches", "legacy"] {
+        match fs::symlink_metadata(named.join(name)) {
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+            Ok(_) => {
+                return Err(Error::new(
+                    "FORMAT_UNSUPPORTED",
+                    "legacy container storage is not supported",
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
 fn named_containers(
     root: &Path,
     file_id: &str,
@@ -220,6 +233,7 @@ fn named_containers(
         let path = entry.path();
         existing_private_dir(&path)?;
         if marker_matches(&path.join(OWNER_MARKER), file_id)? {
+            reject_unsupported_container(&path)?;
             if !directory_exists(&path.join("versions"))? {
                 return Err(invalid("owned container has no version directory"));
             }
@@ -270,6 +284,7 @@ fn container(history: &Path, file_id: &str) -> Result<Option<PathBuf>> {
             named_containers(&entry.path(), file_id, 0, &mut selected)?;
             continue;
         }
+        reject_unsupported_container(&entry.path())?;
         if selected.replace(entry.path()).is_some() {
             return Err(Error::new(
                 "CONTAINER_AMBIGUOUS",
@@ -300,22 +315,8 @@ fn file_exists(path: &Path) -> Result<bool> {
 /// MISSING classification. Only malformed or ambiguous layout fails closed.
 pub(crate) fn content_path(directory: &Path, version: &FileVersion) -> Result<PathBuf> {
     validate_version(version)?;
-    let legacy = directory.join("content").join(&version.creation_name);
-    let Some(name) = &version.storage_name else {
-        if let Some(named) = container(history_root(directory)?, &version.file_id)? {
-            let relocated = named
-                .join("legacy")
-                .join(&version.version_id)
-                .join(&version.creation_name);
-            if file_exists(&relocated)?
-                || (directory_exists(relocated.parent().expect("legacy version parent"))?
-                    && !file_exists(&legacy)?)
-            {
-                return Ok(relocated);
-            }
-        }
-        return Ok(legacy);
-    };
+    let prepared = directory.join("content").join(&version.creation_name);
+    let name = &version.storage_name;
     let history = history_root(directory)?;
     let named = container(history, &version.file_id)?.unwrap_or_else(|| {
         history
@@ -328,10 +329,10 @@ pub(crate) fn content_path(directory: &Path, version: &FileVersion) -> Result<Pa
     if directory_exists(&versions)? && file_exists(&target)? {
         return Ok(target);
     }
-    // Transitional preparation and packages produced by earlier builds can
-    // still hold the verified body beside its immutable metadata.
-    if file_exists(&legacy)? {
-        return Ok(legacy);
+    // Current preparation and offline packages hold the verified body beside
+    // its immutable metadata until installation moves it into the container.
+    if file_exists(&prepared)? {
+        return Ok(prepared);
     }
     Ok(target)
 }
@@ -387,11 +388,7 @@ fn verify_body(path: &Path, version: &FileVersion) -> Result<()> {
 pub(crate) fn install_version_content(directory: &Path, version: &FileVersion) -> Result<PathBuf> {
     validate_version(version)?;
     let source = directory.join("content").join(&version.creation_name);
-    let Some(name) = &version.storage_name else {
-        let resolved = content_path(directory, version)?;
-        verify_body(&resolved, version)?;
-        return Ok(resolved);
-    };
+    let name = &version.storage_name;
     let history = history_root(directory)?;
     existing_private_dir(history)?;
     let stable = history.join("file-containers").join(&version.file_id);
@@ -661,51 +658,6 @@ fn changed_files(previous: &State, next: &State) -> BTreeSet<String> {
     files
 }
 
-/// Older releases projected inherited references as empty files. References now
-/// exist only in metadata; remove only recognized empty legacy cache files.
-/// Validate the whole directory first so an unexpected entry is preserved.
-fn cleanup_legacy_pending(named: &Path) -> Result<()> {
-    let directory = named.join("pending-branches");
-    if !directory_exists(&directory)? {
-        return Ok(());
-    }
-    let held = held_directory(&directory)?;
-    let mut removable = Vec::new();
-    for entry in fs::read_dir(&directory)? {
-        let entry = entry?;
-        let name = entry
-            .file_name()
-            .into_string()
-            .map_err(|_| invalid("pending branch filename is not UTF-8"))?;
-        let branch = name
-            .strip_suffix(".pending")
-            .ok_or_else(|| invalid("pending branch filename has an unsupported form"))?;
-        validate_id(branch, "br")?;
-        if !file_exists(&entry.path())? || open_regular(&entry.path())?.metadata()?.len() != 0 {
-            return Err(invalid("pending branch must be one empty ordinary file"));
-        }
-        removable.push(name);
-    }
-    for name in removable {
-        rustix::fs::unlinkat(
-            held.directory(),
-            name.as_str(),
-            rustix::fs::AtFlags::empty(),
-        )
-        .map_err(std::io::Error::from)?;
-    }
-    held.directory().sync_all()?;
-    let parent = held_directory(named)?;
-    rustix::fs::unlinkat(
-        parent.directory(),
-        "pending-branches",
-        rustix::fs::AtFlags::REMOVEDIR,
-    )
-    .map_err(std::io::Error::from)?;
-    parent.directory().sync_all()?;
-    Ok(())
-}
-
 fn synchronize_location(
     current: PathBuf,
     stable: &Path,
@@ -738,8 +690,8 @@ fn synchronize_location(
     }
     let namespace = stable.join("namespace");
     let mut current = current;
-    // A legacy user file may itself be named `namespace`. Move that one
-    // container aside first; discovery and retry still use its stable identity.
+    // Initial installation may name a current-format file `namespace` before
+    // its location is projected. Move that container aside for retry-safe projection.
     if current == namespace && !marker_matches(&namespace.join(NAMESPACE_MARKER), file_id)? {
         let temporary_name = format!(".zxs-relocate-{}", new_id("req"));
         let parent = held_directory(stable)?;
@@ -841,52 +793,6 @@ fn synchronize_location(
     Ok(target)
 }
 
-fn migrate_legacy_body(history: &Path, named: &Path, version: &FileVersion) -> Result<()> {
-    let source = history
-        .join("versions")
-        .join(&version.version_id)
-        .join("content")
-        .join(&version.creation_name);
-    let destination = named.join("legacy").join(&version.version_id);
-    let target = destination.join(&version.creation_name);
-    if !file_exists(&source)? && !file_exists(&target)? {
-        return Ok(());
-    }
-    if file_exists(&target)? {
-        verify_body(&target, version)?;
-        if file_exists(&source)? {
-            verify_body(&source, version)?;
-            let source_parent = held_directory(source.parent().expect("legacy content parent"))?;
-            rustix::fs::unlinkat(
-                source_parent.directory(),
-                source.file_name().expect("legacy body name"),
-                rustix::fs::AtFlags::empty(),
-            )
-            .map_err(std::io::Error::from)?;
-            source_parent.directory().sync_all()?;
-        }
-        sync_dir(&destination)?;
-        return Ok(());
-    }
-    verify_body(&source, version)?;
-    private_dir(&destination)?;
-    sync_dir(destination.parent().expect("legacy parent"))?;
-    sync_dir(named)?;
-    let source_parent = held_directory(source.parent().expect("legacy content parent"))?;
-    let target_parent = held_directory(&destination)?;
-    rustix::fs::renameat_with(
-        source_parent.directory(),
-        source.file_name().expect("legacy body name"),
-        target_parent.directory(),
-        target.file_name().expect("legacy target name"),
-        rustix::fs::RenameFlags::NOREPLACE,
-    )
-    .map_err(std::io::Error::from)?;
-    source_parent.directory().sync_all()?;
-    target_parent.directory().sync_all()?;
-    Ok(())
-}
-
 fn collect_empty_directories(
     root: &Path,
     depth: usize,
@@ -930,10 +836,6 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
                     .map(|source| (branch, source))
             })
             .collect::<Vec<_>>();
-        let had_pending = previous
-            .branches
-            .values()
-            .any(|branch| branch.pending_file_versions.contains_key(&file));
         let mut locations = BTreeSet::new();
         for (state, version) in previous
             .versions
@@ -942,13 +844,7 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
             .chain(next.versions.values().map(|version| (next, version)))
             .filter(|(_, version)| version.file_id == file)
         {
-            if version.storage_name.is_none()
-                && pending.is_empty()
-                && !had_pending
-                && !next.file_locations.contains_key(&file)
-            {
-                continue;
-            }
+            validate_version(version)?;
             if let Some(placement) = state.placements.get(&version.version_id) {
                 for slot in &placement.route_slot_ids {
                     locations.insert((slot.clone(), version.history_tree_id.clone()));
@@ -983,40 +879,9 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
             let physical_name = backup_location
                 .and_then(|path| path.rsplit('/').next())
                 .or_else(|| next.file_names.get(&file).map(String::as_str));
-            let current = match container(&history, &file)? {
-                Some(current) => current,
-                None => {
-                    if !next.file_locations.contains_key(&file) {
-                        continue;
-                    }
-                    let mut available = None;
-                    for version in versions.iter().filter(|version| {
-                        version.history_tree_id == history_id && version.storage_name.is_none()
-                    }) {
-                        let source = history
-                            .join("versions")
-                            .join(&version.version_id)
-                            .join("content")
-                            .join(&version.creation_name);
-                        if file_exists(&source)? {
-                            available = Some(*version);
-                            break;
-                        }
-                    }
-                    // Neither metadata-only references nor tombstones create
-                    // empty containers. A real legacy body may be relocated
-                    // without changing its immutable proof or inode.
-                    let Some(version) = available else {
-                        continue;
-                    };
-                    let name = physical_name.unwrap_or(&version.creation_name);
-                    zxs_naming::validate_name(name)?;
-                    let current = history.join("file-containers").join(&file).join(name);
-                    private_dir(&current.join("versions"))?;
-                    sync_dir(&current)?;
-                    sync_dir(current.parent().expect("stable file parent"))?;
-                    current
-                }
+            // Metadata-only references and tombstones never synthesize bodies.
+            let Some(current) = container(&history, &file)? else {
+                continue;
             };
             let current_name = current
                 .file_name()
@@ -1024,11 +889,6 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
                 .ok_or_else(|| invalid("container directory name is not UTF-8"))?;
             let name = physical_name.unwrap_or(current_name);
             zxs_naming::validate_name(name)?;
-            for version in versions.iter().filter(|version| {
-                version.history_tree_id == history_id && version.storage_name.is_none()
-            }) {
-                migrate_legacy_body(&history, &current, version)?;
-            }
             let stable = history.join("file-containers").join(&file);
             let named = synchronize_location(
                 current.clone(),
@@ -1054,7 +914,6 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
                     });
                     records
                 });
-            cleanup_legacy_pending(&named)?;
             let inherited = pending_here
                 .iter()
                 .map(|(branch, source)| {
@@ -1084,7 +943,7 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
             let path_nodes = nodes.into_iter().map(|node| json!({"node":node,"tags":node_projection.tags(&node.node_id),"note":next.file_path_notes.get(&node.node_id).map(String::as_str).unwrap_or("")})).collect::<Vec<_>>();
             write_json(
                 &named.join("container.json"),
-                &json!({"format_version":1,"cache_only":true,"file_id":file,"history_tree_id":history_id,"name":name,"location":physical_location,"primary_location":next.file_locations.get(&file),"backup_policy_id":next.file_backup_policies.get(&file),"metadata_nodes":next.file_metadata_nodes.values().filter(|node|node.file_id==file&&node.history_tree_id==history_id).map(|node|json!({"node":node,"note":next.file_path_notes.get(&node.node_id).map(String::as_str).unwrap_or("")})).collect::<Vec<_>>(),"branch_merges":next.file_branch_merges.values().filter(|event|event.file_id==file&&event.history_tree_id==history_id).collect::<Vec<_>>(),"branch_aliases":next.file_branch_aliases.iter().filter(|(source,_)|next.branches.get(*source).is_some_and(|branch|branch.file_id.as_deref()==Some(file.as_str()))).collect::<BTreeMap<_,_>>(),"note":next.file_notes.get(&file).map(String::as_str).unwrap_or(""),"selected_branch_id":next.file_selections.get(&file),"path_contexts":contexts,"path_nodes":path_nodes,"versions":records,"inherited_branches":inherited}),
+                &json!({"cache_only":true,"file_id":file,"history_tree_id":history_id,"name":name,"location":physical_location,"primary_location":next.file_locations.get(&file),"backup_policy_id":next.file_backup_policies.get(&file),"metadata_nodes":next.file_metadata_nodes.values().filter(|node|node.file_id==file&&node.history_tree_id==history_id).map(|node|json!({"node":node,"note":next.file_path_notes.get(&node.node_id).map(String::as_str).unwrap_or("")})).collect::<Vec<_>>(),"branch_merges":next.file_branch_merges.values().filter(|event|event.file_id==file&&event.history_tree_id==history_id).collect::<Vec<_>>(),"branch_aliases":next.file_branch_aliases.iter().filter(|(source,_)|next.branches.get(*source).is_some_and(|branch|branch.file_id.as_deref()==Some(file.as_str()))).collect::<BTreeMap<_,_>>(),"note":next.file_notes.get(&file).map(String::as_str).unwrap_or(""),"path_contexts":contexts,"path_nodes":path_nodes,"versions":records,"inherited_branches":inherited}),
                 true,
             )?;
             sync_dir(&named)?;
@@ -1096,16 +955,12 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{
-        collections::BTreeMap,
-        os::unix::fs::{PermissionsExt, symlink},
-    };
+    use std::{collections::BTreeMap, os::unix::fs::symlink};
 
     fn version(state: &State, history: &str, file: &str, name: &str, bytes: &[u8]) -> FileVersion {
         let hash = blake3::hash(bytes).to_hex().to_string();
         let (storage_name, created_at) = version_identity(state, file, name, &hash).unwrap();
         FileVersion {
-            format_version: 2,
             history_tree_id: history.into(),
             version_id: new_id("ver"),
             file_id: file.into(),
@@ -1116,8 +971,8 @@ mod tests {
             checksum_chunk_bytes: 262_144,
             checksum_manifest_hash: "0".repeat(64),
             creation_name: name.into(),
-            storage_name: Some(storage_name),
-            created_at: Some(created_at),
+            storage_name,
+            created_at,
             source_version_ids: Vec::new(),
             created_as_full_checkpoint: true,
         }
@@ -1181,6 +1036,96 @@ mod tests {
     }
 
     #[test]
+    fn current_version_requires_storage_name_and_creation_time() {
+        let item = version(
+            &State::default(),
+            &new_id("history"),
+            &new_id("file"),
+            "file.txt",
+            b"body",
+        );
+        for field in ["storage_name", "created_at"] {
+            let mut missing = serde_json::to_value(&item).unwrap();
+            missing.as_object_mut().unwrap().remove(field);
+            let error = serde_json::from_value::<FileVersion>(missing).unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains(&format!("missing field `{field}`"))
+            );
+            let mut null = serde_json::to_value(&item).unwrap();
+            null[field] = serde_json::Value::Null;
+            assert!(serde_json::from_value::<FileVersion>(null).is_err());
+        }
+        let mut tagged = serde_json::to_value(&item).unwrap();
+        tagged["format_version"] = json!(2);
+        assert!(serde_json::from_value::<FileVersion>(tagged).is_err());
+        assert!(
+            serde_json::to_value(item)
+                .unwrap()
+                .get("format_version")
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn unsupported_legacy_containers_are_rejected_without_cleanup_or_migration() {
+        for legacy_name in ["pending-branches", "legacy"] {
+            for bytes in [b"".as_slice(), b"preserve old bytes".as_slice()] {
+                let temporary = tempfile::tempdir().unwrap();
+                let config = Config::development([
+                    temporary.path().join("p"),
+                    temporary.path().join("b"),
+                    temporary.path().join("c"),
+                ]);
+                drop(Engine::initialize(&temporary.path().join("system"), config.clone()).unwrap());
+                let history_id = new_id("history");
+                let item = version(
+                    &State::default(),
+                    &history_id,
+                    &new_id("file"),
+                    "file.txt",
+                    b"body",
+                );
+                let history = config.disks[0].root.join("histories").join(history_id);
+                let directory = prepare(&history, &item, b"body");
+                let body = install_version_content(&directory, &item).unwrap();
+                let inode = fs::metadata(&body).unwrap().ino();
+                let named = body.parent().unwrap().parent().unwrap();
+                let legacy = named.join(legacy_name);
+                private_dir(&legacy).unwrap();
+                let retained = legacy.join("old.pending");
+                write_atomic(&retained, bytes, false).unwrap();
+                let previous = with_version(&item);
+                let mut next = previous.clone();
+                next.file_names
+                    .insert(item.file_id.clone(), "renamed.txt".into());
+                assert_eq!(
+                    content_path(&directory, &item).unwrap_err().code(),
+                    "FORMAT_UNSUPPORTED"
+                );
+                assert_eq!(
+                    install_version_content(&directory, &item)
+                        .unwrap_err()
+                        .code(),
+                    "FORMAT_UNSUPPORTED"
+                );
+                assert_eq!(
+                    synchronize_names(&config, &previous, &next)
+                        .unwrap_err()
+                        .code(),
+                    "FORMAT_UNSUPPORTED"
+                );
+                assert_eq!(fs::read(&retained).unwrap(), bytes);
+                assert_eq!(fs::read(&body).unwrap(), b"body");
+                assert_eq!(fs::metadata(&body).unwrap().ino(), inode);
+                assert!(!named.parent().unwrap().join("renamed.txt").exists());
+                assert!(!named.join("container.json").exists());
+            }
+        }
+    }
+
+    #[test]
     fn inherited_references_update_cache_without_creating_files_and_follow_rename() {
         let temporary = tempfile::tempdir().unwrap();
         let config = Config::development([
@@ -1230,16 +1175,6 @@ mod tests {
         assert_eq!(fs::metadata(&body).unwrap().ino(), body_inode);
         assert_eq!(fs::read(&body).unwrap(), b"body");
 
-        // Replay also upgrades a cache left by the older placeholder layout,
-        // without treating that empty file as content or preserving its name.
-        let legacy = named.join("pending-branches");
-        private_dir(&legacy).unwrap();
-        write_atomic(&legacy.join(format!("{branch}.pending")), b"", false).unwrap();
-        synchronize_names(&config, &previous, &pending).unwrap();
-        assert!(!legacy.exists());
-        assert_eq!(fs::metadata(&body).unwrap().ino(), body_inode);
-        assert_eq!(fs::read(&body).unwrap(), b"body");
-
         let mut renamed = pending.clone();
         renamed.file_names.insert(file.clone(), "renamed.md".into());
         synchronize_names(&config, &pending, &renamed).unwrap();
@@ -1259,44 +1194,6 @@ mod tests {
         assert_eq!(fs::metadata(&new_body).unwrap().ino(), body_inode);
         let cached: serde_json::Value = read_json(&new_named.join("container.json")).unwrap();
         assert_eq!(cached["inherited_branches"], json!([]));
-    }
-
-    #[test]
-    fn legacy_inherited_sources_keep_only_the_original_body_without_new_containers() {
-        let temporary = tempfile::tempdir().unwrap();
-        let config = Config::development([
-            temporary.path().join("p"),
-            temporary.path().join("b"),
-            temporary.path().join("c"),
-        ]);
-        drop(Engine::initialize(&temporary.path().join("state"), config.clone()).unwrap());
-        let history_id = new_id("history");
-        let file = new_id("file");
-        let mut item = version(
-            &State::default(),
-            &history_id,
-            &file,
-            "legacy.txt",
-            b"old body",
-        );
-        item.storage_name = None;
-        item.created_at = None;
-        let history = config.disks[0].root.join("histories").join(&history_id);
-        let directory = prepare(&history, &item, b"old body");
-        let body = install_version_content(&directory, &item).unwrap();
-        let inode = fs::metadata(&body).unwrap().ino();
-        let previous = with_version(&item);
-        let mut pending = previous.clone();
-        reserve(&mut pending, &item);
-        synchronize_names(&config, &previous, &pending).unwrap();
-        let containers = history.join("file-containers");
-        assert!(!containers.exists());
-        assert_eq!(content_path(&directory, &item).unwrap(), body);
-        assert_eq!(fs::metadata(&body).unwrap().ino(), inode);
-        synchronize_names(&config, &State::default(), &pending).unwrap();
-        assert!(!containers.exists());
-        assert_eq!(fs::metadata(&body).unwrap().ino(), inode);
-        assert_eq!(fs::read(body).unwrap(), b"old body");
     }
 
     #[test]
@@ -1355,58 +1252,6 @@ mod tests {
         let cache: serde_json::Value =
             read_json(&b.parent().unwrap().parent().unwrap().join("container.json")).unwrap();
         assert_eq!(cache["location"], "b/报告.txt");
-    }
-
-    #[test]
-    fn legacy_proof_remains_unchanged_when_its_body_moves_to_the_new_owner() {
-        let temporary = tempfile::tempdir().unwrap();
-        let config = Config::development([
-            temporary.path().join("p"),
-            temporary.path().join("b"),
-            temporary.path().join("c"),
-        ]);
-        drop(Engine::initialize(&temporary.path().join("state"), config.clone()).unwrap());
-        let history_id = new_id("history");
-        let file = new_id("file");
-        let mut item = version(
-            &State::default(),
-            &history_id,
-            &file,
-            "legacy.txt",
-            b"old proof bytes",
-        );
-        item.storage_name = None;
-        item.created_at = None;
-        let immutable = canonical_json(&item).unwrap();
-        let history = config.disks[0].root.join("histories").join(&history_id);
-        let directory = prepare(&history, &item, b"old proof bytes");
-        let original = install_version_content(&directory, &item).unwrap();
-        let inode = fs::metadata(&original).unwrap().ino();
-        let previous = with_version(&item);
-        let mut moved = previous.clone();
-        moved
-            .file_locations
-            .insert(file.clone(), "b/legacy.txt".into());
-        synchronize_names(&config, &previous, &moved).unwrap();
-        let relocated = content_path(&directory, &item).unwrap();
-        assert!(!original.exists());
-        assert!(
-            relocated
-                .to_string_lossy()
-                .contains("/namespace/b/legacy.txt/legacy/")
-        );
-        assert_eq!(fs::metadata(&relocated).unwrap().ino(), inode);
-        assert_eq!(fs::metadata(&relocated).unwrap().nlink(), 1);
-        assert_eq!(
-            canonical_json(&moved.versions[&item.version_id]).unwrap(),
-            immutable
-        );
-        assert_eq!(
-            install_version_content(&directory, &item).unwrap(),
-            relocated
-        );
-        synchronize_names(&config, &previous, &moved).unwrap();
-        assert_eq!(content_path(&directory, &item).unwrap(), relocated);
     }
 
     #[test]
@@ -1606,93 +1451,29 @@ mod tests {
     }
 
     #[test]
-    fn legacy_pending_cleanup_rejects_links_and_nonempty_files_without_removing_them() {
-        let temporary = tempfile::tempdir().unwrap();
-        fs::set_permissions(temporary.path(), fs::Permissions::from_mode(0o700)).unwrap();
-        let named = temporary.path().join("container");
-        let pending = named.join("pending-branches");
-        private_dir(&pending).unwrap();
-        let branch = new_id("br");
-        let placeholder = pending.join(format!("{branch}.pending"));
-        write_atomic(&placeholder, b"unexpected user bytes", false).unwrap();
-        assert_eq!(
-            cleanup_legacy_pending(&named).unwrap_err().code(),
-            "CONTAINER_LAYOUT_INVALID"
-        );
-        assert_eq!(fs::read(&placeholder).unwrap(), b"unexpected user bytes");
-        fs::remove_file(&placeholder).unwrap();
-        let source = temporary.path().join("source");
-        write_atomic(&source, b"", false).unwrap();
-        symlink(&source, &placeholder).unwrap();
-        assert!(cleanup_legacy_pending(&named).is_err());
-        assert!(source.is_file());
-        assert!(
-            fs::symlink_metadata(&placeholder)
-                .unwrap()
-                .file_type()
-                .is_symlink()
-        );
-    }
-
-    #[test]
-    fn legacy_pending_cleanup_removes_only_empty_cache_files_and_never_recreates_them() {
-        let temporary = tempfile::tempdir().unwrap();
-        fs::set_permissions(temporary.path(), fs::Permissions::from_mode(0o700)).unwrap();
-        let named = temporary.path().join("container");
-        let pending = named.join("pending-branches");
-        private_dir(&pending).unwrap();
-        let stub = pending.join(format!("{}.pending", new_id("br")));
-        write_atomic(&stub, b"", false).unwrap();
-        cleanup_legacy_pending(&named).unwrap();
-        assert!(!pending.exists());
-        cleanup_legacy_pending(&named).unwrap();
-        assert!(!pending.exists());
-
-        private_dir(&pending).unwrap();
-        write_atomic(&stub, b"", false).unwrap();
-        let unknown = pending.join("keep.txt");
-        write_atomic(&unknown, b"user data", false).unwrap();
-        assert!(cleanup_legacy_pending(&named).is_err());
-        assert!(stub.is_file());
-        assert_eq!(fs::read(&unknown).unwrap(), b"user data");
-
-        fs::remove_file(&unknown).unwrap();
-        let linked = temporary.path().join("linked");
-        fs::hard_link(&stub, &linked).unwrap();
-        assert!(cleanup_legacy_pending(&named).is_err());
-        assert!(stub.is_file());
-        assert!(linked.is_file());
-    }
-
-    #[test]
-    fn identity_counts_each_file_independently_and_preserves_legacy_order() {
+    fn identity_counts_each_file_independently_with_required_numbered_names() {
         let mut state = State::default();
         let file = new_id("file");
         let history = new_id("history");
-        let mut old = version(&state, &history, &file, "报告.txt", b"legacy");
-        old.storage_name = None;
-        old.created_at = None;
+        let old = version(&state, &history, &file, "报告.txt", b"first");
         state.versions.insert(old.version_id.clone(), old);
         let next = version(&state, &history, &file, "报告.txt", b"next");
-        assert_eq!(sequence(next.storage_name.as_deref().unwrap()).unwrap(), 2);
-        assert!(next.storage_name.as_deref().unwrap().ends_with(".txt"));
-        assert!(next.created_at.as_deref().unwrap().ends_with('Z'));
-        assert_eq!(next.created_at.as_deref().unwrap().len(), 20);
+        assert_eq!(sequence(&next.storage_name).unwrap(), 2);
+        assert!(next.storage_name.ends_with(".txt"));
+        assert!(next.created_at.ends_with('Z'));
+        assert_eq!(next.created_at.len(), 20);
         state.versions.insert(next.version_id.clone(), next);
         state.file_names.insert(file.clone(), "改名.md".into());
         assert!(
             version(&state, &history, &file, "报告.txt", b"new extension")
                 .storage_name
-                .as_deref()
-                .unwrap()
                 .ends_with(".md")
         );
         assert_eq!(
             sequence(
                 version(&state, &history, &file, "renamed.md", b"third")
                     .storage_name
-                    .as_deref()
-                    .unwrap()
+                    .as_str()
             )
             .unwrap(),
             3
@@ -1701,8 +1482,7 @@ mod tests {
             sequence(
                 version(&state, &history, &new_id("file"), "other.txt", b"other")
                     .storage_name
-                    .as_deref()
-                    .unwrap()
+                    .as_str()
             )
             .unwrap(),
             1
@@ -1724,15 +1504,15 @@ mod tests {
             b"complete bytes",
         );
         let directory = prepare(&history, &item, b"complete bytes");
-        let legacy = directory.join("content/notes.txt");
+        let prepared = directory.join("content/notes.txt");
         assert_eq!(
             content_path(&directory, &item).unwrap(),
-            legacy,
+            prepared,
             "a prepared body remains readable before its atomic move"
         );
-        let before = fs::metadata(&legacy).unwrap();
+        let before = fs::metadata(&prepared).unwrap();
         let target = install_version_content(&directory, &item).unwrap();
-        assert!(!legacy.exists());
+        assert!(!prepared.exists());
         let after = fs::metadata(&target).unwrap();
         assert_eq!((before.dev(), before.ino()), (after.dev(), after.ino()));
         assert_eq!(after.nlink(), 1);
@@ -1818,7 +1598,7 @@ mod tests {
         assert_eq!(cached["name"], "重命名.md");
         assert_eq!(cached["note"], "文件备注");
         assert_eq!(cached["versions"][0]["note"], "版本备注");
-        assert_eq!(cached["selected_branch_id"], next.file_selections[&file]);
+        assert!(cached.get("selected_branch_id").is_none());
         synchronize_names(&config, &previous, &next).unwrap();
         assert_eq!(fs::metadata(&renamed).unwrap().ino(), inode);
         let cache_inode = fs::metadata(&cache).unwrap().ino();

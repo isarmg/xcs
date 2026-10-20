@@ -938,32 +938,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
 
 [[package]]
-name = "zxs-contract"
-version = "0.1.0"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "zxs-contract-check"
-version = "0.1.0"
-dependencies = [
- "blake3",
- "jsonschema",
- "percent-encoding",
- "regex",
- "serde",
- "serde_json",
- "toml",
- "walkdir",
- "zxs-contract",
-]
-
-[[package]]
 name = "zerocopy"
 version = "0.8.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -988,3 +962,29 @@ name = "zmij"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+
+[[package]]
+name = "zxs-contract"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "zxs-contract-check"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "jsonschema",
+ "percent-encoding",
+ "regex",
+ "serde",
+ "serde_json",
+ "toml",
+ "walkdir",
+ "zxs-contract",
+]

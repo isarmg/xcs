@@ -13,7 +13,7 @@ pub(super) fn recovery_record(
     // `published` describes the last reconciled operation, not all bytes
     // currently reachable through the live writable descriptor. Recovery must
     // reconcile these bytes even when no Dirty request was received.
-    let value = json!({"format":"zxs-smb-work-v1","principal":principal,"branch_id":branch,"path":writer.path,"item_id":writer.item_id,"source_path":writer.source,"workspace_id":writer.workspace.workspace_id,"expected_head":writer.workspace.base_head,"fencing_token":writer.workspace.fencing_token.to_string(),"operation_id":writer.operation_id,"dirty":writer.dirty,"published":writer.committed,"descriptor_changes_unconfirmed":true});
+    let value = json!({"format":"zxs-smb-work","principal":principal,"branch_id":branch,"path":writer.path,"item_id":writer.item_id,"source_path":writer.source,"workspace_id":writer.workspace.workspace_id,"expected_head":writer.workspace.base_head,"fencing_token":writer.workspace.fencing_token.to_string(),"operation_id":writer.operation_id,"dirty":writer.dirty,"published":writer.committed,"descriptor_changes_unconfirmed":true});
     let mut temporary = tempfile::Builder::new()
         .prefix(".smb-work-")
         .tempfile_in(parent)

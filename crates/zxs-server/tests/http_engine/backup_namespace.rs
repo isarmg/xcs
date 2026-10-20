@@ -5,13 +5,13 @@ fn listing_path(slot: &str, path: &str) -> String {
     let query = url::form_urlencoded::Serializer::new(String::new())
         .append_pair("path", path)
         .finish();
-    format!("/v1/file-manager/disks/{slot}/entries?{query}")
+    format!("/api/file-manager/disks/{slot}/entries?{query}")
 }
 async fn listing(app: &Router, token: &str, slot: &str, path: &str) -> Value {
     success(app, token, "GET", &listing_path(slot, path), None).await
 }
 async fn configure(app: &Router, token: &str, repo: &str, path: &str, b: &str, c: &str) -> Value {
-    let route = format!("/v1/repositories/{repo}/backup-configuration");
+    let route = format!("/api/repositories/{repo}/backup-configuration");
     let query = url::form_urlencoded::Serializer::new(String::new())
         .append_pair("path", path)
         .finish();
@@ -54,7 +54,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
         &app,
         &admin,
         "GET",
-        &format!("/v1/repositories/{repo}/backup-configuration?path=docs"),
+        &format!("/api/repositories/{repo}/backup-configuration?path=docs"),
         None,
     )
     .await;
@@ -94,7 +94,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
         &app,
         &admin,
         "PUT",
-        &format!("/v1/policies/{policy}"),
+        &format!("/api/policies/{policy}"),
         Some(
             json!({"repository_id":repo,"path_prefix":"docs","target_copies":1,
         "expected_generation":"1","operation_id":new_id("op")}),
@@ -115,7 +115,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
         ("docs", "archive"),
         ("archive/nested/report.txt", "archive/nested/renamed.txt"),
     ] {
-        success(&app,&admin,"POST","/v1/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":path,"destination":destination,"operation_id":new_id("op")}))).await;
+        success(&app,&admin,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":path,"destination":destination,"operation_id":new_id("op")}))).await;
     }
     let renamed = listing(&app, &admin, "P01", "archive/nested").await;
     assert_eq!(renamed["entries"][0]["version_id"], current_version);
@@ -135,7 +135,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
     assert_eq!(entry["historical_only"], false);
     assert_eq!(entry["version_id"], version);
     assert_eq!(entry["node_id"], version);
-    let history=success(&app,&admin,"GET",&format!("/v1/file-manager/files/{file}/history?repository_id={repo}&path=archive/nested/renamed.txt"),None).await;
+    let history=success(&app,&admin,"GET",&format!("/api/file-manager/files/{file}/history?repository_id={repo}&path=archive/nested/renamed.txt"),None).await;
     assert_eq!(history["version_id"], current_version);
     assert!(
         history["versions"]
@@ -174,7 +174,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
                 &app,
                 Some(&admin),
                 "POST",
-                &format!("/v1/file-manager/disks/B01/{route}"),
+                &format!("/api/file-manager/disks/B01/{route}"),
                 Some(body)
             )
             .await
@@ -182,7 +182,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
             StatusCode::FORBIDDEN
         );
     }
-    success(&app,&admin,"POST","/v1/file-manager/disks/P01/namespace",Some(json!({"kind":"delete","path":"archive/nested/renamed.txt","operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"delete","path":"archive/nested/renamed.txt","operation_id":new_id("op")}))).await;
     let retained = listing(&app, &admin, "B01", "WorkBackup/nested").await;
     read_only_listing(&retained);
     assert_eq!(retained["entries"][0]["historical_only"], true);
@@ -193,7 +193,7 @@ async fn user_backup_prefixes_keep_fixed_paths_and_slot_versions_after_primary_r
         &app,
         &admin,
         "GET",
-        &format!("/v1/file-manager/files/{file}/history"),
+        &format!("/api/file-manager/files/{file}/history"),
         None,
     )
     .await;
@@ -224,7 +224,7 @@ async fn backup_path_collisions_are_rejected_after_acl_filtering_without_overwri
     let repo = primary["context"]["repository_id"].as_str().unwrap();
     let public_version = primary["entries"][0]["version_id"].as_str().unwrap();
     configure(&app, &admin, repo, "docs", "WorkBackup/nested", "冷备份").await;
-    let private=success(&app,&admin,"POST","/v1/repositories",Some(json!({"name":"Private","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
+    let private=success(&app,&admin,"POST","/api/repositories",Some(json!({"name":"Private","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
     let private_repo = private["repository_id"].as_str().unwrap();
     manager_upload(
         &app,
@@ -264,8 +264,8 @@ async fn backup_path_collisions_are_rejected_after_acl_filtering_without_overwri
         version_bytes(&app, &admin, private_version).await,
         b"private body must not leak"
     );
-    success(&app,&admin,"POST","/v1/admin/accounts",Some(json!({"username":"backup-viewer","password":"backup-viewer-test-password","repositories":[repo]}))).await;
-    success(&app,&admin,"PUT",&format!("/v1/repositories/{repo}/grants"),Some(json!({"grants":{"read":["backup-viewer"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"backup-viewer","password":"backup-viewer-test-password","repositories":[repo]}))).await;
+    success(&app,&admin,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["backup-viewer"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
     let reader = login(&app, "backup-viewer", "backup-viewer-test-password").await;
     let authorized = listing(&app, &reader, "B01", "WorkBackup/nested").await;
     read_only_listing(&authorized);
@@ -305,7 +305,7 @@ async fn backup_path_collisions_are_rejected_after_acl_filtering_without_overwri
         .clone()
         .oneshot(
             Request::builder()
-                .uri(format!("/v1/versions/{private_version}/content"))
+                .uri(format!("/api/versions/{private_version}/content"))
                 .header("authorization", format!("Bearer {reader}"))
                 .body(Body::empty())
                 .unwrap(),
@@ -365,21 +365,21 @@ async fn readers_discover_historical_primary_routes_by_history_identity_and_all_
     }
     let app = configured_application(root.path(), config);
     let admin = login(&app, "admin", "integration-test-password").await;
-    let repo=success(&app,&admin,"POST","/v1/repositories",Some(json!({"name":"Mixed","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
+    let repo=success(&app,&admin,"POST","/api/repositories",Some(json!({"name":"Mixed","primary_slot_id":"P01","target_copies":1,"operation_id":new_id("op")}))).await;
     let id = repo["repository_id"].as_str().unwrap();
     manager_upload(&app, &admin, "Mixed/a.txt", b"first primary").await;
     let first = listing(&app, &admin, "P01", "Mixed").await["entries"][0]["version_id"]
         .as_str()
         .unwrap()
         .to_owned();
-    success(&app,&admin,"PUT",&format!("/v1/primary-placement-rules/{}",new_id("rule")),Some(json!({"repository_id":id,
+    success(&app,&admin,"PUT",&format!("/api/primary-placement-rules/{}",new_id("rule")),Some(json!({"repository_id":id,
         "path_prefix":"a.txt","primary_slot_id":"P02","expected_generation":"0","operation_id":new_id("op")}))).await;
     manager_upload(&app, &admin, "Mixed/a.txt", b"second primary").await;
     let second = listing(&app, &admin, "P01", "Mixed").await["entries"][0]["version_id"]
         .as_str()
         .unwrap()
         .to_owned();
-    let route = format!("/v1/repositories/{id}/backup-configuration");
+    let route = format!("/api/repositories/{id}/backup-configuration");
     let before = success(&app, &admin, "GET", &format!("{route}?path=a.txt"), None).await;
     assert_eq!(
         before["backup_routes"],
@@ -396,12 +396,12 @@ async fn readers_discover_historical_primary_routes_by_history_identity_and_all_
         "expected_scope_id":before["scope"]["id"],"expected_generation":"0","operation_id":new_id("op")}))).await;
     // This other history uses the same default P01, but its C01 route must not
     // grant visibility to a reader admitted only to Mixed.
-    success(&app,&admin,"POST","/v1/repositories",Some(json!({"name":"Hidden","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST","/api/repositories",Some(json!({"name":"Hidden","primary_slot_id":"P01","target_copies":3,"operation_id":new_id("op")}))).await;
     manager_upload(&app, &admin, "Hidden/secret.txt", b"not admitted").await;
-    success(&app,&admin,"POST","/v1/admin/accounts",Some(json!({"username":"route-reader","password":"route-reader-test-password","repositories":[id]}))).await;
-    success(&app,&admin,"PUT",&format!("/v1/repositories/{id}/grants"),Some(json!({"grants":{"read":["route-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
+    success(&app,&admin,"POST","/api/admin/accounts",Some(json!({"username":"route-reader","password":"route-reader-test-password","repositories":[id]}))).await;
+    success(&app,&admin,"PUT",&format!("/api/repositories/{id}/grants"),Some(json!({"grants":{"read":["route-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
     let reader = login(&app, "route-reader", "route-reader-test-password").await;
-    let disks = success(&app, &reader, "GET", "/v1/file-manager/disks", None).await;
+    let disks = success(&app, &reader, "GET", "/api/file-manager/disks", None).await;
     let visible = disks["disks"]
         .as_array()
         .unwrap()

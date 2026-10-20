@@ -19,7 +19,7 @@ try {
   const page=await context.newPage();
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/*',route=>{
-    const req=route.request();if(new URL(req.url()).pathname.startsWith('/v1')||!['GET','HEAD'].includes(req.method())){business.push({method:req.method(),url:req.url()});return route.abort();}
+    const req=route.request();if(new URL(req.url()).pathname.startsWith('/api')||!['GET','HEAD'].includes(req.method())){business.push({method:req.method(),url:req.url()});return route.abort();}
     return route.continue();
   });
   const wasmPromise=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pkg/zxs_bg.wasm'));

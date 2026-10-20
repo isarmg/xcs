@@ -78,7 +78,8 @@ fn parents(
     }
     Ok(())
 }
-fn legacy_path(
+// Default namespace for current files without an explicit per-slot backup path.
+fn default_backup_path(
     repo: &Repository,
     entry: Option<&Entry>,
     version: &FileVersion,
@@ -209,7 +210,7 @@ pub(super) fn entries(
             .get(file)
             .and_then(|paths| paths.get(slot))
             .cloned()
-            .unwrap_or_else(|| legacy_path(repo, current, version, engine));
+            .unwrap_or_else(|| default_backup_path(repo, current, version, engine));
         // State values are validated again at this filesystem-facing boundary.
         zxs_naming::validate_path(&display).map_err(ApiError::invalid)?;
         parents(&mut nodes, slot, &display, maximum)?;

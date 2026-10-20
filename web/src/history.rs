@@ -22,7 +22,7 @@ pub(crate) fn load(state: RwSignal<State>) {
     state.update(|s| s.activity.loading = true);
     let epoch = state.with_untracked(|s| s.session_epoch);
     spawn_local(async move {
-        let result = api::request("GET", "/v1/file-manager/history", None).await;
+        let result = api::request("GET", "/api/file-manager/history", None).await;
         if !current_session(state, epoch) {
             return;
         }

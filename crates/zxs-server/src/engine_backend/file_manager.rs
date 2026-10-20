@@ -508,16 +508,12 @@ fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<V
             }) && seen.insert(id.as_str())
         }).collect::<Vec<_>>();
         let commit = first_commits.get(version.version_id.as_str()).copied();
-        let timestamp = version.created_at.as_ref().map(|timestamp| json!(timestamp))
-            .or_else(|| commit.and_then(|commit| state.operations.get(&commit.operation_id))
-                .and_then(|operation| operation.result.get("timestamp")).cloned())
-            .unwrap_or(Value::Null);
         let download_name = current.as_ref().map(|entry| entry.name.as_str())
             .or_else(|| state.file_names.get(file).map(String::as_str))
             .unwrap_or(&version.creation_name);
         json!({
             "version_id":version.version_id,"file_id":file,"source_version_ids":source_version_ids,
-            "branch_id":heads.get(version.version_id.as_str()),"created_at":timestamp,
+            "branch_id":heads.get(version.version_id.as_str()),"created_at":version.created_at,
             "message":commit.map(|commit| commit.message.as_str()).unwrap_or(""),
             "size":version.logical_size.to_string(),"sequence":version.version_sequence.to_string(),
             "current":current.as_ref().is_some_and(|entry| entry.version_id == version.version_id),
@@ -525,8 +521,7 @@ fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<V
             "content_hash":version.content_hash,
             "note":state.version_notes.get(&version.version_id).map(String::as_str).unwrap_or(""),
             "download_name":download_name,
-            "storage_name":version.storage_name.as_deref().unwrap_or(&version.creation_name),
-            "legacy":version.storage_name.is_none()
+            "storage_name":version.storage_name
         })
     }).collect::<Vec<_>>();
     versions.reverse();

@@ -87,7 +87,7 @@ impl Engine {
                     state.file_branch_aliases.insert(branch.clone(),survivor.into());
                     let branch = state.branches.get_mut(branch).expect("checked merge branch");
                     branch.state="merged".into();
-                    branch.generation += 1;
+                    branch.generation = branch.generation.checked_add(1).ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
                 }
                 // Historical aliases remain frozen, while their writable
                 // ownership target follows a later explicit owner merge.

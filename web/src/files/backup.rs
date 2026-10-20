@@ -68,7 +68,7 @@ fn start(state: RwSignal<State>, repository: String, path: String) {
         let result = api::request(
             "GET",
             &format!(
-                "/v1/repositories/{}/backup-configuration?path={}",
+                "/api/repositories/{}/backup-configuration?path={}",
                 api::segment(&repository),
                 api::segment(&path)
             ),
@@ -215,7 +215,7 @@ fn submit(state: RwSignal<State>) {
             review::Kind::Backup,
             "PUT",
             format!(
-                "/v1/repositories/{}/backup-configuration",
+                "/api/repositories/{}/backup-configuration",
                 api::segment(&draft.repository)
             ),
             body,

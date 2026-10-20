@@ -169,7 +169,7 @@ pub fn prepare_commit(
     }
     let digest = crate::request_digest(
         "POST",
-        "/v1/workspaces/{workspace}/commit",
+        "/api/workspaces/{workspace}/commit",
         json!({"workspace":workspace}),
         json!({}),
         &seal,
@@ -218,7 +218,7 @@ mod tests {
             absent["request_digest"],
             crate::request_digest(
                 "POST",
-                "/v1/workspaces/{workspace}/commit",
+                "/api/workspaces/{workspace}/commit",
                 json!({"workspace":"workspace_test"}),
                 json!({}),
                 &absent

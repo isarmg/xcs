@@ -15,7 +15,7 @@ pub(crate) fn load_disks(state: RwSignal<State>) {
     state.update(|s| s.files.loading_disks = true);
     let epoch = state.with_untracked(|s| s.session_epoch);
     spawn_local(async move {
-        let result = api::request("GET", "/v1/file-manager/disks", None).await;
+        let result = api::request("GET", "/api/file-manager/disks", None).await;
         if !current_session(state, epoch) {
             return;
         }
@@ -200,7 +200,7 @@ pub(crate) fn load_file_history(state: RwSignal<State>) {
         let result = api::request(
             "GET",
             &format!(
-                "/v1/file-manager/files/{}/history{}",
+                "/api/file-manager/files/{}/history{}",
                 api::segment(&id),
                 context
                     .as_ref()

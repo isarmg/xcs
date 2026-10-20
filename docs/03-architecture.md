@@ -138,7 +138,7 @@ SMB 服务及 API 网关不直接共享版本对象目录。Storage Daemon 仍�
 | 元数据 | 三成员应用日志与检查点 | 两成员决定、三成员保护后正常发布 |
 | 索引 | SQLite，可重建 | 不将 SQLite WAL 当成跨盘事务 |
 | 校验 | BLAKE3 整文件与分段清单 | 范围验证和全文件验证分别执行 |
-| 命名 | PortableNameV2 / PortablePathV1 | 固定 Unicode 数据版本，各入口统一校验 |
+| 命名 | PortableName / PortablePath | 固定 Unicode 数据版本，各入口统一校验 |
 | 恢复 | 独立只读离线工具 | 不依赖在线索引或其他历史版本打开本盘文件 |
 
 [S03]: https://www.samba.org/samba/docs/current/man-html/smbd.8.html

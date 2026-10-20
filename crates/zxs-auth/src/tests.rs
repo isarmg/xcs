@@ -69,7 +69,7 @@ fn only_the_current_password_policy_verifies() {
 fn csrf_derivation_is_canonical_stable_and_domain_separated() {
     let token = "A".repeat(43);
     let derived = derive_csrf_token(&token).unwrap();
-    assert_eq!(derived, "UrzW0MSy4xHyq-sVrm2RAmQrAq2izgfZrWeMXEvFhOE");
+    assert_eq!(derived, "Gt5U2H4mxXFOTGk8VgxGCUw3suwJxxqfr8KOuL-F4D8");
     assert_eq!(derive_csrf_token(&token).unwrap(), derived);
     assert_ne!(token, derived);
     assert_ne!(

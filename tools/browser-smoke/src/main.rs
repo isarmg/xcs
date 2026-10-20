@@ -473,7 +473,7 @@ fn exercise(
             let status = r["status"].as_f64().unwrap_or(0.0) as u64;
             if url.starts_with(origin) {
                 if status >= 400
-                    && !(url.ends_with("/v1/auth/me") && status == 401)
+                    && !(url.ends_with("/api/auth/me") && status == 401)
                     && !(url.ends_with("/favicon.ico") && status == 404)
                 {
                     return Err(format!("unexpected HTTP {status}: {url}").into());
@@ -483,10 +483,10 @@ fn exercise(
         }
     }
     for route in [
-        "/v1/auth/login",
-        "/v1/file-manager/disks",
-        "/v1/file-manager/history",
-        "/v1/auth/logout",
+        "/api/auth/login",
+        "/api/file-manager/disks",
+        "/api/file-manager/history",
+        "/api/auth/logout",
     ] {
         if !responses
             .iter()

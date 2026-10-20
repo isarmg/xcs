@@ -30,7 +30,7 @@ pub(super) fn begin_paused_download(browser: &Browser) -> Result<Fixture<'_>> {
             const response = await originalFetch.apply(this, args);
             const request = args[0];
             const url = typeof request === 'string' ? request : request.url;
-            if (!new URL(url, location.href).pathname.match(/^\/v1\/versions\/[^/]+\/content$/)) return response;
+            if (!new URL(url, location.href).pathname.match(/^\/api\/versions\/[^/]+\/content$/)) return response;
             // Intercept exactly this response, not logout or any future request.
             window.fetch = originalFetch;
             const reader = response.body.getReader();

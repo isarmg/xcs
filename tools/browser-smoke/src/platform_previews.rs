@@ -28,7 +28,7 @@ fn pause_upload(browser: &Browser) -> Result<UploadGate<'_>> {
             const response = await originalFetch.apply(this,args);
             const request = args[0];
             const url = typeof request === 'string' ? request : request.url;
-            if (new URL(url,location.href).pathname.match(/^\/v1\/workspaces\/[^/]+\/files\/[^/]+\/content$/)) {
+            if (new URL(url,location.href).pathname.match(/^\/api\/workspaces\/[^/]+\/files\/[^/]+\/content$/)) {
                 window.fetch = originalFetch;
                 state.waiting = true;
                 await gate;

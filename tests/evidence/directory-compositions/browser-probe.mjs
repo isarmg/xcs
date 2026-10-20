@@ -26,30 +26,30 @@ try{
     await page.addInitScript(theme=>localStorage.setItem('zxs-theme',theme),theme);
     page.on('pageerror',error=>state.pageErrors.push(error.message));
     page.on('response',response=>{const path=new URL(response.url()).pathname;if(path.endsWith('.wasm'))pending.push((async()=>{const body=await response.body();state.wasm.push({path,sha256:createHash('sha256').update(body).digest('hex'),matchesCandidate:body.equals(await readFile(`${root}/web/dist${path}`))});})());});
-    await page.route('**/v1/**',async route=>{
+    await page.route('**/api/**',async route=>{
       const request=route.request(),url=new URL(request.url()),path=url.pathname,method=request.method();
       const publish=(body,result={})=>({operation_id:body.operation_id,state:'PUBLISHED',result});
       let body;
-      if(method==='GET'&&path==='/v1/auth/me')body={principal:'fixture-user',admin:false,csrf_token:'fixture-only'};
-      else if(method==='GET'&&path==='/v1/file-manager/disks')body={disks:[{slot_id:'P01',online:true,writable:true,available_bytes:'4096'}]};
-      else if(method==='GET'&&path==='/v1/file-manager/history')body={events:['directory.branches.create','directory.branch.rename','directory.default.select','directory.branches.select','directory.tree.write'].map((action,index)=>({event_id:`event-${index}`,action,file_id:'',version_id:null,directory_branch_id:`directory-${index}`,head_tree_id:`subtree-${index}`,parent_tree_id:index===4?'parent-subtree':null,slot_id:'P01',path:index===3?'folder':'',timestamp:String(index+1),principal:'fixture-user',message:'directory composition'}))};
-      else if(method==='GET'&&path==='/v1/file-manager/disks/P01/entries'){
+      if(method==='GET'&&path==='/api/auth/me')body={principal:'fixture-user',admin:false,csrf_token:'fixture-only'};
+      else if(method==='GET'&&path==='/api/file-manager/disks')body={disks:[{slot_id:'P01',online:true,writable:true,available_bytes:'4096'}]};
+      else if(method==='GET'&&path==='/api/file-manager/history')body={events:['directory.branches.create','directory.branch.rename','directory.default.select','directory.branches.select','directory.tree.write'].map((action,index)=>({event_id:`event-${index}`,action,file_id:'',version_id:null,directory_branch_id:`directory-${index}`,head_tree_id:`subtree-${index}`,parent_tree_id:index===4?'parent-subtree':null,slot_id:'P01',path:index===3?'folder':'',timestamp:String(index+1),principal:'fixture-user',message:'directory composition'}))};
+      else if(method==='GET'&&path==='/api/file-manager/disks/P01/entries'){
         const child=url.searchParams.get('path')==='folder';
         body={entries:child?[]:[{entry_id:'folder-entry',kind:'directory',name:'folder',path:'folder'}],context:{repository_id:'fixture-repository',branch_id:'stable-namespace'},default_branch_scope:!child,writable:true,directory_file_count:'0',directory_branches_supported:true,directory_branches:(child?children:rootBranches).map(branch=>({...branch,current:branch.directory_branch_id===(child?childCurrent:rootCurrent)}))};
-      }else if(method==='POST'&&path==='/v1/file-manager/disks/P01/directory-branches'){
+      }else if(method==='POST'&&path==='/api/file-manager/disks/P01/directory-branches'){
         const value=request.postDataJSON();state.writes.push({method,path,body:value});
         assert.equal(value.path,'');assert.equal(value.name,'empty-draft');
         rootBranches=[{directory_branch_id:'auto-main',name:'auto-main-0001',materialized:true},{directory_branch_id:'root-draft',name:value.name,materialized:false}];
         body=publish(value,{directory_branch_id:'root-draft',count:'0',copied_files:'0',placeholder_files:'0'});
-      }else if(method==='PATCH'&&path==='/v1/repositories/fixture-repository/directory-branches/auto-main'){
+      }else if(method==='PATCH'&&path==='/api/repositories/fixture-repository/directory-branches/auto-main'){
         const value=request.postDataJSON();state.writes.push({method,path,body:value});
         assert.equal(value.name,'renamed-main');rootBranches[0].name=value.name;
         body=publish(value,{directory_branch_id:'auto-main',name:value.name});
-      }else if(method==='PUT'&&path==='/v1/repositories/fixture-repository/default-branch'){
+      }else if(method==='PUT'&&path==='/api/repositories/fixture-repository/default-branch'){
         const value=request.postDataJSON();state.writes.push({method,path,body:value});
         assert.equal(value.directory_branch_id,'root-draft');rootCurrent=value.directory_branch_id;
         body=publish(value,{directory_branch_id:rootCurrent,branch_id:'stable-namespace'});
-      }else if(method==='POST'&&path==='/v1/file-manager/disks/P01/directory-select'){
+      }else if(method==='POST'&&path==='/api/file-manager/disks/P01/directory-select'){
         const value=request.postDataJSON();state.writes.push({method,path,body:value});
         assert.equal(value.path,'folder');assert.equal(value.name,'child-draft');childCurrent='child-draft';
         body=publish(value,{directory_branch_id:childCurrent});

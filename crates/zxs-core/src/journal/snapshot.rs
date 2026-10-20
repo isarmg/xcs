@@ -1,4 +1,4 @@
-//! Page-at-a-time snapshot encoding. The wire format remains v2.
+//! Page-at-a-time snapshot encoding for the single current wire format.
 use super::*;
 
 struct SnapshotBuilder {
@@ -158,7 +158,6 @@ pub(super) fn prepare(state: &State, maximum: usize) -> Result<PreparedSnapshot>
         scalars.insert("control_auth".into(), serde_json::to_value(control_auth)?);
     }
     let descriptor = Snapshot {
-        format_version: 2,
         sequence,
         pages: builder.pages,
         scalars,

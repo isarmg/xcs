@@ -112,6 +112,48 @@ pub struct MergeFileBranches {
     pub operation_id: String,
 }
 
+/// Wire commands accept only canonical decimal strings for generations.
+/// These mutations bind their canonical request in the core, not to a lossy
+/// reserialization of a public envelope.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UpdateProtectionPolicy {
+    #[serde(deserialize_with = "nonempty_string")]
+    pub policy_id: String,
+    #[serde(deserialize_with = "nonempty_string")]
+    pub repository_id: String,
+    pub path_prefix: String,
+    pub target_copies: u32,
+    #[serde(with = "zxs_contract::u64_string")]
+    pub expected_generation: u64,
+    #[serde(deserialize_with = "nonempty_string")]
+    pub operation_id: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UpdatePlacementRule {
+    #[serde(deserialize_with = "nonempty_string")]
+    pub rule_id: String,
+    #[serde(deserialize_with = "nonempty_string")]
+    pub repository_id: String,
+    pub path_prefix: String,
+    #[serde(deserialize_with = "nonempty_string")]
+    pub primary_slot_id: String,
+    #[serde(with = "zxs_contract::u64_string")]
+    pub expected_generation: u64,
+    #[serde(deserialize_with = "nonempty_string")]
+    pub operation_id: String,
+}
+
+fn nonempty_string<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+    let value = String::deserialize(deserializer)?;
+    if value.is_empty() {
+        return Err(serde::de::Error::custom("expected nonempty string"));
+    }
+    Ok(value)
+}
+
 /// This service borrows a locked engine. It has no transport, JSON dispatch, or
 /// caller-supplied principal; the authenticated identity is bound at creation.
 pub struct Application<'a> {
@@ -122,6 +164,50 @@ pub struct Application<'a> {
 impl<'a> Application<'a> {
     pub fn new(engine: &'a mut Engine, identity: &'a Identity) -> Self {
         Self { engine, identity }
+    }
+
+    pub fn update_protection_policy(
+        &mut self,
+        command: UpdateProtectionPolicy,
+    ) -> Result<zxs_core::OperationResult, ApiError> {
+        authorize_access(
+            self.identity,
+            repository(self.engine, &command.repository_id)?,
+            RepositoryAccess::Manage,
+        )?;
+        self.engine
+            .update_protection_policy(
+                &command.policy_id,
+                &command.repository_id,
+                &command.path_prefix,
+                command.target_copies,
+                command.expected_generation,
+                &self.identity.principal,
+                &command.operation_id,
+            )
+            .map_err(error)
+    }
+
+    pub fn update_placement_rule(
+        &mut self,
+        command: UpdatePlacementRule,
+    ) -> Result<zxs_core::OperationResult, ApiError> {
+        authorize_access(
+            self.identity,
+            repository(self.engine, &command.repository_id)?,
+            RepositoryAccess::Manage,
+        )?;
+        self.engine
+            .update_placement_rule(
+                &command.rule_id,
+                &command.repository_id,
+                &command.path_prefix,
+                &command.primary_slot_id,
+                command.expected_generation,
+                &self.identity.principal,
+                &command.operation_id,
+            )
+            .map_err(error)
     }
 
     fn commit_request(&self, command: CommitWorkspace) -> Result<CommitRequest, ApiError> {
@@ -474,6 +560,190 @@ mod tests {
             repositories: BTreeSet::from([repo.repository_id.clone()]),
         };
         (root, engine, repo, identity)
+    }
+
+    #[test]
+    fn protection_commands_validate_wire_types_and_unknown_fields() {
+        let policy = json!({"policy_id":new_id("policy"),"repository_id":new_id("repo"),
+            "path_prefix":"","target_copies":3,"expected_generation":"0","operation_id":new_id("op")});
+        let rule = json!({"rule_id":new_id("rule"),"repository_id":new_id("repo"),
+            "path_prefix":"","primary_slot_id":"P01","expected_generation":"0","operation_id":new_id("op")});
+        for (is_policy, valid) in [(true, policy), (false, rule)] {
+            let decode = |value: serde_json::Value| {
+                if is_policy {
+                    serde_json::from_value::<UpdateProtectionPolicy>(value).map(|_| ())
+                } else {
+                    serde_json::from_value::<UpdatePlacementRule>(value).map(|_| ())
+                }
+            };
+            assert!(decode(valid.clone()).is_ok());
+            for generation in [
+                json!(0),
+                json!(null),
+                json!(""),
+                json!("00"),
+                json!("01"),
+                json!("+1"),
+                json!(" 1"),
+                json!("-1"),
+                json!("18446744073709551616"),
+            ] {
+                let mut invalid = valid.clone();
+                invalid["expected_generation"] = generation;
+                assert!(decode(invalid).is_err());
+            }
+            let mut max = valid.clone();
+            max["expected_generation"] = json!(u64::MAX.to_string());
+            assert!(decode(max).is_ok());
+            for key in ["repository_id", "operation_id"] {
+                let mut invalid = valid.clone();
+                invalid[key] = json!("");
+                assert!(decode(invalid).is_err());
+            }
+            let mut extra = valid.clone();
+            extra["principal"] = json!("admin");
+            assert!(decode(extra).is_err());
+            let mut invalid = valid.clone();
+            invalid["path_prefix"] = json!(null);
+            assert!(decode(invalid).is_err());
+            if is_policy {
+                for copies in [json!("3"), json!(3.5), json!(-1), json!(4294967296_u64)] {
+                    let mut invalid = valid.clone();
+                    invalid["target_copies"] = copies;
+                    assert!(decode(invalid).is_err());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn protection_commands_preserve_core_replay_and_transport_contract() {
+        for is_policy in [true, false] {
+            let (_root, mut engine, repo, owner) = fixture();
+            let operation = new_id("op");
+            let id = new_id(if is_policy { "policy" } else { "rule" });
+            let (action, input, original) = if is_policy {
+                let original = engine
+                    .update_protection_policy(
+                        &id,
+                        &repo.repository_id,
+                        "",
+                        3,
+                        0,
+                        &owner.principal,
+                        &operation,
+                    )
+                    .unwrap();
+                (
+                    crate::BackendAction::UpdatePolicy,
+                    json!({"policy_id":id,"repository_id":repo.repository_id,"path_prefix":"",
+                        "target_copies":3,"expected_generation":"0","operation_id":operation}),
+                    original,
+                )
+            } else {
+                let original = engine
+                    .update_placement_rule(
+                        &id,
+                        &repo.repository_id,
+                        "",
+                        "P01",
+                        0,
+                        &owner.principal,
+                        &operation,
+                    )
+                    .unwrap();
+                (
+                    crate::BackendAction::UpdatePlacementRule,
+                    json!({"rule_id":id,"repository_id":repo.repository_id,"path_prefix":"",
+                        "primary_slot_id":"P01","expected_generation":"0","operation_id":operation}),
+                    original,
+                )
+            };
+            let backend = EngineBackend::new(engine);
+            let replay = backend.call(action, &owner, input.clone()).unwrap();
+            assert_eq!(replay["request_digest"], original.request_digest);
+            assert_eq!(replay["result"], original.result);
+            assert_eq!(
+                replay["publication_sequence"],
+                original.sequence.to_string()
+            );
+            assert_eq!(replay["operation_kind"], original.kind);
+            let mut changed = input.clone();
+            changed["path_prefix"] = json!("Other");
+            assert_eq!(
+                backend.call(action, &owner, changed).unwrap_err().code,
+                "IDEMPOTENCY_KEY_REUSED"
+            );
+            let mut extra = input.clone();
+            extra["unexpected"] = json!(true);
+            assert_eq!(backend.call(action, &owner, extra).unwrap_err().status, 400);
+            let stranger = Identity {
+                principal: "stranger".into(),
+                admin: false,
+                repositories: owner.repositories.clone(),
+            };
+            assert_eq!(
+                backend
+                    .call(action, &stranger, input.clone())
+                    .unwrap_err()
+                    .status,
+                403
+            );
+            let mut malformed = input.clone();
+            malformed["expected_generation"] = json!(1);
+            assert_eq!(
+                backend
+                    .call(action, &stranger, malformed.clone())
+                    .unwrap_err()
+                    .status,
+                403
+            );
+            assert_eq!(
+                backend.call(action, &owner, malformed).unwrap_err().status,
+                400
+            );
+            // Transport-independent callers also need both account admission and Manage.
+            let mut engine = backend.engine.lock().unwrap();
+            let denied = if is_policy {
+                Application::new(&mut engine, &stranger)
+                    .update_protection_policy(serde_json::from_value(input).unwrap())
+            } else {
+                Application::new(&mut engine, &stranger)
+                    .update_placement_rule(serde_json::from_value(input).unwrap())
+            };
+            assert_eq!(denied.unwrap_err().status, 403);
+            assert_eq!(
+                engine.state().operations[&operation].request_digest,
+                original.request_digest
+            );
+            drop(engine);
+            let mut update = if is_policy {
+                json!({"policy_id":id,"repository_id":repo.repository_id,"path_prefix":"",
+                    "target_copies":3,"expected_generation":"1","operation_id":new_id("op")})
+            } else {
+                json!({"rule_id":id,"repository_id":repo.repository_id,"path_prefix":"",
+                    "primary_slot_id":"P01","expected_generation":"1","operation_id":new_id("op")})
+            };
+            let unadmitted_owner = Identity {
+                principal: owner.principal.clone(),
+                admin: false,
+                repositories: BTreeSet::new(),
+            };
+            assert_eq!(
+                backend
+                    .call(action, &unadmitted_owner, update.clone())
+                    .unwrap_err()
+                    .status,
+                403
+            );
+            let applied = backend.call(action, &owner, update.clone()).unwrap();
+            let record = if is_policy { "policy" } else { "rule" };
+            assert_eq!(applied["result"][record]["generation"], "2");
+            update["operation_id"] = json!(new_id("op"));
+            let stale = backend.call(action, &owner, update).unwrap_err();
+            assert_eq!(stale.code, "CONFIG_CONFLICT");
+            assert_eq!(stale.status, 409);
+        }
     }
 
     #[test]

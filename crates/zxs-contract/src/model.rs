@@ -30,7 +30,6 @@ pub struct DiskConfig {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-    pub format_version: u32,
     pub pool_id: String,
     pub mode: Mode,
     pub disks: Vec<DiskConfig>,
@@ -50,7 +49,6 @@ impl Config {
     pub fn development(disks: [PathBuf; 3]) -> Self {
         let slots = ["P01", "B01", "C01"];
         Self {
-            format_version: 2,
             pool_id: crate::new_id("pool"),
             mode: Mode::Development,
             disks: disks
@@ -390,7 +388,6 @@ pub struct Commit {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct FileVersion {
-    pub format_version: u32,
     pub history_tree_id: String,
     pub version_id: String,
     pub file_id: String,
@@ -403,10 +400,8 @@ pub struct FileVersion {
     pub checksum_chunk_bytes: u32,
     pub checksum_manifest_hash: String,
     pub creation_name: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub storage_name: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<String>,
+    pub storage_name: String,
+    pub created_at: String,
     pub source_version_ids: Vec<String>,
     pub created_as_full_checkpoint: bool,
 }
@@ -829,7 +824,7 @@ mod operation_status_tests {
                 let operation: OperationResult = crate::decode_strict(&bytes).unwrap();
                 assert_eq!(crate::canonical_json(&operation).unwrap(), bytes);
                 let mut expected = blake3::Hasher::new();
-                expected.update(b"zxs:state-page:v2\0");
+                expected.update(b"zxs:state-page\0");
                 expected.update(&bytes);
                 assert_eq!(
                     crate::object_hash("state-page", &operation).unwrap(),

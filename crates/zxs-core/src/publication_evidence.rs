@@ -64,3 +64,43 @@ pub(crate) fn verified_publication_seal(
     Err(first_error
         .unwrap_or_else(|| Error::new("RECOVERY_REQUIRED", "no trusted publication seal replica")))
 }
+
+pub(crate) fn repair_object_copies<T: serde::Serialize>(
+    members: &[DiskConfig],
+    kind: &str,
+    hash: &str,
+    value: &T,
+) -> Result<()> {
+    if object_hash(kind, value)? != hash {
+        return Err(Error::new("OBJECT_CORRUPT", "repair object digest differs"));
+    }
+    let bytes = encode_metadata(value, MAX_METADATA)?;
+    for member in members {
+        let mut paths = existing_object_paths(member, kind, hash)?;
+        if paths.is_empty() {
+            paths.push(object_path(member, kind, hash));
+        }
+        for path in paths {
+            match std::fs::symlink_metadata(&path) {
+                Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => {
+                    // Never replace an unsafe entry, even if a healthy replica exists.
+                    open_regular(&path)?;
+                    if read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice()) {
+                        write_atomic(&path, &bytes, true)?;
+                    }
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                    write_atomic(&path, &bytes, false)?;
+                }
+                Err(e) => return Err(e.into()),
+                Ok(_) => {
+                    return Err(Error::new(
+                        "UNSAFE_PATH",
+                        "object repair target is not a regular file",
+                    ));
+                }
+            }
+        }
+    }
+    Ok(())
+}

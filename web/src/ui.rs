@@ -269,7 +269,7 @@ fn logout(state: RwSignal<State>) {
     };
     // Finish the requested logout even if the UI is disposed while it is pending.
     wasm_bindgen_futures::spawn_local(async move {
-        let result = api::request("POST", "/v1/auth/logout", Some(json!({}))).await;
+        let result = api::request("POST", "/api/auth/logout", Some(json!({}))).await;
         if !state
             .try_with_untracked(|s| s.session_epoch == epoch && s.logout_pending)
             .unwrap_or(false)
@@ -318,7 +318,7 @@ fn account(state: RwSignal<State>) -> impl IntoView {
         spawn_local(async move {
             let result = api::request(
                 "POST",
-                "/v1/auth/password",
+                "/api/auth/password",
                 Some(json!({
                     "current_password": credentials.current_password,
                     "new_password": credentials.new_password,

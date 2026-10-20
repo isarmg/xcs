@@ -8,6 +8,8 @@ use std::{
     sync::{Mutex, OnceLock},
 };
 pub(crate) const MAX_FRAME: usize = 16 * 1024 * 1024;
+const LOG_MAGIC: &[u8; 8] = b"ZXSLOG\0\0";
+const LOG_HEADER_BYTES: usize = 12;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -38,10 +40,8 @@ pub(crate) fn receipt_binds(
     if payload.len() > MAX_FRAME {
         return Ok(false);
     }
-    let mut header = Vec::with_capacity(16);
-    header.extend(b"ZXSLOG2\0");
-    header.extend(2u16.to_le_bytes());
-    header.extend(0u16.to_le_bytes());
+    let mut header = Vec::with_capacity(LOG_HEADER_BYTES);
+    header.extend(LOG_MAGIC);
     header.extend((payload.len() as u32).to_le_bytes());
     let mut digest = blake3::Hasher::new();
     digest.update(&header);
@@ -85,9 +85,9 @@ pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
     let mut previous = "0".repeat(64);
     let mut last_sequence = 0;
     loop {
-        let mut header = [0u8; 16];
+        let mut header = [0u8; LOG_HEADER_BYTES];
         let mut got = 0;
-        while got < 16 {
+        while got < LOG_HEADER_BYTES {
             let n = file.read(&mut header[got..])?;
             if n == 0 {
                 break;
@@ -97,17 +97,18 @@ pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
         if got == 0 {
             break;
         }
-        if got < 16 {
+        if got < LOG_HEADER_BYTES {
             out.torn_tail = true;
             break;
         }
-        if &header[..8] != b"ZXSLOG2\0"
-            || header[8..10] != 2u16.to_le_bytes()
-            || header[10..12] != [0, 0]
-        {
+        if &header[..8] != LOG_MAGIC {
             return Err(Error::new("LOG_CORRUPT", "invalid log frame header"));
         }
-        let len = u32::from_le_bytes(header[12..16].try_into().expect("fixed header")) as usize;
+        let len = u32::from_le_bytes(
+            header[8..LOG_HEADER_BYTES]
+                .try_into()
+                .expect("fixed header"),
+        ) as usize;
         if len > MAX_FRAME {
             return Err(Error::new("LOG_CORRUPT", "log frame length exceeds limit"));
         }
@@ -155,7 +156,7 @@ pub(crate) fn scan(d: &DiskConfig) -> Result<Scan> {
         previous = blake3::Hash::from_bytes(digest).to_hex().to_string();
         last_sequence = record.sequence;
         out.records.push((record, previous.clone()));
-        out.valid_bytes += 16 + len as u64 + 32;
+        out.valid_bytes += LOG_HEADER_BYTES as u64 + len as u64 + 32;
     }
     Ok(out)
 }
@@ -289,10 +290,8 @@ pub(crate) fn append(
             "log record exceeds frame limit",
         ));
     }
-    let mut header = Vec::with_capacity(16);
-    header.extend(b"ZXSLOG2\0");
-    header.extend(2u16.to_le_bytes());
-    header.extend(0u16.to_le_bytes());
+    let mut header = Vec::with_capacity(LOG_HEADER_BYTES);
+    header.extend(LOG_MAGIC);
     header.extend((bytes.len() as u32).to_le_bytes());
     let mut h = blake3::Hasher::new();
     h.update(&header);
@@ -437,8 +436,8 @@ pub(crate) fn load_object<T: serde::de::DeserializeOwned + Serialize>(
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct Snapshot {
-    pub format_version: u32,
     #[serde(with = "zxs_contract::u64_string")]
     pub sequence: u64,
     pub pages: BTreeMap<String, Vec<String>>,
@@ -448,8 +447,8 @@ pub(crate) const STATE_PAGE_ENTRIES: usize = 128;
 /// Content-defined key boundaries keep an insertion from shifting every later
 /// page (about 32 entries per page for uniformly distributed key hashes).
 /// Values do not participate: updating an entity only rewrites its page.
-/// The hard cap bounds adversarial keys without changing the v2 on-disk format.
-/// Readers intentionally accept both these pages and legacy fixed-count pages.
+/// The hard cap bounds adversarial keys within the single current on-disk format.
+/// Readers verify exact bound pages; partitioning is not a format discriminator.
 pub(crate) fn state_pages(
     map: &serde_json::Map<String, serde_json::Value>,
 ) -> impl Iterator<Item = serde_json::Map<String, serde_json::Value>> + '_ {
@@ -504,7 +503,7 @@ pub(crate) fn prepare_snapshot(state: &State, maximum: usize) -> Result<Prepared
     snapshot::prepare(state, maximum)
 }
 
-// Differential oracle for exact v2 bytes, including legacy serde field rules.
+// Differential oracle for exact current bytes and field-specific serde rules.
 #[cfg(test)]
 fn prepare_snapshot_reference(state: &State, maximum: usize) -> Result<PreparedSnapshot> {
     let value = serde_json::to_value(state)?;
@@ -540,7 +539,6 @@ fn prepare_snapshot_reference(state: &State, maximum: usize) -> Result<PreparedS
         }
     }
     let descriptor = Snapshot {
-        format_version: 2,
         sequence: state.sequence,
         pages,
         scalars,
@@ -563,10 +561,16 @@ pub(crate) fn load_snapshot(d: &DiskConfig, hash: &str) -> Result<State> {
     #[cfg(test)]
     SNAPSHOT_LOAD_COUNT.with(|count| count.set(count.get() + 1));
     let snapshot: Snapshot = load_object(d, "snapshot", hash)?;
-    if snapshot.format_version != 2 {
+    if snapshot.scalars.contains_key("events") && snapshot.pages.contains_key("events") {
+        return Err(Error::new(
+            "OBJECT_CORRUPT",
+            "snapshot events are both scalar and paged",
+        ));
+    }
+    if !snapshot.pages.contains_key("events") {
         return Err(Error::new(
             "FORMAT_UNSUPPORTED",
-            "snapshot version unsupported",
+            "snapshot events must use the current paged representation",
         ));
     }
     let mut out = snapshot.scalars;
@@ -617,8 +621,8 @@ pub(crate) struct VersionEvidence {
     pub placement: Placement,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct Candidate {
-    pub format_version: u32,
     pub pool_id: String,
     #[serde(with = "zxs_contract::u64_string")]
     pub sequence: u64,
@@ -892,8 +896,7 @@ pub(crate) fn verify_local_publication(directory: &Path, version: &FileVersion) 
         .ok_or_else(|| Error::new("PUBLICATION_INVALID", "version is outside disk layout"))?;
     let seal: DiskSeal = read_json(&root.join("disk.json"))?;
     let finalize_hash = object_hash("finalize", &p.finalize)?;
-    if c.format_version != 2
-        || p.candidate_hash != candidate_hash
+    if p.candidate_hash != candidate_hash
         || proof.candidate_hash != candidate_hash
         || object_hash("commit-proof", &proof)? != object_hash("commit-proof", &local.commit_proof)?
         || proof.version_hash != object_hash("version", version)?
@@ -1110,6 +1113,44 @@ mod tail_cache_tests {
             &"b".repeat(64),
         )
         .unwrap()
+    }
+
+    #[test]
+    fn unnumbered_frame_header_binds_length_payload_and_receipt() {
+        let temp = tempfile::tempdir().unwrap();
+        let d = disk(&temp);
+        let receipt = put(&d, "PREPARE", 1);
+        let bytes = std::fs::read(log_path(&d)).unwrap();
+        let payload = canonical_json(&receipt.record).unwrap();
+        assert_eq!(&bytes[..8], LOG_MAGIC);
+        assert_eq!(
+            u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize,
+            payload.len()
+        );
+        assert_eq!(bytes.len(), LOG_HEADER_BYTES + payload.len() + 32);
+        assert_eq!(
+            &bytes[LOG_HEADER_BYTES..LOG_HEADER_BYTES + payload.len()],
+            payload
+        );
+        assert!(
+            receipt_binds(
+                &receipt,
+                "PREPARE",
+                1,
+                &format!("{:064x}", 1),
+                &"b".repeat(64)
+            )
+            .unwrap()
+        );
+        assert_eq!(scan(&d).unwrap().valid_bytes, bytes.len() as u64);
+        let mut invalid = bytes;
+        invalid[..8].copy_from_slice(b"ZXSLOG2\0");
+        std::fs::write(log_path(&d), &invalid).unwrap();
+        assert_eq!(scan(&d).err().unwrap().code(), "LOG_CORRUPT");
+        invalid[..8].copy_from_slice(LOG_MAGIC);
+        invalid[8..12].copy_from_slice(&((MAX_FRAME + 1) as u32).to_le_bytes());
+        std::fs::write(log_path(&d), invalid).unwrap();
+        assert!(scan(&d).is_err());
     }
 
     #[test]
@@ -1378,6 +1419,68 @@ mod snapshot_partition_tests {
     }
 
     #[test]
+    fn current_snapshot_and_candidate_are_strict_unversioned_structures() {
+        let prepared = prepare_snapshot(&State::default(), MAX_METADATA).unwrap();
+        let mut snapshot = serde_json::to_value(&prepared.descriptor).unwrap();
+        assert!(snapshot.get("format_version").is_none());
+        snapshot["format_version"] = serde_json::json!(2);
+        assert!(serde_json::from_value::<Snapshot>(snapshot).is_err());
+        let candidate = Candidate {
+            pool_id: new_id("pool"),
+            sequence: 1,
+            transaction_id: new_id("tx"),
+            operation_id: new_id("op"),
+            request_digest: "a".repeat(64),
+            previous_snapshot: None,
+            snapshot_hash: prepared.hash,
+            versions: Vec::new(),
+            metadata_disk_ids: Vec::new(),
+            history_manifest_hashes: BTreeMap::new(),
+        };
+        let mut candidate = serde_json::to_value(candidate).unwrap();
+        assert!(candidate.get("format_version").is_none());
+        candidate["format_version"] = serde_json::json!(2);
+        assert!(serde_json::from_value::<Candidate>(candidate).is_err());
+        let config = Config::development(["a".into(), "b".into(), "c".into()]);
+        let mut config = serde_json::to_value(config).unwrap();
+        assert!(config.get("format_version").is_none());
+        config["format_version"] = serde_json::json!(2);
+        assert!(serde_json::from_value::<Config>(config).is_err());
+    }
+
+    #[test]
+    fn scalar_event_snapshots_are_rejected_without_rewriting_evidence() {
+        let temp = tempfile::tempdir().unwrap();
+        let config = Config::development([
+            temp.path().join("one"),
+            temp.path().join("two"),
+            temp.path().join("three"),
+        ]);
+        let disk = &config.disks[0];
+        let state = event_state(1);
+        let mut descriptor = prepare_snapshot(&state, MAX_METADATA).unwrap().descriptor;
+        descriptor.pages.remove("events");
+        descriptor.scalars.insert(
+            "events".into(),
+            serde_json::to_value(&state.events).unwrap(),
+        );
+        let hash = store_object(disk, "snapshot", &descriptor).unwrap();
+        let path = object_path(disk, "snapshot", &hash);
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(
+            load_snapshot(disk, &hash).unwrap_err().code(),
+            "FORMAT_UNSUPPORTED"
+        );
+        assert_eq!(std::fs::read(path).unwrap(), bytes);
+        descriptor.scalars.remove("events");
+        let absent_hash = store_object(disk, "snapshot", &descriptor).unwrap();
+        assert_eq!(
+            load_snapshot(disk, &absent_hash).unwrap_err().code(),
+            "FORMAT_UNSUPPORTED"
+        );
+    }
+
+    #[test]
     fn event_snapshot_rejects_gaps_and_ambiguous_scalar_page_fields() {
         let temp = tempfile::tempdir().unwrap();
         let config = Config::development([
@@ -1500,7 +1603,7 @@ mod snapshot_partition_tests {
     }
 
     #[test]
-    fn legacy_and_content_defined_snapshots_restore_identical_full_state() {
+    fn alternate_page_partitions_preserve_exact_bound_current_snapshots() {
         let temp = tempfile::tempdir().unwrap();
         let config = Config::development([
             temp.path().join("one"),
@@ -1523,8 +1626,7 @@ mod snapshot_partition_tests {
             ..Default::default()
         };
         let value = serde_json::to_value(&state).unwrap();
-        let mut legacy = Snapshot {
-            format_version: 2,
+        let mut alternate = Snapshot {
             sequence: state.sequence,
             pages: BTreeMap::new(),
             scalars: serde_json::Map::new(),
@@ -1542,15 +1644,22 @@ mod snapshot_partition_tests {
                         store_object(disk, "state-page", &page).unwrap()
                     })
                     .collect();
-                legacy.pages.insert(field.clone(), pages);
+                alternate.pages.insert(field.clone(), pages);
             } else {
-                legacy.scalars.insert(field.clone(), value.clone());
+                alternate.scalars.insert(field.clone(), value.clone());
             }
         }
-        let legacy_hash = store_object(disk, "snapshot", &legacy).unwrap();
-        let modern_hash = store_snapshot(std::slice::from_ref(disk), &state).unwrap();
-        assert_ne!(legacy_hash, modern_hash);
-        assert_eq!(load_snapshot(disk, &legacy_hash).unwrap(), state);
+        // Different map partitions remain valid current-format evidence, but
+        // scalar event arrays are no longer an accepted representation.
+        alternate.scalars.remove("events");
+        let modern = prepare_snapshot(&state, MAX_METADATA).unwrap();
+        alternate
+            .pages
+            .insert("events".into(), modern.descriptor.pages["events"].clone());
+        let modern_hash = modern.store(std::slice::from_ref(disk)).unwrap();
+        let alternate_hash = store_object(disk, "snapshot", &alternate).unwrap();
+        assert_ne!(alternate_hash, modern_hash);
+        assert_eq!(load_snapshot(disk, &alternate_hash).unwrap(), state);
         assert_eq!(load_snapshot(disk, &modern_hash).unwrap(), state);
         // Writing a later state must not change either retained snapshot.
         let mut next = state.clone();
@@ -1559,7 +1668,7 @@ mod snapshot_partition_tests {
             .insert("new-version".into(), "MIGRATED".into());
         let next_hash = store_snapshot(std::slice::from_ref(disk), &next).unwrap();
         assert_eq!(load_snapshot(disk, &next_hash).unwrap(), next);
-        assert_eq!(load_snapshot(disk, &legacy_hash).unwrap(), state);
+        assert_eq!(load_snapshot(disk, &alternate_hash).unwrap(), state);
         assert_eq!(load_snapshot(disk, &modern_hash).unwrap(), state);
     }
 }

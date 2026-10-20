@@ -1,0 +1,256 @@
+//! Split validation must reject broken inputs without publishing a partial migration.
+use super::*;
+
+fn fixture() -> (tempfile::TempDir, Engine, Repository, String, String) {
+    let temporary = tempfile::tempdir().unwrap();
+    let mut engine = Engine::initialize(
+        &temporary.path().join("system"),
+        Config::development([
+            temporary.path().join("p"),
+            temporary.path().join("b"),
+            temporary.path().join("c"),
+        ]),
+    )
+    .unwrap();
+    let repo = engine
+        .create_repository("split", "P01", 3, "admin", &new_id("op"))
+        .unwrap();
+    let mut commits = Vec::new();
+    for bytes in [b"first".as_slice(), b"second".as_slice()] {
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        engine
+            .stage_bytes(&workspace.workspace_id, "file.txt", bytes)
+            .unwrap();
+        commits.push(
+            engine
+                .commit_workspace(CommitRequest {
+                    workspace_id: workspace.workspace_id,
+                    operation_id: new_id("op"),
+                    principal: "admin".into(),
+                    expected_head: workspace.base_head,
+                    fencing_token: workspace.fencing_token,
+                    message: "fixture".into(),
+                    request_digest: None,
+                })
+                .unwrap()
+                .commit_id
+                .unwrap(),
+        );
+    }
+    (
+        temporary,
+        engine,
+        repo,
+        commits[0].clone(),
+        commits[1].clone(),
+    )
+}
+
+#[test]
+fn split_rejects_broken_persisted_identities_without_partial_migration() {
+    for corruption in [
+        "missing_prefix",
+        "foreign_prefix",
+        "cyclic_prefix",
+        "cut_identity",
+        "descendant_identity",
+        "version_identity",
+        "version_file",
+        "reused_version_file",
+        "branch_identity",
+    ] {
+        let (_temporary, mut engine, repo, cut, last) = fixture();
+        let plan = engine
+            .create_split_plan(&repo.history_tree_id, &cut, "admin")
+            .unwrap();
+        let prefix = engine.state.commits[&cut].parent_commit_ids[0].clone();
+        match corruption {
+            "missing_prefix" => {
+                engine.state.commits.remove(&prefix);
+            }
+            "foreign_prefix" => {
+                engine
+                    .state
+                    .commits
+                    .get_mut(&prefix)
+                    .unwrap()
+                    .history_tree_id = "foreign".into();
+            }
+            "cyclic_prefix" => {
+                engine
+                    .state
+                    .commits
+                    .get_mut(&prefix)
+                    .unwrap()
+                    .parent_commit_ids = vec![cut.clone()];
+            }
+            "cut_identity" => {
+                engine.state.commits.get_mut(&cut).unwrap().commit_id = "missing".into();
+            }
+            "descendant_identity" => {
+                engine.state.commits.get_mut(&last).unwrap().commit_id = "missing".into();
+            }
+            "version_identity" | "version_file" => {
+                let version = engine.state.commits[&cut]
+                    .entries
+                    .iter()
+                    .find(|entry| entry.kind == "file")
+                    .unwrap()
+                    .version_id
+                    .clone();
+                let version = engine.state.versions.get_mut(&version).unwrap();
+                if corruption == "version_identity" {
+                    version.version_id = "missing".into();
+                } else {
+                    version.file_id = "missing".into();
+                }
+            }
+            "reused_version_file" => {
+                let version = engine.state.commits[&cut]
+                    .entries
+                    .iter()
+                    .find(|entry| entry.kind == "file")
+                    .unwrap()
+                    .version_id
+                    .clone();
+                let entry = engine
+                    .state
+                    .commits
+                    .get_mut(&last)
+                    .unwrap()
+                    .entries
+                    .iter_mut()
+                    .find(|entry| entry.kind == "file")
+                    .unwrap();
+                entry.version_id = version;
+                entry.file_id = "missing".into();
+            }
+            "branch_identity" => {
+                engine
+                    .state
+                    .branches
+                    .get_mut(&repo.main_branch_id)
+                    .unwrap()
+                    .branch_id = "missing".into();
+            }
+            _ => unreachable!(),
+        }
+        let before = canonical_json(&engine.state).unwrap();
+        let error = engine
+            .commit_plan(&plan.plan_id, "admin", &new_id("op"))
+            .unwrap_err();
+        assert_eq!(error.code(), "STATE_INVALID", "{corruption}");
+        assert_eq!(
+            canonical_json(&engine.state).unwrap(),
+            before,
+            "{corruption}"
+        );
+        assert_eq!(engine.plan(&plan.plan_id).unwrap().state, "ready");
+    }
+}
+
+#[test]
+fn split_rejects_broken_crossing_merge_endpoints_without_publication() {
+    for corruption in [
+        "prefix_branch",
+        "prefix_commit",
+        "moved_branch",
+        "foreign_branch",
+        "foreign_commit",
+        "link_identity",
+    ] {
+        let (_temporary, mut engine, repo, cut, _) = fixture();
+        let prefix = engine.state.commits[&cut].parent_commit_ids[0].clone();
+        let outside = engine
+            .create_branch(&prefix, "prefix", "admin", &new_id("op"))
+            .unwrap();
+        let plan = engine
+            .create_split_plan(&repo.history_tree_id, &cut, "admin")
+            .unwrap();
+        let mut link = MergeLink {
+            merge_link_id: new_id("link"),
+            history_tree_id: repo.history_tree_id.clone(),
+            source_branch_id: repo.main_branch_id.clone(),
+            source_commit_id: cut,
+            target_branch_id: outside.branch_id.clone(),
+            target_commit_id: prefix.clone(),
+            author: "admin".into(),
+            operation_id: new_id("op"),
+        };
+        match corruption {
+            "prefix_branch" => link.target_branch_id = "missing".into(),
+            "prefix_commit" => link.target_commit_id = "missing".into(),
+            "moved_branch" => link.source_branch_id = "missing".into(),
+            "foreign_branch" => {
+                engine
+                    .state
+                    .branches
+                    .get_mut(&outside.branch_id)
+                    .unwrap()
+                    .history_tree_id = "foreign".into();
+            }
+            "foreign_commit" => {
+                // Keep the real prefix intact so this specifically tests link validation.
+                let mut foreign = engine.state.commits[&prefix].clone();
+                foreign.commit_id = new_id("commit");
+                foreign.history_tree_id = "foreign".into();
+                link.target_commit_id = foreign.commit_id.clone();
+                engine
+                    .state
+                    .commits
+                    .insert(foreign.commit_id.clone(), foreign);
+            }
+            "link_identity" => {}
+            _ => unreachable!(),
+        }
+        let key = link.merge_link_id.clone();
+        if corruption == "link_identity" {
+            link.merge_link_id = "missing".into();
+        }
+        engine.state.merge_links.insert(key, link);
+        let before = canonical_json(&engine.state).unwrap();
+        let error = engine
+            .commit_plan(&plan.plan_id, "admin", &new_id("op"))
+            .unwrap_err();
+        assert_eq!(error.code(), "STATE_INVALID", "{corruption}");
+        assert_eq!(
+            canonical_json(&engine.state).unwrap(),
+            before,
+            "{corruption}"
+        );
+    }
+}
+
+#[test]
+fn split_generation_overflow_does_not_wrap_or_publish_migration() {
+    for counter in ["branch", "history"] {
+        let (_temporary, mut engine, repo, cut, _) = fixture();
+        let plan = engine
+            .create_split_plan(&repo.history_tree_id, &cut, "admin")
+            .unwrap();
+        if counter == "branch" {
+            engine
+                .state
+                .branches
+                .get_mut(&repo.main_branch_id)
+                .unwrap()
+                .generation = u64::MAX;
+        } else {
+            engine
+                .state
+                .histories
+                .get_mut(&repo.history_tree_id)
+                .unwrap()
+                .generation = u64::MAX;
+        }
+        let before = canonical_json(&engine.state).unwrap();
+        let error = engine
+            .commit_plan(&plan.plan_id, "admin", &new_id("op"))
+            .unwrap_err();
+        assert_eq!(error.code(), "RESOURCE_LIMIT", "{counter}");
+        assert_eq!(canonical_json(&engine.state).unwrap(), before, "{counter}");
+        assert_eq!(engine.plan(&plan.plan_id).unwrap().state, "ready");
+    }
+}

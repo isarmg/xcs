@@ -70,11 +70,11 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
     let auth = backend.protect_auth(auth).unwrap();
     let app = zxs_server::router(backend, auth, ServerConfig::loopback(&system)).unwrap();
     assert_eq!(
-        request(&app, None, "/v1/system/status", None).await.0,
+        request(&app, None, "/api/system/status", None).await.0,
         StatusCode::UNAUTHORIZED
     );
     assert_eq!(
-        request(&app, None, "/v1/system/history?range=1h", None)
+        request(&app, None, "/api/system/history?range=1h", None)
             .await
             .0,
         StatusCode::UNAUTHORIZED
@@ -82,18 +82,19 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
     let (_, reader) = request(
         &app,
         None,
-        "/v1/auth/login",
+        "/api/auth/login",
         Some(json!({"username":"reader","password":"monitor-reader-password"})),
     )
     .await;
-    let (status, denied) = request(&app, reader["token"].as_str(), "/v1/system/status", None).await;
+    let (status, denied) =
+        request(&app, reader["token"].as_str(), "/api/system/status", None).await;
     assert_eq!(status, StatusCode::FORBIDDEN);
     assert!(denied.get("cpu").is_none());
     assert_eq!(
         request(
             &app,
             reader["token"].as_str(),
-            "/v1/system/history?range=1h",
+            "/api/system/history?range=1h",
             None
         )
         .await
@@ -103,11 +104,11 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
     let (_, admin) = request(
         &app,
         None,
-        "/v1/auth/login",
+        "/api/auth/login",
         Some(json!({"username":"admin","password":"monitor-test-password"})),
     )
     .await;
-    let (status, sample) = request(&app, admin["token"].as_str(), "/v1/system/status", None).await;
+    let (status, sample) = request(&app, admin["token"].as_str(), "/api/system/status", None).await;
     assert_eq!(status, StatusCode::OK);
     assert!(
         sample["cpu"]["logical_count"]
@@ -154,7 +155,7 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
             || sample["cpu"]["power_unavailable_reason"].is_string()
     );
     tokio::time::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL).await;
-    let (status, sample) = request(&app, admin["token"].as_str(), "/v1/system/status", None).await;
+    let (status, sample) = request(&app, admin["token"].as_str(), "/api/system/status", None).await;
     assert_eq!(status, StatusCode::OK);
     assert!(
         sample["cpu"]["usage_percent"]
@@ -162,7 +163,7 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
             .is_some_and(|value| (0.0..=100.0).contains(&value))
     );
     let token = admin["token"].as_str();
-    let (status, before) = request(&app, token, "/v1/system/history?range=1min", None).await;
+    let (status, before) = request(&app, token, "/api/system/history?range=1min", None).await;
     assert_eq!(status, StatusCode::OK);
     assert!(!before["samples"].as_array().unwrap().is_empty());
     let last_before = before["samples"].as_array().unwrap().last().unwrap()["collected_at"]
@@ -178,7 +179,7 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
         ready_before["sequence"], ready_after["sequence"],
         "monitoring must not publish business history"
     );
-    let (_, after) = request(&app, token, "/v1/system/history?range=1min", None).await;
+    let (_, after) = request(&app, token, "/api/system/history?range=1min", None).await;
     assert!(
         after["samples"]
             .as_array()
@@ -197,7 +198,7 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
         let (status, history) = request(
             &app,
             token,
-            &format!("/v1/system/history?range={range}"),
+            &format!("/api/system/history?range={range}"),
             None,
         )
         .await;
@@ -207,7 +208,7 @@ async fn real_status_samples_host_and_registered_disks_without_exposing_them_to_
         assert!(history["samples"].as_array().unwrap().len() <= 361);
     }
     assert_eq!(
-        request(&app, token, "/v1/system/history?range=1year", None)
+        request(&app, token, "/api/system/history?range=1year", None)
             .await
             .0,
         StatusCode::BAD_REQUEST

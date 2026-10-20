@@ -542,7 +542,7 @@ impl Backend for EngineBackend {
                 Ok(json!({"disks":disks}))
             }
             crate::BackendAction::Capabilities => Ok(
-                json!({"protocol_version":"1","disk_format_version":2,"name_policy_version":"PortableNameV2","path_policy_version":"PortablePathV1","unicode_data_version":"16.0.0","supported_save_modes":["full"],"full_only":true,"full_branches":false,"branch_creation":"record-until-write","branch_content":"inherit-parent-until-first-write","file_branches":true,"branch_scope":"file","directory_branches":true,"directory_branch_creation":"inherit-directory-tree","directory_subtrees":true,"namespace_batch":true,"smb_default_branch":"selected-root-directory","file_manager":true,"historical_save_creates_branch":true,"merge_behavior":"explicit-file-node-adoption","file_branch_merge":true,"directory_branch_merge":false,"directory_merge_status":"design-pending","file_node_tags":true,"backup_configuration":true,"range_upload":false,"complete_upload":true,"max_upload_bytes":engine.config().max_file_bytes.to_string(),"authentication":"session-bearer-or-cookie","platforms":{"web":true,"cli":true,"native_app":"requires-platform-build"},"operations":["repositories","tree","workspace","commit","history","graph","branch","merge-link","file-branch-merge","file-node-tags","backup-configuration","purge-plan","split-plan","version-range-read","file-manager","file-branches","file-branch-rename","file-path-nodes","directory-branches","directory-subtrees","namespace-batch","default-branch","file-notes","system-status"]}),
+                json!({"name_policy":"PortableName","path_policy":"PortablePath","unicode_data_version":"16.0.0","supported_save_modes":["full"],"full_only":true,"full_branches":false,"branch_creation":"record-until-write","branch_content":"inherit-parent-until-first-write","file_branches":true,"branch_scope":"file","directory_branches":true,"directory_branch_creation":"inherit-directory-tree","directory_subtrees":true,"namespace_batch":true,"smb_default_branch":"selected-root-directory","file_manager":true,"historical_save_creates_branch":true,"merge_behavior":"explicit-file-node-adoption","file_branch_merge":true,"directory_branch_merge":false,"directory_merge_status":"design-pending","file_node_tags":true,"backup_configuration":true,"range_upload":false,"complete_upload":true,"max_upload_bytes":engine.config().max_file_bytes.to_string(),"authentication":"session-bearer-or-cookie","platforms":{"web":true,"cli":true,"native_app":"requires-platform-build"},"operations":["repositories","tree","workspace","commit","history","graph","branch","merge-link","file-branch-merge","file-node-tags","backup-configuration","purge-plan","split-plan","version-range-read","file-manager","file-branches","file-branch-rename","file-path-nodes","directory-branches","directory-subtrees","namespace-batch","default-branch","file-notes","system-status"]}),
             ),
             crate::BackendAction::Ready => {
                 if engine.is_read_only() {
@@ -1305,29 +1305,11 @@ impl Backend for EngineBackend {
                 )?;
                 let repo = field(&input, "repository_id")?;
                 authorize(identity, repository(&engine, repo)?, true, true)?;
-                let generation =
-                    zxs_contract::parse_u64_decimal(field(&input, "expected_generation")?)
-                        .map_err(ApiError::invalid)?;
-                let copies = input
-                    .get("target_copies")
-                    .and_then(Value::as_u64)
-                    .and_then(|value| u32::try_from(value).ok())
-                    .ok_or_else(|| ApiError::invalid("target_copies must be an integer"))?;
-                let prefix = input
-                    .get("path_prefix")
-                    .and_then(Value::as_str)
-                    .ok_or_else(|| ApiError::invalid("path_prefix must be a string"))?;
-                let result = engine
-                    .update_protection_policy(
-                        field(&input, "policy_id")?,
-                        repo,
-                        prefix,
-                        copies,
-                        generation,
-                        &identity.principal,
-                        operation(&input)?,
-                    )
-                    .map_err(error)?;
+                // Retain the transport's key/admission error ordering while the
+                // application also enforces ACLs for non-HTTP callers.
+                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let result =
+                    Application::new(&mut engine, identity).update_protection_policy(command)?;
                 operation_wire(&engine, result)
             }
             crate::BackendAction::UpdatePlacementRule => {
@@ -1344,24 +1326,11 @@ impl Backend for EngineBackend {
                 )?;
                 let repo = field(&input, "repository_id")?;
                 authorize(identity, repository(&engine, repo)?, true, true)?;
-                let generation =
-                    zxs_contract::parse_u64_decimal(field(&input, "expected_generation")?)
-                        .map_err(ApiError::invalid)?;
-                let prefix = input
-                    .get("path_prefix")
-                    .and_then(Value::as_str)
-                    .ok_or_else(|| ApiError::invalid("path_prefix must be a string"))?;
-                let result = engine
-                    .update_placement_rule(
-                        field(&input, "rule_id")?,
-                        repo,
-                        prefix,
-                        field(&input, "primary_slot_id")?,
-                        generation,
-                        &identity.principal,
-                        operation(&input)?,
-                    )
-                    .map_err(error)?;
+                // Retain the transport's key/admission error ordering while the
+                // application also enforces ACLs for non-HTTP callers.
+                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let result =
+                    Application::new(&mut engine, identity).update_placement_rule(command)?;
                 operation_wire(&engine, result)
             }
             crate::BackendAction::Check => {
@@ -1636,7 +1605,7 @@ mod authorization_tests {
             main_branch_id: "branch".into(),
             primary_slot_id: "P01".into(),
             target_copies: 3,
-            name_policy: "PortableNameV2".into(),
+            name_policy: "PortableName".into(),
             unicode_version: "16.0.0".into(),
             grants: Grants::default(),
             account_scope_repository_id: None,
@@ -1689,7 +1658,7 @@ mod authorization_tests {
             main_branch_id: "branch".into(),
             primary_slot_id: "P01".into(),
             target_copies: 3,
-            name_policy: "PortableNameV2".into(),
+            name_policy: "PortableName".into(),
             unicode_version: "16.0.0".into(),
             grants: Grants::owner("reader"),
             account_scope_repository_id: Some("source repository".into()),

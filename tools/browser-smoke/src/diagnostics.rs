@@ -39,7 +39,7 @@ pub(super) fn install(browser: &Browser) -> Result<()> {
     Ok(())
 }
 pub(super) fn upload_snapshot(browser: &Browser, phase: &str) {
-    match browser.script("return {events:window.__zxsSmokeUploadEvents||[],errors:window.__zxsSmokeErrors||[],text:document.body.innerText,requests:performance.getEntriesByType('resource').filter(e=>e.name.includes('/v1/')).map(e=>({name:e.name,start:e.startTime,duration:e.duration}))}") {
+    match browser.script("return {events:window.__zxsSmokeUploadEvents||[],errors:window.__zxsSmokeErrors||[],text:document.body.innerText,requests:performance.getEntriesByType('resource').filter(e=>e.name.includes('/api/')).map(e=>({name:e.name,start:e.startTime,duration:e.duration}))}") {
         Ok(value) => eprintln!("--- upload diagnostic {phase} ---\n{value}"),
         Err(error) => eprintln!("upload diagnostic {phase} unavailable: {error}"),
     }
@@ -60,7 +60,7 @@ pub(super) fn failure(browser: &Browser, directory: &Path, password: &str) {
         }
         Err(error) => eprintln!("browser failure {name} unavailable: {error}"),
     };
-    save("page.json", browser.script("return {url:location.href,title:document.title,text:document.body.innerText,events:window.__zxsSmokeUploadEvents||[],errors:window.__zxsSmokeErrors||[],inputs:[...document.querySelectorAll('input[type=file]')].map(e=>({multiple:e.multiple,filesLength:e.files?.length,files:[...(e.files||[])].map(f=>({name:f.name,size:f.size}))})),requests:performance.getEntriesByType('resource').filter(e=>e.name.includes('/v1/')).map(e=>({name:e.name,start:e.startTime,duration:e.duration}))}"));
+    save("page.json", browser.script("return {url:location.href,title:document.title,text:document.body.innerText,events:window.__zxsSmokeUploadEvents||[],errors:window.__zxsSmokeErrors||[],inputs:[...document.querySelectorAll('input[type=file]')].map(e=>({multiple:e.multiple,filesLength:e.files?.length,files:[...(e.files||[])].map(f=>({name:f.name,size:f.size}))})),requests:performance.getEntriesByType('resource').filter(e=>e.name.includes('/api/')).map(e=>({name:e.name,start:e.startTime,duration:e.duration}))}"));
     save("dom.json", browser.script("const root=document.documentElement.cloneNode(true);root.querySelectorAll('input[type=password]').forEach(e=>e.removeAttribute('value'));return root.outerHTML"));
     save(
         "console.json",

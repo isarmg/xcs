@@ -1310,57 +1310,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
-name = "zxs-app-bridge"
-version = "0.1.0"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "tempfile",
- "tokio",
- "zxs-client",
- "zxs-contract",
- "zxs-naming",
-]
-
-[[package]]
-name = "zxs-client"
-version = "0.1.0"
-dependencies = [
- "blake3",
- "futures-util",
- "reqwest",
- "rustix",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror",
- "tokio",
- "tokio-util",
- "url",
- "zxs-contract",
-]
-
-[[package]]
-name = "zxs-contract"
-version = "0.1.0"
-dependencies = [
- "blake3",
- "serde",
- "serde_json",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "zxs-naming"
-version = "0.1.0"
-dependencies = [
- "unicode-normalization",
- "zxs-contract",
-]
-
-[[package]]
 name = "yoke"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1448,3 +1397,54 @@ name = "zmij"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+
+[[package]]
+name = "zxs-app-bridge"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "zxs-client",
+ "zxs-contract",
+ "zxs-naming",
+]
+
+[[package]]
+name = "zxs-client"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "futures-util",
+ "reqwest",
+ "rustix",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+ "url",
+ "zxs-contract",
+]
+
+[[package]]
+name = "zxs-contract"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "zxs-naming"
+version = "0.1.0"
+dependencies = [
+ "unicode-normalization",
+ "zxs-contract",
+]

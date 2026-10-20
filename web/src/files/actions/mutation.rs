@@ -132,7 +132,7 @@ pub(crate) fn select_default_branch(state: RwSignal<State>, branch_id: String) {
         state,
         "PUT",
         format!(
-            "/v1/repositories/{}/default-branch",
+            "/api/repositories/{}/default-branch",
             api::segment(&repository)
         ),
         json!({"directory_branch_id":branch_id}),
@@ -155,7 +155,7 @@ pub(crate) fn rename_directory_branch(
         state,
         "PATCH",
         format!(
-            "/v1/repositories/{}/directory-branches/{}",
+            "/api/repositories/{}/directory-branches/{}",
             api::segment(&repository),
             api::segment(&branch_id)
         ),
@@ -179,7 +179,7 @@ pub(crate) fn rename_file_branch(
         state,
         "PATCH",
         format!(
-            "/v1/file-manager/files/{}/branches/{}",
+            "/api/file-manager/files/{}/branches/{}",
             api::segment(&file),
             api::segment(&branch_id)
         ),
@@ -249,7 +249,7 @@ pub(crate) fn update_note(state: RwSignal<State>, version: Option<String>, note:
         return;
     }
     let endpoint = format!(
-        "/v1/file-manager/{collection}/{}/metadata",
+        "/api/file-manager/{collection}/{}/metadata",
         api::segment(&id)
     );
     let epoch = state.with_untracked(|s| s.session_epoch);
@@ -302,7 +302,7 @@ pub(crate) fn update_node_note(state: RwSignal<State>, node: String, note: Strin
         state,
         "PATCH",
         format!(
-            "/v1/file-manager/files/{}/nodes/{}",
+            "/api/file-manager/files/{}/nodes/{}",
             api::segment(&file),
             api::segment(&node)
         ),
@@ -367,7 +367,7 @@ fn file_mutation(state: RwSignal<State>, file: &str, action: &str, mut body: Val
         body["path"] = path.into();
     }
     body["operation_id"] = id.clone().into();
-    let endpoint = format!("/v1/file-manager/files/{}/{action}", api::segment(file));
+    let endpoint = format!("/api/file-manager/files/{}/{action}", api::segment(file));
     state.update(|s| s.files.mutation_pending = true);
     let epoch = state.with_untracked(|s| s.session_epoch);
     spawn_local(async move {

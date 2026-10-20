@@ -338,7 +338,7 @@ pub(crate) async fn login(
     .await
     .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "authentication task failed"))??;
     let cookie = format!(
-        "zxs_session={}; Path=/v1; HttpOnly; SameSite=Strict; Max-Age={}{}",
+        "zxs_session={}; Path=/api; HttpOnly; SameSite=Strict; Max-Age={}{}",
         result.token,
         crate::auth::SESSION_TTL_SECONDS,
         if state.config.secure_cookie() {
@@ -375,7 +375,7 @@ pub(crate) async fn logout(
     let mut response = Json(json!({"logged_out":true})).into_response();
     response.headers_mut().insert(
         header::SET_COOKIE,
-        HeaderValue::from_static("zxs_session=; Path=/v1; HttpOnly; SameSite=Strict; Max-Age=0"),
+        HeaderValue::from_static("zxs_session=; Path=/api; HttpOnly; SameSite=Strict; Max-Age=0"),
     );
     Ok(response)
 }
@@ -425,7 +425,7 @@ pub(crate) async fn change_password(
         Json(json!({"changed":true,"reauthentication_required":true})).into_response();
     response.headers_mut().insert(
         header::SET_COOKIE,
-        HeaderValue::from_static("zxs_session=; Path=/v1; HttpOnly; SameSite=Strict; Max-Age=0"),
+        HeaderValue::from_static("zxs_session=; Path=/api; HttpOnly; SameSite=Strict; Max-Age=0"),
     );
     Ok(response)
 }

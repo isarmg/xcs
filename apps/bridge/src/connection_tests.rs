@@ -55,7 +55,7 @@ async fn an_old_logout_response_cannot_disconnect_a_new_session() {
     }
     let caller = bridge.clone();
     let request =
-        tokio::spawn(async move { caller.request("POST", "/v1/auth/logout", None).await });
+        tokio::spawn(async move { caller.request("POST", "/api/auth/logout", None).await });
     received.await.unwrap();
     {
         let mut state = bridge.connection.write().await;
@@ -178,13 +178,13 @@ async fn failed_logout_can_retry_with_the_same_credential_then_revokes_pending_l
     let pending_login = bridge.connection.write().await.begin();
     assert!(
         bridge
-            .request("POST", "/v1/auth/logout", None)
+            .request("POST", "/api/auth/logout", None)
             .await
             .is_err()
     );
     assert!(bridge.connection.read().await.current(revision));
     bridge
-        .request("POST", "/v1/auth/logout?source=app", None)
+        .request("POST", "/api/auth/logout?source=app", None)
         .await
         .unwrap();
     assert_eq!(bridge.snapshot().await.err().unwrap().code, "NOT_CONNECTED");
@@ -212,7 +212,7 @@ async fn rejected_logout_method_does_not_drop_session() {
     let bridge = connected_bridge(&endpoint).await;
     assert!(
         bridge
-            .request("GET", "/v1/auth/logout", None)
+            .request("GET", "/api/auth/logout", None)
             .await
             .is_err()
     );
@@ -226,7 +226,7 @@ async fn logout_unauthorized_confirms_session_is_already_invalid() {
     let bridge = connected_bridge(&endpoint).await;
     assert_eq!(
         bridge
-            .request("POST", "/v1/auth/logout", None)
+            .request("POST", "/api/auth/logout", None)
             .await
             .unwrap_err()
             .status,
@@ -239,7 +239,7 @@ async fn logout_unauthorized_confirms_session_is_already_invalid() {
 #[tokio::test]
 async fn generic_login_cannot_return_credentials_or_create_an_untracked_session() {
     let bridge = Bridge::default();
-    for route in ["/v1/auth/login", "/v1/auth/login?source=app"] {
+    for route in ["/api/auth/login", "/api/auth/login?source=app"] {
         assert_eq!(
             bridge.request("POST", route, None).await.unwrap_err().code,
             "NATIVE_LOGIN_REQUIRED"
@@ -271,7 +271,7 @@ async fn restored_native_session_does_not_expose_credentials_to_webview() {
             .unwrap();
     });
     let result = bridge
-        .request("GET", "/v1/auth/me?source=app", None)
+        .request("GET", "/api/auth/me?source=app", None)
         .await
         .unwrap();
     assert_eq!(
@@ -347,14 +347,14 @@ async fn real_login_keeps_secrets_native_and_failed_reauthentication_preserves_s
     assert!(bridge.connection.read().await.current(revision));
     assert_eq!(
         bridge
-            .request("GET", "/v1/system/status", None)
+            .request("GET", "/api/system/status", None)
             .await
             .unwrap(),
         json!({"ok":true})
     );
     let requests = server.await.unwrap();
     for request in &requests[..2] {
-        assert!(request.starts_with("POST /v1/auth/login HTTP/1.1\r\n"));
+        assert!(request.starts_with("POST /api/auth/login HTTP/1.1\r\n"));
         assert!(!request.to_lowercase().contains("authorization:"));
     }
     assert!(requests[0].contains("synthetic-password"));
@@ -381,7 +381,7 @@ async fn expired_session_errors_survive_request_upload_and_download_boundaries()
     std::fs::write(&source, b"upload source").unwrap();
     let errors = [
         bridge
-            .request("GET", "/v1/system/status", None)
+            .request("GET", "/api/system/status", None)
             .await
             .unwrap_err(),
         bridge
@@ -419,7 +419,7 @@ async fn forbidden_resource_keeps_the_session_and_preserves_error_envelope() {
     let bridge = connected_bridge(&endpoint).await;
     let (_, revision) = bridge.snapshot().await.unwrap();
     let error = bridge
-        .request("GET", "/v1/repositories/private", None)
+        .request("GET", "/api/repositories/private", None)
         .await
         .unwrap_err();
     assert_eq!(error.status, 403);
@@ -428,7 +428,7 @@ async fn forbidden_resource_keeps_the_session_and_preserves_error_envelope() {
     assert!(!error.retryable);
     assert!(bridge.connection.read().await.current(revision));
     bridge
-        .request("GET", "/v1/system/status", None)
+        .request("GET", "/api/system/status", None)
         .await
         .unwrap();
     assert_eq!(server.await.unwrap().len(), 2);
@@ -449,13 +449,13 @@ async fn password_change_revokes_connection_only_after_confirmed_reauthenticatio
     .await;
     let bridge = connected_bridge(&endpoint).await;
     bridge
-        .request("POST", "/v1/auth/password", Some(&json!({})))
+        .request("POST", "/api/auth/password", Some(&json!({})))
         .await
         .unwrap();
     assert!(bridge.snapshot().await.is_ok());
     let pending = bridge.connection.write().await.begin();
     bridge
-        .request("POST", "/v1/auth/password?source=app", Some(&json!({})))
+        .request("POST", "/api/auth/password?source=app", Some(&json!({})))
         .await
         .unwrap();
     assert_eq!(bridge.snapshot().await.err().unwrap().code, "NOT_CONNECTED");
@@ -497,7 +497,7 @@ async fn native_seal_failures_never_report_a_submitted_commit() {
         assert_eq!(encoded["code"], code);
         let requests = server.await.unwrap();
         assert_eq!(requests.len(), 1);
-        assert!(requests[0].starts_with("POST /v1/workspaces/workspace_test/seal HTTP/1.1"));
+        assert!(requests[0].starts_with("POST /api/workspaces/workspace_test/seal HTTP/1.1"));
     }
     let failure = Bridge::default()
         .commit_workspace("workspace_test", "operation_test", "save", "")
@@ -539,8 +539,8 @@ async fn native_commit_preserves_digest_identity_and_publication_recovery() {
         }
         let requests = server.await.unwrap();
         assert_eq!(requests.len(), 2);
-        assert!(requests[0].starts_with("POST /v1/workspaces/workspace_test/seal HTTP/1.1"));
-        assert!(requests[1].starts_with("POST /v1/workspaces/workspace_test/commit HTTP/1.1"));
+        assert!(requests[0].starts_with("POST /api/workspaces/workspace_test/seal HTTP/1.1"));
+        assert!(requests[1].starts_with("POST /api/workspaces/workspace_test/commit HTTP/1.1"));
         for request in &requests {
             assert!(
                 request
@@ -557,7 +557,7 @@ async fn native_commit_preserves_digest_identity_and_publication_recovery() {
         assert_eq!(body["message"], "save");
         let digest = zxs_contract::request_digest(
             "POST",
-            "/v1/workspaces/{workspace}/commit",
+            "/api/workspaces/{workspace}/commit",
             json!({"workspace":"workspace_test"}),
             json!({}),
             &body,
@@ -584,7 +584,7 @@ async fn replacing_the_native_session_during_seal_does_not_submit_commit() {
         assert!(
             String::from_utf8(headers)
                 .unwrap()
-                .starts_with("POST /v1/workspaces/workspace_test/seal HTTP/1.1")
+                .starts_with("POST /api/workspaces/workspace_test/seal HTTP/1.1")
         );
         sent.send(()).unwrap();
         wait.await.unwrap();
@@ -675,14 +675,14 @@ async fn starting_logout_during_seal_fences_commit_before_logout_responds() {
         assert!(
             read_request(&mut seal)
                 .await
-                .starts_with("POST /v1/workspaces/workspace_test/seal HTTP/1.1")
+                .starts_with("POST /api/workspaces/workspace_test/seal HTTP/1.1")
         );
         sealed.send(()).unwrap();
         let (mut logout, _) = listener.accept().await.unwrap();
         assert!(
             read_request(&mut logout)
                 .await
-                .starts_with("POST /v1/auth/logout HTTP/1.1")
+                .starts_with("POST /api/auth/logout HTTP/1.1")
         );
         logging_out.send(()).unwrap();
         let body = json!({"workspace_id":"workspace_test", "manifest_hash":"manifest_test", "fencing_token":"1"}).to_string();
@@ -711,7 +711,8 @@ async fn starting_logout_during_seal_fences_commit_before_logout_responds() {
     });
     seal_seen.await.unwrap();
     let caller = bridge.clone();
-    let logout = tokio::spawn(async move { caller.request("POST", "/v1/auth/logout", None).await });
+    let logout =
+        tokio::spawn(async move { caller.request("POST", "/api/auth/logout", None).await });
     logout_seen.await.unwrap();
     let failure = tokio::time::timeout(std::time::Duration::from_secs(5), commit)
         .await

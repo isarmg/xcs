@@ -450,92 +450,95 @@ fn router_shared(
     };
     let protected = Router::new()
         .merge(file_manager::routes())
-        .route("/v1/system/status", get(telemetry::status))
-        .route("/v1/system/history", get(telemetry::history))
-        .route("/v1/auth/me", get(me))
-        .route("/v1/auth/logout", post(logout))
-        .route("/v1/auth/password", post(change_password))
-        .route("/v1/admin/accounts", get(accounts).post(account_upsert))
+        .route("/api/system/status", get(telemetry::status))
+        .route("/api/system/history", get(telemetry::history))
+        .route("/api/auth/me", get(me))
+        .route("/api/auth/logout", post(logout))
+        .route("/api/auth/password", post(change_password))
+        .route("/api/admin/accounts", get(accounts).post(account_upsert))
         .route(
-            "/v1/repositories",
+            "/api/repositories",
             get(repositories).post(create_repository),
         )
-        .route("/v1/repositories/{repo}", get(repository))
-        .route("/v1/repositories/{repo}/grants", put(grants))
+        .route("/api/repositories/{repo}", get(repository))
+        .route("/api/repositories/{repo}/grants", put(grants))
         .route(
-            "/v1/repositories/{repo}/smb-binding",
+            "/api/repositories/{repo}/smb-binding",
             get(smb_binding).put(update_smb_binding),
         )
         .route(
-            "/v1/repositories/{repo}/default-branch",
+            "/api/repositories/{repo}/default-branch",
             get(default_branch).put(update_default_branch),
         )
         .route(
-            "/v1/repositories/{repo}/directory-scopes",
+            "/api/repositories/{repo}/directory-scopes",
             post(initialize_directory_scope),
         )
         .route(
-            "/v1/repositories/{repo}/directory-branches",
+            "/api/repositories/{repo}/directory-branches",
             get(directory_branch_scopes),
         )
         .route(
-            "/v1/repositories/{repo}/directory-branches/{id}",
+            "/api/repositories/{repo}/directory-branches/{id}",
             patch(rename_directory_branch),
         )
         .route(
-            "/v1/repositories/{repo}/branches",
+            "/api/repositories/{repo}/branches",
             get(branches).post(create_branch),
         )
-        .route("/v1/branches/{branch}/tree", get(tree))
-        .route("/v1/branches/{branch}", get(branch_info))
-        .route("/v1/branches/{branch}/resolve", post(resolve))
-        .route("/v1/branches/{branch}/write-sessions", post(write_session))
-        .route("/v1/branches/{branch}/archive", post(archive))
-        .route("/v1/workspaces", post(workspace))
-        .route("/v1/workspaces/{workspace}", get(workspace_info))
+        .route("/api/branches/{branch}/tree", get(tree))
+        .route("/api/branches/{branch}", get(branch_info))
+        .route("/api/branches/{branch}/resolve", post(resolve))
+        .route("/api/branches/{branch}/write-sessions", post(write_session))
+        .route("/api/branches/{branch}/archive", post(archive))
+        .route("/api/workspaces", post(workspace))
+        .route("/api/workspaces/{workspace}", get(workspace_info))
         .route(
-            "/v1/workspaces/{workspace}/files/{item}/content",
+            "/api/workspaces/{workspace}/files/{item}/content",
             put(upload).get(workspace_content).head(workspace_content),
         )
         .route(
-            "/v1/workspaces/{workspace}/files/{item}/upload-status",
+            "/api/workspaces/{workspace}/files/{item}/upload-status",
             get(upload_status),
         )
         .route(
-            "/v1/workspaces/{workspace}/namespace-operations",
+            "/api/workspaces/{workspace}/namespace-operations",
             post(namespace),
         )
-        .route("/v1/workspaces/{workspace}/commit", post(commit))
-        .route("/v1/workspaces/{workspace}/seal", post(seal))
-        .route("/v1/workspaces/{workspace}/abort", post(abort))
-        .route("/v1/operations/{operation}", get(operation))
-        .route("/v1/versions/{version}/content", get(content).head(content))
-        .route("/v1/versions/{version}", get(version))
-        .route("/v1/versions/{version}/placement", get(placement))
-        .route("/v1/versions/{version}/checksums", get(checksums))
-        .route("/v1/files/{file}/history", get(history))
-        .route("/v1/commits/{commit}", get(commit_info))
-        .route("/v1/history-trees/{history}/graph", get(graph))
-        .route("/v1/history-trees/{history}/merge-links", post(merge_link))
-        .route("/v1/history-trees/{history}/purge-plans", post(purge_plan))
-        .route("/v1/history-trees/{history}/split-plans", post(split_plan))
+        .route("/api/workspaces/{workspace}/commit", post(commit))
+        .route("/api/workspaces/{workspace}/seal", post(seal))
+        .route("/api/workspaces/{workspace}/abort", post(abort))
+        .route("/api/operations/{operation}", get(operation))
         .route(
-            "/v1/history-trees/{history}/historical-save-plans",
+            "/api/versions/{version}/content",
+            get(content).head(content),
+        )
+        .route("/api/versions/{version}", get(version))
+        .route("/api/versions/{version}/placement", get(placement))
+        .route("/api/versions/{version}/checksums", get(checksums))
+        .route("/api/files/{file}/history", get(history))
+        .route("/api/commits/{commit}", get(commit_info))
+        .route("/api/history-trees/{history}/graph", get(graph))
+        .route("/api/history-trees/{history}/merge-links", post(merge_link))
+        .route("/api/history-trees/{history}/purge-plans", post(purge_plan))
+        .route("/api/history-trees/{history}/split-plans", post(split_plan))
+        .route(
+            "/api/history-trees/{history}/historical-save-plans",
             post(historical_save_plan),
         )
-        .route("/v1/plans/{plan}/commit", post(plan_commit))
-        .route("/v1/plans/{plan}", get(plan_info))
-        .route("/v1/plans/{plan}/cancel", post(plan_cancel))
-        .route("/v1/admin/disks", get(disks).post(register_disk))
-        .route("/v1/admin/check", get(check))
-        .route("/v1/backup-topologies/{topology}", get(topology))
-        .route("/v1/policies/{policy}", get(policy).put(update_policy))
+        .route("/api/plans/{plan}/commit", post(plan_commit))
+        .route("/api/plans/{plan}", get(plan_info))
+        .route("/api/plans/{plan}/cancel", post(plan_cancel))
+        .route("/api/admin/disks", get(disks).post(register_disk))
+        .route("/api/admin/check", get(check))
+        .route("/api/backup-topologies/{topology}", get(topology))
+        .route("/api/policies/{policy}", get(policy).put(update_policy))
         .route(
-            "/v1/primary-placement-rules/{rule}",
+            "/api/primary-placement-rules/{rule}",
             get(placement_rule).put(update_placement_rule),
         )
-        .route("/v1/events", get(events))
-        .route("/v1/compare", post(compare))
+        .route("/api/events", get(events))
+        .route("/api/compare", post(compare))
         .route_layer(middleware::from_fn_with_state(state.clone(), authorize));
     let mut app = Router::new()
         .merge(protected)
@@ -544,8 +547,8 @@ fn router_shared(
             get(|| async { Json(json!({"status":"alive"})) }),
         )
         .route("/readyz", get(ready))
-        .route("/v1/capabilities", get(capabilities))
-        .route("/v1/auth/login", post(login))
+        .route("/api/capabilities", get(capabilities))
+        .route("/api/auth/login", post(login))
         .fallback(web_assets::not_found);
     if let Some(web_dir) = config.web_dir {
         app = app.fallback_service(web_assets::fallback(web_dir));
@@ -638,7 +641,7 @@ async fn shutdown() {
 }
 
 async fn security_headers(request: Request, next: Next) -> Response {
-    let sensitive = request.uri().path().starts_with("/v1/")
+    let sensitive = request.uri().path().starts_with("/api/")
         || matches!(request.uri().path(), "/healthz" | "/readyz");
     let mut response = next.run(request).await;
     let headers = response.headers_mut();
@@ -957,13 +960,13 @@ mod tests {
     async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope() {
         let root = tempfile::tempdir().unwrap();
         let assets = root.path().join("web");
-        std::fs::create_dir_all(assets.join("v1")).unwrap();
+        std::fs::create_dir_all(assets.join("api")).unwrap();
         std::fs::write(assets.join("index.html"), b"<html>fixture</html>").unwrap();
-        std::fs::write(assets.join("v1/unknown"), b"must never be an API response").unwrap();
+        std::fs::write(assets.join("api/unknown"), b"must never be an API response").unwrap();
         let mut config = ServerConfig::loopback(root.path());
         config.web_dir = Some(assets);
         let app = application_config(root.path(), config);
-        for path in ["/v1/unknown", "/v1/missing", "/missing.css"] {
+        for path in ["/api/unknown", "/api/missing", "/missing.css"] {
             let response = app
                 .clone()
                 .oneshot(
@@ -977,7 +980,7 @@ mod tests {
                 .unwrap();
             assert_eq!(response.status(), StatusCode::NOT_FOUND, "{path}");
             assert_eq!(response.headers()[header::CONTENT_TYPE], "application/json");
-            if path.starts_with("/v1/") {
+            if path.starts_with("/api/") {
                 assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
             }
             let error: Value = serde_json::from_slice(
@@ -1056,7 +1059,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method("POST")
-                    .uri("/v1/auth/login")
+                    .uri("/api/auth/login")
                     .header("content-type", "application/json")
                     .body(Body::from(
                         r#"{"username":"admin","password":"a-long-test-password"}"#,
@@ -1096,7 +1099,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method("POST")
-                    .uri("/v1/repositories")
+                    .uri("/api/repositories")
                     .header("cookie", &cookie)
                     .header("host", "127.0.0.1:7400")
                     .header("origin", "http://127.0.0.1:7400")
@@ -1111,7 +1114,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method("POST")
-                    .uri("/v1/repositories")
+                    .uri("/api/repositories")
                     .header("cookie", &cookie)
                     .header("x-csrf-token", csrf)
                     .header("host", "127.0.0.1:7400")
@@ -1125,7 +1128,7 @@ mod tests {
         let response = app
             .oneshot(
                 Request::builder()
-                    .uri("/v1/auth/me")
+                    .uri("/api/auth/me")
                     .header("authorization", format!("Bearer {token}"))
                     .header("origin", "https://foreign.invalid")
                     .header("host", "127.0.0.1:7400")
@@ -1145,7 +1148,7 @@ mod tests {
         let response = app
             .oneshot(
                 Request::builder()
-                    .uri("/v1/versions/test/content")
+                    .uri("/api/versions/test/content")
                     .header("authorization", format!("Bearer {token}"))
                     .header("range", "bytes=2-5")
                     .body(Body::empty())
@@ -1208,7 +1211,7 @@ mod tests {
                 .oneshot(
                     Request::builder()
                         .method("POST")
-                        .uri("/v1/auth/login")
+                        .uri("/api/auth/login")
                         .body(Body::from(
                             r#"{"username":"admin","password":"a-long-test-password"}"#,
                         ))
@@ -1225,7 +1228,7 @@ mod tests {
         let response = app
             .oneshot(
                 Request::builder()
-                    .uri("/v1/auth/me")
+                    .uri("/api/auth/me")
                     .header("authorization", format!("Bearer {token}"))
                     .body(Body::empty())
                     .unwrap(),
@@ -1252,7 +1255,7 @@ mod tests {
         ]);
         let request = Request::builder()
             .method("PUT")
-            .uri("/v1/workspaces/ws/files/item/content?path=file")
+            .uri("/api/workspaces/ws/files/item/content?path=file")
             .header("authorization", format!("Bearer {token}"))
             .header("x-zxs-logical-size", "20")
             .header("x-zxs-content-hash", "0".repeat(64))
@@ -1272,7 +1275,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method("PUT")
-                    .uri("/v1/workspaces/ws/files/item/content?path=file")
+                    .uri("/api/workspaces/ws/files/item/content?path=file")
                     .header("authorization", format!("Bearer {token}"))
                     .header("x-zxs-logical-size", "20")
                     .header("x-zxs-content-hash", "0".repeat(64))
@@ -1319,7 +1322,7 @@ mod tests {
                 .oneshot(
                     Request::builder()
                         .method("PUT")
-                        .uri("/v1/workspaces/ws/files/item/content?path=file")
+                        .uri("/api/workspaces/ws/files/item/content?path=file")
                         .header("authorization", format!("Bearer {token}"))
                         .header("x-zxs-logical-size", "30")
                         .header("x-zxs-content-hash", "0".repeat(64))
@@ -1357,7 +1360,7 @@ mod tests {
         let request = |body| {
             Request::builder()
                 .method("PUT")
-                .uri("/v1/workspaces/ws/files/item/content?path=file")
+                .uri("/api/workspaces/ws/files/item/content?path=file")
                 .header("authorization", format!("Bearer {token}"))
                 .header("x-zxs-logical-size", bytes.len().to_string())
                 .header("x-zxs-content-hash", &hash)
@@ -1441,7 +1444,7 @@ mod tests {
                 .oneshot(
                     Request::builder()
                         .method("PUT")
-                        .uri("/v1/workspaces/ws/files/item/content?path=file")
+                        .uri("/api/workspaces/ws/files/item/content?path=file")
                         .header("authorization", format!("Bearer {token}"))
                         .header("x-zxs-logical-size", bytes.len().to_string())
                         .header(
@@ -1550,7 +1553,7 @@ mod tests {
         let request = || {
             Request::builder()
                 .method("PUT")
-                .uri("/v1/workspaces/ws/files/item/content?path=file")
+                .uri("/api/workspaces/ws/files/item/content?path=file")
                 .header("authorization", format!("Bearer {token}"))
                 .header("x-zxs-logical-size", "4")
                 .header(

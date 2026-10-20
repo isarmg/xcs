@@ -46,7 +46,7 @@ async fn login_as(
 ) -> StatusCode {
     let mut builder = Request::builder()
         .method("POST")
-        .uri("/v1/auth/login")
+        .uri("/api/auth/login")
         .header("content-type", "application/json")
         .extension(ConnectInfo(
             "127.0.0.1:12345".parse::<SocketAddr>().unwrap(),

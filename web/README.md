@@ -2,7 +2,7 @@
 
 `src/` 是 Rust/WASM CSR 应用，`runtime/` 提供公共组件和浏览器运行环境，`../vendor/web/zxs-web-core`、`zxs-web-macro` 是项目维护的 CSR 引擎及过程宏。自有包、DOM 标记、缓存键和配置统一使用 ZXS 命名；外部依赖保留真实包名，来源说明集中在 README。
 
-浏览器与 App 共用界面。浏览器请求同源 `/v1/`；App 通过 Rust IPC 调用 `zxs-client`，文件内容由原生传输处理。构建与运行均不依赖兄弟项目目录。
+浏览器与 App 共用界面。浏览器请求同源 `/api/`；App 通过 Rust IPC 调用 `zxs-client`，文件内容由原生传输处理。构建与运行均不依赖兄弟项目目录。
 
 ## 页面与操作
 
@@ -68,7 +68,7 @@ histories/<history-id>/file-containers/<file-id>/<当前文件名>/versions/
 
 新增页面先组合共享布局角色，不增加页面级尺寸覆盖：`.zxs-stack` 和 `.zxs-flow` 排列内容，默认不另加外部间距；`.zxs-row` 管理字盒留白，`.zxs-frame` 管理灰色边框与 G4 表面。透明包装仅在其边界紧贴可见框时使用 `.zxs-surface-start/end` 或 `.zxs-surface`，由公共规则分开直接接触的框；中间已有标签或说明行时不重复加距。普通输入保持 44px；搜索、账户和下拉框显式采用 `.zxs-input--compact`，原位输入再组合 `.zxs-input--underline`。登录规则只在 `.zxs-auth-shell` 内生效。完整用法见[公共样式](public/styles/README.md)。
 
-请求路径与备注校验复用 `zxs-contract`：浏览器和 App 使用相同的 `/v1/` 路径边界，备注使用同一 128 字节单行规则。目录读取和历史读取保留请求代次隔离；下载反馈、改密反馈也必须属于原有有效会话，登出或重新登录后的旧响应不能改写新会话。
+请求路径与备注校验复用 `zxs-contract`：浏览器和 App 使用相同的 `/api/` 路径边界，备注使用同一 128 字节单行规则。目录读取和历史读取保留请求代次隔离；下载反馈、改密反馈也必须属于原有有效会话，登出或重新登录后的旧响应不能改写新会话。
 
 轮廓使用 `data-zxs-contour-*` / `--zxs-contour-*`，主题和语言偏好键为 `zxs-theme` / `zxs-language`。产品逻辑与轮廓为 Rust；WASM 绑定和 WASM 加载前的通用失败处理由 Rust 构建工具生成，不维护自写业务 JS/TS。
 

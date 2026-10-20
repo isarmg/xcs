@@ -43,10 +43,10 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
             client.logout().await?;
             json!({ "logged_out" : true })
         }
-        Command::Whoami => request("GET", "/v1/auth/me".into(), None).await?,
-        Command::Repositories => request("GET", "/v1/repositories".into(), None).await?,
-        Command::Disks => request("GET", "/v1/admin/disks".into(), None).await?,
-        Command::Topology => request("GET", "/v1/backup-topologies/default".into(), None).await?,
+        Command::Whoami => request("GET", "/api/auth/me".into(), None).await?,
+        Command::Repositories => request("GET", "/api/repositories".into(), None).await?,
+        Command::Disks => request("GET", "/api/admin/disks".into(), None).await?,
+        Command::Topology => request("GET", "/api/backup-topologies/default".into(), None).await?,
         Command::CreateRepo {
             name,
             primary_slot,
@@ -55,7 +55,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             request(
                 "POST",
-                "/v1/repositories".into(),
+                "/api/repositories".into(),
                 Some(json!(
                     { "name" : name, "primary_slot_id" : primary_slot,
                     "target_copies" : copies, "operation_id" : op(operation_id
@@ -67,24 +67,24 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         Command::List { branch } => {
             request(
                 "GET",
-                format!("/v1/branches/{}/tree", segment(branch)),
+                format!("/api/branches/{}/tree", segment(branch)),
                 None,
             )
             .await?
         }
         Command::History { file } => {
-            request("GET", format!("/v1/files/{}/history", segment(file)), None).await?
+            request("GET", format!("/api/files/{}/history", segment(file)), None).await?
         }
         Command::Graph { history } => {
             request(
                 "GET",
-                format!("/v1/history-trees/{}/graph", segment(history)),
+                format!("/api/history-trees/{}/graph", segment(history)),
                 None,
             )
             .await?
         }
         Command::Operation { id } => {
-            request("GET", format!("/v1/operations/{}", segment(id)), None).await?
+            request("GET", format!("/api/operations/{}", segment(id)), None).await?
         }
         Command::Get { version, output } | Command::Export { version, output } => {
             client.download_file(version, output).await?;
@@ -100,7 +100,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             let workspace = request(
                 "POST",
-                "/v1/workspaces".into(),
+                "/api/workspaces".into(),
                 Some(json!({ "branch_id" : branch })),
             )
             .await?;
@@ -135,7 +135,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             let commit = request(
                 "GET",
-                format!("/v1/commits/{}", segment(source_commit)),
+                format!("/api/commits/{}", segment(source_commit)),
                 None,
             )
             .await?;
@@ -144,7 +144,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
                 .ok_or("missing history")?;
             let graph = request(
                 "GET",
-                format!("/v1/history-trees/{}/graph", segment(history)),
+                format!("/api/history-trees/{}/graph", segment(history)),
                 None,
             )
             .await?;
@@ -153,7 +153,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
                 .ok_or("missing repository")?;
             request(
                 "POST",
-                format!("/v1/repositories/{}/branches", segment(repo)),
+                format!("/api/repositories/{}/branches", segment(repo)),
                 Some(json!(
                     { "source_commit_id" : source_commit, "name" : name,
                     "operation_id" : op(operation_id.clone()) }
@@ -170,7 +170,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             let commit = request(
                 "GET",
-                format!("/v1/commits/{}", segment(source_commit)),
+                format!("/api/commits/{}", segment(source_commit)),
                 None,
             )
             .await?;
@@ -179,7 +179,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
                 .ok_or("missing history")?;
             request(
                 "POST",
-                format!("/v1/history-trees/{}/merge-links", segment(history)),
+                format!("/api/history-trees/{}/merge-links", segment(history)),
                 Some(json!(
                     { "source_branch_id" : source_branch, "source_commit_id" :
                     source_commit, "target_branch_id" : target_branch,
@@ -198,7 +198,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             let workspace = request(
                 "POST",
-                "/v1/workspaces".into(),
+                "/api/workspaces".into(),
                 Some(json!({ "branch_id" : branch })),
             )
             .await?;
@@ -207,7 +207,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
                 .ok_or("missing workspace identity")?;
             request(
                 "POST",
-                format!("/v1/workspaces/{}/namespace-operations", segment(id)),
+                format!("/api/workspaces/{}/namespace-operations", segment(id)),
                 Some(json!(
                     { "kind" : kind, "path" : path, "destination" : destination }
                 )),
@@ -221,7 +221,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
             eprintln!("commit request preserved at {}", pending.display());
             client.commit_prepared(&prepared).await?
         }
-        Command::Check => request("GET", "/v1/admin/check".into(), None).await?,
+        Command::Check => request("GET", "/api/admin/check".into(), None).await?,
         Command::SmbBinding {
             repository,
             branch,
@@ -231,7 +231,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             request(
                 "PUT",
-                format!("/v1/repositories/{}/smb-binding", segment(repository)),
+                format!("/api/repositories/{}/smb-binding", segment(repository)),
                 Some(json!(
                     { "branch_id" : branch, "enabled" : enabled,
                     "expected_history_generation" : expected_history_generation,
@@ -255,7 +255,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
             };
             request(
                 "PUT",
-                format!("/v1/policies/{}", segment(&id)),
+                format!("/api/policies/{}", segment(&id)),
                 Some(json!(
                     { "repository_id" : repository, "path_prefix" : path_prefix,
                     "target_copies" : copies, "expected_generation" :
@@ -280,7 +280,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
             };
             request(
                 "PUT",
-                format!("/v1/primary-placement-rules/{}", segment(&id)),
+                format!("/api/primary-placement-rules/{}", segment(&id)),
                 Some(json!(
                     { "repository_id" : repository, "path_prefix" : path_prefix,
                     "primary_slot_id" : primary_slot, "expected_generation" :
@@ -303,16 +303,18 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
             operation_id,
         } => {
             let branch_info =
-                request("GET", format!("/v1/branches/{}", segment(branch)), None).await?;
+                request("GET", format!("/api/branches/{}", segment(branch)), None).await?;
             let history = branch_info["history_tree_id"]
                 .as_str()
                 .ok_or("source history missing")?;
             let workspace = match workspace {
-                Some(id) => request("GET", format!("/v1/workspaces/{}", segment(id)), None).await?,
+                Some(id) => {
+                    request("GET", format!("/api/workspaces/{}", segment(id)), None).await?
+                }
                 None => {
                     request(
                         "POST",
-                        "/v1/workspaces".into(),
+                        "/api/workspaces".into(),
                         Some(json!(
                             { "branch_id" : branch, "source_commit_id" : source_commit }
                         )),
@@ -331,7 +333,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
             let plan = request(
                 "POST",
                 format!(
-                    "/v1/history-trees/{}/historical-save-plans",
+                    "/api/history-trees/{}/historical-save-plans",
                     segment(history)
                 ),
                 Some(json!(
@@ -350,7 +352,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             request(
                 "POST",
-                format!("/v1/plans/{}/commit", segment(id)),
+                format!("/api/plans/{}/commit", segment(id)),
                 Some(json!(
                     { "operation_id" : op(operation_id.clone()), "plan_digest" :
                     digest }
@@ -361,7 +363,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         Command::PlanCancel { id, operation_id } => {
             request(
                 "POST",
-                format!("/v1/plans/{}/cancel", segment(id)),
+                format!("/api/plans/{}/cancel", segment(id)),
                 Some(json!({ "operation_id" : op(operation_id.clone()) })),
             )
             .await?
@@ -374,7 +376,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             let plan = request(
                 "POST",
-                format!("/v1/history-trees/{}/purge-plans", segment(history)),
+                format!("/api/history-trees/{}/purge-plans", segment(history)),
                 Some(json!({ "version_ids" : versions })),
             )
             .await?;
@@ -388,7 +390,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
         } => {
             let plan = request(
                 "POST",
-                format!("/v1/history-trees/{}/split-plans", segment(history)),
+                format!("/api/history-trees/{}/split-plans", segment(history)),
                 Some(json!({ "cut_commit_id" : cut_commit })),
             )
             .await?;
@@ -407,7 +409,7 @@ pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
                 .transpose()?;
             request(
                 "POST",
-                "/v1/admin/accounts".into(),
+                "/api/admin/accounts".into(),
                 Some(json!(
                     { "username" : username, "password" : secret, "admin" :
                     admin, "disabled" : disabled, "repositories" : repository }
@@ -441,7 +443,7 @@ async fn remote_plan(
     Ok(client
         .request(
             "POST",
-            &format!("/v1/plans/{}/commit", zxs_client::segment(id)),
+            &format!("/api/plans/{}/commit", zxs_client::segment(id)),
             Some(&json!(
                 { "operation_id" : op(operation_id), "plan_digest" :
                 plan["digest"] }
@@ -552,7 +554,7 @@ mod tests {
             .await
             .unwrap()
             .unwrap();
-        assert_eq!(paths, ["/v1/auth/login", "/v1/auth/logout"]);
+        assert_eq!(paths, ["/api/auth/login", "/api/auth/logout"]);
         assert_eq!(std::fs::read(output).unwrap(), b"preserved");
     }
 }

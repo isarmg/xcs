@@ -216,7 +216,7 @@ pub(crate) fn visible_content(value: &Value) -> bool {
         .is_some_and(|id| !id.is_empty())
 }
 /// Materialization describes ownership, independently of readable inherited
-/// content. Older servers expose only a real version ID and imply ownership.
+/// content. Body-history records do not carry branch ownership markers.
 pub(crate) fn materialized(value: &Value) -> bool {
     value["materialized"] != false
         && value["inherited"] != true
@@ -303,20 +303,23 @@ pub(crate) fn history_for_entry(mut history: Value, entry: &Value) -> Value {
     for (field, selected) in [("nodes", &node), ("versions", &version)] {
         if let Some(records) = history[field].as_array_mut() {
             for record in records {
-                record["current"] = (history_node_id(record) == *selected).into();
+                let id_field = if field == "nodes" {
+                    "node_id"
+                } else {
+                    "version_id"
+                };
+                record["current"] = (record[id_field].as_str() == Some(selected.as_str())).into();
             }
         }
     }
     history
 }
 
-/// New servers expose path/content ancestry separately from real body versions.
-/// An explicitly empty node list is authoritative; legacy servers omit it.
+/// Path/content ancestry is the canonical node graph, not the body-version list.
 pub(crate) fn history_nodes(history: &Value) -> Vec<Value> {
     history
         .get("nodes")
         .and_then(Value::as_array)
-        .or_else(|| history.get("versions").and_then(Value::as_array))
         .cloned()
         .unwrap_or_default()
 }
@@ -324,7 +327,6 @@ pub(crate) fn history_node_id(node: &Value) -> String {
     node["node_id"]
         .as_str()
         .filter(|id| !id.is_empty())
-        .or_else(|| node["version_id"].as_str())
         .unwrap_or_default()
         .to_owned()
 }
@@ -576,7 +578,7 @@ mod tests {
         assert!(!materialized(
             &serde_json::json!({"materialized":true,"version_id":null,"source_version_id":"source"})
         ));
-        assert!(materialized(&serde_json::json!({"version_id":"legacy"})));
+        assert!(materialized(&serde_json::json!({"version_id":"body"})));
         assert!(materialized(
             &serde_json::json!({"materialized":true,"version_id":"saved","size":"0"})
         ));
@@ -608,7 +610,8 @@ mod tests {
         history["nodes"] = serde_json::json!([]);
         assert!(history_nodes(&history).is_empty());
         history.as_object_mut().unwrap().remove("nodes");
-        assert_eq!(history_node_id(&history_nodes(&history)[0]), "ver-one");
+        assert!(history_nodes(&history).is_empty());
+        assert!(history_node_id(&serde_json::json!({"version_id":"ver-one"})).is_empty());
     }
     #[test]
     fn generated_public_file_branch_names_are_editable_only_after_loading_a_real_record() {

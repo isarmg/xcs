@@ -12,10 +12,10 @@ histories/<history-id>/
             └── v000001_20261018T133000Z_ab12cd34.txt
 ```
 
-版本名由文件内顺序、UTC 时间、内容散列前八位和原扩展名组成；时间来自 Rust `time` 包。文件版本顺序独立于原有全局审计序列。`State.file_locations` 保存实际归属路径，`file_names` 保存实际容器名称。分支条目的路径可以与其不同；按稳定文件、版本身份读取材料。旧的直接命名容器仍可发现，下一次相关投影按已发布位置迁移，未执行隐式全盘复制。旧版本的 `storage_name = None` 在尚未投影位置时沿用 `versions/<version-id>/content/<creation_name>`；位置投影将已有正文真实迁到同一容器的 `legacy/<version-id>/<creation_name>`，不改动旧证明序列化。
+版本名由文件内顺序、UTC 时间、内容散列前八位和原扩展名组成；时间来自 Rust `time` 包。文件版本顺序独立于原有全局审计序列。`State.file_locations` 保存实际归属路径，`file_names` 保存实际容器名称。分支条目的路径可以与其不同；按稳定文件、版本身份读取材料。当前版本证明必须携带 `storage_name` 和 RFC3339 `created_at`，缺失或 null 在解码时拒绝。首次安装暂存的直接命名容器仍按稳定身份发现，决定后的当前布局投影把它移动到命名空间位置；这是现行发布与崩溃重试流程，不是旧版迁移。
 
 - `version_identity`：验证文件标识、相对路径和内容散列，创建唯一顺序名称与 RFC3339 时间。
-- `content_path`：按稳定文件标识查找唯一私有命名目录；正文缺失时返回预期路径供既有修复流程识别，多个目录或符号链接明确失败。准备过程或早期历史包的旧正文路径可临时读取。
+- `content_path`：按稳定文件标识查找唯一私有命名目录；正文缺失时返回预期路径供既有修复流程识别，多个目录或符号链接明确失败。当前准备过程和离线历史包使用 `versions/<version-id>/content/<creation_name>` 保存待安装正文；读取保留这条现行路径。
 - `install_version_content`：使用已有安全目录封装及文件描述符相对 `renameat2(NOREPLACE)`，将已校验正文移到容器，分别同步源和目标父目录。重试先核对目标长度和完整散列，再删除同内容的准备副本；不创建硬链接、reflink 或第二份持久正文。
 - `capture_names`：只为缺少记录的文件初始化名字和位置；切换分支和读取旧路径不会改动实体归属。实际移动、重命名由对应业务操作明确更新位置和名字；删除保留最后位置。
 - `synchronize_names`：仅为名字、位置、备注、选择、继承引用、版本、放置或内容状态变化的文件更新容器缓存及真实改名。跨目录移动真实迁移同一个容器及所有版本，不复制正文。位置投影在决定后执行并幂等重放；中途失败后仍按稳定身份找到唯一实体，不新建分支占位文件。
@@ -24,11 +24,11 @@ histories/<history-id>/
 
 分支创建仅在 Branch.pending_file_versions / Commit.pending_file_versions 登记冻结父版本，不创建 FileVersion、FULL 校验、保护回执或空文件。读取继承父内容，首个实际写入建立独立 FULL 并清除该文件的待写入归属；零字节或同摘要首写也算真实版本。目录组合与不可变子树保存在发布元数据，不在容器内复制正文。
 
-container.json 的 inherited_branches 记录来源、可见 version_id、空 own_version_id 和继承状态，path_contexts 记录当前各逻辑路径独立的写入目标与继承意图。文件有多个别名时不能用单个 selected_branch_id 推断所有路径；该字段仅保留旧缓存兼容。所有缓存都不替代发布快照、历史清单或版本签名证明。恢复只重建缓存，不重建空 stub。legacy 来源没有已有正文时不新建空容器；迁移已有正文也保持原 inode。
+container.json 的 inherited_branches 记录来源、可见 version_id、空 own_version_id 和继承状态，path_contexts 记录当前各逻辑路径独立的写入目标与继承意图。文件有多个别名时不能用单个文件级选择推断所有路径；容器缓存只用 path_contexts 表达精确选择，不再输出旧 selected_branch_id 摘要。所有缓存都不替代发布快照、历史清单或版本签名证明。恢复只重建缓存，不重建空 stub。缺失正文和元数据继承不会创建空容器。
 
 文件改名新增不可变 FilePathNode，记录旧、新路径并引用同一个真实版本；文件夹改名为受影响的每个文件分别登记节点。path_nodes 缓存这些节点及备注，版本记录的 parent_node_ids 同时覆盖后续正文写入与改名节点之间的父子关系。节点本身不新增正文、版本证明或 FULL 回执。历史包保存节点及混合父子关系，验证同文件归属、冻结正文对应关系和无环性；正文清除后保留节点及 PURGED 版本记录，避免元数据历史永久钉住旧正文。
 
-兼容清理先验证旧 pending-branches 全目录，只删除合法 br_ 标识的零字节单链接普通 .pending 文件及其空目录。未知项、非空内容、符号链接及硬链接保持并报错。新分支创建、恢复、改名和历史包导入都不生成新 stub。目录组合/子树或文件路径节点存在时旧拆分接口明确拒绝，避免漏掉映射。
+不再读取无命名版本字段的旧正文，不迁移 legacy 正文，也不清理 pending-branches。检测到 `legacy` 或 `pending-branches` 旧容器结构时返回 `FORMAT_UNSUPPORTED`，原字节、空占位文件和目录均保留。新分支创建、恢复、改名和历史包导入都不生成 stub。目录组合/子树或文件路径节点存在时旧拆分接口明确拒绝，避免漏掉映射。
 
 实现直接复用本项目的 `disk::{private_dir, existing_private_dir, open_regular, write_json, sync_dir}` 与 `zxs-platform` 安全文件系统原语；没有复制兄弟仓库的存储协议或脚本。依赖 `rustix` 和 `time` 的真实包名保留。
 

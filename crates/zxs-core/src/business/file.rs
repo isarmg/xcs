@@ -119,7 +119,10 @@ pub(crate) fn synchronize_directory_edits(
         target.head_commit_id = id;
         target.pending_file_versions.remove(&file.file_id);
         target.file_node_id = None;
-        target.generation += 1;
+        target.generation = target
+            .generation
+            .checked_add(1)
+            .ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
     }
     Ok(())
 }
@@ -256,7 +259,10 @@ pub(crate) fn publish_selected_file_at(
     // Selection delegates this file to its independent branch. An older
     // directory placeholder must not mask that branch's first real write.
     main.pending_file_versions.remove(file_id);
-    main.generation += 1;
+    main.generation = main
+        .generation
+        .checked_add(1)
+        .ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
     state
         .file_selections
         .insert(file_id.into(), branch_id.into());
@@ -550,7 +556,7 @@ impl Engine {
             let id=new_id("commit");
             state.commits.insert(id.clone(),Commit{commit_id:id.clone(),history_tree_id:branch.history_tree_id.clone(),kind:"namespace".into(),parent_commit_ids:vec![previous.commit_id],tree_id:new_id("tree"),sequence:state.sequence,operation_id:operation.into(),author:principal.into(),message:format!("{} {}",change.kind,change.path),entries,pending_file_versions,provenance:None});
             let live_files=state.commits[&id].entries.iter().filter(|entry|entry.kind=="file").map(|entry|entry.file_id.clone()).collect::<std::collections::BTreeSet<_>>();
-            let branch=state.branches.get_mut(&repo.main_branch_id).expect("checked");branch.head_commit_id=id.clone();branch.generation+=1;
+            let branch=state.branches.get_mut(&repo.main_branch_id).expect("checked");branch.head_commit_id=id.clone();branch.generation = branch.generation.checked_add(1).ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
             branch.pending_file_versions.retain(|file,_|live_files.contains(file));
             let mut changed_paths=vec![change.path.clone()];
             changed_paths.extend(renamed_directories);
@@ -597,18 +603,38 @@ impl Engine {
         operation: &str,
     ) -> Result<OperationResult> {
         zxs_naming::validate_path(path)?;
-        self.mutate("file.branch.select",principal,operation,json!({"repository_id":repository,"path":path,"file_id":file_id,"branch_id":branch_id}),|engine,state,_|{
-            let repo=state.repositories.get(repository).ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository missing"))?;engine.require_grant(repo,principal,zxs_contract::RepositoryAccess::Write)?;
-            let current=&state.commits[&state.branches[&repo.main_branch_id].head_commit_id];
-            if !find(&current.entries,path).is_some_and(|e|e.kind=="file"&&e.file_id==file_id){return Err(Error::new("FILE_NOT_FOUND","file/path identity differs"));}
-            let branch=state.branches.get(branch_id).cloned().filter(|b|b.file_id.as_deref()==Some(file_id)&&b.history_tree_id==repo.history_tree_id&&b.state=="active").ok_or_else(||Error::new("FILE_BRANCH_NOT_FOUND","file branch missing"))?;
-            let selected=state.commits[&branch.head_commit_id].entries.iter().find(|e|e.file_id==file_id).ok_or_else(||Error::new("STATE_INVALID","file branch entry missing"))?;
-            // A path-scoped selection has the same content safety requirement as
-            // the unscoped operation. Pending branches retain frozen references.
-            if !branch.pending_file_versions.contains_key(file_id) { engine.valid_replica(&selected.version_id)?; }
-            let commit=publish_selected_file_at(state,branch_id,Some(path),principal,operation)?;
-            Ok(json!({"file_id":file_id,"branch_id":branch_id,"commit_id":commit,"history_tree_id":branch.history_tree_id,"path":path}))
-        })
+        self.mutate(
+            "file.branch.select", principal, operation,
+            json!({"repository_id":repository,"path":path,"file_id":file_id,"branch_id":branch_id}),
+            |engine, state, _| {
+                let repo = state.repositories.get(repository)
+                    .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
+                engine.require_grant(repo, principal, zxs_contract::RepositoryAccess::Write)?;
+                engine.repository_for_history(&repo.history_tree_id)?;
+                let main = state.branches.get(&repo.main_branch_id)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "repository main branch missing"))?;
+                let current = state.commits.get(&main.head_commit_id)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "repository head missing"))?;
+                if !find(&current.entries, path).is_some_and(|e| e.kind == "file" && e.file_id == file_id) {
+                    return Err(Error::new("FILE_NOT_FOUND", "file/path identity differs"));
+                }
+                let branch = state.branches.get(branch_id).cloned()
+                    .filter(|b| b.file_id.as_deref() == Some(file_id)
+                        && b.history_tree_id == repo.history_tree_id && b.state == "active")
+                    .ok_or_else(|| Error::new("FILE_BRANCH_NOT_FOUND", "file branch missing"))?;
+                let selected = state.commits.get(&branch.head_commit_id)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "file branch head missing"))?
+                    .entries.iter().find(|e| e.kind == "file" && e.file_id == file_id)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "file branch entry missing"))?;
+                // Pending branches retain frozen references rather than requiring
+                // a fresh content replica for their metadata-only selection.
+                if !branch.pending_file_versions.contains_key(file_id) {
+                    engine.valid_replica(&selected.version_id)?;
+                }
+                let commit = publish_selected_file_at(state, branch_id, Some(path), principal, operation)?;
+                Ok(json!({"file_id":file_id,"branch_id":branch_id,"commit_id":commit,"history_tree_id":branch.history_tree_id,"path":path}))
+            },
+        )
     }
     pub fn select_file_branch(
         &mut self,
@@ -617,15 +643,28 @@ impl Engine {
         principal: &str,
         operation: &str,
     ) -> Result<OperationResult> {
-        self.mutate("file.branch.select",principal,operation,json!({"file_id":file_id,"branch_id":branch_id}),|engine,state,_|{
-            let branch=state.branches.get(branch_id).cloned().filter(|b|b.file_id.as_deref()==Some(file_id)&&b.state=="active")
-                .ok_or_else(||Error::new("FILE_BRANCH_NOT_FOUND","select an active branch of this file"))?;
-            engine.require_grant(engine.repository_for_history(&branch.history_tree_id)?,principal,zxs_contract::RepositoryAccess::Write)?;
-            let selected=state.commits[&branch.head_commit_id].entries.iter().find(|e|e.file_id==file_id).ok_or_else(||Error::new("STATE_INVALID","file branch entry missing"))?;
-            if !branch.pending_file_versions.contains_key(file_id) { engine.valid_replica(&selected.version_id)?; }
-            let commit=publish_selected_file(state,branch_id,principal,operation)?;
-            Ok(json!({"file_id":file_id,"branch_id":branch_id,"commit_id":commit,"history_tree_id":branch.history_tree_id}))
-        })
+        self.mutate(
+            "file.branch.select", principal, operation,
+            json!({"file_id":file_id,"branch_id":branch_id}),
+            |engine, state, _| {
+                let branch = state.branches.get(branch_id).cloned()
+                    .filter(|b| b.file_id.as_deref() == Some(file_id) && b.state == "active")
+                    .ok_or_else(|| Error::new("FILE_BRANCH_NOT_FOUND", "select an active branch of this file"))?;
+                engine.require_grant(
+                    engine.repository_for_history(&branch.history_tree_id)?, principal,
+                    zxs_contract::RepositoryAccess::Write,
+                )?;
+                let selected = state.commits.get(&branch.head_commit_id)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "file branch head missing"))?
+                    .entries.iter().find(|e| e.kind == "file" && e.file_id == file_id)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "file branch entry missing"))?;
+                if !branch.pending_file_versions.contains_key(file_id) {
+                    engine.valid_replica(&selected.version_id)?;
+                }
+                let commit = publish_selected_file(state, branch_id, principal, operation)?;
+                Ok(json!({"file_id":file_id,"branch_id":branch_id,"commit_id":commit,"history_tree_id":branch.history_tree_id}))
+            },
+        )
     }
 }
 

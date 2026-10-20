@@ -149,7 +149,10 @@ fn submit(state: RwSignal<State>) {
             state,
             review::Kind::Merge,
             "POST",
-            format!("/v1/file-manager/files/{}/merge", api::segment(&draft.file)),
+            format!(
+                "/api/file-manager/files/{}/merge",
+                api::segment(&draft.file)
+            ),
             body,
         ),
         Err(error) => review::error(state, review::Kind::Merge, error),

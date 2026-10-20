@@ -46,7 +46,7 @@ flowchart LR
 内容接口使用稳定逻辑版本ID，返回完整文件的逻辑字节，支持 `Range`、`206 Partial Content`、`Content-Range`、内容长度和强ETag。每次GET/HEAD/条件请求先核对当前权限、内容墓碑和域状态，再判断304或206；PURGED不得因ETag相同继续返回内容。协议层使用条件请求避免错误复用缓存；具体语义依 HTTP 标准实现。[S18]
 
 ```http
-GET /v1/versions/version-example-002/content HTTP/2
+GET /api/versions/version-example-002/content HTTP/2
 Range: bytes=262144-524287
 If-Match: "version-example-002-content-hash"
 ```

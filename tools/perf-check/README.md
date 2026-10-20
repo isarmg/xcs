@@ -26,6 +26,11 @@ To reproduce the historical baseline, archive commit `92cd662` into a fresh scra
 - Hold a read descriptor and its lease while another thread starts reading that immutable version and the single writer commits a newer version. Require the old bytes throughout and after the save. Scheduler overlap is not guaranteed; this is a held-read correctness exercise, not a server concurrency/latency claim.
 - Require a clean final engine integrity check.
 
+Reports use descriptive measurement fields without a project-format version tag.
+The comparator requires matching workload settings, sample checkpoints and all five
+named correctness checks; unrelated report metadata is not a format dispatch key.
+Archived evidence is not rewritten when the current report shape changes.
+
 The optional comparison gate checks bounded SQLite entity writes (at most 100 per sampled save and at most 10 growth after first save). It does not require a specific speedup. The baseline is expected to fail this incremental-write gate. Keep architecture-specific deterministic unit tests as the more precise contracts: journal scan-count bounds, chunk-reader byte bounds and projection changed-row counts.
 
 ## Limits

@@ -203,8 +203,8 @@ fn validate_path(path: &str) -> Result<(), Error> {
         error(
             "INVALID_API_PATH",
             t(
-                "仅允许本服务的 /v1/ 业务接口",
-                "Only this service’s /v1/ API is allowed",
+                "仅允许本服务的 /api/ 业务接口",
+                "Only this service’s /api/ API is allowed",
             ),
         )
     })
@@ -475,7 +475,7 @@ pub async fn login(endpoint: &str, username: &str, password: &str) -> Result<Val
     } else {
         request(
             "POST",
-            "/v1/auth/login",
+            "/api/auth/login",
             Some(json!({"username":username,"password":password})),
         )
         .await?
@@ -509,7 +509,7 @@ pub async fn login(endpoint: &str, username: &str, password: &str) -> Result<Val
 
 pub async fn restore() -> Result<Value, Error> {
     let generation = CREDENTIALS.with(|saved| saved.borrow().generation);
-    let value = request("GET", "/v1/auth/me", None).await?;
+    let value = request("GET", "/api/auth/me", None).await?;
     CREDENTIALS.with(|saved| {
         let mut saved = saved.borrow_mut();
         if saved.generation == generation {
@@ -538,7 +538,7 @@ pub async fn commit_workspace(
     let admission = SessionAdmission::capture();
     let body = request(
         "POST",
-        &format!("/v1/workspaces/{}/seal", segment(workspace)),
+        &format!("/api/workspaces/{}/seal", segment(workspace)),
         Some(json!({})),
     )
     .await?;
@@ -558,7 +558,7 @@ pub async fn commit_workspace(
     on_commit();
     request(
         "POST",
-        &format!("/v1/workspaces/{}/commit", segment(workspace)),
+        &format!("/api/workspaces/{}/commit", segment(workspace)),
         Some(body),
     )
     .await
@@ -616,7 +616,7 @@ pub async fn upload(
     admission.check()?;
     let bytes = Uint8Array::new(&data);
     let endpoint = format!(
-        "/v1/workspaces/{}/files/{}/content?path={}",
+        "/api/workspaces/{}/files/{}/content?path={}",
         segment(workspace),
         segment(item),
         segment(path)
@@ -636,7 +636,7 @@ pub async fn upload(
 pub async fn download(path: &str, filename: &str) -> Result<String, Error> {
     if native() {
         let version = path
-            .strip_prefix("/v1/versions/")
+            .strip_prefix("/api/versions/")
             .and_then(|s| s.strip_suffix("/content"))
             .ok_or_else(|| {
                 error(
@@ -763,7 +763,7 @@ pub async fn open_version(version: &str, name: &str) -> Result<Option<String>, E
     }
     let fetched = fetch(
         "GET",
-        &format!("/v1/versions/{}/content", segment(version)),
+        &format!("/api/versions/{}/content", segment(version)),
         None,
         None,
     )
@@ -953,21 +953,22 @@ mod tests {
     }
     #[test]
     fn restrict_transport_to_own_api() {
-        assert!(validate_path("/v1/repositories").is_ok());
-        assert!(validate_path("/v1/file-manager/disks/P01/entries?path=report..txt").is_ok());
-        assert!(validate_path("/v1/file-manager/disks/P01/entries?path=photos%2F2026").is_ok());
+        assert!(validate_path("/api/repositories").is_ok());
+        assert!(validate_path("/api/file-manager/disks/P01/entries?path=report..txt").is_ok());
+        assert!(validate_path("/api/file-manager/disks/P01/entries?path=photos%2F2026").is_ok());
         for path in [
-            "https://other/v1/a",
-            "//other/v1/a",
-            "/api/v1/a",
-            "/v1/../secret",
-            "/v1/%2e%2e/secret",
-            "/v1/.%2e/secret",
-            "/v1/a%2fb",
-            "/v1/a#secret",
-            "/v1/\\evil",
-            "/v1/\t../secret",
-            "/v1/file\nname",
+            "https://other/api/a",
+            "//other/api/a",
+            "/other/api/a",
+            "/v1/repositories",
+            "/api/../secret",
+            "/api/%2e%2e/secret",
+            "/api/.%2e/secret",
+            "/api/a%2fb",
+            "/api/a#secret",
+            "/api/\\evil",
+            "/api/\t../secret",
+            "/api/file\nname",
         ] {
             assert!(validate_path(path).is_err(), "{path}");
         }

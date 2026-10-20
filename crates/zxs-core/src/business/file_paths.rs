@@ -3,7 +3,7 @@ use super::*;
 use serde_json::json;
 
 pub(crate) fn source_node(state: &State, file: &str, version: &str, node: &str) -> Result<()> {
-    let valid = file_nodes::node_version(state, file, node).is_ok_and(|v| v == version);
+    let valid = file_nodes::node_version(state, file, node)? == version;
     if !valid {
         return Err(Error::new(
             "FILE_NODE_NOT_FOUND",
@@ -22,8 +22,20 @@ pub(crate) fn rename_node(
     principal: &str,
     operation: &str,
 ) -> Result<FileContext> {
-    let repo = state.repositories[repository].clone();
-    let current = state.commits[&state.branches[&repo.main_branch_id].head_commit_id].clone();
+    let repo = state
+        .repositories
+        .get(repository)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "file repository missing"))?;
+    let main = state
+        .branches
+        .get(&repo.main_branch_id)
+        .ok_or_else(|| Error::new("STATE_INVALID", "repository main branch missing"))?;
+    let current = state
+        .commits
+        .get(&main.head_commit_id)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "repository head missing"))?;
     let mut context = if let Some(c) = context {
         c
     } else {

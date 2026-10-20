@@ -353,6 +353,11 @@ impl Engine {
         if branch.state != "active" {
             return Err(Error::new("BRANCH_ARCHIVED", "branch is not writable"));
         }
+        let head = self
+            .state
+            .commits
+            .get(&branch.head_commit_id)
+            .ok_or_else(|| Error::new("STATE_INVALID", "branch HEAD missing"))?;
         let w = Workspace {
             workspace_id: new_id("ws"),
             purpose: "normal".into(),
@@ -367,8 +372,7 @@ impl Engine {
                 .values()
                 .find(|r| r.main_branch_id == branch_id)
                 .map(|r| {
-                    self.state.commits[&branch.head_commit_id]
-                        .entries
+                    head.entries
                         .iter()
                         .filter(|e| e.kind == "file")
                         .filter_map(|e| {
@@ -381,11 +385,7 @@ impl Engine {
             selected_directory_branches: self.state.directory_selections.clone(),
             directory_selection_generations: self.state.directory_selection_generations.clone(),
             file_selection_generations: self.state.file_selection_generations.clone(),
-            selected_file_branches: self
-                .state
-                .commits
-                .get(&branch.head_commit_id)
-                .ok_or_else(|| Error::new("STATE_INVALID", "branch HEAD missing"))?
+            selected_file_branches: head
                 .entries
                 .iter()
                 .filter(|entry| entry.kind == "file")
@@ -1047,7 +1047,7 @@ impl Engine {
                 });
                 let target = state.branches.get_mut(&w.branch_id).expect("branch checked");
                 target.head_commit_id = commit_id.clone();
-                target.generation += 1;
+                target.generation = target.generation.checked_add(1).ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
                 target.pending_file_versions.retain(|file, _| live_files.contains(file) && !written_files.contains(file));
                 if !written_files.is_empty(){target.file_node_id=None;}
                 if branch.file_id.is_some() {
@@ -1206,7 +1206,6 @@ impl Engine {
         let (storage_name, created_at) =
             crate::container_storage::version_identity(state, file_id, path, &content_hash)?;
         let version = FileVersion {
-            format_version: 2,
             history_tree_id: history.into(),
             version_id: new_id("ver"),
             file_id: file_id.into(),
@@ -1217,8 +1216,8 @@ impl Engine {
             checksum_chunk_bytes: self.config.checksum_chunk_bytes,
             checksum_manifest_hash: blake3::hash(&manifest.encode()?).to_hex().to_string(),
             creation_name: path.rsplit('/').next().unwrap_or("").into(),
-            storage_name: Some(storage_name),
-            created_at: Some(created_at),
+            storage_name,
+            created_at,
             source_version_ids: source_ids,
             created_as_full_checkpoint: checkpoint,
         };

@@ -43,7 +43,7 @@ pub const CSRF_HEADER: &str = "x-csrf-token";
 /// derived from the same constants and enum values used by runtime hashing.
 pub fn credential_policy() -> serde_json::Value {
     serde_json::json!({
-        "format": "administrator-credential-policy-v1",
+        "format": "administrator-credential-policy",
         "username": {
             "min_bytes": ADMINISTRATOR_USERNAME_MIN_BYTES,
             "max_bytes": ADMINISTRATOR_USERNAME_MAX_BYTES,
@@ -300,7 +300,7 @@ pub fn derive_csrf_token(session_token: &str) -> Result<String, Error> {
         .decode(session_token)
         .map_err(|_| Error::InvalidCsrfToken)?;
     let mut mac = Hmac::<Sha256>::new_from_slice(&key).map_err(|_| Error::InvalidCsrfToken)?;
-    mac.update(b"zxs/admin-csrf/v1");
+    mac.update(b"zxs/admin-csrf");
     Ok(URL_SAFE_NO_PAD.encode(mac.finalize().into_bytes()))
 }
 

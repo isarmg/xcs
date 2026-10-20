@@ -46,8 +46,7 @@ pub(super) fn acquire_locks(
 }
 pub(super) fn validate_config(c: &Config) -> Result<()> {
     validate_id(&c.pool_id, "pool")?;
-    if c.format_version != 2
-        || c.disks.iter().filter(|d| d.metadata_member).count() != 3
+    if c.disks.iter().filter(|d| d.metadata_member).count() != 3
         || c.max_file_bytes == 0
         || c.max_workspace_bytes == 0
         || c.max_file_bytes > c.max_workspace_bytes
@@ -57,11 +56,11 @@ pub(super) fn validate_config(c: &Config) -> Result<()> {
     {
         return Err(Error::new(
             "CONFIG_INVALID",
-            "invalid format, metadata membership, resource limits or checksum size",
+            "invalid metadata membership, resource limits or checksum size",
         ));
     }
     let chunks = c.max_file_bytes.div_ceil(c.checksum_chunk_bytes as u64);
-    if chunks > (MAX_CHECKSUM_MANIFEST as u64 - 32) / 32 {
+    if chunks > (MAX_CHECKSUM_MANIFEST as u64 - CHECKSUM_HEADER_BYTES as u64) / 32 {
         return Err(Error::new(
             "CONFIG_INVALID",
             "file limit exceeds the bounded checksum manifest capacity",

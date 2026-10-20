@@ -115,9 +115,7 @@ fn main() -> Result<()> {
     inventory_tree(&staging, &staging, &mut inventory)?;
     fs::write(
         staging.join("build-manifest.json"),
-        serde_json::to_vec_pretty(
-            &serde_json::json!({"format_version":1,"runtime":"zxs-web","files":inventory,"inputs":inputs_after,"target":"wasm32-unknown-unknown","wasm_bindgen":"0.2.129"}),
-        )?,
+        serde_json::to_vec_pretty(&build_manifest(&inventory, &inputs_after))?,
     )?;
     let dist = web.join("dist");
     let backup = web.join(".dist-backup");
@@ -147,6 +145,13 @@ fn main() -> Result<()> {
     );
     Ok(())
 }
+fn build_manifest(
+    files: &BTreeMap<String, String>,
+    inputs: &BTreeMap<String, String>,
+) -> serde_json::Value {
+    serde_json::json!({"runtime":"zxs-web","files":files,"inputs":inputs,"target":"wasm32-unknown-unknown","wasm_bindgen":"0.2.129"})
+}
+
 struct BuildLock {
     path: PathBuf,
     _file: fs::File,
@@ -252,6 +257,19 @@ fn inventory_tree(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn build_inventory_uses_descriptive_fields_without_format_numbering() {
+        let files = BTreeMap::from([("boot.js".to_owned(), "output-hash".to_owned())]);
+        let inputs = BTreeMap::from([("web/src/lib.rs".to_owned(), "input-hash".to_owned())]);
+        let manifest = build_manifest(&files, &inputs);
+        assert_eq!(manifest.as_object().unwrap().len(), 5);
+        assert_eq!(manifest["runtime"], "zxs-web");
+        assert_eq!(manifest["files"]["boot.js"], "output-hash");
+        assert_eq!(manifest["inputs"]["web/src/lib.rs"], "input-hash");
+        assert_eq!(manifest["target"], "wasm32-unknown-unknown");
+        assert_eq!(manifest["wasm_bindgen"], "0.2.129");
+    }
 
     struct Fixture(PathBuf);
     impl Fixture {

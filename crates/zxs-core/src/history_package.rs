@@ -2,6 +2,7 @@
 use crate::{business::validate_entries, disk::*, journal::*, *};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+mod graph;
 use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
     fs,
@@ -11,7 +12,6 @@ use std::{
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct HistoryManifest {
-    pub format_version: u32,
     pub repository: Repository,
     pub history: HistoryTree,
     pub branches: BTreeMap<String, Branch>,
@@ -92,7 +92,6 @@ pub struct HistoryPackageReport {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct PackageProof {
-    format_version: u32,
     manifest_hash: String,
     candidate: Candidate,
     publication: Publication,
@@ -106,7 +105,6 @@ pub(crate) fn package_proof_bytes(
 ) -> Result<usize> {
     Ok(encode_metadata(
         &PackageProof {
-            format_version: 2,
             manifest_hash: "0".repeat(64),
             candidate: candidate.clone(),
             publication: publication.clone(),
@@ -157,7 +155,6 @@ impl HistoryManifest {
             .map(|version| version.file_id.as_str())
             .collect::<BTreeSet<_>>();
         let manifest = Self {
-            format_version: 2,
             repository,
             history,
             file_names: state
@@ -870,8 +867,7 @@ impl HistoryManifest {
         let history = &self.history.history_tree_id;
         validate_id(history, "history")?;
         validate_id(&self.repository.repository_id, "repo")?;
-        if self.format_version != 2
-            || self.history.repository_id != self.repository.repository_id
+        if self.history.repository_id != self.repository.repository_id
             || self.repository.history_tree_id != *history
             || !self.commits.contains_key(&self.history.root_commit_id)
         {
@@ -1296,19 +1292,25 @@ impl HistoryManifest {
             return Err(invalid("version state or placement coverage differs"));
         }
         for (id, version) in &self.versions {
+            // Tombstones retain identity even without a payload to trigger
+            // content_path validation. Reject malformed retained records before
+            // import can reach a decision or post-decision name projection.
+            crate::container_storage::validate_version(version).map_err(|error| {
+                Error::new(
+                    "HISTORY_PACKAGE_INVALID",
+                    format!("invalid version storage identity: {error}"),
+                )
+            })?;
             validate_id(id, "ver")?;
             validate_id(&version.file_id, "file")?;
             zxs_naming::validate_name(&version.creation_name)?;
-            if let Some(name) = &version.storage_name {
-                zxs_naming::validate_name(name)?;
-            }
+            zxs_naming::validate_name(&version.storage_name)?;
             let placement = self
                 .placements
                 .get(id)
                 .ok_or_else(|| invalid("version placement missing"))?;
             if version.version_id != *id
                 || version.history_tree_id != *history
-                || version.format_version != 2
                 || placement.version_id != *id
                 || !["AVAILABLE", "PURGED", "MIGRATED"].contains(&self.content_states[id].as_str())
             {
@@ -1413,12 +1415,7 @@ impl HistoryManifest {
     }
 }
 
-pub(crate) fn store_history_manifests(
-    members: &[DiskConfig],
-    state: &State,
-) -> Result<BTreeMap<String, String>> {
-    store_history_manifests_bounded(members, state, MAX_METADATA)
-}
+#[cfg(test)]
 pub(crate) fn store_history_manifests_bounded(
     members: &[DiskConfig],
     state: &State,
@@ -1438,28 +1435,130 @@ pub(crate) fn prepare_history_manifests(
     let mut objects = Vec::new();
     for id in state.histories.keys() {
         let manifest = HistoryManifest::from_state(state, id)?;
-        let object = PreparedMetadataObject::new("history-manifest", &manifest, maximum)?;
-        hashes.insert(id.clone(), object.hash.clone());
-        objects.push(object);
+        let (hash, graph) = graph::prepare(&manifest, maximum)?;
+        hashes.insert(id.clone(), hash);
+        objects.extend(graph);
     }
     Ok((hashes, objects))
+}
+
+type HistoryGraphObjects = Vec<(String, String, serde_json::Value)>;
+
+/// Select every dependency independently from trusted replicas, without repair.
+fn bound_history_graph(
+    members: &[DiskConfig],
+    hash: &str,
+) -> Result<(HistoryManifest, HistoryGraphObjects)> {
+    let root = crate::publication_evidence::verified_object(members, "history-manifest", hash)?;
+    let (manifest, objects) = graph::resolve_with_objects(root, |kind, hash| {
+        crate::publication_evidence::verified_object(members, kind, hash)
+    })?;
+    manifest.validate()?;
+    Ok((manifest, objects))
+}
+
+/// Freeze exact candidate-bound history graphs before any recovery writes. Missing
+/// roots cannot be recreated from a flat projection or a different encoder.
+pub(crate) fn bound_history_objects(
+    members: &[DiskConfig],
+    candidate: &Candidate,
+    state: Option<&State>,
+) -> Result<HistoryGraphObjects> {
+    let mut objects = Vec::new();
+    let mut seen = BTreeSet::new();
+    if let Some(state) = state
+        && candidate
+            .history_manifest_hashes
+            .keys()
+            .ne(state.histories.keys())
+    {
+        return Err(Error::new(
+            "OBJECT_CORRUPT",
+            "candidate history set differs",
+        ));
+    }
+    for (id, hash) in &candidate.history_manifest_hashes {
+        let expected = state
+            .map(|state| HistoryManifest::from_state(state, id))
+            .transpose()?;
+        let (manifest, graph) = bound_history_graph(members, hash)?;
+        let manifest_bytes = canonical_json(&manifest)?;
+        if manifest.history.history_tree_id != *id
+            || expected
+                .as_ref()
+                .map(canonical_json)
+                .transpose()?
+                .is_some_and(|expected| expected != manifest_bytes)
+        {
+            return Err(Error::new(
+                "OBJECT_CORRUPT",
+                "bound history projection differs",
+            ));
+        }
+        for (kind, hash, value) in graph {
+            encode_metadata(&value, MAX_METADATA)?;
+            if seen.insert((kind.clone(), hash.clone())) {
+                objects.push((kind, hash, value));
+            }
+        }
+    }
+    Ok(objects)
+}
+
+pub(crate) fn repair_history_objects(
+    members: &[DiskConfig],
+    objects: &HistoryGraphObjects,
+    repaired: &mut BTreeSet<(String, String)>,
+) -> Result<()> {
+    // Resolver output is dependency-first, including child indexes before parents.
+    for (kind, hash, value) in objects {
+        if !repaired.contains(&(kind.clone(), hash.clone())) {
+            crate::publication_evidence::repair_object_copies(members, kind, hash, value)?;
+            // Optimization only: overflow objects remain fully verified and repaired.
+            if repaired.len() < 16_384 {
+                repaired.insert((kind.clone(), hash.clone()));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn package_version(package: &Path, version: &str) -> PathBuf {
     package.join("versions").join(version)
 }
+fn package_object(package: &Path, kind: &str, hash: &str) -> Result<PathBuf> {
+    if !matches!(kind, "state-page" | "history-index")
+        || hash.len() != 64
+        || !hash
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err(Error::new(
+            "HISTORY_PACKAGE_INVALID",
+            "invalid graph object address",
+        ));
+    }
+    Ok(package
+        .join("objects")
+        .join(kind)
+        .join(&hash[..2])
+        .join(format!("{hash}.json")))
+}
+
 fn load_package(package: &Path) -> Result<(HistoryManifest, PackageProof, HistoryPackageReport)> {
-    let manifest: HistoryManifest = read_json(&package.join("manifest.json"))?;
+    let root: serde_json::Value = read_json(&package.join("manifest.json"))?;
+    let hash = object_hash("history-manifest", &root)?;
+    let manifest = graph::resolve(root, |kind, hash| {
+        read_json(&package_object(package, kind, hash)?)
+    })?;
     manifest.validate()?;
     let proof: PackageProof = read_json(&package.join("publication.json"))?;
-    let hash = object_hash("history-manifest", &manifest)?;
     verify_publication_seal(
         &proof.candidate,
         &proof.publication,
         &proof.publication_seal,
     )?;
-    if proof.format_version != 2
-        || proof.manifest_hash != hash
+    if proof.manifest_hash != hash
         || proof
             .candidate
             .history_manifest_hashes
@@ -1523,8 +1622,8 @@ impl Engine {
             zxs_contract::RepositoryAccess::Manage,
         )?;
         let manifest = HistoryManifest::from_state(&self.state, history)?;
-        let hash = object_hash("history-manifest", &manifest)?;
         let mut proof = None;
+        let mut graph_objects = Vec::new();
         let members = self.trusted_evidence_members();
         for disk in &members {
             for (record, _) in scan(disk)?
@@ -1545,9 +1644,14 @@ impl Engine {
                         "candidate differs from journal or pool",
                     ));
                 }
-                if candidate.history_manifest_hashes.get(history) != Some(&hash) {
+                let Some(hash) = candidate.history_manifest_hashes.get(history).cloned() else {
+                    continue;
+                };
+                let (bound, objects) = bound_history_graph(&members, &hash)?;
+                if canonical_json(&bound)? != canonical_json(&manifest)? {
                     continue;
                 }
+                graph_objects = objects;
                 let publication: Publication = crate::publication_evidence::verified_object(
                     &members,
                     "publication",
@@ -1560,7 +1664,6 @@ impl Engine {
                         &publication,
                     )?;
                 proof = Some(PackageProof {
-                    format_version: 2,
                     manifest_hash: hash.clone(),
                     candidate,
                     publication,
@@ -1613,7 +1716,14 @@ impl Engine {
                 write_atomic(&dir.join("checksums.bin"), &checksums.encode()?, false)?;
                 sync_dir(&dir)?;
             }
-            write_json(&staging.join("manifest.json"), &manifest, false)?;
+            for (kind, hash, value) in &graph_objects {
+                let path = if kind == "history-manifest" {
+                    staging.join("manifest.json")
+                } else {
+                    package_object(&staging, kind, hash)?
+                };
+                write_json(&path, value, false)?;
+            }
             write_json(&staging.join("publication.json"), &proof, false)?;
             sync_dir(&staging)?;
             let report = offline_check_history_package(&staging)?;
@@ -1834,6 +1944,199 @@ mod tests {
             .unwrap()
             .commit_id
             .unwrap()
+    }
+
+    fn latest_candidate(engine: &Engine) -> Candidate {
+        let member = &engine.members()[0];
+        let record = scan(member)
+            .unwrap()
+            .records
+            .into_iter()
+            .rev()
+            .find(|(record, _)| record.record_type == "PUBLICATION")
+            .unwrap()
+            .0;
+        load_object(member, "candidate", &record.candidate_hash).unwrap()
+    }
+
+    #[test]
+    fn paged_pending_recovery_repairs_leaf_index_and_root_and_checkpoint_checks_them() {
+        for kind in ["state-page", "history-index", "history-manifest"] {
+            let temp = tempfile::tempdir().unwrap();
+            let source = temp.path().join("source");
+            let mut engine = initialize(&source);
+            let repo = engine
+                .create_repository("history", "P01", 3, "alice", &new_id("op"))
+                .unwrap();
+            let mut next = engine.state.clone();
+            next.sequence = engine.next_slot;
+            let original =
+                next.commits[&next.histories[&repo.history_tree_id].root_commit_id].clone();
+            let mut parent = original.commit_id.clone();
+            for _ in 0..160 {
+                let mut commit = original.clone();
+                commit.commit_id = new_id("commit");
+                commit.parent_commit_ids = vec![parent];
+                commit.sequence = next.sequence;
+                parent = commit.commit_id.clone();
+                next.commits.insert(commit.commit_id.clone(), commit);
+            }
+            let mut result = next.operations.values().next().unwrap().clone();
+            result.operation_id = new_id("op");
+            result.sequence = next.sequence;
+            next.operations
+                .insert(result.operation_id.clone(), result.clone());
+            engine.inject_fault_once("after_accept_2");
+            assert!(
+                engine
+                    .persist(next.clone(), Vec::new(), result.clone())
+                    .is_err()
+            );
+            let members = engine.members();
+            let record = scan(&members[0])
+                .unwrap()
+                .records
+                .into_iter()
+                .rev()
+                .find(|(record, _)| record.record_type == "ACCEPT")
+                .unwrap()
+                .0;
+            let candidate: Candidate =
+                load_object(&members[0], "candidate", &record.candidate_hash).unwrap();
+            let objects = bound_history_objects(&members, &candidate, Some(&next)).unwrap();
+            let (_, hash, value) = objects
+                .iter()
+                .find(|(domain, _, _)| domain == kind)
+                .unwrap();
+            let expected = canonical_json(value).unwrap();
+            let damaged = object_path(&members[0], kind, hash);
+            fs::write(&damaged, b"damaged").unwrap();
+            drop(engine);
+            let engine = Engine::open(&source.join("state")).unwrap();
+            assert_eq!(
+                engine.operation(&result.operation_id).unwrap().sequence,
+                result.sequence
+            );
+            assert_eq!(fs::read(&damaged).unwrap(), expected);
+            drop(engine);
+            // A checkpoint must not turn a now-missing graph dependency into
+            // apparent publication validity. No graph re-rooting is permitted.
+            for member in &members {
+                for path in existing_object_paths(member, kind, hash).unwrap() {
+                    fs::remove_file(path).unwrap();
+                }
+            }
+            assert!(Engine::open(&source.join("state")).is_err());
+        }
+    }
+
+    #[test]
+    fn paged_history_resolves_disjoint_replicas_without_read_repair() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
+        let mut engine = initialize(&temp.path().join("source"));
+        let repo = engine
+            .create_repository("history", "P01", 3, "alice", &new_id("op"))
+            .unwrap();
+        save(&mut engine, &repo.main_branch_id, b"full retained bytes");
+        let candidate = latest_candidate(&engine);
+        let members = engine.members();
+        let objects = bound_history_objects(&members, &candidate, Some(&engine.state)).unwrap();
+        assert!(objects.len() > 3);
+        for (i, (kind, hash, _)) in objects.iter().enumerate() {
+            for (j, member) in members.iter().enumerate() {
+                if j != i % 3 {
+                    for path in existing_object_paths(member, kind, hash).unwrap() {
+                        fs::remove_file(path).unwrap();
+                    }
+                }
+            }
+        }
+        let selected = bound_history_objects(&members, &candidate, Some(&engine.state)).unwrap();
+        assert_eq!(selected.len(), objects.len());
+        for (i, (kind, hash, _)) in objects.iter().enumerate() {
+            for (j, member) in members.iter().enumerate() {
+                assert_eq!(
+                    existing_object_paths(member, kind, hash)
+                        .unwrap()
+                        .is_empty(),
+                    j != i % 3
+                );
+            }
+        }
+        repair_history_objects(&members, &selected, &mut BTreeSet::new()).unwrap();
+        for member in &members {
+            bound_history_objects(
+                std::slice::from_ref(member),
+                &candidate,
+                Some(&engine.state),
+            )
+            .unwrap();
+        }
+        let (_, hash, _) = objects
+            .iter()
+            .find(|(kind, _, _)| kind == "history-manifest")
+            .unwrap();
+        assert_ne!(
+            object_hash(
+                "history-manifest",
+                &HistoryManifest::from_state(&engine.state, &repo.history_tree_id).unwrap()
+            )
+            .unwrap(),
+            *hash
+        );
+    }
+
+    #[test]
+    fn paged_package_missing_leaf_and_flat_proof_substitution_fail_closed() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
+        let mut engine = initialize(&temp.path().join("source"));
+        let repo = engine
+            .create_repository("history", "P01", 3, "alice", &new_id("op"))
+            .unwrap();
+        save(&mut engine, &repo.main_branch_id, b"retained bytes");
+        let package = temp.path().join("package");
+        let report = engine
+            .export_history_package(&repo.history_tree_id, &package, "alice")
+            .unwrap();
+        let (manifest, proof, _) = load_package(&package).unwrap();
+        assert_eq!(proof.manifest_hash, report.manifest_hash);
+        let proof_bytes = fs::read(package.join("publication.json")).unwrap();
+        let mut unsupported = serde_json::to_value(&proof).unwrap();
+        unsupported["unexpected"] = json!(true);
+        write_json(&package.join("publication.json"), &unsupported, true).unwrap();
+        assert!(offline_check_history_package(&package).is_err());
+        write_atomic(&package.join("publication.json"), &proof_bytes, true).unwrap();
+        let root = fs::read(package.join("manifest.json")).unwrap();
+        write_json(&package.join("manifest.json"), &manifest, true).unwrap();
+        assert!(offline_check_history_package(&package).is_err());
+        write_atomic(&package.join("manifest.json"), &root, true).unwrap();
+        let objects =
+            bound_history_objects(&engine.members(), &proof.candidate, Some(&engine.state))
+                .unwrap();
+        let (kind, hash, _) = objects
+            .iter()
+            .find(|(kind, _, _)| kind == "state-page")
+            .unwrap();
+        let path = package_object(&package, kind, hash).unwrap();
+        let bytes = fs::read(&path).unwrap();
+        fs::remove_file(&path).unwrap();
+        assert!(offline_check_history_package(&package).is_err());
+        write_atomic(&path, &bytes, false).unwrap();
+        offline_check_history_package(&package).unwrap();
+        // Candidate-bound root loss may not be replaced with a newly encoded root.
+        for member in engine.members() {
+            for path in
+                existing_object_paths(&member, "history-manifest", &report.manifest_hash).unwrap()
+            {
+                fs::remove_file(path).unwrap();
+            }
+        }
+        assert!(
+            bound_history_objects(&engine.members(), &proof.candidate, Some(&engine.state))
+                .is_err()
+        );
     }
 
     fn legacy_placeholder(
@@ -3009,6 +3312,198 @@ mod tests {
         let reopened = Engine::open(&restored_root.join("state")).unwrap();
         assert_eq!(reopened.graph(&history).unwrap().commits.len(), 3);
     }
+    /// Rebind a complete test package to its altered logical graph using a fresh
+    /// internally consistent receipt chain. This isolates semantic validation
+    /// from root/proof mismatch checks without touching the source pool.
+    fn rebind_test_package(
+        package: &Path,
+        proof_root: &Path,
+        manifest: &HistoryManifest,
+        mut proof: PackageProof,
+        source_members: &[DiskConfig],
+    ) {
+        let members = source_members
+            .iter()
+            .enumerate()
+            .map(|(index, member)| DiskConfig {
+                root: proof_root.join(format!("member-{index}")),
+                ..member.clone()
+            })
+            .collect::<Vec<_>>();
+        let (root_hash, prepared) = graph::prepare(manifest, MAX_METADATA).unwrap();
+        for object in prepared {
+            object.store(&members[..1]).unwrap();
+        }
+        let root = load_object(&members[0], "history-manifest", &root_hash).unwrap();
+        let (_, objects) =
+            graph::resolve_with_objects(root, |kind, hash| load_object(&members[0], kind, hash))
+                .unwrap();
+        for (kind, hash, value) in objects {
+            let path = if kind == "history-manifest" {
+                package.join("manifest.json")
+            } else {
+                package_object(package, &kind, &hash).unwrap()
+            };
+            write_json(&path, &value, true).unwrap();
+        }
+        proof.manifest_hash = root_hash.clone();
+        proof
+            .candidate
+            .history_manifest_hashes
+            .insert(manifest.history.history_tree_id.clone(), root_hash);
+        let candidate_hash = object_hash("candidate", &proof.candidate).unwrap();
+        let sequence = proof.candidate.sequence;
+        let accepts = members
+            .iter()
+            .map(|member| {
+                append(
+                    member,
+                    "PREPARE",
+                    sequence,
+                    &candidate_hash,
+                    &proof.candidate.snapshot_hash,
+                )
+                .unwrap();
+                append(member, "ACCEPT", sequence, &candidate_hash, &candidate_hash).unwrap()
+            })
+            .collect();
+        proof.publication.candidate_hash = candidate_hash.clone();
+        proof.publication.finalize = Finalize {
+            candidate_hash: candidate_hash.clone(),
+            accepts,
+            recovery_id: None,
+        };
+        let finalize_hash = object_hash("finalize", &proof.publication.finalize).unwrap();
+        proof.publication.finalize_receipts = members
+            .iter()
+            .map(|member| {
+                append(
+                    member,
+                    "FINALIZE",
+                    sequence,
+                    &candidate_hash,
+                    &finalize_hash,
+                )
+                .unwrap()
+            })
+            .collect();
+        let publication_hash = object_hash("publication", &proof.publication).unwrap();
+        let receipts = members
+            .iter()
+            .map(|member| {
+                append(
+                    member,
+                    "PUBLICATION",
+                    sequence,
+                    &candidate_hash,
+                    &publication_hash,
+                )
+                .unwrap()
+            })
+            .collect();
+        proof.publication_seal = PublicationSeal {
+            candidate_hash,
+            publication_hash,
+            receipts,
+        };
+        verify_publication_seal(
+            &proof.candidate,
+            &proof.publication,
+            &proof.publication_seal,
+        )
+        .unwrap();
+        write_json(&package.join("publication.json"), &proof, true).unwrap();
+    }
+
+    #[test]
+    fn tombstoned_storage_identity_is_validated_before_restore_decision() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::set_permissions(temp.path(), fs::Permissions::from_mode(0o700)).unwrap();
+        let mut source = initialize(&temp.path().join("source"));
+        let repo = source
+            .create_repository("retained identity", "P01", 3, "alice", &new_id("op"))
+            .unwrap();
+        save(&mut source, &repo.main_branch_id, b"retained");
+        let old = source.list_tree(&repo.main_branch_id).unwrap()[0]
+            .version_id
+            .clone();
+        save(&mut source, &repo.main_branch_id, b"current");
+        let purge = source
+            .create_purge_plan(&repo.history_tree_id, vec![old.clone()], "alice")
+            .unwrap();
+        source
+            .commit_plan(&purge.plan_id, "alice", &new_id("op"))
+            .unwrap();
+        let package = temp.path().join("package");
+        source
+            .export_history_package(&repo.history_tree_id, &package, "alice")
+            .unwrap();
+        let (baseline, proof, _) = load_package(&package).unwrap();
+        assert!(!package_version(&package, &old).exists());
+        for status in ["PURGED", "MIGRATED"] {
+            for malformed in ["none", "storage_name", "created_at"] {
+                let label = format!("{status}-{malformed}");
+                let mut manifest = baseline.clone();
+                manifest.content_states.insert(old.clone(), status.into());
+                let version = manifest.versions.get_mut(&old).unwrap();
+                match malformed {
+                    "storage_name" => version.storage_name = "invalid.txt".into(),
+                    "created_at" => version.created_at.clear(),
+                    _ => (),
+                }
+                rebind_test_package(
+                    &package,
+                    &temp.path().join(format!("proof-{label}")),
+                    &manifest,
+                    proof.clone(),
+                    &source.members(),
+                );
+                let mut restored = initialize(&temp.path().join(format!("restored-{label}")));
+                let before = canonical_json(&restored.state).unwrap();
+                let journals = restored
+                    .members()
+                    .iter()
+                    .map(|member| fs::read(log_path(member)).ok())
+                    .collect::<Vec<_>>();
+                let next_slot = restored.next_slot;
+                if malformed == "none" {
+                    manifest.validate().unwrap();
+                    assert_eq!(
+                        offline_check_history_package(&package).unwrap().tombstones,
+                        1
+                    );
+                    restored
+                        .restore_history_package(&package, "P01", 3, "alice", &new_id("op"))
+                        .unwrap();
+                    assert_eq!(restored.state.versions[&old], baseline.versions[&old]);
+                    assert_eq!(restored.state.content_states[&old], status);
+                } else {
+                    assert_eq!(
+                        manifest.validate().unwrap_err().code(),
+                        "HISTORY_PACKAGE_INVALID"
+                    );
+                    assert_eq!(
+                        offline_check_history_package(&package).unwrap_err().code(),
+                        "HISTORY_PACKAGE_INVALID"
+                    );
+                    assert_eq!(
+                        restored
+                            .restore_history_package(&package, "P01", 3, "alice", &new_id("op"))
+                            .unwrap_err()
+                            .code(),
+                        "HISTORY_PACKAGE_INVALID"
+                    );
+                    assert_eq!(canonical_json(&restored.state).unwrap(), before);
+                    assert_eq!(restored.next_slot, next_slot);
+                    assert!(!restored.blocked);
+                    for (member, journal) in restored.members().iter().zip(journals) {
+                        assert_eq!(fs::read(log_path(member)).ok(), journal);
+                    }
+                }
+            }
+        }
+    }
+
     #[test]
     fn package_preserves_purge_and_rejects_missing_bytes_or_unpublished_manifest() {
         let temp = tempfile::tempdir().unwrap();
@@ -3043,9 +3538,10 @@ mod tests {
             "CONTENT_PURGED"
         );
         let original = fs::read(package.join("manifest.json")).unwrap();
-        let mut manifest: HistoryManifest = decode_strict(&original).unwrap();
-        manifest.repository.name = "被修改的名字".into();
-        write_json(&package.join("manifest.json"), &manifest, true).unwrap();
+        let manifest = load_package(&package).unwrap().0;
+        let mut root: serde_json::Value = decode_strict(&original).unwrap();
+        root["repository"]["name"] = json!("被修改的名字");
+        write_json(&package.join("manifest.json"), &root, true).unwrap();
         assert_eq!(
             offline_check_history_package(&package).unwrap_err().code(),
             "HISTORY_PACKAGE_INVALID"

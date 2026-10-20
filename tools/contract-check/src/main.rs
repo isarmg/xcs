@@ -213,7 +213,7 @@ fn semantics(name: &str, value: &Value) -> Result {
         "CommitRequest" => {
             let mut body = object(value)?.clone();
             body.remove("request_digest");
-            let envelope = json!({"method":"POST","route":"/v1/workspaces/{workspace}/commit","path_parameters":{"workspace":body["workspace_id"]},"query":{},"body":body});
+            let envelope = json!({"method":"POST","route":"/api/workspaces/{workspace}/commit","path_parameters":{"workspace":body["workspace_id"]},"query":{},"body":body});
             require(
                 zxs_contract::object_hash("request", &envelope)? == text(&value["request_digest"])?,
                 "request digest mismatch",
@@ -810,7 +810,7 @@ mod tests {
         let path =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts/openapi.json");
         let mut api = read(&path).unwrap();
-        let item = api["paths"]["/v1/file-manager/disks/{slot}/entries"]["get"]["responses"]["200"]
+        let item = api["paths"]["/api/file-manager/disks/{slot}/entries"]["get"]["responses"]["200"]
             ["content"]["application/json"]["schema"]["properties"]["entries"]["items"]
             .clone();
         api["$defs"]["entry_projection"] = item;
@@ -867,12 +867,12 @@ mod tests {
             "entry_id":"virtual-directory","name":"P01","path":"P01","kind":"directory",
             "size":"0","file_id":"","version_id":""
         })));
-        let creation_shape = api["paths"]["/v1/file-manager/files/{file}/branches"]["post"]
+        let creation_shape = api["paths"]["/api/file-manager/files/{file}/branches"]["post"]
             ["responses"]["200"]["content"]["application/json"]["schema"]["properties"]
             ["result"]
             .clone();
         let directory_branch_shape = api["paths"]
-            ["/v1/file-manager/disks/{slot}/directory-branches"]["post"]["responses"]["200"]
+            ["/api/file-manager/disks/{slot}/directory-branches"]["post"]["responses"]["200"]
             ["content"]["application/json"]["schema"]["properties"]["result"]["properties"]
             ["branches"]["items"]
             .clone();
@@ -910,11 +910,11 @@ mod tests {
         let root =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts/openapi.json");
         let mut value = read(&root).unwrap();
-        value["paths"]["/v1/workspaces/{workspace}/commit"]["post"]["operationId"] =
+        value["paths"]["/api/workspaces/{workspace}/commit"]["post"]["operationId"] =
             "getContentSaveOperation".into();
         assert!(openapi(&value).is_err());
         let mut value = read(&root).unwrap();
-        value["paths"]["/v1/workspaces/{workspace}/commit"]["post"]["parameters"] = json!([]);
+        value["paths"]["/api/workspaces/{workspace}/commit"]["post"]["parameters"] = json!([]);
         assert!(openapi(&value).is_err());
     }
 
@@ -923,7 +923,7 @@ mod tests {
         let path =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts/openapi.json");
         let mut api = read(&path).unwrap();
-        let version_pointer = "/paths/~1v1~1file-manager~1files~1{file}~1history/get/responses/200/content/application~1json/schema/properties/versions/items";
+        let version_pointer = "/paths/~1api~1file-manager~1files~1{file}~1history/get/responses/200/content/application~1json/schema/properties/versions/items";
         let schema = api.pointer(version_pointer).unwrap();
         assert!(
             schema["required"]
@@ -947,12 +947,20 @@ mod tests {
         let schema = validator(&api).unwrap();
         let mut version = json!({
             "version_id":zxs_contract::new_id("ver"),"file_id":zxs_contract::new_id("file"),
-            "source_version_ids":[],"branch_id":null,"created_at":null,"message":"",
+            "source_version_ids":[],"branch_id":null,"created_at":"2026-10-20T00:00:00Z","message":"",
             "size":"1","sequence":"3","current":false,"content_state":"AVAILABLE",
             "content_hash":"a".repeat(64),"note":"","download_name":"a.txt",
-            "storage_name":"v000001_a.txt","legacy":false
+            "storage_name":"v000001_a.txt"
         });
         assert!(schema.is_valid(&version));
+        let mut obsolete = version.clone();
+        obsolete["legacy"] = json!(false);
+        assert!(!schema.is_valid(&obsolete));
+        for timestamp in [Value::Null, json!(1792400000)] {
+            obsolete = version.clone();
+            obsolete["created_at"] = timestamp;
+            assert!(!schema.is_valid(&obsolete));
+        }
         let first = zxs_contract::new_id("ver");
         let second = zxs_contract::new_id("ver");
         version["source_version_ids"] = json!([first, second]);
@@ -974,8 +982,8 @@ mod tests {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts/openapi.json");
         let api = read(&path).unwrap();
         for route in [
-            "/v1/file-manager/files/{file}/metadata",
-            "/v1/file-manager/versions/{version}/metadata",
+            "/api/file-manager/files/{file}/metadata",
+            "/api/file-manager/versions/{version}/metadata",
         ] {
             let note = &api["paths"][route]["post"]["requestBody"]["content"]["application/json"]["schema"]
                 ["properties"]["note"];
@@ -1004,10 +1012,10 @@ mod tests {
                 assert!(!accepts(&invalid), "invalid note accepted: {route}");
             }
         }
-        let entries = &api["paths"]["/v1/file-manager/disks/{slot}/entries"]["get"]["responses"]["200"]
+        let entries = &api["paths"]["/api/file-manager/disks/{slot}/entries"]["get"]["responses"]["200"]
             ["content"]["application/json"]["schema"]["properties"]["entries"]["items"]["properties"]
             ["note"];
-        let history = &api["paths"]["/v1/file-manager/files/{file}/history"]["get"]["responses"]["200"]
+        let history = &api["paths"]["/api/file-manager/files/{file}/history"]["get"]["responses"]["200"]
             ["content"]["application/json"]["schema"]["properties"];
         for note in [
             entries,
@@ -1026,7 +1034,7 @@ mod tests {
         let path =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts/openapi.json");
         let mut api = read(&path).unwrap();
-        api["$ref"]="#/paths/~1v1~1file-manager~1disks~1%7Bslot%7D~1namespace-batch/post/requestBody/content/application~1json/schema".into();
+        api["$ref"]="#/paths/~1api~1file-manager~1disks~1%7Bslot%7D~1namespace-batch/post/requestBody/content/application~1json/schema".into();
         let schema = validator(&api).unwrap();
         let source = json!({"directory_branch_id":zxs_contract::new_id("dbr"),"expected_tree_id":zxs_contract::new_id("dtree"),"path":"a/report.txt","entry_id":zxs_contract::new_id("entry")});
         let target = json!({"directory_branch_id":zxs_contract::new_id("dbr"),"expected_tree_id":zxs_contract::new_id("dtree"),"path":"b/report.txt"});
@@ -1080,7 +1088,7 @@ mod tests {
         let file = zxs_contract::new_id("file");
         let version = zxs_contract::new_id("ver");
         let renamed = zxs_contract::new_id("fnode");
-        let content = json!({"node_id":version,"version_id":version,"file_id":file,"kind":"content","parent_node_ids":[],"path":"a/report.txt","previous_path":null,"note":"","created_at":null,"sequence":"1","current":false});
+        let content = json!({"node_id":version,"version_id":version,"file_id":file,"kind":"content","parent_node_ids":[],"path":"a/report.txt","previous_path":null,"note":"","created_at":"2026-10-20T00:00:00Z","sequence":"1","current":false});
         let rename = json!({"node_id":renamed,"version_id":version,"file_id":file,"kind":"rename","parent_node_ids":[version],"path":"a/new.txt","previous_path":"a/report.txt","note":"Path note","created_at":"1792400000","sequence":"2","current":true});
         assert!(schema.is_valid(&content));
         assert!(schema.is_valid(&rename));
@@ -1105,13 +1113,13 @@ mod tests {
         invalid = child;
         invalid["parent_node_ids"] = json!([version, version]);
         assert!(!schema.is_valid(&invalid));
-        let note = &api["paths"]["/v1/file-manager/files/{file}/nodes/{node}"]["patch"]["requestBody"]
+        let note = &api["paths"]["/api/file-manager/files/{file}/nodes/{node}"]["patch"]["requestBody"]
             ["content"]["application/json"]["schema"]["properties"]["note"];
         assert_eq!(note["x-maxUtf8Bytes"], 128);
         let note_schema = validator(note).unwrap();
         assert!(note_schema.is_valid(&json!("")));
         assert!(!note_schema.is_valid(&json!("bad\nline")));
-        let source = &api["paths"]["/v1/file-manager/files/{file}/branches"]["post"]["requestBody"]
+        let source = &api["paths"]["/api/file-manager/files/{file}/branches"]["post"]["requestBody"]
             ["content"]["application/json"]["schema"]["properties"]["source_node_id"];
         let mut source_document = api.clone();
         source_document["$ref"] = source["$ref"].clone();
@@ -1139,7 +1147,7 @@ mod tests {
         let version = zxs_contract::new_id("ver");
         let meta = zxs_contract::new_id("fmeta");
         let operation = zxs_contract::new_id("op");
-        let merge = request_schema("/v1/file-manager/files/{file}/merge", "post");
+        let merge = request_schema("/api/file-manager/files/{file}/merge", "post");
         let body = json!({"inputs":[{"branch_id":branch,"expected_node_id":version},{"branch_id":other,"expected_node_id":meta}],"chosen_node_id":meta,"surviving_branch_id":branch,"confirmed":true,"operation_id":operation});
         assert!(merge.is_valid(&body));
         for key in ["confirmed", "surviving_branch_id", "chosen_node_id"] {
@@ -1162,7 +1170,7 @@ mod tests {
         invalid = body;
         invalid["repository_id"] = zxs_contract::new_id("repo").into();
         assert!(!merge.is_valid(&invalid));
-        let tags = request_schema("/v1/file-manager/files/{file}/tags", "post");
+        let tags = request_schema("/api/file-manager/files/{file}/tags", "post");
         let body = json!({"targets":[{"branch_id":branch,"source_node_id":version,"expected_node_id":meta}],"add":["审核"],"remove":[],"operation_id":operation});
         assert!(tags.is_valid(&body));
         let mut invalid = body.clone();
@@ -1177,7 +1185,7 @@ mod tests {
         invalid = body;
         invalid["add"] = json!((0..17).map(|n| format!("tag{n}")).collect::<Vec<_>>());
         assert!(!tags.is_valid(&invalid));
-        let backups = request_schema("/v1/repositories/{repo}/backup-configuration", "put");
+        let backups = request_schema("/api/repositories/{repo}/backup-configuration", "put");
         let body = json!({"path":"docs/report.txt","target_copies":3,"backup_prefixes":{"B01":"工作备份","C01":"archive"},"expected_scope_id":file,"expected_generation":"0","operation_id":operation});
         assert!(backups.is_valid(&body));
         for key in ["expected_scope_id", "expected_generation"] {
@@ -1198,34 +1206,34 @@ mod tests {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/merge-tags-backup");
         for (route, name) in [
             (
-                "/v1/file-manager/files/{file}/history",
+                "/api/file-manager/files/{file}/history",
                 "file-merge-tag-history.json",
             ),
             (
-                "/v1/repositories/{repo}/backup-configuration",
+                "/api/repositories/{repo}/backup-configuration",
                 "scoped-backup-configuration.json",
             ),
             (
-                "/v1/repositories/{repo}/backup-configuration",
+                "/api/repositories/{repo}/backup-configuration",
                 "backup-prefix-configuration.json",
             ),
             (
-                "/v1/repositories/{repo}/backup-configuration",
+                "/api/repositories/{repo}/backup-configuration",
                 "backup-mixed-routes.json",
             ),
             (
-                "/v1/file-manager/disks/{slot}/entries",
+                "/api/file-manager/disks/{slot}/entries",
                 "backup-prefix-files.json",
             ),
             (
-                "/v1/file-manager/disks/{slot}/entries",
+                "/api/file-manager/disks/{slot}/entries",
                 "backup-prefix-retained.json",
             ),
             (
-                "/v1/file-manager/disks/{slot}/entries",
+                "/api/file-manager/disks/{slot}/entries",
                 "backup-prefix-acl.json",
             ),
-            ("/v1/file-manager/disks", "backup-route-disks.json"),
+            ("/api/file-manager/disks", "backup-route-disks.json"),
         ] {
             let wire = read(&fixtures.join(name))
                 .unwrap_or_else(|error| panic!("required response fixture {name}: {error}"));
@@ -1253,7 +1261,7 @@ mod tests {
                     .into();
             validator(&schema).unwrap()
         };
-        let snapshot_schema = response_schema("/v1/system/status");
+        let snapshot_schema = response_schema("/api/system/status");
         let snapshot = json!({
             "collected_at":"2026-10-19T00:00:00Z",
             "cpu":{"usage_percent":12.5,"logical_count":4,"power_watts":15.5,"power_unavailable_reason":null},
@@ -1289,8 +1297,8 @@ mod tests {
         leaked_path["disks"][0]["physical_device"] = "/sys/private/device".into();
         assert!(!snapshot_schema.is_valid(&leaked_path));
 
-        let history = &api["paths"]["/v1/system/history"]["get"];
-        let status = &api["paths"]["/v1/system/status"]["get"];
+        let history = &api["paths"]["/api/system/history"]["get"];
+        let status = &api["paths"]["/api/system/status"]["get"];
         assert_eq!(history["operationId"], "getSystemHistory");
         for code in ["401", "403"] {
             assert_eq!(history["responses"][code], status["responses"][code]);
@@ -1306,7 +1314,7 @@ mod tests {
         assert_eq!(history["parameters"][0]["schema"]["default"], "1min");
         let range_schema = validator(&history["parameters"][0]["schema"]).unwrap();
         assert!(!range_schema.is_valid(&json!("1year")));
-        let history_schema = response_schema("/v1/system/history");
+        let history_schema = response_schema("/api/system/history");
         let response = json!({"range":"1h","interval_seconds":10,"from":"2026-10-18T23:00:00Z","to":"2026-10-19T00:00:00Z","samples":[snapshot,unavailable]});
         assert!(history_schema.is_valid(&response));
         let mut empty = response.clone();

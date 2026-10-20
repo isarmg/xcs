@@ -52,58 +52,58 @@ async function scenario(language,width,theme) {
   const branches = () => [{branch_id:'main',name:'main',current:selected==='main',version_id:'source',materialized:true,inherited:false,own_version_id:'source',content_state:'LIVE'},...registered.map(({id,name})=>({branch_id:id,name,current:selected===id,version_id:id==='draft'&&written?'first-write':'source',materialized:id==='draft'&&written,inherited:!(id==='draft'&&written),own_version_id:id==='draft'&&written?'first-write':null,content_state:id==='draft'&&written?'LIVE':'PENDING',visible_content_state:'LIVE',source_version_id:'source'}))];
   const versions = () => [{file_id:'file-a',version_id:'source',created_at:'1',size:'3',source_version_ids:[],note:'parent content',current:version()==='source',content_state:'LIVE',branch_id:'main'},...(written?[{file_id:'file-a',version_id:'first-write',created_at:'2',size:'0',source_version_ids:['source'],note:'',current:version()==='first-write',content_state:'LIVE',branch_id:'draft'}]:[])];
   const published = (request,result={}) => ({operation_id:request.operation_id,state:'PUBLISHED',result});
-  await page.route('**/v1/**',async route=>{
+  await page.route('**/api/**',async route=>{
     const request=route.request(),url=new URL(request.url()),path=url.pathname,method=request.method();
     const json=()=>request.postDataJSON() || {};
     const fulfill=(body,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
     state.mockRequests.push({method,path});
-    if(method==='GET'&&path==='/v1/auth/me')return fulfill({principal:'fixture-user',admin:false,csrf_token:'fixture-only'});
-    if(method==='GET'&&path==='/v1/file-manager/disks')return fulfill({disks:[{slot_id:'P01',online:true,writable:true,available_bytes:'4096'}]});
-    if(method==='GET'&&path==='/v1/file-manager/disks/P01/entries')return fulfill({entries:[entry(),otherEntry()],writable:true,directory_branches_supported:true,directory_file_count:'2',directory_branches:selected==='draft'?[{name:'draft-inherited',current:true,materialized:written,inherited:!written}]:[]});
-    if(method==='GET'&&path==='/v1/file-manager/files/file-a/history')return fulfill({...entry(),note:'',branches:branches(),versions:versions()});
-    if(method==='GET'&&path==='/v1/file-manager/files/file-other/history')return fulfill({...otherEntry(),note:'',branches:[{branch_id:'other-draft',name:'draft-inherited',current:true,materialized:true,inherited:false,version_id:'other-own',own_version_id:'other-own'}],versions:[{file_id:'file-other',version_id:'other-own',created_at:'1',size:'0',source_version_ids:[],note:'written in directory branch',current:true,content_state:'LIVE',branch_id:'other-draft'}]});
-    if(method==='POST'&&path==='/v1/file-manager/files/file-a/branches') {
+    if(method==='GET'&&path==='/api/auth/me')return fulfill({principal:'fixture-user',admin:false,csrf_token:'fixture-only'});
+    if(method==='GET'&&path==='/api/file-manager/disks')return fulfill({disks:[{slot_id:'P01',online:true,writable:true,available_bytes:'4096'}]});
+    if(method==='GET'&&path==='/api/file-manager/disks/P01/entries')return fulfill({entries:[entry(),otherEntry()],writable:true,directory_branches_supported:true,directory_file_count:'2',directory_branches:selected==='draft'?[{name:'draft-inherited',current:true,materialized:written,inherited:!written}]:[]});
+    if(method==='GET'&&path==='/api/file-manager/files/file-a/history')return fulfill({...entry(),note:'',branches:branches(),versions:versions()});
+    if(method==='GET'&&path==='/api/file-manager/files/file-other/history')return fulfill({...otherEntry(),note:'',branches:[{branch_id:'other-draft',name:'draft-inherited',current:true,materialized:true,inherited:false,version_id:'other-own',own_version_id:'other-own'}],versions:[{file_id:'file-other',version_id:'other-own',created_at:'1',size:'0',source_version_ids:[],note:'written in directory branch',current:true,content_state:'LIVE',branch_id:'other-draft'}]});
+    if(method==='POST'&&path==='/api/file-manager/files/file-a/branches') {
       const body=json();
       assert.equal(body.source_version_id,'source');
       const id=registered.length===0?'draft':`nested-${registered.length}`;
       registered.push({id,name:body.name});
       return fulfill(published(body,{branch_id:id,copied_files:'0',placeholder_files:'1',materialized:false,inherited:true,version_id:'source',own_version_id:null,source_version_id:'source'}));
     }
-    if(method==='POST'&&path==='/v1/file-manager/files/file-a/select') {
+    if(method==='POST'&&path==='/api/file-manager/files/file-a/select') {
       const body=json();
       assert.equal(body.branch_id,'draft');
       selected=body.branch_id;
       return fulfill(published(body,{branch_id:selected}));
     }
-    if(method==='POST'&&path==='/v1/file-manager/disks/P01/write-sessions') {
+    if(method==='POST'&&path==='/api/file-manager/disks/P01/write-sessions') {
       state.writeTarget=json();
       assert.deepEqual(state.writeTarget,{path:'report.txt',branch_id:'draft'});
       return fulfill({workspace_id:'write-pending',base_head:'base-commit',relative_path:'report.txt'});
     }
-    if(method==='PUT'&&/^\/v1\/workspaces\/write-pending\/files\/[^/]+\/content$/.test(path)) {
+    if(method==='PUT'&&/^\/api\/workspaces\/write-pending\/files\/[^/]+\/content$/.test(path)) {
       state.uploadBytes=request.postDataBuffer()?.length || 0;
       assert.equal(url.searchParams.get('path'),'report.txt');
       assert.equal(state.uploadBytes,0);
       return fulfill({saved:true});
     }
-    if(method==='POST'&&path==='/v1/workspaces/write-pending/seal')return fulfill({workspace_id:'write-pending',manifest_digest:'fixture-seal'});
-    if(method==='POST'&&path==='/v1/workspaces/write-pending/commit') {
+    if(method==='POST'&&path==='/api/workspaces/write-pending/seal')return fulfill({workspace_id:'write-pending',manifest_digest:'fixture-seal'});
+    if(method==='POST'&&path==='/api/workspaces/write-pending/commit') {
       const body=json();
       assert.equal(body.expected_head,'base-commit');
       assert.match(body.request_digest,/^[a-f0-9]{64}$/);
       written=true;
       return fulfill(published(body,{commit_id:'first-commit',branch_id:'draft'}));
     }
-    if(method==='GET'&&path==='/v1/versions/first-write/content') {
+    if(method==='GET'&&path==='/api/versions/first-write/content') {
       state.contentReads++;
       return route.fulfill({status:200,headers:{'Content-Type':'text/plain','Content-Length':'0',ETag:`"${emptyHash}"`},body:Buffer.alloc(0)});
     }
-    if(method==='GET'&&path==='/v1/versions/source/content') {
+    if(method==='GET'&&path==='/api/versions/source/content') {
       state.contentReads++;
       state.parentReads=(state.parentReads||0)+1;
       return route.fulfill({status:200,headers:{'Content-Type':'text/plain','Content-Length':String(parentBytes.length),ETag:`"${parentHash}"`},body:parentBytes});
     }
-    if(method==='GET'&&path==='/v1/versions/other-own/content') {
+    if(method==='GET'&&path==='/api/versions/other-own/content') {
       state.contentReads++;
       return route.fulfill({status:200,headers:{'Content-Type':'text/plain','Content-Length':'0',ETag:`"${emptyHash}"`},body:Buffer.alloc(0)});
     }

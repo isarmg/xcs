@@ -12,7 +12,7 @@
 - [15.2 拟定接口](#s15-02)
 - [15.3 提交请求示例](#s15-03)
 - [15.4 错误码基线](#s15-04)
-- [15.5 协议兼容与能力协商](#s15-05)
+- [15.5 能力声明与准入](#s15-05)
 - [15.6 不同操作的结果类型](#s15-06)
 - [15.7 请求摘要、幂等与结果保留](#s15-07)
 - [15.8 上传代际与续传](#s15-08)
@@ -33,66 +33,68 @@ App、Web 和远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作由桥
 
 | 接口 | 用途 |
 | --- | --- |
-| `GET /v1/file-manager/disks` | 可见磁盘目录入口及只读状态 |
-| `GET /v1/file-manager/disks/{slot}/entries?path={path}` | 当前目录列表、后代文件数与稳定目录分支的冻结组成 |
-| `POST /v1/file-manager/disks/{slot}/namespace` | 准备并提交当前目录的创建、重命名或删除 |
-| `POST /v1/file-manager/disks/{slot}/namespace-batch` | 显式源分支→目标分支映射；移动、复制、删除、重命名整批检查并发布 |
-| `GET /v1/repositories/{repo}/directory-branches?path={path}` | 只读查询冻结分支和条目；省略 path 返回所有作用域，不切换默认分支 |
-| `GET/PUT /v1/repositories/{repo}/default-branch` | 查询或选择 Web/App/SMB 共享默认根目录分支 |
-| `PATCH /v1/repositories/{repo}/directory-branches/{id}` | 修改分支标签，身份、子树和内容不变 |
-| `POST /v1/file-manager/disks/{slot}/write-sessions` | 取得该盘目录当前文件分支的写会话；随后通过通用工作区接口上传 |
-| `POST /v1/file-manager/disks/{slot}/directory-branches` | `{path,name,operation_id}`：登记命名目录分支，直接引用父子树；不提前创建文件分支、不复制正文、不创建占位文件、不自动选择 |
-| `POST /v1/file-manager/disks/{slot}/directory-select` | 同结构请求；选择完整冻结目录子树，恢复成员、名称、层级及精确节点；不要求后代有同名文件分支 |
-| `GET /v1/file-manager/files/{file}/history` | 文件容器备注、所选分支及历史图；versions仅正文，nodes包含正文和复用正文的重命名节点；可成对传入 repository_id/path 区分别名 |
-| `POST /v1/file-manager/files/{file}/branches` | 从选定版本登记公共文件分支；可传 source_node_id 固定路径节点来源，不复制正文或新增节点 |
-| `PATCH /v1/file-manager/files/{file}/nodes/{node}` | 设置路径节点独立备注，最多128 UTF-8字节；不改正文备注或新增节点 |
-| `PATCH /v1/file-manager/files/{file}/branches/{branch}` | 修改公共文件分支标签，最多128 UTF-8字节；同文件内规范化名称唯一，不增加版本或目录子树 |
-| `POST /v1/file-manager/files/{file}/select` | 选择此文件的分支；传入 repository_id/path 时只改变该逻辑别名，不改变其他路径 |
-| `POST /v1/file-manager/files/{file}/metadata` | 设置或清空文件容器备注，最多 128 UTF-8 字节，禁止换行及控制字符 |
-| `POST /v1/file-manager/versions/{version}/metadata` | 设置或清空版本备注，最多 128 UTF-8 字节，禁止换行及控制字符 |
-| `GET /v1/file-manager/history` | 获授权文件实际操作记录，当前最多最近 200 项 |
-| `GET /v1/system/status` | 管理员读取真实 CPU、内存、磁盘容量及 CPU/磁盘功耗；不可用值为 null，功耗另含原因代码 |
-| `GET /v1/system/history?range={range}` | 管理员读取后台监测历史；1min/30min/1h/24h/1month（最近30天），最多361个真实聚合点，与文件操作历史分离 |
-| `GET /v1/capabilities` | 协议、命名策略、上传范围、全量能力及入口限制 |
-| `GET /v1/repositories` | 已授权仓库列表 |
-| `GET /v1/repositories/{repo}/branches` | 分支及归档状态 |
-| `POST /v1/repositories/{repo}/branches` | 兼容目录快照入口：从指定提交登记各文件引用，不复制来源正文 |
-| `POST /v1/branches/{branch}/archive` | 显式归档 |
-| `GET /v1/branches/{branch}/tree` | 固定提交下的目录列表 |
-| `POST /v1/branches/{branch}/resolve` | 把路径解析为条目与确定版本 |
-| `POST /v1/branches/{branch}/write-sessions` | 登记会话、文件写入占用和 fencing token，不独占整分支日常写入 |
-| `POST /v1/workspaces` | 创建写工作区和基础 HEAD 绑定 |
-| `PUT /v1/workspaces/{workspace}/files/{item}/content` | 上传完整文件内容 |
-| `GET /v1/workspaces/{workspace}/files/{item}/upload-status` | 查询上传代际、已持久化范围、预期长度及封存状态 |
-| `GET /v1/workspaces/{workspace}/files/{item}/content` | 仅授权所属会话读取覆盖后的工作文件及 Range；返回 no-store，不使用不可变版本缓存 |
-| `PUT /v1/workspaces/{workspace}/files/{item}/ranges/{offset}` | 可选脏范围协议，只有能力已声明才可使用 |
-| `POST /v1/workspaces/{workspace}/namespace-operations` | 准备创建、改名、移动、删除等操作 |
-| `POST /v1/workspaces/{workspace}/commit` | 发起封存与提交 |
-| `GET /v1/operations/{operation}` | 查询确定结果或处理中状态 |
-| `POST /v1/workspaces/{workspace}/abort` | 仅在安全阶段中止 |
-| `GET /v1/versions/{version}/content` | 受授权的固定版本内容与 Range；可传 repository_id/path 按具体逻辑别名生成下载名称 |
-| `GET /v1/versions/{version}` | 返回获授权版本描述及可信校验清单摘要 |
-| `GET /v1/versions/{version}/checksums` | 返回该版本完整二进制校验清单，按当前权限及内容状态核验 |
-| `GET /v1/files/{file}/history` | 文件和替换事件历史 |
-| `GET /v1/commits/{commit}` | 提交及目录树信息 |
-| `POST /v1/compare` | 比较版本或提交，不产生写入 |
-| `POST /v1/history-trees/{history}/historical-save-plans` | 从历史元数据和工作区实际写入创建新分支计划，未写文件仍引用父版本 |
-| `POST /v1/history-trees/{history}/merge-links` | 直接记录 source_branch_id/source_commit_id 到 target_branch_id/target_commit_id 的合并连线，不准备文件内容或冲突决议 |
-| `POST /v1/history-trees/{history}/purge-plans` | 预览历史内容清除、受保护引用及实际释放量 |
-| `POST /v1/history-trees/{history}/split-plans` | 预览切点后代闭包、ID映射、独立性及空间预算 |
-| `POST /v1/plans/{plan}/commit` | 以固定计划摘要和代际执行，长任务通过operation查询 |
-| `POST /v1/plans/{plan}/cancel` | 仅在未进入不可撤销决定时取消 |
-| `GET /v1/history-trees/{history}/graph` | 分别包含版本演进父边、合并标记线、PURGED 节点及拆分来源的历史图 |
-| `PUT /v1/policies/{policy}` | 条件更新保护策略 |
-| `GET /v1/events?after={cursor}` | 可续读事件流或分页事件 |
-| `GET /v1/backup-topologies/{topology}` | 已发布层级、各盘位直接来源和物理绑定；按权限展示 |
-| `POST /v1/backup-topology-plans` | 用户指定一级/二级/后续来源映射，预检路由和数据迁移 |
-| `POST /v1/storage-slots/{slot}/replacement-plans` | 用户为同一逻辑角色指定替换物理盘，保留来源映射 |
-| `PUT /v1/primary-placement-rules/{rule}` | 条件设置仓库/目录的一级盘规则，只影响新版本；旧版另迁移 |
-| `GET /v1/versions/{version}/placement` | 该版本一级归属、冻结路由、每级健康和迁移残留 |
-| `GET /v1/admin/disks` | 磁盘状态，仅授权管理员 |
-| `POST /v1/admin/disks/{disk}/drain` | 排空前检查和迁移任务 |
-| `POST /v1/admin/disks/{disk}/eject` | 检查后安全卸载 |
+| `GET /api/file-manager/disks` | 可见磁盘目录入口及只读状态 |
+| `GET /api/file-manager/disks/{slot}/entries?path={path}` | 当前目录列表、后代文件数与稳定目录分支的冻结组成 |
+| `POST /api/file-manager/disks/{slot}/namespace` | 准备并提交当前目录的创建、重命名或删除 |
+| `POST /api/file-manager/disks/{slot}/namespace-batch` | 显式源分支→目标分支映射；移动、复制、删除、重命名整批检查并发布 |
+| `GET /api/repositories/{repo}/directory-branches?path={path}` | 只读查询冻结分支和条目；省略 path 返回所有作用域，不切换默认分支 |
+| `GET/PUT /api/repositories/{repo}/default-branch` | 查询或选择 Web/App/SMB 共享默认根目录分支 |
+| `PATCH /api/repositories/{repo}/directory-branches/{id}` | 修改分支标签，身份、子树和内容不变 |
+| `POST /api/file-manager/disks/{slot}/write-sessions` | 取得该盘目录当前文件分支的写会话；随后通过通用工作区接口上传 |
+| `POST /api/file-manager/disks/{slot}/directory-branches` | `{path,name,operation_id}`：登记命名目录分支，直接引用父子树；不提前创建文件分支、不复制正文、不创建占位文件、不自动选择 |
+| `POST /api/file-manager/disks/{slot}/directory-select` | 同结构请求；选择完整冻结目录子树，恢复成员、名称、层级及精确节点；不要求后代有同名文件分支 |
+| `GET /api/file-manager/files/{file}/history` | 文件容器备注、所选分支及历史图；versions仅正文，nodes包含正文和复用正文的重命名节点；可成对传入 repository_id/path 区分别名 |
+| `POST /api/file-manager/files/{file}/branches` | 从选定版本登记公共文件分支；可传 source_node_id 固定路径节点来源，不复制正文或新增节点 |
+| `PATCH /api/file-manager/files/{file}/nodes/{node}` | 设置路径节点独立备注，最多128 UTF-8字节；不改正文备注或新增节点 |
+| `PATCH /api/file-manager/files/{file}/branches/{branch}` | 修改公共文件分支标签，最多128 UTF-8字节；同文件内规范化名称唯一，不增加版本或目录子树 |
+| `POST /api/file-manager/files/{file}/select` | 选择此文件的分支；传入 repository_id/path 时只改变该逻辑别名，不改变其他路径 |
+| `POST /api/file-manager/files/{file}/metadata` | 设置或清空文件容器备注，最多 128 UTF-8 字节，禁止换行及控制字符 |
+| `POST /api/file-manager/versions/{version}/metadata` | 设置或清空版本备注，最多 128 UTF-8 字节，禁止换行及控制字符 |
+| `GET /api/file-manager/history` | 获授权文件实际操作记录，当前最多最近 200 项 |
+| `GET /api/system/status` | 管理员读取真实 CPU、内存、磁盘容量及 CPU/磁盘功耗；不可用值为 null，功耗另含原因代码 |
+| `GET /api/system/history?range={range}` | 管理员读取后台监测历史；1min/30min/1h/24h/1month（最近30天），最多361个真实聚合点，与文件操作历史分离 |
+| `GET /api/capabilities` | 协议、命名策略、上传范围、全量能力及入口限制 |
+| `GET /api/repositories` | 已授权仓库列表 |
+| `GET /api/repositories/{repo}/branches` | 分支及归档状态 |
+| `POST /api/repositories/{repo}/branches` | 兼容目录快照入口：从指定提交登记各文件引用，不复制来源正文 |
+| `POST /api/branches/{branch}/archive` | 显式归档 |
+| `GET /api/branches/{branch}/tree` | 固定提交下的目录列表 |
+| `POST /api/branches/{branch}/resolve` | 把路径解析为条目与确定版本 |
+| `POST /api/branches/{branch}/write-sessions` | 登记会话、文件写入占用和 fencing token，不独占整分支日常写入 |
+| `POST /api/workspaces` | 创建写工作区和基础 HEAD 绑定 |
+| `PUT /api/workspaces/{workspace}/files/{item}/content` | 上传完整文件内容 |
+| `GET /api/workspaces/{workspace}/files/{item}/upload-status` | 查询上传代际、已持久化范围、预期长度及封存状态 |
+| `GET /api/workspaces/{workspace}/files/{item}/content` | 仅授权所属会话读取覆盖后的工作文件及 Range；返回 no-store，不使用不可变版本缓存 |
+| `PUT /api/workspaces/{workspace}/files/{item}/ranges/{offset}` | 可选脏范围协议，只有能力已声明才可使用 |
+| `POST /api/workspaces/{workspace}/namespace-operations` | 准备创建、改名、移动、删除等操作 |
+| `POST /api/workspaces/{workspace}/commit` | 发起封存与提交 |
+| `GET /api/operations/{operation}` | 查询确定结果或处理中状态 |
+| `POST /api/workspaces/{workspace}/abort` | 仅在安全阶段中止 |
+| `GET /api/versions/{version}/content` | 受授权的固定版本内容与 Range；可传 repository_id/path 按具体逻辑别名生成下载名称 |
+| `GET /api/versions/{version}` | 返回获授权版本描述及可信校验清单摘要 |
+| `GET /api/versions/{version}/checksums` | 返回该版本完整二进制校验清单，按当前权限及内容状态核验 |
+| `GET /api/files/{file}/history` | 文件和替换事件历史 |
+| `GET /api/commits/{commit}` | 提交及目录树信息 |
+| `POST /api/compare` | 比较版本或提交，不产生写入 |
+| `POST /api/history-trees/{history}/historical-save-plans` | 从历史元数据和工作区实际写入创建新分支计划，未写文件仍引用父版本 |
+| `POST /api/history-trees/{history}/merge-links` | 直接记录 source_branch_id/source_commit_id 到 target_branch_id/target_commit_id 的合并连线，不准备文件内容或冲突决议 |
+| `POST /api/history-trees/{history}/purge-plans` | 预览历史内容清除、受保护引用及实际释放量 |
+| `POST /api/history-trees/{history}/split-plans` | 预览切点后代闭包、ID映射、独立性及空间预算 |
+| `POST /api/plans/{plan}/commit` | 以固定计划摘要和代际执行，长任务通过operation查询 |
+| `POST /api/plans/{plan}/cancel` | 仅在未进入不可撤销决定时取消 |
+| `GET /api/history-trees/{history}/graph` | 分别包含版本演进父边、合并标记线、PURGED 节点及拆分来源的历史图 |
+| `PUT /api/policies/{policy}` | 条件更新保护策略 |
+| `GET /api/events?after={cursor}` | 可续读事件流或分页事件 |
+| `GET /api/backup-topologies/{topology}` | 已发布层级、各盘位直接来源和物理绑定；按权限展示 |
+| `POST /api/backup-topology-plans` | 用户指定一级/二级/后续来源映射，预检路由和数据迁移 |
+| `POST /api/storage-slots/{slot}/replacement-plans` | 用户为同一逻辑角色指定替换物理盘，保留来源映射 |
+| `PUT /api/primary-placement-rules/{rule}` | 条件设置仓库/目录的一级盘规则，只影响新版本；旧版另迁移 |
+| `GET /api/versions/{version}/placement` | 该版本一级归属、冻结路由、每级健康和迁移残留 |
+| `GET /api/admin/disks` | 磁盘状态，仅授权管理员 |
+| `POST /api/admin/disks/{disk}/drain` | 排空前检查和迁移任务 |
+| `POST /api/admin/disks/{disk}/eject` | 检查后安全卸载 |
+
+文件历史图只使用 `nodes` 以及每项的 `node_id`、`parent_node_ids` 和字符串 `created_at`。`versions` 保留为正文版本元数据，不作为缺失 `nodes` 时的兼容替代；前端不再把 `version_id`、`source_version_ids` 或数字时间戳解读为旧版图协议。缺失的图不会在客户端从正文列表推测重建。
 
 文件分支登记回执固定创建时的可见父 ID、`inherited:true` 与 `own_version_id:null`；目录分支回执固定目录分支身份和父子树引用，不表示预先创建文件分支。之后首写不会改写原回执。当前内容状态通过读取接口查询，不能以当前状态回填旧操作结果。
 
@@ -179,11 +181,11 @@ App、Web 和远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作由桥
 
 <a id="s15-05"></a>
 
-## 15.5 协议兼容与能力协商
+## 15.5 能力声明与准入
 
-客户端首次连接读取 `protocol_version`、`disk_format_version`、`name_policy_version`、`unicode_data_version`、路径预算、支持的操作、最大上传范围和任务状态机版本；同时获取存储池份数上限、每个一级盘的route_max_copies及拓扑/物理绑定代际、默认校验段大小、可读段大小集合及服务端验证/客户端独立验证模式。
+客户端通过 `/api/capabilities` 读取 `name_policy`、`path_policy`、`unicode_data_version`、支持的操作、`max_upload_bytes` 和平台能力。项目采用单一当前协议与格式，不声明数字协议版本或可读旧格式列表；Unicode 版本用于标识固定的外部字符数据，不是项目协议版本。拓扑代际、备份路由和具体资源状态通过各自查询接口读取。
 
-遇到不能正确执行的规则版本应拒绝相关写入并说明升级要求，不用旧规则静默近似。服务器不能因为客户端缺少某个按钮就省去权限检查。
+遇到不能正确执行的规则或操作应拒绝相关写入并说明原因，不用其他规则静默近似。服务器不能因为客户端缺少某个按钮就省去权限检查。
 
 当前能力声明 `full_only:true`、`full_branches:false`、`branch_creation:"record-until-write"`、`branch_content:"inherit-parent-until-first-write"`，`directory_branch_creation:"inherit-directory-tree"`、`namespace_batch:true`，区分内容必须 FULL 与登记分支只保存冻结引用。历史另存、合并关系标记、清除、独立树拆分和用户备份拓扑按各自能力及已开放入口报告。SMB 暴露用户所选默认根目录分支的基础操作，管理 API 能力不能被解释为 SMB 也支持。画线请求固定节点，不要求固定当前 HEAD、解决冲突或提供文件内容。客户端请求不支持的保存方式或操作时明确拒绝，不能近似执行。
 
@@ -191,10 +193,10 @@ App、Web 和远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作由桥
 
 | 已实现入口 | 写入基线与结果 |
 | --- | --- |
-| `POST /v1/file-manager/files/{file}/merge` | 每个公共文件分支 `expected_node_id`、结果 `chosen_node_id`、归属 `surviving_branch_id` 与 `confirmed:true`；只推进参与引用，被合并分支成为只读历史别名 |
-| `POST /v1/file-manager/files/{file}/tags` | 每个显式 `source_node_id` 与所关联分支当前 `expected_node_id`，按 `add/remove` 增量创建继承标签的元数据子节点；最多16标签、每项128 UTF-8字节；历史源不推进分支head |
-| `PATCH /v1/file-manager/files/{file}/nodes/{node}` | 路径、标签与合并节点的独立128字节备注；不修改正文备注或正文proof |
-| `GET/PUT /v1/repositories/{repo}/backup-configuration` | GET返回自身与有效策略代数、scope身份和manage权限；PUT固定 `expected_scope_id`/`expected_generation`、含主盘总份数和每个备份slot的用户逻辑前缀，并回填可用历史版本 |
+| `POST /api/file-manager/files/{file}/merge` | 每个公共文件分支 `expected_node_id`、结果 `chosen_node_id`、归属 `surviving_branch_id` 与 `confirmed:true`；只推进参与引用，被合并分支成为只读历史别名 |
+| `POST /api/file-manager/files/{file}/tags` | 每个显式 `source_node_id` 与所关联分支当前 `expected_node_id`，按 `add/remove` 增量创建继承标签的元数据子节点；最多16标签、每项128 UTF-8字节；历史源不推进分支head |
+| `PATCH /api/file-manager/files/{file}/nodes/{node}` | 路径、标签与合并节点的独立128字节备注；不修改正文备注或正文proof |
+| `GET/PUT /api/repositories/{repo}/backup-configuration` | GET返回自身与有效策略代数、scope身份和manage权限；PUT固定 `expected_scope_id`/`expected_generation`、含主盘总份数和每个备份slot的用户逻辑前缀，并回填可用历史版本 |
 
 节点标签和合并复用已有正文，`versions`仍只包含真实正文版本。统一 `nodes` 增加 `tags`/`merge` 类型与 `tags` 快照；独立 `merges` 保存全部输入来源，图边略去会形成环的关系。只读别名可通过历史节点下载和派生新分支，不能直接选择为可写分支。条件冲突返回409，标签限制/无效prefix返回400；不能因客户端先筛选了分支就省略服务端校验。
 
@@ -229,7 +231,7 @@ HTTP 202 或任务已受理只表示操作登记，不表示正常保存成功�
 
 核心以 `(pool_id, principal_id, operation_id)` 登记操作；目标作用域属于请求摘要，改变目标不能另建同 ID 操作。客户端只能查询当前获授权的操作，幂等索引命中不绕过授权。登记作为独立的短控制事务，按第 10 章完成三成员保护、发布及操作账本更新后再返回 202；该事务完成即释放槽位，不能在整个上传期间占住未收敛槽位，也不表示稍后保存内容的业务候选已 ACCEPT。登记失败或响应未知时，以相同 ID 查询或重试；明确未登记才可报告未受理。
 
-JSON 变更请求摘要为 `BLAKE3("zxs:request:v2" + NUL + JCS(envelope))`。envelope 固定包含 `method`、`route`、`path_parameters`、`query` 和 `body`；method 大写，route 使用契约中的路径模板，路径参数单独传入，query 仅包含 schema 定义的有业务意义参数。body 排除唯一的顶层 `request_digest`；operation_id、目标、前置条件、fencing_token、计划摘要、工作清单摘要及全部已接纳扩展都参与计算。身份由已认证通道绑定；认证令牌、请求跟踪 ID、网络超时和重试次数不进入摘要。拒绝未知字段和重复字段后再计算，不自行填充会随环境变化的默认值。
+JSON 变更请求摘要为 `BLAKE3("zxs:request" + NUL + JCS(envelope))`。envelope 固定包含 `method`、`route`、`path_parameters`、`query` 和 `body`；method 大写，route 使用契约中的路径模板，路径参数单独传入，query 仅包含 schema 定义的有业务意义参数。body 排除唯一的顶层 `request_digest`；operation_id、目标、前置条件、fencing_token、计划摘要、工作清单摘要及全部已接纳扩展都参与计算。身份由已认证通道绑定；认证令牌、请求跟踪 ID、网络超时和重试次数不进入摘要。拒绝未知字段和重复字段后再计算，不自行填充会随环境变化的默认值。
 
 内容提交必须绑定不可变 `sealed_manifest_hash`，覆盖每项最终长度、内容哈希、上传代际和命名空间操作顺序。相同工作区 ID 下字节变化必须产生新清单和新操作，不能沿用已登记请求指向可变工作区。流式内容的摘要绑定目标、上传代际、偏移、长度和内容哈希，不将二进制流强行表示成 JSON。
 

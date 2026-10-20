@@ -497,19 +497,30 @@ impl Engine {
                 let cut_commit = state.commits.get(cut)
                     .filter(|c| c.history_tree_id == history).cloned()
                     .ok_or_else(|| Error::new("COMMIT_NOT_FOUND", "cut commit missing"))?;
+                if cut_commit.commit_id != cut {
+                    return Err(Error::new("STATE_INVALID", "split cut commit identity differs from its key"));
+                }
                 if original.root_commit_id == cut || cut_commit.parent_commit_ids.len() != 1 {
                     return Err(Error::new("SPLIT_ROOT_FORBIDDEN", "split must preserve the original root and prefix"));
                 }
                 let prefix_head = cut_commit.parent_commit_ids[0].clone();
+                let prefix = state.commits.get(&prefix_head)
+                    .filter(|commit| commit.commit_id == prefix_head && commit.history_tree_id == history)
+                    .ok_or_else(|| Error::new("STATE_INVALID", "split prefix commit missing from source history"))?;
+                let prefix_pending = prefix.pending_file_versions.clone();
                 let selected = crate::business::descendant_commits(
                     state.commits.values().filter(|commit| commit.history_tree_id == history), cut,
                 );
+                if selected.contains(&prefix_head) {
+                    return Err(Error::new("STATE_INVALID", "split prefix is part of a cyclic selected history"));
+                }
                 if engine.workspaces.values().any(|w| matches!(w.state.as_str(), "open" | "sealed") && state.branches
                     .get(&w.branch_id).is_some_and(|b| b.history_tree_id == history)) {
                     return Err(Error::new("WORKSPACE_BUSY", "split input has an open workspace"));
                 }
-                let mut commits = selected.iter().map(|id| state.commits.get(id).cloned()
-                    .ok_or_else(|| Error::new("STATE_INVALID", "split commit missing")))
+                let mut commits = selected.iter().map(|id| state.commits.get(id)
+                    .filter(|commit| commit.commit_id == *id && commit.history_tree_id == history).cloned()
+                    .ok_or_else(|| Error::new("STATE_INVALID", "split commit identity missing from source history")))
                     .collect::<Result<Vec<_>>>()?;
                 commits.sort_by_key(|c| c.sequence);
                 let selected_versions = commits.iter().flat_map(|c| &c.entries)
@@ -532,12 +543,22 @@ impl Engine {
                 let file_map = commits.iter().flat_map(|c| &c.entries).filter(|e| e.kind == "file")
                     .map(|e| e.file_id.clone()).collect::<BTreeSet<_>>().into_iter()
                     .map(|id| (id, new_id("file"))).collect::<BTreeMap<_,_>>();
-                let source_branches = state.branches.values().filter(|b| b.history_tree_id == history)
-                    .cloned().collect::<Vec<_>>();
+                let source_branches = state.branches.iter().filter(|(_, branch)| branch.history_tree_id == history)
+                    .map(|(id, branch)| {
+                        if id != &branch.branch_id {
+                            return Err(Error::new("STATE_INVALID", "split source branch identity differs from its key"));
+                        }
+                        Ok(branch.clone())
+                    }).collect::<Result<Vec<_>>>()?;
                 let moved = source_branches.iter().filter(|b| selected.contains(&b.head_commit_id))
                     .map(|b| b.branch_id.clone()).collect::<BTreeSet<_>>();
-                let links = state.merge_links.values().filter(|l| l.history_tree_id == history)
-                    .cloned().collect::<Vec<_>>();
+                let links = state.merge_links.iter().filter(|(_, link)| link.history_tree_id == history)
+                    .map(|(id, link)| {
+                        if id != &link.merge_link_id {
+                            return Err(Error::new("STATE_INVALID", "split merge link identity differs from its key"));
+                        }
+                        Ok(link.clone())
+                    }).collect::<Result<Vec<_>>>()?;
                 let mut branch_map = moved.iter().map(|id| (id.clone(), new_id("br")))
                     .collect::<BTreeMap<_,_>>();
                 // A link may name a branch whose current HEAD is outside the cut.
@@ -545,10 +566,20 @@ impl Engine {
                 for link in &links {
                     for (branch, commit) in [(&link.source_branch_id, &link.source_commit_id),
                         (&link.target_branch_id, &link.target_commit_id)] {
+                        // Even the endpoint left in the prefix becomes a local
+                        // audit boundary. Both references must remain valid;
+                        // legacy links need not match the branch's current HEAD.
+                        if !state.branches.get(branch).is_some_and(|b|
+                            b.branch_id == *branch && b.history_tree_id == history)
+                        {
+                            return Err(Error::new("STATE_INVALID", "merge link branch missing from source history"));
+                        }
+                        if !state.commits.get(commit).is_some_and(|c|
+                            c.commit_id == *commit && c.history_tree_id == history)
+                        {
+                            return Err(Error::new("STATE_INVALID", "merge link commit missing from source history"));
+                        }
                         if selected.contains(commit) {
-                            if !source_branches.iter().any(|b| &b.branch_id == branch) {
-                                return Err(Error::new("STATE_INVALID", "merge link branch missing"));
-                            }
                             branch_map.entry(branch.clone()).or_insert_with(|| new_id("br"));
                         }
                     }
@@ -556,9 +587,12 @@ impl Engine {
                 let mut version_map = BTreeMap::new();
                 for c in &commits {
                     for entry in c.entries.iter().filter(|e| e.kind == "file") {
+                        let old = state.versions.get(&entry.version_id)
+                            .filter(|version| version.version_id == entry.version_id
+                                && version.file_id == entry.file_id && version.history_tree_id == history)
+                            .ok_or_else(|| Error::new("STATE_INVALID", "split version identity differs from its entry"))?;
                         if version_map.contains_key(&entry.version_id) { continue; }
-                        let old = state.versions.get(&entry.version_id).cloned()
-                            .ok_or_else(|| Error::new("STATE_INVALID", "split version missing"))?;
+                        let old = old.clone();
                         let placement = state.placements.get(&entry.version_id).cloned()
                             .ok_or_else(|| Error::new("PLACEMENT_NOT_FOUND", "split placement missing"))?;
                         let file_id = file_map.get(&old.file_id)
@@ -634,13 +668,14 @@ impl Engine {
                             &branch.pending_file_versions, &file_map, &version_map,
                         )?;
                         new.head_commit_id = commit_map[&branch.head_commit_id].clone();
-                        let prefix_pending = state.commits[&prefix_head].pending_file_versions.clone();
-                        let old = state.branches.get_mut(&branch.branch_id).expect("source branch");
-                        old.pending_file_versions = prefix_pending;
+                        let old = state.branches.get_mut(&branch.branch_id)
+                            .ok_or_else(|| Error::new("STATE_INVALID", "split source branch identity missing"))?;
+                        old.pending_file_versions = prefix_pending.clone();
                         old.head_commit_id = prefix_head.clone();
                         if selected.contains(&old.fork_commit_id) { old.fork_commit_id = prefix_head.clone(); }
                         old.state = "migrated".into();
-                        old.generation += 1;
+                        old.generation = old.generation.checked_add(1)
+                            .ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
                     } else {
                         let endpoint = links.iter().find_map(|l| {
                             if l.source_branch_id == branch.branch_id && selected.contains(&l.source_commit_id) {
@@ -685,7 +720,8 @@ impl Engine {
                     generation: 1, state: "active".into(), provenance: Some(format!("{history}:{cut}")),
                 });
                 let old = state.histories.get_mut(history).expect("source history");
-                old.generation += 1;
+                old.generation = old.generation.checked_add(1)
+                    .ok_or_else(|| Error::new("RESOURCE_LIMIT", "history generation exhausted"))?;
                 let main_moved = old.main_branch_id.as_ref().is_some_and(|id| moved.contains(id));
                 if main_moved { old.main_branch_id = None; old.state = "archived".into(); }
                 if main_moved {
@@ -1693,3 +1729,7 @@ mod split_tests {
             .unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "maintenance_corruption_tests.rs"]
+mod corruption_tests;

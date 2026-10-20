@@ -85,7 +85,7 @@ pub(crate) fn start(state: RwSignal<State>, kind: Kind, entry: Option<Value>) {
         let result = api::request(
             "GET",
             &format!(
-                "/v1/repositories/{}/directory-branches",
+                "/api/repositories/{}/directory-branches",
                 api::segment(&repository)
             ),
             None,
@@ -199,7 +199,7 @@ pub(super) fn load_target(state: RwSignal<State>) {
     }
     let generation = draft.generation + 1;
     let endpoint = format!(
-        "/v1/file-manager/disks/{}/entries?path={}",
+        "/api/file-manager/disks/{}/entries?path={}",
         api::segment(&snapshot.files.slot),
         api::segment(&join_path(&draft.disk_prefix, &target))
     );
@@ -272,11 +272,11 @@ pub(super) fn initialize_scope(state: RwSignal<State>, destination: bool) {
         return;
     }
     let endpoint = format!(
-        "/v1/repositories/{}/directory-scopes",
+        "/api/repositories/{}/directory-scopes",
         api::segment(&draft.repository)
     );
     let catalogue_endpoint = format!(
-        "/v1/repositories/{}/directory-branches",
+        "/api/repositories/{}/directory-branches",
         api::segment(&draft.repository)
     );
     let epoch = snapshot.session_epoch;
@@ -398,7 +398,7 @@ pub(super) fn submit(state: RwSignal<State>) {
     }
     body["operation_id"] = id.clone().into();
     let endpoint = format!(
-        "/v1/file-manager/disks/{}/namespace-batch",
+        "/api/file-manager/disks/{}/namespace-batch",
         api::segment(&snapshot.files.slot)
     );
     let epoch = snapshot.session_epoch;

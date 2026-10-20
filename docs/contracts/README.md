@@ -8,17 +8,17 @@
 
 | 文件 | 当前覆盖 | 尚未证明 |
 | --- | --- | --- |
-| [core.schema.json](core.schema.json) | UINT64 精确上界、实体 ID、Branch / Commit 待写入映射、泛型 Entry 及文件分支投影、版本描述、内容提交请求、操作结果、完整上传状态、内容保存 PUBLICATION 字段 | 完整命名规则、父边和来源闭合、授权、实际 I/O、Tree/日志完整格式及所有管理操作 |
+| [core.schema.json](core.schema.json) | UINT64 精确上界、实体 ID、Branch / Commit 待写入映射、泛型 Entry 及文件分支投影、版本描述、内容提交请求、操作结果、完整上传状态、内容保存 PUBLICATION 字段、当前分页历史根/索引/引用/叶页形状 | 完整命名规则、父边和来源闭合、授权、实际 I/O、Tree/日志完整格式及所有管理操作 |
 | [openapi.json](openapi.json) | 保存、结果查询、版本/校验/内容/上传状态、文件管理（含零正文分支创建、冻结父版本与自有版本分开的继承投影、目录批量分支、共同分支交集和128字节单行备注）及管理员系统状态、真实功耗和监测历史 | 认证签发刷新、工作区创建/上传写接口、分页/事件及其余拟定管理接口 |
 | [config-constraints.schema.json](config-constraints.schema.json) | 第 21 章关键常量、资源上限和告警字段的受检投影 | 完整部署配置、物理身份、拓扑和启动状态验证 |
-| [vectors.json](vectors.json) | 正反字段样例、分支映射键/值和文件作用域拒绝、旧 Branch / Commit 编码兼容、规范字节与 BLAKE3、空文件和短文件分段清单 | 跨 Rust/Web/离线工具的一致实现及断电恢复 |
+| [vectors.json](vectors.json) | 正反字段样例、分支映射键/值和文件作用域拒绝、旧 Branch / Commit 编码兼容、分页历史图固定映射/引用种类/深度/未知字段拒绝、规范字节与 BLAKE3、空文件和短文件分段清单 | 跨 Rust/Web/离线工具的一致实现及断电恢复 |
 | [zxs-contract-check](../../tools/contract-check/README.md) | Rust 实现的 schema/OpenAPI 有效性、两者定义一致性、固定向量、配置投影、文档本地链接和 JSON/TOML 语法校验 | 模型检查、平台测试、网络端点行为和性能 |
 
 PUBLICATION 中回执使用合成身份与摘要；通过字段或覆盖集合检查不证明磁盘曾同步。展开清单只是字段语义，生产日志须使用有界分页引用并保留完整证明闭包。成功保存后当前健康变为不可用的样例，只验证这两个维度可以分别表达，不模拟真实故障。
 
 文件大小等大整数使用十进制字符串；schema 的 UInt64 正则精确限制最大值。语义检查另验证盘位连续、物理成员不重复、所需内容证明覆盖、上传完整性及账户/全池额度关系。OpenAPI 内嵌与 core 相同的定义供工具离线使用，校验器会拒绝二者漂移。
 
-持久状态、写请求和固定向量的 JSON 解析先拒绝重复字段、BOM、孤立代理项和浮点数，再做 schema 和 JCS；解析后只检查普通字典无法找回重复字段信息。`/v1/system/status` 与 `/v1/system/history` 的临时监测响应允许有限小数，不放宽持久状态或写请求规则。固定向量中的 JCS 属性排序包含非 BMP 键样例，用于检测错误地按 Unicode 标量顺序排序；该向量不表示 PortableNameV2 允许 emoji 文件名。
+持久状态、写请求和固定向量的 JSON 解析先拒绝重复字段、BOM、孤立代理项和浮点数，再做 schema 和 JCS；解析后只检查普通字典无法找回重复字段信息。`/api/system/status` 与 `/api/system/history` 的临时监测响应允许有限小数，不放宽持久状态或写请求规则。固定向量中的 JCS 属性排序包含非 BMP 键样例，用于检测错误地按 Unicode 标量顺序排序；该向量不表示 PortableName 允许 emoji 文件名。
 
 备注写接口通过 `x-maxUtf8Bytes: 128` 标明 UTF-8 字节上限，配合控制字符模式和服务端字节计数校验；JSON Schema 的 `maxLength` 本身只计算 Unicode 字符数。读响应保留历史备注原文，允许旧记录超过新写入上限或包含换行，不能按128字节截断。
 
@@ -49,3 +49,7 @@ CARGO_INCREMENTAL=0 cargo run --manifest-path tools/contract-check/Cargo.toml \
 `FilePathNode` 描述重命名的路径节点并引用现有正文，`FileHistoryNode` 把内容与路径节点放在同一历史图；`FileNodeId` 允许 `ver_`、`fnode_` 与 `fmeta_`，正文读取仍只接受真实 `VersionId`。`FileContext.node_id` 和 `Branch.file_node_id` 冻结具体图节点，创建分支可以传 `source_node_id` 保留此来源。路径备注的写入单独限制为128 UTF-8字节，读历史不截断。
 
 `FileMetadataNode` 保存不可变标签/合并子节点，`FileBranchMerge` 独立保存全部合并来源和安全图边。文件合并请求要求明确确认、结果归属及每个参与head，标签批量请求固定源节点与branch head，scope备份配置同时固定稳定身份和自身代数。标签的16项/128字节限制、无控制字符和全部预检由共享Rust验证及业务事务执行；schema检查不代替真实发布。目录分支合并待用户确认，暂不实现，能力为false。
+
+`PagedHistoryRoot`、`HistoryIndex`、`HistoryGraphReference` 和 `HistoryLeaf` 描述实际实验存储图的字段形状；所有历史图结构均不带项目格式代际字段；根内仓库/历史身份使用 `HistoryRepository`、`HistoryIdentity`。原 `FileFeatureStateFields` 仍只是 State / 逻辑 HistoryManifest 的局部投影，未改成分页根。新增定义仅镜像进 OpenAPI 的离线组件，不新增网络端点或改变现有请求。
+
+新字段向量使用合成摘要，只检查 schema，不能证明引用对象存在或摘要正确。规范编码字节上限（128 项、64 KiB 软目标、不可分单实体页 64 MiB 上限）、逐位置前缀、图闭包、重复实体及完整历史语义由核心图读取器和测试验证；扁平投影误作根及未知字段拒绝、真实超过 64 MiB 的聚合图往返、正常/降级恢复、独立包和篡改检查亦属于核心测试，不冒充 JSON Schema 的能力。PackageProof 的完整候选/回执闭包尚未在本附件全部建模，发行格式仍未冻结；版本边界见[第 8.7 节](../08-full-storage-and-disk-format.md#s08-07)。

@@ -93,7 +93,7 @@ impl Client {
         file.seek(std::io::SeekFrom::Start(0)).await?;
         let content_hash = hasher.finalize().to_hex().to_string();
         let mut url = self.url(&format!(
-            "/v1/workspaces/{}/files/{}/content",
+            "/api/workspaces/{}/files/{}/content",
             segment(workspace),
             segment(item)
         ))?;
@@ -125,7 +125,7 @@ impl Client {
         let response = self
             .builder(
                 reqwest::Method::GET,
-                &format!("/v1/versions/{}/content", segment(version)),
+                &format!("/api/versions/{}/content", segment(version)),
             )?
             .send()
             .await?;

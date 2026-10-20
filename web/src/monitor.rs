@@ -53,7 +53,7 @@ pub(crate) fn load(state: RwSignal<State>) {
     state.update(|s| s.monitor.loading = true);
     let epoch = state.with_untracked(|s| s.session_epoch);
     spawn_local(async move {
-        let result = api::request("GET", "/v1/system/status", None).await;
+        let result = api::request("GET", "/api/system/status", None).await;
         if !current_session(state, epoch) {
             return;
         }
@@ -82,7 +82,7 @@ fn load_history(state: RwSignal<State>) {
         )
     });
     spawn_local(async move {
-        let result = api::request("GET", &format!("/v1/system/history?range={range}"), None).await;
+        let result = api::request("GET", &format!("/api/system/history?range={range}"), None).await;
         if !current_session(state, epoch)
             || !state.with_untracked(|s| history_matches(&s.monitor, generation, &range))
         {

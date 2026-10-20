@@ -493,7 +493,7 @@ pub(crate) fn download(state: RwSignal<State>, entry: Value) {
     let epoch = state.with_untracked(|s| s.session_epoch);
     spawn_local(async move {
         let result = api::download(
-            &format!("/v1/versions/{}/content", api::segment(&version)),
+            &format!("/api/versions/{}/content", api::segment(&version)),
             &name,
         )
         .await;

@@ -76,6 +76,25 @@ fn validate_identities(entries: &[Entry]) -> Result<()> {
     Ok(())
 }
 
+// Older snapshots may only have the per-file ownership cache. Neither form
+// may be synthesized when persisted ownership is absent.
+fn file_context(branch: &DirectoryBranch, entry: &Entry) -> Result<FileContext> {
+    if let Some(context) = branch.file_contexts.get(&entry.lookup_key) {
+        return Ok(context.clone());
+    }
+    let branch_id = branch
+        .file_branches
+        .get(&entry.file_id)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "source public file branch missing"))?;
+    Ok(FileContext {
+        node_id: None,
+        selection_generation: 0,
+        branch_id,
+        inherited_from: branch.inherited_files.get(&entry.file_id).cloned(),
+    })
+}
+
 fn save_inactive(
     state: &mut State,
     branch: &DirectoryBranch,
@@ -83,11 +102,18 @@ fn save_inactive(
     operation: &str,
     maximum: usize,
 ) -> Result<()> {
-    let previous = state.directory_branches[&branch.directory_branch_id].clone();
+    let previous = state
+        .directory_branches
+        .get(&branch.directory_branch_id)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "directory branch missing"))?;
     let mut entries = branch.entries.clone();
     // Snapshot commits include real ancestor identities so the normal namespace
     // validator and portable history export do not need a second path model.
-    let base = &state.commits[&previous.commit_id];
+    let base = state
+        .commits
+        .get(&previous.commit_id)
+        .ok_or_else(|| Error::new("STATE_INVALID", "directory branch commit missing"))?;
     let key = zxs_naming::path_key(&branch.path);
     entries.extend(
         base.entries
@@ -100,7 +126,10 @@ fn save_inactive(
     );
     validate_entries(&mut entries, maximum)?;
     let commit_id = new_id("commit");
-    let repo = &state.repositories[&branch.repository_id];
+    let repo = state
+        .repositories
+        .get(&branch.repository_id)
+        .ok_or_else(|| Error::new("STATE_INVALID", "directory repository missing"))?;
     state.commits.insert(
         commit_id.clone(),
         Commit {
@@ -207,7 +236,16 @@ fn apply(
             originals.insert(id.clone(), branch.clone());
         }
     }
-    let current = state.commits[&state.branches[&repo.main_branch_id].head_commit_id].clone();
+    let main = state
+        .branches
+        .get(&repo.main_branch_id)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "repository main branch missing"))?;
+    let current = state
+        .commits
+        .get(&main.head_commit_id)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "repository head missing"))?;
     let active_rename_changes = request
         .items
         .iter()
@@ -442,7 +480,13 @@ fn apply(
                         copy_receipts.push(json!({"source_file_id":member.file_id,"source_version_id":member.version_id,"file_id":moved.file_id,"version_id":moved.version_id,"path":moved.path}));
                         copies.insert(cache_key, moved.clone());
                     }
-                    let mut commit = state.commits[&source_scope.commit_id].clone();
+                    let mut commit = state
+                        .commits
+                        .get(&source_scope.commit_id)
+                        .cloned()
+                        .ok_or_else(|| {
+                            Error::new("STATE_INVALID", "source directory commit missing")
+                        })?;
                     commit.entries = target_draft.entries.clone();
                     commit.entries.push(moved.clone());
                     ensure_parents_for_scope(state, target_draft, &mut commit.entries)?;
@@ -468,16 +512,7 @@ fn apply(
                         .insert(moved.file_id.clone(), moved.name.clone());
                 }
             } else if moved.kind == "file" {
-                let context = source_scope
-                    .file_contexts
-                    .get(&member.lookup_key)
-                    .cloned()
-                    .unwrap_or_else(|| FileContext {
-                        node_id: None,
-                        selection_generation: 0,
-                        branch_id: source_scope.file_branches[&member.file_id].clone(),
-                        inherited_from: source_scope.inherited_files.get(&member.file_id).cloned(),
-                    });
+                let context = file_context(source_scope, &member)?;
                 let context = if member.path != moved.path {
                     file_paths::rename_node(
                         state,
@@ -516,6 +551,7 @@ fn apply(
                     &request.kind,
                     source.kind == "directory",
                 );
+                // set_namespace_location above inserts this exact file identity.
                 let canonical = state.file_locations[&moved.file_id].clone();
                 if let Some(previous) = owners.insert(moved.file_id.clone(), canonical.clone())
                     && zxs_naming::path_key(&previous) != zxs_naming::path_key(&canonical)
@@ -536,7 +572,7 @@ fn apply(
     }
     if touched.is_empty() {
         return Ok(
-            json!({"branch_id":repo.main_branch_id,"history_tree_id":repo.history_tree_id,"commit_id":state.branches[&repo.main_branch_id].head_commit_id,"no_change":true,"directory_branch_ids":[],"changes":[],"copies":[]}),
+            json!({"branch_id":repo.main_branch_id,"history_tree_id":repo.history_tree_id,"commit_id":main.head_commit_id,"no_change":true,"directory_branch_ids":[],"changes":[],"copies":[]}),
         );
     }
     for id in &touched {
@@ -547,8 +583,7 @@ fn apply(
         validate_identities(&draft.entries)?;
         sorted(&mut draft.entries);
     }
-    let main = state.branches[&repo.main_branch_id].clone();
-    let previous = state.commits[&main.head_commit_id].clone();
+    let previous = current;
     let mut entries = previous.entries.clone();
     let mut active = touched
         .iter()
@@ -607,16 +642,7 @@ fn apply(
             &path,
         )?);
         for e in draft.entries.iter().filter(|e| e.kind == "file") {
-            let context = draft
-                .file_contexts
-                .get(&e.lookup_key)
-                .cloned()
-                .unwrap_or_else(|| FileContext {
-                    node_id: None,
-                    selection_generation: 0,
-                    branch_id: draft.file_branches[&e.file_id].clone(),
-                    inherited_from: draft.inherited_files.get(&e.file_id).cloned(),
-                });
+            let context = file_context(draft, e)?;
             let restored = directory::rebase_entries(std::slice::from_ref(e), &draft.path, &path)?;
             state.file_contexts.insert(
                 directory::context_key(repository, &restored[0].path),
@@ -660,7 +686,10 @@ fn apply(
             .get_mut(&repo.main_branch_id)
             .expect("checked");
         target.head_commit_id = id.clone();
-        target.generation += 1;
+        target.generation = target
+            .generation
+            .checked_add(1)
+            .ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
         Some(id)
     } else {
         None
@@ -693,7 +722,10 @@ fn ensure_parents_for_scope(
 ) -> Result<()> {
     let key = zxs_naming::path_key(&branch.path);
     entries.extend(
-        state.commits[&branch.commit_id]
+        state
+            .commits
+            .get(&branch.commit_id)
+            .ok_or_else(|| Error::new("STATE_INVALID", "directory branch commit missing"))?
             .entries
             .iter()
             .filter(|e| {

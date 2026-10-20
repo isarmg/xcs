@@ -261,7 +261,7 @@ fn submit(state: RwSignal<State>) {
             state,
             review::Kind::Tags,
             "POST",
-            format!("/v1/file-manager/files/{}/tags", api::segment(&draft.file)),
+            format!("/api/file-manager/files/{}/tags", api::segment(&draft.file)),
             body,
         ),
         Err(error) => review::error(state, review::Kind::Tags, error),

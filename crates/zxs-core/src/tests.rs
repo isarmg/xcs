@@ -308,20 +308,8 @@ fn file_container_rename_replays_only_after_decision_and_keeps_all_version_bytes
         let entry = engine.list_tree(&repo.main_branch_id).unwrap()[0].clone();
         let versions = engine.file_history(&entry.file_id).unwrap();
         assert_eq!(versions.len(), 2);
-        assert!(
-            versions[0]
-                .storage_name
-                .as_ref()
-                .unwrap()
-                .starts_with("v000001_")
-        );
-        assert!(
-            versions[1]
-                .storage_name
-                .as_ref()
-                .unwrap()
-                .starts_with("v000002_")
-        );
+        assert!(versions[0].storage_name.starts_with("v000001_"));
+        assert!(versions[1].storage_name.starts_with("v000002_"));
         let operation = new_id("op");
         engine.inject_fault_once(fault);
         assert_eq!(

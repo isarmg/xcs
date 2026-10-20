@@ -2,6 +2,8 @@
 
 Axum HTTP 服务、持久会话认证及受保护的 Samba 本机桥接。业务变更经过 `zxs-core::Engine`，HTTP 层不直接修改数据盘内容。
 
+项目尚未正式发布，业务接口统一使用无版本号的 `/api/` 前缀；客户端、Cookie 路径及路由校验共同使用该命名空间，不提供旧数字版本路由别名。
+
 ## 代码职责
 
 | 模块 | 职责 |
@@ -10,7 +12,7 @@ Axum HTTP 服务、持久会话认证及受保护的 Samba 本机桥接。业务
 | `http_auth` | 同源/CSRF 准入、登录和改密共用的限流、账号 HTTP 接口 |
 | `auth` | 账号与会话持久化、备份发布、代际撤销和恢复阻断 |
 | `transfer` / `uploads` | HTTP 内容流/范围/读租约；上传进度的有界读取与持久化 |
-| `web_assets` | 静态资源准入和 ETag，保留 `/v1` API 命名空间 |
+| `web_assets` | 静态资源准入和 ETag，保留 `/api` API 命名空间 |
 | `engine_backend` / `file_manager` | 核心权限检查、业务动作和文件管理响应适配 |
 | `telemetry` | 有界可重建的主机采样和历史，不参与存储提交真相 |
 | `smb_rpc` | 本机 Samba 会话、句柄与工作区发布，不直接授予账号权限 |
@@ -32,11 +34,11 @@ HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止
 
 ## 认证与授权
 
-`POST /v1/auth/login` 接受 `{"username":"admin","password":"..."}`，返回内存使用的 Bearer token、`csrf_token`、账号和到期时间，同时设置 HttpOnly、SameSite=Strict Cookie。会话默认 12 小时有效。密码采用 Argon2id；持久状态仅保存会话 token 的摘要。每个来源 IP 与用户名组合每分钟最多尝试登录 10 次。
+`POST /api/auth/login` 接受 `{"username":"admin","password":"..."}`，返回内存使用的 Bearer token、`csrf_token`、账号和到期时间，同时设置 HttpOnly、SameSite=Strict Cookie。会话默认 12 小时有效。密码采用 Argon2id；持久状态仅保存会话 token 的摘要。每个来源 IP 与用户名组合每分钟最多尝试登录 10 次。
 
 Bearer 请求使用 `Authorization: Bearer ...`。Cookie 写请求必须同时提供精确匹配的 `Origin` 和 `X-CSRF-Token`；若 Bearer 请求显式提供跨源 Origin，也会拒绝。浏览器下载可直接使用同源 Cookie，不需要把 token 放进 URL。没有开放跨源 CORS。
 
-`POST /v1/auth/password` 允许当前账号提交 `current_password`、`new_password` 自助改密；新密码沿用至少 12 字节的准入要求。不接受用户名、角色或仓库范围变更。旧密码不正确返回 `403 CURRENT_PASSWORD_INVALID` 并保留会话；成功后通过账号代际撤销该账号所有会话、清除浏览器 Cookie，要求重新登录。每个来源 IP 和账号分别限制每分钟 10 次改密尝试，与登录共享密码计算并发上限。改密使用相同的三成员认证备份事务。
+`POST /api/auth/password` 允许当前账号提交 `current_password`、`new_password` 自助改密；新密码沿用至少 12 字节的准入要求。不接受用户名、角色或仓库范围变更。旧密码不正确返回 `403 CURRENT_PASSWORD_INVALID` 并保留会话；成功后通过账号代际撤销该账号所有会话、清除浏览器 Cookie，要求重新登录。每个来源 IP 和账号分别限制每分钟 10 次改密尝试，与登录共享密码计算并发上限。改密使用相同的三成员认证备份事务。
 
 账号可限制允许进入的仓库，仓库还独立验证 read/write/manage 授权。直接访问版本、校验表、历史图、工作区和操作结果同样验证对象权限。拆分仓库允许自身 ID 的账号准入，也可沿用来源仓库的准入范围，最后始终验证新仓库独立的 ACL。修改或禁用账号会撤销该账号所有已有会话；不能禁用最后一个有效管理员。Samba 的每次业务调用也重新检查账号状态。
 
@@ -48,41 +50,41 @@ Bearer 请求使用 `Authorization: Bearer ...`。Cookie 写请求必须同时�
 
 | 路由 | 方法与作用 |
 | --- | --- |
-| `/healthz`、`/readyz`、`/v1/capabilities` | GET，存活、就绪、实际能力 |
-| `/v1/auth/login`、`/v1/auth/me`、`/v1/auth/logout` | POST 登录、GET 当前会话、POST 撤销 |
-| `/v1/auth/password` | POST 校验当前密码并更新本账号密码，撤销原有会话 |
-| `/v1/file-manager/disks`、`/disks/{slot}/entries` | GET 独立磁盘目录、文件列表与冻结目录分支组成 |
-| `/v1/file-manager/disks/{slot}/write-sessions`、`/namespace` | POST 当前文件上传会话、目录创建/重命名/删除 |
-| `/v1/file-manager/disks/{slot}/directory-branches`、`/directory-select` | POST 登记或选择目录分支的完整冻结子树 |
-| `/v1/file-manager/disks/{slot}/namespace-batch` | POST 显式源/目标目录分支映射，原子移动、复制、删除、重命名 |
-| `/v1/repositories/{repo}/directory-branches`、`/directory-branches/{id}` | GET 全部或指定路径作用域与冻结条目；PATCH 分支标签 |
-| `/v1/repositories/{repo}/default-branch` | GET/PUT Web/App/SMB 共用默认根目录分支 |
-| `/v1/file-manager/files/{file}/nodes/{node}` | PATCH 文件路径节点独立备注，最多128 UTF-8字节 |
-| `/v1/file-manager/files/{file}/branches/{branch}` | PATCH 公共文件分支标签，元数据修改，不生成版本或目录子树 |
-| `/v1/file-manager/files/{file}/history`、`/branches`、`/select`、`/metadata` | GET 文件版本/分支/备注；POST 创建、选择文件分支或更新文件备注 |
-| `/v1/file-manager/versions/{version}/metadata`、`/v1/file-manager/history` | POST 版本备注；GET 最近实际文件操作 |
-| `/v1/system/status` | GET 管理员 CPU、内存与磁盘真实容量采样 |
-| `/v1/admin/accounts` | GET 账号列表、POST 新建或修改账号 |
-| `/v1/repositories`、`/v1/repositories/{repo}` | GET 列表/详情，POST 建仓 |
-| `/v1/repositories/{repo}/grants`、`/v1/repositories/{repo}/smb-binding` | PUT ACL；GET/PUT 显式 SMB 分支绑定 |
-| `/v1/repositories/{repo}/branches` | GET 分支、POST 登记独立待写入分支 |
-| `/v1/branches/{branch}`、`/tree`、`/resolve` | GET 元信息/目录树、POST 路径解析 |
-| `/v1/branches/{branch}/write-sessions`、`/archive` | POST 工作区写会话或归档 |
-| `/v1/workspaces`、`/v1/workspaces/{workspace}` | POST 创建、GET 状态；可绑定历史提交 |
-| `/v1/workspaces/{workspace}/files/{item}/content` | PUT 完整上传、GET/HEAD 私有工作内容 |
-| `/v1/workspaces/{workspace}/files/{item}/upload-status` | GET 持久范围、代际、封存状态 |
-| `/v1/workspaces/{workspace}/namespace-operations` | POST mkdir/rename/delete/delete_tree |
-| `/v1/workspaces/{workspace}/seal`、`/commit`、`/abort` | POST 封存、原子发布、显式放弃 |
-| `/v1/versions/{version}`、`/placement`、`/checksums`、`/content` | GET 元信息/路由/校验表/内容，内容支持 HEAD 与单段 Range |
-| `/v1/files/{file}/history`、`/v1/commits/{commit}` | GET 文件历史或提交 |
-| `/v1/history-trees/{history}/graph`、`/merge-links` | GET 图、POST 仅关联的合并链接 |
-| `/v1/history-trees/{history}/purge-plans`、`/split-plans`、`/historical-save-plans` | POST 预览，尚不执行变更 |
-| `/v1/plans/{plan}`、`/commit`、`/cancel` | GET 已保存预览、POST 按摘要执行或取消 |
-| `/v1/policies/{policy}`、`/v1/primary-placement-rules/{rule}` | GET/PUT 目录保护策略、主盘规则，更新要求 generation |
-| `/v1/admin/disks`、`/v1/backup-topologies/{topology}`、`/v1/admin/check` | GET 盘状态、拓扑、完整性检查 |
-| `/v1/operations/{operation}`、`/v1/events`、`/v1/compare` | GET 结果/分页事件、POST 两次提交比较 |
+| `/healthz`、`/readyz`、`/api/capabilities` | GET，存活、就绪、实际能力 |
+| `/api/auth/login`、`/api/auth/me`、`/api/auth/logout` | POST 登录、GET 当前会话、POST 撤销 |
+| `/api/auth/password` | POST 校验当前密码并更新本账号密码，撤销原有会话 |
+| `/api/file-manager/disks`、`/disks/{slot}/entries` | GET 独立磁盘目录、文件列表与冻结目录分支组成 |
+| `/api/file-manager/disks/{slot}/write-sessions`、`/namespace` | POST 当前文件上传会话、目录创建/重命名/删除 |
+| `/api/file-manager/disks/{slot}/directory-branches`、`/directory-select` | POST 登记或选择目录分支的完整冻结子树 |
+| `/api/file-manager/disks/{slot}/namespace-batch` | POST 显式源/目标目录分支映射，原子移动、复制、删除、重命名 |
+| `/api/repositories/{repo}/directory-branches`、`/directory-branches/{id}` | GET 全部或指定路径作用域与冻结条目；PATCH 分支标签 |
+| `/api/repositories/{repo}/default-branch` | GET/PUT Web/App/SMB 共用默认根目录分支 |
+| `/api/file-manager/files/{file}/nodes/{node}` | PATCH 文件路径节点独立备注，最多128 UTF-8字节 |
+| `/api/file-manager/files/{file}/branches/{branch}` | PATCH 公共文件分支标签，元数据修改，不生成版本或目录子树 |
+| `/api/file-manager/files/{file}/history`、`/branches`、`/select`、`/metadata` | GET 文件版本/分支/备注；POST 创建、选择文件分支或更新文件备注 |
+| `/api/file-manager/versions/{version}/metadata`、`/api/file-manager/history` | POST 版本备注；GET 最近实际文件操作 |
+| `/api/system/status` | GET 管理员 CPU、内存与磁盘真实容量采样 |
+| `/api/admin/accounts` | GET 账号列表、POST 新建或修改账号 |
+| `/api/repositories`、`/api/repositories/{repo}` | GET 列表/详情，POST 建仓 |
+| `/api/repositories/{repo}/grants`、`/api/repositories/{repo}/smb-binding` | PUT ACL；GET/PUT 显式 SMB 分支绑定 |
+| `/api/repositories/{repo}/branches` | GET 分支、POST 登记独立待写入分支 |
+| `/api/branches/{branch}`、`/tree`、`/resolve` | GET 元信息/目录树、POST 路径解析 |
+| `/api/branches/{branch}/write-sessions`、`/archive` | POST 工作区写会话或归档 |
+| `/api/workspaces`、`/api/workspaces/{workspace}` | POST 创建、GET 状态；可绑定历史提交 |
+| `/api/workspaces/{workspace}/files/{item}/content` | PUT 完整上传、GET/HEAD 私有工作内容 |
+| `/api/workspaces/{workspace}/files/{item}/upload-status` | GET 持久范围、代际、封存状态 |
+| `/api/workspaces/{workspace}/namespace-operations` | POST mkdir/rename/delete/delete_tree |
+| `/api/workspaces/{workspace}/seal`、`/commit`、`/abort` | POST 封存、原子发布、显式放弃 |
+| `/api/versions/{version}`、`/placement`、`/checksums`、`/content` | GET 元信息/路由/校验表/内容，内容支持 HEAD 与单段 Range |
+| `/api/files/{file}/history`、`/api/commits/{commit}` | GET 文件历史或提交 |
+| `/api/history-trees/{history}/graph`、`/merge-links` | GET 图、POST 仅关联的合并链接 |
+| `/api/history-trees/{history}/purge-plans`、`/split-plans`、`/historical-save-plans` | POST 预览，尚不执行变更 |
+| `/api/plans/{plan}`、`/commit`、`/cancel` | GET 已保存预览、POST 按摘要执行或取消 |
+| `/api/policies/{policy}`、`/api/primary-placement-rules/{rule}` | GET/PUT 目录保护策略、主盘规则，更新要求 generation |
+| `/api/admin/disks`、`/api/backup-topologies/{topology}`、`/api/admin/check` | GET 盘状态、拓扑、完整性检查 |
+| `/api/operations/{operation}`、`/api/events`、`/api/compare` | GET 结果/分页事件、POST 两次提交比较 |
 
-表中同一行的缩写路径共享资源前缀，例如 `/v1/branches/{branch}/tree` 和 `/v1/branches/{branch}/resolve`。请求字段以代码及 [HTTP 契约](../../docs/15-api-and-errors.md) 为准；64 位整数使用规范十进制字符串。重复 JSON 键、浮点数、未声明的变更字段会被拒绝。失败响应包含 `error.code/message/retryable/request_id`，不会把未实现操作返回为成功。
+表中同一行的缩写路径共享资源前缀，例如 `/api/branches/{branch}/tree` 和 `/api/branches/{branch}/resolve`。请求字段以代码及 [HTTP 契约](../../docs/15-api-and-errors.md) 为准；64 位整数使用规范十进制字符串。重复 JSON 键、浮点数、未声明的变更字段会被拒绝。失败响应包含 `error.code/message/retryable/request_id`，不会把未实现操作返回为成功。
 
 ## 上传与发布
 
@@ -108,11 +110,11 @@ Samba 的只读打开取得父版本的只读描述符；写打开从当前可�
 
 静态目录支持 `.gz` 预压缩、WASM MIME、弱 ETag/304、CSP 和 nosniff；发布新静态文件后应重启服务以重建资源 ETag 表。未知 API 不回退到网页。不要在静态目录保存认证或工作文件。
 
-`/v1` 和 `/v1/` 下路径只属于 API：即便静态目录意外出现同名文件，也不返回静态正文或静态 304。未知 API 与缺失静态文件均返回 JSON `NOT_FOUND` 错误封装。
+`/api` 和 `/api/` 下路径只属于 API：即便静态目录意外出现同名文件，也不返回静态正文或静态 304。未知 API 与缺失静态文件均返回 JSON `NOT_FOUND` 错误封装。
 
 可选桥接参数为 `--smb-socket /srv/zxs/run/smb.sock --smb-peer-uid UID --smb-user SambaUser=CoreAccount`。只接受 Unix peer UID 白名单和显式账号映射，拒绝管理员账号映射；socket 父目录 0700、socket 0600。FD 传递、工作区提交和失败保留由桥接实现，Samba 模块构建与验收范围见 [集成文档](../../integrations/smb/README.md)。
 
-尚未提供 HTTP 线上拓扑迁移、换盘/排空/弹出、偏移分片上传、多段 Range 或任意服务端路径导出。`POST /v1/admin/disks` 明确返回 409，不能在线修改配置草稿代替迁移。历史独立恢复包通过本机 CLI 操作。上传与 delete/rename 路径发生祖先重叠时会保留数据并拒绝提交，尚未实现任意交错的工作区事件重放。
+尚未提供 HTTP 线上拓扑迁移、换盘/排空/弹出、偏移分片上传、多段 Range 或任意服务端路径导出。`POST /api/admin/disks` 明确返回 409，不能在线修改配置草稿代替迁移。历史独立恢复包通过本机 CLI 操作。上传与 delete/rename 路径发生祖先重叠时会保留数据并拒绝提交，尚未实现任意交错的工作区事件重放。
 
 ## 验证
 
@@ -129,11 +131,11 @@ Unix socket 测试需要运行环境允许本机 socket。[集成回归](tests/h
 
 文件历史保留真实正文的 `versions`，统一图使用 `nodes`、`node_id` 与 `parent_node_ids`。文件或文件夹重命名为受影响文件创建路径节点并复用原正文；后续真实写入沿路径节点继续连线。路径节点备注与版本备注分开保存，分支来源可明确指向路径节点，下载仍使用真实 `version_id`。
 
-`POST /v1/file-manager/files/{file}/merge` 提交已审阅的参与分支 head、任意同文件结果节点、归属分支及 `confirmed:true`。参与 head 改变返回409；被合并分支保留冻结历史，转为只读别名。结果恰为参与 head 时复用节点，否则创建复用正文的 `fmeta_` 合并节点；独立来源记录保存全部输入，图边过滤成环关系。只推进参与引用，父目录冻结的旧子树在自己的组成上派生，不从子目录新 head 带入未参与文件。
+`POST /api/file-manager/files/{file}/merge` 提交已审阅的参与分支 head、任意同文件结果节点、归属分支及 `confirmed:true`。参与 head 改变返回409；被合并分支保留冻结历史，转为只读别名。结果恰为参与 head 时复用节点，否则创建复用正文的 `fmeta_` 合并节点；独立来源记录保存全部输入，图边过滤成环关系。只推进参与引用，父目录冻结的旧子树在自己的组成上派生，不从子目录新 head 带入未参与文件。
 
-`POST /v1/file-manager/files/{file}/tags` 对显式节点与分支 head 基线应用标签增量，最多16项，每项128 UTF-8字节。变化生成不可变标签子节点，保留源标签；历史源不推进分支 head，当前精确引用才推进。标签不产生正文或完成首次正文写入。路径、标签、合并节点备注统一使用 `PATCH /files/{file}/nodes/{node}`，与正文备注独立。
+`POST /api/file-manager/files/{file}/tags` 对显式节点与分支 head 基线应用标签增量，最多16项，每项128 UTF-8字节。变化生成不可变标签子节点，保留源标签；历史源不推进分支 head，当前精确引用才推进。标签不产生正文或完成首次正文写入。路径、标签、合并节点备注统一使用 `PATCH /files/{file}/nodes/{node}`，与正文备注独立。
 
-`GET/PUT /v1/repositories/{repo}/backup-configuration` 查询/配置稳定文件或目录 scope。写请求需要manage，绑定 `expected_scope_id` 与自身 `expected_generation`；继承策略的有效代数另以 `effective_generation` 返回。份数包含主盘；每个备份slot使用用户独立指定的逻辑路径前缀，相对所选scope根。配置回填可用历史正文且保持版本及proof ID。目录分支合并待用户确认，暂不实现，能力明确为false且无写端点。完整语义见[文件合并、标签和备份](../../docs/design/file-merge-tags-backup.md)。
+`GET/PUT /api/repositories/{repo}/backup-configuration` 查询/配置稳定文件或目录 scope。写请求需要manage，绑定 `expected_scope_id` 与自身 `expected_generation`；继承策略的有效代数另以 `effective_generation` 返回。份数包含主盘；每个备份slot使用用户独立指定的逻辑路径前缀，相对所选scope根。配置回填可用历史正文且保持版本及proof ID。目录分支合并待用户确认，暂不实现，能力明确为false且无写端点。完整语义见[文件合并、标签和备份](../../docs/design/file-merge-tags-backup.md)。
 
 ### 反向代理登录限流
 

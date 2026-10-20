@@ -145,7 +145,7 @@ pub fn encode_hashed_object<T: Serialize + ?Sized>(
     }
     let bytes = canonical_json(value)?;
     let mut h = blake3::Hasher::new();
-    h.update(format!("zxs:{kind}:v2\0").as_bytes());
+    h.update(format!("zxs:{kind}\0").as_bytes());
     h.update(&bytes);
     Ok((bytes, h.finalize().to_hex().to_string()))
 }
@@ -179,6 +179,10 @@ pub struct ChecksumManifest {
 /// Supported by checksum encoding, configuration admission and package readers.
 pub const SUPPORTED_CHECKSUM_CHUNK_BYTES: [u32; 4] = [65_536, 262_144, 1_048_576, 4_194_304];
 
+/// Fixed semantic header: magic, algorithm, chunk size, logical size and count.
+pub const CHECKSUM_HEADER_BYTES: usize = 30;
+const CHECKSUM_MAGIC: &[u8; 8] = b"ZXSCHKS\0";
+
 impl ChecksumManifest {
     pub fn encode(&self) -> Result<Vec<u8>> {
         self.validate()?;
@@ -186,7 +190,7 @@ impl ChecksumManifest {
             .chunks
             .len()
             .checked_mul(32)
-            .and_then(|bytes| bytes.checked_add(32))
+            .and_then(|bytes| bytes.checked_add(CHECKSUM_HEADER_BYTES))
             .ok_or_else(|| {
                 Error::new(
                     "CHECKSUM_FORMAT_INVALID",
@@ -194,8 +198,7 @@ impl ChecksumManifest {
                 )
             })?;
         let mut out = Vec::with_capacity(capacity);
-        out.extend_from_slice(b"ZXSCHK2\0");
-        out.extend(2u16.to_le_bytes());
+        out.extend_from_slice(CHECKSUM_MAGIC);
         out.extend(1u16.to_le_bytes());
         out.extend(self.chunk_bytes.to_le_bytes());
         out.extend(self.logical_size.to_le_bytes());
@@ -207,24 +210,23 @@ impl ChecksumManifest {
     }
     pub fn decode(bytes: &[u8]) -> Result<Self> {
         let bad = || Error::new("CHECKSUM_FORMAT_INVALID", "invalid checksum manifest");
-        if bytes.len() < 32
-            || &bytes[..8] != b"ZXSCHK2\0"
-            || bytes[8..10] != 2u16.to_le_bytes()
-            || bytes[10..12] != 1u16.to_le_bytes()
+        if bytes.len() < CHECKSUM_HEADER_BYTES
+            || &bytes[..8] != CHECKSUM_MAGIC
+            || bytes[8..10] != 1u16.to_le_bytes()
         {
             return Err(bad());
         }
-        let chunk_bytes = u32::from_le_bytes(bytes[12..16].try_into().map_err(|_| bad())?);
-        let logical_size = u64::from_le_bytes(bytes[16..24].try_into().map_err(|_| bad())?);
-        let count = u64::from_le_bytes(bytes[24..32].try_into().map_err(|_| bad())?);
+        let chunk_bytes = u32::from_le_bytes(bytes[10..14].try_into().map_err(|_| bad())?);
+        let logical_size = u64::from_le_bytes(bytes[14..22].try_into().map_err(|_| bad())?);
+        let count = u64::from_le_bytes(bytes[22..30].try_into().map_err(|_| bad())?);
         let payload_len = usize::try_from(count)
             .ok()
             .and_then(|count| count.checked_mul(32))
-            .and_then(|bytes| bytes.checked_add(32));
+            .and_then(|bytes| bytes.checked_add(CHECKSUM_HEADER_BYTES));
         if payload_len != Some(bytes.len()) {
             return Err(bad());
         }
-        let chunks = bytes[32..].as_chunks::<32>().0.to_vec();
+        let chunks = bytes[CHECKSUM_HEADER_BYTES..].as_chunks::<32>().0.to_vec();
         let m = Self {
             chunk_bytes,
             logical_size,
@@ -256,7 +258,7 @@ mod tests {
         let (bytes, hash) = encode_hashed_object("state-page", &value).unwrap();
         assert_eq!(bytes, br#"{"a":1,"z":[true,null]}"#);
         let mut expected = blake3::Hasher::new();
-        expected.update(b"zxs:state-page:v2\0");
+        expected.update(b"zxs:state-page\0");
         expected.update(br#"{"a":1,"z":[true,null]}"#);
         assert_eq!(hash, expected.finalize().to_hex().as_str());
         assert_eq!(object_hash("state-page", &value).unwrap(), hash);
@@ -282,7 +284,7 @@ mod tests {
                 "utf16-key-order" => "vector",
                 name => panic!("unknown canonical vector {name}"),
             };
-            let expected_prefix = format!("zxs:{purpose}:v2\0")
+            let expected_prefix = format!("zxs:{purpose}\0")
                 .bytes()
                 .map(|b| format!("{b:02x}"))
                 .collect::<String>();
@@ -347,6 +349,42 @@ mod tests {
     }
 
     #[test]
+    fn checksum_header_is_semantic_and_rejects_tagged_or_truncated_inputs() {
+        let manifest = ChecksumManifest {
+            chunk_bytes: 65_536,
+            logical_size: 3,
+            chunks: vec![*blake3::hash(b"abc").as_bytes()],
+        };
+        let bytes = manifest.encode().unwrap();
+        assert_eq!(bytes.len(), CHECKSUM_HEADER_BYTES + 32);
+        assert_eq!(&bytes[..8], b"ZXSCHKS\0");
+        assert_eq!(&bytes[8..10], &1u16.to_le_bytes());
+        assert_eq!(&bytes[10..14], &65_536u32.to_le_bytes());
+        assert_eq!(&bytes[14..22], &3u64.to_le_bytes());
+        assert_eq!(&bytes[22..30], &1u64.to_le_bytes());
+        for length in 0..bytes.len() {
+            assert!(
+                ChecksumManifest::decode(&bytes[..length]).is_err(),
+                "length {length}"
+            );
+        }
+        let mut unsupported = b"ZXSCHK2\0".to_vec();
+        unsupported.extend(2u16.to_le_bytes());
+        unsupported.extend_from_slice(&bytes[8..]);
+        assert_eq!(
+            ChecksumManifest::decode(&unsupported).unwrap_err().code(),
+            "CHECKSUM_FORMAT_INVALID"
+        );
+        let mut wrong_algorithm = bytes.clone();
+        wrong_algorithm[8..10].copy_from_slice(&2u16.to_le_bytes());
+        assert!(ChecksumManifest::decode(&wrong_algorithm).is_err());
+        assert_eq!(
+            ChecksumManifest::decode(&bytes).unwrap().encode().unwrap(),
+            bytes
+        );
+    }
+
+    #[test]
     fn checksum_decoder_rejects_count_overflow_extensions_and_unsupported_chunks() {
         let base = ChecksumManifest {
             chunk_bytes: 65536,
@@ -360,7 +398,7 @@ mod tests {
             65536
         );
         let mut corrupt = base.encode().unwrap();
-        corrupt[24..32].copy_from_slice(&u64::MAX.to_le_bytes());
+        corrupt[22..30].copy_from_slice(&u64::MAX.to_le_bytes());
         assert!(ChecksumManifest::decode(&corrupt).is_err());
         let mut extension = base.encode().unwrap();
         extension.push(0);

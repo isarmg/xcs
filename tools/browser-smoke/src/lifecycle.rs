@@ -142,7 +142,7 @@ fn pending_session_response(browser: &Browser, origin: &str) -> Result<()> {
     const response = await Reflect.apply(nativeFetch, this, args);
     const request = args[0];
     const url = typeof request === 'string' ? request : request.url;
-    if (new URL(url, location.href).pathname !== '/v1/auth/me') return response;
+    if (new URL(url, location.href).pathname !== '/api/auth/me') return response;
     state.status = response.status;
     state.waiting = true;
     window.fetch = nativeFetch;

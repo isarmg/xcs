@@ -12,6 +12,11 @@ case "${1:-}" in
     ;;
   workspace)
     cargo test --locked --workspace
+    # Serialize the real >64MiB history codec fixture separately from parallel
+    # unit tests, without making the format-capacity regression optional.
+    cargo test --locked -p zxs-core --lib \
+      history_package::graph::tests::distributed_history_larger_than_real_reader_limit_roundtrips \
+      -- --ignored --exact --test-threads=1
     ;;
   apps)
     cargo test --locked --manifest-path apps/Cargo.toml --workspace

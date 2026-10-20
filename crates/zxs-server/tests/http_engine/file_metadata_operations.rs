@@ -1,14 +1,14 @@
 use super::*;
 
 async fn branch(app: &Router, token: &str, file: &str, version: &str, name: &str) -> String {
-    success(app,token,"POST",&format!("/v1/file-manager/files/{file}/branches"),Some(json!({"source_version_id":version,"source_node_id":version,"name":name,"operation_id":new_id("op")}))).await["result"]["branch_id"].as_str().unwrap().into()
+    success(app,token,"POST",&format!("/api/file-manager/files/{file}/branches"),Some(json!({"source_version_id":version,"source_node_id":version,"name":name,"operation_id":new_id("op")}))).await["result"]["branch_id"].as_str().unwrap().into()
 }
 async fn select(app: &Router, token: &str, file: &str, branch: &str) {
     success(
         app,
         token,
         "POST",
-        &format!("/v1/file-manager/files/{file}/select"),
+        &format!("/api/file-manager/files/{file}/select"),
         Some(json!({"branch_id":branch,"operation_id":new_id("op")})),
     )
     .await;
@@ -18,7 +18,7 @@ async fn history(app: &Router, token: &str, file: &str) -> Value {
         app,
         token,
         "GET",
-        &format!("/v1/file-manager/files/{file}/history"),
+        &format!("/api/file-manager/files/{file}/history"),
         None,
     )
     .await
@@ -34,7 +34,7 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -44,7 +44,7 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
     let left = branch(&app, &token, file, base, "left").await;
     let right = branch(&app, &token, file, base, "right").await;
     select(&app, &token, file, &left).await;
-    let tag_route = format!("/v1/file-manager/files/{file}/tags");
+    let tag_route = format!("/api/file-manager/files/{file}/tags");
     let tagged=success(&app,&token,"POST",&tag_route,Some(json!({"targets":[{"branch_id":left,"source_node_id":base,"expected_node_id":base}],"add":["已审核","work"],"remove":[],"operation_id":new_id("op")}))).await;
     let tag_node = tagged["result"]["nodes"][0]["node_id"].as_str().unwrap();
     assert!(tag_node.starts_with("fmeta_"));
@@ -64,11 +64,11 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
         &app,
         &token,
         "PATCH",
-        &format!("/v1/file-manager/files/{file}/nodes/{tag_node}"),
+        &format!("/api/file-manager/files/{file}/nodes/{tag_node}"),
         Some(json!({"note":"独立标签备注","operation_id":new_id("op")})),
     )
     .await;
-    success(&app,&token,"POST","/v1/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"report.txt","destination":"renamed.txt","operation_id":new_id("op")}))).await;
+    success(&app,&token,"POST","/api/file-manager/disks/P01/namespace",Some(json!({"kind":"rename","path":"report.txt","destination":"renamed.txt","operation_id":new_id("op")}))).await;
     let renamed = history(&app, &token, file).await;
     let path_node = renamed["node_id"].as_str().unwrap();
     manager_upload(&app, &token, "renamed.txt", b"left body").await;
@@ -88,7 +88,7 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
     manager_upload(&app, &token, "renamed.txt", b"right body").await;
     let right_history = history(&app, &token, file).await;
     let right_node = right_history["node_id"].as_str().unwrap();
-    let merge_route = format!("/v1/file-manager/files/{file}/merge");
+    let merge_route = format!("/api/file-manager/files/{file}/merge");
     let request = json!({"inputs":[{"branch_id":left,"expected_node_id":left_node},{"branch_id":right,"expected_node_id":right_node}],"chosen_node_id":tag_node,"surviving_branch_id":left,"confirmed":true,"repository_id":repo,"path":"renamed.txt","operation_id":new_id("op")});
     let mut unconfirmed = request.clone();
     unconfirmed["confirmed"] = false.into();
@@ -145,7 +145,7 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
             &app,
             Some(&token),
             "POST",
-            &format!("/v1/file-manager/files/{file}/select"),
+            &format!("/api/file-manager/files/{file}/select"),
             Some(json!({"branch_id":right,"operation_id":new_id("op")}))
         )
         .await
@@ -157,15 +157,15 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
             &app,
             Some(&token),
             "PATCH",
-            &format!("/v1/file-manager/files/{file}/branches/{right}"),
+            &format!("/api/file-manager/files/{file}/branches/{right}"),
             Some(json!({"name":"forbidden label","operation_id":new_id("op")}))
         )
         .await
         .0,
         StatusCode::CONFLICT
     );
-    success(&app,&token,"POST","/v1/admin/accounts",Some(json!({"username":"node-reader","password":"node-reader-test-password","repositories":[repo]}))).await;
-    success(&app,&token,"PUT",&format!("/v1/repositories/{repo}/grants"),Some(json!({"grants":{"read":["node-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
+    success(&app,&token,"POST","/api/admin/accounts",Some(json!({"username":"node-reader","password":"node-reader-test-password","repositories":[repo]}))).await;
+    success(&app,&token,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["node-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
     let reader = login(&app, "node-reader", "node-reader-test-password").await;
     assert_eq!(history(&app, &reader, file).await["node_id"], node);
     assert_eq!(
@@ -180,7 +180,7 @@ async fn tags_and_file_merges_publish_reviewed_node_graphs_without_new_bodies() 
         .0,
         StatusCode::FORBIDDEN
     );
-    let audit = success(&app, &token, "GET", "/v1/file-manager/history", None).await;
+    let audit = success(&app, &token, "GET", "/api/file-manager/history", None).await;
     for action in ["file.branches.merge", "file.tags.update"] {
         assert!(
             audit["events"]
@@ -207,13 +207,13 @@ async fn scoped_backup_configuration_checks_scope_identity_generation_and_manage
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries?path=docs/nested",
+        "/api/file-manager/disks/P01/entries?path=docs/nested",
         None,
     )
     .await;
     let file = listing["entries"][0]["file_id"].as_str().unwrap();
     let repo = listing["context"]["repository_id"].as_str().unwrap();
-    let route = format!("/v1/repositories/{repo}/backup-configuration");
+    let route = format!("/api/repositories/{repo}/backup-configuration");
     let before = success(&app, &token, "GET", &format!("{route}?path=docs"), None).await;
     assert_eq!(before["can_manage"], true);
     assert_eq!(before["generation"], "0");
@@ -279,8 +279,8 @@ async fn scoped_backup_configuration_checks_scope_identity_generation_and_manage
     )
     .await;
     assert_eq!(new_file["backup_paths"]["B01"], "工作备份/new.txt");
-    success(&app,&token,"POST","/v1/admin/accounts",Some(json!({"username":"backup-reader","password":"backup-reader-test-password","repositories":[repo]}))).await;
-    success(&app,&token,"PUT",&format!("/v1/repositories/{repo}/grants"),Some(json!({"grants":{"read":["backup-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
+    success(&app,&token,"POST","/api/admin/accounts",Some(json!({"username":"backup-reader","password":"backup-reader-test-password","repositories":[repo]}))).await;
+    success(&app,&token,"PUT",&format!("/api/repositories/{repo}/grants"),Some(json!({"grants":{"read":["backup-reader"],"write":[],"manage":["admin"]},"operation_id":new_id("op")}))).await;
     let reader = login(&app, "backup-reader", "backup-reader-test-password").await;
     assert_eq!(
         success(&app, &reader, "GET", &format!("{route}?path=docs"), None).await["can_manage"],
@@ -313,7 +313,7 @@ async fn contextual_branch_selection_preserves_current_file_when_target_body_is_
         &app,
         &token,
         "GET",
-        "/v1/file-manager/disks/P01/entries",
+        "/api/file-manager/disks/P01/entries",
         None,
     )
     .await;
@@ -345,7 +345,7 @@ async fn contextual_branch_selection_preserves_current_file_when_target_body_is_
     let auth = backend.open_auth(&system).unwrap();
     let app = zxs_server::router(backend, auth, ServerConfig::loopback(&system)).unwrap();
     let token = login(&app, "admin", "integration-test-password").await;
-    let route = format!("/v1/file-manager/files/{file}/select");
+    let route = format!("/api/file-manager/files/{file}/select");
     for contextual in [false, true] {
         let mut request = json!({"branch_id":original_branch,"operation_id":new_id("op")});
         if contextual {

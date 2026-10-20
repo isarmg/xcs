@@ -71,7 +71,10 @@ pub(crate) fn advance_branch_node(
     target.head_commit_id = id;
     target.file_node_id = Some(node.into());
     target.pending_file_versions = pending;
-    target.generation += 1;
+    target.generation = target
+        .generation
+        .checked_add(1)
+        .ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
     Ok(())
 }
 
@@ -368,8 +371,16 @@ pub(crate) fn publish_node(
             state.directory_tree_selections.insert(directory, rewritten);
         }
     }
-    let main = state.branches[&repo.main_branch_id].clone();
-    let previous = state.commits[&main.head_commit_id].clone();
+    let main = state
+        .branches
+        .get(&repo.main_branch_id)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "repository main branch missing"))?;
+    let previous = state
+        .commits
+        .get(&main.head_commit_id)
+        .cloned()
+        .ok_or_else(|| Error::new("STATE_INVALID", "repository head missing"))?;
     let mut entries = previous.entries.clone();
     let mut changed_paths = Vec::new();
     for entry in entries
@@ -423,7 +434,10 @@ pub(crate) fn publish_node(
             .get_mut(&repo.main_branch_id)
             .expect("checked namespace");
         main.head_commit_id = id;
-        main.generation += 1;
+        main.generation = main
+            .generation
+            .checked_add(1)
+            .ok_or_else(|| Error::new("RESOURCE_LIMIT", "branch generation exhausted"))?;
         if matching_node.is_none() {
             main.pending_file_versions.remove(file);
         }

@@ -476,6 +476,7 @@ impl Engine {
         let hash = object_hash("candidate", &candidate)?;
         exclude_publication(self, &candidate, &hash)?;
         let state = self.load_bound_snapshot(&candidate.snapshot_hash)?;
+        crate::history_package::bound_history_objects(&self.members(), &candidate, Some(&state))?;
         Ok((candidate, state, witnesses, accepts))
     }
     pub fn prepare_degraded_recovery(
@@ -628,17 +629,8 @@ impl Engine {
         }
         require_permanent_loss(self, &candidate, &plan.version_protection)?;
         let member_disks = self.members();
-        // Dependences and the immutable candidate are persisted before fencing.
-        // Complete the exact hash-bound snapshot, not a reserialization using
-        // today's page partitioning. Older pending candidates keep their root.
-        self.repair_bound_snapshot(&candidate.snapshot_hash)?;
-        let manifest_hashes =
-            crate::history_package::store_history_manifests(&member_disks, &next)?;
-        if !candidate.history_manifest_hashes.is_empty()
-            && manifest_hashes != candidate.history_manifest_hashes
-        {
-            return Err(required("recovery history manifests differ"));
-        }
+        let history_objects =
+            crate::history_package::bound_history_objects(&member_disks, &candidate, Some(&next))?;
         let mut result = next
             .operations
             .get(&candidate.operation_id)
@@ -663,7 +655,7 @@ impl Engine {
         result.result["isolation_generation"] = json!(plan.isolation_generation);
         result.result["outcome"] = json!("COMMITTED_DEGRADED");
         result.result["version_protection"] = json!(plan.version_protection);
-        crate::metadata_budget::preflight_publication(
+        crate::metadata_budget::preflight_bound_publication(
             self,
             &candidate,
             &result,
@@ -673,6 +665,13 @@ impl Engine {
                 reprotect: Vec::new(),
             }),
             MAX_METADATA,
+        )?;
+        // All graph and combined proof checks precede any recovery writes.
+        self.repair_bound_snapshot(&candidate.snapshot_hash)?;
+        crate::history_package::repair_history_objects(
+            &member_disks,
+            &history_objects,
+            &mut BTreeSet::new(),
         )?;
         let mut reprotect = Vec::new();
         let plan_hash = object_hash("recovery-plan", &plan)?;
@@ -788,6 +787,12 @@ impl Engine {
 mod tests {
     use super::*;
     fn fixture(point: &str) -> (tempfile::TempDir, Engine, String, Candidate) {
+        fixture_with_history(point, 0)
+    }
+    fn fixture_with_history(
+        point: &str,
+        retained: usize,
+    ) -> (tempfile::TempDir, Engine, String, Candidate) {
         let temp = tempfile::tempdir().unwrap();
         let config = Config::development([
             temp.path().join("p"),
@@ -798,6 +803,27 @@ mod tests {
         let repo = engine
             .create_repository("恢复测试", "P01", 3, "alice", &new_id("op"))
             .unwrap();
+        if retained > 0 {
+            let mut next = engine.state.clone();
+            next.sequence = engine.next_slot;
+            let original =
+                next.commits[&next.histories[&repo.history_tree_id].root_commit_id].clone();
+            let mut parent = original.commit_id.clone();
+            for _ in 0..retained {
+                let mut commit = original.clone();
+                commit.commit_id = new_id("commit");
+                commit.parent_commit_ids = vec![parent];
+                commit.sequence = next.sequence;
+                parent = commit.commit_id.clone();
+                next.commits.insert(commit.commit_id.clone(), commit);
+            }
+            let mut result = next.operations.values().next().unwrap().clone();
+            result.operation_id = new_id("op");
+            result.sequence = next.sequence;
+            next.operations
+                .insert(result.operation_id.clone(), result.clone());
+            engine.persist(next, Vec::new(), result).unwrap();
+        }
         let workspace = engine
             .create_workspace(&repo.main_branch_id, "alice")
             .unwrap();
@@ -1057,6 +1083,53 @@ mod tests {
                 engine.operation(&operation).unwrap().commit_state,
                 zxs_contract::CommitState::PublishedDegraded
             );
+        }
+    }
+
+    #[test]
+    fn degraded_recovery_verifies_and_repairs_exact_history_graph_before_reprotect() {
+        for kind in ["state-page", "history-index", "history-manifest"] {
+            for missing_all in [false, true] {
+                let (_temp, mut engine, operation, candidate) =
+                    fixture_with_history("after_accept_2", 160);
+                lose(&engine, &candidate, true);
+                let members = engine.members();
+                let objects =
+                    crate::history_package::bound_history_objects(&members, &candidate, None)
+                        .unwrap();
+                let (_, hash, value) = objects
+                    .iter()
+                    .find(|(domain, _, _)| domain == kind)
+                    .unwrap();
+                let expected = canonical_json(value).unwrap();
+                let plan = engine
+                    .prepare_degraded_recovery(&operation, "alice", "permanent loss")
+                    .unwrap();
+                let logs = members
+                    .iter()
+                    .map(|member| fs::read(log_path(member)).unwrap())
+                    .collect::<Vec<_>>();
+                for member in members.iter().take(if missing_all { 3 } else { 1 }) {
+                    fs::write(object_path(member, kind, hash), b"damaged").unwrap();
+                }
+                let result =
+                    engine.commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true);
+                if missing_all {
+                    assert!(result.is_err());
+                    for (member, log) in members.iter().zip(logs) {
+                        assert_eq!(fs::read(log_path(member)).unwrap(), log);
+                    }
+                } else {
+                    assert_eq!(
+                        result.unwrap().commit_state,
+                        zxs_contract::CommitState::PublishedDegraded
+                    );
+                    assert_eq!(
+                        fs::read(object_path(&members[0], kind, hash)).unwrap(),
+                        expected
+                    );
+                }
+            }
         }
     }
 

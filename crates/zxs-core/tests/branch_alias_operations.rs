@@ -149,7 +149,7 @@ impl Pool {
             .join("namespace")
             .join(&state.file_locations[file])
             .join("versions")
-            .join(version.storage_name.as_ref().unwrap())
+            .join(&version.storage_name)
     }
     fn current_entry(&self, path: &str) -> Entry {
         self.engine

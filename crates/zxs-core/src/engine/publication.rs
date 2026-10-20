@@ -90,7 +90,6 @@ impl Engine {
         let (history_manifest_hashes, manifests) =
             crate::history_package::prepare_history_manifests(&next, maximum)?;
         let candidate = Candidate {
-            format_version: 2,
             pool_id: self.config.pool_id.clone(),
             sequence: next.sequence,
             transaction_id: new_id("tx"),
@@ -276,7 +275,7 @@ impl Engine {
                 write_atomic(&staging.join("checksums.bin"), &checks.encode()?, false)?;
                 write_json(
                     &staging.join("payload.json"),
-                    &json!({"format_version":2,"payload_id":format!("payload_{}",&p.version.version_id[4..]),"version_id":p.version.version_id,"kind":"FULL","size":size.to_string(),"content_hash":hash}),
+                    &json!({"payload_id":format!("payload_{}",&p.version.version_id[4..]),"version_id":p.version.version_id,"kind":"FULL","size":size.to_string(),"content_hash":hash}),
                     false,
                 )?;
                 sync_dir(&staging)?;

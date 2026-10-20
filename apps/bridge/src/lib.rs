@@ -174,7 +174,7 @@ impl Bridge {
         let route = path.split('?').next().unwrap_or(path);
         // Authentication must go through connect so tokens remain in Rust and
         // the installed session participates in connection generation checks.
-        if route == "/v1/auth/login" {
+        if route == "/api/auth/login" {
             return Err(BridgeError {
                 code: "NATIVE_LOGIN_REQUIRED".into(),
                 message: "Use the native connection command to sign in".into(),
@@ -182,7 +182,7 @@ impl Bridge {
                 status: 0,
             });
         }
-        let logout = method == "POST" && route == "/v1/auth/logout";
+        let logout = method == "POST" && route == "/api/auth/logout";
         let (client, revision) = if logout {
             let mut connection = self.connection.write().await;
             let snapshot = connection.begin_logout().ok_or_else(disconnected)?;
@@ -192,7 +192,7 @@ impl Bridge {
             self.snapshot().await?
         };
         let mut result = client.request(method, path, body).await;
-        if route == "/v1/auth/me"
+        if route == "/api/auth/me"
             && let Ok(Value::Object(value)) = &mut result
         {
             // Native requests use the Rust-held bearer, never cookie CSRF.
@@ -210,10 +210,10 @@ impl Bridge {
         // A failed logout is unconfirmed: keep the credential so the locked
         // UI can retry revocation. An explicit 401 confirms it is already invalid.
         if (method == "POST"
-            && route == "/v1/auth/logout"
+            && route == "/api/auth/logout"
             && (result.is_ok() || matches!(&result, Err(Error::Api { status: 401, .. }))))
             || (method == "POST"
-                && route == "/v1/auth/password"
+                && route == "/api/auth/password"
                 && result.as_ref().is_ok_and(|value| {
                     value["changed"] == true && value["reauthentication_required"] == true
                 }))
@@ -286,7 +286,7 @@ impl Bridge {
             let metadata = client
                 .request(
                     "GET",
-                    &format!("/v1/versions/{}", zxs_client::segment(version)),
+                    &format!("/api/versions/{}", zxs_client::segment(version)),
                     None,
                 )
                 .await?;
