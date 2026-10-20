@@ -49,8 +49,8 @@ jobs:
           rustup show active-toolchain
           rustc --version
           cargo --version
-      - name: Install WASM standard library for the quality gate
-        if: matrix.suite == 'quality'
+      - name: Install WASM standard library for cross-target checks
+        if: matrix.suite == 'quality' || matrix.suite == 'foundation'
         run: rustup target add wasm32-unknown-unknown
       - name: Run locked test suite
         run: bash .github/scripts/check.sh "${{ matrix.suite }}"
