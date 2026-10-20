@@ -16,12 +16,22 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: '1'
   CARGO_INCREMENTAL: '0'
-  # A fresh Cargo home proves no preloaded registry/git sources are needed.
-  CARGO_HOME: ${{ runner.temp }}/zxs-cargo-home
 
 jobs:
+  static:
+    name: Static workflow and tooling regressions (no Rust)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check workflows, source governance and script regressions
+        run: bash .github/scripts/check.sh static
+
   tests:
     name: Tests (${{ matrix.suite }})
+    needs: static
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -32,6 +42,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Initialize isolated Cargo home
+        run: bash .github/scripts/initialize-cargo-home.sh
       - name: Install repository Rust toolchain
         run: |
           rustup show active-toolchain
@@ -45,12 +57,15 @@ jobs:
 
   web-production:
     name: Production WASM build
+    needs: static
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Initialize isolated Cargo home
+        run: bash .github/scripts/initialize-cargo-home.sh
       - name: Install repository Rust toolchain and WASM target
         run: |
           rustup show active-toolchain
@@ -82,6 +97,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Initialize isolated Cargo home
+        run: bash .github/scripts/initialize-cargo-home.sh
       - name: Install repository Rust toolchain
         run: rustup show active-toolchain
       - name: Fetch production Web assets from this workflow run
@@ -128,12 +145,15 @@ jobs:
 
   smb-sdk:
     name: Samba 4.23.0 real SDK ABI and FFI tests
+    needs: static
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Initialize isolated Cargo home
+        run: bash .github/scripts/initialize-cargo-home.sh
       - name: Install repository Rust toolchain
         run: rustup show active-toolchain
       - name: Install official Ubuntu SDK build prerequisites

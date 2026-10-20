@@ -15,11 +15,22 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: '0'
-  CARGO_HOME: ${{ runner.temp }}/zxs-cargo-home
   RUST_BACKTRACE: '1'
 
 jobs:
+  static:
+    name: Static workflow and tooling regressions (no Rust)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check workflows, source governance and script regressions
+        run: bash .github/scripts/check.sh static
+
   version:
+    needs: static
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     outputs:
@@ -30,6 +41,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Initialize isolated Cargo home
+        run: bash .github/scripts/initialize-cargo-home.sh
       - run: rustup show active-toolchain
       - run: cargo test --locked --offline -p release-tools
       - id: version
@@ -45,6 +58,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Initialize isolated Cargo home
+        run: bash .github/scripts/initialize-cargo-home.sh
       - run: |
           rustup show active-toolchain
           rustup target add wasm32-unknown-unknown
@@ -64,6 +79,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Initialize isolated Cargo home
+        run: bash .github/scripts/initialize-cargo-home.sh
       - run: |
           rustup show active-toolchain
           rustup target add wasm32-unknown-unknown

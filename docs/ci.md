@@ -6,6 +6,7 @@
 
 | 范围 | 实际检查 |
 | --- | --- |
+| `static` | 不安装或调用 Rust：工作流早期 env 上下文检查、来源静态校验、Python 工具回归、shell 语法与发布 mock、Node 历史脚本配置和库存检查；不执行历史浏览器验收 |
 | `rust-sources` | 源码、manifest、全部特性边、锁文件、来源文档和退役记录校验；空 Cargo home 重新解析七个入口／目标闭包，拒绝无闭包使用的活动源码树 |
 | `quality` | 自有 workspace 的格式与严格 Clippy；宿主机全部目标及 Web 的 WASM release 编译，所有本地依赖的 Rust warning/error 均失败；基础源码不自动格式化 |
 | `security` | 固定 cargo-audit 扫描器查询当前 RustSec；消费者锁和活动／已合并实现的原始身份均扫描，告警或扫描错误失败；已移除来源单列历史记录 |
@@ -19,7 +20,15 @@
 | `web-production` | 本地维护的绑定工具、wasm32 release 构建、资源清单和压缩产物 |
 | `browser-smoke` | 实际 Web/WASM 对真实服务端的 Chrome 交互；响应式尺寸预览不冒充原生 App 验收 |
 
-安装工具链、WASM target、浏览器/驱动和所需原生库后，在仓库根执行：
+只需 Python 3.11+、Node.js 和 Bash 即可在仓库根先运行静态门禁，无需 Rust、registry、浏览器或联网安装依赖：
+
+```sh
+bash .github/scripts/check.sh static
+```
+
+CI 与 Release 都先运行独立的 `static` job；它通过后才安装或使用 Rust。工作流上下文检查是针对本仓库 block-mapping 写法的定向回归，不是完整 YAML / GitHub Actions 语义验证器。它检查顶层及 job 的 `env`，拒绝尚未可用的 `runner`、`steps` 等上下文及 `hashFiles`；合法的 step env 和 action 输入仍可使用 runner 上下文。
+
+安装工具链、WASM target、浏览器/驱动和所需原生库后，在仓库根执行其余门禁：
 
 ```sh
 python3 tools/rust-sources/manage.py verify --metadata
@@ -42,4 +51,4 @@ bash .github/scripts/check.sh browser-smoke
 
 SMB SDK 编译不等于 Samba 模块已加载或跨客户端往返通过；Chrome 检查不等于所有浏览器和移动设备通过；模拟文件故障不等于物理盘掉电验收。依赖源码本地化也不等于漏洞或许可证审查完成，见 [第三方来源清单](THIRD_PARTY_RUST_SOURCES.md)。
 
-工作流仅授予所需权限，checkout 不保留凭据，官方 Actions 固定完整提交 SHA。产品验证使用独立 Cargo home，不缓存 registry/git 源码或测试成功结果。新增组件必须加入根工作区、复用根锁文件、登记中央来源清单并增加对应检查；不得增加子工作区或活动子锁文件。
+工作流仅授予所需权限，checkout 不保留凭据，官方 Actions 固定完整提交 SHA。所有调用 Rust 的 job 在 checkout 后通过 [环境初始化脚本](../.github/scripts/initialize-cargo-home.sh) 从运行时 `RUNNER_TEMP` 创建全新空 Cargo home，再写入 `GITHUB_ENV` 供后续步骤使用；不在顶层或 job env 引用尚不可用的 `runner.temp`。不缓存 registry/git 源码或测试成功结果。新增组件必须加入根工作区、复用根锁文件、登记中央来源清单并增加对应检查；不得增加子工作区或活动子锁文件。

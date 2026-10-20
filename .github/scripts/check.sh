@@ -4,6 +4,20 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 case "${1:-}" in
+  static)
+    # No Rust toolchain, registry, package installer or live browser required.
+    python3 .github/scripts/check-workflows.py
+    python3 tools/rust-sources/manage.py verify
+    python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
+    python3 -m unittest discover -s .github/scripts/tests -p 'test_*.py'
+    python3 -m unittest discover -s tools/perf-check -p 'test_*.py'
+    for script in .github/scripts/*.sh .github/scripts/tests/*.sh; do
+      bash -n "$script"
+    done
+    bash .github/scripts/tests/release-package.sh
+    bash .github/scripts/tests/release-publish.sh
+    node .github/scripts/check-evidence-probes.mjs
+    ;;
   rust-sources)
     python3 tools/rust-sources/manage.py verify --metadata
     python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
@@ -77,7 +91,7 @@ case "${1:-}" in
       --cli-bin "$PWD/target/native/debug/zxs" --web-dir "$PWD/build/web" "${screenshot_args[@]}"
     ;;
   *)
-    echo 'Usage: check.sh {rust-sources|quality|security|workspace|foundation|web|contracts|build-tools|smb-protocol|web-production|browser-smoke}' >&2
+    echo 'Usage: check.sh {static|rust-sources|quality|security|workspace|foundation|web|contracts|build-tools|smb-protocol|web-production|browser-smoke}' >&2
     exit 2
     ;;
 esac

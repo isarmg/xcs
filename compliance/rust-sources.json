@@ -1238,7 +1238,7 @@
       "version": "1.1.5"
     },
     "src/foundation/any_spawner": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "Spawn asynchronous tasks in an executor-independent way.",
       "directory": "src/foundation/any_spawner",
       "files_sha256": {
@@ -3537,7 +3537,7 @@
       "version": "0.10.2"
     },
     "src/foundation/const_str_slice_concat": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Utilities for const concatenation of string slices.",
       "directory": "src/foundation/const_str_slice_concat",
       "files_sha256": {
@@ -4537,7 +4537,7 @@
       "version": "1.19.0"
     },
     "src/foundation/either_of": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Utilities for working with enumerated types that contain one of 2..n other types.",
       "directory": "src/foundation/either_of",
       "files_sha256": {
@@ -9017,7 +9017,7 @@
       "version": "0.1.0"
     },
     "src/foundation/leptos_dom": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "DOM operations for the Leptos web framework.",
       "directory": "src/foundation/leptos_dom",
       "files_sha256": {
@@ -9052,7 +9052,7 @@
       "version": "0.8.8"
     },
     "src/foundation/leptos_hot_reload": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Utility types used for dev mode and hot-reloading for the Leptos web framework.",
       "directory": "src/foundation/leptos_hot_reload",
       "files_sha256": {
@@ -10831,7 +10831,7 @@
       "version": "1.2.4"
     },
     "src/foundation/next_tuple": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "A trait to build and extend tuples.",
       "directory": "src/foundation/next_tuple",
       "files_sha256": {
@@ -11335,7 +11335,7 @@
       "version": "0.2.19"
     },
     "src/foundation/oco_ref": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "A smart pointer for storing immutable values with relatively-cheap cloning. (Like a `Cow` meets an `Rc`!)",
       "directory": "src/foundation/oco_ref",
       "files_sha256": {
@@ -11413,7 +11413,7 @@
       "version": "1.21.4"
     },
     "src/foundation/or_poisoned": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Unwrap std lock guards in a semantic way.",
       "directory": "src/foundation/or_poisoned",
       "files_sha256": {
@@ -12563,7 +12563,7 @@
       "version": "1.13.0"
     },
     "src/foundation/reactive_graph": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "A fine-grained reactive graph for building user interfaces.",
       "directory": "src/foundation/reactive_graph",
       "files_sha256": {
@@ -16539,7 +16539,7 @@
       "version": "0.39.6"
     },
     "src/foundation/tachys": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "Tools for building reactivity-agnostic, renderer-generic, statically-typed view trees for user interface libraries.",
       "directory": "src/foundation/tachys",
       "files_sha256": {
@@ -16876,7 +16876,7 @@
       "version": "1.1.10"
     },
     "src/foundation/throw_error": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Utilities for wrapping, throwing, and catching errors.",
       "directory": "src/foundation/throw_error",
       "files_sha256": {

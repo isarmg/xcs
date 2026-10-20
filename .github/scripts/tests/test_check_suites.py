@@ -1,6 +1,6 @@
 """Exercise CI suite commands without a compiler, network or product data."""
-import json
 import hashlib
+import json
 import os
 from pathlib import Path
 import shutil
@@ -22,7 +22,7 @@ class SuiteCoverageTests(unittest.TestCase):
             (scripts / "tests" / name).write_text("#!/bin/sh\nexit 0\n")
         binary_directory = self.root / "bin"
         binary_directory.mkdir()
-        for name in ("cargo", "python3"):
+        for name in ("cargo", "python3", "node"):
             command = binary_directory / name
             command.write_text(
                 f"#!{sys.executable}\n"
@@ -71,6 +71,23 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertEqual(len(verification), 1)
         self.assertIn("--metadata", verification[0]["args"])
         self.assertTrue(any("test_rust_diagnostics.py" in call["args"] for call in calls))
+
+    def test_static_gate_requires_no_rust_or_metadata_resolution(self):
+        calls = self.suite("static")
+        self.assertTrue(all(call["tool"] in ("python3", "node") for call in calls))
+        self.assertIn(
+            {"tool": "python3", "args": [".github/scripts/check-workflows.py"]}, calls,
+        )
+        self.assertIn(
+            {"tool": "python3", "args": ["tools/rust-sources/manage.py", "verify"]}, calls,
+        )
+        for directory in ("tools/rust-sources", ".github/scripts/tests", "tools/perf-check"):
+            self.assertIn(
+                {"tool": "python3", "args": ["-m", "unittest", "discover", "-s",
+                                           directory, "-p", "test_*.py"]}, calls,
+            )
+        self.assertEqual(calls[-1], {"tool": "node", "args": [".github/scripts/check-evidence-probes.mjs"]})
+        self.assertFalse(any("--metadata" in call["args"] for call in calls))
 
     def test_build_tools_cover_report_parsing_without_running_a_workload(self):
         calls = self.suite("build-tools")

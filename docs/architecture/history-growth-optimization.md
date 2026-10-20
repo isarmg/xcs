@@ -1,7 +1,9 @@
-# Retained-history growth: second optimization pass
+# Retained-history growth: current implementation
 
-This pass reduces repeated work without deleting history or changing the
-authoritative journal, snapshot hash, or corruption/repair requirements.
+The current implementation reduces repeated work without deleting retained
+history or weakening the authoritative journal, exact candidate identity, or
+corruption/repair requirements. Historical performance reports describe their
+original commits; they do not establish performance for the current source.
 
 ## Stable snapshot boundaries
 
@@ -13,9 +15,10 @@ changes a nearby page rather than shifting all later positional pages.
 Adversarial key distributions can still hit the hard cap and have worse sharing;
 this is not a constant-write guarantee.
 
-The root and page wire representation remains v2. Readers accept old fixed-count
-pages and new pages. Tombstone admission uses the same page builder for a new
-publication and the actual hash-bound pages for an existing recovery candidate.
+The project uses one current, unnumbered root/page representation. Valid page
+partitions are checked structurally, not selected by a release-version branch.
+Tombstone admission uses the same page builder for a new publication and the
+actual hash-bound pages for an existing recovery candidate.
 Recovery repairs the original root and pages, never substitutes a new-layout
 root for an old candidate.
 
@@ -32,7 +35,8 @@ beyond the limit take the original full repair path. It does not survive a
 restart and never replaces the initial byte verification.
 
 Exact snapshot repair also replaces redundant reserialization during replay.
-This avoids generating orphan new-layout roots when opening legacy journals.
+This avoids generating replacement roots that are not bound by the original
+candidate during journal replay.
 Historical-only pages remain covered by repair; unsafe targets and irreparable
 corruption still fail.
 
@@ -47,11 +51,24 @@ A deterministic 4,096-node chain requires 4,096 ancestry visits rather than
 8,390,656 repeated visits, with no new visits when another replica requests the
 same records. This is an algorithmic counter, not a throughput benchmark.
 
-## Remaining costs and compatibility limits
+## Paged history roots and remaining costs
 
-State construction, full history manifests, and retained event lists still grow.
-Full manifests remain bound by their existing logical hashes in candidate and
-portable-package proofs; they have not been silently replaced with a different
-storage format. Journal/coverage verification is still required. No retained
-history was removed, and no physical disk or power-loss guarantee follows from
-the development probes.
+Each candidate binds a `PagedHistoryRoot` for every history. Its fixed map
+references reach domain-separated `history-index` and `state-page` objects;
+portable-package proofs preserve that exact root identity, not the hash of a
+flattened logical manifest. Readers validate field sets, routing prefixes,
+depth, duplicates, object hashes, and the reconstructed semantic graph. The
+obsolete flat-manifest representation is not a compatibility reader.
+
+History dependencies can be selected object by object from different verified
+members. This does not generalize to State snapshots: snapshot verification
+currently requires one member with a complete correct root and page set.
+Recovery must not silently substitute a newly encoded root for a bound one.
+See [the paged-history decision](../adr/0004-paged-history-manifests.md) and
+[implementation limits](optimization-status.md).
+
+State construction/cloning, complete logical-history projection, retained
+events, and proof/coverage verification still grow with retained state. A
+bounded page or individual metadata object is not a bound on total package
+objects, import traversal memory, or complete save cost. This is not end-to-end
+O(delta), constant-memory operation, or a physical-disk durability guarantee.

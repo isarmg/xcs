@@ -84,6 +84,44 @@ class SourcePolicy(unittest.TestCase):
         with patch.object(manager, "cargo_metadata", return_value=self.metadata):
             self.verify(metadata=True)
 
+    def test_refresh_descriptions_is_idempotent_and_preserves_original_receipts(self):
+        package = self.catalog["packages"]["src/foundation/mini"]
+        package["changes"] = "See crates/zxs-naming/README.md."
+        (self.root / "docs/components").mkdir()
+        (self.root / "docs/components/naming.md").write_text("current documentation\n")
+        self.save_catalog()
+        original = self.catalog["origin_records_sha256"]
+        with self.assertRaisesRegex(ValueError, "outdated source description"):
+            self.verify()
+        self.refresh()
+        self.verify()
+        first_catalog = (self.root / manager.CATALOG).read_bytes()
+        first_doc = (self.root / manager.DOC).read_bytes()
+        self.refresh()
+        self.assertEqual((self.root / manager.CATALOG).read_bytes(), first_catalog)
+        self.assertEqual((self.root / manager.DOC).read_bytes(), first_doc)
+        self.assertEqual(self.catalog["origin_records_sha256"], original)
+
+    def test_description_references_must_exist_even_if_generated_doc_matches(self):
+        self.catalog["packages"]["src/foundation/mini"]["changes"] = "See docs/components/naming.md"
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "missing source description path"):
+            self.verify()
+
+    def test_repeated_provenance_prefix_is_rejected_even_with_matching_generated_doc(self):
+        self.catalog["packages"]["src/foundation/mini"]["changes"] = (
+            "See " + "compliance/provenance/shared/" * 16 + "vendor/web/dependencies/patches.json"
+        )
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "outdated source description"):
+            self.verify()
+
+    def test_merged_descriptions_are_checked_too(self):
+        self.catalog["merges"][0]["changes"] = "See crates/zxs-naming/README.md"
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "outdated source description"):
+            self.verify()
+
     def test_changed_local_source_fails_until_explicit_refresh(self):
         (self.source / "lib.rs").write_text("pub fn value() -> u8 { 2 }\n")
         with self.assertRaisesRegex(ValueError, "source content drift"):
@@ -282,6 +320,30 @@ class SourcePolicy(unittest.TestCase):
         self.metadata["resolve"]["nodes"][0]["deps"] = []
         with self.assertRaisesRegex(ValueError, "outside supported entry closures"):
             self.refresh()
+
+
+class DescriptionPaths(unittest.TestCase):
+    def test_each_migration_is_idempotent(self):
+        for before, after in manager.DESCRIPTION_PATHS:
+            with self.subTest(before=before):
+                self.assertEqual(manager.current_description(before), after)
+                self.assertEqual(manager.current_description(after), after)
+                self.assertEqual(manager.current_description(f"路径 `{before}`；说明"), f"路径 `{after}`；说明")
+
+    def test_repeated_shared_prefix_is_repaired_once(self):
+        suffix = "vendor/web/dependencies/patches.json"
+        canonical = "compliance/provenance/shared/" + suffix
+        for count in (2, 16, 32):
+            with self.subTest(count=count):
+                repaired = manager.current_description("compliance/provenance/shared/" * count + suffix)
+                self.assertEqual(repaired, canonical)
+                self.assertEqual(manager.current_description(repaired), canonical)
+
+    def test_embedded_paths_and_similarly_named_paths_are_not_rewritten(self):
+        for text in ("docs/upstream/web/dist", "https://example.test/web/src/file.rs",
+                     "web/dist-old", "tools/zxs-bindgen-other", "src/web/src/main.rs"):
+            with self.subTest(text=text):
+                self.assertEqual(manager.current_description(text), text)
 
 
 class MetadataProcess(unittest.TestCase):

@@ -18,7 +18,7 @@
 
 ```mermaid
 flowchart TB
-    subgraph WEB_ACCESS[Web 接入路径 / 完整功能]
+    subgraph WEB_ACCESS[Web 接入路径 / 当前产品页面]
         WEB[浏览器 Web 界面]
         API[HTTPS 文件与管理 API]
         AAUTH[业务身份 / 会话 / 目标分支]

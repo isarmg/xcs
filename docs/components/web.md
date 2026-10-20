@@ -34,7 +34,7 @@ histories/<history-id>/file-containers/<file-id>/<当前文件名>/versions/
 
 稳定外层 `file-id` 保持不变，内层目录随业务改名真实重命名。内部版本名记录文件内顺序、UTC 时间、内容散列短前缀和保存时的扩展名；改名不会重写旧版本文件名或不可变证明。版本说明、校验和及发布证明仍在独立的 `histories/<history-id>/versions/<version-id>/`。
 
-当前名称、文件备注、版本备注与选中分支由已发布 State 持久恢复，`container.json` 是供离线浏览的可重建缓存，不代替证明。旧版本没有新增可选字段时继续按原 `content/<creation_name>` 路径读取，本次更新不会隐式迁移全部旧正文。详细规则见[存储布局](../08-full-storage-and-disk-format.md#s08-02)。
+当前名称、文件备注、版本备注与选中分支由已发布 State 持久恢复，`container.json` 是供离线浏览的可重建缓存，不代替证明。当前版本记录必须包含 `storage_name` 和 `created_at`，不保留缺失字段的旧格式读取或隐式全盘迁移。准备阶段与独立历史包使用的 `content/<creation_name>` 是当前中间布局，不是旧格式兼容入口。详细规则见[存储布局](../08-full-storage-and-disk-format.md#s08-02)。
 
 ## 模块与公共界面
 

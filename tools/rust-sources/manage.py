@@ -19,6 +19,19 @@ DOC = "docs/THIRD_PARTY_RUST_SOURCES.md"
 POLICY = "tools/rust-sources/workspaces.json"
 REGISTRY = "registry+https://github.com/rust-lang/crates.io-index"
 HEX = re.compile(r"[0-9a-f]{64}")
+DESCRIPTION_PATHS = (
+    ("tools/zxs-bindgen/PROVENANCE.json", "compliance/provenance/packages/zxs-bindgen-0.2.129/PROVENANCE.json"),
+    ("tools/zxs-bindgen", "tools/web-bindings"),
+    ("crates/zxs-naming/README.md", "docs/components/naming.md"),
+    ("crates/zxs-naming", "src/naming"),
+    ("vendor/web/zxs-web-core", "src/interface"),
+    ("vendor/web/zxs-web-macro", "src/macros"),
+    ("vendor/web/dependencies/patches.json", "compliance/provenance/shared/vendor/web/dependencies/patches.json"),
+    ("vendor/web/README.md", "docs/components/interface.md"),
+    ("web/runtime", "src/interface"),
+    ("web/dist", "build/web"),
+    ("web/src/", "src/web/src/"),
+)
 
 
 def digest(data):
@@ -356,20 +369,32 @@ def provenance(root):
 
 
 def current_description(text):
-    for before, after in (
-        ("tools/zxs-bindgen/PROVENANCE.json", "compliance/provenance/packages/zxs-bindgen-0.2.129/PROVENANCE.json"),
-        ("tools/zxs-bindgen", "tools/web-bindings"),
-        ("crates/zxs-naming/README.md", "docs/components/naming.md"),
-        ("crates/zxs-naming", "src/naming"),
-        ("vendor/web/zxs-web-core", "src/interface"),
-        ("vendor/web/zxs-web-macro", "src/macros"),
-        ("vendor/web/dependencies/patches.json", "compliance/provenance/shared/vendor/web/dependencies/patches.json"),
-        ("vendor/web/README.md", "docs/components/interface.md"),
-        ("web/runtime", "src/interface"),
-        ("web/dist", "build/web"),
-    ):
-        text = text.replace(before, after)
-    return re.sub(r"(?<!src/)web/src/", "src/web/src/", text)
+    """Migrate path tokens once, without matching inside an already moved path."""
+    # Repair descriptions produced by the old unbounded replacement. This is
+    # descriptive metadata only, never the immutable upstream file inventory.
+    text = re.sub(r"(?:compliance/provenance/shared/){2,}(?=vendor/web/dependencies/patches\.json)",
+                  "compliance/provenance/shared/", text)
+    for before, after in DESCRIPTION_PATHS:
+        text = re.sub(description_path_pattern(before), lambda _: after, text)
+    return text
+
+
+def description_path_pattern(path):
+    end = "" if path.endswith("/") else r"(?![A-Za-z0-9_-]|\.[A-Za-z0-9])"
+    return rf"(?<![A-Za-z0-9_./-]){re.escape(path)}{end}"
+
+
+def verify_descriptions(root, package):
+    for key in ("changes", "merged_into"):
+        text = package.get(key, "")
+        if current_description(text) != text:
+            raise ValueError(f"outdated source description: {package['directory']} {key}")
+        # Build output need not exist in a clean checkout. Migrated references
+        # to retained source, documentation and provenance must still resolve.
+        for target in {after for _, after in DESCRIPTION_PATHS if after != "build/web"}:
+            if re.search(description_path_pattern(target), text):
+                if not safe_path(root, target.rstrip("/")).exists():
+                    raise ValueError(f"missing source description path: {target}")
 
 
 def resolutions(root, policy, merged_sources=()):
@@ -594,10 +619,12 @@ def verify(root, metadata=False):
         if relative != package["directory"]:
             raise ValueError(f"source directory identity mismatch: {relative}")
         match_origin(package, records)
+        verify_descriptions(root, package)
         if files(safe_path(root, relative)) != package["files_sha256"]:
             raise ValueError(f"source content drift: {relative}")
     for merge in catalog.get("merges", []):
         match_origin(merge, records)
+        verify_descriptions(root, merge)
         if files(safe_path(root, merge["directory"])) != merge["files_sha256"]:
             raise ValueError(f"merged source content drift: {merge['directory']}")
     retired_sources(root, catalog, records)
