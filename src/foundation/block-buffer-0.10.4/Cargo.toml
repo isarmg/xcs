@@ -1,0 +1,27 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+name = "block-buffer"
+version = "0.10.4"
+authors = ["RustCrypto Developers"]
+description = "Buffer type for block processing of data"
+documentation = "https://docs.rs/block-buffer"
+readme = "../../../docs/upstream/block-buffer-0.10.4/README.md"
+keywords = [
+    "block",
+    "buffer",
+]
+categories = [
+    "cryptography",
+    "no-std",
+]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/RustCrypto/utils"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[dependencies.generic-array]
+version = "0.14"
+path = "../generic-array"
