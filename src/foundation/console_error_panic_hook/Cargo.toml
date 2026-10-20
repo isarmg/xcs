@@ -1,0 +1,23 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+name = "console_error_panic_hook"
+version = "0.1.7"
+authors = ["Nick Fitzgerald <fitzgen@gmail.com>"]
+description = "A panic hook for `wasm32-unknown-unknown` that logs panics to `console.error`"
+readme = "../../../docs/upstream/console_error_panic_hook-0.1.7/README.md"
+categories = ["wasm"]
+license = "Apache-2.0/MIT"
+repository = "https://github.com/rustwasm/console_error_panic_hook"
+autotests = false
+autobenches = false
+autoexamples = false
+[dependencies.cfg-if]
+version = "1.0.0"
+path = "../cfg-if"
+
+[dependencies.wasm-bindgen]
+version = "0.2.37"
+path = "../wasm-bindgen"
+[badges.travis-ci]
+repository = "rustwasm/console_error_panic_hook"

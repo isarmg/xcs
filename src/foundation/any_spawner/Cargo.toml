@@ -1,0 +1,55 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+name = "any_spawner"
+version = "0.3.0"
+authors = ["Greg Johnston"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Spawn asynchronous tasks in an executor-independent way."
+readme = "../../../docs/upstream/any_spawner-0.3.0/README.md"
+license = "MIT"
+repository = "https://github.com/leptos-rs/leptos"
+
+[lib]
+name = "any_spawner"
+path = "src/lib.rs"
+
+[dependencies.futures]
+version = "0.3.31"
+path = "../futures"
+
+[dependencies.thiserror]
+version = "2.0.12"
+path = "../thiserror"
+
+[dependencies.tokio]
+version = "1.41"
+features = ["rt"]
+optional = true
+default-features = false
+path = "../tokio"
+
+[dependencies.tracing]
+version = "0.1.41"
+optional = true
+path = "../tracing"
+
+[dependencies.wasm-bindgen-futures]
+version = "0.4.50"
+optional = true
+path = "../wasm-bindgen-futures"
+
+[features]
+async-executor = []
+futures-executor = ["futures/thread-pool", "futures/executor"]
+glib = []
+tokio = ["dep:tokio"]
+tracing = ["dep:tracing"]
+wasm-bindgen = ["dep:wasm-bindgen-futures"]
+
+# Maintained independently of the enclosing application workspace.

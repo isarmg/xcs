@@ -1,0 +1,86 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.88"
+name = "leptos_dom"
+version = "0.8.8"
+authors = ["Greg Johnston"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "DOM operations for the Leptos web framework."
+readme = false
+license = "MIT"
+repository = "https://github.com/leptos-rs/leptos"
+
+[features]
+default = []
+hydration = ["reactive_graph/hydration"]
+trace-component-props = ["dep:serde", "dep:serde_json"]
+tracing = ["dep:tracing"]
+
+[lib]
+name = "leptos_dom"
+path = "src/lib.rs"
+
+[dependencies.js-sys]
+version = "0.3"
+default-features = true
+path = "../js-sys"
+
+[dependencies.or_poisoned]
+path = "../or_poisoned"
+version = "0.1.0"
+
+[dependencies.reactive_graph]
+path = "../reactive_graph"
+version = "0.2.13"
+
+[dependencies.send_wrapper]
+version = "0.6"
+default-features = true
+path = "../send_wrapper"
+
+[dependencies.serde]
+version = "1.0"
+optional = true
+default-features = true
+path = "../serde"
+
+[dependencies.serde_json]
+version = "1.0"
+optional = true
+default-features = true
+path = "../serde_json"
+
+[dependencies.tachys]
+path = "../tachys"
+version = "0.2.12"
+
+[dependencies.tracing]
+version = "0.1"
+optional = true
+default-features = true
+path = "../tracing"
+
+[dependencies.wasm-bindgen]
+version = "0.2"
+default-features = true
+path = "../wasm-bindgen"
+
+[dependencies.web-sys]
+version = "0.3"
+features = ["Location"]
+default-features = true
+path = "../web-sys"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(leptos_debuginfo)"]
+
+# Maintained independently of the enclosing application workspace.
