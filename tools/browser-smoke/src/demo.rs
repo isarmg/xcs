@@ -112,15 +112,7 @@ pub(super) fn run(browser: &Browser, temp: &Path, dir: &Path) -> Result<()> {
     let input = temp.join("活动方案.txt");
     for (index, budget) in ["8", "10", "12"].iter().enumerate() {
         fs::write(&input, content(budget))?;
-        let selector = if index == 0 {
-            "input[type='file']"
-        } else {
-            ".zxs-entry-content input[type='file']"
-        };
-        browser.keys(
-            &browser.css(selector)?,
-            input.to_str().ok_or("invalid fixture path")?,
-        )?;
+        browser.upload_file(&input, index != 0)?;
         if index == 0 {
             let file = browser.element(
                 "xpath",
@@ -166,10 +158,7 @@ pub(super) fn run(browser: &Browser, temp: &Path, dir: &Path) -> Result<()> {
     c.preview("8", "09-branch-inherited-8-preview")?;
     fs::write(&input, content("6"))?;
     c.shot("10-before-writing-6")?;
-    browser.keys(
-        &browser.css(".zxs-entry-content input[type='file']")?,
-        input.to_str().ok_or("invalid fixture path")?,
-    )?;
+    browser.upload_file(&input, true)?;
     nodes(browser, 4)?;
     note(browser, "精简预算6万元")?;
     c.shot("11-branch-written-6")?;

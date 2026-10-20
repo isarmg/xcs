@@ -83,10 +83,13 @@ pub(crate) fn pick_upload(state: RwSignal<State>, replace: bool) -> bool {
 pub(crate) fn cancel_picker(state: RwSignal<State>) {
     state.update(|s| s.files.upload_picker = None);
 }
-pub(crate) fn upload_files(state: RwSignal<State>, files: Option<web_sys::FileList>) {
+fn take_picker_context(state: RwSignal<State>) -> Option<PickerContext> {
     let context = state.with_untracked(|s| s.files.upload_picker.clone());
     cancel_picker(state);
-    let Some(context) = context else {
+    context
+}
+pub(crate) fn upload_files(state: RwSignal<State>, files: Option<web_sys::FileList>) {
+    let Some(context) = take_picker_context(state) else {
         return;
     };
     let sources = files
@@ -402,6 +405,35 @@ pub(crate) fn download(state: RwSignal<State>, entry: Value) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cancelled_picker_does_not_retarget_a_late_browser_change() {
+        let owner = Owner::new();
+        owner.with(|| {
+            let state = RwSignal::new(State {
+                authenticated: true,
+                session_epoch: 3,
+                files: Model {
+                    writable: true,
+                    slot: "P01".into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+            let original = state.with_untracked(|s| PickerContext::capture(s, false));
+            state.update(|s| s.files.upload_picker = Some(original));
+            cancel_picker(state);
+            state.update(|s| s.files.directory = "new-destination".into());
+            // A missing context is not reconstructed from the new directory,
+            // even when it is otherwise authenticated and writable.
+            assert!(take_picker_context(state).is_none());
+            upload_files(state, None);
+            state.with_untracked(|s| {
+                assert!(s.files.upload_picker.is_none());
+                assert!(s.files.uploads.is_empty());
+            });
+        });
+    }
 
     #[test]
     fn picker_result_cannot_move_to_a_new_session_location_or_branch() {

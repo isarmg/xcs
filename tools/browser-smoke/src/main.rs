@@ -192,6 +192,32 @@ impl Browser {
         )?;
         Ok(())
     }
+    /// Follow the real UI entry point before assigning the OS-selected file.
+    /// A bare send-keys to the hidden input has no captured upload destination.
+    fn upload_file(&self, file: &Path, replace: bool) -> Result<()> {
+        let button = if replace {
+            self.button("Write to current branch", "写入当前分支")?
+        } else {
+            self.button("Upload files", "上传文件")?
+        };
+        wait_for("upload entry point enabled", || {
+            if self.command("GET", &format!("/element/{button}/enabled"), None)? == true {
+                Ok(())
+            } else {
+                Err("upload entry point disabled".into())
+            }
+        })?;
+        self.click(&button)?;
+        let selector = if replace {
+            ".zxs-entry-content input[type='file']"
+        } else {
+            "input[type='file']"
+        };
+        self.keys(
+            &self.css(selector)?,
+            file.to_str().ok_or("non-UTF8 upload fixture path")?,
+        )
+    }
     fn cdp(&self, cmd: &str, params: Value) -> Result<Value> {
         self.command(
             "POST",
@@ -264,10 +290,7 @@ fn exercise(
         b"ZXS real browser smoke: complete file content\nUTF-8: \xe6\xb5\x8b\xe8\xaf\x95\n";
     let input = temp.join("browser-smoke.txt");
     fs::write(&input, payload)?;
-    browser.keys(
-        &browser.css("input[type='file']")?,
-        input.to_str().ok_or("non-UTF8 temp path")?,
-    )?;
+    browser.upload_file(&input, false)?;
     let file = browser.element(
         "xpath",
         "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
@@ -292,10 +315,7 @@ fn exercise(
         ] {
             let fixture = temp.join(name);
             fs::write(&fixture, content)?;
-            browser.keys(
-                &browser.css("input[type='file']")?,
-                fixture.to_str().ok_or("non-UTF8 fixture path")?,
-            )?;
+            browser.upload_file(&fixture, false)?;
             browser.element(
                 "xpath",
                 &format!("//button[contains(@class,'zxs-file-name')][normalize-space(.)='{name}']"),
