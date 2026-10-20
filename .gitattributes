@@ -14,3 +14,8 @@
 /tools/web-bindings/** -text
 /compliance/** -text
 /docs/upstream/** -text
+
+# Exact upstream test vectors retain original header whitespace and terminal
+# blank lines. Hash verification, not cosmetic rewriting, protects these bytes.
+/src/foundation/ring/**/*tests.txt whitespace=-blank-at-eof
+/src/foundation/ring/cavp/third_party/NIST/SHAVS/*.rsp whitespace=-blank-at-eol,-blank-at-eof

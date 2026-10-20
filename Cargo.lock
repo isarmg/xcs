@@ -795,7 +795,9 @@ name = "getrandom"
 version = "0.2.17"
 dependencies = [
  "cfg-if",
+ "js-sys",
  "libc",
+ "wasm-bindgen",
 ]
 
 [[package]]

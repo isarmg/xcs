@@ -1,0 +1,211 @@
+#!/usr/bin/env python3
+"""Verify pinned ring test materials offline and run the GNU amd64 regression matrix.
+
+No download, synthetic test vectors, algorithm edits, skipped assertions, alternate
+Cargo workspace, or replacement original provenance is used. Local-generation mode
+copies the registered repository workspace before adding ring's development marker.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import platform
+import shutil
+import subprocess
+import tempfile
+import tomllib
+
+ROOT = Path(__file__).resolve().parents[2]
+RING = Path('src/foundation/ring')
+PROOF = Path('compliance/provenance/supplemental/ring-0.17.14-test-materials.json')
+OVERLAP = Path('compliance/provenance/supplemental/ring-0.17.14-original-overlap.json')
+COMMIT = '2723abbca9e83347d82b056d5b239c6604f786df'
+
+
+def object_hash(kind, content):
+    return hashlib.sha1(kind.encode() + b' ' + str(len(content)).encode() + b'\0' + content).hexdigest()
+
+
+def checked_path(root, relative):
+    path = PurePosixPath(relative)
+    if path.is_absolute() or '..' in path.parts or str(path) != relative:
+        raise ValueError(f'unsafe material path: {relative}')
+    result = root / relative
+    if not result.resolve().is_relative_to(root.resolve()) or result.is_symlink():
+        raise ValueError(f'material escaped source tree: {relative}')
+    return result
+
+
+def verify(root=ROOT):
+    proof = json.loads((root / PROOF).read_text())
+    if proof['repository'] != 'https://github.com/briansmith/ring' or proof['commit'] != COMMIT:
+        raise ValueError('unexpected upstream repository or commit')
+    commit = proof['commit_object'].encode()
+    if object_hash('commit', commit) != COMMIT or not commit.startswith(f"tree {proof['tree']}\n".encode()):
+        raise ValueError('commit object does not authenticate the recorded tree')
+    entries = {entry['path']: entry for entry in proof['git_tree_entries']}
+    if len(entries) != len(proof['git_tree_entries']):
+        raise ValueError('duplicate Git tree entries')
+    for path in entries:
+        checked_path(root / RING, path)
+    for parent in [''] + [path for path, entry in entries.items() if entry['type'] == 'tree']:
+        children = [entry for path, entry in entries.items()
+                    if (str(PurePosixPath(path).parent) if '/' in path else '') == parent]
+        content = b''
+        for entry in sorted(children, key=lambda e: PurePosixPath(e['path']).name + ('/' if e['type'] == 'tree' else '')):
+            mode = '40000' if entry['type'] == 'tree' else entry['mode']
+            content += mode.encode() + b' ' + PurePosixPath(entry['path']).name.encode() + b'\0' + bytes.fromhex(entry['sha'])
+        expected = entries[parent]['sha'] if parent else proof['tree']
+        if object_hash('tree', content) != expected:
+            raise ValueError(f'Git tree mismatch: {parent}')
+    seen = set()
+    for entry in proof['materials']:
+        path = entry['path']
+        if path in seen:
+            raise ValueError(f'duplicate material: {path}')
+        seen.add(path)
+        destination = entry.get('destination', (RING / path).as_posix())
+        content = checked_path(root, destination).read_bytes()
+        expected_url = f'https://github.com/briansmith/ring/blob/{COMMIT}/{path}'
+        if (entry['commit'] != COMMIT or entry['origin_url'] != expected_url
+                or len(content) != entry['bytes'] or len(content) != entries[path]['size']
+                or hashlib.sha256(content).hexdigest() != entry['sha256']
+                or object_hash('blob', content) != entry['blob'] or entry['blob'] != entries[path]['sha']):
+            raise ValueError(f'upstream material mismatch: {path}')
+        if not entry['associated_sources']:
+            raise ValueError(f'material has no associated test source: {path}')
+        for source in entry['associated_sources']:
+            content = checked_path(root / RING, source['path']).read_bytes()
+            if hashlib.sha256(content).hexdigest() != source['sha256']:
+                raise ValueError(f'associated test source mismatch: {source["path"]}')
+    originals = json.loads((root / 'compliance/provenance/packages/ring-0.17.14/cargo-checksum.json.txt').read_text())['files']
+    audit = json.loads((root / OVERLAP).read_text())
+    if audit['commit'] != COMMIT or {row['path'] for row in audit['records']} != set(originals):
+        raise ValueError('original package overlap inventory changed')
+    for row in audit['records']:
+        path = row['path']
+        content = (row['original_content'].encode() if 'original_content' in row
+                   else checked_path(root, row['original_path']).read_bytes())
+        if (hashlib.sha256(content).hexdigest() != originals[path]
+                or row['recorded_sha256'] != originals[path]
+                or object_hash('blob', content) != row['original_blob']):
+            raise ValueError(f'original package hash mismatch: {path}')
+        upstream_path = 'Cargo.toml' if path == 'Cargo.toml.orig' else path
+        upstream = entries.get(upstream_path)
+        if row['upstream_blob'] != (upstream['sha'] if upstream else None):
+            raise ValueError(f'original overlap tree mismatch: {path}')
+        if upstream and path != 'Cargo.toml' and row['original_blob'] != upstream['sha']:
+            raise ValueError(f'unexplained original/upstream mismatch: {path}')
+    for source in proof['test_sources']:
+        content = checked_path(root / RING, source['path']).read_bytes()
+        if (hashlib.sha256(content).hexdigest() != source['sha256']
+                or source['sha256'] != originals[source['path']]
+                or object_hash('blob', content) != source['blob'] or source['blob'] != entries[source['path']]['sha']):
+            raise ValueError(f'original integration source mismatch: {source["path"]}')
+    for source in proof['implementation_sources']:
+        content = checked_path(root / RING, source['path']).read_bytes()
+        if hashlib.sha256(content).hexdigest() != source['sha256']:
+            raise ValueError(f'restoration changed an existing implementation: {source["path"]}')
+    manifest = tomllib.loads((root / RING / 'Cargo.toml').read_text())
+    wanted = {source['path'] for source in proof['test_sources']} | {'cavp/tests/shavs.rs'}
+    actual = [entry['path'] for entry in manifest['test']]
+    if set(actual) != wanted or len(actual) != len(wanted):
+        raise ValueError('upstream integration test entry set changed')
+    if len(seen) != 69:
+        raise ValueError('restoration material set changed')
+    workspace = tomllib.loads((root / 'Cargo.toml').read_text())['workspace']
+    if str(RING) not in workspace['members'] or str(RING) in workspace['default-members']:
+        raise ValueError('ring must be an explicit non-default verification member')
+    print(f'Verified {len(seen)} upstream materials and {len(wanted)} integration test entries.', flush=True)
+    return proof
+
+
+def run_matrix(root, mode, target_dir):
+    # Ring is selected explicitly; default workspace members do not enable this suite.
+    for profile in ('debug', 'release'):
+        for features in ('default', 'std'):
+            run_case(root, mode, target_dir, profile, features)
+    run_case(root, mode, target_dir, 'release', 'std,slow_tests')
+
+
+def run_case(root, mode, target_dir, profile, features):
+    verify(root)
+    command = ['cargo', 'test', '--locked', '--offline', '-j2', '-p', 'ring']
+    if profile == 'release':
+        command.append('--release')
+    if features != 'default':
+        command += ['--features', features]
+    env = dict(os.environ, CARGO_TARGET_DIR=str(target_dir / mode))
+    print(f'RING CASE {mode}/{profile}/{features}: {" ".join(command)}', flush=True)
+    subprocess.run(command, cwd=root, env=env, check=True)
+    if mode == 'localgen':
+        verify_generated(root, target_dir / mode, profile)
+    print(f'RING PASS {mode}/{profile}/{features}', flush=True)
+
+
+def verify_generated(root, target_dir, profile):
+    pregenerated = root / RING / 'pregenerated'
+    expected = {path.relative_to(pregenerated) for path in pregenerated.glob('*x86_64*elf.S')}
+    expected.update(Path('ring_core_generated') / name for name in (
+        'prefix_symbols.h', 'prefix_symbols_asm.h', 'prefix_symbols_nasm.inc',
+    ))
+    if len(expected) != 15:
+        raise ValueError('unexpected GNU amd64 generated-source inventory')
+    directories = list(target_dir.glob(f'**/{profile}/build/ring-*/out'))
+    if not directories:
+        raise ValueError('local-generation mode produced no ring build output')
+    for directory in directories:
+        for relative in expected:
+            generated = directory / relative
+            if not generated.is_file() or generated.read_bytes() != (pregenerated / relative).read_bytes():
+                raise ValueError(f'local-generation output differs from original package: {generated}')
+    print(f'Verified 15 generated assembly/header files in {len(directories)} {profile} build outputs.', flush=True)
+
+
+def copy_workspace(destination):
+    # Includes pending authorized source additions for local validation; excludes
+    # ignored build output. Every path comes from Git's source inventory.
+    result = subprocess.check_output(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], cwd=ROOT)
+    for relative in sorted(set(p.decode() for p in result.split(b'\0') if p)):
+        source = checked_path(ROOT, relative)
+        if not source.is_file():
+            continue
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    (destination / RING / '.git').mkdir()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--verify-only', action='store_true')
+    parser.add_argument('--mode', choices=('packaged', 'localgen', 'both'), default='both')
+    args = parser.parse_args()
+    verify()
+    if args.verify_only:
+        return
+    host = subprocess.check_output(['rustc', '-vV'], text=True)
+    if platform.system() != 'Linux' or platform.machine() != 'x86_64' or 'host: x86_64-unknown-linux-gnu' not in host:
+        raise SystemExit('Executable coverage requires GNU/Linux amd64; other ABIs are not claimed.')
+    if os.environ.get('CARGO_BUILD_TARGET') not in (None, 'x86_64-unknown-linux-gnu'):
+        raise SystemExit('A cross-target override would invalidate the GNU amd64 execution matrix.')
+    if os.environ.get('RING_PREGENERATE_ASM') is not None:
+        raise SystemExit('Unset RING_PREGENERATE_ASM: the all-platform packaging flow is not a test mode.')
+    target_dir = Path(os.environ.get('CARGO_TARGET_DIR', ROOT / 'target')).resolve() / 'ring-regression'
+    if args.mode in ('packaged', 'both'):
+        if (ROOT / RING / '.git').exists():
+            raise SystemExit('Packaged mode requires no ring/.git development marker.')
+        run_matrix(ROOT, 'packaged', target_dir)
+    if args.mode in ('localgen', 'both'):
+        # /tmp may be a small tmpfs. Keep the isolated workspace beside ignored
+        # build output on the repository filesystem, never inside source paths.
+        target_dir.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='workspace-', dir=target_dir) as temporary:
+            isolated = Path(temporary)
+            copy_workspace(isolated)
+            run_matrix(isolated, 'localgen', target_dir)
+
+
+if __name__ == '__main__':
+    main()

@@ -12,6 +12,7 @@
     {"id": "validation-tools", "manifests": ["tools/contract-check/Cargo.toml", "tools/browser-smoke/Cargo.toml", "tools/unicode-build/Cargo.toml", "tools/perf-check/Cargo.toml"], "targets": ["x86_64-unknown-linux-gnu"], "role": "compile", "purpose": "契约、浏览器、命名表及性能验证工具", "production": false}
   ],
   "integrated_sources": ["src/macros", "tools/web-bindings"],
+  "verification_members": ["src/foundation/ring"],
   "excluded": ["rustc", "cargo", "std", "core", "alloc", "LLVM", "rustup", "rustfmt", "clippy", "rustdoc", "Rust target components"],
   "native_policy": "原生产品及构建宿主仅支持 Linux amd64；当前登记及验收目标为 x86_64-unknown-linux-gnu，其他 Linux amd64 ABI 的共享源码保留为未验收预留。wasm32-unknown-unknown 仅用于浏览器 Web，不是额外原生平台。原生组件沿用既有系统/SDK/原生构建管理；必要的 crate 内 C/ABI 构建材料保留。"
 }

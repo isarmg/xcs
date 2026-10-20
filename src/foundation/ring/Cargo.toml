@@ -195,3 +195,70 @@ path = "../libc"
 version = "0.2.148"
 default-features = false
 path = "../libc"
+
+# Exact upstream tests; restoration evidence is kept in supplemental provenance.
+[target.'cfg(all(target_os = "linux", target_arch = "x86_64"))'.dev-dependencies.libc]
+version = "0.2.148"
+default-features = false
+path = "../libc"
+
+[[test]]
+name = "aead_tests"
+path = "tests/aead_tests.rs"
+
+[[test]]
+name = "agreement_tests"
+path = "tests/agreement_tests.rs"
+
+[[test]]
+name = "constant_time_tests"
+path = "tests/constant_time_tests.rs"
+
+[[test]]
+name = "digest_tests"
+path = "tests/digest_tests.rs"
+
+[[test]]
+name = "ecdsa_tests"
+path = "tests/ecdsa_tests.rs"
+
+[[test]]
+name = "ed25519_tests"
+path = "tests/ed25519_tests.rs"
+
+[[test]]
+name = "error_tests"
+path = "tests/error_tests.rs"
+
+[[test]]
+name = "hkdf_tests"
+path = "tests/hkdf_tests.rs"
+
+[[test]]
+name = "hmac_tests"
+path = "tests/hmac_tests.rs"
+
+[[test]]
+name = "pbkdf2_tests"
+path = "tests/pbkdf2_tests.rs"
+
+[[test]]
+name = "quic_tests"
+path = "tests/quic_tests.rs"
+
+[[test]]
+name = "rand_tests"
+path = "tests/rand_tests.rs"
+
+[[test]]
+name = "rsa_tests"
+path = "tests/rsa_tests.rs"
+
+[[test]]
+name = "signature_tests"
+path = "tests/signature_tests.rs"
+
+# Original ring-cavp SHAVS source, not a second Cargo workspace/package.
+[[test]]
+name = "cavp_shavs"
+path = "cavp/tests/shavs.rs"

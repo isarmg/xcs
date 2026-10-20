@@ -138,6 +138,15 @@ def structure(root, policy):
     if not registry.is_dir() or any(path.is_dir() or path.is_symlink() for path in registry.iterdir()):
         raise ValueError("registry fallback must contain no source packages or links")
     root_manifest = tomllib.loads((root / "Cargo.toml").read_text(encoding="utf-8"))
+    workspace = root_manifest["workspace"]
+    verification_members = policy.get("verification_members", [])
+    if ((verification_members and not workspace.get("default-members"))
+            or len(set(verification_members)) != len(verification_members)
+            or set(verification_members) != {
+                path for path in workspace.get("members", []) if path.startswith("src/foundation/")}
+            or any(not path.startswith("src/foundation/") or path not in workspace.get("members", [])
+                   or path in workspace.get("default-members", []) for path in verification_members)):
+        raise ValueError("foundation verification members must be explicit non-default root members")
     workspace_dependencies = root_manifest["workspace"].get("dependencies", {})
     for relative in project_manifests(root):
         manifest_path = safe_path(root, relative)
@@ -561,6 +570,10 @@ def document(catalog, policy):
              "runtime 是 normal 边可达的运行候选；compile 包括 build/proc-macro 子图及维护工具。元数据闭包与解析 features 不等于最终链接代码、实际浏览器/SMB 验收或安全审计。每个活动源码身份必须至少进入一个受支持入口/目标闭包，未使用身份只能显式退役并保留来源证据。工具链及既有 Samba/SQLite/系统 SDK 管理边界保持独立。", "",
              "修改后显式执行 `python3 tools/rust-sources/manage.py refresh`，审查源码、来源清单与文档差异，再执行 `python3 tools/rust-sources/manage.py verify --metadata`；verify 不接受新哈希。删除依赖必须另提供经复核的 `refresh --retire-plan PLAN.json`，保存已移除实现的最后源码摘要及原因；普通 refresh 拒绝意外丢失目录或改写退役记录。原始身份与法律材料继续保存，不因退役而删除。原始发布包重建工具只向仓库外独立复核目录输出，不覆盖活动源码。", "",
              "## 单工作区入口与解析目标", "", "| 入口闭包 | 用途 | 目标 |", "| --- | --- | --- |"]
+    if policy.get("verification_members"):
+        lines[2] += (" 基础库验证成员 " + "、".join(policy["verification_members"])
+                     + " 显式登记在同一个根 workspace，不属于 default-members；这是上游回归对象，不是新业务组件。"
+                     + " 追加测试材料的精确来源单独保存于 compliance/provenance/supplemental，不改写原始发布包记录。")
     for profile in policy.get("profiles", policy["workspaces"]):
         lines.append("| " + " | ".join(map(cell, [profile.get("id", "workspace"), profile.get("purpose", "根工作区"), ", ".join(profile["targets"])])) + " |")
     lines += ["", "## 逐项来源、许可与改造", "", "| 原始身份 | 当前组件 / 位置 | 许可材料 | 用途与闭包 | 修改及合并 |", "| --- | --- | --- | --- | --- |"]

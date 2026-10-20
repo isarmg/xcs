@@ -4,6 +4,7 @@
 
 | 报告 | 范围 |
 | --- | --- |
+| [ring 上游回归材料恢复](ring-test-restoration-20261020.md) | 精确 commit/blob 溯源、34 库向量与完整集成/CAVP 入口、唯一工作区离线回归矩阵 |
 | [Linux amd64 基础源码第二批收敛](linux-amd64-foundation-second-20261020.md) | rustix/libc 架构与 OS 分派、选中源码等价、GNU ABI 和双后端回归；ring 只读生成证据与完整回归缺口 |
 | [Linux amd64 基础源码收敛](linux-amd64-foundation-20261020.md) | 原生平台边界、MSVC 构建依赖退役、Linux UAPI 架构裁剪、未来 API 保留与离线回归 |
 | [演示代码清理](demo-removal-20261020.md) | 删除独立演示、素材采集、构建与CI入口，保留真实分支业务与历史来源 |

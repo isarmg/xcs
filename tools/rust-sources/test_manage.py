@@ -84,6 +84,33 @@ class SourcePolicy(unittest.TestCase):
         with patch.object(manager, "cargo_metadata", return_value=self.metadata):
             self.verify(metadata=True)
 
+    def test_verification_member_is_explicit_and_non_default(self):
+        self.policy["verification_members"] = ["src/foundation/mini"]
+        (self.root / "Cargo.toml").write_text(
+            '[workspace]\nmembers = ["src/app", "src/foundation/mini"]\n'
+            'default-members = ["src/app"]\n')
+        manager.structure(self.root, self.policy)
+
+    def test_rejects_unregistered_or_default_verification_member(self):
+        self.policy["verification_members"] = ["src/foundation/mini"]
+        for members, defaults in (
+            ('["src/app"]', '["src/app"]'),
+            ('["src/app", "src/foundation/mini"]', '["src/app", "src/foundation/mini"]'),
+            ('["src/app", "src/foundation/mini"]', '[]'),
+        ):
+            with self.subTest(members=members, defaults=defaults):
+                (self.root / "Cargo.toml").write_text(
+                    f'[workspace]\nmembers = {members}\ndefault-members = {defaults}\n')
+                with self.assertRaisesRegex(ValueError, 'explicit non-default'):
+                    manager.structure(self.root, self.policy)
+
+    def test_rejects_unrecorded_foundation_workspace_member(self):
+        (self.root / "Cargo.toml").write_text(
+            '[workspace]\nmembers = ["src/app", "src/foundation/mini"]\n'
+            'default-members = ["src/app"]\n')
+        with self.assertRaisesRegex(ValueError, 'explicit non-default'):
+            manager.structure(self.root, self.policy)
+
     def test_native_target_policy_rejects_arm64_even_after_refresh(self):
         self.policy["workspaces"][0]["targets"].append("aarch64-unknown-linux-gnu")
         self.write_json(manager.POLICY, self.policy)
