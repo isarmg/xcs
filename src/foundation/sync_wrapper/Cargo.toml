@@ -1,0 +1,27 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+name = "sync_wrapper"
+version = "1.0.2"
+authors = ["Actyx AG <developer@actyx.io>"]
+description = "A tool for enlisting the compiler's help in proving the absence of concurrency"
+homepage = "https://docs.rs/sync_wrapper"
+documentation = "https://docs.rs/sync_wrapper"
+readme = "../../../docs/upstream/sync_wrapper-1.0.2/README.md"
+keywords = ["concurrency"]
+categories = ["concurrency"]
+license = "Apache-2.0"
+repository = "https://github.com/Actyx/sync_wrapper"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[dependencies.futures-core]
+version = "0.3"
+optional = true
+default-features = false
+path = "../futures-core"
+
+[features]
+futures = ["futures-core"]

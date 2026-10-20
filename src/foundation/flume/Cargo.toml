@@ -1,0 +1,72 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+name = "flume"
+version = "0.12.0"
+authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
+build = false
+exclude = [
+    "/.github",
+    "/misc",
+]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "A blazingly fast multi-producer channel"
+documentation = "https://docs.rs/flume"
+readme = "../../../docs/upstream/flume-0.12.0/README.md"
+keywords = [
+    "mpsc",
+    "fifo",
+    "channel",
+    "thread",
+    "mpmc",
+]
+categories = [
+    "concurrency",
+    "data-structures",
+]
+license = "Apache-2.0/MIT"
+repository = "https://github.com/zesterer/flume"
+
+[features]
+async = ["futures-sink", "futures-core"]
+default = ["async", "select", "eventual-fairness"]
+eventual-fairness = ["select", "fastrand"]
+select = []
+spin = []
+
+[lib]
+name = "flume"
+path = "src/lib.rs"
+
+[dependencies.fastrand]
+version = "2.3"
+features = [
+    "std",
+    "js",
+]
+optional = true
+path = "../fastrand"
+
+[dependencies.futures-core]
+version = "0.3"
+optional = true
+default-features = false
+path = "../futures-core"
+
+[dependencies.futures-sink]
+version = "0.3"
+optional = true
+default-features = false
+path = "../futures-sink"
+
+[dependencies.spin1]
+version = "0.9.8"
+features = ["mutex"]
+package = "spin"
+path = "../spin"
+

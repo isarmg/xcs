@@ -1,0 +1,70 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.71"
+name = "tokio-stream"
+version = "0.1.19"
+authors = ["Tokio Contributors <team@tokio.rs>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = """
+Utilities to work with `Stream` and `tokio`.
+"""
+homepage = "https://tokio.rs"
+readme = "../../../docs/upstream/tokio-stream-0.1.19/README.md"
+categories = ["asynchronous"]
+license = "MIT"
+repository = "https://github.com/tokio-rs/tokio"
+
+[features]
+default = ["time"]
+fs = ["tokio/fs"]
+full = ["time", "net", "io-util", "fs", "rt", "sync", "signal"]
+io-util = ["tokio/io-util"]
+net = ["tokio/net"]
+rt = ["tokio/rt"]
+signal = ["tokio/signal"]
+sync = ["tokio/sync", "tokio-util"]
+time = ["tokio/time"]
+
+[lib]
+name = "tokio_stream"
+path = "src/lib.rs"
+
+[dependencies.futures-core]
+version = "0.3.0"
+path = "../futures-core"
+
+[dependencies.pin-project-lite]
+version = "0.2.11"
+path = "../pin-project-lite"
+
+[dependencies.tokio]
+version = "1.38.0"
+features = ["sync"]
+path = "../tokio"
+
+[dependencies.tokio-util]
+version = "0.7.0"
+optional = true
+path = "../tokio-util"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = [
+    "cfg(fuzzing)",
+    "cfg(loom)",
+    "cfg(mio_unsupported_force_poll_poll)",
+    "cfg(tokio_allow_from_blocking_fd)",
+    "cfg(tokio_internal_mt_counters)",
+    "cfg(tokio_no_parking_lot)",
+    "cfg(tokio_no_tuning_tests)",
+    "cfg(tokio_unstable)",
+    'cfg(target_os, values("cygwin"))',
+]

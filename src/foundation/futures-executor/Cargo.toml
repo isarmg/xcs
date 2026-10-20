@@ -1,0 +1,55 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+rust-version = "1.71"
+name = "futures-executor"
+version = "0.3.34"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = """
+Executors for asynchronous tasks based on the futures-rs library.
+"""
+homepage = "https://rust-lang.github.io/futures-rs"
+readme = "../../../docs/upstream/futures-executor-0.3.34/README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rust-lang/futures-rs"
+
+[features]
+default = ["std"]
+std = ["futures-core/std", "futures-task/std", "futures-util/std"]
+thread-pool = ["std"]
+
+[lib]
+name = "futures_executor"
+path = "src/lib.rs"
+
+[dependencies.futures-core]
+version = "0.3.34"
+default-features = false
+path = "../futures-core"
+
+[dependencies.futures-task]
+version = "0.3.34"
+default-features = false
+path = "../futures-task"
+
+[dependencies.futures-util]
+version = "0.3.34"
+default-features = false
+path = "../futures-util"
+
+[lints.rust]
+missing_debug_implementations = "warn"
+rust_2018_idioms = "warn"
+single_use_lifetimes = "warn"
+unreachable_pub = "warn"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(futures_sanitizer)"]

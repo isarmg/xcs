@@ -1,0 +1,139 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2024"
+rust-version = "1.85"
+name = "hyper-util"
+version = "0.1.21"
+authors = ["Sean McArthur <sean@seanmonstar.com>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "hyper utilities"
+homepage = "https://hyper.rs"
+documentation = "https://docs.rs/hyper-util"
+readme = "../../../docs/upstream/hyper-util-0.1.21/README.md"
+keywords = [
+    "http",
+    "hyper",
+    "hyperium",
+]
+categories = [
+    "network-programming",
+    "web-programming::http-client",
+    "web-programming::http-server",
+]
+license = "MIT"
+repository = "https://github.com/hyperium/hyper-util"
+
+[features]
+__internal_happy_eyeballs_tests = []
+client = ["hyper/client", "dep:tracing", "dep:futures-channel", "dep:tower-service"]
+client-legacy = ["client", "tokio/net", "dep:socket2", "tokio/sync", "dep:libc", "dep:futures-util", "dep:httparse"]
+client-pool = ["client", "dep:futures-util", "dep:tower-layer", "tokio/sync"]
+client-proxy = ["client", "dep:base64", "dep:ipnet", "dep:percent-encoding"]
+client-proxy-system = []
+default = []
+full = ["client", "client-legacy", "client-pool", "client-proxy", "client-proxy-system", "server", "server-auto", "server-graceful", "service", "http1", "http2", "tokio", "tracing"]
+http1 = ["hyper/http1"]
+http2 = ["hyper/http2"]
+rt-tracing-exec-force = ["tokio", "tracing"]
+server = ["hyper/server"]
+server-auto = ["server", "http1", "http2"]
+server-graceful = ["server", "tokio/sync"]
+service = ["dep:tower-service"]
+tokio = ["dep:tokio", "tokio/rt", "tokio/time"]
+tracing = ["dep:tracing"]
+
+[lib]
+name = "hyper_util"
+path = "src/lib.rs"
+
+[dependencies.base64]
+version = "0.23"
+optional = true
+path = "../base64-0.23.1"
+
+[dependencies.bytes]
+version = "1.7.1"
+path = "../bytes"
+
+[dependencies.futures-channel]
+version = "0.3"
+optional = true
+path = "../futures-channel"
+
+[dependencies.futures-util]
+version = "0.3.16"
+optional = true
+default-features = false
+path = "../futures-util"
+
+[dependencies.http]
+version = "1.0"
+path = "../http"
+
+[dependencies.http-body]
+version = "1.0.0"
+path = "../http-body"
+
+[dependencies.httparse]
+version = "1"
+optional = true
+path = "../httparse"
+
+[dependencies.hyper]
+version = "1.9.0"
+path = "../hyper"
+
+[dependencies.ipnet]
+version = "2.9"
+optional = true
+path = "../ipnet"
+
+[dependencies.libc]
+version = "0.2"
+optional = true
+path = "../libc"
+
+[dependencies.percent-encoding]
+version = "2.3"
+optional = true
+path = "../percent-encoding"
+
+[dependencies.pin-project-lite]
+version = "0.2.4"
+path = "../pin-project-lite"
+
+[dependencies.socket2]
+version = "0.6"
+features = ["all"]
+optional = true
+path = "../socket2"
+
+[dependencies.tokio]
+version = "1.13"
+optional = true
+default-features = false
+path = "../tokio"
+
+[dependencies.tower-layer]
+version = "0.3"
+optional = true
+path = "../tower-layer"
+
+[dependencies.tower-service]
+version = "0.3"
+optional = true
+path = "../tower-service"
+
+[dependencies.tracing]
+version = "0.1.36"
+features = ["std"]
+optional = true
+default-features = false
+path = "../tracing"
+

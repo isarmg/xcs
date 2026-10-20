@@ -1,0 +1,102 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.85"
+name = "tokio-util"
+version = "0.7.20"
+authors = ["Tokio Contributors <team@tokio.rs>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = """
+Additional utilities for working with Tokio.
+"""
+homepage = "https://tokio.rs"
+readme = "../../../docs/upstream/tokio-util-0.7.20/README.md"
+categories = ["asynchronous"]
+license = "MIT"
+repository = "https://github.com/tokio-rs/tokio"
+
+[features]
+__docs_rs = ["futures-util"]
+codec = ["libc"]
+compat = ["futures-io"]
+default = []
+full = ["codec", "compat", "io-util", "time", "net", "rt", "join-map"]
+io = []
+io-util = ["io", "tokio/rt", "tokio/io-util"]
+join-map = ["rt"]
+net = ["tokio/net"]
+rt = ["tokio/rt", "tokio/sync", "futures-util"]
+time = ["tokio/time", "slab"]
+
+[lib]
+name = "tokio_util"
+path = "src/lib.rs"
+
+[dependencies.bytes]
+version = "1.5.0"
+path = "../bytes"
+
+[dependencies.futures-core]
+version = "0.3.0"
+path = "../futures-core"
+
+[dependencies.futures-io]
+version = "0.3.0"
+optional = true
+path = "../futures-io"
+
+[dependencies.futures-sink]
+version = "0.3.0"
+path = "../futures-sink"
+
+[dependencies.futures-util]
+version = "0.3.0"
+optional = true
+path = "../futures-util"
+
+[dependencies.pin-project-lite]
+version = "0.2.11"
+path = "../pin-project-lite"
+
+[dependencies.slab]
+version = "0.4.4"
+optional = true
+path = "../slab"
+
+[dependencies.tokio]
+version = "1.51.0"
+features = ["sync"]
+path = "../tokio"
+
+[dependencies.tracing]
+version = "0.1.29"
+features = ["std"]
+optional = true
+default-features = false
+path = "../tracing"
+
+[target."cfg(unix)".dependencies.libc]
+version = "0.2.168"
+optional = true
+path = "../libc"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = [
+    "cfg(fuzzing)",
+    "cfg(loom)",
+    "cfg(mio_unsupported_force_poll_poll)",
+    "cfg(tokio_allow_from_blocking_fd)",
+    "cfg(tokio_internal_mt_counters)",
+    "cfg(tokio_no_parking_lot)",
+    "cfg(tokio_no_tuning_tests)",
+    "cfg(tokio_unstable)",
+    'cfg(target_os, values("cygwin"))',
+]
