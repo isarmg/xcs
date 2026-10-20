@@ -30,10 +30,18 @@ fn query<'a>(input: &'a Value, key: &str) -> Option<&'a str> {
         .and_then(Value::as_str)
 }
 fn path(input: &Value) -> Result<&str, ApiError> {
-    let value = input
+    // An omitted path denotes the root, but an explicit malformed value must
+    // never silently select it (especially for branch and backup mutations).
+    let supplied = input
         .get("path")
-        .and_then(Value::as_str)
-        .or_else(|| query(input, "path"))
+        .or_else(|| input.get("query").and_then(|q| q.get("path")));
+    let value = supplied
+        .map(|value| {
+            value
+                .as_str()
+                .ok_or_else(|| ApiError::invalid("path must be a string"))
+        })
+        .transpose()?
         .unwrap_or("");
     if !value.is_empty() {
         name_policy::validate_path(value).map_err(ApiError::invalid)?;
@@ -59,13 +67,45 @@ fn eligible(engine: &Engine, slot: &str, repo: &Repository) -> bool {
                 && p.route_slot_ids.iter().any(|s| s == slot)
         })
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum DiskAccess {
+    Read,
+    Write,
+    Create,
+}
+
+fn needs_disk_root(engine: &Engine, slot: &str, path: &str) -> bool {
+    let first = path.split('/').next().unwrap_or("");
+    !engine.state().repositories.values().any(|repo| {
+        repo.primary_slot_id == slot
+            && (repo.file_manager_root
+                || name_policy::lookup_key(&repo.name) == name_policy::lookup_key(first))
+    })
+}
+
+fn admit_root_operation(
+    engine: &Engine,
+    slot: &str,
+    path: &str,
+    operation: &str,
+) -> Result<(), ApiError> {
+    if needs_disk_root(engine, slot, path) && engine.state().operations.contains_key(operation) {
+        return Err(ApiError::conflict(
+            "IDEMPOTENCY_KEY_REUSED",
+            "operation is already bound to another request",
+        ));
+    }
+    Ok(())
+}
+
 fn resolve(
     engine: &mut Engine,
     identity: &Identity,
     slot: &str,
     value: &str,
-    write: bool,
+    access: DiskAccess,
 ) -> Result<(Repository, String), ApiError> {
+    let write = access != DiskAccess::Read;
     if write && disk(engine, slot)?.level != 1 {
         return Err(ApiError::new(
             403,
@@ -111,7 +151,7 @@ fn resolve(
         .cloned();
     let repo = match existing {
         Some(repo) => repo,
-        None if write => {
+        None if access == DiskAccess::Create => {
             identity.require_admin()?;
             engine
                 .create_disk_root(&primary, &identity.principal, &storage_engine::new_id("op"))
@@ -295,7 +335,7 @@ fn entries(engine: &mut Engine, identity: &Identity, input: &Value) -> Result<Va
             values.push(directory(&repo.name, &display, &repo.repository_id));
         }
     }
-    let resolved = resolve(engine, identity, slot, value, false);
+    let resolved = resolve(engine, identity, slot, value, DiskAccess::Read);
     let mut context = Value::Null;
     let mut directory_file_count = 0;
     let mut directory_branches = Vec::new();
@@ -598,6 +638,10 @@ pub(super) fn call(
             keys(&input, &["slot_id", "path", "name", "operation_id"])?;
             let slot = field(&input, "slot_id")?;
             let display = path(&input)?;
+            let name = field(&input, "name")?;
+            storage_engine::validate_branch_name(name).map_err(error)?;
+            let operation = operation(&input)?;
+            storage_contract::validate_id(operation, "op").map_err(ApiError::invalid)?;
             if display.is_empty() && root_has_virtual_directories(engine, identity, slot) {
                 return Err(ApiError::new(
                     409,
@@ -605,22 +649,39 @@ pub(super) fn call(
                     "select a specific folder before branching this disk root",
                 ));
             }
-            let (repo, relative) = resolve(engine, identity, slot, display, true)?;
+            let access = if action == crate::BackendAction::FileManagerDirectoryBranches
+                && display.is_empty()
+            {
+                DiskAccess::Create
+            } else {
+                DiskAccess::Write
+            };
+            if access == DiskAccess::Create {
+                admit_root_operation(engine, slot, display, operation)?;
+                if needs_disk_root(engine, slot, display) && name_policy::lookup_key(name) == "main"
+                {
+                    return Err(ApiError::conflict(
+                        "NAME_COLLISION",
+                        "directory baseline branch already uses this name",
+                    ));
+                }
+            }
+            let (repo, relative) = resolve(engine, identity, slot, display, access)?;
             let result = if action == crate::BackendAction::FileManagerDirectoryBranches {
                 engine.create_directory_branches(
                     &repo.repository_id,
                     &relative,
-                    field(&input, "name")?,
+                    name,
                     &identity.principal,
-                    operation(&input)?,
+                    operation,
                 )
             } else {
                 engine.select_directory_branches(
                     &repo.repository_id,
                     &relative,
-                    field(&input, "name")?,
+                    name,
                     &identity.principal,
-                    operation(&input)?,
+                    operation,
                 )
             }
             .map_err(error)?;
@@ -632,8 +693,27 @@ pub(super) fn call(
             if display.is_empty() {
                 return Err(ApiError::invalid("file path required"));
             }
-            let (repo, relative) =
-                resolve(engine, identity, field(&input, "slot_id")?, &display, true)?;
+            let requested_branch = input
+                .get("branch_id")
+                .map(|_| field(&input, "branch_id"))
+                .transpose()?;
+            if let Some(branch) = requested_branch {
+                storage_contract::validate_id(branch, "br").map_err(ApiError::invalid)?;
+            }
+            // Selecting an existing branch cannot create a namespace as a side
+            // effect when neither that branch nor its file exists.
+            let access = if requested_branch.is_some() {
+                DiskAccess::Write
+            } else {
+                DiskAccess::Create
+            };
+            let (repo, relative) = resolve(
+                engine,
+                identity,
+                field(&input, "slot_id")?,
+                &display,
+                access,
+            )?;
             if relative.is_empty() {
                 return Err(ApiError::invalid("cannot upload over a disk directory"));
             }
@@ -655,10 +735,7 @@ pub(super) fn call(
                     "the selected file branch is read-only; select an active branch before writing",
                 ));
             }
-            if let Some(requested) = input.get("branch_id") {
-                let requested = requested
-                    .as_str()
-                    .ok_or_else(|| ApiError::invalid("branch_id must be a string"))?;
+            if let Some(requested) = requested_branch {
                 let selected = existing
                     .and_then(|entry| engine.file_context(&repo.repository_id, &entry.path))
                     .map(|context| context.branch_id.clone())
@@ -690,32 +767,70 @@ pub(super) fn call(
                 &["slot_id", "kind", "path", "destination", "operation_id"],
             )?;
             let slot = field(&input, "slot_id")?;
-            let (repo, relative) = resolve(engine, identity, slot, path(&input)?, true)?;
+            let kind = field(&input, "kind")?;
+            if !matches!(kind, "mkdir" | "delete" | "delete_tree" | "rename") {
+                return Err(ApiError::invalid("unsupported namespace operation"));
+            }
+            let operation = operation(&input)?;
+            storage_contract::validate_id(operation, "op").map_err(ApiError::invalid)?;
+            let display = path(&input)?;
+            if display.is_empty() {
+                return Err(ApiError::invalid("disk namespace root cannot be changed"));
+            }
+            let target_path = match input.get("destination") {
+                None | Some(Value::Null) => None,
+                Some(value) => Some(
+                    value
+                        .as_str()
+                        .ok_or_else(|| ApiError::invalid("destination must be a string"))?,
+                ),
+            };
+            if let Some(destination) = target_path {
+                name_policy::validate_path(destination).map_err(ApiError::invalid)?;
+            }
+            if (kind == "rename") != target_path.is_some() {
+                return Err(ApiError::invalid("only rename requires a destination"));
+            }
+            let access = if kind == "mkdir" {
+                DiskAccess::Create
+            } else {
+                DiskAccess::Write
+            };
+            if access == DiskAccess::Create {
+                admit_root_operation(engine, slot, display, operation)?;
+                // An empty root needs one entry per requested directory component.
+                if needs_disk_root(engine, slot, display)
+                    && display.split('/').count() > engine.config().max_entries
+                {
+                    return Err(ApiError::limit("directory entry limit exceeded"));
+                }
+            }
+            let (repo, relative) = resolve(engine, identity, slot, display, access)?;
             if relative.is_empty() {
                 return Err(ApiError::invalid("disk namespace root cannot be changed"));
             }
-            let destination =
-                if let Some(destination) = input.get("destination").and_then(Value::as_str) {
-                    let (target, relative) = resolve(engine, identity, slot, destination, true)?;
-                    if target.repository_id != repo.repository_id {
-                        return Err(ApiError::invalid(
-                            "move across disk namespace boundaries is not supported",
-                        ));
-                    }
-                    Some(relative)
-                } else {
-                    None
-                };
+            let destination = if let Some(destination) = target_path {
+                let (target, relative) =
+                    resolve(engine, identity, slot, destination, DiskAccess::Write)?;
+                if target.repository_id != repo.repository_id {
+                    return Err(ApiError::invalid(
+                        "move across disk namespace boundaries is not supported",
+                    ));
+                }
+                Some(relative)
+            } else {
+                None
+            };
             let result = engine
                 .file_namespace(
                     &repo.repository_id,
                     NamespaceOperation {
-                        kind: field(&input, "kind")?.into(),
+                        kind: kind.into(),
                         path: relative,
                         destination,
                     },
                     &identity.principal,
-                    operation(&input)?,
+                    operation,
                 )
                 .map_err(error)?;
             operation_wire(result)
@@ -1299,3 +1414,6 @@ pub(super) fn call(
         _ => Err(ApiError::unsupported()),
     }
 }
+
+#[cfg(test)]
+mod request_tests;

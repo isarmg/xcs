@@ -207,8 +207,8 @@ fn same_origin(headers: &HeaderMap, config: &ServerConfig, required: bool) -> Re
         return Err(ApiError::forbidden());
     }
     let origin = origin.to_str().map_err(|_| ApiError::forbidden())?;
-    let expected = match &config.external_origin {
-        Some(origin) => origin.clone(),
+    let expected = match config.normalized_external_origin()? {
+        Some(origin) => origin,
         None => {
             let host = headers
                 .get(header::HOST)
@@ -490,6 +490,65 @@ pub(crate) async fn account_upsert(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn configured_external_origins_match_canonical_browser_origins() {
+        let root = tempfile::tempdir().unwrap();
+        for (configured, browser) in [
+            ("https://EXAMPLE.COM:443", "https://example.com"),
+            ("HTTPS://example.com", "https://example.com"),
+            ("https://[0:0:0:0:0:0:0:1]:443", "https://[::1]"),
+            ("https://Example.COM:8443", "https://example.com:8443"),
+        ] {
+            let mut config = ServerConfig::loopback(root.path());
+            config.external_origin = Some(configured.into());
+            config.validate().unwrap();
+            let mut headers = HeaderMap::new();
+            headers.insert(header::ORIGIN, HeaderValue::from_str(browser).unwrap());
+            headers.insert("sec-fetch-site", HeaderValue::from_static("same-origin"));
+            assert!(same_origin(&headers, &config, true).is_ok(), "{configured}");
+            assert!(
+                config.secure_cookie(),
+                "{configured} must set Secure cookies"
+            );
+        }
+    }
+
+    #[test]
+    fn external_origin_normalization_preserves_scheme_host_and_port_boundaries() {
+        let root = tempfile::tempdir().unwrap();
+        let mut config = ServerConfig::loopback(root.path());
+        config.external_origin = Some("https://EXAMPLE.COM:443".into());
+        config.validate().unwrap();
+        for origin in [
+            "null",
+            "http://example.com",
+            "https://example.com:8443",
+            "https://example.com.evil.test",
+            "https://example.com/path",
+            "https://example.com?query=1",
+            "https://example.com#fragment",
+            "https://user@example.com",
+        ] {
+            let mut headers = HeaderMap::new();
+            headers.insert(header::ORIGIN, HeaderValue::from_str(origin).unwrap());
+            assert_eq!(
+                same_origin(&headers, &config, true).unwrap_err().status,
+                403,
+                "{origin}"
+            );
+        }
+        config.external_origin = Some("https://example.com:8443".into());
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::ORIGIN,
+            HeaderValue::from_static("https://example.com"),
+        );
+        assert_eq!(
+            same_origin(&headers, &config, true).unwrap_err().status,
+            403
+        );
+    }
 
     fn address(last: u8) -> IpAddr {
         IpAddr::from([192, 0, 2, last])

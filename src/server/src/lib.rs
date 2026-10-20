@@ -296,9 +296,32 @@ impl ServerConfig {
         Ok(())
     }
     fn secure_cookie(&self) -> bool {
+        self.normalized_external_origin()
+            .is_ok_and(|origin| origin.is_some())
+    }
+    /// Match browser Origin serialization, including host case, default ports
+    /// and IPv6 compression. Validation and cookie policy share this boundary.
+    fn normalized_external_origin(&self) -> Result<Option<String>, ApiError> {
         self.external_origin
             .as_ref()
-            .is_some_and(|origin| origin.starts_with("https://"))
+            .map(|origin| {
+                let parsed = url::Url::parse(origin).map_err(ApiError::invalid)?;
+                if parsed.scheme() != "https"
+                    || parsed.host_str().is_none()
+                    || !parsed.username().is_empty()
+                    || parsed.password().is_some()
+                    || parsed.path() != "/"
+                    || parsed.query().is_some()
+                    || parsed.fragment().is_some()
+                    || origin.ends_with('/')
+                {
+                    return Err(ApiError::invalid(
+                        "external origin must be an HTTPS origin without trailing slash",
+                    ));
+                }
+                Ok(parsed.origin().ascii_serialization())
+            })
+            .transpose()
     }
     fn validate(&self) -> Result<(), ApiError> {
         if !self.listen.ip().is_loopback() {
@@ -324,22 +347,7 @@ impl ServerConfig {
                 "SMB requires explicit authenticated-user mappings",
             ));
         }
-        if let Some(origin) = &self.external_origin {
-            let parsed = url::Url::parse(origin).map_err(ApiError::invalid)?;
-            if parsed.scheme() != "https"
-                || parsed.host_str().is_none()
-                || !parsed.username().is_empty()
-                || parsed.password().is_some()
-                || parsed.path() != "/"
-                || parsed.query().is_some()
-                || parsed.fragment().is_some()
-                || origin.ends_with('/')
-            {
-                return Err(ApiError::invalid(
-                    "external origin must be an HTTPS origin without trailing slash",
-                ));
-            }
-        }
+        self.normalized_external_origin()?;
         Ok(())
     }
 }

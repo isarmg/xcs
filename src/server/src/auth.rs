@@ -18,6 +18,8 @@ use std::{
 pub(crate) const SESSION_TTL_SECONDS: u64 = 12 * 60 * 60;
 const MAX_ACCOUNTS: usize = 1024;
 const MAX_SESSIONS: usize = 4096;
+/// Successful writes must remain admissible to the same bounded restart reader.
+const MAX_STORE_BYTES: usize = 4 * 1024 * 1024;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -214,10 +216,17 @@ impl AuthStore {
                         ));
                     }
                 }
-                if metadata.len() > 4 * 1024 * 1024 {
-                    return Err(ApiError::invalid("credential store exceeds limit"));
+                if authoritative.is_some() {
+                    // Safety checks still apply, but a recovered authoritative
+                    // snapshot replaces local contents without reading them.
+                    // A stale or oversized cache cannot veto valid recovery.
+                    None
+                } else {
+                    if metadata.len() > MAX_STORE_BYTES as u64 {
+                        return Err(ApiError::invalid("credential store exceeds limit"));
+                    }
+                    Some(fs::read(&path).map_err(ApiError::io)?)
                 }
-                Some(fs::read(&path).map_err(ApiError::io)?)
             }
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
             Err(error) => return Err(ApiError::io(error)),
@@ -274,6 +283,15 @@ impl AuthStore {
     }
 
     fn persist(&self, initial: bool) -> Result<(), ApiError> {
+        // Reject an oversized candidate before creating even a temporary file
+        // or publishing its protected backup. This is deterministic admission,
+        // not an uncertain I/O outcome that should block existing credentials.
+        let bytes = serde_json::to_vec(&self.db).map_err(ApiError::invalid)?;
+        if bytes.len() > MAX_STORE_BYTES {
+            return Err(ApiError::limit(
+                "credential store exceeds serialized byte limit",
+            ));
+        }
         let temporary = self.path.with_extension(format!(
             "tmp-{}",
             primitives::random_token().map_err(ApiError::invalid)?
@@ -287,8 +305,7 @@ impl AuthStore {
         }
         let mut file = options.open(&temporary).map_err(ApiError::io)?;
         let result = (|| {
-            file.write_all(&serde_json::to_vec(&self.db).map_err(ApiError::invalid)?)
-                .map_err(ApiError::io)?;
+            file.write_all(&bytes).map_err(ApiError::io)?;
             file.sync_all().map_err(ApiError::io)?;
             if let Some(backup) = &self.backup
                 && let Err(error) = backup(self.snapshot()?)
@@ -358,16 +375,26 @@ impl AuthStore {
             generation: account.generation,
             expires_at,
         };
+        let current_time = now();
+        let expired = self
+            .db
+            .sessions
+            .iter()
+            .filter(|(_, session)| session.expires_at <= current_time)
+            .map(|(key, session)| (key.clone(), session.clone()))
+            .collect::<Vec<_>>();
         self.db
             .sessions
-            .retain(|_, session| session.expires_at > now());
+            .retain(|_, session| session.expires_at > current_time);
         if self.db.sessions.len() >= MAX_SESSIONS {
+            self.db.sessions.extend(expired);
             return Err(ApiError::limit("session limit reached"));
         }
         let key = primitives::token_hash_hex(&token);
         self.db.sessions.insert(key.clone(), session);
         if let Err(error) = self.persist(false) {
             self.db.sessions.remove(&key);
+            self.db.sessions.extend(expired);
             return Err(error);
         }
         Ok(result)
@@ -516,6 +543,9 @@ impl AuthStore {
         self.db.accounts.values().map(|account| serde_json::json!({"username":account.username,"admin":account.admin,"disabled":account.disabled,"repositories":account.repositories})).collect()
     }
 }
+
+#[cfg(test)]
+mod budget_tests;
 
 #[cfg(test)]
 mod tests {

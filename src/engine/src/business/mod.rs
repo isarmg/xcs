@@ -30,7 +30,7 @@ pub(crate) fn now() -> u64 {
         .as_secs()
 }
 
-pub(crate) fn validate_branch_name(name: &str) -> Result<()> {
+pub fn validate_branch_name(name: &str) -> Result<()> {
     if name.len() > 128 {
         return Err(Error::new(
             "METADATA_TOO_LONG",
