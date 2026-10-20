@@ -1,0 +1,57 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+rust-version = "1.65.0"
+name = "tracing-core"
+version = "0.1.36"
+authors = ["Tokio Contributors <team@tokio.rs>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = """
+Core primitives for application-level tracing.
+"""
+homepage = "https://tokio.rs"
+readme = "../../../docs/upstream/tracing-core-0.1.36/README.md"
+keywords = [
+    "logging",
+    "tracing",
+    "profiling",
+]
+categories = [
+    "development-tools::debugging",
+    "development-tools::profiling",
+    "asynchronous",
+]
+license = "MIT"
+repository = "https://github.com/tokio-rs/tracing"
+resolver = "2"
+
+[badges.maintenance]
+status = "actively-developed"
+
+[features]
+default = ["std"]
+std = ["once_cell"]
+
+[lib]
+name = "tracing_core"
+path = "src/lib.rs"
+
+[dependencies.once_cell]
+version = "1.13.0"
+optional = true
+path = "../once_cell"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = [
+    "cfg(flaky_tests)",
+    "cfg(tracing_unstable)",
+    "cfg(unsound_local_offset)",
+]

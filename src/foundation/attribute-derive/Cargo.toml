@@ -1,0 +1,63 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+name = "attribute-derive"
+version = "0.11.0"
+build = false
+include = [
+    "src/**/*",
+    "LICENSE-*",
+    "README.md",
+    "docs/**/*",
+]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Clap like parsing for attributes in proc-macros"
+documentation = "https://docs.rs/attribute-derive"
+readme = "../../../docs/upstream/attribute-derive-0.11.0/README.md"
+keywords = [
+    "derive",
+    "macro",
+    "attribute",
+    "arguments",
+    "syn",
+]
+categories = [
+    "rust-patterns",
+    "development-tools::procedural-macro-helpers",
+    "parsing",
+]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ModProg/attribute-derive"
+
+[features]
+syn-full = ["syn/full"]
+
+[lib]
+name = "attribute_derive"
+path = "src/lib.rs"
+
+[dependencies.attribute-derive-macro]
+version = "0.11.0"
+path = "../attribute-derive-macro"
+
+[dependencies.manyhow]
+version = "0.14.0"
+path = "../manyhow"
+
+[dependencies.proc-macro2]
+version = "1"
+path = "../proc-macro2"
+
+[dependencies.quote]
+version = "1"
+path = "../quote"
+
+[dependencies.syn]
+version = "3"
+path = "../syn-3.0.9"
+

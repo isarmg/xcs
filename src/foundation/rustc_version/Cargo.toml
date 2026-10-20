@@ -1,0 +1,30 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+rust-version = "1.32"
+name = "rustc_version"
+version = "0.4.1"
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "A library for querying the version of a installed rustc compiler"
+documentation = "https://docs.rs/rustc_version/"
+readme = "../../../docs/upstream/rustc_version-0.4.1/README.md"
+keywords = [
+    "version",
+    "rustc",
+]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/djc/rustc-version-rs"
+
+[lib]
+name = "rustc_version"
+path = "src/lib.rs"
+
+[dependencies.semver]
+version = "1.0"
+path = "../semver"
+

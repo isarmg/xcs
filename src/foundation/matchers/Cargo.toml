@@ -1,0 +1,41 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+name = "matchers"
+version = "0.2.0"
+authors = ["Eliza Weisman <eliza@buoyant.io>"]
+description = """
+Regex matching on character and byte streams.
+"""
+homepage = "https://github.com/hawkw/matchers"
+documentation = "https://docs.rs/matchers/"
+readme = "../../../docs/upstream/matchers-0.2.0/README.md"
+keywords = [
+    "regex",
+    "match",
+    "pattern",
+    "streaming",
+]
+categories = ["text-processing"]
+license = "MIT"
+repository = "https://github.com/hawkw/matchers"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[dependencies.regex-automata]
+version = "0.4"
+features = [
+    "syntax",
+    "dfa-build",
+    "dfa-search",
+]
+default-features = false
+path = "../regex-automata"
+
+[features]
+unicode = ["regex-automata/unicode"]
+
+[badges.maintenance]
+status = "experimental"

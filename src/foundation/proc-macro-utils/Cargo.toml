@@ -1,0 +1,43 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+name = "proc-macro-utils"
+version = "0.10.0"
+include = [
+    "src/**/*",
+    "LICENSE-*",
+    "README.md",
+    "CHANGELOG.md",
+]
+description = "low-level utilities on proc-macro and proc-macro2 types"
+documentation = "https://docs.rs/proc-macro-utils"
+readme = "../../../docs/upstream/proc-macro-utils-0.10.0/README.md"
+keywords = ["macros"]
+categories = ["development-tools::procedural-macro-helpers"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ModProg/proc-macro-utils"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[dependencies.proc-macro2]
+version = "1"
+optional = true
+path = "../proc-macro2"
+
+[dependencies.quote]
+version = "1"
+optional = true
+path = "../quote"
+
+[dependencies.smallvec]
+version = "1.5"
+features = ["const_generics"]
+optional = true
+path = "../smallvec"
+
+[features]
+default = ["proc-macro2", "proc-macro", "parser", "quote"]
+parser = ["smallvec", "proc-macro2"]
+proc-macro = []

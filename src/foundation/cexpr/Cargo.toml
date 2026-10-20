@@ -1,0 +1,22 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+name = "cexpr"
+version = "0.6.0"
+authors = ["Jethro Beekman <jethro@jbeekman.nl>"]
+description = "A C expression parser and evaluator"
+documentation = "https://docs.rs/cexpr/"
+keywords = ["C", "expression", "parser"]
+license = "Apache-2.0/MIT"
+repository = "https://github.com/jethrogb/rust-cexpr"
+autotests = false
+autobenches = false
+autoexamples = false
+[dependencies.nom]
+version = "7"
+features = ["std"]
+default-features = false
+path = "../nom"
+[badges.travis-ci]
+repository = "jethrogb/rust-cexpr"

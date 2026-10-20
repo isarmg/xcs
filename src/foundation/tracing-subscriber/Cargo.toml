@@ -1,0 +1,145 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+rust-version = "1.65.0"
+name = "tracing-subscriber"
+version = "0.3.23"
+authors = [
+    "Eliza Weisman <eliza@buoyant.io>",
+    "David Barsky <me@davidbarsky.com>",
+    "Tokio Contributors <team@tokio.rs>",
+]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = """
+Utilities for implementing and composing `tracing` subscribers.
+"""
+homepage = "https://tokio.rs"
+readme = "../../../docs/upstream/tracing-subscriber-0.3.23/README.md"
+keywords = [
+    "logging",
+    "tracing",
+    "metrics",
+    "subscriber",
+]
+categories = [
+    "development-tools::debugging",
+    "development-tools::profiling",
+    "asynchronous",
+]
+license = "MIT"
+repository = "https://github.com/tokio-rs/tracing"
+resolver = "2"
+
+[badges.maintenance]
+status = "experimental"
+
+[features]
+alloc = []
+ansi = ["fmt", "nu-ansi-term"]
+default = ["smallvec", "fmt", "ansi", "tracing-log", "std"]
+env-filter = ["matchers", "once_cell", "tracing", "std", "thread_local", "dep:regex-automata"]
+fmt = ["registry", "std"]
+json = ["serde", "serde_json"]
+local-time = ["time/local-offset"]
+nu-ansi-term = ["dep:nu-ansi-term"]
+regex = []
+registry = ["sharded-slab", "thread_local", "std"]
+std = ["alloc", "tracing-core/std"]
+
+[lib]
+name = "tracing_subscriber"
+path = "src/lib.rs"
+
+[dependencies.matchers]
+version = "0.2.0"
+optional = true
+path = "../matchers"
+
+[dependencies.nu-ansi-term]
+version = "0.50.0"
+optional = true
+path = "../nu-ansi-term"
+
+[dependencies.once_cell]
+version = "1.13.0"
+optional = true
+path = "../once_cell"
+
+[dependencies.parking_lot]
+version = "0.12.1"
+optional = true
+path = "../parking_lot"
+
+[dependencies.regex-automata]
+version = "0.4"
+features = ["std"]
+optional = true
+default-features = false
+path = "../regex-automata"
+
+[dependencies.serde]
+version = "1.0.140"
+optional = true
+path = "../serde"
+
+[dependencies.serde_json]
+version = "1.0.82"
+optional = true
+path = "../serde_json"
+
+[dependencies.sharded-slab]
+version = "0.1.4"
+optional = true
+path = "../sharded-slab"
+
+[dependencies.smallvec]
+version = "1.9.0"
+optional = true
+path = "../smallvec"
+
+[dependencies.thread_local]
+version = "1.1.4"
+optional = true
+path = "../thread_local"
+
+[dependencies.time]
+version = "0.3.2"
+features = ["formatting"]
+optional = true
+path = "../time"
+
+[dependencies.tracing]
+version = "0.1.43"
+optional = true
+default-features = false
+path = "../tracing"
+
+[dependencies.tracing-core]
+version = "0.1.35"
+default-features = false
+path = "../tracing-core"
+
+[dependencies.tracing-log]
+version = "0.2.0"
+features = [
+    "log-tracer",
+    "std",
+]
+optional = true
+default-features = false
+path = "../tracing-log"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = [
+    "cfg(flaky_tests)",
+    "cfg(tracing_unstable)",
+    "cfg(unsound_local_offset)",
+]
