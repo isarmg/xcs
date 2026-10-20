@@ -20,6 +20,7 @@ pub(crate) use namespace::{
     apply_namespace, apply_workspace_namespace, ensure_parents, find, sorted, validate_entries,
     validate_workspace_dependencies,
 };
+pub use workspace::{PreparedUpload, UploadPreparation};
 
 pub(crate) fn now() -> u64 {
     SystemTime::now()

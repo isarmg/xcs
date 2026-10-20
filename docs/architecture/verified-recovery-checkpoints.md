@@ -15,10 +15,32 @@ exclusive Engine ownership locks; unsupported concurrent external writers are
 not made safe by a cache. Metadata fingerprints are not cryptographic evidence
 against silent storage corruption or adversarial timestamp/inode manipulation.
 
-This is **not a durable checkpoint**. Startup still verifies authoritative
-journals from byte zero and performs existing recovery and repair. No history is
-removed, no recovery authority is transferred to a cache, and no bounded total
-startup claim is made.
+The append cache is **not a durable checkpoint**. A separate conservative
+version-1 replay checkpoint is now implemented in `engine/recovery_checkpoint.rs`.
+After a successful full recovery, it writes matching content-hashed checkpoint
+envelopes to all three metadata members. A later clean open still scans every
+journal from byte zero, rejects forks and verifies candidate linkage and every
+publication seal. It can skip historical snapshot decoding only when all three
+checkpoint copies agree, the exact verified journal tips agree, the pool/config
+binding agrees, and a fresh cryptographic inventory of all repair-relevant
+metadata, historical proofs and layout matches the completed recovery.
+
+The inventory hashes metadata/proof bytes and covers payload presence, type,
+name and size. It excludes modern named-version payload bytes: ordinary historical recovery
+also does not reverify those bytes or claim fresh protection. Legacy/content
+payload bytes are hashed because historical name reconciliation revalidates
+legacy bodies during migration, including previously migrated bodies. All
+configured disks must validate for this optimization. Missing/corrupt/added
+metadata, renamed paths, changed configuration, missing members, torn tails or
+new decisions fall back to ordinary full recovery/repair. The checkpoint loads
+one final authoritative snapshot and applies its recovery-result overlay.
+
+This is deliberately a clean-restart checkpoint, not yet a suffix-replay
+checkpoint: exact inventory/tip matching conservatively invalidates it after a
+new decision. Checkpoint creation occurs on full recovery, never on the commit
+hot path. Partial/malformed checkpoint writes are optional hints and cannot
+publish a decision. No history is removed, no recovery authority is transferred
+to a checkpoint, and no bounded total startup claim is made.
 
 ## Why a latest-snapshot pointer is insufficient
 
@@ -36,7 +58,7 @@ proves that all preceding decisions have been checked or that their historical
 repair dependencies remain available. File metadata alone is not an acceptable
 durable trust anchor.
 
-## Proposed first stage: verified replay checkpoint
+## Next stage: selective prefix coverage and suffix replay
 
 1. Define a versioned, canonical immutable checkpoint object binding the pool,
    exact membership/configuration epoch, completed sequence, final visible state
@@ -62,7 +84,7 @@ durable trust anchor.
    from data disks must discover and validate checkpoints without the system
    disk. Legacy stores must continue to open without a checkpoint.
 
-This stage bounds *state replay* and avoids repeatedly decoding all historical
+This next stage bounds *state replay* and avoids repeatedly decoding all historical
 snapshots when coverage is valid. Full journal and coverage verification can
 remain linear. Benchmark and label scan, coverage verification, snapshot decode,
 repair and suffix replay separately.

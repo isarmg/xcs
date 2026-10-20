@@ -1,0 +1,1095 @@
+use super::*;
+use crate::engine_backend::EngineBackend;
+use std::{
+    os::unix::fs::FileExt,
+    sync::atomic::{AtomicBool, AtomicUsize, Ordering},
+};
+use xcs_core::{CommitRequest, Config, Engine};
+
+struct LostCommitReply {
+    inner: EngineBackend,
+    fail: AtomicBool,
+    uploads: AtomicUsize,
+    revoked: AtomicBool,
+}
+impl Backend for LostCommitReply {
+    fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError> {
+        if action == "version" && self.revoked.load(Ordering::SeqCst) {
+            return Err(ApiError::forbidden());
+        }
+        let value = self.inner.call(action, identity, input)?;
+        if action == "commit_workspace_internal" && self.fail.swap(false, Ordering::SeqCst) {
+            return Err(ApiError::new(
+                503,
+                "RESPONSE_LOST",
+                "injected after actual durable publication",
+            ));
+        }
+        Ok(value)
+    }
+    fn upload(
+        &self,
+        identity: &Identity,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        source: &Path,
+    ) -> Result<Value, ApiError> {
+        self.uploads.fetch_add(1, Ordering::SeqCst);
+        self.inner.upload(identity, workspace, item, path, source)
+    }
+    fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
+        self.inner.content(identity, version)
+    }
+}
+
+fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
+    let temp = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        temp.path().join("p"),
+        temp.path().join("b"),
+        temp.path().join("c"),
+    ]);
+    let mut engine = Engine::initialize(&temp.path().join("state"), config).unwrap();
+    let repo = engine
+        .create_repository("资料", "P01", 3, "alice", &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "alice")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "report.txt", b"old")
+        .unwrap();
+    engine
+        .commit_workspace(CommitRequest {
+            workspace_id: workspace.workspace_id,
+            operation_id: new_id("op"),
+            principal: "alice".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "initial".into(),
+            request_digest: None,
+        })
+        .unwrap();
+    let identity = Identity {
+        principal: "alice".into(),
+        admin: false,
+        repositories: BTreeSet::from([repo.repository_id.clone()]),
+    };
+    let spool = temp.path().join("spool");
+    fs::create_dir(&spool).unwrap();
+    fs::set_permissions(&spool, fs::Permissions::from_mode(0o700)).unwrap();
+    fs::create_dir(spool.join("empty-directory")).unwrap();
+    let backend = Arc::new(LostCommitReply {
+        inner: EngineBackend::new(engine),
+        fail: AtomicBool::new(false),
+        uploads: AtomicUsize::new(0),
+        revoked: AtomicBool::new(false),
+    });
+    let shared = Arc::new(Shared {
+        backend: backend.clone(),
+        identities: BTreeMap::from([("alice".into(), identity)]),
+        spool,
+        file_writers: Mutex::new(BTreeSet::new()),
+    });
+    (temp, shared, backend, repo.main_branch_id)
+}
+fn session(shared: Arc<Shared>, branch: &str) -> Session {
+    Session {
+        identity: shared.identities["alice"].clone(),
+        shared,
+        branch: branch.into(),
+        handles: BTreeMap::new(),
+        next_handle: 1,
+        writer_locks: BTreeSet::new(),
+        max_file_bytes: 1 << 30,
+    }
+}
+fn open_file(session: &mut Session, writable: bool) -> (OpenResult, File) {
+    let (result, fd) = session
+        .open("report.txt".into(), writable, false, false, false, false)
+        .unwrap();
+    (
+        serde_json::from_value(result).unwrap(),
+        File::from(fd.unwrap()),
+    )
+}
+
+fn select_pending_file(shared: &Shared, branch: &str) -> String {
+    let identity = &shared.identities["alice"];
+    let tree = shared
+        .backend
+        .call("tree", identity, json!({"branch_id":branch}))
+        .unwrap();
+    let entry = tree["entries"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["path"] == "report.txt")
+        .unwrap();
+    let file = entry["file_id"].as_str().unwrap().to_owned();
+    let created = shared.backend.call("file_manager_branch", identity, json!({
+        "file_id":file,"source_version_id":entry["version_id"],"name":"draft","operation_id":new_id("op")
+    })).unwrap();
+    shared.backend.call("file_manager_select", identity, json!({
+        "file_id":file,"branch_id":created["result"]["branch_id"],"operation_id":new_id("op")
+    })).unwrap();
+    file
+}
+
+fn directory_fixture(shared: &Shared) -> (String, String, String) {
+    let identity = &shared.identities["alice"];
+    let repositories = shared
+        .backend
+        .call("repositories", identity, json!({}))
+        .unwrap();
+    let repository = repositories["repositories"][0]["repository_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let created = shared
+        .backend
+        .call(
+            "file_manager_directory_branches",
+            identity,
+            json!({
+                "slot_id":"P01","path":"资料","name":"draft","operation_id":new_id("op")
+            }),
+        )
+        .unwrap();
+    let initial = shared
+        .backend
+        .call(
+            "default_branch",
+            identity,
+            json!({"repository_id":repository}),
+        )
+        .unwrap();
+    (
+        repository,
+        initial["directory_branch_id"].as_str().unwrap().to_owned(),
+        created["result"]["directory_branch_id"]
+            .as_str()
+            .unwrap()
+            .to_owned(),
+    )
+}
+
+fn select_directory(shared: &Shared, repository: &str, directory: &str) {
+    shared.backend.call("update_default_branch", &shared.identities["alice"], json!({
+        "repository_id":repository,"directory_branch_id":directory,"operation_id":new_id("op")
+    })).unwrap();
+}
+
+#[test]
+fn directory_default_switch_fences_open_and_already_published_writers() {
+    let (_temp, shared, backend, branch) = fixture();
+    let (repository, main, draft) = directory_fixture(&shared);
+    let mut one = session(shared.clone(), &branch);
+    let (opened, file) = open_file(&mut one, true);
+    file.write_all_at(b"new", 0).unwrap();
+    select_directory(&shared, &repository, &draft);
+    let error = one.dirty(opened.handle).unwrap_err();
+    assert_eq!(error.code, "DIRECTORY_BRANCH_CONFLICT");
+    assert_eq!(error.status, 409);
+    let writer = match &one.handles[&opened.handle] {
+        Handle::Write(w) => w,
+        _ => unreachable!(),
+    };
+    assert!(writer.source.is_file());
+    assert!(writer.source.with_extension("work.json").is_file());
+    assert_eq!(backend.uploads.load(Ordering::SeqCst), 0);
+    assert_eq!(one.find("report.txt").unwrap().unwrap().size, 3);
+    one.close(opened.handle, true).unwrap();
+
+    let (opened, file) = open_file(&mut one, true);
+    file.write_all_at(b"own", 0).unwrap();
+    one.dirty(opened.handle).unwrap();
+    one.flush(opened.handle).unwrap();
+    // Return through another root selection, then to this exact content.
+    // Equal file tuples must still retain the old handle's destination.
+    select_directory(&shared, &repository, &main);
+    select_directory(&shared, &repository, &draft);
+    file.write_all_at(b"bad", 0).unwrap();
+    assert_eq!(
+        one.dirty(opened.handle).unwrap_err().code,
+        "DIRECTORY_BRANCH_CONFLICT"
+    );
+    assert_eq!(backend.uploads.load(Ordering::SeqCst), 1);
+    let writer = match &one.handles[&opened.handle] {
+        Handle::Write(w) => w,
+        _ => unreachable!(),
+    };
+    assert!(writer.dirty && writer.source.is_file());
+    one.close(opened.handle, true).unwrap();
+    let current = one.find("report.txt").unwrap().unwrap();
+    let content = backend.content(&one.identity, &current.version_id).unwrap();
+    let mut bytes = [0; 3];
+    content.file.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"own");
+}
+
+#[test]
+fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle() {
+    let (_temp, shared, backend, branch) = fixture();
+    let mut client = session(shared.clone(), &branch);
+    for (path, bytes) in [
+        ("a/report.txt", b"source".as_slice()),
+        ("b/stay.txt", b"sibling".as_slice()),
+    ] {
+        let (opened, fd) = client
+            .open(path.into(), true, true, false, false, false)
+            .unwrap();
+        let opened: OpenResult = serde_json::from_value(opened).unwrap();
+        File::from(fd.unwrap()).write_all_at(bytes, 0).unwrap();
+        client.dirty(opened.handle).unwrap();
+        client.close(opened.handle, false).unwrap();
+    }
+    let identity = &shared.identities["alice"];
+    let repo = shared
+        .backend
+        .call("repositories", identity, json!({}))
+        .unwrap()["repositories"][0]["repository_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let register = |path: &str, name: &str| {
+        shared.backend.call("file_manager_directory_branches",identity,json!({
+        "slot_id":"P01","path":format!("资料/{path}"),"name":name,"operation_id":new_id("op")
+    })).unwrap()["result"]["directory_branch_id"].as_str().unwrap().to_owned()
+    };
+    let a_m = register("a", "m");
+    let a_n = register("a", "n");
+    let b_l = register("b", "l");
+    let b_p = register("b", "p");
+    for (path, name) in [("a", "m"), ("b", "l")] {
+        shared.backend.call("file_manager_directory_select",identity,json!({
+            "slot_id":"P01","path":format!("资料/{path}"),"name":name,"operation_id":new_id("op")
+        })).unwrap();
+    }
+    let scope = |id: &str| {
+        shared
+            .backend
+            .call(
+                "directory_branch_scopes",
+                identity,
+                json!({"repository_id":repo}),
+            )
+            .unwrap()["directory_branches"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|s| s["directory_branch_id"] == id)
+            .unwrap()
+            .clone()
+    };
+    let m0 = scope(&a_m);
+    let n0 = scope(&a_n);
+    let l0 = scope(&b_l);
+    let p0 = scope(&b_p);
+    let source = client.find("a/report.txt").unwrap().unwrap();
+    let (opened, fd) = client
+        .open("a/report.txt".into(), false, false, false, false, false)
+        .unwrap();
+    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let reader = File::from(fd.unwrap());
+    client
+        .dispatch(Request::Namespace {
+            kind: "rename".into(),
+            path: "a/report.txt".into(),
+            destination: Some("b/report.txt".into()),
+            replace: false,
+        })
+        .unwrap();
+    assert!(client.find("a/report.txt").unwrap().is_none());
+    let moved = client.find("b/report.txt").unwrap().unwrap();
+    assert_eq!(moved.file_id, source.file_id);
+    assert_eq!(moved.version_id, source.version_id);
+    let m1 = scope(&a_m);
+    let l1 = scope(&b_l);
+    assert_ne!(m1["head_tree_id"], m0["head_tree_id"]);
+    assert_ne!(l1["head_tree_id"], l0["head_tree_id"]);
+    assert_eq!(scope(&a_n)["head_tree_id"], n0["head_tree_id"]);
+    assert_eq!(scope(&b_p)["head_tree_id"], p0["head_tree_id"]);
+    let mut bytes = [0; 6];
+    reader.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"source");
+    client.close(opened.handle, false).unwrap();
+    let (opened, fd) = client
+        .open("b/report.txt".into(), true, false, false, false, false)
+        .unwrap();
+    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    File::from(fd.unwrap()).write_all_at(b"edited", 0).unwrap();
+    client.dirty(opened.handle).unwrap();
+    client.close(opened.handle, false).unwrap();
+    assert_eq!(
+        scope(&a_m)["head_tree_id"],
+        m1["head_tree_id"],
+        "source stopped tracking the moved file"
+    );
+    assert_ne!(scope(&b_l)["head_tree_id"], l1["head_tree_id"]);
+    assert_eq!(scope(&a_n)["head_tree_id"], n0["head_tree_id"]);
+    assert_eq!(scope(&b_p)["head_tree_id"], p0["head_tree_id"]);
+    let previous = backend.content(identity, &source.version_id).unwrap();
+    previous.file.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"source");
+}
+
+#[test]
+fn newly_created_ancestor_selection_fences_an_existing_create_handle() {
+    let (_temp, shared, _backend, branch) = fixture();
+    let mut original = session(shared.clone(), &branch);
+    let (opened, file) = original
+        .open("future/new.txt".into(), true, true, false, false, false)
+        .unwrap();
+    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let file = File::from(file.unwrap());
+    let mut creator = session(shared.clone(), &branch);
+    let (other, other_fd) = creator
+        .open("future/other.txt".into(), true, true, false, false, false)
+        .unwrap();
+    let other: OpenResult = serde_json::from_value(other).unwrap();
+    File::from(other_fd.unwrap())
+        .write_all_at(b"other", 0)
+        .unwrap();
+    creator.dirty(other.handle).unwrap();
+    creator.close(other.handle, false).unwrap();
+    shared
+        .backend
+        .call(
+            "file_manager_directory_branches",
+            &shared.identities["alice"],
+            json!({
+                "slot_id":"P01","path":"资料/future","name":"alternate","operation_id":new_id("op")
+            }),
+        )
+        .unwrap();
+    shared
+        .backend
+        .call(
+            "file_manager_directory_select",
+            &shared.identities["alice"],
+            json!({
+                "slot_id":"P01","path":"资料/future","name":"alternate","operation_id":new_id("op")
+            }),
+        )
+        .unwrap();
+    file.write_all_at(b"keep", 0).unwrap();
+    assert_eq!(
+        original.dirty(opened.handle).unwrap_err().code,
+        "DIRECTORY_BRANCH_CONFLICT"
+    );
+    let writer = match &original.handles[&opened.handle] {
+        Handle::Write(w) => w,
+        _ => unreachable!(),
+    };
+    assert!(writer.source.is_file() && writer.dirty);
+    assert!(original.find("future/new.txt").unwrap().is_none());
+    original.close(opened.handle, true).unwrap();
+}
+
+#[test]
+fn nested_directory_switch_does_not_fence_an_unrelated_open_file() {
+    let (_temp, shared, backend, branch) = fixture();
+    let mut creator = session(shared.clone(), &branch);
+    let (opened, file) = creator
+        .open("nested/other.txt".into(), true, true, false, false, false)
+        .unwrap();
+    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    File::from(file.unwrap()).write_all_at(b"other", 0).unwrap();
+    creator.dirty(opened.handle).unwrap();
+    creator.close(opened.handle, false).unwrap();
+    let (_repository, _main, _draft) = directory_fixture(&shared);
+    shared
+        .backend
+        .call(
+            "file_manager_directory_branches",
+            &shared.identities["alice"],
+            json!({
+                "slot_id":"P01","path":"资料/nested","name":"alternate","operation_id":new_id("op")
+            }),
+        )
+        .unwrap();
+    let mut one = session(shared.clone(), &branch);
+    let (opened, file) = open_file(&mut one, true);
+    shared
+        .backend
+        .call(
+            "file_manager_directory_select",
+            &shared.identities["alice"],
+            json!({
+                "slot_id":"P01","path":"资料/nested","name":"alternate","operation_id":new_id("op")
+            }),
+        )
+        .unwrap();
+    file.write_all_at(b"new", 0).unwrap();
+    one.dirty(opened.handle).unwrap();
+    one.close(opened.handle, false).unwrap();
+    let current = one.find("report.txt").unwrap().unwrap();
+    let content = backend.content(&one.identity, &current.version_id).unwrap();
+    let mut bytes = [0; 3];
+    content.file.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"new");
+}
+
+#[test]
+fn unix_rpc_default_switch_preserves_read_fds_and_targets_new_writes() {
+    let (_temp, shared, backend, branch) = fixture();
+    let (repository, main, draft) = directory_fixture(&shared);
+    select_directory(&shared, &repository, &draft);
+    let mut initial = session(shared.clone(), &branch);
+    let (opened, file) = open_file(&mut initial, true);
+    file.write_all_at(b"new", 0).unwrap();
+    initial.dirty(opened.handle).unwrap();
+    initial.close(opened.handle, false).unwrap();
+
+    let (client, server) = std::os::unix::net::UnixStream::pair().unwrap();
+    let server_shared = shared.clone();
+    let server = std::thread::spawn(move || {
+        run_connection(FrameStream::new(server).unwrap(), server_shared).unwrap()
+    });
+    let mut wire = FrameStream::new(client).unwrap();
+    let rpc = |wire: &mut FrameStream, request: Request| {
+        wire.send(&request, None).unwrap();
+        wire.receive::<Response>().unwrap()
+    };
+    let (hello, fd) = rpc(
+        &mut wire,
+        Request::Hello {
+            protocol: PROTOCOL.into(),
+            username: "alice".into(),
+            repository_id: repository.clone(),
+        },
+    );
+    assert!(matches!(hello, Response::Ok { .. }) && fd.is_none());
+    let open = || Request::Open {
+        path: "report.txt".into(),
+        writable: false,
+        create: false,
+        truncate: false,
+        exclusive: false,
+        write_through: false,
+    };
+    let (Response::Ok { result }, pinned) = rpc(&mut wire, open()) else {
+        panic!("read open failed")
+    };
+    let pinned_open: OpenResult = serde_json::from_value(result).unwrap();
+    let pinned = File::from(pinned.unwrap());
+    let mut bytes = [0; 3];
+    pinned.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"new");
+    select_directory(&shared, &repository, &main);
+    let (Response::Ok { result }, visible) = rpc(&mut wire, open()) else {
+        panic!("read after switch failed")
+    };
+    let visible_open: OpenResult = serde_json::from_value(result).unwrap();
+    File::from(visible.unwrap())
+        .read_exact_at(&mut bytes, 0)
+        .unwrap();
+    assert_eq!(&bytes, b"old");
+    pinned.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"new", "existing immutable read FD stays pinned");
+    let (Response::Ok { result }, writable_fd) = rpc(
+        &mut wire,
+        Request::Open {
+            path: "report.txt".into(),
+            writable: true,
+            create: false,
+            truncate: false,
+            exclusive: false,
+            write_through: false,
+        },
+    ) else {
+        panic!("write after switch failed")
+    };
+    let writable: OpenResult = serde_json::from_value(result).unwrap();
+    let writable_fd = File::from(writable_fd.unwrap());
+    writable_fd.write_all_at(b"smb", 0).unwrap();
+    assert!(matches!(
+        rpc(
+            &mut wire,
+            Request::Dirty {
+                handle: writable.handle
+            }
+        )
+        .0,
+        Response::Ok { .. }
+    ));
+    assert!(matches!(
+        rpc(
+            &mut wire,
+            Request::Close {
+                handle: writable.handle
+            }
+        )
+        .0,
+        Response::Ok { .. }
+    ));
+    for handle in [pinned_open.handle, visible_open.handle] {
+        assert!(matches!(
+            rpc(&mut wire, Request::Close { handle }).0,
+            Response::Ok { .. }
+        ));
+    }
+    drop(wire);
+    server.join().unwrap();
+    let observer = session(shared.clone(), &branch);
+    let entry = observer.find("report.txt").unwrap().unwrap();
+    let content = backend
+        .content(&observer.identity, &entry.version_id)
+        .unwrap();
+    content.file.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"smb");
+    select_directory(&shared, &repository, &draft);
+    let entry = observer.find("report.txt").unwrap().unwrap();
+    backend
+        .content(&observer.identity, &entry.version_id)
+        .unwrap()
+        .file
+        .read_exact_at(&mut bytes, 0)
+        .unwrap();
+    assert_eq!(
+        &bytes, b"new",
+        "saving a different combination preserves the original frozen view"
+    );
+}
+
+#[test]
+fn unwritten_branch_reads_parent_and_materializes_only_on_dirty_save() {
+    let (_temp, shared, backend, branch) = fixture();
+    let file = select_pending_file(&shared, &branch);
+    let history = || {
+        shared
+            .backend
+            .call(
+                "file_manager_file_history",
+                &shared.identities["alice"],
+                json!({"file_id":file}),
+            )
+            .unwrap()
+    };
+    let before = history();
+    assert_eq!(before["versions"].as_array().unwrap().len(), 1);
+    let mut session = session(shared.clone(), &branch);
+    assert_eq!(before["inherited"], true);
+    assert!(before["own_version_id"].is_null());
+    let (parent_read, parent_content) = open_file(&mut session, false);
+    let mut parent_bytes = [0u8; 3];
+    parent_content.read_exact_at(&mut parent_bytes, 0).unwrap();
+    assert_eq!(&parent_bytes, b"old");
+    let (opened, staged) = open_file(&mut session, true);
+    assert_eq!(opened.size, 3);
+    assert_eq!(
+        opened.version_id.as_deref(),
+        before["versions"][0]["version_id"].as_str()
+    );
+    assert_eq!(staged.metadata().unwrap().len(), 3);
+    let mut copied = [0u8; 3];
+    staged.read_exact_at(&mut copied, 0).unwrap();
+    assert_eq!(&copied, b"old");
+    session.close(opened.handle, false).unwrap();
+    assert_eq!(history(), before);
+    assert_eq!(backend.uploads.load(Ordering::SeqCst), 0);
+
+    let (opened, staged) = open_file(&mut session, true);
+    staged.write_all_at(b"unpublished", 0).unwrap();
+    session.dirty(opened.handle).unwrap();
+    session.close(opened.handle, true).unwrap();
+    assert_eq!(
+        history(),
+        before,
+        "aborting an actual write retains the inherited branch record"
+    );
+
+    let (opened, staged) = open_file(&mut session, true);
+    staged.write_all_at(b"X", 0).unwrap();
+    session.dirty(opened.handle).unwrap();
+    session.close(opened.handle, false).unwrap();
+    let after = history();
+    assert_eq!(after["versions"].as_array().unwrap().len(), 2);
+    let current = after["versions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|version| version["current"] == true)
+        .unwrap();
+    assert_eq!(
+        current["content_hash"],
+        blake3::hash(b"Xld").to_hex().as_str()
+    );
+    assert_eq!(
+        current["source_version_ids"],
+        json!([before["versions"][0]["version_id"]])
+    );
+    let (read, mut content) = open_file(&mut session, false);
+    let mut bytes = Vec::new();
+    content.read_to_end(&mut bytes).unwrap();
+    assert_eq!(bytes, b"Xld");
+    assert_eq!(after["inherited"], false);
+    assert_eq!(after["materialized"], true);
+    assert_eq!(after["own_version_id"], current["version_id"]);
+    parent_content.read_exact_at(&mut parent_bytes, 0).unwrap();
+    assert_eq!(
+        &parent_bytes, b"old",
+        "the inherited read handle keeps the parent version"
+    );
+    session.close(parent_read.handle, false).unwrap();
+    session.close(read.handle, false).unwrap();
+}
+
+#[test]
+fn explicit_truncation_materializes_an_empty_pending_branch() {
+    let (_temp, shared, _backend, branch) = fixture();
+    let file = select_pending_file(&shared, &branch);
+    let mut session = session(shared.clone(), &branch);
+    let (opened, descriptor) = session
+        .open("report.txt".into(), true, false, true, false, false)
+        .unwrap();
+    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    drop(descriptor);
+    session.close(opened.handle, false).unwrap();
+    let history = shared
+        .backend
+        .call(
+            "file_manager_file_history",
+            &shared.identities["alice"],
+            json!({"file_id":file}),
+        )
+        .unwrap();
+    assert_eq!(history["versions"].as_array().unwrap().len(), 2);
+    let current = history["versions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|version| version["current"] == true)
+        .unwrap();
+    assert_eq!(current["size"], "0");
+    assert_eq!(current["content_hash"], blake3::hash(b"").to_hex().as_str());
+    assert!(
+        history["branches"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|branch| branch["current"] == true)
+            .unwrap()["materialized"]
+            .as_bool()
+            .unwrap()
+    );
+}
+
+#[test]
+fn actual_core_flush_publishes_full_file_and_old_reader_keeps_its_version() {
+    let (_temp, shared, backend, branch) = fixture();
+    let mut one = session(shared.clone(), &branch);
+    let (read, old) = open_file(&mut one, false);
+    let (write, file) = open_file(&mut one, true);
+    file.write_all_at(b"new", 0).unwrap();
+    one.dirty(write.handle).unwrap();
+    let mut bytes = [0u8; 3];
+    old.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"old");
+    let saved = one.flush(write.handle).unwrap();
+    assert_eq!(saved["commit_state"], "PUBLISHED");
+    old.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"old");
+    let new_entry = one
+        .entries()
+        .unwrap()
+        .into_iter()
+        .find(|entry| entry.path == "report.txt")
+        .unwrap();
+    let content = backend
+        .content(&one.identity, &new_entry.version_id)
+        .unwrap();
+    content.file.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"new");
+    one.close(write.handle, false).unwrap();
+    one.close(read.handle, false).unwrap();
+}
+
+#[test]
+fn lost_commit_reply_reconciles_same_operation_without_restaging_or_second_version() {
+    let (_temp, shared, backend, branch) = fixture();
+    let mut one = session(shared, &branch);
+    let (opened, file) = open_file(&mut one, true);
+    file.write_all_at(b"new", 0).unwrap();
+    one.dirty(opened.handle).unwrap();
+    backend.fail.store(true, Ordering::SeqCst);
+    assert_eq!(one.flush(opened.handle).unwrap_err().code, "RESPONSE_LOST");
+    let uploads = backend.uploads.load(Ordering::SeqCst);
+    let saved = one.flush(opened.handle).unwrap();
+    assert_eq!(saved["commit_state"], "PUBLISHED");
+    assert_eq!(backend.uploads.load(Ordering::SeqCst), uploads);
+    let entry = one
+        .entries()
+        .unwrap()
+        .into_iter()
+        .find(|entry| entry.path == "report.txt")
+        .unwrap();
+    let history = backend
+        .call("history", &one.identity, json!({"file_id":entry.file_id}))
+        .unwrap();
+    assert_eq!(history["versions"].as_array().unwrap().len(), 2);
+    one.close(opened.handle, false).unwrap();
+}
+
+#[test]
+fn cross_session_writer_is_denied_and_last_close_commits() {
+    let (_temp, shared, _backend, branch) = fixture();
+    let mut one = session(shared.clone(), &branch);
+    let mut two = session(shared, &branch);
+    let (opened, file) = open_file(&mut one, true);
+    let error = two
+        .open("report.txt".into(), true, false, false, false, false)
+        .unwrap_err();
+    assert_eq!(error.code, "FILE_WRITE_BUSY");
+    file.write_all_at(b"end", 0).unwrap();
+    one.dirty(opened.handle).unwrap();
+    one.close(opened.handle, false).unwrap();
+    let (next, _) = open_file(&mut two, true);
+    two.close(next.handle, false).unwrap();
+}
+
+#[test]
+fn different_files_publish_concurrently_and_reopen_workspace_after_unrelated_save() {
+    let (_temp, shared, _backend, branch) = fixture();
+    let mut one = session(shared.clone(), &branch);
+    let mut two = session(shared, &branch);
+    let (first, first_file) = open_file(&mut one, true);
+    let (result, fd) = two
+        .open("other.txt".into(), true, true, false, false, false)
+        .unwrap();
+    let second: OpenResult = serde_json::from_value(result).unwrap();
+    let second_file = File::from(fd.unwrap());
+    first_file.write_all_at(b"one", 0).unwrap();
+    one.dirty(first.handle).unwrap();
+    second_file.write_all_at(b"two", 0).unwrap();
+    two.dirty(second.handle).unwrap();
+    one.flush(first.handle).unwrap();
+    two.flush(second.handle).unwrap();
+    first_file.write_all_at(b"new", 0).unwrap();
+    one.dirty(first.handle).unwrap();
+    one.flush(first.handle).unwrap();
+    let entries = one.entries().unwrap();
+    assert_eq!(entries.iter().filter(|e| e.kind == "file").count(), 2);
+    let other = entries.iter().find(|e| e.path == "other.txt").unwrap();
+    let content = one
+        .shared
+        .backend
+        .content(&one.identity, &other.version_id)
+        .unwrap();
+    let mut bytes = [0u8; 3];
+    content.file.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"two");
+    one.close(first.handle, false).unwrap();
+    two.close(second.handle, false).unwrap();
+}
+#[test]
+fn namespace_locks_cover_only_affected_paths_and_case_only_replace_preserves_entry() {
+    let (_temp, shared, _backend, branch) = fixture();
+    let mut one = session(shared.clone(), &branch);
+    let mut two = session(shared, &branch);
+    let before = one.find("report.txt").unwrap().unwrap();
+    two.dispatch(Request::Namespace {
+        kind: "rename".into(),
+        path: "report.txt".into(),
+        destination: Some("REPORT.txt".into()),
+        replace: true,
+    })
+    .unwrap();
+    let after = two.find("REPORT.txt").unwrap().unwrap();
+    assert_eq!(after.entry_id, before.entry_id);
+    assert_eq!(after.version_id, before.version_id);
+    assert_eq!(after.path, "REPORT.txt");
+    let (opened, fd) = one
+        .open("dir/file.txt".into(), true, true, false, false, false)
+        .unwrap();
+    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let file = File::from(fd.unwrap());
+    assert_eq!(
+        two.dispatch(Request::Namespace {
+            kind: "rename".into(),
+            path: "dir".into(),
+            destination: Some("moved".into()),
+            replace: false
+        })
+        .unwrap_err()
+        .code,
+        "FILE_WRITE_BUSY"
+    );
+    two.dispatch(Request::Namespace {
+        kind: "mkdir".into(),
+        path: "unrelated".into(),
+        destination: None,
+        replace: false,
+    })
+    .unwrap();
+    file.write_all_at(b"bytes", 0).unwrap();
+    one.dirty(opened.handle).unwrap();
+    one.close(opened.handle, false).unwrap();
+    assert!(two.find("unrelated").unwrap().is_some());
+    assert!(two.find("dir/file.txt").unwrap().is_some());
+    assert_eq!(
+        two.dispatch(Request::Namespace {
+            kind: "rename".into(),
+            path: "REPORT.txt".into(),
+            destination: Some("unrelated".into()),
+            replace: true
+        })
+        .unwrap_err()
+        .code,
+        "INVALID_REQUEST"
+    );
+    two.dispatch(Request::Namespace {
+        kind: "mkdir".into(),
+        path: "after-failure".into(),
+        destination: None,
+        replace: false,
+    })
+    .unwrap();
+}
+
+#[test]
+fn listing_uses_portable_lookup_keys_and_rejects_files_or_missing_directories() {
+    let (_temp, shared, _backend, branch) = fixture();
+    let mut session = session(shared, &branch);
+    for path in ["Straße", "STRASSE/子目录", "Straße-other"] {
+        session
+            .dispatch(Request::Namespace {
+                kind: "mkdir".into(),
+                path: path.into(),
+                destination: None,
+                replace: false,
+            })
+            .unwrap();
+    }
+    let (opened, fd) = session
+        .open(
+            "STRASSE/子目录/内容.txt".into(),
+            true,
+            true,
+            false,
+            false,
+            false,
+        )
+        .unwrap();
+    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let file = File::from(fd.unwrap());
+    file.write_all_at(b"content", 0).unwrap();
+    session.dirty(opened.handle).unwrap();
+    session.close(opened.handle, false).unwrap();
+    let (listed, _) = session
+        .dispatch(Request::List {
+            path: "straße".into(),
+        })
+        .unwrap();
+    let entries = listed["entries"].as_array().unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0]["name"], "子目录");
+    let (listed, _) = session
+        .dispatch(Request::List {
+            path: "strasse/子目录".into(),
+        })
+        .unwrap();
+    let entries = listed["entries"].as_array().unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0]["name"], "内容.txt");
+    assert_eq!(
+        session
+            .dispatch(Request::List {
+                path: "REPORT.TXT".into()
+            })
+            .unwrap_err()
+            .code,
+        "NOT_DIRECTORY"
+    );
+    assert_eq!(
+        session
+            .dispatch(Request::List {
+                path: "absent".into()
+            })
+            .unwrap_err()
+            .status,
+        404
+    );
+}
+
+#[test]
+fn changed_bytes_after_lost_publication_reply_are_retained_for_a_second_save() {
+    let (_temp, shared, backend, branch) = fixture();
+    let mut one = session(shared, &branch);
+    let (opened, file) = open_file(&mut one, true);
+    file.write_all_at(b"new", 0).unwrap();
+    one.dirty(opened.handle).unwrap();
+    backend.fail.store(true, Ordering::SeqCst);
+    assert_eq!(one.flush(opened.handle).unwrap_err().code, "RESPONSE_LOST");
+    file.write_all_at(b"end", 0).unwrap();
+    assert_eq!(
+        one.flush(opened.handle).unwrap_err().code,
+        "WORKSPACE_REBASE_REQUIRED"
+    );
+    one.dirty(opened.handle).unwrap();
+    one.flush(opened.handle).unwrap();
+    let current = one.find("report.txt").unwrap().unwrap();
+    let content = backend.content(&one.identity, &current.version_id).unwrap();
+    let mut bytes = [0u8; 3];
+    content.file.read_exact_at(&mut bytes, 0).unwrap();
+    assert_eq!(&bytes, b"end");
+    one.close(opened.handle, false).unwrap();
+}
+
+#[test]
+fn external_same_file_change_rejects_rebase_and_preserves_work_bytes() {
+    let (temp, shared, backend, branch) = fixture();
+    let mut one = session(shared, &branch);
+    let (opened, file) = open_file(&mut one, true);
+    file.write_all_at(b"one", 0).unwrap();
+    one.dirty(opened.handle).unwrap();
+    one.flush(opened.handle).unwrap();
+    let workspace: Workspace = serde_json::from_value(
+        backend
+            .call(
+                "create_workspace",
+                &one.identity,
+                json!({"branch_id":branch}),
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    let source = temp.path().join("external.txt");
+    fs::write(&source, b"api").unwrap();
+    backend
+        .upload(
+            &one.identity,
+            &workspace.workspace_id,
+            &opened.entry_id,
+            "report.txt",
+            &source,
+        )
+        .unwrap();
+    backend.call("commit_workspace_internal",&one.identity,json!({"workspace_id":workspace.workspace_id,"operation_id":new_id("op"),"expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"external app"})).unwrap();
+    file.write_all_at(b"end", 0).unwrap();
+    assert_eq!(
+        one.dirty(opened.handle).unwrap_err().code,
+        "FILE_VERSION_CONFLICT"
+    );
+    assert_eq!(
+        one.close(opened.handle, false).unwrap_err().code,
+        "WORKSPACE_REBASE_REQUIRED"
+    );
+    let pending = match &one.handles[&opened.handle] {
+        Handle::Write(writer) => writer.source.clone(),
+        _ => panic!("write handle missing"),
+    };
+    drop(one);
+    assert_eq!(fs::read(pending).unwrap(), b"end");
+}
+
+#[test]
+fn already_open_reader_checks_current_account_before_each_read_request() {
+    let (_temp, shared, backend, branch) = fixture();
+    let mut one = session(shared, &branch);
+    let (opened, _file) = open_file(&mut one, false);
+    one.dispatch(Request::AuthorizeRead {
+        handle: opened.handle,
+    })
+    .unwrap();
+    backend.revoked.store(true, Ordering::SeqCst);
+    assert_eq!(
+        one.dispatch(Request::AuthorizeRead {
+            handle: opened.handle
+        })
+        .unwrap_err()
+        .code,
+        "FORBIDDEN"
+    );
+    assert!(one.handles.contains_key(&opened.handle));
+    one.close(opened.handle, false).unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn cancellation_closes_blocked_rpc_sessions_and_removes_its_socket() {
+    let (temp, shared, _backend, _branch) = fixture();
+    let parent = temp.path().join("rpc");
+    fs::create_dir(&parent).unwrap();
+    fs::set_permissions(&parent, fs::Permissions::from_mode(0o700)).unwrap();
+    let socket = parent.join("smb.sock");
+    let server_socket = socket.clone();
+    let identities = shared.identities.clone();
+    let backend = shared.backend.clone();
+    let server = tokio::spawn(async move {
+        serve(
+            &server_socket,
+            xcs_smb::protocol::effective_uid(),
+            identities,
+            backend,
+        )
+        .await
+    });
+    for _ in 0..100 {
+        if socket.exists() {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    let stream = std::os::unix::net::UnixStream::connect(&socket).unwrap();
+    server.abort();
+    let _ = server.await;
+    assert!(!socket.exists());
+    drop(stream);
+}
+
+fn immutable_fixture_payloads(root: &Path) -> Vec<PathBuf> {
+    fn visit(root: &Path, found: &mut Vec<PathBuf>) {
+        for entry in fs::read_dir(root).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                visit(&path, found);
+            } else if path
+                .components()
+                .any(|part| part.as_os_str() == "file-containers")
+                && fs::read(&path).unwrap() == b"old"
+            {
+                found.push(path);
+            }
+        }
+    }
+    let mut found = Vec::new();
+    visit(root, &mut found);
+    found.sort();
+    found
+}
+
+#[test]
+fn raw_fd_and_writer_copy_reject_corruption_and_use_verified_fallback() {
+    for writable in [false, true] {
+        let (temp, shared, _backend, branch) = fixture();
+        let payloads = immutable_fixture_payloads(temp.path());
+        assert_eq!(payloads.len(), 3);
+        // Corrupt the primary specifically, leaving the backup replicas valid.
+        let primary = payloads
+            .iter()
+            .find(|path| path.starts_with(temp.path().join("p")))
+            .unwrap();
+        fs::set_permissions(primary, fs::Permissions::from_mode(0o600)).unwrap();
+        fs::write(primary, b"bad").unwrap();
+        let mut active = session(shared.clone(), &branch);
+        let (opened, file) = open_file(&mut active, writable);
+        let mut bytes = [0u8; 3];
+        file.read_exact_at(&mut bytes, 0).unwrap();
+        assert_eq!(
+            &bytes, b"old",
+            "raw FD or writer copy exposed corrupted bytes"
+        );
+        active.close(opened.handle, true).unwrap();
+        drop(active);
+        for path in payloads {
+            fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+            fs::write(path, b"bad").unwrap();
+        }
+        let mut denied = session(shared, &branch);
+        let result = denied.open("report.txt".into(), writable, false, false, false, false);
+        assert!(matches!(result, Err(ref error) if error.code == "CONTENT_UNAVAILABLE"));
+        assert!(denied.handles.is_empty(), "corrupt descriptor was admitted");
+    }
+}

@@ -2831,3 +2831,201 @@ fn workspace_read_plan_pins_exact_inode_before_unlocked_verification() {
         "CHECKSUM_MISMATCH"
     );
 }
+
+#[test]
+fn upload_preparation_releases_engine_and_revalidates_workspace_without_lost_updates() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"prepared upload bytes").unwrap();
+    let item = new_id("entry");
+    let plan = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap();
+    assert_eq!(
+        engine
+            .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+            .err()
+            .unwrap()
+            .code(),
+        "FILE_WRITE_BUSY"
+    );
+    // The copy plan is detached from Engine; unrelated writer work is allowed.
+    engine
+        .create_repository("parallel", "P01", 1, "admin", &new_id("op"))
+        .unwrap();
+    let prepared = plan.execute().unwrap();
+    let directory = engine.workspace_data_directory(&workspace).unwrap();
+    assert!(fs::read_dir(&directory).unwrap().any(|e| {
+        e.unwrap()
+            .path()
+            .extension()
+            .is_some_and(|e| e == "prepared")
+    }));
+    // Fence changes while copying cannot be overwritten by a stale manifest.
+    engine
+        .workspaces
+        .get_mut(&workspace.workspace_id)
+        .unwrap()
+        .fencing_token += 1;
+    assert_eq!(
+        engine.finish_upload(prepared).unwrap_err().code(),
+        "WORKSPACE_CHANGED"
+    );
+    assert!(input.exists());
+    assert!(
+        engine
+            .workspace(&workspace.workspace_id)
+            .unwrap()
+            .files
+            .is_empty()
+    );
+    assert!(!fs::read_dir(&directory).unwrap().any(|e| {
+        e.unwrap()
+            .path()
+            .extension()
+            .is_some_and(|e| e == "prepared")
+    }));
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let staged = engine.finish_upload(prepared).unwrap();
+    assert_eq!(
+        fs::read(staged.source_path).unwrap(),
+        b"prepared upload bytes"
+    );
+}
+
+#[test]
+fn dropped_upload_preparation_cleans_only_owned_scratch_and_releases_claim() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"retained HTTP spool").unwrap();
+    let item = new_id("entry");
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    drop(prepared);
+    assert_eq!(fs::read(&input).unwrap(), b"retained HTTP spool");
+    let plan = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap();
+    drop(plan);
+    assert!(
+        engine
+            .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+            .is_ok()
+    );
+}
+
+#[test]
+fn upload_preparation_counts_crash_scratch_and_rechecks_final_quota() {
+    let mut fixture = Fixture::new();
+    fixture.config.max_file_bytes = 8;
+    fixture.config.max_workspace_bytes = 10;
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let directory = engine.workspace_data_directory(&workspace).unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"12345678").unwrap();
+    let crash_scratch = directory.join(".xcs-upload-crashed.prepared");
+    fs::write(&crash_scratch, b"old").unwrap();
+    let item = new_id("entry");
+    assert_eq!(
+        engine
+            .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+            .err()
+            .unwrap()
+            .code(),
+        "RESOURCE_LIMIT"
+    );
+    // A failed admission must release its claim, and new scratch counts once.
+    fs::remove_file(&crash_scratch).unwrap();
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    fs::write(&crash_scratch, b"old").unwrap();
+    assert_eq!(
+        engine.finish_upload(prepared).unwrap_err().code(),
+        "RESOURCE_LIMIT"
+    );
+    assert_eq!(fs::read(&crash_scratch).unwrap(), b"old");
+    assert!(input.exists());
+    fs::remove_file(crash_scratch).unwrap();
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(engine.finish_upload(prepared).unwrap().size, 8);
+}
+
+#[test]
+fn upload_preparation_rejects_parent_swap_and_cleans_original_directory_only() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let directory = engine.workspace_data_directory(&workspace).unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"safe payload").unwrap();
+    let item = new_id("entry");
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let scratch_name = fs::read_dir(&directory)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .find(|name| {
+            std::path::Path::new(name)
+                .extension()
+                .is_some_and(|ext| ext == "prepared")
+        })
+        .unwrap();
+    let moved = directory.with_extension("moved");
+    fs::rename(&directory, &moved).unwrap();
+    fs::create_dir(&directory).unwrap();
+    fs::write(
+        directory.join(&scratch_name),
+        b"do not delete replacement directory file",
+    )
+    .unwrap();
+    assert_eq!(
+        engine.finish_upload(prepared).unwrap_err().code(),
+        "UNSAFE_PATH"
+    );
+    assert_eq!(
+        fs::read(directory.join(&scratch_name)).unwrap(),
+        b"do not delete replacement directory file"
+    );
+    assert!(!moved.join(&scratch_name).exists());
+    assert!(
+        engine
+            .workspace(&workspace.workspace_id)
+            .unwrap()
+            .files
+            .is_empty()
+    );
+}

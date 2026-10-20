@@ -470,6 +470,24 @@ fn workspace_authorize(
     Ok(workspace)
 }
 
+/// Reauthorize after the unlocked copy against the current protected account
+/// snapshot, not the Identity captured before account revocation could publish.
+fn finish_authorized_upload(
+    engine: &mut Engine,
+    identity: &Identity,
+    workspace: &str,
+    prepared: xcs_core::PreparedUpload,
+) -> Result<Value, ApiError> {
+    let current = match engine.auth_state() {
+        Some(snapshot) => {
+            crate::auth::AuthStore::identity_from_snapshot(snapshot, &identity.principal)?
+        }
+        None => identity.clone(), // Embedded engines without a protected account store.
+    };
+    workspace_authorize(engine, &current, workspace)?;
+    sanitized(engine.finish_upload(prepared).map_err(error)?)
+}
+
 fn operation_wire(_engine: &Engine, op: xcs_core::OperationResult) -> Result<Value, ApiError> {
     let health = match op.current_health.as_str() {
         "HEALTHY" | "DEGRADED" | "UNAVAILABLE" | "UNKNOWN" => op.current_health.as_str(),
@@ -523,14 +541,26 @@ impl Backend for EngineBackend {
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
         match action {
+            "file_manager_disks" => {
+                let access = file_manager::disk_access(&engine, identity);
+                let observation = engine.prepare_disk_observation();
+                drop(engine);
+                let disks = observation.status().map_err(error)?.into_iter().filter_map(|disk| {
+                    let writable = access.get(&disk.slot_id)?;
+                    Some(json!({"slot_id":disk.slot_id,"level":disk.level,"online":disk.online,"writable":writable,"available_bytes":disk.available_bytes.to_string(),"used_bytes":disk.used_bytes.to_string(),"simulation":disk.simulation}))
+                }).collect::<Vec<_>>();
+                Ok(json!({"disks":disks}))
+            }
             action if action.starts_with("file_manager_") => {
                 file_manager::call(&mut engine, identity, action, input)
             }
             "monitor_disks" => {
                 identity.require_admin()?;
+                let observation = engine.prepare_disk_observation();
+                drop(engine);
                 let mut disks = Vec::new();
-                for disk in engine.disk_status().map_err(error)? {
-                    let capacity = engine.disk_capacity(&disk.slot_id).ok();
+                for disk in observation.status().map_err(error)? {
+                    let capacity = observation.capacity(&disk.slot_id).ok();
                     let (power_watts, power_unavailable_reason) = crate::telemetry::disk_power(
                         &disk.physical_device,
                         disk.simulation,
@@ -555,7 +585,11 @@ impl Backend for EngineBackend {
                         "storage is open for verified recovery reads only",
                     ));
                 }
-                let status = engine.disk_status().map_err(error)?;
+                let mode = engine.config().mode.clone();
+                let sequence = engine.state().sequence;
+                let observation = engine.prepare_disk_observation();
+                drop(engine);
+                let status = observation.status().map_err(error)?;
                 let members = status
                     .iter()
                     .filter(|disk| disk.metadata_member && disk.online)
@@ -567,9 +601,7 @@ impl Backend for EngineBackend {
                         "all three metadata members are required for normal writes",
                     ));
                 }
-                Ok(
-                    json!({"ready":true,"mode":engine.config().mode,"sequence":engine.state().sequence.to_string()}),
-                )
+                Ok(json!({"ready":true,"mode":mode,"sequence":sequence.to_string()}))
             }
             "repositories" => {
                 let values = engine
@@ -1379,7 +1411,9 @@ impl Backend for EngineBackend {
             }
             "disks" => {
                 identity.require_admin()?;
-                encode(json!({"disks":engine.disk_status().map_err(error)?}))
+                let observation = engine.prepare_disk_observation();
+                drop(engine);
+                encode(json!({"disks":observation.status().map_err(error)?}))
             }
             "topology" => {
                 identity.require_admin()?;
@@ -1448,16 +1482,32 @@ impl Backend for EngineBackend {
         path: &str,
         source: &Path,
     ) -> Result<Value, ApiError> {
+        let engine = self
+            .engine
+            .lock()
+            .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
+        let current = workspace_authorize(&engine, identity, workspace)?;
+        let generation = current
+            .files
+            .get(_item)
+            .map(|file| file.dirty_generation.checked_add(1))
+            .unwrap_or(Some(1))
+            .ok_or_else(|| {
+                error(xcs_core::Error::new(
+                    "RESOURCE_LIMIT",
+                    "upload generation exhausted",
+                ))
+            })?;
+        let plan = engine
+            .prepare_upload(workspace, _item, path, source, generation)
+            .map_err(error)?;
+        drop(engine);
+        let prepared = plan.execute().map_err(error)?;
         let mut engine = self
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
-        workspace_authorize(&engine, identity, workspace)?;
-        sanitized(
-            engine
-                .stage_file_as(workspace, _item, path, source)
-                .map_err(error)?,
-        )
+        finish_authorized_upload(&mut engine, identity, workspace, prepared)
     }
     fn upload_generation(
         &self,
@@ -1468,16 +1518,22 @@ impl Backend for EngineBackend {
         source: &Path,
         generation: u64,
     ) -> Result<Value, ApiError> {
-        let mut engine = self
+        let engine = self
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
         workspace_authorize(&engine, identity, workspace)?;
-        sanitized(
-            engine
-                .stage_upload(workspace, item, path, source, generation)
-                .map_err(error)?,
-        )
+        let plan = engine
+            .prepare_upload(workspace, item, path, source, generation)
+            .map_err(error)?;
+        drop(engine);
+        let prepared = plan.execute().map_err(error)?;
+        let mut engine = self
+            .engine
+            .lock()
+            .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
+        // Admission and current ACLs may have changed while bytes were copied.
+        finish_authorized_upload(&mut engine, identity, workspace, prepared)
     }
     fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
         self.range_content(identity, version)?.fully_verified()

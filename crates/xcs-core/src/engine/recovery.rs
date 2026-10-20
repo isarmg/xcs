@@ -7,12 +7,18 @@ impl Engine {
     pub(super) fn recover_mode(&mut self, complete_unpublished: bool) -> Result<()> {
         let members = self.members();
         let mut online = Vec::new();
+        let mut tips = BTreeMap::new();
+        let mut torn_tail = false;
         let mut records = BTreeMap::<u64, BTreeMap<String, Vec<(String, Record)>>>::new();
         for d in &members {
             if validate_seal(&self.config, d).is_err() {
                 continue;
             }
             let scanned = scan(d)?;
+            torn_tail |= scanned.torn_tail;
+            if let Some((_, hash)) = scanned.records.last() {
+                tips.insert(d.disk_id.clone(), hash.clone());
+            }
             for (r, _) in scanned.records {
                 self.next_slot =
                     self.next_slot.max(r.sequence.checked_add(1).ok_or_else(|| {
@@ -33,6 +39,15 @@ impl Engine {
                 "online service requires at least two trusted metadata members; use offline recovery",
             ));
         }
+        let checkpoint = if online.len() == 3 && !torn_tail {
+            super::recovery_checkpoint::load(self, &tips).filter(|c| {
+                records
+                    .get(&c.sequence)
+                    .is_some_and(|candidates| candidates.contains_key(&c.candidate_hash))
+            })
+        } else {
+            None
+        };
         for (_seq, candidates) in records {
             let active = candidates
                 .into_iter()
@@ -68,7 +83,6 @@ impl Engine {
                     "candidate does not extend the verified publication prefix",
                 ));
             }
-            let mut next = load_snapshot(source, &candidate.snapshot_hash)?;
             let publication_record = rs.iter().find(|(_, r)| r.record_type == "PUBLICATION");
             let publication = if let Some((slot, r)) = publication_record {
                 let d = self.disk(slot)?;
@@ -80,6 +94,40 @@ impl Engine {
             } else {
                 crate::degraded_recovery::discover_publication(self, &candidate, &hash)?
             };
+            if let Some(checkpoint) = checkpoint
+                .as_ref()
+                .filter(|c| candidate.sequence <= c.sequence)
+            {
+                let publication = publication.as_ref().ok_or_else(|| {
+                    Error::new("CHECKPOINT_INVALID", "covered publication is absent")
+                })?;
+                // Recheck the publication barrier independently of the checkpoint.
+                // Coverage established that all historical repair artifacts remain
+                // byte-for-byte present after the previous successful full replay.
+                for d in &online {
+                    let seal: PublicationSeal = read_json(&publication_seal_path(d, &hash))?;
+                    verify_publication_seal(&candidate, publication, &seal)?;
+                }
+                if candidate.sequence == checkpoint.sequence {
+                    if hash != checkpoint.candidate_hash
+                        || candidate.snapshot_hash != checkpoint.snapshot_hash
+                    {
+                        return Err(Error::new(
+                            "CHECKPOINT_INVALID",
+                            "checkpoint boundary differs from journal",
+                        ));
+                    }
+                    let mut next = load_snapshot(source, &candidate.snapshot_hash)?;
+                    if publication.recovery.is_some() {
+                        next.operations
+                            .insert(candidate.operation_id.clone(), publication.result.clone());
+                    }
+                    self.state = next;
+                }
+                self.snapshot = Some(candidate.snapshot_hash);
+                continue;
+            }
+            let mut next = load_snapshot(source, &candidate.snapshot_hash)?;
             if publication.is_none() && !complete_unpublished {
                 self.blocked = true;
                 break;
@@ -149,6 +197,12 @@ impl Engine {
             self.blocked = true;
         }
         self.cleanup_purged()?;
+        // Optional acceleration only. Failure to create a checkpoint must never
+        // fail or roll back an otherwise verified recovery. Existing checkpoints
+        // become ineligible whenever their journal/coverage hashes differ.
+        if checkpoint.is_none() {
+            let _ = super::recovery_checkpoint::save(self);
+        }
         Ok(())
     }
 }

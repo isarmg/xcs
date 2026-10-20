@@ -992,6 +992,20 @@ mod tests {
                 plan.candidate_hash
             );
         }
+        // The next clean restart may skip historical snapshot decoding, but it
+        // must preserve the degraded-publication result overlay exactly.
+        drop(engine);
+        crate::journal::SNAPSHOT_LOAD_COUNT.with(|count| count.set(0));
+        let engine = Engine::open(&temp.path().join("state")).unwrap();
+        assert_eq!(
+            crate::journal::SNAPSHOT_LOAD_COUNT.with(|count| count.get()),
+            1
+        );
+        let replay = engine.operation(&operation).unwrap();
+        assert_eq!(replay.commit_state, "PUBLISHED_DEGRADED");
+        assert_eq!(replay.protection_at_publish, "BELOW_TARGET");
+        assert!(engine.open_content(&healthy.version.version_id).is_ok());
+        assert!(engine.open_content(&lost.version.version_id).is_err());
     }
     #[test]
     fn insufficient_accepts_or_repairable_bytes_never_authorize_degraded_publication() {

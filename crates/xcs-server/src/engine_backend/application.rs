@@ -582,4 +582,74 @@ mod tests {
         });
         assert_eq!(result.unwrap_err().code, "HISTORY_NODE_NOT_FOUND");
     }
+    #[test]
+    fn upload_finalization_rechecks_completed_account_revocation() {
+        for disabled in [false, true] {
+            let (root, mut engine, repo, owner) = fixture();
+            let workspace = engine
+                .create_workspace(&repo.main_branch_id, &owner.principal)
+                .unwrap();
+            let source = root.path().join("upload-source");
+            std::fs::write(&source, b"prepared bytes").unwrap();
+            let item = new_id("entry");
+            let backend = std::sync::Arc::new(EngineBackend::new(engine));
+            let mut auth = crate::auth::AuthStore::initialize(
+                root.path(),
+                "admin",
+                "integration-test-password",
+            )
+            .unwrap();
+            auth.upsert_account(
+                "owner",
+                Some("integration-test-password"),
+                false,
+                owner.repositories.clone(),
+                false,
+            )
+            .unwrap();
+            let mut auth = backend.protect_auth(auth).unwrap();
+            let plan = {
+                let engine = backend.engine.lock().unwrap();
+                engine
+                    .prepare_upload(&workspace.workspace_id, &item, "file.txt", &source, 1)
+                    .unwrap()
+            };
+            // This update completes while byte preparation holds no engine lock.
+            auth.upsert_account(
+                "owner",
+                None,
+                false,
+                if disabled {
+                    owner.repositories.clone()
+                } else {
+                    BTreeSet::new()
+                },
+                disabled,
+            )
+            .unwrap();
+            let prepared = plan.execute().unwrap();
+            let mut engine = backend.engine.lock().unwrap();
+            let result = crate::engine_backend::finish_authorized_upload(
+                &mut engine,
+                &owner,
+                &workspace.workspace_id,
+                prepared,
+            );
+            assert_eq!(
+                result.unwrap_err().code,
+                if disabled {
+                    "UNAUTHORIZED"
+                } else {
+                    "FORBIDDEN"
+                }
+            );
+            assert!(
+                engine
+                    .workspace(&workspace.workspace_id)
+                    .unwrap()
+                    .files
+                    .is_empty()
+            );
+        }
+    }
 }

@@ -19,41 +19,6 @@ impl Engine {
             .filter_map(|p| self.state.versions.get(&p.version_id))
             .fold(0u64, |sum, v| sum.saturating_add(v.logical_size))
     }
-    pub fn disk_status(&self) -> Result<Vec<DiskStatus>> {
-        Ok(self
-            .config
-            .disks
-            .iter()
-            .map(|d| {
-                let seal = validate_seal(&self.config, d).ok();
-                DiskStatus {
-                    slot_id: d.slot_id.clone(),
-                    disk_id: d.disk_id.clone(),
-                    level: d.level,
-                    upstream_slot_id: d.upstream_slot_id.clone(),
-                    online: seal.is_some(),
-                    metadata_member: d.metadata_member,
-                    physical_device: seal.map(|s| s.physical_device).unwrap_or_default(),
-                    available_bytes: available(&d.root).unwrap_or(0),
-                    used_bytes: self.used_bytes(&d.slot_id),
-                    simulation: self.config.mode == Mode::Development,
-                }
-            })
-            .collect())
-    }
-    /// Filesystem capacity is sampled from the actual managed member mount.
-    /// Development directories may share one physical filesystem.
-    pub fn disk_capacity(&self, slot: &str) -> Result<(u64, u64, u64)> {
-        let disk = self.disk(slot)?;
-        let stat = rustix::fs::statvfs(&disk.root).map_err(std::io::Error::from)?;
-        let total = stat.f_blocks.saturating_mul(stat.f_frsize);
-        let available = stat.f_bavail.saturating_mul(stat.f_frsize);
-        let used = stat
-            .f_blocks
-            .saturating_sub(stat.f_bfree)
-            .saturating_mul(stat.f_frsize);
-        Ok((total, available, used))
-    }
     pub(crate) fn valid_replica(&self, version_id: &str) -> Result<(PathBuf, FileVersion)> {
         let (content, version, _) = self.verified_replica(version_id)?;
         Ok((content, version))

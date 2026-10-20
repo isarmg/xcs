@@ -9,10 +9,13 @@ use std::{
 
 mod config;
 mod index;
+mod observations;
+pub use observations::DiskObservationPlan;
 mod publication;
 mod reads;
 pub use reads::{ContentReadPlan, RangeContent, WorkspaceReadPlan};
 mod recovery;
+mod recovery_checkpoint;
 mod workspace_storage;
 use config::{acquire_locks, validate_config};
 
@@ -25,6 +28,7 @@ pub struct Engine {
     pub(crate) snapshot: Option<String>,
     pub(crate) next_slot: u64,
     pub(crate) reads: Arc<Mutex<BTreeMap<String, usize>>>,
+    pub(crate) upload_preparations: Arc<Mutex<BTreeSet<String>>>,
     _locks: Vec<File>,
     pub(crate) fault: Option<String>,
 }
@@ -129,6 +133,7 @@ impl Engine {
             snapshot: None,
             next_slot: 1,
             reads: Arc::new(Mutex::new(BTreeMap::new())),
+            upload_preparations: Arc::new(Mutex::new(BTreeSet::new())),
             _locks: locks,
             fault: None,
         };
@@ -159,6 +164,7 @@ impl Engine {
             snapshot: None,
             next_slot: 1,
             reads: Arc::new(Mutex::new(BTreeMap::new())),
+            upload_preparations: Arc::new(Mutex::new(BTreeSet::new())),
             _locks: locks,
             fault: None,
         };

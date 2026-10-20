@@ -558,6 +558,32 @@ fn file_history(engine: &Engine, identity: &Identity, input: &Value) -> Result<V
     Ok(response)
 }
 
+/// Capture admission before physical disk probes leave the engine lock.
+pub(super) fn disk_access(engine: &Engine, identity: &Identity) -> BTreeMap<String, bool> {
+    engine
+        .config()
+        .disks
+        .iter()
+        .filter_map(|disk| {
+            let visible = identity.admin
+                || engine.state().repositories.values().any(|repo| {
+                    eligible(engine, &disk.slot_id, repo)
+                        && authorize(identity, repo, false, false).is_ok()
+                });
+            if !visible {
+                return None;
+            }
+            let writable = disk.level == 1
+                && (identity.admin
+                    || engine.state().repositories.values().any(|repo| {
+                        repo.primary_slot_id == disk.slot_id
+                            && authorize(identity, repo, true, false).is_ok()
+                    }));
+            Some((disk.slot_id.clone(), writable))
+        })
+        .collect()
+}
+
 pub(super) fn call(
     engine: &mut Engine,
     identity: &Identity,
@@ -569,10 +595,6 @@ pub(super) fn call(
         | "file_manager_tags"
         | "file_manager_backup_configuration"
         | "file_manager_configure_backups" => operations::call(engine, identity, action, &input),
-        "file_manager_disks" => {
-            let disks=engine.disk_status().map_err(error)?.into_iter().filter(|disk|identity.admin||engine.state().repositories.values().any(|r|eligible(engine,&disk.slot_id,r)&&authorize(identity,r,false,false).is_ok())).map(|disk|json!({"slot_id":disk.slot_id,"level":disk.level,"online":disk.online,"writable":disk.level==1&&(identity.admin||engine.state().repositories.values().any(|r|r.primary_slot_id==disk.slot_id&&authorize(identity,r,true,false).is_ok())),"available_bytes":disk.available_bytes.to_string(),"used_bytes":disk.used_bytes.to_string(),"simulation":disk.simulation})).collect::<Vec<_>>();
-            Ok(json!({"disks":disks}))
-        }
         "file_manager_entries" => entries(engine, identity, &input),
         "file_manager_directory_branches" | "file_manager_directory_select" => {
             keys(&input, &["slot_id", "path", "name", "operation_id"])?;

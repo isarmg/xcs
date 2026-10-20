@@ -217,7 +217,7 @@ pub(crate) fn full_copy(
     chunk_bytes: u32,
     max_bytes: u64,
 ) -> Result<(u64, String, ChecksumManifest)> {
-    let mut source = open_regular(source)?;
+    let source = open_regular(source)?;
     let destination = absolute_path(destination)?;
     let parent = destination
         .parent()
@@ -232,6 +232,22 @@ pub(crate) fn full_copy(
             .ok_or_else(|| Error::new("UNSAFE_PATH", "missing destination name"))?,
     )
     .map_err(fs_error)?;
+    full_copy_held(
+        source,
+        &directory,
+        &destination_name,
+        chunk_bytes,
+        max_bytes,
+    )
+}
+
+pub(crate) fn full_copy_held(
+    mut source: File,
+    directory: &OpenAt2Root,
+    destination_name: &EntryName,
+    chunk_bytes: u32,
+    max_bytes: u64,
+) -> Result<(u64, String, ChecksumManifest)> {
     let temporary = format!(".xcs-full-{}", new_id("req"));
     let mut target = File::from(
         rustix::fs::openat(

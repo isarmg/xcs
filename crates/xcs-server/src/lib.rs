@@ -183,8 +183,9 @@ pub trait Backend: Send + Sync {
         path: &str,
         source: &Path,
     ) -> Result<Value, ApiError>;
+    /// Return a fully verified raw descriptor (used by SMB and local consumers).
     fn content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError>;
-    /// Range streaming verifies each emitted chunk; raw descriptor callers use content.
+    /// HTTP may authenticate only requested chunks, while retaining the read lease.
     fn range_content(&self, identity: &Identity, version: &str) -> Result<Content, ApiError> {
         self.content(identity, version)
     }

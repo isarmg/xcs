@@ -84,9 +84,7 @@ impl Engine {
         crate::metadata_budget::preflight_publication(
             self, &candidate, &result, &next, None, maximum,
         )?;
-        for p in &prepared {
-            self.prepare_payload(p)?;
-        }
+        self.prepare_payloads(&prepared)?;
         self.failpoint("after_payloads")?;
         if store_snapshot(&members, &next)? != candidate.snapshot_hash
             || crate::history_package::store_history_manifests(&members, &next)?
@@ -128,6 +126,20 @@ impl Engine {
         self.update_index(&previous)?;
         self.blocked = false;
         Ok(())
+    }
+    fn prepare_payloads(&self, prepared: &[Prepared]) -> Result<()> {
+        // Versions of the same file can share a named container. Preserve their
+        // order, and each version's route chain, while independent files copy
+        // in bounded parallel batches. No decision is written until all join.
+        let mut by_file = BTreeMap::<&str, Vec<&Prepared>>::new();
+        for payload in prepared {
+            by_file
+                .entry(&payload.version.file_id)
+                .or_default()
+                .push(payload);
+        }
+        let groups: Vec<_> = by_file.into_values().collect();
+        run_payload_groups(&groups, |payload| self.prepare_payload(payload))
     }
     pub(crate) fn prepare_payload(&self, p: &Prepared) -> Result<()> {
         let mut source = p.source.clone();
@@ -390,5 +402,80 @@ impl Engine {
         }
         self.failpoint("after_local_publications")?;
         Ok(())
+    }
+}
+
+/// Bounded scoped workers are fully joined before returning, even on failure.
+/// The caller still owns the single-writer decision lock throughout this phase.
+fn run_payload_groups<T: Sync>(
+    groups: &[Vec<&T>],
+    work: impl Fn(&T) -> Result<()> + Sync,
+) -> Result<()> {
+    const WORKERS: usize = 4;
+    for batch in groups.chunks(WORKERS) {
+        std::thread::scope(|scope| {
+            let work = &work;
+            let workers: Vec<_> = batch
+                .iter()
+                .map(|group| {
+                    scope.spawn(move || {
+                        for payload in group {
+                            work(payload)?;
+                        }
+                        Ok(())
+                    })
+                })
+                .collect();
+            let mut first_error = None;
+            for worker in workers {
+                let result = worker.join().unwrap_or_else(|_| {
+                    Err(Error::new(
+                        "INTERNAL_ERROR",
+                        "payload preparation worker panicked",
+                    ))
+                });
+                if first_error.is_none() {
+                    first_error = result.err();
+                }
+            }
+            first_error.map_or(Ok(()), Err)
+        })?;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod parallel_preparation_tests {
+    use super::*;
+    use std::sync::{
+        Barrier,
+        atomic::{AtomicUsize, Ordering},
+    };
+
+    #[test]
+    fn independent_payload_workers_are_bounded_and_file_order_is_serial() {
+        let jobs: Vec<_> = (0..8).flat_map(|file| [(file, 0), (file, 1)]).collect();
+        let groups: Vec<_> = jobs.chunks(2).map(|jobs| jobs.iter().collect()).collect();
+        let progress: Vec<_> = (0..8).map(|_| AtomicUsize::new(0)).collect();
+        let active = AtomicUsize::new(0);
+        let maximum = AtomicUsize::new(0);
+        let barrier = Barrier::new(4);
+        run_payload_groups(&groups, |&(file, step)| {
+            assert_eq!(progress[file].fetch_add(1, Ordering::SeqCst), step);
+            let now = active.fetch_add(1, Ordering::SeqCst) + 1;
+            maximum.fetch_max(now, Ordering::SeqCst);
+            barrier.wait();
+            active.fetch_sub(1, Ordering::SeqCst);
+            barrier.wait();
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(maximum.load(Ordering::SeqCst), 4);
+        assert_eq!(active.load(Ordering::SeqCst), 0);
+        assert!(
+            progress
+                .iter()
+                .all(|count| count.load(Ordering::SeqCst) == 2)
+        );
     }
 }

@@ -117,8 +117,19 @@ impl AuthStore {
     }
     pub fn identity_for_principal(&self, username: &str) -> Result<Identity, ApiError> {
         self.require_available()?;
-        let account = self
-            .db
+        Self::database_identity(&self.db, username)
+    }
+    /// Read the engine's authoritative protected snapshot without taking the
+    /// mutable authentication-store lock (account publication uses auth -> engine).
+    pub(crate) fn identity_from_snapshot(
+        snapshot: serde_json::Value,
+        username: &str,
+    ) -> Result<Identity, ApiError> {
+        let database: Database = serde_json::from_value(snapshot).map_err(ApiError::invalid)?;
+        Self::database_identity(&database, username)
+    }
+    fn database_identity(database: &Database, username: &str) -> Result<Identity, ApiError> {
+        let account = database
             .accounts
             .get(username)
             .filter(|account| !account.disabled)

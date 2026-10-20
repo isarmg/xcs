@@ -2,14 +2,21 @@
 use super::*;
 use crate::{disk::*, engine::Prepared};
 use serde_json::json;
+use std::os::unix::ffi::OsStrExt;
 use std::{
     collections::BTreeMap,
     io::{Read, Write},
     path::Path,
 };
+use xcs_platform::fs_safety::{
+    EntryName, RelativePath,
+    linux::{MountPolicy, OpenAt2Root},
+};
 
 fn upload_fingerprint(path: &Path, maximum: u64) -> Result<(u64, String)> {
-    let mut input = open_regular(path)?;
+    upload_fingerprint_file(open_regular(path)?, maximum)
+}
+fn upload_fingerprint_file(mut input: std::fs::File, maximum: u64) -> Result<(u64, String)> {
     let mut digest = blake3::Hasher::new();
     let mut size = 0u64;
     let mut buffer = [0u8; 65536];
@@ -30,6 +37,157 @@ fn upload_fingerprint(path: &Path, maximum: u64) -> Result<(u64, String)> {
         digest.update(&buffer[..n]);
     }
     Ok((size, digest.finalize().to_hex().to_string()))
+}
+
+fn preparation_fs_error(error: xcs_platform::fs_safety::Error) -> Error {
+    Error::new("UNSAFE_PATH", error.to_string())
+}
+fn retained_upload_bytes(directory: &OpenAt2Root) -> Result<u64> {
+    let mut retained = 0u64;
+    let entries =
+        rustix::fs::Dir::read_from(directory.directory()).map_err(std::io::Error::from)?;
+    for entry in entries {
+        let entry = entry.map_err(std::io::Error::from)?;
+        let path = Path::new(std::ffi::OsStr::from_bytes(entry.file_name().to_bytes()));
+        if path
+            .extension()
+            .is_some_and(|ext| ext == "full" || ext == "prepared")
+        {
+            let relative = RelativePath::new(path).map_err(preparation_fs_error)?;
+            retained = retained
+                .checked_add(
+                    directory
+                        .open_file(&relative, false)
+                        .map_err(preparation_fs_error)?
+                        .metadata()?
+                        .len(),
+                )
+                .ok_or_else(|| {
+                    Error::new("RESOURCE_LIMIT", "retained workspace byte count overflow")
+                })?;
+        }
+    }
+    Ok(retained)
+}
+
+struct UploadPreparationClaim {
+    workspace: String,
+    claims: std::sync::Arc<std::sync::Mutex<std::collections::BTreeSet<String>>>,
+}
+impl Drop for UploadPreparationClaim {
+    fn drop(&mut self) {
+        if let Ok(mut claims) = self.claims.lock() {
+            claims.remove(&self.workspace);
+        }
+    }
+}
+
+pub struct UploadPreparation {
+    workspace: Workspace,
+    item: String,
+    path: String,
+    source: std::path::PathBuf,
+    generation: u64,
+    base_version_id: Option<String>,
+    directory: std::path::PathBuf,
+    directory_handle: OpenAt2Root,
+    target: std::path::PathBuf,
+    previous: Option<StagedFile>,
+    existing: bool,
+    maximum: u64,
+    max_file_bytes: u64,
+    max_workspace_bytes: u64,
+    chunk_bytes: u32,
+    claim: UploadPreparationClaim,
+}
+
+pub struct PreparedUpload {
+    plan: UploadPreparation,
+    size: u64,
+    hash: String,
+    scratch: Option<std::path::PathBuf>,
+}
+impl Drop for PreparedUpload {
+    fn drop(&mut self) {
+        if let Some(path) = &self.scratch {
+            if let Some(name) = path.file_name() {
+                let _ = rustix::fs::unlinkat(
+                    self.plan.directory_handle.directory(),
+                    name,
+                    rustix::fs::AtFlags::empty(),
+                );
+            }
+        }
+    }
+}
+impl UploadPreparation {
+    /// Full-file I/O runs here, with no Engine reference or mutex guard.
+    pub fn execute(self) -> Result<PreparedUpload> {
+        let _keep_claim = &self.claim;
+        if let Some(old) = self
+            .previous
+            .as_ref()
+            .filter(|old| old.dirty_generation == self.generation)
+        {
+            let (size, hash) = upload_fingerprint(&self.source, self.max_file_bytes)?;
+            if size != old.size || hash != old.content_hash {
+                return Err(Error::new(
+                    "UPLOAD_GENERATION_CONFLICT",
+                    "one upload generation cannot name different bytes",
+                ));
+            }
+            return Ok(PreparedUpload {
+                plan: self,
+                size,
+                hash,
+                scratch: None,
+            });
+        }
+        if self.existing {
+            let relative =
+                RelativePath::new(Path::new(self.target.file_name().expect("target filename")))
+                    .map_err(preparation_fs_error)?;
+            let existing = upload_fingerprint_file(
+                self.directory_handle
+                    .open_file(&relative, false)
+                    .map_err(preparation_fs_error)?,
+                self.max_file_bytes,
+            )?;
+            if existing != upload_fingerprint(&self.source, self.max_file_bytes)? {
+                return Err(Error::new(
+                    "UPLOAD_GENERATION_CONFLICT",
+                    "one upload generation cannot name different bytes",
+                ));
+            }
+            return Ok(PreparedUpload {
+                plan: self,
+                size: existing.0,
+                hash: existing.1,
+                scratch: None,
+            });
+        }
+        let scratch = self
+            .directory
+            .join(format!(".xcs-upload-{}.prepared", new_id("req")));
+        let mut prepared = PreparedUpload {
+            plan: self,
+            size: 0,
+            hash: String::new(),
+            scratch: Some(scratch.clone()),
+        };
+        let scratch_name = EntryName::new(scratch.file_name().expect("scratch filename"))
+            .map_err(preparation_fs_error)?;
+        let (size, hash, _) = full_copy_held(
+            open_regular(&prepared.plan.source)?,
+            &prepared.plan.directory_handle,
+            &scratch_name,
+            prepared.plan.chunk_bytes,
+            prepared.plan.maximum,
+        )?;
+        prepared.size = size;
+        prepared.hash = hash;
+        Ok(prepared)
+    }
 }
 
 fn validate_directory_selection(state: &State, workspace: &Workspace, path: &str) -> Result<()> {
@@ -252,14 +410,13 @@ impl Engine {
     /// Persist an explicitly numbered HTTP upload generation. Retrying the same
     /// generation may only replay the same complete bytes; older files remain
     /// available until the workspace is explicitly cleaned up.
-    pub fn stage_upload(
-        &mut self,
+    fn validate_upload_target(
+        &self,
         workspace: &str,
         item: &str,
         path: &str,
-        source: &Path,
         generation: u64,
-    ) -> Result<StagedFile> {
+    ) -> Result<(Workspace, Option<Entry>)> {
         if generation == 0 {
             return Err(Error::new(
                 "INVALID_REQUEST",
@@ -268,7 +425,7 @@ impl Engine {
         }
         validate_id(item, "entry")?;
         xcs_naming::validate_path(path)?;
-        let mut w = self.writable_workspace(workspace)?;
+        let w = self.writable_workspace(workspace)?;
         if w.purpose == "normal" {
             validate_directory_selection(&self.state, &w, path)?;
         }
@@ -341,6 +498,33 @@ impl Engine {
                 "upload item is bound to a different path",
             ));
         }
+        Ok((w, base_entry))
+    }
+    pub fn stage_upload(
+        &mut self,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        source: &Path,
+        generation: u64,
+    ) -> Result<StagedFile> {
+        let prepared = self
+            .prepare_upload(workspace, item, path, source, generation)?
+            .execute()?;
+        self.finish_upload(prepared)
+    }
+
+    /// Admission and snapshot only. The returned claim serializes preparation
+    /// within one workspace; different workspaces can copy/hash concurrently.
+    pub fn prepare_upload(
+        &self,
+        workspace: &str,
+        item: &str,
+        path: &str,
+        source: &Path,
+        generation: u64,
+    ) -> Result<UploadPreparation> {
+        let (w, base_entry) = self.validate_upload_target(workspace, item, path, generation)?;
         let expected = open_regular(source)?.metadata()?.len();
         if expected > self.config.max_file_bytes {
             return Err(Error::new(
@@ -348,93 +532,143 @@ impl Engine {
                 "workspace or file byte budget exceeded",
             ));
         }
-        if let Some(old) = &previous {
-            if generation < old.dirty_generation {
-                return Err(Error::new(
-                    "STALE_UPLOAD_GENERATION",
-                    "upload generation is older than staged bytes",
-                ));
-            }
-            if generation == old.dirty_generation {
-                let (size, hash) = upload_fingerprint(source, self.config.max_file_bytes)?;
-                if size == old.size && hash == old.content_hash {
-                    return Ok(old.clone());
-                }
-                return Err(Error::new(
-                    "UPLOAD_GENERATION_CONFLICT",
-                    "one upload generation cannot name different bytes",
-                ));
-            }
+        let previous = w.files.get(item).cloned();
+        if previous
+            .as_ref()
+            .is_some_and(|old| generation < old.dirty_generation)
+        {
+            return Err(Error::new(
+                "STALE_UPLOAD_GENERATION",
+                "upload generation is older than staged bytes",
+            ));
         }
         let directory = self.workspace_data_directory(&w)?;
-        let mut retained = 0u64;
-        for entry in std::fs::read_dir(&directory)? {
-            let entry = entry?;
-            if entry
-                .path()
-                .extension()
-                .is_some_and(|extension| extension == "full")
-            {
-                let size = open_regular(&entry.path())?.metadata()?.len();
-                retained = retained.checked_add(size).ok_or_else(|| {
-                    Error::new("RESOURCE_LIMIT", "retained workspace byte count overflow")
-                })?;
-            }
+        let mut claims = self
+            .upload_preparations
+            .lock()
+            .map_err(|_| Error::new("INTERNAL_ERROR", "upload preparation lock poisoned"))?;
+        if !claims.insert(workspace.into()) {
+            return Err(Error::new(
+                "FILE_WRITE_BUSY",
+                "another upload is preparing this workspace",
+            ));
         }
+        drop(claims);
+        let claim = UploadPreparationClaim {
+            workspace: workspace.into(),
+            claims: self.upload_preparations.clone(),
+        };
+        let directory_handle =
+            OpenAt2Root::open(&directory, MountPolicy::SameMount).map_err(preparation_fs_error)?;
+        let retained = retained_upload_bytes(&directory_handle)?;
         let target = directory.join(format!("{item}-{generation}.full"));
-        // Publishing the immutable bytes can succeed before manifest persistence
-        // fails. Recover that generation by checking both complete files, without
-        // overwriting it or charging its already-retained bytes a second time.
-        let (size, hash) = if target.try_exists()? {
-            let existing = upload_fingerprint(&target, self.config.max_file_bytes)?;
-            let incoming = upload_fingerprint(source, self.config.max_file_bytes)?;
-            if existing != incoming {
-                return Err(Error::new(
-                    "UPLOAD_GENERATION_CONFLICT",
-                    "one upload generation cannot name different bytes",
-                ));
-            }
-            if retained > self.config.max_workspace_bytes {
-                return Err(Error::new(
-                    "RESOURCE_LIMIT",
-                    "retained generations exceed the workspace byte budget",
-                ));
-            }
-            // Retry the directory durability step too, in case the original
-            // full_copy failed after rename but before its directory sync.
-            sync_dir(&directory)?;
-            existing
-        } else {
-            if retained.saturating_add(expected) > self.config.max_workspace_bytes {
-                return Err(Error::new(
-                    "RESOURCE_LIMIT",
-                    "new upload and all retained generations exceed the workspace byte budget",
-                ));
-            }
-            let (size, hash, _) = full_copy(
-                source,
-                &target,
-                self.config.checksum_chunk_bytes,
-                // The source can grow after metadata() admission. Enforce both
-                // quotas while streaming, before full_copy publishes its target.
-                self.config
-                    .max_file_bytes
-                    .min(self.config.max_workspace_bytes.saturating_sub(retained)),
-            )?;
-            (size, hash)
-        };
-        let staged = StagedFile {
-            item_id: item.into(),
+        let existing = target.try_exists()?;
+        if retained > self.config.max_workspace_bytes
+            || (!existing && retained.saturating_add(expected) > self.config.max_workspace_bytes)
+        {
+            return Err(Error::new(
+                "RESOURCE_LIMIT",
+                "new upload and retained generations exceed the workspace byte budget",
+            ));
+        }
+        Ok(UploadPreparation {
+            workspace: w,
+            item: item.into(),
             path: path.into(),
-            source_path: target,
-            size,
-            content_hash: hash,
-            dirty_generation: generation,
+            source: source.into(),
+            generation,
             base_version_id: base_entry.map(|entry| entry.version_id),
+            directory,
+            directory_handle,
+            target,
+            previous,
+            existing,
+            maximum: self
+                .config
+                .max_file_bytes
+                .min(self.config.max_workspace_bytes.saturating_sub(retained)),
+            max_file_bytes: self.config.max_file_bytes,
+            max_workspace_bytes: self.config.max_workspace_bytes,
+            chunk_bytes: self.config.checksum_chunk_bytes,
+            claim,
+        })
+    }
+
+    /// Revalidate the frozen workspace and authorization before making copied
+    /// bytes visible through its manifest. Stale work never replaces new state.
+    pub fn finish_upload(&mut self, mut prepared: PreparedUpload) -> Result<StagedFile> {
+        let plan = &prepared.plan;
+        let (mut w, base_entry) = self.validate_upload_target(
+            &plan.workspace.workspace_id,
+            &plan.item,
+            &plan.path,
+            plan.generation,
+        )?;
+        if canonical_json(&w)? != canonical_json(&plan.workspace)?
+            || base_entry.map(|entry| entry.version_id) != plan.base_version_id
+            || self.config.max_file_bytes != plan.max_file_bytes
+            || self.config.max_workspace_bytes != plan.max_workspace_bytes
+            || self.config.checksum_chunk_bytes != plan.chunk_bytes
+        {
+            return Err(Error::new(
+                "WORKSPACE_CHANGED",
+                "workspace changed during upload preparation; retry with current state",
+            ));
+        }
+        if self.workspace_data_directory(&w)? != plan.directory {
+            return Err(Error::new(
+                "WORKSPACE_CHANGED",
+                "workspace storage changed during upload preparation",
+            ));
+        }
+        if let Some(old) = plan
+            .previous
+            .as_ref()
+            .filter(|old| old.dirty_generation == plan.generation)
+        {
+            return Ok(old.clone());
+        }
+        let current_directory = OpenAt2Root::open(&plan.directory, MountPolicy::SameMount)
+            .map_err(preparation_fs_error)?;
+        if current_directory.identity() != plan.directory_handle.identity() {
+            return Err(Error::new(
+                "UNSAFE_PATH",
+                "workspace data directory identity changed during preparation",
+            ));
+        }
+        let retained = retained_upload_bytes(&plan.directory_handle)?;
+        if retained > self.config.max_workspace_bytes {
+            return Err(Error::new(
+                "RESOURCE_LIMIT",
+                "retained generations exceed the workspace byte budget",
+            ));
+        }
+        if let Some(scratch) = &prepared.scratch {
+            // Unique immutable scratch is already included in the quota above.
+            // Rename, never copy or hash, while holding the serialized writer.
+            rustix::fs::renameat_with(
+                plan.directory_handle.directory(),
+                scratch.file_name().expect("scratch filename"),
+                plan.directory_handle.directory(),
+                plan.target.file_name().expect("target filename"),
+                rustix::fs::RenameFlags::NOREPLACE,
+            )
+            .map_err(std::io::Error::from)?;
+            prepared.scratch = None;
+        }
+        plan.directory_handle.directory().sync_all()?;
+        let staged = StagedFile {
+            item_id: plan.item.clone(),
+            path: plan.path.clone(),
+            source_path: plan.target.clone(),
+            size: prepared.size,
+            content_hash: prepared.hash.clone(),
+            dirty_generation: plan.generation,
+            base_version_id: plan.base_version_id.clone(),
         };
-        w.files.insert(item.into(), staged.clone());
+        w.files.insert(plan.item.clone(), staged.clone());
         self.persist_workspace(&w)?;
-        self.workspaces.insert(workspace.into(), w);
+        self.workspaces.insert(w.workspace_id.clone(), w);
         Ok(staged)
     }
     pub fn stage_bytes(&mut self, workspace: &str, path: &str, bytes: &[u8]) -> Result<StagedFile> {

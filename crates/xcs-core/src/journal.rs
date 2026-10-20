@@ -477,7 +477,13 @@ fn store_snapshot_described(
     let hash = store_object_replicas_bounded(members, "snapshot", &snapshot, maximum)?;
     Ok((hash, snapshot))
 }
+#[cfg(test)]
+thread_local! {
+    pub(crate) static SNAPSHOT_LOAD_COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
 pub(crate) fn load_snapshot(d: &DiskConfig, hash: &str) -> Result<State> {
+    #[cfg(test)]
+    SNAPSHOT_LOAD_COUNT.with(|count| count.set(count.get() + 1));
     let snapshot: Snapshot = load_object(d, "snapshot", hash)?;
     if snapshot.format_version != 2 {
         return Err(Error::new(
