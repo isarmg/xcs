@@ -1,13 +1,6 @@
 // Take a look at the license at the top of the repository in the LICENSE file.
 
 cfg_select! {
-    any(target_os = "macos", target_os = "ios") => {
-        pub(crate) mod apple;
-        pub(crate) use apple as sys;
-
-        #[allow(unused_imports)]
-        pub(crate) use libc::__error as libc_errno;
-    }
     any(target_os = "linux", target_os = "android") => {
         pub(crate) mod linux;
         pub(crate) use linux as sys;
@@ -18,13 +11,6 @@ cfg_select! {
         #[cfg(target_os = "android")]
         #[allow(unused_imports)]
         pub(crate) use libc::__errno as libc_errno;
-    }
-    any(target_os = "freebsd", target_os = "netbsd") => {
-        pub(crate) mod bsd;
-        pub(crate) use bsd as sys;
-
-        #[allow(unused_imports)]
-        pub(crate) use bsd::libc_errno;
     }
     _ => {
         compile_error!("Invalid cfg!");
@@ -67,10 +53,6 @@ cfg_select! {
 pub(crate) mod utils;
 
 // Make formattable by rustfmt.
-#[cfg(any())]
-mod apple;
-#[cfg(any())]
-mod bsd;
 #[cfg(any())]
 mod groups;
 #[cfg(any())]

@@ -61,12 +61,6 @@ cfg_os_poll! {
     pub use self::unix::*;
 }
 
-#[cfg(windows)]
-cfg_os_poll! {
-    mod windows;
-    pub use self::windows::*;
-}
-
 #[cfg(all(target_os = "wasi", target_env = "p1"))]
 cfg_os_poll! {
     mod wasip1;

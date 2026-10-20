@@ -22,6 +22,13 @@
 #![allow(renamed_and_removed_lints)]
 #![allow(clippy::assertions_on_constants)]
 
+// Maintained native target contract; shared Linux ABI implementations stay intact.
+#[cfg(not(any(
+    all(target_os = "linux", target_arch = "x86_64", target_pointer_width = "64"),
+    all(target_arch = "wasm32", target_os = "unknown", target_pointer_width = "32"),
+)))]
+compile_error!("foundation sysinfo supports Linux amd64 and wasm32-unknown-unknown fallback only");
+
 #[macro_use]
 mod macros;
 
@@ -34,10 +41,7 @@ cfg_select! {
         #[cfg(test)]
         pub(crate) const MIN_USERS: usize = 0;
     }
-    any(
-        target_os = "macos", target_os = "ios",
-        target_os = "linux", target_os = "android",
-        target_os = "freebsd", target_os = "netbsd") =>
+    target_os = "linux" =>
     {
         mod unix;
         use crate::unix::sys as sys;
@@ -46,18 +50,6 @@ cfg_select! {
         mod network;
         #[cfg(feature = "network")]
         use crate::unix::network_helper;
-
-        #[cfg(test)]
-        pub(crate) const MIN_USERS: usize = 1;
-    }
-    windows => {
-        mod windows;
-        use crate::windows as sys;
-
-        #[cfg(feature = "network")]
-        mod network;
-        #[cfg(feature = "network")]
-        use crate::windows::network_helper;
 
         #[cfg(test)]
         pub(crate) const MIN_USERS: usize = 1;
@@ -129,8 +121,6 @@ mod network;
 mod unix;
 #[cfg(any())]
 mod unknown;
-#[cfg(any())]
-mod windows;
 
 /// This function is only used on Linux targets, when the `system` feature is enabled. In other
 /// cases, it does nothing and returns `false`.

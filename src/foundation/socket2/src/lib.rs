@@ -60,6 +60,10 @@
 // Disallow warnings in examples.
 #![doc(test(attr(deny(warnings))))]
 
+// Maintained native target contract; shared Linux ABI implementations stay intact.
+#[cfg(not(all(target_os = "linux", target_arch = "x86_64", target_pointer_width = "64")))]
+compile_error!("foundation socket2 supports Linux amd64 only");
+
 use std::fmt;
 #[cfg(not(any(target_os = "redox", target_os = "wasi", target_os = "horizon")))]
 use std::io::IoSlice;
@@ -180,10 +184,9 @@ mod sockref;
     any(unix, all(target_os = "wasi", not(target_env = "p1"))),
     path = "sys/unix.rs"
 )]
-#[cfg_attr(windows, path = "sys/windows.rs")]
 mod sys;
 
-#[cfg(not(any(windows, unix, all(target_os = "wasi", not(target_env = "p1")))))]
+#[cfg(not(any(unix, all(target_os = "wasi", not(target_env = "p1")))))]
 compile_error!("Socket2 doesn't support the compile target");
 
 use sys::c_int;

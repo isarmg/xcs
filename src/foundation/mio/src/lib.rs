@@ -44,6 +44,12 @@
 compile_error!("This wasm target is unsupported by mio. If using Tokio, disable the net feature.");
 
 // macros used internally
+// Maintained native target contract; shared Linux ABI implementations stay intact.
+#[cfg(not(any(
+    all(target_os = "linux", target_arch = "x86_64", target_pointer_width = "64"),
+)))]
+compile_error!("foundation mio supports Linux amd64 only");
+
 #[macro_use]
 mod macros;
 
