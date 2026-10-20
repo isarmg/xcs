@@ -10,7 +10,7 @@ pub(crate) use mutation::{
     create_branch, directory_branch, namespace, rename_directory_branch, rename_file_branch,
     select_branch, select_default_branch, update_node_note, update_note,
 };
-pub(crate) use operation::{poll, record_operation, record_receipt};
+pub(crate) use operation::{check_upload, poll, record_operation, record_receipt};
 pub(crate) use transfer::{
     PickerContext, cancel_picker, download, pick_upload, preview, upload_files,
 };
@@ -24,7 +24,7 @@ fn disk_path(slot: &str) -> String {
 pub(crate) fn pending(state: &State) -> bool {
     state.files.upload_picker.is_some()
         || state.files.mutation_pending
-        || state.files.uploads.iter().any(|row| row.status.pending())
+        || state.transfers.rows.iter().any(|row| row.status.pending())
         || state
             .files
             .operations

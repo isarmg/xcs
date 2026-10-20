@@ -33,7 +33,6 @@ pub(crate) struct Model {
     pub publications: super::review::Publications,
     pub preview: Option<(String, String)>,
     pub preview_generation: u64,
-    pub uploads: Vec<UploadRow>,
     pub upload_picker: Option<super::actions::PickerContext>,
     pub operations: Vec<Value>,
     pub polling_operations: Vec<String>,
@@ -115,19 +114,6 @@ impl Model {
 pub(crate) enum NamespaceAction {
     CreateDirectory,
     Rename(Value),
-}
-#[derive(Clone, Default)]
-pub(crate) struct UploadRow {
-    pub operation_id: String,
-    pub name: String,
-    pub slot: String,
-    pub path: String,
-    pub branch_id: String,
-    pub workspace: String,
-    pub expected_head: String,
-    pub status: SaveStatus,
-    pub message: String,
-    pub polling: bool,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub(crate) enum SaveStatus {

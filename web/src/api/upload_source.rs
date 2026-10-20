@@ -34,6 +34,12 @@ impl UploadSource {
             Self::Native(source) => source.name.clone(),
         }
     }
+    pub fn size(&self) -> Option<u64> {
+        match self {
+            Self::Browser(file) => Some(file.size() as u64),
+            Self::Native(source) => source.size.parse().ok(),
+        }
+    }
     pub fn preflight(&self) -> Result<(), Error> {
         match self {
             Self::Browser(file) => browser_size(file.size()),

@@ -4,6 +4,7 @@ mod format;
 mod history;
 mod icons;
 mod monitor;
+mod transfers;
 mod ui;
 
 use wasm_bindgen::prelude::*;

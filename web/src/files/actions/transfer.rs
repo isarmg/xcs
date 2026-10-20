@@ -3,9 +3,10 @@ use super::{browse::load_entries, disk_path, pending};
 use crate::{
     api,
     files::model::{
-        Model, SaveStatus, UploadRow, file_kind, join_path, operation_status, publication_notice,
+        Model, SaveStatus, file_kind, join_path, operation_status, publication_notice,
         selected_branch, visible_content,
     },
+    transfers::UploadRow,
     ui::{State, current_session, fail, set_notice, text},
 };
 use serde_json::{Value, json};
@@ -154,6 +155,59 @@ fn write_session_body(row: &UploadRow) -> Value {
     }
     request
 }
+fn record_preflight_failure(
+    state: RwSignal<State>,
+    model: &Model,
+    source: &api::UploadSource,
+    target: Option<UploadTarget>,
+    message: String,
+) {
+    let row = preflight_failure(
+        model,
+        source.name(),
+        target,
+        source.size(),
+        api::operation_id(),
+        message,
+    );
+    state.update(|s| s.transfers.rows.push(row));
+}
+fn preflight_failure(
+    model: &Model,
+    name: String,
+    target: Option<UploadTarget>,
+    size: Option<u64>,
+    id: String,
+    message: String,
+) -> UploadRow {
+    let mut row = UploadRow {
+        operation_id: id,
+        path: target
+            .as_ref()
+            .map(|target| target.path.clone())
+            .unwrap_or_default(),
+        branch_id: target
+            .as_ref()
+            .map(|target| target.branch_id.clone())
+            .unwrap_or_default(),
+        name,
+        slot: model.slot.clone(),
+        size,
+        status: SaveStatus::Rejected,
+        message: format!(
+            "{} {}",
+            message,
+            t(
+                "未发送文件或保存操作。请检查后重新选择。",
+                "No file or save operation was sent. Check the file and select it again."
+            )
+        ),
+        ..Default::default()
+    };
+    row.settle_time();
+    row
+}
+
 fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, context: PickerContext) {
     let snapshot = state.get_untracked();
     if !context.current(&snapshot)
@@ -182,25 +236,36 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
     let mut queue = Vec::new();
     for source in sources {
         // Validate the entire queue before creating any server workspace.
+        let Some(target) = upload_target(&snapshot.files, &source.name(), context.replace) else {
+            let message = t(
+                "上传文件名或目标无效，本文件未上传。",
+                "The upload filename or destination is invalid. This file was not uploaded.",
+            );
+            record_preflight_failure(state, &snapshot.files, &source, None, message.clone());
+            set_notice(state, message);
+            return;
+        };
         if let Err(error) = source.preflight() {
+            record_preflight_failure(
+                state,
+                &snapshot.files,
+                &source,
+                Some(target),
+                error.to_string(),
+            );
             fail(state, error);
             return;
         }
-        let Some(target) = upload_target(&snapshot.files, &source.name(), context.replace) else {
-            set_notice(
-                state,
-                t("上传文件名无效。", "An upload filename is invalid."),
-            );
-            return;
-        };
         let id = api::operation_id();
         if id.is_empty() {
             return;
         }
+        let size = source.size();
         queue.push((
             source,
             UploadRow {
                 operation_id: id,
+                size,
                 name: target.name,
                 slot: snapshot.files.slot.clone(),
                 path: target.path,
@@ -211,7 +276,7 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
     }
     state.update(|s| {
         append_uploads(
-            &mut s.files.uploads,
+            &mut s.transfers.rows,
             queue.iter().map(|(_, row)| row.clone()),
         );
     });
@@ -222,7 +287,10 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
                 return;
             }
             let id = row.operation_id.clone();
-            update_upload(state, &id, |row| row.status = SaveStatus::Uploading);
+            update_upload(state, &id, |row| {
+                row.status = SaveStatus::Uploading;
+                row.started_at = crate::transfers::now();
+            });
             let request = write_session_body(&row);
             let mut commit_attempted = false;
             let result = async {
@@ -255,7 +323,10 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
                     &id,
                     &format!("Upload {}", row.name),
                     &expected_head,
-                    || commit_attempted = true,
+                    || {
+                        commit_attempted = true;
+                        update_upload(state, &id, |row| row.commit_attempted = true);
+                    },
                 )
                 .await
             }
@@ -279,13 +350,13 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
                 }
             }
             if state.with_untracked(|s| {
-                s.files
-                    .uploads
+                s.transfers
+                    .rows
                     .iter()
                     .find(|row| row.operation_id == id)
                     .is_some_and(|row| row.status == SaveStatus::Unknown)
             }) {
-                state.update(|s| stop_waiting_uploads(&mut s.files.uploads));
+                state.update(|s| stop_waiting_uploads(&mut s.transfers.rows));
                 break;
             }
         }
@@ -305,6 +376,8 @@ fn upload_error_status(commit_attempted: bool, http_status: u16) -> SaveStatus {
 fn apply_upload_error(row: &mut UploadRow, commit_attempted: bool, error: &api::Error) {
     row.status = upload_error_status(commit_attempted, error.status);
     row.message = error.to_string();
+    row.request_id = error.request_id.clone();
+    row.settle_time();
 }
 
 // Receipts (especially failed staged uploads) remain until the user explicitly
@@ -320,6 +393,7 @@ fn stop_waiting_uploads(uploads: &mut [UploadRow]) {
         .filter(|row| row.status == SaveStatus::Waiting)
     {
         row.status = SaveStatus::Rejected;
+        row.settle_time();
         row.message = t(
             "前一项保存尚未确认，本文件未上传。确认后请重新选择。",
             "The previous save is unconfirmed. This file was not uploaded; select it again after confirmation.",
@@ -329,8 +403,8 @@ fn stop_waiting_uploads(uploads: &mut [UploadRow]) {
 pub(super) fn update_upload(state: RwSignal<State>, id: &str, update: impl FnOnce(&mut UploadRow)) {
     state.update(|s| {
         if let Some(row) = s
-            .files
-            .uploads
+            .transfers
+            .rows
             .iter_mut()
             .find(|row| row.operation_id == id)
         {
@@ -344,7 +418,16 @@ pub(super) fn apply_upload_result(state: RwSignal<State>, id: &str, value: Value
     update_upload(state, id, |row| {
         row.status = status;
         row.message = publication_notice(status);
+        let item = value.get("operation").unwrap_or(&value);
+        if let Some(error) = item.get("error").filter(|error| !error.is_null()) {
+            let detail = error
+                .as_str()
+                .map(str::to_owned)
+                .unwrap_or_else(|| error.to_string());
+            row.message.push_str(&format!(" {detail}"));
+        }
         row.polling = false;
+        row.settle_time();
         if matches!(status, SaveStatus::Published | SaveStatus::Degraded) {
             row.workspace.clear();
             row.expected_head.clear();
@@ -407,6 +490,55 @@ mod tests {
     use super::*;
 
     #[test]
+    fn preflight_failure_records_metadata_without_creating_a_pollable_operation() {
+        let model = Model {
+            slot: "P01".into(),
+            directory: "reports".into(),
+            ..Default::default()
+        };
+        let row = preflight_failure(
+            &model,
+            "large.bin".into(),
+            upload_target(&model, "large.bin", false),
+            Some(67_108_865),
+            "local-id".into(),
+            "File exceeds browser limit".into(),
+        );
+        assert_eq!(row.status, SaveStatus::Rejected);
+        assert_eq!(row.size, Some(67_108_865));
+        assert_eq!(row.path, "reports/large.bin");
+        assert!(row.message.contains("No file or save operation was sent"));
+        assert!(row.workspace.is_empty());
+        assert!(row.started_at.is_none());
+        assert!(!row.commit_attempted);
+        assert!(!row.queryable());
+    }
+    #[test]
+    fn failed_replacement_keeps_actual_target_and_branch_not_local_source_name() {
+        let model = pending_model();
+        let row = preflight_failure(
+            &model,
+            "large.bin".into(),
+            upload_target(&model, "large.bin", true),
+            Some(67_108_865),
+            "local".into(),
+            "Too large".into(),
+        );
+        assert_eq!(row.name, "large.bin");
+        assert_eq!(row.path, "reports/report.txt");
+        assert_eq!(row.branch_id, "draft");
+        let invalid = preflight_failure(
+            &model,
+            "../invalid".into(),
+            None,
+            None,
+            "local".into(),
+            "Invalid destination".into(),
+        );
+        assert!(invalid.path.is_empty());
+        assert!(invalid.branch_id.is_empty());
+    }
+    #[test]
     fn cancelled_picker_does_not_retarget_a_late_browser_change() {
         let owner = Owner::new();
         owner.with(|| {
@@ -430,7 +562,7 @@ mod tests {
             upload_files(state, None);
             state.with_untracked(|s| {
                 assert!(s.files.upload_picker.is_none());
-                assert!(s.files.uploads.is_empty());
+                assert!(s.transfers.rows.is_empty());
             });
         });
     }
@@ -482,7 +614,7 @@ mod tests {
             ] {
                 let state = RwSignal::new(State::default());
                 state.update(|s| {
-                    s.files.uploads.push(UploadRow {
+                    s.transfers.rows.push(UploadRow {
                         operation_id: "original".into(),
                         workspace: "retained-workspace".into(),
                         expected_head: "retained-head".into(),
@@ -493,7 +625,7 @@ mod tests {
                 });
                 apply_upload_result(state, "original", response);
                 state.with_untracked(|s| {
-                    let row = &s.files.uploads[0];
+                    let row = &s.transfers.rows[0];
                     assert_eq!(row.status, SaveStatus::Unknown);
                     assert!(pending(s));
                     assert!(!row.polling);
@@ -508,7 +640,7 @@ mod tests {
                     }),
                 );
                 state.with_untracked(|s| {
-                    let row = &s.files.uploads[0];
+                    let row = &s.transfers.rows[0];
                     assert_eq!(row.status, SaveStatus::Published);
                     assert!(!pending(s));
                     assert!(row.workspace.is_empty());

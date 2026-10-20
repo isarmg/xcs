@@ -163,6 +163,6 @@ fn file_table(state: RwSignal<State>) -> impl IntoView {
 }
 fn upload_queue(state: RwSignal<State>) -> impl IntoView {
     view! {
-        <Show when=move ||state.with(|s|!s.files.uploads.is_empty())><section class="zxs-content-panel zxs-frame zxs-stack"><div class="zxs-file-heading zxs-flow"><h2 class="zxs-row">{t("上传与保存","Uploads and saves")}</h2><button class="zxs-button" disabled=move ||state.with(|s|s.files.uploads.iter().any(|row|row.status.pending())) on:click=move |_|state.update(|s|s.files.uploads.clear())>{t("清除已完成项","Clear completed")}</button></div><ul class="zxs-activity-list">{move ||state.with(|s|s.files.uploads.clone()).into_iter().map(|row|view!{<li><strong class="zxs-row">{row.name}</strong><span class="zxs-row">{row.status.label()}</span><p class="zxs-row">{row.message}</p></li>}).collect_view()}</ul></section></Show>
+        {crate::transfers::summary(state)}
     }
 }
