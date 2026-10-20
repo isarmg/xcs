@@ -208,21 +208,50 @@ impl Browser {
                 Err("upload entry point disabled".into())
             }
         })?;
-        diagnostics::upload_snapshot(self, "before-button-click");
-        self.click(&button)?;
-        diagnostics::upload_snapshot(self, "after-button-click");
-        let selector = if replace {
-            ".zxs-entry-content input[type='file']"
-        } else {
-            "input[type='file']"
-        };
-        let result = self.keys(
-            &self.css(selector)?,
-            file.to_str().ok_or("non-UTF8 upload fixture path")?,
-        );
-        diagnostics::upload_snapshot(self, "after-file-selection");
-        result
+        // Headless Chrome otherwise cancels its OS chooser immediately. Keep
+        // the real button/input click and captured destination, but let the
+        // standard WebDriver file selection satisfy the intercepted chooser.
+        self.cdp(
+            "Page.setInterceptFileChooserDialog",
+            json!({"enabled":true}),
+        )?;
+        with_cleanup(
+            || {
+                let started = self.script("return performance.now()")?;
+                let started = started.as_f64().ok_or("missing chooser start time")?;
+                diagnostics::upload_snapshot(self, "before-button-click");
+                self.click(&button)?;
+                diagnostics::upload_snapshot(self, "after-button-click");
+                let selector = if replace {
+                    ".zxs-entry-content input[type='file']"
+                } else {
+                    "input[type='file']"
+                };
+                self.keys(
+                    &self.css(selector)?,
+                    file.to_str().ok_or("non-UTF8 upload fixture path")?,
+                )?;
+                diagnostics::upload_snapshot(self, "after-file-selection");
+                let cancelled = self.script(&format!(
+                    "return (window.__zxsSmokeUploadEvents||[]).some(e=>e.time>={started}&&e.type==='cancel')"
+                ))?;
+                if cancelled == true {
+                    return Err(
+                        "file chooser cancelled before WebDriver selection completed".into(),
+                    );
+                }
+                Ok(())
+            },
+            || {
+                self.cdp(
+                    "Page.setInterceptFileChooserDialog",
+                    json!({"enabled":false}),
+                )
+                .map(|_| ())
+            },
+        )
     }
+
     fn cdp(&self, cmd: &str, params: Value) -> Result<Value> {
         self.command(
             "POST",
@@ -241,6 +270,23 @@ impl Browser {
 impl Drop for Browser {
     fn drop(&mut self) {
         let _ = self.command("DELETE", "", None);
+    }
+}
+
+// Always restore Chrome's chooser behavior, including on click/selection errors.
+fn with_cleanup(
+    action: impl FnOnce() -> Result<()>,
+    cleanup: impl FnOnce() -> Result<()>,
+) -> Result<()> {
+    let result = action();
+    let cleanup_result = cleanup();
+    match (result, cleanup_result) {
+        (Err(error), Err(cleanup_error)) => {
+            eprintln!("file chooser cleanup also failed: {cleanup_error}");
+            Err(error)
+        }
+        (Err(error), _) | (_, Err(error)) => Err(error),
+        _ => Ok(()),
     }
 }
 
@@ -603,6 +649,28 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn chooser_interception_cleanup_runs_after_success_and_failure() {
+        for succeed in [true, false] {
+            let cleaned = std::cell::Cell::new(false);
+            let result = with_cleanup(
+                || {
+                    if succeed {
+                        Ok(())
+                    } else {
+                        Err("selection failed".into())
+                    }
+                },
+                || {
+                    cleaned.set(true);
+                    Ok(())
+                },
+            );
+            assert!(cleaned.get());
+            assert_eq!(result.is_ok(), succeed);
+        }
+        assert!(with_cleanup(|| Ok(()), || Err("cleanup failed".into())).is_err());
+    }
     #[test]
     fn webdriver_http_keeps_binary_body_and_status() {
         let (status, body) =
