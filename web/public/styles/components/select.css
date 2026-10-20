@@ -21,9 +21,11 @@
   --zxs-contour-mode: clip;
   --zxs-contour-foreground: 1;
 }
-/* Hidden popovers cannot be measured. Reveal a newly opened panel only once
- * its shared contour and shadow are painted, including the first frame. */
-.zxs-select-panel:popover-open:not([data-zxs-contour-state=clip]):not([data-zxs-contour-reason=forced-colors]) { visibility: hidden; }
+/* Hide only unfinished paint, not a completed square fallback. Unsupported
+ * decoration must never make an otherwise usable menu invisible. */
+.zxs-select-panel:popover-open:not([data-zxs-contour-state=clip]):not([data-zxs-contour-state=fallback]) { visibility: hidden; }
+/* A closed popover was unmeasurable, not a completed visible fallback. */
+.zxs-select-panel:popover-open[data-zxs-contour-state=fallback][data-zxs-contour-reason=not-visible] { visibility: hidden; }
 .zxs-select-option {
   display: block; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   --zxs-contour-extent: 0px;

@@ -77,10 +77,29 @@ pub fn t(zh: &str, en: &str) -> String {
 }
 
 pub fn tf(zh: &str, en: &str, values: &[&str]) -> String {
-    let mut text = t(zh, en);
-    for (index, value) in values.iter().enumerate() {
-        text = text.replace(&format!("{{{index}}}"), value);
+    let template = t(zh, en);
+    let mut text = String::with_capacity(template.len());
+    let mut remaining = template.as_str();
+    // Read only the template, never replacement values. Preserve unknown and
+    // noncanonical placeholders exactly as the former literal replacement did.
+    while let Some(start) = remaining.find('{') {
+        text.push_str(&remaining[..start]);
+        remaining = &remaining[start..];
+        if let Some(end) = remaining.find('}') {
+            let token = &remaining[1..end];
+            if let Ok(index) = token.parse::<usize>()
+                && token == index.to_string()
+                && let Some(value) = values.get(index)
+            {
+                text.push_str(value);
+                remaining = &remaining[end + 1..];
+                continue;
+            }
+        }
+        text.push('{');
+        remaining = &remaining[1..];
     }
+    text.push_str(remaining);
     text
 }
 
@@ -119,6 +138,16 @@ pub fn switch_language() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn format_parameters_are_literal_and_never_reparsed() {
+        assert_eq!(tf("", "{0} / {1}", &["{1}", "second"]), "{1} / second");
+        assert_eq!(tf("", "{0}{0} {2}", &["中文🦀"]), "中文🦀中文🦀 {2}");
+        assert_eq!(
+            tf("", "plain {invalid} {", &["unused"]),
+            "plain {invalid} {"
+        );
+        assert_eq!(tf("", "{01} {1}", &["zero", "one"]), "{01} one");
+    }
     #[test]
     fn locale_admission_matches_current_contract() {
         assert_eq!(supported("zh-Hans-CN"), Some("zh-CN"));

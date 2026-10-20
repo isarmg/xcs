@@ -1,6 +1,5 @@
 :where(button,input,select,textarea) { font: inherit; }
 :where(button,[href],input,select,textarea,[tabindex]):focus-visible { outline: 3px solid var(--zxs-focus,#2563eb); outline-offset: 3px; }
-:root :is(input,select,textarea,[role=combobox]):focus { outline: 0; }
 .zxs-button,.zxs-input { min-height: 44px; border: 1px solid currentColor; border-radius: 0; padding: .5rem .8rem; color: inherit; background: var(--zxs-bg-panel,#fff); }
 .zxs-button { cursor: pointer; touch-action: manipulation; }
 .zxs-button:disabled { opacity: .6; cursor: not-allowed; }

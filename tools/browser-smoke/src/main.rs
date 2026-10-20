@@ -16,6 +16,7 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+mod accessibility;
 mod demo;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -343,6 +344,7 @@ fn exercise(
     wait_for("uploaded file in activity history", || {
         if browser.script("return Array.from(document.querySelectorAll('.zxs-history-path')).some(e=>e.textContent.includes('browser-smoke.txt'))")? == true { Ok(()) } else { Err("history missing uploaded file".into()) }
     })?;
+    accessibility::run(browser)?;
     browser.click(&browser.button("Sign out", "退出")?)?;
     browser.css("input[autocomplete='current-password']")?;
     if browser.script("return window.__zxsSmokeErrors")? != json!([]) {
