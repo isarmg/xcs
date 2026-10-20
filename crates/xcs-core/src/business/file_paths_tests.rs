@@ -218,3 +218,64 @@ fn path_node_note_and_new_branch_are_metadata_and_preserve_the_named_source_node
     assert_eq!(e.state().file_node_parents[&new], vec![node]);
     assert!(e.state().branches[&branch].file_node_id.is_none());
 }
+
+#[test]
+fn contextual_selection_rejects_unavailable_owned_content_without_publication() {
+    let (_t, mut e, r) = setup();
+    save(&mut e, &r, "a.txt", b"original body");
+    let original = entries(&e, &r)["a.txt"].clone();
+    let original_branch = e.file_context(&r.repository_id, "a.txt").unwrap().branch_id;
+    let branch = e
+        .create_file_branch(
+            &original.file_id,
+            &original.version_id,
+            "other",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap()
+        .result["branch_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    e.select_file_branch_at(
+        &r.repository_id,
+        "a.txt",
+        &original.file_id,
+        &branch,
+        "admin",
+        &new_id("op"),
+    )
+    .unwrap();
+    save(&mut e, &r, "a.txt", b"available body");
+    // Lose only the old body's physical replicas, leaving its active branch and
+    // all immutable history metadata intact.
+    while let Ok((path, _)) = e.valid_replica(&original.version_id) {
+        std::fs::remove_file(path).unwrap();
+    }
+    let before = canonical_json(e.state()).unwrap();
+    assert_eq!(
+        e.select_file_branch(&original.file_id, &original_branch, "admin", &new_id("op"))
+            .unwrap_err()
+            .code(),
+        "CONTENT_UNAVAILABLE"
+    );
+    assert_eq!(
+        e.select_file_branch_at(
+            &r.repository_id,
+            "a.txt",
+            &original.file_id,
+            &original_branch,
+            "admin",
+            &new_id("op")
+        )
+        .unwrap_err()
+        .code(),
+        "CONTENT_UNAVAILABLE"
+    );
+    assert_eq!(canonical_json(e.state()).unwrap(), before);
+    assert_eq!(
+        e.file_context(&r.repository_id, "a.txt").unwrap().branch_id,
+        branch
+    );
+}

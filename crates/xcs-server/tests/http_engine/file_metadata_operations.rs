@@ -301,3 +301,63 @@ async fn scoped_backup_configuration_checks_scope_identity_generation_and_manage
         "工作备份/nested/report.txt"
     );
 }
+
+#[tokio::test]
+async fn contextual_branch_selection_preserves_current_file_when_target_body_is_lost() {
+    let root = tempfile::tempdir().unwrap();
+    let system = root.path().join("system");
+    let app = application(root.path());
+    let token = login(&app, "admin", "integration-test-password").await;
+    manager_upload(&app, &token, "report.txt", b"original body").await;
+    let listing = success(
+        &app,
+        &token,
+        "GET",
+        "/v1/file-manager/disks/P01/entries",
+        None,
+    )
+    .await;
+    let file = listing["entries"][0]["file_id"].as_str().unwrap();
+    let version = listing["entries"][0]["version_id"].as_str().unwrap();
+    let repo = listing["context"]["repository_id"].as_str().unwrap();
+    let original_branch = listing["entries"][0]["selected_branch_id"]
+        .as_str()
+        .unwrap();
+    let other = branch(&app, &token, file, version, "other").await;
+    select(&app, &token, file, &other).await;
+    manager_upload(&app, &token, "report.txt", b"still readable body").await;
+    let before = history(&app, &token, file).await;
+    drop(app);
+    let engine = reopen_after_router_drop(&system).await;
+    let history_id = &engine.state().versions[version].history_tree_id;
+    for disk in &engine.config().disks {
+        let directory = disk
+            .root
+            .join("histories")
+            .join(history_id)
+            .join("versions")
+            .join(version);
+        if directory.exists() {
+            std::fs::remove_file(fixture_payload(&directory, engine.state())).unwrap();
+        }
+    }
+    let backend = Arc::new(EngineBackend::new(engine));
+    let auth = backend.open_auth(&system).unwrap();
+    let app = xcs_server::router(backend, auth, ServerConfig::loopback(&system)).unwrap();
+    let token = login(&app, "admin", "integration-test-password").await;
+    let route = format!("/v1/file-manager/files/{file}/select");
+    for contextual in [false, true] {
+        let mut request = json!({"branch_id":original_branch,"operation_id":new_id("op")});
+        if contextual {
+            request["repository_id"] = repo.into();
+            request["path"] = "report.txt".into();
+        }
+        let (status, response) = send(&app, Some(&token), "POST", &route, Some(request)).await;
+        assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "{response}");
+        assert_eq!(response["error"]["code"], "CONTENT_UNAVAILABLE");
+    }
+    let after = history(&app, &token, file).await;
+    assert_eq!(after["selected_branch_id"], before["selected_branch_id"]);
+    assert_eq!(after["current_node_id"], before["current_node_id"]);
+    assert_eq!(after["versions"], before["versions"]);
+}

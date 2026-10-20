@@ -125,11 +125,7 @@ impl Engine {
                 ));
             }
             let workspace = self.workspace(&request.workspace_id)?;
-            self.require_grant(
-                self.repository_for_branch(&workspace.branch_id)?,
-                &request.principal,
-                "read",
-            )?;
+            self.require_workspace_commit_access(&workspace, &request.principal, true)?;
             return Ok(crate::business::WorkspaceMutation {
                 mutation: crate::engine::MutationPlan::Existing(
                     self.operation(&request.operation_id)?,

@@ -4,6 +4,12 @@ use crate::{disk::*, journal::*, *};
 use std::collections::{BTreeMap, BTreeSet};
 
 impl Engine {
+    /// Read only a complete, verified replica of the exact candidate-bound root.
+    /// A damaged preferred member must not hide healthy metadata replicas.
+    pub(crate) fn load_bound_snapshot(&self, hash: &str) -> Result<State> {
+        verified_snapshot(&self.members(), hash).map(|(state, _)| state)
+    }
+
     /// Preserve the candidate's original snapshot layout when completing a
     /// persisted decision, including decisions made by an older page writer.
     pub(crate) fn repair_bound_snapshot(&self, hash: &str) -> Result<()> {

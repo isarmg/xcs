@@ -3061,6 +3061,78 @@ fn detached_commit_fixture(engine: &mut Engine, repo: &Repository) -> (Workspace
 }
 
 #[test]
+fn detached_commit_retry_accepts_retained_write_permission_without_read_grant() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let mut grants = repo.grants.clone();
+    grants.write.insert("writer".into());
+    engine
+        .set_grants(&repo.repository_id, grants.clone(), "admin", &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "writer")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "file", b"saved")
+        .unwrap();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id,
+        operation_id: new_id("op"),
+        principal: "writer".into(),
+        expected_head: workspace.base_head,
+        fencing_token: workspace.fencing_token,
+        message: "write-only save".into(),
+        request_digest: None,
+    };
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let original = engine.finish_workspace_commit(prepared).unwrap();
+    let sequence = engine.state.sequence;
+    // The synchronous retry already accepts the same writer-owned request.
+    assert_eq!(engine.commit_workspace(request.clone()).unwrap(), original);
+    for reopen in [false, true] {
+        if reopen {
+            drop(engine);
+            engine = Engine::open(&fixture.root).unwrap();
+        }
+        let prepared = engine
+            .prepare_workspace_commit(request.clone(), None)
+            .unwrap()
+            .execute()
+            .unwrap();
+        assert_eq!(engine.finish_workspace_commit(prepared).unwrap(), original);
+        assert_eq!(engine.state.sequence, sequence);
+    }
+    grants.write.remove("writer");
+    grants.read.insert("writer".into());
+    engine
+        .set_grants(&repo.repository_id, grants.clone(), "admin", &new_id("op"))
+        .unwrap();
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(engine.finish_workspace_commit(prepared).unwrap(), original);
+    grants.read.remove("writer");
+    engine
+        .set_grants(&repo.repository_id, grants, "admin", &new_id("op"))
+        .unwrap();
+    assert_eq!(
+        engine
+            .prepare_workspace_commit(request, None)
+            .err()
+            .unwrap()
+            .code(),
+        "PERMISSION_DENIED"
+    );
+}
+
+#[test]
 fn detached_workspace_preparation_writes_no_decision_and_replays_original_operation() {
     let fixture = Fixture::new();
     let mut engine = fixture.initialize();
@@ -3279,9 +3351,28 @@ fn detached_public_wire_commit_keeps_exact_digest_and_retry_binding() {
     let fixture = Fixture::new();
     let mut engine = fixture.initialize();
     let repo = repository(&mut engine, 1);
-    let (workspace, mut request) = detached_commit_fixture(&mut engine, &repo);
+    let mut grants = repo.grants.clone();
+    grants.write.insert("writer".into());
+    engine
+        .set_grants(&repo.repository_id, grants, "admin", &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "writer")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "wire-file", b"wire save")
+        .unwrap();
+    let mut request = CommitRequest {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "writer".into(),
+        expected_head: workspace.base_head.clone(),
+        fencing_token: workspace.fencing_token,
+        message: String::new(),
+        request_digest: None,
+    };
     let mut body = engine
-        .seal_workspace(&workspace.workspace_id, "admin")
+        .seal_workspace(&workspace.workspace_id, "writer")
         .unwrap();
     request.operation_id = body["operation_id"].as_str().unwrap().into();
     request.message.clear();

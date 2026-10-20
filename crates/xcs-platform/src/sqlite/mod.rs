@@ -200,13 +200,20 @@ pub fn index_connect_options(
     database_path: &Path,
     create_if_missing: bool,
 ) -> SqliteConnectOptions {
+    index_open_options(database_path, create_if_missing)
+        .journal_mode(SqliteJournalMode::Wal)
+        .synchronous(SqliteSynchronous::Full)
+}
+
+// SQLx drops rather than awaits closure if a connect-time PRAGMA fails. Keep
+// schema-reading PRAGMAs out of connect_with so callers own and close the native
+// worker before returning any corruption error (and moving database sidecars).
+fn index_open_options(database_path: &Path, create_if_missing: bool) -> SqliteConnectOptions {
     SqliteConnectOptions::new()
         .filename(database_path)
         .create_if_missing(create_if_missing)
-        .journal_mode(SqliteJournalMode::Wal)
         .foreign_keys(true)
         .busy_timeout(BUSY_TIMEOUT)
-        .synchronous(SqliteSynchronous::Full)
 }
 
 /// Open a direct SQLite connection, suitable for [`block_on_sqlite_connection`].
@@ -222,9 +229,15 @@ pub async fn open_index_connection(
         limits.validate()?;
     }
     let mut connection =
-        SqliteConnection::connect_with(&index_connect_options(database_path, create_if_missing))
+        SqliteConnection::connect_with(&index_open_options(database_path, create_if_missing))
             .await?;
     let initialized = async {
+        sqlx::query("PRAGMA journal_mode=WAL")
+            .execute(&mut connection)
+            .await?;
+        sqlx::query("PRAGMA synchronous=FULL")
+            .execute(&mut connection)
+            .await?;
         enable_defensive(&mut connection)
             .await
             .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
@@ -237,7 +250,13 @@ pub async fn open_index_connection(
     }
     .await;
     if let Err(error) = initialized {
-        let _ = connection.close().await;
+        if let Err(close_error) = connection.close().await {
+            // A caller must not interpret the original corruption code as
+            // permission to move files while native closure remains uncertain.
+            return Err(pool_connect_error(sqlx::Error::Io(io::Error::other(
+                close_error,
+            ))));
+        }
         return Err(pool_connect_error(error));
     }
     Ok(connection)
@@ -246,11 +265,17 @@ pub async fn open_index_connection(
 /// Best-effort candidate reads must not hold the engine mutex for the normal
 /// writer busy budget. Preserve defensive/WAL/FULL policy, never create a file.
 pub async fn open_index_read_connection(database_path: &Path) -> Result<SqliteConnection, Error> {
-    let options = index_connect_options(database_path, false)
+    let options = index_open_options(database_path, false)
         .read_only(true)
         .busy_timeout(Duration::from_millis(20));
     let mut connection = SqliteConnection::connect_with(&options).await?;
     let initialized = async {
+        sqlx::query("PRAGMA journal_mode=WAL")
+            .execute(&mut connection)
+            .await?;
+        sqlx::query("PRAGMA synchronous=FULL")
+            .execute(&mut connection)
+            .await?;
         enable_defensive(&mut connection)
             .await
             .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
@@ -267,7 +292,11 @@ pub async fn open_index_read_connection(database_path: &Path) -> Result<SqliteCo
     }
     .await;
     if let Err(error) = initialized {
-        let _ = connection.close().await;
+        if let Err(close_error) = connection.close().await {
+            return Err(pool_connect_error(sqlx::Error::Io(io::Error::other(
+                close_error,
+            ))));
+        }
         return Err(pool_connect_error(error));
     }
     Ok(connection)

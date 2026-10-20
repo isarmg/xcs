@@ -483,7 +483,7 @@ impl Engine {
         let candidate = candidate.ok_or_else(|| required("candidate missing"))?;
         let hash = object_hash("candidate", &candidate)?;
         exclude_publication(self, &candidate, &hash)?;
-        let state = load_snapshot(&self.members()[0], &candidate.snapshot_hash)?;
+        let state = self.load_bound_snapshot(&candidate.snapshot_hash)?;
         Ok((candidate, state, witnesses, accepts))
     }
     pub fn prepare_degraded_recovery(
@@ -782,9 +782,12 @@ impl Engine {
                 .checked_add(1)
                 .ok_or_else(|| required("decision sequence exhausted"))?,
         );
-        self.blocked = false;
+        // Publication is durable, but a failed local reconciliation must retain
+        // the write fence, just like ordinary publication's index update. A
+        // restart can rebuild the disposable index and reconcile workspaces.
         self.rebuild_index()?;
         self.load_workspaces()?;
+        self.blocked = false;
         self.operation(&result.operation_id)
     }
 }
@@ -1007,6 +1010,134 @@ mod tests {
         assert!(engine.open_content(&healthy.version.version_id).is_ok());
         assert!(engine.open_content(&lost.version.version_id).is_err());
     }
+    #[test]
+    fn degraded_recovery_uses_verified_snapshot_replica_and_repairs_missing_page() {
+        for corrupt in [false, true] {
+            let (temp, engine, operation, candidate) = fixture("after_accept_2");
+            lose(&engine, &candidate, true);
+            let members = engine.members();
+            let snapshot: Snapshot =
+                load_object(&members[0], "snapshot", &candidate.snapshot_hash).unwrap();
+            let page = snapshot.pages.values().flatten().next().unwrap();
+            let path = object_path(&members[0], "state-page", page);
+            let original = fs::read(&path).unwrap();
+            if corrupt {
+                fs::write(&path, b"corrupt").unwrap();
+            } else {
+                fs::remove_file(&path).unwrap();
+            }
+            drop(engine);
+            let root = temp.path().join("state");
+            let mut engine = Engine::open_for_recovery(&root).unwrap();
+            let plan = engine
+                .prepare_degraded_recovery(&operation, "alice", "permanent loss")
+                .unwrap();
+            let result = engine
+                .commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true)
+                .unwrap();
+            assert_eq!(result.commit_state, "PUBLISHED_DEGRADED");
+            assert_eq!(fs::read(&path).unwrap(), original);
+            assert_eq!(engine.snapshot.as_ref(), Some(&candidate.snapshot_hash));
+            drop(engine);
+            let engine = Engine::open(&root).unwrap();
+            assert_eq!(
+                engine.operation(&operation).unwrap().commit_state,
+                "PUBLISHED_DEGRADED"
+            );
+        }
+    }
+
+    #[test]
+    fn degraded_recovery_rejects_unverifiable_snapshot_before_reprotect() {
+        let (_temp, mut engine, operation, candidate) = fixture("after_accept_2");
+        lose(&engine, &candidate, true);
+        let plan = engine
+            .prepare_degraded_recovery(&operation, "alice", "permanent loss")
+            .unwrap();
+        let members = engine.members();
+        let snapshot: Snapshot =
+            load_object(&members[0], "snapshot", &candidate.snapshot_hash).unwrap();
+        let page = snapshot.pages.values().flatten().next().unwrap();
+        let logs = members
+            .iter()
+            .map(|d| fs::read(log_path(d)).unwrap())
+            .collect::<Vec<_>>();
+        for member in &members {
+            fs::remove_file(object_path(member, "state-page", page)).unwrap();
+        }
+        assert!(
+            engine
+                .commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true)
+                .is_err()
+        );
+        assert!(engine.is_read_only());
+        assert!(!engine.state.operations.contains_key(&operation));
+        for (member, log) in members.iter().zip(logs) {
+            assert_eq!(fs::read(log_path(member)).unwrap(), log);
+        }
+    }
+
+    #[test]
+    fn degraded_publication_stays_read_only_when_local_reconciliation_fails() {
+        for fail_index in [true, false] {
+            let (temp, engine, operation, candidate) = fixture("after_accept_2");
+            lose(&engine, &candidate, true);
+            drop(engine);
+            let root = temp.path().join("state");
+            let mut engine = Engine::open_for_recovery(&root).unwrap();
+            let plan = engine
+                .prepare_degraded_recovery(&operation, "alice", "permanent loss")
+                .unwrap();
+            let obstruction = if fail_index {
+                let path = root.join("index.sqlite");
+                fs::remove_file(&path).unwrap();
+                fs::create_dir(&path).unwrap();
+                path
+            } else {
+                let path = root.join("workspaces").join("broken-workspace");
+                fs::create_dir_all(&path).unwrap();
+                fs::write(path.join("workspace.json"), b"{}").unwrap();
+                path
+            };
+            let error = engine
+                .commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true)
+                .unwrap_err();
+            if fail_index {
+                assert_eq!(error.code(), "UNSAFE_PATH");
+            }
+            assert!(
+                engine.is_read_only(),
+                "failed reconciliation must retain the write fence"
+            );
+            assert_eq!(
+                engine.operation(&operation).unwrap().commit_state,
+                "PUBLISHED_DEGRADED"
+            );
+            assert_eq!(
+                engine
+                    .create_repository("must-not-write", "P01", 3, "alice", &new_id("op"))
+                    .unwrap_err()
+                    .code(),
+                "RECOVERY_REQUIRED"
+            );
+            // Idempotent result lookup must not reopen writes either.
+            engine
+                .commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true)
+                .unwrap();
+            assert!(engine.is_read_only());
+            let expected = engine.state.clone();
+            drop(engine);
+            fs::remove_dir_all(&obstruction).unwrap();
+            let engine = Engine::open(&root).unwrap();
+            assert!(!engine.is_read_only());
+            assert_eq!(engine.state, expected);
+            assert_eq!(
+                engine.operation(&operation).unwrap().commit_state,
+                "PUBLISHED_DEGRADED"
+            );
+        }
+    }
+
     #[test]
     fn insufficient_accepts_or_repairable_bytes_never_authorize_degraded_publication() {
         let (temp, engine, operation, candidate) = fixture("after_accept_1");

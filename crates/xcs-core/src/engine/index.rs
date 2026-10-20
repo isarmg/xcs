@@ -211,18 +211,73 @@ fn project(path: &Path, before: Option<&State>, after: &State) -> Result<IndexWo
     project_delta(path, before, after, &delta)
 }
 
+#[derive(Debug)]
+struct ProjectionFailure {
+    message: String,
+    corrupt: bool,
+}
+impl From<sqlx::Error> for ProjectionFailure {
+    fn from(error: sqlx::Error) -> Self {
+        // Extended SQLite codes retain their primary error in the low byte.
+        // Never turn permission, I/O, busy, or schema errors into file replacement.
+        let corrupt = error
+            .as_database_error()
+            .and_then(|error| error.code())
+            .and_then(|code| code.parse::<i32>().ok())
+            .is_some_and(|code| matches!(code & 0xff, 11 | 26));
+        Self {
+            message: error.to_string(),
+            corrupt,
+        }
+    }
+}
+impl From<xcs_platform::sqlite::Error> for ProjectionFailure {
+    fn from(error: xcs_platform::sqlite::Error) -> Self {
+        match error {
+            xcs_platform::sqlite::Error::Sqlx(error) => error.into(),
+            error => Self {
+                message: error.to_string(),
+                corrupt: false,
+            },
+        }
+    }
+}
+impl From<&str> for ProjectionFailure {
+    fn from(message: &str) -> Self {
+        Self {
+            message: message.into(),
+            corrupt: false,
+        }
+    }
+}
+impl From<ProjectionFailure> for Error {
+    fn from(error: ProjectionFailure) -> Self {
+        Self::new("INDEX_REBUILD_FAILED", error.message)
+    }
+}
+
 fn project_delta(
     path: &Path,
     before: Option<&State>,
     after: &State,
     delta: &Delta,
 ) -> Result<IndexWork> {
+    try_project_delta(path, before, after, delta).map_err(Into::into)
+}
+
+fn try_project_delta(
+    path: &Path,
+    before: Option<&State>,
+    after: &State,
+    delta: &Delta,
+) -> std::result::Result<IndexWork, ProjectionFailure> {
     let work = delta.work();
     let result = xcs_platform::sqlite::block_on_sqlite_connection(async {
         let mut c = xcs_platform::sqlite::open_index_connection(path, before.is_none(), None)
             .await
-            .map_err(|e| e.to_string())?;
-        let mut tx = c.begin().await.map_err(|e| e.to_string())?;
+            .map_err(ProjectionFailure::from)?;
+        let result = async {
+        let mut tx = c.begin().await.map_err(ProjectionFailure::from)?;
         if let Some(before) = before {
             // This runs after durable publication. Never evaluate a cache-supplied
             // view while checking the marker, even if a reader already disabled
@@ -231,9 +286,9 @@ fn project_delta(
                 sqlx::query("SELECT type,sql FROM sqlite_schema WHERE name='current_state'")
                     .fetch_one(&mut *tx)
                     .await
-                    .map_err(|e| e.to_string())?;
-            if marker.try_get::<String, _>(0).map_err(|e| e.to_string())? != "table"
-                || marker.try_get::<String, _>(1).map_err(|e| e.to_string())? != CURRENT_STATE_TABLE
+                    .map_err(ProjectionFailure::from)?;
+            if marker.try_get::<String, _>(0).map_err(ProjectionFailure::from)? != "table"
+                || marker.try_get::<String, _>(1).map_err(ProjectionFailure::from)? != CURRENT_STATE_TABLE
             {
                 return Err(
                     "projection marker schema mismatch; reopen to rebuild from durable evidence"
@@ -244,7 +299,7 @@ fn project_delta(
                 sqlx::query_scalar("SELECT sequence FROM current_state WHERE singleton=1")
                     .fetch_optional(&mut *tx)
                     .await
-                    .map_err(|e| e.to_string())?;
+                    .map_err(ProjectionFailure::from)?;
             if sequence.as_deref() != Some(before.sequence.to_string().as_str()) {
                 return Err(
                     "projection sequence mismatch; reopen to rebuild from durable evidence".into(),
@@ -263,17 +318,17 @@ fn project_delta(
                         .bind(name)
                         .fetch_optional(&mut *tx)
                         .await
-                        .map_err(|e| e.to_string())?;
+                        .map_err(ProjectionFailure::from)?;
                 if kind.as_deref() == Some("view") {
-                    tx.execute(drop_view).await.map_err(|e| e.to_string())?;
+                    tx.execute(drop_view).await.map_err(ProjectionFailure::from)?;
                 }
             }
             tx.execute("DROP TABLE IF EXISTS current_state;DROP TABLE IF EXISTS entities;DROP TABLE IF EXISTS file_history_versions;")
                 .await
-                .map_err(|e| e.to_string())?;
-            tx.execute(SCHEMA).await.map_err(|e| e.to_string())?;
-            tx.execute(HISTORY_TABLE).await.map_err(|e| e.to_string())?;
-            tx.execute(HISTORY_INDEX).await.map_err(|e| e.to_string())?;
+                .map_err(ProjectionFailure::from)?;
+            tx.execute(SCHEMA).await.map_err(ProjectionFailure::from)?;
+            tx.execute(HISTORY_TABLE).await.map_err(ProjectionFailure::from)?;
+            tx.execute(HISTORY_INDEX).await.map_err(ProjectionFailure::from)?;
         }
         for (kind, id) in &delta.deletes {
             if *kind == "versions" {
@@ -281,33 +336,109 @@ fn project_delta(
                     .bind(id)
                     .execute(&mut *tx)
                     .await
-                    .map_err(|e| e.to_string())?;
+                    .map_err(ProjectionFailure::from)?;
             }
             sqlx::query("DELETE FROM entities WHERE kind=? AND id=?")
                 .bind(kind)
                 .bind(id)
                 .execute(&mut *tx)
                 .await
-                .map_err(|e| e.to_string())?;
+                .map_err(ProjectionFailure::from)?;
         }
         for (kind, id, data) in &delta.upserts {
             if *kind == "versions" {
                 let v = &after.versions[id];
                 sqlx::query("INSERT INTO file_history_versions VALUES(?,?,?,?) ON CONFLICT(version_id) DO UPDATE SET file_id=excluded.file_id,history_tree_id=excluded.history_tree_id,version_sequence_key=excluded.version_sequence_key")
                     .bind(id).bind(&v.file_id).bind(&v.history_tree_id).bind(v.version_sequence.to_be_bytes().as_slice())
-                    .execute(&mut *tx).await.map_err(|e| e.to_string())?;
+                    .execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
             }
             sqlx::query("INSERT INTO entities(kind,id,json) VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET json=excluded.json")
-                .bind(kind).bind(id).bind(data).execute(&mut *tx).await.map_err(|e| e.to_string())?;
+                .bind(kind).bind(id).bind(data).execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
         }
         sqlx::query("INSERT INTO current_state VALUES(1,?) ON CONFLICT(singleton) DO UPDATE SET sequence=excluded.sequence")
-            .bind(after.sequence.to_string()).execute(&mut *tx).await.map_err(|e| e.to_string())?;
-        tx.commit().await.map_err(|e| e.to_string())?;
-        c.close().await.map_err(|e| e.to_string())?;
-        Ok::<(), String>(())
+            .bind(after.sequence.to_string()).execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
+        tx.commit().await.map_err(ProjectionFailure::from)?;
+        Ok::<(), ProjectionFailure>(())
+        }.await;
+        // Do not replace files if closing the native worker is uncertain.
+        if let Err(error) = c.close().await {
+            return Err(ProjectionFailure {
+                message: error.to_string(),
+                corrupt: false,
+            });
+        }
+        result
     });
-    result.map_err(|e| Error::new("INDEX_REBUILD_FAILED", e))?;
+    result?;
     Ok(work)
+}
+
+// Move every journal before the main database. A partial quarantine must never
+// leave old WAL bytes next to a missing database that a later open could create.
+const INDEX_FILES: [&str; 4] = [
+    "index.sqlite-wal",
+    "index.sqlite-shm",
+    "index.sqlite-journal",
+    "index.sqlite",
+];
+
+fn checked_index_files(root: &Path) -> Result<Vec<(&'static str, std::fs::File)>> {
+    let mut files = Vec::new();
+    for name in INDEX_FILES {
+        match std::fs::symlink_metadata(root.join(name)) {
+            Ok(_) => files.push((name, crate::disk::open_regular(&root.join(name))?)),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+    }
+    Ok(files)
+}
+
+/// Preserve the corrupt cache and any journals remaining after SQLite closes.
+/// This is recoverable diagnostic material, not a forensic pre-open snapshot:
+/// SQLite may already have recovered, checkpointed or removed sidecars during
+/// cleanup. These files are never recovery authority; durable evidence is untouched.
+/// The engine holds its exclusive root lock and no connection may remain open.
+/// Reject special files/links instead of following them or overwriting targets.
+fn quarantine_corrupt_index(root: &Path) -> Result<()> {
+    use xcs_platform::fs_safety::linux::{FileIdentity, MountPolicy, OpenAt2Root};
+    let files = checked_index_files(root)?;
+    let source = OpenAt2Root::open(root, MountPolicy::SameMount)
+        .map_err(|error| Error::new("UNSAFE_PATH", error.to_string()))?;
+    // Keep from the outset: even a partial move must never be auto-deleted.
+    let quarantine = tempfile::Builder::new()
+        .prefix("index-corrupt-")
+        .tempdir_in(root)?
+        .keep();
+    let destination = OpenAt2Root::open(&quarantine, MountPolicy::SameMount)
+        .map_err(|error| Error::new("UNSAFE_PATH", error.to_string()))?;
+    for (name, file) in files {
+        let current = crate::disk::open_regular(&root.join(name))?;
+        if FileIdentity::from_fd(&file)? != FileIdentity::from_fd(&current)? {
+            return Err(Error::new(
+                "UNSAFE_PATH",
+                "index identity changed before quarantine",
+            ));
+        }
+        rustix::fs::renameat_with(
+            source.directory(),
+            name,
+            destination.directory(),
+            name,
+            rustix::fs::RenameFlags::NOREPLACE,
+        )
+        .map_err(std::io::Error::from)?;
+        let moved = crate::disk::open_regular(&quarantine.join(name))?;
+        if FileIdentity::from_fd(&file)? != FileIdentity::from_fd(&moved)? {
+            return Err(Error::new(
+                "UNSAFE_PATH",
+                "index identity changed during quarantine",
+            ));
+        }
+    }
+    destination.directory().sync_all()?;
+    source.directory().sync_all()?;
+    Ok(())
 }
 
 impl Engine {
@@ -315,7 +446,16 @@ impl Engine {
         let mut proof = self.history_query_proof.lock().unwrap();
         proof.healthy = false;
         let delta = Delta::between(None, &self.state)?;
-        project_delta(&self.root.join("index.sqlite"), None, &self.state, &delta)?;
+        checked_index_files(&self.root)?;
+        let path = self.root.join("index.sqlite");
+        if let Err(error) = try_project_delta(&path, None, &self.state, &delta) {
+            if !error.corrupt {
+                return Err(error.into());
+            }
+            quarantine_corrupt_index(&self.root)?;
+            // Only recovered durable State supplies the replacement projection.
+            project_delta(&path, None, &self.state, &delta)?;
+        }
         proof.counts.clear();
         for v in self.state.versions.values() {
             *proof.counts.entry(v.file_id.clone()).or_default() += 1;
@@ -327,6 +467,10 @@ impl Engine {
     pub(crate) fn update_index(&self, previous: &State) -> Result<()> {
         let delta = Delta::between(Some(previous), &self.state)?;
         let mut proof = self.history_query_proof.lock().unwrap();
+        if let Err(error) = checked_index_files(&self.root) {
+            proof.healthy = false;
+            return Err(error);
+        }
         if let Err(error) = project_delta(
             &self.root.join("index.sqlite"),
             Some(previous),
@@ -387,6 +531,10 @@ impl Engine {
     pub(crate) fn indexed_file_history(&self, file_id: &str) -> Option<Vec<FileVersion>> {
         let mut proof = self.history_query_proof.lock().ok()?;
         if !proof.healthy || proof.sequence != self.state.sequence {
+            return None;
+        }
+        if checked_index_files(&self.root).is_err() {
+            proof.healthy = false;
             return None;
         }
         let expected = proof.counts.get(file_id).copied().unwrap_or(0);
@@ -971,6 +1119,9 @@ mod tests {
             "CREATE TRIGGER fail_second BEFORE INSERT ON entities WHEN NEW.id='second' BEGIN SELECT RAISE(ABORT,'injected failure');END;",
         );
         assert!(project(&path, Some(&previous), &next).is_err());
+        // The failed transaction's native worker has closed before returning.
+        assert!(!path.with_file_name("index.sqlite-wal").exists());
+        assert!(!path.with_file_name("index.sqlite-shm").exists());
         assert_eq!(rows(&path), baseline);
         // Full rebuild discards failed/stale projection and its triggers.
         project(&path, None, &next).unwrap();
@@ -1055,6 +1206,164 @@ mod tests {
         let engine = Engine::open(&root).unwrap();
         assert_eq!(engine.state, published);
         assert_eq!(projected_state(&path), published);
+    }
+
+    #[test]
+    fn startup_rebuilds_a_corrupt_disposable_database_from_durable_evidence() {
+        for corrupt_page in [false, true] {
+            let temp = tempfile::tempdir().unwrap();
+            let mut engine = engine(&temp);
+            engine
+                .create_repository("published", "P01", 1, "admin", &new_id("op"))
+                .unwrap();
+            let root = engine.root.clone();
+            let published = engine.state.clone();
+            drop(engine);
+            let corrupt_bytes = if corrupt_page {
+                let mut bytes = std::fs::read(root.join("index.sqlite")).unwrap();
+                bytes[100] = 0xff; // Invalid b-tree page type: SQLITE_CORRUPT, not NOTADB.
+                bytes
+            } else {
+                b"not a SQLite database".to_vec()
+            };
+            std::fs::write(root.join("index.sqlite"), &corrupt_bytes).unwrap();
+            let recovered = Engine::open(&root).unwrap();
+            assert_eq!(recovered.state, published);
+            assert_eq!(projected_state(&root.join("index.sqlite")), published);
+            assert!(recovered.history_query_proof.lock().unwrap().healthy);
+            assert!(!recovered.is_read_only());
+            let quarantines: Vec<_> = std::fs::read_dir(&root)
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .filter(|path| {
+                    path.file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .starts_with("index-corrupt-")
+                })
+                .collect();
+            assert_eq!(quarantines.len(), 1);
+            assert_eq!(
+                std::fs::read(quarantines[0].join("index.sqlite")).unwrap(),
+                corrupt_bytes
+            );
+        }
+    }
+
+    #[test]
+    fn corrupt_reader_closes_before_immediate_rebuild() {
+        let temp = tempfile::tempdir().unwrap();
+        let engine = engine(&temp);
+        let path = engine.root.join("index.sqlite");
+        let mut bytes = std::fs::read(&path).unwrap();
+        bytes[100] = 0xff;
+        std::fs::write(&path, &bytes).unwrap();
+        assert!(engine.indexed_file_history("missing").is_none());
+        assert!(!engine.history_query_proof.lock().unwrap().healthy);
+        engine.rebuild_index().unwrap();
+        assert_eq!(engine.indexed_file_history("missing"), Some(vec![]));
+        assert_eq!(projected_state(&path), engine.state);
+    }
+
+    #[test]
+    fn corrupt_index_quarantine_preserves_surviving_sidecars() {
+        let temp = tempfile::tempdir().unwrap();
+        for name in INDEX_FILES {
+            std::fs::write(temp.path().join(name), name.as_bytes()).unwrap();
+        }
+        quarantine_corrupt_index(temp.path()).unwrap();
+        let quarantine = std::fs::read_dir(temp.path())
+            .unwrap()
+            .next()
+            .unwrap()
+            .unwrap()
+            .path();
+        for name in INDEX_FILES {
+            assert!(!temp.path().join(name).exists());
+            assert_eq!(
+                std::fs::read(quarantine.join(name)).unwrap(),
+                name.as_bytes()
+            );
+        }
+    }
+
+    #[test]
+    fn rebuild_refuses_linked_index_or_sidecar_without_touching_target() {
+        for name in INDEX_FILES {
+            for hard_link in [false, true] {
+                let temp = tempfile::tempdir().unwrap();
+                let engine = engine(&temp);
+                let path = engine.root.join(name);
+                if path.exists() {
+                    std::fs::remove_file(&path).unwrap();
+                }
+                let target = temp.path().join("unrelated");
+                std::fs::write(&target, b"do not change").unwrap();
+                if hard_link {
+                    std::fs::hard_link(&target, &path).unwrap();
+                } else {
+                    std::os::unix::fs::symlink(&target, &path).unwrap();
+                }
+                let original_index = std::fs::read(engine.root.join("index.sqlite")).unwrap();
+                let error = engine.rebuild_index().unwrap_err();
+                assert_eq!(error.code, "UNSAFE_PATH", "{name} hard_link={hard_link}");
+                assert_eq!(std::fs::read(&target).unwrap(), b"do not change");
+                assert_eq!(
+                    std::fs::read(engine.root.join("index.sqlite")).unwrap(),
+                    original_index
+                );
+                assert!(!engine.history_query_proof.lock().unwrap().healthy);
+                assert!(!std::fs::read_dir(&engine.root).unwrap().any(|entry| {
+                    entry
+                        .unwrap()
+                        .file_name()
+                        .to_string_lossy()
+                        .starts_with("index-corrupt-")
+                }));
+            }
+        }
+    }
+
+    #[test]
+    fn runtime_linked_cache_falls_back_and_blocks_publication_without_touching_target() {
+        for name in INDEX_FILES {
+            for hard_link in [false, true] {
+                let temp = tempfile::tempdir().unwrap();
+                let mut engine = engine(&temp);
+                populate(&mut engine);
+                let path = engine.root.join(name);
+                if path.exists() {
+                    std::fs::remove_file(&path).unwrap();
+                }
+                let target = temp.path().join("unrelated");
+                std::fs::write(&target, b"do not change").unwrap();
+                if hard_link {
+                    std::fs::hard_link(&target, &path).unwrap();
+                } else {
+                    std::os::unix::fs::symlink(&target, &path).unwrap();
+                }
+                assert!(engine.indexed_file_history("file").is_none());
+                assert_eq!(engine.file_history("file").unwrap(), scan(&engine, "file"));
+                assert!(!engine.history_query_proof.lock().unwrap().healthy);
+                let error = engine
+                    .create_repository("published", "P01", 1, "admin", &new_id("op"))
+                    .unwrap_err();
+                assert_eq!(error.code, "UNSAFE_PATH");
+                assert!(engine.is_read_only());
+                assert_eq!(std::fs::read(&target).unwrap(), b"do not change");
+            }
+        }
+    }
+
+    #[test]
+    fn non_corruption_errors_cannot_authorize_quarantine() {
+        for error in [
+            sqlx::Error::Io(std::io::Error::from(std::io::ErrorKind::PermissionDenied)),
+            sqlx::Error::Protocol("file is not a database".into()),
+            sqlx::Error::RowNotFound,
+        ] {
+            assert!(!ProjectionFailure::from(error).corrupt);
+        }
     }
 
     #[test]

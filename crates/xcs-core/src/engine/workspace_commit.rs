@@ -51,6 +51,22 @@ pub struct PreparedWorkspaceCommit {
 }
 
 impl Engine {
+    pub(crate) fn require_workspace_commit_access(
+        &self,
+        workspace: &Workspace,
+        principal: &str,
+        replay: bool,
+    ) -> Result<()> {
+        let repository = self.repository_for_branch(&workspace.branch_id)?;
+        // Returning the caller's existing save receipt must not require a new
+        // read grant when the original write grant is still present. This does
+        // not grant access to file contents or change general read semantics.
+        if replay && self.require_grant(repository, principal, "read").is_ok() {
+            return Ok(());
+        }
+        self.require_grant(repository, principal, "write")
+    }
+
     /// Capture authorization and metadata under the Engine mutex. No payload
     /// bytes are read here. execute() owns all expensive planning/copy/hash work.
     pub fn prepare_workspace_commit(
@@ -66,11 +82,7 @@ impl Engine {
             ));
         }
         let replay = self.state.operations.contains_key(&request.operation_id);
-        self.require_grant(
-            self.repository_for_branch(&workspace.branch_id)?,
-            &request.principal,
-            if replay { "read" } else { "write" },
-        )?;
+        self.require_workspace_commit_access(&workspace, &request.principal, replay)?;
         if !replay {
             self.require_write()?;
             if workspace.fencing_token != request.fencing_token {
@@ -144,11 +156,7 @@ impl Engine {
             return Err(Error::new("PERMISSION_DENIED", "workspace owner changed"));
         }
         if let Some(existing) = self.state.operations.get(&prepared.request.operation_id) {
-            self.require_grant(
-                self.repository_for_branch(&workspace.branch_id)?,
-                &prepared.request.principal,
-                "read",
-            )?;
+            self.require_workspace_commit_access(&workspace, &prepared.request.principal, true)?;
             if existing.request_digest != prepared.expected_digest
                 || self
                     .state

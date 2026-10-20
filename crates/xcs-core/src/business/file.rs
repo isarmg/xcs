@@ -603,6 +603,10 @@ impl Engine {
             let current=&state.commits[&state.branches[&repo.main_branch_id].head_commit_id];
             if !find(&current.entries,path).is_some_and(|e|e.kind=="file"&&e.file_id==file_id){return Err(Error::new("FILE_NOT_FOUND","file/path identity differs"));}
             let branch=state.branches.get(branch_id).cloned().filter(|b|b.file_id.as_deref()==Some(file_id)&&b.history_tree_id==repo.history_tree_id&&b.state=="active").ok_or_else(||Error::new("FILE_BRANCH_NOT_FOUND","file branch missing"))?;
+            let selected=state.commits[&branch.head_commit_id].entries.iter().find(|e|e.file_id==file_id).ok_or_else(||Error::new("STATE_INVALID","file branch entry missing"))?;
+            // A path-scoped selection has the same content safety requirement as
+            // the unscoped operation. Pending branches retain frozen references.
+            if !branch.pending_file_versions.contains_key(file_id) { engine.valid_replica(&selected.version_id)?; }
             let commit=publish_selected_file_at(state,branch_id,Some(path),principal,operation)?;
             Ok(json!({"file_id":file_id,"branch_id":branch_id,"commit_id":commit,"history_tree_id":branch.history_tree_id,"path":path}))
         })
