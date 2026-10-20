@@ -1,9 +1,12 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=await loadPlaywright();
 import {readFile,writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
-const root=resolve(process.env.ZXS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url))), results=[];
+const root=probe.root, results=[];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const select=(label)=>`<div class="zxs-select"><span class="zxs-select-label zxs-row">${label}</span><button class="zxs-input zxs-select-trigger zxs-input--compact"><span class="zxs-select-value">main</span><span>›</span></button></div>`;
 for(const lang of ['zh','en'])for(const width of [1440,800,390,320]){
@@ -21,6 +24,6 @@ for(const lang of ['zh','en'])for(const width of [1440,800,390,320]){
  assert.ok(data.historyPanel.padding.every(v=>v==='0px'));assert.equal(data.historyPanel.border,'1px');assert.equal(data.history.at(-1).bottomBorder,'0px');for(const row of data.history){assert.equal(parseFloat(row.rowGap),18);assert.equal(parseFloat(row.columnGap),0);for(const field of row.fields){assert.ok(field.height>=35.9);assert.equal(field.font,14.4);assert.equal(parseFloat(field.padding[3]),9.8);}}
  for(const card of data.cards){assert.ok(Math.abs(card.width/card.height-1.5)<.002);assert.equal(card.header.height,36);assert.equal(card.subtitle.height,36);assert.equal(card.padding[0],'0px');assert.ok(card.chart.height>0,JSON.stringify({lang,width,card}));if(width===800)assert.ok(card.chart.height>40);}
  assert.ok(data.timestamp.height>=35.9);assert.equal(data.timestamp.font,14.4);assert.equal(parseFloat(data.timestamp.padding[3]),10.8);assert.deepEqual(data.timestamp.margin,['0px','0px']);
- results.push({lang,width,...data});await page.screenshot({path:`/tmp/zxs-lower-page-${lang}-${width}.png`,fullPage:true});await page.close();
+ results.push({lang,width,...data});await page.screenshot({path:`${probe.output}/zxs-lower-page-${lang}-${width}.png`,fullPage:true});await page.close();
 }
-await browser.close();await writeFile('/tmp/zxs-layout-refactor-fixture.json',JSON.stringify({passed:true,results},null,2)+'\n');console.log('PASS lower-page source CSS: 8 language/normal-width combinations, detail row/margin/control geometry, wrapped history list rows, status heading/subtitle 36px and 3:2 card/chart, timestamp, no document overflow.');
+await browser.close();await writeFile(`${probe.output}/zxs-layout-refactor-fixture.json`,JSON.stringify({passed:true,results},null,2)+'\n');console.log('PASS lower-page source CSS: 8 language/normal-width combinations, detail row/margin/control geometry, wrapped history list rows, status heading/subtitle 36px and 3:2 card/chart, timestamp, no document overflow.');

@@ -38,6 +38,16 @@ production fault certification or constant-time operations.
   once, then reuses their exact hashes and bytes for preflight and replica
   installation. The prepared snapshot descriptor is also reused by tombstone
   admission. Existing immutable-file collision verification remains enabled.
+- Snapshot encoding borrows typed state entries page by page instead of creating
+  an intermediate JSON tree for the complete State. An exhaustive field
+  declaration prevents silent omissions; differential tests retain the exact
+  v2 descriptor, canonical object bytes and hashes. The temporary page builder
+  buffers at most 128 top-level entries, while final encoded objects remain
+  retained until installation.
+- New immutable object hashes use a two-hex-digit directory prefix. Verified
+  legacy flat objects are reused, not moved or duplicated. Duplicate locations
+  must agree; discovery, repair, checkpoint verification and performance
+  inventory cover both layouts.
 
 ## Deliberate limits
 

@@ -146,6 +146,7 @@ fn ignore_generated_data_without_hiding_sources_or_fixed_fixtures() {
         "server.log.2026-10-19",
     ];
     let retained = [
+        "tests/evidence/probes.json",
         "Cargo.toml",
         "Cargo.lock",
         "web/Cargo.lock",

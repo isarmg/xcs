@@ -3642,3 +3642,58 @@ fn pending_operation_requires_a_trusted_decision_not_prepared_objects() {
         assert_eq!(engine.operation_owner(&operation), None);
     }
 }
+
+#[test]
+fn history_export_rejects_conflicting_flat_shard_duplicates_without_repair() {
+    for kind in ["candidate", "publication"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        let members = engine.members();
+        let record = crate::journal::scan(&members[0])
+            .unwrap()
+            .records
+            .into_iter()
+            .rev()
+            .find(|(record, _)| record.record_type == "PUBLICATION")
+            .unwrap()
+            .0;
+        let hash = if kind == "candidate" {
+            &record.candidate_hash
+        } else {
+            &record.object_hash
+        };
+        let flat = |disk: &DiskConfig| {
+            disk.root
+                .join("metadata/objects")
+                .join(kind)
+                .join(format!("{hash}.json"))
+        };
+        let expected = fs::read(crate::journal::object_path(&members[0], kind, hash)).unwrap();
+        for disk in &members[..2] {
+            fs::write(flat(disk), b"{}").unwrap();
+        }
+        let destination = fixture.root.join("mixed-export");
+        engine
+            .export_history_package(&repo.history_tree_id, &destination, "admin")
+            .unwrap();
+        offline_check_history_package(&destination).unwrap();
+        for disk in &members[..2] {
+            assert_eq!(fs::read(flat(disk)).unwrap(), b"{}");
+            assert_eq!(
+                fs::read(crate::journal::object_path(disk, kind, hash)).unwrap(),
+                expected
+            );
+        }
+        fs::write(flat(&members[2]), b"{}").unwrap();
+        assert!(
+            engine
+                .export_history_package(
+                    &repo.history_tree_id,
+                    &fixture.root.join("rejected-mixed-export"),
+                    "admin"
+                )
+                .is_err()
+        );
+    }
+}

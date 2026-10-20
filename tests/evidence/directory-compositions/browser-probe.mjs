@@ -1,13 +1,17 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const historicalOrigin = fixtureOrigin();
+const probe = await configureProbe(import.meta.url);
 // Directory composition controls in actual WASM; every API is intercepted.
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
-const root=resolve(process.env.ZXS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
-const base=process.env.ZXS_PREVIEW_URL||'http://127.0.0.1:17401';
-const output=resolve(process.env.ZXS_DIRECTORY_EVIDENCE||`${root}/tests/evidence/directory-compositions`);
+const {chromium}=await loadPlaywright();
+const root=probe.root;
+const base=historicalOrigin;
+const output=probe.output;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const scenes=[];await mkdir(output,{recursive:true});
 try{

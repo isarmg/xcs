@@ -360,19 +360,16 @@ fn cache_tail(
     tails.insert(path, VerifiedTail { stamp, records });
 }
 
-pub(crate) fn object_path(d: &DiskConfig, kind: &str, hash: &str) -> PathBuf {
-    d.root
-        .join("metadata/objects")
-        .join(kind)
-        .join(format!("{hash}.json"))
-}
+mod object_storage;
+pub(crate) use object_storage::{existing_object_paths, list_object_hashes, object_path};
+use object_storage::{read_object_bytes, write_object_bytes};
 pub(crate) fn store_object<T: Serialize + ?Sized>(
     d: &DiskConfig,
     kind: &str,
     value: &T,
 ) -> Result<String> {
     let hash = object_hash(kind, value)?;
-    write_json(&object_path(d, kind, &hash), value, false)?;
+    write_object_bytes(d, kind, &hash, &encode_metadata(value, MAX_METADATA)?)?;
     Ok(hash)
 }
 /// Encode an immutable object once for all replicas, retaining the same hash
@@ -418,11 +415,7 @@ impl PreparedMetadataObject {
             ));
         }
         for disk in members {
-            write_atomic(
-                &object_path(disk, self.kind, &self.hash),
-                &self.bytes,
-                false,
-            )?;
+            write_object_bytes(disk, self.kind, &self.hash, &self.bytes)?;
         }
         Ok(self.hash.clone())
     }
@@ -433,14 +426,7 @@ pub(crate) fn load_object<T: serde::de::DeserializeOwned + Serialize>(
     kind: &str,
     hash: &str,
 ) -> Result<T> {
-    if hash.len() != 64
-        || !hash
-            .bytes()
-            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
-    {
-        return Err(Error::new("OBJECT_CORRUPT", "invalid object hash"));
-    }
-    let value = read_json(&object_path(d, kind, hash))?;
+    let value = decode_strict(&read_object_bytes(d, kind, hash)?)?;
     if object_hash(kind, &value)? != hash {
         return Err(Error::new(
             "OBJECT_CORRUPT",
@@ -512,7 +498,15 @@ impl PreparedSnapshot {
         Ok(self.hash.clone())
     }
 }
+#[path = "journal/snapshot.rs"]
+mod snapshot;
 pub(crate) fn prepare_snapshot(state: &State, maximum: usize) -> Result<PreparedSnapshot> {
+    snapshot::prepare(state, maximum)
+}
+
+// Differential oracle for exact v2 bytes, including legacy serde field rules.
+#[cfg(test)]
+fn prepare_snapshot_reference(state: &State, maximum: usize) -> Result<PreparedSnapshot> {
     let value = serde_json::to_value(state)?;
     let obj = value
         .as_object()
@@ -1424,6 +1418,85 @@ mod snapshot_partition_tests {
             load_snapshot(disk, &hash).unwrap_err().code(),
             "OBJECT_CORRUPT"
         );
+    }
+
+    fn assert_prepared_snapshot_identity(state: &State) {
+        let reference = prepare_snapshot_reference(state, MAX_METADATA).unwrap();
+        let actual = prepare_snapshot(state, MAX_METADATA).unwrap();
+        assert_eq!(actual.hash, reference.hash);
+        assert_eq!(
+            canonical_json(&actual.descriptor).unwrap(),
+            canonical_json(&reference.descriptor).unwrap()
+        );
+        let objects = |snapshot: PreparedSnapshot| {
+            let mut objects = snapshot
+                .objects
+                .into_iter()
+                .map(|object| ((object.kind, object.hash), object.bytes))
+                .collect::<Vec<_>>();
+            objects.sort();
+            objects
+        };
+        assert_eq!(objects(actual), objects(reference));
+    }
+
+    #[test]
+    fn typed_snapshot_matches_full_value_encoder_exactly() {
+        // Empty required maps and omitted optional maps have different wire rules.
+        assert_prepared_snapshot_identity(&State::default());
+        let mut state = event_state(2000);
+        state.sequence = u64::MAX;
+        state.business_generation = u64::MAX - 1;
+        state.topology_generation = u64::MAX - 2;
+        state
+            .file_selection_generations
+            .insert("unicode-文件".into(), u64::MAX);
+        state
+            .directory_selection_generations
+            .insert("directory".into(), 9_007_199_254_740_992);
+        state.file_notes = synthetic_map()
+            .into_iter()
+            .map(|(key, _)| (key, "note".into()))
+            .collect();
+        state
+            .file_names
+            .insert("\u{10000}".into(), "supplementary".into());
+        state.file_names.insert("\u{e000}".into(), "bmp".into());
+        for auth in [
+            None,
+            Some(serde_json::json!({})),
+            Some(serde_json::json!({"nested": {"roles": ["reader"]}, "name": "用户"})),
+            Some(serde_json::json!([{"nested": true}, null, "scalar"])),
+            Some(serde_json::json!("legacy scalar")),
+            Some(serde_json::json!(null)),
+        ] {
+            state.control_auth = auth;
+            assert_prepared_snapshot_identity(&state);
+        }
+    }
+
+    #[test]
+    fn typed_snapshot_only_buffers_one_page_of_borrowed_entries() {
+        let state = State {
+            content_states: (0..20_000)
+                .map(|i| (format!("version-{i:020}"), "AVAILABLE".into()))
+                .collect(),
+            ..event_state(20_000)
+        };
+        assert_prepared_snapshot_identity(&state);
+        let peak = snapshot::SNAPSHOT_PEAK_PAGE_ENTRIES.with(|peak| peak.get());
+        assert!(
+            peak > 0 && peak <= STATE_PAGE_ENTRIES,
+            "peak buffered entries: {peak}"
+        );
+        // The previous encoder first materialized both whole collections as JSON,
+        // before page clones. This is structural evidence, not an RSS/timing claim.
+        let old_value = serde_json::to_value(&state).unwrap();
+        assert_eq!(
+            old_value["content_states"].as_object().unwrap().len(),
+            20_000
+        );
+        assert_eq!(old_value["events"].as_array().unwrap().len(), 20_000);
     }
 
     #[test]

@@ -123,27 +123,19 @@ pub(crate) fn discover_publication(
 ) -> Result<Option<Publication>> {
     let mut found: Option<Publication> = None;
     for disk in engine.members() {
-        let directory = disk.root.join("metadata/objects/publication");
-        if directory.exists() {
-            for entry in fs::read_dir(directory)? {
-                let path = entry?.path();
-                let name = path
-                    .file_stem()
-                    .and_then(|s| s.to_str())
-                    .ok_or_else(|| required("invalid publication object name"))?;
-                let publication: Publication =
-                    load_object(&disk, "publication", name).map_err(|_| {
-                        required("an unreadable publication object prevents proving absence")
-                    })?;
-                if publication.candidate_hash == hash {
-                    if found.as_ref().is_some_and(|old| {
-                        object_hash("publication", old).ok()
-                            != object_hash("publication", &publication).ok()
-                    }) {
-                        return Err(required("conflicting publication results exist"));
-                    }
-                    found = Some(publication);
+        for name in list_object_hashes(&disk, "publication")? {
+            let publication: Publication =
+                load_object(&disk, "publication", &name).map_err(|_| {
+                    required("an unreadable publication object prevents proving absence")
+                })?;
+            if publication.candidate_hash == hash {
+                if found.as_ref().is_some_and(|old| {
+                    object_hash("publication", old).ok()
+                        != object_hash("publication", &publication).ok()
+                }) {
+                    return Err(required("conflicting publication results exist"));
                 }
+                found = Some(publication);
             }
         }
     }

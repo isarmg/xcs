@@ -1,12 +1,16 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const historicalOrigin = fixtureOrigin();
+const probe = await configureProbe(import.meta.url);
 // Read-only acceptance of the actual local preview, without credentials.
 import assert from 'node:assert/strict';
 import {readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {resolve} from 'node:path';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
-const root=resolve(new URL('../../../',import.meta.url).pathname);
-const evidence=resolve(root,'tests/evidence/merge-tags-backup');
-const receipt=JSON.parse(await readFile(resolve(evidence,'candidate-receipt.json'),'utf8'));
+const {chromium}=await loadPlaywright();
+const root=probe.root;
+const evidence=probe.output;
+const receipt=JSON.parse(await readFile(requiredInput('ZXS_EVIDENCE_RECEIPT'),'utf8'));
 const expected=receipt.artifacts.find(item=>item.path==='web/dist/pkg/zxs_bg.wasm').sha256;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try {
@@ -23,7 +27,7 @@ try {
     return route.continue();
   });
   const wasmResponse=page.waitForResponse(response=>new URL(response.url()).pathname==='/pkg/zxs_bg.wasm');
-  const response=await page.goto('http://127.0.0.1:7400/');
+  const response=await page.goto(historicalOrigin);
   assert.equal(response.status(),200);
   await page.waitForFunction(()=>document.documentElement.getAttribute('data-zxs-ready')==='true');
   await page.locator('input[type="password"]').waitFor({state:'visible'});

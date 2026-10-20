@@ -1,10 +1,13 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 
-const { chromium } = await import(process.env.ZXS_PLAYWRIGHT_MODULE || 'playwright');
-const root = resolve(process.env.ZXS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url)));
+const { chromium } = await loadPlaywright();
+const root = probe.root;
 const source = await readFile(`${root}/tests/evidence/maintainability/browser-probe.mjs`, 'utf8');
 // Exercise the same assertion as the real candidate, rather than a weaker copy.
 const helper = source.match(/  async function fileRows\(name\) \{[\s\S]*?\n  \}(?=\n  async function loginKnownUser)/)?.[0];
@@ -65,7 +68,7 @@ try {
   await browser.close();
 }
 
-await writeFile(`${root}/tests/evidence/maintainability/source-table-alignment-result.json`, JSON.stringify({
+await writeFile(`${probe.output}/source-table-alignment-result.json`, JSON.stringify({
   passed: true,
   source: 'actual fileRows helper extracted unchanged; static local DOM only, no service/auth',
   checks: results.length,

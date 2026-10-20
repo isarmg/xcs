@@ -1,11 +1,15 @@
-import {chromium} from '/mnt/sarmg.org/zxss/node_modules/playwright/index.mjs';
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const historicalOrigin = fixtureOrigin();
+const probe = await configureProbe(import.meta.url);
+const {chromium} = await loadPlaywright();
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import {verifyPath} from './g4-reference.mjs';
-const root='/mnt/sarmg.org/zxs',base='http://127.0.0.1:7400',output=`${root}/tests/evidence/page-format-newest-tree`;
-const password=(await readFile((await readFile(`${root}/runtime/web-preview/password-file`,'utf8')).trim(),'utf8')).trim();
-const seed=JSON.parse(await readFile('/tmp/zxs-demo-seed/result.json','utf8')),fixtureFile=seed.files.find(f=>f.path.endsWith('/说明.md'));
+const root=probe.root,base=historicalOrigin,output=probe.output;
+const password=(await readFile(requiredInput('ZXS_BROWSER_PASSWORD_FILE'),'utf8')).trim();
+const seed=JSON.parse(await readFile(requiredInput('ZXS_BROWSER_SEED'),'utf8')),fixtureFile=seed.files.find(f=>f.path.endsWith('/说明.md'));
 assert.ok(fixtureFile);const fileId=fixtureFile.file_id,historyPath=`/v1/file-manager/files/${fileId}/history`;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']}),scenes=[],pathCache=new Map();await mkdir(output,{recursive:true});
 const labels={zh:{user:'用户名',password:'密码',login:'登录',logout:'退出',files:'文件',details:'详情',status:'状态',history:'历史记录',refresh:'刷新',account:'账号设置',save:'保存',saving:'保存中…',current:'当前密码',new:'新密码',confirm:'确认新密码',edit:'编辑备注',branch:'创建分支'},en:{user:'Username',password:'Password',login:'Sign in',logout:'Sign out',files:'Files',details:'Details',status:'Status',history:'History',refresh:'Refresh',account:'Account settings',save:'Save',saving:'Saving…',current:'Current password',new:'New password',confirm:'Confirm new password',edit:'Edit note',branch:'Create branch'}};

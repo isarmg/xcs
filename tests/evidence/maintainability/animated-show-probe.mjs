@@ -1,3 +1,6 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 import {createServer} from 'node:http';
 import {readFile,writeFile} from 'node:fs/promises';
 import {resolve,extname,sep} from 'node:path';
@@ -5,9 +8,9 @@ import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
-const root=resolve(process.env.ZXS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
-const fixture=resolve(process.env.ZXS_ANIMATED_FIXTURE||'/tmp/zxs-animated-show-fixture/dist');
+const {chromium}=await loadPlaywright();
+const root=probe.root;
+const fixture=resolve(requiredInput('ZXS_ANIMATED_FIXTURE'));
 const result={passed:false,independentFixture:true,productionRoutesUnchanged:true,pageErrors:[],consoleErrors:[],resources:[]};
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.wasm':'application/wasm'};
 const server=createServer(async(request,response)=>{
@@ -46,5 +49,5 @@ try{
   await Promise.all(resources);assert.equal(result.resources.length,1);assert.equal(result.resources[0].status,200);assert.equal(result.resources[0].mime,'application/wasm');assert.deepEqual(result.pageErrors,[]);assert.deepEqual(result.consoleErrors,[]);result.passed=true;
 }catch(error){result.failure=error.message;process.exitCode=1;}
 finally{await page.close();await browser.close();await new Promise(done=>server.close(done));}
-await writeFile(`${root}/tests/evidence/maintainability/animated-show-result.json`,JSON.stringify(result,null,2)+'\n');
+await writeFile(`${probe.output}/animated-show-result.json`,JSON.stringify(result,null,2)+'\n');
 console.log(JSON.stringify(result));

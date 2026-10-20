@@ -11,6 +11,8 @@
 !/tests/evidence/**/*.mjs
 !/tests/evidence/**/*.py
 !/tests/evidence/**/*.sh
+# Source classification manifest, not a generated acceptance result.
+!/tests/evidence/probes.json
 !/demos/*/tests/evidence/**/*.md
 !/demos/*/tests/evidence/**/*.rs
 !/demos/*/tests/evidence/**/*.mjs

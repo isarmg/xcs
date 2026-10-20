@@ -1,13 +1,16 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 // Production Rust/WASM against a fully isolated API fixture. This proves UI
 // requests and browser behavior, not native merge, storage or SMB acceptance.
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 import {createHash} from 'node:crypto';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'/mnt/sarmg.org/zxss/node_modules/playwright/index.mjs');
-const root=resolve(process.env.ZXS_PRODUCT_ROOT||'/mnt/sarmg.org/zxs');
-const dist=resolve(process.env.ZXS_BROWSER_DIST||'/tmp/zxs-web-merge-tags-candidate/web/dist');
-const output=resolve(process.env.ZXS_WEB_EVIDENCE||`${root}/tests/evidence/merge-tags-backup/web`);
+const {chromium}=await loadPlaywright();
+const root=probe.root;
+const dist=resolve(requiredInput('ZXS_BROWSER_DIST'));
+const output=probe.output;
 const csp="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 await mkdir(output,{recursive:true});const scenes=[];

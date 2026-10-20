@@ -246,24 +246,29 @@ fn repair_object_copies<T: serde::Serialize>(
     }
     let bytes = encode_metadata(value, MAX_METADATA)?;
     for member in members {
-        let path = object_path(member, kind, hash);
-        match std::fs::symlink_metadata(&path) {
-            Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => {
-                // Never replace an unsafe entry, even if a healthy replica exists.
-                open_regular(&path)?;
-                if read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice()) {
-                    write_atomic(&path, &bytes, true)?;
+        let mut paths = existing_object_paths(member, kind, hash)?;
+        if paths.is_empty() {
+            paths.push(object_path(member, kind, hash));
+        }
+        for path in paths {
+            match std::fs::symlink_metadata(&path) {
+                Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => {
+                    // Never replace an unsafe entry, even if a healthy replica exists.
+                    open_regular(&path)?;
+                    if read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice()) {
+                        write_atomic(&path, &bytes, true)?;
+                    }
                 }
-            }
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                write_atomic(&path, &bytes, false)?;
-            }
-            Err(e) => return Err(e.into()),
-            Ok(_) => {
-                return Err(Error::new(
-                    "UNSAFE_PATH",
-                    "object repair target is not a regular file",
-                ));
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                    write_atomic(&path, &bytes, false)?;
+                }
+                Err(e) => return Err(e.into()),
+                Ok(_) => {
+                    return Err(Error::new(
+                        "UNSAFE_PATH",
+                        "object repair target is not a regular file",
+                    ));
+                }
             }
         }
     }
@@ -474,6 +479,44 @@ mod tests {
                 assert_eq!(std::fs::read(log_path(member)).unwrap(), journal);
             }
         }
+    }
+
+    #[test]
+    fn recovery_repairs_both_flat_and_sharded_duplicates_from_exact_replica() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("system");
+        let config = Config::development([
+            temp.path().join("a"),
+            temp.path().join("b"),
+            temp.path().join("c"),
+        ]);
+        let mut engine = Engine::initialize(&root, config).unwrap();
+        engine
+            .create_repository("repo", "P01", 3, "admin", &new_id("op"))
+            .unwrap();
+        let members = engine.members();
+        let record = scan(&members[0])
+            .unwrap()
+            .records
+            .into_iter()
+            .find(|(r, _)| r.record_type == "PUBLICATION")
+            .unwrap()
+            .0;
+        let hash = record.candidate_hash;
+        let expected = std::fs::read(object_path(&members[0], "candidate", &hash)).unwrap();
+        let flat = members[0]
+            .root
+            .join("metadata/objects/candidate")
+            .join(format!("{hash}.json"));
+        std::fs::write(&flat, b"{}").unwrap();
+        assert!(load_object::<Candidate>(&members[0], "candidate", &hash).is_err());
+        drop(engine);
+        assert_eq!(Engine::open(&root).unwrap().state.repositories.len(), 1);
+        assert_eq!(std::fs::read(flat).unwrap(), expected);
+        assert_eq!(
+            std::fs::read(object_path(&members[0], "candidate", &hash)).unwrap(),
+            expected
+        );
     }
 
     #[test]

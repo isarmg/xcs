@@ -29,3 +29,5 @@
 2026-10-19 全项目维护性优化的阅读范围、具体问题、源文件摘要和集成验证见[检查记录](evidence/maintainability/README.md)及[逻辑与模块梳理](../docs/reports/code-review-20261019.md)。浏览器检查使用当前候选的实际 WASM，额外改变共享几何 token 验证多页同步，不用逐页重复声明尺寸；登录保持独立。
 
 2026-10-19 最新分支与批量文件操作的核心恢复、HTTP、Unix 描述符、Web 和本地服务证据见[分支实现记录](../docs/reports/branch-system-implementation.md)及[验收材料](evidence/branch-operations/README.md)。文档图示检查与这些业务验证分别记录。
+
+历史 JavaScript 探针的完整分类、显式夹具配置及静态 CI 门禁见[证据索引](evidence/README.md)。当前生产浏览器验收由 [browser-smoke](../tools/browser-smoke/README.md) 单独维护；历史脚本语法通过不替代实际浏览器运行。

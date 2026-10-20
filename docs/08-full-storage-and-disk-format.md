@@ -56,12 +56,14 @@
 │               ├── v000001_20261018T133000Z_ab12cd34.docx
 │               └── v000002_20261018T134500Z_ef56ab78.docx
 ├── metadata/application-log/journal.bin
-├── metadata/objects/<object-type>/<hash>.json
+├── metadata/objects/<object-type>/<hash前两位>/<hash>.json
 ├── metadata/pool-membership/config.json
 ├── metadata/publication-seals/<candidate-hash>.json
 ├── staging/<operation-id>/
 └── quarantine/<incident-id>/
 ```
+
+新建不可变元数据对象按散列前两位分桶，每类最多 256 个桶，完整散列文件名、规范编码、摘要和日志引用保持不变。已存在的 `metadata/objects/<object-type>/<hash>.json` 平铺对象继续原地验证和复用，不迁移、不删除、不复制未变化的历史对象。若平铺与分桶路径同时存在，必须逐字节一致；冲突使该盘副本不可用，不能按路径优先级隐藏损坏。已验证的健康副本可以按原恢复规则修复两处，离线导出只读且不修复。目录枚举和恢复检查点覆盖两种布局，并拒绝链接及错误分桶。
 
 `versions/<version-id>/` 保留不可变版本说明、校验及发布证明；正文唯一实体位于 `file-containers/<file-id>/<当前文件名>/versions/<storage_name>`，是可以直接读取的普通文件。外层 `file-id` 为稳定身份，内层是实际目录，不是界面别名。业务改名真正重命名该内层目录；历史版本文件的内部名称及已有证明保持不变。下载当前或历史版本时使用该文件当前的业务名称，已删除文件保留最后登记的名称。
 

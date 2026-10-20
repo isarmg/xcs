@@ -1,12 +1,15 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-const {chromium} = await import(process.env.ZXS_PLAYWRIGHT_MODULE || 'playwright');
-const evidence = dirname(fileURLToPath(import.meta.url));
-const root = resolve(process.env.ZXS_PRODUCT_ROOT || resolve(evidence, '../../..'));
+const {chromium} = await loadPlaywright();
+const evidence = probe.output;
+const root = probe.root;
 const authPath = 'web/public/styles/components/auth.css';
 // Captured before this correction. Business spacing must leave authentication alone.
 const authBefore = 'c5d671093294a9cf6b8384aae66c819b0f43afe2400d70b09467fe10e2178f96';

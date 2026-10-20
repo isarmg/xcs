@@ -44,6 +44,41 @@ fn sql(path: &Path, install: bool) -> Result<Value> {
         Ok::<Value,String>(json!({"inserts":r.get::<i64,_>(0),"updates":r.get::<i64,_>(1),"deletes":r.get::<i64,_>(2),"entity_json_bytes_written":r.get::<i64,_>(3)}))
     }).map_err(Into::into)
 }
+// Accept only the two persisted object layouts, never report a shard prefix
+// as an object kind or count malformed evidence as a successful benchmark.
+fn metadata_object_kind(path: &Path) -> Result<Option<String>> {
+    let parts = path
+        .iter()
+        .map(|p| p.to_str())
+        .collect::<Option<Vec<_>>>()
+        .ok_or("non-UTF-8 benchmark path")?;
+    let Some(start) = parts
+        .windows(2)
+        .position(|pair| pair == ["metadata", "objects"])
+    else {
+        return Ok(None);
+    };
+    let tail = &parts[start + 2..];
+    if !(tail.len() == 2 || tail.len() == 3) {
+        return Err("invalid metadata object layout".into());
+    }
+    let kind = tail[0];
+    let hash = tail
+        .last()
+        .and_then(|name| name.strip_suffix(".json"))
+        .ok_or("invalid metadata object filename")?;
+    if kind.is_empty()
+        || !kind.bytes().all(|b| b.is_ascii_lowercase() || b == b'-')
+        || hash.len() != 64
+        || !hash
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        || (tail.len() == 3 && tail[1] != &hash[..2])
+    {
+        return Err("invalid metadata object address".into());
+    }
+    Ok(Some(kind.to_owned()))
+}
 fn disk_bytes(root: &Path) -> Result<Value> {
     fn walk(
         root: &Path,
@@ -64,15 +99,11 @@ fn disk_bytes(root: &Path) -> Result<Value> {
                 if name.contains("/metadata/application-log/") {
                     counts[2] += n;
                 }
-                if name.contains("/metadata/objects/") {
+                if let Some(kind) = metadata_object_kind(&p)? {
                     counts[3] += n;
-                    if let Some(kind) = p.parent().and_then(Path::file_name) {
-                        let entry = kinds
-                            .entry(kind.to_string_lossy().into_owned())
-                            .or_default();
-                        entry.0 += n;
-                        entry.1 += 1;
-                    }
+                    let entry = kinds.entry(kind).or_default();
+                    entry.0 += n;
+                    entry.1 += 1;
                 }
             }
         }
@@ -187,4 +218,35 @@ fn main() -> Result<()> {
         )?
     );
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn metadata_metrics_count_flat_and_sharded_files_by_kind() {
+        let temp = tempfile::tempdir().unwrap();
+        let objects = temp.path().join("member/metadata/objects");
+        let hash = "ab".repeat(32);
+        let flat = objects.join("snapshot").join(format!("{hash}.json"));
+        let shard = objects.join("state-page/ab").join(format!("{hash}.json"));
+        fs::create_dir_all(flat.parent().unwrap()).unwrap();
+        fs::create_dir_all(shard.parent().unwrap()).unwrap();
+        fs::write(flat, b"123").unwrap();
+        fs::write(shard, b"12345").unwrap();
+        let metrics = disk_bytes(temp.path()).unwrap();
+        assert_eq!(metrics["files"], 2);
+        assert_eq!(metrics["metadata_object_bytes_all_members"], 8);
+        assert_eq!(
+            metrics["metadata_objects_by_kind_all_members"],
+            json!({"snapshot":{"bytes":3,"files":1},"state-page":{"bytes":5,"files":1}})
+        );
+        for bad in [
+            format!("state-page/ff/{hash}.json"),
+            format!("state-page/ab/de/{hash}.json"),
+            "state-page/not-a-hash.json".into(),
+        ] {
+            assert!(metadata_object_kind(&objects.join(bad)).is_err());
+        }
+    }
 }

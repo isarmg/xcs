@@ -1,3 +1,6 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 // Real production WASM, isolated API fixture: rename adds a history node while
 // reusing its body; the next write follows that node rather than skipping it.
 import assert from 'node:assert/strict';
@@ -5,9 +8,9 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
-const root=resolve(process.env.ZXS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
-const dist=resolve(process.env.ZXS_BROWSER_DIST||`${root}/web/dist`),output=resolve(process.env.ZXS_PATH_NODE_EVIDENCE||`${root}/tests/evidence/branch-operations/web-path-nodes`);
+const {chromium}=await loadPlaywright();
+const root=probe.root;
+const dist=resolve(process.env.ZXS_BROWSER_DIST||`${root}/web/dist`),output=probe.output;
 const csp="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 const parentHash='6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85',emptyHash='af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});await mkdir(output,{recursive:true});const scenes=[];

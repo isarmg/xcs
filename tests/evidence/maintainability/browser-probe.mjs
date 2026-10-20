@@ -1,13 +1,17 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const historicalOrigin = fixtureOrigin();
+const probe = await configureProbe(import.meta.url);
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=await loadPlaywright();
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { verifyPath } from './g4-reference.mjs';
-const root = resolve(process.env.ZXS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url))),
-  base = process.env.ZXS_PREVIEW_URL || process.env.ZXS_BROWSER_BASE || 'http://127.0.0.1:7400',
-  output = resolve(process.env.ZXS_MAINT_EVIDENCE || `${root}/tests/evidence/maintainability`);
+const root = probe.root,
+  base = historicalOrigin,
+  output = probe.output;
 const tokenCss = '\n:root { --zxs-compact-row-height:40px; --zxs-input-row-height:50px; }\n';
 async function candidateCss(directory, prefix = '') {
   const paths = [];
@@ -20,8 +24,8 @@ async function candidateCss(directory, prefix = '') {
   return paths;
 }
 const expectedResources = [...(await candidateCss(root + '/web/dist')), '/pkg/zxs_bg.wasm'].sort();
-const password = (await readFile((await readFile(`${root}/runtime/web-preview/password-file`, 'utf8')).trim(), 'utf8')).trim();
-const seed = JSON.parse(await readFile(process.env.ZXS_BROWSER_SEED || '/tmp/zxs-demo-seed/result.json', 'utf8')),
+const password = (await readFile(requiredInput('ZXS_BROWSER_PASSWORD_FILE'), 'utf8')).trim();
+const seed = JSON.parse(await readFile(requiredInput('ZXS_BROWSER_SEED'), 'utf8')),
   fixtureFile = seed.files.find(f => f.path.endsWith('/说明.md'));
 assert.ok(fixtureFile);
 const fileId = fixtureFile.file_id,

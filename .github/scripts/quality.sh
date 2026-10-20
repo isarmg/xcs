@@ -3,6 +3,9 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
+# Static historical evidence checks do not execute browsers or contact services.
+node .github/scripts/check-evidence-probes.mjs
+
 manifests=(Cargo.toml apps/Cargo.toml web/Cargo.toml
   tools/contract-check/Cargo.toml tools/release-tools/Cargo.toml
   tools/web-build/Cargo.toml tools/unicode-build/Cargo.toml

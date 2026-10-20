@@ -1,14 +1,17 @@
-import {chromium} from '/mnt/sarmg.org/zxss/node_modules/playwright/index.mjs';
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const historicalOrigin = fixtureOrigin();
+const probe = await configureProbe(import.meta.url);
+const {chromium} = await loadPlaywright();
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {verifyPath} from './g4-reference.mjs';
-const root='/mnt/sarmg.org/zxs',base=process.env.ZXS_TREE_BASE||'http://127.0.0.1:7401';
-assert.equal(new URL(base).port,'7401','This mutating acceptance is restricted to the independent fixture on7401');
-const seed=JSON.parse(await readFile(process.env.ZXS_TREE_SEED||'/tmp/zxs-version-tree-fixture/seed.json','utf8'));
+const root=probe.root,base=historicalOrigin;
+const seed=JSON.parse(await readFile(requiredInput('ZXS_TREE_SEED'),'utf8'));
 const password=(await readFile(process.env.ZXS_TREE_PASSWORD_FILE||seed.password_file,'utf8')).trim();
 const account=seed.username||'admin',fileId=seed.file_id||seed.fileId,slot=seed.slot||'P01';
 assert.ok(fileId,'fixture file_id is required');
-const output=`${root}/tests/evidence/version-tree`;await mkdir(output,{recursive:true});
+const output=probe.output;await mkdir(output,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});const scenes=[],contourCache=new Map();
 const labels={zh:{user:'用户名',password:'密码',login:'登录',logout:'退出',details:'详情',refresh:'刷新',edit:'编辑备注',branch:'创建分支',current:'当前',none:'无备注',dismiss:'关闭错误提示'},en:{user:'Username',password:'Password',login:'Sign in',logout:'Sign out',details:'Details',refresh:'Refresh',edit:'Edit note',branch:'Create branch',current:'Current',none:'No note',dismiss:'Dismiss error'}};
 function clean(error){return String(error?.message||error).split(password).join('[redacted]')}

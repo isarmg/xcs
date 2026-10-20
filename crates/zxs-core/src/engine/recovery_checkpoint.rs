@@ -362,7 +362,30 @@ fn verify_coverage(
                         return Err(invalid());
                     }
                     match hash {
-                        Some(hash) if file_hash(&d.root.join(path))? == *hash => (),
+                        Some(hash) if file_hash(&d.root.join(path))? == *hash => {
+                            // Append-only directories may gain an alternate layout for an
+                            // already covered hash. That addition must not hide conflicting
+                            // evidence behind the checkpoint's historical replay shortcut.
+                            if parts.first() == Some(&"metadata")
+                                && parts.get(1) == Some(&"objects")
+                            {
+                                let kind = parts.get(2).ok_or_else(invalid)?;
+                                let object_hash = parts
+                                    .last()
+                                    .and_then(|name| name.strip_suffix(".json"))
+                                    .ok_or_else(invalid)?;
+                                let paths = existing_object_paths(d, kind, object_hash)?;
+                                let covered = d.root.join(path);
+                                if !paths.contains(&covered) {
+                                    return Err(invalid());
+                                }
+                                for alternate in paths {
+                                    if alternate != covered && file_hash(&alternate)? != *hash {
+                                        return Err(invalid());
+                                    }
+                                }
+                            }
+                        }
                         None if payload(&d.root, path)? => (),
                         _ => return Err(invalid()),
                     }
@@ -636,6 +659,28 @@ mod tests {
         assert_eq!(fast, 1);
         assert_eq!(canonical_json(&engine.state).unwrap(), expected);
     }
+    #[test]
+    fn added_conflicting_layout_cannot_hide_behind_checkpoint_coverage() {
+        let (_temp, root, config) = setup();
+        drop(reopen(&root).0);
+        let source = &config.disks[0];
+        let first = scan(source)
+            .unwrap()
+            .records
+            .into_iter()
+            .find(|(r, _)| r.record_type == "PUBLICATION")
+            .unwrap()
+            .0;
+        for disk in &config.disks {
+            let flat = disk
+                .root
+                .join("metadata/objects/candidate")
+                .join(format!("{}.json", first.candidate_hash));
+            std::fs::write(flat, b"{}").unwrap();
+        }
+        assert!(Engine::open(&root).is_err());
+    }
+
     #[test]
     fn missing_historical_page_falls_back_and_repairs_replica() {
         let (_temp, root, config) = setup();

@@ -1,3 +1,6 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 // Real Rust/WASM with a complete local HTTP fixture. Checks the backup display
 // namespace, primary authorization context and physically selected body remain
 // independent, including historical containers with no current primary alias.
@@ -5,9 +8,9 @@ import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 import {createHash} from 'node:crypto';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'/mnt/sarmg.org/zxss/node_modules/playwright/index.mjs');
-const dist=resolve(process.env.ZXS_BROWSER_DIST||'/tmp/zxs-web-merge-tags-candidate/web/dist');
-const output=resolve(process.env.ZXS_BACKUP_BROWSE_EVIDENCE||'/mnt/sarmg.org/zxs/tests/evidence/merge-tags-backup/web/backup-browse');
+const {chromium}=await loadPlaywright();
+const dist=resolve(requiredInput('ZXS_BROWSER_DIST'));
+const output=probe.output;
 const csp="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 const digest='6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85';
 await mkdir(output,{recursive:true});const scenes=[];

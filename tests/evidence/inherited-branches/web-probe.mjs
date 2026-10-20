@@ -1,3 +1,7 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const historicalOrigin = fixtureOrigin();
+const probe = await configureProbe(import.meta.url);
 // Real candidate WASM with an entirely intercepted, deterministic API fixture.
 // No authentication or business request reaches the running preview service.
 import assert from 'node:assert/strict';
@@ -6,10 +10,10 @@ import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 
-const {chromium} = await import(process.env.ZXS_PLAYWRIGHT_MODULE || 'playwright');
-const root = resolve(process.env.ZXS_PRODUCT_ROOT || fileURLToPath(new URL('../../../', import.meta.url)));
-const base = process.env.ZXS_PREVIEW_URL || 'http://127.0.0.1:7400';
-const output = resolve(process.env.ZXS_BRANCH_EVIDENCE || `${root}/tests/evidence/inherited-branches`);
+const {chromium} = await loadPlaywright();
+const root = probe.root;
+const base = historicalOrigin;
+const output = probe.output;
 const emptyHash = 'af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262';
 const parentBytes = Buffer.from('abc');
 const parentHash = '6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85';

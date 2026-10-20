@@ -1,9 +1,12 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=await loadPlaywright();
 import { readFile, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
-const root=resolve(process.env.ZXS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
+const root=probe.root;
 const browser = await chromium.launch({headless: true, args: ['--no-sandbox']});
 const results = [];
 const html = `<!doctype html><html data-zxs-appearance="content-blocks"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/styles.css"></head><body>
@@ -54,5 +57,5 @@ for (const width of [1440,800,390,320]) {
   await page.close();
 }
 await browser.close();
-await writeFile('/tmp/zxs-geometry-token-result.json',JSON.stringify({passed:true,results},null,2)+'\n');
+await writeFile(`${probe.output}/zxs-geometry-token-result.json`,JSON.stringify({passed:true,results},null,2)+'\n');
 console.log('PASS shared geometry: live token change 36→40 and 44→50 propagates rows/fonts/G4/frames/inputs/header/gaps across all pages, while login remains identical, at 4 normal widths.');

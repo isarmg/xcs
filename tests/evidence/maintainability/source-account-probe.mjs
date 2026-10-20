@@ -1,9 +1,12 @@
+// Historical evidence probe, not current acceptance. See tests/evidence/README.md.
+import {configureProbe, loadPlaywright, fixtureOrigin, requiredInput} from '../_support/runtime.mjs';
+const probe = await configureProbe(import.meta.url);
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
-const {chromium}=await import(process.env.ZXS_PLAYWRIGHT_MODULE||'playwright');
+const {chromium}=await loadPlaywright();
 import {readFile,writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
-const root=resolve(process.env.ZXS_PRODUCT_ROOT||fileURLToPath(new URL('../../../',import.meta.url)));
+const root=probe.root;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const results=[];
 const fields=(lang)=>[['username',lang==='en'?'Username':'用户名','text','username'],['current_password',lang==='en'?'Current password':'当前密码','password','current-password'],['new_password',lang==='en'?'New password':'新密码','password','new-password'],['confirm_password',lang==='en'?'Confirm new password':'确认新密码','password','new-password']].map(([name,label,type,ac])=>`<label class="zxs-form-field"><span class="zxs-row zxs-row--center">${label}</span><input class="zxs-input zxs-input--compact" name="${name}" type="${type}" autocomplete="${ac}" ${name==='username'?'value="admin" readonly':''}></label>`).join('');
@@ -21,6 +24,6 @@ for(const lang of ['zh','en'])for(const width of [1440,800,390,320]){
  if(width>768){assert.ok(r.labels.every((b,i)=>Math.abs(b.y-r.inputs[i].y)<.1));assert.ok(r.labels[1].y-r.labels[0].y===54);}else{assert.ok(r.inputs.every((b,i)=>Math.abs(b.y-r.labels[i].y-36)<.1));assert.ok(r.labels[1].y-r.inputs[0].y-36===18);}
  await page.evaluate(()=>{const f=document.querySelector('form');f.setAttribute('aria-busy','true');for(const i of f.querySelectorAll('input[type=password]'))i.readOnly=true;f.querySelector('button').disabled=true;f.querySelector('button').textContent='Saving…';const error=document.createElement('div');error.className='zxs-error zxs-row';error.textContent='Network response failed. '.repeat(20);f.insertBefore(error,f.querySelector('.zxs-actions'));});
  const pending=await inspect();assert.equal(pending.documentOverflow,false);assert.equal(pending.busy,'true');assert.ok(pending.inputs.every(i=>i.readonly));assert.ok(pending.save.disabled);assert.equal(pending.panel.w,r.panel.w);assert.ok(Math.abs(pending.save.h-36)<.1);
- results.push({...r,pending});await page.screenshot({path:`/tmp/zxs-account-${lang}-${width}.png`,fullPage:true});await page.close();
+ results.push({...r,pending});await page.screenshot({path:`${probe.output}/zxs-account-${lang}-${width}.png`,fullPage:true});await page.close();
 }
-await writeFile('/tmp/zxs-account-refactor-fixture.json',JSON.stringify({passed:true,results},null,2));await browser.close();console.log('PASS account compact CSS: 8 language/viewport combinations, 36px rows, 14.4px font, G4 E18, 18px groups, 504px maximum panel, readonly/autocomplete/pending/error layout, no page overflow.');
+await writeFile(`${probe.output}/zxs-account-refactor-fixture.json`,JSON.stringify({passed:true,results},null,2));await browser.close();console.log('PASS account compact CSS: 8 language/viewport combinations, 36px rows, 14.4px font, G4 E18, 18px groups, 504px maximum panel, readonly/autocomplete/pending/error layout, no page overflow.');
