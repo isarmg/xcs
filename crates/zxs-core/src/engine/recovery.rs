@@ -88,16 +88,7 @@ impl Engine {
             let Some((hash, rs)) = active.into_iter().next() else {
                 continue;
             };
-            let source = online
-                .iter()
-                .find(|d| object_path(d, "candidate", &hash).exists())
-                .ok_or_else(|| {
-                    Error::new(
-                        "RECOVERY_REQUIRED",
-                        "candidate dependencies are unavailable",
-                    )
-                })?;
-            let candidate: Candidate = load_object(source, "candidate", &hash)?;
+            let candidate: Candidate = verified_object(&online, "candidate", &hash)?;
             if candidate.pool_id != self.config.pool_id
                 || candidate.previous_snapshot != self.snapshot
             {
@@ -107,10 +98,9 @@ impl Engine {
                 ));
             }
             let publication_record = rs.iter().find(|(_, r)| r.record_type == "PUBLICATION");
-            let publication = if let Some((slot, r)) = publication_record {
-                let d = self.disk(slot)?;
-                Some(load_object::<Publication>(
-                    d,
+            let publication = if let Some((_, r)) = publication_record {
+                Some(verified_object::<Publication>(
+                    &online,
                     "publication",
                     &r.object_hash,
                 )?)
@@ -180,8 +170,14 @@ impl Engine {
                         "history recovery manifest differs from candidate",
                     ));
                 }
-                for d in &members {
-                    store_object(d, "candidate", &candidate)?;
+                repair_object_copies(&members, "candidate", &hash, &candidate)?;
+                if let Some(publication) = &publication {
+                    repair_object_copies(
+                        &members,
+                        "publication",
+                        &object_hash("publication", publication)?,
+                        publication,
+                    )?;
                 }
                 let recovered_result = publication
                     .as_ref()
@@ -243,6 +239,60 @@ impl Engine {
     }
 }
 
+// The journal supplies the authoritative digest. A replica is usable only if
+// its decoded object matches that exact digest, never by majority agreement.
+fn verified_object<T: serde::Serialize + serde::de::DeserializeOwned>(
+    members: &[DiskConfig],
+    kind: &str,
+    hash: &str,
+) -> Result<T> {
+    let mut first_error = None;
+    for member in members {
+        match load_object(member, kind, hash) {
+            Ok(value) => return Ok(value),
+            Err(error) => {
+                first_error.get_or_insert(error);
+            }
+        }
+    }
+    Err(first_error.unwrap_or_else(|| Error::new("RECOVERY_REQUIRED", "no trusted object replica")))
+}
+
+fn repair_object_copies<T: serde::Serialize>(
+    members: &[DiskConfig],
+    kind: &str,
+    hash: &str,
+    value: &T,
+) -> Result<()> {
+    if object_hash(kind, value)? != hash {
+        return Err(Error::new("OBJECT_CORRUPT", "repair object digest differs"));
+    }
+    let bytes = encode_metadata(value, MAX_METADATA)?;
+    for member in members {
+        let path = object_path(member, kind, hash);
+        match std::fs::symlink_metadata(&path) {
+            Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => {
+                // Never replace an unsafe entry, even if a healthy replica exists.
+                open_regular(&path)?;
+                if read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice()) {
+                    write_atomic(&path, &bytes, true)?;
+                }
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                write_atomic(&path, &bytes, false)?;
+            }
+            Err(e) => return Err(e.into()),
+            Ok(_) => {
+                return Err(Error::new(
+                    "UNSAFE_PATH",
+                    "object repair target is not a regular file",
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
 // A candidate binds one snapshot root. Try only replicas of that exact root;
 // never substitute a different state or advance past a failed dependency.
 fn verified_snapshot(members: &[DiskConfig], hash: &str) -> Result<(State, DiskConfig)> {
@@ -282,30 +332,7 @@ fn repair_snapshot_copies(
         hash: &str,
     ) -> Result<()> {
         let value: T = load_object(source, kind, hash)?;
-        let bytes = encode_metadata(&value, MAX_METADATA)?;
-        for member in members {
-            let path = object_path(member, kind, hash);
-            match std::fs::symlink_metadata(&path) {
-                Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => {
-                    // Require a safe regular file even when replacing corrupt bytes.
-                    open_regular(&path)?;
-                    if read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice()) {
-                        write_atomic(&path, &bytes, true)?;
-                    }
-                }
-                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                    write_atomic(&path, &bytes, false)?
-                }
-                Err(e) => return Err(e.into()),
-                Ok(_) => {
-                    return Err(Error::new(
-                        "UNSAFE_PATH",
-                        "snapshot repair target is not a regular file",
-                    ));
-                }
-            }
-        }
-        Ok(())
+        repair_object_copies(members, kind, hash, &value)
     }
     let snapshot: Snapshot = load_object(source, "snapshot", hash)?;
     for hash in snapshot.pages.values().flatten() {
@@ -333,6 +360,190 @@ thread_local! {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn recovery_repairs_exact_candidate_and_publication_replicas() {
+        for interrupted in [false, true] {
+            for kind in ["candidate", "publication"] {
+                for missing in [false, true] {
+                    let temp = tempfile::tempdir().unwrap();
+                    let root = temp.path().join("system");
+                    let config = Config::development([
+                        temp.path().join("a"),
+                        temp.path().join("b"),
+                        temp.path().join("c"),
+                    ]);
+                    let mut engine = Engine::initialize(&root, config).unwrap();
+                    if interrupted {
+                        engine.inject_fault_once("after_publication_3");
+                    }
+                    let result = engine.create_repository("repo", "P01", 3, "admin", &new_id("op"));
+                    assert_eq!(result.is_err(), interrupted);
+                    let members = engine.members();
+                    let record = scan(&members[0])
+                        .unwrap()
+                        .records
+                        .into_iter()
+                        .find(|(r, _)| r.record_type == "PUBLICATION")
+                        .unwrap()
+                        .0;
+                    let candidate: Candidate =
+                        load_object(&members[0], "candidate", &record.candidate_hash).unwrap();
+                    let expected = canonical_json(
+                        &load_snapshot(&members[0], &candidate.snapshot_hash).unwrap(),
+                    )
+                    .unwrap();
+                    let hash = if kind == "candidate" {
+                        record.candidate_hash
+                    } else {
+                        record.object_hash
+                    };
+                    let target = object_path(&members[0], kind, &hash);
+                    let original = std::fs::read(&target).unwrap();
+                    drop(engine);
+                    if missing {
+                        std::fs::remove_file(&target).unwrap();
+                    } else {
+                        std::fs::write(&target, b"corrupt").unwrap();
+                    }
+                    let recovered = Engine::open(&root).unwrap();
+                    assert_eq!(canonical_json(&recovered.state).unwrap(), expected);
+                    assert_eq!(std::fs::read(&target).unwrap(), original);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn pending_candidate_recovers_from_healthy_exact_replica() {
+        for fault in ["after_accept_1", "after_accept_2"] {
+            for missing in [false, true] {
+                let temp = tempfile::tempdir().unwrap();
+                let root = temp.path().join("system");
+                let config = Config::development([
+                    temp.path().join("a"),
+                    temp.path().join("b"),
+                    temp.path().join("c"),
+                ]);
+                let mut engine = Engine::initialize(&root, config).unwrap();
+                engine.inject_fault_once(fault);
+                let operation = new_id("op");
+                assert!(
+                    engine
+                        .create_repository("repo", "P01", 3, "admin", &operation)
+                        .is_err()
+                );
+                let members = engine.members();
+                let record = scan(&members[0])
+                    .unwrap()
+                    .records
+                    .into_iter()
+                    .find(|(r, _)| r.record_type == "ACCEPT")
+                    .unwrap()
+                    .0;
+                let target = object_path(&members[0], "candidate", &record.candidate_hash);
+                let original = std::fs::read(&target).unwrap();
+                drop(engine);
+                if missing {
+                    std::fs::remove_file(&target).unwrap();
+                } else {
+                    std::fs::write(&target, b"corrupt").unwrap();
+                }
+                let recovered = Engine::open(&root).unwrap();
+                assert_eq!(
+                    recovered.operation(&operation).unwrap().commit_state,
+                    "PUBLISHED"
+                );
+                assert_eq!(recovered.state.repositories.len(), 1);
+                assert_eq!(std::fs::read(&target).unwrap(), original);
+                drop(recovered);
+                assert_eq!(Engine::open(&root).unwrap().state.repositories.len(), 1);
+            }
+        }
+    }
+
+    #[test]
+    fn recovery_rejects_all_digest_mismatched_object_replicas_without_rewriting_them() {
+        for kind in ["candidate", "publication"] {
+            let temp = tempfile::tempdir().unwrap();
+            let root = temp.path().join("system");
+            let config = Config::development([
+                temp.path().join("a"),
+                temp.path().join("b"),
+                temp.path().join("c"),
+            ]);
+            let mut engine = Engine::initialize(&root, config).unwrap();
+            engine
+                .create_repository("repo", "P01", 3, "admin", &new_id("op"))
+                .unwrap();
+            let members = engine.members();
+            let record = scan(&members[0])
+                .unwrap()
+                .records
+                .into_iter()
+                .find(|(r, _)| r.record_type == "PUBLICATION")
+                .unwrap()
+                .0;
+            let hash = if kind == "candidate" {
+                record.candidate_hash
+            } else {
+                record.object_hash
+            };
+            let mut wrong: serde_json::Value =
+                read_json(&object_path(&members[0], kind, &hash)).unwrap();
+            if kind == "candidate" {
+                wrong["operation_id"] = serde_json::json!(new_id("op"));
+            } else {
+                wrong["candidate_hash"] = serde_json::json!("0".repeat(64));
+            }
+            let wrong = canonical_json(&wrong).unwrap();
+            let journals = members
+                .iter()
+                .map(|d| std::fs::read(log_path(d)).unwrap())
+                .collect::<Vec<_>>();
+            drop(engine);
+            for member in &members {
+                std::fs::write(object_path(member, kind, &hash), &wrong).unwrap();
+            }
+            assert_eq!(Engine::open(&root).err().unwrap().code, "OBJECT_CORRUPT");
+            for (member, journal) in members.iter().zip(journals) {
+                assert_eq!(
+                    std::fs::read(object_path(member, kind, &hash)).unwrap(),
+                    wrong
+                );
+                assert_eq!(std::fs::read(log_path(member)).unwrap(), journal);
+            }
+        }
+    }
+
+    #[test]
+    fn object_repair_does_not_replace_symlink_or_hardlink() {
+        use std::os::unix::fs::symlink;
+        for hardlink in [false, true] {
+            let temp = tempfile::tempdir().unwrap();
+            let config = Config::development([
+                temp.path().join("a"),
+                temp.path().join("b"),
+                temp.path().join("c"),
+            ]);
+            let engine = Engine::initialize(&temp.path().join("system"), config).unwrap();
+            let members = engine.members();
+            let value = serde_json::json!({"data": "verified"});
+            let hash = store_object(&members[0], "candidate", &value).unwrap();
+            let target = object_path(&members[0], "candidate", &hash);
+            std::fs::remove_file(&target).unwrap();
+            let external = temp.path().join("external");
+            std::fs::write(&external, b"untouched").unwrap();
+            if hardlink {
+                std::fs::hard_link(&external, &target).unwrap();
+            } else {
+                symlink(&external, &target).unwrap();
+            }
+            assert!(repair_object_copies(&members, "candidate", &hash, &value).is_err());
+            assert_eq!(std::fs::read(&external).unwrap(), b"untouched");
+            assert_eq!(std::fs::read(&target).unwrap(), b"untouched");
+        }
+    }
 
     #[test]
     fn bound_snapshot_repair_preserves_legacy_page_layout() {

@@ -248,6 +248,7 @@ pub(super) fn update_upload(state: RwSignal<State>, id: &str, update: impl FnOnc
     });
 }
 pub(super) fn apply_upload_result(state: RwSignal<State>, id: &str, value: Value) {
+    let value = super::operation::receipt(id, value);
     let status = operation_status(&value);
     update_upload(state, id, |row| {
         row.status = status;
@@ -313,6 +314,52 @@ pub(crate) fn download(state: RwSignal<State>, entry: Value) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unrelated_upload_receipts_keep_recovery_data_and_stop_the_queue() {
+        Owner::new().with(|| {
+            for response in [
+                json!({"state":"SUCCEEDED"}),
+                json!({"operation_id":"other","state":"SUCCEEDED"}),
+                json!({"operation":{"operation_id":"other","state":"SUCCEEDED"}}),
+            ] {
+                let state = RwSignal::new(State::default());
+                state.update(|s| {
+                    s.files.uploads.push(UploadRow {
+                        operation_id: "original".into(),
+                        workspace: "retained-workspace".into(),
+                        expected_head: "retained-head".into(),
+                        status: SaveStatus::Saving,
+                        polling: true,
+                        ..Default::default()
+                    })
+                });
+                apply_upload_result(state, "original", response);
+                state.with_untracked(|s| {
+                    let row = &s.files.uploads[0];
+                    assert_eq!(row.status, SaveStatus::Unknown);
+                    assert!(pending(s));
+                    assert!(!row.polling);
+                    assert_eq!(row.workspace, "retained-workspace");
+                    assert_eq!(row.expected_head, "retained-head");
+                });
+                apply_upload_result(
+                    state,
+                    "original",
+                    json!({
+                        "operation":{"operation_id":"original","state":"SUCCEEDED"}
+                    }),
+                );
+                state.with_untracked(|s| {
+                    let row = &s.files.uploads[0];
+                    assert_eq!(row.status, SaveStatus::Published);
+                    assert!(!pending(s));
+                    assert!(row.workspace.is_empty());
+                    assert!(row.expected_head.is_empty());
+                });
+            }
+        });
+    }
 
     #[test]
     fn seal_failures_do_not_poll_an_operation_that_was_never_submitted() {

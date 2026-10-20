@@ -249,15 +249,19 @@ fn restore_session(state: RwSignal<State>) {
         state.update(|s| s.restoring = false);
     });
 }
-fn logout(state: RwSignal<State>) {
-    if state.with_untracked(|s| s.logout_pending) {
-        return;
+pub(crate) fn begin_logout(state: &mut State) -> Option<u64> {
+    if state.logout_pending {
+        return None;
     }
-    state.update(|s| {
-        s.logout_pending = true;
-        s.session_epoch += 1;
-    });
-    let epoch = state.with_untracked(|s| s.session_epoch);
+    state.logout_pending = true;
+    state.session_epoch += 1;
+    api::invalidate_session_work();
+    Some(state.session_epoch)
+}
+fn logout(state: RwSignal<State>) {
+    let Some(epoch) = state.try_update(begin_logout).flatten() else {
+        return;
+    };
     spawn_local(async move {
         let result = api::request("POST", "/v1/auth/logout", Some(json!({}))).await;
         if !state.with_untracked(|s| s.session_epoch == epoch && s.logout_pending) {

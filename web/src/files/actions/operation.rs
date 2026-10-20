@@ -20,7 +20,7 @@ pub(crate) fn record_receipt(state: RwSignal<State>, id: &str, value: Value) -> 
     record_operation(state, value);
     status
 }
-fn receipt(id: &str, value: Value) -> Value {
+pub(super) fn receipt(id: &str, value: Value) -> Value {
     let item = value.get("operation").unwrap_or(&value);
     if item["operation_id"].as_str() == Some(id) {
         value

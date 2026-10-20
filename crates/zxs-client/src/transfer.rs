@@ -14,7 +14,15 @@ impl Client {
         path: &str,
         source: &Path,
     ) -> Result<Value, Error> {
-        let mut file = tokio::fs::File::open(source).await?;
+        let mut options = tokio::fs::OpenOptions::new();
+        options.read(true);
+        #[cfg(unix)]
+        // Opening a FIFO normally blocks before metadata can reject it. Keep
+        // the open nonblocking, then validate the opened descriptor (not a
+        // pre-open path check that could race a replacement). O_NONBLOCK has
+        // no effect on regular-file reads and local symlinks remain supported.
+        options.custom_flags(rustix::fs::OFlags::NONBLOCK.bits() as i32);
+        let mut file = options.open(source).await?;
         let metadata = file.metadata().await?;
         if !metadata.is_file() {
             return Err(Error::Response(

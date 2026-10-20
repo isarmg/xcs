@@ -402,3 +402,108 @@ async fn response_adapter_enforces_shared_duplicate_key_and_status_rules() {
         server.await.unwrap();
     }
 }
+
+#[cfg(unix)]
+#[test]
+fn fifo_upload_child_exits_without_a_writer() {
+    let Some(source) = std::env::var_os("ZXS_TEST_UPLOAD_FIFO") else {
+        return;
+    };
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    runtime.block_on(async {
+        let client = Client::connect("http://127.0.0.1:1").unwrap();
+        let result = client
+            .upload_file("workspace", "item", "file", std::path::Path::new(&source))
+            .await;
+        assert!(
+            matches!(result, Err(Error::Response(message)) if message.contains("regular file"))
+        );
+    });
+    // Returning must also shut down the runtime: a cancelled FIFO open can
+    // otherwise keep Tokio's blocking pool alive forever.
+    drop(runtime);
+}
+
+#[cfg(unix)]
+#[test]
+fn fifo_upload_is_rejected_without_blocking_runtime_shutdown() {
+    use std::{
+        process::Command,
+        time::{Duration, Instant},
+    };
+    let directory = tempfile::tempdir().unwrap();
+    let fifo = directory.path().join("source.fifo");
+    assert!(
+        Command::new("mkfifo")
+            .arg(&fifo)
+            .status()
+            .unwrap()
+            .success()
+    );
+    let mut child = Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "transfer_tests::fifo_upload_child_exits_without_a_writer",
+            "--nocapture",
+        ])
+        .env("ZXS_TEST_UPLOAD_FIFO", &fifo)
+        .spawn()
+        .unwrap();
+    let deadline = Instant::now() + Duration::from_secs(5);
+    loop {
+        if let Some(status) = child.try_wait().unwrap() {
+            assert!(status.success(), "FIFO upload subprocess failed: {status}");
+            break;
+        }
+        if Instant::now() >= deadline {
+            child.kill().unwrap();
+            child.wait().unwrap();
+            panic!("FIFO upload or runtime shutdown blocked without a FIFO writer");
+        }
+        std::thread::sleep(Duration::from_millis(10));
+    }
+}
+
+#[tokio::test]
+async fn upload_accepts_regular_files_and_rejects_directories() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source");
+    std::fs::write(&source, b"ordinary upload content").unwrap();
+    let (client, server) =
+        reply(b"HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n".to_vec()).await;
+    client
+        .upload_file("workspace", "item", "file", &source)
+        .await
+        .unwrap();
+    server.await.unwrap();
+    assert!(matches!(
+        client
+            .upload_file("workspace", "item", "file", directory.path())
+            .await,
+        Err(Error::Response(_)) | Err(Error::Io(_))
+    ));
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn upload_preserves_symlinks_to_regular_files_and_rejects_devices() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source");
+    let alias = directory.path().join("alias");
+    std::fs::write(&source, b"content through a local symlink").unwrap();
+    std::os::unix::fs::symlink(&source, &alias).unwrap();
+    let (client, server) =
+        reply(b"HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n".to_vec()).await;
+    client
+        .upload_file("workspace", "item", "file", &alias)
+        .await
+        .unwrap();
+    server.await.unwrap();
+    assert!(
+        matches!(client.upload_file("workspace", "item", "file", std::path::Path::new("/dev/null")).await,
+        Err(Error::Response(message)) if message.contains("regular file"))
+    );
+}

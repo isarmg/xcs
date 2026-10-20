@@ -1330,6 +1330,7 @@ dependencies = [
  "blake3",
  "futures-util",
  "reqwest",
+ "rustix",
  "serde",
  "serde_json",
  "tempfile",

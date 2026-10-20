@@ -137,6 +137,24 @@ pub fn clear_session() {
     CREDENTIALS.with(|saved| saved.borrow_mut().replace(None, None));
 }
 
+// Stop later stages of in-flight uploads before logout reaches the server.
+// Keep the credential until revocation is confirmed so failed logout can retry.
+pub(crate) fn invalidate_session_work() {
+    CREDENTIALS.with(|saved| saved.borrow_mut().generation += 1);
+}
+
+fn credential_generation() -> u64 {
+    CREDENTIALS.with(|saved| saved.borrow().generation)
+}
+
+fn ensure_credential_generation(generation: u64) -> Result<(), Error> {
+    if credential_generation() == generation {
+        Ok(())
+    } else {
+        Err(session_changed())
+    }
+}
+
 pub fn operation_id() -> String {
     fresh_id("op")
 }
@@ -503,12 +521,16 @@ pub async fn commit_workspace(
         }
         return result;
     }
+    let generation = credential_generation();
     let body = request(
         "POST",
         &format!("/v1/workspaces/{}/seal", segment(workspace)),
         Some(json!({})),
     )
     .await?;
+    // Sealing can outlive logout or a replacement login. Never publish the old
+    // workspace using credentials installed while that request was in flight.
+    ensure_credential_generation(generation)?;
     let body = zxs_contract::client_protocol::prepare_commit(
         body,
         workspace,
@@ -563,9 +585,13 @@ pub async fn upload(
             ),
         ));
     }
+    let generation = credential_generation();
     let data = JsFuture::from(file.array_buffer())
         .await
         .map_err(js_error)?;
+    // Reading a browser file is asynchronous too: do not send its bytes under
+    // a different session if authentication changed while buffering it.
+    ensure_credential_generation(generation)?;
     let bytes = Uint8Array::new(&data);
     let endpoint = format!(
         "/v1/workspaces/{}/files/{}/content?path={}",
@@ -742,6 +768,77 @@ pub async fn open_version(version: &str, name: &str) -> Result<Option<String>, E
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn asynchronous_upload_and_seal_steps_cannot_continue_in_a_replaced_session() {
+        CREDENTIALS.with(|saved| {
+            saved
+                .borrow_mut()
+                .replace(Some("old-token".into()), Some("old-csrf".into()));
+        });
+        let generation = credential_generation();
+        assert!(ensure_credential_generation(generation).is_ok());
+        clear_session();
+        assert_eq!(
+            ensure_credential_generation(generation).unwrap_err().code,
+            "SESSION_CHANGED"
+        );
+        CREDENTIALS.with(|saved| {
+            saved
+                .borrow_mut()
+                .replace(Some("new-token".into()), Some("new-csrf".into()));
+        });
+        assert_eq!(
+            ensure_credential_generation(generation).unwrap_err().code,
+            "SESSION_CHANGED"
+        );
+        assert!(ensure_credential_generation(credential_generation()).is_ok());
+        clear_session();
+    }
+
+    #[test]
+    fn beginning_logout_blocks_buffered_upload_and_sealed_commit_before_revocation_completes() {
+        CREDENTIALS.with(|saved| {
+            saved
+                .borrow_mut()
+                .replace(Some("active-token".into()), Some("active-csrf".into()));
+        });
+        let mut state = crate::ui::State {
+            authenticated: true,
+            session_epoch: 7,
+            ..Default::default()
+        };
+        // Both operations have entered their internal await: the outer UI epoch
+        // checks have already passed, but PUT/commit have not been sent yet.
+        let buffering_generation = credential_generation();
+        let sealing_generation = credential_generation();
+        assert_eq!(crate::ui::begin_logout(&mut state), Some(8));
+        assert!(state.logout_pending);
+        assert!(state.authenticated);
+        assert_eq!(crate::ui::begin_logout(&mut state), None);
+        // The logout request has not completed. Each resumed transfer must stop.
+        for generation in [buffering_generation, sealing_generation] {
+            assert_eq!(
+                ensure_credential_generation(generation).unwrap_err().code,
+                "SESSION_CHANGED"
+            );
+        }
+        CREDENTIALS.with(|saved| {
+            let saved = saved.borrow();
+            assert_eq!(saved.token.as_deref(), Some("active-token"));
+            assert_eq!(saved.csrf.as_deref(), Some("active-csrf"));
+        });
+        let logout_generation = credential_generation();
+        assert!(ensure_credential_generation(logout_generation).is_ok());
+        // A failed logout unlocks its retry, not the old transfer continuations.
+        state.logout_pending = false;
+        state.logout_unconfirmed = true;
+        state.authenticated = false;
+        assert_eq!(crate::ui::begin_logout(&mut state), Some(9));
+        CREDENTIALS.with(|saved| assert_eq!(saved.borrow().token.as_deref(), Some("active-token")));
+        assert!(ensure_credential_generation(buffering_generation).is_err());
+        clear_session();
+    }
+
     #[test]
     fn native_publication_evidence_is_explicit_and_missing_ipc_evidence_is_unknown() {
         let mut failure = error("TRANSPORT_ERROR", "connection lost");

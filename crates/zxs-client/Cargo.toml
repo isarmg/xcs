@@ -17,5 +17,8 @@ blake3 = "1.8.7"
 zxs-contract = { path = "../zxs-contract" }
 tempfile = "3"
 
+[target.'cfg(unix)'.dependencies]
+rustix.workspace = true
+
 [dev-dependencies]
 tokio = { version = "1.53.2", features = ["macros", "rt-multi-thread", "net", "io-util", "sync", "time"] }
