@@ -2,11 +2,16 @@
 //!
 //! The backend owns storage authorization and publication. This boundary owns
 //! request limits, byte ranges, staging progress and the read-lease lifetime.
-use crate::{ApiError, AppState, Content, auth::Identity, lock, uploads};
+use crate::{
+    ApiError, AppState, Content,
+    auth::Identity,
+    http_boundary::{ApiPath, ApiQuery},
+    lock, uploads,
+};
 use axum::{
     Json,
     body::Body,
-    extract::{Path as RoutePath, Query, Request, State},
+    extract::{Request, State},
     http::{HeaderMap, HeaderValue, Method, StatusCode, header},
     response::{IntoResponse, Response},
 };
@@ -23,7 +28,7 @@ use tokio_util::io::ReaderStream;
 pub(crate) async fn upload_status(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
-    RoutePath((workspace, item)): RoutePath<(String, String)>,
+    ApiPath((workspace, item)): ApiPath<(String, String)>,
 ) -> Result<Json<Value>, ApiError> {
     let backend = state.backend.clone();
     let owner = identity.clone();
@@ -37,7 +42,7 @@ pub(crate) async fn upload_status(
         )
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     let backend = state.backend.clone();
     let owner = identity.clone();
     let ws = workspace.clone();
@@ -50,7 +55,7 @@ pub(crate) async fn upload_status(
         )
     })
     .await
-    .map_err(ApiError::invalid)?
+    .map_err(ApiError::join)?
     {
         Ok(status) => Ok(status),
         Err(error) if error.status == 404 => Err(error),
@@ -61,7 +66,7 @@ pub(crate) async fn upload_status(
     let item_id = item.clone();
     if let Some(record) = tokio::task::spawn_blocking(move || uploads::load(&root, &ws, &item_id))
         .await
-        .map_err(ApiError::invalid)??
+        .map_err(ApiError::join)??
     {
         if record.principal != identity.principal && !identity.admin {
             return Err(ApiError::forbidden());
@@ -112,13 +117,13 @@ async fn persist_upload(
         uploads::persist_staged(&root, &record, &staged)
     })
     .await
-    .map_err(ApiError::invalid)?
+    .map_err(ApiError::join)?
 }
 pub(crate) async fn upload(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
-    RoutePath((workspace, item)): RoutePath<(String, String)>,
-    Query(query): Query<UploadQuery>,
+    ApiPath((workspace, item)): ApiPath<(String, String)>,
+    ApiQuery(query): ApiQuery<UploadQuery>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
     let _permit = state
@@ -202,14 +207,14 @@ pub(crate) async fn upload(
         )
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     let spool = state.config.spool_dir.clone();
     let root = spool.clone();
     let ws = workspace.clone();
     let item_id = item.clone();
     let previous = tokio::task::spawn_blocking(move || uploads::load(&root, &ws, &item_id))
         .await
-        .map_err(ApiError::invalid)??;
+        .map_err(ApiError::join)??;
     let mut prefix = None;
     if let Some(previous) = &previous {
         if previous.principal != identity.principal || previous.path != query.path {
@@ -241,7 +246,7 @@ pub(crate) async fn upload(
                 uploads::ExistingPrefix::open(&root, &previous)
             })
             .await
-            .map_err(ApiError::invalid)??;
+            .map_err(ApiError::join)??;
         }
     }
     let retry = previous
@@ -267,7 +272,7 @@ pub(crate) async fn upload(
         uploads::StagedFile::open_budgeted(create_path, retry, reservation)
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     let mut record = uploads::UploadRecord {
         workspace_id: workspace.clone(),
         item_id: item.clone(),
@@ -296,7 +301,7 @@ pub(crate) async fn upload(
             result
         })
         .await
-        .map_err(ApiError::invalid)??;
+        .map_err(ApiError::join)??;
     }
     if previous
         .as_ref()
@@ -346,7 +351,7 @@ pub(crate) async fn upload(
                 Ok::<_, ApiError>((!existing.complete()).then_some(existing))
             })
             .await
-            .map_err(ApiError::invalid)??;
+            .map_err(ApiError::join)??;
         }
         hash.update(&chunk);
         if skipped < chunk.len() {
@@ -358,7 +363,7 @@ pub(crate) async fn upload(
                 staged.write(&bytes)
             })
             .await
-            .map_err(ApiError::invalid)??;
+            .map_err(ApiError::join)??;
         }
         if length.saturating_sub(last_persisted) >= 1024 * 1024
             && prefix.as_ref().is_none_or(|prefix| prefix.complete())
@@ -414,7 +419,7 @@ pub(crate) async fn upload(
         Ok::<_, ApiError>(staged)
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     Ok(Json(staged))
 }
 
@@ -496,8 +501,8 @@ pub(crate) struct ContentQuery {
 pub(crate) async fn content(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
-    RoutePath(version): RoutePath<String>,
-    Query(query): Query<ContentQuery>,
+    ApiPath(version): ApiPath<String>,
+    ApiQuery(query): ApiQuery<ContentQuery>,
     method: Method,
     headers: HeaderMap,
 ) -> Result<Response, ApiError> {
@@ -540,13 +545,13 @@ pub(crate) async fn content(
         Ok(content)
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     content_response(content, method, headers)
 }
 pub(crate) async fn workspace_content(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
-    RoutePath((workspace, item)): RoutePath<(String, String)>,
+    ApiPath((workspace, item)): ApiPath<(String, String)>,
     method: Method,
     headers: HeaderMap,
 ) -> Result<Response, ApiError> {
@@ -563,13 +568,13 @@ pub(crate) async fn workspace_content(
         Ok::<_, ApiError>(content)
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     content_response(content, method, headers)
 }
 pub(crate) async fn checksums(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
-    RoutePath(version): RoutePath<String>,
+    ApiPath(version): ApiPath<String>,
 ) -> Result<Response, ApiError> {
     let permit = state
         .read_slots
@@ -581,7 +586,7 @@ pub(crate) async fn checksums(
         state.backend.checksums(&identity, &version)
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     Ok(([(header::CONTENT_TYPE, "application/octet-stream")], bytes).into_response())
 }
 fn content_response(
@@ -919,6 +924,38 @@ mod tests {
             assert_eq!(dropped.load(Ordering::SeqCst), 1);
             assert_eq!(slots.available_permits(), 1);
         }
+    }
+
+    #[tokio::test]
+    async fn verification_failure_after_a_chunk_stays_a_stream_error() {
+        let original = vec![42; 65536 * 2];
+        let expected = manifest(&original);
+        let mut corrupted = original.clone();
+        corrupted[65536] = 0;
+        let mut file = tempfile::tempfile().unwrap();
+        std::io::Write::write_all(&mut file, &corrupted).unwrap();
+        let dropped = Arc::new(AtomicUsize::new(0));
+        let content = Content {
+            checksum_manifest: Some(expected),
+            fallback_files: Vec::new(),
+            file,
+            size: original.len() as u64,
+            hash: blake3::hash(&original).to_hex().to_string(),
+            lease: Box::new(ReadLease(dropped.clone())),
+            download_name: None,
+        };
+        let response = content_response(content, Method::GET, HeaderMap::new()).unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers()[header::CONTENT_TYPE],
+            "application/octet-stream"
+        );
+        let mut stream = response.into_body().into_data_stream();
+        assert_eq!(stream.next().await.unwrap().unwrap(), &original[..65536]);
+        assert!(stream.next().await.unwrap().is_err());
+        // No JSON envelope is appended to the partial binary representation.
+        assert!(stream.next().await.is_none());
+        assert_eq!(dropped.load(Ordering::SeqCst), 1);
     }
 
     #[test]

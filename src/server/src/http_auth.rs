@@ -298,7 +298,7 @@ pub(crate) async fn authorize(
     let credential = token.clone();
     let identity = tokio::task::spawn_blocking(move || lock(&auth)?.authenticate(&credential))
         .await
-        .map_err(ApiError::invalid)??;
+        .map_err(ApiError::join)??;
     request.extensions_mut().insert(identity);
     request.extensions_mut().insert(SessionToken(token));
     Ok(next.run(request).await)
@@ -318,9 +318,7 @@ pub(crate) async fn login(
 ) -> Result<Response, ApiError> {
     same_origin(request.headers(), &state.config, false)?;
     let ip = client_ip(&request, &state.config)?;
-    let bytes = axum::body::to_bytes(request.into_body(), 4096)
-        .await
-        .map_err(ApiError::invalid)?;
+    let bytes = crate::http_boundary::read_body(request, 4096).await?;
     let body: Login = storage_contract::decode_strict(&bytes).map_err(ApiError::invalid)?;
     let pending = PendingLogin::acquire(&state.pending_logins, &body.username)?;
     let delay = admit_login(&state.attempts, ip, &body.username)?;
@@ -337,7 +335,7 @@ pub(crate) async fn login(
         lock(&auth)?.login(&body.username, &body.password)
     })
     .await
-    .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "authentication task failed"))??;
+    .map_err(ApiError::join)??;
     let cookie = format!(
         "zxs_session={}; Path=/api; HttpOnly; SameSite=Strict; Max-Age={}{}",
         result.token,
@@ -372,7 +370,7 @@ pub(crate) async fn logout(
     let auth = state.auth.clone();
     tokio::task::spawn_blocking(move || lock(&auth)?.logout(&token.0))
         .await
-        .map_err(ApiError::invalid)??;
+        .map_err(ApiError::join)??;
     let mut response = Json(json!({"logged_out":true})).into_response();
     response.headers_mut().insert(
         header::SET_COOKIE,
@@ -396,9 +394,7 @@ pub(crate) async fn change_password(
 ) -> Result<Response, ApiError> {
     let ip = client_ip(&request, &state.config)?;
     let body: PasswordChange = storage_contract::decode_strict(
-        &axum::body::to_bytes(request.into_body(), 16 * 1024)
-            .await
-            .map_err(ApiError::invalid)?,
+        &crate::http_boundary::read_body(request, 16 * 1024).await?,
     )
     .map_err(ApiError::invalid)?;
     admit_attempts(
@@ -421,7 +417,7 @@ pub(crate) async fn change_password(
         lock(&auth)?.change_password(&token.0, &body.current_password, &body.new_password)
     })
     .await
-    .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "password task failed"))??;
+    .map_err(ApiError::join)??;
     let mut response =
         Json(json!({"changed":true,"reauthentication_required":true})).into_response();
     response.headers_mut().insert(
@@ -443,7 +439,7 @@ pub(crate) async fn accounts(
         Ok::<_, ApiError>(auth.list_accounts())
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     Ok(Json(json!({"accounts": accounts})))
 }
 #[derive(Deserialize)]
@@ -464,12 +460,9 @@ pub(crate) async fn account_upsert(
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
     identity.require_admin()?;
-    let body: AccountUpdate = storage_contract::decode_strict(
-        &axum::body::to_bytes(request.into_body(), 8192)
-            .await
-            .map_err(ApiError::invalid)?,
-    )
-    .map_err(ApiError::invalid)?;
+    let body: AccountUpdate =
+        storage_contract::decode_strict(&crate::http_boundary::read_body(request, 8192).await?)
+            .map_err(ApiError::invalid)?;
     let auth = state.auth.clone();
     let permit = state
         .password_slots
@@ -490,7 +483,7 @@ pub(crate) async fn account_upsert(
         )
     })
     .await
-    .map_err(ApiError::invalid)??;
+    .map_err(ApiError::join)??;
     Ok(Json(json!({"updated":true})))
 }
 

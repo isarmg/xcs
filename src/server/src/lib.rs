@@ -4,6 +4,8 @@ pub mod auth;
 pub mod engine_backend;
 mod file_manager;
 mod http_auth;
+mod http_boundary;
+pub use http_boundary::ApiError;
 pub mod smb_rpc;
 mod spool_budget;
 mod telemetry;
@@ -18,14 +20,14 @@ pub use backend_action::BackendAction;
 use auth::{AuthStore, Identity};
 use axum::{
     Json, Router,
-    extract::{DefaultBodyLimit, Path as RoutePath, Query, Request, State},
-    http::{HeaderValue, StatusCode, header},
+    extract::{DefaultBodyLimit, Request, State},
+    http::{HeaderValue, header},
     middleware::{self, Next},
-    response::{IntoResponse, Response},
+    response::Response,
     routing::{get, patch, post, put},
 };
 use http_auth::{account_upsert, accounts, authorize, change_password, login, logout, me};
-use serde::{Deserialize, Serialize};
+use http_boundary::{ApiPath, ApiQuery};
 use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap},
@@ -34,69 +36,6 @@ use std::{
     sync::{Arc, Mutex},
 };
 use transfer::{checksums, content, upload, upload_status, workspace_content};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ApiError {
-    pub code: String,
-    pub message: String,
-    pub retryable: bool,
-    pub request_id: String,
-    #[serde(skip)]
-    pub status: u16,
-}
-impl ApiError {
-    pub fn new(status: u16, code: impl Into<String>, message: impl Into<String>) -> Self {
-        Self {
-            status,
-            code: code.into(),
-            message: message.into(),
-            retryable: (status >= 500 && status != 501) || status == 429,
-            request_id: storage_contract::new_id("req"),
-        }
-    }
-    pub fn invalid(error: impl std::fmt::Display) -> Self {
-        Self::new(400, "INVALID_REQUEST", error.to_string())
-    }
-    pub fn io(error: std::io::Error) -> Self {
-        tracing::error!(%error, "local I/O failed");
-        Self::new(500, "IO_ERROR", "local storage operation failed")
-    }
-    pub fn unauthorized() -> Self {
-        Self::new(
-            401,
-            "UNAUTHORIZED",
-            "authentication required or session expired",
-        )
-    }
-    pub fn forbidden() -> Self {
-        Self::new(403, "FORBIDDEN", "permission denied")
-    }
-    pub fn conflict(code: &str, message: &str) -> Self {
-        Self::new(409, code, message)
-    }
-    pub fn limit(message: &str) -> Self {
-        Self::new(429, "RESOURCE_LIMIT_EXCEEDED", message)
-    }
-    pub fn unsupported() -> Self {
-        Self::new(
-            501,
-            "UNSUPPORTED_OPERATION",
-            "operation is not supported by this build",
-        )
-    }
-}
-impl std::fmt::Display for ApiError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}: {}", self.code, self.message)
-    }
-}
-impl std::error::Error for ApiError {}
-impl IntoResponse for ApiError {
-    fn into_response(self) -> Response {
-        let status = StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
-        (status, Json(json!({"error":self}))).into_response()
-    }
-}
 
 /// A successful content open must hold its core read lease until the body drops.
 pub struct Content {
@@ -571,7 +510,8 @@ fn router_shared(
         .route("/readyz", get(ready))
         .route("/api/capabilities", get(capabilities))
         .route("/api/auth/login", post(login))
-        .fallback(web_assets::not_found);
+        .method_not_allowed_fallback(http_boundary::method_not_allowed)
+        .fallback(http_boundary::not_found);
     if let Some(web_dir) = config.web_dir {
         app = app.fallback_service(web_assets::fallback(web_dir));
     }
@@ -663,7 +603,7 @@ async fn shutdown() {
 }
 
 async fn security_headers(request: Request, next: Next) -> Response {
-    let sensitive = request.uri().path().starts_with("/api/")
+    let sensitive = http_boundary::is_api_path(request.uri().path())
         || matches!(request.uri().path(), "/healthz" | "/readyz");
     let mut response = next.run(request).await;
     let headers = response.headers_mut();
@@ -689,13 +629,11 @@ async fn call(
 ) -> Result<Json<Value>, ApiError> {
     tokio::task::spawn_blocking(move || state.backend.call(action, &identity, input))
         .await
-        .map_err(ApiError::invalid)?
+        .map_err(ApiError::join)?
         .map(Json)
 }
 async fn json_body(request: Request) -> Result<Value, ApiError> {
-    let bytes = axum::body::to_bytes(request.into_body(), 1024 * 1024)
-        .await
-        .map_err(ApiError::invalid)?;
+    let bytes = http_boundary::read_body(request, 1024 * 1024).await?;
     if bytes.is_empty() {
         Ok(json!({}))
     } else {
@@ -716,8 +654,31 @@ fn with_id(mut body: Value, key: &str, id: String) -> Result<Value, ApiError> {
     Ok(body)
 }
 
-macro_rules! list_handler { ($name:ident, $action:expr) => { async fn $name(State(state): State<AppState>, axum::Extension(identity): axum::Extension<Identity>, Query(query): Query<BTreeMap<String,String>>) -> Result<Json<Value>, ApiError> { call(state,identity,$action,json!({"query":query})).await } }; }
-macro_rules! read_handler { ($name:ident, $action:expr, $id:literal) => { async fn $name(State(state): State<AppState>, axum::Extension(identity): axum::Extension<Identity>, RoutePath(id): RoutePath<String>, Query(query): Query<BTreeMap<String,String>>) -> Result<Json<Value>, ApiError> { let mut input=json!({"query":query}); input[$id]=id.into(); call(state,identity,$action,input).await } }; }
+macro_rules! list_handler {
+    ($name:ident, $action:expr) => {
+        async fn $name(
+            State(state): State<AppState>,
+            axum::Extension(identity): axum::Extension<Identity>,
+            ApiQuery(query): ApiQuery<BTreeMap<String, String>>,
+        ) -> Result<Json<Value>, ApiError> {
+            call(state, identity, $action, json!({"query": query})).await
+        }
+    };
+}
+macro_rules! read_handler {
+    ($name:ident, $action:expr, $key:literal) => {
+        async fn $name(
+            State(state): State<AppState>,
+            axum::Extension(identity): axum::Extension<Identity>,
+            ApiPath(id): ApiPath<String>,
+            ApiQuery(query): ApiQuery<BTreeMap<String, String>>,
+        ) -> Result<Json<Value>, ApiError> {
+            let mut input = json!({"query": query});
+            input[$key] = id.into();
+            call(state, identity, $action, input).await
+        }
+    };
+}
 macro_rules! post_handler {
     ($name:ident, $action:expr) => {
         async fn $name(
@@ -734,7 +695,7 @@ macro_rules! id_post_handler {
         async fn $name(
             State(state): State<AppState>,
             axum::Extension(identity): axum::Extension<Identity>,
-            RoutePath(id): RoutePath<String>,
+            ApiPath(id): ApiPath<String>,
             request: Request,
         ) -> Result<Json<Value>, ApiError> {
             call(
@@ -822,7 +783,7 @@ id_post_handler!(
 async fn rename_directory_branch(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
-    RoutePath((repo, id)): RoutePath<(String, String)>,
+    ApiPath((repo, id)): ApiPath<(String, String)>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
     let input = with_id(json_body(request).await?, "repository_id", repo)?;

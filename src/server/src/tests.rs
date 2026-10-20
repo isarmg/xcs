@@ -1,5 +1,8 @@
 use super::*;
-use axum::body::{Body, Bytes};
+use axum::{
+    body::{Body, Bytes},
+    http::StatusCode,
+};
 use std::time::Duration;
 use tower::ServiceExt;
 struct TestBackend {
@@ -71,7 +74,7 @@ async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope()
     let mut config = ServerConfig::loopback(root.path());
     config.web_dir = Some(assets);
     let app = application_config(root.path(), config);
-    for path in ["/api/unknown", "/api/missing", "/missing.css"] {
+    for path in ["/api", "/api/unknown", "/api/missing", "/missing.css"] {
         let response = app
             .clone()
             .oneshot(
@@ -85,7 +88,7 @@ async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope()
             .unwrap();
         assert_eq!(response.status(), StatusCode::NOT_FOUND, "{path}");
         assert_eq!(response.headers()[header::CONTENT_TYPE], "application/json");
-        if path.starts_with("/api/") {
+        if http_boundary::is_api_path(path) {
             assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
         }
         let error: Value = serde_json::from_slice(
@@ -701,3 +704,6 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
 
 #[path = "tests/spool_budget.rs"]
 mod spool_budget_tests;
+
+#[path = "tests/http_boundary.rs"]
+mod http_boundary_tests;

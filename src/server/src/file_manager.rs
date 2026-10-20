@@ -1,13 +1,36 @@
 //! Path-oriented file manager routes over controlled disk namespaces.
 use crate::*;
-macro_rules! list_handler { ($name:ident,$action:expr)=>{ async fn $name(State(state):State<AppState>,axum::Extension(identity):axum::Extension<Identity>,Query(query):Query<BTreeMap<String,String>>)->Result<Json<Value>,ApiError>{call(state,identity,$action,json!({"query":query})).await}}; }
-macro_rules! read_handler { ($name:ident,$action:expr,$key:literal)=>{ async fn $name(State(state):State<AppState>,axum::Extension(identity):axum::Extension<Identity>,RoutePath(id):RoutePath<String>,Query(query):Query<BTreeMap<String,String>>)->Result<Json<Value>,ApiError>{let mut input=json!({"query":query});input[$key]=id.into();call(state,identity,$action,input).await}}; }
+macro_rules! list_handler {
+    ($name:ident, $action:expr) => {
+        async fn $name(
+            State(state): State<AppState>,
+            axum::Extension(identity): axum::Extension<Identity>,
+            ApiQuery(query): ApiQuery<BTreeMap<String, String>>,
+        ) -> Result<Json<Value>, ApiError> {
+            call(state, identity, $action, json!({"query": query})).await
+        }
+    };
+}
+macro_rules! read_handler {
+    ($name:ident, $action:expr, $key:literal) => {
+        async fn $name(
+            State(state): State<AppState>,
+            axum::Extension(identity): axum::Extension<Identity>,
+            ApiPath(id): ApiPath<String>,
+            ApiQuery(query): ApiQuery<BTreeMap<String, String>>,
+        ) -> Result<Json<Value>, ApiError> {
+            let mut input = json!({"query": query});
+            input[$key] = id.into();
+            call(state, identity, $action, input).await
+        }
+    };
+}
 macro_rules! id_post_handler {
     ($name:ident,$action:expr,$key:literal) => {
         async fn $name(
             State(state): State<AppState>,
             axum::Extension(identity): axum::Extension<Identity>,
-            RoutePath(id): RoutePath<String>,
+            ApiPath(id): ApiPath<String>,
             request: Request,
         ) -> Result<Json<Value>, ApiError> {
             call(
@@ -106,7 +129,7 @@ id_post_handler!(branch, crate::BackendAction::FileManagerBranch, "file_id");
 async fn rename_file_branch(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
-    RoutePath((file, branch)): RoutePath<(String, String)>,
+    ApiPath((file, branch)): ApiPath<(String, String)>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
     let input = with_id(json_body(request).await?, "file_id", file)?;
@@ -122,7 +145,7 @@ async fn rename_file_branch(
 async fn node_note(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
-    RoutePath((file, node)): RoutePath<(String, String)>,
+    ApiPath((file, node)): ApiPath<(String, String)>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
     let input = with_id(json_body(request).await?, "file_id", file)?;

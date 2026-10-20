@@ -1,5 +1,8 @@
 //! Static asset admission, validators and the reserved API namespace.
-use crate::{ApiError, AppState};
+use crate::{
+    ApiError, AppState,
+    http_boundary::{is_api_path, not_found},
+};
 use axum::{
     Router,
     extract::{Request, State},
@@ -11,10 +14,6 @@ use std::{
     collections::BTreeMap,
     path::{Path, PathBuf},
 };
-
-pub(crate) async fn not_found() -> ApiError {
-    ApiError::new(404, "NOT_FOUND", "route not found")
-}
 
 pub(crate) fn fallback(directory: PathBuf) -> Router {
     Router::new()
@@ -32,10 +31,6 @@ async fn reserve_api_namespace(request: Request, next: Next) -> Response {
         return not_found().await.into_response();
     }
     next.run(request).await
-}
-
-fn is_api_path(path: &str) -> bool {
-    path == "/api" || path.starts_with("/api/")
 }
 
 pub(crate) fn static_etags(root: &Path) -> Result<BTreeMap<String, String>, ApiError> {

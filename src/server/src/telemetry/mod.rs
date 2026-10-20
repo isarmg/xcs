@@ -3,11 +3,8 @@ mod history;
 mod power;
 mod statistics;
 
-use crate::{ApiError, AppState, Backend, auth::Identity};
-use axum::{
-    Extension, Json,
-    extract::{Query, State},
-};
+use crate::{ApiError, AppState, Backend, auth::Identity, http_boundary::ApiQuery};
+use axum::{Extension, Json, extract::State};
 use history::{HistoryStore, Sample};
 use power::CpuPowerSampler;
 use serde::{Deserialize, Serialize};
@@ -281,7 +278,7 @@ fn range_parameters(range: &str) -> Result<(i64, i64), ApiError> {
 pub(crate) async fn history(
     State(state): State<AppState>,
     Extension(identity): Extension<Identity>,
-    Query(query): Query<HistoryQuery>,
+    ApiQuery(query): ApiQuery<HistoryQuery>,
 ) -> Result<Json<Value>, ApiError> {
     tokio::task::spawn_blocking(move || {
         require_current_administrator(&state.auth, &identity)?;
