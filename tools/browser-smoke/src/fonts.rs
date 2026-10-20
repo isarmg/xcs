@@ -158,16 +158,16 @@ pub(super) fn run(browser: &Browser, origin: &str) -> Result<()> {
                     )?;
                     if mode == "delayed" {
                         wait_for("font-reflow contour geometry", || {
-                            if browser.script(r#"return document.fonts.check('16px ZxsUI') && document.fonts.check('bold 16px ZxsUI') && Array.from(document.querySelectorAll('[data-zxs-contour-state="paint"], [data-zxs-contour-state="clip"]')).some(node => {
-                                const box=node.getBoundingClientRect();
-                                const decoration=node.querySelector(':scope > div[data-zxs-contour-decoration]');
-                                if (!decoration) return false;
-                                const css=getComputedStyle(decoration);
-                                const size=css.backgroundSize.split(',')[0].split(' ').map(parseFloat);
-                                const position=css.backgroundPosition.split(',')[0].split(' ').map(parseFloat);
-                                return size.length===2 && Math.abs(size[0]+2*position[0]-box.width)<1 && Math.abs(size[1]+2*position[1]-box.height)<1;
-                            })"#)? == true { Ok(()) }
-                        else { Err("original fonts or reflow contour geometry not ready".into()) }
+                            let paint = browser.command(
+                                "POST",
+                                "/execute/async",
+                                Some(json!({
+                                    "script": PAINT_OBSERVER, "args": []
+                                })),
+                            )?;
+                            validate_paint(&paint).map_err(|reason| {
+                                format!("{reason}; observed paint: {paint}").into()
+                            })
                         })?;
                     }
                 }
@@ -185,9 +185,140 @@ pub(super) fn run(browser: &Browser, origin: &str) -> Result<()> {
     )
 }
 
+// Read the actual renderer output, not an assumed decoration child. Plain solid
+// backgrounds use a compact nine-slice border-image; its source dimensions are
+// intentionally independent of the host's size. Image decoding respects CSP's
+// img-src blob allowance (fetching the blob would require connect-src blob).
+const PAINT_OBSERVER: &str = r#"
+const done=arguments[arguments.length-1];
+(async () => {
+  const node=document.querySelector('.zxs-auth-card');
+  if(!node) return {error:'missing real login card'};
+  const css=getComputedStyle(node), box=node.getBoundingClientRect();
+  const match=css.borderImageSource.match(/^url\(["']?(blob:[^"')]+)["']?\)$/);
+  if(!match) return {error:'missing active border-image',source:css.borderImageSource,state:node.dataset.zxsContourState};
+  const source=css.borderImageSource;
+  const image=new Image();
+  image.src=match[1];
+  await image.decode();
+  const canvas=document.createElement('canvas');
+  canvas.width=image.naturalWidth; canvas.height=image.naturalHeight;
+  const context=canvas.getContext('2d');
+  context.drawImage(image,0,0);
+  const raw=node.getAttribute('data-zxs-contour-extent') || css.getPropertyValue('--zxs-contour-extent');
+  const requested=parseFloat(raw)*(raw.trim().endsWith('%') ? Math.min(box.width,box.height)/100 : 1);
+  return {
+    fonts:document.fonts.check('16px ZxsUI') && document.fonts.check('bold 16px ZxsUI'),
+    stable:node.isConnected && getComputedStyle(node).borderImageSource===source,
+    state:node.dataset.zxsContourState,
+    width:box.width,height:box.height,extent:Math.min(requested,box.width/2,box.height/2),
+    imageWidth:image.naturalWidth,imageHeight:image.naturalHeight,
+    slice:css.borderImageSlice,borderWidth:parseFloat(css.borderImageWidth),outset:parseFloat(css.borderImageOutset),
+    cornerAlpha:context.getImageData(0,0,1,1).data[3],
+    curveCornerAlpha:context.getImageData(Math.ceil(parseFloat(css.borderImageOutset)),Math.ceil(parseFloat(css.borderImageOutset)),1,1).data[3],
+    centerAlpha:context.getImageData(Math.floor(canvas.width/2),Math.floor(canvas.height/2),1,1).data[3]
+  };
+})().then(done,error=>done({error:String(error)}));
+"#;
+
+fn validate_paint(paint: &Value) -> std::result::Result<(), &'static str> {
+    let number = |key: &str| paint[key].as_f64().filter(|value| value.is_finite());
+    let (
+        Some(width),
+        Some(height),
+        Some(extent),
+        Some(image_width),
+        Some(image_height),
+        Some(border_width),
+        Some(outset),
+    ) = (
+        number("width"),
+        number("height"),
+        number("extent"),
+        number("imageWidth"),
+        number("imageHeight"),
+        number("borderWidth"),
+        number("outset"),
+    )
+    else {
+        return Err("missing finite paint geometry");
+    };
+    if paint["fonts"] != true
+        || paint["stable"] != true
+        || paint["state"] != "paint"
+        || width <= 0.0
+        || height <= 0.0
+        || extent <= 0.0
+        || outset <= 0.0
+        || paint["cornerAlpha"] != 0
+        || paint["curveCornerAlpha"] != 0
+        || paint["centerAlpha"].as_u64().unwrap_or(0) == 0
+    {
+        return Err("font, live paint or decoded rounded-image check failed");
+    }
+    let slice = paint["slice"].as_str().ok_or("missing nine-slice CSS")?;
+    if !slice.split_whitespace().any(|part| part == "fill") {
+        return Err("missing painted center fill");
+    }
+    let first = slice
+        .split_whitespace()
+        .next()
+        .ok_or("missing slice value")?;
+    let close = |a: f64, b: f64| (a - b).abs() < 0.6; // SVG natural dimensions round to image pixels.
+    if let Some(percent) = first.strip_suffix('%') {
+        let percent: f64 = percent.parse().map_err(|_| "invalid percentage slice")?;
+        // Compact tile: E-pixel corners + 2-pixel margin + one straight center pixel.
+        if !close(border_width, extent + outset)
+            || !close(image_width, 2.0 * border_width + 1.0)
+            || !close(image_height, image_width)
+            || !close(percent / 100.0 * image_width, border_width)
+        {
+            return Err("compact nine-slice corner size differs from host geometry");
+        }
+    } else {
+        let slice: f64 = first.parse().map_err(|_| "invalid pixel slice")?;
+        if !close(slice, outset)
+            || !close(border_width, outset)
+            || !close(image_width, width + 2.0 * outset)
+            || !close(image_height, height + 2.0 * outset)
+        {
+            return Err("full-size border image differs from current host geometry");
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn actual_compact_and_full_size_paint_geometry_are_distinct() {
+        let compact = json!({"fonts":true,"stable":true,"state":"paint","width":380,"height":253.333,
+            "extent":48,"imageWidth":101,"imageHeight":101,"slice":"49.504950495% fill",
+            "borderWidth":50,"outset":2,"cornerAlpha":0,"curveCornerAlpha":0,"centerAlpha":255});
+        assert!(validate_paint(&compact).is_ok());
+        let mut stale = compact.clone();
+        stale["extent"] = json!(40);
+        assert!(validate_paint(&stale).is_err());
+        let mut full = compact.clone();
+        full["imageWidth"] = json!(384);
+        full["imageHeight"] = json!(257);
+        full["slice"] = json!("2 fill");
+        full["borderWidth"] = json!(2);
+        assert!(validate_paint(&full).is_ok());
+        full["height"] = json!(300);
+        assert!(validate_paint(&full).is_err());
+        let mut undrawn = compact.clone();
+        undrawn["centerAlpha"] = json!(0);
+        assert!(validate_paint(&undrawn).is_err());
+        let mut squared = compact.clone();
+        squared["curveCornerAlpha"] = json!(255);
+        assert!(validate_paint(&squared).is_err());
+        let mut replaced = compact;
+        replaced["stable"] = json!(false);
+        assert!(validate_paint(&replaced).is_err());
+    }
 
     #[test]
     fn font_proxy_delays_original_bytes_and_headers() {
