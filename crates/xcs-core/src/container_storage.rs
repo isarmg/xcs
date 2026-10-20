@@ -913,6 +913,7 @@ fn collect_empty_directories(
 /// Replayable post-decision projection of names and user notes. The cache is
 /// convenient for offline inspection; signed version evidence remains separate.
 pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State) -> Result<()> {
+    let mut node_projection = crate::business::file_nodes::NodeProjection::new(next);
     for file in changed_files(previous, next) {
         validate_id(&file, "file")?;
         let versions = next
@@ -955,6 +956,8 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
                 }
             }
         }
+        // Replica-independent version records are built once per file/history.
+        let mut records_by_history = BTreeMap::new();
         for (slot, history_id) in locations {
             let disk = config
                 .disks
@@ -1038,15 +1041,20 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
             // Also seal a directory rename that became visible before an
             // earlier attempt returned a durability error.
             sync_dir(&stable)?;
-            let mut records = versions.iter().filter(|version| version.history_tree_id == history_id).map(|version| {
-                json!({"version_id":version.version_id,"parent_node_ids":crate::business::file_nodes::node_parents(next,&version.version_id),"tags":crate::business::file_nodes::node_tags(next,&version.version_id),"storage_name":version.storage_name,"created_at":version.created_at,"size":version.logical_size.to_string(),"content_hash":version.content_hash,"note":next.version_notes.get(&version.version_id).map(String::as_str).unwrap_or(""),"content_state":next.content_states.get(&version.version_id)})
-            }).collect::<Vec<_>>();
-            records.sort_by(|a, b| {
-                a["storage_name"]
-                    .as_str()
-                    .cmp(&b["storage_name"].as_str())
-                    .then_with(|| a["version_id"].as_str().cmp(&b["version_id"].as_str()))
-            });
+            let records = records_by_history
+                .entry(history_id.clone())
+                .or_insert_with(|| {
+                    let mut records = versions.iter().filter(|version| version.history_tree_id == history_id).map(|version| {
+                        json!({"version_id":version.version_id,"parent_node_ids":node_projection.parents(&version.version_id),"tags":node_projection.tags(&version.version_id),"storage_name":version.storage_name,"created_at":version.created_at,"size":version.logical_size.to_string(),"content_hash":version.content_hash,"note":next.version_notes.get(&version.version_id).map(String::as_str).unwrap_or(""),"content_state":next.content_states.get(&version.version_id)})
+                    }).collect::<Vec<_>>();
+                    records.sort_by(|a, b| {
+                        a["storage_name"]
+                            .as_str()
+                            .cmp(&b["storage_name"].as_str())
+                            .then_with(|| a["version_id"].as_str().cmp(&b["version_id"].as_str()))
+                    });
+                    records
+                });
             cleanup_legacy_pending(&named)?;
             let inherited = pending_here
                 .iter()
@@ -1074,7 +1082,7 @@ pub(crate) fn synchronize_names(config: &Config, previous: &State, next: &State)
                     .cmp(&b.sequence)
                     .then_with(|| a.node_id.cmp(&b.node_id))
             });
-            let path_nodes = nodes.into_iter().map(|node| json!({"node":node,"tags":crate::business::file_nodes::node_tags(next,&node.node_id),"note":next.file_path_notes.get(&node.node_id).map(String::as_str).unwrap_or("")})).collect::<Vec<_>>();
+            let path_nodes = nodes.into_iter().map(|node| json!({"node":node,"tags":node_projection.tags(&node.node_id),"note":next.file_path_notes.get(&node.node_id).map(String::as_str).unwrap_or("")})).collect::<Vec<_>>();
             write_json(
                 &named.join("container.json"),
                 &json!({"format_version":1,"cache_only":true,"file_id":file,"history_tree_id":history_id,"name":name,"location":physical_location,"primary_location":next.file_locations.get(&file),"backup_policy_id":next.file_backup_policies.get(&file),"metadata_nodes":next.file_metadata_nodes.values().filter(|node|node.file_id==file&&node.history_tree_id==history_id).map(|node|json!({"node":node,"note":next.file_path_notes.get(&node.node_id).map(String::as_str).unwrap_or("")})).collect::<Vec<_>>(),"branch_merges":next.file_branch_merges.values().filter(|event|event.file_id==file&&event.history_tree_id==history_id).collect::<Vec<_>>(),"branch_aliases":next.file_branch_aliases.iter().filter(|(source,_)|next.branches.get(*source).is_some_and(|branch|branch.file_id.as_deref()==Some(file.as_str()))).collect::<BTreeMap<_,_>>(),"note":next.file_notes.get(&file).map(String::as_str).unwrap_or(""),"selected_branch_id":next.file_selections.get(&file),"path_contexts":contexts,"path_nodes":path_nodes,"versions":records,"inherited_branches":inherited}),

@@ -1,5 +1,9 @@
 # Recorded architecture probe: 2026-10-20
 
+For the subsequent retained-history optimization and its equal-size comparisons,
+see [the second-pass report](growth-pass.md). The reports below are retained as
+the earlier baseline; they have not been overwritten with newer results.
+
 One baseline and one integrated architecture run; **not a release benchmark**. Baseline source was a fresh `git archive` of `92cd662`. The current report was regenerated on 2026-10-20 at approximately 03:12 UTC against the integrated architecture source subsequently committed as `401f3756ad6b2a7df64731a692084460fb488f02`, including detached workspace preparation and recovery-checkpoint extensions. Final admission-gate tests were completed separately; this serial core probe is not evidence for that concurrency behavior.
 
 Environment: Linux x86_64, kernel 6.18.55, rustc 1.99.0 (b940084d7 2026-09-28), unoptimized dev profile, identical standalone Cargo.lock. Both private test pools were on `/tmp`, which is **tmpfs** on this machine. Timings therefore do not measure real disk latency/durability. The baseline was collected with other compiler/test jobs active; the current run also occurred in a shared development environment without controlled machine load. No warm-up, repetitions or confidence intervals were collected. `/tmp` was rechecked as tmpfs for the current run.

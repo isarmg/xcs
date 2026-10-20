@@ -132,21 +132,44 @@ pub(crate) fn preflight_publication(
         .values()
         .any(|status| matches!(status.as_str(), "PURGED" | "MIGRATED"))
     {
-        let snapshot = snapshot_descriptor(state, maximum)?;
+        // A decided pre-upgrade candidate may bind legacy fixed-count pages.
+        // Degraded recovery repairs its exact dependencies before preflight;
+        // never re-partition that root when sizing its offline tombstones.
+        let recovery_disk = if publication.recovery.is_some() {
+            Some(members.first().ok_or_else(|| {
+                Error::new("RECOVERY_REQUIRED", "recovery metadata member missing")
+            })?)
+        } else {
+            None
+        };
+        let snapshot = if let Some(disk) = recovery_disk {
+            load_object(disk, "snapshot", &candidate.snapshot_hash)?
+        } else {
+            snapshot_descriptor(state, maximum)?
+        };
         let states = serde_json::to_value(&state.content_states)?;
-        let entries = states
+        let states = states
             .as_object()
-            .ok_or_else(|| Error::new("STATE_INVALID", "content states are not a map"))?
-            .iter()
-            .collect::<Vec<_>>();
-        for chunk in entries.chunks(STATE_PAGE_ENTRIES) {
-            let page: serde_json::Map<String, serde_json::Value> = chunk
-                .iter()
-                .map(|(key, value)| ((*key).clone(), (*value).clone()))
-                .collect();
+            .ok_or_else(|| Error::new("STATE_INVALID", "content states are not a map"))?;
+        let pages: Box<
+            dyn Iterator<Item = Result<serde_json::Map<String, serde_json::Value>>> + '_,
+        > = if let Some(disk) = recovery_disk {
+            Box::new(
+                snapshot
+                    .pages
+                    .get("content_states")
+                    .into_iter()
+                    .flatten()
+                    .map(|hash| load_object(disk, "state-page", hash)),
+            )
+        } else {
+            Box::new(state_pages(states).map(Ok))
+        };
+        for page in pages {
+            let page = page?;
             // Only pages containing a tombstone can be embedded by cleanup.
             let mut longest = None;
-            for (id, status) in chunk.iter().filter(|(_, status)| {
+            for (id, status) in page.iter().filter(|(_, status)| {
                 status
                     .as_str()
                     .is_some_and(|s| matches!(s, "PURGED" | "MIGRATED"))
@@ -162,7 +185,7 @@ pub(crate) fn preflight_publication(
                     .as_ref()
                     .is_none_or(|(previous, _, _)| size > *previous)
                 {
-                    longest = Some((size, *id, *status));
+                    longest = Some((size, id, status));
                 }
             }
             let Some((_, id, status)) = longest else {
@@ -494,6 +517,191 @@ mod tests {
             "RESOURCE_LIMIT"
         );
         assert!(package_size > canonical_json(&publication).unwrap().len());
+
+        // Exercise multiple content-defined pages without hundreds of disk
+        // publications. Only the state shape varies here; proof hashes have
+        // fixed width, so the existing real publication supplies exact sizes.
+        let mut wide_state = engine.state.clone();
+        for n in 0u32..600 {
+            wide_state.content_states.insert(
+                blake3::hash(&n.to_le_bytes()).to_hex().to_string(),
+                if n % 3 == 0 { "MIGRATED" } else { "PURGED" }.into(),
+            );
+        }
+        // Keep each modern page below half the legacy cap so this fixture
+        // deterministically distinguishes legacy and current tombstone sizes.
+        let values = serde_json::to_value(&wide_state.content_states).unwrap();
+        let mut in_page = 0;
+        for key in values.as_object().unwrap().keys() {
+            if blake3::hash(key.as_bytes()).as_bytes()[0] & 31 == 0 {
+                in_page = 0;
+            }
+            in_page += 1;
+            if in_page > 64 {
+                wide_state.content_states.remove(key);
+            }
+        }
+        let snapshot_hash = store_snapshot(std::slice::from_ref(&disk), &wide_state).unwrap();
+        let snapshot: Snapshot = load_object(&disk, "snapshot", &snapshot_hash).unwrap();
+        assert!(snapshot.pages["content_states"].len() > 5);
+        let mut actual_largest = package_size;
+        for hash in &snapshot.pages["content_states"] {
+            let page: serde_json::Map<String, serde_json::Value> =
+                load_object(&disk, "state-page", hash).unwrap();
+            for (id, status) in &page {
+                if !matches!(status.as_str(), Some("PURGED" | "MIGRATED")) {
+                    continue;
+                }
+                actual_largest = actual_largest.max(
+                    canonical_json(&ContentTombstone {
+                        version_id: id.clone(),
+                        state: status.as_str().unwrap().into(),
+                        candidate: candidate.clone(),
+                        publication: publication.clone(),
+                        publication_seal: seal.clone(),
+                        snapshot: snapshot.clone(),
+                        content_state_page: page.clone(),
+                    })
+                    .unwrap()
+                    .len(),
+                );
+            }
+        }
+        let bounded = preflight_publication(
+            &engine,
+            &candidate,
+            &publication.result,
+            &wide_state,
+            None,
+            MAX_METADATA,
+        )
+        .unwrap();
+        assert_eq!(bounded, actual_largest);
+        assert!(
+            preflight_publication(
+                &engine,
+                &candidate,
+                &publication.result,
+                &wide_state,
+                None,
+                bounded,
+            )
+            .is_ok()
+        );
+        assert_eq!(
+            preflight_publication(
+                &engine,
+                &candidate,
+                &publication.result,
+                &wide_state,
+                None,
+                bounded - 1,
+            )
+            .unwrap_err()
+            .code(),
+            "RESOURCE_LIMIT"
+        );
+
+        // A pre-upgrade decided candidate must keep its old, larger pages for
+        // exact preflight, even though the current writer makes smaller ones.
+        let mut legacy = snapshot.clone();
+        let states = serde_json::to_value(&wide_state.content_states).unwrap();
+        let entries = states.as_object().unwrap().iter().collect::<Vec<_>>();
+        let legacy_pages = entries
+            .chunks(STATE_PAGE_ENTRIES)
+            .map(|chunk| {
+                let page = chunk
+                    .iter()
+                    .map(|(key, value)| ((*key).clone(), (*value).clone()))
+                    .collect::<serde_json::Map<_, _>>();
+                store_object(&disk, "state-page", &page).unwrap()
+            })
+            .collect::<Vec<_>>();
+        legacy
+            .pages
+            .insert("content_states".into(), legacy_pages.clone());
+        let legacy_hash = store_object(&disk, "snapshot", &legacy).unwrap();
+        let mut legacy_candidate = candidate.clone();
+        legacy_candidate.snapshot_hash = legacy_hash;
+        // Preflight sizes proofs but does not authorize or publish recovery.
+        let recovery = RecoveryProof {
+            plan: serde_json::from_value(serde_json::json!({
+                "recovery_id": "test-recovery", "digest": "0".repeat(64),
+                "operation_id": candidate.operation_id, "candidate_hash": "0".repeat(64),
+                "principal": "alice", "reason": "size regression", "isolation_generation": "1",
+                "sequence": candidate.sequence.to_string(), "version_protection": [],
+                "loss_details": [], "members": [], "original_accepts": publication.finalize.accepts,
+            }))
+            .unwrap(),
+            reprotect: Vec::new(),
+        };
+        let old_bound = preflight_publication(
+            &engine,
+            &legacy_candidate,
+            &publication.result,
+            &wide_state,
+            Some(recovery.clone()),
+            MAX_METADATA,
+        )
+        .unwrap();
+        let mut modern_candidate = candidate.clone();
+        modern_candidate.snapshot_hash = snapshot_hash;
+        let modern_bound = preflight_publication(
+            &engine,
+            &modern_candidate,
+            &publication.result,
+            &wide_state,
+            Some(recovery.clone()),
+            MAX_METADATA,
+        )
+        .unwrap();
+        assert!(
+            old_bound > modern_bound,
+            "legacy 128-entry tombstones need the larger bound: old={old_bound}, modern={modern_bound}, pages={:?}",
+            state_pages(states.as_object().unwrap())
+                .map(|p| p.len())
+                .collect::<Vec<_>>()
+        );
+        for limit in [modern_bound, old_bound - 1] {
+            assert_eq!(
+                preflight_publication(
+                    &engine,
+                    &legacy_candidate,
+                    &publication.result,
+                    &wide_state,
+                    Some(recovery.clone()),
+                    limit,
+                )
+                .unwrap_err()
+                .code(),
+                "RESOURCE_LIMIT"
+            );
+        }
+        assert_eq!(
+            preflight_publication(
+                &engine,
+                &legacy_candidate,
+                &publication.result,
+                &wide_state,
+                Some(recovery.clone()),
+                old_bound,
+            )
+            .unwrap(),
+            old_bound
+        );
+        std::fs::remove_file(object_path(&disk, "state-page", &legacy_pages[0])).unwrap();
+        assert!(
+            preflight_publication(
+                &engine,
+                &legacy_candidate,
+                &publication.result,
+                &wide_state,
+                Some(recovery),
+                MAX_METADATA,
+            )
+            .is_err(),
+            "missing legacy pages must fail closed, not use a new partition"
+        );
     }
 
     #[test]

@@ -2,6 +2,7 @@
 use serde_json::{Value, json};
 use sqlx::{Executor, Row};
 use std::{
+    collections::BTreeMap,
     fs,
     io::{Read, Seek, SeekFrom},
     path::Path,
@@ -44,12 +45,16 @@ fn sql(path: &Path, install: bool) -> Result<Value> {
     }).map_err(Into::into)
 }
 fn disk_bytes(root: &Path) -> Result<Value> {
-    fn walk(root: &Path, counts: &mut [u64; 4]) -> Result<()> {
+    fn walk(
+        root: &Path,
+        counts: &mut [u64; 4],
+        kinds: &mut BTreeMap<String, (u64, u64)>,
+    ) -> Result<()> {
         for e in fs::read_dir(root)? {
             let e = e?;
             let meta = e.file_type()?;
             if meta.is_dir() {
-                walk(&e.path(), counts)?;
+                walk(&e.path(), counts, kinds)?;
             } else if meta.is_file() {
                 let p = e.path();
                 let name = p.to_string_lossy();
@@ -61,15 +66,25 @@ fn disk_bytes(root: &Path) -> Result<Value> {
                 }
                 if name.contains("/metadata/objects/") {
                     counts[3] += n;
+                    if let Some(kind) = p.parent().and_then(Path::file_name) {
+                        let entry = kinds.entry(kind.to_string_lossy().into_owned()).or_default();
+                        entry.0 += n;
+                        entry.1 += 1;
+                    }
                 }
             }
         }
         Ok(())
     }
     let mut c = [0; 4];
-    walk(root, &mut c)?;
+    let mut kinds = BTreeMap::new();
+    walk(root, &mut c, &mut kinds)?;
+    let kinds: BTreeMap<_, _> = kinds
+        .into_iter()
+        .map(|(kind, (bytes, files))| (kind, json!({"bytes": bytes, "files": files})))
+        .collect();
     Ok(
-        json!({"file_bytes":c[0],"files":c[1],"application_log_bytes_all_members":c[2],"metadata_object_bytes_all_members":c[3]}),
+        json!({"file_bytes":c[0],"files":c[1],"application_log_bytes_all_members":c[2],"metadata_object_bytes_all_members":c[3],"metadata_objects_by_kind_all_members":kinds}),
     )
 }
 fn range(engine: &Engine, id: &str, expected: &[u8], repetitions: usize) -> Result<u128> {

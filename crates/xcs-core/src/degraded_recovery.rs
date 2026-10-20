@@ -637,10 +637,9 @@ impl Engine {
         require_permanent_loss(self, &candidate, &plan.version_protection)?;
         let member_disks = self.members();
         // Dependences and the immutable candidate are persisted before fencing.
-        let snapshot = store_snapshot(&member_disks, &next)?;
-        if snapshot != candidate.snapshot_hash {
-            return Err(required("recovery snapshot differs"));
-        }
+        // Complete the exact hash-bound snapshot, not a reserialization using
+        // today's page partitioning. Older pending candidates keep their root.
+        self.repair_bound_snapshot(&candidate.snapshot_hash)?;
         let manifest_hashes =
             crate::history_package::store_history_manifests(&member_disks, &next)?;
         if !candidate.history_manifest_hashes.is_empty()

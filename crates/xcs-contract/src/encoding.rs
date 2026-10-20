@@ -131,13 +131,23 @@ pub fn canonical_json<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>> {
     Ok(out)
 }
 pub fn object_hash<T: Serialize + ?Sized>(kind: &str, value: &T) -> Result<String> {
+    encode_hashed_object(kind, value).map(|(_, hash)| hash)
+}
+
+/// Canonical bytes and their domain-separated digest from one encoding.
+/// Returning the bytes with their hash avoids serializing immutable replicas twice.
+pub fn encode_hashed_object<T: Serialize + ?Sized>(
+    kind: &str,
+    value: &T,
+) -> Result<(Vec<u8>, String)> {
     if kind.is_empty() || !kind.bytes().all(|b| b.is_ascii_lowercase() || b == b'-') {
         return Err(Error::new("INVALID_OBJECT_TYPE", "invalid metadata domain"));
     }
+    let bytes = canonical_json(value)?;
     let mut h = blake3::Hasher::new();
     h.update(format!("xcs:{kind}:v2\0").as_bytes());
-    h.update(&canonical_json(value)?);
-    Ok(h.finalize().to_hex().to_string())
+    h.update(&bytes);
+    Ok((bytes, h.finalize().to_hex().to_string()))
 }
 
 /// Digest for a JSON mutation request; transport credentials never enter it.
@@ -242,6 +252,24 @@ impl ChecksumManifest {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn encoded_object_preserves_canonical_bytes_and_domain_digest() {
+        let value = serde_json::json!({"z": [true, null], "a": 1});
+        let (bytes, hash) = encode_hashed_object("state-page", &value).unwrap();
+        assert_eq!(bytes, br#"{"a":1,"z":[true,null]}"#);
+        let mut expected = blake3::Hasher::new();
+        expected.update(b"xcs:state-page:v2\0");
+        expected.update(br#"{"a":1,"z":[true,null]}"#);
+        assert_eq!(hash, expected.finalize().to_hex().as_str());
+        assert_eq!(object_hash("state-page", &value).unwrap(), hash);
+        assert_ne!(object_hash("snapshot", &value).unwrap(), hash);
+        assert_eq!(
+            encode_hashed_object("Invalid", &value).unwrap_err().code(),
+            "INVALID_OBJECT_TYPE"
+        );
+        assert!(encode_hashed_object("state-page", &serde_json::json!({"n": u64::MAX})).is_err());
+    }
     #[test]
     fn published_vectors() {
         let v: Value =

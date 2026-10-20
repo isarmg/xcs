@@ -27,6 +27,9 @@ production fault certification or constant-time operations.
 - A reproducible development workload measures logical SQLite entity writes,
   verifies recovered-state equality and historical reads, and compares against
   the pre-optimization baseline.
+- A [second retained-history pass](history-growth-optimization.md) stabilizes
+  snapshot page boundaries, reuses invocation-local page repairs and container
+  projections, and avoids duplicate canonical serialization.
 
 ## Deliberate limits
 

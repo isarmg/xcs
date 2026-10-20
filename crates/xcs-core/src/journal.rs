@@ -388,8 +388,13 @@ pub(crate) fn store_object_replicas_bounded<T: Serialize + ?Sized>(
     } else {
         maximum.min(MAX_METADATA)
     };
-    let bytes = encode_metadata(value, maximum)?;
-    let hash = object_hash(kind, value)?;
+    let (bytes, hash) = encode_hashed_object(kind, value)?;
+    if bytes.len() > maximum {
+        return Err(Error::new(
+            "RESOURCE_LIMIT",
+            format!("serialized metadata exceeds {maximum} byte reader limit"),
+        ));
+    }
     for disk in members {
         write_atomic(&object_path(disk, kind, &hash), &bytes, false)?;
     }
@@ -426,6 +431,29 @@ pub(crate) struct Snapshot {
     pub scalars: serde_json::Map<String, serde_json::Value>,
 }
 pub(crate) const STATE_PAGE_ENTRIES: usize = 128;
+/// Content-defined key boundaries keep an insertion from shifting every later
+/// page (about 32 entries per page for uniformly distributed key hashes).
+/// Values do not participate: updating an entity only rewrites its page.
+/// The hard cap bounds adversarial keys without changing the v2 on-disk format.
+/// Readers intentionally accept both these pages and legacy fixed-count pages.
+pub(crate) fn state_pages(
+    map: &serde_json::Map<String, serde_json::Value>,
+) -> impl Iterator<Item = serde_json::Map<String, serde_json::Value>> + '_ {
+    let mut entries = map.iter().peekable();
+    std::iter::from_fn(move || {
+        let mut page = serde_json::Map::new();
+        while let Some((key, _)) = entries.peek() {
+            let boundary = blake3::hash(key.as_bytes()).as_bytes()[0] & 31 == 0;
+            if !page.is_empty() && (page.len() == STATE_PAGE_ENTRIES || boundary) {
+                break;
+            }
+            let (key, value) = entries.next().expect("peeked entry");
+            page.insert(key.clone(), value.clone());
+        }
+        (!page.is_empty()).then_some(page)
+    })
+}
+
 /// Each page is immutable and independently hashed; the journal holds only roots.
 pub(crate) fn store_snapshot(members: &[DiskConfig], state: &State) -> Result<String> {
     store_snapshot_bounded(members, state, MAX_METADATA)
@@ -454,12 +482,7 @@ fn store_snapshot_described(
     for (field, value) in obj {
         if let Some(map) = value.as_object() {
             let mut hashes = Vec::new();
-            let entries = map.iter().collect::<Vec<_>>();
-            for chunk in entries.chunks(STATE_PAGE_ENTRIES) {
-                let page: serde_json::Map<_, _> = chunk
-                    .iter()
-                    .map(|(k, v)| ((*k).clone(), (*v).clone()))
-                    .collect();
+            for page in state_pages(map) {
                 let hash = store_object_replicas_bounded(members, "state-page", &page, maximum)?;
                 hashes.push(hash);
             }
@@ -905,9 +928,9 @@ mod replication_tests {
         let hash = store_object_replicas_bounded(&config.disks, "state-page", &value, MAX_METADATA)
             .unwrap();
         assert_eq!(hash, original_hash);
-        // Canonical encoding validates then serializes: eight encodings become two.
+        // Canonical encoding validates then serializes: eight encodings become one.
         assert_eq!(original_serializations, 16);
-        assert_eq!(value.serializations.get(), 4);
+        assert_eq!(value.serializations.get(), 2);
         for disk in &config.disks {
             assert_eq!(
                 read_bytes(&object_path(disk, "state-page", &hash), MAX_METADATA).unwrap(),
@@ -1091,5 +1114,163 @@ mod tail_cache_tests {
             "evicted/cold state must verify the full journal again"
         );
         assert_eq!(scan(&d).unwrap().records.len(), 81);
+    }
+}
+
+#[cfg(test)]
+mod snapshot_partition_tests {
+    use super::*;
+    use std::collections::BTreeSet;
+
+    fn partition(
+        map: &serde_json::Map<String, serde_json::Value>,
+    ) -> Vec<serde_json::Map<String, serde_json::Value>> {
+        state_pages(map).collect()
+    }
+
+    fn synthetic_map() -> serde_json::Map<String, serde_json::Value> {
+        (0u32..4096)
+            .map(|n| {
+                let key = blake3::hash(&n.to_le_bytes()).to_hex().to_string();
+                (key, serde_json::json!({"data": "immutable".repeat(64)}))
+            })
+            .collect()
+    }
+    fn hashes(pages: &[serde_json::Map<String, serde_json::Value>]) -> BTreeSet<String> {
+        pages
+            .iter()
+            .map(|page| object_hash("state-page", page).unwrap())
+            .collect()
+    }
+
+    #[test]
+    fn deterministic_random_key_insertion_and_update_reuse_unaffected_pages() {
+        let original = synthetic_map();
+        let pages = partition(&original);
+        assert!(pages.len() > 50);
+        assert!(
+            pages
+                .iter()
+                .all(|page| !page.is_empty() && page.len() <= STATE_PAGE_ENTRIES)
+        );
+        assert_eq!(
+            pages
+                .iter()
+                .flat_map(|p| p.clone())
+                .collect::<serde_json::Map<_, _>>(),
+            original
+        );
+        let before = hashes(&pages);
+        // Choose a non-boundary new key inside a page that cannot overflow.
+        let key = (4096u32..8192)
+            .map(|n| blake3::hash(&n.to_le_bytes()).to_hex().to_string())
+            .find(|key| {
+                blake3::hash(key.as_bytes()).as_bytes()[0] & 31 != 0
+                    && pages.iter().any(|page| {
+                        page.len() < STATE_PAGE_ENTRIES
+                            && page.keys().next().unwrap() < key
+                            && key < page.keys().last().unwrap()
+                    })
+            })
+            .unwrap();
+        let mut changed = original.clone();
+        changed.insert(key.clone(), serde_json::json!("new"));
+        let after = hashes(&partition(&changed));
+        assert_eq!(before.difference(&after).count(), 1);
+        assert_eq!(after.difference(&before).count(), 1);
+        // Values cannot influence boundaries, even when their size changes.
+        changed.insert(key, serde_json::json!("updated".repeat(1024)));
+        let updated = hashes(&partition(&changed));
+        assert_eq!(after.difference(&updated).count(), 1);
+        assert_eq!(updated.difference(&after).count(), 1);
+        // Insertion order has no influence on the content-addressed pages.
+        let reverse = changed.into_iter().rev().collect();
+        assert_eq!(updated, hashes(&partition(&reverse)));
+    }
+
+    #[test]
+    fn adversarial_boundary_free_keys_remain_bounded_and_lossless() {
+        let map = (0..10000)
+            .map(|n| format!("key-{n:05}"))
+            .filter(|key| blake3::hash(key.as_bytes()).as_bytes()[0] & 31 != 0)
+            .take(STATE_PAGE_ENTRIES * 3 + 1)
+            .map(|key| (key, serde_json::json!("value")))
+            .collect::<serde_json::Map<_, _>>();
+        let pages = partition(&map);
+        assert_eq!(
+            pages.iter().map(|p| p.len()).collect::<Vec<_>>(),
+            vec![128, 128, 128, 1]
+        );
+        assert_eq!(
+            pages
+                .into_iter()
+                .flatten()
+                .collect::<serde_json::Map<_, _>>(),
+            map
+        );
+        assert!(partition(&serde_json::Map::new()).is_empty());
+    }
+
+    #[test]
+    fn legacy_and_content_defined_snapshots_restore_identical_full_state() {
+        let temp = tempfile::tempdir().unwrap();
+        let config = Config::development([
+            temp.path().join("one"),
+            temp.path().join("two"),
+            temp.path().join("three"),
+        ]);
+        let disk = &config.disks[0];
+        let state = State {
+            sequence: 123,
+            business_generation: 19,
+            content_states: synthetic_map()
+                .into_iter()
+                .map(|(key, _)| key)
+                .enumerate()
+                .map(|(n, key)| (key, if n % 3 == 0 { "PURGED" } else { "AVAILABLE" }.into()))
+                .collect(),
+            file_notes: [("文件".into(), "preserved note".into())].into(),
+            control_auth: Some(serde_json::json!({"nested": {"roles": ["reader"]}})),
+            ..Default::default()
+        };
+        let value = serde_json::to_value(&state).unwrap();
+        let mut legacy = Snapshot {
+            format_version: 2,
+            sequence: state.sequence,
+            pages: BTreeMap::new(),
+            scalars: serde_json::Map::new(),
+        };
+        for (field, value) in value.as_object().unwrap() {
+            if let Some(map) = value.as_object() {
+                let entries = map.iter().collect::<Vec<_>>();
+                let pages = entries
+                    .chunks(STATE_PAGE_ENTRIES)
+                    .map(|chunk| {
+                        let page = chunk
+                            .iter()
+                            .map(|(k, v)| ((*k).clone(), (*v).clone()))
+                            .collect::<serde_json::Map<_, _>>();
+                        store_object(disk, "state-page", &page).unwrap()
+                    })
+                    .collect();
+                legacy.pages.insert(field.clone(), pages);
+            } else {
+                legacy.scalars.insert(field.clone(), value.clone());
+            }
+        }
+        let legacy_hash = store_object(disk, "snapshot", &legacy).unwrap();
+        let modern_hash = store_snapshot(std::slice::from_ref(disk), &state).unwrap();
+        assert_ne!(legacy_hash, modern_hash);
+        assert_eq!(load_snapshot(disk, &legacy_hash).unwrap(), state);
+        assert_eq!(load_snapshot(disk, &modern_hash).unwrap(), state);
+        // Writing a later state must not change either retained snapshot.
+        let mut next = state.clone();
+        next.sequence += 1;
+        next.content_states
+            .insert("new-version".into(), "MIGRATED".into());
+        let next_hash = store_snapshot(std::slice::from_ref(disk), &next).unwrap();
+        assert_eq!(load_snapshot(disk, &next_hash).unwrap(), next);
+        assert_eq!(load_snapshot(disk, &legacy_hash).unwrap(), state);
+        assert_eq!(load_snapshot(disk, &modern_hash).unwrap(), state);
     }
 }
