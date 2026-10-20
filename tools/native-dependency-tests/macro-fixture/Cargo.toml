@@ -1,0 +1,11 @@
+[package]
+name = "zxs-native-macro-fixture"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro-error2 = "2"

@@ -244,7 +244,7 @@ fn wire_commit_reconciles_after_publication_and_system_disk_loss() {
         );
         let sequence = engine.state().sequence;
         let result = engine.commit_workspace_wire(request, body).unwrap();
-        assert_eq!(result.commit_state, "PUBLISHED");
+        assert_eq!(result.commit_state, zxs_contract::CommitState::Published);
         assert_eq!(engine.state().sequence, sequence);
         let retained = engine.workspace(&workspace.workspace_id).unwrap();
         assert_eq!(
@@ -342,7 +342,7 @@ fn wire_receipt_cannot_close_a_different_manifest_with_the_same_workspace_id() {
                 .operation(&request.operation_id)
                 .unwrap()
                 .commit_state,
-            "PUBLISHED"
+            zxs_contract::CommitState::Published
         );
     }
 }

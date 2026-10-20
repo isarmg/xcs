@@ -110,3 +110,7 @@ flowchart LR
 - `crates/zxs-server/src/web_assets.rs` (129 lines)
 - `crates/zxs-server/tests/http_engine.rs` (1734 lines)
 - `crates/zxs-server/tests/telemetry_status.rs` (225 lines)
+
+### Follow-up: direct credential dependency
+
+The server `auth_primitives` and platform `admin_auth` compatibility re-exports have since been removed. Server and CLI callers now depend directly on `zxs-auth`; credential algorithms and persisted formats are unchanged. The earlier module inventory above records the review at that time, not the current file layout.

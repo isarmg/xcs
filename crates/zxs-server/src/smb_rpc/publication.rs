@@ -32,10 +32,10 @@ pub(super) fn recovery_record(
 
 pub(super) fn cleanup_writer(writer: &Writer) {
     for path in [&writer.source, &writer.source.with_extension("work.json")] {
-        if let Err(error) = fs::remove_file(path) {
-            if error.kind() != io::ErrorKind::NotFound {
-                tracing::warn!(%error,path=%path.display(),"SMB staging cleanup failed");
-            }
+        if let Err(error) = fs::remove_file(path)
+            && error.kind() != io::ErrorKind::NotFound
+        {
+            tracing::warn!(%error,path=%path.display(),"SMB staging cleanup failed");
         }
     }
 }
@@ -52,7 +52,7 @@ pub(super) fn finish_publication(
     // Bytes may have changed after a response was lost. Never acknowledge the
     // earlier publication as if it included those later FD-backed writes.
     let tree = shared.backend.call(
-        "tree",
+        crate::BackendAction::Tree,
         identity,
         json!({"branch_id":branch,"query":{"commit_id":writer.last_head}}),
     )?;
@@ -112,11 +112,11 @@ impl Session {
                 }
                 _ => return Err(ApiError::forbidden()),
             };
-        self.call("tree", json!({"branch_id":self.branch}))?;
+        self.call(crate::BackendAction::Tree, json!({"branch_id":self.branch}))?;
         // Even an already published handle remains bound to the selection it
         // opened. A same-content default switch must not retarget this FD.
         self.call(
-            "workspace_selection_authorize",
+            crate::BackendAction::WorkspaceSelectionAuthorize,
             json!({
                 "workspace_id":captured_workspace,"path":path
             }),
@@ -125,11 +125,11 @@ impl Session {
             let workspace = self.workspace()?;
             let validate = (|| {
                 let original = self.call(
-                    "tree",
+                    crate::BackendAction::Tree,
                     json!({"branch_id":self.branch,"query":{"commit_id":last_head}}),
                 )?;
                 let current = self.call(
-                    "tree",
+                    crate::BackendAction::Tree,
                     json!({"branch_id":self.branch,"query":{"commit_id":workspace.base_head}}),
                 )?;
                 let select = |tree: &Value| -> Result<Option<Entry>, ApiError> {
@@ -157,7 +157,7 @@ impl Session {
             })();
             if let Err(error) = validate {
                 let _ = self.call(
-                    "abort_workspace",
+                    crate::BackendAction::AbortWorkspace,
                     json!({"workspace_id":workspace.workspace_id}),
                 );
                 return Err(error);
@@ -166,7 +166,7 @@ impl Session {
         } else {
             if let Some(Handle::Write(writer)) = self.handles.get(&handle) {
                 self.call(
-                    "upload_authorize",
+                    crate::BackendAction::UploadAuthorize,
                     json!({"workspace_id":writer.workspace.workspace_id,"item_id":writer.item_id}),
                 )?;
             }
@@ -217,7 +217,7 @@ impl Session {
         // A lost response must not restage under a new dirty generation and
         // thereby change the original request digest. Reconcile by operation id.
         match self.shared.backend.call(
-            "operation",
+            crate::BackendAction::Operation,
             &self.identity,
             json!({"operation_id":writer.operation_id}),
         ) {
@@ -253,7 +253,7 @@ impl Session {
             &writer.path,
             &writer.source,
         )?;
-        let result=self.shared.backend.call("commit_workspace_internal",&self.identity,json!({"workspace_id":writer.workspace.workspace_id,"operation_id":writer.operation_id,"expected_head":writer.workspace.base_head,"fencing_token":writer.workspace.fencing_token.to_string(),"message":"SMB full-file save"}))?;
+        let result=self.shared.backend.call(crate::BackendAction::CommitWorkspaceInternal,&self.identity,json!({"workspace_id":writer.workspace.workspace_id,"operation_id":writer.operation_id,"expected_head":writer.workspace.base_head,"fencing_token":writer.workspace.fencing_token.to_string(),"message":"SMB full-file save"}))?;
         finish_publication(&self.shared, &self.identity, &self.branch, writer, result)
     }
     pub(super) fn close(&mut self, handle: u64, abort: bool) -> Result<Value, ApiError> {
@@ -263,13 +263,13 @@ impl Session {
         if !abort {
             self.flush(handle)?;
         }
-        if let Some(Handle::Write(writer)) = self.handles.get(&handle) {
-            if !writer.committed {
-                self.call(
-                    "abort_workspace",
-                    json!({"workspace_id":writer.workspace.workspace_id}),
-                )?;
-            }
+        if let Some(Handle::Write(writer)) = self.handles.get(&handle)
+            && !writer.committed
+        {
+            self.call(
+                crate::BackendAction::AbortWorkspace,
+                json!({"workspace_id":writer.workspace.workspace_id}),
+            )?;
         }
         if let Some(Handle::Write(writer)) = self.handles.remove(&handle) {
             cleanup_writer(&writer);

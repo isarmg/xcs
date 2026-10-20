@@ -1,6 +1,5 @@
 //! zxs HTTP boundary. Storage semantics stay in the synchronous core backend.
 pub mod auth;
-pub mod auth_primitives;
 #[cfg(feature = "core")]
 pub mod engine_backend;
 mod file_manager;
@@ -10,6 +9,9 @@ mod telemetry;
 mod transfer;
 mod uploads;
 mod web_assets;
+
+mod backend_action;
+pub use backend_action::BackendAction;
 
 use auth::{AuthStore, Identity};
 use axum::{
@@ -174,7 +176,12 @@ fn verify_content_file(
 }
 
 pub trait Backend: Send + Sync {
-    fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError>;
+    fn call(
+        &self,
+        action: crate::BackendAction,
+        identity: &Identity,
+        input: Value,
+    ) -> Result<Value, ApiError>;
     fn upload(
         &self,
         identity: &Identity,
@@ -224,8 +231,16 @@ impl AuthorizedBackend {
     }
 }
 impl Backend for AuthorizedBackend {
-    fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError> {
-        if matches!(action, "capabilities" | "ready") {
+    fn call(
+        &self,
+        action: crate::BackendAction,
+        identity: &Identity,
+        input: Value,
+    ) -> Result<Value, ApiError> {
+        if matches!(
+            action,
+            crate::BackendAction::Capabilities | crate::BackendAction::Ready
+        ) {
             self.backend.call(action, identity, input)
         } else {
             self.backend.call(action, &self.current(identity)?, input)
@@ -290,8 +305,10 @@ pub struct SmbConfig {
 #[derive(Clone)]
 pub struct ServerConfig {
     pub listen: SocketAddr,
-    /// Required when TLS terminates upstream. It is compared exactly; forwarded headers are ignored.
+    /// Required when TLS terminates upstream. Origin comparison never uses forwarded headers.
     pub external_origin: Option<String>,
+    /// Exact loopback proxy peers allowed to supply a single, overwritten X-Forwarded-For IP.
+    pub trusted_proxy_ips: Vec<std::net::IpAddr>,
     pub spool_dir: PathBuf,
     pub web_dir: Option<PathBuf>,
     pub max_upload_bytes: u64,
@@ -302,6 +319,7 @@ impl ServerConfig {
         Self {
             listen: "127.0.0.1:7400".parse().unwrap(),
             external_origin: None,
+            trusted_proxy_ips: Vec::new(),
             spool_dir: root.join("api-spool"),
             web_dir: None,
             max_upload_bytes: 1024 * 1024 * 1024,
@@ -327,6 +345,14 @@ impl ServerConfig {
         if !self.listen.ip().is_loopback() {
             return Err(ApiError::invalid(
                 "API must listen on loopback; publish through a TLS terminator",
+            ));
+        }
+        if !self.trusted_proxy_ips.is_empty()
+            && (self.external_origin.is_none()
+                || self.trusted_proxy_ips.iter().any(|ip| !ip.is_loopback()))
+        {
+            return Err(ApiError::invalid(
+                "trusted proxies must be exact loopback IPs and require an HTTPS external origin",
             ));
         }
         if self.max_upload_bytes == 0 {
@@ -363,6 +389,7 @@ struct AppState {
     auth: Arc<Mutex<AuthStore>>,
     config: ServerConfig,
     attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
+    pending_logins: Arc<Mutex<std::collections::HashSet<String>>>,
     password_slots: Arc<tokio::sync::Semaphore>,
     upload_slots: Arc<tokio::sync::Semaphore>,
     read_slots: Arc<tokio::sync::Semaphore>,
@@ -411,6 +438,7 @@ fn router_shared(
         telemetry,
         config: config.clone(),
         attempts: Arc::new(Mutex::new(HashMap::new())),
+        pending_logins: Arc::new(Mutex::new(std::collections::HashSet::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
         upload_slots: Arc::new(tokio::sync::Semaphore::new(8)),
         read_slots: Arc::new(tokio::sync::Semaphore::new(8)),
@@ -631,7 +659,7 @@ async fn security_headers(request: Request, next: Next) -> Response {
 async fn call(
     state: AppState,
     identity: Identity,
-    action: &'static str,
+    action: crate::BackendAction,
     input: Value,
 ) -> Result<Json<Value>, ApiError> {
     tokio::task::spawn_blocking(move || state.backend.call(action, &identity, input))
@@ -663,10 +691,10 @@ fn with_id(mut body: Value, key: &str, id: String) -> Result<Value, ApiError> {
     Ok(body)
 }
 
-macro_rules! list_handler { ($name:ident, $action:literal) => { async fn $name(State(state): State<AppState>, axum::Extension(identity): axum::Extension<Identity>, Query(query): Query<BTreeMap<String,String>>) -> Result<Json<Value>, ApiError> { call(state,identity,$action,json!({"query":query})).await } }; }
-macro_rules! read_handler { ($name:ident, $action:literal, $id:literal) => { async fn $name(State(state): State<AppState>, axum::Extension(identity): axum::Extension<Identity>, RoutePath(id): RoutePath<String>, Query(query): Query<BTreeMap<String,String>>) -> Result<Json<Value>, ApiError> { let mut input=json!({"query":query}); input[$id]=id.into(); call(state,identity,$action,input).await } }; }
+macro_rules! list_handler { ($name:ident, $action:expr) => { async fn $name(State(state): State<AppState>, axum::Extension(identity): axum::Extension<Identity>, Query(query): Query<BTreeMap<String,String>>) -> Result<Json<Value>, ApiError> { call(state,identity,$action,json!({"query":query})).await } }; }
+macro_rules! read_handler { ($name:ident, $action:expr, $id:literal) => { async fn $name(State(state): State<AppState>, axum::Extension(identity): axum::Extension<Identity>, RoutePath(id): RoutePath<String>, Query(query): Query<BTreeMap<String,String>>) -> Result<Json<Value>, ApiError> { let mut input=json!({"query":query}); input[$id]=id.into(); call(state,identity,$action,input).await } }; }
 macro_rules! post_handler {
-    ($name:ident, $action:literal) => {
+    ($name:ident, $action:expr) => {
         async fn $name(
             State(state): State<AppState>,
             axum::Extension(identity): axum::Extension<Identity>,
@@ -677,7 +705,7 @@ macro_rules! post_handler {
     };
 }
 macro_rules! id_post_handler {
-    ($name:ident, $action:literal, $id:literal) => {
+    ($name:ident, $action:expr, $id:literal) => {
         async fn $name(
             State(state): State<AppState>,
             axum::Extension(identity): axum::Extension<Identity>,
@@ -694,48 +722,76 @@ macro_rules! id_post_handler {
         }
     };
 }
-list_handler!(repositories, "repositories");
-list_handler!(disks, "disks");
-list_handler!(events, "events");
-list_handler!(check, "check");
-read_handler!(repository, "repository", "repository_id");
-read_handler!(smb_binding, "smb_binding", "repository_id");
-read_handler!(default_branch, "default_branch", "repository_id");
-read_handler!(branches, "branches", "repository_id");
-read_handler!(branch_info, "branch", "branch_id");
-read_handler!(tree, "tree", "branch_id");
-read_handler!(operation, "operation", "operation_id");
-read_handler!(version, "version", "version_id");
-read_handler!(placement, "placement", "version_id");
-read_handler!(history, "history", "file_id");
-read_handler!(commit_info, "commit", "commit_id");
-read_handler!(graph, "graph", "history_tree_id");
-read_handler!(topology, "topology", "topology_id");
-read_handler!(workspace_info, "workspace", "workspace_id");
-read_handler!(plan_info, "plan", "plan_id");
-read_handler!(policy, "policy", "policy_id");
-read_handler!(placement_rule, "placement_rule", "rule_id");
+list_handler!(repositories, crate::BackendAction::Repositories);
+list_handler!(disks, crate::BackendAction::Disks);
+list_handler!(events, crate::BackendAction::Events);
+list_handler!(check, crate::BackendAction::Check);
 read_handler!(
-    directory_branch_scopes,
-    "directory_branch_scopes",
+    repository,
+    crate::BackendAction::Repository,
     "repository_id"
 );
-post_handler!(create_repository, "create_repository");
-post_handler!(workspace, "create_workspace");
-post_handler!(register_disk, "register_disk");
-post_handler!(compare, "compare");
-id_post_handler!(create_branch, "create_branch", "repository_id");
-id_post_handler!(resolve, "resolve", "branch_id");
-id_post_handler!(grants, "set_grants", "repository_id");
-id_post_handler!(update_smb_binding, "update_smb_binding", "repository_id");
+read_handler!(
+    smb_binding,
+    crate::BackendAction::SmbBinding,
+    "repository_id"
+);
+read_handler!(
+    default_branch,
+    crate::BackendAction::DefaultBranch,
+    "repository_id"
+);
+read_handler!(branches, crate::BackendAction::Branches, "repository_id");
+read_handler!(branch_info, crate::BackendAction::Branch, "branch_id");
+read_handler!(tree, crate::BackendAction::Tree, "branch_id");
+read_handler!(operation, crate::BackendAction::Operation, "operation_id");
+read_handler!(version, crate::BackendAction::Version, "version_id");
+read_handler!(placement, crate::BackendAction::Placement, "version_id");
+read_handler!(history, crate::BackendAction::History, "file_id");
+read_handler!(commit_info, crate::BackendAction::Commit, "commit_id");
+read_handler!(graph, crate::BackendAction::Graph, "history_tree_id");
+read_handler!(topology, crate::BackendAction::Topology, "topology_id");
+read_handler!(
+    workspace_info,
+    crate::BackendAction::Workspace,
+    "workspace_id"
+);
+read_handler!(plan_info, crate::BackendAction::Plan, "plan_id");
+read_handler!(policy, crate::BackendAction::Policy, "policy_id");
+read_handler!(
+    placement_rule,
+    crate::BackendAction::PlacementRule,
+    "rule_id"
+);
+read_handler!(
+    directory_branch_scopes,
+    crate::BackendAction::DirectoryBranchScopes,
+    "repository_id"
+);
+post_handler!(create_repository, crate::BackendAction::CreateRepository);
+post_handler!(workspace, crate::BackendAction::CreateWorkspace);
+post_handler!(register_disk, crate::BackendAction::RegisterDisk);
+post_handler!(compare, crate::BackendAction::Compare);
+id_post_handler!(
+    create_branch,
+    crate::BackendAction::CreateBranch,
+    "repository_id"
+);
+id_post_handler!(resolve, crate::BackendAction::Resolve, "branch_id");
+id_post_handler!(grants, crate::BackendAction::SetGrants, "repository_id");
+id_post_handler!(
+    update_smb_binding,
+    crate::BackendAction::UpdateSmbBinding,
+    "repository_id"
+);
 id_post_handler!(
     initialize_directory_scope,
-    "initialize_directory_scope",
+    crate::BackendAction::InitializeDirectoryScope,
     "repository_id"
 );
 id_post_handler!(
     update_default_branch,
-    "update_default_branch",
+    crate::BackendAction::UpdateDefaultBranch,
     "repository_id"
 );
 async fn rename_directory_branch(
@@ -746,26 +802,60 @@ async fn rename_directory_branch(
 ) -> Result<Json<Value>, ApiError> {
     let input = with_id(json_body(request).await?, "repository_id", repo)?;
     let input = with_id(input, "directory_branch_id", id)?;
-    call(state, identity, "rename_directory_branch", input).await
+    call(
+        state,
+        identity,
+        crate::BackendAction::RenameDirectoryBranch,
+        input,
+    )
+    .await
 }
-id_post_handler!(write_session, "write_session", "branch_id");
-id_post_handler!(archive, "archive", "branch_id");
-id_post_handler!(namespace, "namespace", "workspace_id");
-id_post_handler!(commit, "commit_workspace", "workspace_id");
-id_post_handler!(seal, "seal_workspace", "workspace_id");
-id_post_handler!(abort, "abort_workspace", "workspace_id");
-id_post_handler!(merge_link, "merge_link", "history_tree_id");
-id_post_handler!(purge_plan, "purge_plan", "history_tree_id");
-id_post_handler!(split_plan, "split_plan", "history_tree_id");
 id_post_handler!(
-    historical_save_plan,
-    "historical_save_plan",
+    write_session,
+    crate::BackendAction::WriteSession,
+    "branch_id"
+);
+id_post_handler!(archive, crate::BackendAction::Archive, "branch_id");
+id_post_handler!(namespace, crate::BackendAction::Namespace, "workspace_id");
+id_post_handler!(
+    commit,
+    crate::BackendAction::CommitWorkspace,
+    "workspace_id"
+);
+id_post_handler!(seal, crate::BackendAction::SealWorkspace, "workspace_id");
+id_post_handler!(abort, crate::BackendAction::AbortWorkspace, "workspace_id");
+id_post_handler!(
+    merge_link,
+    crate::BackendAction::MergeLink,
     "history_tree_id"
 );
-id_post_handler!(update_policy, "update_policy", "policy_id");
-id_post_handler!(update_placement_rule, "update_placement_rule", "rule_id");
-id_post_handler!(plan_commit, "plan_commit", "plan_id");
-id_post_handler!(plan_cancel, "plan_cancel", "plan_id");
+id_post_handler!(
+    purge_plan,
+    crate::BackendAction::PurgePlan,
+    "history_tree_id"
+);
+id_post_handler!(
+    split_plan,
+    crate::BackendAction::SplitPlan,
+    "history_tree_id"
+);
+id_post_handler!(
+    historical_save_plan,
+    crate::BackendAction::HistoricalSavePlan,
+    "history_tree_id"
+);
+id_post_handler!(
+    update_policy,
+    crate::BackendAction::UpdatePolicy,
+    "policy_id"
+);
+id_post_handler!(
+    update_placement_rule,
+    crate::BackendAction::UpdatePlacementRule,
+    "rule_id"
+);
+id_post_handler!(plan_commit, crate::BackendAction::PlanCommit, "plan_id");
+id_post_handler!(plan_cancel, crate::BackendAction::PlanCancel, "plan_id");
 
 async fn ready(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
     let identity = Identity {
@@ -773,7 +863,7 @@ async fn ready(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
         admin: false,
         repositories: Default::default(),
     };
-    call(state, identity, "ready", json!({})).await
+    call(state, identity, crate::BackendAction::Ready, json!({})).await
 }
 async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiError> {
     let identity = Identity {
@@ -782,7 +872,13 @@ async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiE
         repositories: Default::default(),
     };
     let limit = state.config.max_upload_bytes;
-    let Json(mut value) = call(state, identity, "capabilities", json!({})).await?;
+    let Json(mut value) = call(
+        state,
+        identity,
+        crate::BackendAction::Capabilities,
+        json!({}),
+    )
+    .await?;
     let core_limit = value
         .get("max_upload_bytes")
         .and_then(Value::as_str)
@@ -804,15 +900,15 @@ mod tests {
     impl Backend for TestBackend {
         fn call(
             &self,
-            action: &str,
+            action: crate::BackendAction,
             _identity: &Identity,
             _input: Value,
         ) -> Result<Value, ApiError> {
             match action {
-                "capabilities"
-                | "upload_authorize"
-                | "workspace_authorize"
-                | "create_repository" => Ok(json!({"accepted":true})),
+                crate::BackendAction::Capabilities
+                | crate::BackendAction::UploadAuthorize
+                | crate::BackendAction::WorkspaceAuthorize
+                | crate::BackendAction::CreateRepository => Ok(json!({"accepted":true})),
                 _ => Err(ApiError::unsupported()),
             }
         }
@@ -1397,7 +1493,7 @@ mod tests {
         impl Backend for BlockingUpload {
             fn call(
                 &self,
-                action: &str,
+                action: crate::BackendAction,
                 identity: &Identity,
                 input: Value,
             ) -> Result<Value, ApiError> {

@@ -14,10 +14,10 @@ impl Drop for SocketGuard {
             }
             connections.clear();
         }
-        if let Ok(metadata) = fs::symlink_metadata(&self.path) {
-            if (metadata.dev(), metadata.ino()) == self.identity {
-                let _ = fs::remove_file(&self.path);
-            }
+        if let Ok(metadata) = fs::symlink_metadata(&self.path)
+            && (metadata.dev(), metadata.ino()) == self.identity
+        {
+            let _ = fs::remove_file(&self.path);
         }
     }
 }
@@ -59,7 +59,7 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
             .cloned()
             .ok_or_else(ApiError::forbidden)?;
         let repo = shared.backend.call(
-            "repository",
+            crate::BackendAction::Repository,
             &identity,
             json!({"repository_id":repository_id}),
         )?;
@@ -71,7 +71,10 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
             ));
         }
         let branch = field(&repo, "main_branch_id")?.to_owned();
-        let capabilities = shared.backend.call("capabilities", &identity, json!({}))?;
+        let capabilities =
+            shared
+                .backend
+                .call(crate::BackendAction::Capabilities, &identity, json!({}))?;
         let max_file_bytes =
             parse_u64_decimal(field(&capabilities, "max_upload_bytes")?).map_err(contract)?;
         Ok(Session {

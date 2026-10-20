@@ -187,7 +187,9 @@ impl Telemetry {
             admin: true,
             repositories: Default::default(),
         };
-        let disks = self.backend.call("monitor_disks", &identity, json!({}))?;
+        let disks = self
+            .backend
+            .call(crate::BackendAction::MonitorDisks, &identity, json!({}))?;
         let disks = serde_json::from_value::<Vec<DiskStatus>>(disks["disks"].clone())
             .map_err(|_| unavailable("disk sampling is unavailable"))?;
         let (cpu, memory) = self
@@ -334,11 +336,11 @@ mod tests {
     impl Backend for MonitorBackend {
         fn call(
             &self,
-            action: &str,
+            action: crate::BackendAction,
             _identity: &Identity,
             _input: Value,
         ) -> Result<Value, ApiError> {
-            assert_eq!(action, "monitor_disks");
+            assert_eq!(action, crate::BackendAction::MonitorDisks);
             Ok(json!({"disks":[]}))
         }
         fn upload(

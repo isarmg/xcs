@@ -24,3 +24,12 @@ tauri-build = { version = "2", features = [] }
 [profile.dev]
 debug = 0
 incremental = false
+
+# Locally maintained compatibility/security backports; upstream versions are retained.
+[patch.crates-io]
+glib = { path = "../../vendor/dependencies/glib-0.18.5" }
+glib-macros = { path = "../../vendor/dependencies/glib-macros-0.18.5" }
+gtk3-macros = { path = "../../vendor/dependencies/gtk3-macros-0.18.2" }
+tauri-plugin-opener = { path = "../../vendor/dependencies/tauri-plugin-opener-2.7.2" }
+proc-macro-error2 = { path = "../../vendor/dependencies/proc-macro-error2-2.0.1" }
+proc-macro-error-attr2 = { path = "../../vendor/dependencies/proc-macro-error-attr2-2.0.0" }

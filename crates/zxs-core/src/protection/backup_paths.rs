@@ -365,11 +365,18 @@ impl Engine {
             .repositories
             .get(repository)
             .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "backup repository missing"))?;
-        self.require_grant(repo, principal, "read")?;
+        self.require_grant(repo, principal, zxs_contract::RepositoryAccess::Read)?;
         let mut value = self.backup_configuration(repository, path)?;
-        value["can_manage"] = json!(self.require_grant(repo, principal, "manage").is_ok());
+        value["can_manage"] = json!(
+            self.require_grant(repo, principal, zxs_contract::RepositoryAccess::Manage)
+                .is_ok()
+        );
         Ok(value)
     }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "Preserves the public backup API; tracked request-type migration in .github/QUALITY.md"
+    )]
     pub fn configure_backups(
         &mut self,
         repository: &str,
@@ -391,6 +398,10 @@ impl Engine {
             operation,
         )
     }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "Preserves explicit generation and scope fencing in the public API; tracked request-type migration in .github/QUALITY.md"
+    )]
     pub fn configure_backups_scoped(
         &mut self,
         repository: &str,
@@ -408,7 +419,7 @@ impl Engine {
             |engine, state, pending| {
                 let repo = state.repositories.get(repository).cloned()
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "backup repository missing"))?;
-                engine.require_grant(&repo, principal, "manage")?;
+                engine.require_grant(&repo, principal, zxs_contract::RepositoryAccess::Manage)?;
                 let mut scope = source_scope(state, repository, path)?;
                 if expected_scope_id.is_some_and(|expected| expected != scope.id) {
                     return Err(Error::new("SCOPE_CHANGED", "backup path now describes a different file or directory"));

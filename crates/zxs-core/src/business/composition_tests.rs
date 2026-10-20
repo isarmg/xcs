@@ -283,7 +283,7 @@ fn batch_move_recovery_keeps_source_and_target_in_one_decision() {
         let result = e
             .directory_namespace_batch(&r.repository_id, &request, "admin", &op)
             .unwrap();
-        assert_eq!(result.commit_state, "PUBLISHED");
+        assert_eq!(result.commit_state, zxs_contract::CommitState::Published);
         assert_eq!(entries(&e, &r)["b/f.txt"].file_id, f.file_id);
     }
 }

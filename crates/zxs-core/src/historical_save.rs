@@ -129,8 +129,8 @@ impl Engine {
                 "historical file versions must be saved as independent file branches",
             ));
         }
-        self.require_grant(repository, principal, "read")?;
-        self.require_grant(repository, principal, "write")?;
+        self.require_grant(repository, principal, zxs_contract::RepositoryAccess::Read)?;
+        self.require_grant(repository, principal, zxs_contract::RepositoryAccess::Write)?;
         let selected =
             self.state.commits.get(source_commit).ok_or_else(|| {
                 Error::new("COMMIT_NOT_FOUND", "historical source commit is missing")
@@ -207,8 +207,12 @@ impl Engine {
         }
         crate::business::validate_branch_name(&options.name)?;
         let repository = self.repository_for_history(history)?.clone();
-        self.require_grant(&repository, principal, "read")?;
-        self.require_grant(&repository, principal, "write")?;
+        self.require_grant(&repository, principal, zxs_contract::RepositoryAccess::Read)?;
+        self.require_grant(
+            &repository,
+            principal,
+            zxs_contract::RepositoryAccess::Write,
+        )?;
         let source = self
             .state
             .commits
@@ -429,8 +433,8 @@ impl Engine {
             json!({"plan_id":id,"plan_digest":plan.digest}),
             |engine, state, pending| {
                 let repository = engine.repository_for_history(&history)?.clone();
-                engine.require_grant(&repository, principal, "read")?;
-                engine.require_grant(&repository, principal, "write")?;
+                engine.require_grant(&repository, principal, zxs_contract::RepositoryAccess::Read)?;
+                engine.require_grant(&repository, principal, zxs_contract::RepositoryAccess::Write)?;
                 if state.branches.values().any(|branch| {
                     branch.history_tree_id == history
                         && zxs_naming::lookup_key(&branch.name) == zxs_naming::lookup_key(&name)

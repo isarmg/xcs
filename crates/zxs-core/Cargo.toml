@@ -3,6 +3,7 @@ name = "zxs-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+rust-version.workspace = true
 [dependencies]
 zxs-contract.workspace = true
 zxs-naming.workspace = true

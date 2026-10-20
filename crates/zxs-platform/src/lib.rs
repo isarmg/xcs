@@ -10,7 +10,6 @@ compile_error!(
     "zxs-platform is the Linux server foundation; portable clients must use zxs-contract"
 );
 
-pub mod admin_auth;
 pub mod error;
 pub mod fs_safety;
 pub mod payload;

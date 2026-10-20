@@ -197,7 +197,7 @@ fn process(state: RwSignal<State>) -> impl IntoView {
     view! { <section class="zxs-stack" aria-label="过程播放控制">
         <div class="zxs-demo-process-toolbar zxs-flow zxs-surface-end"><Select label="演示过程".to_owned() options=scene_options value=scene_value on_change=Callback::new(move |v:String|{if let Ok(index) = v.parse::<usize>() {state.update(|s|{s.playing=false;s.load(index,0);});}})/>
             <div class="zxs-flow"><button class="zxs-button" disabled=move ||state.with(|s|s.cursor == 0) on:click=move |_|state.update(|s|{s.playing=false;s.load(s.scene,s.cursor-1);})>"上一步"</button>
-            <button class="zxs-button" on:click=move |_|state.update(|s|{if s.cursor == scenarios::all()[s.scene].steps.len(){s.load(s.scene,0);}s.playing=!s.playing;})>{move ||if state.with(|s|s.playing){"暂停"}else{"播放"}}</button>
+            <button class="zxs-button" on:click=move |_|state.update(|s|{if s.cursor == scenarios::all()[s.scene].steps.len(){s.load(s.scene,0);}s.playing = !s.playing;})>{move ||if state.with(|s|s.playing){"暂停"}else{"播放"}}</button>
             <button class="zxs-button" disabled=move ||state.with(|s|s.cursor == scenarios::all()[s.scene].steps.len()) on:click=move |_|{state.update(|s|s.playing=false);advance(state);}>"下一步"</button>
             <button class="zxs-button" on:click=move |_|state.update(|s|{s.playing=false;s.load(s.scene,0);})>"重播"</button></div>
             <a class="zxs-button" href=move ||state.with(|s|format!("./playground.html?scenario={}&step={}",scenarios::all()[s.scene].id,s.cursor))>"从这一步自行操作 →"</a>
@@ -401,7 +401,7 @@ fn trees(state: RwSignal<State>) -> impl IntoView {
     });
     view! { <div class="zxs-demo-trees">
         <section class="zxs-stack"><div class="zxs-surface-end"><Select label="文件节点树 · 正文与元数据".to_owned() options=file_options value=file_value on_change=Callback::new(move |path:String|state.update(|s|{s.selected=s.model.file_at(&path).map(|v|v.2).unwrap_or(0);s.path=path;}))/></div>
-            <div class="zxs-frame zxs-demo-canvas" on:click=move |ev:web_sys::MouseEvent|{if let Some(element)=ev.target().and_then(|v|v.dyn_into::<web_sys::Element>().ok()).and_then(|e|e.closest("[data-demo-kind='F']").ok().flatten()){if let Some(id)=element.get_attribute("data-demo-node").and_then(|v|v.parse().ok()){state.update(|s|s.selected=id);}}}
+            <div class="zxs-frame zxs-demo-canvas" on:click=move |ev:web_sys::MouseEvent|{if let Some(element)=ev.target().and_then(|v|v.dyn_into::<web_sys::Element>().ok()).and_then(|e|e.closest("[data-demo-kind='F']").ok().flatten())&& let Some(id)=element.get_attribute("data-demo-node").and_then(|v|v.parse().ok()){state.update(|s|s.selected=id);}}
                 inner_html=move ||state.with(|s|s.model.file_at(&s.path).ok().map(|(file,_,_)|graph::file(&s.model,file,s.selected,s.previous.as_ref()).html).unwrap_or_else(||"<p class='zxs-row'>选择一个文件查看节点树</p>".into()))>
             </div>
             <p class="zxs-row" data-demo-node="selected-detail">{move ||state.with(|s|s.model.files.get(&s.selected).map(|n|format!("F{} · {} · {} · 标签：{}",n.id,n.path,n.note,n.tags.iter().cloned().collect::<Vec<_>>().join(" / "))).unwrap_or_default())}</p>

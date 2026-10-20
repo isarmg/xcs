@@ -115,6 +115,9 @@ pub(crate) enum Command {
         listen: SocketAddr,
         #[arg(long)]
         external_origin: Option<String>,
+        /// Trust this exact loopback proxy peer; it must overwrite X-Forwarded-For with one IP.
+        #[arg(long = "trusted-proxy-ip", requires = "external_origin")]
+        trusted_proxy_ips: Vec<std::net::IpAddr>,
         #[arg(long)]
         web_dir: Option<PathBuf>,
         #[arg(long, default_value_t = 1_073_741_824)]
@@ -300,4 +303,57 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+}
+
+#[cfg(test)]
+mod trusted_proxy_tests {
+    use super::*;
+
+    #[test]
+    fn trusted_proxy_is_explicit_repeatable_and_requires_origin() {
+        let args = Args::try_parse_from(["zxs", "serve"]).unwrap();
+        let Command::Serve {
+            trusted_proxy_ips, ..
+        } = args.command
+        else {
+            panic!("serve expected")
+        };
+        assert!(trusted_proxy_ips.is_empty());
+        assert!(Args::try_parse_from(["zxs", "serve", "--trusted-proxy-ip", "127.0.0.1"]).is_err());
+        assert!(
+            Args::try_parse_from([
+                "zxs",
+                "serve",
+                "--external-origin",
+                "https://storage.example.org",
+                "--trusted-proxy-ip",
+                "127.0.0.0/8"
+            ])
+            .is_err()
+        );
+        let args = Args::try_parse_from([
+            "zxs",
+            "serve",
+            "--external-origin",
+            "https://storage.example.org",
+            "--trusted-proxy-ip",
+            "127.0.0.1",
+            "--trusted-proxy-ip",
+            "::1",
+        ])
+        .unwrap();
+        let Command::Serve {
+            trusted_proxy_ips, ..
+        } = args.command
+        else {
+            panic!("serve expected")
+        };
+        assert_eq!(
+            trusted_proxy_ips,
+            vec![
+                "127.0.0.1".parse::<std::net::IpAddr>().unwrap(),
+                "::1".parse().unwrap()
+            ]
+        );
+    }
 }

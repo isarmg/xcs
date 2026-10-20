@@ -86,7 +86,7 @@ impl Session {
                 // An HTTP writer can commit between find() and workspace creation,
                 // even while this session owns the SMB-only path reservation.
                 let snapshot = self.call(
-                    "tree",
+                    crate::BackendAction::Tree,
                     json!({
                         "branch_id":self.branch,"query":{"commit_id":workspace.base_head}
                     }),
@@ -160,11 +160,19 @@ impl Session {
                 };
                 writer.file.sync_all().map_err(ApiError::io)?;
                 recovery_record(&writer, &self.identity.principal, &self.branch)?;
-                Ok((Handle::Write(writer), fd, size, Some(workspace_id)))
+                Ok((
+                    Handle::Write(Box::new(writer)),
+                    fd,
+                    size,
+                    Some(workspace_id),
+                ))
             })();
             if result.is_err() {
                 if let Some(id) = pending_workspace {
-                    let _ = self.call("abort_workspace", json!({"workspace_id":id}));
+                    let _ = self.call(
+                        crate::BackendAction::AbortWorkspace,
+                        json!({"workspace_id":id}),
+                    );
                 }
                 if let Some(path) = pending_source {
                     let _ = fs::remove_file(path.with_extension("work.json"));
@@ -216,10 +224,10 @@ impl Session {
     pub(super) fn authorize_read(&self, handle: u64) -> Result<Value, ApiError> {
         match self.handles.get(&handle) {
             Some(Handle::Read(_, version)) => {
-                self.call("version", json!({"version_id":version}))?;
+                self.call(crate::BackendAction::Version, json!({"version_id":version}))?;
             }
             Some(Handle::Write(_)) | Some(Handle::Directory(_)) => {
-                self.call("tree", json!({"branch_id":self.branch}))?;
+                self.call(crate::BackendAction::Tree, json!({"branch_id":self.branch}))?;
             }
             None => return Err(ApiError::new(404, "NOT_FOUND", "SMB handle missing")),
         }

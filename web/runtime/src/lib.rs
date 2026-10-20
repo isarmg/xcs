@@ -17,7 +17,7 @@ pub use zxs_web_core::*;
 
 use wasm_bindgen::JsValue;
 
-/// Begin CSR startup. Both font weights decode before the application is mounted.
+/// Begin CSR startup. Optional UI fonts load independently of functional readiness.
 /// Errors before scheduling are returned; later failures publish the startup failure event.
 pub fn mount<F, V>(root_id: &str, app: F) -> Result<(), JsValue>
 where
@@ -46,7 +46,7 @@ mod browser {
     use zxs_web_core::prelude::IntoAny;
 
     thread_local! {
-        static APPLICATION: RefCell<lifecycle::Lifecycle<Application>> =
+        static APPLICATION: RefCell<lifecycle::Lifecycle<Box<Application>>> =
             const { RefCell::new(lifecycle::Lifecycle::new()) };
     }
     struct Application {
@@ -91,7 +91,7 @@ mod browser {
             return Err(error);
         }
         // Register before yielding, and retain these same listeners through the
-        // mounted lifetime. No cancellation gap exists between font and view work.
+        // mounted lifetime. Background font work must not mutate a disposed document.
         let (cancel, cancelled) = oneshot::channel::<()>();
         let cancel = Rc::new(RefCell::new(Some(cancel)));
         let failed_cancel = cancel.clone();
@@ -116,7 +116,6 @@ mod browser {
         theme::initialize();
         wasm_bindgen_futures::spawn_local(async move {
             let result: Result<(), JsValue> = async {
-                wait_for_fonts(&document, cancelled).await?;
                 ensure_starting()?;
                 startup::ensure_pending(&document)?;
                 root.set_text_content(None);
@@ -132,11 +131,11 @@ mod browser {
                 html.set_attribute("data-zxs-appearance", "content-blocks")?;
                 html.set_attribute("data-zxs-selection", "underline")?;
                 let contours = contours::start(&document)?;
-                let application = Application {
+                let application = Box::new(Application {
                     view,
                     contours,
                     _listeners: (pagehide, failed),
-                };
+                });
                 // Publish before dispatch: a synchronous ready listener can
                 // navigate away or reject startup and must find the live owner.
                 let installed = APPLICATION.with(|slot| slot.borrow_mut().install(application));
@@ -148,6 +147,18 @@ mod browser {
                 if !APPLICATION.with(|slot| slot.borrow().is_mounted()) {
                     return Err(JsValue::from_str("Application startup was cancelled"));
                 }
+                // Font download/decoding is enhancement work, not an application
+                // startup dependency. Start it only after publishing ownership.
+                let font_document = document.clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    if let Some(result) = wait_for_fonts(&font_document, cancelled).await
+                        && APPLICATION.with(|slot| slot.borrow().is_mounted())
+                        && let Some(html) = font_document.document_element()
+                    {
+                        let state = if result.is_ok() { "ready" } else { "failed" };
+                        let _ = html.set_attribute("data-zxs-fonts", state);
+                    }
+                });
                 Ok(())
             }
             .await;
@@ -169,7 +180,7 @@ mod browser {
     async fn wait_for_fonts(
         document: &web_sys::Document,
         cancelled: oneshot::Receiver<()>,
-    ) -> Result<(), JsValue> {
+    ) -> Option<Result<(), JsValue>> {
         let fonts = async {
             let fonts = document.fonts();
             let regular = fonts.load("16px \"ZxsUI\"");
@@ -187,13 +198,11 @@ mod browser {
             Ok(())
         }
         .fuse();
-        let timeout = gloo_timers::future::TimeoutFuture::new(startup::TIMEOUT_MS).fuse();
         let cancelled = cancelled.fuse();
-        futures::pin_mut!(fonts, timeout, cancelled);
+        futures::pin_mut!(fonts, cancelled);
         futures::select! {
-            result = fonts => result,
-            _ = timeout => Err(JsValue::from_str("Application font loading timed out")),
-            _ = cancelled => Err(JsValue::from_str("Application startup was cancelled")),
+            result = fonts => Some(result),
+            _ = cancelled => None,
         }
     }
 }

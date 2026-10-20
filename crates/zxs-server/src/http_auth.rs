@@ -1,8 +1,8 @@
 //! HTTP authentication admission and account endpoints.
 //!
-//! Credential algorithms come from `zxs-auth` through the compatibility module;
+//! Credential algorithms come directly from `zxs-auth`;
 //! persistent account/session state remains in `auth::AuthStore`.
-use crate::{ApiError, AppState, ServerConfig, auth::Identity, auth_primitives, lock};
+use crate::{ApiError, AppState, ServerConfig, auth::Identity, lock};
 use axum::{
     Json,
     extract::{Request, State},
@@ -13,27 +13,99 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     net::{IpAddr, SocketAddr},
-    sync::Mutex,
+    sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
 
 const ATTEMPT_WINDOW: Duration = Duration::from_secs(60);
 const MAX_ATTEMPT_KEYS: usize = 4096;
 const MAX_ATTEMPTS: u32 = 10;
+const MAX_PENDING_LOGINS: usize = 64;
+
+/// At most one verifier or sleeper per canonical account, without reserving global hash slots.
+struct PendingLogin {
+    pending: Arc<Mutex<HashSet<String>>>,
+    account: String,
+}
+
+impl PendingLogin {
+    fn acquire(pending: &Arc<Mutex<HashSet<String>>>, username: &str) -> Result<Self, ApiError> {
+        let account = login_username_key(username)?;
+        let mut active = lock(pending)?;
+        if active.len() >= MAX_PENDING_LOGINS || active.contains(&account) {
+            return Err(ApiError::limit("login verification is busy"));
+        }
+        active.insert(account.clone());
+        Ok(Self {
+            pending: pending.clone(),
+            account,
+        })
+    }
+}
+
+impl Drop for PendingLogin {
+    fn drop(&mut self) {
+        if let Ok(mut active) = self.pending.lock() {
+            active.remove(&self.account);
+        }
+    }
+}
 
 pub(crate) struct Attempts {
     since: Instant,
     count: u32,
 }
 
-fn login_username_key(username: &str) -> String {
+fn login_username_key(username: &str) -> Result<String, ApiError> {
     // Rate limiting must identify the same account as password verification,
     // including the canonical policy's accepted outer ASCII spaces.
-    let canonical = auth_primitives::normalize_administrator_username(username)
-        .unwrap_or_else(|_| username.to_ascii_lowercase());
-    format!("user:{canonical}")
+    // Validate before retaining any input in pending/counter maps. The shared
+    // policy bounds raw candidate bytes before normalization can allocate.
+    let canonical = zxs_auth::normalize_administrator_username(username)
+        .map_err(|_| ApiError::unauthorized())?;
+    Ok(format!("user:{canonical}"))
+}
+
+/// Charge all keys atomically. Rejected requests never poison another account's budget.
+fn charge_attempts<const N: usize>(
+    attempts: &Mutex<HashMap<String, Attempts>>,
+    keys: [(String, Option<u32>); N],
+    capacity_message: &str,
+    attempt_message: &str,
+) -> Result<[u32; N], ApiError> {
+    let mut attempts = lock(attempts)?;
+    attempts.retain(|_, attempt| attempt.since.elapsed() < ATTEMPT_WINDOW);
+    let additional = keys
+        .iter()
+        .filter(|(key, _)| !attempts.contains_key(key))
+        .count();
+    if attempts.len().saturating_add(additional) > MAX_ATTEMPT_KEYS {
+        return Err(ApiError::limit(capacity_message));
+    }
+    if keys.iter().any(|(key, limit)| {
+        limit.is_some_and(|limit| {
+            attempts
+                .get(key)
+                .is_some_and(|attempt| attempt.count >= limit)
+        })
+    }) {
+        return Err(ApiError::limit(attempt_message));
+    }
+    Ok(keys.map(|(key, limit)| {
+        let attempt = attempts.entry(key).or_insert(Attempts {
+            since: Instant::now(),
+            count: 0,
+        });
+        attempt.count = attempt.count.saturating_add(1);
+        if limit.is_none() {
+            // Distributed account pressure cools down only after an idle minute,
+            // rather than allowing a new burst at every fixed-window boundary.
+            attempt.since = Instant::now();
+        }
+        attempt.count
+    }))
 }
 
 fn admit_attempts(
@@ -42,22 +114,85 @@ fn admit_attempts(
     capacity_message: &str,
     attempt_message: &str,
 ) -> Result<(), ApiError> {
-    let mut attempts = lock(attempts)?;
-    attempts.retain(|_, attempt| attempt.since.elapsed() < ATTEMPT_WINDOW);
-    for key in keys {
-        if !attempts.contains_key(&key) && attempts.len() >= MAX_ATTEMPT_KEYS {
-            return Err(ApiError::limit(capacity_message));
-        }
-        let attempt = attempts.entry(key).or_insert(Attempts {
-            since: Instant::now(),
-            count: 0,
-        });
-        attempt.count = attempt.count.saturating_add(1);
-        if attempt.count > MAX_ATTEMPTS {
-            return Err(ApiError::limit(attempt_message));
-        }
-    }
+    charge_attempts(
+        attempts,
+        keys.map(|key| (key, Some(MAX_ATTEMPTS))),
+        capacity_message,
+        attempt_message,
+    )?;
     Ok(())
+}
+
+fn admit_login(
+    attempts: &Mutex<HashMap<String, Attempts>>,
+    ip: IpAddr,
+    username: &str,
+) -> Result<Duration, ApiError> {
+    let account = login_username_key(username)?;
+    let counts = charge_attempts(
+        attempts,
+        [
+            (format!("ip:{ip}"), Some(MAX_ATTEMPTS)),
+            (format!("source:{ip}:{account}"), Some(MAX_ATTEMPTS)),
+            (account, None),
+        ],
+        "login admission capacity reached",
+        "too many login attempts; retry after 60 seconds",
+    )?;
+    // Account-wide pressure slows distributed guesses but cannot hard-lock a victim.
+    // A single bounded pending-account guard spans delay and verification.
+    // Global password slots are reserved for hashing, never for this sleep.
+    let excess = counts[2].saturating_sub(MAX_ATTEMPTS);
+    Ok(if excess == 0 {
+        Duration::ZERO
+    } else {
+        Duration::from_millis((250 * (1_u64 << (excess - 1).min(5))).min(6000))
+    })
+}
+
+fn client_ip(request: &Request, config: &ServerConfig) -> Result<IpAddr, ApiError> {
+    let peer = request
+        .extensions()
+        .get::<axum::extract::ConnectInfo<SocketAddr>>()
+        .map(|info| info.0.ip());
+    // Missing transport metadata must never authenticate a forwarding header.
+    let Some(peer) = peer else {
+        return if config.trusted_proxy_ips.is_empty() {
+            Ok(IpAddr::from([127, 0, 0, 1]))
+        } else {
+            Err(ApiError::invalid(
+                "trusted proxy requires transport peer metadata",
+            ))
+        };
+    };
+    if !config.trusted_proxy_ips.contains(&peer) {
+        return Ok(peer);
+    }
+    let values = request.headers().get_all("x-forwarded-for");
+    let mut values = values.iter();
+    let value = values
+        .next()
+        .ok_or_else(|| ApiError::invalid("trusted proxy must set X-Forwarded-For"))?;
+    if values.next().is_some() {
+        return Err(ApiError::invalid(
+            "trusted proxy must overwrite X-Forwarded-For with one IP",
+        ));
+    }
+    let ip = value
+        .to_str()
+        .ok()
+        .and_then(|value| value.parse::<IpAddr>().ok())
+        .ok_or_else(|| {
+            ApiError::invalid("trusted proxy must overwrite X-Forwarded-For with one IP")
+        })?;
+    // Unify IPv4 and IPv4-mapped IPv6 spellings so they cannot multiply a budget.
+    Ok(match ip {
+        IpAddr::V6(ip) => ip
+            .to_ipv4_mapped()
+            .map(IpAddr::V4)
+            .unwrap_or(IpAddr::V6(ip)),
+        ip => ip,
+    })
 }
 
 fn same_origin(headers: &HeaderMap, config: &ServerConfig, required: bool) -> Result<(), ApiError> {
@@ -93,10 +228,10 @@ fn same_origin(headers: &HeaderMap, config: &ServerConfig, required: bool) -> Re
     if origin != expected {
         return Err(ApiError::forbidden());
     }
-    if let Some(site) = headers.get("sec-fetch-site") {
-        if site != "same-origin" {
-            return Err(ApiError::forbidden());
-        }
+    if let Some(site) = headers.get("sec-fetch-site")
+        && site != "same-origin"
+    {
+        return Err(ApiError::forbidden());
     }
     Ok(())
 }
@@ -123,7 +258,7 @@ fn request_token(headers: &HeaderMap) -> Result<(String, bool), ApiError> {
         .and_then(|cookie| cookie.to_str().ok())
         .ok_or_else(ApiError::unauthorized)?;
     Ok((
-        auth_primitives::parse_cookie_value(cookie, "zxs_session")
+        zxs_auth::parse_cookie_value(cookie, "zxs_session")
             .ok_or_else(ApiError::unauthorized)?
             .to_owned(),
         true,
@@ -148,11 +283,10 @@ pub(crate) async fn authorize(
             .and_then(|value| value.to_str().ok())
             .ok_or_else(ApiError::forbidden)?;
         if request.headers().get_all("x-csrf-token").iter().count() != 1
-            || !auth_primitives::token_matches_hash(
+            || !zxs_auth::token_matches_hash(
                 csrf,
-                &auth_primitives::token_hash(
-                    &auth_primitives::derive_csrf_token(&token)
-                        .map_err(|_| ApiError::forbidden())?,
+                &zxs_auth::token_hash(
+                    &zxs_auth::derive_csrf_token(&token).map_err(|_| ApiError::forbidden())?,
                 ),
             )
         {
@@ -182,21 +316,14 @@ pub(crate) async fn login(
     request: Request,
 ) -> Result<Response, ApiError> {
     same_origin(request.headers(), &state.config, false)?;
-    let ip = request
-        .extensions()
-        .get::<axum::extract::ConnectInfo<SocketAddr>>()
-        .map(|info| info.0.ip())
-        .unwrap_or(IpAddr::from([127, 0, 0, 1]));
+    let ip = client_ip(&request, &state.config)?;
     let bytes = axum::body::to_bytes(request.into_body(), 4096)
         .await
         .map_err(ApiError::invalid)?;
     let body: Login = zxs_contract::decode_strict(&bytes).map_err(ApiError::invalid)?;
-    admit_attempts(
-        &state.attempts,
-        [format!("ip:{ip}"), login_username_key(&body.username)],
-        "login admission capacity reached",
-        "too many login attempts; retry after 60 seconds",
-    )?;
+    let pending = PendingLogin::acquire(&state.pending_logins, &body.username)?;
+    let delay = admit_login(&state.attempts, ip, &body.username)?;
+    tokio::time::sleep(delay).await;
     let permit = state
         .password_slots
         .clone()
@@ -204,6 +331,7 @@ pub(crate) async fn login(
         .map_err(|_| ApiError::limit("password verification is busy"))?;
     let auth = state.auth.clone();
     let result = tokio::task::spawn_blocking(move || {
+        let _pending = pending;
         let _permit = permit;
         lock(&auth)?.login(&body.username, &body.password)
     })
@@ -231,7 +359,7 @@ pub(crate) async fn me(
     axum::Extension(identity): axum::Extension<Identity>,
     axum::Extension(token): axum::Extension<SessionToken>,
 ) -> Result<Json<Value>, ApiError> {
-    let csrf_token = auth_primitives::derive_csrf_token(&token.0).map_err(ApiError::invalid)?;
+    let csrf_token = zxs_auth::derive_csrf_token(&token.0).map_err(ApiError::invalid)?;
     Ok(Json(
         json!({"principal":identity.principal,"admin":identity.admin,"repositories":identity.repositories,"csrf_token":csrf_token}),
     ))
@@ -265,11 +393,7 @@ pub(crate) async fn change_password(
     axum::Extension(token): axum::Extension<SessionToken>,
     request: Request,
 ) -> Result<Response, ApiError> {
-    let ip = request
-        .extensions()
-        .get::<axum::extract::ConnectInfo<SocketAddr>>()
-        .map(|info| info.0.ip())
-        .unwrap_or(IpAddr::from([127, 0, 0, 1]));
+    let ip = client_ip(&request, &state.config)?;
     let body: PasswordChange = zxs_contract::decode_strict(
         &axum::body::to_bytes(request.into_body(), 16 * 1024)
             .await
@@ -373,31 +497,266 @@ pub(crate) async fn account_upsert(
 mod tests {
     use super::*;
 
+    fn address(last: u8) -> IpAddr {
+        IpAddr::from([192, 0, 2, last])
+    }
+
     #[test]
-    fn normalized_username_variants_share_one_attempt_budget_across_ips() {
+    fn distributed_normalized_username_attempts_slow_without_hard_lockout() {
         let attempts = Mutex::new(HashMap::new());
         for index in 0..MAX_ATTEMPTS {
             let username = if index % 2 == 0 { " Admin " } else { "ADMIN" };
-            admit_attempts(
-                &attempts,
-                [format!("ip:{index}"), login_username_key(username)],
-                "capacity",
-                "attempts",
-            )
-            .unwrap();
+            assert_eq!(
+                admit_login(&attempts, address(index as u8), username).unwrap(),
+                Duration::ZERO
+            );
+        }
+        for (index, millis) in [
+            (10, 250),
+            (11, 500),
+            (12, 1000),
+            (13, 2000),
+            (14, 4000),
+            (15, 6000),
+            (16, 6000),
+        ] {
+            assert_eq!(
+                admit_login(&attempts, address(index), "admin").unwrap(),
+                Duration::from_millis(millis)
+            );
+        }
+        assert_eq!(attempts.lock().unwrap()["user:admin"].count, 17);
+        // Pressure on admin never delays a different account on another source.
+        assert_eq!(
+            admit_login(&attempts, address(100), "reader").unwrap(),
+            Duration::ZERO
+        );
+    }
+
+    #[test]
+    fn source_limit_cannot_be_evaded_by_rotating_accounts_or_poison_other_accounts() {
+        let attempts = Mutex::new(HashMap::new());
+        for index in 0..MAX_ATTEMPTS {
+            admit_login(&attempts, address(1), &format!("user{index}")).unwrap();
         }
         assert_eq!(
-            admit_attempts(
-                &attempts,
-                ["ip:new".into(), login_username_key("admin")],
-                "capacity",
-                "attempts"
-            )
-            .unwrap_err()
-            .status,
+            admit_login(&attempts, address(1), "victim")
+                .unwrap_err()
+                .status,
             429
         );
-        assert_eq!(attempts.lock().unwrap()["user:admin"].count, 11);
+        assert!(!attempts.lock().unwrap().contains_key("user:victim"));
+        assert_eq!(
+            admit_login(&attempts, address(2), "victim").unwrap(),
+            Duration::ZERO
+        );
+    }
+
+    fn proxy_config() -> ServerConfig {
+        let mut config = ServerConfig::loopback(std::path::Path::new("/tmp/zxs-test"));
+        config.external_origin = Some("https://storage.example.org".into());
+        config.trusted_proxy_ips = vec!["127.0.0.1".parse().unwrap()];
+        config
+    }
+
+    fn request_from(peer: &str, forwarded: Option<&str>) -> Request {
+        let mut request = Request::new(axum::body::Body::empty());
+        request.extensions_mut().insert(axum::extract::ConnectInfo(
+            peer.parse::<SocketAddr>().unwrap(),
+        ));
+        if let Some(value) = forwarded {
+            request
+                .headers_mut()
+                .insert("x-forwarded-for", value.parse().unwrap());
+        }
+        request
+    }
+
+    #[test]
+    fn forwarding_is_ignored_by_default_and_from_untrusted_peers() {
+        let default = ServerConfig::loopback(std::path::Path::new("/tmp/zxs-test"));
+        assert_eq!(
+            client_ip(
+                &request_from("127.0.0.1:1234", Some("192.0.2.10")),
+                &default
+            )
+            .unwrap(),
+            "127.0.0.1".parse::<IpAddr>().unwrap()
+        );
+        assert_eq!(
+            client_ip(
+                &request_from("127.0.0.2:1234", Some("192.0.2.10")),
+                &proxy_config()
+            )
+            .unwrap(),
+            "127.0.0.2".parse::<IpAddr>().unwrap()
+        );
+        assert_eq!(
+            client_ip(&request_from("127.0.0.1:1234", None), &default).unwrap(),
+            "127.0.0.1".parse::<IpAddr>().unwrap()
+        );
+    }
+
+    #[test]
+    fn trusted_proxy_requires_exact_single_ip_and_transport_metadata() {
+        let config = proxy_config();
+        for value in [
+            None,
+            Some(""),
+            Some("garbage"),
+            Some("192.0.2.1, 192.0.2.2"),
+            Some("192.0.2.1:8080"),
+            Some(" 192.0.2.1"),
+        ] {
+            assert!(client_ip(&request_from("127.0.0.1:1234", value), &config).is_err());
+        }
+        let mut duplicate = request_from("127.0.0.1:1234", Some("192.0.2.1"));
+        duplicate
+            .headers_mut()
+            .append("x-forwarded-for", HeaderValue::from_static("192.0.2.2"));
+        assert!(client_ip(&duplicate, &config).is_err());
+        let missing_peer = Request::builder()
+            .header("x-forwarded-for", "192.0.2.1")
+            .body(axum::body::Body::empty())
+            .unwrap();
+        assert!(client_ip(&missing_peer, &config).is_err());
+        assert_eq!(
+            client_ip(
+                &request_from("127.0.0.1:1234", Some("::ffff:192.0.2.1")),
+                &config
+            )
+            .unwrap(),
+            address(1)
+        );
+    }
+
+    #[test]
+    fn proxy_clients_have_separate_budgets_but_cannot_rotate_accounts_to_bypass_source_limit() {
+        let attempts = Mutex::new(HashMap::new());
+        let config = proxy_config();
+        let first = client_ip(&request_from("127.0.0.1:1234", Some("192.0.2.1")), &config).unwrap();
+        let second =
+            client_ip(&request_from("127.0.0.1:1234", Some("192.0.2.2")), &config).unwrap();
+        for _ in 0..MAX_ATTEMPTS {
+            admit_login(&attempts, first, "admin").unwrap();
+        }
+        assert_eq!(
+            admit_login(&attempts, first, "reader").unwrap_err().status,
+            429
+        );
+        assert_eq!(
+            admit_login(&attempts, second, "admin").unwrap(),
+            Duration::from_millis(250)
+        );
+    }
+
+    #[test]
+    fn proxy_configuration_requires_loopback_peer_and_valid_https_origin() {
+        let mut config = proxy_config();
+        config.validate().unwrap();
+        config.external_origin = None;
+        assert!(config.validate().is_err());
+        config.external_origin = Some("http://storage.example.org".into());
+        assert!(config.validate().is_err());
+        config.external_origin = Some("https://storage.example.org".into());
+        config.trusted_proxy_ips = vec![address(1)];
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
+    fn invalid_usernames_never_allocate_retained_pending_or_counter_keys() {
+        let pending = Arc::new(Mutex::new(HashSet::new()));
+        let attempts = Mutex::new(HashMap::new());
+        for username in [
+            "x".repeat(1_000_000),
+            "管理员".repeat(100_000),
+            "é".to_owned(),
+            "a\nb".to_owned(),
+            "".to_owned(),
+            " admin ".repeat(100),
+        ] {
+            assert_eq!(login_username_key(&username).unwrap_err().status, 401);
+            assert!(PendingLogin::acquire(&pending, &username).is_err());
+            assert_eq!(
+                admit_login(&attempts, address(1), &username)
+                    .unwrap_err()
+                    .status,
+                401
+            );
+            assert!(pending.lock().unwrap().is_empty());
+            assert!(attempts.lock().unwrap().is_empty());
+        }
+        assert_eq!(login_username_key(" Admin ").unwrap(), "user:admin");
+        let longest = "x".repeat(zxs_auth::ADMINISTRATOR_USERNAME_MAX_BYTES);
+        assert_eq!(
+            login_username_key(&longest).unwrap().len(),
+            5 + zxs_auth::ADMINISTRATOR_USERNAME_MAX_BYTES
+        );
+        assert!(login_username_key(&(longest + "x")).is_err());
+    }
+
+    #[test]
+    fn pending_logins_are_per_canonical_account_bounded_and_release_on_drop() {
+        let pending = Arc::new(Mutex::new(HashSet::new()));
+        let first = PendingLogin::acquire(&pending, " Admin ").unwrap();
+        assert!(PendingLogin::acquire(&pending, "ADMIN").is_err());
+        let other = PendingLogin::acquire(&pending, "reader").unwrap();
+        drop(first);
+        let first = PendingLogin::acquire(&pending, "admin").unwrap();
+        let mut guards = vec![first, other];
+        for index in 2..MAX_PENDING_LOGINS {
+            guards.push(PendingLogin::acquire(&pending, &format!("user{index}")).unwrap());
+        }
+        assert!(PendingLogin::acquire(&pending, "overflow").is_err());
+        assert_eq!(pending.lock().unwrap().len(), MAX_PENDING_LOGINS);
+        drop(guards);
+        assert!(pending.lock().unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn cancelled_waiter_releases_account_guard_without_delaying_other_account() {
+        let pending = Arc::new(Mutex::new(HashSet::new()));
+        let waiting = pending.clone();
+        let (ready, started) = tokio::sync::oneshot::channel();
+        let task = tokio::spawn(async move {
+            let _guard = PendingLogin::acquire(&waiting, "admin").unwrap();
+            ready.send(()).unwrap();
+            tokio::time::sleep(Duration::from_secs(6)).await;
+        });
+        started.await.unwrap();
+        assert!(PendingLogin::acquire(&pending, "admin").is_err());
+        let other = PendingLogin::acquire(&pending, "reader").unwrap();
+        task.abort();
+        assert!(task.await.unwrap_err().is_cancelled());
+        let admin = PendingLogin::acquire(&pending, "admin").unwrap();
+        drop((admin, other));
+        assert!(pending.lock().unwrap().is_empty());
+    }
+
+    #[test]
+    fn account_backoff_survives_active_window_boundary_and_cools_after_idle_minute() {
+        let attempts = Mutex::new(HashMap::from([(
+            "user:admin".into(),
+            Attempts {
+                since: Instant::now() - Duration::from_secs(59),
+                count: 20,
+            },
+        )]));
+        assert_eq!(
+            admit_login(&attempts, address(1), "admin").unwrap(),
+            Duration::from_secs(6)
+        );
+        assert!(attempts.lock().unwrap()["user:admin"].since.elapsed() < Duration::from_secs(1));
+        attempts
+            .lock()
+            .unwrap()
+            .get_mut("user:admin")
+            .unwrap()
+            .since = Instant::now() - ATTEMPT_WINDOW;
+        assert_eq!(
+            admit_login(&attempts, address(2), "admin").unwrap(),
+            Duration::ZERO
+        );
     }
 
     #[test]
@@ -437,6 +796,7 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(error.status, 429);
-        assert_eq!(attempts.lock().unwrap().len(), MAX_ATTEMPT_KEYS);
+        assert_eq!(attempts.lock().unwrap().len(), MAX_ATTEMPT_KEYS - 1);
+        assert!(!attempts.lock().unwrap().contains_key("new:one"));
     }
 }

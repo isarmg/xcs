@@ -15,7 +15,7 @@ impl Engine {
     ) -> Result<OperationResult> {
         self.mutate("smb.binding.update",principal,operation,json!({"repository_id":repository,"branch_id":branch_id,"enabled":enabled,"expected_generation":expected_generation.to_string()}),|engine,state,_|{
             let repo=state.repositories.get(repository).cloned().ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository not found"))?;
-            engine.require_grant(&repo,principal,"manage")?;
+            engine.require_grant(&repo,principal,zxs_contract::RepositoryAccess::Manage)?;
             let history=state.histories.get(&repo.history_tree_id).ok_or_else(||Error::new("STATE_INVALID","repository history missing"))?;
             if history.generation!=expected_generation { return Err(Error::new("GENERATION_MISMATCH","share binding history changed")); }
             let branch=state.branches.get(branch_id).ok_or_else(||Error::new("BRANCH_NOT_FOUND","share branch missing"))?;
@@ -52,7 +52,7 @@ impl Engine {
             .values()
             .find(|r| r.file_manager_root && r.primary_slot_id == primary)
         {
-            self.require_grant(repo, principal, "write")?;
+            self.require_grant(repo, principal, zxs_contract::RepositoryAccess::Write)?;
             return Ok(repo.clone());
         }
         self.create_repository_kind(

@@ -98,7 +98,11 @@ impl Engine {
                 "workspace belongs to another principal",
             ));
         }
-        self.require_grant(self.repository_for_branch(&w.branch_id)?, principal, "read")?;
+        self.require_grant(
+            self.repository_for_branch(&w.branch_id)?,
+            principal,
+            zxs_contract::RepositoryAccess::Read,
+        )?;
         let staged = w
             .files
             .get(item)

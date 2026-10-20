@@ -477,14 +477,13 @@ impl Workspace {
                 note: message.into(),
             },
         );
-        if ctx.lazy.is_none() {
-            if let Some(b) = self
+        if ctx.lazy.is_none()
+            && let Some(b) = self
                 .directory_branches
                 .get_mut(&(ctx.directory, ctx.branch.clone()))
                 .filter(|b| b.head == ctx.node)
-            {
-                b.head = node;
-            }
+        {
+            b.head = node;
         }
         node
     }
@@ -530,6 +529,10 @@ impl Workspace {
         }
         Ok(())
     }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "Demo node construction keeps provenance fields explicit; migrate with the model request types tracked in .github/QUALITY.md"
+    )]
     fn child(
         &mut self,
         source: Id,
@@ -924,10 +927,10 @@ impl Workspace {
             if id == ancestor {
                 return true;
             }
-            if seen.insert(id) {
-                if let Some(node) = self.files.get(&id) {
-                    todo.extend(&node.parents);
-                }
+            if seen.insert(id)
+                && let Some(node) = self.files.get(&id)
+            {
+                todo.extend(&node.parents);
             }
         }
         false

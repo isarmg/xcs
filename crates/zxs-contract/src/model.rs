@@ -85,7 +85,25 @@ pub struct Grants {
     pub write: BTreeSet<String>,
     pub manage: BTreeSet<String>,
 }
+/// Repository ACL capability. Read and write are independent; manage grants both.
+/// Account admission and administrator identity are evaluated by the transport.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RepositoryAccess {
+    Read,
+    Write,
+    Manage,
+}
+
 impl Grants {
+    pub fn allows(&self, principal: &str, access: RepositoryAccess) -> bool {
+        self.manage.contains(principal)
+            || match access {
+                RepositoryAccess::Read => self.read.contains(principal),
+                RepositoryAccess::Write => self.write.contains(principal),
+                RepositoryAccess::Manage => false,
+            }
+    }
+
     pub fn owner(principal: &str) -> Self {
         let set = BTreeSet::from([principal.to_string()]);
         Self {
@@ -506,6 +524,36 @@ pub struct CommitRequest {
     #[serde(default)]
     pub request_digest: Option<String>,
 }
+/// Closed publication lifecycle vocabulary shared by persisted and wire results.
+/// Serde names are part of the hashed on-disk contract.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CommitState {
+    Staging,
+    Sealed,
+    Prepared,
+    Deciding,
+    Decided,
+    Protected,
+    Published,
+    Acked,
+    Recovering,
+    RecoveryRequired,
+    InDoubt,
+    PublishedDegraded,
+    Aborted,
+}
+
+/// Frozen evidence at publication, not a live assessment of copy health.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ProtectionAtPublish {
+    NotApplicable,
+    TargetMet,
+    BelowTarget,
+    Unconfirmed,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct OperationResult {
@@ -514,8 +562,8 @@ pub struct OperationResult {
     pub commit_id: Option<String>,
     pub history_tree_id: Option<String>,
     pub branch_id: Option<String>,
-    pub commit_state: String,
-    pub protection_at_publish: String,
+    pub commit_state: CommitState,
+    pub protection_at_publish: ProtectionAtPublish,
     pub current_health: String,
     pub request_digest: String,
     #[serde(with = "crate::u64_string")]
@@ -689,4 +737,105 @@ pub struct CheckReport {
     pub healthy_replicas: usize,
     pub tombstoned_versions: usize,
     pub issues: Vec<String>,
+}
+
+#[cfg(test)]
+mod repository_access_tests {
+    use super::{Grants, RepositoryAccess};
+
+    #[test]
+    fn capabilities_are_independent_and_manage_implies_both() {
+        for bits in 0..8 {
+            let mut grants = Grants::default();
+            if bits & 1 != 0 {
+                grants.read.insert("user".into());
+            }
+            if bits & 2 != 0 {
+                grants.write.insert("user".into());
+            }
+            if bits & 4 != 0 {
+                grants.manage.insert("user".into());
+            }
+            for (access, expected) in [
+                (RepositoryAccess::Read, bits & 5 != 0),
+                (RepositoryAccess::Write, bits & 6 != 0),
+                (RepositoryAccess::Manage, bits & 4 != 0),
+            ] {
+                assert_eq!(grants.allows("user", access), expected);
+                assert!(!grants.allows("other", access));
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod operation_status_tests {
+    use super::*;
+
+    // These strings are the existing public commit-state vocabulary, plus the
+    // persisted protection values emitted by normal and recovery publication.
+    const COMMIT_STATES: &[&str] = &[
+        "STAGING",
+        "SEALED",
+        "PREPARED",
+        "DECIDING",
+        "DECIDED",
+        "PROTECTED",
+        "PUBLISHED",
+        "ACKED",
+        "RECOVERING",
+        "RECOVERY_REQUIRED",
+        "IN_DOUBT",
+        "PUBLISHED_DEGRADED",
+        "ABORTED",
+    ];
+    const PROTECTION_STATES: &[&str] = &[
+        "NOT_APPLICABLE",
+        "TARGET_MET",
+        "BELOW_TARGET",
+        "UNCONFIRMED",
+    ];
+
+    fn frozen_operation(commit: &str, protection: &str) -> Vec<u8> {
+        format!(r#"{{"branch_id":null,"commit_id":null,"commit_state":"{commit}","current_health":"HEALTHY","history_tree_id":null,"kind":"workspace.commit","operation_id":"operation_fixture","protection_at_publish":"{protection}","request_digest":"fixture","result":{{}},"sequence":"18446744073709551615"}}"#).into_bytes()
+    }
+
+    #[test]
+    fn operation_status_rejects_unknown_or_malformed_values() {
+        for (commit, protection) in [
+            ("published", "TARGET_MET"),
+            ("PUBLISHED_TYPO", "TARGET_MET"),
+            ("", "TARGET_MET"),
+            ("PUBLISHED", "HEALTHY"),
+            ("PUBLISHED", "target_met"),
+            ("PUBLISHED", ""),
+        ] {
+            assert!(
+                crate::decode_strict::<OperationResult>(&frozen_operation(commit, protection))
+                    .is_err()
+            );
+        }
+        for invalid in ["null", "0", "{}", "[]"] {
+            assert!(serde_json::from_str::<CommitState>(invalid).is_err());
+            assert!(serde_json::from_str::<ProtectionAtPublish>(invalid).is_err());
+        }
+    }
+
+    #[test]
+    fn operation_status_preserves_frozen_bytes_and_digest() {
+        for commit in COMMIT_STATES {
+            for protection in PROTECTION_STATES {
+                let bytes = frozen_operation(commit, protection);
+                let operation: OperationResult = crate::decode_strict(&bytes).unwrap();
+                assert_eq!(crate::canonical_json(&operation).unwrap(), bytes);
+                let mut expected = blake3::Hasher::new();
+                expected.update(b"zxs:state-page:v2\0");
+                expected.update(&bytes);
+                assert_eq!(
+                    crate::object_hash("state-page", &operation).unwrap(),
+                    expected.finalize().to_hex().as_str()
+                );
+            }
+        }
+    }
 }

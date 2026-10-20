@@ -19,7 +19,7 @@
 执行方式（需要已安装 Chromium 的 Playwright；依赖路径可按本机配置）：
 
 ```sh
-ZXS_PLAYWRIGHT_MODULE=/mnt/sarmg.org/zxss/node_modules/playwright/index.mjs node tests/evidence/spacing-correction/source-spacing-probe.mjs
+ZXS_PLAYWRIGHT_MODULE=/path/to/node_modules/playwright/index.mjs node tests/evidence/spacing-correction/source-spacing-probe.mjs
 ```
 
 未增加浏览器大幅缩放适配逻辑；上述均为正常视口尺寸验证。静态夹具不运行 Rust/WASM 轮廓绘制器，不能替代以下真实应用检查。

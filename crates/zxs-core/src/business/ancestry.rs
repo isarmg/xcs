@@ -17,10 +17,10 @@ pub(crate) fn descendant_commits<'a>(
     let mut reached = BTreeSet::new();
     let mut pending = vec![root];
     while let Some(id) = pending.pop() {
-        if reached.insert(id.to_owned()) {
-            if let Some(descendants) = children.get(id) {
-                pending.extend(descendants.iter().copied());
-            }
+        if reached.insert(id.to_owned())
+            && let Some(descendants) = children.get(id)
+        {
+            pending.extend(descendants.iter().copied());
         }
     }
     reached

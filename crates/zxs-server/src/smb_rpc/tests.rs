@@ -14,11 +14,16 @@ struct LostCommitReply {
     change_before_workspace: AtomicBool,
 }
 impl Backend for LostCommitReply {
-    fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError> {
-        if action == "version" && self.revoked.load(Ordering::SeqCst) {
+    fn call(
+        &self,
+        action: crate::BackendAction,
+        identity: &Identity,
+        input: Value,
+    ) -> Result<Value, ApiError> {
+        if action == crate::BackendAction::Version && self.revoked.load(Ordering::SeqCst) {
             return Err(ApiError::forbidden());
         }
-        if action == "create_workspace"
+        if action == crate::BackendAction::CreateWorkspace
             && self.change_before_workspace.swap(false, Ordering::SeqCst)
         {
             let workspace: Workspace =
@@ -32,14 +37,16 @@ impl Backend for LostCommitReply {
                 "report.txt",
                 source.path(),
             )?;
-            self.inner.call("commit_workspace_internal", identity, json!({
+            self.inner.call(crate::BackendAction::CommitWorkspaceInternal, identity, json!({
                 "workspace_id":workspace.workspace_id,"operation_id":new_id("op"),
                 "expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),
                 "message":"concurrent update during SMB open"
             }))?;
         }
         let value = self.inner.call(action, identity, input)?;
-        if action == "commit_workspace_internal" && self.fail.swap(false, Ordering::SeqCst) {
+        if action == crate::BackendAction::CommitWorkspaceInternal
+            && self.fail.swap(false, Ordering::SeqCst)
+        {
             return Err(ApiError::new(
                 503,
                 "RESPONSE_LOST",
@@ -141,7 +148,11 @@ fn select_pending_file(shared: &Shared, branch: &str) -> String {
     let identity = &shared.identities["alice"];
     let tree = shared
         .backend
-        .call("tree", identity, json!({"branch_id":branch}))
+        .call(
+            crate::BackendAction::Tree,
+            identity,
+            json!({"branch_id":branch}),
+        )
         .unwrap();
     let entry = tree["entries"]
         .as_array()
@@ -150,10 +161,10 @@ fn select_pending_file(shared: &Shared, branch: &str) -> String {
         .find(|entry| entry["path"] == "report.txt")
         .unwrap();
     let file = entry["file_id"].as_str().unwrap().to_owned();
-    let created = shared.backend.call("file_manager_branch", identity, json!({
+    let created = shared.backend.call(crate::BackendAction::FileManagerBranch, identity, json!({
         "file_id":file,"source_version_id":entry["version_id"],"name":"draft","operation_id":new_id("op")
     })).unwrap();
-    shared.backend.call("file_manager_select", identity, json!({
+    shared.backend.call(crate::BackendAction::FileManagerSelect, identity, json!({
         "file_id":file,"branch_id":created["result"]["branch_id"],"operation_id":new_id("op")
     })).unwrap();
     file
@@ -163,7 +174,7 @@ fn directory_fixture(shared: &Shared) -> (String, String, String) {
     let identity = &shared.identities["alice"];
     let repositories = shared
         .backend
-        .call("repositories", identity, json!({}))
+        .call(crate::BackendAction::Repositories, identity, json!({}))
         .unwrap();
     let repository = repositories["repositories"][0]["repository_id"]
         .as_str()
@@ -172,7 +183,7 @@ fn directory_fixture(shared: &Shared) -> (String, String, String) {
     let created = shared
         .backend
         .call(
-            "file_manager_directory_branches",
+            crate::BackendAction::FileManagerDirectoryBranches,
             identity,
             json!({
                 "slot_id":"P01","path":"资料","name":"draft","operation_id":new_id("op")
@@ -182,7 +193,7 @@ fn directory_fixture(shared: &Shared) -> (String, String, String) {
     let initial = shared
         .backend
         .call(
-            "default_branch",
+            crate::BackendAction::DefaultBranch,
             identity,
             json!({"repository_id":repository}),
         )
@@ -198,7 +209,7 @@ fn directory_fixture(shared: &Shared) -> (String, String, String) {
 }
 
 fn select_directory(shared: &Shared, repository: &str, directory: &str) {
-    shared.backend.call("update_default_branch", &shared.identities["alice"], json!({
+    shared.backend.call(crate::BackendAction::UpdateDefaultBranch, &shared.identities["alice"], json!({
         "repository_id":repository,"directory_branch_id":directory,"operation_id":new_id("op")
     })).unwrap();
 }
@@ -270,13 +281,13 @@ fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle(
     let identity = &shared.identities["alice"];
     let repo = shared
         .backend
-        .call("repositories", identity, json!({}))
+        .call(crate::BackendAction::Repositories, identity, json!({}))
         .unwrap()["repositories"][0]["repository_id"]
         .as_str()
         .unwrap()
         .to_owned();
     let register = |path: &str, name: &str| {
-        shared.backend.call("file_manager_directory_branches",identity,json!({
+        shared.backend.call(crate::BackendAction::FileManagerDirectoryBranches,identity,json!({
         "slot_id":"P01","path":format!("资料/{path}"),"name":name,"operation_id":new_id("op")
     })).unwrap()["result"]["directory_branch_id"].as_str().unwrap().to_owned()
     };
@@ -285,7 +296,7 @@ fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle(
     let b_l = register("b", "l");
     let b_p = register("b", "p");
     for (path, name) in [("a", "m"), ("b", "l")] {
-        shared.backend.call("file_manager_directory_select",identity,json!({
+        shared.backend.call(crate::BackendAction::FileManagerDirectorySelect,identity,json!({
             "slot_id":"P01","path":format!("资料/{path}"),"name":name,"operation_id":new_id("op")
         })).unwrap();
     }
@@ -293,7 +304,7 @@ fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle(
         shared
             .backend
             .call(
-                "directory_branch_scopes",
+                crate::BackendAction::DirectoryBranchScopes,
                 identity,
                 json!({"repository_id":repo}),
             )
@@ -379,7 +390,7 @@ fn newly_created_ancestor_selection_fences_an_existing_create_handle() {
     shared
         .backend
         .call(
-            "file_manager_directory_branches",
+            crate::BackendAction::FileManagerDirectoryBranches,
             &shared.identities["alice"],
             json!({
                 "slot_id":"P01","path":"资料/future","name":"alternate","operation_id":new_id("op")
@@ -389,7 +400,7 @@ fn newly_created_ancestor_selection_fences_an_existing_create_handle() {
     shared
         .backend
         .call(
-            "file_manager_directory_select",
+            crate::BackendAction::FileManagerDirectorySelect,
             &shared.identities["alice"],
             json!({
                 "slot_id":"P01","path":"资料/future","name":"alternate","operation_id":new_id("op")
@@ -425,7 +436,7 @@ fn nested_directory_switch_does_not_fence_an_unrelated_open_file() {
     shared
         .backend
         .call(
-            "file_manager_directory_branches",
+            crate::BackendAction::FileManagerDirectoryBranches,
             &shared.identities["alice"],
             json!({
                 "slot_id":"P01","path":"资料/nested","name":"alternate","operation_id":new_id("op")
@@ -437,7 +448,7 @@ fn nested_directory_switch_does_not_fence_an_unrelated_open_file() {
     shared
         .backend
         .call(
-            "file_manager_directory_select",
+            crate::BackendAction::FileManagerDirectorySelect,
             &shared.identities["alice"],
             json!({
                 "slot_id":"P01","path":"资料/nested","name":"alternate","operation_id":new_id("op")
@@ -584,7 +595,7 @@ fn unwritten_branch_reads_parent_and_materializes_only_on_dirty_save() {
         shared
             .backend
             .call(
-                "file_manager_file_history",
+                crate::BackendAction::FileManagerFileHistory,
                 &shared.identities["alice"],
                 json!({"file_id":file}),
             )
@@ -673,7 +684,7 @@ fn explicit_truncation_materializes_an_empty_pending_branch() {
     let history = shared
         .backend
         .call(
-            "file_manager_file_history",
+            crate::BackendAction::FileManagerFileHistory,
             &shared.identities["alice"],
             json!({"file_id":file}),
         )
@@ -749,7 +760,11 @@ fn lost_commit_reply_reconciles_same_operation_without_restaging_or_second_versi
         .find(|entry| entry.path == "report.txt")
         .unwrap();
     let history = backend
-        .call("history", &one.identity, json!({"file_id":entry.file_id}))
+        .call(
+            crate::BackendAction::History,
+            &one.identity,
+            json!({"file_id":entry.file_id}),
+        )
         .unwrap();
     assert_eq!(history["versions"].as_array().unwrap().len(), 2);
     one.close(opened.handle, false).unwrap();
@@ -971,7 +986,7 @@ fn external_same_file_change_rejects_rebase_and_preserves_work_bytes() {
     let workspace: Workspace = serde_json::from_value(
         backend
             .call(
-                "create_workspace",
+                crate::BackendAction::CreateWorkspace,
                 &one.identity,
                 json!({"branch_id":branch}),
             )
@@ -989,7 +1004,7 @@ fn external_same_file_change_rejects_rebase_and_preserves_work_bytes() {
             &source,
         )
         .unwrap();
-    backend.call("commit_workspace_internal",&one.identity,json!({"workspace_id":workspace.workspace_id,"operation_id":new_id("op"),"expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"external app"})).unwrap();
+    backend.call(crate::BackendAction::CommitWorkspaceInternal,&one.identity,json!({"workspace_id":workspace.workspace_id,"operation_id":new_id("op"),"expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"external app"})).unwrap();
     file.write_all_at(b"end", 0).unwrap();
     assert_eq!(
         one.dirty(opened.handle).unwrap_err().code,

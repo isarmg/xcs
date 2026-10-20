@@ -30,6 +30,14 @@ production fault certification or constant-time operations.
 - A [second retained-history pass](history-growth-optimization.md) stabilizes
   snapshot page boundaries, reuses invocation-local page repairs and container
   projections, and avoids duplicate canonical serialization.
+- Event arrays now use ordered, validated snapshot pages rather than one scalar
+  root field. Existing scalar-event snapshots remain readable. Duplicate or
+  discontinuous event indexes and ambiguous scalar/page representations fail
+  validation instead of silently losing or reordering events.
+- Publication prepares bounded immutable snapshot and history-manifest bytes
+  once, then reuses their exact hashes and bytes for preflight and replica
+  installation. The prepared snapshot descriptor is also reused by tombstone
+  admission. Existing immutable-file collision verification remains enabled.
 
 ## Deliberate limits
 
@@ -37,6 +45,11 @@ The complete save path is not O(delta). State cloning/comparison, snapshots,
 historical manifests, and retained metadata can still grow with history. The
 initial workspace preparation snapshot is copied under the mutex. Other mutation
 classes and recovery remain synchronous.
+
+Event paging removes the previous single event-array object bottleneck, not all
+metadata limits: page references, individual pages and publication proofs remain
+bounded. No operation or event evidence is expired, and no historical objects
+are garbage-collected by this optimization.
 
 Concurrent namespace relocation must not race detached pathname-based payload
 installation. Write admission is therefore conservatively fenced during a

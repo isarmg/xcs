@@ -22,7 +22,7 @@ pub(crate) fn find<'a>(entries: &'a [Entry], path: &str) -> Option<&'a Entry> {
     let key = zxs_naming::path_key(path);
     entries.iter().find(|e| e.lookup_key == key)
 }
-pub(crate) fn validate_entries(entries: &mut Vec<Entry>, maximum: usize) -> Result<()> {
+pub(crate) fn validate_entries(entries: &mut [Entry], maximum: usize) -> Result<()> {
     if entries.len() > maximum {
         return Err(Error::new(
             "RESOURCE_LIMIT",
@@ -48,13 +48,13 @@ pub(crate) fn validate_entries(entries: &mut Vec<Entry>, maximum: usize) -> Resu
         }
     }
     for entry in entries.iter() {
-        if let Some((parent, _)) = entry.lookup_key.rsplit_once('/') {
-            if kinds.get(parent).copied() != Some("directory") {
-                return Err(Error::new(
-                    "PARENT_NOT_DIRECTORY",
-                    "file parent is missing or is not a directory",
-                ));
-            }
+        if let Some((parent, _)) = entry.lookup_key.rsplit_once('/')
+            && kinds.get(parent).copied() != Some("directory")
+        {
+            return Err(Error::new(
+                "PARENT_NOT_DIRECTORY",
+                "file parent is missing or is not a directory",
+            ));
         }
     }
     sorted(entries);
@@ -280,9 +280,12 @@ mod tests {
     #[test]
     fn rebasing_directory_preserves_identity_and_uses_component_depth() {
         let original = entry("STRASSE/文档.txt", "file");
-        let rebased =
-            super::super::directory::rebase_entries(&[original.clone()], "Straße", "Moved")
-                .unwrap();
+        let rebased = super::super::directory::rebase_entries(
+            std::slice::from_ref(&original),
+            "Straße",
+            "Moved",
+        )
+        .unwrap();
         assert_eq!(rebased[0].path, "Moved/文档.txt");
         assert_eq!(rebased[0].name, "文档.txt");
         assert_eq!(

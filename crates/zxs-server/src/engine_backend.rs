@@ -7,6 +7,7 @@ use zxs_core::{Engine, Grants, NamespaceOperation, Repository};
 pub mod application;
 use application::Application;
 mod file_manager;
+mod read_projection;
 
 pub struct EngineBackend {
     engine: Mutex<Engine>,
@@ -227,19 +228,18 @@ fn pending_entry_source<'a>(
             .repositories
             .values()
             .find(|repo| repo.main_branch_id == branch)
+            && let Some(context) = engine.file_context(&repo.repository_id, &entry.path)
         {
-            if let Some(context) = engine.file_context(&repo.repository_id, &entry.path) {
-                return if context.inherited_from.is_some() {
-                    Some(visible.version_id.as_str())
-                } else {
-                    state
-                        .branches
-                        .get(&context.branch_id)?
-                        .pending_file_versions
-                        .get(&entry.file_id)
-                        .map(String::as_str)
-                };
-            }
+            return if context.inherited_from.is_some() {
+                Some(visible.version_id.as_str())
+            } else {
+                state
+                    .branches
+                    .get(&context.branch_id)?
+                    .pending_file_versions
+                    .get(&entry.file_id)
+                    .map(String::as_str)
+            };
         }
     } else if let Some(context) = state
         .directory_trees
@@ -362,13 +362,7 @@ fn authorize(
     )
 }
 
-/// Account admission and ACL evaluation shared by all transports and commands.
-#[derive(Debug, Clone, Copy)]
-pub enum RepositoryAccess {
-    Read,
-    Write,
-    Manage,
-}
+pub use zxs_contract::RepositoryAccess;
 
 pub fn authorize_access(
     identity: &Identity,
@@ -386,93 +380,11 @@ pub fn authorize_access(
     if !admitted {
         return Err(ApiError::forbidden());
     }
-    let grants = &repo.grants;
-    let allowed = match access {
-        RepositoryAccess::Manage => grants.manage.contains(&identity.principal),
-        RepositoryAccess::Write => {
-            grants.write.contains(&identity.principal)
-                || grants.manage.contains(&identity.principal)
-        }
-        RepositoryAccess::Read => {
-            grants.read.contains(&identity.principal)
-                || grants.write.contains(&identity.principal)
-                || grants.manage.contains(&identity.principal)
-        }
-    };
+    let allowed = repo.grants.allows(&identity.principal, access);
     if allowed {
         Ok(())
     } else {
         Err(ApiError::forbidden())
-    }
-}
-
-#[cfg(test)]
-mod authorization_tests {
-    use super::*;
-    use std::collections::BTreeSet;
-
-    #[test]
-    fn preparation_conflicts_retain_retryable_contract() {
-        for code in [
-            "COMMIT_PREPARATION_BUSY",
-            "COMMIT_PREPARATION_STALE",
-            "PREPARATION_STALE",
-        ] {
-            let mapped = error(zxs_core::Error::new(code, "retry preparation").retryable());
-            assert_eq!(mapped.status, 409);
-            assert_eq!(mapped.code, code);
-            assert!(mapped.retryable);
-        }
-    }
-
-    #[test]
-    fn upload_generation_and_lease_errors_preserve_conflict_status() {
-        for (core_code, api_code) in [
-            ("STALE_UPLOAD_GENERATION", "UPLOAD_GENERATION_CONFLICT"),
-            ("UPLOAD_GENERATION_CONFLICT", "UPLOAD_GENERATION_CONFLICT"),
-            ("FENCING_TOKEN_EXPIRED", "LEASE_EXPIRED"),
-        ] {
-            let error = error(zxs_core::Error::new(core_code, "retry needs new state"));
-            assert_eq!(error.status, 409, "{core_code}");
-            assert_eq!(error.code, api_code);
-        }
-    }
-
-    #[test]
-    fn split_repository_accepts_independent_account_admission_and_still_requires_its_own_acl() {
-        let mut repository = Repository {
-            repository_id: "new repository".into(),
-            name: "Independent split".into(),
-            history_tree_id: "history".into(),
-            main_branch_id: "branch".into(),
-            primary_slot_id: "P01".into(),
-            target_copies: 3,
-            name_policy: "PortableNameV2".into(),
-            unicode_version: "16.0.0".into(),
-            grants: Grants::owner("reader"),
-            account_scope_repository_id: Some("source repository".into()),
-            smb_enabled: false,
-            file_manager_root: false,
-        };
-        let direct = Identity {
-            principal: "reader".into(),
-            admin: false,
-            repositories: BTreeSet::from([repository.repository_id.clone()]),
-        };
-        let inherited = Identity {
-            repositories: BTreeSet::from(["source repository".into()]),
-            ..direct.clone()
-        };
-        assert!(authorize(&direct, &repository, false, false).is_ok());
-        assert!(authorize(&inherited, &repository, false, false).is_ok());
-        let unrelated = Identity {
-            repositories: BTreeSet::from(["unrelated repository".into()]),
-            ..direct.clone()
-        };
-        assert!(authorize(&unrelated, &repository, false, false).is_err());
-        repository.grants = Grants::default();
-        assert!(authorize(&direct, &repository, false, false).is_err());
-        assert!(authorize(&inherited, &repository, false, false).is_err());
     }
 }
 fn workspace_authorize(
@@ -521,16 +433,21 @@ fn operation_wire(_engine: &Engine, op: zxs_core::OperationResult) -> Result<Val
         _ => "UNKNOWN",
     };
     let current_health = json!({"state":health,"checked_at":time::OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).map_err(ApiError::invalid)?});
-    let content_save =
-        op.kind == "workspace.commit" && op.protection_at_publish != "NOT_APPLICABLE";
+    let content_save = op.kind == "workspace.commit"
+        && op.protection_at_publish != zxs_contract::ProtectionAtPublish::NotApplicable;
     if content_save {
         let complete = matches!(
-            op.commit_state.as_str(),
-            "PUBLISHED" | "ACKED" | "PUBLISHED_DEGRADED"
+            op.commit_state,
+            zxs_contract::CommitState::Published
+                | zxs_contract::CommitState::Acked
+                | zxs_contract::CommitState::PublishedDegraded
         );
         let state = if complete {
             "completed"
-        } else if matches!(op.commit_state.as_str(), "IN_DOUBT" | "RECOVERY_REQUIRED") {
+        } else if matches!(
+            op.commit_state,
+            zxs_contract::CommitState::InDoubt | zxs_contract::CommitState::RecoveryRequired
+        ) {
             "in_doubt"
         } else {
             "processing"
@@ -547,7 +464,7 @@ fn operation_wire(_engine: &Engine, op: zxs_core::OperationResult) -> Result<Val
                         "frozen publication protection evidence is missing",
                     )
                 })?;
-            json!({"outcome":if op.protection_at_publish=="TARGET_MET"{"COMMITTED_AND_PROTECTED"}else{"COMMITTED_DEGRADED"},"commit_id":op.commit_id,"branch_id":op.branch_id,"branch_generation":field(&op.result,"branch_generation")?,"publication_sequence":op.sequence.to_string(),"membership_epoch":field(&op.result,"membership_epoch")?,"protection_at_publish":op.protection_at_publish,"versions":versions})
+            json!({"outcome":if op.protection_at_publish==zxs_contract::ProtectionAtPublish::TargetMet{"COMMITTED_AND_PROTECTED"}else{"COMMITTED_DEGRADED"},"commit_id":op.commit_id,"branch_id":op.branch_id,"branch_generation":field(&op.result,"branch_generation")?,"publication_sequence":op.sequence.to_string(),"membership_epoch":field(&op.result,"membership_epoch")?,"protection_at_publish":op.protection_at_publish,"versions":versions})
         } else {
             Value::Null
         };
@@ -556,19 +473,24 @@ fn operation_wire(_engine: &Engine, op: zxs_core::OperationResult) -> Result<Val
         )
     } else {
         Ok(
-            json!({"operation_id":op.operation_id,"operation_kind":op.kind,"request_digest":op.request_digest,"state":if matches!(op.commit_state.as_str(),"PUBLISHED"|"ACKED"){"completed"}else{"in_doubt"},"commit_state":op.commit_state,"protection_at_publish":op.protection_at_publish,"publication_sequence":op.sequence.to_string(),"result":op.result,"error":null,"current_health":current_health}),
+            json!({"operation_id":op.operation_id,"operation_kind":op.kind,"request_digest":op.request_digest,"state":if matches!(op.commit_state,zxs_contract::CommitState::Published|zxs_contract::CommitState::Acked){"completed"}else{"in_doubt"},"commit_state":op.commit_state,"protection_at_publish":op.protection_at_publish,"publication_sequence":op.sequence.to_string(),"result":op.result,"error":null,"current_health":current_health}),
         )
     }
 }
 
 impl Backend for EngineBackend {
-    fn call(&self, action: &str, identity: &Identity, input: Value) -> Result<Value, ApiError> {
+    fn call(
+        &self,
+        action: crate::BackendAction,
+        identity: &Identity,
+        input: Value,
+    ) -> Result<Value, ApiError> {
         let mut engine = self
             .engine
             .lock()
             .map_err(|_| ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart"))?;
         match action {
-            "file_manager_disks" => {
+            crate::BackendAction::FileManagerDisks => {
                 let access = file_manager::disk_access(&engine, identity);
                 let observation = engine.prepare_disk_observation();
                 drop(engine);
@@ -578,10 +500,28 @@ impl Backend for EngineBackend {
                 }).collect::<Vec<_>>();
                 Ok(json!({"disks":disks}))
             }
-            action if action.starts_with("file_manager_") => {
+            crate::BackendAction::FileManagerBackupConfiguration
+            | crate::BackendAction::FileManagerBranch
+            | crate::BackendAction::FileManagerConfigureBackups
+            | crate::BackendAction::FileManagerDirectoryBranches
+            | crate::BackendAction::FileManagerDirectorySelect
+            | crate::BackendAction::FileManagerDownloadContext
+            | crate::BackendAction::FileManagerEntries
+            | crate::BackendAction::FileManagerFileHistory
+            | crate::BackendAction::FileManagerFileMetadata
+            | crate::BackendAction::FileManagerHistory
+            | crate::BackendAction::FileManagerMerge
+            | crate::BackendAction::FileManagerNamespace
+            | crate::BackendAction::FileManagerNamespaceBatch
+            | crate::BackendAction::FileManagerNodeNote
+            | crate::BackendAction::FileManagerRenameBranch
+            | crate::BackendAction::FileManagerSelect
+            | crate::BackendAction::FileManagerTags
+            | crate::BackendAction::FileManagerVersionMetadata
+            | crate::BackendAction::FileManagerWriteSession => {
                 file_manager::call(&mut engine, identity, action, input)
             }
-            "monitor_disks" => {
+            crate::BackendAction::MonitorDisks => {
                 identity.require_admin()?;
                 let observation = engine.prepare_disk_observation();
                 drop(engine);
@@ -601,10 +541,10 @@ impl Backend for EngineBackend {
                 }
                 Ok(json!({"disks":disks}))
             }
-            "capabilities" => Ok(
+            crate::BackendAction::Capabilities => Ok(
                 json!({"protocol_version":"1","disk_format_version":2,"name_policy_version":"PortableNameV2","path_policy_version":"PortablePathV1","unicode_data_version":"16.0.0","supported_save_modes":["full"],"full_only":true,"full_branches":false,"branch_creation":"record-until-write","branch_content":"inherit-parent-until-first-write","file_branches":true,"branch_scope":"file","directory_branches":true,"directory_branch_creation":"inherit-directory-tree","directory_subtrees":true,"namespace_batch":true,"smb_default_branch":"selected-root-directory","file_manager":true,"historical_save_creates_branch":true,"merge_behavior":"explicit-file-node-adoption","file_branch_merge":true,"directory_branch_merge":false,"directory_merge_status":"design-pending","file_node_tags":true,"backup_configuration":true,"range_upload":false,"complete_upload":true,"max_upload_bytes":engine.config().max_file_bytes.to_string(),"authentication":"session-bearer-or-cookie","platforms":{"web":true,"cli":true,"native_app":"requires-platform-build"},"operations":["repositories","tree","workspace","commit","history","graph","branch","merge-link","file-branch-merge","file-node-tags","backup-configuration","purge-plan","split-plan","version-range-read","file-manager","file-branches","file-branch-rename","file-path-nodes","directory-branches","directory-subtrees","namespace-batch","default-branch","file-notes","system-status"]}),
             ),
-            "ready" => {
+            crate::BackendAction::Ready => {
                 if engine.is_read_only() {
                     return Err(ApiError::new(
                         503,
@@ -630,7 +570,7 @@ impl Backend for EngineBackend {
                 }
                 Ok(json!({"ready":true,"mode":mode,"sequence":sequence.to_string()}))
             }
-            "repositories" => {
+            crate::BackendAction::Repositories => {
                 let values = engine
                     .state()
                     .repositories
@@ -639,46 +579,23 @@ impl Backend for EngineBackend {
                     .collect::<Vec<_>>();
                 Ok(json!({"repositories":values}))
             }
-            "repository" => {
+            crate::BackendAction::Repository => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
                 authorize(identity, repo, false, false)?;
                 encode(repo)
             }
-            "branches" => {
+            crate::BackendAction::Branches => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
                 authorize(identity, repo, false, false)?;
                 Ok(
                     json!({"branches":engine.state().branches.values().filter(|branch|branch.history_tree_id==repo.history_tree_id).map(|branch| branch_wire(&engine, branch)).collect::<Result<Vec<_>, _>>()?}),
                 )
             }
-            "tree" => {
-                let branch = field(&input, "branch_id")?;
-                authorize(identity, repo_for_branch(&engine, branch)?, false, false)?;
-                let branch_info = engine.state().branches.get(branch).unwrap();
-                let commit = input
-                    .get("query")
-                    .and_then(|v| v.get("commit_id"))
-                    .and_then(Value::as_str)
-                    .unwrap_or(&branch_info.head_commit_id);
-                let snapshot = engine
-                    .state()
-                    .commits
-                    .get(commit)
-                    .filter(|commit| commit.history_tree_id == branch_info.history_tree_id)
-                    .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "commit not found"))?;
-                let entries = engine.list_tree_at(branch, commit).map_err(error)?;
-                let pending_file_versions = entries
-                    .iter()
-                    .filter_map(|entry| {
-                        pending_entry_source(&engine, branch, snapshot, entry)
-                            .map(|source| (entry.file_id.as_str(), source))
-                    })
-                    .collect::<std::collections::BTreeMap<_, _>>();
-                Ok(
-                    json!({"branch_id":branch,"commit_id":commit,"entries":entries,"pending_file_versions":pending_file_versions}),
-                )
+            crate::BackendAction::Tree => {
+                let projection = read_projection::Tree::capture(&engine, identity, &input)?;
+                read_projection::render_unlocked(engine, projection)
             }
-            "smb_binding" => {
+            crate::BackendAction::SmbBinding => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
                 authorize(identity, repo, false, true)?;
                 let history = engine
@@ -692,7 +609,7 @@ impl Backend for EngineBackend {
                     json!({"repository_id":repo.repository_id,"branch_id":repo.main_branch_id,"enabled":repo.smb_enabled,"history_generation":history.generation.to_string()}),
                 )
             }
-            "default_branch" => {
+            crate::BackendAction::DefaultBranch => {
                 let repo = repository(&engine, field(&input, "repository_id")?)?;
                 authorize(identity, repo, true, false)?;
                 let selected = engine.state().directory_selections.get(&repo.repository_id);
@@ -708,7 +625,7 @@ impl Backend for EngineBackend {
                     "directory_branch_id":selected,"name":name,"directory_branches":branches}),
                 )
             }
-            "directory_branch_scopes" => file_manager::directory_branch_scopes(
+            crate::BackendAction::DirectoryBranchScopes => file_manager::directory_branch_scopes(
                 &engine,
                 identity,
                 field(&input, "repository_id")?,
@@ -717,7 +634,7 @@ impl Backend for EngineBackend {
                     .and_then(|query| query.get("path"))
                     .and_then(Value::as_str),
             ),
-            "initialize_directory_scope" => {
+            crate::BackendAction::InitializeDirectoryScope => {
                 keys(&input, &["repository_id", "path", "operation_id"])?;
                 let repo = field(&input, "repository_id")?;
                 authorize(identity, repository(&engine, repo)?, true, false)?;
@@ -734,7 +651,7 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 operation_wire(&engine, result)
             }
-            "update_default_branch" => {
+            crate::BackendAction::UpdateDefaultBranch => {
                 keys(
                     &input,
                     &["repository_id", "directory_branch_id", "operation_id"],
@@ -751,7 +668,7 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 operation_wire(&engine, result)
             }
-            "rename_directory_branch" => {
+            crate::BackendAction::RenameDirectoryBranch => {
                 keys(
                     &input,
                     &[
@@ -774,7 +691,7 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 operation_wire(&engine, result)
             }
-            "update_smb_binding" => {
+            crate::BackendAction::UpdateSmbBinding => {
                 identity.require_admin()?;
                 keys(
                     &input,
@@ -807,7 +724,7 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 operation_wire(&engine, result)
             }
-            "set_grants" => {
+            crate::BackendAction::SetGrants => {
                 keys(&input, &["repository_id", "grants", "operation_id"])?;
                 let repository_id = field(&input, "repository_id")?;
                 authorize(identity, repository(&engine, repository_id)?, true, true)?;
@@ -829,7 +746,7 @@ impl Backend for EngineBackend {
                         .map_err(error)?,
                 )
             }
-            "resolve" => {
+            crate::BackendAction::Resolve => {
                 keys(&input, &["branch_id", "path", "commit_id"])?;
                 let branch_id = field(&input, "branch_id")?;
                 authorize(identity, repo_for_branch(&engine, branch_id)?, false, false)?;
@@ -867,12 +784,12 @@ impl Backend for EngineBackend {
                 }
                 Ok(response)
             }
-            "workspace" => sanitized(workspace_authorize(
+            crate::BackendAction::Workspace => sanitized(workspace_authorize(
                 &engine,
                 identity,
                 field(&input, "workspace_id")?,
             )?),
-            "plan" => {
+            crate::BackendAction::Plan => {
                 let plan = engine.plan(field(&input, "plan_id")?).map_err(error)?;
                 if plan.principal != identity.principal && !identity.admin {
                     return Err(ApiError::forbidden());
@@ -885,7 +802,7 @@ impl Backend for EngineBackend {
                 )?;
                 encode(plan)
             }
-            "create_repository" => {
+            crate::BackendAction::CreateRepository => {
                 identity.require_admin()?;
                 keys(
                     &input,
@@ -908,7 +825,7 @@ impl Backend for EngineBackend {
                         .map_err(error)?,
                 )
             }
-            "write_session" => {
+            crate::BackendAction::WriteSession => {
                 keys(&input, &["branch_id"])?;
                 let branch = field(&input, "branch_id")?;
                 authorize(identity, repo_for_branch(&engine, branch)?, true, false)?;
@@ -919,7 +836,7 @@ impl Backend for EngineBackend {
                     json!({"write_session_id":workspace.workspace_id,"workspace_id":workspace.workspace_id,"branch_id":workspace.branch_id,"principal":workspace.principal,"fencing_token":workspace.fencing_token.to_string(),"expires_at":workspace.created_at.saturating_add(engine.config().workspace_ttl_seconds).to_string(),"scope":"workspace","state":workspace.state}),
                 )
             }
-            "compare" => {
+            crate::BackendAction::Compare => {
                 keys(&input, &["left_commit_id", "right_commit_id"])?;
                 let left = field(&input, "left_commit_id")?;
                 let right = field(&input, "right_commit_id")?;
@@ -936,7 +853,7 @@ impl Backend for EngineBackend {
                 }
                 engine.compare_commits(left, right).map_err(error)
             }
-            "plan_cancel" => {
+            crate::BackendAction::PlanCancel => {
                 keys(&input, &["plan_id", "operation_id"])?;
                 let plan = engine.plan(field(&input, "plan_id")?).map_err(error)?;
                 if plan.principal != identity.principal && !identity.admin {
@@ -958,7 +875,7 @@ impl Backend for EngineBackend {
                         .map_err(error)?,
                 )
             }
-            "create_workspace" => {
+            crate::BackendAction::CreateWorkspace => {
                 keys(&input, &["branch_id", "source_commit_id"])?;
                 let branch = field(&input, "branch_id")?;
                 authorize(identity, repo_for_branch(&engine, branch)?, true, false)?;
@@ -974,7 +891,7 @@ impl Backend for EngineBackend {
                     };
                 sanitized(workspace)
             }
-            "branch" => {
+            crate::BackendAction::Branch => {
                 let id = field(&input, "branch_id")?;
                 authorize(identity, repo_for_branch(&engine, id)?, false, false)?;
                 branch_wire(
@@ -986,7 +903,7 @@ impl Backend for EngineBackend {
                         .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "branch not found"))?,
                 )
             }
-            "historical_save_plan" => {
+            crate::BackendAction::HistoricalSavePlan => {
                 keys(
                     &input,
                     &[
@@ -1010,11 +927,11 @@ impl Backend for EngineBackend {
                         .map_err(error)?,
                 )
             }
-            "workspace_authorize" => {
+            crate::BackendAction::WorkspaceAuthorize => {
                 workspace_authorize(&engine, identity, field(&input, "workspace_id")?)?;
                 Ok(json!({"authorized":true}))
             }
-            "workspace_selection_authorize" => {
+            crate::BackendAction::WorkspaceSelectionAuthorize => {
                 keys(&input, &["workspace_id", "path"])?;
                 let id = field(&input, "workspace_id")?;
                 workspace_authorize(&engine, identity, id)?;
@@ -1023,7 +940,7 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 Ok(json!({"authorized":true}))
             }
-            "upload_authorize" => {
+            crate::BackendAction::UploadAuthorize => {
                 keys(&input, &["workspace_id", "item_id", "logical_size"])?;
                 let workspace =
                     workspace_authorize(&engine, identity, field(&input, "workspace_id")?)?;
@@ -1061,7 +978,7 @@ impl Backend for EngineBackend {
                 }
                 Ok(json!({"authorized":true}))
             }
-            "upload_status" => {
+            crate::BackendAction::UploadStatus => {
                 let workspace =
                     workspace_authorize(&engine, identity, field(&input, "workspace_id")?)?;
                 let item = field(&input, "item_id")?;
@@ -1079,7 +996,7 @@ impl Backend for EngineBackend {
                     json!({"workspace_id":workspace.workspace_id,"item_id":item,"upload_generation":staged.dirty_generation.to_string(),"logical_size":staged.size.to_string(),"content_hash":staged.content_hash,"state":if sealed{"SEALED"}else{"COMPLETE"},"durable_ranges":if staged.size>0{vec![json!({"offset":"0","length":staged.size.to_string(),"content_hash":staged.content_hash})]}else{vec![]},"sealed_manifest_hash":manifest}),
                 )
             }
-            "namespace" => {
+            crate::BackendAction::Namespace => {
                 keys(&input, &["workspace_id", "kind", "path", "destination"])?;
                 let workspace = field(&input, "workspace_id")?;
                 let change = NamespaceOperation {
@@ -1097,7 +1014,7 @@ impl Backend for EngineBackend {
                     },
                 )?)
             }
-            "seal_workspace" => {
+            crate::BackendAction::SealWorkspace => {
                 keys(&input, &["workspace_id"])?;
                 let workspace =
                     workspace_authorize(&engine, identity, field(&input, "workspace_id")?)?;
@@ -1105,8 +1022,9 @@ impl Backend for EngineBackend {
                     .seal_workspace(&workspace.workspace_id, &workspace.principal)
                     .map_err(error)
             }
-            "commit_workspace" | "commit_workspace_internal" => {
-                if action == "commit_workspace" {
+            crate::BackendAction::CommitWorkspace
+            | crate::BackendAction::CommitWorkspaceInternal => {
+                if action == crate::BackendAction::CommitWorkspace {
                     keys(
                         &input,
                         &[
@@ -1147,7 +1065,7 @@ impl Backend for EngineBackend {
                     field(&input, key)?;
                 }
                 let workspace_id = field(&input, "workspace_id")?.to_owned();
-                let plan = if action == "commit_workspace" {
+                let plan = if action == crate::BackendAction::CommitWorkspace {
                     let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
                     Application::new(&mut engine, identity)
                         .prepare_commit_workspace_public(command)?
@@ -1187,7 +1105,7 @@ impl Backend for EngineBackend {
                     .finish_workspace_commit(&workspace_id, prepared)?;
                 operation_wire(&engine, result)
             }
-            "abort_workspace" => {
+            crate::BackendAction::AbortWorkspace => {
                 keys(&input, &["workspace_id"])?;
                 let id = field(&input, "workspace_id")?;
                 workspace_authorize(&engine, identity, id)?;
@@ -1196,7 +1114,7 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 Ok(json!({"workspace_id":id,"state":"aborted"}))
             }
-            "create_branch" => {
+            crate::BackendAction::CreateBranch => {
                 for key in ["repository_id", "source_commit_id", "name", "operation_id"] {
                     field(&input, key)?;
                 }
@@ -1204,14 +1122,14 @@ impl Backend for EngineBackend {
                 let branch = Application::new(&mut engine, identity).create_branch(command)?;
                 branch_wire(&engine, &branch)
             }
-            "archive" => {
+            crate::BackendAction::Archive => {
                 for key in ["branch_id", "operation_id"] {
                     field(&input, key)?;
                 }
                 let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
                 encode(Application::new(&mut engine, identity).archive_branch(command)?)
             }
-            "merge_link" => {
+            crate::BackendAction::MergeLink => {
                 for key in [
                     "history_tree_id",
                     "source_branch_id",
@@ -1225,7 +1143,7 @@ impl Backend for EngineBackend {
                 let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
                 encode(Application::new(&mut engine, identity).merge_link(command)?)
             }
-            "history" => {
+            crate::BackendAction::History => {
                 let file = field(&input, "file_id")?;
                 let versions = engine.file_history(file).map_err(error)?;
                 let visible = versions
@@ -1240,12 +1158,12 @@ impl Backend for EngineBackend {
                 }
                 Ok(json!({"file_id":file,"versions":visible}))
             }
-            "graph" => {
+            crate::BackendAction::Graph => {
                 let history = field(&input, "history_tree_id")?;
                 authorize(identity, repo_for_history(&engine, history)?, false, false)?;
                 encode(engine.graph(history).map_err(error)?)
             }
-            "commit" => {
+            crate::BackendAction::Commit => {
                 let commit = engine
                     .state()
                     .commits
@@ -1259,7 +1177,7 @@ impl Backend for EngineBackend {
                 )?;
                 encode(commit)
             }
-            "version" | "placement" => {
+            crate::BackendAction::Version | crate::BackendAction::Placement => {
                 let id = field(&input, "version_id")?;
                 let version = engine
                     .state()
@@ -1272,7 +1190,7 @@ impl Backend for EngineBackend {
                     false,
                     false,
                 )?;
-                if action == "version" {
+                if action == crate::BackendAction::Version {
                     let mut value = encode(version)?;
                     value["content_state"] = engine
                         .state()
@@ -1290,7 +1208,7 @@ impl Backend for EngineBackend {
                     )
                 }
             }
-            "operation" => {
+            crate::BackendAction::Operation => {
                 let operation_id = field(&input, "operation_id")?;
                 let operation = engine.operation(operation_id).map_err(error)?;
                 if !identity.admin
@@ -1305,7 +1223,7 @@ impl Backend for EngineBackend {
                 }
                 operation_wire(&engine, operation)
             }
-            "purge_plan" => {
+            crate::BackendAction::PurgePlan => {
                 keys(&input, &["history_tree_id", "version_ids"])?;
                 let history = field(&input, "history_tree_id")?;
                 authorize(identity, repo_for_history(&engine, history)?, true, true)?;
@@ -1322,7 +1240,7 @@ impl Backend for EngineBackend {
                         .map_err(error)?,
                 )
             }
-            "split_plan" => {
+            crate::BackendAction::SplitPlan => {
                 keys(&input, &["history_tree_id", "cut_commit_id"])?;
                 let history = field(&input, "history_tree_id")?;
                 authorize(identity, repo_for_history(&engine, history)?, true, true)?;
@@ -1336,14 +1254,14 @@ impl Backend for EngineBackend {
                         .map_err(error)?,
                 )
             }
-            "plan_commit" => {
+            crate::BackendAction::PlanCommit => {
                 for key in ["plan_id", "operation_id", "plan_digest"] {
                     field(&input, key)?;
                 }
                 let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
                 encode(Application::new(&mut engine, identity).commit_plan(command)?)
             }
-            "policy" => {
+            crate::BackendAction::Policy => {
                 let policy = engine
                     .state()
                     .protection_policies
@@ -1359,7 +1277,7 @@ impl Backend for EngineBackend {
                 )?;
                 encode(policy)
             }
-            "placement_rule" => {
+            crate::BackendAction::PlacementRule => {
                 let rule = engine
                     .state()
                     .placement_rules
@@ -1373,7 +1291,7 @@ impl Backend for EngineBackend {
                 )?;
                 encode(rule)
             }
-            "update_policy" => {
+            crate::BackendAction::UpdatePolicy => {
                 keys(
                     &input,
                     &[
@@ -1412,7 +1330,7 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 operation_wire(&engine, result)
             }
-            "update_placement_rule" => {
+            crate::BackendAction::UpdatePlacementRule => {
                 keys(
                     &input,
                     &[
@@ -1446,23 +1364,23 @@ impl Backend for EngineBackend {
                     .map_err(error)?;
                 operation_wire(&engine, result)
             }
-            "check" => {
+            crate::BackendAction::Check => {
                 identity.require_admin()?;
                 encode(engine.check().map_err(error)?)
             }
-            "disks" => {
+            crate::BackendAction::Disks => {
                 identity.require_admin()?;
                 let observation = engine.prepare_disk_observation();
                 drop(engine);
                 encode(json!({"disks":observation.status().map_err(error)?}))
             }
-            "topology" => {
+            crate::BackendAction::Topology => {
                 identity.require_admin()?;
                 Ok(
                     json!({"topology_id":"default","generation":engine.state().topology_generation.to_string(),"slots":engine.config().disks.iter().map(|disk|json!({"slot_id":disk.slot_id,"disk_id":disk.disk_id,"level":disk.level,"upstream_slot_id":disk.upstream_slot_id,"metadata_member":disk.metadata_member,"binding_generation":disk.binding_generation.to_string()})).collect::<Vec<_>>()}),
                 )
             }
-            "events" => {
+            crate::BackendAction::Events => {
                 let after = zxs_contract::parse_u64_decimal(
                     input
                         .get("query")
@@ -1504,7 +1422,7 @@ impl Backend for EngineBackend {
                 }
                 Ok(json!({"events":events,"next_cursor":inspected.to_string()}))
             }
-            "register_disk" => {
+            crate::BackendAction::RegisterDisk => {
                 identity.require_admin()?;
                 Err(ApiError::new(
                     409,
@@ -1512,7 +1430,6 @@ impl Backend for EngineBackend {
                     "disk registration requires an explicit offline configuration and topology migration",
                 ))
             }
-            _ => Err(ApiError::unsupported()),
         }
     }
     fn upload(
@@ -1675,5 +1592,128 @@ impl Backend for EngineBackend {
         let plan = engine.prepare_content(version).map_err(error)?;
         drop(engine);
         plan.checksums().map_err(error)
+    }
+}
+
+#[cfg(test)]
+mod authorization_tests {
+    use super::*;
+    use std::collections::BTreeSet;
+
+    #[test]
+    fn preparation_conflicts_retain_retryable_contract() {
+        for code in [
+            "COMMIT_PREPARATION_BUSY",
+            "COMMIT_PREPARATION_STALE",
+            "PREPARATION_STALE",
+        ] {
+            let mapped = error(zxs_core::Error::new(code, "retry preparation").retryable());
+            assert_eq!(mapped.status, 409);
+            assert_eq!(mapped.code, code);
+            assert!(mapped.retryable);
+        }
+    }
+
+    #[test]
+    fn upload_generation_and_lease_errors_preserve_conflict_status() {
+        for (core_code, api_code) in [
+            ("STALE_UPLOAD_GENERATION", "UPLOAD_GENERATION_CONFLICT"),
+            ("UPLOAD_GENERATION_CONFLICT", "UPLOAD_GENERATION_CONFLICT"),
+            ("FENCING_TOKEN_EXPIRED", "LEASE_EXPIRED"),
+        ] {
+            let error = error(zxs_core::Error::new(core_code, "retry needs new state"));
+            assert_eq!(error.status, 409, "{core_code}");
+            assert_eq!(error.code, api_code);
+        }
+    }
+
+    #[test]
+    fn transport_acl_matches_core_capabilities_and_preserves_account_admission() {
+        let mut repository = Repository {
+            repository_id: "repository".into(),
+            name: "Repository".into(),
+            history_tree_id: "history".into(),
+            main_branch_id: "branch".into(),
+            primary_slot_id: "P01".into(),
+            target_copies: 3,
+            name_policy: "PortableNameV2".into(),
+            unicode_version: "16.0.0".into(),
+            grants: Grants::default(),
+            account_scope_repository_id: None,
+            smb_enabled: false,
+            file_manager_root: false,
+        };
+        let mut identity = Identity {
+            principal: "user".into(),
+            admin: false,
+            repositories: BTreeSet::from([repository.repository_id.clone()]),
+        };
+        for bits in 0..8 {
+            repository.grants = Grants::default();
+            if bits & 1 != 0 {
+                repository.grants.read.insert("user".into());
+            }
+            if bits & 2 != 0 {
+                repository.grants.write.insert("user".into());
+            }
+            if bits & 4 != 0 {
+                repository.grants.manage.insert("user".into());
+            }
+            for access in [
+                RepositoryAccess::Read,
+                RepositoryAccess::Write,
+                RepositoryAccess::Manage,
+            ] {
+                assert_eq!(
+                    authorize_access(&identity, &repository, access).is_ok(),
+                    repository.grants.allows("user", access)
+                );
+                identity.repositories.clear();
+                assert!(authorize_access(&identity, &repository, access).is_err());
+                identity.admin = true;
+                assert!(authorize_access(&identity, &repository, access).is_ok());
+                identity.admin = false;
+                identity
+                    .repositories
+                    .insert(repository.repository_id.clone());
+            }
+        }
+    }
+
+    #[test]
+    fn split_repository_accepts_independent_account_admission_and_still_requires_its_own_acl() {
+        let mut repository = Repository {
+            repository_id: "new repository".into(),
+            name: "Independent split".into(),
+            history_tree_id: "history".into(),
+            main_branch_id: "branch".into(),
+            primary_slot_id: "P01".into(),
+            target_copies: 3,
+            name_policy: "PortableNameV2".into(),
+            unicode_version: "16.0.0".into(),
+            grants: Grants::owner("reader"),
+            account_scope_repository_id: Some("source repository".into()),
+            smb_enabled: false,
+            file_manager_root: false,
+        };
+        let direct = Identity {
+            principal: "reader".into(),
+            admin: false,
+            repositories: BTreeSet::from([repository.repository_id.clone()]),
+        };
+        let inherited = Identity {
+            repositories: BTreeSet::from(["source repository".into()]),
+            ..direct.clone()
+        };
+        assert!(authorize(&direct, &repository, false, false).is_ok());
+        assert!(authorize(&inherited, &repository, false, false).is_ok());
+        let unrelated = Identity {
+            repositories: BTreeSet::from(["unrelated repository".into()]),
+            ..direct.clone()
+        };
+        assert!(authorize(&unrelated, &repository, false, false).is_err());
+        repository.grants = Grants::default();
+        assert!(authorize(&direct, &repository, false, false).is_err());
+        assert!(authorize(&inherited, &repository, false, false).is_err());
     }
 }

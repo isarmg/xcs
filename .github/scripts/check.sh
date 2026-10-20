@@ -4,6 +4,12 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 case "${1:-}" in
+  quality)
+    bash .github/scripts/quality.sh
+    ;;
+  security)
+    bash .github/scripts/security.sh
+    ;;
   workspace)
     cargo test --locked --workspace
     ;;
@@ -54,6 +60,8 @@ case "${1:-}" in
   desktop-host)
     test -s web/dist/build-manifest.json
     cargo run --locked --manifest-path tools/web-build/Cargo.toml -- icons --product-root .
+    cargo fmt --manifest-path apps/host/Cargo.toml -- --check
+    cargo clippy --locked --manifest-path apps/host/Cargo.toml --all-targets -- -D warnings
     cargo check --locked --manifest-path apps/host/Cargo.toml
     ;;
   browser-smoke)
@@ -67,7 +75,7 @@ case "${1:-}" in
       --cli-bin "$PWD/target/native/debug/zxs" --web-dir "$PWD/web/dist" "${screenshot_args[@]}"
     ;;
   *)
-    echo 'Usage: check.sh {workspace|apps|web|contracts|build-tools|demo|smb-protocol|web-production|desktop-host|browser-smoke}' >&2
+    echo 'Usage: check.sh {quality|security|workspace|apps|web|contracts|build-tools|demo|smb-protocol|web-production|desktop-host|browser-smoke}' >&2
     exit 2
     ;;
 esac

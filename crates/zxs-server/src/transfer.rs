@@ -2,7 +2,7 @@
 //!
 //! The backend owns storage authorization and publication. This boundary owns
 //! request limits, byte ranges, staging progress and the read-lease lifetime.
-use crate::{ApiError, AppState, Content, auth::Identity, auth_primitives, lock, uploads};
+use crate::{ApiError, AppState, Content, auth::Identity, lock, uploads};
 use axum::{
     Json,
     body::Body,
@@ -32,7 +32,7 @@ pub(crate) async fn upload_status(
     let item_id = item.clone();
     tokio::task::spawn_blocking(move || {
         backend.call(
-            "workspace_authorize",
+            crate::BackendAction::WorkspaceAuthorize,
             &owner,
             json!({"workspace_id":ws,"item_id":item_id}),
         )
@@ -45,7 +45,7 @@ pub(crate) async fn upload_status(
     let item_id = item.clone();
     let published = match tokio::task::spawn_blocking(move || {
         backend.call(
-            "upload_status",
+            crate::BackendAction::UploadStatus,
             &owner,
             json!({"workspace_id":ws,"item_id":item_id}),
         )
@@ -198,7 +198,7 @@ pub(crate) async fn upload(
     let item_id = item.clone();
     tokio::task::spawn_blocking(move || {
         backend.call(
-            "upload_authorize",
+            crate::BackendAction::UploadAuthorize,
             &owner,
             json!({"workspace_id":ws,"item_id":item_id,"logical_size":expected_length.to_string()}),
         )
@@ -248,7 +248,7 @@ pub(crate) async fn upload(
     }
     let data_file = format!(
         "upload-{}.data",
-        auth_primitives::random_token().map_err(ApiError::invalid)?
+        zxs_auth::random_token().map_err(ApiError::invalid)?
     );
     let path = spool.join(&data_file);
     let create_path = path.clone();
@@ -495,7 +495,7 @@ pub(crate) async fn content(
         }
         let logical_name = if let (Some(repo), Some(path)) = (query.repository_id, query.path) {
             let metadata = state.backend.call(
-                "file_manager_download_context",
+                crate::BackendAction::FileManagerDownloadContext,
                 &identity,
                 json!({
                     "repository_id":repo,"path":path,"version_id":version

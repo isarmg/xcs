@@ -19,6 +19,7 @@ use std::{
 mod accessibility;
 mod demo;
 mod diagnostics;
+mod fonts;
 mod lifecycle;
 mod platform_previews;
 mod session_delivery;
@@ -502,6 +503,7 @@ fn exercise(
     }
     println!("PASS uncaught-error and real HTTP/WASM response checks");
     lifecycle::run(browser, origin)?;
+    fonts::run(browser, origin)?;
     Ok(())
 }
 
@@ -627,7 +629,7 @@ fn run() -> Result<()> {
             "POST",
             "/session",
             Some(
-                json!({"capabilities":{"alwaysMatch":{"browserName":"chrome","goog:chromeOptions":chrome,"goog:loggingPrefs":{"browser":"ALL","performance":"ALL"}}}}),
+                json!({"capabilities":{"alwaysMatch":{"browserName":"chrome","pageLoadStrategy":"eager","goog:chromeOptions":chrome,"goog:loggingPrefs":{"browser":"ALL","performance":"ALL"}}}}),
             ),
         )?;
         let response: Value = serde_json::from_slice(&body)?;

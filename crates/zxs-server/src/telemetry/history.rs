@@ -218,10 +218,10 @@ impl HistoryStore {
         if error.is_some() {
             self.directory = None;
         }
-        if self.last_maintenance_minute != now / 60 {
-            if let Err(failure) = self.maintenance(now) {
-                error = Some(failure);
-            }
+        if self.last_maintenance_minute != now / 60
+            && let Err(failure) = self.maintenance(now)
+        {
+            error = Some(failure);
         }
         match error {
             Some(error) => Err(error),

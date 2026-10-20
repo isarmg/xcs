@@ -199,16 +199,15 @@ impl Publication<'_> {
                 .entries
                 .iter()
                 .find(|entry| entry.kind == "file" && entry.file_id == self.file)
+                && let Some(context) = tree.file_contexts.get(&entry.lookup_key)
             {
-                if let Some(context) = tree.file_contexts.get(&entry.lookup_key) {
-                    tree.file_branches
-                        .insert(self.file.into(), context.branch_id.clone());
-                    if let Some(origin) = &context.inherited_from {
-                        tree.inherited_files
-                            .insert(self.file.into(), origin.clone());
-                    } else {
-                        tree.inherited_files.remove(self.file);
-                    }
+                tree.file_branches
+                    .insert(self.file.into(), context.branch_id.clone());
+                if let Some(origin) = &context.inherited_from {
+                    tree.inherited_files
+                        .insert(self.file.into(), origin.clone());
+                } else {
+                    tree.inherited_files.remove(self.file);
                 }
             }
             let previous = state
@@ -280,6 +279,10 @@ impl Publication<'_> {
 /// Publish only matching exact references. Historical child compositions are
 /// rewritten from their own frozen tree, never replaced by a child's new HEAD.
 /// No payload, version proof, namespace path or physical owner is changed.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "Publication arguments keep frozen source and destination identities explicit; tracked request-type migration in .github/QUALITY.md"
+)]
 pub(crate) fn publish_node(
     state: &mut State,
     file: &str,

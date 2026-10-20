@@ -1,6 +1,6 @@
 # ZXS SMB 桥接
 
-本目录包含 `zxs-smb` 本机协议与 `zxs-smb-vfs` Rust 模块。已用官方 Samba 4.23.0 实际编译 SDK、构建 release 模块、加载 `smbd`，并通过官方客户端的 SMB3.11 文件往返。完整证据及未测范围见[实测记录](../../tests/evidence/smb/README.md)。这不是跨平台应用、生产认证配置或故障恢复矩阵全部通过的声明。
+本目录包含 `zxs-smb` 本机协议与 `zxs-smb-vfs` Rust 模块。已重新使用官方 Samba 4.23.0 编译 SDK 并验证 VFS。2026-10-18 的文档另报告过加载 `smbd` 和官方客户端 SMB3.11 文件往返，但其原始日志不在当前 checkout，本轮未重新验证该运行时结果。当前可复核记录、历史声明与未测范围见[验证记录](../../tests/evidence/smb/README.md)。这不是跨平台应用、生产认证配置或故障恢复矩阵全部通过的声明。
 
 ## 目录与职责
 
@@ -70,7 +70,7 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline --manifest-path integrations/
 
 构建需要 libclang。`build.rs` 检查源码 `VERSION` 和 `source3/include/vfs.h` 的接口版本，然后从 `includes.h`、`smbd/smbd.h`、`smbd/globals.h` 生成实际 ABI。不同 configure 的额外 include/define 参数必须来自对应 SDK；缺失时构建失败，不能换成猜测的类型定义。
 
-模块文件生成在 `target/native/release/libzxs_smb_vfs.so`，按目标 SDK 的模块路径提供 `zxs.so`。已验证 release 文件 SHA-256：`606ad728c0db2ac2daa2f6fe742ebdfe2c0474e799721163cafb956c7b5b3425`。SDK 测试还需要链接配置对应的 tevent/talloc 库。
+模块文件生成在 `target/native/release/libzxs_smb_vfs.so`，按目标 SDK 的模块路径提供 `zxs.so`。2026-10-20 本轮 SDK 配置下的 release 文件 SHA-256：`c72636bbdb5aa31b8b217f7b503828447edeb7fa4b85663dcae9f011c8eadce2`（不是跨平台或跨 SDK 配置的固定产物摘要）。SDK 测试还需要链接配置对应的 tevent/talloc 库。
 
 共享配置的基本形状如下。模块参数使用独立键，不能用逗号拼进 `vfs objects`：
 
@@ -94,7 +94,7 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline --manifest-path integrations/
     follow symlinks = no
 ```
 
-`path` 只能是专用空目录，不能指向版本目录、数据盘根或工作区。实际测试中该目录保持为空，所有内容来自核心 FD。完整实测配置已通过 `testparm`；其 loopback、guest Unix UID 为 root 的测试设置用于验证受限非管理员 ZXS 映射，不是生产认证模板，也不能证明普通 Unix 用户切换时的连接权限。生产用户认证、SMB 最低版本、签名、加密及可信 UID 的完整链路仍须单独验收。
+`path` 只能是专用空目录，不能指向版本目录、数据盘根或工作区。历史文档报告测试目录保持为空、配置通过 `testparm`，但当前缺少其原始日志，本轮未重跑；当时 loopback、guest Unix UID 为 root 的测试设置用于验证受限非管理员 ZXS 映射，不是生产认证模板，也不能证明普通 Unix 用户切换时的连接权限。生产用户认证、SMB 最低版本、签名、加密及可信 UID 的完整链路仍须单独验收。
 
 ## 验证范围
 
@@ -102,17 +102,29 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline --manifest-path integrations/
 
 - 协议与客户端测试 6 项：实际 Unix socket SCM_RIGHTS 转交及 CLOEXEC、超长帧头拒绝、远端错误保留 code/operation_id 并映射文件系统 errno，以及非法帧后拒绝遗留成功响应、发送失败使所有 clone 断开、业务错误后连接仍可用。
 - 服务端桥接测试 9 项：真实开发模式三盘核心的完整保存与旧版本读、实际发布后丢回执并重试、同文件跨会话锁与 close 保存、不同文件交错发布、命名空间局部锁与仅大小写替换、丢回执后的新字节保留、外部改动拒绝覆盖并保留暂存、任务取消清理，以及已开读句柄的实时撤权。
-- SDK 真实库测试 5 项：共享根绝对路径隔离、失败查询保留调用者文件名、异步等待不阻塞宿主事件循环、取消后不触碰已释放宿主状态，以及锁失败或保存失败仍关闭已移除句柄。历史 SMB 服务实测记录中的 4 项是当时的测试快照；本轮只重新执行 SDK 单元测试，未重启 `smbd`。
-- 真实官方客户端：`SMB3_11`、模块加载、新文件 83 字节保存并成功 CLOSE、3407872 字节往返比对、43 字节原子覆盖、仅大小写改名及不区分大小写再打开。子目录创建与子文件另在扩展测试执行；最终脱敏原始批次见证据目录。
+- SDK 真实库测试 7 项：共享根绝对路径隔离、失败查询保留调用者文件名、异步等待不阻塞宿主事件循环、取消后不触碰已释放宿主状态、锁失败或保存失败仍关闭已移除句柄，以及输入空值/长度检查与异步结果越界拒绝。历史 SMB 服务实测记录中的 4 项是当时的测试快照；本轮只重新执行 SDK 单元测试，未重启 `smbd`。
+- 历史文档报告的官方客户端（原始日志当前不可用，本轮未重跑）：`SMB3_11`、模块加载、新文件 83 字节保存并成功 CLOSE、3407872 字节往返比对、43 字节原子覆盖、仅大小写改名及不区分大小写再打开。子目录创建与子文件另在扩展测试执行；原始批次当前不在 checkout，不能当作本轮可复核证据。
 - 测试命令：`cargo test --manifest-path integrations/smb/Cargo.toml -p zxs-smb`；`cargo test -p zxs-server smb_rpc::tests`。环境隔离禁止 Unix socket 时需在具备对应能力的测试环境运行，不能将该限制写成测试通过。
 
 尚未执行：真实客户端 write-through/FLUSH、Windows/macOS/移动端应用保存与临时文件多句柄矩阵、断网重连、故障注入、真实设备掉电及多账户认证部署。文件存在活动写句柄时，覆盖该路径的命名空间变更会拒绝，不能将已测的关闭后改名解释为所有编辑器保存模式均可用。当前未完整建模文件系统时间戳，剩余空间报告仍来自宿主文件系统，不能当作保护路由可用容量。
 
-`testparm` 的测试进程以私有目录 `0700` 运行，产生建议 `0755` 的浏览警告；实际共享列目录成功。没有为消除警告放宽核心私有 socket 或目录权限。本轮仅启动并停止本地隔离测试进程，未安装系统服务或公开网络端口。
+历史文档报告 `testparm` 在私有目录 `0700` 上产生建议 `0755` 的浏览警告，同时共享列目录成功，并称未为消除警告放宽核心私有 socket 或目录权限；这些原始日志当前不可复核。2026-10-20 本轮仅构建 SDK/模块和执行单元测试，没有启动 `smbd`、安装系统服务或公开网络端口。
 
 恢复时先查询 `*.work.json` 记录的 `operation_id`：若已发布，保留原发布结果；若未决，先恢复核心事务。`published` 仅描述最后核对的操作结果，不保证暂存 FD 当前所有字节都已发布。`descriptor_changes_unconfirmed: true` 表示可写 FD 交出后，仍可能存在尚未收到 `Dirty` 通知的修改；即使 `published: true` 且 `dirty: false`，也必须保留并核对暂存文件，不能据此删除或自动提交后续字节。管理员可先导出完整暂存文件，再决定如何恢复或放弃对应工作区。当前没有自动重新挂接旧 SMB 句柄的能力。
 
 断连时无法证明可写 FD 未发生修改，因此普通无写打开、以及成功 FLUSH 后的断连，也会保守保留暂存和恢复记录，不创建新历史版本；这会占用额外空间，应按恢复流程核对后处理。正常收到并完成显式 CLOSE（或显式放弃）仍清理该句柄的暂存文件与恢复记录。
+
+## FFI 安全与持续验证
+
+手写 VFS 代码启用 `unsafe_op_in_unsafe_fn` 与 `clippy::undocumented_unsafe_blocks` 的 deny 检查；仅由 bindgen 生成的 SDK 代码豁免安全注释 lint，不豁免手写模块。每个不安全边界说明有效指针、长度、所有权或宿主事件循环约束。空值检查不能证明非空裸指针有效，也不能替代匹配的 ABI。同步写入在宿主边界验证空值/长度后转为借用切片，工作线程使用自己的缓冲区；不再由安全函数接收可解引用的任意裸指针。
+
+CI 的独立 `smb-sdk` job 调用 `.github/scripts/smb-sdk.sh`，下载固定官方 Samba 4.23.0 tar（SHA-256 `b0cb963a63eb1515227f3779a46d3a7f790c1bbfeeb4b31fd43e405eefe7a3af`），编译真实 SDK、生成头文件与依赖库，再执行 VFS 全目标 Clippy、SDK 单元测试及 release 模块构建。缓存包含配置后的源码与生成头文件，键包含构建脚本摘要。运行前需要脚本对应的 Ubuntu 开发依赖；脚本不自动安装包、不启动或安装 Samba，也不改宿主服务配置。
+
+```sh
+bash .github/scripts/smb-sdk.sh
+```
+
+此 job 验证真实 ABI 的编译和事件/内存库单元测试，不等于运行 `smbd` 或真实客户端互操作测试；`smb-protocol` job 仍只验证本机 RPC 协议。源码 tar 校验固定摘要，不宣称验证了发行签名。
 
 ## 依赖与许可
 

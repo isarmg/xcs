@@ -182,7 +182,7 @@ fn persist_inner(
     let target = root.join(format!("{name}.json"));
     let temporary = root.join(format!(
         "{name}.json.tmp-{}",
-        crate::auth_primitives::random_token().map_err(ApiError::invalid)?
+        zxs_auth::random_token().map_err(ApiError::invalid)?
     ));
     let mut options = OpenOptions::new();
     options.create_new(true).write(true);
@@ -213,7 +213,7 @@ pub(crate) fn retain_generation(root: &Path, record: &UploadRecord) -> Result<()
         "retained-{}-{}-{}.json",
         key(&record.workspace_id, &record.item_id),
         record.generation,
-        crate::auth_primitives::random_token().map_err(ApiError::invalid)?
+        zxs_auth::random_token().map_err(ApiError::invalid)?
     ));
     let mut options = OpenOptions::new();
     options.create_new(true).write(true);

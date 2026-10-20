@@ -86,6 +86,10 @@ struct Scene {
 fn row(text: &'static str, tone: Tone) -> Row {
     Row { text, tone }
 }
+#[expect(
+    clippy::too_many_arguments,
+    reason = "Reference diagram nodes declare independent geometry and labels; migrate to named render inputs with the plan in .github/QUALITY.md"
+)]
 fn node(
     id: &'static str,
     x: f64,
@@ -2494,12 +2498,12 @@ fn html(scenes: &[Scene], svgs: &[String]) -> String {
         write!(o,"#case-{i}:checked~.app .panel[data-case='{i}']{{display:block}}#case-{i}:checked~.app label[for='case-{i}']{{background:#eaf1fc;color:#234f91;font-weight:600}}#case-{i}:checked~.app label[for='case-{i}'] .num{{color:#376db6}}/*{}*/",s.id).unwrap();
     }
     o.push_str("</style></head><body>");
-    for i in 0..scenes.len() {
+    for (i, scene) in scenes.iter().enumerate() {
         write!(
             o,
             "<input class='case-radio' type='radio' name='case' id='case-{i}' aria-label='{}' {}>",
-            esc(scenes[i].short),
-            if scenes[i].id == "24-file-merge-reuse" {
+            esc(scene.short),
+            if scene.id == "24-file-merge-reuse" {
                 "checked"
             } else {
                 ""

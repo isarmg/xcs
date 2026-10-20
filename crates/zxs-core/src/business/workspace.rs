@@ -112,14 +112,14 @@ pub struct PreparedUpload {
 }
 impl Drop for PreparedUpload {
     fn drop(&mut self) {
-        if let Some(path) = &self.scratch {
-            if let Some(name) = path.file_name() {
-                let _ = rustix::fs::unlinkat(
-                    self.plan.directory_handle.directory(),
-                    name,
-                    rustix::fs::AtFlags::empty(),
-                );
-            }
+        if let Some(path) = &self.scratch
+            && let Some(name) = path.file_name()
+        {
+            let _ = rustix::fs::unlinkat(
+                self.plan.directory_handle.directory(),
+                name,
+                rustix::fs::AtFlags::empty(),
+            );
         }
     }
 }
@@ -328,7 +328,11 @@ impl Engine {
     }
     pub fn create_workspace(&mut self, branch_id: &str, principal: &str) -> Result<Workspace> {
         self.require_write()?;
-        self.require_grant(self.repository_for_branch(branch_id)?, principal, "write")?;
+        self.require_grant(
+            self.repository_for_branch(branch_id)?,
+            principal,
+            zxs_contract::RepositoryAccess::Write,
+        )?;
         if self
             .workspaces
             .values()
@@ -413,7 +417,7 @@ impl Engine {
         self.require_grant(
             self.repository_for_branch(&w.branch_id)?,
             &w.principal,
-            "write",
+            zxs_contract::RepositoryAccess::Write,
         )?;
         Ok(w)
     }
@@ -475,10 +479,10 @@ impl Engine {
             .get(&w.base_head)
             .ok_or_else(|| Error::new("STATE_INVALID", "workspace base is absent"))?;
         let base_entry = find(&base.entries, path).cloned();
-        if w.purpose == "normal" {
-            if let Some(entry) = base_entry.as_ref().filter(|e| e.kind == "file") {
-                validate_file_selection(&self.state, &w, &entry.file_id, path)?;
-            }
+        if w.purpose == "normal"
+            && let Some(entry) = base_entry.as_ref().filter(|e| e.kind == "file")
+        {
+            validate_file_selection(&self.state, &w, &entry.file_id, path)?;
         }
         if base_entry
             .as_ref()
@@ -851,7 +855,7 @@ impl Engine {
                 prepared,
                 result,
             } => {
-                self.persist(next, prepared, result.clone())?;
+                self.persist(*next, prepared, result.clone())?;
                 result
             }
         };
@@ -895,7 +899,7 @@ impl Engine {
         self.require_grant(
             self.repository_for_branch(&w.branch_id)?,
             &request.principal,
-            "write",
+            zxs_contract::RepositoryAccess::Write,
         )?;
         if w.principal != request.principal || w.fencing_token != request.fencing_token {
             return Err(Error::new(
@@ -945,7 +949,7 @@ impl Engine {
                 let base = state.commits.get(&w.base_head)
                     .ok_or_else(|| Error::new("STATE_INVALID", "workspace base missing"))?;
                 let repo = engine.repository_for_branch(&w.branch_id)?;
-                engine.require_grant(repo, &request.principal, "write")?;
+                engine.require_grant(repo, &request.principal, zxs_contract::RepositoryAccess::Write)?;
                 for file in w.files.values() {
                     validate_directory_selection(state, &w, &file.path)?;
                     let existing = find(&current.entries, &file.path);
@@ -1011,7 +1015,7 @@ impl Engine {
                         file_paths::source_node(state,&file_id,source_ids.first().map(String::as_str).unwrap_or(""),node)?;
                         state.file_node_parents.insert(version.version_id.clone(),vec![node.clone()]);
                     }
-                    if let Some(repo)=state.repositories.values().find(|r|r.main_branch_id==w.branch_id) {if let Some(context)=state.file_contexts.get_mut(&directory::context_key(&repo.repository_id,&file.path)){context.node_id=None;}}
+                    if let Some(repo)=state.repositories.values().find(|r|r.main_branch_id==w.branch_id)&& let Some(context)=state.file_contexts.get_mut(&directory::context_key(&repo.repository_id,&file.path)){context.node_id=None;}
                     let entry = Entry {
                         entry_id: existing.as_ref().map(|entry| entry.entry_id.clone()).unwrap_or_else(|| file.item_id.clone()),
                         path: file.path.clone(), name: file.path.rsplit('/').next().unwrap_or("").into(),
@@ -1091,7 +1095,7 @@ impl Engine {
         )?;
         write_json(
             &self
-                .workspace_data_directory(&w)?
+                .workspace_data_directory(w)?
                 .join("commit-request.json"),
             &request,
             true,
@@ -1139,6 +1143,10 @@ impl Engine {
             .insert(completed.workspace_id.clone(), completed);
         Ok(result)
     }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "Sealing needs separate source, placement and checkpoint inputs; tracked request-type migration in .github/QUALITY.md"
+    )]
     pub(crate) fn build_version(
         &self,
         state: &mut State,

@@ -83,7 +83,7 @@ zxs/
 ├── docs/
 │   ├── README.md               # 文档导航
 │   ├── getting-started.md      # 本地运行
-│   ├── 21-ci.md                # 持续集成
+│   ├── ci.md                # 持续集成
 │   ├── release.md              # 发布与安装
 │   ├── 01-…25-*.md             # 编号规范手册
 │   ├── design/                 # 分支、合并、标签和备份等专题规则
@@ -112,7 +112,7 @@ zxs/
 
 文档可链接本地验证结果；源码副本中未必包含这些文件。契约校验会单独统计声明验证目录中的生成物链接及缺失数量，存在时检查目标，不将缺失的本地生成物当作源码断链。规范、schema、固定样例、Markdown 说明及检查脚本的链接仍必须存在，路径越界和符号链接越界也仍拒绝。若要审阅具体执行证据，应运行对应检查或从独立归档取得材料，不能只凭源码副本的文档检查认定验收已完成。
 
-认证算法在独立可移植 `zxs-auth` 中只有一个实现；服务端 `auth_primitives` 与平台 `admin_auth` 保留原公开路径的兼容导出，业务会话持久化仍属于服务端。
+认证算法在独立可移植 `zxs-auth` 中只有一个实现；服务端与 CLI 直接依赖 `zxs-auth`，服务端与平台均不保留旧认证路径兼容导出，业务会话持久化仍属于服务端。
 
 核心按责任拆分：business/repository 管仓库与共享绑定，workspace 管完整上传和提交，history 管文件历史和关系，namespace 管路径，file 管共享文件分支与备注，directory 管稳定目录分支、不可变子树、选择及默认视图。container_storage 管普通正文唯一路径、真实容器改名、继承缓存与旧 stub 清理；边界见其[README](../crates/zxs-core/src/container_storage/README.md)。engine/{publication,recovery,reads,index,workspace_storage} 管发布、恢复、读取、索引和工作区；journal 管状态分页及证明，metadata_budget 管决定前限额，maintenance 管计划/清理/兼容拆分，history_package 管完整恢复闭包，repair/degraded_recovery 区分可修复与永久损失。入口复用核心规则，不直接操作业务盘。
 

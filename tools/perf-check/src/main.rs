@@ -67,7 +67,9 @@ fn disk_bytes(root: &Path) -> Result<Value> {
                 if name.contains("/metadata/objects/") {
                     counts[3] += n;
                     if let Some(kind) = p.parent().and_then(Path::file_name) {
-                        let entry = kinds.entry(kind.to_string_lossy().into_owned()).or_default();
+                        let entry = kinds
+                            .entry(kind.to_string_lossy().into_owned())
+                            .or_default();
                         entry.0 += n;
                         entry.1 += 1;
                     }

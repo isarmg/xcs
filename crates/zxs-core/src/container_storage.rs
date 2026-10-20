@@ -546,10 +546,10 @@ fn changed_files(previous: &State, next: &State) -> BTreeSet<String> {
         .keys()
         .chain(next.file_node_parents.keys())
     {
-        if previous.file_node_parents.get(id) != next.file_node_parents.get(id) {
-            if let Some(version) = next.versions.get(id).or_else(|| previous.versions.get(id)) {
-                files.insert(version.file_id.clone());
-            }
+        if previous.file_node_parents.get(id) != next.file_node_parents.get(id)
+            && let Some(version) = next.versions.get(id).or_else(|| previous.versions.get(id))
+        {
+            files.insert(version.file_id.clone());
         }
     }
     for key in previous
@@ -608,14 +608,13 @@ fn changed_files(previous: &State, next: &State) -> BTreeSet<String> {
         .keys()
         .chain(next.version_notes.keys())
     {
-        if previous.version_notes.get(key) != next.version_notes.get(key) {
-            if let Some(version) = next
+        if previous.version_notes.get(key) != next.version_notes.get(key)
+            && let Some(version) = next
                 .versions
                 .get(key)
                 .or_else(|| previous.versions.get(key))
-            {
-                files.insert(version.file_id.clone());
-            }
+        {
+            files.insert(version.file_id.clone());
         }
     }
     for (id, version) in previous.versions.iter().chain(next.versions.iter()) {

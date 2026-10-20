@@ -412,7 +412,7 @@ mod tests {
                 let recovered = Engine::open(&root).unwrap();
                 assert_eq!(
                     recovered.operation(&operation).unwrap().commit_state,
-                    "PUBLISHED"
+                    zxs_contract::CommitState::Published
                 );
                 assert_eq!(recovered.state.repositories.len(), 1);
                 assert_eq!(std::fs::read(&target).unwrap(), original);

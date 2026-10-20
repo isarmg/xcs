@@ -59,7 +59,6 @@ mod browser {
         if phase(&root)?.settle(Phase::Ready).is_none() {
             return Err(JsValue::from_str("Application startup is already settled"));
         }
-        root.set_attribute("data-zxs-fonts", "ready")?;
         root.set_attribute("data-zxs-runtime", "zxs-web")?;
         root.set_attribute("data-zxs-ready", "true")?;
         root.set_attribute("data-zxs-startup", "ready")?;
@@ -77,7 +76,6 @@ mod browser {
             return;
         }
         let _ = root.set_attribute("data-zxs-startup", "failed");
-        let _ = root.set_attribute("data-zxs-fonts", "failed");
         let _ = root.remove_attribute("data-zxs-runtime");
         let _ = root.remove_attribute("data-zxs-ready");
         web_sys::console::error_2(&JsValue::from_str("Application startup failed"), error);

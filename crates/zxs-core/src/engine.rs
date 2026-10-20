@@ -44,12 +44,12 @@ pub struct ReadLease {
 }
 impl Drop for ReadLease {
     fn drop(&mut self) {
-        if let Ok(mut reads) = self.reads.lock() {
-            if let Some(count) = reads.get_mut(&self.version) {
-                *count = count.saturating_sub(1);
-                if *count == 0 {
-                    reads.remove(&self.version);
-                }
+        if let Ok(mut reads) = self.reads.lock()
+            && let Some(count) = reads.get_mut(&self.version)
+        {
+            *count = count.saturating_sub(1);
+            if *count == 0 {
+                reads.remove(&self.version);
             }
         }
     }
@@ -71,7 +71,7 @@ pub(crate) struct Prepared {
 pub(crate) enum MutationPlan {
     Existing(OperationResult),
     Prepared {
-        next: State,
+        next: Box<State>,
         prepared: Vec<Prepared>,
         result: OperationResult,
     },
@@ -345,8 +345,8 @@ impl Engine {
             .get(id)
             .cloned()
             .ok_or_else(|| Error::new("OPERATION_NOT_FOUND", "operation is not registered"))?;
-        operation.commit_state = "IN_DOUBT".into();
-        operation.protection_at_publish = "UNCONFIRMED".into();
+        operation.commit_state = zxs_contract::CommitState::InDoubt;
+        operation.protection_at_publish = zxs_contract::ProtectionAtPublish::Unconfirmed;
         operation.current_health = "RECOVERING".into();
         Ok(operation)
     }
@@ -361,14 +361,12 @@ impl Engine {
                 }) {
                     if let Ok(candidate) =
                         verified_object::<Candidate>(&members, "candidate", &record.candidate_hash)
+                        && candidate.operation_id == id
+                        && candidate.pool_id == self.config.pool_id
+                        && candidate.sequence == record.sequence
                     {
-                        if candidate.operation_id == id
-                            && candidate.pool_id == self.config.pool_id
-                            && candidate.sequence == record.sequence
-                        {
-                            return verified_snapshot(&members, &candidate.snapshot_hash)
-                                .map(|(state, _)| state);
-                        }
+                        return verified_snapshot(&members, &candidate.snapshot_hash)
+                            .map(|(state, _)| state);
                     }
                 }
             }
@@ -479,14 +477,9 @@ impl Engine {
         &self,
         repo: &Repository,
         principal: &str,
-        action: &str,
+        access: RepositoryAccess,
     ) -> Result<()> {
-        let set = match action {
-            "read" => &repo.grants.read,
-            "write" => &repo.grants.write,
-            _ => &repo.grants.manage,
-        };
-        if repo.grants.manage.contains(principal) || set.contains(principal) {
+        if repo.grants.allows(principal, access) {
             Ok(())
         } else {
             Err(Error::new(
@@ -553,7 +546,7 @@ impl Engine {
                 prepared,
                 result,
             } => {
-                self.persist(next, prepared, result.clone())?;
+                self.persist(*next, prepared, result.clone())?;
                 Ok(result)
             }
         }
@@ -609,10 +602,9 @@ impl Engine {
             .get("branch_id")
             .and_then(|v| v.as_str())
             .map(str::to_string)
+            && let Some(branch) = next.branches.get(&branch_id)
         {
-            if let Some(branch) = next.branches.get(&branch_id) {
-                result["branch_generation"] = json!(branch.generation.to_string());
-            }
+            result["branch_generation"] = json!(branch.generation.to_string());
         }
         result["membership_epoch"] = json!("1");
         let mut protection = Vec::new();
@@ -626,9 +618,9 @@ impl Engine {
         }
         result["version_protection"] = json!(protection);
         let protection = if prepared.is_empty() {
-            "NOT_APPLICABLE"
+            ProtectionAtPublish::NotApplicable
         } else {
-            "TARGET_MET"
+            ProtectionAtPublish::TargetMet
         };
         let op = OperationResult {
             operation_id: operation_id.into(),
@@ -645,8 +637,8 @@ impl Engine {
                 .get("branch_id")
                 .and_then(|v| v.as_str())
                 .map(str::to_string),
-            commit_state: "PUBLISHED".into(),
-            protection_at_publish: protection.into(),
+            commit_state: zxs_contract::CommitState::Published,
+            protection_at_publish: protection,
             current_health: "HEALTHY".into(),
             request_digest: digest.clone(),
             sequence: next.sequence,
@@ -666,7 +658,7 @@ impl Engine {
                 .unwrap_or_else(|| operation_id.into()),
         });
         Ok(MutationPlan::Prepared {
-            next,
+            next: Box::new(next),
             prepared,
             result: op,
         })

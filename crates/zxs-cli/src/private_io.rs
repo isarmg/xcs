@@ -89,10 +89,7 @@ fn write_atomic(path: &Path, bytes: &[u8], replace: bool) -> Result<()> {
             return Err("configuration draft must belong to this user".into());
         }
     }
-    let name = format!(
-        ".zxs-cli-{}.tmp",
-        zxs_server::auth_primitives::random_token()?
-    );
+    let name = format!(".zxs-cli-{}.tmp", zxs_auth::random_token()?);
     let mut file = File::from(openat(
         directory,
         name.as_str(),

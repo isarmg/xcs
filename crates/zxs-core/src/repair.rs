@@ -86,10 +86,10 @@ impl Engine {
             {
                 continue;
             }
-            if let Ok((source, _)) = self.valid_replica(&published.version_id) {
-                if matching(&source, version)? {
-                    return Ok(Some(source));
-                }
+            if let Ok((source, _)) = self.valid_replica(&published.version_id)
+                && matching(&source, version)?
+            {
+                return Ok(Some(source));
             }
         }
         for disk in &self.config.disks {
@@ -289,7 +289,7 @@ mod tests {
         let engine = Engine::open(&root).unwrap();
         assert_eq!(
             engine.operation(&operation).unwrap().commit_state,
-            "PUBLISHED"
+            zxs_contract::CommitState::Published
         );
         let entries = engine.list_tree(&branch).unwrap();
         assert_eq!(entries[0].version_id, metadata.version_id);
@@ -314,7 +314,7 @@ mod tests {
         let engine = Engine::open(&root).unwrap();
         assert_eq!(
             engine.operation(&operation).unwrap().commit_state,
-            "PUBLISHED"
+            zxs_contract::CommitState::Published
         );
         assert_eq!(engine.list_tree(&branch).unwrap().len(), 1);
         assert!(engine.check().unwrap().issues.is_empty());

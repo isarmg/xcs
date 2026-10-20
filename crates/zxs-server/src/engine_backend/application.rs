@@ -552,7 +552,7 @@ mod tests {
         let backend = EngineBackend::new(engine);
         for identity in [&intruder, &unadmitted_owner] {
             let result = backend.call(
-                "namespace",
+                crate::BackendAction::Namespace,
                 identity,
                 json!({"workspace_id":workspace.workspace_id,
                 "kind":"mkdir", "path":"WireDenied"}),
@@ -761,9 +761,9 @@ mod tests {
                 let writer = std::thread::spawn(move || {
                     writer_backend.call(
                         if public {
-                            "commit_workspace"
+                            crate::BackendAction::CommitWorkspace
                         } else {
-                            "commit_workspace_internal"
+                            crate::BackendAction::CommitWorkspaceInternal
                         },
                         &writer_owner,
                         input,
@@ -775,7 +775,11 @@ mod tests {
                 let (query_tx, query_rx) = mpsc::channel();
                 let reader = std::thread::spawn(move || {
                     query_tx
-                        .send(reader_backend.call("repositories", &reader_owner, json!({})))
+                        .send(reader_backend.call(
+                            crate::BackendAction::Repositories,
+                            &reader_owner,
+                            json!({}),
+                        ))
                         .unwrap();
                 });
                 let queried = query_rx.recv_timeout(Duration::from_secs(2));

@@ -587,16 +587,19 @@ pub(super) fn disk_access(engine: &Engine, identity: &Identity) -> BTreeMap<Stri
 pub(super) fn call(
     engine: &mut Engine,
     identity: &Identity,
-    action: &str,
+    action: crate::BackendAction,
     input: Value,
 ) -> Result<Value, ApiError> {
     match action {
-        "file_manager_merge"
-        | "file_manager_tags"
-        | "file_manager_backup_configuration"
-        | "file_manager_configure_backups" => operations::call(engine, identity, action, &input),
-        "file_manager_entries" => entries(engine, identity, &input),
-        "file_manager_directory_branches" | "file_manager_directory_select" => {
+        crate::BackendAction::FileManagerMerge
+        | crate::BackendAction::FileManagerTags
+        | crate::BackendAction::FileManagerBackupConfiguration
+        | crate::BackendAction::FileManagerConfigureBackups => {
+            operations::call(engine, identity, action, &input)
+        }
+        crate::BackendAction::FileManagerEntries => entries(engine, identity, &input),
+        crate::BackendAction::FileManagerDirectoryBranches
+        | crate::BackendAction::FileManagerDirectorySelect => {
             keys(&input, &["slot_id", "path", "name", "operation_id"])?;
             let slot = field(&input, "slot_id")?;
             let display = path(&input)?;
@@ -608,7 +611,7 @@ pub(super) fn call(
                 ));
             }
             let (repo, relative) = resolve(engine, identity, slot, display, true)?;
-            let result = if action == "file_manager_directory_branches" {
+            let result = if action == crate::BackendAction::FileManagerDirectoryBranches {
                 engine.create_directory_branches(
                     &repo.repository_id,
                     &relative,
@@ -628,7 +631,7 @@ pub(super) fn call(
             .map_err(error)?;
             operation_wire(engine, result)
         }
-        "file_manager_write_session" => {
+        crate::BackendAction::FileManagerWriteSession => {
             keys(&input, &["slot_id", "path", "branch_id"])?;
             let display = path(&input)?.to_string();
             if display.is_empty() {
@@ -645,19 +648,17 @@ pub(super) fn call(
                 .find(|e| e.lookup_key == zxs_naming::path_key(&relative));
             if let Some(context) =
                 existing.and_then(|entry| engine.file_context(&repo.repository_id, &entry.path))
+                && context.inherited_from.is_none()
+                && engine
+                    .state()
+                    .branches
+                    .get(&context.branch_id)
+                    .is_some_and(|branch| branch.state != "active")
             {
-                if context.inherited_from.is_none()
-                    && engine
-                        .state()
-                        .branches
-                        .get(&context.branch_id)
-                        .is_some_and(|branch| branch.state != "active")
-                {
-                    return Err(ApiError::conflict(
-                        "BRANCH_NOT_ACTIVE",
-                        "the selected file branch is read-only; select an active branch before writing",
-                    ));
-                }
+                return Err(ApiError::conflict(
+                    "BRANCH_NOT_ACTIVE",
+                    "the selected file branch is read-only; select an active branch before writing",
+                ));
             }
             if let Some(requested) = input.get("branch_id") {
                 let requested = requested
@@ -688,7 +689,7 @@ pub(super) fn call(
             response["display_path"] = display.into();
             Ok(response)
         }
-        "file_manager_namespace" => {
+        crate::BackendAction::FileManagerNamespace => {
             keys(
                 &input,
                 &["slot_id", "kind", "path", "destination", "operation_id"],
@@ -724,7 +725,7 @@ pub(super) fn call(
                 .map_err(error)?;
             operation_wire(engine, result)
         }
-        "file_manager_namespace_batch" => {
+        crate::BackendAction::FileManagerNamespaceBatch => {
             keys(&input, &["slot_id", "kind", "items", "operation_id"])?;
             let slot = field(&input, "slot_id")?;
             let request: zxs_contract::DirectoryNamespaceBatch = serde_json::from_value(json!({
@@ -740,8 +741,8 @@ pub(super) fn call(
             )?;
             operation_wire(engine, result)
         }
-        "file_manager_file_history" => file_history(engine, identity, &input),
-        "file_manager_download_context" => {
+        crate::BackendAction::FileManagerFileHistory => file_history(engine, identity, &input),
+        crate::BackendAction::FileManagerDownloadContext => {
             keys(&input, &["repository_id", "path", "version_id"])?;
             let repo = repository(engine, field(&input, "repository_id")?)?;
             authorize(identity, repo, false, false)?;
@@ -777,8 +778,9 @@ pub(super) fn call(
                 })?;
             Ok(json!({"name":entry.name}))
         }
-        "file_manager_file_metadata" | "file_manager_version_metadata" => {
-            let version = if action == "file_manager_version_metadata" {
+        crate::BackendAction::FileManagerFileMetadata
+        | crate::BackendAction::FileManagerVersionMetadata => {
+            let version = if action == crate::BackendAction::FileManagerVersionMetadata {
                 Some(field(&input, "version_id")?)
             } else {
                 None
@@ -818,7 +820,7 @@ pub(super) fn call(
                 .map_err(error)?;
             operation_wire(engine, result)
         }
-        "file_manager_branch" => {
+        crate::BackendAction::FileManagerBranch => {
             keys(
                 &input,
                 &[
@@ -858,7 +860,7 @@ pub(super) fn call(
             .map_err(error)?;
             operation_wire(engine, result)
         }
-        "file_manager_node_note" => {
+        crate::BackendAction::FileManagerNodeNote => {
             keys(&input, &["file_id", "node_id", "note", "operation_id"])?;
             let file = field(&input, "file_id")?;
             file_repo(engine, identity, file, true)?;
@@ -877,7 +879,7 @@ pub(super) fn call(
                 .map_err(error)?;
             operation_wire(engine, result)
         }
-        "file_manager_select" => {
+        crate::BackendAction::FileManagerSelect => {
             keys(
                 &input,
                 &[
@@ -939,7 +941,7 @@ pub(super) fn call(
             .map_err(error)?;
             operation_wire(engine, result)
         }
-        "file_manager_rename_branch" => {
+        crate::BackendAction::FileManagerRenameBranch => {
             keys(&input, &["file_id", "branch_id", "name", "operation_id"])?;
             let file = field(&input, "file_id")?;
             file_repo(engine, identity, file, true)?;
@@ -954,7 +956,7 @@ pub(super) fn call(
                 .map_err(error)?;
             operation_wire(engine, result)
         }
-        "file_manager_history" => {
+        crate::BackendAction::FileManagerHistory => {
             let mut events = BTreeMap::new();
             for commit in engine.state().commits.values() {
                 let Ok(repo) = repo_for_history(engine, &commit.history_tree_id) else {
@@ -1067,15 +1069,14 @@ pub(super) fn call(
                         | "branch_pending"
                         | "file_content"
                         | "historical_save"
-                ) {
-                    if let Some(parent) = parent {
-                        for entry in &parent.entries {
-                            if !commit.entries.iter().any(|e| e.entry_id == entry.entry_id) {
-                                record_event(
-                                    &mut events,
-                                    json!({"event_id":format!("{}:{}:deleted",commit.commit_id,entry.entry_id),"timestamp":timestamp,"sequence":commit.sequence.to_string(),"slot_id":repo.primary_slot_id,"path":if repo.file_manager_root{entry.path.clone()}else{format!("{}/{}",repo.name,entry.path)},"action":"delete","principal":commit.author,"version_id":entry.version_id,"file_id":entry.file_id,"message":commit.message}),
-                                );
-                            }
+                ) && let Some(parent) = parent
+                {
+                    for entry in &parent.entries {
+                        if !commit.entries.iter().any(|e| e.entry_id == entry.entry_id) {
+                            record_event(
+                                &mut events,
+                                json!({"event_id":format!("{}:{}:deleted",commit.commit_id,entry.entry_id),"timestamp":timestamp,"sequence":commit.sequence.to_string(),"slot_id":repo.primary_slot_id,"path":if repo.file_manager_root{entry.path.clone()}else{format!("{}/{}",repo.name,entry.path)},"action":"delete","principal":commit.author,"version_id":entry.version_id,"file_id":entry.file_id,"message":commit.message}),
+                            );
                         }
                     }
                 }

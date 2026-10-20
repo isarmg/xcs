@@ -25,11 +25,11 @@ fn compact(mut ranges: Vec<(u32, u32)>) -> Vec<(u32, u32)> {
     ranges.sort_unstable();
     let mut out: Vec<(u32, u32)> = Vec::new();
     for (start, end) in ranges {
-        if let Some(last) = out.last_mut() {
-            if start <= last.1 + 1 {
-                last.1 = last.1.max(end);
-                continue;
-            }
+        if let Some(last) = out.last_mut()
+            && start <= last.1 + 1
+        {
+            last.1 = last.1.max(end);
+            continue;
         }
         out.push((start, end));
     }
@@ -89,9 +89,7 @@ fn generate(root: &Path) -> Result<String> {
         if fields.len() < 2 || fields[1] != "Default_Ignorable_Code_Point" {
             continue;
         }
-        let (start, end) = fields[0]
-            .split_once("..")
-            .map_or((fields[0], fields[0]), |v| v);
+        let (start, end) = fields[0].split_once("..").unwrap_or((fields[0], fields[0]));
         ignored.push((cp(start)?, cp(end)?));
     }
     let mut fold = BTreeMap::new();

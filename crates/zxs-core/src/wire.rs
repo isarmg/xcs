@@ -45,7 +45,7 @@ impl Engine {
         self.require_grant(
             self.repository_for_branch(&w.branch_id)?,
             principal,
-            "write",
+            zxs_contract::RepositoryAccess::Write,
         )?;
         let repository = self.repository_for_branch(&w.branch_id)?.clone();
         // Once sealed, no uploader or namespace request can mutate this generation.
@@ -78,7 +78,7 @@ impl Engine {
                 prepared,
                 result,
             } => {
-                self.persist(next, prepared, result.clone())?;
+                self.persist(*next, prepared, result.clone())?;
                 result
             }
         };
@@ -113,17 +113,16 @@ impl Engine {
             ));
         }
         let wire_digest = commit_request_digest(&request.workspace_id, &body)?;
-        if let Some(existing) = self.state.operations.get(&request.operation_id) {
-            if existing.request_digest != wire_digest
+        if let Some(existing) = self.state.operations.get(&request.operation_id)
+            && (existing.request_digest != wire_digest
                 || text(&body, "request_digest")? != wire_digest
                 || self.operation_owner(&request.operation_id).as_deref()
-                    != Some(&request.principal)
-            {
-                return Err(Error::new(
-                    "IDEMPOTENCY_KEY_REUSED",
-                    "completed wire request differs from its registered digest",
-                ));
-            }
+                    != Some(&request.principal))
+        {
+            return Err(Error::new(
+                "IDEMPOTENCY_KEY_REUSED",
+                "completed wire request differs from its registered digest",
+            ));
         }
         // Replay skips live topology/manifest preconditions, never immutable
         // binding between the authenticated request and its original body.
@@ -241,10 +240,10 @@ impl Engine {
             .versions
             .get(version)
             .ok_or_else(|| Error::new("VERSION_NOT_FOUND", "version not found"))?;
-        if let Some(state) = self.state.content_states.get(version) {
-            if state == "PURGED" || state == "MIGRATED" {
-                return Ok("PURGED".into());
-            }
+        if let Some(state) = self.state.content_states.get(version)
+            && (state == "PURGED" || state == "MIGRATED")
+        {
+            return Ok("PURGED".into());
         }
         let p = self
             .state

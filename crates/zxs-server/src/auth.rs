@@ -1,6 +1,6 @@
 //! Product account/session policy built on the local credential primitives.
 //! Credentials and token hashes are local protected control data, never public API data.
-use crate::{ApiError, auth_primitives as primitives};
+use crate::ApiError;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -13,6 +13,7 @@ use std::{
     },
     time::{SystemTime, UNIX_EPOCH},
 };
+use zxs_auth as primitives;
 
 pub(crate) const SESSION_TTL_SECONDS: u64 = 12 * 60 * 60;
 const MAX_ACCOUNTS: usize = 1024;
@@ -289,14 +290,14 @@ impl AuthStore {
             file.write_all(&serde_json::to_vec(&self.db).map_err(ApiError::invalid)?)
                 .map_err(ApiError::io)?;
             file.sync_all().map_err(ApiError::io)?;
-            if let Some(backup) = &self.backup {
-                if let Err(error) = backup(self.snapshot()?) {
-                    // Admission rejected before any decision or auth publication.
-                    if error.code != "COMMIT_PREPARATION_BUSY" {
-                        self.blocked.store(true, Ordering::SeqCst);
-                    }
-                    return Err(error);
+            if let Some(backup) = &self.backup
+                && let Err(error) = backup(self.snapshot()?)
+            {
+                // Admission rejected before any decision or auth publication.
+                if error.code != "COMMIT_PREPARATION_BUSY" {
+                    self.blocked.store(true, Ordering::SeqCst);
                 }
+                return Err(error);
             }
             if initial && self.path.symlink_metadata().is_ok() {
                 return Err(ApiError::conflict(

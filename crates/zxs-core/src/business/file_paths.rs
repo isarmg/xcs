@@ -134,7 +134,7 @@ impl Engine {
                 engine.require_grant(
                     engine.repository_for_history(&history)?,
                     principal,
-                    "write",
+                    zxs_contract::RepositoryAccess::Write,
                 )?;
                 if note.is_empty() {
                     state.file_path_notes.remove(node);

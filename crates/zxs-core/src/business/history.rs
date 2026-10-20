@@ -143,7 +143,7 @@ impl Engine {
                 let source = state.commits.get(source_commit).cloned()
                     .ok_or_else(|| Error::new("COMMIT_NOT_FOUND", "source commit not found"))?;
                 let repo = engine.repository_for_history(&source.history_tree_id)?;
-                engine.require_grant(repo, principal, "write")?;
+                engine.require_grant(repo, principal, zxs_contract::RepositoryAccess::Write)?;
                 if state.branches.values().any(|branch| branch.history_tree_id == source.history_tree_id && branch.file_id.is_some()) {
                     return Err(Error::new("FILE_BRANCH_SCOPE", "use independent file branches in this history"));
                 }
@@ -190,7 +190,7 @@ impl Engine {
         let op=self.mutate("merge-link.create",principal,operation,json!({"source_branch_id":source_branch,"source_commit_id":source_commit,"target_branch_id":target_branch,"target_commit_id":target_commit}),|engine,state,_|{
             let sb=state.branches.get(source_branch).ok_or_else(||Error::new("BRANCH_NOT_FOUND","source branch missing"))?;let tb=state.branches.get(target_branch).ok_or_else(||Error::new("BRANCH_NOT_FOUND","target branch missing"))?;if sb.history_tree_id!=tb.history_tree_id{return Err(Error::new("HISTORY_MISMATCH","merge endpoints must belong to one history"));}
             if sb.file_id!=tb.file_id&&(sb.file_id.is_some()||tb.file_id.is_some()){return Err(Error::new("FILE_BRANCH_SCOPE","file branch relations must identify the same file"));}
-            let repo=engine.repository_for_history(&sb.history_tree_id)?;engine.require_grant(repo,principal,"manage")?;
+            let repo=engine.repository_for_history(&sb.history_tree_id)?;engine.require_grant(repo,principal,zxs_contract::RepositoryAccess::Manage)?;
             for id in [source_commit,target_commit]{if !state.commits.get(id).is_some_and(|c|c.history_tree_id==sb.history_tree_id){return Err(Error::new("COMMIT_NOT_FOUND","selected endpoint is not in the history"));}}
             if source_branch==target_branch || !branch_contains_commit(state,sb,source_commit)? || !branch_contains_commit(state,tb,target_commit)? {return Err(Error::new("MERGE_ENDPOINT_MISMATCH","select one existing commit from each of two distinct branches"));}
             let link=MergeLink{merge_link_id:new_id("link"),history_tree_id:sb.history_tree_id.clone(),source_branch_id:source_branch.into(),source_commit_id:source_commit.into(),target_branch_id:target_branch.into(),target_commit_id:target_commit.into(),author:principal.into(),operation_id:operation.into()};let id=link.merge_link_id.clone();let history=link.history_tree_id.clone();state.merge_links.insert(id.clone(),link);Ok(json!({"merge_link_id":id,"history_tree_id":history}))
@@ -214,7 +214,7 @@ impl Engine {
             json!({"branch_id":id}),
             |engine, state, _| {
                 let repo = engine.repository_for_branch(id)?;
-                engine.require_grant(repo, principal, "manage")?;
+                engine.require_grant(repo, principal, zxs_contract::RepositoryAccess::Manage)?;
                 if repo.main_branch_id == id {
                     return Err(Error::new(
                         "MAIN_BRANCH_REQUIRED",
@@ -266,7 +266,7 @@ impl Engine {
                     .repositories
                     .get(repository)
                     .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-                engine.require_grant(repo, principal, "manage")?;
+                engine.require_grant(repo, principal, zxs_contract::RepositoryAccess::Manage)?;
                 if grants.manage.is_empty() {
                     return Err(Error::new(
                         "OWNER_REQUIRED",

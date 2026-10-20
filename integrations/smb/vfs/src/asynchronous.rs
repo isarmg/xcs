@@ -74,6 +74,8 @@ fn pool() -> io::Result<&'static mpsc::SyncSender<Work>> {
                         }
                         let signal = 1_u64;
                         loop {
+                            // SAFETY: wake owns a live eventfd duplicate; signal is a live
+                            // initialized u64 and write reads exactly its eight bytes.
                             let result = unsafe {
                                 libc::write(
                                     work.wake.as_raw_fd(),
@@ -115,8 +117,12 @@ struct Extra {
 }
 unsafe extern "C" fn destroy(pointer: *mut c_void) -> i32 {
     let state = pointer.cast::<State>();
+    // SAFETY: talloc invokes this destructor with the live State allocated by send; it runs only on
+    // the owning event loop.
     let extra = unsafe { (*state).extra };
     if !extra.is_null() {
+        // SAFETY: Extra came from Box::into_raw in send. The destructor clears the slot before
+        // reclaiming it exactly once; workers own only a separate Arc and descriptor.
         unsafe {
             (*state).extra = std::ptr::null_mut();
             drop(Box::from_raw(extra));
@@ -131,8 +137,12 @@ unsafe extern "C" fn completed(
     pointer: *mut c_void,
 ) {
     let state = pointer.cast::<State>();
+    // SAFETY: The watcher is a child of State and cannot survive request cancellation. send
+    // installed the Extra box before registering this callback.
     let extra = unsafe { &*(*state).extra };
     let mut signal = 0_u64;
+    // SAFETY: The live watcher owns read_fd; signal is writable u64 storage of eight bytes. A
+    // failed/nonblocking read cannot dereference host storage.
     unsafe {
         libc::read(extra.read_fd, (&mut signal as *mut u64).cast(), 8);
     }
@@ -151,6 +161,8 @@ unsafe extern "C" fn completed(
         if extra.destination.is_null() || outcome.completion.bytes.len() > extra.capacity {
             error = libc::EINVAL;
         } else {
+            // SAFETY: send requires destination to remain exclusively writable until this callback;
+            // bounds/null checks passed and the owned worker Vec cannot alias the host buffer.
             unsafe {
                 std::ptr::copy_nonoverlapping(
                     outcome.completion.bytes.as_ptr(),
@@ -160,6 +172,8 @@ unsafe extern "C" fn completed(
             }
         }
     }
+    // SAFETY: State and request remain live on this event loop. Free the watcher before marking
+    // completion, since completion may synchronously free the request; access no state afterward.
     unsafe {
         (*state).result = if error == 0 {
             outcome.completion.result
@@ -173,6 +187,12 @@ unsafe extern "C" fn completed(
     }
 }
 
+/// # Safety
+/// mem_ctx is null or a live talloc context and event is a live tevent context.
+/// Call on the owning event loop. If job returns bytes, destination must remain
+/// exclusively writable for capacity bytes until completion, or until the host
+/// cancels by freeing the request on this event loop before releasing the buffer.
+/// Workers must not capture host pointers; they may return only owned data.
 pub(super) unsafe fn send(
     mem_ctx: *mut sdk::TALLOC_CTX,
     event: *mut sdk::tevent_context,
@@ -181,6 +201,8 @@ pub(super) unsafe fn send(
     job: impl FnOnce() -> io::Result<Completion> + Send + 'static,
 ) -> *mut sdk::tevent_req {
     let mut state: *mut State = std::ptr::null_mut();
+    // SAFETY: The caller provides a valid talloc parent (or null); the output slot is writable and
+    // the SDK allocates size_of::<State>() aligned state storage.
     let request = unsafe {
         sdk::__tevent_req_create(
             mem_ctx,
@@ -196,6 +218,8 @@ pub(super) unsafe fn send(
         return request;
     }
     let shared = Arc::new(Mutex::new(None));
+    // SAFETY: Successful __tevent_req_create initialized the state allocation. Populate it before
+    // registering its destructor; Extra ownership transfers to that destructor.
     unsafe {
         (*state).result = -1;
         (*state).error = libc::EINPROGRESS;
@@ -210,16 +234,26 @@ pub(super) unsafe fn send(
     }
     let mut watcher: *mut sdk::tevent_fd = std::ptr::null_mut();
     let prepared = (|| -> io::Result<()> {
+        // SAFETY: eventfd has no pointer arguments; the returned descriptor is checked before
+        // ownership is adopted.
         let descriptor = unsafe { libc::eventfd(0, libc::EFD_CLOEXEC | libc::EFD_NONBLOCK) };
         if descriptor < 0 {
             return Err(io::Error::last_os_error());
         }
+        // SAFETY: eventfd succeeded and returned a fresh owned descriptor not yet managed by
+        // another owner.
         let read = unsafe { OwnedFd::from_raw_fd(descriptor) };
+        // SAFETY: read owns descriptor; fcntl duplicates it without consuming it and its return
+        // value is checked.
         let duplicate = unsafe { libc::fcntl(descriptor, libc::F_DUPFD_CLOEXEC, 0) };
         if duplicate < 0 {
             return Err(io::Error::last_os_error());
         }
+        // SAFETY: fcntl succeeded and the duplicate is a fresh descriptor adopted exactly once
+        // here.
         let wake = unsafe { OwnedFd::from_raw_fd(duplicate) };
+        // SAFETY: event and State are live host objects. Parenting the watcher to State cancels it
+        // before that state can be reclaimed; private_data points to that State.
         watcher = unsafe {
             sdk::_tevent_add_fd(
                 event,
@@ -235,6 +269,8 @@ pub(super) unsafe fn send(
         if watcher.is_null() {
             return Err(io::Error::from_raw_os_error(libc::ENOMEM));
         }
+        // SAFETY: State/Extra and watcher are live on the owning event loop. Auto-close transfers
+        // descriptor cleanup to the watcher before read is forgotten.
         unsafe {
             (*(*state).extra).read_fd = descriptor;
             sdk::tevent_fd_set_auto_close(watcher);
@@ -250,6 +286,8 @@ pub(super) unsafe fn send(
         Ok(())
     })();
     if let Err(error) = prepared {
+        // SAFETY: Only this event loop owns watcher/request. Free any registered watcher, set the
+        // initialized state error, then post completion without further state access.
         unsafe {
             if !watcher.is_null() {
                 sdk::_talloc_free(watcher.cast(), c"zxs Rust VFS queue failure".as_ptr());
@@ -262,13 +300,23 @@ pub(super) unsafe fn send(
     request
 }
 
+/// # Safety
+/// request must be a completed request returned by send, not previously received
+/// or freed. aio must be live, exclusive writable SDK storage. Use the owning
+/// event loop only; no references into request state may survive this call.
 pub(super) unsafe fn recv(request: *mut sdk::tevent_req, aio: *mut sdk::vfs_aio_state) -> isize {
     if request.is_null() || aio.is_null() {
         super::errno(libc::EINVAL);
         return -1;
     }
+    // SAFETY: The caller supplies the matching live request returned by send; its private data was
+    // allocated as State.
     let state = unsafe { sdk::_tevent_req_data(request).cast::<State>() };
+    // SAFETY: The matching completed request still owns its initialized State; copy scalar results
+    // before tevent_req_received can free state.
     let (result, error) = unsafe { ((*state).result, (*state).error) };
+    // SAFETY: aio is caller-provided writable storage. Request is live and completed; no state
+    // references remain when received releases its data.
     unsafe {
         (*aio).error = error;
         (*aio).duration = 0;
@@ -284,6 +332,19 @@ pub(super) unsafe fn recv(request: *mut sdk::tevent_req, aio: *mut sdk::vfs_aio_
 mod tests {
     use super::*;
     use std::time::Duration;
+
+    // tevent.c initializes a process-global backend list without synchronization.
+    // Samba initializes it on the host event loop; Rust's parallel test threads
+    // must not race the first backend registration. Only context creation is
+    // serialized: independent request execution and cancellation stay concurrent.
+    static EVENT_INITIALIZATION: Mutex<()> = Mutex::new(());
+
+    fn event_context() -> *mut sdk::tevent_context {
+        let _initialization = EVENT_INITIALIZATION.lock().unwrap();
+        // SAFETY: a null talloc parent requests a new independently owned event
+        // context; the global backend initialization is serialized above.
+        unsafe { sdk::tevent_context_init(std::ptr::null_mut()) }
+    }
     #[link(name = "tevent-private-samba")]
     #[link(name = "talloc-private-samba")]
     #[link(name = "smbconf")]
@@ -304,8 +365,11 @@ mod tests {
         let (started, ready) = mpsc::channel();
         let (release, wait) = mpsc::channel();
         let mut bytes = [0_u8; 4];
+        // SAFETY: This test uses real SDK allocations on one thread and live local output buffers.
+        // Requests are completed or freed before output/event storage is released; each allocation
+        // is freed once.
         unsafe {
-            let event = sdk::tevent_context_init(std::ptr::null_mut());
+            let event = event_context();
             assert!(!event.is_null());
             let request = send(
                 std::ptr::null_mut(),
@@ -339,13 +403,52 @@ mod tests {
         }
     }
     #[test]
+    fn oversized_completion_is_rejected_without_writing_host_buffer() {
+        let mut destination = [7_u8; 2];
+        // SAFETY: Real SDK allocations and the local output buffer stay live on
+        // this thread until completion; request and event are each freed once.
+        unsafe {
+            let event = event_context();
+            assert!(!event.is_null());
+            let request = send(
+                std::ptr::null_mut(),
+                event,
+                destination.as_mut_ptr().cast(),
+                destination.len(),
+                || {
+                    Ok(Completion {
+                        result: 3,
+                        bytes: vec![9; 3],
+                    })
+                },
+            );
+            assert!(!request.is_null());
+            while sdk::tevent_req_is_in_progress(request) {
+                assert_eq!(
+                    sdk::_tevent_loop_once(event, c"zxs SDK bounds test".as_ptr()),
+                    0
+                );
+            }
+            let mut aio: sdk::vfs_aio_state = Default::default();
+            assert_eq!(recv(request, &mut aio), -1);
+            assert_eq!(aio.error, libc::EINVAL);
+            assert_eq!(destination, [7; 2]);
+            sdk::_talloc_free(request.cast(), c"zxs SDK bounds test".as_ptr());
+            sdk::_talloc_free(event.cast(), c"zxs SDK bounds test".as_ptr());
+        }
+    }
+
+    #[test]
     fn cancelling_request_before_worker_finishes_does_not_touch_released_host_state() {
         let (started, ready) = mpsc::channel();
         let (release, wait) = mpsc::channel();
         let (finished, done) = mpsc::channel();
         let mut destination = [0_u8; 4];
+        // SAFETY: This test uses real SDK allocations on one thread and live local output buffers.
+        // Requests are completed or freed before output/event storage is released; each allocation
+        // is freed once.
         unsafe {
-            let event = sdk::tevent_context_init(std::ptr::null_mut());
+            let event = event_context();
             assert!(!event.is_null());
             let request = send(
                 std::ptr::null_mut(),

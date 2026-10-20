@@ -242,8 +242,8 @@ impl RecoveryProof {
             || receipts_ids(&self.reprotect) != ids
             || p.finalize.recovery_id.as_deref() != Some(plan.recovery_id.as_str())
             || canonical_json(&p.finalize.accepts)? != canonical_json(&plan.original_accepts)?
-            || p.result.commit_state != "PUBLISHED_DEGRADED"
-            || p.result.protection_at_publish != "BELOW_TARGET"
+            || p.result.commit_state != zxs_contract::CommitState::PublishedDegraded
+            || p.result.protection_at_publish != zxs_contract::ProtectionAtPublish::BelowTarget
             || p.result.result["recovery_id"].as_str() != Some(plan.recovery_id.as_str())
             || p.result.result["recovery_plan_digest"].as_str() != Some(plan.digest.as_str())
             || canonical_json(&p.result.result["version_protection"])?
@@ -652,8 +652,8 @@ impl Engine {
             .get(&candidate.operation_id)
             .cloned()
             .ok_or_else(|| required("candidate result missing"))?;
-        result.commit_state = "PUBLISHED_DEGRADED".into();
-        result.protection_at_publish = "BELOW_TARGET".into();
+        result.commit_state = zxs_contract::CommitState::PublishedDegraded;
+        result.protection_at_publish = zxs_contract::ProtectionAtPublish::BelowTarget;
         result.current_health = if plan.version_protection.iter().any(|v| {
             !v["slots"]
                 .as_array()
@@ -907,8 +907,14 @@ mod tests {
         let result = engine
             .commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true)
             .unwrap();
-        assert_eq!(result.commit_state, "PUBLISHED_DEGRADED");
-        assert_eq!(result.protection_at_publish, "BELOW_TARGET");
+        assert_eq!(
+            result.commit_state,
+            zxs_contract::CommitState::PublishedDegraded
+        );
+        assert_eq!(
+            result.protection_at_publish,
+            zxs_contract::ProtectionAtPublish::BelowTarget
+        );
         assert_eq!(result.current_health, "UNAVAILABLE");
         let disk = engine.members()[0].clone();
         let scanned = scan(&disk).unwrap();
@@ -985,8 +991,14 @@ mod tests {
         drop(engine);
         let engine = Engine::open(&temp.path().join("state")).unwrap();
         let replay = engine.operation(&operation).unwrap();
-        assert_eq!(replay.commit_state, "PUBLISHED_DEGRADED");
-        assert_eq!(replay.protection_at_publish, "BELOW_TARGET");
+        assert_eq!(
+            replay.commit_state,
+            zxs_contract::CommitState::PublishedDegraded
+        );
+        assert_eq!(
+            replay.protection_at_publish,
+            zxs_contract::ProtectionAtPublish::BelowTarget
+        );
         assert!(engine.open_content(&healthy.version.version_id).is_ok());
         for disk in engine.members() {
             let same: Candidate = load_object(&disk, "candidate", &plan.candidate_hash).unwrap();
@@ -1005,8 +1017,14 @@ mod tests {
             1
         );
         let replay = engine.operation(&operation).unwrap();
-        assert_eq!(replay.commit_state, "PUBLISHED_DEGRADED");
-        assert_eq!(replay.protection_at_publish, "BELOW_TARGET");
+        assert_eq!(
+            replay.commit_state,
+            zxs_contract::CommitState::PublishedDegraded
+        );
+        assert_eq!(
+            replay.protection_at_publish,
+            zxs_contract::ProtectionAtPublish::BelowTarget
+        );
         assert!(engine.open_content(&healthy.version.version_id).is_ok());
         assert!(engine.open_content(&lost.version.version_id).is_err());
     }
@@ -1035,14 +1053,17 @@ mod tests {
             let result = engine
                 .commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true)
                 .unwrap();
-            assert_eq!(result.commit_state, "PUBLISHED_DEGRADED");
+            assert_eq!(
+                result.commit_state,
+                zxs_contract::CommitState::PublishedDegraded
+            );
             assert_eq!(fs::read(&path).unwrap(), original);
             assert_eq!(engine.snapshot.as_ref(), Some(&candidate.snapshot_hash));
             drop(engine);
             let engine = Engine::open(&root).unwrap();
             assert_eq!(
                 engine.operation(&operation).unwrap().commit_state,
-                "PUBLISHED_DEGRADED"
+                zxs_contract::CommitState::PublishedDegraded
             );
         }
     }
@@ -1111,7 +1132,7 @@ mod tests {
             );
             assert_eq!(
                 engine.operation(&operation).unwrap().commit_state,
-                "PUBLISHED_DEGRADED"
+                zxs_contract::CommitState::PublishedDegraded
             );
             assert_eq!(
                 engine
@@ -1133,7 +1154,7 @@ mod tests {
             assert_eq!(engine.state, expected);
             assert_eq!(
                 engine.operation(&operation).unwrap().commit_state,
-                "PUBLISHED_DEGRADED"
+                zxs_contract::CommitState::PublishedDegraded
             );
         }
     }
@@ -1170,8 +1191,11 @@ mod tests {
         drop(engine);
         let mut engine = Engine::open_for_recovery(&temp.path().join("state")).unwrap();
         let result = engine.operation(&operation).unwrap();
-        assert_eq!(result.commit_state, "PUBLISHED");
-        assert_eq!(result.protection_at_publish, "TARGET_MET");
+        assert_eq!(result.commit_state, zxs_contract::CommitState::Published);
+        assert_eq!(
+            result.protection_at_publish,
+            zxs_contract::ProtectionAtPublish::TargetMet
+        );
         assert_eq!(result.current_health, "UNAVAILABLE");
         assert_eq!(
             engine
@@ -1212,7 +1236,11 @@ mod tests {
                 .commit_degraded_recovery(&plan.recovery_id, &plan.digest, "alice", true)
                 .unwrap();
             assert_eq!(result.result["recovery_id"], plan.recovery_id, "{point}");
-            assert_eq!(result.commit_state, "PUBLISHED_DEGRADED", "{point}");
+            assert_eq!(
+                result.commit_state,
+                zxs_contract::CommitState::PublishedDegraded,
+                "{point}"
+            );
         }
     }
     #[test]

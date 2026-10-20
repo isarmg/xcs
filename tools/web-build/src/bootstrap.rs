@@ -24,10 +24,12 @@ html.setAttribute("data-zxs-startup", "pending");
 html.setAttribute("data-zxs-fonts", "pending");
 let settled = false;
 let timer;
+const stylesheetListeners = [];
 function settle(next) {
   if (settled) return false;
   settled = true;
   clearTimeout(timer);
+  for (const detach of stylesheetListeners.splice(0)) detach();
   document.removeEventListener("zxs-startup-ready", ready);
   document.removeEventListener("zxs-startup-failed", failed);
   window.removeEventListener("error", scriptError);
@@ -38,8 +40,7 @@ function settle(next) {
 }
 function ready() {
   if (html.getAttribute("data-zxs-startup") === "failed"
-      || html.getAttribute("data-zxs-runtime") !== "zxs-web"
-      || html.getAttribute("data-zxs-fonts") !== "ready") {
+      || html.getAttribute("data-zxs-runtime") !== "zxs-web") {
     fail("runtime");
     return;
   }
@@ -52,10 +53,9 @@ function pagehide(event) {
 }
 function fail(stage, error) {
   if (!settle("failed")) return;
-  html.setAttribute("data-zxs-fonts", "failed");
   html.removeAttribute("data-zxs-runtime");
   html.removeAttribute("data-zxs-ready");
-  // Cancel Rust's pending font wait if it has already started.
+  // Cancel the Rust lifetime, including any optional pending font work.
   document.dispatchEvent(new Event("zxs-startup-failed"));
   const language = new URL(window.location.href).searchParams.get("lang") ?? html.lang;
   const chinese = language.toLowerCase().startsWith("zh");
@@ -90,8 +90,49 @@ window.addEventListener("error", scriptError);
 window.addEventListener("unhandledrejection", scriptError);
 window.addEventListener("pagehide", pagehide);
 timer = setTimeout(() => fail("timeout"), __ZXS_TIMEOUT__);
+// CSS remains required, unlike optional font downloads. A missing stylesheet
+// cannot become a falsely ready, unstyled app when font readiness is decoupled.
+function stylesheet(link) {
+  if (link.sheet) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const loaded = () => { detach(); resolve(); };
+    const failed = () => { detach(); reject(new Error("Required stylesheet failed")); };
+    const detach = () => {
+      link.removeEventListener("load", loaded);
+      link.removeEventListener("error", failed);
+    };
+    stylesheetListeners.push(detach);
+    link.addEventListener("load", loaded, { once: true });
+    link.addEventListener("error", failed, { once: true });
+  });
+}
 // Import after the failure boundary exists so a missing binding module is visible.
-Promise.resolve().then(() => import(__ZXS_MODULE__))
-  .then(module => module.default())
+Promise.all([
+  Promise.resolve().then(() => import(__ZXS_MODULE__)),
+  ...Array.from(document.querySelectorAll('link[rel="stylesheet"]'), stylesheet),
+])
+  .then(([module]) => { if (!settled) return module.default(); })
   .catch(error => fail("runtime", error));
 "#;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn readiness_requires_runtime_and_styles_not_optional_fonts() {
+        let loader = loader();
+        let ready = loader
+            .split("function ready()")
+            .nth(1)
+            .unwrap()
+            .split("function failed()")
+            .next()
+            .unwrap();
+        assert!(ready.contains("data-zxs-runtime"));
+        assert!(!ready.contains("data-zxs-fonts"));
+        assert!(loader.contains("link[rel=\"stylesheet\"]"));
+        assert!(loader.contains("if (!settled) return module.default()"));
+        assert!(loader.contains("setTimeout(() => fail(\"timeout\"), 30000)"));
+    }
+}

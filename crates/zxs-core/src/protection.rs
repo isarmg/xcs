@@ -41,6 +41,10 @@ impl Engine {
         self.route(&primary, copies)?;
         Ok((primary, copies))
     }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "Preserves the public placement API; tracked request-type migration in .github/QUALITY.md"
+    )]
     pub fn update_placement_rule(
         &mut self,
         id: &str,
@@ -57,7 +61,7 @@ impl Engine {
         }
         self.mutate("placement-rule.update",principal,operation,json!({"rule_id":id,"repository_id":repository,"path_prefix":path_prefix,"primary_slot_id":primary,"expected_generation":expected_generation.to_string()}),|engine,state,_|{
             let repo=engine.state.repositories.get(repository).ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository does not exist"))?;
-            engine.require_grant(repo,principal,"manage")?;
+            engine.require_grant(repo,principal,zxs_contract::RepositoryAccess::Manage)?;
             let actual=state.placement_rules.get(id).map_or(0,|r|r.generation);
             if actual!=expected_generation { return Err(Error::new("GENERATION_MISMATCH","placement rule changed; reread before updating")); }
             if state.placement_rules.get(id).is_some_and(|r|r.repository_id!=repository) { return Err(Error::new("REQUEST_BINDING_MISMATCH","rule is bound to another repository")); }
@@ -68,6 +72,10 @@ impl Engine {
             Ok(json!({"rule":rule}))
         })
     }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "Preserves the public protection API; tracked request-type migration in .github/QUALITY.md"
+    )]
     pub fn update_protection_policy(
         &mut self,
         id: &str,
@@ -84,7 +92,7 @@ impl Engine {
         }
         self.mutate("protection-policy.update",principal,operation,json!({"policy_id":id,"repository_id":repository,"path_prefix":path_prefix,"target_copies":copies,"expected_generation":expected_generation.to_string()}),|engine,state,_|{
             let repo=engine.state.repositories.get(repository).ok_or_else(||Error::new("REPOSITORY_NOT_FOUND","repository does not exist"))?;
-            engine.require_grant(repo,principal,"manage")?;
+            engine.require_grant(repo,principal,zxs_contract::RepositoryAccess::Manage)?;
             let actual=state.protection_policies.get(id).map_or(0,|p|p.generation);
             if actual!=expected_generation { return Err(Error::new("GENERATION_MISMATCH","protection policy changed; reread before updating")); }
             if state.protection_policies.get(id).is_some_and(|p|p.repository_id!=repository) { return Err(Error::new("REQUEST_BINDING_MISMATCH","policy is bound to another repository")); }

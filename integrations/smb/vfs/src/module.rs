@@ -1,4 +1,15 @@
 //! All ABI calls are generated from the target SDK. No custom C shim.
+//!
+//! # Host boundary contract
+//! Samba must call this table on its owning event-loop thread, with live,
+//! correctly aligned SDK objects and NUL-terminated strings. Input buffers must
+//! be readable and output buffers exclusively writable for the supplied length.
+//! Async output buffers remain live until completion or cancellation; cancellation
+//! frees the request on that same event loop before releasing the buffer.
+//! Handles store only Context boxes installed by connect; directory pointers are
+//! opaque Directory boxes returned by fdopendir and freed exactly once by closedir.
+//! Null checks defend optional arguments, not dangling pointers or a mismatched ABI.
+//! Workers receive owned descriptors/data, never these host pointers.
 #![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]
 use serde_json::Value;
 use std::{
@@ -14,12 +25,20 @@ use zxs_smb::{
 };
 
 mod sdk {
+    // Generated C names/bitfield helpers preserve the pinned SDK ABI. Keep these
+    // exceptions inside the include module, never on hand-written callbacks.
     #![allow(
         dead_code,
         non_camel_case_types,
         non_snake_case,
         non_upper_case_globals,
-        unnecessary_transmutes
+        unnecessary_transmutes,
+        clippy::undocumented_unsafe_blocks,
+        clippy::ptr_offset_with_cast,
+        clippy::upper_case_acronyms,
+        clippy::transmute_int_to_bool,
+        clippy::too_many_arguments,
+        clippy::type_complexity
     )]
     include!(concat!(env!("OUT_DIR"), "/sdk.rs"));
 }
@@ -47,12 +66,19 @@ struct Snapshot {
     writable: bool,
     io: Arc<Mutex<()>>,
 }
+/// # Safety
+/// handle obeys the module host contract and its Context is exclusively accessed
+/// for this call. fsp is only used as an opaque lookup key, never dereferenced.
 unsafe fn snapshot(
     handle: *mut sdk::vfs_handle_struct,
     fsp: *mut sdk::files_struct,
 ) -> std::io::Result<Snapshot> {
+    // SAFETY: The owning host callback supplies a live handle; Context access stays on this event-
+    // loop thread and does not escape the callback.
     let context = unsafe { context(handle) }?;
     let opened = context.files.get(&(fsp as usize)).ok_or_else(bad)?;
+    // SAFETY: Open owns a live descriptor; F_DUPFD_CLOEXEC returns a distinct owned descriptor or
+    // an error, checked below.
     let descriptor = unsafe { libc::fcntl(opened.fd, libc::F_DUPFD_CLOEXEC, 0) };
     if descriptor < 0 {
         return Err(std::io::Error::last_os_error());
@@ -60,6 +86,8 @@ unsafe fn snapshot(
     Ok(Snapshot {
         client: context.client.clone(),
         info: opened.info.clone(),
+        // SAFETY: fcntl succeeded above; this new descriptor has not been adopted by any other
+        // owner.
         fd: unsafe { OwnedFd::from_raw_fd(descriptor) },
         writable: opened.writable,
         io: opened.io.clone(),
@@ -67,6 +95,8 @@ unsafe fn snapshot(
 }
 
 fn errno(error: i32) {
+    // SAFETY: Linux provides a live thread-local errno slot; no reference to it escapes this
+    // assignment.
     unsafe {
         *libc::__errno_location() = error;
     }
@@ -88,20 +118,48 @@ fn guarded(work: impl FnOnce() -> std::io::Result<i32>) -> i32 {
 fn bad() -> std::io::Error {
     std::io::Error::from_raw_os_error(libc::EINVAL)
 }
+/// # Safety
+/// A non-null pointer must address a NUL-terminated string live and immutable for 'a.
 unsafe fn text<'a>(pointer: *const libc::c_char) -> std::io::Result<&'a str> {
     if pointer.is_null() {
         return Err(bad());
     }
+    // SAFETY: The caller guarantees a live NUL-terminated string for the returned borrow; null was
+    // rejected above.
     unsafe { CStr::from_ptr(pointer) }
         .to_str()
         .map_err(|_| bad())
 }
+/// # Safety
+/// For nonzero count, data must be live and readable for count bytes for 'a.
+/// The caller must not mutate or free the storage while the returned slice lives.
+unsafe fn input_bytes<'a>(data: *const c_void, count: usize) -> std::io::Result<&'a [u8]> {
+    if count == 0 {
+        return Ok(&[]);
+    }
+    if data.is_null() || count > isize::MAX as usize {
+        return Err(bad());
+    }
+    // SAFETY: caller guarantees initialized, readable storage for the requested
+    // lifetime; non-null and the slice size bound were checked above.
+    Ok(unsafe { std::slice::from_raw_parts(data.cast(), count) })
+}
+
+/// # Safety
+/// A non-null handle must be live. Its non-null data must be our Context box;
+/// the caller guarantees exclusive access and that the box outlives 'a.
 unsafe fn context<'a>(handle: *mut sdk::vfs_handle_struct) -> std::io::Result<&'a mut Context> {
+    // SAFETY: The caller supplies a live SDK handle when non-null; short-circuiting rejects null
+    // before dereference.
     if handle.is_null() || unsafe { (*handle).data }.is_null() {
         return Err(bad());
     }
+    // SAFETY: connect installed a Context box in data. The caller guarantees exclusive event-loop
+    // access for this borrow; neither handle nor data is null.
     Ok(unsafe { &mut *((*handle).data.cast::<Context>()) })
 }
+/// # Safety
+/// Non-null arguments and nested strings obey the host boundary contract.
 unsafe fn name(
     handle: *mut sdk::vfs_handle_struct,
     pointer: *const sdk::smb_filename,
@@ -109,19 +167,29 @@ unsafe fn name(
     if pointer.is_null() {
         return Err(bad());
     }
+    // SAFETY: The host filename is live for this callback and its non-null string fields are NUL-
+    // terminated; text rejects null strings.
     if !unsafe { (*pointer).stream_name }.is_null()
+        // SAFETY: The host filename is live for this callback and its non-null string fields are
+        // NUL-terminated; text rejects null strings.
         && !unsafe { text((*pointer).stream_name) }?.is_empty()
     {
         return Err(std::io::Error::from_raw_os_error(libc::ENOTSUP));
     }
+    // SAFETY: The host filename is live for this callback and its non-null string fields are NUL-
+    // terminated; text rejects null strings.
     let name = unsafe { text((*pointer).base_name) }?;
     if name.contains('\\') {
         return Err(bad());
     }
     let name = if name.starts_with('/') {
+        // SAFETY: A non-null handle is a live host object; short-circuit evaluation prevents
+        // dereferencing a null handle.
         if handle.is_null() || unsafe { (*handle).conn }.is_null() {
             return Err(bad());
         }
+        // SAFETY: The checked connection belongs to the live handle; its connectpath is a host-
+        // owned NUL-terminated string.
         let root = unsafe { text((*(*handle).conn).connectpath) }?;
         Path::new(name)
             .strip_prefix(root)
@@ -141,18 +209,26 @@ unsafe fn name(
     }
     Ok(components.join("/"))
 }
+/// # Safety
+/// Non-null arguments and nested filenames/strings obey the host boundary contract.
 unsafe fn at_name(
     handle: *mut sdk::vfs_handle_struct,
     directory: *const sdk::files_struct,
     file: *const sdk::smb_filename,
 ) -> std::io::Result<String> {
+    // SAFETY: The host supplies live filename/directory objects and their string fields for this
+    // callback; optional nulls are rejected or handled by the helper.
     let child = unsafe { name(handle, file) }?;
+    // SAFETY: The host filename is live for this callback and its non-null string fields are NUL-
+    // terminated; text rejects null strings.
     if unsafe { text((*file).base_name) }?.starts_with('/') {
         return Ok(child);
     }
     let parent = if directory.is_null() {
         String::new()
     } else {
+        // SAFETY: The host supplies live filename/directory objects and their string fields for
+        // this callback; optional nulls are rejected or handled by the helper.
         unsafe { name(handle, (*directory).fsp_name) }?
     };
     Ok(if parent.is_empty() {
@@ -172,14 +248,22 @@ unsafe extern "C" fn free_context(data: *mut *mut c_void) {
     if data.is_null() {
         return;
     }
+    // SAFETY: The host passes a writable data slot to its registered free callback; null was
+    // rejected above.
     let pointer = unsafe { *data };
     if !pointer.is_null() {
+        // SAFETY: connect created this exact Context with Box::into_raw; free_context consumes it
+        // once and clears the host slot.
         let context = unsafe { Box::from_raw(pointer.cast::<Context>()) };
         for opened in context.files.values() {
+            // SAFETY: Each Open owns its descriptor, transferred by into_raw_fd on open; consuming
+            // Context closes each remaining descriptor once.
             unsafe {
                 libc::close(opened.fd);
             }
         }
+        // SAFETY: The host data slot remains writable during its free callback; clearing it
+        // prevents a second Box reclamation.
         unsafe {
             *data = std::ptr::null_mut();
         }
@@ -191,14 +275,22 @@ unsafe extern "C" fn connect(
     user: *const libc::c_char,
 ) -> i32 {
     guarded(|| {
+        // SAFETY: A non-null handle is a live host object; short-circuit evaluation prevents
+        // dereferencing a null handle.
         if handle.is_null() || unsafe { (*handle).conn }.is_null() {
             return Err(bad());
         }
+        // SAFETY: The handle and connection were checked non-null and remain live on the owning
+        // host thread.
         let parameters = unsafe { (*(*handle).conn).params };
         if parameters.is_null() {
             return Err(bad());
         }
+        // SAFETY: The host parameter object is live for this callback and was checked non-null
+        // above.
         let service = unsafe { (*parameters).service };
+        // SAFETY: SDK parameter lookup uses static NUL-terminated keys and returns a borrowed NUL-
+        // terminated string or null; text validates the latter.
         let socket = unsafe {
             text(sdk::lp_parm_const_string(
                 service,
@@ -207,6 +299,8 @@ unsafe extern "C" fn connect(
                 std::ptr::null(),
             ))
         }?;
+        // SAFETY: SDK parameter lookup uses static NUL-terminated keys and returns a borrowed NUL-
+        // terminated string or null; text validates the latter.
         let repository = unsafe {
             text(sdk::lp_parm_const_string(
                 service,
@@ -215,11 +309,15 @@ unsafe extern "C" fn connect(
                 std::ptr::null(),
             ))
         }?;
+        // SAFETY: Samba supplies a NUL-terminated user string valid during connect; text rejects
+        // null and invalid UTF-8.
         let client = Client::connect(&PathBuf::from(socket), unsafe { text(user) }?, repository)?;
         let boxed = Box::new(Context {
             client,
             files: BTreeMap::new(),
         });
+        // SAFETY: The live handle is exclusively accessed on its host event loop; the new Box is
+        // transferred to the matching free_context callback.
         unsafe {
             (*handle).data = Box::into_raw(boxed).cast();
             (*handle).free_data = Some(free_context);
@@ -229,6 +327,8 @@ unsafe extern "C" fn connect(
 }
 unsafe extern "C" fn disconnect(handle: *mut sdk::vfs_handle_struct) {
     if !handle.is_null() {
+        // SAFETY: The non-null live host handle provides its own writable data slot, which
+        // free_context clears after taking ownership.
         unsafe {
             free_context(&mut (*handle).data);
         }
@@ -246,9 +346,15 @@ unsafe extern "C" fn openat(
         if fsp.is_null() || how.is_null() {
             return Err(bad());
         }
+        // SAFETY: The host supplies a live configuration object; its pointer was checked non-null
+        // before reading flags.
         let flags = unsafe { (*how).flags };
         let writable = flags & libc::O_ACCMODE != libc::O_RDONLY;
+        // SAFETY: The host supplies live filename/directory objects and their string fields for
+        // this callback; optional nulls are rejected or handled by the helper.
         let path = unsafe { at_name(handle, directory, file) }?;
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         let context = unsafe { context(handle) }?;
         let (info, fd) = context.client.open(Request::Open {
             path,
@@ -280,9 +386,11 @@ unsafe extern "C" fn pread(
 ) -> isize {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(
         || -> std::io::Result<isize> {
+            // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+            // event-loop thread and does not escape the callback.
             let context = unsafe { context(handle) }?;
             let opened = context.files.get(&(fsp as usize)).ok_or_else(bad)?;
-            if offset < 0 || count > isize::MAX as usize {
+            if offset < 0 || count > isize::MAX as usize || (count > 0 && data.is_null()) {
                 return Err(bad());
             }
             let _guard = opened
@@ -292,6 +400,8 @@ unsafe extern "C" fn pread(
             context.client.call(Request::AuthorizeRead {
                 handle: opened.info.handle,
             })?;
+            // SAFETY: The host guarantees data is writable for count bytes for this synchronous
+            // call; the descriptor remains owned and the I/O lock is held.
             let result = unsafe { libc::pread(opened.fd, data, count, offset) };
             if result < 0 {
                 return Err(std::io::Error::last_os_error());
@@ -320,6 +430,8 @@ unsafe extern "C" fn pwrite(
 ) -> isize {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(
         || -> std::io::Result<isize> {
+            // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+            // event-loop thread and does not escape the callback.
             let context = unsafe { context(handle) }?;
             let opened = context.files.get(&(fsp as usize)).ok_or_else(bad)?;
             let _guard = opened
@@ -331,8 +443,9 @@ unsafe extern "C" fn pwrite(
                 &opened.info,
                 opened.fd,
                 opened.writable,
-                data,
-                count,
+                // SAFETY: the host provides count readable bytes for this callback;
+                // the helper checks null/length and the slice is not retained.
+                unsafe { input_bytes(data, count) }?,
                 offset,
             )
         },
@@ -355,15 +468,19 @@ fn write_data(
     info: &OpenResult,
     fd: i32,
     writable: bool,
-    data: *const c_void,
-    count: usize,
+    data: &[u8],
     offset: sdk::off_t,
 ) -> std::io::Result<isize> {
+    let count = data.len();
     if !writable || count > isize::MAX as usize {
         return Err(std::io::Error::from_raw_os_error(libc::EACCES));
     }
     let offset = if offset == -1 {
+        // SAFETY: libc::stat is a C POD output structure whose integer and pointer fields admit
+        // zero initialization.
         let mut stat: libc::stat = unsafe { std::mem::zeroed() };
+        // SAFETY: The descriptor is owned and the output points to a live, exclusively borrowed
+        // stat structure.
         if unsafe { libc::fstat(fd, &mut stat) } < 0 {
             return Err(std::io::Error::last_os_error());
         }
@@ -378,7 +495,9 @@ fn write_data(
     {
         return Err(std::io::Error::from_raw_os_error(libc::EFBIG));
     }
-    let result = unsafe { libc::pwrite(fd, data, count, offset) };
+    // SAFETY: The borrowed slice supplies count initialized bytes and remains live throughout
+    // pwrite; the caller serializes descriptor I/O.
+    let result = unsafe { libc::pwrite(fd, data.as_ptr().cast(), count, offset) };
     if result < 0 {
         return Err(std::io::Error::last_os_error());
     }
@@ -395,6 +514,8 @@ unsafe extern "C" fn truncate(
     length: sdk::off_t,
 ) -> i32 {
     guarded(|| {
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         let context = unsafe { context(handle) }?;
         let opened = context.files.get(&(fsp as usize)).ok_or_else(bad)?;
         if !opened.writable || length < 0 || length as u64 > opened.info.max_file_bytes {
@@ -404,6 +525,8 @@ unsafe extern "C" fn truncate(
             .io
             .lock()
             .map_err(|_| std::io::Error::from_raw_os_error(libc::EIO))?;
+        // SAFETY: The descriptor remains owned while the I/O lock is held; length has been
+        // validated.
         if unsafe { libc::ftruncate(opened.fd, length) } < 0 {
             return Err(std::io::Error::last_os_error());
         }
@@ -426,6 +549,8 @@ unsafe extern "C" fn pread_send(
         if count > asynchronous::MAX_IO || offset < 0 || (count > 0 && data.is_null()) {
             return Err(bad());
         }
+        // SAFETY: The host handle is live on its owning event loop; snapshot duplicates the FD and
+        // returns no host pointers to workers.
         let opened = unsafe { snapshot(handle, fsp) }?;
         let mut bytes = Vec::new();
         bytes
@@ -434,6 +559,8 @@ unsafe extern "C" fn pread_send(
         bytes.resize(count, 0);
         Ok((opened, bytes))
     })();
+    // SAFETY: Host mem_ctx/event remain live on this thread. The send contract retains any output
+    // only until completion/cancellation; the worker owns its FD and bytes.
     unsafe {
         asynchronous::send(mem_ctx, event, data, count, move || {
             let (opened, mut bytes) = prepared?;
@@ -471,17 +598,19 @@ unsafe extern "C" fn pwrite_send(
         if count > asynchronous::MAX_IO || (count > 0 && data.is_null()) {
             return Err(bad());
         }
+        // SAFETY: The host handle is live on its owning event loop; snapshot duplicates the FD and
+        // returns no host pointers to workers.
         let opened = unsafe { snapshot(handle, fsp) }?;
         let mut bytes = Vec::new();
         bytes
             .try_reserve_exact(count)
             .map_err(|_| std::io::Error::from_raw_os_error(libc::ENOMEM))?;
-        if count > 0 {
-            bytes
-                .extend_from_slice(unsafe { std::slice::from_raw_parts(data.cast::<u8>(), count) });
-        }
+        // SAFETY: host input is readable for count bytes during this callback.
+        bytes.extend_from_slice(unsafe { input_bytes(data, count) }?);
         Ok((opened, bytes))
     })();
+    // SAFETY: Host mem_ctx/event remain live on this thread. The send contract retains any output
+    // only until completion/cancellation; the worker owns its FD and bytes.
     unsafe {
         asynchronous::send(mem_ctx, event, std::ptr::null_mut(), 0, move || {
             let (opened, bytes) = prepared?;
@@ -494,8 +623,7 @@ unsafe extern "C" fn pwrite_send(
                 &opened.info,
                 opened.fd.as_raw_fd(),
                 opened.writable,
-                bytes.as_ptr().cast(),
-                bytes.len(),
+                &bytes,
                 offset,
             )
             .map(asynchronous::Completion::done)
@@ -503,6 +631,8 @@ unsafe extern "C" fn pwrite_send(
     }
 }
 unsafe extern "C" fn io_recv(request: *mut sdk::tevent_req, aio: *mut sdk::vfs_aio_state) -> isize {
+    // SAFETY: Samba passes the matching completed request from our send callback and writable aio
+    // storage on the same event loop.
     unsafe { asynchronous::recv(request, aio) }
 }
 unsafe extern "C" fn deny_recvfile(
@@ -533,6 +663,8 @@ unsafe extern "C" fn close(
     fsp: *mut sdk::files_struct,
 ) -> i32 {
     guarded(|| {
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         let context = unsafe { context(handle) }?;
         let opened = context.files.remove(&(fsp as usize)).ok_or_else(bad)?;
         close_opened(opened, |handle| {
@@ -555,6 +687,8 @@ fn close_opened(
         .map_err(|_| std::io::Error::from_raw_os_error(libc::EIO))?;
     let saved = save(opened.info.handle);
     // Preserve the callback's existing close-error reporting on the normal path.
+    // SAFETY: into_raw_fd transfers the sole local ownership to this close call; no owner will
+    // close this descriptor again.
     let closed = unsafe { libc::close(descriptor.into_raw_fd()) };
     saved?;
     if closed < 0 {
@@ -568,7 +702,11 @@ unsafe extern "C" fn fsync_send(
     event: *mut sdk::tevent_context,
     fsp: *mut sdk::files_struct,
 ) -> *mut sdk::tevent_req {
+    // SAFETY: The host handle is live on its owning event loop; snapshot duplicates the FD and
+    // returns no host pointers to workers.
     let prepared = unsafe { snapshot(handle, fsp) };
+    // SAFETY: Host mem_ctx/event remain live on this thread. The send contract retains any output
+    // only until completion/cancellation; the worker owns its FD and bytes.
     unsafe {
         asynchronous::send(mem_ctx, event, std::ptr::null_mut(), 0, move || {
             let opened = prepared?;
@@ -587,9 +725,13 @@ unsafe extern "C" fn fsync_recv(
     request: *mut sdk::tevent_req,
     aio: *mut sdk::vfs_aio_state,
 ) -> i32 {
+    // SAFETY: Samba passes the matching completed request from our send callback and writable aio
+    // storage on the same event loop.
     unsafe { asynchronous::recv(request, aio) as i32 }
 }
 
+/// # Safety
+/// A non-null stat points to live, aligned, exclusively writable SDK stat storage.
 unsafe fn fill_stat(node: &Value, stat: *mut sdk::SMB_STRUCT_STAT) -> std::io::Result<()> {
     if stat.is_null() {
         return Err(bad());
@@ -613,6 +755,8 @@ unsafe fn fill_stat(node: &Value, stat: *mut sdk::SMB_STRUCT_STAT) -> std::io::R
     } else {
         libc::S_IFREG | 0o600
     };
+    // SAFETY: The caller supplies exclusive writable SDK stat storage; null was rejected. Its POD
+    // fields admit zero and are filled before return.
     unsafe {
         std::ptr::write_bytes(stat, 0, 1);
         (*stat).st_ex_dev = 1;
@@ -632,7 +776,11 @@ unsafe extern "C" fn stat(
     file: *mut sdk::smb_filename,
 ) -> i32 {
     guarded(|| {
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         let context = unsafe { context(handle) }?;
+        // SAFETY: The host supplies live filename/directory objects and their string fields for
+        // this callback; optional nulls are rejected or handled by the helper.
         let path = unsafe { name(handle, file) }?;
         let (node, _) = context.client.call(Request::Stat { path: path.clone() })?;
         // The host does folded lookup through get_real_filename_at. Its POSIX
@@ -640,6 +788,8 @@ unsafe extern "C" fn stat(
         if node.get("path").and_then(Value::as_str) != Some(path.as_str()) {
             return Err(std::io::Error::from_raw_os_error(libc::ENOENT));
         }
+        // SAFETY: The host supplies exclusive writable stat storage; the filename (if used) was
+        // validated by name above.
         unsafe { fill_stat(&node, &mut (*file).st) }?;
         Ok(0)
     })
@@ -650,15 +800,23 @@ unsafe extern "C" fn fstat(
     stat: *mut sdk::SMB_STRUCT_STAT,
 ) -> i32 {
     guarded(|| {
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         let context = unsafe { context(handle) }?;
         let opened = context.files.get(&(fsp as usize)).ok_or_else(bad)?;
         context.client.call(Request::AuthorizeRead {
             handle: opened.info.handle,
         })?;
+        // SAFETY: libc::stat is a C POD output structure whose integer and pointer fields admit
+        // zero initialization.
         let mut metadata: libc::stat = unsafe { std::mem::zeroed() };
+        // SAFETY: The descriptor is owned and the output points to a live, exclusively borrowed
+        // stat structure.
         if unsafe { libc::fstat(opened.fd, &mut metadata) } < 0 {
             return Err(std::io::Error::last_os_error());
         }
+        // SAFETY: The host provides exclusive writable stat output for this callback, as required
+        // by fill_stat.
         unsafe {
             fill_stat(
                 &serde_json::json!({"kind":opened.info.kind,"entry_id":opened.info.entry_id,"size":if opened.info.kind=="directory"{"0".into()}else{metadata.st_size.to_string()}}),
@@ -676,12 +834,18 @@ unsafe extern "C" fn fstatat(
     _flags: i32,
 ) -> i32 {
     guarded(|| {
+        // SAFETY: The host supplies live filename/directory objects and their string fields for
+        // this callback; optional nulls are rejected or handled by the helper.
         let path = unsafe { at_name(handle, dir, file) }?;
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         let context = unsafe { context(handle) }?;
         let (node, _) = context.client.call(Request::Stat { path: path.clone() })?;
         if node.get("path").and_then(Value::as_str) != Some(path.as_str()) {
             return Err(std::io::Error::from_raw_os_error(libc::ENOENT));
         }
+        // SAFETY: The host supplies exclusive writable stat storage; the filename (if used) was
+        // validated by name above.
         unsafe { fill_stat(&node, stat) }?;
         Ok(0)
     })
@@ -699,6 +863,8 @@ unsafe extern "C" fn real_filename(
         }
         // The host can pass its existing filename as the output slot. Preserve
         // that pointer on failure so a missing path can still become a new file.
+        // SAFETY: The host component is NUL-terminated and live for this callback; text rejects
+        // null and invalid UTF-8.
         let component = unsafe { text(component) }?;
         if component.is_empty()
             || component.contains('/')
@@ -710,6 +876,8 @@ unsafe extern "C" fn real_filename(
         let parent = if directory.is_null() {
             String::new()
         } else {
+            // SAFETY: The host supplies live filename/directory objects and their string fields for
+            // this callback; optional nulls are rejected or handled by the helper.
             unsafe { name(handle, (*directory).fsp_name) }?
         };
         let path = if parent.is_empty() {
@@ -717,15 +885,21 @@ unsafe extern "C" fn real_filename(
         } else {
             format!("{parent}/{component}")
         };
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         let (entry, _) = unsafe { context(handle) }?
             .client
             .call(Request::Stat { path })?;
         let name = entry.get("name").and_then(Value::as_str).ok_or_else(bad)?;
         let name = std::ffi::CString::new(name).map_err(|_| bad())?;
+        // SAFETY: mem_ctx is a live host talloc context or null; name is a live CString copied by
+        // talloc_strdup.
         let allocated = unsafe { sdk::talloc_strdup(mem_ctx.cast(), name.as_ptr()) };
         if allocated.is_null() {
             return Err(std::io::Error::from_raw_os_error(libc::ENOMEM));
         }
+        // SAFETY: found is a checked non-null host output slot; allocated is a successful talloc
+        // allocation owned by mem_ctx.
         unsafe {
             *found = allocated;
         }
@@ -734,6 +908,8 @@ unsafe extern "C" fn real_filename(
     if result == 0 {
         nt_status(0)
     } else {
+        // SAFETY: On Linux __errno_location returns valid thread-local errno storage for this
+        // thread.
         nt_status(match unsafe { *libc::__errno_location() } {
             libc::ENOENT => 0xc0000034,
             libc::EACCES | libc::EPERM => 0xc0000022,
@@ -749,7 +925,11 @@ unsafe extern "C" fn mkdirat(
     _mode: sdk::mode_t,
 ) -> i32 {
     guarded(|| {
+        // SAFETY: The host supplies live filename/directory objects and their string fields for
+        // this callback; optional nulls are rejected or handled by the helper.
         let path = unsafe { at_name(handle, dir, file) }?;
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         unsafe { context(handle) }?
             .client
             .call(Request::Namespace {
@@ -768,7 +948,11 @@ unsafe extern "C" fn unlinkat(
     _flags: i32,
 ) -> i32 {
     guarded(|| {
+        // SAFETY: The host supplies live filename/directory objects and their string fields for
+        // this callback; optional nulls are rejected or handled by the helper.
         let path = unsafe { at_name(handle, dir, file) }?;
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         unsafe { context(handle) }?
             .client
             .call(Request::Namespace {
@@ -792,9 +976,17 @@ unsafe extern "C" fn renameat(
         if how.is_null() {
             return Err(bad());
         }
+        // SAFETY: The host supplies live filename/directory objects and their string fields for
+        // this callback; optional nulls are rejected or handled by the helper.
         let path = unsafe { at_name(handle, srcdir, src) }?;
+        // SAFETY: The host supplies live filename/directory objects and their string fields for
+        // this callback; optional nulls are rejected or handled by the helper.
         let destination = Some(unsafe { at_name(handle, dstdir, dst) }?);
+        // SAFETY: The host supplies a live configuration object; its pointer was checked non-null
+        // before reading flags.
         let replace = unsafe { (*how).flags } & sdk::VFS_RENAME_HOW_NO_REPLACE as i32 == 0;
+        // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+        // event-loop thread and does not escape the callback.
         unsafe { context(handle) }?
             .client
             .call(Request::Namespace {
@@ -814,6 +1006,8 @@ unsafe extern "C" fn fdopendir(
 ) -> *mut sdk::DIR {
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(
         || -> std::io::Result<*mut sdk::DIR> {
+            // SAFETY: The owning host callback supplies a live handle; Context access stays on this
+            // event-loop thread and does not escape the callback.
             let context = unsafe { context(handle) }?;
             let path = context
                 .files
@@ -830,7 +1024,7 @@ unsafe extern "C" fn fdopendir(
                 .ok_or_else(bad)?
             {
                 let name = node.get("name").and_then(Value::as_str).ok_or_else(bad)?;
-                let mut entry: sdk::dirent = unsafe { std::mem::zeroed() };
+                let mut entry: sdk::dirent = Default::default();
                 if name.len() >= entry.d_name.len() || name.as_bytes().contains(&0) {
                     return Err(bad());
                 }
@@ -878,6 +1072,8 @@ unsafe extern "C" fn readdir(
         errno(libc::EINVAL);
         return std::ptr::null_mut();
     }
+    // SAFETY: This non-null opaque directory is the live Box returned by fdopendir; the host
+    // serializes callbacks and closedir consumes it exactly once.
     let directory = unsafe { &mut *directory.cast::<Directory>() };
     match directory.entries.get_mut(directory.position) {
         Some(entry) => {
@@ -892,6 +1088,8 @@ unsafe extern "C" fn readdir(
 }
 unsafe extern "C" fn rewind(_handle: *mut sdk::vfs_handle_struct, directory: *mut sdk::DIR) {
     if !directory.is_null() {
+        // SAFETY: The non-null opaque pointer is our live Directory box from fdopendir, exclusively
+        // accessed on the host event loop.
         unsafe {
             (*directory.cast::<Directory>()).position = 0;
         }
@@ -905,6 +1103,8 @@ unsafe extern "C" fn closedir(
         errno(libc::EINVAL);
         return -1;
     }
+    // SAFETY: This non-null opaque directory is the live Box returned by fdopendir; the host
+    // serializes callbacks and closedir consumes it exactly once.
     drop(unsafe { Box::from_raw(directory.cast::<Directory>()) });
     0
 }
@@ -1004,7 +1204,7 @@ deny_int!(
 );
 deny_int!(deny_delete_acl(h: *mut sdk::vfs_handle_struct, f: *mut sdk::files_struct));
 fn nt_status(value: u32) -> sdk::NTSTATUS {
-    unsafe { std::mem::transmute(value) }
+    sdk::NTSTATUS { v: value }
 }
 unsafe extern "C" fn deny_nt_acl(
     _h: *mut sdk::vfs_handle_struct,
@@ -1042,11 +1242,14 @@ unsafe extern "C" fn deny_fsctl(
     len: *mut u32,
 ) -> sdk::NTSTATUS {
     if !output.is_null() {
+        // SAFETY: The non-null output slot is writable SDK callback storage; no allocation is
+        // transferred on this unsupported operation.
         unsafe {
             *output = std::ptr::null_mut();
         }
     }
     if !len.is_null() {
+        // SAFETY: The non-null length slot is writable SDK callback storage for this invocation.
         unsafe {
             *len = 0;
         }
@@ -1072,63 +1275,84 @@ static FUNCTIONS: OnceLock<sdk::vfs_fn_pointers> = OnceLock::new();
 
 /// The host resolves this ABI symbol from the cdylib. Binding layout is checked against
 /// its exact target source version during the build; no guessed struct offsets.
+///
+/// # Safety
+/// Call only from the matching Samba SDK host after its module registry is ready.
+/// The host must honor the module-level callback ownership and lifetime contract.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn samba_init_module() -> sdk::NTSTATUS {
-    let functions = FUNCTIONS.get_or_init(|| {
-        let mut functions: sdk::vfs_fn_pointers = unsafe { std::mem::zeroed() };
-        functions.connect_fn = Some(connect);
-        functions.disconnect_fn = Some(disconnect);
-        functions.openat_fn = Some(openat);
-        functions.close_fn = Some(close);
-        functions.pread_fn = Some(pread);
-        functions.pread_send_fn = Some(pread_send);
-        functions.pread_recv_fn = Some(io_recv);
-        functions.pwrite_fn = Some(pwrite);
-        functions.pwrite_send_fn = Some(pwrite_send);
-        functions.pwrite_recv_fn = Some(io_recv);
-        functions.recvfile_fn = Some(deny_recvfile);
-        functions.sendfile_fn = Some(deny_sendfile);
-        functions.ftruncate_fn = Some(truncate);
-        functions.fsync_send_fn = Some(fsync_send);
-        functions.fsync_recv_fn = Some(fsync_recv);
-        functions.stat_fn = Some(stat);
-        functions.lstat_fn = Some(stat);
-        functions.fstat_fn = Some(fstat);
-        functions.fstatat_fn = Some(fstatat);
-        functions.get_real_filename_at_fn = Some(real_filename);
-        functions.mkdirat_fn = Some(mkdirat);
-        functions.unlinkat_fn = Some(unlinkat);
-        functions.renameat_fn = Some(renameat);
-        functions.fdopendir_fn = Some(fdopendir);
-        functions.readdir_fn = Some(readdir);
-        functions.rewind_dir_fn = Some(rewind);
-        functions.closedir_fn = Some(closedir);
-        functions.fchmod_fn = Some(deny_chmod);
-        functions.fchown_fn = Some(deny_chown);
-        functions.lchown_fn = Some(deny_lchown);
-        functions.fntimes_fn = Some(deny_times);
-        functions.fallocate_fn = Some(deny_allocate);
-        functions.fchflags_fn = Some(deny_flags);
-        functions.symlinkat_fn = Some(deny_symlink);
-        functions.linkat_fn = Some(deny_link);
-        functions.mknodat_fn = Some(deny_mknod);
-        functions.fsetxattr_fn = Some(deny_setxattr);
-        functions.fremovexattr_fn = Some(deny_removexattr);
-        functions.sys_acl_set_fd_fn = Some(deny_acl);
-        functions.sys_acl_delete_def_fd_fn = Some(deny_delete_acl);
-        functions.fset_nt_acl_fn = Some(deny_nt_acl);
-        functions.fset_dos_attributes_fn = Some(deny_dos);
-        functions.set_compression_fn = Some(deny_compression);
-        functions.fsctl_fn = Some(deny_fsctl);
-        functions.offload_write_send_fn = Some(deny_offload_write);
-        functions
+    let functions = FUNCTIONS.get_or_init(|| sdk::vfs_fn_pointers {
+        connect_fn: Some(connect),
+        disconnect_fn: Some(disconnect),
+        openat_fn: Some(openat),
+        close_fn: Some(close),
+        pread_fn: Some(pread),
+        pread_send_fn: Some(pread_send),
+        pread_recv_fn: Some(io_recv),
+        pwrite_fn: Some(pwrite),
+        pwrite_send_fn: Some(pwrite_send),
+        pwrite_recv_fn: Some(io_recv),
+        recvfile_fn: Some(deny_recvfile),
+        sendfile_fn: Some(deny_sendfile),
+        ftruncate_fn: Some(truncate),
+        fsync_send_fn: Some(fsync_send),
+        fsync_recv_fn: Some(fsync_recv),
+        stat_fn: Some(stat),
+        lstat_fn: Some(stat),
+        fstat_fn: Some(fstat),
+        fstatat_fn: Some(fstatat),
+        get_real_filename_at_fn: Some(real_filename),
+        mkdirat_fn: Some(mkdirat),
+        unlinkat_fn: Some(unlinkat),
+        renameat_fn: Some(renameat),
+        fdopendir_fn: Some(fdopendir),
+        readdir_fn: Some(readdir),
+        rewind_dir_fn: Some(rewind),
+        closedir_fn: Some(closedir),
+        fchmod_fn: Some(deny_chmod),
+        fchown_fn: Some(deny_chown),
+        lchown_fn: Some(deny_lchown),
+        fntimes_fn: Some(deny_times),
+        fallocate_fn: Some(deny_allocate),
+        fchflags_fn: Some(deny_flags),
+        symlinkat_fn: Some(deny_symlink),
+        linkat_fn: Some(deny_link),
+        mknodat_fn: Some(deny_mknod),
+        fsetxattr_fn: Some(deny_setxattr),
+        fremovexattr_fn: Some(deny_removexattr),
+        sys_acl_set_fd_fn: Some(deny_acl),
+        sys_acl_delete_def_fd_fn: Some(deny_delete_acl),
+        fset_nt_acl_fn: Some(deny_nt_acl),
+        fset_dos_attributes_fn: Some(deny_dos),
+        set_compression_fn: Some(deny_compression),
+        fsctl_fn: Some(deny_fsctl),
+        offload_write_send_fn: Some(deny_offload_write),
+        ..Default::default()
     });
+    // SAFETY: The SDK version matches build.rs; the name and OnceLock callback table have static
+    // lifetime and match the generated function signatures.
     unsafe { sdk::smb_register_vfs(51, c"zxs".as_ptr(), functions) }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn input_buffer_checks_null_empty_and_oversize_before_borrowing() {
+        // SAFETY: null/zero and invalid sizes must be rejected before dereference;
+        // the only nonempty valid buffer is a live local array borrowed here.
+        unsafe {
+            assert!(input_bytes(std::ptr::null(), 0).unwrap().is_empty());
+            assert!(input_bytes(std::ptr::null(), 1).is_err());
+            let bytes = [1_u8, 2, 3];
+            assert!(input_bytes(bytes.as_ptr().cast(), usize::MAX).is_err());
+            assert_eq!(
+                input_bytes(bytes.as_ptr().cast(), bytes.len()).unwrap(),
+                &bytes
+            );
+        }
+    }
 
     #[test]
     fn removed_open_descriptor_is_closed_on_poisoned_lock_and_remote_save_failure() {
@@ -1181,6 +1405,8 @@ mod tests {
     fn failed_name_lookup_preserves_the_callers_filename() {
         let original = c"new.txt".as_ptr().cast_mut();
         let mut found = original;
+        // SAFETY: The output points to a live local slot and the static invalid component is
+        // rejected before any null host handle is accessed.
         let status = unsafe {
             real_filename(
                 std::ptr::null_mut(),
@@ -1196,11 +1422,15 @@ mod tests {
     #[test]
     fn absolute_names_are_confined_to_the_exact_share_root() {
         let root = c"/safe/share";
-        let mut connection: sdk::connection_struct = unsafe { std::mem::zeroed() };
-        connection.connectpath = root.as_ptr().cast_mut();
-        let mut handle: sdk::vfs_handle_struct = unsafe { std::mem::zeroed() };
-        handle.conn = &mut connection;
-        let mut file: sdk::smb_filename = unsafe { std::mem::zeroed() };
+        let mut connection = sdk::connection_struct {
+            connectpath: root.as_ptr().cast_mut(),
+            ..Default::default()
+        };
+        let mut handle = sdk::vfs_handle_struct {
+            conn: &mut connection,
+            ..Default::default()
+        };
+        let mut file: sdk::smb_filename = Default::default();
         for (input, expected) in [
             ("/safe/share", Some("")),
             ("/safe/share/./文件.txt", Some("文件.txt")),
@@ -1212,6 +1442,8 @@ mod tests {
         ] {
             let input = std::ffi::CString::new(input).unwrap();
             file.base_name = input.as_ptr().cast_mut();
+            // SAFETY: All SDK objects and CString storage are local, initialized, and live until
+            // name returns; their pointers reference those objects.
             let result = unsafe { name(&mut handle, &file) };
             match expected {
                 Some(expected) => assert_eq!(result.unwrap(), expected),

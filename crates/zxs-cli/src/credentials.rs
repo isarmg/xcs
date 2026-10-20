@@ -1,7 +1,7 @@
 //! Bounded password/token input; secrets are never accepted as CLI arguments.
 use crate::{Result, private_io};
 use std::{io::Read, path::Path};
-use zxs_server::auth_primitives as auth;
+use zxs_auth as auth;
 
 const PASSWORD_INPUT_BYTES: usize = auth::PASSWORD_MAX_BYTES + 2;
 const TOKEN_INPUT_BYTES: usize = auth::SESSION_TOKEN_ENCODED_BYTES + 2;

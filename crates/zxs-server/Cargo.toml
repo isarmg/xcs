@@ -1,8 +1,9 @@
 [package]
 name = "zxs-server"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 license.workspace = true
+rust-version.workspace = true
 
 [features]
 default = ["core"]
@@ -11,14 +12,14 @@ core = ["dep:zxs-core"]
 [dependencies]
 zxs-auth.workspace = true
 axum = { version = "0.8.9", features = ["macros"] }
-blake3 = "1.8.7"
+blake3.workspace = true
 bytes = "1"
 futures-util = "0.3"
 http = "1"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde.workspace = true
+serde_json.workspace = true
 sysinfo = { version = "=0.39.6", default-features = false, features = ["system"] }
-thiserror = "2"
+thiserror.workspace = true
 tokio = { version = "1.53.2", features = ["full"] }
 tokio-util = { version = "0.7", features = ["io"] }
 tower-http = { version = "0.6", features = ["trace", "limit", "fs"] }
@@ -29,7 +30,7 @@ zxs-core = { path = "../zxs-core", optional = true }
 zxs-contract = { path = "../zxs-contract" }
 zxs-naming = { path = "../zxs-naming" }
 zxs-smb = { path = "../../integrations/smb" }
-tempfile = "3"
+tempfile.workspace = true
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

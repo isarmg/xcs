@@ -41,7 +41,7 @@ struct Shared {
 enum Handle {
     Read(Content, String),
     Directory(File),
-    Write(Writer),
+    Write(Box<Writer>),
 }
 
 struct Writer {

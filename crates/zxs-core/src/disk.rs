@@ -459,28 +459,29 @@ fn production_device(root: &Path) -> Result<(String, String)> {
         ));
     }
     // Multiple namespaces of one NVMe controller still share a physical drive.
-    if let Some(name) = physical.file_name().and_then(|n| n.to_str()) {
-        if name.starts_with("nvme") && name.contains('n') {
-            let suffix = &name[4..];
-            if suffix
-                .split_once('n')
-                .is_some_and(|(controller, namespace)| {
-                    !controller.is_empty()
-                        && !namespace.is_empty()
-                        && controller.bytes().all(|b| b.is_ascii_digit())
-                        && namespace.bytes().all(|b| b.is_ascii_digit())
-                })
-            {
-                physical = physical
-                    .parent()
-                    .ok_or_else(|| {
-                        Error::new(
-                            "DISK_IDENTITY_MISMATCH",
-                            "NVMe controller identity is missing",
-                        )
-                    })?
-                    .to_path_buf();
-            }
+    if let Some(name) = physical.file_name().and_then(|n| n.to_str())
+        && name.starts_with("nvme")
+        && name.contains('n')
+    {
+        let suffix = &name[4..];
+        if suffix
+            .split_once('n')
+            .is_some_and(|(controller, namespace)| {
+                !controller.is_empty()
+                    && !namespace.is_empty()
+                    && controller.bytes().all(|b| b.is_ascii_digit())
+                    && namespace.bytes().all(|b| b.is_ascii_digit())
+            })
+        {
+            physical = physical
+                .parent()
+                .ok_or_else(|| {
+                    Error::new(
+                        "DISK_IDENTITY_MISMATCH",
+                        "NVMe controller identity is missing",
+                    )
+                })?
+                .to_path_buf();
         }
     }
     let mut fsid = None;

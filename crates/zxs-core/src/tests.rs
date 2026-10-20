@@ -1117,7 +1117,11 @@ fn faults_replay_same_operation_and_never_publish_early() {
         drop(e);
         let mut e = Engine::open(&f.root).unwrap();
         let result = e.operation(&request.operation_id).unwrap();
-        assert_eq!(result.commit_state, "PUBLISHED", "{point}");
+        assert_eq!(
+            result.commit_state,
+            zxs_contract::CommitState::Published,
+            "{point}"
+        );
         assert_eq!(
             e.commit_workspace(request.clone()).unwrap().commit_id,
             result.commit_id
@@ -1331,8 +1335,11 @@ fn published_success_survives_later_content_damage() {
     fs::remove_file(content).unwrap();
     let e = Engine::open(&f.root).unwrap();
     let result = e.operation(&op.operation_id).unwrap();
-    assert_eq!(result.protection_at_publish, "TARGET_MET");
-    assert_eq!(result.commit_state, "PUBLISHED");
+    assert_eq!(
+        result.protection_at_publish,
+        zxs_contract::ProtectionAtPublish::TargetMet
+    );
+    assert_eq!(result.commit_state, zxs_contract::CommitState::Published);
     assert_eq!(result.current_health, "UNAVAILABLE");
 }
 
@@ -1951,7 +1958,11 @@ fn partial_publication_is_not_visible_with_two_members_and_receipt_tampering_is_
         assert!(e.is_read_only());
         assert_eq!(
             e.operation(&request.operation_id).unwrap().commit_state,
-            if complete { "PUBLISHED" } else { "IN_DOUBT" }
+            if complete {
+                CommitState::Published
+            } else {
+                CommitState::InDoubt
+            }
         );
         assert_eq!(
             e.list_tree(&r.main_branch_id).unwrap().is_empty(),
@@ -2578,7 +2589,7 @@ fn accepted_batch_recovers_without_staged_sources_and_replays_exactly_once() {
 
     let mut engine = Engine::open(&fixture.root).unwrap();
     let result = engine.operation(&request.operation_id).unwrap();
-    assert_eq!(result.commit_state, "PUBLISHED");
+    assert_eq!(result.commit_state, zxs_contract::CommitState::Published);
     assert_eq!(
         engine.workspace(&workspace.workspace_id).unwrap().state,
         "committed"
@@ -3532,7 +3543,7 @@ fn pending_operation_reads_exact_snapshot_replica_without_repair() {
         let path = crate::journal::object_path(source, kind, &hash);
         fs::write(&path, b"broken").unwrap();
         let result = engine.operation(&operation).unwrap();
-        assert_eq!(result.commit_state, "IN_DOUBT");
+        assert_eq!(result.commit_state, zxs_contract::CommitState::InDoubt);
         assert_eq!(engine.operation_owner(&operation).as_deref(), Some("admin"));
         assert_eq!(fs::read(&path).unwrap(), b"broken");
         for disk in &members {

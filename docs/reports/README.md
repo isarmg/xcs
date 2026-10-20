@@ -1,6 +1,6 @@
 # 实现与检查报告
 
-[文档目录](../README.md) · [交付状态](../23-delivery-and-decisions.md)
+[文档目录](../README.md) · [交付状态](../23-delivery-and-decisions.md) · [变更索引](../CHANGELOG.md)
 
 | 报告 | 范围 |
 | --- | --- |

@@ -863,10 +863,10 @@ mod tests {
                 {
                     return Some(path);
                 }
-                if path.is_dir() {
-                    if let Some(proof) = find_proof(&path) {
-                        return Some(proof);
-                    }
+                if path.is_dir()
+                    && let Some(proof) = find_proof(&path)
+                {
+                    return Some(proof);
                 }
             }
             None

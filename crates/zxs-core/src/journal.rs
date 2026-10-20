@@ -377,29 +377,57 @@ pub(crate) fn store_object<T: Serialize + ?Sized>(
 }
 /// Encode an immutable object once for all replicas, retaining the same hash
 /// function, reader bounds, atomic publication and existing-byte checks.
+#[cfg(test)]
 pub(crate) fn store_object_replicas_bounded<T: Serialize + ?Sized>(
     members: &[DiskConfig],
-    kind: &str,
+    kind: &'static str,
     value: &T,
     maximum: usize,
 ) -> Result<String> {
-    let maximum = if members.is_empty() {
-        maximum
-    } else {
-        maximum.min(MAX_METADATA)
-    };
-    let (bytes, hash) = encode_hashed_object(kind, value)?;
-    if bytes.len() > maximum {
-        return Err(Error::new(
-            "RESOURCE_LIMIT",
-            format!("serialized metadata exceeds {maximum} byte reader limit"),
-        ));
-    }
-    for disk in members {
-        write_atomic(&object_path(disk, kind, &hash), &bytes, false)?;
-    }
-    Ok(hash)
+    PreparedMetadataObject::new(kind, value, maximum)?.store(members)
 }
+
+/// Frozen canonical bytes shared by size preflight and every replica write.
+/// Construction performs all serialization and hashing; installation retains
+/// atomic writes, immutable-byte collision checks and reader-size limits.
+pub(crate) struct PreparedMetadataObject {
+    kind: &'static str,
+    pub(crate) hash: String,
+    bytes: Vec<u8>,
+}
+impl PreparedMetadataObject {
+    pub(crate) fn new<T: Serialize + ?Sized>(
+        kind: &'static str,
+        value: &T,
+        maximum: usize,
+    ) -> Result<Self> {
+        let (bytes, hash) = encode_hashed_object(kind, value)?;
+        if bytes.len() > maximum {
+            return Err(Error::new(
+                "RESOURCE_LIMIT",
+                format!("serialized metadata exceeds {maximum} byte reader limit"),
+            ));
+        }
+        Ok(Self { kind, hash, bytes })
+    }
+    pub(crate) fn store(&self, members: &[DiskConfig]) -> Result<String> {
+        if !members.is_empty() && self.bytes.len() > MAX_METADATA {
+            return Err(Error::new(
+                "RESOURCE_LIMIT",
+                "serialized metadata exceeds reader limit",
+            ));
+        }
+        for disk in members {
+            write_atomic(
+                &object_path(disk, self.kind, &self.hash),
+                &self.bytes,
+                false,
+            )?;
+        }
+        Ok(self.hash.clone())
+    }
+}
+
 pub(crate) fn load_object<T: serde::de::DeserializeOwned + Serialize>(
     d: &DiskConfig,
     kind: &str,
@@ -455,51 +483,84 @@ pub(crate) fn state_pages(
 }
 
 /// Each page is immutable and independently hashed; the journal holds only roots.
+#[cfg(test)]
 pub(crate) fn store_snapshot(members: &[DiskConfig], state: &State) -> Result<String> {
     store_snapshot_bounded(members, state, MAX_METADATA)
 }
+#[cfg(test)]
 pub(crate) fn store_snapshot_bounded(
     members: &[DiskConfig],
     state: &State,
     maximum: usize,
 ) -> Result<String> {
-    store_snapshot_described(members, state, maximum).map(|(hash, _)| hash)
+    prepare_snapshot(state, maximum)?.store(members)
 }
 pub(crate) fn snapshot_descriptor(state: &State, maximum: usize) -> Result<Snapshot> {
-    store_snapshot_described(&[], state, maximum).map(|(_, snapshot)| snapshot)
+    Ok(prepare_snapshot(state, maximum)?.descriptor)
 }
-fn store_snapshot_described(
-    members: &[DiskConfig],
-    state: &State,
-    maximum: usize,
-) -> Result<(String, Snapshot)> {
+
+pub(crate) struct PreparedSnapshot {
+    pub(crate) descriptor: Snapshot,
+    pub(crate) hash: String,
+    objects: Vec<PreparedMetadataObject>,
+}
+impl PreparedSnapshot {
+    pub(crate) fn store(&self, members: &[DiskConfig]) -> Result<String> {
+        for object in &self.objects {
+            object.store(members)?;
+        }
+        Ok(self.hash.clone())
+    }
+}
+pub(crate) fn prepare_snapshot(state: &State, maximum: usize) -> Result<PreparedSnapshot> {
     let value = serde_json::to_value(state)?;
     let obj = value
         .as_object()
         .ok_or_else(|| Error::new("STATE_INVALID", "state is not an object"))?;
     let mut pages = BTreeMap::new();
     let mut scalars = serde_json::Map::new();
+    let mut objects = Vec::new();
     for (field, value) in obj {
-        if let Some(map) = value.as_object() {
+        // Event indexes are fixed-width, so lexical order is chronological.
+        // Reuse ordinary object pages: dependency repair and historical proofs
+        // continue to traverse the exact same content-addressed object graph.
+        let events = (field == "events").then(|| {
+            value
+                .as_array()
+                .expect("State events serialize as an array")
+                .iter()
+                .enumerate()
+                .map(|(i, event)| (format!("{i:020}"), event.clone()))
+                .collect::<serde_json::Map<_, _>>()
+        });
+        if let Some(map) = events.as_ref().or_else(|| value.as_object()) {
             let mut hashes = Vec::new();
             for page in state_pages(map) {
-                let hash = store_object_replicas_bounded(members, "state-page", &page, maximum)?;
-                hashes.push(hash);
+                let object = PreparedMetadataObject::new("state-page", &page, maximum)?;
+                hashes.push(object.hash.clone());
+                objects.push(object);
             }
             pages.insert(field.clone(), hashes);
         } else {
             scalars.insert(field.clone(), value.clone());
         }
     }
-    let snapshot = Snapshot {
+    let descriptor = Snapshot {
         format_version: 2,
         sequence: state.sequence,
         pages,
         scalars,
     };
-    let hash = store_object_replicas_bounded(members, "snapshot", &snapshot, maximum)?;
-    Ok((hash, snapshot))
+    let root = PreparedMetadataObject::new("snapshot", &descriptor, maximum)?;
+    let hash = root.hash.clone();
+    objects.push(root);
+    Ok(PreparedSnapshot {
+        descriptor,
+        hash,
+        objects,
+    })
 }
+
 #[cfg(test)]
 thread_local! {
     pub(crate) static SNAPSHOT_LOAD_COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
@@ -526,7 +587,28 @@ pub(crate) fn load_snapshot(d: &DiskConfig, hash: &str) -> Result<State> {
                 }
             }
         }
-        out.insert(field, serde_json::Value::Object(map));
+        if out.contains_key(&field) {
+            return Err(Error::new(
+                "OBJECT_CORRUPT",
+                "snapshot field is both scalar and paged",
+            ));
+        }
+        let value = if field == "events" {
+            let mut events = Vec::with_capacity(map.len());
+            for (index, (key, value)) in map.into_iter().enumerate() {
+                if key != format!("{index:020}") {
+                    return Err(Error::new(
+                        "OBJECT_CORRUPT",
+                        "snapshot event indexes are not contiguous",
+                    ));
+                }
+                events.push(value);
+            }
+            serde_json::Value::Array(events)
+        } else {
+            serde_json::Value::Object(map)
+        };
+        out.insert(field, value);
     }
     let state: State = serde_json::from_value(serde_json::Value::Object(out))?;
     if state.sequence != snapshot.sequence {
@@ -644,7 +726,8 @@ pub(crate) fn verify_publication_seal(
         || p.result.request_digest != c.request_digest
         || p.result.sequence != c.sequence
         || (p.recovery.is_none()
-            && (p.result.commit_state != "PUBLISHED" || p.finalize.recovery_id.is_some()))
+            && (p.result.commit_state != zxs_contract::CommitState::Published
+                || p.finalize.recovery_id.is_some()))
     {
         return Err(Error::new(
             "PUBLICATION_INVALID",
@@ -956,6 +1039,43 @@ mod replication_tests {
     }
 
     #[test]
+    fn prepared_metadata_serializes_only_at_preflight_and_reuses_exact_bytes() {
+        let temp = tempfile::tempdir().unwrap();
+        let config = Config::development([
+            temp.path().join("one"),
+            temp.path().join("two"),
+            temp.path().join("three"),
+        ]);
+        let value = CountedValue {
+            value: serde_json::json!({"retained": ["history", "events", "idempotency"]}),
+            serializations: Cell::new(0),
+        };
+        let prepared = PreparedMetadataObject::new("state-page", &value, MAX_METADATA).unwrap();
+        assert_eq!(value.serializations.get(), 2);
+        let expected_hash = object_hash("state-page", &value.value).unwrap();
+        let expected_bytes = encode_metadata(&value.value, MAX_METADATA).unwrap();
+        assert_eq!(prepared.hash, expected_hash);
+        for _ in 0..2 {
+            assert_eq!(prepared.store(&config.disks).unwrap(), expected_hash);
+        }
+        assert_eq!(
+            value.serializations.get(),
+            2,
+            "replica writes must not encode again"
+        );
+        for disk in &config.disks {
+            assert_eq!(
+                read_bytes(
+                    &object_path(disk, "state-page", &expected_hash),
+                    MAX_METADATA
+                )
+                .unwrap(),
+                expected_bytes
+            );
+        }
+    }
+
+    #[test]
     fn replicated_metadata_rejects_oversize_before_creating_any_object() {
         let temp = tempfile::tempdir().unwrap();
         let config = Config::development([
@@ -1169,7 +1289,7 @@ mod snapshot_partition_tests {
                     && pages.iter().any(|page| {
                         page.len() < STATE_PAGE_ENTRIES
                             && page.keys().next().unwrap() < key
-                            && key < page.keys().last().unwrap()
+                            && key < page.keys().next_back().unwrap()
                     })
             })
             .unwrap();
@@ -1211,6 +1331,101 @@ mod snapshot_partition_tests {
         assert!(partition(&serde_json::Map::new()).is_empty());
     }
 
+    fn event_state(count: usize) -> State {
+        State {
+            events: (0..count)
+                .map(|index| Event {
+                    sequence: index as u64,
+                    operation_id: format!("op-{index}"),
+                    kind: "MUTATION".into(),
+                    object_id: "retained-history".into(),
+                })
+                .collect(),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn event_pages_remove_scalar_cap_preserve_order_and_append_locality() {
+        let temp = tempfile::tempdir().unwrap();
+        let config = Config::development([
+            temp.path().join("one"),
+            temp.path().join("two"),
+            temp.path().join("three"),
+        ]);
+        let state = event_state(2000);
+        let maximum = 20_000;
+        assert!(encode_metadata(&state.events, maximum).is_err());
+        let prepared = prepare_snapshot(&state, maximum).unwrap();
+        assert!(!prepared.descriptor.scalars.contains_key("events"));
+        assert!(prepared.descriptor.pages["events"].len() > 1);
+        let hash = prepared.store(&config.disks).unwrap();
+        for disk in &config.disks {
+            assert_eq!(load_snapshot(disk, &hash).unwrap(), state);
+            assert_eq!(
+                read_bytes(&object_path(disk, "snapshot", &hash), MAX_METADATA).unwrap(),
+                encode_metadata(&prepared.descriptor, maximum).unwrap()
+            );
+        }
+        let next = prepare_snapshot(&event_state(2001), maximum).unwrap();
+        let old = &prepared.descriptor.pages["events"];
+        let new = &next.descriptor.pages["events"];
+        assert_eq!(&old[..old.len() - 1], &new[..old.len() - 1]);
+        // Prepared objects remain immutable, and installation still refuses
+        // conflicting disk bytes rather than overwriting or trusting a cache.
+        let page = &old[0];
+        let path = object_path(&config.disks[0], "state-page", page);
+        std::fs::write(&path, b"corrupt").unwrap();
+        assert_eq!(
+            prepared.store(&config.disks).unwrap_err().code(),
+            "OBJECT_COLLISION"
+        );
+        assert_eq!(std::fs::read(path).unwrap(), b"corrupt");
+    }
+
+    #[test]
+    fn event_snapshot_rejects_gaps_and_ambiguous_scalar_page_fields() {
+        let temp = tempfile::tempdir().unwrap();
+        let config = Config::development([
+            temp.path().join("one"),
+            temp.path().join("two"),
+            temp.path().join("three"),
+        ]);
+        let disk = &config.disks[0];
+        let prepared = prepare_snapshot(&event_state(1), MAX_METADATA).unwrap();
+        prepared.store(std::slice::from_ref(disk)).unwrap();
+        let mut descriptor = prepared.descriptor;
+        let original_pages = descriptor.pages["events"].clone();
+        descriptor
+            .pages
+            .get_mut("events")
+            .unwrap()
+            .extend(original_pages);
+        let duplicate_hash = store_object(disk, "snapshot", &descriptor).unwrap();
+        assert_eq!(
+            load_snapshot(disk, &duplicate_hash).unwrap_err().code(),
+            "OBJECT_CORRUPT"
+        );
+        let bad_page = serde_json::json!({"00000000000000000001": event_state(1).events[0]});
+        descriptor.pages.insert(
+            "events".into(),
+            vec![store_object(disk, "state-page", &bad_page).unwrap()],
+        );
+        let hash = store_object(disk, "snapshot", &descriptor).unwrap();
+        assert_eq!(
+            load_snapshot(disk, &hash).unwrap_err().code(),
+            "OBJECT_CORRUPT"
+        );
+        descriptor
+            .scalars
+            .insert("events".into(), serde_json::json!([]));
+        let hash = store_object(disk, "snapshot", &descriptor).unwrap();
+        assert_eq!(
+            load_snapshot(disk, &hash).unwrap_err().code(),
+            "OBJECT_CORRUPT"
+        );
+    }
+
     #[test]
     fn legacy_and_content_defined_snapshots_restore_identical_full_state() {
         let temp = tempfile::tempdir().unwrap();
@@ -1223,6 +1438,7 @@ mod snapshot_partition_tests {
         let state = State {
             sequence: 123,
             business_generation: 19,
+            events: event_state(300).events,
             content_states: synthetic_map()
                 .into_iter()
                 .map(|(key, _)| key)

@@ -117,7 +117,7 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                 return Err("provide --config or exactly three --development-disks paths".into());
             };
             let secret = password(password_file.as_deref())?;
-            zxs_server::auth_primitives::normalize_administrator_username(&username)?;
+            zxs_auth::normalize_administrator_username(&username)?;
             if root.join("auth.json").exists() {
                 return Err("credentials already initialized".into());
             }
@@ -133,6 +133,7 @@ pub(crate) async fn run(args: Args) -> Result<()> {
         Command::Serve {
             listen,
             external_origin,
+            trusted_proxy_ips,
             web_dir,
             max_upload_bytes,
             smb_socket,
@@ -145,6 +146,7 @@ pub(crate) async fn run(args: Args) -> Result<()> {
             let mut config = ServerConfig::loopback(&root);
             config.listen = listen;
             config.external_origin = external_origin;
+            config.trusted_proxy_ips = trusted_proxy_ips;
             config.web_dir = web_dir;
             config.max_upload_bytes = max_upload_bytes;
             if let Some(socket) = smb_socket {
@@ -162,9 +164,7 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                     {
                         return Err("SMB user mappings must be nonempty and unique".into());
                     }
-                    zxs_server::auth_primitives::require_canonical_administrator_username(
-                        principal,
-                    )?;
+                    zxs_auth::require_canonical_administrator_username(principal)?;
                 }
                 config.smb = Some(zxs_server::SmbConfig {
                     socket,
@@ -228,16 +228,13 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                     "primary disks have no upstream; higher levels require an upstream".into(),
                 );
             }
-            if let Some(source) = &upstream {
-                if !draft
+            if let Some(source) = &upstream
+                && !draft
                     .disks
                     .iter()
                     .any(|disk| &disk.slot_id == source && disk.level.checked_add(1) == Some(level))
-                {
-                    return Err(
-                        "upstream must name a disk in the immediately previous level".into(),
-                    );
-                }
+            {
+                return Err("upstream must name a disk in the immediately previous level".into());
             }
             draft.disks.push(zxs_core::DiskConfig {
                 slot_id: slot.clone(),

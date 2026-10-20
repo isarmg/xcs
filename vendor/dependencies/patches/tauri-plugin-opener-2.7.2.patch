@@ -1,0 +1,110 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -101,7 +101,7 @@
+ version = "2"
+ 
+ [target.'cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd"))'.dependencies.zbus]
+-version = "5.9"
++version = "6"
+ 
+ [target.'cfg(target_os = "ios")'.dependencies.tauri]
+ version = "2.12"
+--- a/Cargo.toml.orig
++++ b/Cargo.toml.orig
+@@ -51,7 +51,7 @@
+ ]
+ 
+ [target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"netbsd\", target_os = \"openbsd\"))".dependencies]
+-zbus = { workspace = true }
++zbus = "6"
+ url = { workspace = true }
+ 
+ [target."cfg(target_os = \"macos\")".dependencies.objc2-app-kit]
+--- a/src/reveal_item_in_dir.rs
++++ b/src/reveal_item_in_dir.rs
+@@ -213,32 +213,31 @@
+     use std::path::PathBuf;
+ 
+     pub fn reveal_items_in_dir(paths: &[PathBuf]) -> crate::Result<()> {
+-        // `zbus::blocking` starts its own tokio runtime when zbus is built with the `tokio` feature,
+-        // which panics with "Cannot start a runtime from within a runtime" if the caller is already
+-        // inside one (e.g. an async command), so always run it on a dedicated thread.
++        // Keep the zbus 6 runtime off the caller thread, including async callers.
++        // The blocking adapter drives the entire D-Bus operation on this dedicated thread.
++        // This avoids nesting a runtime when invoked from an async command.
+         std::thread::scope(|s| {
+-            s.spawn(|| reveal_items_in_dir_blocking(paths))
++            s.spawn(|| zbus::block_on(reveal_items_in_dir_async(paths)))
+                 .join()
+                 .unwrap_or_else(|e| std::panic::resume_unwind(e))
+         })
+     }
+ 
+-    fn reveal_items_in_dir_blocking(paths: &[PathBuf]) -> crate::Result<()> {
+-        let connection = zbus::blocking::Connection::session()?;
+-
+-        reveal_with_filemanager1(paths, &connection).or_else(|e| {
+-            // Fallback to opening the directory of the first item if revealing multiple items fails.
+-            if let Some(first_path) = paths.first() {
+-                reveal_with_open_uri_portal(first_path, &connection)
+-            } else {
+-                Err(e)
+-            }
+-        })
+-    }
+-
+-    fn reveal_with_filemanager1(
++    async fn reveal_items_in_dir_async(paths: &[PathBuf]) -> crate::Result<()> {
++        let connection = zbus::Connection::session().await?;
++
++        match reveal_with_filemanager1(paths, &connection).await {
++            Ok(()) => Ok(()),
++            Err(error) => match paths.first() {
++                Some(first_path) => reveal_with_open_uri_portal(first_path, &connection).await,
++                None => Err(error),
++            },
++        }
++    }
++
++    async fn reveal_with_filemanager1(
+         paths: &[PathBuf],
+-        connection: &zbus::blocking::Connection,
++        connection: &zbus::Connection,
+     ) -> crate::Result<()> {
+         let uris: Result<Vec<_>, _> = paths
+             .iter()
+@@ -259,14 +258,14 @@
+             async fn ShowItems(&self, name: Vec<&str>, arg2: &str) -> crate::Result<()>;
+         }
+ 
+-        let proxy = FileManager1ProxyBlocking::new(connection)?;
+-
+-        proxy.ShowItems(uri_strs, "")
+-    }
+-
+-    fn reveal_with_open_uri_portal(
++        let proxy = FileManager1Proxy::new(connection).await?;
++
++        proxy.ShowItems(uri_strs, "").await
++    }
++
++    async fn reveal_with_open_uri_portal(
+         path: &Path,
+-        connection: &zbus::blocking::Connection,
++        connection: &zbus::Connection,
+     ) -> crate::Result<()> {
+         let uri = url::Url::from_file_path(path)
+             .map_err(|_| crate::Error::FailedToConvertPathToFileUrl)?;
+@@ -285,9 +284,9 @@
+             ) -> crate::Result<()>;
+         }
+ 
+-        let proxy = PortalDesktopProxyBlocking::new(connection)?;
+-
+-        proxy.OpenDirectory("", uri.as_str(), HashMap::new())
++        let proxy = PortalDesktopProxy::new(connection).await?;
++
++        proxy.OpenDirectory("", uri.as_str(), HashMap::new()).await
+     }
+ }
+ 

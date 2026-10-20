@@ -59,7 +59,11 @@ impl Engine {
         principal: &str,
     ) -> Result<Plan> {
         self.require_write()?;
-        self.require_grant(self.repository_for_history(history)?, principal, "manage")?;
+        self.require_grant(
+            self.repository_for_history(history)?,
+            principal,
+            zxs_contract::RepositoryAccess::Manage,
+        )?;
         let mut ids = versions;
         ids.sort();
         ids.dedup();
@@ -75,7 +79,11 @@ impl Engine {
     }
     pub fn create_split_plan(&mut self, history: &str, cut: &str, principal: &str) -> Result<Plan> {
         self.require_write()?;
-        self.require_grant(self.repository_for_history(history)?, principal, "manage")?;
+        self.require_grant(
+            self.repository_for_history(history)?,
+            principal,
+            zxs_contract::RepositoryAccess::Manage,
+        )?;
         self.check_directory_split(history)?;
         if self
             .state
@@ -256,7 +264,11 @@ impl Engine {
             .as_str()
             .ok_or_else(|| Error::new("PLAN_INVALID", "history missing"))?
             .to_string();
-        self.require_grant(self.repository_for_history(&history)?, principal, "manage")?;
+        self.require_grant(
+            self.repository_for_history(&history)?,
+            principal,
+            zxs_contract::RepositoryAccess::Manage,
+        )?;
         let result = match plan.kind.as_str() {
             "purge" => {
                 let ids = plan.input["version_ids"]
@@ -647,12 +659,11 @@ impl Engine {
                     state.branches.insert(new.branch_id.clone(), new);
                 }
                 for (file,selected_branch) in state.file_selections.clone() {
-                    if moved.contains(&selected_branch) {
-                        if let (Some(new_file),Some(new_branch))=(file_map.get(&file),branch_map.get(&selected_branch)) {
+                    if moved.contains(&selected_branch)
+                        && let (Some(new_file),Some(new_branch))=(file_map.get(&file),branch_map.get(&selected_branch)) {
                             state.file_selections.insert(new_file.clone(),new_branch.clone());
                             state.file_selections.remove(&file);
                         }
-                    }
                 }
                 let new_main = original.main_branch_id.as_ref().filter(|id| moved.contains(*id))
                     .and_then(|id| branch_map.get(id)).cloned()
@@ -790,6 +801,10 @@ fn remap_pending_versions(
         .collect()
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "Boundary construction records distinct provenance fields; tracked request-type migration in .github/QUALITY.md"
+)]
 fn insert_boundary(
     state: &mut State,
     history: &str,

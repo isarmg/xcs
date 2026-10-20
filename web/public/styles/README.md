@@ -42,6 +42,6 @@
 
 字体 CSS 别名统一为 `ZxsUI`，实际文件继续使用 `/fonts/zxs-regular.woff2` 和 `/fonts/zxs-bold.woff2`。字体来源和许可见 [`../fonts/README.md`](../fonts/README.md)。构建工具应递归复制 `web/public/`，保留目录层级，并将这些 CSS 纳入资源清单、缓存和完整性检查。
 
-本目录从项目所有者提供的 `/mnt/sarmg.org/zxss/web/design-tokens/`、`admin-ui/` 与 `zxss-web/startup.css` 复用并按 zxs DOM 契约定制。内容块外观原先参考 `union-rust` 的 Apache-2.0 设计；本次仅复制 CSS 声明，没有引入其脚本、认证逻辑或构建工具。第三方字体的许可和来源继续保留在字体 README 中。
+本目录从项目所有者提供的设计令牌、管理界面样式与启动样式复用并按 ZXS DOM 契约定制。内容块外观原先参考 `union-rust` 的 Apache-2.0 设计；仅复制 CSS 声明，没有引入其脚本、认证逻辑或构建工具。第三方字体的许可和来源继续保留在字体 README 中。
 
-文件工具栏及面包屑实际取自 `/mnt/sarmg.org/xczs/web/index.css`，属性列表取自 `/mnt/sarmg.org/xsos/web/src/host.css`；在本项目中改为统一命名、局部作用域、窄屏布局和简洁文件详情/资源卡。`xsoc` 提供的是主机监测采集层，不含另一套可直接复制的浏览器样式；其采集逻辑由服务端按需复用。
+文件工具栏及面包屑来自所有者提供的文件浏览样式，属性列表来自主机管理样式；在本项目中改为统一命名、局部作用域、窄屏布局和简洁文件详情/资源卡。主机监测采集源码提供采集层，不含另一套可直接复制的浏览器样式；其采集逻辑由服务端按需复用。原作者私有工作区路径不是构建依赖。

@@ -297,6 +297,10 @@ impl Client {
         )
         .await
     }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "Preserves the public backup configuration API; migrate to a request type in the next API revision (see .github/QUALITY.md)"
+    )]
     pub async fn configure_backups(
         &self,
         repository: &str,

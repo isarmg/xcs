@@ -224,10 +224,7 @@ impl ChecksumManifest {
         if payload_len != Some(bytes.len()) {
             return Err(bad());
         }
-        let chunks = bytes[32..]
-            .chunks_exact(32)
-            .map(|v| v.try_into().expect("exact chunk"))
-            .collect();
+        let chunks = bytes[32..].as_chunks::<32>().0.to_vec();
         let m = Self {
             chunk_bytes,
             logical_size,

@@ -25,11 +25,13 @@ Initial self-written Rust src size3,418 lines + vfs/build.rs.
 4. No concrete async host-pointer escape/cancellation defect found in the reviewed worker/event ownership flow; did not change its ABI/lifecycle. No invented Unicode, contract-check or bootstrap issue.
 
 ## Validation
+
+Paths below use `<repository>` for the original checkout root; these are historical environment descriptions, not directly executable shell assignments.
 - SMB protocol/client: cargo test --locked --offline --manifest-path integrations/smb/Cargo.toml -p zxs-smb --target-dir target/native:6 passed. New invalid frame followed by queued valid stale response returns error then both clones NotConnected; send failure disconnects all clones; business error followed by a real second request succeeds.
 - SDK real libraries: same manifest -p zxs-smb-vfs --features smb-sdk --target-dir target/native:5 passed, including new removed-fd poisoned-lock/save-error EOF test and existing event-loop/cancellation/path/pointer tests. Sandbox Unix socket pair creation returnedEPERM; explicitly authorized host retry passed. No smbd started.
-- SDK_SOURCE=/mnt/sarmg.org/zxs/target/samba-sdk/samba-4.23.0
+- SDK_SOURCE=<repository>/target/samba-sdk/samba-4.23.0
 - SDK_BUILD=SDK_SOURCE/bin/default
-- CLANG_ARGS_JSON=["-I/mnt/sarmg.org/zxs/target/sysroot/usr/include","-I/mnt/sarmg.org/zxs/target/sysroot/usr/include/x86_64-linux-gnu","-I/mnt/sarmg.org/zxs/target/sysroot/usr/include/tirpc"]
+- CLANG_ARGS_JSON=["-I<repository>/target/sysroot/usr/include","-I<repository>/target/sysroot/usr/include/x86_64-linux-gnu","-I<repository>/target/sysroot/usr/include/tirpc"]
 - SDK runtime LD_LIBRARY_PATH included source bin/shared/private, bin/shared, bin/default/lib/tevent, bin/default/lib/talloc, bin/default/source3; values restored from known Cargo fingerprint metadata only.
 - Web builder cargo test --locked --offline --manifest-path tools/web-build/Cargo.toml --target-dir target/native:2 passed; real mkfifo, symlink-root/child, copy and nested hash fixtures.
 - Contract-check cargo test same targetdir:6 passed; all contract/document checks pass. No production source change needed.

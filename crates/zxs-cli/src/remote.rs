@@ -478,8 +478,8 @@ mod tests {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = format!("http://{}", listener.local_addr().unwrap());
-        let token = zxs_server::auth_primitives::random_token().unwrap();
-        let csrf = zxs_server::auth_primitives::derive_csrf_token(&token).unwrap();
+        let token = zxs_auth::random_token().unwrap();
+        let csrf = zxs_auth::derive_csrf_token(&token).unwrap();
         let server = tokio::spawn(async move {
             let mut paths = Vec::new();
             for payload in [

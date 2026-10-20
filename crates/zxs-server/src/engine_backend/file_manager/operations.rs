@@ -21,11 +21,11 @@ fn location(input: &Value) -> Result<Option<application::FileLocation>, ApiError
 pub(super) fn call(
     engine: &mut Engine,
     identity: &Identity,
-    action: &str,
+    action: crate::BackendAction,
     input: &Value,
 ) -> Result<Value, ApiError> {
     match action {
-        "file_manager_merge" => {
+        crate::BackendAction::FileManagerMerge => {
             keys(
                 input,
                 &[
@@ -60,7 +60,7 @@ pub(super) fn call(
             )?;
             operation_wire(engine, result)
         }
-        "file_manager_tags" => {
+        crate::BackendAction::FileManagerTags => {
             keys(
                 input,
                 &[
@@ -104,7 +104,7 @@ pub(super) fn call(
                 .map_err(error)?;
             operation_wire(engine, result)
         }
-        "file_manager_backup_configuration" => {
+        crate::BackendAction::FileManagerBackupConfiguration => {
             let repo = field(input, "repository_id")?;
             authorize(identity, repository(engine, repo)?, false, false)?;
             engine
@@ -115,7 +115,7 @@ pub(super) fn call(
                 )
                 .map_err(error)
         }
-        "file_manager_configure_backups" => {
+        crate::BackendAction::FileManagerConfigureBackups => {
             keys(
                 input,
                 &[

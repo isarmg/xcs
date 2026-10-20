@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [workspace, apps, web, contracts, build-tools, demo, smb-protocol]
+        suite: [quality, security, workspace, apps, web, contracts, build-tools, demo, smb-protocol]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -203,3 +203,55 @@ jobs:
           path: artifacts/platform-previews/
           if-no-files-found: warn
           retention-days: 7
+
+  smb-sdk:
+    name: Samba 4.23.0 real SDK ABI and FFI tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install repository Rust toolchain
+        run: rustup show active-toolchain
+      - name: Install official Ubuntu SDK build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential pkg-config python3 perl libparse-yapp-perl flex bison m4 \
+            clang libclang-dev libgnutls28-dev libkrb5-dev zlib1g-dev libpopt-dev
+      - name: Cache pinned configured Samba source and real libraries
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: target/smb-sdk
+          key: samba-4.23.0-${{ runner.os }}-${{ runner.arch }}-ubuntu24-${{ hashFiles('.github/scripts/smb-sdk.sh') }}
+      - name: Cache Cargo dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/registry/src
+          key: cargo-${{ runner.os }}-${{ runner.arch }}-smb-sdk-${{ hashFiles('rust-toolchain.toml', 'integrations/smb/Cargo.lock') }}
+      - name: Build official SDK and validate the Rust VFS
+        run: bash .github/scripts/smb-sdk.sh
+
+  native-dependency-regressions:
+    name: Native dependency backport regressions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install GLib SDK and isolated D-Bus test runner
+        run: sudo apt-get update && sudo apt-get install -y libglib2.0-dev pkg-config dbus
+      - name: Verify maintained sources and tamper regressions
+        run: |
+          python3 tools/native-dependency-tests/verify_sources.py
+          python3 tools/native-dependency-tests/test_verify_sources.py
+          python3 tools/native-dependency-tests/test_upstream_audit.py
+      - name: Test optimized native dependency regressions
+        run: dbus-run-session -- cargo test --manifest-path tools/native-dependency-tests/Cargo.toml --release --locked
+      - name: Check regression harness lint
+        run: cargo clippy --manifest-path tools/native-dependency-tests/Cargo.toml --all-targets --locked -- -D warnings

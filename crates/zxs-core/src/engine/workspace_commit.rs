@@ -61,10 +61,14 @@ impl Engine {
         // Returning the caller's existing save receipt must not require a new
         // read grant when the original write grant is still present. This does
         // not grant access to file contents or change general read semantics.
-        if replay && self.require_grant(repository, principal, "read").is_ok() {
+        if replay
+            && self
+                .require_grant(repository, principal, zxs_contract::RepositoryAccess::Read)
+                .is_ok()
+        {
             return Ok(());
         }
-        self.require_grant(repository, principal, "write")
+        self.require_grant(repository, principal, zxs_contract::RepositoryAccess::Write)
     }
 
     /// Structural binding also used during restart, before live authorization
@@ -229,7 +233,7 @@ impl Engine {
         self.require_grant(
             self.repository_for_branch(&workspace.branch_id)?,
             &prepared.request.principal,
-            "write",
+            zxs_contract::RepositoryAccess::Write,
         )?;
         if canonical_json(&workspace)? != prepared.frozen_workspace
             || self.snapshot != prepared.base_snapshot
@@ -294,7 +298,7 @@ impl WorkspaceCommitPreparation {
                 let digest = result.request_digest.clone();
                 (
                     Some(engine.prepare_publication(
-                        next,
+                        *next,
                         prepared,
                         result,
                         crate::disk::MAX_METADATA,

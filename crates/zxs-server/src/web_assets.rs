@@ -94,36 +94,34 @@ pub(crate) async fn static_validation(
     } else {
         state.static_etags.get(request.uri().path()).cloned()
     };
-    if matches!(*request.method(), Method::GET | Method::HEAD) {
-        if let Some(etag) = &etag {
-            if request
-                .headers()
-                .get(header::IF_NONE_MATCH)
-                .and_then(|value| value.to_str().ok())
-                .is_some_and(|value| {
-                    value
-                        .split(',')
-                        .any(|candidate| candidate.trim() == etag || candidate.trim() == "*")
-                })
-            {
-                let mut response = StatusCode::NOT_MODIFIED.into_response();
-                response
-                    .headers_mut()
-                    .insert(header::ETAG, HeaderValue::from_str(etag).unwrap());
-                response
-                    .headers_mut()
-                    .insert(header::VARY, HeaderValue::from_static("accept-encoding"));
-                return response;
-            }
-        }
+    if matches!(*request.method(), Method::GET | Method::HEAD)
+        && let Some(etag) = &etag
+        && request
+            .headers()
+            .get(header::IF_NONE_MATCH)
+            .and_then(|value| value.to_str().ok())
+            .is_some_and(|value| {
+                value
+                    .split(',')
+                    .any(|candidate| candidate.trim() == etag || candidate.trim() == "*")
+            })
+    {
+        let mut response = StatusCode::NOT_MODIFIED.into_response();
+        response
+            .headers_mut()
+            .insert(header::ETAG, HeaderValue::from_str(etag).unwrap());
+        response
+            .headers_mut()
+            .insert(header::VARY, HeaderValue::from_static("accept-encoding"));
+        return response;
     }
     let mut response = next.run(request).await;
-    if response.status().is_success() {
-        if let Some(etag) = etag {
-            response
-                .headers_mut()
-                .insert(header::ETAG, HeaderValue::from_str(&etag).unwrap());
-        }
+    if response.status().is_success()
+        && let Some(etag) = etag
+    {
+        response
+            .headers_mut()
+            .insert(header::ETAG, HeaderValue::from_str(&etag).unwrap());
     }
     response
 }

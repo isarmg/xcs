@@ -85,9 +85,10 @@ impl Engine {
         }
         // Resolve real page hashes and enforce every metadata bound without
         // publishing files or journal records. No estimate enters the decision.
-        let snapshot_hash = store_snapshot_bounded(&[], &next, maximum)?;
-        let history_manifest_hashes =
-            crate::history_package::store_history_manifests_bounded(&[], &next, maximum)?;
+        let snapshot = prepare_snapshot(&next, maximum)?;
+        let snapshot_hash = snapshot.hash.clone();
+        let (history_manifest_hashes, manifests) =
+            crate::history_package::prepare_history_manifests(&next, maximum)?;
         let candidate = Candidate {
             format_version: 2,
             pool_id: self.config.pool_id.clone(),
@@ -107,20 +108,21 @@ impl Engine {
             metadata_disk_ids: members.iter().map(|d| d.disk_id.clone()).collect(),
             history_manifest_hashes,
         };
-        crate::metadata_budget::preflight_publication(
-            self, &candidate, &result, &next, None, maximum,
+        crate::metadata_budget::preflight_publication_prepared(
+            self,
+            &candidate,
+            &result,
+            &next,
+            None,
+            maximum,
+            Some(&snapshot.descriptor),
         )?;
         let preparation = PayloadPreparation::new(&self.config, &candidate)?;
         self.prepare_payloads(&prepared)?;
         let verified = preparation.verify(&self.config, &candidate)?;
-        if store_snapshot(&members, &next)? != candidate.snapshot_hash
-            || crate::history_package::store_history_manifests(&members, &next)?
-                != candidate.history_manifest_hashes
-        {
-            return Err(Error::new(
-                "STATE_INVALID",
-                "metadata changed after size preflight",
-            ));
+        snapshot.store(&members)?;
+        for manifest in manifests {
+            manifest.store(&members)?;
         }
         Ok(DetachedPublication {
             next,
@@ -170,18 +172,17 @@ impl Engine {
         // Preparation consumed payload capacity, but concurrent staged uploads
         // may have consumed the metadata reserve without changing State.
         for disk in &self.config.disks {
-            if disk.metadata_member
+            if (disk.metadata_member
                 || candidate
                     .versions
                     .iter()
-                    .any(|evidence| evidence.placement.route_slot_ids.contains(&disk.slot_id))
+                    .any(|evidence| evidence.placement.route_slot_ids.contains(&disk.slot_id)))
+                && available(&disk.root)? < self.config.metadata_reserve_bytes
             {
-                if available(&disk.root)? < self.config.metadata_reserve_bytes {
-                    return Err(Error::new(
-                        "NO_SPACE",
-                        "metadata reserve was consumed during payload preparation",
-                    ));
-                }
+                return Err(Error::new(
+                    "NO_SPACE",
+                    "metadata reserve was consumed during payload preparation",
+                ));
             }
         }
         let members = self.members();

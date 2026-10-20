@@ -31,8 +31,19 @@ pub(crate) fn preflight_publication(
     candidate: &Candidate,
     result: &OperationResult,
     state: &State,
+    recovery: Option<RecoveryProof>,
+    maximum: usize,
+) -> Result<usize> {
+    preflight_publication_prepared(engine, candidate, result, state, recovery, maximum, None)
+}
+pub(crate) fn preflight_publication_prepared(
+    engine: &Engine,
+    candidate: &Candidate,
+    result: &OperationResult,
+    state: &State,
     mut recovery: Option<RecoveryProof>,
     maximum: usize,
+    prepared_snapshot: Option<&Snapshot>,
 ) -> Result<usize> {
     let mut largest = 0usize;
     let mut check = |bytes: Vec<u8>| {
@@ -144,6 +155,8 @@ pub(crate) fn preflight_publication(
         };
         let snapshot = if let Some(disk) = recovery_disk {
             load_object(disk, "snapshot", &candidate.snapshot_hash)?
+        } else if let Some(snapshot) = prepared_snapshot {
+            snapshot.clone()
         } else {
             snapshot_descriptor(state, maximum)?
         };

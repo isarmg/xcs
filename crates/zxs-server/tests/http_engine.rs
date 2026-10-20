@@ -2207,7 +2207,7 @@ fn recovered_permanent_loss_returns_degraded_save_wire_with_frozen_unavailable_s
     let backend = EngineBackend::new(engine);
     let wire = backend
         .call(
-            "operation",
+            zxs_server::BackendAction::Operation,
             &operation_identity(),
             json!({"operation_id":operation}),
         )
@@ -2299,7 +2299,7 @@ fn damage_after_normal_publication_keeps_original_target_met_in_save_wire() {
     std::fs::write(&corrupted, b"corruption after successful publication").unwrap();
     let wire = EngineBackend::new(engine)
         .call(
-            "operation",
+            zxs_server::BackendAction::Operation,
             &operation_identity(),
             json!({"operation_id":operation}),
         )

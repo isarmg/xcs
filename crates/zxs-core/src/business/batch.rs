@@ -160,7 +160,7 @@ fn apply(
         .get(repository)
         .cloned()
         .ok_or_else(|| Error::new("REPOSITORY_NOT_FOUND", "repository missing"))?;
-    engine.require_grant(&repo, principal, "write")?;
+    engine.require_grant(&repo, principal, zxs_contract::RepositoryAccess::Write)?;
     if !["move", "copy", "delete", "rename"].contains(&request.kind.as_str())
         || request.items.is_empty()
         || request.items.len() > engine.config.max_entries
@@ -371,16 +371,15 @@ fn apply(
         }
         // Missing arbitrary destination ancestors are rejected; the user must
         // select a real directory, preventing accidental scope/identity creation.
-        if let Some((parent, _)) = target.path.rsplit_once('/') {
-            if zxs_naming::path_key(parent) != zxs_naming::path_key(&target_draft.path)
-                && !namespace::find(&target_draft.entries, parent)
-                    .is_some_and(|e| e.kind == "directory")
-            {
-                return Err(Error::new(
-                    "DIRECTORY_NOT_FOUND",
-                    "destination parent missing in selected subtree",
-                ));
-            }
+        if let Some((parent, _)) = target.path.rsplit_once('/')
+            && zxs_naming::path_key(parent) != zxs_naming::path_key(&target_draft.path)
+            && !namespace::find(&target_draft.entries, parent)
+                .is_some_and(|e| e.kind == "directory")
+        {
+            return Err(Error::new(
+                "DIRECTORY_NOT_FOUND",
+                "destination parent missing in selected subtree",
+            ));
         }
         for member in members {
             let mut moved = relocate(&member, &source.path, &target.path);
@@ -518,13 +517,13 @@ fn apply(
                     source.kind == "directory",
                 );
                 let canonical = state.file_locations[&moved.file_id].clone();
-                if let Some(previous) = owners.insert(moved.file_id.clone(), canonical.clone()) {
-                    if zxs_naming::path_key(&previous) != zxs_naming::path_key(&canonical) {
-                        return Err(Error::new(
-                            "BATCH_MAPPING_CONFLICT",
-                            "one physical file cannot have two move/rename outcomes",
-                        ));
-                    }
+                if let Some(previous) = owners.insert(moved.file_id.clone(), canonical.clone())
+                    && zxs_naming::path_key(&previous) != zxs_naming::path_key(&canonical)
+                {
+                    return Err(Error::new(
+                        "BATCH_MAPPING_CONFLICT",
+                        "one physical file cannot have two move/rename outcomes",
+                    ));
                 }
             } else if let Some(reference) = source_scope.directory_refs.get(&member.entry_id) {
                 target_draft

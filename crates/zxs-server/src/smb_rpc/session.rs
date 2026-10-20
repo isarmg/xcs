@@ -27,11 +27,15 @@ impl Drop for Session {
 }
 
 impl Session {
-    pub(super) fn call(&self, action: &str, input: Value) -> Result<Value, ApiError> {
+    pub(super) fn call(
+        &self,
+        action: crate::BackendAction,
+        input: Value,
+    ) -> Result<Value, ApiError> {
         self.shared.backend.call(action, &self.identity, input)
     }
     pub(super) fn entries(&self) -> Result<Vec<Entry>, ApiError> {
-        let tree = self.call("tree", json!({"branch_id":self.branch}))?;
+        let tree = self.call(crate::BackendAction::Tree, json!({"branch_id":self.branch}))?;
         serde_json::from_value(
             tree.get("entries")
                 .cloned()
@@ -47,8 +51,11 @@ impl Session {
             .find(|entry| zxs_naming::path_key(&entry.path) == key))
     }
     pub(super) fn workspace(&self) -> Result<Workspace, ApiError> {
-        serde_json::from_value(self.call("create_workspace", json!({"branch_id":self.branch}))?)
-            .map_err(ApiError::invalid)
+        serde_json::from_value(self.call(
+            crate::BackendAction::CreateWorkspace,
+            json!({"branch_id":self.branch}),
+        )?)
+        .map_err(ApiError::invalid)
     }
     pub(super) fn reserve_paths(&mut self, paths: &[&str]) -> Result<Vec<String>, ApiError> {
         let keys = paths
@@ -179,47 +186,48 @@ impl Session {
                                 .iter()
                                 .any(|child| child.lookup_key.starts_with(&prefix))
                     };
-                    if kind == "delete" {
-                        if self.find(&path)?.as_ref().is_some_and(nonempty) {
-                            return Err(ApiError::new(
-                                409,
-                                "DIRECTORY_NOT_EMPTY",
-                                "SMB directory removal requires an empty directory",
+                    if kind == "delete" && self.find(&path)?.as_ref().is_some_and(nonempty) {
+                        return Err(ApiError::new(
+                            409,
+                            "DIRECTORY_NOT_EMPTY",
+                            "SMB directory removal requires an empty directory",
+                        ));
+                    }
+                    if kind == "rename"
+                        && replace
+                        && let Some(target) = destination.as_deref()
+                        && let Some(target_entry) = self.find(target)?
+                    {
+                        let source = self.find(&path)?.ok_or_else(|| {
+                            ApiError::new(404, "NOT_FOUND", "rename source missing")
+                        })?;
+                        if source.kind != target_entry.kind {
+                            return Err(ApiError::invalid(
+                                "rename replacement requires matching entry kinds",
                             ));
                         }
-                    }
-                    if kind == "rename" && replace {
-                        if let Some(target) = destination.as_deref() {
-                            if let Some(target_entry) = self.find(target)? {
-                                let source = self.find(&path)?.ok_or_else(|| {
-                                    ApiError::new(404, "NOT_FOUND", "rename source missing")
-                                })?;
-                                if source.kind != target_entry.kind {
-                                    return Err(ApiError::invalid(
-                                        "rename replacement requires matching entry kinds",
-                                    ));
-                                }
-                                // A case-only rename addresses the same stable entry.
-                                if source.entry_id != target_entry.entry_id {
-                                    if nonempty(&target_entry) {
-                                        return Err(ApiError::new(
-                                            409,
-                                            "DIRECTORY_NOT_EMPTY",
-                                            "rename replacement directory is not empty",
-                                        ));
-                                    }
-                                    self.call("namespace",json!({"workspace_id":workspace.workspace_id,"kind":"delete","path":target,"destination":null}))?;
-                                }
+                        // A case-only rename addresses the same stable entry.
+                        if source.entry_id != target_entry.entry_id {
+                            if nonempty(&target_entry) {
+                                return Err(ApiError::new(
+                                    409,
+                                    "DIRECTORY_NOT_EMPTY",
+                                    "rename replacement directory is not empty",
+                                ));
                             }
+                            self.call(crate::BackendAction::Namespace,json!({"workspace_id":workspace.workspace_id,"kind":"delete","path":target,"destination":null}))?;
                         }
                     }
-                    self.call("namespace",json!({"workspace_id":workspace.workspace_id,"kind":kind,"path":path,"destination":destination}))?;
-                    self.call("commit_workspace_internal",json!({"workspace_id":workspace.workspace_id,"operation_id":new_id("op"),"expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"SMB namespace change"}))
+                    self.call(crate::BackendAction::Namespace,json!({"workspace_id":workspace.workspace_id,"kind":kind,"path":path,"destination":destination}))?;
+                    self.call(crate::BackendAction::CommitWorkspaceInternal,json!({"workspace_id":workspace.workspace_id,"operation_id":new_id("op"),"expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"SMB namespace change"}))
                 })();
-                if result.is_err() {
-                    if let Some(id) = pending_workspace {
-                        let _ = self.call("abort_workspace", json!({"workspace_id":id}));
-                    }
+                if result.is_err()
+                    && let Some(id) = pending_workspace
+                {
+                    let _ = self.call(
+                        crate::BackendAction::AbortWorkspace,
+                        json!({"workspace_id":id}),
+                    );
                 }
                 self.release_paths(&reserved);
                 result?

@@ -419,15 +419,14 @@ impl HistoryManifest {
                     "directory composition entry escapes its scope or normalized identity",
                 ));
             }
-            if let Some(previous) = entries.insert(entry.entry_id.as_str(), entry) {
-                if entry.kind != "file"
+            if let Some(previous) = entries.insert(entry.entry_id.as_str(), entry)
+                && (entry.kind != "file"
                     || previous.kind != "file"
-                    || previous.file_id != entry.file_id
-                {
-                    return Err(invalid(
-                        "directory composition entry identity is reused by different entities",
-                    ));
-                }
+                    || previous.file_id != entry.file_id)
+            {
+                return Err(invalid(
+                    "directory composition entry identity is reused by different entities",
+                ));
             }
             match entry.kind.as_str() {
                 "file" => {
@@ -1425,14 +1424,27 @@ pub(crate) fn store_history_manifests_bounded(
     state: &State,
     maximum: usize,
 ) -> Result<BTreeMap<String, String>> {
-    let mut hashes = BTreeMap::new();
-    for id in state.histories.keys() {
-        let manifest = HistoryManifest::from_state(state, id)?;
-        let hash = store_object_replicas_bounded(members, "history-manifest", &manifest, maximum)?;
-        hashes.insert(id.clone(), hash);
+    let (hashes, objects) = prepare_history_manifests(state, maximum)?;
+    for object in objects {
+        object.store(members)?;
     }
     Ok(hashes)
 }
+pub(crate) fn prepare_history_manifests(
+    state: &State,
+    maximum: usize,
+) -> Result<(BTreeMap<String, String>, Vec<PreparedMetadataObject>)> {
+    let mut hashes = BTreeMap::new();
+    let mut objects = Vec::new();
+    for id in state.histories.keys() {
+        let manifest = HistoryManifest::from_state(state, id)?;
+        let object = PreparedMetadataObject::new("history-manifest", &manifest, maximum)?;
+        hashes.insert(id.clone(), object.hash.clone());
+        objects.push(object);
+    }
+    Ok((hashes, objects))
+}
+
 fn package_version(package: &Path, version: &str) -> PathBuf {
     package.join("versions").join(version)
 }
@@ -1505,7 +1517,11 @@ impl Engine {
         destination: &Path,
         principal: &str,
     ) -> Result<HistoryPackageReport> {
-        self.require_grant(self.repository_for_history(history)?, principal, "manage")?;
+        self.require_grant(
+            self.repository_for_history(history)?,
+            principal,
+            zxs_contract::RepositoryAccess::Manage,
+        )?;
         let manifest = HistoryManifest::from_state(&self.state, history)?;
         let hash = object_hash("history-manifest", &manifest)?;
         let mut proof = None;
@@ -1664,16 +1680,15 @@ impl Engine {
         let remap_paths = |paths: &BTreeMap<String, String>| -> Result<BTreeMap<String, String>> {
             let mut rebound = BTreeMap::new();
             for (slot, path) in paths {
-                if let Some(target) = backup_slots.get(slot) {
-                    if rebound
+                if let Some(target) = backup_slots.get(slot)
+                    && rebound
                         .insert(target.clone(), path.clone())
                         .is_some_and(|prior| prior != *path)
-                    {
-                        return Err(Error::new(
-                            "RESTORE_BACKUP_CONFLICT",
-                            "backup prefixes collide after route rebinding",
-                        ));
-                    }
+                {
+                    return Err(Error::new(
+                        "RESTORE_BACKUP_CONFLICT",
+                        "backup prefixes collide after route rebinding",
+                    ));
                 }
             }
             if !paths.is_empty() && route.iter().skip(1).any(|slot| !rebound.contains_key(slot)) {

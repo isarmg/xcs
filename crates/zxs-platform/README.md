@@ -8,7 +8,6 @@ ZXS 独立的 Linux 服务端基础库，在本项目维护和构建。
 | `payload` | 有长度上限的完整流式写入、BLAKE3 校验、新 inode、不可覆盖发布 |
 | `sqlite` | SQLx 0.9 索引连接、WAL/FULL/外键、defensive、原生连接限额、完整性及快照检查 |
 | `schema_identity` | 索引表结构身份和确定性指纹 |
-| `admin_auth` | 兼容导出 `zxs-auth` 的凭据、CSRF、同源与 Cookie 算法 |
 | `secret` | 默认脱敏、不可序列化、释放时清零的秘密类型 |
 | `error` | 有长度上限的错误和请求标识；支持 ZXS 大写业务错误码 |
 
