@@ -1,6 +1,6 @@
 # 17 初始化、启停与硬盘维护
 
-[文档目录](README.md) · [上一章：App、网页与命令行界面](16-client-interfaces.md) · [下一章：故障处理与降级行为](18-failure-handling.md)
+[文档目录](README.md) · [上一章：Web 与内部管理命令行界面](16-client-interfaces.md) · [下一章：故障处理与降级行为](18-failure-handling.md)
 
 <a id="s17"></a>
 
@@ -107,4 +107,4 @@ flowchart TB
 
 ---
 
-[文档目录](README.md) · [上一章：App、网页与命令行界面](16-client-interfaces.md) · [下一章：故障处理与降级行为](18-failure-handling.md)
+[文档目录](README.md) · [上一章：Web 与内部管理命令行界面](16-client-interfaces.md) · [下一章：故障处理与降级行为](18-failure-handling.md)

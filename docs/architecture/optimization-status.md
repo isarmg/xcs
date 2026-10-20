@@ -5,8 +5,8 @@ production fault certification or constant-time operations.
 
 ## Implemented
 
-- Web and native bridge share commit preparation, response parsing, size limits,
-  and mutation-outcome rules in `zxs-contract::client_protocol`.
+- Web and the operational CLI share commit preparation, response parsing, size limits,
+  and mutation-outcome rules in `storage-contract::client_protocol`.
 - The server uses typed application commands for high-risk business mutations.
   Namespace relocation centralizes identity-preserving path/name updates.
 - SQLite projection updates only changed entities inside a transaction. The
@@ -86,11 +86,11 @@ and repair guarantees and requires a separate protocol/integrity-policy design.
 
 Local fixtures, tmpfs workload timings, and CI do not establish physical disk
 independence, power-loss durability, real-device latency, or write amplification.
-The [physical-storage validation plan](../../tools/perf-check/PHYSICAL-DISK-VALIDATION.md)
+The [physical-storage validation plan](../tools/perf-check/PHYSICAL-DISK-VALIDATION.md)
 has not been executed. It requires explicitly approved disposable independent
 devices and fault-injection methods. Do not treat this hardware-dependent part
 of the original plan as completed.
 
 For workload commands and measurement limitations, see
-[the probe](../../tools/perf-check/README.md) and
-[recorded results](../../tools/perf-check/results/README.md).
+[the probe](../tools/perf-check.md) and
+[recorded results](../tools/perf-check/results.md).

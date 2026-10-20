@@ -11,7 +11,7 @@ SCRIPT = Path(__file__).resolve().parents[1] / "security.sh"
 class ScannerDiagnosticsTests(unittest.TestCase):
     def run_scanner(self, behavior):
         script = SCRIPT.read_text()
-        wrapper = script[script.index("scan_lock() {"):script.index("\nstatus=0\n# Audit")]
+        wrapper = script[script.index("scan_lock() {"):script.index("\nstatus=0\n")]
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             fake = root / "fake-audit"

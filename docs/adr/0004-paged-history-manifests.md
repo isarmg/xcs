@@ -42,12 +42,12 @@
 
 | 入口 | 必要变更 |
 | --- | --- |
-| [history_package.rs](../../crates/zxs-core/src/history_package.rs) | 严格分页根读取、图准备/遍历/修复；`PackageProof`、大小预检、导出和加载分派；保留逻辑校验与导入规则 |
-| [publication.rs](../../crates/zxs-core/src/engine/publication.rs) | 准备完整图、冻结准确根、依赖先于决定落盘；不在构造候选后更换根 |
-| [recovery.rs](../../crates/zxs-core/src/engine/recovery.rs)、[degraded_recovery.rs](../../crates/zxs-core/src/degraded_recovery.rs) | 用准确绑定图修复替代调用当前编码器重新生成全部清单；修复去重以对象域和哈希共同为键 |
-| [publication_evidence.rs](../../crates/zxs-core/src/publication_evidence.rs) | 逐依赖、跨可信成员的只读哈希验证，不要求单个成员拥有完整图 |
-| [metadata_budget.rs](../../crates/zxs-core/src/metadata_budget.rs)、[journal.rs](../../crates/zxs-core/src/journal.rs) | 精确计入新图对象和包证明；复用冻结字节和候选闭包；保留准确快照读取 |
-| [object_storage.rs](../../crates/zxs-core/src/journal/object_storage.rs)、[recovery_checkpoint.rs](../../crates/zxs-core/src/engine/recovery_checkpoint.rs) | 复用安全地址、哈希前缀/原子写规则；验证新依赖纳入检查点覆盖 |
+| [history_package.rs](../../src/engine/src/history_package.rs) | 严格分页根读取、图准备/遍历/修复；`PackageProof`、大小预检、导出和加载分派；保留逻辑校验与导入规则 |
+| [publication.rs](../../src/engine/src/engine/publication.rs) | 准备完整图、冻结准确根、依赖先于决定落盘；不在构造候选后更换根 |
+| [recovery.rs](../../src/engine/src/engine/recovery.rs)、[degraded_recovery.rs](../../src/engine/src/degraded_recovery.rs) | 用准确绑定图修复替代调用当前编码器重新生成全部清单；修复去重以对象域和哈希共同为键 |
+| [publication_evidence.rs](../../src/engine/src/publication_evidence.rs) | 逐依赖、跨可信成员的只读哈希验证，不要求单个成员拥有完整图 |
+| [metadata_budget.rs](../../src/engine/src/metadata_budget.rs)、[journal.rs](../../src/engine/src/journal.rs) | 精确计入新图对象和包证明；复用冻结字节和候选闭包；保留准确快照读取 |
+| [object_storage.rs](../../src/engine/src/journal/object_storage.rs)、[recovery_checkpoint.rs](../../src/engine/src/engine/recovery_checkpoint.rs) | 复用安全地址、哈希前缀/原子写规则；验证新依赖纳入检查点覆盖 |
 
 仅分页后，State 克隆、快照全量遍历、各历史投影构造、索引差分和现存对象碰撞校验仍可能是 O(total) CPU/I/O；保存全部准备字节也仍消耗与图规模相关的内存。结构共享降低新增落盘字节，不等于端到端 O(delta)。
 

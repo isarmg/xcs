@@ -28,6 +28,10 @@ case "$1 $2" in
       echo false
     elif [[ "$MODE" == public ]]; then
       echo '{"isDraft":false,"body":""}'
+    elif [[ "$MODE" == foreign ]]; then
+      echo '{"isDraft":true,"body":"<!-- zxs-release-source:another-source -->"}'
+    elif [[ "$MODE" == malformed ]]; then
+      echo '{"isDraft":true,"body":null}'
     elif [[ "$MODE" == resume ]]; then
       printf '{"isDraft":true,"body":"<!-- zxs-release-source:%s -->"}\n' "$MOCK_SHA"
     else exit 1; fi ;;
@@ -42,7 +46,7 @@ esac
 MOCK
 chmod +x "$root/bin/gh"
 export PATH="$root/bin:$PATH" RELEASE_TAG=v0.1.0 RELEASE_PRERELEASE=false GH_REPO=test/repo
-for MODE in new resume network forbidden public corrupt; do
+for MODE in new resume network forbidden public foreign malformed corrupt; do
   export MODE
   rm -f "$root/created" "$root/published"
   status=0
@@ -54,7 +58,7 @@ for MODE in new resume network forbidden public corrupt; do
       if [[ "$status" == 0 || -f "$root/published" ]]; then cat "$root/log"; exit 1; fi ;;
   esac
   case "$MODE" in
-    network|forbidden|public) test ! -f "$root/created" ;;
+    network|forbidden|public|foreign|malformed) test ! -f "$root/created" ;;
   esac
   echo "PASS mock release publication: $MODE"
 done

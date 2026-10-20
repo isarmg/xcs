@@ -1,1 +1,0 @@
-{"identifier":"main","description":"Only the local zxs application window may call native operations.","windows":["main"],"permissions":["core:default","allow-connect","allow-api-request","allow-upload-file","allow-download-file","allow-choose-files","allow-release-sources","allow-open-cached-file","allow-commit-workspace"]}

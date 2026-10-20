@@ -1,15 +1,16 @@
 # ZXS 文档目录
 
-[项目入口](../README.md) · [工程结构](20-engineering.md) · [过程演示](../demos/branch-system/index.html)
+[项目入口](../README.md) · [工程结构](20-engineering.md)
 
-本目录集中提供使用、开发和设计资料。编号 01—25 保留既有主题和锚点；稳定规则、架构决策、操作指南及变更证据按下面的用途索引阅读。机器可读契约统一放在 `contracts/`。
+本目录统一提供所有产品、组件、开发、运维、验收及上游原始说明；许可证与机器可读溯源统一放在 [compliance/](../compliance/README.md)。项目仅有一个根 Cargo 工作区，目录说明见[单仓库结构](monorepo.md)。编号 01—25 保留既有主题和锚点；稳定规则、架构决策、操作指南及变更证据按下面的用途索引阅读。机器可读契约统一放在 `contracts/`。
 
 ## 从这里开始
 
+- 仓库与来源：[整体目录和合并规则](monorepo.md) → [统一许可与溯源](../compliance/README.md)
 - 本地开发：[运行服务与检查](getting-started.md) → [工程结构](20-engineering.md)
 - 日常使用：[操作手册](25-operation-manual.md) → [配置](21-configuration.md)
-- 理解设计：[总体架构](03-architecture.md) → [分支逻辑](design/branch-system-logic.md) → [图形实例](../demos/branch-system/examples.md)
-- 构建与分发：[持续集成](ci.md) → [发布与安装](release.md)
+- 理解设计：[总体架构](03-architecture.md) → [分支逻辑](design/branch-system-logic.md)
+- 构建与分发：[持续集成](ci.md) → [质量门禁](quality.md) → [发布与安装](release.md) → [Rust 第三方源码来源](THIRD_PARTY_RUST_SOURCES.md)
 - 核对进度：[交付状态](23-delivery-and-decisions.md#s23-05) → [实现与检查报告](reports/README.md)
 
 ## 按资料用途阅读
@@ -35,8 +36,9 @@
 | 专题设计 | [design/](design/README.md)：分支完整规则及合并、标签、备份补充 |
 | 实现与检查报告 | [reports/](reports/README.md)：实现范围、测试证据、重构与讨论记录 |
 | 公开机器契约 | [contracts/](contracts/README.md)：schema、OpenAPI 和固定向量 |
+| 组件和工具 | [第一方组件](components/README.md)、[构建与验收工具](tools/README.md)、[验证材料索引](validation.md) |
+| 许可与溯源 | [统一规则](../compliance/README.md)、[第三方通知](../compliance/NOTICE.md)、[原始上游文档](upstream/README.md) |
 | 报告模板 | [验收报告模板](templates/validation-report-template.md) |
-| 演示、图示及其测试 | [demos/branch-system/](../demos/branch-system/README.md)，统一存放在独立演示目录 |
 
 新增规范按主题放入本目录；具体实现证据放入报告或对应测试材料，避免与领域规则混写。项目源码、构建缓存与运行池的边界见[工程约定](20-engineering.md)。
 

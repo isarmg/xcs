@@ -17,7 +17,7 @@
 
 ## 21.1 配置示例
 
-以下 TOML 定义完整目标配置，不是现有进程直接读取的配置或可直接部署的 smb.conf。当前服务读取严格 JSON `Config`，可用 `zxs config-template --production --disks <三个绝对路径> --output <file>` 生成带随机池/盘 ID 的模板，再审查后传给 `zxs --root <state> init --config <file> --username <name>`；模板命令不访问、挂载或初始化设备。实际已接受字段、CLI 和限制见[服务端说明](../crates/zxs-server/README.md)与[实现报告](reports/implementation.md)。
+以下 TOML 定义完整目标配置，不是现有进程直接读取的配置或可直接部署的 smb.conf。当前服务读取严格 JSON `Config`，可用 `zxs config-template --production --disks <三个绝对路径> --output <file>` 生成带随机池/盘 ID 的模板，再审查后传给 `zxs --root <state> init --config <file> --username <name>`；模板命令不访问、挂载或初始化设备。实际已接受字段、CLI 和限制见[服务端说明](components/server.md)与[实现报告](reports/implementation.md)。
 
 Samba 配置由经版本验收的部署模板另行生成。设备清单通过登记工具产生，不在示例中填写真实设备路径。
 
@@ -303,13 +303,13 @@ queue_warning_seconds = 30
 
 `supported_save_modes=["full"]` 与 `creation_mode="full"` 分别约束保存和分支创建。示例中 `merge_behavior="link-only"`、`merge_updates_branch_head=false` 等 `merge_*` 字段只描述旧 `MergeLink` 关系标记：端点固定、正文与HEAD不变，不是所有合并操作的全局约束。文件分支合并 `FileBranchMerge` 是另一个已实现能力，接口声明 `merge_behavior:"explicit-file-node-adoption"`，会推进归属与参与目录引用；目录分支合并待用户确认，暂不实现。两者见[补充规则](design/file-merge-tags-backup.md)，不能通过修改旧字段开启或关闭新语义。`preserve_topology_after_purge=true`保留图节点，不永久锁住payload。`tree_split`要求新域对象和恢复包独立，不只是分支引用改名。
 
-`smb.shares` 固定历史树与主分支；App 切换工作分支不修改该配置。普通会话不独占整个分支，按文件核对并串行发布；显式批量计划仍锁定 HEAD，维护计划处理相关工作区后才取得排他权。`auto_create_conflict_branch=false` 禁止静默处理冲突，不影响用户从历史保存时按规则登记新分支并只保存实际写入的 FULL 版本。
+`smb.shares` 固定历史树与主分支；Web 切换工作分支不修改该配置。普通会话不独占整个分支，按文件核对并串行发布；显式批量计划仍锁定 HEAD，维护计划处理相关工作区后才取得排他权。`auto_create_conflict_branch=false` 禁止静默处理冲突，不影响用户从历史保存时按规则登记新分支并只保存实际写入的 FULL 版本。
 
 上述示例有4个一级、2个二级、1个三级和1个四级盘位。primary_placement按规范目录的最长匹配规则解析，`/media`落在P03，其余由根规则落在P01；不同目录规则冲突必须拒绝，不能用规则声明顺序猜测。disk_id仅为占位，实际必须通过设备登记与物理身份校验。
 
 `member_slot_ids`是用户另外指定的三个控制元数据成员，不等于每个业务版本都保存三份。盘位配置、业务路由和控制成员发生变更时分别校验并按需要组合迁移，普通启动不重新随机选成员。
 
-`verification_mode` 是默认服务端校验模式，App 和 CLI 可协商完整段独立验证；SMB 客户端不需要实现本系统校验协议，由服务端在返回字节前校验。段参数仅对新版本生效；读取旧版本时以其描述为准。容量阈值与校验段默认值都是待实测的初始配置，不能宣称为适合所有设备的最优参数。
+`verification_mode` 是默认服务端校验模式，内部管理 CLI 可协商完整段独立验证；SMB 客户端不需要实现本系统校验协议，由服务端在返回字节前校验。段参数仅对新版本生效；读取旧版本时以其描述为准。容量阈值与校验段默认值都是待实测的初始配置，不能宣称为适合所有设备的最优参数。
 
 项目未正式发布，只实现当前唯一存储格式，不提供可配置的旧格式读取列表或兼容分支。格式修改必须同步更新写入、恢复、校验和测试向量，不自动迁移真实数据。resource_limits 与 observability 的数值、计费口径和超限动作见[第 19.9 节](19-capacity-and-performance.md#s19-09)及[第 19.10 节](19-capacity-and-performance.md#s19-10)。告警秒数不是提交取消期限。
 

@@ -12,7 +12,7 @@
 | [openapi.json](openapi.json) | 保存、结果查询、版本/校验/内容/上传状态、文件管理（含零正文分支创建、冻结父版本与自有版本分开的继承投影、目录批量分支、共同分支交集和128字节单行备注）及管理员系统状态、真实功耗和监测历史 | 认证签发刷新、工作区创建/上传写接口、分页/事件及其余拟定管理接口 |
 | [config-constraints.schema.json](config-constraints.schema.json) | 第 21 章关键常量、资源上限和告警字段的受检投影 | 完整部署配置、物理身份、拓扑和启动状态验证 |
 | [vectors.json](vectors.json) | 正反字段样例、分支映射键/值和文件作用域拒绝、旧 Branch / Commit 编码兼容、分页历史图固定映射/引用种类/深度/未知字段拒绝、规范字节与 BLAKE3、空文件和短文件分段清单 | 跨 Rust/Web/离线工具的一致实现及断电恢复 |
-| [zxs-contract-check](../../tools/contract-check/README.md) | Rust 实现的 schema/OpenAPI 有效性、两者定义一致性、固定向量、配置投影、文档本地链接和 JSON/TOML 语法校验 | 模型检查、平台测试、网络端点行为和性能 |
+| [contract-check](../tools/contract-check.md) | Rust 实现的 schema/OpenAPI 有效性、两者定义一致性、固定向量、配置投影、文档本地链接和 JSON/TOML 语法校验 | 模型检查、平台测试、网络端点行为和性能 |
 
 PUBLICATION 中回执使用合成身份与摘要；通过字段或覆盖集合检查不证明磁盘曾同步。展开清单只是字段语义，生产日志须使用有界分页引用并保留完整证明闭包。成功保存后当前健康变为不可用的样例，只验证这两个维度可以分别表达，不模拟真实故障。
 
@@ -27,7 +27,7 @@ PUBLICATION 中回执使用合成身份与摘要；通过字段或覆盖集合�
 使用仓库 Rust 工具链，从仓库根执行：
 
 ```bash
-CARGO_INCREMENTAL=0 cargo run --manifest-path tools/contract-check/Cargo.toml \
+CARGO_INCREMENTAL=0 cargo run -p contract-check \
   --locked --offline --target-dir target/native
 ```
 
@@ -42,7 +42,7 @@ CARGO_INCREMENTAL=0 cargo run --manifest-path tools/contract-check/Cargo.toml \
 
 字段与文本变更须同步更新固定向量和 OpenAPI；未经变更说明不得用重新生成期望值来掩盖兼容变化。外部规格依据为 [JSON Schema 2020-12](https://json-schema.org/draft/2020-12)、[OpenAPI 3.1.0](https://spec.openapis.org/oas/v3.1.0.html) 和 [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html)，这些资料不为本系统业务协议提供正确性证明。
 
-分支创建只登记元数据与冻结来源引用，`pending_file_versions` 的键/值分别为 FileId/VersionId；Commit 逐快照保留此状态，当前分支首写不会改变旧快照。泛型 Entry 及文件管理的 version_id 都指可见真实版本；继承时为冻结父 ID，own_version_id 为 null，首次写入后才为自有 ID。新增校验同时拒绝 pending 来源逃逸文件作用域、快照来源与条目不符，以及可见父内容被误标为已拥有内容；旧 Branch / Commit 的空映射省略序列化并核对规范字节与摘要。最新执行见[本轮契约记录](../../tests/evidence/inherited-branches/contract/README.md)，不覆盖旧向量验收快照。
+分支创建只登记元数据与冻结来源引用，`pending_file_versions` 的键/值分别为 FileId/VersionId；Commit 逐快照保留此状态，当前分支首写不会改变旧快照。泛型 Entry 及文件管理的 version_id 都指可见真实版本；继承时为冻结父 ID，own_version_id 为 null，首次写入后才为自有 ID。新增校验同时拒绝 pending 来源逃逸文件作用域、快照来源与条目不符，以及可见父内容被误标为已拥有内容；旧 Branch / Commit 的空映射省略序列化并核对规范字节与摘要。最新执行见[本轮契约记录](../validation/evidence/inherited-branches/contract.md)，不覆盖旧向量验收快照。
 
 目录分支以 `DirectoryBranch`、`DirectoryTree` 和 `DirectoryReference` 区分命名身份、不可变组成及子目录精确引用；`DirectoryNamespaceBatch` 每项要求源分支、依据子树与稳定条目 ID，非删除操作还要求明确目标分支及依据子树。登记目录分支不提前创建文件分支或占位文件。路径、跨分支冲突与实际归属由核心统一校验，schema 合法不等于业务可发布。
 

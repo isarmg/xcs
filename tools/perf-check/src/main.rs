@@ -8,7 +8,7 @@ use std::{
     path::Path,
     time::Instant,
 };
-use zxs_core::{CommitRequest, Config, Engine, new_id};
+use storage_engine::{CommitRequest, Config, Engine, new_id};
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn save(engine: &mut Engine, branch: &str, bytes: &[u8]) -> Result<()> {
@@ -35,8 +35,8 @@ fn version(engine: &Engine, branch: &str) -> String {
         .version_id
 }
 fn sql(path: &Path, install: bool) -> Result<Value> {
-    zxs_platform::sqlite::block_on_sqlite_connection(async {
-        let mut conn = zxs_platform::sqlite::open_index_connection(path, false, None).await.map_err(|e| e.to_string())?;
+    platform_io::sqlite::block_on_sqlite_connection(async {
+        let mut conn = platform_io::sqlite::open_index_connection(path, false, None).await.map_err(|e| e.to_string())?;
         if install {
             conn.execute("CREATE TABLE IF NOT EXISTS perf_writes(inserts INTEGER,updates INTEGER,deletes INTEGER,payload_bytes INTEGER);DELETE FROM perf_writes;INSERT INTO perf_writes VALUES(0,0,0,0);CREATE TRIGGER IF NOT EXISTS perf_insert AFTER INSERT ON entities BEGIN UPDATE perf_writes SET inserts=inserts+1,payload_bytes=payload_bytes+length(NEW.json);END;CREATE TRIGGER IF NOT EXISTS perf_update AFTER UPDATE ON entities BEGIN UPDATE perf_writes SET updates=updates+1,payload_bytes=payload_bytes+length(NEW.json);END;CREATE TRIGGER IF NOT EXISTS perf_delete AFTER DELETE ON entities BEGIN UPDATE perf_writes SET deletes=deletes+1;END;").await.map_err(|e|e.to_string())?;
         }

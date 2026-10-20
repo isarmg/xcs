@@ -1,14 +1,9 @@
 [package]
-name = "zxs-unicode-build"
+name = "unicode-build"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 
-[workspace]
 
 [dependencies]
-sha2 = "0.10"
-
-[profile.dev]
-debug = 0
-incremental = false
+sha2 = {version = "0.10", path = "../../src/foundation/sha2-0.10.9"}

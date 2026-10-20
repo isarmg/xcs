@@ -8,7 +8,7 @@
 需要 `rust-toolchain.toml` 指定的 Rust 1.99.0。先构建服务与 CLI；密码从权限为 `0600` 的私人文件或标准输入读取，至少 12 字节。
 
 ```sh
-cargo build --locked --target-dir target/native -p zxs-cli
+cargo build --locked --offline --target-dir target/native -p storage-admin
 target/native/debug/zxs --root "$PWD/runtime/pool" init \
   --development-disks "$PWD/runtime/disks/P01" "$PWD/runtime/disks/B01" "$PWD/runtime/disks/C01" \
   --username admin --password-file /secure/path/zxs-password
@@ -17,16 +17,16 @@ target/native/debug/zxs --root "$PWD/runtime/pool" serve --listen 127.0.0.1:7400
 
 `--development-disks` 明确使用目录模拟三个物理设备，仅用于开发。生产配置必须使用三个独立物理设备上的单设备 Btrfs，启动时核对盘位与物理身份。服务运行时，CLI 使用 `--server http://127.0.0.1:7400` 访问同一核心；直接打开本地池的第二写者会被拒绝。默认服务仅监听本机，外部访问配置 HTTPS 反向代理和正确的外部 origin。
 
-Web 构建、资源服务及真实浏览器验证见 [Web README](../web/README.md)。原生平台依赖及平台矩阵见 [App README](../apps/README.md)。Samba 的目标 SDK、受限用户映射和构建边界见 [Samba README](../integrations/smb/README.md)。
+Web 构建、资源服务及真实浏览器验证见 [Web README](components/web.md)。仅提供浏览器和 SMB 用户入口，不安装原生 App。Samba 的目标 SDK、受限用户映射和构建边界见 [Samba README](components/smb.md)。
 
 ```sh
-cargo test --locked --target-dir target/native --workspace
-cargo run --locked --manifest-path tools/contract-check/Cargo.toml --target-dir target/native
-cargo run --locked --manifest-path tools/unicode-build/Cargo.toml -- --check
+cargo test --locked --offline --target-dir target/native
+cargo run --locked --offline -p contract-check --target-dir target/native
+cargo run --locked --offline -p unicode-build -- --check
 rustup target add wasm32-unknown-unknown
 bash .github/scripts/check.sh web-production
 ```
 
-首次构建需要联网取得各工作区锁文件中的依赖。`web-production` 会预取 Web 依赖并安装匹配的 wasm-bindgen CLI，再调用内部离线的正式构建器；其余 Cargo 命令在对应工作区缓存齐全后可追加 `--offline`。本机 Unix 套接字和所有权隔离测试需要相应系统能力，不能把隔离环境拒绝执行当作业务测试通过。
+Rust 依赖源码已经纳入仓库，首次业务构建也使用根锁文件和 `--locked --offline`。须预先准备 Rust 工具链、WASM target 和所需系统 SDK；Web 构建器调用本地维护的绑定工具。工具链或 SDK 的安装不属于 Rust 依赖下载。本机 Unix 套接字和所有权隔离测试需要相应系统能力，不能把隔离环境拒绝执行当作业务测试通过。
 
-[持续集成说明](ci.md)列出根工作区之外的独立测试、正式 WASM 构建、三桌面宿主检查与浏览器烟测，以及 SDK 和真机验证边界。 标签自动发布、下载校验与安装方式见[发布说明](release.md)。
+[持续集成说明](ci.md)列出同一根工作区中按目标选择的服务端、SMB、正式 WASM 构建与浏览器烟测，以及 SDK 和真机验证边界。 标签自动发布、下载校验与安装方式见[发布说明](release.md)。

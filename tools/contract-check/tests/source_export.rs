@@ -87,8 +87,15 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
             "{name}"
         );
         let source = root.join(relative);
+        // A source export follows the current working tree while a refactor
+        // may still have removed files recorded in the Git index.
+        let metadata = match source.symlink_metadata() {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => panic!("cannot inspect export source {name}: {error}"),
+        };
         assert!(
-            source.symlink_metadata().unwrap().file_type().is_file(),
+            metadata.file_type().is_file(),
             "export requires regular source files: {name}"
         );
         let output = fixture.0.join(relative);
@@ -107,13 +114,13 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
     assert!(
         fixture
             .0
-            .join("tests/evidence/merge-tags-backup/README.md")
+            .join("docs/validation/evidence/merge-tags-backup.md")
             .is_file()
     );
     assert!(
         fixture
             .0
-            .join("demos/branch-system/tests/browser.mjs")
+            .join("tests/evidence/lazy-branches/web-probe.mjs")
             .is_file()
     );
     assert!(
@@ -125,10 +132,10 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
     assert!(
         !fixture
             .0
-            .join("demos/branch-system/tests/evidence/browser-result.json")
+            .join("tests/evidence/lazy-branches/browser-result.json")
             .exists()
     );
-    let result = Command::new(env!("CARGO_BIN_EXE_zxs-contract-check"))
+    let result = Command::new(env!("CARGO_BIN_EXE_contract-check"))
         .arg("--root")
         .arg(&fixture.0)
         .output()
@@ -151,7 +158,7 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
         "[Required source](missing-required-source.rs)\n",
     )
     .unwrap();
-    let failure = Command::new(env!("CARGO_BIN_EXE_zxs-contract-check"))
+    let failure = Command::new(env!("CARGO_BIN_EXE_contract-check"))
         .arg("--root")
         .arg(&fixture.0)
         .output()

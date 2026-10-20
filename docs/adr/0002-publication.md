@@ -14,4 +14,4 @@ SQLite 是可重建的查询投影，不替代文件系统及日志成为权威�
 
 ## 依据
 
-[事务恢复](../10-transactions-and-recovery.md)、[故障处理](../18-failure-handling.md)、[操作手册](../25-operation-manual.md)、[一次写入流程](../architecture/write-flow.md)。实现入口为 [publication.rs](../../crates/zxs-core/src/engine/publication.rs) 与 [index.rs](../../crates/zxs-core/src/engine/index.rs)。
+[事务恢复](../10-transactions-and-recovery.md)、[故障处理](../18-failure-handling.md)、[操作手册](../25-operation-manual.md)、[一次写入流程](../architecture/write-flow.md)。实现入口为 [publication.rs](../../src/engine/src/engine/publication.rs) 与 [index.rs](../../src/engine/src/engine/index.rs)。

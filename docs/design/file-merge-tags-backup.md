@@ -1,6 +1,6 @@
 # 文件分支合并、版本标签与备份前缀
 
-2026-10-19 按用户确认规则更新。[完整分支规则](branch-system-logic.md) · [图形实例](../../demos/branch-system/index.html) · [实现与验证](../reports/branch-system-implementation.md)。父节点在下，子节点在上。
+2026-10-19 按用户确认规则更新。[完整分支规则](branch-system-logic.md) · [实现与验证](../reports/branch-system-implementation.md)。父节点在下，子节点在上。
 
 ## 文件分支合并
 

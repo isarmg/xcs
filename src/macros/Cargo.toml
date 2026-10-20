@@ -1,0 +1,31 @@
+[package]
+name = "view-macros"
+version = "0.8.19"
+edition = "2021"
+autotests = false
+license-file = "../../compliance/licenses/upstream/zxs-web-macro-0.8.19/UPSTREAM-NOTICE.md"
+description = "Project CSR view and component macros"
+
+[lib]
+name = "view_macros"
+proc-macro = true
+
+[dependencies]
+attribute-derive = { version = "0.11", features = ["syn-full"], path = "../foundation/attribute-derive"}
+convert_case = {version = "0.11", path = "../foundation/convert_case"}
+convert_case_extras = {version = "0.2", path = "../foundation/convert_case_extras"}
+html-escape = {version = "0.2", path = "../foundation/html-escape"}
+itertools = {version = "0.14", path = "../foundation/itertools-0.14.0"}
+leptos_hot_reload = { path = "../foundation/leptos_hot_reload", version = "0.8.7" }
+prettyplease = {version = "0.3", path = "../foundation/prettyplease-0.3.0"}
+proc-macro2 = {version = "1", path = "../foundation/proc-macro2"}
+quote = {version = "1", path = "../foundation/quote"}
+rstml = {version = "0.13.1", path = "../foundation/rstml"}
+syn = { version = "3", features = ["full"], path = "../foundation/syn-3.0.9"}
+
+[dev-dependencies]
+# Run macro documentation in the same consumer context as the application.
+web-interface = { path = "../interface" }
+
+[lints.rust]
+unexpected_cfgs = "deny"

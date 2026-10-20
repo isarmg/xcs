@@ -6,7 +6,7 @@ env=dict(os.environ, TMPDIR=str(run/'tmp'))
 start=time.monotonic()
 with output.open('w') as stdout, (run/f'{revision}-{count}.stderr').open('w') as stderr:
     try:
-        proc=subprocess.run([str(run/f'target-{revision}'/'debug/zxs-perf-check'), str(count)],stdout=stdout,stderr=stderr,env=env,timeout=1200)
+        proc=subprocess.run([str(run/f'target-{revision}'/'debug/perf-check'), str(count)],stdout=stdout,stderr=stderr,env=env,timeout=1200)
         status=proc.returncode
     except subprocess.TimeoutExpired:
         status='timeout-1200s'

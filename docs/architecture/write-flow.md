@@ -35,21 +35,21 @@ sequenceDiagram
 
 ## 1. 规划不是发布
 
-[plan_mutation_digest](../../crates/zxs-core/src/engine.rs) 将操作 ID 与请求摘要及主体绑定：相同请求可以查回原结果，复用 ID 提交不同输入会失败。新操作检查写入条件，复制状态，应用变更并登记拟发布结果与事件。规划中的 `PUBLISHED` / `TARGET_MET` 字段是候选结果，不是已落盘成功证明；只有完成发布闭包后才返回成功。
+[plan_mutation_digest](../../src/engine/src/engine.rs) 将操作 ID 与请求摘要及主体绑定：相同请求可以查回原结果，复用 ID 提交不同输入会失败。新操作检查写入条件，复制状态，应用变更并登记拟发布结果与事件。规划中的 `PUBLISHED` / `TARGET_MET` 字段是候选结果，不是已落盘成功证明；只有完成发布闭包后才返回成功。
 
-[工作区准备](../../crates/zxs-core/src/engine/workspace_commit.rs) 在锁内捕获基线，锁外执行重活，发布前再次校验工作区所有者、权限、内容、代际与租约。详见[分离准备](detached-workspace-commits.md)。
+[工作区准备](../../src/engine/src/engine/workspace_commit.rs) 在锁内捕获基线，锁外执行重活，发布前再次校验工作区所有者、权限、内容、代际与租约。详见[分离准备](detached-workspace-commits.md)。
 
 ## 2. 准备正文与元数据
 
-[prepare_publication](../../crates/zxs-core/src/engine/publication.rs) 检查指定路由容量、元数据预留、候选对象大小与哈希。正文按每个文件的版本顺序及保护路由复制，独立文件使用有界并行。已存在正文也必须校验。准备将完整正文及不可变元数据写到目标盘，但不写任何决定日志。
+[prepare_publication](../../src/engine/src/engine/publication.rs) 检查指定路由容量、元数据预留、候选对象大小与哈希。正文按每个文件的版本顺序及保护路由复制，独立文件使用有界并行。已存在正文也必须校验。准备将完整正文及不可变元数据写到目标盘，但不写任何决定日志。
 
 准备持有与候选、磁盘和实际文件绑定的校验证据。大批量达到句柄上限时采用完整重读回退，不能假定决定阶段始终没有正文 I/O。取消或过期准备可能留下未引用不可变对象，不会自动发布。
 
 ## 3. 串行决定与成功边界
 
-[decide_publication](../../crates/zxs-core/src/engine/publication.rs) 先复查根目录、快照、序号、决定槽、配置、正文凭据与空间。失配返回可重试的 `PREPARATION_STALE`；尚未写 ACCEPT。各成员写入 Candidate 与 PREPARE 后，进入可能产生不可撤销决定的区域。
+[decide_publication](../../src/engine/src/engine/publication.rs) 先复查根目录、快照、序号、决定槽、配置、正文凭据与空间。失配返回可重试的 `PREPARATION_STALE`；尚未写 ACCEPT。各成员写入 Candidate 与 PREPARE 后，进入可能产生不可撤销决定的区域。
 
-[complete_candidate_verified](../../crates/zxs-core/src/engine/publication.rs) 收集 ACCEPT、写 FINALIZE，再同步名称和正文提交证明，形成包含结果及各类收据的 Publication。三成员 PUBLICATION、PublicationSeal 和正文盘本地发布证明都完成后，才替换内存状态并更新 [SQLite 投影](../../crates/zxs-core/src/engine/index.rs)。SQLite 仍是可重建投影，权威证据在日志及不可变对象中。
+[complete_candidate_verified](../../src/engine/src/engine/publication.rs) 收集 ACCEPT、写 FINALIZE，再同步名称和正文提交证明，形成包含结果及各类收据的 Publication。三成员 PUBLICATION、PublicationSeal 和正文盘本地发布证明都完成后，才替换内存状态并更新 [SQLite 投影](../../src/engine/src/engine/index.rs)。SQLite 仍是可重建投影，权威证据在日志及不可变对象中。
 
 ## 4. 失败后怎么判断
 

@@ -1,0 +1,13 @@
+[package]
+name = "smb-protocol"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+description = "ZXS local Samba bridge protocol and file descriptor transport"
+
+
+[dependencies]
+libc = {version = "0.2", path = "../foundation/libc"}
+serde = { version = "1", features = ["derive"], path = "../foundation/serde"}
+serde_json = {version = "1", path = "../foundation/serde_json"}
+storage-contract.workspace = true

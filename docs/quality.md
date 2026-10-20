@@ -1,0 +1,23 @@
+# Rust 质量与安全门禁
+
+[文档目录](README.md) · [持续集成](ci.md) · [源码来源与许可](../compliance/README.md)
+
+`bash .github/scripts/check.sh quality` 对根工作区中的第一方应用和工具执行格式检查及拒绝警告的 Clippy。检查按包选择，基础源码作为本地依赖参与编译，不批量格式化第三方基础实现。另对宿主机全部工作区目标（排除依赖 SDK 的 `smb-vfs`）及 WASM release 的 `web-app` 检查 Rust 编译诊断。
+
+Clippy 和编译门禁经由 [Cargo 诊断包装器](../.github/scripts/check-rust-diagnostics.py) 读取 JSON，包括本地基础依赖的 `compiler-message`。任何 Rust warning/error、无效消息、缺少成功的 `build-finished` 或 Cargo 失败均阻止通过。包装器不改变 `RUSTFLAGS`、lint cap 或 Cargo 缓存目录；Cargo 进度和构建脚本的原有 stderr 保持可见。
+
+产品入口为 Web 和 SMB；普通协议检查不要求 Samba SDK，独立 `smb-sdk` 任务使用固定的官方 SDK。真实 VFS Clippy、测试编译和 release 构建使用相同诊断门禁；测试先以 `--no-run` 检查纯编译 JSON，再正常执行测试，以免把测试输出当成编译消息。发布工作流的原生 release 编译和本地 Web 绑定工具也使用该门禁。
+
+`bash .github/scripts/check.sh foundation` 运行本次维护涉及的限定基础库回归：`password-hash`、`idna_adapter` 的全 Unicode 标量测试、四个数值包，以及位集合、arena 与符号反解辅助包。IDNA 测试与真实 `storage-client` 消费者一起选包，由实际依赖图启用 `compiled_data`，不向工作区之外的依赖包直接传入特性。只运行限定 lib 测试，不恢复已退役的上游开发依赖，也不把整个 foundation 变为工作区成员。该入口同时纳入 CI 和 Release 验证。
+
+`bash .github/scripts/check.sh security` 使用固定版本 `cargo-audit` 扫描根锁文件，并根据保留的原始身份构造仅供审计的上游身份锁。该补充审计覆盖 Cargo 常规扫描可能跳过的本地路径包，包名、版本、校验和必须与中央来源证据一致；审计锁不参与产品构建。
+
+已知漏洞、停止维护、被撤回版本及扫描不完整均按门禁规则失败，不维护静默忽略清单。扫描工具的版本固定，公告和 registry 状态实时读取；工具安装可追溯不代表安全结论永久不变。来源收据完整性与安全公告扫描不能代替独立安全审查或许可资料复核。
+
+## 具名输入与身份边界
+
+客户端和引擎的备份配置、放置规则与保护策略更新使用具名请求结构。仓库、路径、份数、备份前缀、预期代数、稳定范围身份、操作身份与已认证主体分别保留字段；请求类型负责表达输入，不替代鉴权、作用域检查或代际冲突处理。客户端请求不会携带服务端信任主体，服务端从认证上下文构造引擎输入。
+
+内部文件节点发布、版本构建、历史边界插入和元数据预检同样使用具名输入。公开 Rust 方法与所有调用方同步迁移，HTTP 路径、JSON 字段、错误码及持久化格式保持原有契约。
+
+新增包含多个身份或隔离值的方法应采用相同规则，避免连续同类型位置参数和无名元组，也不为通过参数计数检查而增加宽泛 lint 例外。具名输入不豁免正确性、所有权、内存分配、死代码或风格检查。真实 SDK 生成绑定保留必要的局部 ABI lint 处理，与手写业务 API 分开维护。

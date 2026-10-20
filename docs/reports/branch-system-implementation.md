@@ -1,6 +1,8 @@
 # 分支系统实现记录
 
-2026-10-19 新增[文件合并、节点标签和用户备份前缀](../design/file-merge-tags-backup.md)，配套[实例 24—27](../../demos/branch-system/examples.md#example-24)。新增验证及本地预览记录集中在[本次材料](../../tests/evidence/merge-tags-backup/README.md)，下文旧分支操作材料保留为先前验收记录。
+> 后续范围说明：独立分支演示及其图示、构建和素材采集已于 2026-10-20 移除。本文涉及这些内容的路径、命令、计数及产物仅作历史记录；业务分支规则与存储验收分别保留。见[演示清理记录](demo-removal-20261020.md)。
+
+2026-10-19 新增[文件合并、节点标签和用户备份前缀](../design/file-merge-tags-backup.md)，配套实例 24—27（原路径 `../examples/branch-system/examples.md#example-24`，演示材料已移除）。新增验证及本地预览记录集中在[本次材料](../validation/evidence/merge-tags-backup.md)，下文旧分支操作材料保留为先前验收记录。
 
 2026-10-19，按[确认后的逻辑规范](../design/branch-system-logic.md)及实例 17—22 继续实现。这里区分实际代码、隔离测试和本地服务，不将说明图作为业务测试。
 
@@ -31,20 +33,20 @@
 
 | 位置 | 职责 |
 | --- | --- |
-| `crates/zxs-contract/src/model.rs` | 不可变目录子树、精确子目录引用、按路径的 `FileContext` 和批量请求 |
-| `crates/zxs-core/src/business/directory.rs` | 组合恢复、继承首写、祖先子树及路径上下文 |
-| `crates/zxs-core/src/business/batch.rs` | 冻结依据校验、显式映射、复制身份、整批发布及回执 |
-| `crates/zxs-core/src/business/file.rs`、`file_metadata.rs`、`file_paths.rs` | 公共文件分支、定向内容发布、分支名称和不可变路径节点 |
-| `crates/zxs-core/src/business/file_nodes.rs`、`file_merges.rs`、`file_tags.rs`、`file_publication.rs` | 公共节点解析、标签继承、合并来源与只读别名、按精确引用统一发布 |
-| `crates/zxs-core/src/protection/backup_paths.rs` | 稳定策略范围、每盘前缀、子策略优先、既有正文回填和代数检查 |
-| `crates/zxs-core/src/business/workspace.rs` | 工作区范围、暂存、选择冲突和自己的首写后续保存 |
-| `crates/zxs-core/src/container_storage.rs` | 单一真实容器、路径迁移、旧格式解析及缓存投影 |
-| `crates/zxs-core/src/history_package.rs`、`maintenance.rs` | 历史包、引用验证、恢复及冻结正文保留 |
-| `crates/zxs-server/src/engine_backend/file_manager.rs` | 授权、路径上下文、批量 API 和操作审计 |
-| `crates/zxs-server/src/engine_backend/file_manager/backup_namespace.rs` | 按备份逻辑前缀的只读浏览、授权过滤、固定正文和历史容器，不反向猜主盘路径 |
+| `crates/storage-contract/src/model.rs` | 不可变目录子树、精确子目录引用、按路径的 `FileContext` 和批量请求 |
+| `crates/storage-engine/src/business/directory.rs` | 组合恢复、继承首写、祖先子树及路径上下文 |
+| `crates/storage-engine/src/business/batch.rs` | 冻结依据校验、显式映射、复制身份、整批发布及回执 |
+| `crates/storage-engine/src/business/file.rs`、`file_metadata.rs`、`file_paths.rs` | 公共文件分支、定向内容发布、分支名称和不可变路径节点 |
+| `crates/storage-engine/src/business/file_nodes.rs`、`file_merges.rs`、`file_tags.rs`、`file_publication.rs` | 公共节点解析、标签继承、合并来源与只读别名、按精确引用统一发布 |
+| `crates/storage-engine/src/protection/backup_paths.rs` | 稳定策略范围、每盘前缀、子策略优先、既有正文回填和代数检查 |
+| `crates/storage-engine/src/business/workspace.rs` | 工作区范围、暂存、选择冲突和自己的首写后续保存 |
+| `crates/storage-engine/src/container_storage.rs` | 单一真实容器、路径迁移、旧格式解析及缓存投影 |
+| `crates/storage-engine/src/history_package.rs`、`maintenance.rs` | 历史包、引用验证、恢复及冻结正文保留 |
+| `crates/storage-server/src/engine_backend/file_manager.rs` | 授权、路径上下文、批量 API 和操作审计 |
+| `crates/storage-server/src/engine_backend/file_manager/backup_namespace.rs` | 按备份逻辑前缀的只读浏览、授权过滤、固定正文和历史容器，不反向猜主盘路径 |
 | `web/src/files/batch/` | 草稿、纯请求校验、请求生命周期和显示分离 |
 
-路径、标签及合并元数据节点与正文版本分开存储，历史树统一显示；节点引用真实正文，不创建假正文版本，后续写入通过节点父边衔接历史，原正文的内容证明不重写。节点备注独立保存，最多 128 UTF-8 字节。标签校验和容量上限统一放在 `zxs-contract`，核心、历史包读取和 Web 共用。
+路径、标签及合并元数据节点与正文版本分开存储，历史树统一显示；节点引用真实正文，不创建假正文版本，后续写入通过节点父边衔接历史，原正文的内容证明不重写。节点备注独立保存，最多 128 UTF-8 字节。标签校验和容量上限统一放在 `storage-contract`，核心、历史包读取和 Web 共用。
 
 目录与文件的旧单身份映射仅保留为兼容缓存；多个路径的选择以 `FileContext` 为准。历史快照保存自己的路径上下文，恢复时不追踪公共分支后来移动的 HEAD。
 
@@ -56,6 +58,6 @@
 
 批量事务的当前边界为同一主盘上的同一托管仓库／历史域；跨历史树操作不伪装为保留身份的移动。一个真实文件在同一次批量操作中的物理去向必须唯一，冲突的映射整批拒绝。含目录组合或文件路径节点的历史域尚不支持独立树拆分，当前明确拒绝该操作，防止丢失引用；普通历史域拆分保持原有行为。未选分支的逻辑路径可以与规范位置不同。
 
-[验收材料与执行结果](../../tests/evidence/branch-operations/README.md)分别列出 Rust、HTTP、SMB SDK、实际 WASM 浏览器和本地服务的证据。临时目录的三成员测试不是三块物理设备的断电验收；Unix 描述符测试不是部署 smbd 和六平台设备验收。
+[验收材料与执行结果](../validation/evidence/branch-operations.md)分别列出 Rust、HTTP、SMB SDK、实际 WASM 浏览器和本地服务的证据。临时目录的三成员测试不是三块物理设备的断电验收；Unix 描述符测试不是部署 smbd 和六平台设备验收。
 
 本地预览已使用包含文件合并、标签与备份浏览修正的最终候选更新并恢复，入口为 [http://127.0.0.1:7400](http://127.0.0.1:7400)。[最新服务核验](../../tests/evidence/merge-tags-backup/served-assets.json)记录 HTTP 200、进程摘要、严格 CSP、实际静态资源和构建输入匹配；此前记录保留为历史验收。

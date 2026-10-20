@@ -1,70 +1,45 @@
 # 持续集成
 
-[GitHub Actions 工作流](../.github/workflows/ci.yml) 在每次 push、pull request 及手动触发时运行。所有检查使用仓库 `rust-toolchain.toml` 的 Rust 1.99.0 与已提交的 Cargo.lock，不使用浮动 stable，不发布、部署或签名。
+[GitHub Actions 工作流](../.github/workflows/ci.yml) 在 push、pull request 及手动触发时检查项目。使用 `rust-toolchain.toml` 指定工具链与唯一根 Cargo.lock，不部署或发布。产品用户入口仅为 Web 与 SMB；没有桌面或移动 App 构建任务。
 
-## 检查范围
+所有自有 Rust 组件和基础实现由一个根 workspace 管理，命令按包和编译目标选择。统一入口为 [check.sh](../.github/scripts/check.sh)：
 
-根 workspace 明确排除了多个独立 workspace，单独运行根 `cargo test --workspace` 不能代表全仓测试。工作流使用 [统一检查入口](../.github/scripts/check.sh)，按以下范围分别运行：
+| 范围 | 实际检查 |
+| --- | --- |
+| `rust-sources` | 源码、manifest、全部特性边、锁文件、来源文档和退役记录校验；空 Cargo home 重新解析七个入口／目标闭包，拒绝无闭包使用的活动源码树 |
+| `quality` | 自有 workspace 的格式与严格 Clippy；宿主机全部目标及 Web 的 WASM release 编译，所有本地依赖的 Rust warning/error 均失败；基础源码不自动格式化 |
+| `security` | 固定 cargo-audit 扫描器查询当前 RustSec；消费者锁和活动／已合并实现的原始身份均扫描，告警或扫描错误失败；已移除来源单列历史记录 |
+| `workspace` | 服务端、核心、认证、平台、运维 CLI、HTTP 与 socket 测试；另行串行运行真实大历史包用例 |
+| `foundation` | 密码哈希、经真实 storage-client 消费者启用数据的 IDNA 全 Unicode 标量回归，以及数值基础库与位集合／arena／符号反解库的限定 lib 回归；不恢复已退役开发依赖或运行全部上游测试 |
+| `web` | Web 应用、公共 runtime 与 CSR 内核/宏的单元、集成及 Rustdoc 测试；过程宏通过仅开发依赖的真实消费者验证文档 |
+| `contracts` | 契约工具测试及全仓 schema、配置、文档链接检查 |
+| `build-tools` | 发布校验、WASM 构建器、本地绑定工具、Unicode 重现、离线编排与性能报告校验器回归；不执行性能工作负载 |
+| `smb-protocol` | 显式选择独立的 smb-protocol 协议包 |
+| `smb-sdk` job | 固定哈希的官方 Samba 4.23.0 SDK，真实 VFS Clippy、测试编译和 release 构建均经过零 Rust 警告门禁，再正常执行链接测试 |
+| `web-production` | 本地维护的绑定工具、wasm32 release 构建、资源清单和压缩产物 |
+| `browser-smoke` | 实际 Web/WASM 对真实服务端的 Chrome 交互；响应式尺寸预览不冒充原生 App 验收 |
 
-- `quality`：只选择项目 workspace 成员执行 `cargo fmt --check` 与 `cargo clippy --locked --all-targets -- -D warnings`；不格式化第三方快照。覆盖根、桥接、Web、工具、演示与 SMB 协议；宿主 Clippy 在平台 job 中运行，自维护 core/macro fork 另行检查，新原生回归 harness 在 SDK job 编译。
-- `security`：从官方 crates.io 锁定安装 cargo-audit 0.22.2，对全部消费者 Cargo.lock 及由来源记录生成的上游身份影子锁查询最新 RustSec 数据；漏洞、未维护及撤回警告均失败，不设置忽略列表；经精确来源校验的本地安全回补须在输出中显式分类，其他公告和扫描错误仍失败。
-- `workspace`：根 `cargo test --locked --workspace`，包括服务端与实际本机 socket 测试；没有为受限沙箱添加 skip 或忽略失败。
-- `apps`：独立原生桥接 workspace 的测试。
-- `web`：Web 应用及 runtime 的原生 Rust 测试。
-- `contracts`：契约工具自身测试，再运行全仓契约、配置、语法与本地链接检查。
-- `build-tools`：Release 版本校验器、Web 构建器、Unicode 生成器测试，以及 Unicode 数据 `--check`。
-- `demo`：独立分支演示 workspace 测试。
-- `smb-protocol`：独立 `zxs-smb` 协议 crate 测试，显式指定 package。
-- `smb-sdk`：独立 job 从固定哈希的官方 Samba 4.23.0 构建真实 SDK，再执行 VFS 严格 Clippy、实际链接测试和 release 构建；入口为 `.github/scripts/smb-sdk.sh`。
-- `native-dependency-regressions`：安装 GLib SDK，在隔离 D-Bus 会话中运行原生依赖回补的优化构建回归，并核对来源哈希及篡改拒绝测试。
-- `web-production`：先抓取锁定的 Web 依赖，再运行项目正式离线构建器，使用 `wasm32-unknown-unknown` release 与精确的 wasm-bindgen CLI 0.2.129；检查发行入口、WASM、gzip 和构建清单存在。
-- `desktop-host`：Linux、Windows、macOS runner 分别运行桥接测试、生成图标，并执行 Tauri 宿主 `cargo check --locked`；复用本次工作流构建的 Web 产物。Linux 安装官方 Ubuntu 包提供的 GTK/WebKit 开发依赖。
-- `browser-smoke`：Linux runner 使用匹配的预装 Chrome/ChromeDriver，编译真实服务端与 Rust WebDriver 测试工具，对本次生成的 Web/WASM 运行浏览器烟测。浏览器缺失、版本不匹配或执行失败均使 job 失败，不降级为跳过。
-
-Web 产物仅作为同一次工作流的检查输入保存 7 天，不表示发布。vendor 中的 Rust 路径依赖随消费者编译，但不单独运行上游 vendor 的完整测试矩阵。
-
-## 本地复现
-
-在安装好仓库 Rust 工具链后，可以逐项执行：
+安装工具链、WASM target、浏览器/驱动和所需原生库后，在仓库根执行：
 
 ```sh
-bash .github/scripts/check.sh quality
-bash .github/scripts/check.sh security
+python3 tools/rust-sources/manage.py verify --metadata
+bash .github/scripts/check.sh rust-sources
 bash .github/scripts/check.sh workspace
-bash .github/scripts/check.sh apps
+bash .github/scripts/check.sh foundation
 bash .github/scripts/check.sh web
+bash .github/scripts/check.sh smb-protocol
 bash .github/scripts/check.sh contracts
 bash .github/scripts/check.sh build-tools
-bash .github/scripts/check.sh demo
-bash .github/scripts/check.sh smb-protocol
-rustup target add wasm32-unknown-unknown
+bash .github/scripts/check.sh quality
+bash .github/scripts/check.sh security
 bash .github/scripts/check.sh web-production
-bash .github/scripts/check.sh desktop-host
 bash .github/scripts/check.sh browser-smoke
 ```
 
-首次运行需要联网获取锁定依赖。正式 Web builder 内部仍保持离线；检查脚本提前 `cargo fetch --locked`，避免把缓存命中当成成功前提。浏览器检查要求 Chrome 和 ChromeDriver，支持 `CHROME_BIN` 与 `CHROMEDRIVER` 指定可执行文件。原生宿主需要该平台 SDK，见 [App 构建说明](../apps/README.md)。
+所有业务及构建辅助 Rust 源码通过根工作区的本地依赖提供；正式 Cargo 命令使用 `--locked --offline`。验证器使用临时空 Cargo home 核对登记目标的依赖闭包。工具链和非 Rust SDK 继续独立管理；安全扫描器作为开发辅助工具可以联网更新漏洞信息，其联网不参与正式业务构建。
 
-## 不包含的验收
+质量、SDK 和发布编译使用 [Cargo JSON 诊断包装器](../.github/scripts/check-rust-diagnostics.py)，保留命令参数与环境。包装器拒绝所有编译警告、错误及不完整或无效的构建流；其回归同时覆盖解析失败、Cargo 失败和本地依赖警告。质量任务与发布验证任务安装 WASM 标准库后检查目标闭包。
 
-- 桌面 `cargo check` 验证编译及权限生成，不证明实际链接、WebView 交互、系统文件选择/关联、打包、签名与安装成功。
-- Android、iOS/iPadOS 的 SDK/NDK/Xcode、签名、文件提供方、后台生命周期及真机交互需要专门的平台验收。
-- SMB VFS 默认 `smb-sdk` 功能要求已配置的 Samba 4.23.0 源码和生成头文件；SDK job 校验真实头文件与库的编译、链接和测试，但不能证明模块实际加载或完整 Samba 互操作。CI 不使用关闭功能来冒充 SDK 验收。
-- Chrome 烟测不是跨浏览器、移动设备或完整人工 UI 验收。
-- 第三方快照不运行项目格式门禁；依赖以正常编译方式校验。少量参数过多的现有 API 使用带理由的函数级 `expect`，迁移计划见 [质量策略](../.github/QUALITY.md)。
-- cargo-audit 不替代许可证策略审计或未公开漏洞审计；无法连接 registry/RustSec 时失败而不跳过。
+SMB SDK 编译不等于 Samba 模块已加载或跨客户端往返通过；Chrome 检查不等于所有浏览器和移动设备通过；模拟文件故障不等于物理盘掉电验收。依赖源码本地化也不等于漏洞或许可证审查完成，见 [第三方来源清单](THIRD_PARTY_RUST_SOURCES.md)。
 
-## 工作流维护
-
-工作流仅授予 `contents: read`，checkout 不保留凭据，只使用 push/PR 事件，不使用高权限 `pull_request_target`。同一分支或 PR 的旧运行会取消；独立测试与桌面矩阵不会因其他项失败提前取消。缓存仅包含 Cargo 依赖及精确版本的 wasm-bindgen CLI，不缓存产品测试成功结果。
-
-所有 GitHub 官方 Actions 固定完整提交 SHA；升级时同时核验版本与 SHA：
-
-- [checkout v7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1)
-- [cache v6.1.0](https://github.com/actions/cache/releases/tag/v6.1.0)
-- [upload-artifact v7.0.2](https://github.com/actions/upload-artifact/releases/tag/v7.0.2)
-- [download-artifact v8.0.2](https://github.com/actions/download-artifact/releases/tag/v8.0.2)
-- [Tauri 官方平台依赖](https://v2.tauri.app/start/prerequisites/)
-- [Ubuntu 24.04 runner 预装浏览器清单](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)
-
-更改 Rust 工具链或 wasm-bindgen 时，应同步清单、脚本、缓存键与正式构建器版本检查。新增独立 workspace 时，显式增加对应检查，不依赖根 workspace 自动包含它。
+工作流仅授予所需权限，checkout 不保留凭据，官方 Actions 固定完整提交 SHA。产品验证使用独立 Cargo home，不缓存 registry/git 源码或测试成功结果。新增组件必须加入根工作区、复用根锁文件、登记中央来源清单并增加对应检查；不得增加子工作区或活动子锁文件。

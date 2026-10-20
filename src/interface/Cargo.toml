@@ -1,0 +1,45 @@
+[package]
+name = "web-interface"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0 AND MIT"
+description = "Integrated ZXS browser interface, CSR primitives, mounting and presentation"
+
+[features]
+default = ["csr"]
+csr = ["reactive_graph/effects"]
+
+[dependencies]
+any_spawner = { path = "../foundation/any_spawner", version = "0.3.0", features = ["wasm-bindgen"] }
+either_of = { path = "../foundation/either_of", version = "0.1.9" }
+leptos_dom = { path = "../foundation/leptos_dom", version = "0.8.8" }
+view_macros = { package = "view-macros", path = "../macros" }
+oco_ref = { path = "../foundation/oco_ref", version = "0.2.1" }
+reactive_graph = { path = "../foundation/reactive_graph", version = "0.2.14", features = ["serde"] }
+tachys = { path = "../foundation/tachys", version = "0.2.15", features = ["reactive_graph", "oco"] }
+throw_error = { path = "../foundation/throw_error", version = "0.3.1" }
+typed-builder = {version = "0.23", path = "../foundation/typed-builder"}
+typed-builder-macro = {version = "0.23", path = "../foundation/typed-builder-macro"}
+console_error_panic_hook = {version = "0.1", path = "../foundation/console_error_panic_hook"}
+gloo-events = {version = "0.2", path = "../foundation/gloo-events"}
+gloo-timers = { version = "0.3", features = ["futures"], path = "../foundation/gloo-timers"}
+futures = {version = "0.3", path = "../foundation/futures"}
+js-sys = {version = "=0.3.106", path = "../foundation/js-sys"}
+send_wrapper = {version = "0.6", path = "../foundation/send_wrapper"}
+serde = { version = "1", features = ["derive"], path = "../foundation/serde"}
+serde_json = {version = "1", path = "../foundation/serde_json"}
+wasm-bindgen = {version = "=0.2.129", path = "../foundation/wasm-bindgen"}
+wasm-bindgen-futures = {version = "=0.4.79", path = "../foundation/wasm-bindgen-futures"}
+web-sys = { version = "=0.3.106", features = [
+  "Window", "Document", "DocumentFragment", "HtmlElement", "Element", "Node", "NodeList", "HtmlCollection", "DomTokenList",
+  "Storage", "Location", "Url", "UrlSearchParams", "Navigator", "MediaQueryList", "MediaQueryListEvent", "Event", "EventTarget",
+  "HtmlDialogElement", "HtmlInputElement", "HtmlButtonElement", "HtmlFormElement", "HtmlTextAreaElement", "HtmlTemplateElement",
+  "KeyboardEvent", "MouseEvent", "PointerEvent", "FocusEvent", "SubmitEvent", "CustomEvent", "CustomEventInit", "Text",
+  "CssStyleDeclaration", "FontFace", "FontFaceSet", "DomException", "DomMatrix", "DomMatrixReadOnly", "DomRect", "DomRectList",
+  "MutationObserver", "MutationObserverInit", "ResizeObserver", "SvgsvgElement", "SvgElement", "SvgGraphicsElement", "SvgAnimatedRect", "SvgRect", "SvgMatrix",
+  "PageTransitionEvent", "TransitionEvent", "Blob", "BlobPropertyBag", "Performance", "console",
+], path = "../foundation/web-sys"}
+
+[lints.rust]
+unsafe_code = "forbid"
+unexpected_cfgs = "deny"

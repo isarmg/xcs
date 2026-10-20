@@ -11,13 +11,7 @@ pub struct Target {
     pub generated: bool,
 }
 fn generated(relative: &Path) -> bool {
-    let parts: Vec<_> = relative.iter().filter_map(|s| s.to_str()).collect();
-    let evidence = parts.starts_with(&["tests", "evidence"])
-        || (parts.len() >= 5
-            && parts[0] == "demos"
-            && parts[2] == "tests"
-            && matches!(parts[3], "evidence" | "history"));
-    evidence
+    relative.starts_with("tests/evidence")
         && !matches!(
             relative.extension().and_then(|s| s.to_str()),
             Some("md" | "rs" | "mjs" | "py" | "sh")
@@ -116,21 +110,21 @@ mod tests {
     fn excludes_only_generated_output_in_declared_evidence_directories() {
         for path in [
             "tests/evidence/run/result.json",
-            "demos/branch-system/tests/evidence/shot.png",
-            "demos/other/tests/history/run/build.log",
+            "tests/evidence/lazy-branches/shot.png",
+            "tests/evidence/recovery/run/build.log",
         ] {
             assert!(generated(Path::new(path)), "{path}");
         }
         for path in [
             "tests/fixtures/result.json",
             "docs/contracts/vectors.json",
-            "demos/branch-system/reference/image.png",
+            "docs/images/web-file-manager.png",
             "tests/evidence/run/README.md",
             "tests/evidence/run/probe.mjs",
             "tests/evidence/run/seed.rs",
             "tests/evidence/run/helper.py",
             "tests/evidence/run/check.sh",
-            "demos/branch-system/tests/evidence/README.md",
+            "docs/validation/evidence/README.md",
         ] {
             assert!(!generated(Path::new(path)), "{path}");
         }

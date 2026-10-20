@@ -93,7 +93,7 @@ Existing generation-retention and cancelled-publication claim tests still pass.
   not recorded as passing and needs a socket-enabled validation environment.
 - Tests use `--locked --offline`; no dependency update is part of this work.
 - Extra strict Clippy validation is not clean on this baseline: dependency
-  checking stops at `zxs-contract/src/encoding.rs` (`chunks_exact_to_as_chunks`);
+  checking stops at `storage-contract/src/encoding.rs` (`chunks_exact_to_as_chunks`);
   `--no-deps` reports existing server `collapsible_if` and
   `items_after_test_module` findings. These unrelated style changes were not
   folded into this correctness patch.

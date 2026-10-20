@@ -16,6 +16,8 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: '1'
   CARGO_INCREMENTAL: '0'
+  # A fresh Cargo home proves no preloaded registry/git sources are needed.
+  CARGO_HOME: ${{ runner.temp }}/zxs-cargo-home
 
 jobs:
   tests:
@@ -25,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [quality, security, workspace, apps, web, contracts, build-tools, demo, smb-protocol]
+        suite: [rust-sources, quality, security, workspace, foundation, web, contracts, build-tools, smb-protocol]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -35,17 +37,9 @@ jobs:
           rustup show active-toolchain
           rustc --version
           cargo --version
-      - name: Cache Cargo dependencies
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/registry/src
-            ~/.cargo/git/db
-          key: cargo-${{ runner.os }}-${{ runner.arch }}-${{ matrix.suite }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
-          restore-keys: |
-            cargo-${{ runner.os }}-${{ runner.arch }}-${{ matrix.suite }}-
+      - name: Install WASM standard library for the quality gate
+        if: matrix.suite == 'quality'
+        run: rustup target add wasm32-unknown-unknown
       - name: Run locked test suite
         run: bash .github/scripts/check.sh "${{ matrix.suite }}"
 
@@ -62,73 +56,22 @@ jobs:
           rustup show active-toolchain
           rustup target add wasm32-unknown-unknown
           rustc --version
-      - name: Cache Cargo dependencies and exact wasm-bindgen CLI
+      - name: Cache locally compiled Rust build helpers
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/registry/src
-            ~/.cargo/git/db
-            target/ci-tools
-          key: cargo-${{ runner.os }}-${{ runner.arch }}-web-build-bindgen-0.2.129-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          path: target/rust-build-tools
+          key: rust-build-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rust-toolchain.toml', 'compliance/rust-sources.json') }}
           restore-keys: |
-            cargo-${{ runner.os }}-${{ runner.arch }}-web-build-bindgen-0.2.129-
+            rust-build-tools-${{ runner.os }}-${{ runner.arch }}-
       - name: Build production Web distribution
         run: bash .github/scripts/check.sh web-production
       - name: Retain production assets for checks in this run
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: web-dist
-          path: web/dist/
+          path: build/web/
           if-no-files-found: error
           retention-days: 7
-
-  desktop-host:
-    name: Desktop host (${{ matrix.os }})
-    needs: web-production
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, windows-2025, macos-15]
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Install repository Rust toolchain
-        run: rustup show active-toolchain
-      - name: Cache Cargo dependencies
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/registry/src
-            ~/.cargo/git/db
-          key: cargo-${{ runner.os }}-${{ runner.arch }}-host-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
-          restore-keys: |
-            cargo-${{ runner.os }}-${{ runner.arch }}-host-
-      - name: Fetch production Web assets from this workflow run
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: web-dist
-          path: web/dist
-      - name: Install official Ubuntu Tauri development dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y \
-            build-essential pkg-config libwebkit2gtk-4.1-dev libxdo-dev \
-            libssl-dev libayatana-appindicator3-dev librsvg2-dev
-      - name: Test portable bridge on this platform
-        run: bash .github/scripts/check.sh apps
-      - name: Check native host against production Web assets
-        run: bash .github/scripts/check.sh desktop-host
 
   browser-smoke:
     name: Browser smoke (Chrome)
@@ -141,22 +84,11 @@ jobs:
           persist-credentials: false
       - name: Install repository Rust toolchain
         run: rustup show active-toolchain
-      - name: Cache Cargo dependencies
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/registry/src
-            ~/.cargo/git/db
-          key: cargo-${{ runner.os }}-${{ runner.arch }}-browser-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
-          restore-keys: |
-            cargo-${{ runner.os }}-${{ runner.arch }}-browser-
       - name: Fetch production Web assets from this workflow run
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: web-dist
-          path: web/dist
+          path: build/web
       - name: Verify runner Chrome and ChromeDriver
         run: |
           chrome="$(command -v google-chrome)"
@@ -175,8 +107,7 @@ jobs:
       - name: Run browser smoke against the real server and WASM app
         env:
           ZXS_SMOKE_SCREENSHOT: artifacts/web-file-manager.png
-          ZXS_DEMO_CAPTURE: artifacts/demo-capture
-          ZXS_PLATFORM_PREVIEWS: artifacts/platform-previews
+          ZXS_VIEWPORT_PREVIEWS: artifacts/viewport-previews
         run: bash .github/scripts/check.sh browser-smoke
       - name: Retain real Web file manager screenshot
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -186,21 +117,12 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Retain verified real Web demonstration frames
+      - name: Retain responsive Web viewport previews
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: zxs-demo-capture
-          path: artifacts/demo-capture/
-          if-no-files-found: warn
-          retention-days: 7
-
-      - name: Retain six shared app layout previews
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always()
-        with:
-          name: platform-previews
-          path: artifacts/platform-previews/
+          name: viewport-previews
+          path: artifacts/viewport-previews/
           if-no-files-found: warn
           retention-days: 7
 
@@ -225,33 +147,5 @@ jobs:
         with:
           path: target/smb-sdk
           key: samba-4.23.0-${{ runner.os }}-${{ runner.arch }}-ubuntu24-${{ hashFiles('.github/scripts/smb-sdk.sh') }}
-      - name: Cache Cargo dependencies
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
-            ~/.cargo/registry/src
-          key: cargo-${{ runner.os }}-${{ runner.arch }}-smb-sdk-${{ hashFiles('rust-toolchain.toml', 'integrations/smb/Cargo.lock') }}
       - name: Build official SDK and validate the Rust VFS
         run: bash .github/scripts/smb-sdk.sh
-
-  native-dependency-regressions:
-    name: Native dependency backport regressions
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Install GLib SDK and isolated D-Bus test runner
-        run: sudo apt-get update && sudo apt-get install -y libglib2.0-dev pkg-config dbus
-      - name: Verify maintained sources and tamper regressions
-        run: |
-          python3 tools/native-dependency-tests/verify_sources.py
-          python3 tools/native-dependency-tests/test_verify_sources.py
-          python3 tools/native-dependency-tests/test_upstream_audit.py
-      - name: Test optimized native dependency regressions
-        run: dbus-run-session -- cargo test --manifest-path tools/native-dependency-tests/Cargo.toml --release --locked
-      - name: Check regression harness lint
-        run: cargo clippy --manifest-path tools/native-dependency-tests/Cargo.toml --all-targets --locked -- -D warnings

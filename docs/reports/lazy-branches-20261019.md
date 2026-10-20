@@ -1,6 +1,8 @@
 # 分支引用、目录子树与首次内容写入
 
-实现讨论记录：2026-10-19。[文档目录](../README.md) · [当前分支规则](../06-history-and-branches.md#s06-02) · [完整逻辑](../design/branch-system-logic.md) · [实际图形实例](../../demos/branch-system/examples.md)
+> 后续范围说明：独立分支演示及其图示、构建和素材采集已于 2026-10-20 移除。本文涉及这些内容的路径、命令、计数及产物仅作历史记录；业务分支规则与存储验收分别保留。见[演示清理记录](demo-removal-20261020.md)。
+
+实现讨论记录：2026-10-19。[文档目录](../README.md) · [当前分支规则](../06-history-and-branches.md#s06-02) · [完整逻辑](../design/branch-system-logic.md) · 实际图形实例（原路径 `../examples/branch-system/examples.md`，演示材料已移除）
 
 本文保留实现过程中的字段、缓存及恢复讨论，不作为最新语义已经实现的证明。创建目录分支直接引用父子树、首次写入才为文件建立公共分支，以及跨目录跟踪移交和批量作用范围，以[最新逻辑](../design/branch-system-logic.md#s23)为准；实现与规范需分别验收。
 
@@ -82,6 +84,6 @@ Branch/Commit 的空继承映射，以及 State/历史清单的空目录映射�
 
 ## 验证与历史记录
 
-业务实现证据按[测试材料索引](../../tests/README.md)分别核对；本次实际图形检查见[图示结果](../../demos/branch-system/tests/history/branch-system-visuals/result.json)。图示检查仅证明文档图片及页面展示，不能代替存储、业务 API、SMB 实际读写或物理断电验收。
+业务实现证据按[测试材料索引](../validation.md)分别核对；本次实际图形检查见图示结果（原路径 `../../examples/branch-system/tests/history/branch-system-visuals/result.json`，演示材料已移除）。图示检查仅证明文档图片及页面展示，不能代替存储、业务 API、SMB 实际读写或物理断电验收。
 
-此前[继承加空文件方案](../../tests/evidence/inherited-branches/README.md)和[不允许读取的占位方案](../../tests/evidence/lazy-branches/README.md)均为被后续澄清替代的历史材料，保留原日志。旧自动增加命名目录分支的中间结果也不作为当前“修改只生成子树”的通过证据。全量验收仍按[第 22 章](../22-acceptance.md#s22-03)记录，不把构建或临时 fixture 通过解释为六平台实机和发行完成。
+此前[继承加空文件方案](../validation/evidence/inherited-branches.md)和[不允许读取的占位方案](../validation/evidence/lazy-branches.md)均为被后续澄清替代的历史材料，保留原日志。旧自动增加命名目录分支的中间结果也不作为当前“修改只生成子树”的通过证据。全量验收仍按[第 22 章](../22-acceptance.md#s22-03)记录，不把构建或临时 fixture 通过解释为六平台实机和发行完成。

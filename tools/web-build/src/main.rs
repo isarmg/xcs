@@ -2,7 +2,7 @@
 //! and a generated generic module loader; product behavior lives in Rust.
 use anyhow::{Context, Result, bail};
 mod bootstrap;
-mod icon;
+mod wasm_release;
 use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap,
@@ -25,15 +25,18 @@ fn main() -> Result<()> {
     if args.next().is_some() {
         bail!("unexpected argument");
     }
-    if command == "icons" {
-        return icon::generate(&root);
-    }
-    let web = root.join("web");
+    let web = root.join("src/web");
+    let build = root.join("build");
+    fs::create_dir_all(&build)?;
+    reject_link(&build)?;
     if !web.join("Cargo.toml").is_file() {
-        bail!("product does not contain web/Cargo.toml");
+        bail!("product does not contain src/web/Cargo.toml");
     }
-    let lock_path = web.join(".build-lock");
-    let _lock = BuildLock { path:lock_path.clone(), _file:fs::OpenOptions::new().write(true).create_new(true).open(&lock_path).context("another Web build is running (remove a stale web/.build-lock only after confirming its process exited)")? };
+    if command == "build" {
+        verify_rust_sources(&root)?;
+    }
+    let lock_path = build.join(".web-build-lock");
+    let _lock = BuildLock { path:lock_path.clone(), _file:fs::OpenOptions::new().write(true).create_new(true).open(&lock_path).context("another Web build is running (remove a stale build/.web-build-lock only after confirming its process exited)")? };
     let inputs_before = source_inventory(&root)?;
     let target = std::env::var_os("ZXS_WEB_TARGET_DIR")
         .map(PathBuf::from)
@@ -46,23 +49,25 @@ fn main() -> Result<()> {
         "build" => "build",
         "check" => "check",
         "test" => "test",
-        _ => bail!("usage: zxs-web-build build|check|test [--product-root DIR]"),
+        _ => bail!("usage: web-build build|check|test [--product-root DIR]"),
     });
     cargo
         // Cargo discovers repository configuration and toolchains from its cwd,
         // not from --manifest-path. Use the same root that we inventory.
         .current_dir(&root)
-        .args(["--locked", "--offline", "--manifest-path"])
-        .arg(web.join("Cargo.toml"))
+        .args(["--locked", "--offline", "--package", "web-app"])
         .arg("--target-dir")
         .arg(&target);
     if command != "test" {
         cargo.args(["--target", "wasm32-unknown-unknown"]);
     } else {
-        cargo.arg("--workspace");
+        cargo.args(["--package", "web-interface", "--package", "view-macros"]);
     }
     if command == "build" {
         cargo.arg("--release");
+        // Browser delivery optimizes size; the native service retains the root
+        // release profile. Both builds share the root workspace and lockfile.
+        wasm_release::configure(&mut cargo);
     }
     if !cargo.status().context("cannot run cargo")?.success() {
         bail!("browser Cargo {command} failed");
@@ -82,7 +87,7 @@ fn main() -> Result<()> {
     {
         bail!("wasm-bindgen CLI must be exactly 0.2.129");
     }
-    let staging = web.join(".dist-staging");
+    let staging = build.join(".web-staging");
     if staging.exists() {
         reject_link(&staging)?;
         fs::remove_dir_all(&staging)?;
@@ -92,13 +97,14 @@ fn main() -> Result<()> {
         .args(["--target", "web", "--no-typescript", "--out-name", "zxs"])
         .arg("--out-dir")
         .arg(staging.join("pkg"))
-        .arg(target.join("wasm32-unknown-unknown/release/zxs_web_app.wasm"))
+        .arg(target.join("wasm32-unknown-unknown/release/web_app.wasm"))
         .status()?;
     if !status.success() {
         bail!("wasm-bindgen failed");
     }
     fs::copy(web.join("styles.css"), staging.join("zxs.css"))?;
     copy_tree(&web.join("public"), &staging)?;
+    copy_distribution_material(&root, &staging)?;
     fs::write(staging.join("boot.js"), bootstrap::loader())?;
     fs::write(staging.join("index.html"), bootstrap::index())?;
     let wasm = staging.join("pkg/zxs_bg.wasm");
@@ -107,6 +113,7 @@ fn main() -> Result<()> {
         .write(Vec::new(), flate2::Compression::best());
     gzip.write_all(&fs::read(&wasm)?)?;
     fs::write(wasm.with_extension("wasm.gz"), gzip.finish()?)?;
+    verify_rust_sources(&root)?;
     let inputs_after = source_inventory(&root)?;
     if inputs_before != inputs_after {
         bail!("Web sources changed during compilation; retry with a stable source tree");
@@ -117,16 +124,16 @@ fn main() -> Result<()> {
         staging.join("build-manifest.json"),
         serde_json::to_vec_pretty(&build_manifest(&inventory, &inputs_after))?,
     )?;
-    let dist = web.join("dist");
-    let backup = web.join(".dist-backup");
+    let dist = build.join("web");
+    let backup = build.join(".web-backup");
     if backup.exists() {
-        bail!("web/.dist-backup needs inspection after an interrupted publication");
+        bail!("build/.web-backup needs inspection after an interrupted publication");
     }
     let had_previous = dist.exists();
     if had_previous {
         reject_link(&dist)?;
         if !dist.join("build-manifest.json").is_file() {
-            bail!("refusing to replace unrecognized web/dist");
+            bail!("refusing to replace unrecognized build/web");
         }
         fs::rename(&dist, &backup)?;
     }
@@ -141,15 +148,48 @@ fn main() -> Result<()> {
     }
     println!(
         "{}",
-        serde_json::json!({"event":"built","dist":dist,"runtime":"zxs-web"})
+        serde_json::json!({"event":"built","dist":dist,"runtime":"web-interface"})
     );
     Ok(())
 }
+fn verify_rust_sources(root: &Path) -> Result<()> {
+    if !Command::new("python3")
+        .current_dir(root)
+        .args(["tools/rust-sources/manage.py", "verify"])
+        .status()
+        .context("cannot verify local Rust source inventory")?
+        .success()
+    {
+        bail!("local Rust source verification failed");
+    }
+    Ok(())
+}
+fn copy_distribution_material(root: &Path, staging: &Path) -> Result<()> {
+    let legal = staging.join("compliance");
+    fs::create_dir_all(legal.join("licenses"))?;
+    copy_tree(&root.join("compliance/licenses"), &legal.join("licenses"))?;
+    // Generated distributions carry the canonical legal bytes and source
+    // receipts. Historical development metadata stays in the source archive.
+    for relative in [
+        "README.md",
+        "NOTICE.md",
+        "rust-sources.json",
+        "provenance/origins.json",
+        "provenance/document-migration.json",
+        "provenance/shared/vendor/rust-notices/provenance.json",
+    ] {
+        let output = legal.join(relative);
+        fs::create_dir_all(output.parent().context("legal output parent missing")?)?;
+        fs::write(output, read_input(&root.join("compliance").join(relative))?)?;
+    }
+    Ok(())
+}
+
 fn build_manifest(
     files: &BTreeMap<String, String>,
     inputs: &BTreeMap<String, String>,
 ) -> serde_json::Value {
-    serde_json::json!({"runtime":"zxs-web","files":files,"inputs":inputs,"target":"wasm32-unknown-unknown","wasm_bindgen":"0.2.129"})
+    serde_json::json!({"runtime":"web-interface","files":files,"inputs":inputs,"target":"wasm32-unknown-unknown","wasm_bindgen":"0.2.129"})
 }
 
 struct BuildLock {
@@ -164,14 +204,16 @@ impl Drop for BuildLock {
 fn source_inventory(root: &Path) -> Result<BTreeMap<String, String>> {
     let mut inventory = BTreeMap::new();
     for path in [
-        "web/src",
-        "web/runtime",
-        "web/public",
-        "vendor/web",
-        "vendor/dependencies/unicode-normalization-0.1.24",
-        "crates/zxs-contract",
-        "crates/zxs-naming",
+        "src/web/src",
+        "src/interface",
+        "src/web/public",
+        "src/foundation",
+        "src/macros",
+        "src/contract",
+        "src/naming",
         "tools/web-build/src",
+        "tools/web-bindings/src",
+        "compliance",
     ] {
         inventory_tree(root, &root.join(path), &mut inventory)?;
     }
@@ -179,11 +221,15 @@ fn source_inventory(root: &Path) -> Result<BTreeMap<String, String>> {
         "Cargo.toml",
         "rust-toolchain.toml",
         ".cargo/config.toml",
-        "web/Cargo.toml",
-        "web/Cargo.lock",
-        "web/styles.css",
+        "compliance/rust-sources.json",
+        "docs/THIRD_PARTY_RUST_SOURCES.md",
+        "tools/rust-sources/manage.py",
+        ".github/scripts/rust-build-tool.sh",
+        "src/web/Cargo.toml",
+        "Cargo.lock",
+        "src/web/styles.css",
         "tools/web-build/Cargo.toml",
-        "tools/web-build/Cargo.lock",
+        "tools/web-bindings/Cargo.toml",
     ] {
         let input = root.join(path);
         inventory.insert(
@@ -261,12 +307,12 @@ mod tests {
     #[test]
     fn build_inventory_uses_descriptive_fields_without_format_numbering() {
         let files = BTreeMap::from([("boot.js".to_owned(), "output-hash".to_owned())]);
-        let inputs = BTreeMap::from([("web/src/lib.rs".to_owned(), "input-hash".to_owned())]);
+        let inputs = BTreeMap::from([("src/web/src/lib.rs".to_owned(), "input-hash".to_owned())]);
         let manifest = build_manifest(&files, &inputs);
         assert_eq!(manifest.as_object().unwrap().len(), 5);
-        assert_eq!(manifest["runtime"], "zxs-web");
+        assert_eq!(manifest["runtime"], "web-interface");
         assert_eq!(manifest["files"]["boot.js"], "output-hash");
-        assert_eq!(manifest["inputs"]["web/src/lib.rs"], "input-hash");
+        assert_eq!(manifest["inputs"]["src/web/src/lib.rs"], "input-hash");
         assert_eq!(manifest["target"], "wasm32-unknown-unknown");
         assert_eq!(manifest["wasm_bindgen"], "0.2.129");
     }
@@ -295,42 +341,87 @@ mod tests {
     }
 
     #[test]
+    fn distribution_retains_central_notices_fonts_and_source_receipts() {
+        let fixture = Fixture::new();
+        let source = fixture.0.join("source");
+        let output = fixture.0.join("output");
+        fs::create_dir_all(source.join("compliance/licenses/fonts")).unwrap();
+        fs::create_dir_all(&output).unwrap();
+        for relative in [
+            "licenses/fonts/OFL.txt",
+            "README.md",
+            "NOTICE.md",
+            "rust-sources.json",
+            "provenance/origins.json",
+            "provenance/document-migration.json",
+            "provenance/shared/vendor/rust-notices/provenance.json",
+        ] {
+            let input = source.join("compliance").join(relative);
+            fs::create_dir_all(input.parent().unwrap()).unwrap();
+            fs::write(input, format!("canonical {relative} bytes")).unwrap();
+        }
+        copy_distribution_material(&source, &output).unwrap();
+        assert_eq!(
+            files_for_test(&source.join("compliance")),
+            files_for_test(&output.join("compliance"))
+        );
+    }
+
+    fn files_for_test(root: &Path) -> BTreeMap<String, String> {
+        let mut result = BTreeMap::new();
+        inventory_tree(root, root, &mut result).unwrap();
+        result
+    }
+
+    #[test]
     fn inventory_tracks_cargo_configuration_and_toolchain() {
         let fixture = Fixture::new();
         for directory in [
-            "web/src",
-            "web/runtime",
-            "web/public",
-            "vendor/web",
-            "vendor/dependencies/unicode-normalization-0.1.24",
-            "crates/zxs-contract",
-            "crates/zxs-naming",
+            "src/web/src",
+            "src/interface",
+            "src/web/public",
+            "src/foundation",
+            "src/macros",
+            "src/contract",
+            "src/naming",
             "tools/web-build/src",
+            "tools/web-bindings/src",
+            "compliance",
             ".cargo",
+            "docs",
+            "tools/rust-sources",
+            ".github/scripts",
         ] {
             fs::create_dir_all(fixture.0.join(directory)).unwrap();
         }
         for file in [
             "Cargo.toml",
-            "web/Cargo.toml",
-            "web/Cargo.lock",
-            "web/styles.css",
+            "src/web/Cargo.toml",
+            "Cargo.lock",
+            "src/web/styles.css",
             "tools/web-build/Cargo.toml",
-            "tools/web-build/Cargo.lock",
+            "tools/web-bindings/Cargo.toml",
             "rust-toolchain.toml",
             ".cargo/config.toml",
+            "compliance/rust-sources.json",
+            "docs/THIRD_PARTY_RUST_SOURCES.md",
+            "tools/rust-sources/manage.py",
+            ".github/scripts/rust-build-tool.sh",
         ] {
             fs::write(fixture.0.join(file), "initial").unwrap();
         }
-        for file in ["rust-toolchain.toml", ".cargo/config.toml"] {
+        for file in [
+            "rust-toolchain.toml",
+            ".cargo/config.toml",
+            "compliance/rust-sources.json",
+            "docs/THIRD_PARTY_RUST_SOURCES.md",
+        ] {
             let before = source_inventory(&fixture.0).unwrap();
             fs::write(fixture.0.join(file), "changed").unwrap();
             let after = source_inventory(&fixture.0).unwrap();
             assert_ne!(before, after, "{file} must invalidate the build inventory");
         }
-        let dependency = fixture
-            .0
-            .join("vendor/web/dependencies/reactive_graph/src/lib.rs");
+        let dependency = fixture.0.join("src/foundation/reactive_graph/src/lib.rs");
         fs::create_dir_all(dependency.parent().unwrap()).unwrap();
         fs::write(&dependency, "upstream").unwrap();
         let before = source_inventory(&fixture.0).unwrap();

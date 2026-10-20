@@ -51,7 +51,13 @@ export ZXS_SMB_SDK_BUILD="$source/bin/default"
 export ZXS_SMB_SDK_CLANG_ARGS_JSON="${ZXS_SMB_SDK_CLANG_ARGS_JSON:-[]}"
 # The SDK's shared libraries use their own sibling shared/private dependencies.
 export LD_LIBRARY_PATH="$source/bin/shared:$source/bin/shared/private${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-cargo clippy --locked --manifest-path integrations/smb/Cargo.toml \
-  -p zxs-smb-vfs --all-targets -- -D warnings
-cargo test --locked --manifest-path integrations/smb/Cargo.toml -p zxs-smb-vfs
-cargo build --locked --manifest-path integrations/smb/Cargo.toml -p zxs-smb-vfs --release
+python3 .github/scripts/check-rust-diagnostics.py -- \
+  cargo clippy --locked --offline --message-format=json \
+  -p smb-vfs --all-targets -- -D warnings
+# Test harness output is not Cargo JSON. Gate compilation first, then run the
+# already compiled tests without filtering their normal stdout/stderr.
+python3 .github/scripts/check-rust-diagnostics.py -- \
+  cargo test --locked --offline -p smb-vfs --no-run --message-format=json
+cargo test --locked --offline -p smb-vfs
+python3 .github/scripts/check-rust-diagnostics.py -- \
+  cargo build --locked --offline -p smb-vfs --release --message-format=json

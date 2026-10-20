@@ -5,12 +5,18 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 audit_root="$PWD/target/security-tools"
 audit="$audit_root/bin/cargo-audit"
 if [[ ! -x "$audit" ]] || [[ "$("$audit" --version)" != 'cargo-audit 0.22.2' ]]; then
-  cargo install cargo-audit --version '=0.22.2' --locked --root "$audit_root" --force
+  # The online advisory scanner is development tooling, not a business build
+  # dependency. Keep its existing registry installation outside this project's
+  # offline source replacement configuration.
+  (
+    install_context=$(mktemp -d)
+    trap 'rmdir "$install_context"' EXIT
+    cd "$install_context"
+    cargo install cargo-audit --version '=0.22.2' --locked --root "$audit_root" --force
+  )
 fi
 python3 .github/scripts/tests/test_security_gate.py
-python3 tools/native-dependency-tests/verify_sources.py
-python3 tools/native-dependency-tests/test_classify_audit.py >/dev/null
-python3 tools/native-dependency-tests/test_upstream_audit.py >/dev/null
+python3 -m unittest discover -s tools/rust-sources -p 'test_audit.py'
 reports=$(mktemp -d)
 trap 'rm -rf "$reports"' EXIT
 # Keep stderr error detection shared by consumer and synthetic-upstream scans.
@@ -35,25 +41,20 @@ scan_lock() {
   done
 }
 status=0
-# Audit consumer lockfiles, not unused lockfiles shipped in upstream snapshots.
-while IFS= read -r -d '' lockfile; do
-  echo "Auditing $lockfile"
-  scan_lock "$lockfile"
-  if ! python3 tools/native-dependency-tests/classify_audit.py \
-    "$report" "$lockfile" "$scanner_status"; then
-    cat "$report"
-    status=1
-  fi
-done < <(find Cargo.lock apps demos integrations tools web -name Cargo.lock \
-  -not -path '*/target/*' -print0 | sort -z)
-# RustSec skips path packages, so separately scan their original registry
-# identities. Exact source/provenance checks and byte-for-byte shadow-lock
-# validation permit only documented maintained forks, never future advisories.
+# All product and build packages resolve from the single root lockfile.
+scan_lock Cargo.lock
+if ! python3 tools/rust-sources/audit.py check \
+  "$report" Cargo.lock "$scanner_status"; then
+  cat "$report"
+  status=1
+fi
+# RustSec skips path packages. Match their exact original registry identities
+# as well; all findings fail, including on locally modified or renamed code.
 upstream_lock="$reports/upstream.Cargo.lock"
-if python3 tools/native-dependency-tests/upstream_audit.py build "$upstream_lock"; then
+if python3 tools/rust-sources/audit.py build "$upstream_lock"; then
   echo 'Auditing vendored upstream identities'
   scan_lock "$upstream_lock"
-  if ! python3 tools/native-dependency-tests/upstream_audit.py classify \
+  if ! python3 tools/rust-sources/audit.py check \
     "$report" "$upstream_lock" "$scanner_status"; then
     cat "$report"
     status=1

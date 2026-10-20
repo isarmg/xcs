@@ -192,7 +192,7 @@ pub(super) fn run(browser: &Browser, origin: &str) -> Result<()> {
 const PAINT_OBSERVER: &str = r#"
 const done=arguments[arguments.length-1];
 (async () => {
-  const node=document.querySelector('.zxs-auth-card');
+  const node=document.querySelector('.authentication-card');
   if(!node) return {error:'missing real login card'};
   const css=getComputedStyle(node), box=node.getBoundingClientRect();
   const match=css.borderImageSource.match(/^url\(["']?(blob:[^"')]+)["']?\)$/);
@@ -338,7 +338,7 @@ mod tests {
         let proxy = FontProxy::start(&origin, false).unwrap();
         let mut client = TcpStream::connect(proxy.origin.trim_start_matches("http://")).unwrap();
         client
-            .write_all(b"GET /fonts/zxs-regular.woff2 HTTP/1.1\r\nHost: localhost\r\n\r\n")
+            .write_all(b"GET /fonts/interface-regular.woff2 HTTP/1.1\r\nHost: localhost\r\n\r\n")
             .unwrap();
         client
             .set_read_timeout(Some(Duration::from_millis(100)))
@@ -360,7 +360,7 @@ mod tests {
     fn missing_font_does_not_need_upstream_response() {
         let proxy = FontProxy::start("http://127.0.0.1:1", true).unwrap();
         let port = proxy.origin.rsplit(':').next().unwrap().parse().unwrap();
-        let (status, body) = http(port, "GET", "/fonts/zxs-bold.woff2", None).unwrap();
+        let (status, body) = http(port, "GET", "/fonts/interface-bold.woff2", None).unwrap();
         assert_eq!(status, 404);
         assert!(body.is_empty());
         assert_eq!(proxy.requested.load(Ordering::SeqCst), 1);

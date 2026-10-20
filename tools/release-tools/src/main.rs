@@ -27,19 +27,23 @@ fn validate(root: &Path, tag: &str) -> Result<semver::Version> {
         return Err(format!("{tag} differs from workspace version {workspace_version}").into());
     }
     let mut paths = vec![];
-    for entry in fs::read_dir(root.join("crates"))? {
-        let path = entry?.path().join("Cargo.toml");
-        if path.is_file() {
-            paths.push(path);
-        }
-    }
-    for path in [
-        "web/Cargo.toml",
-        "web/runtime/Cargo.toml",
-        "apps/bridge/Cargo.toml",
-        "apps/host/Cargo.toml",
+    // Upstream-derived foundation and macro components retain upstream version
+    // identities. Product components follow the root release version.
+    for component in [
+        "auth",
+        "contract",
+        "naming",
+        "platform",
+        "engine",
+        "server",
+        "client",
+        "admin",
+        "web",
+        "interface",
+        "smb",
+        "smb-vfs",
     ] {
-        paths.push(root.join(path));
+        paths.push(root.join("src").join(component).join("Cargo.toml"));
     }
     paths.sort();
     for path in paths {
@@ -57,11 +61,6 @@ fn validate(root: &Path, tag: &str) -> Result<semver::Version> {
             )
             .into());
         }
-    }
-    let config: serde_json::Value =
-        serde_json::from_str(&fs::read_to_string(root.join("apps/host/tauri.conf.json"))?)?;
-    if config["version"].as_str() != Some(expected.as_str()) {
-        return Err("Tauri configuration version differs from tag".into());
     }
     Ok(version)
 }

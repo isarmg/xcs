@@ -15,19 +15,26 @@ cat > "$notes" <<EOF
 $marker
 ZXS $RELEASE_TAG
 
-All portable tests, contract checks, production WASM/browser smoke, and the three desktop builds passed for $sha.
+Portable tests, source/security checks, contract checks and production WASM/browser smoke passed for $sha.
 
 - Linux x86_64 server/CLI: one zxs binary; the server is the zxs serve subcommand.
 - Production Web static assets, including the build manifest.
-- Desktop: Linux x86_64 .deb, Windows x86_64 NSIS installer, macOS Apple Silicon .app archive.
-- Desktop packages are unsigned; macOS is not notarized. Operating systems may block installation. No security bypass is prescribed.
-- Android/iOS/iPadOS packages are not included: SDK, native-project, signing and device validation are still required.
+- SMB uses the separately built Samba VFS module and the pinned native Samba SDK.
 
-Read INSTALL.md and BUILD.txt; verify SHA256SUMS before installation. These checks do not replace physical-device/UI acceptance or promise bit-for-bit reproducibility.
+Read INSTALL.md and BUILD.txt; verify SHA256SUMS before installation. These checks do not replace physical-disk and live Samba acceptance or promise bit-for-bit reproducibility.
 EOF
 if gh release view "$RELEASE_TAG" --json isDraft,body > "$existing"; then
   # Retry only our own draft for this exact source; never mutate a published release.
-  jq -e --arg marker "$marker" '.isDraft == true and (.body | contains($marker))' "$existing" >/dev/null
+  python3 - "$existing" "$marker" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+release = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+body = release.get("body")
+if release.get("isDraft") is not True or not isinstance(body, str) or sys.argv[2] not in body:
+    raise SystemExit("Refusing to resume a release outside this source draft")
+PY
 else
   # Only a confirmed HTTP 404 permits creation. Auth/network/server errors stop.
   gh api --include "repos/$GH_REPO/releases/tags/$RELEASE_TAG" > "$existing" || true

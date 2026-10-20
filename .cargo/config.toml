@@ -3,4 +3,11 @@ target-dir = "target/native"
 jobs = 4
 
 [net]
-retry = 2
+offline = true
+
+# Every active dependency has an internal path. This empty source rejects accidental registry edges.
+[source.crates-io]
+replace-with = "unavailable-registry"
+
+[source.unavailable-registry]
+directory = "compliance/empty-registry"

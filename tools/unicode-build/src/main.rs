@@ -11,7 +11,7 @@ use std::{
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 fn source(root: &Path, name: &str, expected: &str) -> Result<String> {
-    let bytes = fs::read(root.join("crates/zxs-naming/data").join(name))?;
+    let bytes = fs::read(root.join("src/naming/data").join(name))?;
     let hash = format!("{:x}", Sha256::digest(&bytes));
     if hash != expected {
         return Err(format!("Unicode 16 input checksum differs: {name}").into());
@@ -141,7 +141,7 @@ fn main() -> Result<()> {
         }
     }
     let generated = generate(&root)?;
-    let target = root.join("crates/zxs-naming/src/unicode16.rs");
+    let target = root.join("src/naming/src/unicode16.rs");
     if write {
         let pending = target.with_extension("rs.pending");
         fs::write(&pending, &generated)?;

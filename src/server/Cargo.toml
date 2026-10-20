@@ -1,0 +1,35 @@
+[package]
+name = "storage-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[features]
+default = ["core"]
+core = ["dep:storage-engine"]
+
+[dependencies]
+authentication.workspace = true
+axum = { version = "0.8.9", features = ["macros"], path = "../foundation/axum"}
+blake3.workspace = true
+bytes = {version = "1", path = "../foundation/bytes"}
+futures-util = {version = "0.3", path = "../foundation/futures-util"}
+http = {version = "1", path = "../foundation/http"}
+serde.workspace = true
+serde_json.workspace = true
+sysinfo = { version = "=0.39.6", default-features = false, features = ["system"], path = "../foundation/sysinfo"}
+tokio.workspace = true
+tokio-util = { version = "0.7", features = ["io"], path = "../foundation/tokio-util"}
+tower-http = { version = "0.6", features = ["trace", "limit", "fs"], path = "../foundation/tower-http"}
+tracing = {version = "0.1", path = "../foundation/tracing"}
+time = { version = "0.3.55", features = ["formatting"], path = "../foundation/time"}
+url = {version = "2", path = "../foundation/url"}
+storage-engine = { path = "../engine", optional = true }
+storage-contract = { path = "../contract" }
+name-policy = { path = "../naming" }
+smb-protocol = { path = "../smb" }
+tempfile.workspace = true
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"], path = "../foundation/tower"}

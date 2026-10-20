@@ -15,6 +15,7 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: '0'
+  CARGO_HOME: ${{ runner.temp }}/zxs-cargo-home
   RUST_BACKTRACE: '1'
 
 jobs:
@@ -30,11 +31,11 @@ jobs:
         with:
           persist-credentials: false
       - run: rustup show active-toolchain
-      - run: cargo test --locked --manifest-path tools/release-tools/Cargo.toml
+      - run: cargo test --locked --offline -p release-tools
       - id: version
         env:
           TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
-        run: cargo run --locked --manifest-path tools/release-tools/Cargo.toml -- "$TAG"
+        run: cargo run --locked --offline -p release-tools -- "$TAG"
 
   verify:
     needs: version
@@ -44,10 +45,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: rustup show active-toolchain
+      - run: |
+          rustup show active-toolchain
+          rustup target add wasm32-unknown-unknown
       - name: Run all portable test suites and contract checks
         run: |
-          for suite in workspace apps web contracts build-tools demo smb-protocol; do
+          for suite in rust-sources quality security workspace foundation web contracts build-tools smb-protocol; do
             bash .github/scripts/check.sh "$suite"
           done
 
@@ -72,12 +75,10 @@ jobs:
           bash .github/scripts/check.sh browser-smoke
       - name: Build Linux server and CLI
         run: |
-          cargo build --locked --release --package zxs-cli
+          python3 .github/scripts/check-rust-diagnostics.py -- \
+            cargo build --locked --offline --release --package storage-admin --message-format=json
           target/native/release/zxs --help
-          mkdir -p release-assets
-          tar -czf "release-assets/zxs-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
-            -C target/native/release zxs
-          tar -czf "release-assets/zxs-web-${RELEASE_VERSION}.tar.gz" -C web/dist .
+          bash .github/scripts/release-package.sh
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-linux-web
@@ -86,60 +87,11 @@ jobs:
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-web-dist
-          path: web/dist/
-          if-no-files-found: error
-
-  desktop:
-    needs: [version, linux-web]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-24.04
-            target: x86_64-unknown-linux-gnu
-            bundle: deb
-          - os: windows-2025
-            target: x86_64-pc-windows-msvc
-            bundle: nsis
-          - os: macos-15
-            target: aarch64-apple-darwin
-            bundle: app
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
-    defaults:
-      run:
-        shell: bash
-    env:
-      RELEASE_VERSION: ${{ needs.version.outputs.version }}
-      RELEASE_TARGET: ${{ matrix.target }}
-      RELEASE_BUNDLE: ${{ matrix.bundle }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - run: |
-          rustup show active-toolchain
-          rustup target add "$RELEASE_TARGET"
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: release-web-dist
-          path: web/dist
-      - name: Install Linux packaging dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y build-essential pkg-config \
-            libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
-      - run: bash .github/scripts/check.sh apps
-      - run: bash .github/scripts/release-desktop.sh
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: release-desktop-${{ matrix.target }}
-          path: release-assets/*
+          path: build/web/
           if-no-files-found: error
 
   assemble:
-    needs: [version, verify, linux-web, desktop]
+    needs: [version, verify, linux-web]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
@@ -148,11 +100,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          pattern: release-desktop-*
-          merge-multiple: true
-          path: release-assets
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-linux-web

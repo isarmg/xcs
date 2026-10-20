@@ -1,49 +1,38 @@
 #!/usr/bin/env bash
-# Check first-party workspace members, never reformat immutable upstream snapshots.
+# Check maintained product and tool components in the single root workspace.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
-# Static historical evidence checks do not execute browsers or contact services.
 node .github/scripts/check-evidence-probes.mjs
 
-manifests=(Cargo.toml apps/Cargo.toml web/Cargo.toml
-  tools/contract-check/Cargo.toml tools/release-tools/Cargo.toml
-  tools/web-build/Cargo.toml tools/unicode-build/Cargo.toml
-  tools/browser-smoke/Cargo.toml tools/perf-check/Cargo.toml
-  demos/branch-system/Cargo.toml integrations/smb/Cargo.toml)
-
-for manifest in "${manifests[@]}"; do
-  echo "Checking first-party Rust quality: $manifest"
-  # Explicit member selection avoids cargo fmt --all traversing path dependencies
-  # into vendor/dependencies and vendor/web/dependencies.
-  mapfile -t packages < <(cargo metadata --locked --no-deps --format-version 1 \
-    --manifest-path "$manifest" | python3 -c '
-import json, sys
+mapfile -t packages < <(cargo metadata --locked --offline --no-deps --format-version 1 | python3 -c '
+import json, pathlib, sys
 m = json.load(sys.stdin)
-members = set(m["workspace_members"])
+root = pathlib.Path(m["workspace_root"])
 for p in m["packages"]:
-    if p["id"] in members:
+    path = pathlib.Path(p["manifest_path"]).relative_to(root)
+    if p["id"] in m["workspace_members"] and not path.is_relative_to("src/foundation"):
         print(p["name"])
 ')
-  ((${#packages[@]} > 0))
-  fmt_args=()
-  for package in "${packages[@]}"; do fmt_args+=(--package "$package"); done
-  cargo fmt --manifest-path "$manifest" "${fmt_args[@]}" -- --check
-  if [[ "$manifest" == integrations/smb/Cargo.toml ]]; then
-    # The VFS module needs the explicitly configured Samba SDK.
-    cargo clippy --locked --manifest-path "$manifest" --package zxs-smb --all-targets -- -D warnings
-  else
-    cargo clippy --locked --manifest-path "$manifest" --workspace --all-targets -- -D warnings
+((${#packages[@]} > 0))
+fmt_args=()
+clippy_args=()
+for package in "${packages[@]}"; do
+  fmt_args+=(--package "$package")
+  # Samba FFI is checked separately against the configured real Samba SDK.
+  if [[ "$package" != smb-vfs ]]; then
+    clippy_args+=(--package "$package")
   fi
 done
-# Formatting does not require the native Tauri system libraries or generated assets.
-cargo fmt --manifest-path apps/host/Cargo.toml -- --check
+cargo fmt "${fmt_args[@]}" -- --check
+python3 .github/scripts/check-rust-diagnostics.py -- \
+  cargo clippy --locked --offline "${clippy_args[@]}" --all-targets \
+  --message-format=json -- -D warnings
 
-# These two maintained project forks are excluded from the consumer workspace.
-# Without --all this formats only the selected crate, not upstream dependencies.
-cargo fmt --manifest-path vendor/web/zxs-web-core/Cargo.toml -- --check
-cargo fmt --manifest-path vendor/web/zxs-web-macro/Cargo.toml -- --check
-cargo clippy --locked --manifest-path web/Cargo.toml -p zxs-web-core -p zxs-web-macro --all-targets -- -D warnings
-
-# Linux native regression harness is compiled in its SDK-enabled CI job.
-cargo fmt --manifest-path tools/native-dependency-tests/Cargo.toml -- --check
+# Clippy's dependency lint levels do not make local foundation warnings fatal.
+# Validate every Cargo compiler-message without changing flags or lint caps.
+python3 .github/scripts/check-rust-diagnostics.py -- \
+  cargo check --locked --offline --workspace --all-targets --exclude smb-vfs --message-format=json
+python3 .github/scripts/check-rust-diagnostics.py -- \
+  cargo check --locked --offline --target wasm32-unknown-unknown --release \
+  -p web-app --message-format=json

@@ -1,7 +1,39 @@
 [workspace]
 resolver = "2"
-members = ["crates/zxs-auth", "crates/zxs-contract", "crates/zxs-naming", "crates/zxs-platform", "crates/zxs-core", "crates/zxs-server", "crates/zxs-client", "crates/zxs-cli"]
-exclude = ["demos/branch-system", "web", "apps", "integrations/smb", "vendor/web/zxs-web-core", "vendor/web/zxs-web-macro", "vendor/dependencies/unicode-normalization-0.1.24", "tools/web-build", "tools/contract-check", "tools/unicode-build"]
+members = [
+    "src/macros",
+    "src/auth",
+    "src/client",
+    "src/contract",
+    "src/admin",
+    "src/engine",
+    "src/web",
+    "src/smb",
+    "src/interface",
+    "src/platform",
+    "src/naming",
+    "src/smb-vfs",
+    "src/server",
+    "tools/unicode-build",
+    "tools/contract-check",
+    "tools/release-tools",
+    "tools/perf-check",
+    "tools/web-build",
+    "tools/browser-smoke",
+    "tools/web-bindings",
+]
+exclude = ["src/foundation"]
+default-members = [
+    "src/auth",
+    "src/contract",
+    "src/naming",
+    "src/platform",
+    "src/engine",
+    "src/server",
+    "src/client",
+    "src/admin",
+    "src/smb",
+]
 
 [workspace.package]
 version = "0.1.0"
@@ -10,23 +42,23 @@ rust-version = "1.99"
 license = "Apache-2.0"
 
 [workspace.dependencies]
-zxs-auth = { path = "crates/zxs-auth" }
-zxs-contract = { path = "crates/zxs-contract" }
-zxs-naming = { path = "crates/zxs-naming" }
-zxs-platform = { path = "crates/zxs-platform" }
-zxs-core = { path = "crates/zxs-core" }
-zxs-client = { path = "crates/zxs-client" }
-zxs-server = { path = "crates/zxs-server" }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-thiserror = "2"
-blake3 = "=1.8.7"
-uuid = { version = "1", features = ["v4"] }
-sqlx = { version = "=0.9.0", default-features = false, features = ["runtime-tokio", "sqlite-bundled"] }
-tokio = { version = "1.53.2", features = ["fs", "io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
-rustix = { version = "1.1.5", features = ["fs", "process", "mount"] }
-tempfile = "3"
-clap = { version = "4.6.7", features = ["derive"] }
+authentication = { path = "src/auth" }
+storage-contract = { path = "src/contract" }
+name-policy = { path = "src/naming" }
+platform-io = { path = "src/platform" }
+storage-engine = { path = "src/engine" }
+storage-client = { path = "src/client" }
+storage-server = { path = "src/server" }
+serde = { version = "1", features = ["derive"], path = "src/foundation/serde"}
+serde_json = {version = "1", path = "src/foundation/serde_json"}
+thiserror = {version = "2", path = "src/foundation/thiserror"}
+blake3 = {version = "=1.8.7", path = "src/foundation/blake3"}
+uuid = { version = "1", features = ["v4"], path = "src/foundation/uuid"}
+sqlx = { version = "=0.9.0", default-features = false, features = ["runtime-tokio", "sqlite-bundled"], path = "src/foundation/sqlx"}
+tokio = { version = "1.53.2", features = ["fs", "io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"], path = "src/foundation/tokio"}
+rustix = { version = "1.1.5", features = ["fs", "process", "mount"], path = "src/foundation/rustix"}
+tempfile = {version = "3", path = "src/foundation/tempfile"}
+clap = { version = "4.6.7", features = ["derive"], path = "src/foundation/clap"}
 
 [profile.release]
 lto = "thin"

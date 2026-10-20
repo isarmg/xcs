@@ -17,12 +17,11 @@ use std::{
     time::{Duration, Instant},
 };
 mod accessibility;
-mod demo;
 mod diagnostics;
 mod fonts;
 mod lifecycle;
-mod platform_previews;
 mod session_delivery;
+mod viewport_previews;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 const ELEMENT: &str = "element-6066-11e4-a52e-4f735466cecf";
@@ -302,9 +301,8 @@ fn exercise(
     screenshot: Option<&Path>,
 ) -> Result<()> {
     diagnostics::install(browser)?;
-    let demo_capture = env::var_os("ZXS_DEMO_CAPTURE").map(PathBuf::from);
-    let platform_previews = env::var_os("ZXS_PLATFORM_PREVIEWS").map(PathBuf::from);
-    let url = if screenshot.is_some() || demo_capture.is_some() || platform_previews.is_some() {
+    let viewport_previews = env::var_os("ZXS_VIEWPORT_PREVIEWS").map(PathBuf::from);
+    let url = if screenshot.is_some() || viewport_previews.is_some() {
         format!("{origin}/?lang=zh-CN")
     } else {
         origin.to_owned()
@@ -338,9 +336,6 @@ fn exercise(
             Err("upload disabled".into())
         }
     })?;
-    if let Some(dir) = demo_capture {
-        demo::run(browser, temp, &dir)?;
-    }
     let payload =
         b"ZXS real browser smoke: complete file content\nUTF-8: \xe6\xb5\x8b\xe8\xaf\x95\n";
     let input = temp.join("browser-smoke.txt");
@@ -352,30 +347,7 @@ fn exercise(
     )?;
     println!("PASS browser file upload and directory publication");
     if let Some(path) = screenshot {
-        // Small, public demo fixtures go through the same real browser upload flow.
-        // No DOM edits, fake responses, or user data are used for the screenshot.
-        for (name, content) in [
-            (
-                "项目说明.md",
-                "# 示例项目\n这些文件仅用于展示 ZXS 文件管理界面。\n",
-            ),
-            (
-                "备份计划.txt",
-                "示例计划：主盘 P01 → 备份盘 B01 → 归档盘 C01。\n",
-            ),
-            (
-                "容量记录.csv",
-                "盘位,用途\nP01,主存储\nB01,备份\nC01,归档\n",
-            ),
-        ] {
-            let fixture = temp.join(name);
-            fs::write(&fixture, content)?;
-            browser.upload_file(&fixture, false)?;
-            browser.element(
-                "xpath",
-                &format!("//button[contains(@class,'zxs-file-name')][normalize-space(.)='{name}']"),
-            )?;
-        }
+        // Save the real regression view without adding presentation-only data.
         wait_for("loaded screenshot fonts", || {
             if browser.script("return document.fonts.status === 'loaded'")? == true {
                 Ok(())
@@ -394,7 +366,7 @@ fn exercise(
         fs::write(path, png)?;
         println!("PASS real browser screenshot saved to {}", path.display());
     }
-    platform_previews::run(browser, temp, platform_previews.as_deref())?;
+    viewport_previews::run(browser, temp, viewport_previews.as_deref())?;
     // Transfer fixtures rerender the table; resolve the original smoke file again.
     let file = {
         browser.element(
@@ -510,7 +482,7 @@ fn exercise(
 fn run() -> Result<()> {
     let mut args = env::args().skip(1);
     let mut cli_binary = PathBuf::from("target/native/debug/zxs");
-    let mut web = PathBuf::from("web/dist");
+    let mut web = PathBuf::from("build/web");
     let mut screenshot: Option<PathBuf> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -521,7 +493,7 @@ fn run() -> Result<()> {
             }
             _ => {
                 return Err(format!(
-                    "unknown argument {arg}; usage: zxs-browser-smoke [--cli-bin PATH] [--web-dir PATH] [--screenshot PNG]"
+                    "unknown argument {arg}; usage: browser-smoke [--cli-bin PATH] [--web-dir PATH] [--screenshot PNG]"
                 )
                 .into());
             }
@@ -530,10 +502,10 @@ fn run() -> Result<()> {
     let cli_binary = cli_binary.canonicalize()?;
     let web = web.canonicalize()?;
     if !web.join("index.html").is_file() {
-        return Err("build the real web/dist before running this test".into());
+        return Err("build the real build/web before running this test".into());
     }
     let temp = tempfile::Builder::new()
-        .prefix("zxs-browser-smoke-")
+        .prefix("browser-smoke-")
         .tempdir()?;
     let root = temp.path();
     let pool = root.join("pool");
@@ -649,10 +621,7 @@ fn run() -> Result<()> {
         )?;
         let result = exercise(&browser, &origin, &password, root, screenshot.as_deref());
         if result.is_err() {
-            let diagnostics_dir = env::var_os("ZXS_DEMO_CAPTURE")
-                .map(PathBuf::from)
-                .unwrap_or_else(|| PathBuf::from("artifacts/browser-smoke"))
-                .join("diagnostics");
+            let diagnostics_dir = PathBuf::from("artifacts/browser-smoke/diagnostics");
             diagnostics::failure(&browser, &diagnostics_dir, &password);
         }
         result

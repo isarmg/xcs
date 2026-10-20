@@ -1,86 +1,83 @@
 #!/usr/bin/env bash
-# Invoke from any directory; each excluded workspace is checked explicitly.
+# Invoke every suite through the single root workspace and root Cargo.lock.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 case "${1:-}" in
+  rust-sources)
+    python3 tools/rust-sources/manage.py verify --metadata
+    python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
+    python3 -m unittest discover -s .github/scripts/tests -p 'test_offline_builds.py'
+    python3 -m unittest discover -s .github/scripts/tests -p 'test_check_suites.py'
+    python3 -m unittest discover -s .github/scripts/tests -p 'test_rust_diagnostics.py'
+    ;;
   quality)
+    python3 -m unittest discover -s .github/scripts/tests -p 'test_rust_diagnostics.py'
     bash .github/scripts/quality.sh
     ;;
   security)
     bash .github/scripts/security.sh
     ;;
   workspace)
-    cargo test --locked --workspace
-    # Serialize the real >64MiB history codec fixture separately from parallel
-    # unit tests, without making the format-capacity regression optional.
-    cargo test --locked -p zxs-core --lib \
+    # Root default-members are the native product components. Web, tools, and
+    # the Samba SDK module have dedicated suites in this same workspace.
+    cargo test --locked --offline
+    cargo test --locked --offline -p storage-engine --lib \
       history_package::graph::tests::distributed_history_larger_than_real_reader_limit_roundtrips \
       -- --ignored --exact --test-threads=1
     ;;
-  apps)
-    cargo test --locked --manifest-path apps/Cargo.toml --workspace
+  foundation)
+    # Focused regressions for maintained foundation changes. Do not restore
+    # retired upstream dev dependencies or run unrelated upstream test suites.
+    cargo test --locked --offline --lib -p password-hash
+    # An external workspace package cannot receive --features directly. Its
+    # actual storage-client consumer enables compiled_data in the shared graph.
+    cargo test --locked --offline --lib -p idna_adapter -p storage-client \
+      property_masks_preserve_all_unicode_scalars
+    cargo test --locked --offline --lib \
+      -p num-traits -p num-integer -p num-iter -p num-rational \
+      -p bit-set -p bit-vec -p id-arena -p rustc-demangle
     ;;
   web)
-    python3 tools/vendor-leptos/vendor.py verify
-    python3 -m unittest discover -s tools/vendor-leptos -p 'test_*.py'
-    cargo test --locked --manifest-path web/Cargo.toml --workspace
-    cargo test --locked --manifest-path web/Cargo.toml -p zxs-web-core -p zxs-web-macro --lib
+    cargo test --locked --offline -p web-app -p web-interface -p view-macros
     ;;
   contracts)
-    cargo test --locked --manifest-path tools/contract-check/Cargo.toml
-    cargo run --locked --manifest-path tools/contract-check/Cargo.toml -- --root .
+    cargo test --locked --offline -p contract-check
+    cargo run --locked --offline -p contract-check -- --root .
     ;;
   build-tools)
-    cargo test --locked --manifest-path tools/release-tools/Cargo.toml
+    cargo test --locked --offline -p web-bindings -p release-tools -p web-build -p unicode-build -p perf-check
+    bash .github/scripts/tests/release-package.sh
     bash .github/scripts/tests/release-publish.sh
-    cargo test --locked --manifest-path tools/web-build/Cargo.toml
-    cargo test --locked --manifest-path tools/unicode-build/Cargo.toml
-    cargo run --locked --manifest-path tools/unicode-build/Cargo.toml -- --check
-    ;;
-  demo)
-    cargo test --locked --manifest-path demos/branch-system/Cargo.toml
+    python3 -m unittest discover -s .github/scripts/tests -p 'test_offline_builds.py'
+    python3 -m unittest discover -s tools/perf-check -p 'test_*.py'
+    cargo run --locked --offline -p unicode-build -- --check
     ;;
   smb-protocol)
-    # Do not build the VFS module without its configured Samba 4.23.0 SDK.
-    cargo test --locked --manifest-path integrations/smb/Cargo.toml --package zxs-smb
+    cargo test --locked --offline -p smb-protocol
     ;;
   web-production)
-    python3 tools/vendor-leptos/vendor.py verify
-    # The production builder deliberately invokes Cargo offline. A clean CI
-    # runner must fetch the locked Web dependencies before calling it.
-    cargo fetch --locked --manifest-path web/Cargo.toml
-    bindgen_root="$PWD/target/ci-tools"
-    export ZXS_WEB_BINDGEN="$bindgen_root/bin/wasm-bindgen"
-    if [[ ! -x "$ZXS_WEB_BINDGEN" ]] || \
-       [[ "$("$ZXS_WEB_BINDGEN" --version)" != 'wasm-bindgen 0.2.129' ]]; then
-      cargo install wasm-bindgen-cli --version '=0.2.129' --locked --root "$bindgen_root" --force
-    fi
-    cargo run --locked --manifest-path tools/web-build/Cargo.toml -- build --product-root .
-    test -s web/dist/index.html
-    test -s web/dist/pkg/zxs_bg.wasm
-    test -s web/dist/pkg/zxs_bg.wasm.gz
-    test -s web/dist/build-manifest.json
-    ;;
-  desktop-host)
-    test -s web/dist/build-manifest.json
-    cargo run --locked --manifest-path tools/web-build/Cargo.toml -- icons --product-root .
-    cargo fmt --manifest-path apps/host/Cargo.toml -- --check
-    cargo clippy --locked --manifest-path apps/host/Cargo.toml --all-targets -- -D warnings
-    cargo check --locked --manifest-path apps/host/Cargo.toml
+    python3 tools/rust-sources/manage.py verify
+    ZXS_WEB_BINDGEN="$(bash .github/scripts/rust-build-tool.sh wasm-bindgen)"
+    export ZXS_WEB_BINDGEN
+    cargo run --locked --offline -p web-build -- build --product-root .
+    test -s build/web/index.html
+    test -s build/web/pkg/zxs_bg.wasm
+    test -s build/web/pkg/zxs_bg.wasm.gz
+    test -s build/web/build-manifest.json
     ;;
   browser-smoke)
-    cargo build --locked --package zxs-cli
-    cargo test --locked --manifest-path tools/browser-smoke/Cargo.toml
+    cargo build --locked --offline -p storage-admin
+    cargo test --locked --offline -p browser-smoke
     screenshot_args=()
     if [[ -n "${ZXS_SMOKE_SCREENSHOT:-}" ]]; then
       screenshot_args=(--screenshot "$ZXS_SMOKE_SCREENSHOT")
     fi
-    cargo run --locked --manifest-path tools/browser-smoke/Cargo.toml -- \
-      --cli-bin "$PWD/target/native/debug/zxs" --web-dir "$PWD/web/dist" "${screenshot_args[@]}"
+    cargo run --locked --offline -p browser-smoke -- \
+      --cli-bin "$PWD/target/native/debug/zxs" --web-dir "$PWD/build/web" "${screenshot_args[@]}"
     ;;
   *)
-    echo 'Usage: check.sh {quality|security|workspace|apps|web|contracts|build-tools|demo|smb-protocol|web-production|desktop-host|browser-smoke}' >&2
+    echo 'Usage: check.sh {rust-sources|quality|security|workspace|foundation|web|contracts|build-tools|smb-protocol|web-production|browser-smoke}' >&2
     exit 2
     ;;
 esac

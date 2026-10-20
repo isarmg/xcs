@@ -1,0 +1,3693 @@
+use super::*;
+use std::{
+    fs,
+    io::{Read, Write},
+    os::unix::fs::MetadataExt,
+};
+
+struct Fixture {
+    temp: tempfile::TempDir,
+    root: std::path::PathBuf,
+    config: Config,
+}
+impl Fixture {
+    fn new() -> Self {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("state");
+        let config = Config::development([
+            temp.path().join("primary"),
+            temp.path().join("backup"),
+            temp.path().join("tertiary"),
+        ]);
+        Self { temp, root, config }
+    }
+    fn initialize(&self) -> Engine {
+        Engine::initialize(&self.root, self.config.clone()).unwrap()
+    }
+}
+fn repository(e: &mut Engine, copies: u32) -> Repository {
+    e.create_repository("项目", "P01", copies, "admin", &new_id("op"))
+        .unwrap()
+}
+fn save(e: &mut Engine, branch: &str, path: &str, bytes: &[u8]) -> OperationResult {
+    let w = e.create_workspace(branch, "admin").unwrap();
+    e.stage_bytes(&w.workspace_id, path, bytes).unwrap();
+    e.commit_workspace(CommitRequest {
+        workspace_id: w.workspace_id,
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: w.base_head,
+        fencing_token: w.fencing_token,
+        message: "save".into(),
+        request_digest: None,
+    })
+    .unwrap()
+}
+fn bytes(e: &Engine, id: &str) -> Vec<u8> {
+    let mut f = e.open_content(id).unwrap();
+    let mut b = Vec::new();
+    f.file.read_to_end(&mut b).unwrap();
+    b
+}
+
+#[test]
+fn normalized_directory_rename_and_file_branch_keep_parent_closure_after_restart() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "Straße/one.txt",
+        b"first",
+    );
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "STRASSE/two.txt",
+        b"second",
+    );
+    let original = engine.list_tree(&repo.main_branch_id).unwrap();
+    let file = crate::business::find(&original, "strasse/two.txt")
+        .unwrap()
+        .clone();
+    let branch = engine
+        .create_file_branch(
+            &file.file_id,
+            &file.version_id,
+            "Draft",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    let branch_id = branch.branch_id.unwrap();
+    let snapshot = engine.list_tree(&branch_id).unwrap();
+    assert_eq!(
+        snapshot.len(),
+        2,
+        "file branches retain their normalized parent directory"
+    );
+    assert!(crate::business::find(&snapshot, "STRASSE").is_some());
+    engine
+        .file_namespace(
+            &repo.repository_id,
+            NamespaceOperation {
+                kind: "rename".into(),
+                path: "strasse".into(),
+                destination: Some("Moved".into()),
+            },
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    drop(engine);
+    let engine = Engine::open(&fixture.root).unwrap();
+    let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+    let moved = crate::business::find(&entries, "Moved/two.txt").unwrap();
+    assert_eq!(moved.file_id, file.file_id);
+    assert_eq!(bytes(&engine, &moved.version_id), b"second");
+    assert!(crate::business::find(&entries, "Moved/one.txt").is_some());
+    assert_eq!(engine.list_tree(&branch_id).unwrap().len(), 2);
+    assert!(engine.check().unwrap().issues.is_empty());
+}
+
+#[test]
+fn rejected_directory_upload_does_not_consume_an_immutable_generation() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "folder/child.txt",
+        b"child",
+    );
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let item = new_id("entry");
+    let source = fixture.temp.path().join("upload.txt");
+    fs::write(&source, b"retryable upload").unwrap();
+    assert_eq!(
+        engine
+            .stage_upload(&workspace.workspace_id, &item, "folder", &source, 1)
+            .unwrap_err()
+            .code(),
+        "IS_DIRECTORY"
+    );
+    let staging = engine.workspace_data_directory(&workspace).unwrap();
+    assert!(fs::read_dir(staging).unwrap().all(|entry| {
+        entry
+            .unwrap()
+            .path()
+            .extension()
+            .is_none_or(|suffix| suffix != "full")
+    }));
+    let staged = engine
+        .stage_upload(&workspace.workspace_id, &item, "valid.txt", &source, 1)
+        .unwrap();
+    assert_eq!(staged.dirty_generation, 1);
+    assert_eq!(fs::read(staged.source_path).unwrap(), b"retryable upload");
+}
+
+#[test]
+fn direct_namespace_cannot_write_an_inactive_directory_branch() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    engine
+        .state
+        .branches
+        .get_mut(&repo.main_branch_id)
+        .unwrap()
+        .state = "archived".into();
+    let before = canonical_json(engine.state()).unwrap();
+    let error = engine
+        .file_namespace(
+            &repo.repository_id,
+            NamespaceOperation {
+                kind: "mkdir".into(),
+                path: "unpublished".into(),
+                destination: None,
+            },
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap_err();
+    assert_eq!(error.code(), "BRANCH_NOT_ACTIVE");
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
+}
+
+#[test]
+fn indexed_commit_comparison_preserves_normalized_identity_and_change_order() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "keep.txt",
+        b"unchanged bytes",
+    );
+    let left = save(&mut engine, &repo.main_branch_id, "remove.txt", b"removed")
+        .commit_id
+        .unwrap();
+    engine
+        .file_namespace(
+            &repo.repository_id,
+            NamespaceOperation {
+                kind: "delete".into(),
+                path: "remove.txt".into(),
+                destination: None,
+            },
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    engine
+        .file_namespace(
+            &repo.repository_id,
+            NamespaceOperation {
+                kind: "rename".into(),
+                path: "keep.txt".into(),
+                destination: Some("KEEP.txt".into()),
+            },
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    let right = save(&mut engine, &repo.main_branch_id, "added.txt", b"added")
+        .commit_id
+        .unwrap();
+    let comparison = engine.compare_commits(&left, &right).unwrap();
+    let changes = comparison["changes"].as_array().unwrap();
+    assert_eq!(changes.len(), 3);
+    assert_eq!(changes[0]["change"], "modified");
+    assert_eq!(changes[0]["path"], "KEEP.txt");
+    assert_eq!(
+        changes[0]["before"]["version_id"],
+        changes[0]["after"]["version_id"]
+    );
+    assert_eq!(changes[1]["change"], "removed");
+    assert_eq!(changes[1]["path"], "remove.txt");
+    assert_eq!(changes[2]["change"], "added");
+    assert_eq!(changes[2]["path"], "added.txt");
+}
+
+#[test]
+fn modified_local_maintenance_plan_cannot_execute_a_different_preview_after_restart() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    save(&mut engine, &repo.main_branch_id, "file.txt", b"one");
+    let first = engine.list_tree(&repo.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    save(&mut engine, &repo.main_branch_id, "file.txt", b"two");
+    let second = engine.list_tree(&repo.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    save(&mut engine, &repo.main_branch_id, "file.txt", b"three");
+    let mut plan = engine
+        .create_purge_plan(&repo.history_tree_id, vec![first.clone()], "admin")
+        .unwrap();
+    let plan_path = fixture
+        .root
+        .join("plans")
+        .join(format!("{}.json", plan.plan_id));
+    plan.input["version_ids"] = serde_json::json!([second]);
+    crate::disk::write_json(&plan_path, &plan, true).unwrap();
+    drop(engine);
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    let before = engine.state().sequence;
+    assert_eq!(
+        engine
+            .commit_plan(&plan.plan_id, "admin", &new_id("op"))
+            .unwrap_err()
+            .code(),
+        "PLAN_INVALID"
+    );
+    assert_eq!(engine.state().sequence, before);
+    assert_eq!(bytes(&engine, &first), b"one");
+    assert_eq!(bytes(&engine, &second), b"two");
+    plan.digest = object_hash("plan", &plan.input).unwrap();
+    plan.plan_id = new_id("plan");
+    crate::disk::write_json(&plan_path, &plan, true).unwrap();
+    assert_eq!(
+        engine
+            .plan(plan_path.file_stem().unwrap().to_str().unwrap())
+            .unwrap_err()
+            .code(),
+        "PLAN_INVALID"
+    );
+}
+
+#[test]
+fn file_container_rename_replays_only_after_decision_and_keeps_all_version_bytes() {
+    for (fault, committed) in [
+        ("after_prepare_3", false),
+        ("after_accept_1", true),
+        ("after_accept_2", true),
+        ("after_container_names", true),
+    ] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        save(
+            &mut engine,
+            &repo.main_branch_id,
+            "report.txt",
+            b"version one",
+        );
+        save(
+            &mut engine,
+            &repo.main_branch_id,
+            "report.txt",
+            b"version two",
+        );
+        let entry = engine.list_tree(&repo.main_branch_id).unwrap()[0].clone();
+        let versions = engine.file_history(&entry.file_id).unwrap();
+        assert_eq!(versions.len(), 2);
+        assert!(versions[0].storage_name.starts_with("v000001_"));
+        assert!(versions[1].storage_name.starts_with("v000002_"));
+        let operation = new_id("op");
+        engine.inject_fault_once(fault);
+        assert_eq!(
+            engine
+                .file_namespace(
+                    &repo.repository_id,
+                    NamespaceOperation {
+                        kind: "rename".into(),
+                        path: "report.txt".into(),
+                        destination: Some("renamed.txt".into()),
+                    },
+                    "admin",
+                    &operation
+                )
+                .unwrap_err()
+                .code(),
+            if committed {
+                "IN_DOUBT"
+            } else {
+                "INJECTED_FAILURE"
+            }
+        );
+        if fault != "after_container_names" {
+            for disk in &fixture.config.disks {
+                assert!(
+                    disk.root
+                        .join("histories")
+                        .join(&repo.history_tree_id)
+                        .join("file-containers")
+                        .join(&entry.file_id)
+                        .join("namespace")
+                        .join("report.txt")
+                        .is_dir()
+                );
+            }
+        }
+        drop(engine);
+        let mut engine = Engine::open(&fixture.root).unwrap();
+        let expected = if committed {
+            "renamed.txt"
+        } else {
+            "report.txt"
+        };
+        assert_eq!(
+            engine.list_tree(&repo.main_branch_id).unwrap()[0].name,
+            expected
+        );
+        assert_eq!(engine.state().file_names[&entry.file_id], expected);
+        for disk in &fixture.config.disks {
+            let stable = disk
+                .root
+                .join("histories")
+                .join(&repo.history_tree_id)
+                .join("file-containers")
+                .join(&entry.file_id);
+            assert_eq!(fs::read_dir(&stable).unwrap().count(), 1);
+            let named = stable.join("namespace").join(expected);
+            assert!(named.is_dir());
+            let files = fs::read_dir(named.join("versions"))
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .collect::<Vec<_>>();
+            assert_eq!(files.len(), 2);
+            assert!(
+                files
+                    .iter()
+                    .all(|path| fs::metadata(path).unwrap().nlink() == 1)
+            );
+        }
+        assert_eq!(bytes(&engine, &versions[0].version_id), b"version one");
+        assert_eq!(bytes(&engine, &versions[1].version_id), b"version two");
+        if committed {
+            let before = engine.state().sequence;
+            engine
+                .file_namespace(
+                    &repo.repository_id,
+                    NamespaceOperation {
+                        kind: "rename".into(),
+                        path: "report.txt".into(),
+                        destination: Some("renamed.txt".into()),
+                    },
+                    "admin",
+                    &operation,
+                )
+                .unwrap();
+            assert_eq!(
+                engine.state().sequence,
+                before,
+                "replaying the rename cannot publish twice"
+            );
+        }
+    }
+}
+
+#[test]
+fn file_branches_register_then_write_and_switch_only_one_file_and_survive_reopen() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "docs/one.txt",
+        b"one main",
+    );
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "docs/two.txt",
+        b"two unchanged",
+    );
+    let before = engine.list_tree(&repo.main_branch_id).unwrap();
+    let one = before
+        .iter()
+        .find(|e| e.path == "docs/one.txt")
+        .unwrap()
+        .clone();
+    let two = before
+        .iter()
+        .find(|e| e.path == "docs/two.txt")
+        .unwrap()
+        .clone();
+    let versions = engine.state().versions.len();
+    let operation = new_id("op");
+    let branch = engine
+        .create_file_branch(&one.file_id, &one.version_id, "draft", "admin", &operation)
+        .unwrap();
+    let branch_id = branch.result["branch_id"].as_str().unwrap().to_string();
+    assert_eq!(
+        engine
+            .set_smb_binding(
+                &repo.repository_id,
+                &branch_id,
+                true,
+                engine.state().histories[&repo.history_tree_id].generation,
+                "admin",
+                &new_id("op")
+            )
+            .unwrap_err()
+            .code(),
+        "FILE_BRANCH_SCOPE"
+    );
+    assert_eq!(
+        engine.state().versions.len(),
+        versions,
+        "registration does not create or copy a content version"
+    );
+    let snapshot = engine.list_tree(&branch_id).unwrap();
+    assert_eq!(snapshot.iter().filter(|e| e.kind == "file").count(), 1);
+    assert_eq!(
+        snapshot.iter().find(|e| e.kind == "file").unwrap().file_id,
+        one.file_id
+    );
+    let scope = engine.create_workspace(&branch_id, "admin").unwrap();
+    assert_eq!(
+        engine
+            .stage_bytes(&scope.workspace_id, "docs/two.txt", b"bad")
+            .unwrap_err()
+            .code(),
+        "FILE_BRANCH_SCOPE"
+    );
+    assert_eq!(
+        engine
+            .namespace_operation(
+                &scope.workspace_id,
+                NamespaceOperation {
+                    kind: "mkdir".into(),
+                    path: "other".into(),
+                    destination: None
+                }
+            )
+            .unwrap_err()
+            .code(),
+        "FILE_BRANCH_SCOPE"
+    );
+    engine
+        .abort_workspace(&scope.workspace_id, "admin")
+        .unwrap();
+    save(&mut engine, &branch_id, "docs/one.txt", b"one draft");
+    assert_eq!(
+        bytes(
+            &engine,
+            &engine
+                .list_tree(&repo.main_branch_id)
+                .unwrap()
+                .iter()
+                .find(|e| e.file_id == one.file_id)
+                .unwrap()
+                .version_id
+        ),
+        b"one main",
+        "editing an unselected branch cannot change the visible file"
+    );
+    engine
+        .select_file_branch(&one.file_id, &branch_id, "admin", &new_id("op"))
+        .unwrap();
+    save(
+        &mut engine,
+        &branch_id,
+        "docs/one.txt",
+        b"one selected draft",
+    );
+    let visible = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(
+        visible
+            .iter()
+            .find(|e| e.file_id == two.file_id)
+            .unwrap()
+            .version_id,
+        two.version_id
+    );
+    assert_eq!(
+        bytes(
+            &engine,
+            &visible
+                .iter()
+                .find(|e| e.file_id == one.file_id)
+                .unwrap()
+                .version_id
+        ),
+        b"one selected draft"
+    );
+    let main = engine
+        .state()
+        .branches
+        .values()
+        .find(|b| b.file_id.as_deref() == Some(&one.file_id) && b.name == "main")
+        .unwrap()
+        .branch_id
+        .clone();
+    engine
+        .select_file_branch(&one.file_id, &main, "admin", &new_id("op"))
+        .unwrap();
+    assert_eq!(
+        bytes(
+            &engine,
+            &engine
+                .list_tree(&repo.main_branch_id)
+                .unwrap()
+                .iter()
+                .find(|e| e.file_id == one.file_id)
+                .unwrap()
+                .version_id
+        ),
+        b"one main"
+    );
+    assert_eq!(
+        engine
+            .create_file_branch(
+                &one.file_id,
+                &two.version_id,
+                "wrong file",
+                "admin",
+                &new_id("op")
+            )
+            .unwrap_err()
+            .code(),
+        "VERSION_NOT_FOUND"
+    );
+    assert_eq!(
+        engine
+            .select_file_branch(&one.file_id, &branch_id, "other user", &new_id("op"))
+            .unwrap_err()
+            .code(),
+        "PERMISSION_DENIED"
+    );
+    drop(engine);
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(engine.state().file_selections[&one.file_id], main);
+    assert_eq!(
+        bytes(
+            &engine,
+            &engine
+                .list_tree(&branch_id)
+                .unwrap()
+                .iter()
+                .find(|e| e.kind == "file")
+                .unwrap()
+                .version_id
+        ),
+        b"one selected draft"
+    );
+    assert_eq!(bytes(&engine, &two.version_id), b"two unchanged");
+    assert!(engine.check().unwrap().issues.is_empty());
+    let package = fixture.temp.path().join("file-branch-package");
+    fs::set_permissions(
+        fixture.temp.path(),
+        std::os::unix::fs::PermissionsExt::from_mode(0o700),
+    )
+    .unwrap();
+    engine
+        .set_file_note(
+            &one.file_id,
+            None,
+            "file container note",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    engine
+        .set_file_note(
+            &one.file_id,
+            Some(&one.version_id),
+            "original version note",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    engine
+        .export_history_package(&repo.history_tree_id, &package, "admin")
+        .unwrap();
+    let target = Fixture::new();
+    let mut recovered = target.initialize();
+    recovered
+        .restore_history_package(&package, "P01", 3, "rescuer", &new_id("op"))
+        .unwrap();
+    assert_eq!(recovered.state().file_selections[&one.file_id], main);
+    assert_eq!(
+        recovered.state().file_notes[&one.file_id],
+        "file container note"
+    );
+    assert_eq!(
+        recovered.state().version_notes[&one.version_id],
+        "original version note"
+    );
+    assert_eq!(
+        bytes(
+            &recovered,
+            &recovered
+                .list_tree(&branch_id)
+                .unwrap()
+                .iter()
+                .find(|e| e.kind == "file")
+                .unwrap()
+                .version_id
+        ),
+        b"one selected draft"
+    );
+}
+
+#[test]
+fn directory_writes_update_only_the_selected_file_branch() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    save(&mut engine, &repo.main_branch_id, "file.txt", b"original");
+    let file = engine.list_tree(&repo.main_branch_id).unwrap().remove(0);
+    let result = engine
+        .create_file_branch(
+            &file.file_id,
+            &file.version_id,
+            "experiment",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    let branch = result.result["branch_id"].as_str().unwrap().to_string();
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "file.txt",
+        b"current main",
+    );
+    let pending = &engine.list_tree(&branch).unwrap()[0];
+    assert_eq!(pending.version_id, file.version_id);
+    assert_eq!(pending.size, file.size);
+    assert_eq!(bytes(&engine, &pending.version_id), b"original");
+    assert_eq!(
+        engine.pending_file_source(&branch, &file.file_id),
+        Some(file.version_id.as_str())
+    );
+    let main = engine.state().file_selections[&file.file_id].clone();
+    assert_eq!(
+        bytes(&engine, &engine.list_tree(&main).unwrap()[0].version_id),
+        b"current main"
+    );
+    let change = NamespaceOperation {
+        kind: "rename".into(),
+        path: "file.txt".into(),
+        destination: Some("renamed.txt".into()),
+    };
+    let operation = new_id("op");
+    let result = engine
+        .file_namespace(&repo.repository_id, change.clone(), "admin", &operation)
+        .unwrap();
+    assert_eq!(
+        engine
+            .file_namespace(&repo.repository_id, change, "admin", &operation)
+            .unwrap()
+            .operation_id,
+        result.operation_id
+    );
+    engine
+        .select_file_branch(&file.file_id, &branch, "admin", &new_id("op"))
+        .unwrap();
+    let visible = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(visible[0].path, "renamed.txt");
+    assert_eq!(visible[0].version_id, file.version_id);
+    assert_eq!(visible[0].size, file.size);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "renamed.txt",
+        b"first branch content",
+    );
+    let written = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(
+        bytes(&engine, &written[0].version_id),
+        b"first branch content"
+    );
+    assert!(engine.pending_file_source(&branch, &file.file_id).is_none());
+}
+
+#[test]
+fn directory_file_branch_batch_is_recursive_atomic_and_idempotent() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    save(&mut engine, &repo.main_branch_id, "inside/a.txt", b"A main");
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "inside/nested/b.txt",
+        b"B main",
+    );
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "outside/c.txt",
+        b"C unchanged",
+    );
+    let before = engine.list_tree(&repo.main_branch_id).unwrap();
+    let outside = before
+        .iter()
+        .find(|e| e.path == "outside/c.txt")
+        .unwrap()
+        .clone();
+    let versions = engine.state().versions.len();
+    let operation = new_id("op");
+    let created = engine
+        .create_directory_branches(&repo.repository_id, "inside", "draft", "admin", &operation)
+        .unwrap();
+    assert_eq!(created.result["count"], "2");
+    assert_eq!(created.result["copied_files"], "0");
+    assert_eq!(created.result["placeholder_files"], "0");
+    assert!(created.result.get("branch_id").is_none());
+    assert_eq!(engine.state().versions.len(), versions);
+    let sequence = engine.state().sequence;
+    assert_eq!(
+        engine
+            .create_directory_branches(&repo.repository_id, "inside", "draft", "admin", &operation)
+            .unwrap()
+            .result,
+        created.result
+    );
+    assert_eq!(engine.state().sequence, sequence);
+    for branch in created.result["branches"].as_array().unwrap() {
+        let id = branch["branch_id"].as_str().unwrap();
+        let files = engine.list_tree(id).unwrap();
+        assert_eq!(files.iter().filter(|e| e.kind == "file").count(), 1);
+        let file = files.iter().find(|e| e.kind == "file").unwrap();
+        save(
+            &mut engine,
+            id,
+            &file.path,
+            format!("draft {}", file.path).as_bytes(),
+        );
+    }
+    let selection = new_id("op");
+    let selected = engine
+        .select_directory_branches(&repo.repository_id, "inside", "draft", "admin", &selection)
+        .unwrap();
+    assert_eq!(selected.result["count"], "2");
+    let tree = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(
+        tree.iter()
+            .find(|e| e.file_id == outside.file_id)
+            .unwrap()
+            .version_id,
+        outside.version_id
+    );
+    assert_eq!(bytes(&engine, &outside.version_id), b"C unchanged");
+    for file in tree
+        .iter()
+        .filter(|e| e.kind == "file" && e.path.starts_with("inside/"))
+    {
+        assert_eq!(
+            bytes(&engine, &file.version_id),
+            if file.path.ends_with("a.txt") {
+                b"A main".as_slice()
+            } else {
+                b"B main".as_slice()
+            }
+        );
+    }
+    drop(engine);
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(
+        engine
+            .select_directory_branches(&repo.repository_id, "inside", "draft", "admin", &selection)
+            .unwrap()
+            .result,
+        selected.result
+    );
+    assert_eq!(
+        engine
+            .create_directory_branches(&repo.repository_id, "inside", "draft", "admin", &operation)
+            .unwrap()
+            .result,
+        created.result
+    );
+    assert_eq!(
+        engine
+            .list_tree(&repo.main_branch_id)
+            .unwrap()
+            .iter()
+            .find(|e| e.file_id == outside.file_id)
+            .unwrap()
+            .version_id,
+        outside.version_id
+    );
+}
+
+#[test]
+fn directory_batch_conflict_and_new_file_reject_without_partial_changes() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    save(&mut engine, &repo.main_branch_id, "folder/a.txt", b"A");
+    save(&mut engine, &repo.main_branch_id, "folder/b.txt", b"B");
+    let files = engine.list_tree(&repo.main_branch_id).unwrap();
+    let b = files.iter().find(|e| e.path == "folder/b.txt").unwrap();
+    engine
+        .create_file_branch(&b.file_id, &b.version_id, "taken", "admin", &new_id("op"))
+        .unwrap();
+    // File and directory branch names are separate namespaces. Registering
+    // this composition reuses the already selected shared file branches.
+    engine
+        .create_directory_branches(
+            &repo.repository_id,
+            "folder",
+            "taken",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    let before = canonical_json(engine.state()).unwrap();
+    assert_eq!(
+        engine
+            .create_directory_branches(
+                &repo.repository_id,
+                "folder",
+                "taken",
+                "admin",
+                &new_id("op")
+            )
+            .unwrap_err()
+            .code(),
+        "NAME_COLLISION"
+    );
+    assert_eq!(
+        canonical_json(engine.state()).unwrap(),
+        before,
+        "a late member conflict cannot create earlier branches or payloads"
+    );
+    engine
+        .create_directory_branches(
+            &repo.repository_id,
+            "folder",
+            "complete",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "folder/new.txt",
+        b"new file has no draft",
+    );
+    engine
+        .select_directory_branches(
+            &repo.repository_id,
+            "folder",
+            "complete",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    assert!(
+        !engine
+            .list_tree(&repo.main_branch_id)
+            .unwrap()
+            .iter()
+            .any(|e| e.path == "folder/new.txt")
+    );
+    let before = canonical_json(engine.state()).unwrap();
+    assert_eq!(
+        engine
+            .create_directory_branches(
+                &repo.repository_id,
+                "folder",
+                "unauthorized",
+                "other user",
+                &new_id("op")
+            )
+            .unwrap_err()
+            .code(),
+        "PERMISSION_DENIED"
+    );
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
+    let lost = engine.state().versions[&b.version_id].clone();
+    for disk in &fixture.config.disks {
+        let directory = crate::disk::version_dir(disk, &lost.history_tree_id, &lost.version_id);
+        fs::remove_file(crate::container_storage::content_path(&directory, &lost).unwrap())
+            .unwrap();
+    }
+    let version_count = engine.state().versions.len();
+    let placeholders = engine
+        .create_directory_branches(
+            &repo.repository_id,
+            "folder",
+            "unavailable",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    assert_eq!(placeholders.result["placeholder_files"], "0");
+    assert_eq!(placeholders.result["copied_files"], "0");
+    assert_eq!(engine.state().versions.len(), version_count);
+    engine
+        .select_directory_branches(
+            &repo.repository_id,
+            "folder",
+            "unavailable",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    assert!(
+        engine
+            .list_tree(&repo.main_branch_id)
+            .unwrap()
+            .iter()
+            .filter(|entry| entry.kind == "file")
+            .all(|entry| !entry.version_id.is_empty()
+                && engine.state().versions.contains_key(&entry.version_id))
+    );
+}
+
+#[test]
+fn full_versions_independent_rebuild_and_offline_export() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 3);
+    save(&mut e, &r.main_branch_id, "资料/报告.txt", b"first");
+    let first = e
+        .list_tree(&r.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .find(|e| e.kind == "file")
+        .unwrap();
+    save(
+        &mut e,
+        &r.main_branch_id,
+        "资料/报告.txt",
+        b"second complete",
+    );
+    let second = e
+        .list_tree(&r.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .find(|e| e.kind == "file")
+        .unwrap();
+    assert_ne!(first.version_id, second.version_id);
+    assert_eq!(bytes(&e, &first.version_id), b"first");
+    assert_eq!(bytes(&e, &second.version_id), b"second complete");
+    let v = &e.state().versions[&second.version_id];
+    let mut inodes = Vec::new();
+    for d in &f.config.disks {
+        let p = crate::container_storage::content_path(
+            &crate::disk::version_dir(d, &v.history_tree_id, &v.version_id),
+            v,
+        )
+        .unwrap();
+        let m = fs::metadata(p).unwrap();
+        assert_eq!(m.nlink(), 1);
+        inodes.push(m.ino());
+    }
+    inodes.sort();
+    inodes.dedup();
+    assert_eq!(inodes.len(), 3);
+    let seq = e.state().sequence;
+    drop(e);
+    fs::remove_file(f.root.join("index.sqlite")).unwrap();
+    let e = Engine::open(&f.root).unwrap();
+    assert_eq!(e.state().sequence, seq);
+    assert_eq!(bytes(&e, &second.version_id), b"second complete");
+    drop(e);
+    let export = f.temp.path().join("export.txt");
+    offline_export(&f.config.disks[2].root, &second.version_id, &export).unwrap();
+    assert_eq!(fs::read(export).unwrap(), b"second complete");
+}
+#[test]
+fn written_branch_survives_source_purge_and_merge_is_metadata_only() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 3);
+    let first = save(&mut e, &r.main_branch_id, "a.txt", b"A");
+    let old = e.list_tree(&r.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    let b = e
+        .create_branch(
+            first.commit_id.as_deref().unwrap(),
+            "独立分支",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    assert_eq!(e.list_tree(&b.branch_id).unwrap()[0].version_id, old);
+    save(&mut e, &b.branch_id, "a.txt", b"written independently");
+    let fork = e.list_tree(&b.branch_id).unwrap()[0].version_id.clone();
+    assert_ne!(old, fork);
+    save(&mut e, &r.main_branch_id, "a.txt", b"B");
+    let before = e.list_tree(&r.main_branch_id).unwrap();
+    let target = e.state().branches[&r.main_branch_id].head_commit_id.clone();
+    let count = e.state().versions.len();
+    e.add_merge_link(
+        &b.branch_id,
+        &b.head_commit_id,
+        &r.main_branch_id,
+        &target,
+        "admin",
+        &new_id("op"),
+    )
+    .unwrap();
+    assert_eq!(e.state().versions.len(), count);
+    assert_eq!(
+        e.list_tree(&r.main_branch_id).unwrap()[0].version_id,
+        before[0].version_id
+    );
+    let plan = e
+        .create_purge_plan(&r.history_tree_id, vec![old.clone()], "admin")
+        .unwrap();
+    e.commit_plan(&plan.plan_id, "admin", &new_id("op"))
+        .unwrap();
+    assert_eq!(e.open_content(&old).err().unwrap().code(), "CONTENT_PURGED");
+    assert_eq!(bytes(&e, &fork), b"written independently");
+    drop(e);
+    let e = Engine::open(&f.root).unwrap();
+    assert_eq!(bytes(&e, &fork), b"written independently");
+    assert_eq!(e.open_content(&old).err().unwrap().code(), "CONTENT_PURGED");
+}
+#[test]
+fn faults_replay_same_operation_and_never_publish_early() {
+    for point in [
+        "after_accept_1",
+        "after_accept_2",
+        "after_accept_3",
+        "after_finalize",
+        "after_commit_proofs",
+        "after_publication_1",
+        "after_publication_3",
+        "after_local_publications",
+    ] {
+        let f = Fixture::new();
+        let mut e = f.initialize();
+        let r = repository(&mut e, 3);
+        let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+        e.stage_bytes(&w.workspace_id, "文件.txt", b"durable")
+            .unwrap();
+        let request = CommitRequest {
+            workspace_id: w.workspace_id,
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: w.base_head,
+            fencing_token: w.fencing_token,
+            message: point.into(),
+            request_digest: None,
+        };
+        e.inject_fault_once(point);
+        assert_eq!(
+            e.commit_workspace(request.clone()).unwrap_err().code(),
+            "IN_DOUBT",
+            "{point}"
+        );
+        assert!(e.is_read_only());
+        assert_eq!(
+            e.operation_owner(&request.operation_id).as_deref(),
+            Some("admin")
+        );
+        drop(e);
+        let mut e = Engine::open(&f.root).unwrap();
+        let result = e.operation(&request.operation_id).unwrap();
+        assert_eq!(
+            result.commit_state,
+            storage_contract::CommitState::Published,
+            "{point}"
+        );
+        assert_eq!(
+            e.commit_workspace(request.clone()).unwrap().commit_id,
+            result.commit_id
+        );
+        let files = e.list_tree(&r.main_branch_id).unwrap();
+        assert_eq!(bytes(&e, &files[0].version_id), b"durable");
+        assert_eq!(e.state().versions.len(), 1);
+    }
+}
+#[test]
+fn disjoint_workspaces_rebase_but_same_file_is_owned() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 1);
+    let a = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    let b = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    e.stage_bytes(&a.workspace_id, "a", b"a").unwrap();
+    assert_eq!(
+        e.stage_bytes(&b.workspace_id, "a", b"b")
+            .unwrap_err()
+            .code(),
+        "FILE_BUSY"
+    );
+    e.stage_bytes(&b.workspace_id, "b", b"b").unwrap();
+    for w in [a, b] {
+        e.commit_workspace(CommitRequest {
+            workspace_id: w.workspace_id,
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: w.base_head,
+            fencing_token: w.fencing_token,
+            message: "disjoint".into(),
+            request_digest: None,
+        })
+        .unwrap();
+    }
+    assert_eq!(e.list_tree(&r.main_branch_id).unwrap().len(), 2);
+}
+#[test]
+fn revoke_before_commit_and_idempotency_conflicts() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 1);
+    let mut grants = r.grants.clone();
+    grants.read.insert("user".into());
+    grants.write.insert("user".into());
+    e.set_grants(&r.repository_id, grants, "admin", &new_id("op"))
+        .unwrap();
+    let w = e.create_workspace(&r.main_branch_id, "user").unwrap();
+    e.stage_bytes(&w.workspace_id, "a", b"private").unwrap();
+    e.set_grants(
+        &r.repository_id,
+        Grants::owner("admin"),
+        "admin",
+        &new_id("op"),
+    )
+    .unwrap();
+    assert_eq!(
+        e.commit_workspace(CommitRequest {
+            workspace_id: w.workspace_id,
+            operation_id: new_id("op"),
+            principal: "user".into(),
+            expected_head: w.base_head,
+            fencing_token: w.fencing_token,
+            message: String::new(),
+            request_digest: None
+        })
+        .unwrap_err()
+        .code(),
+        "PERMISSION_DENIED"
+    );
+    let op = new_id("op");
+    let b = e
+        .create_repository("second", "P01", 1, "admin", &op)
+        .unwrap();
+    assert_eq!(
+        e.create_repository("second", "P01", 1, "admin", &op)
+            .unwrap()
+            .repository_id,
+        b.repository_id
+    );
+    assert_eq!(
+        e.create_repository("other", "P01", 1, "admin", &op)
+            .unwrap_err()
+            .code(),
+        "IDEMPOTENCY_KEY_REUSED"
+    );
+}
+#[test]
+fn active_reads_protect_history_and_split_remaps_full_payloads() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 3);
+    let first = save(&mut e, &r.main_branch_id, "a", b"v1");
+    let old = e.list_tree(&r.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    save(&mut e, &r.main_branch_id, "a", b"v2");
+    let lease = e.open_content(&old).unwrap();
+    assert_eq!(
+        e.create_purge_plan(&r.history_tree_id, vec![old.clone()], "admin")
+            .unwrap_err()
+            .code(),
+        "CONTENT_PINNED"
+    );
+    drop(lease);
+    let plan = e
+        .create_split_plan(
+            &r.history_tree_id,
+            first.commit_id.as_deref().unwrap(),
+            "admin",
+        )
+        .unwrap();
+    let result = e
+        .commit_plan(&plan.plan_id, "admin", &new_id("op"))
+        .unwrap();
+    let new_history = result.history_tree_id.unwrap();
+    assert_ne!(new_history, r.history_tree_id);
+    let graph = e.graph(&new_history).unwrap();
+    assert!(
+        graph
+            .commits
+            .iter()
+            .find(|c| c.kind == "split_root")
+            .unwrap()
+            .parent_commit_ids
+            .is_empty()
+    );
+    for c in &graph.commits {
+        for entry in &c.entries {
+            assert_eq!(
+                e.state().versions[&entry.version_id].history_tree_id,
+                new_history
+            );
+            assert!(bytes(&e, &entry.version_id).starts_with(b"v"));
+        }
+    }
+    drop(e);
+    Engine::open(&f.root).unwrap();
+}
+#[test]
+fn fixed_route_capacity_does_not_fallback_and_second_writer_is_rejected() {
+    let mut f = Fixture::new();
+    f.config.disks[1].capacity_bytes = Some(1);
+    let mut e = f.initialize();
+    assert_eq!(
+        Engine::open(&f.root).err().unwrap().code(),
+        "WRITER_ALREADY_ACTIVE"
+    );
+    let r = repository(&mut e, 3);
+    let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    e.stage_bytes(&w.workspace_id, "a", b"too large for assigned backup")
+        .unwrap();
+    let err = e
+        .commit_workspace(CommitRequest {
+            workspace_id: w.workspace_id.clone(),
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: w.base_head,
+            fencing_token: w.fencing_token,
+            message: String::new(),
+            request_digest: None,
+        })
+        .unwrap_err();
+    assert_eq!(err.code(), "NO_SPACE");
+    assert!(e.list_tree(&r.main_branch_id).unwrap().is_empty());
+    assert!(!e.workspace(&w.workspace_id).unwrap().files.is_empty());
+}
+#[test]
+fn corrupt_log_is_not_skipped_and_torn_tail_is_bounded() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 1);
+    save(&mut e, &r.main_branch_id, "a", b"a");
+    drop(e);
+    let log = f.config.disks[0]
+        .root
+        .join("metadata/application-log/journal.bin");
+    fs::OpenOptions::new()
+        .append(true)
+        .open(&log)
+        .unwrap()
+        .write_all(b"ZXS")
+        .unwrap();
+    let mut e = Engine::open(&f.root).unwrap();
+    save(&mut e, &r.main_branch_id, "b", b"b");
+    drop(e);
+    let mut data = fs::read(&log).unwrap();
+    data[20] ^= 1;
+    fs::write(log, data).unwrap();
+    assert!(Engine::open(&f.root).is_err());
+}
+#[test]
+fn published_success_survives_later_content_damage() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 1);
+    let op = save(&mut e, &r.main_branch_id, "a", b"verified");
+    let entry = e.list_tree(&r.main_branch_id).unwrap()[0].clone();
+    let version = e.state().versions[&entry.version_id].clone();
+    drop(e);
+    let content = crate::container_storage::content_path(
+        &crate::disk::version_dir(
+            &f.config.disks[0],
+            &version.history_tree_id,
+            &version.version_id,
+        ),
+        &version,
+    )
+    .unwrap();
+    fs::remove_file(content).unwrap();
+    let e = Engine::open(&f.root).unwrap();
+    let result = e.operation(&op.operation_id).unwrap();
+    assert_eq!(
+        result.protection_at_publish,
+        storage_contract::ProtectionAtPublish::TargetMet
+    );
+    assert_eq!(
+        result.commit_state,
+        storage_contract::CommitState::Published
+    );
+    assert_eq!(result.current_health, "UNAVAILABLE");
+}
+
+#[test]
+fn explicit_upload_generations_and_sealed_wire_requests_are_stable() {
+    use serde_json::json;
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 3);
+    let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    let input = f.temp.path().join("upload");
+    fs::write(&input, b"generation one hundred").unwrap();
+    let item = new_id("entry");
+    let staged = e
+        .stage_upload(&w.workspace_id, &item, "a", &input, 100)
+        .unwrap();
+    assert_eq!(staged.dirty_generation, 100);
+    assert_eq!(
+        e.stage_upload(&w.workspace_id, &item, "a", &input, 100)
+            .unwrap()
+            .source_path,
+        staged.source_path
+    );
+    assert_eq!(
+        e.stage_upload(&w.workspace_id, &item, "a", &input, 99)
+            .unwrap_err()
+            .code(),
+        "STALE_UPLOAD_GENERATION"
+    );
+    fs::write(&input, b"different").unwrap();
+    assert_eq!(
+        e.stage_upload(&w.workspace_id, &item, "a", &input, 100)
+            .unwrap_err()
+            .code(),
+        "UPLOAD_GENERATION_CONFLICT"
+    );
+    let next = e
+        .stage_upload(&w.workspace_id, &item, "a", &input, 200)
+        .unwrap();
+    assert_eq!(next.dirty_generation, 200);
+    assert_eq!(
+        fs::read(staged.source_path).unwrap(),
+        b"generation one hundred"
+    );
+    let mut body = e.seal_workspace(&w.workspace_id, "admin").unwrap();
+    body["file_placement"][&item]["target_copies"] = json!(1);
+    body["request_digest"] = json!(commit_request_digest(&w.workspace_id, &body).unwrap());
+    let request = CommitRequest {
+        workspace_id: w.workspace_id.clone(),
+        operation_id: body["operation_id"].as_str().unwrap().into(),
+        principal: "admin".into(),
+        expected_head: w.base_head,
+        fencing_token: w.fencing_token,
+        message: String::new(),
+        request_digest: None,
+    };
+    let mut wrong = body.clone();
+    wrong["request_digest"] = json!("0".repeat(64));
+    assert_eq!(
+        e.commit_workspace_wire(request.clone(), wrong)
+            .unwrap_err()
+            .code(),
+        "REQUEST_DIGEST_MISMATCH"
+    );
+    assert!(
+        e.stage_upload(&w.workspace_id, &item, "a", &input, 201)
+            .is_err()
+    );
+    let result = e
+        .commit_workspace_wire(request.clone(), body.clone())
+        .unwrap();
+    let version = e.list_tree(&r.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    assert_eq!(e.state().placements[&version].route_slot_ids, ["P01"]);
+    save(&mut e, &r.main_branch_id, "b", b"later head");
+    assert_eq!(
+        e.commit_workspace_wire(request, body).unwrap().commit_id,
+        result.commit_id
+    );
+    drop(e);
+    let mut e = Engine::open(&f.root).unwrap();
+    assert_eq!(e.workspace(&w.workspace_id).unwrap().state, "committed");
+    assert!(e.create_workspace(&r.main_branch_id, "admin").is_ok());
+}
+
+#[test]
+fn system_disk_restore_recovers_auth_and_unsubmitted_full_bytes() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 3);
+    e.persist_auth_state(
+        serde_json::json!({"users":{"admin":{"password_hash":"test-hash-only"}}}),
+        "admin",
+        &new_id("op"),
+    )
+    .unwrap();
+    let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    e.stage_bytes(&w.workspace_id, "pending", b"not yet published")
+        .unwrap();
+    drop(e);
+    fs::remove_dir_all(&f.root).unwrap();
+    let recovered = f.temp.path().join("replacement-system");
+    let mut e = Engine::restore_from_disks(
+        &recovered,
+        &f.config
+            .disks
+            .iter()
+            .map(|d| d.root.clone())
+            .collect::<Vec<_>>(),
+    )
+    .unwrap();
+    assert_eq!(
+        e.auth_state().unwrap()["users"]["admin"]["password_hash"],
+        "test-hash-only"
+    );
+    let pending = e.workspace(&w.workspace_id).unwrap();
+    assert_eq!(pending.state, "open");
+    assert_eq!(
+        fs::read(&pending.files.values().next().unwrap().source_path).unwrap(),
+        b"not yet published"
+    );
+    e.commit_workspace(CommitRequest {
+        workspace_id: w.workspace_id,
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: w.base_head,
+        fencing_token: w.fencing_token,
+        message: String::new(),
+        request_digest: None,
+    })
+    .unwrap();
+    assert_eq!(
+        bytes(&e, &e.list_tree(&r.main_branch_id).unwrap()[0].version_id),
+        b"not yet published"
+    );
+}
+
+#[test]
+fn mkdir_and_child_upload_publish_together_and_cancellation_never_undoes_execution() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 3);
+    let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    e.namespace_operation(
+        &w.workspace_id,
+        NamespaceOperation {
+            kind: "mkdir".into(),
+            path: "文档".into(),
+            destination: None,
+        },
+    )
+    .unwrap();
+    e.stage_bytes(&w.workspace_id, "文档/说明.txt", b"first")
+        .unwrap();
+    e.commit_workspace(CommitRequest {
+        workspace_id: w.workspace_id,
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: w.base_head,
+        fencing_token: w.fencing_token,
+        message: String::new(),
+        request_digest: None,
+    })
+    .unwrap();
+    assert_eq!(e.list_tree(&r.main_branch_id).unwrap().len(), 2);
+    let old = e
+        .list_tree(&r.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .find(|e| e.kind == "file")
+        .unwrap()
+        .version_id;
+    save(&mut e, &r.main_branch_id, "文档/说明.txt", b"second");
+    let plan = e
+        .create_purge_plan(&r.history_tree_id, vec![old.clone()], "admin")
+        .unwrap();
+    let cancel = new_id("op");
+    let result = e.cancel_plan(&plan.plan_id, "admin", &cancel).unwrap();
+    assert_eq!(result.result["state"], "cancelled");
+    assert_eq!(
+        e.cancel_plan(&plan.plan_id, "admin", &cancel)
+            .unwrap()
+            .sequence,
+        result.sequence
+    );
+    assert_eq!(
+        e.commit_plan(&plan.plan_id, "admin", &cancel)
+            .unwrap_err()
+            .code(),
+        "IDEMPOTENCY_KEY_REUSED"
+    );
+    let plan = e
+        .create_purge_plan(&r.history_tree_id, vec![old], "admin")
+        .unwrap();
+    e.commit_plan(&plan.plan_id, "admin", &new_id("op"))
+        .unwrap();
+    assert_eq!(
+        e.cancel_plan(&plan.plan_id, "admin", &new_id("op"))
+            .unwrap_err()
+            .code(),
+        "PLAN_CLOSED"
+    );
+}
+
+#[test]
+fn managed_io_rejects_symlink_ancestors_and_preserves_export_directory_permissions() {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 1);
+    save(&mut e, &r.main_branch_id, "a", b"whole");
+    let version = e.list_tree(&r.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    let public = f.temp.path().join("exports");
+    fs::create_dir(&public).unwrap();
+    fs::set_permissions(&public, fs::Permissions::from_mode(0o755)).unwrap();
+    offline_export(&f.config.disks[0].root, &version, &public.join("a")).unwrap();
+    assert_eq!(
+        fs::metadata(&public).unwrap().permissions().mode() & 0o777,
+        0o755
+    );
+    let link = f.temp.path().join("linked");
+    symlink(&public, &link).unwrap();
+    assert_eq!(
+        crate::disk::open_regular(&link.join("a"))
+            .unwrap_err()
+            .code(),
+        "UNSAFE_PATH"
+    );
+    assert!(crate::disk::write_atomic(&link.join("attack"), b"no", true).is_err());
+    assert!(!public.join("attack").exists());
+    assert_eq!(
+        fs::metadata(&public).unwrap().permissions().mode() & 0o777,
+        0o755
+    );
+}
+
+#[test]
+fn conditional_directory_policies_change_only_future_placements() {
+    let mut f = Fixture::new();
+    f.config.disks.push(DiskConfig {
+        slot_id: "P02".into(),
+        disk_id: new_id("disk"),
+        root: f.temp.path().join("second-primary"),
+        level: 1,
+        upstream_slot_id: None,
+        metadata_member: false,
+        binding_generation: 1,
+        capacity_bytes: None,
+    });
+    let mut e = f.initialize();
+    let r = repository(&mut e, 3);
+    save(
+        &mut e,
+        &r.main_branch_id,
+        "docs/a",
+        b"three complete originals",
+    );
+    let old = e
+        .list_tree(&r.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .find(|f| f.kind == "file")
+        .unwrap()
+        .version_id;
+    let policy = new_id("policy");
+    e.update_protection_policy(crate::ProtectionPolicyUpdate {
+        policy_id: &policy,
+        repository_id: &r.repository_id,
+        path_prefix: "DOCS",
+        target_copies: 1,
+        expected_generation: 0,
+        principal: "admin",
+        operation_id: &new_id("op"),
+    })
+    .unwrap();
+    let rule = new_id("rule");
+    e.update_placement_rule(crate::PlacementRuleUpdate {
+        rule_id: &rule,
+        repository_id: &r.repository_id,
+        path_prefix: "Docs",
+        primary_slot_id: "P02",
+        expected_generation: 0,
+        principal: "admin",
+        operation_id: &new_id("op"),
+    })
+    .unwrap();
+    assert_eq!(
+        e.update_protection_policy(crate::ProtectionPolicyUpdate {
+            policy_id: &policy,
+            repository_id: &r.repository_id,
+            path_prefix: "DOCS",
+            target_copies: 2,
+            expected_generation: 0,
+            principal: "admin",
+            operation_id: &new_id("op"),
+        })
+        .unwrap_err()
+        .code(),
+        "GENERATION_MISMATCH"
+    );
+    assert!(
+        e.update_protection_policy(crate::ProtectionPolicyUpdate {
+            policy_id: &new_id("policy"),
+            repository_id: &r.repository_id,
+            path_prefix: "secret",
+            target_copies: 1,
+            expected_generation: 0,
+            principal: "intruder",
+            operation_id: &new_id("op"),
+        })
+        .is_err()
+    );
+    save(&mut e, &r.main_branch_id, "docs/a", b"new primary");
+    let current = e
+        .list_tree(&r.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .find(|f| f.kind == "file")
+        .unwrap()
+        .version_id;
+    assert_eq!(
+        e.state().placements[&old].route_slot_ids,
+        ["P01", "B01", "C01"]
+    );
+    assert_eq!(e.state().placements[&current].route_slot_ids, ["P02"]);
+    assert_eq!(
+        e.new_file_placement(&r.repository_id, "docs-extra/a")
+            .unwrap(),
+        ("P01".into(), 3)
+    );
+    drop(e);
+    let e = Engine::open(&f.root).unwrap();
+    assert_eq!(
+        e.new_file_placement(&r.repository_id, "DOCS/b").unwrap(),
+        ("P02".into(), 1)
+    );
+    assert_eq!(bytes(&e, &old), b"three complete originals");
+}
+
+#[test]
+fn overlapping_namespace_and_upload_never_reports_a_successful_disappearing_file() {
+    for delete_first in [true, false] {
+        let f = Fixture::new();
+        let mut e = f.initialize();
+        let r = repository(&mut e, 1);
+        save(&mut e, &r.main_branch_id, "docs/original", b"original");
+        let head = e.state().branches[&r.main_branch_id].head_commit_id.clone();
+        let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+        let delete = NamespaceOperation {
+            kind: "delete_tree".into(),
+            path: "docs".into(),
+            destination: None,
+        };
+        if delete_first {
+            e.namespace_operation(&w.workspace_id, delete.clone())
+                .unwrap();
+        }
+        let staged = e
+            .stage_bytes(&w.workspace_id, "docs/new", b"must remain staged")
+            .unwrap();
+        if !delete_first {
+            e.namespace_operation(&w.workspace_id, delete).unwrap();
+        }
+        let error = e
+            .commit_workspace(CommitRequest {
+                workspace_id: w.workspace_id.clone(),
+                operation_id: new_id("op"),
+                principal: "admin".into(),
+                expected_head: w.base_head,
+                fencing_token: w.fencing_token,
+                message: String::new(),
+                request_digest: None,
+            })
+            .unwrap_err();
+        assert_eq!(error.code(), "WORKSPACE_DEPENDENCY_BUSY");
+        assert_eq!(e.state().branches[&r.main_branch_id].head_commit_id, head);
+        assert_eq!(fs::read(staged.source_path).unwrap(), b"must remain staged");
+    }
+}
+
+#[test]
+fn smb_binding_is_explicit_conditional_and_requires_clean_workspaces() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 1);
+    let root = e.state().branches[&r.main_branch_id].head_commit_id.clone();
+    let branch = e
+        .create_branch(&root, "new-main", "admin", &new_id("op"))
+        .unwrap();
+    let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    assert_eq!(
+        e.set_smb_binding(
+            &r.repository_id,
+            &branch.branch_id,
+            true,
+            1,
+            "admin",
+            &new_id("op")
+        )
+        .unwrap_err()
+        .code(),
+        "WORKSPACE_BUSY"
+    );
+    e.abort_workspace(&w.workspace_id, "admin").unwrap();
+    e.set_smb_binding(
+        &r.repository_id,
+        &branch.branch_id,
+        true,
+        1,
+        "admin",
+        &new_id("op"),
+    )
+    .unwrap();
+    assert_eq!(
+        e.state().repositories[&r.repository_id].main_branch_id,
+        branch.branch_id
+    );
+    assert_eq!(
+        e.set_smb_binding(
+            &r.repository_id,
+            &r.main_branch_id,
+            true,
+            1,
+            "admin",
+            &new_id("op")
+        )
+        .unwrap_err()
+        .code(),
+        "GENERATION_MISMATCH"
+    );
+}
+
+#[test]
+fn retained_generations_and_sealed_workspaces_keep_their_resource_and_file_ownership() {
+    let mut f = Fixture::new();
+    f.config.max_file_bytes = 8;
+    f.config.max_workspace_bytes = 10;
+    f.config.max_workspaces = 2;
+    let mut e = f.initialize();
+    let r = repository(&mut e, 1);
+    let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    let item = new_id("entry");
+    let input = f.temp.path().join("input");
+    fs::write(&input, b"1234").unwrap();
+    let first = e
+        .stage_upload(&w.workspace_id, &item, "a", &input, 1)
+        .unwrap();
+    fs::write(&input, b"5678").unwrap();
+    e.stage_upload(&w.workspace_id, &item, "a", &input, 2)
+        .unwrap();
+    assert!(
+        e.stage_upload(&w.workspace_id, &item, "a", &input, 2)
+            .is_ok()
+    );
+    assert_eq!(
+        e.stage_upload(&w.workspace_id, &item, "a", &input, 3)
+            .unwrap_err()
+            .code(),
+        "RESOURCE_LIMIT"
+    );
+    assert_eq!(fs::read(first.source_path).unwrap(), b"1234");
+    e.seal_workspace(&w.workspace_id, "admin").unwrap();
+    let second = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+    assert_eq!(
+        e.stage_bytes(&second.workspace_id, "a", b"no")
+            .unwrap_err()
+            .code(),
+        "FILE_BUSY"
+    );
+    assert_eq!(
+        e.create_workspace(&r.main_branch_id, "admin")
+            .unwrap_err()
+            .code(),
+        "RESOURCE_LIMIT"
+    );
+    let missing = f.temp.path().join("open-must-not-initialize");
+    assert!(Engine::open(&missing).is_err());
+    assert!(!missing.exists());
+}
+
+#[test]
+fn merge_link_endpoints_must_belong_to_the_selected_distinct_branches() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let repo = repository(&mut e, 1);
+    let first = save(&mut e, &repo.main_branch_id, "a", b"first")
+        .commit_id
+        .unwrap();
+    let branch = e
+        .create_branch(&first, "other", "admin", &new_id("op"))
+        .unwrap();
+    let latest = save(&mut e, &repo.main_branch_id, "a", b"second")
+        .commit_id
+        .unwrap();
+    assert_eq!(
+        e.add_merge_link(
+            &branch.branch_id,
+            &latest,
+            &repo.main_branch_id,
+            &first,
+            "admin",
+            &new_id("op")
+        )
+        .unwrap_err()
+        .code(),
+        "MERGE_ENDPOINT_MISMATCH"
+    );
+    assert_eq!(
+        e.add_merge_link(
+            &branch.branch_id,
+            &branch.head_commit_id,
+            &repo.main_branch_id,
+            &branch.head_commit_id,
+            "admin",
+            &new_id("op")
+        )
+        .unwrap_err()
+        .code(),
+        "MERGE_ENDPOINT_MISMATCH"
+    );
+    assert_eq!(
+        e.add_merge_link(
+            &repo.main_branch_id,
+            &latest,
+            &repo.main_branch_id,
+            &first,
+            "admin",
+            &new_id("op")
+        )
+        .unwrap_err()
+        .code(),
+        "MERGE_ENDPOINT_MISMATCH"
+    );
+    e.archive_branch(&branch.branch_id, "admin", &new_id("op"))
+        .unwrap();
+    e.add_merge_link(
+        &branch.branch_id,
+        &branch.head_commit_id,
+        &repo.main_branch_id,
+        &first,
+        "admin",
+        &new_id("op"),
+    )
+    .unwrap();
+    assert_eq!(
+        e.state().branches[&repo.main_branch_id].head_commit_id,
+        latest
+    );
+}
+
+#[test]
+fn auth_sessions_do_not_stale_plans_and_offline_tombstones_are_proven() {
+    let f = Fixture::new();
+    let mut e = f.initialize();
+    let r = repository(&mut e, 3);
+    save(&mut e, &r.main_branch_id, "a", b"old");
+    let old = e.list_tree(&r.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    save(&mut e, &r.main_branch_id, "a", b"new");
+    let p = e
+        .create_purge_plan(&r.history_tree_id, vec![old.clone()], "admin")
+        .unwrap();
+    e.persist_auth_state(
+        serde_json::json!({"session_hashes":["not-raw-session-token"]}),
+        "admin",
+        &new_id("op"),
+    )
+    .unwrap();
+    e.commit_plan(&p.plan_id, "admin", &new_id("op")).unwrap();
+    let report = offline_check(&f.config.disks[0].root).unwrap();
+    assert!(report.issues.is_empty(), "{:?}", report.issues);
+    assert_eq!(report.tombstoned_versions, 1);
+    assert_eq!(report.healthy_replicas, 1);
+    let dir = crate::disk::version_dir(&f.config.disks[0], &r.history_tree_id, &old);
+    let mut proof: serde_json::Value =
+        serde_json::from_slice(&fs::read(dir.join("purged.json")).unwrap()).unwrap();
+    proof["content_state_page"][&old] = serde_json::json!("AVAILABLE");
+    fs::write(dir.join("purged.json"), serde_json::to_vec(&proof).unwrap()).unwrap();
+    assert_eq!(
+        offline_check(&f.config.disks[0].root).unwrap().issues.len(),
+        1
+    );
+}
+
+#[test]
+fn partial_publication_is_not_visible_with_two_members_and_receipt_tampering_is_rejected() {
+    for complete in [false, true] {
+        let f = Fixture::new();
+        let mut e = f.initialize();
+        let r = repository(&mut e, 3);
+        let w = e.create_workspace(&r.main_branch_id, "admin").unwrap();
+        e.stage_bytes(&w.workspace_id, "a", b"protected").unwrap();
+        let request = CommitRequest {
+            workspace_id: w.workspace_id,
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: w.base_head.clone(),
+            fencing_token: w.fencing_token,
+            message: String::new(),
+            request_digest: None,
+        };
+        if !complete {
+            e.inject_fault_once("after_publication_1");
+        }
+        let result = e.commit_workspace(request.clone());
+        assert_eq!(result.is_ok(), complete);
+        drop(e);
+        let missing = &f.config.disks[2].root;
+        let hidden = f.temp.path().join("unavailable");
+        fs::rename(missing, &hidden).unwrap();
+        let e = Engine::open(&f.root).unwrap();
+        assert!(e.is_read_only());
+        assert_eq!(
+            e.operation(&request.operation_id).unwrap().commit_state,
+            if complete {
+                CommitState::Published
+            } else {
+                CommitState::InDoubt
+            }
+        );
+        assert_eq!(
+            e.list_tree(&r.main_branch_id).unwrap().is_empty(),
+            !complete
+        );
+        drop(e);
+        fs::rename(&hidden, missing).unwrap();
+        let e = Engine::open(&f.root).unwrap();
+        let version = e.list_tree(&r.main_branch_id).unwrap()[0]
+            .version_id
+            .clone();
+        let dir = crate::disk::version_dir(&f.config.disks[0], &r.history_tree_id, &version);
+        let mut proof: serde_json::Value =
+            serde_json::from_slice(&fs::read(dir.join("publication-proof.json")).unwrap()).unwrap();
+        proof["publication_receipts"][0]["record"]["record_type"] = serde_json::json!("PREPARE");
+        fs::write(
+            dir.join("publication-proof.json"),
+            serde_json::to_vec(&proof).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(
+            offline_check(&f.config.disks[0].root).unwrap().issues.len(),
+            1
+        );
+        assert_eq!(
+            offline_export(
+                &f.config.disks[0].root,
+                &version,
+                &f.temp.path().join("must-not-export")
+            )
+            .unwrap_err()
+            .code(),
+            "PUBLICATION_INVALID"
+        );
+    }
+}
+#[test]
+fn production_does_not_silently_accept_directory_simulation() {
+    let mut f = Fixture::new();
+    f.config.mode = Mode::Production;
+    assert_eq!(
+        Engine::initialize(&f.root, f.config).err().unwrap().code(),
+        "FILESYSTEM_REQUIRED"
+    );
+}
+
+#[test]
+fn legacy_branch_and_workspace_json_keep_their_canonical_bytes() {
+    let old_branch = serde_json::json!({
+        "branch_id":new_id("br"),"history_tree_id":new_id("history"),"name":"legacy",
+        "head_commit_id":new_id("commit"),"fork_commit_id":new_id("commit"),
+        "branch_kind":"full","generation":"1","state":"active"
+    });
+    let decoded: Branch = serde_json::from_value(old_branch.clone()).unwrap();
+    assert!(decoded.pending_file_versions.is_empty());
+    assert_eq!(
+        canonical_json(&decoded).unwrap(),
+        canonical_json(&old_branch).unwrap()
+    );
+    let old_workspace = serde_json::json!({
+        "workspace_id":new_id("ws"),"purpose":"normal","branch_id":decoded.branch_id,
+        "principal":"admin","base_head":decoded.head_commit_id,"fencing_token":"1",
+        "files":{},"namespace_operations":[],"created_at":"1","state":"open"
+    });
+    let decoded: Workspace = serde_json::from_value(old_workspace.clone()).unwrap();
+    assert!(decoded.selected_file_branches.is_empty());
+    assert_eq!(
+        canonical_json(&decoded).unwrap(),
+        canonical_json(&old_workspace).unwrap()
+    );
+}
+
+#[test]
+fn pending_first_write_keeps_selected_ancestry_and_creates_a_real_empty_version() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    save(&mut engine, &repo.main_branch_id, "file.txt", b"old source");
+    let source = engine.list_tree(&repo.main_branch_id).unwrap().remove(0);
+    save(&mut engine, &repo.main_branch_id, "file.txt", b"newer main");
+    let before = engine.state().versions.len();
+    let branch = engine
+        .create_file_branch(
+            &source.file_id,
+            &source.version_id,
+            "old source branch",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap()
+        .branch_id
+        .unwrap();
+    assert_eq!(engine.state().versions.len(), before);
+    assert_eq!(
+        engine.pending_file_source(&branch, &source.file_id),
+        Some(source.version_id.as_str())
+    );
+    engine
+        .select_file_branch(&source.file_id, &branch, "admin", &new_id("op"))
+        .unwrap();
+    let placeholder = engine.list_tree(&repo.main_branch_id).unwrap().remove(0);
+    assert_eq!(placeholder.version_id, source.version_id);
+    assert_eq!(placeholder.size, source.size);
+    assert_eq!(bytes(&engine, &placeholder.version_id), b"old source");
+    save(&mut engine, &repo.main_branch_id, "file.txt", b"");
+    let entry = engine.list_tree(&branch).unwrap().remove(0);
+    let version = &engine.state().versions[&entry.version_id];
+    assert_eq!(engine.state().versions.len(), before + 1);
+    assert_eq!(version.source_version_ids, vec![source.version_id]);
+    assert!(version.created_as_full_checkpoint);
+    assert_eq!(entry.size, 0);
+    assert!(
+        engine
+            .pending_file_source(&branch, &source.file_id)
+            .is_none()
+    );
+    assert_eq!(bytes(&engine, &entry.version_id), b"");
+    drop(engine);
+    let engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(
+        engine.list_tree(&repo.main_branch_id).unwrap()[0].version_id,
+        entry.version_id
+    );
+    assert_eq!(bytes(&engine, &entry.version_id), b"");
+}
+
+#[test]
+fn first_write_identical_to_source_is_not_an_unwritten_or_shared_version() {
+    for source_bytes in [b"same bytes".as_slice(), b"".as_slice()] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        save(&mut engine, &repo.main_branch_id, "file.txt", source_bytes);
+        let source = engine.list_tree(&repo.main_branch_id).unwrap().remove(0);
+        let branch = engine
+            .create_file_branch(
+                &source.file_id,
+                &source.version_id,
+                "identical",
+                "admin",
+                &new_id("op"),
+            )
+            .unwrap()
+            .branch_id
+            .unwrap();
+        let before = engine.state().versions.len();
+        save(&mut engine, &branch, "file.txt", source_bytes);
+        let entry = engine.list_tree(&branch).unwrap().remove(0);
+        assert_ne!(entry.version_id, source.version_id);
+        assert_eq!(engine.state().versions.len(), before + 1);
+        assert_eq!(bytes(&engine, &entry.version_id), source_bytes);
+        assert!(
+            engine.state().branches[&branch]
+                .pending_file_versions
+                .is_empty()
+        );
+    }
+}
+
+#[test]
+fn pending_range_write_edits_parent_before_publishing_its_own_complete_version() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "file.txt",
+        b"parent body",
+    );
+    let source = engine.list_tree(&repo.main_branch_id).unwrap().remove(0);
+    let branch = engine
+        .create_file_branch(
+            &source.file_id,
+            &source.version_id,
+            "range",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap()
+        .branch_id
+        .unwrap();
+    let workspace = engine.create_workspace(&branch, "admin").unwrap();
+    engine
+        .stage_range(
+            &workspace.workspace_id,
+            &new_id("entry"),
+            "file.txt",
+            3,
+            b"X",
+            Some(4),
+        )
+        .unwrap();
+    engine
+        .commit_workspace(CommitRequest {
+            workspace_id: workspace.workspace_id,
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "range".into(),
+            request_digest: None,
+        })
+        .unwrap();
+    let entry = engine.list_tree(&branch).unwrap().remove(0);
+    assert_eq!(bytes(&engine, &entry.version_id), b"parX");
+    assert_eq!(
+        engine.state().versions[&entry.version_id].source_version_ids,
+        vec![source.version_id]
+    );
+}
+
+#[test]
+fn switching_pending_destinations_fences_old_directory_writes_with_same_source() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "file.txt",
+        b"shared ancestor",
+    );
+    let source = engine.list_tree(&repo.main_branch_id).unwrap().remove(0);
+    let first = engine
+        .create_file_branch(
+            &source.file_id,
+            &source.version_id,
+            "first",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap()
+        .branch_id
+        .unwrap();
+    let second = engine
+        .create_file_branch(
+            &source.file_id,
+            &source.version_id,
+            "second",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap()
+        .branch_id
+        .unwrap();
+    engine
+        .select_file_branch(&source.file_id, &first, "admin", &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let staged = engine
+        .stage_bytes(&workspace.workspace_id, "file.txt", b"belongs to first")
+        .unwrap();
+    engine
+        .select_file_branch(&source.file_id, &second, "admin", &new_id("op"))
+        .unwrap();
+    let before = engine.state().versions.len();
+    let error = engine
+        .commit_workspace(CommitRequest {
+            workspace_id: workspace.workspace_id.clone(),
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "stale".into(),
+            request_digest: None,
+        })
+        .unwrap_err();
+    assert_eq!(error.code(), "FILE_BRANCH_CONFLICT");
+    assert!(staged.source_path.exists());
+    assert_eq!(engine.state().versions.len(), before);
+    assert_eq!(
+        engine.list_tree(&first).unwrap()[0].version_id,
+        source.version_id
+    );
+    assert!(
+        engine
+            .pending_file_source(&first, &source.file_id)
+            .is_some()
+    );
+    assert_eq!(
+        engine.list_tree(&second).unwrap()[0].version_id,
+        source.version_id
+    );
+    assert!(
+        engine
+            .pending_file_source(&second, &source.file_id)
+            .is_some()
+    );
+    engine
+        .abort_workspace(&workspace.workspace_id, "admin")
+        .unwrap();
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "file.txt",
+        b"belongs to second",
+    );
+    assert_eq!(
+        bytes(&engine, &engine.list_tree(&second).unwrap()[0].version_id),
+        b"belongs to second"
+    );
+    assert_eq!(
+        engine.list_tree(&first).unwrap()[0].version_id,
+        source.version_id
+    );
+    assert!(
+        engine
+            .pending_file_source(&first, &source.file_id)
+            .is_some()
+    );
+}
+
+#[test]
+fn directory_branch_inherits_frozen_parents_and_overrides_only_written_files_after_reopen() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    for (path, body) in [
+        ("folder/a.txt", b"parent A".as_slice()),
+        ("folder/b.txt", b"parent B".as_slice()),
+        ("folder/c.txt", b"parent C".as_slice()),
+    ] {
+        save(&mut engine, &repo.main_branch_id, path, body);
+    }
+    let parents = engine
+        .list_tree(&repo.main_branch_id)
+        .unwrap()
+        .into_iter()
+        .filter(|entry| entry.kind == "file")
+        .map(|entry| (entry.path.clone(), entry))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    let before = engine.state().versions.len();
+    let created = engine
+        .create_directory_branches(
+            &repo.repository_id,
+            "folder",
+            "draft",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    assert_eq!(created.result["copied_files"], "0");
+    assert_eq!(created.result["placeholder_files"], "0");
+    assert_eq!(engine.state().versions.len(), before);
+    // The inheritance is a frozen parent snapshot, not a moving parent HEAD.
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "folder/b.txt",
+        b"later parent B",
+    );
+    engine
+        .select_directory_branches(
+            &repo.repository_id,
+            "folder",
+            "draft",
+            "admin",
+            &new_id("op"),
+        )
+        .unwrap();
+    for entry in engine
+        .list_tree(&repo.main_branch_id)
+        .unwrap()
+        .iter()
+        .filter(|entry| entry.kind == "file")
+    {
+        assert_eq!(entry.version_id, parents[&entry.path].version_id);
+        assert_eq!(
+            engine.pending_file_source(&repo.main_branch_id, &entry.file_id),
+            None
+        );
+        assert_eq!(
+            bytes(&engine, &entry.version_id),
+            format!(
+                "parent {}",
+                entry.name.chars().next().unwrap().to_ascii_uppercase()
+            )
+            .as_bytes()
+        );
+    }
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "folder/a.txt",
+        b"draft A only",
+    );
+    assert_eq!(
+        engine.state().versions.len(),
+        before + 2,
+        "one later parent edit and one actual draft edit, never branch copies"
+    );
+    let selected = engine.state().file_selections.clone();
+    let inspect = |engine: &Engine| {
+        for entry in engine
+            .list_tree(&repo.main_branch_id)
+            .unwrap()
+            .iter()
+            .filter(|entry| entry.kind == "file")
+        {
+            if entry.path == "folder/a.txt" {
+                assert_ne!(entry.version_id, parents[&entry.path].version_id);
+                assert_eq!(bytes(engine, &entry.version_id), b"draft A only");
+                assert!(
+                    engine
+                        .pending_file_source(&repo.main_branch_id, &entry.file_id)
+                        .is_none()
+                );
+                assert!(
+                    engine.state().branches[&selected[&entry.file_id]]
+                        .pending_file_versions
+                        .is_empty()
+                );
+            } else {
+                assert_eq!(entry.version_id, parents[&entry.path].version_id);
+                assert!(
+                    engine
+                        .pending_file_source(&repo.main_branch_id, &entry.file_id)
+                        .is_none()
+                );
+                assert_eq!(
+                    bytes(engine, &entry.version_id),
+                    if entry.path == "folder/b.txt" {
+                        b"parent B"
+                    } else {
+                        b"parent C"
+                    }
+                );
+            }
+        }
+    };
+    inspect(&engine);
+    drop(engine);
+    let engine = Engine::open(&fixture.root).unwrap();
+    inspect(&engine);
+    assert_eq!(engine.state().file_selections, selected);
+}
+
+#[test]
+fn workspace_commit_rejects_bytes_changed_after_upload_sealing() {
+    use std::os::unix::fs::PermissionsExt;
+
+    for changed in [b"evil".as_slice(), b"changed length".as_slice()] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        let staged = engine
+            .stage_bytes(&workspace.workspace_id, "file.txt", b"good")
+            .unwrap();
+        fs::set_permissions(&staged.source_path, fs::Permissions::from_mode(0o600)).unwrap();
+        fs::write(&staged.source_path, changed).unwrap();
+        let sequence = engine.state().sequence;
+        let operation = new_id("op");
+        let request = CommitRequest {
+            workspace_id: workspace.workspace_id.clone(),
+            operation_id: operation.clone(),
+            principal: "admin".into(),
+            expected_head: workspace.base_head.clone(),
+            fencing_token: workspace.fencing_token,
+            message: "save".into(),
+            request_digest: None,
+        };
+        let error = engine.commit_workspace(request.clone()).unwrap_err();
+        assert_eq!(error.code(), "CHECKSUM_MISMATCH");
+        assert_eq!(engine.state().sequence, sequence);
+        assert!(!engine.state().operations.contains_key(&operation));
+        assert!(engine.list_tree(&repo.main_branch_id).unwrap().is_empty());
+        assert_eq!(
+            engine.workspace(&workspace.workspace_id).unwrap().state,
+            "open"
+        );
+
+        // Failure did not consume the operation or publish a different request.
+        fs::write(&staged.source_path, b"good").unwrap();
+        engine.commit_workspace(request).unwrap();
+        let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+        assert_eq!(bytes(&engine, &entries[0].version_id), b"good");
+        drop(engine);
+        let reopened = Engine::open(&fixture.root).unwrap();
+        assert_eq!(bytes(&reopened, &entries[0].version_id), b"good");
+    }
+}
+
+#[test]
+fn journal_append_rejects_dangling_symlink_without_creating_its_target() {
+    let fixture = Fixture::new();
+    let disk = &fixture.config.disks[0];
+    let log = crate::journal::log_path(disk);
+    crate::disk::private_dir(log.parent().unwrap()).unwrap();
+    let outside = fixture.temp.path().join("outside-journal.bin");
+    std::os::unix::fs::symlink(&outside, &log).unwrap();
+    let error =
+        crate::journal::append(disk, "PREPARE", 1, &"a".repeat(64), &"b".repeat(64)).unwrap_err();
+    assert_eq!(error.code(), "UNSAFE_PATH");
+    assert!(!outside.exists());
+    assert!(fs::symlink_metadata(&log).unwrap().file_type().is_symlink());
+}
+
+#[test]
+fn sealed_batch_checksum_failure_rolls_back_all_files_and_retries_after_restart() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    for path in ["first.txt", "second.txt"] {
+        engine
+            .stage_bytes(&workspace.workspace_id, path, path.as_bytes())
+            .unwrap();
+    }
+    engine
+        .seal_workspace(&workspace.workspace_id, "admin")
+        .unwrap();
+    // Corrupt the last item in execution order, after another file has already
+    // been composed into the transaction's private candidate state.
+    let staged = engine
+        .workspace(&workspace.workspace_id)
+        .unwrap()
+        .files
+        .values()
+        .last()
+        .unwrap()
+        .clone();
+    fs::set_permissions(&staged.source_path, fs::Permissions::from_mode(0o600)).unwrap();
+    fs::write(&staged.source_path, b"corrupted").unwrap();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: workspace.base_head,
+        fencing_token: workspace.fencing_token,
+        message: "atomic sealed batch".into(),
+        request_digest: None,
+    };
+    let before = canonical_json(engine.state()).unwrap();
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap_err().code(),
+        "CHECKSUM_MISMATCH"
+    );
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
+    assert!(!engine.is_read_only());
+    drop(engine);
+
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "sealed"
+    );
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap_err().code(),
+        "CHECKSUM_MISMATCH"
+    );
+    assert_eq!(canonical_json(engine.state()).unwrap(), before);
+    fs::write(&staged.source_path, staged.path.as_bytes()).unwrap();
+    let result = engine.commit_workspace(request.clone()).unwrap();
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap().commit_id,
+        result.commit_id
+    );
+    assert_eq!(engine.state().versions.len(), 2);
+    drop(engine);
+
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(
+        engine.commit_workspace(request).unwrap().commit_id,
+        result.commit_id
+    );
+    let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(entries.len(), 2);
+    for entry in entries {
+        assert_eq!(bytes(&engine, &entry.version_id), entry.path.as_bytes());
+    }
+    assert_eq!(engine.state().versions.len(), 2);
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "committed"
+    );
+}
+
+#[test]
+fn accepted_batch_recovers_without_staged_sources_and_replays_exactly_once() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let first = engine
+        .stage_bytes(&workspace.workspace_id, "first.txt", b"first")
+        .unwrap();
+    let second = engine
+        .stage_bytes(&workspace.workspace_id, "second.txt", b"second")
+        .unwrap();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: workspace.base_head,
+        fencing_token: workspace.fencing_token,
+        message: "recover full batch".into(),
+        request_digest: None,
+    };
+    engine.inject_fault_once("after_accept_1");
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap_err().code(),
+        "IN_DOUBT"
+    );
+    assert!(engine.list_tree(&repo.main_branch_id).unwrap().is_empty());
+    assert!(engine.state().versions.is_empty());
+    // Once accepted, recovery must use prepared durable payloads, not require
+    // uploads that the client may already have lost.
+    fs::remove_file(first.source_path).unwrap();
+    fs::remove_file(second.source_path).unwrap();
+    drop(engine);
+
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    let result = engine.operation(&request.operation_id).unwrap();
+    assert_eq!(
+        result.commit_state,
+        storage_contract::CommitState::Published
+    );
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "committed"
+    );
+    let sequence = engine.state().sequence;
+    assert_eq!(
+        engine.commit_workspace(request.clone()).unwrap().commit_id,
+        result.commit_id
+    );
+    assert_eq!(engine.state().sequence, sequence);
+    let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(entries.len(), 2);
+    assert_eq!(bytes(&engine, &entries[0].version_id), b"first");
+    assert_eq!(bytes(&engine, &entries[1].version_id), b"second");
+    assert_eq!(engine.state().versions.len(), 2);
+    drop(engine);
+    let mut engine = Engine::open(&fixture.root).unwrap();
+    assert_eq!(
+        engine.commit_workspace(request).unwrap().commit_id,
+        result.commit_id
+    );
+    assert_eq!(engine.state().sequence, sequence);
+    assert_eq!(engine.state().versions.len(), 2);
+}
+
+#[test]
+fn unchanged_save_recovery_persists_operation_without_creating_content_history() {
+    for (fault, accepted) in [("after_prepare_1", false), ("after_accept_1", true)] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        let original = save(&mut engine, &repo.main_branch_id, "file.txt", b"unchanged");
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        engine
+            .stage_bytes(&workspace.workspace_id, "file.txt", b"unchanged")
+            .unwrap();
+        let request = CommitRequest {
+            workspace_id: workspace.workspace_id.clone(),
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "same bytes".into(),
+            request_digest: None,
+        };
+        let commits = engine.state().commits.len();
+        let versions = engine.state().versions.len();
+        let generation = engine.state().branches[&repo.main_branch_id].generation;
+        engine.inject_fault_once(fault);
+        assert_eq!(
+            engine.commit_workspace(request.clone()).unwrap_err().code(),
+            if accepted {
+                "IN_DOUBT"
+            } else {
+                "INJECTED_FAILURE"
+            },
+            "{fault}"
+        );
+        assert_eq!(engine.is_read_only(), accepted);
+        drop(engine);
+
+        let mut engine = Engine::open(&fixture.root).unwrap();
+        assert_eq!(
+            engine
+                .state()
+                .operations
+                .contains_key(&request.operation_id),
+            accepted,
+            "{fault}"
+        );
+        let result = engine.commit_workspace(request.clone()).unwrap();
+        assert_eq!(result.commit_id, original.commit_id);
+        assert_eq!(result.result["no_change"], true);
+        let sequence = engine.state().sequence;
+        assert_eq!(
+            engine.commit_workspace(request.clone()).unwrap().commit_id,
+            result.commit_id
+        );
+        assert_eq!(engine.state().sequence, sequence);
+        assert_eq!(engine.state().commits.len(), commits);
+        assert_eq!(engine.state().versions.len(), versions);
+        assert_eq!(
+            engine.state().branches[&repo.main_branch_id].generation,
+            generation
+        );
+        drop(engine);
+
+        let mut engine = Engine::open(&fixture.root).unwrap();
+        assert_eq!(
+            engine.commit_workspace(request).unwrap().commit_id,
+            original.commit_id
+        );
+        assert_eq!(engine.state().sequence, sequence);
+        assert_eq!(engine.state().commits.len(), commits);
+        assert_eq!(engine.state().versions.len(), versions);
+        assert_eq!(
+            engine.workspace(&workspace.workspace_id).unwrap().state,
+            "committed"
+        );
+    }
+}
+
+#[test]
+fn content_read_plan_pins_before_io_and_authenticates_manifest_outside_engine() {
+    let f = Fixture::new();
+    let mut engine = f.initialize();
+    let repo = repository(&mut engine, 2);
+    save(&mut engine, &repo.main_branch_id, "range", &[7; 65536]);
+    let version_id = engine.list_tree(&repo.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    save(&mut engine, &repo.main_branch_id, "range", b"new version");
+    let plan = engine.prepare_content(&version_id).unwrap();
+    assert_eq!(
+        engine
+            .create_purge_plan(&repo.history_tree_id, vec![version_id.clone()], "admin")
+            .unwrap_err()
+            .code(),
+        "CONTENT_PINNED"
+    );
+    // The plan owns its snapshot, so unrelated metadata work can run before any
+    // disk verification; no borrow or Engine mutex is retained.
+    engine
+        .create_repository("second", "P01", 1, "admin", &new_id("op"))
+        .unwrap();
+    let version = engine.state.versions[&version_id].clone();
+    let placement = engine.state.placements[&version_id].clone();
+    let first = engine.disk(&placement.route_slot_ids[0]).unwrap();
+    let dir = disk::version_dir(first, &version.history_tree_id, &version_id);
+    fs::write(dir.join("checksums.bin"), b"bad manifest").unwrap();
+    let opened = plan.open().unwrap(); // authenticated second replica
+    assert_eq!(opened.manifest.logical_size, 65536);
+    assert_eq!(opened.file.metadata().unwrap().len(), 65536);
+    drop(opened);
+    assert!(
+        engine
+            .create_purge_plan(&repo.history_tree_id, vec![version_id.clone()], "admin")
+            .is_ok()
+    );
+    // All disks gone: plan construction still succeeds, proving it performs no
+    // payload, manifest, publication or disk identity reads under the lock.
+    for slot in &placement.route_slot_ids {
+        let disk = engine.disk(slot).unwrap();
+        fs::remove_dir_all(disk::version_dir(
+            disk,
+            &version.history_tree_id,
+            &version_id,
+        ))
+        .unwrap();
+    }
+    let plan = engine.prepare_content(&version_id).unwrap();
+    assert!(plan.open().is_err());
+    assert!(!engine.reads.lock().unwrap().contains_key(&version_id));
+}
+
+#[test]
+fn shared_client_prepares_real_seal_without_losing_frozen_head() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    for expected_override in [None, Some("")] {
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        engine
+            .stage_bytes(
+                &workspace.workspace_id,
+                "prepared.txt",
+                b"prepared from a real seal",
+            )
+            .unwrap();
+        let seal = engine
+            .seal_workspace(&workspace.workspace_id, "admin")
+            .unwrap();
+        let operation_id = new_id("op");
+        let body = storage_contract::client_protocol::prepare_commit(
+            seal,
+            &workspace.workspace_id,
+            &operation_id,
+            "shared client",
+            expected_override,
+        )
+        .unwrap();
+        assert_eq!(body["expected_head"], workspace.base_head);
+        assert_eq!(
+            body["request_digest"],
+            commit_request_digest(&workspace.workspace_id, &body).unwrap()
+        );
+        let request = CommitRequest {
+            workspace_id: workspace.workspace_id.clone(),
+            operation_id,
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "shared client".into(),
+            request_digest: Some(body["request_digest"].as_str().unwrap().into()),
+        };
+        let committed = engine
+            .commit_workspace_wire(request.clone(), body.clone())
+            .unwrap();
+        assert_eq!(
+            engine
+                .commit_workspace_wire(request, body)
+                .unwrap()
+                .commit_id,
+            committed.commit_id
+        );
+    }
+    drop(engine);
+    let engine = Engine::open(&fixture.root).unwrap();
+    let entries = engine.list_tree(&repo.main_branch_id).unwrap();
+    assert_eq!(
+        bytes(&engine, &entries[0].version_id),
+        b"prepared from a real seal"
+    );
+}
+
+#[test]
+fn workspace_read_plan_pins_exact_inode_before_unlocked_verification() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let staged = engine
+        .stage_bytes(&workspace.workspace_id, "staged", b"original")
+        .unwrap();
+    let plan = engine
+        .prepare_workspace_content(&workspace.workspace_id, &staged.item_id, "admin")
+        .unwrap();
+    let replacement = staged.source_path.with_extension("replacement");
+    fs::write(&replacement, b"modified").unwrap();
+    fs::rename(replacement, &staged.source_path).unwrap();
+    let mut opened = plan.open().unwrap();
+    let mut bytes = Vec::new();
+    opened.file.read_to_end(&mut bytes).unwrap();
+    assert_eq!(bytes, b"original");
+    drop(opened);
+    assert_eq!(
+        engine
+            .prepare_workspace_content(&workspace.workspace_id, &staged.item_id, "admin")
+            .unwrap()
+            .open()
+            .err()
+            .unwrap()
+            .code(),
+        "CHECKSUM_MISMATCH"
+    );
+}
+
+#[test]
+fn upload_preparation_releases_engine_and_revalidates_workspace_without_lost_updates() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"prepared upload bytes").unwrap();
+    let item = new_id("entry");
+    let plan = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap();
+    assert_eq!(
+        engine
+            .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+            .err()
+            .unwrap()
+            .code(),
+        "FILE_WRITE_BUSY"
+    );
+    // The copy plan is detached from Engine; unrelated writer work is allowed.
+    engine
+        .create_repository("parallel", "P01", 1, "admin", &new_id("op"))
+        .unwrap();
+    let prepared = plan.execute().unwrap();
+    let directory = engine.workspace_data_directory(&workspace).unwrap();
+    assert!(fs::read_dir(&directory).unwrap().any(|e| {
+        e.unwrap()
+            .path()
+            .extension()
+            .is_some_and(|e| e == "prepared")
+    }));
+    // Fence changes while copying cannot be overwritten by a stale manifest.
+    engine
+        .workspaces
+        .get_mut(&workspace.workspace_id)
+        .unwrap()
+        .fencing_token += 1;
+    assert_eq!(
+        engine.finish_upload(prepared).unwrap_err().code(),
+        "WORKSPACE_CHANGED"
+    );
+    assert!(input.exists());
+    assert!(
+        engine
+            .workspace(&workspace.workspace_id)
+            .unwrap()
+            .files
+            .is_empty()
+    );
+    assert!(!fs::read_dir(&directory).unwrap().any(|e| {
+        e.unwrap()
+            .path()
+            .extension()
+            .is_some_and(|e| e == "prepared")
+    }));
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let staged = engine.finish_upload(prepared).unwrap();
+    assert_eq!(
+        fs::read(staged.source_path).unwrap(),
+        b"prepared upload bytes"
+    );
+}
+
+#[test]
+fn dropped_upload_preparation_cleans_only_owned_scratch_and_releases_claim() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"retained HTTP spool").unwrap();
+    let item = new_id("entry");
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    drop(prepared);
+    assert_eq!(fs::read(&input).unwrap(), b"retained HTTP spool");
+    let plan = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap();
+    drop(plan);
+    assert!(
+        engine
+            .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+            .is_ok()
+    );
+}
+
+#[test]
+fn upload_preparation_counts_crash_scratch_and_rechecks_final_quota() {
+    let mut fixture = Fixture::new();
+    fixture.config.max_file_bytes = 8;
+    fixture.config.max_workspace_bytes = 10;
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let directory = engine.workspace_data_directory(&workspace).unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"12345678").unwrap();
+    let crash_scratch = directory.join(".zxs-upload-crashed.prepared");
+    fs::write(&crash_scratch, b"old").unwrap();
+    let item = new_id("entry");
+    assert_eq!(
+        engine
+            .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+            .err()
+            .unwrap()
+            .code(),
+        "RESOURCE_LIMIT"
+    );
+    // A failed admission must release its claim, and new scratch counts once.
+    fs::remove_file(&crash_scratch).unwrap();
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    fs::write(&crash_scratch, b"old").unwrap();
+    assert_eq!(
+        engine.finish_upload(prepared).unwrap_err().code(),
+        "RESOURCE_LIMIT"
+    );
+    assert_eq!(fs::read(&crash_scratch).unwrap(), b"old");
+    assert!(input.exists());
+    fs::remove_file(crash_scratch).unwrap();
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(engine.finish_upload(prepared).unwrap().size, 8);
+}
+
+#[test]
+fn upload_preparation_rejects_parent_swap_and_cleans_original_directory_only() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    let directory = engine.workspace_data_directory(&workspace).unwrap();
+    let input = fixture.temp.path().join("upload-input");
+    fs::write(&input, b"safe payload").unwrap();
+    let item = new_id("entry");
+    let prepared = engine
+        .prepare_upload(&workspace.workspace_id, &item, "prepared", &input, 1)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let scratch_name = fs::read_dir(&directory)
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name())
+        .find(|name| {
+            std::path::Path::new(name)
+                .extension()
+                .is_some_and(|ext| ext == "prepared")
+        })
+        .unwrap();
+    let moved = directory.with_extension("moved");
+    fs::rename(&directory, &moved).unwrap();
+    fs::create_dir(&directory).unwrap();
+    fs::write(
+        directory.join(&scratch_name),
+        b"do not delete replacement directory file",
+    )
+    .unwrap();
+    assert_eq!(
+        engine.finish_upload(prepared).unwrap_err().code(),
+        "UNSAFE_PATH"
+    );
+    assert_eq!(
+        fs::read(directory.join(&scratch_name)).unwrap(),
+        b"do not delete replacement directory file"
+    );
+    assert!(!moved.join(&scratch_name).exists());
+    assert!(
+        engine
+            .workspace(&workspace.workspace_id)
+            .unwrap()
+            .files
+            .is_empty()
+    );
+}
+
+fn detached_commit_fixture(engine: &mut Engine, repo: &Repository) -> (Workspace, CommitRequest) {
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    engine
+        .stage_bytes(
+            &workspace.workspace_id,
+            "detached-a",
+            b"first detached file",
+        )
+        .unwrap();
+    engine
+        .stage_bytes(
+            &workspace.workspace_id,
+            "detached-b",
+            b"second detached file",
+        )
+        .unwrap();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: workspace.base_head.clone(),
+        fencing_token: workspace.fencing_token,
+        message: "detached preparation".into(),
+        request_digest: None,
+    };
+    (workspace, request)
+}
+
+#[test]
+fn detached_commit_retry_accepts_retained_write_permission_without_read_grant() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let mut grants = repo.grants.clone();
+    grants.write.insert("writer".into());
+    engine
+        .set_grants(&repo.repository_id, grants.clone(), "admin", &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "writer")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "file", b"saved")
+        .unwrap();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id,
+        operation_id: new_id("op"),
+        principal: "writer".into(),
+        expected_head: workspace.base_head,
+        fencing_token: workspace.fencing_token,
+        message: "write-only save".into(),
+        request_digest: None,
+    };
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let original = engine.finish_workspace_commit(prepared).unwrap();
+    let sequence = engine.state.sequence;
+    // The synchronous retry already accepts the same writer-owned request.
+    assert_eq!(engine.commit_workspace(request.clone()).unwrap(), original);
+    for reopen in [false, true] {
+        if reopen {
+            drop(engine);
+            engine = Engine::open(&fixture.root).unwrap();
+        }
+        let prepared = engine
+            .prepare_workspace_commit(request.clone(), None)
+            .unwrap()
+            .execute()
+            .unwrap();
+        assert_eq!(engine.finish_workspace_commit(prepared).unwrap(), original);
+        assert_eq!(engine.state.sequence, sequence);
+    }
+    grants.write.remove("writer");
+    grants.read.insert("writer".into());
+    engine
+        .set_grants(&repo.repository_id, grants.clone(), "admin", &new_id("op"))
+        .unwrap();
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(engine.finish_workspace_commit(prepared).unwrap(), original);
+    grants.read.remove("writer");
+    engine
+        .set_grants(&repo.repository_id, grants, "admin", &new_id("op"))
+        .unwrap();
+    assert_eq!(
+        engine
+            .prepare_workspace_commit(request, None)
+            .err()
+            .unwrap()
+            .code(),
+        "PERMISSION_DENIED"
+    );
+}
+
+#[test]
+fn detached_workspace_preparation_writes_no_decision_and_replays_original_operation() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    let (workspace, request) = detached_commit_fixture(&mut engine, &repo);
+    let sequence = engine.state.sequence;
+    let before: Vec<_> = engine
+        .members()
+        .iter()
+        .map(|disk| journal::scan(disk).unwrap().records.len())
+        .collect();
+    let plan = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap();
+    assert_eq!(
+        engine
+            .prepare_workspace_commit(request.clone(), None)
+            .err()
+            .unwrap()
+            .code(),
+        "COMMIT_PREPARATION_BUSY"
+    );
+    let prepared = plan.execute().unwrap();
+    assert_eq!(engine.state.sequence, sequence);
+    assert_eq!(
+        engine
+            .members()
+            .iter()
+            .map(|disk| journal::scan(disk).unwrap().records.len())
+            .collect::<Vec<_>>(),
+        before
+    );
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "open"
+    );
+    assert!(
+        !engine
+            .root
+            .join("workspaces")
+            .join(&workspace.workspace_id)
+            .join("commit-request.json")
+            .exists()
+    );
+    let result = engine.finish_workspace_commit(prepared).unwrap();
+    assert_eq!(result.operation_id, request.operation_id);
+    assert_eq!(engine.state.sequence, sequence + 1);
+    assert_eq!(engine.list_tree(&repo.main_branch_id).unwrap().len(), 2);
+    let retry = engine
+        .prepare_workspace_commit(request, None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let replay = engine.finish_workspace_commit(retry).unwrap();
+    assert_eq!(replay.request_digest, result.request_digest);
+    assert_eq!(replay.sequence, result.sequence);
+}
+
+#[test]
+fn detached_workspace_commit_stale_base_is_definite_retryable_conflict() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (workspace, request) = detached_commit_fixture(&mut engine, &repo);
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let busy = engine
+        .create_repository("unrelated-writer", "P01", 1, "admin", &new_id("op"))
+        .unwrap_err();
+    assert_eq!(busy.code(), "COMMIT_PREPARATION_BUSY");
+    assert!(busy.retryable);
+    // Simulate an externally invalidated base to retain the final fence test.
+    engine.state.business_generation += 1;
+    let error = engine.finish_workspace_commit(prepared).unwrap_err();
+    assert_eq!(error.code(), "COMMIT_PREPARATION_STALE");
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "open"
+    );
+    for staged in engine
+        .workspace(&workspace.workspace_id)
+        .unwrap()
+        .files
+        .values()
+    {
+        assert!(staged.source_path.exists());
+    }
+    let retry = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(retry).unwrap().operation_id,
+        request.operation_id
+    );
+}
+
+#[test]
+fn detached_workspace_commit_rechecks_fence_and_releases_cancelled_admission() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (workspace, request) = detached_commit_fixture(&mut engine, &repo);
+    let plan = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap();
+    drop(plan);
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    drop(prepared);
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    engine
+        .abort_workspace(&workspace.workspace_id, "admin")
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(prepared).unwrap_err().code(),
+        "COMMIT_PREPARATION_STALE"
+    );
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+}
+
+#[test]
+fn detached_workspace_commit_consumes_real_fault_only_at_decision_boundary() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (_, request) = detached_commit_fixture(&mut engine, &repo);
+    engine.inject_fault_once("after_payloads");
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(prepared).unwrap_err().code(),
+        "INJECTED_FAILURE"
+    );
+    assert!(!engine.blocked);
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+    let retry = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(retry).unwrap().operation_id,
+        request.operation_id
+    );
+}
+
+#[test]
+fn detached_workspace_commit_checks_actual_source_grants_and_topology() {
+    use std::os::unix::fs::PermissionsExt;
+    for changed in ["source", "grant", "topology"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 1);
+        let (workspace, request) = detached_commit_fixture(&mut engine, &repo);
+        let plan = engine
+            .prepare_workspace_commit(request.clone(), None)
+            .unwrap();
+        if changed == "source" {
+            let staged = engine
+                .workspace(&workspace.workspace_id)
+                .unwrap()
+                .files
+                .into_values()
+                .next()
+                .unwrap();
+            fs::set_permissions(&staged.source_path, fs::Permissions::from_mode(0o600)).unwrap();
+            fs::write(&staged.source_path, b"altered after snapshot").unwrap();
+            assert_eq!(plan.execute().err().unwrap().code(), "CHECKSUM_MISMATCH");
+        } else {
+            let prepared = plan.execute().unwrap();
+            if changed == "grant" {
+                let live = engine
+                    .state
+                    .repositories
+                    .get_mut(&repo.repository_id)
+                    .unwrap();
+                live.grants.manage.clear();
+                live.grants.write.clear();
+            } else {
+                engine.state.topology_generation += 1;
+            }
+            let error = engine.finish_workspace_commit(prepared).unwrap_err();
+            assert_eq!(
+                error.code(),
+                if changed == "grant" {
+                    "PERMISSION_DENIED"
+                } else {
+                    "COMMIT_PREPARATION_STALE"
+                }
+            );
+        }
+        assert!(!engine.state.operations.contains_key(&request.operation_id));
+        assert!(!engine.blocked);
+    }
+}
+
+#[test]
+fn detached_public_wire_commit_keeps_exact_digest_and_retry_binding() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let mut grants = repo.grants.clone();
+    grants.write.insert("writer".into());
+    engine
+        .set_grants(&repo.repository_id, grants, "admin", &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "writer")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "wire-file", b"wire save")
+        .unwrap();
+    let mut request = CommitRequest {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "writer".into(),
+        expected_head: workspace.base_head.clone(),
+        fencing_token: workspace.fencing_token,
+        message: String::new(),
+        request_digest: None,
+    };
+    let mut body = engine
+        .seal_workspace(&workspace.workspace_id, "writer")
+        .unwrap();
+    request.operation_id = body["operation_id"].as_str().unwrap().into();
+    request.message.clear();
+    body["request_digest"] =
+        serde_json::json!(commit_request_digest(&workspace.workspace_id, &body).unwrap());
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), Some(body.clone()))
+        .unwrap()
+        .execute()
+        .unwrap();
+    let result = engine.finish_workspace_commit(prepared).unwrap();
+    assert_eq!(
+        result.request_digest,
+        body["request_digest"].as_str().unwrap()
+    );
+    let retry = engine
+        .prepare_workspace_commit(request.clone(), Some(body.clone()))
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(retry).unwrap().commit_id,
+        result.commit_id
+    );
+    body["message"] = serde_json::json!("changed retry");
+    let plan = engine
+        .prepare_workspace_commit(request, Some(body))
+        .unwrap();
+    assert_eq!(
+        plan.execute().err().unwrap().code(),
+        "IDEMPOTENCY_KEY_REUSED"
+    );
+}
+
+#[test]
+fn detached_preparation_fences_physical_namespace_writes_but_not_reads() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "original.txt",
+        b"published",
+    );
+    let version = engine.list_tree(&repo.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "original.txt", b"replacement")
+        .unwrap();
+    let workspace_id = workspace.workspace_id.clone();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id,
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: workspace.base_head,
+        fencing_token: workspace.fencing_token,
+        message: "fenced preparation".into(),
+        request_digest: None,
+    };
+    let plan = engine.prepare_workspace_commit(request, None).unwrap();
+    let rename = NamespaceOperation {
+        kind: "rename".into(),
+        path: "original.txt".into(),
+        destination: Some("renamed.txt".into()),
+    };
+    let error = engine
+        .file_namespace(&repo.repository_id, rename.clone(), "admin", &new_id("op"))
+        .unwrap_err();
+    assert_eq!(error.code(), "COMMIT_PREPARATION_BUSY");
+    assert!(error.retryable);
+    assert_eq!(bytes(&engine, &version), b"published");
+    let prepared = plan.execute().unwrap();
+    assert_eq!(
+        engine.cleanup_purged().unwrap_err().code(),
+        "COMMIT_PREPARATION_BUSY"
+    );
+    assert_eq!(
+        engine
+            .stage_bytes(&workspace_id, "other.txt", b"x")
+            .unwrap_err()
+            .code(),
+        "COMMIT_PREPARATION_BUSY"
+    );
+    drop(prepared);
+    engine
+        .file_namespace(&repo.repository_id, rename, "admin", &new_id("op"))
+        .unwrap();
+    assert_eq!(bytes(&engine, &version), b"published");
+    assert_eq!(
+        engine.list_tree(&repo.main_branch_id).unwrap()[0].path,
+        "renamed.txt"
+    );
+}
+
+#[test]
+fn detached_commit_rechecks_lease_expiry_at_finish() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (_, request) = detached_commit_fixture(&mut engine, &repo);
+    engine.config.workspace_ttl_seconds = 1;
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    std::thread::sleep(std::time::Duration::from_secs(2));
+    let before = engine.state.sequence;
+    let error = engine.finish_workspace_commit(prepared).unwrap_err();
+    assert_eq!(error.code(), "FENCING_TOKEN_EXPIRED");
+    assert_eq!(engine.state.sequence, before);
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+    assert!(engine.require_write().is_ok());
+}
+
+#[test]
+fn pending_operation_reads_exact_snapshot_replica_without_repair() {
+    for kind in ["snapshot", "candidate", "state-page"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let operation = new_id("op");
+        engine.inject_fault_once("after_accept_1");
+        assert!(
+            engine
+                .create_repository("pending", "P01", 3, "admin", &operation)
+                .is_err()
+        );
+        let members = engine.members();
+        let (source, record) = members
+            .iter()
+            .find_map(|disk| {
+                crate::journal::scan(disk)
+                    .unwrap()
+                    .records
+                    .into_iter()
+                    .find(|(record, _)| record.record_type == "ACCEPT")
+                    .map(|(record, _)| (disk, record))
+            })
+            .unwrap();
+        let candidate: crate::journal::Candidate =
+            crate::journal::load_object(source, "candidate", &record.candidate_hash).unwrap();
+        let hash = match kind {
+            "candidate" => record.candidate_hash.clone(),
+            "snapshot" => candidate.snapshot_hash.clone(),
+            _ => {
+                let snapshot: crate::journal::Snapshot =
+                    crate::journal::load_object(source, "snapshot", &candidate.snapshot_hash)
+                        .unwrap();
+                snapshot.pages["operation_principals"][0].clone()
+            }
+        };
+        let path = crate::journal::object_path(source, kind, &hash);
+        fs::write(&path, b"broken").unwrap();
+        let result = engine.operation(&operation).unwrap();
+        assert_eq!(result.commit_state, storage_contract::CommitState::InDoubt);
+        assert_eq!(engine.operation_owner(&operation).as_deref(), Some("admin"));
+        assert_eq!(fs::read(&path).unwrap(), b"broken");
+        for disk in &members {
+            fs::write(crate::journal::object_path(disk, kind, &hash), b"broken").unwrap();
+        }
+        assert!(engine.operation(&operation).is_err());
+        assert_eq!(engine.operation_owner(&operation), None);
+    }
+}
+#[test]
+fn history_export_reads_exact_evidence_replicas_without_repair() {
+    for kind in ["candidate", "publication", "seal"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        let members = engine.members();
+        let record = crate::journal::scan(&members[0])
+            .unwrap()
+            .records
+            .into_iter()
+            .rev()
+            .find(|(record, _)| record.record_type == "PUBLICATION")
+            .unwrap()
+            .0;
+        let path_for = |disk: &DiskConfig| match kind {
+            "candidate" => crate::journal::object_path(disk, kind, &record.candidate_hash),
+            "publication" => crate::journal::object_path(disk, kind, &record.object_hash),
+            _ => crate::journal::publication_seal_path(disk, &record.candidate_hash),
+        };
+        let path = path_for(&members[0]);
+        let mut damaged: serde_json::Value =
+            serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        if kind == "seal" {
+            damaged["receipts"] = serde_json::json!([]);
+        } else if kind == "candidate" {
+            damaged["request_digest"] = serde_json::json!("wrong digest");
+        } else {
+            damaged["candidate_hash"] = serde_json::json!("0".repeat(64));
+        }
+        let damaged = serde_json::to_vec(&damaged).unwrap();
+        // A wrong but parseable majority must never defeat the one exact copy.
+        for disk in &members[..2] {
+            fs::write(path_for(disk), &damaged).unwrap();
+        }
+        let destination = fixture.root.join("export");
+        engine
+            .export_history_package(&repo.history_tree_id, &destination, "admin")
+            .unwrap();
+        offline_check_history_package(&destination).unwrap();
+        assert_eq!(fs::read(&path).unwrap(), damaged);
+        for disk in &members {
+            fs::write(path_for(disk), &damaged).unwrap();
+        }
+        assert!(
+            engine
+                .export_history_package(
+                    &repo.history_tree_id,
+                    &fixture.root.join("rejected"),
+                    "admin"
+                )
+                .is_err()
+        );
+    }
+}
+
+#[test]
+fn pending_operation_requires_a_trusted_decision_not_prepared_objects() {
+    for fault in ["after_prepare_3", "after_accept_1"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let operation = new_id("op");
+        engine.inject_fault_once(fault);
+        assert!(
+            engine
+                .create_repository("pending", "P01", 3, "admin", &operation)
+                .is_err()
+        );
+        if fault == "after_accept_1" {
+            let disk = engine
+                .members()
+                .into_iter()
+                .find(|disk| {
+                    crate::journal::scan(disk)
+                        .unwrap()
+                        .records
+                        .iter()
+                        .any(|(record, _)| record.record_type == "ACCEPT")
+                })
+                .unwrap();
+            fs::write(disk.root.join("disk.json"), b"untrusted").unwrap();
+        }
+        assert_eq!(
+            engine.operation(&operation).unwrap_err().code(),
+            "OPERATION_NOT_FOUND"
+        );
+        assert_eq!(engine.operation_owner(&operation), None);
+    }
+}
+
+#[test]
+fn history_export_rejects_conflicting_flat_shard_duplicates_without_repair() {
+    for kind in ["candidate", "publication"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 3);
+        let members = engine.members();
+        let record = crate::journal::scan(&members[0])
+            .unwrap()
+            .records
+            .into_iter()
+            .rev()
+            .find(|(record, _)| record.record_type == "PUBLICATION")
+            .unwrap()
+            .0;
+        let hash = if kind == "candidate" {
+            &record.candidate_hash
+        } else {
+            &record.object_hash
+        };
+        let flat = |disk: &DiskConfig| {
+            disk.root
+                .join("metadata/objects")
+                .join(kind)
+                .join(format!("{hash}.json"))
+        };
+        let expected = fs::read(crate::journal::object_path(&members[0], kind, hash)).unwrap();
+        for disk in &members[..2] {
+            fs::write(flat(disk), b"{}").unwrap();
+        }
+        let destination = fixture.root.join("mixed-export");
+        engine
+            .export_history_package(&repo.history_tree_id, &destination, "admin")
+            .unwrap();
+        offline_check_history_package(&destination).unwrap();
+        for disk in &members[..2] {
+            assert_eq!(fs::read(flat(disk)).unwrap(), b"{}");
+            assert_eq!(
+                fs::read(crate::journal::object_path(disk, kind, hash)).unwrap(),
+                expected
+            );
+        }
+        fs::write(flat(&members[2]), b"{}").unwrap();
+        assert!(
+            engine
+                .export_history_package(
+                    &repo.history_tree_id,
+                    &fixture.root.join("rejected-mixed-export"),
+                    "admin"
+                )
+                .is_err()
+        );
+    }
+}

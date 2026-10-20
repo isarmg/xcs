@@ -1,5 +1,7 @@
 # 静态审阅整改追踪：2026-10-20
 
+> 历史范围说明：2026-10-20 起产品仅保留 Web 与 SMB；本文 App/Tauri 的路径、命令和结果属于移除前记录，不再作为当前构建或验收要求。
+
 审阅意见作为待核实线索，不作为测试结果。本文区分已经实现的修复、仍需推进的架构工作及不能机械采纳的建议；最终验收以对应提交的 CI 和明确记录的测试范围为准。
 
 项目尚未正式发布，采用单一当前格式，不保留人为的 v1/v2/v3 演进层。格式简化不涉及第三方依赖版本、标准协议版本或业务文件历史版本。
@@ -26,10 +28,10 @@
 
 ## 正在验证的质量与安全工作
 
-- 已为 11 个主要第一方 workspace 加入格式与 `clippy --all-targets -- -D warnings` 门禁，维护的 core/macro fork 也单独检查；本地已通过。新增原生回归 harness 由 SDK job 单独编译。少量函数级参数数量 `expect` 及迁移计划见 [质量策略](../../.github/QUALITY.md)。G4 仅在父模块声明标注旧文档 lint 的明确例外，源文件不变。
+- 已为 11 个主要第一方 workspace 加入格式与 `clippy --all-targets -- -D warnings` 门禁，维护的 core/macro fork 也单独检查；本地已通过。新增原生回归 harness 由 SDK job 单独编译。少量函数级参数数量 `expect` 及迁移计划见 [质量策略](../quality.md)。G4 仅在父模块声明标注旧文档 lint 的明确例外，源文件不变。
 - 固定 cargo-audit 0.22.2，13 个消费者锁文件与 20 个自维护依赖原始上游身份的影子锁审计已通过。影子锁不会参与构建，新增未审阅公告及遗漏路径依赖均失败。GLib 安全回补与仓库维护的 proc-macro-error2 未维护公告仍明确保留；这不是“零公告”声明。扫描器即使返回 0，只要报告 registry/yank 查询错误也不得判为完整成功，最多重试一次。
 - 审计发现的未维护宏依赖与桌面宿主依赖分别处理，不能通过无说明忽略公告声称完成。
-- SMB FFI 增加可核实的安全边界与检查，固定 Samba 4.23.0 SDK 的严格 Clippy、7 项真实链接测试与 release 构建已本地通过；另在 30 个新进程中重复并行运行测试，共 210 项通过。宿主 CI 尚待确认，未启动 smbd 或重复历史客户端验收。见[本轮记录](../../tests/evidence/smb/review-2026-10-20/README.md)。
+- SMB FFI 增加可核实的安全边界与检查，固定 Samba 4.23.0 SDK 的严格 Clippy、7 项真实链接测试与 release 构建已本地通过；另在 30 个新进程中重复并行运行测试，共 210 项通过。宿主 CI 尚待确认，未启动 smbd 或重复历史客户端验收。见[本轮记录](../validation/evidence/smb/review-2026-10-20.md)。
 
 ## 尚未完成的架构工作
 
@@ -51,6 +53,6 @@
 
 ## 验证入口
 
-64/256 次保存的[新鲜对照结果](../../tools/perf-check/results/20261020-snapshot-pages/README.md)保留了负面结果：逐页编码与目录布局的组合改动未显示整体耗时或峰值 RSS 下降。共享主机存在并行编译干扰，结果不能用于因果归因或物理设备结论；本报告不把结构共享、页面上限或少量末次保存变化包装为端到端提速。
+64/256 次保存的[新鲜对照结果](../tools/perf-check/results/20261020-snapshot-pages.md)保留了负面结果：逐页编码与目录布局的组合改动未显示整体耗时或峰值 RSS 下降。共享主机存在并行编译干扰，结果不能用于因果归因或物理设备结论；本报告不把结构共享、页面上限或少量末次保存变化包装为端到端提速。
 
-[CI 指南](../ci.md)、[依赖维护清单](../../vendor/web/dependencies/README.md)、[架构优化状态](../architecture/optimization-status.md)、[物理盘验证计划](../../tools/perf-check/PHYSICAL-DISK-VALIDATION.md)。
+[CI 指南](../ci.md)、[依赖维护清单](../upstream/shared/vendor/web/dependencies/README.md)、[架构优化状态](../architecture/optimization-status.md)、[物理盘验证计划](../tools/perf-check/PHYSICAL-DISK-VALIDATION.md)。

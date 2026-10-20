@@ -1,16 +1,11 @@
 [package]
-name = "zxs-browser-smoke"
+name = "browser-smoke"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 
-[workspace]
 
 [dependencies]
-base64 = "0.22.1"
-serde_json = "1"
-tempfile = "3"
-
-[profile.dev]
-debug = 0
-incremental = false
+base64 = {version = "0.22.1", path = "../../src/foundation/base64-0.22.1"}
+serde_json = {version = "1", path = "../../src/foundation/serde_json"}
+tempfile = {version = "3", path = "../../src/foundation/tempfile"}

@@ -1,6 +1,6 @@
 # 15 API、操作结果与错误契约
 
-[文档目录](README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：App、网页与命令行界面](16-client-interfaces.md)
+[文档目录](README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：Web 与内部管理命令行界面](16-client-interfaces.md)
 
 <a id="s15"></a>
 
@@ -23,7 +23,7 @@
 
 ## 15.1 设计原则
 
-App、Web 和远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作由桥接映射到同一核心规则，SMB 文件请求仅承担基础操作；自研 App 的文件读写和高级功能均调用业务 API。两种入口不串接。内容流、元数据和管理操作可以使用不同路由或连接，但不能各自实现一套提交或权限规则。
+Web 和内部远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作经 Samba 及服务端桥接映射到同一核心规则。Web 文件读写和高级功能均调用业务 API，两条用户入口不串接。内容流、元数据和管理操作可以使用不同路由或连接，但不能各自实现一套提交或权限规则。
 
 所有变更请求绑定账户、目标作用域和 operation_id。内容保存携带分支、文件版本及相应前置条件；配置变更携带对应代际。旧 `MergeLink` 只固定所选节点，不要求当前 HEAD 或文件内容；文件分支合并 `FileBranchMerge` 则固定每个参与head、结果和归属，并验证所选正文。业务文件名称通过结构化字段传输，内部对象路径不对外开放。
 
@@ -38,7 +38,7 @@ App、Web 和远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作由桥
 | `POST /api/file-manager/disks/{slot}/namespace` | 准备并提交当前目录的创建、重命名或删除 |
 | `POST /api/file-manager/disks/{slot}/namespace-batch` | 显式源分支→目标分支映射；移动、复制、删除、重命名整批检查并发布 |
 | `GET /api/repositories/{repo}/directory-branches?path={path}` | 只读查询冻结分支和条目；省略 path 返回所有作用域，不切换默认分支 |
-| `GET/PUT /api/repositories/{repo}/default-branch` | 查询或选择 Web/App/SMB 共享默认根目录分支 |
+| `GET/PUT /api/repositories/{repo}/default-branch` | 查询或选择 Web/SMB 共享默认根目录分支 |
 | `PATCH /api/repositories/{repo}/directory-branches/{id}` | 修改分支标签，身份、子树和内容不变 |
 | `POST /api/file-manager/disks/{slot}/write-sessions` | 取得该盘目录当前文件分支的写会话；随后通过通用工作区接口上传 |
 | `POST /api/file-manager/disks/{slot}/directory-branches` | `{path,name,operation_id}`：登记命名目录分支，直接引用父子树；不提前创建文件分支、不复制正文、不创建占位文件、不自动选择 |
@@ -177,7 +177,7 @@ App、Web 和远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作由桥
 | `CURSOR_EXPIRED` / `PAGE_SNAPSHOT_EXPIRED` | 事件窗口或分页快照失效 | 重新授权并取得一致快照，按返回的新游标继续 |
 | `CONFIG_CONFLICT` / `CONFIG_INVARIANT_VIOLATION` | 配置与权威状态或协议常量冲突 | 进入配置核查，不自动改盘上状态或降低保护 |
 
-业务 API 向 App 返回结构化错误，自研 App 展示错误码、请求 ID、原因和待处理状态。SMB 入口单独返回对应协议状态，详细原因记录在服务器活动中心，按权限供管理入口查询。
+业务 API 向 Web 返回结构化错误，Web 展示错误码、请求 ID、原因和待处理状态。SMB 入口单独返回对应协议状态，详细原因记录在服务器活动中心，按权限供管理入口查询。
 
 <a id="s15-05"></a>
 
@@ -286,4 +286,4 @@ HTTP 状态描述本次调用，operation 的终态描述原业务请求，二�
 
 ---
 
-[文档目录](README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：App、网页与命令行界面](16-client-interfaces.md)
+[文档目录](README.md) · [上一章：身份、权限与运行隔离](14-security-and-permissions.md) · [下一章：Web 与内部管理命令行界面](16-client-interfaces.md)

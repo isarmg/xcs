@@ -26,7 +26,7 @@ fn text(value: &Value) -> Result<&str> {
     value.as_str().ok_or_else(|| "expected string".into())
 }
 fn uint(value: &Value) -> Result<u64> {
-    Ok(zxs_contract::parse_u64_decimal(text(value)?)?)
+    Ok(storage_contract::parse_u64_decimal(text(value)?)?)
 }
 fn small(value: &Value) -> Result<u64> {
     value
@@ -34,7 +34,7 @@ fn small(value: &Value) -> Result<u64> {
         .ok_or_else(|| "expected unsigned small integer".into())
 }
 fn read(path: &Path) -> Result<Value> {
-    Ok(zxs_contract::strict_json(&fs::read(path)?)?)
+    Ok(storage_contract::strict_json(&fs::read(path)?)?)
 }
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
@@ -165,15 +165,15 @@ fn semantics(name: &str, value: &Value) -> Result {
             if name == "Commit" {
                 for entry in array(&value["entries"])? {
                     if entry["kind"] == "file" {
-                        zxs_contract::validate_id(text(&entry["file_id"])?, "file")?;
-                        zxs_contract::validate_id(text(&entry["version_id"])?, "ver")?;
+                        storage_contract::validate_id(text(&entry["file_id"])?, "file")?;
+                        storage_contract::validate_id(text(&entry["version_id"])?, "ver")?;
                     }
                 }
             }
             if let Some(pending) = value.get("pending_file_versions") {
                 for (file, version) in object(pending)? {
-                    zxs_contract::validate_id(file, "file")?;
-                    zxs_contract::validate_id(text(version)?, "ver")?;
+                    storage_contract::validate_id(file, "file")?;
+                    storage_contract::validate_id(text(version)?, "ver")?;
                     if value["branch_kind"] == "file" {
                         require(
                             value["file_id"] == *file,
@@ -215,7 +215,8 @@ fn semantics(name: &str, value: &Value) -> Result {
             body.remove("request_digest");
             let envelope = json!({"method":"POST","route":"/api/workspaces/{workspace}/commit","path_parameters":{"workspace":body["workspace_id"]},"query":{},"body":body});
             require(
-                zxs_contract::object_hash("request", &envelope)? == text(&value["request_digest"])?,
+                storage_contract::object_hash("request", &envelope)?
+                    == text(&value["request_digest"])?,
                 "request digest mismatch",
             )?;
         }
@@ -311,7 +312,7 @@ fn checksum_manifest(bytes: &[u8], content: &[u8], expected_hash: &str) -> Resul
         blake3::hash(bytes).to_hex().as_str() == expected_hash,
         "manifest hash",
     )?;
-    let manifest = zxs_contract::ChecksumManifest::decode(bytes)?;
+    let manifest = storage_contract::ChecksumManifest::decode(bytes)?;
     require(
         manifest.logical_size == content.len() as u64,
         "checksum dimensions",
@@ -365,7 +366,7 @@ fn schema_valid(schema: &Value, value: &Value) -> Result {
 
 fn openapi(api: &Value) -> Result {
     let schema =
-        zxs_contract::strict_json(include_bytes!("../schema/openapi-3.1-2022-10-07.json"))?;
+        storage_contract::strict_json(include_bytes!("../schema/openapi-3.1-2022-10-07.json"))?;
     schema_valid(&schema, api)?;
     fn references(root: &Value, value: &Value) -> Result {
         match value {
@@ -535,7 +536,7 @@ fn run(root: &Path) -> Result<Report> {
         }
     }
     for vector in array(&vectors["canonical"])? {
-        let bytes = zxs_contract::canonical_json(&vector["value"])?;
+        let bytes = storage_contract::canonical_json(&vector["value"])?;
         require(
             hex(&bytes) == text(&vector["canonical_utf8_hex"])?,
             "canonical bytes",
@@ -555,13 +556,13 @@ fn run(root: &Path) -> Result<Report> {
                 .collect(),
         );
         require(
-            zxs_contract::canonical_json(&reversed)? == bytes,
+            storage_contract::canonical_json(&reversed)? == bytes,
             "field order affects hash",
         )?;
     }
     for vector in array(&vectors["strict_json_negative"])? {
         require(
-            zxs_contract::strict_json(text(&vector["text"])?.as_bytes()).is_err(),
+            storage_contract::strict_json(text(&vector["text"])?.as_bytes()).is_err(),
             format!("invalid JSON accepted: {}", text(&vector["name"])?),
         )?;
     }
@@ -629,29 +630,27 @@ fn run(root: &Path) -> Result<Report> {
     let links = regex::Regex::new(r"\[[^\]\n]*\]\(([^)\s]+)\)")?;
     let scheme = regex::Regex::new(r"^[A-Za-z]+:")?;
     let mut paths = vec![root.join("README.md")];
-    for directory in ["docs", "demos/branch-system"] {
-        let directory = root.join(directory);
-        if !directory.is_dir() {
-            continue;
-        }
-        for entry in walkdir::WalkDir::new(directory)
-            .into_iter()
-            .filter_entry(|e| {
-                !matches!(
+    for entry in walkdir::WalkDir::new(root.join("docs"))
+        .into_iter()
+        .filter_entry(|e| {
+            // Archived upstream documentation keeps original bytes and
+            // historical links; compliance receipts verify that archive.
+            // This gate validates maintained project documentation.
+            e.path() != root.join("docs/upstream")
+                && !matches!(
                     e.file_name().to_str(),
                     Some("dist" | ".dist-staging" | ".dist-backup" | "target")
                 )
-            })
+        })
+    {
+        let entry = entry?;
+        if entry.file_type().is_file()
+            && entry
+                .path()
+                .extension()
+                .is_some_and(|extension| extension == "md")
         {
-            let entry = entry?;
-            if entry.file_type().is_file()
-                && entry
-                    .path()
-                    .extension()
-                    .is_some_and(|extension| extension == "md")
-            {
-                paths.push(entry.into_path());
-            }
+            paths.push(entry.into_path());
         }
     }
     paths.sort();
@@ -700,7 +699,7 @@ fn run(root: &Path) -> Result<Report> {
         for capture in fences.captures_iter(&document) {
             match &capture[1] {
                 "json" => {
-                    zxs_contract::strict_json(capture[2].as_bytes()).map_err(|error| {
+                    storage_contract::strict_json(capture[2].as_bytes()).map_err(|error| {
                         format!("invalid JSON example in {}: {error}", path.display())
                     })?;
                 }
@@ -733,7 +732,7 @@ fn main() {
         let root = match arguments.as_slice() {
             [] => PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."),
             [flag, path] if flag == "--root" => PathBuf::from(path),
-            _ => return Err("usage: zxs-contract-check [--root PATH]".into()),
+            _ => return Err("usage: contract-check [--root PATH]".into()),
         };
         println!("{}", serde_json::to_string_pretty(&run(&root)?)?);
         Ok(())
@@ -762,47 +761,49 @@ mod tests {
             .find(|case| case["name"] == "legacy-branch-without-pending-map")
             .unwrap()["value"]
             .clone();
-        let before = zxs_contract::canonical_json(&value).unwrap();
-        let branch: zxs_contract::Branch = zxs_contract::decode_strict(&before).unwrap();
+        let before = storage_contract::canonical_json(&value).unwrap();
+        let branch: storage_contract::Branch = storage_contract::decode_strict(&before).unwrap();
         assert!(branch.pending_file_versions.is_empty());
-        assert_eq!(zxs_contract::canonical_json(&branch).unwrap(), before);
+        assert_eq!(storage_contract::canonical_json(&branch).unwrap(), before);
         assert_eq!(
-            zxs_contract::object_hash("branch", &branch).unwrap(),
-            zxs_contract::object_hash("branch", &value).unwrap()
+            storage_contract::object_hash("branch", &branch).unwrap(),
+            storage_contract::object_hash("branch", &value).unwrap()
         );
         let mut created = branch;
-        created
-            .pending_file_versions
-            .insert(zxs_contract::new_id("file"), zxs_contract::new_id("ver"));
-        let encoded = zxs_contract::canonical_json(&created).unwrap();
-        let decoded: zxs_contract::Branch = zxs_contract::decode_strict(&encoded).unwrap();
+        created.pending_file_versions.insert(
+            storage_contract::new_id("file"),
+            storage_contract::new_id("ver"),
+        );
+        let encoded = storage_contract::canonical_json(&created).unwrap();
+        let decoded: storage_contract::Branch = storage_contract::decode_strict(&encoded).unwrap();
         assert_eq!(decoded.pending_file_versions, created.pending_file_versions);
         assert_ne!(encoded, before);
         created.pending_file_versions.clear();
-        assert_eq!(zxs_contract::canonical_json(&created).unwrap(), before);
+        assert_eq!(storage_contract::canonical_json(&created).unwrap(), before);
         let value = array(&vectors["positive"])
             .unwrap()
             .iter()
             .find(|case| case["name"] == "legacy-commit-without-pending-map")
             .unwrap()["value"]
             .clone();
-        let before = zxs_contract::canonical_json(&value).unwrap();
-        let mut commit: zxs_contract::Commit = zxs_contract::decode_strict(&before).unwrap();
+        let before = storage_contract::canonical_json(&value).unwrap();
+        let mut commit: storage_contract::Commit =
+            storage_contract::decode_strict(&before).unwrap();
         assert!(commit.pending_file_versions.is_empty());
-        assert_eq!(zxs_contract::canonical_json(&commit).unwrap(), before);
+        assert_eq!(storage_contract::canonical_json(&commit).unwrap(), before);
         assert_eq!(
-            zxs_contract::object_hash("commit", &commit).unwrap(),
-            zxs_contract::object_hash("commit", &value).unwrap()
+            storage_contract::object_hash("commit", &commit).unwrap(),
+            storage_contract::object_hash("commit", &value).unwrap()
         );
         commit.pending_file_versions.insert(
             commit.entries[0].file_id.clone(),
             commit.entries[0].version_id.clone(),
         );
-        let encoded = zxs_contract::canonical_json(&commit).unwrap();
-        let decoded: zxs_contract::Commit = zxs_contract::decode_strict(&encoded).unwrap();
+        let encoded = storage_contract::canonical_json(&commit).unwrap();
+        let decoded: storage_contract::Commit = storage_contract::decode_strict(&encoded).unwrap();
         assert_eq!(decoded.pending_file_versions, commit.pending_file_versions);
         commit.pending_file_versions.clear();
-        assert_eq!(zxs_contract::canonical_json(&commit).unwrap(), before);
+        assert_eq!(storage_contract::canonical_json(&commit).unwrap(), before);
     }
 
     #[test]
@@ -816,13 +817,13 @@ mod tests {
         api["$defs"]["entry_projection"] = item;
         api["$ref"] = "#/$defs/entry_projection".into();
         let schema = validator(&api).unwrap();
-        let source = zxs_contract::new_id("ver");
+        let source = storage_contract::new_id("ver");
         let inherited = json!({
             "entry_id":"entry-example","name":"a.txt","path":"a.txt","kind":"file",
-            "container":true,"size":"12","file_id":zxs_contract::new_id("file"),
+            "container":true,"size":"12","file_id":storage_contract::new_id("file"),
             "version_id":source,"own_version_id":null,"inherited":true,"materialized":false,
             "content_state":"PENDING","visible_content_state":"AVAILABLE",
-            "source_version_id":source,"selected_branch_id":zxs_contract::new_id("br")
+            "source_version_id":source,"selected_branch_id":storage_contract::new_id("br")
         });
         let accepts =
             |value: &Value| schema.is_valid(value) && validate_content_view(value).is_ok();
@@ -830,7 +831,7 @@ mod tests {
         for (field, value) in [
             ("version_id", Value::Null),
             ("version_id", json!("")),
-            ("version_id", json!(zxs_contract::new_id("ver"))),
+            ("version_id", json!(storage_contract::new_id("ver"))),
             ("own_version_id", json!(source)),
             ("inherited", json!(false)),
             ("source_version_id", Value::Null),
@@ -842,7 +843,7 @@ mod tests {
             assert!(!accepts(&invalid), "invalid inherited {field}");
         }
         let mut written = inherited.clone();
-        let own = zxs_contract::new_id("ver");
+        let own = storage_contract::new_id("ver");
         written["materialized"] = true.into();
         written["inherited"] = false.into();
         written["version_id"] = own.clone().into();
@@ -853,7 +854,7 @@ mod tests {
         // A genuinely written zero-byte FULL is valid and distinguishable.
         assert!(accepts(&written));
         let mut wrong_own = written.clone();
-        wrong_own["own_version_id"] = zxs_contract::new_id("ver").into();
+        wrong_own["own_version_id"] = storage_contract::new_id("ver").into();
         assert!(!accepts(&wrong_own));
         let mut wrong_state = written.clone();
         wrong_state["visible_content_state"] = "PURGED".into();
@@ -882,7 +883,7 @@ mod tests {
         let creation_schema = validator(&api).unwrap();
         let creation = json!({
             "file_id":inherited["file_id"],"branch_id":inherited["selected_branch_id"],
-            "commit_id":zxs_contract::new_id("commit"),"history_tree_id":zxs_contract::new_id("history"),
+            "commit_id":storage_contract::new_id("commit"),"history_tree_id":storage_contract::new_id("history"),
             "copied_files":"0","placeholder_files":"1","materialized":false,"selected":false,
             "inherited":true,"own_version_id":null,"version_id":source,
             "source_version_id":source,"content_state":"PENDING"
@@ -891,7 +892,7 @@ mod tests {
         let mut rewritten_receipt = creation.clone();
         rewritten_receipt["materialized"] = true.into();
         rewritten_receipt["inherited"] = false.into();
-        rewritten_receipt["own_version_id"] = zxs_contract::new_id("ver").into();
+        rewritten_receipt["own_version_id"] = storage_contract::new_id("ver").into();
         assert!(!creation_schema.is_valid(&rewritten_receipt));
         api["$ref"] = "#/$defs/directory_branch_creation".into();
         let directory_branch_schema = validator(&api).unwrap();
@@ -946,7 +947,7 @@ mod tests {
         api["$ref"] = "#/$defs/file_history_version".into();
         let schema = validator(&api).unwrap();
         let mut version = json!({
-            "version_id":zxs_contract::new_id("ver"),"file_id":zxs_contract::new_id("file"),
+            "version_id":storage_contract::new_id("ver"),"file_id":storage_contract::new_id("file"),
             "source_version_ids":[],"branch_id":null,"created_at":"2026-10-20T00:00:00Z","message":"",
             "size":"1","sequence":"3","current":false,"content_state":"AVAILABLE",
             "content_hash":"a".repeat(64),"note":"","download_name":"a.txt",
@@ -961,8 +962,8 @@ mod tests {
             obsolete["created_at"] = timestamp;
             assert!(!schema.is_valid(&obsolete));
         }
-        let first = zxs_contract::new_id("ver");
-        let second = zxs_contract::new_id("ver");
+        let first = storage_contract::new_id("ver");
+        let second = storage_contract::new_id("ver");
         version["source_version_ids"] = json!([first, second]);
         assert!(schema.is_valid(&version));
         version["source_version_ids"] = json!([first, first]);
@@ -1036,9 +1037,9 @@ mod tests {
         let mut api = read(&path).unwrap();
         api["$ref"]="#/paths/~1api~1file-manager~1disks~1%7Bslot%7D~1namespace-batch/post/requestBody/content/application~1json/schema".into();
         let schema = validator(&api).unwrap();
-        let source = json!({"directory_branch_id":zxs_contract::new_id("dbr"),"expected_tree_id":zxs_contract::new_id("dtree"),"path":"a/report.txt","entry_id":zxs_contract::new_id("entry")});
-        let target = json!({"directory_branch_id":zxs_contract::new_id("dbr"),"expected_tree_id":zxs_contract::new_id("dtree"),"path":"b/report.txt"});
-        let valid = json!({"kind":"move","operation_id":zxs_contract::new_id("op"),"items":[{"source":source,"target":target}]});
+        let source = json!({"directory_branch_id":storage_contract::new_id("dbr"),"expected_tree_id":storage_contract::new_id("dtree"),"path":"a/report.txt","entry_id":storage_contract::new_id("entry")});
+        let target = json!({"directory_branch_id":storage_contract::new_id("dbr"),"expected_tree_id":storage_contract::new_id("dtree"),"path":"b/report.txt"});
+        let valid = json!({"kind":"move","operation_id":storage_contract::new_id("op"),"items":[{"source":source,"target":target}]});
         assert!(schema.is_valid(&valid));
         for kind in ["copy", "rename"] {
             let mut body = valid.clone();
@@ -1085,15 +1086,15 @@ mod tests {
         let mut document = api.clone();
         document["$ref"] = "#/components/schemas/FileHistoryNode".into();
         let schema = validator(&document).unwrap();
-        let file = zxs_contract::new_id("file");
-        let version = zxs_contract::new_id("ver");
-        let renamed = zxs_contract::new_id("fnode");
+        let file = storage_contract::new_id("file");
+        let version = storage_contract::new_id("ver");
+        let renamed = storage_contract::new_id("fnode");
         let content = json!({"node_id":version,"version_id":version,"file_id":file,"kind":"content","parent_node_ids":[],"path":"a/report.txt","previous_path":null,"note":"","created_at":"2026-10-20T00:00:00Z","sequence":"1","current":false});
         let rename = json!({"node_id":renamed,"version_id":version,"file_id":file,"kind":"rename","parent_node_ids":[version],"path":"a/new.txt","previous_path":"a/report.txt","note":"Path note","created_at":"1792400000","sequence":"2","current":true});
         assert!(schema.is_valid(&content));
         assert!(schema.is_valid(&rename));
         let mut child = content.clone();
-        child["node_id"] = zxs_contract::new_id("ver").into();
+        child["node_id"] = storage_contract::new_id("ver").into();
         child["version_id"] = child["node_id"].clone();
         child["parent_node_ids"] = json!([renamed]);
         child["source_version_ids"] = json!([version]);
@@ -1141,12 +1142,12 @@ mod tests {
             ]);
             validator(&document).unwrap()
         };
-        let file = zxs_contract::new_id("file");
-        let branch = zxs_contract::new_id("br");
-        let other = zxs_contract::new_id("br");
-        let version = zxs_contract::new_id("ver");
-        let meta = zxs_contract::new_id("fmeta");
-        let operation = zxs_contract::new_id("op");
+        let file = storage_contract::new_id("file");
+        let branch = storage_contract::new_id("br");
+        let other = storage_contract::new_id("br");
+        let version = storage_contract::new_id("ver");
+        let meta = storage_contract::new_id("fmeta");
+        let operation = storage_contract::new_id("op");
         let merge = request_schema("/api/file-manager/files/{file}/merge", "post");
         let body = json!({"inputs":[{"branch_id":branch,"expected_node_id":version},{"branch_id":other,"expected_node_id":meta}],"chosen_node_id":meta,"surviving_branch_id":branch,"confirmed":true,"operation_id":operation});
         assert!(merge.is_valid(&body));
@@ -1168,7 +1169,7 @@ mod tests {
         invalid["inputs"] = json!([body["inputs"][0]]);
         assert!(!merge.is_valid(&invalid));
         invalid = body;
-        invalid["repository_id"] = zxs_contract::new_id("repo").into();
+        invalid["repository_id"] = storage_contract::new_id("repo").into();
         assert!(!merge.is_valid(&invalid));
         let tags = request_schema("/api/file-manager/files/{file}/tags", "post");
         let body = json!({"targets":[{"branch_id":branch,"source_node_id":version,"expected_node_id":meta}],"add":["审核"],"remove":[],"operation_id":operation});

@@ -28,10 +28,8 @@
 - 本地预检失败也留下任务记录，但不会创建服务器工作区或提交操作。替换文件的失败记录保留实际目标及分支，不能误用源文件名推断目标。
 - 已上传字节不等于已保存。HTTP 传输错误、提交结果未知与已发布后的保护状态分别处理。
 
-## 六平台页面预览
+## 浏览器视口预览
 
-共享界面供 Linux、Windows、macOS、Android、iOS 和 iPadOS 宿主使用。传输布局沿用公共字体、行高、轮廓和焦点规则；长名称换行，手机元数据单列，壳与正文尊重安全区。
+Web 传输布局沿用公共字体、行高、轮廓和焦点规则；长名称换行，窄视口元数据单列，页面尊重浏览器安全区。浏览器文件选择、上传、下载和页面会话状态按实际浏览器组合验收。
 
-CI 可通过 `ZXS_PLATFORM_PREVIEWS` 输出六种视口 PNG 和来源记录。页面使用真实生产 WASM、真实临时服务及合成测试文件：正常上传产生已保存记录，超限文件触发真实本地错误，延迟原始上传响应交付以捕获进行中状态；不注入假任务或假成功回执。
-
-这些 PNG 是真实 Chrome 渲染的共享界面尺寸预览，不是六种操作系统或原生 WebView 的实机截图。宿主编译、原生交互、移动文件提供方和真机验收范围见[平台矩阵](app-platform-matrix.md)。
+已有 Chrome 渲染材料按实际 CSS 尺寸保存在[视口预览目录](../images/viewport-previews/README.md)：[1366×900](../images/viewport-previews/viewport-1366x900.png)、[1440×960](../images/viewport-previews/viewport-1440x960.png)、[1512×982](../images/viewport-previews/viewport-1512x982.png)、[412×915](../images/viewport-previews/viewport-412x915.png)、[390×844](../images/viewport-previews/viewport-390x844.png)和[1024×1366](../images/viewport-previews/viewport-1024x1366.png)。其原始构建来源和哈希继续保留；这些是不同浏览器尺寸的页面材料，不证明对应操作系统、浏览器版本或本次修改已通过验收。

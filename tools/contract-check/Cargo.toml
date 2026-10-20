@@ -1,26 +1,17 @@
 [package]
-name = "zxs-contract-check"
+name = "contract-check"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 
-[workspace]
 
 [dependencies]
-blake3 = "1.8.7"
-jsonschema = { version = "=0.58.6", default-features = false }
-percent-encoding = "2.3"
-regex = "1"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-toml = "0.8.23"
-walkdir = "2"
-zxs-contract = { path = "../../crates/zxs-contract" }
-
-[profile.dev]
-debug = 0
-incremental = false
-
-[profile.test]
-debug = 0
-incremental = false
+blake3 = {version = "1.8.7", path = "../../src/foundation/blake3"}
+jsonschema = { version = "=0.58.6", default-features = false, path = "../../src/foundation/jsonschema"}
+percent-encoding = {version = "2.3", path = "../../src/foundation/percent-encoding"}
+regex = {version = "1", path = "../../src/foundation/regex"}
+serde = { version = "1", features = ["derive"], path = "../../src/foundation/serde"}
+serde_json = {version = "1", path = "../../src/foundation/serde_json"}
+toml = {version = "0.8.23", path = "../../src/foundation/toml"}
+walkdir = {version = "2", path = "../../src/foundation/walkdir"}
+storage-contract.workspace = true
