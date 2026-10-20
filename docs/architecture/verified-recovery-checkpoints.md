@@ -15,32 +15,51 @@ exclusive Engine ownership locks; unsupported concurrent external writers are
 not made safe by a cache. Metadata fingerprints are not cryptographic evidence
 against silent storage corruption or adversarial timestamp/inode manipulation.
 
-The append cache is **not a durable checkpoint**. A separate conservative
-version-1 replay checkpoint is now implemented in `engine/recovery_checkpoint.rs`.
-After a successful full recovery, it writes matching content-hashed checkpoint
-envelopes to all three metadata members. A later clean open still scans every
-journal from byte zero, rejects forks and verifies candidate linkage and every
-publication seal. It can skip historical snapshot decoding only when all three
-checkpoint copies agree, the exact verified journal tips agree, the pool/config
-binding agrees, and a fresh cryptographic inventory of all repair-relevant
-metadata, historical proofs and layout matches the completed recovery.
+The append cache is **not a durable checkpoint**. The separate version-2
+replay checkpoint is implemented in `engine/recovery_checkpoint.rs`. After a
+successful full or suffix recovery, it writes identical content-hashed envelopes
+to all three metadata members. Selection requires agreement between all three
+copies, the same pool/configuration, and each saved tip appearing in that
+member's fully verified journal chain. Startup still scans journals from byte
+zero and rejects forks and candidate-linkage errors.
 
-The inventory hashes metadata/proof bytes and covers payload presence, type,
-name and size. It excludes modern named-version payload bytes: ordinary historical recovery
-also does not reverify those bytes or claim fresh protection. Legacy/content
-payload bytes are hashed because historical name reconciliation revalidates
-legacy bodies during migration, including previously migrated bodies. All
-configured disks must validate for this optimization. Missing/corrupt/added
-metadata, renamed paths, changed configuration, missing members, torn tails or
-new decisions fall back to ordinary full recovery/repair. The checkpoint loads
-one final authoritative snapshot and applies its recovery-result overlay.
+A bounded coverage manifest records repair-relevant files and directory rules:
+- Metadata and proof bytes are cryptographically hashed and reread on selection.
+- Existing payload paths, sizes, types and link counts remain covered. Modern
+  named-version payload bytes are excluded because historical replay does not
+  reverify them. Legacy/content bytes ARE hashed because legacy migration does
+  reverify them, even after migration. Namespaced containers are identified by
+  their ownership markers, not a fixed path depth.
+- New entries are allowed only in recognized append-only namespaces. Stable-file
+  and named-container directory layouts remain exact to catch rename ambiguity.
+- Absent historical version/history/container paths are recorded explicitly.
+  Restoring such a path forces historical proof/name repair instead of silently
+  skipping an obligation that was previously inapplicable.
+- A derived `container.json` may differ only for a file/history with genuinely
+  new version evidence in a continuous, fully sealed suffix. Suffix replay
+  reconstructs that cache. Forks, pending decisions, reused version IDs and
+  unrelated suffix activity do not authorize this exception.
 
-This is deliberately a clean-restart checkpoint, not yet a suffix-replay
-checkpoint: exact inventory/tip matching conservatively invalidates it after a
-new decision. Checkpoint creation occurs on full recovery, never on the commit
-hot path. Partial/malformed checkpoint writes are optional hints and cannot
-publish a decision. No history is removed, no recovery authority is transferred
-to a checkpoint, and no bounded total startup claim is made.
+A valid checkpoint loads one authoritative boundary snapshot, applies its
+recovery-result overlay, and replays subsequent decisions normally. Missing or
+changed covered dependencies, renames, unknown layout changes, missing members,
+legacy byte corruption and torn tails conservatively trigger full recovery.
+No checkpoint is built on the commit hot path. Coverage is capped at 8 MiB and
+32,768 entries per disk, with a 16 MiB envelope limit; exceeding a cap disables
+this optional acceleration rather than weakening verification.
+
+Partial/malformed checkpoint writes cannot publish a decision. No history is
+removed, no publication authority is transferred to a checkpoint, and no bounded
+**total startup** claim is made. Journal scan and coverage verification still
+scale with retained history. A seven-decision prefix followed by three ordinary
+same-file saves is tested to decode four snapshots instead of ten; the next
+unchanged open decodes one.
+
+Recovery also tries healthy replicas of the exact candidate-bound snapshot root
+when its first source is missing or corrupt. After a complete snapshot verifies,
+missing/corrupt regular snapshot/page replicas can be atomically repaired from
+that hash-verified source. Unsafe targets still fail, and failure of every source
+fails closed. This never substitutes a different snapshot or suppresses a fork.
 
 ## Why a latest-snapshot pointer is insufficient
 
@@ -58,36 +77,15 @@ proves that all preceding decisions have been checked or that their historical
 repair dependencies remain available. File metadata alone is not an acceptable
 durable trust anchor.
 
-## Next stage: selective prefix coverage and suffix replay
+## Remaining extensions
 
-1. Define a versioned, canonical immutable checkpoint object binding the pool,
-   exact membership/configuration epoch, completed sequence, final visible state
-   hash (including recovery result overlays), previous checkpoint, and each
-   member's journal byte boundary, final frame hash and maximum observed slot.
-2. Build a content-addressed repair-coverage manifest for the covered prefix.
-   Bind all candidate/publication/seal dependencies, historical snapshot and
-   history-manifest roots, and required local commit/publication proofs. Describe
-   deliberate purge/loss states explicitly; never infer that missing payloads
-   have been newly verified. Bind a current container-name reconciliation plan.
-3. Write and synchronize checkpoint dependencies and coverage manifests on all
-   required members before writing checkpoint receipts. Require a completed
-   three-member checkpoint seal before selecting the checkpoint. A crash at any
-   earlier step leaves the existing journal recovery path authoritative.
-4. At open, retain the full journal integrity scan and accepted-candidate/fork
-   checks. Verify checkpoint boundaries against those actual frames and verify
-   prefix linkage/repair coverage. Load the checkpoint's final visible state,
-   reconcile names, then replay only the suffix. Missing coverage triggers full
-   historical repair. Actual authoritative corruption remains an error, not a
-   reason to quietly accept a cache or roll back committed history.
-5. Add read-only/offline selection with exactly the same publication visibility
-   rules. Two available members must not advance an unsealed decision. Restore
-   from data disks must discover and validate checkpoints without the system
-   disk. Legacy stores must continue to open without a checkpoint.
-
-This next stage bounds *state replay* and avoids repeatedly decoding all historical
-snapshots when coverage is valid. Full journal and coverage verification can
-remain linear. Benchmark and label scan, coverage verification, snapshot decode,
-repair and suffix replay separately.
+The current bounded inline coverage format deliberately falls back once its
+size limit is reached. A paged, independently hash-bound coverage tree could
+extend acceleration to larger stores without an unbounded checkpoint object.
+Incremental coverage refresh could reduce checkpoint construction work. Degraded
+(two-member) opens currently keep ordinary recovery and its visibility rules;
+they do not use the replay shortcut. Further optimization must preserve those
+rules and all historical repair obligations.
 
 ## Required failure and regression matrix
 

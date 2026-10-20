@@ -10,11 +10,15 @@ mod file_manager;
 
 pub struct EngineBackend {
     engine: Mutex<Engine>,
+    #[cfg(test)]
+    commit_preparation_hook: Mutex<Option<std::sync::Arc<dyn Fn() + Send + Sync>>>,
 }
 impl EngineBackend {
     pub fn new(engine: Engine) -> Self {
         Self {
             engine: Mutex::new(engine),
+            #[cfg(test)]
+            commit_preparation_hook: Mutex::new(None),
         }
     }
     pub fn protect_auth(
@@ -79,7 +83,10 @@ fn error(error: xcs_core::Error) -> ApiError {
             | "ROUTE_TARGET_UNAVAILABLE"
             | "COMMIT_IN_DOUBT"
             | "BACKUP_ROUTE_INCOMPLETE" => 503,
-            "HEAD_CONFLICT"
+            "COMMIT_PREPARATION_BUSY"
+            | "COMMIT_PREPARATION_STALE"
+            | "PREPARATION_STALE"
+            | "HEAD_CONFLICT"
             | "BRANCH_NOT_ACTIVE"
             | "FENCED"
             | "LEASE_EXPIRED"
@@ -132,7 +139,9 @@ fn error(error: xcs_core::Error) -> ApiError {
             "storage operation could not be completed; administrator inspection is required",
         )
     } else {
-        ApiError::new(status, code, error.message.clone())
+        let mut mapped = ApiError::new(status, code, error.message.clone());
+        mapped.retryable |= error.retryable;
+        mapped
     }
 }
 
@@ -403,6 +412,20 @@ mod authorization_tests {
     use std::collections::BTreeSet;
 
     #[test]
+    fn preparation_conflicts_retain_retryable_contract() {
+        for code in [
+            "COMMIT_PREPARATION_BUSY",
+            "COMMIT_PREPARATION_STALE",
+            "PREPARATION_STALE",
+        ] {
+            let mapped = error(xcs_core::Error::new(code, "retry preparation").retryable());
+            assert_eq!(mapped.status, 409);
+            assert_eq!(mapped.code, code);
+            assert!(mapped.retryable);
+        }
+    }
+
+    #[test]
     fn upload_generation_and_lease_errors_preserve_conflict_status() {
         for (core_code, api_code) in [
             ("STALE_UPLOAD_GENERATION", "UPLOAD_GENERATION_CONFLICT"),
@@ -472,18 +495,22 @@ fn workspace_authorize(
 
 /// Reauthorize after the unlocked copy against the current protected account
 /// snapshot, not the Identity captured before account revocation could publish.
+fn current_protected_identity(engine: &Engine, identity: &Identity) -> Result<Identity, ApiError> {
+    match engine.auth_state() {
+        Some(snapshot) => {
+            crate::auth::AuthStore::identity_from_snapshot(snapshot, &identity.principal)
+        }
+        None => Ok(identity.clone()), // Embedded engines without a protected account store.
+    }
+}
+
 fn finish_authorized_upload(
     engine: &mut Engine,
     identity: &Identity,
     workspace: &str,
     prepared: xcs_core::PreparedUpload,
 ) -> Result<Value, ApiError> {
-    let current = match engine.auth_state() {
-        Some(snapshot) => {
-            crate::auth::AuthStore::identity_from_snapshot(snapshot, &identity.principal)?
-        }
-        None => identity.clone(), // Embedded engines without a protected account store.
-    };
+    let current = current_protected_identity(engine, identity)?;
     workspace_authorize(engine, &current, workspace)?;
     sanitized(engine.finish_upload(prepared).map_err(error)?)
 }
@@ -1119,9 +1146,11 @@ impl Backend for EngineBackend {
                 ] {
                     field(&input, key)?;
                 }
-                let result = if action == "commit_workspace" {
+                let workspace_id = field(&input, "workspace_id")?.to_owned();
+                let plan = if action == "commit_workspace" {
                     let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
-                    Application::new(&mut engine, identity).commit_workspace_public(command)?
+                    Application::new(&mut engine, identity)
+                        .prepare_commit_workspace_public(command)?
                 } else {
                     let command = application::CommitWorkspace {
                         workspace_id: field(&input, "workspace_id")?.into(),
@@ -1142,8 +1171,20 @@ impl Backend for EngineBackend {
                             .and_then(Value::as_str)
                             .map(str::to_owned),
                     };
-                    Application::new(&mut engine, identity).commit_workspace(command)?
+                    Application::new(&mut engine, identity).prepare_commit_workspace(command)?
                 };
+                drop(engine);
+                #[cfg(test)]
+                if let Some(hook) = self.commit_preparation_hook.lock().unwrap().clone() {
+                    hook();
+                }
+                let prepared = plan.execute().map_err(error)?;
+                let mut engine = self.engine.lock().map_err(|_| {
+                    ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart")
+                })?;
+                let current = current_protected_identity(&engine, identity)?;
+                let result = Application::new(&mut engine, &current)
+                    .finish_workspace_commit(&workspace_id, prepared)?;
                 operation_wire(&engine, result)
             }
             "abort_workspace" => {

@@ -1,0 +1,524 @@
+//! Owned, non-serializable evidence for the live prepare/decide path only.
+//! Recovery cannot construct a proof without reading the complete payload.
+use crate::{disk::*, journal::*, *};
+use std::{
+    fs::File,
+    io::Read,
+    os::unix::fs::MetadataExt,
+    path::{Path, PathBuf},
+};
+
+#[derive(Debug, PartialEq, Eq)]
+struct Stamp {
+    dev: u64,
+    ino: u64,
+    size: u64,
+    links: u64,
+    mode: u32,
+    modified: (i64, i64),
+    changed: (i64, i64),
+}
+impl Stamp {
+    fn of(file: &File) -> Result<Self> {
+        let m = file.metadata()?;
+        Ok(Self {
+            dev: m.dev(),
+            ino: m.ino(),
+            size: m.len(),
+            links: m.nlink(),
+            mode: m.mode(),
+            modified: (m.mtime(), m.mtime_nsec()),
+            changed: (m.ctime(), m.ctime_nsec()),
+        })
+    }
+}
+struct HeldFile {
+    file: File,
+    stamp: Stamp,
+}
+impl HeldFile {
+    fn open(path: &Path) -> Result<Self> {
+        let file = open_regular(path)?;
+        let stamp = Stamp::of(&file)?;
+        Ok(Self { file, stamp })
+    }
+    fn validate(&self, path: &Path) -> Result<()> {
+        let current = open_regular(path)?;
+        if Stamp::of(&self.file)? != self.stamp || Stamp::of(&current)? != self.stamp {
+            return Err(Error::new(
+                "PREPARATION_STALE",
+                "verified payload or metadata changed after preparation",
+            ));
+        }
+        Ok(())
+    }
+}
+struct VerifiedPayload {
+    version_id: String,
+    slot_id: String,
+    version_hash: String,
+    directory: PathBuf,
+    body: HeldFile,
+    metadata: Vec<(PathBuf, HeldFile)>,
+}
+struct HeldDisk {
+    root: PathBuf,
+    directory: File,
+    device: u64,
+    inode: u64,
+    seal: HeldFile,
+}
+pub(super) struct VerifiedPayloadSet {
+    entries: Vec<VerifiedPayload>,
+    disks: Vec<HeldDisk>,
+    full_revalidation: bool,
+}
+const MAX_HELD_PAYLOAD_FILES: usize = 128;
+/// Disk identities are pinned before copying begins. Only complete verification
+/// can turn this preparation into a live decision proof.
+pub(super) struct PayloadPreparation {
+    disks: Vec<HeldDisk>,
+}
+impl PayloadPreparation {
+    pub(super) fn new(config: &Config, candidate: &Candidate) -> Result<Self> {
+        let mut disks = Vec::new();
+        for disk in &config.disks {
+            if !disk.metadata_member
+                && !candidate
+                    .versions
+                    .iter()
+                    .any(|evidence| evidence.placement.route_slot_ids.contains(&disk.slot_id))
+            {
+                continue;
+            }
+            validate_seal(config, disk)?;
+            let directory = File::open(&disk.root)?;
+            let metadata = directory.metadata()?;
+            disks.push(HeldDisk {
+                root: disk.root.clone(),
+                directory,
+                device: metadata.dev(),
+                inode: metadata.ino(),
+                seal: HeldFile::open(&disk.root.join("disk.json"))?,
+            });
+        }
+        Ok(Self { disks })
+    }
+    pub(super) fn verify(
+        self,
+        config: &Config,
+        candidate: &Candidate,
+    ) -> Result<VerifiedPayloadSet> {
+        let replicas = candidate
+            .versions
+            .iter()
+            .try_fold(0usize, |count, evidence| {
+                count
+                    .checked_add(evidence.placement.route_slot_ids.len())
+                    .ok_or_else(|| Error::new("RESOURCE_LIMIT", "payload proof count overflow"))
+            })?;
+        let full_revalidation = replicas > MAX_HELD_PAYLOAD_FILES / 4;
+        let mut entries = Vec::new();
+        for evidence in &candidate.versions {
+            for slot in &evidence.placement.route_slot_ids {
+                let entry = verify_replica(config, &evidence.version, slot)?;
+                if !full_revalidation {
+                    entries.push(entry);
+                }
+            }
+        }
+        let proof = VerifiedPayloadSet {
+            entries,
+            disks: self.disks,
+            full_revalidation,
+        };
+        proof.validate(config, candidate)?;
+        Ok(proof)
+    }
+}
+fn verify_replica(config: &Config, version: &FileVersion, slot: &str) -> Result<VerifiedPayload> {
+    let disk = config
+        .disks
+        .iter()
+        .find(|disk| disk.slot_id == slot)
+        .ok_or_else(|| Error::new("SLOT_NOT_FOUND", "prepared payload slot disappeared"))?;
+    validate_seal(config, disk)?;
+    let directory = version_dir(disk, &version.history_tree_id, &version.version_id);
+    let mut metadata = Vec::new();
+    for name in ["version.json", "checksums.bin", "payload.json"] {
+        let path = directory.join(name);
+        metadata.push((path.clone(), HeldFile::open(&path)?));
+    }
+    let recorded: FileVersion = read_json(&directory.join("version.json"))?;
+    let version_hash = object_hash("version", version)?;
+    if object_hash("version", &recorded)? != version_hash {
+        return Err(Error::new(
+            "OBJECT_COLLISION",
+            "prepared version metadata differs",
+        ));
+    }
+    let checks = read_bytes(&directory.join("checksums.bin"), MAX_CHECKSUM_MANIFEST)?;
+    if blake3::hash(&checks).to_hex().as_str() != version.checksum_manifest_hash {
+        return Err(Error::new(
+            "CHECKSUM_MISMATCH",
+            "checksum manifest digest differs",
+        ));
+    }
+    let manifest = ChecksumManifest::decode(&checks)?;
+    if manifest.logical_size != version.logical_size
+        || manifest.chunk_bytes != version.checksum_chunk_bytes
+    {
+        return Err(Error::new(
+            "CHECKSUM_MISMATCH",
+            "checksum header differs from version",
+        ));
+    }
+    let path = crate::container_storage::content_path(&directory, version)?;
+    let mut body = HeldFile::open(&path)?;
+    if body.stamp.size != version.logical_size {
+        return Err(Error::new("CHECKSUM_MISMATCH", "payload length differs"));
+    }
+    let mut full = blake3::Hasher::new();
+    let mut buffer = vec![0; manifest.chunk_bytes as usize];
+    let mut remaining = manifest.logical_size;
+    for expected in manifest.chunks {
+        let n = remaining.min(buffer.len() as u64) as usize;
+        body.file.read_exact(&mut buffer[..n])?;
+        if blake3::hash(&buffer[..n]).as_bytes() != &expected {
+            return Err(Error::new("CHECKSUM_MISMATCH", "payload chunk differs"));
+        }
+        full.update(&buffer[..n]);
+        remaining -= n as u64;
+    }
+    if remaining != 0 || full.finalize().to_hex().as_str() != version.content_hash {
+        return Err(Error::new(
+            "CHECKSUM_MISMATCH",
+            "complete payload hash differs",
+        ));
+    }
+    body.validate(&path)?;
+    for (path, held) in &metadata {
+        held.validate(path)?;
+    }
+    Ok(VerifiedPayload {
+        version_id: version.version_id.clone(),
+        slot_id: slot.to_owned(),
+        version_hash,
+        directory,
+        body,
+        metadata,
+    })
+}
+
+impl VerifiedPayloadSet {
+    #[cfg(test)]
+    fn prepare(config: &Config, candidate: &Candidate) -> Result<Self> {
+        PayloadPreparation::new(config, candidate)?.verify(config, candidate)
+    }
+    pub(super) fn validate(&self, config: &Config, candidate: &Candidate) -> Result<()> {
+        for disk in &self.disks {
+            let current = std::fs::symlink_metadata(&disk.root)?;
+            let held = disk.directory.metadata()?;
+            if !current.is_dir()
+                || current.file_type().is_symlink()
+                || current.dev() != disk.device
+                || current.ino() != disk.inode
+                || held.dev() != disk.device
+                || held.ino() != disk.inode
+            {
+                return Err(Error::new(
+                    "PREPARATION_STALE",
+                    "prepared disk directory identity changed",
+                ));
+            }
+            disk.seal.validate(&disk.root.join("disk.json"))?;
+        }
+        let expected: usize = candidate
+            .versions
+            .iter()
+            .map(|e| e.placement.route_slot_ids.len())
+            .sum();
+        if (!self.full_revalidation && expected != self.entries.len())
+            || (self.full_revalidation && !self.entries.is_empty())
+        {
+            return Err(Error::new(
+                "PREPARATION_STALE",
+                "payload proof count differs",
+            ));
+        }
+        for evidence in &candidate.versions {
+            for slot in &evidence.placement.route_slot_ids {
+                self.validate_payload(config, &evidence.version, slot)?;
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn validate_payload(
+        &self,
+        config: &Config,
+        version: &FileVersion,
+        slot: &str,
+    ) -> Result<()> {
+        if self.full_revalidation {
+            // Large candidates keep only disk identities pinned. Re-read every
+            // byte with the same metadata and held-inode checks, one replica at
+            // a time, rather than exhausting process-wide file descriptors.
+            verify_replica(config, version, slot)?;
+            return Ok(());
+        }
+        let entry = self
+            .entries
+            .iter()
+            .find(|entry| entry.version_id == version.version_id && entry.slot_id == slot)
+            .ok_or_else(|| Error::new("PREPARATION_STALE", "payload proof missing"))?;
+        let disk = config
+            .disks
+            .iter()
+            .find(|disk| disk.slot_id == slot)
+            .ok_or_else(|| Error::new("PREPARATION_STALE", "payload slot changed"))?;
+        validate_seal(config, disk)?;
+        if entry.directory != version_dir(disk, &version.history_tree_id, &version.version_id)
+            || entry.version_hash != object_hash("version", version)?
+        {
+            return Err(Error::new(
+                "PREPARATION_STALE",
+                "payload proof identity differs",
+            ));
+        }
+        entry
+            .body
+            .validate(&crate::container_storage::content_path(
+                &entry.directory,
+                version,
+            )?)?;
+        for (path, held) in &entry.metadata {
+            held.validate(path)?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn fixture() -> (tempfile::TempDir, Engine, Candidate) {
+        fixture_with_files(1)
+    }
+    fn fixture_with_files(count: usize) -> (tempfile::TempDir, Engine, Candidate) {
+        let temp = tempfile::tempdir().unwrap();
+        let config = Config::development([
+            temp.path().join("p"),
+            temp.path().join("b"),
+            temp.path().join("t"),
+        ]);
+        let mut engine = Engine::initialize(&temp.path().join("state"), config).unwrap();
+        let repo = engine
+            .create_repository("proof", "P01", 3, "admin", &new_id("op"))
+            .unwrap();
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        for index in 0..count {
+            engine
+                .stage_bytes(
+                    &workspace.workspace_id,
+                    &format!("body-{index}.txt"),
+                    b"original",
+                )
+                .unwrap();
+        }
+        let result = engine
+            .commit_workspace(CommitRequest {
+                workspace_id: workspace.workspace_id,
+                operation_id: new_id("op"),
+                principal: "admin".into(),
+                expected_head: workspace.base_head,
+                fencing_token: workspace.fencing_token,
+                message: "proof".into(),
+                request_digest: None,
+            })
+            .unwrap();
+        let candidate = Candidate {
+            format_version: 2,
+            pool_id: engine.config.pool_id.clone(),
+            sequence: engine.state.sequence,
+            transaction_id: new_id("tx"),
+            operation_id: result.operation_id,
+            request_digest: result.request_digest,
+            previous_snapshot: None,
+            snapshot_hash: engine.snapshot.clone().unwrap(),
+            versions: engine
+                .state
+                .versions
+                .values()
+                .map(|version| VersionEvidence {
+                    version: version.clone(),
+                    placement: engine.state.placements[&version.version_id].clone(),
+                })
+                .collect(),
+            metadata_disk_ids: engine
+                .members()
+                .iter()
+                .map(|disk| disk.disk_id.clone())
+                .collect(),
+            history_manifest_hashes: Default::default(),
+        };
+        (temp, engine, candidate)
+    }
+    #[test]
+    fn large_candidate_uses_bounded_full_revalidation_and_rejects_changes() {
+        let (_temp, mut engine, candidate) = fixture_with_files(MAX_HELD_PAYLOAD_FILES / 12 + 1);
+        let proof = VerifiedPayloadSet::prepare(&engine.config, &candidate).unwrap();
+        assert!(proof.full_revalidation);
+        assert!(proof.entries.is_empty());
+        assert_eq!(proof.disks.len(), 3);
+        proof.validate(&engine.config, &candidate).unwrap();
+        let mut next = engine.state.clone();
+        next.sequence = engine.next_slot;
+        let prepared = candidate
+            .versions
+            .iter()
+            .map(|evidence| {
+                let disk = engine.disk(&evidence.placement.route_slot_ids[0]).unwrap();
+                let directory = version_dir(
+                    disk,
+                    &evidence.version.history_tree_id,
+                    &evidence.version.version_id,
+                );
+                crate::engine::Prepared {
+                    version: evidence.version.clone(),
+                    placement: evidence.placement.clone(),
+                    source: crate::container_storage::content_path(&directory, &evidence.version)
+                        .unwrap(),
+                }
+            })
+            .collect();
+        let result = engine.state.operations[&candidate.operation_id].clone();
+        let detached = engine
+            .prepare_publication(next, prepared, result, MAX_METADATA)
+            .unwrap();
+        let evidence = &candidate.versions[0];
+        let slot = &evidence.placement.route_slot_ids[0];
+        let disk = engine.disk(slot).unwrap();
+        let directory = version_dir(
+            disk,
+            &evidence.version.history_tree_id,
+            &evidence.version.version_id,
+        );
+        let body = crate::container_storage::content_path(&directory, &evidence.version).unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&body, std::fs::Permissions::from_mode(0o600)).unwrap();
+        std::fs::write(&body, b"tampered").unwrap();
+        assert!(proof.validate(&engine.config, &candidate).is_err());
+        assert!(
+            proof
+                .validate_payload(&engine.config, &evidence.version, slot)
+                .is_err()
+        );
+        let sequence = engine.state.sequence;
+        let next_slot = engine.next_slot;
+        assert_eq!(
+            engine.decide_publication(detached).unwrap_err().code(),
+            "PREPARATION_STALE"
+        );
+        assert_eq!(engine.state.sequence, sequence);
+        assert_eq!(engine.next_slot, next_slot);
+        assert!(!engine.blocked);
+    }
+    #[test]
+    fn held_proof_rejects_in_place_content_changes() {
+        let (_temp, engine, candidate) = fixture();
+        let proof = VerifiedPayloadSet::prepare(&engine.config, &candidate).unwrap();
+        proof.validate(&engine.config, &candidate).unwrap();
+        let evidence = &candidate.versions[0];
+        let disk = engine.disk(&evidence.placement.route_slot_ids[0]).unwrap();
+        let dir = version_dir(
+            disk,
+            &evidence.version.history_tree_id,
+            &evidence.version.version_id,
+        );
+        let body = crate::container_storage::content_path(&dir, &evidence.version).unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&body, std::fs::Permissions::from_mode(0o600)).unwrap();
+        std::fs::write(body, b"tampered").unwrap();
+        assert_eq!(
+            proof
+                .validate(&engine.config, &candidate)
+                .unwrap_err()
+                .code(),
+            "PREPARATION_STALE"
+        );
+    }
+    #[test]
+    fn held_proof_rejects_replaced_checksum_inode() {
+        let (_temp, engine, candidate) = fixture();
+        let proof = VerifiedPayloadSet::prepare(&engine.config, &candidate).unwrap();
+        let entry = &proof.entries[0];
+        let path = entry.directory.join("checksums.bin");
+        let bytes = std::fs::read(&path).unwrap();
+        std::fs::rename(&path, path.with_extension("old")).unwrap();
+        std::fs::write(&path, bytes).unwrap();
+        assert_eq!(
+            proof
+                .validate(&engine.config, &candidate)
+                .unwrap_err()
+                .code(),
+            "PREPARATION_STALE"
+        );
+    }
+    #[test]
+    fn held_proof_rejects_disk_seal_replacement_and_candidate_changes() {
+        let (_temp, engine, candidate) = fixture();
+        let proof = VerifiedPayloadSet::prepare(&engine.config, &candidate).unwrap();
+        let mut changed = candidate.clone();
+        changed.versions[0].version.content_hash = "0".repeat(64);
+        assert_eq!(
+            proof.validate(&engine.config, &changed).unwrap_err().code(),
+            "PREPARATION_STALE"
+        );
+        let path = proof.disks[0].root.join("disk.json");
+        let bytes = std::fs::read(&path).unwrap();
+        std::fs::rename(&path, path.with_extension("old")).unwrap();
+        std::fs::write(&path, bytes).unwrap();
+        assert_eq!(
+            proof
+                .validate(&engine.config, &candidate)
+                .unwrap_err()
+                .code(),
+            "PREPARATION_STALE"
+        );
+    }
+    #[test]
+    fn detached_decision_rejects_changed_topology_before_journaling() {
+        let (_temp, mut engine, candidate) = fixture();
+        let mut next = engine.state.clone();
+        next.sequence = engine.next_slot;
+        let result = engine.state.operations[&candidate.operation_id].clone();
+        let detached = engine
+            .prepare_publication(next, Vec::new(), result, MAX_METADATA)
+            .unwrap();
+        let sequence = engine.state.sequence;
+        let slot = engine.next_slot;
+        engine.config.metadata_reserve_bytes += 1;
+        assert_eq!(
+            engine.decide_publication(detached).unwrap_err().code(),
+            "PREPARATION_STALE"
+        );
+        assert_eq!(engine.state.sequence, sequence);
+        assert_eq!(engine.next_slot, slot);
+        assert!(!engine.blocked);
+    }
+    #[test]
+    fn preparation_pins_disk_identity_before_payload_work() {
+        let (_temp, engine, candidate) = fixture();
+        let preparation = PayloadPreparation::new(&engine.config, &candidate).unwrap();
+        let path = preparation.disks[0].root.join("disk.json");
+        let bytes = std::fs::read(&path).unwrap();
+        std::fs::rename(&path, path.with_extension("old")).unwrap();
+        std::fs::write(&path, bytes).unwrap();
+        match preparation.verify(&engine.config, &candidate) {
+            Err(error) => assert_eq!(error.code(), "PREPARATION_STALE"),
+            Ok(_) => panic!("replaced disk seal was accepted"),
+        }
+    }
+}

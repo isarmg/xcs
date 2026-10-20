@@ -3,9 +3,25 @@ use super::{Engine, Prepared};
 use crate::{disk::*, journal::*, *};
 use serde_json::json;
 use std::collections::BTreeMap;
+#[path = "verified_payloads.rs"]
+mod verified_payloads;
+use verified_payloads::{PayloadPreparation, VerifiedPayloadSet};
+
+/// An owned preparation, never serializable or constructible by callers.
+pub(crate) struct DetachedPublication {
+    next: State,
+    candidate: Candidate,
+    result: OperationResult,
+    verified: VerifiedPayloadSet,
+    base_root: std::path::PathBuf,
+    base_snapshot: Option<String>,
+    base_sequence: u64,
+    base_next_slot: u64,
+    config_hash: String,
+}
 
 impl Engine {
-    pub(super) fn persist(
+    pub(crate) fn persist(
         &mut self,
         next: State,
         prepared: Vec<Prepared>,
@@ -20,6 +36,16 @@ impl Engine {
         result: OperationResult,
         maximum: usize,
     ) -> Result<()> {
+        let detached = self.prepare_publication(next, prepared, result, maximum)?;
+        self.decide_publication(detached).map(|_| ())
+    }
+    pub(crate) fn prepare_publication(
+        &self,
+        next: State,
+        prepared: Vec<Prepared>,
+        result: OperationResult,
+        maximum: usize,
+    ) -> Result<DetachedPublication> {
         let members = self.members();
         let mut required = BTreeMap::<String, u64>::new();
         for p in &prepared {
@@ -84,8 +110,9 @@ impl Engine {
         crate::metadata_budget::preflight_publication(
             self, &candidate, &result, &next, None, maximum,
         )?;
+        let preparation = PayloadPreparation::new(&self.config, &candidate)?;
         self.prepare_payloads(&prepared)?;
-        self.failpoint("after_payloads")?;
+        let verified = preparation.verify(&self.config, &candidate)?;
         if store_snapshot(&members, &next)? != candidate.snapshot_hash
             || crate::history_package::store_history_manifests(&members, &next)?
                 != candidate.history_manifest_hashes
@@ -95,6 +122,73 @@ impl Engine {
                 "metadata changed after size preflight",
             ));
         }
+        Ok(DetachedPublication {
+            next,
+            candidate,
+            result,
+            verified,
+            base_root: self.root.clone(),
+            base_snapshot: self.snapshot.clone(),
+            base_sequence: self.state.sequence,
+            base_next_slot: self.next_slot,
+            config_hash: object_hash("publication-config", &self.config)?,
+        })
+    }
+    pub(crate) fn decide_publication(
+        &mut self,
+        detached: DetachedPublication,
+    ) -> Result<OperationResult> {
+        if self.blocked
+            || self.root != detached.base_root
+            || self.snapshot != detached.base_snapshot
+            || self.state.sequence != detached.base_sequence
+            || self.next_slot != detached.base_next_slot
+            || object_hash("publication-config", &self.config)? != detached.config_hash
+        {
+            return Err(Error::new(
+                "PREPARATION_STALE",
+                "engine changed during detached publication preparation",
+            )
+            .retryable());
+        }
+        let DetachedPublication {
+            next,
+            candidate,
+            result,
+            verified,
+            ..
+        } = detached;
+        verified
+            .validate(&self.config, &candidate)
+            .map_err(|error| {
+                Error::new(
+                    "PREPARATION_STALE",
+                    format!("prepared payload identity changed: {error}"),
+                )
+                .retryable()
+            })?;
+        // Preparation consumed payload capacity, but concurrent staged uploads
+        // may have consumed the metadata reserve without changing State.
+        for disk in &self.config.disks {
+            if disk.metadata_member
+                || candidate
+                    .versions
+                    .iter()
+                    .any(|evidence| evidence.placement.route_slot_ids.contains(&disk.slot_id))
+            {
+                if available(&disk.root)? < self.config.metadata_reserve_bytes {
+                    return Err(Error::new(
+                        "NO_SPACE",
+                        "metadata reserve was consumed during payload preparation",
+                    ));
+                }
+            }
+        }
+        let members = self.members();
+        for disk in &members {
+            validate_seal(&self.config, disk)?;
+        }
+        self.failpoint("after_payloads")?;
         let hash = object_hash("candidate", &candidate)?;
         self.next_slot = candidate
             .sequence
@@ -113,7 +207,8 @@ impl Engine {
         }
         // Once the first ACCEPT may have reached disk, failure is indeterminate.
         self.blocked = true;
-        let finish = self.complete_candidate(&candidate, &hash, &next, None);
+        let finish =
+            self.complete_candidate_verified(&candidate, &hash, &next, None, Some(&verified));
         if let Err(e) = finish {
             return Err(Error::new(
                 "IN_DOUBT",
@@ -125,7 +220,7 @@ impl Engine {
         self.snapshot = Some(candidate.snapshot_hash);
         self.update_index(&previous)?;
         self.blocked = false;
-        Ok(())
+        Ok(result)
     }
     fn prepare_payloads(&self, prepared: &[Prepared]) -> Result<()> {
         // Versions of the same file can share a named container. Preserve their
@@ -185,11 +280,21 @@ impl Engine {
                 )?;
                 sync_dir(&staging)?;
                 private_dir(directory.parent().expect("version parent"))?;
+                let staging_parent = xcs_platform::fs_safety::linux::OpenAt2Root::open(
+                    staging.parent().expect("staging parent"),
+                    xcs_platform::fs_safety::linux::MountPolicy::SameMount,
+                )
+                .map_err(|error| Error::new("UNSAFE_PATH", error.to_string()))?;
+                let version_parent = xcs_platform::fs_safety::linux::OpenAt2Root::open(
+                    directory.parent().expect("version parent"),
+                    xcs_platform::fs_safety::linux::MountPolicy::SameMount,
+                )
+                .map_err(|error| Error::new("UNSAFE_PATH", error.to_string()))?;
                 rustix::fs::renameat_with(
-                    rustix::fs::CWD,
-                    &staging,
-                    rustix::fs::CWD,
-                    &directory,
+                    staging_parent.directory(),
+                    staging.file_name().expect("staging name"),
+                    version_parent.directory(),
+                    directory.file_name().expect("version name"),
                     rustix::fs::RenameFlags::NOREPLACE,
                 )
                 .map_err(std::io::Error::from)?;
@@ -207,6 +312,16 @@ impl Engine {
         hash: &str,
         next: &State,
         existing: Option<Publication>,
+    ) -> Result<()> {
+        self.complete_candidate_verified(c, hash, next, existing, None)
+    }
+    fn complete_candidate_verified(
+        &mut self,
+        c: &Candidate,
+        hash: &str,
+        next: &State,
+        existing: Option<Publication>,
+        verified: Option<&VerifiedPayloadSet>,
     ) -> Result<()> {
         if let Some(publication) = existing {
             if publication.candidate_hash != hash
@@ -329,7 +444,12 @@ impl Engine {
                     &evidence.version.history_tree_id,
                     &evidence.version.version_id,
                 );
-                verify_payload(&directory, &evidence.version)?;
+                if let Some(verified) = verified {
+                    verified.validate_payload(&self.config, &evidence.version, slot)?;
+                } else {
+                    // Recovery has no live held-inode proof and must re-read all bytes.
+                    verify_payload(&directory, &evidence.version)?;
+                }
                 let proof = CommitProof {
                     candidate_hash: hash.into(),
                     finalize: finalize.clone(),
@@ -406,7 +526,7 @@ impl Engine {
 }
 
 /// Bounded scoped workers are fully joined before returning, even on failure.
-/// The caller still owns the single-writer decision lock throughout this phase.
+/// Detached preparation may run without the engine mutex; decision follows all joins.
 fn run_payload_groups<T: Sync>(
     groups: &[Vec<&T>],
     work: impl Fn(&T) -> Result<()> + Sync,

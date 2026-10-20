@@ -12,6 +12,9 @@ mod index;
 mod observations;
 pub use observations::DiskObservationPlan;
 mod publication;
+pub(crate) use publication::DetachedPublication;
+mod workspace_commit;
+pub use workspace_commit::{PreparedWorkspaceCommit, WorkspaceCommitPreparation};
 mod reads;
 pub use reads::{ContentReadPlan, RangeContent, WorkspaceReadPlan};
 mod recovery;
@@ -29,6 +32,7 @@ pub struct Engine {
     pub(crate) next_slot: u64,
     pub(crate) reads: Arc<Mutex<BTreeMap<String, usize>>>,
     pub(crate) upload_preparations: Arc<Mutex<BTreeSet<String>>>,
+    commit_preparation: Arc<std::sync::atomic::AtomicBool>,
     _locks: Vec<File>,
     pub(crate) fault: Option<String>,
 }
@@ -58,6 +62,17 @@ pub(crate) struct Prepared {
     pub version: FileVersion,
     pub placement: Placement,
     pub source: PathBuf,
+}
+
+/// A real unpublished mutation plan; constructing it never acknowledges a
+/// publication or writes a decision record.
+pub(crate) enum MutationPlan {
+    Existing(OperationResult),
+    Prepared {
+        next: State,
+        prepared: Vec<Prepared>,
+        result: OperationResult,
+    },
 }
 
 impl Engine {
@@ -134,6 +149,7 @@ impl Engine {
             next_slot: 1,
             reads: Arc::new(Mutex::new(BTreeMap::new())),
             upload_preparations: Arc::new(Mutex::new(BTreeSet::new())),
+            commit_preparation: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             _locks: locks,
             fault: None,
         };
@@ -165,6 +181,7 @@ impl Engine {
             next_slot: 1,
             reads: Arc::new(Mutex::new(BTreeMap::new())),
             upload_preparations: Arc::new(Mutex::new(BTreeSet::new())),
+            commit_preparation: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             _locks: locks,
             fault: None,
         };
@@ -424,7 +441,21 @@ impl Engine {
         }
         Ok(route)
     }
+    pub(crate) fn require_no_commit_preparation(&self) -> Result<()> {
+        if self
+            .commit_preparation
+            .load(std::sync::atomic::Ordering::Acquire)
+        {
+            return Err(Error::new(
+                "COMMIT_PREPARATION_BUSY",
+                "workspace payload preparation temporarily fences other writes",
+            )
+            .retryable());
+        }
+        Ok(())
+    }
     pub(crate) fn require_write(&self) -> Result<()> {
+        self.require_no_commit_preparation()?;
         if self.blocked {
             return Err(Error::new(
                 "RECOVERY_REQUIRED",
@@ -501,6 +532,37 @@ impl Engine {
     where
         F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<serde_json::Value>,
     {
+        match self.plan_mutation_digest(
+            kind,
+            principal,
+            operation_id,
+            input,
+            digest_override,
+            change,
+        )? {
+            MutationPlan::Existing(result) => Ok(result),
+            MutationPlan::Prepared {
+                next,
+                prepared,
+                result,
+            } => {
+                self.persist(next, prepared, result.clone())?;
+                Ok(result)
+            }
+        }
+    }
+    pub(crate) fn plan_mutation_digest<F>(
+        &self,
+        kind: &str,
+        principal: &str,
+        operation_id: &str,
+        input: serde_json::Value,
+        digest_override: Option<String>,
+        change: F,
+    ) -> Result<MutationPlan>
+    where
+        F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<serde_json::Value>,
+    {
         validate_id(operation_id, "op")?;
         if principal.is_empty() {
             return Err(Error::new("UNAUTHENTICATED", "principal is required"));
@@ -515,7 +577,7 @@ impl Engine {
             if result.request_digest == digest
                 && self.operation_owner(operation_id).as_deref() == Some(principal)
             {
-                return self.operation(operation_id);
+                return self.operation(operation_id).map(MutationPlan::Existing);
             }
             return Err(Error::new(
                 "IDEMPOTENCY_KEY_REUSED",
@@ -596,7 +658,10 @@ impl Engine {
                 .or_else(|| op.history_tree_id.clone())
                 .unwrap_or_else(|| operation_id.into()),
         });
-        self.persist(next, prepared, op.clone())?;
-        Ok(op)
+        Ok(MutationPlan::Prepared {
+            next,
+            prepared,
+            result: op,
+        })
     }
 }

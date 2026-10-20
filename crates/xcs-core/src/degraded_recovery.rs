@@ -599,6 +599,7 @@ impl Engine {
         principal: &str,
         accept_permanent_loss: bool,
     ) -> Result<OperationResult> {
+        self.require_no_commit_preparation()?;
         let plan = self.recovery_plan(id)?;
         if plan.digest != digest || plan.principal != principal {
             return Err(Error::new(

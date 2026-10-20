@@ -145,10 +145,10 @@ impl<'a> Application<'a> {
         self.engine.commit_workspace(request).map_err(error)
     }
 
-    pub fn commit_workspace_public(
-        &mut self,
+    fn public_commit_request(
+        &self,
         command: PublicCommitWorkspace,
-    ) -> Result<xcs_core::OperationResult, ApiError> {
+    ) -> Result<(CommitRequest, serde_json::Value), ApiError> {
         let fencing_token =
             xcs_contract::parse_u64_decimal(&command.fencing_token).map_err(ApiError::invalid)?;
         let body = serde_json::to_value(&command).map_err(ApiError::invalid)?;
@@ -160,9 +160,46 @@ impl<'a> Application<'a> {
             message: command.message,
             request_digest: Some(command.request_digest),
         })?;
+        Ok((request, body))
+    }
+
+    pub fn commit_workspace_public(
+        &mut self,
+        command: PublicCommitWorkspace,
+    ) -> Result<xcs_core::OperationResult, ApiError> {
+        let (request, body) = self.public_commit_request(command)?;
         self.engine
             .commit_workspace_wire(request, body)
             .map_err(error)
+    }
+
+    pub fn prepare_commit_workspace(
+        &mut self,
+        command: CommitWorkspace,
+    ) -> Result<xcs_core::WorkspaceCommitPreparation, ApiError> {
+        let request = self.commit_request(command)?;
+        self.engine
+            .prepare_workspace_commit(request, None)
+            .map_err(error)
+    }
+
+    pub fn prepare_commit_workspace_public(
+        &mut self,
+        command: PublicCommitWorkspace,
+    ) -> Result<xcs_core::WorkspaceCommitPreparation, ApiError> {
+        let (request, body) = self.public_commit_request(command)?;
+        self.engine
+            .prepare_workspace_commit(request, Some(body))
+            .map_err(error)
+    }
+
+    pub fn finish_workspace_commit(
+        &mut self,
+        workspace: &str,
+        prepared: xcs_core::PreparedWorkspaceCommit,
+    ) -> Result<xcs_core::OperationResult, ApiError> {
+        workspace_authorize(self.engine, self.identity, workspace)?;
+        self.engine.finish_workspace_commit(prepared).map_err(error)
     }
 
     pub fn stage_namespace(
@@ -650,6 +687,133 @@ mod tests {
                     .files
                     .is_empty()
             );
+        }
+    }
+    #[test]
+    fn commit_preparation_releases_engine_and_rechecks_completed_revocation() {
+        use std::sync::{Arc, Mutex, mpsc};
+        use std::time::Duration;
+        for public in [false, true] {
+            for revoke in [None, Some(false), Some(true)] {
+                let (root, mut engine, repo, owner) = fixture();
+                let workspace = engine
+                    .create_workspace(&repo.main_branch_id, &owner.principal)
+                    .unwrap();
+                engine
+                    .stage_bytes(&workspace.workspace_id, "file.txt", b"commit bytes")
+                    .unwrap();
+                let operation = new_id("op");
+                let input = if public {
+                    let mut input = engine
+                        .seal_workspace(&workspace.workspace_id, &owner.principal)
+                        .unwrap();
+                    input["operation_id"] = operation.clone().into();
+                    input["request_digest"] =
+                        xcs_core::commit_request_digest(&workspace.workspace_id, &input)
+                            .unwrap()
+                            .into();
+                    input
+                } else {
+                    json!({"workspace_id":workspace.workspace_id,"operation_id":operation,
+                        "expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"commit"})
+                };
+                let backend = Arc::new(EngineBackend::new(engine));
+                let mut auth = crate::auth::AuthStore::initialize(
+                    root.path(),
+                    "admin",
+                    "integration-test-password",
+                )
+                .unwrap();
+                auth.upsert_account(
+                    "owner",
+                    Some("integration-test-password"),
+                    false,
+                    owner.repositories.clone(),
+                    false,
+                )
+                .unwrap();
+                let mut auth = backend.protect_auth(auth).unwrap();
+                // A request can retain an Identity captured before revocation.
+                // Finish must refresh it even though concurrent auth writes are fenced.
+                if let Some(disabled) = revoke {
+                    auth.upsert_account(
+                        "owner",
+                        None,
+                        false,
+                        if disabled {
+                            owner.repositories.clone()
+                        } else {
+                            BTreeSet::new()
+                        },
+                        disabled,
+                    )
+                    .unwrap();
+                }
+                let (started_tx, started_rx) = mpsc::channel();
+                let (release_tx, release_rx) = mpsc::channel();
+                let release_rx = Mutex::new(release_rx);
+                *backend.commit_preparation_hook.lock().unwrap() = Some(Arc::new(move || {
+                    started_tx.send(()).unwrap();
+                    release_rx.lock().unwrap().recv().unwrap();
+                }));
+                let writer_backend = backend.clone();
+                let writer_owner = owner.clone();
+                let writer = std::thread::spawn(move || {
+                    writer_backend.call(
+                        if public {
+                            "commit_workspace"
+                        } else {
+                            "commit_workspace_internal"
+                        },
+                        &writer_owner,
+                        input,
+                    )
+                });
+                started_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+                let reader_backend = backend.clone();
+                let reader_owner = owner.clone();
+                let (query_tx, query_rx) = mpsc::channel();
+                let reader = std::thread::spawn(move || {
+                    query_tx
+                        .send(reader_backend.call("repositories", &reader_owner, json!({})))
+                        .unwrap();
+                });
+                let queried = query_rx.recv_timeout(Duration::from_secs(2));
+                if queried.is_err() {
+                    release_tx.send(()).unwrap();
+                    let _ = writer.join();
+                    let _ = reader.join();
+                    panic!("repository query blocked behind detached commit preparation");
+                }
+                assert!(queried.unwrap().is_ok());
+                reader.join().unwrap();
+                let before_busy = auth.snapshot().unwrap();
+                let busy = auth
+                    .upsert_account("owner", None, false, owner.repositories.clone(), false)
+                    .unwrap_err();
+                assert_eq!(busy.code, "COMMIT_PREPARATION_BUSY");
+                assert!(busy.retryable);
+                assert_eq!(auth.snapshot().unwrap(), before_busy);
+                assert!(auth.identity_for_principal("admin").is_ok());
+                release_tx.send(()).unwrap();
+                let result = writer.join().unwrap();
+                let engine = backend.engine.lock().unwrap();
+                if let Some(disabled) = revoke {
+                    assert_eq!(
+                        result.unwrap_err().code,
+                        if disabled {
+                            "UNAUTHORIZED"
+                        } else {
+                            "FORBIDDEN"
+                        }
+                    );
+                    assert!(!engine.state().operations.contains_key(&operation));
+                    assert!(engine.list_tree(&repo.main_branch_id).unwrap().is_empty());
+                } else {
+                    assert!(result.is_ok(), "{result:?}");
+                    assert!(engine.state().operations.contains_key(&operation));
+                }
+            }
         }
     }
 }

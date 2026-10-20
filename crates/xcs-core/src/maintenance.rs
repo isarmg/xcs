@@ -370,6 +370,7 @@ impl Engine {
         Ok(())
     }
     pub(crate) fn cleanup_purged(&self) -> Result<()> {
+        self.require_no_commit_preparation()?;
         if !self
             .state
             .content_states

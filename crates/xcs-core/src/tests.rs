@@ -3029,3 +3029,375 @@ fn upload_preparation_rejects_parent_swap_and_cleans_original_directory_only() {
             .is_empty()
     );
 }
+
+fn detached_commit_fixture(engine: &mut Engine, repo: &Repository) -> (Workspace, CommitRequest) {
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    engine
+        .stage_bytes(
+            &workspace.workspace_id,
+            "detached-a",
+            b"first detached file",
+        )
+        .unwrap();
+    engine
+        .stage_bytes(
+            &workspace.workspace_id,
+            "detached-b",
+            b"second detached file",
+        )
+        .unwrap();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id.clone(),
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: workspace.base_head.clone(),
+        fencing_token: workspace.fencing_token,
+        message: "detached preparation".into(),
+        request_digest: None,
+    };
+    (workspace, request)
+}
+
+#[test]
+fn detached_workspace_preparation_writes_no_decision_and_replays_original_operation() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 3);
+    let (workspace, request) = detached_commit_fixture(&mut engine, &repo);
+    let sequence = engine.state.sequence;
+    let before: Vec<_> = engine
+        .members()
+        .iter()
+        .map(|disk| journal::scan(disk).unwrap().records.len())
+        .collect();
+    let plan = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap();
+    assert_eq!(
+        engine
+            .prepare_workspace_commit(request.clone(), None)
+            .err()
+            .unwrap()
+            .code(),
+        "COMMIT_PREPARATION_BUSY"
+    );
+    let prepared = plan.execute().unwrap();
+    assert_eq!(engine.state.sequence, sequence);
+    assert_eq!(
+        engine
+            .members()
+            .iter()
+            .map(|disk| journal::scan(disk).unwrap().records.len())
+            .collect::<Vec<_>>(),
+        before
+    );
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "open"
+    );
+    assert!(
+        !engine
+            .root
+            .join("workspaces")
+            .join(&workspace.workspace_id)
+            .join("commit-request.json")
+            .exists()
+    );
+    let result = engine.finish_workspace_commit(prepared).unwrap();
+    assert_eq!(result.operation_id, request.operation_id);
+    assert_eq!(engine.state.sequence, sequence + 1);
+    assert_eq!(engine.list_tree(&repo.main_branch_id).unwrap().len(), 2);
+    let retry = engine
+        .prepare_workspace_commit(request, None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let replay = engine.finish_workspace_commit(retry).unwrap();
+    assert_eq!(replay.request_digest, result.request_digest);
+    assert_eq!(replay.sequence, result.sequence);
+}
+
+#[test]
+fn detached_workspace_commit_stale_base_is_definite_retryable_conflict() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (workspace, request) = detached_commit_fixture(&mut engine, &repo);
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    let busy = engine
+        .create_repository("unrelated-writer", "P01", 1, "admin", &new_id("op"))
+        .unwrap_err();
+    assert_eq!(busy.code(), "COMMIT_PREPARATION_BUSY");
+    assert!(busy.retryable);
+    // Simulate an externally invalidated base to retain the final fence test.
+    engine.state.business_generation += 1;
+    let error = engine.finish_workspace_commit(prepared).unwrap_err();
+    assert_eq!(error.code(), "COMMIT_PREPARATION_STALE");
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+    assert_eq!(
+        engine.workspace(&workspace.workspace_id).unwrap().state,
+        "open"
+    );
+    for staged in engine
+        .workspace(&workspace.workspace_id)
+        .unwrap()
+        .files
+        .values()
+    {
+        assert!(staged.source_path.exists());
+    }
+    let retry = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(retry).unwrap().operation_id,
+        request.operation_id
+    );
+}
+
+#[test]
+fn detached_workspace_commit_rechecks_fence_and_releases_cancelled_admission() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (workspace, request) = detached_commit_fixture(&mut engine, &repo);
+    let plan = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap();
+    drop(plan);
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    drop(prepared);
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    engine
+        .abort_workspace(&workspace.workspace_id, "admin")
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(prepared).unwrap_err().code(),
+        "COMMIT_PREPARATION_STALE"
+    );
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+}
+
+#[test]
+fn detached_workspace_commit_consumes_real_fault_only_at_decision_boundary() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (_, request) = detached_commit_fixture(&mut engine, &repo);
+    engine.inject_fault_once("after_payloads");
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(prepared).unwrap_err().code(),
+        "INJECTED_FAILURE"
+    );
+    assert!(!engine.blocked);
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+    let retry = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(retry).unwrap().operation_id,
+        request.operation_id
+    );
+}
+
+#[test]
+fn detached_workspace_commit_checks_actual_source_grants_and_topology() {
+    use std::os::unix::fs::PermissionsExt;
+    for changed in ["source", "grant", "topology"] {
+        let fixture = Fixture::new();
+        let mut engine = fixture.initialize();
+        let repo = repository(&mut engine, 1);
+        let (workspace, request) = detached_commit_fixture(&mut engine, &repo);
+        let plan = engine
+            .prepare_workspace_commit(request.clone(), None)
+            .unwrap();
+        if changed == "source" {
+            let staged = engine
+                .workspace(&workspace.workspace_id)
+                .unwrap()
+                .files
+                .into_values()
+                .next()
+                .unwrap();
+            fs::set_permissions(&staged.source_path, fs::Permissions::from_mode(0o600)).unwrap();
+            fs::write(&staged.source_path, b"altered after snapshot").unwrap();
+            assert_eq!(plan.execute().err().unwrap().code(), "CHECKSUM_MISMATCH");
+        } else {
+            let prepared = plan.execute().unwrap();
+            if changed == "grant" {
+                let live = engine
+                    .state
+                    .repositories
+                    .get_mut(&repo.repository_id)
+                    .unwrap();
+                live.grants.manage.clear();
+                live.grants.write.clear();
+            } else {
+                engine.state.topology_generation += 1;
+            }
+            let error = engine.finish_workspace_commit(prepared).unwrap_err();
+            assert_eq!(
+                error.code(),
+                if changed == "grant" {
+                    "PERMISSION_DENIED"
+                } else {
+                    "COMMIT_PREPARATION_STALE"
+                }
+            );
+        }
+        assert!(!engine.state.operations.contains_key(&request.operation_id));
+        assert!(!engine.blocked);
+    }
+}
+
+#[test]
+fn detached_public_wire_commit_keeps_exact_digest_and_retry_binding() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (workspace, mut request) = detached_commit_fixture(&mut engine, &repo);
+    let mut body = engine
+        .seal_workspace(&workspace.workspace_id, "admin")
+        .unwrap();
+    request.operation_id = body["operation_id"].as_str().unwrap().into();
+    request.message.clear();
+    body["request_digest"] =
+        serde_json::json!(commit_request_digest(&workspace.workspace_id, &body).unwrap());
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), Some(body.clone()))
+        .unwrap()
+        .execute()
+        .unwrap();
+    let result = engine.finish_workspace_commit(prepared).unwrap();
+    assert_eq!(
+        result.request_digest,
+        body["request_digest"].as_str().unwrap()
+    );
+    let retry = engine
+        .prepare_workspace_commit(request.clone(), Some(body.clone()))
+        .unwrap()
+        .execute()
+        .unwrap();
+    assert_eq!(
+        engine.finish_workspace_commit(retry).unwrap().commit_id,
+        result.commit_id
+    );
+    body["message"] = serde_json::json!("changed retry");
+    let plan = engine
+        .prepare_workspace_commit(request, Some(body))
+        .unwrap();
+    assert_eq!(
+        plan.execute().err().unwrap().code(),
+        "IDEMPOTENCY_KEY_REUSED"
+    );
+}
+
+#[test]
+fn detached_preparation_fences_physical_namespace_writes_but_not_reads() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    save(
+        &mut engine,
+        &repo.main_branch_id,
+        "original.txt",
+        b"published",
+    );
+    let version = engine.list_tree(&repo.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "original.txt", b"replacement")
+        .unwrap();
+    let workspace_id = workspace.workspace_id.clone();
+    let request = CommitRequest {
+        workspace_id: workspace.workspace_id,
+        operation_id: new_id("op"),
+        principal: "admin".into(),
+        expected_head: workspace.base_head,
+        fencing_token: workspace.fencing_token,
+        message: "fenced preparation".into(),
+        request_digest: None,
+    };
+    let plan = engine.prepare_workspace_commit(request, None).unwrap();
+    let rename = NamespaceOperation {
+        kind: "rename".into(),
+        path: "original.txt".into(),
+        destination: Some("renamed.txt".into()),
+    };
+    let error = engine
+        .file_namespace(&repo.repository_id, rename.clone(), "admin", &new_id("op"))
+        .unwrap_err();
+    assert_eq!(error.code(), "COMMIT_PREPARATION_BUSY");
+    assert!(error.retryable);
+    assert_eq!(bytes(&engine, &version), b"published");
+    let prepared = plan.execute().unwrap();
+    assert_eq!(
+        engine.cleanup_purged().unwrap_err().code(),
+        "COMMIT_PREPARATION_BUSY"
+    );
+    assert_eq!(
+        engine
+            .stage_bytes(&workspace_id, "other.txt", b"x")
+            .unwrap_err()
+            .code(),
+        "COMMIT_PREPARATION_BUSY"
+    );
+    drop(prepared);
+    engine
+        .file_namespace(&repo.repository_id, rename, "admin", &new_id("op"))
+        .unwrap();
+    assert_eq!(bytes(&engine, &version), b"published");
+    assert_eq!(
+        engine.list_tree(&repo.main_branch_id).unwrap()[0].path,
+        "renamed.txt"
+    );
+}
+
+#[test]
+fn detached_commit_rechecks_lease_expiry_at_finish() {
+    let fixture = Fixture::new();
+    let mut engine = fixture.initialize();
+    let repo = repository(&mut engine, 1);
+    let (_, request) = detached_commit_fixture(&mut engine, &repo);
+    engine.config.workspace_ttl_seconds = 1;
+    let prepared = engine
+        .prepare_workspace_commit(request.clone(), None)
+        .unwrap()
+        .execute()
+        .unwrap();
+    std::thread::sleep(std::time::Duration::from_secs(2));
+    let before = engine.state.sequence;
+    let error = engine.finish_workspace_commit(prepared).unwrap_err();
+    assert_eq!(error.code(), "FENCING_TOKEN_EXPIRED");
+    assert_eq!(engine.state.sequence, before);
+    assert!(!engine.state.operations.contains_key(&request.operation_id));
+    assert!(engine.require_write().is_ok());
+}

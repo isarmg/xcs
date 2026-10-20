@@ -66,9 +66,29 @@ impl Engine {
     }
     pub fn commit_workspace_wire(
         &mut self,
-        mut request: CommitRequest,
+        request: CommitRequest,
         body: Value,
     ) -> Result<OperationResult> {
+        let plan = self.plan_workspace_commit_wire(request, body)?;
+        self.persist_workspace_commit_request(&plan)?;
+        let result = match plan.mutation {
+            crate::engine::MutationPlan::Existing(result) => return Ok(result),
+            crate::engine::MutationPlan::Prepared {
+                next,
+                prepared,
+                result,
+            } => {
+                self.persist(next, prepared, result.clone())?;
+                result
+            }
+        };
+        self.complete_workspace_commit(plan.workspace, result)
+    }
+    pub(crate) fn plan_workspace_commit_wire(
+        &self,
+        mut request: CommitRequest,
+        body: Value,
+    ) -> Result<crate::business::WorkspaceMutation> {
         let fields = [
             "operation_id",
             "workspace_id",
@@ -110,7 +130,14 @@ impl Engine {
                 &request.principal,
                 "read",
             )?;
-            return self.operation(&request.operation_id);
+            return Ok(crate::business::WorkspaceMutation {
+                mutation: crate::engine::MutationPlan::Existing(
+                    self.operation(&request.operation_id)?,
+                ),
+                workspace,
+                request,
+                wire: None,
+            });
         }
         let w = self.workspace(&request.workspace_id)?;
         let repo = self.repository_for_branch(&w.branch_id)?;
@@ -200,16 +227,7 @@ impl Engine {
             ));
         }
         request.request_digest = Some(digest.clone());
-        write_json(
-            &self
-                .root
-                .join("workspaces")
-                .join(&w.workspace_id)
-                .join("wire-request.json"),
-            &body,
-            true,
-        )?;
-        self.commit_workspace_inner(
+        self.plan_workspace_commit_inner(
             request,
             Some(WireCommit {
                 digest,

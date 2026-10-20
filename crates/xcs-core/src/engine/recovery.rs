@@ -1,13 +1,13 @@
 //! Replay the verified publication prefix and reconcile pending decisions.
 use super::Engine;
 use crate::{disk::*, journal::*, *};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 impl Engine {
     pub(super) fn recover_mode(&mut self, complete_unpublished: bool) -> Result<()> {
         let members = self.members();
         let mut online = Vec::new();
-        let mut tips = BTreeMap::new();
+        let mut prefixes = BTreeMap::<String, BTreeSet<String>>::new();
         let mut torn_tail = false;
         let mut records = BTreeMap::<u64, BTreeMap<String, Vec<(String, Record)>>>::new();
         for d in &members {
@@ -16,9 +16,14 @@ impl Engine {
             }
             let scanned = scan(d)?;
             torn_tail |= scanned.torn_tail;
-            if let Some((_, hash)) = scanned.records.last() {
-                tips.insert(d.disk_id.clone(), hash.clone());
-            }
+            prefixes.insert(
+                d.disk_id.clone(),
+                scanned
+                    .records
+                    .iter()
+                    .map(|(_, hash)| hash.clone())
+                    .collect(),
+            );
             for (r, _) in scanned.records {
                 self.next_slot =
                     self.next_slot.max(r.sequence.checked_add(1).ok_or_else(|| {
@@ -40,7 +45,7 @@ impl Engine {
             ));
         }
         let checkpoint = if online.len() == 3 && !torn_tail {
-            super::recovery_checkpoint::load(self, &tips).filter(|c| {
+            super::recovery_checkpoint::load(self, &prefixes, &records).filter(|c| {
                 records
                     .get(&c.sequence)
                     .is_some_and(|candidates| candidates.contains_key(&c.candidate_hash))
@@ -117,7 +122,7 @@ impl Engine {
                             "checkpoint boundary differs from journal",
                         ));
                     }
-                    let mut next = load_snapshot(source, &candidate.snapshot_hash)?;
+                    let (mut next, _) = verified_snapshot(&online, &candidate.snapshot_hash)?;
                     if publication.recovery.is_some() {
                         next.operations
                             .insert(candidate.operation_id.clone(), publication.result.clone());
@@ -127,7 +132,7 @@ impl Engine {
                 self.snapshot = Some(candidate.snapshot_hash);
                 continue;
             }
-            let mut next = load_snapshot(source, &candidate.snapshot_hash)?;
+            let (mut next, snapshot_source) = verified_snapshot(&online, &candidate.snapshot_hash)?;
             if publication.is_none() && !complete_unpublished {
                 self.blocked = true;
                 break;
@@ -136,7 +141,9 @@ impl Engine {
                 self.repair_pending_payloads(&candidate)?;
             }
             if online.len() == 3 {
-                // Copy verified immutable dependencies, never manufacture a new candidate.
+                // Repair only replicas of the exact hash-bound snapshot. Never
+                // manufacture a replacement state from an unverifiable copy.
+                repair_snapshot_copies(&snapshot_source, &members, &candidate.snapshot_hash)?;
                 store_snapshot(&members, &next)?;
                 let manifests = crate::history_package::store_history_manifests(&members, &next)?;
                 if !candidate.history_manifest_hashes.is_empty()
@@ -200,9 +207,69 @@ impl Engine {
         // Optional acceleration only. Failure to create a checkpoint must never
         // fail or roll back an otherwise verified recovery. Existing checkpoints
         // become ineligible whenever their journal/coverage hashes differ.
-        if checkpoint.is_none() {
+        if checkpoint
+            .as_ref()
+            .is_none_or(|c| c.sequence < self.state.sequence)
+        {
             let _ = super::recovery_checkpoint::save(self);
         }
         Ok(())
     }
+}
+
+// A candidate binds one snapshot root. Try only replicas of that exact root;
+// never substitute a different state or advance past a failed dependency.
+fn verified_snapshot(members: &[DiskConfig], hash: &str) -> Result<(State, DiskConfig)> {
+    let mut first_error = None;
+    for member in members {
+        match load_snapshot(member, hash) {
+            Ok(state) => return Ok((state, member.clone())),
+            Err(error) => {
+                if first_error.is_none() {
+                    first_error = Some(error);
+                }
+            }
+        }
+    }
+    Err(first_error
+        .unwrap_or_else(|| Error::new("RECOVERY_REQUIRED", "no trusted snapshot replica")))
+}
+fn repair_snapshot_copies(source: &DiskConfig, members: &[DiskConfig], hash: &str) -> Result<()> {
+    fn install<T: serde::Serialize + serde::de::DeserializeOwned>(
+        source: &DiskConfig,
+        members: &[DiskConfig],
+        kind: &str,
+        hash: &str,
+    ) -> Result<()> {
+        let value: T = load_object(source, kind, hash)?;
+        let bytes = encode_metadata(&value, MAX_METADATA)?;
+        for member in members {
+            let path = object_path(member, kind, hash);
+            match std::fs::symlink_metadata(&path) {
+                Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => {
+                    // Require a safe regular file even when replacing corrupt bytes.
+                    open_regular(&path)?;
+                    if read_bytes(&path, MAX_METADATA).ok().as_deref() != Some(bytes.as_slice()) {
+                        write_atomic(&path, &bytes, true)?;
+                    }
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                    write_atomic(&path, &bytes, false)?
+                }
+                Err(e) => return Err(e.into()),
+                Ok(_) => {
+                    return Err(Error::new(
+                        "UNSAFE_PATH",
+                        "snapshot repair target is not a regular file",
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+    let snapshot: Snapshot = load_object(source, "snapshot", hash)?;
+    for hash in snapshot.pages.values().flatten() {
+        install::<serde_json::Map<String, serde_json::Value>>(source, members, "state-page", hash)?;
+    }
+    install::<Snapshot>(source, members, "snapshot", hash)
 }

@@ -291,7 +291,10 @@ impl AuthStore {
             file.sync_all().map_err(ApiError::io)?;
             if let Some(backup) = &self.backup {
                 if let Err(error) = backup(self.snapshot()?) {
-                    self.blocked.store(true, Ordering::SeqCst);
+                    // Admission rejected before any decision or auth publication.
+                    if error.code != "COMMIT_PREPARATION_BUSY" {
+                        self.blocked.store(true, Ordering::SeqCst);
+                    }
                     return Err(error);
                 }
             }
@@ -313,7 +316,12 @@ impl AuthStore {
             Ok(())
         })();
         if result.is_err() {
-            if self.backup.is_some() {
+            if self.backup.is_some()
+                && result
+                    .as_ref()
+                    .err()
+                    .is_none_or(|error| error.code != "COMMIT_PREPARATION_BUSY")
+            {
                 self.blocked.store(true, Ordering::SeqCst);
             }
             let _ = fs::remove_file(temporary);

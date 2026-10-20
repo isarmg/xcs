@@ -6,6 +6,7 @@ mod degraded_recovery;
 mod disk;
 mod engine;
 mod historical_save;
+pub use engine::{PreparedWorkspaceCommit, WorkspaceCommitPreparation};
 mod history_package;
 mod journal;
 mod maintenance;

@@ -1,6 +1,9 @@
 //! Full upload generations, working files and atomic content publication.
 use super::*;
-use crate::{disk::*, engine::Prepared};
+use crate::{
+    disk::*,
+    engine::{MutationPlan, Prepared},
+};
 use serde_json::json;
 use std::os::unix::ffi::OsStrExt;
 use std::{
@@ -188,6 +191,13 @@ impl UploadPreparation {
         prepared.hash = hash;
         Ok(prepared)
     }
+}
+
+pub(crate) struct WorkspaceMutation {
+    pub mutation: MutationPlan,
+    pub workspace: Workspace,
+    pub request: CommitRequest,
+    pub wire: Option<crate::wire::WireCommit>,
 }
 
 fn validate_directory_selection(state: &State, workspace: &Workspace, path: &str) -> Result<()> {
@@ -806,6 +816,26 @@ impl Engine {
         request: CommitRequest,
         wire: Option<crate::wire::WireCommit>,
     ) -> Result<OperationResult> {
+        let plan = self.plan_workspace_commit_inner(request, wire)?;
+        self.persist_workspace_commit_request(&plan)?;
+        let result = match plan.mutation {
+            MutationPlan::Existing(result) => return Ok(result),
+            MutationPlan::Prepared {
+                next,
+                prepared,
+                result,
+            } => {
+                self.persist(next, prepared, result.clone())?;
+                result
+            }
+        };
+        self.complete_workspace_commit(plan.workspace, result)
+    }
+    pub(crate) fn plan_workspace_commit_inner(
+        &self,
+        request: CommitRequest,
+        wire: Option<crate::wire::WireCommit>,
+    ) -> Result<WorkspaceMutation> {
         if let Some(op) = self.state.operations.get(&request.operation_id).cloned() {
             // Retry always reuses the exact sealed request saved with the workspace.
             let p = self
@@ -818,7 +848,12 @@ impl Engine {
                 && self.operation_owner(&request.operation_id).as_deref()
                     == Some(&request.principal)
             {
-                return self.operation(&op.operation_id);
+                return Ok(WorkspaceMutation {
+                    mutation: MutationPlan::Existing(self.operation(&op.operation_id)?),
+                    workspace: self.workspace(&request.workspace_id)?,
+                    request,
+                    wire,
+                });
             }
             return Err(Error::new(
                 "IDEMPOTENCY_KEY_REUSED",
@@ -888,23 +923,7 @@ impl Engine {
                 "server request digest differs",
             ));
         }
-        write_json(
-            &self
-                .root
-                .join("workspaces")
-                .join(&w.workspace_id)
-                .join("commit-request.json"),
-            &request,
-            true,
-        )?;
-        write_json(
-            &self
-                .workspace_data_directory(&w)?
-                .join("commit-request.json"),
-            &request,
-            true,
-        )?;
-        let result = self.mutate_digest(
+        let mutation = self.plan_mutation_digest(
             "workspace.commit", &request.principal, &request.operation_id, input,
             wire.as_ref().map(|wire| wire.digest.clone()),
             |engine, state, pending| {
@@ -1034,6 +1053,59 @@ impl Engine {
                 Ok(json!({"commit_id":commit_id,"branch_id":w.branch_id,"history_tree_id":branch.history_tree_id,"file_node_ids":file_paths::operation_nodes(state,&request.operation_id)}))
             },
         )?;
+        Ok(WorkspaceMutation {
+            mutation,
+            workspace: w,
+            request,
+            wire,
+        })
+    }
+    pub(crate) fn persist_workspace_commit_request(&self, plan: &WorkspaceMutation) -> Result<()> {
+        if matches!(plan.mutation, MutationPlan::Existing(_)) {
+            return Ok(());
+        }
+        self.write_workspace_commit_request(&plan.workspace, &plan.request, plan.wire.as_ref())
+    }
+    pub(crate) fn write_workspace_commit_request(
+        &self,
+        w: &Workspace,
+        request: &CommitRequest,
+        wire: Option<&crate::wire::WireCommit>,
+    ) -> Result<()> {
+        write_json(
+            &self
+                .root
+                .join("workspaces")
+                .join(&w.workspace_id)
+                .join("commit-request.json"),
+            &request,
+            true,
+        )?;
+        write_json(
+            &self
+                .workspace_data_directory(&w)?
+                .join("commit-request.json"),
+            &request,
+            true,
+        )?;
+        if let Some(wire) = wire {
+            write_json(
+                &self
+                    .root
+                    .join("workspaces")
+                    .join(&w.workspace_id)
+                    .join("wire-request.json"),
+                &wire.body,
+                true,
+            )?;
+        }
+        Ok(())
+    }
+    pub(crate) fn complete_workspace_commit(
+        &mut self,
+        w: Workspace,
+        result: OperationResult,
+    ) -> Result<OperationResult> {
         let mut completed = w;
         // A first inherited save can create a public file branch. The same SMB
         // handle subsequently continues its own published destination; later
