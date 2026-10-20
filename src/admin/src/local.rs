@@ -139,6 +139,10 @@ pub(crate) async fn run(args: Args) -> Result<()> {
             http_spool_bytes_per_account,
             http_spool_bytes_total,
             http_spool_recovery_reserve_bytes,
+            http_transfer_slots_total,
+            http_transfer_slots_per_account,
+            http_transfer_idle_seconds,
+            http_transfer_total_seconds,
             smb_socket,
             smb_peer_uid,
             smb_user,
@@ -156,6 +160,12 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                 bytes_per_account: http_spool_bytes_per_account,
                 bytes_total: http_spool_bytes_total,
                 recovery_reserve_bytes: http_spool_recovery_reserve_bytes,
+            };
+            config.http_transfer_limits = storage_server::TransferLimits {
+                slots_total: http_transfer_slots_total,
+                slots_per_account: http_transfer_slots_per_account,
+                idle_timeout: std::time::Duration::from_secs(http_transfer_idle_seconds),
+                total_timeout: std::time::Duration::from_secs(http_transfer_total_seconds),
             };
             if let Some(socket) = smb_socket {
                 let allowed_uid =

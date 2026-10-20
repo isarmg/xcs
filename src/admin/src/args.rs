@@ -130,6 +130,15 @@ pub(crate) enum Command {
         /// Keep this filesystem headroom outside new upload reservations.
         #[arg(long, default_value_t = 1_073_741_824)]
         http_spool_recovery_reserve_bytes: u64,
+        /// Independent capacity for each HTTP upload/read pool.
+        #[arg(long, default_value_t = 8)]
+        http_transfer_slots_total: usize,
+        #[arg(long, default_value_t = 2)]
+        http_transfer_slots_per_account: usize,
+        #[arg(long, default_value_t = 60)]
+        http_transfer_idle_seconds: u64,
+        #[arg(long, default_value_t = 3600)]
+        http_transfer_total_seconds: u64,
         #[arg(long)]
         smb_socket: Option<PathBuf>,
         #[arg(long, requires = "smb_socket")]

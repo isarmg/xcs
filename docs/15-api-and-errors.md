@@ -185,6 +185,7 @@ Web 和内部远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作经 Sa
 | `IDEMPOTENCY_KEY_REUSED` / `REQUEST_DIGEST_MISMATCH` | 操作 ID 对应不同输入或摘要不匹配 | 查询原操作，不能修改原输入后继续使用同一 ID |
 | `RESOURCE_LIMIT_EXCEEDED` | 工作区、上传、句柄或队列达到准入上限 | 停止新增工作，查询或处理已有工作，不删除脏数据腾空间 |
 | `UPLOAD_GENERATION_CONFLICT` / `UPLOAD_RANGE_CONFLICT` | 上传代际变化或重叠范围内容不同 | 查询原上传状态，保留本地内容，显式创建新代际 |
+| `TRANSFER_TIMEOUT` | HTTP 正文空闲或总期限到达；响应头前为 408，已开始的正文终止为流错误 | 查询上传状态后重试；已有字节/操作记录保留，阻塞 I/O 可能仍在完成 |
 | `UPLOAD_INCOMPLETE` | 长度或有效范围未满足封存条件 | 补齐缺失范围，不能补零冒充完整上传 |
 | `CURSOR_EXPIRED` / `PAGE_SNAPSHOT_EXPIRED` | 事件窗口或分页快照失效 | 重新授权并取得一致快照，按返回的新游标继续 |
 | `CONFIG_CONFLICT` / `CONFIG_INVARIANT_VIOLATION` | 配置与权威状态或协议常量冲突 | 进入配置核查，不自动改盘上状态或降低保护 |

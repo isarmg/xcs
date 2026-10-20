@@ -350,3 +350,12 @@ queue_warning_seconds = 30
 - `--http-spool-recovery-reserve-bytes`：默认 `1073741824`，即 1 GiB。
 
 它们映射到 `ServerConfig.http_spool_limits`，只约束 HTTP `api-spool`。`--max-upload-bytes` 仍限制单次上传；核心工作区及 SMB 的预算独立。上文完整设计配置中的跨入口全池参数不能仅因存在于示例中就视为全部已接入运行时。启动会盘点留存数据并持有独占目录锁；不得让多个服务实例同时使用同一 spool。详见[HTTP 暂存预算与恢复](components/server.md#http-spool-budget)。
+
+HTTP 传输准入及期限参数（上传/读取各自独立一池）：
+
+- `--http-transfer-slots-total`：默认 `8`。
+- `--http-transfer-slots-per-account`：默认 `2`，必须大于零且小于全局值。
+- `--http-transfer-idle-seconds`：默认 `60`，无非空正文进度的期限。
+- `--http-transfer-total-seconds`：默认 `3600`，必须不低于 idle，且最多 `604800`（7 天）。
+
+映射到 `ServerConfig.http_transfer_limits`。额度耗尽立即 429；响应头前超时为 408 `TRANSFER_TIMEOUT`，已开始的正文以流错误终止。超时不删除留存数据，也不提前归还仍被阻塞 I/O 使用的许可/租约。详见[HTTP 并发公平性与传输期限](components/server.md#http-transfer-limits)。

@@ -6,7 +6,9 @@ use crate::{
     ApiError, AppState, Content,
     auth::Identity,
     http_boundary::{ApiPath, ApiQuery},
-    lock, uploads,
+    lock,
+    transfer_limits::{BoundedStream, TransferLimits, timeout_error},
+    uploads,
 };
 use axum::{
     Json,
@@ -19,11 +21,10 @@ use futures_util::StreamExt;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::{
-    io::{Seek, SeekFrom},
+    io::{Read, Seek, SeekFrom},
     path::Path,
     sync::Arc,
 };
-use tokio_util::io::ReaderStream;
 
 pub(crate) async fn upload_status(
     State(state): State<AppState>,
@@ -97,7 +98,7 @@ pub(crate) struct UploadQuery {
 /// Shared with every blocking metadata/publication task. Request cancellation
 /// must not admit a retry until all tasks that can replace its record finish.
 struct UploadAdmission {
-    _permit: tokio::sync::OwnedSemaphorePermit,
+    _permit: crate::transfer_limits::Permit,
     _claim: uploads::Claim,
 }
 
@@ -126,11 +127,25 @@ pub(crate) async fn upload(
     ApiQuery(query): ApiQuery<UploadQuery>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
-    let _permit = state
-        .upload_slots
-        .clone()
-        .try_acquire_owned()
-        .map_err(|_| ApiError::limit("upload capacity reached"))?;
+    let deadline = tokio::time::Instant::now() + state.config.http_transfer_limits.total_timeout;
+    tokio::time::timeout_at(
+        deadline,
+        upload_inner(state, identity, workspace, item, query, request, deadline),
+    )
+    .await
+    .map_err(|_| timeout_error())?
+}
+
+async fn upload_inner(
+    state: AppState,
+    identity: Identity,
+    workspace: String,
+    item: String,
+    query: UploadQuery,
+    request: Request,
+    deadline: tokio::time::Instant,
+) -> Result<Json<Value>, ApiError> {
+    let _permit = state.upload_slots.acquire(&identity.principal)?;
     let key = uploads::key(&workspace, &item);
     {
         let mut claims = lock(&state.upload_claims)?;
@@ -199,7 +214,9 @@ pub(crate) async fn upload(
     let owner = identity.clone();
     let ws = workspace.clone();
     let item_id = item.clone();
+    let ownership = admission.clone();
     tokio::task::spawn_blocking(move || {
+        let _ownership = ownership;
         backend.call(
             crate::BackendAction::UploadAuthorize,
             &owner,
@@ -212,9 +229,13 @@ pub(crate) async fn upload(
     let root = spool.clone();
     let ws = workspace.clone();
     let item_id = item.clone();
-    let previous = tokio::task::spawn_blocking(move || uploads::load(&root, &ws, &item_id))
-        .await
-        .map_err(ApiError::join)??;
+    let ownership = admission.clone();
+    let previous = tokio::task::spawn_blocking(move || {
+        let _ownership = ownership;
+        uploads::load(&root, &ws, &item_id)
+    })
+    .await
+    .map_err(ApiError::join)??;
     let mut prefix = None;
     if let Some(previous) = &previous {
         if previous.principal != identity.principal || previous.path != query.path {
@@ -313,7 +334,29 @@ pub(crate) async fn upload(
     let mut length = 0u64;
     let mut last_persisted = 0u64;
     let mut hash = blake3::Hasher::new();
-    while let Some(chunk) = stream.next().await {
+    let idle = state.config.http_transfer_limits.idle_timeout;
+    let mut idle_deadline = (tokio::time::Instant::now() + idle).min(deadline);
+    loop {
+        // Ready empty frames must not starve the timer or extend idle time.
+        let next = if tokio::time::Instant::now() >= idle_deadline {
+            None
+        } else {
+            tokio::time::timeout_at(idle_deadline, stream.next())
+                .await
+                .ok()
+        };
+        let chunk = match next {
+            Some(Some(chunk)) => chunk,
+            Some(None) => break,
+            None => {
+                if prefix.as_ref().is_none_or(|prefix| prefix.complete()) {
+                    record.persisted_bytes = length;
+                    record.persisted_hash = hash.clone().finalize().to_hex().to_string();
+                    persist_upload(&spool, &record, &admission, &staged_file).await?;
+                }
+                return Err(timeout_error());
+            }
+        };
         let chunk = match chunk {
             Ok(chunk) => chunk,
             Err(error) => {
@@ -327,6 +370,11 @@ pub(crate) async fn upload(
                 )));
             }
         };
+        if chunk.is_empty() {
+            tokio::task::yield_now().await;
+            continue;
+        }
+        idle_deadline = (tokio::time::Instant::now() + idle).min(deadline);
         length = length
             .checked_add(chunk.len() as u64)
             .ok_or_else(|| ApiError::invalid("upload length overflow"))?;
@@ -506,47 +554,49 @@ pub(crate) async fn content(
     method: Method,
     headers: HeaderMap,
 ) -> Result<Response, ApiError> {
-    let permit = state
-        .read_slots
-        .clone()
-        .try_acquire_owned()
-        .map_err(|_| ApiError::limit("download capacity reached"))?;
-    let content = tokio::task::spawn_blocking(move || {
-        if query.repository_id.is_some() != query.path.is_some() {
-            return Err(ApiError::invalid(
-                "repository_id and path must be supplied together",
-            ));
-        }
-        let logical_name = if let (Some(repo), Some(path)) = (query.repository_id, query.path) {
-            let metadata = state.backend.call(
-                crate::BackendAction::FileManagerDownloadContext,
-                &identity,
-                json!({
-                    "repository_id":repo,"path":path,"version_id":version
-                }),
-            )?;
-            Some(
-                metadata
-                    .get("name")
-                    .and_then(Value::as_str)
-                    .ok_or_else(|| {
-                        ApiError::new(500, "STATE_INVALID", "download context has no filename")
-                    })?
-                    .to_owned(),
-            )
-        } else {
-            None
-        };
-        let mut content = state.backend.range_content(&identity, &version)?;
-        if logical_name.is_some() {
-            content.download_name = logical_name;
-        }
-        content.lease = Box::new((content.lease, permit));
-        Ok(content)
-    })
+    let limits = state.config.http_transfer_limits.clone();
+    let deadline = tokio::time::Instant::now() + limits.total_timeout;
+    let permit = state.read_slots.acquire(&identity.principal)?;
+    let content = tokio::time::timeout_at(
+        deadline,
+        tokio::task::spawn_blocking(move || {
+            if query.repository_id.is_some() != query.path.is_some() {
+                return Err(ApiError::invalid(
+                    "repository_id and path must be supplied together",
+                ));
+            }
+            let logical_name = if let (Some(repo), Some(path)) = (query.repository_id, query.path) {
+                let metadata = state.backend.call(
+                    crate::BackendAction::FileManagerDownloadContext,
+                    &identity,
+                    json!({
+                        "repository_id":repo,"path":path,"version_id":version
+                    }),
+                )?;
+                Some(
+                    metadata
+                        .get("name")
+                        .and_then(Value::as_str)
+                        .ok_or_else(|| {
+                            ApiError::new(500, "STATE_INVALID", "download context has no filename")
+                        })?
+                        .to_owned(),
+                )
+            } else {
+                None
+            };
+            let mut content = state.backend.range_content(&identity, &version)?;
+            if logical_name.is_some() {
+                content.download_name = logical_name;
+            }
+            content.lease = Box::new((content.lease, permit));
+            Ok(content)
+        }),
+    )
     .await
+    .map_err(|_| timeout_error())?
     .map_err(ApiError::join)??;
-    content_response(content, method, headers)
+    content_response_with_limits(content, method, headers, &limits, deadline)
 }
 pub(crate) async fn workspace_content(
     State(state): State<AppState>,
@@ -555,44 +605,88 @@ pub(crate) async fn workspace_content(
     method: Method,
     headers: HeaderMap,
 ) -> Result<Response, ApiError> {
-    let permit = state
-        .read_slots
-        .clone()
-        .try_acquire_owned()
-        .map_err(|_| ApiError::limit("download capacity reached"))?;
-    let content = tokio::task::spawn_blocking(move || {
-        let mut content = state
-            .backend
-            .workspace_content(&identity, &workspace, &item)?;
-        content.lease = Box::new((content.lease, permit));
-        Ok::<_, ApiError>(content)
-    })
+    let limits = state.config.http_transfer_limits.clone();
+    let deadline = tokio::time::Instant::now() + limits.total_timeout;
+    let permit = state.read_slots.acquire(&identity.principal)?;
+    let content = tokio::time::timeout_at(
+        deadline,
+        tokio::task::spawn_blocking(move || {
+            let mut content = state
+                .backend
+                .workspace_content(&identity, &workspace, &item)?;
+            content.lease = Box::new((content.lease, permit));
+            Ok::<_, ApiError>(content)
+        }),
+    )
     .await
+    .map_err(|_| timeout_error())?
     .map_err(ApiError::join)??;
-    content_response(content, method, headers)
+    content_response_with_limits(content, method, headers, &limits, deadline)
 }
 pub(crate) async fn checksums(
     State(state): State<AppState>,
     axum::Extension(identity): axum::Extension<Identity>,
     ApiPath(version): ApiPath<String>,
 ) -> Result<Response, ApiError> {
-    let permit = state
-        .read_slots
-        .clone()
-        .try_acquire_owned()
-        .map_err(|_| ApiError::limit("download capacity reached"))?;
-    let bytes = tokio::task::spawn_blocking(move || {
-        let _permit = permit;
-        state.backend.checksums(&identity, &version)
-    })
+    let limits = state.config.http_transfer_limits.clone();
+    let deadline = tokio::time::Instant::now() + limits.total_timeout;
+    let permit = state.read_slots.acquire(&identity.principal)?;
+    let (bytes, permit) = tokio::time::timeout_at(
+        deadline,
+        tokio::task::spawn_blocking(move || {
+            let bytes = state.backend.checksums(&identity, &version)?;
+            Ok::<_, ApiError>((bytes, permit))
+        }),
+    )
     .await
+    .map_err(|_| timeout_error())?
     .map_err(ApiError::join)??;
-    Ok(([(header::CONTENT_TYPE, "application/octet-stream")], bytes).into_response())
+    let length = bytes.len();
+    let stream = futures_util::stream::try_unfold(
+        (bytes::Bytes::from(bytes), permit),
+        |(mut bytes, permit)| async move {
+            if bytes.is_empty() {
+                return Ok::<_, std::io::Error>(None);
+            }
+            // A transport-owned chunk must not pin the entire manifest after
+            // timeout drops the remaining body and returns its admission slot.
+            let chunk = bytes::Bytes::copy_from_slice(&bytes.split_to(bytes.len().min(64 * 1024)));
+            Ok(Some((chunk, (bytes, permit))))
+        },
+    );
+    let mut response =
+        Body::from_stream(BoundedStream::new(stream, &limits, deadline)).into_response();
+    response.headers_mut().insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/octet-stream"),
+    );
+    response.headers_mut().insert(
+        header::CONTENT_LENGTH,
+        HeaderValue::from_str(&length.to_string()).unwrap(),
+    );
+    Ok(response)
 }
+#[cfg(test)]
 fn content_response(
     content: Content,
     method: Method,
     headers: HeaderMap,
+) -> Result<Response, ApiError> {
+    let limits = TransferLimits::default();
+    content_response_with_limits(
+        content,
+        method,
+        headers,
+        &limits,
+        tokio::time::Instant::now() + limits.total_timeout,
+    )
+}
+fn content_response_with_limits(
+    content: Content,
+    method: Method,
+    headers: HeaderMap,
+    limits: &TransferLimits,
+    deadline: tokio::time::Instant,
 ) -> Result<Response, ApiError> {
     let manifest = content.checksum_manifest;
     let download_name = content.download_name;
@@ -647,18 +741,29 @@ fn content_response(
                 .await
                 .map_err(std::io::Error::other)?
             });
-        Body::from_stream(stream)
+        Body::from_stream(BoundedStream::new(stream, limits, deadline))
     } else {
         file.seek(SeekFrom::Start(start)).map_err(ApiError::io)?;
-        let stream = ReaderStream::new(tokio::io::AsyncReadExt::take(
-            tokio::fs::File::from_std(file),
-            length,
-        ));
-        let stream = stream.map(move |chunk| {
-            let _keep_lease = &lease;
-            chunk
-        });
-        Body::from_stream(stream)
+        let stream = futures_util::stream::try_unfold(
+            (file, length, lease),
+            |(mut file, remaining, lease)| async move {
+                if remaining == 0 {
+                    return Ok(None);
+                }
+                tokio::task::spawn_blocking(move || {
+                    let mut bytes = vec![0; remaining.min(64 * 1024) as usize];
+                    file.read_exact(&mut bytes)?;
+                    let remaining = remaining - bytes.len() as u64;
+                    Ok::<_, std::io::Error>(Some((
+                        bytes::Bytes::from(bytes),
+                        (file, remaining, lease),
+                    )))
+                })
+                .await
+                .map_err(std::io::Error::other)?
+            },
+        );
+        Body::from_stream(BoundedStream::new(stream, limits, deadline))
     };
     let mut response = Response::new(body);
     *response.status_mut() = status;

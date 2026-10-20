@@ -279,3 +279,228 @@ async fn cancellation_settles_actual_unknown_tail_and_retry_never_overwrites_it(
         expected
     );
 }
+
+#[tokio::test]
+async fn upload_idle_timeout_preserves_tail_and_allows_verified_retry() {
+    let root = tempfile::tempdir().unwrap();
+    let mut settings = config(root.path(), METADATA_ALLOWANCE + 10);
+    settings.http_transfer_limits.idle_timeout = Duration::from_millis(50);
+    let app = application_config(root.path(), settings);
+    let (token, _, _) = authenticated(&app).await;
+    let hash = blake3::hash(b"abcdefghij").to_hex().to_string();
+    let stream = futures_util::StreamExt::chain(
+        futures_util::stream::once(async { Ok::<_, std::io::Error>(Bytes::from_static(b"abc")) }),
+        futures_util::stream::pending(),
+    );
+    let response = app
+        .clone()
+        .oneshot(request(
+            &token,
+            "idle",
+            1,
+            10,
+            &hash,
+            Body::from_stream(stream),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
+    let body: Value = serde_json::from_slice(
+        &axum::body::to_bytes(response.into_body(), 8192)
+            .await
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(body["error"]["code"], "TRANSFER_TIMEOUT");
+    let record = uploads::load(&root.path().join("api-spool"), "ws", "idle")
+        .unwrap()
+        .unwrap();
+    assert_eq!(record.persisted_bytes, 3);
+    assert_eq!(
+        std::fs::read(root.path().join("api-spool").join(record.data_file)).unwrap(),
+        b"abc"
+    );
+    let response = app
+        .oneshot(request(
+            &token,
+            "idle",
+            1,
+            10,
+            &hash,
+            Body::from("abcdefghij"),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(data_count(root.path()), 1);
+}
+
+#[tokio::test]
+async fn upload_total_timeout_retains_unfinished_evidence_despite_progress() {
+    let root = tempfile::tempdir().unwrap();
+    let mut settings = config(root.path(), METADATA_ALLOWANCE + 100);
+    settings.http_transfer_limits.idle_timeout = Duration::from_millis(100);
+    settings.http_transfer_limits.total_timeout = Duration::from_millis(180);
+    let app = application_config(root.path(), settings);
+    let (token, _, _) = authenticated(&app).await;
+    let hash = blake3::hash(&[b'x'; 100]).to_hex().to_string();
+    let stream = futures_util::stream::unfold((), |_| async {
+        tokio::time::sleep(Duration::from_millis(10)).await;
+        Some((Ok::<_, std::io::Error>(Bytes::from_static(b"x")), ()))
+    });
+    let response = app
+        .oneshot(request(
+            &token,
+            "total",
+            1,
+            100,
+            &hash,
+            Body::from_stream(stream),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
+    let record = uploads::load(&root.path().join("api-spool"), "ws", "total")
+        .unwrap()
+        .unwrap();
+    assert_eq!(record.state, "incomplete");
+    let bytes = std::fs::read(root.path().join("api-spool").join(record.data_file)).unwrap();
+    assert!(!bytes.is_empty());
+    assert!(bytes.len() < 100);
+    assert!(bytes.iter().all(|&byte| byte == b'x'));
+}
+
+#[tokio::test]
+async fn account_upload_slots_are_shared_across_items_and_released_on_cancel() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let (token, _, _) = authenticated(&app).await;
+    let hash = blake3::hash(b"").to_hex().to_string();
+    let mut tasks = Vec::new();
+    for item in ["one", "two"] {
+        let (ready_tx, ready_rx) = tokio::sync::oneshot::channel();
+        let mut ready = Some(ready_tx);
+        let stream = futures_util::stream::poll_fn(move |_| {
+            if let Some(ready) = ready.take() {
+                let _ = ready.send(());
+            }
+            std::task::Poll::Pending::<Option<Result<Bytes, std::io::Error>>>
+        });
+        let req = request(&token, item, 1, 0, &hash, Body::from_stream(stream));
+        let app = app.clone();
+        tasks.push(tokio::spawn(async move { app.oneshot(req).await }));
+        tokio::time::timeout(Duration::from_secs(5), ready_rx)
+            .await
+            .unwrap()
+            .unwrap();
+    }
+    let response = app
+        .clone()
+        .oneshot(request(&token, "three", 1, 0, &hash, Body::empty()))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
+    // Reads have a separate pool and are not starved by uploads.
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/api/versions/test/content")
+                .header("authorization", format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    drop(response);
+    for task in tasks {
+        task.abort();
+        let _ = task.await;
+    }
+    let response = app
+        .oneshot(request(&token, "three", 1, 0, &hash, Body::empty()))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+}
+
+#[tokio::test]
+async fn account_read_slots_remain_held_by_unconsumed_bodies() {
+    let root = tempfile::tempdir().unwrap();
+    let app = application(root.path());
+    let (token, _, _) = authenticated(&app).await;
+    let download = || {
+        Request::builder()
+            .uri("/api/versions/test/content")
+            .header("authorization", format!("Bearer {token}"))
+            .body(Body::empty())
+            .unwrap()
+    };
+    let first = app.clone().oneshot(download()).await.unwrap();
+    let second = app.clone().oneshot(download()).await.unwrap();
+    assert_eq!(first.status(), StatusCode::OK);
+    assert_eq!(second.status(), StatusCode::OK);
+    assert_eq!(
+        app.clone().oneshot(download()).await.unwrap().status(),
+        StatusCode::TOO_MANY_REQUESTS
+    );
+    drop(first);
+    assert_eq!(
+        app.oneshot(download()).await.unwrap().status(),
+        StatusCode::OK
+    );
+    drop(second);
+}
+
+#[tokio::test]
+async fn checksum_bodies_share_read_slots_and_expire_without_polling() {
+    let root = tempfile::tempdir().unwrap();
+    let mut config = ServerConfig::loopback(root.path());
+    config.http_transfer_limits.idle_timeout = Duration::from_millis(100);
+    let app = application_config(root.path(), config);
+    let (token, _, _) = authenticated(&app).await;
+    let download = |suffix| {
+        Request::builder()
+            .uri(format!("/api/versions/test/{suffix}"))
+            .header("authorization", format!("Bearer {token}"))
+            .body(Body::empty())
+            .unwrap()
+    };
+    let first = app.clone().oneshot(download("checksums")).await.unwrap();
+    let second = app.clone().oneshot(download("content")).await.unwrap();
+    assert_eq!(first.status(), StatusCode::OK);
+    assert_eq!(second.status(), StatusCode::OK);
+    assert_eq!(
+        first.headers()[header::CONTENT_LENGTH],
+        (128 * 1024).to_string()
+    );
+    assert_eq!(
+        app.clone()
+            .oneshot(download("checksums"))
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::TOO_MANY_REQUESTS
+    );
+    tokio::time::sleep(Duration::from_millis(150)).await;
+    assert!(
+        axum::body::to_bytes(first.into_body(), 256 * 1024)
+            .await
+            .is_err()
+    );
+    assert!(
+        axum::body::to_bytes(second.into_body(), 8192)
+            .await
+            .is_err()
+    );
+    let response = app.oneshot(download("checksums")).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        axum::body::to_bytes(response.into_body(), 256 * 1024)
+            .await
+            .unwrap()
+            .as_ref(),
+        &[7; 128 * 1024]
+    );
+}

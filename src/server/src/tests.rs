@@ -36,6 +36,9 @@ impl Backend for TestBackend {
             json!({"workspace_id":workspace,"item_id":item,"path":path,"size":bytes.len().to_string(),"content_hash":blake3::hash(&bytes).to_hex().to_string()}),
         )
     }
+    fn checksums(&self, _identity: &Identity, _version: &str) -> Result<Vec<u8>, ApiError> {
+        Ok(vec![7; 128 * 1024])
+    }
     fn content(&self, _identity: &Identity, _version: &str) -> Result<Content, ApiError> {
         Ok(Content {
             checksum_manifest: None,

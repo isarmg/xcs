@@ -11,6 +11,8 @@ mod spool_budget;
 mod telemetry;
 pub use spool_budget::SpoolLimits;
 mod transfer;
+mod transfer_limits;
+pub use transfer_limits::TransferLimits;
 mod uploads;
 mod web_assets;
 
@@ -266,6 +268,7 @@ pub struct ServerConfig {
     pub max_upload_bytes: u64,
     /// HTTP spool only; independent of engine workspace and SMB storage.
     pub http_spool_limits: SpoolLimits,
+    pub http_transfer_limits: TransferLimits,
     pub smb: Option<SmbConfig>,
 }
 impl ServerConfig {
@@ -278,6 +281,7 @@ impl ServerConfig {
             web_dir: None,
             max_upload_bytes: 1024 * 1024 * 1024,
             http_spool_limits: SpoolLimits::default(),
+            http_transfer_limits: TransferLimits::default(),
             smb: None,
         }
     }
@@ -311,6 +315,7 @@ impl ServerConfig {
             ));
         }
         self.http_spool_limits.validate()?;
+        self.http_transfer_limits.validate()?;
         if self.max_upload_bytes == 0 {
             return Err(ApiError::invalid("upload limit must be positive"));
         }
@@ -347,8 +352,8 @@ struct AppState {
     attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
     pending_logins: Arc<Mutex<std::collections::HashSet<String>>>,
     password_slots: Arc<tokio::sync::Semaphore>,
-    upload_slots: Arc<tokio::sync::Semaphore>,
-    read_slots: Arc<tokio::sync::Semaphore>,
+    upload_slots: Arc<transfer_limits::Admission>,
+    read_slots: Arc<transfer_limits::Admission>,
     upload_claims: Arc<Mutex<std::collections::BTreeSet<String>>>,
     spool_budget: Arc<spool_budget::SpoolBudget>,
     static_etags: Arc<BTreeMap<String, String>>,
@@ -401,8 +406,8 @@ fn router_shared(
         attempts: Arc::new(Mutex::new(HashMap::new())),
         pending_logins: Arc::new(Mutex::new(std::collections::HashSet::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
-        upload_slots: Arc::new(tokio::sync::Semaphore::new(8)),
-        read_slots: Arc::new(tokio::sync::Semaphore::new(8)),
+        upload_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
+        read_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
         upload_claims: Arc::new(Mutex::new(Default::default())),
         static_etags: Arc::new(match &config.web_dir {
             Some(root) => web_assets::static_etags(root)?,
