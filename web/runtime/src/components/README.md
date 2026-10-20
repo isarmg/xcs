@@ -7,7 +7,7 @@
 | `mod.rs` | 公共导出、身份视图、错误反馈及不实现 `Debug` 的凭据输入类型 |
 | `state.rs` | 加载、空状态和含安全请求标识的错误展示 |
 | `dialog.rs` | 原生 modal、Esc、初始焦点、Tab 边界与关闭后的焦点恢复 |
-| `notification.rs` | 文档事件通知、数量和文本长度限制、自动消失 |
+| `notification.rs` | 文档事件通知、数量和文本长度限制、owner 持有的有界自动消失计时器 |
 | `select.rs` | 受控单选菜单、原设计弹层、键盘选择、焦点和无障碍语义 |
 | `header.rs` | 顶栏 Portal 插槽、主题和语言切换 |
 | `shell.rs` | 匿名/恢复/认证状态、原登录卡容器、页面壳、账户与退出入口 |
@@ -21,3 +21,5 @@
 `Select` 接受 `label: String`、`options: Signal<Vec<SelectOption>>`、`value: Signal<String>` 和 `on_change: Callback<String>`；`disabled: Signal<bool>` 和 `placeholder: String` 可选。选项由 `SelectOption::new(value, label)` 创建，`disabled` 字段控制是否可选，空字符串也是有效值。菜单使用浏览器顶层 popover，避免在带轮廓的文件面板中被裁切；Rust 管理方向键、Home/End、输入跳转、Enter/空格确认、Escape/Tab 和外点关闭。焦点保持在 combobox，`aria-activedescendant` 指向当前选项。公共样式文件不再单独存在而没有实际控件。
 
 登录卡的标签、输入和按钮统一为 `1rem`、常规字重，不再按卡片高度放大字号。六行使用内容和最小 44px 控件驱动高度，窄屏与放大文字时取消固定比例。
+
+通知的显示记录是只读投影；插入、手动关闭、自动到期与注销统一通过通知队列修改。最多五条记录分别持有一个可取消计时器，容量淘汰先释放旧计时器再创建新计时器，组件 owner 释放时取消全部待执行通知。队列回归使用计数型替身验证一万次突发仍最多五个存活句柄，以及关闭、注销、owner 释放后的归零；这是 host 生命周期测试，不替代浏览器计时器验证。

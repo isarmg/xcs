@@ -137,7 +137,7 @@ pub fn clear_session() {
     CREDENTIALS.with(|saved| saved.borrow_mut().replace(None, None));
 }
 
-// Stop later stages of in-flight uploads before logout reaches the server.
+// Stop later stages of in-flight transfers before logout reaches the server.
 // Keep the credential until revocation is confirmed so failed logout can retry.
 pub(crate) fn invalidate_session_work() {
     CREDENTIALS.with(|saved| saved.borrow_mut().generation += 1);
@@ -152,6 +152,21 @@ fn ensure_credential_generation(generation: u64) -> Result<(), Error> {
         Ok(())
     } else {
         Err(session_changed())
+    }
+}
+
+/// Admission ticket for multi-stage browser work. Keep the original identity
+/// across awaits and check it immediately before publishing or delivering data.
+/// Browser JavaScript runs synchronously between this check and the final action.
+#[derive(Clone, Copy)]
+struct SessionAdmission(u64);
+impl SessionAdmission {
+    fn capture() -> Self {
+        Self(credential_generation())
+    }
+
+    fn check(self) -> Result<(), Error> {
+        ensure_credential_generation(self.0)
     }
 }
 
@@ -521,7 +536,7 @@ pub async fn commit_workspace(
         }
         return result;
     }
-    let generation = credential_generation();
+    let admission = SessionAdmission::capture();
     let body = request(
         "POST",
         &format!("/v1/workspaces/{}/seal", segment(workspace)),
@@ -530,7 +545,7 @@ pub async fn commit_workspace(
     .await?;
     // Sealing can outlive logout or a replacement login. Never publish the old
     // workspace using credentials installed while that request was in flight.
-    ensure_credential_generation(generation)?;
+    admission.check()?;
     let body = zxs_contract::client_protocol::prepare_commit(
         body,
         workspace,
@@ -593,13 +608,13 @@ pub async fn upload(
             "Select the file again using the native picker.",
         ));
     }
-    let generation = credential_generation();
+    let admission = SessionAdmission::capture();
     let data = JsFuture::from(file.array_buffer())
         .await
         .map_err(js_error)?;
     // Reading a browser file is asynchronous too: do not send its bytes under
     // a different session if authentication changed while buffering it.
-    ensure_credential_generation(generation)?;
+    admission.check()?;
     let bytes = Uint8Array::new(&data);
     let endpoint = format!(
         "/v1/workspaces/{}/files/{}/content?path={}",
@@ -685,16 +700,13 @@ pub async fn download(path: &str, filename: &str) -> Result<String, Error> {
                 ),
             )
         })?;
-    let bytes = read_body(&fetched.response, 64 * 1024 * 1024).await?;
-    if bytes.len() as u64 != length || blake3::hash(&bytes).to_hex().as_str() != hash {
-        return Err(error(
-            "CHECKSUM_MISMATCH",
-            t(
-                "下载长度或 BLAKE3 摘要不一致，未交付文件",
-                "The downloaded size or BLAKE3 hash does not match. The file was not delivered.",
-            ),
-        ));
-    }
+    let bytes = verified_download_bytes(
+        read_body(&fetched.response, 64 * 1024 * 1024),
+        length,
+        &hash,
+        SessionAdmission(fetched.credential_generation),
+    )
+    .await?;
     let parts = js_sys::Array::new();
     parts.push(&Uint8Array::from(bytes.as_slice()).buffer());
     let blob = web_sys::Blob::new_with_buffer_source_sequence(&parts).map_err(js_error)?;
@@ -721,6 +733,28 @@ pub async fn download(path: &str, filename: &str) -> Result<String, Error> {
     })
     .forget();
     result
+}
+
+/// Keep asynchronous body acquisition, integrity verification, and session
+/// admission together, so no browser delivery can accidentally skip the fence.
+async fn verified_download_bytes(
+    body: impl std::future::Future<Output = Result<Vec<u8>, Error>>,
+    length: u64,
+    hash: &str,
+    admission: SessionAdmission,
+) -> Result<Vec<u8>, Error> {
+    let bytes = body.await?;
+    if bytes.len() as u64 != length || blake3::hash(&bytes).to_hex().as_str() != hash {
+        return Err(error(
+            "CHECKSUM_MISMATCH",
+            t(
+                "下载长度或 BLAKE3 摘要不一致，未交付文件",
+                "The downloaded size or BLAKE3 hash does not match. The file was not delivered.",
+            ),
+        ));
+    }
+    admission.check()?;
+    Ok(bytes)
 }
 
 pub async fn open_version(version: &str, name: &str) -> Result<Option<String>, Error> {
@@ -770,6 +804,7 @@ pub async fn open_version(version: &str, name: &str) -> Result<Option<String>, E
             t("此文件需要通过 App 的系统应用打开，或显式下载", "Preview supports UTF-8 text. Download this file to open it in another application."),
         )
     })?;
+    SessionAdmission(fetched.credential_generation).check()?;
     Ok(Some(text))
 }
 
@@ -777,34 +812,70 @@ pub async fn open_version(version: &str, name: &str) -> Result<Option<String>, E
 mod tests {
     use super::*;
     #[test]
-    fn asynchronous_upload_and_seal_steps_cannot_continue_in_a_replaced_session() {
+    fn verified_download_pipeline_rejects_body_completed_after_logout() {
+        fn complete<F: std::future::Future>(future: F) -> F::Output {
+            let mut future = std::pin::pin!(future);
+            let mut context = std::task::Context::from_waker(std::task::Waker::noop());
+            match future.as_mut().poll(&mut context) {
+                std::task::Poll::Ready(result) => result,
+                std::task::Poll::Pending => panic!("test body should complete in one poll"),
+            }
+        }
+        let bytes = b"verified real pipeline fixture".to_vec();
+        let hash = blake3::hash(&bytes).to_hex().to_string();
+        let length = bytes.len() as u64;
+        let admission = SessionAdmission::capture();
+        assert_eq!(
+            complete(verified_download_bytes(
+                async { Ok(bytes.clone()) },
+                length,
+                &hash,
+                admission,
+            ))
+            .unwrap(),
+            bytes
+        );
+        let released = std::cell::Cell::new(false);
+        let body = std::future::poll_fn(|_| {
+            if released.get() {
+                std::task::Poll::Ready(Ok(bytes.clone()))
+            } else {
+                std::task::Poll::Pending
+            }
+        });
+        let mut pipeline = std::pin::pin!(verified_download_bytes(body, length, &hash, admission));
+        let mut context = std::task::Context::from_waker(std::task::Waker::noop());
+        use std::future::Future;
+        assert!(pipeline.as_mut().poll(&mut context).is_pending());
+        invalidate_session_work();
+        released.set(true);
+        let result = complete(pipeline);
+        assert_eq!(result.unwrap_err().code, "SESSION_CHANGED");
+    }
+
+    #[test]
+    fn asynchronous_transfer_admission_rejects_a_replaced_session() {
         CREDENTIALS.with(|saved| {
             saved
                 .borrow_mut()
                 .replace(Some("old-token".into()), Some("old-csrf".into()));
         });
-        let generation = credential_generation();
-        assert!(ensure_credential_generation(generation).is_ok());
+        let admission = SessionAdmission::capture();
+        assert!(admission.check().is_ok());
         clear_session();
-        assert_eq!(
-            ensure_credential_generation(generation).unwrap_err().code,
-            "SESSION_CHANGED"
-        );
+        assert_eq!(admission.check().unwrap_err().code, "SESSION_CHANGED");
         CREDENTIALS.with(|saved| {
             saved
                 .borrow_mut()
                 .replace(Some("new-token".into()), Some("new-csrf".into()));
         });
-        assert_eq!(
-            ensure_credential_generation(generation).unwrap_err().code,
-            "SESSION_CHANGED"
-        );
+        assert_eq!(admission.check().unwrap_err().code, "SESSION_CHANGED");
         assert!(ensure_credential_generation(credential_generation()).is_ok());
         clear_session();
     }
 
     #[test]
-    fn beginning_logout_blocks_buffered_upload_and_sealed_commit_before_revocation_completes() {
+    fn beginning_logout_blocks_transfer_admission_before_revocation_completes() {
         CREDENTIALS.with(|saved| {
             saved
                 .borrow_mut()
@@ -815,20 +886,16 @@ mod tests {
             session_epoch: 7,
             ..Default::default()
         };
-        // Both operations have entered their internal await: the outer UI epoch
-        // checks have already passed, but PUT/commit have not been sent yet.
-        let buffering_generation = credential_generation();
-        let sealing_generation = credential_generation();
+        // Multi-stage work has entered its internal await: outer UI checks
+        // passed but upload, commit, download, and preview delivery must stop.
+        let admissions = [SessionAdmission::capture(); 4];
         assert_eq!(crate::ui::begin_logout(&mut state), Some(8));
         assert!(state.logout_pending);
         assert!(state.authenticated);
         assert_eq!(crate::ui::begin_logout(&mut state), None);
         // The logout request has not completed. Each resumed transfer must stop.
-        for generation in [buffering_generation, sealing_generation] {
-            assert_eq!(
-                ensure_credential_generation(generation).unwrap_err().code,
-                "SESSION_CHANGED"
-            );
+        for admission in admissions {
+            assert_eq!(admission.check().unwrap_err().code, "SESSION_CHANGED");
         }
         CREDENTIALS.with(|saved| {
             let saved = saved.borrow();
@@ -843,7 +910,7 @@ mod tests {
         state.authenticated = false;
         assert_eq!(crate::ui::begin_logout(&mut state), Some(9));
         CREDENTIALS.with(|saved| assert_eq!(saved.borrow().token.as_deref(), Some("active-token")));
-        assert!(ensure_credential_generation(buffering_generation).is_err());
+        assert!(admissions[0].check().is_err());
         clear_session();
     }
 

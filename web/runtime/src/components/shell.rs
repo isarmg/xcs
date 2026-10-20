@@ -23,10 +23,7 @@ pub fn AppShell(
     login: ChildrenFn,
     children: ChildrenFn,
 ) -> impl IntoView {
-    let toasts = Toasts {
-        records: RwSignal::new(Vec::new()),
-        sequence: RwSignal::new(0),
-    };
+    let toasts = Toasts::new();
     provide_context(toasts);
     let targets = HeaderTargets {
         actions: NodeRef::new(),
@@ -50,7 +47,7 @@ pub fn AppShell(
     }
     Effect::new(move |_| {
         if session.get().phase != SessionPhase::Authenticated {
-            toasts.records.set(Vec::new());
+            toasts.clear();
         }
     });
     IntoRender::into_render(move || {
@@ -329,7 +326,7 @@ pub fn AppShell(
                 )
                 .on(
                     zxs_web::ev::click,
-                    move |_| toasts.records.update(|v| v.retain(|r| r.id != id)),
+                    move |_| toasts.dismiss(id),
                 ),
         ))
         .class("zxs-toast zxs-row zxs-flow")

@@ -19,6 +19,7 @@ use std::{
 mod accessibility;
 mod demo;
 mod diagnostics;
+mod session_delivery;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 const ELEMENT: &str = "element-6066-11e4-a52e-4f735466cecf";
@@ -415,8 +416,29 @@ fn exercise(
         if browser.script("return Array.from(document.querySelectorAll('.zxs-history-path')).some(e=>e.textContent.includes('browser-smoke.txt'))")? == true { Ok(()) } else { Err("history missing uploaded file".into()) }
     })?;
     accessibility::run(browser)?;
+    browser.click(&browser.button("Files", "文件")?)?;
+    let file = browser.element(
+        "xpath",
+        "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
+    )?;
+    browser.click(&file)?;
+    // The same timing fixture must still deliver a complete real download
+    // when credentials remain current, before testing the logout fence.
+    fs::remove_file(&downloaded)?;
+    let current_download = session_delivery::begin_paused_download(browser)?;
+    session_delivery::finish(current_download, 1, payload.len())?;
+    wait_for("unblocked same-session download bytes", || {
+        if fs::read(&downloaded)? == payload {
+            Ok(())
+        } else {
+            Err("unblocked download differs".into())
+        }
+    })?;
+    let stale_download = session_delivery::begin_paused_download(browser)?;
     browser.click(&browser.button("Sign out", "退出")?)?;
     browser.css("input[autocomplete='current-password']")?;
+    session_delivery::finish(stale_download, 0, payload.len())?;
+    println!("PASS real streamed download delivers only in its original session");
     if browser.script("return window.__zxsSmokeErrors")? != json!([]) {
         return Err("uncaught error before logout/reload".into());
     }
