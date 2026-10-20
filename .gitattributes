@@ -1,0 +1,16 @@
+# Maintained source and build inputs use stable line endings on every platform.
+*.rs text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.mjs text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+**/Cargo.lock text eol=lf
+/tools/rust-sources/workspaces.json text eol=lf
+
+# Source receipts and archived upstream materials preserve exact original bytes.
+# These overrides include source files and mixed-line-ending legal texts.
+/src/foundation/** -text
+/tools/web-bindings/** -text
+/compliance/** -text
+/docs/upstream/** -text
