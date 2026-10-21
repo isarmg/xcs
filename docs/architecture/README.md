@@ -25,3 +25,4 @@
 - [Pattern matching capabilities and maintained verification](pattern-matching.md)
 
 - [读取投影与请求内上下文](read-projections.md)：目录读取的复杂度边界与冻结响应保证。
+- [Tracing instrumentation and collectors](../components/tracing.md): explicit capabilities, direct JSON fields, source origins and retained verification.

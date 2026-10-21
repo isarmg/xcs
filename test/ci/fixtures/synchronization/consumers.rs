@@ -1,6 +1,6 @@
 #[test]
 fn actual_consumers_share_synchronization() {
-    let _subscriber = tracing_subscriber::registry();
+    let _subscriber = tracing::collector::registry();
     let once = once_cell::sync::OnceCell::new();
     assert_eq!(*once.get_or_init(|| 7), 7);
     let runtime = tokio::runtime::Builder::new_current_thread()

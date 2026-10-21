@@ -17,7 +17,7 @@ command-line = { workspace = true, features = ["env"] }
 data-serialization.workspace = true
 json-codec.workspace = true
 tokio.workspace = true
-tracing-subscriber = { version = "0.3", features = ["env-filter"], path = "../foundation/tracing-subscriber"}
+tracing = { version = "0.1", features = ["collector-default", "env-filter"], path = "../foundation/tracing" }
 storage-client = { path = "../client" }
 storage-server = { path = "../server" }
 storage-engine = { path = "../engine" }

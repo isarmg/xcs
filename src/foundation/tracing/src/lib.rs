@@ -839,37 +839,6 @@
 //!     requires <code>liballoc</code>.
 //! </pre>
 //!
-//! ### Unstable Features
-//!
-//! These feature flags enable **unstable** features. The public API may break in 0.1.x
-//! releases. To enable these features, the `--cfg tracing_unstable` must be passed to
-//! `rustc` when compiling.
-//!
-//! The following unstable feature flags are currently available:
-//!
-//! * `valuable`: Enables support for recording [field values] using the
-//!   [`valuable`] crate.
-//!
-//! #### Enabling Unstable Features
-//!
-//! The easiest way to set the `tracing_unstable` cfg is to use the `RUSTFLAGS`
-//! env variable when running `cargo` commands:
-//!
-//! ```shell
-//! RUSTFLAGS="--cfg tracing_unstable" cargo build
-//! ```
-//! Alternatively, the following can be added to the `.cargo/config` file in a
-//! project to automatically enable the cfg flag for that project:
-//!
-//! ```toml
-//! [build]
-//! rustflags = ["--cfg", "tracing_unstable"]
-//! ```
-//!
-//! [feature flags]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
-//! [field values]: crate::field
-//! [`valuable`]: https://crates.io/crates/valuable
-//!
 //! ## Supported Rust Versions
 //!
 //! Tracing is built against the latest stable release. The minimum supported
@@ -942,14 +911,22 @@
     while_true
 )]
 
+extern crate alloc;
+extern crate self as tracing;
 #[cfg(feature = "std")]
 extern crate std;
 
-// Somehow this `use` statement is necessary for us to re-export the `core`
-// macros on Rust 1.26.0. I'm not sure how this makes it work, but it does.
-#[allow(unused_imports)]
-#[doc(hidden)]
-use tracing_core::*;
+/// Layered event collectors and formatting.
+#[cfg(feature = "collector")]
+pub mod collector;
+/// Interoperability with unstructured log records.
+#[cfg(feature = "log-bridge")]
+pub mod log_bridge;
+/// Incremental pattern matching for event field filters.
+#[cfg(feature = "pattern")]
+pub mod pattern;
+/// Core instrumentation types and dispatch primitives.
+pub mod primitives;
 
 #[doc(inline)]
 pub use self::instrument::Instrument;
@@ -959,11 +936,11 @@ pub use self::{dispatcher::Dispatch, event::Event, field::Value, subscriber::Sub
 pub use self::span::Id;
 
 #[doc(hidden)]
-pub use tracing_core::{
+pub use tracing::primitives::{
     callsite::{self, Callsite},
     metadata,
 };
-pub use tracing_core::{event, Level, Metadata};
+pub use tracing::primitives::{event, Level, Metadata};
 
 #[doc(inline)]
 pub use self::span::Span;
@@ -1001,7 +978,7 @@ pub mod __macro_support {
     /// by the `tracing` macros, but it is not part of the stable versioned API.
     /// Breaking changes to this module may occur in small-numbered versions
     /// without warning.
-    pub use tracing_core::callsite::DefaultCallsite as MacroCallsite;
+    pub use tracing::primitives::callsite::DefaultCallsite as MacroCallsite;
 
     /// /!\ WARNING: This is *not* a stable API! /!\
     /// This function, and all code contained in the `__macro_support` module, is
@@ -1048,7 +1025,7 @@ pub mod __macro_support {
         meta: &Metadata<'static>,
         logger: &'static dyn log::Log,
         log_meta: log::Metadata<'_>,
-        values: &tracing_core::field::ValueSet<'_>,
+        values: &tracing::primitives::field::ValueSet<'_>,
     ) {
         logger.log(
             &crate::log::Record::builder()
@@ -1145,7 +1122,7 @@ pub mod __macro_support {
 pub mod log {
     use core::fmt;
     pub use log::*;
-    use tracing_core::field::{Field, ValueSet, Visit};
+    use tracing::primitives::field::{Field, ValueSet, Visit};
 
     /// Utility to format [`ValueSet`]s for logging.
     pub(crate) struct LogValueSet<'a> {

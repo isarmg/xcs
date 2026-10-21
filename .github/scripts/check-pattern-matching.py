@@ -110,17 +110,18 @@ def main():
                 False, "does not have")
         consumers = work / "consumers"
         deps = ""
-        for name in ("regex", "matchers", "fancy-regex", "jsonschema-regex", "tracing-subscriber"):
+        for name in ("regex", "tracing", "fancy-regex", "jsonschema-regex"):
             deps += f"[dependencies.{name}]\npath = " + json.dumps(str(ROOT / "src/foundation" / name)) + "\n"
-            if name == "tracing-subscriber":
+            if name == "tracing":
                 deps += 'features = ["env-filter"]\n'
         deps += '[[test]]\nname = "consumers"\npath = ' + json.dumps(str(ROOT / "test/regex-family/consumers.rs")) + "\n"
         probe_manifest(consumers, deps)
         (consumers / "src/lib.rs").write_text("")
         run(["cargo", "test", "--offline", "--manifest-path", str(consumers / "Cargo.toml")], env)
-        run(["cargo", "check", "--locked", "--offline", "-p", "matchers", "-p", "fancy-regex",
-             "-p", "jsonschema-regex", "-p", "tracing-subscriber"], env)
-        run(["cargo", "test", "--locked", "--offline", "-p", "matchers", "--lib"], env)
+        run(["cargo", "check", "--locked", "--offline", "-p", "tracing", "-p", "fancy-regex",
+             "-p", "jsonschema-regex"], env)
+        # The 17 retained matcher unit tests run in check-tracing-family.py,
+        # under the required async shard; do not duplicate the owned family gate.
     print("Regex retained tests, capabilities, real consumers and removed-feature rejection: PASS")
 
 

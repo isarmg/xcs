@@ -46,6 +46,7 @@ case "${1:-}" in
     cargo test --locked --offline --lib -p idna_adapter -p storage-client property_masks_preserve_all_unicode_scalars
     ;;
   foundation-async)
+    python3 .github/scripts/check-tracing-family.py
     python3 .github/scripts/check-runtime-join-map.py
     python3 .github/scripts/check-futures-consolidation.py
     python3 .github/scripts/check-http-body-consolidation.py

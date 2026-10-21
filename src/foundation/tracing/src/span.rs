@@ -318,7 +318,7 @@
 //! [guard]: Entered
 //! [parent]: #span-relationships
 
-pub use tracing_core::span::{Attributes, Id, Record};
+pub use tracing::primitives::span::{Attributes, Id, Record};
 
 use crate::{
     dispatcher::{self, Dispatch},
@@ -1604,4 +1604,7 @@ const PhantomNotSend: PhantomNotSend = PhantomNotSend { ghost: PhantomData };
 unsafe impl Sync for PhantomNotSend {}
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tracing/unit/src/span/test_1606.rs"));
+include!(core::concat!(
+    core::env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/tracing-family/facade/unit/src/span/test_1606.rs"
+));

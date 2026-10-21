@@ -1,49 +1,36 @@
-# Internal source component. Original manifest and origin: compliance/provenance.
+# Project-owned tracing instrumentation and collectors. Origins: compliance/provenance.
 
 [package]
 edition = "2018"
 rust-version = "1.65.0"
 name = "tracing"
 version = "0.1.44"
-authors = [
-    "Eliza Weisman <eliza@buoyant.io>",
-    "Tokio Contributors <team@tokio.rs>",
-]
+authors = ["Eliza Weisman <eliza@buoyant.io>", "Tokio Contributors <team@tokio.rs>"]
 build = false
 autolib = false
 autobins = false
 autoexamples = false
 autotests = false
 autobenches = false
-description = """
-Application-level tracing for Rust.
-"""
+description = "Application-level tracing for Rust.\n"
 homepage = "https://tokio.rs"
 readme = "../../../docs/upstream/tracing-0.1.44/README.md"
-keywords = [
-    "logging",
-    "tracing",
-    "metrics",
-    "async",
-]
-categories = [
-    "development-tools::debugging",
-    "development-tools::profiling",
-    "asynchronous",
-    "no-std",
-]
+keywords = ["logging", "tracing", "metrics", "async"]
+categories = ["development-tools::debugging", "development-tools::profiling", "asynchronous", "no-std"]
 license = "MIT"
 repository = "https://github.com/tokio-rs/tracing"
 resolver = "2"
+
+[badges]
 
 [badges.maintenance]
 status = "actively-developed"
 
 [features]
-async-await = []
 attributes = ["tracing-attributes"]
 default = ["std", "attributes"]
 log-always = ["log"]
+log = ["dep:log"]
 max_level_debug = []
 max_level_error = []
 max_level_info = []
@@ -56,17 +43,35 @@ release_max_level_info = []
 release_max_level_off = []
 release_max_level_trace = []
 release_max_level_warn = []
-std = ["tracing-core/std"]
-valuable = []
+std = ["alloc", "dep:once_cell"]
+alloc = []
+collector = ["alloc"]
+registry = ["collector", "std", "dep:sharded-slab", "dep:thread_local"]
+fmt = ["registry", "std"]
+ansi = ["fmt", "dep:nu-ansi-term"]
+env-filter = ["collector", "std", "pattern", "dep:once_cell", "dep:thread_local"]
+pattern = ["std", "regex/std", "dep:regex", "regex/syntax", "regex/dfa-build", "regex/dfa-search"]
+unicode = ["pattern", "regex/unicode"]
+serialization = ["collector", "dep:data-serialization"]
+json = ["fmt", "serialization", "dep:json-codec"]
+log-bridge = ["std", "dep:log", "log/std", "dep:once_cell"]
+log-tracer = ["log-bridge"]
+collector-default = ["fmt", "ansi", "log-tracer", "smallvec"]
+time = ["fmt", "dep:time"]
+parking = ["collector", "std", "dep:synchronization", "synchronization/locks"]
+smallvec = ["collector", "dep:smallvec"]
 
 [lib]
 name = "tracing"
 path = "src/lib.rs"
 
+[dependencies]
+
 [dependencies.log]
 version = "0.4.17"
 optional = true
 path = "../log"
+default-features = false
 
 [dependencies.pin-project-lite]
 version = "0.2.9"
@@ -77,16 +82,78 @@ version = "0.1.31"
 optional = true
 path = "../tracing-attributes"
 
-[dependencies.tracing-core]
-version = "0.1.36"
+[dependencies.nu-ansi-term]
+version = "0.50.0"
+optional = true
+path = "../nu-ansi-term"
+
+[dependencies.once_cell]
+version = "1.13.0"
+optional = true
+path = "../once_cell"
+
+[dependencies.synchronization]
+version = "0.9.12"
+optional = true
 default-features = false
-path = "../tracing-core"
+path = "../synchronization"
+
+[dependencies.regex]
+version = "1.13.1"
+features = ["automata", "syntax", "dfa-build", "dfa-search"]
+default-features = false
+path = "../regex"
+optional = true
+
+[dependencies.data-serialization]
+version = "1.0.140"
+optional = true
+path = "../data-serialization"
+
+[dependencies.json-codec]
+version = "1.0.82"
+optional = true
+path = "../json-codec"
+
+[dependencies.sharded-slab]
+version = "0.1.4"
+optional = true
+path = "../sharded-slab"
+
+[dependencies.smallvec]
+version = "1.9.0"
+optional = true
+path = "../smallvec"
+
+[dependencies.thread_local]
+version = "1.1.4"
+optional = true
+path = "../thread_local"
+
+[dependencies.time]
+version = "0.3.2"
+features = ["formatting"]
+optional = true
+path = "../time"
+
+[lints]
+
+[lints.rust]
 
 [lints.rust.unexpected_cfgs]
 level = "warn"
 priority = 0
-check-cfg = [
-    "cfg(flaky_tests)",
-    "cfg(tracing_unstable)",
-    "cfg(unsound_local_offset)",
-]
+check-cfg = ["cfg(flaky_tests)", "cfg(tracing_unstable)", "cfg(unsound_local_offset)"]
+
+[dev-dependencies.regex]
+path = "../regex"
+
+[[test]]
+name = "tracing-behavior"
+path = "../../../test/tracing/behavior.rs"
+required-features = ["json", "env-filter", "attributes", "time"]
+
+[[test]]
+name = "log-bridge"
+path = "../../../test/tracing/log_bridge.rs"
+required-features = ["registry", "log-tracer", "log"]

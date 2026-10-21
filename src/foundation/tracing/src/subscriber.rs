@@ -1,9 +1,9 @@
 //! Collects and records trace data.
-pub use tracing_core::subscriber::*;
+pub use tracing::primitives::subscriber::*;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use tracing_core::dispatcher::DefaultGuard;
+pub use tracing::primitives::dispatcher::DefaultGuard;
 
 /// Sets this [`Subscriber`] as the default for the current thread for the
 /// duration of a closure.
@@ -61,4 +61,4 @@ where
     crate::dispatcher::set_default(&crate::Dispatch::new(subscriber))
 }
 
-pub use tracing_core::dispatcher::SetGlobalDefaultError;
+pub use tracing::primitives::dispatcher::SetGlobalDefaultError;

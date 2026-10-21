@@ -125,7 +125,7 @@ def check_consumers(directory):
         if standard:
             extra += dependency('tokio', ('rt', 'sync', 'parking'))
             extra += dependency('once_cell', ('parking',), defaults=True)
-            extra += dependency('tracing-subscriber', ('std', 'registry', 'parking'))
+            extra += dependency('tracing', ('std', 'registry', 'parking'))
             fixture = 'consumers.rs'
         prepare(
             directory, ('locks',) if standard else (),

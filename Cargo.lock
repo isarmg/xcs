@@ -1027,13 +1027,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "matchers"
-version = "0.2.0"
-dependencies = [
- "regex",
-]
-
-[[package]]
 name = "matchit"
 version = "0.8.4"
 
@@ -1654,7 +1647,7 @@ dependencies = [
  "storage-server",
  "tempfile",
  "tokio",
- "tracing-subscriber",
+ "tracing",
 ]
 
 [[package]]
@@ -1931,9 +1924,14 @@ name = "tracing"
 version = "0.1.44"
 dependencies = [
  "log",
+ "nu-ansi-term",
+ "once_cell",
  "pin-project-lite",
+ "regex",
+ "sharded-slab",
+ "smallvec",
+ "thread_local",
  "tracing-attributes",
- "tracing-core",
 ]
 
 [[package]]
@@ -1943,38 +1941,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rust-syntax",
-]
-
-[[package]]
-name = "tracing-core"
-version = "0.1.36"
-dependencies = [
- "once_cell",
-]
-
-[[package]]
-name = "tracing-log"
-version = "0.2.0"
-dependencies = [
- "log",
- "once_cell",
- "tracing-core",
-]
-
-[[package]]
-name = "tracing-subscriber"
-version = "0.3.23"
-dependencies = [
- "matchers",
- "nu-ansi-term",
- "once_cell",
- "regex",
- "sharded-slab",
- "smallvec",
- "thread_local",
- "tracing",
- "tracing-core",
- "tracing-log",
 ]
 
 [[package]]

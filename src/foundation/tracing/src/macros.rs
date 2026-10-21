@@ -31,10 +31,11 @@ macro_rules! span {
                 level: $lvl,
                 fields: $($fields)*
             };
-            let mut interest = $crate::subscriber::Interest::never();
-            if $crate::level_enabled!($lvl)
-                && { interest = __CALLSITE.interest(); !interest.is_never() }
-                && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
+            if $crate::level_enabled!($lvl) && {
+                let interest = __CALLSITE.interest();
+                !interest.is_never()
+                    && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
+            }
             {
                 let meta = __CALLSITE.metadata();
                 // span with explicit parent
@@ -62,10 +63,11 @@ macro_rules! span {
                 level: $lvl,
                 fields: $($fields)*
             };
-            let mut interest = $crate::subscriber::Interest::never();
-            if $crate::level_enabled!($lvl)
-                && { interest = __CALLSITE.interest(); !interest.is_never() }
-                && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
+            if $crate::level_enabled!($lvl) && {
+                let interest = __CALLSITE.interest();
+                !interest.is_never()
+                    && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
+            }
             {
                 let meta = __CALLSITE.metadata();
                 // span with contextual parent
@@ -629,7 +631,7 @@ macro_rules! event {
             !interest.is_never() && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
         };
         if enabled {
-            (|value_set: $crate::field::ValueSet| {
+            (|value_set: $crate::field::ValueSet<'_>| {
                 $crate::__tracing_log!(
                     $lvl,
                     __CALLSITE,
@@ -682,7 +684,7 @@ macro_rules! event {
             !interest.is_never() && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
         };
         if enabled {
-            (|value_set: $crate::field::ValueSet| {
+            (|value_set: $crate::field::ValueSet<'_>| {
                 let meta = __CALLSITE.metadata();
                 // event with contextual parent
                 $crate::Event::dispatch(
@@ -739,7 +741,7 @@ macro_rules! event {
             !interest.is_never() && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
         };
         if enabled {
-            (|value_set: $crate::field::ValueSet| {
+            (|value_set: $crate::field::ValueSet<'_>| {
                 $crate::__tracing_log!(
                     $lvl,
                     __CALLSITE,
@@ -792,7 +794,7 @@ macro_rules! event {
             !interest.is_never() && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
         };
         if enabled {
-            (|value_set: $crate::field::ValueSet| {
+            (|value_set: $crate::field::ValueSet<'_>| {
                 $crate::__tracing_log!(
                     $lvl,
                     __CALLSITE,
@@ -844,7 +846,7 @@ macro_rules! event {
             !interest.is_never() && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
         };
         if enabled {
-            (|value_set: $crate::field::ValueSet| {
+            (|value_set: $crate::field::ValueSet<'_>| {
                 let meta = __CALLSITE.metadata();
                 // event with contextual parent
                 $crate::Event::dispatch(
@@ -899,7 +901,7 @@ macro_rules! event {
             !interest.is_never() && $crate::__macro_support::__is_enabled(__CALLSITE.metadata(), interest)
         };
         if enabled {
-            (|value_set: $crate::field::ValueSet| {
+            (|value_set: $crate::field::ValueSet<'_>| {
                 let meta = __CALLSITE.metadata();
                 // event with contextual parent
                 $crate::Event::dispatch(

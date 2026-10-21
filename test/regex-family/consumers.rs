@@ -1,6 +1,6 @@
 #[test]
 fn streaming_matcher_uses_shared_dfa() {
-    let pattern = matchers::Pattern::new("hel+o w[orl]{3}d").unwrap();
+    let pattern = tracing::pattern::Pattern::new("hel+o w[orl]{3}d").unwrap();
     assert!(pattern.display_matches(&"hello world"));
     assert!(!pattern.display_matches(&"goodbye world"));
 }
@@ -22,6 +22,6 @@ fn schema_parser_translation_uses_shared_syntax() {
 
 #[test]
 fn tracing_filter_keeps_regex_field_support() {
-    let filter = tracing_subscriber::EnvFilter::try_new("info,[span{value=abc.*}]=trace");
+    let filter = tracing::collector::EnvFilter::try_new("info,[span{value=abc.*}]=trace");
     assert!(filter.is_ok());
 }

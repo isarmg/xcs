@@ -34,4 +34,4 @@ struct Sub {
     field: u64,
 }
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tracing/functions/test-macros/tests/event_ntp/event_36.rs"));
+include!(core::concat!(core::env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tracing-family/facade/functions/test-macros/tests/event_ntp/event_36.rs"));

@@ -24,11 +24,11 @@
 //! example:
 //! ```rust
 //! # pub struct FooSubscriber;
-//! # use tracing_core::{
+//! # use tracing::primitives::{
 //! #   dispatcher, Event, Metadata,
 //! #   span::{Attributes, Id, Record}
 //! # };
-//! # impl tracing_core::Subscriber for FooSubscriber {
+//! # impl tracing::primitives::Subscriber for FooSubscriber {
 //! #   fn new_span(&self, _: &Attributes) -> Id { Id::from_u64(0) }
 //! #   fn record(&self, _: &Id, _: &Record) {}
 //! #   fn event(&self, _: &Event) {}
@@ -47,11 +47,11 @@
 //! the duration of a block:
 //! ```rust
 //! # pub struct FooSubscriber;
-//! # use tracing_core::{
+//! # use tracing::primitives::{
 //! #   dispatcher, Event, Metadata,
 //! #   span::{Attributes, Id, Record}
 //! # };
-//! # impl tracing_core::Subscriber for FooSubscriber {
+//! # impl tracing::primitives::Subscriber for FooSubscriber {
 //! #   fn new_span(&self, _: &Attributes) -> Id { Id::from_u64(0) }
 //! #   fn record(&self, _: &Id, _: &Record) {}
 //! #   fn event(&self, _: &Event) {}
@@ -82,11 +82,11 @@
 //! program. For example:
 //! ```rust
 //! # pub struct FooSubscriber;
-//! # use tracing_core::{
+//! # use tracing::primitives::{
 //! #   dispatcher, Event, Metadata,
 //! #   span::{Attributes, Id, Record}
 //! # };
-//! # impl tracing_core::Subscriber for FooSubscriber {
+//! # impl tracing::primitives::Subscriber for FooSubscriber {
 //! #   fn new_span(&self, _: &Attributes) -> Id { Id::from_u64(0) }
 //! #   fn record(&self, _: &Id, _: &Record) {}
 //! #   fn event(&self, _: &Event) {}
@@ -125,14 +125,14 @@
 //! [`Subscriber`]: crate::Subscriber
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use tracing_core::dispatcher::set_default;
+pub use tracing::primitives::dispatcher::set_default;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use tracing_core::dispatcher::with_default;
+pub use tracing::primitives::dispatcher::with_default;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use tracing_core::dispatcher::DefaultGuard;
-pub use tracing_core::dispatcher::{
+pub use tracing::primitives::dispatcher::DefaultGuard;
+pub use tracing::primitives::dispatcher::{
     get_default, set_global_default, Dispatch, SetGlobalDefaultError, WeakDispatch,
 };
 
@@ -142,4 +142,4 @@ pub use tracing_core::dispatcher::{
 /// stability guarantees. If you use it, and it breaks or disappears entirely,
 /// don't say we didn;'t warn you.
 #[doc(hidden)]
-pub use tracing_core::dispatcher::has_been_set;
+pub use tracing::primitives::dispatcher::has_been_set;
