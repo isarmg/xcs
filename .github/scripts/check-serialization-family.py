@@ -53,8 +53,9 @@ def manifest(root, no_std=False):
         dependencies['serialization-core'] = ([], False)
     else:
         for name in ('flag-set', 'miniz_oxide', 'icu_collections', 'random-generator-core',
-                     'source-spanned-value', 'derive-where'):
+                     'derive-where'):
             dependencies[name] = (['serialization'], True)
+        dependencies['toml'] = (['serialization'], False)
         dependencies['time'] = (['serialization', 'serialization-human-readable'], True)
         dependencies['form-codec'] = ([], True)
         dependencies['serialization-error-path'] = ([], True)
@@ -137,11 +138,8 @@ def check(root):
                             str(work / 'Cargo.toml')], cwd=root, env=environment, check=True)
             build(root, work, environment, NATIVE, tests=not no_std)
             build(root, work, environment, WASM)
-            if not no_std:
-                subprocess.run(['cargo', 'test', '--locked', '--offline', '--doc',
-                                '--manifest-path', str(work / 'Cargo.toml'), '-p', 'source-spanned-value',
-                                '--target-dir', str(work.parent / 'target')],
-                               cwd=root, env=environment, check=True)
+            # The absorbed span doctests now run in check-toml-consolidation.py
+            # with the real dev dependencies, alongside all other TOML docs.
         check_rejections(root, Path(temporary), environment)
 
 

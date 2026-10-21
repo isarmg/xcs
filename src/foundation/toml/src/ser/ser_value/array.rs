@@ -1,7 +1,8 @@
 use super::write_value;
 use super::{Error, ValueSerializer};
 
-type InnerSerializeValueSeq = <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeSeq;
+type InnerSerializeValueSeq =
+    <crate::editor::ser::ValueSerializer as data_serialization::Serializer>::SerializeSeq;
 
 #[doc(hidden)]
 pub struct SerializeValueArray<'d> {
@@ -67,7 +68,7 @@ impl data_serialization::ser::SerializeTupleStruct for SerializeValueArray<'_> {
 }
 
 type InnerSerializeValueTupleVariant =
-    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeTupleVariant;
+    <crate::editor::ser::ValueSerializer as data_serialization::Serializer>::SerializeTupleVariant;
 
 #[doc(hidden)]
 pub struct SerializeValueTupleVariant<'d> {

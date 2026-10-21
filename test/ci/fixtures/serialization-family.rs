@@ -43,7 +43,7 @@ fn round_trip() {
 }
 #[test]
 fn protocol_tokens_and_error_path() {
-    use source_spanned_value::__unstable as wire;
+    use toml::span::__unstable as wire;
     assert_eq!(wire::NAME, "$__serde_spanned_private_Spanned");
     assert_eq!(wire::START_FIELD, "$__serde_spanned_private_start");
     assert_eq!(wire::END_FIELD, "$__serde_spanned_private_end");

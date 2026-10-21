@@ -9,6 +9,7 @@
 - [Foundation CI 分组](foundation-ci.md)：职责分组、单次覆盖、平台准备和 Release 验证屏障。
 - [HTTP 请求体整合](../components/http-body.md)：单包请求体接口、可选工具与通道边界。
 - [SQLite 访问层整合](sqlite-access.md)：查询引擎、驱动与 facade 合并边界、可选能力及原始来源。
+- [TOML 职能组件](../components/toml.md)：能力隔离、编辑语义、保留测试和原始来源。
 - [一次写入的完整流程](write-flow.md)：规划、准备、决定、发布和失败边界。
 - [分离工作区准备](detached-workspace-commits.md)：引擎锁、冻结基线、取消和校验凭据。
 - [写入准入](detached-write-admission.md)：准备期间允许和阻止的并发行为。

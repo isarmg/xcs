@@ -1701,13 +1701,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "source-spanned-value"
-version = "0.6.9"
-dependencies = [
- "data-serialization",
-]
-
-[[package]]
 name = "spin"
 version = "0.9.9"
 dependencies = [
@@ -1995,33 +1988,9 @@ name = "toml"
 version = "0.8.23"
 dependencies = [
  "data-serialization",
- "source-spanned-value",
- "toml_datetime",
- "toml_edit",
-]
-
-[[package]]
-name = "toml_datetime"
-version = "0.6.11"
-dependencies = [
- "data-serialization",
-]
-
-[[package]]
-name = "toml_edit"
-version = "0.22.27"
-dependencies = [
- "data-serialization",
  "indexmap",
- "source-spanned-value",
- "toml_datetime",
- "toml_write",
  "winnow",
 ]
-
-[[package]]
-name = "toml_write"
-version = "0.1.2"
 
 [[package]]
 name = "tower"

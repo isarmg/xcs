@@ -1,11 +1,11 @@
 # Source-spanned values
 
-The internal source-spanned-value component records a value together with its byte range in a source document. Its origin is serde_spanned 0.6.9. The original [upstream README](../upstream/serde_spanned-0.6.9/README.md), source provenance, and MIT/Apache-2.0 license materials are preserved unchanged.
+The `toml::span` module (formerly the source-spanned-value component) records a value together with its byte range in a source document. Its origin is serde_spanned 0.6.9. The original [upstream README](../upstream/serde_spanned-0.6.9/README.md), source provenance, and MIT/Apache-2.0 license materials are preserved unchanged.
 
 The value wrapper does not require a serialization engine to construct or inspect:
 
 ```rust
-use source_spanned_value::Spanned;
+use toml::span::Spanned;
 
 let value = Spanned::new(4..9, String::from("hello"));
 assert_eq!(value.span(), 4..9);

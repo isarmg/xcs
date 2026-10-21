@@ -4,22 +4,22 @@ pub(crate) struct DocumentFormatter {
     is_value: bool,
 }
 
-impl toml_edit::visit_mut::VisitMut for DocumentFormatter {
-    fn visit_document_mut(&mut self, node: &mut toml_edit::DocumentMut) {
-        toml_edit::visit_mut::visit_document_mut(self, node);
+impl crate::editor::visit_mut::VisitMut for DocumentFormatter {
+    fn visit_document_mut(&mut self, node: &mut crate::editor::DocumentMut) {
+        crate::editor::visit_mut::visit_document_mut(self, node);
     }
 
-    fn visit_item_mut(&mut self, node: &mut toml_edit::Item) {
+    fn visit_item_mut(&mut self, node: &mut crate::editor::Item) {
         let is_parent_value = self.is_value;
         if !is_parent_value {
             let other = std::mem::take(node);
-            let other = match other.into_table().map(toml_edit::Item::Table) {
+            let other = match other.into_table().map(crate::editor::Item::Table) {
                 Ok(i) => i,
                 Err(i) => i,
             };
             let other = match other
                 .into_array_of_tables()
-                .map(toml_edit::Item::ArrayOfTables)
+                .map(crate::editor::Item::ArrayOfTables)
             {
                 Ok(i) => i,
                 Err(i) => i,
@@ -28,11 +28,11 @@ impl toml_edit::visit_mut::VisitMut for DocumentFormatter {
             *node = other;
         }
 
-        toml_edit::visit_mut::visit_item_mut(self, node);
+        crate::editor::visit_mut::visit_item_mut(self, node);
         self.is_value = is_parent_value;
     }
 
-    fn visit_table_mut(&mut self, node: &mut toml_edit::Table) {
+    fn visit_table_mut(&mut self, node: &mut crate::editor::Table) {
         node.decor_mut().clear();
 
         // Empty tables could be semantically meaningful, so make sure they are not implicit
@@ -40,17 +40,17 @@ impl toml_edit::visit_mut::VisitMut for DocumentFormatter {
             node.set_implicit(true);
         }
 
-        toml_edit::visit_mut::visit_table_mut(self, node);
+        crate::editor::visit_mut::visit_table_mut(self, node);
     }
 
-    fn visit_value_mut(&mut self, node: &mut toml_edit::Value) {
+    fn visit_value_mut(&mut self, node: &mut crate::editor::Value) {
         node.decor_mut().clear();
 
-        toml_edit::visit_mut::visit_value_mut(self, node);
+        crate::editor::visit_mut::visit_value_mut(self, node);
     }
 
-    fn visit_array_mut(&mut self, node: &mut toml_edit::Array) {
-        toml_edit::visit_mut::visit_array_mut(self, node);
+    fn visit_array_mut(&mut self, node: &mut crate::editor::Array) {
+        crate::editor::visit_mut::visit_array_mut(self, node);
 
         if !self.multiline_array || (0..=1).contains(&node.len()) {
             node.set_trailing("");

@@ -139,47 +139,84 @@
 //! [serde]: https://serde.rs/
 
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
-// Makes rustc abort compilation if there are any unsafe blocks in the crate.
-// Presence of this annotation is picked up by tools such as cargo-geiger
-// and lets them ensure that there is indeed no unsafe code as opposed to
-// something they couldn't detect (e.g. unsafe added via macro expansion, etc).
-#![forbid(unsafe_code)]
+// Preserve unsafe prohibitions outside the editor, whose original parser retains
+// audited UTF-8 fast paths behind its explicit module-level allowance.
+#![deny(unsafe_code)]
+#![recursion_limit = "256"]
 #![warn(missing_docs)]
 #![warn(clippy::print_stderr)]
 #![warn(clippy::print_stdout)]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+/// TOML date and time primitives, with no parser or editor dependency.
+#[forbid(unsafe_code)]
+pub mod datetime;
+#[cfg(feature = "edit")]
+#[allow(unsafe_code)] // Existing audited UTF-8 fast paths remain confined to the editor.
+/// Parse and modify documents while retaining their formatting.
+pub mod editor;
+#[cfg(feature = "serialization")]
+#[forbid(unsafe_code)]
 pub mod map;
+/// Values paired with byte ranges in their original source.
+#[forbid(unsafe_code)]
+pub mod span;
+#[cfg(feature = "serialization")]
+#[forbid(unsafe_code)]
 pub mod value;
+#[cfg(feature = "write")]
+/// Low-level TOML encoding without the format-preserving editor.
+#[allow(missing_docs)]
+#[forbid(unsafe_code)]
+pub mod writer;
 
+#[cfg(feature = "serialization")]
+#[forbid(unsafe_code)]
 pub mod de;
+#[cfg(feature = "serialization")]
+#[forbid(unsafe_code)]
 pub mod ser;
 
 #[doc(hidden)]
+#[cfg(feature = "serialization")]
+#[forbid(unsafe_code)]
 pub mod macros;
 
+#[cfg(feature = "serialization")]
+#[forbid(unsafe_code)]
 mod edit;
 #[cfg(feature = "display")]
+#[cfg(feature = "serialization")]
+#[forbid(unsafe_code)]
 mod fmt;
+#[cfg(feature = "serialization")]
+#[forbid(unsafe_code)]
 mod table;
 
 #[cfg(feature = "parse")]
 #[doc(inline)]
+#[cfg(feature = "serialization")]
 pub use crate::de::{from_str, Deserializer};
 #[cfg(feature = "display")]
 #[doc(inline)]
+#[cfg(feature = "serialization")]
 pub use crate::ser::{to_string, to_string_pretty, Serializer};
 #[doc(inline)]
+#[cfg(feature = "serialization")]
 pub use crate::value::Value;
 
-pub use source_spanned_value::Spanned;
+#[cfg(feature = "serialization")]
+pub use crate::span::Spanned;
+#[cfg(feature = "serialization")]
 pub use table::Table;
 
 // Shortcuts for the module doc-comment
 #[allow(unused_imports)]
-use core::str::FromStr;
+use crate::datetime::Datetime;
 #[allow(unused_imports)]
-use toml_datetime::Datetime;
+use core::str::FromStr;
 
-#[doc = include_str!("../../../../docs/upstream/toml-0.8.23/README.md")]
+#[doc = include_str!("../../../../docs/components/toml/overview.md")]
 #[cfg(doctest)]
 pub struct ReadmeDoctests;

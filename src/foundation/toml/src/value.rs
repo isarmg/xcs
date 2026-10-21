@@ -11,8 +11,8 @@ use data_serialization::de;
 use data_serialization::de::IntoDeserializer;
 use data_serialization::ser;
 
-use toml_datetime::__unstable as datetime;
-pub use toml_datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
+use crate::datetime::__unstable as datetime;
+pub use crate::datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
 
 /// Type representing a TOML array, payload of the `Value::Array` variant
 pub type Array = Vec<Value>;

@@ -40,41 +40,36 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/toml-rs/toml"
 
 [features]
-default = ["parse", "display"]
-display = ["dep:toml_edit", "toml_edit?/display"]
-parse = ["dep:toml_edit", "toml_edit?/parse"]
-preserve_order = ["indexmap"]
-unbounded = ["toml_edit?/unbounded"]
+default = ["std", "serialization", "parse", "display"]
+std = ["alloc"]
+alloc = []
+write = []
+edit = ["dep:indexmap"]
+parse = ["edit", "dep:winnow"]
+display = ["edit", "write", "std"]
+serialization = ["dep:data-serialization"]
+preserve_order = ["dep:indexmap"]
+unbounded = []
 
 [lib]
 name = "toml"
 path = "src/lib.rs"
 
 [dependencies.indexmap]
-version = "2.0.0"
+version = "2.3.0"
 optional = true
+features = ["std"]
 path = "../indexmap"
 
 [dependencies.data-serialization]
 version = "1.0.145"
+optional = true
 path = "../data-serialization"
 
-[dependencies.source-spanned-value]
-version = "0.6.9"
-features = ["serialization"]
-path = "../source-spanned-value"
-
-[dependencies.toml_datetime]
-version = "0.6.11"
-features = ["serialization"]
-path = "../toml_datetime"
-
-[dependencies.toml_edit]
-version = "0.22.27"
-features = ["serialization"]
+[dependencies.winnow]
+version = "0.7.10"
 optional = true
-default-features = false
-path = "../toml_edit"
+path = "../winnow"
 
 [lints.clippy]
 bool_assert_comparison = "allow"
@@ -148,3 +143,13 @@ unused_qualifications = "warn"
 [lints.rust.rust_2018_idioms]
 level = "warn"
 priority = -1
+
+[[test]]
+name = "capabilities"
+path = "../../../test/tools/toml/capabilities.rs"
+required-features = ["serialization", "parse", "display"]
+
+[dev-dependencies.data-serialization]
+version = "1.0.145"
+path = "../data-serialization"
+features = ["derive"]

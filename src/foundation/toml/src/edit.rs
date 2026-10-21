@@ -1,6 +1,6 @@
 #[cfg(feature = "parse")]
 pub(crate) mod de {
-    pub(crate) use toml_edit::de::Error;
+    pub(crate) use crate::editor::de::Error;
 }
 
 #[cfg(not(feature = "parse"))]
@@ -43,7 +43,7 @@ pub(crate) mod de {
 
 #[cfg(feature = "display")]
 pub(crate) mod ser {
-    pub(crate) use toml_edit::ser::Error;
+    pub(crate) use crate::editor::ser::Error;
 }
 
 #[cfg(not(feature = "display"))]

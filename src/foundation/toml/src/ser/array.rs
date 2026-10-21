@@ -3,7 +3,7 @@ use super::{Error, Serializer};
 use crate::fmt::DocumentFormatter;
 
 type InnerSerializeDocumentSeq =
-    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeSeq;
+    <crate::editor::ser::ValueSerializer as data_serialization::Serializer>::SerializeSeq;
 
 #[doc(hidden)]
 pub struct SerializeDocumentArray<'d> {
@@ -71,7 +71,7 @@ impl data_serialization::ser::SerializeTupleStruct for SerializeDocumentArray<'_
 }
 
 type InnerSerializeDocumentTupleVariant =
-    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeTupleVariant;
+    <crate::editor::ser::ValueSerializer as data_serialization::Serializer>::SerializeTupleVariant;
 
 #[doc(hidden)]
 pub struct SerializeDocumentTupleVariant<'d> {

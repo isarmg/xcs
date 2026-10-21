@@ -3,7 +3,7 @@ use super::{Error, Serializer};
 use crate::fmt::DocumentFormatter;
 
 type InnerSerializeDocumentTable =
-    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeMap;
+    <crate::editor::ser::ValueSerializer as data_serialization::Serializer>::SerializeMap;
 
 #[doc(hidden)]
 pub struct SerializeDocumentTable<'d> {
@@ -80,7 +80,7 @@ impl data_serialization::ser::SerializeStructVariant for SerializeDocumentTable<
 }
 
 type InnerSerializeDocumentStructVariant =
-    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeStructVariant;
+    <crate::editor::ser::ValueSerializer as data_serialization::Serializer>::SerializeStructVariant;
 
 #[doc(hidden)]
 pub struct SerializeDocumentStructVariant<'d> {

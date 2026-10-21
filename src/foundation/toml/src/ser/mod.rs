@@ -71,7 +71,7 @@ where
 /// To serialize TOML values, instead of documents, see [`ValueSerializer`].
 ///
 /// For greater customization, instead serialize to a
-/// [`toml_edit::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
+/// [`toml::editor::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
 #[cfg(feature = "display")]
 pub fn to_string_pretty<T>(value: &T) -> Result<String, Error>
 where
@@ -176,7 +176,7 @@ impl<'d> Serializer<'d> {
     /// Apply a default "pretty" policy to the document
     ///
     /// For greater customization, instead serialize to a
-    /// [`toml_edit::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
+    /// [`toml::editor::DocumentMut`](https://docs.rs/toml_edit/latest/toml_edit/struct.DocumentMut.html).
     pub fn pretty(dst: &'d mut String) -> Self {
         let mut ser = Serializer::new(dst);
         ser.settings.multiline_array = true;
@@ -200,7 +200,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_bool(v),
+            crate::editor::ser::ValueSerializer::new().serialize_bool(v),
         )
     }
 
@@ -208,7 +208,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_i8(v),
+            crate::editor::ser::ValueSerializer::new().serialize_i8(v),
         )
     }
 
@@ -216,7 +216,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_i16(v),
+            crate::editor::ser::ValueSerializer::new().serialize_i16(v),
         )
     }
 
@@ -224,7 +224,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_i32(v),
+            crate::editor::ser::ValueSerializer::new().serialize_i32(v),
         )
     }
 
@@ -232,7 +232,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_i64(v),
+            crate::editor::ser::ValueSerializer::new().serialize_i64(v),
         )
     }
 
@@ -240,7 +240,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_u8(v),
+            crate::editor::ser::ValueSerializer::new().serialize_u8(v),
         )
     }
 
@@ -248,7 +248,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_u16(v),
+            crate::editor::ser::ValueSerializer::new().serialize_u16(v),
         )
     }
 
@@ -256,7 +256,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_u32(v),
+            crate::editor::ser::ValueSerializer::new().serialize_u32(v),
         )
     }
 
@@ -264,7 +264,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_u64(v),
+            crate::editor::ser::ValueSerializer::new().serialize_u64(v),
         )
     }
 
@@ -272,7 +272,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_f32(v),
+            crate::editor::ser::ValueSerializer::new().serialize_f32(v),
         )
     }
 
@@ -280,7 +280,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_f64(v),
+            crate::editor::ser::ValueSerializer::new().serialize_f64(v),
         )
     }
 
@@ -288,7 +288,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_char(v),
+            crate::editor::ser::ValueSerializer::new().serialize_char(v),
         )
     }
 
@@ -296,7 +296,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_str(v),
+            crate::editor::ser::ValueSerializer::new().serialize_str(v),
         )
     }
 
@@ -304,7 +304,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_bytes(v),
+            crate::editor::ser::ValueSerializer::new().serialize_bytes(v),
         )
     }
 
@@ -312,7 +312,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_none(),
+            crate::editor::ser::ValueSerializer::new().serialize_none(),
         )
     }
 
@@ -323,7 +323,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_some(v),
+            crate::editor::ser::ValueSerializer::new().serialize_some(v),
         )
     }
 
@@ -331,7 +331,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_unit(),
+            crate::editor::ser::ValueSerializer::new().serialize_unit(),
         )
     }
 
@@ -339,7 +339,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_unit_struct(name),
+            crate::editor::ser::ValueSerializer::new().serialize_unit_struct(name),
         )
     }
 
@@ -352,7 +352,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_unit_variant(
+            crate::editor::ser::ValueSerializer::new().serialize_unit_variant(
                 name,
                 variant_index,
                 variant,
@@ -367,7 +367,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_newtype_struct(name, v),
+            crate::editor::ser::ValueSerializer::new().serialize_newtype_struct(name, v),
         )
     }
 
@@ -384,7 +384,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         write_document(
             self.dst,
             self.settings,
-            toml_edit::ser::ValueSerializer::new().serialize_newtype_variant(
+            crate::editor::ser::ValueSerializer::new().serialize_newtype_variant(
                 name,
                 variant_index,
                 variant,
@@ -394,7 +394,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
     }
 
     fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
+        let ser = crate::editor::ser::ValueSerializer::new()
             .serialize_seq(len)
             .map_err(Error::wrap)?;
         let ser = array::SerializeDocumentArray::new(self, ser);
@@ -420,7 +420,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
+        let ser = crate::editor::ser::ValueSerializer::new()
             .serialize_tuple_variant(name, variant_index, variant, len)
             .map_err(Error::wrap)?;
         let ser = array::SerializeDocumentTupleVariant::new(self, ser);
@@ -428,7 +428,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
     }
 
     fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
+        let ser = crate::editor::ser::ValueSerializer::new()
             .serialize_map(len)
             .map_err(Error::wrap)?;
         let ser = map::SerializeDocumentTable::new(self, ser);
@@ -450,7 +450,7 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
-        let ser = toml_edit::ser::ValueSerializer::new()
+        let ser = crate::editor::ser::ValueSerializer::new()
             .serialize_struct_variant(name, variant_index, variant, len)
             .map_err(Error::wrap)?;
         let ser = map::SerializeDocumentStructVariant::new(self, ser);
@@ -462,13 +462,13 @@ impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
 pub(crate) fn write_document(
     dst: &mut String,
     mut settings: crate::fmt::DocumentFormatter,
-    value: Result<toml_edit::Value, crate::edit::ser::Error>,
+    value: Result<crate::editor::Value, crate::edit::ser::Error>,
 ) -> Result<(), Error> {
+    use crate::editor::visit_mut::VisitMut as _;
     use std::fmt::Write;
-    use toml_edit::visit_mut::VisitMut as _;
 
     let value = value.map_err(Error::wrap)?;
-    let mut table = match toml_edit::Item::Value(value).into_table() {
+    let mut table = match crate::editor::Item::Value(value).into_table() {
         Ok(i) => i,
         Err(_) => {
             return Err(Error::unsupported_type(None));
@@ -477,7 +477,7 @@ pub(crate) fn write_document(
 
     settings.visit_table_mut(&mut table);
 
-    let doc: toml_edit::DocumentMut = table.into();
+    let doc: crate::editor::DocumentMut = table.into();
     write!(dst, "{doc}").unwrap();
 
     Ok(())

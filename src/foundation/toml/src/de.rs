@@ -77,7 +77,7 @@ impl data_serialization::de::Error for Error {
     where
         T: std::fmt::Display,
     {
-        Error::new(crate::edit::de::Error::custom(msg))
+        Error::new(<crate::edit::de::Error as data_serialization::de::Error>::custom(msg))
     }
 }
 
@@ -119,7 +119,7 @@ impl<'de> data_serialization::Deserializer<'de> for Deserializer<'_> {
     where
         V: data_serialization::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = crate::editor::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner.deserialize_any(visitor).map_err(Error::new)
     }
 
@@ -129,7 +129,7 @@ impl<'de> data_serialization::Deserializer<'de> for Deserializer<'_> {
     where
         V: data_serialization::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = crate::editor::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner.deserialize_option(visitor).map_err(Error::new)
     }
 
@@ -141,7 +141,7 @@ impl<'de> data_serialization::Deserializer<'de> for Deserializer<'_> {
     where
         V: data_serialization::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = crate::editor::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner
             .deserialize_newtype_struct(name, visitor)
             .map_err(Error::new)
@@ -156,7 +156,7 @@ impl<'de> data_serialization::Deserializer<'de> for Deserializer<'_> {
     where
         V: data_serialization::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = crate::editor::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner
             .deserialize_struct(name, fields, visitor)
             .map_err(Error::new)
@@ -172,7 +172,7 @@ impl<'de> data_serialization::Deserializer<'de> for Deserializer<'_> {
     where
         V: data_serialization::de::Visitor<'de>,
     {
-        let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
+        let inner = crate::editor::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner
             .deserialize_enum(name, variants, visitor)
             .map_err(Error::new)
@@ -233,7 +233,7 @@ impl<'de> data_serialization::Deserializer<'de> for ValueDeserializer<'_> {
     {
         let inner = self
             .input
-            .parse::<toml_edit::de::ValueDeserializer>()
+            .parse::<crate::editor::de::ValueDeserializer>()
             .map_err(Error::new)?;
         inner.deserialize_any(visitor).map_err(Error::new)
     }
@@ -246,7 +246,7 @@ impl<'de> data_serialization::Deserializer<'de> for ValueDeserializer<'_> {
     {
         let inner = self
             .input
-            .parse::<toml_edit::de::ValueDeserializer>()
+            .parse::<crate::editor::de::ValueDeserializer>()
             .map_err(Error::new)?;
         inner.deserialize_option(visitor).map_err(Error::new)
     }
@@ -261,7 +261,7 @@ impl<'de> data_serialization::Deserializer<'de> for ValueDeserializer<'_> {
     {
         let inner = self
             .input
-            .parse::<toml_edit::de::ValueDeserializer>()
+            .parse::<crate::editor::de::ValueDeserializer>()
             .map_err(Error::new)?;
         inner
             .deserialize_newtype_struct(name, visitor)
@@ -279,7 +279,7 @@ impl<'de> data_serialization::Deserializer<'de> for ValueDeserializer<'_> {
     {
         let inner = self
             .input
-            .parse::<toml_edit::de::ValueDeserializer>()
+            .parse::<crate::editor::de::ValueDeserializer>()
             .map_err(Error::new)?;
         inner
             .deserialize_struct(name, fields, visitor)
@@ -298,7 +298,7 @@ impl<'de> data_serialization::Deserializer<'de> for ValueDeserializer<'_> {
     {
         let inner = self
             .input
-            .parse::<toml_edit::de::ValueDeserializer>()
+            .parse::<crate::editor::de::ValueDeserializer>()
             .map_err(Error::new)?;
         inner
             .deserialize_enum(name, variants, visitor)

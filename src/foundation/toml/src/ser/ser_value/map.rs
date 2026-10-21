@@ -2,7 +2,7 @@ use super::write_value;
 use super::{Error, ValueSerializer};
 
 type InnerSerializeValueTable =
-    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeMap;
+    <crate::editor::ser::ValueSerializer as data_serialization::Serializer>::SerializeMap;
 
 #[doc(hidden)]
 pub struct SerializeValueTable<'d> {
@@ -59,7 +59,7 @@ impl data_serialization::ser::SerializeStruct for SerializeValueTable<'_> {
 }
 
 type InnerSerializeValueStructVariant =
-    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeStructVariant;
+    <crate::editor::ser::ValueSerializer as data_serialization::Serializer>::SerializeStructVariant;
 
 #[doc(hidden)]
 pub struct SerializeValueStructVariant<'d> {

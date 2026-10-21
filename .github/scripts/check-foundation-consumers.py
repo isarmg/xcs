@@ -19,7 +19,7 @@ def check(root):
         dependencies = '\n'.join(f'{name} = {{path = "{root / "src/foundation" / directory}", features = {json.dumps(FEATURES.get(name, []))}}}'
                                  for name, directory in [('bindgen', 'bindgen'), ('anstream', 'anstream'),
                                                          ('attribute-derive', 'attribute-derive'), ('rust-syntax', 'rust-syntax'),
-                                                         ('winnow', 'winnow'), ('toml_edit', 'toml_edit')])
+                                                         ('winnow', 'winnow'), ('toml', 'toml')])
         manifest = work / 'Cargo.toml'
         manifest.write_text('[package]\nname = "foundation-consumer-regression"\nversion = "0.0.0"\n'
                             'edition = "2021"\n[workspace]\n[dependencies]\n' + dependencies + '\n')
@@ -36,7 +36,7 @@ def check(root):
         if not result.returncode or 'error[E0432]' not in result.stderr:
             raise AssertionError('retired parser tracing API was accepted or failed for another reason: ' + result.stderr)
         (work / 'src/lib.rs').write_text('')
-        for feature in ['winnow/debug', 'toml_edit/unstable-debug']:
+        for feature in ['winnow/debug', 'toml/unstable-debug']:
             result = subprocess.run(command + ['--features', feature], cwd=root, capture_output=True, text=True)
             if not result.returncode or 'does not have that feature' not in result.stderr:
                 raise AssertionError('retired parser debug feature was accepted or failed for another reason: ' + result.stderr)

@@ -39,6 +39,7 @@ case "${1:-}" in
     python3 .github/scripts/check-serialization-family.py
     python3 .github/scripts/check-error-definition-family.py
     python3 .github/scripts/check-command-line-family.py
+    python3 .github/scripts/check-toml-consolidation.py
     python3 .github/scripts/check-web-bindgen-scope.py
     cargo test --locked --offline --lib -p idna_adapter -p storage-client property_masks_preserve_all_unicode_scalars
     ;;

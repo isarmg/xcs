@@ -73,7 +73,7 @@ mod tests {
         let result: ModalResult<u16> = winnow::binary::be_u16.parse_next(&mut &[0x12, 0x34][..]);
         assert_eq!(result.unwrap(), 0x1234);
         let source = "title = \"文件 Ω\"\nvalue = 1_024\n";
-        let document: toml_edit::DocumentMut = source.parse().unwrap();
+        let document: toml::editor::DocumentMut = source.parse().unwrap();
         assert_eq!(document["title"].as_str(), Some("文件 Ω"));
         assert_eq!(document["value"].as_integer(), Some(1024));
         assert_eq!(document.to_string(), source);
