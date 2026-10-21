@@ -648,6 +648,28 @@ class ClosureRoles(unittest.TestCase):
         self.assertEqual(roles["shared"], {"roles": ["compile", "runtime"], "features": ["a", "z"]})
         self.assertNotIn("dev", roles)
 
+    def test_profile_is_a_conservative_workspace_feature_superset(self):
+        # Mirrors Cargo metadata when tool enables base/extra but app does not.
+        # Selecting app only after metadata cannot undo workspace unification.
+        root = Path("/repository")
+        metadata = dict(workspace_members=["app", "tool"], packages=[
+            dict(id=name, name=name, manifest_path=str(root / path / "Cargo.toml"),
+                 targets=[{"kind": ["lib"]}])
+            for name, path in (("app", "src/app"), ("tool", "tools/tool"),
+                               ("base", "src/foundation/base"), ("extra", "src/foundation/extra"))
+        ], resolve={"nodes": [
+            dict(id="app", features=[], deps=[dict(pkg="base", dep_kinds=[{"kind": None}])]),
+            dict(id="tool", features=[], deps=[dict(pkg="base", dep_kinds=[{"kind": None}])]),
+            dict(id="base", features=["extra"], deps=[dict(pkg="extra", dep_kinds=[{"kind": None}])]),
+            dict(id="extra", features=[], deps=[]),
+        ]})
+        selected = manager.selected_sources(root, metadata, profile={"id": "app", "packages": ["app"]})
+        self.assertEqual(selected, {
+            "src/foundation/base": {"roles": ["runtime"], "features": ["extra"]},
+            "src/foundation/extra": {"roles": ["runtime"], "features": []},
+        })
+        self.assertIn("not an isolated consumer", manager.closure.__doc__)
+
     def test_build_helper_entire_dependency_graph_is_compile_only(self):
         roles = manager.closure(self.metadata, initial_role="compile")
         self.assertTrue(all(package["roles"] == ["compile"] for package in roles.values()))

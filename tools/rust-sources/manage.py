@@ -258,7 +258,12 @@ def cargo_metadata(root, manifest="Cargo.toml", target=None, cargo_home=None):
 
 
 def closure(metadata, initial_role="runtime", roots=None):
-    """Normal, build and proc-macro roles are distinct; dev edges are excluded."""
+    """Traverse a conservative workspace-feature graph; skip direct dev edges.
+
+    Cargo unifies workspace features before roots are selected below. Another
+    member or dev dependency can therefore activate normal/build edges here.
+    Roles describe this superset, not an isolated consumer or linked artifact.
+    """
     packages = {package["id"]: package for package in metadata["packages"]}
     nodes = {node["id"]: node for node in metadata["resolve"]["nodes"]}
     if initial_role not in ("runtime", "compile"):
@@ -686,7 +691,7 @@ def document(catalog, policy):
     lines = ["# Rust 第三方源码来源与使用清单", "",
              "本仓库只有根 Git 仓库、根 Cargo workspace 与根 Cargo.lock。活动 Rust 依赖全部通过仓库内 path 连接；基础实现位于 src/foundation，界面内核与命名规范化实现分别整合进 src/interface 与 src/naming。没有独立第三方工作区或独立锁文件。", "",
              "精确来源及原始逐文件摘要见 compliance/provenance/origins.json；当前源码逐文件摘要、单锁文件及各目标闭包见 compliance/rust-sources.json；法律材料统一见 compliance/NOTICE.md 和 compliance/licenses。集中管理不改变各上游许可，也不把改造代码全部重新许可为根项目许可。", "",
-             "runtime 是 normal 边可达的运行候选；compile 包括 build/proc-macro 子图及维护工具。元数据闭包与解析 features 不等于最终链接代码、实际浏览器/SMB 验收或安全审计。每个活动源码身份必须至少进入一个受支持入口/目标闭包，未使用身份只能显式退役并保留来源证据。工具链及既有 Samba/SQLite/系统 SDK 管理边界保持独立。", "",
+             "runtime 是统一工作区特性图中 normal 边可达的运行候选；compile 包括 build/proc-macro 子图及维护工具。Cargo 先统一整个 workspace 的 features，再从各登记入口遍历；直接 dev 边虽被跳过，其他成员或开发依赖启用的特性仍可能间接扩大 normal/build 可达集合。这是保守可达超集，不是精确单入口运行时闭包或最终链接证明，不能单独据此判定源码可删除。元数据也不替代实际浏览器/SMB 验收或安全审计。每个活动源码身份必须至少进入一个受支持入口/目标的保守超集，移除身份仍须显式退役并保留来源证据。工具链及既有 Samba/SQLite/系统 SDK 管理边界保持独立。", "",
              "修改后显式执行 `python3 tools/rust-sources/manage.py refresh`，审查源码、来源清单与文档差异，再执行 `python3 tools/rust-sources/manage.py verify --metadata`；verify 不接受新哈希。删除依赖必须另提供经复核的 `refresh --retire-plan PLAN.json`，保存已移除实现的最后源码摘要及原因；普通 refresh 拒绝意外丢失目录或改写退役记录。原始身份与法律材料继续保存，不因退役而删除。原始发布包重建工具只向仓库外独立复核目录输出，不覆盖活动源码。", "",
              "同目录上游升级必须追加新的原始发布包及集中材料，并使用经复核的 `refresh --upgrade-plan PLAN.json`。计划 schema 为 1，packages 每项包含 directory、与上次活动记录完全相同的 package、successor_origin_directory、reason 及非空 source_prefixes（例如 `[\"src/\"]`）。升级时逐文件校验这些完整前缀下的源码与新发布包完全一致，不能仅提升版本号；路径清单、缺失、新增和内容差异均拒绝。schema 4 的 superseded 以旧 origin_directory 为键，保留原 package、后继来源、原因和已校验前缀，superseded_records_sha256 固定其摘要。连续升级保留不可改写的直接后继链，最终指向同目录的当前身份或显式退役记录。升级后有意的本地源码修改仍需常规 refresh，不改写上游原始收据。", "",
              "## 单工作区入口与解析目标", "", "| 入口闭包 | 用途 | 目标 |", "| --- | --- | --- |"]
@@ -731,7 +736,7 @@ def document(catalog, policy):
                      retired["reason"], f"{retired['file_count']} / {retired['bytes']}"])) + " |")
     lines += ["", "## 完整性、安全与验收", "",
               f"共 {len(catalog['packages'])} 个活动源码树、{len(catalog.get('retired', {}))} 个已移除来源、{len(catalog.get('superseded', {}))} 个已升级替换来源，{len(catalog['resolutions'])} 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。", "",
-              "`.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口闭包。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。", ""]
+              "`.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口的保守可达超集；该记录不证明每个入口实际编译或链接了这些源码。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。", ""]
     return "\n".join(lines)
 
 

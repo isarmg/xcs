@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Exercise every rustix API build and both backends via the real locked consumer."""
 import json
+import runpy
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
+matrix_environment = runpy.run_path(str(Path(__file__).with_name("backend_environment.py")))["matrix_environment"]
 TARGET = "x86_64-unknown-linux-gnu"
 
 
@@ -31,6 +33,7 @@ def libraries(output):
 
 
 def check(root):
+    environment = matrix_environment()
     with tempfile.TemporaryDirectory(prefix="zxs-linux-syscalls-") as temporary:
         guard_test = str(Path(temporary) / "target-guard")
         subprocess.run([
@@ -51,7 +54,7 @@ def check(root):
                 built = subprocess.run(
                     ["cargo", "build", "--locked", "--offline", "--target", TARGET,
                      "-p", "platform-io", "--features", features, "--message-format=json"],
-                    cwd=root, check=True, text=True, stdout=subprocess.PIPE,
+                    cwd=root, env=environment, check=True, text=True, stdout=subprocess.PIPE,
                 )
             except subprocess.CalledProcessError as error:
                 # Do not hide Cargo's structured diagnostics on a failed build.

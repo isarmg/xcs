@@ -2,13 +2,13 @@
 """Check Linux parking timeout and wake-token behavior in a locked consumer."""
 from pathlib import Path
 import json
-import os
 import runpy
 import sys
 import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
+matrix_environment = runpy.run_path(str(Path(__file__).with_name("backend_environment.py")))["matrix_environment"]
 TARGET = "x86_64-unknown-linux-gnu"
 CONSUMER = r'''
 #[cfg(test)]
@@ -84,6 +84,7 @@ mod tests {
 '''
 
 def check(root):
+    environment = matrix_environment()
     (root / 'target').mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='parking-regression-', dir=root / 'target') as temporary:
         work = Path(temporary)
@@ -110,7 +111,7 @@ parking_lot_core = {{ path = "{foundation / 'parking_lot_core'}" }}
                        "--target", TARGET, "--target-dir", str(work / "target"), "-j2"]
             diagnostics = diagnostics_type(sys.stderr)
             executables = []
-            with subprocess.Popen(command, cwd=root, env=os.environ | {"RUSTFLAGS": flags},
+            with subprocess.Popen(command, cwd=root, env=environment | {"RUSTFLAGS": flags},
                                   stdout=subprocess.PIPE, text=True, encoding="utf-8") as process:
                 for number, line in enumerate(process.stdout, 1):
                     diagnostics.consume(line, number)

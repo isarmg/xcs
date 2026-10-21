@@ -3,7 +3,6 @@
 
 import argparse
 import json
-import os
 from pathlib import Path
 import re
 import runpy
@@ -12,6 +11,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
+matrix_environment = runpy.run_path(str(Path(__file__).with_name("backend_environment.py")))["matrix_environment"]
 VERSIONS = ("0.2.17", "0.3.4", "0.4.3")
 RETIRED = ("rndr", "efi_rng", "windows_legacy")
 DIAGNOSTIC = "this getrandom backend was retired"
@@ -120,12 +120,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target-dir", type=Path, default=ROOT / "target" / "random-backends")
     args = parser.parse_args()
-    base_env = os.environ.copy()
-    # Use RUSTFLAGS consistently; encoded flags otherwise silently override them.
-    inherited = base_env.get("RUSTFLAGS", "")
-    if base_env.get("CARGO_ENCODED_RUSTFLAGS"):
-        raise RuntimeError("unset CARGO_ENCODED_RUSTFLAGS before this matrix")
-    base_env["RUSTFLAGS"] = inherited + " --deny=warnings"
+    base_env = matrix_environment()
+    base_env["RUSTFLAGS"] = "--deny=warnings"
     with tempfile.TemporaryDirectory(prefix="zxs-random-backends-") as directory:
         for version in VERSIONS:
             source = ROOT / "src" / "foundation" / ("getrandom-" + version)
