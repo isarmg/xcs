@@ -3,6 +3,7 @@ from collections import Counter
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -90,13 +91,66 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertIn(
             {"tool": "python3", "args": ["tools/rust-sources/manage.py", "verify"]}, calls,
         )
-        for directory in ("test/tools/rust-sources", "test/ci", "test/tools/perf-check"):
+        for directory in ("test/ci", "test/tools/perf-check"):
             self.assertIn(
                 {"tool": "python3", "args": ["-m", "unittest", "discover", "-s",
                                            directory, "-p", "test_*.py"]}, calls,
             )
         self.assertEqual(calls[-1], {"tool": "node", "args": [".github/scripts/check-evidence-probes.mjs"]})
         self.assertFalse(any("--metadata" in call["args"] for call in calls))
+
+    def test_full_source_tool_regressions_run_only_in_source_shard(self):
+        full_discovery = {
+            "tool": "python3",
+            "args": ["-m", "unittest", "discover", "-s",
+                     "test/tools/rust-sources", "-p", "test_*.py"],
+        }
+        self.assertNotIn(full_discovery, self.suite("static"))
+        self.assertEqual(self.suite("rust-sources").count(full_discovery), 1)
+        # Guard against a second full invocation in any other shell branch.
+        script = (self.root / ".github/scripts/check.sh").read_text()
+        self.assertEqual(script.count("-s test/tools/rust-sources"), 1)
+        for suite in ("static", "rust-sources"):
+            self.assertIn(
+                {"tool": "python3", "args": ["tools/rust-sources/architecture.py", "verify"]},
+                self.suite(suite),
+            )
+
+    def test_workflows_schedule_source_shard_once_after_preflight(self):
+        # Deliberately target our block-mapping / inline-list workflow format;
+        # no PyYAML, compiler, network or runner is needed for this regression.
+        root = Path(__file__).resolve().parents[2]
+        for filename, matrix_job, predecessor in (
+            ("ci.yml", "tests", "static"),
+            ("release.yml", "verify", "version"),
+        ):
+            with self.subTest(workflow=filename):
+                workflow = (root / ".github/workflows" / filename).read_text()
+                parts = re.split(r"^  ([A-Za-z0-9_-]+):\s*$",
+                                 workflow.split("\njobs:\n", 1)[1], flags=re.MULTILINE)
+                jobs = dict(zip(parts[1::2], parts[2::2]))
+                self.assertIn("bash .github/scripts/check.sh static", jobs["static"])
+                body = jobs[matrix_job]
+                matrix = re.findall(r"^        suite: \[(.+)\]$", body, re.MULTILINE)
+                self.assertEqual(len(matrix), 1)
+                suites = [suite.strip() for suite in matrix[0].split(",")]
+                self.assertEqual(suites.count("rust-sources"), 1)
+                self.assertNotIn("static", suites)
+                self.assertNotRegex(body, r"(?m)^        (?:exclude|include):")
+                self.assertIn("    needs: " + predecessor + "\n", body)
+                self.assertIn("      fail-fast: false\n", body)
+                self.assertNotRegex(body, r"(?m)^    (?:if|continue-on-error):")
+                invocation = '        run: bash .github/scripts/check.sh "${{ matrix.suite }}"'
+                self.assertEqual(body.count(invocation), 1)
+                self.assertRegex(body, r"- name: [^\n]+\n" + re.escape(invocation))
+                self.assertEqual(workflow.count("suite: ["), 1)
+                self.assertNotIn("check.sh rust-sources", workflow)
+                self.assertNotIn("test/tools/rust-sources", workflow)
+                if predecessor != "static":
+                    self.assertIn("    needs: static\n", jobs[predecessor])
+                    # Release assets cannot be assembled before all shards pass.
+                    self.assertIn("    needs: [version, verify, linux-web]\n", jobs["assemble"])
+                    self.assertIn("    needs: [version, assemble]\n", jobs["publish"])
 
     def test_build_tools_cover_report_parsing_without_running_a_workload(self):
         calls = self.suite("build-tools")

@@ -6,8 +6,8 @@
 
 | 范围 | 实际检查 |
 | --- | --- |
-| `static` | 不安装或调用 Rust：工作流早期 env 上下文检查、来源静态校验、Python 工具回归、shell 语法与发布 mock、Node 历史脚本配置和库存检查；不执行历史浏览器验收 |
-| `rust-sources` | 源码、manifest、全部特性边、锁文件、来源文档和退役记录校验；空 Cargo home 重新解析五个入口／目标闭包，拒绝无闭包使用的活动源码树 |
+| `static` | 不安装或调用 Rust：工作流早期 env 上下文检查、来源静态校验、CI 与性能报告 Python 工具回归、shell 语法与发布 mock、Node 历史脚本配置和库存检查；不执行历史浏览器验收 |
+| `rust-sources` | 源码、manifest、全部特性边、锁文件、来源文档和退役记录校验；空 Cargo home 重新解析五个入口／目标闭包，拒绝无闭包使用的活动源码树；完整来源工具 Python 回归 |
 | `quality` | 自有 workspace 的格式与严格 Clippy；宿主机全部目标及 Web 的 WASM release 编译，所有本地依赖的 Rust warning/error 均失败；基础源码不自动格式化 |
 | `security` | 固定 cargo-audit 查询当前 RustSec 与 registry/yank 状态；独立扫描器锁、产品根锁和活动／已合并实现的原始身份均扫描，告警或扫描不完整失败；退役及已升级替换的旧身份单列历史记录 |
 | `workspace` | 服务端、核心、认证、平台、运维 CLI、HTTP 与 socket 测试；另行串行运行真实大历史包用例 |
@@ -26,7 +26,11 @@
 bash .github/scripts/check.sh static
 ```
 
-CI 与 Release 都先运行独立的 `static` job；它通过后才安装或使用 Rust。工作流上下文检查是针对本仓库 block-mapping 写法的定向回归，不是完整 YAML / GitHub Actions 语义验证器。它检查顶层及 job 的 `env`，拒绝尚未可用的 `runner`、`steps` 等上下文及 `hashFiles`；合法的 step env 和 action 输入仍可使用 runner 上下文。
+CI 与 Release 都先运行独立的 `static` job；它通过后才安装或使用 Rust。
+
+完整来源工具回归只在后续矩阵的 `rust-sources` 分片运行一次，不再阻塞静态预检；它与其余 Rust 测试、生产构建并行，Release 仍须等待所有验证分片通过后才组装和发布。`static` 通过不代表完整来源工具回归通过。需要单独在本地运行全部来源工具测试（无需 Rust）时，执行 `python3 -m unittest discover -s test/tools/rust-sources -p 'test_*.py'`；完整来源门禁仍使用下列 `check.sh rust-sources` 命令。
+
+工作流上下文检查是针对本仓库 block-mapping 写法的定向回归，不是完整 YAML / GitHub Actions 语义验证器。它检查顶层及 job 的 `env`，拒绝尚未可用的 `runner`、`steps` 等上下文及 `hashFiles`；合法的 step env 和 action 输入仍可使用 runner 上下文。
 
 安装工具链、WASM target、浏览器/驱动和所需原生库后，在仓库根执行其余门禁：
 

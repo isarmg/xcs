@@ -5,11 +5,11 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 case "${1:-}" in
   static)
+    # Fast preflight only; full source-tool regressions run in rust-sources.
     # No Rust toolchain, registry, package installer or live browser required.
     python3 .github/scripts/check-workflows.py
     python3 tools/rust-sources/manage.py verify
     python3 tools/rust-sources/architecture.py verify
-    python3 -m unittest discover -s test/tools/rust-sources -p 'test_*.py'
     python3 -m unittest discover -s test/ci -p 'test_*.py'
     python3 -m unittest discover -s test/tools/perf-check -p 'test_*.py'
     for script in .github/scripts/*.sh test/ci/*.sh; do
