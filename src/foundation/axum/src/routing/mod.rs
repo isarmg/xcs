@@ -20,8 +20,8 @@ use std::{
     sync::Arc,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 pub mod future;
 pub mod method_routing;
@@ -435,7 +435,7 @@ where
     /// Convert the router into a borrowed [`Service`] with a fixed request body type, to aid type
     /// inference.
     ///
-    /// In some cases when calling methods from [`tower::ServiceExt`] on a [`Router`] you might get
+    /// In some cases when calling methods from [`service_stack::ServiceExt`] on a [`Router`] you might get
     /// type inference errors along the lines of
     ///
     /// ```not_rust
@@ -454,7 +454,7 @@ where
     ///     http::Request,
     ///     body::Body,
     /// };
-    /// use tower::{Service, ServiceExt};
+    /// use service_stack::{Service, ServiceExt};
     ///
     /// # async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut router = Router::new().route("/", get(|| async {}));
@@ -473,7 +473,7 @@ where
     ///     http::Request,
     ///     body::Body,
     /// };
-    /// use tower::{Service, ServiceExt};
+    /// use service_stack::{Service, ServiceExt};
     ///
     /// # async fn async_main() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut router = Router::new().route("/", get(|| async {}));
@@ -524,7 +524,7 @@ impl Router {
     /// # };
     /// ```
     ///
-    /// [`MakeService`]: tower::make::MakeService
+    /// [`MakeService`]: service_stack::make::MakeService
     #[must_use]
     pub fn into_make_service(self) -> IntoMakeService<Self> {
         // call `Router::with_state` such that everything is turned into `Route` eagerly

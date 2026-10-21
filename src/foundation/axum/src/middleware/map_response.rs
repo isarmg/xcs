@@ -11,12 +11,12 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Create a middleware from an async function that transforms a response.
 ///
-/// This differs from [`tower::util::MapResponse`] in that it allows you to easily run axum-specific
+/// This differs from [`service_stack::util::MapResponse`] in that it allows you to easily run axum-specific
 /// extractors.
 ///
 /// # Example
@@ -146,7 +146,7 @@ pub fn map_response_with_state<F, S, T>(state: S, f: F) -> MapResponseLayer<F, S
     }
 }
 
-/// A [`tower::Layer`] from an async function that transforms a response.
+/// A [`service_stack::Layer`] from an async function that transforms a response.
 ///
 /// Created with [`map_response`]. See that function for more details.
 #[must_use]

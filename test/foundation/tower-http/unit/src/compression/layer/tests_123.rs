@@ -7,7 +7,7 @@ mod tests {
     use std::convert::Infallible;
     use tokio::fs::File;
     use tokio_util::io::ReaderStream;
-    use tower::{Service, ServiceBuilder, ServiceExt};
+    use service_stack::{Service, ServiceBuilder, ServiceExt};
 
     async fn handle(_req: Request<Body>) -> Result<Response<Body>, Infallible> {
         // Open the file.

@@ -17,7 +17,7 @@ mod tests {
     use std::sync::{Arc, RwLock};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio_util::io::StreamReader;
-    use tower::{service_fn, Service, ServiceExt};
+    use service_stack::{service_fn, Service, ServiceExt};
 
     // Compression filter allows every other request to be compressed
     #[derive(Clone)]

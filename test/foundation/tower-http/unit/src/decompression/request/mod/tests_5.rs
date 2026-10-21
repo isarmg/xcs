@@ -7,7 +7,7 @@ mod tests {
     use http::{header, Request, Response, StatusCode};
     use http_body::BodyExt;
     use std::{convert::Infallible, io::Write};
-    use tower::{service_fn, Service, ServiceExt};
+    use service_stack::{service_fn, Service, ServiceExt};
 
     #[tokio::test]
     async fn decompress_accepted_encoding() {

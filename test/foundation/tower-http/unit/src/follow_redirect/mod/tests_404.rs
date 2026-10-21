@@ -4,7 +4,7 @@ mod tests {
     use crate::test_helpers::Body;
     use http::header::LOCATION;
     use std::convert::Infallible;
-    use tower::{ServiceBuilder, ServiceExt};
+    use service_stack::{ServiceBuilder, ServiceExt};
 
     #[tokio::test]
     async fn follows() {

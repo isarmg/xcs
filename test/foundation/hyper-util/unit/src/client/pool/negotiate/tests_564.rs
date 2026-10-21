@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use futures::future;
-    use tower_service::Service;
+    use service_stack::Service;
     use tower_test::assert_request_eq;
 
     #[tokio::test]
@@ -62,7 +62,7 @@ mod tests {
     #[derive(Clone)]
     struct LayerFn<F>(F);
 
-    impl<F, S, Out> tower_layer::Layer<S> for LayerFn<F>
+    impl<F, S, Out> service_stack::Layer<S> for LayerFn<F>
     where
         F: Fn(S) -> Out,
     {

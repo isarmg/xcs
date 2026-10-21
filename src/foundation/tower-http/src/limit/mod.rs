@@ -25,7 +25,7 @@
 //! use std::convert::Infallible;
 //! use http::{Request, Response, StatusCode, HeaderValue, header::CONTENT_LENGTH};
 //! use http_body::{LengthLimitError};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::{body::Limited, limit::RequestBodyLimitLayer};
 //! use http_body::Full;
 //!
@@ -73,7 +73,7 @@
 //! # use std::convert::Infallible;
 //! # use http::{Request, Response, StatusCode};
 //! # use http_body::LengthLimitError;
-//! # use tower::{Service, ServiceExt, ServiceBuilder, BoxError};
+//! # use service_stack::{Service, ServiceExt, ServiceBuilder, BoxError};
 //! # use tower_http::{body::Limited, limit::RequestBodyLimitLayer};
 //! # use http_body::Full;
 //! # use http_body::BodyExt;

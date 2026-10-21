@@ -32,12 +32,12 @@ use std::{
     task::{Context, Poll},
     time::Duration,
 };
-use tower::{service_fn, util::MapResponseLayer, ServiceExt as TowerServiceExt};
+use service_stack::{service_fn, util::MapResponseLayer, ServiceExt as TowerServiceExt};
 use tower_http::{
     limit::RequestBodyLimitLayer, timeout::TimeoutLayer,
     validate_request::ValidateRequestHeaderLayer,
 };
-use tower_service::Service;
+use service_stack::Service;
 
 mod fallback;
 mod get_to_head;
@@ -137,7 +137,7 @@ async fn router_type_doesnt_change() {
 #[crate::test]
 async fn routing_between_services() {
     use std::convert::Infallible;
-    use tower::service_fn;
+    use service_stack::service_fn;
 
     async fn handle(_: Request) -> &'static str {
         "handler"
@@ -462,7 +462,7 @@ async fn middleware_still_run_for_unmatched_requests() {
 
     let app = Router::new()
         .route("/", get(|| async {}))
-        .layer(tower::layer::layer_fn(CountMiddleware));
+        .layer(service_stack::layer::layer_fn(CountMiddleware));
 
     let client = TestClient::new(app);
 

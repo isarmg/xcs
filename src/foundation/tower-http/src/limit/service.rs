@@ -3,7 +3,7 @@ use crate::body::Limited;
 use http::{Request, Response};
 use http_body::Body;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use service_stack::Service;
 
 /// Middleware that intercepts requests with body lengths greater than the
 /// configured limit and converts them into `413 Payload Too Large` responses.
@@ -25,7 +25,7 @@ impl<S> RequestBodyLimit<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `RequestBodyLimit` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(limit: usize) -> RequestBodyLimitLayer {
         RequestBodyLimitLayer::new(limit)
     }

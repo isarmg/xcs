@@ -5,7 +5,7 @@ use crate::{compression_utils::AcceptEncoding, content_encoding::Encoding};
 use http::{Request, Response};
 use http_body::Body;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use service_stack::Service;
 
 /// Compress response bodies of the underlying service.
 ///
@@ -38,7 +38,7 @@ impl<S, P> Compression<S, P> {
 
     /// Returns a new [`Layer`] that wraps services with a `Compression` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer() -> CompressionLayer {
         CompressionLayer::new()
     }
@@ -123,7 +123,7 @@ impl<S, P> Compression<S, P> {
     ///     Compression,
     ///     predicate::{Predicate, NotForContentType, DefaultPredicate},
     /// };
-    /// use tower::util::service_fn;
+    /// use service_stack::util::service_fn;
     ///
     /// // Placeholder service_fn
     /// let service = service_fn(|_: ()| async {

@@ -7,11 +7,11 @@ use axum::{
     http::{Request, StatusCode},
 };
 use json_codec::json;
+use service_stack::ServiceExt;
 use std::{net::SocketAddr, path::Path, sync::Arc};
 use storage_contract::Config;
 use storage_engine::Engine;
 use storage_server::{ServerConfig, auth::AuthStore, engine_backend::EngineBackend};
-use tower::ServiceExt;
 
 fn application(root: &Path, proxy: bool) -> Router {
     let engine = Engine::initialize(

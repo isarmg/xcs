@@ -1,5 +1,5 @@
 use super::RequestBodyLimit;
-use tower_layer::Layer;
+use service_stack::Layer;
 
 /// Layer that applies the [`RequestBodyLimit`] middleware that intercepts requests
 /// with body lengths greater than the configured limit and converts them into

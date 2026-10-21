@@ -5,7 +5,7 @@ mod usable_for_retries {
     use std::fmt;
 
     use http::{Request, Response};
-    use tower::retry::Policy;
+    use service_stack::retry::Policy;
 
     use super::{ClassifiedResponse, ClassifyResponse};
 

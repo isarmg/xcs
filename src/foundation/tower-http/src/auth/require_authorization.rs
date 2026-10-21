@@ -8,7 +8,7 @@
 //! ```
 //! use tower_http::validate_request::{ValidateRequest, ValidateRequestHeader, ValidateRequestHeaderLayer};
 //! use http::{Request, Response, StatusCode, header::AUTHORIZATION};
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use bytes::Bytes;
 //! use http_body::Full;
 //!

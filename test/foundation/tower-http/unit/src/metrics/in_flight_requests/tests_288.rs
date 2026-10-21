@@ -4,7 +4,7 @@ mod tests {
     use super::*;
     use crate::test_helpers::Body;
     use http::Request;
-    use tower::{BoxError, ServiceBuilder};
+    use service_stack::{BoxError, ServiceBuilder};
 
     #[tokio::test]
     async fn basic() {

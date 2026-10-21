@@ -47,14 +47,14 @@ impl DebugConnector {
     }
 }
 
-impl tower_service::Service<Uri> for DebugConnector {
+impl service_stack::Service<Uri> for DebugConnector {
     type Response = DebugStream;
-    type Error = <HttpConnector as tower_service::Service<Uri>>::Error;
+    type Error = <HttpConnector as service_stack::Service<Uri>>::Error;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         // don't forget to check inner service is ready :)
-        tower_service::Service::<Uri>::poll_ready(&mut self.http, cx)
+        service_stack::Service::<Uri>::poll_ready(&mut self.http, cx)
     }
 
     fn call(&mut self, dst: Uri) -> Self::Future {

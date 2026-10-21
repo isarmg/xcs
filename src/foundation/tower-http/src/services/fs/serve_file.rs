@@ -7,7 +7,7 @@ use std::{
     path::Path,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use service_stack::Service;
 
 /// Service that serves a file.
 #[derive(Clone, Debug)]

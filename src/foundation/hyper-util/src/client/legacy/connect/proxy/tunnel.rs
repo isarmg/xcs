@@ -6,7 +6,7 @@ use std::task::{self, Poll, ready};
 use http::{HeaderMap, HeaderValue, Uri};
 use hyper::rt::{Read, Write};
 use pin_project_lite::pin_project;
-use tower_service::Service;
+use service_stack::Service;
 
 /// Tunnel Proxy via HTTP CONNECT
 ///

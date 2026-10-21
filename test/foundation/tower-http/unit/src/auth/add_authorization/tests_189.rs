@@ -5,7 +5,7 @@ mod tests {
     use crate::validate_request::ValidateRequestHeaderLayer;
     use http::{Response, StatusCode};
     use std::convert::Infallible;
-    use tower::{BoxError, Service, ServiceBuilder, ServiceExt};
+    use service_stack::{BoxError, Service, ServiceBuilder, ServiceExt};
 
     #[tokio::test]
     async fn basic() {

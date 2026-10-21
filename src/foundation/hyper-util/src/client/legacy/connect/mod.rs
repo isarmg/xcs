@@ -18,7 +18,7 @@
 //! a TCP connection to the same address could be written like this:
 //!
 //! ```rust,ignore
-//! let connector = tower::service_fn(|_dst| async {
+//! let connector = service_stack::service_fn(|_dst| async {
 //!     tokio::net::TcpStream::connect("127.0.0.1:1337")
 //! })
 //! ```
@@ -29,7 +29,7 @@
 //! use std::{net::SocketAddr, pin::Pin, task::{self, Poll}};
 //! use http::Uri;
 //! use tokio::net::TcpStream;
-//! use tower_service::Service;
+//! use service_stack::Service;
 //!
 //! #[derive(Clone)]
 //! struct LocalConnector;
@@ -57,7 +57,7 @@
 //! better starting place to extend from.
 //!
 //! [`HttpConnector`]: HttpConnector
-//! [`Service`]: tower_service::Service
+//! [`Service`]: service_stack::Service
 //! [`Uri`]: ::http::Uri
 //! [`Read`]: hyper::rt::Read
 //! [`Write`]: hyper::rt::Write
@@ -315,9 +315,9 @@ pub(super) mod sealed {
     ///
     /// # Trait Alias
     ///
-    /// This is really just an *alias* for the `tower::Service` trait, with
+    /// This is really just an *alias* for the `service_stack::Service` trait, with
     /// additional bounds set for convenience *inside* hyper. You don't actually
-    /// implement this trait, but `tower::Service<Uri>` instead.
+    /// implement this trait, but `service_stack::Service<Uri>` instead.
     // The `Sized` bound is to prevent creating `dyn Connect`, since they cannot
     // fit the `Connect` bounds because of the blanket impl for `Service`.
     pub trait Connect: Sealed + Sized {
@@ -337,7 +337,7 @@ pub(super) mod sealed {
 
     impl<S, T> Connect for S
     where
-        S: tower_service::Service<Uri, Response = T> + Send + 'static,
+        S: service_stack::Service<Uri, Response = T> + Send + 'static,
         S::Error: Into<Box<dyn StdError + Send + Sync>>,
         S::Future: Unpin + Send,
         T: Read + Write + Connection + Unpin + Send + 'static,
@@ -351,7 +351,7 @@ pub(super) mod sealed {
 
     impl<S, T> ConnectSvc for S
     where
-        S: tower_service::Service<Uri, Response = T> + Send + 'static,
+        S: service_stack::Service<Uri, Response = T> + Send + 'static,
         S::Error: Into<Box<dyn StdError + Send + Sync>>,
         S::Future: Unpin + Send,
         T: Read + Write + Connection + Unpin + Send + 'static,
@@ -367,7 +367,7 @@ pub(super) mod sealed {
 
     impl<S, T> Sealed for S
     where
-        S: tower_service::Service<Uri, Response = T> + Send,
+        S: service_stack::Service<Uri, Response = T> + Send,
         S::Error: Into<Box<dyn StdError + Send + Sync>>,
         S::Future: Unpin + Send,
         T: Read + Write + Connection + Unpin + Send + 'static,

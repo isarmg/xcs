@@ -9,7 +9,7 @@
 //! use http::{Request, Uri, StatusCode};
 //! use http_body::Full;
 //! use bytes::Bytes;
-//! use tower::{Service, ServiceExt};
+//! use service_stack::{Service, ServiceExt};
 //! use tower_http::services::Redirect;
 //!
 //! # #[tokio::main]
@@ -40,7 +40,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use service_stack::Service;
 
 /// Service that redirects all requests.
 ///

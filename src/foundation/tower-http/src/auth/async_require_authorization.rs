@@ -7,7 +7,7 @@
 //! ```
 //! use tower_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
 //! use http::{Request, Response, StatusCode, header::AUTHORIZATION};
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use futures::future::BoxFuture;
 //! use bytes::Bytes;
 //! use http_body::Full;
@@ -79,7 +79,7 @@
 //! ```
 //! use tower_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
 //! use http::{Request, Response, StatusCode};
-//! use tower::{Service, ServiceExt, ServiceBuilder, BoxError};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, BoxError};
 //! use futures::future::BoxFuture;
 //! use http_body::Full;
 //! use bytes::Bytes;
@@ -125,8 +125,8 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Layer that applies [`AsyncRequireAuthorization`] which authorizes all requests using the
 /// [`Authorization`] header.
@@ -183,7 +183,7 @@ impl<S, T> AsyncRequireAuthorization<S, T> {
     /// Returns a new [`Layer`] that wraps services with an [`AsyncRequireAuthorizationLayer`]
     /// middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(auth: T) -> AsyncRequireAuthorizationLayer<T> {
         AsyncRequireAuthorizationLayer::new(auth)
     }

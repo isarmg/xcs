@@ -5,7 +5,7 @@ use crate::on_early_drop::future::OnEarlyDropFuture;
 use crate::on_early_drop::traits::{OnBodyDrop, OnFutureDrop};
 use http::{Request, Response};
 use std::task::{Context, Poll};
-use tower_service::Service;
+use service_stack::Service;
 
 /// [`Service`] produced by [`OnEarlyDropLayer`].
 ///

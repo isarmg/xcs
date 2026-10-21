@@ -8,7 +8,7 @@
 //! use http::{Request, Response};
 //! use std::convert::Infallible;
 //! use std::{pin::Pin, task::{ready, Context, Poll}};
-//! use tower::{ServiceBuilder, service_fn, ServiceExt, Service};
+//! use service_stack::{ServiceBuilder, service_fn, ServiceExt, Service};
 //! use tower_http::map_request_body::MapRequestBodyLayer;
 //!
 //! // A wrapper for a `Full<Bytes>`
@@ -25,7 +25,7 @@
 //! impl http_body::Body for BodyWrapper {
 //!     // ...
 //!     # type Data = Bytes;
-//!     # type Error = tower::BoxError;
+//!     # type Error = service_stack::BoxError;
 //!     # fn poll_frame(
 //!     #     self: Pin<&mut Self>,
 //!     #     cx: &mut Context<'_>
@@ -59,8 +59,8 @@ use std::{
     fmt,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Apply a transformation to the request body.
 ///
@@ -117,7 +117,7 @@ impl<S, F> MapRequestBody<S, F> {
 
     /// Returns a new [`Layer`] that wraps services with a `MapRequestBodyLayer` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(f: F) -> MapRequestBodyLayer<F> {
         MapRequestBodyLayer::new(f)
     }

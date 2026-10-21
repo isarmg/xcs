@@ -8,7 +8,7 @@ mod tests {
         convert::Infallible,
         sync::{atomic::Ordering, Arc},
     };
-    use tower::{ServiceBuilder, ServiceExt};
+    use service_stack::{ServiceBuilder, ServiceExt};
 
     #[allow(unused_imports)]
     use super::*;

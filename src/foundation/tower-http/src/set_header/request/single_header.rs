@@ -7,8 +7,8 @@ use std::{
     fmt,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 use crate::set_header::{InsertHeaderMode, MakeHeaderValue};
 

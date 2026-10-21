@@ -14,7 +14,7 @@ mod tests {
     use std::io::Read;
     use std::str::FromStr;
     use tokio::io::AsyncReadExt;
-    use tower::ServiceExt;
+    use service_stack::ServiceExt;
 
     #[tokio::test]
     async fn basic() {

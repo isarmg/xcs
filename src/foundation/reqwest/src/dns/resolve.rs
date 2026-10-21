@@ -1,5 +1,5 @@
 use hyper_util::client::legacy::connect::dns::Name as HyperName;
-use tower_service::Service;
+use service_stack::Service;
 
 use std::collections::HashMap;
 use std::future::Future;
@@ -22,7 +22,7 @@ pub trait Resolve: Send + Sync {
     /// Performs DNS resolution on a `Name`.
     /// The return type is a future containing an iterator of `SocketAddr`.
     ///
-    /// It differs from `tower_service::Service<Name>` in several ways:
+    /// It differs from `service_stack::Service<Name>` in several ways:
     ///  * It is assumed that `resolve` will always be ready to poll.
     ///  * It does not need a mutable reference to `self`.
     ///  * Since trait objects cannot make use of associated types, it requires

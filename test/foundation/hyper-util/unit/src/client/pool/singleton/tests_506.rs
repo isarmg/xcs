@@ -4,7 +4,7 @@ mod tests {
     use std::pin::Pin;
     use std::task::Poll;
 
-    use tower_service::Service;
+    use service_stack::Service;
 
     use super::Singleton;
 

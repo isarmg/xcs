@@ -13,11 +13,11 @@
 //! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
 //! # struct Conn;
 //! # impl Conn { fn negotiated_protocol(&self) -> &[u8] { b"h2" } }
-//! # let some_tls_connector = tower::service::service_fn(|_| async move {
+//! # let some_tls_connector = service_stack::service::service_fn(|_| async move {
 //! #     Ok::<_, std::convert::Infallible>(Conn)
 //! # });
-//! # let http1_layer = tower::layer::layer_fn(|s| s);
-//! # let http2_layer = tower::layer::layer_fn(|s| s);
+//! # let http1_layer = service_stack::layer::layer_fn(|s| s);
+//! # let http2_layer = service_stack::layer::layer_fn(|s| s);
 //! let mut pool = hyper_util::client::pool::negotiate::builder()
 //!     .connect(some_tls_connector)
 //!     .inspect(|c| c.negotiated_protocol() == b"h2")
@@ -51,8 +51,8 @@ mod internal {
     use std::task::{self, Poll, ready};
 
     use pin_project_lite::pin_project;
-    use tower_layer::Layer;
-    use tower_service::Service;
+    use service_stack::Layer;
+    use service_stack::Service;
 
     type BoxError = Box<dyn std::error::Error + Send + Sync>;
 

@@ -16,14 +16,14 @@ use std::{
     net::SocketAddr,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// A [`MakeService`] created from a router.
 ///
 /// See [`Router::into_make_service_with_connect_info`] for more details.
 ///
-/// [`MakeService`]: tower::make::MakeService
+/// [`MakeService`]: service_stack::make::MakeService
 /// [`Router::into_make_service_with_connect_info`]: crate::routing::Router::into_make_service_with_connect_info
 pub struct IntoMakeServiceWithConnectInfo<S, C> {
     svc: S,
@@ -184,7 +184,7 @@ axum_core::__impl_deref!(ConnectInfo);
 ///     http::{Request, StatusCode},
 /// };
 /// use std::net::SocketAddr;
-/// use tower::ServiceExt;
+/// use service_stack::ServiceExt;
 ///
 /// async fn handler(ConnectInfo(addr): ConnectInfo<SocketAddr>) {}
 ///

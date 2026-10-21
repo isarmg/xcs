@@ -8,8 +8,8 @@ use std::{
     time::Duration,
 };
 use tokio::time::Sleep;
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Layer that applies the [`Timeout`] middleware which apply a timeout to requests.
 ///
@@ -80,7 +80,7 @@ impl<S> Timeout<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `Timeout` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     #[deprecated(
         since = "0.6.7",
         note = "Use `Timeout::layer_with_status_code` instead"
@@ -189,7 +189,7 @@ impl<S> RequestBodyTimeout<S> {
 
     /// Returns a new [`Layer`] that wraps services with a [`RequestBodyTimeoutLayer`] middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(timeout: Duration) -> RequestBodyTimeoutLayer {
         RequestBodyTimeoutLayer::new(timeout)
     }
@@ -274,7 +274,7 @@ impl<S> ResponseBodyTimeout<S> {
 
     /// Returns a new [`Layer`] that wraps services with a [`ResponseBodyTimeoutLayer`] middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(timeout: Duration) -> ResponseBodyTimeoutLayer {
         ResponseBodyTimeoutLayer::new(timeout)
     }

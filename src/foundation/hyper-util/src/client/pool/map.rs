@@ -15,7 +15,7 @@
 //! # use hyper_util::client::pool;
 //! # let req = http::Request::new(());
 //! # let some_http1_connector = || {
-//! #     tower::service::service_fn(|_req| async { Ok::<_, &'static str>(()) })
+//! #     service_stack::service::service_fn(|_req| async { Ok::<_, &'static str>(()) })
 //! # };
 //! let mut map = pool::map::Map::builder()
 //!     .keys(|uri| (uri.scheme().clone(), uri.authority().clone()))

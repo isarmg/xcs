@@ -191,7 +191,7 @@ mod tests {
     // https://github.com/tokio-rs/axum/issues/1579
     #[crate::test]
     async fn doesnt_panic_if_router_called_from_wildcard_route() {
-        use tower::ServiceExt;
+        use service_stack::ServiceExt;
 
         let app = Router::new().route(
             "/{*path}",

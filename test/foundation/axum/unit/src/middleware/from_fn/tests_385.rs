@@ -4,7 +4,7 @@ mod tests {
     use crate::{body::Body, routing::get, Router};
     use http::{HeaderMap, StatusCode};
     use http_body::BodyExt;
-    use tower::ServiceExt;
+    use service_stack::ServiceExt;
 
     #[crate::test]
     async fn basic() {

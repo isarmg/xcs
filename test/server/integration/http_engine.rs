@@ -5,6 +5,7 @@ use axum::{
     http::{Request, StatusCode},
 };
 use json_codec::{Value, json};
+use service_stack::ServiceExt;
 use std::{path::Path, sync::Arc};
 use storage_contract::{Config, new_id, request_digest};
 use storage_engine::{CommitRequest, Engine};
@@ -13,7 +14,6 @@ use storage_server::{
     auth::{AuthStore, Identity},
     engine_backend::EngineBackend,
 };
-use tower::ServiceExt;
 #[path = "http_engine/backup_namespace.rs"]
 mod backup_namespace;
 #[path = "http_engine/file_metadata_operations.rs"]

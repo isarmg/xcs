@@ -1,7 +1,7 @@
 use super::*;
 use crate::extract::OriginalUri;
 use json_codec::{json, Value};
-use tower::limit::ConcurrencyLimitLayer;
+use service_stack::limit::ConcurrencyLimitLayer;
 
 #[crate::test]
 async fn basic() {

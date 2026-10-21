@@ -10,14 +10,14 @@
 //!
 //! ```
 //! use http::{Request, Response, header::{self, HeaderValue}};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::SetRequestHeaderLayer;
 //! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let http_client = tower::service_fn(|_: Request<Full<Bytes>>| async move {
+//! # let http_client = service_stack::service_fn(|_: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(Full::<Bytes>::default()))
 //! # });
 //! #
@@ -46,14 +46,14 @@
 //!
 //! ```
 //! use http::{Request, Response, header::{self, HeaderValue}};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::SetRequestHeaderLayer;
 //! use bytes::Bytes;
 //! use http_body::Full;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let http_client = tower::service_fn(|_: Request<Full<Bytes>>| async move {
+//! # let http_client = service_stack::service_fn(|_: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(Full::<Bytes>::default()))
 //! # });
 //! fn date_header_value() -> HeaderValue {
@@ -96,14 +96,14 @@
 //!
 //! ```
 //! use http::{Request, Response, header::{self, HeaderValue}};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::{HeaderMetadata, request::{SetMultipleRequestHeadersLayer}};
 //! use bytes::Bytes;
 //! use http_body::Full;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let http_client = tower::service_fn(|_: Request<Full<Bytes>>| async move {
+//! # let http_client = service_stack::service_fn(|_: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(Full::<Bytes>::default()))
 //! # });
 //!
@@ -115,7 +115,7 @@
 //!             }).into(),
 //!         ])
 //!     )
-//!     .service(tower::service_fn(|req: Request<Full<Bytes>>| async move {
+//!     .service(service_stack::service_fn(|req: Request<Full<Bytes>>| async move {
 //!         assert_eq!(req.headers()["date"], "now");
 //!         Ok::<_, std::convert::Infallible>(Response::new(Full::<Bytes>::default()))
 //!     }));

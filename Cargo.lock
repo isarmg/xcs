@@ -159,11 +159,9 @@ dependencies = [
  "pin-project-lite",
  "serialization-core",
  "serialization-error-path",
+ "service-stack",
  "sync_wrapper",
  "tokio",
- "tower",
- "tower-layer",
- "tower-service",
  "tracing",
 ]
 
@@ -177,9 +175,8 @@ dependencies = [
  "http-body",
  "mime",
  "pin-project-lite",
+ "service-stack",
  "sync_wrapper",
- "tower-layer",
- "tower-service",
  "tracing",
 ]
 
@@ -786,9 +783,9 @@ dependencies = [
  "hyper",
  "hyper-util",
  "rustls",
+ "service-stack",
  "tokio",
  "tokio-rustls",
- "tower-service",
  "webpki-roots",
 ]
 
@@ -807,9 +804,9 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
+ "service-stack",
  "socket2",
  "tokio",
- "tower-service",
  "tracing",
 ]
 
@@ -1418,13 +1415,12 @@ dependencies = [
  "pin-project-lite",
  "rustls",
  "rustls-pki-types",
+ "service-stack",
  "sync_wrapper",
  "tokio",
  "tokio-rustls",
  "tokio-util",
- "tower",
  "tower-http",
- "tower-service",
  "url",
  "webpki-roots",
 ]
@@ -1568,6 +1564,17 @@ version = "0.1.20"
 dependencies = [
  "itoa",
  "serialization-core",
+]
+
+[[package]]
+name = "service-stack"
+version = "0.5.3"
+dependencies = [
+ "futures",
+ "pin-project-lite",
+ "sync_wrapper",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -1773,6 +1780,7 @@ dependencies = [
  "json-codec",
  "name-policy",
  "rustix",
+ "service-stack",
  "smb-protocol",
  "storage-contract",
  "storage-engine",
@@ -1781,7 +1789,6 @@ dependencies = [
  "time",
  "tokio",
  "tokio-util",
- "tower",
  "tower-http",
  "tracing",
  "url",
@@ -1946,19 +1953,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tower"
-version = "0.5.3"
-dependencies = [
- "futures",
- "pin-project-lite",
- "sync_wrapper",
- "tokio",
- "tower-layer",
- "tower-service",
- "tracing",
-]
-
-[[package]]
 name = "tower-http"
 version = "0.6.11"
 dependencies = [
@@ -1973,22 +1967,12 @@ dependencies = [
  "mime_guess",
  "percent-encoding",
  "pin-project-lite",
+ "service-stack",
  "tokio",
  "tokio-util",
- "tower",
- "tower-layer",
- "tower-service",
  "tracing",
  "url",
 ]
-
-[[package]]
-name = "tower-layer"
-version = "0.3.3"
-
-[[package]]
-name = "tower-service"
-version = "0.3.3"
 
 [[package]]
 name = "tracing"

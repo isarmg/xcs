@@ -52,9 +52,9 @@ use crate::{
     routing::IntoMakeService,
 };
 use std::{convert::Infallible, fmt, future::Future, marker::PhantomData, pin::Pin};
-use tower::ServiceExt;
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::ServiceExt;
+use service_stack::Layer;
+use service_stack::Service;
 
 pub mod future;
 mod service;
@@ -74,7 +74,7 @@ pub use self::service::HandlerService;
 /// [`HandlerWithoutStateExt::into_service`] or [`Handler::with_state`]:
 ///
 /// ```
-/// use tower::Service;
+/// use service_stack::Service;
 /// use axum::{
 ///     extract::{State, Request},
 ///     body::Body,
@@ -152,7 +152,7 @@ pub trait Handler<T, S>: Clone + Send + Sync + Sized + 'static {
     /// Call the handler with the given request.
     fn call(self, req: Request, state: S) -> Self::Future;
 
-    /// Apply a [`tower::Layer`] to the handler.
+    /// Apply a [`service_stack::Layer`] to the handler.
     ///
     /// All requests to the handler will be processed by the layer's
     /// corresponding middleware.
@@ -169,7 +169,7 @@ pub trait Handler<T, S>: Clone + Send + Sync + Sized + 'static {
     ///
     /// # Example
     ///
-    /// Adding the [`tower::limit::ConcurrencyLimit`] middleware to a handler
+    /// Adding the [`service_stack::limit::ConcurrencyLimit`] middleware to a handler
     /// can be done like so:
     ///
     /// ```rust
@@ -178,7 +178,7 @@ pub trait Handler<T, S>: Clone + Send + Sync + Sized + 'static {
     ///     handler::Handler,
     ///     Router,
     /// };
-    /// use tower::limit::{ConcurrencyLimitLayer, ConcurrencyLimit};
+    /// use service_stack::limit::{ConcurrencyLimitLayer, ConcurrencyLimit};
     ///
     /// async fn handler() { /* ... */ }
     ///
@@ -353,7 +353,7 @@ where
 ///
 /// This provides convenience methods to convert the [`Handler`] into a [`Service`] or [`MakeService`].
 ///
-/// [`MakeService`]: tower::make::MakeService
+/// [`MakeService`]: service_stack::make::MakeService
 pub trait HandlerWithoutStateExt<T>: Handler<T, ()> {
     /// Convert the handler into a [`Service`] and no state.
     fn into_service(self) -> HandlerService<Self, T, ()>;
@@ -362,7 +362,7 @@ pub trait HandlerWithoutStateExt<T>: Handler<T, ()> {
     ///
     /// See [`HandlerService::into_make_service`] for more details.
     ///
-    /// [`MakeService`]: tower::make::MakeService
+    /// [`MakeService`]: service_stack::make::MakeService
     fn into_make_service(self) -> IntoMakeService<HandlerService<Self, T, ()>>;
 
     /// Convert the handler into a [`MakeService`] which stores information
@@ -370,7 +370,7 @@ pub trait HandlerWithoutStateExt<T>: Handler<T, ()> {
     ///
     /// See [`HandlerService::into_make_service_with_connect_info`] for more details.
     ///
-    /// [`MakeService`]: tower::make::MakeService
+    /// [`MakeService`]: service_stack::make::MakeService
     #[cfg(feature = "tokio")]
     fn into_make_service_with_connect_info<C>(
         self,

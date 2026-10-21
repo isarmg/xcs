@@ -10,7 +10,7 @@ use bytes::Buf;
 use http::{header, Request, Response};
 use http_body::Body;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use service_stack::Service;
 
 #[cfg(any(
     feature = "decompression-gzip",
@@ -123,7 +123,7 @@ impl<S> RequestDecompression<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `RequestDecompression` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer() -> RequestDecompressionLayer {
         RequestDecompressionLayer::new()
     }

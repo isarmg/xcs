@@ -72,14 +72,6 @@ features = ["limit"]
 optional = true
 path = "../tower-http"
 
-[dependencies.tower-layer]
-version = "0.3"
-path = "../tower-layer"
-
-[dependencies.tower-service]
-version = "0.3"
-path = "../tower-service"
-
 [dependencies.tracing]
 version = "0.1.37"
 optional = true
@@ -137,3 +129,7 @@ unsafe_code = "forbid"
 [lints.rust.rust_2018_idioms]
 level = "warn"
 priority = -1
+[dependencies.service-stack]
+version = "0.5.3"
+path = "../service-stack"
+default-features = false

@@ -3,7 +3,7 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
     use http::header;
-    use tower::{ServiceBuilder, ServiceExt};
+    use service_stack::{ServiceBuilder, ServiceExt};
 
     #[tokio::test]
     async fn multiple_value_header() {

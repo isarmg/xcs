@@ -10,14 +10,14 @@
 //!
 //! ```
 //! use http::{Request, Response, header::{self, HeaderValue}};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::SetResponseHeaderLayer;
 //! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let render_html = tower::service_fn(|request: Request<Full<Bytes>>| async move {
+//! # let render_html = service_stack::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(request.into_body()))
 //! # });
 //!
@@ -43,7 +43,7 @@
 //!
 //! ```
 //! use http::{Request, Response, header::{self, HeaderValue}};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::SetResponseHeaderLayer;
 //! use bytes::Bytes;
 //! use http_body::Full;
@@ -51,7 +51,7 @@
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let render_html = tower::service_fn(|request: Request<Full<Bytes>>| async move {
+//! # let render_html = service_stack::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(Full::from("1234567890")))
 //! # });
 //!
@@ -91,14 +91,14 @@
 //!
 //! ```
 //! use http::{Request, Response, header::{self, HeaderValue}};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::{HeaderMetadata, response::{SetMultipleResponseHeadersLayer}};
 //! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let render_html = tower::service_fn(|request: Request<Full<Bytes>>| async move {
+//! # let render_html = service_stack::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(request.into_body()))
 //! # });
 //!
@@ -125,7 +125,7 @@
 //!
 //! ```
 //! use http::{Request, Response, header::{self, HeaderValue}};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::{HeaderMetadata, response::{SetMultipleResponseHeadersLayer}};
 //! use bytes::Bytes;
 //! use http_body::Full;
@@ -133,7 +133,7 @@
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let render_html = tower::service_fn(|request: Request<Full<Bytes>>| async move {
+//! # let render_html = service_stack::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(Full::from("1234567890")))
 //! # });
 //!

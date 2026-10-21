@@ -9,7 +9,7 @@ use std::{
     convert::Infallible,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use service_stack::Service;
 
 /// Extractor and response for extensions.
 ///
@@ -137,7 +137,7 @@ where
     }
 }
 
-impl<S, T> tower_layer::Layer<S> for Extension<T>
+impl<S, T> service_stack::Layer<S> for Extension<T>
 where
     T: Clone + Send + Sync + 'static,
 {
@@ -159,7 +159,7 @@ where
 /// [request extensions]: https://docs.rs/http/latest/http/struct.Extensions.html
 ///
 /// If you need a layer to add an extension to every request,
-/// use the [Layer](tower::Layer) implementation of [Extension].
+/// use the [Layer](service_stack::Layer) implementation of [Extension].
 #[derive(Clone, Copy, Debug)]
 pub struct AddExtension<S, T> {
     pub(crate) inner: S,

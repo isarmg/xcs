@@ -10,7 +10,7 @@
 //! use http::{header, HeaderValue, Request, Response};
 //! use http_body::{Full, BodyExt};
 //! use std::{error::Error, io::Write};
-//! use tower::{Service, ServiceBuilder, service_fn, ServiceExt};
+//! use service_stack::{Service, ServiceBuilder, service_fn, ServiceExt};
 //! use tower_http::{BoxError, decompression::{DecompressionBody, RequestDecompressionLayer}};
 //!
 //! # #[tokio::main]
@@ -50,7 +50,7 @@
 //! use http::{Request, Response};
 //! use http_body::{Full, BodyExt};
 //! use std::convert::Infallible;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::{compression::Compression, decompression::DecompressionLayer, BoxError};
 //! #
 //! # #[tokio::main]

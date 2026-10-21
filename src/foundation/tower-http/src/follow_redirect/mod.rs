@@ -20,12 +20,12 @@
 //! use http::{Request, Response};
 //! use bytes::Bytes;
 //! use http_body::Full;
-//! use tower::{Service, ServiceBuilder, ServiceExt};
+//! use service_stack::{Service, ServiceBuilder, ServiceExt};
 //! use tower_http::follow_redirect::{FollowRedirectLayer, RequestUri};
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), std::convert::Infallible> {
-//! # let http_client = tower::service_fn(|req: Request<_>| async move {
+//! # let http_client = service_stack::service_fn(|req: Request<_>| async move {
 //! #     let dest = "https://www.rust-lang.org/";
 //! #     let mut res = http::Response::builder();
 //! #     if req.uri() != dest {
@@ -59,7 +59,7 @@
 //! use http::{Request, Response};
 //! use http_body::Full;
 //! use bytes::Bytes;
-//! use tower::{Service, ServiceBuilder, ServiceExt};
+//! use service_stack::{Service, ServiceBuilder, ServiceExt};
 //! use tower_http::follow_redirect::{
 //!     policy::{self, PolicyExt},
 //!     FollowRedirectLayer,
@@ -68,13 +68,13 @@
 //! #[derive(Debug)]
 //! enum MyError {
 //!     TooManyRedirects,
-//!     Other(tower::BoxError),
+//!     Other(service_stack::BoxError),
 //! }
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), MyError> {
 //! # let http_client =
-//! #     tower::service_fn(|_: Request<Full<Bytes>>| async { Ok(Response::new(Full::<Bytes>::default())) });
+//! #     service_stack::service_fn(|_: Request<Full<Bytes>>| async { Ok(Response::new(Full::<Bytes>::default())) });
 //! let policy = policy::Limited::new(10) // Set the maximum number of redirections to 10.
 //!     // Return an error when the limit was reached.
 //!     .or::<_, (), _>(policy::redirect_fn(|_| Err(MyError::TooManyRedirects)))
@@ -111,9 +111,9 @@ use std::{
     str,
     task::{ready, Context, Poll},
 };
-use tower::util::Oneshot;
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::util::Oneshot;
+use service_stack::Layer;
+use service_stack::Service;
 use url::Url;
 
 /// [`Layer`] for retrying requests with a [`Service`] to follow redirection responses.
@@ -167,7 +167,7 @@ impl<S> FollowRedirect<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `FollowRedirect` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer() -> FollowRedirectLayer {
         FollowRedirectLayer::new()
     }
@@ -185,7 +185,7 @@ where
     /// Returns a new [`Layer`] that wraps services with a `FollowRedirect` middleware
     /// with the given redirection [`Policy`].
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer_with_policy(policy: P) -> FollowRedirectLayer<P> {
         FollowRedirectLayer::with_policy(policy)
     }

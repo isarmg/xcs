@@ -8,7 +8,7 @@
 //! ```rust
 //! use http::{Request, Response, header::HeaderName};
 //! use std::convert::Infallible;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::catch_panic::CatchPanicLayer;
 //! use http_body::Full;
 //! use bytes::Bytes;
@@ -40,7 +40,7 @@
 //! ```rust
 //! use http::{Request, StatusCode, Response, header::{self, HeaderName}};
 //! use std::{any::Any, convert::Infallible};
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::catch_panic::CatchPanicLayer;
 //! use bytes::Bytes;
 //! use http_body::Full;
@@ -97,8 +97,8 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 use crate::{
     body::{Full, UnsyncBoxBody},

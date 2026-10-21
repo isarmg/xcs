@@ -5,7 +5,7 @@ mod tests {
     use http::Uri;
     use hyper_util::rt::TokioIo;
     use tokio::net::TcpStream;
-    use tower_service::Service;
+    use service_stack::Service;
 
     use super::*;
     use crate::{ConfigBuilderExt, HttpsConnectorBuilder, MaybeHttpsStream};

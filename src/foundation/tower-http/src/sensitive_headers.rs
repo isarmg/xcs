@@ -6,7 +6,7 @@
 //!
 //! ```
 //! use tower_http::sensitive_headers::SetSensitiveHeadersLayer;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use http::{Request, Response, header::AUTHORIZATION};
 //! use http_body::Full;
 //! use bytes::Bytes;
@@ -53,7 +53,7 @@
 //!         SetSensitiveResponseHeadersLayer,
 //!     },
 //! };
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use http::header;
 //! use std::sync::Arc;
 //! # use http::{Request, Response};
@@ -92,8 +92,8 @@ use std::{
     sync::Arc,
     task::{ready, Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Mark headers as [sensitive] on both requests and responses.
 ///
@@ -210,7 +210,7 @@ impl<S> SetSensitiveRequestHeaders<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `SetSensitiveRequestHeaders` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer<I>(headers: I) -> SetSensitiveRequestHeadersLayer
     where
         I: IntoIterator<Item = HeaderName>,
@@ -315,7 +315,7 @@ impl<S> SetSensitiveResponseHeaders<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `SetSensitiveResponseHeaders` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer<I>(headers: I) -> SetSensitiveResponseHeadersLayer
     where
         I: IntoIterator<Item = HeaderName>,

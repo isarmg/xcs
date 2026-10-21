@@ -1,7 +1,7 @@
 use std::{convert::Infallible, fmt};
 
 use crate::extract::Request;
-use tower::Service;
+use service_stack::Service;
 
 use crate::{
     handler::Handler,

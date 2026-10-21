@@ -11,7 +11,7 @@
 //!
 //! In particular, the last point is what sets `axum` apart from other libraries / frameworks.
 //! `axum` doesn't have its own middleware system but instead uses
-//! [`tower::Service`]. This means `axum` gets timeouts, tracing, compression,
+//! [`service_stack::Service`]. This means `axum` gets timeouts, tracing, compression,
 //! authorization, and more, for free. It also enables you to share middleware with
 //! applications written using [`hyper`] or [`tonic`].
 //!
@@ -450,13 +450,13 @@
 //! [`tonic`]: http://crates.io/crates/tonic
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html#the-features-section
 //! [`IntoResponse`]: crate::response::IntoResponse
-//! [`Timeout`]: tower::timeout::Timeout
+//! [`Timeout`]: service_stack::timeout::Timeout
 //! [examples]: https://github.com/tokio-rs/axum/tree/main/examples
 //! [`Router::merge`]: crate::routing::Router::merge
-//! [`Service`]: tower::Service
-//! [`Service::poll_ready`]: tower::Service::poll_ready
-//! [`Service`'s]: tower::Service
-//! [`tower::Service`]: tower::Service
+//! [`Service`]: service_stack::Service
+//! [`Service::poll_ready`]: service_stack::Service::poll_ready
+//! [`Service`'s]: service_stack::Service
+//! [`service_stack::Service`]: service_stack::Service
 //! [tower-guides]: https://github.com/tower-rs/tower/tree/master/guides
 //! [`Uuid`]: https://docs.rs/uuid/latest/uuid/
 //! [`FromRequest`]: crate::extract::FromRequest
@@ -468,7 +468,7 @@
 //! [`debug_handler`]: https://docs.rs/axum-macros/latest/axum_macros/attr.debug_handler.html
 //! [`Handler`]: crate::handler::Handler
 //! [`Infallible`]: std::convert::Infallible
-//! [load shed]: tower::load_shed
+//! [load shed]: service_stack::load_shed
 //! [`axum-core`]: http://crates.io/crates/axum-core
 //! [`State`]: crate::extract::State
 //! [`FromRef`]: crate::extract::FromRef

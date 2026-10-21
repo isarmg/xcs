@@ -10,7 +10,7 @@ mod tests {
     use tokio::io::{AsyncRead, AsyncWrite};
     use tokio::net::TcpStream;
     use tokio_tungstenite::tungstenite;
-    use tower::ServiceExt;
+    use service_stack::ServiceExt;
 
     #[crate::test]
     async fn rejects_http_1_0_requests() {

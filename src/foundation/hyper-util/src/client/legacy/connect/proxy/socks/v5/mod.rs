@@ -9,7 +9,7 @@ use std::task::{Context, Poll};
 
 use http::Uri;
 use hyper::rt::{Read, Write};
-use tower_service::Service;
+use service_stack::Service;
 
 use bytes::BytesMut;
 

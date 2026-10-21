@@ -3,11 +3,11 @@ use std::{
     future::ready,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use service_stack::Service;
 
 /// A [`MakeService`] that produces axum router services.
 ///
-/// [`MakeService`]: tower::make::MakeService
+/// [`MakeService`]: service_stack::make::MakeService
 #[derive(Debug, Clone)]
 pub struct IntoMakeService<S> {
     svc: S,

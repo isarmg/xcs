@@ -10,7 +10,7 @@ mod tests {
         sync::atomic::{AtomicU32, Ordering},
         time::Duration,
     };
-    use tower::{BoxError, Service, ServiceBuilder, ServiceExt};
+    use service_stack::{BoxError, Service, ServiceBuilder, ServiceExt};
     use tracing::Span;
 
     #[tokio::test]

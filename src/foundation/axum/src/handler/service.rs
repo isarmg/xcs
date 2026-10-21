@@ -12,7 +12,7 @@ use std::{
     marker::PhantomData,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use service_stack::Service;
 
 /// An adapter that makes a [`Handler`] into a [`Service`].
 ///
@@ -59,7 +59,7 @@ impl<H, T, S> HandlerService<H, T, S> {
     /// # };
     /// ```
     ///
-    /// [`MakeService`]: tower::make::MakeService
+    /// [`MakeService`]: service_stack::make::MakeService
     pub fn into_make_service(self) -> IntoMakeService<HandlerService<H, T, S>> {
         IntoMakeService::new(self)
     }
@@ -98,7 +98,7 @@ impl<H, T, S> HandlerService<H, T, S> {
     /// # };
     /// ```
     ///
-    /// [`MakeService`]: tower::make::MakeService
+    /// [`MakeService`]: service_stack::make::MakeService
     /// [`Router::into_make_service_with_connect_info`]: crate::routing::Router::into_make_service_with_connect_info
     #[cfg(feature = "tokio")]
     pub fn into_make_service_with_connect_info<C>(

@@ -7,7 +7,7 @@ use std::{
     sync::Arc,
     task::{ready, Context, Poll},
 };
-use tower::Service;
+use service_stack::Service;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub(crate) struct PercentDecodedStr(Arc<str>);

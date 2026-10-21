@@ -14,7 +14,7 @@
 //! asynchronous function.
 //!
 //! The [`TowerToHyperService`] type provided by this submodule can be used to bridge these
-//! ecosystems together. By wrapping a [`tower::Service`][tower-svc] in [`TowerToHyperService`],
+//! ecosystems together. By wrapping a [`service_stack::Service`][tower-svc] in [`TowerToHyperService`],
 //! it can be passed into [`hyper`] interfaces that expect a [`hyper::service::Service`].
 //!
 //! [hyper-svc]: hyper::service::Service

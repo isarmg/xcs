@@ -31,7 +31,7 @@ impl<S> TowerToHyperService<S> {
 
 impl<S, R> hyper::service::Service<R> for TowerToHyperService<S>
 where
-    S: tower_service::Service<R> + Clone,
+    S: service_stack::Service<R> + Clone,
 {
     type Response = S::Response;
     type Error = S::Error;
@@ -51,7 +51,7 @@ pin_project! {
     /// [`TowerToHyperService`].
     pub struct TowerToHyperServiceFuture<S, R>
     where
-        S: tower_service::Service<R>,
+        S: service_stack::Service<R>,
     {
         #[pin]
         future: Oneshot<S, R>,
@@ -60,7 +60,7 @@ pin_project! {
 
 impl<S, R> Future for TowerToHyperServiceFuture<S, R>
 where
-    S: tower_service::Service<R>,
+    S: service_stack::Service<R>,
 {
     type Output = Result<S::Response, S::Error>;
 

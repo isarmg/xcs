@@ -9,7 +9,7 @@ mod tests {
     use std::sync::Arc;
     use std::time::Duration;
     use tokio::time::{sleep, timeout};
-    use tower::{service_fn, Layer, ServiceExt};
+    use service_stack::{service_fn, Layer, ServiceExt};
 
     fn ok_service() -> impl Service<
         Request<()>,

@@ -5,8 +5,8 @@ use crate::{
 use axum_core::response::IntoResponse;
 use matchit::MatchError;
 use std::{borrow::Cow, collections::HashMap, convert::Infallible, fmt, sync::Arc};
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 use super::{
     future::RouteFuture, not_found::NotFound, strip_prefix::StripPrefix, url_params, Endpoint,

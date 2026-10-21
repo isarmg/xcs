@@ -12,7 +12,7 @@
 //! use std::convert::Infallible;
 //! use tokio::fs::{self, File};
 //! use tokio_util::io::ReaderStream;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::{compression::CompressionLayer, BoxError};
 //! use futures::TryStreamExt;
 //!

@@ -38,7 +38,7 @@
 //! **Other features**
 //!
 //! * `service`: Enable [`service`] interfaces for compatibility with tower's
-//!   [`Service`][tower_service::Service]. See the module-level documentation
+//!   [`Service`][service_stack::Service]. See the module-level documentation
 //!   of [`service`] for more information.
 //! * `http1`: Enable HTTP/1 support.
 //! * `http2`: Enable HTTP/2 support.

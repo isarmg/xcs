@@ -48,7 +48,7 @@ decompression-full = ["decompression-br", "decompression-deflate", "decompressio
 decompression-gzip = ["dep:futures", "dep:http-body", "http-body/utilities", "tokio-util", "dep:tokio"]
 decompression-zstd = ["dep:futures", "dep:http-body", "http-body/utilities", "tokio-util", "dep:tokio"]
 default = []
-follow-redirect = ["dep:futures", "futures/utilities", "dep:http-body", "dep:url", "tower/util"]
+follow-redirect = ["dep:futures", "futures/utilities", "dep:http-body", "dep:url", "service-stack/util"]
 fs = ["dep:tokio", "tokio?/fs", "tokio?/io-util", "dep:futures", "futures/utilities", "dep:http-body", "http-body/utilities", "tokio-util/io", "dep:http-range-header", "mime_guess", "mime", "percent-encoding", "httpdate", "set-status", "futures/alloc"]
 full = ["add-extension", "auth", "catch-panic", "compression-full", "cors", "decompression-full", "follow-redirect", "fs", "limit", "map-request-body", "map-response-body", "metrics", "normalize-path", "on-early-drop", "propagate-header", "redirect", "request-id", "sensitive-headers", "set-header", "set-status", "timeout", "trace", "util", "validate-request"]
 limit = ["dep:http-body", "http-body/utilities"]
@@ -66,7 +66,7 @@ set-status = []
 timeout = ["dep:http-body", "dep:tokio", "tokio?/time"]
 tokio = []
 trace = ["dep:http-body", "tracing"]
-util = ["tower"]
+util = []
 validate-request = ["mime"]
 
 [lib]
@@ -147,19 +147,6 @@ optional = true
 default-features = false
 path = "../tokio-util"
 
-[dependencies.tower]
-version = "0.5"
-optional = true
-path = "../tower"
-
-[dependencies.tower-layer]
-version = "0.3.3"
-path = "../tower-layer"
-
-[dependencies.tower-service]
-version = "0.3"
-path = "../tower-service"
-
 [dependencies.tracing]
 version = "0.1"
 optional = true
@@ -176,4 +163,9 @@ version = "1.0"
 features = ["v4"]
 optional = true
 path = "../uuid"
+
+[dependencies.service-stack]
+version = "0.5.3"
+path = "../service-stack"
+default-features = false
 

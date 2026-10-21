@@ -10,8 +10,8 @@ mod tests {
 
     use crate::test_helpers::Body;
     use http::{header::ORIGIN, request::Parts, HeaderName, HeaderValue, Request, Response};
-    use tower::{BoxError, ServiceBuilder, ServiceExt};
-    use tower_service::Service;
+    use service_stack::{BoxError, ServiceBuilder, ServiceExt};
+    use service_stack::Service;
 
     const REQUEST_PRIVATE_NETWORK: HeaderName =
         HeaderName::from_static("access-control-request-private-network");

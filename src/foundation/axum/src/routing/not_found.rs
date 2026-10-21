@@ -6,7 +6,7 @@ use std::{
     future::ready,
     task::{Context, Poll},
 };
-use tower_service::Service;
+use service_stack::Service;
 
 /// A [`Service`] that responds with `404 Not Found` to all requests.
 ///

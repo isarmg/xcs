@@ -10,7 +10,7 @@ use hyper_util::client::legacy::connect::Connection;
 use hyper_util::rt::TokioIo;
 use rustls::pki_types::ServerName;
 use tokio_rustls::TlsConnector;
-use tower_service::Service;
+use service_stack::Service;
 
 use crate::stream::MaybeHttpsStream;
 

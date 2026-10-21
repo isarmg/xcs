@@ -1,6 +1,6 @@
 use super::*;
 use std::future::pending;
-use tower::timeout::TimeoutLayer;
+use service_stack::timeout::TimeoutLayer;
 
 async fn unit() {}
 
@@ -81,7 +81,7 @@ async fn handler_multiple_methods_last() {
 
 #[crate::test]
 async fn handler_service_ext() {
-    let fallible_service = tower::service_fn(|_| async { Err::<(), ()>(()) });
+    let fallible_service = service_stack::service_fn(|_| async { Err::<(), ()>(()) });
     let handle_error_service =
         fallible_service.handle_error(|_| async { StatusCode::INTERNAL_SERVER_ERROR });
 

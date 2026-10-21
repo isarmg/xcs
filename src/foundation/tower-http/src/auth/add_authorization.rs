@@ -8,7 +8,7 @@
 //! use tower_http::validate_request::{ValidateRequestHeader, ValidateRequestHeaderLayer};
 //! use tower_http::auth::AddAuthorizationLayer;
 //! use http::{Request, Response, StatusCode, header::AUTHORIZATION};
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use http_body::Full;
 //! use bytes::Bytes;
 //! # async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
@@ -18,7 +18,7 @@
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), BoxError> {
 //! # let service_that_requires_auth = ValidateRequestHeader::basic(
-//! #     tower::service_fn(handle),
+//! #     service_stack::service_fn(handle),
 //! #     "username",
 //! #     "password",
 //! # );
@@ -45,8 +45,8 @@ use std::{
     convert::TryFrom,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 const BASE64: base64::engine::GeneralPurpose = base64::engine::general_purpose::STANDARD;
 

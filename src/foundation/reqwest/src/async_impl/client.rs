@@ -50,8 +50,8 @@ use pin_project_lite::pin_project;
 
 
 use tokio::time::Sleep;
-use tower::util::BoxCloneSyncServiceLayer;
-use tower::{Layer, Service};
+use service_stack::util::BoxCloneSyncServiceLayer;
+use service_stack::{Layer, Service};
 
 use tower_http::follow_redirect::FollowRedirect;
 
@@ -668,7 +668,7 @@ impl ClientBuilder {
 
         let retry_policy = config.retry_policy.into_policy();
 
-        let svc = tower::retry::Retry::new(retry_policy.clone(), hyper_service);
+        let svc = service_stack::retry::Retry::new(retry_policy.clone(), hyper_service);
 
 
         let hyper = FollowRedirect::with_policy(svc, redirect_policy.clone());
@@ -1649,8 +1649,8 @@ impl ClientBuilder {
     ///                      // resolved to outermost layer, meaning while we are waiting on concurrency limit
     ///                      .connect_timeout(Duration::from_millis(200))
     ///                      // underneath the concurrency check, so only after concurrency limit lets us through
-    ///                      .connector_layer(tower::timeout::TimeoutLayer::new(Duration::from_millis(50)))
-    ///                      .connector_layer(tower::limit::concurrency::ConcurrencyLimitLayer::new(2))
+    ///                      .connector_layer(service_stack::timeout::TimeoutLayer::new(Duration::from_millis(50)))
+    ///                      .connector_layer(service_stack::limit::concurrency::ConcurrencyLimitLayer::new(2))
     ///                      .build()
     ///                      .unwrap();
     /// ```
@@ -1911,7 +1911,7 @@ impl fmt::Debug for Client {
     }
 }
 
-impl tower_service::Service<Request> for Client {
+impl service_stack::Service<Request> for Client {
     type Response = Response;
     type Error = crate::Error;
     type Future = Pending;
@@ -1925,7 +1925,7 @@ impl tower_service::Service<Request> for Client {
     }
 }
 
-impl tower_service::Service<Request> for &'_ Client {
+impl service_stack::Service<Request> for &'_ Client {
     type Response = Response;
     type Error = crate::Error;
     type Future = Pending;
@@ -2077,7 +2077,7 @@ type MaybeDecompression<T> = T;
 
 type LayeredService<T> = MaybeDecompression<
     FollowRedirect<
-        MaybeCookieService<tower::retry::Retry<crate::retry::Policy, T>>,
+        MaybeCookieService<service_stack::retry::Retry<crate::retry::Policy, T>>,
         TowerRedirectPolicy,
     >,
 >;

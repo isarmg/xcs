@@ -9,9 +9,9 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use tower::util::BoxCloneSyncService;
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::util::BoxCloneSyncService;
+use service_stack::Layer;
+use service_stack::Service;
 
 use crate::{
     response::{IntoResponse, Response},
@@ -169,9 +169,9 @@ pub fn from_fn_with_state<F, S, T>(state: S, f: F) -> FromFnLayer<F, S, T> {
     }
 }
 
-/// A [`tower::Layer`] from an async function.
+/// A [`service_stack::Layer`] from an async function.
 ///
-/// [`tower::Layer`] is used to apply middleware to [`Router`](crate::Router)'s.
+/// [`service_stack::Layer`] is used to apply middleware to [`Router`](crate::Router)'s.
 ///
 /// Created with [`from_fn`] or [`from_fn_with_state`]. See those functions for more details.
 #[must_use]

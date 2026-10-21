@@ -11,13 +11,13 @@ use std::{fmt, ops::RangeInclusive};
 ///
 /// ```no_run
 /// use tower_http::{trace::TraceLayer, classify::StatusInRangeAsFailures};
-/// use tower::{ServiceBuilder, Service, ServiceExt};
+/// use service_stack::{ServiceBuilder, Service, ServiceExt};
 /// use http::{Request, Method};
 /// use http_body::Full;
 /// use bytes::Bytes;
 /// use hyper_util::{rt::TokioExecutor, client::legacy::Client};
 ///
-/// # async fn foo() -> Result<(), tower::BoxError> {
+/// # async fn foo() -> Result<(), service_stack::BoxError> {
 /// let classifier = StatusInRangeAsFailures::new(400..=599);
 ///
 /// let client = Client::builder(TokioExecutor::new()).build_http();

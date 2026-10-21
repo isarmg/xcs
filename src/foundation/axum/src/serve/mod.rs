@@ -16,8 +16,8 @@ use hyper_util::rt::{TokioExecutor, TokioIo};
 #[cfg(any(feature = "http1", feature = "http2"))]
 use hyper_util::{server::conn::auto::Builder, service::TowerToHyperService};
 use tokio::sync::watch;
-use tower::ServiceExt as _;
-use tower_service::Service;
+use service_stack::ServiceExt as _;
+use service_stack::Service;
 
 mod listener;
 

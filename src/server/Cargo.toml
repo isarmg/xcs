@@ -33,7 +33,7 @@ smb-protocol = { path = "../smb" }
 tempfile.workspace = true
 
 [dev-dependencies]
-tower = { version = "0.5", features = ["util"], path = "../foundation/tower"}
+service-stack = { version = "0.5", features = ["util"], path = "../foundation/service-stack"}
 
 [[test]]
 name = "http_engine"

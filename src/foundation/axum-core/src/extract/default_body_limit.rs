@@ -1,6 +1,6 @@
 use self::private::DefaultBodyLimitService;
 use http::Request;
-use tower_layer::Layer;
+use service_stack::Layer;
 
 /// Layer for configuring the default request body limit.
 ///
@@ -199,7 +199,7 @@ mod private {
     use super::DefaultBodyLimitKind;
     use http::Request;
     use std::task::Context;
-    use tower_service::Service;
+    use service_stack::Service;
 
     #[derive(Debug, Clone, Copy)]
     pub struct DefaultBodyLimitService<S> {

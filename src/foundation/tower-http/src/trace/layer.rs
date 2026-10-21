@@ -5,15 +5,15 @@ use super::{
 use crate::classify::{
     GrpcErrorsAsFailures, MakeClassifier, ServerErrorsAsFailures, SharedClassifier,
 };
-use tower_layer::Layer;
+use service_stack::Layer;
 
 /// [`Layer`] that adds high level [tracing] to a [`Service`].
 ///
 /// See the [module docs](crate::trace) for more details.
 ///
-/// [`Layer`]: tower_layer::Layer
+/// [`Layer`]: service_stack::Layer
 /// [tracing]: https://crates.io/crates/tracing
-/// [`Service`]: tower_service::Service
+/// [`Service`]: service_stack::Service
 #[derive(Debug, Copy, Clone)]
 pub struct TraceLayer<
     M,

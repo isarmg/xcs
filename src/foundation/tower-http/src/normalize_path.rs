@@ -8,7 +8,7 @@
 //! use http_body::Full;
 //! use bytes::Bytes;
 //! use std::{iter::once, convert::Infallible};
-//! use tower::{ServiceBuilder, Service, ServiceExt};
+//! use service_stack::{ServiceBuilder, Service, ServiceExt};
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -39,8 +39,8 @@ use std::{
     borrow::Cow,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Different modes of normalizing paths
 #[derive(Debug, Copy, Clone)]

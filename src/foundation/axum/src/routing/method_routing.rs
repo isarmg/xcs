@@ -20,9 +20,9 @@ use std::{
     fmt,
     task::{Context, Poll},
 };
-use tower::service_fn;
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::service_fn;
+use service_stack::Layer;
+use service_stack::Service;
 
 macro_rules! top_level_service_fn {
     (
@@ -43,7 +43,7 @@ macro_rules! top_level_service_fn {
             /// use http::Response;
             /// use std::convert::Infallible;
             ///
-            /// let service = tower::service_fn(|request: Request| async {
+            /// let service = service_stack::service_fn(|request: Request| async {
             ///     Ok::<_, Infallible>(Response::new(Body::empty()))
             /// });
             ///
@@ -192,11 +192,11 @@ macro_rules! chained_service_fn {
             /// use http::Response;
             /// use std::convert::Infallible;
             ///
-            /// let service = tower::service_fn(|request: Request| async {
+            /// let service = service_stack::service_fn(|request: Request| async {
             ///     Ok::<_, Infallible>(Response::new(Body::empty()))
             /// });
             ///
-            /// let other_service = tower::service_fn(|request: Request| async {
+            /// let other_service = service_stack::service_fn(|request: Request| async {
             ///     Ok::<_, Infallible>(Response::new(Body::empty()))
             /// });
             ///
@@ -357,7 +357,7 @@ top_level_service_fn!(trace_service, TRACE);
 /// use http::Response;
 /// use std::convert::Infallible;
 ///
-/// let service = tower::service_fn(|request: Request| async {
+/// let service = service_stack::service_fn(|request: Request| async {
 ///     Ok::<_, Infallible>(Response::new(Body::empty()))
 /// });
 ///
@@ -389,7 +389,7 @@ where
 /// use http::Response;
 /// use std::convert::Infallible;
 ///
-/// let service = tower::service_fn(|request: Request| async {
+/// let service = service_stack::service_fn(|request: Request| async {
 ///     Ok::<_, Infallible>(Response::new(Body::empty()))
 /// });
 ///
@@ -410,12 +410,12 @@ where
 /// use http::Response;
 /// use std::convert::Infallible;
 ///
-/// let service = tower::service_fn(|request: Request| async {
+/// let service = service_stack::service_fn(|request: Request| async {
 ///     # Ok::<_, Infallible>(Response::new(Body::empty()))
 ///     // ...
 /// });
 ///
-/// let other_service = tower::service_fn(|request: Request| async {
+/// let other_service = service_stack::service_fn(|request: Request| async {
 ///     # Ok::<_, Infallible>(Response::new(Body::empty()))
 ///     // ...
 /// });
@@ -522,7 +522,7 @@ where
 /// Whether or not `MethodRouter` implements [`Service`] depends on the state type it requires.
 ///
 /// ```
-/// use tower::Service;
+/// use service_stack::Service;
 /// use axum::{routing::get, extract::{State, Request}, body::Body};
 ///
 /// // this `MethodRouter` doesn't require any state, i.e. the state is `()`,
@@ -702,7 +702,7 @@ impl MethodRouter<(), Infallible> {
     /// # };
     /// ```
     ///
-    /// [`MakeService`]: tower::make::MakeService
+    /// [`MakeService`]: service_stack::make::MakeService
     #[must_use]
     pub fn into_make_service(self) -> IntoMakeService<Self> {
         IntoMakeService::new(self.with_state(()))
@@ -734,7 +734,7 @@ impl MethodRouter<(), Infallible> {
     /// # };
     /// ```
     ///
-    /// [`MakeService`]: tower::make::MakeService
+    /// [`MakeService`]: service_stack::make::MakeService
     /// [`Router::into_make_service_with_connect_info`]: crate::routing::Router::into_make_service_with_connect_info
     #[cfg(feature = "tokio")]
     #[must_use]
@@ -801,7 +801,7 @@ where
     /// use http::Response;
     /// use std::convert::Infallible;
     ///
-    /// let service = tower::service_fn(|request: Request| async {
+    /// let service = service_stack::service_fn(|request: Request| async {
     ///     Ok::<_, Infallible>(Response::new(Body::empty()))
     /// });
     ///

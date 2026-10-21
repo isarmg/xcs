@@ -24,7 +24,7 @@ mod internal {
     use std::sync::{Arc, Mutex, Weak};
     use std::task::{self, Poll, Waker, ready};
 
-    use tower_service::Service;
+    use service_stack::Service;
 
     use super::events;
 

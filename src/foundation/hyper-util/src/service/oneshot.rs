@@ -1,9 +1,9 @@
 use pin_project_lite::pin_project;
 use std::pin::Pin;
 use std::task::{Context, Poll, ready};
-use tower_service::Service;
+use service_stack::Service;
 
-// Vendored from tower::util to reduce dependencies, the code is small enough.
+// Vendored from service_stack::util to reduce dependencies, the code is small enough.
 
 // Not really pub, but used in a trait for bounds
 pin_project! {

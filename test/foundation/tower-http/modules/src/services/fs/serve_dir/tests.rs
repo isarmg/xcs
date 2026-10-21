@@ -11,7 +11,7 @@ use http_body::BodyExt;
 use std::convert::Infallible;
 use std::fs;
 use std::io::Read;
-use tower::{service_fn, ServiceExt};
+use service_stack::{service_fn, ServiceExt};
 
 #[tokio::test]
 async fn basic() {
@@ -717,7 +717,7 @@ async fn with_fallback_svc() {
         ))))
     }
 
-    let svc = ServeDir::new("..").fallback(tower::service_fn(fallback));
+    let svc = ServeDir::new("..").fallback(service_stack::service_fn(fallback));
 
     let req = Request::builder()
         .uri("/doesnt-exist")
@@ -776,7 +776,7 @@ async fn calling_fallback_on_not_allowed() {
 
     let svc = ServeDir::new("..")
         .call_fallback_on_method_not_allowed(true)
-        .fallback(tower::service_fn(fallback));
+        .fallback(service_stack::service_fn(fallback));
 
     let req = Request::builder()
         .method(Method::POST)
@@ -817,7 +817,7 @@ async fn with_fallback_svc_and_not_append_index_html_on_directories() {
 
     let svc = ServeDir::new("..")
         .append_index_html_on_directories(false)
-        .fallback(tower::service_fn(fallback));
+        .fallback(service_stack::service_fn(fallback));
 
     let req = Request::builder().uri("/").body(Body::empty()).unwrap();
     let res = svc.oneshot(req).await.unwrap();

@@ -4,7 +4,7 @@ use http::header::HeaderName;
 /// Extension trait that adds methods to any [`Service`] for adding middleware from
 /// tower-http.
 ///
-/// [`Service`]: tower::Service
+/// [`Service`]: service_stack::Service
 #[cfg(feature = "util")]
 // ^ work around rustdoc not inferring doc(cfg)s for cfg's from surrounding scopes
 pub trait ServiceExt {
@@ -161,7 +161,7 @@ pub trait ServiceExt {
     where
         Self: Sized,
     {
-        use tower_layer::Layer as _;
+        use service_stack::Layer as _;
         crate::sensitive_headers::SetSensitiveHeadersLayer::new(headers).layer(self)
     }
 

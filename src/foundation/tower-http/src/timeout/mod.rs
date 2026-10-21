@@ -3,10 +3,10 @@
 //! If the request does not complete within the specified timeout, it will be aborted and a
 //! response with an empty body and a custom status code will be returned.
 //!
-//! # Differences from `tower::timeout`
+//! # Differences from `service_stack::timeout`
 //!
-//! tower's [`Timeout`](tower::timeout::Timeout) middleware uses an error to signal timeout, i.e.
-//! it changes the error type to [`BoxError`](tower::BoxError). For HTTP services that is rarely
+//! tower's [`Timeout`](service_stack::timeout::Timeout) middleware uses an error to signal timeout, i.e.
+//! it changes the error type to [`BoxError`](service_stack::BoxError). For HTTP services that is rarely
 //! what you want as returning errors will terminate the connection without sending a response.
 //!
 //! This middleware won't change the error type and instead returns a response with an empty body
@@ -20,7 +20,7 @@
 //! use http_body::Full;
 //! use bytes::Bytes;
 //! use std::{convert::Infallible, time::Duration};
-//! use tower::ServiceBuilder;
+//! use service_stack::ServiceBuilder;
 //! use tower_http::timeout::TimeoutLayer;
 //!
 //! async fn handle(_: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {

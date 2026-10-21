@@ -1,19 +1,19 @@
-use tower::ServiceBuilder;
+use service_stack::ServiceBuilder;
 
 #[allow(unused_imports)]
 use http::header::HeaderName;
 #[allow(unused_imports)]
-use tower_layer::Stack;
+use service_stack::Stack;
 
 mod sealed {
     #[allow(unreachable_pub, unused)]
     pub trait Sealed<T> {}
 }
 
-/// Extension trait that adds methods to [`tower::ServiceBuilder`] for adding middleware from
+/// Extension trait that adds methods to [`service_stack::ServiceBuilder`] for adding middleware from
 /// tower-http.
 ///
-/// [`Service`]: tower::Service
+/// [`Service`]: service_stack::Service
 ///
 /// # Example
 ///
@@ -22,7 +22,7 @@ mod sealed {
 /// use bytes::Bytes;
 /// use http_body::Full;
 /// use std::{time::Duration, convert::Infallible};
-/// use tower::{ServiceBuilder, ServiceExt, Service};
+/// use service_stack::{ServiceBuilder, ServiceExt, Service};
 /// use tower_http::ServiceBuilderExt;
 ///
 /// async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {

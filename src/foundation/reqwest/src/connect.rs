@@ -9,9 +9,9 @@ use hyper_util::client::legacy::connect::{Connected, Connection};
 use hyper_util::rt::TokioIo;
 
 use pin_project_lite::pin_project;
-use tower::util::{BoxCloneSyncServiceLayer, MapRequestLayer};
-use tower::{timeout::TimeoutLayer, util::BoxCloneSyncService, ServiceBuilder};
-use tower_service::Service;
+use service_stack::util::{BoxCloneSyncServiceLayer, MapRequestLayer};
+use service_stack::{timeout::TimeoutLayer, util::BoxCloneSyncService, ServiceBuilder};
+use service_stack::Service;
 
 use std::future::Future;
 use std::io::{self, IoSlice};
@@ -459,7 +459,7 @@ impl ConnectorService {
                 .as_ref()
                 .expect("connect local must have socket path")
                 .clone();
-            tower::service_fn(move |_| {
+            service_stack::service_fn(move |_| {
                 let fut = tokio::net::UnixStream::connect(path.clone());
                 async move {
                     let io = fut.await?;
@@ -475,7 +475,7 @@ impl ConnectorService {
                 .as_ref()
                 .expect("connect local must have pipe path")
                 .clone();
-            tower::service_fn(move |_| {
+            service_stack::service_fn(move |_| {
                 let pipe = pipe.clone();
                 async move { ClientOptions::new().open(pipe).map(TokioIo::new) }
             })

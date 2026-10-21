@@ -5,7 +5,7 @@ mod tests {
     use crate::test_helpers::Body;
     use http::Response;
     use std::{convert::Infallible, sync::Arc};
-    use tower::{service_fn, ServiceBuilder, ServiceExt};
+    use service_stack::{service_fn, ServiceBuilder, ServiceExt};
 
     struct State(i32);
 

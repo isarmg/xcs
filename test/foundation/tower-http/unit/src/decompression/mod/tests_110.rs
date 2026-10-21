@@ -9,7 +9,7 @@ mod tests {
     use http::Response;
     use http::{HeaderMap, HeaderName, Request};
     use http_body::BodyExt;
-    use tower::{service_fn, Service, ServiceExt};
+    use service_stack::{service_fn, Service, ServiceExt};
 
     #[tokio::test]
     async fn works() {

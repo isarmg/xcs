@@ -1,13 +1,13 @@
 //! Measure the number of in-flight requests.
 //!
 //! In-flight requests is the number of requests a service is currently processing. The processing
-//! of a request starts when it is received by the service (`tower::Service::call` is called) and
+//! of a request starts when it is received by the service (`service_stack::Service::call` is called) and
 //! is considered complete when the response body is consumed, dropped, or an error happens.
 //!
 //! # Example
 //!
 //! ```
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::metrics::InFlightRequestsLayer;
 //! use http::{Request, Response};
 //! use bytes::Bytes;
@@ -64,8 +64,8 @@ use std::{
     task::{ready, Context, Poll},
     time::Duration,
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Layer for applying [`InFlightRequests`] which counts the number of in-flight requests.
 ///

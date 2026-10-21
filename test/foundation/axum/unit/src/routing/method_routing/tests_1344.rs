@@ -5,7 +5,7 @@ mod tests {
     use http::{header::ALLOW, HeaderMap};
     use http_body::BodyExt;
     use std::time::Duration;
-    use tower::ServiceExt;
+    use service_stack::ServiceExt;
     use tower_http::{
         services::fs::ServeDir, timeout::TimeoutLayer, validate_request::ValidateRequestHeaderLayer,
     };
@@ -209,7 +209,7 @@ mod tests {
     async fn allow_header_noop_middleware() {
         let mut svc = MethodRouter::new()
             .get(ok)
-            .layer(tower::layer::util::Identity::new());
+            .layer(service_stack::layer::util::Identity::new());
 
         let (status, headers, _) = call(Method::DELETE, &mut svc).await;
         assert_eq!(status, StatusCode::METHOD_NOT_ALLOWED);

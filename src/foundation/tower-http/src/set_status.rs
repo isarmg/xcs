@@ -8,7 +8,7 @@
 //! use bytes::Bytes;
 //! use http_body::Full;
 //! use std::{iter::once, convert::Infallible};
-//! use tower::{ServiceBuilder, Service, ServiceExt};
+//! use service_stack::{ServiceBuilder, Service, ServiceExt};
 //!
 //! async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //!     // ...
@@ -40,8 +40,8 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Layer that applies [`SetStatus`] which overrides the status codes.
 #[derive(Debug, Clone, Copy)]
@@ -87,7 +87,7 @@ impl<S> SetStatus<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `SetStatus` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(status: StatusCode) -> SetStatusLayer {
         SetStatusLayer::new(status)
     }

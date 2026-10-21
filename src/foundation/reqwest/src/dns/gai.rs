@@ -1,5 +1,5 @@
 use hyper_util::client::legacy::connect::dns::GaiResolver as HyperGaiResolver;
-use tower_service::Service;
+use service_stack::Service;
 
 use crate::dns::{Addrs, Name, Resolve, Resolving};
 use crate::error::BoxError;

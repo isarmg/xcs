@@ -12,8 +12,8 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Create a middleware from an extractor.
 ///
@@ -105,7 +105,7 @@ pub fn from_extractor_with_state<E, S>(state: S) -> FromExtractorLayer<E, S> {
 ///
 /// See [`from_extractor`] for more details.
 ///
-/// [`Layer`]: tower::Layer
+/// [`Layer`]: service_stack::Layer
 #[must_use]
 pub struct FromExtractorLayer<E, S> {
     state: S,

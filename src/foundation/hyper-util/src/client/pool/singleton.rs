@@ -23,7 +23,7 @@
 use std::sync::{Arc, Mutex};
 use std::task::{self, Poll};
 
-use tower_service::Service;
+use service_stack::Service;
 
 use self::internal::{SingletonError, SingletonFuture, State};
 
@@ -164,7 +164,7 @@ mod internal {
     use std::task::{self, Poll, Waker};
 
     use tokio::sync::oneshot;
-    use tower_service::Service;
+    use service_stack::Service;
 
     use super::BoxError;
 

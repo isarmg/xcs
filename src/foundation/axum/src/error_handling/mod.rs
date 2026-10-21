@@ -12,9 +12,9 @@ use std::{
     marker::PhantomData,
     task::{Context, Poll},
 };
-use tower::ServiceExt;
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::ServiceExt;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// [`Layer`] that applies [`HandleError`] which is a [`Service`] adapter
 /// that handles errors by converting them into responses.

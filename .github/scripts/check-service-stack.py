@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Exercise the single Service/Layer owner and maintained middleware boundaries."""
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[2]
+FEATURES = ((), ('util',), ('filter', 'load-shed', 'steer'), ('full',))
+
+def run(work, *args):
+    command = ['cargo', *args, '--color', 'never', '--offline']
+    result = subprocess.run(command, cwd=work, text=True, capture_output=True, timeout=600)
+    if result.returncode:
+        raise RuntimeError(' '.join(command) + '\n' + result.stdout + result.stderr)
+    return result.stdout
+
+def main():
+    os.environ.setdefault('CARGO_BUILD_JOBS', '2')
+    os.environ.setdefault('CARGO_PROFILE_DEV_DEBUG', '0')
+    os.environ.setdefault('CARGO_INCREMENTAL', '0')
+    with tempfile.TemporaryDirectory(prefix='service-stack-') as temporary:
+        work = Path(temporary)
+        (work / 'src').mkdir()
+        (work / 'src/lib.rs').write_text('pub use service_stack::{Service, Layer, ServiceBuilder};\n')
+        (work / 'test').mkdir()
+        (work / 'test/behavior.rs').write_bytes((ROOT / 'test/architecture/service-stack/behavior.rs').read_bytes())
+        for features in FEATURES:
+            (work / 'Cargo.toml').write_text(
+                '[package]\nname="service-stack-contract"\nversion="0.0.0"\nedition="2021"\n'
+                '[workspace]\n[dependencies.service-stack]\n'
+                f'path={json.dumps(str(ROOT / "src/foundation/service-stack"))}\n'
+                f'default-features=false\nfeatures={json.dumps(features)}\n'
+                '[[test]]\nname="behavior"\npath="test/behavior.rs"\nrequired-features=["service-stack/util"]\n'
+            )
+            run(work, 'generate-lockfile')
+            metadata = json.loads(run(work, 'metadata', '--locked', '--format-version', '1'))
+            nodes = {node['id'] for node in metadata['resolve']['nodes']}
+            names = {p['name'] for p in metadata['packages'] if p['id'] in nodes}
+            assert not names.intersection({'tower', 'tower-layer', 'tower-service'}), names
+            if not features:
+                assert names == {'service-stack-contract', 'service-stack'}, names
+            if 'full' not in features:
+                assert 'tokio' not in names, names
+            run(work, 'check', '--locked')
+            # Tokio net/time middleware is native-only; bare traits and pure utilities remain WASM.
+            if 'full' not in features:
+                run(work, 'check', '--locked', '--target', 'wasm32-unknown-unknown')
+            if features == ('util',):
+                output = run(work, 'test', '--locked', '--test', 'behavior')
+                assert re.search(r'test result: ok\. 4 passed; 0 failed', output), output
+        (work / 'Cargo.toml').write_text(
+            '[package]\nname="service-stack-consumers"\nversion="0.0.0"\nedition="2021"\n'
+            '[workspace]\n[dependencies]\n'
+            f'axum={{path={json.dumps(str(ROOT / "src/foundation/axum"))},default-features=false,features=["http1","tokio","json"]}}\n'
+            f'reqwest={{path={json.dumps(str(ROOT / "src/foundation/reqwest"))},default-features=false}}\n'
+        )
+        (work / 'src/lib.rs').write_text(
+            'pub fn router() -> axum::Router { axum::Router::new().route("/", axum::routing::get(|| async { "ok" })) }\n'
+            'pub fn client() -> reqwest::Client { reqwest::Client::new() }\n'
+        )
+        run(work, 'generate-lockfile')
+        run(work, 'check', '--locked')
+        print('service-stack: 7 native/WASM feature checks, 4 behavior tests, Axum/Reqwest consumers passed')
+
+if __name__ == '__main__':
+    main()

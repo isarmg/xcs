@@ -17,12 +17,12 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tower::{
+use service_stack::{
     util::{BoxCloneSyncService, MapErrLayer, Oneshot},
     ServiceExt,
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// How routes are stored inside a [`Router`](super::Router).
 ///

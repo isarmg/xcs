@@ -3,8 +3,8 @@ use axum::{
     body::{Body, Bytes},
     http::StatusCode,
 };
+use service_stack::ServiceExt;
 use std::time::Duration;
-use tower::ServiceExt;
 struct TestBackend {
     path: PathBuf,
 }

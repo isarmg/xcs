@@ -30,7 +30,7 @@ repository = "https://github.com/tokio-rs/axum"
 [features]
 serialization = ["dep:data-serialization"]
 __private = ["tokio", "http1", "dep:reqwest"]
-__private_docs = ["axum-core/__private_docs", "tower/full", "dep:data-serialization", "dep:tower-http"]
+__private_docs = ["axum-core/__private_docs", "service-stack/full", "dep:data-serialization", "dep:tower-http"]
 default = ["form", "http1", "json", "matched-path", "original-uri", "query", "tokio", "tower-log", "tracing"]
 form = ["dep:form_urlencoded", "dep:form-codec", "dep:serialization-error-path"]
 http1 = ["dep:hyper", "hyper?/http1", "hyper-util?/http1"]
@@ -41,8 +41,8 @@ matched-path = []
 multipart = []
 original-uri = []
 query = ["dep:form_urlencoded", "dep:form-codec", "dep:serialization-error-path"]
-tokio = ["dep:hyper-util", "dep:tokio", "tokio/net", "tokio/rt", "tower/make", "tokio/macros"]
-tower-log = ["tower/log"]
+tokio = ["dep:hyper-util", "dep:tokio", "tokio/net", "tokio/rt", "service-stack/make", "tokio/macros"]
+tower-log = ["service-stack/log"]
 tracing = ["dep:tracing", "axum-core/tracing"]
 ws = ["dep:hyper", "tokio", "dep:base64"]
 
@@ -175,12 +175,6 @@ optional = true
 package = "tokio"
 path = "../tokio"
 
-[dependencies.tower]
-version = "0.5.2"
-features = ["util"]
-default-features = false
-path = "../tower"
-
 [dependencies.tower-http]
 version = "0.6.8"
 features = [
@@ -214,14 +208,6 @@ features = [
 ]
 optional = true
 path = "../tower-http"
-
-[dependencies.tower-layer]
-version = "0.3.2"
-path = "../tower-layer"
-
-[dependencies.tower-service]
-version = "0.3"
-path = "../tower-service"
 
 [dependencies.tracing]
 version = "0.1"
@@ -269,3 +255,8 @@ unsafe_code = "forbid"
 [lints.rust.rust_2018_idioms]
 level = "warn"
 priority = -1
+[dependencies.service-stack]
+version = "0.5.3"
+path = "../service-stack"
+default-features = false
+features = ["util"]

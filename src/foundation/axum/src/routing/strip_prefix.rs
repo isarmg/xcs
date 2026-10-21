@@ -3,9 +3,9 @@ use std::{
     sync::Arc,
     task::{Context, Poll},
 };
-use tower::Layer;
-use tower_layer::layer_fn;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::layer_fn;
+use service_stack::Service;
 
 #[derive(Clone)]
 pub(super) struct StripPrefix<S> {

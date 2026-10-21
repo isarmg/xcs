@@ -4,7 +4,7 @@ mod tests {
     use crate::test_helpers::Body;
     use http::{header, HeaderValue};
     use std::convert::Infallible;
-    use tower::{service_fn, ServiceExt};
+    use service_stack::{service_fn, ServiceExt};
 
     #[tokio::test]
     async fn test_override_mode() {

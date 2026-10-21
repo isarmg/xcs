@@ -4,7 +4,7 @@ mod tests {
     use crate::test_helpers::Body;
     use http::{Request, Response, StatusCode};
     use std::time::Duration;
-    use tower::{BoxError, ServiceBuilder, ServiceExt};
+    use service_stack::{BoxError, ServiceBuilder, ServiceExt};
 
     #[tokio::test]
     async fn request_completes_within_timeout() {
@@ -24,7 +24,7 @@ mod tests {
     #[tokio::test]
     async fn timeout_middleware_with_custom_status_code() {
         let timeout_service = Timeout::with_status_code(
-            tower::service_fn(slow_handler),
+            service_stack::service_fn(slow_handler),
             StatusCode::REQUEST_TIMEOUT,
             Duration::from_millis(10),
         );

@@ -7,7 +7,7 @@
 //! use http::{Request, Response, StatusCode, header::ACCEPT};
 //! use http_body::Full;
 //! use bytes::Bytes;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //!
 //! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
 //!     Ok(Response::new(Full::default()))
@@ -57,7 +57,7 @@
 //! use tower_http::validate_request::{ValidateRequestHeaderLayer, ValidateRequest};
 //! use http::{Request, Response, StatusCode, header::ACCEPT};
 //! use http_body::Full;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use bytes::Bytes;
 //!
 //! #[derive(Clone, Copy)]
@@ -97,7 +97,7 @@
 //! use http::{Request, Response, StatusCode, header::ACCEPT};
 //! use bytes::Bytes;
 //! use http_body::Full;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //!
 //! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
 //!     # todo!();
@@ -127,8 +127,8 @@ use std::{
     sync::Arc,
     task::{Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Layer that applies [`ValidateRequestHeader`] which validates all requests.
 ///

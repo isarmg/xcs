@@ -31,9 +31,9 @@ repository = "https://github.com/hyperium/hyper-util"
 
 [features]
 __internal_happy_eyeballs_tests = []
-client = ["hyper/client", "dep:tracing", "dep:futures", "futures/channel", "futures/std", "dep:tower-service"]
+client = ["hyper/client", "dep:tracing", "dep:futures", "futures/channel", "futures/std", "dep:service-stack"]
 client-legacy = ["client", "tokio/net", "dep:socket2", "tokio/sync", "dep:libc", "dep:futures", "futures/utilities", "dep:httparse"]
-client-pool = ["client", "dep:futures", "futures/utilities", "dep:tower-layer", "tokio/sync"]
+client-pool = ["client", "dep:futures", "futures/utilities", "dep:service-stack", "tokio/sync"]
 client-proxy = ["client", "dep:base64", "dep:ipnet", "dep:percent-encoding"]
 client-proxy-system = []
 default = []
@@ -44,7 +44,7 @@ rt-tracing-exec-force = ["tokio", "tracing"]
 server = ["hyper/server"]
 server-auto = ["server", "http1", "http2"]
 server-graceful = ["server", "tokio/sync"]
-service = ["dep:tower-service"]
+service = ["dep:service-stack"]
 tokio = ["dep:tokio", "tokio/rt", "tokio/time"]
 tracing = ["dep:tracing"]
 
@@ -115,20 +115,16 @@ optional = true
 default-features = false
 path = "../tokio"
 
-[dependencies.tower-layer]
-version = "0.3"
-optional = true
-path = "../tower-layer"
-
-[dependencies.tower-service]
-version = "0.3"
-optional = true
-path = "../tower-service"
-
 [dependencies.tracing]
 version = "0.1.36"
 features = ["std"]
 optional = true
 default-features = false
 path = "../tracing"
+
+[dependencies.service-stack]
+version = "0.5.3"
+path = "../service-stack"
+default-features = false
+optional = true
 

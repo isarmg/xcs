@@ -6,7 +6,7 @@
 //!
 //! ```
 //! use tower_http::add_extension::AddExtensionLayer;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use http::{Request, Response};
 //! use bytes::Bytes;
 //! use http_body::Full;
@@ -53,8 +53,8 @@
 
 use http::{Request, Response};
 use std::task::{Context, Poll};
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// [`Layer`] for adding some shareable value to [request extensions].
 ///
@@ -108,7 +108,7 @@ impl<S, T> AddExtension<S, T> {
 
     /// Returns a new [`Layer`] that wraps services with a `AddExtension` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(value: T) -> AddExtensionLayer<T> {
         AddExtensionLayer::new(value)
     }

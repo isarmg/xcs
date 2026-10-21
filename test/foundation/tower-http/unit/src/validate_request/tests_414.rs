@@ -4,7 +4,7 @@ mod tests {
     use super::*;
     use crate::test_helpers::Body;
     use http::header;
-    use tower::{BoxError, ServiceBuilder, ServiceExt};
+    use service_stack::{BoxError, ServiceBuilder, ServiceExt};
 
     #[tokio::test]
     async fn valid_accept_header() {

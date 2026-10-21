@@ -6,7 +6,7 @@
 //! use http::{Request, Response, Method, header};
 //! use http_body::Full;
 //! use bytes::Bytes;
-//! use tower::{ServiceBuilder, ServiceExt, Service};
+//! use service_stack::{ServiceBuilder, ServiceExt, Service};
 //! use tower_http::cors::{Any, CorsLayer};
 //! use std::convert::Infallible;
 //!
@@ -62,8 +62,8 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 mod allow_credentials;
 mod allow_headers;
@@ -548,7 +548,7 @@ impl<S> Cors<S> {
 
     /// Returns a new [`Layer`] that wraps services with a [`Cors`] middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer() -> CorsLayer {
         CorsLayer::new()
     }

@@ -39,7 +39,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use tower::retry::budget::{Budget as _, TpsBudget as Budget};
+use service_stack::retry::budget::{Budget as _, TpsBudget as Budget};
 
 /// Builder to configure retries
 ///
@@ -54,7 +54,7 @@ pub struct Builder {
 }
 
 /// The internal type that we convert the builder into, that implements
-/// tower::retry::Policy privately.
+/// service_stack::retry::Policy privately.
 #[derive(Clone, Debug)]
 pub(crate) struct Policy {
     budget: Option<Arc<Budget>>,
@@ -217,7 +217,7 @@ impl Builder {
 
 type Req = http::Request<crate::async_impl::body::Body>;
 
-impl<B> tower::retry::Policy<Req, http::Response<B>, crate::Error> for Policy {
+impl<B> service_stack::retry::Policy<Req, http::Response<B>, crate::Error> for Policy {
     // TODO? backoff futures...
     type Future = std::future::Ready<()>;
 

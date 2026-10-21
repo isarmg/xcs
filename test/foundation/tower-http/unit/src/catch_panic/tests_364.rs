@@ -6,7 +6,7 @@ mod tests {
     use crate::test_helpers::Body;
     use http::Response;
     use std::convert::Infallible;
-    use tower::{ServiceBuilder, ServiceExt};
+    use service_stack::{ServiceBuilder, ServiceExt};
 
     #[tokio::test]
     async fn panic_before_returning_future() {

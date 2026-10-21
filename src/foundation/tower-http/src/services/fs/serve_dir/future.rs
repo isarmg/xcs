@@ -21,7 +21,7 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tower_service::Service;
+use service_stack::Service;
 
 pin_project! {
     /// Response future of [`ServeDir::try_call()`][`super::ServeDir::try_call()`].

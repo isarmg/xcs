@@ -1241,7 +1241,7 @@ impl hyper_util::client::legacy::connect::Connection for MockConnection {
 }
 
 // Struct representing a mock connector for creating MockConnection instances.
-// Implements tower_service::Service to integrate with hyper’s client.
+// Implements service_stack::Service to integrate with hyper’s client.
 #[derive(Clone)]
 struct MockConnector {
     // The IoBuilder used to create mock I/O objects for each connection.
@@ -1263,9 +1263,9 @@ impl MockConnector {
     }
 }
 
-// Implement tower_service::Service for MockConnector to create MockConnection instances.
+// Implement service_stack::Service for MockConnector to create MockConnection instances.
 // Takes a hyper::Uri and returns a future resolving to a MockConnection.
-impl tower_service::Service<hyper::Uri> for MockConnector {
+impl service_stack::Service<hyper::Uri> for MockConnector {
     type Response = crate::MockConnection;
     type Error = std::io::Error;
     type Future = std::pin::Pin<

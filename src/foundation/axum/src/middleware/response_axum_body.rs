@@ -9,7 +9,7 @@ use axum_core::{body::Body, response::Response};
 use bytes::Bytes;
 use http_body::Body as HttpBody;
 use pin_project_lite::pin_project;
-use tower::{Layer, Service};
+use service_stack::{Layer, Service};
 
 /// Layer that transforms the Response body to [`crate::body::Body`].
 ///

@@ -13,14 +13,14 @@ use std::{
     task::{Context, Poll},
     time::Instant,
 };
-use tower_service::Service;
+use service_stack::Service;
 
 /// Middleware that adds high level [tracing] to a [`Service`].
 ///
 /// See the [module docs](crate::trace) for an example.
 ///
 /// [tracing]: https://crates.io/crates/tracing
-/// [`Service`]: tower_service::Service
+/// [`Service`]: service_stack::Service
 #[derive(Debug, Clone, Copy)]
 pub struct Trace<
     S,
@@ -62,7 +62,7 @@ impl<S, M> Trace<S, M> {
 
     /// Returns a new [`Layer`] that wraps services with a [`TraceLayer`] middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(make_classifier: M) -> TraceLayer<M>
     where
         M: MakeClassifier,

@@ -19,7 +19,7 @@
 //!     compression::CompressionLayer,
 //!     trace::TraceLayer,
 //! };
-//! use tower::{ServiceBuilder, service_fn, BoxError};
+//! use service_stack::{ServiceBuilder, service_fn, BoxError};
 //! use http::{Request, Response};
 //! use std::net::{SocketAddr, Ipv6Addr};
 //! use bytes::Bytes;
@@ -77,7 +77,7 @@
 //!     trace::TraceLayer,
 //!     classify::StatusInRangeAsFailures,
 //! };
-//! use tower::{ServiceBuilder, Service, ServiceExt};
+//! use service_stack::{ServiceBuilder, Service, ServiceExt};
 //! use hyper_util::{rt::TokioExecutor, client::legacy::Client};
 //! use http_body::Full;
 //! use bytes::Bytes;
@@ -101,7 +101,7 @@
 //!         .layer(DecompressionLayer::new())
 //!         // Wrap a `Client` in our middleware stack.
 //!         // This is possible because `Client` implements
-//!         // `tower::Service`.
+//!         // `service_stack::Service`.
 //!         .service(client);
 //!
 //!     // Make a request

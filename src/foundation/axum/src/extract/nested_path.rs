@@ -6,8 +6,8 @@ use std::{
 use crate::extract::Request;
 use axum_core::extract::FromRequestParts;
 use http::request::Parts;
-use tower_layer::{layer_fn, Layer};
-use tower_service::Service;
+use service_stack::{layer_fn, Layer};
+use service_stack::Service;
 
 use super::rejection::NestedPathRejection;
 

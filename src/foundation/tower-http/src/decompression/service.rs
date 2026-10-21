@@ -6,7 +6,7 @@ use http::{
 };
 use http_body::Body;
 use std::task::{Context, Poll};
-use tower_service::Service;
+use service_stack::Service;
 
 /// Decompresses response bodies of the underlying service.
 ///
@@ -33,7 +33,7 @@ impl<S> Decompression<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `Decompression` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer() -> DecompressionLayer {
         DecompressionLayer::new()
     }

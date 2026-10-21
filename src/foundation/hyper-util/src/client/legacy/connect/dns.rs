@@ -16,7 +16,7 @@
 //! ```rust,ignore
 //! use std::{convert::Infallible, iter, net::SocketAddr};
 //!
-//! let resolver = tower::service_fn(|_name| async {
+//! let resolver = service_stack::service_fn(|_name| async {
 //!     Ok::<_, Infallible>(iter::once(SocketAddr::from(([127, 0, 0, 1], 8080))))
 //! });
 //! ```
@@ -28,7 +28,7 @@ use std::task::{self, Poll};
 use std::{fmt, io, vec};
 
 use tokio::task::JoinHandle;
-use tower_service::Service;
+use service_stack::Service;
 
 pub(super) use self::sealed::Resolve;
 
@@ -253,7 +253,7 @@ mod sealed {
     use std::task::{self, Poll};
 
     use super::{Name, SocketAddr};
-    use tower_service::Service;
+    use service_stack::Service;
 
     // "Trait alias" for `Service<Name, Response = Addrs>`
     pub trait Resolve {

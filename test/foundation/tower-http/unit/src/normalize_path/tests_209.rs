@@ -2,7 +2,7 @@
 mod tests {
     use super::*;
     use std::convert::Infallible;
-    use tower::{ServiceBuilder, ServiceExt};
+    use service_stack::{ServiceBuilder, ServiceExt};
 
     #[tokio::test]
     async fn trim_works() {

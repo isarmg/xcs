@@ -263,7 +263,7 @@ async fn outer_middleware_still_see_whole_url() {
         .route("/foo/bar", get(handler))
         .nest("/one", Router::new().route("/two", get(handler)))
         .fallback(handler)
-        .layer(tower::layer::layer_fn(SetUriExtension));
+        .layer(service_stack::layer::layer_fn(SetUriExtension));
 
     let client = TestClient::new(app);
 

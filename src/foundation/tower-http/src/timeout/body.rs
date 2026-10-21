@@ -33,7 +33,7 @@ pin_project! {
     /// use bytes::Bytes;
     /// use http_body::Full;
     /// use std::time::Duration;
-    /// use tower::ServiceBuilder;
+    /// use service_stack::ServiceBuilder;
     /// use tower_http::timeout::RequestBodyTimeoutLayer;
     ///
     /// async fn handle(_: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, std::convert::Infallible> {

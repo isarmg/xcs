@@ -15,7 +15,7 @@ use std::{
     path::{Component, Path, PathBuf},
     task::{Context, Poll},
 };
-use tower_service::Service;
+use service_stack::Service;
 
 pub(crate) mod future;
 mod headers;
@@ -271,7 +271,7 @@ impl<F> ServeDir<F> {
     /// use http_body::Body as _;
     /// use http_body::{Full, BodyExt, combinators::UnsyncBoxBody};
     /// use bytes::Bytes;
-    /// use tower::{service_fn, ServiceExt, BoxError};
+    /// use service_stack::{service_fn, ServiceExt, BoxError};
     ///
     /// async fn serve_dir(
     ///     request: Request<Full<Bytes>>

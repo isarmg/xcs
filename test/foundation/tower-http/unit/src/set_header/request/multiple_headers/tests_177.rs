@@ -4,7 +4,7 @@ mod tests {
     use crate::test_helpers::Body;
     use http::{header, HeaderValue, Request, Response};
     use std::convert::Infallible;
-    use tower::{service_fn, ServiceExt};
+    use service_stack::{service_fn, ServiceExt};
 
     #[tokio::test]
     async fn test_override_mode() {
@@ -106,7 +106,7 @@ mod tests {
         assert!(debug_rh.contains("HeaderInsertionConfig"));
 
         let svc = SetMultipleRequestHeader::overriding(
-            tower::service_fn(|_req: Request<Body>| async {
+            service_stack::service_fn(|_req: Request<Body>| async {
                 Ok::<_, std::convert::Infallible>(Response::new(Body::empty()))
             }),
             vec![(header::CONTENT_TYPE, HeaderValue::from_static("foo")).into()]
@@ -119,7 +119,7 @@ mod tests {
     #[tokio::test]
     async fn test_layer_construction_and_multiple_headers() {
         // Multiple different headers in the same vec
-        let svc = tower::ServiceBuilder::new()
+        let svc = service_stack::ServiceBuilder::new()
             .layer(SetMultipleRequestHeadersLayer::overriding(vec![
                 (header::CONTENT_TYPE, HeaderValue::from_static("text/html")).into(),
                 (header::CACHE_CONTROL, HeaderValue::from_static("no-cache")).into(),
@@ -137,7 +137,7 @@ mod tests {
     #[tokio::test]
     async fn test_layer_with_empty_vec() {
         let header_metadatas: Vec<HeaderMetadata<Request<Body>>> = vec![];
-        let svc = tower::ServiceBuilder::new()
+        let svc = service_stack::ServiceBuilder::new()
             .layer(SetMultipleRequestHeadersLayer::<Request<Body>>::overriding(
                 header_metadatas,
             ))
@@ -162,7 +162,7 @@ mod tests {
             })
                 .into();
 
-        let svc = tower::ServiceBuilder::new()
+        let svc = service_stack::ServiceBuilder::new()
             .layer(SetMultipleRequestHeadersLayer::overriding(vec![
                 static_meta,
                 closure_meta,

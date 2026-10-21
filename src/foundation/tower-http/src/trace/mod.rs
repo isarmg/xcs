@@ -6,7 +6,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response};
-//! use tower::{ServiceBuilder, ServiceExt, Service};
+//! use service_stack::{ServiceBuilder, ServiceExt, Service};
 //! use tower_http::trace::TraceLayer;
 //! use std::convert::Infallible;
 //! use http_body::Full;
@@ -53,14 +53,14 @@
 //! use http::{Request, Response, HeaderMap, StatusCode};
 //! use http_body::Full;
 //! use bytes::Bytes;
-//! use tower::ServiceBuilder;
+//! use service_stack::ServiceBuilder;
 //! use tracing::Level;
 //! use tower_http::{
 //!     LatencyUnit,
 //!     trace::{TraceLayer, DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse},
 //! };
 //! use std::time::Duration;
-//! # use tower::{ServiceExt, Service};
+//! # use service_stack::{ServiceExt, Service};
 //! # use std::convert::Infallible;
 //!
 //! # async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
@@ -103,11 +103,11 @@
 //! use http::{Request, Response, HeaderMap, StatusCode};
 //! use http_body::Full;
 //! use bytes::Bytes;
-//! use tower::ServiceBuilder;
+//! use service_stack::ServiceBuilder;
 //! use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 //! use std::time::Duration;
 //! use tracing::Span;
-//! # use tower::{ServiceExt, Service};
+//! # use service_stack::{ServiceExt, Service};
 //! # use std::convert::Infallible;
 //!
 //! # async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
@@ -156,11 +156,11 @@
 //!
 //! ```rust
 //! use http::StatusCode;
-//! use tower::ServiceBuilder;
+//! use service_stack::ServiceBuilder;
 //! use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 //! use std::time::Duration;
 //! use tracing::Span;
-//! # use tower::{ServiceExt, Service};
+//! # use service_stack::{ServiceExt, Service};
 //! # use http_body::Full;
 //! # use bytes::Bytes;
 //! # use http::{Response, Request};
@@ -248,7 +248,7 @@
 //! use http::{Request, Response, HeaderMap, StatusCode};
 //! use http_body::Full;
 //! use bytes::Bytes;
-//! use tower::ServiceBuilder;
+//! use service_stack::ServiceBuilder;
 //! use tower_http::trace::TraceLayer;
 //! use tracing::Span;
 //! use std::time::Duration;
@@ -293,7 +293,7 @@
 //! use http::{Request, Response};
 //! use http_body::Full;
 //! use bytes::Bytes;
-//! use tower::ServiceBuilder;
+//! use service_stack::ServiceBuilder;
 //! use tower_http::{
 //!     trace::TraceLayer,
 //!     classify::{
@@ -374,8 +374,8 @@
 //!   responses.
 //!
 //! [tracing]: https://crates.io/crates/tracing
-//! [`Service`]: tower_service::Service
-//! [`Service::call`]: tower_service::Service::call
+//! [`Service`]: service_stack::Service
+//! [`Service::call`]: service_stack::Service::call
 //! [`MakeClassifier`]: crate::classify::MakeClassifier
 //! [`ClassifyResponse`]: crate::classify::ClassifyResponse
 //! [record]: https://docs.rs/tracing/latest/tracing/span/struct.Span.html#method.record

@@ -5,7 +5,7 @@
 //! ```rust
 //! use http::{Request, Response, header::HeaderName};
 //! use std::convert::Infallible;
-//! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::propagate_header::PropagateHeaderLayer;
 //! use bytes::Bytes;
 //! use http_body::Full;
@@ -42,8 +42,8 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 
 /// Layer that applies [`PropagateHeader`] which propagates headers from requests to responses.
 ///
@@ -96,7 +96,7 @@ impl<S> PropagateHeader<S> {
 
     /// Returns a new [`Layer`] that wraps services with a `PropagateHeader` middleware.
     ///
-    /// [`Layer`]: tower_layer::Layer
+    /// [`Layer`]: service_stack::Layer
     pub fn layer(header: HeaderName) -> PropagateHeaderLayer {
         PropagateHeaderLayer::new(header)
     }

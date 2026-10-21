@@ -8,7 +8,7 @@ mod tests {
     use std::task::{self, Poll};
 
     use futures::future;
-    use tower_service::Service;
+    use service_stack::Service;
     use tower_test::assert_request_eq;
 
     #[tokio::test]

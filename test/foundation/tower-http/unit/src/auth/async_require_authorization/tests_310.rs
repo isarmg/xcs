@@ -5,7 +5,7 @@ mod tests {
     use crate::test_helpers::Body;
     use futures::future::BoxFuture;
     use http::{header, StatusCode};
-    use tower::{BoxError, ServiceBuilder, ServiceExt};
+    use service_stack::{BoxError, ServiceBuilder, ServiceExt};
 
     #[derive(Clone, Copy)]
     struct MyAuth;

@@ -4,7 +4,7 @@
 //!
 //! ```
 //! use http::{Request, Response, header::HeaderName};
-//! use tower::{Service, ServiceExt, ServiceBuilder};
+//! use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::request_id::{
 //!     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! };
@@ -14,7 +14,7 @@
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let handler = tower::service_fn(|request: Request<Full<Bytes>>| async move {
+//! # let handler = service_stack::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(request.into_body()))
 //! # });
 //! #
@@ -62,7 +62,7 @@
 //! ```
 //! use tower_http::ServiceBuilderExt;
 //! # use http::{Request, Response, header::HeaderName};
-//! # use tower::{Service, ServiceExt, ServiceBuilder};
+//! # use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! # use tower_http::request_id::{
 //! #     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! # };
@@ -71,7 +71,7 @@
 //! # use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let handler = tower::service_fn(|request: Request<Full<Bytes>>| async move {
+//! # let handler = service_stack::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(request.into_body()))
 //! # });
 //! # #[derive(Clone, Default)]
@@ -116,7 +116,7 @@
 //!     trace::{TraceLayer, DefaultMakeSpan, DefaultOnResponse},
 //! };
 //! # use http::{Request, Response, header::HeaderName};
-//! # use tower::{Service, ServiceExt, ServiceBuilder};
+//! # use service_stack::{Service, ServiceExt, ServiceBuilder};
 //! # use tower_http::request_id::{
 //! #     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! # };
@@ -125,7 +125,7 @@
 //! # use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let handler = tower::service_fn(|request: Request<Full<Bytes>>| async move {
+//! # let handler = service_stack::service_fn(|request: Request<Full<Bytes>>| async move {
 //! #     Ok::<_, std::convert::Infallible>(Response::new(request.into_body()))
 //! # });
 //! # #[derive(Clone, Default)]
@@ -177,8 +177,8 @@ use http::{
 use pin_project_lite::pin_project;
 use std::task::{ready, Context, Poll};
 use std::{future::Future, pin::Pin};
-use tower_layer::Layer;
-use tower_service::Service;
+use service_stack::Layer;
+use service_stack::Service;
 use uuid::Uuid;
 
 pub(crate) const X_REQUEST_ID: HeaderName = HeaderName::from_static("x-request-id");

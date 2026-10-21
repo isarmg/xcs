@@ -10,7 +10,7 @@ use http_body::Frame;
 use http_body::BodyExt;
 use pin_project_lite::pin_project;
 use sync_wrapper::SyncWrapper;
-use tower::BoxError;
+use service_stack::BoxError;
 
 type BoxBody = http_body::combinators::UnsyncBoxBody<Bytes, BoxError>;
 

@@ -193,10 +193,10 @@ impl Error {
 /// Converts from external types to reqwest's
 /// internal equivalents.
 ///
-/// Currently only is used for `tower::timeout::error::Elapsed`.
+/// Currently only is used for `service_stack::timeout::error::Elapsed`.
 
 pub(crate) fn cast_to_internal_error(error: BoxError) -> BoxError {
-    if error.is::<tower::timeout::error::Elapsed>() {
+    if error.is::<service_stack::timeout::error::Elapsed>() {
         Box::new(crate::error::TimedOut) as BoxError
     } else {
         error

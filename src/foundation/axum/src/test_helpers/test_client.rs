@@ -5,8 +5,8 @@ use http::header::{HeaderName, HeaderValue};
 use std::ops::Deref;
 use std::{convert::Infallible, future::IntoFuture, net::SocketAddr};
 use tokio::net::TcpListener;
-use tower::make::Shared;
-use tower_service::Service;
+use service_stack::make::Shared;
+use service_stack::Service;
 
 pub(crate) fn spawn_service<S>(svc: S) -> SocketAddr
 where

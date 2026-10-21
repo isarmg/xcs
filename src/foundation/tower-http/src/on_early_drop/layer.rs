@@ -1,7 +1,7 @@
 //! Tower [`Layer`] for the on-early-drop middleware.
 
 use crate::on_early_drop::service::OnEarlyDropService;
-use tower_layer::Layer;
+use service_stack::Layer;
 
 /// [`Layer`] that applies [`OnEarlyDropService`].
 ///
