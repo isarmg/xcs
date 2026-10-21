@@ -353,7 +353,7 @@ def validate_origins(records, origins):
                 raise ValueError('consolidation historical license inventory drift')
 
 
-def _unhandled_history(root, previous, inputs, destination, records):
+def _unhandled_history(root, previous, inputs, destination, records, record=None, authorize_pinned=None):
     directories, origins = set(inputs), {p['origin_directory'] for p in inputs.values()}
     if any(p.get('directory') in directories | {destination} or p.get('origin_directory') in origins
            for p in previous.get('merges', [])):
@@ -371,10 +371,11 @@ def _unhandled_history(root, previous, inputs, destination, records):
         if path.exists():
             content = path.read_text(encoding='utf-8')
             if any(directory in content or 'test/foundation/' + directory.rsplit('/', 1)[1] in content for directory in directories):
-                raise ValueError('consolidating pinned source requires a historical-view adapter')
+                if authorize_pinned is None or authorize_pinned(root, previous, record) is not True:
+                    raise ValueError('consolidating pinned source requires a historical-view adapter')
 
 
-def prepare(root, previous, plan, file_inventory, validate_external=None):
+def prepare(root, previous, plan, file_inventory, validate_external=None, authorize_pinned=None):
     """Return active, merges, immutable history, and new records by destination.
 
 The input plan is schema=1, packages=[record,...], with exactly FIELDS per record.
@@ -410,7 +411,7 @@ validator is mandatory whenever any external data exists, even for old history.
                 or destination in previous.get('retired', {})):
             raise ValueError('consolidation destination identity is already registered')
         source_history_chain.validate(root, record, previous)
-        _unhandled_history(root, previous, inputs, destination, history)
+        _unhandled_history(root, previous, inputs, destination, history, record, authorize_pinned)
         _absence(root, record)
         destination_path = _foundation(root, destination)
         if not destination_path.is_dir():

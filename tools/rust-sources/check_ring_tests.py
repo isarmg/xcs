@@ -14,9 +14,13 @@ from pathlib import Path, PurePosixPath
 import platform
 import shutil
 import subprocess
+import sys
 import tempfile
 import tomllib
 import zipfile
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import proof_routing
 
 ROOT = Path(__file__).resolve().parents[2]
 RING = Path('src/foundation/ring')
@@ -35,6 +39,7 @@ RELOCATION_SHA256 = '178ec0e2f7a74909cd037f3d2eda20ef50911d305effcd78311267addb2
 
 def relocated_sources(root):
     """Authenticate exact live inventories and reverse only pinned routing edits."""
+    view = proof_routing.load(root)
     content = checked_path(root, str(RELOCATION)).read_bytes()
     if hashlib.sha256(content).hexdigest() != RELOCATION_SHA256:
         raise ValueError('ring relocation receipt changed')
@@ -43,13 +48,10 @@ def relocated_sources(root):
         raise ValueError('unexpected ring relocation schema')
     current = {}
     for base in (RING, Path('test/foundation/ring')):
-        directory = checked_path(root, str(base))
-        for path in directory.rglob('*'):
-            checked_path(root, path.relative_to(root).as_posix())
-            if path.is_file():
-                current[path.relative_to(root).as_posix()] = path.read_bytes()
-            elif not path.is_dir():
-                raise ValueError('special file in ring sources')
+        for path in view.inventory(str(base)):
+            if path in current:
+                raise ValueError('duplicate ring routed source')
+            current[path] = view.read(path)
     expected = {row['path']: row['sha256'] for row in receipt['files']}
     expected.update(receipt['external_files'])
     if {path: hashlib.sha256(data).hexdigest() for path, data in current.items()} != expected:
@@ -148,7 +150,6 @@ def target_sources(root):
             or len(retained) != 331 or len(retained) != len(record['retained'])
             or set(deleted) & set(retained)):
         raise ValueError('unexpected target-pruning source inventory')
-    source_root = checked_path(root, str(RING))
     relocated = relocated_sources(root)
     actual = {str(Path(path).relative_to(RING)) for path in relocated}
     if actual != set(retained) | {'build.rs'}:
@@ -254,6 +255,53 @@ def historical_sources(root):
     return read
 
 
+def current_ring(root, view=None):
+    """Read the actual Cargo identity, never a reconstructed historical manifest."""
+    if view is None:
+        view = proof_routing.load(root)
+    package = view.current_package(str(RING))
+    manifest_path = checked_path(root, package['directory'] + '/Cargo.toml')
+    if not manifest_path.is_file():
+        raise ValueError('current ring manifest is missing')
+    manifest = tomllib.loads(manifest_path.read_text())
+    if any(manifest['package'][key] != package[key] for key in ('name', 'version')):
+        raise ValueError('current ring package identity changed')
+    return view, package, manifest
+
+
+def verify_current_targets(root, proof):
+    """Resolve live manifest targets back to the authenticated logical inventory."""
+    view, package, manifest = current_ring(root)
+    wanted = {source['path'] for source in proof['test_sources']} | {'cavp/tests/shavs.rs'}
+    actual = []
+    for entry in manifest['test']:
+        target = entry['path']
+        if not isinstance(target, str) or Path(target).is_absolute() or '\\' in target:
+            raise ValueError('unsafe current ring test target')
+        raw_path = root / package['directory']
+        for part in PurePosixPath(target).parts:
+            raw_path /= part
+            if raw_path.is_symlink():
+                raise ValueError('current ring test target traverses a symlink')
+        relative = os.path.normpath(package['directory'] + '/' + target)
+        path = checked_path(root, relative)
+        if not path.is_file() or not raw_path.is_file():
+            raise ValueError(f'current ring test target is missing: {relative}')
+        baseline = view.baseline_path(relative)
+        for base in ('test/foundation/ring/', str(RING) + '/'):
+            if baseline.startswith(base):
+                actual.append(baseline[len(base):])
+                break
+        else:
+            raise ValueError('current ring test target is outside its authenticated roots')
+    if set(actual) != wanted or len(actual) != len(wanted):
+        raise ValueError('upstream integration test entry set changed')
+    workspace = tomllib.loads(checked_path(root, 'Cargo.toml').read_text())['workspace']
+    if package['directory'] not in workspace['members'] or package['directory'] in workspace['default-members']:
+        raise ValueError('ring must be an explicit non-default verification member')
+    return wanted
+
+
 def verify(root=ROOT):
     historical = historical_sources(root)
     proof = json.loads((root / PROOF).read_text())
@@ -325,16 +373,9 @@ def verify(root=ROOT):
         content = historical(RING / source['path'])
         if hashlib.sha256(content).hexdigest() != source['sha256']:
             raise ValueError(f'restoration changed an existing implementation: {source["path"]}')
-    manifest = tomllib.loads((root / RING / 'Cargo.toml').read_text())
-    wanted = {source['path'] for source in proof['test_sources']} | {'cavp/tests/shavs.rs'}
-    actual = [str((RING / entry['path']).relative_to(RING)) if not entry['path'].startswith('../../../test/foundation/ring/') else entry['path'][len('../../../test/foundation/ring/'):] for entry in manifest['test']]
-    if set(actual) != wanted or len(actual) != len(wanted):
-        raise ValueError('upstream integration test entry set changed')
+    wanted = verify_current_targets(root, proof)
     if len(seen) != 69:
         raise ValueError('restoration material set changed')
-    workspace = tomllib.loads((root / 'Cargo.toml').read_text())['workspace']
-    if str(RING) not in workspace['members'] or str(RING) in workspace['default-members']:
-        raise ValueError('ring must be an explicit non-default verification member')
     print(f'Verified {len(seen)} upstream materials and {len(wanted)} integration test entries.', flush=True)
     return proof
 
@@ -349,7 +390,8 @@ def run_matrix(root, mode, target_dir):
 
 def run_case(root, mode, target_dir, profile, features):
     verify(root)
-    command = ['cargo', 'test', '--locked', '--offline', '-j2', '-p', 'ring']
+    _, package, _ = current_ring(root)
+    command = ['cargo', 'test', '--locked', '--offline', '-j2', '-p', package['name']]
     if profile == 'release':
         command.append('--release')
     if features != 'default':
@@ -363,14 +405,16 @@ def run_case(root, mode, target_dir, profile, features):
 
 
 def verify_generated(root, target_dir, profile):
-    pregenerated = root / RING / 'pregenerated'
+    view, package, _ = current_ring(root)
+    pregenerated = checked_path(root, view.current_path(str(RING / 'pregenerated')))
     expected = {path.relative_to(pregenerated) for path in pregenerated.glob('*x86_64*elf.S')}
     expected.update(Path('ring_core_generated') / name for name in (
         'prefix_symbols.h', 'prefix_symbols_asm.h', 'prefix_symbols_nasm.inc',
     ))
     if len(expected) != 15:
         raise ValueError('unexpected GNU amd64 generated-source inventory')
-    directories = list(target_dir.glob(f'**/{profile}/build/ring-*/out'))
+    directories = [path for path in target_dir.glob(f'**/{profile}/build/*/out')
+                   if path.parent.name.startswith(package['name'] + '-') and path.is_dir()]
     if not directories:
         raise ValueError('local-generation mode produced no ring build output')
     for directory in directories:
@@ -392,7 +436,8 @@ def copy_workspace(destination):
         target = destination / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
-    (destination / RING / '.git').mkdir()
+    _, package, _ = current_ring(destination)
+    checked_path(destination, package['directory'] + '/.git').mkdir()
 
 
 def main():
@@ -412,7 +457,8 @@ def main():
         raise SystemExit('Unset RING_PREGENERATE_ASM: the Linux amd64 packaging flow is not a test mode.')
     target_dir = Path(os.environ.get('CARGO_TARGET_DIR', ROOT / 'target')).resolve() / 'ring-regression'
     if args.mode in ('packaged', 'both'):
-        if (ROOT / RING / '.git').exists():
+        _, package, _ = current_ring(ROOT)
+        if checked_path(ROOT, package['directory'] + '/.git').exists():
             raise SystemExit('Packaged mode requires no ring/.git development marker.')
         run_matrix(ROOT, 'packaged', target_dir)
     if args.mode in ('localgen', 'both'):

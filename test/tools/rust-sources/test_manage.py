@@ -393,7 +393,7 @@ class SourcePolicy(unittest.TestCase):
         self.catalog['schema'] = 4
         self.catalog.pop('renames', None); self.catalog.pop('rename_records_sha256', None)
         self.save_catalog(); self.verify(); self.refresh(); self.verify()
-        self.assertEqual(self.catalog['schema'], 6)
+        self.assertEqual(self.catalog['schema'], 7)
         self.assertEqual(self.catalog['renames'], {})
 
     def rename_mini(self):
@@ -430,7 +430,7 @@ class SourcePolicy(unittest.TestCase):
         origins = (self.root / manager.ORIGINS).read_bytes()
         self.refresh(rename_plan_data=plan)
         self.verify()
-        self.assertEqual(self.catalog['schema'], 6)
+        self.assertEqual(self.catalog['schema'], 7)
         self.assertEqual(self.catalog['renames']['src/foundation/mini']['package'], plan['packages'][0]['package'])
         owner = self.catalog['external_tests']['src/foundation/value-core']
         self.assertEqual(owner['files'][0]['source'], 'src/foundation/mini/lib.rs')
@@ -506,7 +506,7 @@ class SourcePolicy(unittest.TestCase):
         plan = self.internal_move_plan()
         original = (self.root / manager.ORIGINS).read_bytes()
         self.refresh(move_plan_data=plan); self.verify()
-        self.assertEqual(self.catalog['schema'], 6)
+        self.assertEqual(self.catalog['schema'], 7)
         history = deepcopy(self.catalog['source_moves'])
         self.refresh(); self.verify()
         self.assertEqual(self.catalog['source_moves'], history)

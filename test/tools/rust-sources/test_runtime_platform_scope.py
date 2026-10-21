@@ -48,8 +48,11 @@ class RuntimePlatformScope(unittest.TestCase):
                  'parking_lot_core/src/thread_parker/wasm_atomic.rs', 'tokio/src/net/windows/named_pipe.rs',
                  'tokio/src/signal/windows/stub.rs', 'tokio/src/process/unix/mod.rs',
                  'memchr/src/arch/generic/mod.rs', 'memchr/src/arch/x86_64/mod.rs', 'memchr/src/arch/wasm32/mod.rs')
+        import proof_routing
+        view = proof_routing.load(ROOT)
         for path in paths:
-            self.assertTrue((ROOT / 'src/foundation' / path).is_file(), path)
+            current = view.current_path('src/foundation/' + path)
+            self.assertTrue((ROOT / current).is_file(), path)
 
 
 if __name__ == '__main__':

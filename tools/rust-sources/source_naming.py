@@ -225,7 +225,8 @@ repeat renames and sources with upgrade histories until their chain model exists
         for receipt in ('compliance/ring-test-relocation.json', 'compliance/platform-test-relocation.json'):
             path = _path(root, receipt)
             if path.exists() and (old in path.read_text() or _test_prefix(old) in path.read_text()):
-                raise ValueError('renaming pinned source requires historical-view adapter')
+                import proof_routing
+                proof_routing.authorize(root, previous, item)
         if old_path.exists() or not new_path.is_dir():
             raise ValueError('rename requires absent old and present new source root')
         after = deepcopy(before)

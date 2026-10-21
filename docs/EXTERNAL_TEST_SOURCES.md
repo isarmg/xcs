@@ -247,3 +247,34 @@ the existing per-origin, per-file transfer proof is checked.
 Upgraded inputs, previously merged inputs, repeated consolidations and pinned
 proof families still require separately reviewed adapters; this history binding
 does not authorize any of them or weaken physical inventory checks.
+
+### Active historical proof routing and a pinned-primary consolidation
+
+Active proof-owned roots cannot use missing-file retirement archives. Bounded,
+content-addressed `proof-routing` transactions authenticate the complete live
+inventory and reverse unique byte replacements to replay unchanged historical
+platform/runtime/ring proofs. Current-path and package routing also drives the
+actual ring matrix, rather than merely making historical verification pass.
+Receipts are explicitly pinned in the helper and registered in the catalog;
+refresh accepts only one new step per origin against its exact previous snapshot.
+Existing schemas and consolidation history are never downgraded or replaced.
+
+A terminal `consolidation` proof binding names the exact registered consolidation
+record. The original pinned primary's production and test inventory remains a
+bijection, with every original file reconstructed from its present current file.
+Imported origins and new glue are authenticated against the complete combined
+physical inventory but never enter that primary's historical file projection.
+The original primary cannot archive files or share a routed file with an imported
+origin. A second pinned input requires a separate future adapter and is rejected.
+
+Large transformations must use meaningful reviewed same-root stages within the
+existing 512 replacement/2 MiB decoded patch bounds, followed by the terminal
+root/consolidation transaction. The final consolidation takes exact snapshots from
+the immediately preceding stage, not the original unstaged catalog. Its external
+transfers retain their independent bound and exact per-origin attribution.
+
+A consolidated pinned chain is deliberately terminal: later edits, renames,
+retirement or other lifecycle changes need a new authenticated adapter. Ordinary
+unrelated owners retain their existing reviewed-refresh behavior. No historical
+receipt, proof checksum, original origin/license material or verification step is
+rewritten or skipped by this routing mechanism.

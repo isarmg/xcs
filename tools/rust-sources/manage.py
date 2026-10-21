@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import external_tests
 import source_naming
 import source_moves
+import proof_routing
 import source_consolidation
 import external_transfers
 import source_relocation
@@ -685,7 +686,8 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     if upgrade_paths & retirement_paths:
         raise ValueError("upgrade and retirement of one source require separate reviewed refreshes")
     consolidated, merged_inputs, consolidation_history, consolidated_now = source_consolidation.prepare(
-        root, previous, consolidate_plan_data, files, validate_external=external_transfers.validate)
+        root, previous, consolidate_plan_data, files, validate_external=external_transfers.validate,
+        authorize_pinned=proof_routing.authorize_consolidation)
     source_consolidation.validate_origins(consolidation_history, records)
     consolidation_paths = {path for row in consolidated_now.values()
                            for path in [row['destination_directory'], *[item['package']['directory'] for item in row['inputs']]]}
@@ -763,7 +765,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
         retained_external, external, root,
         source_owners(packages, merges),
         source_moves.remap_previous(source_naming.remap_previous(source_consolidation.remap_previous_packages(source_owners(previous["packages"], previous.get("merges", [])), consolidated_now), renames), moved_now))
-    catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=max(previous.get("schema", 6), 8 if consolidation_history else 6), consolidations=consolidation_history, consolidation_records_sha256=source_consolidation.hashes(consolidation_history), source_moves=move_history, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
+    catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=max(previous.get("schema", 6), 8 if consolidation_history else 7), proof_routing_receipts=list(proof_routing.RECEIPTS), consolidations=consolidation_history, consolidation_records_sha256=source_consolidation.hashes(consolidation_history), source_moves=move_history, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
                    lockfiles_sha256={"Cargo.lock": digest((root / "Cargo.lock").read_bytes())},
@@ -774,6 +776,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
                    superseded=superseded, superseded_records_sha256=origin_hashes(superseded))
     if external or external_tests.has_history(previous):
         catalog["initial_test_relocation_sha256"] = source_relocation.RECEIPT_SHA256
+    proof_routing.validate_refresh(root, previous, catalog)
     source_consolidation.validate_origins(source_consolidation.validate_history(root, catalog, validate_external=external_transfers.validate), records)
     source_naming.validate_history(root, catalog)
     source_moves.validate_origins(source_moves.validate_history(root, catalog), records)
@@ -902,6 +905,7 @@ def verify(root, metadata=False):
     if catalog.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
         raise ValueError("initial test relocation history identity drift")
     structure(root, policy)
+    proof_routing.load(root, catalog)
     renames = source_naming.validate_history(root, catalog)
     for key, relative in (("policy_sha256", POLICY), ("config_sha256", ".cargo/config.toml"), ("origins_sha256", ORIGINS)):
         if catalog[key] != digest(safe_path(root, relative).read_bytes()):
