@@ -80,6 +80,17 @@ class AdvisoryGate(unittest.TestCase):
             {"upstream": dict(name="leptos", version="0.8.20", archive_sha256="b" * 64)}]}
         self.assertEqual({p["name"] for p in audit.identities(catalog)}, {"unicode-normalization", "leptos"})
 
+    def test_same_directory_digest_merge_keeps_both_crypto_advisory_identities(self):
+        blake2 = dict(name="blake2", version="0.10.6", archive_sha256="a" * 64)
+        digest_old = dict(name="digest", version="0.10.7", archive_sha256="b" * 64)
+        digest_new = dict(name="digest", version="0.11.3", archive_sha256="c" * 64)
+        catalog = dict(schema=6, packages={
+            "src/foundation/blake2": dict(upstream=blake2),
+            "src/foundation/digest-0.11.3": dict(upstream=digest_new)},
+            merges=[dict(directory="src/foundation/blake2", upstream=digest_old)])
+        self.assertEqual([(p["name"], p["version"]) for p in audit.identities(catalog)],
+                         [("blake2", "0.10.6"), ("digest", "0.10.7"), ("digest", "0.11.3")])
+
     def test_conflicting_original_checksums_fail(self):
         catalog = {"packages": {}, "upstream_identities": [
             dict(name="mini", version="1.0.0", archive_sha256="a" * 64),

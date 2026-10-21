@@ -4,6 +4,7 @@
 
 | 报告 | 范围 |
 | --- | --- |
+| [密码学公共接口整合](crypto-consolidation-20261021.md) | 单一摘要接口、BLAKE2 适配、合并来源与独立向量回归 |
 | [语法解析与 CPU 检测整合](syntax-cpu-consolidation-20261021.md) | 三组重复实现合并、AST 适配、实际绑定生成与维护回归 |
 | [序列化组件功能命名](serialization-naming-20261021.md) | 七包与 97 个路径、派生宏、数据格式保护、无版本私有模块与回归 |
 | [熵源依赖整合](entropy-consolidation-20261021.md) | 单代实现合并、失败关闭、Linux/WASM 后端验证、不可变历史归档 |

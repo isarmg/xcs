@@ -444,6 +444,17 @@ def verify_descriptions(root, package):
                     raise ValueError(f"missing source description path: {target}")
 
 
+def source_owners(packages, merges):
+    """Keep the primary package's test/source ownership for overlapping merges.
+
+    A merged identity shares the destination tree's full current receipt, but
+    must not replace that tree's primary upstream attribution. Merge-only trees
+    still provide their own owner. Advisory and origin coverage continue to use
+    every merge separately rather than this directory-keyed accounting view.
+    """
+    return dict({merge["directory"]: merge for merge in merges}, **packages)
+
+
 def resolutions(root, policy, merged_sources=()):
     result, metadata = [], {}
     with tempfile.TemporaryDirectory(prefix="zxs-empty-cargo-") as home:
@@ -717,7 +728,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
             if key in merged:
                 merged[key] = current_description(merged[key])
         merges.append(merged)
-    external, external_receipts = external_tests.load(root, dict(packages, **{m["directory"]: m for m in merges}), renames)
+    external, external_receipts = external_tests.load(root, source_owners(packages, merges), renames)
     source_naming.check_current_external(previous, external, renames)
     source_moves.check_current_external(external, moved_now)
     if external:
@@ -733,8 +744,8 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     retained_external = external_tests.transition_previous(source_naming.remap_previous(previous.get("external_tests", {}), renames), retired, superseded, external)
     external_tests.check_previous(
         retained_external, external, root,
-        dict(packages, **{m["directory"]: m for m in merges}),
-        source_moves.remap_previous(source_naming.remap_previous(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), renames), moved_now))
+        source_owners(packages, merges),
+        source_moves.remap_previous(source_naming.remap_previous(source_owners(previous["packages"], previous.get("merges", [])), renames), moved_now))
     catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=6, source_moves=move_history, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
@@ -751,7 +762,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     retired_sources(root, catalog, records)
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
-    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), renames), moved_now), dict(packages, **{m["directory"]: m for m in merges}), external, renames)
+    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(source_owners(previous["packages"], previous.get("merges", [])), renames), moved_now), source_owners(packages, merges), external, renames)
     verify_retained_closure(catalog, policy)
     (root / CATALOG).write_text(json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (root / DOC).write_text(document(catalog, policy), encoding="utf-8", newline="\n")
@@ -872,7 +883,7 @@ def verify(root, metadata=False):
     source_moves.validate_origins(source_moves.validate_history(root, catalog), records)
     if origin_hashes(records) != catalog["origin_records_sha256"] or provenance(root) != catalog["provenance_sha256"]:
         raise ValueError("centralized original provenance/license inventory drift")
-    external, external_receipts = external_tests.load(root, dict(catalog["packages"], **{m["directory"]: m for m in catalog.get("merges", [])}), renames)
+    external, external_receipts = external_tests.load(root, source_owners(catalog["packages"], catalog.get("merges", [])), renames)
     if external or external_tests.has_history(catalog):
         source_relocation.read_receipt(root, safe_path)
     if external != catalog.get("external_tests", {}) or external_receipts != catalog.get("external_test_mappings_sha256", {}):

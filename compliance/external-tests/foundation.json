@@ -3002,20 +3002,6 @@
       ]
     },
     {
-      "directory": "src/foundation/block-buffer-0.10.4",
-      "roots": [
-        "test/foundation/block-buffer-0.10.4"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/block-buffer-0.10.4/tests/mod.rs",
-          "source_sha256_before": "a42403629557eea432a8797f2d81a4ab65de15ce9a2db933496c53f05669e1d7",
-          "path": "test/foundation/block-buffer-0.10.4/tests/mod.rs",
-          "sha256": "a42403629557eea432a8797f2d81a4ab65de15ce9a2db933496c53f05669e1d7"
-        }
-      ]
-    },
-    {
       "directory": "src/foundation/block-buffer-0.12.1",
       "roots": [
         "test/foundation/block-buffer-0.12.1"
@@ -6252,38 +6238,6 @@
           "source_sha256_before": "1f575a11cb0c286b06c2730c328c256a01b9b067609ed2ffd590f2b615c394b9",
           "path": "test/foundation/futures-util/unit/src/stream/stream/split/tests_160.rs",
           "sha256": "7a962d53e977b4acd0078118d22435764b8f0959b6c3b53ece02aa128cefcdbd"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/generic-array",
-      "roots": [
-        "test/foundation/generic-array"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/generic-array/src/impl_serde.rs",
-          "source_sha256_before": "f046daba067522b4c3e79437d04f43a001e83353c81e6b2188c37a2e63dba7a3",
-          "path": "test/foundation/generic-array/unit/src/impl_serialization/tests_75.rs",
-          "sha256": "aed0ed016a4d2833cbeda7bedfbb3aceeda1358032f41d8ed75a2cd8616bdc35"
-        },
-        {
-          "source": "src/foundation/generic-array/src/impl_zeroize.rs",
-          "source_sha256_before": "dd1af63ef2cba2120c6f775350c98eb12bb1be6ba784d5350d07d4ae5419c292",
-          "path": "test/foundation/generic-array/unit/src/impl_zeroize/tests_11.rs",
-          "sha256": "56a8f2df9bfed62236d95b49bb0be73e749634ba4ee151a711c13dd3d35899f5"
-        },
-        {
-          "source": "src/foundation/generic-array/src/iter.rs",
-          "source_sha256_before": "4f50253f4130caa0780984b64467ca1916a881410f631f7eb85a1724b3ab4ced",
-          "path": "test/foundation/generic-array/unit/src/iter/test_18.rs",
-          "sha256": "132f8cd50fab6af3b229288dc7ddde3f2a36b9e3e2d8a898af6250729dcf5ef9"
-        },
-        {
-          "source": "src/foundation/generic-array/src/lib.rs",
-          "source_sha256_before": "0bc060883650b2302f1191a374ea1e3cd40e044fb26baddb570bc6ad8f27c39c",
-          "path": "test/foundation/generic-array/unit/src/lib/test_658.rs",
-          "sha256": "936234072ce5f840fce392e96a427361ad7aa3a17b121f134e3a5463d1e70632"
         }
       ]
     },

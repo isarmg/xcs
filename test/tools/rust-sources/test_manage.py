@@ -227,6 +227,86 @@ class SourcePolicy(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "merged source content drift"):
             self.verify()
 
+    def test_same_directory_merge_preserves_primary_external_test_origin(self):
+        before = self.install_external_tests()
+        primary = "src/foundation/mini"
+        self.catalog["merges"][0].update(directory=primary, files_sha256=manager.files(self.source))
+        self.save_catalog()
+        self.refresh()
+        self.verify()
+        self.assertEqual(self.catalog["external_tests"][primary], before)
+        self.assertEqual(self.catalog["packages"][primary]["origin_directory"], "old/mini")
+        self.assertEqual(self.catalog["merges"][0]["origin_directory"], "old/normalization")
+        # Both identities authenticate the destination's whole current tree;
+        # these equal receipts do not imply identical upstream ownership.
+        self.assertEqual(self.catalog["merges"][0]["files_sha256"],
+                         self.catalog["packages"][primary]["files_sha256"])
+        self.assertEqual(manager.source_owners(self.catalog["packages"], self.catalog["merges"])[primary],
+                         self.catalog["packages"][primary])
+        self.refresh()
+        self.verify()
+        self.assertEqual(self.catalog["external_tests"][primary], before)
+
+    def test_multiple_merged_origins_cannot_override_same_primary_owner(self):
+        before = self.install_external_tests()
+        primary = "src/foundation/mini"
+        self.catalog["merges"][0].update(directory=primary, files_sha256=manager.files(self.source))
+        other_upstream = dict(name="second-merged", version="3.0.0", archive_sha256="d" * 64,
+                              archive_url="https://static.crates.io/crates/second-merged/second-merged-3.0.0.crate")
+        self.origin_records.append(self.origin("old/second-merged", other_upstream))
+        self.write_json(manager.ORIGINS, dict(packages=self.origin_records))
+        self.catalog["merges"].append(dict(directory=primary, upstream=other_upstream,
+                                          origin_directory="old/second-merged", files_sha256=manager.files(self.source)))
+        self.save_catalog()
+        self.refresh(); self.verify()
+        self.assertEqual(self.catalog["external_tests"][primary], before)
+        self.assertEqual({m["origin_directory"] for m in self.catalog["merges"]},
+                         {"old/normalization", "old/second-merged"})
+        for merged in self.catalog["merges"]:
+            self.assertEqual(merged["files_sha256"], self.catalog["packages"][primary]["files_sha256"])
+        self.catalog["merges"].reverse()
+        self.save_catalog(); self.refresh(); self.verify()
+        self.assertEqual(self.catalog["external_tests"][primary], before)
+
+    def test_correcting_old_merge_owner_keeps_immutable_move_receipt_and_source_labels(self):
+        # Reproduce the old last-merge-wins behavior, including a later internal
+        # move receipt, before testing the current-owner correction.
+        before = self.install_external_tests()
+        primary = "src/foundation/mini"
+        self.catalog["merges"][0].update(directory=primary, files_sha256=manager.files(self.source))
+        self.save_catalog()
+        legacy = lambda packages, merges: dict(packages, **{m["directory"]: m for m in merges})
+        with patch.object(manager, "source_owners", side_effect=legacy):
+            self.refresh()
+            self.assertEqual(self.catalog["external_tests"][primary]["origin_directory"], "old/normalization")
+            self.refresh(move_plan_data=self.internal_move_plan())
+            self.verify()
+        history = deepcopy(self.catalog["source_moves"])
+        renames = deepcopy(self.catalog["renames"])
+        originals = (self.root / manager.ORIGINS).read_bytes()
+        self.refresh(); self.verify(); self.refresh(); self.verify()
+        self.assertEqual(self.catalog["external_tests"][primary], before)
+        self.assertEqual(self.catalog["source_moves"], history)
+        self.assertEqual(self.catalog["renames"], renames)
+        self.assertEqual((self.root / manager.ORIGINS).read_bytes(), originals)
+        archived = next(iter(history.values()))["external_tests"]
+        self.assertEqual(archived["origin_directory"], "old/normalization")
+        self.assertEqual(archived["files"], before["files"])
+
+    def test_duplicate_merged_origin_is_rejected_even_for_distinct_destination(self):
+        duplicate = dict(self.catalog["merges"][0], directory="src/foundation/mini")
+        self.catalog["merges"].append(duplicate)
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "historical active/merged/retired/superseded source coverage drift"):
+            self.refresh()
+
+    def test_merged_origin_cannot_also_be_retired(self):
+        plan = self.retire_mini()
+        self.catalog["merges"].append(dict(plan["packages"][0]["package"], directory="src/merged"))
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "historical active/merged/retired/superseded source coverage drift"):
+            self.refresh(retire_plan=plan)
+
     def test_missing_source_manifest_fails(self):
         (self.source / "Cargo.toml").unlink()
         with self.assertRaises(ValueError):

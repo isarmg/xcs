@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "cda5969688c401aecd0d2ef7e880cf432f800d8abbfa099dcda10da239706fc1",
+    "compliance/external-tests/foundation.json": "7ad5583e2225c772c7902d61e909aaa3d08f7e996928b2b612c753069c7402cb",
     "compliance/external-tests/integrated.json": "f1abff10929ce584ceedddb5709f68e6d4dc9a36e97872ade3577c888223e663",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -2781,23 +2781,6 @@
       "origin_directory": "vendor/rust/blake3-1.8.7",
       "roots": [
         "test/foundation/blake3"
-      ]
-    },
-    "src/foundation/block-buffer-0.10.4": {
-      "bytes": 5683,
-      "directory": "src/foundation/block-buffer-0.10.4",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/block-buffer-0.10.4/tests/mod.rs",
-          "sha256": "a42403629557eea432a8797f2d81a4ab65de15ce9a2db933496c53f05669e1d7",
-          "source": "src/foundation/block-buffer-0.10.4/tests/mod.rs",
-          "source_sha256_before": "a42403629557eea432a8797f2d81a4ab65de15ce9a2db933496c53f05669e1d7"
-        }
-      ],
-      "origin_directory": "vendor/rust/block-buffer-0.10.4",
-      "roots": [
-        "test/foundation/block-buffer-0.10.4"
       ]
     },
     "src/foundation/block-buffer-0.12.1": {
@@ -6464,41 +6447,6 @@
       "origin_directory": "vendor/rust/futures-util-0.3.34",
       "roots": [
         "test/foundation/futures-util"
-      ]
-    },
-    "src/foundation/generic-array": {
-      "bytes": 2232,
-      "directory": "src/foundation/generic-array",
-      "file_count": 4,
-      "files": [
-        {
-          "path": "test/foundation/generic-array/unit/src/impl_serialization/tests_75.rs",
-          "sha256": "aed0ed016a4d2833cbeda7bedfbb3aceeda1358032f41d8ed75a2cd8616bdc35",
-          "source": "src/foundation/generic-array/src/impl_serde.rs",
-          "source_sha256_before": "f046daba067522b4c3e79437d04f43a001e83353c81e6b2188c37a2e63dba7a3"
-        },
-        {
-          "path": "test/foundation/generic-array/unit/src/impl_zeroize/tests_11.rs",
-          "sha256": "56a8f2df9bfed62236d95b49bb0be73e749634ba4ee151a711c13dd3d35899f5",
-          "source": "src/foundation/generic-array/src/impl_zeroize.rs",
-          "source_sha256_before": "dd1af63ef2cba2120c6f775350c98eb12bb1be6ba784d5350d07d4ae5419c292"
-        },
-        {
-          "path": "test/foundation/generic-array/unit/src/iter/test_18.rs",
-          "sha256": "132f8cd50fab6af3b229288dc7ddde3f2a36b9e3e2d8a898af6250729dcf5ef9",
-          "source": "src/foundation/generic-array/src/iter.rs",
-          "source_sha256_before": "4f50253f4130caa0780984b64467ca1916a881410f631f7eb85a1724b3ab4ced"
-        },
-        {
-          "path": "test/foundation/generic-array/unit/src/lib/test_658.rs",
-          "sha256": "936234072ce5f840fce392e96a427361ad7aa3a17b121f134e3a5463d1e70632",
-          "source": "src/foundation/generic-array/src/lib.rs",
-          "source_sha256_before": "0bc060883650b2302f1191a374ea1e3cd40e044fb26baddb570bc6ad8f27c39c"
-        }
-      ],
-      "origin_directory": "vendor/rust/generic-array-0.14.7",
-      "roots": [
-        "test/foundation/generic-array"
       ]
     },
     "src/foundation/getrandom-0.2.17": {
@@ -26106,7 +26054,7 @@
           "source_sha256_before": "2b591d8f856bff3271bafe3aac28f0e116e8b11396857800b4ef336e71f28068"
         }
       ],
-      "origin_directory": "vendor/web/dependencies/leptos_hot_reload-0.8.7",
+      "origin_directory": "vendor/web/zxs-web-macro",
       "roots": [
         "test/macros"
       ]
@@ -26202,7 +26150,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "063358a1b7cfd295b89780c3bea6dda548cd4cb26112e7bf5a58b99ec6519d73"
+    "Cargo.lock": "0ff098a5232e1c8e0179ae372228d814b511f355c0bd38cba5ad4bb2b07b7fba"
   },
   "manifests_sha256": {
     "Cargo.toml": "b9962a9a9def1bd1191f1dbbed0b183cb4e0419c4c27e112b32d134a5e853b4b",
@@ -26237,9 +26185,8 @@
     "src/foundation/bindgen/Cargo.toml": "5636ac1a1c6f28ac135562162b586fac7fe5a6e77a984471b48dd772bd6bfa2e",
     "src/foundation/bit-set/Cargo.toml": "1e3169fd3e633b901a185cc0c4c813290bb23dbf07d47e69621aefd49b5c179e",
     "src/foundation/bit-vec/Cargo.toml": "2689339b3f38bb7be614995e19e1c50d36e5fbd8753fd3af44911a183fecaab7",
-    "src/foundation/blake2/Cargo.toml": "61caefa3aa70cce7fc7f670eb27e1c836157a7498f6c2f94c85437382712c7b1",
+    "src/foundation/blake2/Cargo.toml": "9f04af8bc03fd783e7c00352410430d863f5af09a2bbe2cd3fcb9e3bd091bab4",
     "src/foundation/blake3/Cargo.toml": "fa0566ba785abb873686f76d233dc11e5277f77316bba3ff3a986e589fc40d0d",
-    "src/foundation/block-buffer-0.10.4/Cargo.toml": "e2a07c6ebf8732601b51291c73ba27109ee0171c74f722822b646264dc920677",
     "src/foundation/block-buffer-0.12.1/Cargo.toml": "e8ff75c22e63111e08f25a6095ccc67291ace591ec5cfd5b3ebfeeb4f9bee495",
     "src/foundation/borrow-or-share/Cargo.toml": "6c9b279ce3ebb535df4aa142680660dd0de5c9d5e9769f946fe2572bcda73dc5",
     "src/foundation/bumpalo/Cargo.toml": "ba91475c6116fbee52fe8d5e94de01736a7f4a321c2a5c3a803454cf9c4a9eb7",
@@ -26267,14 +26214,12 @@
     "src/foundation/crossbeam-epoch/Cargo.toml": "813da5624e219795bcfae27e14186bcf7e203487551f5051ea7afcf6fe34fc5b",
     "src/foundation/crossbeam-queue/Cargo.toml": "1a92f0f6716ff303d85e8441160045056106e300b115a0640938e77b29ecd513",
     "src/foundation/crossbeam-utils/Cargo.toml": "d76ac4fff2054d48b0cdabba7b11175aab4e0530301b93ac6f327c3a28e80267",
-    "src/foundation/crypto-common-0.1.7/Cargo.toml": "e29573893632946ba1b9bc185b24e36887d2425a0d30e63301b86c23329b35a8",
     "src/foundation/crypto-common-0.2.2/Cargo.toml": "7c9b00105f7427d50f40ed3a807eef92dcf0316a2b72c7d23e21c26c9455fb2b",
     "src/foundation/ctutils/Cargo.toml": "cdc1ef4af0617251af94a040855aace3959d098652db9ab223af4fedd0f2927f",
     "src/foundation/data-encoding/Cargo.toml": "6ff883672e9f8e6fbd5c4082c8ca953ba1985777a02013a2733ebc3d542e7456",
     "src/foundation/data-serialization/Cargo.toml": "b5102e00173b22ae8b388dfd79da4277c016b03b894555677c395c39a80a87d8",
     "src/foundation/deranged/Cargo.toml": "cde471cede70613b53e06a648d033bfb95fb6cadfc86cc105a812a1b36f43aee",
     "src/foundation/derive-where/Cargo.toml": "6c662360b86c6bbd4f1efa5988be7159641f88d8dfc5dbf748967cac1ec6baed",
-    "src/foundation/digest-0.10.7/Cargo.toml": "d6a54b4c2412693f9e3ed76e2aec895eca8c707a2705424f0a5614e488c1d64d",
     "src/foundation/digest-0.11.3/Cargo.toml": "adab346e4fedf7d74f58dab4cd5eacecc8b0449674bbeda512e748d62a1eae8c",
     "src/foundation/displaydoc/Cargo.toml": "4ed665b8774905e9d8628cfa2e675d82c93fc4bf5ac9baa858d13c3df468b58f",
     "src/foundation/dom-helpers/Cargo.toml": "0faa4e2e9280b28bf0fcad93cd120e86a64787b170c5a77997f68fbdf926b3d9",
@@ -26309,7 +26254,6 @@
     "src/foundation/futures-task/Cargo.toml": "98619f6f9e4de33b4cc2241bf8238db13b8d03c341dabeb532cfe3d944a873a0",
     "src/foundation/futures-util/Cargo.toml": "46467b8b03321a218f2f785ac59209541b652978037d8d37a832f4fd7231c408",
     "src/foundation/futures/Cargo.toml": "a8a42e45bed24464515b214dc7fca55678b7a417d349dfca1c029fe66a091fa1",
-    "src/foundation/generic-array/Cargo.toml": "3086ab91317b43d748c5944e4e62baa2db66ac115f87605386d58838ed41a1a9",
     "src/foundation/getrandom-0.2.17/Cargo.toml": "343a500ff60a657dae7cd4dfbbca349e474473bbeddfa26bab6065d8f842669c",
     "src/foundation/getrandom-0.4.3/Cargo.toml": "6e3eb9b5f452fcc904633c89c0c1fcb368e18f1a347bc1ed651b6037cf6b5d32",
     "src/foundation/gimli/Cargo.toml": "bef81f95876ce5612c8c2449e99fce212aaa662b54ac173c7c1387ba02c74030",
@@ -26712,6 +26656,72 @@
         "path_in_vcs": "leptos_hot_reload"
       },
       "version": "0.8.7"
+    },
+    {
+      "changes": "Adapt fixed-output buffering, conditional reset, runtime variable-output traits/wrapper and std::io::Write to the shared hybrid-array digest traits. Preserve original digest source identity, licenses and advisory coverage; no cryptographic compression code imported. Exact source mapping: docs/components/crypto-consolidation.md.",
+      "description": "Traits for cryptographic hash functions and message authentication codes",
+      "directory": "src/foundation/blake2",
+      "files_sha256": {
+        "Cargo.toml": "9f04af8bc03fd783e7c00352410430d863f5af09a2bbe2cd3fcb9e3bd091bab4",
+        "benches/mod.rs": "f61c6cacfe1a3f70940806d0213572f7887dc1ecc9c1946a868baad3e8a6c341",
+        "src/as_bytes.rs": "4e00472aa326ad60bbaf9fafc8456c886f081ba1a8ae8614b1b6d7dbb93533fc",
+        "src/buffered.rs": "f25200da9f2b07611d527d30eca519bfdd2ff4df242b3b699633fdd9f568e7f6",
+        "src/consts.rs": "03edc1d4697a6074c9389202324444f27625ef11f17d34cc86b83d0dda920e79",
+        "src/lib.rs": "3413d6a948988a9f638da25aa73fdc7c8237f63fdbbe3a946bf314183192bc3e",
+        "src/macros.rs": "2253cd04e18ed04858f5597c11cfc82c5d16a7851f12f53d58e88446580eb7fa",
+        "src/simd.rs": "79d6d11d14664c908c2f6a2120c23e8de0e0422b610a8b838aa95ba469ef43fc",
+        "src/simd/simd_opt.rs": "b254d82005e288f1d07531ef71b2468be0bc70ae9bdba1b46001acac4db283fe",
+        "src/simd/simd_opt/u32x4.rs": "f87ab763a2f7a60e0192c9eb16df3fd172f7e1747cd26e081b5e7f074701b13c",
+        "src/simd/simd_opt/u64x4.rs": "6f9e371ec300bbb3af4f4f6d9b052257eb4da669b5595b16b17f4710559f5b85",
+        "src/simd/simdint.rs": "3b506bb05761752142f61ca8de138958af9a050ddcfe5bbf454dd9a003bf71c3",
+        "src/simd/simdop.rs": "6154f31c9675f33ba476eb6d5378deda657afc79ad43be1c9257f4f4306e43ce",
+        "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13",
+        "src/variable.rs": "cf75c86361cebbd0c3abdde5be3e2db12209d1c5b8a3a5517059415b230958c1"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/digest-0.10.7/LICENSE-APACHE",
+        "compliance/licenses/upstream/digest-0.10.7/LICENSE-MIT"
+      ],
+      "merge_receipt": {
+        "directory": "src/foundation/digest-0.10.7",
+        "files_sha256": {
+          "Cargo.toml": "d6a54b4c2412693f9e3ed76e2aec895eca8c707a2705424f0a5614e488c1d64d",
+          "src/core_api.rs": "b52728aba8a84f980f3f9cc8a94a64d3a97f1eb5f4db144904822c2f8eefb1f8",
+          "src/core_api/ct_variable.rs": "703bd62fb693a437e319d1192988bd674f9127a6b76f73b4c58c71afc79bc013",
+          "src/core_api/rt_variable.rs": "b57f89bf3991a313e2ddde09c701375e23539e7df74d685a161707ba1fbc99e4",
+          "src/core_api/wrapper.rs": "033777bed7d140b158e15d50fda8a6e06557ce89bd0738fcca692be2c39e8b8a",
+          "src/core_api/xof_reader.rs": "f33ca7b2c17eb99d84ea460d5567af68690e4fa6c2d94069a5d6748f8c8620eb",
+          "src/dev.rs": "cbaeab07489efcadec917d7b7bcf2fdade79e78a4839ab3c3d8ad442f8f82833",
+          "src/dev/fixed.rs": "1cbabc651645c1e781d31825791132b4e3741f426e99d7e40988e2a5ee49bddd",
+          "src/dev/mac.rs": "e8837d3b99dc8b6ddb398e7fad5731c2ed36931f851ed625d3ae59fb31244165",
+          "src/dev/rng.rs": "156f42e9eb8fb2083cd12dc4a9bff9d57a321d33367efe6cd42cdc02c17ed2dc",
+          "src/dev/variable.rs": "51939602b43f5a813fc725bc603a34246bbf76facaa7930cb7bf78c283ec94a7",
+          "src/dev/xof.rs": "b3971175e50f615247e4158cba87d77c369461eda22751d888725cec45b61985",
+          "src/digest.rs": "8beab74640774c9f6811daa6dac9b5a8867f5beeb0b552a9b5ddbc5cfc196ed0",
+          "src/lib.rs": "33e9c410746b267c39ac4aa65d96183bb0ab9c8c359790d3dd24e506b80df257",
+          "src/mac.rs": "b1eedeba8c53755a8dfac91391874b7b2e267ab67a0606a1bf67b425eaab7428"
+        },
+        "reason": "Adapt fixed and runtime output buffering into BLAKE2 on shared hybrid-array primitives. Exact former bytes remain in pinned crypto-consolidation-source-archive.json.gz."
+      },
+      "merged_into": "src/foundation/blake2/src/buffered.rs + src/foundation/blake2/src/variable.rs",
+      "name": "digest",
+      "origin_directory": "vendor/rust/digest-0.10.7",
+      "repository": "https://github.com/RustCrypto/traits",
+      "status": "Merged implementation fragments",
+      "upstream": {
+        "archive_sha256": "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292",
+        "archive_url": "https://static.crates.io/crates/digest/digest-0.10.7.crate",
+        "name": "digest",
+        "version": "0.10.7"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "344389411fd9718a0742435152e933a9e71461ee"
+        },
+        "path_in_vcs": "digest"
+      },
+      "version": "0.10.7"
     }
   ],
   "origin_records_sha256": {
@@ -27509,7 +27519,7 @@
       "files_sha256": {
         "Cargo.toml": "6a25d55e7493684139a5efba8b7c687894f5463b71be4835f1235f11bace86c4",
         "src/algorithm.rs": "147013d8476ef71da944636de336db3006471f7b70b04a3061d3cf1e631235ef",
-        "src/blake2b_long.rs": "bc4ed31907946ff5d99ddc8641944d794a91cd108e6f2bd356ba29a2f9620983",
+        "src/blake2b_long.rs": "c3ae8354c67474737ae70ac3f8f18e46e2bf7a03e42b68cf49d80b640bff7b34",
         "src/block.rs": "08b0c81b9d273f08047a27175520513eab08015a1b7ea887272a533237bae8f7",
         "src/error.rs": "be431ea75ef7161ad919737c3d129e2d2fdc26c16100d7edd2af5154f8603b73",
         "src/lib.rs": "9268bfce7ae5424182882e664191b6c8ec3006a5e69e89316da9c85c706b1a5a",
@@ -28249,19 +28259,21 @@
       "description": "BLAKE2 hash functions",
       "directory": "src/foundation/blake2",
       "files_sha256": {
-        "Cargo.toml": "61caefa3aa70cce7fc7f670eb27e1c836157a7498f6c2f94c85437382712c7b1",
+        "Cargo.toml": "9f04af8bc03fd783e7c00352410430d863f5af09a2bbe2cd3fcb9e3bd091bab4",
         "benches/mod.rs": "f61c6cacfe1a3f70940806d0213572f7887dc1ecc9c1946a868baad3e8a6c341",
         "src/as_bytes.rs": "4e00472aa326ad60bbaf9fafc8456c886f081ba1a8ae8614b1b6d7dbb93533fc",
+        "src/buffered.rs": "f25200da9f2b07611d527d30eca519bfdd2ff4df242b3b699633fdd9f568e7f6",
         "src/consts.rs": "03edc1d4697a6074c9389202324444f27625ef11f17d34cc86b83d0dda920e79",
-        "src/lib.rs": "4014e33ab4dbe879ebf8168a4cbe88f71b837589e1cd238fd469e0579337f9ff",
-        "src/macros.rs": "4d92b71adb3f464758635fa00058d478b814bb5004e5677055815547acf3a698",
+        "src/lib.rs": "3413d6a948988a9f638da25aa73fdc7c8237f63fdbbe3a946bf314183192bc3e",
+        "src/macros.rs": "2253cd04e18ed04858f5597c11cfc82c5d16a7851f12f53d58e88446580eb7fa",
         "src/simd.rs": "79d6d11d14664c908c2f6a2120c23e8de0e0422b610a8b838aa95ba469ef43fc",
         "src/simd/simd_opt.rs": "b254d82005e288f1d07531ef71b2468be0bc70ae9bdba1b46001acac4db283fe",
         "src/simd/simd_opt/u32x4.rs": "f87ab763a2f7a60e0192c9eb16df3fd172f7e1747cd26e081b5e7f074701b13c",
         "src/simd/simd_opt/u64x4.rs": "6f9e371ec300bbb3af4f4f6d9b052257eb4da669b5595b16b17f4710559f5b85",
         "src/simd/simdint.rs": "3b506bb05761752142f61ca8de138958af9a050ddcfe5bbf454dd9a003bf71c3",
         "src/simd/simdop.rs": "6154f31c9675f33ba476eb6d5378deda657afc79ad43be1c9257f4f4306e43ce",
-        "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13"
+        "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13",
+        "src/variable.rs": "cf75c86361cebbd0c3abdde5be3e2db12209d1c5b8a3a5517059415b230958c1"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -28378,39 +28390,6 @@
         "path_in_vcs": ""
       },
       "version": "1.8.7"
-    },
-    "src/foundation/block-buffer-0.10.4": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Buffer type for block processing of data",
-      "directory": "src/foundation/block-buffer-0.10.4",
-      "files_sha256": {
-        "Cargo.toml": "e2a07c6ebf8732601b51291c73ba27109ee0171c74f722822b646264dc920677",
-        "src/lib.rs": "b437252d389042d894b1ef17859b043e827d2bd2a1bca4b5311c67dff565274d",
-        "src/sealed.rs": "9327ee3e567ae779b83c2b7f4f3ff56fcb2117163e023e7b0e37759e7e8d1f5c"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/block-buffer-0.10.4/LICENSE-APACHE",
-        "compliance/licenses/upstream/block-buffer-0.10.4/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "block-buffer",
-      "origin_directory": "vendor/rust/block-buffer-0.10.4",
-      "repository": "https://github.com/RustCrypto/utils",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71",
-        "archive_url": "https://static.crates.io/crates/block-buffer/block-buffer-0.10.4.crate",
-        "name": "block-buffer",
-        "version": "0.10.4"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "6d35952d3d3b124bc1049ad6fb406b42b1ce4bfe"
-        },
-        "path_in_vcs": "block-buffer"
-      },
-      "version": "0.10.4"
     },
     "src/foundation/block-buffer-0.12.1": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -29583,38 +29562,6 @@
       },
       "version": "0.8.23"
     },
-    "src/foundation/crypto-common-0.1.7": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Common cryptographic traits",
-      "directory": "src/foundation/crypto-common-0.1.7",
-      "files_sha256": {
-        "Cargo.toml": "e29573893632946ba1b9bc185b24e36887d2425a0d30e63301b86c23329b35a8",
-        "src/lib.rs": "e281ab8dbe8164e2c5aa17abd8202f5b71af9a7c4fc11af597c18554349aab0c"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/crypto-common-0.1.7/LICENSE-APACHE",
-        "compliance/licenses/upstream/crypto-common-0.1.7/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "crypto-common",
-      "origin_directory": "vendor/rust/crypto-common-0.1.7",
-      "repository": "https://github.com/RustCrypto/traits",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a",
-        "archive_url": "https://static.crates.io/crates/crypto-common/crypto-common-0.1.7.crate",
-        "name": "crypto-common",
-        "version": "0.1.7"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "66a997ccf5776ce873da5a48e2885a9908e940f6"
-        },
-        "path_in_vcs": "crypto-common"
-      },
-      "version": "0.1.7"
-    },
     "src/foundation/crypto-common-0.2.2": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "Common traits used by cryptographic algorithms",
@@ -29874,51 +29821,6 @@
         "path_in_vcs": ""
       },
       "version": "1.7.0"
-    },
-    "src/foundation/digest-0.10.7": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Traits for cryptographic hash functions and message authentication codes",
-      "directory": "src/foundation/digest-0.10.7",
-      "files_sha256": {
-        "Cargo.toml": "d6a54b4c2412693f9e3ed76e2aec895eca8c707a2705424f0a5614e488c1d64d",
-        "src/core_api.rs": "b52728aba8a84f980f3f9cc8a94a64d3a97f1eb5f4db144904822c2f8eefb1f8",
-        "src/core_api/ct_variable.rs": "703bd62fb693a437e319d1192988bd674f9127a6b76f73b4c58c71afc79bc013",
-        "src/core_api/rt_variable.rs": "b57f89bf3991a313e2ddde09c701375e23539e7df74d685a161707ba1fbc99e4",
-        "src/core_api/wrapper.rs": "033777bed7d140b158e15d50fda8a6e06557ce89bd0738fcca692be2c39e8b8a",
-        "src/core_api/xof_reader.rs": "f33ca7b2c17eb99d84ea460d5567af68690e4fa6c2d94069a5d6748f8c8620eb",
-        "src/dev.rs": "cbaeab07489efcadec917d7b7bcf2fdade79e78a4839ab3c3d8ad442f8f82833",
-        "src/dev/fixed.rs": "1cbabc651645c1e781d31825791132b4e3741f426e99d7e40988e2a5ee49bddd",
-        "src/dev/mac.rs": "e8837d3b99dc8b6ddb398e7fad5731c2ed36931f851ed625d3ae59fb31244165",
-        "src/dev/rng.rs": "156f42e9eb8fb2083cd12dc4a9bff9d57a321d33367efe6cd42cdc02c17ed2dc",
-        "src/dev/variable.rs": "51939602b43f5a813fc725bc603a34246bbf76facaa7930cb7bf78c283ec94a7",
-        "src/dev/xof.rs": "b3971175e50f615247e4158cba87d77c369461eda22751d888725cec45b61985",
-        "src/digest.rs": "8beab74640774c9f6811daa6dac9b5a8867f5beeb0b552a9b5ddbc5cfc196ed0",
-        "src/lib.rs": "33e9c410746b267c39ac4aa65d96183bb0ab9c8c359790d3dd24e506b80df257",
-        "src/mac.rs": "b1eedeba8c53755a8dfac91391874b7b2e267ab67a0606a1bf67b425eaab7428"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/digest-0.10.7/LICENSE-APACHE",
-        "compliance/licenses/upstream/digest-0.10.7/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "digest",
-      "origin_directory": "vendor/rust/digest-0.10.7",
-      "repository": "https://github.com/RustCrypto/traits",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292",
-        "archive_url": "https://static.crates.io/crates/digest/digest-0.10.7.crate",
-        "name": "digest",
-        "version": "0.10.7"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "344389411fd9718a0742435152e933a9e71461ee"
-        },
-        "path_in_vcs": "digest"
-      },
-      "version": "0.10.7"
     },
     "src/foundation/digest-0.11.3": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
@@ -31438,46 +31340,6 @@
         "path_in_vcs": "futures-util"
       },
       "version": "0.3.34"
-    },
-    "src/foundation/generic-array": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Generic types implementing functionality of arrays",
-      "directory": "src/foundation/generic-array",
-      "files_sha256": {
-        "Cargo.toml": "3086ab91317b43d748c5944e4e62baa2db66ac115f87605386d58838ed41a1a9",
-        "build.rs": "08fa30c4a2c1ad24fe5f987e721dfb20131f45ea5b5dc3e836dcf88a8e33248c",
-        "src/arr.rs": "c115d6926deb769ced772e9c4e1c84baf1bdea4fe4b9eb2061658a63869eab62",
-        "src/functional.rs": "7dd6ddd5db3000054cbbd76959f745c7de73c8493cbfb745be80509b306e4a83",
-        "src/hex.rs": "091fb78f6d373a6ef1c467d85c461472fcdb1e91efc294039f4c870151c3ee9f",
-        "src/impl_serialization.rs": "6059106700b2e6abd8448261b8f32a8e62c80a44e0ccd87d8feaad74776c6dd3",
-        "src/impl_zeroize.rs": "2e112af81960b38ce5a8cbc2d536d65236d37c6ca58e24df8b58bae456f903bb",
-        "src/impls.rs": "ccf9e1a77f8bfbeffbd3e631c2c9f3d6f251943c7a97363ecbf84d3d8860427e",
-        "src/iter.rs": "007493f6b3c21bcc0fd6e69831fe399b4b5d4c4487b667f594ec9358edd5a3e1",
-        "src/lib.rs": "ebaa3cc54278ecbbb22b763ca353ef47d767c2622520cad3d468801fe4f05aa1",
-        "src/sequence.rs": "26679cfec035bae7298f067f37e8d42a1eda8fe241e9cf2c2977ba4bddddab1d"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/generic-array-0.14.7/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "generic-array",
-      "origin_directory": "vendor/rust/generic-array-0.14.7",
-      "repository": "https://github.com/fizyk20/generic-array.git",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a",
-        "archive_url": "https://static.crates.io/crates/generic-array/generic-array-0.14.7.crate",
-        "name": "generic-array",
-        "version": "0.14.7"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "1397d2bb40c406901b7827161b73b34b056cbe3a"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.14.7"
     },
     "src/foundation/getrandom-0.2.17": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
@@ -51689,12 +51551,6 @@
             "runtime"
           ]
         },
-        "src/foundation/block-buffer-0.10.4": {
-          "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/block-buffer-0.12.1": {
           "features": [],
           "roles": [
@@ -51817,12 +51673,6 @@
             "runtime"
           ]
         },
-        "src/foundation/crypto-common-0.1.7": {
-          "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/crypto-common-0.2.2": {
           "features": [],
           "roles": [
@@ -51850,18 +51700,6 @@
         "src/foundation/deranged": {
           "features": [
             "default"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/digest-0.10.7": {
-          "features": [
-            "block-buffer",
-            "core-api",
-            "default",
-            "mac",
-            "subtle"
           ],
           "roles": [
             "runtime"
@@ -52067,14 +51905,6 @@
             "sink",
             "slab",
             "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/generic-array": {
-          "features": [
-            "more_lengths"
           ],
           "roles": [
             "runtime"
@@ -53172,12 +53002,6 @@
           ],
           "roles": [
             "runtime"
-          ]
-        },
-        "src/foundation/version_check": {
-          "features": [],
-          "roles": [
-            "compile"
           ]
         },
         "src/foundation/want": {
@@ -57135,6 +56959,66 @@
       },
       "version": "1.3.2"
     },
+    "src/foundation/block-buffer-0.10.4": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Buffer type for block processing of data",
+      "directory": "src/foundation/block-buffer-0.10.4",
+      "files_sha256": {
+        "Cargo.toml": "e2a07c6ebf8732601b51291c73ba27109ee0171c74f722822b646264dc920677",
+        "src/lib.rs": "b437252d389042d894b1ef17859b043e827d2bd2a1bca4b5311c67dff565274d",
+        "src/sealed.rs": "9327ee3e567ae779b83c2b7f4f3ff56fcb2117163e023e7b0e37759e7e8d1f5c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/block-buffer-0.10.4/LICENSE-APACHE",
+        "compliance/licenses/upstream/block-buffer-0.10.4/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "block-buffer",
+      "origin_directory": "vendor/rust/block-buffer-0.10.4",
+      "repository": "https://github.com/RustCrypto/utils",
+      "retirement": {
+        "bytes": 13520,
+        "category": "consolidated-implementation",
+        "external_tests": {
+          "bytes": 5683,
+          "directory": "src/foundation/block-buffer-0.10.4",
+          "file_count": 1,
+          "files": [
+            {
+              "path": "test/foundation/block-buffer-0.10.4/tests/mod.rs",
+              "sha256": "a42403629557eea432a8797f2d81a4ab65de15ce9a2db933496c53f05669e1d7",
+              "source": "src/foundation/block-buffer-0.10.4/tests/mod.rs",
+              "source_sha256_before": "a42403629557eea432a8797f2d81a4ab65de15ce9a2db933496c53f05669e1d7"
+            }
+          ],
+          "origin_directory": "vendor/rust/block-buffer-0.10.4",
+          "roots": [
+            "test/foundation/block-buffer-0.10.4"
+          ]
+        },
+        "file_count": 3,
+        "reason": "Consolidate BLAKE2 and Argon2 onto the retained hybrid-array digest stack after preserved vectors and independent differential validation. Preserve original sources and provenance in the authenticated consolidation archive.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71",
+        "archive_url": "https://static.crates.io/crates/block-buffer/block-buffer-0.10.4.crate",
+        "name": "block-buffer",
+        "version": "0.10.4"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "6d35952d3d3b124bc1049ad6fb406b42b1ce4bfe"
+        },
+        "path_in_vcs": "block-buffer"
+      },
+      "version": "0.10.4"
+    },
     "src/foundation/camino": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "UTF-8 paths",
@@ -57511,6 +57395,48 @@
       },
       "version": "2.5.0"
     },
+    "src/foundation/crypto-common-0.1.7": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Common cryptographic traits",
+      "directory": "src/foundation/crypto-common-0.1.7",
+      "files_sha256": {
+        "Cargo.toml": "e29573893632946ba1b9bc185b24e36887d2425a0d30e63301b86c23329b35a8",
+        "src/lib.rs": "e281ab8dbe8164e2c5aa17abd8202f5b71af9a7c4fc11af597c18554349aab0c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/crypto-common-0.1.7/LICENSE-APACHE",
+        "compliance/licenses/upstream/crypto-common-0.1.7/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "crypto-common",
+      "origin_directory": "vendor/rust/crypto-common-0.1.7",
+      "repository": "https://github.com/RustCrypto/traits",
+      "retirement": {
+        "bytes": 10421,
+        "category": "consolidated-implementation",
+        "file_count": 2,
+        "reason": "Consolidate BLAKE2 and Argon2 onto the retained hybrid-array digest stack after preserved vectors and independent differential validation. Preserve original sources and provenance in the authenticated consolidation archive.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a",
+        "archive_url": "https://static.crates.io/crates/crypto-common/crypto-common-0.1.7.crate",
+        "name": "crypto-common",
+        "version": "0.1.7"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "66a997ccf5776ce873da5a48e2885a9908e940f6"
+        },
+        "path_in_vcs": "crypto-common"
+      },
+      "version": "0.1.7"
+    },
     "src/foundation/defmt": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "A highly efficient logging framework that targets resource-constrained devices, like microcontrollers",
@@ -57863,6 +57789,91 @@
         "path_in_vcs": ""
       },
       "version": "0.1.3"
+    },
+    "src/foundation/generic-array": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Generic types implementing functionality of arrays",
+      "directory": "src/foundation/generic-array",
+      "files_sha256": {
+        "Cargo.toml": "3086ab91317b43d748c5944e4e62baa2db66ac115f87605386d58838ed41a1a9",
+        "build.rs": "08fa30c4a2c1ad24fe5f987e721dfb20131f45ea5b5dc3e836dcf88a8e33248c",
+        "src/arr.rs": "c115d6926deb769ced772e9c4e1c84baf1bdea4fe4b9eb2061658a63869eab62",
+        "src/functional.rs": "7dd6ddd5db3000054cbbd76959f745c7de73c8493cbfb745be80509b306e4a83",
+        "src/hex.rs": "091fb78f6d373a6ef1c467d85c461472fcdb1e91efc294039f4c870151c3ee9f",
+        "src/impl_serialization.rs": "6059106700b2e6abd8448261b8f32a8e62c80a44e0ccd87d8feaad74776c6dd3",
+        "src/impl_zeroize.rs": "2e112af81960b38ce5a8cbc2d536d65236d37c6ca58e24df8b58bae456f903bb",
+        "src/impls.rs": "ccf9e1a77f8bfbeffbd3e631c2c9f3d6f251943c7a97363ecbf84d3d8860427e",
+        "src/iter.rs": "007493f6b3c21bcc0fd6e69831fe399b4b5d4c4487b667f594ec9358edd5a3e1",
+        "src/lib.rs": "ebaa3cc54278ecbbb22b763ca353ef47d767c2622520cad3d468801fe4f05aa1",
+        "src/sequence.rs": "26679cfec035bae7298f067f37e8d42a1eda8fe241e9cf2c2977ba4bddddab1d"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/generic-array-0.14.7/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "generic-array",
+      "origin_directory": "vendor/rust/generic-array-0.14.7",
+      "repository": "https://github.com/fizyk20/generic-array.git",
+      "retirement": {
+        "bytes": 55631,
+        "category": "consolidated-implementation",
+        "external_tests": {
+          "bytes": 2232,
+          "directory": "src/foundation/generic-array",
+          "file_count": 4,
+          "files": [
+            {
+              "path": "test/foundation/generic-array/unit/src/impl_serialization/tests_75.rs",
+              "sha256": "aed0ed016a4d2833cbeda7bedfbb3aceeda1358032f41d8ed75a2cd8616bdc35",
+              "source": "src/foundation/generic-array/src/impl_serde.rs",
+              "source_sha256_before": "f046daba067522b4c3e79437d04f43a001e83353c81e6b2188c37a2e63dba7a3"
+            },
+            {
+              "path": "test/foundation/generic-array/unit/src/impl_zeroize/tests_11.rs",
+              "sha256": "56a8f2df9bfed62236d95b49bb0be73e749634ba4ee151a711c13dd3d35899f5",
+              "source": "src/foundation/generic-array/src/impl_zeroize.rs",
+              "source_sha256_before": "dd1af63ef2cba2120c6f775350c98eb12bb1be6ba784d5350d07d4ae5419c292"
+            },
+            {
+              "path": "test/foundation/generic-array/unit/src/iter/test_18.rs",
+              "sha256": "132f8cd50fab6af3b229288dc7ddde3f2a36b9e3e2d8a898af6250729dcf5ef9",
+              "source": "src/foundation/generic-array/src/iter.rs",
+              "source_sha256_before": "4f50253f4130caa0780984b64467ca1916a881410f631f7eb85a1724b3ab4ced"
+            },
+            {
+              "path": "test/foundation/generic-array/unit/src/lib/test_658.rs",
+              "sha256": "936234072ce5f840fce392e96a427361ad7aa3a17b121f134e3a5463d1e70632",
+              "source": "src/foundation/generic-array/src/lib.rs",
+              "source_sha256_before": "0bc060883650b2302f1191a374ea1e3cd40e044fb26baddb570bc6ad8f27c39c"
+            }
+          ],
+          "origin_directory": "vendor/rust/generic-array-0.14.7",
+          "roots": [
+            "test/foundation/generic-array"
+          ]
+        },
+        "file_count": 11,
+        "reason": "Consolidate BLAKE2 and Argon2 onto the retained hybrid-array digest stack after preserved vectors and independent differential validation. Preserve original sources and provenance in the authenticated consolidation archive.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a",
+        "archive_url": "https://static.crates.io/crates/generic-array/generic-array-0.14.7.crate",
+        "name": "generic-array",
+        "version": "0.14.7"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "1397d2bb40c406901b7827161b73b34b056cbe3a"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.14.7"
     },
     "src/foundation/getrandom-0.3.4": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
@@ -67683,6 +67694,7 @@
     "src/foundation/anstyle-wincon": "5a0150bb732478959f49ff460a2811133143119a34db1df32dea36dbf73edd6b",
     "src/foundation/base64-0.22.1": "92c2491c81dae6cf8ae5b3dcf59249610b42e604a44246529e30be38dbfe631a",
     "src/foundation/bitflags-1.3.2": "ac778507e82d947908dc49d1656946beb62148438d79ce43146662308cc05e3b",
+    "src/foundation/block-buffer-0.10.4": "38f569480fe2c20616cb32dc874f95f0cb09abcc692647783a0ed50a415ad8f4",
     "src/foundation/camino": "e01c43d23e823827c1d36e74f3e07b18152c3f34fabe9b17349fedac73ba5293",
     "src/foundation/cfg_aliases": "b31405fde7e9450ac4f6e6d8e00d8b93c7725cf821bc2724675421b636ce87b5",
     "src/foundation/chacha20": "9abe1e2a5d044b44929e83ea540b127980e98f97f20e4cbfcb2445e572449a6f",
@@ -67690,11 +67702,13 @@
     "src/foundation/cpufeatures-0.2.17": "4a07d523fbf0b74595fc2a52ed83b336175cf2dde3fe4215282254bf40a6356a",
     "src/foundation/crc": "328f7f6a88b18c2c953b175c8db47ed903e4110aabcac455075f1ac97aaca0d8",
     "src/foundation/crc-catalog": "0e12c31129186b5d0d295f4b3e64dab001950032bd688d22e2c3a96cae75a9f8",
+    "src/foundation/crypto-common-0.1.7": "1a6522a7a6fb1ff8df25adb0c51e1f74639cf9a3675d98b0b5ce6f8f5138469f",
     "src/foundation/defmt": "cbe4bc06b61a18683eda2187eb48c07105aa29ffefb487dd5f5a53a64ffe8eea",
     "src/foundation/defmt-macros": "9b6077c02155b4bf14c5496c9b1752f3d9f3f15be57afc9bdf8ad8dc4db9ff81",
     "src/foundation/defmt-parser": "13fb36063c62bb805fbe9a25c5fa8f5867cd67c88399ade25dc43767a9a0b35a",
     "src/foundation/dotenvy": "cd5f14644b5a7aa236d7018bb77f9a1ad3c2fd719762e2320713321205c28e3f",
     "src/foundation/drain_filter_polyfill": "9bd00168d21cdc708296eb316c673e738cfa0a9665c99d49ae248a7331325e99",
+    "src/foundation/generic-array": "3006cfbbf2c7c9706af46cae70553154c1d927d06b011e6866c9f3d4a64b8379",
     "src/foundation/getrandom-0.3.4": "134390924fc2ba79a7633d5166c36f4ff84f84111edcfe0bc576eef4b897c537",
     "src/foundation/hashbrown-0.16.1": "79cdc46d22754ec4dc3289737115e2bceb5bc1ad1fc6863183230495337d6df3",
     "src/foundation/hex": "37146935caac26425e292364a000256037ac1737af648797011f3538a82dccab",

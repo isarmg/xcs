@@ -25,9 +25,9 @@ autobenches = false
 autoexamples = false
 
 [dependencies.digest]
-version = "0.10.3"
+version = "0.11.3"
 features = ["mac"]
-path = "../digest-0.10.7"
+path = "../digest-0.11.3"
 
 [features]
 default = ["std"]
@@ -36,4 +36,5 @@ simd = []
 simd_asm = ["simd_opt"]
 simd_opt = ["simd"]
 size_opt = []
-std = ["digest/std"]
+std = ["alloc"]
+alloc = ["digest/alloc"]
