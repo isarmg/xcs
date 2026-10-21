@@ -28,13 +28,13 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/serde-rs/json"
 
 [features]
-alloc = ["serialization-core/alloc"]
+alloc = ["data-serialization/alloc"]
 arbitrary_precision = []
 default = ["std"]
 float_roundtrip = []
 preserve_order = ["indexmap", "alloc", "dep:foldhash"]
 raw_value = []
-std = ["memchr/std", "serialization-core/std"]
+std = ["memchr/std", "data-serialization/std"]
 unbounded_depth = []
 
 [lib]
@@ -62,10 +62,10 @@ version = "2"
 default-features = false
 path = "../memchr"
 
-[dependencies.serialization-core]
-version = "1.0.220"
+[dependencies.data-serialization]
+version = "1.0.229"
 default-features = false
-path = "../serialization-core"
+path = "../data-serialization"
 
 [dependencies.zmij]
 version = "1.0"

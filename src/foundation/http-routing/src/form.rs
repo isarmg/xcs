@@ -2,9 +2,9 @@ use crate::extract::Request;
 use crate::extract::{rejection::*, FromRequest, RawForm};
 use crate::kernel::response::{IntoResponse, Response};
 use crate::kernel::RequestExt;
+use data_serialization::{de::DeserializeOwned, Serialize};
 use http::header::CONTENT_TYPE;
 use http::StatusCode;
-use serialization_core::{de::DeserializeOwned, Serialize};
 
 /// URL encoded extractor and response.
 ///
@@ -83,7 +83,7 @@ where
         match req.extract().await {
             Ok(RawForm(bytes)) => {
                 let deserializer = form_codec::Deserializer::new(form_urlencoded::parse(&bytes));
-                let value = serialization_error_path::deserialize(deserializer).map_err(
+                let value = data_serialization::error_path::deserialize(deserializer).map_err(
                     |err| -> FormRejection {
                         if is_get_or_head {
                             FailedToDeserializeForm::from_err(err).into()

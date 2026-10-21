@@ -1,6 +1,6 @@
 use super::{ErrorKind, PathDeserializationError};
 use crate::util::PercentDecodedStr;
-use serialization_core::{
+use data_serialization::{
     de::{self, DeserializeSeed, EnumAccess, Error, MapAccess, SeqAccess, VariantAccess, Visitor},
     forward_to_deserialize_any, Deserializer,
 };

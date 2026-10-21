@@ -38,7 +38,7 @@ repository = "https://github.com/servo/rust-url"
 debugger_visualizer = []
 default = ["std"]
 expose_internals = []
-serialization = ["dep:data-serialization", "dep:serialization-derive"]
+serialization = ["dep:data-serialization", "data-serialization/derive"]
 std = ["idna/std", "percent-encoding/std", "form_urlencoded/std", "data-serialization?/std"]
 
 [lib]
@@ -67,14 +67,8 @@ default-features = false
 path = "../percent-encoding"
 
 [dependencies.data-serialization]
-version = "1.0"
+version = "1.0.229"
 optional = true
 default-features = false
 path = "../data-serialization"
-
-[dependencies.serialization-derive]
-version = "1.0"
-optional = true
-default-features = false
-path = "../serialization-derive"
 

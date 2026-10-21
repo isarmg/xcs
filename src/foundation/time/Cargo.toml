@@ -39,7 +39,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/time-rs/time"
 
 [features]
-alloc = ["serialization-core?/alloc"]
+alloc = ["data-serialization?/alloc"]
 default = ["std"]
 formatting = ["std"]
 large-dates = ["time-core/large-dates"]
@@ -49,7 +49,7 @@ quickcheck = ["alloc", "deranged/quickcheck"]
 rand = ["rand08", "rand09"]
 rand08 = ["deranged/rand08"]
 rand09 = ["deranged/rand09"]
-serialization = ["dep:serialization-core", "deranged/serialization"]
+serialization = ["dep:data-serialization", "deranged/serialization"]
 serialization-human-readable = ["serialization", "formatting", "parsing"]
 serialization-well-known = ["serialization", "formatting", "parsing"]
 std = ["alloc"]
@@ -73,11 +73,11 @@ version = "0.2.0"
 default-features = false
 path = "../powerfmt"
 
-[dependencies.serialization-core]
-version = "1.0.220"
+[dependencies.data-serialization]
+version = "1.0.229"
 optional = true
 default-features = false
-path = "../serialization-core"
+path = "../data-serialization"
 
 [dependencies.time-core]
 version = "=0.1.9"

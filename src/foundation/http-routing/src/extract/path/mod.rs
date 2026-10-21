@@ -14,7 +14,7 @@ use crate::kernel::{
     RequestPartsExt as _,
 };
 use http::{request::Parts, StatusCode};
-use serialization_core::de::DeserializeOwned;
+use data_serialization::de::DeserializeOwned;
 use std::{fmt, sync::Arc};
 
 /// Extractor that will get captures from the URL and parse them using
@@ -254,7 +254,7 @@ impl WrongNumberOfParameters<usize> {
     }
 }
 
-impl serialization_core::de::Error for PathDeserializationError {
+impl data_serialization::de::Error for PathDeserializationError {
     #[inline]
     fn custom<T>(msg: T) -> Self
     where

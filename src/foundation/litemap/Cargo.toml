@@ -40,7 +40,7 @@ repository = "https://github.com/unicode-org/icu4x"
 alloc = []
 databake = []
 default = ["alloc"]
-serialization = ["dep:serialization-core", "alloc"]
+serialization = ["dep:data-serialization", "alloc"]
 testing = ["alloc"]
 yoke = ["dep:yoke"]
 
@@ -49,12 +49,12 @@ name = "litemap"
 path = "src/lib.rs"
 bench = false
 
-[dependencies.serialization-core]
-version = "1.0.220"
-features = ["alloc"]
+[dependencies.data-serialization]
+version = "1.0.229"
 optional = true
 default-features = false
-path = "../serialization-core"
+path = "../data-serialization"
+features = ["alloc"]
 
 [dependencies.yoke]
 version = "0.8.3"

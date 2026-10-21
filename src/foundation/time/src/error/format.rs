@@ -116,9 +116,9 @@ impl Format {
     #[inline]
     pub fn into_invalid_serialization_value<S>(self) -> S::Error
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
-        use serialization_core::ser::Error;
+        use data_serialization::ser::Error;
         S::Error::custom(self)
     }
 }

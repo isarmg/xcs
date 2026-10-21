@@ -9,9 +9,9 @@ use alloc::collections::TryReserveError;
 #[cfg(feature = "serialization")]
 use core::marker::PhantomData;
 #[cfg(feature = "serialization")]
-use serialization_core::de::{Deserialize, Deserializer, SeqAccess, Visitor};
+use data_serialization::de::{Deserialize, Deserializer, SeqAccess, Visitor};
 #[cfg(feature = "serialization")]
-use serialization_core::ser::{Serialize, SerializeSeq, Serializer};
+use data_serialization::ser::{Serialize, SerializeSeq, Serializer};
 
 macro_rules! impl_mirrored {
   {

@@ -153,7 +153,7 @@ mod sval_support {
 mod serialization_support {
     use super::*;
 
-    use serialization_core::{Serialize, Serializer};
+    use data_serialization::{Serialize, Serializer};
 
     impl<'a> Serialize for Key<'a> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

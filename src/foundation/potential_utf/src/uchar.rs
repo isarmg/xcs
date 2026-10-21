@@ -231,12 +231,12 @@ impl TryFrom<PotentialCodePoint> for char {
 
 /// This impl requires enabling the optional `serde` Cargo feature
 #[cfg(feature = "serialization")]
-impl serialization_core::Serialize for PotentialCodePoint {
+impl data_serialization::Serialize for PotentialCodePoint {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
-        use serialization_core::ser::Error;
+        use data_serialization::ser::Error;
         let c = self
             .try_to_char()
             .map_err(|_| S::Error::custom("invalid Unicode scalar value in PotentialCodePoint"))?;
@@ -250,10 +250,10 @@ impl serialization_core::Serialize for PotentialCodePoint {
 
 /// This impl requires enabling the optional `serde` Cargo feature
 #[cfg(feature = "serialization")]
-impl<'de> serialization_core::Deserialize<'de> for PotentialCodePoint {
+impl<'de> data_serialization::Deserialize<'de> for PotentialCodePoint {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serialization_core::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         if deserializer.is_human_readable() {
             let c = <char>::deserialize(deserializer)?;

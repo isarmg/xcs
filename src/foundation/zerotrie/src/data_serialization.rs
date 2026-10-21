@@ -13,12 +13,12 @@ use alloc::boxed::Box;
 use alloc::vec::Vec;
 use core::fmt;
 use litemap::LiteMap;
-use serialization_core::de::Error;
-use serialization_core::de::Visitor;
-use serialization_core::Deserialize;
-use serialization_core::Deserializer;
-use serialization_core::Serialize;
-use serialization_core::Serializer;
+use data_serialization::de::Error;
+use data_serialization::de::Visitor;
+use data_serialization::Deserialize;
+use data_serialization::Deserializer;
+use data_serialization::Serialize;
+use data_serialization::Serializer;
 
 struct ByteStrVisitor;
 impl<'de> Visitor<'de> for ByteStrVisitor {
@@ -34,7 +34,7 @@ impl<'de> Visitor<'de> for ByteStrVisitor {
     }
     fn visit_seq<A>(self, mut v: A) -> Result<Self::Value, A::Error>
     where
-        A: serialization_core::de::SeqAccess<'de>,
+        A: data_serialization::de::SeqAccess<'de>,
     {
         let mut result = Vec::with_capacity(v.size_hint().unwrap_or(0));
         while let Some(x) = v.next_element::<u8>()? {

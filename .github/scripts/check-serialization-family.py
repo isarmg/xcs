@@ -16,7 +16,7 @@ WASM = "wasm32-unknown-unknown"
 
 
 def validate_private_family(manifests):
-    names = ('data-serialization', 'serialization-core', 'serialization-derive')
+    names = ('data-serialization', 'serialization-derive')
     version = manifests[names[0]]['package']['version']
     for name in names:
         if manifests[name]['package']['version'] != version:
@@ -39,26 +39,23 @@ def check_source_paths(root):
 
 def check_private_family(root):
     manifests = {name: tomllib.loads((root / 'src/foundation' / name / 'Cargo.toml').read_text())
-                 for name in ('data-serialization', 'serialization-core', 'serialization-derive')}
+                 for name in ('data-serialization', 'serialization-derive')}
     validate_private_family(manifests)
 
 
 def manifest(root, no_std=False):
     foundation = root / "src/foundation"
     dependencies = {
-        "data-serialization": (['derive', 'alloc', 'rc'], not no_std),
+        "data-serialization": (['derive', 'alloc', 'rc', 'error-path'], not no_std),
         "json-codec": (['alloc'] if no_std else ['raw_value', 'arbitrary_precision'], not no_std),
     }
-    if no_std:
-        dependencies['serialization-core'] = ([], False)
-    else:
+    if not no_std:
         for name in ('flag-set', 'miniz_oxide', 'icu_collections', 'random-generator-core',
                      'derive-where'):
             dependencies[name] = (['serialization'], True)
         dependencies['toml'] = (['serialization'], False)
         dependencies['time'] = (['serialization', 'serialization-human-readable'], True)
         dependencies['form-codec'] = ([], True)
-        dependencies['serialization-error-path'] = ([], True)
     lines = ['[package]', 'name = "serialization-family-regression"', 'version = "0.0.0"',
              'edition = "2021"', '[workspace]', '[dependencies]']
     for name, (features, defaults) in dependencies.items():
@@ -109,7 +106,7 @@ def check_rejections(root, directory, environment):
          'pub struct Rejected { field_name: u32 }\n', 'cannot find attribute `serde`'),
         ('#[derive(data_serialization::Serialize)]\n#[serialization(crate="serialization_core")]\n'
          'pub struct Rejected { value: u32 }\n',
-         'Serialization derive requires a dependency on data-serialization, not serialization-core'),
+         'serialization_core'),
     ]
     for source, expected in cases:
         (work / 'src/lib.rs').write_text(source)

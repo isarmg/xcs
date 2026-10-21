@@ -12,7 +12,7 @@ pub mod milliseconds;
 pub mod milliseconds_i64;
 pub mod nanoseconds;
 
-use serialization_core::{Deserialize, Deserializer, Serialize, Serializer};
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::OffsetDateTime;
 use crate::error::ComponentRange;

@@ -46,8 +46,8 @@
 //!
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 //! [`no_std`]: #no-standard-library-targets
-//! [`Serialize`]: `::serialization_core::Serialize`
-//! [`Deserialize`]: `::serialization_core::Deserialize`
+//! [`Serialize`]: `::data_serialization::Serialize`
+//! [`Deserialize`]: `::data_serialization::Deserialize`
 //! [`BorshSerialize`]: `::borsh::BorshSerialize`
 //! [`BorshDeserialize`]: `::borsh::BorshDeserialize`
 //! [`borsh`]: `::borsh`

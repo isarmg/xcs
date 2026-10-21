@@ -285,8 +285,6 @@ extern crate postgres_types;
 
 #[cfg(feature = "with-serialization-support")]
 #[macro_use]
-extern crate serialization_derive;
-#[cfg(feature = "with-serialization-support")]
 extern crate data_serialization;
 
 #[cfg(feature = "with-decimal")]

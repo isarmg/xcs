@@ -3521,10 +3521,32 @@
       ],
       "files": [
         {
+          "path": "test/foundation/data-serialization/core/functions/src/ser/impls/test_format_u8_788.rs",
+          "sha256": "d981b886fcd00e0198175d4db069579ea1fc9b118322b538140ab8ad8d971b3e",
+          "source": "src/foundation/serde_core/src/ser/impls.rs",
+          "source_sha256_before": "5ee7efc439345e8665da0bd79bc06c02a0506e5fd0f3a4cf11af0c7197eaa643",
+          "origin_directory": "vendor/rust/serde_core-1.0.229"
+        },
+        {
+          "path": "test/foundation/data-serialization/error-path/tests/deserialize.rs",
+          "sha256": "864f1514ed19330e6a7f4f4bdb067ca90fc8d387864eadb1d204ad509d8ff24d",
+          "source": "src/foundation/serde_path_to_error/tests/deserialize.rs",
+          "source_sha256_before": "b9f327bc0baf5e3626045e9dafe550c50e58b043661b29cc0fc1c609abf5362e",
+          "origin_directory": "vendor/rust/serde_path_to_error-0.1.20"
+        },
+        {
+          "path": "test/foundation/data-serialization/error-path/tests/serialize.rs",
+          "sha256": "a2ef9d5695f0426001885705e2daed66a087ab85eb14485b9ae4b7e3b45ca7a2",
+          "source": "src/foundation/serde_path_to_error/tests/serialize.rs",
+          "source_sha256_before": "dc304dcaa9b8ae89b624c3d9ecde5a195c8dac062bb00a1f791beb11f77c09b7",
+          "origin_directory": "vendor/rust/serde_path_to_error-0.1.20"
+        },
+        {
+          "path": "test/foundation/data-serialization/functions/src/core/ser/impls/test_format_u8_770.rs",
+          "sha256": "d981b886fcd00e0198175d4db069579ea1fc9b118322b538140ab8ad8d971b3e",
           "source": "src/foundation/serde/src/core/ser/impls.rs",
           "source_sha256_before": "acc3df49af857c10f49b409ad70ce13aaf094c5b2e1fb27a8c4ffe8070b115f3",
-          "path": "test/foundation/data-serialization/functions/src/core/ser/impls/test_format_u8_770.rs",
-          "sha256": "d27fc5447efdf52006bd9bca1f81bdd0d87464535f426c1e791f0dc764b7690d"
+          "origin_directory": "vendor/rust/serde-1.0.229"
         }
       ]
     },
@@ -16723,20 +16745,6 @@
       ]
     },
     {
-      "directory": "src/foundation/serialization-core",
-      "roots": [
-        "test/foundation/serialization-core"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/serde_core/src/ser/impls.rs",
-          "source_sha256_before": "5ee7efc439345e8665da0bd79bc06c02a0506e5fd0f3a4cf11af0c7197eaa643",
-          "path": "test/foundation/serialization-core/functions/src/ser/impls/test_format_u8_788.rs",
-          "sha256": "d27fc5447efdf52006bd9bca1f81bdd0d87464535f426c1e791f0dc764b7690d"
-        }
-      ]
-    },
-    {
       "directory": "src/foundation/serialization-derive",
       "roots": [
         "test/foundation/serialization-derive"
@@ -16753,26 +16761,6 @@
           "source_sha256_before": "10c8dda2b32d8c6c6b63cf09cdc63d02375af7e95ecefe8fecb34f93b65191bb",
           "path": "test/foundation/serialization-derive/functions/src/internals/case/rename_variants_139.rs",
           "sha256": "afdd3f9eb4999ca9d6bac18f4cfa0963fa9480d7cc1ef0b76a833baba852007d"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/serialization-error-path",
-      "roots": [
-        "test/foundation/serialization-error-path"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/serde_path_to_error/tests/deserialize.rs",
-          "source_sha256_before": "b9f327bc0baf5e3626045e9dafe550c50e58b043661b29cc0fc1c609abf5362e",
-          "path": "test/foundation/serialization-error-path/tests/deserialize.rs",
-          "sha256": "0f1ec763c35342740299ea95efcea99886f56888ca7987fde6cc12d018896cc2"
-        },
-        {
-          "source": "src/foundation/serde_path_to_error/tests/serialize.rs",
-          "source_sha256_before": "dc304dcaa9b8ae89b624c3d9ecde5a195c8dac062bb00a1f791beb11f77c09b7",
-          "path": "test/foundation/serialization-error-path/tests/serialize.rs",
-          "sha256": "b98fcedd46109abcdebaa32ddba5f850de159f095bf2ded3f7bdf601c6849e43"
         }
       ]
     },

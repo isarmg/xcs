@@ -38,7 +38,7 @@ quickcheck = ["alloc"]
 rand = ["rand08", "rand09"]
 rand08 = []
 rand09 = []
-serialization = ["dep:serialization-core"]
+serialization = ["dep:data-serialization"]
 
 [lib]
 name = "deranged"
@@ -50,11 +50,11 @@ optional = true
 default-features = false
 path = "../powerfmt"
 
-[dependencies.serialization-core]
-version = "1.0.220"
+[dependencies.data-serialization]
+version = "1.0.229"
 optional = true
 default-features = false
-path = "../serialization-core"
+path = "../data-serialization"
 
 [lints.clippy]
 alloc_instead_of_core = "deny"

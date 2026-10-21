@@ -57,7 +57,7 @@ macro-diagnostics = []
 md5 = []
 rng = ["dep:system-entropy"]
 rng-system-entropy = ["rng", "dep:system-entropy"]
-serialization = ["dep:serialization-core"]
+serialization = ["dep:data-serialization"]
 sha1 = []
 std = ["wasm-bindgen?/std", "js-sys?/std"]
 v1 = ["atomic"]
@@ -72,11 +72,11 @@ v8 = []
 name = "uuid"
 path = "src/lib.rs"
 
-[dependencies.serialization-core]
-version = "1.0.221"
+[dependencies.data-serialization]
+version = "1.0.229"
 optional = true
 default-features = false
-path = "../serialization-core"
+path = "../data-serialization"
 
 [target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dependencies.wasm-bindgen]
 version = "0.2"

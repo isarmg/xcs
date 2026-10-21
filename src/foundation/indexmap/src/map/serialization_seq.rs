@@ -18,8 +18,8 @@
 //! }
 //! ```
 
-use serialization_core::de::{Deserialize, Deserializer, SeqAccess, Visitor};
-use serialization_core::ser::{Serialize, Serializer};
+use data_serialization::de::{Deserialize, Deserializer, SeqAccess, Visitor};
+use data_serialization::ser::{Serialize, Serializer};
 
 use core::fmt::{self, Formatter};
 use core::hash::{BuildHasher, Hash};

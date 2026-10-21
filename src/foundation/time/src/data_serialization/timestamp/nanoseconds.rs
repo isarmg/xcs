@@ -8,7 +8,7 @@
 //! [Unix timestamp]: https://en.wikipedia.org/wiki/Unix_time
 //! [with]: https://serde.rs/field-attrs.html#with
 
-use serialization_core::{Deserialize, Deserializer, Serialize, Serializer};
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::OffsetDateTime;
 use crate::error::ComponentRange;

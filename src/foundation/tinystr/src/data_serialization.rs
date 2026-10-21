@@ -6,9 +6,9 @@ use crate::TinyAsciiStr;
 use core::fmt;
 use core::marker::PhantomData;
 use core::ops::Deref;
-use serialization_core::de::{Error, SeqAccess, Visitor};
-use serialization_core::ser::SerializeTuple;
-use serialization_core::{Deserialize, Deserializer, Serialize, Serializer};
+use data_serialization::de::{Error, SeqAccess, Visitor};
+use data_serialization::ser::SerializeTuple;
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 impl<const N: usize> Serialize for TinyAsciiStr<N> {
     #[inline]

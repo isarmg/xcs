@@ -2,14 +2,14 @@
 
 [package]
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.99"
 name = "data-serialization"
 version = "1.0.229"
 authors = [
     "Erick Tryzelaar <erick.tryzelaar@gmail.com>",
     "David Tolnay <dtolnay@gmail.com>",
 ]
-build = "build.rs"
+build = false
 autolib = false
 autobins = false
 autoexamples = false
@@ -33,24 +33,23 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/serde-rs/serde"
 
 [features]
-alloc = ["serialization-core/alloc"]
+alloc = []
 default = ["std"]
-derive = ["serialization-derive"]
-rc = ["serialization-core/rc"]
-std = ["serialization-core/std"]
-unstable = ["serialization-core/unstable"]
+derive = ["dep:serialization-derive"]
+error-path = ["alloc", "dep:itoa"]
+rc = []
+std = ["alloc"]
 
 [lib]
 name = "data_serialization"
 path = "src/lib.rs"
 
-[dependencies.serialization-core]
-version = "=1.0.229"
-features = ["result"]
-default-features = false
-path = "../serialization-core"
-
 [dependencies.serialization-derive]
 version = "=1.0.229"
 optional = true
 path = "../serialization-derive"
+
+[dependencies.itoa]
+version = "1"
+optional = true
+path = "../itoa"

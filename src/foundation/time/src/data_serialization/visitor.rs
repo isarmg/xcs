@@ -4,8 +4,8 @@ use core::fmt;
 use core::marker::PhantomData;
 
 #[cfg(feature = "parsing")]
-use serialization_core::Deserializer;
-use serialization_core::de;
+use data_serialization::Deserializer;
+use data_serialization::de;
 
 #[cfg(feature = "parsing")]
 use super::{

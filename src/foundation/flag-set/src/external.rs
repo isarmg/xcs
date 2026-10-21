@@ -67,7 +67,7 @@ __impl_external_bitflags_my_library! {
 
 pub(crate) mod __private {
     #[cfg(feature = "serialization")]
-    pub use serialization_core as data_serialization;
+    pub use data_serialization;
 
 
 

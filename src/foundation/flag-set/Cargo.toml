@@ -34,16 +34,16 @@ repository = "https://github.com/bitflags/bitflags"
 
 [features]
 example_generated = []
-serialization = ["serialization-core"]
+serialization = ["data-serialization"]
 std = []
 
 [lib]
 name = "flag_set"
 path = "src/lib.rs"
 
-[dependencies.serialization-core]
-version = "1.0.228"
+[dependencies.data-serialization]
+version = "1.0.229"
 optional = true
 default-features = false
-path = "../serialization-core"
+path = "../data-serialization"
 

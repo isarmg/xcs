@@ -4,11 +4,11 @@ use core::convert::{TryFrom, TryInto};
 #[cfg(feature = "serialization")]
 use core::marker::PhantomData;
 #[cfg(feature = "serialization")]
-use serialization_core::de::{
+use data_serialization::de::{
   Deserialize, Deserializer, Error as DeserializeError, SeqAccess, Visitor,
 };
 #[cfg(feature = "serialization")]
-use serialization_core::ser::{Serialize, SerializeSeq, Serializer};
+use data_serialization::ser::{Serialize, SerializeSeq, Serializer};
 
 /// Helper to make an `ArrayVec`.
 ///

@@ -39,6 +39,7 @@ case "${1:-}" in
   foundation-language)
     python3 .github/scripts/check-foundation-consumers.py
     python3 .github/scripts/check-serialization-family.py
+    python3 .github/scripts/check-serialization-consolidation.py
     python3 .github/scripts/check-error-definition-family.py
     python3 .github/scripts/check-command-line-family.py
     python3 .github/scripts/check-toml-consolidation.py

@@ -1591,9 +1591,9 @@ macro_rules! impl_ranged {
         })+
 
         #[cfg(feature = "serialization")]
-        impl<const MIN: $internal, const MAX: $internal> serialization_core::Serialize for $type<MIN, MAX> {
+        impl<const MIN: $internal, const MAX: $internal> data_serialization::Serialize for $type<MIN, MAX> {
             #[inline(always)]
-            fn serialize<S: serialization_core::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            fn serialize<S: data_serialization::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>
             {
                 const { assert!(MIN <= MAX); }
                 self.get().serialize(serializer)
@@ -1604,9 +1604,9 @@ macro_rules! impl_ranged {
         impl<
             const MIN: $internal,
             const MAX: $internal,
-        > serialization_core::Serialize for $optional_type<MIN, MAX> {
+        > data_serialization::Serialize for $optional_type<MIN, MAX> {
             #[inline(always)]
-            fn serialize<S: serialization_core::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            fn serialize<S: data_serialization::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>
             {
                 const { assert!(MIN <= MAX); }
                 self.get().serialize(serializer)
@@ -1618,9 +1618,9 @@ macro_rules! impl_ranged {
             'de,
             const MIN: $internal,
             const MAX: $internal,
-        > serialization_core::Deserialize<'de> for $type<MIN, MAX> {
+        > data_serialization::Deserialize<'de> for $type<MIN, MAX> {
             #[inline]
-            fn deserialize<D: serialization_core::Deserializer<'de>>(deserializer: D)
+            fn deserialize<D: data_serialization::Deserializer<'de>>(deserializer: D)
                 -> Result<Self, D::Error>
             {
                 const { assert!(MIN <= MAX); }
@@ -1631,8 +1631,8 @@ macro_rules! impl_ranged {
                     #[cfg(not(feature = "alloc"))]
                     let s = "an integer in the valid range";
 
-                    <D::Error as serialization_core::de::Error>::invalid_value(
-                        serialization_core::de::Unexpected::Other("integer"),
+                    <D::Error as data_serialization::de::Error>::invalid_value(
+                        data_serialization::de::Unexpected::Other("integer"),
                         &s.as_ref(),
                     )
                 })
@@ -1644,9 +1644,9 @@ macro_rules! impl_ranged {
             'de,
             const MIN: $internal,
             const MAX: $internal,
-        > serialization_core::Deserialize<'de> for $optional_type<MIN, MAX> {
+        > data_serialization::Deserialize<'de> for $optional_type<MIN, MAX> {
             #[inline]
-            fn deserialize<D: serialization_core::Deserializer<'de>>(deserializer: D)
+            fn deserialize<D: data_serialization::Deserializer<'de>>(deserializer: D)
                 -> Result<Self, D::Error>
             {
                 const { assert!(MIN <= MAX); }

@@ -254,7 +254,7 @@ impl Event {
     #[cfg(feature = "json")]
     pub fn json_data<T>(self, data: T) -> Result<Self, crate::kernel::Error>
     where
-        T: serialization_core::Serialize,
+        T: data_serialization::Serialize,
     {
         struct JsonWriter<'a>(&'a mut EventDataWriter);
         impl std::io::Write for JsonWriter<'_> {

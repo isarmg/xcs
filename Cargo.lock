@@ -372,7 +372,7 @@ version = "2.11.1"
 name = "data-serialization"
 version = "1.0.229"
 dependencies = [
- "serialization-core",
+ "itoa",
  "serialization-derive",
 ]
 
@@ -630,9 +630,9 @@ name = "hash-table"
 version = "0.17.1"
 dependencies = [
  "allocator-api2",
+ "data-serialization",
  "equivalent",
  "foldhash",
- "serialization-core",
 ]
 
 [[package]]
@@ -685,6 +685,7 @@ version = "0.8.9"
 dependencies = [
  "axum-macros",
  "bytes",
+ "data-serialization",
  "form-codec",
  "form_urlencoded",
  "futures",
@@ -698,8 +699,6 @@ dependencies = [
  "mime",
  "percent-encoding",
  "pin-project-lite",
- "serialization-core",
- "serialization-error-path",
  "service-stack",
  "sync_wrapper",
  "tokio",
@@ -856,9 +855,9 @@ dependencies = [
 name = "indexmap"
 version = "2.14.2"
 dependencies = [
+ "data-serialization",
  "equivalent",
  "hash-table",
- "serialization-core",
 ]
 
 [[package]]
@@ -893,9 +892,9 @@ dependencies = [
 name = "json-codec"
 version = "1.0.154"
 dependencies = [
+ "data-serialization",
  "itoa",
  "memchr",
- "serialization-core",
  "zmij",
 ]
 
@@ -1463,24 +1462,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "serialization-core"
-version = "1.0.229"
-
-[[package]]
 name = "serialization-derive"
 version = "1.0.229"
 dependencies = [
  "proc-macro2",
  "quote",
  "rust-syntax",
-]
-
-[[package]]
-name = "serialization-error-path"
-version = "0.1.20"
-dependencies = [
- "itoa",
- "serialization-core",
 ]
 
 [[package]]
@@ -1817,10 +1804,10 @@ dependencies = [
 name = "time"
 version = "0.3.55"
 dependencies = [
+ "data-serialization",
  "deranged",
  "num-conv",
  "powerfmt",
- "serialization-core",
  "time-core",
 ]
 

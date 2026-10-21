@@ -9,11 +9,11 @@
 use core::marker::PhantomData;
 
 #[cfg(feature = "parsing")]
-use serialization_core::Deserializer;
+use data_serialization::Deserializer;
 #[cfg(feature = "formatting")]
-use serialization_core::ser::Error as _;
+use data_serialization::ser::Error as _;
 #[cfg(feature = "formatting")]
-use serialization_core::{Serialize, Serializer};
+use data_serialization::{Serialize, Serializer};
 
 #[cfg(feature = "parsing")]
 use super::Visitor;

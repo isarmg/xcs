@@ -7,7 +7,7 @@ use crate::store::*;
 use alloc::vec::Vec;
 use core::fmt;
 use core::marker::PhantomData;
-use serialization_core::{
+use data_serialization::{
     de::{MapAccess, SeqAccess, Visitor},
     ser::{SerializeMap, SerializeSeq},
     Deserialize, Deserializer, Serialize, Serializer,

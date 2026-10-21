@@ -45,7 +45,7 @@ rustc_1_55 = []
 rustc_1_57 = []
 rustc_1_61 = ["rustc_1_57"]
 schemars = ["alloc"]
-serialization = ["dep:serialization-core"]
+serialization = ["dep:data-serialization"]
 std = ["alloc"]
 tinyvec_macros = []
 
@@ -53,8 +53,8 @@ tinyvec_macros = []
 name = "tinyvec"
 path = "src/lib.rs"
 
-[dependencies.serialization-core]
-version = "1.0"
+[dependencies.data-serialization]
+version = "1.0.229"
 optional = true
 default-features = false
-path = "../serialization-core"
+path = "../data-serialization"

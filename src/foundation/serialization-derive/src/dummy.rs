@@ -23,7 +23,6 @@ pub fn wrap_in_const(serialization_path: Option<&rust_syntax::Path>, code: Token
         const _: () = {
             #use_serialization
 
-            _serialization::__require_serialization_not_serialization_core!();
 
             #code
         };

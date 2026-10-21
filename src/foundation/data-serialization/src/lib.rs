@@ -1,117 +1,14 @@
-//! # Serde
-//!
-//! Serde is a framework for ***ser***ializing and ***de***serializing Rust data
-//! structures efficiently and generically.
-//!
-//! The Serde ecosystem consists of data structures that know how to serialize
-//! and deserialize themselves along with data formats that know how to
-//! serialize and deserialize other things. Serde provides the layer by which
-//! these two groups interact with each other, allowing any supported data
-//! structure to be serialized and deserialized using any supported data format.
-//!
-//! See the Serde website <https://serde.rs> for additional documentation and
-//! usage examples.
-//!
-//! ## Design
-//!
-//! Where many other languages rely on runtime reflection for serializing data,
-//! Serde is instead built on Rust's powerful trait system. A data structure
-//! that knows how to serialize and deserialize itself is one that implements
-//! Serde's `Serialize` and `Deserialize` traits (or uses Serde's derive
-//! attribute to automatically generate implementations at compile time). This
-//! avoids any overhead of reflection or runtime type information. In fact in
-//! many situations the interaction between data structure and data format can
-//! be completely optimized away by the Rust compiler, leaving Serde
-//! serialization to perform the same speed as a handwritten serializer for the
-//! specific selection of data structure and data format.
-//!
-//! ## Data formats
-//!
-//! The following is a partial list of data formats that have been implemented
-//! for Serde by the community.
-//!
-//! - [JSON], the ubiquitous JavaScript Object Notation used by many HTTP APIs.
-//! - [Postcard], a no\_std and embedded-systems friendly compact binary format.
-//! - [CBOR], a Concise Binary Object Representation designed for small message
-//!   size without the need for version negotiation.
-//! - [YAML], a self-proclaimed human-friendly configuration language that ain't
-//!   markup language.
-//! - [MessagePack], an efficient binary format that resembles a compact JSON.
-//! - [TOML], a minimal configuration format used by [Cargo].
-//! - [Pickle], a format common in the Python world.
-//! - [RON], a Rusty Object Notation.
-//! - [BSON], the data storage and network transfer format used by MongoDB.
-//! - [Avro], a binary format used within Apache Hadoop, with support for schema
-//!   definition.
-//! - [JSON5], a superset of JSON including some productions from ES5.
-//! - [URL] query strings, in the x-www-form-urlencoded format.
-//! - [Starlark], the format used for describing build targets by the Bazel and
-//!   Buck build systems. *(serialization only)*
-//! - [Envy], a way to deserialize environment variables into Rust structs.
-//!   *(deserialization only)*
-//! - [Envy Store], a way to deserialize [AWS Parameter Store] parameters into
-//!   Rust structs. *(deserialization only)*
-//! - [S-expressions], the textual representation of code and data used by the
-//!   Lisp language family.
-//! - [D-Bus]'s binary wire format.
-//! - [FlexBuffers], the schemaless cousin of Google's FlatBuffers zero-copy
-//!   serialization format.
-//! - [Bencode], a simple binary format used in the BitTorrent protocol.
-//! - [Token streams], for processing Rust procedural macro input.
-//!   *(deserialization only)*
-//! - [DynamoDB Items], the format used by [rusoto_dynamodb] to transfer data to
-//!   and from DynamoDB.
-//! - [Hjson], a syntax extension to JSON designed around human reading and
-//!   editing. *(deserialization only)*
-//! - [CSV], Comma-separated values is a tabular text file format.
-//!
-//! [JSON]: https://github.com/serde-rs/json
-//! [Postcard]: https://github.com/jamesmunns/postcard
-//! [CBOR]: https://github.com/enarx/ciborium
-//! [YAML]: https://github.com/dtolnay/serde-yaml
-//! [MessagePack]: https://github.com/3Hren/msgpack-rust
-//! [TOML]: https://docs.rs/toml
-//! [Pickle]: https://github.com/birkenfeld/serde-pickle
-//! [RON]: https://github.com/ron-rs/ron
-//! [BSON]: https://github.com/mongodb/bson-rust
-//! [Avro]: https://docs.rs/apache-avro
-//! [JSON5]: https://github.com/callum-oakley/json5-rs
-//! [URL]: https://docs.rs/serde_qs
-//! [Starlark]: https://github.com/dtolnay/serde-starlark
-//! [Envy]: https://github.com/softprops/envy
-//! [Envy Store]: https://github.com/softprops/envy-store
-//! [Cargo]: https://doc.rust-lang.org/cargo/reference/manifest.html
-//! [AWS Parameter Store]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html
-//! [S-expressions]: https://github.com/rotty/lexpr-rs
-//! [D-Bus]: https://docs.rs/zvariant
-//! [FlexBuffers]: https://github.com/google/flatbuffers/tree/master/rust/flexbuffers
-//! [Bencode]: https://github.com/P3KI/bendy
-//! [Token streams]: https://github.com/oxidecomputer/serde_tokenstream
-//! [DynamoDB Items]: https://docs.rs/serde_dynamo
-//! [rusoto_dynamodb]: https://docs.rs/rusoto_dynamodb
-//! [Hjson]: https://github.com/Canop/deser-hjson
-//! [CSV]: https://docs.rs/csv
-
+//! Serialization traits, derives and optional structured error paths.
 ////////////////////////////////////////////////////////////////////////////////
 
 // Serde types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/serde/1.0.229")]
+#![doc(html_root_url = "https://docs.rs/serde_core/1.0.229")]
 // Support using Serde without the standard library!
 #![cfg_attr(not(feature = "std"), no_std)]
 // Show which crate feature enables conditionally compiled APIs in documentation.
 #![cfg_attr(docsrs, feature(doc_cfg, rustdoc_internals))]
 #![cfg_attr(docsrs, allow(internal_features))]
-// Unstable functionality only if the user asks for it. For tracking and
-// discussion of these features please refer to this issue:
-//
-//    https://github.com/serde-rs/serde/issues/812
-#![cfg_attr(all(feature = "unstable", docsrs), feature(never_type))]
-#![allow(
-    unknown_lints,
-    bare_trait_objects,
-    deprecated,
-    mismatched_lifetime_syntaxes
-)]
+#![allow(unknown_lints, bare_trait_objects, deprecated)]
 // Ignored clippy and clippy_pedantic lints
 #![allow(
     // clippy bug: https://github.com/rust-lang/rust-clippy/issues/5704
@@ -168,118 +65,170 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-// Rustdoc has a lot of shortcomings related to cross-crate re-exports that make
-// the rendered documentation of serde_core traits in serde more challenging to
-// understand than the equivalent documentation of the same items in serde_core.
-// https://github.com/rust-lang/rust/labels/A-cross-crate-reexports
-// So, just for the purpose of docs.rs documentation, we inline the contents of
-// serde_core into serde. This sidesteps all the cross-crate rustdoc bugs.
-#[cfg(docsrs)]
 #[macro_use]
-#[path = "core/crate_root.rs"]
-mod crate_root;
-
-#[cfg(docsrs)]
-#[macro_use]
-#[path = "core/macros.rs"]
 mod macros;
 
-#[cfg(not(docsrs))]
-macro_rules! crate_root {
-    () => {
-        /// A facade around all the types we need from the `std`, `core`, and `alloc`
-        /// crates. This avoids elaborate import wrangling having to happen in every
-        /// module.
-        mod lib {
-            mod core {
-                #[cfg(not(feature = "std"))]
-                pub use core::*;
-                #[cfg(feature = "std")]
-                pub use std::*;
-            }
+/// A facade around all the types we need from the `std`, `core`, and `alloc`
+/// crates. This avoids elaborate import wrangling having to happen in every
+/// module.
+mod lib {
+    mod core {
+        #[cfg(not(feature = "std"))]
+        pub use core::*;
+        #[cfg(feature = "std")]
+        pub use std::*;
+    }
 
-            pub use self::core::{f32, f64};
-            pub use self::core::{ptr, str};
+    #[cfg(feature = "derive")]
+    pub use self::core::{clone, convert, default, option, ptr};
+    pub use self::core::{f32, f64};
+    pub use self::core::{iter, num, str};
 
-            #[cfg(any(feature = "std", feature = "alloc"))]
-            pub use self::core::slice;
+    #[cfg(all(feature = "derive", any(feature = "std", feature = "alloc")))]
+    pub use self::core::slice;
+    #[cfg(any(feature = "std", feature = "alloc"))]
+    pub use self::core::{cmp, mem};
 
-            pub use self::core::clone;
-            pub use self::core::convert;
-            pub use self::core::default;
-            pub use self::core::fmt::{self, Debug, Display, Write as FmtWrite};
-            pub use self::core::marker::{self, PhantomData};
-            pub use self::core::option;
-            pub use self::core::result;
+    pub use self::core::cell::{Cell, RefCell};
+    pub use self::core::cmp::Reverse;
+    pub use self::core::fmt::{self, Debug, Display, Write as FmtWrite};
+    #[cfg(feature = "derive")]
+    pub use self::core::marker;
+    pub use self::core::marker::PhantomData;
+    pub use self::core::num::Wrapping;
+    pub use self::core::ops::{Bound, Range, RangeFrom, RangeInclusive, RangeTo};
+    #[cfg(feature = "derive")]
+    pub use self::core::result;
+    pub use self::core::time::Duration;
 
-            #[cfg(all(feature = "alloc", not(feature = "std")))]
-            pub use alloc::borrow::{Cow, ToOwned};
-            #[cfg(feature = "std")]
-            pub use std::borrow::{Cow, ToOwned};
+    #[cfg(all(feature = "alloc", not(feature = "std")))]
+    pub use alloc::borrow::{Cow, ToOwned};
+    #[cfg(feature = "std")]
+    pub use std::borrow::{Cow, ToOwned};
 
-            #[cfg(all(feature = "alloc", not(feature = "std")))]
-            pub use alloc::string::{String, ToString};
-            #[cfg(feature = "std")]
-            pub use std::string::{String, ToString};
+    #[cfg(all(feature = "alloc", not(feature = "std")))]
+    pub use alloc::string::{String, ToString};
+    #[cfg(feature = "std")]
+    pub use std::string::{String, ToString};
 
-            #[cfg(all(feature = "alloc", not(feature = "std")))]
-            pub use alloc::vec::Vec;
-            #[cfg(feature = "std")]
-            pub use std::vec::Vec;
+    #[cfg(all(feature = "alloc", not(feature = "std")))]
+    pub use alloc::vec::Vec;
+    #[cfg(feature = "std")]
+    pub use std::vec::Vec;
 
-            #[cfg(all(feature = "alloc", not(feature = "std")))]
-            pub use alloc::boxed::Box;
-            #[cfg(feature = "std")]
-            pub use std::boxed::Box;
+    #[cfg(all(feature = "alloc", not(feature = "std")))]
+    pub use alloc::boxed::Box;
+    #[cfg(feature = "std")]
+    pub use std::boxed::Box;
+
+    #[cfg(all(feature = "rc", feature = "alloc", not(feature = "std")))]
+    pub use alloc::rc::{Rc, Weak as RcWeak};
+    #[cfg(all(feature = "rc", feature = "std"))]
+    pub use std::rc::{Rc, Weak as RcWeak};
+
+    #[cfg(all(feature = "rc", feature = "alloc", not(feature = "std")))]
+    pub use alloc::sync::{Arc, Weak as ArcWeak};
+    #[cfg(all(feature = "rc", feature = "std"))]
+    pub use std::sync::{Arc, Weak as ArcWeak};
+
+    #[cfg(all(feature = "alloc", not(feature = "std")))]
+    pub use alloc::collections::{BTreeMap, BTreeSet, BinaryHeap, LinkedList, VecDeque};
+    #[cfg(feature = "std")]
+    pub use std::collections::{BTreeMap, BTreeSet, BinaryHeap, LinkedList, VecDeque};
+
+    #[cfg(not(feature = "std"))]
+    pub use self::core::ffi::CStr;
+    #[cfg(feature = "std")]
+    pub use std::ffi::CStr;
+
+    #[cfg(all(feature = "alloc", not(feature = "std")))]
+    pub use alloc::ffi::CString;
+    #[cfg(feature = "std")]
+    pub use std::ffi::CString;
+
+    #[cfg(not(feature = "std"))]
+    pub use self::core::net;
+    #[cfg(feature = "std")]
+    pub use std::net;
+
+    #[cfg(feature = "std")]
+    pub use std::error;
+
+    #[cfg(feature = "std")]
+    pub use std::collections::{HashMap, HashSet};
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    pub use std::ffi::{OsStr, OsString};
+    #[cfg(feature = "std")]
+    pub use std::hash::{BuildHasher, Hash};
+    #[cfg(feature = "std")]
+    pub use std::io::Write;
+    #[cfg(feature = "std")]
+    pub use std::path::{Path, PathBuf};
+    #[cfg(feature = "std")]
+    pub use std::sync::{Mutex, RwLock};
+    #[cfg(feature = "std")]
+    pub use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[cfg(feature = "std")]
+    pub use std::sync::atomic::Ordering;
+    #[cfg(all(feature = "std", target_has_atomic = "8"))]
+    pub use std::sync::atomic::{AtomicBool, AtomicI8, AtomicU8};
+    #[cfg(all(feature = "std", target_has_atomic = "16"))]
+    pub use std::sync::atomic::{AtomicI16, AtomicU16};
+    #[cfg(all(feature = "std", target_has_atomic = "32"))]
+    pub use std::sync::atomic::{AtomicI32, AtomicU32};
+    #[cfg(all(feature = "std", target_has_atomic = "64"))]
+    pub use std::sync::atomic::{AtomicI64, AtomicU64};
+    #[cfg(all(feature = "std", target_has_atomic = "ptr"))]
+    pub use std::sync::atomic::{AtomicIsize, AtomicUsize};
+
+    pub use self::core::num::Saturating;
+}
+
+// None of this crate's error handling needs the `From::from` error conversion
+// performed implicitly by the `?` operator or the standard library's `try!`
+// macro. This simplified macro gives a 5.5% improvement in compile time
+// compared to standard `try!`, and 9% improvement compared to `?`.
+macro_rules! tri {
+    ($expr:expr) => {
+        match $expr {
+            Ok(val) => val,
+            Err(err) => return Err(err),
         }
-
-        // None of this crate's error handling needs the `From::from` error conversion
-        // performed implicitly by the `?` operator or the standard library's `try!`
-        // macro. This simplified macro gives a 5.5% improvement in compile time
-        // compared to standard `try!`, and 9% improvement compared to `?`.
-        #[cfg(not(no_serialization_derive))]
-        macro_rules! tri {
-            ($expr:expr) => {
-                match $expr {
-                    Ok(val) => val,
-                    Err(err) => return Err(err),
-                }
-            };
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////
-
-        pub use serialization_core::{
-            de, forward_to_deserialize_any, ser, Deserialize, Deserializer, Serialize, Serializer,
-        };
-
-        // Used by generated code and doc tests. Not public API.
-        #[doc(hidden)]
-        mod private;
-
-        include!(concat!(env!("OUT_DIR"), "/private.rs"));
     };
 }
+pub mod de;
+mod format;
+pub mod ser;
 
-crate_root!();
+#[doc(inline)]
+pub use crate::de::{Deserialize, Deserializer};
+#[doc(inline)]
+pub use crate::ser::{Serialize, Serializer};
 
-mod integer128;
+// Used by generated code. Not public API.
+#[doc(hidden)]
+mod private;
 
-// Re-export #[derive(Serialize, Deserialize)].
-//
-// The reason re-exporting is not enabled by default is that disabling it would
-// be annoying for crates that provide handwritten impls or data formats. They
-// would need to disable default features and then explicitly re-enable std.
-#[cfg(feature = "serialization-derive")]
-extern crate serialization_derive;
+// Used by declarative macro generated code. Not public API.
+#[doc(hidden)]
+pub mod __private {
+    #[doc(hidden)]
+    pub use crate::private::doc;
+    #[doc(hidden)]
+    pub use core::result::Result;
+}
 
-/// Derive macro available if serde is built with `features = ["derive"]`.
-#[cfg(feature = "serialization-derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
+#[doc(hidden)]
+pub mod __derive_support {
+    #[doc(hidden)]
+    pub use crate::private::*;
+}
+
+#[cfg(feature = "derive")]
+/// Derive serialization implementations.
 pub use serialization_derive::{Deserialize, Serialize};
 
-#[macro_export]
-#[doc(hidden)]
-macro_rules! __require_serialization_not_serialization_core {
-    () => {};
-}
+#[cfg(feature = "error-path")]
+/// Track field, map and sequence locations in serialization errors.
+pub mod error_path;

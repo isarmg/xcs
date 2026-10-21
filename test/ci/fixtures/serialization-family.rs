@@ -49,7 +49,7 @@ fn protocol_tokens_and_error_path() {
     assert_eq!(wire::END_FIELD, "$__serde_spanned_private_end");
     assert_eq!(wire::VALUE_FIELD, "$__serde_spanned_private_value");
     let mut de = json_codec::Deserializer::from_str(r#"{"fieldName":1}"#);
-    let err = serialization_error_path::deserialize::<_, Sample>(&mut de).unwrap_err();
+    let err = data_serialization::error_path::deserialize::<_, Sample>(&mut de).unwrap_err();
     assert_eq!(err.path().to_string(), "fieldName");
 }
 

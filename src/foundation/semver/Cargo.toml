@@ -34,9 +34,8 @@ name = "semver"
 path = "src/lib.rs"
 
 [dependencies.data-serialization]
-version = "1.0.220"
+version = "1.0.229"
 optional = true
 default-features = false
-package = "serialization-core"
-path = "../serialization-core"
+path = "../data-serialization"
 

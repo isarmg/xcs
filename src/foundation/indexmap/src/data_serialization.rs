@@ -1,10 +1,10 @@
 #![cfg_attr(docsrs, doc(cfg(feature = "serialization")))]
 
-use serialization_core::de::value::{MapDeserializer, SeqDeserializer};
-use serialization_core::de::{
+use data_serialization::de::value::{MapDeserializer, SeqDeserializer};
+use data_serialization::de::{
     Deserialize, Deserializer, Error, IntoDeserializer, MapAccess, SeqAccess, Visitor,
 };
-use serialization_core::ser::{Serialize, Serializer};
+use data_serialization::ser::{Serialize, Serializer};
 
 use core::fmt::{self, Formatter};
 use core::hash::{BuildHasher, Hash};

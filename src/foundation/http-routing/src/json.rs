@@ -7,7 +7,7 @@ use http::{
     header::{self, HeaderMap, HeaderValue},
     StatusCode,
 };
-use serialization_core::{de::DeserializeOwned, Serialize};
+use data_serialization::{de::DeserializeOwned, Serialize};
 
 /// JSON Extractor / Response.
 ///
@@ -171,7 +171,7 @@ where
     /// constructing a `Json<T>`.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, JsonRejection> {
         // Extracted into separate fn so it's only compiled once for all T.
-        fn make_rejection(err: serialization_error_path::Error<json_codec::Error>) -> JsonRejection {
+        fn make_rejection(err: data_serialization::error_path::Error<json_codec::Error>) -> JsonRejection {
             match err.inner().classify() {
                 json_codec::error::Category::Data => JsonDataError::from_err(err).into(),
                 json_codec::error::Category::Syntax | json_codec::error::Category::Eof => {
@@ -191,7 +191,7 @@ where
 
         let mut deserializer = json_codec::Deserializer::from_slice(bytes);
 
-        serialization_error_path::deserialize(&mut deserializer)
+        data_serialization::error_path::deserialize(&mut deserializer)
             .map_err(make_rejection)
             .and_then(|value| {
                 deserializer

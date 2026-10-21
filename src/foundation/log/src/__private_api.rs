@@ -145,7 +145,7 @@ mod kv_support {
     }
 
     #[cfg(feature = "kv_serialization")]
-    pub fn capture_serialization<'a, V: serialization_core::Serialize + ?Sized>(v: &'a &'a V) -> Value<'a> {
+    pub fn capture_serialization<'a, V: data_serialization::Serialize + ?Sized>(v: &'a &'a V) -> Value<'a> {
         Value::from_serialization(v)
     }
 }

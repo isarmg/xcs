@@ -1,6 +1,6 @@
 use super::{rejection::*, FromRequestParts};
 use http::{request::Parts, Uri};
-use serialization_core::de::DeserializeOwned;
+use data_serialization::de::DeserializeOwned;
 
 /// Extractor that deserializes query strings into some type.
 ///
@@ -89,7 +89,7 @@ where
         let query = value.query().unwrap_or_default();
         let deserializer =
             form_codec::Deserializer::new(form_urlencoded::parse(query.as_bytes()));
-        let params = serialization_error_path::deserialize(deserializer)
+        let params = data_serialization::error_path::deserialize(deserializer)
             .map_err(FailedToDeserializeQueryString::from_err)?;
         Ok(Query(params))
     }

@@ -27,7 +27,7 @@ repository = "https://github.com/indexmap-rs/indexmap"
 
 [features]
 default = ["std"]
-serialization = ["dep:serialization-core"]
+serialization = ["dep:data-serialization"]
 std = []
 test_debug = []
 
@@ -51,11 +51,11 @@ version = "1.9"
 optional = true
 path = "../rayon"
 
-[dependencies.serialization-core]
-version = "1.0.220"
+[dependencies.data-serialization]
+version = "1.0.229"
 optional = true
 default-features = false
-path = "../serialization-core"
+path = "../data-serialization"
 
 [lints.clippy]
 style = "allow"

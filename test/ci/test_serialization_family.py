@@ -26,7 +26,7 @@ class SerializationGateTests(unittest.TestCase):
         CHECKER['check_source_paths'](ROOT)
 
     def test_private_family_requires_matching_versions_and_exact_pins(self):
-        names = ('data-serialization', 'serialization-core', 'serialization-derive')
+        names = ('data-serialization', 'serialization-derive')
         manifests = {name: {'package': {'version': '1.2.3'}} for name in names}
         manifests[names[0]]['dependencies'] = {name: {'version': '=1.2.3'} for name in names[1:]}
         CHECKER['validate_private_family'](manifests)
@@ -60,7 +60,7 @@ class SerializationGateTests(unittest.TestCase):
             if command[1] == 'generate-lockfile':
                 return subprocess.CompletedProcess(command, 0)
             error = ('cannot find attribute `serde`' if '#[serde(' in source.read_text()
-                     else 'Serialization derive requires a dependency on data-serialization, not serialization-core')
+                     else 'serialization_core')
             return subprocess.CompletedProcess(command, 101, '', error)
 
         with tempfile.TemporaryDirectory() as directory:

@@ -28,15 +28,14 @@ license = "MIT"
 repository = "https://github.com/tokio-rs/axum"
 
 [features]
-serialization = ["dep:data-serialization"]
 default = ["form", "http1", "json", "matched-path", "original-uri", "query", "tokio", "tower-log", "tracing"]
-form = ["dep:form_urlencoded", "dep:form-codec", "dep:serialization-error-path"]
+form = ["dep:form_urlencoded", "dep:form-codec", "data-serialization/error-path"]
 http1 = ["http-transport/http1"]
-json = ["dep:json-codec", "dep:serialization-error-path"]
+json = ["dep:json-codec", "data-serialization/error-path"]
 macros = ["dep:axum-macros"]
 matched-path = []
 original-uri = []
-query = ["dep:form_urlencoded", "dep:form-codec", "dep:serialization-error-path"]
+query = ["dep:form_urlencoded", "dep:form-codec", "data-serialization/error-path"]
 tokio = ["dep:http-transport", "dep:tokio", "tokio/net", "tokio/rt", "service-stack/make", "tokio/macros", "http-transport/adapter-server", "http-transport/service-adapter", "http-transport/tokio"]
 tower-log = ["service-stack/log"]
 tracing = ["dep:tracing"]
@@ -100,13 +99,10 @@ version = "0.2.7"
 path = "../pin-project-lite"
 
 [dependencies.data-serialization]
-version = "1.0.211"
-optional = true
+version = "1.0.229"
+optional = false
 path = "../data-serialization"
-
-[dependencies.serialization-core]
-version = "1.0.221"
-path = "../serialization-core"
+default-features = true
 
 [dependencies.json-codec]
 version = "1.0"
@@ -114,10 +110,6 @@ features = ["raw_value"]
 optional = true
 path = "../json-codec"
 
-[dependencies.serialization-error-path]
-version = "0.1.8"
-optional = true
-path = "../serialization-error-path"
 
 [dependencies.form-codec]
 version = "0.7"

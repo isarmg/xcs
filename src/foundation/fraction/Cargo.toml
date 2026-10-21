@@ -36,7 +36,7 @@ with-decimal = []
 with-dynaint = []
 with-juniper-support = []
 with-postgres-support = ["bytes"]
-with-serialization-support = ["serialization", "serialization-derive", "numeric/serialization"]
+with-serialization-support = ["serialization", "data-serialization/derive", "numeric/serialization"]
 with-unicode = []
 
 [lib]
@@ -49,14 +49,9 @@ optional = true
 path = "../bytes"
 
 [dependencies.data-serialization]
-version = "1"
+version = "1.0.229"
 optional = true
 path = "../data-serialization"
-
-[dependencies.serialization-derive]
-version = "1"
-optional = true
-path = "../serialization-derive"
 
 
 [dependencies.numeric]

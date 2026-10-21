@@ -182,6 +182,12 @@
     {
       "tool": "python3",
       "args": [
+        ".github/scripts/check-serialization-consolidation.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
         ".github/scripts/check-error-definition-family.py"
       ]
     },

@@ -9,7 +9,7 @@
 macro_rules! item {
     ($seq:expr, $name:literal) => {
         $seq.next_element()?
-            .ok_or_else(|| <A::Error as serialization_core::de::Error>::custom(concat!("expected ", $name)))
+            .ok_or_else(|| <A::Error as data_serialization::de::Error>::custom(concat!("expected ", $name)))
     };
 }
 
@@ -27,8 +27,8 @@ use alloc::string::ToString;
 use core::marker::PhantomData;
 
 #[cfg(feature = "serialization-human-readable")]
-use serialization_core::ser::Error as _;
-use serialization_core::{Deserialize, Deserializer, Serialize, Serializer};
+use data_serialization::ser::Error as _;
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 
 use self::visitor::Visitor;

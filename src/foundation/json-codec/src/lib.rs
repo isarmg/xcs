@@ -379,7 +379,7 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-extern crate serialization_core as data_serialization;
+extern crate data_serialization;
 
 // Not public API. Used from macro-generated code.
 #[doc(hidden)]

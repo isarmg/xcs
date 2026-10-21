@@ -1,10 +1,10 @@
-#![cfg(feature = "serialization-core")]
+#![cfg(feature = "serialization")]
 
-use serialization_core::de::{
+use data_serialization::de::{
     Deserialize, DeserializeSeed, Deserializer, EnumAccess, Error, Unexpected, VariantAccess,
     Visitor,
 };
-use serialization_core::ser::{Serialize, Serializer};
+use data_serialization::ser::{Serialize, Serializer};
 
 use crate::{Level, LevelFilter, LOG_LEVEL_NAMES};
 

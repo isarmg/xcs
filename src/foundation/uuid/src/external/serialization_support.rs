@@ -18,7 +18,7 @@ use crate::{
     std::fmt,
     Bytes, Uuid,
 };
-use serialization_core::{
+use data_serialization::{
     de::{self, Error as _},
     Deserialize, Deserializer, Serialize, Serializer,
 };
@@ -36,7 +36,7 @@ impl Serialize for Uuid {
 impl Serialize for NonNilUuid {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
         Uuid::from(*self).serialize(serializer)
     }
@@ -270,7 +270,7 @@ impl<'de> Deserialize<'de> for Urn {
 impl<'de> Deserialize<'de> for NonNilUuid {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serialization_core::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         let uuid = Uuid::deserialize(deserializer)?;
 
@@ -290,9 +290,9 @@ pub mod compact {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
-        serialization_core::Serialize::serialize(u.as_bytes(), serializer)
+        data_serialization::Serialize::serialize(u.as_bytes(), serializer)
     }
 
     /// Deserialize a `[u8; 16]` as a [`Uuid`]
@@ -300,9 +300,9 @@ pub mod compact {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-        D: serialization_core::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
-        let bytes: [u8; 16] = serialization_core::Deserialize::deserialize(deserializer)?;
+        let bytes: [u8; 16] = data_serialization::Deserialize::deserialize(deserializer)?;
 
         Ok(crate::Uuid::from_bytes(bytes))
     }
@@ -312,7 +312,7 @@ pub mod compact {
         /// Serialize an optional [`Uuid`](crate::Uuid) as an optional `[u8; 16]`.
         pub fn serialize<S>(u: &Option<crate::Uuid>, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serialization_core::Serializer,
+            S: data_serialization::Serializer,
         {
             match u {
                 Some(u) => serializer.serialize_some(u.as_bytes()),
@@ -323,9 +323,9 @@ pub mod compact {
         /// Deserialize an optional `[u8; 16]` as an optional [`Uuid`](crate::Uuid).
         pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<crate::Uuid>, D::Error>
         where
-            D: serialization_core::Deserializer<'de>,
+            D: data_serialization::Deserializer<'de>,
         {
-            <Option<[u8; 16]> as serialization_core::Deserialize>::deserialize(deserializer)
+            <Option<[u8; 16]> as data_serialization::Deserialize>::deserialize(deserializer)
                 .map(|bytes| bytes.map(crate::Uuid::from_bytes))
         }
     }
@@ -344,7 +344,7 @@ include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/uuid/uni
 /// integers.
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
-/// [`serialize_bytes`]: serialization_core::Serializer::serialize_bytes
+/// [`serialize_bytes`]: data_serialization::Serializer::serialize_bytes
 ///
 /// ## Examples
 ///
@@ -361,14 +361,14 @@ pub mod bytes {
 
     struct ByteUuid(crate::Uuid);
 
-    impl serialization_core::Serialize for ByteUuid {
-        fn serialize<S: serialization_core::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    impl data_serialization::Serialize for ByteUuid {
+        fn serialize<S: data_serialization::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
             serializer.serialize_bytes(self.0.as_bytes())
         }
     }
 
-    impl<'de> serialization_core::Deserialize<'de> for ByteUuid {
-        fn deserialize<D: serialization_core::Deserializer<'de>>(
+    impl<'de> data_serialization::Deserialize<'de> for ByteUuid {
+        fn deserialize<D: data_serialization::Deserializer<'de>>(
             deserializer: D,
         ) -> Result<Self, D::Error> {
             deserializer
@@ -384,7 +384,7 @@ pub mod bytes {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
         ByteUuid(*u).serialize(serializer)
     }
@@ -394,7 +394,7 @@ pub mod bytes {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-        D: serialization_core::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         ByteUuid::deserialize(deserializer).map(|u| u.0)
     }
@@ -406,7 +406,7 @@ pub mod bytes {
         /// Serialize an optional [`Uuid`](crate::Uuid) as an optional byte string.
         pub fn serialize<S>(u: &Option<crate::Uuid>, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serialization_core::Serializer,
+            S: data_serialization::Serializer,
         {
             match u {
                 Some(u) => serializer.serialize_some(&ByteUuid(*u)),
@@ -417,7 +417,7 @@ pub mod bytes {
         /// Deserialize an optional byte string as an optional [`Uuid`](crate::Uuid).
         pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<crate::Uuid>, D::Error>
         where
-            D: serialization_core::Deserializer<'de>,
+            D: data_serialization::Deserializer<'de>,
         {
             Option::<ByteUuid>::deserialize(deserializer).map(|u| u.map(|u| u.0))
         }
@@ -472,9 +472,9 @@ pub mod simple {
     /// ```
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
-        serialization_core::Serialize::serialize(u.as_simple(), serializer)
+        data_serialization::Serialize::serialize(u.as_simple(), serializer)
     }
 
     /// Deserialize a simple-formatted string as a [`Uuid`].
@@ -482,7 +482,7 @@ pub mod simple {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Uuid, D::Error>
     where
-        D: serialization_core::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         Ok(Simple::deserialize(deserializer)?.into())
     }
@@ -494,7 +494,7 @@ pub mod simple {
         /// Serialize an optional [`Uuid`](crate::Uuid) in the simple format.
         pub fn serialize<S>(u: &Option<Uuid>, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serialization_core::Serializer,
+            S: data_serialization::Serializer,
         {
             match u {
                 Some(u) => serializer.serialize_some(u.as_simple()),
@@ -505,7 +505,7 @@ pub mod simple {
         /// Deserialize an optional simple string as an optional [`Uuid`](crate::Uuid).
         pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Uuid>, D::Error>
         where
-            D: serialization_core::Deserializer<'de>,
+            D: data_serialization::Deserializer<'de>,
         {
             Option::<Simple>::deserialize(deserializer).map(|u| u.map(Into::into))
         }
@@ -560,9 +560,9 @@ pub mod braced {
     /// ```
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
-        serialization_core::Serialize::serialize(u.as_braced(), serializer)
+        data_serialization::Serialize::serialize(u.as_braced(), serializer)
     }
 
     /// Deserialize a braced-formatted string as a [`Uuid`].
@@ -570,7 +570,7 @@ pub mod braced {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-        D: serialization_core::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         Ok(Braced::deserialize(deserializer)?.into())
     }
@@ -582,7 +582,7 @@ pub mod braced {
         /// Serialize an optional [`Uuid`](crate::Uuid) in the braced format.
         pub fn serialize<S>(u: &Option<Uuid>, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serialization_core::Serializer,
+            S: data_serialization::Serializer,
         {
             match u {
                 Some(u) => serializer.serialize_some(u.as_braced()),
@@ -593,7 +593,7 @@ pub mod braced {
         /// Deserialize an optional braced string as an optional [`Uuid`](crate::Uuid).
         pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Uuid>, D::Error>
         where
-            D: serialization_core::Deserializer<'de>,
+            D: data_serialization::Deserializer<'de>,
         {
             Option::<Braced>::deserialize(deserializer).map(|u| u.map(Into::into))
         }
@@ -649,9 +649,9 @@ pub mod hyphenated {
     /// ```
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
-        serialization_core::Serialize::serialize(u.as_hyphenated(), serializer)
+        data_serialization::Serialize::serialize(u.as_hyphenated(), serializer)
     }
 
     /// Deserialize a hyphenated-formatted string as a [`Uuid`].
@@ -659,7 +659,7 @@ pub mod hyphenated {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-        D: serialization_core::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         Ok(Hyphenated::deserialize(deserializer)?.into())
     }
@@ -671,7 +671,7 @@ pub mod hyphenated {
         /// Serialize an optional [`Uuid`](crate::Uuid) in the hyphenated format.
         pub fn serialize<S>(u: &Option<Uuid>, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serialization_core::Serializer,
+            S: data_serialization::Serializer,
         {
             match u {
                 Some(u) => serializer.serialize_some(u.as_hyphenated()),
@@ -682,7 +682,7 @@ pub mod hyphenated {
         /// Deserialize an optional hyphenated string as an optional [`Uuid`](crate::Uuid).
         pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Uuid>, D::Error>
         where
-            D: serialization_core::Deserializer<'de>,
+            D: data_serialization::Deserializer<'de>,
         {
             Option::<Hyphenated>::deserialize(deserializer).map(|u| u.map(Into::into))
         }
@@ -737,9 +737,9 @@ pub mod urn {
     /// ```
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serialization_core::Serializer,
+        S: data_serialization::Serializer,
     {
-        serialization_core::Serialize::serialize(u.as_urn(), serializer)
+        data_serialization::Serialize::serialize(u.as_urn(), serializer)
     }
 
     /// Deserialize a URN-formatted string as a [`Uuid`].
@@ -747,7 +747,7 @@ pub mod urn {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-        D: serialization_core::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         Ok(Urn::deserialize(deserializer)?.into())
     }
@@ -759,7 +759,7 @@ pub mod urn {
         /// Serialize an optional [`Uuid`](crate::Uuid) in the URN format.
         pub fn serialize<S>(u: &Option<Uuid>, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serialization_core::Serializer,
+            S: data_serialization::Serializer,
         {
             match u {
                 Some(u) => serializer.serialize_some(u.as_urn()),
@@ -770,7 +770,7 @@ pub mod urn {
         /// Deserialize an optional URN string as an optional [`Uuid`](crate::Uuid).
         pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Uuid>, D::Error>
         where
-            D: serialization_core::Deserializer<'de>,
+            D: data_serialization::Deserializer<'de>,
         {
             Option::<Urn>::deserialize(deserializer).map(|u| u.map(Into::into))
         }

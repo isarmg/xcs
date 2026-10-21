@@ -5,7 +5,7 @@ use crate::{
     Flags,
 };
 use core::{fmt, str};
-use serialization_core::{
+use data_serialization::{
     de::{Error, Visitor},
     Deserialize, Deserializer, Serialize, Serializer,
 };

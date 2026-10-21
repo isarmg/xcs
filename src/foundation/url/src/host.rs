@@ -16,7 +16,7 @@ use core::fmt::{self, Formatter};
 
 use percent_encoding::{percent_decode, utf8_percent_encode, CONTROLS};
 #[cfg(feature = "serialization")]
-use serialization_derive::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 
 use crate::parser::{ParseError, ParseResult};
 
