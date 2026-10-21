@@ -1,8 +1,8 @@
 use crate::connection::{ConnectionHandle, ConnectionState};
 use crate::error::Error;
-use crate::logger::QueryLogger;
 use crate::statement::{StatementHandle, VirtualStatement};
 use crate::{SqliteArguments, SqliteQueryResult, SqliteRow};
+use sqlx_core::logger::QueryLogger;
 use sqlx_core::sql_str::SqlSafeStr;
 use sqlx_core::Either;
 
@@ -53,16 +53,6 @@ fn bind(
     }
 
     Ok(n)
-}
-
-impl ExecuteIter<'_> {
-    pub fn finish(self) -> Result<(), Error> {
-        for res in self {
-            let _ = res?;
-        }
-
-        Ok(())
-    }
 }
 
 impl Iterator for ExecuteIter<'_> {

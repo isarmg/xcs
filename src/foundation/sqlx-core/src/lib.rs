@@ -65,10 +65,7 @@ pub mod database;
 pub mod describe;
 pub mod executor;
 pub mod from_row;
-pub mod fs;
-pub mod io;
 pub mod logger;
-pub mod net;
 pub mod query_as;
 pub mod query_builder;
 pub mod query_scalar;
@@ -76,23 +73,11 @@ pub mod sql_str;
 
 pub mod raw_sql;
 pub mod row;
-pub mod rt;
+pub(crate) mod rt;
 pub mod sync;
-pub mod type_checking;
 pub mod type_info;
 pub mod value;
-
-#[cfg(feature = "migrate")]
-pub mod migrate;
-
-#[cfg(feature = "any")]
-pub mod any;
-
-// Implements test support with automatic DB management.
-#[cfg(feature = "migrate")]
-pub mod testing;
-
-pub mod config;
+pub mod value_debug;
 
 pub use error::{Error, Result};
 
@@ -103,8 +88,6 @@ pub use percent_encoding;
 pub use smallvec::SmallVec;
 pub use url::{self, Url};
 
-pub use bytes;
-
 /// Helper module to get drivers compiling again that used to be in this crate,
 /// to avoid having to replace tons of `use crate::<...>` imports.
 ///
@@ -112,8 +95,8 @@ pub use bytes;
 /// would want to implement itself.
 pub mod driver_prelude {
     pub use crate::{
-        acquire, common, decode, describe, encode, executor, ext, from_row, fs, io, logger, net,
-        pool, query, query_as, query_builder, query_scalar, rt, sync,
+        acquire, common, decode, describe, encode, executor, ext, from_row, logger, pool, query,
+        query_as, query_builder, query_scalar, sync,
     };
 
     pub use crate::error::{Error, Result};

@@ -112,7 +112,8 @@ class SuiteCoverageTests(unittest.TestCase):
         ))
 
     def test_foundation_runs_only_selected_library_regressions(self):
-        uapi, libc, syscalls, systems, parking, search_process, random_backends, system_units, ring, password, idna, helpers = self.suite("foundation")
+        sqlite, uapi, libc, syscalls, systems, parking, search_process, random_backends, system_units, ring, password, idna, helpers = self.suite("foundation")
+        self.assertEqual(sqlite, {"tool": "python3", "args": [".github/scripts/check-sqlite-scope.py"]})
         self.assertEqual(uapi, {"tool": "python3", "args": [".github/scripts/check-linux-uapi.py"]})
         self.assertEqual(libc, {"tool": "python3", "args": ["tools/rust-sources/check_libc_abi.py"]})
         self.assertEqual(syscalls, {"tool": "python3", "args": [".github/scripts/check-linux-syscalls.py"]})

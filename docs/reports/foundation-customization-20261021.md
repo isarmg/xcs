@@ -1,5 +1,7 @@
 # Foundation 项目定制与架构优化（2026-10-21）
 
+后续云端 SQLite 专用实现与验证见 [接续报告](foundation-sqlite-cloud-20261021.md)；本文 SQLx 保留决定记录的是此前阶段边界。
+
 本轮基线为 main `c6421fb5cd07d7c7d67bee087d59050d8d83a269`。已有工作区干净，已通过 fast-forward 拉取与 Git push dry-run。此前 Linux amd64 裁剪、后端矩阵、ring 测试材料恢复及 13 项 CI 结果属于先前工作，不计入本轮成果。
 
 ## 分析方法与范围

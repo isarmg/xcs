@@ -43,6 +43,7 @@ case "${1:-}" in
       -- --ignored --exact --test-threads=1
     ;;
   foundation)
+    python3 .github/scripts/check-sqlite-scope.py
     # Focused regressions for maintained foundation changes. Do not restore
     # retired upstream dev dependencies or run unrelated upstream test suites.
     # All preserved Linux ABI features, not only today's enabled dependency set.

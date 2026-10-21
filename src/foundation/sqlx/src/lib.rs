@@ -1,13 +1,4 @@
-#![cfg_attr(docsrs, feature(doc_cfg))]
-#![doc = include_str!("../../../../docs/upstream/sqlx-0.9.0/src/lib.md")]
-
-#[cfg(all(
-    feature = "sqlite-preupdate-hook",
-    not(any(feature = "sqlite", feature = "sqlite-unbundled"))
-))]
-compile_error!(
-    "sqlite-preupdate-hook requires either 'sqlite' or 'sqlite-unbundled' to be enabled"
-);
+//! Project SQLite facade: queries, transactions, pools and typed values.
 
 pub use sqlx_core::acquire::Acquire;
 pub use sqlx_core::arguments::{Arguments, IntoArguments};
@@ -41,52 +32,9 @@ pub use sqlx_core::Either;
 #[doc(inline)]
 pub use sqlx_core::error::{self, Error, Result};
 
-#[cfg(feature = "migrate")]
-pub use sqlx_core::migrate;
-
-
-
-
-
-#[cfg(feature = "_sqlite")]
-#[cfg_attr(docsrs, doc(cfg(feature = "_sqlite")))]
-#[doc(inline)]
 pub use sqlx_sqlite::{
     self as sqlite, Sqlite, SqliteConnection, SqliteExecutor, SqlitePool, SqliteTransaction,
 };
-
-#[cfg(feature = "any")]
-#[cfg_attr(docsrs, doc(cfg(feature = "any")))]
-pub use crate::any::{reexports::*, Any, AnyExecutor};
-
-
-
-// derives
-
-
-// We can't do our normal facade approach with an attribute, but thankfully we can now
-// have docs out-of-line quite easily.
-
-
-#[doc(hidden)]
-#[cfg(feature = "migrate")]
-pub use sqlx_core::testing;
-
-#[doc(hidden)]
-pub use sqlx_core::rt::test_block_on;
-
-#[cfg(feature = "any")]
-pub mod any;
-
-
-
-// macro support
-
-
-
-
-#[doc(hidden)]
-pub use sqlx_core::rt as __rt;
 
 /// Conversions between Rust and SQL types.
 ///
@@ -104,15 +52,11 @@ pub use sqlx_core::rt as __rt;
 /// [`Type`]: types::Type
 pub mod types {
     pub use sqlx_core::types::*;
-
-
 }
 
 /// Provides [`Encode`] for encoding values for the database.
 pub mod encode {
     pub use sqlx_core::encode::{Encode, IsNull};
-
-
 }
 
 pub use self::encode::Encode;
@@ -120,8 +64,6 @@ pub use self::encode::Encode;
 /// Provides [`Decode`] for decoding values from the database.
 pub mod decode {
     pub use sqlx_core::decode::Decode;
-
-
 }
 
 pub use self::decode::Decode;
@@ -147,20 +89,3 @@ pub mod prelude {
     pub use super::Statement;
     pub use super::Type;
 }
-
-#[cfg(feature = "_unstable-docs")]
-pub use sqlx_core::config as _config;
-
-// NOTE: APIs exported in this module are SemVer-exempt.
-#[doc(hidden)]
-pub mod _unstable {
-    pub use sqlx_core::config;
-}
-
-#[doc(hidden)]
-
-pub fn warn_on_ambiguous_inferred_date_time_crate() {}
-
-#[doc(hidden)]
-
-pub fn warn_on_ambiguous_inferred_numeric_crate() {}

@@ -3,10 +3,10 @@ use crate::database::Database;
 use crate::decode::Decode;
 use crate::error::{mismatched_types, Error};
 
-use crate::type_checking::TypeChecking;
 use crate::type_info::TypeInfo;
 use crate::types::Type;
 use crate::value::ValueRef;
+use crate::value_debug::ValueDebug;
 
 /// Represents a single row from the database.
 ///
@@ -182,7 +182,7 @@ pub fn debug_row<R>(row: &R, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Resul
 where
     R: Row,
     usize: ColumnIndex<R>,
-    <R as Row>::Database: TypeChecking,
+    <R as Row>::Database: ValueDebug,
 {
     write!(f, "{} ", std::any::type_name::<R>())?;
 

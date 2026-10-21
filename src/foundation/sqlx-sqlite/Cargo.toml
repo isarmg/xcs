@@ -26,17 +26,13 @@ repository = "https://github.com/launchbadge/sqlx"
 [features]
 _unstable-all-sqlite-features = ["deserialize", "load-extension", "preupdate-hook", "unlock-notify"]
 _unstable-all-types = ["json", "uuid"]
-_unstable-docs = ["bundled", "any", "_unstable-all-types", "_unstable-all-sqlite-features"]
-any = ["sqlx-core/any"]
 bundled = ["libsqlite3-sys/bundled"]
 deserialize = []
 json = ["sqlx-core/json", "serde"]
 load-extension = []
-migrate = ["sqlx-core/migrate"]
 offline = ["sqlx-core/offline", "serde"]
 preupdate-hook = ["libsqlite3-sys/preupdate_hook"]
 regexp = ["dep:regex"]
-sqlx-toml = ["sqlx-core/sqlx-toml"]
 unbundled = ["libsqlite3-sys/buildtime_bindgen"]
 unlock-notify = ["libsqlite3-sys/unlock_notify"]
 uuid = ["dep:uuid", "sqlx-core/uuid"]
@@ -44,6 +40,10 @@ uuid = ["dep:uuid", "sqlx-core/uuid"]
 [lib]
 name = "sqlx_sqlite"
 path = "src/lib.rs"
+
+[dependencies.bytes]
+version = "1.2.0"
+path = "../bytes"
 
 [dependencies.atoi]
 version = "2.0"

@@ -18,7 +18,7 @@ pub use synchronous::SqliteSynchronous;
 
 use crate::common::DebugFn;
 use crate::connection::collation::Collation;
-use sqlx_core::{config, IndexMap};
+use sqlx_core::IndexMap;
 
 /// Options and flags which can be used to configure a SQLite connection.
 ///
@@ -636,40 +636,5 @@ impl SqliteConnectOptions {
     pub fn with_regexp(mut self) -> Self {
         self.register_regexp_function = true;
         self
-    }
-
-    #[cfg_attr(not(feature = "load-extension"), expect(unused_mut))]
-    pub(crate) fn apply_driver_config(
-        mut self,
-        config: &config::drivers::SqliteConfig,
-    ) -> crate::Result<Self> {
-        #[cfg(feature = "load-extension")]
-        for extension in &config.unsafe_load_extensions {
-            // SAFETY: the documentation warns the user about loading extensions
-            match extension {
-                config::drivers::SqliteExtension::Path(path) => {
-                    self = unsafe { self.extension(path.clone()) }
-                }
-                config::drivers::SqliteExtension::PathWithEntrypoint { path, entrypoint } => {
-                    self =
-                        unsafe { self.extension_with_entrypoint(path.clone(), entrypoint.clone()) }
-                }
-            }
-        }
-
-        #[cfg(not(feature = "load-extension"))]
-        if !config.unsafe_load_extensions.is_empty() {
-            return Err(sqlx_core::Error::Configuration(
-                format!(
-                    "sqlx.toml specifies `drivers.sqlite.unsafe-load-extensions = {:?}` \
-                 but extension loading is not enabled; \
-                 enable the `sqlite-load-extension` feature of SQLx to use SQLite extensions",
-                    config.unsafe_load_extensions,
-                )
-                .into(),
-            ));
-        }
-
-        Ok(self)
     }
 }

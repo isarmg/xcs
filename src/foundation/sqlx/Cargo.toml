@@ -24,41 +24,19 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/launchbadge/sqlx"
 
 [features]
-_rt-async-global-executor = []
-_rt-async-std = []
-_rt-smol = []
-_rt-tokio = []
-_sqlite = []
 _unstable-all-types = ["json", "ipnet", "uuid", "bit-vec"]
-_unstable-docs = ["all-databases", "_unstable-all-types", "sqlx-sqlite/_unstable-docs"]
-all-databases = ["sqlite", "any"]
-any = ["sqlx-core/any", "sqlx-sqlite?/any"]
 bit-vec = ["sqlx-core/bit-vec"]
-default = ["any", "migrate", "json"]
 ipnet = ["sqlx-core/ipnet"]
-json = ["sqlx-core/json", "sqlx-sqlite?/json"]
-migrate = ["sqlx-core/migrate", "sqlx-sqlite?/migrate"]
-regexp = ["sqlx-sqlite?/regexp"]
-runtime-async-global-executor = ["_rt-async-global-executor", "sqlx-core/_rt-async-global-executor"]
-runtime-async-std = ["_rt-async-std", "sqlx-core/_rt-async-std"]
-runtime-smol = ["_rt-smol", "sqlx-core/_rt-smol"]
-runtime-tokio = ["_rt-tokio", "sqlx-core/_rt-tokio"]
+json = ["sqlx-core/json", "sqlx-sqlite/json"]
+regexp = ["sqlx-sqlite/regexp"]
 sqlite = ["sqlite-bundled", "sqlite-deserialize", "sqlite-load-extension", "sqlite-unlock-notify"]
-sqlite-bundled = ["_sqlite", "sqlx-sqlite/bundled"]
+sqlite-bundled = ["sqlx-sqlite/bundled"]
 sqlite-deserialize = ["sqlx-sqlite/deserialize"]
 sqlite-load-extension = ["sqlx-sqlite/load-extension"]
 sqlite-preupdate-hook = ["sqlx-sqlite/preupdate-hook"]
-sqlite-unbundled = ["_sqlite", "sqlx-sqlite/unbundled"]
+sqlite-unbundled = ["sqlx-sqlite/unbundled"]
 sqlite-unlock-notify = ["sqlx-sqlite/unlock-notify"]
-sqlx-toml = ["sqlx-core/sqlx-toml", "sqlx-sqlite?/sqlx-toml"]
-tls-native-tls = ["sqlx-core/_tls-native-tls"]
-tls-none = []
-tls-rustls = ["tls-rustls-ring"]
-tls-rustls-aws-lc-rs = ["sqlx-core/_tls-rustls-aws-lc-rs"]
-tls-rustls-ring = ["tls-rustls-ring-webpki"]
-tls-rustls-ring-native-roots = ["sqlx-core/_tls-rustls-ring-native-roots"]
-tls-rustls-ring-webpki = ["sqlx-core/_tls-rustls-ring-webpki"]
-uuid = ["sqlx-core/uuid", "sqlx-sqlite?/uuid"]
+uuid = ["sqlx-core/uuid", "sqlx-sqlite/uuid"]
 
 [lib]
 name = "sqlx"
@@ -66,12 +44,10 @@ path = "src/lib.rs"
 
 [dependencies.sqlx-core]
 version = "=0.9.0"
-features = ["migrate"]
 path = "../sqlx-core"
 
 [dependencies.sqlx-sqlite]
 version = "=0.9.0"
-optional = true
 path = "../sqlx-sqlite"
 
 [lints.rust.unexpected_cfgs]

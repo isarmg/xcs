@@ -24,8 +24,6 @@ use crate::type_info::TypeInfo;
 
 mod non_zero;
 
-
-
 #[cfg(feature = "json")]
 #[cfg_attr(docsrs, doc(cfg(feature = "json")))]
 mod json;
@@ -37,17 +35,10 @@ mod text;
 #[doc(no_inline)]
 pub use uuid::{self, Uuid};
 
-
-
 #[cfg(feature = "bit-vec")]
 #[cfg_attr(docsrs, doc(cfg(feature = "bit-vec")))]
 #[doc(no_inline)]
 pub use bit_vec::BitVec;
-
-
-
-
-
 
 #[cfg(feature = "ipnet")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ipnet")))]
@@ -56,15 +47,9 @@ pub mod ipnet {
     pub use ipnet::{IpNet, Ipv4Net, Ipv6Net};
 }
 
-
-
-
-
 #[cfg(feature = "json")]
 pub use json::{Json, JsonRawValue, JsonValue};
 pub use text::Text;
-
-
 
 /// Indicates that a SQL type is supported for a database.
 ///

@@ -72,8 +72,6 @@
 #[macro_use]
 extern crate sqlx_core;
 
-use std::sync::atomic::AtomicBool;
-
 pub use arguments::{SqliteArgumentValue, SqliteArguments, SqliteArgumentsBuffer};
 pub use column::SqliteColumn;
 #[cfg(feature = "deserialize")]
@@ -95,43 +93,27 @@ pub use transaction::SqliteTransactionManager;
 pub use type_info::SqliteTypeInfo;
 pub use value::{SqliteValue, SqliteValueRef};
 
-use crate::connection::establish::EstablishParams;
-
 pub(crate) use sqlx_core::driver_prelude::*;
 
-use sqlx_core::config;
-use sqlx_core::describe::Describe;
-use sqlx_core::error::Error;
 use sqlx_core::executor::Executor;
-use sqlx_core::sql_str::{AssertSqlSafe, SqlSafeStr};
 
 mod arguments;
 mod column;
 mod connection;
 mod database;
 mod error;
-mod logger;
 mod options;
 mod query_result;
 mod row;
 mod statement;
 mod transaction;
-mod type_checking;
 mod type_info;
 pub mod types;
 mod value;
-
-#[cfg(feature = "any")]
-pub mod any;
+mod value_debug;
 
 #[cfg(feature = "regexp")]
 mod regexp;
-
-#[cfg(feature = "migrate")]
-mod migrate;
-
-#[cfg(feature = "migrate")]
-mod testing;
 
 /// An alias for [`Pool`][crate::pool::Pool], specialized for SQLite.
 pub type SqlitePool = crate::pool::Pool<Sqlite>;
@@ -154,30 +136,3 @@ impl_acquire!(Sqlite, SqliteConnection);
 
 // required because some databases have a different handling of NULL
 impl_encode_for_option!(Sqlite);
-
-/// UNSTABLE: for use by `sqlx-cli` only.
-#[doc(hidden)]
-pub static CREATE_DB_WAL: AtomicBool = AtomicBool::new(true);
-
-/// UNSTABLE: for use by `sqlite-macros-core` only.
-#[doc(hidden)]
-pub fn describe_blocking(
-    query: &str,
-    database_url: &str,
-    driver_config: &config::drivers::Config,
-) -> Result<Describe<Sqlite>, Error> {
-    let mut opts: SqliteConnectOptions = database_url.parse()?;
-
-    opts = opts.apply_driver_config(&driver_config.sqlite)?;
-
-    let params = EstablishParams::from_options(&opts)?;
-    let mut conn = params.establish()?;
-
-    // Execute any ancillary `PRAGMA`s
-    connection::execute::iter(&mut conn, AssertSqlSafe(opts.pragma_string()), None, false)?
-        .finish()?;
-
-    connection::describe::describe(&mut conn, AssertSqlSafe(query.to_string()).into_sql_str())
-
-    // SQLite database is closed immediately when `conn` is dropped
-}

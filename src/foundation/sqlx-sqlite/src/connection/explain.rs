@@ -6,10 +6,10 @@
     clippy::cast_sign_loss
 )]
 use crate::connection::intmap::IntMap;
+use crate::connection::plan_logger::{BranchParent, BranchResult, DebugDiff};
 use crate::connection::{execute, ConnectionState};
 use crate::error::Error;
 use crate::from_row::FromRow;
-use crate::logger::{BranchParent, BranchResult, DebugDiff};
 use crate::type_info::DataType;
 use crate::SqliteTypeInfo;
 use sqlx_core::sql_str::AssertSqlSafe;
@@ -542,7 +542,7 @@ impl BranchList {
     pub fn push<R: Debug, P: Debug>(
         &mut self,
         mut state: QueryState,
-        logger: &mut crate::logger::QueryPlanLogger<'_, R, MemoryState, P>,
+        logger: &mut crate::connection::plan_logger::QueryPlanLogger<'_, R, MemoryState, P>,
     ) {
         logger.add_branch(&state, &state.branch_parent.unwrap());
         match self.visited_branch_state.entry(state.mem) {
@@ -577,7 +577,7 @@ pub(super) fn explain(
             .collect::<Result<Vec<_>, Error>>()?;
     let program_size = program.len();
 
-    let mut logger = crate::logger::QueryPlanLogger::new(query, &program);
+    let mut logger = crate::connection::plan_logger::QueryPlanLogger::new(query, &program);
     let mut branch_seq = Sequence::new();
     let mut states = BranchList::new(QueryState {
         visited: vec![0; program_size],

@@ -48,10 +48,6 @@ pub enum Error {
     #[error("error communicating with database: {0}")]
     Io(#[from] io::Error),
 
-    /// Error occurred while attempting to establish a TLS connection.
-    #[error("error occurred while attempting to establish a TLS connection: {0}")]
-    Tls(#[source] BoxDynError),
-
     /// Unexpected or invalid data encountered while communicating with the database.
     ///
     /// This should indicate there is a programming error in a SQLx driver or there
@@ -92,10 +88,6 @@ pub enum Error {
     #[error("error occurred while decoding: {0}")]
     Decode(#[source] BoxDynError),
 
-    /// Error occurred within the `Any` driver mapping to/from the native driver.
-    #[error("error in Any driver mapping: {0}")]
-    AnyDriverError(#[source] BoxDynError),
-
     /// A [`Pool::acquire`] timed out due to connections not becoming available or
     /// because another task encountered too many errors while trying to open a new connection.
     ///
@@ -114,21 +106,11 @@ pub enum Error {
     #[error("attempted to communicate with a crashed background worker")]
     WorkerCrashed,
 
-    #[cfg(feature = "migrate")]
-    #[error("{0}")]
-    Migrate(#[source] Box<crate::migrate::MigrateError>),
-
     #[error("attempted to call begin_with at non-zero transaction depth")]
     InvalidSavePointStatement,
 
     #[error("got unexpected connection status after attempting to begin transaction")]
     BeginFailed,
-
-    // Not returned in normal operation.
-    /// Error occurred while reading configuration file
-    #[doc(hidden)]
-    #[error("error reading configuration file: {0}")]
-    ConfigFile(#[from] crate::config::ConfigError),
 }
 
 impl StdError for Box<dyn DatabaseError> {}
@@ -164,10 +146,6 @@ impl Error {
     #[inline]
     pub fn config(err: impl StdError + Send + Sync + 'static) -> Self {
         Error::Configuration(err.into())
-    }
-
-    pub(crate) fn tls(err: impl Into<Box<dyn StdError + Send + Sync + 'static>>) -> Self {
-        Error::Tls(err.into())
     }
 
     #[doc(hidden)]
@@ -324,14 +302,6 @@ where
     #[inline]
     fn from(error: E) -> Self {
         Error::Database(Box::new(error))
-    }
-}
-
-#[cfg(feature = "migrate")]
-impl From<crate::migrate::MigrateError> for Error {
-    #[inline]
-    fn from(error: crate::migrate::MigrateError) -> Self {
-        Error::Migrate(Box::new(error))
     }
 }
 

@@ -31,13 +31,18 @@ use crate::statement::VirtualStatement;
 use crate::{Sqlite, SqliteConnectOptions, SqliteError};
 
 pub(crate) mod collation;
+#[cfg(feature = "offline")]
 pub(crate) mod describe;
 pub(crate) mod establish;
 pub(crate) mod execute;
 mod executor;
+#[cfg(feature = "offline")]
 mod explain;
 mod handle;
+#[cfg(feature = "offline")]
 pub(crate) mod intmap;
+#[cfg(feature = "offline")]
+mod plan_logger;
 #[cfg(feature = "preupdate-hook")]
 mod preupdate_hook;
 

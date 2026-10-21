@@ -56,7 +56,7 @@ serde_json = {version = "1", path = "src/foundation/serde_json"}
 thiserror = {version = "2", path = "src/foundation/thiserror"}
 blake3 = {version = "=1.8.7", path = "src/foundation/blake3"}
 uuid = { version = "1", features = ["v4"], path = "src/foundation/uuid"}
-sqlx = { version = "=0.9.0", default-features = false, features = ["runtime-tokio", "sqlite-bundled"], path = "src/foundation/sqlx"}
+sqlx = { version = "=0.9.0", default-features = false, features = ["sqlite-bundled"], path = "src/foundation/sqlx"}
 tokio = { version = "1.53.2", features = ["fs", "io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"], path = "src/foundation/tokio"}
 rustix = { version = "1.1.5", features = ["fs", "process", "mount"], path = "src/foundation/rustix"}
 tempfile = {version = "3", path = "src/foundation/tempfile"}

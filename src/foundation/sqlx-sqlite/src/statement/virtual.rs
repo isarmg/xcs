@@ -9,7 +9,7 @@ use libsqlite3_sys::{
     sqlite3, sqlite3_prepare_v3, sqlite3_stmt, SQLITE_OK, SQLITE_PREPARE_PERSISTENT,
 };
 
-use sqlx_core::bytes::{Buf, Bytes};
+use bytes::{Buf, Bytes};
 use sqlx_core::error::Error;
 use sqlx_core::ext::ustr::UStr;
 use sqlx_core::{HashMap, SmallVec};
