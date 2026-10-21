@@ -65,9 +65,9 @@ optional = true
 path = "../pkg-config"
 
 [build-dependencies.prettyplease]
-version = "0.2.20"
+version = "0.3"
 optional = true
-path = "../prettyplease-0.2.37"
+path = "../prettyplease-0.3.0"
 
 [build-dependencies.quote]
 version = "1.0.36"
@@ -76,11 +76,11 @@ default-features = false
 path = "../quote"
 
 [build-dependencies.syn]
-version = "2.0.89"
+version = "3"
 features = [
     "full",
     "extra-traits",
     "visit-mut",
 ]
 optional = true
-path = "../syn-2.0.119"
+path = "../syn-3.0.9"

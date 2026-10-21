@@ -35,19 +35,20 @@ pub fn ident_to_type(ident: syn::Ident) -> syn::Type {
         ident,
         arguments: Default::default(),
     });
-    syn::Type::Path(syn::TypePath { qself: None, path })
+    syn::Type::Path(syn::TypePath { attrs: Vec::new(), qself: None, path })
 }
 
 pub fn empty_type() -> syn::Type {
-    syn::TypeTuple {
+    syn::Type::Tuple(syn::TypeTuple {
+        attrs: Vec::new(),
         paren_token: Default::default(),
         elems: Default::default(),
-    }
-    .into()
+    })
 }
 
 pub fn type_tuple(elems: impl Iterator<Item = syn::Type>) -> syn::TypeTuple {
     let mut result = syn::TypeTuple {
+        attrs: Vec::new(),
         paren_token: Default::default(),
         elems: elems.collect(),
     };
@@ -59,6 +60,7 @@ pub fn type_tuple(elems: impl Iterator<Item = syn::Type>) -> syn::TypeTuple {
 
 pub fn empty_type_tuple() -> syn::TypeTuple {
     syn::TypeTuple {
+        attrs: Vec::new(),
         paren_token: Default::default(),
         elems: Default::default(),
     }

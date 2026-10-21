@@ -46,6 +46,7 @@ case "${1:-}" in
     python3 .github/scripts/check-sqlite-scope.py
     python3 .github/scripts/check-foundation-consumers.py
     python3 .github/scripts/check-serialization-family.py
+    python3 .github/scripts/check-rust-syntax-migration.py
     python3 .github/scripts/check-web-bindgen-scope.py
     # Focused regressions for maintained foundation changes. Do not restore
     # retired upstream dev dependencies or run unrelated upstream test suites.

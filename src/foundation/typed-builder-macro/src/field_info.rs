@@ -48,11 +48,11 @@ impl<'a> FieldInfo<'a> {
         let mut types = Punctuated::default();
         types.push(self.ty.clone());
         types.push_punct(Default::default());
-        syn::TypeTuple {
+        syn::Type::Tuple(syn::TypeTuple {
+            attrs: Vec::new(),
             paren_token: Default::default(),
             elems: types,
-        }
-        .into()
+        })
     }
 
     pub fn type_from_inside_option(&self) -> Option<&syn::Type> {

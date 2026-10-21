@@ -37,7 +37,7 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
     let Signature {
         output,
         inputs: params,
-        unsafety,
+        safety,
         asyncness,
         constness,
         abi,
@@ -102,7 +102,7 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
 
     let mut result = quote!(
         #(#outer_attrs) *
-        #vis #constness #asyncness #unsafety #abi #fn_token #ident
+        #vis #constness #asyncness #safety #abi #fn_token #ident
         #lt_token #gen_params #gt_token
     );
 
@@ -830,11 +830,11 @@ struct ImplTraitEraser;
 
 impl VisitMut for ImplTraitEraser {
     fn visit_type_mut(&mut self, t: &mut Type) {
-        if let Type::ImplTrait(..) = t {
-            *t = syn::TypeInfer {
-                underscore_token: Token![_](t.span()),
-            }
-            .into();
+        if let Type::ImplTrait(impl_trait) = t {
+            *t = Type::Infer(syn::TypeInfer {
+                attrs: impl_trait.attrs.clone(),
+                underscore_token: Token![_](impl_trait.span()),
+            });
         } else {
             syn::visit_mut::visit_type_mut(self, t);
         }

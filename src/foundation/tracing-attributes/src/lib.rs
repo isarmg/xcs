@@ -605,6 +605,7 @@ fn instrument_precise(
     item: proc_macro::TokenStream,
 ) -> Result<proc_macro::TokenStream, syn::Error> {
     let input = syn::parse::<ItemFn>(item)?;
+    input.modifiers.require_empty()?;
     let instrumented_function_name = input.sig.ident.to_string();
 
     if input.sig.constness.is_some() {
@@ -685,6 +686,7 @@ impl From<ItemFn> for MaybeItemFn {
             vis,
             sig,
             block,
+            modifiers: _, // Checked in instrument_precise before conversion.
         }: ItemFn,
     ) -> Self {
         let (outer_attrs, inner_attrs) = attrs

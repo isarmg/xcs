@@ -39,6 +39,6 @@ version = "1.0.45"
 path = "../quote"
 
 [dependencies.syn]
-version = "2.0.117"
+version = "3"
 features = ["extra-traits"]
-path = "../syn-2.0.119"
+path = "../syn-3.0.9"

@@ -97,14 +97,14 @@ impl<'a> StructInfo<'a> {
         let mut all_fields_param_type: syn::TypeParam =
             syn::Ident::new("TypedBuilderFields", proc_macro2::Span::call_site()).into();
         let all_fields_param = syn::GenericParam::Type(all_fields_param_type.clone());
-        all_fields_param_type.default = Some(syn::Type::Tuple(init_fields_type.clone()));
+        all_fields_param_type.default = Some((Default::default(), syn::Type::Tuple(init_fields_type.clone())));
         let b_generics = {
             let mut generics = self.generics.clone();
             generics.params.push(syn::GenericParam::Type(all_fields_param_type));
             generics
         };
         let generics_with_empty = modify_types_generics_hack(&ty_generics, |args| {
-            args.push(syn::GenericArgument::Type(init_fields_type.clone().into()));
+            args.push(syn::GenericArgument::Type(syn::Type::Tuple(init_fields_type.clone())));
         });
         let phantom_data = phantom_data_for_generics(self.generics);
 
@@ -247,8 +247,8 @@ impl<'a> StructInfo<'a> {
             generics
         };
         let mut target_generics = ty_generics.clone();
-        target_generics.push(syn::GenericArgument::Type(target_generics_tuple.into()));
-        ty_generics.push(syn::GenericArgument::Type(ty_generics_tuple.into()));
+        target_generics.push(syn::GenericArgument::Type(syn::Type::Tuple(target_generics_tuple)));
+        ty_generics.push(syn::GenericArgument::Type(syn::Type::Tuple(ty_generics_tuple)));
         let (impl_generics, _, where_clause) = generics.split_for_impl();
         let doc = if let Some(doc) = field.builder_attr.setter.doc.as_ref() {
             Some(quote!(#[doc = #doc]))
@@ -492,7 +492,7 @@ impl<'a> StructInfo<'a> {
             generics
         };
 
-        builder_generics.push(syn::GenericArgument::Type(builder_generics_tuple.into()));
+        builder_generics.push(syn::GenericArgument::Type(syn::Type::Tuple(builder_generics_tuple)));
         let (impl_generics, _, where_clause) = generics.split_for_impl();
 
         let early_build_error_type_name = syn::Ident::new(
@@ -557,7 +557,7 @@ impl<'a> StructInfo<'a> {
                 quote!(#name,).to_tokens(&mut destructuring);
             }
         }
-        ty_generics.push(syn::GenericArgument::Type(ty_generics_tuple.into()));
+        ty_generics.push(syn::GenericArgument::Type(syn::Type::Tuple(ty_generics_tuple)));
         let (impl_generics, _, where_clause) = generics.split_for_impl();
 
         let mutator_struct_name = format_ident!("TypedBuilderFieldMutator");
@@ -637,7 +637,7 @@ impl<'a> StructInfo<'a> {
             for field in self.included_fields() {
                 if field.builder_attr.default.is_some() {
                     let generic_param: syn::TypeParam = field.generic_ident.clone().into();
-                    generics.params.push(generic_param.into());
+                    generics.params.push(syn::GenericParam::Type(generic_param));
                 }
             }
             generics
@@ -650,14 +650,13 @@ impl<'a> StructInfo<'a> {
 
         let modified_ty_generics = modify_types_generics_hack(&ty_generics, |args| {
             args.push(syn::GenericArgument::Type(
-                type_tuple(self.included_fields().map(|field| {
+                syn::Type::Tuple(type_tuple(self.included_fields().map(|field| {
                     if field.builder_attr.default.is_some() {
                         field.type_ident()
                     } else {
                         field.tuplized_type_ty_param()
                     }
-                }))
-                .into(),
+                }))),
             ));
         });
 

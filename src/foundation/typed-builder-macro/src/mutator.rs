@@ -104,14 +104,13 @@ impl Mutator {
                 FnArg::Receiver(_) => parse_quote!(self),
                 FnArg::Typed(mut input) => {
                     input.pat = Box::new(
-                        PatIdent {
+                        syn::Pat::Ident(PatIdent {
                             attrs: Vec::new(),
                             by_ref: None,
                             mutability: None,
                             ident: pat_to_ident(i, &input.pat),
                             subpat: None,
-                        }
-                        .into(),
+                        }),
                     );
                     FnArg::Typed(input)
                 }

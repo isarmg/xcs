@@ -78,10 +78,10 @@ optional = true
 path = "../log"
 
 [dependencies.prettyplease]
-version = "0.2.7"
+version = "0.3"
 features = ["verbatim"]
 optional = true
-path = "../prettyplease-0.2.37"
+path = "../prettyplease-0.3.0"
 
 [dependencies.proc-macro2]
 version = "1.0.80"
@@ -110,13 +110,13 @@ version = "2"
 path = "../shell-tokenizer"
 
 [dependencies.syn]
-version = "2.0"
+version = "3"
 features = [
     "full",
     "extra-traits",
     "visit-mut",
 ]
-path = "../syn-2.0.119"
+path = "../syn-3.0.9"
 
 [lints.clippy]
 cast_possible_truncation = "allow"

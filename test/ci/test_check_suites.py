@@ -113,10 +113,11 @@ class SuiteCoverageTests(unittest.TestCase):
         ))
 
     def test_foundation_runs_only_selected_library_regressions(self):
-        sqlite, consumers, serialization, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, random_backends, entropy_consumers, system_units, ring, password, idna, helpers = self.suite("foundation")
+        sqlite, consumers, serialization, syntax_migration, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, random_backends, entropy_consumers, system_units, ring, password, idna, helpers = self.suite("foundation")
         self.assertEqual(sqlite, {"tool": "python3", "args": [".github/scripts/check-sqlite-scope.py"]})
         self.assertEqual(consumers, {"tool": "python3", "args": [".github/scripts/check-foundation-consumers.py"]})
         self.assertEqual(serialization, {"tool": "python3", "args": [".github/scripts/check-serialization-family.py"]})
+        self.assertEqual(syntax_migration, {"tool": "python3", "args": [".github/scripts/check-rust-syntax-migration.py"]})
         self.assertEqual(web_bindgen, {"tool": "python3", "args": [".github/scripts/check-web-bindgen-scope.py"]})
         self.assertEqual(uapi, {"tool": "python3", "args": [".github/scripts/check-linux-uapi.py"]})
         self.assertEqual(libc, {"tool": "python3", "args": ["tools/rust-sources/check_libc_abi.py"]})
