@@ -94,21 +94,95 @@ impl<'src, T: Decode<'src>> Decode<'src> for Option<T> {
     }
 }
 
+// Keep the 0.2.129 wire schema and consume declaration-only metadata in place.
+// It must not enter the Web renderer or allocate a declaration reference graph.
 macro_rules! decode_struct {
-    ($name:ident ($($lt:tt)*) $($field:ident: $ty:ty,)*) => {
-        pub struct $name <$($lt)*> {
-            $(pub $field: $ty,)*
-        }
-
+    ($name:ident ($($lt:tt)*) $($fields:tt)*) => {
+        decode_struct!(@collect _data $name ($($lt)*) () () () $($fields)*);
+    };
+    (@collect $data:ident $name:ident ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+    ) => {
+        pub struct $name <$($lt)*> { $($fields)* }
         impl <'a> Decode<'a> for $name <$($lt)*> {
-            fn decode(_data: &mut &'a [u8]) -> Self {
+            fn decode($data: &mut &'a [u8]) -> Self {
                 log::trace!("start decode `{}`", stringify!($name));
-                $name {
-                    $($field: Decode::decode(_data),)*
-                }
+                $($reads)*
+                $name { $($keys,)* }
             }
         }
-    }
+    };
+    (@collect $data:ident $name:ident ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        generate_typescript: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data $name ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident $name:ident ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        typescript_custom_sections: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data $name ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident StringEnum ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        comments: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data StringEnum ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident StringEnum ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        private: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data StringEnum ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident StringEnum ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        js_namespace: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data StringEnum ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident DynamicUnion ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        variant_strings: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data DynamicUnion ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident DynamicUnion ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        comments: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data DynamicUnion ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident DynamicUnion ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        private: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data DynamicUnion ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident DynamicUnion ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        fallback: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data DynamicUnion ($($lt)*) ($($fields)*)
+            ($($reads)* let _: $ty = Decode::decode($data);) ($($keys,)*) $($rest)*);
+    };
+    (@collect $data:ident $name:ident ($($lt:tt)*)
+        ($($fields:tt)*) ($($reads:tt)*) ($($keys:ident,)*)
+        $field:ident: $ty:ty, $($rest:tt)*
+    ) => {
+        decode_struct!(@collect $data $name ($($lt)*) ($($fields)* pub $field: $ty,)
+            ($($reads)* let $field = Decode::decode($data);)
+            ($($keys,)* $field,) $($rest)*);
+    };
 }
 
 macro_rules! decode_enum {

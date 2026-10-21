@@ -33,10 +33,6 @@ path = "src/lib.rs"
 version = "1.0"
 path = "../anyhow"
 
-[dependencies.base64]
-version = "0.22"
-path = "../base64-0.22.1"
-
 [dependencies.leb128]
 version = "0.2"
 path = "../leb128"

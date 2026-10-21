@@ -37,7 +37,7 @@ pub(crate) struct Token<'s> {
 
 impl fmt::Debug for Token<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // Customized for brevity for a better `winnow/debug` experience
+        // Customized for brevity for concise parser error diagnostics
         match self.kind {
             TokenKind::Value => Debug::fmt(self.raw, fmt),
             TokenKind::Oper(oper) => Debug::fmt(&oper, fmt),

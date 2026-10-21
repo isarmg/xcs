@@ -60,10 +60,6 @@
 //! completes synchronously under its still-live callers and keeps the entry
 //! offset.
 //!
-//! On the emscripten target under `--cfg wasm_bindgen_unstable_jspi` none of
-//! this runs: emscripten's own JSPI runtime owns the fibers and their stacks,
-//! and the exports and imports are instead wrapped with its lifecycle hooks
-//! (see `transforms::jspi_hooks`).
 
 use crate::wit::{AdapterKind, Instruction, NonstandardWitSection, WasmBindgenAux};
 use anyhow::{anyhow, bail, Error};
@@ -83,7 +79,6 @@ pub fn run(
     aux: &mut WasmBindgenAux,
     wit: &mut NonstandardWitSection,
     externref: bool,
-    hooks: Option<super::ExceptionHandlingVersion>,
 ) -> Result<(), Error> {
     // The wasm-level export ids of `#[wasm_bindgen(jspi)]` exports.
     let mut jspi_exports = Vec::new();
@@ -194,18 +189,6 @@ pub fn run(
              suspending import bypasses the JS shim's return conversion, so \
              it must travel as an externref (enabled by default since \
              Rust 1.82)"
-        );
-    }
-
-    if let Some(eh_version) = hooks {
-        let legacy_eh = eh_version == super::ExceptionHandlingVersion::Legacy;
-        return super::jspi_hooks::run(
-            module,
-            aux,
-            wit,
-            jspi_exports,
-            suspending_imports,
-            legacy_eh,
         );
     }
 

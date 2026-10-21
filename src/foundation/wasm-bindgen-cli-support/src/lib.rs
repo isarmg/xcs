@@ -19,16 +19,15 @@ mod js;
 mod multivalue;
 mod suggest;
 mod transforms;
-pub mod wasm2es6js;
 mod wasm_conventions;
 mod wit;
 
 pub struct Bindgen {
     input: Input,
     out_name: Option<String>,
-    mode: OutputMode,
+
     debug: bool,
-    typescript: bool,
+
     omit_imports: bool,
     demangle: bool,
     keep_lld_exports: bool,
@@ -38,7 +37,7 @@ pub struct Bindgen {
     remove_name_section: bool,
     remove_producers_section: bool,
     omit_default_module_path: bool,
-    ts_typed_array_buffers: bool,
+
     emit_start: bool,
     externref: bool,
     multi_value: bool,
@@ -57,29 +56,11 @@ pub struct Output {
 }
 
 struct Generated {
-    mode: OutputMode,
     js: String,
-    ts: String,
-    start: Option<String>,
+
     snippets: BTreeMap<String, Vec<String>>,
     local_modules: HashMap<String, String>,
     npm_dependencies: HashMap<String, (PathBuf, String)>,
-    typescript: bool,
-    /// For `OutputMode::Emscripten` only: the contents of a sidecar file
-    /// emcc loads via `--extern-pre-js`, containing ESM `import` statements
-    /// that must live at module top-level. Empty for other modes.
-    emscripten_extern_pre_js: String,
-}
-
-#[derive(Clone)]
-enum OutputMode {
-    Bundler { browser_only: bool },
-    Web,
-    NoModules { global: String },
-    Node { module: bool },
-    Deno,
-    Module,
-    Emscripten,
 }
 
 enum Input {
@@ -104,11 +85,8 @@ impl Bindgen {
         Bindgen {
             input: Input::None,
             out_name: None,
-            mode: OutputMode::Bundler {
-                browser_only: false,
-            },
             debug: false,
-            typescript: false,
+
             omit_imports: false,
             demangle: true,
             keep_lld_exports: false,
@@ -122,7 +100,7 @@ impl Bindgen {
             multi_value,
             encode_into: EncodeInto::Test,
             omit_default_module_path: true,
-            ts_typed_array_buffers: false,
+
             split_linked_modules: false,
             generate_reset_state: false,
             force_enable_abort_handler: false,
@@ -159,105 +137,8 @@ impl Bindgen {
         self
     }
 
-    fn switch_mode(&mut self, mode: OutputMode, flag: &str) -> Result<(), Error> {
-        match self.mode {
-            OutputMode::Bundler { .. } => self.mode = mode,
-            _ => bail!("cannot specify `{flag}` with another output mode already specified"),
-        }
-        Ok(())
-    }
-
-    pub fn nodejs(&mut self, node: bool) -> Result<&mut Bindgen, Error> {
-        if node {
-            self.switch_mode(OutputMode::Node { module: false }, "--target nodejs")?;
-        }
-        Ok(self)
-    }
-
-    pub fn nodejs_module(&mut self, node: bool) -> Result<&mut Bindgen, Error> {
-        if node {
-            self.switch_mode(
-                OutputMode::Node { module: true },
-                "--target experimental-nodejs-module",
-            )?;
-        }
-        Ok(self)
-    }
-
-    pub fn bundler(&mut self, bundler: bool) -> Result<&mut Bindgen, Error> {
-        if bundler {
-            self.switch_mode(
-                OutputMode::Bundler {
-                    browser_only: false,
-                },
-                "--target bundler",
-            )?;
-        }
-        Ok(self)
-    }
-
-    pub fn web(&mut self, web: bool) -> Result<&mut Bindgen, Error> {
-        if web {
-            self.switch_mode(OutputMode::Web, "--target web")?;
-        }
-        Ok(self)
-    }
-
-    pub fn no_modules(&mut self, no_modules: bool) -> Result<&mut Bindgen, Error> {
-        if no_modules {
-            self.switch_mode(
-                OutputMode::NoModules {
-                    global: "wasm_bindgen".to_string(),
-                },
-                "--target no-modules",
-            )?;
-        }
-        Ok(self)
-    }
-
-    pub fn browser(&mut self, browser: bool) -> Result<&mut Bindgen, Error> {
-        if browser {
-            match &mut self.mode {
-                OutputMode::Bundler { browser_only } => *browser_only = true,
-                _ => bail!("cannot specify `--browser` with other output types"),
-            }
-        }
-        Ok(self)
-    }
-
-    pub fn deno(&mut self, deno: bool) -> Result<&mut Bindgen, Error> {
-        if deno {
-            self.switch_mode(OutputMode::Deno, "--target deno")?;
-            self.encode_into(EncodeInto::Always);
-        }
-        Ok(self)
-    }
-
-    pub fn module(&mut self, source_phase: bool) -> Result<&mut Bindgen, Error> {
-        if source_phase {
-            self.switch_mode(OutputMode::Module, "--target module")?;
-        }
-        Ok(self)
-    }
-
-    pub fn no_modules_global(&mut self, name: &str) -> Result<&mut Bindgen, Error> {
-        if !wasm_bindgen_shared::identifier::is_valid_ident(name) {
-            bail!("`--no-modules-global` must be a valid JS identifier, got `{name}`");
-        }
-        match &mut self.mode {
-            OutputMode::NoModules { global } => *global = name.to_string(),
-            _ => bail!("can only specify `--no-modules-global` with `--target no-modules`"),
-        }
-        Ok(self)
-    }
-
     pub fn debug(&mut self, debug: bool) -> &mut Bindgen {
         self.debug = debug;
-        self
-    }
-
-    pub fn typescript(&mut self, typescript: bool) -> &mut Bindgen {
-        self.typescript = typescript;
         self
     }
 
@@ -313,11 +194,6 @@ impl Bindgen {
 
     pub fn omit_default_module_path(&mut self, omit_default_module_path: bool) -> &mut Bindgen {
         self.omit_default_module_path = omit_default_module_path;
-        self
-    }
-
-    pub fn ts_typed_array_buffers(&mut self, ts_typed_array_buffers: bool) -> &mut Bindgen {
-        self.ts_typed_array_buffers = ts_typed_array_buffers;
         self
     }
 
@@ -377,18 +253,13 @@ impl Bindgen {
             .customs
             .remove_raw("__wasm_bindgen_emscripten_marker")
             .is_some()
+            || module
+                .customs
+                .remove_raw("__wasm_bindgen_emscripten_jspi_marker")
+                .is_some()
         {
-            // Force the internal configuration to Emscripten mode.
-            self.mode = OutputMode::Emscripten;
+            bail!("only browser Web bindings are supported; unsupported Emscripten module marker");
         }
-
-        // Emitted by the runtime under `--cfg wasm_bindgen_unstable_jspi`:
-        // JSPI goes through Emscripten's lifecycle hooks.
-        let emscripten_jspi_hooks = module
-            .customs
-            .remove_raw("__wasm_bindgen_emscripten_jspi_marker")
-            .is_some()
-            && matches!(self.mode, OutputMode::Emscripten);
 
         // Enable reference type transformations if the module is already using it.
         if let Ok(true) = wasm_conventions::target_feature(&module, "reference-types") {
@@ -401,26 +272,11 @@ impl Bindgen {
         }
 
         // Check that no exported symbol is called "default" if we target web.
-        if matches!(self.mode, OutputMode::Web)
-            && module.exports.iter().any(|export| export.name == "default")
-        {
+        if module.exports.iter().any(|export| export.name == "default") {
             bail!("exported symbol \"default\" not allowed for --target web")
         }
 
-        // Check that reset_state is only used with --target module, web, or node
-        if self.generate_reset_state
-            && !matches!(
-                self.mode,
-                OutputMode::Module | OutputMode::Web | OutputMode::Node { module: false }
-            )
-        {
-            bail!("--experimental-reset-state-function is only supported for --target module, --target web, or --target nodejs")
-        }
-
-        let thread_count = if self.mode.emscripten() {
-            // Emscripten owns multithreading bootstrap logic.
-            None
-        } else {
+        let thread_count = {
             transforms::threads::run(&mut module)
                 .with_context(|| "failed to prepare module for threading")?
         };
@@ -430,7 +286,7 @@ impl Bindgen {
         if self.demangle {
             demangle(&mut module);
         }
-        if !self.keep_lld_exports && !self.mode.emscripten() {
+        if !self.keep_lld_exports {
             unexported_unused_lld_things(&mut module);
         }
         // Quick fix for https://github.com/wasm-bindgen/wasm-bindgen/pull/4931
@@ -530,33 +386,9 @@ impl Bindgen {
         let eh_version =
             transforms::detect_exception_handling_version(&module, self.force_enable_abort_handler);
 
-        // Instrument JSPI exports and suspending imports with the in-wasm
-        // shadow-stack save/restore wrappers. This must run after the
-        // externref/multi-value passes (which repoint export items) and
-        // before the catch-wrapper pass, which then wraps *outside* the
-        // suspending wrappers (via the repointed `implements` entries) so
-        // that promise rejections are consumed innermost as data while
-        // SuspendError misuse and rethrown exceptions still reach the
-        // abort/catch machinery over a restored shadow stack. On emscripten
-        // under `wasm_bindgen_unstable_jspi` the fibers belong to
-        // emscripten's JSPI runtime, so the wrappers call its lifecycle hooks
-        // instead and touch no stack state.
-        let hooks = emscripten_jspi_hooks.then_some(eh_version);
-        run_jspi_transform(&mut module, self.externref, hooks)?;
+        run_jspi_transform(&mut module, self.externref)?;
 
-        // Generate Wasm catch wrappers for imports with #[wasm_bindgen(catch)].
-        // This runs after externref processing so that we have access to the
-        // externref table and allocation function.
-        //
-        // Emscripten output may contain wasm exception-handling instructions
-        // from linked libc++ / embind that have no relation to wasm-bindgen's
-        // `#[wasm_bindgen(catch)]` machinery, and the wasm-bindgen runtime
-        // intrinsics (`__externref_table`, `__externref_table_alloc`,
-        // `__wbindgen_exn_store`) may be absent. Skip the transform until
-        // proper emscripten-mode catch support lands.
-        if !matches!(self.mode, OutputMode::Emscripten) {
-            run_exception_handling_transforms(&mut module, eh_version)?;
-        }
+        run_exception_handling_transforms(&mut module, eh_version)?;
 
         // We've done a whole bunch of transformations to the Wasm module, many
         // of which leave "garbage" lying around, so let's prune out all our
@@ -565,7 +397,6 @@ impl Bindgen {
 
         let stem = self.stem()?;
 
-        // Now we execute the JS generation passes to actually emit JS/TypeScript/etc.
         let aux = module
             .customs
             .delete_typed::<wit::WasmBindgenAux>()
@@ -576,22 +407,13 @@ impl Bindgen {
             .unwrap();
         let mut cx = js::Context::new(&mut module, self, &adapters, &aux)?;
         cx.generate()?;
-        let js::FinalizedOutput {
-            js,
-            ts,
-            start,
-            emscripten_extern_pre_js,
-        } = cx.finalize(stem)?;
+        let js = cx.finalize(stem)?;
         let generated = Generated {
             snippets: aux.snippets.clone(),
             local_modules: aux.local_modules.clone(),
-            mode: self.mode.clone(),
-            typescript: self.typescript,
+
             npm_dependencies: cx.npm_dependencies.clone(),
             js,
-            ts,
-            start,
-            emscripten_extern_pre_js,
         };
 
         Ok(Output {
@@ -712,35 +534,6 @@ fn demangle(module: &mut Module) {
     }
 }
 
-impl OutputMode {
-    fn uses_es_modules(&self) -> bool {
-        matches!(
-            self,
-            OutputMode::Bundler { .. }
-                | OutputMode::Web
-                | OutputMode::Node { module: true }
-                | OutputMode::Deno
-                | OutputMode::Module
-        )
-    }
-
-    fn nodejs(&self) -> bool {
-        matches!(self, OutputMode::Node { .. })
-    }
-
-    fn no_modules(&self) -> bool {
-        matches!(self, OutputMode::NoModules { .. })
-    }
-
-    fn bundler(&self) -> bool {
-        matches!(self, OutputMode::Bundler { .. })
-    }
-
-    fn emscripten(&self) -> bool {
-        matches!(self, OutputMode::Emscripten)
-    }
-}
-
 /// Remove a number of internal exports that are synthesized by Rust's linker,
 /// LLD. These exports aren't typically ever needed and just add extra space to
 /// the binary.
@@ -762,18 +555,6 @@ fn unexported_unused_lld_things(module: &mut Module) {
 impl Output {
     pub fn js(&self) -> &str {
         &self.generated.js
-    }
-
-    pub fn ts(&self) -> Option<&str> {
-        if self.generated.typescript {
-            Some(&self.generated.ts)
-        } else {
-            None
-        }
-    }
-
-    pub fn start(&self) -> Option<&String> {
-        self.generated.start.as_ref()
     }
 
     pub fn snippets(&self) -> &BTreeMap<String, Vec<String>> {
@@ -841,16 +622,12 @@ impl Output {
                 .with_context(|| format!("failed to write `{}`", path.display()))?;
         }
 
-        let is_genmode_nodemodule = matches!(gen.mode, OutputMode::Node { module: true });
-        if !gen.npm_dependencies.is_empty() || is_genmode_nodemodule {
+        if !gen.npm_dependencies.is_empty() {
             #[derive(serde::Serialize)]
             struct PackageJson<'a> {
-                #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
-                ty: Option<&'static str>,
                 dependencies: BTreeMap<&'a str, &'a str>,
             }
             let pj = PackageJson {
-                ty: is_genmode_nodemodule.then_some("module"),
                 dependencies: gen
                     .npm_dependencies
                     .iter()
@@ -861,8 +638,6 @@ impl Output {
             fs::write(out_dir.join("package.json"), json)?;
         }
 
-        // And now that we've got all our JS and TypeScript, actually write it
-        // out to the filesystem.
         let extension = "js";
 
         fn write<P, C>(path: P, contents: C) -> Result<(), anyhow::Error>
@@ -875,45 +650,8 @@ impl Output {
         }
 
         let js_path = out_dir.join(&self.stem).with_extension(extension);
-        if matches!(self.generated.mode, OutputMode::Emscripten) {
-            let emscripten_js_path = out_dir.join("library_bindgen.js");
-            write(&emscripten_js_path, reset_indentation(&gen.js))?;
-            // When the user crate imports from an ESM module
-            // (`#[wasm_bindgen(module = "...")]`), we emit those imports to a
-            // sidecar `library_bindgen.extern-pre.js`. Consumers pass it to
-            // emcc with `--extern-pre-js`, which prepends it before emcc's
-            // modularize wrapper — ESM imports can only legally live there.
-            // Skip writing when empty so consumers don't accidentally pick
-            // up a stale file from a previous build.
-            let extern_pre_js_path = out_dir.join("library_bindgen.extern-pre.js");
-            if gen.emscripten_extern_pre_js.is_empty() {
-                let _ = fs::remove_file(&extern_pre_js_path);
-            } else {
-                write(
-                    &extern_pre_js_path,
-                    reset_indentation(&gen.emscripten_extern_pre_js),
-                )?;
-            }
-        } else {
+        {
             write(&js_path, reset_indentation(&gen.js))?;
-        }
-
-        if let Some(start) = &gen.start {
-            let js_path = out_dir.join(wasm_name).with_extension(extension);
-            write(&js_path, reset_indentation(start))?;
-        }
-
-        if gen.typescript {
-            let ts_path = js_path.with_extension("d.ts");
-            fs::write(&ts_path, reset_indentation(&gen.ts))
-                .with_context(|| format!("failed to write `{}`", ts_path.display()))?;
-        }
-
-        if gen.typescript {
-            let ts_path = wasm_path.with_extension("wasm.d.ts");
-            let ts = wasm2es6js::typescript(&self.module)?;
-            fs::write(&ts_path, reset_indentation(&ts))
-                .with_context(|| format!("failed to write `{}`", ts_path.display()))?;
         }
 
         Ok(())
@@ -962,14 +700,7 @@ fn split_debug_info(wasm: &[u8], url: &str) -> Result<Vec<u8>, Error> {
     Ok(out)
 }
 
-/// Instrument `#[wasm_bindgen(jspi)]` exports and `#[wasm_bindgen(suspending)]`
-/// imports with in-wasm shadow-stack management, or with emscripten's JSPI
-/// lifecycle hooks when `hooks` is set. See `transforms::jspi`.
-fn run_jspi_transform(
-    module: &mut Module,
-    externref: bool,
-    hooks: Option<transforms::ExceptionHandlingVersion>,
-) -> Result<(), Error> {
+fn run_jspi_transform(module: &mut Module, externref: bool) -> Result<(), Error> {
     let mut aux = module
         .customs
         .delete_typed::<wit::WasmBindgenAux>()
@@ -979,7 +710,7 @@ fn run_jspi_transform(
         .delete_typed::<wit::NonstandardWitSection>()
         .expect("wit section should exist");
 
-    let result = transforms::jspi::run(module, &mut aux, &mut wit, externref, hooks)
+    let result = transforms::jspi::run(module, &mut aux, &mut wit, externref)
         .context("failed to instrument module for JSPI");
 
     module.customs.add(*wit);

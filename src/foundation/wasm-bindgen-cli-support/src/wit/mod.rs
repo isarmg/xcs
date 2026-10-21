@@ -1032,7 +1032,6 @@ impl<'a> Context<'a> {
             enums,
             imports,
             structs,
-            typescript_custom_sections,
             local_modules,
             inline_js,
             unique_crate_identifier,
@@ -1105,10 +1104,6 @@ impl<'a> Context<'a> {
             self.struct_(struct_)?;
         }
 
-        // Collect custom sections to be sorted later when all CGUs encountered
-        self.aux
-            .extra_typescript
-            .extend(typescript_custom_sections.iter().map(|s| s.to_string()));
         self.aux
             .snippets
             .entry(unique_crate_identifier.to_string())
@@ -1266,7 +1261,7 @@ impl<'a> Context<'a> {
                 js_namespace: export
                     .js_namespace
                     .map(|ns| ns.iter().map(|s| s.to_string()).collect()),
-                generate_typescript: export.function.generate_typescript,
+
                 generate_jsdoc: export.function.generate_jsdoc,
                 variadic: export.function.variadic,
                 fn_ret_ty_override: export.function.ret_ty_override.map(String::from),
@@ -1323,7 +1318,6 @@ impl<'a> Context<'a> {
             suspending,
             generic_per_mono,
         } = function;
-        let generate_typescript = import.generate_typescript;
 
         // Generic (per-monomorphisation) imports have no single descriptor
         // shim; each concrete instantiation is discovered by the interpreter
@@ -1461,14 +1455,7 @@ impl<'a> Context<'a> {
                 if let Some(reexport_name) = import.reexport {
                     self.aux.reexports.insert(
                         reexport_name,
-                        (
-                            self.determine_import(
-                                &import.module,
-                                &import.js_namespace,
-                                function.name,
-                            )?,
-                            generate_typescript,
-                        ),
+                        self.determine_import(&import.module, &import.js_namespace, function.name)?,
                     );
                 }
                 return Ok(());
@@ -1539,9 +1526,7 @@ impl<'a> Context<'a> {
                         )?;
 
                         if let Some(reexport_name) = import.reexport {
-                            self.aux
-                                .reexports
-                                .insert(reexport_name, (js_import.clone(), generate_typescript));
+                            self.aux.reexports.insert(reexport_name, js_import.clone());
                         }
 
                         AuxImport::Value(AuxValue::Bare(js_import))
@@ -1711,21 +1696,13 @@ impl<'a> Context<'a> {
         let decode::ImportKind::Static(static_) = import.kind else {
             unreachable!();
         };
-        let generate_typescript = import.generate_typescript;
         let (import_id, _id) = match self.function_imports.get(static_.shim) {
             Some(pair) => *pair,
             None => {
                 if let Some(reexport_name) = import.reexport {
                     self.aux.reexports.insert(
                         reexport_name,
-                        (
-                            self.determine_import(
-                                &import.module,
-                                &import.js_namespace,
-                                static_.name,
-                            )?,
-                            generate_typescript,
-                        ),
+                        self.determine_import(&import.module, &import.js_namespace, static_.name)?,
                     );
                 }
                 return Ok(());
@@ -1756,9 +1733,7 @@ impl<'a> Context<'a> {
         let js = self.determine_import(&import.module, &import.js_namespace, static_.name)?;
 
         if let Some(reexport_name) = import.reexport {
-            self.aux
-                .reexports
-                .insert(reexport_name, (js.clone(), generate_typescript));
+            self.aux.reexports.insert(reexport_name, js.clone());
         }
 
         self.aux
@@ -1798,7 +1773,6 @@ impl<'a> Context<'a> {
             unreachable!();
         };
 
-        let generate_typescript = import.generate_typescript;
         let (import_id, _id) = match self.function_imports.get(type_.instanceof_shim) {
             Some(pair) => *pair,
             None => {
@@ -1807,14 +1781,7 @@ impl<'a> Context<'a> {
                 if let Some(reexport_name) = import.reexport {
                     self.aux.reexports.insert(
                         reexport_name,
-                        (
-                            self.determine_import(
-                                &import.module,
-                                &import.js_namespace,
-                                type_.name,
-                            )?,
-                            generate_typescript,
-                        ),
+                        self.determine_import(&import.module, &import.js_namespace, type_.name)?,
                     );
                 }
                 return Ok(());
@@ -1837,9 +1804,7 @@ impl<'a> Context<'a> {
         // imported item.
         let js_import = self.determine_import(&import.module, &import.js_namespace, type_.name)?;
         if let Some(reexport_name) = import.reexport {
-            self.aux
-                .reexports
-                .insert(reexport_name, (js_import.clone(), generate_typescript));
+            self.aux.reexports.insert(reexport_name, js_import.clone());
         }
         self.aux
             .import_map
@@ -1850,18 +1815,11 @@ impl<'a> Context<'a> {
     fn string_enum(&mut self, string_enum: &decode::StringEnum<'_>) -> Result<(), Error> {
         let aux = AuxStringEnum {
             name: string_enum.name.to_string(),
-            comments: concatenate_comments(&string_enum.comments),
             variant_values: string_enum
                 .variant_values
                 .iter()
                 .map(|v| v.to_string())
                 .collect(),
-            generate_typescript: string_enum.generate_typescript,
-            private: string_enum.private,
-            js_namespace: string_enum
-                .js_namespace
-                .as_ref()
-                .map(|ns| ns.iter().map(|s| s.to_string()).collect()),
         };
         let mut result = Ok(());
         self.aux
@@ -1875,20 +1833,6 @@ impl<'a> Context<'a> {
     }
 
     fn dynamic_union(&mut self, dynamic_union: &decode::DynamicUnion<'_>) -> Result<(), Error> {
-        use crate::wit::AuxDynamicUnionVariant;
-
-        let mut variants = Vec::new();
-
-        // Add all string variants as pre-rendered literals.
-        for string_variant in dynamic_union.variant_strings.iter() {
-            variants.push(AuxDynamicUnionVariant::Literal(format!(
-                "\"{string_variant}\""
-            )));
-        }
-
-        // Add all type variants by looking up their descriptors. Defer the
-        // TypeScript rendering to JS-generation time so that renamed types
-        // resolve through `qualified_to_identifier`.
         for idx in 0..dynamic_union.variant_type_cnt {
             let descriptor_name = self.mangled(&wasm_bindgen_shared::dynamic_union_variant(
                 dynamic_union.name,
@@ -1907,26 +1851,16 @@ impl<'a> Context<'a> {
                     builder.output.len()
                 );
             }
-            variants.push(AuxDynamicUnionVariant::Type(builder.output[0].clone()));
         }
 
-        let aux = AuxDynamicUnion {
-            name: dynamic_union.name.to_string(),
-            comments: concatenate_comments(&dynamic_union.comments),
-            variants,
-            generate_typescript: dynamic_union.generate_typescript,
-            private: dynamic_union.private,
-            fallback: dynamic_union.fallback,
-        };
-        let mut result = Ok(());
-        self.aux
+        if !self
+            .aux
             .dynamic_unions
-            .entry(aux.name.clone())
-            .and_modify(|existing| {
-                result = Err(anyhow!("duplicate dynamic unions:\n{existing:?}\n{aux:?}"));
-            })
-            .or_insert(aux);
-        result
+            .insert(dynamic_union.name.to_string())
+        {
+            bail!("duplicate dynamic unions: {}", dynamic_union.name);
+        }
+        Ok(())
     }
 
     fn enum_(&mut self, enum_: decode::Enum<'_>) -> Result<(), Error> {
@@ -1953,7 +1887,7 @@ impl<'a> Context<'a> {
                     (v.name.to_string(), value, concatenate_comments(&v.comments))
                 })
                 .collect(),
-            generate_typescript: enum_.generate_typescript,
+
             js_namespace: enum_
                 .js_namespace
                 .as_ref()
@@ -2021,7 +1955,7 @@ impl<'a> Context<'a> {
                         kind: AuxExportedMethodKind::Getter,
                     },
                     js_namespace: None,
-                    generate_typescript: field.generate_typescript,
+
                     generate_jsdoc: field.generate_jsdoc,
                     variadic: false,
                     fn_ret_ty_override: None,
@@ -2061,7 +1995,7 @@ impl<'a> Context<'a> {
                         kind: AuxExportedMethodKind::Setter,
                     },
                     js_namespace: None,
-                    generate_typescript: field.generate_typescript,
+
                     generate_jsdoc: field.generate_jsdoc,
                     variadic: false,
                     fn_ret_ty_override: None,
@@ -2114,7 +2048,7 @@ impl<'a> Context<'a> {
             name: bare_identity,
             comments: concatenate_comments(&struct_.comments),
             is_inspectable: struct_.is_inspectable,
-            generate_typescript: struct_.generate_typescript,
+
             js_namespace: struct_
                 .js_namespace
                 .as_ref()
@@ -2197,9 +2131,6 @@ impl<'a> Context<'a> {
         js_namespace: &Option<Vec<String>>,
         item: &str,
     ) -> Result<JsImport, Error> {
-        // Similar to `--target no-modules`, only allow vendor prefixes
-        // basically for web apis, shouldn't be necessary for things like npm
-        // packages or other imported items.
         let vendor_prefixes = self.vendor_prefixes.get(item);
         if let Some(vendor_prefixes) = vendor_prefixes {
             assert!(!vendor_prefixes.is_empty());

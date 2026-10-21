@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "lockfiles_sha256": {
-    "Cargo.lock": "5a77406758f909f2f359d7afac62296ebb6999bbce8c4d24a65a8bef890a2ad4"
+    "Cargo.lock": "4c42a9ac5aa1640fa2749ca1c95255eebe62e249eddfcd471026d9d3f5b3a680"
   },
   "manifests_sha256": {
     "Cargo.toml": "1c6472894378c77e0b3e3c52b586039cdc6b030bada2609b3bbe9f719be96455",
@@ -312,7 +312,7 @@
     "src/foundation/walrus-macro/Cargo.toml": "d5d9375a57efaf6dc2fd67fc23a2e1dc446e383b2fa97ff9ff4d23e162636f46",
     "src/foundation/walrus/Cargo.toml": "000bec3ce31caa7077b94965a98356edc2a3808ed2b3da2a0c667a0002643895",
     "src/foundation/want/Cargo.toml": "8e577e9914b75b840b6f0e14c46cf59495c2504d62921e329b517d3ca6a77e9e",
-    "src/foundation/wasm-bindgen-cli-support/Cargo.toml": "eb7c503b7ebca2ad6316f5ecc931e410532b4c46cb698cb4b44097d7b8ba2d4e",
+    "src/foundation/wasm-bindgen-cli-support/Cargo.toml": "7b32497509a3abe7ab921422d6ae55e5bf9f3d231d6c1ac1b5e7cac805306143",
     "src/foundation/wasm-bindgen-futures/Cargo.toml": "0eaec7e0850444e2c9622f213641a8920bcb01fa47a3be9e802e605d349df9b8",
     "src/foundation/wasm-bindgen-macro-support/Cargo.toml": "955867ffc49d70dc18cbada9e69417a1cc0ea7381010f678745ce5e3a88719ed",
     "src/foundation/wasm-bindgen-macro/Cargo.toml": "18ca164ec7a6c183d2c79e8bb92a0118e12efca514ca74d725d4cc36a2d33372",
@@ -18113,21 +18113,21 @@
       "version": "0.2.129"
     },
     "src/foundation/wasm-bindgen-cli-support": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；云端按 ZXS Web/no-TypeScript 契约移除全部非 Web 后端、Emscripten 输出/JSPI hooks/描述器跳板、TypeScript 渲染和引用图/输出 API、wasm2es6js 与其唯一 base64 边；合并 Web 导入和导出引用 helper。保留浏览器加载/异常/线程/内存/文本回退，0.2.129 描述格式顺序消费与校验不变。",
       "description": "Shared support for the wasm-bindgen-cli package, an internal dependency",
       "directory": "src/foundation/wasm-bindgen-cli-support",
       "files_sha256": {
-        "Cargo.toml": "eb7c503b7ebca2ad6316f5ecc931e410532b4c46cb698cb4b44097d7b8ba2d4e",
-        "src/decode.rs": "8fa1b01bf93e599ec86b058b7cc287615c02b9605fb394bbe75f73681b5b4546",
+        "Cargo.toml": "7b32497509a3abe7ab921422d6ae55e5bf9f3d231d6c1ac1b5e7cac805306143",
+        "src/decode.rs": "b53d8dd82bc541f14eb740130ee7d0e2209d2bf1983835f06e4e32645a7553ef",
         "src/descriptor.rs": "29100039c02a2cc60a7f104d926e5f3188fc4776c3d9fba4149143918daf380f",
         "src/descriptors.rs": "83b39ab75da5479e0bdf4c0def09ff5891c418bc3a8c23005438f747e71e37f5",
         "src/externref.rs": "c862cc65d7133eea0e8dd4debe2b645ea9324917951c0ce6eebe87301d184d4a",
-        "src/interpreter/mod.rs": "52f2bbe616450eb5853327b143cf798f37161b2a29b79c02f96e11b64ace023a",
+        "src/interpreter/mod.rs": "439c2dfea47baa6531dc5d15cc7f30d07ed8b91a87f279d74f1cd923c87ddb33",
         "src/interpreter/smoke_tests.rs": "082b91e3e776891e0bd6f508af76ae3573a39d6192f21a642ab041f890e11544",
         "src/intrinsic.rs": "dd7a4b58680ae2b65094ddbd6c75f9b0dd07139cbf5792f913b39526152771bb",
-        "src/js/binding.rs": "290a034f11b6ed90465d645c7e3b3cb25c72359614ad02dbb9e6d619f247fdd9",
-        "src/js/mod.rs": "3b69afa642e174bf7eb3ed9e17c5cb815bcdb8c7dd2e8a7eb667d8284c6c64cf",
-        "src/lib.rs": "03659820fd1820439c41667f751cf8ce09cb56a774700d50d84801a2f71165f5",
+        "src/js/binding.rs": "fab3c4e24eb6fd7b0b5e764842898a305aee977ea38f1eaa9c5777bc133e9f08",
+        "src/js/mod.rs": "df33f3a8eedeed46d79902cf5382e167eece47d529192246009350c9a696b207",
+        "src/lib.rs": "1073624b439e1274f5bbbecc7d6a5171bbee008c3e6b25dfc013b25abbb750cd",
         "src/multivalue.rs": "803c80f3bd132a1bd3bb532be4b0541e35a376367adf9de28686916c9e2ec42a",
         "src/suggest.rs": "2585186767d94cf6f2e4f04e658c5e2ce6d263088ace994ca4ca7373c8174a07",
         "src/transforms/catch_handler.rs": "241b4b9f995ab4ac020dcd7f4424fdf879b0f0202b5a1e6df4909720c4b48e42",
@@ -18147,9 +18147,8 @@
         "src/transforms/externref/tests/table-grow-intrinsic.wat": "9e48c840bc80ec50bf745701e270c737084eaf76e4d7e3c8e5c647adbb7d8f9a",
         "src/transforms/externref/tests/table-set-null-intrinsic.wat": "f5997bbddf625a6f580fa67a59ebccc9391cbe302409a4483f82d4eeb084687a",
         "src/transforms/externref/tests/tee-before-grow.wat": "4f06be56834aeb593c5fae3a36068581b032af675ffc1e2a0716f0c3c1ebbc1c",
-        "src/transforms/jspi.rs": "2726653c228bf25e7ad55c30b33cc80dbb6ce8118c43d3c066f98d69323d2c36",
-        "src/transforms/jspi_hooks.rs": "0237d5dac3c9536d4db77186d5a34a2d69c7c0e2922978ab4175542836d58378",
-        "src/transforms/mod.rs": "299f85d0d836c05ffe47abeb067691a41c53024b43998ec17ff9c4a078f9db6f",
+        "src/transforms/jspi.rs": "4fe2e9dec149ea5d1d7a616ed8f5181b06adc1e25bfc8f5bb3c5c856b5081f02",
+        "src/transforms/mod.rs": "2b68c4b61309f2c91d5c0c32dfba1006a1411a0f05d05eb66c7703c143c8bccd",
         "src/transforms/multi_value/mod.rs": "7549427031402bcb30cf92ef4e65a5665a8dd3edf1b0e22726af9270a3b75299",
         "src/transforms/multi_value/tests/align.wat": "3aef5f1a7549c10ce2a03de7d021ce4247ed459bdfe681e2167dd0f1ea705a7d",
         "src/transforms/multi_value/tests/many.wat": "525d5004b1f086004e69c12b7b422d6d5499a42a72fdd6f137cddc7a46613cb3",
@@ -18160,11 +18159,10 @@
         "src/transforms/threads/mod.rs": "25617f8f3e885e619b702ce82ea62dba6da5354eba54e0992fde9dbab062dc9c",
         "src/transforms/threads/tests/basic.wat": "8938a2b9926a29eb9c731a968661ed57eecc33f95cc77a4f552c34941c0f4acc",
         "src/transforms/threads/tests/mod.rs": "3961aec6e11cf9dd34f16451a5be925959da929a238aa72e43bf3919b8756072",
-        "src/wasm2es6js.rs": "561cca5d6ce6345bdeeb4633f3e42505d31bc371da69e8c4ec428e0179194b96",
         "src/wasm_conventions.rs": "774442a1e3c7029fe76c24435b1a775399ae2002df0c6c8cc906a2d5b03c6d65",
         "src/wit/incoming.rs": "730ca5d96bec42c67e17c00d1ced2af3196be695971afcec57154149f7cc707b",
-        "src/wit/mod.rs": "30dcf020dd1fc2b55174f70adcbf4709d323c90ca8e0ea56cdcdbf7ddb1431bc",
-        "src/wit/nonstandard.rs": "998d9cbde96d50e0d6739deacbd73d432787b827b62d8c909e6c5e9cded2ccc0",
+        "src/wit/mod.rs": "02da956ff7e355e99ab6fc09f67f69fa11d6e2812843fce8bf66beffbef9b0ab",
+        "src/wit/nonstandard.rs": "2e1052c294c8fc783c8daf555b16937a38c817abf06653ac9f55b5c92f54c16c",
         "src/wit/outgoing.rs": "51538d39f8d661c0925b1029064a224cedd9e510b63704ec62adf811470429c0",
         "src/wit/standard.rs": "9b72bdd110dbc102b90da5e0d6ce6f054b4cdadc64d63ea9c30a8aecdb779ef5"
       },
@@ -20304,7 +20302,7 @@
       "version": "1.0.10"
     },
     "src/foundation/winnow": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。 2026-10-21：移除未使用且缺边的终端 parser debug/trace 表面；迁移真实 TOML 消费者，删除 trace 包装、结果探针、日志实现与未用可选特性，保留解析/错误/partial-input 合约。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。 2026-10-21：移除未使用且缺边的终端 parser debug/trace 表面；迁移真实 TOML 消费者，删除 trace 包装、结果探针、日志实现与未用可选特性，保留解析/错误/partial-input 合约。；算术示例错误诊断注释同步移除旧 debug feature 引用。",
       "description": "A byte-oriented, zero-copy, parser combinators library",
       "directory": "src/foundation/winnow",
       "files_sha256": {
@@ -20313,7 +20311,7 @@
         "examples/arithmetic/main.rs": "42982ed3cc995b5ee0aa0b0d8eb1dc656550a5a7d4e8d2099ea0c89654ae0136",
         "examples/arithmetic/parser.rs": "cc2ee2de1e10bca9fc10ab7b22bc77f7690b0bc287dabfdf006c61c51a44ee9b",
         "examples/arithmetic/parser_ast.rs": "eeb12535c386632e88ce18781d23e50c79512ff63f2349231f0d423df00bc4ad",
-        "examples/arithmetic/parser_lexer.rs": "996a5e48b0d35a6a897b5d35c33d94c708ac51f90f4b0803351c1cc928429d81",
+        "examples/arithmetic/parser_lexer.rs": "54b4725ce2074c84cfbe87be3ef171f9e6cebaf610e0563b4dac3640a6ebbdf0",
         "examples/arithmetic/test_parser.rs": "3f4568e039c4a5a66cdc76b41a8b0c1352f44a664bc2932d9386849b88d49095",
         "examples/arithmetic/test_parser_ast.rs": "19a9f18a4fb719a976bd470d5b8b403665e9a871bf9ab47dcb1c1c92b0083e0f",
         "examples/arithmetic/test_parser_lexer.rs": "ea6825693dece6fb60f39bdc80f6714b94dddac5482e27b17090355ed699a0d6",
@@ -21363,7 +21361,8 @@
       "files_sha256": {
         "Cargo.toml": "9e4fa929ef20246d202c133c361afe22fb59f05c90d16f5a3352bf301f5bbf34",
         "src/logging_tests.rs": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9",
-        "src/main.rs": "a233144dc5ef51ceebf1633d79620f9416308ba7c674a87868149f4cb8b0c8bb"
+        "src/main.rs": "841654e8e75c3e3585e5a8f103f2b94a5bdce8ac15ff5284db71c68bc6909df8",
+        "tests/fixtures/contract.rs": "ed0f5d4086663cadeef70ae76153aa4d8e086d2e94f99aa0aa2299eefe63fc2f"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -28513,16 +28512,6 @@
         },
         "src/foundation/anyhow": {
           "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/base64-0.22.1": {
-          "features": [
-            "alloc",
             "default",
             "std"
           ],

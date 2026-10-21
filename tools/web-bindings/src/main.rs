@@ -46,14 +46,13 @@ where
     };
     let mut bindgen = Bindgen::new();
     let Target::Web = args.target;
-    bindgen.web(true)?;
+    debug_assert!(args.no_typescript, "required by the CLI output contract");
     // Match upstream CLI defaults exactly for the formal ZXS invocation.
     // Bindgen::new() differs here: it initially omits the default Wasm URL and
     // reads an externref environment override that the upstream CLI clears.
     #[allow(deprecated)]
     bindgen
         .input_path(&args.input)
-        .typescript(!args.no_typescript)
         .out_name(&args.out_name)
         .omit_default_module_path(false)
         .reference_types(false);
@@ -86,7 +85,15 @@ mod tests {
             "app.wasm",
         ];
         assert!(Args::try_parse_from(arguments).is_ok());
-        for target in ["bundler", "nodejs", "deno", "no-modules"] {
+        for target in [
+            "bundler",
+            "nodejs",
+            "nodejs-module",
+            "deno",
+            "no-modules",
+            "emscripten",
+            "module",
+        ] {
             let mut changed = arguments;
             changed[2] = target;
             assert!(Args::try_parse_from(changed).is_err(), "{target}");
@@ -97,6 +104,31 @@ mod tests {
                 .filter(|arg| *arg != "--no-typescript")
         )
         .is_err());
+    }
+
+    #[test]
+    fn emscripten_markers_fail_before_descriptor_processing() {
+        for name in [
+            "__wasm_bindgen_emscripten_marker",
+            "__wasm_bindgen_emscripten_jspi_marker",
+        ] {
+            let mut wasm = b"\0asm\x01\0\0\0".to_vec();
+            // Each name and section fit in a single unsigned LEB128 byte.
+            wasm.extend([0, (name.len() + 1) as u8, name.len() as u8]);
+            wasm.extend(name.as_bytes());
+            let mut generator = Bindgen::new();
+            generator.input_bytes("unsupported", wasm);
+            let error = generator
+                .generate_output()
+                .err()
+                .expect("must reject unsupported backend");
+            assert!(
+                error
+                    .to_string()
+                    .contains("unsupported Emscripten module marker"),
+                "{error}"
+            );
+        }
     }
 
     #[test]

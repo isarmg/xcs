@@ -71,17 +71,6 @@ pub struct Interpreter {
     /// and `__wasm_call_dtors`.
     skip_calls: HashSet<FunctionId>,
     stopped: bool,
-
-    /// Emscripten `env::invoke_*` trampolines. Emscripten rewrites direct calls
-    /// that may unwind/longjmp into indirect calls through the function table,
-    /// wrapped in these imported helpers (`invoke_v(fnptr)`, `invoke_vi(fnptr,
-    /// a)`, ...). The first argument is the table index of the real target; the
-    /// rest are forwarded. Maps the import id to its number of result values.
-    invoke_imports: HashMap<FunctionId, usize>,
-
-    /// Function table contents (index -> function), reconstructed from active
-    /// element segments. Used to resolve the target of an `invoke_*` call.
-    funcref_table: BTreeMap<i32, FunctionId>,
 }
 
 fn skip_calls(module: &Module, id: FunctionId) -> HashSet<FunctionId> {
@@ -186,40 +175,6 @@ impl Interpreter {
                 ret.describe_id = Some(id);
             } else if import.name == "__wbindgen_describe_generic_import" {
                 ret.describe_generic_import_id = Some(id);
-            }
-        }
-
-        // Collect emscripten `invoke_*` trampolines so calls to them can be
-        // redirected to their real (table-indexed) targets during descriptor
-        // interpretation.
-        for import in module.imports.iter() {
-            let id = match import.kind {
-                walrus::ImportKind::Function(id) => id,
-                _ => continue,
-            };
-            if import.module == "env" && import.name.starts_with("invoke_") {
-                let results = module.types.get(module.funcs.get(id).ty()).results().len();
-                ret.invoke_imports.insert(id, results);
-            }
-        }
-
-        // Reconstruct the function table from active element segments so an
-        // `invoke_*(fnptr, ..)` can resolve `fnptr` to a concrete function.
-        for element in module.elements.iter() {
-            let offset = match &element.kind {
-                walrus::ElementKind::Active { offset, .. } => offset,
-                _ => continue,
-            };
-            let base = match offset {
-                walrus::ConstExpr::Value(walrus::ir::Value::I32(n)) => *n,
-                walrus::ConstExpr::Value(walrus::ir::Value::I64(n)) => *n as i32,
-                walrus::ConstExpr::Global(g) => ret.globals.get(g).copied().unwrap_or(0),
-                _ => continue,
-            };
-            if let walrus::ElementItems::Functions(funcs) = &element.items {
-                for (i, func) in funcs.iter().enumerate() {
-                    ret.funcref_table.insert(base + i as i32, *func);
-                }
             }
         }
 
@@ -338,8 +293,7 @@ struct Frame<'a> {
 
 /// Result of evaluating an instruction sequence: either it ran to the end, a
 /// branch escaped to an enclosing block, or the function returned. Needed to
-/// interpret the control flow emscripten emits around `invoke_*` (the "did it
-/// throw?" guard) in descriptor functions.
+/// interpret nested control flow in descriptor functions.
 enum Flow {
     Normal,
     Branch(InstrSeqId),
@@ -580,22 +534,7 @@ impl Frame<'_> {
                             .collect::<Vec<_>>();
                         args.reverse();
 
-                        // Redirect emscripten `invoke_*(fnptr, ..args)` to the
-                        // table-indexed target, forwarding the trailing args.
-                        if self.interp.invoke_imports.contains_key(&func) {
-                            let (&fnptr, rest) = args
-                                .split_first()
-                                .expect("invoke_* always takes a function pointer");
-                            let target =
-                                *self.interp.funcref_table.get(&fnptr).unwrap_or_else(|| {
-                                    panic!(
-                                        "invoke_* target {fnptr} not found in the function table"
-                                    )
-                                });
-                            self.interp.call(target, self.module, rest);
-                        } else {
-                            self.interp.call(func, self.module, &args);
-                        }
+                        self.interp.call(func, self.module, &args);
                     }
 
                     if let Instr::ReturnCall(_) = instr {

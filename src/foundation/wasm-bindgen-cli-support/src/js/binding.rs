@@ -10,10 +10,9 @@ use crate::wit::InstructionData;
 use crate::wit::{
     Adapter, AdapterId, AdapterKind, AdapterType, AuxFunctionArgumentData, ClosureDtor, Instruction,
 };
-use crate::OutputMode;
 use anyhow::{bail, Error};
 use std::borrow::Cow;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fmt::Write;
 use walrus::{Module, ValType};
 use wasm_bindgen_shared::identifier::is_valid_ident;
@@ -81,30 +80,14 @@ pub struct JsBuilder<'a, 'b> {
 
 pub struct JsFunction {
     pub code: String,
-    pub ts_sig: String,
+
     pub js_doc: String,
-    pub ts_doc: String,
-    pub ts_arg_tys: Vec<String>,
-    pub ts_ret_ty: Option<String>,
-    pub ts_refs: HashSet<TsReference>,
-    /// Whether this function has a single optional argument.
-    ///
-    /// If the function is a setter, that means that the field it sets is optional.
-    pub might_be_optional_field: bool,
+
     pub catch: bool,
     pub log_error: bool,
     /// True when the generated JS function body uses `await` (JSPI exports that
     /// return a value).  The function definition must then be prefixed with `async`.
     pub jspi_async: bool,
-}
-
-/// A references to an (likely) exported symbol used in TS type expression.
-///
-/// Right now, only string enum and dynamic unions require this type of analysis.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TsReference {
-    StringEnum(String),
-    DynamicUnion(String),
 }
 
 /// Whether and how to guard an export call against instance termination.
@@ -395,12 +378,6 @@ impl<'a, 'b> Builder<'a, 'b> {
         }
         assert!(js.stack.is_empty());
 
-        // // Remove extraneous typescript args which were synthesized and aren't
-        // // part of our function shim.
-        // while self.ts_args.len() > function_args.len() {
-        //     self.ts_args.remove(0);
-        // }
-
         let mut code = String::new();
         code.push('(');
         for (i, v) in function_args.iter().enumerate() {
@@ -436,28 +413,16 @@ impl<'a, 'b> Builder<'a, 'b> {
         code.push_str(&call);
         code.push('}');
 
-        // Rust Structs' fields converted into Getter and Setter functions before
-        // we decode them from webassembly, finding if a function is a field
-        // should start from here. Struct fields(Getter) only have one arg, and
-        // this is the clue we can infer if a function might be a field.
-        let mut might_be_optional_field = false;
-        // For JSPI exports, the return type should be `Promise<T>` in TypeScript
-        // (just like async functions). We pass the OR of the two flags.
-        let ts_asyncness = asyncness || self.cx.current_adapter_jspi;
-        let (ts_sig, ts_arg_tys, ts_ret_ty, ts_refs) = self.typescript_signature(
-            &function_args,
-            &arg_tys,
-            &adapter.inner_results,
-            &mut might_be_optional_field,
-            ts_asyncness,
-            variadic,
-            ret_ty_override,
-        );
         let js_doc = if generate_jsdoc {
+            let return_type = self.js_doc_return_type(
+                &adapter.inner_results,
+                asyncness || self.cx.current_adapter_jspi,
+                ret_ty_override,
+            );
             self.js_doc_comments(
                 &function_args,
                 &arg_tys,
-                &ts_ret_ty,
+                &return_type,
                 variadic,
                 ret_ty_override,
                 ret_desc,
@@ -466,156 +431,46 @@ impl<'a, 'b> Builder<'a, 'b> {
             String::new()
         };
 
-        // generate ts_doc
-        // ts doc is slightly different than js doc, where there is no
-        // arguments types followed after @param tag, as well as no special
-        // casings for arguments names such as "@param {string} [arg]" that
-        // tags the argument as optional, for ts doc we only need arg names
-        // and rest are just derived from function ts signature
-        let ts_doc = self.ts_doc_comments(&function_args, ret_desc);
-
         Ok(JsFunction {
             code,
-            ts_sig,
+
             js_doc,
-            ts_doc,
-            ts_arg_tys,
-            ts_ret_ty,
-            ts_refs,
-            might_be_optional_field,
+
             catch: self.catch,
             log_error: self.log_error,
             jspi_async,
         })
     }
 
-    /// Returns the typescript signature of the binding that this has described.
-    /// This is used to generate all the TypeScript definitions later on.
-    ///
-    /// Note that the TypeScript returned here is just the argument list and the
-    /// return value, it doesn't include the function name in any way.
-    fn typescript_signature(
+    /// Describe JavaScript return values without building declaration output.
+    fn js_doc_return_type(
         &self,
-        args_data: &[AuxFunctionArgumentData],
-        arg_tys: &[&AdapterType],
-        result_tys: &[AdapterType],
-        might_be_optional_field: &mut bool,
+        results: &[AdapterType],
         asyncness: bool,
-        variadic: bool,
-        ret_ty_override: &Option<String>,
-    ) -> (String, Vec<String>, Option<String>, HashSet<TsReference>) {
-        // Build up the typescript signature as well
-        let mut omittable = true;
-        let mut ts_args = Vec::new();
-        let mut ts_arg_tys = Vec::new();
-        let mut ts_refs = HashSet::new();
-        for (
-            AuxFunctionArgumentData {
-                name,
-                ty_override,
-                optional,
-                ..
-            },
-            ty,
-        ) in args_data.iter().zip(arg_tys).rev()
-        {
-            // In TypeScript, we can mark optional parameters as omittable
-            // using the `?` suffix, but only if they're not followed by
-            // non-omittable parameters. Therefore iterate the parameter list
-            // in reverse and stop using the `?` suffix for optional params as
-            // soon as a non-optional parameter is encountered.
-            let mut arg = name.to_string();
-            let mut ts = String::new();
-            if let Some(v) = ty_override {
-                omittable = false;
-                if *optional {
-                    arg.push('?');
-                }
-                arg.push_str(": ");
-                ts.push_str(v);
-            } else {
-                match ty {
-                    AdapterType::Option(ty) if omittable => {
-                        // e.g. `foo?: string | null`
-                        arg.push_str("?: ");
-                        adapter2ts(
-                            ty,
-                            TypePosition::Argument,
-                            &mut ts,
-                            Some(&mut ts_refs),
-                            &self.cx.qualified_to_identifier,
-                            self.cx.config.ts_typed_array_buffers,
-                        );
-                        ts.push_str(" | null");
-                    }
-                    ty => {
-                        adapter2ts(
-                            ty,
-                            TypePosition::Argument,
-                            &mut ts,
-                            Some(&mut ts_refs),
-                            &self.cx.qualified_to_identifier,
-                            self.cx.config.ts_typed_array_buffers,
-                        );
-                        omittable = false;
-                        arg.push_str(": ");
-                    }
-                }
-            }
-            arg.push_str(&ts);
-            ts_arg_tys.push(ts);
-            ts_args.push(arg);
+        override_type: &Option<String>,
+    ) -> Option<String> {
+        if self.constructor.is_some() {
+            return None;
         }
-        ts_args.reverse();
-        ts_arg_tys.reverse();
-        let mut ts = String::from("(");
-        if variadic {
-            if let Some((last, non_variadic_args)) = ts_args.split_last() {
-                ts.push_str(&non_variadic_args.join(", "));
-                if !non_variadic_args.is_empty() {
-                    ts.push_str(", ");
-                }
-                ts.push_str((String::from("...") + last).as_str())
-            }
+        let mut doc_type = String::new();
+        if let Some(value) = override_type {
+            doc_type.push_str(value);
         } else {
-            ts.push_str(&ts_args.join(", "));
-        };
-        ts.push(')');
-
-        // If this function is an optional field's setter, it should have only
-        // one arg, and omittable should be `true`.
-        if ts_args.len() == 1 && omittable {
-            *might_be_optional_field = true;
-        }
-
-        // Constructors have no listed return type in typescript
-        let mut ts_ret = None;
-        if self.constructor.is_none() {
-            ts.push_str(": ");
-            let mut ret = String::new();
-            if let Some(v) = &ret_ty_override {
-                ret.push_str(v);
-            } else {
-                match result_tys.len() {
-                    0 => ret.push_str("void"),
-                    1 => adapter2ts(
-                        &result_tys[0],
-                        TypePosition::Return,
-                        &mut ret,
-                        Some(&mut ts_refs),
-                        &self.cx.qualified_to_identifier,
-                        self.cx.config.ts_typed_array_buffers,
-                    ),
-                    _ => ret.push_str("[any]"),
-                }
+            match results.len() {
+                0 => doc_type.push_str("void"),
+                1 => adapter2jsdoc(
+                    &results[0],
+                    JsDocTypePosition::Return,
+                    &mut doc_type,
+                    &self.cx.qualified_to_identifier,
+                ),
+                _ => doc_type.push_str("[any]"),
             }
-            if asyncness {
-                ret = format!("Promise<{ret}>");
-            }
-            ts.push_str(&ret);
-            ts_ret = Some(ret);
         }
-        (ts, ts_arg_tys, ts_ret, ts_refs)
+        if asyncness {
+            doc_type = format!("Promise<{doc_type}>");
+        }
+        Some(doc_type)
     }
 
     /// Returns a helpful JS doc comment which lists types for all parameters
@@ -624,7 +479,7 @@ impl<'a, 'b> Builder<'a, 'b> {
         &self,
         args_data: &[AuxFunctionArgumentData],
         arg_tys: &[&AdapterType],
-        ts_ret: &Option<String>,
+        return_type: &Option<String>,
         variadic: bool,
         ret_ty_override: &Option<String>,
         ret_desc: &Option<String>,
@@ -664,13 +519,11 @@ impl<'a, 'b> Builder<'a, 'b> {
             } else {
                 match ty {
                     AdapterType::Option(ty) if omittable => {
-                        adapter2ts(
+                        adapter2jsdoc(
                             ty,
-                            TypePosition::Argument,
+                            JsDocTypePosition::Argument,
                             &mut arg,
-                            None,
                             &self.cx.qualified_to_identifier,
-                            self.cx.config.ts_typed_array_buffers,
                         );
                         arg.push_str(" | null} ");
                         arg.push('[');
@@ -679,13 +532,11 @@ impl<'a, 'b> Builder<'a, 'b> {
                     }
                     _ => {
                         omittable = false;
-                        adapter2ts(
+                        adapter2jsdoc(
                             ty,
-                            TypePosition::Argument,
+                            JsDocTypePosition::Argument,
                             &mut arg,
-                            None,
                             &self.cx.qualified_to_identifier,
-                            self.cx.config.ts_typed_array_buffers,
                         );
                         arg.push_str("} ");
                         arg.push_str(name);
@@ -717,13 +568,11 @@ impl<'a, 'b> Builder<'a, 'b> {
             if let Some(v) = ty_override {
                 ret.push_str(v);
             } else {
-                adapter2ts(
+                adapter2jsdoc(
                     ty,
-                    TypePosition::Argument,
+                    JsDocTypePosition::Argument,
                     &mut ret,
-                    None,
                     &self.cx.qualified_to_identifier,
-                    self.cx.config.ts_typed_array_buffers,
                 );
             }
             ret.push_str("} ");
@@ -736,10 +585,10 @@ impl<'a, 'b> Builder<'a, 'b> {
             }
             ret.push('\n');
         }
-        if let Some(ts) = ret_ty_override.as_ref().or(ts_ret.as_ref()) {
+        if let Some(doc_type) = ret_ty_override.as_ref().or(return_type.as_ref()) {
             // skip if type is void and there is no description
-            if ts != "void" || ret_desc.is_some() {
-                ret.push_str(&format!("@returns {{{ts}}}"));
+            if doc_type != "void" || ret_desc.is_some() {
+                ret.push_str(&format!("@returns {{{doc_type}}}"));
             }
             // append return description
             if let Some(v) = ret_desc {
@@ -748,35 +597,6 @@ impl<'a, 'b> Builder<'a, 'b> {
             }
         }
         ret
-    }
-
-    /// Returns a helpful TS doc comment which lists all parameters and
-    /// the return value descriptions.
-    fn ts_doc_comments(
-        &self,
-        args_data: &[AuxFunctionArgumentData],
-        ret_desc: &Option<String>,
-    ) -> String {
-        let mut ts_doc = String::new();
-        // ofc we dont need arg type for ts doc, only arg name
-        for AuxFunctionArgumentData { name, desc, .. } in args_data.iter() {
-            ts_doc.push_str("@param ");
-            ts_doc.push_str(name);
-
-            // append desc
-            if let Some(v) = desc {
-                ts_doc.push_str(" - ");
-                ts_doc.push_str(v);
-            }
-            ts_doc.push('\n');
-        }
-
-        // only if there is return description, as we dont want empty @return tag
-        if let Some(ret_desc) = ret_desc {
-            ts_doc.push_str("@returns ");
-            ts_doc.push_str(ret_desc);
-        }
-        ts_doc
     }
 }
 
@@ -1261,7 +1081,7 @@ fn instruction(
             // an LLVM-synthesized `i64` sret, arriving in JS as a BigInt, so
             // coerce it to a number before doing pointer arithmetic.
             let val = js.pop();
-            let mem_string = mem.access(js.cx.config.mode.emscripten());
+            let mem_string = mem.access();
             let expr = format!(
                 "{mem_string}.{method}({retptr} + {size} * {offset}, {val}, true);",
                 retptr = if js.cx.memory64 {
@@ -1289,7 +1109,7 @@ fn instruction(
             // If we're loading from the return pointer then we must have pushed
             // it earlier, and we always push the same value, so load that value
             // here
-            let mem_string = mem.access(js.cx.config.mode.emscripten());
+            let mem_string = mem.access();
 
             let expr = format!("{mem_string}.{method}(retptr + {size} * {scaled_offset}, true)");
             js.prelude(&format!("var r{offset} = {expr};"));
@@ -1787,10 +1607,6 @@ fn instruction(
             let a = js.pop();
             let wrapper = js.cx.export_adapter_name(*adapter);
 
-            if matches!(js.cx.config.mode, OutputMode::Emscripten) {
-                js.cx.adapter_deps.insert(wrapper.clone());
-            }
-
             // TODO: further merge the heap and stack closure handling as
             // they're almost identical (by nature) except for ownership
             // integration.
@@ -2135,22 +1951,13 @@ impl Invocation {
                 // wrapping them causes them to return a discarded Promise instead of
                 // running synchronously as expected.
                 if cx.current_adapter_jspi && !defer {
-                    // Emit a module-level lazy cache variable and wrap the
-                    // call with `WebAssembly.promising` so the fiber can
-                    // suspend via JSPI. On emscripten the cache variable must
-                    // be its own library symbol (module-scope `let`s aren't
-                    // preserved there); the `intrinsic` helper handles both.
                     let cache_var = format!(
                         "__wbg_jspi_{}",
                         name.replace(|c: char| !c.is_ascii_alphanumeric(), "_")
                     );
-                    let decl = if matches!(cx.config.mode, OutputMode::Emscripten) {
-                        Cow::Borrowed("undefined")
-                    } else {
-                        Cow::Owned(format!("let {cache_var};"))
-                    };
-                    cx.intrinsic(Cow::Owned(cache_var.clone()), Some(&cache_var), decl, &[]);
-                    let raw = cx.raw_wasm_export_ref(&name);
+                    let decl = { Cow::Owned(format!("let {cache_var};")) };
+                    cx.intrinsic(Cow::Owned(cache_var.clone()), decl);
+                    let raw = cx.wasm_export_ref(&name);
                     Ok(format!(
                         "({cache_var} ??= WebAssembly.promising({raw}))({})",
                         args.join(", ")
@@ -2196,18 +2003,17 @@ impl Invocation {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub(crate) enum TypePosition {
+pub(crate) enum JsDocTypePosition {
     Argument,
     Return,
 }
 
-pub(crate) fn adapter2ts(
+/// Render a type annotation in a JavaScript documentation comment.
+pub(crate) fn adapter2jsdoc(
     ty: &AdapterType,
-    position: TypePosition,
+    position: JsDocTypePosition,
     dst: &mut String,
-    refs: Option<&mut HashSet<TsReference>>,
     name_map: &HashMap<String, String>,
-    typed_array_buffers: bool,
 ) {
     match ty {
         AdapterType::I32
@@ -2226,53 +2032,29 @@ pub(crate) fn adapter2ts(
         | AdapterType::S128
         | AdapterType::U128 => dst.push_str("bigint"),
         AdapterType::String => dst.push_str("string"),
-        AdapterType::Externref => dst.push_str("any"),
+        AdapterType::Externref | AdapterType::Function => dst.push_str("any"),
         AdapterType::Bool => dst.push_str("boolean"),
-        AdapterType::Vector(kind) => match kind {
-            VectorKind::NamedExternref(name) => {
-                let resolved = name_map.get(name).map(|s| s.as_str()).unwrap_or(name);
-                if is_valid_ident(resolved) {
-                    dst.push_str(&format!("{resolved}[]"));
-                } else {
-                    dst.push_str(&format!("({resolved})[]"));
-                }
+        AdapterType::Vector(VectorKind::NamedExternref(name)) => {
+            let resolved = name_map.get(name).map(|s| s.as_str()).unwrap_or(name);
+            if is_valid_ident(resolved) {
+                dst.push_str(&format!("{resolved}[]"));
+            } else {
+                dst.push_str(&format!("({resolved})[]"));
             }
-            VectorKind::String | VectorKind::Externref => dst.push_str(&kind.js_ty()),
-            _ => {
-                dst.push_str(&kind.js_ty());
-                // Owned typed-array returns are always copied out of wasm
-                // memory into a fresh, non-shared `ArrayBuffer`.
-                if typed_array_buffers && matches!(position, TypePosition::Return) {
-                    dst.push_str("<ArrayBuffer>");
-                }
-            }
-        },
-        AdapterType::Option(ty) => {
-            adapter2ts(ty, position, dst, refs, name_map, typed_array_buffers);
+        }
+        AdapterType::Vector(kind) => dst.push_str(&kind.js_ty()),
+        AdapterType::Option(inner) => {
+            adapter2jsdoc(inner, position, dst, name_map);
             dst.push_str(match position {
-                TypePosition::Argument => " | null | undefined",
-                TypePosition::Return => " | undefined",
+                JsDocTypePosition::Argument => " | null | undefined",
+                JsDocTypePosition::Return => " | undefined",
             });
         }
-        AdapterType::NamedExternref(name) => dst.push_str(name),
+        AdapterType::NamedExternref(name)
+        | AdapterType::StringEnum(name)
+        | AdapterType::DynamicUnion(name) => dst.push_str(name),
         AdapterType::Struct(name) | AdapterType::Enum(name) => {
-            let resolved = name_map.get(name).map(|s| s.as_str()).unwrap_or(name);
-            dst.push_str(resolved);
+            dst.push_str(name_map.get(name).map(|s| s.as_str()).unwrap_or(name));
         }
-        AdapterType::StringEnum(name) => {
-            if let Some(refs) = refs {
-                refs.insert(TsReference::StringEnum(name.clone()));
-            }
-
-            dst.push_str(name);
-        }
-        AdapterType::DynamicUnion(name) => {
-            if let Some(refs) = refs {
-                refs.insert(TsReference::DynamicUnion(name.clone()));
-            }
-
-            dst.push_str(name);
-        }
-        AdapterType::Function => dst.push_str("any"),
     }
 }

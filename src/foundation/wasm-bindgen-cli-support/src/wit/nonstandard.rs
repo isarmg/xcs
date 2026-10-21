@@ -11,10 +11,6 @@ use walrus::TypedCustomSectionId;
 /// processed in the JS generation pass.
 #[derive(Default, Debug)]
 pub struct WasmBindgenAux {
-    /// Extra typescript annotations that should be appended to the generated
-    /// TypeScript file. This is provided via a custom attribute in Rust code.
-    pub extra_typescript: Vec<String>,
-
     /// A map from identifier to the contents of each local module defined via
     /// the `#[wasm_bindgen(module = "/foo.js")]` import options.
     pub local_modules: HashMap<String, String>,
@@ -45,8 +41,7 @@ pub struct WasmBindgenAux {
     pub import_comments: HashMap<AdapterId, String>,
 
     /// List of imports that should be re-exported, keyed by reexport name.
-    /// The bool indicates whether TypeScript definitions should be generated for the reexport.
-    pub reexports: BTreeMap<String, (JsImport, bool)>,
+    pub reexports: BTreeMap<String, JsImport>,
 
     /// Small bits of metadata about imports.
     pub imports_with_catch: HashSet<AdapterId>,
@@ -54,17 +49,16 @@ pub struct WasmBindgenAux {
     pub imports_with_assert_no_shim: HashSet<AdapterId>,
     pub imports_with_suspending: HashSet<AdapterId>,
 
-    /// Auxiliary information to go into JS/TypeScript bindings describing the
+    /// Auxiliary information to go into JavaScript bindings describing the
     /// exported enums from Rust.
     pub enums: HashMap<String, AuxEnum>,
-    /// Auxiliary information to go into JS/TypeScript bindings describing the
+    /// Auxiliary information to go into JavaScript bindings describing the
     /// exported string enums from Rust.
     pub string_enums: HashMap<String, AuxStringEnum>,
-    /// Auxiliary information to go into JS/TypeScript bindings describing the
-    /// exported dynamic unions from Rust.
-    pub dynamic_unions: HashMap<String, AuxDynamicUnion>,
+    /// Names already checked for duplicate dynamic union declarations.
+    pub dynamic_unions: HashSet<String>,
 
-    /// Auxiliary information to go into JS/TypeScript bindings describing the
+    /// Auxiliary information to go into JavaScript bindings describing the
     /// exported structs from Rust and their fields they've got exported.
     pub structs: Vec<AuxStruct>,
 
@@ -130,7 +124,7 @@ pub struct AuxExport {
     /// Function's argument info in Rust forwarded here to configure the signature
     /// that shows up in bindings.
     pub args: Option<Vec<AuxFunctionArgumentData>>,
-    /// Whether this is an async function, to configure the TypeScript return value.
+    /// Whether this is an async function, to configure its Promise return documentation.
     pub asyncness: bool,
     /// Whether this export should be wrapped with `WebAssembly.promising` so
     /// it returns a JS Promise and can suspend via JSPI.
@@ -139,11 +133,9 @@ pub struct AuxExport {
     pub kind: AuxExportKind,
     /// The namespace to export the item through, if any
     pub js_namespace: Option<Vec<String>>,
-    /// Whether typescript bindings should be generated for this export.
-    pub generate_typescript: bool,
     /// Whether jsdoc comments should be generated for this export.
     pub generate_jsdoc: bool,
-    /// Whether typescript bindings should be generated for this export.
+    /// Whether the final argument is variadic.
     pub variadic: bool,
     /// Function's return overriding type
     pub fn_ret_ty_override: Option<String>,
@@ -250,10 +242,7 @@ pub struct AuxEnum {
     /// The copied Rust comments to forward to JS
     pub comments: String,
     /// A list of variants with their name, value and comments
-    /// and whether typescript bindings should be generated for each variant
     pub variants: Vec<(String, i64, String)>,
-    /// Whether typescript bindings should be generated for this enum.
-    pub generate_typescript: bool,
     /// Whether to not export this enum from the module exports
     pub private: bool,
     /// The namespace to export the enum through, if any
@@ -262,55 +251,10 @@ pub struct AuxEnum {
 
 #[derive(Debug)]
 pub struct AuxStringEnum {
-    /// The name of this enum
+    /// The name of this enum.
     pub name: String,
-    /// The copied Rust comments to forward to JS
-    pub comments: String,
-    /// A list of variants values
+    /// Runtime values used by ABI conversions.
     pub variant_values: Vec<String>,
-    /// Whether typescript bindings should be generated for this enum.
-    pub generate_typescript: bool,
-    /// Whether to suppress the `export` keyword on the generated TS type
-    /// alias.
-    pub private: bool,
-    /// The namespace to export the enum through, if any
-    /// Note: Currently unused as string enums don't generate exports,
-    /// but kept for consistency and potential future use.
-    #[allow(dead_code)]
-    pub js_namespace: Option<Vec<String>>,
-}
-
-#[derive(Debug)]
-pub struct AuxDynamicUnion {
-    /// The name of this enum
-    pub name: String,
-    /// The copied Rust comments to forward to JS
-    pub comments: String,
-    /// The list of variants. Each variant is either a quoted string literal
-    /// (already wrapped in `"..."`) or an [`AdapterType`] whose TypeScript
-    /// rendering depends on the JS-context name map.
-    pub variants: Vec<AuxDynamicUnionVariant>,
-    /// Whether typescript bindings should be generated for this enum.
-    pub generate_typescript: bool,
-    /// Whether to suppress the `export` keyword on the generated TS type
-    /// alias.
-    pub private: bool,
-    /// Whether the last tuple variant acts as an unconditional fallback.
-    /// Currently informational on the cli-support side; the codegen on the
-    /// macro side already inlines the fallback into the generated
-    /// `from_abi` / `try_from_js_value` impls.
-    #[allow(dead_code)]
-    pub fallback: bool,
-}
-
-#[derive(Debug)]
-pub enum AuxDynamicUnionVariant {
-    /// A pre-rendered TypeScript fragment, used for string literal variants
-    /// like `"loading"` whose form does not depend on later name resolution.
-    Literal(String),
-    /// A variant whose TypeScript rendering must be deferred until JS
-    /// generation, when the name map for renamed types is available.
-    Type(crate::wit::AdapterType),
 }
 
 #[derive(Debug)]
@@ -324,8 +268,6 @@ pub struct AuxStruct {
     pub comments: String,
     /// Whether to generate helper methods for inspecting the class
     pub is_inspectable: bool,
-    /// Whether typescript bindings should be generated for this struct.
-    pub generate_typescript: bool,
     /// Whether to not export this struct from the module exports
     pub private: bool,
     /// The namespace to export the struct through, if any

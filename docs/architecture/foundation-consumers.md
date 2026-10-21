@@ -26,7 +26,7 @@ flowchart TD
 | root-native | src/auth/Cargo.toml, src/contract/Cargo.toml, src/naming/Cargo.toml, src/platform/Cargo.toml, src/engine/Cargo.toml, src/server/Cargo.toml, src/client/Cargo.toml, src/admin/Cargo.toml | x86_64-unknown-linux-gnu | 200 / 176 / 25 |
 | web | src/web/Cargo.toml | wasm32-unknown-unknown | 100 / 63 / 43 |
 | smb | src/smb/Cargo.toml, src/smb-vfs/Cargo.toml | x86_64-unknown-linux-gnu | 42 / 15 / 34 |
-| build-tools | tools/web-build/Cargo.toml, tools/release-tools/Cargo.toml, tools/web-bindings/Cargo.toml | x86_64-unknown-linux-gnu | 83 / 0 / 83 |
+| build-tools | tools/web-build/Cargo.toml, tools/release-tools/Cargo.toml, tools/web-bindings/Cargo.toml | x86_64-unknown-linux-gnu | 82 / 0 / 82 |
 | validation-tools | tools/contract-check/Cargo.toml, tools/browser-smoke/Cargo.toml, tools/unicode-build/Cargo.toml, tools/perf-check/Cargo.toml | x86_64-unknown-linux-gnu | 170 / 0 / 170 |
 
 角色可重叠，计数不可相加。显式验证成员：src/foundation/ring。
@@ -57,7 +57,7 @@ flowchart TD
 | src/foundation/axum (axum@0.8.9) | src/server [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=default,form,http1,json,macros,matched-path,original-uri,query,tokio,tower-log,tracing |
 | src/foundation/axum-core (axum-core@0.5.6) | src/foundation/axum [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=tracing |
 | src/foundation/axum-macros (axum-macros@0.5.1) | src/foundation/axum [normal, optional] | root-native@x86_64-unknown-linux-gnu: compile; features=default |
-| src/foundation/base64-0.22.1 (base64@0.22.1) | src/foundation/axum [normal, optional]; src/foundation/reqwest [normal]; src/foundation/tower-http [normal, optional]; src/foundation/wasm-bindgen-cli-support [normal]; tools/browser-smoke [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,default,std; build-tools@x86_64-unknown-linux-gnu: compile; features=alloc,default,std; validation-tools@x86_64-unknown-linux-gnu: compile; features=alloc,default,std |
+| src/foundation/base64-0.22.1 (base64@0.22.1) | src/foundation/axum [normal, optional]; src/foundation/reqwest [normal]; src/foundation/tower-http [normal, optional]; tools/browser-smoke [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,default,std; validation-tools@x86_64-unknown-linux-gnu: compile; features=alloc,default,std |
 | src/foundation/base64-0.23.1 (base64@0.23.1) | src/auth [normal]; src/foundation/hyper-util [normal, optional] | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,default,simd-unsafe,std |
 | src/foundation/base64ct (base64ct@1.8.3) | src/foundation/argon2 [normal]; src/foundation/password-hash [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,std |
 | src/foundation/bindgen (bindgen@0.72.1) | src/foundation/libsqlite3-sys [build, optional]; src/smb-vfs [build, optional] | smb@x86_64-unknown-linux-gnu: compile; features=default,logging,prettyplease,runtime |
