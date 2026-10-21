@@ -574,7 +574,7 @@ class SourcePolicy(unittest.TestCase):
         self.write_json('move-plan.json', dict(schema=1, packages=[]))
         with patch.object(manager.sys, 'argv', ['manage.py', 'refresh', '--move-plan', str(path)]), patch.object(manager, 'refresh') as call:
             self.assertEqual(manager.main(), 0)
-            self.assertEqual(call.call_args.args[-1], dict(schema=1, packages=[]))
+            self.assertEqual(call.call_args.args[-2], dict(schema=1, packages=[]))
         with patch.object(manager.sys, 'argv', ['manage.py', 'verify', '--move-plan', str(path)]), patch.object(manager.sys, 'stderr', io.StringIO()):
             self.assertEqual(manager.main(), 1)
 

@@ -39,6 +39,8 @@
     "src/web/styles.css",
     "tools/web-build/Cargo.toml",
     "tools/web-bindings/Cargo.toml",
-    "tools/web-build/build-inputs.json"
+    "tools/web-build/build-inputs.json",
+    "tools/rust-sources/source_consolidation.py",
+    "tools/rust-sources/external_transfers.py"
   ]
 }

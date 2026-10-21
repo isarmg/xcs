@@ -39,11 +39,12 @@ def inventory(root, relative):
     return result
 
 
-def load(root, packages, renames=None):
+def load(root, packages, renames=None, transfers=None):
     """Never learn new source bytes during refresh: verify explicit receipts first."""
     directory = safe(root, MAPPINGS)
     if not directory.exists():
         return {}, {}
+    from external_transfers import permits
     owners, receipts, all_roots, paths = {}, {}, [], set()
     for file in sorted(directory.iterdir()):
         safe(root, file.relative_to(root).as_posix())
@@ -67,7 +68,10 @@ def load(root, packages, renames=None):
                     raise ValueError(f'missing original test source hash: {source}')
                 safe(root, source)
                 safe(root, path)
-                if not source.startswith(prefixes) or not path.startswith('test/') or path in paths:
+                primary_origin = packages[identity]['origin_directory']
+                native = entry.get('origin_directory', primary_origin) == primary_origin and source.startswith(prefixes)
+                if (not (native or permits(transfers or {}, identity, entry, primary_origin))
+                        or not path.startswith('test/') or path in paths):
                     raise ValueError(f'invalid external test ownership: {path}')
                 paths.add(path)
                 expected[path] = entry['sha256']
@@ -115,12 +119,17 @@ def check_previous(previous, current, root=None, packages=None, previous_package
     """Allow exact whole-file restoration, never disappearance of test fragments."""
     from collections import Counter
     for directory, owner in previous.items():
-        old = Counter((row['source'], row['source_sha256_before']) for row in owner['files'])
-        new = Counter((row['source'], row['source_sha256_before']) for row in current.get(directory, {}).get('files', []))
+        # Legacy rows predate per-origin transfers and may carry a corrected
+        # aggregate owner. Explicit row origins are immutable transfer identity.
+        def identity(row):
+            return (row.get('origin_directory'), row['source'], row['source_sha256_before'])
+        old = Counter(identity(row) for row in owner['files'])
+        next_owner = current.get(directory, {})
+        new = Counter(identity(row) for row in next_owner.get('files', []))
         missing = old - new
-        for (source, before_hash), count in list(missing.items()):
+        for (origin, source, before_hash), count in list(missing.items()):
             candidates = [row for row in owner['files']
-                          if row['source'] == source and row['source_sha256_before'] == before_hash]
+                          if identity(row) == (origin, source, before_hash)]
             # Only a single whole-file move can be reversed this way. Multiple
             # extracted fragments cannot collapse into one restored production file.
             if count != 1 or len(candidates) != 1 or root is None:
@@ -128,7 +137,7 @@ def check_previous(previous, current, root=None, packages=None, previous_package
             row = candidates[0]
             package = (packages or {}).get(directory, {})
             prior = (previous_packages or {}).get(directory, {})
-            if (not source.startswith(directory + '/')
+            if (origin not in (None, owner.get('origin_directory')) or not source.startswith(directory + '/')
                     or package.get('origin_directory') != owner.get('origin_directory')
                     or prior.get('origin_directory') != owner.get('origin_directory')
                     or current.get(directory, {}).get('origin_directory', owner.get('origin_directory')) != owner.get('origin_directory')
@@ -142,7 +151,7 @@ def check_previous(previous, current, root=None, packages=None, previous_package
             if (external.exists() or not restored.is_file()
                     or hashlib.sha256(restored.read_bytes()).hexdigest() != row['sha256']):
                 continue
-            del missing[(source, before_hash)]
+            del missing[(origin, source, before_hash)]
         if missing:
             raise ValueError(f'external test source accounting shrank: {directory}')
 

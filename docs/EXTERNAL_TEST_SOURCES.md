@@ -153,3 +153,43 @@ receipt for a separate move plan. Disjoint owners may use different explicit pla
 in one refresh. This accounting proves declared file preservation, not behavioral
 compatibility; affected consumers and protocol/format invariants still require
 their normal tests.
+
+## Reviewed multi-origin consolidation
+
+`refresh --consolidate-plan PLAN.json` explicitly combines implementations. Schema
+8 catalogs retain content-addressed `consolidations` and matching
+`consolidation_records_sha256`; older empty-history catalogs remain readable.
+Catalog schemas never decrease during refresh.
+
+A schema-1 plan has `packages` entries naming a `primary_directory`,
+`destination_directory`, `destination_name`, and review `reason`. Each `inputs`
+entry contains the exact previous `package` and enriched `external_tests` receipt
+(or null). `destination_files_sha256` is the complete reviewed production tree.
+`file_routes` names every previous package-relative file per input directory:
+`destination` is a current relative file; only redundant root Cargo manifests
+may instead use byte-exact `archive_base64`. Explicit `new_files` accounts for
+new glue independently of routed files. Production routes may be many-to-one.
+They document reviewed content migration, NOT byte preservation or semantic
+compatibility. Functional tests remain mandatory.
+
+`destination_external_tests` is the complete enriched combined owner. Every row
+retains its historical source/hash and metadata, adds the original input's
+`origin_directory`, and updates only the current path/hash.
+`external_file_routes` maps every previous repository-relative test path to one
+unique `destination` plus `replacements`: ordered base64 `old`/`new` byte pairs.
+Initial verification reverses unique nonempty bounded edits and reproduces the
+exact last-current test hash. Whole-file substitutions, disappearance, extra
+files, symlinks, ambiguous edits and wrong-origin attribution fail closed.
+Unchanged files require no replacements. Grants name exact origin/source/original
+hash triples, never a broad merged-source prefix.
+
+Primary and absorbed origins retain separate upstream versions, security and
+license identities; absorbed origins are merged, not reported as deleted. Old
+source and external roots must be absent. Historical receipts and original
+materials are immutable. Later reviewed current-file edits use ordinary refresh
+without rewriting initial transfer evidence or dropping origin tags.
+
+The initial bounded implementation rejects pinned proof families, previously
+renamed/moved/upgraded/merged inputs and chained consolidated-owner lifecycle
+changes until an authenticated adapter supports them. Disjoint ordinary lifecycle
+plans may run together, but overlapping plans never silently bypass checks.
