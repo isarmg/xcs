@@ -1,4 +1,4 @@
-use axum::http::{Method, Uri};
+use http_routing::http::{Method, Uri};
 use axum_macros::debug_handler;
 
 #[debug_handler]

@@ -354,7 +354,7 @@ fn impl_struct_by_extracting_each_field(
     } else if has_no_fields(&fields) {
         quote!(::std::convert::Infallible)
     } else {
-        quote!(::axum::response::Response)
+        quote!(::http_routing::response::Response)
     };
 
     let impl_generics = state
@@ -370,14 +370,14 @@ fn impl_struct_by_extracting_each_field(
     Ok(match tr {
         Trait::FromRequest => quote! {
             #[automatically_derived]
-            impl<#impl_generics> ::axum::extract::FromRequest<#trait_generics> for #ident
+            impl<#impl_generics> ::http_routing::extract::FromRequest<#trait_generics> for #ident
             where
                 #state_bounds
             {
                 type Rejection = #rejection_ident;
 
                 async fn from_request(
-                    mut req: ::axum::http::Request<::axum::body::Body>,
+                    mut req: ::http_routing::http::Request<::http_routing::body::Body>,
                     state: &#state,
                 ) -> ::std::result::Result<Self, Self::Rejection> {
                     #trait_fn_body
@@ -386,14 +386,14 @@ fn impl_struct_by_extracting_each_field(
         },
         Trait::FromRequestParts => quote! {
             #[automatically_derived]
-            impl<#impl_generics> ::axum::extract::FromRequestParts<#trait_generics> for #ident
+            impl<#impl_generics> ::http_routing::extract::FromRequestParts<#trait_generics> for #ident
             where
                 #state_bounds
             {
                 type Rejection = #rejection_ident;
 
                 async fn from_request_parts(
-                    parts: &mut ::axum::http::request::Parts,
+                    parts: &mut ::http_routing::http::request::Parts,
                     state: &#state,
                 ) -> ::std::result::Result<Self, Self::Rejection> {
                     #trait_fn_body
@@ -485,14 +485,14 @@ fn extract_fields(
                             #member: {
                                 let (mut parts, body) = req.into_parts();
                                 let value =
-                                    <#field_ty as ::axum::extract::FromRequestParts<_>>::from_request_parts(
+                                    <#field_ty as ::http_routing::extract::FromRequestParts<_>>::from_request_parts(
                                         &mut parts,
                                         state,
                                     )
                                     .await
                                     .ok()
                                     .map(#into_inner);
-                                req = ::axum::http::Request::from_parts(parts, body);
+                                req = ::http_routing::http::Request::from_parts(parts, body);
                                 value
                             },
                         }
@@ -500,7 +500,7 @@ fn extract_fields(
                     Trait::FromRequestParts => {
                         quote_spanned! {ty_span=>
                             #member: {
-                                <#field_ty as ::axum::extract::FromRequestParts<_>>::from_request_parts(
+                                <#field_ty as ::http_routing::extract::FromRequestParts<_>>::from_request_parts(
                                     parts,
                                     state,
                                 )
@@ -520,13 +520,13 @@ fn extract_fields(
                             #member: {
                                 let (mut parts, body) = req.into_parts();
                                 let value =
-                                    <#field_ty as ::axum::extract::FromRequestParts<_>>::from_request_parts(
+                                    <#field_ty as ::http_routing::extract::FromRequestParts<_>>::from_request_parts(
                                         &mut parts,
                                         state,
                                     )
                                     .await
                                     .map(#into_inner);
-                                req = ::axum::http::Request::from_parts(parts, body);
+                                req = ::http_routing::http::Request::from_parts(parts, body);
                                 value
                             },
                         }
@@ -534,7 +534,7 @@ fn extract_fields(
                     Trait::FromRequestParts => {
                         quote_spanned! {ty_span=>
                             #member: {
-                                <#field_ty as ::axum::extract::FromRequestParts<_>>::from_request_parts(
+                                <#field_ty as ::http_routing::extract::FromRequestParts<_>>::from_request_parts(
                                     parts,
                                     state,
                                 )
@@ -550,7 +550,7 @@ fn extract_fields(
                 let map_err = if let Some(rejection) = rejection {
                     quote! { <#rejection as ::std::convert::From<_>>::from }
                 } else {
-                    quote! { ::axum::response::IntoResponse::into_response }
+                    quote! { ::http_routing::response::IntoResponse::into_response }
                 };
 
                 let tokens = match tr {
@@ -559,14 +559,14 @@ fn extract_fields(
                             #member: {
                                 let (mut parts, body) = req.into_parts();
                                 let value =
-                                    <#field_ty as ::axum::extract::FromRequestParts<_>>::from_request_parts(
+                                    <#field_ty as ::http_routing::extract::FromRequestParts<_>>::from_request_parts(
                                         &mut parts,
                                         state,
                                     )
                                     .await
                                     .map(#into_inner)
                                     .map_err(#map_err)?;
-                                req = ::axum::http::Request::from_parts(parts, body);
+                                req = ::http_routing::http::Request::from_parts(parts, body);
                                 value
                             },
                         }
@@ -574,7 +574,7 @@ fn extract_fields(
                     Trait::FromRequestParts => {
                         quote_spanned! {ty_span=>
                             #member: {
-                                <#field_ty as ::axum::extract::FromRequestParts<_>>::from_request_parts(
+                                <#field_ty as ::http_routing::extract::FromRequestParts<_>>::from_request_parts(
                                     parts,
                                     state,
                                 )
@@ -602,7 +602,7 @@ fn extract_fields(
             let field_ty = into_outer(&via, ty_span, peel_option(&field.ty).unwrap());
             quote_spanned! {ty_span=>
                 #member: {
-                    <#field_ty as ::axum::extract::FromRequest<_, _>>::from_request(req, state)
+                    <#field_ty as ::http_routing::extract::FromRequest<_, _>>::from_request(req, state)
                         .await
                         .ok()
                         .map(#into_inner)
@@ -612,7 +612,7 @@ fn extract_fields(
             let field_ty = into_outer(&via, ty_span, peel_result_ok(&field.ty).unwrap());
             quote_spanned! {ty_span=>
                 #member: {
-                    <#field_ty as ::axum::extract::FromRequest<_, _>>::from_request(req, state)
+                    <#field_ty as ::http_routing::extract::FromRequest<_, _>>::from_request(req, state)
                         .await
                         .map(#into_inner)
                 },
@@ -622,12 +622,12 @@ fn extract_fields(
             let map_err = if let Some(rejection) = rejection {
                 quote! { <#rejection as ::std::convert::From<_>>::from }
             } else {
-                quote! { ::axum::response::IntoResponse::into_response }
+                quote! { ::http_routing::response::IntoResponse::into_response }
             };
 
             quote_spanned! {ty_span=>
                 #member: {
-                    <#field_ty as ::axum::extract::FromRequest<_, _>>::from_request(req, state)
+                    <#field_ty as ::http_routing::extract::FromRequest<_, _>>::from_request(req, state)
                         .await
                         .map(#into_inner)
                         .map_err(#map_err)?
@@ -738,9 +738,9 @@ fn impl_struct_by_extracting_all_at_once(
         (rejection, map_err)
     } else {
         let rejection = quote! {
-            ::axum::response::Response
+            ::http_routing::response::Response
         };
-        let map_err = quote! { ::axum::response::IntoResponse::into_response };
+        let map_err = quote! { ::http_routing::response::IntoResponse::into_response };
         (rejection, map_err)
     };
 
@@ -785,22 +785,22 @@ fn impl_struct_by_extracting_all_at_once(
         match (tr, generic_ident.is_some()) {
             (Trait::FromRequest, true) => {
                 quote! {
-                    #rejection: ::std::convert::From<<#via_path<T> as ::axum::extract::FromRequest<#trait_generics>>::Rejection>,
+                    #rejection: ::std::convert::From<<#via_path<T> as ::http_routing::extract::FromRequest<#trait_generics>>::Rejection>,
                 }
             },
             (Trait::FromRequest, false) => {
                 quote! {
-                    #rejection: ::std::convert::From<<#via_path<Self> as ::axum::extract::FromRequest<#trait_generics>>::Rejection>,
+                    #rejection: ::std::convert::From<<#via_path<Self> as ::http_routing::extract::FromRequest<#trait_generics>>::Rejection>,
                 }
             },
             (Trait::FromRequestParts, true) => {
                 quote! {
-                    #rejection: ::std::convert::From<<#via_path<T> as ::axum::extract::FromRequestParts<#trait_generics>>::Rejection>,
+                    #rejection: ::std::convert::From<<#via_path<T> as ::http_routing::extract::FromRequestParts<#trait_generics>>::Rejection>,
                 }
             },
             (Trait::FromRequestParts, false) => {
                 quote! {
-                    #rejection: ::std::convert::From<<#via_path<Self> as ::axum::extract::FromRequestParts<#trait_generics>>::Rejection>,
+                    #rejection: ::std::convert::From<<#via_path<Self> as ::http_routing::extract::FromRequestParts<#trait_generics>>::Rejection>,
                 }
             }
         }
@@ -826,19 +826,19 @@ fn impl_struct_by_extracting_all_at_once(
         Trait::FromRequest => {
             quote_spanned! {path_span=>
                 #[automatically_derived]
-                impl<#impl_generics> ::axum::extract::FromRequest<#trait_generics> for #ident #ident_generics
+                impl<#impl_generics> ::http_routing::extract::FromRequest<#trait_generics> for #ident #ident_generics
                 where
-                    #via_path<#via_type_generics>: ::axum::extract::FromRequest<#trait_generics>,
+                    #via_path<#via_type_generics>: ::http_routing::extract::FromRequest<#trait_generics>,
                     #rejection_bound
                     #state_bounds
                 {
                     type Rejection = #associated_rejection_type;
 
                     async fn from_request(
-                        req: ::axum::http::Request<::axum::body::Body>,
+                        req: ::http_routing::http::Request<::http_routing::body::Body>,
                         state: &#state,
                     ) -> ::std::result::Result<Self, Self::Rejection> {
-                        <#via_path<#via_type_generics> as ::axum::extract::FromRequest<_, _>>::from_request(req, state)
+                        <#via_path<#via_type_generics> as ::http_routing::extract::FromRequest<_, _>>::from_request(req, state)
                             .await
                             .map(|#via_path(value)| #value_to_self)
                             .map_err(#map_err)
@@ -849,19 +849,19 @@ fn impl_struct_by_extracting_all_at_once(
         Trait::FromRequestParts => {
             quote_spanned! {path_span=>
                 #[automatically_derived]
-                impl<#impl_generics> ::axum::extract::FromRequestParts<#trait_generics> for #ident #ident_generics
+                impl<#impl_generics> ::http_routing::extract::FromRequestParts<#trait_generics> for #ident #ident_generics
                 where
-                    #via_path<#via_type_generics>: ::axum::extract::FromRequestParts<#trait_generics>,
+                    #via_path<#via_type_generics>: ::http_routing::extract::FromRequestParts<#trait_generics>,
                     #rejection_bound
                     #state_bounds
                 {
                     type Rejection = #associated_rejection_type;
 
                     async fn from_request_parts(
-                        parts: &mut ::axum::http::request::Parts,
+                        parts: &mut ::http_routing::http::request::Parts,
                         state: &#state,
                     ) -> ::std::result::Result<Self, Self::Rejection> {
-                        <#via_path<#via_type_generics> as ::axum::extract::FromRequestParts<_>>::from_request_parts(parts, state)
+                        <#via_path<#via_type_generics> as ::http_routing::extract::FromRequestParts<_>>::from_request_parts(parts, state)
                             .await
                             .map(|#via_path(value)| #value_to_self)
                             .map_err(#map_err)
@@ -915,9 +915,9 @@ fn impl_enum_by_extracting_all_at_once(
         (rejection, map_err)
     } else {
         let rejection = quote! {
-            ::axum::response::Response
+            ::http_routing::response::Response
         };
-        let map_err = quote! { ::axum::response::IntoResponse::into_response };
+        let map_err = quote! { ::http_routing::response::IntoResponse::into_response };
         (rejection, map_err)
     };
 
@@ -937,17 +937,17 @@ fn impl_enum_by_extracting_all_at_once(
         Trait::FromRequest => {
             quote_spanned! {path_span=>
                 #[automatically_derived]
-                impl<#impl_generics> ::axum::extract::FromRequest<#trait_generics> for #ident
+                impl<#impl_generics> ::http_routing::extract::FromRequest<#trait_generics> for #ident
                 where
                     #state_bounds
                 {
                     type Rejection = #associated_rejection_type;
 
                     async fn from_request(
-                        req: ::axum::http::Request<::axum::body::Body>,
+                        req: ::http_routing::http::Request<::http_routing::body::Body>,
                         state: &#state,
                     ) -> ::std::result::Result<Self, Self::Rejection> {
-                        <#path::<#ident> as ::axum::extract::FromRequest<_, _>>::from_request(req, state)
+                        <#path::<#ident> as ::http_routing::extract::FromRequest<_, _>>::from_request(req, state)
                             .await
                             .map(|#path(inner)| inner)
                             .map_err(#map_err)
@@ -958,17 +958,17 @@ fn impl_enum_by_extracting_all_at_once(
         Trait::FromRequestParts => {
             quote_spanned! {path_span=>
                 #[automatically_derived]
-                impl<#impl_generics> ::axum::extract::FromRequestParts<#trait_generics> for #ident
+                impl<#impl_generics> ::http_routing::extract::FromRequestParts<#trait_generics> for #ident
                 where
                     #state_bounds
                 {
                     type Rejection = #associated_rejection_type;
 
                     async fn from_request_parts(
-                        parts: &mut ::axum::http::request::Parts,
+                        parts: &mut ::http_routing::http::request::Parts,
                         state: &#state,
                     ) -> ::std::result::Result<Self, Self::Rejection> {
-                        <#path::<#ident> as ::axum::extract::FromRequestParts<_>>::from_request_parts(parts, state)
+                        <#path::<#ident> as ::http_routing::extract::FromRequestParts<_>>::from_request_parts(parts, state)
                             .await
                             .map(|#path(inner)| inner)
                             .map_err(#map_err)

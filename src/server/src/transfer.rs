@@ -10,15 +10,15 @@ use crate::{
     transfer_limits::{BoundedStream, TransferLimits, timeout_error},
     uploads,
 };
-use axum::{
+use data_serialization::Deserialize;
+use futures::StreamExt;
+use http_routing::{
     Json,
     body::Body,
     extract::{Request, State},
     http::{HeaderMap, HeaderValue, Method, StatusCode, header},
     response::{IntoResponse, Response},
 };
-use data_serialization::Deserialize;
-use futures::StreamExt;
 use json_codec::{Value, json};
 use std::{
     io::{Read, Seek, SeekFrom},
@@ -28,7 +28,7 @@ use std::{
 
 pub(crate) async fn upload_status(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath((workspace, item)): ApiPath<(String, String)>,
 ) -> Result<Json<Value>, ApiError> {
     let backend = state.backend.clone();
@@ -122,7 +122,7 @@ async fn persist_upload(
 }
 pub(crate) async fn upload(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath((workspace, item)): ApiPath<(String, String)>,
     ApiQuery(query): ApiQuery<UploadQuery>,
     request: Request,
@@ -548,7 +548,7 @@ pub(crate) struct ContentQuery {
 }
 pub(crate) async fn content(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath(version): ApiPath<String>,
     ApiQuery(query): ApiQuery<ContentQuery>,
     method: Method,
@@ -600,7 +600,7 @@ pub(crate) async fn content(
 }
 pub(crate) async fn workspace_content(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath((workspace, item)): ApiPath<(String, String)>,
     method: Method,
     headers: HeaderMap,
@@ -625,7 +625,7 @@ pub(crate) async fn workspace_content(
 }
 pub(crate) async fn checksums(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath(version): ApiPath<String>,
 ) -> Result<Response, ApiError> {
     let limits = state.config.http_transfer_limits.clone();

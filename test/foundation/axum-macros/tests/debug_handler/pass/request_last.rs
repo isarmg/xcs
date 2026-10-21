@@ -1,4 +1,4 @@
-use axum::extract::{Extension, Request};
+use http_routing::extract::{Extension, Request};
 use axum_macros::debug_handler;
 
 #[debug_handler]

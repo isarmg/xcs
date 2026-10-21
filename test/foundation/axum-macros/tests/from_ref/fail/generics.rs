@@ -1,4 +1,4 @@
-use axum::extract::FromRef;
+use http_routing::extract::FromRef;
 
 #[derive(Clone, FromRef)]
 struct AppState<T> {

@@ -1,6 +1,6 @@
 //! Login admission through the actual HTTP router and persistent account store.
 #![cfg(feature = "core")]
-use axum::{
+use http_routing::{
     Router,
     body::Body,
     extract::ConnectInfo,

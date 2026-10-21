@@ -1,8 +1,8 @@
-use axum::{extract::State, routing::get, Router};
+use http_routing::{extract::State, routing::get, Router};
 use axum_macros::FromRequest;
 
 fn main() {
-    let _: axum::Router = Router::new()
+    let _: http_routing::Router = Router::new()
         .route("/", get(|_: Extractor| async {}))
         .with_state(AppState::default());
 }

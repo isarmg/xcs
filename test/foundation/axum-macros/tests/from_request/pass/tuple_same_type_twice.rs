@@ -1,16 +1,16 @@
-use axum::extract::Query;
+use http_routing::extract::Query;
 use axum_macros::FromRequest;
 use data_serialization::Deserialize;
 
 #[derive(FromRequest)]
-struct Extractor(Query<Payload>, axum::extract::Json<Payload>);
+struct Extractor(Query<Payload>, http_routing::extract::Json<Payload>);
 
 #[derive(Deserialize)]
 struct Payload {}
 
 fn assert_from_request()
 where
-    Extractor: axum::extract::FromRequest<()>,
+    Extractor: http_routing::extract::FromRequest<()>,
 {
 }
 

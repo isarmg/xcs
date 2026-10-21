@@ -2,14 +2,14 @@
 //!
 //! Translate failures before a response starts. Content stream errors remain
 //! transport failures; they cannot be replaced by a JSON envelope after headers.
-use axum::{
+use data_serialization::{Deserialize, Serialize, de::DeserializeOwned};
+use http_routing::{
     Json,
     body::Bytes,
     extract::{DefaultBodyLimit, FromRequest, FromRequestParts, Path, Query, Request},
     http::{StatusCode, request::Parts},
     response::{IntoResponse, Response},
 };
-use data_serialization::{Deserialize, Serialize, de::DeserializeOwned};
 use json_codec::json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

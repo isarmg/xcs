@@ -1,5 +1,5 @@
 //! Host metrics use real collectors and the real storage backend behind auth.
-use axum::{
+use http_routing::{
     Router,
     body::Body,
     http::{Request, StatusCode},
@@ -38,7 +38,7 @@ async fn request(
         .unwrap();
     let status = response.status();
     let value = json_codec::from_slice(
-        &axum::body::to_bytes(response.into_body(), 2 * 1024 * 1024)
+        &http_routing::body::to_bytes(response.into_body(), 2 * 1024 * 1024)
             .await
             .unwrap(),
     )

@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::rejection::PathRejection,
     response::{IntoResponse, Response},
 };
@@ -40,7 +40,7 @@ impl Default for MyRejection {
 }
 
 fn main() {
-    _ = axum::Router::<()>::new()
+    _ = http_routing::Router::<()>::new()
         .typed_get(|_: Result<MyPathNamed, MyRejection>| async {})
         .typed_post(|_: Result<MyPathUnnamed, MyRejection>| async {})
         .typed_put(|_: Result<MyPathUnit, MyRejection>| async {});

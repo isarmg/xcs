@@ -242,6 +242,12 @@
       "args": [
         ".github/scripts/check-service-stack.py"
       ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-http-routing.py"
+      ]
     }
   ]
 }

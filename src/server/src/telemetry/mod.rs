@@ -4,9 +4,9 @@ mod power;
 mod statistics;
 
 use crate::{ApiError, AppState, Backend, auth::Identity, http_boundary::ApiQuery};
-use axum::{Extension, Json, extract::State};
 use data_serialization::{Deserialize, Serialize};
 use history::{HistoryStore, Sample};
+use http_routing::{Extension, Json, extract::State};
 use json_codec::{Value, json};
 use power::CpuPowerSampler;
 use std::{

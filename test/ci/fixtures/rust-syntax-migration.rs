@@ -18,7 +18,7 @@ unsafe fn unsafe_identity(value: u32) -> u32 { value }
 fn impl_return() -> impl Iterator<Item = u32> { [1, 2].into_iter() }
 #[tracing_attributes::instrument]
 async fn async_identity(value: u32) -> u32 { value }
-#[axum::debug_handler]
+#[http_routing::debug_handler]
 async fn handler() -> &'static str { "ok" }
 #[derive(Debug, PartialEq, strum::EnumString, strum::Display)]
 enum Choice { First, Second }

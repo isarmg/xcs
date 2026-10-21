@@ -1,7 +1,7 @@
-#[axum::debug_handler]
+#[http_routing::debug_handler]
 async fn handler() -> (
-    axum::http::request::Parts, // this should be response parts, not request parts
-    axum::http::StatusCode,
+    http_routing::http::request::Parts, // this should be response parts, not request parts
+    http_routing::http::StatusCode,
 ) {
     panic!()
 }

@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     debug_middleware,
     extract::Request,
     response::{IntoResponse, Response},

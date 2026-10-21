@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::{FromRef, Query, State},
     routing::get,
     Router,
@@ -7,7 +7,7 @@ use axum_macros::FromRequestParts;
 use std::collections::HashMap;
 
 fn main() {
-    let _: axum::Router = Router::new()
+    let _: http_routing::Router = Router::new()
         .route("/b", get(|_: Extractor| async {}))
         .with_state(AppState::default());
 }

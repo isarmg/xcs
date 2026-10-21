@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::rejection::ExtensionRejection,
     response::{IntoResponse, Response},
     routing::get,

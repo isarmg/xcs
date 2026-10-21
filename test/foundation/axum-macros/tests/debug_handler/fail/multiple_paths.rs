@@ -1,4 +1,4 @@
-use axum::extract::Path;
+use http_routing::extract::Path;
 use axum_macros::debug_handler;
 
 #[debug_handler]

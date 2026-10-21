@@ -1,4 +1,4 @@
-use axum::{http::Uri, Json};
+use http_routing::{http::Uri, Json};
 use axum_macros::debug_handler;
 
 #[debug_handler]

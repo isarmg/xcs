@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::rejection::ExtensionRejection,
     response::{IntoResponse, Response},
     routing::get,
@@ -15,7 +15,7 @@ async fn handler(_: MyExtractor) {}
 async fn handler_result(_: Result<MyExtractor, MyRejection>) {}
 
 #[derive(FromRequest, Clone)]
-#[from_request(via(axum::Extension), rejection(MyRejection))]
+#[from_request(via(http_routing::Extension), rejection(MyRejection))]
 enum MyExtractor {}
 
 struct MyRejection {}

@@ -1,5 +1,5 @@
 //! Exercise the public HTTP boundary against the real durable engine without a socket.
-use axum::{
+use http_routing::{
     Router,
     body::Body,
     http::{Request, StatusCode},
@@ -70,7 +70,7 @@ async fn send(
         .await
         .unwrap();
     let status = response.status();
-    let bytes = axum::body::to_bytes(response.into_body(), 8 * 1024 * 1024)
+    let bytes = http_routing::body::to_bytes(response.into_body(), 8 * 1024 * 1024)
         .await
         .unwrap();
     (status, json_codec::from_slice(&bytes).unwrap())
@@ -447,7 +447,7 @@ async fn upload(
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     json_codec::from_slice(
-        &axum::body::to_bytes(response.into_body(), 65536)
+        &http_routing::body::to_bytes(response.into_body(), 65536)
             .await
             .unwrap(),
     )
@@ -467,7 +467,7 @@ async fn version_bytes(app: &Router, token: &str, version: &str) -> Vec<u8> {
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
-    axum::body::to_bytes(response.into_body(), 65536)
+    http_routing::body::to_bytes(response.into_body(), 65536)
         .await
         .unwrap()
         .to_vec()
@@ -669,7 +669,7 @@ async fn file_notes_are_authorized_bounded_persistent_and_download_uses_current_
     assert!(disposition.contains("filename*=UTF-8''%E6%94%B9"));
     assert!(!disposition.contains("original.txt"));
     assert_eq!(
-        &axum::body::to_bytes(response.into_body(), 4096)
+        &http_routing::body::to_bytes(response.into_body(), 4096)
             .await
             .unwrap()[..],
         b"immutable historical bytes"
@@ -1891,7 +1891,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         .unwrap();
     assert_eq!(response.status(), StatusCode::PARTIAL_CONTENT);
     assert_eq!(
-        &axum::body::to_bytes(response.into_body(), 65536)
+        &http_routing::body::to_bytes(response.into_body(), 65536)
             .await
             .unwrap()[..],
         &bytes[2..10]
@@ -1909,7 +1909,7 @@ async fn durable_http_save_seals_the_real_manifest_and_keeps_original_publicatio
         .unwrap();
     assert_eq!(checksums.status(), StatusCode::OK);
     assert!(
-        !axum::body::to_bytes(checksums.into_body(), 65536)
+        !http_routing::body::to_bytes(checksums.into_body(), 65536)
             .await
             .unwrap()
             .is_empty()
@@ -3111,7 +3111,7 @@ async fn moved_file_aliases_keep_independent_path_contexts_for_history_and_write
                 .contains(&format!("filename=\"{name}\""))
         );
         assert_eq!(
-            axum::body::to_bytes(response.into_body(), 64)
+            http_routing::body::to_bytes(response.into_body(), 64)
                 .await
                 .unwrap()
                 .as_ref(),
@@ -3599,7 +3599,7 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
             "generation {generation}"
         );
         let body: Value = json_codec::from_slice(
-            &axum::body::to_bytes(response.into_body(), 8192)
+            &http_routing::body::to_bytes(response.into_body(), 8192)
                 .await
                 .unwrap(),
         )

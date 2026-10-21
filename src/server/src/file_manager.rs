@@ -4,7 +4,7 @@ macro_rules! list_handler {
     ($name:ident, $action:expr) => {
         async fn $name(
             State(state): State<AppState>,
-            axum::Extension(identity): axum::Extension<Identity>,
+            http_routing::Extension(identity): http_routing::Extension<Identity>,
             ApiQuery(query): ApiQuery<BTreeMap<String, String>>,
         ) -> Result<Json<Value>, ApiError> {
             call(state, identity, $action, json!({"query": query})).await
@@ -15,7 +15,7 @@ macro_rules! read_handler {
     ($name:ident, $action:expr, $key:literal) => {
         async fn $name(
             State(state): State<AppState>,
-            axum::Extension(identity): axum::Extension<Identity>,
+            http_routing::Extension(identity): http_routing::Extension<Identity>,
             ApiPath(id): ApiPath<String>,
             ApiQuery(query): ApiQuery<BTreeMap<String, String>>,
         ) -> Result<Json<Value>, ApiError> {
@@ -29,7 +29,7 @@ macro_rules! id_post_handler {
     ($name:ident,$action:expr,$key:literal) => {
         async fn $name(
             State(state): State<AppState>,
-            axum::Extension(identity): axum::Extension<Identity>,
+            http_routing::Extension(identity): http_routing::Extension<Identity>,
             ApiPath(id): ApiPath<String>,
             request: Request,
         ) -> Result<Json<Value>, ApiError> {
@@ -128,7 +128,7 @@ id_post_handler!(
 id_post_handler!(branch, crate::BackendAction::FileManagerBranch, "file_id");
 async fn rename_file_branch(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath((file, branch)): ApiPath<(String, String)>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
@@ -144,7 +144,7 @@ async fn rename_file_branch(
 }
 async fn node_note(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath((file, node)): ApiPath<(String, String)>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {

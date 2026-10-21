@@ -23,6 +23,7 @@ def main():
     os.environ.setdefault('CARGO_INCREMENTAL', '0')
     with tempfile.TemporaryDirectory(prefix='service-stack-') as temporary:
         work = Path(temporary)
+        (work / 'rust-toolchain.toml').write_bytes((ROOT / 'rust-toolchain.toml').read_bytes())
         (work / 'src').mkdir()
         (work / 'src/lib.rs').write_text('pub use service_stack::{Service, Layer, ServiceBuilder};\n')
         (work / 'test').mkdir()
@@ -54,11 +55,11 @@ def main():
         (work / 'Cargo.toml').write_text(
             '[package]\nname="service-stack-consumers"\nversion="0.0.0"\nedition="2021"\n'
             '[workspace]\n[dependencies]\n'
-            f'axum={{path={json.dumps(str(ROOT / "src/foundation/axum"))},default-features=false,features=["http1","tokio","json"]}}\n'
+            f'http-routing={{path={json.dumps(str(ROOT / "src/foundation/http-routing"))},default-features=false,features=["http1","tokio","json"]}}\n'
             f'reqwest={{path={json.dumps(str(ROOT / "src/foundation/reqwest"))},default-features=false}}\n'
         )
         (work / 'src/lib.rs').write_text(
-            'pub fn router() -> axum::Router { axum::Router::new().route("/", axum::routing::get(|| async { "ok" })) }\n'
+            'pub fn router() -> http_routing::Router { http_routing::Router::new().route("/", http_routing::routing::get(|| async { "ok" })) }\n'
             'pub fn client() -> reqwest::Client { reqwest::Client::new() }\n'
         )
         run(work, 'generate-lockfile')

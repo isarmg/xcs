@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::rejection::QueryRejection,
     response::{IntoResponse, Response},
     routing::get,
@@ -17,7 +17,7 @@ async fn handler(_: MyQuery) {}
 async fn handler_result(_: Result<MyQuery, MyQueryRejection>) {}
 
 #[derive(FromRequestParts, Deserialize)]
-#[from_request(via(axum::extract::Query), rejection(MyQueryRejection))]
+#[from_request(via(http_routing::extract::Query), rejection(MyQueryRejection))]
 #[serialization(transparent)]
 struct MyQuery(HashMap<String, String>);
 

@@ -1,4 +1,4 @@
-use axum::{routing::get, Extension, Router};
+use http_routing::{routing::get, Extension, Router};
 use axum_macros::FromRequestParts;
 
 #[derive(FromRequestParts, Clone)]

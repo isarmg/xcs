@@ -1,4 +1,4 @@
-use axum::response::{IntoResponse, Response};
+use http_routing::response::{IntoResponse, Response};
 use axum_macros::debug_handler;
 
 struct A;

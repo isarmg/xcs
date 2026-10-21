@@ -122,10 +122,12 @@ fn proxy_config() -> ServerConfig {
 }
 
 fn request_from(peer: &str, forwarded: Option<&str>) -> Request {
-    let mut request = Request::new(axum::body::Body::empty());
-    request.extensions_mut().insert(axum::extract::ConnectInfo(
-        peer.parse::<SocketAddr>().unwrap(),
-    ));
+    let mut request = Request::new(http_routing::body::Body::empty());
+    request
+        .extensions_mut()
+        .insert(http_routing::extract::ConnectInfo(
+            peer.parse::<SocketAddr>().unwrap(),
+        ));
     if let Some(value) = forwarded {
         request
             .headers_mut()
@@ -179,7 +181,7 @@ fn trusted_proxy_requires_exact_single_ip_and_transport_metadata() {
     assert!(client_ip(&duplicate, &config).is_err());
     let missing_peer = Request::builder()
         .header("x-forwarded-for", "192.0.2.1")
-        .body(axum::body::Body::empty())
+        .body(http_routing::body::Body::empty())
         .unwrap();
     assert!(client_ip(&missing_peer, &config).is_err());
     assert_eq!(

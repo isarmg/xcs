@@ -1,4 +1,4 @@
-use axum::{extract::FromRequest, response::Response};
+use http_routing::{extract::FromRequest, response::Response};
 use axum_extra::{
     headers::{self, UserAgent},
     typed_header::TypedHeaderRejection,
@@ -7,7 +7,7 @@ use axum_extra::{
 
 #[derive(FromRequest)]
 struct Extractor {
-    uri: axum::http::Uri,
+    uri: http_routing::http::Uri,
     user_agent: TypedHeader<UserAgent>,
     content_type: TypedHeader<headers::ContentType>,
     etag: Option<TypedHeader<headers::ETag>>,

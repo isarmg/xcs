@@ -1,5 +1,5 @@
 use super::*;
-use axum::{
+use http_routing::{
     body::{Body, Bytes},
     http::StatusCode,
 };
@@ -95,7 +95,7 @@ async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope()
             assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
         }
         let error: Value = json_codec::from_slice(
-            &axum::body::to_bytes(response.into_body(), 8192)
+            &http_routing::body::to_bytes(response.into_body(), 8192)
                 .await
                 .unwrap(),
         )
@@ -114,7 +114,7 @@ async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope()
             .starts_with("text/html")
     );
     assert_eq!(
-        axum::body::to_bytes(response.into_body(), 8192)
+        http_routing::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),
         "<html>fixture</html>"
@@ -188,7 +188,7 @@ async fn authenticated(app: &Router) -> (String, String, String) {
         .unwrap()
         .to_owned();
     let body: Value = json_codec::from_slice(
-        &axum::body::to_bytes(response.into_body(), 8192)
+        &http_routing::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),
     )
@@ -270,7 +270,7 @@ async fn authenticated_range_download_returns_exact_immutable_bytes() {
     assert_eq!(response.status(), StatusCode::PARTIAL_CONTENT);
     assert_eq!(response.headers()[header::CONTENT_RANGE], "bytes 2-5/10");
     assert_eq!(
-        axum::body::to_bytes(response.into_body(), 8192)
+        http_routing::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),
         "2345"
@@ -683,9 +683,12 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
     assert!(pending.await.unwrap_err().is_cancelled());
     let retry = app.clone().oneshot(request()).await.unwrap();
     assert_eq!(retry.status(), StatusCode::CONFLICT);
-    let error: Value =
-        json_codec::from_slice(&axum::body::to_bytes(retry.into_body(), 8192).await.unwrap())
-            .unwrap();
+    let error: Value = json_codec::from_slice(
+        &http_routing::body::to_bytes(retry.into_body(), 8192)
+            .await
+            .unwrap(),
+    )
+    .unwrap();
     assert_eq!(error["error"]["code"], "FILE_WRITE_BUSY");
     drop(release);
     tokio::time::timeout(Duration::from_secs(5), async {

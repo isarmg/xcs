@@ -8,5 +8,5 @@ struct MyPath {
 }
 
 fn main() {
-    _ = axum::Router::<()>::new().typed_get(|_: MyPath| async {});
+    _ = http_routing::Router::<()>::new().typed_get(|_: MyPath| async {});
 }

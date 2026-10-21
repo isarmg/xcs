@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::{FromRef, State},
     routing::get,
     Router,
@@ -18,5 +18,5 @@ fn main() {
         auth_token: Default::default(),
     };
 
-    let _: axum::Router = Router::new().route("/", get(handler)).with_state(state);
+    let _: http_routing::Router = Router::new().route("/", get(handler)).with_state(state);
 }

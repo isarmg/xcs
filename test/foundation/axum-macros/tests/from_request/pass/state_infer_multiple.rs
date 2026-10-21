@@ -1,4 +1,4 @@
-use axum::extract::State;
+use http_routing::extract::State;
 use axum_macros::FromRequest;
 
 #[derive(FromRequest)]
@@ -12,7 +12,7 @@ struct AppState {}
 
 fn assert_from_request()
 where
-    Extractor: axum::extract::FromRequest<AppState, Rejection = axum::response::Response>,
+    Extractor: http_routing::extract::FromRequest<AppState, Rejection = http_routing::response::Response>,
 {
 }
 

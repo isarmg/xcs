@@ -1,11 +1,11 @@
 use axum_macros::FromRequestParts;
 
 #[derive(FromRequestParts)]
-struct Extractor(axum::http::HeaderMap, axum::http::Method);
+struct Extractor(http_routing::http::HeaderMap, http_routing::http::Method);
 
 fn assert_from_request()
 where
-    Extractor: axum::extract::FromRequestParts<()>,
+    Extractor: http_routing::extract::FromRequestParts<()>,
 {
 }
 

@@ -5,7 +5,7 @@ struct Extractor();
 
 fn assert_from_request()
 where
-    Extractor: axum::extract::FromRequestParts<(), Rejection = std::convert::Infallible>,
+    Extractor: http_routing::extract::FromRequestParts<(), Rejection = std::convert::Infallible>,
 {
 }
 

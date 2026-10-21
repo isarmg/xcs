@@ -37,7 +37,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///
 /// ```
 /// use axum_macros::FromRequest;
-/// use axum::{
+/// use http_routing::{
 ///     extract::Extension,
 ///     body::Bytes,
 /// };
@@ -67,7 +67,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///
 /// ```compile_fail
 /// use axum_macros::FromRequest;
-/// use axum::body::Bytes;
+/// use http_routing::body::Bytes;
 ///
 /// #[derive(FromRequest)]
 /// struct MyExtractor {
@@ -85,7 +85,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///
 /// ```
 /// use axum_macros::FromRequest;
-/// use axum::{
+/// use http_routing::{
 ///     extract::Extension,
 ///     body::Bytes,
 /// };
@@ -153,11 +153,11 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///
 /// ## The rejection
 ///
-/// By default [`axum::response::Response`] will be used as the rejection. You can also use your own
+/// By default [`http_routing::response::Response`] will be used as the rejection. You can also use your own
 /// rejection type with `#[from_request(rejection(YourType))]`:
 ///
 /// ```
-/// use axum::{
+/// use http_routing::{
 ///     extract::{
 ///         rejection::{ExtensionRejection, StringRejection},
 ///         FromRequest,
@@ -205,7 +205,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 /// `#[from_request(state(YourState))]`:
 ///
 /// ```
-/// use axum::extract::{FromRequest, FromRequestParts};
+/// use http_routing::extract::{FromRequest, FromRequestParts};
 ///
 /// #[derive(Clone)]
 /// struct CustomState;
@@ -217,7 +217,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///     # type Rejection = ();
 ///
 ///     # async fn from_request_parts(
-///         # _parts: &mut axum::http::request::Parts,
+///         # _parts: &mut http_routing::http::request::Parts,
 ///         # _state: &CustomState
 ///     # ) -> Result<Self, Self::Rejection> {
 ///     #    todo!()
@@ -235,7 +235,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 /// This is not needed for a `State<T>` as the type is inferred in that case.
 ///
 /// ```
-/// use axum::extract::{FromRequest, FromRequestParts, State};
+/// use http_routing::extract::{FromRequest, FromRequestParts, State};
 ///
 /// #[derive(Clone)]
 /// struct CustomState;
@@ -254,7 +254,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///
 /// ```
 /// use axum_macros::FromRequest;
-/// use axum::extract::Extension;
+/// use http_routing::extract::Extension;
 ///
 /// // This will extracted via `Extension::<State>::from_request`
 /// #[derive(Clone, FromRequest)]
@@ -267,13 +267,13 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 /// ```
 ///
 /// The rejection will be the "via extractors"'s rejection. For the previous example that would be
-/// [`axum::extract::rejection::ExtensionRejection`].
+/// [`http_routing::extract::rejection::ExtensionRejection`].
 ///
 /// You can use a different rejection type with `#[from_request(rejection(YourType))]`:
 ///
 /// ```
 /// use axum_macros::FromRequest;
-/// use axum::{
+/// use http_routing::{
 ///     extract::{Extension, rejection::ExtensionRejection},
 ///     response::{IntoResponse, Response},
 ///     Json,
@@ -320,7 +320,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///
 /// ```
 /// use axum_macros::FromRequest;
-/// use axum::{
+/// use http_routing::{
 ///     extract::{Extension, rejection::JsonRejection},
 ///     response::{IntoResponse, Response},
 ///     http::StatusCode,
@@ -328,9 +328,9 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 /// use json_codec::json;
 /// use data_serialization::Deserialize;
 ///
-/// // create an extractor that internally uses `axum::Json` but has a custom rejection
+/// // create an extractor that internally uses `http_routing::Json` but has a custom rejection
 /// #[derive(FromRequest)]
-/// #[from_request(via(axum::Json), rejection(MyRejection))]
+/// #[from_request(via(http_routing::Json), rejection(MyRejection))]
 /// struct MyJson<T>(T);
 ///
 /// struct MyRejection(Response);
@@ -339,7 +339,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///     fn from(rejection: JsonRejection) -> Self {
 ///         let response = (
 ///             StatusCode::INTERNAL_SERVER_ERROR,
-///             axum::Json(json!({ "error": rejection.to_string() })),
+///             http_routing::Json(json!({ "error": rejection.to_string() })),
 ///         ).into_response();
 ///
 ///         MyRejection(response)
@@ -356,7 +356,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 /// struct Payload {}
 ///
 /// async fn handler(
-///     // make sure to use `MyJson` and not `axum::Json`
+///     // make sure to use `MyJson` and not `http_routing::Json`
 ///     MyJson(payload): MyJson<Payload>,
 /// ) {}
 /// ```
@@ -373,8 +373,8 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 /// ```
 ///
 /// [`FromRequest`]: https://docs.rs/axum/0.8/axum/extract/trait.FromRequest.html
-/// [`axum::response::Response`]: https://docs.rs/axum/0.8/axum/response/type.Response.html
-/// [`axum::extract::rejection::ExtensionRejection`]: https://docs.rs/axum/0.8/axum/extract/rejection/enum.ExtensionRejection.html
+/// [`http_routing::response::Response`]: https://docs.rs/axum/0.8/axum/response/type.Response.html
+/// [`http_routing::extract::rejection::ExtensionRejection`]: https://docs.rs/axum/0.8/axum/extract/rejection/enum.ExtensionRejection.html
 #[proc_macro_derive(FromRequest, attributes(from_request))]
 pub fn derive_from_request(item: TokenStream) -> TokenStream {
     expand_with(item, |item| from_request::expand(item, FromRequest))
@@ -389,7 +389,7 @@ pub fn derive_from_request(item: TokenStream) -> TokenStream {
 ///
 /// ```
 /// use axum_macros::FromRequestParts;
-/// use axum::{
+/// use http_routing::{
 ///     extract::Query,
 /// };
 /// use axum_extra::{
@@ -434,14 +434,14 @@ pub fn derive_from_request_parts(item: TokenStream) -> TokenStream {
 /// While using [`axum`], you can get long error messages for simple mistakes. For example:
 ///
 /// ```compile_fail
-/// use axum::{routing::get, Router};
+/// use http_routing::{routing::get, Router};
 ///
 /// #[tokio::main]
 /// async fn main() {
 ///     let app = Router::new().route("/", get(handler));
 ///
 ///     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-///     axum::serve(listener, app).await.unwrap();
+///     http_routing::serve(listener, app).await.unwrap();
 /// }
 ///
 /// fn handler() -> &'static str {
@@ -453,7 +453,7 @@ pub fn derive_from_request_parts(item: TokenStream) -> TokenStream {
 /// does this function not implement it? To figure it out, the [`debug_handler`] macro can be used.
 ///
 /// ```compile_fail
-/// # use axum::{routing::get, Router};
+/// # use http_routing::{routing::get, Router};
 /// # use axum_macros::debug_handler;
 /// #
 /// # #[tokio::main]
@@ -461,7 +461,7 @@ pub fn derive_from_request_parts(item: TokenStream) -> TokenStream {
 /// #     let app = Router::new().route("/", get(handler));
 /// #
 /// #     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-/// #     axum::serve(listener, app).await.unwrap();
+/// #     http_routing::serve(listener, app).await.unwrap();
 /// # }
 /// #
 /// #[debug_handler]
@@ -481,14 +481,14 @@ pub fn derive_from_request_parts(item: TokenStream) -> TokenStream {
 /// As the error message says, handler function needs to be async.
 ///
 /// ```no_run
-/// use axum::{routing::get, Router, debug_handler};
+/// use http_routing::{routing::get, Router, debug_handler};
 ///
 /// #[tokio::main]
 /// async fn main() {
 ///     let app = Router::new().route("/", get(handler));
 ///
 ///     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-///     axum::serve(listener, app).await.unwrap();
+///     http_routing::serve(listener, app).await.unwrap();
 /// }
 ///
 /// #[debug_handler]
@@ -500,10 +500,10 @@ pub fn derive_from_request_parts(item: TokenStream) -> TokenStream {
 /// # Changing state type
 ///
 /// By default `#[debug_handler]` assumes your state type is `()` unless your handler has a
-/// [`axum::extract::State`] argument:
+/// [`http_routing::extract::State`] argument:
 ///
 /// ```
-/// use axum::{debug_handler, extract::State};
+/// use http_routing::{debug_handler, extract::State};
 ///
 /// #[debug_handler]
 /// async fn handler(
@@ -515,11 +515,11 @@ pub fn derive_from_request_parts(item: TokenStream) -> TokenStream {
 /// struct AppState {}
 /// ```
 ///
-/// If your handler takes multiple [`axum::extract::State`] arguments or you need to otherwise
+/// If your handler takes multiple [`http_routing::extract::State`] arguments or you need to otherwise
 /// customize the state type you can set it with `#[debug_handler(state = ...)]`:
 ///
 /// ```
-/// use axum::{debug_handler, extract::{State, FromRef}};
+/// use http_routing::{debug_handler, extract::{State, FromRef}};
 ///
 /// #[debug_handler(state = AppState)]
 /// async fn handler(
@@ -547,7 +547,7 @@ pub fn derive_from_request_parts(item: TokenStream) -> TokenStream {
 /// This macro does not work for functions in an `impl` block that don't have a `self` parameter:
 ///
 /// ```compile_fail
-/// use axum::{debug_handler, extract::Path};
+/// use http_routing::{debug_handler, extract::Path};
 ///
 /// struct App {}
 ///
@@ -573,7 +573,7 @@ pub fn derive_from_request_parts(item: TokenStream) -> TokenStream {
 ///
 /// [`axum`]: https://docs.rs/axum/0.8
 /// [`Handler`]: https://docs.rs/axum/0.8/axum/handler/trait.Handler.html
-/// [`axum::extract::State`]: https://docs.rs/axum/0.8/axum/extract/struct.State.html
+/// [`http_routing::extract::State`]: https://docs.rs/axum/0.8/axum/extract/struct.State.html
 /// [`debug_handler`]: macro@debug_handler
 #[proc_macro_attribute]
 pub fn debug_handler(_attr: TokenStream, input: TokenStream) -> TokenStream {
@@ -589,12 +589,12 @@ pub fn debug_handler(_attr: TokenStream, input: TokenStream) -> TokenStream {
 /// Generates better error messages when applied to middleware functions.
 ///
 /// This works similarly to [`#[debug_handler]`](macro@debug_handler) except for middleware using
-/// [`axum::middleware::from_fn`].
+/// [`http_routing::middleware::from_fn`].
 ///
 /// # Example
 ///
 /// ```no_run
-/// use axum::{
+/// use http_routing::{
 ///     routing::get,
 ///     extract::Request,
 ///     response::Response,
@@ -610,7 +610,7 @@ pub fn debug_handler(_attr: TokenStream, input: TokenStream) -> TokenStream {
 ///         .layer(middleware::from_fn(my_middleware));
 ///
 ///     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-///     axum::serve(listener, app).await.unwrap();
+///     http_routing::serve(listener, app).await.unwrap();
 /// }
 ///
 /// // if this wasn't a valid middleware function #[debug_middleware] would
@@ -629,7 +629,7 @@ pub fn debug_handler(_attr: TokenStream, input: TokenStream) -> TokenStream {
 /// This macro has no effect when compiled with the release profile. (eg. `cargo build --release`)
 ///
 /// [`axum`]: https://docs.rs/axum/latest
-/// [`axum::middleware::from_fn`]: https://docs.rs/axum/0.8/axum/middleware/fn.from_fn.html
+/// [`http_routing::middleware::from_fn`]: https://docs.rs/axum/0.8/axum/middleware/fn.from_fn.html
 /// [`debug_middleware`]: macro@debug_middleware
 #[proc_macro_attribute]
 pub fn debug_middleware(_attr: TokenStream, input: TokenStream) -> TokenStream {
@@ -673,7 +673,7 @@ pub fn derive_typed_path(input: TokenStream) -> TokenStream {
 /// # Example
 ///
 /// ```
-/// use axum::{
+/// use http_routing::{
 ///     Router,
 ///     routing::get,
 ///     extract::{State, FromRef},
@@ -709,7 +709,7 @@ pub fn derive_typed_path(input: TokenStream) -> TokenStream {
 /// let app = Router::new()
 ///     .route("/", get(handler).post(other_handler))
 ///     .with_state(state);
-/// # let _: axum::Router = app;
+/// # let _: http_routing::Router = app;
 /// ```
 ///
 /// [`FromRef`]: https://docs.rs/axum/0.8/axum/extract/trait.FromRef.html

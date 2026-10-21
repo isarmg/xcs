@@ -3,14 +3,14 @@
 //! Credential algorithms come directly from `authentication`;
 //! persistent account/session state remains in `auth::AuthStore`.
 use crate::{ApiError, AppState, ServerConfig, auth::Identity, lock};
-use axum::{
+use data_serialization::Deserialize;
+use http_routing::{
     Json,
     extract::{Request, State},
     http::{HeaderMap, HeaderValue, Method, header},
     middleware::Next,
     response::{IntoResponse, Response},
 };
-use data_serialization::Deserialize;
 use json_codec::{Value, json};
 use std::{
     collections::{HashMap, HashSet},
@@ -153,7 +153,7 @@ fn admit_login(
 fn client_ip(request: &Request, config: &ServerConfig) -> Result<IpAddr, ApiError> {
     let peer = request
         .extensions()
-        .get::<axum::extract::ConnectInfo<SocketAddr>>()
+        .get::<http_routing::extract::ConnectInfo<SocketAddr>>()
         .map(|info| info.0.ip());
     // Missing transport metadata must never authenticate a forwarding header.
     let Some(peer) = peer else {
@@ -355,8 +355,8 @@ pub(crate) async fn login(
 }
 
 pub(crate) async fn me(
-    axum::Extension(identity): axum::Extension<Identity>,
-    axum::Extension(token): axum::Extension<SessionToken>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
+    http_routing::Extension(token): http_routing::Extension<SessionToken>,
 ) -> Result<Json<Value>, ApiError> {
     let csrf_token = authentication::derive_csrf_token(&token.0).map_err(ApiError::invalid)?;
     Ok(Json(
@@ -365,7 +365,7 @@ pub(crate) async fn me(
 }
 pub(crate) async fn logout(
     State(state): State<AppState>,
-    axum::Extension(token): axum::Extension<SessionToken>,
+    http_routing::Extension(token): http_routing::Extension<SessionToken>,
 ) -> Result<Response, ApiError> {
     let auth = state.auth.clone();
     tokio::task::spawn_blocking(move || lock(&auth)?.logout(&token.0))
@@ -388,8 +388,8 @@ struct PasswordChange {
 
 pub(crate) async fn change_password(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
-    axum::Extension(token): axum::Extension<SessionToken>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
+    http_routing::Extension(token): http_routing::Extension<SessionToken>,
     request: Request,
 ) -> Result<Response, ApiError> {
     let ip = client_ip(&request, &state.config)?;
@@ -428,7 +428,7 @@ pub(crate) async fn change_password(
 }
 pub(crate) async fn accounts(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
 ) -> Result<Json<Value>, ApiError> {
     identity.require_admin()?;
     let auth = state.auth.clone();
@@ -456,7 +456,7 @@ struct AccountUpdate {
 }
 pub(crate) async fn account_upsert(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
     identity.require_admin()?;

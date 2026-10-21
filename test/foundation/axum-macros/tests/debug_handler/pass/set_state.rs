@@ -1,4 +1,4 @@
-use axum::extract::{FromRef, FromRequest, Request};
+use http_routing::extract::{FromRef, FromRequest, Request};
 use axum_macros::debug_handler;
 
 #[debug_handler(state = AppState)]

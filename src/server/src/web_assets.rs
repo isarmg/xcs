@@ -3,7 +3,7 @@ use crate::{
     ApiError, AppState,
     http_boundary::{is_api_path, not_found},
 };
-use axum::{
+use http_routing::{
     Router,
     extract::{Request, State},
     http::{HeaderValue, Method, StatusCode, header},

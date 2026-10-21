@@ -135,17 +135,17 @@ fn expand_named_fields(
 
     let from_request_impl = quote! {
         #[automatically_derived]
-        impl<S> ::axum::extract::FromRequestParts<S> for #ident
+        impl<S> ::http_routing::extract::FromRequestParts<S> for #ident
         where
             S: Send + Sync,
         {
             type Rejection = #rejection_assoc_type;
 
             async fn from_request_parts(
-                parts: &mut ::axum::http::request::Parts,
+                parts: &mut ::http_routing::http::request::Parts,
                 state: &S,
             ) -> ::std::result::Result<Self, Self::Rejection> {
-                <::axum::extract::Path<#ident> as ::axum::extract::FromRequestParts<S>>
+                <::http_routing::extract::Path<#ident> as ::http_routing::extract::FromRequestParts<S>>
                     ::from_request_parts(parts, state)
                     .await
                     .map(|path| path.0)
@@ -241,17 +241,17 @@ fn expand_unnamed_fields(
 
     let from_request_impl = quote! {
         #[automatically_derived]
-        impl<S> ::axum::extract::FromRequestParts<S> for #ident
+        impl<S> ::http_routing::extract::FromRequestParts<S> for #ident
         where
             S: Send + Sync,
         {
             type Rejection = #rejection_assoc_type;
 
             async fn from_request_parts(
-                parts: &mut ::axum::http::request::Parts,
+                parts: &mut ::http_routing::http::request::Parts,
                 state: &S,
             ) -> ::std::result::Result<Self, Self::Rejection> {
-                ::axum::extract::Path::from_request_parts(parts, state)
+                ::http_routing::extract::Path::from_request_parts(parts, state)
                     .await
                     .map(|path| path.0)
                     #map_err_rejection
@@ -310,7 +310,7 @@ fn expand_unit_fields(
     let rejection_assoc_type = if let Some(rejection) = &rejection {
         quote! { #rejection }
     } else {
-        quote! { ::axum::http::StatusCode }
+        quote! { ::http_routing::http::StatusCode }
     };
     let create_rejection = if let Some(rejection) = &rejection {
         quote! {
@@ -318,20 +318,20 @@ fn expand_unit_fields(
         }
     } else {
         quote! {
-            Err(::axum::http::StatusCode::NOT_FOUND)
+            Err(::http_routing::http::StatusCode::NOT_FOUND)
         }
     };
 
     let from_request_impl = quote! {
         #[automatically_derived]
-        impl<S> ::axum::extract::FromRequestParts<S> for #ident
+        impl<S> ::http_routing::extract::FromRequestParts<S> for #ident
         where
             S: Send + Sync,
         {
             type Rejection = #rejection_assoc_type;
 
             async fn from_request_parts(
-                parts: &mut ::axum::http::request::Parts,
+                parts: &mut ::http_routing::http::request::Parts,
                 _state: &S,
             ) -> ::std::result::Result<Self, Self::Rejection> {
                 if parts.uri.path() == <Self as ::axum_extra::routing::TypedPath>::PATH {
@@ -408,7 +408,7 @@ enum Segment {
 
 fn path_rejection() -> TokenStream {
     quote! {
-        <::axum::extract::Path<Self> as ::axum::extract::FromRequestParts<S>>::Rejection
+        <::http_routing::extract::Path<Self> as ::http_routing::extract::FromRequestParts<S>>::Rejection
     }
 }
 

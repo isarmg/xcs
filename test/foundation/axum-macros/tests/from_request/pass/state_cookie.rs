@@ -1,4 +1,4 @@
-use axum::extract::FromRef;
+use http_routing::extract::FromRef;
 use axum_extra::extract::cookie::{Key, PrivateCookieJar};
 use axum_macros::FromRequest;
 
@@ -20,7 +20,7 @@ impl FromRef<AppState> for Key {
 
 fn assert_from_request()
 where
-    Extractor: axum::extract::FromRequest<AppState, Rejection = axum::response::Response>,
+    Extractor: http_routing::extract::FromRequest<AppState, Rejection = http_routing::response::Response>,
 {
 }
 

@@ -1,4 +1,4 @@
-use axum::extract::Extension;
+use http_routing::extract::Extension;
 use axum_macros::debug_handler;
 
 struct NonCloneType;

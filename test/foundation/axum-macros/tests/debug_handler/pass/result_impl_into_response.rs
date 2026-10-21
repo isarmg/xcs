@@ -1,4 +1,4 @@
-use axum::{extract::FromRequestParts, http::request::Parts, response::IntoResponse};
+use http_routing::{extract::FromRequestParts, http::request::Parts, response::IntoResponse};
 use axum_macros::debug_handler;
 
 fn main() {}

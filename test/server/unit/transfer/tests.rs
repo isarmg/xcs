@@ -127,7 +127,7 @@ async fn verified_stream_preserves_lease_and_admission_until_consumption_or_drop
         assert_eq!(slots.available_permits(), 0);
         if consume {
             assert_eq!(
-                axum::body::to_bytes(response.into_body(), 8192)
+                http_routing::body::to_bytes(response.into_body(), 8192)
                     .await
                     .unwrap(),
                 "0123456789"
@@ -215,7 +215,7 @@ async fn malformed_duplicate_and_unsatisfiable_ranges_include_size_and_head_is_e
             assert_eq!(response.status(), StatusCode::RANGE_NOT_SATISFIABLE);
             assert_eq!(response.headers()[header::CONTENT_RANGE], "bytes */10");
             assert_eq!(response.headers()[header::ACCEPT_RANGES], "bytes");
-            let body = axum::body::to_bytes(response.into_body(), 8192)
+            let body = http_routing::body::to_bytes(response.into_body(), 8192)
                 .await
                 .unwrap();
             assert_eq!(body.is_empty(), method == Method::HEAD);
@@ -238,7 +238,7 @@ async fn download_lease_survives_until_body_consumption_or_cancellation() {
         assert_eq!(dropped.load(Ordering::SeqCst), 0);
         if consume {
             assert_eq!(
-                axum::body::to_bytes(response.into_body(), 8192)
+                http_routing::body::to_bytes(response.into_body(), 8192)
                     .await
                     .unwrap(),
                 "0123456789"
@@ -258,7 +258,7 @@ async fn stale_if_range_returns_complete_content_and_head_retains_length() {
     let response = content_response(content(Arc::default()), Method::GET, headers).unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
-        axum::body::to_bytes(response.into_body(), 8192)
+        http_routing::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),
         "0123456789"
@@ -270,7 +270,7 @@ async fn stale_if_range_returns_complete_content_and_head_retains_length() {
     assert_eq!(response.status(), StatusCode::PARTIAL_CONTENT);
     assert_eq!(response.headers()[header::CONTENT_LENGTH], "2");
     assert!(
-        axum::body::to_bytes(response.into_body(), 8192)
+        http_routing::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap()
             .is_empty()

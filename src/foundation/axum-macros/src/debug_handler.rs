@@ -305,15 +305,15 @@ fn check_inputs_impls_from_request(
 
         let from_request_bound = if must_impl_from_request_parts {
             quote_spanned! {span=>
-                #ty: ::axum::extract::FromRequestParts<#state_ty> + Send
+                #ty: ::http_routing::extract::FromRequestParts<#state_ty> + Send
             }
         } else if consumes_request {
             quote_spanned! {span=>
-                #ty: ::axum::extract::FromRequest<#state_ty> + Send
+                #ty: ::http_routing::extract::FromRequest<#state_ty> + Send
             }
         } else {
             quote_spanned! {span=>
-                #ty: ::axum::extract::FromRequest<#state_ty, M> + Send
+                #ty: ::http_routing::extract::FromRequest<#state_ty, M> + Send
             }
         };
 
@@ -412,7 +412,7 @@ fn check_into_response(handler: &Ident, ty: &Type) -> TokenStream {
     };
 
     let from_request_bound = quote_spanned! {span=>
-        #ty: ::axum::response::IntoResponse
+        #ty: ::http_routing::response::IntoResponse
     };
     quote_spanned! {span=>
         #[allow(warnings)]
@@ -447,7 +447,7 @@ fn check_is_response_parts(ty: &Type, ident: &Ident, index: usize) -> TokenStrea
         #[allow(warnings)]
         #[allow(unreachable_code)]
         #[doc(hidden)]
-        fn #check_fn(parts: #ty) -> ::axum::http::response::Parts {
+        fn #check_fn(parts: #ty) -> ::http_routing::http::response::Parts {
             parts
         }
     }
@@ -473,7 +473,7 @@ fn check_into_response_parts(ty: &Type, ident: &Ident, index: usize) -> TokenStr
     };
 
     let from_request_bound = quote_spanned! {span=>
-        #ty: ::axum::response::IntoResponseParts
+        #ty: ::http_routing::response::IntoResponseParts
     };
     quote_spanned! {span=>
         #[allow(warnings)]
@@ -682,7 +682,7 @@ fn check_output_impls_into_response(item_fn: &ItemFn) -> TokenStream {
             #[doc(hidden)]
             async fn #name() {
                 fn check<T>(_: T)
-                    where T: ::axum::response::IntoResponse
+                    where T: ::http_routing::response::IntoResponse
                 {}
                 let value = #receiver #make_value_name().await;
                 check(value);
@@ -697,7 +697,7 @@ fn check_output_impls_into_response(item_fn: &ItemFn) -> TokenStream {
                 #make
 
                 fn check<T>(_: T)
-                where T: ::axum::response::IntoResponse
+                where T: ::http_routing::response::IntoResponse
                 {}
 
                 let value = #make_value_name().await;
@@ -802,7 +802,7 @@ fn self_receiver(item_fn: &ItemFn) -> Option<TokenStream> {
 /// ```skip
 /// #[debug_handler]
 /// async fn handler(
-///     _: axum::extract::State<AppState>,
+///     _: http_routing::extract::State<AppState>,
 ///     _: State<AppState>,
 /// ) {}
 /// ```
@@ -835,7 +835,7 @@ fn next_is_last_input(item_fn: &ItemFn) -> TokenStream {
     if next_args.is_empty() {
         return quote! {
             compile_error!(
-                "Middleware functions must take `axum::middleware::Next` as the last argument",
+                "Middleware functions must take `http_routing::middleware::Next` as the last argument",
             );
         };
     }
@@ -844,7 +844,7 @@ fn next_is_last_input(item_fn: &ItemFn) -> TokenStream {
         let (idx, arg) = &next_args[0];
         if *idx != item_fn.sig.inputs.len() - 1 {
             return quote_spanned! {arg.span()=>
-                compile_error!("`axum::middleware::Next` must the last argument");
+                compile_error!("`http_routing::middleware::Next` must the last argument");
             };
         }
     }
@@ -852,7 +852,7 @@ fn next_is_last_input(item_fn: &ItemFn) -> TokenStream {
     if next_args.len() >= 2 {
         return quote! {
             compile_error!(
-                "Middleware functions can only take one argument of type `axum::middleware::Next`",
+                "Middleware functions can only take one argument of type `http_routing::middleware::Next`",
             );
         };
     }

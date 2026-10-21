@@ -20,7 +20,9 @@ mod backend_action;
 pub use backend_action::BackendAction;
 
 use auth::{AuthStore, Identity};
-use axum::{
+use http_auth::{account_upsert, accounts, authorize, change_password, login, logout, me};
+use http_boundary::{ApiPath, ApiQuery};
+use http_routing::{
     Json, Router,
     extract::{DefaultBodyLimit, Request, State},
     http::{HeaderValue, header},
@@ -28,8 +30,6 @@ use axum::{
     response::Response,
     routing::{get, patch, post, put},
 };
-use http_auth::{account_upsert, accounts, authorize, change_password, login, logout, me};
-use http_boundary::{ApiPath, ApiQuery};
 use json_codec::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap},
@@ -583,7 +583,7 @@ pub async fn serve(
     }
     let app = router_shared(backend.clone(), auth, config, telemetry)?;
     let http = async move {
-        axum::serve(
+        http_routing::serve(
             listener,
             app.into_make_service_with_connect_info::<SocketAddr>(),
         )
@@ -671,7 +671,7 @@ macro_rules! list_handler {
     ($name:ident, $action:expr) => {
         async fn $name(
             State(state): State<AppState>,
-            axum::Extension(identity): axum::Extension<Identity>,
+            http_routing::Extension(identity): http_routing::Extension<Identity>,
             ApiQuery(query): ApiQuery<BTreeMap<String, String>>,
         ) -> Result<Json<Value>, ApiError> {
             call(state, identity, $action, json!({"query": query})).await
@@ -682,7 +682,7 @@ macro_rules! read_handler {
     ($name:ident, $action:expr, $key:literal) => {
         async fn $name(
             State(state): State<AppState>,
-            axum::Extension(identity): axum::Extension<Identity>,
+            http_routing::Extension(identity): http_routing::Extension<Identity>,
             ApiPath(id): ApiPath<String>,
             ApiQuery(query): ApiQuery<BTreeMap<String, String>>,
         ) -> Result<Json<Value>, ApiError> {
@@ -696,7 +696,7 @@ macro_rules! post_handler {
     ($name:ident, $action:expr) => {
         async fn $name(
             State(state): State<AppState>,
-            axum::Extension(identity): axum::Extension<Identity>,
+            http_routing::Extension(identity): http_routing::Extension<Identity>,
             request: Request,
         ) -> Result<Json<Value>, ApiError> {
             call(state, identity, $action, json_body(request).await?).await
@@ -707,7 +707,7 @@ macro_rules! id_post_handler {
     ($name:ident, $action:expr, $id:literal) => {
         async fn $name(
             State(state): State<AppState>,
-            axum::Extension(identity): axum::Extension<Identity>,
+            http_routing::Extension(identity): http_routing::Extension<Identity>,
             ApiPath(id): ApiPath<String>,
             request: Request,
         ) -> Result<Json<Value>, ApiError> {
@@ -795,7 +795,7 @@ id_post_handler!(
 );
 async fn rename_directory_branch(
     State(state): State<AppState>,
-    axum::Extension(identity): axum::Extension<Identity>,
+    http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath((repo, id)): ApiPath<(String, String)>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {

@@ -810,312 +810,353 @@
       ]
     },
     {
-      "directory": "src/foundation/axum",
+      "directory": "src/foundation/http-routing",
       "roots": [
-        "test/foundation/axum"
+        "test/foundation/http-routing"
       ],
       "files": [
         {
+          "path": "test/foundation/http-routing/functions/src/error_handling/mod/traits_256.rs",
+          "sha256": "690f3ca12de3ce88cee0315ec17d8593e5862a581693ee067f88a77278b603cd",
           "source": "src/foundation/axum/src/error_handling/mod.rs",
           "source_sha256_before": "7ae51a4a0d04be46c31683a04317295b4b4bdeb1c72ec4361bee8bdb7b5bb7c2",
-          "path": "test/foundation/axum/functions/src/error_handling/mod/traits_256.rs",
-          "sha256": "690f3ca12de3ce88cee0315ec17d8593e5862a581693ee067f88a77278b603cd"
+          "origin_directory": "vendor/rust/axum-0.8.9"
         },
         {
+          "path": "test/foundation/http-routing/functions/src/extract/connect_info/traits_33.rs",
+          "sha256": "7bbba8125548a0e93959527c02279b5a11088019c6c044bdae53cbd6841b4a5a",
           "source": "src/foundation/axum/src/extract/connect_info.rs",
           "source_sha256_before": "d179339934e306b059a613ffa38432cffe268dccafd6452f8511485d6afb972a",
-          "path": "test/foundation/axum/functions/src/extract/connect_info/traits_33.rs",
-          "sha256": "7bbba8125548a0e93959527c02279b5a11088019c6c044bdae53cbd6841b4a5a"
+          "origin_directory": "vendor/rust/axum-0.8.9"
         },
         {
+          "path": "test/foundation/http-routing/functions/src/handler/service/traits_111.rs",
+          "sha256": "5ea814f79eece562169889fee751137e23fe931afc51048d47ad5a8901296291",
           "source": "src/foundation/axum/src/handler/service.rs",
           "source_sha256_before": "990bf13fbb02ee4c94e8404e924c0742bd6ba092c9c3f9c9b895fc967f4fffa5",
-          "path": "test/foundation/axum/functions/src/handler/service/traits_111.rs",
-          "sha256": "5ea814f79eece562169889fee751137e23fe931afc51048d47ad5a8901296291"
+          "origin_directory": "vendor/rust/axum-0.8.9"
         },
         {
+          "path": "test/foundation/http-routing/functions/src/middleware/from_extractor/traits_163.rs",
+          "sha256": "81ff06f7d8775123ac9ef3e81d42a23c622ee20cd38178fc19a1feeebf7d8f0c",
           "source": "src/foundation/axum/src/middleware/from_extractor.rs",
           "source_sha256_before": "02fce7b89e20004fe26c105561b396337a2c89789a1671de4d559363337daea6",
-          "path": "test/foundation/axum/functions/src/middleware/from_extractor/traits_163.rs",
-          "sha256": "81ff06f7d8775123ac9ef3e81d42a23c622ee20cd38178fc19a1feeebf7d8f0c"
+          "origin_directory": "vendor/rust/axum-0.8.9"
         },
         {
+          "path": "test/foundation/http-routing/functions/src/routing/mod/traits_799.rs",
+          "sha256": "4da3b3413f1c3348b110296658160c81fd061b4f1186b36f75e20919b06e9664",
           "source": "src/foundation/axum/src/routing/mod.rs",
           "source_sha256_before": "e228a3d414a5684c440a1b91872a9163e8857ba58ef6462010005462fdcdc187",
-          "path": "test/foundation/axum/functions/src/routing/mod/traits_799.rs",
-          "sha256": "4da3b3413f1c3348b110296658160c81fd061b4f1186b36f75e20919b06e9664"
+          "origin_directory": "vendor/rust/axum-0.8.9"
         },
         {
+          "path": "test/foundation/http-routing/functions/src/util/test_try_downcast_112.rs",
+          "sha256": "da4fc8e7dca2e707e51adfe875c4c10794fa22a9c4c229cc61dac04d546ff248",
           "source": "src/foundation/axum/src/util.rs",
           "source_sha256_before": "687ea91590f562caa0459455fabbc91a69ae152f8910d55241503969938a764b",
-          "path": "test/foundation/axum/functions/src/util/test_try_downcast_112.rs",
-          "sha256": "da4fc8e7dca2e707e51adfe875c4c10794fa22a9c4c229cc61dac04d546ff248"
+          "origin_directory": "vendor/rust/axum-0.8.9"
         },
         {
-          "source": "src/foundation/axum/src/routing/tests/fallback.rs",
-          "source_sha256_before": "f8320561d1a495ced3c7e5b8b18da1fc10d114e6416afa183147f5328de1cef8",
-          "path": "test/foundation/axum/modules/src/routing/tests/fallback.rs",
-          "sha256": "f8320561d1a495ced3c7e5b8b18da1fc10d114e6416afa183147f5328de1cef8"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/tests/get_to_head.rs",
-          "source_sha256_before": "239896501902ad4b549ab5b88287095ce623b3e092353b00a2d39f2d8e23d0ad",
-          "path": "test/foundation/axum/modules/src/routing/tests/get_to_head.rs",
-          "sha256": "4d210edf2c56131c85949f1c5bc79c51bf9b6d1989ee6ecebe2622fa27be1190"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/tests/handle_error.rs",
-          "source_sha256_before": "25a87355a7f0f0f976686fa86b8a39949e444e848f5c43fa2d8b52fe5e31d139",
-          "path": "test/foundation/axum/modules/src/routing/tests/handle_error.rs",
-          "sha256": "5037d26c2c9751eedaed621b9cdc5f4440633d26cb5845889a681a3313e08741"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/tests/merge.rs",
-          "source_sha256_before": "770e78fed76f9d5bf3eba6b0a56f84532468f24e660ef7f1e991be2d3e8e8d0b",
-          "path": "test/foundation/axum/modules/src/routing/tests/merge.rs",
-          "sha256": "b672fcbbda1c45e158cbcd209cf6b57ab37206f4e6e5203cfa6ef8051e90d75a"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/tests/mod.rs",
-          "source_sha256_before": "48c54f725094786e778cd8bb79c96dd2c31d760187a64962c403477e805538c9",
-          "path": "test/foundation/axum/modules/src/routing/tests/mod.rs",
-          "sha256": "217bcc314c6a424a50ab94f6f30b0ab438b8ecced3bcb6fe6030943e292342a3"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/tests/nest.rs",
-          "source_sha256_before": "ae253d891d2c8e4517ef0d7ce4d8387b54631dbfb9c65ffa025d35cab7107e29",
-          "path": "test/foundation/axum/modules/src/routing/tests/nest.rs",
-          "sha256": "d52a78252429141a84fef5dc51429387ee530b9e7f4362f64e99f6b87c9e3f90"
-        },
-        {
-          "source": "src/foundation/axum/src/test_helpers/counting_cloneable_state.rs",
-          "source_sha256_before": "72bb0bc19cf7c3b9967cea896395c35dfa033ffbf3eb6ea999de66481dc3621a",
-          "path": "test/foundation/axum/modules/src/test_helpers/counting_cloneable_state.rs",
-          "sha256": "72bb0bc19cf7c3b9967cea896395c35dfa033ffbf3eb6ea999de66481dc3621a"
-        },
-        {
-          "source": "src/foundation/axum/src/test_helpers/tracing_helpers.rs",
-          "source_sha256_before": "7048698b042f9010590bfccba959171a33eeab5d10de564f7f8e431a5740e7fc",
-          "path": "test/foundation/axum/modules/src/test_helpers/tracing_helpers.rs",
-          "sha256": "53dbfa0993bb6cc498be39ac9f09957aa3aef453365fb9b670799afb46660e7b"
-        },
-        {
-          "source": "src/foundation/axum/tests/panic_location.rs",
-          "source_sha256_before": "6d0d3602c1b080d888c1c4a3683beaa7551961efc739e7fb54cee2e1e38477fb",
-          "path": "test/foundation/axum/tests/panic_location.rs",
-          "sha256": "6d0d3602c1b080d888c1c4a3683beaa7551961efc739e7fb54cee2e1e38477fb"
-        },
-        {
-          "source": "src/foundation/axum/src/extension.rs",
-          "source_sha256_before": "afecc958be6d00da1813ee3ca623265d3c7ec7d32a8b72859f11fef364e701ef",
-          "path": "test/foundation/axum/unit/src/extension/tests_189.rs",
-          "sha256": "362dd98e76e4bb4df724a89ea2ec42b8a34de7f4af98bfe28df3a8dc0f1380f7"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/connect_info.rs",
-          "source_sha256_before": "d179339934e306b059a613ffa38432cffe268dccafd6452f8511485d6afb972a",
-          "path": "test/foundation/axum/unit/src/extract/connect_info/tests_234.rs",
-          "sha256": "3c90f7e986e2e6df51474d97a1fdc5301085e794d5d569ffc20481e0686a7e99"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/matched_path.rs",
-          "source_sha256_before": "8b05d4cfe1a6ba378ff4836349162963026a865389ea60e055157680fffa215d",
-          "path": "test/foundation/axum/unit/src/extract/matched_path/tests_144.rs",
-          "sha256": "f934ec9e0ff640a780efe4a1027fc2a9ffee6eddf2dd5b91e96199fdbd1f7caf"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/mod.rs",
-          "source_sha256_before": "e812a9df24f786bbefe31763d8d032c97e59f1a992e0e50767bb89da0fe43680",
-          "path": "test/foundation/axum/unit/src/extract/mod/tests_99.rs",
-          "sha256": "52024b2618602761d0ab76d41caa124d001e7d96a4d8798971d8f74a4127c102"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/multipart.rs",
-          "source_sha256_before": "0916d72cb8d6686ce99b709b1520f8e5813c13987bab8c3c164e9cf15e68c9fa",
-          "path": "test/foundation/axum/unit/src/extract/multipart/tests_357.rs",
-          "sha256": "9c719ae67be392e5e037a2e1e9cbc7064b60cbd3591ce40d80d95cc74299a809"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/nested_path.rs",
-          "source_sha256_before": "47d8227d72db97ca1fc580dc80005b2b51681732184301fd0db6a082d355a739",
-          "path": "test/foundation/axum/unit/src/extract/nested_path/tests_111.rs",
-          "sha256": "9e7d63f88a0ab8f709594129d44740059c38139a038cebdf5e14c27936639bc2"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/path/de.rs",
-          "source_sha256_before": "d66b931638a0d8c24c30d9c1c787b1060b8ef045d41272c9d1887765f1016089",
-          "path": "test/foundation/axum/unit/src/extract/path/de/tests_648.rs",
-          "sha256": "bdf4699e5fdbf67e784cb9b316edede8b076f9c0a20774f20236d7b90a4f4dfa"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/path/mod.rs",
-          "source_sha256_before": "d75df8f7586bd6e7ef69953335f71cab6ba7bfe8e4c21c7caed3b175ff7806af",
-          "path": "test/foundation/axum/unit/src/extract/path/mod/tests_600.rs",
-          "sha256": "2e75e5faccda7f8b803210e87b232c597f16379ae14092cc037ca180b3837aa5"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/query.rs",
-          "source_sha256_before": "26854506503a90152ed25dae4c3b7594c8521cc17ed2d96f3126bcc780c426bb",
-          "path": "test/foundation/axum/unit/src/extract/query/tests_100.rs",
-          "sha256": "b35262e8e298bdde8f8a7761594bb0b92dbf4497fd0adce00ac4d0e92cfd7afb"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/raw_form.rs",
-          "source_sha256_before": "7f75091199f478e19275a1449582f0aab4243184ddd825f017bb27577749eab0",
-          "path": "test/foundation/axum/unit/src/extract/raw_form/tests_55.rs",
-          "sha256": "8112526aa2b31f11047d44ffa83777165904843fe6350701734fe13857286bb4"
-        },
-        {
-          "source": "src/foundation/axum/src/extract/ws.rs",
-          "source_sha256_before": "1d2145ee8500333c511bbb43ba470f05e0dc65d6be411c0d42bb3bf507d0fdc5",
-          "path": "test/foundation/axum/unit/src/extract/ws/tests_1100.rs",
-          "sha256": "138c8737ccf4fcd3b4b3184f67c57e464db7381c0a41a386612eb5c1c399fe90"
-        },
-        {
-          "source": "src/foundation/axum/src/form.rs",
-          "source_sha256_before": "f20a1cc31c8109bc20a9946463c39c9435814a0bed5a1f0cf4a1a64e940d7a4c",
-          "path": "test/foundation/axum/unit/src/form/tests_129.rs",
-          "sha256": "e0441538facee07a08b02deebf4bfae920fa0dfe5ae77b42cfbeb74cfc3021b2"
-        },
-        {
-          "source": "src/foundation/axum/src/handler/mod.rs",
-          "source_sha256_before": "e881f79f3b9ba05eba24505a964bf58caf7993044c381a1e731bf464f95020b7",
-          "path": "test/foundation/axum/unit/src/handler/mod/tests_400.rs",
-          "sha256": "752641ea33354bce070524d278ecfd0bbdfae97afa9c361ed492024975eeb86d"
-        },
-        {
-          "source": "src/foundation/axum/src/json.rs",
-          "source_sha256_before": "feaad1fce714c48cad69b3a1e6ccac9a49966e7c6b5f85f7d8a7c392af667f7a",
-          "path": "test/foundation/axum/unit/src/json/tests_241.rs",
-          "sha256": "161f884b700003cfeffa8c7a7cb7ce282fca7f84bf8949f4f48349ebdaef7903"
-        },
-        {
-          "source": "src/foundation/axum/src/middleware/from_extractor.rs",
-          "source_sha256_before": "02fce7b89e20004fe26c105561b396337a2c89789a1671de4d559363337daea6",
-          "path": "test/foundation/axum/unit/src/middleware/from_extractor/tests_302.rs",
-          "sha256": "a8b241fe4628687b521e772c6c77b9a655e9880039b15594883c55eafd91c17e"
-        },
-        {
-          "source": "src/foundation/axum/src/middleware/from_fn.rs",
-          "source_sha256_before": "1365f074e0d46b99b69069a5e01f5575e2067d4826744eac96a352082b550367",
-          "path": "test/foundation/axum/unit/src/middleware/from_fn/tests_385.rs",
-          "sha256": "a82a61443ac3b5276a3a3ff144768ec2024c04e8b4220f26e439e43825b3880e"
-        },
-        {
-          "source": "src/foundation/axum/src/middleware/map_request.rs",
-          "source_sha256_before": "9ed050830ffdcd750f1e3da5db22afada633babdc080b3bf77a8d0e0e644b40d",
-          "path": "test/foundation/axum/unit/src/middleware/map_request/tests_388.rs",
-          "sha256": "33d785bb9412baef4627cdf281fa53c7e4e90b3fdc6cbfb68c5f2b732c2e63ba"
-        },
-        {
-          "source": "src/foundation/axum/src/middleware/map_response.rs",
-          "source_sha256_before": "5e6bea36d836f6788a7df141dcd710c4963712643a578b1f98ae92f8abc34dff",
-          "path": "test/foundation/axum/unit/src/middleware/map_response/tests_343.rs",
-          "sha256": "b545bc08228a7f192a605c87aae39142278c045e19c726ea4a34eada8c5f2680"
-        },
-        {
-          "source": "src/foundation/axum/src/response/mod.rs",
-          "source_sha256_before": "e20e8e199800955c19ec46f6cc82f7a678014bf26be38089b270ebe2db1d5544",
-          "path": "test/foundation/axum/unit/src/response/mod/tests_85.rs",
-          "sha256": "3a40291378dff3b1c11b3cd5899411d93cf042e1683663b70dd8a7a81f582878"
-        },
-        {
-          "source": "src/foundation/axum/src/response/redirect.rs",
-          "source_sha256_before": "9e2701b2fe093b9a2f68d3fc65487e1fe1d09028e6593fe9882333d644b90a51",
-          "path": "test/foundation/axum/unit/src/response/redirect/tests_96.rs",
-          "sha256": "2d2fe520b7413c2607ece059a404bb708255a8bb3a61b1a9f0498654ae2d8ce6"
-        },
-        {
-          "source": "src/foundation/axum/src/response/sse.rs",
-          "source_sha256_before": "7df949388820fb32ddb6726a6860832cf588abcb4f3302d235c57f0a99ac6bcb",
-          "path": "test/foundation/axum/unit/src/response/sse/tests_637.rs",
-          "sha256": "329fecd44fbe91d0af7cc8fb480925f0aa4fb53f3f9bedcf09bc8d60f434c8d5"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/into_make_service.rs",
-          "source_sha256_before": "be40a59846270094b76d6a29cf36afe5f2ec23d4e8779c34eb2a7eea9c327b00",
-          "path": "test/foundation/axum/unit/src/routing/into_make_service/tests_46.rs",
-          "sha256": "aff9a66b0a442bb6365545a550981437385637b14bdf400edfeb1ecf1e901874"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/method_filter.rs",
-          "source_sha256_before": "ba400ca4d955cc963900a83abb8312fe6703505d8af791347a11db17d52b03f3",
-          "path": "test/foundation/axum/unit/src/routing/method_filter/tests_107.rs",
-          "sha256": "2ad3dbe43a249f7e57808a232c6e0127a576a7f175b0aa3cc9b6cab7d5817f01"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/method_routing.rs",
-          "source_sha256_before": "05d1ad5ffeb7ac06dec3f70e55e67a8e57e7ad035f4d69e1615df9a1bc7bcbe4",
-          "path": "test/foundation/axum/unit/src/routing/method_routing/tests_1344.rs",
-          "sha256": "b755793a16c2c5e2c2282c395e4b9e502e20b48a767ab5608d04c007e9a9b15b"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/route.rs",
-          "source_sha256_before": "d4b24b803c4dd9fb389da53f267ae06ec40531399f1062148a99dc4336982bd7",
-          "path": "test/foundation/axum/unit/src/routing/route/tests_235.rs",
-          "sha256": "fe3f5ba3c0b0c44e27b936b758d9babb22dedb363f21291963ce77427051424f"
-        },
-        {
-          "source": "src/foundation/axum/src/routing/strip_prefix.rs",
-          "source_sha256_before": "1a0370935ea3cec519e7fa5c9147fa9dd812be86e1e6c6674c059ac9a3fe6a22",
-          "path": "test/foundation/axum/unit/src/routing/strip_prefix/tests_166.rs",
-          "sha256": "b559a90fd9b64c83292b5ff6caef9ca779dd2fd4220ba1713bf3aab894ecae05"
-        },
-        {
-          "source": "src/foundation/axum/src/serve/mod.rs",
-          "source_sha256_before": "063ccc352890e97c82d497b32888cf261921bb99687240120643d1d85c59324a",
-          "path": "test/foundation/axum/unit/src/serve/mod/tests_473.rs",
-          "sha256": "0a9a89cf65ec4b48a95688662ada4f9a787c82628ee1edcbbc9d5545f04f0fab"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/axum-core",
-      "roots": [
-        "test/foundation/axum-core"
-      ],
-      "files": [
-        {
+          "path": "test/foundation/http-routing/kernel/functions/src/body/test_try_downcast_222.rs",
+          "sha256": "da4fc8e7dca2e707e51adfe875c4c10794fa22a9c4c229cc61dac04d546ff248",
           "source": "src/foundation/axum-core/src/body.rs",
           "source_sha256_before": "a737b8441863a95a84fbd91a02c5711121d029ef24e7890f2fcbafc30c60a0f8",
-          "path": "test/foundation/axum-core/functions/src/body/test_try_downcast_222.rs",
-          "sha256": "da4fc8e7dca2e707e51adfe875c4c10794fa22a9c4c229cc61dac04d546ff248"
+          "origin_directory": "vendor/rust/axum-core-0.5.6"
         },
         {
+          "path": "test/foundation/http-routing/kernel/unit/src/ext_traits/mod/tests_4.rs",
+          "sha256": "44dfd75171fdb6d1281691b369110c88884fa50655f87e077fb04cae1af32687",
           "source": "src/foundation/axum-core/src/ext_traits/mod.rs",
           "source_sha256_before": "533890b41906c43b6796041cd329494f1cae887fc63ec273b1d6c92110fe1a21",
-          "path": "test/foundation/axum-core/unit/src/ext_traits/mod/tests_4.rs",
-          "sha256": "44dfd75171fdb6d1281691b369110c88884fa50655f87e077fb04cae1af32687"
+          "origin_directory": "vendor/rust/axum-core-0.5.6"
         },
         {
+          "path": "test/foundation/http-routing/kernel/unit/src/ext_traits/request/tests_335.rs",
+          "sha256": "f0260df8f3f5dee4dd13598373aa9ad12c49da17c63d84383f4a98f17d39d835",
           "source": "src/foundation/axum-core/src/ext_traits/request.rs",
           "source_sha256_before": "630a931c1c4ee0f6232e7934a0ff4d08a2cc1854587e48c87af12cb93611b935",
-          "path": "test/foundation/axum-core/unit/src/ext_traits/request/tests_335.rs",
-          "sha256": "f0260df8f3f5dee4dd13598373aa9ad12c49da17c63d84383f4a98f17d39d835"
+          "origin_directory": "vendor/rust/axum-core-0.5.6"
         },
         {
+          "path": "test/foundation/http-routing/kernel/unit/src/ext_traits/request_parts/tests_137.rs",
+          "sha256": "de59b2afb2e5d55e5dc0a1b5dd917f635432950ed0ceefb660b51bdcd3b5e18f",
           "source": "src/foundation/axum-core/src/ext_traits/request_parts.rs",
           "source_sha256_before": "54271e7e1b099826d08c919bf0bd6d899b73d3a25382a92618b1ca10934ad6bd",
-          "path": "test/foundation/axum-core/unit/src/ext_traits/request_parts/tests_137.rs",
-          "sha256": "de59b2afb2e5d55e5dc0a1b5dd917f635432950ed0ceefb660b51bdcd3b5e18f"
+          "origin_directory": "vendor/rust/axum-core-0.5.6"
         },
         {
+          "path": "test/foundation/http-routing/kernel/unit/src/extract/request_parts/tests_175.rs",
+          "sha256": "359b067bfb2009199b2689f0ef3891193a3398846b523ed39fc2fe98c4bed80a",
           "source": "src/foundation/axum-core/src/extract/request_parts.rs",
           "source_sha256_before": "5e791539e708afde58143eb82c7a61c6a4dfc5c61cbde87429165e03b33d29b1",
-          "path": "test/foundation/axum-core/unit/src/extract/request_parts/tests_175.rs",
-          "sha256": "7f2c1eeec0cfd8dc4dbef18b430ab6423d53c459723bf9c21c049e37a1f699dd"
+          "origin_directory": "vendor/rust/axum-core-0.5.6"
         },
         {
+          "path": "test/foundation/http-routing/kernel/unit/src/extract/tuple/tests_79.rs",
+          "sha256": "393f27efa79cfc5c42c5d1344abe74e734d5698ebc3b28ea876260aaeaf2ca55",
           "source": "src/foundation/axum-core/src/extract/tuple.rs",
           "source_sha256_before": "2ca52e18b17e95c60d6d05b05de82fa7e371d2b293fcdc0ddcea26c990c7deff",
-          "path": "test/foundation/axum-core/unit/src/extract/tuple/tests_79.rs",
-          "sha256": "393f27efa79cfc5c42c5d1344abe74e734d5698ebc3b28ea876260aaeaf2ca55"
+          "origin_directory": "vendor/rust/axum-core-0.5.6"
         },
         {
+          "path": "test/foundation/http-routing/kernel/unit/src/macros/composite_rejection_tests_318.rs",
+          "sha256": "c8365bbf893078ab92ba815736024f475506bce4a35905dc56cdfd0100d610d6",
           "source": "src/foundation/axum-core/src/macros.rs",
           "source_sha256_before": "d05abefae3b886d726be7b8c75a23016a34b413eee5936e9ad280aeed7827e5c",
-          "path": "test/foundation/axum-core/unit/src/macros/composite_rejection_tests_318.rs",
-          "sha256": "c8365bbf893078ab92ba815736024f475506bce4a35905dc56cdfd0100d610d6"
+          "origin_directory": "vendor/rust/axum-core-0.5.6"
+        },
+        {
+          "path": "test/foundation/http-routing/modules/src/routing/tests/fallback.rs",
+          "sha256": "f8320561d1a495ced3c7e5b8b18da1fc10d114e6416afa183147f5328de1cef8",
+          "source": "src/foundation/axum/src/routing/tests/fallback.rs",
+          "source_sha256_before": "f8320561d1a495ced3c7e5b8b18da1fc10d114e6416afa183147f5328de1cef8",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/modules/src/routing/tests/get_to_head.rs",
+          "sha256": "4d210edf2c56131c85949f1c5bc79c51bf9b6d1989ee6ecebe2622fa27be1190",
+          "source": "src/foundation/axum/src/routing/tests/get_to_head.rs",
+          "source_sha256_before": "239896501902ad4b549ab5b88287095ce623b3e092353b00a2d39f2d8e23d0ad",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/modules/src/routing/tests/handle_error.rs",
+          "sha256": "5037d26c2c9751eedaed621b9cdc5f4440633d26cb5845889a681a3313e08741",
+          "source": "src/foundation/axum/src/routing/tests/handle_error.rs",
+          "source_sha256_before": "25a87355a7f0f0f976686fa86b8a39949e444e848f5c43fa2d8b52fe5e31d139",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/modules/src/routing/tests/merge.rs",
+          "sha256": "b672fcbbda1c45e158cbcd209cf6b57ab37206f4e6e5203cfa6ef8051e90d75a",
+          "source": "src/foundation/axum/src/routing/tests/merge.rs",
+          "source_sha256_before": "770e78fed76f9d5bf3eba6b0a56f84532468f24e660ef7f1e991be2d3e8e8d0b",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/modules/src/routing/tests/mod.rs",
+          "sha256": "a1f1bf79f80a35d1f92062aa9b6fc22f1af74d2b1b7a663b0265d2a2cb24a74e",
+          "source": "src/foundation/axum/src/routing/tests/mod.rs",
+          "source_sha256_before": "48c54f725094786e778cd8bb79c96dd2c31d760187a64962c403477e805538c9",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/modules/src/routing/tests/nest.rs",
+          "sha256": "d52a78252429141a84fef5dc51429387ee530b9e7f4362f64e99f6b87c9e3f90",
+          "source": "src/foundation/axum/src/routing/tests/nest.rs",
+          "source_sha256_before": "ae253d891d2c8e4517ef0d7ce4d8387b54631dbfb9c65ffa025d35cab7107e29",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/modules/src/test_helpers/counting_cloneable_state.rs",
+          "sha256": "72bb0bc19cf7c3b9967cea896395c35dfa033ffbf3eb6ea999de66481dc3621a",
+          "source": "src/foundation/axum/src/test_helpers/counting_cloneable_state.rs",
+          "source_sha256_before": "72bb0bc19cf7c3b9967cea896395c35dfa033ffbf3eb6ea999de66481dc3621a",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/modules/src/test_helpers/tracing_helpers.rs",
+          "sha256": "53dbfa0993bb6cc498be39ac9f09957aa3aef453365fb9b670799afb46660e7b",
+          "source": "src/foundation/axum/src/test_helpers/tracing_helpers.rs",
+          "source_sha256_before": "7048698b042f9010590bfccba959171a33eeab5d10de564f7f8e431a5740e7fc",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/tests/panic_location.rs",
+          "sha256": "bd9108aab901ad224a54ab6d401a4c778b5e6592b893f80ea378ede10a1d3057",
+          "source": "src/foundation/axum/tests/panic_location.rs",
+          "source_sha256_before": "6d0d3602c1b080d888c1c4a3683beaa7551961efc739e7fb54cee2e1e38477fb",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extension/tests_189.rs",
+          "sha256": "e6523954b6c640cf97d4af5d4d812b175b5e9c8fb059f2d6f568e823937754cf",
+          "source": "src/foundation/axum/src/extension.rs",
+          "source_sha256_before": "afecc958be6d00da1813ee3ca623265d3c7ec7d32a8b72859f11fef364e701ef",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/connect_info/tests_234.rs",
+          "sha256": "3c90f7e986e2e6df51474d97a1fdc5301085e794d5d569ffc20481e0686a7e99",
+          "source": "src/foundation/axum/src/extract/connect_info.rs",
+          "source_sha256_before": "d179339934e306b059a613ffa38432cffe268dccafd6452f8511485d6afb972a",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/matched_path/tests_144.rs",
+          "sha256": "f934ec9e0ff640a780efe4a1027fc2a9ffee6eddf2dd5b91e96199fdbd1f7caf",
+          "source": "src/foundation/axum/src/extract/matched_path.rs",
+          "source_sha256_before": "8b05d4cfe1a6ba378ff4836349162963026a865389ea60e055157680fffa215d",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/mod/tests_99.rs",
+          "sha256": "52024b2618602761d0ab76d41caa124d001e7d96a4d8798971d8f74a4127c102",
+          "source": "src/foundation/axum/src/extract/mod.rs",
+          "source_sha256_before": "e812a9df24f786bbefe31763d8d032c97e59f1a992e0e50767bb89da0fe43680",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/multipart/tests_357.rs",
+          "sha256": "1d5b26817733bc7f57c06322eceec1165de68f3bbf0f4dd177c3c7074c5415b5",
+          "source": "src/foundation/axum/src/extract/multipart.rs",
+          "source_sha256_before": "0916d72cb8d6686ce99b709b1520f8e5813c13987bab8c3c164e9cf15e68c9fa",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/nested_path/tests_111.rs",
+          "sha256": "87dd9041dddfacbfe4da2cfff80144a3b5a114f1e40c6a40acd9df624fab0afa",
+          "source": "src/foundation/axum/src/extract/nested_path.rs",
+          "source_sha256_before": "47d8227d72db97ca1fc580dc80005b2b51681732184301fd0db6a082d355a739",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/path/de/tests_648.rs",
+          "sha256": "bdf4699e5fdbf67e784cb9b316edede8b076f9c0a20774f20236d7b90a4f4dfa",
+          "source": "src/foundation/axum/src/extract/path/de.rs",
+          "source_sha256_before": "d66b931638a0d8c24c30d9c1c787b1060b8ef045d41272c9d1887765f1016089",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/path/mod/tests_600.rs",
+          "sha256": "2e75e5faccda7f8b803210e87b232c597f16379ae14092cc037ca180b3837aa5",
+          "source": "src/foundation/axum/src/extract/path/mod.rs",
+          "source_sha256_before": "d75df8f7586bd6e7ef69953335f71cab6ba7bfe8e4c21c7caed3b175ff7806af",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/query/tests_100.rs",
+          "sha256": "2ec492e0981e750494025ad883a3923675420fa2f8d4fda8d165653951c8db0e",
+          "source": "src/foundation/axum/src/extract/query.rs",
+          "source_sha256_before": "26854506503a90152ed25dae4c3b7594c8521cc17ed2d96f3126bcc780c426bb",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/raw_form/tests_55.rs",
+          "sha256": "69a590845dd13bcb2f79a4cb842088ac7e68877dcdd8cc82678bed3f11b87131",
+          "source": "src/foundation/axum/src/extract/raw_form.rs",
+          "source_sha256_before": "7f75091199f478e19275a1449582f0aab4243184ddd825f017bb27577749eab0",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/extract/ws/tests_1100.rs",
+          "sha256": "138c8737ccf4fcd3b4b3184f67c57e464db7381c0a41a386612eb5c1c399fe90",
+          "source": "src/foundation/axum/src/extract/ws.rs",
+          "source_sha256_before": "1d2145ee8500333c511bbb43ba470f05e0dc65d6be411c0d42bb3bf507d0fdc5",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/form/tests_129.rs",
+          "sha256": "48a0b0526b4f0573fb79f26c07638f06ac8d1e8445285cad88dc88069a2de34a",
+          "source": "src/foundation/axum/src/form.rs",
+          "source_sha256_before": "f20a1cc31c8109bc20a9946463c39c9435814a0bed5a1f0cf4a1a64e940d7a4c",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/handler/mod/tests_400.rs",
+          "sha256": "6ccc695df31b9d32154cae76fb32a66891beb3da04c2136ace9d0d73417f94c0",
+          "source": "src/foundation/axum/src/handler/mod.rs",
+          "source_sha256_before": "e881f79f3b9ba05eba24505a964bf58caf7993044c381a1e731bf464f95020b7",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/json/tests_241.rs",
+          "sha256": "161f884b700003cfeffa8c7a7cb7ce282fca7f84bf8949f4f48349ebdaef7903",
+          "source": "src/foundation/axum/src/json.rs",
+          "source_sha256_before": "feaad1fce714c48cad69b3a1e6ccac9a49966e7c6b5f85f7d8a7c392af667f7a",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/middleware/from_extractor/tests_302.rs",
+          "sha256": "86a1eb158b80bdd044c9d78ffb403e650e899dd115fc600949dbf4817ea3adf6",
+          "source": "src/foundation/axum/src/middleware/from_extractor.rs",
+          "source_sha256_before": "02fce7b89e20004fe26c105561b396337a2c89789a1671de4d559363337daea6",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/middleware/from_fn/tests_385.rs",
+          "sha256": "a82a61443ac3b5276a3a3ff144768ec2024c04e8b4220f26e439e43825b3880e",
+          "source": "src/foundation/axum/src/middleware/from_fn.rs",
+          "source_sha256_before": "1365f074e0d46b99b69069a5e01f5575e2067d4826744eac96a352082b550367",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/middleware/map_request/tests_388.rs",
+          "sha256": "33d785bb9412baef4627cdf281fa53c7e4e90b3fdc6cbfb68c5f2b732c2e63ba",
+          "source": "src/foundation/axum/src/middleware/map_request.rs",
+          "source_sha256_before": "9ed050830ffdcd750f1e3da5db22afada633babdc080b3bf77a8d0e0e644b40d",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/middleware/map_response/tests_343.rs",
+          "sha256": "b545bc08228a7f192a605c87aae39142278c045e19c726ea4a34eada8c5f2680",
+          "source": "src/foundation/axum/src/middleware/map_response.rs",
+          "source_sha256_before": "5e6bea36d836f6788a7df141dcd710c4963712643a578b1f98ae92f8abc34dff",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/response/mod/tests_85.rs",
+          "sha256": "8aff4364f8f60c260dd2e18d08ab4b9f44db130f39a23f45f67788245961a1ed",
+          "source": "src/foundation/axum/src/response/mod.rs",
+          "source_sha256_before": "e20e8e199800955c19ec46f6cc82f7a678014bf26be38089b270ebe2db1d5544",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/response/redirect/tests_96.rs",
+          "sha256": "519dd422ce75db4fd0f68205359c443c6221dc9d083e426e630b2e2ea08b5551",
+          "source": "src/foundation/axum/src/response/redirect.rs",
+          "source_sha256_before": "9e2701b2fe093b9a2f68d3fc65487e1fe1d09028e6593fe9882333d644b90a51",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/response/sse/tests_637.rs",
+          "sha256": "329fecd44fbe91d0af7cc8fb480925f0aa4fb53f3f9bedcf09bc8d60f434c8d5",
+          "source": "src/foundation/axum/src/response/sse.rs",
+          "source_sha256_before": "7df949388820fb32ddb6726a6860832cf588abcb4f3302d235c57f0a99ac6bcb",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/routing/into_make_service/tests_46.rs",
+          "sha256": "aff9a66b0a442bb6365545a550981437385637b14bdf400edfeb1ecf1e901874",
+          "source": "src/foundation/axum/src/routing/into_make_service.rs",
+          "source_sha256_before": "be40a59846270094b76d6a29cf36afe5f2ec23d4e8779c34eb2a7eea9c327b00",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/routing/method_filter/tests_107.rs",
+          "sha256": "2ad3dbe43a249f7e57808a232c6e0127a576a7f175b0aa3cc9b6cab7d5817f01",
+          "source": "src/foundation/axum/src/routing/method_filter.rs",
+          "source_sha256_before": "ba400ca4d955cc963900a83abb8312fe6703505d8af791347a11db17d52b03f3",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/routing/method_routing/tests_1344.rs",
+          "sha256": "b755793a16c2c5e2c2282c395e4b9e502e20b48a767ab5608d04c007e9a9b15b",
+          "source": "src/foundation/axum/src/routing/method_routing.rs",
+          "source_sha256_before": "05d1ad5ffeb7ac06dec3f70e55e67a8e57e7ad035f4d69e1615df9a1bc7bcbe4",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/routing/route/tests_235.rs",
+          "sha256": "fe3f5ba3c0b0c44e27b936b758d9babb22dedb363f21291963ce77427051424f",
+          "source": "src/foundation/axum/src/routing/route.rs",
+          "source_sha256_before": "d4b24b803c4dd9fb389da53f267ae06ec40531399f1062148a99dc4336982bd7",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/routing/strip_prefix/tests_166.rs",
+          "sha256": "b559a90fd9b64c83292b5ff6caef9ca779dd2fd4220ba1713bf3aab894ecae05",
+          "source": "src/foundation/axum/src/routing/strip_prefix.rs",
+          "source_sha256_before": "1a0370935ea3cec519e7fa5c9147fa9dd812be86e1e6c6674c059ac9a3fe6a22",
+          "origin_directory": "vendor/rust/axum-0.8.9"
+        },
+        {
+          "path": "test/foundation/http-routing/unit/src/serve/mod/tests_473.rs",
+          "sha256": "bf2092082b99c2d9a3e284cf7c3918b5d8ed5dae8a0dc8e2473b5903d7b1f0bc",
+          "source": "src/foundation/axum/src/serve/mod.rs",
+          "source_sha256_before": "063ccc352890e97c82d497b32888cf261921bb99687240120643d1d85c59324a",
+          "origin_directory": "vendor/rust/axum-0.8.9"
         }
       ]
     },
@@ -1189,7 +1230,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/extension_not_clone.rs",
           "source_sha256_before": "5b661fddf7ac7cef6468b2461af138781152eb771dfeeecc9ba870f5c9c52392",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/extension_not_clone.rs",
-          "sha256": "5b661fddf7ac7cef6468b2461af138781152eb771dfeeecc9ba870f5c9c52392"
+          "sha256": "ff9c3324f0a8adc7afac36e4dbfc9fc31ce023fe48a133f280b6b6f3ade3b13c"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/extension_not_clone.stderr",
@@ -1201,7 +1242,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/extract_self_mut.rs",
           "source_sha256_before": "637d3fa0868d774d76ac163c6cae69b517321ef79a017385866eda3204f99744",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/extract_self_mut.rs",
-          "sha256": "637d3fa0868d774d76ac163c6cae69b517321ef79a017385866eda3204f99744"
+          "sha256": "b28ec59c0aa8b62331c96f4c033fdbac92593aa436210d04deb9d8ae8e4bcb9d"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/extract_self_mut.stderr",
@@ -1213,7 +1254,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/extract_self_ref.rs",
           "source_sha256_before": "fa055c97505ab25c2c8a17ac169656b107a5b2d8d29eebae5d77712ef99d5762",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/extract_self_ref.rs",
-          "sha256": "fa055c97505ab25c2c8a17ac169656b107a5b2d8d29eebae5d77712ef99d5762"
+          "sha256": "8a7502d53981f06e004b73a8495e3b850df7b5c6dad51f861d66bb963963410a"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/extract_self_ref.stderr",
@@ -1249,7 +1290,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/json_not_deserialize.rs",
           "source_sha256_before": "fb9780b456e36e71616f79d985a5b18280c7d9aa3b61c395eef296040b70e50b",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/json_not_deserialize.rs",
-          "sha256": "fb9780b456e36e71616f79d985a5b18280c7d9aa3b61c395eef296040b70e50b"
+          "sha256": "3b61e33697af8a044099d3425bfc3d86459c7b902e9c9ae5bab0592823a2527c"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/json_not_deserialize.stderr",
@@ -1261,7 +1302,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/multiple_paths.rs",
           "source_sha256_before": "8a86a64662eb046dfabfbff4508c193ee9c550d55d8f9d3c0ea25ec451594f1d",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/multiple_paths.rs",
-          "sha256": "8a86a64662eb046dfabfbff4508c193ee9c550d55d8f9d3c0ea25ec451594f1d"
+          "sha256": "e921dd43e49a2b6e371a0177e8c6883fb21097aad9132e267e630259aea5377f"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/multiple_paths.stderr",
@@ -1273,7 +1314,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/multiple_request_consumers.rs",
           "source_sha256_before": "ab101b71a92c323ceb1a0ce1266f5e8e7ae638037c18218aecb73667468f276b",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/multiple_request_consumers.rs",
-          "sha256": "ab101b71a92c323ceb1a0ce1266f5e8e7ae638037c18218aecb73667468f276b"
+          "sha256": "e1f10834734a46affc72e9a777bb9c3f85bcc1327cd6c5d597ceac1e29189948"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/multiple_request_consumers.stderr",
@@ -1321,7 +1362,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/output_tuple_too_many.rs",
           "source_sha256_before": "ac498922a75d8489f074a35afcf45f8f9bdfc6253394f6b4bb432353a5dba072",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/output_tuple_too_many.rs",
-          "sha256": "ac498922a75d8489f074a35afcf45f8f9bdfc6253394f6b4bb432353a5dba072"
+          "sha256": "1d97fef59c2d5e2e874fcb880d9656e81753f5cf1d12071fe2fcfa58c3ccc9a2"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/output_tuple_too_many.stderr",
@@ -1333,7 +1374,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/returning_request_parts.rs",
           "source_sha256_before": "9cb95030a847b9832bbc6d814ced19e04b942ead4b376dd80878ad2d1be23780",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/returning_request_parts.rs",
-          "sha256": "9cb95030a847b9832bbc6d814ced19e04b942ead4b376dd80878ad2d1be23780"
+          "sha256": "0da7c6ae77b9daf7be962cda0353a4ceb91d49e390df25773a0dc718c818455b"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/returning_request_parts.stderr",
@@ -1345,7 +1386,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/single_wrong_return_tuple.rs",
           "source_sha256_before": "205ffeeffa3e8cd15b76d051f6371d8b8cc8999a9715893669af21a82221fc43",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/single_wrong_return_tuple.rs",
-          "sha256": "205ffeeffa3e8cd15b76d051f6371d8b8cc8999a9715893669af21a82221fc43"
+          "sha256": "f8260ec74b7a08cbdbcc6dd320fb5f82ca8077a24c60b43904d252b6a6859d5e"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/single_wrong_return_tuple.stderr",
@@ -1357,7 +1398,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/too_many_extractors.rs",
           "source_sha256_before": "88c3b8e20b65557068904f16c82cc6ce006067692c18dde386c9270cd1b02ce4",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/too_many_extractors.rs",
-          "sha256": "88c3b8e20b65557068904f16c82cc6ce006067692c18dde386c9270cd1b02ce4"
+          "sha256": "97bd4738173217d4ea79261124759b2b22fff1be4a32f45d55bd493e26a8fbb2"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/too_many_extractors.stderr",
@@ -1369,7 +1410,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/wrong_order.rs",
           "source_sha256_before": "130138ac02474bbdb22eed1d6d623de6ce7dab3f6d7430915f8f67e8de351299",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/wrong_order.rs",
-          "sha256": "130138ac02474bbdb22eed1d6d623de6ce7dab3f6d7430915f8f67e8de351299"
+          "sha256": "de2ca8b227c6094bd317b44d70358e509ce3717a18b7cb01b27895360a8bd30a"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/wrong_order.stderr",
@@ -1381,7 +1422,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/wrong_return_tuple.rs",
           "source_sha256_before": "a6d87a0db317fce0a30ee990373cc4312e7bc6a3b9732d636f4cbde267bdc05c",
           "path": "test/foundation/axum-macros/tests/debug_handler/fail/wrong_return_tuple.rs",
-          "sha256": "a6d87a0db317fce0a30ee990373cc4312e7bc6a3b9732d636f4cbde267bdc05c"
+          "sha256": "08cb685629189e484e5e79c3794400bd0ffccf51844893c0a99b058f2bdc4d2c"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/fail/wrong_return_tuple.stderr",
@@ -1411,7 +1452,7 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/deny_unreachable_code.rs",
           "source_sha256_before": "b61c032279f54435fd4a0d7cb1f6c487ae7d759c098aa3cb744964b76c414032",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/deny_unreachable_code.rs",
-          "sha256": "b61c032279f54435fd4a0d7cb1f6c487ae7d759c098aa3cb744964b76c414032"
+          "sha256": "a3431dd47be848bcb1f340b27d4e8bb9fcb88216fa0496032c7fd5eefd883f36"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/impl_future.rs",
@@ -1423,19 +1464,19 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/impl_into_response.rs",
           "source_sha256_before": "34fd7c92369bc9cf1801c3071b84e27ede9829d4bbb64a7e3603b0e58680559e",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/impl_into_response.rs",
-          "sha256": "34fd7c92369bc9cf1801c3071b84e27ede9829d4bbb64a7e3603b0e58680559e"
+          "sha256": "eacd0ada4ae7268f063ac49eb2a17d9044edd5be27f7cf51e1b34d3bf65b5deb"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/infer_state.rs",
           "source_sha256_before": "983b87d2986dd558677213ec37c8d9cd7c9c860e526c2b7c3649af99a71fd877",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/infer_state.rs",
-          "sha256": "983b87d2986dd558677213ec37c8d9cd7c9c860e526c2b7c3649af99a71fd877"
+          "sha256": "e80355f850ddf9a2a9c123ebf4261e643ff73756e329977228b3e833da42ea92"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/multiple_extractors.rs",
           "source_sha256_before": "b0253582f45b6dcd9e54db877285844860234006cb15b0af12a3ac9e3e905c0a",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/multiple_extractors.rs",
-          "sha256": "b0253582f45b6dcd9e54db877285844860234006cb15b0af12a3ac9e3e905c0a"
+          "sha256": "3d268ab9256b25c9b85ee0be07062df8900dd14c303575675d20771ac5ecd484"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/mut_extractor.rs",
@@ -1453,43 +1494,43 @@
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/request_last.rs",
           "source_sha256_before": "d8edecb068cabaf4e2ed04f4c089ba23f3aeabd6265e72e796aba5c6c8ea0d54",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/request_last.rs",
-          "sha256": "d8edecb068cabaf4e2ed04f4c089ba23f3aeabd6265e72e796aba5c6c8ea0d54"
+          "sha256": "eb08bd6eefce542a97403181942bbf96a53c4bafa25458ab61bdb1cea5e1d339"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/result_impl_into_response.rs",
           "source_sha256_before": "aeb6896bdb4c916de92338c68e153a52d750eec96309fe5de1856d9dedbec3ac",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/result_impl_into_response.rs",
-          "sha256": "aeb6896bdb4c916de92338c68e153a52d750eec96309fe5de1856d9dedbec3ac"
+          "sha256": "c66c147a603cbc58bb2635423b5f0082b5f61056582c8f0e307a455a9147babf"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/returns_self.rs",
           "source_sha256_before": "213f45fb5fbe5b3a109d2f46ff7b6c8da13445287162f411c38582c6e317f611",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/returns_self.rs",
-          "sha256": "213f45fb5fbe5b3a109d2f46ff7b6c8da13445287162f411c38582c6e317f611"
+          "sha256": "98af85531fdd839b99cfb11cadac6d335f03d1cd46fec68046f229906d15acad"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/self_receiver.rs",
           "source_sha256_before": "a4271b7a4498d762a503197cdb9be89f51701d34781dd83df7784bc4e23c4cb7",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/self_receiver.rs",
-          "sha256": "a4271b7a4498d762a503197cdb9be89f51701d34781dd83df7784bc4e23c4cb7"
+          "sha256": "c26b367cfbd2108386a62b279d74e3bc93b9055edbc401584f3e41901494c8dc"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/set_state.rs",
           "source_sha256_before": "791030924f0932e335667b599fc17a214acdf0ec3d50ea3dce2e4787d36d4a77",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/set_state.rs",
-          "sha256": "791030924f0932e335667b599fc17a214acdf0ec3d50ea3dce2e4787d36d4a77"
+          "sha256": "5564b7bada47132445b70250a055e4e05ad9846e438ace098c25118190c8d70f"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_handler/pass/state_and_body.rs",
           "source_sha256_before": "6968296240a724c4549034cbc3c2e9325a8d3339071efe7c3d7154f4edbd0d83",
           "path": "test/foundation/axum-macros/tests/debug_handler/pass/state_and_body.rs",
-          "sha256": "6968296240a724c4549034cbc3c2e9325a8d3339071efe7c3d7154f4edbd0d83"
+          "sha256": "3d5f4598245fe001383fd43f83273b714487bb5f45d3fbdaf2278a900093ae9d"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_middleware/fail/doesnt_take_next.rs",
           "source_sha256_before": "89fe954fc1541b4e17aff366a99fca0c592ea641fb512fd5523a3eb0f4520271",
           "path": "test/foundation/axum-macros/tests/debug_middleware/fail/doesnt_take_next.rs",
-          "sha256": "89fe954fc1541b4e17aff366a99fca0c592ea641fb512fd5523a3eb0f4520271"
+          "sha256": "7d438364dffd8af59bd4afcce7e8fa6dff441b86822d2af536e1ca8085b8cfc2"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_middleware/fail/doesnt_take_next.stderr",
@@ -1501,7 +1542,7 @@
           "source": "src/foundation/axum-macros/tests/debug_middleware/fail/next_not_last.rs",
           "source_sha256_before": "d1539ff509a8888f923d6ee2ddb6794696d67b698359223d9d1488b31eed2a42",
           "path": "test/foundation/axum-macros/tests/debug_middleware/fail/next_not_last.rs",
-          "sha256": "d1539ff509a8888f923d6ee2ddb6794696d67b698359223d9d1488b31eed2a42"
+          "sha256": "a1f3385b53126ba9b0c5c1f6afa9296fd3591c02bc419cd2e8d556ac20da45d3"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_middleware/fail/next_not_last.stderr",
@@ -1513,7 +1554,7 @@
           "source": "src/foundation/axum-macros/tests/debug_middleware/fail/takes_next_twice.rs",
           "source_sha256_before": "f2d28ab3f6cffb76c83dbff0cd0c8bd4a701d19970ddf0d12e8c80a01e8318b9",
           "path": "test/foundation/axum-macros/tests/debug_middleware/fail/takes_next_twice.rs",
-          "sha256": "f2d28ab3f6cffb76c83dbff0cd0c8bd4a701d19970ddf0d12e8c80a01e8318b9"
+          "sha256": "12aa0c9251d1a8449f26df9e7ce279fdb2c2b776c462a4dd0a61ed76fabfb068"
         },
         {
           "source": "src/foundation/axum-macros/tests/debug_middleware/fail/takes_next_twice.stderr",
@@ -1525,13 +1566,13 @@
           "source": "src/foundation/axum-macros/tests/debug_middleware/pass/basic.rs",
           "source_sha256_before": "4b6a739df73e9584aa41d16a55d1d3a729b05df8b5b30c1a4a8288924cdd6a16",
           "path": "test/foundation/axum-macros/tests/debug_middleware/pass/basic.rs",
-          "sha256": "4b6a739df73e9584aa41d16a55d1d3a729b05df8b5b30c1a4a8288924cdd6a16"
+          "sha256": "a28a548be79723d28b4fd91f517d9f28a38578edf08a6a403550a8bb25078d79"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_ref/fail/generics.rs",
           "source_sha256_before": "b791d3d62daedbc474130ae3caa8f0e0eff7de534d1a23cb90024adde0f4596f",
           "path": "test/foundation/axum-macros/tests/from_ref/fail/generics.rs",
-          "sha256": "b791d3d62daedbc474130ae3caa8f0e0eff7de534d1a23cb90024adde0f4596f"
+          "sha256": "bc3356aa83c34efeb7a00a5ded8231e3fae6dcfe2bcdcd3a2cc1bab44e6976d0"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_ref/fail/generics.stderr",
@@ -1543,7 +1584,7 @@
           "source": "src/foundation/axum-macros/tests/from_ref/pass/basic.rs",
           "source_sha256_before": "ed2369ffff19aa805211dbdad232a74009d95db4e6691c51e3499aed6d183ec2",
           "path": "test/foundation/axum-macros/tests/from_ref/pass/basic.rs",
-          "sha256": "ed2369ffff19aa805211dbdad232a74009d95db4e6691c51e3499aed6d183ec2"
+          "sha256": "9ecf4afbebfa25de85253d3dc20fce5ab3fbdb3222a615dc01e4c3b584b2301d"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_ref/pass/reference-types.rs",
@@ -1561,7 +1602,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/double_via_attr.rs",
           "source_sha256_before": "d758c423526896051995225e8ccb717188adb3fe34a3a477b972145bfbd20a72",
           "path": "test/foundation/axum-macros/tests/from_request/fail/double_via_attr.rs",
-          "sha256": "d758c423526896051995225e8ccb717188adb3fe34a3a477b972145bfbd20a72"
+          "sha256": "f81b6ffb0dc80e541022c3afcead82e926c2aa01fd4539be121a33e0e49595af"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/double_via_attr.stderr",
@@ -1573,7 +1614,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/enum_from_request_ident_in_variant.rs",
           "source_sha256_before": "3007f39f48a8f4d71f6c8258db400acc7ecdb4ab70871ad491b5009965745b65",
           "path": "test/foundation/axum-macros/tests/from_request/fail/enum_from_request_ident_in_variant.rs",
-          "sha256": "3007f39f48a8f4d71f6c8258db400acc7ecdb4ab70871ad491b5009965745b65"
+          "sha256": "acc734a6b1cd5513fad9215822082240c2932067330861c7b54a8bbbf2ae970e"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/enum_from_request_ident_in_variant.stderr",
@@ -1585,7 +1626,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/enum_from_request_on_variant.rs",
           "source_sha256_before": "2817e44a6ad03bdb24c07ea0ec7f7206417defc9531faff0b998aee7e35e30d1",
           "path": "test/foundation/axum-macros/tests/from_request/fail/enum_from_request_on_variant.rs",
-          "sha256": "2817e44a6ad03bdb24c07ea0ec7f7206417defc9531faff0b998aee7e35e30d1"
+          "sha256": "f7238b9dfdf09fe86fd34402440af8a95e04dedb8fa9b90f8cee4204d5668411"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/enum_from_request_on_variant.stderr",
@@ -1621,7 +1662,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/generic_without_via.rs",
           "source_sha256_before": "9f4531b4d0d32c5a26bf1662f34b425ea4f50d0d46f4aa48a3a1cb7e7be8552d",
           "path": "test/foundation/axum-macros/tests/from_request/fail/generic_without_via.rs",
-          "sha256": "9f4531b4d0d32c5a26bf1662f34b425ea4f50d0d46f4aa48a3a1cb7e7be8552d"
+          "sha256": "aa3541f3bcaaa435402f6c737d0474da693dc5b8d30f92b003d52310ec635392"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/generic_without_via.stderr",
@@ -1633,7 +1674,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/generic_without_via_rejection.rs",
           "source_sha256_before": "443ba17ad3a49d012b62204e8abd5ba244c7521d55344080c16f50fbf7db254a",
           "path": "test/foundation/axum-macros/tests/from_request/fail/generic_without_via_rejection.rs",
-          "sha256": "443ba17ad3a49d012b62204e8abd5ba244c7521d55344080c16f50fbf7db254a"
+          "sha256": "e0d5de9cece54cfe44f580f7afc66e3b2e58ad60bd66a0154a9e5f3b767c5917"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/generic_without_via_rejection.stderr",
@@ -1657,7 +1698,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/override_rejection_on_enum_without_via.rs",
           "source_sha256_before": "357e706ce22e613c0c11c0877075d6d6b22f5d339fb9355aef5982f4c7e04d6e",
           "path": "test/foundation/axum-macros/tests/from_request/fail/override_rejection_on_enum_without_via.rs",
-          "sha256": "357e706ce22e613c0c11c0877075d6d6b22f5d339fb9355aef5982f4c7e04d6e"
+          "sha256": "cd6e7374d2fa1a444968cae138b0cc8cfb11a3ead72f145a54e151b8d16b197e"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/override_rejection_on_enum_without_via.stderr",
@@ -1669,7 +1710,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/parts_extracting_body.rs",
           "source_sha256_before": "011d25627db45cecab7d3be6d0fd744da686775c1c381ec20b2064eb9448fe5d",
           "path": "test/foundation/axum-macros/tests/from_request/fail/parts_extracting_body.rs",
-          "sha256": "011d25627db45cecab7d3be6d0fd744da686775c1c381ec20b2064eb9448fe5d"
+          "sha256": "576020adfe7eb1e08cf362a8df2a4d1a290113379ca6c81948b7bf99e313a0f7"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/parts_extracting_body.stderr",
@@ -1681,7 +1722,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/state_infer_multiple_different_types.rs",
           "source_sha256_before": "2fd790678c0caf9720b435b16c30ee26d133ff4c38e778c88c20cfadc64bb88d",
           "path": "test/foundation/axum-macros/tests/from_request/fail/state_infer_multiple_different_types.rs",
-          "sha256": "2fd790678c0caf9720b435b16c30ee26d133ff4c38e778c88c20cfadc64bb88d"
+          "sha256": "eb448560057154b093745da6583ddb4a8e75f5aef70f1497433b665b191c74c8"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/state_infer_multiple_different_types.stderr",
@@ -1717,7 +1758,7 @@
           "source": "src/foundation/axum-macros/tests/from_request/fail/via_on_container_and_field.rs",
           "source_sha256_before": "e84c2a8102d1766598f01be67179079ab6d98ab2b1198c4fbdc6b514bfbdba57",
           "path": "test/foundation/axum-macros/tests/from_request/fail/via_on_container_and_field.rs",
-          "sha256": "e84c2a8102d1766598f01be67179079ab6d98ab2b1198c4fbdc6b514bfbdba57"
+          "sha256": "40f20ac82ffa5cc2a327f9266786501388ebcd0d1e71ff19883c64cef07b4051"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/fail/via_on_container_and_field.stderr",
@@ -1729,265 +1770,265 @@
           "source": "src/foundation/axum-macros/tests/from_request/pass/container.rs",
           "source_sha256_before": "3e1b70aceebc5c5d5769c26cbed55178a85efe17dc1bf77d69de0e0be1de041c",
           "path": "test/foundation/axum-macros/tests/from_request/pass/container.rs",
-          "sha256": "1faa39f260bb66ec41ca72b4b7f257b8fbca3857e87276f827adb9d834f17409"
+          "sha256": "2effa9897ba6e96bb5e440d6deb90a53f779577d2d03e3ae484923f51b237e65"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/container_parts.rs",
           "source_sha256_before": "a65a595b2466c04b5e5d503d58324f900fde421386203662fb872789c4a76167",
           "path": "test/foundation/axum-macros/tests/from_request/pass/container_parts.rs",
-          "sha256": "a65a595b2466c04b5e5d503d58324f900fde421386203662fb872789c4a76167"
+          "sha256": "47ca1f51c3306d1e261724d57a1c5a6c8b9feba5df07a5dd27c43767aa462d25"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/empty_named.rs",
           "source_sha256_before": "b058e16825ef2ff46933160162f3ae56305940b5c6ee58b5402e8d1417330a3d",
           "path": "test/foundation/axum-macros/tests/from_request/pass/empty_named.rs",
-          "sha256": "b058e16825ef2ff46933160162f3ae56305940b5c6ee58b5402e8d1417330a3d"
+          "sha256": "7f2833c499d99e06217348c19643a724f05e50ea8f8294e08e8b61fad2b01573"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/empty_named_parts.rs",
           "source_sha256_before": "28318e5ab07d5b710c678d64333114014c97ef95a84b43da7143e1a620dd87a7",
           "path": "test/foundation/axum-macros/tests/from_request/pass/empty_named_parts.rs",
-          "sha256": "28318e5ab07d5b710c678d64333114014c97ef95a84b43da7143e1a620dd87a7"
+          "sha256": "899f889673e7be28cba5bb213743567f470decb048e5bf6d28642527e08ff123"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/empty_tuple.rs",
           "source_sha256_before": "503029686ccbc1622e0ab9ce2619204979a7e4e6787aa5cace7a05556ff6522b",
           "path": "test/foundation/axum-macros/tests/from_request/pass/empty_tuple.rs",
-          "sha256": "503029686ccbc1622e0ab9ce2619204979a7e4e6787aa5cace7a05556ff6522b"
+          "sha256": "5ca0f79ab7044f4f60d53f26e969eced453a1f44c84dd98982e0c9a9713cc69a"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/empty_tuple_parts.rs",
           "source_sha256_before": "b1a613a7aa250f424a8f05671bbe111c05857151d87f7b78091043af3acbc8e5",
           "path": "test/foundation/axum-macros/tests/from_request/pass/empty_tuple_parts.rs",
-          "sha256": "b1a613a7aa250f424a8f05671bbe111c05857151d87f7b78091043af3acbc8e5"
+          "sha256": "ce80c02c0176d107eb652393da5e93f6726df919a978ee6b630830018ddefce6"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/enum_via.rs",
           "source_sha256_before": "c7c9d0fb79ad3d4419fcfb3340568805ed17a2932942aee8afbcca44117bd8cd",
           "path": "test/foundation/axum-macros/tests/from_request/pass/enum_via.rs",
-          "sha256": "c7c9d0fb79ad3d4419fcfb3340568805ed17a2932942aee8afbcca44117bd8cd"
+          "sha256": "c495c1256f8b59664229d01093b73facfd9ce072cda3d4091c77b8d9c9d55490"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/enum_via_parts.rs",
           "source_sha256_before": "5ecd1c43459eb250fac87069b073e9a7df987d7d80c8bccfbf418d99314ba2ce",
           "path": "test/foundation/axum-macros/tests/from_request/pass/enum_via_parts.rs",
-          "sha256": "5ecd1c43459eb250fac87069b073e9a7df987d7d80c8bccfbf418d99314ba2ce"
+          "sha256": "99b9aa6a15ad63363b54f44e5900813e48f19f9ab1e933fbc997264feafd9325"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/named.rs",
           "source_sha256_before": "55f39864959f0b5f9599b35c49aa35892edb13423d6cb3117b8cbf8c420d8779",
           "path": "test/foundation/axum-macros/tests/from_request/pass/named.rs",
-          "sha256": "55f39864959f0b5f9599b35c49aa35892edb13423d6cb3117b8cbf8c420d8779"
+          "sha256": "b361bf61bed5cdf2917dd84dafad55c8d84d786da2fb4ca9df6c35ab36bd0a36"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/named_parts.rs",
           "source_sha256_before": "21a4ce9323850ae3819fcf0909a5fbc924ec7ce00b0c2db86ccd1b2dd46a7b4c",
           "path": "test/foundation/axum-macros/tests/from_request/pass/named_parts.rs",
-          "sha256": "21a4ce9323850ae3819fcf0909a5fbc924ec7ce00b0c2db86ccd1b2dd46a7b4c"
+          "sha256": "393ce58d996605162e5be346634cca20efc9a7341c927c28a98bb8acdffdccd5"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/named_via.rs",
           "source_sha256_before": "40810b06bfeed0c47c448405683aed761e9e0d8d9b3bdfed0814cf178b0ad4e0",
           "path": "test/foundation/axum-macros/tests/from_request/pass/named_via.rs",
-          "sha256": "40810b06bfeed0c47c448405683aed761e9e0d8d9b3bdfed0814cf178b0ad4e0"
+          "sha256": "b18b1c2d4234423e09e2c7f583f2005ef7fbd494b55bb43da850794ba10f9567"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/named_via_parts.rs",
           "source_sha256_before": "12ebb76b2fde090f575533985cd3e8b5a142153ad4e50523cd985f93789dcb3a",
           "path": "test/foundation/axum-macros/tests/from_request/pass/named_via_parts.rs",
-          "sha256": "12ebb76b2fde090f575533985cd3e8b5a142153ad4e50523cd985f93789dcb3a"
+          "sha256": "fec06a77409babea0ba46ca1b632e26ea6c3a0c8df44569218b7858926ab6064"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/override_rejection.rs",
           "source_sha256_before": "74d5c01563f6be91b104e84d63213082fd5eb634aaa2dc0200f700ad9742b8e2",
           "path": "test/foundation/axum-macros/tests/from_request/pass/override_rejection.rs",
-          "sha256": "74d5c01563f6be91b104e84d63213082fd5eb634aaa2dc0200f700ad9742b8e2"
+          "sha256": "bdb35935ddd4f9a41b05df595b210e8362e3f1f72251cd74ff089f50f6f46b27"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/override_rejection_non_generic.rs",
           "source_sha256_before": "c3c174ac33f883995d7f76a5a3098de9e2319f09df88b67a15774c20e762da77",
           "path": "test/foundation/axum-macros/tests/from_request/pass/override_rejection_non_generic.rs",
-          "sha256": "d948225621f779908055c252bc9bf42e1a29825e6d7bc940edc10f9ee5613019"
+          "sha256": "24f76080b28e063f525b55bce9ceb30efb053d5745d22648a9cccb777c3a00e4"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/override_rejection_non_generic_parts.rs",
           "source_sha256_before": "070b55dd9dd9d07ebda8dcebe1c4ac00229ef676772d89f36e0f9d13bd284620",
           "path": "test/foundation/axum-macros/tests/from_request/pass/override_rejection_non_generic_parts.rs",
-          "sha256": "7191064ba859c8da3df31ec36b0e9ded8799925e5bb8da4fc81e4a3cad1468cb"
+          "sha256": "35495e4b2de8381eda2b89c9aea37e1c415c5586f373ec03ed995371f1fa172b"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/override_rejection_parts.rs",
           "source_sha256_before": "9c3848c64758e99a57432dd480a9d7bfccc77b3d08b1c42adefea66326e5c6a0",
           "path": "test/foundation/axum-macros/tests/from_request/pass/override_rejection_parts.rs",
-          "sha256": "9c3848c64758e99a57432dd480a9d7bfccc77b3d08b1c42adefea66326e5c6a0"
+          "sha256": "80bf720e7a86cbcb5bfc7ca87a0727bf4d30837b841b18f9010082a0399de526"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/override_rejection_with_via_on_enum.rs",
           "source_sha256_before": "41d6488fa027d036555362786c0a918bcdf2d07199e1ce586939c8a50962faa6",
           "path": "test/foundation/axum-macros/tests/from_request/pass/override_rejection_with_via_on_enum.rs",
-          "sha256": "41d6488fa027d036555362786c0a918bcdf2d07199e1ce586939c8a50962faa6"
+          "sha256": "d533e3cbb676b880a25b563efcc7d9098f1b51ac6b88d61930f34266f1ca0566"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/override_rejection_with_via_on_enum_parts.rs",
           "source_sha256_before": "4e4b308b87f4af6fa069b319b4128a1d06f287f8973ccb78a9489b58c7eb76ca",
           "path": "test/foundation/axum-macros/tests/from_request/pass/override_rejection_with_via_on_enum_parts.rs",
-          "sha256": "4e4b308b87f4af6fa069b319b4128a1d06f287f8973ccb78a9489b58c7eb76ca"
+          "sha256": "218c59a2d284be33fa21c6d2a04b59f428d3b7d7f96b68c0c3d168458d160742"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/override_rejection_with_via_on_struct.rs",
           "source_sha256_before": "2ee9057ba41e9542a91506ff69c19792f80c1ae9dced529cb2896ff25b51a2b3",
           "path": "test/foundation/axum-macros/tests/from_request/pass/override_rejection_with_via_on_struct.rs",
-          "sha256": "c5cc78961b94fe0640f798aadc7f27f81ea602949706b8252738d88950c0acb9"
+          "sha256": "b5009e8eecdebab62f151305dbc311831e3bd0bdc5069c425fabd6e31021be5e"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/override_rejection_with_via_on_struct_parts.rs",
           "source_sha256_before": "4df86825be070f7ad71923bdfc625f1da7e768162653d814f9f6055dfc2207a7",
           "path": "test/foundation/axum-macros/tests/from_request/pass/override_rejection_with_via_on_struct_parts.rs",
-          "sha256": "0b7d46c95ca8c3ce052c9b34824e544df22d4dbe41743d83d3082da5ffd51732"
+          "sha256": "35f7bbf1fb56a4d6c9d63e865ae8b201b7d0813db60200663339708ecfb3a988"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_cookie.rs",
           "source_sha256_before": "d6b75618290952b00c48c3150c0e564cf887492afa05972ea4a34230e6dd2e03",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_cookie.rs",
-          "sha256": "d6b75618290952b00c48c3150c0e564cf887492afa05972ea4a34230e6dd2e03"
+          "sha256": "a71156d8ebb86985976e42e38a7169c6ef307cdead99af6c84c9be333aede228"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_enum_via.rs",
           "source_sha256_before": "d114a423de9d0bc444b92fe495dcb82bb05d356357cbf8e3f76e96c0c4f79091",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_enum_via.rs",
-          "sha256": "d114a423de9d0bc444b92fe495dcb82bb05d356357cbf8e3f76e96c0c4f79091"
+          "sha256": "8cd578e073cb2ad819647543d8b7fa34e730f76a832a1a808b58183d50ddfc8c"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_enum_via_parts.rs",
           "source_sha256_before": "3ebade66d90179a1d8739187126a6ceb9c4952523523cb81472eb294a1403d34",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_enum_via_parts.rs",
-          "sha256": "3ebade66d90179a1d8739187126a6ceb9c4952523523cb81472eb294a1403d34"
+          "sha256": "743c1d474a58ebfde903348acf543df07baa394cd612c5e3d1cdb8332e49c19b"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_explicit.rs",
           "source_sha256_before": "5221a5377904bbb4433479308ee554931f694eb84335413ef752d588ac1ee468",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_explicit.rs",
-          "sha256": "5221a5377904bbb4433479308ee554931f694eb84335413ef752d588ac1ee468"
+          "sha256": "92832228d8bdb8eedd19d616b11d600adcbae65bc7bf3a93617ecb2dbcf7a5fc"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_explicit_parts.rs",
           "source_sha256_before": "71310018a33b7b910df38858fc8e1524e4daebc5bb33319179cb63ed7eab17db",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_explicit_parts.rs",
-          "sha256": "71310018a33b7b910df38858fc8e1524e4daebc5bb33319179cb63ed7eab17db"
+          "sha256": "d8178a4e549c6fd3b258ecc7f70040e660668c40b26829ca1e4c231f5bf00c6e"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_field_explicit.rs",
           "source_sha256_before": "ed125c193f92cc1780e7f6c7cfd5cee1ff1f520d8f9ede47970e88139e0053d9",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_field_explicit.rs",
-          "sha256": "ed125c193f92cc1780e7f6c7cfd5cee1ff1f520d8f9ede47970e88139e0053d9"
+          "sha256": "3a2b03f3d8a3fbfbc2aa632e089497f58317b24af048a8d22b9c2e6fe12456c7"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_field_infer.rs",
           "source_sha256_before": "2f3d1cbbccc2030897f4619d33071805d90d85c9d1ededbfe5af477195464d59",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_field_infer.rs",
-          "sha256": "2f3d1cbbccc2030897f4619d33071805d90d85c9d1ededbfe5af477195464d59"
+          "sha256": "f2b039a9ccabd9ec09af412ee92362e1352f8b30c0281c51d393e5351e79d02e"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_infer.rs",
           "source_sha256_before": "8c7ae81582e8adcbadc4cc95c5e0376321016da8afcdfcee735643b289f0a95c",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_infer.rs",
-          "sha256": "8c7ae81582e8adcbadc4cc95c5e0376321016da8afcdfcee735643b289f0a95c"
+          "sha256": "9630a48ff022749fd80fa16a6730b855d84174c6f5571e1e3f2cd743127eb974"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_infer_multiple.rs",
           "source_sha256_before": "c24da708c906c4611f3bedff4e05afbedbc302627f5ab5ace1ac9081860ddbc0",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_infer_multiple.rs",
-          "sha256": "c24da708c906c4611f3bedff4e05afbedbc302627f5ab5ace1ac9081860ddbc0"
+          "sha256": "1cd577d0bdf008579da5dc19b947836efcb3d4f1d3a760664b35ed9d7d3c8e66"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_infer_parts.rs",
           "source_sha256_before": "e608caf27aa31211ac33edec215ba10e089444a46e37ee763164d2b0b1f446ca",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_infer_parts.rs",
-          "sha256": "e608caf27aa31211ac33edec215ba10e089444a46e37ee763164d2b0b1f446ca"
+          "sha256": "4a94c7cc6bc7f42a5baf32ea19f41026fd551cffd1e2af370bc9d19584539b36"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_via.rs",
           "source_sha256_before": "0bf23f6a453badff0b1b47947191d10b2920b75b4eea4da584931c2d5bd50bd6",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_via.rs",
-          "sha256": "0bf23f6a453badff0b1b47947191d10b2920b75b4eea4da584931c2d5bd50bd6"
+          "sha256": "00d9b74ea90d00770996fdc9dc1fe56792cfc522e3bbc7555d1df9d871bec9ae"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_via_infer.rs",
           "source_sha256_before": "1797c578c2980f95820f9b9277e6a026ce99ce36788c4a42dabdbf7c08401fab",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_via_infer.rs",
-          "sha256": "1797c578c2980f95820f9b9277e6a026ce99ce36788c4a42dabdbf7c08401fab"
+          "sha256": "1e82c9be0d41e875ec53968b88506505f4bfcf8063e27c400254b9626b3c59c8"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_via_parts.rs",
           "source_sha256_before": "ed8ecc0e23632522efbbad9de104bcdd7e9b50f1d546172e9407245e6c4ac77c",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_via_parts.rs",
-          "sha256": "ed8ecc0e23632522efbbad9de104bcdd7e9b50f1d546172e9407245e6c4ac77c"
+          "sha256": "ecb87bedb493bae2c72129d9e4c1c080a22ff9047a6afc0c1abfed6b51230b40"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/state_with_rejection.rs",
           "source_sha256_before": "28c496bdf67c791909bfe3a905ec00b8d68ffcf9e224ab7139d136d4439151f1",
           "path": "test/foundation/axum-macros/tests/from_request/pass/state_with_rejection.rs",
-          "sha256": "28c496bdf67c791909bfe3a905ec00b8d68ffcf9e224ab7139d136d4439151f1"
+          "sha256": "3410b7e10a4ed67633d5f6c9ac628f76da03cbe8f9e7ee03b3df46ac118a98d4"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/tuple.rs",
           "source_sha256_before": "37dd9f29932d0f244d012aac17dba01eaecd4e064d8999c222360ec687c652cd",
           "path": "test/foundation/axum-macros/tests/from_request/pass/tuple.rs",
-          "sha256": "37dd9f29932d0f244d012aac17dba01eaecd4e064d8999c222360ec687c652cd"
+          "sha256": "edb188dfe88bb53fa04b24eb1e4161dabe91f2fc85032ddff797add0543c51bc"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/tuple_parts.rs",
           "source_sha256_before": "5ca652431184e58860b27e2458379ced8750ea585d35d511e5faf5e25b40f1d8",
           "path": "test/foundation/axum-macros/tests/from_request/pass/tuple_parts.rs",
-          "sha256": "5ca652431184e58860b27e2458379ced8750ea585d35d511e5faf5e25b40f1d8"
+          "sha256": "0b220a485937512a6280e7ffdf7312610b146890fc3f9416ed4456a83079760e"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/tuple_same_type_twice.rs",
           "source_sha256_before": "e62ec6004cd4a3cc860508c2afc88babd477874f7ae6f9a4e6d0231f83c8f54e",
           "path": "test/foundation/axum-macros/tests/from_request/pass/tuple_same_type_twice.rs",
-          "sha256": "37da368f4e1b44408ddb25dc62151778fe3f3209d027f22388dc53d3e7d06a42"
+          "sha256": "5ef8e654fcb1aa02a21b742231fdbec4de0621f88faf024534ba5e208bc74c10"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/tuple_same_type_twice_parts.rs",
           "source_sha256_before": "be331fa5a0fedba08f9cf887a90341a8a28ede57dc037654dd8ff935996a96b1",
           "path": "test/foundation/axum-macros/tests/from_request/pass/tuple_same_type_twice_parts.rs",
-          "sha256": "8170857ec9cbebe9e16e0b8474a035362790a1e9cb7f9608b7397c838258f50f"
+          "sha256": "739e1882c0be38d63950fb24d1c9914e454d6026b60319d6471a8f3c6b7a6a6c"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/tuple_same_type_twice_via.rs",
           "source_sha256_before": "d89438d8fdc72b84032c427e7cc43f64e1a7187b3f75df6c0153cd2d6af26e64",
           "path": "test/foundation/axum-macros/tests/from_request/pass/tuple_same_type_twice_via.rs",
-          "sha256": "834711e8cad494c0f1e943dc5a03f8a5539568ac99092a3f73378e77f2727ef0"
+          "sha256": "f5d681bff56b09a8566ca0fab9cd47a6677bfeb9d426d040f3beb49397c61855"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/tuple_same_type_twice_via_parts.rs",
           "source_sha256_before": "710c2d60c6cd7aca47681b3edb2aa9dc5650b9bf935b9fc944ddb64647df7e4d",
           "path": "test/foundation/axum-macros/tests/from_request/pass/tuple_same_type_twice_via_parts.rs",
-          "sha256": "6d03b954234fa58bb3b608204e213fc0d62fbf02ac29a69811132ba9fa0e7ef8"
+          "sha256": "117171d7c531b0c8153e75fd73e632734bf96801c637c829329ade9b3bfe4595"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/tuple_via.rs",
           "source_sha256_before": "32228e6badd398d29b672858726bb3a2425ccf71ed764bc44f2e81412ebffc63",
           "path": "test/foundation/axum-macros/tests/from_request/pass/tuple_via.rs",
-          "sha256": "32228e6badd398d29b672858726bb3a2425ccf71ed764bc44f2e81412ebffc63"
+          "sha256": "f2392e91d613e813c1afa371164efb2414d0cfafb3c6ad82ea33fe298efbcc47"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/tuple_via_parts.rs",
           "source_sha256_before": "75076e47c8ab9e5c0e9c3e5de1f2d91f2eff375e945c401790e803fd6b1066a8",
           "path": "test/foundation/axum-macros/tests/from_request/pass/tuple_via_parts.rs",
-          "sha256": "75076e47c8ab9e5c0e9c3e5de1f2d91f2eff375e945c401790e803fd6b1066a8"
+          "sha256": "1886e3e66e3ffcefe60b9c96cec8d8379b73ec07606b5d5b4404eae6e53c6029"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/unit.rs",
           "source_sha256_before": "2ccd4becb806363cbe5b484b767d7ede0cd102646cb7f2bb13dbe239722039c0",
           "path": "test/foundation/axum-macros/tests/from_request/pass/unit.rs",
-          "sha256": "2ccd4becb806363cbe5b484b767d7ede0cd102646cb7f2bb13dbe239722039c0"
+          "sha256": "83741c8b4a1ba090d123bbebc0f349473e1d6c2bae567382505b4c7542bea3c5"
         },
         {
           "source": "src/foundation/axum-macros/tests/from_request/pass/unit_parts.rs",
           "source_sha256_before": "a5a4e68058d8c003d1684c8e86b76d527813f9e41fa10ea53125640940b60246",
           "path": "test/foundation/axum-macros/tests/from_request/pass/unit_parts.rs",
-          "sha256": "a5a4e68058d8c003d1684c8e86b76d527813f9e41fa10ea53125640940b60246"
+          "sha256": "93a3afb8b135062b0477435cda8bbc5f6cb6eb4a9792a7814c29f4be733145d6"
         },
         {
           "source": "src/foundation/axum-macros/tests/typed_path/fail/missing_capture.rs",
@@ -2065,37 +2106,37 @@
           "source": "src/foundation/axum-macros/tests/typed_path/pass/customize_rejection.rs",
           "source_sha256_before": "fa88a4de63f7d68de4d04fb40fc40ccf185fab7717f076f0a090731a1e6f7029",
           "path": "test/foundation/axum-macros/tests/typed_path/pass/customize_rejection.rs",
-          "sha256": "1382279e541394495c2b8210722c0c2dcc4ac617e09b62b780154490d3f8148d"
+          "sha256": "cd5af704dc2ee1a413e72095e852705a2a2a1da8e2fd5e70d0d205bc74dde267"
         },
         {
           "source": "src/foundation/axum-macros/tests/typed_path/pass/into_uri.rs",
           "source_sha256_before": "ff3d2958ad85470373b1309ccdead9e7c578263c25db32f67c62ff0fb6277322",
           "path": "test/foundation/axum-macros/tests/typed_path/pass/into_uri.rs",
-          "sha256": "d3ec435324e10768b38f8a8dba7ee7d02de4568e0168b9251cb704640cfa315d"
+          "sha256": "e17a6f211fd818bb466569349329f22d81295b722ce10dbec4379b65a0cc27e7"
         },
         {
           "source": "src/foundation/axum-macros/tests/typed_path/pass/named_fields_struct.rs",
           "source_sha256_before": "1532b65a540191d9f03d6e8c91f8091eeff3834c61c3329457de9478d30e7997",
           "path": "test/foundation/axum-macros/tests/typed_path/pass/named_fields_struct.rs",
-          "sha256": "14e01ad3a3aa158d3a04a48dcdad1326f9c556154cf42de4b7997b8e4cd76677"
+          "sha256": "31c9ebb341f3fbf60e74e8cedf19f4d8643a78b0351c948de97f6dff259413b7"
         },
         {
           "source": "src/foundation/axum-macros/tests/typed_path/pass/result_handler.rs",
           "source_sha256_before": "2c086baaa67a8830aca04bde60fb38f52d3fbd8606d64e3522a7a8b263460769",
           "path": "test/foundation/axum-macros/tests/typed_path/pass/result_handler.rs",
-          "sha256": "0770df5112cd47dc553c3e294ce9d971292d9bb537552cfb5ab6b5bfa2929911"
+          "sha256": "df22e0bfe0707a4d4ec652439fc3c2c237b1399b60eece47a1dd6d5fdd63a7b6"
         },
         {
           "source": "src/foundation/axum-macros/tests/typed_path/pass/tuple_struct.rs",
           "source_sha256_before": "91e7666782968916fcd6d261e579631565c96a151f9e77bb826dbdc512d67710",
           "path": "test/foundation/axum-macros/tests/typed_path/pass/tuple_struct.rs",
-          "sha256": "9327385e466c9931dea25006ba9a39cbe20eeeb3f65128a157a6a9eb6b4b1e9f"
+          "sha256": "e263fbd6a9ce9dc98d8aff8872176eefabdd273f69b554c36310a82fbe6dc628"
         },
         {
           "source": "src/foundation/axum-macros/tests/typed_path/pass/unit_struct.rs",
           "source_sha256_before": "534ef044a68f14ecb81db3b0f6c4a47476a656d31e9119fd581cf4ee1fba08e8",
           "path": "test/foundation/axum-macros/tests/typed_path/pass/unit_struct.rs",
-          "sha256": "534ef044a68f14ecb81db3b0f6c4a47476a656d31e9119fd581cf4ee1fba08e8"
+          "sha256": "808d82f9ea1f1b5b5ad135163ecaf06985dd1d61a9901d498f4b366f69c198c5"
         },
         {
           "source": "src/foundation/axum-macros/tests/typed_path/pass/url_encoding.rs",
@@ -2107,7 +2148,7 @@
           "source": "src/foundation/axum-macros/tests/typed_path/pass/wildcards.rs",
           "source_sha256_before": "7c09f7daac30d435e780b1271da9d2346558b7a2c2ec9b3cc6eb7e0f773c9a8d",
           "path": "test/foundation/axum-macros/tests/typed_path/pass/wildcards.rs",
-          "sha256": "adce20af94f26458158f3eadd9d15dc916dc1873461b33a91c15aed634710e1f"
+          "sha256": "d3f326772ce8ecd34bb5c2b9733ebc157f34fc4b63173a2629be679c8ef45025"
         }
       ]
     },

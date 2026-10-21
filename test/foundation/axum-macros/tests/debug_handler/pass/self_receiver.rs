@@ -1,4 +1,4 @@
-use axum::extract::{FromRequest, Request};
+use http_routing::extract::{FromRequest, Request};
 use axum_macros::debug_handler;
 
 struct A;

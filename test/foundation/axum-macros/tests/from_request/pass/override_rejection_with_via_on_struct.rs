@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::rejection::JsonRejection,
     response::{IntoResponse, Response},
     routing::get,
@@ -19,7 +19,7 @@ async fn handler(_: MyJson<Payload>) {}
 async fn handler_result(_: Result<MyJson<Payload>, MyJsonRejection>) {}
 
 #[derive(FromRequest)]
-#[from_request(via(axum::Json), rejection(MyJsonRejection))]
+#[from_request(via(http_routing::Json), rejection(MyJsonRejection))]
 struct MyJson<T>(T);
 
 struct MyJsonRejection {}

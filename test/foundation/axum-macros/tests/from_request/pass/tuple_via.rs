@@ -1,4 +1,4 @@
-use axum::Extension;
+use http_routing::Extension;
 use axum_macros::FromRequest;
 
 #[derive(FromRequest)]
@@ -9,7 +9,7 @@ struct State;
 
 fn assert_from_request()
 where
-    Extractor: axum::extract::FromRequest<()>,
+    Extractor: http_routing::extract::FromRequest<()>,
 {
 }
 

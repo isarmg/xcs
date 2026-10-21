@@ -11,7 +11,7 @@ core = ["dep:storage-engine"]
 
 [dependencies]
 authentication.workspace = true
-axum = { version = "0.8.9", features = ["macros"], path = "../foundation/axum"}
+http-routing = { version = "0.8.9", features = ["macros"], path = "../foundation/http-routing"}
 blake3.workspace = true
 bytes = {version = "1", path = "../foundation/bytes"}
 futures = { version = "0.3.34", path = "../foundation/futures", default-features = false, features = ["async-await-macro", "shared-state", "std", "utilities"] }

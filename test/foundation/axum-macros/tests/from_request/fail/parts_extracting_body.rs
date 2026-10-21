@@ -1,4 +1,4 @@
-use axum::{extract::FromRequestParts, response::Response};
+use http_routing::{extract::FromRequestParts, response::Response};
 
 #[derive(FromRequestParts)]
 struct Extractor {

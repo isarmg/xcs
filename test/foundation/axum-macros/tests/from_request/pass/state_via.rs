@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::{FromRef, State},
     routing::get,
     Router,
@@ -6,7 +6,7 @@ use axum::{
 use axum_macros::FromRequest;
 
 fn main() {
-    let _: axum::Router = Router::new()
+    let _: http_routing::Router = Router::new()
         .route("/b", get(|_: (), _: AppState| async {}))
         .route("/c", get(|_: (), _: InnerState| async {}))
         .with_state(AppState::default());

@@ -1,4 +1,4 @@
-use axum::response::IntoResponse;
+use http_routing::response::IntoResponse;
 use axum_macros::debug_handler;
 
 #[debug_handler]

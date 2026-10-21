@@ -1,4 +1,4 @@
-use axum::Json;
+use http_routing::Json;
 use axum_macros::debug_handler;
 
 struct Struct {}

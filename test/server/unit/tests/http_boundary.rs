@@ -1,6 +1,6 @@
 use super::*;
 use crate::http_boundary::read_body;
-use axum::{extract::FromRequestParts, response::IntoResponse};
+use http_routing::{extract::FromRequestParts, response::IntoResponse};
 
 async fn assert_error(
     response: Response,
@@ -11,7 +11,7 @@ async fn assert_error(
     assert_eq!(response.status(), status);
     assert_eq!(response.headers()[header::CONTENT_TYPE], "application/json");
     let body: Value = json_codec::from_slice(
-        &axum::body::to_bytes(response.into_body(), 8192)
+        &http_routing::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),
     )
@@ -199,7 +199,7 @@ async fn head_errors_retain_status_and_headers_without_a_body() {
             assert_eq!(response.headers()[header::ALLOW], "POST");
         }
         assert!(
-            axum::body::to_bytes(response.into_body(), 8192)
+            http_routing::body::to_bytes(response.into_body(), 8192)
                 .await
                 .unwrap()
                 .is_empty()

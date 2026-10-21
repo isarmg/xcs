@@ -1,26 +1,26 @@
-use axum::response::AppendHeaders;
+use http_routing::response::AppendHeaders;
 
-#[axum::debug_handler]
+#[http_routing::debug_handler]
 async fn handler() -> (
-    axum::http::StatusCode,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    AppendHeaders<[(axum::http::HeaderName, &'static str); 1]>,
-    axum::http::StatusCode,
+    http_routing::http::StatusCode,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    AppendHeaders<[(http_routing::http::HeaderName, &'static str); 1]>,
+    http_routing::http::StatusCode,
 ) {
     panic!()
 }

@@ -240,7 +240,7 @@ async fn cancellation_settles_actual_unknown_tail_and_retry_never_overwrites_it(
                 .await
                 .unwrap();
             if response.status() == StatusCode::CONFLICT {
-                let bytes = axum::body::to_bytes(response.into_body(), 8192)
+                let bytes = http_routing::body::to_bytes(response.into_body(), 8192)
                     .await
                     .unwrap();
                 let error: Value = json_codec::from_slice(&bytes).unwrap();
@@ -306,7 +306,7 @@ async fn upload_idle_timeout_preserves_tail_and_allows_verified_retry() {
         .unwrap();
     assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
     let body: Value = json_codec::from_slice(
-        &axum::body::to_bytes(response.into_body(), 8192)
+        &http_routing::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),
     )
@@ -485,19 +485,19 @@ async fn checksum_bodies_share_read_slots_and_expire_without_polling() {
     );
     tokio::time::sleep(Duration::from_millis(150)).await;
     assert!(
-        axum::body::to_bytes(first.into_body(), 256 * 1024)
+        http_routing::body::to_bytes(first.into_body(), 256 * 1024)
             .await
             .is_err()
     );
     assert!(
-        axum::body::to_bytes(second.into_body(), 8192)
+        http_routing::body::to_bytes(second.into_body(), 8192)
             .await
             .is_err()
     );
     let response = app.oneshot(download("checksums")).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
     assert_eq!(
-        axum::body::to_bytes(response.into_body(), 256 * 1024)
+        http_routing::body::to_bytes(response.into_body(), 256 * 1024)
             .await
             .unwrap()
             .as_ref(),

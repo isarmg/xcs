@@ -2,7 +2,7 @@
 
 struct NotIntoResponse;
 
-#[axum::debug_handler]
+#[http_routing::debug_handler]
 async fn handler() -> (NotIntoResponse) {
     panic!()
 }

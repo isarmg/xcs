@@ -1,4 +1,4 @@
-use axum::{extract::rejection::PathRejection, http::StatusCode};
+use http_routing::{extract::rejection::PathRejection, http::StatusCode};
 use axum_extra::routing::{RouterExt, TypedPath};
 use data_serialization::Deserialize;
 
@@ -17,7 +17,7 @@ struct UsersIndex;
 async fn result_handler_unit_struct(_: Result<UsersIndex, StatusCode>) {}
 
 fn main() {
-    _ = axum::Router::<()>::new()
+    _ = http_routing::Router::<()>::new()
         .typed_post(result_handler)
         .typed_post(result_handler_unit_struct);
 }

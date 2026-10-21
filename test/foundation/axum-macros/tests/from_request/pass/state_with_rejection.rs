@@ -1,4 +1,4 @@
-use axum::{
+use http_routing::{
     extract::State,
     response::{IntoResponse, Response},
     routing::get,
@@ -8,7 +8,7 @@ use axum_macros::FromRequest;
 use std::convert::Infallible;
 
 fn main() {
-    let _: axum::Router = Router::new()
+    let _: http_routing::Router = Router::new()
         .route("/a", get(|_: Extractor| async {}))
         .with_state(AppState::default());
 }
