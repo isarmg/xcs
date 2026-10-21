@@ -52,8 +52,16 @@ jobs:
       - name: Install WASM standard library for cross-target checks
         if: matrix.suite == 'quality' || matrix.suite == 'foundation'
         run: rustup target add wasm32-unknown-unknown
+      - name: Install system SQLite SDK for unbundled validation
+        if: matrix.suite == 'foundation'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libsqlite3-dev clang libclang-dev pkg-config
       - name: Run locked test suite
         run: bash .github/scripts/check.sh "${{ matrix.suite }}"
+      - name: Verify isolated system SQLite consumer
+        if: matrix.suite == 'foundation'
+        run: python3 .github/scripts/check-sqlite-system.py
 
   web-production:
     name: Production WASM build

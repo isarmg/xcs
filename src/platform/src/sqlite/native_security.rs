@@ -1,11 +1,11 @@
 //! One-way connection hardening through SQLx's exclusive native handle.
 use error_definition::Error;
-use sqlx::{SqliteConnection, sqlite::LockedSqliteHandle};
+use sqlite_access::{SqliteConnection, sqlite::LockedSqliteHandle};
 
 #[derive(Debug, Error)]
 pub enum ConnectionSecurityError {
     #[error("SQLite connection handle could not be acquired")]
-    Connection(#[source] sqlx::Error),
+    Connection(#[source] sqlite_access::Error),
     #[error("SQLite refused defensive mode")]
     DefensiveModeRejected,
 }

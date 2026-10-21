@@ -9,5 +9,5 @@ license = "Apache-2.0"
 storage-engine.workspace = true
 platform-io.workspace = true
 json-codec = {version = "1", path = "../../src/foundation/json-codec"}
-sqlx = { version = "=0.9.0", default-features = false, features = ["sqlite-bundled"], path = "../../src/foundation/sqlx"}
+sqlite-access = { version = "=0.9.0", default-features = false, features = ["sqlite-bundled"], path = "../../src/foundation/sqlite-access"}
 tempfile = {version = "3", path = "../../src/foundation/tempfile"}

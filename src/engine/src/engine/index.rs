@@ -7,7 +7,7 @@
 use super::Engine;
 use crate::*;
 use data_serialization::Serialize;
-use sqlx::{Connection, Executor, Row};
+use sqlite_access::{Connection, Executor, Row};
 use std::{collections::BTreeMap, path::Path};
 
 const HISTORY_INDEX_MIN_VERSIONS: usize = 300_000;
@@ -216,8 +216,8 @@ struct ProjectionFailure {
     message: String,
     corrupt: bool,
 }
-impl From<sqlx::Error> for ProjectionFailure {
-    fn from(error: sqlx::Error) -> Self {
+impl From<sqlite_access::Error> for ProjectionFailure {
+    fn from(error: sqlite_access::Error) -> Self {
         // Extended SQLite codes retain their primary error in the low byte.
         // Never turn permission, I/O, busy, or schema errors into file replacement.
         let corrupt = error
@@ -283,7 +283,7 @@ fn try_project_delta(
             // view while checking the marker, even if a reader already disabled
             // its candidate path; a definite error retains write blocking/recovery.
             let marker =
-                sqlx::query("SELECT type,sql FROM sqlite_schema WHERE name='current_state'")
+                sqlite_access::query("SELECT type,sql FROM sqlite_schema WHERE name='current_state'")
                     .fetch_one(&mut *tx)
                     .await
                     .map_err(ProjectionFailure::from)?;
@@ -296,7 +296,7 @@ fn try_project_delta(
                 );
             }
             let sequence: Option<String> =
-                sqlx::query_scalar("SELECT sequence FROM current_state WHERE singleton=1")
+                sqlite_access::query_scalar("SELECT sequence FROM current_state WHERE singleton=1")
                     .fetch_optional(&mut *tx)
                     .await
                     .map_err(ProjectionFailure::from)?;
@@ -314,7 +314,7 @@ fn try_project_delta(
                 ("file_history_versions", "DROP VIEW file_history_versions"),
             ] {
                 let kind: Option<String> =
-                    sqlx::query_scalar("SELECT type FROM sqlite_schema WHERE name=?")
+                    sqlite_access::query_scalar("SELECT type FROM sqlite_schema WHERE name=?")
                         .bind(name)
                         .fetch_optional(&mut *tx)
                         .await
@@ -332,13 +332,13 @@ fn try_project_delta(
         }
         for (kind, id) in &delta.deletes {
             if *kind == "versions" {
-                sqlx::query("DELETE FROM file_history_versions WHERE version_id=?")
+                sqlite_access::query("DELETE FROM file_history_versions WHERE version_id=?")
                     .bind(id)
                     .execute(&mut *tx)
                     .await
                     .map_err(ProjectionFailure::from)?;
             }
-            sqlx::query("DELETE FROM entities WHERE kind=? AND id=?")
+            sqlite_access::query("DELETE FROM entities WHERE kind=? AND id=?")
                 .bind(kind)
                 .bind(id)
                 .execute(&mut *tx)
@@ -348,14 +348,14 @@ fn try_project_delta(
         for (kind, id, data) in &delta.upserts {
             if *kind == "versions" {
                 let v = &after.versions[id];
-                sqlx::query("INSERT INTO file_history_versions VALUES(?,?,?,?) ON CONFLICT(version_id) DO UPDATE SET file_id=excluded.file_id,history_tree_id=excluded.history_tree_id,version_sequence_key=excluded.version_sequence_key")
+                sqlite_access::query("INSERT INTO file_history_versions VALUES(?,?,?,?) ON CONFLICT(version_id) DO UPDATE SET file_id=excluded.file_id,history_tree_id=excluded.history_tree_id,version_sequence_key=excluded.version_sequence_key")
                     .bind(id).bind(&v.file_id).bind(&v.history_tree_id).bind(v.version_sequence.to_be_bytes().as_slice())
                     .execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
             }
-            sqlx::query("INSERT INTO entities(kind,id,json) VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET json=excluded.json")
+            sqlite_access::query("INSERT INTO entities(kind,id,json) VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET json=excluded.json")
                 .bind(kind).bind(id).bind(data).execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
         }
-        sqlx::query("INSERT INTO current_state VALUES(1,?) ON CONFLICT(singleton) DO UPDATE SET sequence=excluded.sequence")
+        sqlite_access::query("INSERT INTO current_state VALUES(1,?) ON CONFLICT(singleton) DO UPDATE SET sequence=excluded.sequence")
             .bind(after.sequence.to_string()).execute(&mut *tx).await.map_err(ProjectionFailure::from)?;
         tx.commit().await.map_err(ProjectionFailure::from)?;
         Ok::<(), ProjectionFailure>(())
@@ -553,17 +553,17 @@ impl Engine {
                     ("file_history_versions", "table", HISTORY_TABLE),
                     ("file_history_lookup", "index", HISTORY_INDEX),
                 ] {
-                    let actual = sqlx::query("SELECT type,sql FROM sqlite_schema WHERE name=?")
+                    let actual = sqlite_access::query("SELECT type,sql FROM sqlite_schema WHERE name=?")
                         .bind(name).fetch_one(&mut *tx).await.map_err(|e| e.to_string())?;
                     if actual.try_get::<String, _>(0).map_err(|e| e.to_string())? != kind
                         || actual.try_get::<String, _>(1).map_err(|e| e.to_string())? != ddl {
                         return Err("query schema mismatch".into());
                     }
                 }
-                let sequence: String = sqlx::query_scalar("SELECT sequence FROM current_state WHERE singleton=1")
+                let sequence: String = sqlite_access::query_scalar("SELECT sequence FROM current_state WHERE singleton=1")
                     .fetch_one(&mut *tx).await.map_err(|e| e.to_string())?;
                 if sequence != self.state.sequence.to_string() { return Err("stale sequence".into()); }
-                let rows = sqlx::query("SELECT version_id,file_id,history_tree_id,version_sequence_key FROM file_history_versions INDEXED BY file_history_lookup WHERE file_id=? ORDER BY version_sequence_key,version_id LIMIT ?")
+                let rows = sqlite_access::query("SELECT version_id,file_id,history_tree_id,version_sequence_key FROM file_history_versions INDEXED BY file_history_lookup WHERE file_id=? ORDER BY version_sequence_key,version_id LIMIT ?")
                     .bind(file_id).bind(limit).fetch_all(&mut *tx).await.map_err(|e| e.to_string())?;
                 if rows.len() != expected { return Err("incomplete candidate set".into()); }
                 let mut versions = Vec::with_capacity(expected);

@@ -44,6 +44,8 @@ case "${1:-}" in
     ;;
   foundation)
     python3 .github/scripts/check-sqlite-scope.py
+    cargo test --locked --offline --lib -p sqlite-access
+    python3 .github/scripts/check-sqlite-family.py
     python3 .github/scripts/check-foundation-consumers.py
     python3 .github/scripts/check-serialization-family.py
     python3 .github/scripts/check-error-definition-family.py

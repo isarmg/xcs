@@ -2,7 +2,7 @@
 
 use crate::schema_identity::schema_fingerprint;
 use error_definition::Error;
-use sqlx::{Connection, SqliteConnection, sqlite::SqliteConnectOptions};
+use sqlite_access::{Connection, SqliteConnection, sqlite::SqliteConnectOptions};
 use std::time::{Duration, Instant};
 
 const MAX_FRAGMENTS: usize = 128;
@@ -19,11 +19,11 @@ pub enum DdlFingerprintError {
     #[error("trusted DDL evaluation exceeded its deadline")]
     Deadline,
     #[error("trusted DDL SQLite evaluation failed")]
-    Sqlite(#[source] sqlx::Error),
+    Sqlite(#[source] sqlite_access::Error),
     #[error("trusted DDL schema fingerprint failed")]
     Schema(#[source] crate::schema_identity::Error),
     #[error("trusted DDL SQLite connection could not be closed")]
-    Close(#[source] sqlx::Error),
+    Close(#[source] sqlite_access::Error),
 }
 
 /// Compute a schema fingerprint from owned, trusted product DDL synchronously.
@@ -89,7 +89,7 @@ async fn evaluate(
         }
         // Audited boundary: fragments are owned source constants, never data
         // received from configuration, persisted state, or external callers.
-        sqlx::raw_sql(sqlx::AssertSqlSafe(*fragment))
+        sqlite_access::raw_sql(sqlite_access::AssertSqlSafe(*fragment))
             .execute(&mut *connection)
             .await
             .map_err(|error| {

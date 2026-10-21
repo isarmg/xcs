@@ -145,7 +145,7 @@ fn ignore_generated_data_without_hiding_sources_or_fixed_fixtures() {
         "src/foundation/cargo-fixture/.idea/Project.xml",
         "src/foundation/cc/src/target/cached.bin",
         "src/foundation/cc/src/target/apple.rs.bak",
-        "test/foundation/sqlx/tests/.env.local",
+        "test/foundation/sqlite-access/facade/tests/.env.local",
     ];
     let retained = [
         "test/evidence/probes.json",
@@ -164,7 +164,7 @@ fn ignore_generated_data_without_hiding_sources_or_fixed_fixtures() {
         "src/foundation/cc/src/target/generated.rs",
         "src/foundation/cc/src/target/llvm.rs",
         "src/foundation/cc/src/target/parser.rs",
-        "test/foundation/sqlx/tests/.env",
+        "test/foundation/sqlite-access/facade/tests/.env",
         "test/foundation/cc/unit/src/target/llvm/tests_120.rs",
         "test/foundation/cc/unit/src/target/parser/tests_475.rs",
         "src/foundation/source.tar.gz",

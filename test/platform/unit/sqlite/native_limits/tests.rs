@@ -1,5 +1,5 @@
 use super::*;
-use sqlx::Connection;
+use sqlite_access::Connection;
 
 #[test]
 fn huge_cells_are_rejected_without_affecting_another_connection()
@@ -7,15 +7,17 @@ fn huge_cells_are_rejected_without_affecting_another_connection()
     crate::sqlite::block_on_sqlite_connection(async {
         let mut first = SqliteConnection::connect("sqlite::memory:").await?;
         let mut second = SqliteConnection::connect("sqlite::memory:").await?;
-        sqlx::raw_sql("CREATE TABLE data(value BLOB);INSERT INTO data VALUES(zeroblob(2097152))")
-            .execute(&mut first)
-            .await?;
+        sqlite_access::raw_sql(
+            "CREATE TABLE data(value BLOB);INSERT INTO data VALUES(zeroblob(2097152))",
+        )
+        .execute(&mut first)
+        .await?;
         let requested = ConnectionLimits::new(64 * 1024);
         assert_eq!(
             apply_connection_limits(&mut first, requested).await?,
             requested
         );
-        let error = sqlx::query_scalar::<_, Vec<u8>>("SELECT value FROM data")
+        let error = sqlite_access::query_scalar::<_, Vec<u8>>("SELECT value FROM data")
             .fetch_one(&mut first)
             .await
             .unwrap_err();
@@ -27,19 +29,19 @@ fn huge_cells_are_rejected_without_affecting_another_connection()
             Some("18")
         );
         assert!(
-            sqlx::query("INSERT INTO data VALUES(zeroblob(2097152))")
+            sqlite_access::query("INSERT INTO data VALUES(zeroblob(2097152))")
                 .execute(&mut first)
                 .await
                 .is_err()
         );
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT 7")
+            sqlite_access::query_scalar::<_, i64>("SELECT 7")
                 .fetch_one(&mut first)
                 .await?,
             7
         );
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT length(zeroblob(2097152))")
+            sqlite_access::query_scalar::<_, i64>("SELECT length(zeroblob(2097152))")
                 .fetch_one(&mut second)
                 .await?,
             2097152
@@ -73,7 +75,7 @@ fn sql_and_parameter_limits_are_native_and_invalid_input_changes_nothing()
         }
         // Test-owned fixed comment bytes, with no external SQL inputs.
         assert!(
-            sqlx::query(sqlx::AssertSqlSafe(format!(
+            sqlite_access::query(sqlite_access::AssertSqlSafe(format!(
                 "SELECT 1 /*{}*/",
                 "x".repeat(1024)
             )))
@@ -82,7 +84,7 @@ fn sql_and_parameter_limits_are_native_and_invalid_input_changes_nothing()
             .is_err()
         );
         assert!(
-            sqlx::query("SELECT ?9")
+            sqlite_access::query("SELECT ?9")
                 .execute(&mut connection)
                 .await
                 .is_err()

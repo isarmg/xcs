@@ -1,0 +1,188 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2021"
+rust-version = "1.94.0"
+name = "sqlite-access"
+version = "0.9.0"
+authors = [
+    "Ryan Leckey <leckey.ryan@gmail.com>",
+    "Austin Bonander <austin.bonander@gmail.com>",
+    "Chloe Ross <orangesnowfox@gmail.com>",
+    "Daniel Akhterov <akhterovd@gmail.com>",
+]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Asynchronous SQLite access: queries, pools, transactions and typed values."
+documentation = "https://docs.rs/sqlx"
+readme = "../../../docs/upstream/sqlx-0.9.0/README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/launchbadge/sqlx"
+
+[lib]
+name = "sqlite_access"
+path = "src/lib.rs"
+
+[features]
+serialization = ["dep:data-serialization"]
+json = ["serialization", "dep:json-codec"]
+offline = ["serialization", "either/serialization"]
+uuid = ["dep:uuid"]
+bit-vec = ["dep:bit-vec"]
+ipnet = ["dep:ipnet"]
+regexp = ["dep:regex"]
+sqlite = ["sqlite-bundled", "sqlite-deserialize", "sqlite-load-extension", "sqlite-unlock-notify"]
+sqlite-bundled = ["libsqlite3-sys/bundled"]
+sqlite-unbundled = ["libsqlite3-sys/buildtime_bindgen"]
+sqlite-deserialize = []
+sqlite-load-extension = []
+sqlite-preupdate-hook = ["libsqlite3-sys/preupdate_hook"]
+sqlite-unlock-notify = ["libsqlite3-sys/unlock_notify"]
+
+[dependencies.bit-vec]
+version = "0.8"
+optional = true
+path = "../bit-vec"
+
+[dependencies.crossbeam-queue]
+version = "0.3.2"
+path = "../crossbeam-queue"
+
+[dependencies.either]
+version = "1.6.1"
+path = "../either"
+
+[dependencies.event-listener]
+version = "5.2.0"
+path = "../event-listener"
+
+[dependencies.futures-core]
+version = "0.3.32"
+default-features = false
+path = "../futures-core"
+
+[dependencies.futures-util]
+version = "0.3.32"
+features = ["alloc", "sink"]
+default-features = false
+path = "../futures-util"
+
+[dependencies.hash-table]
+version = "0.17.1"
+path = "../hash-table"
+
+[dependencies.hashlink]
+version = "0.11.0"
+path = "../hashlink"
+
+[dependencies.indexmap]
+version = "2.0"
+path = "../indexmap"
+
+[dependencies.ipnet]
+version = "2.3.0"
+optional = true
+path = "../ipnet"
+
+[dependencies.log]
+version = "0.4.18"
+path = "../log"
+
+[dependencies.percent-encoding]
+version = "2.3.0"
+path = "../percent-encoding"
+
+[dependencies.data-serialization]
+version = "1.0.219"
+features = ["derive", "rc"]
+optional = true
+path = "../data-serialization"
+
+[dependencies.json-codec]
+version = "1.0.142"
+features = ["raw_value"]
+optional = true
+path = "../json-codec"
+
+[dependencies.smallvec]
+version = "1.13.1"
+path = "../smallvec"
+
+[dependencies.error-definition]
+version = "2.0.18"
+features = ["std"]
+default-features = false
+path = "../error-definition"
+
+[dependencies.tokio]
+version = "1.25.0"
+features = ["time", "sync", "rt"]
+default-features = false
+path = "../tokio"
+
+[dependencies.tracing]
+version = "0.1.37"
+features = ["log"]
+path = "../tracing"
+
+[dependencies.url]
+version = "2.2.2"
+path = "../url"
+
+[dependencies.uuid]
+version = "1.12.1"
+optional = true
+path = "../uuid"
+
+[dependencies.bytes]
+version = "1.2.0"
+path = "../bytes"
+
+[dependencies.atoi]
+version = "2.0"
+path = "../atoi"
+
+[dependencies.flume]
+version = "0.12.0"
+features = ["async"]
+default-features = false
+path = "../flume"
+
+[dependencies.form_urlencoded]
+version = "1.2.2"
+path = "../form_urlencoded"
+
+[dependencies.futures-channel]
+version = "0.3.32"
+features = ["sink", "alloc", "std"]
+default-features = false
+path = "../futures-channel"
+
+[dependencies.futures-executor]
+version = "0.3.32"
+path = "../futures-executor"
+
+[dependencies.futures-intrusive]
+version = "0.5.0"
+path = "../futures-intrusive"
+
+[dependencies.libsqlite3-sys]
+version = ">=0.30.1, <0.38.0"
+features = ["pkg-config"]
+default-features = false
+path = "../libsqlite3-sys"
+
+[dependencies.regex]
+version = "1.6.0"
+optional = true
+path = "../regex"
+
+[lints.clippy]
+cast_possible_truncation = "deny"
+cast_possible_wrap = "deny"
+cast_sign_loss = "deny"
+disallowed_methods = "deny"

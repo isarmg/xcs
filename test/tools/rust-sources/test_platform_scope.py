@@ -47,7 +47,7 @@ class PlatformScope(unittest.TestCase):
 
     def test_msvc_discovery_is_removed_without_dropping_provenance(self):
         self.assertFalse((ROOT / "src/foundation/vcpkg").exists())
-        for relative in ("src/foundation/libsqlite3-sys/Cargo.toml", "src/foundation/sqlx-sqlite/Cargo.toml", "src/foundation/libsqlite3-sys/build.rs"):
+        for relative in ("src/foundation/libsqlite3-sys/Cargo.toml", "src/foundation/sqlite-access/Cargo.toml", "src/foundation/libsqlite3-sys/build.rs"):
             self.assertNotIn("vcpkg", (ROOT / relative).read_text().lower())
         records = manager.origins(ROOT)
         retired = [item for item in records.values() if item["upstream"]["name"] == "vcpkg"]

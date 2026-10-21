@@ -1,6 +1,6 @@
 //! Disposable Development-mode architecture probe, not a physical-storage benchmark.
 use json_codec::{Value, json};
-use sqlx::{Executor, Row};
+use sqlite_access::{Executor, Row};
 use std::{
     collections::BTreeMap,
     fs,
@@ -40,7 +40,7 @@ fn sql(path: &Path, install: bool) -> Result<Value> {
         if install {
             conn.execute("CREATE TABLE IF NOT EXISTS perf_writes(inserts INTEGER,updates INTEGER,deletes INTEGER,payload_bytes INTEGER);DELETE FROM perf_writes;INSERT INTO perf_writes VALUES(0,0,0,0);CREATE TRIGGER IF NOT EXISTS perf_insert AFTER INSERT ON entities BEGIN UPDATE perf_writes SET inserts=inserts+1,payload_bytes=payload_bytes+length(NEW.json);END;CREATE TRIGGER IF NOT EXISTS perf_update AFTER UPDATE ON entities BEGIN UPDATE perf_writes SET updates=updates+1,payload_bytes=payload_bytes+length(NEW.json);END;CREATE TRIGGER IF NOT EXISTS perf_delete AFTER DELETE ON entities BEGIN UPDATE perf_writes SET deletes=deletes+1;END;").await.map_err(|e|e.to_string())?;
         }
-        let r = sqlx::query("SELECT inserts,updates,deletes,payload_bytes FROM perf_writes").fetch_one(&mut conn).await.map_err(|e|e.to_string())?;
+        let r = sqlite_access::query("SELECT inserts,updates,deletes,payload_bytes FROM perf_writes").fetch_one(&mut conn).await.map_err(|e|e.to_string())?;
         Ok::<Value,String>(json!({"inserts":r.get::<i64,_>(0),"updates":r.get::<i64,_>(1),"deletes":r.get::<i64,_>(2),"entity_json_bytes_written":r.get::<i64,_>(3)}))
     }).map_err(Into::into)
 }

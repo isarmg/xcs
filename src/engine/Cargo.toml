@@ -12,7 +12,7 @@ data-serialization.workspace = true
 json-codec.workspace = true
 blake3.workspace = true
 rustix.workspace = true
-sqlx.workspace = true
+sqlite-access.workspace = true
 tempfile.workspace = true
 time = { version = "=0.3.55", features = ["formatting", "parsing"], path = "../foundation/time"}
 
@@ -39,7 +39,7 @@ path = "../../test/engine/integration/workspace_upload_retries.rs"
 [dev-dependencies]
 hash-table = { version = "0.17.1", path = "../foundation/hash-table" }
 hashlink = { version = "0.11.0", path = "../foundation/hashlink" }
-sqlx-core = { version = "0.9.0", default-features = false, path = "../foundation/sqlx-core" }
+sqlite-access = { version = "0.9.0", default-features = false, path = "../foundation/sqlite-access" }
 
 [[test]]
 name = "hash_table_compatibility"

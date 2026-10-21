@@ -1,7 +1,7 @@
 //! Connection-local SQLite limits; no process-global memory settings.
 
 use error_definition::Error;
-use sqlx::{SqliteConnection, sqlite::LockedSqliteHandle};
+use sqlite_access::{SqliteConnection, sqlite::LockedSqliteHandle};
 
 /// Limits to apply before preparing product statements on a connection.
 ///
@@ -64,7 +64,7 @@ pub enum ConnectionLimitError {
     #[error("SQLite did not accept the requested connection limits")]
     NotApplied,
     #[error("SQLite connection handle could not be acquired")]
-    Connection(#[source] sqlx::Error),
+    Connection(#[source] sqlite_access::Error),
 }
 
 /// Apply limits to one connection and verify the native values.

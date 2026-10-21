@@ -3,7 +3,7 @@
 //! connections: closing raw descriptors can affect SQLite's POSIX locks.
 
 use sha2::{Digest, Sha256};
-use sqlx::{
+use sqlite_access::{
     SqlitePool,
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
 };
@@ -185,12 +185,12 @@ async fn open_snapshot_pool(
                 if let Some(limits) = limits {
                     crate::sqlite::apply_connection_limits(connection, limits)
                         .await
-                        .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
+                        .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
                 }
-                sqlx::query("PRAGMA query_only=ON")
+                sqlite_access::query("PRAGMA query_only=ON")
                     .execute(&mut *connection)
                     .await?;
-                sqlx::query("PRAGMA trusted_schema=OFF")
+                sqlite_access::query("PRAGMA trusted_schema=OFF")
                     .execute(&mut *connection)
                     .await?;
                 drop(retained);
@@ -206,16 +206,18 @@ async fn open_snapshot_pool(
     })
 }
 
-fn snapshot_connect_error(error: sqlx::Error) -> SnapshotError {
-    if let sqlx::Error::Io(source) = error {
+fn snapshot_connect_error(error: sqlite_access::Error) -> SnapshotError {
+    if let sqlite_access::Error::Io(source) = error {
         let kind = source.kind();
         if let Some(inner) = source.into_inner() {
             return match inner.downcast::<crate::sqlite::ConnectionLimitError>() {
                 Ok(error) => SnapshotError::ConnectionLimits(*error),
-                Err(inner) => SnapshotError::Sqlx(sqlx::Error::Io(io::Error::new(kind, inner))),
+                Err(inner) => {
+                    SnapshotError::Sqlx(sqlite_access::Error::Io(io::Error::new(kind, inner)))
+                }
             };
         }
-        return SnapshotError::Sqlx(sqlx::Error::Io(io::Error::from(kind)));
+        return SnapshotError::Sqlx(sqlite_access::Error::Io(io::Error::from(kind)));
     }
     SnapshotError::Sqlx(error)
 }
@@ -520,7 +522,7 @@ pub enum SnapshotError {
     #[error("SQLite validation I/O failed: {0}")]
     Io(#[from] io::Error),
     #[error("SQLite private validation failed: {0}")]
-    Sqlx(#[from] sqlx::Error),
+    Sqlx(#[from] sqlite_access::Error),
 }
 
 #[cfg(test)]

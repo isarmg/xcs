@@ -14,25 +14,25 @@ async fn candidate_reader_is_read_only_bounded_and_never_creates_a_database()
 
     let path = directory.path().join("index.sqlite");
     let mut writer = open_index_connection(&path, true, None).await?;
-    sqlx::query("CREATE TABLE items(id INTEGER PRIMARY KEY)")
+    sqlite_access::query("CREATE TABLE items(id INTEGER PRIMARY KEY)")
         .execute(&mut writer)
         .await?;
-    sqlx::query("INSERT INTO items VALUES(7)")
+    sqlite_access::query("INSERT INTO items VALUES(7)")
         .execute(&mut writer)
         .await?;
     writer.close().await?;
 
     let mut reader = open_index_read_connection(&path).await?;
-    let mode: String = sqlx::query_scalar("PRAGMA journal_mode")
+    let mode: String = sqlite_access::query_scalar("PRAGMA journal_mode")
         .fetch_one(&mut reader)
         .await?;
-    let synchronous: i64 = sqlx::query_scalar("PRAGMA synchronous")
+    let synchronous: i64 = sqlite_access::query_scalar("PRAGMA synchronous")
         .fetch_one(&mut reader)
         .await?;
-    let busy: i64 = sqlx::query_scalar("PRAGMA busy_timeout")
+    let busy: i64 = sqlite_access::query_scalar("PRAGMA busy_timeout")
         .fetch_one(&mut reader)
         .await?;
-    let foreign_keys: i64 = sqlx::query_scalar("PRAGMA foreign_keys")
+    let foreign_keys: i64 = sqlite_access::query_scalar("PRAGMA foreign_keys")
         .fetch_one(&mut reader)
         .await?;
     assert_eq!(mode, "wal");
@@ -40,18 +40,18 @@ async fn candidate_reader_is_read_only_bounded_and_never_creates_a_database()
     assert_eq!(busy, 20);
     assert_eq!(foreign_keys, 1);
     assert!(
-        sqlx::query("DELETE FROM items")
+        sqlite_access::query("DELETE FROM items")
             .execute(&mut reader)
             .await
             .is_err()
     );
     assert!(
-        sqlx::query_scalar::<_, Vec<u8>>("SELECT zeroblob(65537)")
+        sqlite_access::query_scalar::<_, Vec<u8>>("SELECT zeroblob(65537)")
             .fetch_one(&mut reader)
             .await
             .is_err()
     );
-    let retained: i64 = sqlx::query_scalar("SELECT id FROM items")
+    let retained: i64 = sqlite_access::query_scalar("SELECT id FROM items")
         .fetch_one(&mut reader)
         .await?;
     assert_eq!(retained, 7);
@@ -70,16 +70,16 @@ async fn explicit_creation_applies_pragmas_to_every_connection_and_reopens()
     let mut first = pool.acquire().await?;
     let mut second = pool.acquire().await?;
     for connection in [&mut first, &mut second] {
-        let foreign_keys: i64 = sqlx::query_scalar("PRAGMA foreign_keys")
+        let foreign_keys: i64 = sqlite_access::query_scalar("PRAGMA foreign_keys")
             .fetch_one(&mut **connection)
             .await?;
-        let journal_mode: String = sqlx::query_scalar("PRAGMA journal_mode")
+        let journal_mode: String = sqlite_access::query_scalar("PRAGMA journal_mode")
             .fetch_one(&mut **connection)
             .await?;
-        let busy_timeout: i64 = sqlx::query_scalar("PRAGMA busy_timeout")
+        let busy_timeout: i64 = sqlite_access::query_scalar("PRAGMA busy_timeout")
             .fetch_one(&mut **connection)
             .await?;
-        let synchronous: i64 = sqlx::query_scalar("PRAGMA synchronous")
+        let synchronous: i64 = sqlite_access::query_scalar("PRAGMA synchronous")
             .fetch_one(&mut **connection)
             .await?;
         assert_eq!(foreign_keys, 1);
@@ -90,10 +90,10 @@ async fn explicit_creation_applies_pragmas_to_every_connection_and_reopens()
     drop(first);
     drop(second);
 
-    sqlx::query("CREATE TABLE parents(id INTEGER PRIMARY KEY)")
+    sqlite_access::query("CREATE TABLE parents(id INTEGER PRIMARY KEY)")
         .execute(&pool)
         .await?;
-    sqlx::query(
+    sqlite_access::query(
         "CREATE TABLE children(\
              id INTEGER PRIMARY KEY,\
              parent_id INTEGER NOT NULL REFERENCES parents(id)\
@@ -102,12 +102,12 @@ async fn explicit_creation_applies_pragmas_to_every_connection_and_reopens()
     .execute(&pool)
     .await?;
     assert!(
-        sqlx::query("INSERT INTO children(id,parent_id) VALUES(1,999)")
+        sqlite_access::query("INSERT INTO children(id,parent_id) VALUES(1,999)")
             .execute(&pool)
             .await
             .is_err()
     );
-    sqlx::query("INSERT INTO parents(id) VALUES(7)")
+    sqlite_access::query("INSERT INTO parents(id) VALUES(7)")
         .execute(&pool)
         .await?;
     integrity_check(&pool).await?;
@@ -116,7 +116,7 @@ async fn explicit_creation_applies_pragmas_to_every_connection_and_reopens()
     pool.close().await;
 
     let reopened = open_existing(&database_path, options).await?;
-    let parent: i64 = sqlx::query_scalar("SELECT id FROM parents")
+    let parent: i64 = sqlite_access::query_scalar("SELECT id FROM parents")
         .fetch_one(&reopened)
         .await?;
     assert_eq!(parent, 7);
@@ -155,13 +155,15 @@ async fn sqlx_adapter_verifies_metadata_shape_values_and_fingerprint()
     let directory = tempfile::tempdir()?;
     let database_path = directory.path().join("identity.sqlite3");
     let pool = create_if_missing(&database_path, PoolOptions::new(2)).await?;
-    sqlx::raw_sql(PRODUCT_METADATA_DDL).execute(&pool).await?;
-    sqlx::query("CREATE TABLE items(id INTEGER PRIMARY KEY, value TEXT NOT NULL)")
+    sqlite_access::raw_sql(PRODUCT_METADATA_DDL)
+        .execute(&pool)
+        .await?;
+    sqlite_access::query("CREATE TABLE items(id INTEGER PRIMARY KEY, value TEXT NOT NULL)")
         .execute(&pool)
         .await?;
     let fingerprint = schema_fingerprint(&pool).await?;
     let expected = test_identity(fingerprint.clone())?;
-    sqlx::query(
+    sqlite_access::query(
         "INSERT INTO product_metadata(\
            singleton, application, application_version, schema_revision, schema_sha256\
          ) VALUES(1, ?, ?, ?, ?)",
@@ -179,7 +181,7 @@ async fn sqlx_adapter_verifies_metadata_shape_values_and_fingerprint()
         expected
     );
 
-    sqlx::query("UPDATE product_metadata SET application_version='0.2.0'")
+    sqlite_access::query("UPDATE product_metadata SET application_version='0.2.0'")
         .execute(&pool)
         .await?;
     assert!(matches!(
@@ -191,10 +193,10 @@ async fn sqlx_adapter_verifies_metadata_shape_values_and_fingerprint()
             }
         ))
     ));
-    sqlx::query("UPDATE product_metadata SET application_version='0.3.0'")
+    sqlite_access::query("UPDATE product_metadata SET application_version='0.3.0'")
         .execute(&pool)
         .await?;
-    sqlx::query("CREATE TABLE drift(id INTEGER PRIMARY KEY)")
+    sqlite_access::query("CREATE TABLE drift(id INTEGER PRIMARY KEY)")
         .execute(&pool)
         .await?;
     assert!(matches!(
@@ -211,7 +213,7 @@ async fn foreign_key_check_reports_the_violating_rows() -> Result<(), Box<dyn st
     let directory = tempfile::tempdir()?;
     let database_path = directory.path().join("foreign-keys.sqlite3");
     let pool = create_if_missing(&database_path, PoolOptions::new(1)).await?;
-    sqlx::raw_sql(
+    sqlite_access::raw_sql(
         "CREATE TABLE parents(id INTEGER PRIMARY KEY);\
          CREATE TABLE children(\
            id INTEGER PRIMARY KEY,\
@@ -221,13 +223,13 @@ async fn foreign_key_check_reports_the_violating_rows() -> Result<(), Box<dyn st
     .execute(&pool)
     .await?;
     let mut connection = pool.acquire().await?;
-    sqlx::query("PRAGMA foreign_keys=OFF")
+    sqlite_access::query("PRAGMA foreign_keys=OFF")
         .execute(&mut *connection)
         .await?;
-    sqlx::query("INSERT INTO children(id,parent_id) VALUES(9,99)")
+    sqlite_access::query("INSERT INTO children(id,parent_id) VALUES(9,99)")
         .execute(&mut *connection)
         .await?;
-    sqlx::query("PRAGMA foreign_keys=ON")
+    sqlite_access::query("PRAGMA foreign_keys=ON")
         .execute(&mut *connection)
         .await?;
     drop(connection);
@@ -248,15 +250,15 @@ async fn foreign_key_check_reports_the_violating_rows() -> Result<(), Box<dyn st
 #[tokio::test]
 async fn metadata_excess_is_detected_with_only_two_rows_materialized()
 -> Result<(), Box<dyn std::error::Error>> {
-    use sqlx::Connection;
+    use sqlite_access::Connection;
     let mut connection = SqliteConnection::connect("sqlite::memory:").await?;
-    sqlx::raw_sql(PRODUCT_METADATA_DDL)
+    sqlite_access::raw_sql(PRODUCT_METADATA_DDL)
         .execute(&mut connection)
         .await?;
-    sqlx::query("PRAGMA ignore_check_constraints=ON")
+    sqlite_access::query("PRAGMA ignore_check_constraints=ON")
         .execute(&mut connection)
         .await?;
-    sqlx::query(
+    sqlite_access::query(
         "WITH RECURSIVE ids(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM ids WHERE n<10000) \
          INSERT INTO product_metadata \
          SELECT n, 'test-product', '0.3.0', 1, ? FROM ids",
@@ -301,25 +303,25 @@ async fn pool_limits_apply_to_replacement_connections_and_invalid_creation_is_re
         PoolOptions::new(1).with_connection_limits(ConnectionLimits::new(64 * 1024)),
     )
     .await?;
-    sqlx::query("CREATE TABLE values_(value BLOB)")
+    sqlite_access::query("CREATE TABLE values_(value BLOB)")
         .execute(&pool)
         .await?;
     for _ in 0..2 {
         let mut connection = pool.acquire().await?;
-        let error = sqlx::query("INSERT INTO values_ VALUES(zeroblob(131072))")
+        let error = sqlite_access::query("INSERT INTO values_ VALUES(zeroblob(131072))")
             .execute(&mut *connection)
             .await
             .unwrap_err();
         assert!(
-            matches!(error, sqlx::Error::Database(ref error) if error.code().as_deref() == Some("18"))
+            matches!(error, sqlite_access::Error::Database(ref error) if error.code().as_deref() == Some("18"))
         );
-        let healthy: i64 = sqlx::query_scalar("SELECT 7")
+        let healthy: i64 = sqlite_access::query_scalar("SELECT 7")
             .fetch_one(&mut *connection)
             .await?;
         assert_eq!(healthy, 7);
         connection.close().await?;
     }
-    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM values_")
+    let count: i64 = sqlite_access::query_scalar("SELECT COUNT(*) FROM values_")
         .fetch_one(&pool)
         .await?;
     assert_eq!(count, 0);
@@ -330,12 +332,12 @@ async fn pool_limits_apply_to_replacement_connections_and_invalid_creation_is_re
 #[tokio::test]
 async fn schema_budget_rejects_complete_excess_and_preserves_canonical_bytes()
 -> Result<(), Box<dyn std::error::Error>> {
-    use sqlx::Connection;
+    use sqlite_access::Connection;
     let mut connection = SqliteConnection::connect("sqlite::memory:").await?;
-    sqlx::raw_sql("CREATE TABLE α(id INTEGER); CREATE INDEX α_id ON α(id);")
+    sqlite_access::raw_sql("CREATE TABLE α(id INTEGER); CREATE INDEX α_id ON α(id);")
         .execute(&mut connection)
         .await?;
-    let canonical = sqlx::query(crate::schema_identity::SQLITE_SCHEMA_ROWS_QUERY)
+    let canonical = sqlite_access::query(crate::schema_identity::SQLITE_SCHEMA_ROWS_QUERY)
         .fetch_all(&mut connection)
         .await?
         .into_iter()
@@ -347,7 +349,7 @@ async fn schema_budget_rejects_complete_excess_and_preserves_canonical_bytes()
                 row.try_get::<String, _>(3)?,
             ))
         })
-        .collect::<Result<Vec<_>, sqlx::Error>>()?;
+        .collect::<Result<Vec<_>, sqlite_access::Error>>()?;
     assert_eq!(schema_rows(&mut connection).await?, canonical);
     assert_eq!(
         schema_fingerprint(&mut connection).await?,
@@ -358,7 +360,7 @@ async fn schema_budget_rejects_complete_excess_and_preserves_canonical_bytes()
     let ddl = (0..MAX_SCHEMA_OBJECTS - 1)
         .map(|index| format!("CREATE TABLE owned_{index}(id INTEGER);"))
         .collect::<String>();
-    sqlx::raw_sql(sqlx::AssertSqlSafe(ddl.as_str()))
+    sqlite_access::raw_sql(sqlite_access::AssertSqlSafe(ddl.as_str()))
         .execute(&mut connection)
         .await?;
     assert!(matches!(
@@ -377,10 +379,10 @@ async fn schema_budget_rejects_complete_excess_and_preserves_canonical_bytes()
         "CREATE TABLE oversized(id INTEGER /*{}*/)",
         "é".repeat(MAX_SCHEMA_BYTES / 2)
     );
-    sqlx::raw_sql(sqlx::AssertSqlSafe(ddl.as_str()))
+    sqlite_access::raw_sql(sqlite_access::AssertSqlSafe(ddl.as_str()))
         .execute(&mut connection)
         .await?;
-    let stored_bytes: i64 = sqlx::query_scalar(
+    let stored_bytes: i64 = sqlite_access::query_scalar(
         "SELECT length(CAST(sql AS BLOB)) FROM sqlite_schema WHERE name='oversized'",
     )
     .fetch_one(&mut connection)
@@ -407,15 +409,15 @@ async fn foreign_key_evidence_stays_bounded_for_many_violations()
         PoolOptions::new(1),
     )
     .await?;
-    sqlx::raw_sql("CREATE TABLE parents(id INTEGER PRIMARY KEY); CREATE TABLE children(id INTEGER PRIMARY KEY, parent_id INTEGER REFERENCES parents(id));")
+    sqlite_access::raw_sql("CREATE TABLE parents(id INTEGER PRIMARY KEY); CREATE TABLE children(id INTEGER PRIMARY KEY, parent_id INTEGER REFERENCES parents(id));")
         .execute(&pool).await?;
     let mut connection = pool.acquire().await?;
-    sqlx::query("PRAGMA foreign_keys=OFF")
+    sqlite_access::query("PRAGMA foreign_keys=OFF")
         .execute(&mut *connection)
         .await?;
-    sqlx::query("WITH RECURSIVE ids(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM ids WHERE n<10000) INSERT INTO children SELECT n, n FROM ids")
+    sqlite_access::query("WITH RECURSIVE ids(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM ids WHERE n<10000) INSERT INTO children SELECT n, n FROM ids")
         .execute(&mut *connection).await?;
-    sqlx::query("PRAGMA foreign_keys=ON")
+    sqlite_access::query("PRAGMA foreign_keys=ON")
         .execute(&mut *connection)
         .await?;
     drop(connection);
@@ -457,20 +459,20 @@ async fn live_reader_makes_truncate_checkpoint_report_busy()
     let directory = tempfile::tempdir()?;
     let database_path = directory.path().join("busy.sqlite3");
     let pool = create_if_missing(&database_path, PoolOptions::new(3)).await?;
-    sqlx::query("CREATE TABLE values_table(value INTEGER NOT NULL)")
+    sqlite_access::query("CREATE TABLE values_table(value INTEGER NOT NULL)")
         .execute(&pool)
         .await?;
-    sqlx::query("INSERT INTO values_table(value) VALUES(1)")
+    sqlite_access::query("INSERT INTO values_table(value) VALUES(1)")
         .execute(&pool)
         .await?;
     checkpoint(&pool).await?;
 
     let mut reader = pool.acquire().await?;
-    sqlx::query("BEGIN").execute(&mut *reader).await?;
-    let _: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM values_table")
+    sqlite_access::query("BEGIN").execute(&mut *reader).await?;
+    let _: i64 = sqlite_access::query_scalar("SELECT COUNT(*) FROM values_table")
         .fetch_one(&mut *reader)
         .await?;
-    sqlx::query("INSERT INTO values_table(value) VALUES(2)")
+    sqlite_access::query("INSERT INTO values_table(value) VALUES(2)")
         .execute(&pool)
         .await?;
 
@@ -478,7 +480,9 @@ async fn live_reader_makes_truncate_checkpoint_report_busy()
         checkpoint(&pool).await,
         Err(Error::CheckpointBusy { .. })
     ));
-    sqlx::query("ROLLBACK").execute(&mut *reader).await?;
+    sqlite_access::query("ROLLBACK")
+        .execute(&mut *reader)
+        .await?;
     checkpoint(&pool).await?;
     Ok(())
 }

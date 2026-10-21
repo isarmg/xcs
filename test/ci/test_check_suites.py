@@ -113,8 +113,10 @@ class SuiteCoverageTests(unittest.TestCase):
         ))
 
     def test_foundation_runs_only_selected_library_regressions(self):
-        sqlite, consumers, serialization, error_definition, crypto, numeric, precision, command_line, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, join_map, http_body, random_backends, entropy_consumers, system_units, ring, password, idna, numeric_tests, helpers = self.suite("foundation")
+        sqlite, sqlite_units, sqlite_family, consumers, serialization, error_definition, crypto, numeric, precision, command_line, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, join_map, http_body, random_backends, entropy_consumers, system_units, ring, password, idna, numeric_tests, helpers = self.suite("foundation")
         self.assertEqual(sqlite, {"tool": "python3", "args": [".github/scripts/check-sqlite-scope.py"]})
+        self.assertEqual(sqlite_units, {"tool": "cargo", "args": ["test", "--locked", "--offline", "--lib", "-p", "sqlite-access"]})
+        self.assertEqual(sqlite_family, {"tool": "python3", "args": [".github/scripts/check-sqlite-family.py"]})
         self.assertEqual(consumers, {"tool": "python3", "args": [".github/scripts/check-foundation-consumers.py"]})
         self.assertEqual(serialization, {"tool": "python3", "args": [".github/scripts/check-serialization-family.py"]})
         self.assertEqual(error_definition, {"tool": "python3", "args": [".github/scripts/check-error-definition-family.py"]})

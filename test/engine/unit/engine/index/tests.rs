@@ -1,5 +1,5 @@
 use super::*;
-use sqlx::Row;
+use sqlite_access::Row;
 
 fn version(id: &str, file: &str, sequence: u64) -> FileVersion {
     FileVersion {
@@ -79,7 +79,7 @@ fn indexed_history_matches_scan_with_unsigned_extremes_ties_and_scoped_query() {
         let mut c = platform_io::sqlite::open_index_read_connection(&path)
             .await
             .unwrap();
-        let plans = sqlx::query("EXPLAIN QUERY PLAN SELECT version_id,file_id,history_tree_id,version_sequence_key FROM file_history_versions INDEXED BY file_history_lookup WHERE file_id=? ORDER BY version_sequence_key,version_id LIMIT ?")
+        let plans = sqlite_access::query("EXPLAIN QUERY PLAN SELECT version_id,file_id,history_tree_id,version_sequence_key FROM file_history_versions INDEXED BY file_history_lookup WHERE file_id=? ORDER BY version_sequence_key,version_id LIMIT ?")
                 .bind("file").bind(6i64).fetch_all(&mut c).await.unwrap();
         let detail: String = plans[0].get(3);
         assert!(
@@ -328,11 +328,11 @@ fn rows(path: &Path) -> (String, Vec<(String, String, Vec<u8>)>) {
         let mut c = platform_io::sqlite::open_index_connection(path, false, None)
             .await
             .unwrap();
-        let sequence = sqlx::query_scalar("SELECT sequence FROM current_state")
+        let sequence = sqlite_access::query_scalar("SELECT sequence FROM current_state")
             .fetch_one(&mut c)
             .await
             .unwrap();
-        let rows = sqlx::query("SELECT kind,id,json FROM entities ORDER BY kind,id")
+        let rows = sqlite_access::query("SELECT kind,id,json FROM entities ORDER BY kind,id")
             .fetch_all(&mut c)
             .await
             .unwrap()
@@ -467,7 +467,7 @@ fn per_change_writes_and_serialization_do_not_grow_with_unchanged_entities() {
             let mut c = platform_io::sqlite::open_index_connection(&path, false, None)
                 .await
                 .unwrap();
-            sqlx::query_scalar("SELECT n FROM writes")
+            sqlite_access::query_scalar("SELECT n FROM writes")
                 .fetch_one(&mut c)
                 .await
                 .unwrap()
@@ -746,9 +746,9 @@ fn runtime_linked_cache_falls_back_and_blocks_publication_without_touching_targe
 #[test]
 fn non_corruption_errors_cannot_authorize_quarantine() {
     for error in [
-        sqlx::Error::Io(std::io::Error::from(std::io::ErrorKind::PermissionDenied)),
-        sqlx::Error::Protocol("file is not a database".into()),
-        sqlx::Error::RowNotFound,
+        sqlite_access::Error::Io(std::io::Error::from(std::io::ErrorKind::PermissionDenied)),
+        sqlite_access::Error::Protocol("file is not a database".into()),
+        sqlite_access::Error::RowNotFound,
     ] {
         assert!(!ProjectionFailure::from(error).corrupt);
     }

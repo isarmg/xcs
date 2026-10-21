@@ -17015,314 +17015,346 @@
       ]
     },
     {
-      "directory": "src/foundation/sqlx",
+      "directory": "src/foundation/sqlite-access",
       "roots": [
-        "test/foundation/sqlx"
+        "test/foundation/sqlite-access"
       ],
       "files": [
         {
+          "path": "test/foundation/sqlite-access/facade/tests/.dockerignore",
+          "sha256": "3262e549a718e2f7fda5d63a9ab057f9439d7cade365eb612f37530096dfbba5",
           "source": "src/foundation/sqlx/tests/.dockerignore",
           "source_sha256_before": "3262e549a718e2f7fda5d63a9ab057f9439d7cade365eb612f37530096dfbba5",
-          "path": "test/foundation/sqlx/tests/.dockerignore",
-          "sha256": "3262e549a718e2f7fda5d63a9ab057f9439d7cade365eb612f37530096dfbba5"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/.env",
+          "sha256": "289dd9de9ee8b647418f283c05215696464861d6231a7ff721a67912277bc74b",
           "source": "src/foundation/sqlx/tests/.env",
           "source_sha256_before": "289dd9de9ee8b647418f283c05215696464861d6231a7ff721a67912277bc74b",
-          "path": "test/foundation/sqlx/tests/.env",
-          "sha256": "289dd9de9ee8b647418f283c05215696464861d6231a7ff721a67912277bc74b"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/fixtures/mysql/posts.sql",
+          "sha256": "041e395a6d5cb7a0c106af5d05cf72538adf265e0820fb9d4ea93410ba24bea9",
           "source": "src/foundation/sqlx/tests/fixtures/mysql/posts.sql",
           "source_sha256_before": "041e395a6d5cb7a0c106af5d05cf72538adf265e0820fb9d4ea93410ba24bea9",
-          "path": "test/foundation/sqlx/tests/fixtures/mysql/posts.sql",
-          "sha256": "041e395a6d5cb7a0c106af5d05cf72538adf265e0820fb9d4ea93410ba24bea9"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/fixtures/mysql/users.sql",
+          "sha256": "d27e6ac6bc175df843dfa16cf0ece16187270b174ab7a77405f56ad077745e5d",
           "source": "src/foundation/sqlx/tests/fixtures/mysql/users.sql",
           "source_sha256_before": "d27e6ac6bc175df843dfa16cf0ece16187270b174ab7a77405f56ad077745e5d",
-          "path": "test/foundation/sqlx/tests/fixtures/mysql/users.sql",
-          "sha256": "d27e6ac6bc175df843dfa16cf0ece16187270b174ab7a77405f56ad077745e5d"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/fixtures/postgres/posts.sql",
+          "sha256": "11839248c9b9797f4767c4fc3251bcdb25d975e160937257cdf1fe4928530346",
           "source": "src/foundation/sqlx/tests/fixtures/postgres/posts.sql",
           "source_sha256_before": "11839248c9b9797f4767c4fc3251bcdb25d975e160937257cdf1fe4928530346",
-          "path": "test/foundation/sqlx/tests/fixtures/postgres/posts.sql",
-          "sha256": "11839248c9b9797f4767c4fc3251bcdb25d975e160937257cdf1fe4928530346"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/fixtures/postgres/users.sql",
+          "sha256": "2e3c11ce7d263a5c88ed5c831b879f31d01cb393f87ab41984bd88f7d061c5f3",
           "source": "src/foundation/sqlx/tests/fixtures/postgres/users.sql",
           "source_sha256_before": "2e3c11ce7d263a5c88ed5c831b879f31d01cb393f87ab41984bd88f7d061c5f3",
-          "path": "test/foundation/sqlx/tests/fixtures/postgres/users.sql",
-          "sha256": "2e3c11ce7d263a5c88ed5c831b879f31d01cb393f87ab41984bd88f7d061c5f3"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/derives.rs",
+          "sha256": "bcc129d73a237c9f165d8988e4bd61f3efb9dce7c37316a804c6bba488af59d7",
           "source": "src/foundation/sqlx/tests/sqlite/derives.rs",
           "source_sha256_before": "dbdd76233f16a0751d5fe13e1bd0845881b599b051625b1e862ab6d16b30bae6",
-          "path": "test/foundation/sqlx/tests/sqlite/derives.rs",
-          "sha256": "dbdd76233f16a0751d5fe13e1bd0845881b599b051625b1e862ab6d16b30bae6"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/describe.rs",
+          "sha256": "aee9c9e154910433571deafaad91db04c4019658fe4a90615463de6a6994f82e",
           "source": "src/foundation/sqlx/tests/sqlite/describe.rs",
           "source_sha256_before": "1551c02995220bdc68aa09a7e53f0f6961f72dc5c17884c895029224af3c8702",
-          "path": "test/foundation/sqlx/tests/sqlite/describe.rs",
-          "sha256": "1551c02995220bdc68aa09a7e53f0f6961f72dc5c17884c895029224af3c8702"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/error.rs",
+          "sha256": "95ae30645bc9794b4bc582e43ded22573bc563905669b857fc8757160df72b78",
           "source": "src/foundation/sqlx/tests/sqlite/error.rs",
           "source_sha256_before": "9592dee8a68b4a83bad9e8d69ddf431180c3f6c88e634ff793f20d4bd96af8de",
-          "path": "test/foundation/sqlx/tests/sqlite/error.rs",
-          "sha256": "9592dee8a68b4a83bad9e8d69ddf431180c3f6c88e634ff793f20d4bd96af8de"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/fixtures/comments.sql",
+          "sha256": "c329cdc81e4ac2a9b5ae3f536d128adf1955e4a57bcaeedfef6d2f361ff53a60",
           "source": "src/foundation/sqlx/tests/sqlite/fixtures/comments.sql",
           "source_sha256_before": "c329cdc81e4ac2a9b5ae3f536d128adf1955e4a57bcaeedfef6d2f361ff53a60",
-          "path": "test/foundation/sqlx/tests/sqlite/fixtures/comments.sql",
-          "sha256": "c329cdc81e4ac2a9b5ae3f536d128adf1955e4a57bcaeedfef6d2f361ff53a60"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/fixtures/posts.sql",
+          "sha256": "c7615cce4f9f4d8ad084c4c29be767d6015c9288381440b5aed65c4624c50fb1",
           "source": "src/foundation/sqlx/tests/sqlite/fixtures/posts.sql",
           "source_sha256_before": "c7615cce4f9f4d8ad084c4c29be767d6015c9288381440b5aed65c4624c50fb1",
-          "path": "test/foundation/sqlx/tests/sqlite/fixtures/posts.sql",
-          "sha256": "c7615cce4f9f4d8ad084c4c29be767d6015c9288381440b5aed65c4624c50fb1"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/fixtures/users.sql",
+          "sha256": "fa286e73fbc2a740a6f019ac069af64e9688567065a6ea9effe47e614b7581f8",
           "source": "src/foundation/sqlx/tests/sqlite/fixtures/users.sql",
           "source_sha256_before": "fa286e73fbc2a740a6f019ac069af64e9688567065a6ea9effe47e614b7581f8",
-          "path": "test/foundation/sqlx/tests/sqlite/fixtures/users.sql",
-          "sha256": "fa286e73fbc2a740a6f019ac069af64e9688567065a6ea9effe47e614b7581f8"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/macros.rs",
+          "sha256": "dddc84b3a73a83126d64c9361f11e9bfca28e9b626d3707539e1494a79b7adc7",
           "source": "src/foundation/sqlx/tests/sqlite/macros.rs",
           "source_sha256_before": "86b92a7f3677715a5f9d37eb12ebe10c221b43926515c91a063e24d0239b0f19",
-          "path": "test/foundation/sqlx/tests/sqlite/macros.rs",
-          "sha256": "86b92a7f3677715a5f9d37eb12ebe10c221b43926515c91a063e24d0239b0f19"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/rustsec.rs",
+          "sha256": "fe36c7d014568360ec2ba157c5a81bda69f778627a62f4d775ca4e406aee616c",
           "source": "src/foundation/sqlx/tests/sqlite/rustsec.rs",
           "source_sha256_before": "c410c69ac89c33d65df29a41e29bafb84f67140a08b397998d5bf749d4a79cb7",
-          "path": "test/foundation/sqlx/tests/sqlite/rustsec.rs",
-          "sha256": "c410c69ac89c33d65df29a41e29bafb84f67140a08b397998d5bf749d4a79cb7"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/setup.sql",
+          "sha256": "0143afda08b05e4adc5876bb3b3fca93e41fd559d9ae60d653e6286a75b2b374",
           "source": "src/foundation/sqlx/tests/sqlite/setup.sql",
           "source_sha256_before": "0143afda08b05e4adc5876bb3b3fca93e41fd559d9ae60d653e6286a75b2b374",
-          "path": "test/foundation/sqlx/tests/sqlite/setup.sql",
-          "sha256": "0143afda08b05e4adc5876bb3b3fca93e41fd559d9ae60d653e6286a75b2b374"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/sqlcipher.rs",
+          "sha256": "70d0ba55e631eeb8131bdf8e1db471a63f7470d18faa1d0220acb6d62b517422",
           "source": "src/foundation/sqlx/tests/sqlite/sqlcipher.rs",
           "source_sha256_before": "fc9670fc2701b36e71c015f4ad1e201ced4717528a2ad4f8a3ff67d80152c1a3",
-          "path": "test/foundation/sqlx/tests/sqlite/sqlcipher.rs",
-          "sha256": "fc9670fc2701b36e71c015f4ad1e201ced4717528a2ad4f8a3ff67d80152c1a3"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/sqlite.db",
+          "sha256": "b2d21ebdabfef366991a5e7756c33424ec44154af04402fa42af9e62ad83545a",
           "source": "src/foundation/sqlx/tests/sqlite/sqlite.db",
           "source_sha256_before": "b2d21ebdabfef366991a5e7756c33424ec44154af04402fa42af9e62ad83545a",
-          "path": "test/foundation/sqlx/tests/sqlite/sqlite.db",
-          "sha256": "b2d21ebdabfef366991a5e7756c33424ec44154af04402fa42af9e62ad83545a"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/sqlite.rs",
+          "sha256": "f4da9bc8c92057a97c0541b3501156aef90c499cc7c8782effaea081090dbce3",
           "source": "src/foundation/sqlx/tests/sqlite/sqlite.rs",
           "source_sha256_before": "77734910f4237861ac75786a29975464b73a67a9cd788a2f6bc3a90af3d200fe",
-          "path": "test/foundation/sqlx/tests/sqlite/sqlite.rs",
-          "sha256": "77734910f4237861ac75786a29975464b73a67a9cd788a2f6bc3a90af3d200fe"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/sqlite/types.rs",
+          "sha256": "b3576cba8f4dee062e3fa9e94f933184b5860168b0028c26ca6286eeb96b88c0",
           "source": "src/foundation/sqlx/tests/sqlite/types.rs",
           "source_sha256_before": "eaacb158fbdd57a3bc847fc251274434e3a5e4c81fcc8ba62e261bdd02355753",
-          "path": "test/foundation/sqlx/tests/sqlite/types.rs",
-          "sha256": "331d6288ab8d66507fbc8e3dd396ca7f8ed06327002dedb63f3fa67a9d446553"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui-tests.rs",
+          "sha256": "13679e1413369f6985ea7c119d412bd31370fa1b590710e63cac510898f9ccc8",
           "source": "src/foundation/sqlx/tests/ui-tests.rs",
           "source_sha256_before": "0c02796a0bdf3733f6c0fe3a4ee8984180cd0a2b9189e5349c799e7af6525fef",
-          "path": "test/foundation/sqlx/tests/ui-tests.rs",
-          "sha256": "f07b1bd9b2260871c03d087904f1ac6afed2052cbeeb249daa9c29bf3c38d538"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/mysql/gated/chrono.rs",
+          "sha256": "3972bc722d2250cc5070777d7fc12b731a939885239903de9fab32e668f8d607",
           "source": "src/foundation/sqlx/tests/ui/mysql/gated/chrono.rs",
           "source_sha256_before": "a2967ca2a27d047d706c2ca85b77084e86fb8f9a608a11fd77e2209897806fe0",
-          "path": "test/foundation/sqlx/tests/ui/mysql/gated/chrono.rs",
-          "sha256": "a2967ca2a27d047d706c2ca85b77084e86fb8f9a608a11fd77e2209897806fe0"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/mysql/gated/chrono.stderr",
+          "sha256": "1ea322938525416e9b3fd054a7673a85989e26530d4b10f8873e78ac719bdd00",
           "source": "src/foundation/sqlx/tests/ui/mysql/gated/chrono.stderr",
           "source_sha256_before": "1ea322938525416e9b3fd054a7673a85989e26530d4b10f8873e78ac719bdd00",
-          "path": "test/foundation/sqlx/tests/ui/mysql/gated/chrono.stderr",
-          "sha256": "1ea322938525416e9b3fd054a7673a85989e26530d4b10f8873e78ac719bdd00"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/deprecated_rename.rs",
+          "sha256": "2ee16f6b35b0d9649485830878b315ebca5ac3c50199263a77a571b3cd0db8bf",
           "source": "src/foundation/sqlx/tests/ui/postgres/deprecated_rename.rs",
           "source_sha256_before": "cca434b354e41848df53ca89e8d2c5b2869111a5a967fab012f23731369647a6",
-          "path": "test/foundation/sqlx/tests/ui/postgres/deprecated_rename.rs",
-          "sha256": "cca434b354e41848df53ca89e8d2c5b2869111a5a967fab012f23731369647a6"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/deprecated_rename.stderr",
+          "sha256": "f2a53b7d1f9f6c09b260883d1b2ee17219e99f73789ed4b7c97a44dfe1ec8189",
           "source": "src/foundation/sqlx/tests/ui/postgres/deprecated_rename.stderr",
           "source_sha256_before": "f2a53b7d1f9f6c09b260883d1b2ee17219e99f73789ed4b7c97a44dfe1ec8189",
-          "path": "test/foundation/sqlx/tests/ui/postgres/deprecated_rename.stderr",
-          "sha256": "f2a53b7d1f9f6c09b260883d1b2ee17219e99f73789ed4b7c97a44dfe1ec8189"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/gated/chrono.rs",
+          "sha256": "f59692c0033cfcc383540669367870041d69d10ddcacf89015bba30c1a53cc84",
           "source": "src/foundation/sqlx/tests/ui/postgres/gated/chrono.rs",
           "source_sha256_before": "b3e6cb1336d5866ec372a7f4b8603205316a05b7f0cb2a74fe69be420d45de20",
-          "path": "test/foundation/sqlx/tests/ui/postgres/gated/chrono.rs",
-          "sha256": "b3e6cb1336d5866ec372a7f4b8603205316a05b7f0cb2a74fe69be420d45de20"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/gated/chrono.stderr",
+          "sha256": "b9c1744362a2164d6d9588dee6ebfe5acc0ea8bba114afc0844dd62de27baec0",
           "source": "src/foundation/sqlx/tests/ui/postgres/gated/chrono.stderr",
           "source_sha256_before": "b9c1744362a2164d6d9588dee6ebfe5acc0ea8bba114afc0844dd62de27baec0",
-          "path": "test/foundation/sqlx/tests/ui/postgres/gated/chrono.stderr",
-          "sha256": "b9c1744362a2164d6d9588dee6ebfe5acc0ea8bba114afc0844dd62de27baec0"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/gated/ipnetwork.rs",
+          "sha256": "86ee4020e9a59d3fb2392deeee9d95e661ffca0ef3d3092381111e430c7b59b9",
           "source": "src/foundation/sqlx/tests/ui/postgres/gated/ipnetwork.rs",
           "source_sha256_before": "f23b05659eb43fc95c7a97d577a2dd2a3030312ac215252c9e869fc4629bcdba",
-          "path": "test/foundation/sqlx/tests/ui/postgres/gated/ipnetwork.rs",
-          "sha256": "f23b05659eb43fc95c7a97d577a2dd2a3030312ac215252c9e869fc4629bcdba"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/gated/ipnetwork.stderr",
+          "sha256": "b691afa0fbee85843303b7400c3711bb75ade4391d04fb78b78ede0219d60e9e",
           "source": "src/foundation/sqlx/tests/ui/postgres/gated/ipnetwork.stderr",
           "source_sha256_before": "b691afa0fbee85843303b7400c3711bb75ade4391d04fb78b78ede0219d60e9e",
-          "path": "test/foundation/sqlx/tests/ui/postgres/gated/ipnetwork.stderr",
-          "sha256": "b691afa0fbee85843303b7400c3711bb75ade4391d04fb78b78ede0219d60e9e"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/gated/uuid.rs",
+          "sha256": "76e965f53ec14be0d1e80bc525922fc512553609b144cdb1476333f35b3d53fb",
           "source": "src/foundation/sqlx/tests/ui/postgres/gated/uuid.rs",
           "source_sha256_before": "f01c322b252c6b1f04aa1140611a83bbd3e33d3f0dda94ce157d640d22f611fb",
-          "path": "test/foundation/sqlx/tests/ui/postgres/gated/uuid.rs",
-          "sha256": "f01c322b252c6b1f04aa1140611a83bbd3e33d3f0dda94ce157d640d22f611fb"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/gated/uuid.stderr",
+          "sha256": "4fa17fcf9de5e4c87e5074a30b54a272e75c08c189c6d4797aa6719bb8514339",
           "source": "src/foundation/sqlx/tests/ui/postgres/gated/uuid.stderr",
           "source_sha256_before": "4fa17fcf9de5e4c87e5074a30b54a272e75c08c189c6d4797aa6719bb8514339",
-          "path": "test/foundation/sqlx/tests/ui/postgres/gated/uuid.stderr",
-          "sha256": "4fa17fcf9de5e4c87e5074a30b54a272e75c08c189c6d4797aa6719bb8514339"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/issue_30.rs",
+          "sha256": "fd6f2b45236a62bd98b467ea082abcc9c7baad927e297293c3e92731503fbac3",
           "source": "src/foundation/sqlx/tests/ui/postgres/issue_30.rs",
           "source_sha256_before": "59a771bd34877b08728db477f6b9f57d4899d87b4b963da5638830853b9f9096",
-          "path": "test/foundation/sqlx/tests/ui/postgres/issue_30.rs",
-          "sha256": "59a771bd34877b08728db477f6b9f57d4899d87b4b963da5638830853b9f9096"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/issue_30.stderr",
+          "sha256": "d765785be439c1580e075731b8f89fc0092d1185868ef54ea6b1f77ec11f4acd",
           "source": "src/foundation/sqlx/tests/ui/postgres/issue_30.stderr",
           "source_sha256_before": "d765785be439c1580e075731b8f89fc0092d1185868ef54ea6b1f77ec11f4acd",
-          "path": "test/foundation/sqlx/tests/ui/postgres/issue_30.stderr",
-          "sha256": "d765785be439c1580e075731b8f89fc0092d1185868ef54ea6b1f77ec11f4acd"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/unsupported-type.rs",
+          "sha256": "42b490404a4de174e757358ac842c586cb6f01e7b855c06df62d33a44ca82add",
           "source": "src/foundation/sqlx/tests/ui/postgres/unsupported-type.rs",
           "source_sha256_before": "3c16a91b27cda97f90db733c48b51161730242d1c79ac3918724435f9f06d207",
-          "path": "test/foundation/sqlx/tests/ui/postgres/unsupported-type.rs",
-          "sha256": "3c16a91b27cda97f90db733c48b51161730242d1c79ac3918724435f9f06d207"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/unsupported-type.stderr",
+          "sha256": "de4076e6c0999760e2dfce850aeed37f088da1674b8d276937675af94843f692",
           "source": "src/foundation/sqlx/tests/ui/postgres/unsupported-type.stderr",
           "source_sha256_before": "de4076e6c0999760e2dfce850aeed37f088da1674b8d276937675af94843f692",
-          "path": "test/foundation/sqlx/tests/ui/postgres/unsupported-type.stderr",
-          "sha256": "de4076e6c0999760e2dfce850aeed37f088da1674b8d276937675af94843f692"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/wrong_param_type.rs",
+          "sha256": "9df505949038fd8c004bf4191949e2815990ec0cd6dde11678c257d986759094",
           "source": "src/foundation/sqlx/tests/ui/postgres/wrong_param_type.rs",
           "source_sha256_before": "e44734ada6f112e9fb9472747eda2ec449673f4a0783002391e00837717ea1de",
-          "path": "test/foundation/sqlx/tests/ui/postgres/wrong_param_type.rs",
-          "sha256": "e44734ada6f112e9fb9472747eda2ec449673f4a0783002391e00837717ea1de"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/postgres/wrong_param_type.stderr",
+          "sha256": "ef311ad816c2bb98ff77406a69861096848bcef397f6bfd0f850509f4f261e53",
           "source": "src/foundation/sqlx/tests/ui/postgres/wrong_param_type.stderr",
           "source_sha256_before": "ef311ad816c2bb98ff77406a69861096848bcef397f6bfd0f850509f4f261e53",
-          "path": "test/foundation/sqlx/tests/ui/postgres/wrong_param_type.stderr",
-          "sha256": "ef311ad816c2bb98ff77406a69861096848bcef397f6bfd0f850509f4f261e53"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/sqlite/expression-column-type.rs",
+          "sha256": "4ceac9f558936dcebc8a792e7c524e1a9a3d4153379735881a7031df8f7eeb96",
           "source": "src/foundation/sqlx/tests/ui/sqlite/expression-column-type.rs",
           "source_sha256_before": "373e6e9747a1ba405ec0c7a5509754a9204ad5543d5dddec79d61698a4ef4297",
-          "path": "test/foundation/sqlx/tests/ui/sqlite/expression-column-type.rs",
-          "sha256": "373e6e9747a1ba405ec0c7a5509754a9204ad5543d5dddec79d61698a4ef4297"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/ui/sqlite/expression-column-type.stderr",
+          "sha256": "e969c488ee466bcd31441d83b4721e161d5f50fdd04104e6d4eb6ec502f54824",
           "source": "src/foundation/sqlx/tests/ui/sqlite/expression-column-type.stderr",
           "source_sha256_before": "e969c488ee466bcd31441d83b4721e161d5f50fdd04104e6d4eb6ec502f54824",
-          "path": "test/foundation/sqlx/tests/ui/sqlite/expression-column-type.stderr",
-          "sha256": "e969c488ee466bcd31441d83b4721e161d5f50fdd04104e6d4eb6ec502f54824"
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/facade/tests/x.py",
+          "sha256": "abae80f274bd25ccab8c021d8b2ec117653ddccb8a78e295f489da28472067ec",
           "source": "src/foundation/sqlx/tests/x.py",
           "source_sha256_before": "6a401094256f1fcbd6d8dc5ff067ae6100c638ae5ff20145d2ac9733351c4d9e",
-          "path": "test/foundation/sqlx/tests/x.py",
-          "sha256": "abae80f274bd25ccab8c021d8b2ec117653ddccb8a78e295f489da28472067ec"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/sqlx-core",
-      "roots": [
-        "test/foundation/sqlx-core"
-      ],
-      "files": [
+          "origin_directory": "vendor/rust/sqlx-0.9.0"
+        },
         {
+          "path": "test/foundation/sqlite-access/query_engine/functions/src/pool/mod/assert_pool_traits_658.rs",
+          "sha256": "47c1ca57f360ecf12b6b7e3d5289bfeecfcead555e46871d738a09fb643fe0c1",
           "source": "src/foundation/sqlx-core/src/pool/mod.rs",
           "source_sha256_before": "ff4b2a9c91c80e7bcf5228883c7d4aec5f423520a790cefe1332a6b35d1ebcdb",
-          "path": "test/foundation/sqlx-core/functions/src/pool/mod/assert_pool_traits_658.rs",
-          "sha256": "47c1ca57f360ecf12b6b7e3d5289bfeecfcead555e46871d738a09fb643fe0c1"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/sqlx-sqlite",
-      "roots": [
-        "test/foundation/sqlx-sqlite"
-      ],
-      "files": [
+          "origin_directory": "vendor/rust/sqlx-core-0.9.0"
+        },
         {
+          "path": "test/foundation/sqlite-access/sqlite/functions/src/connection/explain/test_explain_1786.rs",
+          "sha256": "d2ec0897e6ba56b573c2053c5a4e282e674e1475fa12b76e600ca599ec8189c3",
           "source": "src/foundation/sqlx-sqlite/src/connection/explain.rs",
           "source_sha256_before": "2439b39fbf2b77ce5a83ae519b6810e4d8240ddd1c532aca90961d467d7e1cab",
-          "path": "test/foundation/sqlx-sqlite/functions/src/connection/explain/test_explain_1786.rs",
-          "sha256": "31fb201d620eae669a36a3576babf45b16e95f75e61dec21cd876b8b17352c70"
+          "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/sqlite/functions/src/connection/explain/test_root_block_columns_has_types_1538.rs",
+          "sha256": "ad791f2bed77cd5bbafac9337d05a3a1ab9aaf6574bbd249851be75005dc9354",
           "source": "src/foundation/sqlx-sqlite/src/connection/explain.rs",
           "source_sha256_before": "2439b39fbf2b77ce5a83ae519b6810e4d8240ddd1c532aca90961d467d7e1cab",
-          "path": "test/foundation/sqlx-sqlite/functions/src/connection/explain/test_root_block_columns_has_types_1538.rs",
-          "sha256": "2aaf4e436f78c6e191636dcaf4405bdec021c1400278db9586eae3f1394c94f1"
+          "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/sqlite/functions/src/options/parse/it_returns_the_parsed_url_222.rs",
+          "sha256": "58dd1db4708fe0c90db8bdbc8f665ea8b4054d26cf501c034de1f554b025040d",
           "source": "src/foundation/sqlx-sqlite/src/options/parse.rs",
           "source_sha256_before": "d94008fcdd7e03e2df1c6c0d788cc55cde42e772a83efb6e5f4839249154e156",
-          "path": "test/foundation/sqlx-sqlite/functions/src/options/parse/it_returns_the_parsed_url_222.rs",
-          "sha256": "58dd1db4708fe0c90db8bdbc8f665ea8b4054d26cf501c034de1f554b025040d"
+          "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/sqlite/functions/src/options/parse/test_parse_in_memory_183.rs",
+          "sha256": "5971e2e823908eac73da4f104eb246196f25c0d8d4101fd277f4ed812d0b4bcd",
           "source": "src/foundation/sqlx-sqlite/src/options/parse.rs",
           "source_sha256_before": "d94008fcdd7e03e2df1c6c0d788cc55cde42e772a83efb6e5f4839249154e156",
-          "path": "test/foundation/sqlx-sqlite/functions/src/options/parse/test_parse_in_memory_183.rs",
-          "sha256": "5971e2e823908eac73da4f104eb246196f25c0d8d4101fd277f4ed812d0b4bcd"
+          "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/sqlite/functions/src/options/parse/test_parse_read_only_204.rs",
+          "sha256": "b5a720778f514f69f28da59804cf226ad4c13f0fe592f5b1408fcebfedfef3a0",
           "source": "src/foundation/sqlx-sqlite/src/options/parse.rs",
           "source_sha256_before": "d94008fcdd7e03e2df1c6c0d788cc55cde42e772a83efb6e5f4839249154e156",
-          "path": "test/foundation/sqlx-sqlite/functions/src/options/parse/test_parse_read_only_204.rs",
-          "sha256": "b5a720778f514f69f28da59804cf226ad4c13f0fe592f5b1408fcebfedfef3a0"
+          "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/sqlite/functions/src/options/parse/test_parse_shared_in_memory_213.rs",
+          "sha256": "5ddd2554ee9b9f4e9266ad6ebf881e4bbd01224e767ca8f109e278dc6bd66e1a",
           "source": "src/foundation/sqlx-sqlite/src/options/parse.rs",
           "source_sha256_before": "d94008fcdd7e03e2df1c6c0d788cc55cde42e772a83efb6e5f4839249154e156",
-          "path": "test/foundation/sqlx-sqlite/functions/src/options/parse/test_parse_shared_in_memory_213.rs",
-          "sha256": "5ddd2554ee9b9f4e9266ad6ebf881e4bbd01224e767ca8f109e278dc6bd66e1a"
+          "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/sqlite/functions/src/type_info/test_data_type_from_str_121.rs",
+          "sha256": "608157fcf2a7f6dd67f36ca578c8cd80cb73957acdb3f23e5ce0060c8d74beb1",
           "source": "src/foundation/sqlx-sqlite/src/type_info.rs",
           "source_sha256_before": "be545b2b7811077b51e5c92b61ac1d56deaa754ec70a1d0d5b5c302424ebbf78",
-          "path": "test/foundation/sqlx-sqlite/functions/src/type_info/test_data_type_from_str_121.rs",
-          "sha256": "608157fcf2a7f6dd67f36ca578c8cd80cb73957acdb3f23e5ce0060c8d74beb1"
+          "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0"
         },
         {
+          "path": "test/foundation/sqlite-access/sqlite/unit/src/regexp/tests_173.rs",
+          "sha256": "f3ace8a2d848bbd64cda7d05f671cc58d20d7fb3566dd9e81b16a68fc5e8c195",
           "source": "src/foundation/sqlx-sqlite/src/regexp.rs",
           "source_sha256_before": "ea7a509291d3c9fcbaaa97cd02a139ee5be4608db68adac94829e160ac2cf6a1",
-          "path": "test/foundation/sqlx-sqlite/unit/src/regexp/tests_173.rs",
-          "sha256": "f11a3bf60addcaea57b75fe96682cafabc1869d3f23c67697691456bfdd2b11c"
+          "origin_directory": "vendor/rust/sqlx-sqlite-0.9.0"
         }
       ]
     },

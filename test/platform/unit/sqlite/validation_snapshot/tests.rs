@@ -10,7 +10,7 @@ async fn explicit_private_run_directory_keeps_limits_and_cleans_temporary_files(
     let pool = crate::sqlite::create_if_missing(&source, crate::sqlite::PoolOptions::new(1))
         .await
         .unwrap();
-    sqlx::raw_sql("CREATE TABLE records(value INTEGER);INSERT INTO records VALUES(7)")
+    sqlite_access::raw_sql("CREATE TABLE records(value INTEGER);INSERT INTO records VALUES(7)")
         .execute(&pool)
         .await
         .unwrap();
@@ -31,7 +31,7 @@ async fn explicit_private_run_directory_keeps_limits_and_cleans_temporary_files(
     assert!(snapshot.database_path().starts_with(&run));
     let snapshot = snapshot.into_pool().await.unwrap();
     assert_eq!(
-        sqlx::query_scalar::<_, i64>("SELECT value FROM records")
+        sqlite_access::query_scalar::<_, i64>("SELECT value FROM records")
             .fetch_one(snapshot.pool())
             .await
             .unwrap(),
@@ -52,10 +52,12 @@ async fn connection_limits_survive_pool_replacement_without_touching_source() {
     let original = crate::sqlite::create_if_missing(&source, crate::sqlite::PoolOptions::new(1))
         .await
         .unwrap();
-    sqlx::raw_sql("CREATE TABLE data(value BLOB);INSERT INTO data VALUES(zeroblob(131072))")
-        .execute(&original)
-        .await
-        .unwrap();
+    sqlite_access::raw_sql(
+        "CREATE TABLE data(value BLOB);INSERT INTO data VALUES(zeroblob(131072))",
+    )
+    .execute(&original)
+    .await
+    .unwrap();
     original.close().await;
     let before = generation_bytes(&source);
     assert!(matches!(
@@ -76,7 +78,7 @@ async fn connection_limits_survive_pool_replacement_without_touching_source() {
     .unwrap();
     for _ in 0..2 {
         let mut connection = snapshot.pool().acquire().await.unwrap();
-        let error = sqlx::query_scalar::<_, Vec<u8>>("SELECT value FROM data")
+        let error = sqlite_access::query_scalar::<_, Vec<u8>>("SELECT value FROM data")
             .fetch_one(&mut *connection)
             .await
             .unwrap_err();
@@ -88,7 +90,7 @@ async fn connection_limits_survive_pool_replacement_without_touching_source() {
             Some("18")
         );
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT 7")
+            sqlite_access::query_scalar::<_, i64>("SELECT 7")
                 .fetch_one(&mut *connection)
                 .await
                 .unwrap(),
@@ -120,11 +122,11 @@ async fn an_existing_capture_opens_the_same_generation_after_source_disappears()
     let pool = crate::sqlite::create_if_missing(&source, crate::sqlite::PoolOptions::new(1))
         .await
         .unwrap();
-    sqlx::query("CREATE TABLE records (value TEXT NOT NULL)")
+    sqlite_access::query("CREATE TABLE records (value TEXT NOT NULL)")
         .execute(&pool)
         .await
         .unwrap();
-    sqlx::query("INSERT INTO records VALUES ('captured-generation')")
+    sqlite_access::query("INSERT INTO records VALUES ('captured-generation')")
         .execute(&pool)
         .await
         .unwrap();
@@ -132,14 +134,14 @@ async fn an_existing_capture_opens_the_same_generation_after_source_disappears()
     let snapshot = ValidationSnapshot::capture(&source).unwrap();
     fs::rename(&source, directory.path().join("original.sqlite3")).unwrap();
     let pool = snapshot.into_pool().await.unwrap();
-    let value: String = sqlx::query_scalar("SELECT value FROM records")
+    let value: String = sqlite_access::query_scalar("SELECT value FROM records")
         .fetch_one(pool.pool())
         .await
         .unwrap();
     assert_eq!(value, "captured-generation");
     assert!(!source.exists());
     assert!(
-        sqlx::query("DELETE FROM records")
+        sqlite_access::query("DELETE FROM records")
             .execute(pool.pool())
             .await
             .is_err()
@@ -154,24 +156,24 @@ async fn reads_wal_only_commits_and_preserves_every_source_file() {
     let pool = crate::sqlite::create_if_missing(&source, crate::sqlite::PoolOptions::new(1))
         .await
         .unwrap();
-    sqlx::query("CREATE TABLE records (value TEXT NOT NULL)")
+    sqlite_access::query("CREATE TABLE records (value TEXT NOT NULL)")
         .execute(&pool)
         .await
         .unwrap();
-    sqlx::query("INSERT INTO records VALUES ('wal-only-commit')")
+    sqlite_access::query("INSERT INTO records VALUES ('wal-only-commit')")
         .execute(&pool)
         .await
         .unwrap();
     assert!(sidecar(&source, "-wal").exists());
     let before = generation_bytes(&source);
     let snapshot = open_validation_snapshot(&source).await.unwrap();
-    let value: String = sqlx::query_scalar("SELECT value FROM records")
+    let value: String = sqlite_access::query_scalar("SELECT value FROM records")
         .fetch_one(snapshot.pool())
         .await
         .unwrap();
     assert_eq!(value, "wal-only-commit");
     assert!(
-        sqlx::query("INSERT INTO records VALUES ('forbidden')")
+        sqlite_access::query("INSERT INTO records VALUES ('forbidden')")
             .execute(snapshot.pool())
             .await
             .is_err()
@@ -179,7 +181,7 @@ async fn reads_wal_only_commits_and_preserves_every_source_file() {
     assert_eq!(generation_bytes(&source), before);
     let retained = snapshot.pool().clone();
     drop(snapshot);
-    let value: String = sqlx::query_scalar("SELECT value FROM records")
+    let value: String = sqlite_access::query_scalar("SELECT value FROM records")
         .fetch_one(&retained)
         .await
         .unwrap();
@@ -195,16 +197,16 @@ async fn active_writer_is_busy_instead_of_an_unlocked_snapshot() {
     let pool = crate::sqlite::create_if_missing(&source, crate::sqlite::PoolOptions::new(1))
         .await
         .unwrap();
-    sqlx::query("CREATE TABLE records (value INTEGER)")
+    sqlite_access::query("CREATE TABLE records (value INTEGER)")
         .execute(&pool)
         .await
         .unwrap();
     let mut writer = pool.acquire().await.unwrap();
-    sqlx::query("BEGIN IMMEDIATE")
+    sqlite_access::query("BEGIN IMMEDIATE")
         .execute(&mut *writer)
         .await
         .unwrap();
-    sqlx::query("INSERT INTO records VALUES (1)")
+    sqlite_access::query("INSERT INTO records VALUES (1)")
         .execute(&mut *writer)
         .await
         .unwrap();
@@ -212,7 +214,10 @@ async fn active_writer_is_busy_instead_of_an_unlocked_snapshot() {
         ValidationSnapshot::capture(&source),
         Err(SnapshotError::Busy)
     ));
-    sqlx::query("ROLLBACK").execute(&mut *writer).await.unwrap();
+    sqlite_access::query("ROLLBACK")
+        .execute(&mut *writer)
+        .await
+        .unwrap();
     drop(writer);
     pool.close().await;
 }

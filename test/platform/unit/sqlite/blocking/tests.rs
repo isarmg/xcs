@@ -1,5 +1,7 @@
 use super::*;
-use sqlx::{Connection, SqliteConnection, sqlite::SqliteConnectOptions, sqlite::SqliteJournalMode};
+use sqlite_access::{
+    Connection, SqliteConnection, sqlite::SqliteConnectOptions, sqlite::SqliteJournalMode,
+};
 use std::{fs, path::Path, time::Duration};
 
 fn exercise_direct_connection(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
@@ -11,17 +13,19 @@ fn exercise_direct_connection(path: &Path) -> Result<(), Box<dyn std::error::Err
                 .journal_mode(SqliteJournalMode::Wal),
         )
         .await?;
-        sqlx::raw_sql("CREATE TABLE items(value INTEGER NOT NULL);INSERT INTO items VALUES(7)")
-            .execute(&mut connection)
-            .await?;
-        let value: i64 = sqlx::query_scalar("SELECT value FROM items")
+        sqlite_access::raw_sql(
+            "CREATE TABLE items(value INTEGER NOT NULL);INSERT INTO items VALUES(7)",
+        )
+        .execute(&mut connection)
+        .await?;
+        let value: i64 = sqlite_access::query_scalar("SELECT value FROM items")
             .fetch_one(&mut connection)
             .await?;
         assert_eq!(value, 7);
         // Closing the native worker, rather than dropping a pool, is the
         // required boundary before byte snapshots and permission changes.
         connection.close().await?;
-        Ok::<_, sqlx::Error>(())
+        Ok::<_, sqlite_access::Error>(())
     })?;
     let bytes = fs::read(path)?;
     let wal = path.with_extension("sqlite3-wal");
@@ -68,26 +72,26 @@ fn index_connection_applies_fixed_pragmas_and_defensive_mode_without_runtime()
     let path = directory.path().join("index.sqlite3");
     block_on_sqlite_connection(async {
         let mut connection = crate::sqlite::open_index_connection(&path, true, None).await?;
-        let mode: String = sqlx::query_scalar("PRAGMA journal_mode")
+        let mode: String = sqlite_access::query_scalar("PRAGMA journal_mode")
             .fetch_one(&mut connection)
             .await?;
-        let synchronous: i64 = sqlx::query_scalar("PRAGMA synchronous")
+        let synchronous: i64 = sqlite_access::query_scalar("PRAGMA synchronous")
             .fetch_one(&mut connection)
             .await?;
-        let foreign_keys: i64 = sqlx::query_scalar("PRAGMA foreign_keys")
+        let foreign_keys: i64 = sqlite_access::query_scalar("PRAGMA foreign_keys")
             .fetch_one(&mut connection)
             .await?;
         assert_eq!(mode, "wal");
         assert_eq!(synchronous, 2);
         assert_eq!(foreign_keys, 1);
-        sqlx::query("CREATE TABLE objects(value INTEGER)")
+        sqlite_access::query("CREATE TABLE objects(value INTEGER)")
             .execute(&mut connection)
             .await?;
-        sqlx::query("PRAGMA writable_schema=ON")
+        sqlite_access::query("PRAGMA writable_schema=ON")
             .execute(&mut connection)
             .await?;
         assert!(
-            sqlx::query("UPDATE sqlite_schema SET sql=NULL WHERE name='objects'")
+            sqlite_access::query("UPDATE sqlite_schema SET sql=NULL WHERE name='objects'")
                 .execute(&mut connection)
                 .await
                 .is_err()

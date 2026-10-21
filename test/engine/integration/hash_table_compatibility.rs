@@ -3,7 +3,7 @@
 //! preserve their distinct ordering, equality, LRU and ownership semantics.
 use hash_table::{HashMap, HashSet};
 use hashlink::{LinkedHashMap, LruCache};
-use sqlx_core::common::StatementCache;
+use sqlite_access::common::StatementCache;
 use std::{
     collections::BTreeMap,
     hash::{BuildHasherDefault, Hasher},

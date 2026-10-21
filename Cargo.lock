@@ -1298,7 +1298,7 @@ version = "0.1.0"
 dependencies = [
  "json-codec",
  "platform-io",
- "sqlx",
+ "sqlite-access",
  "storage-engine",
  "tempfile",
 ]
@@ -1325,7 +1325,7 @@ dependencies = [
  "libsqlite3-sys",
  "rustix",
  "sha2",
- "sqlx",
+ "sqlite-access",
  "tempfile",
  "tokio",
  "zeroize",
@@ -1770,41 +1770,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "sqlx"
-version = "0.9.0"
-dependencies = [
- "sqlx-core",
- "sqlx-sqlite",
-]
-
-[[package]]
-name = "sqlx-core"
-version = "0.9.0"
-dependencies = [
- "crossbeam-queue",
- "either",
- "error-definition",
- "event-listener",
- "futures-core",
- "futures-util",
- "hash-table",
- "hashlink",
- "indexmap",
- "log",
- "percent-encoding",
- "smallvec",
- "tokio",
- "tracing",
- "url",
-]
-
-[[package]]
-name = "sqlx-sqlite"
+name = "sqlite-access"
 version = "0.9.0"
 dependencies = [
  "atoi",
  "bytes",
+ "crossbeam-queue",
+ "either",
  "error-definition",
+ "event-listener",
  "flume",
  "form_urlencoded",
  "futures-channel",
@@ -1812,10 +1786,14 @@ dependencies = [
  "futures-executor",
  "futures-intrusive",
  "futures-util",
+ "hash-table",
+ "hashlink",
+ "indexmap",
  "libsqlite3-sys",
  "log",
  "percent-encoding",
- "sqlx-core",
+ "smallvec",
+ "tokio",
  "tracing",
  "url",
 ]
@@ -1887,8 +1865,7 @@ dependencies = [
  "name-policy",
  "platform-io",
  "rustix",
- "sqlx",
- "sqlx-core",
+ "sqlite-access",
  "storage-contract",
  "tempfile",
  "time",

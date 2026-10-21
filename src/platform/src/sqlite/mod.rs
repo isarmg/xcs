@@ -9,7 +9,7 @@ use crate::schema_identity::{
     validate_product_metadata_columns, validate_product_metadata_ddl,
 };
 use error_definition::Error;
-use sqlx::{
+use sqlite_access::{
     Connection, Executor, Row, Sqlite, SqliteConnection, SqlitePool,
     sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous},
 };
@@ -177,11 +177,11 @@ async fn connect(
                 // The query index never needs writable_schema or raw page writes.
                 enable_defensive(connection)
                     .await
-                    .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
+                    .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
                 if let Some(limits) = options.connection_limits {
                     apply_connection_limits(connection, limits)
                         .await
-                        .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
+                        .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
                 }
                 Ok(())
             })
@@ -232,30 +232,30 @@ pub async fn open_index_connection(
         SqliteConnection::connect_with(&index_open_options(database_path, create_if_missing))
             .await?;
     let initialized = async {
-        sqlx::query("PRAGMA journal_mode=WAL")
+        sqlite_access::query("PRAGMA journal_mode=WAL")
             .execute(&mut connection)
             .await?;
-        sqlx::query("PRAGMA synchronous=FULL")
+        sqlite_access::query("PRAGMA synchronous=FULL")
             .execute(&mut connection)
             .await?;
         enable_defensive(&mut connection)
             .await
-            .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
+            .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
         if let Some(limits) = limits {
             apply_connection_limits(&mut connection, limits)
                 .await
-                .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
+                .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
         }
-        Ok::<_, sqlx::Error>(())
+        Ok::<_, sqlite_access::Error>(())
     }
     .await;
     if let Err(error) = initialized {
         if let Err(close_error) = connection.close().await {
             // A caller must not interpret the original corruption code as
             // permission to move files while native closure remains uncertain.
-            return Err(pool_connect_error(sqlx::Error::Io(io::Error::other(
-                close_error,
-            ))));
+            return Err(pool_connect_error(sqlite_access::Error::Io(
+                io::Error::other(close_error),
+            )));
         }
         return Err(pool_connect_error(error));
     }
@@ -270,15 +270,15 @@ pub async fn open_index_read_connection(database_path: &Path) -> Result<SqliteCo
         .busy_timeout(Duration::from_millis(20));
     let mut connection = SqliteConnection::connect_with(&options).await?;
     let initialized = async {
-        sqlx::query("PRAGMA journal_mode=WAL")
+        sqlite_access::query("PRAGMA journal_mode=WAL")
             .execute(&mut connection)
             .await?;
-        sqlx::query("PRAGMA synchronous=FULL")
+        sqlite_access::query("PRAGMA synchronous=FULL")
             .execute(&mut connection)
             .await?;
         enable_defensive(&mut connection)
             .await
-            .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
+            .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
         apply_connection_limits(
             &mut connection,
             ConnectionLimits::new(64 * 1024)
@@ -287,38 +287,38 @@ pub async fn open_index_read_connection(database_path: &Path) -> Result<SqliteCo
                 .with_max_bind_parameters(16),
         )
         .await
-        .map_err(|error| sqlx::Error::Io(io::Error::other(error)))?;
-        Ok::<_, sqlx::Error>(())
+        .map_err(|error| sqlite_access::Error::Io(io::Error::other(error)))?;
+        Ok::<_, sqlite_access::Error>(())
     }
     .await;
     if let Err(error) = initialized {
         if let Err(close_error) = connection.close().await {
-            return Err(pool_connect_error(sqlx::Error::Io(io::Error::other(
-                close_error,
-            ))));
+            return Err(pool_connect_error(sqlite_access::Error::Io(
+                io::Error::other(close_error),
+            )));
         }
         return Err(pool_connect_error(error));
     }
     Ok(connection)
 }
 
-fn pool_connect_error(error: sqlx::Error) -> Error {
-    if let sqlx::Error::Io(source) = error {
+fn pool_connect_error(error: sqlite_access::Error) -> Error {
+    if let sqlite_access::Error::Io(source) = error {
         let kind = source.kind();
         if let Some(inner) = source.into_inner() {
             return match inner.downcast::<ConnectionLimitError>() {
                 Ok(error) => Error::ConnectionLimits(*error),
-                Err(inner) => Error::Sqlx(sqlx::Error::Io(io::Error::new(kind, inner))),
+                Err(inner) => Error::Sqlx(sqlite_access::Error::Io(io::Error::new(kind, inner))),
             };
         }
-        return Error::Sqlx(sqlx::Error::Io(io::Error::from(kind)));
+        return Error::Sqlx(sqlite_access::Error::Io(io::Error::from(kind)));
     }
     Error::Sqlx(error)
 }
 
 /// Require the complete integrity-check result to be the single value `ok`.
 pub async fn integrity_check(pool: &SqlitePool) -> Result<(), Error> {
-    let messages: Vec<String> = sqlx::query_scalar("PRAGMA integrity_check")
+    let messages: Vec<String> = sqlite_access::query_scalar("PRAGMA integrity_check")
         .fetch_all(pool)
         .await?;
     if messages.len() != 1 || !messages[0].eq_ignore_ascii_case("ok") {
@@ -340,20 +340,21 @@ pub struct ForeignKeyViolation {
 /// Failure retains at most the first 32 violations as evidence. It never treats
 /// a partial evidence collection as a successful integrity check.
 pub async fn foreign_key_check(pool: &SqlitePool) -> Result<(), Error> {
-    let violations =
-        sqlx::query("SELECT \"table\", rowid, parent, fkid FROM pragma_foreign_key_check LIMIT 32")
-            .fetch_all(pool)
-            .await?
-            .into_iter()
-            .map(|row| {
-                Ok(ForeignKeyViolation {
-                    table: row.try_get(0)?,
-                    row_id: row.try_get(1)?,
-                    parent: row.try_get(2)?,
-                    foreign_key_index: row.try_get(3)?,
-                })
-            })
-            .collect::<Result<Vec<_>, sqlx::Error>>()?;
+    let violations = sqlite_access::query(
+        "SELECT \"table\", rowid, parent, fkid FROM pragma_foreign_key_check LIMIT 32",
+    )
+    .fetch_all(pool)
+    .await?
+    .into_iter()
+    .map(|row| {
+        Ok(ForeignKeyViolation {
+            table: row.try_get(0)?,
+            row_id: row.try_get(1)?,
+            parent: row.try_get(2)?,
+            foreign_key_index: row.try_get(3)?,
+        })
+    })
+    .collect::<Result<Vec<_>, sqlite_access::Error>>()?;
     if !violations.is_empty() {
         return Err(Error::ForeignKeyViolations { violations });
     }
@@ -362,7 +363,7 @@ pub async fn foreign_key_check(pool: &SqlitePool) -> Result<(), Error> {
 
 /// Truncate-checkpoint the WAL and reject both busy and incomplete results.
 pub async fn checkpoint(pool: &SqlitePool) -> Result<(), Error> {
-    let result: (i64, i64, i64) = sqlx::query_as("PRAGMA wal_checkpoint(TRUNCATE)")
+    let result: (i64, i64, i64) = sqlite_access::query_as("PRAGMA wal_checkpoint(TRUNCATE)")
         .fetch_one(pool)
         .await?;
     validate_checkpoint_result(result)
@@ -400,7 +401,7 @@ where
     // Keep the version-1 filter, raw SQL bytes and BINARY ordering unchanged.
     // LIMIT 1025 proves an object excess without transferring an unbounded
     // result; window totals gate every text field before SQLx allocates it.
-    let rows = sqlx::query(
+    let rows = sqlite_access::query(
         "WITH bounded AS (\
            SELECT type, name, tbl_name, COALESCE(sql, '') AS sql \
            FROM sqlite_schema \
@@ -436,7 +437,7 @@ where
                 row.try_get::<String, _>(3)?,
             ))
         })
-        .collect::<Result<Vec<_>, sqlx::Error>>()?;
+        .collect::<Result<Vec<_>, sqlite_access::Error>>()?;
     Ok(rows)
 }
 
@@ -488,7 +489,7 @@ pub async fn require_pool_current_schema(
 }
 
 async fn validate_metadata_table(connection: &mut SqliteConnection) -> Result<(), Error> {
-    let ddl: Option<String> = sqlx::query_scalar(
+    let ddl: Option<String> = sqlite_access::query_scalar(
         "SELECT sql FROM sqlite_schema WHERE type='table' AND name='product_metadata'",
     )
     .fetch_optional(&mut *connection)
@@ -496,7 +497,7 @@ async fn validate_metadata_table(connection: &mut SqliteConnection) -> Result<()
     let ddl = ddl.ok_or(Error::ProductMetadataTableMissing)?;
     validate_product_metadata_ddl(&ddl)?;
 
-    let columns = sqlx::query(
+    let columns = sqlite_access::query(
         "SELECT cid, name, type, \"notnull\", dflt_value, pk \
          FROM pragma_table_info('product_metadata') ORDER BY cid",
     )
@@ -513,7 +514,7 @@ async fn validate_metadata_table(connection: &mut SqliteConnection) -> Result<()
             primary_key_position: row.try_get(5)?,
         })
     })
-    .collect::<Result<Vec<_>, sqlx::Error>>()?;
+    .collect::<Result<Vec<_>, sqlite_access::Error>>()?;
     validate_product_metadata_columns(&columns)?;
     Ok(())
 }
@@ -521,7 +522,7 @@ async fn validate_metadata_table(connection: &mut SqliteConnection) -> Result<()
 async fn read_metadata_rows(
     connection: &mut SqliteConnection,
 ) -> Result<Vec<ProductMetadataRow>, Error> {
-    let rows = sqlx::query(
+    let rows = sqlite_access::query(
         "SELECT typeof(singleton), singleton, typeof(application), application, \
                 typeof(application_version), application_version, \
                 typeof(schema_revision), schema_revision, \
@@ -586,7 +587,7 @@ pub enum Error {
     #[error("cannot inspect SQLite database {path}: {source}", path = .path.display())]
     InspectDatabase { path: PathBuf, source: io::Error },
     #[error("SQLite operation failed: {0}")]
-    Sqlx(#[from] sqlx::Error),
+    Sqlx(#[from] sqlite_access::Error),
     #[error(transparent)]
     ConnectionLimits(#[from] ConnectionLimitError),
     #[error("SQLite integrity check failed: {messages:?}")]
