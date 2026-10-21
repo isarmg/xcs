@@ -20,7 +20,7 @@ impl FailedToBufferBody {
         E: Into<BoxError>,
     {
         // two layers of boxes here because `with_limited_body`
-        // wraps the `http_body_util::Limited` in a `axum_core::Body`
+        // wraps the `http_body::Limited` in a `axum_core::Body`
         // which also wraps the error type
         let box_error = match err.into().downcast::<Error>() {
             Ok(err) => err.into_inner(),
@@ -30,7 +30,7 @@ impl FailedToBufferBody {
             Ok(err) => err.into_inner(),
             Err(err) => err,
         };
-        match box_error.downcast::<http_body_util::LengthLimitError>() {
+        match box_error.downcast::<http_body::LengthLimitError>() {
             Ok(err) => Self::LengthLimitError(LengthLimitError::from_err(err)),
             Err(err) => Self::UnknownBodyError(UnknownBodyError::from_err(err)),
         }
@@ -43,7 +43,7 @@ define_rejection! {
     /// Encountered some other error when buffering the body.
     ///
     /// This can _only_ happen when you're using [`tower_http::limit::RequestBodyLimitLayer`] or
-    /// otherwise wrapping request bodies in [`http_body_util::Limited`].
+    /// otherwise wrapping request bodies in [`http_body::Limited`].
     pub struct LengthLimitError(Error);
 }
 

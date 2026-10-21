@@ -1,7 +1,7 @@
 use bytes::Bytes;
 use http::{HeaderValue, Response, StatusCode};
 use http_body::{Body, SizeHint};
-use http_body_util::Full;
+use http_body::Full;
 use pin_project_lite::pin_project;
 use std::pin::Pin;
 use std::task::{Context, Poll};

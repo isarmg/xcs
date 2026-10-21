@@ -9,7 +9,7 @@
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use http::{Request, Response};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use std::{sync::Arc, convert::Infallible};
 //!
 //! # struct DatabaseConnectionPool;

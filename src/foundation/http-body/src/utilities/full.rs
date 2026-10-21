@@ -1,5 +1,5 @@
 use bytes::{Buf, Bytes};
-use http_body::{Body, Frame, SizeHint};
+use crate::{Body, Frame, SizeHint};
 use pin_project_lite::pin_project;
 use std::borrow::Cow;
 use std::convert::{Infallible, TryFrom};
@@ -37,7 +37,7 @@ impl<D> Full<D> {
     /// # Examples
     ///
     /// ```
-    /// # use http_body_util::Full;
+    /// # use http_body::Full;
     /// const DATA: &[u8] = b"hello";
     /// let full = Full::new(DATA);
     /// assert_eq!(full.into_inner(), Some("hello").map(str::as_bytes));
@@ -142,4 +142,4 @@ where
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body-util/unit/src/full/tests_144.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body/utilities/unit/src/full/tests_144.rs"));

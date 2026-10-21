@@ -57,7 +57,7 @@ where
             None => self.limit,
         };
 
-        let req = req.map(|body| Limited::new(http_body_util::Limited::new(body, body_limit)));
+        let req = req.map(|body| Limited::new(http_body::Limited::new(body, body_limit)));
 
         ResponseFuture::new(self.inner.call(req))
     }

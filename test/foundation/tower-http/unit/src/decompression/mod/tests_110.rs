@@ -8,7 +8,7 @@ mod tests {
     use crate::{compression::Compression, test_helpers::WithTrailers};
     use http::Response;
     use http::{HeaderMap, HeaderName, Request};
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
     use tower::{service_fn, Service, ServiceExt};
 
     #[tokio::test]

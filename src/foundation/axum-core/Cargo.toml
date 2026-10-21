@@ -50,10 +50,7 @@ path = "../http"
 [dependencies.http-body]
 version = "1.0.0"
 path = "../http-body"
-
-[dependencies.http-body-util]
-version = "0.1.0"
-path = "../http-body-util"
+features = ["utilities"]
 
 [dependencies.mime]
 version = "0.3.16"

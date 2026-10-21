@@ -4,7 +4,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 use bytes::Buf;
-use http_body::{Body, Frame, SizeHint};
+use crate::{Body, Frame, SizeHint};
 use proj::EitherProj;
 
 /// Sum type with two cases: [`Left`] and [`Right`], used if a body can be one of
@@ -147,4 +147,4 @@ pub(crate) mod proj {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body-util/unit/src/either/tests_149.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body/utilities/unit/src/either/tests_149.rs"));

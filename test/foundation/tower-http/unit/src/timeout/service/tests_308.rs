@@ -52,7 +52,7 @@ mod tests {
         assert_eq!(res.status(), StatusCode::GATEWAY_TIMEOUT);
 
         // Verify the body is empty (default)
-        use http_body_util::BodyExt;
+        use http_body::BodyExt;
         let body = res.into_body();
         let bytes = body.collect().await.unwrap().to_bytes();
         assert!(bytes.is_empty());

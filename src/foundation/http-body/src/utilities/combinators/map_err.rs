@@ -1,4 +1,4 @@
-use http_body::{Body, Frame};
+use crate::{Body, Frame, SizeHint};
 use pin_project_lite::pin_project;
 use std::{
     any::type_name,
@@ -8,18 +8,18 @@ use std::{
 };
 
 pin_project! {
-    /// Body returned by the [`inspect_frame()`] combinator.
+    /// Body returned by the [`map_err`] combinator.
     ///
-    /// [`inspect_frame()`]: crate::BodyExt::inspect_frame
+    /// [`map_err`]: crate::BodyExt::map_err
     #[derive(Clone, Copy)]
-    pub struct InspectFrame<B, F> {
+    pub struct MapErr<B, F> {
         #[pin]
         inner: B,
         f: F
     }
 }
 
-impl<B, F> InspectFrame<B, F> {
+impl<B, F> MapErr<B, F> {
     #[inline]
     pub(crate) fn new(body: B, f: F) -> Self {
         Self { inner: body, f }
@@ -46,13 +46,13 @@ impl<B, F> InspectFrame<B, F> {
     }
 }
 
-impl<B, F> Body for InspectFrame<B, F>
+impl<B, F, E> Body for MapErr<B, F>
 where
     B: Body,
-    F: FnMut(&Frame<B::Data>),
+    F: FnMut(B::Error) -> E,
 {
     type Data = B::Data;
-    type Error = B::Error;
+    type Error = E;
 
     fn poll_frame(
         self: Pin<&mut Self>,
@@ -62,29 +62,26 @@ where
         match this.inner.poll_frame(cx) {
             Poll::Pending => Poll::Pending,
             Poll::Ready(None) => Poll::Ready(None),
-            Poll::Ready(Some(Err(err))) => Poll::Ready(Some(Err(err))),
-            Poll::Ready(Some(Ok(frame))) => {
-                (this.f)(&frame);
-                Poll::Ready(Some(Ok(frame)))
-            }
+            Poll::Ready(Some(Ok(frame))) => Poll::Ready(Some(Ok(frame))),
+            Poll::Ready(Some(Err(err))) => Poll::Ready(Some(Err((this.f)(err)))),
         }
-    }
-
-    fn size_hint(&self) -> http_body::SizeHint {
-        self.inner.size_hint()
     }
 
     fn is_end_stream(&self) -> bool {
         self.inner.is_end_stream()
     }
+
+    fn size_hint(&self) -> SizeHint {
+        self.inner.size_hint()
+    }
 }
 
-impl<B, F> fmt::Debug for InspectFrame<B, F>
+impl<B, F> fmt::Debug for MapErr<B, F>
 where
     B: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("InspectFrame")
+        f.debug_struct("MapErr")
             .field("inner", &self.inner)
             .field("f", &type_name::<F>())
             .finish()

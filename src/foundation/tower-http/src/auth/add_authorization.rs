@@ -9,7 +9,7 @@
 //! use tower_http::auth::AddAuthorizationLayer;
 //! use http::{Request, Response, StatusCode, header::AUTHORIZATION};
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! # async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
 //! #     Ok(Response::new(Full::default()))

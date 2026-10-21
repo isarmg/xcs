@@ -22,7 +22,7 @@ mod tests {
             let (_sender, conn) = crate::client::conn::http2::handshake::<
                 _,
                 _,
-                http_body_util::Empty<bytes::Bytes>,
+                http_body::Empty<bytes::Bytes>,
             >(LocalTokioExecutor, io)
             .await
             .unwrap();
@@ -54,7 +54,7 @@ mod tests {
         #[allow(unused)]
         async fn run(io: impl crate::rt::Read + crate::rt::Write + Unpin + 'static) {
             let (_sender, conn) =
-                crate::client::conn::http2::handshake::<_, _, http_body_util::Empty<bytes::Bytes>>(
+                crate::client::conn::http2::handshake::<_, _, http_body::Empty<bytes::Bytes>>(
                     LocalTokioExecutor {
                         _x: Default::default(),
                     },
@@ -90,7 +90,7 @@ mod tests {
         #[allow(unused)]
         async fn run(io: impl crate::rt::Read + crate::rt::Write + Unpin + 'static) {
             let (_sender, conn) =
-                crate::client::conn::http2::handshake::<_, _, http_body_util::Empty<bytes::Bytes>>(
+                crate::client::conn::http2::handshake::<_, _, http_body::Empty<bytes::Bytes>>(
                     LocalTokioExecutor {
                         _x: Default::default(),
                     },
@@ -126,7 +126,7 @@ mod tests {
             let (_sender, conn) = crate::client::conn::http2::handshake::<
                 _,
                 _,
-                http_body_util::Empty<bytes::Bytes>,
+                http_body::Empty<bytes::Bytes>,
             >(TokioExecutor, io)
             .await
             .unwrap();
@@ -159,7 +159,7 @@ mod tests {
         #[allow(unused)]
         async fn run(io: impl crate::rt::Read + crate::rt::Write + Send + Unpin + 'static) {
             let (_sender, conn) =
-                crate::client::conn::http2::handshake::<_, _, http_body_util::Empty<bytes::Bytes>>(
+                crate::client::conn::http2::handshake::<_, _, http_body::Empty<bytes::Bytes>>(
                     TokioExecutor {
                         _x: Default::default(),
                     },

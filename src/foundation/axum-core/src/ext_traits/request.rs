@@ -253,7 +253,7 @@ pub trait RequestExt: sealed::Sealed + Sized {
     /// If it is disabled, the request is returned as-is.
     fn with_limited_body(self) -> Request;
 
-    /// Consumes the request, returning the body wrapped in [`http_body_util::Limited`] if a
+    /// Consumes the request, returning the body wrapped in [`http_body::Limited`] if a
     /// [default limit](crate::extract::DefaultBodyLimit) is in place, or not wrapped if the
     /// default limit is disabled.
     fn into_limited_body(self) -> Body;
@@ -321,9 +321,9 @@ impl RequestExt for Request {
         match self.extensions().get::<DefaultBodyLimitKind>().copied() {
             Some(DefaultBodyLimitKind::Disable) => self,
             Some(DefaultBodyLimitKind::Limit(limit)) => {
-                self.map(|b| Body::new(http_body_util::Limited::new(b, limit)))
+                self.map(|b| Body::new(http_body::Limited::new(b, limit)))
             }
-            None => self.map(|b| Body::new(http_body_util::Limited::new(b, DEFAULT_LIMIT))),
+            None => self.map(|b| Body::new(http_body::Limited::new(b, DEFAULT_LIMIT))),
         }
     }
 

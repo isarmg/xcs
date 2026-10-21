@@ -4,7 +4,7 @@
 //!
 //! ```
 //! use http::{Request, Response, Method, header};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use tower::{ServiceBuilder, ServiceExt, Service};
 //! use tower_http::cors::{Any, CorsLayer};

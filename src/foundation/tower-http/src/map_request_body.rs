@@ -3,7 +3,7 @@
 //! # Example
 //!
 //! ```
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use http::{Request, Response};
 //! use std::convert::Infallible;

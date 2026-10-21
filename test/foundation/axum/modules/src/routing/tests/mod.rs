@@ -22,7 +22,7 @@ use http::{
     header::{ALLOW, CONTENT_LENGTH, HOST},
     HeaderMap, Method, StatusCode, Uri,
 };
-use http_body_util::BodyExt;
+use http_body::BodyExt;
 use data_serialization::Deserialize;
 use json_codec::json;
 use std::{

@@ -4,7 +4,7 @@ mod tests {
 
     use bytes::Bytes;
     use http_body::Frame;
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
     use pin_project_lite::pin_project;
     use std::{error::Error, fmt::Display};
 

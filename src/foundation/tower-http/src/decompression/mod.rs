@@ -8,7 +8,7 @@
 //! use bytes::Bytes;
 //! use flate2::{write::GzEncoder, Compression};
 //! use http::{header, HeaderValue, Request, Response};
-//! use http_body_util::{Full, BodyExt};
+//! use http_body::{Full, BodyExt};
 //! use std::{error::Error, io::Write};
 //! use tower::{Service, ServiceBuilder, service_fn, ServiceExt};
 //! use tower_http::{BoxError, decompression::{DecompressionBody, RequestDecompressionLayer}};
@@ -48,7 +48,7 @@
 //! ```rust
 //! use bytes::Bytes;
 //! use http::{Request, Response};
-//! use http_body_util::{Full, BodyExt};
+//! use http_body::{Full, BodyExt};
 //! use std::convert::Infallible;
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::{compression::Compression, decompression::DecompressionLayer, BoxError};

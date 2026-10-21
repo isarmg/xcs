@@ -20,7 +20,7 @@ mod sealed {
 /// ```rust
 /// use http::{Request, Response, header::HeaderName};
 /// use bytes::Bytes;
-/// use http_body_util::Full;
+/// use http_body::Full;
 /// use std::{time::Duration, convert::Infallible};
 /// use tower::{ServiceBuilder, ServiceExt, Service};
 /// use tower_http::ServiceBuilderExt;

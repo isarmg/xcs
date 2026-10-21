@@ -1,4 +1,4 @@
-use http_body::{Body, Frame};
+use crate::{Body, Frame};
 use pin_project_lite::pin_project;
 use std::{
     any::type_name,
@@ -70,7 +70,7 @@ where
         }
     }
 
-    fn size_hint(&self) -> http_body::SizeHint {
+    fn size_hint(&self) -> crate::SizeHint {
         self.inner.size_hint()
     }
 

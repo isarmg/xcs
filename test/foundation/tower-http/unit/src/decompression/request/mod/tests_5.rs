@@ -5,7 +5,7 @@ mod tests {
     use crate::test_helpers::Body;
     use flate2::{write::GzEncoder, Compression};
     use http::{header, Request, Response, StatusCode};
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
     use std::{convert::Infallible, io::Write};
     use tower::{service_fn, Service, ServiceExt};
 

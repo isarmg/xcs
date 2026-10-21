@@ -12,7 +12,7 @@
 //! use http::{Request, Response, header::{self, HeaderValue}};
 //! use tower::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::SetResponseHeaderLayer;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! # #[tokio::main]
@@ -46,7 +46,7 @@
 //! use tower::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::SetResponseHeaderLayer;
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use http_body::Body as _; // for `Body::size_hint`
 //!
 //! # #[tokio::main]
@@ -93,7 +93,7 @@
 //! use http::{Request, Response, header::{self, HeaderValue}};
 //! use tower::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::{HeaderMetadata, response::{SetMultipleResponseHeadersLayer}};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! # #[tokio::main]
@@ -128,7 +128,7 @@
 //! use tower::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::{HeaderMetadata, response::{SetMultipleResponseHeadersLayer}};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use http_body::Body as _; // for `Body::size_hint`
 //!
 //! # #[tokio::main]

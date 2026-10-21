@@ -3,7 +3,7 @@ mod tests {
     use super::*;
     use crate::test_helpers::Body;
     use http::{header::ACCEPT_ENCODING, Request, Response};
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
     use std::convert::Infallible;
     use tokio::fs::File;
     use tokio_util::io::ReaderStream;

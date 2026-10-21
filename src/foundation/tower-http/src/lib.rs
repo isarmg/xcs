@@ -23,7 +23,7 @@
 //! use http::{Request, Response};
 //! use std::net::{SocketAddr, Ipv6Addr};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use hyper_util::rt::{TokioIo, TokioExecutor};
 //! use hyper_util::service::TowerToHyperService;
 //!
@@ -79,7 +79,7 @@
 //! };
 //! use tower::{ServiceBuilder, Service, ServiceExt};
 //! use hyper_util::{rt::TokioExecutor, client::legacy::Client};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use http::{Request, HeaderValue, header::USER_AGENT};
 //!

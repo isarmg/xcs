@@ -3,7 +3,7 @@ mod tests {
     use crate::{BodyExt, BodyStream, StreamBody};
     use bytes::Bytes;
     use futures_util::StreamExt;
-    use http_body::Frame;
+    use crate::Frame;
     use std::convert::Infallible;
 
     #[tokio::test]

@@ -4,7 +4,7 @@ use std::pin::Pin;
 use std::time::Duration;
 
 use bytes::Bytes;
-use http_body_util::BodyExt;
+use http_body::BodyExt;
 use hyper::{HeaderMap, StatusCode, Version};
 use hyper_util::client::legacy::connect::HttpInfo;
 #[cfg(feature = "json")]
@@ -224,7 +224,7 @@ impl Response {
     /// # }
     /// ```
     pub async fn bytes(self) -> crate::Result<Bytes> {
-        use http_body_util::BodyExt;
+        use http_body::BodyExt;
 
         BodyExt::collect(self.res.into_body())
             .await
@@ -249,7 +249,7 @@ impl Response {
     /// # }
     /// ```
     pub async fn chunk(&mut self) -> crate::Result<Option<Bytes>> {
-        use http_body_util::BodyExt;
+        use http_body::BodyExt;
 
         // loop to ignore unrecognized frames
         loop {
@@ -290,7 +290,7 @@ impl Response {
     #[cfg(feature = "stream")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
     pub fn bytes_stream(self) -> impl futures_core::Stream<Item = crate::Result<Bytes>> {
-        http_body_util::BodyDataStream::new(self.res.into_body().map_err(crate::error::decode))
+        http_body::BodyDataStream::new(self.res.into_body().map_err(crate::error::decode))
     }
 
     // util methods

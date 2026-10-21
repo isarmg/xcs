@@ -38,7 +38,7 @@ repository = "https://github.com/hyperium/hyper"
 capi = []
 client = ["dep:want", "dep:pin-project-lite", "dep:smallvec"]
 default = []
-ffi = ["dep:http-body-util", "dep:futures-util"]
+ffi = ["http-body/utilities", "dep:futures-util"]
 full = ["client", "http1", "http2", "server"]
 http1 = ["dep:atomic-waker", "dep:futures-core", "dep:httparse", "dep:itoa"]
 http2 = ["dep:atomic-waker", "dep:futures-channel", "dep:futures-core"]
@@ -83,11 +83,6 @@ path = "../http"
 [dependencies.http-body]
 version = "1"
 path = "../http-body"
-
-[dependencies.http-body-util]
-version = "0.1"
-optional = true
-path = "../http-body-util"
 
 [dependencies.httparse]
 version = "1.9"

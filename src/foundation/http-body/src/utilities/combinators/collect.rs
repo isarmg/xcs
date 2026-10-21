@@ -5,7 +5,7 @@ use std::{
 };
 
 use futures_core::ready;
-use http_body::Body;
+use crate::Body;
 use pin_project_lite::pin_project;
 
 pin_project! {

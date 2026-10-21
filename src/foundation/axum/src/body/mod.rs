@@ -9,7 +9,7 @@ pub use bytes::Bytes;
 #[doc(inline)]
 pub use axum_core::body::{Body, BodyDataStream};
 
-use http_body_util::{BodyExt, Limited};
+use http_body::{BodyExt, Limited};
 
 /// Converts [`Body`] into [`Bytes`] and limits the maximum size of the body.
 ///
@@ -31,7 +31,7 @@ use http_body_util::{BodyExt, Limited};
 ///
 /// ```rust
 /// use axum::body::{to_bytes, Body};
-/// use http_body_util::LengthLimitError;
+/// use http_body::LengthLimitError;
 ///
 /// # #[tokio::main]
 /// # async fn main() {

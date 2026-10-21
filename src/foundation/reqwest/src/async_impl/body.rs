@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use bytes::Bytes;
 use http_body::Body as HttpBody;
-use http_body_util::combinators::BoxBody;
+use http_body::combinators::BoxBody;
 use pin_project_lite::pin_project;
 #[cfg(feature = "stream")]
 use tokio::fs::File;
@@ -100,9 +100,9 @@ impl Body {
     {
         use futures_util::TryStreamExt;
         use http_body::Frame;
-        use http_body_util::StreamBody;
+        use http_body::StreamBody;
 
-        let body = http_body_util::BodyExt::boxed(StreamBody::new(sync_wrapper::SyncStream::new(
+        let body = http_body::BodyExt::boxed(StreamBody::new(sync_wrapper::SyncStream::new(
             stream
                 .map_ok(|d| Frame::data(Bytes::from(d)))
                 .map_err(Into::into),
@@ -141,7 +141,7 @@ impl Body {
         B::Data: Into<Bytes>,
         B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
     {
-        use http_body_util::BodyExt;
+        use http_body::BodyExt;
 
         let boxed = IntoBytesBody { inner }.map_err(Into::into).boxed();
 
@@ -365,14 +365,14 @@ where
 }
 
 pub(crate) type ResponseBody =
-    http_body_util::combinators::BoxBody<Bytes, Box<dyn std::error::Error + Send + Sync>>;
+    http_body::combinators::BoxBody<Bytes, Box<dyn std::error::Error + Send + Sync>>;
 
 pub(crate) fn boxed<B>(body: B) -> ResponseBody
 where
     B: hyper::body::Body<Data = Bytes> + Send + Sync + 'static,
     B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
 {
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
 
     body.map_err(box_err).boxed()
 }
@@ -386,7 +386,7 @@ where
     B: hyper::body::Body<Data = Bytes> + Send + Sync + 'static,
     B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
 {
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
 
     match (deadline, read_timeout) {
         (Some(total), Some(read)) => {

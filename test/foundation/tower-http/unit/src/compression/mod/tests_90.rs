@@ -11,7 +11,7 @@ mod tests {
     };
     use http::{HeaderMap, HeaderName, HeaderValue, Request, Response};
     use http_body::Body as _;
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
     use std::convert::Infallible;
     use std::io::Read;
     use std::sync::{Arc, RwLock};

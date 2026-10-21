@@ -6,6 +6,7 @@
 
 - [源码命名迁移与来源架构](source-naming.md)：活动身份、原始来源与互操作边界；配套[职责命名规范](../NAMING.md)。
 - [Foundation 按职能整合方案](foundation-package-consolidation.md)：包数口径、分批合并候选、技术边界与验收标准。
+- [HTTP 请求体整合](../components/http-body.md)：单包请求体接口、可选工具与通道边界。
 - [一次写入的完整流程](write-flow.md)：规划、准备、决定、发布和失败边界。
 - [分离工作区准备](detached-workspace-commits.md)：引擎锁、冻结基线、取消和校验凭据。
 - [写入准入](detached-write-admission.md)：准备期间允许和阻止的并发行为。

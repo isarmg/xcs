@@ -2,7 +2,7 @@ use super::{rejection::*, FromRequest, FromRequestParts, Request};
 use crate::{body::Body, RequestExt};
 use bytes::{BufMut, Bytes, BytesMut};
 use http::{request::Parts, Extensions, HeaderMap, Method, Uri, Version};
-use http_body_util::BodyExt;
+use http_body::BodyExt;
 use std::convert::Infallible;
 
 impl<S> FromRequest<S> for Request

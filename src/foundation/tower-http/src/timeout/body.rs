@@ -31,7 +31,7 @@ pin_project! {
     /// ```
     /// use http::{Request, Response};
     /// use bytes::Bytes;
-    /// use http_body_util::Full;
+    /// use http_body::Full;
     /// use std::time::Duration;
     /// use tower::ServiceBuilder;
     /// use tower_http::timeout::RequestBodyTimeoutLayer;

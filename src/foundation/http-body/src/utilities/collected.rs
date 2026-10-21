@@ -6,9 +6,9 @@ use std::{
 
 use bytes::{Buf, Bytes};
 use http::HeaderMap;
-use http_body::{Body, Frame};
+use crate::{Body, Frame};
 
-use crate::util::BufList;
+use crate::utilities::util::BufList;
 
 /// A collected body produced by [`BodyExt::collect`] which collects all the DATA frames
 /// and trailers.
@@ -93,4 +93,4 @@ impl<B> Default for Collected<B> {
 impl<B> Unpin for Collected<B> {}
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body-util/unit/src/collected/tests_95.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body/utilities/unit/src/collected/tests_95.rs"));

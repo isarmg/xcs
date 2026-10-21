@@ -6,7 +6,7 @@
 //! use tower_http::set_status::SetStatusLayer;
 //! use http::{Request, Response, StatusCode};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use std::{iter::once, convert::Infallible};
 //! use tower::{ServiceBuilder, Service, ServiceExt};
 //!

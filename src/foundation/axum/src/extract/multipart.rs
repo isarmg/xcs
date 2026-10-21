@@ -281,7 +281,7 @@ fn status_code_from_multer_error(err: &multer::Error) -> StatusCode {
             if err
                 .downcast_ref::<crate::Error>()
                 .and_then(|err| err.source())
-                .and_then(|err| err.downcast_ref::<http_body_util::LengthLimitError>())
+                .and_then(|err| err.downcast_ref::<http_body::LengthLimitError>())
                 .is_some()
             {
                 return StatusCode::PAYLOAD_TOO_LARGE;
@@ -302,7 +302,7 @@ fn is_body_limit_error(err: &multer::Error) -> bool {
             }
             err.downcast_ref::<crate::Error>()
                 .and_then(|err| err.source())
-                .and_then(|err| err.downcast_ref::<http_body_util::LengthLimitError>())
+                .and_then(|err| err.downcast_ref::<http_body::LengthLimitError>())
                 .is_some()
         }
         _ => false,

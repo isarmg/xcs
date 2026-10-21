@@ -7,7 +7,7 @@
 //! ```rust
 //! use bytes::{Bytes, BytesMut};
 //! use http::{Request, Response, header::ACCEPT_ENCODING};
-//! use http_body_util::{Full, BodyExt, StreamBody, combinators::UnsyncBoxBody};
+//! use http_body::{Full, BodyExt, StreamBody, combinators::UnsyncBoxBody};
 //! use http_body::Frame;
 //! use std::convert::Infallible;
 //! use tokio::fs::{self, File};

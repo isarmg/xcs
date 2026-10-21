@@ -3,7 +3,7 @@ mod tests {
     use super::*;
     use crate::{body::Body, routing::get, Router};
     use http::{HeaderMap, StatusCode};
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
     use tower::ServiceExt;
 
     #[crate::test]

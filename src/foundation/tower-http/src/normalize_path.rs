@@ -5,7 +5,7 @@
 //! ```
 //! use tower_http::normalize_path::NormalizePathLayer;
 //! use http::{Request, Response, StatusCode};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use std::{iter::once, convert::Infallible};
 //! use tower::{ServiceBuilder, Service, ServiceExt};

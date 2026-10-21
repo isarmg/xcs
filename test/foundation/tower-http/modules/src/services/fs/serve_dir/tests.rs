@@ -7,7 +7,7 @@ use http::header::ALLOW;
 use http::{header, Method, Response};
 use http::{Request, StatusCode};
 use http_body::Body as HttpBody;
-use http_body_util::BodyExt;
+use http_body::BodyExt;
 use std::convert::Infallible;
 use std::fs;
 use std::io::Read;

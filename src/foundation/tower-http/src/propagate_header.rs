@@ -8,7 +8,7 @@
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::propagate_header::PropagateHeaderLayer;
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {

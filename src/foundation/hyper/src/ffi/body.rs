@@ -3,7 +3,7 @@ use std::mem::ManuallyDrop;
 use std::ptr;
 use std::task::{Context, Poll};
 
-use http_body_util::BodyExt as _;
+use http_body::BodyExt as _;
 
 use super::task::{hyper_context, hyper_task, hyper_task_return_type, AsTaskType};
 use super::{UserDataPointer, HYPER_ITER_CONTINUE};

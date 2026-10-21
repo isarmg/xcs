@@ -14,7 +14,7 @@
 //!   of `Body`, and returned by hyper as a "receive stream" (so, for server
 //!   requests and client responses).
 //!
-//! There are additional implementations available in [`http-body-util`][],
+//! The `utilities` feature of `http-body` provides additional implementations,
 //! such as a `Full` or `Empty` body.
 //!
 //! ## Reading a body
@@ -23,7 +23,7 @@
 //! frames of a body. A frame can contain either data or trailers:
 //!
 //! ```
-//! use http_body_util::BodyExt as _;
+//! use http_body::BodyExt as _;
 //! use hyper::body::Incoming;
 //!
 //! async fn read_body(mut body: Incoming) -> Result<(), hyper::Error> {
@@ -49,7 +49,7 @@
 //! If a body is known to be small, it can be collected into memory instead:
 //!
 //! ```
-//! use http_body_util::BodyExt as _;
+//! use http_body::BodyExt as _;
 //! use hyper::body::{Bytes, Incoming};
 //!
 //! /// Consider using `Limited` if the body is untrusted.
@@ -61,7 +61,6 @@
 //! Collecting buffers the whole body, so it should be avoided for large or
 //! untrusted bodies unless their size is limited.
 //!
-//! [`http-body-util`]: https://docs.rs/http-body-util
 //! [`BodyExt`]: https://docs.rs/http-body-util/latest/http_body_util/trait.BodyExt.html
 
 pub use bytes::{Buf, Bytes};

@@ -14,7 +14,7 @@ mod tests {
     #[cfg(all(feature = "nightly", not(miri)))]
     use bytes::Bytes;
     #[cfg(all(feature = "http1", any(feature = "client", feature = "server")))]
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
 
     #[cfg(all(feature = "http1", any(feature = "client", feature = "server")))]
     #[test]

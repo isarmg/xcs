@@ -11,7 +11,7 @@
 //! use tower_http::metrics::InFlightRequestsLayer;
 //! use http::{Request, Response};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use std::{time::Duration, convert::Infallible};
 //!
 //! async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {

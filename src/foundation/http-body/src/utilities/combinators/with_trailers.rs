@@ -6,7 +6,7 @@ use std::{
 
 use futures_core::ready;
 use http::HeaderMap;
-use http_body::{Body, Frame};
+use crate::{Body, Frame};
 use pin_project_lite::pin_project;
 
 pin_project! {
@@ -110,7 +110,7 @@ where
     }
 
     #[inline]
-    fn size_hint(&self) -> http_body::SizeHint {
+    fn size_hint(&self) -> crate::SizeHint {
         match &self.state {
             State::PollBody { body, .. } => body.size_hint(),
             State::PollTrailers { .. } | State::Done => Default::default(),
@@ -119,4 +119,4 @@ where
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body-util/unit/src/combinators/with_trailers/tests_121.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body/utilities/unit/src/combinators/with_trailers/tests_121.rs"));

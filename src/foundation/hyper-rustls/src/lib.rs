@@ -9,7 +9,7 @@
 //! # #[cfg(all(feature = "rustls-native-certs", feature = "http1"))]
 //! # fn main() {
 //! use http::StatusCode;
-//! use http_body_util::Empty;
+//! use http_body::Empty;
 //! use hyper::body::Bytes;
 //! use hyper_util::client::legacy::Client;
 //! use hyper_util::rt::TokioExecutor;

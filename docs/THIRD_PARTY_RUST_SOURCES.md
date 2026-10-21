@@ -131,7 +131,6 @@ runtime 是统一工作区特性图中 normal 边可达的运行候选；compile
 | html-escape@0.2.15；https://static.crates.io/crates/html-escape/html-escape-0.2.15.crate；SHA256 c9356095b4b41197bba32173600e1582792cda618f65d12f68e2e77d273413c5 | html-escape@0.2.15；src/foundation/html-escape | MIT；compliance/licenses/upstream/html-escape-0.2.15/LICENSE | compile；web@wasm32-unknown-unknown | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
 | http@1.5.0；https://static.crates.io/crates/http/http-1.5.0.crate；SHA256 918d3568bebf352712bc2ef3d46a8bcf1a75b373be6539de198e9105cbbf9ce0 | http@1.5.0；src/foundation/http | MIT OR Apache-2.0；compliance/licenses/upstream/http-1.5.0/LICENSE-APACHE, compliance/licenses/upstream/http-1.5.0/LICENSE-MIT | runtime；root-native@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
 | http-body@1.1.0；https://static.crates.io/crates/http-body/http-body-1.1.0.crate；SHA256 ca2a8f2913ee65f60facd6a5905613afaa448497a0230cc41ce022d93290bc2c | http-body@1.1.0；src/foundation/http-body | MIT；compliance/licenses/upstream/http-body-1.1.0/LICENSE | runtime；root-native@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
-| http-body-util@0.1.5；https://static.crates.io/crates/http-body-util/http-body-util-0.1.5.crate；SHA256 23169fe34a5fbcdd3f3862e78fb9b6fccd5f02a6dc6f732547005d45631ce71c | http-body-util@0.1.5；src/foundation/http-body-util | MIT；compliance/licenses/upstream/http-body-util-0.1.5/LICENSE | runtime；root-native@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
 | http-range-header@0.4.2；https://static.crates.io/crates/http-range-header/http-range-header-0.4.2.crate；SHA256 9171a2ea8a68358193d15dd5d70c1c10a2afc3e7e4c5bc92bc9f025cebd7359c | http-range-header@0.4.2；src/foundation/http-range-header | MIT；compliance/licenses/upstream/http-range-header-0.4.2/LICENSE | runtime；root-native@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
 | httparse@1.10.1；https://static.crates.io/crates/httparse/httparse-1.10.1.crate；SHA256 6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87 | httparse@1.10.1；src/foundation/httparse | MIT OR Apache-2.0；compliance/licenses/upstream/httparse-1.10.1/LICENSE-APACHE, compliance/licenses/upstream/httparse-1.10.1/LICENSE-MIT | runtime；root-native@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
 | httpdate@1.0.3；https://static.crates.io/crates/httpdate/httpdate-1.0.3.crate；SHA256 df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9 | httpdate@1.0.3；src/foundation/httpdate | MIT OR Apache-2.0；compliance/licenses/upstream/httpdate-1.0.3/LICENSE-APACHE, compliance/licenses/upstream/httpdate-1.0.3/LICENSE-MIT | runtime；root-native@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
@@ -349,6 +348,7 @@ runtime 是统一工作区特性图中 normal 边可达的运行候选；compile
 - `crypto-common@0.2.2` → `src/foundation/cryptographic-core`；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。；实际闭包：root-native@x86_64-unknown-linux-gnu (runtime), build-tools@x86_64-unknown-linux-gnu (compile), validation-tools@x86_64-unknown-linux-gnu (compile)；法律材料：compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-APACHE, compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-MIT。
 - `clap_builder@4.6.7` → `src/foundation/command-line`；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；实际闭包：root-native@x86_64-unknown-linux-gnu (runtime), build-tools@x86_64-unknown-linux-gnu (compile)；法律材料：compliance/licenses/upstream/clap_builder-4.6.7/LICENSE-APACHE, compliance/licenses/upstream/clap_builder-4.6.7/LICENSE-MIT。
 - `clap_lex@1.1.1` → `src/foundation/command-line`；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；实际闭包：root-native@x86_64-unknown-linux-gnu (runtime), build-tools@x86_64-unknown-linux-gnu (compile)；法律材料：compliance/licenses/upstream/clap_lex-1.1.1/LICENSE-APACHE, compliance/licenses/upstream/clap_lex-1.1.1/LICENSE-MIT。
+- `http-body-util@0.1.5` → `src/foundation/http-body`；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；实际闭包：root-native@x86_64-unknown-linux-gnu (runtime)；法律材料：compliance/licenses/upstream/http-body-util-0.1.5/LICENSE。
 
 ## 已升级替换的历史来源
 
@@ -453,7 +453,7 @@ runtime 是统一工作区特性图中 normal 边可达的运行候选；compile
 
 ## 根测试目录的来源核算
 
-包内当前文件 7124 个，另有 269 个原始身份所属的外置测试文件 3860 个、39875238 字节；当前来源文件总计 10984 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。
+包内当前文件 7146 个，另有 268 个原始身份所属的外置测试文件 3860 个、39875064 字节；当前来源文件总计 11006 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。
 
 JSON external_tests 按原包目录和原始身份登记精确根目录、原路径、当前路径及逐文件摘要；external_test_mappings_sha256 固定当前映射文档。refresh 先验证外置清单，不能静默吞入新增文件或因目录迁移缩减来源核算。独立说明见 docs/EXTERNAL_TEST_SOURCES.md。
 
@@ -538,12 +538,14 @@ JSON external_tests 按原包目录和原始身份登记精确根目录、原路
 | src/foundation/command-line | clap@4.6.7 | 3 | 2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61 |
 | src/foundation/command-line | clap_builder@4.6.7 | 22 | 2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61 |
 | src/foundation/command-line | clap_lex@1.1.1 | 0 | 2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61 |
+| src/foundation/http-body | http-body@1.1.0 | 3 | 914124306c29fc963dad00752c0a5f2f96a20db52dd497053eee3eb52b8d2555 |
+| src/foundation/http-body | http-body-util@0.1.5 | 9 | 914124306c29fc963dad00752c0a5f2f96a20db52dd497053eee3eb52b8d2555 |
 | src/foundation/cryptographic-core | digest@0.11.3 | 2 | fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8 |
 | src/foundation/cryptographic-core | block-buffer@0.12.1 | 1 | fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8 |
 | src/foundation/cryptographic-core | crypto-common@0.2.2 | 0 | fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8 |
 
 ## 完整性、安全与验收
 
-共 312 个活动源码树、85 个已移除来源、2 个已升级替换来源，5 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。
+共 311 个活动源码树、85 个已移除来源、2 个已升级替换来源，5 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。
 
 `.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口的保守可达超集；该记录不证明每个入口实际编译或链接了这些源码。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。

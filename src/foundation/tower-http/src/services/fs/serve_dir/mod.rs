@@ -7,7 +7,7 @@ use crate::{
 use bytes::Bytes;
 use futures_util::FutureExt;
 use http::{header, HeaderValue, Method, Request, Response, StatusCode};
-use http_body_util::{BodyExt, Empty};
+use http_body::{BodyExt, Empty};
 use percent_encoding::percent_decode;
 use std::{
     convert::Infallible,
@@ -269,7 +269,7 @@ impl<F> ServeDir<F> {
     /// use std::{io, convert::Infallible};
     /// use http::{Request, Response, StatusCode};
     /// use http_body::Body as _;
-    /// use http_body_util::{Full, BodyExt, combinators::UnsyncBoxBody};
+    /// use http_body::{Full, BodyExt, combinators::UnsyncBoxBody};
     /// use bytes::Bytes;
     /// use tower::{service_fn, ServiceExt, BoxError};
     ///

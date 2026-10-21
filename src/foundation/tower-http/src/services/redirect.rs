@@ -7,7 +7,7 @@
 //!
 //! ```rust
 //! use http::{Request, Uri, StatusCode};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use tower::{Service, ServiceExt};
 //! use tower_http::services::Redirect;

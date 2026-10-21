@@ -1,9 +1,9 @@
 //! Body types.
 //!
 //! All these are wrappers around other body types. You shouldn't have to use them in your code.
-//! Use `http-body-util` instead.
+//! Use `http-body` instead.
 //!
-//! They exist because we don't want to expose types from `http-body-util` in `tower-http`s public
+//! They exist because we don't want to expose types from `http-body` in `tower-http`s public
 //! API.
 
 #![allow(missing_docs)]
@@ -42,13 +42,13 @@ pin_project! {
     #[derive(Default)]
     pub struct Full {
         #[pin]
-        pub(crate) inner: http_body_util::Full<Bytes>
+        pub(crate) inner: http_body::Full<Bytes>
     }
 }
 
 impl Full {
     #[allow(dead_code)]
-    pub(crate) fn new(inner: http_body_util::Full<Bytes>) -> Self {
+    pub(crate) fn new(inner: http_body::Full<Bytes>) -> Self {
         Self { inner }
     }
 }
@@ -63,13 +63,13 @@ impl Body for Full {
 pin_project! {
     pub struct Limited<B> {
         #[pin]
-        pub(crate) inner: http_body_util::Limited<B>
+        pub(crate) inner: http_body::Limited<B>
     }
 }
 
 impl<B> Limited<B> {
     #[allow(dead_code)]
-    pub(crate) fn new(inner: http_body_util::Limited<B>) -> Self {
+    pub(crate) fn new(inner: http_body::Limited<B>) -> Self {
         Self { inner }
     }
 }
@@ -88,7 +88,7 @@ where
 pin_project! {
     pub struct UnsyncBoxBody<D, E> {
         #[pin]
-        pub(crate) inner: http_body_util::combinators::UnsyncBoxBody<D, E>
+        pub(crate) inner: http_body::combinators::UnsyncBoxBody<D, E>
     }
 }
 
@@ -105,7 +105,7 @@ where
 
 impl<D, E> UnsyncBoxBody<D, E> {
     #[allow(dead_code)]
-    pub(crate) fn new(inner: http_body_util::combinators::UnsyncBoxBody<D, E>) -> Self {
+    pub(crate) fn new(inner: http_body::combinators::UnsyncBoxBody<D, E>) -> Self {
         Self { inner }
     }
 }

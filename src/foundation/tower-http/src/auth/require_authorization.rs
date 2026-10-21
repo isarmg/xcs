@@ -10,7 +10,7 @@
 //! use http::{Request, Response, StatusCode, header::AUTHORIZATION};
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //!
 //! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
 //!     Ok(Response::new(Full::default()))

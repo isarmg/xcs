@@ -7,12 +7,12 @@ use bytes::Bytes;
 use futures_util::TryStream;
 use http::HeaderMap;
 use http_body::Frame;
-use http_body_util::BodyExt;
+use http_body::BodyExt;
 use pin_project_lite::pin_project;
 use sync_wrapper::SyncWrapper;
 use tower::BoxError;
 
-type BoxBody = http_body_util::combinators::UnsyncBoxBody<Bytes, BoxError>;
+type BoxBody = http_body::combinators::UnsyncBoxBody<Bytes, BoxError>;
 
 #[derive(Debug)]
 pub(crate) struct Body(BoxBody);
@@ -27,7 +27,7 @@ impl Body {
     }
 
     pub(crate) fn empty() -> Self {
-        Self::new(http_body_util::Empty::new())
+        Self::new(http_body::Empty::new())
     }
 
     pub(crate) fn from_stream<S>(stream: S) -> Self
@@ -59,7 +59,7 @@ macro_rules! body_from_impl {
     ($ty:ty) => {
         impl From<$ty> for Body {
             fn from(buf: $ty) -> Self {
-                Self::new(http_body_util::Full::from(buf))
+                Self::new(http_body::Full::from(buf))
             }
         }
     };

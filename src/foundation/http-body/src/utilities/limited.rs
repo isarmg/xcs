@@ -1,5 +1,5 @@
 use bytes::Buf;
-use http_body::{Body, Frame, SizeHint};
+use crate::{Body, Frame, SizeHint};
 use pin_project_lite::pin_project;
 use std::error::Error;
 use std::fmt;
@@ -101,4 +101,4 @@ impl fmt::Display for LengthLimitError {
 impl Error for LengthLimitError {}
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body-util/unit/src/limited/tests_103.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body/utilities/unit/src/limited/tests_103.rs"));

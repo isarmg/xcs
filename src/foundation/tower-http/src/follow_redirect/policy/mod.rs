@@ -122,7 +122,7 @@ pub trait PolicyExt {
     ///
     /// ```
     /// use bytes::Bytes;
-    /// use http_body_util::Full;
+    /// use http_body::Full;
     /// use tower_http::follow_redirect::policy::{self, clone_body_fn, Limited, PolicyExt};
     ///
     /// enum MyBody {

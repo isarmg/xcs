@@ -37,3 +37,26 @@ path = "../bytes"
 [dependencies.http]
 version = "1"
 path = "../http"
+
+[features]
+default = []
+utilities = ["dep:futures-core", "dep:pin-project-lite"]
+channel = ["utilities", "dep:tokio"]
+full = ["channel"]
+
+[dependencies.futures-core]
+version = "0.3"
+default-features = false
+optional = true
+path = "../futures-core"
+
+[dependencies.pin-project-lite]
+version = "0.2"
+optional = true
+path = "../pin-project-lite"
+
+[dependencies.tokio]
+version = "1"
+features = ["sync"]
+optional = true
+path = "../tokio"

@@ -3,7 +3,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use http_body::{Body, Frame, SizeHint};
+use crate::{Body, Frame, SizeHint};
 
 /// A "fused" [`Body`].
 ///
@@ -80,4 +80,4 @@ where
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body-util/unit/src/combinators/fuse/tests_82.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body/utilities/unit/src/combinators/fuse/tests_82.rs"));

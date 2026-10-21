@@ -230,3 +230,15 @@ impl Body for String {
 fn _assert_bounds() {
     fn can_be_trait_object(_: &dyn Body<Data = std::io::Cursor<Vec<u8>>, Error = std::io::Error>) {}
 }
+
+#[cfg(feature = "utilities")]
+mod utilities;
+
+#[cfg(feature = "utilities")]
+pub use utilities::{
+    combinators, BodyDataStream, BodyExt, BodyStream, Collected, Either, Empty, Full,
+    LengthLimitError, Limited, StreamBody,
+};
+
+#[cfg(feature = "channel")]
+pub use utilities::{channel, Channel};

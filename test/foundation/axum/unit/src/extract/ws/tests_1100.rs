@@ -5,7 +5,7 @@ mod tests {
     use super::*;
     use crate::{routing::any, test_helpers::spawn_service, Router};
     use http::{Request, Version};
-    use http_body_util::BodyExt as _;
+    use http_body::BodyExt as _;
     use hyper_util::rt::TokioExecutor;
     use tokio::io::{AsyncRead, AsyncWrite};
     use tokio::net::TcpStream;

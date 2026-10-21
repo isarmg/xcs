@@ -4,7 +4,7 @@ mod tests {
     use crate::on_early_drop::OnEarlyDropLayer;
     use bytes::Bytes;
     use http::{Request, Response, StatusCode};
-    use http_body_util::{BodyExt, Full};
+    use http_body::{BodyExt, Full};
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
     use tokio::time::{sleep, timeout};

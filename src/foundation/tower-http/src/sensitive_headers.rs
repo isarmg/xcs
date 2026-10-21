@@ -8,7 +8,7 @@
 //! use tower_http::sensitive_headers::SetSensitiveHeadersLayer;
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use http::{Request, Response, header::AUTHORIZATION};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use std::{iter::once, convert::Infallible};
 //!
@@ -58,7 +58,7 @@
 //! use std::sync::Arc;
 //! # use http::{Request, Response};
 //! # use bytes::Bytes;
-//! # use http_body_util::Full;
+//! # use http_body::Full;
 //! # use std::convert::Infallible;
 //! # async fn handle(req: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
 //! #     Ok(Response::new(Full::default()))

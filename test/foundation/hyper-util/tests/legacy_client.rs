@@ -15,8 +15,8 @@ use futures_channel::{mpsc, oneshot};
 use futures_util::future::{self, FutureExt, TryFutureExt};
 use futures_util::stream::StreamExt;
 use futures_util::{self, Stream};
-use http_body_util::BodyExt;
-use http_body_util::{Empty, Full, StreamBody};
+use http_body::BodyExt;
+use http_body::{Empty, Full, StreamBody};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use hyper::Request;
@@ -1361,14 +1361,14 @@ async fn test_connection_error_propagation_pr184() {
     // pool_max_idle_per_host(0) disables connection pooling for a fresh connection.
     let client = hyper_util::client::legacy::Client::builder(hyper_util::rt::TokioExecutor::new())
         .pool_max_idle_per_host(0)
-        .build::<_, http_body_util::Empty<hyper::body::Bytes>>(connector);
+        .build::<_, http_body::Empty<hyper::body::Bytes>>(connector);
     // Build a GET request to a mock URI with custom headers.
     // Uses mixed-case headers to match your style, ensuring case-insensitive handling.
     let request = hyper::Request::builder()
         .uri("http://mocked")
         .header("hoSt", "mocked")
         .header("conNection", "close")
-        .body(http_body_util::Empty::<hyper::body::Bytes>::new())
+        .body(http_body::Empty::<hyper::body::Bytes>::new())
         .expect("failed to build request");
     // Send the request and capture the result.
     // Expect it to fail due to the simulated connection error.
@@ -1414,7 +1414,7 @@ async fn test_incomplete_message_error_pr184() {
     // pool_max_idle_per_host(0) disables pooling for a fresh connection.
     let client = hyper_util::client::legacy::Client::builder(hyper_util::rt::TokioExecutor::new())
         .pool_max_idle_per_host(0)
-        .build::<_, http_body_util::Empty<hyper::body::Bytes>>(connector);
+        .build::<_, http_body::Empty<hyper::body::Bytes>>(connector);
     // Build a GET request to a mock URI with headers.
     // Uses mixed-case headers to match test_connection_error_propagation_pr184.
     // Empty body ensures focus on response parsing failure.
@@ -1422,7 +1422,7 @@ async fn test_incomplete_message_error_pr184() {
         .uri("http://mocked")
         .header("hoSt", "mocked")
         .header("conNection", "close")
-        .body(http_body_util::Empty::<hyper::body::Bytes>::new())
+        .body(http_body::Empty::<hyper::body::Bytes>::new())
         .expect("failed to build request");
     // Send the request and capture the result.
     // Expect failure due to EOF causing IncompleteMessage.
@@ -1482,14 +1482,14 @@ async fn test_successful_connection() {
     // pool_max_idle_per_host(0) ensures a fresh connection.
     let client = hyper_util::client::legacy::Client::builder(hyper_util::rt::TokioExecutor::new())
         .pool_max_idle_per_host(0)
-        .build::<_, http_body_util::Empty<hyper::body::Bytes>>(connector);
+        .build::<_, http_body::Empty<hyper::body::Bytes>>(connector);
     // Build a GET request to a mock URI with headers.
     // Uses mixed-case headers to match your style and verify case-insensitive handling.
     let request = hyper::Request::builder()
         .uri("http://mocked")
         .header("hOst", "mocked")
         .header("coNnection", "close")
-        .body(http_body_util::Empty::<hyper::body::Bytes>::new())
+        .body(http_body::Empty::<hyper::body::Bytes>::new())
         .expect("failed to build request");
     // Send the request and capture the response.
     // Expect a successful response due to the configured IoBuilder.

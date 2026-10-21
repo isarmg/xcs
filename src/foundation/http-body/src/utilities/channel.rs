@@ -8,7 +8,7 @@ use std::{
 
 use bytes::Buf;
 use http::HeaderMap;
-use http_body::{Body, Frame};
+use crate::{Body, Frame};
 use pin_project_lite::pin_project;
 use tokio::sync::{mpsc, oneshot};
 
@@ -125,7 +125,7 @@ impl<D, E> Sender<D, E> {
     ///
     /// ```
     /// use bytes::Bytes;
-    /// use http_body_util::{BodyExt, channel::Channel};
+    /// use http_body::{BodyExt, channel::Channel};
     /// use std::convert::Infallible;
     ///
     /// #[tokio::main]
@@ -156,7 +156,7 @@ impl<D, E> Sender<D, E> {
     ///
     /// ```
     /// use bytes::Bytes;
-    /// use http_body_util::{BodyExt, channel::Channel};
+    /// use http_body::{BodyExt, channel::Channel};
     /// use std::convert::Infallible;
     ///
     /// #[tokio::main]
@@ -202,4 +202,4 @@ impl Display for SendError {
 impl std::error::Error for SendError {}
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body-util/unit/src/channel/tests_204.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body/utilities/unit/src/channel/tests_204.rs"));

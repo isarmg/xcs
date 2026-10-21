@@ -1,6 +1,6 @@
 use bytes::Buf;
 use futures_core::{ready, stream::Stream};
-use http_body::{Body, Frame};
+use crate::{Body, Frame};
 use pin_project_lite::pin_project;
 use std::{
     pin::Pin,
@@ -138,4 +138,4 @@ where
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body-util/unit/src/stream/tests_140.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-body/utilities/unit/src/stream/tests_140.rs"));

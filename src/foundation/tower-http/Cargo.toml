@@ -35,23 +35,23 @@ resolver = "2"
 add-extension = []
 async-compression = []
 auth = ["base64", "validate-request"]
-catch-panic = ["tracing", "futures-util/std", "dep:http-body", "dep:http-body-util"]
+catch-panic = ["tracing", "futures-util/std", "dep:http-body", "http-body/utilities"]
 compression-br = ["futures-core", "dep:http-body", "tokio-util", "dep:tokio"]
 compression-deflate = ["futures-core", "dep:http-body", "tokio-util", "dep:tokio"]
 compression-full = ["compression-br", "compression-deflate", "compression-gzip", "compression-zstd"]
 compression-gzip = ["futures-core", "dep:http-body", "tokio-util", "dep:tokio"]
 compression-zstd = ["futures-core", "dep:http-body", "tokio-util", "dep:tokio"]
 cors = []
-decompression-br = ["futures-core", "dep:http-body", "dep:http-body-util", "tokio-util", "dep:tokio"]
-decompression-deflate = ["futures-core", "dep:http-body", "dep:http-body-util", "tokio-util", "dep:tokio"]
+decompression-br = ["futures-core", "dep:http-body", "http-body/utilities", "tokio-util", "dep:tokio"]
+decompression-deflate = ["futures-core", "dep:http-body", "http-body/utilities", "tokio-util", "dep:tokio"]
 decompression-full = ["decompression-br", "decompression-deflate", "decompression-gzip", "decompression-zstd"]
-decompression-gzip = ["futures-core", "dep:http-body", "dep:http-body-util", "tokio-util", "dep:tokio"]
-decompression-zstd = ["futures-core", "dep:http-body", "dep:http-body-util", "tokio-util", "dep:tokio"]
+decompression-gzip = ["futures-core", "dep:http-body", "http-body/utilities", "tokio-util", "dep:tokio"]
+decompression-zstd = ["futures-core", "dep:http-body", "http-body/utilities", "tokio-util", "dep:tokio"]
 default = []
 follow-redirect = ["futures-util", "dep:http-body", "dep:url", "tower/util"]
-fs = ["dep:tokio", "tokio?/fs", "tokio?/io-util", "futures-core", "futures-util", "dep:http-body", "dep:http-body-util", "tokio-util/io", "dep:http-range-header", "mime_guess", "mime", "percent-encoding", "httpdate", "set-status", "futures-util/alloc"]
+fs = ["dep:tokio", "tokio?/fs", "tokio?/io-util", "futures-core", "futures-util", "dep:http-body", "http-body/utilities", "tokio-util/io", "dep:http-range-header", "mime_guess", "mime", "percent-encoding", "httpdate", "set-status", "futures-util/alloc"]
 full = ["add-extension", "auth", "catch-panic", "compression-full", "cors", "decompression-full", "follow-redirect", "fs", "limit", "map-request-body", "map-response-body", "metrics", "normalize-path", "on-early-drop", "propagate-header", "redirect", "request-id", "sensitive-headers", "set-header", "set-status", "timeout", "trace", "util", "validate-request"]
-limit = ["dep:http-body", "dep:http-body-util"]
+limit = ["dep:http-body", "http-body/utilities"]
 map-request-body = []
 map-response-body = []
 metrics = ["dep:http-body", "dep:tokio", "tokio?/time"]
@@ -108,11 +108,6 @@ path = "../http"
 version = "1.0.0"
 optional = true
 path = "../http-body"
-
-[dependencies.http-body-util]
-version = "0.1.0"
-optional = true
-path = "../http-body-util"
 
 [dependencies.http-range-header]
 version = "0.4.0"

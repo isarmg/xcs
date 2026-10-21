@@ -8,7 +8,7 @@
 //! use tower_http::request_id::{
 //!     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! };
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 //!
@@ -67,7 +67,7 @@
 //! #     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! # };
 //! # use bytes::Bytes;
-//! # use http_body_util::Full;
+//! # use http_body::Full;
 //! # use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -120,7 +120,7 @@
 //! # use tower_http::request_id::{
 //! #     SetRequestIdLayer, PropagateRequestIdLayer, MakeRequestId, RequestId,
 //! # };
-//! # use http_body_util::Full;
+//! # use http_body::Full;
 //! # use bytes::Bytes;
 //! # use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 //! # #[tokio::main]

@@ -53,7 +53,7 @@ pub struct CaptureConnection {
 /// use hyper_util::client::legacy::Client;
 /// use hyper_util::rt::TokioExecutor;
 /// use bytes::Bytes;
-/// use http_body_util::Empty;
+/// use http_body::Empty;
 /// let mut request = http::Request::builder()
 ///   .uri("http://foo.com")
 ///   .body(Empty::<Bytes>::new())

@@ -4,13 +4,13 @@ use crate::{BoxError, Error};
 use bytes::Bytes;
 use futures_core::{Stream, TryStream};
 use http_body::{Body as _, Frame};
-use http_body_util::BodyExt;
+use http_body::BodyExt;
 use pin_project_lite::pin_project;
 use std::pin::Pin;
 use std::task::{ready, Context, Poll};
 use sync_wrapper::SyncWrapper;
 
-type BoxBody = http_body_util::combinators::UnsyncBoxBody<Bytes, Error>;
+type BoxBody = http_body::combinators::UnsyncBoxBody<Bytes, Error>;
 
 fn boxed<B>(body: B) -> BoxBody
 where
@@ -50,7 +50,7 @@ impl Body {
 
     /// Create an empty body.
     pub fn empty() -> Self {
-        Self::new(http_body_util::Empty::new())
+        Self::new(http_body::Empty::new())
     }
 
     /// Create a new `Body` from a [`Stream`].
@@ -69,10 +69,10 @@ impl Body {
 
     /// Convert the body into a [`Stream`] of data frames.
     ///
-    /// Non-data frames (such as trailers) will be discarded. Use [`http_body_util::BodyStream`] if
+    /// Non-data frames (such as trailers) will be discarded. Use [`http_body::BodyStream`] if
     /// you need a [`Stream`] of all frame types.
     ///
-    /// [`http_body_util::BodyStream`]: https://docs.rs/http-body-util/latest/http_body_util/struct.BodyStream.html
+    /// [`http_body::BodyStream`]: https://docs.rs/http-body-util/latest/http_body_util/struct.BodyStream.html
     pub fn into_data_stream(self) -> BodyDataStream {
         BodyDataStream { inner: self }
     }
@@ -94,7 +94,7 @@ macro_rules! body_from_impl {
     ($ty:ty) => {
         impl From<$ty> for Body {
             fn from(buf: $ty) -> Self {
-                Self::new(http_body_util::Full::from(buf))
+                Self::new(http_body::Full::from(buf))
             }
         }
     };

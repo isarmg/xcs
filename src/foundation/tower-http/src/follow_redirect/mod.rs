@@ -19,7 +19,7 @@
 //! ```
 //! use http::{Request, Response};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use tower::{Service, ServiceBuilder, ServiceExt};
 //! use tower_http::follow_redirect::{FollowRedirectLayer, RequestUri};
 //!
@@ -57,7 +57,7 @@
 //!
 //! ```
 //! use http::{Request, Response};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use tower::{Service, ServiceBuilder, ServiceExt};
 //! use tower_http::follow_redirect::{

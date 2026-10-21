@@ -6,7 +6,7 @@ mod tests {
     };
     use http::{Request, Response};
     use http_body::Body;
-    use http_body_util::{BodyExt, Empty, Full};
+    use http_body::{BodyExt, Empty, Full};
     use hyper::{body, body::Bytes, client, service::service_fn};
     use std::{convert::Infallible, error::Error as StdError, net::SocketAddr, time::Duration};
     use tokio::{

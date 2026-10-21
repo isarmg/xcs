@@ -10,7 +10,7 @@
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use futures_core::future::BoxFuture;
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //!
 //! #[derive(Clone, Copy)]
 //! struct MyAuth;
@@ -81,7 +81,7 @@
 //! use http::{Request, Response, StatusCode};
 //! use tower::{Service, ServiceExt, ServiceBuilder, BoxError};
 //! use futures_core::future::BoxFuture;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! async fn check_auth<B>(request: &Request<B>) -> Option<UserId> {

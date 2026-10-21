@@ -13,7 +13,7 @@ use std::{fmt, ops::RangeInclusive};
 /// use tower_http::{trace::TraceLayer, classify::StatusInRangeAsFailures};
 /// use tower::{ServiceBuilder, Service, ServiceExt};
 /// use http::{Request, Method};
-/// use http_body_util::Full;
+/// use http_body::Full;
 /// use bytes::Bytes;
 /// use hyper_util::{rt::TokioExecutor, client::legacy::Client};
 ///

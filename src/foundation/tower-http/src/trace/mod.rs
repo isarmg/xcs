@@ -9,7 +9,7 @@
 //! use tower::{ServiceBuilder, ServiceExt, Service};
 //! use tower_http::trace::TraceLayer;
 //! use std::convert::Infallible;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, Infallible> {
@@ -51,7 +51,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response, HeaderMap, StatusCode};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use tower::ServiceBuilder;
 //! use tracing::Level;
@@ -101,7 +101,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response, HeaderMap, StatusCode};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use tower::ServiceBuilder;
 //! use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
@@ -161,7 +161,7 @@
 //! use std::time::Duration;
 //! use tracing::Span;
 //! # use tower::{ServiceExt, Service};
-//! # use http_body_util::Full;
+//! # use http_body::Full;
 //! # use bytes::Bytes;
 //! # use http::{Response, Request};
 //! # use std::convert::Infallible;
@@ -246,7 +246,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response, HeaderMap, StatusCode};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use tower::ServiceBuilder;
 //! use tower_http::trace::TraceLayer;
@@ -291,7 +291,7 @@
 //!
 //! ```rust
 //! use http::{Request, Response};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use tower::ServiceBuilder;
 //! use tower_http::{

@@ -129,7 +129,7 @@ impl Client<(), ()> {
     ///     .pool_idle_timeout(Duration::from_secs(30))
     ///     .http2_only(true)
     ///     .build_http();
-    /// # let infer: Client<_, http_body_util::Full<bytes::Bytes>> = client;
+    /// # let infer: Client<_, http_body::Full<bytes::Bytes>> = client;
     /// # drop(infer);
     /// # }
     /// # fn main() {}
@@ -166,7 +166,7 @@ where
     /// use hyper_util::client::legacy::Client;
     /// use hyper_util::rt::TokioExecutor;
     /// use bytes::Bytes;
-    /// use http_body_util::Full;
+    /// use http_body::Full;
     ///
     /// let client: Client<_, Full<Bytes>> = Client::builder(TokioExecutor::new()).build_http();
     ///
@@ -197,7 +197,7 @@ where
     /// # fn run () {
     /// use hyper::{Method, Request};
     /// use hyper_util::client::legacy::Client;
-    /// use http_body_util::Full;
+    /// use http_body::Full;
     /// use hyper_util::rt::TokioExecutor;
     /// use bytes::Bytes;
     ///
@@ -1004,7 +1004,7 @@ fn is_schema_secure(uri: &Uri) -> bool {
 ///     .pool_idle_timeout(Duration::from_secs(30))
 ///     .http2_only(true)
 ///     .build_http();
-/// # let infer: Client<_, http_body_util::Full<bytes::Bytes>> = client;
+/// # let infer: Client<_, http_body::Full<bytes::Bytes>> = client;
 /// # drop(infer);
 /// # }
 /// # fn main() {}
@@ -1068,7 +1068,7 @@ impl Builder {
     ///     .pool_timer(TokioTimer::new())
     ///     .build_http();
     ///
-    /// # let infer: Client<_, http_body_util::Full<bytes::Bytes>> = client;
+    /// # let infer: Client<_, http_body::Full<bytes::Bytes>> = client;
     /// # }
     /// # fn main() {}
     /// ```

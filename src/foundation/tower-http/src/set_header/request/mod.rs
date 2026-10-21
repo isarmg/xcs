@@ -12,7 +12,7 @@
 //! use http::{Request, Response, header::{self, HeaderValue}};
 //! use tower::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::SetRequestHeaderLayer;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! # #[tokio::main]
@@ -49,7 +49,7 @@
 //! use tower::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::SetRequestHeaderLayer;
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -99,7 +99,7 @@
 //! use tower::{Service, ServiceExt, ServiceBuilder};
 //! use tower_http::set_header::{HeaderMetadata, request::{SetMultipleRequestHeadersLayer}};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {

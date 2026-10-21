@@ -9,7 +9,7 @@ mod tests {
     use http::header;
     use http::Method;
     use http::{Request, StatusCode};
-    use http_body_util::BodyExt;
+    use http_body::BodyExt;
     use mime::Mime;
     use std::io::Read;
     use std::str::FromStr;

@@ -4,7 +4,7 @@ mod tests {
     use crate::on_early_drop::{OnBodyDropFn, OnEarlyDropLayer};
     use bytes::Bytes;
     use http::{Request, Response, StatusCode};
-    use http_body_util::{BodyExt, Full};
+    use http_body::{BodyExt, Full};
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
     use std::sync::Arc;
     use std::time::Duration;
@@ -290,7 +290,7 @@ mod tests {
             Ok::<_, std::convert::Infallible>(
                 Response::builder()
                     .status(StatusCode::NO_CONTENT)
-                    .body(http_body_util::Empty::<Bytes>::new())
+                    .body(http_body::Empty::<Bytes>::new())
                     .unwrap(),
             )
         });

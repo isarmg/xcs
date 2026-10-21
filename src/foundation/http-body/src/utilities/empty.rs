@@ -1,5 +1,5 @@
 use bytes::Buf;
-use http_body::{Body, Frame, SizeHint};
+use crate::{Body, Frame, SizeHint};
 use std::{
     convert::Infallible,
     fmt,

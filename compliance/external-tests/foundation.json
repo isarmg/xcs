@@ -953,7 +953,7 @@
           "source": "src/foundation/axum/src/routing/tests/mod.rs",
           "source_sha256_before": "48c54f725094786e778cd8bb79c96dd2c31d760187a64962c403477e805538c9",
           "path": "test/foundation/axum/modules/src/routing/tests/mod.rs",
-          "sha256": "9cd2f0bb821d3c1d24c84f1541f1f89fecab82a916e5f13b5cec73285ebcc14d"
+          "sha256": "31e55e98f96cb723968340bef040ec919b2bd53d2875695056d551d4876c4dc4"
         },
         {
           "source": "src/foundation/axum/src/routing/tests/nest.rs",
@@ -1043,7 +1043,7 @@
           "source": "src/foundation/axum/src/extract/ws.rs",
           "source_sha256_before": "1d2145ee8500333c511bbb43ba470f05e0dc65d6be411c0d42bb3bf507d0fdc5",
           "path": "test/foundation/axum/unit/src/extract/ws/tests_1100.rs",
-          "sha256": "259bd2673b6982061b7b0970451c713378c987230c05003fa7f8c4148e841f50"
+          "sha256": "fa842023cb197bf3e61215460d0e8f1a28095a5ceabfa06d740a445e3c6982ac"
         },
         {
           "source": "src/foundation/axum/src/form.rs",
@@ -1073,7 +1073,7 @@
           "source": "src/foundation/axum/src/middleware/from_fn.rs",
           "source_sha256_before": "1365f074e0d46b99b69069a5e01f5575e2067d4826744eac96a352082b550367",
           "path": "test/foundation/axum/unit/src/middleware/from_fn/tests_385.rs",
-          "sha256": "5315543161b746afec28fcca9632492d4587c7d1c61abeadc01e1ee0efe75ad9"
+          "sha256": "a95512b2d79873317f043e442c3ac44d37e98d4032c1d1aa81ef3c659b838237"
         },
         {
           "source": "src/foundation/axum/src/middleware/map_request.rs",
@@ -1121,7 +1121,7 @@
           "source": "src/foundation/axum/src/routing/method_routing.rs",
           "source_sha256_before": "05d1ad5ffeb7ac06dec3f70e55e67a8e57e7ad035f4d69e1615df9a1bc7bcbe4",
           "path": "test/foundation/axum/unit/src/routing/method_routing/tests_1344.rs",
-          "sha256": "078a563de4b27b1ae1c4f51854f9f616613b67c9171d82b23dcd071fd665c9c9"
+          "sha256": "247b6911ce030feb5bf8d520f35e0b56058b782c0926f60208cb939b696cb092"
         },
         {
           "source": "src/foundation/axum/src/routing/route.rs",
@@ -7314,81 +7314,85 @@
           "source": "src/foundation/http-body/src/size_hint.rs",
           "source_sha256_before": "896ec9bfb8fdecd94b33c2d235db1811dc2c1274524741fc09a6264e9440c3c6",
           "path": "test/foundation/http-body/functions/src/size_hint/size_hint_addition_basic_175.rs",
-          "sha256": "d3ebfd96a4045806adb1596817f42c9d82cc64fd7d93b24c133cb18bc15a15d2"
+          "sha256": "d3ebfd96a4045806adb1596817f42c9d82cc64fd7d93b24c133cb18bc15a15d2",
+          "origin_directory": "vendor/rust/http-body-1.1.0"
         },
         {
           "source": "src/foundation/http-body/src/size_hint.rs",
           "source_sha256_before": "896ec9bfb8fdecd94b33c2d235db1811dc2c1274524741fc09a6264e9440c3c6",
           "path": "test/foundation/http-body/functions/src/size_hint/size_hint_addition_proof_100.rs",
-          "sha256": "ca559206bcce5265336b0c76df25ffee608fae2ba7cdad75b479f8fc305f0c46"
+          "sha256": "ca559206bcce5265336b0c76df25ffee608fae2ba7cdad75b479f8fc305f0c46",
+          "origin_directory": "vendor/rust/http-body-1.1.0"
         },
         {
           "source": "src/foundation/http-body/tests/is_end_stream.rs",
           "source_sha256_before": "8f2ebcb3fc0ce4923f984469c4679966c047b5f9e8b0b59c32d37c91bbb33369",
           "path": "test/foundation/http-body/tests/is_end_stream.rs",
-          "sha256": "8f2ebcb3fc0ce4923f984469c4679966c047b5f9e8b0b59c32d37c91bbb33369"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/http-body-util",
-      "roots": [
-        "test/foundation/http-body-util"
-      ],
-      "files": [
+          "sha256": "8f2ebcb3fc0ce4923f984469c4679966c047b5f9e8b0b59c32d37c91bbb33369",
+          "origin_directory": "vendor/rust/http-body-1.1.0"
+        },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/channel/tests_204.rs",
+          "sha256": "a69c3d410dc720cb80bcfc433a44a2b83b8d012523c5511ede76661f43abe667",
           "source": "src/foundation/http-body-util/src/channel.rs",
-          "source_sha256_before": "c2ff39f314712ffbb5f725a7cd619d55e23d48fe7318e4ae8a1d91bd9e2fcd35",
-          "path": "test/foundation/http-body-util/unit/src/channel/tests_204.rs",
-          "sha256": "a69c3d410dc720cb80bcfc433a44a2b83b8d012523c5511ede76661f43abe667"
+          "source_sha256_before": "c2ff39f314712ffbb5f725a7cd619d55e23d48fe7318e4ae8a1d91bd9e2fcd35"
         },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/collected/tests_95.rs",
+          "sha256": "0c489fa85068d576e14a1e5f93f49ec5822b954a9e9ee2bd98e2b7eb9fc0a6ef",
           "source": "src/foundation/http-body-util/src/collected.rs",
-          "source_sha256_before": "23d193d5c44cc80b14cc2f7c469a13634acd1fe577b985bcb476010ed7f8c6fb",
-          "path": "test/foundation/http-body-util/unit/src/collected/tests_95.rs",
-          "sha256": "0c489fa85068d576e14a1e5f93f49ec5822b954a9e9ee2bd98e2b7eb9fc0a6ef"
+          "source_sha256_before": "23d193d5c44cc80b14cc2f7c469a13634acd1fe577b985bcb476010ed7f8c6fb"
         },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/combinators/fuse/tests_82.rs",
+          "sha256": "bd36b946530528f0e8b8161b320ddedb00684fe29779a06fca60424ffd4594b7",
           "source": "src/foundation/http-body-util/src/combinators/fuse.rs",
-          "source_sha256_before": "f8e1a8568a07a2a0d4ab811ca027edcbf14c980822e95c18a64371a3fe138d30",
-          "path": "test/foundation/http-body-util/unit/src/combinators/fuse/tests_82.rs",
-          "sha256": "bd36b946530528f0e8b8161b320ddedb00684fe29779a06fca60424ffd4594b7"
+          "source_sha256_before": "f8e1a8568a07a2a0d4ab811ca027edcbf14c980822e95c18a64371a3fe138d30"
         },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/combinators/with_trailers/tests_121.rs",
+          "sha256": "e720a558a1426afbddbdb5220bb3aa75e1cef56eceb0febe43fd6ab8a5f6d437",
           "source": "src/foundation/http-body-util/src/combinators/with_trailers.rs",
-          "source_sha256_before": "c8fdc73fef609f5c444502f26caf8527ad275e7588743eeaf7d20251ab08de17",
-          "path": "test/foundation/http-body-util/unit/src/combinators/with_trailers/tests_121.rs",
-          "sha256": "e720a558a1426afbddbdb5220bb3aa75e1cef56eceb0febe43fd6ab8a5f6d437"
+          "source_sha256_before": "c8fdc73fef609f5c444502f26caf8527ad275e7588743eeaf7d20251ab08de17"
         },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/either/tests_149.rs",
+          "sha256": "c221c2604992d0aef9996fc219b5f95bf25911a97d85acbd33995b2f3a9745ec",
           "source": "src/foundation/http-body-util/src/either.rs",
-          "source_sha256_before": "0d42804cec710946e74c792656ccc22571ae72e29530169c30db84dffd40e8fe",
-          "path": "test/foundation/http-body-util/unit/src/either/tests_149.rs",
-          "sha256": "c221c2604992d0aef9996fc219b5f95bf25911a97d85acbd33995b2f3a9745ec"
+          "source_sha256_before": "0d42804cec710946e74c792656ccc22571ae72e29530169c30db84dffd40e8fe"
         },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/full/tests_144.rs",
+          "sha256": "599ac42083890b03fcf7f8edb2a0acaaf58b1dcfa2ce3f38a3e73ee5ace457c5",
           "source": "src/foundation/http-body-util/src/full.rs",
-          "source_sha256_before": "301a52ce154e465be1ccb4ae0740c365321243f9ae76393dc808d09894937b1b",
-          "path": "test/foundation/http-body-util/unit/src/full/tests_144.rs",
-          "sha256": "599ac42083890b03fcf7f8edb2a0acaaf58b1dcfa2ce3f38a3e73ee5ace457c5"
+          "source_sha256_before": "301a52ce154e465be1ccb4ae0740c365321243f9ae76393dc808d09894937b1b"
         },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/limited/tests_103.rs",
+          "sha256": "e7b9eedb4a8c0afb7e047294328a8bd31e1440bc884e2a4be64fcb18cb7e30a9",
           "source": "src/foundation/http-body-util/src/limited.rs",
-          "source_sha256_before": "c12ee827d8e09935a96f7ff9bdc9ccc6a5f0bbdc061faa4a3519fa738c49491e",
-          "path": "test/foundation/http-body-util/unit/src/limited/tests_103.rs",
-          "sha256": "e7b9eedb4a8c0afb7e047294328a8bd31e1440bc884e2a4be64fcb18cb7e30a9"
+          "source_sha256_before": "c12ee827d8e09935a96f7ff9bdc9ccc6a5f0bbdc061faa4a3519fa738c49491e"
         },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/stream/tests_140.rs",
+          "sha256": "99e69ccb7dd4704a06d6e5424d48a73b406ab2fb421581d25b6ae48c0a2658b3",
           "source": "src/foundation/http-body-util/src/stream.rs",
-          "source_sha256_before": "09e9ea1380a306dfa96a98e742113022a76a16d707aae3bfde91f7af60e383d0",
-          "path": "test/foundation/http-body-util/unit/src/stream/tests_140.rs",
-          "sha256": "2f8d65fc0a894712a6b59139b8e107dbe508eaf8c6adb77790762b948ac7da3f"
+          "source_sha256_before": "09e9ea1380a306dfa96a98e742113022a76a16d707aae3bfde91f7af60e383d0"
         },
         {
+          "origin_directory": "vendor/rust/http-body-util-0.1.5",
+          "path": "test/foundation/http-body/utilities/unit/src/util/tests_108.rs",
+          "sha256": "17bb49fdfb9854f6017773ad90ee1f87596689fafe316021a42770de8fd5e14c",
           "source": "src/foundation/http-body-util/src/util.rs",
-          "source_sha256_before": "d23ff3fb96171fb2ff9bf9db1c176f862fca3f40f5c0b4ca26d0137103ecb780",
-          "path": "test/foundation/http-body-util/unit/src/util/tests_108.rs",
-          "sha256": "17bb49fdfb9854f6017773ad90ee1f87596689fafe316021a42770de8fd5e14c"
+          "source_sha256_before": "d23ff3fb96171fb2ff9bf9db1c176f862fca3f40f5c0b4ca26d0137103ecb780"
         }
       ]
     },
@@ -7578,7 +7582,7 @@
           "source": "src/foundation/hyper/src/body/incoming.rs",
           "source_sha256_before": "11b8d262650730750721d6f93faf567e9cce6aa2e8a326aeb8f2cad908fdd485",
           "path": "test/foundation/hyper/unit/src/body/incoming/tests_302.rs",
-          "sha256": "a0c533c6545bb24c500cb590bfc1af5fea9bef40f6a2fa042518bba5e53d98ab"
+          "sha256": "ac1660e19406d1475b431dc169c6bb4798fa5da72a7197c531eff56d209a0d6d"
         },
         {
           "source": "src/foundation/hyper/src/body/length.rs",
@@ -7590,7 +7594,7 @@
           "source": "src/foundation/hyper/src/client/conn/http2.rs",
           "source_sha256_before": "0ec553b8106fbc1eec7ed2b84ce4f37128512e4bbbf73096b822c2c1a8bbfcb5",
           "path": "test/foundation/hyper/unit/src/client/conn/http2/tests_597.rs",
-          "sha256": "69a65d1a9f1fed19effcc84136ad64ee2f3fb526f0040a290749f002424275d6"
+          "sha256": "f840c5c3c327ccb684b9e7880c01c650d6fdbd035da0748c688747e0d5cd2ec4"
         },
         {
           "source": "src/foundation/hyper/src/client/dispatch.rs",
@@ -7774,7 +7778,7 @@
           "source": "src/foundation/hyper-util/tests/legacy_client.rs",
           "source_sha256_before": "58f889ce2f6fc51cfb02c6b7a08f80d8f059e85ba98275ec3353af460622fdb6",
           "path": "test/foundation/hyper-util/tests/legacy_client.rs",
-          "sha256": "58f889ce2f6fc51cfb02c6b7a08f80d8f059e85ba98275ec3353af460622fdb6"
+          "sha256": "e501eef019fb9cae86e553bddc1e7973f7fd2cf0a90f9db5aeb739e6cf62bac3"
         },
         {
           "source": "src/foundation/hyper-util/tests/proxy.rs",
@@ -7894,7 +7898,7 @@
           "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
           "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
           "path": "test/foundation/hyper-util/unit/src/server/conn/auto/mod/guarded_tests_1135.rs",
-          "sha256": "bb48b9cf86418623d20031e9f93b31223a30482b27c8d87072a30cef063399ce"
+          "sha256": "248ec9031f35b3bdaa0afc7d18b082983ccf84044c0594b34f5148fad80c8afe"
         },
         {
           "source": "src/foundation/hyper-util/src/server/graceful.rs",
@@ -20468,13 +20472,13 @@
           "source": "src/foundation/tower-http/src/services/fs/serve_dir/tests.rs",
           "source_sha256_before": "b6c6b0ec48afea6f7a6ebf4f3fd5d91855e253bfcbd6133a51ef33f3b051ed62",
           "path": "test/foundation/tower-http/modules/src/services/fs/serve_dir/tests.rs",
-          "sha256": "291477f88cc5617b36bebad90f54635d7c2f0bbd30df67f3ecbe8982ea66784e"
+          "sha256": "f8efc526b6a784b1b8038ce1111917ede35d80ba21bc0c2a364a5d6474cfb58e"
         },
         {
           "source": "src/foundation/tower-http/src/test_helpers.rs",
           "source_sha256_before": "31db04c69cc898baa7dd6c33a42356324585c98d4e120fa45a3c1b00da336fd5",
           "path": "test/foundation/tower-http/modules/src/test_helpers.rs",
-          "sha256": "31db04c69cc898baa7dd6c33a42356324585c98d4e120fa45a3c1b00da336fd5"
+          "sha256": "c65cf2eadabcc0cb36d735214c838138ac92f9051e68c901b51afa6535ba96c1"
         },
         {
           "source": "src/foundation/tower-http/src/add_extension.rs",
@@ -20528,13 +20532,13 @@
           "source": "src/foundation/tower-http/src/compression/layer.rs",
           "source_sha256_before": "2320dfab46baee30b94479cb5409182ed9eb95886773790b5931d3ce239328bb",
           "path": "test/foundation/tower-http/unit/src/compression/layer/tests_123.rs",
-          "sha256": "dc33bf517d5afa23d516b666b802fb1c809add5a77e79e3c184325354628f83f"
+          "sha256": "570c7fd9ae5c4c0abca14a69ddf2a507314a4146f470afd920b2f2108b75360f"
         },
         {
           "source": "src/foundation/tower-http/src/compression/mod.rs",
           "source_sha256_before": "46bc9fffc6e94a74011ef73305809f733ac1cc946970963a58aecbd513ea3f98",
           "path": "test/foundation/tower-http/unit/src/compression/mod/tests_90.rs",
-          "sha256": "0f1f5e487016e581ac239ec0f33ab8745a9402513e37e91dc88d546004d85608"
+          "sha256": "d4841ea98b0d789d824d3a7e5075fba87e49020d8fb66154e59917222ce996b2"
         },
         {
           "source": "src/foundation/tower-http/src/content_encoding.rs",
@@ -20552,13 +20556,13 @@
           "source": "src/foundation/tower-http/src/decompression/mod.rs",
           "source_sha256_before": "43f4d6c31a1d4b2ab1a5a02466234b26d7f6062f5f4cf99a5be37088f83ec636",
           "path": "test/foundation/tower-http/unit/src/decompression/mod/tests_110.rs",
-          "sha256": "dc288240d62bdbad50674b46bc459624a5507a1b88381455f576a3754ba82a08"
+          "sha256": "cb92ccf8478b5112fb4f7a93bfbdfe5a60a46f3f72008923ab4a02b02cc329f1"
         },
         {
           "source": "src/foundation/tower-http/src/decompression/request/mod.rs",
           "source_sha256_before": "57b9e4844d6b9320547b05e00a2256737afd38e86fc17fefb1b62974ac6d8e9e",
           "path": "test/foundation/tower-http/unit/src/decompression/request/mod/tests_5.rs",
-          "sha256": "8c2839614b213a1dd80e0a16d168df41ec1085be2c92dbd5c41a6b0d71c4f603"
+          "sha256": "e68d53c50f9898cf17786493347f0e8e54b8d94c90f972b959d3f5be68433af6"
         },
         {
           "source": "src/foundation/tower-http/src/follow_redirect/mod.rs",
@@ -20618,7 +20622,7 @@
           "source": "src/foundation/tower-http/src/on_early_drop/early_drops_as_failures.rs",
           "source_sha256_before": "521bf4c5041956729291a8dad07a44a98f26e6c3c50dd8bde3f59ceb0f8ccc59",
           "path": "test/foundation/tower-http/unit/src/on_early_drop/early_drops_as_failures/tests_136.rs",
-          "sha256": "324c5615118af2d34f02b56e67b02d4447cebc96e0d588cd56dcfae1aa8f87ed"
+          "sha256": "1424aba8e0ded1ca84cebcd911c29a5b686f4f9c4c0c058bf219708522728064"
         },
         {
           "source": "src/foundation/tower-http/src/on_early_drop/failure.rs",
@@ -20636,7 +20640,7 @@
           "source": "src/foundation/tower-http/src/on_early_drop/service.rs",
           "source_sha256_before": "89733adcde2242c9f3b245b49d07ccf97fad236529c130794b3cf5127f066789",
           "path": "test/foundation/tower-http/unit/src/on_early_drop/service/tests_91.rs",
-          "sha256": "df7509ea834b22e72289e327d7da48067042831ee4bc61ad50e781806484c28b"
+          "sha256": "fdb844de267d9a25a89c7d0fe49a8187256f28765a563047d230e9c3a8d258b9"
         },
         {
           "source": "src/foundation/tower-http/src/request_id.rs",
@@ -20660,7 +20664,7 @@
           "source": "src/foundation/tower-http/src/services/fs/serve_file.rs",
           "source_sha256_before": "a2f6feee5b6261d6643c91a2b6c5547f3dea2b48e823ccea4d95ec0f0f4bb561",
           "path": "test/foundation/tower-http/unit/src/services/fs/serve_file/tests_142.rs",
-          "sha256": "53f5132a5113b9506964bcb371212b47cf4cf9964c0589ccb118c63072dab2d8"
+          "sha256": "32ef0b85eee0e088aadd8ffffd8ba4767cba4aaf32f2aac7b0f387b29c071784"
         },
         {
           "source": "src/foundation/tower-http/src/set_header/request/multiple_headers.rs",
@@ -20684,13 +20688,13 @@
           "source": "src/foundation/tower-http/src/timeout/body.rs",
           "source_sha256_before": "fb2ae892a082f00835084693bdffe2980f5c94cd45ef0be05109ba8cae35b351",
           "path": "test/foundation/tower-http/unit/src/timeout/body/tests_120.rs",
-          "sha256": "a9eb2af0faa57404f924a46c83c9c7a8d2fb69bf08c8441cc81c1282c9d382ce"
+          "sha256": "3f37e0a883458121c1fe13225893afd42c2818395cd2c8cfc8d2eea436612ecd"
         },
         {
           "source": "src/foundation/tower-http/src/timeout/service.rs",
           "source_sha256_before": "90303931a839a43c337996894ce2c93282b4f7431709ef89e1b026e07642c18b",
           "path": "test/foundation/tower-http/unit/src/timeout/service/tests_308.rs",
-          "sha256": "ae1110b30f2422369f9ab8e2592ccc0d9adc4055768025b6718fcdea53d2ea64"
+          "sha256": "7cbcdfa1aef16468ef1bc40fb9ff2021d785b8ce469d9d9a56ac929d9b124c4b"
         },
         {
           "source": "src/foundation/tower-http/src/trace/mod.rs",

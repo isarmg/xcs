@@ -1,4 +1,5 @@
-use http_body::{Body, Frame, SizeHint};
+use bytes::Buf;
+use crate::{Body, Frame};
 use pin_project_lite::pin_project;
 use std::{
     any::type_name,
@@ -8,18 +9,18 @@ use std::{
 };
 
 pin_project! {
-    /// Body returned by the [`map_err`] combinator.
+    /// Body returned by the [`map_frame`] combinator.
     ///
-    /// [`map_err`]: crate::BodyExt::map_err
+    /// [`map_frame`]: crate::BodyExt::map_frame
     #[derive(Clone, Copy)]
-    pub struct MapErr<B, F> {
+    pub struct MapFrame<B, F> {
         #[pin]
         inner: B,
         f: F
     }
 }
 
-impl<B, F> MapErr<B, F> {
+impl<B, F> MapFrame<B, F> {
     #[inline]
     pub(crate) fn new(body: B, f: F) -> Self {
         Self { inner: body, f }
@@ -46,13 +47,14 @@ impl<B, F> MapErr<B, F> {
     }
 }
 
-impl<B, F, E> Body for MapErr<B, F>
+impl<B, F, B2> Body for MapFrame<B, F>
 where
     B: Body,
-    F: FnMut(B::Error) -> E,
+    F: FnMut(Frame<B::Data>) -> Frame<B2>,
+    B2: Buf,
 {
-    type Data = B::Data;
-    type Error = E;
+    type Data = B2;
+    type Error = B::Error;
 
     fn poll_frame(
         self: Pin<&mut Self>,
@@ -62,26 +64,22 @@ where
         match this.inner.poll_frame(cx) {
             Poll::Pending => Poll::Pending,
             Poll::Ready(None) => Poll::Ready(None),
-            Poll::Ready(Some(Ok(frame))) => Poll::Ready(Some(Ok(frame))),
-            Poll::Ready(Some(Err(err))) => Poll::Ready(Some(Err((this.f)(err)))),
+            Poll::Ready(Some(Ok(frame))) => Poll::Ready(Some(Ok((this.f)(frame)))),
+            Poll::Ready(Some(Err(err))) => Poll::Ready(Some(Err(err))),
         }
     }
 
     fn is_end_stream(&self) -> bool {
         self.inner.is_end_stream()
     }
-
-    fn size_hint(&self) -> SizeHint {
-        self.inner.size_hint()
-    }
 }
 
-impl<B, F> fmt::Debug for MapErr<B, F>
+impl<B, F> fmt::Debug for MapFrame<B, F>
 where
     B: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("MapErr")
+        f.debug_struct("MapFrame")
             .field("inner", &self.inner)
             .field("f", &type_name::<F>())
             .finish()

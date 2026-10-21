@@ -5,7 +5,7 @@
 //! ```
 //! use bytes::Bytes;
 //! use http::{Request, Response};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use std::convert::Infallible;
 //! use std::{pin::Pin, task::{ready, Context, Poll}};
 //! use tower::{ServiceBuilder, service_fn, ServiceExt, Service};

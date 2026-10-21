@@ -10,7 +10,7 @@
 //! use std::convert::Infallible;
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::catch_panic::CatchPanicLayer;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //!
 //! # #[tokio::main]
@@ -43,7 +43,7 @@
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::catch_panic::CatchPanicLayer;
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //!
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -88,7 +88,7 @@ use bytes::Bytes;
 use futures_util::future::{CatchUnwind, FutureExt};
 use http::{HeaderValue, Request, Response, StatusCode};
 use http_body::Body;
-use http_body_util::BodyExt;
+use http_body::BodyExt;
 use pin_project_lite::pin_project;
 use std::{
     any::Any,
@@ -349,7 +349,7 @@ impl ResponseForPanic for DefaultResponseForPanic {
             );
         };
 
-        let mut res = Response::new(Full::new(http_body_util::Full::from("Service panicked")));
+        let mut res = Response::new(Full::new(http_body::Full::from("Service panicked")));
         *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
 
         #[allow(clippy::declare_interior_mutable_const)]

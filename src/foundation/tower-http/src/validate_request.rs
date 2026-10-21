@@ -5,7 +5,7 @@
 //! ```
 //! use tower_http::validate_request::ValidateRequestHeaderLayer;
 //! use http::{Request, Response, StatusCode, header::ACCEPT};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use bytes::Bytes;
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //!
@@ -56,7 +56,7 @@
 //! ```
 //! use tower_http::validate_request::{ValidateRequestHeaderLayer, ValidateRequest};
 //! use http::{Request, Response, StatusCode, header::ACCEPT};
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //! use bytes::Bytes;
 //!
@@ -96,7 +96,7 @@
 //! use tower_http::validate_request::{ValidateRequestHeaderLayer, ValidateRequest};
 //! use http::{Request, Response, StatusCode, header::ACCEPT};
 //! use bytes::Bytes;
-//! use http_body_util::Full;
+//! use http_body::Full;
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
 //!
 //! async fn handle(request: Request<Full<Bytes>>) -> Result<Response<Full<Bytes>>, BoxError> {
@@ -152,7 +152,7 @@ impl<ResBody> ValidateRequestHeaderLayer<AcceptHeader<ResBody>> {
     /// # Example
     ///
     /// ```
-    /// use http_body_util::Full;
+    /// use http_body::Full;
     /// use bytes::Bytes;
     /// use tower_http::validate_request::{AcceptHeader, ValidateRequestHeaderLayer};
     ///

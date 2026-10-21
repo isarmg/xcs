@@ -34,7 +34,7 @@ pub use self::stream::{BodyDataStream, BodyStream, StreamBody};
 pub use self::channel::Channel;
 
 /// An extension trait for [`http_body::Body`] adding various combinators and adapters
-pub trait BodyExt: http_body::Body {
+pub trait BodyExt: crate::Body {
     /// Returns a future that resolves to the next [`Frame`], if any.
     ///
     /// [`Frame`]: combinators::Frame
@@ -49,7 +49,7 @@ pub trait BodyExt: http_body::Body {
     fn map_frame<F, B>(self, f: F) -> MapFrame<Self, F>
     where
         Self: Sized,
-        F: FnMut(http_body::Frame<Self::Data>) -> http_body::Frame<B>,
+        F: FnMut(crate::Frame<Self::Data>) -> crate::Frame<B>,
         B: bytes::Buf,
     {
         MapFrame::new(self, f)
@@ -59,7 +59,7 @@ pub trait BodyExt: http_body::Body {
     fn inspect_frame<F>(self, f: F) -> combinators::InspectFrame<Self, F>
     where
         Self: Sized,
-        F: FnMut(&http_body::Frame<Self::Data>),
+        F: FnMut(&crate::Frame<Self::Data>),
     {
         combinators::InspectFrame::new(self, f)
     }
@@ -119,7 +119,7 @@ pub trait BodyExt: http_body::Body {
     ///
     /// ```
     /// use http::HeaderMap;
-    /// use http_body_util::{Full, BodyExt};
+    /// use http_body::{Full, BodyExt};
     /// use bytes::Bytes;
     ///
     /// # #[tokio::main]
@@ -184,4 +184,4 @@ pub trait BodyExt: http_body::Body {
     }
 }
 
-impl<T: ?Sized> BodyExt for T where T: http_body::Body {}
+impl<T: ?Sized> BodyExt for T where T: crate::Body {}

@@ -155,7 +155,6 @@ dependencies = [
  "futures-util",
  "http",
  "http-body",
- "http-body-util",
  "hyper",
  "hyper-util",
  "itoa",
@@ -183,7 +182,6 @@ dependencies = [
  "futures-core",
  "http",
  "http-body",
- "http-body-util",
  "mime",
  "pin-project-lite",
  "sync_wrapper",
@@ -822,17 +820,8 @@ name = "http-body"
 version = "1.1.0"
 dependencies = [
  "bytes",
- "http",
-]
-
-[[package]]
-name = "http-body-util"
-version = "0.1.5"
-dependencies = [
- "bytes",
  "futures-core",
  "http",
- "http-body",
  "pin-project-lite",
 ]
 
@@ -1574,7 +1563,6 @@ dependencies = [
  "futures-util",
  "http",
  "http-body",
- "http-body-util",
  "hyper",
  "hyper-rustls",
  "hyper-util",
@@ -2193,7 +2181,6 @@ dependencies = [
  "futures-util",
  "http",
  "http-body",
- "http-body-util",
  "http-range-header",
  "httpdate",
  "mime",
