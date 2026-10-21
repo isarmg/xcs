@@ -1,11 +1,9 @@
 use crate::{
-    html::attribute::{any_attribute::AnyAttribute, Attribute, AttributeValue},
+    html::attribute::{Attribute, AttributeValue},
     hydration::Cursor,
     renderer::Rndr,
-    ssr::StreamBuilder,
     view::{
-        add_attr::AddAnyAttr, Mountable, Position, PositionState, Render,
-        RenderHtml, ToTemplate,
+        add_attr::AddAnyAttr, Mountable, Position, PositionState, Render, RenderHtml, ToTemplate,
     },
 };
 use reactive_graph::effect::RenderEffect;
@@ -134,66 +132,9 @@ where
     V: RenderHtml + 'static,
     V::State: 'static,
 {
-    type AsyncOutput = V::AsyncOutput;
     type Owned = Self;
 
-    const MIN_LENGTH: usize = 0;
-
-    fn dry_resolve(&mut self) {
-        self.invoke().dry_resolve();
-    }
-
-    async fn resolve(mut self) -> Self::AsyncOutput {
-        self.invoke().resolve().await
-    }
-
-    fn html_len(&self) -> usize {
-        V::MIN_LENGTH
-    }
-
-    fn to_html_with_buf(
-        mut self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        let value = self.invoke();
-        value.to_html_with_buf(
-            buf,
-            position,
-            escape,
-            mark_branches,
-            extra_attrs,
-        )
-    }
-
-    fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-        mut self,
-        buf: &mut StreamBuilder,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) where
-        Self: Sized,
-    {
-        let value = self.invoke();
-        value.to_html_async_with_buf::<OUT_OF_ORDER>(
-            buf,
-            position,
-            escape,
-            mark_branches,
-            extra_attrs,
-        );
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        mut self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(mut self, cursor: &Cursor, position: &PositionState) -> Self::State {
         /// codegen optimisation:
         fn prep(
             cursor: &Cursor,
@@ -225,61 +166,9 @@ where
                 value.rebuild(&mut state);
                 state
             } else {
-                value.hydrate::<FROM_SERVER>(&cursor, &position)
+                value.hydrate(&cursor, &position)
             }
         })
-        .into()
-    }
-
-    async fn hydrate_async(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        /// codegen optimisation:
-        fn prep(
-            cursor: &Cursor,
-            position: &PositionState,
-        ) -> (
-            Cursor,
-            PositionState,
-            Option<Arc<dyn throw_error::ErrorHook>>,
-        ) {
-            let cursor = cursor.clone();
-            let position = position.clone();
-            let hook = throw_error::get_error_hook();
-            (cursor, position, hook)
-        }
-        let (cursor, position, hook) = prep(cursor, position);
-
-        let mut fun = self.into_shared();
-
-        RenderEffect::new_with_async_value(
-            {
-                let mut fun = fun.clone();
-                move |prev| {
-                    /// codegen optimisation:
-                    fn get_guard(
-                        hook: &Option<Arc<dyn throw_error::ErrorHook>>,
-                    ) -> Option<throw_error::ResetErrorHookOnDrop>
-                    {
-                        hook.as_ref()
-                            .map(|h| throw_error::set_error_hook(Arc::clone(h)))
-                    }
-                    let _guard = get_guard(&hook);
-
-                    let value = fun.invoke();
-                    if let Some(mut state) = prev {
-                        value.rebuild(&mut state);
-                        state
-                    } else {
-                        unreachable!()
-                    }
-                }
-            },
-            async move { fun.invoke().hydrate_async(&cursor, &position).await },
-        )
-        .await
         .into()
     }
 
@@ -296,10 +185,7 @@ where
     type Output<SomeNewAttr: Attribute> =
         Box<dyn FnMut() -> V::Output<SomeNewAttr::CloneableOwned> + Send>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        mut self,
-        attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(mut self, attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {
@@ -388,27 +274,13 @@ where
     V: AttributeValue + 'static,
     V::State: 'static,
 {
-    type AsyncOutput = V::AsyncOutput;
     type State = RenderEffect<V::State>;
     type Cloneable = SharedReactiveFunction<V>;
     type CloneableOwned = SharedReactiveFunction<V>;
 
-    fn html_len(&self) -> usize {
-        0
-    }
-
-    fn to_html(mut self, key: &str, buf: &mut String) {
-        let value = self.invoke();
-        value.to_html(key, buf);
-    }
-
     fn to_template(_key: &str, _buf: &mut String) {}
 
-    fn hydrate<const FROM_SERVER: bool>(
-        mut self,
-        key: &str,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
+    fn hydrate(mut self, key: &str, el: &crate::renderer::types::Element) -> Self::State {
         let key = Rndr::intern(key);
         let key = key.to_owned();
         let el = el.to_owned();
@@ -419,16 +291,12 @@ where
                 value.rebuild(&key, &mut state);
                 state
             } else {
-                value.hydrate::<FROM_SERVER>(&key, &el)
+                value.hydrate(&key, &el)
             }
         })
     }
 
-    fn build(
-        mut self,
-        el: &crate::renderer::types::Element,
-        key: &str,
-    ) -> Self::State {
+    fn build(mut self, el: &crate::renderer::types::Element, key: &str) -> Self::State {
         let key = Rndr::intern(key);
         let key = key.to_owned();
         let el = el.to_owned();
@@ -470,14 +338,6 @@ where
     fn into_cloneable_owned(self) -> Self::CloneableOwned {
         self.into_shared()
     }
-
-    fn dry_resolve(&mut self) {
-        self.invoke();
-    }
-
-    async fn resolve(mut self) -> Self::AsyncOutput {
-        self.invoke().resolve().await
-    }
 }
 
 impl<V> AttributeValue for Suspend<V>
@@ -486,47 +346,27 @@ where
     V::State: 'static,
 {
     type State = Rc<RefCell<Option<V::State>>>;
-    type AsyncOutput = V;
+
     type Cloneable = ();
     type CloneableOwned = ();
 
-    fn html_len(&self) -> usize {
-        0
-    }
-
-    fn to_html(self, _key: &str, _buf: &mut String) {
-        #[cfg(feature = "tracing")]
-        tracing::error!(
-            "Suspended attributes cannot be used outside Suspense."
-        );
-    }
-
     fn to_template(_key: &str, _buf: &mut String) {}
 
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        key: &str,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
+    fn hydrate(self, key: &str, el: &crate::renderer::types::Element) -> Self::State {
         let key = key.to_owned();
         let el = el.to_owned();
         let state = Rc::new(RefCell::new(None));
         reactive_graph::spawn_local_scoped({
             let state = Rc::clone(&state);
             async move {
-                *state.borrow_mut() =
-                    Some(self.inner.await.hydrate::<FROM_SERVER>(&key, &el));
+                *state.borrow_mut() = Some(self.inner.await.hydrate(&key, &el));
                 self.subscriber.forward();
             }
         });
         state
     }
 
-    fn build(
-        self,
-        el: &crate::renderer::types::Element,
-        key: &str,
-    ) -> Self::State {
+    fn build(self, el: &crate::renderer::types::Element, key: &str) -> Self::State {
         let key = key.to_owned();
         let el = el.to_owned();
         let state = Rc::new(RefCell::new(None));
@@ -564,12 +404,6 @@ where
         #[cfg(feature = "tracing")]
         tracing::error!("Suspended attributes cannot be spread");
     }
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self.inner.await
-    }
 }
 
 /// A reactive function that can be shared across multiple locations and across threads.
@@ -600,9 +434,7 @@ impl<T: 'static> ReactiveFunction for Arc<Mutex<dyn FnMut() -> T + Send>> {
     }
 }
 
-impl<T: Send + Sync + 'static> ReactiveFunction
-    for Arc<dyn Fn() -> T + Send + Sync>
-{
+impl<T: Send + Sync + 'static> ReactiveFunction for Arc<dyn Fn() -> T + Send + Sync> {
     type Output = T;
 
     fn invoke(&mut self) -> Self::Output {
@@ -630,7 +462,7 @@ where
 }
 
 macro_rules! reactive_impl {
-    ($name:ident, <$($gen:ident),*>, $v:ty, $dry_resolve:literal, $( $where_clause:tt )*) =>
+    ($name:ident, <$($gen:ident),*>, $v:ty, $( $where_clause:tt )*) =>
     {
         #[allow(deprecated)]
         impl<$($gen),*> Render for $name<$($gen),*>
@@ -679,70 +511,16 @@ macro_rules! reactive_impl {
             <$v as Render>::State: 'static,
             $($where_clause)*
         {
-            type AsyncOutput = Self;
+
             type Owned = Self;
 
-            const MIN_LENGTH: usize = 0;
-
-            fn dry_resolve(&mut self) {
-                if $dry_resolve {
-                    _ = self.get();
-                }
-            }
-
-            async fn resolve(self) -> Self::AsyncOutput {
-                self
-            }
-
-            fn html_len(&self) -> usize {
-                <$v>::MIN_LENGTH
-            }
-
-            fn to_html_with_buf(
-                self,
-                buf: &mut String,
-                position: &mut Position,
-                escape: bool,
-                mark_branches: bool,
-                extra_attrs: Vec<AnyAttribute>,
-            ) {
-                let value = self.get();
-                value.to_html_with_buf(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                )
-            }
-
-            fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-                self,
-                buf: &mut StreamBuilder,
-                position: &mut Position,
-                escape: bool,
-                mark_branches: bool,
-                extra_attrs: Vec<AnyAttribute>,
-            ) where
-                Self: Sized,
-            {
-                let value = self.get();
-                value.to_html_async_with_buf::<OUT_OF_ORDER>(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-            }
-
-            fn hydrate<const FROM_SERVER: bool>(
+            fn hydrate(
                 self,
                 cursor: &Cursor,
                 position: &PositionState,
             ) -> Self::State {
                 (move || self.get())
-                    .hydrate::<FROM_SERVER>(cursor, position)
+                    .hydrate(cursor, position)
             }
 
             fn into_owned(self) -> Self::Owned {
@@ -757,28 +535,19 @@ macro_rules! reactive_impl {
             <$v as AttributeValue>::State: 'static,
             $($where_clause)*
         {
-            type AsyncOutput = Self;
+
             type State = RenderEffect<<$v as AttributeValue>::State>;
             type Cloneable = Self;
             type CloneableOwned = Self;
 
-            fn html_len(&self) -> usize {
-                0
-            }
-
-            fn to_html(self, key: &str, buf: &mut String) {
-                let value = self.get();
-                value.to_html(key, buf);
-            }
-
             fn to_template(_key: &str, _buf: &mut String) {}
 
-            fn hydrate<const FROM_SERVER: bool>(
+            fn hydrate(
                 self,
                 key: &str,
                 el: &crate::renderer::types::Element,
             ) -> Self::State {
-                (move || self.get()).hydrate::<FROM_SERVER>(key, el)
+                (move || self.get()).hydrate(key, el)
             }
 
             fn build(
@@ -801,15 +570,6 @@ macro_rules! reactive_impl {
                 self
             }
 
-            fn dry_resolve(&mut self) {
-                if $dry_resolve {
-                    _ = self.get();
-                }
-            }
-
-            async fn resolve(self) -> Self::AsyncOutput {
-                self
-            }
         }
     };
 }
@@ -818,15 +578,9 @@ macro_rules! reactive_impl {
 mod stable {
     use super::RenderEffectState;
     use crate::{
-        html::attribute::{
-            any_attribute::AnyAttribute, Attribute, AttributeValue,
-        },
+        html::attribute::{Attribute, AttributeValue},
         hydration::Cursor,
-        ssr::StreamBuilder,
-        view::{
-            add_attr::AddAnyAttr, Mountable, Position, PositionState, Render,
-            RenderHtml,
-        },
+        view::{add_attr::AddAnyAttr, Mountable, PositionState, Render, RenderHtml},
     };
     #[allow(deprecated)]
     use reactive_graph::wrappers::read::MaybeSignal;
@@ -843,7 +597,6 @@ mod stable {
         RwSignal,
         <V, S>,
         V,
-        false,
         RwSignal<V, S>: Get<Value = V>,
         S: Storage<V> + Storage<Option<V>>,
         S: Send + Sync + 'static,
@@ -852,7 +605,6 @@ mod stable {
         ReadSignal,
         <V, S>,
         V,
-        false,
         ReadSignal<V, S>: Get<Value = V>,
         S: Storage<V> + Storage<Option<V>>,
         S: Send + Sync + 'static,
@@ -861,7 +613,6 @@ mod stable {
         Memo,
         <V, S>,
         V,
-        true,
         Memo<V, S>: Get<Value = V>,
         S: Storage<V> + Storage<Option<V>>,
         S: Send + Sync + 'static,
@@ -870,7 +621,6 @@ mod stable {
         Signal,
         <V, S>,
         V,
-        true,
         Signal<V, S>: Get<Value = V>,
         S: Storage<V> + Storage<Option<V>>,
         S: Send + Sync + 'static,
@@ -879,7 +629,6 @@ mod stable {
         MaybeSignal,
         <V, S>,
         V,
-        true,
         MaybeSignal<V, S>: Get<Value = V>,
         S: Storage<V> + Storage<Option<V>>,
         S: Send + Sync + 'static,
@@ -888,111 +637,14 @@ mod stable {
         MaybeProp,
         <V, S>,
         Option<V>,
-        true,
         MaybeProp<V, S>: Get<Value = Option<V>>,
         S: Storage<Option<V>> + Storage<SignalTypes<Option<V>, S>>,
         S: Send + Sync + 'static,
     );
-    reactive_impl!(ArcRwSignal, <V>, V, false, ArcRwSignal<V>: Get<Value = V>);
-    reactive_impl!(ArcReadSignal, <V>, V, false, ArcReadSignal<V>: Get<Value = V>);
-    reactive_impl!(ArcMemo, <V>, V, true, ArcMemo<V>: Get<Value = V>);
-    reactive_impl!(ArcSignal, <V>, V, true, ArcSignal<V>: Get<Value = V>);
-}
-
-#[cfg(feature = "reactive_stores")]
-mod reactive_stores {
-    use super::RenderEffectState;
-    use crate::{
-        html::attribute::{
-            any_attribute::AnyAttribute, Attribute, AttributeValue,
-        },
-        hydration::Cursor,
-        ssr::StreamBuilder,
-        view::{
-            add_attr::AddAnyAttr, Mountable, Position, PositionState, Render,
-            RenderHtml,
-        },
-    };
-    #[allow(deprecated)]
-    use reactive_graph::{effect::RenderEffect, owner::Storage, traits::Get};
-    use reactive_stores::{
-        ArcField, ArcStore, AtIndex, AtKeyed, DerefedField, Field,
-        KeyedSubfield, Store, StoreField, Subfield,
-    };
-    use std::ops::{Deref, DerefMut, Index, IndexMut};
-
-    reactive_impl!(
-        Subfield,
-        <Inner, Prev, V>,
-        V,
-        false,
-        Subfield<Inner, Prev, V>: Get<Value = V>,
-        Prev: Send + Sync + 'static,
-        Inner: Send + Sync + Clone + 'static,
-    );
-
-    reactive_impl!(
-        AtKeyed,
-        <Inner, Prev, K, V>,
-        V,
-        false,
-        AtKeyed<Inner, Prev, K, V>: Get<Value = V>,
-        Prev: Send + Sync + 'static,
-        Inner: Send + Sync + Clone + 'static,
-        K: Send + Sync + std::fmt::Debug + Clone + 'static,
-        for<'a> &'a V: IntoIterator,
-    );
-
-    reactive_impl!(
-        KeyedSubfield,
-        <Inner, Prev, K, V>,
-        V,
-        false,
-        KeyedSubfield<Inner, Prev, K, V>: Get<Value = V>,
-        Prev: Send + Sync + 'static,
-        Inner: Send + Sync + Clone + 'static,
-        K: Send + Sync + std::fmt::Debug + Clone + 'static,
-        for<'a> &'a V: IntoIterator,
-    );
-
-    reactive_impl!(
-        DerefedField,
-        <S>,
-        <S::Value as Deref>::Target,
-        false,
-        S: Clone + StoreField + Send + Sync + 'static,
-        <S as StoreField>::Value: Deref + DerefMut
-    );
-
-    reactive_impl!(
-        AtIndex,
-        <Inner, Prev>,
-        <Prev as Index<usize>>::Output,
-        false,
-        AtIndex<Inner, Prev>: Get<Value = Prev::Output>,
-        Prev: Send + Sync + IndexMut<usize> + 'static,
-        Inner: Send + Sync + Clone + 'static,
-    );
-    reactive_impl!(
-        Store,
-        <V, S>,
-        V,
-        false,
-        Store<V, S>: Get<Value = V>,
-        S: Storage<V> + Storage<Option<V>>,
-        S: Send + Sync + 'static,
-    );
-    reactive_impl!(
-        Field,
-        <V, S>,
-        V,
-        false,
-        Field<V, S>: Get<Value = V>,
-        S: Storage<V> + Storage<Option<V>>,
-        S: Send + Sync + 'static,
-    );
-    reactive_impl!(ArcStore, <V>, V, false, ArcStore<V>: Get<Value = V>);
-    reactive_impl!(ArcField, <V>, V, false, ArcField<V>: Get<Value = V>);
+    reactive_impl!(ArcRwSignal, <V>, V, ArcRwSignal<V>: Get<Value = V>);
+    reactive_impl!(ArcReadSignal, <V>, V, ArcReadSignal<V>: Get<Value = V>);
+    reactive_impl!(ArcMemo, <V>, V, ArcMemo<V>: Get<Value = V>);
+    reactive_impl!(ArcSignal, <V>, V, ArcSignal<V>: Get<Value = V>);
 }
 
 /*

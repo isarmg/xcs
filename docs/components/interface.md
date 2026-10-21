@@ -6,6 +6,10 @@
 
 当前维护浏览器 CSR 路径，默认 `csr` 特性启用 `reactive_graph/effects`。界面宏保留 `view!`、`template!` 及普通／透明组件的 props、children 构造；过程宏与界面均由根工作区编译。`Portal` 挂载到常规 DOM，`use_shadow` 必须为 `false`，传入 `true` 会在挂载前明确拒绝。
 
+`tachys::view::RenderHtml` 在本项目只负责把浏览器 `<template>` 克隆恢复为可交互视图，静态模板生成由 `ToTemplate` 负责。它保留节点游标、动态值、事件及重建状态，不再提供服务端 HTML 字符串、流、异步服务端解析或服务端 hydration 模式。`ssr`、`hydrate`、`islands`、`mark_branches` 特性已移除；模板恢复无需启用空特性。模板中的 void 元素不生成子占位或闭合标签，动态 style 在恢复时复用正常 DOM 构建路径。
+
+生产构建同时编译独立模板夹具，浏览器套件实际执行 class/style、文本与转义、微任务属性、事件、节点/焦点保留、重建和卸载清理。CI 保存夹具、精确输入身份与浏览器结果，用于将最终提交、来源收据和实际 WASM 对应起来。
+
 宿主回归统一使用 `bash .github/scripts/check.sh web`，覆盖单元、集成及 Rustdoc 测试。过程宏使用仅开发依赖的 `web-interface` 消费者上下文验证当前文档；正常示例编译，`memo!`、`slice!` 示例实际检查响应式读写，错误示例须被拒绝。它不增加发布依赖。浏览器 DOM 行为由真实 Web/WASM 验收单独确认。
 
 `include_view!` 的文件路径相对使用宏的 crate 根目录解析，模板变更作为编译器输入触发重新编译。slot 本身不接收 DOM 事件；事件应放在 slot 内部的元素上，错误用法会直接得到宏诊断。

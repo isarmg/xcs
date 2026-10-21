@@ -1,12 +1,7 @@
 use super::{
-    add_attr::AddAnyAttr, Mountable, Position, PositionState, Render,
-    RenderHtml, ToTemplate,
+    add_attr::AddAnyAttr, Mountable, Position, PositionState, Render, RenderHtml, ToTemplate,
 };
-use crate::{
-    html::attribute::{any_attribute::AnyAttribute, Attribute},
-    hydration::Cursor,
-    renderer::Rndr,
-};
+use crate::{html::attribute::Attribute, hydration::Cursor, renderer::Rndr};
 
 /// A view wrapper that uses a `<template>` node to optimize DOM node creation.
 ///
@@ -44,7 +39,7 @@ where
         let tpl = Self::to_template();
         let contents = Rndr::clone_template(&tpl);
         self.view
-            .hydrate::<false>(&Cursor::new(contents), &Default::default())
+            .hydrate(&Cursor::new(contents), &Default::default())
     }
 
     fn rebuild(self, state: &mut Self::State) {
@@ -59,10 +54,7 @@ where
 {
     type Output<SomeNewAttr: Attribute> = ViewTemplate<V>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        _attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, _attr: NewAttr) -> Self::Output<NewAttr> {
         panic!("AddAnyAttr not supported on ViewTemplate");
     }
 }
@@ -72,42 +64,10 @@ where
     V: RenderHtml + ToTemplate + 'static,
     V::State: Mountable,
 {
-    type AsyncOutput = V::AsyncOutput;
     type Owned = V::Owned;
 
-    const MIN_LENGTH: usize = V::MIN_LENGTH;
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        self.view.to_html_with_buf(
-            buf,
-            position,
-            escape,
-            mark_branches,
-            extra_attrs,
-        )
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        self.view.hydrate::<FROM_SERVER>(cursor, position)
-    }
-
-    fn dry_resolve(&mut self) {
-        self.view.dry_resolve();
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self.view.resolve().await
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
+        self.view.hydrate(cursor, position)
     }
 
     fn into_owned(self) -> Self::Owned {

@@ -1,17 +1,9 @@
-use super::{
-    add_attr::AddAnyAttr, MarkBranch, Mountable, Position, PositionState,
-    Render, RenderHtml,
-};
+use super::{add_attr::AddAnyAttr, Mountable, PositionState, Render, RenderHtml};
 use crate::{
-    html::attribute::{
-        any_attribute::AnyAttribute, Attribute, NamedAttributeKey,
-        NextAttribute,
-    },
+    html::attribute::{Attribute, NamedAttributeKey, NextAttribute},
     hydration::Cursor,
-    ssr::StreamBuilder,
 };
 use either_of::*;
-use futures::future::join;
 
 impl<A, B> Render for Either<A, B>
 where
@@ -94,15 +86,10 @@ where
     A: RenderHtml,
     B: RenderHtml,
 {
-    type Output<SomeNewAttr: Attribute> = Either<
-        <A as AddAnyAttr>::Output<SomeNewAttr>,
-        <B as AddAnyAttr>::Output<SomeNewAttr>,
-    >;
+    type Output<SomeNewAttr: Attribute> =
+        Either<<A as AddAnyAttr>::Output<SomeNewAttr>, <B as AddAnyAttr>::Output<SomeNewAttr>>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(self, attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {
@@ -113,34 +100,16 @@ where
     }
 }
 
-const fn max_usize(vals: &[usize]) -> usize {
-    let mut max = 0;
-    let len = vals.len();
-    let mut i = 0;
-    while i < len {
-        if vals[i] > max {
-            max = vals[i];
-        }
-        i += 1;
-    }
-    max
-}
-
 #[cfg(not(erase_components))]
 impl<A, B> NextAttribute for Either<A, B>
 where
     B: NextAttribute,
     A: NextAttribute,
 {
-    type Output<NewAttr: Attribute> = Either<
-        <A as NextAttribute>::Output<NewAttr>,
-        <B as NextAttribute>::Output<NewAttr>,
-    >;
+    type Output<NewAttr: Attribute> =
+        Either<<A as NextAttribute>::Output<NewAttr>, <B as NextAttribute>::Output<NewAttr>>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         match self {
             Either::Left(left) => Either::Left(left.add_any_attr(new_attr)),
             Either::Right(right) => Either::Right(right.add_any_attr(new_attr)),
@@ -156,10 +125,7 @@ where
 {
     type Output<NewAttr: Attribute> = Vec<AnyAttribute>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         use crate::html::attribute::any_attribute::IntoAnyAttribute;
 
         vec![
@@ -177,44 +143,14 @@ where
     B: Attribute,
     A: Attribute,
 {
-    const MIN_LENGTH: usize = max_usize(&[A::MIN_LENGTH, B::MIN_LENGTH]);
-
-    type AsyncOutput = Either<A::AsyncOutput, B::AsyncOutput>;
     type State = Either<A::State, B::State>;
     type Cloneable = Either<A::Cloneable, B::Cloneable>;
     type CloneableOwned = Either<A::CloneableOwned, B::CloneableOwned>;
 
-    fn html_len(&self) -> usize {
+    fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
         match self {
-            Either::Left(left) => left.html_len(),
-            Either::Right(right) => right.html_len(),
-        }
-    }
-
-    fn to_html(
-        self,
-        buf: &mut String,
-        class: &mut String,
-        style: &mut String,
-        inner_html: &mut String,
-    ) {
-        match self {
-            Either::Left(left) => left.to_html(buf, class, style, inner_html),
-            Either::Right(right) => {
-                right.to_html(buf, class, style, inner_html)
-            }
-        }
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
-        match self {
-            Either::Left(left) => Either::Left(left.hydrate::<FROM_SERVER>(el)),
-            Either::Right(right) => {
-                Either::Right(right.hydrate::<FROM_SERVER>(el))
-            }
+            Either::Left(left) => Either::Left(left.hydrate(el)),
+            Either::Right(right) => Either::Right(right.hydrate(el)),
         }
     }
 
@@ -254,20 +190,6 @@ where
         }
     }
 
-    fn dry_resolve(&mut self) {
-        match self {
-            Either::Left(left) => left.dry_resolve(),
-            Either::Right(right) => right.dry_resolve(),
-        }
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        match self {
-            Either::Left(left) => Either::Left(left.resolve().await),
-            Either::Right(right) => Either::Right(right.resolve().await),
-        }
-    }
-
     fn keys(&self) -> Vec<NamedAttributeKey> {
         match self {
             Either::Left(left) => left.keys(),
@@ -281,162 +203,14 @@ where
     A: RenderHtml,
     B: RenderHtml,
 {
-    type AsyncOutput = Either<A::AsyncOutput, B::AsyncOutput>;
     type Owned = Either<A::Owned, B::Owned>;
 
-    fn dry_resolve(&mut self) {
-        match self {
-            Either::Left(left) => left.dry_resolve(),
-            Either::Right(right) => right.dry_resolve(),
-        }
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        match self {
-            Either::Left(left) => Either::Left(left.resolve().await),
-            Either::Right(right) => Either::Right(right.resolve().await),
-        }
-    }
-
-    const MIN_LENGTH: usize = max_usize(&[A::MIN_LENGTH, B::MIN_LENGTH]);
-
-    #[inline(always)]
-    fn html_len(&self) -> usize {
-        match self {
-            Either::Left(i) => i.html_len(),
-            Either::Right(i) => i.html_len(),
-        }
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        match self {
-            Either::Left(left) => {
-                if mark_branches && escape {
-                    buf.open_branch("0");
-                }
-                left.to_html_with_buf(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-                if mark_branches && escape {
-                    buf.close_branch("0");
-                    if *position == Position::NextChildAfterText {
-                        *position = Position::NextChild;
-                    }
-                }
-            }
-            Either::Right(right) => {
-                if mark_branches && escape {
-                    buf.open_branch("1");
-                }
-                right.to_html_with_buf(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-                if mark_branches && escape {
-                    buf.close_branch("1");
-                    if *position == Position::NextChildAfterText {
-                        *position = Position::NextChild;
-                    }
-                }
-            }
-        }
-    }
-
-    fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-        self,
-        buf: &mut StreamBuilder,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) where
-        Self: Sized,
-    {
-        match self {
-            Either::Left(left) => {
-                if mark_branches && escape {
-                    buf.open_branch("0");
-                }
-                left.to_html_async_with_buf::<OUT_OF_ORDER>(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-                if mark_branches && escape {
-                    buf.close_branch("0");
-                    if *position == Position::NextChildAfterText {
-                        *position = Position::NextChild;
-                    }
-                }
-            }
-            Either::Right(right) => {
-                if mark_branches && escape {
-                    buf.open_branch("1");
-                }
-                right.to_html_async_with_buf::<OUT_OF_ORDER>(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-                if mark_branches && escape {
-                    buf.close_branch("1");
-                    if *position == Position::NextChildAfterText {
-                        *position = Position::NextChild;
-                    }
-                }
-            }
-        }
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         let state = match self {
-            Either::Left(left) => {
-                Either::Left(left.hydrate::<FROM_SERVER>(cursor, position))
-            }
-            Either::Right(right) => {
-                Either::Right(right.hydrate::<FROM_SERVER>(cursor, position))
-            }
+            Either::Left(left) => Either::Left(left.hydrate(cursor, position)),
+            Either::Right(right) => Either::Right(right.hydrate(cursor, position)),
         };
-        super::close_branch_marker(position);
-        state
-    }
 
-    async fn hydrate_async(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        let state = match self {
-            Either::Left(left) => {
-                Either::Left(left.hydrate_async(cursor, position).await)
-            }
-            Either::Right(right) => {
-                Either::Right(right.hydrate_async(cursor, position).await)
-            }
-        };
-        super::close_branch_marker(position);
         state
     }
 
@@ -527,10 +301,7 @@ where
         <B as AddAnyAttr>::Output<SomeNewAttr::Cloneable>,
     >;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(self, attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {
@@ -549,152 +320,24 @@ where
     A: RenderHtml,
     B: RenderHtml,
 {
-    type AsyncOutput = EitherKeepAlive<A::AsyncOutput, B::AsyncOutput>;
     type Owned = EitherKeepAlive<A::Owned, B::Owned>;
 
-    const MIN_LENGTH: usize = 0;
-
-    fn dry_resolve(&mut self) {
-        if let Some(inner) = &mut self.a {
-            inner.dry_resolve();
-        }
-        if let Some(inner) = &mut self.b {
-            inner.dry_resolve();
-        }
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        let EitherKeepAlive { a, b, show_b } = self;
-        let (a, b) = join(
-            async move {
-                match a {
-                    Some(a) => Some(a.resolve().await),
-                    None => None,
-                }
-            },
-            async move {
-                match b {
-                    Some(b) => Some(b.resolve().await),
-                    None => None,
-                }
-            },
-        )
-        .await;
-        EitherKeepAlive { a, b, show_b }
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        if self.show_b {
-            self.b
-                .expect("rendering B to HTML without filling it")
-                .to_html_with_buf(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-        } else {
-            self.a
-                .expect("rendering A to HTML without filling it")
-                .to_html_with_buf(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-        }
-    }
-
-    fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-        self,
-        buf: &mut StreamBuilder,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) where
-        Self: Sized,
-    {
-        if self.show_b {
-            self.b
-                .expect("rendering B to HTML without filling it")
-                .to_html_async_with_buf::<OUT_OF_ORDER>(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-        } else {
-            self.a
-                .expect("rendering A to HTML without filling it")
-                .to_html_async_with_buf::<OUT_OF_ORDER>(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-        }
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         let showing_b = self.show_b;
         let a = self.a.map(|a| {
             if showing_b {
                 a.build()
             } else {
-                a.hydrate::<FROM_SERVER>(cursor, position)
+                a.hydrate(cursor, position)
             }
         });
         let b = self.b.map(|b| {
             if showing_b {
-                b.hydrate::<FROM_SERVER>(cursor, position)
+                b.hydrate(cursor, position)
             } else {
                 b.build()
             }
         });
-
-        EitherKeepAliveState { showing_b, a, b }
-    }
-
-    async fn hydrate_async(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        let showing_b = self.show_b;
-        let a = if let Some(a) = self.a {
-            Some(if showing_b {
-                a.build()
-            } else {
-                a.hydrate_async(cursor, position).await
-            })
-        } else {
-            None
-        };
-        let b = if let Some(b) = self.b {
-            Some(if showing_b {
-                b.hydrate_async(cursor, position).await
-            } else {
-                b.build()
-            })
-        } else {
-            None
-        };
 
         EitherKeepAliveState { showing_b, a, b }
     }
@@ -824,7 +467,6 @@ macro_rules! tuples {
             {
                 type State = [<EitherOf $num State>]<$($ty,)*>;
 
-
                 fn build(self) -> Self::State {
                     let state = match self {
                         $([<EitherOf $num>]::$ty(this) => [<EitherOf $num>]::$ty(this.build()),)*
@@ -881,109 +523,19 @@ macro_rules! tuples {
                 $($ty: RenderHtml,)*
 
             {
-                type AsyncOutput = [<EitherOf $num>]<$($ty::AsyncOutput,)*>;
+
                 type Owned = [<EitherOf $num>]<$($ty::Owned,)*>;
 
-                const MIN_LENGTH: usize = max_usize(&[$($ty ::MIN_LENGTH,)*]);
-
-
-                fn dry_resolve(&mut self) {
-                    match self {
-                        $([<EitherOf $num>]::$ty(this) => {
-                            this.dry_resolve();
-                        })*
-                    }
-                }
-
-                async fn resolve(self) -> Self::AsyncOutput {
-                    match self {
-                        $([<EitherOf $num>]::$ty(this) => [<EitherOf $num>]::$ty(this.resolve().await),)*
-                    }
-                }
-
-                #[inline(always)]
-                fn html_len(&self) -> usize {
-                    match self {
-                        $([<EitherOf $num>]::$ty(i) => i.html_len(),)*
-                    }
-                }
-
-                fn to_html_with_buf(
-                    self,
-                    buf: &mut String,
-                    position: &mut Position,
-                    escape: bool,
-                    mark_branches: bool,
-                    extra_attrs: Vec<AnyAttribute>
-                ) {
-                    match self {
-                        $([<EitherOf $num>]::$ty(this) => {
-                            if mark_branches && escape {
-                                buf.open_branch(stringify!($ty));
-                            }
-                            this.to_html_with_buf(buf, position, escape, mark_branches, extra_attrs);
-                            if mark_branches && escape {
-                                buf.close_branch(stringify!($ty));
-                                if *position == Position::NextChildAfterText {
-                                    *position = Position::NextChild;
-                                }
-                            }
-                        })*
-                    }
-                }
-
-                fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-                    self,
-                    buf: &mut StreamBuilder,
-                    position: &mut Position,
-                    escape: bool,
-                    mark_branches: bool,
-                    extra_attrs: Vec<AnyAttribute>
-                ) where
-                    Self: Sized,
-                {
-                    match self {
-                        $([<EitherOf $num>]::$ty(this) => {
-                            if mark_branches && escape {
-                                buf.open_branch(stringify!($ty));
-                            }
-                            this.to_html_async_with_buf::<OUT_OF_ORDER>(buf, position, escape, mark_branches, extra_attrs);
-                            if mark_branches && escape {
-                                buf.close_branch(stringify!($ty));
-                                if *position == Position::NextChildAfterText {
-                                    *position = Position::NextChild;
-                                }
-                            }
-                        })*
-                    }
-                }
-
-                fn hydrate<const FROM_SERVER: bool>(
+                fn hydrate(
                     self,
                     cursor: &Cursor,
                     position: &PositionState,
                 ) -> Self::State {
                     let state = match self {
                         $([<EitherOf $num>]::$ty(this) => {
-                            [<EitherOf $num>]::$ty(this.hydrate::<FROM_SERVER>(cursor, position))
+                            [<EitherOf $num>]::$ty(this.hydrate(cursor, position))
                         })*
                     };
-                    $crate::view::close_branch_marker(position);
-
-                    Self::State { state }
-                }
-
-                async fn hydrate_async(
-                    self,
-                    cursor: &Cursor,
-                    position: &PositionState,
-                ) -> Self::State {
-                    let state = match self {
-                        $([<EitherOf $num>]::$ty(this) => {
-                            [<EitherOf $num>]::$ty(this.hydrate_async(cursor, position).await)
-                        })*
-                    };
-                    $crate::view::close_branch_marker(position);
 
                     Self::State { state }
                 }

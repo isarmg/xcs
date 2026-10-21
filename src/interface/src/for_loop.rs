@@ -5,10 +5,7 @@ use reactive_graph::{
     traits::Set,
 };
 use std::hash::Hash;
-use tachys::{
-    reactive_graph::OwnedView,
-    view::keyed::{SerializableKey, keyed},
-};
+use tachys::{reactive_graph::OwnedView, view::keyed::keyed};
 use view_macros::component;
 
 /// Iterates over children and displays them, keyed by the `key` function given.
@@ -123,7 +120,7 @@ where
     EF: Fn(T) -> N + Send + Clone + 'static,
     N: IntoView + 'static,
     KF: Fn(&T) -> K + Send + Clone + 'static,
-    K: Eq + Hash + SerializableKey + 'static,
+    K: Eq + Hash + 'static,
     T: Send + 'static,
 {
     // this takes the owner of the For itself
@@ -196,7 +193,7 @@ where
     EF: Fn(ReadSignal<usize>, T) -> N + Send + Clone + 'static,
     N: IntoView + 'static,
     KF: Fn(&T) -> K + Send + Clone + 'static,
-    K: Eq + Hash + SerializableKey + 'static,
+    K: Eq + Hash + 'static,
     T: Send + 'static,
 {
     // this takes the owner of the For itself
@@ -219,64 +216,3 @@ where
     };
     move || keyed(each(), key.clone(), children.clone())
 }
-
-/*
-#[cfg(test)]
-mod tests {
-    use crate::prelude::*;
-    use view_macros::view;
-    use tachys::{html::element::HtmlElement, prelude::ElementChild};
-
-    #[test]
-    fn creates_list() {
-        Owner::new().with(|| {
-            let values = RwSignal::new(vec![1, 2, 3, 4, 5]);
-            let list: View<HtmlElement<_, _, _>> = view! {
-                <ol>
-                    <For each=move || values.get() key=|i| *i let:i>
-                        <li>{i}</li>
-                    </For>
-                </ol>
-            };
-            assert_eq!(
-                list.to_html(),
-                "<ol><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><!></\
-                 ol>"
-            );
-        });
-    }
-
-    #[test]
-    fn creates_list_enumerate() {
-        Owner::new().with(|| {
-            let values = RwSignal::new(vec![1, 2, 3, 4, 5]);
-            let list: View<HtmlElement<_, _, _>> = view! {
-                <ol>
-                    <ForEnumerate each=move || values.get() key=|i| *i let(index, i)>
-                        <li>{move || index.get()}"-"{i}</li>
-                    </ForEnumerate>
-                </ol>
-            };
-            assert_eq!(
-                list.to_html(),
-                "<ol><li>0<!>-<!>1</li><li>1<!>-<!>2</li><li>2<!>-<!>3</li><li>3\
-                <!>-<!>4</li><li>4<!>-<!>5</li><!></ol>"
-            );
-
-            let list: View<HtmlElement<_, _, _>> = view! {
-                <ol>
-                    <ForEnumerate each=move || values.get() key=|i| *i let(index, i)>
-                        <li>{move || index.get()}"-"{i}</li>
-                    </ForEnumerate>
-                </ol>
-            };
-            values.set(vec![5, 4, 1, 2, 3]);
-            assert_eq!(
-                list.to_html(),
-                "<ol><li>0<!>-<!>5</li><li>1<!>-<!>4</li><li>2<!>-<!>1</li><li>3\
-                <!>-<!>2</li><li>4<!>-<!>3</li><!></ol>"
-            );
-        });
-    }
-}
- */

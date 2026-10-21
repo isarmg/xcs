@@ -1,7 +1,6 @@
 use crate::{
     html::attribute::{
-        maybe_next_attr_erasure_macros::next_attr_combine, Attribute,
-        NamedAttributeKey,
+        maybe_next_attr_erasure_macros::next_attr_combine, Attribute, NamedAttributeKey,
     },
     renderer::{CastFrom, RemoveEventHandler, Rndr},
     view::{Position, ToTemplate},
@@ -113,20 +112,16 @@ where
         event,
         #[cfg(feature = "reactive_graph")]
         owner: reactive_graph::owner::Owner::current().unwrap_or_default(),
-        cb: (!cfg!(feature = "ssr")).then(|| SendWrapper::new(cb)),
+        cb: SendWrapper::new(cb),
     }
 }
 
 /// Creates an [`Attribute`] that will add an event listener with a typed target to an element.
 #[allow(clippy::type_complexity)]
-pub fn on_target<E, T, F>(
-    event: E,
-    mut cb: F,
-) -> On<E, Box<dyn FnMut(E::EventType)>>
+pub fn on_target<E, T, F>(event: E, mut cb: F) -> On<E, Box<dyn FnMut(E::EventType)>>
 where
     T: HasElementType,
-    F: FnMut(Targeted<E::EventType, <T as HasElementType>::ElementType>)
-        + 'static,
+    F: FnMut(Targeted<E::EventType, <T as HasElementType>::ElementType>) + 'static,
     E: EventDescriptor + Send + 'static,
     E::EventType: 'static,
 
@@ -140,7 +135,7 @@ pub struct On<E, F> {
     event: E,
     #[cfg(feature = "reactive_graph")]
     owner: reactive_graph::owner::Owner,
-    cb: Option<SendWrapper<F>>,
+    cb: SendWrapper<F>,
 }
 
 impl<E, F> Clone for On<E, F>
@@ -181,21 +176,18 @@ where
         ) -> RemoveEventHandler<crate::renderer::types::Element> {
             match delegation_key {
                 None => Rndr::add_event_listener(el, &name, cb),
-                Some(key) => {
-                    Rndr::add_event_listener_delegated(el, name, key, cb)
-                }
+                Some(key) => Rndr::add_event_listener_delegated(el, name, key, cb),
             }
         }
 
-        let mut cb = self.cb.expect(super::FEATURE_CONFLICT_DIAGNOSTIC).take();
+        let mut cb = self.cb.take();
 
         #[cfg(feature = "tracing")]
         let span = tracing::Span::current();
 
         let cb = Box::new(move |ev: crate::renderer::types::Event| {
             #[cfg(all(debug_assertions, feature = "reactive_graph"))]
-            let _rx_guard =
-                reactive_graph::diagnostics::SpecialNonReactiveZone::enter();
+            let _rx_guard = reactive_graph::diagnostics::SpecialNonReactiveZone::enter();
             #[cfg(feature = "tracing")]
             let _tracing_guard = span.enter();
 
@@ -211,8 +203,7 @@ where
             el,
             cb,
             self.event.name(),
-            (E::BUBBLES && cfg!(feature = "delegation"))
-                .then(|| self.event.event_delegation_key()),
+            (E::BUBBLES && cfg!(feature = "delegation")).then(|| self.event.event_delegation_key()),
         )
     }
 
@@ -230,15 +221,14 @@ where
             Rndr::add_event_listener_use_capture(el, &name, cb)
         }
 
-        let mut cb = self.cb.expect(super::FEATURE_CONFLICT_DIAGNOSTIC).take();
+        let mut cb = self.cb.take();
 
         #[cfg(feature = "tracing")]
         let span = tracing::Span::current();
 
         let cb = Box::new(move |ev: crate::renderer::types::Event| {
             #[cfg(all(debug_assertions, feature = "reactive_graph"))]
-            let _rx_guard =
-                reactive_graph::diagnostics::SpecialNonReactiveZone::enter();
+            let _rx_guard = reactive_graph::diagnostics::SpecialNonReactiveZone::enter();
             #[cfg(feature = "tracing")]
             let _tracing_guard = span.enter();
 
@@ -271,8 +261,6 @@ where
 
     E::EventType: From<crate::renderer::types::Event>,
 {
-    const MIN_LENGTH: usize = 0;
-    type AsyncOutput = Self;
     // a function that can be called once to remove the event listener
     type State = (
         crate::renderer::types::Element,
@@ -282,25 +270,7 @@ where
     type CloneableOwned = On<E, SharedEventCallback<E::EventType>>;
 
     #[inline(always)]
-    fn html_len(&self) -> usize {
-        0
-    }
-
-    #[inline(always)]
-    fn to_html(
-        self,
-        _buf: &mut String,
-        _class: &mut String,
-        _style: &mut String,
-        _inner_html: &mut String,
-    ) {
-    }
-
-    #[inline(always)]
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
+    fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
         let cleanup = if E::CAPTURE {
             self.attach_capture(el)
         } else {
@@ -336,7 +306,7 @@ where
 
     fn into_cloneable(self) -> Self::Cloneable {
         On {
-            cb: self.cb.map(|cb| SendWrapper::new(cb.take().into_shared())),
+            cb: SendWrapper::new(self.cb.take().into_shared()),
             #[cfg(feature = "reactive_graph")]
             owner: self.owner,
             event: self.event,
@@ -345,17 +315,11 @@ where
 
     fn into_cloneable_owned(self) -> Self::CloneableOwned {
         On {
-            cb: self.cb.map(|cb| SendWrapper::new(cb.take().into_shared())),
+            cb: SendWrapper::new(self.cb.take().into_shared()),
             #[cfg(feature = "reactive_graph")]
             owner: self.owner,
             event: self.event,
         }
-    }
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
     }
 
     fn keys(&self) -> Vec<NamedAttributeKey> {
@@ -373,10 +337,7 @@ where
 {
     next_attr_output_type!(Self, NewAttr);
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         next_attr_combine!(self, new_attr)
     }
 }
@@ -519,9 +480,8 @@ impl<E: FromWasmAbi> Custom<E> {
     pub fn options_mut(&mut self) -> &mut web_sys::AddEventListenerOptions {
         // It is valid to construct a `SendWrapper` here because
         // its inner data will only be accessed in the browser's main thread.
-        self.options.get_or_insert_with(|| {
-            SendWrapper::new(web_sys::AddEventListenerOptions::new())
-        })
+        self.options
+            .get_or_insert_with(|| SendWrapper::new(web_sys::AddEventListenerOptions::new()))
     }
 }
 
@@ -770,18 +730,15 @@ generate_event_types! {
 
 // Export `web_sys` event types
 use super::{
-    attribute::{
-        maybe_next_attr_erasure_macros::next_attr_output_type, NextAttribute,
-    },
+    attribute::{maybe_next_attr_erasure_macros::next_attr_output_type, NextAttribute},
     element::HasElementType,
 };
 #[doc(no_inline)]
 pub use web_sys::{
-    AnimationEvent, BeforeUnloadEvent, ClipboardEvent, CompositionEvent,
-    CustomEvent, DeviceMotionEvent, DeviceOrientationEvent, DragEvent,
-    ErrorEvent, Event, FocusEvent, GamepadEvent, HashChangeEvent, InputEvent,
-    KeyboardEvent, MessageEvent, MouseEvent, PageTransitionEvent, PointerEvent,
-    PopStateEvent, ProgressEvent, PromiseRejectionEvent,
-    SecurityPolicyViolationEvent, StorageEvent, SubmitEvent, TouchEvent,
-    TransitionEvent, UiEvent, WheelEvent,
+    AnimationEvent, BeforeUnloadEvent, ClipboardEvent, CompositionEvent, CustomEvent,
+    DeviceMotionEvent, DeviceOrientationEvent, DragEvent, ErrorEvent, Event, FocusEvent,
+    GamepadEvent, HashChangeEvent, InputEvent, KeyboardEvent, MessageEvent, MouseEvent,
+    PageTransitionEvent, PointerEvent, PopStateEvent, ProgressEvent, PromiseRejectionEvent,
+    SecurityPolicyViolationEvent, StorageEvent, SubmitEvent, TouchEvent, TransitionEvent, UiEvent,
+    WheelEvent,
 };

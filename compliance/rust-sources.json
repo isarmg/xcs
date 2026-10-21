@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "lockfiles_sha256": {
-    "Cargo.lock": "4c42a9ac5aa1640fa2749ca1c95255eebe62e249eddfcd471026d9d3f5b3a680"
+    "Cargo.lock": "df328d0e4842348fefd049844aff05e76f5b1b848201fb95cb2b23a96e6418eb"
   },
   "manifests_sha256": {
     "Cargo.toml": "1c6472894378c77e0b3e3c52b586039cdc6b030bada2609b3bbe9f719be96455",
@@ -265,7 +265,7 @@
     "src/foundation/sync_wrapper/Cargo.toml": "e74f45c6729234e6b97c1e7ed0fea70917888d30bf58f0c4871b887dd94d6c76",
     "src/foundation/synstructure/Cargo.toml": "10739fab666c381d700794f17a12bb0f9120934bad0c223d32600664aae8daf2",
     "src/foundation/sysinfo/Cargo.toml": "28875c3afae210492846c6103abf4f70f5811e6fa4ff3f819e8061d153d6ae5d",
-    "src/foundation/tachys/Cargo.toml": "39b9d49da39205828e59d7405b19c2e567f46ce6e925c4281846ce7de53264c4",
+    "src/foundation/tachys/Cargo.toml": "274f61fa448fb513edacbcf1fb69026ee0e6cb1708391e4e6b7b47ede143671a",
     "src/foundation/tempfile/Cargo.toml": "c4bf18aeccfd20b569c8b74f4d202108ea5fff5466b58614d7a06d55ff3c7f78",
     "src/foundation/thiserror-impl/Cargo.toml": "ffca5b82a7c2364bb69e4950e11e2ac6ab5e1d703f833167ac46f2b7e8d8c6dd",
     "src/foundation/thiserror/Cargo.toml": "cb0c5bb5cf1bd717e3c621fe282756c7e024ef962b06d03baabce50613b5522d",
@@ -408,14 +408,14 @@
       "version": "0.1.24"
     },
     {
-      "changes": "Leptos CSR 内核整合进共享界面，统一生命周期及 ForSnapshot 键控快照更新；删除未声明 islands/tracing/nightly/shadow-dom 死分支、空模块、无效构建探测及未使用直接依赖；常规 DOM Portal 保留，use_shadow=true 显式拒绝；详见 docs/components/interface.md；独立包已删除，算法与业务组件合并。；退出等待与未确认退出期间关闭新的业务写入和内容交付准入，保留凭据仅供撤销重试",
+      "changes": "Leptos CSR 内核整合进共享界面，统一生命周期及 ForSnapshot 键控快照更新；删除未声明 islands/tracing/nightly/shadow-dom 死分支、空模块、无效构建探测及未使用直接依赖；常规 DOM Portal 保留，use_shadow=true 显式拒绝；详见 docs/components/interface.md；独立包已删除，算法与业务组件合并。；退出等待与未确认退出期间关闭新的业务写入和内容交付准入，保留凭据仅供撤销重试；界面 children/View/attribute interceptor 迁移到 CSR 模板 hydration 约束，删除通用 SSR 代理与仅用于服务端输出的 view marker。",
       "description": "Project-specific browser CSR runtime",
       "directory": "src/interface",
       "files_sha256": {
         "Cargo.toml": "2731fc8399b75d8b5cc0aa872130def5853aadf3464b8c8898e4b15797dfc195",
         "src/animated_show.rs": "cd43d5486c2667fe2a72f1bbbc1ae2fe6a61f87823ea042d12e225c209fb0a54",
-        "src/attribute_interceptor.rs": "dc3df7e71fccc19c063d84401a00e19723ee3a784032618550496cf776e2b719",
-        "src/children.rs": "524b6b2ad9b312b24c1ad54f15880ec8deec0134cb068f29db0980598b348914",
+        "src/attribute_interceptor.rs": "28a58d891932fd6dbbab5844840374207f8d65167fb7e6d385c2ae8b87ef5a9a",
+        "src/children.rs": "301c9ca94229120bf20268e91e6e722547e7180481eae83013859c0f3edbb3ad",
         "src/component.rs": "4b2ca289417e0075ad8ea42486daca256505125f6d8a73455ac663fd6f84cec4",
         "src/components/account.rs": "5f4cddd749bfc373c388d053ceee54b15ad267db06ab7814313009ad4b2c501f",
         "src/components/dialog.rs": "4682442941fda719995a9a1f2065b526ef75bfe6703de6c5ed71c5c195d76826",
@@ -431,10 +431,10 @@
         "src/contours/mod.rs": "6888d8f0ccf5a84a8a96d493c5fbcfdcd3879d89a7abb1c9ef6f73283d036454",
         "src/contours/paint.rs": "03e9f77873942b9902a76460378cb4f3135ff56d7a3c23a269efb3fe55d23a7a",
         "src/contours/profile.rs": "ff5f8c063bd6e04bf3fd9442c8b9dae5f407799d77c93133010e38b2e3c5225a",
-        "src/for_loop.rs": "3725805ed3d59673b55fd236cbb3d610f298e290d4a50b6880658532b9358a76",
+        "src/for_loop.rs": "16e2b13e8dfc5805ba1391a2b3a17608d17ee4a725fd4cb7652e6bbdaf0f30fd",
         "src/for_snapshot.rs": "7eda788d3b08388fb3bc652400f6b506b69eb2d84881485a6a0f3bc4a8a8fa16",
         "src/i18n.rs": "743c8f64a2aa16f1bf1100a2df1ff530e84e48a7f7c86fba61dafebcc46b11f1",
-        "src/into_view.rs": "449b8f4858042a6ed468d3ef23ee7942a2a6266bee0faf6dc0d752fb9b02c7d5",
+        "src/into_view.rs": "f6923572e1465c27f53c56a4f910a686779a8310a1eeeb0074b21a36a6a14912",
         "src/lib.rs": "487b03d359b21859b1eade7e443220418142e59d850ec50333c95d4716a40fb8",
         "src/lifecycle.rs": "a7760596d0560ba68423744356a285ac85ec39de741174f9a5c78e68b214b2b3",
         "src/mount.rs": "fa2cab92e5463e62cad6b02ed28b58189912c27586b2538b578c662f35d0bf22",
@@ -485,7 +485,7 @@
         "src/slice.rs": "277ca38d1afda01dd6058e464f0a0d236507e45da3aa932ce4d902b453c47f4a",
         "src/slot.rs": "1f5f59c8eff9523a341716c01f6dba9431bf1247c8edc604e7e8962aef52b777",
         "src/view/component_builder.rs": "ef68d1ecf60cbd7dd60ea2f33e93d3137e8a53bafb191dad2f223e3960f67de2",
-        "src/view/mod.rs": "adea7eb9dc7fd64ec5268156607e7992b54363e1660f4da5ada6e77681a119b6",
+        "src/view/mod.rs": "58388725d0d0ff692741064cf49998912e9b3485a16a17e45d68cb5c42da4aca",
         "src/view/slot_helper.rs": "6c15e192889d03d673bb0e9067eb20d7a8ac01a2e5a80b3b0421d1073fe61d6c",
         "src/view/utils.rs": "d4679c4a8984014adb88f61937fc1bebdc5b1b59734cc76b31e23e65534cdf9e",
         "src/view_source.rs": "2b591d8f856bff3271bafe3aac28f0e116e8b11396857800b4ef336e71f28068"
@@ -14845,67 +14845,63 @@
       "version": "0.39.6"
     },
     "src/foundation/tachys": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。；CSR 内核保留 ToTemplate/RenderHtml 浏览器克隆与 hydration，删除服务端字符串/流式 HTML、异步服务端解析、SSR/服务端 hydration/islands/分支标记及未支持的 testing/sledgehammer/reactive_stores/error-hook 表面；事件/指令/属性直接持有浏览器值，移除序列化 key 和休眠宏标记；保留 client Suspend 的 owner/abort 生命周期。模板 void 元素真实浏览器回归发现旧缺陷并修复。；真实模板夹具同时修复 void 标签生成占位兄弟节点，以及动态 style hydration 沿用服务端已有样式假设的问题；样式恢复统一复用 build。",
       "description": "Tools for building reactivity-agnostic, renderer-generic, statically-typed view trees for user interface libraries.",
       "directory": "src/foundation/tachys",
       "files_sha256": {
-        "Cargo.toml": "39b9d49da39205828e59d7405b19c2e567f46ce6e925c4281846ce7de53264c4",
+        "Cargo.toml": "274f61fa448fb513edacbcf1fb69026ee0e6cb1708391e4e6b7b47ede143671a",
         "build.rs": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e",
         "src/dom.rs": "581b3fc173e231c53b7d34ac47598aae0b821d05c339438b3479f5e76ff65c7b",
         "src/erased.rs": "89974a6b9d6711534ff5fec3ac1e12045b7353678927c659091f45dcc93827d6",
-        "src/html/attribute/any_attribute.rs": "cdc791ede6282c1bdd641606704ba36e6a414599e68622572cebed1867e87e35",
+        "src/html/attribute/any_attribute.rs": "6eca4018445b6a4213bd1670a6ab426826c50d89982fb499a969155167e9d628",
         "src/html/attribute/aria.rs": "26d0c3851eebc34bbdf2c1a135389161fb6b3cc0c71e5b60e40d3d474a8f8186",
-        "src/html/attribute/custom.rs": "6e321b2b4ccf8a4a6c478a9994c83bec91897e1aa72667aac666341d38144fe1",
+        "src/html/attribute/custom.rs": "f20325af15a3e2302a7a6dd890ea8624e1a54e9585fa50221f6222f986933302",
         "src/html/attribute/global.rs": "a9754c0c0a2579535d5d73a80d543d75583140e25ede8e011f607701c5db5045",
         "src/html/attribute/key.rs": "f55ac32e3de52feecbfcd5b62f8a3450f4868eb9a8ca8b6fa149280bcc127db9",
         "src/html/attribute/maybe_next_attr_erasure_macros.rs": "d8bf8965500dcdf3c832faa843ede714495f3c8f2b3632bdb65e38f51cbea262",
-        "src/html/attribute/mod.rs": "e4c6ee44ff4b309cf9823f30465e948327d4e7f84bbae78d225037ae2fdc7f8d",
-        "src/html/attribute/value.rs": "63ef671fa4e98cfc14ca97bd2aeca39e2eed6d9165a566e88d58943d59ff3a97",
-        "src/html/class.rs": "12debe4412efdd81f6bb9ce2718061fe91614d3e16df11d6dadaea1b6df6101f",
-        "src/html/directive.rs": "96b85b1fe55018aa451ebff36af1baf6c4c265bd79744c04bcf7f0b05cd50612",
+        "src/html/attribute/mod.rs": "7117fe442d00b5d8556b1c979adef928667a299bd1e9cc394cdc234a47b4f631",
+        "src/html/attribute/value.rs": "5059fe550904769c9fa9745e0a81c5bb763cfea0fe4f1f48f96366877a872e01",
+        "src/html/class.rs": "41a2f56a3cdde3e436717bdf594967ec2821f3db5aa9a7634014f8d680664952",
+        "src/html/directive.rs": "6bd4092b55f55a727ea1863a65d5a273db768bd8e6812f78a0a480da9d66c6c3",
         "src/html/element/custom.rs": "fd3cf5f9cec5d7029d26cee541eccceef3dcd9b6a9a8f7448a06d33d8ba60c5d",
-        "src/html/element/element_ext.rs": "cbc3f7af1e1c2f94c6437c504aba64ea9ce3612ab28b7f934837e31f3fc0da4e",
+        "src/html/element/element_ext.rs": "264eca830fa794291d882ee11f6ce2167bce36d5900235b8877723ebf5aefae5",
         "src/html/element/elements.rs": "85d5611bbe287694184fbb6b20a6c0997ac327a2f4348b19fda73e5419bbf9a5",
-        "src/html/element/inner_html.rs": "57735aeb316ae39c4c9ae50fd9d9079774581fe56291af264b6ecda1e5a06aef",
-        "src/html/element/mod.rs": "cb9b6ea0732cd3a48b6248438d04de457c6fb1e9e6ddfae030378274b00241f7",
-        "src/html/event.rs": "787c58dcec6f84254e03d2f8cb099d4305858ed0b22f9adae1c06f34bd166205",
-        "src/html/islands.rs": "5ed9fb688ae05069747c3f10369dacc05523dc789e6ad4e073ece1c6830e66e9",
-        "src/html/mod.rs": "3cca389427953c02c077c6d2666db0fb3596be62836009073f49b4207862d000",
-        "src/html/node_ref.rs": "02bd9a567b2758c5ed7418974a37f61aada8f35ea5d6338e1dfadd2aedc9cf68",
-        "src/html/property.rs": "cb875b00fdec4baee37d3e584ca0e2508fd69a53a965be919f0a072d8ab26085",
-        "src/html/style.rs": "66a7194a21df6e30328b7a807551b1b4498d2bcbe9235c0c527e4309cc2f1c38",
-        "src/hydration.rs": "9067228f5f8b83d6f152a8cdd19ad3183ac04f04f89384b8eaf56cee6f65f9c1",
-        "src/lib.rs": "c92408a32c6b7cfab710fd94dec9517b5b27f33d62099aa3a1f82cdf7bf3918d",
+        "src/html/element/inner_html.rs": "b4b5025e64e6343985c83f10aae70f9656f4c1b21a7481b24871c112589e858d",
+        "src/html/element/mod.rs": "b57732d629daf57990f71743d4002658bd758620583ff9032ff43a1c8d359ae9",
+        "src/html/event.rs": "fe41c40aa090ce5345a5cc4e9c7219fe94fce96582bf5c1d55e86396a0009745",
+        "src/html/mod.rs": "fa8fde108e775fbec57b327aaecc25a5d50b038b87273cf8cf54379827533499",
+        "src/html/node_ref.rs": "160e6ad8b5bffd48e2ee45b9661849f2c9ae0f554723ff5b348520b801f057ec",
+        "src/html/property.rs": "193b6672cedeba1419f67c6212104ae55495a2f2125ed891a2bb6bfe67d54388",
+        "src/html/style.rs": "38316a5793623b5cb62201aa8caa8faead4a6e6a59934424973d846e1e9a42b3",
+        "src/hydration.rs": "9850ac1039ba5ec77168dbc928f8d52222e8ae168065a8741a0762f4297b9c96",
+        "src/lib.rs": "13212bf5edb012daa0b92fa5b769a88902ac16212792fffae363ec9199b78cc3",
         "src/mathml/mod.rs": "2c41a09b6b601c04f3e8d63b18ca2164e416810dbc848986af89296db1d76311",
-        "src/oco.rs": "a97ceb2cb31f08350afad6f5953dfdf02be4ad2ca1f5d3ab41c63995117c838f",
-        "src/reactive_graph/bind.rs": "491aced263b5361ac73c38ff5f0be25601762290f0d2362c740d80671f6a3c3d",
-        "src/reactive_graph/class.rs": "22bdbe51c236530ba89b9f3d010e978be7c8ed70d0696738daa9296a82001e58",
-        "src/reactive_graph/inner_html.rs": "fabbd517682ad7d32d329098b37a3a1dad011e7ccbb2cf38856b604a667d5f4b",
-        "src/reactive_graph/mod.rs": "7a554761eea16aaede31c5c4dd7de999907551d541988c100e78f1f5b101bf97",
+        "src/oco.rs": "7fd666bc0a7b13cc50c5ebbfc06e61ccfa3392481a4e6023e776867e18eefb17",
+        "src/reactive_graph/bind.rs": "cf601fb8ff50ae0f21e6d576eac25a0ff3e923cf9c4f0ddea3c8e1b58b12e50d",
+        "src/reactive_graph/class.rs": "d781c7abdd82d7ccd3fc49762b98dcb3cde5f383be5d4612e53d1490125e5c50",
+        "src/reactive_graph/inner_html.rs": "72b99439b386403fd7036bf11766d04f380b55c9c45479e89c991cbdf80bdad3",
+        "src/reactive_graph/mod.rs": "1d9efd39829fa134db89237da010daa873a1fdb8f93e3f70da78777efffa24fe",
         "src/reactive_graph/node_ref.rs": "4a4506ec573f07831af53320767169a625b2a0176de7e8d50eda05552ac5d643",
-        "src/reactive_graph/owned.rs": "d37a0b75f7f9c18a349c34a8cc3e9742a56821548b68dbd04b411aa589e40565",
-        "src/reactive_graph/property.rs": "fece1682687cdd58f4db9d3a5c77bba0f5d62e930b181fcfaf95f4e482391c58",
-        "src/reactive_graph/style.rs": "78f46b2b89e3a869d78d61616f1c32c2252f4ccc67162cf0b9c4c46488ee82d6",
-        "src/reactive_graph/suspense.rs": "2cbbde7f57d7bd95ba8597cd56f2cf63108a5bebfd24181da647cf033a42596c",
+        "src/reactive_graph/owned.rs": "df9aff800d1eca87476960aeea423f68464d576f972eaf0b847cd7edf8af79fb",
+        "src/reactive_graph/property.rs": "08ca5ea9adab9881c1043f3271edcd315d655b10988505cec32e27a722371673",
+        "src/reactive_graph/style.rs": "f240f9809d6d94f978cae44b87fa3ce977473a544b410f48d5fbfe700b4fd314",
+        "src/reactive_graph/suspense.rs": "18dc29c6ca594dec0661334b97a4ceadf062f18cd4cf693b86acba4890a49bb1",
         "src/renderer/dom.rs": "b008f934a062d9f79f66750cfd1301c5a1e24ea561412e0e91aaeee68a23b6b2",
-        "src/renderer/mock_dom.rs": "92f4be9605fc4fa16199a1f2d7a678131251996f41034c46dd3bc7730c7bffcd",
-        "src/renderer/mod.rs": "c26f5358538c4d8a97fad12efc00802e2baf34c497cc75c84d8269f76007a589",
-        "src/renderer/sledgehammer.rs": "6cc2cd4827179afed1bd32f1be22d276f54f3ee34671f291cc5a1cf98b4570a9",
-        "src/ssr/mod.rs": "ba75667214a373cd29d634e4497e9c614cbb203355531192a7e60a5f365d8cfb",
-        "src/svg/mod.rs": "bbc73701dd8937e77144c981dc55c56ccabada52cdf5af6229fef72b60b43223",
+        "src/renderer/mod.rs": "8a4521b46751a9f720664e5d954f50e7d0c5272eb53a978e0efbc08551c7d7e2",
+        "src/svg/mod.rs": "5635811489d308c7885d83f7e68ea4fb14e949bcd513900cb2781ad5649af4a5",
         "src/view/add_attr.rs": "1709ecc464a41b53c162a714b333e7cd123c4a9601641d4f238940bf7734657c",
-        "src/view/any_view.rs": "b134485ccaeab618dfc1f529a7b43472e9deb8da991a117d680da176fe008b87",
-        "src/view/either.rs": "8e819861ceba6936c78902110a244d0ec50246898e695f4f60a149d951b3c9fe",
-        "src/view/error_boundary.rs": "b972d8ec6d2298c29c0f330ff41c05a9cb1a37b03c211ffd4fbe6a3f98f1c8c6",
+        "src/view/any_view.rs": "11a51afb75c988bf2cc2619ea3db666ec188f96934fd1cee0dd3db568c1d490c",
+        "src/view/either.rs": "a3e3713cfe082f2542a1dff18d19df79d8705a8fcb7d9bfdcb5760a0d171dd8b",
+        "src/view/error_boundary.rs": "1815c4a637449e2021dc375d89c530883bc794ef7ce1e4cab0c956e5c02a5b41",
         "src/view/fragment.rs": "b81b0183c5626d2a4b27b35215f7017f9c1cb5d6220de0dad2ae0e0eff28c09b",
-        "src/view/iterators.rs": "4be4ef1cc4a280e93dc1c8971ea98be03d5c84dd81b4eef59fa1a50b22687119",
-        "src/view/keyed.rs": "0f65afde19f1937fa4f4cdf44b7eeae02d385734d25bd11ee6a64a558077f12c",
-        "src/view/mod.rs": "a34c57998dec7797159e2f921e7bbbe714ab964f06344954b056bc793adb6bca",
-        "src/view/primitives.rs": "c1f8b8536f3622c9ec60b501b65a8e5d0ec3c6de997a26dc20b626df6505a9dd",
-        "src/view/static_types.rs": "ee195065be138dcdba443bc10d22e89f10b9ee016bcd843302a17e00ab21adae",
-        "src/view/strings.rs": "ae161a0f354d2efe22ef3530735749e13c23e8d4640fb179a137e766c5b967dd",
-        "src/view/template.rs": "5f9f82979a2e2d0c70ea2db69645dfeb3d8963e19e916f6ddeed07abf7c2684b",
-        "src/view/tuples.rs": "736d97ac455f6af972086ab351bdc6bfdd9d448422c93bce532c42fb6bdd9511"
+        "src/view/iterators.rs": "847b712a5f54a3203c51727deb4234da2423bfbc96c242974250237f7b6047b1",
+        "src/view/keyed.rs": "5dbf68b4f9b0da0c93d7224c6c0274e40dbbf5fcf92124b3449c9e53f0470ff7",
+        "src/view/mod.rs": "fb8fb285b5b815c40c810e9da99413ade95ec3e982a3e6dd77cc047456fc4c77",
+        "src/view/primitives.rs": "4f1c0d696d1384e27eb5cb6279485ecca3d50f928e387c68da84cc660c420b59",
+        "src/view/static_types.rs": "79e3bddba341a1e76f1dff4bb2bd11cf73bafaa6af8622ef1c18b2d8bee17d47",
+        "src/view/strings.rs": "7cc80961338ea7f4468c7b9627941b5bffd8ebd23ba4ccd52b27b49781b32f60",
+        "src/view/template.rs": "4b7f7ee10e9b25a19dbacffcbfd1e4792aa91b44e86d18cc862f926cdcc73bd5",
+        "src/view/tuples.rs": "b3d61e6708ebd2d6707360d5dcbc43905458cd7f6535aac25abf9e379e63691a"
       },
       "license": "MIT",
       "license_materials": [
@@ -21328,7 +21324,7 @@
         "src/slice.rs": "277ca38d1afda01dd6058e464f0a0d236507e45da3aa932ce4d902b453c47f4a",
         "src/slot.rs": "1f5f59c8eff9523a341716c01f6dba9431bf1247c8edc604e7e8962aef52b777",
         "src/view/component_builder.rs": "ef68d1ecf60cbd7dd60ea2f33e93d3137e8a53bafb191dad2f223e3960f67de2",
-        "src/view/mod.rs": "adea7eb9dc7fd64ec5268156607e7992b54363e1660f4da5ada6e77681a119b6",
+        "src/view/mod.rs": "58388725d0d0ff692741064cf49998912e9b3485a16a17e45d68cb5c42da4aca",
         "src/view/slot_helper.rs": "6c15e192889d03d673bb0e9067eb20d7a8ac01a2e5a80b3b0421d1073fe61d6c",
         "src/view/utils.rs": "d4679c4a8984014adb88f61937fc1bebdc5b1b59734cc76b31e23e65534cdf9e",
         "src/view_source.rs": "2b591d8f856bff3271bafe3aac28f0e116e8b11396857800b4ef336e71f28068"
@@ -21362,7 +21358,8 @@
         "Cargo.toml": "9e4fa929ef20246d202c133c361afe22fb59f05c90d16f5a3352bf301f5bbf34",
         "src/logging_tests.rs": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9",
         "src/main.rs": "841654e8e75c3e3585e5a8f103f2b94a5bdce8ac15ff5284db71c68bc6909df8",
-        "tests/fixtures/contract.rs": "ed0f5d4086663cadeef70ae76153aa4d8e086d2e94f99aa0aa2299eefe63fc2f"
+        "tests/fixtures/contract.rs": "ed0f5d4086663cadeef70ae76153aa4d8e086d2e94f99aa0aa2299eefe63fc2f",
+        "tests/fixtures/csr-template.rs": "2fb24e62c743181a77b048c7b9a9c119b0b20d95d0a815b20edc4704f682dd23"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -27345,8 +27342,7 @@
             "std"
           ],
           "roles": [
-            "compile",
-            "runtime"
+            "compile"
           ]
         },
         "src/foundation/indexmap": {
@@ -27696,10 +27692,8 @@
         },
         "src/foundation/tachys": {
           "features": [
-            "default",
             "oco",
-            "reactive_graph",
-            "testing"
+            "reactive_graph"
           ],
           "roles": [
             "runtime"

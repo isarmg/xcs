@@ -115,45 +115,14 @@ where
 }
 
 impl<T: IntoView + 'static, A: Attribute> RenderHtml for AttributeInterceptorInner<T, A> {
-    type AsyncOutput = T::AsyncOutput;
     type Owned = AttributeInterceptorInner<T, A::CloneableOwned>;
 
-    const MIN_LENGTH: usize = T::MIN_LENGTH;
-
-    fn dry_resolve(&mut self) {
-        self.children.dry_resolve()
-    }
-
-    fn resolve(self) -> impl std::future::Future<Output = Self::AsyncOutput> + Send {
-        self.children.resolve()
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut web_interface::tachys::view::Position,
-        escape: bool,
-        mark_branches: bool,
-        _extra_attrs: Vec<AnyAttribute>,
-    ) {
-        self.children
-            .to_html_with_buf(buf, position, escape, mark_branches, vec![])
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
+    fn hydrate(
         self,
         cursor: &web_interface::tachys::hydration::Cursor,
         position: &web_interface::tachys::view::PositionState,
     ) -> Self::State {
-        self.children.hydrate::<FROM_SERVER>(cursor, position)
-    }
-
-    async fn hydrate_async(
-        self,
-        cursor: &web_interface::tachys::hydration::Cursor,
-        position: &web_interface::tachys::view::PositionState,
-    ) -> Self::State {
-        self.children.hydrate_async(cursor, position).await
+        self.children.hydrate(cursor, position)
     }
 
     fn into_owned(self) -> Self::Owned {

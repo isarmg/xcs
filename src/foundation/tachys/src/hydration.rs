@@ -7,9 +7,6 @@ use std::{cell::Cell, panic::Location};
 use std::{cell::RefCell, rc::Rc};
 use web_sys::{Comment, Element, Node, Text};
 
-#[cfg(feature = "mark_branches")]
-const COMMENT_NODE: u16 = 8;
-
 /// Hydration works by walking over the DOM, adding interactivity as needed.
 ///
 /// This cursor tracks the location in the DOM that is currently being hydrated. Each that type
@@ -30,10 +27,9 @@ where
 {
     /// Creates a new cursor starting at the root element.
     pub fn new(root: crate::renderer::types::Element) -> Self {
-        let root = <crate::renderer::types::Element as AsRef<
-            crate::renderer::types::Node,
-        >>::as_ref(&root)
-        .clone();
+        let root =
+            <crate::renderer::types::Element as AsRef<crate::renderer::types::Node>>::as_ref(&root)
+                .clone();
         Self(Rc::new(RefCell::new(root)))
     }
 
@@ -51,21 +47,6 @@ where
             *inner = node;
         }
 
-        #[cfg(feature = "mark_branches")]
-        {
-            while inner.node_type() == COMMENT_NODE {
-                if let Some(content) = inner.text_content() {
-                    if content.starts_with("bo") || content.starts_with("bc") {
-                        if let Some(sibling) = Rndr::next_sibling(&inner) {
-                            *inner = sibling;
-                            continue;
-                        }
-                    }
-                }
-
-                break;
-            }
-        }
         // //drop(inner);
         //crate::log(">> which is ");
         //Rndr::log_node(&self.current());
@@ -80,20 +61,6 @@ where
             *inner = node;
         }
 
-        #[cfg(feature = "mark_branches")]
-        {
-            while inner.node_type() == COMMENT_NODE {
-                if let Some(content) = inner.text_content() {
-                    if content.starts_with("bo") || content.starts_with("bc") {
-                        if let Some(sibling) = Rndr::next_sibling(&inner) {
-                            *inner = sibling;
-                            continue;
-                        }
-                    }
-                }
-                break;
-            }
-        }
         //drop(inner);
         //crate::log(">> which is ");
         //Rndr::log_node(&self.current());
@@ -144,9 +111,7 @@ thread_local! {
 }
 
 #[cfg(any(debug_assertions, leptos_debuginfo))]
-pub(crate) fn set_currently_hydrating(
-    location: Option<&'static Location<'static>>,
-) {
+pub(crate) fn set_currently_hydrating(location: Option<&'static Location<'static>>) {
     CURRENTLY_HYDRATING.set(location);
 }
 

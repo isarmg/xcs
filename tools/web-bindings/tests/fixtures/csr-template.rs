@@ -1,0 +1,113 @@
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
+use tachys::{
+    html::{
+        element::{button, div, input, span},
+        event,
+    },
+    prelude::*,
+    view::{template::ViewTemplate, ToTemplate},
+};
+use wasm_bindgen::{prelude::*, JsCast};
+
+fn template(label: String, counter: Arc<AtomicUsize>) -> impl RenderHtml + ToTemplate {
+    let active = label.starts_with("初始");
+    div()
+        .id("csr-template-probe")
+        .class("template-probe")
+        .class(("active", active))
+        .style(("color", "rgb(1, 2, 3)"))
+        .child((
+            input().prop("value", label.clone()),
+            button()
+                .on(event::click, move |_| {
+                    counter.fetch_add(1, Ordering::SeqCst);
+                })
+                .child(label),
+            span().id("primitive-probe").child((42u32, '<', true)),
+        ))
+}
+
+async fn settle_properties() {
+    let _ =
+        wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&JsValue::UNDEFINED)).await;
+}
+
+#[wasm_bindgen]
+pub async fn run_template_probe() -> Result<String, JsValue> {
+    let owner = reactive_graph::owner::Owner::new();
+    owner.with(|| reactive_graph::computed::ScopedFuture::new(async {
+        let counter = Arc::new(AtomicUsize::new(0));
+        let mut state = ViewTemplate::new(template("初始 <&> Ω".into(), counter.clone())).build();
+        let document = web_sys::window().unwrap().document().unwrap();
+        let parent = document.body().unwrap();
+        state.mount(parent.as_ref(), None);
+        let root = state.elements().into_iter().next().unwrap();
+        let button = root.query_selector("button")?.unwrap();
+        let input: web_sys::HtmlInputElement = root.query_selector("input")?.unwrap().unchecked_into();
+        if root.id() != "csr-template-probe" || !root.class_list().contains("template-probe") || !root.class_list().contains("active") {
+            return Err("template attributes".into());
+        }
+        settle_properties().await;
+        if button.text_content().as_deref() != Some("初始 <&> Ω") || input.value() != "初始 <&> Ω" {
+            return Err(format!("template dynamic text and property: text={:?}, input={:?}, html={}", button.text_content(), input.value(), root.outer_html()).into());
+        }
+        if root.query_selector("#primitive-probe")?.unwrap().text_content().as_deref() != Some("42<true") {
+            return Err("primitive template text and escaping".into());
+        }
+        if !root.get_attribute("style").unwrap_or_default().contains("rgb(1, 2, 3)") {
+            return Err("template style".into());
+        }
+        if button.children().length() != 0 { return Err("text was interpreted as HTML".into()); }
+        button.dispatch_event(&web_sys::Event::new("click")?)?;
+        if counter.load(Ordering::SeqCst) != 1 { return Err("template event listener".into()); }
+        input.focus()?;
+        ViewTemplate::new(template("更新 文件 🌍".into(), counter.clone())).rebuild(&mut state);
+        settle_properties().await;
+        let rebuilt = state.elements().into_iter().next().unwrap();
+        if !root.is_same_node(Some(&rebuilt)) || input.value() != "更新 文件 🌍" || button.text_content().as_deref() != Some("更新 文件 🌍") {
+            return Err("template rebuild and node retention".into());
+        }
+        if root.class_list().contains("active") { return Err("template class toggle rebuild".into()); }
+        if !input.is_same_node(document.active_element().as_ref().map(|el| el.as_ref())) {
+            return Err("template rebuild focus retention".into());
+        }
+        button.dispatch_event(&web_sys::Event::new("click")?)?;
+        if counter.load(Ordering::SeqCst) != 2 { return Err("template listener replaced once".into()); }
+        state.unmount();
+        drop(state);
+        if document.get_element_by_id("csr-template-probe").is_some() { return Err("template unmount".into()); }
+        button.dispatch_event(&web_sys::Event::new("click")?)?;
+        if counter.load(Ordering::SeqCst) != 2 { return Err("template handler cleanup".into()); }
+        Ok("{\"status\":\"passed\",\"checks\":[\"template attributes\",\"dynamic text\",\"DOM property\",\"primitive text and escaping\",\"style\",\"class toggle rebuild\",\"text escaping\",\"event listener\",\"rebuild\",\"node retention\",\"focus retention\",\"listener replacement\",\"unmount and cleanup\"]}".into())
+    })).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn html<V: ToTemplate>(_: &V) -> String {
+        let mut value = String::new();
+        V::to_template(
+            &mut value,
+            &mut String::new(),
+            &mut String::new(),
+            &mut String::new(),
+            &mut Default::default(),
+        );
+        value
+    }
+    #[test]
+    fn void_template_nodes_do_not_create_sibling_placeholders() {
+        let value = template("value".into(), Arc::new(AtomicUsize::new(0)));
+        let output = html(&value);
+        assert!(output.contains("<input><button>"), "{output}");
+        assert!(!output.contains("</input>"), "{output}");
+        fn constant<V: ToTemplate>(_: &V) -> &'static str {
+            V::TEMPLATE
+        }
+        assert!(!constant(&value).contains("</input>"));
+    }
+}

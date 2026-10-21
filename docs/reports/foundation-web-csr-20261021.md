@@ -40,3 +40,30 @@ Chrome 154.0.8037.57 保留浏览器沙箱，分别执行正常加载、错误 M
 本批 foundation 从 10,644 文件 / 148,678,139 字节降至 10,642 / 148,516,376，减少 2 文件与 161,763 字节；相对 a04 基线减少 367 文件、1,932,826 字节。根 Cargo 包仍为 344、活动来源仍为 326、退休来源仍为 76；仅移除 CLI support 到 base64 的一条边，没有改变其余多版本数字。原始 provenance、许可证、上游包名/版本/来源身份保持不变，当前来源收据与架构索引更新，门禁未放宽。生成器源码缩小不等于浏览器性能收益；同输入产物相同正说明本批目标是维护表面与构建职责收窄。
 
 CSR/流式 HTML 和 web-sys/tachys 实际闭包仍是后续已授权批次，尚未在本批完成。浏览器 template 所需 RenderHtml/hydration 必须先分离保留，不能直接删除 RenderHtml。
+
+
+## 第六批：分离浏览器模板与服务端 HTML
+
+第五批的最终补齐提交 `1f67340ce7634acce42e93a3b13fae9475e6de15` 已通过 CI [39544312360](https://github.com/isarmg/zxs/actions/runs/39544312360)，13/13 项成功。前批同输入等价 JSON 是提交前源码验证，不能单独冒充最终提交二进制证明；本批新增 CI 资产到精确 Git SHA/树、当前来源收据和实际 WASM 摘要的对应记录。
+
+`RenderHtml` 保留为浏览器模板克隆的 hydration 契约，`ToTemplate` 继续生成模板，`ViewTemplate` 继续克隆节点、恢复动态数据与事件，并保留可重建状态。删除 RenderHtml/Attribute/AttributeValue/Class/Style/Property 等路径上的服务端字符串输出、长度估算、异步服务端解析、HTML 流和相关类型擦除回调；删除 StreamBuilder 与同步/异步/顺序/乱序输出 API。模板恢复不再带 FROM_SERVER 参数，也不再提供服务器异步恢复模式。
+
+同步移除 islands、分支标记、仅为 islands 使用的 SerializableKey 及无业务约束的序列化 key 空实现；keyed 的 items 不再为 SSR 存 Option，保持 key 比较、保留/逐出和实际 DOM/owner 逻辑。事件、directive、property 的值直接放在 SendWrapper 中，删除仅为服务器跳过浏览器值而存在的 Option 和 feature 冲突诊断。界面 View/attribute interceptor/children 约束及宏调用方均已迁移，移除仅用于服务端输出的 view marker。46 个内部宏调用不再传无用的 dry_resolve 标志。
+
+撤销 `ssr`、`hydrate`、`islands`、`mark_branches`、`testing`、`sledgehammer`、`reactive_stores`、`error-hook` 八个特性，以及原先只激活闲置 testing 的 default 声明。后四项分别关联已被注释掉的 mock renderer、未公开的旧 renderer、引用未声明依赖的休眠模块，或没有任何实现分支的空声明，不保留伪支持。删除对应四个源码文件及 html-escape、serde、serde_json、slotmap 四条 manifest 边；这些库仍有其他消费者，未机械删除包。async-trait 还有 JSON Schema/referencing 的异步 API 声明。本批保留它以及 tachys 原有的依赖声明：后者暂时维持当前受支持闭包的来源可达性，仍是待迁移消费者后一并消除的旧边；没有增加虚假入口或弱化 Schema 校验来凑包数。
+
+### 浏览器模板保留过程中发现的旧缺陷
+
+新增真实模板夹具先暴露 void 元素错误：原先 input 的模板生成连同 `()` 子占位和闭合标签一起输出，浏览器把占位解析成按钮之前的兄弟节点，游标无法恢复按钮。本云端另建精确 `1f67340c` 工作树执行同一夹具，复现相同失败。修复运行时模板与常量模板的 void 规则；原生回归同时检查两者，不删掉该场景。
+
+扩展 class/style 断言后发现旧样式恢复沿用“服务端已写入”的假设，而浏览器模板不包含动态 style。将 14 处重复恢复实现统一到已有 build 路径，恢复实际样式。输入 value 刻意通过微任务写入的原行为保留，夹具等待微任务后验证，未为了同步断言改调度。
+
+真实浏览器模板现覆盖 13 项：class 属性及切换、style、Unicode 动态文本、数字/字符/布尔文本、文本转义、微任务 property、事件、重建、节点与焦点保留、监听替换、卸载与清理。现有 web-app/web-interface/view-macros 全部宿主单元、集成与 doctest 保持通过。For 的 to_html 示例在本轮前已整段注释，不属于通过删除活跃测试逃避错误；旧 SSR 专用断言随其明确退役的 API 撤销，保留的文本/转义/class/style/生命周期行为改由模板原生及真实 DOM 回归验证。
+
+### 持续门禁与量化
+
+新增生产套件的 CSR scope 检查，构建真实宏/模板消费者与 WASM，原生测试 void 模板，并以 15 组负向 API 和 8 组负向 feature 检查阻止旧表面返回。CI 生产任务保存独立夹具，原有 Chrome 任务下载同次运行资产并执行真实模板恢复；`validation.json` 记录 Git HEAD/树、工作区是否有修改、当前来源收据、根锁、夹具源码和 JS/WASM 摘要，`browser-result.json` 记录实际浏览器与断言。任务总数仍为 13，没有新增服务或产品部署。
+
+本批 foundation 从 10,642 文件 / 148,516,376 字节降至 10,638 / 148,264,661，减少 4 文件与 251,715 字节；相对 a04 共减少 371 文件、2,184,541 字节。根 Cargo 包仍为 344、活动来源仍为 326、退休身份仍为 76，多版本统计不变。来源收据、合并来源、架构索引和界面说明已同步，原始 provenance/许可证/上游身份及来源门禁保持不变。
+
+全 workspace quality、来源/静态门禁与 Web 宿主测试已通过。最终生产构建、产品 Chrome/G4/字体/六视口/生命周期及同构建的 13 项模板断言全部通过；本地证据见 [CSR 验证收据](evidence/foundation-csr-local-validation-20261021.json)。产品 WASM 从 2,205,316 到 2,191,592 字节，减少 13,724；当前 gzip 为 659,482 字节。不据此推断运行时延迟、内存或吞吐收益。保留客户端 Suspend、owner 与 Abortable 清理，不把服务端解析清理扩展成取消客户端异步 UI。

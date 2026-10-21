@@ -1,11 +1,8 @@
 use super::attribute::{
-    maybe_next_attr_erasure_macros::next_attr_output_type, Attribute,
-    NextAttribute,
+    maybe_next_attr_erasure_macros::next_attr_output_type, Attribute, NextAttribute,
 };
 use crate::{
-    html::attribute::{
-        maybe_next_attr_erasure_macros::next_attr_combine, NamedAttributeKey,
-    },
+    html::attribute::{maybe_next_attr_erasure_macros::next_attr_combine, NamedAttributeKey},
     prelude::AddAnyAttr,
     view::{Position, ToTemplate},
 };
@@ -47,18 +44,16 @@ pub fn directive<T, P, D>(handler: D, param: P) -> Directive<T, D, P>
 where
     D: IntoDirective<T, P>,
 {
-    Directive((!cfg!(feature = "ssr")).then(|| {
-        SendWrapper::new(DirectiveInner {
-            handler,
-            param,
-            t: PhantomData,
-        })
+    Directive(SendWrapper::new(DirectiveInner {
+        handler,
+        param,
+        t: PhantomData,
     }))
 }
 
 /// Custom logic that runs in the browser when the element is created or hydrated.
 #[derive(Debug)]
-pub struct Directive<T, D, P>(Option<SendWrapper<DirectiveInner<T, D, P>>>);
+pub struct Directive<T, D, P>(SendWrapper<DirectiveInner<T, D, P>>);
 
 impl<T, D, P> Clone for Directive<T, D, P>
 where
@@ -97,43 +92,24 @@ where
     P: Clone + 'static, // TODO this is just here to make them cloneable
     T: 'static,
 {
-    const MIN_LENGTH: usize = 0;
-
-    type AsyncOutput = Self;
     type State = crate::renderer::types::Element;
     type Cloneable = Directive<T, D::Cloneable, P>;
     type CloneableOwned = Directive<T, D::Cloneable, P>;
 
-    fn html_len(&self) -> usize {
-        0
-    }
-
-    fn to_html(
-        self,
-        _buf: &mut String,
-        _class: &mut String,
-        _style: &mut String,
-        _inner_html: &mut String,
-    ) {
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
-        let inner = self.0.expect(super::FEATURE_CONFLICT_DIAGNOSTIC).take();
+    fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
+        let inner = self.0.take();
         inner.handler.run(el.clone(), inner.param);
         el.clone()
     }
 
     fn build(self, el: &crate::renderer::types::Element) -> Self::State {
-        let inner = self.0.expect(super::FEATURE_CONFLICT_DIAGNOSTIC).take();
+        let inner = self.0.take();
         inner.handler.run(el.clone(), inner.param);
         el.clone()
     }
 
     fn rebuild(self, state: &mut Self::State) {
-        let inner = self.0.expect(super::FEATURE_CONFLICT_DIAGNOSTIC).take();
+        let inner = self.0.take();
         inner.handler.run(state.clone(), inner.param);
     }
 
@@ -142,21 +118,13 @@ where
     }
 
     fn into_cloneable_owned(self) -> Self::CloneableOwned {
-        let inner = self.0.map(|inner| {
-            let DirectiveInner { handler, param, t } = inner.take();
-            SendWrapper::new(DirectiveInner {
-                handler: handler.into_cloneable(),
-                param,
-                t,
-            })
+        let DirectiveInner { handler, param, t } = self.0.take();
+        let inner = SendWrapper::new(DirectiveInner {
+            handler: handler.into_cloneable(),
+            param,
+            t,
         });
         Directive(inner)
-    }
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
     }
 
     fn keys(&self) -> Vec<NamedAttributeKey> {
@@ -172,10 +140,7 @@ where
 {
     next_attr_output_type!(Self, NewAttr);
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         next_attr_combine!(self, new_attr)
     }
 }

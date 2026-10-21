@@ -1,8 +1,5 @@
-use super::{
-    Mountable, Position, PositionState, Render, RenderHtml, ToTemplate,
-};
+use super::{Mountable, Position, PositionState, Render, RenderHtml, ToTemplate};
 use crate::{
-    html::attribute::any_attribute::AnyAttribute,
     hydration::Cursor,
     no_attrs,
     renderer::{CastFrom, Rndr},
@@ -38,49 +35,9 @@ impl<'a> Render for &'a str {
 }
 
 impl RenderHtml for &str {
-    type AsyncOutput = Self;
     type Owned = String;
 
-    const MIN_LENGTH: usize = 0;
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
-    }
-
-    fn html_len(&self) -> usize {
-        self.len()
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        _mark_branches: bool,
-        _extra_attrs: Vec<AnyAttribute>,
-    ) {
-        // add a comment node to separate from previous sibling, if any
-        if matches!(position, Position::NextChildAfterText) {
-            buf.push_str("<!>")
-        }
-        if self.is_empty() && escape {
-            buf.push(' ');
-        } else if escape {
-            let escaped = html_escape::encode_text(self);
-            buf.push_str(&escaped);
-        } else {
-            buf.push_str(self);
-        }
-        *position = Position::NextChildAfterText;
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         if position.get() == Position::FirstChild {
             cursor.child();
         } else {
@@ -94,11 +51,9 @@ impl RenderHtml for &str {
 
         let node = cursor.current();
         let node = crate::renderer::types::Text::cast_from(node.clone())
-            .unwrap_or_else(|| {
-                crate::hydration::failed_to_cast_text_node(node)
-            });
+            .unwrap_or_else(|| crate::hydration::failed_to_cast_text_node(node));
 
-        if !FROM_SERVER {
+        {
             Rndr::set_text(&node, self);
         }
         position.set(Position::NextChildAfterText);
@@ -175,45 +130,10 @@ impl Render for String {
 }
 
 impl RenderHtml for String {
-    const MIN_LENGTH: usize = 0;
-    type AsyncOutput = Self;
     type Owned = Self;
 
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
-    }
-
-    fn html_len(&self) -> usize {
-        self.len()
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        <&str as RenderHtml>::to_html_with_buf(
-            self.as_str(),
-            buf,
-            position,
-            escape,
-            mark_branches,
-            extra_attrs,
-        )
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        let StrState { node, .. } =
-            self.as_str().hydrate::<FROM_SERVER>(cursor, position);
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
+        let StrState { node, .. } = self.as_str().hydrate(cursor, position);
         StringState { node, str: self }
     }
 
@@ -232,9 +152,7 @@ impl ToTemplate for String {
         inner_html: &mut String,
         position: &mut Position,
     ) {
-        <&str as ToTemplate>::to_template(
-            buf, class, style, inner_html, position,
-        )
+        <&str as ToTemplate>::to_template(buf, class, style, inner_html, position)
     }
 }
 
@@ -285,38 +203,6 @@ impl Render for Rc<str> {
 
 // can't Send an Rc<str> between threads, so can't implement async HTML rendering that might need
 // to send it
-/*
-impl RenderHtml for Rc<str>
-where
-
-{
-    type AsyncOutput = Self;
-
-    const MIN_LENGTH: usize = 0;
-
-    async fn resolve(self) -> Self::AsyncOutput {
-    self
-    }
-
-    fn html_len(&self) -> usize {
-        self.len()
-    }
-
-    fn to_html_with_buf(self, buf: &mut String, position: &mut Position, escape: bool, mark_branches: bool) {
-        <&str as RenderHtml>::to_html_with_buf(&self, buf, position)
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        let this: &str = self.as_ref();
-        let StrState { node, .. } =
-            this.hydrate::<FROM_SERVER>(cursor, position);
-        RcStrState { node, str: self }
-    }
-}*/
 
 impl ToTemplate for Rc<str> {
     const TEMPLATE: &'static str = <&str as ToTemplate>::TEMPLATE;
@@ -328,9 +214,7 @@ impl ToTemplate for Rc<str> {
         inner_html: &mut String,
         position: &mut Position,
     ) {
-        <&str as ToTemplate>::to_template(
-            buf, class, style, inner_html, position,
-        )
+        <&str as ToTemplate>::to_template(buf, class, style, inner_html, position)
     }
 }
 
@@ -380,47 +264,11 @@ impl Render for Arc<str> {
 }
 
 impl RenderHtml for Arc<str> {
-    type AsyncOutput = Self;
     type Owned = Self;
 
-    const MIN_LENGTH: usize = 0;
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
-    }
-
-    fn html_len(&self) -> usize {
-        self.len()
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        <&str as RenderHtml>::to_html_with_buf(
-            &self,
-            buf,
-            position,
-            escape,
-            mark_branches,
-            extra_attrs,
-        )
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         let this: &str = self.as_ref();
-        let StrState { node, .. } =
-            this.hydrate::<FROM_SERVER>(cursor, position);
+        let StrState { node, .. } = this.hydrate(cursor, position);
         ArcStrState { node, str: self }
     }
 
@@ -439,9 +287,7 @@ impl ToTemplate for Arc<str> {
         inner_html: &mut String,
         position: &mut Position,
     ) {
-        <&str as ToTemplate>::to_template(
-            buf, class, style, inner_html, position,
-        )
+        <&str as ToTemplate>::to_template(buf, class, style, inner_html, position)
     }
 }
 
@@ -491,47 +337,11 @@ impl<'a> Render for Cow<'a, str> {
 }
 
 impl RenderHtml for Cow<'_, str> {
-    type AsyncOutput = Self;
     type Owned = String;
 
-    const MIN_LENGTH: usize = 0;
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
-    }
-
-    fn html_len(&self) -> usize {
-        self.len()
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        <&str as RenderHtml>::to_html_with_buf(
-            &self,
-            buf,
-            position,
-            escape,
-            mark_branches,
-            extra_attrs,
-        )
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         let this: &str = self.as_ref();
-        let StrState { node, .. } =
-            this.hydrate::<FROM_SERVER>(cursor, position);
+        let StrState { node, .. } = this.hydrate(cursor, position);
         CowStrState { node, str: self }
     }
 
@@ -550,9 +360,7 @@ impl ToTemplate for Cow<'_, str> {
         inner_html: &mut String,
         position: &mut Position,
     ) {
-        <&str as ToTemplate>::to_template(
-            buf, class, style, inner_html, position,
-        )
+        <&str as ToTemplate>::to_template(buf, class, style, inner_html, position)
     }
 }
 

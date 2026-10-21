@@ -96,6 +96,7 @@ case "${1:-}" in
     test -s build/web/pkg/zxs_bg.wasm
     test -s build/web/pkg/zxs_bg.wasm.gz
     test -s build/web/build-manifest.json
+    python3 .github/scripts/check-csr-scope.py
     ;;
   browser-smoke)
     cargo build --locked --offline -p storage-admin
@@ -106,6 +107,7 @@ case "${1:-}" in
     fi
     cargo run --locked --offline -p browser-smoke -- \
       --cli-bin "$PWD/target/native/debug/zxs" --web-dir "$PWD/build/web" "${screenshot_args[@]}"
+    python3 .github/scripts/check-csr-browser.py
     ;;
   *)
     echo 'Usage: check.sh {static|rust-sources|quality|security|workspace|foundation|web|contracts|build-tools|smb-protocol|web-production|browser-smoke}' >&2

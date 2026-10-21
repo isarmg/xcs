@@ -12,49 +12,24 @@ mod value;
 
 use crate::view::{Position, ToTemplate};
 pub use key::*;
-use maybe_next_attr_erasure_macros::{
-    next_attr_combine, next_attr_output_type,
-};
-use std::{borrow::Cow, fmt::Debug, future::Future};
+use maybe_next_attr_erasure_macros::{next_attr_combine, next_attr_output_type};
+use std::{borrow::Cow, fmt::Debug};
 pub use value::*;
 
 /// Defines an attribute: anything that can modify an element.
 pub trait Attribute: NextAttribute + Send {
-    /// The minimum length of this attribute in HTML.
-    const MIN_LENGTH: usize;
-
     /// The state that should be retained between building and rebuilding.
     type State;
-    /// The type once all async data have loaded.
-    type AsyncOutput: Attribute;
+
     /// An equivalent to this attribute that can be cloned to be shared across elements.
     type Cloneable: Attribute + Clone;
     /// An equivalent to this attribute that can be cloned to be shared across elements, and
     /// captures no references shorter than `'static`.
     type CloneableOwned: Attribute + Clone + 'static;
 
-    /// An approximation of the actual length of this attribute in HTML.
-    fn html_len(&self) -> usize;
-
-    /// Renders the attribute to HTML.
-    ///
-    /// This separates a general buffer for attribute values from the `class` and `style`
-    /// attributes, so that multiple classes or styles can be combined, and also allows for an
-    /// `inner_html` attribute that sets the child HTML instead of an attribute.
-    fn to_html(
-        self,
-        buf: &mut String,
-        class: &mut String,
-        style: &mut String,
-        inner_html: &mut String,
-    );
-
     /// Adds interactivity as necessary, given DOM nodes that were created from HTML that has
     /// either been rendered on the server, or cloned for a `<template>`.
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State;
+    fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State;
 
     /// Adds this attribute to the element during client-side rendering.
     fn build(self, el: &crate::renderer::types::Element) -> Self::State;
@@ -67,14 +42,6 @@ pub trait Attribute: NextAttribute + Send {
 
     /// Converts this attributes into an equivalent that can be cloned and is `'static`.
     fn into_cloneable_owned(self) -> Self::CloneableOwned;
-
-    /// “Runs” the attribute without other side effects. For primitive types, this is a no-op. For
-    /// reactive types, this can be used to gather data about reactivity or about asynchronous data
-    /// that needs to be loaded.
-    fn dry_resolve(&mut self);
-
-    /// “Resolves” this into a type that is not waiting for any asynchronous data.
-    fn resolve(self) -> impl Future<Output = Self::AsyncOutput> + Send;
 
     /// Returns a set of attribute keys, associated with this attribute, if any.
     ///
@@ -104,38 +71,16 @@ pub trait NextAttribute {
     type Output<NewAttr: Attribute>: Attribute;
 
     /// Adds a new attribute.
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr>;
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr>;
 }
 
 impl Attribute for () {
-    const MIN_LENGTH: usize = 0;
-
     type State = ();
-    type AsyncOutput = ();
+
     type Cloneable = ();
     type CloneableOwned = ();
 
-    fn html_len(&self) -> usize {
-        0
-    }
-
-    fn to_html(
-        self,
-        _buf: &mut String,
-        _class: &mut String,
-        _style: &mut String,
-        _inner_html: &mut String,
-    ) {
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        _el: &crate::renderer::types::Element,
-    ) -> Self::State {
-    }
+    fn hydrate(self, _el: &crate::renderer::types::Element) -> Self::State {}
 
     fn build(self, _el: &crate::renderer::types::Element) -> Self::State {}
 
@@ -149,10 +94,6 @@ impl Attribute for () {
         self
     }
 
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {}
-
     fn keys(&self) -> Vec<NamedAttributeKey> {
         vec![]
     }
@@ -163,13 +104,9 @@ impl NextAttribute for () {
     type Output<NewAttr: Attribute> = (NewAttr,);
 
     #[cfg(erase_components)]
-    type Output<NewAttr: Attribute> =
-        Vec<crate::html::attribute::any_attribute::AnyAttribute>;
+    type Output<NewAttr: Attribute> = Vec<crate::html::attribute::any_attribute::AnyAttribute>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         #[cfg(not(erase_components))]
         {
             (new_attr,)
@@ -221,32 +158,13 @@ where
     K: AttributeKey + Send,
     V: AttributeValue + Send,
 {
-    const MIN_LENGTH: usize = 0;
-
     type State = V::State;
-    type AsyncOutput = Attr<K, V::AsyncOutput>;
+
     type Cloneable = Attr<K, V::Cloneable>;
     type CloneableOwned = Attr<K, V::CloneableOwned>;
 
-    fn html_len(&self) -> usize {
-        K::KEY.len() + 3 + self.1.html_len()
-    }
-
-    fn to_html(
-        self,
-        buf: &mut String,
-        _class: &mut String,
-        _style: &mut String,
-        _inner_html: &mut String,
-    ) {
-        self.1.to_html(K::KEY, buf);
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
-        self.1.hydrate::<FROM_SERVER>(K::KEY, el)
+    fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
+        self.1.hydrate(K::KEY, el)
     }
 
     fn build(self, el: &crate::renderer::types::Element) -> Self::State {
@@ -265,14 +183,6 @@ where
         Attr(self.0, self.1.into_cloneable_owned())
     }
 
-    fn dry_resolve(&mut self) {
-        self.1.dry_resolve();
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        Attr(self.0, self.1.resolve().await)
-    }
-
     fn keys(&self) -> Vec<NamedAttributeKey> {
         vec![NamedAttributeKey::Attribute(K::KEY.into())]
     }
@@ -285,10 +195,7 @@ where
 {
     next_attr_output_type!(Self, NewAttr);
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         next_attr_combine!(self, new_attr)
     }
 }
@@ -300,32 +207,17 @@ macro_rules! impl_attr_for_tuples {
             $first: Attribute,
             $($ty: Attribute),*,
         {
-            const MIN_LENGTH: usize = $first::MIN_LENGTH $(+ $ty::MIN_LENGTH)*;
 
-            type AsyncOutput = ($first::AsyncOutput, $($ty::AsyncOutput,)*);
             type State = ($first::State, $($ty::State,)*);
             type Cloneable = ($first::Cloneable, $($ty::Cloneable,)*);
             type CloneableOwned = ($first::CloneableOwned, $($ty::CloneableOwned,)*);
 
-            fn html_len(&self) -> usize {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)*) = self;
-                $first.html_len() $(+ $ty.html_len())*
-            }
-
-            fn to_html(self, buf: &mut String, class: &mut String, style: &mut String, inner_html: &mut String,) {
-                #[allow(non_snake_case)]
-                    let ($first, $($ty,)* ) = self;
-                    $first.to_html(buf, class, style, inner_html);
-                    $($ty.to_html(buf, class, style, inner_html));*
-            }
-
-            fn hydrate<const FROM_SERVER: bool>(self, el: &crate::renderer::types::Element) -> Self::State {
+            fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
                 #[allow(non_snake_case)]
                     let ($first, $($ty,)* ) = self;
                     (
-                        $first.hydrate::<FROM_SERVER>(el),
-                        $($ty.hydrate::<FROM_SERVER>(el)),*
+                        $first.hydrate(el),
+                        $($ty.hydrate(el)),*
                     )
             }
 
@@ -365,22 +257,6 @@ macro_rules! impl_attr_for_tuples {
                 )
             }
 
-            fn dry_resolve(&mut self) {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)*) = self;
-                $first.dry_resolve();
-                $($ty.dry_resolve());*
-            }
-
-            async fn resolve(self) -> Self::AsyncOutput {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)*) = self;
-                futures::join!(
-                    $first.resolve(),
-                    $($ty.resolve()),*
-                )
-            }
-
             fn keys(&self) -> Vec<NamedAttributeKey> {
                 #[allow(non_snake_case)]
                 let ($first, $($ty,)*) = &self;
@@ -417,32 +293,17 @@ macro_rules! impl_attr_for_tuples_truncate_additional {
             $first: Attribute,
             $($ty: Attribute),*,
         {
-            const MIN_LENGTH: usize = $first::MIN_LENGTH $(+ $ty::MIN_LENGTH)*;
 
-            type AsyncOutput = ($first::AsyncOutput, $($ty::AsyncOutput,)*);
             type State = ($first::State, $($ty::State,)*);
             type Cloneable = ($first::Cloneable, $($ty::Cloneable,)*);
             type CloneableOwned = ($first::CloneableOwned, $($ty::CloneableOwned,)*);
 
-            fn html_len(&self) -> usize {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)*) = self;
-                $first.html_len() $(+ $ty.html_len())*
-            }
-
-            fn to_html(self, buf: &mut String, class: &mut String, style: &mut String, inner_html: &mut String,) {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)* ) = self;
-                $first.to_html(buf, class, style, inner_html);
-                $($ty.to_html(buf, class, style, inner_html));*
-            }
-
-            fn hydrate<const FROM_SERVER: bool>(self, el: &crate::renderer::types::Element) -> Self::State {
+            fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
                 #[allow(non_snake_case)]
                 let ($first, $($ty,)* ) = self;
                 (
-                    $first.hydrate::<FROM_SERVER>(el),
-                    $($ty.hydrate::<FROM_SERVER>(el)),*
+                    $first.hydrate(el),
+                    $($ty.hydrate(el)),*
                 )
             }
 
@@ -482,22 +343,6 @@ macro_rules! impl_attr_for_tuples_truncate_additional {
                 )
             }
 
-            fn dry_resolve(&mut self) {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)*) = self;
-                $first.dry_resolve();
-                $($ty.dry_resolve());*
-            }
-
-            async fn resolve(self) -> Self::AsyncOutput {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)*) = self;
-                futures::join!(
-                    $first.resolve(),
-                    $($ty.resolve()),*
-                )
-            }
-
             fn keys(&self) -> Vec<NamedAttributeKey> {
                 #[allow(non_snake_case)]
                 let ($first, $($ty,)*) = &self;
@@ -530,32 +375,12 @@ impl<A> Attribute for (A,)
 where
     A: Attribute,
 {
-    const MIN_LENGTH: usize = A::MIN_LENGTH;
-
-    type AsyncOutput = (A::AsyncOutput,);
     type State = A::State;
     type Cloneable = (A::Cloneable,);
     type CloneableOwned = (A::CloneableOwned,);
 
-    fn html_len(&self) -> usize {
-        self.0.html_len()
-    }
-
-    fn to_html(
-        self,
-        buf: &mut String,
-        class: &mut String,
-        style: &mut String,
-        inner_html: &mut String,
-    ) {
-        self.0.to_html(buf, class, style, inner_html);
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
-        self.0.hydrate::<FROM_SERVER>(el)
+    fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
+        self.0.hydrate(el)
     }
 
     fn build(self, el: &crate::renderer::types::Element) -> Self::State {
@@ -574,14 +399,6 @@ where
         (self.0.into_cloneable_owned(),)
     }
 
-    fn dry_resolve(&mut self) {
-        self.0.dry_resolve();
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        (self.0.resolve().await,)
-    }
-
     fn keys(&self) -> Vec<NamedAttributeKey> {
         self.0.keys()
     }
@@ -593,10 +410,7 @@ where
 {
     next_attr_output_type!(A, NewAttr);
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         next_attr_combine!(self.0, new_attr)
     }
 }
@@ -619,25 +433,12 @@ impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P);
 impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q);
 impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R);
 impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S);
-impl_attr_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T
-);
-impl_attr_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U
-);
-impl_attr_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V
-);
-impl_attr_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W
-);
-impl_attr_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X
-);
-impl_attr_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y
-);
+impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T);
+impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U);
+impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V);
+impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W);
+impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X);
+impl_attr_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y);
 impl_attr_for_tuples_truncate_additional!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y,
-    Z
+    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
 );

@@ -44,11 +44,7 @@ pub trait ElementExt {
         S: IntoStyle;
 
     /// Adds an event listener to the element, at runtime.
-    fn on<E>(
-        &self,
-        ev: E,
-        cb: impl FnMut(E::EventType) + 'static,
-    ) -> RemoveEventHandler<Element>
+    fn on<E>(&self, ev: E, cb: impl FnMut(E::EventType) + 'static) -> RemoveEventHandler<Element>
     where
         E: EventDescriptor + Send + 'static,
         E::EventType: 'static,
@@ -73,11 +69,7 @@ where
         class.build(self.as_ref())
     }
 
-    fn on<E>(
-        &self,
-        ev: E,
-        cb: impl FnMut(E::EventType) + 'static,
-    ) -> RemoveEventHandler<Element>
+    fn on<E>(&self, ev: E, cb: impl FnMut(E::EventType) + 'static) -> RemoveEventHandler<Element>
     where
         E: EventDescriptor + Send + 'static,
         E::EventType: 'static,

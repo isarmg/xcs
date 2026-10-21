@@ -1,15 +1,11 @@
 use super::{
-    add_attr::AddAnyAttr, Mountable, Position, PositionState, Render,
-    RenderHtml, ToTemplate,
+    add_attr::AddAnyAttr, Mountable, Position, PositionState, Render, RenderHtml, ToTemplate,
 };
 use crate::{
     html::attribute::{
         any_attribute::AnyAttribute,
-        maybe_next_attr_erasure_macros::{
-            next_attr_combine, next_attr_output_type,
-        },
-        Attribute, AttributeKey, AttributeValue, NamedAttributeKey,
-        NextAttribute,
+        maybe_next_attr_erasure_macros::{next_attr_combine, next_attr_output_type},
+        Attribute, AttributeKey, AttributeValue, NamedAttributeKey, NextAttribute,
     },
     hydration::Cursor,
     renderer::{CastFrom, Rndr},
@@ -37,8 +33,7 @@ impl<K: AttributeKey, const V: &'static str> PartialEq for StaticAttr<K, V> {
 }
 
 /// Creates an [`Attribute`] whose key and value are both known at compile time.
-pub fn static_attr<K: AttributeKey, const V: &'static str>() -> StaticAttr<K, V>
-{
+pub fn static_attr<K: AttributeKey, const V: &'static str>() -> StaticAttr<K, V> {
     StaticAttr { ty: PhantomData }
 }
 
@@ -65,33 +60,13 @@ impl<K, const V: &'static str> Attribute for StaticAttr<K, V>
 where
     K: AttributeKey,
 {
-    const MIN_LENGTH: usize = K::KEY.len() + 3 + V.len(); // K::KEY + ="..." + V
+    // K::KEY + ="..." + V
 
-    type AsyncOutput = Self;
     type State = ();
     type Cloneable = Self;
     type CloneableOwned = Self;
 
-    #[inline(always)]
-    fn html_len(&self) -> usize {
-        K::KEY.len() + 3 + V.len()
-    }
-
-    fn to_html(
-        self,
-        buf: &mut String,
-        _class: &mut String,
-        _style: &mut String,
-        _inner_html: &mut String,
-    ) {
-        AttributeValue::to_html(V, K::KEY, buf)
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        _el: &crate::renderer::types::Element,
-    ) -> Self::State {
-    }
+    fn hydrate(self, _el: &crate::renderer::types::Element) -> Self::State {}
 
     fn build(self, el: &crate::renderer::types::Element) -> Self::State {
         Rndr::set_attribute(el, K::KEY, V);
@@ -107,12 +82,6 @@ where
         self
     }
 
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
-    }
-
     fn keys(&self) -> Vec<NamedAttributeKey> {
         vec![NamedAttributeKey::Attribute(K::KEY.into())]
     }
@@ -124,10 +93,7 @@ where
 {
     next_attr_output_type!(Self, NewAttr);
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         next_attr_combine!(StaticAttr::<K, V> { ty: PhantomData }, new_attr)
     }
 }
@@ -166,49 +132,13 @@ where
 }
 
 impl<const V: &'static str> RenderHtml for Static<V> {
-    type AsyncOutput = Self;
     type Owned = Self;
-
-    const MIN_LENGTH: usize = V.len();
-
-    fn dry_resolve(&mut self) {}
 
     // this won't actually compile because if a weird interaction because the const &'static str and
     // the RPITIT, so we just refine it to a concrete future type; this will never change in any
     // case
-    #[allow(refining_impl_trait)]
-    fn resolve(self) -> std::future::Ready<Self> {
-        std::future::ready(self)
-    }
 
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        _mark_branches: bool,
-        _extra_attrs: Vec<AnyAttribute>,
-    ) {
-        // add a comment node to separate from previous sibling, if any
-        if matches!(position, Position::NextChildAfterText) {
-            buf.push_str("<!>")
-        }
-        if V.is_empty() && escape {
-            buf.push(' ');
-        } else if escape {
-            let escaped = html_escape::encode_text(V);
-            buf.push_str(&escaped);
-        } else {
-            buf.push_str(V);
-        }
-        *position = Position::NextChildAfterText;
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         if position.get() == Position::FirstChild {
             cursor.child();
         } else {
@@ -222,9 +152,7 @@ impl<const V: &'static str> RenderHtml for Static<V> {
 
         let node = cursor.current();
         let node = crate::renderer::types::Text::cast_from(node.clone())
-            .unwrap_or_else(|| {
-                crate::hydration::failed_to_cast_text_node(node)
-            });
+            .unwrap_or_else(|| crate::hydration::failed_to_cast_text_node(node));
 
         position.set(Position::NextChildAfterText);
 
@@ -239,10 +167,7 @@ impl<const V: &'static str> RenderHtml for Static<V> {
 impl<const V: &'static str> AddAnyAttr for Static<V> {
     type Output<NewAttr: Attribute> = Static<V>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        _attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(self, _attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {

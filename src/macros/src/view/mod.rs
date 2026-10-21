@@ -105,13 +105,6 @@ fn render_view_inner(
     Ok(base.map(|view| {
         if !should_add_view {
             view
-        } else if let Some(vm) = view_marker {
-            quote! {
-                ::web_interface::prelude::View::new(
-                    #view
-                )
-                .with_view_marker(#vm)
-            }
         } else {
             quote! {
                 ::web_interface::prelude::View::new(
@@ -678,12 +671,10 @@ fn node_to_tokens(
 
     match node {
         Node::Comment(_) => Ok(None),
-        Node::Doctype(node) => {
-            let value = node.value.to_string_best();
-            Ok(Some(
-                quote! { ::web_interface::tachys::html::doctype(#value) },
-            ))
-        }
+        Node::Doctype(node) => Err(syn::Error::new(
+            node.span(),
+            "browser views cannot create document doctypes",
+        )),
         Node::Fragment(fragment) => fragment_to_tokens(
             &mut fragment.children,
             parent_type,

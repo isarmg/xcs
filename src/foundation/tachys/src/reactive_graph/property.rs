@@ -13,11 +13,7 @@ where
     type Cloneable = SharedReactiveFunction<V>;
     type CloneableOwned = SharedReactiveFunction<V>;
 
-    fn hydrate<const FROM_SERVER: bool>(
-        mut self,
-        el: &crate::renderer::types::Element,
-        key: &str,
-    ) -> Self::State {
+    fn hydrate(mut self, el: &crate::renderer::types::Element, key: &str) -> Self::State {
         let key = Rndr::intern(key);
         let key = key.to_owned();
         let el = el.to_owned();
@@ -28,16 +24,12 @@ where
                 value.rebuild(&mut state, &key);
                 state
             } else {
-                value.hydrate::<FROM_SERVER>(&el, &key)
+                value.hydrate(&el, &key)
             }
         })
     }
 
-    fn build(
-        mut self,
-        el: &crate::renderer::types::Element,
-        key: &str,
-    ) -> Self::State {
+    fn build(mut self, el: &crate::renderer::types::Element, key: &str) -> Self::State {
         let key = Rndr::intern(key);
         let key = key.to_owned();
         let el = el.to_owned();
@@ -93,12 +85,12 @@ macro_rules! property_reactive {
             type Cloneable = Self;
             type CloneableOwned = Self;
 
-            fn hydrate<const FROM_SERVER: bool>(
+            fn hydrate(
                 self,
                 el: &crate::renderer::types::Element,
                 key: &str,
             ) -> Self::State {
-                (move || self.get()).hydrate::<FROM_SERVER>(el, key)
+                (move || self.get()).hydrate(el, key)
             }
 
             fn build(
@@ -182,82 +174,4 @@ mod stable {
     property_reactive!(ArcReadSignal, <V>, V, ArcReadSignal<V>: Get<Value = V>);
     property_reactive!(ArcMemo, <V>, V, ArcMemo<V>: Get<Value = V>);
     property_reactive!(ArcSignal, <V>, V, ArcSignal<V>: Get<Value = V>);
-}
-
-#[cfg(feature = "reactive_stores")]
-mod reactive_stores {
-    use crate::html::property::IntoProperty;
-    #[allow(deprecated)]
-    use reactive_graph::{effect::RenderEffect, owner::Storage, traits::Get};
-    use reactive_stores::{
-        ArcField, ArcStore, AtIndex, AtKeyed, DerefedField, Field,
-        KeyedSubfield, Store, StoreField, Subfield,
-    };
-    use std::ops::{Deref, DerefMut, Index, IndexMut};
-
-    property_reactive!(
-        Subfield,
-        <Inner, Prev, V>,
-        V,
-        Subfield<Inner, Prev, V>: Get<Value = V>,
-        Prev: Send + Sync + 'static,
-        Inner: Send + Sync + Clone + 'static,
-    );
-
-    property_reactive!(
-        AtKeyed,
-        <Inner, Prev, K, V>,
-        V,
-        AtKeyed<Inner, Prev, K, V>: Get<Value = V>,
-        Prev: Send + Sync + 'static,
-        Inner: Send + Sync + Clone + 'static,
-        K: Send + Sync + std::fmt::Debug + Clone + 'static,
-        for<'a> &'a V: IntoIterator,
-    );
-
-    property_reactive!(
-        KeyedSubfield,
-        <Inner, Prev, K, V>,
-        V,
-        KeyedSubfield<Inner, Prev, K, V>: Get<Value = V>,
-        Prev: Send + Sync + 'static,
-        Inner: Send + Sync + Clone + 'static,
-        K: Send + Sync + std::fmt::Debug + Clone + 'static,
-        for<'a> &'a V: IntoIterator,
-    );
-
-    property_reactive!(
-        DerefedField,
-        <S>,
-        <S::Value as Deref>::Target,
-        S: Clone + StoreField + Send + Sync + 'static,
-        <S as StoreField>::Value: Deref + DerefMut
-    );
-
-    property_reactive!(
-        AtIndex,
-        <Inner, Prev>,
-        <Prev as Index<usize>>::Output,
-        AtIndex<Inner, Prev>: Get<Value = Prev::Output>,
-        Prev: Send + Sync + IndexMut<usize> + 'static,
-        Inner: Send + Sync + Clone + 'static,
-    );
-    property_reactive!(
-        Store,
-        <V, S>,
-        V,
-        Store<V, S>: Get<Value = V>,
-        S: Storage<V> + Storage<Option<V>>,
-        S: Send + Sync + 'static,
-    );
-    property_reactive!(
-        Field,
-        <V, S>,
-        V,
-        Field<V, S>: Get<Value = V>,
-        S: Storage<V> + Storage<Option<V>>,
-        S: Send + Sync + 'static,
-    );
-    property_reactive!(ArcStore, <V>, V, ArcStore<V>: Get<Value = V>);
-    property_reactive!(ArcField, <V>, V, ArcField<V>: Get<Value = V>);
 }

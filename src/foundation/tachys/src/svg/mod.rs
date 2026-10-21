@@ -1,6 +1,6 @@
 use crate::{
     html::{
-        attribute::{any_attribute::AnyAttribute, Attribute},
+        attribute::Attribute,
         element::{ElementType, ElementWithChildren, HtmlElement},
     },
     hydration::Cursor,
@@ -236,8 +236,7 @@ impl Render for InertElement {
     fn rebuild(self, state: &mut Self::State) {
         let InertElementState(prev, el) = state;
         if &self.html != prev {
-            let mut new_el =
-                Rndr::create_svg_element_from_html(self.html.clone());
+            let mut new_el = Rndr::create_svg_element_from_html(self.html.clone());
             el.insert_before_this(&mut new_el);
             el.unmount();
             *el = new_el;
@@ -249,10 +248,7 @@ impl Render for InertElement {
 impl AddAnyAttr for InertElement {
     type Output<SomeNewAttr: Attribute> = Self;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        _attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(self, _attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {
@@ -264,46 +260,16 @@ impl AddAnyAttr for InertElement {
 }
 
 impl RenderHtml for InertElement {
-    type AsyncOutput = Self;
     type Owned = Self;
 
-    const MIN_LENGTH: usize = 0;
-
-    fn html_len(&self) -> usize {
-        self.html.len()
-    }
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self {
-        self
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        _escape: bool,
-        _mark_branches: bool,
-        _extra_attrs: Vec<AnyAttribute>,
-    ) {
-        buf.push_str(&self.html);
-        *position = Position::NextChild;
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         let curr_position = position.get();
         if curr_position == Position::FirstChild {
             cursor.child();
         } else if curr_position != Position::Current {
             cursor.sibling();
         }
-        let el = crate::renderer::types::Element::cast_from(cursor.current())
-            .unwrap();
+        let el = crate::renderer::types::Element::cast_from(cursor.current()).unwrap();
         position.set(Position::NextChild);
         InertElementState(self.html, el)
     }

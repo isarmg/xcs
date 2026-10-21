@@ -1,15 +1,8 @@
-use super::{
-    Mountable, Position, PositionState, Render, RenderHtml, ToTemplate,
-};
+use super::{Mountable, Position, PositionState, Render, RenderHtml, ToTemplate};
 use crate::{
-    html::attribute::{any_attribute::AnyAttribute, Attribute},
-    hydration::Cursor,
-    renderer::Rndr,
-    view::{add_attr::AddAnyAttr, StreamBuilder},
+    html::attribute::Attribute, hydration::Cursor, renderer::Rndr, view::add_attr::AddAnyAttr,
 };
-use const_str_slice_concat::{
-    const_concat, const_concat_with_separator, str_from_buffer,
-};
+use const_str_slice_concat::{const_concat, const_concat_with_separator, str_from_buffer};
 
 impl Render for () {
     type State = crate::renderer::types::Placeholder;
@@ -22,39 +15,15 @@ impl Render for () {
 }
 
 impl RenderHtml for () {
-    type AsyncOutput = ();
     type Owned = ();
 
-    const MIN_LENGTH: usize = 3;
     const EXISTS: bool = false;
 
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        _mark_branches: bool,
-        _extra_attrs: Vec<AnyAttribute>,
-    ) {
-        if escape {
-            buf.push_str("<!>");
-            *position = Position::NextChild;
-        }
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         let marker = cursor.next_placeholder(position);
         position.set(Position::NextChild);
         marker
     }
-
-    async fn resolve(self) -> Self::AsyncOutput {}
-
-    fn dry_resolve(&mut self) {}
 
     fn into_owned(self) -> Self::Owned {}
 }
@@ -62,10 +31,7 @@ impl RenderHtml for () {
 impl AddAnyAttr for () {
     type Output<SomeNewAttr: Attribute> = ();
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        _attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(self, _attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {
@@ -130,74 +96,12 @@ impl<A> RenderHtml for (A,)
 where
     A: RenderHtml,
 {
-    type AsyncOutput = (A::AsyncOutput,);
     type Owned = (A::Owned,);
 
-    const MIN_LENGTH: usize = A::MIN_LENGTH;
     const EXISTS: bool = A::EXISTS;
 
-    fn html_len(&self) -> usize {
-        self.0.html_len()
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        self.0.to_html_with_buf(
-            buf,
-            position,
-            escape,
-            mark_branches,
-            extra_attrs,
-        );
-    }
-
-    fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-        self,
-        buf: &mut StreamBuilder,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) where
-        Self: Sized,
-    {
-        self.0.to_html_async_with_buf::<OUT_OF_ORDER>(
-            buf,
-            position,
-            escape,
-            mark_branches,
-            extra_attrs,
-        );
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        self.0.hydrate::<FROM_SERVER>(cursor, position)
-    }
-
-    async fn hydrate_async(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        self.0.hydrate_async(cursor, position).await
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        (self.0.resolve().await,)
-    }
-
-    fn dry_resolve(&mut self) {
-        self.0.dry_resolve();
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
+        self.0.hydrate(cursor, position)
     }
 
     fn into_owned(self) -> Self::Owned {
@@ -227,10 +131,7 @@ where
 {
     type Output<SomeNewAttr: Attribute> = (A::Output<SomeNewAttr>,);
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(self, attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {
@@ -273,81 +174,18 @@ macro_rules! impl_view_for_tuples {
 			$($ty: RenderHtml),*,
 
 		{
-            type AsyncOutput = ($first::AsyncOutput, $($ty::AsyncOutput,)*);
+
             type Owned = ($first::Owned, $($ty::Owned,)*);
             const EXISTS: bool = $first::EXISTS || $($ty::EXISTS || )* false;
-            const MIN_LENGTH: usize = $first::MIN_LENGTH $(+ $ty::MIN_LENGTH)*;
 
-            #[inline(always)]
-            fn html_len(&self) -> usize {
-                #[allow(non_snake_case)]
-			    let ($first, $($ty,)* ) = self;
-                $($ty.html_len() +)* $first.html_len()
-            }
-
-			fn to_html_with_buf(
-                self,
-                buf: &mut String,
-                position: &mut Position,
-                escape: bool,
-                mark_branches: bool,
-                extra_attrs: Vec<AnyAttribute>
-            ) {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)* ) = self;
-                $first.to_html_with_buf(buf, position, escape, mark_branches, extra_attrs.clone());
-                $($ty.to_html_with_buf(buf, position, escape, mark_branches, extra_attrs.clone()));*
-			}
-
-			fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-				self,
-				buf: &mut StreamBuilder,
-                position: &mut Position,
-                escape: bool,
-                mark_branches: bool,
-                extra_attrs: Vec<AnyAttribute>
-            ) where
-				Self: Sized,
-			{
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)* ) = self;
-                $first.to_html_async_with_buf::<OUT_OF_ORDER>(buf, position, escape, mark_branches, extra_attrs.clone());
-                $($ty.to_html_async_with_buf::<OUT_OF_ORDER>(buf, position, escape, mark_branches, extra_attrs.clone()));*
-			}
-
-			fn hydrate<const FROM_SERVER: bool>(self, cursor: &Cursor, position: &PositionState) -> Self::State {
+			fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
                 #[allow(non_snake_case)]
 					let ($first, $($ty,)* ) = self;
 					(
-						$first.hydrate::<FROM_SERVER>(cursor, position),
-						$($ty.hydrate::<FROM_SERVER>(cursor, position)),*
+						$first.hydrate(cursor, position),
+						$($ty.hydrate(cursor, position)),*
 					)
 			}
-
-            async fn hydrate_async(self, cursor: &Cursor, position: &PositionState) -> Self::State {
-                #[allow(non_snake_case)]
-					let ($first, $($ty,)* ) = self;
-					(
-						$first.hydrate_async(cursor, position).await,
-						$($ty.hydrate_async(cursor, position).await),*
-					)
-			}
-
-            async fn resolve(self) -> Self::AsyncOutput {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)*) = self;
-                futures::join!(
-                    $first.resolve(),
-                    $($ty.resolve()),*
-                )
-            }
-
-            fn dry_resolve(&mut self) {
-                #[allow(non_snake_case)]
-                let ($first, $($ty,)*) = self;
-                $first.dry_resolve();
-                $($ty.dry_resolve());*
-            }
 
             fn into_owned(self) -> Self::Owned {
                 #[allow(non_snake_case)]
@@ -463,25 +301,10 @@ impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P);
 impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q);
 impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R);
 impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S);
-impl_view_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T
-);
-impl_view_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U
-);
-impl_view_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V
-);
-impl_view_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W
-);
-impl_view_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X
-);
-impl_view_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y
-);
-impl_view_for_tuples!(
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y,
-    Z
-);
+impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T);
+impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U);
+impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V);
+impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W);
+impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X);
+impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y);
+impl_view_for_tuples!(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z);

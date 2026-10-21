@@ -6,10 +6,7 @@
 // this is specifically used for `unsized_const_params` below
 // this allows us to use const generic &'static str for static text nodes and attributes
 #![allow(incomplete_features)]
-#![cfg_attr(
-    all(feature = "nightly", rustc_nightly),
-    feature(unsized_const_params)
-)]
+#![cfg_attr(all(feature = "nightly", rustc_nightly), feature(unsized_const_params))]
 // support for const generic &'static str has now moved back and forth between
 // these two features a couple times; we'll just enable both
 #![cfg_attr(all(feature = "nightly", rustc_nightly), feature(adt_const_params))]
@@ -24,9 +21,8 @@ pub mod prelude {
                 aria::AriaAttributes,
                 custom::CustomAttribute,
                 global::{
-                    ClassAttribute, GlobalAttributes, GlobalOnAttributes,
-                    OnAttribute, OnTargetAttribute, PropAttribute,
-                    StyleAttribute,
+                    ClassAttribute, GlobalAttributes, GlobalOnAttributes, OnAttribute,
+                    OnTargetAttribute, PropAttribute, StyleAttribute,
                 },
                 IntoAttributeValue,
             },
@@ -56,20 +52,12 @@ pub mod hydration;
 pub mod mathml;
 /// Defines various backends that can render views.
 pub mod renderer;
-/// Rendering views to HTML.
-pub mod ssr;
 /// Types for SVG.
 pub mod svg;
 /// Core logic for manipulating views.
 pub mod view;
 
 pub use either_of as either;
-#[cfg(feature = "islands")]
-#[doc(hidden)]
-pub use wasm_bindgen;
-#[cfg(feature = "islands")]
-#[doc(hidden)]
-pub use web_sys;
 
 /// View implementations for the `oco_ref` crate (cheaply-cloned string types).
 #[cfg(feature = "oco")]
@@ -86,11 +74,7 @@ pub(crate) trait UnwrapOrDebug {
 
     fn or_debug(self, el: &Node, label: &'static str);
 
-    fn ok_or_debug(
-        self,
-        el: &Node,
-        label: &'static str,
-    ) -> Option<Self::Output>;
+    fn ok_or_debug(self, el: &Node, label: &'static str) -> Option<Self::Output>;
 }
 
 impl<T> UnwrapOrDebug for Result<T, JsValue> {
@@ -119,11 +103,7 @@ impl<T> UnwrapOrDebug for Result<T, JsValue> {
     }
 
     #[track_caller]
-    fn ok_or_debug(
-        self,
-        _el: &Node,
-        _name: &'static str,
-    ) -> Option<Self::Output> {
+    fn ok_or_debug(self, _el: &Node, _name: &'static str) -> Option<Self::Output> {
         #[cfg(any(debug_assertions, leptos_debuginfo))]
         {
             if let Err(err) = &self {

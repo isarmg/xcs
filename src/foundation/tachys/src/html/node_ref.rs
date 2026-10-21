@@ -1,16 +1,10 @@
 use super::{
-    attribute::{
-        maybe_next_attr_erasure_macros::next_attr_output_type, Attribute,
-        NextAttribute,
-    },
+    attribute::{maybe_next_attr_erasure_macros::next_attr_output_type, Attribute, NextAttribute},
     element::ElementType,
 };
 use crate::{
     html::{
-        attribute::{
-            maybe_next_attr_erasure_macros::next_attr_combine,
-            NamedAttributeKey,
-        },
+        attribute::{maybe_next_attr_erasure_macros::next_attr_combine, NamedAttributeKey},
         element::HtmlElement,
     },
     prelude::Render,
@@ -65,30 +59,11 @@ where
 
     crate::renderer::types::Element: PartialEq,
 {
-    const MIN_LENGTH: usize = 0;
-    type AsyncOutput = Self;
     type State = crate::renderer::types::Element;
     type Cloneable = Self;
     type CloneableOwned = Self;
 
-    #[inline(always)]
-    fn html_len(&self) -> usize {
-        0
-    }
-
-    fn to_html(
-        self,
-        _buf: &mut String,
-        _class: &mut String,
-        _style: &mut String,
-        _inner_html: &mut String,
-    ) {
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
+    fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
         self.container.load(el);
         el.to_owned()
     }
@@ -110,12 +85,6 @@ where
         self
     }
 
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
-    }
-
     fn keys(&self) -> Vec<NamedAttributeKey> {
         vec![]
     }
@@ -130,10 +99,7 @@ where
 {
     next_attr_output_type!(Self, NewAttr);
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         next_attr_combine!(self, new_attr)
     }
 }
@@ -147,10 +113,7 @@ where
     crate::renderer::types::Element: PartialEq,
 {
     /// Binds this HTML element to a [`NodeRefContainer`].
-    fn node_ref(
-        self,
-        container: C,
-    ) -> <Self as AddAnyAttr>::Output<NodeRefAttr<E, C>>
+    fn node_ref(self, container: C) -> <Self as AddAnyAttr>::Output<NodeRefAttr<E, C>>
     where
         Self: Sized + AddAnyAttr,
         <Self as AddAnyAttr>::Output<NodeRefAttr<E, C>>: Render,

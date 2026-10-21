@@ -6,25 +6,19 @@ use crate::{
     html::attribute::Attribute,
     hydration::{failed_to_cast_element, Cursor},
     renderer::{CastFrom, Rndr},
-    ssr::StreamBuilder,
     view::{
-        add_attr::AddAnyAttr, IntoRender, Mountable, Position, PositionState,
-        Render, RenderHtml, ToTemplate,
+        add_attr::AddAnyAttr, IntoRender, Mountable, Position, PositionState, Render, RenderHtml,
+        ToTemplate,
     },
 };
-use const_str_slice_concat::{
-    const_concat, const_concat_with_prefix, str_from_buffer,
-};
-use futures::future::join;
+use const_str_slice_concat::{const_concat, const_concat_with_prefix, str_from_buffer};
 use std::ops::Deref;
 
 mod custom;
 mod element_ext;
 mod elements;
 mod inner_html;
-use super::attribute::{
-    any_attribute::AnyAttribute, escape_attr, NextAttribute,
-};
+use super::attribute::NextAttribute;
 pub use custom::*;
 pub use element_ext::*;
 pub use elements::*;
@@ -81,11 +75,7 @@ where
     NewChild: IntoRender,
     NewChild::Output: RenderHtml,
 {
-    type Output = HtmlElement<
-        E,
-        At,
-        <Ch as next_tuple::NextTuple>::Output<NewChild::Output>,
-    >;
+    type Output = HtmlElement<E, At, <Ch as next_tuple::NextTuple>::Output<NewChild::Output>>;
 
     fn child(self, child: NewChild) -> Self::Output {
         HtmlElement {
@@ -107,8 +97,7 @@ where
     NewChild: IntoRender,
     NewChild::Output: RenderHtml,
 {
-    type Output =
-        HtmlElement<E, At, crate::view::iterators::StaticVec<AnyView>>;
+    type Output = HtmlElement<E, At, crate::view::iterators::StaticVec<AnyView>>;
 
     fn child(self, child: NewChild) -> Self::Output {
         use crate::view::any_view::IntoAny;
@@ -118,19 +107,14 @@ where
             defined_at: self.defined_at,
             tag: self.tag,
             attributes: self.attributes,
-            children: self
-                .children
-                .next_children(child.into_render().into_any()),
+            children: self.children.next_children(child.into_render().into_any()),
         }
     }
 }
 
 #[cfg(erase_components)]
 trait NextChildren {
-    fn next_children(
-        self,
-        child: AnyView,
-    ) -> crate::view::iterators::StaticVec<AnyView>;
+    fn next_children(self, child: AnyView) -> crate::view::iterators::StaticVec<AnyView>;
 }
 
 #[cfg(erase_components)]
@@ -183,51 +167,36 @@ mod erased_tuples {
     impl_next_children_tuples!(AA, BB, CC, DD, EE, FF, GG, HH, II, JJ);
     impl_next_children_tuples!(AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK);
     impl_next_children_tuples!(AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL);
-    impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM
-    );
-    impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN
-    );
-    impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO
-    );
-    impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP
-    );
-    impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ
-    );
+    impl_next_children_tuples!(AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM);
+    impl_next_children_tuples!(AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN);
+    impl_next_children_tuples!(AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO);
+    impl_next_children_tuples!(AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP);
+    impl_next_children_tuples!(AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ);
     impl_next_children_tuples!(
         AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR
     );
     impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR,
-        SS
+        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR, SS
     );
     impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR,
-        SS, TT
+        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR, SS, TT
     );
     impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR,
-        SS, TT, UU
+        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR, SS, TT, UU
     );
     impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR,
-        SS, TT, UU, VV
+        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR, SS, TT, UU, VV
     );
     impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR,
-        SS, TT, UU, VV, WW
+        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR, SS, TT, UU, VV, WW
     );
     impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR,
-        SS, TT, UU, VV, WW, XX
+        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR, SS, TT, UU, VV, WW,
+        XX
     );
     impl_next_children_tuples!(
-        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR,
-        SS, TT, UU, VV, WW, XX, YY
+        AA, BB, CC, DD, EE, FF, GG, HH, II, JJ, KK, LL, MM, NN, OO, PP, QQ, RR, SS, TT, UU, VV, WW,
+        XX, YY
     );
 }
 
@@ -240,10 +209,7 @@ where
     type Output<SomeNewAttr: Attribute> =
         HtmlElement<E, <At as NextAttribute>::Output<SomeNewAttr>, Ch>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, attr: NewAttr) -> Self::Output<NewAttr> {
         let HtmlElement {
             #[cfg(any(debug_assertions, leptos_debuginfo))]
             defined_at,
@@ -373,148 +339,12 @@ where
     At: Attribute + Send,
     Ch: RenderHtml + Send,
 {
-    type AsyncOutput = HtmlElement<E, At::AsyncOutput, Ch::AsyncOutput>;
     type Owned = HtmlElement<E, At::CloneableOwned, Ch::Owned>;
 
-    const MIN_LENGTH: usize = if E::SELF_CLOSING {
-        3 // < ... />
-        + E::TAG.len()
-        + At::MIN_LENGTH
-    } else {
-        2 // < ... >
-        + E::TAG.len()
-        + At::MIN_LENGTH
-        + Ch::MIN_LENGTH
-        + 3 // </ ... >
-        + E::TAG.len()
-    };
-
-    fn dry_resolve(&mut self) {
-        self.attributes.dry_resolve();
-        self.children.dry_resolve();
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        let (attributes, children) =
-            join(self.attributes.resolve(), self.children.resolve()).await;
-        HtmlElement {
-            #[cfg(any(debug_assertions, leptos_debuginfo))]
-            defined_at: self.defined_at,
-            tag: self.tag,
-            attributes,
-            children,
-        }
-    }
-
-    fn html_len(&self) -> usize {
-        if E::SELF_CLOSING {
-            3 // < ... />
-        + E::TAG.len()
-        + self.attributes.html_len()
-        } else {
-            2 // < ... >
-        + E::TAG.len()
-        + self.attributes.html_len()
-        + self.children.html_len()
-        + 3 // </ ... >
-        + E::TAG.len()
-        }
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        _escape: bool,
-        mark_branches: bool,
-        extra_attributes: Vec<AnyAttribute>,
-    ) {
-        // opening tag
-        buf.push('<');
-        buf.push_str(self.tag.tag());
-
-        let inner_html =
-            attributes_to_html((self.attributes, extra_attributes), buf);
-
-        buf.push('>');
-
-        if !E::SELF_CLOSING {
-            if !inner_html.is_empty() {
-                buf.push_str(&inner_html);
-            } else if Ch::EXISTS {
-                // children
-                *position = Position::FirstChild;
-                self.children.to_html_with_buf(
-                    buf,
-                    position,
-                    E::ESCAPE_CHILDREN,
-                    mark_branches,
-                    vec![],
-                );
-            }
-
-            // closing tag
-            buf.push_str("</");
-            buf.push_str(self.tag.tag());
-            buf.push('>');
-        }
-        *position = Position::NextChild;
-    }
-
-    fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-        self,
-        buffer: &mut StreamBuilder,
-        position: &mut Position,
-        _escape: bool,
-        mark_branches: bool,
-        extra_attributes: Vec<AnyAttribute>,
-    ) where
-        Self: Sized,
-    {
-        let mut buf = String::with_capacity(Self::MIN_LENGTH);
-        // opening tag
-        buf.push('<');
-        buf.push_str(self.tag.tag());
-
-        let inner_html =
-            attributes_to_html((self.attributes, extra_attributes), &mut buf);
-
-        buf.push('>');
-        buffer.push_sync(&buf);
-
-        if !E::SELF_CLOSING {
-            // children
-            *position = Position::FirstChild;
-            if !inner_html.is_empty() {
-                buffer.push_sync(&inner_html);
-            } else if Ch::EXISTS {
-                self.children.to_html_async_with_buf::<OUT_OF_ORDER>(
-                    buffer,
-                    position,
-                    E::ESCAPE_CHILDREN,
-                    mark_branches,
-                    vec![],
-                );
-            }
-
-            // closing tag
-            let mut buf = String::with_capacity(3 + E::TAG.len());
-            buf.push_str("</");
-            buf.push_str(self.tag.tag());
-            buf.push('>');
-            buffer.push_sync(&buf);
-        }
-        *position = Position::NextChild;
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         // non-Static custom elements need special support in templates
         // because they haven't been inserted type-wise
-        if E::TAG.is_empty() && !FROM_SERVER {
+        if E::TAG.is_empty() {
             panic!("Custom elements are not supported in ViewTemplate.");
         }
 
@@ -538,9 +368,7 @@ where
                 cursor.sibling();
             }
             crate::renderer::types::Element::cast_from(cursor.current())
-                .unwrap_or_else(|| {
-                    failed_to_cast_element(tag_name, cursor.current())
-                })
+                .unwrap_or_else(|| failed_to_cast_element(tag_name, cursor.current()))
         }
         let el = inner_1(
             cursor,
@@ -550,14 +378,14 @@ where
             self.defined_at,
         );
 
-        let attrs = self.attributes.hydrate::<FROM_SERVER>(&el);
+        let attrs = self.attributes.hydrate(&el);
 
         // hydrate children
         let children = if !Ch::EXISTS || !E::ESCAPE_CHILDREN {
             None
         } else {
             position.set(Position::FirstChild);
-            Some(self.children.hydrate::<FROM_SERVER>(cursor, position))
+            Some(self.children.hydrate(cursor, position))
         };
 
         // codegen optimisation:
@@ -568,80 +396,9 @@ where
         ) {
             // go to next sibling
             cursor.set(
-                <crate::renderer::types::Element as AsRef<
-                    crate::renderer::types::Node,
-                >>::as_ref(el)
-                .clone(),
-            );
-            position.set(Position::NextChild);
-        }
-        inner_2(cursor, position, &el);
-
-        ElementState {
-            el,
-            attrs,
-            children,
-        }
-    }
-
-    async fn hydrate_async(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        // codegen optimisation:
-        fn inner_1(
-            cursor: &Cursor,
-            position: &PositionState,
-            tag_name: &str,
-            #[cfg(any(debug_assertions, leptos_debuginfo))]
-            defined_at: &'static std::panic::Location<'static>,
-        ) -> crate::renderer::types::Element {
-            #[cfg(any(debug_assertions, leptos_debuginfo))]
-            {
-                set_currently_hydrating(Some(defined_at));
-            }
-
-            let curr_position = position.get();
-            if curr_position == Position::FirstChild {
-                cursor.child();
-            } else if curr_position != Position::Current {
-                cursor.sibling();
-            }
-            crate::renderer::types::Element::cast_from(cursor.current())
-                .unwrap_or_else(|| {
-                    failed_to_cast_element(tag_name, cursor.current())
-                })
-        }
-        let el = inner_1(
-            cursor,
-            position,
-            E::TAG,
-            #[cfg(any(debug_assertions, leptos_debuginfo))]
-            self.defined_at,
-        );
-
-        let attrs = self.attributes.hydrate::<true>(&el);
-
-        // hydrate children
-        let children = if !Ch::EXISTS || !E::ESCAPE_CHILDREN {
-            None
-        } else {
-            position.set(Position::FirstChild);
-            Some(self.children.hydrate_async(cursor, position).await)
-        };
-
-        // codegen optimisation:
-        fn inner_2(
-            cursor: &Cursor,
-            position: &PositionState,
-            el: &crate::renderer::types::Element,
-        ) {
-            // go to next sibling
-            cursor.set(
-                <crate::renderer::types::Element as AsRef<
-                    crate::renderer::types::Node,
-                >>::as_ref(el)
+                <crate::renderer::types::Element as AsRef<crate::renderer::types::Node>>::as_ref(
+                    el,
+                )
                 .clone(),
             );
             position.set(Position::NextChild);
@@ -664,43 +421,6 @@ where
             children: self.children.into_owned(),
         }
     }
-}
-
-/// Renders an [`Attribute`] (which can be one or more HTML attributes) into an HTML buffer.
-pub fn attributes_to_html<At>(attr: At, buf: &mut String) -> String
-where
-    At: Attribute,
-{
-    // `class` and `style` are created first, and pushed later
-    // this is because they can be filled by a mixture of values that include
-    // either the whole value (`class="..."` or `style="..."`) and individual
-    // classes and styles (`class:foo=true` or `style:height="40px"`), so they
-    // need to be filled during the whole attribute-creation process and then
-    // added
-
-    // String doesn't allocate until the first push, so this is cheap if there
-    // is no class or style on an element
-    let mut class = String::new();
-    let mut style = String::new();
-    let mut inner_html = String::new();
-
-    // inject regular attributes, and fill class and style
-    attr.to_html(buf, &mut class, &mut style, &mut inner_html);
-
-    if !class.is_empty() {
-        buf.push(' ');
-        buf.push_str("class=\"");
-        buf.push_str(&escape_attr(class.trim_start().trim_end()));
-        buf.push('"');
-    }
-    if !style.is_empty() {
-        buf.push(' ');
-        buf.push_str("style=\"");
-        buf.push_str(&escape_attr(style.trim_start().trim_end()));
-        buf.push('"');
-    }
-
-    inner_html
 }
 
 /// The retained view state for an HTML element.
@@ -741,12 +461,9 @@ impl<At, Ch> Mountable for ElementState<At, Ch> {
 
     fn insert_before_this(&self, child: &mut dyn Mountable) -> bool {
         // codegen optimisation:
-        fn inner(
-            element: &crate::renderer::types::Element,
-            child: &mut dyn Mountable,
-        ) -> bool {
-            if let Some(parent) = Rndr::get_parent(element)
-                .and_then(crate::renderer::types::Element::cast_from)
+        fn inner(element: &crate::renderer::types::Element, child: &mut dyn Mountable) -> bool {
+            if let Some(parent) =
+                Rndr::get_parent(element).and_then(crate::renderer::types::Element::cast_from)
             {
                 child.mount(&parent, Some(element));
                 true
@@ -774,26 +491,30 @@ where
     At: Attribute + ToTemplate,
     Ch: Render + ToTemplate,
 {
-    const TEMPLATE: &'static str = str_from_buffer(&const_concat(&[
-        "<",
-        E::TAG,
-        At::TEMPLATE,
-        str_from_buffer(&const_concat_with_prefix(
-            &[At::CLASS],
-            " class=\"",
-            "\"",
-        )),
-        str_from_buffer(&const_concat_with_prefix(
-            &[At::STYLE],
-            " style=\"",
-            "\"",
-        )),
-        ">",
-        Ch::TEMPLATE,
-        "</",
-        E::TAG,
-        ">",
-    ]));
+    const TEMPLATE: &'static str = str_from_buffer(
+        &const {
+            const_concat(
+                &const {
+                    [
+                        "<",
+                        E::TAG,
+                        At::TEMPLATE,
+                        str_from_buffer(
+                            &const { const_concat_with_prefix(&[At::CLASS], " class=\"", "\"") },
+                        ),
+                        str_from_buffer(
+                            &const { const_concat_with_prefix(&[At::STYLE], " style=\"", "\"") },
+                        ),
+                        ">",
+                        if E::SELF_CLOSING { "" } else { Ch::TEMPLATE },
+                        if E::SELF_CLOSING { "" } else { "</" },
+                        if E::SELF_CLOSING { "" } else { E::TAG },
+                        if E::SELF_CLOSING { "" } else { ">" },
+                    ]
+                },
+            )
+        },
+    );
 
     #[allow(unused)] // the variables `class` and `style` might be used, but only with `nightly` feature
     fn to_template(
@@ -834,84 +555,20 @@ where
             }
             buf.push('>');
 
-            // children
-            *position = Position::FirstChild;
-            class.clear();
-            style.clear();
-            inner_html.clear();
-            Ch::to_template(
-                buf,
-                &mut class,
-                &mut style,
-                &mut inner_html,
-                position,
-            );
+            if !E::SELF_CLOSING {
+                // children
+                *position = Position::FirstChild;
+                class.clear();
+                style.clear();
+                inner_html.clear();
+                Ch::to_template(buf, &mut class, &mut style, &mut inner_html, position);
 
-            // closing tag
-            buf.push_str("</");
-            buf.push_str(E::TAG);
-            buf.push('>');
+                // closing tag
+                buf.push_str("</");
+                buf.push_str(E::TAG);
+                buf.push('>');
+            }
             *position = Position::NextChild;
         }
     }
 }
-/*
-#[cfg(all(test, feature = "testing"))]
-mod tests {
-    #[cfg(all(feature = "nightly", rustc_nightly))]
-    use super::RenderHtml;
-    use super::{main, p, HtmlElement};
-    use crate::{
-        html::{
-            attribute::global::GlobalAttributes,
-            element::{em, ElementChild, Main},
-        },
-        renderer::mock_dom::MockDom,
-        view::Render,
-    };
-
-    #[test]
-    fn mock_dom_creates_element() {
-        let el: HtmlElement<Main, _, _, MockDom> =
-            main().child(p().id("test").lang("en").child("Hello, world!"));
-        let el = el.build();
-        assert_eq!(
-            el.el.to_debug_html(),
-            "<main><p id=\"test\" lang=\"en\">Hello, world!</p></main>"
-        );
-    }
-
-    #[test]
-    fn mock_dom_creates_element_with_several_children() {
-        let el: HtmlElement<Main, _, _, MockDom> = main().child(p().child((
-            "Hello, ",
-            em().child("beautiful"),
-            " world!",
-        )));
-        let el = el.build();
-        assert_eq!(
-            el.el.to_debug_html(),
-            "<main><p>Hello, <em>beautiful</em> world!</p></main>"
-        );
-    }
-
-    #[cfg(all(feature = "nightly", rustc_nightly))]
-    #[test]
-    fn html_render_allocates_appropriate_buffer() {
-        use crate::view::static_types::Static;
-
-        let el: HtmlElement<Main, _, _, MockDom> = main().child(p().child((
-            Static::<"Hello, ">,
-            em().child(Static::<"beautiful">),
-            Static::<" world!">,
-        )));
-        let allocated_len = el.html_len();
-        let html = el.to_html();
-        assert_eq!(
-            html,
-            "<main><p>Hello, <em>beautiful</em> world!</p></main>"
-        );
-        assert_eq!(html.len(), allocated_len);
-    }
-}
- */

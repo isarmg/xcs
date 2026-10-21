@@ -1,7 +1,6 @@
 use self::attribute::Attribute;
 use crate::{
     hydration::Cursor,
-    no_attrs,
     prelude::{AddAnyAttr, Mountable},
     renderer::{
         dom::{Element, Node},
@@ -9,24 +8,7 @@ use crate::{
     },
     view::{Position, PositionState, Render, RenderHtml},
 };
-use attribute::any_attribute::AnyAttribute;
 use std::borrow::Cow;
-
-/// Diagnostic message shared by event, directive, and property `.expect()` calls.
-///
-/// When the `ssr` feature is active, tachys skips creating client-side values
-/// (event handlers, directives, properties) to avoid `SendWrapper` cross-thread
-/// panics on multithreaded servers. If these `.expect()` calls fire, it means
-/// the `ssr` feature was activated unintentionally via Cargo feature
-/// unification in a client-side (CSR or hydrate) build.
-pub(crate) const FEATURE_CONFLICT_DIAGNOSTIC: &str =
-    "Value is None because the `ssr` feature is active. When `ssr` is \
-     enabled, tachys skips creating client-side values (event handlers, \
-     directives, properties) to avoid cross-thread panics on multithreaded \
-     servers. If you are building a client-side (CSR or hydrate) target, this \
-     means the `ssr` feature is being activated unintentionally via Cargo \
-     feature unification; another dependency in your workspace is enabling \
-     it. Run `cargo tree -e features -i tachys` to identify the source.";
 
 /// Types for HTML attributes.
 pub mod attribute;
@@ -38,71 +20,12 @@ pub mod directive;
 pub mod element;
 /// Types for DOM events.
 pub mod event;
-/// Types for adding interactive islands to inert HTML pages.
-pub mod islands;
 /// Types for accessing a reference to an HTML element.
 pub mod node_ref;
 /// Types for DOM properties.
 pub mod property;
 /// Types for the `style` attribute and individual style manipulation.
 pub mod style;
-
-/// A `<!DOCTYPE>` declaration.
-pub struct Doctype {
-    value: &'static str,
-}
-
-/// Creates a `<!DOCTYPE>`.
-pub fn doctype(value: &'static str) -> Doctype {
-    Doctype { value }
-}
-
-impl Render for Doctype {
-    type State = ();
-
-    fn build(self) -> Self::State {}
-
-    fn rebuild(self, _state: &mut Self::State) {}
-}
-
-no_attrs!(Doctype);
-
-impl RenderHtml for Doctype {
-    type AsyncOutput = Self;
-    type Owned = Self;
-
-    const MIN_LENGTH: usize = "<!DOCTYPE html>".len();
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        self
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        _position: &mut Position,
-        _escape: bool,
-        _mark_branches: bool,
-        _extra_attrs: Vec<AnyAttribute>,
-    ) {
-        buf.push_str("<!DOCTYPE ");
-        buf.push_str(self.value);
-        buf.push('>');
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        _cursor: &Cursor,
-        _position: &PositionState,
-    ) -> Self::State {
-    }
-
-    fn into_owned(self) -> Self::Owned {
-        self
-    }
-}
 
 /// An element that contains no interactivity, and whose contents can be known at compile time.
 pub struct InertElement {
@@ -160,10 +83,7 @@ impl Render for InertElement {
 impl AddAnyAttr for InertElement {
     type Output<SomeNewAttr: Attribute> = Self;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        _attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(self, _attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {
@@ -175,46 +95,16 @@ impl AddAnyAttr for InertElement {
 }
 
 impl RenderHtml for InertElement {
-    type AsyncOutput = Self;
     type Owned = Self;
 
-    const MIN_LENGTH: usize = 0;
-
-    fn html_len(&self) -> usize {
-        self.html.len()
-    }
-
-    fn dry_resolve(&mut self) {}
-
-    async fn resolve(self) -> Self {
-        self
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut Position,
-        _escape: bool,
-        _mark_branches: bool,
-        _extra_attrs: Vec<AnyAttribute>,
-    ) {
-        buf.push_str(&self.html);
-        *position = Position::NextChild;
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         let curr_position = position.get();
         if curr_position == Position::FirstChild {
             cursor.child();
         } else if curr_position != Position::Current {
             cursor.sibling();
         }
-        let el = crate::renderer::types::Element::cast_from(cursor.current())
-            .unwrap();
+        let el = crate::renderer::types::Element::cast_from(cursor.current()).unwrap();
         position.set(Position::NextChild);
         InertElementState(self.html, el)
     }

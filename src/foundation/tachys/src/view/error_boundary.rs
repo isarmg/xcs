@@ -1,8 +1,7 @@
-use super::{add_attr::AddAnyAttr, Position, PositionState, RenderHtml};
+use super::{add_attr::AddAnyAttr, PositionState, RenderHtml};
 use crate::{
-    html::attribute::{any_attribute::AnyAttribute, Attribute},
+    html::attribute::Attribute,
     hydration::Cursor,
-    ssr::StreamBuilder,
     view::{iterators::OptionState, Mountable, Render},
 };
 use either_of::Either;
@@ -119,13 +118,9 @@ where
 
     E: Into<AnyError> + Send + 'static,
 {
-    type Output<SomeNewAttr: Attribute> =
-        Result<<T as AddAnyAttr>::Output<SomeNewAttr>, E>;
+    type Output<SomeNewAttr: Attribute> = Result<<T as AddAnyAttr>::Output<SomeNewAttr>, E>;
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        attr: NewAttr,
-    ) -> Self::Output<NewAttr>
+    fn add_any_attr<NewAttr: Attribute>(self, attr: NewAttr) -> Self::Output<NewAttr>
     where
         Self::Output<NewAttr>: RenderHtml,
     {
@@ -138,115 +133,14 @@ where
     T: RenderHtml,
     E: Into<AnyError> + Send + 'static,
 {
-    type AsyncOutput = Result<T::AsyncOutput, E>;
     type Owned = Result<T::Owned, E>;
 
-    const MIN_LENGTH: usize = T::MIN_LENGTH;
-
-    fn dry_resolve(&mut self) {
-        if let Ok(inner) = self.as_mut() {
-            inner.dry_resolve()
-        }
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        match self {
-            Ok(view) => Ok(view.resolve().await),
-            Err(e) => Err(e),
-        }
-    }
-
-    fn html_len(&self) -> usize {
-        match self {
-            Ok(i) => i.html_len() + 3,
-            Err(_) => 0,
-        }
-    }
-
-    fn to_html_with_buf(
-        self,
-        buf: &mut String,
-        position: &mut super::Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) {
-        match self {
-            Ok(inner) => {
-                inner.to_html_with_buf(
-                    buf,
-                    position,
-                    escape,
-                    mark_branches,
-                    extra_attrs,
-                );
-            }
-            Err(e) => {
-                buf.push_str("<!>");
-                throw_error::throw(e);
-            }
-        }
-    }
-
-    fn to_html_async_with_buf<const OUT_OF_ORDER: bool>(
-        self,
-        buf: &mut StreamBuilder,
-        position: &mut Position,
-        escape: bool,
-        mark_branches: bool,
-        extra_attrs: Vec<AnyAttribute>,
-    ) where
-        Self: Sized,
-    {
-        match self {
-            Ok(inner) => inner.to_html_async_with_buf::<OUT_OF_ORDER>(
-                buf,
-                position,
-                escape,
-                mark_branches,
-                extra_attrs,
-            ),
-            Err(e) => {
-                buf.push_sync("<!>");
-                throw_error::throw(e);
-            }
-        }
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
+    fn hydrate(self, cursor: &Cursor, position: &PositionState) -> Self::State {
         let hook = throw_error::get_error_hook();
         let (state, error) = match self {
-            Ok(view) => (
-                Either::Left(view.hydrate::<FROM_SERVER>(cursor, position)),
-                None,
-            ),
+            Ok(view) => (Either::Left(view.hydrate(cursor, position)), None),
             Err(e) => {
-                let state =
-                    RenderHtml::hydrate::<FROM_SERVER>((), cursor, position);
-                (Either::Right(state), Some(throw_error::throw(e.into())))
-            }
-        };
-        ResultState { state, error, hook }
-    }
-
-    async fn hydrate_async(
-        self,
-        cursor: &Cursor,
-        position: &PositionState,
-    ) -> Self::State {
-        let hook = throw_error::get_error_hook();
-        let (state, error) = match self {
-            Ok(view) => (
-                Either::Left(view.hydrate_async(cursor, position).await),
-                None,
-            ),
-            Err(e) => {
-                let state =
-                    RenderHtml::hydrate_async((), cursor, position).await;
+                let state = RenderHtml::hydrate((), cursor, position);
                 (Either::Right(state), Some(throw_error::throw(e.into())))
             }
         };

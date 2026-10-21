@@ -1,10 +1,8 @@
-use super::{
-    maybe_next_attr_erasure_macros::next_attr_output_type, NextAttribute,
-};
+use super::{maybe_next_attr_erasure_macros::next_attr_output_type, NextAttribute};
 use crate::{
     html::attribute::{
-        maybe_next_attr_erasure_macros::next_attr_combine, Attribute,
-        AttributeValue, NamedAttributeKey,
+        maybe_next_attr_erasure_macros::next_attr_combine, Attribute, AttributeValue,
+        NamedAttributeKey,
     },
     view::{add_attr::AddAnyAttr, Position, ToTemplate},
 };
@@ -49,32 +47,13 @@ where
     K: CustomAttributeKey,
     V: AttributeValue,
 {
-    const MIN_LENGTH: usize = 0;
-    type AsyncOutput = CustomAttr<K, V::AsyncOutput>;
     type State = V::State;
     type Cloneable = CustomAttr<K, V::Cloneable>;
     type CloneableOwned = CustomAttr<K, V::CloneableOwned>;
 
-    fn html_len(&self) -> usize {
-        self.key.as_ref().len() + 3 + self.value.html_len()
-    }
-
-    fn to_html(
-        self,
-        buf: &mut String,
-        _class: &mut String,
-        _style: &mut String,
-        _inner_html: &mut String,
-    ) {
-        self.value.to_html(self.key.as_ref(), buf);
-    }
-
-    fn hydrate<const FROM_SERVER: bool>(
-        self,
-        el: &crate::renderer::types::Element,
-    ) -> Self::State {
+    fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
         if !K::KEY.is_empty() {
-            self.value.hydrate::<FROM_SERVER>(self.key.as_ref(), el)
+            self.value.hydrate(self.key.as_ref(), el)
         } else {
             self.value.build(el, self.key.as_ref())
         }
@@ -102,17 +81,6 @@ where
         }
     }
 
-    fn dry_resolve(&mut self) {
-        self.value.dry_resolve();
-    }
-
-    async fn resolve(self) -> Self::AsyncOutput {
-        CustomAttr {
-            key: self.key,
-            value: self.value.resolve().await,
-        }
-    }
-
     fn keys(&self) -> Vec<NamedAttributeKey> {
         vec![NamedAttributeKey::Attribute(
             self.key.as_ref().to_string().into(),
@@ -127,10 +95,7 @@ where
 {
     next_attr_output_type!(Self, NewAttr);
 
-    fn add_any_attr<NewAttr: Attribute>(
-        self,
-        new_attr: NewAttr,
-    ) -> Self::Output<NewAttr> {
+    fn add_any_attr<NewAttr: Attribute>(self, new_attr: NewAttr) -> Self::Output<NewAttr> {
         next_attr_combine!(self, new_attr)
     }
 }
@@ -177,9 +142,7 @@ impl CustomAttributeKey for Arc<str> {
 }
 
 #[cfg(all(feature = "nightly", rustc_nightly))]
-impl<const K: &'static str> CustomAttributeKey
-    for crate::view::static_types::Static<K>
-{
+impl<const K: &'static str> CustomAttributeKey for crate::view::static_types::Static<K> {
     const KEY: &'static str = K;
 }
 
@@ -192,11 +155,7 @@ where
     Self: Sized + AddAnyAttr,
 {
     /// Adds an HTML attribute by key and value.
-    fn attr(
-        self,
-        key: K,
-        value: V,
-    ) -> <Self as AddAnyAttr>::Output<CustomAttr<K, V>> {
+    fn attr(self, key: K, value: V) -> <Self as AddAnyAttr>::Output<CustomAttr<K, V>> {
         self.add_any_attr(custom_attribute(key, value))
     }
 }
