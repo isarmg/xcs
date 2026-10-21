@@ -89,10 +89,13 @@
       "type": "object",
       "properties": {
         "creation_mode": {
-          "const": "full"
+          "const": "record-until-write"
+        },
+        "content_mode": {
+          "const": "inherit-parent-until-first-write"
         },
         "materialize_all_files_on_create": {
-          "const": true
+          "const": false
         },
         "merge_behavior": {
           "const": "link-only"
@@ -109,6 +112,7 @@
       },
       "required": [
         "creation_mode",
+        "content_mode",
         "materialize_all_files_on_create",
         "merge_behavior",
         "merge_creates_content_version",

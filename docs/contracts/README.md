@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | [core.schema.json](core.schema.json) | UINT64 精确上界、实体 ID、Branch / Commit 待写入映射、泛型 Entry 及文件分支投影、版本描述、内容提交请求、操作结果、完整上传状态、内容保存 PUBLICATION 字段、当前分页历史根/索引/引用/叶页形状 | 完整命名规则、父边和来源闭合、授权、实际 I/O、Tree/日志完整格式及所有管理操作 |
 | [openapi.json](openapi.json) | 保存、结果查询、版本/校验/内容/上传状态、文件管理（含零正文分支创建、冻结父版本与自有版本分开的继承投影、目录批量分支、共同分支交集和128字节单行备注）及管理员系统状态、真实功耗和监测历史 | 认证签发刷新、工作区创建/上传写接口、分页/事件及其余拟定管理接口 |
-| [config-constraints.schema.json](config-constraints.schema.json) | 第 21 章关键常量、资源上限和告警字段的受检投影 | 完整部署配置、物理身份、拓扑和启动状态验证 |
+| [config-constraints.schema.json](config-constraints.schema.json) | 第 21 章关键常量、分支冻结引用/首写物化、资源上限和告警字段的受检投影 | 当前进程 JSON Config、完整部署配置、物理身份、拓扑和启动状态验证 |
 | [vectors.json](vectors.json) | 正反字段样例、分支映射键/值和文件作用域拒绝、旧 Branch / Commit 编码兼容、分页历史图固定映射/引用种类/深度/未知字段拒绝、规范字节与 BLAKE3、空文件和短文件分段清单 | 跨 Rust/Web/离线工具的一致实现及断电恢复 |
 | [contract-check](../tools/contract-check.md) | Rust 实现的 schema/OpenAPI 有效性、两者定义一致性、固定向量、配置投影、文档本地链接和 JSON/TOML 语法校验 | 模型检查、平台测试、网络端点行为和性能 |
 
@@ -31,7 +31,7 @@ CARGO_INCREMENTAL=0 cargo run -p contract-check \
   --locked --offline --target-dir target/native
 ```
 
-首次获取 Cargo.lock 中的依赖需要访问包源；依赖已缓存时可以完全离线构建。校验过程不访问网络、不写数据盘，也不生成业务对象。OpenAPI 官方元 schema 已固定随工具保存，JSON Schema 解析禁用网络与文件远程引用功能；自研规则只有 Rust 实现。校验失败返回非零退出码；输出 PASS 仅表示上表声明的文档契约范围通过。
+Rust 依赖源码已包含在仓库中，首次构建也使用唯一根锁文件和 `--locked --offline`，不要求预先缓存或下载 registry 依赖；Rust 工具链及必要系统构建工具须另行准备。校验过程不访问网络、不写数据盘，也不生成业务对象。OpenAPI 官方元 schema 已固定随工具保存，JSON Schema 解析禁用网络与文件远程引用功能；自研规则只有 Rust 实现。校验失败返回非零退出码；输出 PASS 仅表示上表声明的文档契约范围通过。
 
 ## 冻结前仍需完成
 

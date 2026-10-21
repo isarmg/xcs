@@ -83,14 +83,15 @@ member_selection = "user-specified"
 
 [versions]
 immutable_after_seal = true
-historical_save_creates_new_full_branch = true
+historical_save_creates_branch = true
 default_save_mode = "full"
 supported_save_modes = ["full"]
 automatic_topology_expiration = false
 
 [branches]
-creation_mode = "full"
-materialize_all_files_on_create = true
+creation_mode = "record-until-write"
+content_mode = "inherit-parent-until-first-write"
+materialize_all_files_on_create = false
 main_branch_required_for_smb = true
 merge_enabled = true
 ordinary_commit_parent_count = 1
@@ -301,7 +302,9 @@ queue_warning_seconds = 30
 
 `decision_members=2` 不能改解释为两成员可以正常写入。三个成员保护、发布和确认仍须全部完成；两个成员仅建立决定并支持指定恢复流程。`maximum_target="primary-route-depth"`按具体一级来源的连续链深计算；总盘数只给出全局上界。离线、满盘或映射缺失不能擅自降低目标或使用别的来源盘。
 
-`supported_save_modes=["full"]` 与 `creation_mode="full"` 分别约束保存和分支创建。示例中 `merge_behavior="link-only"`、`merge_updates_branch_head=false` 等 `merge_*` 字段只描述旧 `MergeLink` 关系标记：端点固定、正文与HEAD不变，不是所有合并操作的全局约束。文件分支合并 `FileBranchMerge` 是另一个已实现能力，接口声明 `merge_behavior:"explicit-file-node-adoption"`，会推进归属与参与目录引用；目录分支合并待用户确认，暂不实现。两者见[补充规则](design/file-merge-tags-backup.md)，不能通过修改旧字段开启或关闭新语义。`preserve_topology_after_purge=true`保留图节点，不永久锁住payload。`tree_split`要求新域对象和恢复包独立，不只是分支引用改名。
+`supported_save_modes=["full"]` 约束实际内容保存；`creation_mode="record-until-write"`、`content_mode="inherit-parent-until-first-write"` 与 `materialize_all_files_on_create=false` 约束分支只登记冻结来源、首写前继承父内容。目录分支直接引用父子树，不提前创建自己的子树或后代文件分支。历史另存建立新分支，但只为实际 staged 文件生成独立 FULL，其余文件继续继承冻结来源。这些是目标配置的受检断言，不是当前 JSON `Config` 的运行开关；实际能力声明见[API 能力发现](15-api-and-errors.md#s15-05)。
+
+示例中 `merge_behavior="link-only"`、`merge_updates_branch_head=false` 等 `merge_*` 字段只描述旧 `MergeLink` 关系标记：端点固定、正文与HEAD不变，不是所有合并操作的全局约束。文件分支合并 `FileBranchMerge` 是另一个已实现能力，接口声明 `merge_behavior:"explicit-file-node-adoption"`，会推进归属与参与目录引用；目录分支合并待用户确认，暂不实现。两者见[补充规则](design/file-merge-tags-backup.md)，不能通过修改旧字段开启或关闭新语义。`preserve_topology_after_purge=true`保留图节点，不永久锁住payload。`tree_split`要求新域对象和恢复包独立，不只是分支引用改名。
 
 `smb.shares` 固定历史树与主分支；Web 切换工作分支不修改该配置。普通会话不独占整个分支，按文件核对并串行发布；显式批量计划仍锁定 HEAD，维护计划处理相关工作区后才取得排他权。`auto_create_conflict_branch=false` 禁止静默处理冲突，不影响用户从历史保存时按规则登记新分支并只保存实际写入的 FULL 版本。
 

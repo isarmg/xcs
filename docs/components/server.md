@@ -21,7 +21,7 @@ Axum HTTP 服务、持久会话认证及受保护的 Samba 本机桥接。业务
 
 ## 启动
 
-从项目根目录构建 `CARGO_TARGET_DIR=target/native cargo build -p storage-admin`，先按照 [CLI 文档](admin.md) 初始化存储池，然后运行：
+从项目根目录构建 `CARGO_TARGET_DIR=target/native cargo build --locked --offline -p storage-admin`，先按照 [CLI 文档](admin.md) 初始化存储池，然后运行：
 
 ```sh
 target/native/debug/zxs --root /srv/zxs/system serve \
@@ -30,7 +30,7 @@ target/native/debug/zxs --root /srv/zxs/system serve \
 
 HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止 TLS；同时指定公开 HTTPS Origin，例如 `--external-origin https://storage.example.org`。服务只信任显式配置的 Origin，不根据任意转发头改变安全策略。`--web-dir` 可省略；省略时仅提供 API。
 
-`--max-upload-bytes` 设置单次完整上传上限，默认 1073741824 字节；实际公开上限取它与存储池 `max_file_bytes` 的较小值。服务同时最多处理 8 个上传和 4 个密码验证。引擎工作区数量、字节数、过期时间等限制来自初始化 JSON 配置。当前引擎通过互斥锁执行同步事务，未提供吞吐量保证。
+`--max-upload-bytes` 设置单次完整上传上限，默认 1073741824 字节；实际公开上限取它与存储池 `max_file_bytes` 的较小值。HTTP 上传和读取各自默认全局 8 个、每账户 2 个活动操作，支持显式配置，见[传输准入与期限](#http-transfer-limits)；密码验证最多并发 4 个。引擎工作区数量、字节数、过期时间等限制来自初始化 JSON 配置。发布仍经互斥锁串行执行，上传、读取及工作区提交的部分准备在锁外完成，详见[写入流程](../architecture/write-flow.md)；未提供吞吐量保证。
 
 ## 认证与授权
 
@@ -64,7 +64,7 @@ Bearer 请求使用 `Authorization: Bearer ...`。Cookie 写请求必须同时�
 | `/api/file-manager/disks/{slot}/directory-branches`、`/directory-select` | POST 登记或选择目录分支的完整冻结子树 |
 | `/api/file-manager/disks/{slot}/namespace-batch` | POST 显式源/目标目录分支映射，原子移动、复制、删除、重命名 |
 | `/api/repositories/{repo}/directory-branches`、`/directory-branches/{id}` | GET 全部或指定路径作用域与冻结条目；PATCH 分支标签 |
-| `/api/repositories/{repo}/default-branch` | GET/PUT Web/App/SMB 共用默认根目录分支 |
+| `/api/repositories/{repo}/default-branch` | GET/PUT Web/SMB 共用默认根目录分支 |
 | `/api/file-manager/files/{file}/nodes/{node}` | PATCH 文件路径节点独立备注，最多128 UTF-8字节 |
 | `/api/file-manager/files/{file}/branches/{branch}` | PATCH 公共文件分支标签，元数据修改，不生成版本或目录子树 |
 | `/api/file-manager/files/{file}/history`、`/branches`、`/select`、`/metadata` | GET 文件版本/分支/备注；POST 创建、选择文件分支或更新文件备注 |
@@ -126,7 +126,7 @@ Samba 的只读打开取得父版本的只读描述符；写打开从当前可�
 
 ```sh
 CARGO_TARGET_DIR=target/native CARGO_INCREMENTAL=0 \
-  cargo test -p storage-server -p storage-client --offline
+  cargo test --locked --offline -p storage-server -p storage-client
 ```
 
 Unix socket 测试需要运行环境允许本机 socket。[集成回归](../../src/server/tests/http_engine.rs) 覆盖 HTTP 准入、封存、三盘发布、幂等、Range、ACL、历史计划和策略 CAS，也覆盖文件/目录分支、真实版本祖先、备注与重命名下载、上传池限额，以及改密的 CSRF、同源、字段和 JSON 长度边界。永久丢失后的降级发布与发布后损坏均保留原保护证据；本地认证文件丢失后从三成员权威状态恢复新密码。两种保存结果 wire 均通过原 SaveOperation schema 验证，详见 [API 验收证据](../validation/evidence/api.md)。

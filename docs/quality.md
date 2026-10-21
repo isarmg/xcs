@@ -8,9 +8,17 @@ Clippy 和编译门禁经由 [Cargo 诊断包装器](../.github/scripts/check-ru
 
 产品入口为 Web 和 SMB；普通协议检查不要求 Samba SDK，独立 `smb-sdk` 任务使用固定的官方 SDK。真实 VFS Clippy、测试编译和 release 构建使用相同诊断门禁；测试先以 `--no-run` 检查纯编译 JSON，再正常执行测试，以免把测试输出当成编译消息。发布工作流的原生 release 编译和本地 Web 绑定工具也使用该门禁。
 
-`bash .github/scripts/check.sh foundation` 运行本次维护涉及的限定基础库回归：`password-hash`、`idna_adapter` 的全 Unicode 标量测试、四个数值包，以及位集合、arena 与符号反解辅助包。IDNA 测试与真实 `storage-client` 消费者一起选包，由实际依赖图启用 `compiled_data`，不向工作区之外的依赖包直接传入特性。只运行限定 lib 测试，不恢复已退役的上游开发依赖，也不把整个 foundation 变为工作区成员。该入口同时纳入 CI 和 Release 验证。
+`bash .github/scripts/check.sh foundation` 同时纳入 CI 和 Release 验证，包含以下限定回归，并非全部上游测试：
 
-`bash .github/scripts/check.sh security` 使用固定版本 `cargo-audit` 扫描根锁文件，并根据保留的原始身份构造仅供审计的上游身份锁。该补充审计覆盖 Cargo 常规扫描可能跳过的本地路径包，包名、版本、校验和必须与中央来源证据一致；审计锁不参与产品构建。
+- Linux amd64 UAPI、libc ABI、rustix 双后端 syscall，以及系统/socket/mio、停车锁、搜索/进程和随机数后端的消费者探针；另运行 `socket2`、`mio` 与 `parking_lot_core` 的 lib 测试。
+- `ring` 的源码/测试材料溯源检查，以及预生成和本地生成两种模式的完整库、集成与 CAVP 测试矩阵。每种模式运行 default/std 的 debug/release 与 `std,slow_tests` release，并核对本地生成的汇编/头文件；这不是仅运行 lib 测试。
+- `password-hash`、`idna_adapter` 的全 Unicode 标量测试、四个数值包，以及位集合、arena 与符号反解辅助包的限定 lib 测试。IDNA 与真实 `storage-client` 消费者一起选包，由实际依赖图启用 `compiled_data`，不向工作区之外的包直接传入特性。
+
+不恢复已退役的上游开发依赖，也不把整个 foundation 变为工作区成员；`ring` 是显式、非默认的回归成员。探针和矩阵的实际入口以 [check.sh](../.github/scripts/check.sh) 为准，编译或本机测试不代表物理设备、其他 ABI 或 SMB 客户端验收。
+
+`bash .github/scripts/check.sh security` 使用固定版本 `cargo-audit` 分别扫描独立扫描器锁、产品根锁和根据活动/已合并实现原始身份构造的上游身份锁。该补充审计覆盖 Cargo 常规扫描可能跳过的本地路径包，包名、版本、校验和必须与中央来源证据一致；退役及升级替换的旧身份只保留历史证据，当前后继仍接受扫描。上游身份锁不参与产品构建。
+
+扫描器使用独立审阅的依赖锁在产品工作区之外构建，安装器核对官方源码、原始锁、精确允许的锁变化和缓存收据。扫描从临时目录使用固定隔离策略，不能继承调用者的忽略清单、严重度门槛或目标过滤。该开发工具的独立锁不增加产品锁文件；具体依赖修复、网络要求和验证边界见[安全扫描器说明](../.github/security-tools/README.md)。
 
 已知漏洞、停止维护、被撤回版本及扫描不完整均按门禁规则失败，不维护静默忽略清单。扫描工具的版本固定，公告和 registry 状态实时读取；工具安装可追溯不代表安全结论永久不变。来源收据完整性与安全公告扫描不能代替独立安全审查或许可资料复核。
 

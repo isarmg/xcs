@@ -9,7 +9,7 @@ CARGO_INCREMENTAL=0 cargo test -p contract-check \
   --locked --offline --target-dir target/native
 ```
 
-也可传入 `-- --root /absolute/path/to/zxs` 检查指定副本。成功输出 JSON 范围报告，失败退出码为 1。首次构建仍需要已经缓存或预先获取锁文件中的依赖。
+也可传入 `-- --root /absolute/path/to/zxs` 检查指定副本。成功输出 JSON 范围报告，失败退出码为 1。Rust 依赖源码由仓库提供，首次构建同样使用唯一根锁文件及 `--locked --offline`，无需预热 registry 缓存；Rust 工具链和必要系统构建工具须预先准备。
 
 检查内容：
 
@@ -20,7 +20,7 @@ CARGO_INCREMENTAL=0 cargo test -p contract-check \
 - 文件合并、标签、作用域备份与备份命名空间的真实响应使用版本管理中的[固定 fixture](contract-check/tests/fixtures/merge-tags-backup.md)校验完整 OpenAPI 响应 schema；干净源码副本无需预先生成本地 evidence。
 - 所有正反字段向量和语义拒绝向量，覆盖路由、副本成员、发布证明、请求摘要、上传完整性和资源配额关系。
 - 固定 JCS 字节与 BLAKE3、严格 JSON 拒绝向量、空文件/短文件校验清单，以及截断和损坏变体。
-- 文档中真实 TOML 配置的受检投影与 schema/向量一致。
+- 文档中目标 TOML 配置的受检投影与 schema/向量一致；分支必须只登记冻结来源、首写前继承父内容，拒绝创建即全量物化或空内容占位。该投影不是当前进程的 JSON Config。
 - 根 README 与 `docs/` 下 Markdown 的本地链接、显式锚点去重及 JSON/TOML 示例语法；跳过生成的发行目录。`tests/evidence/` 中的本地生成附件单独统计，源码副本缺少附件时记录缺失数量；源码、文档、固定样例、schema 及检查脚本的链接仍严格要求存在。
 
 `cargo test` 还在独立临时 Git 仓库中验证根 `.gitignore`：检查构建缓存、运行数据、本地配置、验证 JSON/截图/日志被排除，同时源码、锁文件、字体、固定样例、测试程序和验收说明保持可见。该测试需要 Git，不读取或修改项目索引和个人 Git 忽略配置；普通契约校验命令不依赖 Git。`local_generated_artifact_links` 和 `missing_local_generated_artifacts` 分别表示生成附件链接数与未在当前副本中生成的数量，不表示这些附件通过验收。

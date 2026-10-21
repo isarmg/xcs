@@ -7,7 +7,7 @@
 ## 构建与初始化
 
 ```sh
-CARGO_TARGET_DIR=target/native CARGO_INCREMENTAL=0 cargo build -p storage-admin --offline
+CARGO_TARGET_DIR=target/native CARGO_INCREMENTAL=0 cargo build --locked --offline -p storage-admin
 target/native/debug/zxs config-template --production \
   --disks /srv/zxs/disk1 /srv/zxs/disk2 /srv/zxs/disk3 --output /tmp/zxs-config.json
 target/native/debug/zxs --root /srv/zxs/system init \
@@ -38,7 +38,7 @@ zxs --root /srv/zxs/system namespace BRANCH_ID rename 原文件.txt 新文件.tx
 
 ID 从前一步 JSON 输出取得。`get`/`export` 拒绝覆盖目标。`put` 创建工作区、保存完整文件并原子提交；可指定固定 `--operation-id op_...`，远端还支持原样提交重试。`link SOURCE_BRANCH SOURCE_COMMIT TARGET_BRANCH TARGET_COMMIT` 只添加历史关联，不自动合并文件内容。
 
-`purge HISTORY_ID VERSION_ID...`、`split HISTORY_ID CUT_COMMIT_ID`、`historical-save BRANCH_ID SOURCE_COMMIT_ID 新分支名` 默认只生成持久预览；检查输出后用 `plan-commit PLAN_ID --digest DIGEST` 执行，或显式给原命令加 `--execute`。`plan-cancel PLAN_ID` 取消尚未执行的计划。业务状态变化可能使预览失效，需重新预览。历史保存可附加 `--source ./完整文件 --path 文档/文件.txt`，在一个事务内建立独立全量分支并发布修改；不修改原分支 HEAD。
+`purge HISTORY_ID VERSION_ID...`、`split HISTORY_ID CUT_COMMIT_ID`、`historical-save BRANCH_ID SOURCE_COMMIT_ID 新分支名` 默认只生成持久预览；检查输出后用 `plan-commit PLAN_ID --digest DIGEST` 执行，或显式给原命令加 `--execute`。`plan-cancel PLAN_ID` 取消尚未执行的计划。业务状态变化可能使预览失效，需重新预览。历史保存可附加 `--source ./完整文件 --path 文档/文件.txt`，在一个事务内登记新分支并只为实际 staged 文件生成独立 FULL，其余文件继承冻结来源；不修改原分支 HEAD。整树历史保存/拆分的当前支持范围不包含独立文件分支；拆分也拒绝目录组合及未支持的混合文件节点历史，不能据命令存在推断任意历史域都可执行。
 
 `policy new REPOSITORY_ID --path-prefix 文档 --copies 3` 与 `rule new REPOSITORY_ID --path-prefix 文档 --primary-slot P01` 创建后续文件的默认策略；更新时用原 ID 和 `--expected-generation 当前值`。已有版本不会被这些默认策略悄悄迁移。
 

@@ -15,7 +15,9 @@ python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
 
 `verify` 检查源码、原始来源及中央法律材料的摘要，拒绝源码链接/特殊文件、仓库外依赖、registry/Git 依赖、独立工作区、独立锁文件、嵌套 Git 和散落的仓库脚手架。它同时检查所有活动 manifest 中的特性边，包括尚未启用的可选特性、`dep:alias`、`alias/feature`、`alias?/feature` 和依赖声明的 `features`；目标包或特性不存在时立即失败，不能靠默认编译没有触及来掩盖残留声明。
 
-`--metadata` 另用空 Cargo home 离线解析五种入口、两个目标组成的五个入口／目标组合，核对 normal/build 传递闭包、编译／运行角色与已解析 features。原生产品和构建宿主只支持 Linux amd64；当前登记及验收目标为 `x86_64-unknown-linux-gnu`，其他 Linux amd64 ABI 的必要共享源码保留为未验收预留。`wasm32-unknown-unknown` 只用于 Web 浏览器产物，不是额外原生平台。策略检查拒绝重新登记 ARM、未验收目标或把 Web 目标混入原生入口。所有活动源码树和已合并实现都必须至少进入一个登记闭包；dev 边不被混入产品运行闭包。此规则约束源码树是否必要，不表示每个可选源码文件都会链接到最终产品。元数据解析也不等于实际编译、浏览器或 Samba 行为验收。
+`--metadata` 另用空 Cargo home 离线解析五种入口、两个目标组成的五个入口／目标组合，核对 normal/build 可达集合、编译／运行角色标签与已解析 features。Cargo metadata 先对整个工作区统一 features，再从各入口根遍历 normal/build 边：直接 dev 边被跳过，但其他成员及 dev 依赖的特性统一仍可能间接激活 normal/build 边。因此结果是保守可达超集，不是精确的单入口运行时或最终链接闭包；不能仅凭该集合断言每棵源码都由该入口实际使用，也不能直接据此删除来源。所有活动源码树和已合并实现都必须至少进入一个登记集合，实际精简仍需依赖、特性及源码调用审查。元数据解析也不等于实际编译、浏览器或 Samba 行为验收。
+
+原生产品和构建宿主只支持 Linux amd64；当前登记及验收目标为 `x86_64-unknown-linux-gnu`，其他 Linux amd64 ABI 的必要共享源码保留为未验收预留。`wasm32-unknown-unknown` 只用于 Web 浏览器产物，不是额外原生平台。策略检查拒绝重新登记 ARM、未验收目标或把 Web 目标混入原生入口。
 
 有意修改当前源码后，先保留来源身份和许可，更新明确的改造/合并说明并完成对应回归，再执行：
 
@@ -44,7 +46,9 @@ python3 tools/rust-sources/manage.py refresh --retire-plan /tmp/reviewed-rust-re
 python3 tools/rust-sources/manage.py verify --metadata
 ```
 
-当前清单使用 schema 3，以 `packages`、`merges`、`retired` 分别记录活动源码、组件内合并实现和已移除实现。退役记录保留最后源码摘要、原始身份及原因，记录摘要单独锁定，后续 `refresh` 不能覆盖。重新创建退役目录会使验证失败，重新引入必须经过显式来源登记。三类记录必须恰好覆盖全部原始身份，中央原始材料继续保留。
+当前清单使用 schema 4，以 `packages`、`merges`、`retired`、`superseded` 分别记录活动源码、组件内合并实现、已移除实现和已升级替换的原始身份。退役记录保留最后源码摘要、原始身份及原因，记录摘要单独锁定，后续 `refresh` 不能覆盖。重新创建退役目录会使验证失败，重新引入必须经过显式来源登记。四类记录必须恰好覆盖全部原始身份，中央原始材料继续保留。
+
+同目录上游升级须先登记新发布包的原始身份与集中材料，再使用显式审阅的 `refresh --upgrade-plan PLAN.json`。计划采用 schema 1；`packages` 每项包含 `directory`、与上次活动收据完全一致的 `package`、`successor_origin_directory`、`reason` 和非空 `source_prefixes`（例如 `["src/"]`）。工具逐文件检查指定完整源码前缀与新发布包的路径、字节一致，不能仅提升版本号。`superseded` 以旧 `origin_directory` 为键，保留原收据、原因、已核对前缀与直接后继；`superseded_records_sha256` 固定历史记录摘要。连续升级保留原直接后继链，最终必须指向同目录的当前身份或显式退役记录。后续本地修改仍使用常规 `refresh`，不能重写原始来源或升级历史。
 
 原始发布包只在仓库外复核。重建器默认使用不可变的改造前发布包收据，保持 archive SHA-256、原始逐文件摘要、tar 路径/链接/特殊文件限制、大小上限与输出暂存校验；不能用当前整合后的清单替代原始收据，不能覆盖仓库内源码：
 
@@ -54,4 +58,6 @@ python3 tools/rust-sources/import_sources.py --output /tmp/rust-original-review
 python3 tools/rust-sources/collect_notices.py --output /tmp/rust-notice-review
 ```
 
-许可收集器默认只列出待复核项；`--fetch` 才从已登记的 Git commit 获取候选通知。结果写到仓库外，由维护者审查后再追加来源材料。安全入口为 [security.sh](../../.github/scripts/security.sh)：统一根锁与全部活动、已合并实现的原始上游身份均接受扫描。已经验证移除的实现只保留历史记录，不冒充当前产品依赖；改名、path 化、合并及本地修改均不形成漏洞、维护警告或扫描不完整的豁免。
+许可收集器默认只列出待复核项；`--fetch` 才从已登记的 Git commit 获取候选通知。结果写到仓库外，由维护者审查后再追加来源材料。安全入口为 [security.sh](../../.github/scripts/security.sh)：分别扫描[独立扫描器锁](../../.github/security-tools/cargo-audit-0.22.2.lock)、产品根锁和全部活动、已合并实现的原始上游身份锁。已退役或已升级替换的旧身份保留历史收据，不冒充当前产品依赖；升级后的活动身份继续扫描，不因改名、path 化、合并或本地修改豁免漏洞、维护警告或扫描不完整。
+
+扫描器在产品工作区之外按独立审阅锁构建，安装过程核对官方源码、原始锁及精确允许的锁变化；不增加产品工作区或产品锁文件。扫描使用隔离的固定策略，当前公告与 registry/yank 状态须实时读取，不能将工具缓存或历史通过结果当作本次安全结论。安装、网络要求和证据边界见[安全扫描器说明](../../.github/security-tools/README.md)。
