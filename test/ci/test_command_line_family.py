@@ -1,5 +1,7 @@
 import importlib.util
 import json
+import os
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -83,7 +85,25 @@ class NamingGate(unittest.TestCase):
 
     def test_cargo_commands_are_locked_and_offline(self):
         for operation in ('test', 'check', 'build', 'metadata'):
-            self.assertEqual(gate.cargo_command(operation, '--manifest-path', 'fixture/Cargo.toml'), ['cargo', operation, '--locked', '--offline', '--manifest-path', 'fixture/Cargo.toml'])
+            self.assertEqual(gate.cargo_command(operation, '--manifest-path', 'fixture/Cargo.toml'), ['cargo', operation, '--locked', '--offline', '--color', 'never', '--manifest-path', 'fixture/Cargo.toml'])
+
+    def test_captured_cargo_diagnostics_override_forced_ci_color(self):
+        with mock.patch.dict(os.environ, {"CARGO_TERM_COLOR": "always"}):
+            command = gate.cargo_command("check", "--manifest-path", "fixture/Cargo.toml")
+            self.assertEqual(command[command.index("--color") + 1], "never")
+            self.assertEqual(os.environ["CARGO_TERM_COLOR"], "always")
+
+    def test_unsafe_rejection_accepts_actual_colored_compiler_content(self):
+        stderr = "\x1b[1m\x1b[91merror\x1b[0m\x1b[1m: usage of an `unsafe` block\x1b[0m\nrejected_unsafe_boundary_probe"
+        gate.require_unsafe_rejection(subprocess.CompletedProcess([], 101, "", stderr), "src/lib.rs")
+
+    def test_unsafe_rejection_requires_error_and_injected_code(self):
+        expected = "error: usage of an `unsafe` block\nrejected_unsafe_boundary_probe"
+        for status, stderr in ((0, expected), (101, "unrelated failure"),
+                               (101, "error: usage of an `unsafe` block"),
+                               (101, "warning: usage of an `unsafe` block\nrejected_unsafe_boundary_probe")):
+            with self.subTest(status=status, stderr=stderr), self.assertRaises(AssertionError):
+                gate.require_unsafe_rejection(subprocess.CompletedProcess([], status, "", stderr), "src/lib.rs")
 
     def test_only_temporary_fixture_generates_a_lock(self):
         fixture = self.root / 'test/command-line-family.rs'

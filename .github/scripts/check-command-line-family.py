@@ -40,7 +40,19 @@ fn grouped_value_capability() {
 
 def cargo_command(operation, *arguments):
     """Every check/build/test consumes an existing lock without modifying it."""
-    return ["cargo", operation, "--locked", "--offline", *arguments]
+    return ["cargo", operation, "--locked", "--offline", "--color", "never", *arguments]
+
+
+
+def require_unsafe_rejection(result, relative):
+    """Match compiler content, not terminal styling; reject inconclusive failures."""
+    stderr = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", result.stderr)
+    assert result.returncode and "error: usage of an `unsafe` block" in stderr, (
+        f"ordinary runtime unsafe code accepted or inconclusive: {relative}: {result.stderr}"
+    )
+    assert "rejected_unsafe_boundary_probe" in stderr, (
+        f"unsafe rejection did not identify injected code: {relative}"
+    )
 
 
 def reject_dependency_aliases(value):
@@ -210,12 +222,7 @@ def check_unsafe_boundary(root):
                 text=True,
             )
             source.write_bytes(before)
-            assert result.returncode and "error: usage of an `unsafe` block" in result.stderr, (
-                f"ordinary runtime unsafe code accepted or inconclusive: {relative}: {result.stderr}"
-            )
-            assert "rejected_unsafe_boundary_probe" in result.stderr, (
-                f"unsafe rejection did not identify injected code: {relative}"
-            )
+            require_unsafe_rejection(result, relative)
     print("actual root and builder compiler probes reject unsafe code")
 
 
