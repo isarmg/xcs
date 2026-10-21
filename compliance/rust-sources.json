@@ -4649,14 +4649,14 @@
       "version": "2.0.0"
     },
     "src/foundation/env_logger": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 8 个独立示例程序及专属输入（7409 字节）；保留文档编译、真实测试及性能基准输入。；构建工具日志只保留 RUST_LOG 正则、级别/目标和颜色；删除未消费的时间戳 feature、API、实现与 jiff 可选边。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 8 个独立示例程序及专属输入（7409 字节）；保留文档编译、真实测试及性能基准输入。；构建工具日志只保留 RUST_LOG 正则、级别/目标和颜色；删除未消费的时间戳 feature、API、实现与 jiff 可选边。；活跃文档默认输出示例同步为无时间戳，INFO 级别空格与实际补齐一致；不可重写的原始上游文档保持不变。",
       "description": "A logging implementation for `log` which is configured via an environment\nvariable.",
       "directory": "src/foundation/env_logger",
       "files_sha256": {
         "Cargo.toml": "e15628c7b1c5c021c25f4f39220537ce7dba9d5eed145a86ea1654d9a93c5f4e",
         "src/fmt/kv.rs": "1a15b740f4b5a67014e3627bd30b5c7583d576ba06fdf6484a2bd95f20f05eb1",
         "src/fmt/mod.rs": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382",
-        "src/lib.rs": "20696e159ce96a5a895a7bc7b28793786da65162168bdd5825a32092231a7658",
+        "src/lib.rs": "02d8003c277909ea4917da6f9ed7f9f58c5586e91a07d0b612ce19170f5ba53a",
         "src/logger.rs": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698",
         "src/writer/buffer.rs": "ccb9e7962e707c66aafd36df471f11843f15c8026b1b8c53204f7d8efbe4ecff",
         "src/writer/mod.rs": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be",

@@ -13,6 +13,8 @@
 //!
 //! By default, `env_logger` writes logs to `stderr`, but can be configured to
 //! instead write them to `stdout`.
+//! The project build-tool formatter omits wall-clock timestamps and retains
+//! level/target filtering and terminal styling.
 //!
 //! ## Example
 //!
@@ -34,37 +36,37 @@
 //!
 //! ```console
 //! $ RUST_LOG=error ./main
-//! [2017-11-09T02:12:24Z ERROR main] this is printed by default
+//! [ERROR main] this is printed by default
 //! ```
 //!
 //! ```console
 //! $ RUST_LOG=info ./main
-//! [2017-11-09T02:12:24Z ERROR main] this is printed by default
-//! [2017-11-09T02:12:24Z INFO main] the answer was: 12
+//! [ERROR main] this is printed by default
+//! [INFO  main] the answer was: 12
 //! ```
 //!
 //! ```console
 //! $ RUST_LOG=debug ./main
-//! [2017-11-09T02:12:24Z DEBUG main] this is a debug message
-//! [2017-11-09T02:12:24Z ERROR main] this is printed by default
-//! [2017-11-09T02:12:24Z INFO main] the answer was: 12
+//! [DEBUG main] this is a debug message
+//! [ERROR main] this is printed by default
+//! [INFO  main] the answer was: 12
 //! ```
 //!
 //! You can also set the log level on a per module basis:
 //!
 //! ```console
 //! $ RUST_LOG=main=info ./main
-//! [2017-11-09T02:12:24Z ERROR main] this is printed by default
-//! [2017-11-09T02:12:24Z INFO main] the answer was: 12
+//! [ERROR main] this is printed by default
+//! [INFO  main] the answer was: 12
 //! ```
 //!
 //! And enable all logging:
 //!
 //! ```console
 //! $ RUST_LOG=main ./main
-//! [2017-11-09T02:12:24Z DEBUG main] this is a debug message
-//! [2017-11-09T02:12:24Z ERROR main] this is printed by default
-//! [2017-11-09T02:12:24Z INFO main] the answer was: 12
+//! [DEBUG main] this is a debug message
+//! [ERROR main] this is printed by default
+//! [INFO  main] the answer was: 12
 //! ```
 //!
 //! If the binary name contains hyphens, you will need to replace
@@ -72,9 +74,9 @@
 //!
 //! ```console
 //! $ RUST_LOG=my_app ./my-app
-//! [2017-11-09T02:12:24Z DEBUG my_app] this is a debug message
-//! [2017-11-09T02:12:24Z ERROR my_app] this is printed by default
-//! [2017-11-09T02:12:24Z INFO my_app] the answer was: 12
+//! [DEBUG my_app] this is a debug message
+//! [ERROR my_app] this is printed by default
+//! [INFO  my_app] the answer was: 12
 //! ```
 //!
 //! This is because Rust modules and crates cannot contain hyphens
