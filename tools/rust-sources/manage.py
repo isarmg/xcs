@@ -14,6 +14,7 @@ import tomllib
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import external_tests
+import source_naming
 import source_relocation
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -457,6 +458,7 @@ def resolutions(root, policy, merged_sources=()):
 
 def retired_sources(root, catalog, records):
     """Retired implementations keep their last receipt, never an active path."""
+    renames = source_naming.validate_history(root, catalog, check_manifests=False)
     retired = catalog.get("retired", {})
     if not isinstance(retired, dict):
         raise ValueError("invalid retired source inventory")
@@ -476,7 +478,7 @@ def retired_sources(root, catalog, records):
                 or any(not HEX.fullmatch(value) for value in package["files_sha256"].values())):
             raise ValueError(f"incomplete retired source receipt: {relative}")
         if "external_tests" in retirement:
-            external_tests.validate_archived(root, retirement["external_tests"], package, removed=True)
+            external_tests.validate_archived(root, retirement["external_tests"], package, removed=True, renames=renames)
     expected = catalog.get("retired_records_sha256", {})
     actual = origin_hashes(retired)
     if actual != expected:
@@ -508,7 +510,8 @@ def retirement_plan(root, previous, plan, records, policy):
         package = dict(before)
         package["retirement"] = dict(reason=item["reason"], category=item["category"],
                                      bytes=item["bytes"], file_count=item["file_count"], targets=targets)
-        external = external_tests.archive_removal(root, previous, item, before)
+        external = external_tests.archive_removal(root, previous, item, before,
+            source_naming.validate_history(root, previous, check_manifests=False))
         if external is not None:
             package["retirement"]["external_tests"] = external
         retired[relative] = package
@@ -552,7 +555,8 @@ def superseded_sources(root, catalog, records, check_manifests=True):
         safe_path(root, relative)
         upgrade_source_prefixes(root, receipt)
         if "external_tests" in receipt:
-            external_tests.validate_archived(root, receipt["external_tests"], package)
+            external_tests.validate_archived(root, receipt["external_tests"], package,
+                renames=source_naming.validate_history(root, catalog, check_manifests=False))
         match_origin(package, records)
         record = records.get(successor)
         if (record is None or successor == origin or successor in successors
@@ -624,7 +628,8 @@ def upgrade_plan(root, previous, plan, records):
             raise ValueError(f"upgraded source differs from successor release: {relative}")
         superseded[prior_origin] = dict(package=before, successor_origin_directory=successor,
                                        reason=item["reason"], source_prefixes=list(prefixes))
-        external = external_tests.archive_removal(root, previous, item, before)
+        external = external_tests.archive_removal(root, previous, item, before,
+            source_naming.validate_history(root, previous, check_manifests=False))
         if external is not None:
             superseded[prior_origin]["external_tests"] = external
         package = dict(before, origin_directory=successor, upstream=record["upstream"])
@@ -637,7 +642,7 @@ def upgrade_plan(root, previous, plan, records):
     return packages, superseded
 
 
-def refresh(root, retire_plan=None, upgrade_plan_data=None):
+def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None):
     policy = read_json(root / POLICY)
     structure(root, policy)
     previous = read_json(root / CATALOG)
@@ -664,8 +669,17 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
     retirement_paths = plan_paths(retire_plan)
     if upgrade_paths & retirement_paths:
         raise ValueError("upgrade and retirement of one source require separate reviewed refreshes")
-    active, superseded = upgrade_plan(root, previous, upgrade_plan_data, records)
-    active, retired = retirement_plan(root, dict(previous, packages=active), retire_plan, records, policy)
+    renamed, renames = source_naming.prepare(root, previous, rename_plan_data, files)
+    rename_paths = {p for old, row in renames.items() if old in previous['packages']
+                    for p in (old, row['destination_directory'])}
+    if rename_paths & (upgrade_paths | retirement_paths):
+        raise ValueError('rename and retirement/upgrade require separate reviewed refreshes')
+    if upgrade_paths & {row['destination_directory'] for row in renames.values()}:
+        raise ValueError('upgrading renamed source requires chain-aware migration')
+    transition = dict(previous, schema=5 if renames else previous.get("schema", 0), packages=renamed, renames=renames,
+                      rename_records_sha256=source_naming.hashes(renames))
+    active, superseded = upgrade_plan(root, transition, upgrade_plan_data, records)
+    active, retired = retirement_plan(root, dict(transition, packages=active), retire_plan, records, policy)
     actual = source_directories(root, policy)
     if actual != set(active):
         raise ValueError(f"unregistered source directories: {sorted(actual ^ set(active))}")
@@ -697,7 +711,8 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
             if key in merged:
                 merged[key] = current_description(merged[key])
         merges.append(merged)
-    external, external_receipts = external_tests.load(root, dict(packages, **{m["directory"]: m for m in merges}))
+    external, external_receipts = external_tests.load(root, dict(packages, **{m["directory"]: m for m in merges}), renames)
+    source_naming.check_current_external(previous, external, renames)
     if external:
         if not external_tests.has_history(previous):
             baseline_packages = [*previous["packages"].values(), *previous.get("merges", [])]
@@ -708,12 +723,12 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
             source_relocation.read_receipt(root, safe_path)
     elif external_tests.has_history(previous):
         source_relocation.read_receipt(root, safe_path)
-    retained_external = external_tests.transition_previous(previous.get("external_tests", {}), retired, superseded, external)
+    retained_external = external_tests.transition_previous(source_naming.remap_previous(previous.get("external_tests", {}), renames), retired, superseded, external)
     external_tests.check_previous(
         retained_external, external, root,
         dict(packages, **{m["directory"]: m for m in merges}),
-        dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}))
-    catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=4, policy_sha256=digest((root / POLICY).read_bytes()),
+        source_naming.remap_previous(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), renames))
+    catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=5, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
                    lockfiles_sha256={"Cargo.lock": digest((root / "Cargo.lock").read_bytes())},
@@ -724,10 +739,11 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
                    superseded=superseded, superseded_records_sha256=origin_hashes(superseded))
     if external or external_tests.has_history(previous):
         catalog["initial_test_relocation_sha256"] = source_relocation.RECEIPT_SHA256
+    source_naming.validate_history(root, catalog)
     retired_sources(root, catalog, records)
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
-    external_tests.check_removed(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), dict(packages, **{m["directory"]: m for m in merges}), external)
+    external_tests.check_removed(source_naming.remap_previous(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), renames), dict(packages, **{m["directory"]: m for m in merges}), external, renames)
     verify_retained_closure(catalog, policy)
     (root / CATALOG).write_text(json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (root / DOC).write_text(document(catalog, policy), encoding="utf-8", newline="\n")
@@ -799,6 +815,13 @@ def document(catalog, policy):
     lines += ["", "## 根测试目录的来源核算", "",
               f"包内当前文件 {production_count} 个，另有 {len(external)} 个原始身份所属的外置测试文件 {external_count} 个、{external_bytes} 字节；当前来源文件总计 {production_count + external_count} 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。", "",
               "JSON external_tests 按原包目录和原始身份登记精确根目录、原路径、当前路径及逐文件摘要；external_test_mappings_sha256 固定当前映射文档。refresh 先验证外置清单，不能静默吞入新增文件或因目录迁移缩减来源核算。独立说明见 docs/EXTERNAL_TEST_SOURCES.md。", ""]
+    if catalog.get('renames'):
+        lines += ["", "## 已登记的职责命名迁移", "",
+                  "当前名称与目录通过显式 rename-plan 迁移；原始身份、旧源码清单及测试来源标签保持不变。重命名不是删除来源。", "",
+                  "| 原始身份 | 原目录 | 当前目录 | 当前名称 | 原因 |", "| --- | --- | --- | --- | --- |"]
+        for old, record in sorted(catalog['renames'].items()):
+            lines.append("| " + " | ".join(map(cell, [f"{record['package']['upstream']['name']}@{record['package']['upstream']['version']}", old, record['destination_directory'],
+                         record['destination_name'], record['reason']])) + " |")
     lines += ["", "## 完整性、安全与验收", "",
               f"共 {len(catalog['packages'])} 个活动源码树、{len(catalog.get('retired', {}))} 个已移除来源、{len(catalog.get('superseded', {}))} 个已升级替换来源，{len(catalog['resolutions'])} 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。", "",
               "`.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口的保守可达超集；该记录不证明每个入口实际编译或链接了这些源码。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。", ""]
@@ -827,13 +850,14 @@ def verify(root, metadata=False):
     if catalog.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
         raise ValueError("initial test relocation history identity drift")
     structure(root, policy)
+    renames = source_naming.validate_history(root, catalog)
     for key, relative in (("policy_sha256", POLICY), ("config_sha256", ".cargo/config.toml"), ("origins_sha256", ORIGINS)):
         if catalog[key] != digest(safe_path(root, relative).read_bytes()):
             raise ValueError(f"policy/config/origin content drift: {relative}")
     records = origins(root)
     if origin_hashes(records) != catalog["origin_records_sha256"] or provenance(root) != catalog["provenance_sha256"]:
         raise ValueError("centralized original provenance/license inventory drift")
-    external, external_receipts = external_tests.load(root, dict(catalog["packages"], **{m["directory"]: m for m in catalog.get("merges", [])}))
+    external, external_receipts = external_tests.load(root, dict(catalog["packages"], **{m["directory"]: m for m in catalog.get("merges", [])}), renames)
     if external or external_tests.has_history(catalog):
         source_relocation.read_receipt(root, safe_path)
     if external != catalog.get("external_tests", {}) or external_receipts != catalog.get("external_test_mappings_sha256", {}):
@@ -889,12 +913,14 @@ def main():
     parser.add_argument("--metadata", action="store_true")
     parser.add_argument("--retire-plan", type=Path, help="explicit reviewed removal plan; refresh only")
     parser.add_argument("--upgrade-plan", type=Path, help="explicit reviewed upstream replacement plan; refresh only")
+    parser.add_argument("--rename-plan", type=Path, help="explicit reviewed lossless source naming plan; refresh only")
     arguments = parser.parse_args()
     try:
-        if (arguments.retire_plan or arguments.upgrade_plan) and arguments.command != "refresh":
-            raise ValueError("--retire-plan and --upgrade-plan are only accepted by refresh")
+        if (arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan) and arguments.command != "refresh":
+            raise ValueError("--retire-plan, --upgrade-plan and --rename-plan are only accepted by refresh")
         (refresh(ROOT, read_json(arguments.retire_plan) if arguments.retire_plan else None,
-                 read_json(arguments.upgrade_plan) if arguments.upgrade_plan else None)
+                 read_json(arguments.upgrade_plan) if arguments.upgrade_plan else None,
+                 read_json(arguments.rename_plan) if arguments.rename_plan else None)
          if arguments.command == "refresh" else verify(ROOT, arguments.metadata))
     except (ValueError, OSError, KeyError, TypeError) as error:
         print(f"Rust source check failed: {error}", file=sys.stderr)

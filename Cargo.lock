@@ -139,7 +139,7 @@ name = "authentication"
 version = "0.1.0"
 dependencies = [
  "argon2",
- "base64 0.23.1",
+ "base64",
  "getrandom 0.4.3",
  "hmac",
  "serde_json",
@@ -209,10 +209,6 @@ dependencies = [
  "quote",
  "syn 2.0.119",
 ]
-
-[[package]]
-name = "base64"
-version = "0.22.1"
 
 [[package]]
 name = "base64"
@@ -295,7 +291,7 @@ version = "0.2.4"
 name = "browser-smoke"
 version = "0.1.0"
 dependencies = [
- "base64 0.22.1",
+ "base64",
  "serde_json",
  "tempfile",
 ]
@@ -950,7 +946,7 @@ dependencies = [
 name = "hyper-util"
 version = "0.1.21"
 dependencies = [
- "base64 0.23.1",
+ "base64",
  "bytes",
  "futures-channel",
  "futures-util",
@@ -1652,7 +1648,7 @@ dependencies = [
 name = "reqwest"
 version = "0.12.28"
 dependencies = [
- "base64 0.22.1",
+ "base64",
  "bytes",
  "futures-core",
  "futures-util",

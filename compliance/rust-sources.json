@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "6646c2df1226c608c1234875e50cd3d49f8e277b4554f51eba051680ba2d6f78",
+    "compliance/external-tests/foundation.json": "414955106caa36ab17ef0d36a39aecc49b6fd3726a0a4e841aac40ba6ae64375",
     "compliance/external-tests/integrated.json": "bcba1d4729b2beb7cb188a6557c2a11f404a8b67b52ba8355b96379ca82ed117",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -2325,107 +2325,6 @@
       "origin_directory": "vendor/rust/axum-macros-0.5.1",
       "roots": [
         "test/foundation/axum-macros"
-      ]
-    },
-    "src/foundation/base64-0.22.1": {
-      "bytes": 132471,
-      "directory": "src/foundation/base64-0.22.1",
-      "file_count": 15,
-      "files": [
-        {
-          "path": "test/foundation/base64-0.22.1/modules/src/engine/naive.rs",
-          "sha256": "70de29d909c3fe7918d2965782088b05047b8b6e30d1d2bf11ba073d3f8633ff",
-          "source": "src/foundation/base64-0.22.1/src/engine/naive.rs",
-          "source_sha256_before": "70de29d909c3fe7918d2965782088b05047b8b6e30d1d2bf11ba073d3f8633ff"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/modules/src/engine/tests.rs",
-          "sha256": "2cc8d1431f40f5b9c3ad8970e6fb73bba8be3f2317553dd026539f41908aaa19",
-          "source": "src/foundation/base64-0.22.1/src/engine/tests.rs",
-          "source_sha256_before": "2cc8d1431f40f5b9c3ad8970e6fb73bba8be3f2317553dd026539f41908aaa19"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/modules/src/read/decoder_tests.rs",
-          "sha256": "66ec39bf6e86f21f4db1afd6c5cd63d4a4931ab896b9c38de25d99b803804bbf",
-          "source": "src/foundation/base64-0.22.1/src/read/decoder_tests.rs",
-          "source_sha256_before": "66ec39bf6e86f21f4db1afd6c5cd63d4a4931ab896b9c38de25d99b803804bbf"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/modules/src/tests.rs",
-          "sha256": "90cb9f8a1ccb7c4ddc4f8618208e0031fc97e0df0e5aa466d6a5cf45d25967d8",
-          "source": "src/foundation/base64-0.22.1/src/tests.rs",
-          "source_sha256_before": "90cb9f8a1ccb7c4ddc4f8618208e0031fc97e0df0e5aa466d6a5cf45d25967d8"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/modules/src/write/encoder_tests.rs",
-          "sha256": "28695a485b17cf5db73656aae5d90127f726e02c6d70efd83e5ab53a4cc17b38",
-          "source": "src/foundation/base64-0.22.1/src/write/encoder_tests.rs",
-          "source_sha256_before": "28695a485b17cf5db73656aae5d90127f726e02c6d70efd83e5ab53a4cc17b38"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/tests/encode.rs",
-          "sha256": "5309f4538b1df611436f7bfba7409c725161b6f841b1bbf8d9890ae185de7d88",
-          "source": "src/foundation/base64-0.22.1/tests/encode.rs",
-          "source_sha256_before": "5309f4538b1df611436f7bfba7409c725161b6f841b1bbf8d9890ae185de7d88"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/tests/tests.rs",
-          "sha256": "78efcf0dc4bb6ae52f7a91fcad89e44e4dce578224c36b4e6c1c306459be8500",
-          "source": "src/foundation/base64-0.22.1/tests/tests.rs",
-          "source_sha256_before": "78efcf0dc4bb6ae52f7a91fcad89e44e4dce578224c36b4e6c1c306459be8500"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/unit/src/alphabet/tests_208.rs",
-          "sha256": "0e0cf1b5cf97f891ad2a9f6b63d3418d0d9d119a6be8694f5e0d4ba122ae4792",
-          "source": "src/foundation/base64-0.22.1/src/alphabet.rs",
-          "source_sha256_before": "5de2beb8fcccb078c61cac2c0477ebbde145122d6c10a0f7ea2e57e8159318e0"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/unit/src/chunked_encoder/tests_73.rs",
-          "sha256": "cab27cf7c7f04fb6c787c72c42179f34efede2f9010b43f2b2d6a84d03a4fcd0",
-          "source": "src/foundation/base64-0.22.1/src/chunked_encoder.rs",
-          "source_sha256_before": "914c2249f9cc83c94cc630adef01e6fc10da86f7ad4eb52582e0c713942c9648"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/unit/src/decode/coverage_gaming_345.rs",
-          "sha256": "cb72bdde96d050054194bc2efa77758d540a099bcddea1fca197ea2e04d244c4",
-          "source": "src/foundation/base64-0.22.1/src/decode.rs",
-          "source_sha256_before": "b046a72d62eaac58dc42efcf7848d9d96d022f6594e851cf87074b77ce45c04a"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/unit/src/decode/tests_155.rs",
-          "sha256": "0f3354dc29825ba621ab154887a7576c94748fe4fccc85b1372a67813f1d072b",
-          "source": "src/foundation/base64-0.22.1/src/decode.rs",
-          "source_sha256_before": "b046a72d62eaac58dc42efcf7848d9d96d022f6594e851cf87074b77ce45c04a"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/unit/src/display/tests_55.rs",
-          "sha256": "86326a17a83ca2f12d28d336bd3865cdb18a37ada5b805066ea04da033d325dc",
-          "source": "src/foundation/base64-0.22.1/src/display.rs",
-          "source_sha256_before": "31bf3e19274a0b80dd8948a81ea535944f756ef5b88736124c940f5fe1e8c71c"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/unit/src/encode/tests_162.rs",
-          "sha256": "21267edbd5e5b80a67cb8ea8d7a6ee53c39824190ec5e1f6cad069795ba91e67",
-          "source": "src/foundation/base64-0.22.1/src/encode.rs",
-          "source_sha256_before": "44ddcc162f3fe9817b6e857dda0a3b9197b90a657e5f71c44aacabf5431ccf7d"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/unit/src/engine/general_purpose/decode/tests_300.rs",
-          "sha256": "7daba3e2c6a7ae8bc0f8a0b63738a7dd725c02e5f5910f9950cc43f222a0c242",
-          "source": "src/foundation/base64-0.22.1/src/engine/general_purpose/decode.rs",
-          "source_sha256_before": "d865b057e5788e7fefd189cf57ec913df263e6a0742dfa52513f587e14fa1a92"
-        },
-        {
-          "path": "test/foundation/base64-0.22.1/unit/src/write/encoder_string_writer/tests_136.rs",
-          "sha256": "f14b14253205582b8a147d997a0facaf7f310d3d28a4885fd349f112103e839a",
-          "source": "src/foundation/base64-0.22.1/src/write/encoder_string_writer.rs",
-          "source_sha256_before": "0326c9d120369b9bbc35697b5b9b141bed24283374c93d5af1052eb042e47799"
-        }
-      ],
-      "origin_directory": "vendor/rust/base64-0.22.1",
-      "roots": [
-        "test/foundation/base64-0.22.1"
       ]
     },
     "src/foundation/base64-0.23.1": {
@@ -26724,7 +26623,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "d90915df60a92d75568cfb5b6a8c7bfc1e67391f5db9014b626a81466e97db54"
+    "Cargo.lock": "77082967accfede0c7fc44e7bdff5718fbdbc629a56a25dd98ee29cc6c5e5652"
   },
   "manifests_sha256": {
     "Cargo.toml": "1c6472894378c77e0b3e3c52b586039cdc6b030bada2609b3bbe9f719be96455",
@@ -26754,8 +26653,7 @@
     "src/foundation/autocfg/Cargo.toml": "fbd42d1ec63c097ed7f545ca974fabcce7a8634a7131fc47b83d3fe9b190b79a",
     "src/foundation/axum-core/Cargo.toml": "ebf926a8d1f72dbda92715080302162208f0f4770e0cc2db7f77ef37b63b1ee5",
     "src/foundation/axum-macros/Cargo.toml": "9f10bb775f32361b11133ea5a5a3bd495f82f8bce05655a3f5e98d4943208f86",
-    "src/foundation/axum/Cargo.toml": "a0bcfe004bab54a0d97e28a54b0b71cd25831c495ade9920a67a66a4acfa9dc7",
-    "src/foundation/base64-0.22.1/Cargo.toml": "ec589369f8c2ab4dbd165f3ad570e56c8995624f7a8b23dea7991277e61028ca",
+    "src/foundation/axum/Cargo.toml": "01c0840f1554e7a16cbcbb8ed6d12eefc2886d48b34f9c4c7f31ceb5984eef6d",
     "src/foundation/base64-0.23.1/Cargo.toml": "9504252614940f1a708e69e97f94dc912c59c6fcc10b172dc6a7bafcf32a2976",
     "src/foundation/base64ct/Cargo.toml": "760135ed9ff49f6ef8786078e6881e0457b4298913b752ce55bf4554101b0998",
     "src/foundation/bindgen/Cargo.toml": "484059457f0fdd4f7aebddf713131447504d6e200913e863c8cb4e7c97b6927d",
@@ -26942,7 +26840,7 @@
     "src/foundation/regex-automata/Cargo.toml": "cf79f831f3458734483607c91c1e1aa687974d4c930fd7753ba783e85361371b",
     "src/foundation/regex-syntax/Cargo.toml": "6e1e9781822dbd258bb510477cd72a1b45da59eae23b242296188848a6c8691d",
     "src/foundation/regex/Cargo.toml": "ca514f446b32a15e9e004c8b12f4d11201d9fed20828225d2b9ab5c8b8c94217",
-    "src/foundation/reqwest/Cargo.toml": "ce1f9b4fc682a7b79d7c87df1cfeecd2871ed2378923696250c1419243485103",
+    "src/foundation/reqwest/Cargo.toml": "160a9cbac04c3114de06ac79de981a293ad9396cc0564410e2dea62d2ad0aa75",
     "src/foundation/ring/Cargo.toml": "8f465a642f461a274d10a62a2ffdd58292a1f45b553aa715bcb734864d34d9d2",
     "src/foundation/rstml/Cargo.toml": "e6f2f6f5a52d5595732ae692a4fbb16d08ccd69e781060923e4d9047026028b4",
     "src/foundation/rustc-demangle/Cargo.toml": "628851822302b25cc16284cf2b532034d07418b5a15d7294dd943dd4e393a43c",
@@ -27006,7 +26904,7 @@
     "src/foundation/toml_datetime/Cargo.toml": "3195cebf16586a14e50f3324ecf30430985c4f25b6fd3e29a24f0d0034ddd280",
     "src/foundation/toml_edit/Cargo.toml": "9de52524365663c2ab941e05d00e4df397ccac5483c1474130bbea6a6f22e0d2",
     "src/foundation/toml_write/Cargo.toml": "67f1bc249e01e447daacfe39a4a5078c117afd136cf41e27ac89c34d4850a430",
-    "src/foundation/tower-http/Cargo.toml": "bb2842a0a03a1f2d32a7e718e3879f918b6d065916e0388fb0ae1cc96c2a41dc",
+    "src/foundation/tower-http/Cargo.toml": "c411659c7deedf86a655713cba73aebea1adec2afcf78069aec032eeaf23e257",
     "src/foundation/tower-layer/Cargo.toml": "52eaa4a657106a1e986bf961ac595248ae8e6d9e640e294adf7e99f6b932a527",
     "src/foundation/tower-service/Cargo.toml": "94904e90f4d4f2390651d598c742c59367834aed043c96119352ac0ad14688d8",
     "src/foundation/tower/Cargo.toml": "b0f0adc698ab4143a71f9e9903d389770cd931cbbb3268eba8d7f39c66fe3633",
@@ -27065,7 +26963,7 @@
     "src/smb-vfs/Cargo.toml": "c7fc43147f9d0389699fea5f89387225d1f822785c09aebd449330cf9672b1d1",
     "src/smb/Cargo.toml": "0e88dc6915ba28eb7ac3327627165fad1a08bf533056c4481e6974de535b835a",
     "src/web/Cargo.toml": "4f9349cf4ed85a4878663c0fe37b8e968a16ceac7a69fdd65fb5e000ebccd95d",
-    "tools/browser-smoke/Cargo.toml": "d0ba62e3f45173b0ac4fa5ec770ab661d8fe2bf4cab44a02e8494d21728d3a08",
+    "tools/browser-smoke/Cargo.toml": "2bc2372c89c6b04007169a337767992a052e3fe1adc8b39905b186162ef6ab43",
     "tools/contract-check/Cargo.toml": "f156740b52e80048f4ae21c0acfcb4f4d77095a3ff7759cc10951b991153663d",
     "tools/perf-check/Cargo.toml": "3b2ee0101edb83fd8e5b5f302b17563cb532fb082f351e9b1369dc1154f43619",
     "tools/release-tools/Cargo.toml": "389ade4140b92ee59d358dc15f3b929f743de4d1987313fd1453e6508400676e",
@@ -28392,7 +28290,7 @@
       "description": "HTTP routing and request handling library that focuses on ergonomics and modularity",
       "directory": "src/foundation/axum",
       "files_sha256": {
-        "Cargo.toml": "a0bcfe004bab54a0d97e28a54b0b71cd25831c495ade9920a67a66a4acfa9dc7",
+        "Cargo.toml": "01c0840f1554e7a16cbcbb8ed6d12eefc2886d48b34f9c4c7f31ceb5984eef6d",
         "benches/benches.rs": "33b88575e5efdcc3803d6402925f72992bcbe9ef77016160f1061fe561d28a7e",
         "src/body/mod.rs": "83a6632a770e9f3c0ddcdafc26dce4729a1c305f12eef0006c9200f38e774a5a",
         "src/boxed.rs": "013079e838244787b0d4d78500092a3ee6408efae0b80a58b5a69e8b635e3a50",
@@ -28554,55 +28452,6 @@
         "path_in_vcs": "axum-macros"
       },
       "version": "0.5.1"
-    },
-    "src/foundation/base64-0.22.1": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（2318 字节）；保留文档编译、真实测试及性能基准输入。",
-      "description": "encodes and decodes base64 as bytes or utf8",
-      "directory": "src/foundation/base64-0.22.1",
-      "files_sha256": {
-        "Cargo.toml": "ec589369f8c2ab4dbd165f3ad570e56c8995624f7a8b23dea7991277e61028ca",
-        "benches/benchmarks.rs": "cebbcc8649e760e569c6be04f5e727aee2c2568ced7faab580fc0aa0d0426d26",
-        "icon_CLion.svg": "cffa044ba75cb998ee3306991dc4a3755ec2f39ab95ddd4b74bc21988389020f",
-        "src/alphabet.rs": "48d62b5dd3fdbe6c0969d958eccd1b98d7b1c8a72bf86393ec8651362ed2811a",
-        "src/chunked_encoder.rs": "f3c61bad4f7f643077427019decec70e2005a07065358d206539255a4b755283",
-        "src/decode.rs": "9388b65282995ec309386ba403227d477de2df332008edac5dfd5951d36f9724",
-        "src/display.rs": "50c7516b0dd382d906ded4d76ac2442816d49c1a7e4c0c47b91d526a80a09689",
-        "src/encode.rs": "c79b37ddeb060ed444bdfb326e7b97e9ced2c1aa90f2e6350d2bb9e9c1644b80",
-        "src/engine/general_purpose/decode.rs": "80476b681c255ccbee0367e61f15f225553fdfa11f618937335f0478f1b79595",
-        "src/engine/general_purpose/decode_suffix.rs": "689688f7bf442b232d3b9f56a1b41c56d9393ace88556a165c224b93dd19b74e",
-        "src/engine/general_purpose/mod.rs": "901760a7f5721ec3bafad5fea6251f57de0f767ecb2e1e2fdfe64d661404ec34",
-        "src/engine/mod.rs": "eee7e7289ab49fde49f93c57461b35b43771a7493da7713acd89497bf5345a42",
-        "src/lib.rs": "5887ca96bfa96fed3b5a1d4c1ed73af8a5977c1ae54822b15a1731de75f5eaa6",
-        "src/prelude.rs": "c1587138e5301ac797c5c362cb3638649b33f79c20c16db6f38ad44330540752",
-        "src/read/decoder.rs": "00aaa0553a54fcf12762658c4e56663a9705cc30c07af30976291e6f69d78c3d",
-        "src/read/mod.rs": "fa3a1beae0d82eb7dcb5b174ae2558f71fc5983b9e2a7e64859932b634c65830",
-        "src/write/encoder.rs": "c889c853249220fe2ddaeb77ee6e2ee2945f7db88cd6658ef89ff71b81255ea8",
-        "src/write/encoder_string_writer.rs": "1fc2c6b53518848ada8772ab7a623be74a517c4906c34e8c1b3df74cefbd729b",
-        "src/write/mod.rs": "a8f69951cc8adffd7a6c5a891f2ed71b7893ba28b0d81255210d5df970f5b1aa"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/base64-0.22.1/LICENSE-APACHE",
-        "compliance/licenses/upstream/base64-0.22.1/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "base64",
-      "origin_directory": "vendor/rust/base64-0.22.1",
-      "repository": "https://github.com/marshallpierce/rust-base64",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6",
-        "archive_url": "https://static.crates.io/crates/base64/base64-0.22.1.crate",
-        "name": "base64",
-        "version": "0.22.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "e14400697453bcc85997119b874bc03d9601d0af"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.22.1"
     },
     "src/foundation/base64-0.23.1": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（2298 字节）；保留文档编译、真实测试及性能基准输入。",
@@ -37391,7 +37240,7 @@
       "description": "higher level HTTP client library",
       "directory": "src/foundation/reqwest",
       "files_sha256": {
-        "Cargo.toml": "ce1f9b4fc682a7b79d7c87df1cfeecd2871ed2378923696250c1419243485103",
+        "Cargo.toml": "160a9cbac04c3114de06ac79de981a293ad9396cc0564410e2dea62d2ad0aa75",
         "src/async_impl/body.rs": "373be4eb83671f850234fb665a6e2abbecd5dacbc6db1df6a136f5e914bca7e0",
         "src/async_impl/client.rs": "e2d1f9dcd226a025195a4e586a161d2abebd902580a77af7b2f90d9828dec893",
         "src/async_impl/mod.rs": "ed7187a5f3070ef7db9336273387651216d7e3edc5862c4f8273e57874653d88",
@@ -41500,7 +41349,7 @@
       "description": "Tower middleware and utilities for HTTP clients and servers",
       "directory": "src/foundation/tower-http",
       "files_sha256": {
-        "Cargo.toml": "bb2842a0a03a1f2d32a7e718e3879f918b6d065916e0388fb0ae1cc96c2a41dc",
+        "Cargo.toml": "c411659c7deedf86a655713cba73aebea1adec2afcf78069aec032eeaf23e257",
         "src/add_extension.rs": "2ecc8622137e802dc8849b5cff656f62a7788c6ff3b4e978e985ee8296b3fa94",
         "src/auth/add_authorization.rs": "ee9fe73bd411c978e86860a11ce42329393cef0845ae6d825f3cb6c2494409be",
         "src/auth/async_require_authorization.rs": "a98523e2c042aa3282a3e48b636037bf6d7796f8d6290ea7edcf69d74b9ed57b",
@@ -48192,6 +48041,8 @@
     "docs/upstream/zxs-web-core-0.8.19/README.md": "5a22efb04cfa9cef41afb32626f8e9637f8284ce71397a6f06aac22bdb64d52e",
     "docs/upstream/zxs-web-macro-0.8.19/README.md": "cadda70f7c6ae3bf8aecab12b3e8f44507695f00b6e21afd9f5ca61fc239670f"
   },
+  "rename_records_sha256": {},
+  "renames": {},
   "resolutions": [
     {
       "manifest": "Cargo.toml",
@@ -48317,16 +48168,6 @@
           ],
           "roles": [
             "compile"
-          ]
-        },
-        "src/foundation/base64-0.22.1": {
-          "features": [
-            "alloc",
-            "default",
-            "std"
-          ],
-          "roles": [
-            "runtime"
           ]
         },
         "src/foundation/base64-0.23.1": {
@@ -52189,10 +52030,11 @@
             "compile"
           ]
         },
-        "src/foundation/base64-0.22.1": {
+        "src/foundation/base64-0.23.1": {
           "features": [
             "alloc",
             "default",
+            "simd-unsafe",
             "std"
           ],
           "roles": [
@@ -53710,6 +53552,166 @@
         "path_in_vcs": "crates/anstyle-wincon"
       },
       "version": "3.0.11"
+    },
+    "src/foundation/base64-0.22.1": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（2318 字节）；保留文档编译、真实测试及性能基准输入。",
+      "description": "encodes and decodes base64 as bytes or utf8",
+      "directory": "src/foundation/base64-0.22.1",
+      "files_sha256": {
+        "Cargo.toml": "ec589369f8c2ab4dbd165f3ad570e56c8995624f7a8b23dea7991277e61028ca",
+        "benches/benchmarks.rs": "cebbcc8649e760e569c6be04f5e727aee2c2568ced7faab580fc0aa0d0426d26",
+        "icon_CLion.svg": "cffa044ba75cb998ee3306991dc4a3755ec2f39ab95ddd4b74bc21988389020f",
+        "src/alphabet.rs": "48d62b5dd3fdbe6c0969d958eccd1b98d7b1c8a72bf86393ec8651362ed2811a",
+        "src/chunked_encoder.rs": "f3c61bad4f7f643077427019decec70e2005a07065358d206539255a4b755283",
+        "src/decode.rs": "9388b65282995ec309386ba403227d477de2df332008edac5dfd5951d36f9724",
+        "src/display.rs": "50c7516b0dd382d906ded4d76ac2442816d49c1a7e4c0c47b91d526a80a09689",
+        "src/encode.rs": "c79b37ddeb060ed444bdfb326e7b97e9ced2c1aa90f2e6350d2bb9e9c1644b80",
+        "src/engine/general_purpose/decode.rs": "80476b681c255ccbee0367e61f15f225553fdfa11f618937335f0478f1b79595",
+        "src/engine/general_purpose/decode_suffix.rs": "689688f7bf442b232d3b9f56a1b41c56d9393ace88556a165c224b93dd19b74e",
+        "src/engine/general_purpose/mod.rs": "901760a7f5721ec3bafad5fea6251f57de0f767ecb2e1e2fdfe64d661404ec34",
+        "src/engine/mod.rs": "eee7e7289ab49fde49f93c57461b35b43771a7493da7713acd89497bf5345a42",
+        "src/lib.rs": "5887ca96bfa96fed3b5a1d4c1ed73af8a5977c1ae54822b15a1731de75f5eaa6",
+        "src/prelude.rs": "c1587138e5301ac797c5c362cb3638649b33f79c20c16db6f38ad44330540752",
+        "src/read/decoder.rs": "00aaa0553a54fcf12762658c4e56663a9705cc30c07af30976291e6f69d78c3d",
+        "src/read/mod.rs": "fa3a1beae0d82eb7dcb5b174ae2558f71fc5983b9e2a7e64859932b634c65830",
+        "src/write/encoder.rs": "c889c853249220fe2ddaeb77ee6e2ee2945f7db88cd6658ef89ff71b81255ea8",
+        "src/write/encoder_string_writer.rs": "1fc2c6b53518848ada8772ab7a623be74a517c4906c34e8c1b3df74cefbd729b",
+        "src/write/mod.rs": "a8f69951cc8adffd7a6c5a891f2ed71b7893ba28b0d81255210d5df970f5b1aa"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/base64-0.22.1/LICENSE-APACHE",
+        "compliance/licenses/upstream/base64-0.22.1/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "base64",
+      "origin_directory": "vendor/rust/base64-0.22.1",
+      "repository": "https://github.com/marshallpierce/rust-base64",
+      "retirement": {
+        "bytes": 130075,
+        "category": "duplicate-implementation-consolidation",
+        "external_tests": {
+          "bytes": 132471,
+          "directory": "src/foundation/base64-0.22.1",
+          "file_count": 15,
+          "files": [
+            {
+              "path": "test/foundation/base64-0.22.1/modules/src/engine/naive.rs",
+              "sha256": "70de29d909c3fe7918d2965782088b05047b8b6e30d1d2bf11ba073d3f8633ff",
+              "source": "src/foundation/base64-0.22.1/src/engine/naive.rs",
+              "source_sha256_before": "70de29d909c3fe7918d2965782088b05047b8b6e30d1d2bf11ba073d3f8633ff"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/modules/src/engine/tests.rs",
+              "sha256": "2cc8d1431f40f5b9c3ad8970e6fb73bba8be3f2317553dd026539f41908aaa19",
+              "source": "src/foundation/base64-0.22.1/src/engine/tests.rs",
+              "source_sha256_before": "2cc8d1431f40f5b9c3ad8970e6fb73bba8be3f2317553dd026539f41908aaa19"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/modules/src/read/decoder_tests.rs",
+              "sha256": "66ec39bf6e86f21f4db1afd6c5cd63d4a4931ab896b9c38de25d99b803804bbf",
+              "source": "src/foundation/base64-0.22.1/src/read/decoder_tests.rs",
+              "source_sha256_before": "66ec39bf6e86f21f4db1afd6c5cd63d4a4931ab896b9c38de25d99b803804bbf"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/modules/src/tests.rs",
+              "sha256": "90cb9f8a1ccb7c4ddc4f8618208e0031fc97e0df0e5aa466d6a5cf45d25967d8",
+              "source": "src/foundation/base64-0.22.1/src/tests.rs",
+              "source_sha256_before": "90cb9f8a1ccb7c4ddc4f8618208e0031fc97e0df0e5aa466d6a5cf45d25967d8"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/modules/src/write/encoder_tests.rs",
+              "sha256": "28695a485b17cf5db73656aae5d90127f726e02c6d70efd83e5ab53a4cc17b38",
+              "source": "src/foundation/base64-0.22.1/src/write/encoder_tests.rs",
+              "source_sha256_before": "28695a485b17cf5db73656aae5d90127f726e02c6d70efd83e5ab53a4cc17b38"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/tests/encode.rs",
+              "sha256": "5309f4538b1df611436f7bfba7409c725161b6f841b1bbf8d9890ae185de7d88",
+              "source": "src/foundation/base64-0.22.1/tests/encode.rs",
+              "source_sha256_before": "5309f4538b1df611436f7bfba7409c725161b6f841b1bbf8d9890ae185de7d88"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/tests/tests.rs",
+              "sha256": "78efcf0dc4bb6ae52f7a91fcad89e44e4dce578224c36b4e6c1c306459be8500",
+              "source": "src/foundation/base64-0.22.1/tests/tests.rs",
+              "source_sha256_before": "78efcf0dc4bb6ae52f7a91fcad89e44e4dce578224c36b4e6c1c306459be8500"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/unit/src/alphabet/tests_208.rs",
+              "sha256": "0e0cf1b5cf97f891ad2a9f6b63d3418d0d9d119a6be8694f5e0d4ba122ae4792",
+              "source": "src/foundation/base64-0.22.1/src/alphabet.rs",
+              "source_sha256_before": "5de2beb8fcccb078c61cac2c0477ebbde145122d6c10a0f7ea2e57e8159318e0"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/unit/src/chunked_encoder/tests_73.rs",
+              "sha256": "cab27cf7c7f04fb6c787c72c42179f34efede2f9010b43f2b2d6a84d03a4fcd0",
+              "source": "src/foundation/base64-0.22.1/src/chunked_encoder.rs",
+              "source_sha256_before": "914c2249f9cc83c94cc630adef01e6fc10da86f7ad4eb52582e0c713942c9648"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/unit/src/decode/coverage_gaming_345.rs",
+              "sha256": "cb72bdde96d050054194bc2efa77758d540a099bcddea1fca197ea2e04d244c4",
+              "source": "src/foundation/base64-0.22.1/src/decode.rs",
+              "source_sha256_before": "b046a72d62eaac58dc42efcf7848d9d96d022f6594e851cf87074b77ce45c04a"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/unit/src/decode/tests_155.rs",
+              "sha256": "0f3354dc29825ba621ab154887a7576c94748fe4fccc85b1372a67813f1d072b",
+              "source": "src/foundation/base64-0.22.1/src/decode.rs",
+              "source_sha256_before": "b046a72d62eaac58dc42efcf7848d9d96d022f6594e851cf87074b77ce45c04a"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/unit/src/display/tests_55.rs",
+              "sha256": "86326a17a83ca2f12d28d336bd3865cdb18a37ada5b805066ea04da033d325dc",
+              "source": "src/foundation/base64-0.22.1/src/display.rs",
+              "source_sha256_before": "31bf3e19274a0b80dd8948a81ea535944f756ef5b88736124c940f5fe1e8c71c"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/unit/src/encode/tests_162.rs",
+              "sha256": "21267edbd5e5b80a67cb8ea8d7a6ee53c39824190ec5e1f6cad069795ba91e67",
+              "source": "src/foundation/base64-0.22.1/src/encode.rs",
+              "source_sha256_before": "44ddcc162f3fe9817b6e857dda0a3b9197b90a657e5f71c44aacabf5431ccf7d"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/unit/src/engine/general_purpose/decode/tests_300.rs",
+              "sha256": "7daba3e2c6a7ae8bc0f8a0b63738a7dd725c02e5f5910f9950cc43f222a0c242",
+              "source": "src/foundation/base64-0.22.1/src/engine/general_purpose/decode.rs",
+              "source_sha256_before": "d865b057e5788e7fefd189cf57ec913df263e6a0742dfa52513f587e14fa1a92"
+            },
+            {
+              "path": "test/foundation/base64-0.22.1/unit/src/write/encoder_string_writer/tests_136.rs",
+              "sha256": "f14b14253205582b8a147d997a0facaf7f310d3d28a4885fd349f112103e839a",
+              "source": "src/foundation/base64-0.22.1/src/write/encoder_string_writer.rs",
+              "source_sha256_before": "0326c9d120369b9bbc35697b5b9b141bed24283374c93d5af1052eb042e47799"
+            }
+          ],
+          "origin_directory": "vendor/rust/base64-0.22.1",
+          "roots": [
+            "test/foundation/base64-0.22.1"
+          ]
+        },
+        "file_count": 19,
+        "reason": "Consolidated all standard Base64 consumers onto the maintained 0.23.1 scalar engines with explicit std-only dependencies; valid, invalid, padding and trailing-bit compatibility verified against 0.22.1. Constant-time base64ct remains separate.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6",
+        "archive_url": "https://static.crates.io/crates/base64/base64-0.22.1.crate",
+        "name": "base64",
+        "version": "0.22.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "e14400697453bcc85997119b874bc03d9601d0af"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.22.1"
     },
     "src/foundation/bitflags-1.3.2": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -63558,6 +63560,7 @@
   },
   "retired_records_sha256": {
     "src/foundation/anstyle-wincon": "5a0150bb732478959f49ff460a2811133143119a34db1df32dea36dbf73edd6b",
+    "src/foundation/base64-0.22.1": "92c2491c81dae6cf8ae5b3dcf59249610b42e604a44246529e30be38dbfe631a",
     "src/foundation/bitflags-1.3.2": "ac778507e82d947908dc49d1656946beb62148438d79ce43146662308cc05e3b",
     "src/foundation/camino": "e01c43d23e823827c1d36e74f3e07b18152c3f34fabe9b17349fedac73ba5293",
     "src/foundation/cfg_aliases": "b31405fde7e9450ac4f6e6d8e00d8b93c7725cf821bc2724675421b636ce87b5",
@@ -63634,7 +63637,7 @@
     "src/foundation/zerocopy-derive": "91195d6147dd2e484bcf210ebe2606a24ec4f8481a4eff805387f6f5dd3ffcc0",
     "src/foundation/zlib-rs": "608642d27ee66035c4c43754b7fd936c1f147e1f873e94db614ff4ca2056e52f"
   },
-  "schema": 4,
+  "schema": 5,
   "superseded": {
     "vendor/rust/rustls-webpki-0.103.15": {
       "package": {

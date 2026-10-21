@@ -28,6 +28,7 @@
     "tools/rust-sources/external_tests.py",
     "tools/rust-sources/historical_test_sources.py",
     "tools/rust-sources/source_relocation.py",
+    "tools/rust-sources/source_naming.py",
     ".github/scripts/rust-build-tool.sh",
     ".github/scripts/release-package.sh",
     ".github/scripts/verify-web-dist.py",

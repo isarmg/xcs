@@ -16,6 +16,10 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+#[cfg(test)]
+#[path = "../unit/base64_compatibility_tests.rs"]
+mod base64_compatibility_tests;
+
 mod accessibility;
 mod diagnostics;
 mod fonts;

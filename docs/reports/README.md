@@ -4,6 +4,7 @@
 
 | 报告 | 范围 |
 | --- | --- |
+| [Base64 单实现整合](base64-consolidation-20261021.md) | 455 万组差异验证、标量特性、旧实现及外置测试归档、调用方和剩余限制 |
 | [Foundation 项目定制与架构优化](foundation-customization-20261021.md) | c6421fb5 后的新一轮消费者地图、微型职责归并、构建依赖裁剪、量化结果与验证边界 |
 | [架构与本轮改造说明](engineering-refactor-20261020.md) | 当前模块、存储真相、正确性/资源边界、foundation职责与验收限制的完整汇总 |
 | [ring Linux amd64 构建输入收敛](ring-linux-amd64-target-20261020.md) | 116 非目标文件退役、选中输入与生成字节等价、不可变历史来源与当前源码双视图校验 |

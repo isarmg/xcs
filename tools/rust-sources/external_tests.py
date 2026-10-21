@@ -39,7 +39,7 @@ def inventory(root, relative):
     return result
 
 
-def load(root, packages):
+def load(root, packages, renames=None):
     """Never learn new source bytes during refresh: verify explicit receipts first."""
     directory = safe(root, MAPPINGS)
     if not directory.exists():
@@ -58,6 +58,8 @@ def load(root, packages):
             identity = owner['directory']
             if identity not in packages or identity in owners:
                 raise ValueError(f'unknown/duplicate external test owner: {identity}')
+            from source_naming import source_prefixes
+            prefixes = source_prefixes(renames or {}, identity, packages[identity]['origin_directory'])
             expected = {}
             for entry in owner['files']:
                 source, path = entry['source'], entry['path']
@@ -65,7 +67,7 @@ def load(root, packages):
                     raise ValueError(f'missing original test source hash: {source}')
                 safe(root, source)
                 safe(root, path)
-                if not source.startswith(identity + '/') or not path.startswith('test/') or path in paths:
+                if not source.startswith(prefixes) or not path.startswith('test/') or path in paths:
                     raise ValueError(f'invalid external test ownership: {path}')
                 paths.add(path)
                 expected[path] = entry['sha256']
@@ -90,13 +92,20 @@ def load(root, packages):
     return owners, receipts
 
 
-def check_removed(previous, current, owners):
+def check_removed(previous, current, owners, renames=None):
     for directory, package in previous.items():
         if directory not in current or package.get('origin_directory') != current[directory].get('origin_directory'):
             continue
         removed = set(package.get('files_sha256', {})) - set(current[directory]['files_sha256'])
-        attributed = {entry['source'][len(directory) + 1:] for entry in owners.get(directory, {}).get('files', [])
-                      if package.get('files_sha256', {}).get(entry['source'][len(directory) + 1:]) == entry['source_sha256_before']}
+        from source_naming import source_prefixes
+        prefixes = source_prefixes(renames or {}, directory, package.get('origin_directory'))
+        attributed = set()
+        for entry in owners.get(directory, {}).get('files', []):
+            for prefix in prefixes:
+                if entry['source'].startswith(prefix):
+                    relative = entry['source'][len(prefix):]
+                    if package.get('files_sha256', {}).get(relative) == entry['source_sha256_before']:
+                        attributed.add(relative)
         # Prior external receipts remain explicit even if a test is relocated again.
         if not removed <= attributed:
             raise ValueError(f'unaccounted source removal during test separation: {directory}: {sorted(removed - attributed)}')
@@ -138,7 +147,7 @@ def check_previous(previous, current, root=None, packages=None, previous_package
             raise ValueError(f'external test source accounting shrank: {directory}')
 
 
-def validate_archived(root, owner, package, removed=False):
+def validate_archived(root, owner, package, removed=False, renames=None):
     """Validate a last-current receipt without learning bytes from absent files."""
     directory = package['directory']
     if (not isinstance(owner, dict) or owner.get('directory') != directory
@@ -148,6 +157,8 @@ def validate_archived(root, owner, package, removed=False):
             or type(owner.get('bytes')) is not int or owner['bytes'] < 0
             or not isinstance(owner.get('roots'), list) or not owner['roots']):
         raise ValueError(f'incomplete archived external test receipt: {directory}')
+    from source_naming import source_prefixes
+    prefixes = source_prefixes(renames or {}, directory, package['origin_directory'])
     roots, paths = [], set()
     for relative in owner['roots']:
         path = safe(root, relative)
@@ -159,7 +170,7 @@ def validate_archived(root, owner, package, removed=False):
     for entry in owner['files']:
         source, path = entry['source'], entry['path']
         safe(root, source); safe(root, path)
-        if (not source.startswith(directory + '/') or path in paths
+        if (not source.startswith(prefixes) or path in paths
                 or not any(path.startswith(p + '/') for p in roots)
                 or any(not re.fullmatch(r'[0-9a-f]{64}', entry.get(key, ''))
                        for key in ('sha256', 'source_sha256_before'))):
@@ -167,7 +178,7 @@ def validate_archived(root, owner, package, removed=False):
         paths.add(path)
 
 
-def archive_removal(root, previous, item, package):
+def archive_removal(root, previous, item, package, renames=None):
     """Only a matching reviewed plan can dispose of the last external inventory."""
     directory = package['directory']
     owner = previous.get('external_tests', {}).get(directory)
@@ -180,7 +191,7 @@ def archive_removal(root, previous, item, package):
                          'set external_action=remove and external_tests to the exact last catalog receipt; '
                          'remove its mapping and roots. For an upgrade, restore successor tests in '
                          'the authenticated source_prefixes before a separate reviewed relocation.')
-    validate_archived(root, owner, package, removed=True)
+    validate_archived(root, owner, package, removed=True, renames=renames)
     return owner
 
 

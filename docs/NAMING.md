@@ -1,0 +1,87 @@
+# 内部组件命名规范
+
+[文档目录](README.md) · [单仓库结构](monorepo.md) · [命名迁移与来源架构](architecture/source-naming.md)
+
+## 目标与状态
+
+内部组件按功能和职责命名，不再把上游仓库品牌或发布版本嵌入活动目录、Cargo 包名及内部代码标识。来源身份、原始版本、许可证、版权和修改记录完整保留；改名不是重新许可，也不是抹去来源。
+
+本文制定规范，并登记首批迁移计划。**下文标为“计划”的映射不代表已经实施或验收**；实际活动路径及身份以 [当前来源清单](../compliance/rust-sources.json)、Cargo manifest 和对应验证记录为准。现有第一方组件已使用 authentication、storage-engine、web-interface、view-macros 等职责名称，不为统一外观重复改名。
+
+这里的“合并”指源码、依赖图、文档、构建及治理入口纳入本仓库，不涉及删除上游托管仓库、修改上游账号或移除许可证。
+
+## 命名规则
+
+1. 目录及 Cargo 包采用小写 kebab-case；Rust crate、依赖别名及模块采用对应 snake_case。类型采用 Rust 的 UpperCamelCase，函数和变量采用 snake_case。
+2. 名称表达“是什么”或“承担什么职责”，优先使用领域词及稳定职责。不添加产品名、上游品牌、发布日期或发布版本后缀。
+3. 同一组件族按职责使用 `-core`、`-macros`、`-derive`、`-bindings`、`-runtime`、`-parser`、`-format` 等后缀；不为了凑齐后缀拆分现有组件。
+4. 已有功能性名称可以保留。base64、sha2、SQLite、HTTP、TLS、Unicode、WASM 等表示编码、算法、数据库、协议或标准；不能因为上游项目同名，就把它们替换成含糊的自造词。`sha2` 的数字表示 SHA-2 算法族，不是软件发布版本。
+5. 多个不兼容实现不能仅删除版本后缀后挤入同一目录。先核查 API、类型、特性、宏展开和消费者，再决定合并；必须并存时按实际职责或实现差异命名，不使用 `old/new`、`v1/v2` 或任意序号。
+6. 改名应覆盖内部 Cargo 包、库目标、依赖别名、模块及宏生成路径，不能只改文件夹、长期保留一整套上游品牌别名后宣称完成。迁移中的临时别名必须明确标为未完成工作。
+7. 正常语义版本继续保存在 Cargo 的 `version` 元数据中；“无版本后缀”不是删除依赖解析所需的版本，也不允许改写上游原始版本记录。
+
+## 领域分层
+
+领域首先作为命名和审查分类，**不是本轮已经实施的目录搬迁**。当前统一的 `src/foundation/<职责>` 平面布局可以继续使用，避免在源码治理工具尚不支持时再增加一层路径变化。
+
+| 领域 | 典型职责 |
+| --- | --- |
+| 数据与编码 | 序列化、JSON、文本编码、集合、迭代器 |
+| 系统与执行 | 系统调用、异步运行时、文件操作、随机熵 |
+| 安全与密码 | 摘要算法、密码派生、证书验证、TLS |
+| 网络与服务 | HTTP 传输、路由、中间件、客户端 |
+| 数据库与存储 | 数据库访问、SQLite 驱动、原生绑定 |
+| 界面与浏览器 | 响应式状态、视图渲染、DOM 辅助、浏览器绑定 |
+| 编译与开发工具 | Rust 语法解析、过程宏、源代码格式化、构建工具 |
+
+## 首批计划：六个单版本组件
+
+Base64 旧实现经差异验证合并后，这批不存在同名多版本冲突，先修复既有验证问题，再实施命名迁移。四个组件同时更改包和内部命名；SHA-2 和合并后的 Base64 组件只去掉目录中的发布版本。
+
+| 迁移前目录（相对 src/foundation） | 计划目录 / Cargo 包 | 计划 Rust crate 标识 | 原始身份 |
+| --- | --- | --- | --- |
+| bitflags-2.13.2 | flag-set | flag_set | bitflags 2.13.2 |
+| itertools-0.14.0 | iterator-toolkit | iterator_toolkit | itertools 0.14.0 |
+| rand_core-0.6.4 | random-generator-core | random_generator_core | rand_core 0.6.4 |
+| sha2-0.11.1 | sha2 | sha2 | sha2 0.11.1 |
+| shlex-2.0.1 | shell-tokenizer | shell_tokenizer | shlex 2.0.1 |
+| base64-0.23.1 | base64 | base64 | base64 0.23.1 |
+
+这六项均有已分离的测试来源映射；源目录、测试 owner、活动测试路径、manifest 及内部引用应协调迁移。不能修改旧的不可变测试搬迁收据以迁就新名称。
+
+### 精确来源与法律材料
+
+下列归档地址、版本和来源键来自现有 [原始来源收据](../compliance/provenance/origins.json)。归档 SHA-256 与原始逐文件摘要继续由该收据维护；不因命名迁移重新接受未知来源。
+
+| 原始身份与归档 | 不可变 origin_directory | 原始许可材料 |
+| --- | --- | --- |
+| [bitflags 2.13.2](https://static.crates.io/crates/bitflags/bitflags-2.13.2.crate) | vendor/rust/bitflags-2.13.2 | [Apache-2.0](../compliance/licenses/upstream/bitflags-2.13.2/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/bitflags-2.13.2/LICENSE-MIT) |
+| [itertools 0.14.0](https://static.crates.io/crates/itertools/itertools-0.14.0.crate) | vendor/rust/itertools-0.14.0 | [Apache-2.0](../compliance/licenses/upstream/itertools-0.14.0/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/itertools-0.14.0/LICENSE-MIT) |
+| [rand_core 0.6.4](https://static.crates.io/crates/rand_core/rand_core-0.6.4.crate) | vendor/rust/rand_core-0.6.4 | [Apache-2.0](../compliance/licenses/upstream/rand_core-0.6.4/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/rand_core-0.6.4/LICENSE-MIT)、[版权](../compliance/licenses/upstream/rand_core-0.6.4/COPYRIGHT) |
+| [sha2 0.11.1](https://static.crates.io/crates/sha2/sha2-0.11.1.crate) | vendor/rust/sha2-0.11.1 | [Apache-2.0](../compliance/licenses/upstream/sha2-0.11.1/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/sha2-0.11.1/LICENSE-MIT) |
+| [shlex 2.0.1](https://static.crates.io/crates/shlex/shlex-2.0.1.crate) | vendor/rust/shlex-2.0.1 | [Apache-2.0](../compliance/licenses/upstream/shlex-2.0.1/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/shlex-2.0.1/LICENSE-MIT) |
+
+| [base64 0.23.1](https://static.crates.io/crates/base64/base64-0.23.1.crate) | vendor/rust/base64-0.23.1 | [Apache-2.0](../compliance/licenses/upstream/base64-0.23.1/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/base64-0.23.1/LICENSE-MIT) |
+
+## 后续组件族：仅为计划
+
+以下是需要联合评审的候选，不是已落地清单，也不要求把所有有明确领域含义的名称强行替换。
+
+| 现有组件族 | 计划方向 | 必须协调的边界 |
+| --- | --- | --- |
+| leptos_dom / tachys / reactive_graph | dom-helpers / view-renderer / reactive-state | web-interface 重导出、view-macros 生成路径、视图和浏览器测试 |
+| tokio / tokio-macros / tokio-util | async-runtime / async-runtime-macros / async-runtime-utils | 属性宏默认 crate 路径、特性转发、调度和取消语义 |
+| serde / serde_core / serde_derive | data-serialization / serialization-core / serialization-derive | 派生宏、辅助属性、生成路径及所有序列化消费者；序列化字段和线格式不变 |
+| thiserror / thiserror-impl | error-definition / error-definition-macros | 宏中硬编码路径及隐藏支持模块 |
+| ring | native-cryptography | 原生符号前缀、预生成汇编、构建脚本和 links；不能仅改 Cargo 名称 |
+
+`src/interface` 和 `src/macros` 自身已经按职责命名，但内部仍存在 `leptos_dom`、`tachys` 重导出和生成的 `web_interface::tachys` 路径。只把依赖文件夹改名不能完成这个组件族的内部化；须在同一批次修改宏生产者和消费者。
+
+## 必须保留与逐项审查的例外
+
+- 许可证、版权归属、上游 URL、原始版本、归档哈希、原始文档、不可变来源及历史记录保留原样。
+- 标准算法、协议、数据库、平台 ABI、系统 API 和格式的名称不因仓库品牌匹配而误改。
+- 对外符号、持久化标记、序列化字段、WASM/JavaScript 绑定契约和原生链接命名不可进行无差别替换；必须记录具体契约和保留原因。若确需变更，应按独立兼容性迁移验证。
+- 例外必须是确切的来源、法律、标准或互操作边界，不能笼统地以“兼容”为由保留所有内部上游品牌。
+
+完成标准是：活动实现采用一致职责命名，残留标识都有明确归类，来源和行为可验证；不是在整个仓库中把所有上游字符串删到零。

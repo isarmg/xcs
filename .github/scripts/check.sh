@@ -75,7 +75,7 @@ case "${1:-}" in
     cargo run --locked --offline -p contract-check -- --root .
     ;;
   build-tools)
-    cargo test --locked --offline -p web-bindings -p release-tools -p web-build -p unicode-build -p perf-check
+    cargo test --locked --offline -p web-bindings -p release-tools -p web-build -p unicode-build -p perf-check -p browser-smoke
     cargo test --locked --offline --lib -p env_logger -p env_filter
     bash test/ci/release-package.sh
     bash test/ci/release-publish.sh

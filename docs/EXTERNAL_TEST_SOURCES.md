@@ -91,3 +91,31 @@ receipt, checks the corrected live bytes, and reverses its exact routing edit an
 whole-file fixture move before applying the unchanged platform relocation proof.
 Modified current bytes, incorrect reversals, reappearing old fixture paths, and
 receipt tampering fail closed; the old platform and runtime receipts stay frozen.
+
+## Explicit source naming transitions
+
+`refresh --rename-plan PLAN.json` supports reviewed foundation package-root,
+package-name and corresponding external-test-root renames. Schema 1 plans contain
+`packages` entries with `directory`, the exact prior `package`,
+`destination_directory`, `destination_name`, `reason`, the exact reviewed post-move
+`files_sha256`, the exact previous `external_tests` owner (or null), and the exact
+reviewed `destination_external_tests` owner (or null). The enriched owner includes
+origin, file count and byte total. Destination directory basename and package name
+must match. Relative production filenames and external fragment counts remain
+bijective; changed routing/import bytes require explicit reviewed after hashes.
+
+Schema 5 catalogs preserve the original package and external owner in append-only
+`renames`, authenticated by `rename_records_sha256`. External `source` and
+`source_sha256_before` labels remain historical; only validated same-origin rename
+history allows that old source prefix under the current owner. Old production and
+test roots must be absent. Ordinary refresh still rejects lost external fragments,
+unknown files, changed ownership and rewritten history. Later local content edits
+follow ordinary explicit refresh without rewriting the naming receipt. Prior
+schema 4 catalogs without naming history remain verifiable.
+
+Rename and retirement/upgrade of one identity require separate changes. A renamed
+owner can later be explicitly retired with its exact external receipt. Repeat
+renames, upstream upgrades after renaming, renames of already-upgraded sources,
+and sources covered by fixed ring/platform live-view proofs fail closed until a
+chain-aware or historical-view adapter is supplied. Original upstream names,
+archives, licenses and security identities are never renamed or overwritten.

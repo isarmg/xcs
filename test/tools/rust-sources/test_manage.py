@@ -309,6 +309,98 @@ class SourcePolicy(unittest.TestCase):
         self.verify()
         return deepcopy(owners[directory])
 
+    def test_catalog_four_without_rename_history_remains_verifiable(self):
+        self.catalog['schema'] = 4
+        self.catalog.pop('renames', None); self.catalog.pop('rename_records_sha256', None)
+        self.save_catalog(); self.verify(); self.refresh(); self.verify()
+        self.assertEqual(self.catalog['schema'], 5)
+        self.assertEqual(self.catalog['renames'], {})
+
+    def rename_mini(self):
+        owner = self.install_external_tests()
+        old, new = 'src/foundation/mini', 'src/foundation/value-core'
+        before = deepcopy(self.catalog['packages'][old])
+        destination = self.root / new
+        self.source.rename(destination)
+        self.source = destination
+        manifest = destination / 'Cargo.toml'
+        manifest.write_text(manifest.read_text().replace('name = "mini"', 'name = "value-core"'))
+        test_new = self.root / 'test/foundation/value-core'
+        self.external_root.rename(test_new)
+        self.external_root = test_new
+        after_owner = deepcopy(owner)
+        after_owner.update(directory=new, roots=['test/foundation/value-core'])
+        after_owner['files'][0]['path'] = 'test/foundation/value-core/tests.rs'
+        mapping_owner = {k: v for k, v in after_owner.items() if k not in ('origin_directory', 'bytes', 'file_count')}
+        self.external_mapping.write_text(json.dumps(dict(schema_version=1, owners=[mapping_owner])))
+        for path in ('Cargo.toml', 'src/app/Cargo.toml'):
+            file = self.root / path
+            file.write_text(file.read_text().replace('foundation/mini', 'foundation/value-core').replace('mini = {', 'value-core = {'))
+        lock = self.root / 'Cargo.lock'
+        lock.write_text(lock.read_text().replace('"mini"', '"value-core"'))
+        self.metadata['packages'][1].update(name='value-core', manifest_path=str(destination / 'Cargo.toml'))
+        item = dict(directory=old, package=before, destination_directory=new,
+                    destination_name='value-core', reason='Functional responsibility',
+                    files_sha256=manager.files(destination), external_tests=owner,
+                    destination_external_tests=after_owner)
+        return dict(schema=1, packages=[item])
+
+    def test_explicit_rename_preserves_original_sources_and_refresh_history(self):
+        plan = self.rename_mini()
+        origins = (self.root / manager.ORIGINS).read_bytes()
+        self.refresh(rename_plan_data=plan)
+        self.verify()
+        self.assertEqual(self.catalog['schema'], 5)
+        self.assertEqual(self.catalog['renames']['src/foundation/mini']['package'], plan['packages'][0]['package'])
+        owner = self.catalog['external_tests']['src/foundation/value-core']
+        self.assertEqual(owner['files'][0]['source'], 'src/foundation/mini/lib.rs')
+        self.assertEqual((self.root / manager.ORIGINS).read_bytes(), origins)
+        history = deepcopy(self.catalog['renames'])
+        self.refresh(); self.verify()
+        self.assertEqual(self.catalog['renames'], history)
+
+    def test_rename_requires_plan_and_exact_current_external_attribution(self):
+        plan = self.rename_mini()
+        with self.assertRaisesRegex(ValueError, 'unregistered source'):
+            self.refresh()
+        mapping = json.loads(self.external_mapping.read_text())
+        mapping['owners'][0]['files'][0]['source'] = 'src/foundation/value-core/lib.rs'
+        self.external_mapping.write_text(json.dumps(mapping))
+        with self.assertRaisesRegex(ValueError, 'reviewed rename plan'):
+            self.refresh(rename_plan_data=plan)
+
+    def test_rename_history_tamper_or_name_drift_rejected(self):
+        plan = self.rename_mini(); self.refresh(rename_plan_data=plan)
+        self.catalog['renames']['src/foundation/mini']['reason'] = 'rewritten'
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, 'rename receipt drift'):
+            self.verify()
+        with self.assertRaisesRegex(ValueError, 'rename receipt drift'):
+            self.refresh()
+
+    def test_renamed_external_owner_can_be_explicitly_retired(self):
+        plan = self.rename_mini(); self.refresh(rename_plan_data=plan)
+        new = 'src/foundation/value-core'
+        package = self.catalog['packages'][new]
+        owner = self.catalog['external_tests'][new]
+        retirement = dict(schema=1, packages=[dict(directory=new, package=package,
+            reason='unsupported platform backend', category='platform',
+            bytes=sum(p.stat().st_size for p in self.source.rglob('*') if p.is_file()),
+            file_count=len(package['files_sha256']), external_action='remove', external_tests=owner)])
+        (self.root / 'src/app/Cargo.toml').write_text('[package]\nname = "app"\nversion = "1.0.0"\n')
+        (self.root / 'Cargo.lock').write_text('version = 4\n[[package]]\nname = "app"\nversion = "1.0.0"\n')
+        self.metadata['packages'] = self.metadata['packages'][:1]
+        self.metadata['resolve']['nodes'] = [dict(id='app', features=[], deps=[])]
+        shutil.rmtree(self.source); self.remove_external_tests()
+        self.refresh(retire_plan=retirement); self.verify(); self.refresh(); self.verify()
+        self.assertEqual(self.catalog['retired'][new]['retirement']['external_tests'], owner)
+
+    def test_rename_cannot_combine_retirement_or_upgrade(self):
+        plan = self.rename_mini()
+        for key in ('retire_plan', 'upgrade_plan_data'):
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'separate reviewed'):
+                self.refresh(rename_plan_data=plan, **{key: dict(packages=[dict(directory='src/foundation/value-core')])})
+
     def remove_external_tests(self):
         shutil.rmtree(self.external_root)
         self.external_mapping.write_text(json.dumps(dict(schema_version=1, owners=[])))

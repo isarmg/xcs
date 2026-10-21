@@ -7,6 +7,7 @@
 ## 从这里开始
 
 - 仓库与来源：[整体目录和合并规则](monorepo.md) → [统一许可与溯源](../compliance/README.md)
+- 内部命名：[职责命名规范](NAMING.md) → [源码命名迁移与来源架构](architecture/source-naming.md)
 - 本地开发：[运行服务与检查](getting-started.md) → [工程结构](20-engineering.md)
 - 日常使用：[操作手册](25-operation-manual.md) → [配置](21-configuration.md)
 - 理解设计：[总体架构](03-architecture.md) → [分支逻辑](design/branch-system-logic.md)
