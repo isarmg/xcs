@@ -25,8 +25,8 @@
 //! The top level of the crate provides normalization of input into the four normalization forms defined in [UAX #15: Unicode
 //! Normalization Forms](https://www.unicode.org/reports/tr15/): NFC, NFD, NFKC, and NFKD.
 //!
-//! Three kinds of contiguous inputs are supported: known-well-formed UTF-8 (`&str`), potentially-not-well-formed UTF-8,
-//! and potentially-not-well-formed UTF-16. Additionally, an iterator over `char` can be wrapped in a normalizing iterator.
+//! Supported inputs are known-well-formed UTF-8 (`&str`), potentially-not-well-formed UTF-8
+//! with `utf8_iter`, and iterators over `char`. UTF-16 capability is not exposed by this package.
 //!
 //! The `uts46` module provides the combination of mapping and normalization operations for [UTS #46: Unicode IDNA
 //! Compatibility Processing](https://www.unicode.org/reports/tr46/). This functionality is not meant to be used by
@@ -35,10 +35,10 @@
 //!
 //! The `properties` module provides the non-recursive canonical decomposition operation on a per `char` basis and
 //! the canonical compositon operation given two `char`s. It also provides access to the Canonical Combining Class
-//! property. These operations are primarily meant for [HarfBuzz](https://harfbuzz.github.io/), the types
+//! property. These operations are available directly through
 //! [`CanonicalComposition`](properties::CanonicalComposition), [`CanonicalDecomposition`](properties::CanonicalDecomposition),
-//! and [`CanonicalCombiningClassMap`](properties::CanonicalCombiningClassMap) implement the [`harfbuzz_traits`] if
-//! the `harfbuzz_traits` Cargo feature is enabled.
+//! and [`CanonicalCombiningClassMap`](properties::CanonicalCombiningClassMap). External HarfBuzz trait
+//! integration is not exposed by this package.
 //!
 //! Notably, this normalizer does _not_ provide the normalization “quick check” that can result in “maybe” in
 //! addition to “yes” and “no”. The normalization checks provided by this crate always give a definitive

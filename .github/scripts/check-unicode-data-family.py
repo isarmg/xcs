@@ -7,9 +7,27 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
 TARGETS = ('x86_64-unknown-linux-gnu', 'wasm32-unknown-unknown')
+RETIRED_FEATURES = {
+    'unicode-normalizer': ('utf16_iter', 'write16', 'harfbuzz_traits', 'datagen'),
+    'unicode-properties': ('harfbuzz_traits', 'unicode_bidi', 'datagen'),
+}
+SUPPORTED_FEATURES = {
+    'unicode-normalizer': ('compiled_data', 'default', 'serialization', 'unicode-properties', 'utf8_iter'),
+    'unicode-properties': ('alloc', 'compiled_data', 'default', 'log', 'serialization', 'unstable'),
+}
+# Minimum/compiled-data profiles are exercised independently by check_family.
+# Keep serialization isolated from baked data and optional normalizer properties.
+CAPABILITY_PROFILES = {
+    'unicode-normalizer': (('utf8_iter',), ('unicode-properties',), ('serialization',),
+                           ('serialization', 'unicode-properties'), SUPPORTED_FEATURES['unicode-normalizer']),
+    'unicode-properties': (('serialization',), ('serialization', 'alloc'),
+                           ('alloc', 'unstable'), SUPPORTED_FEATURES['unicode-properties']),
+}
+
 
 
 def run(root, args, *, capture=False, env=None, negative=False):
@@ -18,8 +36,110 @@ def run(root, args, *, capture=False, env=None, negative=False):
     if not negative:
         result.check_returncode()
     elif result.returncode == 0:
-        raise AssertionError('provider-only build unexpectedly exposes baked data')
+        raise AssertionError('negative Cargo probe unexpectedly succeeded')
     return result
+
+
+def manifest_capability_violations(manifest, workspace_dependencies=None):
+    """Resolve aliases and weak forwarding, including workspace-inherited edges."""
+    aliases = {}
+    violations = []
+    inherited = workspace_dependencies or {}
+
+    def dependencies(value):
+        if not isinstance(value, dict):
+            return
+        for key, child in value.items():
+            if key in ('dependencies', 'dev-dependencies', 'build-dependencies') and isinstance(child, dict):
+                for alias, dependency in child.items():
+                    if not isinstance(dependency, dict):
+                        dependency = {}
+                    parent = inherited.get(alias, {}) if dependency.get('workspace') else {}
+                    if not isinstance(parent, dict):
+                        parent = {}
+                    name = dependency.get('package', parent.get('package', alias))
+                    aliases.setdefault(alias, set()).add(name)
+                    removed = set(RETIRED_FEATURES.get(name, ()))
+                    selected = set(dependency.get('features', ())) | set(parent.get('features', ()))
+                    for feature in sorted(removed & selected):
+                        violations.append(f'{alias}/{feature}')
+            else:
+                dependencies(child)
+
+    dependencies(manifest)
+    own = manifest.get('package', {}).get('name')
+    for feature, forwards in manifest.get('features', {}).items():
+        if feature in RETIRED_FEATURES.get(own, ()):
+            violations.append(feature)
+        for forward in forwards:
+            if '/' in forward:
+                alias, selected = forward.split('/', 1)
+                names = aliases.get(alias.rstrip('?'), {alias.rstrip('?')})
+                if any(selected in RETIRED_FEATURES.get(name, ()) for name in names):
+                    violations.append(forward)
+            elif forward in RETIRED_FEATURES.get(own, ()):
+                violations.append(forward)
+    return sorted(set(violations))
+
+
+def validate_capability_surface(root):
+    workspace = tomllib.loads((root / 'Cargo.toml').read_text()).get('workspace', {}).get('dependencies', {})
+    for name, expected in SUPPORTED_FEATURES.items():
+        manifest = tomllib.loads((root / 'src/foundation' / name / 'Cargo.toml').read_text())
+        if set(manifest['features']) != set(expected):
+            raise AssertionError('Unicode supported capability surface drift: ' + name)
+    # Historical provenance manifests are immutable records, not retained consumers.
+    manifests = [root / 'Cargo.toml']
+    for directory in ('src', 'test', 'tools'):
+        manifests.extend(path for path in (root / directory).rglob('Cargo.toml')
+                         if 'target' not in path.relative_to(root).parts)
+    for path in manifests:
+        violations = manifest_capability_violations(tomllib.loads(path.read_text()), workspace)
+        if violations:
+            raise AssertionError('retired Unicode feature consumer in ' + str(path.relative_to(root))
+                                 + ': ' + ', '.join(violations))
+
+
+def validate_unknown_feature(result, name, feature):
+    # Cargo dependency-resolution diagnostics are intentionally required. An
+    # unresolved crate/provider or Rust compile failure is not a passing rejection.
+    diagnostic = result.stderr
+    expected = (f'with feature `{feature}` but `{name}` does not have that feature',
+                f'package `{name}` does not contain this feature: {feature}')
+    if result.returncode == 0 or not any(text in diagnostic for text in expected):
+        raise AssertionError('retired feature did not fail cleanly at Cargo resolution: '
+                             + name + '/' + feature + '\n' + diagnostic)
+    if 'error[E' in diagnostic or 'could not compile' in diagnostic:
+        raise AssertionError('retired feature reached Rust compilation: ' + name + '/' + feature)
+
+
+def capability_probe(root, temporary, name, label, features):
+    work = temporary / (name + '-capability-' + label)
+    (work / 'src').mkdir(parents=True)
+    (work / 'src/lib.rs').write_text('#![no_std]\npub use ' + name.replace('-', '_') + '::provider;\n')
+    manifest = ('[package]\nname = "unicode-capability-probe"\nversion = "0.0.0"\n'
+                'edition = "2024"\n[workspace]\n[dependencies.' + name + ']\n'
+                'path = ' + json.dumps(str(root / 'src/foundation' / name)) + '\n'
+                'default-features = false\nfeatures = ' + json.dumps(features) + '\n'
+                '[profile.dev]\ndebug = 0\nincremental = false\n')
+    (work / 'Cargo.toml').write_text(manifest)
+    return ['--offline', '--manifest-path', str(work / 'Cargo.toml')]
+
+
+def check_capabilities(root, temporary, target, family):
+    name = 'unicode-' + family
+    for features in CAPABILITY_PROFILES[name]:
+        common = capability_probe(root, temporary, name, '-'.join(features), features)
+        run(root, ['generate-lockfile', *common])
+        for platform in TARGETS:
+            run(root, ['check', '--locked', *common, '--jobs', '1', '--target', platform,
+                       '--target-dir', str(target)])
+    for feature in RETIRED_FEATURES[name]:
+        common = capability_probe(root, temporary, name, 'retired-' + feature, [feature])
+        result = run(root, ['check', *common, '--jobs', '1', '--target-dir', str(target)],
+                     capture=True, negative=True)
+        validate_unknown_feature(result, name, feature)
+        print('Clean retired-feature rejection: ' + name + '/' + feature)
 
 
 def validate_graph(metadata, name, compiled, tree):
@@ -121,15 +241,18 @@ def check_family(root, temporary, target, family):
     run(root, ['test', '--locked', *common, '--doc', '-p', name, '--jobs', '1', '--target-dir', str(target)])
 
 
-def check(root=ROOT, families=('normalizer', 'properties')):
+def check(root=ROOT, families=('normalizer', 'properties'), capabilities_only=False):
     root = Path(root).resolve()
     lock = hashlib.sha256((root / 'Cargo.lock').read_bytes()).hexdigest()
+    validate_capability_surface(root)
     scratch = root / 'target/scope-consumers'
     scratch.mkdir(parents=True, exist_ok=True)
     target = Path(os.environ.get('ICU_FAMILY_TARGET_DIR', str(root / 'target/unicode-data-consumers')))
     with tempfile.TemporaryDirectory(prefix='unicode-data-', dir=scratch) as directory:
         for family in families:
-            check_family(root, Path(directory), target, family)
+            check_capabilities(root, Path(directory), target, family)
+            if not capabilities_only:
+                check_family(root, Path(directory), target, family)
     if hashlib.sha256((root / 'Cargo.lock').read_bytes()).hexdigest() != lock:
         raise AssertionError('Unicode gate changed the product lock file')
 
@@ -137,5 +260,8 @@ def check(root=ROOT, families=('normalizer', 'properties')):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--family', choices=('normalizer', 'properties'))
+    parser.add_argument('--capabilities-only', action='store_true',
+                        help='run supported profiles and clean retired-feature rejections only')
     arguments = parser.parse_args()
-    check(families=(arguments.family,) if arguments.family else ('normalizer', 'properties'))
+    check(families=(arguments.family,) if arguments.family else ('normalizer', 'properties'),
+          capabilities_only=arguments.capabilities_only)

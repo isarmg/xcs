@@ -25,7 +25,7 @@ autotests = false
 autobenches = false
 description = "Definitions for Unicode properties"
 homepage = "https://icu4x.unicode.org"
-readme = "../../../docs/upstream/icu_properties-2.3.0/README.md"
+readme = "../../../docs/architecture/unicode-data-families.md"
 keywords = [
     "character-properties",
     "unicode",
@@ -43,12 +43,9 @@ resolver = "2"
 [features]
 alloc = ["zerovec/alloc", "icu_collections/alloc", "data-serialization?/alloc"]
 compiled_data = ["icu_provider/baked"]
-datagen = ["serialization", "zerovec/databake", "icu_collections/databake", "icu_locale_core/databake", "zerotrie/databake", "icu_provider/export"]
 default = ["compiled_data"]
-harfbuzz_traits = []
 log = ["dep:log"]
 serialization = ["dep:data-serialization", "icu_locale_core/serialization", "zerovec/serialization", "icu_collections/serialization", "icu_provider/serialization", "zerotrie/serialization"]
-unicode_bidi = []
 unstable = []
 
 [lib]
@@ -150,7 +147,10 @@ unused_qualifications = "warn"
 [lints.rust.unexpected_cfgs]
 level = "warn"
 priority = 0
+# Historical implementation branches are retained, not selectable Cargo features.
+# These names only suppress cfg diagnostics; they never enable dormant code.
 check-cfg = [
+    "cfg(feature, values(\"harfbuzz_traits\", \"unicode_bidi\", \"datagen\"))",
     "cfg(icu4x_custom_data)",
     "cfg(icu4c_enable_renaming)",
     "cfg(needs_alloc_error_handler)",

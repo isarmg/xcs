@@ -25,7 +25,7 @@ autotests = false
 autobenches = false
 description = "API for normalizing text into Unicode Normalization Forms"
 homepage = "https://icu4x.unicode.org"
-readme = "../../../docs/upstream/icu_normalizer-2.3.0/README.md"
+readme = "../../../docs/architecture/unicode-data-families.md"
 keywords = [
     "unicode",
     "normalization",
@@ -43,14 +43,10 @@ resolver = "2"
 
 [features]
 compiled_data = ["unicode-properties?/compiled_data", "icu_provider/baked"]
-datagen = ["serialization", "unicode-properties", "icu_collections/databake", "zerovec/databake", "unicode-properties?/datagen", "icu_provider/export"]
 default = ["compiled_data", "utf8_iter"]
-harfbuzz_traits = []
 unicode-properties = ["dep:unicode-properties"]
 serialization = ["dep:data-serialization", "icu_collections/serialization", "zerovec/serialization", "unicode-properties?/serialization", "icu_provider/serialization"]
-utf16_iter = []
 utf8_iter = ["dep:utf8_iter"]
-write16 = []
 
 [lib]
 name = "unicode_normalizer"
@@ -141,7 +137,10 @@ unused_qualifications = "warn"
 [lints.rust.unexpected_cfgs]
 level = "warn"
 priority = 0
+# Historical implementation branches are retained, not selectable Cargo features.
+# These names only suppress cfg diagnostics; they never enable dormant code.
 check-cfg = [
+    "cfg(feature, values(\"utf16_iter\", \"write16\", \"harfbuzz_traits\", \"datagen\"))",
     "cfg(icu4x_custom_data)",
     "cfg(icu4c_enable_renaming)",
     "cfg(needs_alloc_error_handler)",

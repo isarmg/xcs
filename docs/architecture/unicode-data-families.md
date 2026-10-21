@@ -38,11 +38,11 @@ Normalizers default to compiled tables and UTF-8 iteration. The inherited defaul
 previously selected `utf16_iter` despite its `utf16_iter` and `write16` dependencies
 already being absent; that broken selection is no longer a default.
 
-The retained historical UTF-16, datagen, serialization and third-party trait feature
-surfaces are not newly certified by this consolidation. The historical complete
-normalizer test file is preserved with exact inverse migration proof but is not
-reported as executed: it requires the unavailable UTF-16 providers. No fake provider
-or no-op implementation is supplied to make those tests appear green.
+The unsupported historical UTF-16, datagen and third-party trait Cargo surfaces have
+been retired in a separate bounded follow-up. Serialization remains selectable.
+The historical complete normalizer test file is preserved with exact inverse migration
+proof but is not reported as executed: it requires unavailable UTF-16 providers.
+No fake provider or no-op implementation is supplied to make those tests appear green.
 
 `.github/scripts/check-unicode-data-family.py` supports each family independently:
 
@@ -63,15 +63,30 @@ removal does not change ICU scalar values, property bit masks or IDNA wire seman
 
 ## Explicit optional-capability limits
 
-Focused native compile probes of this receiving tree found `serialization` builds
-for both families, but serialization runtime interoperability is not certified.
-`utf16_iter` lacks the `utf16_iter` and `write16` providers; `harfbuzz_traits` in
-both families lacks its trait provider; properties `unicode_bidi` lacks its
-provider. Both `datagen` selections fail in the retained `zerovec` dependency
-because `databake` is absent. Normalizer `write16` alone is an empty no-op feature,
-not a working UTF-16 implementation. These inherited surfaces remain unsupported;
-this consolidation does not claim an all-features build or supply fake providers.
-Retiring them requires a separate bounded API/source provenance change.
+The normalizer no longer declares `utf16_iter`, `write16`, `harfbuzz_traits` or
+`datagen`. Properties no longer declares `harfbuzz_traits`, `unicode_bidi` or
+`datagen`. Selecting any of these seven package/feature pairs fails at Cargo feature
+resolution, before compilation. No compatibility alias or substitute provider exists.
+The normalizer-to-properties datagen forwarding edge is removed with the features;
+all retained Cargo manifests are scanned for consumers and indirect forwarders.
+
+Dormant implementation bytes and historical test sources remain intact. Explicit
+`check-cfg` declarations acknowledge historical names without enabling them. Original
+upstream documentation remains immutable archival evidence, while the package readme
+and active crate documentation describe the maintained capability boundary.
+
+The maintained Unicode gate checks the exact supported feature sets, provider-only
+serialization, serialization with normalizer/property integration or property `alloc`,
+and all supported features together on native and WASM targets. It also runs seven
+isolated negative feature-resolution probes. This is supported-profile compilation,
+not serialization wire-format/runtime interoperability certification, and not execution
+of dormant historical UTF-16, datagen or trait-integration tests. The existing scalar,
+normalization, unit and executable-documentation checks remain separate.
+
+This is an ordinary content refresh under the same source owners, not a package
+retirement, rename, move or upstream upgrade. Original origin/legal material,
+consolidation receipts and authenticated input history stay unchanged. A separate
+explicit lifecycle adapter would be required for a later source-owner lifecycle change.
 
 Executable documentation uses the real public crate/module paths. The normalizer
 doc profile selects `compiled_data,utf8_iter,unicode-properties`; properties selects
