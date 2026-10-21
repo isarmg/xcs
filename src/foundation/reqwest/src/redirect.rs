@@ -9,7 +9,7 @@ use std::{error::Error as StdError, sync::Arc};
 
 use crate::header::{AUTHORIZATION, COOKIE, PROXY_AUTHORIZATION, REFERER, WWW_AUTHENTICATE};
 use http::{HeaderMap, HeaderValue};
-use hyper::StatusCode;
+use http_transport::StatusCode;
 
 use crate::{async_impl, Url};
 use tower_http::follow_redirect::policy::{

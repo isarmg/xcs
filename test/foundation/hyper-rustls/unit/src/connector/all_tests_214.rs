@@ -3,7 +3,7 @@ mod tests {
     use std::future::poll_fn;
 
     use http::Uri;
-    use hyper_util::rt::TokioIo;
+    use http_transport::adapters::rt::TokioIo;
     use tokio::net::TcpStream;
     use service_stack::Service;
 

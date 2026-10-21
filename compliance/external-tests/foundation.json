@@ -936,7 +936,7 @@
         },
         {
           "path": "test/foundation/http-routing/modules/src/routing/tests/mod.rs",
-          "sha256": "a1f1bf79f80a35d1f92062aa9b6fc22f1af74d2b1b7a663b0265d2a2cb24a74e",
+          "sha256": "2869c6838c09767699bd1f659488656454d8b26ce826d91299a9617a8149ade7",
           "source": "src/foundation/axum/src/routing/tests/mod.rs",
           "source_sha256_before": "48c54f725094786e778cd8bb79c96dd2c31d760187a64962c403477e805538c9",
           "origin_directory": "vendor/rust/axum-0.8.9"
@@ -1041,7 +1041,7 @@
         },
         {
           "path": "test/foundation/http-routing/unit/src/extract/ws/tests_1100.rs",
-          "sha256": "138c8737ccf4fcd3b4b3184f67c57e464db7381c0a41a386612eb5c1c399fe90",
+          "sha256": "c39db9937637ec741fd9de3c1af01f8cbb74768387168546fe9dc44b30600565",
           "source": "src/foundation/axum/src/extract/ws.rs",
           "source_sha256_before": "1d2145ee8500333c511bbb43ba470f05e0dc65d6be411c0d42bb3bf507d0fdc5",
           "origin_directory": "vendor/rust/axum-0.8.9"
@@ -1153,7 +1153,7 @@
         },
         {
           "path": "test/foundation/http-routing/unit/src/serve/mod/tests_473.rs",
-          "sha256": "bf2092082b99c2d9a3e284cf7c3918b5d8ed5dae8a0dc8e2473b5903d7b1f0bc",
+          "sha256": "00fed835ebbf456061b75e7a2373546287f1f319a10be99174530202f052697a",
           "source": "src/foundation/axum/src/serve/mod.rs",
           "source_sha256_before": "063ccc352890e97c82d497b32888cf261921bb99687240120643d1d85c59324a",
           "origin_directory": "vendor/rust/axum-0.8.9"
@@ -7600,136 +7600,381 @@
       ]
     },
     {
-      "directory": "src/foundation/hyper",
+      "directory": "src/foundation/http-transport",
       "roots": [
-        "test/foundation/hyper"
+        "test/foundation/http-transport"
       ],
       "files": [
         {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/configuration_1153.rs",
+          "sha256": "872e06021e26a070effb3dccabd41c48f577feeaa214e5d3413135ce2588dd2e",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/graceful_shutdown_1283.rs",
+          "sha256": "1373ac041eed9a1eb0686aeb048e9da3c42c93409cbed4c1436c3f1982fbfba7",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http1_1195.rs",
+          "sha256": "cacabcaefb3597b1531454ca8fe9faba239a6a1a738d8df8a66bb4757ed59b1f",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http1_only_1255.rs",
+          "sha256": "4249e9ced0a996f3a04a5ba8bb595d9bc9d19167b296e8db69c61f3bf8b6b9d2",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http1_only_fail_if_client_is_http2_1271.rs",
+          "sha256": "05b2eb02fbbd4feff6930ef1eb2ba7d16d118200ae386fa4bac6c176b1022257",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http2_1211.rs",
+          "sha256": "7fdbf165087ce92bec45384ac8bf3877f4fb400504f187610be04daddba038fa",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http2_only_1227.rs",
+          "sha256": "f162e119f5e8f2aa50348b15885223af99c0e8a8d6864df311d7a2530b79256c",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/http2_only_fail_if_client_is_http1_1243.rs",
+          "sha256": "23a03c8594f4f118dac8dc365f18553c73cc9f8089aff5397362ab7082ec41f4",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/preserve_header_case_configuration_1183.rs",
+          "sha256": "a4a1856e265bf39d37ebd2c5037874608b057d2a6d857735d81690e4b5980c73",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/functions/src/server/conn/auto/mod/title_case_headers_configuration_1171.rs",
+          "sha256": "4a175a4c96c436d50b521c04ad6fba1bb3e194b9128faa9b58389e974b5b55c0",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/tests/legacy_client.rs",
+          "sha256": "360e1acd51d931468bd8b6a8bb0dcb0a54ba75aaaf12ac7ddea11d9a114dd646",
+          "source": "src/foundation/hyper-util/tests/legacy_client.rs",
+          "source_sha256_before": "58f889ce2f6fc51cfb02c6b7a08f80d8f059e85ba98275ec3353af460622fdb6",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/tests/proxy.rs",
+          "sha256": "30c9d0ec31e46a30a5b9fdd6a30c0f887c6f0d2af3f891b728c4ce432b19fd8f",
+          "source": "src/foundation/hyper-util/tests/proxy.rs",
+          "source_sha256_before": "d923304bb47e55a9653b45c2b186a3b845c01c14bf7775788152abd6e9126d35",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/tests/test_utils/mod.rs",
+          "sha256": "4570e2e7d161ae1a01891d5f744e25e3f39715d5a9ffd433ecaf1392aa302d4b",
+          "source": "src/foundation/hyper-util/tests/test_utils/mod.rs",
+          "source_sha256_before": "9f922de06ad05d8c88e31d08850b4d48e751726c503cb3fc661c69431bb428d1",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/connect/capture/test_122.rs",
+          "sha256": "5d8ccd9d950875607059417e7b0c11d60b6d07ac05e7ea38c330f06a57ef2d7f",
+          "source": "src/foundation/hyper-util/src/client/legacy/connect/capture.rs",
+          "source_sha256_before": "e11c194268e124d617d7a174a28cfec35e7cc1573fed87eb5f14974a00e471aa",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/connect/dns/tests_296.rs",
+          "sha256": "a8c1f8291593c3ddbc4647f5d203e55f0ed4ca1741d065977a127dc1e4c3cfa8",
+          "source": "src/foundation/hyper-util/src/client/legacy/connect/dns.rs",
+          "source_sha256_before": "3a4225a352ecc10c5724793697d967a58a5a6ac1e8f908eb4c0248e8e7d36657",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/connect/http/tests_1021.rs",
+          "sha256": "f5622a7f7a001404e129a7b47a2431c4ca34622a89ac0e6ecde6198972eb6e5b",
+          "source": "src/foundation/hyper-util/src/client/legacy/connect/http.rs",
+          "source_sha256_before": "1b255783854e5d55e9490df682b52b1fd89e2ebb5b7f1daa39fd34720cac84ea",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/connect/mod/tests_382.rs",
+          "sha256": "9213c0d86375d68adf860c59f759025802ee06d8e7ba0697daddb5909e7d38df",
+          "source": "src/foundation/hyper-util/src/client/legacy/connect/mod.rs",
+          "source_sha256_before": "0b471b9813f46bdb80ca2b2263d9adef5f89051b8230e528968a2b2fe87dcb20",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/connect/proxy/socks/mod/all_test_161.rs",
+          "sha256": "e73f01c8ad6a154bb4ea7a92a7e5c0a15a349612066db8648dd228778c194067",
+          "source": "src/foundation/hyper-util/src/client/legacy/connect/proxy/socks/mod.rs",
+          "source_sha256_before": "0f25e92ac7a75b91e8b7bfa68a82853fc5c14ea4b5e46fe0c02c097e77bff578",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/connect/proxy/socks/v4/messages/test_131.rs",
+          "sha256": "c515b40dfa060f2c129da54a5b1842bb4329d17c6fbaff1c7fbd5e6096328431",
+          "source": "src/foundation/hyper-util/src/client/legacy/connect/proxy/socks/v4/messages.rs",
+          "source_sha256_before": "ff040b850a27a7aefcd2cdd4ce6d859847a6f6772fccab099e5a10704915bad1",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/connect/proxy/socks/v5/messages/test_351.rs",
+          "sha256": "68e3fe240b139c0cb853b0041e665864ccfa75b24df90006de373b0bcfe1aa18",
+          "source": "src/foundation/hyper-util/src/client/legacy/connect/proxy/socks/v5/messages.rs",
+          "source_sha256_before": "c4f5165d42e951f447eb04a48253b61cc082375cf34a971d0f7633770c0e5e83",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/connect/proxy/tunnel/all_tests_261.rs",
+          "sha256": "8616044ac96cdbbab4b29de2f56b460310f64da3e5e098988691c816141f0ccb",
+          "source": "src/foundation/hyper-util/src/client/legacy/connect/proxy/tunnel.rs",
+          "source_sha256_before": "e584da5d3d91c65740a719a3a60d36d520e93e3a99289f0d80e04e2dff0383bb",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/legacy/pool/tests_840.rs",
+          "sha256": "e8acb363384e6d53b7cc3bb0d5484a71243f4e024ee3f6dd401f1cdd44150c92",
+          "source": "src/foundation/hyper-util/src/client/legacy/pool.rs",
+          "source_sha256_before": "7154a4688d94c5ac199e31560c1a6bda33dce5aaa4e3b10f38a22f9d37851191",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/mod/all_tests_20.rs",
+          "sha256": "dcb29a876e69aa2b81b20a694c9727db0ded967170d23a25f10de96abc99a9e0",
+          "source": "src/foundation/hyper-util/src/client/mod.rs",
+          "source_sha256_before": "f55757c447232eb50e0684386bed2952c7805ca0a652d44b57151f9c23262658",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/pool/cache/tests_568.rs",
+          "sha256": "5bd83cdd8a6a2b5589201f1ad7660478d5bbd8ee064ea874f7c132cfec9c8383",
+          "source": "src/foundation/hyper-util/src/client/pool/cache.rs",
+          "source_sha256_before": "e3a2ef6305d6cbb0ab3832c113a7201a8f949139aa6f977074768b7ffc66c343",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/pool/map/tests_223.rs",
+          "sha256": "173e3f84fadf5efa53afa9aa2be5ff8c1371d3eb8a8ea249d81296596d6dab63",
+          "source": "src/foundation/hyper-util/src/client/pool/map.rs",
+          "source_sha256_before": "80ac0d584b047a14503826a5e62a0c58b07a121658c55640eaf861eee02ebd97",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/pool/negotiate/tests_564.rs",
+          "sha256": "72f5ca115b03112b78c0138a46c84806ef3e3c1fb201f9abe79ae7ea1cba1804",
+          "source": "src/foundation/hyper-util/src/client/pool/negotiate.rs",
+          "source_sha256_before": "ac747a3e229ed246641d66dfd32d93bc41bba1f16d85e54504c871da41399524",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/pool/singleton/tests_506.rs",
+          "sha256": "eb9263f0e360f0693464edbf439f6e2b5f7099ec007958416515171c438de0aa",
+          "source": "src/foundation/hyper-util/src/client/pool/singleton.rs",
+          "source_sha256_before": "014231ef327f47497d27654363c9949e05d582d50cb9a24000516a015e71a070",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/client/proxy/matcher/tests_725.rs",
+          "sha256": "63240da4b569bff42fd4b8b2c489b643b09b25fabd9abd23cce40ab24eede538",
+          "source": "src/foundation/hyper-util/src/client/proxy/matcher.rs",
+          "source_sha256_before": "c2478808ea3894a8344020386b3cfa377c82637c7e66220097371051d394c329",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/rt/tokio/tests_339.rs",
+          "sha256": "ffcd4cbdd79472c876995e4dd01ea6e713c51c1cc42a7b6bb3ecf5d12192a503",
+          "source": "src/foundation/hyper-util/src/rt/tokio.rs",
+          "source_sha256_before": "143023606be7994c8ecbf538eb5816cbedd62172cb3fbb5f981ea411a1581d28",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/rt/tracing/tests_245.rs",
+          "sha256": "e55f32ac81b0da57a85132b75ca891a5fca41071e8bdf36eff064fa7601b056a",
+          "source": "src/foundation/hyper-util/src/rt/tracing.rs",
+          "source_sha256_before": "5fb8be1bc1aec598707a73f949f28464c3e8da98f05cc5b4dee950b0070f6876",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/server/conn/auto/mod/guarded_tests_1135.rs",
+          "sha256": "866582ab4782d0341edaf33e588c89a6403fdc180f89c6f114c49af39b9987a3",
+          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
+          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/adapters/unit/src/server/graceful/test_307.rs",
+          "sha256": "c017c8f5e4dd4eba1ba8e865f16598fa7f42b6a04ee65267ef332adb5c5b4f4f",
+          "source": "src/foundation/hyper-util/src/server/graceful.rs",
+          "source_sha256_before": "39d6fc356a4112125ae61e1a083e0875a486ffc55904aa4697165b80df957e45",
+          "origin_directory": "vendor/rust/hyper-util-0.1.21"
+        },
+        {
+          "path": "test/foundation/http-transport/modules/src/client/tests.rs",
+          "sha256": "de0001609ef0b82d34d6e152b20d19f0b2f79ab6708bc4b3748a40acd3325238",
           "source": "src/foundation/hyper/src/client/tests.rs",
           "source_sha256_before": "de0001609ef0b82d34d6e152b20d19f0b2f79ab6708bc4b3748a40acd3325238",
-          "path": "test/foundation/hyper/modules/src/client/tests.rs",
-          "sha256": "de0001609ef0b82d34d6e152b20d19f0b2f79ab6708bc4b3748a40acd3325238"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/modules/src/mock.rs",
+          "sha256": "7c77d16f952bda6ce51995548b1a1b8652739fca70115df96598440a524d86d4",
           "source": "src/foundation/hyper/src/mock.rs",
           "source_sha256_before": "7c77d16f952bda6ce51995548b1a1b8652739fca70115df96598440a524d86d4",
-          "path": "test/foundation/hyper/modules/src/mock.rs",
-          "sha256": "7c77d16f952bda6ce51995548b1a1b8652739fca70115df96598440a524d86d4"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/body/chan/tests_240.rs",
+          "sha256": "41b7130d087517d793450faddd9feef38eeac1aa71d8881b7d38c7a967520e01",
           "source": "src/foundation/hyper/src/body/chan.rs",
           "source_sha256_before": "3e95f496a94e6881e2121b8e40e6d6b233e80a40ada76e92aa0d39419943644b",
-          "path": "test/foundation/hyper/unit/src/body/chan/tests_240.rs",
-          "sha256": "41b7130d087517d793450faddd9feef38eeac1aa71d8881b7d38c7a967520e01"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/body/incoming/tests_302.rs",
+          "sha256": "ac1660e19406d1475b431dc169c6bb4798fa5da72a7197c531eff56d209a0d6d",
           "source": "src/foundation/hyper/src/body/incoming.rs",
           "source_sha256_before": "11b8d262650730750721d6f93faf567e9cce6aa2e8a326aeb8f2cad908fdd485",
-          "path": "test/foundation/hyper/unit/src/body/incoming/tests_302.rs",
-          "sha256": "ac1660e19406d1475b431dc169c6bb4798fa5da72a7197c531eff56d209a0d6d"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/body/length/tests_110.rs",
+          "sha256": "fc048aa33f73cfd50e89ebd91472a15be7715efba42689989461b720f5ecfcd8",
           "source": "src/foundation/hyper/src/body/length.rs",
           "source_sha256_before": "81a1ec988bc76df77a65a6a34d47c6935eb3f72f242bdc6f0c141e02e9a6f498",
-          "path": "test/foundation/hyper/unit/src/body/length/tests_110.rs",
-          "sha256": "fc048aa33f73cfd50e89ebd91472a15be7715efba42689989461b720f5ecfcd8"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/client/conn/http2/tests_597.rs",
+          "sha256": "f840c5c3c327ccb684b9e7880c01c650d6fdbd035da0748c688747e0d5cd2ec4",
           "source": "src/foundation/hyper/src/client/conn/http2.rs",
           "source_sha256_before": "0ec553b8106fbc1eec7ed2b84ce4f37128512e4bbbf73096b822c2c1a8bbfcb5",
-          "path": "test/foundation/hyper/unit/src/client/conn/http2/tests_597.rs",
-          "sha256": "f840c5c3c327ccb684b9e7880c01c650d6fdbd035da0748c688747e0d5cd2ec4"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/client/dispatch/tests_394.rs",
+          "sha256": "c112b8538df199779d6d3c91bf90313481b6179600e6a259f93b511088df2f9a",
           "source": "src/foundation/hyper/src/client/dispatch.rs",
           "source_sha256_before": "cce049418dcd9e1700b87701d6e78a4a021ba0e9912e9b669fec3d3f037d4e29",
-          "path": "test/foundation/hyper/unit/src/client/dispatch/tests_394.rs",
-          "sha256": "c112b8538df199779d6d3c91bf90313481b6179600e6a259f93b511088df2f9a"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/common/buf/tests_94.rs",
+          "sha256": "8791a222f7dde85916b29dfe8977c83442a010dcc3d467652d8ce34b889127d2",
           "source": "src/foundation/hyper/src/common/buf.rs",
           "source_sha256_before": "5fc624b4bebfada06c394babe3e654346f51cf48b9465a12e4d21e3e783284c1",
-          "path": "test/foundation/hyper/unit/src/common/buf/tests_94.rs",
-          "sha256": "8791a222f7dde85916b29dfe8977c83442a010dcc3d467652d8ce34b889127d2"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/common/date/tests_106.rs",
+          "sha256": "cafedcd4f3153f9134ea9e816fde71df720e28fd9d3f902bcd9185500a89f6ff",
           "source": "src/foundation/hyper/src/common/date.rs",
           "source_sha256_before": "6b48438b51d0cccb110112acb0eb5cbd87f5ad8089bf5301c633548e801baae9",
-          "path": "test/foundation/hyper/unit/src/common/date/tests_106.rs",
-          "sha256": "cafedcd4f3153f9134ea9e816fde71df720e28fd9d3f902bcd9185500a89f6ff"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/common/io/rewind/tests_116.rs",
+          "sha256": "237a4253b12d4a1dcf5cb853bed9ec84bb5261f059e7378398063b7d5463cff2",
           "source": "src/foundation/hyper/src/common/io/rewind.rs",
           "source_sha256_before": "b31df6879e14b2d6fb0d07eb5a43033eed9592f68770863bde4303597d958122",
-          "path": "test/foundation/hyper/unit/src/common/io/rewind/tests_116.rs",
-          "sha256": "237a4253b12d4a1dcf5cb853bed9ec84bb5261f059e7378398063b7d5463cff2"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/error/tests_701.rs",
+          "sha256": "38c8dfe3269ee2fcf3ef39ff92dd97f7471fb05b7449f094ccbf4134fd6c1ed5",
           "source": "src/foundation/hyper/src/error.rs",
           "source_sha256_before": "d5ebaa35a6a8464d1474023d9aa756dc9632145aeab812879f7cc35dae10b795",
-          "path": "test/foundation/hyper/unit/src/error/tests_701.rs",
-          "sha256": "38c8dfe3269ee2fcf3ef39ff92dd97f7471fb05b7449f094ccbf4134fd6c1ed5"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/ext/h1_reason_phrase/tests_176.rs",
+          "sha256": "3602015ef0f8f3a015cab0cdf5fe2bc439081d04c166d372b565e693ec7468ba",
           "source": "src/foundation/hyper/src/ext/h1_reason_phrase.rs",
           "source_sha256_before": "14ce65c6ab3d8f5437ccbf7296e02d7a57f25e82d6146ae4b220efe289f2ceeb",
-          "path": "test/foundation/hyper/unit/src/ext/h1_reason_phrase/tests_176.rs",
-          "sha256": "3602015ef0f8f3a015cab0cdf5fe2bc439081d04c166d372b565e693ec7468ba"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/ffi/http_types/tests_591.rs",
+          "sha256": "c66379c0c792fe7f6103655efb4befdedac58b70af1d298c249c95fd7a1c22b7",
           "source": "src/foundation/hyper/src/ffi/http_types.rs",
           "source_sha256_before": "e2bb6c4dcccc79c41bb66a25114cd11e73e9baf15dbc0961f94d2ac1bcf8cabc",
-          "path": "test/foundation/hyper/unit/src/ffi/http_types/tests_591.rs",
-          "sha256": "c66379c0c792fe7f6103655efb4befdedac58b70af1d298c249c95fd7a1c22b7"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/headers/all_tests_190.rs",
+          "sha256": "742eeb199a8f6649df7eb034e421a787ce7651a435fe8fd3a2f00c27c4d77c37",
           "source": "src/foundation/hyper/src/headers.rs",
           "source_sha256_before": "c8acc76bb2a2aac07896df1e356d84b7c1d9d718594cf950277b3b5ffbe98fae",
-          "path": "test/foundation/hyper/unit/src/headers/all_tests_190.rs",
-          "sha256": "742eeb199a8f6649df7eb034e421a787ce7651a435fe8fd3a2f00c27c4d77c37"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/proto/h1/conn/tests_1183.rs",
+          "sha256": "81d89e260d8ebdc65f54678f8be1b112f94a0fdcdf7b97b72cf41b8212fd2e5c",
           "source": "src/foundation/hyper/src/proto/h1/conn.rs",
           "source_sha256_before": "59a6db81bd098c126d7929e1996a3a6bf9d6e997da76b47d88178fd8206ad44a",
-          "path": "test/foundation/hyper/unit/src/proto/h1/conn/tests_1183.rs",
-          "sha256": "81d89e260d8ebdc65f54678f8be1b112f94a0fdcdf7b97b72cf41b8212fd2e5c"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/proto/h1/decode/tests_694.rs",
+          "sha256": "19dfe3f4842668b436ff86e18c95e728375c2c809314a24e5990648db2a2c3ab",
           "source": "src/foundation/hyper/src/proto/h1/decode.rs",
           "source_sha256_before": "5fc4f3a580cdeef18ad986fac7d63099637d0482acfd54f78d7ec08de40b295a",
-          "path": "test/foundation/hyper/unit/src/proto/h1/decode/tests_694.rs",
-          "sha256": "19dfe3f4842668b436ff86e18c95e728375c2c809314a24e5990648db2a2c3ab"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/proto/h1/dispatch/tests_770.rs",
+          "sha256": "c416db40350a1066838f29926942044fcf9d29e52b9e2cd3da4c936cff502708",
           "source": "src/foundation/hyper/src/proto/h1/dispatch.rs",
           "source_sha256_before": "9cd6638c59ae4857ae43ee58857abf585cc6a52dfda616c3631e2e48c02eaba2",
-          "path": "test/foundation/hyper/unit/src/proto/h1/dispatch/tests_770.rs",
-          "sha256": "c416db40350a1066838f29926942044fcf9d29e52b9e2cd3da4c936cff502708"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/proto/h1/encode/tests_435.rs",
+          "sha256": "85659b62e0ad41d3d10670e65579c8634cea9b62845460087ef4f77055c4893e",
           "source": "src/foundation/hyper/src/proto/h1/encode.rs",
           "source_sha256_before": "eec0acd88ff2a10b3d981417b2c6daf2aef7828a9197d1b16e632a21059bf136",
-          "path": "test/foundation/hyper/unit/src/proto/h1/encode/tests_435.rs",
-          "sha256": "85659b62e0ad41d3d10670e65579c8634cea9b62845460087ef4f77055c4893e"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/proto/h1/io/tests_654.rs",
+          "sha256": "27c7f401a2f9398c5929fcc06ab5c062edfe82d0137d7e9c0dd203da663f009e",
           "source": "src/foundation/hyper/src/proto/h1/io.rs",
           "source_sha256_before": "27287bec2aeb9d23fbf3440b5eea5186a1826301f7de2d855e78fcfce465c745",
-          "path": "test/foundation/hyper/unit/src/proto/h1/io/tests_654.rs",
-          "sha256": "27c7f401a2f9398c5929fcc06ab5c062edfe82d0137d7e9c0dd203da663f009e"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/proto/h1/role/tests_1697.rs",
+          "sha256": "b610ebe747a5a6ab49ec46a2ec6448076d1aef200eaa975c5e718c78406511aa",
           "source": "src/foundation/hyper/src/proto/h1/role.rs",
           "source_sha256_before": "ee27600c6d7ae2f23e148af5cef02fa029def6ea5999cce84af4aac058ceb03e",
-          "path": "test/foundation/hyper/unit/src/proto/h1/role/tests_1697.rs",
-          "sha256": "b610ebe747a5a6ab49ec46a2ec6448076d1aef200eaa975c5e718c78406511aa"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         },
         {
+          "path": "test/foundation/http-transport/unit/src/upgrade/tests_376.rs",
+          "sha256": "a0c41c606907eeba2cab27ecd9f27a0a4d55ba5e185f23ac5722581137a436cd",
           "source": "src/foundation/hyper/src/upgrade.rs",
           "source_sha256_before": "a9406f2cf45bb2f3574371a60cab20a60733f36fee65828c4f395f1fcf31e520",
-          "path": "test/foundation/hyper/unit/src/upgrade/tests_376.rs",
-          "sha256": "a0c41c606907eeba2cab27ecd9f27a0a4d55ba5e185f23ac5722581137a436cd"
+          "origin_directory": "vendor/rust/hyper-1.12.0"
         }
       ]
     },
@@ -7743,213 +7988,13 @@
           "source": "src/foundation/hyper-rustls/src/connector.rs",
           "source_sha256_before": "b23a01965ecc3b689c3e595275af4b3aa6ec13c02033e739ad0b5e20e424c07a",
           "path": "test/foundation/hyper-rustls/unit/src/connector/all_tests_214.rs",
-          "sha256": "63048ca102d50ff98a822ac3716a583444c6db723472d1d184a0e214ba8cffd9"
+          "sha256": "b7d6f77b0366c4f975cfcc1b5bcc5c4fe0a6d1a0e0a39c87c93de92edfd2da3f"
         },
         {
           "source": "src/foundation/hyper-rustls/src/connector/builder.rs",
           "source_sha256_before": "c7275c8fb2ae648016cce040483a9d843cb5b36fcf98f3692a64028905130914",
           "path": "test/foundation/hyper-rustls/unit/src/connector/builder/tests_318.rs",
           "sha256": "97d9a037b8ea706fb0275b89069f2bb0f8836037a9fa276665a74acf97550414"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/hyper-util",
-      "roots": [
-        "test/foundation/hyper-util"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/configuration_1153.rs",
-          "sha256": "872e06021e26a070effb3dccabd41c48f577feeaa214e5d3413135ce2588dd2e"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/graceful_shutdown_1283.rs",
-          "sha256": "1373ac041eed9a1eb0686aeb048e9da3c42c93409cbed4c1436c3f1982fbfba7"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/http1_1195.rs",
-          "sha256": "cacabcaefb3597b1531454ca8fe9faba239a6a1a738d8df8a66bb4757ed59b1f"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/http1_only_1255.rs",
-          "sha256": "4249e9ced0a996f3a04a5ba8bb595d9bc9d19167b296e8db69c61f3bf8b6b9d2"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/http1_only_fail_if_client_is_http2_1271.rs",
-          "sha256": "05b2eb02fbbd4feff6930ef1eb2ba7d16d118200ae386fa4bac6c176b1022257"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/http2_1211.rs",
-          "sha256": "7fdbf165087ce92bec45384ac8bf3877f4fb400504f187610be04daddba038fa"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/http2_only_1227.rs",
-          "sha256": "f162e119f5e8f2aa50348b15885223af99c0e8a8d6864df311d7a2530b79256c"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/http2_only_fail_if_client_is_http1_1243.rs",
-          "sha256": "23a03c8594f4f118dac8dc365f18553c73cc9f8089aff5397362ab7082ec41f4"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/preserve_header_case_configuration_1183.rs",
-          "sha256": "a4a1856e265bf39d37ebd2c5037874608b057d2a6d857735d81690e4b5980c73"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/functions/src/server/conn/auto/mod/title_case_headers_configuration_1171.rs",
-          "sha256": "4a175a4c96c436d50b521c04ad6fba1bb3e194b9128faa9b58389e974b5b55c0"
-        },
-        {
-          "source": "src/foundation/hyper-util/tests/legacy_client.rs",
-          "source_sha256_before": "58f889ce2f6fc51cfb02c6b7a08f80d8f059e85ba98275ec3353af460622fdb6",
-          "path": "test/foundation/hyper-util/tests/legacy_client.rs",
-          "sha256": "ed426e133e966f77ad9907efcc5918ae112006ed60c6d7de77d25a1fb343c025"
-        },
-        {
-          "source": "src/foundation/hyper-util/tests/proxy.rs",
-          "source_sha256_before": "d923304bb47e55a9653b45c2b186a3b845c01c14bf7775788152abd6e9126d35",
-          "path": "test/foundation/hyper-util/tests/proxy.rs",
-          "sha256": "ee48dcbcecc4a8fe807bf1a11a13c196b59af97227d431f0fac1d0b517c5b63d"
-        },
-        {
-          "source": "src/foundation/hyper-util/tests/test_utils/mod.rs",
-          "source_sha256_before": "9f922de06ad05d8c88e31d08850b4d48e751726c503cb3fc661c69431bb428d1",
-          "path": "test/foundation/hyper-util/tests/test_utils/mod.rs",
-          "sha256": "5d6a704a9213642a7d2d249dc5c6c4ea1330989dd323cf3352da0c9c752682e7"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/connect/capture.rs",
-          "source_sha256_before": "e11c194268e124d617d7a174a28cfec35e7cc1573fed87eb5f14974a00e471aa",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/connect/capture/test_122.rs",
-          "sha256": "5d8ccd9d950875607059417e7b0c11d60b6d07ac05e7ea38c330f06a57ef2d7f"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/connect/dns.rs",
-          "source_sha256_before": "3a4225a352ecc10c5724793697d967a58a5a6ac1e8f908eb4c0248e8e7d36657",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/connect/dns/tests_296.rs",
-          "sha256": "a8c1f8291593c3ddbc4647f5d203e55f0ed4ca1741d065977a127dc1e4c3cfa8"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/connect/http.rs",
-          "source_sha256_before": "1b255783854e5d55e9490df682b52b1fd89e2ebb5b7f1daa39fd34720cac84ea",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/connect/http/tests_1021.rs",
-          "sha256": "db3934985bcb4cfe447e46601641297b3ce3f03322fae72d9f4a52543f720aaf"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/connect/mod.rs",
-          "source_sha256_before": "0b471b9813f46bdb80ca2b2263d9adef5f89051b8230e528968a2b2fe87dcb20",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/connect/mod/tests_382.rs",
-          "sha256": "9213c0d86375d68adf860c59f759025802ee06d8e7ba0697daddb5909e7d38df"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/connect/proxy/socks/mod.rs",
-          "source_sha256_before": "0f25e92ac7a75b91e8b7bfa68a82853fc5c14ea4b5e46fe0c02c097e77bff578",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/connect/proxy/socks/mod/all_test_161.rs",
-          "sha256": "412c53a4c6484ca1901c917921bc1c2020452eb553f5dddfce20f18ef0e4179a"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/connect/proxy/socks/v4/messages.rs",
-          "source_sha256_before": "ff040b850a27a7aefcd2cdd4ce6d859847a6f6772fccab099e5a10704915bad1",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/connect/proxy/socks/v4/messages/test_131.rs",
-          "sha256": "c515b40dfa060f2c129da54a5b1842bb4329d17c6fbaff1c7fbd5e6096328431"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/connect/proxy/socks/v5/messages.rs",
-          "source_sha256_before": "c4f5165d42e951f447eb04a48253b61cc082375cf34a971d0f7633770c0e5e83",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/connect/proxy/socks/v5/messages/test_351.rs",
-          "sha256": "68e3fe240b139c0cb853b0041e665864ccfa75b24df90006de373b0bcfe1aa18"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/connect/proxy/tunnel.rs",
-          "source_sha256_before": "e584da5d3d91c65740a719a3a60d36d520e93e3a99289f0d80e04e2dff0383bb",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/connect/proxy/tunnel/all_tests_261.rs",
-          "sha256": "b240ec9985481efa1113cdc44d083431704c890653529c33cea8034423db4b0e"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/legacy/pool.rs",
-          "source_sha256_before": "7154a4688d94c5ac199e31560c1a6bda33dce5aaa4e3b10f38a22f9d37851191",
-          "path": "test/foundation/hyper-util/unit/src/client/legacy/pool/tests_840.rs",
-          "sha256": "faffb017980a94a00d39476be8ae2d211e87fe63fe0b7c0db2e9a60513bb5840"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/mod.rs",
-          "source_sha256_before": "f55757c447232eb50e0684386bed2952c7805ca0a652d44b57151f9c23262658",
-          "path": "test/foundation/hyper-util/unit/src/client/mod/all_tests_20.rs",
-          "sha256": "dcb29a876e69aa2b81b20a694c9727db0ded967170d23a25f10de96abc99a9e0"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/pool/cache.rs",
-          "source_sha256_before": "e3a2ef6305d6cbb0ab3832c113a7201a8f949139aa6f977074768b7ffc66c343",
-          "path": "test/foundation/hyper-util/unit/src/client/pool/cache/tests_568.rs",
-          "sha256": "5bd83cdd8a6a2b5589201f1ad7660478d5bbd8ee064ea874f7c132cfec9c8383"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/pool/map.rs",
-          "source_sha256_before": "80ac0d584b047a14503826a5e62a0c58b07a121658c55640eaf861eee02ebd97",
-          "path": "test/foundation/hyper-util/unit/src/client/pool/map/tests_223.rs",
-          "sha256": "173e3f84fadf5efa53afa9aa2be5ff8c1371d3eb8a8ea249d81296596d6dab63"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/pool/negotiate.rs",
-          "source_sha256_before": "ac747a3e229ed246641d66dfd32d93bc41bba1f16d85e54504c871da41399524",
-          "path": "test/foundation/hyper-util/unit/src/client/pool/negotiate/tests_564.rs",
-          "sha256": "72f5ca115b03112b78c0138a46c84806ef3e3c1fb201f9abe79ae7ea1cba1804"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/pool/singleton.rs",
-          "source_sha256_before": "014231ef327f47497d27654363c9949e05d582d50cb9a24000516a015e71a070",
-          "path": "test/foundation/hyper-util/unit/src/client/pool/singleton/tests_506.rs",
-          "sha256": "eb9263f0e360f0693464edbf439f6e2b5f7099ec007958416515171c438de0aa"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/client/proxy/matcher.rs",
-          "source_sha256_before": "c2478808ea3894a8344020386b3cfa377c82637c7e66220097371051d394c329",
-          "path": "test/foundation/hyper-util/unit/src/client/proxy/matcher/tests_725.rs",
-          "sha256": "63240da4b569bff42fd4b8b2c489b643b09b25fabd9abd23cce40ab24eede538"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/rt/tokio.rs",
-          "source_sha256_before": "143023606be7994c8ecbf538eb5816cbedd62172cb3fbb5f981ea411a1581d28",
-          "path": "test/foundation/hyper-util/unit/src/rt/tokio/tests_339.rs",
-          "sha256": "b2eadf4897f5f14e3391ca1891d13a41b1edbc0dbebaa169d38293c9d75d5fae"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/rt/tracing.rs",
-          "source_sha256_before": "5fb8be1bc1aec598707a73f949f28464c3e8da98f05cc5b4dee950b0070f6876",
-          "path": "test/foundation/hyper-util/unit/src/rt/tracing/tests_245.rs",
-          "sha256": "4328c80d02aba7944ec08a02adf50e9fc953b76eb651c284786e2e1c00408878"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/conn/auto/mod.rs",
-          "source_sha256_before": "0f28859d1e7f2b6dd9bb255a07cd6e11d5acc0caf87159ea9217ae5e1b3d67d0",
-          "path": "test/foundation/hyper-util/unit/src/server/conn/auto/mod/guarded_tests_1135.rs",
-          "sha256": "248ec9031f35b3bdaa0afc7d18b082983ccf84044c0594b34f5148fad80c8afe"
-        },
-        {
-          "source": "src/foundation/hyper-util/src/server/graceful.rs",
-          "source_sha256_before": "39d6fc356a4112125ae61e1a083e0875a486ffc55904aa4697165b80df957e45",
-          "path": "test/foundation/hyper-util/unit/src/server/graceful/test_307.rs",
-          "sha256": "c017c8f5e4dd4eba1ba8e865f16598fa7f42b6a04ee65267ef332adb5c5b4f4f"
         }
       ]
     },
@@ -14920,7 +14965,7 @@
           "source": "src/foundation/reqwest/src/redirect.rs",
           "source_sha256_before": "b8a618396c45884e5557314a0fb99ec01c1868b77132e2cc81aa0a4ac4831c06",
           "path": "test/foundation/reqwest/functions/src/redirect/test_remove_sensitive_headers_411.rs",
-          "sha256": "32cb2a38f808aba6fd6f36b7510c4fd9b973e11919ff2205031d2dd5b379bbec"
+          "sha256": "60616c2c2d96c7929e433dfb131663f1e0b810aa05f4e85d134c73762a14572f"
         },
         {
           "source": "src/foundation/reqwest/src/async_impl/body.rs",
@@ -14950,7 +14995,7 @@
           "source": "src/foundation/reqwest/src/error.rs",
           "source_sha256_before": "00d7f0408ea2374ade949e9b3acd9611e0b5131389c326a96e5ab85b8d884425",
           "path": "test/foundation/reqwest/unit/src/error/tests_375.rs",
-          "sha256": "93646c425cd90e6ca4a95bb65808943124707f036424709ccf6af4254b7ce68f"
+          "sha256": "2335f63bfd8d0de298bf80aa33a45b0da4b896b01ce96241f836c6312bffbe5f"
         },
         {
           "source": "src/foundation/reqwest/src/into_url.rs",
@@ -20882,7 +20927,7 @@
           "source": "src/foundation/tower-http/src/decompression/mod.rs",
           "source_sha256_before": "43f4d6c31a1d4b2ab1a5a02466234b26d7f6062f5f4cf99a5be37088f83ec636",
           "path": "test/foundation/tower-http/unit/src/decompression/mod/tests_110.rs",
-          "sha256": "10a9412eb555249c55f30be826c9f5c7fda68e0c4bed831c0f3da6a06341b2e8"
+          "sha256": "a8599f0de8cf6197a224b5fcd923c29ff5d2389d6ce512d1151d0da116e5a443"
         },
         {
           "source": "src/foundation/tower-http/src/decompression/request/mod.rs",

@@ -119,7 +119,7 @@ def check(root):
         check_retained_tests(root, temporary, target_dir)
     run(root, [
         "cargo", "check", "--locked", "--offline", "--jobs", "2",
-        "-p", "http-routing", "-p", "hyper", "-p", "tower-http", "-p", "reqwest",
+        "-p", "http-routing", "-p", "http-transport", "-p", "tower-http", "-p", "reqwest",
     ])
 
 

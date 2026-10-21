@@ -5,8 +5,8 @@ use std::time::Duration;
 
 use bytes::Bytes;
 use http_body::BodyExt;
-use hyper::{HeaderMap, StatusCode, Version};
-use hyper_util::client::legacy::connect::HttpInfo;
+use http_transport::{HeaderMap, StatusCode, Version};
+use http_transport::adapters::client::legacy::connect::HttpInfo;
 #[cfg(feature = "json")]
 use data_serialization::de::DeserializeOwned;
 #[cfg(feature = "json")]
@@ -23,7 +23,7 @@ use crate::async_impl::body::ResponseBody;
 
 /// A Response to a submitted `Request`.
 pub struct Response {
-    pub(super) res: hyper::Response<ResponseBody>,
+    pub(super) res: http_transport::Response<ResponseBody>,
     // Boxed to save space (11 words to 1 word), and it's not accessed
     // frequently internally.
     url: Box<Url>,
@@ -31,13 +31,13 @@ pub struct Response {
 
 impl Response {
     pub(super) fn new(
-        res: hyper::Response<ResponseBody>,
+        res: http_transport::Response<ResponseBody>,
         url: Url,
         total_timeout: Option<Pin<Box<Sleep>>>,
         read_timeout: Option<Duration>,
     ) -> Response {
         let (parts, body) = res.into_parts();
-        let res = hyper::Response::from_parts(
+        let res = http_transport::Response::from_parts(
             parts,
             super::body::response(body, total_timeout, read_timeout),
         );
@@ -85,7 +85,7 @@ impl Response {
     /// - The response is gzipped and automatically decoded (thus changing the
     ///   actual decoded length).
     pub fn content_length(&self) -> Option<u64> {
-        use hyper::body::Body;
+        use http_transport::body::Body;
 
         Body::size_hint(self.res.body()).exact()
     }
@@ -318,7 +318,7 @@ impl Response {
     /// ```
     pub fn error_for_status(self) -> crate::Result<Self> {
         let status = self.status();
-        let reason = self.extensions().get::<hyper::ext::ReasonPhrase>().cloned();
+        let reason = self.extensions().get::<http_transport::ext::ReasonPhrase>().cloned();
         if status.is_client_error() || status.is_server_error() {
             Err(crate::error::status_code(*self.url, status, reason))
         } else {
@@ -349,7 +349,7 @@ impl Response {
     /// ```
     pub fn error_for_status_ref(&self) -> crate::Result<&Self> {
         let status = self.status();
-        let reason = self.extensions().get::<hyper::ext::ReasonPhrase>().cloned();
+        let reason = self.extensions().get::<http_transport::ext::ReasonPhrase>().cloned();
         if status.is_client_error() || status.is_server_error() {
             Err(crate::error::status_code(*self.url.clone(), status, reason))
         } else {
@@ -397,7 +397,7 @@ impl<T: Into<Body>> From<http::Response<T>> for Response {
             .remove::<ResponseUrl>()
             .unwrap_or_else(|| ResponseUrl(Url::parse("http://no.url.provided.local").unwrap()));
         let url = url.0;
-        let res = hyper::Response::from_parts(parts, ResponseBody::new(body.map_err(Into::into)));
+        let res = http_transport::Response::from_parts(parts, ResponseBody::new(body.map_err(Into::into)));
         Response {
             res,
             url: Box::new(url),

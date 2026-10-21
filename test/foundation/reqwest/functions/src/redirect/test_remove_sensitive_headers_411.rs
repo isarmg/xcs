@@ -1,6 +1,6 @@
 #[test]
 fn test_remove_sensitive_headers() {
-    use hyper::header::{HeaderValue, ACCEPT, AUTHORIZATION, COOKIE};
+    use http_transport::header::{HeaderValue, ACCEPT, AUTHORIZATION, COOKIE};
 
     let mut headers = HeaderMap::new();
     headers.insert(ACCEPT, HeaderValue::from_static("*/*"));

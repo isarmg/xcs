@@ -5,9 +5,9 @@ use std::task::{Context, Poll};
 use std::{fmt, io};
 
 use http::Uri;
-use hyper::rt;
-use hyper_util::client::legacy::connect::Connection;
-use hyper_util::rt::TokioIo;
+use http_transport::rt;
+use http_transport::adapters::client::legacy::connect::Connection;
+use http_transport::adapters::rt::TokioIo;
 use rustls::pki_types::ServerName;
 use tokio_rustls::TlsConnector;
 use service_stack::Service;

@@ -1,4 +1,4 @@
-use hyper_util::client::legacy::connect::dns::GaiResolver as HyperGaiResolver;
+use http_transport::adapters::client::legacy::connect::dns::GaiResolver as HyperGaiResolver;
 use service_stack::Service;
 
 use crate::dns::{Addrs, Name, Resolve, Resolving};

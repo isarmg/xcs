@@ -3,10 +3,10 @@ use http::header::HeaderValue;
 #[cfg(feature = "__tls")]
 use http::uri::Scheme;
 use http::Uri;
-use hyper::rt::{Read, ReadBufCursor, Write};
-use hyper_util::client::legacy::connect::{Connected, Connection};
+use http_transport::rt::{Read, ReadBufCursor, Write};
+use http_transport::adapters::client::legacy::connect::{Connected, Connection};
 #[cfg(any(feature = "__tls",unix,target_os = "windows"))]
-use hyper_util::rt::TokioIo;
+use http_transport::adapters::rt::TokioIo;
 
 use pin_project_lite::pin_project;
 use service_stack::util::{BoxCloneSyncServiceLayer, MapRequestLayer};
@@ -29,7 +29,7 @@ use crate::error::{cast_to_internal_error, BoxError};
 use crate::proxy::{Intercepted, Matcher as ProxyMatcher};
 use sealed::{Conn, Unnameable};
 
-pub(crate) type HttpConnector = hyper_util::client::legacy::connect::HttpConnector<DynResolver>;
+pub(crate) type HttpConnector = http_transport::adapters::client::legacy::connect::HttpConnector<DynResolver>;
 
 #[derive(Clone)]
 pub(crate) enum Connector {
@@ -545,7 +545,7 @@ impl ConnectorService {
                     let inner = hyper_rustls::HttpsConnector::from((http, tls_proxy.clone()));
                     // TODO: we could cache constructing this
                     let mut tunnel =
-                        hyper_util::client::legacy::connect::proxy::Tunnel::new(proxy_dst, inner);
+                        http_transport::adapters::client::legacy::connect::proxy::Tunnel::new(proxy_dst, inner);
                     if let Some(auth) = auth {
                         tunnel = tunnel.with_auth(auth);
                     }
@@ -1033,10 +1033,10 @@ pub(crate) type Connecting = Pin<Box<dyn Future<Output = Result<Conn, BoxError>>
 #[cfg(feature = "__rustls")]
 mod rustls_tls_conn {
     use super::TlsInfoFactory;
-    use hyper::rt::{Read, ReadBufCursor, Write};
+    use http_transport::rt::{Read, ReadBufCursor, Write};
     use hyper_rustls::MaybeHttpsStream;
-    use hyper_util::client::legacy::connect::{Connected, Connection};
-    use hyper_util::rt::TokioIo;
+    use http_transport::adapters::client::legacy::connect::{Connected, Connection};
+    use http_transport::adapters::rt::TokioIo;
     use pin_project_lite::pin_project;
     use std::{
         io::{self, IoSlice},
@@ -1222,8 +1222,8 @@ mod rustls_tls_conn {
 
 mod verbose {
     use crate::util::Escape;
-    use hyper::rt::{Read, ReadBufCursor, Write};
-    use hyper_util::client::legacy::connect::{Connected, Connection};
+    use http_transport::rt::{Read, ReadBufCursor, Write};
+    use http_transport::adapters::client::legacy::connect::{Connected, Connection};
     use std::cmp::min;
     use std::fmt;
     use std::io::{self, IoSlice};
@@ -1269,7 +1269,7 @@ mod verbose {
             // TODO: This _does_ forget the `init` len, so it could result in
             // re-initializing twice. Needs upstream support, perhaps.
             // SAFETY: Passing to a ReadBuf will never de-initialize any bytes.
-            let mut vbuf = hyper::rt::ReadBuf::uninit(unsafe { buf.as_mut() });
+            let mut vbuf = http_transport::rt::ReadBuf::uninit(unsafe { buf.as_mut() });
             match Pin::new(&mut self.inner).poll_read(cx, vbuf.unfilled()) {
                 Poll::Ready(Ok(())) => {
                     log::trace!("{:08x} read: {:?}", self.id, Escape::new(vbuf.filled()));

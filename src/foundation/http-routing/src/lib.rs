@@ -500,7 +500,7 @@ pub mod handler;
 pub mod middleware;
 pub mod response;
 pub mod routing;
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 pub mod serve;
 
 #[cfg(any(test, feature = "__private"))]
@@ -528,7 +528,7 @@ pub use crate::kernel::{BoxError, Error, RequestExt, RequestPartsExt};
 #[cfg(feature = "macros")]
 pub use axum_macros::{debug_handler, debug_middleware};
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 #[doc(inline)]
 pub use self::serve::serve;
 

@@ -24,10 +24,10 @@
 //! use std::net::{SocketAddr, Ipv6Addr};
 //! use bytes::Bytes;
 //! use http_body::Full;
-//! use hyper_util::rt::{TokioIo, TokioExecutor};
-//! use hyper_util::service::TowerToHyperService;
+//! use http_transport::adapters::rt::{TokioIo, TokioExecutor};
+//! use http_transport::adapters::service::TowerToHyperService;
 //!
-//! # async fn handler(_: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>>, BoxError> {
+//! # async fn handler(_: Request<http_transport::body::Incoming>) -> Result<Response<Full<Bytes>>, BoxError> {
 //! #     Ok(Response::new(Full::new(Bytes::from("hello"))))
 //! # }
 //!
@@ -52,7 +52,7 @@
 //!             // Wrap it for hyper
 //!             let hyper_service = TowerToHyperService::new(service);
 //!
-//!             if let Err(err) = hyper_util::server::conn::auto::Builder::new(TokioExecutor::new())
+//!             if let Err(err) = http_transport::adapters::server::conn::auto::Builder::new(TokioExecutor::new())
 //!                 .serve_connection(socket, hyper_service)
 //!                 .await
 //!             {
@@ -78,7 +78,7 @@
 //!     classify::StatusInRangeAsFailures,
 //! };
 //! use service_stack::{ServiceBuilder, Service, ServiceExt};
-//! use hyper_util::{rt::TokioExecutor, client::legacy::Client};
+//! use http_transport::adapters::{rt::TokioExecutor, client::legacy::Client};
 //! use http_body::Full;
 //! use bytes::Bytes;
 //! use http::{Request, HeaderValue, header::USER_AGENT};

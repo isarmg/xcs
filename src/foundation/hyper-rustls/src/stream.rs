@@ -4,10 +4,10 @@ use std::io;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use hyper::rt;
-use hyper_util::client::legacy::connect::{Connected, Connection};
+use http_transport::rt;
+use http_transport::adapters::client::legacy::connect::{Connected, Connection};
 
-use hyper_util::rt::TokioIo;
+use http_transport::adapters::rt::TokioIo;
 use tokio_rustls::client::TlsStream;
 
 /// A stream that might be protected with TLS.

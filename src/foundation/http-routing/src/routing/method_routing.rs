@@ -1319,7 +1319,7 @@ where
 }
 
 // for `http_routing::serve(listener, router)`
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 const _: () = {
     use crate::serve;
 

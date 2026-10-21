@@ -103,7 +103,7 @@ use http::{
     request::Parts,
     Method, StatusCode, Version,
 };
-use hyper_util::rt::TokioIo;
+use http_transport::adapters::rt::TokioIo;
 use sha1::{Digest, Sha1};
 use std::{
     borrow::Cow,
@@ -138,7 +138,7 @@ pub struct WebSocketUpgrade<F = DefaultOnFailedUpgrade> {
     protocol: Option<HeaderValue>,
     /// `None` if HTTP/2+ WebSockets are used.
     sec_websocket_key: Option<HeaderValue>,
-    on_upgrade: hyper::upgrade::OnUpgrade,
+    on_upgrade: http_transport::upgrade::OnUpgrade,
     on_failed_upgrade: F,
     sec_websocket_protocol: BTreeSet<HeaderValue>,
 }
@@ -474,14 +474,7 @@ where
 
             // if this feature flag is disabled, we won’t be receiving an HTTP/2 request to begin
             // with.
-            #[cfg(feature = "http2")]
-            if parts
-                .extensions
-                .get::<hyper::ext::Protocol>()
-                .map_or(true, |p| p.as_str() != "websocket")
-            {
-                return Err(InvalidProtocolPseudoheader.into());
-            }
+
 
             None
         };
@@ -492,7 +485,7 @@ where
 
         let on_upgrade = parts
             .extensions
-            .remove::<hyper::upgrade::OnUpgrade>()
+            .remove::<http_transport::upgrade::OnUpgrade>()
             .ok_or(ConnectionNotUpgradable)?;
 
         let sec_websocket_protocol = parts
@@ -544,7 +537,7 @@ fn header_contains(headers: &HeaderMap, key: HeaderName, value: &'static str) ->
 /// See [the module level documentation](self) for more details.
 #[derive(Debug)]
 pub struct WebSocket {
-    inner: WebSocketStream<TokioIo<hyper::upgrade::Upgraded>>,
+    inner: WebSocketStream<TokioIo<http_transport::upgrade::Upgraded>>,
     protocol: Option<HeaderValue>,
 }
 

@@ -15,7 +15,7 @@ use std::{fmt, ops::RangeInclusive};
 /// use http::{Request, Method};
 /// use http_body::Full;
 /// use bytes::Bytes;
-/// use hyper_util::{rt::TokioExecutor, client::legacy::Client};
+/// use http_transport::adapters::{rt::TokioExecutor, client::legacy::Client};
 ///
 /// # async fn foo() -> Result<(), service_stack::BoxError> {
 /// let classifier = StatusInRangeAsFailures::new(400..=599);

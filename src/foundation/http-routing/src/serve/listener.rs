@@ -142,7 +142,7 @@ async fn handle_accept_error(e: io::Error) {
         return;
     }
 
-    // [From `hyper::Server` in 0.14](https://github.com/hyperium/hyper/blob/v0.14.27/src/server/tcp.rs#L186)
+    // [From `http_transport::Server` in 0.14](https://github.com/hyperium/hyper/blob/v0.14.27/src/server/tcp.rs#L186)
     //
     // > A possible scenario is that the process has hit the max open files
     // > allowed, and so trying to accept a new connection will fail with

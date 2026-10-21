@@ -44,7 +44,7 @@ use crate::{IntoUrl, Method, Proxy, Url};
 use http::header::{Entry, HeaderMap, HeaderValue, ACCEPT, PROXY_AUTHORIZATION, USER_AGENT};
 use http::uri::Scheme;
 use http::Uri;
-use hyper_util::client::legacy::connect::HttpConnector;
+use http_transport::adapters::client::legacy::connect::HttpConnector;
 
 use pin_project_lite::pin_project;
 
@@ -117,16 +117,16 @@ struct HyperService {
     hyper: HyperClient,
 }
 
-impl Service<hyper::Request<crate::async_impl::body::Body>> for HyperService {
+impl Service<http_transport::Request<crate::async_impl::body::Body>> for HyperService {
     type Error = crate::Error;
-    type Response = http::Response<hyper::body::Incoming>;
+    type Response = http::Response<http_transport::body::Incoming>;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + Sync>>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.hyper.poll_ready(cx).map_err(crate::error::request)
     }
 
-    fn call(&mut self, req: hyper::Request<crate::async_impl::body::Body>) -> Self::Future {
+    fn call(&mut self, req: http_transport::Request<crate::async_impl::body::Body>) -> Self::Future {
         let clone = self.hyper.clone();
         let mut inner = std::mem::replace(&mut self.hyper, clone);
         Box::pin(async move { inner.call(req).await.map_err(crate::error::request) })
@@ -616,11 +616,11 @@ impl ClientBuilder {
         connector_builder.set_windows_named_pipe(config.windows_named_pipe.clone());
 
         let mut builder =
-            hyper_util::client::legacy::Client::builder(hyper_util::rt::TokioExecutor::new());
+            http_transport::adapters::client::legacy::Client::builder(http_transport::adapters::rt::TokioExecutor::new());
 
 
-        builder.timer(hyper_util::rt::TokioTimer::new());
-        builder.pool_timer(hyper_util::rt::TokioTimer::new());
+        builder.timer(http_transport::adapters::rt::TokioTimer::new());
+        builder.pool_timer(http_transport::adapters::rt::TokioTimer::new());
         builder.pool_idle_timeout(config.pool_idle_timeout);
         builder.pool_max_idle_per_host(config.pool_max_idle_per_host);
 
@@ -1670,7 +1670,7 @@ impl ClientBuilder {
     }
 }
 
-type HyperClient = hyper_util::client::legacy::Client<Connector, super::Body>;
+type HyperClient = http_transport::adapters::client::legacy::Client<Connector, super::Body>;
 
 impl Default for Client {
     fn default() -> Self {
@@ -1814,7 +1814,7 @@ impl Client {
         self.proxy_auth(&uri, &mut headers);
         self.proxy_custom_headers(&uri, &mut headers);
 
-        let builder = hyper::Request::builder()
+        let builder = http_transport::Request::builder()
             .method(method.clone())
             .uri(uri)
             .version(version);

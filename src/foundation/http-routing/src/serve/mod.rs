@@ -11,10 +11,10 @@ use std::{
 
 use crate::kernel::{body::Body, extract::Request, response::Response};
 use futures::FutureExt;
-use hyper::body::Incoming;
-use hyper_util::rt::{TokioExecutor, TokioIo};
-#[cfg(any(feature = "http1", feature = "http2"))]
-use hyper_util::{server::conn::auto::Builder, service::TowerToHyperService};
+use http_transport::body::Incoming;
+use http_transport::adapters::rt::{TokioExecutor, TokioIo};
+# [cfg (feature = "http1")]
+use http_transport::adapters::{server::conn::auto::Builder, service::TowerToHyperService};
 use tokio::sync::watch;
 use service_stack::ServiceExt as _;
 use service_stack::Service;
@@ -93,7 +93,7 @@ pub use self::listener::{Listener, ListenerExt, TapIo};
 /// [`Handler`]: crate::handler::Handler
 /// [`HandlerWithoutStateExt::into_make_service_with_connect_info`]: crate::handler::HandlerWithoutStateExt::into_make_service_with_connect_info
 /// [`HandlerService::into_make_service_with_connect_info`]: crate::handler::HandlerService::into_make_service_with_connect_info
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 pub fn serve<L, M, S>(listener: L, make_service: M) -> Serve<L, M, S>
 where
     L: Listener,
@@ -109,7 +109,7 @@ where
 }
 
 /// Future returned by [`serve`].
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 #[must_use = "futures must be awaited or polled"]
 pub struct Serve<L, M, S> {
     listener: L,
@@ -117,7 +117,7 @@ pub struct Serve<L, M, S> {
     _marker: PhantomData<fn() -> S>,
 }
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 impl<L, M, S> Serve<L, M, S>
 where
     L: Listener,
@@ -166,7 +166,7 @@ where
     }
 }
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 impl<L, M, S> Serve<L, M, S>
 where
     L: Listener,
@@ -193,7 +193,7 @@ where
     }
 }
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 impl<L, M, S> Debug for Serve<L, M, S>
 where
     L: Debug + 'static,
@@ -214,7 +214,7 @@ where
     }
 }
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 impl<L, M, S> IntoFuture for Serve<L, M, S>
 where
     L: Listener,
@@ -233,7 +233,7 @@ where
 }
 
 /// Serve future with graceful shutdown enabled.
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 #[must_use = "futures must be awaited or polled"]
 pub struct WithGracefulShutdown<L, M, S, F> {
     listener: L,
@@ -242,7 +242,7 @@ pub struct WithGracefulShutdown<L, M, S, F> {
     _marker: PhantomData<fn() -> S>,
 }
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 impl<L, M, S, F> WithGracefulShutdown<L, M, S, F>
 where
     L: Listener,
@@ -253,7 +253,7 @@ where
     }
 }
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 impl<L, M, S, F> WithGracefulShutdown<L, M, S, F>
 where
     L: Listener,
@@ -304,7 +304,7 @@ where
     }
 }
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 impl<L, M, S, F> Debug for WithGracefulShutdown<L, M, S, F>
 where
     L: Debug + 'static,
@@ -328,7 +328,7 @@ where
     }
 }
 
-#[cfg(all(feature = "tokio", any(feature = "http1", feature = "http2")))]
+# [cfg (all (feature = "tokio" , feature = "http1"))]
 impl<L, M, S, F> IntoFuture for WithGracefulShutdown<L, M, S, F>
 where
     L: Listener,
@@ -387,11 +387,7 @@ async fn handle_connection<L, M, S>(
     let close_rx = close_rx.clone();
 
     tokio::spawn(async move {
-        #[allow(unused_mut)]
-        let mut builder = Builder::new(TokioExecutor::new());
-        // CONNECT protocol needed for HTTP/2 websockets
-        #[cfg(feature = "http2")]
-        builder.http2().enable_connect_protocol();
+        let builder = Builder::new(TokioExecutor::new());
 
         let mut conn = pin!(builder.serve_connection_with_upgrades(io, hyper_service));
         let mut signal_closed = pin!(signal_tx.closed().fuse());

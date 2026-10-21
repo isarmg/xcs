@@ -118,7 +118,7 @@ impl Error {
                 return true;
             }
 
-            if let Some(hyper_err) = err.downcast_ref::<hyper::Error>() {
+            if let Some(hyper_err) = err.downcast_ref::<http_transport::Error>() {
                 if hyper_err.is_timeout() {
                     return true;
                 }
@@ -145,7 +145,7 @@ impl Error {
         let mut source = self.source();
 
         while let Some(err) = source {
-            if let Some(hyper_err) = err.downcast_ref::<hyper_util::client::legacy::Error>() {
+            if let Some(hyper_err) = err.downcast_ref::<http_transport::adapters::client::legacy::Error>() {
                 if hyper_err.is_connect() {
                     return true;
                 }
@@ -275,7 +275,7 @@ pub(crate) enum Kind {
     Request,
     Redirect,
 
-    Status(StatusCode, Option<hyper::ext::ReasonPhrase>),
+    Status(StatusCode, Option<http_transport::ext::ReasonPhrase>),
 
     Body,
     Decode,
@@ -307,7 +307,7 @@ pub(crate) fn redirect<E: Into<BoxError>>(e: E, url: Url) -> Error {
 pub(crate) fn status_code(
     url: Url,
     status: StatusCode,
-    #[cfg(not(target_arch = "wasm32"))] reason: Option<hyper::ext::ReasonPhrase>,
+    #[cfg(not(target_arch = "wasm32"))] reason: Option<http_transport::ext::ReasonPhrase>,
 ) -> Error {
     Error::new(
         Kind::Status(

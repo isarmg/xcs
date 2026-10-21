@@ -1,4 +1,4 @@
-use hyper_util::client::legacy::connect::dns::Name as HyperName;
+use http_transport::adapters::client::legacy::connect::dns::Name as HyperName;
 use service_stack::Service;
 
 use std::collections::HashMap;

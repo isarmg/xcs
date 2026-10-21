@@ -6,7 +6,7 @@ mod tests {
     use crate::{routing::any, test_helpers::spawn_service, Router};
     use http::{Request, Version};
     use http_body::BodyExt as _;
-    use hyper_util::rt::TokioExecutor;
+    use http_transport::adapters::rt::TokioExecutor;
     use tokio::io::{AsyncRead, AsyncWrite};
     use tokio::net::TcpStream;
     use tokio_tungstenite::tungstenite;
@@ -71,7 +71,7 @@ mod tests {
         let addr = spawn_service(echo_app());
         let io = TokioIo::new(TcpStream::connect(addr).await.unwrap());
         let (mut send_request, conn) =
-            hyper::client::conn::http2::Builder::new(TokioExecutor::new())
+            http_transport::client::conn::http2::Builder::new(TokioExecutor::new())
                 .handshake(io)
                 .await
                 .unwrap();
@@ -87,7 +87,7 @@ mod tests {
 
         let req = Request::builder()
             .method(Method::CONNECT)
-            .extension(hyper::ext::Protocol::from_static("websocket"))
+            .extension(http_transport::ext::Protocol::from_static("websocket"))
             .uri("/echo")
             .header("sec-websocket-version", "13")
             .header("sec-websocket-protocol", TEST_ECHO_APP_REQ_SUBPROTO)
@@ -102,7 +102,7 @@ mod tests {
             let body = std::str::from_utf8(&body).unwrap();
             panic!("response status was {status}: {body}");
         }
-        let upgraded = hyper::upgrade::on(&mut response).await.unwrap();
+        let upgraded = http_transport::upgrade::on(&mut response).await.unwrap();
         let upgraded = TokioIo::new(upgraded);
         let socket = WebSocketStream::from_raw_socket(upgraded, protocol::Role::Client, None).await;
         test_echo_app(socket, response.headers()).await;

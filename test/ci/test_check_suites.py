@@ -171,6 +171,16 @@ class SuiteCoverageTests(unittest.TestCase):
                 with self.subTest(suite=name):
                     self.assertNotIn(expected, self.suite(name))
 
+    def test_http_transport_gate_runs_once_in_async_and_aggregate_only(self):
+        expected = {"tool": "python3", "args": [".github/scripts/check-http-transport.py"]}
+        inventory = json.loads((Path(__file__).with_name("foundation-commands.json")).read_text())
+        self.assertEqual(self.suite("foundation-async").count(expected), 1)
+        self.assertEqual(self.suite("foundation").count(expected), 1)
+        for name in inventory:
+            if name != "foundation-async":
+                with self.subTest(suite=name):
+                    self.assertNotIn(expected, self.suite(name))
+
     def test_foundation_aggregate_is_exactly_once_union_of_shards(self):
         inventory = json.loads((Path(__file__).with_name("foundation-commands.json")).read_text())
         expected = [call for calls in inventory.values() for call in calls]

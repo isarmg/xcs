@@ -13,9 +13,9 @@ impl MethodFilter {
     ///
     /// This is useful for implementing HTTP/2's [extended CONNECT method],
     /// in which the `:protocol` pseudoheader is read
-    /// (using [`hyper::ext::Protocol`])
+    /// (using [`http_transport::ext::Protocol`])
     /// and the connection upgraded to a bidirectional byte stream
-    /// (using [`hyper::upgrade::on`]).
+    /// (using [`http_transport::upgrade::on`]).
     ///
     /// As seen in the [HTTP Upgrade Token Registry],
     /// common uses include WebSockets and proxying UDP or IP –

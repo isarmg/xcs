@@ -2,12 +2,12 @@ use std::pin::Pin;
 use std::task::{self, Poll};
 use std::{fmt, io};
 
-use hyper_util::rt::TokioIo;
+use http_transport::adapters::rt::TokioIo;
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
 /// An upgraded HTTP connection.
 pub struct Upgraded {
-    inner: TokioIo<hyper::upgrade::Upgraded>,
+    inner: TokioIo<http_transport::upgrade::Upgraded>,
 }
 
 impl AsyncRead for Upgraded {
@@ -56,8 +56,8 @@ impl fmt::Debug for Upgraded {
     }
 }
 
-impl From<hyper::upgrade::Upgraded> for Upgraded {
-    fn from(inner: hyper::upgrade::Upgraded) -> Self {
+impl From<http_transport::upgrade::Upgraded> for Upgraded {
+    fn from(inner: http_transport::upgrade::Upgraded) -> Self {
         Upgraded {
             inner: TokioIo::new(inner),
         }
@@ -67,7 +67,7 @@ impl From<hyper::upgrade::Upgraded> for Upgraded {
 impl super::response::Response {
     /// Consumes the response and returns a future for a possible HTTP upgrade.
     pub async fn upgrade(self) -> crate::Result<Upgraded> {
-        hyper::upgrade::on(self.res)
+        http_transport::upgrade::on(self.res)
             .await
             .map(Upgraded::from)
             .map_err(crate::error::upgrade)

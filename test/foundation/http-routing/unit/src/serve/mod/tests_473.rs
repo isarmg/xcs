@@ -7,7 +7,7 @@ mod tests {
 
     use http_routing::kernel::{body::Body, extract::Request};
     use http::StatusCode;
-    use hyper_util::rt::TokioIo;
+    use http_transport::adapters::rt::TokioIo;
     #[cfg(unix)]
     use tokio::net::UnixListener;
     use tokio::{
@@ -240,7 +240,7 @@ mod tests {
         tokio::spawn(serve(listener, app).into_future());
 
         let stream = TokioIo::new(client);
-        let (mut sender, conn) = hyper::client::conn::http1::handshake(stream).await.unwrap();
+        let (mut sender, conn) = http_transport::client::conn::http1::handshake(stream).await.unwrap();
         tokio::spawn(conn);
 
         let request = Request::builder().body(Body::empty()).unwrap();

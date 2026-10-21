@@ -709,8 +709,7 @@ dependencies = [
  "futures",
  "http",
  "http-body",
- "hyper",
- "hyper-util",
+ "http-transport",
  "itoa",
  "json-codec",
  "matchit",
@@ -724,6 +723,31 @@ dependencies = [
  "sync_wrapper",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "http-transport"
+version = "1.12.0"
+dependencies = [
+ "atomic-waker",
+ "base64",
+ "bytes",
+ "futures",
+ "http",
+ "http-body",
+ "httparse",
+ "httpdate",
+ "ipnet",
+ "itoa",
+ "libc",
+ "percent-encoding",
+ "pin-project-lite",
+ "service-stack",
+ "smallvec",
+ "socket2",
+ "tokio",
+ "tracing",
+ "want",
 ]
 
 [[package]]
@@ -742,56 +766,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "hyper"
-version = "1.12.0"
-dependencies = [
- "atomic-waker",
- "bytes",
- "futures",
- "http",
- "http-body",
- "httparse",
- "httpdate",
- "itoa",
- "pin-project-lite",
- "smallvec",
- "tokio",
- "want",
-]
-
-[[package]]
 name = "hyper-rustls"
 version = "0.27.10"
 dependencies = [
  "http",
- "hyper",
- "hyper-util",
+ "http-transport",
  "rustls",
  "service-stack",
  "tokio",
  "tokio-rustls",
  "webpki-roots",
-]
-
-[[package]]
-name = "hyper-util"
-version = "0.1.21"
-dependencies = [
- "base64",
- "bytes",
- "futures",
- "http",
- "http-body",
- "httparse",
- "hyper",
- "ipnet",
- "libc",
- "percent-encoding",
- "pin-project-lite",
- "service-stack",
- "socket2",
- "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -1390,9 +1374,8 @@ dependencies = [
  "futures",
  "http",
  "http-body",
- "hyper",
+ "http-transport",
  "hyper-rustls",
- "hyper-util",
  "json-codec",
  "log",
  "percent-encoding",

@@ -645,7 +645,7 @@ async fn body_limited_by_default() {
     for uri in ["/bytes", "/string", "/json"] {
         println!("calling {uri}");
 
-        let stream = futures::stream::repeat("a".repeat(1000)).map(Ok::<_, hyper::Error>);
+        let stream = futures::stream::repeat("a".repeat(1000)).map(Ok::<_, http_transport::Error>);
         let body = reqwest::Body::wrap_stream(stream);
 
         let res_future = client
@@ -799,14 +799,14 @@ async fn limited_body_with_streaming_body() {
 
     let client = TestClient::new(app);
 
-    let stream = futures::stream::iter(vec![Ok::<_, hyper::Error>("a".repeat(LIMIT))]);
+    let stream = futures::stream::iter(vec![Ok::<_, http_transport::Error>("a".repeat(LIMIT))]);
     let res = client
         .post("/")
         .body(reqwest::Body::wrap_stream(stream))
         .await;
     assert_eq!(res.status(), StatusCode::OK);
 
-    let stream = futures::stream::iter(vec![Ok::<_, hyper::Error>("a".repeat(LIMIT * 2))]);
+    let stream = futures::stream::iter(vec![Ok::<_, http_transport::Error>("a".repeat(LIMIT * 2))]);
     let res = client
         .post("/")
         .body(reqwest::Body::wrap_stream(stream))

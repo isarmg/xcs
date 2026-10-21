@@ -77,7 +77,7 @@ mod tests {
     #[allow(dead_code)]
     async fn is_compatible_with_hyper() {
         let client =
-            hyper_util::client::legacy::Client::builder(hyper_util::rt::TokioExecutor::new())
+            http_transport::adapters::client::legacy::Client::builder(http_transport::adapters::rt::TokioExecutor::new())
                 .build_http();
         let mut client = Decompression::new(client);
 

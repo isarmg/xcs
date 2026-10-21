@@ -10,9 +10,9 @@
 //! # fn main() {
 //! use http::StatusCode;
 //! use http_body::Empty;
-//! use hyper::body::Bytes;
-//! use hyper_util::client::legacy::Client;
-//! use hyper_util::rt::TokioExecutor;
+//! use http_transport::body::Bytes;
+//! use http_transport::adapters::client::legacy::Client;
+//! use http_transport::adapters::rt::TokioExecutor;
 //!
 //! let mut rt = tokio::runtime::Runtime::new().unwrap();
 //! let url = ("https://hyper.rs").parse().unwrap();
@@ -62,8 +62,7 @@ pub use crate::stream::MaybeHttpsStream;
 
 /// The various states of the [`HttpsConnectorBuilder`]
 pub mod builderstates {
-    #[cfg(feature = "http2")]
-    pub use crate::connector::builder::WantsProtocols3;
+
     pub use crate::connector::builder::{
         WantsProtocols1, WantsProtocols2, WantsSchemes, WantsTlsConfig,
     };

@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use http::uri::Scheme;
 use http::{header::HeaderValue, HeaderMap, Uri};
-use hyper_util::client::proxy::matcher;
+use http_transport::adapters::client::proxy::matcher;
 
 use crate::into_url::{IntoUrl, IntoUrlSealed};
 use crate::Url;

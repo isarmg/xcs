@@ -9,3 +9,7 @@ Default features preserve the existing application configuration. With defaults 
 `.github/scripts/check-http-routing.py` exercises six native/WASM feature configurations and five maintained in-memory behavior cases: path/query routing, 404/405 distinction, request/response bodies and status, extractor rejection, and real derive/debug-handler macro expansion. No bound socket or fake test provider is required. Historical upstream tests remain individually attributed, not misreported as all executed.
 
 Original sources: Axum 0.8.9 and axum-core 0.5.6. Exact versions, licenses, upstream commits, immutable originals and relocated test identities remain in provenance/catalog/consolidation receipts. The upstream macro package's original identity is also preserved there.
+
+## Transport integration boundary
+
+The `http1` feature enables only the protocol engine. Runtime/server adapters are activated by `tokio`, not by the optional transport dependency itself. The maintained gate verifies native and WASM HTTP/1-only graphs without transport adapters or Tokio networking/runtime/time features. Application routing and protocol reception retain distinct body types; readiness-aware middleware is adapted explicitly, not aliased to the protocol service trait.

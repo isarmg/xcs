@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use hyper_util::client::legacy::connect::HttpConnector;
+use http_transport::adapters::client::legacy::connect::HttpConnector;
 #[cfg(any(feature = "webpki-roots"))]
 use rustls::crypto::CryptoProvider;
 use rustls::pki_types::ServerName;
@@ -174,35 +174,9 @@ impl ConnectorBuilder<WantsProtocols1> {
         ConnectorBuilder(WantsProtocols2 { inner: self.0 })
     }
 
-    /// Enable HTTP2
-    ///
-    /// This needs to be called explicitly, no protocol is enabled by default
-    #[cfg(feature = "http2")]
-    pub fn enable_http2(mut self) -> ConnectorBuilder<WantsProtocols3> {
-        self.0.tls_config.alpn_protocols = vec![b"h2".to_vec()];
-        ConnectorBuilder(WantsProtocols3 {
-            inner: self.0,
-            enable_http1: false,
-        })
-    }
 
-    /// Enable all HTTP versions built into this library (enabled with Cargo features)
-    ///
-    /// For now, this could enable both HTTP 1 and 2, depending on active features.
-    /// In the future, other supported versions will be enabled as well.
-    #[cfg(feature = "http2")]
-    pub fn enable_all_versions(mut self) -> ConnectorBuilder<WantsProtocols3> {
-        #[cfg(feature = "http1")]
-        let alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
-        #[cfg(not(feature = "http1"))]
-        let alpn_protocols = vec![b"h2".to_vec()];
 
-        self.0.tls_config.alpn_protocols = alpn_protocols;
-        ConnectorBuilder(WantsProtocols3 {
-            inner: self.0,
-            enable_http1: cfg!(feature = "http1"),
-        })
-    }
+
 
     /// Override server name for the TLS stack
     ///
@@ -259,17 +233,7 @@ pub struct WantsProtocols2 {
 }
 
 impl ConnectorBuilder<WantsProtocols2> {
-    /// Enable HTTP2
-    ///
-    /// This needs to be called explicitly, no protocol is enabled by default
-    #[cfg(feature = "http2")]
-    pub fn enable_http2(mut self) -> ConnectorBuilder<WantsProtocols3> {
-        self.0.inner.tls_config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
-        ConnectorBuilder(WantsProtocols3 {
-            inner: self.0.inner,
-            enable_http1: true,
-        })
-    }
+
 
     /// This builds an [`HttpsConnector`] built on hyper's default [`HttpConnector`]
     pub fn build(self) -> HttpsConnector<HttpConnector> {
@@ -286,34 +250,9 @@ impl ConnectorBuilder<WantsProtocols2> {
     }
 }
 
-/// State of a builder with HTTP2 (and possibly HTTP1) enabled
-///
-/// At this point a connector can be built, see
-/// [`build`](ConnectorBuilder<WantsProtocols3>::build) and
-/// [`wrap_connector`](ConnectorBuilder<WantsProtocols3>::wrap_connector).
-#[cfg(feature = "http2")]
-pub struct WantsProtocols3 {
-    inner: WantsProtocols1,
-    // ALPN is built piecemeal without the need to read back this field
-    #[allow(dead_code)]
-    enable_http1: bool,
-}
 
-#[cfg(feature = "http2")]
-impl ConnectorBuilder<WantsProtocols3> {
-    /// This builds an [`HttpsConnector`] built on hyper's default [`HttpConnector`]
-    pub fn build(self) -> HttpsConnector<HttpConnector> {
-        self.0.inner.build()
-    }
 
-    /// This wraps an arbitrary low-level connector into an [`HttpsConnector`]
-    pub fn wrap_connector<H>(self, conn: H) -> HttpsConnector<H> {
-        // If HTTP1 is disabled, we can set http2_only
-        // on the Client (a higher-level object that uses the connector)
-        // client.http2_only(!self.0.enable_http1);
-        self.0.inner.wrap_connector(conn)
-    }
-}
+
 
 #[cfg(test)]
 include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-rustls/unit/src/connector/builder/tests_318.rs"));
