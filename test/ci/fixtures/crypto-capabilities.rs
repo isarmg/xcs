@@ -1,5 +1,5 @@
 use blake2::{
-    digest::{Digest, FixedOutput, KeyInit, Update},
+    cryptographic_core::{Digest, FixedOutput, KeyInit, Update},
     Blake2b512, Blake2bVar, Blake2s256, Blake2sVar, VariableOutput,
 };
 #[test]
@@ -69,8 +69,8 @@ fn personalized_mac_parameter_boundaries() {
     }
     check!(blake2::Blake2bMac512, 64);
     check!(blake2::Blake2sMac256, 32);
-    check!(blake2::Blake2bMac<blake2::digest::consts::U16>, 64);
-    check!(blake2::Blake2sMac<blake2::digest::consts::U16>, 32);
+    check!(blake2::Blake2bMac<blake2::cryptographic_core::consts::U16>, 64);
+    check!(blake2::Blake2sMac<blake2::cryptographic_core::consts::U16>, 32);
 }
 
 #[test]
@@ -116,7 +116,7 @@ fn boxed_runtime_output() {
 #[test]
 fn reset_preserves_configuration() {
     use blake2::{
-        digest::{FixedOutputReset, Reset},
+        cryptographic_core::{FixedOutputReset, Reset},
         VariableOutputReset,
     };
     for n in [0, 1, 16, 32, 64] {
@@ -153,7 +153,7 @@ fn reset_preserves_configuration() {
 }
 #[test]
 fn constant_time_mac_verification_interface() {
-    use blake2::digest::Mac;
+    use blake2::cryptographic_core::Mac;
     let mut h = blake2::Blake2bMac512::new_from_slice(b"secret").unwrap();
     Update::update(&mut h, b"message");
     let tag = h.clone().finalize_fixed();
@@ -166,7 +166,7 @@ fn constant_time_mac_verification_interface() {
 #[cfg(feature = "reset")]
 #[test]
 fn small_reset_and_personalized_reset() {
-    use blake2::{digest::FixedOutputReset, VariableOutputReset};
+    use blake2::{cryptographic_core::FixedOutputReset, VariableOutputReset};
     let mut h = Blake2sVar::new(13).unwrap();
     h.update(b"hello");
     let mut first = [0; 13];

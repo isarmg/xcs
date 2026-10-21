@@ -33,10 +33,19 @@ class CryptoConsolidationTests(unittest.TestCase):
                     features.update(name for name, dep in actual.get('dependencies', {}).items() if dep.get('optional') and 'dep:' + name not in activated)
                     self.assertIn(feature, features)
 
+    def test_blake3_feature_contract_is_preserved(self):
+        component = tomllib.loads((ROOT / 'src/foundation/blake3/Cargo.toml').read_text())
+        self.assertNotIn('digest', component['features'])
+        self.assertEqual(component['features']['cryptographic-core'], ['dep:cryptographic-core'])
+        self.assertEqual(component['features']['traits-preview'], ['dep:cryptographic-core'])
+        manifest = tomllib.loads(GATE['manifest'](ROOT))
+        self.assertEqual(manifest['features']['cryptographic-core'], ['blake3/cryptographic-core'])
+        self.assertEqual(manifest['features']['traits-preview'], ['blake3/traits-preview'])
+
     def test_duplicate_stack_is_rejected(self):
-        metadata = {'packages': [{'name': name} for name in ('digest', 'block-buffer', 'crypto-common', 'hybrid-array')]}
+        metadata = {'packages': [{'name': name} for name in ('cryptographic-core', 'hybrid-array')]}
         GATE['check_shared_stack'](ROOT, metadata)
-        for name in ('digest', 'block-buffer', 'crypto-common', 'generic-array'):
+        for name in ('cryptographic-core', 'hash-traits', 'hash-block-buffer', 'cryptographic-traits', 'digest', 'block-buffer', 'crypto-common', 'generic-array'):
             with self.subTest(name=name):
                 invalid = {'packages': metadata['packages'] + [{'name': name}]}
                 with self.assertRaises(AssertionError):

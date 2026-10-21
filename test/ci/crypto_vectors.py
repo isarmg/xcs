@@ -29,7 +29,7 @@ def generate(live, work):
       else:n>>=1;out.append(d[i:i+n]);i+=n
      assert i==len(d) and len(out) <= 3072
      return out
-    head='''use blake2::{Blake2bVar, Blake2sVar, VariableOutput, digest::{Update, FixedOutput, KeyInit, consts::{U1,U16,U32,U64}}};
+    head='''use blake2::{Blake2bVar, Blake2sVar, VariableOutput, cryptographic_core::{Update, FixedOutput, KeyInit, consts::{U1,U16,U32,U64}}};
     fn check_b(input:&[u8], expected:&[u8]) { for chunk in [1,3,64,128,129,2048] { let mut h=Blake2bVar::new(expected.len()).unwrap();for c in input.chunks(chunk) { h.update(c); } let mut out=vec![0;expected.len()];h.finalize_variable(&mut out).unwrap();assert_eq!(out,expected); } }
     fn check_s(input:&[u8], expected:&[u8]) { for chunk in [1,3,64,128,129,2048] { let mut h=Blake2sVar::new(expected.len()).unwrap();for c in input.chunks(chunk) { h.update(c); } let mut out=vec![0;expected.len()];h.finalize_variable(&mut out).unwrap();assert_eq!(out,expected); } }
     '''

@@ -2,17 +2,17 @@
 
 macro_rules! new_test {
     ($name:ident, $digest:ty $(,)?) => {
-        new_test!($name, $digest, digest::dev::MacTruncSide::None);
+        new_test!($name, $digest, cryptographic_core::dev::MacTruncSide::None);
     };
     ($name:ident, $digest:ty, trunc_left $(,)?) => {
-        new_test!($name, $digest, digest::dev::MacTruncSide::Left);
+        new_test!($name, $digest, cryptographic_core::dev::MacTruncSide::Left);
     };
     ($name:ident, $digest:ty, $trunc:expr $(,)?) => {
         #[test]
         fn $name() {
-            use digest::dev::{MacTestVector, mac_test, reset_mac_test};
+            use cryptographic_core::dev::{MacTestVector, mac_test, reset_mac_test};
 
-            digest::dev::blobby::parse_into_structs!(
+            cryptographic_core::dev::blobby::parse_into_structs!(
                 include_bytes!(concat!("data/", stringify!($name), ".blb"));
                 static TEST_VECTORS: &[MacTestVector { key, input, tag }];
             );

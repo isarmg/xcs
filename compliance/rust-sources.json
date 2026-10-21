@@ -1,7 +1,373 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
+  "consolidation_records_sha256": {
+    "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8": "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8"
+  },
+  "consolidations": {
+    "fae6f9b66a7b4143705badfcac36827715e98623ce3baa43b8690ba3c563eff8": {
+      "destination_directory": "src/foundation/cryptographic-core",
+      "destination_external_tests": {
+        "bytes": 16600,
+        "directory": "src/foundation/cryptographic-core",
+        "file_count": 3,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/block-buffer-0.12.1",
+            "path": "test/foundation/cryptographic-core/buffer/tests/mod.rs",
+            "sha256": "9632cebac7270960dd0f0e5559213627271fb3df2264c5617c059cd3f6316ce3",
+            "source": "src/foundation/block-buffer-0.12.1/tests/mod.rs",
+            "source_sha256_before": "543dab1816c288334cca9b9d61dbe89ee1b4862c15fee5fb028ad5c6bb4fa60f"
+          },
+          {
+            "origin_directory": "vendor/rust/digest-0.11.3",
+            "path": "test/foundation/cryptographic-core/hash/tests/data/fixed_hash_serialization.bin",
+            "sha256": "a983af743e3ee4dfb986e4a2283fb790a306afe2c06238491a147e3f24299202",
+            "source": "src/foundation/digest-0.11.3/tests/data/fixed_hash_serialization.bin",
+            "source_sha256_before": "a983af743e3ee4dfb986e4a2283fb790a306afe2c06238491a147e3f24299202"
+          },
+          {
+            "origin_directory": "vendor/rust/digest-0.11.3",
+            "path": "test/foundation/cryptographic-core/hash/tests/dummy_fixed.rs",
+            "sha256": "b4961486a19454c32efed9a5e9fed3b4a7ad3c6c8acc8d0b4cda372fdadc3f66",
+            "source": "src/foundation/digest-0.11.3/tests/dummy_fixed.rs",
+            "source_sha256_before": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab"
+          }
+        ],
+        "origin_directory": "vendor/rust/digest-0.11.3",
+        "roots": [
+          "test/foundation/cryptographic-core"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "ccd38ae8b392c38aee7af0cfd90b62f1a6f2bfcc56802febfa6efd6c85755711",
+        "src/buffer/mod.rs": "145b50bc75a4602d950d3beb20577fb1624ab9baba0d50a4e32390d677cf65b9",
+        "src/buffer/read.rs": "790b7bc1d6e87c0ee797b41e18aa3c394aa561c3074047c72590b33c9cee0f8d",
+        "src/buffer/sealed.rs": "7ad84c528060c27e148e568dc4934ab7704259bdf0c41f1ab59043255d53da3f",
+        "src/common_types/hazmat.rs": "c65eef0eb7b1e319da25e540c6b9e30b7d6d810dd96de41233b203000247672c",
+        "src/common_types/mod.rs": "7eee006e30859f8f67215685bdbe57249c9575d1be490fe5f86c3f516c1b3379",
+        "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
+        "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
+        "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
+        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
+        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
+        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
+        "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
+        "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
+        "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
+        "src/hash/dev/rng.rs": "7911d5dc4bee94b96d26a0c491ef9ce17ce11b0f0da7476c2f2afc8a5480ae16",
+        "src/hash/dev/variable.rs": "acb5c1d49b20166a7864a57b7264e59eb5240ae774af6bb6863a5fc94a7fa048",
+        "src/hash/dev/xof.rs": "70b76dec7f2be10fa33c274ad25f9d8f7963222743e853174b06479632b9623d",
+        "src/hash/fixed_output.rs": "126b97646f204b48f0e53fff04be96f3f636683e1df959086a9ea33094f03f54",
+        "src/hash/mac.rs": "7126fef7457e291af9fcf9b21900773308c6fa10932345e1ec768b4b66cacf5d",
+        "src/hash/mod.rs": "ae0baf0a4d9e5d8e31fc76f707f0e9ad5af610cb88ba63d227a9879e69cdc9b4",
+        "src/hash/xof_fixed.rs": "a423981ae1afc05d485fe822f44edd4f9ed43fdeffe1f63e1788dabb5f817837",
+        "src/lib.rs": "116ab247568763b7de0b6388f98f6b885de8811e19cd04e48df558276151a498"
+      },
+      "destination_name": "cryptographic-core",
+      "external_file_routes": {
+        "test/foundation/block-buffer-0.12.1/tests/mod.rs": {
+          "destination": "test/foundation/cryptographic-core/buffer/tests/mod.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNyeXB0b2dyYXBoaWNfY29yZTo6YnVmZmVyOjp7Cg==",
+              "old": "dXNlIGJsb2NrX2J1ZmZlcjo6ewo="
+            }
+          ]
+        },
+        "test/foundation/digest-0.11.3/tests/data/fixed_hash_serialization.bin": {
+          "destination": "test/foundation/cryptographic-core/hash/tests/data/fixed_hash_serialization.bin",
+          "replacements": []
+        },
+        "test/foundation/digest-0.11.3/tests/dummy_fixed.rs": {
+          "destination": "test/foundation/cryptographic-core/hash/tests/dummy_fixed.rs",
+          "replacements": [
+            {
+              "new": "ICAgIHVzZSBjcnlwdG9ncmFwaGljX2NvcmU6OnsK",
+              "old": "ICAgIHVzZSBkaWdlc3Q6OnsK"
+            },
+            {
+              "new": "ICAgICAgICBjb21tb25fdHlwZXM6Omhhem1hdDo6e0Rlc2VyaWFsaXplU3RhdGVFcnJvciwgU2VyaWFsaXphYmxlU3RhdGUsIFNlcmlhbGl6ZWRTdGF0ZX0sCg==",
+              "old": "ICAgICAgICBjb21tb246Omhhem1hdDo6e0Rlc2VyaWFsaXplU3RhdGVFcnJvciwgU2VyaWFsaXphYmxlU3RhdGUsIFNlcmlhbGl6ZWRTdGF0ZX0sCg=="
+            },
+            {
+              "new": "ICAgICAgICB0eXBlIEJ1ZmZlcktpbmQgPSBjcnlwdG9ncmFwaGljX2NvcmU6OmJ1ZmZlcjo6RWFnZXI7Cg==",
+              "old": "ICAgICAgICB0eXBlIEJ1ZmZlcktpbmQgPSBibG9ja19idWZmZXI6OkVhZ2VyOwo="
+            },
+            {
+              "new": "fQoKY3J5cHRvZ3JhcGhpY19jb3JlOjpidWZmZXJfZml4ZWQhKAogICAgLy8vIFByaW1pdGl2ZSBYT1IgaGFzaGVyIGZvciB0ZXN0aW5nIHB1cnBvc2VzCiAgICBwdWIgc3RydWN0IEZpeGVkSGFzaChibG9ja19hcGk6OkZpeGVkSGFzaENvcmUpOwo=",
+              "old": "fQoKZGlnZXN0OjpidWZmZXJfZml4ZWQhKAogICAgLy8vIFByaW1pdGl2ZSBYT1IgaGFzaGVyIGZvciB0ZXN0aW5nIHB1cnBvc2VzCiAgICBwdWIgc3RydWN0IEZpeGVkSGFzaChibG9ja19hcGk6OkZpeGVkSGFzaENvcmUpOwo="
+            },
+            {
+              "new": "ICAgIGltcGw6IEJhc2VGaXhlZFRyYWl0cyBEZWZhdWx0IENsb25lIEhhc2hNYXJrZXIgUmVzZXQgRml4ZWRPdXRwdXRSZXNldDsKKTsKY3J5cHRvZ3JhcGhpY19jb3JlOjpidWZmZXJfZml4ZWQhKAogICAgLy8vIFByaW1pdGl2ZSBYT1IgaGFzaGVyIGZvciB0ZXN0aW5nIHB1cnBvc2VzCiAgICBwdWIgc3RydWN0IEZpeGVkSGFzaFdpdGhTZXIoYmxvY2tfYXBpOjpGaXhlZEhhc2hDb3JlKTsK",
+              "old": "ICAgIGltcGw6IEJhc2VGaXhlZFRyYWl0cyBEZWZhdWx0IENsb25lIEhhc2hNYXJrZXIgUmVzZXQgRml4ZWRPdXRwdXRSZXNldDsKKTsKZGlnZXN0OjpidWZmZXJfZml4ZWQhKAogICAgLy8vIFByaW1pdGl2ZSBYT1IgaGFzaGVyIGZvciB0ZXN0aW5nIHB1cnBvc2VzCiAgICBwdWIgc3RydWN0IEZpeGVkSGFzaFdpdGhTZXIoYmxvY2tfYXBpOjpGaXhlZEhhc2hDb3JlKTsK"
+            },
+            {
+              "new": "ICAgIGltcGw6IEZpeGVkSGFzaFRyYWl0czsKKTsKY3J5cHRvZ3JhcGhpY19jb3JlOjpidWZmZXJfZml4ZWQhKAogICAgLy8vIFByaW1pdGl2ZSBYT1IgaGFzaGVyIGZvciB0ZXN0aW5nIHB1cnBvc2VzCiAgICBwdWIgc3RydWN0IEZpeGVkSGFzaFdpdGhPaWQoYmxvY2tfYXBpOjpGaXhlZEhhc2hDb3JlKTsK",
+              "old": "ICAgIGltcGw6IEZpeGVkSGFzaFRyYWl0czsKKTsKZGlnZXN0OjpidWZmZXJfZml4ZWQhKAogICAgLy8vIFByaW1pdGl2ZSBYT1IgaGFzaGVyIGZvciB0ZXN0aW5nIHB1cnBvc2VzCiAgICBwdWIgc3RydWN0IEZpeGVkSGFzaFdpdGhPaWQoYmxvY2tfYXBpOjpGaXhlZEhhc2hDb3JlKTsK"
+            },
+            {
+              "new": "ICAgIGltcGw6IEJhc2VGaXhlZFRyYWl0cyBEZWZhdWx0IENsb25lIEhhc2hNYXJrZXIgUmVzZXQgRml4ZWRPdXRwdXRSZXNldDsKKTsKY3J5cHRvZ3JhcGhpY19jb3JlOjpidWZmZXJfZml4ZWQhKAogICAgLy8vIFByaW1pdGl2ZSBYT1IgaGFzaGVyIGZvciB0ZXN0aW5nIHB1cnBvc2VzCiAgICBwdWIgc3RydWN0IEZpeGVkSGFzaFdpdGhPaWRTZXIoYmxvY2tfYXBpOjpGaXhlZEhhc2hDb3JlKTsK",
+              "old": "ICAgIGltcGw6IEJhc2VGaXhlZFRyYWl0cyBEZWZhdWx0IENsb25lIEhhc2hNYXJrZXIgUmVzZXQgRml4ZWRPdXRwdXRSZXNldDsKKTsKZGlnZXN0OjpidWZmZXJfZml4ZWQhKAogICAgLy8vIFByaW1pdGl2ZSBYT1IgaGFzaGVyIGZvciB0ZXN0aW5nIHB1cnBvc2VzCiAgICBwdWIgc3RydWN0IEZpeGVkSGFzaFdpdGhPaWRTZXIoYmxvY2tfYXBpOjpGaXhlZEhhc2hDb3JlKTsK"
+            },
+            {
+              "new": "Y3J5cHRvZ3JhcGhpY19jb3JlOjpoYXNoX3NlcmlhbGl6YXRpb25fdGVzdCEoZml4ZWRfaGFzaF9zZXJpYWxpemF0aW9uLCBGaXhlZEhhc2hXaXRoU2VyLCk7Cg==",
+              "old": "ZGlnZXN0OjpoYXNoX3NlcmlhbGl6YXRpb25fdGVzdCEoZml4ZWRfaGFzaF9zZXJpYWxpemF0aW9uLCBGaXhlZEhhc2hXaXRoU2VyLCk7Cg=="
+            }
+          ]
+        }
+      },
+      "file_routes": {
+        "src/foundation/block-buffer-0.12.1": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDI0IgpydXN0LXZlcnNpb24gPSAiMS44NSIKbmFtZSA9ICJibG9jay1idWZmZXIiCnZlcnNpb24gPSAiMC4xMi4xIgphdXRob3JzID0gWyJSdXN0Q3J5cHRvIERldmVsb3BlcnMiXQpidWlsZCA9IGZhbHNlCmF1dG9saWIgPSBmYWxzZQphdXRvYmlucyA9IGZhbHNlCmF1dG9leGFtcGxlcyA9IGZhbHNlCmF1dG90ZXN0cyA9IGZhbHNlCmF1dG9iZW5jaGVzID0gZmFsc2UKZGVzY3JpcHRpb24gPSAiQnVmZmVyIHR5cGVzIGZvciBibG9jayBwcm9jZXNzaW5nIG9mIGRhdGEiCmRvY3VtZW50YXRpb24gPSAiaHR0cHM6Ly9kb2NzLnJzL2Jsb2NrLWJ1ZmZlciIKcmVhZG1lID0gIi4uLy4uLy4uL2RvY3MvdXBzdHJlYW0vYmxvY2stYnVmZmVyLTAuMTIuMS9SRUFETUUubWQiCmtleXdvcmRzID0gWwogICAgImJsb2NrIiwKICAgICJidWZmZXIiLApdCmNhdGVnb3JpZXMgPSBbCiAgICAiY3J5cHRvZ3JhcGh5IiwKICAgICJuby1zdGQiLApdCmxpY2Vuc2UgPSAiTUlUIE9SIEFwYWNoZS0yLjAiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL1J1c3RDcnlwdG8vdXRpbHMiCgpbbGliXQpuYW1lID0gImJsb2NrX2J1ZmZlciIKcGF0aCA9ICJzcmMvbGliLnJzIgoKW2RlcGVuZGVuY2llcy5oeWJyaWQtYXJyYXldCnZlcnNpb24gPSAiMC40IgpwYXRoID0gIi4uL2h5YnJpZC1hcnJheSIKCltkZXBlbmRlbmNpZXMuemVyb2l6ZV0KdmVyc2lvbiA9ICIxLjgiCm9wdGlvbmFsID0gdHJ1ZQpkZWZhdWx0LWZlYXR1cmVzID0gZmFsc2UKcGF0aCA9ICIuLi96ZXJvaXplIgoKW2xpbnRzLmNsaXBweV0KYm9ycm93X2FzX3B0ciA9ICJ3YXJuIgpjYXN0X2xvc3NsZXNzID0gIndhcm4iCmNhc3RfcG9zc2libGVfdHJ1bmNhdGlvbiA9ICJ3YXJuIgpjYXN0X3Bvc3NpYmxlX3dyYXAgPSAid2FybiIKY2FzdF9wcmVjaXNpb25fbG9zcyA9ICJ3YXJuIgpjYXN0X3NpZ25fbG9zcyA9ICJ3YXJuIgpjaGVja2VkX2NvbnZlcnNpb25zID0gIndhcm4iCmRvY19tYXJrZG93biA9ICJ3YXJuIgpmcm9tX2l0ZXJfaW5zdGVhZF9vZl9jb2xsZWN0ID0gIndhcm4iCmltcGxpY2l0X3NhdHVyYXRpbmdfc3ViID0gIndhcm4iCm1hbnVhbF9hc3NlcnQgPSAid2FybiIKbWFwX3Vud3JhcF9vciA9ICJ3YXJuIgptaXNzaW5nX2Vycm9yc19kb2MgPSAid2FybiIKbWlzc2luZ19wYW5pY3NfZG9jID0gIndhcm4iCm1vZF9tb2R1bGVfZmlsZXMgPSAid2FybiIKbXVzdF91c2VfY2FuZGlkYXRlID0gIndhcm4iCm5lZWRsZXNzX3JhbmdlX2xvb3AgPSAiYWxsb3ciCnB0cl9hc19wdHIgPSAid2FybiIKcmVkdW5kYW50X2Nsb3N1cmVfZm9yX21ldGhvZF9jYWxscyA9ICJ3YXJuIgpyZWZfYXNfcHRyID0gIndhcm4iCnJldHVybl9zZWxmX25vdF9tdXN0X3VzZSA9ICJ3YXJuIgpzZW1pY29sb25faWZfbm90aGluZ19yZXR1cm5lZCA9ICJ3YXJuIgpzdGRfaW5zdGVhZF9vZl9hbGxvYyA9ICJ3YXJuIgpzdGRfaW5zdGVhZF9vZl9jb3JlID0gIndhcm4iCnRyaXZpYWxseV9jb3B5X3Bhc3NfYnlfcmVmID0gIndhcm4iCnVuZG9jdW1lbnRlZF91bnNhZmVfYmxvY2tzID0gIndhcm4iCnVubmVjZXNzYXJ5X3NhZmV0eV9jb21tZW50ID0gIndhcm4iCnVud3JhcF9pbl9yZXN1bHQgPSAid2FybiIKdW53cmFwX3VzZWQgPSAid2FybiIKCltsaW50cy5ydXN0XQptaXNzaW5nX2NvcHlfaW1wbGVtZW50YXRpb25zID0gIndhcm4iCm1pc3NpbmdfZGVidWdfaW1wbGVtZW50YXRpb25zID0gIndhcm4iCm1pc3NpbmdfZG9jcyA9ICJ3YXJuIgp0cml2aWFsX2Nhc3RzID0gIndhcm4iCnRyaXZpYWxfbnVtZXJpY19jYXN0cyA9ICJ3YXJuIgp1bnVzZWRfbGlmZXRpbWVzID0gIndhcm4iCnVudXNlZF9xdWFsaWZpY2F0aW9ucyA9ICJ3YXJuIgo="
+          },
+          "src/lib.rs": {
+            "destination": "src/buffer/mod.rs"
+          },
+          "src/read.rs": {
+            "destination": "src/buffer/read.rs"
+          },
+          "src/sealed.rs": {
+            "destination": "src/buffer/sealed.rs"
+          }
+        },
+        "src/foundation/crypto-common-0.2.2": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDI0IgpydXN0LXZlcnNpb24gPSAiMS44NSIKbmFtZSA9ICJjcnlwdG8tY29tbW9uIgp2ZXJzaW9uID0gIjAuMi4yIgphdXRob3JzID0gWyJSdXN0Q3J5cHRvIERldmVsb3BlcnMiXQpidWlsZCA9IGZhbHNlCmF1dG9saWIgPSBmYWxzZQphdXRvYmlucyA9IGZhbHNlCmF1dG9leGFtcGxlcyA9IGZhbHNlCmF1dG90ZXN0cyA9IGZhbHNlCmF1dG9iZW5jaGVzID0gZmFsc2UKZGVzY3JpcHRpb24gPSAiQ29tbW9uIHRyYWl0cyB1c2VkIGJ5IGNyeXB0b2dyYXBoaWMgYWxnb3JpdGhtcyIKZG9jdW1lbnRhdGlvbiA9ICJodHRwczovL2RvY3MucnMvY3J5cHRvLWNvbW1vbiIKcmVhZG1lID0gIi4uLy4uLy4uL2RvY3MvdXBzdHJlYW0vY3J5cHRvLWNvbW1vbi0wLjIuMi9SRUFETUUubWQiCmtleXdvcmRzID0gWwogICAgImNyeXB0byIsCiAgICAidHJhaXRzIiwKXQpjYXRlZ29yaWVzID0gWwogICAgImNyeXB0b2dyYXBoeSIsCiAgICAibm8tc3RkIiwKXQpsaWNlbnNlID0gIk1JVCBPUiBBcGFjaGUtMi4wIgpyZXBvc2l0b3J5ID0gImh0dHBzOi8vZ2l0aHViLmNvbS9SdXN0Q3J5cHRvL3RyYWl0cyIKCltmZWF0dXJlc10KemVyb2l6ZSA9IFsiaHlicmlkLWFycmF5L3plcm9pemUiXQoKW2xpYl0KbmFtZSA9ICJjcnlwdG9fY29tbW9uIgpwYXRoID0gInNyYy9saWIucnMiCgpbZGVwZW5kZW5jaWVzLmh5YnJpZC1hcnJheV0KdmVyc2lvbiA9ICIwLjQuNyIKcGF0aCA9ICIuLi9oeWJyaWQtYXJyYXkiCgpbbGludHMuY2xpcHB5XQpib3Jyb3dfYXNfcHRyID0gIndhcm4iCmNhc3RfbG9zc2xlc3MgPSAid2FybiIKY2FzdF9wb3NzaWJsZV90cnVuY2F0aW9uID0gIndhcm4iCmNhc3RfcG9zc2libGVfd3JhcCA9ICJ3YXJuIgpjYXN0X3ByZWNpc2lvbl9sb3NzID0gIndhcm4iCmNhc3Rfc2lnbl9sb3NzID0gIndhcm4iCmNoZWNrZWRfY29udmVyc2lvbnMgPSAid2FybiIKZnJvbV9pdGVyX2luc3RlYWRfb2ZfY29sbGVjdCA9ICJ3YXJuIgppbXBsaWNpdF9zYXR1cmF0aW5nX3N1YiA9ICJ3YXJuIgptYW51YWxfYXNzZXJ0ID0gIndhcm4iCm1hcF91bndyYXBfb3IgPSAid2FybiIKbWlzc2luZ19lcnJvcnNfZG9jID0gIndhcm4iCm1pc3NpbmdfcGFuaWNzX2RvYyA9ICJ3YXJuIgptb2RfbW9kdWxlX2ZpbGVzID0gIndhcm4iCm11c3RfdXNlX2NhbmRpZGF0ZSA9ICJ3YXJuIgpuZWVkbGVzc19yYW5nZV9sb29wID0gImFsbG93IgpwdHJfYXNfcHRyID0gIndhcm4iCnJlZHVuZGFudF9jbG9zdXJlX2Zvcl9tZXRob2RfY2FsbHMgPSAid2FybiIKcmVmX2FzX3B0ciA9ICJ3YXJuIgpyZXR1cm5fc2VsZl9ub3RfbXVzdF91c2UgPSAid2FybiIKc2VtaWNvbG9uX2lmX25vdGhpbmdfcmV0dXJuZWQgPSAid2FybiIKc3RkX2luc3RlYWRfb2ZfYWxsb2MgPSAid2FybiIKc3RkX2luc3RlYWRfb2ZfY29yZSA9ICJ3YXJuIgp0cml2aWFsbHlfY29weV9wYXNzX2J5X3JlZiA9ICJ3YXJuIgp1bmRvY3VtZW50ZWRfdW5zYWZlX2Jsb2NrcyA9ICJ3YXJuIgp1bm5lY2Vzc2FyeV9zYWZldHlfY29tbWVudCA9ICJ3YXJuIgp1bndyYXBfaW5fcmVzdWx0ID0gIndhcm4iCnVud3JhcF91c2VkID0gIndhcm4iCgpbbGludHMucnVzdF0KbWlzc2luZ19jb3B5X2ltcGxlbWVudGF0aW9ucyA9ICJ3YXJuIgptaXNzaW5nX2RlYnVnX2ltcGxlbWVudGF0aW9ucyA9ICJ3YXJuIgptaXNzaW5nX2RvY3MgPSAid2FybiIKdHJpdmlhbF9jYXN0cyA9ICJ3YXJuIgp0cml2aWFsX251bWVyaWNfY2FzdHMgPSAid2FybiIKdW51c2VkX2xpZmV0aW1lcyA9ICJ3YXJuIgp1bnVzZWRfcXVhbGlmaWNhdGlvbnMgPSAid2FybiIK"
+          },
+          "src/hazmat.rs": {
+            "destination": "src/common_types/hazmat.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/common_types/mod.rs"
+          }
+        },
+        "src/foundation/digest-0.11.3": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "src/block_api.rs": {
+            "destination": "src/hash/block_api.rs"
+          },
+          "src/block_api/ct_variable.rs": {
+            "destination": "src/hash/block_api/ct_variable.rs"
+          },
+          "src/buffer_macros.rs": {
+            "destination": "src/hash/buffer_macros.rs"
+          },
+          "src/buffer_macros/fixed.rs": {
+            "destination": "src/hash/buffer_macros/fixed.rs"
+          },
+          "src/buffer_macros/variable.rs": {
+            "destination": "src/hash/buffer_macros/variable.rs"
+          },
+          "src/buffer_macros/xof.rs": {
+            "destination": "src/hash/buffer_macros/xof.rs"
+          },
+          "src/dev.rs": {
+            "destination": "src/hash/dev.rs"
+          },
+          "src/dev/fixed.rs": {
+            "destination": "src/hash/dev/fixed.rs"
+          },
+          "src/dev/mac.rs": {
+            "destination": "src/hash/dev/mac.rs"
+          },
+          "src/dev/rng.rs": {
+            "destination": "src/hash/dev/rng.rs"
+          },
+          "src/dev/variable.rs": {
+            "destination": "src/hash/dev/variable.rs"
+          },
+          "src/dev/xof.rs": {
+            "destination": "src/hash/dev/xof.rs"
+          },
+          "src/digest.rs": {
+            "destination": "src/hash/fixed_output.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/hash/mod.rs"
+          },
+          "src/mac.rs": {
+            "destination": "src/hash/mac.rs"
+          },
+          "src/xof_fixed.rs": {
+            "destination": "src/hash/xof_fixed.rs"
+          }
+        }
+      },
+      "inputs": [
+        {
+          "external_tests": {
+            "bytes": 3608,
+            "directory": "src/foundation/digest-0.11.3",
+            "file_count": 2,
+            "files": [
+              {
+                "path": "test/foundation/digest-0.11.3/tests/data/fixed_hash_serialization.bin",
+                "sha256": "a983af743e3ee4dfb986e4a2283fb790a306afe2c06238491a147e3f24299202",
+                "source": "src/foundation/digest-0.11.3/tests/data/fixed_hash_serialization.bin",
+                "source_sha256_before": "a983af743e3ee4dfb986e4a2283fb790a306afe2c06238491a147e3f24299202"
+              },
+              {
+                "path": "test/foundation/digest-0.11.3/tests/dummy_fixed.rs",
+                "sha256": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab",
+                "source": "src/foundation/digest-0.11.3/tests/dummy_fixed.rs",
+                "source_sha256_before": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab"
+              }
+            ],
+            "origin_directory": "vendor/rust/digest-0.11.3",
+            "roots": [
+              "test/foundation/digest-0.11.3"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
+            "description": "Traits for cryptographic hash functions and message authentication codes",
+            "directory": "src/foundation/digest-0.11.3",
+            "files_sha256": {
+              "Cargo.toml": "adab346e4fedf7d74f58dab4cd5eacecc8b0449674bbeda512e748d62a1eae8c",
+              "src/block_api.rs": "f849d3022385cb675df371b9531906bdbe94d4864a75a282760ffe7048654da4",
+              "src/block_api/ct_variable.rs": "74b99085e49d87417e38b6bc56f344e789092e501936767c47efd42edd071a09",
+              "src/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
+              "src/buffer_macros/fixed.rs": "53bc025e5a428d5340fd68e7b581840891fc62fea15cc08e8f6c16466b903160",
+              "src/buffer_macros/variable.rs": "1477d2d847c7b3a67b616de577f8b03b0c7edace458674a61c167ec0e0c01b46",
+              "src/buffer_macros/xof.rs": "a7fe0153d8cae035963ace522172dcfb90e3b7b00ae7f375e6ff14338430eadd",
+              "src/dev.rs": "cd91f2157bbe3294b6a89877150e9b1221a5920d233b67e94f2d185413dfe799",
+              "src/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
+              "src/dev/mac.rs": "d25e9ae655824d2e8356c367c29e99fb1f76213f92f494053268366d7e65d0fb",
+              "src/dev/rng.rs": "7911d5dc4bee94b96d26a0c491ef9ce17ce11b0f0da7476c2f2afc8a5480ae16",
+              "src/dev/variable.rs": "acb5c1d49b20166a7864a57b7264e59eb5240ae774af6bb6863a5fc94a7fa048",
+              "src/dev/xof.rs": "70b76dec7f2be10fa33c274ad25f9d8f7963222743e853174b06479632b9623d",
+              "src/digest.rs": "7f4cc4c695353230e987a8b66bafe9b1a7eda2bb95dcefe0db16a825bc243abc",
+              "src/lib.rs": "92823011f8426f6f67e9c7651f36a2941b2d51f711633a09b0dc4235c42ee709",
+              "src/mac.rs": "298379aef3cb001be81176fd522dfa15e2522cd752fd402b82ddcc6b67af6c94",
+              "src/xof_fixed.rs": "8e341ab1148563a508829e736a34136bbf6f2be3476629e3427c8c92d23c0cb4"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/digest-0.11.3/LICENSE-APACHE",
+              "compliance/licenses/upstream/digest-0.11.3/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "digest",
+            "origin_directory": "vendor/rust/digest-0.11.3",
+            "repository": "https://github.com/RustCrypto/traits",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2",
+              "archive_url": "https://static.crates.io/crates/digest/digest-0.11.3.crate",
+              "name": "digest",
+              "version": "0.11.3"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "2fb9ed8922e244117040bb037a7d141a6a2b8228"
+              },
+              "path_in_vcs": "digest"
+            },
+            "version": "0.11.3"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 12886,
+            "directory": "src/foundation/block-buffer-0.12.1",
+            "file_count": 1,
+            "files": [
+              {
+                "path": "test/foundation/block-buffer-0.12.1/tests/mod.rs",
+                "sha256": "543dab1816c288334cca9b9d61dbe89ee1b4862c15fee5fb028ad5c6bb4fa60f",
+                "source": "src/foundation/block-buffer-0.12.1/tests/mod.rs",
+                "source_sha256_before": "543dab1816c288334cca9b9d61dbe89ee1b4862c15fee5fb028ad5c6bb4fa60f"
+              }
+            ],
+            "origin_directory": "vendor/rust/block-buffer-0.12.1",
+            "roots": [
+              "test/foundation/block-buffer-0.12.1"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Buffer types for block processing of data",
+            "directory": "src/foundation/block-buffer-0.12.1",
+            "files_sha256": {
+              "Cargo.toml": "e8ff75c22e63111e08f25a6095ccc67291ace591ec5cfd5b3ebfeeb4f9bee495",
+              "src/lib.rs": "1e1f665e68a16b6a18ea547aec36d9855163bd79a27c2b293a7a7708dde68a28",
+              "src/read.rs": "790b7bc1d6e87c0ee797b41e18aa3c394aa561c3074047c72590b33c9cee0f8d",
+              "src/sealed.rs": "7ad84c528060c27e148e568dc4934ab7704259bdf0c41f1ab59043255d53da3f"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/block-buffer-0.12.1/LICENSE-APACHE",
+              "compliance/licenses/upstream/block-buffer-0.12.1/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "block-buffer",
+            "origin_directory": "vendor/rust/block-buffer-0.12.1",
+            "repository": "https://github.com/RustCrypto/utils",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa",
+              "archive_url": "https://static.crates.io/crates/block-buffer/block-buffer-0.12.1.crate",
+              "name": "block-buffer",
+              "version": "0.12.1"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "cbd0963c685df025c42bed31f78c50d1bada3805"
+              },
+              "path_in_vcs": "block-buffer"
+            },
+            "version": "0.12.1"
+          }
+        },
+        {
+          "external_tests": null,
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+            "description": "Common traits used by cryptographic algorithms",
+            "directory": "src/foundation/crypto-common-0.2.2",
+            "files_sha256": {
+              "Cargo.toml": "7c9b00105f7427d50f40ed3a807eef92dcf0316a2b72c7d23e21c26c9455fb2b",
+              "src/hazmat.rs": "dd01bc0c197ec1d9607d0b2317dda76736fb3af06af403c640d7881a3d5b90f7",
+              "src/lib.rs": "6dbb48817452cb4c43e844e4db92a15f372b44ff7b38723ee124b93d3225e7f6"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-APACHE",
+              "compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "crypto-common",
+            "origin_directory": "vendor/rust/crypto-common-0.2.2",
+            "repository": "https://github.com/RustCrypto/traits",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453",
+              "archive_url": "https://static.crates.io/crates/crypto-common/crypto-common-0.2.2.crate",
+              "name": "crypto-common",
+              "version": "0.2.2"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "93dee26c6bde3741a197f1c5f6b7baac277705f3"
+              },
+              "path_in_vcs": "crypto-common"
+            },
+            "version": "0.2.2"
+          }
+        }
+      ],
+      "new_files": {
+        "src/lib.rs": "116ab247568763b7de0b6388f98f6b885de8811e19cd04e48df558276151a498"
+      },
+      "primary_directory": "src/foundation/digest-0.11.3",
+      "reason": "Consolidate hash traits, block buffering and common cryptographic types into one maintained cryptographic core; preserve each original source and test origin."
+    }
+  },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "be5798ce27e7fe33e53c71bbc650f9b9f740fc16c31c002a4322e2a38997363c",
+    "compliance/external-tests/foundation.json": "dc6ca83032ae568fb093fb4fb6e1ef47a5ea3d340db6ccd8f6d93663687e1b63",
     "compliance/external-tests/integrated.json": "61167faf558a55d73b6f9312ff3635e5dfb01309856c499e3c4f365c1080c208",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -2606,7 +2972,7 @@
       ]
     },
     "src/foundation/blake2": {
-      "bytes": 94905,
+      "bytes": 94989,
       "directory": "src/foundation/blake2",
       "file_count": 8,
       "files": [
@@ -2642,19 +3008,19 @@
         },
         {
           "path": "test/foundation/blake2/tests/mac.rs",
-          "sha256": "1e5c414e1cd44cc023ea3b7dc8a154fe8a6b36dce496a3b7a5b933e412ed51c0",
+          "sha256": "f36ae3847a9718b8147d2bfd88c7ed608129222f00490137f47aecbaa31abb10",
           "source": "src/foundation/blake2/tests/mac.rs",
           "source_sha256_before": "1e5c414e1cd44cc023ea3b7dc8a154fe8a6b36dce496a3b7a5b933e412ed51c0"
         },
         {
           "path": "test/foundation/blake2/tests/mod.rs",
-          "sha256": "d2da3d57ecaddbfcf292fd0475ebfd988efd52f992bd08113ef4b990f961087d",
+          "sha256": "d5fe67741650008cebc08e384f220db59520eda6968131bc6a7fcf95eba076ab",
           "source": "src/foundation/blake2/tests/mod.rs",
           "source_sha256_before": "d2da3d57ecaddbfcf292fd0475ebfd988efd52f992bd08113ef4b990f961087d"
         },
         {
           "path": "test/foundation/blake2/tests/persona.rs",
-          "sha256": "5e7131d30c3b4a777cc8bd8c74c00cf418d80241da10a7b74e12282c8e3fd775",
+          "sha256": "ac46325cf56d5cd08e7733a1c189320bddc80afe52249d0a00e4e33686b58bb6",
           "source": "src/foundation/blake2/tests/persona.rs",
           "source_sha256_before": "5e7131d30c3b4a777cc8bd8c74c00cf418d80241da10a7b74e12282c8e3fd775"
         }
@@ -2665,7 +3031,7 @@
       ]
     },
     "src/foundation/blake3": {
-      "bytes": 60787,
+      "bytes": 61147,
       "directory": "src/foundation/blake3",
       "file_count": 18,
       "files": [
@@ -2767,7 +3133,7 @@
         },
         {
           "path": "test/foundation/blake3/unit/src/traits/test_88.rs",
-          "sha256": "cd7b40fa90be04e3a6646c144f6448dbbffd3259a520aacde19b792b9decf90e",
+          "sha256": "91ecd187161c3d8e8b3c280dfba69b6847d9c1fa47542a4536dc019a70f7816e",
           "source": "src/foundation/blake3/src/traits.rs",
           "source_sha256_before": "73d3b543f69bfd111a3559a682c64ce531e26716524b9618fba9af14c2d4491d"
         },
@@ -2781,23 +3147,6 @@
       "origin_directory": "vendor/rust/blake3-1.8.7",
       "roots": [
         "test/foundation/blake3"
-      ]
-    },
-    "src/foundation/block-buffer-0.12.1": {
-      "bytes": 12886,
-      "directory": "src/foundation/block-buffer-0.12.1",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/block-buffer-0.12.1/tests/mod.rs",
-          "sha256": "543dab1816c288334cca9b9d61dbe89ee1b4862c15fee5fb028ad5c6bb4fa60f",
-          "source": "src/foundation/block-buffer-0.12.1/tests/mod.rs",
-          "source_sha256_before": "543dab1816c288334cca9b9d61dbe89ee1b4862c15fee5fb028ad5c6bb4fa60f"
-        }
-      ],
-      "origin_directory": "vendor/rust/block-buffer-0.12.1",
-      "roots": [
-        "test/foundation/block-buffer-0.12.1"
       ]
     },
     "src/foundation/bumpalo": {
@@ -3780,6 +4129,38 @@
         "test/foundation/crossbeam-utils"
       ]
     },
+    "src/foundation/cryptographic-core": {
+      "bytes": 16600,
+      "directory": "src/foundation/cryptographic-core",
+      "file_count": 3,
+      "files": [
+        {
+          "origin_directory": "vendor/rust/block-buffer-0.12.1",
+          "path": "test/foundation/cryptographic-core/buffer/tests/mod.rs",
+          "sha256": "9632cebac7270960dd0f0e5559213627271fb3df2264c5617c059cd3f6316ce3",
+          "source": "src/foundation/block-buffer-0.12.1/tests/mod.rs",
+          "source_sha256_before": "543dab1816c288334cca9b9d61dbe89ee1b4862c15fee5fb028ad5c6bb4fa60f"
+        },
+        {
+          "origin_directory": "vendor/rust/digest-0.11.3",
+          "path": "test/foundation/cryptographic-core/hash/tests/data/fixed_hash_serialization.bin",
+          "sha256": "a983af743e3ee4dfb986e4a2283fb790a306afe2c06238491a147e3f24299202",
+          "source": "src/foundation/digest-0.11.3/tests/data/fixed_hash_serialization.bin",
+          "source_sha256_before": "a983af743e3ee4dfb986e4a2283fb790a306afe2c06238491a147e3f24299202"
+        },
+        {
+          "origin_directory": "vendor/rust/digest-0.11.3",
+          "path": "test/foundation/cryptographic-core/hash/tests/dummy_fixed.rs",
+          "sha256": "b4961486a19454c32efed9a5e9fed3b4a7ad3c6c8acc8d0b4cda372fdadc3f66",
+          "source": "src/foundation/digest-0.11.3/tests/dummy_fixed.rs",
+          "source_sha256_before": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab"
+        }
+      ],
+      "origin_directory": "vendor/rust/digest-0.11.3",
+      "roots": [
+        "test/foundation/cryptographic-core"
+      ]
+    },
     "src/foundation/ctutils": {
       "bytes": 30491,
       "directory": "src/foundation/ctutils",
@@ -3972,29 +4353,6 @@
       "origin_directory": "vendor/rust/derive-where-1.7.0",
       "roots": [
         "test/foundation/derive-where"
-      ]
-    },
-    "src/foundation/digest-0.11.3": {
-      "bytes": 3608,
-      "directory": "src/foundation/digest-0.11.3",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/digest-0.11.3/tests/data/fixed_hash_serialization.bin",
-          "sha256": "a983af743e3ee4dfb986e4a2283fb790a306afe2c06238491a147e3f24299202",
-          "source": "src/foundation/digest-0.11.3/tests/data/fixed_hash_serialization.bin",
-          "source_sha256_before": "a983af743e3ee4dfb986e4a2283fb790a306afe2c06238491a147e3f24299202"
-        },
-        {
-          "path": "test/foundation/digest-0.11.3/tests/dummy_fixed.rs",
-          "sha256": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab",
-          "source": "src/foundation/digest-0.11.3/tests/dummy_fixed.rs",
-          "source_sha256_before": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab"
-        }
-      ],
-      "origin_directory": "vendor/rust/digest-0.11.3",
-      "roots": [
-        "test/foundation/digest-0.11.3"
       ]
     },
     "src/foundation/displaydoc": {
@@ -7531,7 +7889,7 @@
       ]
     },
     "src/foundation/hmac": {
-      "bytes": 35757,
+      "bytes": 35805,
       "directory": "src/foundation/hmac",
       "file_count": 12,
       "files": [
@@ -7603,7 +7961,7 @@
         },
         {
           "path": "test/foundation/hmac/tests/mod.rs",
-          "sha256": "ac82dc9484ac09dada4bb8d1ec7c61a500630fa86cde4493e42b2946a568c5eb",
+          "sha256": "d7c2d00ed1f9e33bef41f94c7e796a7d82c9fa84327e3da3b9264776c08f81f5",
           "source": "src/foundation/hmac/tests/mod.rs",
           "source_sha256_before": "ac82dc9484ac09dada4bb8d1ec7c61a500630fa86cde4493e42b2946a568c5eb"
         }
@@ -18073,7 +18431,7 @@
       ]
     },
     "src/foundation/sha2": {
-      "bytes": 3708,
+      "bytes": 3720,
       "directory": "src/foundation/sha2",
       "file_count": 13,
       "files": [
@@ -18151,7 +18509,7 @@
         },
         {
           "path": "test/foundation/sha2/tests/mod.rs",
-          "sha256": "d417a8068dde4a83a1ab8ede2ebacfb38329f67118dd3327b33e73960c4ace79",
+          "sha256": "313f4bcabbade5e7a6cf1abf59c0b84111a538d14de41dc692da72aa49be3301",
           "source": "src/foundation/sha2-0.11.1/tests/mod.rs",
           "source_sha256_before": "d417a8068dde4a83a1ab8ede2ebacfb38329f67118dd3327b33e73960c4ace79"
         }
@@ -26150,7 +26508,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "0c4e97db794e6a0180762a7e0e8a129e87a98a53173c727afd4ee039ce87a2a9"
+    "Cargo.lock": "be4cbf7d8eef9715cb0c49bfb20e583b46683ba21013824f5919650383bc14f2"
   },
   "manifests_sha256": {
     "Cargo.toml": "ecb137eb55a3bc74ddfae2887983252367c3aaf27a764375012a48d0d4df7080",
@@ -26185,9 +26543,8 @@
     "src/foundation/bindgen/Cargo.toml": "3120e5141f5d00bae9f3381994219adf4159c24619177a17305d91e776ddd39f",
     "src/foundation/bit-set/Cargo.toml": "1e3169fd3e633b901a185cc0c4c813290bb23dbf07d47e69621aefd49b5c179e",
     "src/foundation/bit-vec/Cargo.toml": "2689339b3f38bb7be614995e19e1c50d36e5fbd8753fd3af44911a183fecaab7",
-    "src/foundation/blake2/Cargo.toml": "9f04af8bc03fd783e7c00352410430d863f5af09a2bbe2cd3fcb9e3bd091bab4",
-    "src/foundation/blake3/Cargo.toml": "31078fd5cd2a12665a1677977040fc6823e70ae1394166f71bff3a29aa07efd5",
-    "src/foundation/block-buffer-0.12.1/Cargo.toml": "e8ff75c22e63111e08f25a6095ccc67291ace591ec5cfd5b3ebfeeb4f9bee495",
+    "src/foundation/blake2/Cargo.toml": "e0aa604e41e20e2c68c43e02ccddd00d4c33c135607e9acd9a9720959dd0729b",
+    "src/foundation/blake3/Cargo.toml": "1a39bf83125a00c59adbca860ea254e16e907c382abbf08ffc18491177546534",
     "src/foundation/borrow-or-share/Cargo.toml": "6c9b279ce3ebb535df4aa142680660dd0de5c9d5e9769f946fe2572bcda73dc5",
     "src/foundation/bumpalo/Cargo.toml": "ba91475c6116fbee52fe8d5e94de01736a7f4a321c2a5c3a803454cf9c4a9eb7",
     "src/foundation/bytecount/Cargo.toml": "2f5c85dc6f296dcdba075bafc6a2cadb30292083fe0163e458e9ffe7bc07f8f4",
@@ -26214,13 +26571,12 @@
     "src/foundation/crossbeam-epoch/Cargo.toml": "813da5624e219795bcfae27e14186bcf7e203487551f5051ea7afcf6fe34fc5b",
     "src/foundation/crossbeam-queue/Cargo.toml": "1a92f0f6716ff303d85e8441160045056106e300b115a0640938e77b29ecd513",
     "src/foundation/crossbeam-utils/Cargo.toml": "d76ac4fff2054d48b0cdabba7b11175aab4e0530301b93ac6f327c3a28e80267",
-    "src/foundation/crypto-common-0.2.2/Cargo.toml": "7c9b00105f7427d50f40ed3a807eef92dcf0316a2b72c7d23e21c26c9455fb2b",
+    "src/foundation/cryptographic-core/Cargo.toml": "ccd38ae8b392c38aee7af0cfd90b62f1a6f2bfcc56802febfa6efd6c85755711",
     "src/foundation/ctutils/Cargo.toml": "cdc1ef4af0617251af94a040855aace3959d098652db9ab223af4fedd0f2927f",
     "src/foundation/data-encoding/Cargo.toml": "6ff883672e9f8e6fbd5c4082c8ca953ba1985777a02013a2733ebc3d542e7456",
     "src/foundation/data-serialization/Cargo.toml": "b5102e00173b22ae8b388dfd79da4277c016b03b894555677c395c39a80a87d8",
     "src/foundation/deranged/Cargo.toml": "cde471cede70613b53e06a648d033bfb95fb6cadfc86cc105a812a1b36f43aee",
     "src/foundation/derive-where/Cargo.toml": "97788d9913c416fdaabb1be5f0ffa2349fa76b1d87971ae2320f6f4cd9abd8bd",
-    "src/foundation/digest-0.11.3/Cargo.toml": "adab346e4fedf7d74f58dab4cd5eacecc8b0449674bbeda512e748d62a1eae8c",
     "src/foundation/displaydoc/Cargo.toml": "0e403ffd4128dcb4fb73a680c709f6e554b3276b24f18c00af85acbadd9771e6",
     "src/foundation/dom-helpers/Cargo.toml": "0faa4e2e9280b28bf0fcad93cd120e86a64787b170c5a77997f68fbdf926b3d9",
     "src/foundation/either/Cargo.toml": "2ba22fccbda9c75dbb61faa588046507eb28c7d71daa0302b7c3a142b59ce9bc",
@@ -26266,7 +26622,7 @@
     "src/foundation/hash-table/Cargo.toml": "088aeb7f57eecf1005b350f3fccee68853e54745a249bd9fd1ddc8492e5d6780",
     "src/foundation/hashlink/Cargo.toml": "af3f792f7da7aed6f548f3b88fee49b09117803fed41839e15c28782ed80ece8",
     "src/foundation/heck/Cargo.toml": "0f65dd57bb1c314e8779ec19a23d59174e05212c02c58ecab348fc4ed00e57ae",
-    "src/foundation/hmac/Cargo.toml": "31f95d4dc27609d4de9daa327209189e73d731ef42d647fcc4724fef468f0c1a",
+    "src/foundation/hmac/Cargo.toml": "89c0ceb1bc5264439eb84a729e136f41aa2fe1fec2b48e50922b8d40cf326a48",
     "src/foundation/html-escape/Cargo.toml": "b70fe2ac0acc7a16274f227e9b3d641d442e81680167d832f9af8d1c62719714",
     "src/foundation/http-body-util/Cargo.toml": "5cf1b96a7ea5cb6dc61fb818cde7bbcfa161fd7125d1740b99a2a3fb28a3cec8",
     "src/foundation/http-body/Cargo.toml": "2f9a8fdbc0ad5b276719ba117a688a43e88612a6494d1063cc853deea0bd8a98",
@@ -26381,7 +26737,7 @@
     "src/foundation/serialization-core/Cargo.toml": "89a3d43b36a40c0ccb650f38d03557722c5a274a804797764c3023f40a913147",
     "src/foundation/serialization-derive/Cargo.toml": "2ef7de94625b6c50424965abd765f9b8f807d7308cc82802865e2ab76a7cb12d",
     "src/foundation/serialization-error-path/Cargo.toml": "dbd375468e5d8f1a8d4434be2c5b8d3205378a960667e7419bb18f71701d347c",
-    "src/foundation/sha2/Cargo.toml": "da22d106e8ce45b0ddea7220de3d32bbd0e40074f1fbc97e4f09f292c17635a1",
+    "src/foundation/sha2/Cargo.toml": "2306cf2e5f4a79ea9a0738e879090c445b0802fc14a26245528f0da7c3f345ec",
     "src/foundation/sharded-slab/Cargo.toml": "c27d8edf445c0076cdd0e20f3e55603fdec80e68fa661a3e6cec52513400581f",
     "src/foundation/shared-value/Cargo.toml": "9602fd28aac5c8ea12e88a5c8297e5c4934e6b02414eddbb1a3c81784e580028",
     "src/foundation/shell-tokenizer/Cargo.toml": "7cd6e6cfd3faee87c284a88d43a2304572c10c59d96e76bad1f92a9ddd787191",
@@ -26662,12 +27018,12 @@
       "description": "Traits for cryptographic hash functions and message authentication codes",
       "directory": "src/foundation/blake2",
       "files_sha256": {
-        "Cargo.toml": "9f04af8bc03fd783e7c00352410430d863f5af09a2bbe2cd3fcb9e3bd091bab4",
-        "benches/mod.rs": "f61c6cacfe1a3f70940806d0213572f7887dc1ecc9c1946a868baad3e8a6c341",
+        "Cargo.toml": "e0aa604e41e20e2c68c43e02ccddd00d4c33c135607e9acd9a9720959dd0729b",
+        "benches/mod.rs": "7471bea770ee4430369760192a51141d82f224a1052f71587e0d4ef2751b6680",
         "src/as_bytes.rs": "4e00472aa326ad60bbaf9fafc8456c886f081ba1a8ae8614b1b6d7dbb93533fc",
-        "src/buffered.rs": "f25200da9f2b07611d527d30eca519bfdd2ff4df242b3b699633fdd9f568e7f6",
+        "src/buffered.rs": "329cfa2f230c97eb9f6dbb7c48d4e6f599fe59568a9af528f9451c1804759984",
         "src/consts.rs": "03edc1d4697a6074c9389202324444f27625ef11f17d34cc86b83d0dda920e79",
-        "src/lib.rs": "3413d6a948988a9f638da25aa73fdc7c8237f63fdbbe3a946bf314183192bc3e",
+        "src/lib.rs": "751d91d97fbe74e226bd769fcaf771a0955259dca0966fe3103fe8e0ebf55a46",
         "src/macros.rs": "fb094835a032540296ca9752334734caa33c23372282d90036cba4ddadc8c2bf",
         "src/simd.rs": "79d6d11d14664c908c2f6a2120c23e8de0e0422b610a8b838aa95ba469ef43fc",
         "src/simd/simd_opt.rs": "b254d82005e288f1d07531ef71b2468be0bc70ae9bdba1b46001acac4db283fe",
@@ -26676,7 +27032,7 @@
         "src/simd/simdint.rs": "3b506bb05761752142f61ca8de138958af9a050ddcfe5bbf454dd9a003bf71c3",
         "src/simd/simdop.rs": "6154f31c9675f33ba476eb6d5378deda657afc79ad43be1c9257f4f4306e43ce",
         "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13",
-        "src/variable.rs": "cf75c86361cebbd0c3abdde5be3e2db12209d1c5b8a3a5517059415b230958c1"
+        "src/variable.rs": "2dbbf27348cfe22c588d1bf46ca6d468d76808967449b0c49e89a0d3f05e948d"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -26722,6 +27078,112 @@
         "path_in_vcs": "digest"
       },
       "version": "0.10.7"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Buffer types for block processing of data",
+      "directory": "src/foundation/cryptographic-core",
+      "files_sha256": {
+        "Cargo.toml": "ccd38ae8b392c38aee7af0cfd90b62f1a6f2bfcc56802febfa6efd6c85755711",
+        "src/buffer/mod.rs": "145b50bc75a4602d950d3beb20577fb1624ab9baba0d50a4e32390d677cf65b9",
+        "src/buffer/read.rs": "790b7bc1d6e87c0ee797b41e18aa3c394aa561c3074047c72590b33c9cee0f8d",
+        "src/buffer/sealed.rs": "7ad84c528060c27e148e568dc4934ab7704259bdf0c41f1ab59043255d53da3f",
+        "src/common_types/hazmat.rs": "c65eef0eb7b1e319da25e540c6b9e30b7d6d810dd96de41233b203000247672c",
+        "src/common_types/mod.rs": "7eee006e30859f8f67215685bdbe57249c9575d1be490fe5f86c3f516c1b3379",
+        "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
+        "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
+        "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
+        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
+        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
+        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
+        "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
+        "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
+        "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
+        "src/hash/dev/rng.rs": "7911d5dc4bee94b96d26a0c491ef9ce17ce11b0f0da7476c2f2afc8a5480ae16",
+        "src/hash/dev/variable.rs": "acb5c1d49b20166a7864a57b7264e59eb5240ae774af6bb6863a5fc94a7fa048",
+        "src/hash/dev/xof.rs": "70b76dec7f2be10fa33c274ad25f9d8f7963222743e853174b06479632b9623d",
+        "src/hash/fixed_output.rs": "126b97646f204b48f0e53fff04be96f3f636683e1df959086a9ea33094f03f54",
+        "src/hash/mac.rs": "7126fef7457e291af9fcf9b21900773308c6fa10932345e1ec768b4b66cacf5d",
+        "src/hash/mod.rs": "ae0baf0a4d9e5d8e31fc76f707f0e9ad5af610cb88ba63d227a9879e69cdc9b4",
+        "src/hash/xof_fixed.rs": "a423981ae1afc05d485fe822f44edd4f9ed43fdeffe1f63e1788dabb5f817837",
+        "src/lib.rs": "116ab247568763b7de0b6388f98f6b885de8811e19cd04e48df558276151a498"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/block-buffer-0.12.1/LICENSE-APACHE",
+        "compliance/licenses/upstream/block-buffer-0.12.1/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/cryptographic-core",
+      "name": "block-buffer",
+      "origin_directory": "vendor/rust/block-buffer-0.12.1",
+      "repository": "https://github.com/RustCrypto/utils",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa",
+        "archive_url": "https://static.crates.io/crates/block-buffer/block-buffer-0.12.1.crate",
+        "name": "block-buffer",
+        "version": "0.12.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "cbd0963c685df025c42bed31f78c50d1bada3805"
+        },
+        "path_in_vcs": "block-buffer"
+      },
+      "version": "0.12.1"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Common traits used by cryptographic algorithms",
+      "directory": "src/foundation/cryptographic-core",
+      "files_sha256": {
+        "Cargo.toml": "ccd38ae8b392c38aee7af0cfd90b62f1a6f2bfcc56802febfa6efd6c85755711",
+        "src/buffer/mod.rs": "145b50bc75a4602d950d3beb20577fb1624ab9baba0d50a4e32390d677cf65b9",
+        "src/buffer/read.rs": "790b7bc1d6e87c0ee797b41e18aa3c394aa561c3074047c72590b33c9cee0f8d",
+        "src/buffer/sealed.rs": "7ad84c528060c27e148e568dc4934ab7704259bdf0c41f1ab59043255d53da3f",
+        "src/common_types/hazmat.rs": "c65eef0eb7b1e319da25e540c6b9e30b7d6d810dd96de41233b203000247672c",
+        "src/common_types/mod.rs": "7eee006e30859f8f67215685bdbe57249c9575d1be490fe5f86c3f516c1b3379",
+        "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
+        "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
+        "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
+        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
+        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
+        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
+        "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
+        "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
+        "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
+        "src/hash/dev/rng.rs": "7911d5dc4bee94b96d26a0c491ef9ce17ce11b0f0da7476c2f2afc8a5480ae16",
+        "src/hash/dev/variable.rs": "acb5c1d49b20166a7864a57b7264e59eb5240ae774af6bb6863a5fc94a7fa048",
+        "src/hash/dev/xof.rs": "70b76dec7f2be10fa33c274ad25f9d8f7963222743e853174b06479632b9623d",
+        "src/hash/fixed_output.rs": "126b97646f204b48f0e53fff04be96f3f636683e1df959086a9ea33094f03f54",
+        "src/hash/mac.rs": "7126fef7457e291af9fcf9b21900773308c6fa10932345e1ec768b4b66cacf5d",
+        "src/hash/mod.rs": "ae0baf0a4d9e5d8e31fc76f707f0e9ad5af610cb88ba63d227a9879e69cdc9b4",
+        "src/hash/xof_fixed.rs": "a423981ae1afc05d485fe822f44edd4f9ed43fdeffe1f63e1788dabb5f817837",
+        "src/lib.rs": "116ab247568763b7de0b6388f98f6b885de8811e19cd04e48df558276151a498"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-APACHE",
+        "compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/cryptographic-core",
+      "name": "crypto-common",
+      "origin_directory": "vendor/rust/crypto-common-0.2.2",
+      "repository": "https://github.com/RustCrypto/traits",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453",
+        "archive_url": "https://static.crates.io/crates/crypto-common/crypto-common-0.2.2.crate",
+        "name": "crypto-common",
+        "version": "0.2.2"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "93dee26c6bde3741a197f1c5f6b7baac277705f3"
+        },
+        "path_in_vcs": "crypto-common"
+      },
+      "version": "0.2.2"
     }
   ],
   "origin_records_sha256": {
@@ -27519,10 +27981,10 @@
       "files_sha256": {
         "Cargo.toml": "cf5aadb2ab7b0a2a71f26dcaade31903949b4aacc15bd801b83d4d4df761e70d",
         "src/algorithm.rs": "147013d8476ef71da944636de336db3006471f7b70b04a3061d3cf1e631235ef",
-        "src/blake2b_long.rs": "c3ae8354c67474737ae70ac3f8f18e46e2bf7a03e42b68cf49d80b640bff7b34",
+        "src/blake2b_long.rs": "d8aa7c7f5d4c76b7cb9024d68beeebf3684def925ba8f03c09369b4bf048658b",
         "src/block.rs": "08b0c81b9d273f08047a27175520513eab08015a1b7ea887272a533237bae8f7",
         "src/error.rs": "be431ea75ef7161ad919737c3d129e2d2fdc26c16100d7edd2af5154f8603b73",
-        "src/lib.rs": "e5a3eb8fa4638490b5852770b7658b1e513aea60bef17e77465e4e745373b77a",
+        "src/lib.rs": "883f205365810c4efb2a9dae5795495f6e0f528445b03f9386ec10b2e06919ca",
         "src/params.rs": "6368ba6f8d80308426d4e9b402fa407ea760b9a1580244f9e46e08b9f0c15c88",
         "src/version.rs": "f6d0cadcfc094d4050b2075384795da1415d2d1490f90d9dd52c4c395245f6e9"
       },
@@ -28259,12 +28721,12 @@
       "description": "BLAKE2 hash functions",
       "directory": "src/foundation/blake2",
       "files_sha256": {
-        "Cargo.toml": "9f04af8bc03fd783e7c00352410430d863f5af09a2bbe2cd3fcb9e3bd091bab4",
-        "benches/mod.rs": "f61c6cacfe1a3f70940806d0213572f7887dc1ecc9c1946a868baad3e8a6c341",
+        "Cargo.toml": "e0aa604e41e20e2c68c43e02ccddd00d4c33c135607e9acd9a9720959dd0729b",
+        "benches/mod.rs": "7471bea770ee4430369760192a51141d82f224a1052f71587e0d4ef2751b6680",
         "src/as_bytes.rs": "4e00472aa326ad60bbaf9fafc8456c886f081ba1a8ae8614b1b6d7dbb93533fc",
-        "src/buffered.rs": "f25200da9f2b07611d527d30eca519bfdd2ff4df242b3b699633fdd9f568e7f6",
+        "src/buffered.rs": "329cfa2f230c97eb9f6dbb7c48d4e6f599fe59568a9af528f9451c1804759984",
         "src/consts.rs": "03edc1d4697a6074c9389202324444f27625ef11f17d34cc86b83d0dda920e79",
-        "src/lib.rs": "3413d6a948988a9f638da25aa73fdc7c8237f63fdbbe3a946bf314183192bc3e",
+        "src/lib.rs": "751d91d97fbe74e226bd769fcaf771a0955259dca0966fe3103fe8e0ebf55a46",
         "src/macros.rs": "fb094835a032540296ca9752334734caa33c23372282d90036cba4ddadc8c2bf",
         "src/simd.rs": "79d6d11d14664c908c2f6a2120c23e8de0e0422b610a8b838aa95ba469ef43fc",
         "src/simd/simd_opt.rs": "b254d82005e288f1d07531ef71b2468be0bc70ae9bdba1b46001acac4db283fe",
@@ -28273,7 +28735,7 @@
         "src/simd/simdint.rs": "3b506bb05761752142f61ca8de138958af9a050ddcfe5bbf454dd9a003bf71c3",
         "src/simd/simdop.rs": "6154f31c9675f33ba476eb6d5378deda657afc79ad43be1c9257f4f4306e43ce",
         "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13",
-        "src/variable.rs": "cf75c86361cebbd0c3abdde5be3e2db12209d1c5b8a3a5517059415b230958c1"
+        "src/variable.rs": "2dbbf27348cfe22c588d1bf46ca6d468d76808967449b0c49e89a0d3f05e948d"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -28304,7 +28766,7 @@
       "description": "the BLAKE3 hash function",
       "directory": "src/foundation/blake3",
       "files_sha256": {
-        "Cargo.toml": "31078fd5cd2a12665a1677977040fc6823e70ae1394166f71bff3a29aa07efd5",
+        "Cargo.toml": "1a39bf83125a00c59adbca860ea254e16e907c382abbf08ffc18491177546534",
         "benches/bench.rs": "3c8cf54aaeb9fbef305c7e9c4496ea74e3ceec9eec1f5eeaca84cd4e7cad224d",
         "build.rs": "9ec9b359db417071b525a459a191b810e3dd79b9708ae66be4085b2efd2ba7d9",
         "c/CMakeLists.txt": "823f0dbe8d9cd3360dd9a27e32b4c736b6b87c57a2e8514bef02af471a770fba",
@@ -28357,13 +28819,13 @@
         "src/hazmat.rs": "6c9344e13ed3c901ff3ea6cd4c9a21788898031c70a3dd1c11ec36a1e34f8e5c",
         "src/io.rs": "ff9f61156dd71fd9b228914f89c6281294ec96032612fbfd8f6d8184b8b06f31",
         "src/join.rs": "afab10b4778903a6ab601e2836920aad1b169fbcfe3fff55dd33eec89f4620a5",
-        "src/lib.rs": "6b9684d4026ef1167c6e7599c97b7d2eb2d3ed473bf15f34f94185dc39d1e780",
+        "src/lib.rs": "7713896eb2e9f59eded914a26502c683f4f42664dbc8825e2a33c00056e80481",
         "src/platform.rs": "8022d4456d09fa9a00217b7ac610bfc9305a3d5bbe89fb903fa1e96a3119b587",
         "src/portable.rs": "6df47df33497ce2f2167304471dfff8d7f0a617c8225c8e234d9f5043be498d4",
         "src/rust_avx2.rs": "a2c9ccb70953ee2563eb351242acc5d5e5640e264ad90e1b69a958990a47d275",
         "src/rust_sse2.rs": "5e61d5f40b0470ea0f4b47308993cab68e3d475eb118133ca97615ed7347cf68",
         "src/rust_sse41.rs": "2824057276f4a91cd1c9ea2e6bc27b84da85a97ef36467d6b48977795a14ca02",
-        "src/traits.rs": "653967597b7c04b807777092f5343ac9090be293700c0db06fe3326cec986d3b",
+        "src/traits.rs": "d643f16f3dd01097c9ca33290720ee7c57c791ac80eae028aa76b2de49682e22",
         "src/wasm32_simd.rs": "fd58be9024a2c9d3190e34ad102e6a991379d937d510b572aa70a385ce07ff44"
       },
       "license": "CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception",
@@ -28390,40 +28852,6 @@
         "path_in_vcs": ""
       },
       "version": "1.8.7"
-    },
-    "src/foundation/block-buffer-0.12.1": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Buffer types for block processing of data",
-      "directory": "src/foundation/block-buffer-0.12.1",
-      "files_sha256": {
-        "Cargo.toml": "e8ff75c22e63111e08f25a6095ccc67291ace591ec5cfd5b3ebfeeb4f9bee495",
-        "src/lib.rs": "1e1f665e68a16b6a18ea547aec36d9855163bd79a27c2b293a7a7708dde68a28",
-        "src/read.rs": "790b7bc1d6e87c0ee797b41e18aa3c394aa561c3074047c72590b33c9cee0f8d",
-        "src/sealed.rs": "7ad84c528060c27e148e568dc4934ab7704259bdf0c41f1ab59043255d53da3f"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/block-buffer-0.12.1/LICENSE-APACHE",
-        "compliance/licenses/upstream/block-buffer-0.12.1/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "block-buffer",
-      "origin_directory": "vendor/rust/block-buffer-0.12.1",
-      "repository": "https://github.com/RustCrypto/utils",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa",
-        "archive_url": "https://static.crates.io/crates/block-buffer/block-buffer-0.12.1.crate",
-        "name": "block-buffer",
-        "version": "0.12.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "cbd0963c685df025c42bed31f78c50d1bada3805"
-        },
-        "path_in_vcs": "block-buffer"
-      },
-      "version": "0.12.1"
     },
     "src/foundation/borrow-or-share": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -29562,38 +29990,58 @@
       },
       "version": "0.8.23"
     },
-    "src/foundation/crypto-common-0.2.2": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Common traits used by cryptographic algorithms",
-      "directory": "src/foundation/crypto-common-0.2.2",
+    "src/foundation/cryptographic-core": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
+      "description": "Traits for cryptographic hash functions and message authentication codes",
+      "directory": "src/foundation/cryptographic-core",
       "files_sha256": {
-        "Cargo.toml": "7c9b00105f7427d50f40ed3a807eef92dcf0316a2b72c7d23e21c26c9455fb2b",
-        "src/hazmat.rs": "dd01bc0c197ec1d9607d0b2317dda76736fb3af06af403c640d7881a3d5b90f7",
-        "src/lib.rs": "6dbb48817452cb4c43e844e4db92a15f372b44ff7b38723ee124b93d3225e7f6"
+        "Cargo.toml": "ccd38ae8b392c38aee7af0cfd90b62f1a6f2bfcc56802febfa6efd6c85755711",
+        "src/buffer/mod.rs": "145b50bc75a4602d950d3beb20577fb1624ab9baba0d50a4e32390d677cf65b9",
+        "src/buffer/read.rs": "790b7bc1d6e87c0ee797b41e18aa3c394aa561c3074047c72590b33c9cee0f8d",
+        "src/buffer/sealed.rs": "7ad84c528060c27e148e568dc4934ab7704259bdf0c41f1ab59043255d53da3f",
+        "src/common_types/hazmat.rs": "c65eef0eb7b1e319da25e540c6b9e30b7d6d810dd96de41233b203000247672c",
+        "src/common_types/mod.rs": "7eee006e30859f8f67215685bdbe57249c9575d1be490fe5f86c3f516c1b3379",
+        "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
+        "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
+        "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
+        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
+        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
+        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
+        "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
+        "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
+        "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
+        "src/hash/dev/rng.rs": "7911d5dc4bee94b96d26a0c491ef9ce17ce11b0f0da7476c2f2afc8a5480ae16",
+        "src/hash/dev/variable.rs": "acb5c1d49b20166a7864a57b7264e59eb5240ae774af6bb6863a5fc94a7fa048",
+        "src/hash/dev/xof.rs": "70b76dec7f2be10fa33c274ad25f9d8f7963222743e853174b06479632b9623d",
+        "src/hash/fixed_output.rs": "126b97646f204b48f0e53fff04be96f3f636683e1df959086a9ea33094f03f54",
+        "src/hash/mac.rs": "7126fef7457e291af9fcf9b21900773308c6fa10932345e1ec768b4b66cacf5d",
+        "src/hash/mod.rs": "ae0baf0a4d9e5d8e31fc76f707f0e9ad5af610cb88ba63d227a9879e69cdc9b4",
+        "src/hash/xof_fixed.rs": "a423981ae1afc05d485fe822f44edd4f9ed43fdeffe1f63e1788dabb5f817837",
+        "src/lib.rs": "116ab247568763b7de0b6388f98f6b885de8811e19cd04e48df558276151a498"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
-        "compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-APACHE",
-        "compliance/licenses/upstream/crypto-common-0.2.2/LICENSE-MIT"
+        "compliance/licenses/upstream/digest-0.11.3/LICENSE-APACHE",
+        "compliance/licenses/upstream/digest-0.11.3/LICENSE-MIT"
       ],
       "merged_into": "无；通过统一内部源码源接入",
-      "name": "crypto-common",
-      "origin_directory": "vendor/rust/crypto-common-0.2.2",
+      "name": "cryptographic-core",
+      "origin_directory": "vendor/rust/digest-0.11.3",
       "repository": "https://github.com/RustCrypto/traits",
       "status": "内部维护源码",
       "upstream": {
-        "archive_sha256": "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453",
-        "archive_url": "https://static.crates.io/crates/crypto-common/crypto-common-0.2.2.crate",
-        "name": "crypto-common",
-        "version": "0.2.2"
+        "archive_sha256": "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2",
+        "archive_url": "https://static.crates.io/crates/digest/digest-0.11.3.crate",
+        "name": "digest",
+        "version": "0.11.3"
       },
       "vcs": {
         "git": {
-          "sha1": "93dee26c6bde3741a197f1c5f6b7baac277705f3"
+          "sha1": "2fb9ed8922e244117040bb037a7d141a6a2b8228"
         },
-        "path_in_vcs": "crypto-common"
+        "path_in_vcs": "digest"
       },
-      "version": "0.2.2"
+      "version": "0.11.3"
     },
     "src/foundation/ctutils": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -29821,53 +30269,6 @@
         "path_in_vcs": ""
       },
       "version": "1.7.0"
-    },
-    "src/foundation/digest-0.11.3": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
-      "description": "Traits for cryptographic hash functions and message authentication codes",
-      "directory": "src/foundation/digest-0.11.3",
-      "files_sha256": {
-        "Cargo.toml": "adab346e4fedf7d74f58dab4cd5eacecc8b0449674bbeda512e748d62a1eae8c",
-        "src/block_api.rs": "f849d3022385cb675df371b9531906bdbe94d4864a75a282760ffe7048654da4",
-        "src/block_api/ct_variable.rs": "74b99085e49d87417e38b6bc56f344e789092e501936767c47efd42edd071a09",
-        "src/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
-        "src/buffer_macros/fixed.rs": "53bc025e5a428d5340fd68e7b581840891fc62fea15cc08e8f6c16466b903160",
-        "src/buffer_macros/variable.rs": "1477d2d847c7b3a67b616de577f8b03b0c7edace458674a61c167ec0e0c01b46",
-        "src/buffer_macros/xof.rs": "a7fe0153d8cae035963ace522172dcfb90e3b7b00ae7f375e6ff14338430eadd",
-        "src/dev.rs": "cd91f2157bbe3294b6a89877150e9b1221a5920d233b67e94f2d185413dfe799",
-        "src/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
-        "src/dev/mac.rs": "d25e9ae655824d2e8356c367c29e99fb1f76213f92f494053268366d7e65d0fb",
-        "src/dev/rng.rs": "7911d5dc4bee94b96d26a0c491ef9ce17ce11b0f0da7476c2f2afc8a5480ae16",
-        "src/dev/variable.rs": "acb5c1d49b20166a7864a57b7264e59eb5240ae774af6bb6863a5fc94a7fa048",
-        "src/dev/xof.rs": "70b76dec7f2be10fa33c274ad25f9d8f7963222743e853174b06479632b9623d",
-        "src/digest.rs": "7f4cc4c695353230e987a8b66bafe9b1a7eda2bb95dcefe0db16a825bc243abc",
-        "src/lib.rs": "92823011f8426f6f67e9c7651f36a2941b2d51f711633a09b0dc4235c42ee709",
-        "src/mac.rs": "298379aef3cb001be81176fd522dfa15e2522cd752fd402b82ddcc6b67af6c94",
-        "src/xof_fixed.rs": "8e341ab1148563a508829e736a34136bbf6f2be3476629e3427c8c92d23c0cb4"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/digest-0.11.3/LICENSE-APACHE",
-        "compliance/licenses/upstream/digest-0.11.3/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "digest",
-      "origin_directory": "vendor/rust/digest-0.11.3",
-      "repository": "https://github.com/RustCrypto/traits",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2",
-        "archive_url": "https://static.crates.io/crates/digest/digest-0.11.3.crate",
-        "name": "digest",
-        "version": "0.11.3"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "2fb9ed8922e244117040bb037a7d141a6a2b8228"
-        },
-        "path_in_vcs": "digest"
-      },
-      "version": "0.11.3"
     },
     "src/foundation/displaydoc": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -31885,12 +32286,12 @@
       "description": "Generic implementation of Hash-based Message Authentication Code (HMAC)",
       "directory": "src/foundation/hmac",
       "files_sha256": {
-        "Cargo.toml": "31f95d4dc27609d4de9daa327209189e73d731ef42d647fcc4724fef468f0c1a",
-        "src/block_api.rs": "168036c0f18746d5b1bbc11e3223d56f90c3b1a0ae1310d65124ec8d251797ad",
-        "src/lib.rs": "cfee73a5af6ba7653eac35e43b7610cf390769ab4733bd396f76b7896177b8fb",
-        "src/simple.rs": "158b1393a95aceb0f827fb6428b7180ee487f06e5d108d3123b0d440b9983aec",
-        "src/simple_reset.rs": "ff05494d407bdfa1cdc58fec8c7109233b281eecf6ba8fbefef7c50ccd4fbad7",
-        "src/utils.rs": "c319019fd2a948f0afdab177281136358e423c2d25d2d11740a84d56da529bda"
+        "Cargo.toml": "89c0ceb1bc5264439eb84a729e136f41aa2fe1fec2b48e50922b8d40cf326a48",
+        "src/block_api.rs": "ec324b884dd722784cbdc19c0cd4991eb6b55fa0117afbd30688e2a588d79c97",
+        "src/lib.rs": "4aafe4c10e46707fd9e760947ec92d0af764536d1befeac9ec06b12d78510231",
+        "src/simple.rs": "d093d331d50760478c20a446aee858e4193bf103430e712037b4d382beffbeda",
+        "src/simple_reset.rs": "625d4d9330edae93829afa03687b2398c768891c34569c185240f383f2b1d4c8",
+        "src/utils.rs": "edacd27afe98c09bd89df95575f5852e20f1a6c1ce4780ef34ddf85a0a01d1a9"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -38153,11 +38554,11 @@
       "description": "Pure Rust implementation of the SHA-2 hash function family\nincluding SHA-224, SHA-256, SHA-384, and SHA-512.",
       "directory": "src/foundation/sha2",
       "files_sha256": {
-        "Cargo.toml": "da22d106e8ce45b0ddea7220de3d32bbd0e40074f1fbc97e4f09f292c17635a1",
-        "benches/mod.rs": "c32d9f91a541821ea988c14eee710963e623ef1edf69b02b41a29bc44e04ba95",
-        "src/block_api.rs": "43904cf95ba3605b44795625275e0a79cb6afe6fee9fca8ade2873f5b0e13b29",
+        "Cargo.toml": "2306cf2e5f4a79ea9a0738e879090c445b0802fc14a26245528f0da7c3f345ec",
+        "benches/mod.rs": "4a9c0829be58eaf311384d10472d74a3ddb428c3cec7bbefe4516187d6943bd8",
+        "src/block_api.rs": "4de522a068d0422336213053ad2d26f2aba217d7b6a3803ab3247d67f1de5f42",
         "src/consts.rs": "a70aa1d4f798b619e5332fd81162b10e73c02b3adbdbb3b69b6d17781437e073",
-        "src/lib.rs": "4a0d3c4c1f3775e3e17432a7c752dc2af191d95e01c7b42e30468d479c354213",
+        "src/lib.rs": "571550a06332fb6dba10e49bbd4573d27c908dc421f87c23ba332b0f3b8dfe87",
         "src/sha256.rs": "42a12c10acb714cba558ec7b0e56dfd6e37569ba67916ab1ef228c36592a17c4",
         "src/sha256/aarch64_sha2.rs": "4bddcedd5bb92a3b3768880ec3d077d7495b95c238aab3150ced25cc905a1826",
         "src/sha256/loongarch64_asm.rs": "eda57073e3dbcadca88e908dd261a2782b2bb89c06f1b97468a6ffd1cad407ff",
@@ -53636,12 +54037,6 @@
             "runtime"
           ]
         },
-        "src/foundation/block-buffer-0.12.1": {
-          "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/bytes": {
           "features": [
             "default",
@@ -53758,8 +54153,14 @@
             "runtime"
           ]
         },
-        "src/foundation/crypto-common-0.2.2": {
-          "features": [],
+        "src/foundation/cryptographic-core": {
+          "features": [
+            "alloc",
+            "block-api",
+            "default",
+            "mac",
+            "oid"
+          ],
           "roles": [
             "runtime"
           ]
@@ -53785,18 +54186,6 @@
         "src/foundation/deranged": {
           "features": [
             "default"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/digest-0.11.3": {
-          "features": [
-            "alloc",
-            "block-api",
-            "default",
-            "mac",
-            "oid"
           ],
           "roles": [
             "runtime"
@@ -56602,12 +56991,6 @@
             "compile"
           ]
         },
-        "src/foundation/block-buffer-0.12.1": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/cfg-if": {
           "features": [],
           "roles": [
@@ -56717,8 +57100,14 @@
             "compile"
           ]
         },
-        "src/foundation/crypto-common-0.2.2": {
-          "features": [],
+        "src/foundation/cryptographic-core": {
+          "features": [
+            "alloc",
+            "block-api",
+            "default",
+            "mac",
+            "oid"
+          ],
           "roles": [
             "compile"
           ]
@@ -56736,18 +57125,6 @@
             "derive",
             "serialization-derive",
             "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/digest-0.11.3": {
-          "features": [
-            "alloc",
-            "block-api",
-            "default",
-            "mac",
-            "oid"
           ],
           "roles": [
             "compile"
@@ -57366,12 +57743,6 @@
             "compile"
           ]
         },
-        "src/foundation/block-buffer-0.12.1": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/borrow-or-share": {
           "features": [
             "alloc"
@@ -57454,8 +57825,14 @@
             "compile"
           ]
         },
-        "src/foundation/crypto-common-0.2.2": {
-          "features": [],
+        "src/foundation/cryptographic-core": {
+          "features": [
+            "alloc",
+            "block-api",
+            "default",
+            "mac",
+            "oid"
+          ],
           "roles": [
             "compile"
           ]
@@ -57491,18 +57868,6 @@
         "src/foundation/deranged": {
           "features": [
             "default"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/digest-0.11.3": {
-          "features": [
-            "alloc",
-            "block-api",
-            "default",
-            "mac",
-            "oid"
           ],
           "roles": [
             "compile"
@@ -69862,7 +70227,7 @@
     "src/foundation/zerocopy-derive": "91195d6147dd2e484bcf210ebe2606a24ec4f8481a4eff805387f6f5dd3ffcc0",
     "src/foundation/zlib-rs": "608642d27ee66035c4c43754b7fd936c1f147e1f873e94db614ff4ca2056e52f"
   },
-  "schema": 6,
+  "schema": 8,
   "source_moves": {
     "00e81738868c8dc175a969d2eda979e25478fd55b40f8636c521793091532e49": {
       "destination_external_tests": {

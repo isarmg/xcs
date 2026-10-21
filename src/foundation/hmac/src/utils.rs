@@ -1,4 +1,4 @@
-use digest::{
+use cryptographic_core::{
     Digest,
     block_api::{Block, BlockSizeUser},
 };

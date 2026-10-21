@@ -3,7 +3,7 @@
 use crate::{Error, Result};
 
 use blake2::{
-    digest::{self, Digest},
+    cryptographic_core::{self, Digest},
     Blake2b512, Blake2bVar, VariableOutput,
 };
 
@@ -23,10 +23,10 @@ pub fn blake2b_long(inputs: &[&[u8]], out: &mut [u8]) -> Result<()> {
         let mut digest = Blake2bVar::new(out.len()).map_err(|_| Error::OutputTooLong)?;
 
         // Conflicting method name from `Digest` and `Update` traits
-        digest::Update::update(&mut digest, &len_bytes);
+        cryptographic_core::Update::update(&mut digest, &len_bytes);
 
         for input in inputs {
-            digest::Update::update(&mut digest, input);
+            cryptographic_core::Update::update(&mut digest, input);
         }
 
         digest
@@ -70,7 +70,7 @@ pub fn blake2b_long(inputs: &[&[u8]], out: &mut [u8]) -> Result<()> {
     let last_block_size = out.len() - counter;
     let mut digest = Blake2bVar::new(last_block_size).map_err(|_| Error::OutputTooLong)?;
 
-    digest::Update::update(&mut digest, &last_output);
+    cryptographic_core::Update::update(&mut digest, &last_output);
     digest
         .finalize_variable(&mut out[counter..])
         .expect("invalid Blake2bVar out length");

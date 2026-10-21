@@ -1,14 +1,14 @@
 #[cfg(not(feature = "reset"))]
-use digest::new_mac_test as new_test;
+use cryptographic_core::new_mac_test as new_test;
 #[cfg(feature = "reset")]
-use digest::new_resettable_mac_test as new_test;
+use cryptographic_core::new_resettable_mac_test as new_test;
 
 new_test!(blake2b_mac, "blake2b/mac", blake2::Blake2bMac512);
 new_test!(blake2s_mac, "blake2s/mac", blake2::Blake2sMac256);
 
 #[test]
 fn blake2b_new_test() {
-    use blake2::digest::{generic_array::GenericArray, KeyInit, Mac};
+    use blake2::cryptographic_core::{generic_array::GenericArray, KeyInit, Mac};
 
     fn run<T: Mac + KeyInit>(key: &[u8]) {
         const DATA: &[u8] = &[42; 300];

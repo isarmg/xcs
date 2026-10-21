@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 
-use digest::bench_update;
+use cryptographic_core::bench_update;
 use sha2::{Sha256, Sha512};
 use test::Bencher;
 

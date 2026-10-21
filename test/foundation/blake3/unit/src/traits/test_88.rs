@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use digest::array::AsArrayMut;
+    use cryptographic_core::array::AsArrayMut;
 
     use super::*;
 
@@ -17,39 +17,39 @@ mod test {
         assert_eq!(out1.as_bytes(), &xof1[..32]);
 
         // Trait implementations.
-        let mut hasher2: crate::Hasher = digest::Digest::new();
-        digest::Digest::update(&mut hasher2, b"xxx");
-        digest::Digest::reset(&mut hasher2);
-        digest::Digest::update(&mut hasher2, b"foo");
-        digest::Digest::update(&mut hasher2, b"bar");
-        digest::Digest::update(&mut hasher2, b"baz");
-        let out2 = digest::Digest::finalize(hasher2.clone());
+        let mut hasher2: crate::Hasher = cryptographic_core::Digest::new();
+        cryptographic_core::Digest::update(&mut hasher2, b"xxx");
+        cryptographic_core::Digest::reset(&mut hasher2);
+        cryptographic_core::Digest::update(&mut hasher2, b"foo");
+        cryptographic_core::Digest::update(&mut hasher2, b"bar");
+        cryptographic_core::Digest::update(&mut hasher2, b"baz");
+        let out2 = cryptographic_core::Digest::finalize(hasher2.clone());
         let mut xof2 = [0; 301];
-        digest::XofReader::read(
-            &mut digest::ExtendableOutput::finalize_xof(hasher2.clone()),
+        cryptographic_core::XofReader::read(
+            &mut cryptographic_core::ExtendableOutput::finalize_xof(hasher2.clone()),
             &mut xof2,
         );
         assert_eq!(out1.as_bytes(), &out2[..]);
         assert_eq!(xof1[..], xof2[..]);
 
         // Again with the resetting variants.
-        let mut hasher3: crate::Hasher = digest::Digest::new();
-        digest::Digest::update(&mut hasher3, b"foobarbaz");
+        let mut hasher3: crate::Hasher = cryptographic_core::Digest::new();
+        cryptographic_core::Digest::update(&mut hasher3, b"foobarbaz");
         let mut out3 = [0; 32];
-        digest::FixedOutputReset::finalize_into_reset(&mut hasher3, out3.as_array_mut());
-        digest::Digest::update(&mut hasher3, b"foobarbaz");
+        cryptographic_core::FixedOutputReset::finalize_into_reset(&mut hasher3, out3.as_array_mut());
+        cryptographic_core::Digest::update(&mut hasher3, b"foobarbaz");
         let mut out4 = [0; 32];
-        digest::FixedOutputReset::finalize_into_reset(&mut hasher3, out4.as_array_mut());
-        digest::Digest::update(&mut hasher3, b"foobarbaz");
+        cryptographic_core::FixedOutputReset::finalize_into_reset(&mut hasher3, out4.as_array_mut());
+        cryptographic_core::Digest::update(&mut hasher3, b"foobarbaz");
         let mut xof3 = [0; 301];
-        digest::XofReader::read(
-            &mut digest::ExtendableOutputReset::finalize_xof_reset(&mut hasher3),
+        cryptographic_core::XofReader::read(
+            &mut cryptographic_core::ExtendableOutputReset::finalize_xof_reset(&mut hasher3),
             &mut xof3,
         );
-        digest::Digest::update(&mut hasher3, b"foobarbaz");
+        cryptographic_core::Digest::update(&mut hasher3, b"foobarbaz");
         let mut xof4 = [0; 301];
-        digest::XofReader::read(
-            &mut digest::ExtendableOutputReset::finalize_xof_reset(&mut hasher3),
+        cryptographic_core::XofReader::read(
+            &mut cryptographic_core::ExtendableOutputReset::finalize_xof_reset(&mut hasher3),
             &mut xof4,
         );
         assert_eq!(out1.as_bytes(), &out3[..]);
@@ -70,13 +70,13 @@ mod test {
 
         // Trait implementation.
         let generic_key = (*key).into();
-        let mut hasher2: crate::Hasher = digest::KeyInit::new(&generic_key);
-        digest::Mac::update(&mut hasher2, b"xxx");
-        digest::Mac::reset(&mut hasher2);
-        digest::Mac::update(&mut hasher2, b"foo");
-        digest::Mac::update(&mut hasher2, b"bar");
-        digest::Mac::update(&mut hasher2, b"baz");
-        let out2 = digest::Mac::finalize(hasher2);
+        let mut hasher2: crate::Hasher = cryptographic_core::KeyInit::new(&generic_key);
+        cryptographic_core::Mac::update(&mut hasher2, b"xxx");
+        cryptographic_core::Mac::reset(&mut hasher2);
+        cryptographic_core::Mac::update(&mut hasher2, b"foo");
+        cryptographic_core::Mac::update(&mut hasher2, b"bar");
+        cryptographic_core::Mac::update(&mut hasher2, b"baz");
+        let out2 = cryptographic_core::Mac::finalize(hasher2);
         assert_eq!(out1.as_bytes(), out2.into_bytes().as_slice());
     }
 
@@ -110,7 +110,7 @@ mod test {
 
         // Test a short key.
         let mut x = SimpleHmac::<Hasher>::new_from_slice(b"key").unwrap();
-        hmac::digest::Update::update(&mut x, b"data");
+        hmac::cryptographic_core::Update::update(&mut x, b"data");
         let output = x.finalize().into_bytes();
         assert_ne!(output.len(), 0);
         let expected = expected_hmac_blake3(b"key", b"data");
@@ -125,7 +125,7 @@ mod test {
             let input = &input_bytes[..input_len];
 
             let mut x = SimpleHmac::<Hasher>::new_from_slice(input).unwrap();
-            hmac::digest::Update::update(&mut x, input);
+            hmac::cryptographic_core::Update::update(&mut x, input);
             let output = x.finalize().into_bytes();
             assert_ne!(output.len(), 0);
 

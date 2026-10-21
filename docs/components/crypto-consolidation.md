@@ -1,6 +1,6 @@
 # Unified cryptographic traits and BLAKE2 integration
 
-BLAKE2 and Argon2 now use the same digest 0.11.3, block-buffer 0.12.1 and crypto-common 0.2.2 implementation family as SHA-2, HMAC and the optional BLAKE3 digest integration. The shared storage representation is hybrid-array 0.4.15. The former standalone digest 0.10.7, block-buffer 0.10.4, crypto-common 0.1.7 and generic-array 0.14.7 dependency stack is no longer reachable or present as packages.
+BLAKE2, Argon2, SHA-2, HMAC and the optional BLAKE3 trait integration now share one cryptographic-core package. It contains the digest 0.11.3, block-buffer 0.12.1 and crypto-common 0.2.2 implementations as internal modules. The shared storage representation is hybrid-array 0.4.15. The former standalone digest 0.10.7, block-buffer 0.10.4, crypto-common 0.1.7 and generic-array 0.14.7 dependency stack is no longer reachable or present as packages.
 
 This is not an algorithm replacement. BLAKE2 compression rounds, constants, parameter encoding, counters, final-block handling and SIMD sources are preserved. Runtime-selected output remains available for Argon2 H'. Optional reset, allocated output and std::io::Write behavior remain available; the obsolete digest::VariableOutput import becomes blake2::VariableOutput, without an old-path compatibility alias.
 
@@ -29,3 +29,13 @@ Capability tests cover fixed/runtime output, invalid length without state consum
 After consolidation, a focused fix makes the fallible BLAKE2 new_with_salt_and_personal constructor return InvalidLength for all oversized key, salt and persona inputs instead of allowing intermediate lengths to reach core assertions. Keys are limited to 64 bytes for BLAKE2b and 32 for BLAKE2s; salt/persona fields are limited to 16 and 8 bytes respectively. These limits do not shrink with truncated output sizes. The low-level Self-returning new_with_params constructor intentionally retains its assertions.
 
 Maintained capability tests exhaust lengths from zero through one beyond the former block-sized bound for each parameter and both full/truncated BLAKE2b/BLAKE2s MACs, including simultaneous exact maxima and invalid maxima. The existing independent vectors and feature matrix prove valid cryptographic output, reset and no_std behavior remain unchanged. Original snapshots and provenance receipts are not rewritten by this correction.
+
+## One maintained cryptographic core
+
+The shared interface and buffering layer is one `cryptographic-core` crate, not three independent packages. Its `common_types`, hash/MAC and optional `buffer` modules preserve their distinct responsibilities. Algorithms remain in their existing components, and `hybrid-array` remains independently shared. The root denies unsafe code, hash/common modules forbid it, and only the imported buffer module allows its pre-existing unsafe operations.
+
+The primary source is RustCrypto digest 0.11.3. block-buffer 0.12.1 and crypto-common 0.2.2 are merged implementation origins, not retired code. The earlier digest 0.10.7 adapters remain a separate merged origin at BLAKE2. Original versions, source labels, licenses, manifests and immutable snapshots stay preserved. There are no obsolete package aliases. This replaces the unpublished three-name intermediate layout rather than introducing chained rename receipts.
+
+The maintained gate tests the original crypto vectors and BLAKE2 error boundaries, SHA2/HMAC/BLAKE3 consumers, native/WASM no_std, fourteen direct minimal-feature combinations, all eleven original buffer tests with and without zeroize, explicit buffer/array zeroization, and compiler-enforced safety boundaries in temporary copies only. `zeroize` unifies the former optional buffer and array zeroization capabilities; `block-api`, `mac`, `oid`, and `alloc` stay optional. Disabled large-memory Argon2 test cfg values are registered without activating those tests.
+
+The measured structural change is three packages and eight outgoing dependency declarations to one package and four. This is a maintainability improvement, not a measured runtime performance or binary-size claim.

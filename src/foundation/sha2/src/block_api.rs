@@ -1,13 +1,13 @@
 use crate::consts;
 use core::fmt;
-use digest::{
+use cryptographic_core::{
     HashMarker, InvalidOutputSize, Output,
     array::Array,
     block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, Eager, OutputSizeUser,
         TruncSide, UpdateCore, VariableOutputCore,
     },
-    common::hazmat::{DeserializeStateError, SerializableState, SerializedState},
+    common_types::hazmat::{DeserializeStateError, SerializableState, SerializedState},
     typenum::{U32, U40, U64, U80, U128, Unsigned},
 };
 
@@ -93,7 +93,7 @@ impl Drop for Sha256VarCore {
     fn drop(&mut self) {
         #[cfg(feature = "zeroize")]
         {
-            use digest::zeroize::Zeroize;
+            use cryptographic_core::zeroize::Zeroize;
             self.state.zeroize();
             self.block_len.zeroize();
         }
@@ -101,7 +101,7 @@ impl Drop for Sha256VarCore {
 }
 
 #[cfg(feature = "zeroize")]
-impl digest::zeroize::ZeroizeOnDrop for Sha256VarCore {}
+impl cryptographic_core::zeroize::ZeroizeOnDrop for Sha256VarCore {}
 
 impl SerializableState for Sha256VarCore {
     type SerializedStateSize = U40;
@@ -218,14 +218,14 @@ impl Drop for Sha512VarCore {
     fn drop(&mut self) {
         #[cfg(feature = "zeroize")]
         {
-            use digest::zeroize::Zeroize;
+            use cryptographic_core::zeroize::Zeroize;
             self.state.zeroize();
             self.block_len.zeroize();
         }
     }
 }
 #[cfg(feature = "zeroize")]
-impl digest::zeroize::ZeroizeOnDrop for Sha512VarCore {}
+impl cryptographic_core::zeroize::ZeroizeOnDrop for Sha512VarCore {}
 
 impl SerializableState for Sha512VarCore {
     type SerializedStateSize = U80;

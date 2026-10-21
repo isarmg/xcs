@@ -68,7 +68,7 @@
 //! support is assumed. This may become the default in the future.
 //!
 //! The `traits-preview` feature enables implementations of traits from the
-//! RustCrypto [`digest`] crate, and re-exports that crate as `traits::digest`.
+//! maintained `cryptographic_core` crate (derived from RustCrypto digest), and re-exports that crate as `traits::cryptographic_core`.
 //! However, the traits aren't stable, and they're expected to change in
 //! incompatible ways before that crate reaches 1.0. For that reason, this crate
 //! makes no SemVer guarantees for this feature, and callers who use it should
@@ -82,7 +82,7 @@
 //! [`Read`]: https://doc.rust-lang.org/std/io/trait.Read.html
 //! [`Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
 //! [`Seek`]: https://doc.rust-lang.org/std/io/trait.Seek.html
-//! [`digest`]: https://crates.io/crates/digest
+//! [`cryptographic_core`]: https://crates.io/crates/cryptographic_core
 //! [`signature`]: https://crates.io/crates/signature
 
 #![cfg_attr(not(feature = "std"), no_std)]

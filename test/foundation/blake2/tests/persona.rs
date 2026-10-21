@@ -1,4 +1,4 @@
-use blake2::{digest::FixedOutput, Blake2bMac512, Blake2sMac256};
+use blake2::{cryptographic_core::FixedOutput, Blake2bMac512, Blake2sMac256};
 use hex_literal::hex;
 
 #[test]

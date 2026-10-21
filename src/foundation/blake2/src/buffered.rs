@@ -1,10 +1,10 @@
 // Adapted from RustCrypto digest 0.10.7 core_api/wrapper.rs.
 // Original license and source provenance remain under compliance/provenance.
 use core::fmt;
-use digest::{
+use cryptographic_core::{
     block_api::{AlgorithmName, Buffer, BufferKindUser, FixedOutputCore, UpdateCore},
-    block_buffer::BlockBuffer,
-    common::{BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser},
+    buffer::BlockBuffer,
+    common_types::{BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser},
     FixedOutput, FixedOutputReset, HashMarker, MacMarker, Output, OutputSizeUser, Reset, Update,
 };
 /// Wrapper around [`BufferKindUser`].
@@ -160,7 +160,7 @@ where
     }
 }
 
-impl<T: BufferKindUser> digest::block_api::CoreProxy for BufferedHash<T> {
+impl<T: BufferKindUser> cryptographic_core::block_api::CoreProxy for BufferedHash<T> {
     type Core = T;
     fn compose(core: T, buffer: Buffer<T>) -> Self {
         Self { core, buffer }

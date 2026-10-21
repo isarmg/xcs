@@ -242,7 +242,7 @@ version = "0.8.0"
 name = "blake2"
 version = "0.10.6"
 dependencies = [
- "digest",
+ "cryptographic-core",
 ]
 
 [[package]]
@@ -254,13 +254,6 @@ dependencies = [
  "cfg-if",
  "constant_time_eq",
  "cpu-feature-detect",
-]
-
-[[package]]
-name = "block-buffer"
-version = "0.12.1"
-dependencies = [
- "hybrid-array",
 ]
 
 [[package]]
@@ -446,9 +439,11 @@ name = "crossbeam-utils"
 version = "0.8.23"
 
 [[package]]
-name = "crypto-common"
-version = "0.2.2"
+name = "cryptographic-core"
+version = "0.11.3"
 dependencies = [
+ "const-oid",
+ "ctutils",
  "hybrid-array",
 ]
 
@@ -482,16 +477,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rust-syntax",
-]
-
-[[package]]
-name = "digest"
-version = "0.11.3"
-dependencies = [
- "block-buffer",
- "const-oid",
- "crypto-common",
- "ctutils",
 ]
 
 [[package]]
@@ -829,7 +814,7 @@ version = "0.5.0"
 name = "hmac"
 version = "0.13.0"
 dependencies = [
- "digest",
+ "cryptographic-core",
 ]
 
 [[package]]
@@ -1769,7 +1754,7 @@ version = "0.11.1"
 dependencies = [
  "cfg-if",
  "cpu-feature-detect",
- "digest",
+ "cryptographic-core",
 ]
 
 [[package]]

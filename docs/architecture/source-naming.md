@@ -81,3 +81,7 @@ WASM 绑定同时包含 Rust 宏、共享 schema、生成 JS 和工具端解释�
 计划固定当前包记录、重叠合并来源记录及外置测试记录，逐文件列出生产相对路径和测试仓库相对路径的一一映射；目录迁移必须展开到每个后代文件。未列出文件保持原路径，完整前后文件集合、内容摘要和测试片段数均须核对。包目录、包名、版本、来源身份和测试历史 source 标签不变。
 
 schema 6 的 source_moves 以收据内容摘要为键追加保存每次迁移。连续整理不改写旧的根命名记录或内部迁移记录。同一来源的根改名、内部整理、升级和退役分开执行审查与刷新；不同来源的独立计划可以在同一刷新中验证。文件会计证明不能替代序列化格式、应用数据、协议和实际消费者行为测试。
+
+## Consolidated cryptographic core
+
+The shared layer has one `cryptographic-core` package with common-types, hash/MAC and block-buffer modules. digest 0.11.3 remains its primary origin; block-buffer 0.12.1 and crypto-common 0.2.2 are retained as merged origins, not retired implementations. Original test fragments keep per-origin source labels and hashes through explicit reviewed transfers. See [crypto consolidation](../components/crypto-consolidation.md).

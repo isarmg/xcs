@@ -1,4 +1,4 @@
-use digest::{
+use cryptographic_core::{
     dev::{feed_rand_16mib, fixed_reset_test},
     hash_serialization_test, new_test,
 };

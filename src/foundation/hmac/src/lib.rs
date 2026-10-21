@@ -1,7 +1,7 @@
 // Overwrite intra-crate links
-//! [`Reset`]: digest::Reset
-//! [`Digest`]: digest::Digest
-//! [`FixedOutputReset`]: digest::FixedOutputReset
+//! [`Reset`]: cryptographic_core::Reset
+//! [`Digest`]: cryptographic_core::Digest
+//! [`FixedOutputReset`]: cryptographic_core::FixedOutputReset
 //! [`Hmac`]: Hmac
 //! [`HmacReset`]: HmacReset
 //! [`SimpleHmac`]: SimpleHmac
@@ -17,7 +17,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-pub use digest::{self, KeyInit, Mac, block_api::EagerHash};
+pub use cryptographic_core::{self, KeyInit, Mac, block_api::EagerHash};
 
 /// Block-level implementation.
 pub mod block_api;
@@ -29,9 +29,9 @@ pub use simple::SimpleHmac;
 pub use simple_reset::SimpleHmacReset;
 
 use core::fmt;
-use digest::block_api::{AlgorithmName, CoreProxy};
+use cryptographic_core::block_api::{AlgorithmName, CoreProxy};
 
-digest::buffer_fixed!(
+cryptographic_core::buffer_fixed!(
     /// Generic HMAC instance.
     #[derive(Clone)]
     pub struct Hmac<D: EagerHash>(block_api::HmacCore<D>);
@@ -44,7 +44,7 @@ impl<D: EagerHash + AlgorithmName> AlgorithmName for Hmac<D> {
     }
 }
 
-digest::buffer_fixed!(
+cryptographic_core::buffer_fixed!(
     /// Generic HMAC instance with reset support.
     #[derive(Clone)]
     pub struct HmacReset<D: EagerHash>(block_api::HmacResetCore<D>);

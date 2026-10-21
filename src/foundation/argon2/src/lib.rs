@@ -114,7 +114,7 @@ pub use {
 };
 
 use crate::blake2b_long::blake2b_long;
-use blake2::{digest, Blake2b512, Digest};
+use blake2::{cryptographic_core, Blake2b512, Digest};
 use core::fmt;
 
 #[cfg(all(feature = "alloc", feature = "password-hash"))]
@@ -287,7 +287,7 @@ impl<'key> Argon2<'key> {
     fn fill_blocks(
         &self,
         memory_blocks: &mut [Block],
-        mut initial_hash: digest::Output<Blake2b512>,
+        mut initial_hash: cryptographic_core::Output<Blake2b512>,
     ) -> Result<()> {
         let block_count = self.params.block_count();
         let memory_blocks = memory_blocks
@@ -520,7 +520,7 @@ impl<'key> Argon2<'key> {
 
     /// Hashes all the inputs into `blockhash[PREHASH_DIGEST_LEN]`.
     #[allow(clippy::cast_possible_truncation)]
-    fn initial_hash(&self, pwd: &[u8], salt: &[u8], out: &[u8]) -> digest::Output<Blake2b512> {
+    fn initial_hash(&self, pwd: &[u8], salt: &[u8], out: &[u8]) -> cryptographic_core::Output<Blake2b512> {
         let mut digest = Blake2b512::new();
         digest.update(self.params.p_cost().to_le_bytes());
         digest.update((out.len() as u32).to_le_bytes());

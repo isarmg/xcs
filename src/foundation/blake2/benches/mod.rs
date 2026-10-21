@@ -2,7 +2,7 @@
 extern crate test;
 
 use blake2::{Blake2b512, Blake2s256};
-use digest::bench_update;
+use cryptographic_core::bench_update;
 use test::Bencher;
 
 bench_update!(

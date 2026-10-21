@@ -31,10 +31,10 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/RustCrypto/hashes"
 
 [features]
-alloc = ["digest/alloc"]
+alloc = ["cryptographic-core/alloc"]
 default = ["alloc", "oid"]
-oid = ["digest/oid"]
-zeroize = ["digest/zeroize"]
+oid = ["cryptographic-core/oid"]
+zeroize = ["cryptographic-core/zeroize"]
 
 [lib]
 name = "sha2"
@@ -44,9 +44,9 @@ path = "src/lib.rs"
 version = "1"
 path = "../cfg-if"
 
-[dependencies.digest]
+[dependencies.cryptographic-core]
 version = "0.11"
-path = "../digest-0.11.3"
+path = "../cryptographic-core"
 
 [target.'cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))'.dependencies.cpu-feature-detect]
 version = "0.3"

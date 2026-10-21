@@ -1,13 +1,13 @@
 use crate::utils::{IPAD, OPAD, get_der_key};
 use core::{fmt, slice};
-use digest::{
+use cryptographic_core::{
     InvalidLength, KeyInit, MacMarker, Output, Reset,
     block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, EagerHash, FixedOutputCore,
         OutputSizeUser, UpdateCore,
     },
-    block_buffer::Eager,
-    common::{Key, KeySizeUser},
+    buffer::Eager,
+    common_types::{Key, KeySizeUser},
 };
 
 /// Generic core HMAC instance, which operates over blocks.

@@ -1,40 +1,40 @@
 //! Implementations of commonly used traits like `Digest` and `Mac` from the
 //! [`digest`](https://crates.io/crates/digest) crate.
 
-pub use digest;
+pub use cryptographic_core;
 
 use crate::{Hasher, OutputReader};
-use digest::array::{Array, typenum::U32, typenum::U64};
-use digest::common;
+use cryptographic_core::array::{Array, typenum::U32, typenum::U64};
+use cryptographic_core::common_types;
 
-impl digest::HashMarker for Hasher {}
+impl cryptographic_core::HashMarker for Hasher {}
 
-impl digest::Update for Hasher {
+impl cryptographic_core::Update for Hasher {
     #[inline]
     fn update(&mut self, data: &[u8]) {
         self.update(data);
     }
 }
 
-impl digest::Reset for Hasher {
+impl cryptographic_core::Reset for Hasher {
     #[inline]
     fn reset(&mut self) {
         self.reset(); // the inherent method
     }
 }
 
-impl digest::OutputSizeUser for Hasher {
+impl cryptographic_core::OutputSizeUser for Hasher {
     type OutputSize = U32;
 }
 
-impl digest::FixedOutput for Hasher {
+impl cryptographic_core::FixedOutput for Hasher {
     #[inline]
     fn finalize_into(self, out: &mut Array<u8, Self::OutputSize>) {
         out.copy_from_slice(self.finalize().as_bytes());
     }
 }
 
-impl digest::FixedOutputReset for Hasher {
+impl cryptographic_core::FixedOutputReset for Hasher {
     #[inline]
     fn finalize_into_reset(&mut self, out: &mut Array<u8, Self::OutputSize>) {
         out.copy_from_slice(self.finalize().as_bytes());
@@ -42,7 +42,7 @@ impl digest::FixedOutputReset for Hasher {
     }
 }
 
-impl digest::ExtendableOutput for Hasher {
+impl cryptographic_core::ExtendableOutput for Hasher {
     type Reader = OutputReader;
 
     #[inline]
@@ -51,7 +51,7 @@ impl digest::ExtendableOutput for Hasher {
     }
 }
 
-impl digest::ExtendableOutputReset for Hasher {
+impl cryptographic_core::ExtendableOutputReset for Hasher {
     #[inline]
     fn finalize_xof_reset(&mut self) -> Self::Reader {
         let reader = Hasher::finalize_xof(self);
@@ -60,26 +60,26 @@ impl digest::ExtendableOutputReset for Hasher {
     }
 }
 
-impl digest::XofReader for OutputReader {
+impl cryptographic_core::XofReader for OutputReader {
     #[inline]
     fn read(&mut self, buffer: &mut [u8]) {
         self.fill(buffer);
     }
 }
 
-impl common::KeySizeUser for Hasher {
+impl common_types::KeySizeUser for Hasher {
     type KeySize = U32;
 }
 
-impl common::BlockSizeUser for Hasher {
+impl common_types::BlockSizeUser for Hasher {
     type BlockSize = U64;
 }
 
-impl digest::MacMarker for Hasher {}
+impl cryptographic_core::MacMarker for Hasher {}
 
-impl digest::KeyInit for Hasher {
+impl cryptographic_core::KeyInit for Hasher {
     #[inline]
-    fn new(key: &digest::Key<Self>) -> Self {
+    fn new(key: &cryptographic_core::Key<Self>) -> Self {
         let key_bytes: [u8; 32] = (*key).into();
         Hasher::new_keyed(&key_bytes)
     }

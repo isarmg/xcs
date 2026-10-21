@@ -29,16 +29,16 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/RustCrypto/MACs"
 
 [features]
-zeroize = ["digest/zeroize"]
+zeroize = ["cryptographic-core/zeroize"]
 
 [lib]
 name = "hmac"
 path = "src/lib.rs"
 
-[dependencies.digest]
+[dependencies.cryptographic-core]
 version = "0.11.2"
 features = ["mac"]
-path = "../digest-0.11.3"
+path = "../cryptographic-core"
 
 [lints.clippy]
 borrow_as_ptr = "warn"

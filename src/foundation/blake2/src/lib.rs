@@ -33,7 +33,7 @@
 //! Run time variable output example:
 //! ```rust
 //! use blake2::Blake2bVar;
-//! use blake2::{digest::Update, VariableOutput};
+//! use blake2::{cryptographic_core::Update, VariableOutput};
 //!
 //! let mut hasher = Blake2bVar::new(10).unwrap();
 //! hasher.update(b"my_input");
@@ -44,7 +44,7 @@
 //!
 //! Compile time variable output example:
 //! ```rust
-//! use blake2::{Blake2b, Digest, digest::consts::U10};
+//! use blake2::{Blake2b, Digest, cryptographic_core::consts::U10};
 //!
 //! type Blake2b80 = Blake2b<U10>;
 //!
@@ -74,24 +74,24 @@ extern crate std;
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-pub use digest::{self, Digest};
+pub use cryptographic_core::{self, Digest};
 
 use core::{convert::TryInto, fmt, marker::PhantomData, ops::Div};
-use digest::{
-    block_buffer::{Lazy, LazyBuffer},
+use cryptographic_core::{
+    buffer::{Lazy, LazyBuffer},
     consts::{U128, U32, U4, U64},
     block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser,
         CtOutWrapper, OutputSizeUser, TruncSide, UpdateCore,
         VariableOutputCore,
     },
-    common::{InvalidLength, Key, KeyInit, KeySizeUser},
+    common_types::{InvalidLength, Key, KeyInit, KeySizeUser},
     array::{ArraySize, Array},
     typenum::{IsLessOrEqual, LeEq, NonZero, Unsigned},
     FixedOutput, HashMarker, InvalidOutputSize, MacMarker, Output, Update,
 };
 #[cfg(feature = "reset")]
-use digest::{FixedOutputReset, Reset};
+use cryptographic_core::{FixedOutputReset, Reset};
 
 mod buffered;
 mod variable;

@@ -23,7 +23,7 @@ repository = "https://github.com/BLAKE3-team/BLAKE3"
 [features]
 serialization = ["dep:data-serialization"]
 default = ["std"]
-digest = ["dep:digest"]
+cryptographic-core = ["dep:cryptographic-core"]
 mmap = ["std"]
 neon = []
 no_avx2 = []
@@ -35,7 +35,7 @@ prefer_intrinsics = []
 pure = []
 rayon = ["dep:rayon-core"]
 std = ["constant_time_eq/std"]
-traits-preview = ["dep:digest"]
+traits-preview = ["dep:cryptographic-core"]
 wasm32_simd = []
 zeroize = ["dep:zeroize", "arrayvec/zeroize"]
 
@@ -57,11 +57,11 @@ version = "0.4.2"
 default-features = false
 path = "../constant_time_eq"
 
-[dependencies.digest]
+[dependencies.cryptographic-core]
 version = "0.11.2"
 features = ["mac"]
 optional = true
-path = "../digest-0.11.3"
+path = "../cryptographic-core"
 
 [dependencies.rayon-core]
 version = "1.12.1"
