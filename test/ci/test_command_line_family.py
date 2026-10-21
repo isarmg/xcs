@@ -105,6 +105,48 @@ class NamingGate(unittest.TestCase):
             with self.subTest(status=status, stderr=stderr), self.assertRaises(AssertionError):
                 gate.require_unsafe_rejection(subprocess.CompletedProcess([], status, "", stderr), "src/lib.rs")
 
+    def check_consumer_result(self, result):
+        fixture = self.root / 'test/fixtures/command-line-cli.json'
+        fixture.parent.mkdir(parents=True, exist_ok=True)
+        fixture.write_text(json.dumps([{
+            "binary": "web-build", "args": ["check", "--invalid"],
+            "code": 1, "stdout": "", "stderr": "Error: unknown option --invalid\n",
+        }]))
+        metadata = json.dumps({"target_directory": str(self.root / 'target')})
+        with mock.patch.object(gate.subprocess, 'check_output', return_value=metadata), \
+                mock.patch.object(gate.subprocess, 'run', return_value=result) as run:
+            gate.check_consumers(self.root)
+        return run.call_args_list
+
+    def test_consumer_goldens_disable_only_local_optional_backtraces(self):
+        polluted = {
+            "RUST_BACKTRACE": "1", "RUST_LIB_BACKTRACE": "full",
+            "CARGO_TERM_COLOR": "always", "PATH": os.environ.get("PATH", ""),
+        }
+        result = subprocess.CompletedProcess([], 1, "", "Error: unknown option --invalid\n")
+        with mock.patch.dict(os.environ, polluted):
+            original = dict(os.environ)
+            calls = self.check_consumer_result(result)
+            self.assertEqual(dict(os.environ), original)
+        self.assertNotIn('env', calls[0].kwargs)
+        self.assertNotIn('env', calls[1].kwargs)
+        self.assertEqual(calls[2].kwargs['env'], {
+            **original, "RUST_BACKTRACE": "0", "RUST_LIB_BACKTRACE": "0",
+        })
+        self.assertTrue(calls[2].kwargs['capture_output'])
+
+    def test_consumer_goldens_reject_any_output_or_status_drift(self):
+        stderr = "Error: unknown option --invalid\n"
+        for status, stdout, error in (
+            (0, "", stderr), (1, "unexpected output", stderr),
+            (1, "", stderr + "unexpected diagnostic\n"),
+            (1, "", "\x1b[31m" + stderr + "\x1b[0m"),
+            (1, "", stderr + "\nStack backtrace:\n unexpected trace\n"),
+        ):
+            with self.subTest(status=status, stdout=stdout, stderr=error), \
+                    self.assertRaisesRegex(AssertionError, 'CLI contract drift'):
+                self.check_consumer_result(subprocess.CompletedProcess([], status, stdout, error))
+
     def test_only_temporary_fixture_generates_a_lock(self):
         fixture = self.root / 'test/command-line-family.rs'
         fixture.parent.mkdir()

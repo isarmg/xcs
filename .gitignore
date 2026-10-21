@@ -115,7 +115,7 @@ Desktop.ini
 !/src/foundation/cc/src/target/generated.rs
 !/src/foundation/cc/src/target/llvm.rs
 !/src/foundation/cc/src/target/parser.rs
-!/test/foundation/sqlx/tests/.env
+!/test/foundation/sqlite-access/facade/tests/.env
 
 # 外置的 cc 目标解析单元测试属于源码，不是 target 编译缓存。
 !/test/foundation/cc/unit/src/target/

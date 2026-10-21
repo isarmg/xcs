@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -305,10 +306,14 @@ def check_consumers(root):
     ))
     binary_directory = Path(metadata["target_directory"]) / "debug"
     cases = json.loads((root / "test/fixtures/command-line-cli.json").read_text())
+    # Goldens cover normal CLI diagnostics, not opt-in, machine-specific backtraces.
+    # Keep this local: retained-feature probes separately require a real backtrace.
+    environment = {**os.environ, "RUST_BACKTRACE": "0", "RUST_LIB_BACKTRACE": "0"}
     for case in cases:
         result = subprocess.run(
             [str(binary_directory / case["binary"]), *case["args"]],
             cwd=root,
+            env=environment,
             capture_output=True,
             text=True,
         )
