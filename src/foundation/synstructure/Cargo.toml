@@ -22,7 +22,7 @@ description = "Helper methods and macros for custom derives"
 documentation = "https://docs.rs/synstructure"
 readme = "../../../docs/upstream/synstructure-0.14.0/README.md"
 keywords = [
-    "syn",
+    "rust-syntax",
     "macros",
     "derive",
     "expand_substructure",
@@ -33,7 +33,7 @@ repository = "https://github.com/mystor/synstructure"
 
 [features]
 default = ["proc-macro"]
-proc-macro = ["proc-macro2/proc-macro", "syn/proc-macro", "quote/proc-macro"]
+proc-macro = ["proc-macro2/proc-macro", "rust-syntax/proc-macro", "quote/proc-macro"]
 
 [lib]
 name = "synstructure"
@@ -49,7 +49,7 @@ version = "1"
 default-features = false
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3"
 features = [
     "derive",
@@ -60,5 +60,5 @@ features = [
     "extra-traits",
 ]
 default-features = false
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 

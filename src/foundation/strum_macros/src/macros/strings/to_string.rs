@@ -1,10 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields};
+use rust_syntax::{Data, DeriveInput, Fields};
 
 use crate::helpers::{non_enum_error, HasStrumVariantProperties, HasTypeProperties};
 
-pub fn to_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn to_string_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let variants = match &ast.data {
@@ -30,7 +30,7 @@ pub fn to_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                     continue;
                 }
                 _ => {
-                    return Err(syn::Error::new_spanned(
+                    return Err(rust_syntax::Error::new_spanned(
                         variant,
                         "Default only works on newtype structs with a single String field",
                     ))

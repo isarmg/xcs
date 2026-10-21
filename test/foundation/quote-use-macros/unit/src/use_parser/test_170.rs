@@ -2,8 +2,8 @@
 mod test {
     use pretty_assertions::assert_eq;
     use quote::ToTokens;
-    use syn::parse::Parser;
-    use syn::parse_str;
+    use rust_syntax::parse::Parser;
+    use rust_syntax::parse_str;
 
     use super::*;
 

@@ -2,8 +2,8 @@ use proc_macro2::TokenStream;
 use quote::ToTokens;
 use std::collections::btree_map::Entry;
 use std::collections::{BTreeMap as Map, BTreeSet as Set};
-use syn::punctuated::Punctuated;
-use syn::{parse_quote, GenericArgument, Generics, Ident, PathArguments, Token, Type, WhereClause};
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::{parse_quote, GenericArgument, Generics, Ident, PathArguments, Token, Type, WhereClause};
 
 pub struct ParamsInScope<'a> {
     names: Set<&'a Ident>,

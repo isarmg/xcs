@@ -18,22 +18,33 @@ mod tests {
         beta: bool,
     }
 
+    #[derive(FromAttr)]
+    struct Expression { expression: rust_syntax::ExprIf }
+
+    #[test]
+    fn full_syntax_attributes_parse_expression_nodes() {
+        let parsed = rust_syntax::parse_str::<Expression>(
+            "expression = if true { 1 } else { 2 }"
+        ).unwrap();
+        assert!(parsed.expression.else_branch.is_some());
+    }
+
     #[test]
     fn attribute_templates_preserve_missing_duplicate_unknown_and_conflict_diagnostics() {
-        assert_eq!(syn::parse_str::<One>(r#"required = "文件 Ω""#).unwrap().required, "文件 Ω");
-        let unknown = syn::parse_str::<One>("unknown = 1").unwrap_err().to_string();
+        assert_eq!(rust_syntax::parse_str::<One>(r#"required = "文件 Ω""#).unwrap().required, "文件 Ω");
+        let unknown = rust_syntax::parse_str::<One>("unknown = 1").unwrap_err().to_string();
         assert_eq!(unknown, "expected supported field `required`");
-        let missing = syn::parse_str::<One>("").unwrap_err().to_string();
+        let missing = rust_syntax::parse_str::<One>("").unwrap_err().to_string();
         assert_eq!(missing, "required `required` is not specified\n\n= help: try `#[one(required = ...)]`");
-        let duplicate = syn::parse_str::<One>(r#"required = "a", required = "b""#).unwrap_err().to_string();
+        let duplicate = rust_syntax::parse_str::<One>(r#"required = "a", required = "b""#).unwrap_err().to_string();
         assert_eq!(duplicate, "`required` is specified multiple times");
-        let two = syn::parse_str::<Two>("").unwrap();
+        let two = rust_syntax::parse_str::<Two>("").unwrap();
         assert!(two.alpha.is_none() && two.beta.is_none());
-        assert_eq!(syn::parse_str::<Two>("unknown = 1").unwrap_err().to_string(),
+        assert_eq!(rust_syntax::parse_str::<Two>("unknown = 1").unwrap_err().to_string(),
                    "supported fields are `alpha` and `beta`");
-        let flags = syn::parse_str::<Flags>("alpha").unwrap();
+        let flags = rust_syntax::parse_str::<Flags>("alpha").unwrap();
         assert!(flags.alpha && !flags.beta);
-        let conflict = syn::parse_str::<Flags>("alpha, beta").unwrap_err().to_string();
+        let conflict = rust_syntax::parse_str::<Flags>("alpha, beta").unwrap_err().to_string();
         assert!(conflict.contains("conflicts with mutually exclusive"), "{conflict}");
         assert!(conflict.contains("alpha") && conflict.contains("beta"), "{conflict}");
     }
@@ -98,7 +109,11 @@ mod tests {
                 int trailing;
             };
         "#;
+        let formatter: bindgen::Formatter = "rust_source_format".parse().unwrap();
+        assert_eq!(formatter, bindgen::Formatter::RustSourceFormat);
+        assert_eq!(formatter.to_string(), "rust_source_format");
         let output = bindgen::Builder::default()
+            .formatter(formatter)
             .header_contents("foundation-consumer.h", source)
             .layout_tests(false)
             .generate().expect("actual C parsing and binding generation").to_string();

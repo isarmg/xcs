@@ -1,28 +1,28 @@
-//! A Serde ast, parsed from the Syn ast and ready to generate Rust code.
+//! A Serde ast, parsed from the Rust Syntax ast and ready to generate Rust code.
 
 use crate::internals::{attr, check, Ctxt, Derive};
 use proc_macro2::Ident;
-use syn::punctuated::Punctuated;
-use syn::Token;
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::Token;
 
 /// A source data structure annotated with `#[derive(Serialize)]` and/or `#[derive(Deserialize)]`,
 /// parsed into an internal representation.
 pub struct Container<'a> {
     /// The struct or enum name (without generics).
-    pub ident: syn::Ident,
+    pub ident: rust_syntax::Ident,
     /// Attributes on the structure, parsed for Serde.
     pub attrs: attr::Container,
     /// The contents of the struct or enum.
     pub data: Data<'a>,
     /// Any generics on the struct or enum.
-    pub generics: &'a syn::Generics,
+    pub generics: &'a rust_syntax::Generics,
     /// Original input.
-    pub original: &'a syn::DeriveInput,
+    pub original: &'a rust_syntax::DeriveInput,
 }
 
 /// The fields of a struct or enum.
 ///
-/// Analogous to `syn::Data`.
+/// Analogous to `rust_syntax::Data`.
 pub enum Data<'a> {
     Enum(Vec<Variant<'a>>),
     Struct(Style, Vec<Field<'a>>),
@@ -30,19 +30,19 @@ pub enum Data<'a> {
 
 /// A variant of an enum.
 pub struct Variant<'a> {
-    pub ident: syn::Ident,
+    pub ident: rust_syntax::Ident,
     pub attrs: attr::Variant,
     pub style: Style,
     pub fields: Vec<Field<'a>>,
-    pub original: &'a syn::Variant,
+    pub original: &'a rust_syntax::Variant,
 }
 
 /// A field of a struct.
 pub struct Field<'a> {
-    pub member: syn::Member,
+    pub member: rust_syntax::Member,
     pub attrs: attr::Field,
-    pub ty: &'a syn::Type,
-    pub original: &'a syn::Field,
+    pub ty: &'a rust_syntax::Type,
+    pub original: &'a rust_syntax::Field,
 }
 
 #[derive(Copy, Clone)]
@@ -58,25 +58,25 @@ pub enum Style {
 }
 
 impl<'a> Container<'a> {
-    /// Convert the raw Syn ast into a parsed container object, collecting errors in `cx`.
+    /// Convert the raw Rust Syntax ast into a parsed container object, collecting errors in `cx`.
     pub fn from_ast(
         cx: &Ctxt,
-        item: &'a syn::DeriveInput,
+        item: &'a rust_syntax::DeriveInput,
         derive: Derive,
         private: &Ident,
     ) -> Option<Container<'a>> {
         let attrs = attr::Container::from_ast(cx, item);
 
         let mut data = match &item.data {
-            syn::Data::Enum(data) => {
+            rust_syntax::Data::Enum(data) => {
                 Data::Enum(enum_from_ast(cx, &data.variants, attrs.default(), private))
             }
-            syn::Data::Struct(data) => {
+            rust_syntax::Data::Struct(data) => {
                 let (style, fields) =
                     struct_from_ast(cx, &data.fields, None, attrs.default(), private);
                 Data::Struct(style, fields)
             }
-            syn::Data::Union(_) => {
+            rust_syntax::Data::Union(_) => {
                 cx.error_spanned_by(item, "Serialization does not support derive for unions");
                 return None;
             }
@@ -132,7 +132,7 @@ impl<'a> Data<'a> {
 
 fn enum_from_ast<'a>(
     cx: &Ctxt,
-    variants: &'a Punctuated<syn::Variant, Token![,]>,
+    variants: &'a Punctuated<rust_syntax::Variant, Token![,]>,
     container_default: &attr::Default,
     private: &Ident,
 ) -> Vec<Variant<'a>> {
@@ -173,31 +173,31 @@ fn enum_from_ast<'a>(
 
 fn struct_from_ast<'a>(
     cx: &Ctxt,
-    fields: &'a syn::Fields,
+    fields: &'a rust_syntax::Fields,
     attrs: Option<&attr::Variant>,
     container_default: &attr::Default,
     private: &Ident,
 ) -> (Style, Vec<Field<'a>>) {
     match fields {
-        syn::Fields::Named(fields) => (
+        rust_syntax::Fields::Named(fields) => (
             Style::Struct,
             fields_from_ast(cx, &fields.named, attrs, container_default, private),
         ),
-        syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => (
+        rust_syntax::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => (
             Style::Newtype,
             fields_from_ast(cx, &fields.unnamed, attrs, container_default, private),
         ),
-        syn::Fields::Unnamed(fields) => (
+        rust_syntax::Fields::Unnamed(fields) => (
             Style::Tuple,
             fields_from_ast(cx, &fields.unnamed, attrs, container_default, private),
         ),
-        syn::Fields::Unit => (Style::Unit, Vec::new()),
+        rust_syntax::Fields::Unit => (Style::Unit, Vec::new()),
     }
 }
 
 fn fields_from_ast<'a>(
     cx: &Ctxt,
-    fields: &'a Punctuated<syn::Field, Token![,]>,
+    fields: &'a Punctuated<rust_syntax::Field, Token![,]>,
     attrs: Option<&attr::Variant>,
     container_default: &attr::Default,
     private: &Ident,
@@ -206,8 +206,8 @@ fn fields_from_ast<'a>(
     for field in fields {
         dst_fields.push(Field {
             member: match &field.ident {
-                Some(ident) => syn::Member::Named(ident.clone()),
-                None => syn::Member::Unnamed(dst_fields.len().into()),
+                Some(ident) => rust_syntax::Member::Named(ident.clone()),
+                None => rust_syntax::Member::Unnamed(dst_fields.len().into()),
             },
             attrs: attr::Field::from_ast(
                 cx,

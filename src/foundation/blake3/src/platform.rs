@@ -418,7 +418,7 @@ pub fn avx512_detected() -> bool {
         return false;
     }
 
-    cpufeatures::new!(has_avx512, "avx512f", "avx512vl");
+    cpu_feature_detect::new!(has_avx512, "avx512f", "avx512vl");
     has_avx512::get()
 }
 
@@ -435,7 +435,7 @@ pub fn avx2_detected() -> bool {
         return false;
     }
 
-    cpufeatures::new!(has_avx2, "avx2");
+    cpu_feature_detect::new!(has_avx2, "avx2");
     has_avx2::get()
 }
 
@@ -452,7 +452,7 @@ pub fn sse41_detected() -> bool {
         return false;
     }
 
-    cpufeatures::new!(has_sse41, "sse4.1");
+    cpu_feature_detect::new!(has_sse41, "sse4.1");
     has_sse41::get()
 }
 
@@ -469,7 +469,7 @@ pub fn sse2_detected() -> bool {
         return false;
     }
 
-    cpufeatures::new!(has_sse2, "sse2");
+    cpu_feature_detect::new!(has_sse2, "sse2");
     has_sse2::get()
 }
 

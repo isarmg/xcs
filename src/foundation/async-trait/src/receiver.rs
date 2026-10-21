@@ -1,6 +1,6 @@
 use proc_macro2::{Group, TokenStream, TokenTree};
-use syn::visit_mut::{self, VisitMut};
-use syn::{
+use rust_syntax::visit_mut::{self, VisitMut};
+use rust_syntax::{
     Block, ExprPath, Ident, Item, Macro, Pat, PatIdent, Path, Receiver, Signature, Token, TypePath,
 };
 

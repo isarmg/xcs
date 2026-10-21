@@ -17,7 +17,7 @@ use crate::internals::attr;
 use crate::private;
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::spanned::Spanned;
+use rust_syntax::spanned::Spanned;
 
 /// Generates `Deserialize::deserialize` body for an `enum Enum {...}` without additional attributes
 pub(super) fn deserialize(
@@ -163,7 +163,7 @@ fn deserialize_externally_tagged_variant(
 fn wrap_deserialize_variant_with(
     params: &Parameters,
     variant: &Variant,
-    deserialize_with: &syn::ExprPath,
+    deserialize_with: &rust_syntax::ExprPath,
 ) -> (TokenStream, TokenStream, TokenStream) {
     let field_tys = variant.fields.iter().map(|field| field.ty);
     let (wrapper, wrapper_ty) =
@@ -175,7 +175,7 @@ fn wrap_deserialize_variant_with(
 }
 
 fn deserialize_externally_tagged_newtype_variant(
-    variant_ident: &syn::Ident,
+    variant_ident: &rust_syntax::Ident,
     params: &Parameters,
     field: &Field,
     cattrs: &attr::Container,

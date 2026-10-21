@@ -1,17 +1,17 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput};
+use rust_syntax::{Data, DeriveInput};
 
 use crate::helpers::variant_props::HasStrumVariantProperties;
 use crate::helpers::{non_enum_error, HasTypeProperties};
 
-pub(crate) fn enum_count_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub(crate) fn enum_count_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let n = match &ast.data {
         Data::Enum(v) => v.variants.iter().try_fold(0usize, |acc, v| {
             if v.get_variant_properties()?.disabled.is_none() {
-                Ok::<usize, syn::Error>(acc + 1usize)
+                Ok::<usize, rust_syntax::Error>(acc + 1usize)
             } else {
-                Ok::<usize, syn::Error>(acc)
+                Ok::<usize, rust_syntax::Error>(acc)
             }
         })?,
         _ => return Err(non_enum_error()),

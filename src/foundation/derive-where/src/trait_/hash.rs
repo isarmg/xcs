@@ -22,7 +22,7 @@ impl TraitImpl for Hash {
 		DeriveTrait::Hash
 	}
 
-	fn path(&self) -> syn::Path {
+	fn path(&self) -> rust_syntax::Path {
 		util::path_from_strs(&["core", "hash", "Hash"])
 	}
 

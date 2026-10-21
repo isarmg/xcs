@@ -641,12 +641,12 @@ mod loadable_extension {
     /// sqlite3_api->abc` macros` in sqlite3ext.h
     pub fn generate_functions(output: &mut String) {
         // (1) parse sqlite3_api_routines fields from bindgen output
-        let ast: syn::File = syn::parse_str(output).expect("could not parse bindgen output");
-        let sqlite3_api_routines: syn::ItemStruct = ast
+        let ast: rust_syntax::File = rust_syntax::parse_str(output).expect("could not parse bindgen output");
+        let sqlite3_api_routines: rust_syntax::ItemStruct = ast
             .items
             .into_iter()
             .find_map(|i| {
-                if let syn::Item::Struct(s) = i {
+                if let rust_syntax::Item::Struct(s) = i {
                     if s.ident == "sqlite3_api_routines" {
                         Some(s)
                     } else {
@@ -692,11 +692,11 @@ mod loadable_extension {
                 }
             };
             let ptr_name =
-                syn::Ident::new(format!("__{}", sqlite3_name.to_uppercase()).as_ref(), span);
-            let sqlite3_fn_name = syn::Ident::new(&sqlite3_name, span);
+                rust_syntax::Ident::new(format!("__{}", sqlite3_name.to_uppercase()).as_ref(), span);
+            let sqlite3_fn_name = rust_syntax::Ident::new(&sqlite3_name, span);
             let method =
                 extract_method(&field.ty).unwrap_or_else(|| panic!("unexpected type for {name}"));
-            let arg_names: syn::punctuated::Punctuated<&syn::Ident, syn::token::Comma> = method
+            let arg_names: rust_syntax::punctuated::Punctuated<&rust_syntax::Ident, rust_syntax::token::Comma> = method
                 .inputs
                 .iter()
                 .map(|i| &i.name.as_ref().unwrap().0)
@@ -739,8 +739,8 @@ mod loadable_extension {
                     }
                 }
             };
-            output.push_str(&prettyplease::unparse(
-                &syn::parse2(tokens).expect("could not parse quote output"),
+            output.push_str(&rust_source_format::unparse(
+                &rust_syntax::parse2(tokens).expect("could not parse quote output"),
             ));
             output.push('\n');
             if name == "malloc" {
@@ -774,27 +774,27 @@ mod loadable_extension {
                 Ok(())
             }
         };
-        output.push_str(&prettyplease::unparse(
-            &syn::parse2(tokens).expect("could not parse quote output"),
+        output.push_str(&rust_source_format::unparse(
+            &rust_syntax::parse2(tokens).expect("could not parse quote output"),
         ));
         output.push('\n');
     }
 
-    fn extract_method(ty: &syn::Type) -> Option<&syn::TypeFnPtr> {
+    fn extract_method(ty: &rust_syntax::Type) -> Option<&rust_syntax::TypeFnPtr> {
         match ty {
-            syn::Type::Path(tp) => tp.path.segments.last(),
+            rust_syntax::Type::Path(tp) => tp.path.segments.last(),
             _ => None,
         }
         .map(|seg| match &seg.arguments {
-            syn::PathArguments::AngleBracketed(args) => args.args.first(),
+            rust_syntax::PathArguments::AngleBracketed(args) => args.args.first(),
             _ => None,
         })?
         .map(|arg| match arg {
-            syn::GenericArgument::Type(t) => Some(t),
+            rust_syntax::GenericArgument::Type(t) => Some(t),
             _ => None,
         })?
         .map(|ty| match ty {
-            syn::Type::FnPtr(r) => Some(r),
+            rust_syntax::Type::FnPtr(r) => Some(r),
             _ => None,
         })?
     }

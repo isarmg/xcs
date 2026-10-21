@@ -3,8 +3,8 @@ use std::iter::FromIterator;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use quote::quote;
-use syn::spanned::Spanned;
-use syn::{
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{
     Attribute, Expr, Ident, LitStr, Token, parenthesized,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
@@ -21,7 +21,7 @@ pub(crate) struct ClapAttr {
 }
 
 impl ClapAttr {
-    pub(crate) fn parse_all(all_attrs: &[Attribute]) -> Result<Vec<Self>, syn::Error> {
+    pub(crate) fn parse_all(all_attrs: &[Attribute]) -> Result<Vec<Self>, rust_syntax::Error> {
         let mut parsed = Vec::new();
         for attr in all_attrs {
             let kind = if attr.path().is_ident("clap") {
@@ -47,17 +47,17 @@ impl ClapAttr {
         Ok(parsed)
     }
 
-    pub(crate) fn value_or_abort(&self) -> Result<&AttrValue, syn::Error> {
+    pub(crate) fn value_or_abort(&self) -> Result<&AttrValue, rust_syntax::Error> {
         self.value
             .as_ref()
             .ok_or_else(|| format_err!(self.name, "attribute `{}` requires a value", self.name))
     }
 
-    pub(crate) fn lit_str_or_abort(&self) -> Result<&LitStr, syn::Error> {
+    pub(crate) fn lit_str_or_abort(&self) -> Result<&LitStr, rust_syntax::Error> {
         let value = self.value_or_abort()?;
         match value {
             AttrValue::Expr(Expr::Lit(expr)) => match &expr.lit {
-                syn::Lit::Str(lit) => Ok(lit),
+                rust_syntax::Lit::Str(lit) => Ok(lit),
                 _ => {
                     abort!(
                         expr,
@@ -83,11 +83,11 @@ impl ClapAttr {
         }
     }
 
-    pub(crate) fn lit_bool_or_abort(&self) -> Result<bool, syn::Error> {
+    pub(crate) fn lit_bool_or_abort(&self) -> Result<bool, rust_syntax::Error> {
         let value = self.value_or_abort()?;
         match value {
-            AttrValue::Expr(Expr::Lit(syn::ExprLit {
-                lit: syn::Lit::Bool(lit),
+            AttrValue::Expr(Expr::Lit(rust_syntax::ExprLit {
+                lit: rust_syntax::Lit::Bool(lit),
                 ..
             })) => Ok(lit.value()),
             _ => abort!(
@@ -100,7 +100,7 @@ impl ClapAttr {
 }
 
 impl Parse for ClapAttr {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let name: Ident = input.parse()?;
         let name_str = name.to_string();
 
@@ -145,7 +145,7 @@ impl Parse for ClapAttr {
                     "expected `string literal` or `expression` after `=`"
                 },
             }
-        } else if input.peek(syn::token::Paren) {
+        } else if input.peek(rust_syntax::token::Paren) {
             // `name(...)` attributes.
             let nested;
             parenthesized!(nested in input);

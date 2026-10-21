@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use syn::custom_punctuation;
+    use rust_syntax::custom_punctuation;
 
     use super::*;
 
@@ -15,7 +15,7 @@ mod test {
                         let tts = quote::quote!{
                             $($tts)*
                         };
-                        syn::parse2::<$name>(tts).unwrap();
+                        rust_syntax::parse2::<$name>(tts).unwrap();
 
                     }
                 }
@@ -42,6 +42,6 @@ mod test {
         let tts = quote::quote! {
             </
         };
-        syn::parse2::<CloseTagStart2>(tts).unwrap_err();
+        rust_syntax::parse2::<CloseTagStart2>(tts).unwrap_err();
     }
 }

@@ -1,5 +1,5 @@
 use quote::quote;
-use syn::Result;
+use rust_syntax::Result;
 
 use super::compiles;
 

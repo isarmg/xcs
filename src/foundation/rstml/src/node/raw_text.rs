@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use derive_where::derive_where;
 use proc_macro2::{Span, TokenStream, TokenTree};
 use quote::ToTokens;
-use syn::{parse::ParseStream, spanned::Spanned, token::Brace, LitStr, Token};
+use rust_syntax::{parse::ParseStream, spanned::Spanned, token::Brace, LitStr, Token};
 
 use super::{CustomNode, Infallible, Node};
 use crate::recoverable::ParseRecoverable;
@@ -126,7 +126,7 @@ impl<C> RawText<C> {
     {
         let spans: Vec<Span> = Some(open_tag_end)
             .into_iter()
-            .chain(children.iter().map(syn::spanned::Spanned::span))
+            .chain(children.iter().map(rust_syntax::spanned::Spanned::span))
             .chain(close_tag_start)
             .collect();
 

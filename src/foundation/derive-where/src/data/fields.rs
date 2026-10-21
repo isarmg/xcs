@@ -1,6 +1,6 @@
 //! Storage for items or variants with data.
 
-use syn::{
+use rust_syntax::{
 	token::{Brace, Paren},
 	FieldPat, FieldsNamed, FieldsUnnamed, Ident, Pat, PatIdent, PatStruct, PatTupleStruct, Path,
 	Result, Token,

@@ -1,9 +1,9 @@
 use super::metadata::{InnerVariantExt, InnerVariantMeta};
 use super::occurrence_error;
-use syn::{Field, LitStr};
+use rust_syntax::{Field, LitStr};
 
 pub trait HasInnerVariantProperties {
-    fn get_variant_inner_properties(&self) -> syn::Result<StrumInnerVariantProperties>;
+    fn get_variant_inner_properties(&self) -> rust_syntax::Result<StrumInnerVariantProperties>;
 }
 
 #[derive(Clone, Default)]
@@ -12,7 +12,7 @@ pub struct StrumInnerVariantProperties {
 }
 
 impl HasInnerVariantProperties for Field {
-    fn get_variant_inner_properties(&self) -> syn::Result<StrumInnerVariantProperties> {
+    fn get_variant_inner_properties(&self) -> rust_syntax::Result<StrumInnerVariantProperties> {
         let mut output = StrumInnerVariantProperties { default_with: None };
 
         let mut default_with_kw = None;

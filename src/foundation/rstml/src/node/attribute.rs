@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{
+use rust_syntax::{
     parse::{discouraged::Speculative, Parse, ParseStream},
     parse_quote,
     punctuated::Punctuated,
@@ -142,13 +142,13 @@ impl KeyedAttribute {
     // Checks if error is about eof.
     // This error is known to report Span::call_site.
     // Correct them to point to ParseStream
-    pub(crate) fn correct_expr_error_span(error: syn::Error, input: ParseStream) -> syn::Error {
+    pub(crate) fn correct_expr_error_span(error: rust_syntax::Error, input: ParseStream) -> rust_syntax::Error {
         let error_str = error.to_string();
         if error_str.starts_with("unexpected end of input") {
             let stream = input
                 .parse::<TokenStream>()
                 .expect("BUG: Token stream should always be parsable");
-            return syn::Error::new(
+            return rust_syntax::Error::new(
                 stream.span(),
                 format!("failed to parse expression: {error}"),
             );
@@ -166,7 +166,7 @@ pub struct FnBinding {
 }
 
 // Copy - pasted from syn1 closure argument parsing
-fn closure_arg(input: ParseStream) -> syn::Result<Pat> {
+fn closure_arg(input: ParseStream) -> rust_syntax::Result<Pat> {
     let attrs = input.call(Attribute::parse_outer)?;
     let mut pat: Pat = Pat::parse_single(input)?;
 
@@ -246,7 +246,7 @@ impl ParseRecoverable for KeyedAttribute {
                 .map_err(|e| parser.push_diagnostic(e))
                 .ok()?;
             if input.is_empty() {
-                parser.push_diagnostic(syn::Error::new(eq.span(), "missing attribute value"));
+                parser.push_diagnostic(rust_syntax::Error::new(eq.span(), "missing attribute value"));
                 return None;
             }
 
@@ -312,9 +312,9 @@ impl ParseRecoverable for NodeAttribute {
 }
 
 impl Parse for FnBinding {
-    fn parse(stream: ParseStream) -> syn::Result<Self> {
+    fn parse(stream: ParseStream) -> rust_syntax::Result<Self> {
         let content;
-        let paren = syn::parenthesized!(content in stream);
+        let paren = rust_syntax::parenthesized!(content in stream);
         let inputs = Punctuated::parse_terminated_with(&content, closure_arg)?;
         Ok(Self { paren, inputs })
     }

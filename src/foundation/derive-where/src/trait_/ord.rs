@@ -22,7 +22,7 @@ impl TraitImpl for Ord {
 		DeriveTrait::Ord
 	}
 
-	fn path(&self) -> syn::Path {
+	fn path(&self) -> rust_syntax::Path {
 		util::path_from_strs(&["core", "cmp", "Ord"])
 	}
 

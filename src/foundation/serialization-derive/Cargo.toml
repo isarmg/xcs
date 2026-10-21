@@ -54,7 +54,7 @@ features = ["proc-macro"]
 default-features = false
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3"
 features = [
     "clone-impls",
@@ -64,5 +64,5 @@ features = [
     "proc-macro",
 ]
 default-features = false
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 

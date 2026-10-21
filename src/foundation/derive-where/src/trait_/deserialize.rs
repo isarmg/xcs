@@ -4,7 +4,7 @@ use std::{borrow::Cow, ops::Deref};
 
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{
+use rust_syntax::{
 	punctuated::Punctuated, Attribute, DeriveInput, Ident, ImplGenerics, Meta, Path, Result,
 	TypeGenerics, WhereClause,
 };
@@ -37,7 +37,7 @@ impl TraitImpl for Deserialize {
 	fn parse_derive_trait(
 		attrs: &[Attribute],
 		span: Span,
-		list: Option<Punctuated<Meta, syn::Token![,]>>,
+		list: Option<Punctuated<Meta, rust_syntax::Token![,]>>,
 	) -> Result<DeriveTrait>
 	where
 		Self: Sized,
@@ -49,7 +49,7 @@ impl TraitImpl for Deserialize {
 
 	fn path(&self) -> Path {
 		let crate_ = self.crate_();
-		syn::parse2::<Path>(quote! { #crate_::Deserialize<'de> }).unwrap()
+		rust_syntax::parse2::<Path>(quote! { #crate_::Deserialize<'de> }).unwrap()
 	}
 
 	fn impl_item(

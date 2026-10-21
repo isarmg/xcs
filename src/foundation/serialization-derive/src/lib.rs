@@ -68,7 +68,7 @@
 
 extern crate proc_macro2;
 extern crate quote;
-extern crate syn;
+extern crate rust_syntax;
 
 extern crate proc_macro;
 
@@ -77,8 +77,8 @@ mod internals;
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
 use quote::{ToTokens, TokenStreamExt as _};
-use syn::parse_macro_input;
-use syn::DeriveInput;
+use rust_syntax::parse_macro_input;
+use rust_syntax::DeriveInput;
 
 #[macro_use]
 mod bound;
@@ -114,7 +114,7 @@ impl ToTokens for private {
 pub fn derive_serialize(input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
     ser::expand_derive_serialize(&mut input)
-        .unwrap_or_else(syn::Error::into_compile_error)
+        .unwrap_or_else(rust_syntax::Error::into_compile_error)
         .into()
 }
 
@@ -122,6 +122,6 @@ pub fn derive_serialize(input: TokenStream) -> TokenStream {
 pub fn derive_deserialize(input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
     de::expand_derive_deserialize(&mut input)
-        .unwrap_or_else(syn::Error::into_compile_error)
+        .unwrap_or_else(rust_syntax::Error::into_compile_error)
         .into()
 }

@@ -5,7 +5,7 @@
 use crate::{hash::ShortHash, Diagnostic};
 use proc_macro2::{Ident, Span};
 use std::hash::{Hash, Hasher};
-use syn::Path;
+use rust_syntax::Path;
 use wasm_bindgen_shared as shared;
 
 pub fn use_js_sys_futures() -> bool {
@@ -71,9 +71,9 @@ impl Default for Program {
             structs: Default::default(),
             typescript_custom_sections: Default::default(),
             inline_js: Default::default(),
-            wasm_bindgen: syn::parse_quote! { wasm_bindgen },
-            js_sys: syn::parse_quote! { js_sys },
-            wasm_bindgen_futures: syn::parse_quote! { wasm_bindgen_futures },
+            wasm_bindgen: rust_syntax::parse_quote! { wasm_bindgen },
+            js_sys: rust_syntax::parse_quote! { js_sys },
+            wasm_bindgen_futures: rust_syntax::parse_quote! { wasm_bindgen_futures },
         }
     }
 }
@@ -204,7 +204,7 @@ pub struct ImportFunction {
     /// The name rust code will use
     pub rust_name: Ident,
     /// The type being returned
-    pub js_ret: Option<syn::Type>,
+    pub js_ret: Option<rust_syntax::Type>,
     /// Whether to catch JS exceptions
     pub catch: bool,
     /// Whether the function is variadic on the JS side
@@ -232,7 +232,7 @@ pub struct ImportFunction {
     /// Path to js_sys
     pub js_sys: Path,
     /// Generic parameters as validated simple type parameters for this function
-    pub generics: syn::Generics,
+    pub generics: rust_syntax::Generics,
     /// Opt-in to the experimental per-monomorphisation generic import codegen
     /// path (interpreter-discovered, marker-terminated) instead of type erasure.
     pub generic_per_mono: bool,
@@ -247,7 +247,7 @@ pub enum ImportFunctionKind {
         /// The name of the class for this method, in JS
         class: String,
         /// The type of the class for this method, in Rust
-        ty: syn::Type,
+        ty: rust_syntax::Type,
         /// The kind of method this is
         kind: MethodKind,
     },
@@ -300,9 +300,9 @@ pub enum OperationKind {
 #[derive(Clone)]
 pub struct ImportStatic {
     /// The visibility of this static in Rust
-    pub vis: syn::Visibility,
+    pub vis: rust_syntax::Visibility,
     /// The type of static being imported
-    pub ty: syn::Type,
+    pub ty: rust_syntax::Type,
     /// The name of the shim function used to access this static
     pub shim: Ident,
     /// The name of this static on the Rust side
@@ -329,9 +329,9 @@ pub enum ThreadLocal {
 #[derive(Clone)]
 pub struct ImportString {
     /// The visibility of this static string in Rust
-    pub vis: syn::Visibility,
+    pub vis: rust_syntax::Visibility,
     /// The type specified by the user, which we only use to show an error if the wrong type is used.
-    pub ty: syn::Type,
+    pub ty: rust_syntax::Type,
     /// The name of the shim function used to access this static
     pub shim: Ident,
     /// The name of this static on the Rust side
@@ -351,13 +351,13 @@ pub struct ImportString {
 #[derive(Clone)]
 pub struct ImportType {
     /// The visibility of this type in Rust
-    pub vis: syn::Visibility,
+    pub vis: rust_syntax::Visibility,
     /// The name of this type on the Rust side
     pub rust_name: Ident,
     /// The name of this type on the JS side
     pub js_name: String,
     /// The custom attributes to apply to this type
-    pub attrs: Vec<syn::Attribute>,
+    pub attrs: Vec<rust_syntax::Attribute>,
     /// The TS definition to generate for this type
     pub typescript_type: Option<String>,
     /// The doc comment applied to this type, if one exists
@@ -365,9 +365,9 @@ pub struct ImportType {
     /// The name of the shim to check instanceof for this type
     pub instanceof_shim: String,
     /// The name of the remote function to use for the generated is_type_of
-    pub is_type_of: Option<syn::Expr>,
+    pub is_type_of: Option<rust_syntax::Expr>,
     /// The list of classes this extends, if any
-    pub extends: Vec<syn::Path>,
+    pub extends: Vec<rust_syntax::Path>,
     /// A custom prefix to add and attempt to fall back to, if the type isn't found
     pub vendor_prefixes: Vec<Ident>,
     /// If present, don't generate a `Deref` impl
@@ -381,7 +381,7 @@ pub struct ImportType {
     /// Path to wasm_bindgen
     pub wasm_bindgen: Path,
     /// Validated generics
-    pub generics: syn::Generics,
+    pub generics: rust_syntax::Generics,
 }
 
 /// The metadata for a String Enum
@@ -389,7 +389,7 @@ pub struct ImportType {
 #[derive(Clone)]
 pub struct StringEnum {
     /// The Rust enum's visibility
-    pub vis: syn::Visibility,
+    pub vis: rust_syntax::Visibility,
     /// The Rust enum's identifiers
     pub name: Ident,
     /// The export name of this string enum in JS/TS code
@@ -401,7 +401,7 @@ pub struct StringEnum {
     /// The doc comments on this enum, if any
     pub comments: Vec<String>,
     /// Attributes to apply to the Rust enum
-    pub rust_attrs: Vec<syn::Attribute>,
+    pub rust_attrs: Vec<rust_syntax::Attribute>,
     /// Whether to generate a typescript definition for this enum
     pub generate_typescript: bool,
     /// Whether to suppress the `export` keyword on the generated TS type
@@ -419,7 +419,7 @@ pub struct StringEnum {
 #[derive(Clone)]
 pub struct DynamicUnion {
     /// The Rust enum's visibility
-    pub vis: syn::Visibility,
+    pub vis: rust_syntax::Visibility,
     /// The Rust enum's identifiers
     pub name: Ident,
     /// The name of this enum in JS/TS code
@@ -429,11 +429,11 @@ pub struct DynamicUnion {
     /// The JS string values of the known string variants
     pub variant_values: Vec<String>,
     /// The field types for each variant (empty for known string variants, one element for fallback variant)
-    pub variant_fields: Vec<Vec<syn::Type>>,
+    pub variant_fields: Vec<Vec<rust_syntax::Type>>,
     /// The doc comments on this enum, if any
     pub comments: Vec<String>,
     /// Attributes to apply to the Rust enum
-    pub rust_attrs: Vec<syn::Attribute>,
+    pub rust_attrs: Vec<rust_syntax::Attribute>,
     /// Whether to generate a typescript definition for this enum
     pub generate_typescript: bool,
     /// Whether to suppress the `export` keyword on the generated TS type alias.
@@ -472,9 +472,9 @@ pub struct Function {
     /// The data of return type of the function
     pub ret: Option<FunctionReturnData>,
     /// Any custom attributes being applied to the function
-    pub rust_attrs: Vec<syn::Attribute>,
+    pub rust_attrs: Vec<rust_syntax::Attribute>,
     /// The visibility of this function in Rust
-    pub rust_vis: syn::Visibility,
+    pub rust_vis: rust_syntax::Visibility,
     /// Whether this is an `unsafe` function
     pub r#unsafe: bool,
     /// Whether this is an `async` function
@@ -499,7 +499,7 @@ pub struct Function {
 #[derive(Clone)]
 pub struct FunctionReturnData {
     /// Specifies the type of the function's return
-    pub r#type: syn::Type,
+    pub r#type: rust_syntax::Type,
     /// Specifies the JS return type override
     pub js_type: Option<String>,
     /// Specifies the return description
@@ -511,7 +511,7 @@ pub struct FunctionReturnData {
 #[derive(Clone)]
 pub struct FunctionArgumentData {
     /// Specifies the type of the function's argument
-    pub pat_type: syn::PatType,
+    pub pat_type: rust_syntax::PatType,
     /// Specifies the JS argument name override
     pub js_name: Option<String>,
     /// Specifies the JS function argument type override
@@ -576,7 +576,7 @@ pub struct Struct {
 #[derive(Clone)]
 pub struct StructField {
     /// The name of the field in Rust code
-    pub rust_name: syn::Member,
+    pub rust_name: rust_syntax::Member,
     /// The name of the field in JS code
     pub js_name: String,
     /// The name of the struct this field is part of
@@ -584,7 +584,7 @@ pub struct StructField {
     /// Whether this value is read-only to JS
     pub readonly: bool,
     /// The type of this field
-    pub ty: syn::Type,
+    pub ty: rust_syntax::Type,
     /// The name of the getter shim for this field
     pub getter: Ident,
     /// The name of the setter shim for this field
@@ -651,12 +651,12 @@ pub struct Variant {
     pub comments: Vec<String>,
 }
 
-/// An enum representing either a literal value (`Lit`) or an expression (`syn::Expr`).
+/// An enum representing either a literal value (`Lit`) or an expression (`rust_syntax::Expr`).
 #[cfg_attr(feature = "extra-traits", derive(Debug))]
 #[derive(Clone)]
 pub enum LitOrExpr {
     /// Represents an expression that needs to be evaluated before it can be encoded
-    Expr(syn::Expr),
+    Expr(rust_syntax::Expr),
     /// Represents a literal string that can be directly encoded.
     Lit(String),
 }
@@ -734,7 +734,7 @@ impl Function {
         // Otherwise we infer names based on the Rust function name.
         if !name.starts_with("set_") {
             bail_span!(
-                syn::token::Pub(self.name_span),
+                rust_syntax::token::Pub(self.name_span),
                 "setters must start with `set_`, found: {}",
                 name,
             );

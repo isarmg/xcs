@@ -25,7 +25,7 @@ use std::{borrow::Cow, ops::Deref};
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{
+use rust_syntax::{
 	parse::{Parse, ParseStream},
 	punctuated::Punctuated,
 	spanned::Spanned,
@@ -263,14 +263,14 @@ impl DeriveTrait {
 	pub fn from_stream(
 		attrs: &[Attribute],
 		span: Span,
-		data: &syn::Data,
+		data: &rust_syntax::Data,
 		input: ParseStream,
 	) -> Result<(Span, Self)> {
 		match Meta::parse(input) {
 			Ok(meta) => {
 				let trait_ = Trait::from_path(meta.path())?;
 
-				if let syn::Data::Union(_) = data {
+				if let rust_syntax::Data::Union(_) = data {
 					// Make sure this `Trait` supports unions.
 					if !trait_.supports_union() {
 						return Err(Error::union(span));
@@ -303,7 +303,7 @@ impl DeriveTrait {
 /// Single trait implementation. Parses attributes and constructs `impl`s.
 pub trait TraitImpl: Deref<Target = Trait> {
 	/// [`str`] representation of this [`Trait`].
-	/// Used to compare against [`Ident`](struct@syn::Ident)s and create error
+	/// Used to compare against [`Ident`](struct@rust_syntax::Ident)s and create error
 	/// messages.
 	fn as_str() -> &'static str
 	where

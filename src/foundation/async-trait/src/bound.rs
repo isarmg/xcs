@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens};
-use syn::punctuated::Punctuated;
-use syn::{Token, TypeParamBound};
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::{Token, TypeParamBound};
 
 pub type Supertraits = Punctuated<TypeParamBound, Token![+]>;
 

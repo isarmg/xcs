@@ -1,10 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, LitStr};
+use rust_syntax::{Data, DeriveInput, LitStr};
 
 use crate::helpers::{non_enum_error, HasStrumVariantProperties, HasTypeProperties};
 
-pub fn enum_variant_names_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn enum_variant_names_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let gen = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = gen.split_for_impl();
@@ -28,7 +28,7 @@ pub fn enum_variant_names_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                 type_properties.suffix.as_ref(),
             ))
         })
-        .collect::<syn::Result<Vec<LitStr>>>()?;
+        .collect::<rust_syntax::Result<Vec<LitStr>>>()?;
 
     Ok(quote! {
         #[automatically_derived]

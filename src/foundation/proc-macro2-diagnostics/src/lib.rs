@@ -15,7 +15,7 @@
 //!    [`proc_macro2::Span`] to create [`Diagnostic`]s:
 //!
 //! ```rust
-//! use syn::spanned::Spanned;
+//! use rust_syntax::spanned::Spanned;
 //! use proc_macro2::TokenStream;
 //! use proc_macro2_diagnostics::{SpanDiagnosticExt, Diagnostic};
 //!
@@ -31,7 +31,7 @@
 //!
 //! # use proc_macro2::TokenStream;
 //! # use proc_macro2_diagnostics::{SpanDiagnosticExt, Diagnostic};
-//! # use syn::spanned::Spanned;
+//! # use rust_syntax::spanned::Spanned;
 //! # fn my_macro(input: TokenStream) -> Result<TokenStream, Diagnostic> {
 //! #     Err(input.span().error("there's a problem here..."))
 //! # }

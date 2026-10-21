@@ -1,4 +1,4 @@
-//! [`Attribute`](syn::Attribute) parsing for items, variants and fields.
+//! [`Attribute`](rust_syntax::Attribute) parsing for items, variants and fields.
 
 mod crate_;
 mod default;

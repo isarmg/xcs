@@ -8,7 +8,7 @@ use proc_macro2::TokenStream;
 use proc_macro2::{Literal, Span};
 use quote::quote;
 #[cfg(not(feature = "nightly"))]
-use syn::{parse_quote, Expr, ExprLit, Lit, LitInt, Path};
+use rust_syntax::{parse_quote, Expr, ExprLit, Lit, LitInt, Path};
 
 #[cfg(not(feature = "nightly"))]
 use crate::{item::Representation, DeriveTrait, Discriminant};

@@ -6,7 +6,7 @@ pub trait FromPartial<T>: Sized {
     /// Creates `Self` from `T`.
     ///
     /// # Errors
-    /// Returns a [`syn::Error`] when `T` does not represent a valid `Self`,
+    /// Returns a [`rust_syntax::Error`] when `T` does not represent a valid `Self`,
     /// e.g., due to missing or conflicting fields.
     fn from(partial: T) -> Result<Self>;
 
@@ -22,7 +22,7 @@ pub trait FromPartial<T>: Sized {
         partial
             .map(Self::from)
             .transpose()?
-            .ok_or_else(|| syn::Error::new(Span::call_site(), error_missing))
+            .ok_or_else(|| rust_syntax::Error::new(Span::call_site(), error_missing))
     }
 
     /// Defines how two arguments for the same parameter should be handled.

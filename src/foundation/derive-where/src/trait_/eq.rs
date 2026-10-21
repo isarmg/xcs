@@ -4,7 +4,7 @@ use std::{borrow::Cow, ops::Deref};
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, Ident, ImplGenerics, Path, TypeGenerics, WhereClause};
+use rust_syntax::{DeriveInput, Ident, ImplGenerics, Path, TypeGenerics, WhereClause};
 
 use crate::{util, Data, DeriveTrait, DeriveWhere, Item, SplitGenerics, Trait, TraitImpl};
 

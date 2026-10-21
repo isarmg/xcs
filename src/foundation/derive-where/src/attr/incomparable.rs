@@ -1,7 +1,7 @@
 //! Attribute parsing for the `incomparable` option.
 
 use proc_macro2::Span;
-use syn::{spanned::Spanned, Meta, Result};
+use rust_syntax::{spanned::Spanned, Meta, Result};
 
 use crate::{trait_::DeriveTrait, DeriveWhere, Error};
 

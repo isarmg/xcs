@@ -13,7 +13,7 @@
 //!   main.rs.** Types from `proc_macro` are entirely specific to procedural
 //!   macros and cannot ever exist in code outside of a procedural macro.
 //!   Meanwhile `proc_macro2` types may exist anywhere including non-macro code.
-//!   By developing foundational libraries like [syn] and [quote] against
+//!   By developing foundational libraries like [rust_syntax] and [quote] against
 //!   `proc_macro2` rather than `proc_macro`, the procedural macro ecosystem
 //!   becomes easily applicable to many other use cases and we avoid
 //!   reimplementing non-macro equivalents of those libraries.
@@ -24,7 +24,7 @@
 //!   a macro to be testable in isolation, they must be implemented using
 //!   `proc_macro2`.
 //!
-//! [syn]: https://github.com/dtolnay/syn
+//! [rust_syntax]: https://github.com/dtolnay/syn
 //! [quote]: https://github.com/dtolnay/quote
 //!
 //! # Usage
@@ -50,7 +50,7 @@
 //! }
 //! ```
 //!
-//! If parsing with [Syn], you'll use [`parse_macro_input!`] instead to
+//! If parsing with [Rust Syntax], you'll use [`parse_macro_input!`] instead to
 //! propagate parse errors correctly back to the compiler when parsing fails.
 //!
 //! [`parse_macro_input!`]: https://docs.rs/syn/3/syn/macro.parse_macro_input.html
@@ -907,7 +907,7 @@ impl Debug for Punct {
 /// property.
 ///
 /// - The empty string is not an identifier. Use `Option<Ident>`.
-/// - A lifetime is not an identifier. Use `syn::Lifetime` instead.
+/// - A lifetime is not an identifier. Use `rust_syntax::Lifetime` instead.
 ///
 /// An identifier constructed with `Ident::new` is permitted to be a Rust
 /// keyword, though parsing one through its [`Parse`] implementation rejects
@@ -1013,7 +1013,7 @@ impl Ident {
     /// name. If you are not sure whether the string contains an identifier and
     /// need to handle an error case, use
     /// <a href="https://docs.rs/syn/3/syn/fn.parse_str.html"><code
-    ///   style="padding-right:0;">syn::parse_str</code></a><code
+    ///   style="padding-right:0;">rust_syntax::parse_str</code></a><code
     ///   style="padding-left:0;">::&lt;Ident&gt;</code>
     /// rather than `Ident::new`.
     #[track_caller]

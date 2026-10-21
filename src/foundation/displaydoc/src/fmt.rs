@@ -1,7 +1,7 @@
 use crate::attr::Display;
 use proc_macro2::TokenStream;
 use quote::quote_spanned;
-use syn::{Ident, LitStr};
+use rust_syntax::{Ident, LitStr};
 
 macro_rules! peek_next {
     ($read:ident) => {

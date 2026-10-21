@@ -82,9 +82,9 @@
 use proc_macro2::TokenStream;
 use quote::TokenStreamExt;
 use quote::{quote, ToTokens};
-use syn::parse::{Parse, ParseStream};
-use syn::token::Brace;
-use syn::{Attribute, ItemFn, Signature, Visibility};
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::token::Brace;
+use rust_syntax::{Attribute, ItemFn, Signature, Visibility};
 
 mod attr;
 mod expand;
@@ -576,7 +576,7 @@ pub fn instrument(
     args: proc_macro::TokenStream,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    let args = syn::parse_macro_input!(args as attr::InstrumentArgs);
+    let args = rust_syntax::parse_macro_input!(args as attr::InstrumentArgs);
     // Cloning a `TokenStream` is cheap since it's reference counted internally.
     instrument_precise(args.clone(), item.clone())
         .unwrap_or_else(|_err| instrument_speculative(args, item))
@@ -587,7 +587,7 @@ fn instrument_speculative(
     args: attr::InstrumentArgs,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    let input = syn::parse_macro_input!(item as MaybeItemFn);
+    let input = rust_syntax::parse_macro_input!(item as MaybeItemFn);
     let instrumented_function_name = input.sig.ident.to_string();
     expand::gen_function(
         input.as_ref(),
@@ -603,8 +603,8 @@ fn instrument_speculative(
 fn instrument_precise(
     args: attr::InstrumentArgs,
     item: proc_macro::TokenStream,
-) -> Result<proc_macro::TokenStream, syn::Error> {
-    let input = syn::parse::<ItemFn>(item)?;
+) -> Result<proc_macro::TokenStream, rust_syntax::Error> {
+    let input = rust_syntax::parse::<ItemFn>(item)?;
     input.modifiers.require_empty()?;
     let instrumented_function_name = input.sig.ident.to_string();
 
@@ -660,13 +660,13 @@ impl MaybeItemFn {
 /// This parses a `TokenStream` into a `MaybeItemFn`
 /// (just like `ItemFn`, but skips parsing the body).
 impl Parse for MaybeItemFn {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let outer_attrs = input.call(Attribute::parse_outer)?;
         let vis: Visibility = input.parse()?;
         let sig: Signature = input.parse()?;
         let inner_attrs = input.call(Attribute::parse_inner)?;
         let block;
-        let brace_token = syn::braced!(block in input);
+        let brace_token = rust_syntax::braced!(block in input);
         let block: TokenStream = block.call(|buffer| buffer.parse())?;
         Ok(Self {
             outer_attrs,
@@ -691,7 +691,7 @@ impl From<ItemFn> for MaybeItemFn {
     ) -> Self {
         let (outer_attrs, inner_attrs) = attrs
             .into_iter()
-            .partition(|attr| attr.style == syn::AttrStyle::Outer);
+            .partition(|attr| attr.style == rust_syntax::AttrStyle::Outer);
         let mut block_tokens = TokenStream::new();
         block_tokens.append_all(block.stmts);
         Self {

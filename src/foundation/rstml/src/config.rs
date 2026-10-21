@@ -1,7 +1,7 @@
 use std::{collections::HashSet, fmt::Debug, marker::PhantomData, rc::Rc};
 
 use proc_macro2::TokenStream;
-use syn::{parse::ParseStream, Result};
+use rust_syntax::{parse::ParseStream, Result};
 
 #[cfg(feature = "rawtext-stable-hack")]
 use crate::rawtext_stable_hack::MacroPattern;
@@ -119,10 +119,10 @@ impl<C> ParserConfig<C> {
         self
     }
 
-    /// Try to parse invalid `syn::Block`.
+    /// Try to parse invalid `rust_syntax::Block`.
     /// If set tot true, `NodeBlock` can return `Invalid` variant.
     ///
-    /// If `NodeBlock` is failed to parse as `syn::Block`
+    /// If `NodeBlock` is failed to parse as `rust_syntax::Block`
     /// it still usefull to emit it as expression.
     /// It will enhance IDE compatibility, and provide completion in cases of
     /// invalid blocks, for example `{x.}` is invalid expression, because
@@ -183,7 +183,7 @@ impl<C> ParserConfig<C> {
     ///
     /// ```rust
     /// use quote::quote;
-    /// use syn::Token;
+    /// use rust_syntax::Token;
     /// use rstml::{parse2_with_config, ParserConfig};
     ///
     /// let tokens = quote! {
@@ -216,7 +216,7 @@ impl<C> ParserConfig<C> {
     ///     node::{Node, NodeElement},
     ///     Parser, ParserConfig,
     /// };
-    /// use syn::{Expr, ExprRange, RangeLimits, Stmt};
+    /// use rust_syntax::{Expr, ExprRange, RangeLimits, Stmt};
     ///
     /// let config = ParserConfig::new()
     ///     .element_close_wildcard(|_open_tag, close_tag| close_tag.name.is_wildcard());

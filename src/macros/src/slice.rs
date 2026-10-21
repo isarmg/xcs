@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{
+use rust_syntax::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     punctuated::Punctuated,
@@ -10,16 +10,17 @@ use syn::{
 };
 
 struct SliceMacroInput {
-    root: syn::Ident,
-    path: Punctuated<syn::Member, Token![.]>,
+    root: rust_syntax::Ident,
+    path: Punctuated<rust_syntax::Member, Token![.]>,
 }
 
 impl Parse for SliceMacroInput {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let root: syn::Ident = input.parse()?;
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
+        let root: rust_syntax::Ident = input.parse()?;
         input.parse::<Token![.]>()?;
         // do not accept trailing punctuation
-        let path: Punctuated<syn::Member, Token![.]> = Punctuated::parse_separated_nonempty(input)?;
+        let path: Punctuated<rust_syntax::Member, Token![.]> =
+            Punctuated::parse_separated_nonempty(input)?;
 
         if path.is_empty() {
             return Err(input.error("expected identifier"));

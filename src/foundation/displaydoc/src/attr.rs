@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{Attribute, LitStr, Meta, Result};
+use rust_syntax::{Attribute, LitStr, Meta, Result};
 
 #[derive(Clone)]
 pub(crate) struct Display {
@@ -73,10 +73,10 @@ impl AttrsHelper {
             .iter()
             .filter(|attr| attr.path().is_ident("doc"))
             .map(|attr| match &attr.meta {
-                Meta::NameValue(syn::MetaNameValue {
+                Meta::NameValue(rust_syntax::MetaNameValue {
                     value:
-                        syn::Expr::Lit(syn::ExprLit {
-                            lit: syn::Lit::Str(lit),
+                        rust_syntax::Expr::Lit(rust_syntax::ExprLit {
+                            lit: rust_syntax::Lit::Str(lit),
                             ..
                         }),
                     ..

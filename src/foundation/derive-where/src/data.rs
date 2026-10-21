@@ -5,8 +5,8 @@ mod fields;
 
 use proc_macro2::Span;
 #[cfg(not(feature = "nightly"))]
-use syn::Expr;
-use syn::{FieldsNamed, Ident, Pat, PatPath, Path, Result, Variant};
+use rust_syntax::Expr;
+use rust_syntax::{FieldsNamed, Ident, Pat, PatPath, Path, Result, Variant};
 
 pub use self::{
 	field::{Field, Member},
@@ -78,19 +78,19 @@ pub enum SimpleType<'a> {
 }
 
 impl<'a> Data<'a> {
-	/// Create [`Data`]s from [`syn::Fields`] of a struct.
+	/// Create [`Data`]s from [`rust_syntax::Fields`] of a struct.
 	pub fn from_struct(
 		span: Span,
 		derive_wheres: &[DeriveWhere],
 		skip_inner: Skip,
 		incomparable: Incomparable,
 		ident: &'a Ident,
-		fields: &'a syn::Fields,
+		fields: &'a rust_syntax::Fields,
 	) -> Result<Self> {
 		let path = util::path_from_idents(&[ident]);
 
 		match fields {
-			syn::Fields::Named(fields) => {
+			rust_syntax::Fields::Named(fields) => {
 				if fields.named.is_empty() && incomparable.0.is_none() {
 					Err(Error::item_empty(span))
 				} else {
@@ -108,7 +108,7 @@ impl<'a> Data<'a> {
 					})
 				}
 			}
-			syn::Fields::Unnamed(fields) => {
+			rust_syntax::Fields::Unnamed(fields) => {
 				if fields.unnamed.is_empty() && incomparable.0.is_none() {
 					Err(Error::item_empty(span))
 				} else {
@@ -126,7 +126,7 @@ impl<'a> Data<'a> {
 					})
 				}
 			}
-			syn::Fields::Unit if incomparable.0.is_some() => Ok(Self {
+			rust_syntax::Fields::Unit if incomparable.0.is_some() => Ok(Self {
 				skip_inner,
 				incomparable,
 				ident,
@@ -139,7 +139,7 @@ impl<'a> Data<'a> {
 				#[cfg(not(feature = "nightly"))]
 				discriminant: None,
 			}),
-			syn::Fields::Unit => Err(Error::item_empty(span)),
+			rust_syntax::Fields::Unit => Err(Error::item_empty(span)),
 		}
 	}
 
@@ -170,7 +170,7 @@ impl<'a> Data<'a> {
 		}
 	}
 
-	/// Create [`Data`]s from [`syn::Fields`] of a variant.
+	/// Create [`Data`]s from [`rust_syntax::Fields`] of a variant.
 	pub fn from_variant(
 		item_ident: &'a Ident,
 		derive_wheres: &[DeriveWhere],
@@ -186,7 +186,7 @@ impl<'a> Data<'a> {
 		let path = util::path_from_idents(&[item_ident, &variant.ident]);
 
 		match &variant.fields {
-			syn::Fields::Named(fields) => {
+			rust_syntax::Fields::Named(fields) => {
 				let fields = Fields::from_named(derive_wheres, &skip_inner, path.clone(), fields)?;
 
 				Ok(Self {
@@ -202,7 +202,7 @@ impl<'a> Data<'a> {
 					discriminant: variant.discriminant.as_ref().map(|(_, expr)| expr),
 				})
 			}
-			syn::Fields::Unnamed(fields) => {
+			rust_syntax::Fields::Unnamed(fields) => {
 				let fields =
 					Fields::from_unnamed(derive_wheres, &skip_inner, path.clone(), fields)?;
 
@@ -219,7 +219,7 @@ impl<'a> Data<'a> {
 					discriminant: variant.discriminant.as_ref().map(|(_, expr)| expr),
 				})
 			}
-			syn::Fields::Unit => {
+			rust_syntax::Fields::Unit => {
 				let pattern = Pat::Path(PatPath {
 					attrs: Vec::new(),
 					qself: None,

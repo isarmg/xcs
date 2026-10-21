@@ -14,7 +14,7 @@
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{Generics, Ident};
+use rust_syntax::{Generics, Ident};
 
 use crate::item::Item;
 
@@ -22,7 +22,7 @@ pub(crate) fn gen_for_struct(
     item: &Item,
     item_name: &Ident,
     generics: &Generics,
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let name = item.cased_name();
@@ -70,7 +70,7 @@ pub(crate) fn gen_for_enum(
     item: &Item,
     item_name: &Ident,
     generics: &Generics,
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let name = item.cased_name();

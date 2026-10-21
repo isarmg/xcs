@@ -1,6 +1,6 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::ToTokens;
-use syn::LitStr;
+use rust_syntax::LitStr;
 
 use std::ops::{Deref, DerefMut};
 

@@ -1,9 +1,9 @@
 use crate::helpers::{case_style::snakify, non_enum_error, HasStrumVariantProperties};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
-use syn::{Data, DeriveInput};
+use rust_syntax::{Data, DeriveInput};
 
-pub fn enum_is_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn enum_is_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let variants = match &ast.data {
         Data::Enum(v) => &v.variants,
         _ => return Err(non_enum_error()),

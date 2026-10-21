@@ -21,7 +21,7 @@ impl TraitImpl for Debug {
 		DeriveTrait::Debug
 	}
 
-	fn path(&self) -> syn::Path {
+	fn path(&self) -> rust_syntax::Path {
 		util::path_from_strs(&["core", "fmt", "Debug"])
 	}
 

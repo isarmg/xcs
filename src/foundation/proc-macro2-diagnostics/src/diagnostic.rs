@@ -156,7 +156,7 @@ impl Diagnostic {
     }
 
     fn stable_emit_as_tokens(self, item: bool) -> TokenStream {
-        let error: syn::parse::Error = self.into();
+        let error: rust_syntax::parse::Error = self.into();
         if item {
             error.to_compile_error()
         } else {
@@ -211,8 +211,8 @@ impl Diagnostic {
     }
 }
 
-impl From<Diagnostic> for syn::parse::Error {
-    fn from(diag: Diagnostic) -> syn::parse::Error {
+impl From<Diagnostic> for rust_syntax::parse::Error {
+    fn from(diag: Diagnostic) -> rust_syntax::parse::Error {
         fn diag_to_msg(diag: &Diagnostic) -> String {
             let (spans, level, msg) = (&diag.spans, diag.level, &diag.message);
             if spans.is_empty() {
@@ -232,7 +232,7 @@ impl From<Diagnostic> for syn::parse::Error {
 
         let mut msg = diag_to_msg(&diag);
         let mut span = diag_to_span(&diag);
-        let mut error: Option<syn::Error> = None;
+        let mut error: Option<rust_syntax::Error> = None;
         for child in diag.children {
             if child.spans.is_empty() {
                 // Join to the current error we're building up.
@@ -240,7 +240,7 @@ impl From<Diagnostic> for syn::parse::Error {
             } else {
                 // This creates a new error with all of the diagnostic messages
                 // that have been joined thus far in `msg`.
-                let new_error = syn::parse::Error::new(span, &msg);
+                let new_error = rust_syntax::parse::Error::new(span, &msg);
                 if let Some(ref mut error) = error {
                     error.combine(new_error);
                 } else {
@@ -254,16 +254,16 @@ impl From<Diagnostic> for syn::parse::Error {
         }
 
         if let Some(mut error) = error {
-            error.combine(syn::parse::Error::new(span, &msg));
+            error.combine(rust_syntax::parse::Error::new(span, &msg));
             error
         } else {
-            syn::parse::Error::new(span, &msg)
+            rust_syntax::parse::Error::new(span, &msg)
         }
     }
 }
 
-impl From<syn::parse::Error> for Diagnostic {
-    fn from(error: syn::parse::Error) -> Diagnostic {
+impl From<rust_syntax::parse::Error> for Diagnostic {
+    fn from(error: rust_syntax::parse::Error) -> Diagnostic {
         let mut diag: Option<Diagnostic> = None;
         for e in &error {
             for line in e.to_string().lines() {

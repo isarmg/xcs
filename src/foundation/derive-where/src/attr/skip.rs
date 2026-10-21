@@ -2,7 +2,7 @@
 
 use std::default::Default;
 
-use syn::{spanned::Spanned, Meta, Path, Result};
+use rust_syntax::{spanned::Spanned, Meta, Path, Result};
 
 use crate::{trait_::DeriveTrait, util::MetaListExt, DeriveWhere, Error, Trait};
 
@@ -214,7 +214,7 @@ impl SkipGroup {
 	}
 
 	/// [`str`] representation of this [`Trait`].
-	/// Used to compare against [`Ident`](struct@syn::Ident)s and create error
+	/// Used to compare against [`Ident`](struct@rust_syntax::Ident)s and create error
 	/// messages.
 	const fn as_str(self) -> &'static str {
 		match self {

@@ -7,10 +7,10 @@ use crate::internals::{attr, replace_receiver, Ctxt, Derive};
 use crate::{bound, dummy, pretend, private, this};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::spanned::Spanned;
-use syn::{parse_quote, Ident, Index, Member};
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{parse_quote, Ident, Index, Member};
 
-pub fn expand_derive_serialize(input: &mut syn::DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_derive_serialize(input: &mut rust_syntax::DeriveInput) -> rust_syntax::Result<TokenStream> {
     replace_receiver(input);
 
     let ctxt = Ctxt::new();
@@ -83,14 +83,14 @@ struct Parameters {
     /// Path to the type the impl is for. Either a single `Ident` for local
     /// types (does not include generic parameters) or `some::remote::Path` for
     /// remote types.
-    this_type: syn::Path,
+    this_type: rust_syntax::Path,
 
     /// Same as `this_type` but using `::<T>` for generic parameters for use in
     /// expression position.
-    this_value: syn::Path,
+    this_value: rust_syntax::Path,
 
     /// Generics including any explicit and inferred bounds for the impl.
-    generics: syn::Generics,
+    generics: rust_syntax::Generics,
 
     /// Type has a `serde(remote = "...")` attribute.
     is_remote: bool,
@@ -132,7 +132,7 @@ impl Parameters {
 
 // All the generics in the input, plus a bound `T: Serialize` for each generic
 // field type that will be serialized by us.
-fn build_generics(cont: &Container) -> syn::Generics {
+fn build_generics(cont: &Container) -> rust_syntax::Generics {
     let generics = bound::without_defaults(cont.generics);
 
     let generics =
@@ -211,7 +211,7 @@ fn serialize_transparent(cont: &Container, params: &Parameters) -> Fragment {
     }
 }
 
-fn serialize_into(params: &Parameters, type_into: &syn::Type) -> Fragment {
+fn serialize_into(params: &Parameters, type_into: &rust_syntax::Type) -> Fragment {
     let self_var = &params.self_var;
     quote_block! {
         _serialization::Serialize::serialize(
@@ -276,7 +276,7 @@ fn serialize_tuple_struct(
         .map(|(i, field)| match field.attrs.skip_serializing_if() {
             None => quote!(1),
             Some(path) => {
-                let index = syn::Index {
+                let index = rust_syntax::Index {
                     index: i as u32,
                     span: Span::call_site(),
                 };
@@ -1172,8 +1172,8 @@ fn serialize_struct_visitor(
 
 fn wrap_serialize_field_with(
     params: &Parameters,
-    field_ty: &syn::Type,
-    serialize_with: &syn::ExprPath,
+    field_ty: &rust_syntax::Type,
+    serialize_with: &rust_syntax::ExprPath,
     field_expr: &TokenStream,
 ) -> TokenStream {
     wrap_serialize_with(params, serialize_with, &[field_ty], &[quote!(#field_expr)])
@@ -1181,7 +1181,7 @@ fn wrap_serialize_field_with(
 
 fn wrap_serialize_variant_with(
     params: &Parameters,
-    serialize_with: &syn::ExprPath,
+    serialize_with: &rust_syntax::ExprPath,
     variant: &Variant,
 ) -> TokenStream {
     let field_tys: Vec<_> = variant.fields.iter().map(|field| field.ty).collect();
@@ -1206,8 +1206,8 @@ fn wrap_serialize_variant_with(
 
 fn wrap_serialize_with(
     params: &Parameters,
-    serialize_with: &syn::ExprPath,
-    field_tys: &[&syn::Type],
+    serialize_with: &rust_syntax::ExprPath,
+    field_tys: &[&rust_syntax::Type],
     field_exprs: &[TokenStream],
 ) -> TokenStream {
     let this_type = &params.this_type;

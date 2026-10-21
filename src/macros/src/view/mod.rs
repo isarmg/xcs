@@ -19,13 +19,13 @@ use rstml::node::{
     CustomNode, KVAttributeValue, KeyedAttribute, Node, NodeAttribute, NodeBlock, NodeElement,
     NodeName, NodeNameFragment,
 };
-use std::collections::{HashMap, HashSet, VecDeque};
-use syn::{
+use rust_syntax::{
     punctuated::Pair::{End, Punctuated},
     spanned::Spanned,
     Expr::{self, Tuple},
     ExprArray, ExprLit, ExprPath, ExprRange, Lit, LitStr, RangeLimits, Stmt,
 };
+use std::collections::{HashMap, HashSet, VecDeque};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum TagType {
@@ -39,7 +39,7 @@ pub fn render_view(
     global_class: Option<&TokenTree>,
     view_marker: Option<String>,
     disable_inert_html: bool,
-) -> syn::Result<Option<TokenStream>> {
+) -> rust_syntax::Result<Option<TokenStream>> {
     let mut errors = Errors::default();
     let result = render_view_inner(
         nodes,
@@ -57,7 +57,7 @@ fn render_view_inner(
     view_marker: Option<String>,
     disable_inert_html: bool,
     errors: &mut Errors,
-) -> syn::Result<Option<TokenStream>> {
+) -> rust_syntax::Result<Option<TokenStream>> {
     let disable_inert_html = disable_inert_html || global_class.is_some();
 
     let (base, should_add_view) = match nodes.len() {
@@ -512,7 +512,7 @@ fn element_children_to_tokens(
     view_marker: Option<&str>,
     disable_inert_html: bool,
     errors: &mut Errors,
-) -> syn::Result<Option<TokenStream>> {
+) -> rust_syntax::Result<Option<TokenStream>> {
     let children = children_to_tokens(
         nodes,
         parent_type,
@@ -565,7 +565,7 @@ fn fragment_to_tokens(
     view_marker: Option<&str>,
     disable_inert_html: bool,
     errors: &mut Errors,
-) -> syn::Result<Option<TokenStream>> {
+) -> rust_syntax::Result<Option<TokenStream>> {
     let children = children_to_tokens(
         nodes,
         parent_type,
@@ -610,7 +610,7 @@ fn children_to_tokens(
     top_level: bool,
     disable_inert_html: bool,
     errors: &mut Errors,
-) -> syn::Result<Vec<TokenStream>> {
+) -> rust_syntax::Result<Vec<TokenStream>> {
     if nodes.len() == 1 {
         match node_to_tokens(
             &mut nodes[0],
@@ -642,7 +642,7 @@ fn children_to_tokens(
                 )
                 .transpose()
             })
-            .collect::<syn::Result<Vec<_>>>()?;
+            .collect::<rust_syntax::Result<Vec<_>>>()?;
         if let Some(parent_slots) = parent_slots {
             for (slot, mut values) in slots.drain() {
                 parent_slots
@@ -665,12 +665,12 @@ fn node_to_tokens(
     top_level: bool,
     disable_inert_html: bool,
     errors: &mut Errors,
-) -> syn::Result<Option<TokenStream>> {
+) -> rust_syntax::Result<Option<TokenStream>> {
     let is_inert = !disable_inert_html && is_inert_element(node);
 
     match node {
         Node::Comment(_) => Ok(None),
-        Node::Doctype(node) => Err(syn::Error::new(
+        Node::Doctype(node) => Err(rust_syntax::Error::new(
             node.span(),
             "browser views cannot create document doctypes",
         )),
@@ -689,7 +689,7 @@ fn node_to_tokens(
         Node::Text(text) => Ok(Some(text_to_tokens(&text.value))),
         Node::RawText(raw) => {
             let text = raw.to_string_best();
-            let text = syn::LitStr::new(&text, raw.span());
+            let text = rust_syntax::LitStr::new(&text, raw.span());
             Ok(Some(text_to_tokens(&text)))
         }
         Node::Element(el_node) => {
@@ -754,7 +754,7 @@ pub(crate) fn element_to_tokens(
     view_marker: Option<&str>,
     disable_inert_html: bool,
     errors: &mut Errors,
-) -> syn::Result<Option<TokenStream>> {
+) -> rust_syntax::Result<Option<TokenStream>> {
     // attribute sorting:
     //
     // the `class` and `style` attributes overwrite individual `class:` and `style:` attributes
@@ -802,7 +802,7 @@ pub(crate) fn element_to_tokens(
                 }
             }
             if names.contains(&name) && !allow_multiples(&name, attr) {
-                errors.push(syn::Error::new_spanned(
+                errors.push(rust_syntax::Error::new_spanned(
                     attr,
                     format!("This element already has a `{name}` attribute."),
                 ));
@@ -884,7 +884,7 @@ pub(crate) fn element_to_tokens(
             };
             quote_spanned! { node.name().span() => ::web_interface::view_renderer::svg::#name() }
         } else if is_math_ml_element(&tag) {
-            return Err(syn::Error::new(
+            return Err(rust_syntax::Error::new(
                 node.name().span(),
                 "typed MathML elements are not supported by this browser interface",
             ));
@@ -921,7 +921,7 @@ pub(crate) fn element_to_tokens(
             let nodes = attributes
                 .iter()
                 .map(|node| attribute_to_tokens(parent_type, node, global_class, is_custom, errors))
-                .collect::<syn::Result<Vec<_>>>()?;
+                .collect::<rust_syntax::Result<Vec<_>>>()?;
             Some(quote! {
                 #(#nodes)*
             })
@@ -945,7 +945,7 @@ pub(crate) fn element_to_tokens(
         } else {
             if !node.children.is_empty() {
                 let name = node.name();
-                errors.push(syn::Error::new_spanned(
+                errors.push(rust_syntax::Error::new_spanned(
                     name,
                     format!(
                         "Self-closing elements like <{name}> cannot have \
@@ -1010,7 +1010,7 @@ fn attribute_to_tokens(
     global_class: Option<&TokenTree>,
     is_custom: bool,
     errors: &mut Errors,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     Ok(match node {
         NodeAttribute::Block(node) => as_spread_attr(node)
             .flatten()
@@ -1095,7 +1095,7 @@ fn attribute_to_tokens(
                     && node.value().and_then(value_to_string).is_none()
                 {
                     let span = node.key.span();
-                    errors.push(syn::Error::new(span, "Combining a global class (view! { class = ... }) \
+                    errors.push(rust_syntax::Error::new(span, "Combining a global class (view! { class = ... }) \
             and a dynamic `class=` attribute on an element causes runtime inconsistencies. You can \
             toggle individual classes dynamically with the `class:name=value` syntax. \n\nSee this issue \
             for more information and an example: docs/components/interface.md"));
@@ -1113,7 +1113,7 @@ fn attribute_to_tokens(
 pub(crate) fn attribute_absolute(
     node: &KeyedAttribute,
     after_spread: bool,
-) -> syn::Result<Option<TokenStream>> {
+) -> rust_syntax::Result<Option<TokenStream>> {
     let key = node.key.to_string();
     let contains_dash = key.contains('-');
     let attr_colon = key.starts_with("attr:")
@@ -1193,7 +1193,7 @@ pub(crate) fn attribute_absolute(
                             let (on, ty, handler) = event_type_and_handler(&key, node)?;
                             Some(quote! { ::web_interface::view_renderer::html::event::#on(#ty, #handler) })
                         } else {
-                            return Err(syn::Error::new(
+                            return Err(rust_syntax::Error::new(
                                 id.span(),
                                 format!(
                                     "`{id}:` syntax is not supported on \
@@ -1249,7 +1249,10 @@ pub(crate) fn two_way_binding_to_tokens(name: &str, node: &KeyedAttribute) -> To
     }
 }
 
-pub(crate) fn event_to_tokens(name: &str, node: &KeyedAttribute) -> syn::Result<TokenStream> {
+pub(crate) fn event_to_tokens(
+    name: &str,
+    node: &KeyedAttribute,
+) -> rust_syntax::Result<TokenStream> {
     let (on, event_type, handler) = event_type_and_handler(name, node)?;
 
     Ok(quote! {
@@ -1260,7 +1263,7 @@ pub(crate) fn event_to_tokens(name: &str, node: &KeyedAttribute) -> syn::Result<
 pub(crate) fn event_type_and_handler(
     name: &str,
     node: &KeyedAttribute,
-) -> syn::Result<(TokenStream, TokenStream, TokenStream)> {
+) -> rust_syntax::Result<(TokenStream, TokenStream, TokenStream)> {
     let handler = attribute_value(node, false);
 
     let (event_type, is_custom, options) = parse_event_name(name)?;
@@ -1332,7 +1335,7 @@ fn class_to_tokens(
     node: &KeyedAttribute,
     class: TokenStream,
     class_name: Option<&str>,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     // case of class=(["foo", "bar"], /* something */)
     // just expands to multiple uses of class:
     if let Some(Tuple(tuple)) = node.value() {
@@ -1348,7 +1351,7 @@ fn class_to_tokens(
                         }) => Ok(quote! {
                             .#class((#s, #value))
                         }),
-                        _ => Err(syn::Error::new_spanned(elem, "invalid name")),
+                        _ => Err(rust_syntax::Error::new_spanned(elem, "invalid name")),
                     })
                     .collect();
             }
@@ -1728,7 +1731,9 @@ pub(crate) struct EventNameOptions {
     captured: bool,
 }
 
-pub(crate) fn parse_event_name(name: &str) -> syn::Result<(TokenStream, bool, EventNameOptions)> {
+pub(crate) fn parse_event_name(
+    name: &str,
+) -> rust_syntax::Result<(TokenStream, bool, EventNameOptions)> {
     let (name, options) = parse_event(name);
 
     let (event_type, is_custom) = TYPED_EVENTS
@@ -1738,7 +1743,7 @@ pub(crate) fn parse_event_name(name: &str) -> syn::Result<(TokenStream, bool, Ev
 
     let event_type = event_type
         .parse::<TokenStream>()
-        .map_err(|_| syn::Error::new_spanned(event_type, "couldn't parse event name"))?;
+        .map_err(|_| rust_syntax::Error::new_spanned(event_type, "couldn't parse event name"))?;
 
     let event_type = if is_custom {
         quote! { Custom::new(#name) }
@@ -1768,7 +1773,7 @@ pub(crate) fn ident_from_tag_name(tag_name: &NodeName, errors: &mut Errors) -> I
             .expect("element needs to have a name"),
         NodeName::Block(_) => {
             let span = tag_name.span();
-            errors.push(syn::Error::new(
+            errors.push(rust_syntax::Error::new(
                 span,
                 "blocks not allowed in tag-name position",
             ));
@@ -1789,7 +1794,7 @@ pub(crate) fn full_path_from_tag_name(
         NodeName::Path(path) => Some(path.clone()),
         NodeName::Block(_) => {
             let span = tag_name.span();
-            errors.push(syn::Error::new(
+            errors.push(rust_syntax::Error::new(
                 span,
                 "blocks not allowed in tag-name position",
             ));
@@ -1797,7 +1802,7 @@ pub(crate) fn full_path_from_tag_name(
         }
         _ => {
             let span = tag_name.span();
-            errors.push(syn::Error::new(
+            errors.push(rust_syntax::Error::new(
                 span,
                 "punctuated names not allowed in slots",
             ));
@@ -1810,7 +1815,7 @@ pub(crate) fn directive_call_from_attribute_node(
     attr: &KeyedAttribute,
     directive_name: &str,
 ) -> TokenStream {
-    let handler = syn::Ident::new(directive_name, attr.key.span());
+    let handler = rust_syntax::Ident::new(directive_name, attr.key.span());
 
     let param = if let Some(value) = attr.value() {
         quote!(#value)
@@ -1821,7 +1826,7 @@ pub(crate) fn directive_call_from_attribute_node(
     quote! { .directive(#handler, #[allow(clippy::useless_conversion)] #param) }
 }
 
-fn tuple_name(name: &str, node: &KeyedAttribute) -> syn::Result<TupleName> {
+fn tuple_name(name: &str, node: &KeyedAttribute) -> rust_syntax::Result<TupleName> {
     if name == "style" || name == "class" {
         if let Some(Tuple(tuple)) = node.value() {
             {
@@ -1839,9 +1844,9 @@ fn tuple_name(name: &str, node: &KeyedAttribute) -> syn::Result<TupleName> {
                                 Expr::Lit(ExprLit {
                                     lit: Lit::Str(s), ..
                                 }) => Ok(s.value()),
-                                _ => Err(syn::Error::new_spanned(elem, "invalid name")),
+                                _ => Err(rust_syntax::Error::new_spanned(elem, "invalid name")),
                             })
-                            .collect::<syn::Result<Vec<_>>>()
+                            .collect::<rust_syntax::Result<Vec<_>>>()
                             .map(TupleName::Array);
                     }
                 }

@@ -2,7 +2,7 @@ use crate::ToTokens;
 use proc_macro2::extra::DelimSpan;
 use proc_macro2::{Span, TokenStream};
 
-// Not public API other than via the syn crate. Use syn::spanned::Spanned.
+// Not public API other than via the rust_syntax crate. Use rust_syntax::spanned::Spanned.
 pub trait Spanned: private::Sealed {
     fn __span(&self) -> Span;
 }

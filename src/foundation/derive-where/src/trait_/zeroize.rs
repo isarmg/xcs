@@ -4,7 +4,7 @@ use std::ops::Deref;
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{
+use rust_syntax::{
 	punctuated::Punctuated, spanned::Spanned, Attribute, Expr, ExprLit, ExprPath, Lit, Meta, Path,
 	Result, Token,
 };
@@ -88,7 +88,7 @@ impl TraitImpl for Zeroize {
 		Ok(DeriveTrait::Zeroize(Self { crate_ }))
 	}
 
-	fn path(&self) -> syn::Path {
+	fn path(&self) -> rust_syntax::Path {
 		util::path_from_root_and_strs(self.crate_(), &["Zeroize"])
 	}
 

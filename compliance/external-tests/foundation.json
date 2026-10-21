@@ -3690,28 +3690,28 @@
       ]
     },
     {
-      "directory": "src/foundation/cpufeatures-0.3.1",
+      "directory": "src/foundation/cpu-feature-detect",
       "roots": [
-        "test/foundation/cpufeatures-0.3.1"
+        "test/foundation/cpu-feature-detect"
       ],
       "files": [
         {
           "source": "src/foundation/cpufeatures-0.3.1/tests/aarch64.rs",
           "source_sha256_before": "f6f0f55d821dbcac61e54cec8d35bf944cd09f90f3422eee2b6d55a1e9899635",
-          "path": "test/foundation/cpufeatures-0.3.1/tests/aarch64.rs",
-          "sha256": "f6f0f55d821dbcac61e54cec8d35bf944cd09f90f3422eee2b6d55a1e9899635"
+          "path": "test/foundation/cpu-feature-detect/tests/aarch64.rs",
+          "sha256": "91b0ee8e8d7694b8c8631e6170b5d7db03cee1cb3f272007a7a6d9fcea828d09"
         },
         {
           "source": "src/foundation/cpufeatures-0.3.1/tests/loongarch64.rs",
           "source_sha256_before": "ac35b961a5d0ef629323c01d5401805a8801f1c30fd36377686c6dfab08994a8",
-          "path": "test/foundation/cpufeatures-0.3.1/tests/loongarch64.rs",
-          "sha256": "ac35b961a5d0ef629323c01d5401805a8801f1c30fd36377686c6dfab08994a8"
+          "path": "test/foundation/cpu-feature-detect/tests/loongarch64.rs",
+          "sha256": "52e40c5c2502bacd00c22708046d99f3beff169aae9f41dfc2b41560044353fb"
         },
         {
           "source": "src/foundation/cpufeatures-0.3.1/tests/x86.rs",
           "source_sha256_before": "8582b0ae2ed6cdc719259c76fa5d1f2a54b3189b55fbfd58b5cb453686ef1d9a",
-          "path": "test/foundation/cpufeatures-0.3.1/tests/x86.rs",
-          "sha256": "8582b0ae2ed6cdc719259c76fa5d1f2a54b3189b55fbfd58b5cb453686ef1d9a"
+          "path": "test/foundation/cpu-feature-detect/tests/x86.rs",
+          "sha256": "48cc0fb5bac5096a3b27a067ae5eb0335bae27e568c8beb6efb3cb8e2ea032ca"
         }
       ]
     },
@@ -4021,79 +4021,79 @@
           "source": "src/foundation/derive-where/src/test/basic.rs",
           "source_sha256_before": "3c4ec1e0b1acdffcb57b8cb5c01310ac2480cb4a35ce54be6f284cf6117d3138",
           "path": "test/foundation/derive-where/modules/src/test/basic.rs",
-          "sha256": "3c4ec1e0b1acdffcb57b8cb5c01310ac2480cb4a35ce54be6f284cf6117d3138"
+          "sha256": "e0539b703c77f04be9546822f9e2886265549d712bd66a3542867906fb62b23b"
         },
         {
           "source": "src/foundation/derive-where/src/test/bound.rs",
           "source_sha256_before": "0987e45a91d877a05c3cc7ab8199eb87508e909ce5cadba22a0dbf1a67337276",
           "path": "test/foundation/derive-where/modules/src/test/bound.rs",
-          "sha256": "0987e45a91d877a05c3cc7ab8199eb87508e909ce5cadba22a0dbf1a67337276"
+          "sha256": "9785e9e9f304b35a8f7f8b531c6b40e140d1478ced416c74ffddd0e56bc7aee7"
         },
         {
           "source": "src/foundation/derive-where/src/test/clone.rs",
           "source_sha256_before": "dce8141dcad39efd30149408faeb03be22fd0ce2904875bc1eed17baa9dacc60",
           "path": "test/foundation/derive-where/modules/src/test/clone.rs",
-          "sha256": "dce8141dcad39efd30149408faeb03be22fd0ce2904875bc1eed17baa9dacc60"
+          "sha256": "da301fb548efa44d60b94b568fae60ea7551bea5baa89af6045ef87b6782ce83"
         },
         {
           "source": "src/foundation/derive-where/src/test/discriminant.rs",
           "source_sha256_before": "137cebfbd0d76ce802f9dbd68faf4f412104e6bbfcd05068cfabb3c52ef00bb4",
           "path": "test/foundation/derive-where/modules/src/test/discriminant.rs",
-          "sha256": "137cebfbd0d76ce802f9dbd68faf4f412104e6bbfcd05068cfabb3c52ef00bb4"
+          "sha256": "35828665d6b421d690aafecbfdf02be1d3e50c5273d9ae04f27576afa640412e"
         },
         {
           "source": "src/foundation/derive-where/src/test/enum_.rs",
           "source_sha256_before": "4545add8138fcddae46b3034cb5d2435afd927fb2ca92fb88a673657f729f1fb",
           "path": "test/foundation/derive-where/modules/src/test/enum_.rs",
-          "sha256": "4545add8138fcddae46b3034cb5d2435afd927fb2ca92fb88a673657f729f1fb"
+          "sha256": "028f96a437c3906914187dd023a9dc36ae2c7af922c4420e13a5f1c81c0767d8"
         },
         {
           "source": "src/foundation/derive-where/src/test/incomparable.rs",
           "source_sha256_before": "977e74427ccf3eaff0a260e2aa2487b321f5055df07954a40bd6c9b768fdb359",
           "path": "test/foundation/derive-where/modules/src/test/incomparable.rs",
-          "sha256": "977e74427ccf3eaff0a260e2aa2487b321f5055df07954a40bd6c9b768fdb359"
+          "sha256": "52ca225d73e1e66643d85a55dacfbd8b4822e3a8906e748a4d16911f7ab45b67"
         },
         {
           "source": "src/foundation/derive-where/src/test/misc.rs",
           "source_sha256_before": "e3586d1474fe15a9584401199d98b364cb47094ae97aa3f768c5ff3bc1f3f243",
           "path": "test/foundation/derive-where/modules/src/test/misc.rs",
-          "sha256": "e3586d1474fe15a9584401199d98b364cb47094ae97aa3f768c5ff3bc1f3f243"
+          "sha256": "ae045ddb8ed68313f6187ae7470314c09e1a2daa8e03743cfc96afb6dcb24c14"
         },
         {
           "source": "src/foundation/derive-where/src/test/mod.rs",
           "source_sha256_before": "5404f33c3f205f8d5f434a7b398bcdf2b98462b90eb72d0d2980806de8814ff8",
           "path": "test/foundation/derive-where/modules/src/test/mod.rs",
-          "sha256": "7fb89869d6a56ac2d5b82902e0f21a26e89a4dd274e3b000e479c4801721b270"
+          "sha256": "4343a284935b69272d0d8a8cee55f825170f5a7771bbdd657fa0740410d1f22e"
         },
         {
           "source": "src/foundation/derive-where/src/test/partial_ord.rs",
           "source_sha256_before": "91d20e99ee00af6df406745f873ea4552fd14c48b935f3f9bde6743f2b5262c8",
           "path": "test/foundation/derive-where/modules/src/test/partial_ord.rs",
-          "sha256": "91d20e99ee00af6df406745f873ea4552fd14c48b935f3f9bde6743f2b5262c8"
+          "sha256": "1b4fe7abb01d0d84cf913886be253f12681cc09fcdf006de094abb4bee11a61a"
         },
         {
           "source": "src/foundation/derive-where/src/test/serde.rs",
           "source_sha256_before": "971850edc2a1fc09840b586b234e1138c3b37c8ef3d21b28ef14106331dac0e2",
           "path": "test/foundation/derive-where/modules/src/test/data_serialization.rs",
-          "sha256": "44c3bcbfbaa67548991147adceb3c7b6e7cceef41eae726cc9cd4fc247a5b046"
+          "sha256": "9330f3cee7b7159c8591f40e997f704f2ce4c2c9e3f7e10b3daf46c835fd1af5"
         },
         {
           "source": "src/foundation/derive-where/src/test/skip.rs",
           "source_sha256_before": "ba93dce5bedc7aa28f33686468f928e76d0ba5b0b4f610bc4eb11979df058226",
           "path": "test/foundation/derive-where/modules/src/test/skip.rs",
-          "sha256": "ba93dce5bedc7aa28f33686468f928e76d0ba5b0b4f610bc4eb11979df058226"
+          "sha256": "6ee8029d6457cdec39798ebaa0810b6f0fa29946ee6d883ab045922754969e54"
         },
         {
           "source": "src/foundation/derive-where/src/test/use_case.rs",
           "source_sha256_before": "b68ae0405b450401de4ef50b5c16dcb2493e339bdd9da0418f5f434a439de3d0",
           "path": "test/foundation/derive-where/modules/src/test/use_case.rs",
-          "sha256": "b68ae0405b450401de4ef50b5c16dcb2493e339bdd9da0418f5f434a439de3d0"
+          "sha256": "65f286fd41d3ab5f5dac67821aef170046aa9d0e025c5b5c427f93bd707f8cd7"
         },
         {
           "source": "src/foundation/derive-where/src/test/zeroize.rs",
           "source_sha256_before": "13543438cb38eae9d0b63406223e6d13b766eb20bf27c97ce50aba0f867b365b",
           "path": "test/foundation/derive-where/modules/src/test/zeroize.rs",
-          "sha256": "13543438cb38eae9d0b63406223e6d13b766eb20bf27c97ce50aba0f867b365b"
+          "sha256": "d7132b6742e1854b122228bc57ccae9642d7600a308794f11c89dab3cf7c358f"
         }
       ]
     },
@@ -9897,13 +9897,13 @@
           "source": "src/foundation/manyhow/src/lib.rs",
           "source_sha256_before": "b3cd7a3eec26a1fe7432ddea819c2790f2a6c84f381b19efce516ef624b30381",
           "path": "test/foundation/manyhow/functions/src/lib/function_macro_722.rs",
-          "sha256": "c8093e15f1fdc7cd831ce83c8cea083f1e2f49163b978a9a730e10ffc2be4d1e"
+          "sha256": "a3f3966dffbdd863a5bdc13258644974af6a5a25a20b8d5bb1862d6e80769811"
         },
         {
           "source": "src/foundation/manyhow/src/parse_to_tokens.rs",
           "source_sha256_before": "b08fc4b06b3b13c62cb747087b219dcf3c4b19ac9729c318694f5113e9786a19",
           "path": "test/foundation/manyhow/functions/src/parse_to_tokens/test_inference_113.rs",
-          "sha256": "5b60f3f1535a54aab09e317d977ba7f94913556b9e22355434bdaa0d3ed0b8ef"
+          "sha256": "89b449be70eea4e79850323c7e6aea42be506e5f3879d52de4d8f5a2ea0e8c7b"
         },
         {
           "source": "src/foundation/manyhow/src/error.rs",
@@ -9915,7 +9915,7 @@
           "source": "src/foundation/manyhow/src/macro_rules.rs",
           "source_sha256_before": "27cfc11e7b453fdbc36790df3bae7f168206e064e51cef0f88ae74000ecbac27",
           "path": "test/foundation/manyhow/unit/src/macro_rules/test_227.rs",
-          "sha256": "47e868898a6df133a36e545df5b7ca0cebc987f486f71294540c63e0b185e3d5"
+          "sha256": "1aec611915ceb37bcd703ea7312b6a61ab2bf1589005efc33cd7c1918d541394"
         },
         {
           "source": "src/foundation/manyhow/src/span_ranged.rs",
@@ -12140,22 +12140,22 @@
       ]
     },
     {
-      "directory": "src/foundation/prettyplease-0.3.0",
+      "directory": "src/foundation/rust-source-format",
       "roots": [
-        "test/foundation/prettyplease-0.3.0"
+        "test/foundation/rust-source-format"
       ],
       "files": [
         {
           "source": "src/foundation/prettyplease-0.3.0/tests/test.rs",
           "source_sha256_before": "c6f8c7830b7491fca1d56e41aa4acc6256b683a3556a48982f57ae62d38aaaa2",
-          "path": "test/foundation/prettyplease-0.3.0/tests/test.rs",
-          "sha256": "c6f8c7830b7491fca1d56e41aa4acc6256b683a3556a48982f57ae62d38aaaa2"
+          "path": "test/foundation/rust-source-format/tests/test.rs",
+          "sha256": "d12cef4dc393ddad37b1638a339f4b353cd9edae09396a43816fe8b41027b03d"
         },
         {
           "source": "src/foundation/prettyplease-0.3.0/tests/test_precedence.rs",
           "source_sha256_before": "139ccee1718eb4b2690ee090104afbbc41a7eb44fb18b6f5cb900527d5955786",
-          "path": "test/foundation/prettyplease-0.3.0/tests/test_precedence.rs",
-          "sha256": "139ccee1718eb4b2690ee090104afbbc41a7eb44fb18b6f5cb900527d5955786"
+          "path": "test/foundation/rust-source-format/tests/test_precedence.rs",
+          "sha256": "ca82ad0efd26ce3d5d5c49a19d4161a21cbe70b1b6a302c8e4f4d21cb440867f"
         }
       ]
     },
@@ -12447,7 +12447,7 @@
           "source": "src/foundation/quote-use-macros/src/use_parser.rs",
           "source_sha256_before": "b1a084b633ce3182f14ae564cedeb41d9a056890ed94c754bd85aa4e3e5d6840",
           "path": "test/foundation/quote-use-macros/unit/src/use_parser/test_170.rs",
-          "sha256": "8f346982a06070b2afa85fc012de80068e169574c72f655214128ddf53f55bf4"
+          "sha256": "fc9b6b2559f0c2f1136b6e6f36ea69b0102befd11d96e485b2b14bb0c63b79e9"
         }
       ]
     },
@@ -14221,7 +14221,7 @@
           "source": "src/foundation/rstml/src/node/atoms.rs",
           "source_sha256_before": "84de42133c4d40a86cb81d4805aef5c001eb0ba710d37bf5de381cfe3fa14371",
           "path": "test/foundation/rstml/unit/src/node/atoms/test_304.rs",
-          "sha256": "9a6d6cf643bb9d37c1c771373c435c0aa6f06a6a5ed8cd4c557293699da7eb1c"
+          "sha256": "5f7c62db9e3ae2d47f8082bbf78038ec18977e39fc245491c8d7970d4247cd35"
         },
         {
           "source": "src/foundation/rstml/src/rawtext_stable_hack.rs",
@@ -14233,7 +14233,7 @@
           "source": "src/foundation/rstml/src/visitor.rs",
           "source_sha256_before": "91f0ce5cd8b763c803fa0fd677171a8d5405ee96404d75eb7b62069781964093",
           "path": "test/foundation/rstml/unit/src/visitor/tests_461.rs",
-          "sha256": "6114ff0623d743036e55741def5420604fe3adad2c8bfef96e9f045a56df9e83"
+          "sha256": "5f4e58ab031ae48ce8b35f91e29617410c7b8fb17fe06a34b5275bb828ccdbef"
         }
       ]
     },
@@ -16822,250 +16822,250 @@
       ]
     },
     {
-      "directory": "src/foundation/syn-3.0.9",
+      "directory": "src/foundation/rust-syntax",
       "roots": [
-        "test/foundation/syn-3.0.9"
+        "test/foundation/rust-syntax"
       ],
       "files": [
         {
           "source": "src/foundation/syn-3.0.9/src/drops.rs",
           "source_sha256_before": "c48e679507424c08716b48256a06d59fe55e877de336c40f0df56cfd80e23826",
-          "path": "test/foundation/syn-3.0.9/functions/src/drops/test_needs_drop_40.rs",
+          "path": "test/foundation/rust-syntax/functions/src/drops/test_needs_drop_40.rs",
           "sha256": "d1970c9ef9aff160bb6b4d40ba42c470a07e4dcf1c9f5cfa30ec9d4bd9b8eb41"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/common/eq.rs",
           "source_sha256_before": "bb7e40bf43a7628e305fc1afaa4c0b540e7bb2f25f4a3b9d3ac4c317bbb58a29",
-          "path": "test/foundation/syn-3.0.9/tests/common/eq.rs",
+          "path": "test/foundation/rust-syntax/tests/common/eq.rs",
           "sha256": "bb7e40bf43a7628e305fc1afaa4c0b540e7bb2f25f4a3b9d3ac4c317bbb58a29"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/common/mod.rs",
           "source_sha256_before": "b752aa8f1faf8c6abf1286a12fb50b6c257ec1889d81bcdb3dc3257134695a89",
-          "path": "test/foundation/syn-3.0.9/tests/common/mod.rs",
+          "path": "test/foundation/rust-syntax/tests/common/mod.rs",
           "sha256": "b752aa8f1faf8c6abf1286a12fb50b6c257ec1889d81bcdb3dc3257134695a89"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/common/parse.rs",
           "source_sha256_before": "b1685e9e0f0569f48d66ddd92d787a12933a1d2f95e7c9ae974a3648763f989b",
-          "path": "test/foundation/syn-3.0.9/tests/common/parse.rs",
-          "sha256": "b1685e9e0f0569f48d66ddd92d787a12933a1d2f95e7c9ae974a3648763f989b"
+          "path": "test/foundation/rust-syntax/tests/common/parse.rs",
+          "sha256": "b2b16dc08e30263867e084ab7f8635e4c23e068deb3e6c245f659720f442cb34"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/common/visit.rs",
           "source_sha256_before": "a260ecd2ce7853cd3644e19aba08e8d358a656fd3fb0f1287cea40c59c9e62c9",
-          "path": "test/foundation/syn-3.0.9/tests/common/visit.rs",
-          "sha256": "a260ecd2ce7853cd3644e19aba08e8d358a656fd3fb0f1287cea40c59c9e62c9"
+          "path": "test/foundation/rust-syntax/tests/common/visit.rs",
+          "sha256": "b8b7eb620c68a79f884a0944b42719c82d7d8fbb24737977bd1b6b24e16afd56"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/debug/gen.rs",
           "source_sha256_before": "75b59398bb58e8d05c5ee5598b88163564b480c866af3dddb9bcc69e8df8459a",
-          "path": "test/foundation/syn-3.0.9/tests/debug/gen.rs",
-          "sha256": "75b59398bb58e8d05c5ee5598b88163564b480c866af3dddb9bcc69e8df8459a"
+          "path": "test/foundation/rust-syntax/tests/debug/gen.rs",
+          "sha256": "fc8f1bb1eee29c4fd5e887c904981daac64e6871a015c3dbbe5238947b223c2e"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/debug/mod.rs",
           "source_sha256_before": "1259df940bbcaa968a837e402d6853f2efa38d2260e306d42f17f9e8ef74fae5",
-          "path": "test/foundation/syn-3.0.9/tests/debug/mod.rs",
-          "sha256": "1259df940bbcaa968a837e402d6853f2efa38d2260e306d42f17f9e8ef74fae5"
+          "path": "test/foundation/rust-syntax/tests/debug/mod.rs",
+          "sha256": "aa616a4e58815ac616d3adc0f26c3d1905055eb4f2045fa5b7aee31e85886649"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/macros/mod.rs",
           "source_sha256_before": "d2294a79e341c623ae671dd363e99965d78dda7f340b0cc038267207adfacae2",
-          "path": "test/foundation/syn-3.0.9/tests/macros/mod.rs",
+          "path": "test/foundation/rust-syntax/tests/macros/mod.rs",
           "sha256": "d2294a79e341c623ae671dd363e99965d78dda7f340b0cc038267207adfacae2"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/regression.rs",
           "source_sha256_before": "e9565ea0efecb4136f099164ffcfa26e1996b0a27fb9c6659e90ad9bdd42e7b6",
-          "path": "test/foundation/syn-3.0.9/tests/regression.rs",
-          "sha256": "88d1a97ae6f38c865304e7069ec3d87f7119073561526fcb765ae481c215cff7"
+          "path": "test/foundation/rust-syntax/tests/regression.rs",
+          "sha256": "a0f24a6f9921b769d562c3e8c17e065a86f7cbff254b7118fa6044b4364e36ac"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/regression/issue1108.rs",
           "source_sha256_before": "f32db35244a674e22ff824ca9e5bbec2184e287b59f022db68c418b5878a2edc",
-          "path": "test/foundation/syn-3.0.9/tests/regression/issue1108.rs",
-          "sha256": "f32db35244a674e22ff824ca9e5bbec2184e287b59f022db68c418b5878a2edc"
+          "path": "test/foundation/rust-syntax/tests/regression/issue1108.rs",
+          "sha256": "fbb6e4583c705adfe53f4ae71130a13a64a8250fc8baf79553c9c24a2cac114d"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/regression/issue1235.rs",
           "source_sha256_before": "a2266b10c3f7c7af5734817ab0a3e8b309b51e7d177b63f26e67e6b744d280b0",
-          "path": "test/foundation/syn-3.0.9/tests/regression/issue1235.rs",
-          "sha256": "a2266b10c3f7c7af5734817ab0a3e8b309b51e7d177b63f26e67e6b744d280b0"
+          "path": "test/foundation/rust-syntax/tests/regression/issue1235.rs",
+          "sha256": "bc6110e5a631075c3cc1a5ec22bd10118d8ff5648468a569a1b77953e0d7946d"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/repo/mod.rs",
           "source_sha256_before": "a86074ef6992d93768d9af0e6d8bac21cc9a3378d158a3e1edde0e12a9ebf959",
-          "path": "test/foundation/syn-3.0.9/tests/repo/mod.rs",
-          "sha256": "c269949377f90032014f7bb1c00e058730a99076c0e749ae01466884d3583504"
+          "path": "test/foundation/rust-syntax/tests/repo/mod.rs",
+          "sha256": "cf768027487e979038ed8378bf589038a9735b900d0f2e91c26af0ea6e8dff8b"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/repo/progress.rs",
           "source_sha256_before": "11219e4ae5e0175d5ddc743907a57b8c4e750e709687c3df53728d6af994a86f",
-          "path": "test/foundation/syn-3.0.9/tests/repo/progress.rs",
+          "path": "test/foundation/rust-syntax/tests/repo/progress.rs",
           "sha256": "11219e4ae5e0175d5ddc743907a57b8c4e750e709687c3df53728d6af994a86f"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/snapshot/mod.rs",
           "source_sha256_before": "4a101272c5abe6ca9f3501e0cacacee9a0ccf7ca773348a239e5b046d0316a7e",
-          "path": "test/foundation/syn-3.0.9/tests/snapshot/mod.rs",
-          "sha256": "4a101272c5abe6ca9f3501e0cacacee9a0ccf7ca773348a239e5b046d0316a7e"
+          "path": "test/foundation/rust-syntax/tests/snapshot/mod.rs",
+          "sha256": "bb10634f2dfec84086c5ce69c4244fc7e562cc0dbfe14813276ec686de7906e4"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_attribute.rs",
           "source_sha256_before": "8a4429b7cfe2360bb73beae54a62ae3255ebbd5181467a8608d6f858c2711728",
-          "path": "test/foundation/syn-3.0.9/tests/test_attribute.rs",
-          "sha256": "8a4429b7cfe2360bb73beae54a62ae3255ebbd5181467a8608d6f858c2711728"
+          "path": "test/foundation/rust-syntax/tests/test_attribute.rs",
+          "sha256": "15c5631e01b9381bc1081f9d48211d12c7519f0509cc7b811a3c0c4d21d0e839"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_derive_input.rs",
           "source_sha256_before": "ac6fff053bded4ca30f88343cbf984a319119b58805f56058bd6ad61a1f60972",
-          "path": "test/foundation/syn-3.0.9/tests/test_derive_input.rs",
-          "sha256": "ac6fff053bded4ca30f88343cbf984a319119b58805f56058bd6ad61a1f60972"
+          "path": "test/foundation/rust-syntax/tests/test_derive_input.rs",
+          "sha256": "8d8bfbf0e299cc4856fc2a1354e0869074a4cd4eb9f415931b46ae5f7a307aca"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_expr.rs",
           "source_sha256_before": "0356f48052aaa837147fcab33185703e24c0bac5f4d007234f3e86c7cf5a3faa",
-          "path": "test/foundation/syn-3.0.9/tests/test_expr.rs",
-          "sha256": "0356f48052aaa837147fcab33185703e24c0bac5f4d007234f3e86c7cf5a3faa"
+          "path": "test/foundation/rust-syntax/tests/test_expr.rs",
+          "sha256": "188c9d688fd133083333ad8170ec063954166c35e4982f6430fbd43e1b169a4d"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_generics.rs",
           "source_sha256_before": "2bd20cbaab8ff268e6e283ae9564f064f352deab7d3d4beafb7f41baa2b862cf",
-          "path": "test/foundation/syn-3.0.9/tests/test_generics.rs",
-          "sha256": "2bd20cbaab8ff268e6e283ae9564f064f352deab7d3d4beafb7f41baa2b862cf"
+          "path": "test/foundation/rust-syntax/tests/test_generics.rs",
+          "sha256": "12bbbe13c60f05ecdce47e65c6da595055e74591eae1e0dac87c4fa8d4eacb92"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_grouping.rs",
           "source_sha256_before": "fe3de6e8824f0722ab6450c6dfc374f6e0f8fe75c87c4dd56b2cb00a2197ed58",
-          "path": "test/foundation/syn-3.0.9/tests/test_grouping.rs",
-          "sha256": "fe3de6e8824f0722ab6450c6dfc374f6e0f8fe75c87c4dd56b2cb00a2197ed58"
+          "path": "test/foundation/rust-syntax/tests/test_grouping.rs",
+          "sha256": "da112f703c16080bbd2f7014e1ddc50c5418b691b16b9bb9cd0f3414bd081371"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_ident.rs",
           "source_sha256_before": "d5850e817720e774cd397a46dbc5298c57933823c18e20805e84503fc9387e8f",
-          "path": "test/foundation/syn-3.0.9/tests/test_ident.rs",
-          "sha256": "d5850e817720e774cd397a46dbc5298c57933823c18e20805e84503fc9387e8f"
+          "path": "test/foundation/rust-syntax/tests/test_ident.rs",
+          "sha256": "fdf88e221249a8cacf6b7604155c00d1cf750103f062008cf3b93675ab188ba9"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_item.rs",
           "source_sha256_before": "49f7130127da9077dc39cb1c3b9a70b55f62c39555b48bf9c7f5bb07fc506531",
-          "path": "test/foundation/syn-3.0.9/tests/test_item.rs",
-          "sha256": "49f7130127da9077dc39cb1c3b9a70b55f62c39555b48bf9c7f5bb07fc506531"
+          "path": "test/foundation/rust-syntax/tests/test_item.rs",
+          "sha256": "183df1125d9a99945a6e6ca9ecff032a4d74fadb4e0f858d500eb1020a223ea0"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_lit.rs",
           "source_sha256_before": "4130efa425d14ed3ad9a1c2a00ef4b29782c9d1cf9e29ff9dddd3b23b2e3ddee",
-          "path": "test/foundation/syn-3.0.9/tests/test_lit.rs",
-          "sha256": "4130efa425d14ed3ad9a1c2a00ef4b29782c9d1cf9e29ff9dddd3b23b2e3ddee"
+          "path": "test/foundation/rust-syntax/tests/test_lit.rs",
+          "sha256": "adb53f44f810b429bc781c1ba32716894afd60e87695994fed3a49a75355df42"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_meta.rs",
           "source_sha256_before": "5b0fdee0decbd07476c9673403a662de385901b4bf60600c26ac879893f5bf9c",
-          "path": "test/foundation/syn-3.0.9/tests/test_meta.rs",
-          "sha256": "e43e7463f100882d1734579380ab37e1d298817d888a257ffdc89f35cb64da96"
+          "path": "test/foundation/rust-syntax/tests/test_meta.rs",
+          "sha256": "11416071d376abf07b18d20d139889fdd089b99f8162cb29afe4892073011bad"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_parse_buffer.rs",
           "source_sha256_before": "1c8cbbf457603bd0a83348079591f843f7ef0533a6275a0c76533e2d07dd321a",
-          "path": "test/foundation/syn-3.0.9/tests/test_parse_buffer.rs",
-          "sha256": "1c8cbbf457603bd0a83348079591f843f7ef0533a6275a0c76533e2d07dd321a"
+          "path": "test/foundation/rust-syntax/tests/test_parse_buffer.rs",
+          "sha256": "6784683f77e8045b1081590b6e17c3336f6dd8118f5365e476d075da6462c6aa"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_parse_quote.rs",
           "source_sha256_before": "2fc6fcd5f6ab063fb26dd64e087a8a0799f0650b7249c1c4f3b08b870b89ed22",
-          "path": "test/foundation/syn-3.0.9/tests/test_parse_quote.rs",
-          "sha256": "2fc6fcd5f6ab063fb26dd64e087a8a0799f0650b7249c1c4f3b08b870b89ed22"
+          "path": "test/foundation/rust-syntax/tests/test_parse_quote.rs",
+          "sha256": "c28a1fffc939864097446afe4f735aef75c7464d5214234a095c31281f564374"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_parse_stream.rs",
           "source_sha256_before": "b6b533432173123d6d01d8d2cb33714bc50b30b16ffbb6116f93937221ad4594",
-          "path": "test/foundation/syn-3.0.9/tests/test_parse_stream.rs",
-          "sha256": "b6b533432173123d6d01d8d2cb33714bc50b30b16ffbb6116f93937221ad4594"
+          "path": "test/foundation/rust-syntax/tests/test_parse_stream.rs",
+          "sha256": "e34ab223b8ceb13e3abb710181b3b6a0098b21e420606486dc5685a07a0c092b"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_pat.rs",
           "source_sha256_before": "91458c108f6d8a1660e5633cde6441b0e583f7fa8f36375dcf0a051301eb3d34",
-          "path": "test/foundation/syn-3.0.9/tests/test_pat.rs",
-          "sha256": "91458c108f6d8a1660e5633cde6441b0e583f7fa8f36375dcf0a051301eb3d34"
+          "path": "test/foundation/rust-syntax/tests/test_pat.rs",
+          "sha256": "8e7e0dcce59160f154d423313701b6227565286c174425362c7f75b4914d0be3"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_path.rs",
           "source_sha256_before": "4957de8bd9e0c158cfa91dc12ec3b16132d243f0d1f3184d827ac6da5ab1739f",
-          "path": "test/foundation/syn-3.0.9/tests/test_path.rs",
-          "sha256": "4957de8bd9e0c158cfa91dc12ec3b16132d243f0d1f3184d827ac6da5ab1739f"
+          "path": "test/foundation/rust-syntax/tests/test_path.rs",
+          "sha256": "43857cce574fb200dc5358774e08a9609458afc88fc7bea0b61ef5fc1a7b1dca"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_precedence.rs",
           "source_sha256_before": "fd6da10bb2414f1a6fc6d18dbbcd773bae9179b405abb06de5874f09848f3887",
-          "path": "test/foundation/syn-3.0.9/tests/test_precedence.rs",
-          "sha256": "d2ca5680b3734d7d2672cd513e0ab22020dbc8624515db5d2eed7affb949a7dd"
+          "path": "test/foundation/rust-syntax/tests/test_precedence.rs",
+          "sha256": "dd834c342f1097d13010ce41e2cca7b3a8c9c939587ed5aac06b1567b33cc8be"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_punctuated.rs",
           "source_sha256_before": "efed2c281b6965d71b065c7606631ba1989af6e7b5f5d1ca1033f8b968dc076c",
-          "path": "test/foundation/syn-3.0.9/tests/test_punctuated.rs",
-          "sha256": "efed2c281b6965d71b065c7606631ba1989af6e7b5f5d1ca1033f8b968dc076c"
+          "path": "test/foundation/rust-syntax/tests/test_punctuated.rs",
+          "sha256": "bce8492b6a683bea3d025bcd127fda143f831f23e1ae3c921effa4160d4f3ddd"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_receiver.rs",
           "source_sha256_before": "c94e39e57b21844b9c89f9da672da33e83046a409f6d8d00422652f92e703d43",
-          "path": "test/foundation/syn-3.0.9/tests/test_receiver.rs",
-          "sha256": "c94e39e57b21844b9c89f9da672da33e83046a409f6d8d00422652f92e703d43"
+          "path": "test/foundation/rust-syntax/tests/test_receiver.rs",
+          "sha256": "91e34e0abbcc5452c14f94fa04be080bcb6217ab753d6483824bd3948e837ddf"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_round_trip.rs",
           "source_sha256_before": "b784443cfc084e48f1b9fd4d1b2583d19d6e1ec9e5f4137fafc288dd3a44fc49",
-          "path": "test/foundation/syn-3.0.9/tests/test_round_trip.rs",
-          "sha256": "b784443cfc084e48f1b9fd4d1b2583d19d6e1ec9e5f4137fafc288dd3a44fc49"
+          "path": "test/foundation/rust-syntax/tests/test_round_trip.rs",
+          "sha256": "8660637331903ff370560c0f4578bfa62f8d021461be1ca4622b2443114efd65"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_shebang.rs",
           "source_sha256_before": "785345c798689328060d59a715ed1a54f7a72e9d0305f2f2a1ed84102bcf100b",
-          "path": "test/foundation/syn-3.0.9/tests/test_shebang.rs",
-          "sha256": "785345c798689328060d59a715ed1a54f7a72e9d0305f2f2a1ed84102bcf100b"
+          "path": "test/foundation/rust-syntax/tests/test_shebang.rs",
+          "sha256": "6187f068b3c4f619735effe4b0c78e9834fdbe825e81a0e870a420e2b7d624d3"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_size.rs",
           "source_sha256_before": "2928bfc73c6a1dc1a7a4fc31bbd1ce8583f97aea4b3adf747dad325bfa748ef0",
-          "path": "test/foundation/syn-3.0.9/tests/test_size.rs",
-          "sha256": "2928bfc73c6a1dc1a7a4fc31bbd1ce8583f97aea4b3adf747dad325bfa748ef0"
+          "path": "test/foundation/rust-syntax/tests/test_size.rs",
+          "sha256": "d02b83010c21fd00ebaa61d1842cc208c094c1a791b04154985b6d1a78416b77"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_stmt.rs",
           "source_sha256_before": "7f54d395303447bdb639cb100d8611c2d945cab975c9efbb8569c78e4b333f07",
-          "path": "test/foundation/syn-3.0.9/tests/test_stmt.rs",
-          "sha256": "7f54d395303447bdb639cb100d8611c2d945cab975c9efbb8569c78e4b333f07"
+          "path": "test/foundation/rust-syntax/tests/test_stmt.rs",
+          "sha256": "596061cc2ec3811eace2068a8a8f1cf1c606e8db06ed438a773cb950f6d1c639"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_token_trees.rs",
           "source_sha256_before": "c30b921a96739c9334ec2bdd06552729891e0251b9d8fbdf0b8f5cc897babee5",
-          "path": "test/foundation/syn-3.0.9/tests/test_token_trees.rs",
-          "sha256": "c30b921a96739c9334ec2bdd06552729891e0251b9d8fbdf0b8f5cc897babee5"
+          "path": "test/foundation/rust-syntax/tests/test_token_trees.rs",
+          "sha256": "000521e1b28fea0acca92eb257c3b42c2f4dd400af664e928f4bc40532d9aa7e"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_ty.rs",
           "source_sha256_before": "5b70d0bc3a02ef6b06f39e4ba5a29df56f1e2237b365f9a0ea1f146b1e2386d2",
-          "path": "test/foundation/syn-3.0.9/tests/test_ty.rs",
-          "sha256": "5b70d0bc3a02ef6b06f39e4ba5a29df56f1e2237b365f9a0ea1f146b1e2386d2"
+          "path": "test/foundation/rust-syntax/tests/test_ty.rs",
+          "sha256": "a0ef87f209ed699c355ff2aa3dbaf6d89f9ab676b0f8a28ba548145bfb2938b6"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_unparenthesize.rs",
           "source_sha256_before": "a304a65af2cd4ec4b9ab1925727ebfc25b8cb39296f8e6d316d882c381c568da",
-          "path": "test/foundation/syn-3.0.9/tests/test_unparenthesize.rs",
-          "sha256": "a304a65af2cd4ec4b9ab1925727ebfc25b8cb39296f8e6d316d882c381c568da"
+          "path": "test/foundation/rust-syntax/tests/test_unparenthesize.rs",
+          "sha256": "bc4c12fb7f50e303950016bf0fc5a5afe531d7787f429bc5be5d64c14717f08d"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/test_visibility.rs",
           "source_sha256_before": "811a5df8923426bc24f1bc5e6e346dbbde5ce2ae3143867d81332200ad082494",
-          "path": "test/foundation/syn-3.0.9/tests/test_visibility.rs",
-          "sha256": "811a5df8923426bc24f1bc5e6e346dbbde5ce2ae3143867d81332200ad082494"
+          "path": "test/foundation/rust-syntax/tests/test_visibility.rs",
+          "sha256": "524f5589a41ee87152a4112308a3295c7d1633bf5a07ddefc0826b8831760d32"
         },
         {
           "source": "src/foundation/syn-3.0.9/tests/zzz_stable.rs",
           "source_sha256_before": "2a862e59cb446235ed99aec0e6ada8e16d3ecc30229b29d825b7c0bbc2602989",
-          "path": "test/foundation/syn-3.0.9/tests/zzz_stable.rs",
-          "sha256": "2a862e59cb446235ed99aec0e6ada8e16d3ecc30229b29d825b7c0bbc2602989"
+          "path": "test/foundation/rust-syntax/tests/zzz_stable.rs",
+          "sha256": "3337fdfc86ab3df4adaf1a62e34958840552553cc0bec6d45ad1f49c6d5e6108"
         }
       ]
     },
@@ -17079,7 +17079,7 @@
           "source": "src/foundation/synstructure/src/lib.rs",
           "source_sha256_before": "ac509872dfe10aab7ecdf673814c11cefe25810b38c51ff9f7ddf4c4a2dc38fa",
           "path": "test/foundation/synstructure/unit/src/lib/tests_2520.rs",
-          "sha256": "a14fba978e10b0c4bf8a5263dc6bbc281dc701877950bef84e01ceef201d6ddc"
+          "sha256": "b97ee091a507324532e2083b1e4fc0ca0d13712ece3dfa81ed5951f2ebaa5f7b"
         }
       ]
     },
@@ -22831,19 +22831,19 @@
           "source": "src/foundation/wasm-bindgen-macro-support/src/codegen.rs",
           "source_sha256_before": "1407bc9989776038c1b2ab57a17fe36cafb9ad2f943ae24bf1ad83ecd905191b",
           "path": "test/foundation/wasm-bindgen-macro-support/unit/src/codegen/tests_5747.rs",
-          "sha256": "3534dc2eef58f5dec6cc391c82500414647d0d838bc653469563b5f809f5f3ab"
+          "sha256": "7f4c50310cfce2d908ffbdbed0a3d53ad3e324e03d6bd9eb205fa84f4c70a631"
         },
         {
           "source": "src/foundation/wasm-bindgen-macro-support/src/generics.rs",
           "source_sha256_before": "91be53d06ad9c62f8c618a53afe54422db10805a94f3fb4c2942736864cbc820",
           "path": "test/foundation/wasm-bindgen-macro-support/unit/src/generics/tests_796.rs",
-          "sha256": "dab000ee0065f8ba15401fa311689c9143b2dbb6987773147a2086a3c4032304"
+          "sha256": "0554cc79cc95e1cbf4ecde648d9e8815fd9c8f588cbe9c4cbe5449997f82dbca"
         },
         {
           "source": "src/foundation/wasm-bindgen-macro-support/src/parser.rs",
           "source_sha256_before": "f8471ec0a0159479500e661355b113fd0ff25281ae073ed5725d52d34faa3ac2",
           "path": "test/foundation/wasm-bindgen-macro-support/unit/src/parser/tests_3446.rs",
-          "sha256": "78d46c219b91124bc14b2c6edab356ffd8efc792e5a32b4b3f297d81a9d8ee69"
+          "sha256": "79f7675c13495fb8b4f91e5b75d33aa3b26ea93890905fc1abedffba4ab59f84"
         }
       ]
     },
@@ -23417,13 +23417,13 @@
           "source": "src/foundation/yoke-derive/src/lifetimes.rs",
           "source_sha256_before": "3e538ea7150dbba39f5e059662900ca1d86710b527a71e514bfe7d5a4cbb9707",
           "path": "test/foundation/yoke-derive/unit/src/lifetimes/tests_43.rs",
-          "sha256": "19d4f3a54bb0652cd25fb10f1a962193cbca1bb02fe8688b3a5bd4177d526a35"
+          "sha256": "d5015b02ed8cbcb439377e6d663a1d274a40ce9dbb08ae20490c9f4c8bf80da5"
         },
         {
           "source": "src/foundation/yoke-derive/src/visitor.rs",
           "source_sha256_before": "eb5378438f024c3351c20fa53188316c3b69a268cf85ca3c34830bd93d4b90e2",
           "path": "test/foundation/yoke-derive/unit/src/visitor/tests_166.rs",
-          "sha256": "0040d8f133be2311586beec7195cc58c99b30a16a0f46bd246569d38a65d3145"
+          "sha256": "d34b06673fae299a462ced64fcc7eb7ee9a80506507196cd64b9cecbb83147fb"
         }
       ]
     },
@@ -23901,7 +23901,7 @@
           "source": "src/foundation/zerofrom-derive/src/visitor.rs",
           "source_sha256_before": "3317ce40feb6de39a80895739d3eb2e87659f943dc8d42b2eeddae145b0492a8",
           "path": "test/foundation/zerofrom-derive/unit/src/visitor/tests_61.rs",
-          "sha256": "4b02ac3171779c6ce9c0aaf23c310b6085ece789d77579a0524df9de0264b503"
+          "sha256": "ce020cbc26ad407a78ebcd522384eb3a82f497e6eb80175df5d491222830111c"
         }
       ]
     },

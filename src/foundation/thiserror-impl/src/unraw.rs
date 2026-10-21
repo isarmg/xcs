@@ -3,9 +3,9 @@ use quote::ToTokens;
 use std::cmp::Ordering;
 use std::fmt::{self, Display};
 use std::hash::{Hash, Hasher};
-use syn::ext::IdentExt as _;
-use syn::parse::{Parse, ParseStream, Result};
-use syn::Index;
+use rust_syntax::ext::IdentExt as _;
+use rust_syntax::parse::{Parse, ParseStream, Result};
+use rust_syntax::Index;
 
 #[derive(Clone)]
 #[repr(transparent)]
@@ -19,7 +19,7 @@ impl IdentUnraw {
     pub fn to_local(&self) -> Ident {
         let unraw = self.0.unraw();
         let repr = unraw.to_string();
-        if syn::parse_str::<Ident>(&repr).is_err() {
+        if rust_syntax::parse_str::<Ident>(&repr).is_err() {
             if let "_" | "super" | "self" | "Self" | "crate" = repr.as_str() {
                 // Some identifiers are never allowed to appear as raw, like r#self and r#_.
             } else {

@@ -7,7 +7,7 @@ use crate::internals::attr;
 use crate::private;
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::spanned::Spanned;
+use rust_syntax::spanned::Spanned;
 
 /// Generates `Deserialize::deserialize` body for a `struct Tuple(...);` including `struct Newtype(T);`
 pub(super) fn deserialize(

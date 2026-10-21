@@ -4,15 +4,15 @@ use quote::{quote, quote_spanned, ToTokens};
 
 pub(crate) fn test(args: TokenStream, item: TokenStream) -> TokenStream {
     if !args.is_empty() {
-        return syn::Error::new_spanned(proc_macro2::TokenStream::from(args), "invalid argument")
+        return rust_syntax::Error::new_spanned(proc_macro2::TokenStream::from(args), "invalid argument")
             .to_compile_error()
             .into();
     }
 
-    let mut input = syn::parse_macro_input!(item as syn::ItemFn);
+    let mut input = rust_syntax::parse_macro_input!(item as rust_syntax::ItemFn);
 
     if input.sig.asyncness.take().is_none() {
-        return syn::Error::new_spanned(input.sig.fn_token, "Only async functions are supported")
+        return rust_syntax::Error::new_spanned(input.sig.fn_token, "Only async functions are supported")
             .to_compile_error()
             .into();
     }
@@ -29,7 +29,7 @@ pub(crate) fn test(args: TokenStream, item: TokenStream) -> TokenStream {
         // `Span` on stable Rust has a limitation that only points to the first
         // token, not the whole tokens. We can work around this limitation by
         // using the first/last span of the tokens like
-        // `syn::Error::new_spanned` does.
+        // `rust_syntax::Error::new_spanned` does.
         let start = last_stmt.next().map_or_else(Span::call_site, |t| t.span());
         let end = last_stmt.last().map_or(start, |t| t.span());
         (start, end)
@@ -39,8 +39,8 @@ pub(crate) fn test(args: TokenStream, item: TokenStream) -> TokenStream {
         ::futures_test::__private
     };
     let body = &input.block;
-    input.block.stmts = vec![syn::Stmt::Expr(
-        syn::parse2(quote_spanned! {last_stmt_end_span=>
+    input.block.stmts = vec![rust_syntax::Stmt::Expr(
+        rust_syntax::parse2(quote_spanned! {last_stmt_end_span=>
             #path::block_on(async #body)
         })
         .unwrap(),

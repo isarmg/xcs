@@ -9,7 +9,7 @@ use convert_case_extras::is_case;
 use iterator_toolkit::Itertools;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens, TokenStreamExt};
-use syn::{
+use rust_syntax::{
     parse::Parse, parse_quote, spanned::Spanned, token::Colon, visit_mut::VisitMut,
     AngleBracketedGenericArguments, Attribute, FnArg, GenericArgument, GenericParam, Item, ItemFn,
     LitStr, Meta, Pat, PatIdent, Path, PathArguments, ReturnType, Signature, Stmt, Type,
@@ -17,7 +17,7 @@ use syn::{
 };
 
 pub struct Model {
-    validation_error: Option<syn::Error>,
+    validation_error: Option<rust_syntax::Error>,
     is_transparent: bool,
     docs: Docs,
     unknown_attrs: UnknownAttrs,
@@ -29,7 +29,7 @@ pub struct Model {
 }
 
 impl Parse for Model {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+    fn parse(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Self> {
         let mut item = ItemFn::parse(input)?;
 
         convert_impl_trait_to_generic(&mut item.sig);
@@ -47,7 +47,7 @@ impl Parse for Model {
                 .clone()
                 .into_iter()
                 .map(Prop::new)
-                .collect::<syn::Result<Vec<_>>>()
+                .collect::<rust_syntax::Result<Vec<_>>>()
             {
                 Ok(props) => props,
                 Err(error) => {
@@ -113,7 +113,7 @@ pub fn convert_from_snake_case(name: &Ident) -> Ident {
 }
 
 impl Model {
-    pub(crate) fn expand(mut self, errors: &mut Errors) -> syn::Result<TokenStream> {
+    pub(crate) fn expand(mut self, errors: &mut Errors) -> rust_syntax::Result<TokenStream> {
         if let Some(error) = self.validation_error.take() {
             return Err(error);
         }
@@ -138,7 +138,7 @@ impl Model {
                 _ => None,
             });
             if let Some(semi) = ends_semi {
-                errors.push(syn::Error::new(
+                errors.push(rust_syntax::Error::new(
                     semi.span(),
                     "A component that ends with a `view!` macro followed by a \
                      semicolon will return (), an empty view. This is usually \
@@ -272,7 +272,7 @@ pub struct DummyModel {
 }
 
 impl Parse for DummyModel {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+    fn parse(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Self> {
         let mut attrs = input.call(Attribute::parse_outer)?;
         // Drop unknown attributes like #[deprecated]
         drain_filter(&mut attrs, |attr| {
@@ -348,11 +348,14 @@ struct Prop {
 }
 
 impl Prop {
-    fn new(arg: FnArg) -> syn::Result<Self> {
+    fn new(arg: FnArg) -> rust_syntax::Result<Self> {
         let typed = if let FnArg::Typed(ty) = arg {
             ty
         } else {
-            return Err(syn::Error::new_spanned(arg, "receiver not allowed in `fn`"));
+            return Err(rust_syntax::Error::new_spanned(
+                arg,
+                "receiver not allowed in `fn`",
+            ));
         };
 
         let prop_opts = PropOpt::from_attributes(&typed.attrs)?;
@@ -373,7 +376,7 @@ impl Prop {
             }
             pat @ (Pat::Struct(_) | Pat::Tuple(_) | Pat::TupleStruct(_)) => {
                 let Some(name) = prop_opts.name.as_deref() else {
-                    return Err(syn::Error::new_spanned(
+                    return Err(rust_syntax::Error::new_spanned(
                         pat,
                         "destructured props must be given a name e.g. \
                          #[prop(name = \"data\")]",
@@ -388,7 +391,7 @@ impl Prop {
                 }
             }
             pat => {
-                return Err(syn::Error::new_spanned(
+                return Err(rust_syntax::Error::new_spanned(
                     pat,
                     "only `prop: bool` style types are allowed within the \
                      `#[component]` macro",
@@ -421,7 +424,7 @@ impl ToTokens for Docs {
 }
 
 impl Docs {
-    pub fn new(attrs: &[Attribute]) -> syn::Result<Self> {
+    pub fn new(attrs: &[Attribute]) -> rust_syntax::Result<Self> {
         #[derive(Debug, Copy, Clone, PartialEq, Eq)]
         enum ViewCodeFenceState {
             Outside,
@@ -491,7 +494,7 @@ impl Docs {
                     value_to_string(&attr.value)
                         .map(|val| (val, attr.path.span()))
                         .ok_or_else(|| {
-                            syn::Error::new_spanned(
+                            rust_syntax::Error::new_spanned(
                                 attr,
                                 "expected string literal in value of doc \
                                  comment",
@@ -499,7 +502,7 @@ impl Docs {
                         }),
                 )
             })
-            .collect::<syn::Result<Vec<_>>>()?
+            .collect::<rust_syntax::Result<Vec<_>>>()?
             .into_iter()
             .flat_map(map)
             .collect_vec();
@@ -599,7 +602,7 @@ struct PropOpt {
     #[attribute(conflicts = [optional, optional_no_strip, marker])]
     strip_option: bool,
     #[attribute(example = "5 * 10")]
-    default: Option<syn::Expr>,
+    default: Option<rust_syntax::Expr>,
     into: bool,
     attrs: bool,
     name: Option<String>,
@@ -610,7 +613,7 @@ struct PropOpt {
 struct TypedBuilderOpts<'a> {
     marker: bool,
     default: bool,
-    default_with_value: Option<syn::Expr>,
+    default_with_value: Option<rust_syntax::Expr>,
     strip_option: bool,
     into: bool,
     ty: &'a Type,
@@ -630,7 +633,7 @@ impl<'a> TypedBuilderOpts<'a> {
 }
 
 impl TypedBuilderOpts<'_> {
-    fn expand(&self) -> syn::Result<TokenStream> {
+    fn expand(&self) -> rust_syntax::Result<TokenStream> {
         if self.marker {
             return Ok(quote! {
                 #[builder(default, setter(skip))]
@@ -689,7 +692,7 @@ impl TypedBuilderOpts<'_> {
     }
 }
 
-fn prop_builder_fields(vis: &Visibility, props: &[Prop]) -> syn::Result<TokenStream> {
+fn prop_builder_fields(vis: &Visibility, props: &[Prop]) -> rust_syntax::Result<TokenStream> {
     props
         .iter()
         .map(|prop| {
@@ -735,7 +738,7 @@ fn prop_names(props: &[Prop]) -> TokenStream {
         .collect()
 }
 
-fn generate_component_fn_prop_docs(props: &[Prop]) -> syn::Result<TokenStream> {
+fn generate_component_fn_prop_docs(props: &[Prop]) -> rust_syntax::Result<TokenStream> {
     let required_prop_docs = props
         .iter()
         .filter(|Prop { prop_opts, .. }| {
@@ -743,7 +746,7 @@ fn generate_component_fn_prop_docs(props: &[Prop]) -> syn::Result<TokenStream> {
         })
         .filter(|prop| !prop.prop_opts.marker)
         .map(|p| prop_to_doc(p, PropDocStyle::List))
-        .collect::<syn::Result<TokenStream>>()?;
+        .collect::<rust_syntax::Result<TokenStream>>()?;
 
     let optional_prop_docs = props
         .iter()
@@ -752,7 +755,7 @@ fn generate_component_fn_prop_docs(props: &[Prop]) -> syn::Result<TokenStream> {
         })
         .filter(|prop| !prop.prop_opts.marker)
         .map(|p| prop_to_doc(p, PropDocStyle::List))
-        .collect::<syn::Result<TokenStream>>()?;
+        .collect::<rust_syntax::Result<TokenStream>>()?;
 
     let required_prop_docs = if !required_prop_docs.is_empty() {
         quote! {
@@ -794,7 +797,7 @@ pub fn is_option(ty: &Type) -> bool {
     }
 }
 
-pub fn unwrap_option(ty: &Type) -> syn::Result<Type> {
+pub fn unwrap_option(ty: &Type) -> rust_syntax::Result<Type> {
     const STD_OPTION_MSG: &str =
         "make sure you're not shadowing the `std::option::Option` type that \
          is automatically imported from the standard prelude";
@@ -818,7 +821,7 @@ pub fn unwrap_option(ty: &Type) -> syn::Result<Type> {
         }
     }
 
-    Err(syn::Error::new_spanned(
+    Err(rust_syntax::Error::new_spanned(
         ty,
         message_with_help("`Option` must be `std::option::Option`", STD_OPTION_MSG),
     ))
@@ -838,25 +841,25 @@ fn prop_to_doc(
         prop_opts,
     }: &Prop,
     style: PropDocStyle,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     let ty = if (prop_opts.optional || prop_opts.strip_option) && is_option(ty) {
         unwrap_option(ty)?
     } else {
         ty.to_owned()
     };
 
-    let type_item: syn::Item = parse_quote! {
+    let type_item: rust_syntax::Item = parse_quote! {
         type SomeType = #ty;
     };
 
-    let file = syn::File {
+    let file = rust_syntax::File {
         shebang: None,
         frontmatter: None,
         attrs: vec![],
         items: vec![type_item],
     };
 
-    let pretty_ty = prettyplease::unparse(&file);
+    let pretty_ty = rust_source_format::unparse(&file);
 
     let pretty_ty = &pretty_ty[16..&pretty_ty.len() - 2];
 
@@ -926,7 +929,7 @@ fn convert_impl_trait_to_generic(sig: &mut Signature) {
     struct RemoveImplTrait(Vec<TypeImplTrait>);
     impl VisitMut for RemoveImplTrait {
         fn visit_type_mut(&mut self, ty: &mut Type) {
-            syn::visit_mut::visit_type_mut(self, ty);
+            rust_syntax::visit_mut::visit_type_mut(self, ty);
             if matches!(ty, Type::ImplTrait(_)) {
                 let ident = new_generic_ident(self.0.len(), ty.span());
                 let generic_type = Type::Path(TypePath {

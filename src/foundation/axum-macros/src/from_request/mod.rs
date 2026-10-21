@@ -6,7 +6,7 @@ use crate::{
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned, ToTokens};
 use std::{collections::HashSet, fmt, iter};
-use syn::{
+use rust_syntax::{
     parse_quote, punctuated::Punctuated, spanned::Spanned, Fields, Ident, Path, Token, Type,
 };
 
@@ -38,8 +38,8 @@ impl fmt::Display for Trait {
 
 #[derive(Debug)]
 enum State {
-    Custom(syn::Type),
-    Default(syn::Type),
+    Custom(rust_syntax::Type),
+    Default(rust_syntax::Type),
     CannotInfer,
 }
 
@@ -90,10 +90,10 @@ impl ToTokens for State {
     }
 }
 
-pub(crate) fn expand(item: syn::Item, tr: Trait) -> syn::Result<TokenStream> {
+pub(crate) fn expand(item: rust_syntax::Item, tr: Trait) -> rust_syntax::Result<TokenStream> {
     match item {
-        syn::Item::Struct(item) => {
-            let syn::ItemStruct {
+        rust_syntax::Item::Struct(item) => {
+            let rust_syntax::ItemStruct {
                 attrs,
                 ident,
                 generics,
@@ -124,7 +124,7 @@ pub(crate) fn expand(item: syn::Item, tr: Trait) -> syn::Result<TokenStream> {
                     }
 
                     match inferred_state_types.len() {
-                        0 => State::Default(syn::parse_quote!(S)),
+                        0 => State::Default(rust_syntax::parse_quote!(S)),
                         1 => State::Custom(inferred_state_types.iter().next().unwrap().to_owned()),
                         _ => State::CannotInfer,
                     }
@@ -152,7 +152,7 @@ pub(crate) fn expand(item: syn::Item, tr: Trait) -> syn::Result<TokenStream> {
                     Trait::FromRequest => "from_request",
                     Trait::FromRequestParts => "from_request_parts",
                 };
-                let compile_error = syn::Error::new(
+                let compile_error = rust_syntax::Error::new(
                     Span::call_site(),
                     format_args!(
                         "can't infer state type, please add \
@@ -169,8 +169,8 @@ pub(crate) fn expand(item: syn::Item, tr: Trait) -> syn::Result<TokenStream> {
                 Ok(trait_impl)
             }
         }
-        syn::Item::Enum(item) => {
-            let syn::ItemEnum {
+        rust_syntax::Item::Enum(item) => {
+            let rust_syntax::ItemEnum {
                 attrs,
                 vis: _,
                 enum_token: _,
@@ -183,11 +183,11 @@ pub(crate) fn expand(item: syn::Item, tr: Trait) -> syn::Result<TokenStream> {
             let generics_error = format!("`#[derive({tr})]` on enums don't support generics");
 
             if !generics.params.is_empty() {
-                return Err(syn::Error::new_spanned(generics, generics_error));
+                return Err(rust_syntax::Error::new_spanned(generics, generics_error));
             }
 
             if let Some(where_clause) = generics.where_clause {
-                return Err(syn::Error::new_spanned(where_clause, generics_error));
+                return Err(rust_syntax::Error::new_spanned(where_clause, generics_error));
             }
 
             let FromRequestContainerAttrs {
@@ -202,7 +202,7 @@ pub(crate) fn expand(item: syn::Item, tr: Trait) -> syn::Result<TokenStream> {
                     let via = via.as_ref().map(|(_, via)| via)?;
                     state_from_via(&ident, via).map(State::Custom)
                 })()
-                .unwrap_or_else(|| State::Default(syn::parse_quote!(S))),
+                .unwrap_or_else(|| State::Default(rust_syntax::parse_quote!(S))),
             };
 
             match (via.map(second), rejection) {
@@ -214,27 +214,27 @@ pub(crate) fn expand(item: syn::Item, tr: Trait) -> syn::Result<TokenStream> {
                     state,
                     tr,
                 ),
-                (None, Some((rejection_kw, _))) => Err(syn::Error::new_spanned(
+                (None, Some((rejection_kw, _))) => Err(rust_syntax::Error::new_spanned(
                     rejection_kw,
                     "cannot use `rejection` without `via`",
                 )),
-                (None, _) => Err(syn::Error::new(
+                (None, _) => Err(rust_syntax::Error::new(
                     Span::call_site(),
                     "missing `#[from_request(via(...))]`",
                 )),
             }
         }
-        _ => Err(syn::Error::new_spanned(item, "expected `struct` or `enum`")),
+        _ => Err(rust_syntax::Error::new_spanned(item, "expected `struct` or `enum`")),
     }
 }
 
 fn parse_single_generic_type_on_struct(
-    generics: syn::Generics,
-    fields: &syn::Fields,
+    generics: rust_syntax::Generics,
+    fields: &rust_syntax::Fields,
     tr: Trait,
-) -> syn::Result<Option<Ident>> {
+) -> rust_syntax::Result<Option<Ident>> {
     if let Some(where_clause) = generics.where_clause {
-        return Err(syn::Error::new_spanned(
+        return Err(rust_syntax::Error::new_spanned(
             where_clause,
             format_args!("#[derive({tr})] doesn't support structs with `where` clauses"),
         ));
@@ -245,9 +245,9 @@ fn parse_single_generic_type_on_struct(
         1 => {
             let param = generics.params.first().unwrap();
             let ty_ident = match param {
-                syn::GenericParam::Type(ty) => &ty.ident,
-                syn::GenericParam::Lifetime(lifetime) => {
-                    return Err(syn::Error::new_spanned(
+                rust_syntax::GenericParam::Type(ty) => &ty.ident,
+                rust_syntax::GenericParam::Lifetime(lifetime) => {
+                    return Err(rust_syntax::Error::new_spanned(
                         lifetime,
                         format_args!(
                             "#[derive({tr})] doesn't support structs \
@@ -255,8 +255,8 @@ fn parse_single_generic_type_on_struct(
                         ),
                     ));
                 }
-                syn::GenericParam::Const(konst) => {
-                    return Err(syn::Error::new_spanned(
+                rust_syntax::GenericParam::Const(konst) => {
+                    return Err(rust_syntax::Error::new_spanned(
                         konst,
                         format_args!(
                             "#[derive({tr})] doesn't support structs \
@@ -267,8 +267,8 @@ fn parse_single_generic_type_on_struct(
             };
 
             match fields {
-                syn::Fields::Named(fields_named) => {
-                    return Err(syn::Error::new_spanned(
+                rust_syntax::Fields::Named(fields_named) => {
+                    return Err(rust_syntax::Error::new_spanned(
                         fields_named,
                         format_args!(
                             "#[derive({tr})] doesn't support named fields \
@@ -276,9 +276,9 @@ fn parse_single_generic_type_on_struct(
                         ),
                     ));
                 }
-                syn::Fields::Unnamed(fields_unnamed) => {
+                rust_syntax::Fields::Unnamed(fields_unnamed) => {
                     if fields_unnamed.unnamed.len() != 1 {
-                        return Err(syn::Error::new_spanned(
+                        return Err(rust_syntax::Error::new_spanned(
                             fields_unnamed,
                             format_args!(
                                 "#[derive({tr})] only supports generics on \
@@ -289,9 +289,9 @@ fn parse_single_generic_type_on_struct(
 
                     let field = fields_unnamed.unnamed.first().unwrap();
 
-                    if let syn::Type::Path(type_path) = &field.ty {
+                    if let rust_syntax::Type::Path(type_path) = &field.ty {
                         if type_path.path.get_ident() != Some(ty_ident) {
-                            return Err(syn::Error::new_spanned(
+                            return Err(rust_syntax::Error::new_spanned(
                                 type_path,
                                 format_args!(
                                     "#[derive({tr})] only supports generics on \
@@ -300,24 +300,24 @@ fn parse_single_generic_type_on_struct(
                             ));
                         }
                     } else {
-                        return Err(syn::Error::new_spanned(&field.ty, "Expected type path"));
+                        return Err(rust_syntax::Error::new_spanned(&field.ty, "Expected type path"));
                     }
                 }
-                syn::Fields::Unit => return Ok(None),
+                rust_syntax::Fields::Unit => return Ok(None),
             }
 
             Ok(Some(ty_ident.clone()))
         }
-        _ => Err(syn::Error::new_spanned(
+        _ => Err(rust_syntax::Error::new_spanned(
             generics,
             format_args!("#[derive({tr})] only supports 0 or 1 generic type parameters"),
         )),
     }
 }
 
-fn error_on_generic_ident(generic_ident: Option<Ident>, tr: Trait) -> syn::Result<()> {
+fn error_on_generic_ident(generic_ident: Option<Ident>, tr: Trait) -> rust_syntax::Result<()> {
     if let Some(generic_ident) = generic_ident {
-        Err(syn::Error::new_spanned(
+        Err(rust_syntax::Error::new_spanned(
             generic_ident,
             format_args!(
                 "#[derive({tr})] only supports generics when used with #[from_request(via)]"
@@ -329,12 +329,12 @@ fn error_on_generic_ident(generic_ident: Option<Ident>, tr: Trait) -> syn::Resul
 }
 
 fn impl_struct_by_extracting_each_field(
-    ident: syn::Ident,
-    fields: syn::Fields,
-    rejection: Option<syn::Path>,
+    ident: rust_syntax::Ident,
+    fields: rust_syntax::Fields,
+    rejection: Option<rust_syntax::Path>,
     state: &State,
     tr: Trait,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     let trait_fn_body = match state {
         State::CannotInfer => quote! {
             ::std::unimplemented!()
@@ -403,24 +403,24 @@ fn impl_struct_by_extracting_each_field(
     })
 }
 
-fn has_no_fields(fields: &syn::Fields) -> bool {
+fn has_no_fields(fields: &rust_syntax::Fields) -> bool {
     match fields {
-        syn::Fields::Named(fields) => fields.named.is_empty(),
-        syn::Fields::Unnamed(fields) => fields.unnamed.is_empty(),
-        syn::Fields::Unit => true,
+        rust_syntax::Fields::Named(fields) => fields.named.is_empty(),
+        rust_syntax::Fields::Unnamed(fields) => fields.unnamed.is_empty(),
+        rust_syntax::Fields::Unit => true,
     }
 }
 
 fn extract_fields(
-    fields: &syn::Fields,
-    rejection: &Option<syn::Path>,
+    fields: &rust_syntax::Fields,
+    rejection: &Option<rust_syntax::Path>,
     tr: Trait,
-) -> syn::Result<Vec<TokenStream>> {
-    fn member(field: &syn::Field, index: usize) -> TokenStream {
+) -> rust_syntax::Result<Vec<TokenStream>> {
+    fn member(field: &rust_syntax::Field, index: usize) -> TokenStream {
         match &field.ident {
             Some(ident) => quote! { #ident },
             _ => {
-                let member = syn::Member::Unnamed(syn::Index {
+                let member = rust_syntax::Member::Unnamed(rust_syntax::Index {
                     index: index as u32,
                     span: field.span(),
                 });
@@ -429,7 +429,7 @@ fn extract_fields(
         }
     }
 
-    fn into_inner(via: &Option<(attr::kw::via, syn::Path)>, ty_span: Span) -> TokenStream {
+    fn into_inner(via: &Option<(attr::kw::via, rust_syntax::Path)>, ty_span: Span) -> TokenStream {
         if let Some((_, path)) = via {
             let span = path.span();
             quote_spanned! {span=>
@@ -443,7 +443,7 @@ fn extract_fields(
     }
 
     fn into_outer(
-        via: &Option<(attr::kw::via, syn::Path)>,
+        via: &Option<(attr::kw::via, rust_syntax::Path)>,
         ty_span: Span,
         field_ty: &Type,
     ) -> TokenStream {
@@ -588,7 +588,7 @@ fn extract_fields(
                 Ok(tokens)
             }
         })
-        .collect::<syn::Result<_>>()?;
+        .collect::<rust_syntax::Result<_>>()?;
 
     // Handle the last element, if deriving FromRequest
     if let Some(field) = last {
@@ -641,8 +641,8 @@ fn extract_fields(
     Ok(res)
 }
 
-fn peel_option(ty: &syn::Type) -> Option<&syn::Type> {
-    let type_path = if let syn::Type::Path(type_path) = ty {
+fn peel_option(ty: &rust_syntax::Type) -> Option<&rust_syntax::Type> {
+    let type_path = if let rust_syntax::Type::Path(type_path) = ty {
         type_path
     } else {
         return None;
@@ -655,8 +655,8 @@ fn peel_option(ty: &syn::Type) -> Option<&syn::Type> {
     }
 
     let args = match &segment.arguments {
-        syn::PathArguments::AngleBracketed(args) => args,
-        syn::PathArguments::Parenthesized(_) | syn::PathArguments::None => return None,
+        rust_syntax::PathArguments::AngleBracketed(args) => args,
+        rust_syntax::PathArguments::Parenthesized(_) | rust_syntax::PathArguments::None => return None,
     };
 
     let ty = if args.args.len() == 1 {
@@ -665,15 +665,15 @@ fn peel_option(ty: &syn::Type) -> Option<&syn::Type> {
         return None;
     };
 
-    if let syn::GenericArgument::Type(ty) = ty {
+    if let rust_syntax::GenericArgument::Type(ty) = ty {
         Some(ty)
     } else {
         None
     }
 }
 
-fn peel_result_ok(ty: &syn::Type) -> Option<&syn::Type> {
-    let type_path = if let syn::Type::Path(type_path) = ty {
+fn peel_result_ok(ty: &rust_syntax::Type) -> Option<&rust_syntax::Type> {
+    let type_path = if let rust_syntax::Type::Path(type_path) = ty {
         type_path
     } else {
         return None;
@@ -686,8 +686,8 @@ fn peel_result_ok(ty: &syn::Type) -> Option<&syn::Type> {
     }
 
     let args = match &segment.arguments {
-        syn::PathArguments::AngleBracketed(args) => args,
-        syn::PathArguments::Parenthesized(_) | syn::PathArguments::None => return None,
+        rust_syntax::PathArguments::AngleBracketed(args) => args,
+        rust_syntax::PathArguments::Parenthesized(_) | rust_syntax::PathArguments::None => return None,
     };
 
     let ty = if args.args.len() == 2 {
@@ -696,7 +696,7 @@ fn peel_result_ok(ty: &syn::Type) -> Option<&syn::Type> {
         return None;
     };
 
-    if let syn::GenericArgument::Type(ty) = ty {
+    if let rust_syntax::GenericArgument::Type(ty) = ty {
         Some(ty)
     } else {
         None
@@ -704,25 +704,25 @@ fn peel_result_ok(ty: &syn::Type) -> Option<&syn::Type> {
 }
 
 fn impl_struct_by_extracting_all_at_once(
-    ident: syn::Ident,
-    fields: syn::Fields,
-    via_path: syn::Path,
-    rejection: Option<syn::Path>,
+    ident: rust_syntax::Ident,
+    fields: rust_syntax::Fields,
+    via_path: rust_syntax::Path,
+    rejection: Option<rust_syntax::Path>,
     generic_ident: Option<Ident>,
     state: &State,
     tr: Trait,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     let fields = match fields {
-        syn::Fields::Named(fields) => fields.named.into_iter(),
-        syn::Fields::Unnamed(fields) => fields.unnamed.into_iter(),
-        syn::Fields::Unit => Punctuated::<_, Token![,]>::new().into_iter(),
+        rust_syntax::Fields::Named(fields) => fields.named.into_iter(),
+        rust_syntax::Fields::Unnamed(fields) => fields.unnamed.into_iter(),
+        rust_syntax::Fields::Unit => Punctuated::<_, Token![,]>::new().into_iter(),
     };
 
     for field in fields {
         let FromRequestFieldAttrs { via } = parse_attrs("from_request", &field.attrs)?;
 
         if let Some((via, _)) = via {
-            return Err(syn::Error::new_spanned(
+            return Err(rust_syntax::Error::new_spanned(
                 via,
                 "`#[from_request(via(...))]` on a field cannot be used \
                 together with `#[from_request(...)]` on the container",
@@ -875,33 +875,33 @@ fn impl_struct_by_extracting_all_at_once(
 }
 
 fn impl_enum_by_extracting_all_at_once(
-    ident: syn::Ident,
-    variants: Punctuated<syn::Variant, Token![,]>,
-    path: syn::Path,
-    rejection: Option<syn::Path>,
+    ident: rust_syntax::Ident,
+    variants: Punctuated<rust_syntax::Variant, Token![,]>,
+    path: rust_syntax::Path,
+    rejection: Option<rust_syntax::Path>,
     state: State,
     tr: Trait,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     for variant in variants {
         let FromRequestFieldAttrs { via } = parse_attrs("from_request", &variant.attrs)?;
 
         if let Some((via, _)) = via {
-            return Err(syn::Error::new_spanned(
+            return Err(rust_syntax::Error::new_spanned(
                 via,
                 "`#[from_request(via(...))]` cannot be used on variants",
             ));
         }
 
         let fields = match variant.fields {
-            syn::Fields::Named(fields) => fields.named.into_iter(),
-            syn::Fields::Unnamed(fields) => fields.unnamed.into_iter(),
-            syn::Fields::Unit => Punctuated::<_, Token![,]>::new().into_iter(),
+            rust_syntax::Fields::Named(fields) => fields.named.into_iter(),
+            rust_syntax::Fields::Unnamed(fields) => fields.unnamed.into_iter(),
+            rust_syntax::Fields::Unit => Punctuated::<_, Token![,]>::new().into_iter(),
         };
 
         for field in fields {
             let FromRequestFieldAttrs { via } = parse_attrs("from_request", &field.attrs)?;
             if let Some((via, _)) = via {
-                return Err(syn::Error::new_spanned(
+                return Err(rust_syntax::Error::new_spanned(
                     via,
                     "`#[from_request(via(...))]` cannot be used inside variants",
                 ));

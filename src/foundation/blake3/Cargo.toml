@@ -85,6 +85,6 @@ path = "../zeroize"
 version = "1.1.12"
 path = "../cc"
 
-[target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies.cpufeatures]
+[target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies.cpu-feature-detect]
 version = "0.3.0"
-path = "../cpufeatures-0.3.1"
+path = "../cpu-feature-detect"

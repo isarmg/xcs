@@ -37,7 +37,7 @@
 //! }
 //! ```
 //!
-//! The API is modeled after [`syn::visit_mut`](https://docs.rs/syn/1/syn/visit_mut).
+//! The API is modeled after [`rust_syntax::visit_mut`](https://docs.rs/syn/1/syn/visit_mut).
 //!
 //! # Examples
 //!

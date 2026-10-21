@@ -1,13 +1,13 @@
 use proc_macro2::TokenStream;
 use std::default::Default;
-use syn::{parse_quote, DeriveInput, Ident, LitStr, Meta, Path, Visibility};
+use rust_syntax::{parse_quote, DeriveInput, Ident, LitStr, Meta, Path, Visibility};
 
 use super::case_style::CaseStyle;
 use super::metadata::{DeriveInputExt, EnumDiscriminantsMeta, EnumMeta};
 use super::occurrence_error;
 
 pub trait HasTypeProperties {
-    fn get_type_properties(&self) -> syn::Result<StrumTypeProperties>;
+    fn get_type_properties(&self) -> rust_syntax::Result<StrumTypeProperties>;
 }
 
 #[derive(Clone, Default)]
@@ -29,7 +29,7 @@ pub struct StrumTypeProperties {
 }
 
 impl HasTypeProperties for DeriveInput {
-    fn get_type_properties(&self) -> syn::Result<StrumTypeProperties> {
+    fn get_type_properties(&self) -> rust_syntax::Result<StrumTypeProperties> {
         let mut output = StrumTypeProperties::default();
 
         let strum_meta = self.get_metadata()?;

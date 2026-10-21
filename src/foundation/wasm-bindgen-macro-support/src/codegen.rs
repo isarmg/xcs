@@ -10,11 +10,11 @@ use quote::{quote, ToTokens};
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-use syn::ext::IdentExt;
-use syn::parse_quote;
-use syn::spanned::Spanned;
-use syn::visit_mut::{self, VisitMut};
-use syn::{Attribute, Meta, MetaList};
+use rust_syntax::ext::IdentExt;
+use rust_syntax::parse_quote;
+use rust_syntax::spanned::Spanned;
+use rust_syntax::visit_mut::{self, VisitMut};
+use rust_syntax::{Attribute, Meta, MetaList};
 use wasm_bindgen_shared as shared;
 
 /// A trait for converting AST structs into Tokens and adding them to a TokenStream,
@@ -157,7 +157,7 @@ impl TryToTokens for ast::Program {
             .iter()
             .map(|chunk| match chunk {
                 EncodeChunk::EncodedBuf(buf) => {
-                    let buf = syn::LitByteStr::new(buf.as_slice(), Span::call_site());
+                    let buf = rust_syntax::LitByteStr::new(buf.as_slice(), Span::call_site());
                     quote!(#buf)
                 }
                 EncodeChunk::StrExpr(expr) => {
@@ -211,7 +211,7 @@ impl TryToTokens for ast::Program {
 
         let len = prefix_json.len() as u32;
         let prefix_json_bytes = [&len.to_le_bytes()[..], prefix_json.as_bytes()].concat();
-        let prefix_json_bytes = syn::LitByteStr::new(&prefix_json_bytes, Span::call_site());
+        let prefix_json_bytes = rust_syntax::LitByteStr::new(&prefix_json_bytes, Span::call_site());
 
         (quote! {
             #[cfg(all(target_family = "wasm", not(target_os = "wasi")))]
@@ -241,14 +241,14 @@ impl TryToTokens for ast::Program {
 fn imported_class_generics<'a>(
     function: &ast::ImportFunction,
     types: &HashMap<String, Vec<&'a ast::ImportType>>,
-) -> Vec<(Option<&'a syn::Generics>, Vec<syn::Attribute>)> {
+) -> Vec<(Option<&'a rust_syntax::Generics>, Vec<rust_syntax::Attribute>)> {
     let ast::ImportFunctionKind::Method {
         ty: class_ty, kind, ..
     } = &function.kind
     else {
         return vec![(None, Vec::new())];
     };
-    let syn::Type::Path(syn::TypePath {
+    let rust_syntax::Type::Path(rust_syntax::TypePath {
         attrs: _,
         qself: None,
         path,
@@ -288,15 +288,15 @@ fn imported_class_generics<'a>(
 }
 
 fn cfg_union_attrs(
-    contexts: &[(Option<&syn::Generics>, Vec<syn::Attribute>)],
-) -> Vec<syn::Attribute> {
+    contexts: &[(Option<&rust_syntax::Generics>, Vec<rust_syntax::Attribute>)],
+) -> Vec<rust_syntax::Attribute> {
     let mut alternatives = Vec::new();
     for (_, attrs) in contexts {
         if attrs.is_empty() {
             return Vec::new();
         }
         let conditions = attrs.iter().filter_map(|attr| match &attr.meta {
-            syn::Meta::List(list) if list.path.is_ident("cfg") => Some(&list.tokens),
+            rust_syntax::Meta::List(list) if list.path.is_ident("cfg") => Some(&list.tokens),
             _ => None,
         });
         alternatives.push(quote! { all(#(#conditions),*) });
@@ -304,11 +304,11 @@ fn cfg_union_attrs(
     if alternatives.is_empty() {
         Vec::new()
     } else {
-        vec![syn::parse_quote! { #[cfg(any(#(#alternatives),*))] }]
+        vec![rust_syntax::parse_quote! { #[cfg(any(#(#alternatives),*))] }]
     }
 }
 
-fn same_class_path(left: &syn::Path, right: &syn::Path) -> bool {
+fn same_class_path(left: &rust_syntax::Path, right: &rust_syntax::Path) -> bool {
     if left.leading_colon.is_some() != right.leading_colon.is_some() {
         return false;
     }
@@ -971,17 +971,17 @@ impl TryToTokens for ast::Export {
             argtys.push(&*arg.pat_type.ty);
             let i = i + offset;
             let ident = Ident::new(&format!("arg{i}"), Span::call_site());
-            fn unwrap_nested_types(ty: &syn::Type) -> &syn::Type {
+            fn unwrap_nested_types(ty: &rust_syntax::Type) -> &rust_syntax::Type {
                 match &ty {
-                    syn::Type::Group(syn::TypeGroup { ref elem, .. }) => unwrap_nested_types(elem),
-                    syn::Type::Paren(syn::TypeParen { ref elem, .. }) => unwrap_nested_types(elem),
+                    rust_syntax::Type::Group(rust_syntax::TypeGroup { ref elem, .. }) => unwrap_nested_types(elem),
+                    rust_syntax::Type::Paren(rust_syntax::TypeParen { ref elem, .. }) => unwrap_nested_types(elem),
                     _ => ty,
                 }
             }
             let ty = unwrap_nested_types(&arg.pat_type.ty);
 
             match &ty {
-                syn::Type::Reference(syn::TypeReference {
+                rust_syntax::Type::Reference(rust_syntax::TypeReference {
                     mutability: Some(_),
                     elem,
                     ..
@@ -1004,7 +1004,7 @@ impl TryToTokens for ast::Export {
                         let #ident = &mut *#ident;
                     });
                 }
-                syn::Type::Reference(syn::TypeReference { elem, .. }) => {
+                rust_syntax::Type::Reference(rust_syntax::TypeReference { elem, .. }) => {
                     if self.function.r#async {
                         let abi =
                             quote! { <#elem as #wasm_bindgen::convert::LongRefFromWasmAbi>::Abi };
@@ -1064,19 +1064,19 @@ impl TryToTokens for ast::Export {
             }
             converted_arguments.push(quote! { #ident });
         }
-        let syn_unit = syn::Type::Tuple(syn::TypeTuple {
+        let syntax_unit = rust_syntax::Type::Tuple(rust_syntax::TypeTuple {
             attrs: Vec::new(),
             elems: Default::default(),
             paren_token: Default::default(),
         });
-        let syn_ret = self
+        let syntax_ret = self
             .function
             .ret
             .as_ref()
             .map(|ret| &ret.r#type)
-            .unwrap_or(&syn_unit);
-        if let syn::Type::Reference(_) = syn_ret {
-            bail_span!(syn_ret, "cannot return a borrowed ref with #[wasm_bindgen]",)
+            .unwrap_or(&syntax_unit);
+        if let rust_syntax::Type::Reference(_) = syntax_ret {
+            bail_span!(syntax_ret, "cannot return a borrowed ref with #[wasm_bindgen]",)
         }
 
         // `#[wasm_bindgen(jspi, experimental_tokio)]`: the export is a
@@ -1094,8 +1094,8 @@ impl TryToTokens for ast::Export {
                 _ => quote! { block_on },
             };
             (
-                quote! { #syn_ret },
-                quote! { #syn_ret },
+                quote! { #syntax_ret },
+                quote! { #syntax_ret },
                 quote! { #wasm_bindgen_futures::tokio::#block_on(async move { #ret.await }) },
             )
         } else if self.function.r#async {
@@ -1104,15 +1104,15 @@ impl TryToTokens for ast::Export {
                     quote! { () },
                     quote! { () },
                     quote! {
-                        <#syn_ret as #wasm_bindgen::__rt::Start>::start(#ret.await)
+                        <#syntax_ret as #wasm_bindgen::__rt::Start>::start(#ret.await)
                     },
                 )
             } else {
                 (
                     quote! { #wasm_bindgen::JsValue },
-                    quote! { #syn_ret },
+                    quote! { #syntax_ret },
                     quote! {
-                        <#syn_ret as #wasm_bindgen::__rt::IntoJsResult>::into_js_result(#ret.await)
+                        <#syntax_ret as #wasm_bindgen::__rt::IntoJsResult>::into_js_result(#ret.await)
                     },
                 )
             }
@@ -1120,10 +1120,10 @@ impl TryToTokens for ast::Export {
             (
                 quote! { () },
                 quote! { () },
-                quote! { <#syn_ret as #wasm_bindgen::__rt::Start>::start(#ret) },
+                quote! { <#syntax_ret as #wasm_bindgen::__rt::Start>::start(#ret) },
             )
         } else {
-            (quote! { #syn_ret }, quote! { #syn_ret }, quote! { #ret })
+            (quote! { #syntax_ret }, quote! { #syntax_ret }, quote! { #ret })
         };
 
         let mut call = quote! {
@@ -1308,7 +1308,7 @@ impl TryToTokens for ast::Export {
         let describe_args: TokenStream = argtys
             .iter()
             .map(|ty| match ty {
-                syn::Type::Reference(reference)
+                rust_syntax::Type::Reference(reference)
                     if self.function.r#async && reference.mutability.is_none() =>
                 {
                     let inner = &reference.elem;
@@ -1451,7 +1451,7 @@ impl TryToTokens for ast::ImportType {
         let mut reference_generics = declaration_generics.clone();
         reference_generics.params.insert(
             0,
-            syn::GenericParam::Lifetime(syn::LifetimeParam::new(reference_lifetime.clone())),
+            rust_syntax::GenericParam::Lifetime(rust_syntax::LifetimeParam::new(reference_lifetime.clone())),
         );
         let (reference_impl_generics, _, _) = reference_generics.split_for_impl();
 
@@ -1478,7 +1478,7 @@ impl TryToTokens for ast::ImportType {
             .where_clause
             .iter()
             .flat_map(|clause| clause.predicates.iter())
-            .filter(|predicate| matches!(predicate, syn::WherePredicate::Lifetime(_)))
+            .filter(|predicate| matches!(predicate, rust_syntax::WherePredicate::Lifetime(_)))
             .collect();
         let from_jsvalue_where_clause = if from_jsvalue_lifetime_predicates.is_empty() {
             quote! {}
@@ -1527,14 +1527,14 @@ impl TryToTokens for ast::ImportType {
             let mut clause = declaration_generics
                 .where_clause
                 .clone()
-                .unwrap_or_else(|| syn::WhereClause {
+                .unwrap_or_else(|| rust_syntax::WhereClause {
                     where_token: Default::default(),
                     predicates: Default::default(),
                 });
             let self_ty_generics = &ty_generics;
-            let self_ty: syn::Type = syn::parse_quote!(#rust_name #self_ty_generics);
-            let wasm_bindgen_path: syn::Path = syn::parse_quote!(#wasm_bindgen);
-            clause.predicates.push(syn::parse_quote!(
+            let self_ty: rust_syntax::Type = rust_syntax::parse_quote!(#rust_name #self_ty_generics);
+            let wasm_bindgen_path: rust_syntax::Path = rust_syntax::parse_quote!(#wasm_bindgen);
+            clause.predicates.push(rust_syntax::parse_quote!(
                 #self_ty: #wasm_bindgen_path::JsGeneric
             ));
             quote! {
@@ -1862,7 +1862,7 @@ impl TryToTokens for ast::ImportType {
                 // Structural covariance impl for generic types
                 // Build impl generics: all original params plus a Target param for each
                 let mut impl_generics_extended = declaration_generics.clone();
-                let target_param_names: Vec<syn::Ident> = type_params
+                let target_param_names: Vec<rust_syntax::Ident> = type_params
                     .iter()
                     .enumerate()
                     .map(|(i, tp)| {
@@ -1872,12 +1872,12 @@ impl TryToTokens for ast::ImportType {
                         if tp.bounds.is_empty() {
                             impl_generics_extended
                                 .params
-                                .push(syn::parse_quote!(#target_name));
+                                .push(rust_syntax::parse_quote!(#target_name));
                         } else {
                             let bounds = &tp.bounds;
                             impl_generics_extended
                                 .params
-                                .push(syn::parse_quote!(#target_name: #bounds));
+                                .push(rust_syntax::parse_quote!(#target_name: #bounds));
                         }
                         target_name
                     })
@@ -1887,14 +1887,14 @@ impl TryToTokens for ast::ImportType {
                 let mut where_clause_extended = declaration_generics
                     .where_clause
                     .clone()
-                    .unwrap_or_else(|| syn::WhereClause {
+                    .unwrap_or_else(|| rust_syntax::WhereClause {
                         where_token: Default::default(),
                         predicates: Default::default(),
                     });
 
                 for (type_param, target_name) in type_params.iter().zip(&target_param_names) {
                     let param_ident = &type_param.ident;
-                    where_clause_extended.predicates.push(syn::parse_quote!(
+                    where_clause_extended.predicates.push(rust_syntax::parse_quote!(
                         #target_name: #wasm_bindgen::convert::UpcastFrom<#param_ident>
                     ));
                 }
@@ -2412,8 +2412,8 @@ impl ast::ImportFunction {
     fn try_to_tokens_with_class_generics(
         &self,
         tokens: &mut TokenStream,
-        class_generics: Option<&syn::Generics>,
-        class_cfg_attrs: &[syn::Attribute],
+        class_generics: Option<&rust_syntax::Generics>,
+        class_cfg_attrs: &[rust_syntax::Attribute],
     ) -> Result<(), Diagnostic> {
         if self.suspending {
             (quote_spanned! {
@@ -2513,13 +2513,13 @@ impl ast::ImportFunction {
         for (i, arg) in self.function.arguments.iter().enumerate() {
             let ty = &*arg.pat_type.ty;
             let name = match &*arg.pat_type.pat {
-                syn::Pat::Ident(syn::PatIdent {
+                rust_syntax::Pat::Ident(rust_syntax::PatIdent {
                     by_ref: None,
                     ident,
                     subpat: None,
                     ..
                 }) => ident.clone(),
-                syn::Pat::Wild(_) => syn::Ident::new(&format!("__genarg_{i}"), Span::call_site()),
+                rust_syntax::Pat::Wild(_) => rust_syntax::Ident::new(&format!("__genarg_{i}"), Span::call_site()),
                 _ => bail_span!(
                     arg.pat_type.pat,
                     "unsupported pattern in #[wasm_bindgen] imported function",
@@ -2539,7 +2539,7 @@ impl ast::ImportFunction {
                 || generics::uses_lifetime_params(ty, &fn_lifetime_param_names)
             {
                 let (inner_ty, ref_mut, ref_lifetime) =
-                    if let syn::Type::Reference(syn::TypeReference {
+                    if let rust_syntax::Type::Reference(rust_syntax::TypeReference {
                         elem,
                         mutability: mut_,
                         lifetime,
@@ -2655,7 +2655,7 @@ impl ast::ImportFunction {
         let abi_ret;
         let mut convert_ret;
         match &self.js_ret {
-            Some(syn::Type::Reference(_)) => {
+            Some(rust_syntax::Type::Reference(_)) => {
                 bail_span!(
                     self.js_ret,
                     "cannot return references in #[wasm_bindgen] imports yet"
@@ -2868,14 +2868,14 @@ impl ast::ImportFunction {
         let mut class_impl_def = None;
         if let Some((_, class)) = class {
             let mut class = class.clone();
-            if let syn::Type::Path(syn::TypePath {
+            if let rust_syntax::Type::Path(rust_syntax::TypePath {
                 attrs: _,
                 qself: None,
                 ref mut path,
             }) = class
             {
                 if let Some(segment) = path.segments.last_mut() {
-                    segment.arguments = syn::PathArguments::None;
+                    segment.arguments = rust_syntax::PathArguments::None;
                 }
             }
             // Explicit `static_method_of = Class<T>` arguments select the impl
@@ -2964,20 +2964,20 @@ impl ast::ImportFunction {
 ///
 /// Top-level references and grouping layers are stripped first: `&[T]` crosses
 /// as whatever `[T]` does, and grouping is transparent to a type's meaning.
-fn is_spreadable_sequence(ty: &syn::Type) -> bool {
+fn is_spreadable_sequence(ty: &rust_syntax::Type) -> bool {
     let mut ty = ty;
     loop {
         ty = match ty {
-            syn::Type::Reference(r) => &r.elem,
-            syn::Type::Paren(p) => &p.elem,
-            syn::Type::Group(g) => &g.elem,
+            rust_syntax::Type::Reference(r) => &r.elem,
+            rust_syntax::Type::Paren(p) => &p.elem,
+            rust_syntax::Type::Group(g) => &g.elem,
             _ => break,
         };
     }
     match ty {
         // `[T]` and `[T; N]`.
-        syn::Type::Slice(_) | syn::Type::Array(_) => true,
-        syn::Type::Path(syn::TypePath {
+        rust_syntax::Type::Slice(_) | rust_syntax::Type::Array(_) => true,
+        rust_syntax::Type::Path(rust_syntax::TypePath {
             attrs: _,
             qself: None,
             path,
@@ -2990,9 +2990,9 @@ fn is_spreadable_sequence(ty: &syn::Type) -> bool {
             }
             // `Box<[T]>` marshals as a slice, but `Box<T>` does not.
             if seg.ident == "Box" {
-                if let syn::PathArguments::AngleBracketed(args) = &seg.arguments {
-                    if let Some(syn::GenericArgument::Type(inner)) = args.args.first() {
-                        return matches!(get_ty(inner), syn::Type::Slice(_));
+                if let rust_syntax::PathArguments::AngleBracketed(args) = &seg.arguments {
+                    if let Some(rust_syntax::GenericArgument::Type(inner)) = args.args.first() {
+                        return matches!(get_ty(inner), rust_syntax::Type::Slice(_));
                     }
                 }
             }
@@ -3079,8 +3079,8 @@ impl ast::ImportFunction {
     fn try_to_tokens_generic(
         &self,
         tokens: &mut TokenStream,
-        class_generics: Option<&syn::Generics>,
-        class_cfg_attrs: &[syn::Attribute],
+        class_generics: Option<&rust_syntax::Generics>,
+        class_cfg_attrs: &[rust_syntax::Attribute],
     ) -> Result<(), Diagnostic> {
         let wasm_bindgen = &self.wasm_bindgen;
         let wasm_bindgen_futures = &self.wasm_bindgen_futures;
@@ -3114,8 +3114,8 @@ impl ast::ImportFunction {
         //
         // `arg_types` replaces `arg.pat_type.ty` as the source of truth for
         // every argument's type for the rest of this function.
-        let mut synthesized_params: Vec<syn::GenericParam> = Vec::new();
-        let arg_types: Vec<syn::Type> = self
+        let mut synthesized_params: Vec<rust_syntax::GenericParam> = Vec::new();
+        let arg_types: Vec<rust_syntax::Type> = self
             .function
             .arguments
             .iter()
@@ -3126,11 +3126,11 @@ impl ast::ImportFunction {
             })
             .collect();
         let synthesized_type_idents = synthesized_params.iter().map(|p| match p {
-            syn::GenericParam::Type(tp) => &tp.ident,
+            rust_syntax::GenericParam::Type(tp) => &tp.ident,
             _ => unreachable!("desugar_impl_trait only synthesizes type parameters"),
         });
 
-        let type_params: Vec<&syn::Ident> = self
+        let type_params: Vec<&rust_syntax::Ident> = self
             .generics
             .type_params()
             .map(|tp| &tp.ident)
@@ -3213,14 +3213,14 @@ impl ast::ImportFunction {
                 // defaults, rather than an impl for that return instantiation.
                 // Propagate declaration bounds for the same defaulted self type
                 // so the discarded function generic cannot leak into the impl.
-                if let syn::Type::Path(syn::TypePath {
+                if let rust_syntax::Type::Path(rust_syntax::TypePath {
                     attrs: _,
                     qself: None,
                     path,
                 }) = &mut class_with_defaults
                 {
                     if let Some(segment) = path.segments.last_mut() {
-                        segment.arguments = syn::PathArguments::None;
+                        segment.arguments = rust_syntax::PathArguments::None;
                     }
                 }
             }
@@ -3250,7 +3250,7 @@ impl ast::ImportFunction {
                     None => {}
                     Some(generics)
                         if generics.params.iter().any(|parameter| {
-                            !matches!(parameter, syn::GenericParam::Type(parameter) if parameter.default.is_some())
+                            !matches!(parameter, rust_syntax::GenericParam::Type(parameter) if parameter.default.is_some())
                         }) =>
                     {
                         bail_span!(
@@ -3366,13 +3366,13 @@ impl ast::ImportFunction {
             // Rewritten to desugar any `impl Trait`; see `arg_types` above.
             let ty = &arg_types[i];
             let name = match &*arg.pat_type.pat {
-                syn::Pat::Ident(syn::PatIdent {
+                rust_syntax::Pat::Ident(rust_syntax::PatIdent {
                     by_ref: None,
                     ident,
                     subpat: None,
                     ..
                 }) => ident.clone(),
-                syn::Pat::Wild(_) => Ident::new(&format!("__genarg_{i}"), Span::call_site()),
+                rust_syntax::Pat::Wild(_) => Ident::new(&format!("__genarg_{i}"), Span::call_site()),
                 _ => bail_span!(
                     arg.pat_type.pat,
                     "unsupported pattern in experimental_generic_mono imported function",
@@ -3459,12 +3459,12 @@ impl ast::ImportFunction {
                 // concrete element type (checked before the loop), so it never
                 // mentions a type parameter and no bound is recorded for it.
                 let top_level_shared_ref = match ty {
-                    syn::Type::Reference(r) if r.mutability.is_none() => {
+                    rust_syntax::Type::Reference(r) if r.mutability.is_none() => {
                         !generics::references_generic_param(&r.elem, &type_params)
                     }
                     _ => false,
                 };
-                if let (true, syn::Type::Reference(r)) = (top_level_shared_ref, ty) {
+                if let (true, rust_syntax::Type::Reference(r)) = (top_level_shared_ref, ty) {
                     let elem = &r.elem;
                     where_bounds.push(quote! {
                         for<'__wbg> &'__wbg #elem: #wasm_bindgen::convert::IntoWasmAbi
@@ -3551,7 +3551,7 @@ impl ast::ImportFunction {
             )
         };
         match &self.js_ret {
-            Some(syn::Type::Reference(_)) => {
+            Some(rust_syntax::Type::Reference(_)) => {
                 bail_span!(
                     self.js_ret,
                     "cannot return references in #[wasm_bindgen] imports yet"
@@ -3753,7 +3753,7 @@ impl ast::ImportFunction {
                 .arguments
                 .first()
                 .and_then(|arg| match get_ty(&arg.pat_type.ty) {
-                    syn::Type::Reference(r) => r.lifetime.as_ref(),
+                    rust_syntax::Type::Reference(r) => r.lifetime.as_ref(),
                     _ => None,
                 })
                 .filter(|lt| lt.ident != "_");
@@ -3839,14 +3839,14 @@ impl ast::ImportFunction {
             // segment so the bare class name is left to parameterise below
             // (or to `impl` directly, if there is nothing to hoist).
             let mut class = class;
-            if let syn::Type::Path(syn::TypePath {
+            if let rust_syntax::Type::Path(rust_syntax::TypePath {
                 attrs: _,
                 qself: None,
                 path,
             }) = &mut class
             {
                 if let Some(segment) = path.segments.last_mut() {
-                    segment.arguments = syn::PathArguments::None;
+                    segment.arguments = rust_syntax::PathArguments::None;
                 }
             }
             // `hoist` is the same gate the type-erasure path applies, computed
@@ -3872,38 +3872,38 @@ impl ast::ImportFunction {
 // See comment above in ast::Export for what's going on here.
 struct DescribeImport<'a> {
     kind: &'a ast::ImportKind,
-    wasm_bindgen: &'a syn::Path,
-    class_cfg_attrs: Vec<syn::Attribute>,
+    wasm_bindgen: &'a rust_syntax::Path,
+    class_cfg_attrs: Vec<rust_syntax::Attribute>,
 }
 
 // Extracted impl block info given class generics and function-level method generics
 struct FnClassGenerics<'a> {
     // the hoisted class-level param idents used, with identifiers renamed to use function generic identifier names
-    class_generic_params: BTreeSet<syn::Ident>,
+    class_generic_params: BTreeSet<rust_syntax::Ident>,
     // the struct generic expressions on those params
-    class_generic_exprs: Vec<&'a syn::Type>,
+    class_generic_exprs: Vec<&'a rust_syntax::Type>,
     // class where bounds including hoisted function bounds
-    class_bounds: Vec<syn::WherePredicate>,
+    class_bounds: Vec<rust_syntax::WherePredicate>,
     // the remaining non-hoisted function-level param idents
-    fn_generic_params: Vec<&'a syn::Ident>,
+    fn_generic_params: Vec<&'a rust_syntax::Ident>,
     // function bounds on params which are only specific to the function not hoisted as class bounds
-    fn_bounds: Vec<Cow<'a, syn::WherePredicate>>,
+    fn_bounds: Vec<Cow<'a, rust_syntax::WherePredicate>>,
     // the union of class-level defaults (for identifier generics) and function defaults
     // this is used to form the concrete type via replacement (using JsValue otherwise)
-    concrete_defaults: BTreeMap<&'a syn::Ident, Option<Cow<'a, syn::Type>>>,
+    concrete_defaults: BTreeMap<&'a rust_syntax::Ident, Option<Cow<'a, rust_syntax::Type>>>,
     // hoisted class-level lifetime params, deduplicated, for the impl header
-    class_lifetime_params: Vec<&'a syn::Lifetime>,
+    class_lifetime_params: Vec<&'a rust_syntax::Lifetime>,
     // the class type's lifetime arguments as written, in position, including
     // repeats and lifetimes the function does not declare; passed to the type
-    class_lifetime_args: Vec<syn::Lifetime>,
+    class_lifetime_args: Vec<rust_syntax::Lifetime>,
     // hoisted class-level lifetime params only used in bounds (not passed to type)
-    class_bound_lifetime_params: Vec<syn::Lifetime>,
+    class_bound_lifetime_params: Vec<rust_syntax::Lifetime>,
     // the remaining non-hoisted function-level lifetime params
-    fn_lifetime_params: Vec<&'a syn::Lifetime>,
+    fn_lifetime_params: Vec<&'a rust_syntax::Lifetime>,
 }
 
-fn class_path_arguments(class: &syn::Type) -> Option<Vec<syn::GenericArgument>> {
-    let syn::Type::Path(syn::TypePath {
+fn class_path_arguments(class: &rust_syntax::Type) -> Option<Vec<rust_syntax::GenericArgument>> {
+    let rust_syntax::Type::Path(rust_syntax::TypePath {
         attrs: _,
         qself: None,
         path,
@@ -3913,23 +3913,23 @@ fn class_path_arguments(class: &syn::Type) -> Option<Vec<syn::GenericArgument>> 
     };
     let segment = path.segments.last()?;
     match &segment.arguments {
-        syn::PathArguments::None => Some(Vec::new()),
-        syn::PathArguments::AngleBracketed(arguments) => {
+        rust_syntax::PathArguments::None => Some(Vec::new()),
+        rust_syntax::PathArguments::AngleBracketed(arguments) => {
             Some(arguments.args.iter().cloned().collect())
         }
-        syn::PathArguments::Parenthesized(_) => None,
+        rust_syntax::PathArguments::Parenthesized(_) => None,
     }
 }
 
 struct ClassGenericSubstituter<'a> {
-    type_replacements: &'a BTreeMap<Ident, syn::Type>,
-    lifetime_replacements: &'a BTreeMap<Ident, syn::Lifetime>,
+    type_replacements: &'a BTreeMap<Ident, rust_syntax::Type>,
+    lifetime_replacements: &'a BTreeMap<Ident, rust_syntax::Lifetime>,
     unsupported_projection: bool,
 }
 
 impl VisitMut for ClassGenericSubstituter<'_> {
-    fn visit_type_mut(&mut self, ty: &mut syn::Type) {
-        let syn::Type::Path(type_path) = ty else {
+    fn visit_type_mut(&mut self, ty: &mut rust_syntax::Type) {
+        let rust_syntax::Type::Path(type_path) = ty else {
             return visit_mut::visit_type_mut(self, ty);
         };
         if let Some(qself) = &mut type_path.qself {
@@ -3948,7 +3948,7 @@ impl VisitMut for ClassGenericSubstituter<'_> {
                     *ty = replacement.clone();
                     return;
                 }
-                let syn::Type::Path(replacement_path) = replacement else {
+                let rust_syntax::Type::Path(replacement_path) = replacement else {
                     // `T::Assoc` cannot be rewritten as `(U, u8)::Assoc`.
                     self.unsupported_projection = true;
                     return;
@@ -3992,7 +3992,7 @@ impl VisitMut for ClassGenericSubstituter<'_> {
         }
     }
 
-    fn visit_lifetime_mut(&mut self, lifetime: &mut syn::Lifetime) {
+    fn visit_lifetime_mut(&mut self, lifetime: &mut rust_syntax::Lifetime) {
         if let Some(replacement) = self.lifetime_replacements.get(&lifetime.ident) {
             *lifetime = replacement.clone();
         }
@@ -4000,8 +4000,8 @@ impl VisitMut for ClassGenericSubstituter<'_> {
 }
 
 fn class_generic_substituter<'a>(
-    type_replacements: &'a BTreeMap<Ident, syn::Type>,
-    lifetime_replacements: &'a BTreeMap<Ident, syn::Lifetime>,
+    type_replacements: &'a BTreeMap<Ident, rust_syntax::Type>,
+    lifetime_replacements: &'a BTreeMap<Ident, rust_syntax::Lifetime>,
 ) -> ClassGenericSubstituter<'a> {
     ClassGenericSubstituter {
         type_replacements,
@@ -4011,9 +4011,9 @@ fn class_generic_substituter<'a>(
 }
 
 fn substitute_class_type(
-    ty: &mut syn::Type,
-    type_replacements: &BTreeMap<Ident, syn::Type>,
-    lifetime_replacements: &BTreeMap<Ident, syn::Lifetime>,
+    ty: &mut rust_syntax::Type,
+    type_replacements: &BTreeMap<Ident, rust_syntax::Type>,
+    lifetime_replacements: &BTreeMap<Ident, rust_syntax::Lifetime>,
 ) -> bool {
     let mut substituter = class_generic_substituter(type_replacements, lifetime_replacements);
     substituter.visit_type_mut(ty);
@@ -4021,89 +4021,89 @@ fn substitute_class_type(
 }
 
 fn substitute_class_predicate(
-    predicate: &mut syn::WherePredicate,
-    type_replacements: &BTreeMap<Ident, syn::Type>,
-    lifetime_replacements: &BTreeMap<Ident, syn::Lifetime>,
+    predicate: &mut rust_syntax::WherePredicate,
+    type_replacements: &BTreeMap<Ident, rust_syntax::Type>,
+    lifetime_replacements: &BTreeMap<Ident, rust_syntax::Lifetime>,
 ) -> bool {
     let mut substituter = class_generic_substituter(type_replacements, lifetime_replacements);
     substituter.visit_where_predicate_mut(predicate);
     !substituter.unsupported_projection
 }
 
-fn class_argument_has_elided_lifetime(ty: &syn::Type) -> bool {
+fn class_argument_has_elided_lifetime(ty: &rust_syntax::Type) -> bool {
     struct Visitor {
         found: bool,
     }
 
-    impl<'ast> syn::visit::Visit<'ast> for Visitor {
-        fn visit_lifetime(&mut self, lifetime: &'ast syn::Lifetime) {
+    impl<'ast> rust_syntax::visit::Visit<'ast> for Visitor {
+        fn visit_lifetime(&mut self, lifetime: &'ast rust_syntax::Lifetime) {
             self.found |= lifetime.ident == "_";
         }
 
-        fn visit_type_reference(&mut self, reference: &'ast syn::TypeReference) {
+        fn visit_type_reference(&mut self, reference: &'ast rust_syntax::TypeReference) {
             self.found |= reference.lifetime.is_none();
-            syn::visit::visit_type_reference(self, reference);
+            rust_syntax::visit::visit_type_reference(self, reference);
         }
     }
 
     let mut visitor = Visitor { found: false };
-    syn::visit::Visit::visit_type(&mut visitor, ty);
+    rust_syntax::visit::Visit::visit_type(&mut visitor, ty);
     visitor.found
 }
 
-fn class_argument_has_inferred_type(ty: &syn::Type) -> bool {
+fn class_argument_has_inferred_type(ty: &rust_syntax::Type) -> bool {
     struct Visitor {
         found: bool,
     }
 
-    impl<'ast> syn::visit::Visit<'ast> for Visitor {
-        fn visit_type_infer(&mut self, _: &'ast syn::TypeInfer) {
+    impl<'ast> rust_syntax::visit::Visit<'ast> for Visitor {
+        fn visit_type_infer(&mut self, _: &'ast rust_syntax::TypeInfer) {
             self.found = true;
         }
     }
 
     let mut visitor = Visitor { found: false };
-    syn::visit::Visit::visit_type(&mut visitor, ty);
+    rust_syntax::visit::Visit::visit_type(&mut visitor, ty);
     visitor.found
 }
 
-fn class_argument_has_impl_trait(ty: &syn::Type) -> bool {
+fn class_argument_has_impl_trait(ty: &rust_syntax::Type) -> bool {
     struct Visitor {
         found: bool,
     }
 
-    impl<'ast> syn::visit::Visit<'ast> for Visitor {
-        fn visit_type_impl_trait(&mut self, _: &'ast syn::TypeImplTrait) {
+    impl<'ast> rust_syntax::visit::Visit<'ast> for Visitor {
+        fn visit_type_impl_trait(&mut self, _: &'ast rust_syntax::TypeImplTrait) {
             self.found = true;
         }
     }
 
     let mut visitor = Visitor { found: false };
-    syn::visit::Visit::visit_type(&mut visitor, ty);
+    rust_syntax::visit::Visit::visit_type(&mut visitor, ty);
     visitor.found
 }
 
 fn predicate_binds_replacement_lifetime(
-    predicate: &syn::WherePredicate,
-    type_replacements: &BTreeMap<Ident, syn::Type>,
-    lifetime_replacements: &BTreeMap<Ident, syn::Lifetime>,
-    additional_replacements: &[&syn::Lifetime],
+    predicate: &rust_syntax::WherePredicate,
+    type_replacements: &BTreeMap<Ident, rust_syntax::Type>,
+    lifetime_replacements: &BTreeMap<Ident, rust_syntax::Lifetime>,
+    additional_replacements: &[&rust_syntax::Lifetime],
 ) -> bool {
     struct Visitor<'a> {
         replacements: &'a BTreeSet<Ident>,
         conflict: bool,
     }
 
-    impl<'ast> syn::visit::Visit<'ast> for Visitor<'_> {
-        fn visit_bound_lifetimes(&mut self, lifetimes: &'ast syn::BoundLifetimes) {
+    impl<'ast> rust_syntax::visit::Visit<'ast> for Visitor<'_> {
+        fn visit_bound_lifetimes(&mut self, lifetimes: &'ast rust_syntax::BoundLifetimes) {
             self.conflict |= lifetimes.lifetimes.iter().any(|parameter| {
                 matches!(
                     parameter,
-                    syn::GenericParam::Lifetime(parameter)
+                    rust_syntax::GenericParam::Lifetime(parameter)
                         if self.replacements.contains(&parameter.lifetime.ident)
                 )
             });
-            syn::visit::visit_bound_lifetimes(self, lifetimes);
+            rust_syntax::visit::visit_bound_lifetimes(self, lifetimes);
         }
     }
 
@@ -4114,8 +4114,8 @@ fn predicate_binds_replacement_lifetime(
         .collect::<BTreeSet<_>>();
     struct ReplacementVisitor<'a>(&'a mut BTreeSet<Ident>);
 
-    impl<'ast> syn::visit::Visit<'ast> for ReplacementVisitor<'_> {
-        fn visit_lifetime(&mut self, lifetime: &'ast syn::Lifetime) {
+    impl<'ast> rust_syntax::visit::Visit<'ast> for ReplacementVisitor<'_> {
+        fn visit_lifetime(&mut self, lifetime: &'ast rust_syntax::Lifetime) {
             if lifetime.ident != "static" && lifetime.ident != "_" {
                 self.0.insert(lifetime.ident.clone());
             }
@@ -4124,19 +4124,19 @@ fn predicate_binds_replacement_lifetime(
 
     let mut replacement_visitor = ReplacementVisitor(&mut replacements);
     for replacement in type_replacements.values() {
-        syn::visit::Visit::visit_type(&mut replacement_visitor, replacement);
+        rust_syntax::visit::Visit::visit_type(&mut replacement_visitor, replacement);
     }
     let mut visitor = Visitor {
         replacements: &replacements,
         conflict: false,
     };
-    syn::visit::Visit::visit_where_predicate(&mut visitor, predicate);
+    rust_syntax::visit::Visit::visit_where_predicate(&mut visitor, predicate);
     visitor.conflict
 }
 
 impl<'a> FnClassGenerics<'a> {
     /// Adds a new function bound, checking it is not already a bound
-    fn add_fn_bound(&mut self, bound: syn::WherePredicate) {
+    fn add_fn_bound(&mut self, bound: rust_syntax::WherePredicate) {
         if !self.fn_bounds.iter().any(|existing| **existing == bound) {
             self.fn_bounds.push(Cow::Owned(bound));
         }
@@ -4144,9 +4144,9 @@ impl<'a> FnClassGenerics<'a> {
 
     fn add_class_bounds(
         &mut self,
-        class_generics: &syn::Generics,
-        class: &syn::Type,
-        additional_conflicting_lifetimes: &[&syn::Lifetime],
+        class_generics: &rust_syntax::Generics,
+        class: &rust_syntax::Type,
+        additional_conflicting_lifetimes: &[&rust_syntax::Lifetime],
     ) -> Result<(), Diagnostic> {
         let Some(arguments) = class_path_arguments(class) else {
             return Ok(());
@@ -4157,18 +4157,18 @@ impl<'a> FnClassGenerics<'a> {
         let mut arguments = arguments.iter();
         for parameter in &class_generics.params {
             match (parameter, arguments.next()) {
-                (syn::GenericParam::Type(parameter), Some(syn::GenericArgument::Type(ty))) => {
+                (rust_syntax::GenericParam::Type(parameter), Some(rust_syntax::GenericArgument::Type(ty))) => {
                     type_replacements.insert(parameter.ident.clone(), ty.clone());
                 }
                 (
-                    syn::GenericParam::Lifetime(parameter),
-                    Some(syn::GenericArgument::Lifetime(lifetime)),
+                    rust_syntax::GenericParam::Lifetime(parameter),
+                    Some(rust_syntax::GenericArgument::Lifetime(lifetime)),
                 ) => {
                     lifetime_replacements
                         .insert(parameter.lifetime.ident.clone(), lifetime.clone());
                 }
-                (syn::GenericParam::Lifetime(_), _) => {
-                    let syn::Type::Path(syn::TypePath { path, .. }) = class else {
+                (rust_syntax::GenericParam::Lifetime(_), _) => {
+                    let rust_syntax::Type::Path(rust_syntax::TypePath { path, .. }) = class else {
                         unreachable!("class_path_arguments accepted a non-path class")
                     };
                     let segment = path.segments.last().unwrap();
@@ -4178,7 +4178,7 @@ impl<'a> FnClassGenerics<'a> {
                     );
                 }
                 // Omitted type arguments use the default added by the parser.
-                (syn::GenericParam::Type(parameter), None) if parameter.default.is_some() => {
+                (rust_syntax::GenericParam::Type(parameter), None) if parameter.default.is_some() => {
                     let mut default = parameter.default.clone().unwrap().1;
                     if !substitute_class_type(
                         &mut default,
@@ -4250,7 +4250,7 @@ impl<'a> FnClassGenerics<'a> {
     /// generics — a static method that is neither a constructor nor
     /// self-returning — which impl on the class's own parameter defaults
     /// instead.
-    fn class_impl_def(&self, class: &syn::Type, hoist: bool) -> TokenStream {
+    fn class_impl_def(&self, class: &rust_syntax::Type, hoist: bool) -> TokenStream {
         if !hoist {
             return quote! { impl #class };
         }
@@ -4314,7 +4314,7 @@ impl<'a> FnClassGenerics<'a> {
 impl ast::ImportFunction {
     fn get_fn_generics<'a>(&'a self) -> Result<FnClassGenerics<'a>, Diagnostic> {
         let original_fn_generics = generics::generic_params(&self.generics);
-        let mut fn_generic_params: Vec<&syn::Ident> =
+        let mut fn_generic_params: Vec<&rust_syntax::Ident> =
             original_fn_generics.iter().map(|p| p.0).collect();
         let concrete_defaults: BTreeMap<_, _> = original_fn_generics
             .into_iter()
@@ -4323,15 +4323,15 @@ impl ast::ImportFunction {
 
         // Extract lifetime parameters
         let all_lifetime_params = generics::lifetime_args(&self.generics);
-        let mut fn_lifetime_params: Vec<&syn::Lifetime> = all_lifetime_params.clone();
+        let mut fn_lifetime_params: Vec<&rust_syntax::Lifetime> = all_lifetime_params.clone();
 
-        let mut class_bounds: Vec<syn::WherePredicate> = Vec::new();
+        let mut class_bounds: Vec<rust_syntax::WherePredicate> = Vec::new();
         let mut fn_bounds = generics::generic_bounds(&self.generics);
         let mut class_generic_params = BTreeSet::new();
         let mut class_lifetime_params_set = BTreeSet::new();
-        let mut class_bound_lifetime_params_set: BTreeSet<syn::Lifetime> = BTreeSet::new();
+        let mut class_bound_lifetime_params_set: BTreeSet<rust_syntax::Lifetime> = BTreeSet::new();
         let mut class_generic_exprs = Vec::new();
-        let mut class_lifetime_args: Vec<syn::Lifetime> = Vec::new();
+        let mut class_lifetime_args: Vec<rust_syntax::Lifetime> = Vec::new();
 
         let mut class = None;
         if let ast::ImportFunctionKind::Method {
@@ -4340,7 +4340,7 @@ impl ast::ImportFunction {
             ..
         } = &self.kind
         {
-            let syn::Type::Path(syn::TypePath { path, .. }) = ty else {
+            let rust_syntax::Type::Path(rust_syntax::TypePath { path, .. }) = ty else {
                 unreachable!(); // validated at parse time
             };
             if class_path_arguments(get_ty(ty)).is_some_and(|arguments| !arguments.is_empty()) {
@@ -4356,8 +4356,8 @@ impl ast::ImportFunction {
         }
 
         if let Some(cls_path) = class {
-            if let Some(syn::PathSegment {
-                arguments: syn::PathArguments::AngleBracketed(gen_args),
+            if let Some(rust_syntax::PathSegment {
+                arguments: rust_syntax::PathArguments::AngleBracketed(gen_args),
                 ..
             }) = cls_path.segments.last()
             {
@@ -4374,7 +4374,7 @@ impl ast::ImportFunction {
                     // that names one of the function's own lifetime parameters,
                     // i.e. the ones that also have to be *declared* on the impl
                     // header, where each may appear only once.
-                    if let syn::GenericArgument::Lifetime(lt) = gen_arg {
+                    if let rust_syntax::GenericArgument::Lifetime(lt) = gen_arg {
                         class_lifetime_args.push(lt.clone());
                         if all_lifetime_params.contains(&lt) {
                             class_lifetime_params_set.insert(lt.clone());
@@ -4382,7 +4382,7 @@ impl ast::ImportFunction {
                         continue;
                     }
 
-                    let syn::GenericArgument::Type(ty) = gen_arg else {
+                    let rust_syntax::GenericArgument::Type(ty) = gen_arg else {
                         bail_span!(gen_arg, "Functions must provide generic arguments");
                     };
 
@@ -4423,7 +4423,7 @@ impl ast::ImportFunction {
                         .copied()
                         .collect();
 
-                    let remaining_fn_lifetimes: Vec<&syn::Lifetime> = fn_lifetime_params
+                    let remaining_fn_lifetimes: Vec<&rust_syntax::Lifetime> = fn_lifetime_params
                         .iter()
                         .filter(|lt| {
                             !class_lifetime_params_set.contains(*lt)
@@ -4439,8 +4439,8 @@ impl ast::ImportFunction {
                         let mut predicate_params_to_add = BTreeSet::new();
                         // Only process bounds where the bounded type IS a class param
                         // e.g., for `F: JsFunction<Ret = Ret>`, bounded_ty is `F`
-                        if let syn::WherePredicate::Type(pred_type) = bound.as_ref() {
-                            if let syn::Type::Path(type_path) = &pred_type.bounded_ty {
+                        if let rust_syntax::WherePredicate::Type(pred_type) = bound.as_ref() {
+                            if let rust_syntax::Type::Path(type_path) = &pred_type.bounded_ty {
                                 if type_path.qself.is_none() && type_path.path.segments.len() == 1 {
                                     let bounded_ident = &type_path.path.segments[0].ident;
                                     if class_generic_params.contains(bounded_ident) {
@@ -4448,19 +4448,19 @@ impl ast::ImportFunction {
                                         // another impl parameter. Ordinary trait arguments
                                         // and associated-type constraints do not.
                                         for type_bound in &pred_type.bounds {
-                                            let syn::TypeParamBound::Trait(trait_bound) =
+                                            let rust_syntax::TypeParamBound::Trait(trait_bound) =
                                                 type_bound
                                             else {
                                                 continue;
                                             };
                                             for segment in &trait_bound.path.segments {
-                                                let syn::PathArguments::AngleBracketed(arguments) =
+                                                let rust_syntax::PathArguments::AngleBracketed(arguments) =
                                                     &segment.arguments
                                                 else {
                                                     continue;
                                                 };
                                                 for argument in &arguments.args {
-                                                    let syn::GenericArgument::AssocType(binding) =
+                                                    let rust_syntax::GenericArgument::AssocType(binding) =
                                                         argument
                                                     else {
                                                         continue;
@@ -4489,7 +4489,7 @@ impl ast::ImportFunction {
                                                             &remaining_fn_params,
                                                             &mut found_set,
                                                         );
-                                                    syn::visit::Visit::visit_type(
+                                                    rust_syntax::visit::Visit::visit_type(
                                                         &mut visitor,
                                                         &binding.ty,
                                                     );
@@ -4512,7 +4512,7 @@ impl ast::ImportFunction {
                             &remaining_fn_params,
                             &mut predicate_params,
                         );
-                        syn::visit::Visit::visit_where_predicate(&mut visitor, bound);
+                        rust_syntax::visit::Visit::visit_where_predicate(&mut visitor, bound);
                         if predicate_params == predicate_params_to_add
                             && generics::used_lifetimes_in_predicate(bound, &remaining_fn_lifetimes)
                                 .is_empty()
@@ -4525,8 +4525,8 @@ impl ast::ImportFunction {
                         // function lifetimes it relates so the predicate does
                         // not leave the wrapper referring to an undeclared
                         // lifetime after the class lifetime moves to the impl.
-                        if let syn::WherePredicate::Lifetime(_) = bound.as_ref() {
-                            let class_lifetimes: Vec<&syn::Lifetime> = class_lifetime_params_set
+                        if let rust_syntax::WherePredicate::Lifetime(_) = bound.as_ref() {
+                            let class_lifetimes: Vec<&rust_syntax::Lifetime> = class_lifetime_params_set
                                 .iter()
                                 .chain(class_bound_lifetime_params_set.iter())
                                 .collect();
@@ -4570,7 +4570,7 @@ impl ast::ImportFunction {
 
                 // hoist function where bounds on class generic params
                 fn_bounds.retain(|bound| {
-                    let class_lifetimes: Vec<&syn::Lifetime> = class_lifetime_params_set
+                    let class_lifetimes: Vec<&rust_syntax::Lifetime> = class_lifetime_params_set
                         .iter()
                         .chain(class_bound_lifetime_params_set.iter())
                         .collect();
@@ -4593,7 +4593,7 @@ impl ast::ImportFunction {
         }
 
         // Convert class_lifetime_params_set to Vec, maintaining order from original params
-        let class_lifetime_params: Vec<&syn::Lifetime> = all_lifetime_params
+        let class_lifetime_params: Vec<&rust_syntax::Lifetime> = all_lifetime_params
             .iter()
             .copied()
             .filter(|lt| class_lifetime_params_set.contains(*lt))
@@ -4603,7 +4603,7 @@ impl ast::ImportFunction {
         // original params. The two buckets are both emitted on the impl header,
         // so a lifetime in both would be declared twice; the type-argument
         // bucket wins since it also has to be passed to the type.
-        let class_bound_lifetime_params: Vec<syn::Lifetime> = all_lifetime_params
+        let class_bound_lifetime_params: Vec<rust_syntax::Lifetime> = all_lifetime_params
             .iter()
             .copied()
             .filter(|lt| {
@@ -4639,10 +4639,10 @@ impl ast::ImportFunction {
     /// whenever the class arguments are emitted directly on the impl header.
     fn validate_class_shape(
         &self,
-        class: &syn::Type,
+        class: &rust_syntax::Type,
         require_constraining_arguments: bool,
     ) -> Result<(), Diagnostic> {
-        let syn::Type::Path(syn::TypePath {
+        let rust_syntax::Type::Path(rust_syntax::TypePath {
             attrs: _,
             qself: None,
             path,
@@ -4650,8 +4650,8 @@ impl ast::ImportFunction {
         else {
             return Ok(());
         };
-        let Some(syn::PathSegment {
-            arguments: syn::PathArguments::AngleBracketed(gen_args),
+        let Some(rust_syntax::PathSegment {
+            arguments: rust_syntax::PathArguments::AngleBracketed(gen_args),
             ..
         }) = path.segments.last()
         else {
@@ -4669,7 +4669,7 @@ impl ast::ImportFunction {
         // This applies to every hoisting shape, not just a receiver:
         let fn_lifetimes = generics::lifetime_args(&self.generics);
         for gen_arg in gen_args.args.iter() {
-            if let syn::GenericArgument::Lifetime(lt) = gen_arg {
+            if let rust_syntax::GenericArgument::Lifetime(lt) = gen_arg {
                 if lt.ident != "static" && !fn_lifetimes.contains(&lt) {
                     bail_span!(
                         lt,
@@ -4679,7 +4679,7 @@ impl ast::ImportFunction {
                     );
                 }
             }
-            if let syn::GenericArgument::Type(ty) = gen_arg {
+            if let rust_syntax::GenericArgument::Type(ty) = gen_arg {
                 if class_argument_has_elided_lifetime(ty) {
                     bail_span!(
                         ty,
@@ -4770,7 +4770,7 @@ impl ast::ImportFunction {
     /// type generic arguments are bare type parameter idents (e.g. `Array<T>`). Cases
     /// like `Array<I::Item>` or `Promise<U::Resolution>` are left as plain static
     /// methods — the associated type is a function-level concern, not a class property.
-    fn class_return_path(&self) -> Option<&syn::Path> {
+    fn class_return_path(&self) -> Option<&rust_syntax::Path> {
         let ast::ImportFunctionKind::Method {
             ty: class_ty, kind, ..
         } = &self.kind
@@ -4792,7 +4792,7 @@ impl ast::ImportFunction {
         }
 
         let ret_ty = self.js_ret.as_ref()?;
-        let syn::Type::Path(syn::TypePath {
+        let rust_syntax::Type::Path(rust_syntax::TypePath {
             attrs: _,
             qself: None,
             ref path,
@@ -4803,7 +4803,7 @@ impl ast::ImportFunction {
 
         let seg = path.segments.last()?;
         if !is_constructor {
-            let syn::Type::Path(syn::TypePath {
+            let rust_syntax::Type::Path(rust_syntax::TypePath {
                 attrs: _,
                 qself: None,
                 path: class_path,
@@ -4831,7 +4831,7 @@ impl ast::ImportFunction {
         // idents" heuristic, which was both too strict (rejected valid
         // shapes like `Array<Option<T>>`) and too narrow (didn't apply to
         // constructors, leading to E0207 for `Promise<<T as Promising>::Resolution>`).
-        if let syn::PathArguments::AngleBracketed(ref gen_args) = seg.arguments {
+        if let rust_syntax::PathArguments::AngleBracketed(ref gen_args) = seg.arguments {
             let fn_params: Vec<&Ident> = generics::generic_params(&self.generics)
                 .iter()
                 .map(|p| p.0)
@@ -4854,7 +4854,7 @@ impl ast::ImportFunction {
         let Some(ret_ty) = &self.js_ret else {
             return Ok(());
         };
-        let syn::Type::Path(syn::TypePath {
+        let rust_syntax::Type::Path(rust_syntax::TypePath {
             attrs: _,
             qself: None,
             path,
@@ -4865,7 +4865,7 @@ impl ast::ImportFunction {
         let Some(segment) = path.segments.last() else {
             return Ok(());
         };
-        let syn::Type::Path(syn::TypePath {
+        let rust_syntax::Type::Path(rust_syntax::TypePath {
             attrs: _,
             qself: None,
             path: class_path,
@@ -4876,13 +4876,13 @@ impl ast::ImportFunction {
         if !matches!(kind, ast::MethodKind::Constructor) && !same_class_path(path, class_path) {
             return Ok(());
         }
-        let syn::PathArguments::AngleBracketed(arguments) = &segment.arguments else {
+        let rust_syntax::PathArguments::AngleBracketed(arguments) = &segment.arguments else {
             return Ok(());
         };
         if arguments
             .args
             .iter()
-            .any(|argument| matches!(argument, syn::GenericArgument::Lifetime(_)))
+            .any(|argument| matches!(argument, rust_syntax::GenericArgument::Lifetime(_)))
         {
             bail_span!(
                 ret_ty,
@@ -4975,7 +4975,7 @@ impl TryToTokens for DescribeImport<'_> {
                 }
                 Ok(ty)
             })
-            .collect::<Result<Vec<syn::Type>, Diagnostic>>()?;
+            .collect::<Result<Vec<rust_syntax::Type>, Diagnostic>>()?;
         let nargs = f.function.arguments.len() as u32;
         // Concretising the return type is only needed when it is what actually gets
         // described. An `async` import always describes the `Promise` handle
@@ -5210,7 +5210,7 @@ impl ToTokens for ast::ImportStatic {
 impl ToTokens for ast::ImportString {
     fn to_tokens(&self, into: &mut TokenStream) {
         let js_sys = &self.js_sys;
-        let actual_ty: syn::Type = parse_quote!(#js_sys::JsString);
+        let actual_ty: rust_syntax::Type = parse_quote!(#js_sys::JsString);
 
         thread_local_import(
             &self.vis,
@@ -5226,11 +5226,11 @@ impl ToTokens for ast::ImportString {
 }
 
 fn thread_local_import(
-    vis: &syn::Visibility,
+    vis: &rust_syntax::Visibility,
     name: &Ident,
-    wasm_bindgen: &syn::Path,
-    actual_ty: &syn::Type,
-    ty: &syn::Type,
+    wasm_bindgen: &rust_syntax::Path,
+    actual_ty: &rust_syntax::Type,
+    ty: &rust_syntax::Type,
     shim_name: &Ident,
     thread_local: ast::ThreadLocal,
 ) -> TokenStream {
@@ -5259,7 +5259,7 @@ fn thread_local_import(
     }
 }
 
-fn static_init(wasm_bindgen: &syn::Path, ty: &syn::Type, shim_name: &Ident) -> TokenStream {
+fn static_init(wasm_bindgen: &rust_syntax::Path, ty: &rust_syntax::Type, shim_name: &Ident) -> TokenStream {
     let abi_ret = quote! {
         #wasm_bindgen::convert::WasmRet<<#ty as #wasm_bindgen::convert::FromWasmAbi>::Abi>
     };
@@ -5286,8 +5286,8 @@ fn static_init(wasm_bindgen: &syn::Path, ty: &syn::Type, shim_name: &Ident) -> T
 struct Descriptor<'a, T> {
     ident: &'a Ident,
     inner: T,
-    attrs: Vec<syn::Attribute>,
-    wasm_bindgen: &'a syn::Path,
+    attrs: Vec<rust_syntax::Attribute>,
+    wasm_bindgen: &'a rust_syntax::Path,
 }
 
 impl<T: ToTokens> ToTokens for Descriptor<'_, T> {
@@ -5337,7 +5337,7 @@ impl<T: ToTokens> ToTokens for Descriptor<'_, T> {
 
 fn extern_fn(
     import_name: &Ident,
-    attrs: &[syn::Attribute],
+    attrs: &[rust_syntax::Attribute],
     abi_arguments: &[TokenStream],
     abi_argument_names: &[Ident],
     abi_ret: TokenStream,
@@ -5375,7 +5375,7 @@ fn extern_fn(
 /// `#[wasm_bindgen]` attribute instead of the argument. Pass
 /// `Span::call_site()` to keep the previous behaviour.
 fn splat(
-    wasm_bindgen: &syn::Path,
+    wasm_bindgen: &rust_syntax::Path,
     name: &Ident,
     abi: &TokenStream,
     span: Span,
@@ -5466,8 +5466,8 @@ fn respan(input: TokenStream, span: &dyn ToTokens) -> TokenStream {
 /// ones. They used to carry separate copies of this logic with a "keep the two in
 /// sync" comment; this helper is what makes that drift impossible.
 fn import_describe_ret(
-    wasm_bindgen: &syn::Path,
-    ret_ty: Option<&syn::Type>,
+    wasm_bindgen: &rust_syntax::Path,
+    ret_ty: Option<&rust_syntax::Type>,
     is_async: bool,
 ) -> TokenStream {
     let describe = quote! { #wasm_bindgen::describe::WasmDescribe };
@@ -5481,8 +5481,8 @@ fn import_describe_ret(
     }
 }
 
-fn get_ty(mut ty: &syn::Type) -> &syn::Type {
-    while let syn::Type::Group(g) = ty {
+fn get_ty(mut ty: &rust_syntax::Type) -> &rust_syntax::Type {
+    while let rust_syntax::Type::Group(g) = ty {
         ty = &g.elem;
     }
     ty
@@ -5491,7 +5491,7 @@ fn get_ty(mut ty: &syn::Type) -> &syn::Type {
 /// A slice-shaped argument recognised by the `slice_to_array` codegen.
 pub(crate) struct SliceArg {
     /// The slice's element type `T`.
-    pub elem_ty: syn::Type,
+    pub elem_ty: rust_syntax::Type,
     /// Whether the slice was wrapped in an outer `Option`.
     pub is_option: bool,
     /// Whether the reference was `&mut` rather than `&`.
@@ -5506,13 +5506,13 @@ pub(crate) struct SliceArg {
 /// Recognise `&[T]`, `&mut [T]`, and either wrapped in `Option`. Used by the
 /// `slice_to_array` codegen to rewrite the ABI path, and by the parser to
 /// reject the mutable and generic-element forms.
-pub(crate) fn detect_slice_or_option_slice(ty: &syn::Type) -> Option<SliceArg> {
+pub(crate) fn detect_slice_or_option_slice(ty: &rust_syntax::Type) -> Option<SliceArg> {
     // Direct `&[T]` / `&mut [T]`.
-    if let syn::Type::Reference(syn::TypeReference {
+    if let rust_syntax::Type::Reference(rust_syntax::TypeReference {
         elem, mutability, ..
     }) = ty
     {
-        if let syn::Type::Slice(syn::TypeSlice { elem: inner, .. }) = &**elem {
+        if let rust_syntax::Type::Slice(rust_syntax::TypeSlice { elem: inner, .. }) = &**elem {
             return Some(SliceArg {
                 elem_ty: (**inner).clone(),
                 is_option: false,
@@ -5521,7 +5521,7 @@ pub(crate) fn detect_slice_or_option_slice(ty: &syn::Type) -> Option<SliceArg> {
         }
     }
     // `Option<&[T]>` — match shape `Option<...>` and recurse once.
-    if let syn::Type::Path(syn::TypePath {
+    if let rust_syntax::Type::Path(rust_syntax::TypePath {
         attrs: _,
         qself: None,
         path,
@@ -5529,9 +5529,9 @@ pub(crate) fn detect_slice_or_option_slice(ty: &syn::Type) -> Option<SliceArg> {
     {
         if let Some(seg) = path.segments.last() {
             if seg.ident == "Option" {
-                if let syn::PathArguments::AngleBracketed(args) = &seg.arguments {
+                if let rust_syntax::PathArguments::AngleBracketed(args) = &seg.arguments {
                     if args.args.len() == 1 {
-                        if let syn::GenericArgument::Type(inner) = &args.args[0] {
+                        if let rust_syntax::GenericArgument::Type(inner) = &args.args[0] {
                             if let Some(inner) = detect_slice_or_option_slice(inner) {
                                 if !inner.is_option {
                                     return Some(SliceArg {
@@ -5555,8 +5555,8 @@ pub(crate) fn detect_slice_or_option_slice(ty: &syn::Type) -> Option<SliceArg> {
 /// Best-effort and purely syntactic, like the rest of the `catch` handling: a
 /// `Result` alias or a re-ordered alias will not be recognised, which only means
 /// a diagnostic is skipped.
-fn result_err_ty(ty: &syn::Type) -> Option<&syn::Type> {
-    let syn::Type::Path(syn::TypePath {
+fn result_err_ty(ty: &rust_syntax::Type) -> Option<&rust_syntax::Type> {
+    let rust_syntax::Type::Path(rust_syntax::TypePath {
         attrs: _,
         qself: None,
         path,
@@ -5564,14 +5564,14 @@ fn result_err_ty(ty: &syn::Type) -> Option<&syn::Type> {
     else {
         return None;
     };
-    let syn::PathArguments::AngleBracketed(args) = &path.segments.last()?.arguments else {
+    let rust_syntax::PathArguments::AngleBracketed(args) = &path.segments.last()?.arguments else {
         return None;
     };
     if args.args.len() != 2 {
         return None;
     }
     match &args.args[1] {
-        syn::GenericArgument::Type(t) => Some(t),
+        rust_syntax::GenericArgument::Type(t) => Some(t),
         _ => None,
     }
 }
@@ -5585,7 +5585,7 @@ fn result_err_ty(ty: &syn::Type) -> Option<&syn::Type> {
 /// view". This must stay in lockstep with the ABI rewrite in
 /// [`slice_to_array_rewrite`]: the descriptor is what selects the JS shim, and
 /// the ABI is what the shim is handed.
-fn slice_to_array_describe_ty(wasm_bindgen: &syn::Path, ty: &syn::Type) -> Option<syn::Type> {
+fn slice_to_array_describe_ty(wasm_bindgen: &rust_syntax::Path, ty: &rust_syntax::Type) -> Option<rust_syntax::Type> {
     let SliceArg {
         elem_ty, is_option, ..
     } = detect_slice_or_option_slice(ty)?;
@@ -5611,7 +5611,7 @@ struct SliceToArrayRewrite {
     /// Statements converting the user-facing argument into `prim_names`.
     conversion: TokenStream,
     /// The type to describe, per [`slice_to_array_describe_ty`].
-    describe_ty: syn::Type,
+    describe_ty: rust_syntax::Type,
 }
 
 /// Build the `slice_to_array` rewrite for one argument, or `None` if `ty` is not
@@ -5635,10 +5635,10 @@ struct SliceToArrayRewrite {
 /// Neither `&mut [T]` nor a generic element type reaches here: the parser
 /// rejects both up front (see `check_slice_to_array_arg` in `parser.rs`).
 fn slice_to_array_rewrite(
-    wasm_bindgen: &syn::Path,
+    wasm_bindgen: &rust_syntax::Path,
     name: &Ident,
     var: &TokenStream,
-    ty: &syn::Type,
+    ty: &rust_syntax::Type,
 ) -> Option<SliceToArrayRewrite> {
     let SliceArg {
         elem_ty, is_option, ..
@@ -5689,25 +5689,25 @@ fn slice_to_array_rewrite(
 /// This is used by the import function codegen to auto-inject `MaybeUnwindSafe`
 /// bounds for closure arguments, ensuring unwind safety when `panic = "unwind"`.
 fn detect_raw_fn_trait_obj(
-    ty: &syn::Type,
+    ty: &rust_syntax::Type,
 ) -> Option<(
     bool,
-    &syn::punctuated::Punctuated<syn::TypeParamBound, syn::token::Plus>,
+    &rust_syntax::punctuated::Punctuated<rust_syntax::TypeParamBound, rust_syntax::token::Plus>,
 )> {
-    let syn::Type::Reference(syn::TypeReference {
+    let rust_syntax::Type::Reference(rust_syntax::TypeReference {
         mutability, elem, ..
     }) = ty
     else {
         return None;
     };
     let inner = get_ty(elem);
-    let syn::Type::TraitObject(trait_obj) = inner else {
+    let rust_syntax::Type::TraitObject(trait_obj) = inner else {
         return None;
     };
     let is_mut = mutability.is_some();
     // Check that the primary bound is Fn or FnMut (matching mutability)
     for bound in &trait_obj.bounds {
-        if let syn::TypeParamBound::Trait(tb) = bound {
+        if let rust_syntax::TypeParamBound::Trait(tb) = bound {
             if let Some(last_seg) = tb.path.segments.last() {
                 let name = last_seg.ident.to_string();
                 if is_mut && name == "FnMut" {
@@ -5724,20 +5724,20 @@ fn detect_raw_fn_trait_obj(
 
 /// Extracts the argument and return types from a `Fn`/`FnMut` trait bound.
 fn fn_trait_bound_sig(
-    bounds: &syn::punctuated::Punctuated<syn::TypeParamBound, syn::token::Plus>,
-) -> Option<(Vec<syn::Type>, syn::Type, bool)> {
+    bounds: &rust_syntax::punctuated::Punctuated<rust_syntax::TypeParamBound, rust_syntax::token::Plus>,
+) -> Option<(Vec<rust_syntax::Type>, rust_syntax::Type, bool)> {
     for bound in bounds {
-        let syn::TypeParamBound::Trait(tb) = bound else {
+        let rust_syntax::TypeParamBound::Trait(tb) = bound else {
             continue;
         };
         let segment = tb.path.segments.last()?;
-        let syn::PathArguments::Parenthesized(args) = &segment.arguments else {
+        let rust_syntax::PathArguments::Parenthesized(args) = &segment.arguments else {
             continue;
         };
         let inputs = args.inputs.iter().map(|arg| arg.ty.clone()).collect();
         let ret = match &args.output {
-            syn::ReturnType::Type(_, ty) => (**ty).clone(),
-            syn::ReturnType::Default => parse_quote!(()),
+            rust_syntax::ReturnType::Type(_, ty) => (**ty).clone(),
+            rust_syntax::ReturnType::Default => parse_quote!(()),
         };
         return Some((inputs, ret, tb.lifetimes.is_some()));
     }

@@ -4,7 +4,7 @@ use std::vec;
 
 use proc_macro2::TokenStream;
 use proc_macro2_diagnostics::Diagnostic;
-use syn::{parse::ParseStream, spanned::Spanned, Result};
+use rust_syntax::{parse::ParseStream, spanned::Spanned, Result};
 
 pub mod recoverable;
 
@@ -47,7 +47,7 @@ impl<C: CustomNode + std::fmt::Debug> Parser<C> {
     ///
     /// # Errors
     ///
-    /// Returns a [`syn::Error`] if parsing fails completely or only partially.
+    /// Returns a [`rust_syntax::Error`] if parsing fails completely or only partially.
     ///
     /// [`proc-macro2::TokenStream`]: https://docs.rs/proc-macro2/latest/proc_macro2/struct.TokenStream.html
     /// [`proc-macro::TokenStream`]: https://doc.rust-lang.org/proc_macro/struct.TokenStream.html
@@ -61,10 +61,10 @@ impl<C: CustomNode + std::fmt::Debug> Parser<C> {
     ///
     /// # Panics
     ///
-    /// Panics if the inner syn parser unexpectedly fails, or (with
+    /// Panics if the inner rust_syntax parser unexpectedly fails, or (with
     /// `rawtext-stable-hack`) if macro source text / pattern matching fails.
     pub fn parse_recoverable(&self, v: impl Into<TokenStream>) -> ParsingResult<Vec<Node<C>>> {
-        use syn::parse::Parser as _;
+        use rust_syntax::parse::Parser as _;
 
         let parser = move |input: ParseStream| Ok(self.parse_syn_stream(input));
         let source = parser.parse2(v.into()).expect("No errors from parser");
@@ -81,9 +81,9 @@ impl<C: CustomNode + std::fmt::Debug> Parser<C> {
         mut source: ParsingResult<Vec<Node<C>>>,
     ) -> ParsingResult<Vec<Node<C>>>
     where
-        Parser: FnOnce(ParseStream) -> syn::Result<ParsingResult<Vec<Node<C>>>>,
+        Parser: FnOnce(ParseStream) -> rust_syntax::Result<ParsingResult<Vec<Node<C>>>>,
     {
-        use syn::parse::Parser as _;
+        use rust_syntax::parse::Parser as _;
         // in case we already have valid raw_text, we can skip re-parsing
         if rawtext_stable_hack::is_join_span_available() {
             return source;

@@ -10,7 +10,7 @@
 use debug_handler::FunctionKind;
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse::Parse, Type};
+use rust_syntax::{parse::Parse, Type};
 
 mod attr_parsing;
 #[cfg(feature = "__private")]
@@ -720,11 +720,11 @@ pub fn derive_from_ref(item: TokenStream) -> TokenStream {
 
 fn expand_with<F, I, K>(input: TokenStream, f: F) -> TokenStream
 where
-    F: FnOnce(I) -> syn::Result<K>,
+    F: FnOnce(I) -> rust_syntax::Result<K>,
     I: Parse,
     K: ToTokens,
 {
-    expand(syn::parse(input).and_then(f))
+    expand(rust_syntax::parse(input).and_then(f))
 }
 
 #[cfg(any(debug_assertions, feature = "__private"))]
@@ -736,14 +736,14 @@ where
     K: ToTokens,
 {
     let expand_result = (|| {
-        let attr = syn::parse(attr)?;
-        let input = syn::parse(input)?;
+        let attr = rust_syntax::parse(attr)?;
+        let input = rust_syntax::parse(input)?;
         Ok(f(attr, input))
     })();
     expand(expand_result)
 }
 
-fn expand<T>(result: syn::Result<T>) -> TokenStream
+fn expand<T>(result: rust_syntax::Result<T>) -> TokenStream
 where
     T: ToTokens,
 {
@@ -778,7 +778,7 @@ where
                 }
 
                 match &last_segment.arguments {
-                    syn::PathArguments::AngleBracketed(args) if args.args.len() == 1 => {
+                    rust_syntax::PathArguments::AngleBracketed(args) if args.args.len() == 1 => {
                         Some(args.args.first().unwrap())
                     }
                     _ => None,
@@ -788,7 +788,7 @@ where
             }
         })
         .filter_map(|generic_arg| {
-            if let syn::GenericArgument::Type(ty) = generic_arg {
+            if let rust_syntax::GenericArgument::Type(ty) = generic_arg {
                 Some(ty)
             } else {
                 None

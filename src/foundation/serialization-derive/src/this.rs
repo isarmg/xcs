@@ -1,5 +1,5 @@
 use crate::internals::ast::Container;
-use syn::{Path, PathArguments, Token};
+use rust_syntax::{Path, PathArguments, Token};
 
 pub fn this_type(cont: &Container) -> Path {
     if let Some(remote) = cont.attrs.remote() {

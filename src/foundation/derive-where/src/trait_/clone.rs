@@ -4,7 +4,7 @@ use std::ops::Deref;
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{TraitBound, TraitBoundModifiers, TypeParamBound};
+use rust_syntax::{TraitBound, TraitBoundModifiers, TypeParamBound};
 
 use crate::{
 	data::Field, util, Data, DataType, DeriveTrait, DeriveWhere, Item, SimpleType, SplitGenerics,
@@ -46,7 +46,7 @@ impl TraitImpl for Clone {
 		}
 	}
 
-	fn path(&self) -> syn::Path {
+	fn path(&self) -> rust_syntax::Path {
 		util::path_from_strs(&["core", "clone", "Clone"])
 	}
 

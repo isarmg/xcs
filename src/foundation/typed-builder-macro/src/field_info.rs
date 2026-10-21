@@ -2,10 +2,10 @@ use std::ops::Deref;
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::parse::Parser;
-use syn::punctuated::Punctuated;
-use syn::{Expr, ExprBlock};
-use syn::{parse::Error, spanned::Spanned};
+use rust_syntax::parse::Parser;
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::{Expr, ExprBlock};
+use rust_syntax::{parse::Error, spanned::Spanned};
 
 use crate::mutator::Mutator;
 use crate::struct_info::StructInfo;
@@ -14,19 +14,19 @@ use crate::util::{ApplyMeta, AttrArg, expr_to_lit_string, ident_to_type, path_to
 #[derive(Debug)]
 pub struct FieldInfo<'a> {
     pub ordinal: usize,
-    pub name: &'a syn::Ident,
-    pub generic_ident: syn::Ident,
-    pub ty: &'a syn::Type,
+    pub name: &'a rust_syntax::Ident,
+    pub generic_ident: rust_syntax::Ident,
+    pub ty: &'a rust_syntax::Type,
     pub builder_attr: FieldBuilderAttr<'a>,
 }
 
 impl<'a> FieldInfo<'a> {
-    pub fn new(ordinal: usize, field: &'a syn::Field, field_defaults: FieldBuilderAttr<'a>) -> Result<FieldInfo<'a>, Error> {
+    pub fn new(ordinal: usize, field: &'a rust_syntax::Field, field_defaults: FieldBuilderAttr<'a>) -> Result<FieldInfo<'a>, Error> {
         if let Some(ref name) = field.ident {
             FieldInfo {
                 ordinal,
                 name,
-                generic_ident: syn::Ident::new(&format!("__{}", strip_raw_ident_prefix(name.to_string())), Span::call_site()),
+                generic_ident: rust_syntax::Ident::new(&format!("__{}", strip_raw_ident_prefix(name.to_string())), Span::call_site()),
                 ty: &field.ty,
                 builder_attr: field_defaults.with(name, &field.attrs)?,
             }
@@ -36,33 +36,33 @@ impl<'a> FieldInfo<'a> {
         }
     }
 
-    pub fn generic_ty_param(&self) -> syn::GenericParam {
-        syn::GenericParam::Type(self.generic_ident.clone().into())
+    pub fn generic_ty_param(&self) -> rust_syntax::GenericParam {
+        rust_syntax::GenericParam::Type(self.generic_ident.clone().into())
     }
 
-    pub fn type_ident(&self) -> syn::Type {
+    pub fn type_ident(&self) -> rust_syntax::Type {
         ident_to_type(self.generic_ident.clone())
     }
 
-    pub fn tuplized_type_ty_param(&self) -> syn::Type {
+    pub fn tuplized_type_ty_param(&self) -> rust_syntax::Type {
         let mut types = Punctuated::default();
         types.push(self.ty.clone());
         types.push_punct(Default::default());
-        syn::Type::Tuple(syn::TypeTuple {
+        rust_syntax::Type::Tuple(rust_syntax::TypeTuple {
             attrs: Vec::new(),
             paren_token: Default::default(),
             elems: types,
         })
     }
 
-    pub fn type_from_inside_option(&self) -> Option<&syn::Type> {
-        let typ = if let syn::Type::Group(type_group) = self.ty {
+    pub fn type_from_inside_option(&self) -> Option<&rust_syntax::Type> {
+        let typ = if let rust_syntax::Type::Group(type_group) = self.ty {
             type_group.elem.deref()
         } else {
             self.ty
         };
 
-        let path = if let syn::Type::Path(type_path) = typ {
+        let path = if let rust_syntax::Type::Path(type_path) = typ {
             if type_path.qself.is_some() {
                 return None;
             }
@@ -74,12 +74,12 @@ impl<'a> FieldInfo<'a> {
         if segment.ident != "Option" {
             return None;
         }
-        let generic_params = if let syn::PathArguments::AngleBracketed(generic_params) = &segment.arguments {
+        let generic_params = if let rust_syntax::PathArguments::AngleBracketed(generic_params) = &segment.arguments {
             generic_params
         } else {
             return None;
         };
-        if let syn::GenericArgument::Type(ty) = generic_params.args.first()? {
+        if let rust_syntax::GenericArgument::Type(ty) = generic_params.args.first()? {
             Some(ty)
         } else {
             None
@@ -110,9 +110,9 @@ impl<'a> FieldInfo<'a> {
                 error.combine(Error::new(default_span, "default set here"));
                 return Err(error);
             }
-            self.builder_attr.default = Some(syn::Expr::Lit(syn::ExprLit {
+            self.builder_attr.default = Some(rust_syntax::Expr::Lit(rust_syntax::ExprLit {
                 attrs: Default::default(),
-                lit: syn::Lit::Bool(syn::LitBool {
+                lit: rust_syntax::Lit::Bool(rust_syntax::LitBool {
                     value: false,
                     span: strip_bool.span,
                 }),
@@ -137,7 +137,7 @@ impl<'a> FieldInfo<'a> {
         }
     }
 
-    pub fn gen_next_field_default_trait_impl(&self, struct_info: &StructInfo) -> syn::Result<Option<TokenStream>> {
+    pub fn gen_next_field_default_trait_impl(&self, struct_info: &StructInfo) -> rust_syntax::Result<Option<TokenStream>> {
         if self.builder_attr.setter.skip.is_some() {
             return Ok(None);
         }
@@ -168,7 +168,7 @@ impl<'a> FieldInfo<'a> {
                 predicates.extend(where_clause.predicates.iter().cloned());
             }
             predicates.extend(default_where.iter().cloned());
-            where_clause_storage = syn::WhereClause {
+            where_clause_storage = rust_syntax::WhereClause {
                 where_token: Default::default(),
                 predicates,
             };
@@ -203,11 +203,11 @@ impl<'a> FieldInfo<'a> {
 
 #[derive(Debug, Default, Clone)]
 pub struct FieldBuilderAttr<'a> {
-    pub default: Option<syn::Expr>,
-    pub default_where: Option<Punctuated<syn::WherePredicate, syn::token::Comma>>,
+    pub default: Option<rust_syntax::Expr>,
+    pub default_where: Option<Punctuated<rust_syntax::WherePredicate, rust_syntax::token::Comma>>,
     pub via_mutators: Option<ViaMutators>,
-    pub deprecated: Option<&'a syn::Attribute>,
-    pub doc_comments: Vec<&'a syn::Expr>,
+    pub deprecated: Option<&'a rust_syntax::Attribute>,
+    pub doc_comments: Vec<&'a rust_syntax::Expr>,
     pub setter: SetterSettings,
     /// Functions that are able to mutate fields in the builder that are already set
     pub mutators: Vec<Mutator>,
@@ -216,7 +216,7 @@ pub struct FieldBuilderAttr<'a> {
 
 #[derive(Debug, Default, Clone)]
 pub struct SetterSettings {
-    pub doc: Option<syn::Expr>,
+    pub doc: Option<rust_syntax::Expr>,
     pub skip: Option<Span>,
     pub auto_into: Option<Span>,
     pub strip_option: Option<Strip>,
@@ -227,10 +227,10 @@ pub struct SetterSettings {
 }
 
 impl<'a> FieldBuilderAttr<'a> {
-    pub fn with(mut self, name: &Ident, attrs: &'a [syn::Attribute]) -> Result<Self, Error> {
+    pub fn with(mut self, name: &Ident, attrs: &'a [rust_syntax::Attribute]) -> Result<Self, Error> {
         for attr in attrs {
             let list = match &attr.meta {
-                syn::Meta::List(list) => {
+                rust_syntax::Meta::List(list) => {
                     let Some(path) = path_to_single_string(&list.path) else {
                         continue;
                     };
@@ -246,7 +246,7 @@ impl<'a> FieldBuilderAttr<'a> {
 
                     list
                 }
-                syn::Meta::NameValue(syn::MetaNameValue { path, value, .. }) => {
+                rust_syntax::Meta::NameValue(rust_syntax::MetaNameValue { path, value, .. }) => {
                     match path_to_single_string(path).as_deref() {
                         Some("deprecated") => self.deprecated = Some(attr),
                         Some("doc") => self.doc_comments.push(value),
@@ -255,7 +255,7 @@ impl<'a> FieldBuilderAttr<'a> {
 
                     continue;
                 }
-                syn::Meta::Path(path) => {
+                rust_syntax::Meta::Path(path) => {
                     match path_to_single_string(path).as_deref() {
                         Some("deprecated") => self.deprecated = Some(attr),
                         _ => continue,
@@ -320,7 +320,7 @@ impl ApplyMeta for FieldBuilderAttr<'_> {
             "default" => match expr {
                 AttrArg::Flag(ident) => {
                     self.default =
-                        Some(syn::parse2(quote_spanned!(ident.span() => ::core::default::Default::default())).unwrap());
+                        Some(rust_syntax::parse2(quote_spanned!(ident.span() => ::core::default::Default::default())).unwrap());
                     Ok(())
                 }
                 AttrArg::KeyValue(key_value) => {
@@ -347,9 +347,9 @@ impl ApplyMeta for FieldBuilderAttr<'_> {
             "default_code" => {
                 use std::str::FromStr;
 
-                let code = expr.key_value()?.parse_value::<syn::LitStr>()?;
+                let code = expr.key_value()?.parse_value::<rust_syntax::LitStr>()?;
                 let tokenized_code = TokenStream::from_str(&code.value())?;
-                self.default = Some(syn::parse2(tokenized_code).map_err(|e| Error::new_spanned(code, format!("{}", e)))?);
+                self.default = Some(rust_syntax::parse2(tokenized_code).map_err(|e| Error::new_spanned(code, format!("{}", e)))?);
 
                 Ok(())
             }
@@ -363,7 +363,7 @@ impl ApplyMeta for FieldBuilderAttr<'_> {
                     AttrArg::Flag(ident) => {
                         self.via_mutators = Some(ViaMutators {
                             span: ident.span(),
-                            init: syn::parse2(quote_spanned!(ident.span() => ::core::default::Default::default())).unwrap(),
+                            init: rust_syntax::parse2(quote_spanned!(ident.span() => ::core::default::Default::default())).unwrap(),
                         });
                     }
                     AttrArg::KeyValue(key_value) => {
@@ -460,7 +460,7 @@ impl ApplyMeta for SetterSettings {
 
 #[derive(Debug, Clone)]
 pub struct Strip {
-    pub fallback: Option<syn::Ident>,
+    pub fallback: Option<rust_syntax::Ident>,
     pub fallback_prefix: Option<String>,
     pub fallback_suffix: Option<String>,
     pub ignore_invalid: bool,
@@ -490,7 +490,7 @@ impl ApplyMeta for Strip {
                     ));
                 }
 
-                let ident: syn::Ident = expr.key_value().map(|kv| kv.parse_value())??;
+                let ident: rust_syntax::Ident = expr.key_value().map(|kv| kv.parse_value())??;
                 self.fallback = Some(ident);
                 Ok(())
             }
@@ -502,7 +502,7 @@ impl ApplyMeta for Strip {
                     ));
                 }
 
-                self.fallback_prefix = Some(expr.key_value()?.parse_value::<syn::LitStr>()?.value());
+                self.fallback_prefix = Some(expr.key_value()?.parse_value::<rust_syntax::LitStr>()?.value());
                 Ok(())
             }
             "fallback_suffix" => {
@@ -513,7 +513,7 @@ impl ApplyMeta for Strip {
                     ));
                 }
 
-                self.fallback_suffix = Some(expr.key_value()?.parse_value::<syn::LitStr>()?.value());
+                self.fallback_suffix = Some(expr.key_value()?.parse_value::<rust_syntax::LitStr>()?.value());
                 Ok(())
             }
             "ignore_invalid" => {
@@ -538,14 +538,14 @@ impl ApplyMeta for Strip {
 
 #[derive(Debug, Clone)]
 pub struct Transform {
-    pub params: Vec<(syn::Pat, syn::Type)>,
-    pub body: syn::Expr,
-    pub generics: Option<syn::Generics>,
-    pub return_type: syn::ReturnType,
+    pub params: Vec<(rust_syntax::Pat, rust_syntax::Type)>,
+    pub body: rust_syntax::Expr,
+    pub generics: Option<rust_syntax::Generics>,
+    pub return_type: rust_syntax::ReturnType,
     span: Span,
 }
 
-fn parse_transform_fn(span: Span, func: syn::ItemFn) -> Result<Transform, Error> {
+fn parse_transform_fn(span: Span, func: rust_syntax::ItemFn) -> Result<Transform, Error> {
     if let Some(kw) = &func.sig.asyncness {
         return Err(Error::new(kw.span, "Transform function cannot be async"));
     }
@@ -555,8 +555,8 @@ fn parse_transform_fn(span: Span, func: syn::ItemFn) -> Result<Transform, Error>
         .inputs
         .into_iter()
         .map(|input| match input {
-            syn::FnArg::Typed(pat_type) => Ok((*pat_type.pat, *pat_type.ty)),
-            syn::FnArg::Receiver(_) => Err(Error::new_spanned(input, "Transform function cannot have self parameter")),
+            rust_syntax::FnArg::Typed(pat_type) => Ok((*pat_type.pat, *pat_type.ty)),
+            rust_syntax::FnArg::Receiver(_) => Err(Error::new_spanned(input, "Transform function cannot have self parameter")),
         })
         .collect::<Result<Vec<_>, _>>()?;
 
@@ -575,9 +575,9 @@ fn parse_transform_fn(span: Span, func: syn::ItemFn) -> Result<Transform, Error>
     })
 }
 
-fn parse_transform_closure(span: Span, expr: syn::Expr) -> Result<Transform, Error> {
+fn parse_transform_closure(span: Span, expr: rust_syntax::Expr) -> Result<Transform, Error> {
     let closure = match expr {
-        syn::Expr::Closure(closure) => closure,
+        rust_syntax::Expr::Closure(closure) => closure,
         _ => return Err(Error::new_spanned(expr, "Expected closure")),
     };
 
@@ -592,7 +592,7 @@ fn parse_transform_closure(span: Span, expr: syn::Expr) -> Result<Transform, Err
         .inputs
         .into_iter()
         .map(|input| match input {
-            syn::Pat::Type(pat_type) => Ok((*pat_type.pat, *pat_type.ty)),
+            rust_syntax::Pat::Type(pat_type) => Ok((*pat_type.pat, *pat_type.ty)),
             _ => Err(Error::new_spanned(input, "Transform closure must explicitly declare types")),
         })
         .collect::<Result<Vec<_>, _>>()?;
@@ -609,14 +609,14 @@ fn parse_transform_closure(span: Span, expr: syn::Expr) -> Result<Transform, Err
 #[derive(Debug, Clone)]
 pub struct ViaMutators {
     pub span: Span,
-    pub init: syn::Expr,
+    pub init: rust_syntax::Expr,
 }
 
 impl ViaMutators {
     fn empty_spanned(span: Span) -> Self {
         Self {
             span,
-            init: syn::parse2(quote_spanned!(span => ::core::default::Default::default())).unwrap(),
+            init: rust_syntax::parse2(quote_spanned!(span => ::core::default::Default::default())).unwrap(),
         }
     }
 }

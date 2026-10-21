@@ -12,7 +12,7 @@ use std::thread;
 pub struct Ctxt {
     // The contents will be set to `None` during checking. This is so that checking can be
     // enforced.
-    errors: RefCell<Option<Vec<syn::Error>>>,
+    errors: RefCell<Option<Vec<rust_syntax::Error>>>,
 }
 
 impl Ctxt {
@@ -34,16 +34,16 @@ impl Ctxt {
             .as_mut()
             .unwrap()
             // Curb monomorphization from generating too many identical methods.
-            .push(syn::Error::new_spanned(obj.into_token_stream(), msg));
+            .push(rust_syntax::Error::new_spanned(obj.into_token_stream(), msg));
     }
 
-    /// Add one of Syn's parse errors.
-    pub fn syn_error(&self, err: syn::Error) {
+    /// Add one of Rust Syntax's parse errors.
+    pub fn syntax_error(&self, err: rust_syntax::Error) {
         self.errors.borrow_mut().as_mut().unwrap().push(err);
     }
 
     /// Consume this object, producing a formatted error string if there are errors.
-    pub fn check(self) -> syn::Result<()> {
+    pub fn check(self) -> rust_syntax::Result<()> {
         let mut errors = self.errors.borrow_mut().take().unwrap().into_iter();
 
         let Some(mut combined) = errors.next() else {

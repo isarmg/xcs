@@ -83,10 +83,10 @@
 //!
 //! When using `quote` in a build.rs or main.rs and writing the output out to a
 //! file, consider having the code generator pass the tokens through
-//! [prettyplease] before writing. This way if an error occurs in the generated
+//! [rust_source_format] before writing. This way if an error occurs in the generated
 //! code it is convenient for a human to read and debug.
 //!
-//! [prettyplease]: https://github.com/dtolnay/prettyplease
+//! [rust_source_format]: https://github.com/dtolnay/prettyplease
 
 #![no_std]
 #![doc(html_root_url = "https://docs.rs/quote/1.0.47")]
@@ -144,10 +144,10 @@ macro_rules! __quote {
         /// `macro_rules!` macros). This grabs the `var` variable that is currently in
         /// scope and inserts it in that location in the output tokens. Any type
         /// implementing the [`ToTokens`] trait can be interpolated. This includes most
-        /// Rust primitive types as well as most of the syntax tree types from the [Syn]
+        /// Rust primitive types as well as most of the syntax tree types from the [Rust Syntax]
         /// crate.
         ///
-        /// [Syn]: https://github.com/dtolnay/syn
+        /// [Rust Syntax]: https://github.com/dtolnay/syn
         ///
         /// Repetition is done using `#(...)*` or `#(...),*` again similar to
         /// `macro_rules!`. This iterates through the elements of any variable
@@ -198,11 +198,11 @@ macro_rules! __quote {
         ///
         /// ### Procedural macro
         ///
-        /// The structure of a basic procedural macro is as follows. Refer to the [Syn]
+        /// The structure of a basic procedural macro is as follows. Refer to the [Rust Syntax]
         /// crate for further useful guidance on using `quote!` as part of a procedural
         /// macro.
         ///
-        /// [Syn]: https://github.com/dtolnay/syn
+        /// [Rust Syntax]: https://github.com/dtolnay/syn
         ///
         /// ```
         /// # #[cfg(any())]
@@ -275,10 +275,10 @@ macro_rules! __quote {
         /// continue to be two separate tokens as if you had written `_ x`.
         ///
         /// ```edition2018
-        /// # use proc_macro2::{self as syn, Span};
+        /// # use proc_macro2::{self as rust_syntax, Span};
         /// # use quote::quote;
         /// #
-        /// # let ident = syn::Ident::new("i", Span::call_site());
+        /// # let ident = rust_syntax::Ident::new("i", Span::call_site());
         /// #
         /// // incorrect
         /// quote! {
@@ -304,18 +304,18 @@ macro_rules! __quote {
         /// # ;
         /// ```
         ///
-        /// Alternatively, the APIs provided by Syn and proc-macro2 can be used to
+        /// Alternatively, the APIs provided by Rust Syntax and proc-macro2 can be used to
         /// directly build the identifier. This is roughly equivalent to the above, but
         /// will not handle `ident` being a raw identifier.
         ///
         /// ```
-        /// # use proc_macro2::{self as syn, Span};
+        /// # use proc_macro2::{self as rust_syntax, Span};
         /// # use quote::quote;
         /// #
-        /// # let ident = syn::Ident::new("i", Span::call_site());
+        /// # let ident = rust_syntax::Ident::new("i", Span::call_site());
         /// #
         /// let concatenated = format!("_{}", ident);
-        /// let varname = syn::Ident::new(&concatenated, ident.span());
+        /// let varname = rust_syntax::Ident::new(&concatenated, ident.span());
         /// quote! {
         ///     let mut #varname = 0;
         /// }
@@ -328,7 +328,7 @@ macro_rules! __quote {
         ///
         /// Let's say our macro requires some type specified in the macro input to have
         /// a constructor called `new`. We have the type in a variable called
-        /// `field_type` of type `syn::Type` and want to invoke the constructor.
+        /// `field_type` of type `rust_syntax::Type` and want to invoke the constructor.
         ///
         /// ```
         /// # use quote::quote;
@@ -421,10 +421,10 @@ macro_rules! __quote {
         /// ### Indexing into a tuple struct
         ///
         /// When interpolating indices of a tuple or tuple struct, we need them not to
-        /// appears suffixed as integer literals by interpolating them as [`syn::Index`]
+        /// appears suffixed as integer literals by interpolating them as [`rust_syntax::Index`]
         /// instead.
         ///
-        /// [`syn::Index`]: https://docs.rs/syn/3/syn/struct.Index.html
+        /// [`rust_syntax::Index`]: https://docs.rs/syn/3/syn/struct.Index.html
         ///
         /// ```compile_fail
         /// let i = 0usize..self.fields.len();
@@ -440,7 +440,7 @@ macro_rules! __quote {
         /// # use proc_macro2::{Ident, TokenStream};
         /// # use quote::quote;
         /// #
-        /// # mod syn {
+        /// # mod rust_syntax {
         /// #     use proc_macro2::{Literal, TokenStream};
         /// #     use quote::{ToTokens, TokenStreamExt};
         /// #
@@ -465,7 +465,7 @@ macro_rules! __quote {
         /// #
         /// # impl Struct {
         /// #     fn example(&self) -> TokenStream {
-        /// let i = (0..self.fields.len()).map(syn::Index::from);
+        /// let i = (0..self.fields.len()).map(rust_syntax::Index::from);
         ///
         /// // expands to 0 + self.0.heap_size() + self.1.heap_size() + ...
         /// quote! {

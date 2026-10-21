@@ -1,10 +1,10 @@
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, Ident};
+use rust_syntax::{Data, DeriveInput, Fields, Ident};
 
 use crate::helpers::{non_enum_error, HasStrumVariantProperties, HasTypeProperties};
 
-pub fn enum_iter_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn enum_iter_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let gen = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = gen.split_for_impl();
@@ -14,7 +14,7 @@ pub fn enum_iter_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
     let doc_comment = format!("An iterator over the variants of [{}]", name);
 
     if gen.lifetimes().count() > 0 {
-        return Err(syn::Error::new(
+        return Err(rust_syntax::Error::new(
             Span::call_site(),
             "This macro doesn't support enums with lifetimes. \
              The resulting enums would be unbounded.",
@@ -63,11 +63,11 @@ pub fn enum_iter_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
 
     let variant_count = arms.len();
     arms.push(quote! { _ => ::core::option::Option::None });
-    let iter_name = syn::parse_str::<Ident>(&format!("{}Iter", name)).unwrap();
+    let iter_name = rust_syntax::parse_str::<Ident>(&format!("{}Iter", name)).unwrap();
 
     // Create a string literal "MyEnumIter" to use in the debug impl.
     let iter_name_debug_struct =
-        syn::parse_str::<syn::LitStr>(&format!("\"{}\"", iter_name)).unwrap();
+        rust_syntax::parse_str::<rust_syntax::LitStr>(&format!("\"{}\"", iter_name)).unwrap();
 
     Ok(quote! {
         #[doc = #doc_comment]

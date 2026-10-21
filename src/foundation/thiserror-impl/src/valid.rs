@@ -1,6 +1,6 @@
 use crate::ast::{Enum, Field, Input, Struct, Variant};
 use crate::attr::Attrs;
-use syn::{Error, GenericArgument, PathArguments, Result, Type};
+use rust_syntax::{Error, GenericArgument, PathArguments, Result, Type};
 
 impl Input<'_> {
     pub(crate) fn validate(&self) -> Result<()> {

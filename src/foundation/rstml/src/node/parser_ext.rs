@@ -1,6 +1,6 @@
 use proc_macro2::{TokenStream, TokenTree};
 use proc_macro2_diagnostics::{Diagnostic, Level};
-use syn::{
+use rust_syntax::{
     parse::{discouraged::Speculative, Parse, ParseStream, Parser},
     spanned::Spanned,
 };
@@ -46,7 +46,7 @@ impl RecoverableContext {
                 .expect("TokenTree should always be parsable");
             tokens.extend([next]);
         };
-        self.save_diagnostics(syn::parse2(tokens)).zip(res)
+        self.save_diagnostics(rust_syntax::parse2(tokens)).zip(res)
     }
 
     /// Parse array of toknes using recoverable parser.
@@ -58,8 +58,8 @@ impl RecoverableContext {
     ///
     /// Example:
     /// ```no_build
-    /// # use syn::{parse::{Parser, ParseStream}, Ident, Result, parse_macro_input, Token};
-    /// # fn main() -> syn::Result<()>{
+    /// # use rust_syntax::{parse::{Parser, ParseStream}, Ident, Result, parse_macro_input, Token};
+    /// # fn main() -> rust_syntax::Result<()>{
     /// # let mut parser = rstml::recoverable::RecoverableContext::new(rstml::recoverable::RecoveryConfig::default());
     /// let tokens:proc_macro2::TokenStream = quote::quote!(few idents seperated by spaces and then minus sign - that will stop parsing).into();
     /// let concat_idents_without_minus = |input: ParseStream| -> Result<String> {
@@ -88,7 +88,7 @@ impl RecoverableContext {
     ) -> (Vec<T>, Option<U>)
     where
         T: ParseRecoverable + Spanned,
-        F: Fn(ParseStream) -> syn::Result<U>,
+        F: Fn(ParseStream) -> rust_syntax::Result<U>,
     {
         let mut collection = vec![];
         let res = loop {
@@ -141,7 +141,7 @@ impl RecoverableContext {
     ) -> (Vec<T>, Option<U>)
     where
         T: ParseRecoverable,
-        F: Fn(ParseStream) -> syn::Result<U>,
+        F: Fn(ParseStream) -> rust_syntax::Result<U>,
     {
         let parser = |parser: &mut Self, tokens: TokenStream| {
             let parse = |input: ParseStream| {
@@ -179,7 +179,7 @@ impl RecoverableContext {
         ending: F,
     ) -> (V, Option<U>)
     where
-        F: Fn(ParseStream) -> syn::Result<U>,
+        F: Fn(ParseStream) -> rust_syntax::Result<U>,
         CNV: Fn(&mut Self, TokenStream) -> V,
     {
         let mut tokens = TokenStream::new();

@@ -14,20 +14,20 @@ fn function_macro() {
         );
     }
 
-    #[cfg(feature = "syn")]
+    #[cfg(feature = "rust-syntax")]
     {
         use quote::ToTokens;
         let output: TokenStream = function!(
             #[as_dummy]
             quote!(hello;),
-            |input: syn::LitInt| -> TokenStream { input.into_token_stream() }
+            |input: rust_syntax::LitInt| -> TokenStream { input.into_token_stream() }
         );
         assert_eq!(
             output.to_string(),
             quote!(hello; ::core::compile_error! { "expected integer literal" }).to_string()
         );
-        let output: TokenStream = function!(quote!(20), |_input: syn::LitInt| -> syn::Ident {
-            syn::parse_quote!(hello)
+        let output: TokenStream = function!(quote!(20), |_input: rust_syntax::LitInt| -> rust_syntax::Ident {
+            rust_syntax::parse_quote!(hello)
         });
         assert_eq!(output.to_string(), "hello");
     }

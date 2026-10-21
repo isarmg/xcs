@@ -1,6 +1,6 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::quote_spanned;
-use syn::{
+use rust_syntax::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
     Field, ItemStruct, Token, Type,
@@ -8,9 +8,9 @@ use syn::{
 
 use crate::attr_parsing::{combine_unary_attribute, parse_attrs, Combine};
 
-pub(crate) fn expand(item: ItemStruct) -> syn::Result<TokenStream> {
+pub(crate) fn expand(item: ItemStruct) -> rust_syntax::Result<TokenStream> {
     if !item.generics.params.is_empty() {
-        return Err(syn::Error::new_spanned(
+        return Err(rust_syntax::Error::new_spanned(
             item.generics,
             "`#[derive(FromRef)]` doesn't support generics",
         ));
@@ -46,7 +46,7 @@ fn expand_field(state: &Ident, idx: usize, field: &Field) -> TokenStream {
             quote_spanned! {span=> state.#field_ident.clone() }
         }
     } else {
-        let idx = syn::Index {
+        let idx = rust_syntax::Index {
             index: idx as _,
             span: field.span(),
         };
@@ -64,7 +64,7 @@ fn expand_field(state: &Ident, idx: usize, field: &Field) -> TokenStream {
 }
 
 mod kw {
-    syn::custom_keyword!(skip);
+    rust_syntax::custom_keyword!(skip);
 }
 
 #[derive(Default)]
@@ -73,7 +73,7 @@ pub(super) struct FieldAttrs {
 }
 
 impl Parse for FieldAttrs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut skip = None;
 
         while !input.is_empty() {
@@ -92,7 +92,7 @@ impl Parse for FieldAttrs {
 }
 
 impl Combine for FieldAttrs {
-    fn combine(mut self, other: Self) -> syn::Result<Self> {
+    fn combine(mut self, other: Self) -> rust_syntax::Result<Self> {
         let Self { skip } = other;
         combine_unary_attribute(&mut self.skip, skip)?;
         Ok(self)

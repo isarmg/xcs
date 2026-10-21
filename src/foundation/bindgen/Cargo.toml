@@ -38,7 +38,7 @@ __cli = ["dep:clap"]
 __testing_only_extra_assertions = []
 __testing_only_libclang_16 = []
 __testing_only_libclang_9 = []
-default = ["logging", "prettyplease", "runtime"]
+default = ["logging", "rust-source-format", "runtime"]
 experimental = []
 logging = ["dep:log"]
 runtime = ["clang-sys/runtime"]
@@ -77,11 +77,11 @@ version = "0.4"
 optional = true
 path = "../log"
 
-[dependencies.prettyplease]
+[dependencies.rust-source-format]
 version = "0.3"
 features = ["verbatim"]
 optional = true
-path = "../prettyplease-0.3.0"
+path = "../rust-source-format"
 
 [dependencies.proc-macro2]
 version = "1.0.80"
@@ -109,14 +109,14 @@ path = "../rustc-hash"
 version = "2"
 path = "../shell-tokenizer"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3"
 features = [
     "full",
     "extra-traits",
     "visit-mut",
 ]
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 
 [lints.clippy]
 cast_possible_truncation = "allow"

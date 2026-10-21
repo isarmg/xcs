@@ -1,6 +1,6 @@
 //! Attribute parsing for fields.
 
-use syn::{spanned::Spanned, Attribute, Meta, Result};
+use rust_syntax::{spanned::Spanned, Attribute, Meta, Result};
 
 use crate::{util::MetaListExt, DeriveWhere, Error, Skip, DERIVE_WHERE};
 #[cfg(feature = "zeroize")]

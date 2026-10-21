@@ -64,7 +64,7 @@ version = "0.5.3"
 dependencies = [
  "base64ct",
  "blake2",
- "cpufeatures",
+ "cpu-feature-detect",
  "password-hash",
 ]
 
@@ -87,7 +87,7 @@ version = "0.1.92"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -109,7 +109,7 @@ dependencies = [
  "manyhow",
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -122,7 +122,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "quote-use",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -198,7 +198,7 @@ version = "0.5.1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -218,13 +218,13 @@ dependencies = [
  "flag-set",
  "iterator-toolkit",
  "log",
- "prettyplease",
  "proc-macro2",
  "quote",
  "regex",
+ "rust-source-format",
+ "rust-syntax",
  "rustc-hash",
  "shell-tokenizer",
- "syn",
 ]
 
 [[package]]
@@ -253,7 +253,7 @@ dependencies = [
  "cc",
  "cfg-if",
  "constant_time_eq",
- "cpufeatures",
+ "cpu-feature-detect",
 ]
 
 [[package]]
@@ -341,7 +341,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -406,7 +406,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cpufeatures"
+name = "cpu-feature-detect"
 version = "0.3.1"
 dependencies = [
  "libc",
@@ -481,7 +481,7 @@ version = "1.7.0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -500,7 +500,7 @@ version = "0.2.7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -709,7 +709,7 @@ version = "0.3.34"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -1164,7 +1164,7 @@ dependencies = [
  "manyhow-macros",
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -1417,14 +1417,6 @@ name = "powerfmt"
 version = "0.2.1"
 
 [[package]]
-name = "prettyplease"
-version = "0.3.0"
-dependencies = [
- "proc-macro2",
- "syn",
-]
-
-[[package]]
 name = "proc-macro-utils"
 version = "0.10.0"
 dependencies = [
@@ -1446,7 +1438,7 @@ version = "0.11.0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
  "version_check",
 ]
 
@@ -1472,7 +1464,7 @@ dependencies = [
  "proc-macro-utils",
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -1532,7 +1524,7 @@ version = "1.0.27"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -1633,8 +1625,25 @@ dependencies = [
  "proc-macro2",
  "proc-macro2-diagnostics",
  "quote",
- "syn",
+ "rust-syntax",
  "thiserror",
+]
+
+[[package]]
+name = "rust-source-format"
+version = "0.3.0"
+dependencies = [
+ "proc-macro2",
+ "rust-syntax",
+]
+
+[[package]]
+name = "rust-syntax"
+version = "3.0.9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
 ]
 
 [[package]]
@@ -1727,7 +1736,7 @@ version = "1.0.229"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -1743,7 +1752,7 @@ name = "sha2"
 version = "0.11.1"
 dependencies = [
  "cfg-if",
- "cpufeatures",
+ "cpu-feature-detect",
  "digest",
 ]
 
@@ -2006,21 +2015,12 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
 name = "subtle"
 version = "2.6.1"
-
-[[package]]
-name = "syn"
-version = "3.0.9"
-dependencies = [
- "proc-macro2",
- "quote",
- "unicode-ident",
-]
 
 [[package]]
 name = "sync_wrapper"
@@ -2035,7 +2035,7 @@ version = "0.14.0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -2078,7 +2078,7 @@ version = "2.0.21"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -2141,7 +2141,7 @@ version = "2.7.2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -2260,7 +2260,7 @@ version = "0.1.31"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -2312,7 +2312,7 @@ version = "0.23.2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -2402,11 +2402,11 @@ dependencies = [
  "convert_case_extras",
  "html-escape",
  "iterator-toolkit",
- "prettyplease",
  "proc-macro2",
  "quote",
  "rstml",
- "syn",
+ "rust-source-format",
+ "rust-syntax",
  "web-interface",
 ]
 
@@ -2468,7 +2468,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -2528,7 +2528,7 @@ dependencies = [
  "bumpalo",
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
  "wasm-bindgen-shared",
 ]
 
@@ -2666,7 +2666,7 @@ version = "0.8.4"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
  "synstructure",
 ]
 
@@ -2687,7 +2687,7 @@ version = "0.1.8"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
  "synstructure",
 ]
 
@@ -2719,7 +2719,7 @@ version = "0.11.6"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "rust-syntax",
 ]
 
 [[package]]

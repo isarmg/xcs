@@ -47,10 +47,10 @@ cfg_if::cfg_if! {
         cfg_if::cfg_if! {
             if #[cfg(any(target_arch = "x86", target_arch = "x86_64"))] {
                 mod x86_sha;
-                cpufeatures::new!(shani_cpuid, "sha", "sse4.1");
+                cpu_feature_detect::new!(shani_cpuid, "sha", "sse4.1");
             } else if #[cfg(target_arch = "aarch64")] {
                 mod aarch64_sha2;
-                cpufeatures::new!(sha2_hwcap, "sha2");
+                cpu_feature_detect::new!(sha2_hwcap, "sha2");
             }
         }
 

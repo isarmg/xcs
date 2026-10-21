@@ -26,7 +26,7 @@ keywords = [
     "jsx",
     "macro",
     "rsx",
-    "syn",
+    "rust-syntax",
 ]
 license = "MIT"
 repository = "https://github.com/rs-tml/rstml"
@@ -61,7 +61,7 @@ path = "../proc-macro2-diagnostics"
 version = "1.0.38"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3.0.0"
 features = [
     "extra-traits",
@@ -69,7 +69,7 @@ features = [
     "parsing",
     "visit-mut",
 ]
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 
 [dependencies.thiserror]
 version = "2.0.11"

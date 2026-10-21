@@ -1,12 +1,12 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
-use syn::{punctuated::Punctuated, Data, DeriveInput, Fields, LitStr, Token};
+use rust_syntax::{punctuated::Punctuated, Data, DeriveInput, Fields, LitStr, Token};
 
 use crate::helpers::{
     non_enum_error, non_single_field_variant_error, HasStrumVariantProperties, HasTypeProperties,
 };
 
-pub fn display_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn display_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let variants = match &ast.data {
@@ -53,7 +53,7 @@ pub fn display_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                     .map(|(index, field)| {
                         assert!(field.ident.is_none());
                         let ident =
-                            syn::parse_str::<Ident>(format!("field{}", index).as_str()).unwrap();
+                            rust_syntax::parse_str::<Ident>(format!("field{}", index).as_str()).unwrap();
                         quote! { ref #ident }
                     })
                     .collect();
@@ -79,7 +79,7 @@ pub fn display_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                 quote! { ::core::fmt::Display::fmt(#tok, f)}
             })
             .map_err(|_| {
-                syn::Error::new_spanned(
+                rust_syntax::Error::new_spanned(
                     variant,
                     "Default only works on newtype structs with a single String field",
                 )
@@ -119,7 +119,7 @@ pub fn display_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
             Fields::Unnamed(ref unnamed_fields) => {
                 let used_vars = capture_format_strings(&output)?;
                 if used_vars.iter().any(String::is_empty) {
-                    return Err(syn::Error::new_spanned(
+                    return Err(rust_syntax::Error::new_spanned(
                         &output,
                         "Empty {} is not allowed; Use manual numbering ({0})",
                     ));
@@ -133,7 +133,7 @@ pub fn display_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                         .enumerate()
                         .map(|(index, field)| {
                             assert!(field.ident.is_none());
-                            syn::parse_str::<Ident>(format!("field{}", index).as_str()).unwrap()
+                            rust_syntax::parse_str::<Ident>(format!("field{}", index).as_str()).unwrap()
                         })
                         .collect();
                     quote! {
@@ -145,7 +145,7 @@ pub fn display_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
             Fields::Unit => {
                 let used_vars = capture_format_strings(&output)?;
                 if !used_vars.is_empty() {
-                    return Err(syn::Error::new_spanned(
+                    return Err(rust_syntax::Error::new_spanned(
                         &output,
                         "Unit variants do not support interpolation",
                     ));
@@ -174,12 +174,12 @@ pub fn display_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
     })
 }
 
-fn capture_format_string_idents(string_literal: &LitStr) -> syn::Result<Vec<Ident>> {
+fn capture_format_string_idents(string_literal: &LitStr) -> rust_syntax::Result<Vec<Ident>> {
     capture_format_strings(string_literal)?
         .into_iter()
         .map(|ident| {
-            syn::parse_str::<Ident>(ident.as_str()).map_err(|_| {
-                syn::Error::new_spanned(
+            rust_syntax::parse_str::<Ident>(ident.as_str()).map_err(|_| {
+                rust_syntax::Error::new_spanned(
                     string_literal,
                     "Invalid identifier inside format string bracket",
                 )
@@ -188,7 +188,7 @@ fn capture_format_string_idents(string_literal: &LitStr) -> syn::Result<Vec<Iden
         .collect()
 }
 
-fn capture_format_strings(string_literal: &LitStr) -> syn::Result<Vec<String>> {
+fn capture_format_strings(string_literal: &LitStr) -> rust_syntax::Result<Vec<String>> {
     // Remove escaped brackets
     let format_str = string_literal.value().replace("{{", "").replace("}}", "");
 
@@ -198,7 +198,7 @@ fn capture_format_strings(string_literal: &LitStr) -> syn::Result<Vec<String>> {
     for (i, chr) in format_str.bytes().enumerate() {
         if chr == b'{' {
             if new_var_start_index.is_some() {
-                return Err(syn::Error::new_spanned(
+                return Err(rust_syntax::Error::new_spanned(
                     string_literal,
                     "Bracket opened without closing previous bracket",
                 ));
@@ -208,7 +208,7 @@ fn capture_format_strings(string_literal: &LitStr) -> syn::Result<Vec<String>> {
         }
 
         if chr == b'}' {
-            let start_index = new_var_start_index.take().ok_or(syn::Error::new_spanned(
+            let start_index = new_var_start_index.take().ok_or(rust_syntax::Error::new_spanned(
                 string_literal,
                 "Bracket closed without previous opened bracket",
             ))?;

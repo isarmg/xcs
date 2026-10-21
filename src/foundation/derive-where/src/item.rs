@@ -5,7 +5,7 @@ use proc_macro2::Ident;
 use {
 	proc_macro2::{Span, TokenStream},
 	quote::{quote, ToTokens},
-	syn::{punctuated::Punctuated, spanned::Spanned, Attribute, Meta, Result, Token, Variant},
+	rust_syntax::{punctuated::Punctuated, spanned::Spanned, Attribute, Meta, Result, Token, Variant},
 };
 
 #[cfg(not(feature = "nightly"))]

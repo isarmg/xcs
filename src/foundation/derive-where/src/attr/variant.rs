@@ -1,6 +1,6 @@
 //! Attribute parsing for variants.
 
-use syn::{spanned::Spanned, Attribute, Fields, Meta, Result, Variant};
+use rust_syntax::{spanned::Spanned, Attribute, Fields, Meta, Result, Variant};
 
 use crate::{util::MetaListExt, Default, DeriveWhere, Error, Incomparable, Skip, DERIVE_WHERE};
 

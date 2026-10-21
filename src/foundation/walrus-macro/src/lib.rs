@@ -6,12 +6,12 @@ use self::proc_macro::TokenStream;
 use heck::ToSnakeCase;
 use proc_macro2::Span;
 use quote::quote;
-use syn::ext::IdentExt;
-use syn::parse::{Parse, ParseStream};
-use syn::punctuated::Punctuated;
-use syn::DeriveInput;
-use syn::Error;
-use syn::{parse_macro_input, Ident, Result, Token};
+use rust_syntax::ext::IdentExt;
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::DeriveInput;
+use rust_syntax::Error;
+use rust_syntax::{parse_macro_input, Ident, Result, Token};
 
 #[proc_macro_attribute]
 pub fn walrus_instr(_attr: TokenStream, input: TokenStream) -> TokenStream {
@@ -38,15 +38,15 @@ pub fn walrus_instr(_attr: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 struct WalrusVariant {
-    syn: syn::Variant,
+    rust_syntax: rust_syntax::Variant,
     fields: Vec<WalrusFieldOpts>,
     opts: WalrusVariantOpts,
 }
 
 #[derive(Default)]
 struct WalrusVariantOpts {
-    display_name: Option<syn::Ident>,
-    display_extra: Option<syn::Ident>,
+    display_name: Option<rust_syntax::Ident>,
+    display_extra: Option<rust_syntax::Ident>,
     skip_builder: bool,
 }
 
@@ -57,11 +57,11 @@ struct WalrusFieldOpts {
 
 fn get_enum_variants(input: &DeriveInput) -> Result<Vec<WalrusVariant>> {
     let en = match &input.data {
-        syn::Data::Enum(en) => en,
-        syn::Data::Struct(_) => {
+        rust_syntax::Data::Enum(en) => en,
+        rust_syntax::Data::Struct(_) => {
             panic!("can only put #[walrus_instr] on an enum; found it on a struct")
         }
-        syn::Data::Union(_) => {
+        rust_syntax::Data::Union(_) => {
             panic!("can only put #[walrus_instr] on an enum; found it on a union")
         }
     };
@@ -70,13 +70,13 @@ fn get_enum_variants(input: &DeriveInput) -> Result<Vec<WalrusVariant>> {
         .cloned()
         .map(|mut variant| {
             Ok(WalrusVariant {
-                opts: syn::parse(walrus_attrs(&mut variant.attrs))?,
+                opts: rust_syntax::parse(walrus_attrs(&mut variant.attrs))?,
                 fields: variant
                     .fields
                     .iter_mut()
-                    .map(|field| syn::parse(walrus_attrs(&mut field.attrs)))
+                    .map(|field| rust_syntax::parse(walrus_attrs(&mut field.attrs)))
                     .collect::<Result<_>>()?,
-                syn: variant,
+                rust_syntax: variant,
             })
         })
         .collect()
@@ -88,7 +88,7 @@ impl Parse for WalrusFieldOpts {
             SkipVisit,
         }
 
-        let attrs = Punctuated::<_, syn::token::Comma>::parse_terminated(input)?;
+        let attrs = Punctuated::<_, rust_syntax::token::Comma>::parse_terminated(input)?;
         let mut ret = WalrusFieldOpts::default();
         for attr in attrs {
             match attr {
@@ -112,12 +112,12 @@ impl Parse for WalrusFieldOpts {
 impl Parse for WalrusVariantOpts {
     fn parse(input: ParseStream) -> Result<Self> {
         enum Attr {
-            DisplayName(syn::Ident),
-            DisplayExtra(syn::Ident),
+            DisplayName(rust_syntax::Ident),
+            DisplayExtra(rust_syntax::Ident),
             SkipBuilder,
         }
 
-        let attrs = Punctuated::<_, syn::token::Comma>::parse_terminated(input)?;
+        let attrs = Punctuated::<_, rust_syntax::token::Comma>::parse_terminated(input)?;
         let mut ret = WalrusVariantOpts::default();
         for attr in attrs {
             match attr {
@@ -150,15 +150,15 @@ impl Parse for WalrusVariantOpts {
     }
 }
 
-fn walrus_attrs(attrs: &mut Vec<syn::Attribute>) -> TokenStream {
+fn walrus_attrs(attrs: &mut Vec<rust_syntax::Attribute>) -> TokenStream {
     let mut ret = proc_macro2::TokenStream::new();
-    let ident = syn::Path::from(syn::Ident::new("walrus", Span::call_site()));
+    let ident = rust_syntax::Path::from(rust_syntax::Ident::new("walrus", Span::call_site()));
     for i in (0..attrs.len()).rev() {
         if attrs[i].path() != &ident {
             continue;
         }
         let attr = attrs.remove(i);
-        let group = if let syn::Meta::List(syn::MetaList { tokens, .. }) = attr.meta {
+        let group = if let rust_syntax::Meta::List(rust_syntax::MetaList { tokens, .. }) = attr.meta {
             tokens
         } else {
             panic!("#[walrus(...)] expected")
@@ -169,13 +169,13 @@ fn walrus_attrs(attrs: &mut Vec<syn::Attribute>) -> TokenStream {
     ret.into()
 }
 
-fn create_types(attrs: &[syn::Attribute], variants: &[WalrusVariant]) -> impl quote::ToTokens {
+fn create_types(attrs: &[rust_syntax::Attribute], variants: &[WalrusVariant]) -> impl quote::ToTokens {
     let types: Vec<_> = variants
         .iter()
         .map(|v| {
-            let name = &v.syn.ident;
-            let attrs = &v.syn.attrs;
-            let fields = v.syn.fields.iter().map(|f| {
+            let name = &v.rust_syntax.ident;
+            let attrs = &v.rust_syntax.attrs;
+            let fields = v.rust_syntax.fields.iter().map(|f| {
                 let name = &f.ident;
                 let attrs = &f.attrs;
                 let ty = &f.ty;
@@ -204,23 +204,23 @@ fn create_types(attrs: &[syn::Attribute], variants: &[WalrusVariant]) -> impl qu
     let methods: Vec<_> = variants
         .iter()
         .map(|v| {
-            let name = &v.syn.ident;
+            let name = &v.rust_syntax.ident;
             let snake_name = name.to_string().to_snake_case();
 
             let is_name = format!("is_{}", snake_name);
-            let is_name = syn::Ident::new(&is_name, Span::call_site());
+            let is_name = rust_syntax::Ident::new(&is_name, Span::call_site());
 
             let ref_name = format!("{}_ref", snake_name);
-            let ref_name = syn::Ident::new(&ref_name, Span::call_site());
+            let ref_name = rust_syntax::Ident::new(&ref_name, Span::call_site());
 
             let mut_name = format!("{}_mut", snake_name);
-            let mut_name = syn::Ident::new(&mut_name, Span::call_site());
+            let mut_name = rust_syntax::Ident::new(&mut_name, Span::call_site());
 
             let unwrap_name = format!("unwrap_{}", snake_name);
-            let unwrap_name = syn::Ident::new(&unwrap_name, Span::call_site());
+            let unwrap_name = rust_syntax::Ident::new(&unwrap_name, Span::call_site());
 
             let unwrap_mut_name = format!("unwrap_{}_mut", snake_name);
-            let unwrap_mut_name = syn::Ident::new(&unwrap_mut_name, Span::call_site());
+            let unwrap_mut_name = rust_syntax::Ident::new(&unwrap_mut_name, Span::call_site());
 
             let ref_name_doc = format!(
                 "
@@ -305,8 +305,8 @@ fn create_types(attrs: &[syn::Attribute], variants: &[WalrusVariant]) -> impl qu
     let variants: Vec<_> = variants
         .iter()
         .map(|v| {
-            let name = &v.syn.ident;
-            let attrs = &v.syn.attrs;
+            let name = &v.rust_syntax.ident;
+            let attrs = &v.rust_syntax.attrs;
             quote! {
                 #( #attrs )*
                 #name(#name)
@@ -331,9 +331,9 @@ fn create_types(attrs: &[syn::Attribute], variants: &[WalrusVariant]) -> impl qu
 fn visit_fields(
     variant: &WalrusVariant,
     allow_skip: bool,
-) -> impl Iterator<Item = (syn::Ident, proc_macro2::TokenStream, bool)> + '_ {
+) -> impl Iterator<Item = (rust_syntax::Ident, proc_macro2::TokenStream, bool)> + '_ {
     return variant
-        .syn
+        .rust_syntax
         .fields
         .iter()
         .zip(&variant.fields)
@@ -347,30 +347,30 @@ fn visit_fields(
             let (ty_name, list) = extract_name_and_if_list(&field.ty);
             let mut method_name = "visit_".to_string();
             method_name.push_str(&ty_name.to_string().to_snake_case());
-            let method_name = syn::Ident::new(&method_name, Span::call_site());
+            let method_name = rust_syntax::Ident::new(&method_name, Span::call_site());
             (method_name, field_name, list)
         });
 
-    fn extract_name_and_if_list(ty: &syn::Type) -> (&syn::Ident, bool) {
+    fn extract_name_and_if_list(ty: &rust_syntax::Type) -> (&rust_syntax::Ident, bool) {
         let path = match ty {
-            syn::Type::Path(p) => &p.path,
+            rust_syntax::Type::Path(p) => &p.path,
             _ => panic!("field types must be paths"),
         };
         let segment = path.segments.last().unwrap();
         let args = match &segment.arguments {
-            syn::PathArguments::None => return (&segment.ident, false),
-            syn::PathArguments::AngleBracketed(a) => &a.args,
+            rust_syntax::PathArguments::None => return (&segment.ident, false),
+            rust_syntax::PathArguments::AngleBracketed(a) => &a.args,
             _ => panic!("invalid path in #[walrus_instr]"),
         };
         let mut ty = match args.first().unwrap() {
-            syn::GenericArgument::Type(ty) => ty,
+            rust_syntax::GenericArgument::Type(ty) => ty,
             _ => panic!("invalid path in #[walrus_instr]"),
         };
-        if let syn::Type::Slice(t) = ty {
+        if let rust_syntax::Type::Slice(t) = ty {
             ty = &t.elem;
         }
         match ty {
-            syn::Type::Path(p) => {
+            rust_syntax::Type::Path(p) => {
                 let segment = p.path.segments.last().unwrap();
                 (&segment.ident, true)
             }
@@ -387,12 +387,12 @@ fn create_visit(variants: &[WalrusVariant]) -> impl quote::ToTokens {
     let mut visit_mut_impl = Vec::new();
 
     for variant in variants {
-        let name = &variant.syn.ident;
+        let name = &variant.rust_syntax.ident;
 
         let mut method_name = "visit_".to_string();
         method_name.push_str(&name.to_string().to_snake_case());
-        let method_name = syn::Ident::new(&method_name, Span::call_site());
-        let method_name_mut = syn::Ident::new(&format!("{}_mut", method_name), Span::call_site());
+        let method_name = rust_syntax::Ident::new(&method_name, Span::call_site());
+        let method_name_mut = rust_syntax::Ident::new(&format!("{}_mut", method_name), Span::call_site());
 
         let recurse_fields = visit_fields(variant, true).map(|(method_name, field_name, list)| {
             if list {
@@ -410,7 +410,7 @@ fn create_visit(variants: &[WalrusVariant]) -> impl quote::ToTokens {
         let recurse_fields_mut =
             visit_fields(variant, true).map(|(method_name, field_name, list)| {
                 let name = format!("{}_mut", method_name);
-                let method_name = syn::Ident::new(&name, Span::call_site());
+                let method_name = rust_syntax::Ident::new(&name, Span::call_site());
                 if list {
                     quote! {
                         for item in self.#field_name.iter_mut() {
@@ -457,7 +457,7 @@ fn create_visit(variants: &[WalrusVariant]) -> impl quote::ToTokens {
 
         let mut method_name = "visit_".to_string();
         method_name.push_str(&name.to_string().to_snake_case());
-        let method_name = syn::Ident::new(&method_name, Span::call_site());
+        let method_name = rust_syntax::Ident::new(&method_name, Span::call_site());
         visit_impl.push(quote! {
             Instr::#name(e) => {
                 visitor.#method_name(e);
@@ -740,25 +740,25 @@ fn create_builder(variants: &[WalrusVariant]) -> impl quote::ToTokens {
             continue;
         }
 
-        let name = &variant.syn.ident;
+        let name = &variant.rust_syntax.ident;
 
         let mut method_name = name.to_string().to_snake_case();
 
         let mut method_name_at = method_name.clone();
         method_name_at.push_str("_at");
-        let method_name_at = syn::Ident::new(&method_name_at, Span::call_site());
+        let method_name_at = rust_syntax::Ident::new(&method_name_at, Span::call_site());
 
         if method_name == "return" || method_name == "const" {
             method_name.push('_');
         } else if method_name == "block" {
             continue;
         }
-        let method_name = syn::Ident::new(&method_name, Span::call_site());
+        let method_name = rust_syntax::Ident::new(&method_name, Span::call_site());
 
         let mut args = Vec::new();
         let mut arg_names = Vec::new();
 
-        for field in variant.syn.fields.iter() {
+        for field in variant.rust_syntax.fields.iter() {
             let name = field.ident.as_ref().expect("can't have unnamed fields");
             arg_names.push(name);
             let ty = &field.ty;

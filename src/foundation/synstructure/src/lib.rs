@@ -163,10 +163,10 @@ extern crate proc_macro;
 
 use std::collections::HashSet;
 
-use syn::parse::{ParseStream, Parser};
-use syn::spanned::Spanned;
-use syn::visit::{self, Visit};
-use syn::{
+use rust_syntax::parse::{ParseStream, Parser};
+use rust_syntax::spanned::Spanned;
+use rust_syntax::visit::{self, Visit};
+use rust_syntax::{
     braced, punctuated, token, Attribute, Data, DeriveInput, Error, Expr, Field, Fields,
     FieldsNamed, FieldsUnnamed, GenericParam, Generics, Ident, PredicateType, Result, Token,
     TraitBound, Type, TypeMacro, TypeParamBound, TypePath, WhereClause, WherePredicate,
@@ -257,7 +257,7 @@ fn merge_generics(into: &mut Generics, from: &Generics) -> Result<()> {
     for p in &from.params {
         for op in &into.params {
             match (op, p) {
-                // NOTE: This is only OK because syn ignores the span for equality purposes.
+                // NOTE: This is only OK because rust_syntax ignores the span for equality purposes.
                 (GenericParam::Type(otp), GenericParam::Type(tp)) if otp.ident == tp.ident => {
                     return Err(Error::new_spanned(
                         p,
@@ -268,7 +268,7 @@ fn merge_generics(into: &mut Generics, from: &Generics) -> Result<()> {
                         ),
                     ));
                 }
-                // NOTE: This is only OK because syn ignores the span for equality purposes.
+                // NOTE: This is only OK because rust_syntax ignores the span for equality purposes.
                 (GenericParam::Lifetime(olp), GenericParam::Lifetime(lp))
                     if olp.lifetime == lp.lifetime =>
                 {
@@ -316,7 +316,7 @@ where
 }
 
 /// Information about a specific binding. This contains both an `Ident`
-/// reference to the given field, and the syn `&'a Field` descriptor for that
+/// reference to the given field, and the rust_syntax `&'a Field` descriptor for that
 /// field.
 ///
 /// This type supports `quote::ToTokens`, so can be directly used within the
@@ -346,7 +346,7 @@ impl ToTokens for BindingInfo<'_> {
 }
 
 impl<'a> BindingInfo<'a> {
-    /// Returns a reference to the underlying `syn` AST node which this
+    /// Returns a reference to the underlying `rust_syntax` AST node which this
     /// `BindingInfo` references
     pub fn ast(&self) -> &'a Field {
         self.field
@@ -357,7 +357,7 @@ impl<'a> BindingInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B{ a: i32, b: i32 },
     ///         C(u32),
@@ -389,7 +389,7 @@ impl<'a> BindingInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     struct A<T, U> {
     ///         a: Option<T>,
     ///         b: U,
@@ -407,9 +407,9 @@ impl<'a> BindingInfo<'a> {
     }
 }
 
-/// This type is similar to `syn`'s `Variant` type, however each of the fields
+/// This type is similar to `rust_syntax`'s `Variant` type, however each of the fields
 /// are references rather than owned. When this is used as the AST for a real
-/// variant, this struct simply borrows the fields of the `syn::Variant`,
+/// variant, this struct simply borrows the fields of the `rust_syntax::Variant`,
 /// however this type may also be used as the sole variant for a struct.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct VariantAst<'a> {
@@ -419,7 +419,7 @@ pub struct VariantAst<'a> {
     pub discriminant: &'a Option<(token::Eq, Expr)>,
 }
 
-/// A wrapper around a `syn::DeriveInput`'s variant which provides utilities
+/// A wrapper around a `rust_syntax::DeriveInput`'s variant which provides utilities
 /// for destructuring `Variant`s with `match` expressions.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct VariantInfo<'a> {
@@ -523,7 +523,7 @@ impl<'a> VariantInfo<'a> {
     }
 
     /// Returns a `VariantAst` object which contains references to the
-    /// underlying `syn` AST node which this `Variant` was created from.
+    /// underlying `rust_syntax` AST node which this `Variant` was created from.
     pub fn ast(&self) -> VariantAst<'a> {
         self.ast
     }
@@ -538,7 +538,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -602,7 +602,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(usize, usize),
     ///         C{ v: usize },
@@ -670,7 +670,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -714,7 +714,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -758,7 +758,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B{ a: i32, b: i32 },
     ///         C{ a: u32 },
@@ -802,7 +802,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B{ a: i32, b: i32 },
     ///         C{ a: u32 },
@@ -872,7 +872,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -918,7 +918,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B{ a: i32, b: i32 },
     ///         C{ a: u32 },
@@ -964,7 +964,7 @@ impl<'a> VariantInfo<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     struct A<T, U> {
     ///         a: Option<T>,
     ///         b: U,
@@ -986,7 +986,7 @@ impl<'a> VariantInfo<'a> {
     }
 }
 
-/// A wrapper around a `syn::DeriveInput` which provides utilities for creating
+/// A wrapper around a `rust_syntax::DeriveInput` which provides utilities for creating
 /// custom derive trait implementations.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Structure<'a> {
@@ -1072,7 +1072,7 @@ impl<'a> Structure<'a> {
         &mut self.variants
     }
 
-    /// Returns a reference to the underlying `syn` AST node which this
+    /// Returns a reference to the underlying `rust_syntax` AST node which this
     /// `Structure` was created from.
     pub fn ast(&self) -> &'a DeriveInput {
         self.ast
@@ -1092,7 +1092,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -1141,7 +1141,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -1188,7 +1188,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -1241,7 +1241,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B{ a: i32, b: i32 },
     ///         C{ a: u32 },
@@ -1287,7 +1287,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B{ a: i32, b: i32 },
     ///         C{ a: u32 },
@@ -1351,7 +1351,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T),
     ///         C(Option<U>),
@@ -1360,7 +1360,7 @@ impl<'a> Structure<'a> {
     /// let mut s = Structure::new(&di);
     ///
     /// // Add an additional where predicate.
-    /// s.add_where_predicate(syn::parse_quote!(T: std::fmt::Display));
+    /// s.add_where_predicate(rust_syntax::parse_quote!(T: std::fmt::Display));
     ///
     /// assert_eq!(
     ///     s.bound_impl(quote!(krate::Trait), quote!{
@@ -1395,7 +1395,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T),
     ///         C(Option<U>),
@@ -1440,7 +1440,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -1484,7 +1484,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -1553,7 +1553,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B(i32, i32),
     ///         C(u32),
@@ -1599,7 +1599,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A {
     ///         B{ a: i32, b: i32 },
     ///         C{ a: u32 },
@@ -1645,7 +1645,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T, i32),
     ///         C(Option<U>),
@@ -1676,14 +1676,14 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T),
     ///         C(Option<U>),
     ///     }
     /// };
     /// let mut s = Structure::new(&di);
-    /// let generic: syn::GenericParam = syn::parse_quote!(X: krate::AnotherTrait);
+    /// let generic: rust_syntax::GenericParam = rust_syntax::parse_quote!(X: krate::AnotherTrait);
     ///
     /// assert_eq!(
     ///     s.add_impl_generic(generic)
@@ -1825,7 +1825,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T),
     ///         C(Option<U>),
@@ -1893,7 +1893,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T),
     ///         C(Option<U>),
@@ -1954,7 +1954,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T),
     ///         C(Option<U>),
@@ -2012,7 +2012,7 @@ impl<'a> Structure<'a> {
     /// # Example
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T),
     ///         C(Option<U>),
@@ -2060,7 +2060,7 @@ impl<'a> Structure<'a> {
         let (impl_generics, _, _) = gen_clone.split_for_impl();
         let (_, ty_generics, where_clause) = self.ast.generics.split_for_impl();
 
-        let bound = syn::parse2::<TraitBound>(path)
+        let bound = rust_syntax::parse2::<TraitBound>(path)
             .expect("`path` argument must be a valid rust trait bound");
 
         let mut where_clause = where_clause.cloned();
@@ -2114,7 +2114,7 @@ impl<'a> Structure<'a> {
     ///     // into scope.
     ///     //
     ///     // WARNING: Try not to use common names here, because the stable
-    ///     // version of syn does not support hygiene and you could accidentally
+    ///     // version of rust_syntax does not support hygiene and you could accidentally
     ///     // shadow types from the caller crate.
     ///     use krate::Trait as MyTrait;
     ///
@@ -2196,7 +2196,7 @@ impl<'a> Structure<'a> {
     ///
     /// ```
     /// # use synstructure::*;
-    /// let di: syn::DeriveInput = syn::parse_quote! {
+    /// let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
     ///     enum A<T, U> {
     ///         B(T),
     ///         C(Option<U>),

@@ -1,7 +1,7 @@
 //! Parsing implementation for `#[derive_where(crate = ...)]`.
 
 use proc_macro2::Span;
-use syn::{spanned::Spanned, Expr, ExprLit, ExprPath, Lit, Meta, Path, Result};
+use rust_syntax::{spanned::Spanned, Expr, ExprLit, ExprPath, Lit, Meta, Path, Result};
 
 use crate::{util, Error, DERIVE_WHERE};
 

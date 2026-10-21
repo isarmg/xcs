@@ -1,17 +1,17 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{spanned::Spanned, Data, DeriveInput, Fields};
+use rust_syntax::{spanned::Spanned, Data, DeriveInput, Fields};
 
 use crate::helpers::{non_enum_error, snakify, HasStrumVariantProperties};
 
-pub fn enum_table_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn enum_table_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let gen = &ast.generics;
     let vis = &ast.vis;
     let mut doc_comment = format!("A map over the variants of `{}`", name);
 
     if gen.lifetimes().count() > 0 {
-        return Err(syn::Error::new(
+        return Err(rust_syntax::Error::new(
             Span::call_site(),
             "`EnumTable` doesn't support enums with lifetimes.",
         ));
@@ -59,7 +59,7 @@ pub fn enum_table_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
 
         // Error on variants with data
         if !matches!(variant.fields, Fields::Unit) {
-            return Err(syn::Error::new(
+            return Err(rust_syntax::Error::new(
                 variant.fields.span(),
                 "`EnumTable` doesn't support enums with non-unit variants",
             ));
@@ -79,7 +79,7 @@ pub fn enum_table_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
 
     // Error on empty enums
     if pascal_idents.is_empty() {
-        return Err(syn::Error::new(
+        return Err(rust_syntax::Error::new(
             variants.span(),
             "`EnumTable` requires at least one non-disabled variant",
         ));

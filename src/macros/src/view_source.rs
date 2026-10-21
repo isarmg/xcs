@@ -17,13 +17,13 @@ pub(crate) fn span_to_stable_id(path: impl AsRef<Path>, line: usize) -> String {
 }
 
 /// Convert the literal forms accepted by component documentation.
-pub(crate) fn value_to_string(value: &syn::Expr) -> Option<String> {
+pub(crate) fn value_to_string(value: &rust_syntax::Expr) -> Option<String> {
     match value {
-        syn::Expr::Lit(lit) => match &lit.lit {
-            syn::Lit::Str(s) => Some(s.value()),
-            syn::Lit::Char(c) => Some(c.value().to_string()),
-            syn::Lit::Int(i) => Some(i.base10_digits().to_string()),
-            syn::Lit::Float(f) => Some(f.base10_digits().to_string()),
+        rust_syntax::Expr::Lit(lit) => match &lit.lit {
+            rust_syntax::Lit::Str(s) => Some(s.value()),
+            rust_syntax::Lit::Char(c) => Some(c.value().to_string()),
+            rust_syntax::Lit::Int(i) => Some(i.base10_digits().to_string()),
+            rust_syntax::Lit::Float(f) => Some(f.base10_digits().to_string()),
             _ => None,
         },
         _ => None,

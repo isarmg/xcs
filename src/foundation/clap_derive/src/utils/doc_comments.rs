@@ -6,7 +6,7 @@
 #[cfg(feature = "unstable-markdown")]
 use markdown::parse_markdown;
 
-pub(crate) fn extract_doc_comment(attrs: &[syn::Attribute]) -> Vec<String> {
+pub(crate) fn extract_doc_comment(attrs: &[rust_syntax::Attribute]) -> Vec<String> {
     // multiline comments (`/** ... */`) may have LFs (`\n`) in them,
     // we need to split so we could handle the lines correctly
     //
@@ -18,10 +18,10 @@ pub(crate) fn extract_doc_comment(attrs: &[syn::Attribute]) -> Vec<String> {
             // non #[doc = "..."] attributes are not our concern
             // we leave them for rustc to handle
             match &attr.meta {
-                syn::Meta::NameValue(syn::MetaNameValue {
+                rust_syntax::Meta::NameValue(rust_syntax::MetaNameValue {
                     value:
-                        syn::Expr::Lit(syn::ExprLit {
-                            lit: syn::Lit::Str(s),
+                        rust_syntax::Expr::Lit(rust_syntax::ExprLit {
+                            lit: rust_syntax::Lit::Str(s),
                             ..
                         }),
                     ..

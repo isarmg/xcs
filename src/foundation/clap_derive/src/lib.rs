@@ -21,8 +21,8 @@
 #![warn(clippy::print_stdout)]
 
 use proc_macro::TokenStream;
-use syn::{Data, DataStruct, Fields};
-use syn::{DeriveInput, parse_macro_input};
+use rust_syntax::{Data, DataStruct, Fields};
+use rust_syntax::{DeriveInput, parse_macro_input};
 
 #[macro_use]
 mod macros;
@@ -107,7 +107,7 @@ pub fn args(input: TokenStream) -> TokenStream {
 }
 
 fn to_compile_error(
-    error: syn::Error,
+    error: rust_syntax::Error,
     dummy: proc_macro2::TokenStream,
 ) -> proc_macro2::TokenStream {
     let compile_errors = error.to_compile_error();

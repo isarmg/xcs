@@ -7,7 +7,7 @@ use crate::unraw::MemberUnraw;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use std::collections::BTreeSet as Set;
-use syn::{DeriveInput, GenericArgument, PathArguments, Result, Token, Type};
+use rust_syntax::{DeriveInput, GenericArgument, PathArguments, Result, Token, Type};
 
 pub fn derive(input: &DeriveInput) -> TokenStream {
     match try_expand(input) {

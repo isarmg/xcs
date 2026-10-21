@@ -4,7 +4,7 @@ use quote::ToTokens;
 use std::cmp::Ordering;
 use std::collections::BTreeSet;
 use std::fmt::{self, Display};
-use syn::LitStr;
+use rust_syntax::LitStr;
 
 pub struct MultiName {
     pub(crate) serialize: Name,

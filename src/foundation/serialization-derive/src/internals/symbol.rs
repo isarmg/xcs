@@ -1,5 +1,5 @@
 use std::fmt::{self, Display};
-use syn::{Ident, Path};
+use rust_syntax::{Ident, Path};
 
 #[derive(Copy, Clone)]
 pub struct Symbol(&'static str);

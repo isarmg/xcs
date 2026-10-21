@@ -2,7 +2,7 @@
 mod tests {
 
     use quote::{quote, ToTokens};
-    use syn::parse_quote;
+    use rust_syntax::parse_quote;
 
     use super::*;
     use crate::Infallible;
@@ -19,7 +19,7 @@ mod tests {
             }
         }
         // empty impl
-        impl syn::visit_mut::VisitMut for TestVisitor {}
+        impl rust_syntax::visit_mut::VisitMut for TestVisitor {}
 
         let stream = quote! {
             <div>
@@ -57,7 +57,7 @@ mod tests {
             }
         }
         // empty impl
-        impl syn::visit_mut::VisitMut for TestVisitor {}
+        impl rust_syntax::visit_mut::VisitMut for TestVisitor {}
 
         let stream = quote! {
             <div>
@@ -83,12 +83,12 @@ mod tests {
     fn collect_rust_blocks() {
         #[derive(Default)]
         struct TestVisitor {
-            collected_blocks: Vec<syn::Block>,
+            collected_blocks: Vec<rust_syntax::Block>,
         }
         // empty impl
         impl<C: CustomNode> Visitor<C> for TestVisitor {}
-        impl syn::visit_mut::VisitMut for TestVisitor {
-            fn visit_block_mut(&mut self, i: &mut syn::Block) {
+        impl rust_syntax::visit_mut::VisitMut for TestVisitor {
+            fn visit_block_mut(&mut self, i: &mut rust_syntax::Block) {
                 self.collected_blocks.push(i.clone());
             }
         }
@@ -134,7 +134,7 @@ mod tests {
             }
         }
         // empty impl
-        impl syn::visit_mut::VisitMut for TestVisitor {}
+        impl rust_syntax::visit_mut::VisitMut for TestVisitor {}
 
         let stream = quote! {
             <!Doctype Other raw text >
@@ -169,11 +169,11 @@ mod tests {
     fn collect_string_literals() {
         #[derive(Default)]
         struct TestVisitor {
-            collected_literals: Vec<syn::LitStr>,
+            collected_literals: Vec<rust_syntax::LitStr>,
         }
         impl<C: CustomNode> Visitor<C> for TestVisitor {}
-        impl syn::visit_mut::VisitMut for TestVisitor {
-            fn visit_lit_str_mut(&mut self, i: &mut syn::LitStr) {
+        impl rust_syntax::visit_mut::VisitMut for TestVisitor {
+            fn visit_lit_str_mut(&mut self, i: &mut rust_syntax::LitStr) {
                 self.collected_literals.push(i.clone());
             }
         }
@@ -192,7 +192,7 @@ mod tests {
         let literals = visitor
             .collected_literals
             .iter()
-            .map(syn::LitStr::value)
+            .map(rust_syntax::LitStr::value)
             .collect::<Vec<_>>();
 
         assert_eq!(literals, vec!["Some raw text", "And text after span"]);
@@ -207,7 +207,7 @@ mod tests {
                 true
             }
         }
-        impl syn::visit_mut::VisitMut for TestVisitor {}
+        impl rust_syntax::visit_mut::VisitMut for TestVisitor {}
 
         let mut visitor = Walker::new(TestVisitor);
 

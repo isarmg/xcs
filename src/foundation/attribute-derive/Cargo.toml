@@ -24,7 +24,7 @@ keywords = [
     "macro",
     "attribute",
     "arguments",
-    "syn",
+    "rust-syntax",
 ]
 categories = [
     "rust-patterns",
@@ -35,7 +35,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/ModProg/attribute-derive"
 
 [features]
-syn-full = ["syn/full"]
+syntax-full = ["rust-syntax/full"]
 
 [lib]
 name = "attribute_derive"
@@ -57,7 +57,7 @@ path = "../proc-macro2"
 version = "1"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3"
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 

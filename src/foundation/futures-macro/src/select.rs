@@ -3,11 +3,11 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::{format_ident, quote};
-use syn::parse::{Parse, ParseStream};
-use syn::{parse_quote, Expr, Ident, Pat, Token};
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::{parse_quote, Expr, Ident, Pat, Token};
 
 mod kw {
-    syn::custom_keyword!(complete);
+    rust_syntax::custom_keyword!(complete);
 }
 
 struct Select {
@@ -26,7 +26,7 @@ enum CaseKind {
 }
 
 impl Parse for Select {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut select = Self {
             complete: None,
             default: None,
@@ -96,7 +96,7 @@ fn declare_result_enum(
     variants: usize,
     complete: bool,
     span: Span,
-) -> (Vec<Ident>, syn::ItemEnum) {
+) -> (Vec<Ident>, rust_syntax::ItemEnum) {
     // "_0", "_1", "_2"
     let variant_names: Vec<Ident> =
         (0..variants).map(|num| format_ident!("_{}", num, span = span)).collect();
@@ -129,7 +129,7 @@ pub(crate) fn select_biased(input: TokenStream) -> TokenStream {
 }
 
 fn select_inner(input: TokenStream, random: bool) -> TokenStream {
-    let parsed = syn::parse_macro_input!(input as Select);
+    let parsed = rust_syntax::parse_macro_input!(input as Select);
 
     // should be def_site, but that's unstable
     let span = Span::call_site();
@@ -151,7 +151,7 @@ fn select_inner(input: TokenStream, random: bool) -> TokenStream {
         .zip(variant_names.iter())
         .map(|(expr, variant_name)| {
             match expr {
-                syn::Expr::Path(path) => {
+                rust_syntax::Expr::Path(path) => {
                     // Don't bind futures that are already a path.
                     // This prevents creating redundant stack space
                     // for them.

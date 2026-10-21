@@ -823,7 +823,7 @@
 //!   adapter is used to convert `log` records into `tracing` events, this will
 //!   cause duplicate events to occur.
 //! * `attributes`: Includes support for the `#[instrument]` attribute.
-//!   This is on by default, but does bring in the `syn` crate as a dependency,
+//!   This is on by default, but does bring in the `rust_syntax` crate as a dependency,
 //!   which may add to the compile time of crates that do not already use it.
 //! * `std`: Depend on the Rust standard library (enabled by default).
 //!

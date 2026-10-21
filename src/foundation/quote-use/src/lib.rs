@@ -62,14 +62,14 @@
 //!
 //! ## Other quote macros
 //!
-//! There are also variants for other quote macros from [syn] and [mod@quote]:
+//! There are also variants for other quote macros from [rust_syntax] and [mod@quote]:
 //!
 //! - [`quote_use!`] and [`quote_spanned_use!`] as replacement for [`quote!`]
 //!   and
 //! [`quote_spanned!`](quote::quote_spanned!) respectively
 //! - [`parse_quote_use!`] and [`parse_quote_spanned_use!`] for
-//!   [`parse_quote!`](syn::parse_quote!)
-//! and [`parse_quote_spanned!`](syn::parse_quote_spanned!)
+//!   [`parse_quote!`](rust_syntax::parse_quote!)
+//! and [`parse_quote_spanned!`](rust_syntax::parse_quote_spanned!)
 #[cfg(doc)]
 use quote::quote;
 // Reexport
@@ -79,8 +79,8 @@ pub use quote::{format_ident, IdentFragment, ToTokens, TokenStreamExt};
 pub mod __private {
     pub use quote;
     pub use quote_use_macros::quote_use_impl;
-    #[cfg(feature = "syn")]
-    pub use syn;
+    #[cfg(feature = "rust-syntax")]
+    pub use rust_syntax;
 }
 
 #[macro_export]
@@ -97,19 +97,19 @@ macro_rules! quote_spanned_use {
     };
 }
 
-#[cfg(feature = "syn")]
+#[cfg(feature = "rust-syntax")]
 #[macro_export]
 macro_rules! parse_quote_use {
     ($($tokens:tt)*) => {
-        $crate::__private::quote_use_impl!{($crate::__private::syn::parse_quote) () ($($tokens)*)}
+        $crate::__private::quote_use_impl!{($crate::__private::rust_syntax::parse_quote) () ($($tokens)*)}
     };
 }
 
-#[cfg(feature = "syn")]
+#[cfg(feature = "rust-syntax")]
 #[macro_export]
 macro_rules! parse_quote_spanned_use {
     ($span:expr => $($tokens:tt)*) => {
-        $crate::__private::quote_use_impl!{($crate::__private::syn::parse_quote_spanned) ($span =>) ($($tokens)*)}
+        $crate::__private::quote_use_impl!{($crate::__private::rust_syntax::parse_quote_spanned) ($span =>) ($($tokens)*)}
     };
 }
 
@@ -127,18 +127,18 @@ macro_rules! quote_spanned_use_no_prelude {
     };
 }
 
-#[cfg(feature = "syn")]
+#[cfg(feature = "rust-syntax")]
 #[macro_export]
 macro_rules! parse_quote_use_no_prelude {
     ($($tokens:tt)*) => {
-        $crate::__private::quote_use_impl!{($crate::__private::syn::parse_quote) () (#use no_prelude; $($tokens)*)}
+        $crate::__private::quote_use_impl!{($crate::__private::rust_syntax::parse_quote) () (#use no_prelude; $($tokens)*)}
     };
 }
 
-#[cfg(feature = "syn")]
+#[cfg(feature = "rust-syntax")]
 #[macro_export]
 macro_rules! parse_quote_spanned_use_no_prelude {
     ($span:expr => $($tokens:tt)*) => {
-        $crate::__private::quote_use_impl!{($crate::__private::syn::parse_quote_spanned) ($span =>) (#use no_prelude; $($tokens)*)}
+        $crate::__private::quote_use_impl!{($crate::__private::rust_syntax::parse_quote_spanned) ($span =>) (#use no_prelude; $($tokens)*)}
     };
 }

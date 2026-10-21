@@ -629,7 +629,7 @@ pub fn test_rt(args: TokenStream, item: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn main_fail(_args: TokenStream, _item: TokenStream) -> TokenStream {
-    syn::Error::new(
+    rust_syntax::Error::new(
         proc_macro2::Span::call_site(),
         "The #[tokio::main] macro requires rt or rt-multi-thread.",
     )
@@ -643,7 +643,7 @@ pub fn main_fail(_args: TokenStream, _item: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn test_fail(_args: TokenStream, _item: TokenStream) -> TokenStream {
-    syn::Error::new(
+    rust_syntax::Error::new(
         proc_macro2::Span::call_site(),
         "The #[tokio::test] macro requires rt or rt-multi-thread.",
     )

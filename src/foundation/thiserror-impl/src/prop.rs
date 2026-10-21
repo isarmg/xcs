@@ -1,7 +1,7 @@
 use crate::ast::{Enum, Field, Struct, Variant};
 use crate::unraw::MemberUnraw;
 use proc_macro2::Span;
-use syn::Type;
+use rust_syntax::Type;
 
 impl Struct<'_> {
     pub(crate) fn from_field(&self) -> Option<&Field> {

@@ -145,7 +145,7 @@ pub(crate) const SYNC_POINTS: usize = 4;
 const ADDRESSES_IN_BLOCK: usize = 128;
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-cpufeatures::new!(avx2_cpuid, "avx2");
+cpu_feature_detect::new!(avx2_cpuid, "avx2");
 
 /// Argon2 context.
 ///

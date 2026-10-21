@@ -16,7 +16,7 @@ use crate::internals::attr;
 use crate::private;
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::spanned::Spanned;
+use rust_syntax::spanned::Spanned;
 
 /// Generates `Deserialize::deserialize` body for an `enum Enum {...}` with `#[serialization(untagged)]` attribute
 pub(super) fn deserialize(
@@ -111,7 +111,7 @@ pub(super) fn deserialize_variant(
 // Also used by internally tagged enums
 // Implicitly (via `generate_variant`) used by adjacently tagged enums
 pub(super) fn deserialize_newtype_variant(
-    variant_ident: &syn::Ident,
+    variant_ident: &rust_syntax::Ident,
     params: &Parameters,
     field: &Field,
 ) -> Fragment {

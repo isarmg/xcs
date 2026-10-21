@@ -9,13 +9,13 @@ use std::ops::Range;
 use manyhow::{span_range, SpanRanged};
 use proc_macro2::{Ident, Span};
 use quote::ToTokens;
-use syn::ext::IdentExt;
-use syn::parse::discouraged::Speculative;
+use rust_syntax::ext::IdentExt;
+use rust_syntax::parse::discouraged::Speculative;
 #[cfg(doc)]
-use syn::parse::ParseBuffer;
-use syn::parse::{Parse, ParseStream};
-use syn::token::Paren;
-use syn::{parenthesized, Result, Token};
+use rust_syntax::parse::ParseBuffer;
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::token::Paren;
+use rust_syntax::{parenthesized, Result, Token};
 
 use crate::from_partial::FromPartial;
 use crate::FromAttr;

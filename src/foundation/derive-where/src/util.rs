@@ -1,7 +1,7 @@
 //! Utility functions.
 
 use proc_macro2::Span;
-use syn::{
+use rust_syntax::{
 	punctuated::Punctuated, spanned::Spanned, Ident, Meta, MetaList, Path, PathArguments,
 	PathSegment, Result, Token,
 };

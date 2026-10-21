@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, TokenStreamExt};
-use syn::parse::{Parse, ParseStream, Result};
-use syn::{Attribute, Signature, Token, Visibility};
+use rust_syntax::parse::{Parse, ParseStream, Result};
+use rust_syntax::{Attribute, Signature, Token, Visibility};
 
 pub struct VerbatimFn {
     pub attrs: Vec<Attribute>,

@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream};
 use std::mem;
-use syn::visit_mut::{self, VisitMut};
-use syn::{
+use rust_syntax::visit_mut::{self, VisitMut};
+use rust_syntax::{
     parse_quote_spanned, token, Expr, GenericArgument, Lifetime, ReceiverKind, ReturnType, Token,
     Type, TypeFnPtr, TypeImplTrait, TypeParen, TypePtr, TypeReference,
 };

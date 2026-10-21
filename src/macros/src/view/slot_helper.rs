@@ -9,8 +9,8 @@ use crate::{
 use proc_macro2::{Ident, TokenStream, TokenTree};
 use quote::{quote, quote_spanned};
 use rstml::node::{CustomNode, KeyedAttribute, NodeAttribute, NodeElement};
+use rust_syntax::spanned::Spanned;
 use std::collections::HashMap;
-use syn::spanned::Spanned;
 
 pub(crate) fn slot_to_tokens(
     node: &mut NodeElement<impl CustomNode>,
@@ -19,7 +19,7 @@ pub(crate) fn slot_to_tokens(
     global_class: Option<&TokenTree>,
     disable_inert_html: bool,
     errors: &mut Errors,
-) -> syn::Result<()> {
+) -> rust_syntax::Result<()> {
     let name = slot.key.to_string();
     let name = name.trim();
     let name = convert_to_snake_case(if name.starts_with("slot:") {
@@ -31,7 +31,7 @@ pub(crate) fn slot_to_tokens(
     let component_path = full_path_from_tag_name(node.name(), errors);
 
     let Some(parent_slots) = parent_slots else {
-        errors.push(syn::Error::new_spanned(
+        errors.push(rust_syntax::Error::new_spanned(
             node.name(),
             "slots cannot be used inside HTML elements",
         ));
@@ -59,7 +59,7 @@ pub(crate) fn slot_to_tokens(
         .iter()
         .find(|attribute| attribute.key.to_string().starts_with("on:"))
     {
-        return Err(syn::Error::new_spanned(
+        return Err(rust_syntax::Error::new_spanned(
             &event.key,
             "event handlers cannot be attached to slots; attach the handler to an element inside the slot instead",
         ));

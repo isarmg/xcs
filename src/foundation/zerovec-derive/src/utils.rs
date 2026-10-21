@@ -6,10 +6,10 @@ use quote::{quote, ToTokens};
 
 use proc_macro2::Span;
 use proc_macro2::TokenStream as TokenStream2;
-use syn::parse::{Parse, ParseStream};
-use syn::punctuated::Punctuated;
-use syn::spanned::Spanned;
-use syn::{Attribute, Error, Field, Fields, Ident, Index, Result, Token};
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{Attribute, Error, Field, Fields, Ident, Index, Result, Token};
 
 #[derive(Default)]
 pub struct ReprInfo {

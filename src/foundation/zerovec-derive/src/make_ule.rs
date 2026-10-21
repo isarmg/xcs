@@ -7,8 +7,8 @@ use quote::quote;
 
 use crate::utils::{self, FieldInfo, ZeroVecAttrs};
 
-use syn::spanned::Spanned;
-use syn::{parse_quote, Data, DataEnum, DataStruct, DeriveInput, Error, Expr, Fields, Ident, Lit};
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{parse_quote, Data, DataEnum, DataStruct, DeriveInput, Error, Expr, Fields, Ident, Lit};
 
 pub fn make_ule_impl(ule_name: Ident, mut input: DeriveInput) -> TokenStream2 {
     if input.generics.type_params().next().is_some()
@@ -214,7 +214,7 @@ fn make_ule_enum_impl(
 }
 
 fn get_expr_int(e: &Expr) -> Option<u64> {
-    if let Ok(Lit::Int(ref i)) = syn::parse2(quote!(#e)) {
+    if let Ok(Lit::Int(ref i)) = rust_syntax::parse2(quote!(#e)) {
         return i.base10_parse().ok();
     }
 
@@ -260,7 +260,7 @@ fn make_ule_struct_impl(
 
     for (i, field) in struc.fields.iter().enumerate() {
         let ty = &field.ty;
-        let i = syn::Index::from(i);
+        let i = rust_syntax::Index::from(i);
         if let Some(ref ident) = field.ident {
             as_ule_conversions
                 .push(quote!(#ident: <#ty as zerovec::ule::AsULE>::to_unaligned(self.#ident)));

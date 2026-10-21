@@ -1,12 +1,12 @@
 use std::default::Default;
-use syn::{Ident, Lit, LitStr, Variant};
+use rust_syntax::{Ident, Lit, LitStr, Variant};
 
 use super::case_style::{CaseStyle, CaseStyleHelpers};
 use super::metadata::{kw, VariantExt, VariantMeta};
 use super::occurrence_error;
 
 pub trait HasStrumVariantProperties {
-    fn get_variant_properties(&self) -> syn::Result<StrumVariantProperties>;
+    fn get_variant_properties(&self) -> rust_syntax::Result<StrumVariantProperties>;
 }
 
 #[derive(Clone, Default)]
@@ -71,7 +71,7 @@ impl StrumVariantProperties {
 }
 
 impl HasStrumVariantProperties for Variant {
-    fn get_variant_properties(&self) -> syn::Result<StrumVariantProperties> {
+    fn get_variant_properties(&self) -> rust_syntax::Result<StrumVariantProperties> {
         let mut output = StrumVariantProperties {
             ident: Some(self.ident.clone()),
             ..Default::default()

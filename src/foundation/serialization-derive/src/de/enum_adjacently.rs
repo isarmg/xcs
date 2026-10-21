@@ -13,7 +13,7 @@ use crate::internals::ast::{Style, Variant};
 use crate::internals::attr;
 use crate::private;
 use quote::{quote, quote_spanned};
-use syn::spanned::Spanned;
+use rust_syntax::spanned::Spanned;
 
 /// Generates `Deserialize::deserialize` body for an `enum Enum {...}` with `#[serialization(tag, content)]` attributes
 pub(super) fn deserialize(

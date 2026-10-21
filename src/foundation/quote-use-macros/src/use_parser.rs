@@ -1,9 +1,9 @@
 use proc_macro2::{Ident, TokenStream, TokenTree};
 use quote::{quote, ToTokens};
-use syn::ext::IdentExt;
-use syn::parse::{Parse, ParseStream};
-use syn::token::Brace;
-use syn::{braced, Error, Result, Token};
+use rust_syntax::ext::IdentExt;
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::token::Brace;
+use rust_syntax::{braced, Error, Result, Token};
 
 #[derive(Debug, Clone)]
 pub enum IdentOrPounded {

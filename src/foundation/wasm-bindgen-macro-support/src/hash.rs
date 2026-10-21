@@ -1,4 +1,4 @@
-//! Common utility function for manipulating syn types and
+//! Common utility function for manipulating rust_syntax types and
 //! handling parsed values
 
 use std::collections::hash_map::DefaultHasher;

@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn wrap_in_const(serialization_path: Option<&syn::Path>, code: TokenStream) -> TokenStream {
+pub fn wrap_in_const(serialization_path: Option<&rust_syntax::Path>, code: TokenStream) -> TokenStream {
     let use_serialization = match serialization_path {
         Some(path) => quote! {
             use #path as _serialization;

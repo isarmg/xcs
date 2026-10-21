@@ -11,29 +11,29 @@ pub mod variant_props;
 
 use proc_macro2::Span;
 use quote::ToTokens;
-use syn::spanned::Spanned;
+use rust_syntax::spanned::Spanned;
 
-pub fn missing_parse_err_attr_error() -> syn::Error {
-    syn::Error::new(
+pub fn missing_parse_err_attr_error() -> rust_syntax::Error {
+    rust_syntax::Error::new(
         Span::call_site(),
         "`parse_err_ty` and `parse_err_fn` attributes are both required.",
     )
 }
 
-pub fn non_enum_error() -> syn::Error {
-    syn::Error::new(Span::call_site(), "This macro only supports enums.")
+pub fn non_enum_error() -> rust_syntax::Error {
+    rust_syntax::Error::new(Span::call_site(), "This macro only supports enums.")
 }
 
-pub fn non_unit_variant_error() -> syn::Error {
-    syn::Error::new(
+pub fn non_unit_variant_error() -> rust_syntax::Error {
+    rust_syntax::Error::new(
         Span::call_site(),
         "This macro only supports enums of strictly unit variants. Consider \
         using it in conjunction with [`EnumDiscriminants`]",
     )
 }
 
-pub fn non_single_field_variant_error(attr: &str) -> syn::Error {
-    syn::Error::new(
+pub fn non_single_field_variant_error(attr: &str) -> rust_syntax::Error {
+    rust_syntax::Error::new(
         Span::call_site(),
         format_args!(
             "The [`{}`] attribute only supports enum variants with a single field",
@@ -42,18 +42,18 @@ pub fn non_single_field_variant_error(attr: &str) -> syn::Error {
     )
 }
 
-pub fn strum_discriminants_passthrough_error(span: &impl Spanned) -> syn::Error {
-    syn::Error::new(
+pub fn strum_discriminants_passthrough_error(span: &impl Spanned) -> rust_syntax::Error {
+    rust_syntax::Error::new(
         span.span(),
         "expected a pass-through attribute, e.g. #[strum_discriminants(serde(rename = \"var0\"))]",
     )
 }
 
-pub fn occurrence_error<T: ToTokens>(fst: T, snd: T, attr: &str) -> syn::Error {
-    let mut e = syn::Error::new_spanned(
+pub fn occurrence_error<T: ToTokens>(fst: T, snd: T, attr: &str) -> rust_syntax::Error {
+    let mut e = rust_syntax::Error::new_spanned(
         snd,
         format!("Found multiple occurrences of strum({})", attr),
     );
-    e.combine(syn::Error::new_spanned(fst, "first one here"));
+    e.combine(rust_syntax::Error::new_spanned(fst, "first one here"));
     e
 }

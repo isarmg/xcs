@@ -5,7 +5,7 @@ mod tests {
     // Regression test for #48
     #[test]
     fn test_each_enum() {
-        let di: syn::DeriveInput = syn::parse_quote! {
+        let di: rust_syntax::DeriveInput = rust_syntax::parse_quote! {
          enum A {
              Foo(usize, bool),
              Bar(bool, usize),

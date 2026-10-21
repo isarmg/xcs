@@ -2,7 +2,7 @@
 mod tests {
     use proc_macro2::Span;
     use std::collections::HashMap;
-    use syn::{parse_quote, Ident};
+    use rust_syntax::{parse_quote, Ident};
 
     use super::check_type_for_parameters;
     fn make_typarams(params: &[&str]) -> HashMap<Ident, Option<Ident>> {

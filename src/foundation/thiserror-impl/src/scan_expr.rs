@@ -1,7 +1,7 @@
 use self::{Action::*, Input::*};
 use proc_macro2::{Delimiter, Ident, Spacing, TokenTree};
-use syn::parse::{ParseStream, Result};
-use syn::{AngleBracketedGenericArguments, BinOp, Expr, ExprPath, Lifetime, Lit, Token, Type};
+use rust_syntax::parse::{ParseStream, Result};
+use rust_syntax::{AngleBracketedGenericArguments, BinOp, Expr, ExprPath, Lifetime, Lit, Token, Type};
 
 enum Input {
     Keyword(&'static str),

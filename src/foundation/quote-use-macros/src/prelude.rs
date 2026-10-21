@@ -1,6 +1,6 @@
-use syn::parse::Parser;
-use syn::punctuated::Punctuated;
-use syn::Token;
+use rust_syntax::parse::Parser;
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::Token;
 
 use crate::use_parser::UseItem;
 use crate::Use;

@@ -24,7 +24,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/wasm-bindgen/wasm-bindgen/tree/main/crates/macro-support"
 
 [features]
-extra-traits = ["syn/extra-traits"]
+extra-traits = ["rust-syntax/extra-traits"]
 strict-macro = []
 
 [lib]
@@ -43,7 +43,7 @@ path = "../proc-macro2"
 version = "1.0"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3.0"
 features = [
     "visit",
@@ -51,7 +51,7 @@ features = [
     "full",
     "extra-traits",
 ]
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 
 [dependencies.wasm-bindgen-shared]
 version = "=0.2.129"

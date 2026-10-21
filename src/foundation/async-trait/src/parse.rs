@@ -1,6 +1,6 @@
 use proc_macro2::Span;
-use syn::parse::{Error, Parse, ParseStream, Result};
-use syn::{Attribute, ItemImpl, ItemTrait, Token};
+use rust_syntax::parse::{Error, Parse, ParseStream, Result};
+use rust_syntax::{Attribute, ItemImpl, ItemTrait, Token};
 
 pub enum Item {
     Trait(ItemTrait),

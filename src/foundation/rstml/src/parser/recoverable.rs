@@ -13,7 +13,7 @@
 //!   # use quote::quote;
 //!   # use rstml::{Parser, ParserConfig};
 //!   # Parser::new(ParserConfig::default()).parse_recoverable(quote! {
-//!   <div hello={world.} /> // dot after world is invalid syn::Expr
+//!   <div hello={world.} /> // dot after world is invalid rust_syntax::Expr
 //!   <>
 //!       <div>"1"</x> // incorrect closed tag
 //!       <div>"2"</div>
@@ -41,7 +41,7 @@
 use std::{collections::HashSet, fmt::Debug, rc::Rc};
 
 use proc_macro2_diagnostics::{Diagnostic, Level};
-use syn::parse::{Parse, ParseStream};
+use rust_syntax::parse::{Parse, ParseStream};
 
 use crate::{
     config::{ElementWildcardFn, TransformBlockFn},
@@ -56,7 +56,7 @@ use crate::{
 #[derive(Default, Clone)]
 pub struct RecoveryConfig {
     ///
-    /// Try to parse invalid `syn::Block` as something.
+    /// Try to parse invalid `rust_syntax::Block` as something.
     /// Usefull to make expressions more IDE-friendly.
     pub(crate) recover_block: bool,
     /// elements that has no child and is always self closed like <img> and <br>
@@ -98,7 +98,7 @@ impl Debug for RecoveryConfig {
 }
 
 /// Context that is provided in [`ParseRecoverable`] interface.
-/// Used to save [`Diagnostic`] messages or [`syn::Result`].
+/// Used to save [`Diagnostic`] messages or [`rust_syntax::Result`].
 ///
 /// Also can be extended with user needs through [`RecoveryConfig`].
 #[derive(Debug, Default, Clone)]
@@ -137,7 +137,7 @@ impl RecoverableContext {
         ParsingResult::from_parts(val, self.diagnostics)
     }
 
-    /// Parse token using [`syn::parse::Parse`]
+    /// Parse token using [`rust_syntax::parse::Parse`]
     pub fn parse_simple<T: Parse>(&mut self, input: ParseStream) -> Option<T> {
         match input.parse() {
             Ok(v) => Some(v),
@@ -150,7 +150,7 @@ impl RecoverableContext {
     /// Parse token using closure
     pub fn parse_mixed_fn<F, T>(&mut self, input: ParseStream, mut parser: F) -> Option<T>
     where
-        F: FnMut(&mut Self, ParseStream) -> Result<T, syn::Error>,
+        F: FnMut(&mut Self, ParseStream) -> Result<T, rust_syntax::Error>,
     {
         match parser(self, input) {
             Ok(v) => Some(v),
@@ -166,10 +166,10 @@ impl RecoverableContext {
         T::parse_recoverable(self, input)
     }
 
-    /// Save diagnostic message of [`syn::Result`]
+    /// Save diagnostic message of [`rust_syntax::Result`]
     /// and convert result to `Option`, that can be used directly
     /// as output in [`ParseRecoverable::parse_recoverable`]
-    pub fn save_diagnostics<T>(&mut self, val: syn::Result<T>) -> Option<T> {
+    pub fn save_diagnostics<T>(&mut self, val: rust_syntax::Result<T>) -> Option<T> {
         match val {
             Ok(v) => Some(v),
             Err(e) => {
@@ -179,7 +179,7 @@ impl RecoverableContext {
         }
     }
 
-    /// Push custom message of [`syn::Error`] or
+    /// Push custom message of [`rust_syntax::Error`] or
     /// [`proc_macro2_diagnostics::Diagnostic`]
     pub fn push_diagnostic(&mut self, diagnostic: impl Into<Diagnostic>) {
         let diag = diagnostic.into();
@@ -217,16 +217,16 @@ impl<T> ParsingResult<T> {
     }
 
     ///
-    /// Convert into [`syn::Result`], with fail on first diagnostic message,
+    /// Convert into [`rust_syntax::Result`], with fail on first diagnostic message,
     /// Ignores any diagnostic non error message when result is available.
     /// Returns Error on [`ParsingResult::Failed`], and
     /// [`ParsingResult::Partial`].
     ///
     /// # Errors
     ///
-    /// Returns the first error diagnostic as a [`syn::Error`] when parsing
+    /// Returns the first error diagnostic as a [`rust_syntax::Error`] when parsing
     /// failed or was only partial.
-    pub fn into_result(self) -> syn::Result<T> {
+    pub fn into_result(self) -> rust_syntax::Result<T> {
         match self {
             ParsingResult::Ok(r) => Ok(r),
             ParsingResult::Failed(errors) => Err(errors
@@ -290,11 +290,11 @@ impl<T> ParsingResult<Vec<T>> {
     }
 }
 
-impl<T> From<syn::Result<T>> for ParsingResult<T> {
+impl<T> From<rust_syntax::Result<T>> for ParsingResult<T> {
     ///
-    /// Convert into `syn::Result`,
+    /// Convert into `rust_syntax::Result`,
     /// Returns Error on `ParsingResult::Failed`, and `ParsingResult::Partial`.
-    fn from(result: syn::Result<T>) -> ParsingResult<T> {
+    fn from(result: rust_syntax::Result<T>) -> ParsingResult<T> {
         match result {
             Result::Ok(r) => ParsingResult::Ok(r),
             Result::Err(e) => ParsingResult::Failed(vec![e.into()]),
@@ -315,7 +315,7 @@ impl<C: CustomNode> From<ParserConfig<C>> for RecoveryConfig {
 }
 
 ///
-/// Adaptor to provide a [`syn::parse::Parse`] interface to [`ParseRecoverable`]
+/// Adaptor to provide a [`rust_syntax::parse::Parse`] interface to [`ParseRecoverable`]
 /// types. Returns error if any error was set in [`RecoverableContext`] during
 /// parsing. Use Default implementation of [`RecoveryConfig`].
 ///
@@ -330,7 +330,7 @@ impl<T> Recoverable<T> {
 }
 
 impl<T: ParseRecoverable> Parse for Recoverable<T> {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
         let mut empty_context = RecoverableContext::default();
         let parse = T::parse_recoverable(&mut empty_context, input);
         empty_context
@@ -342,7 +342,7 @@ impl<T: ParseRecoverable> Parse for Recoverable<T> {
 
 ///
 /// Parsing interface for recoverable [`TokenStream`] parsing,
-///     analog to [`syn::parse::Parse`] but with ability to skip unexpected
+///     analog to [`rust_syntax::parse::Parse`] but with ability to skip unexpected
 /// tokens, and more diagnostic messages.
 ///
 /// - If input stream can be parsed to valid, or partially valid object
@@ -357,7 +357,7 @@ impl<T: ParseRecoverable> Parse for Recoverable<T> {
 /// Instead of using [`RecoverableContext`] the interface can be changed to the
 /// following:
 /// ```rust
-/// # use syn::parse::ParseStream;
+/// # use rust_syntax::parse::ParseStream;
 /// # use rstml::ParsingResult;
 /// pub trait ParseRecoverable: Sized {
 ///     fn parse_recoverable(input: ParseStream) -> ParsingResult<Self>;

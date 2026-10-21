@@ -3,7 +3,7 @@ use heck::{
     ToUpperCamelCase,
 };
 use std::str::FromStr;
-use syn::{
+use rust_syntax::{
     parse::{Parse, ParseStream},
     Ident, LitStr,
 };
@@ -39,12 +39,12 @@ const VALID_CASE_STYLES: &[&str] = &[
 ];
 
 impl Parse for CaseStyle {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
         let text = input.parse::<LitStr>()?;
         let val = text.value();
 
         val.as_str().parse().map_err(|_| {
-            syn::Error::new_spanned(
+            rust_syntax::Error::new_spanned(
                 &text,
                 format!(
                     "Unexpected case style for serialize_all: `{}`. Valid values are: `{:?}`",

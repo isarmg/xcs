@@ -1,21 +1,21 @@
-#[cfg(feature = "syn")]
+#[cfg(feature = "rust-syntax")]
 #[test]
 #[allow(unused)]
 fn test_inference() {
-    use syn::parse::Parse;
+    use rust_syntax::parse::Parse;
 
     if false {
         let wt = &WhatType::new();
         let ts: proc_macro::TokenStream = wt.manyhow_parse(quote::quote!(test), false).unwrap();
         let wt = &WhatType::new();
         if false {
-            let wt: Result<syn::Ident, _> = wt.identify();
+            let wt: Result<rust_syntax::Ident, _> = wt.identify();
         }
-        let ts: syn::Ident = wt.manyhow_parse(quote::quote!(test), false).unwrap();
+        let ts: rust_syntax::Ident = wt.manyhow_parse(quote::quote!(test), false).unwrap();
 
         struct Parsable;
         impl Parse for Parsable {
-            fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+            fn parse(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Self> {
                 todo!()
             }
         }

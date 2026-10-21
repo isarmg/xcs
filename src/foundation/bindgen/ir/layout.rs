@@ -22,13 +22,13 @@ include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/
 
 impl Layout {
     /// Gets the integer type name for a given known size.
-    pub(crate) fn known_type_for_size(size: usize) -> Option<syn::Type> {
+    pub(crate) fn known_type_for_size(size: usize) -> Option<rust_syntax::Type> {
         Some(match size {
-            16 => syn::parse_quote! { u128 },
-            8 => syn::parse_quote! { u64 },
-            4 => syn::parse_quote! { u32 },
-            2 => syn::parse_quote! { u16 },
-            1 => syn::parse_quote! { u8 },
+            16 => rust_syntax::parse_quote! { u128 },
+            8 => rust_syntax::parse_quote! { u64 },
+            4 => rust_syntax::parse_quote! { u32 },
+            2 => rust_syntax::parse_quote! { u16 },
+            1 => rust_syntax::parse_quote! { u8 },
             _ => return None,
         })
     }
@@ -85,7 +85,7 @@ impl Opaque {
 
     /// Return the known rust type we should use to create a correctly-aligned
     /// field with this layout.
-    pub(crate) fn known_rust_type_for_array(&self) -> Option<syn::Type> {
+    pub(crate) fn known_rust_type_for_array(&self) -> Option<rust_syntax::Type> {
         Layout::known_type_for_size(self.0.align)
     }
 

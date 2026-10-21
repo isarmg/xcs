@@ -56,6 +56,6 @@ rand = ["password-hash/random-generator-core"]
 simple = ["password-hash"]
 std = ["alloc", "password-hash/std"]
 
-[target."cfg(any(target_arch = \"x86\", target_arch = \"x86_64\"))".dependencies.cpufeatures]
+[target."cfg(any(target_arch = \"x86\", target_arch = \"x86_64\"))".dependencies.cpu-feature-detect]
 version = "0.3"
-path = "../cpufeatures-0.3.1"
+path = "../cpu-feature-detect"

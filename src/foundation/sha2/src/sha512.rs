@@ -44,10 +44,10 @@ cfg_if::cfg_if! {
         cfg_if::cfg_if! {
             if #[cfg(any(target_arch = "x86", target_arch = "x86_64"))] {
                 mod x86_avx2;
-                cpufeatures::new!(avx2_cpuid, "avx2");
+                cpu_feature_detect::new!(avx2_cpuid, "avx2");
             } else if #[cfg(target_arch = "aarch64")] {
                 mod aarch64_sha3;
-                cpufeatures::new!(sha3_hwcap, "sha3");
+                cpu_feature_detect::new!(sha3_hwcap, "sha3");
             }
         }
 

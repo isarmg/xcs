@@ -4,7 +4,7 @@ use std::{borrow::Cow, iter, ops::Deref};
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{
+use rust_syntax::{
 	punctuated::Punctuated, spanned::Spanned, Attribute, DeriveInput, Expr, ExprLit, ExprPath,
 	Ident, ImplGenerics, Lit, Meta, Path, Result, Token, TypeGenerics, WhereClause,
 };
@@ -105,7 +105,7 @@ impl TraitImpl for ZeroizeOnDrop {
 		Ok(DeriveTrait::ZeroizeOnDrop(Self { crate_, no_drop }))
 	}
 
-	fn path(&self) -> syn::Path {
+	fn path(&self) -> rust_syntax::Path {
 		util::path_from_root_and_strs(self.crate_(), &["ZeroizeOnDrop"])
 	}
 

@@ -46,8 +46,8 @@ path = "../proc-macro2"
 version = "1.0"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3"
 features = ["parsing"]
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 

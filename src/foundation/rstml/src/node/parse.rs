@@ -4,7 +4,7 @@
 use proc_macro2::{extra::DelimSpan, Delimiter, TokenStream};
 use proc_macro2_diagnostics::{Diagnostic, Level};
 use quote::ToTokens;
-use syn::{
+use rust_syntax::{
     braced,
     parse::{discouraged::Speculative, Parse, ParseStream, Parser},
     spanned::Spanned,
@@ -332,7 +332,7 @@ impl<C: CustomNode> ParseRecoverable for Node<C> {
 
 // This method couldn't be const generic until https://github.com/rust-lang/rust/issues/63569
 /// Parse array of tokens with
-pub(super) fn parse_array_of2_tokens<T: Parse>(input: ParseStream) -> syn::Result<[T; 2]> {
+pub(super) fn parse_array_of2_tokens<T: Parse>(input: ParseStream) -> rust_syntax::Result<[T; 2]> {
     Ok([input.parse()?, input.parse()?])
 }
 
@@ -348,7 +348,7 @@ where
 /// Replace the next [`TokenTree::Group`] in the given parse stream with a
 /// token stream returned by a user callback, or parse as original block if
 /// no token stream is returned.
-fn block_transform(input: ParseStream, transform_fn: &TransformBlockFn) -> syn::Result<Block> {
+fn block_transform(input: ParseStream, transform_fn: &TransformBlockFn) -> rust_syntax::Result<Block> {
     input.step(|cursor| {
         let (block_group, block_span, next) = cursor
             .group(Delimiter::Brace)
@@ -379,8 +379,8 @@ fn block_transform(input: ParseStream, transform_fn: &TransformBlockFn) -> syn::
 #[allow(clippy::needless_pass_by_ref_mut)]
 pub(crate) fn parse_valid_block_expr(
     parser: &mut RecoverableContext,
-    input: syn::parse::ParseStream,
-) -> syn::Result<Block> {
+    input: rust_syntax::parse::ParseStream,
+) -> rust_syntax::Result<Block> {
     let transform_block = parser.config().transform_block.clone();
     let value = if let Some(transform_fn) = transform_block {
         block_transform(input, &*transform_fn)?
@@ -390,7 +390,7 @@ pub(crate) fn parse_valid_block_expr(
     Ok(value)
 }
 /// Parse the given stream and span as [`Expr::Block`].
-fn block_expr_with_extern_span(input: ParseStream, span: DelimSpan) -> syn::Result<Block> {
+fn block_expr_with_extern_span(input: ParseStream, span: DelimSpan) -> rust_syntax::Result<Block> {
     Ok(Block {
         brace_token: Brace { span },
         stmts: Block::parse_within(input)?,
@@ -398,7 +398,7 @@ fn block_expr_with_extern_span(input: ParseStream, span: DelimSpan) -> syn::Resu
 }
 
 /// Parse the given stream as [`Expr::Block`].
-pub(crate) fn block_expr(input: syn::parse::ParseStream) -> syn::Result<Block> {
+pub(crate) fn block_expr(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Block> {
     let content;
     let brace_token = braced!(content in input);
     Ok(Block {

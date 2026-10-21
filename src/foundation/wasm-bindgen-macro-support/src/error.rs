@@ -1,6 +1,6 @@
 use proc_macro2::*;
 use quote::{ToTokens, TokenStreamExt};
-use syn::parse::Error;
+use rust_syntax::parse::Error;
 
 /// Provide a Diagnostic with the given span and message
 macro_rules! err_span {
@@ -28,7 +28,7 @@ enum Repr {
         text: String,
         span: Option<(Span, Span)>,
     },
-    SynError(Error),
+    SyntaxError(Error),
     Multi {
         diagnostics: Vec<Diagnostic>,
     },
@@ -82,7 +82,7 @@ impl Diagnostic {
     pub fn panic(&self) -> ! {
         match &self.inner {
             Repr::Single { text, .. } => panic!("{}", text),
-            Repr::SynError(error) => panic!("{}", error),
+            Repr::SyntaxError(error) => panic!("{}", error),
             Repr::Multi { diagnostics } => diagnostics[0].panic(),
         }
     }
@@ -91,7 +91,7 @@ impl Diagnostic {
 impl From<Error> for Diagnostic {
     fn from(err: Error) -> Diagnostic {
         Diagnostic {
-            inner: Repr::SynError(err),
+            inner: Repr::SyntaxError(err),
         }
     }
 }
@@ -124,7 +124,7 @@ impl ToTokens for Diagnostic {
                     diagnostic.to_tokens(dst);
                 }
             }
-            Repr::SynError(err) => {
+            Repr::SyntaxError(err) => {
                 err.to_compile_error().to_tokens(dst);
             }
         }

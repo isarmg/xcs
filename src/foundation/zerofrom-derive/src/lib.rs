@@ -21,10 +21,10 @@ use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
 use std::collections::{HashMap, HashSet};
-use syn::fold::{self, Fold};
-use syn::punctuated::Punctuated;
-use syn::spanned::Spanned;
-use syn::{
+use rust_syntax::fold::{self, Fold};
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{
     parse_macro_input, parse_quote, DeriveInput, Ident, Lifetime, MetaList, Token, Type,
     TypeParamBound, TypePath, WherePredicate,
 };
@@ -52,7 +52,7 @@ pub fn zf_derive(input: TokenStream) -> TokenStream {
     TokenStream::from(zf_derive_impl(&input))
 }
 
-fn has_attr(attrs: &[syn::Attribute], name: &str) -> bool {
+fn has_attr(attrs: &[rust_syntax::Attribute], name: &str) -> bool {
     attrs.iter().any(|a| {
         if let Ok(i) = a.parse_args::<Ident>() {
             if i == name {
@@ -66,7 +66,7 @@ fn has_attr(attrs: &[syn::Attribute], name: &str) -> bool {
 // Collects all idents from #[zerofrom(may_borrow(A, B, C, D))]
 // needed since #[zerofrom(may_borrow)] doesn't work yet
 // (https://github.com/rust-lang/rust/issues/114393)
-fn get_may_borrow_attr(attrs: &[syn::Attribute]) -> Result<HashSet<Ident>, Span> {
+fn get_may_borrow_attr(attrs: &[rust_syntax::Attribute]) -> Result<HashSet<Ident>, Span> {
     let mut params = HashSet::new();
     for attr in attrs {
         if let Ok(list) = attr.parse_args::<MetaList>() {
@@ -106,7 +106,7 @@ fn zf_derive_impl(input: &DeriveInput) -> TokenStream2 {
     let may_borrow_attrs = match get_may_borrow_attr(&input.attrs) {
         Ok(mb) => mb,
         Err(span) => {
-            return syn::Error::new(
+            return rust_syntax::Error::new(
             span,
             "#[zerofrom(may_borrow)] on the struct takes in a comma separated list of type parameters, like so: `#[zerofrom(may_borrow(A, B, C, D)]`",
         ).to_compile_error();
@@ -175,7 +175,7 @@ fn zf_derive_impl(input: &DeriveInput) -> TokenStream2 {
         }
     } else {
         if lts > 1 {
-            return syn::Error::new(
+            return rust_syntax::Error::new(
                 input.generics.span(),
                 "derive(ZeroFrom) cannot have multiple lifetime parameters",
             )

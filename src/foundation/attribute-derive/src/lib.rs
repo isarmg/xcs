@@ -17,7 +17,7 @@
 //!     // Any type implementing default can be flagged as default
 //!     // This will be set to Vec::default() when not specified
 //!     #[from_attr(optional)]
-//!     list: Vec<syn::Type>,
+//!     list: Vec<rust_syntax::Type>,
 //!     // Booleans can be used without assigning a value, i.e., as a flag.
 //!     // If omitted they are set to false
 //!     some_flag: bool,
@@ -35,7 +35,7 @@
 //!
 //! Any type that for [`AttributeNamed`] or [`AttributePositional`] are
 //! implemented respectively are supported. These should be the general types
-//! that [`syn`] supports like [`LitStr`](struct@LitStr) or [`Type`] or that
+//! that [`rust_syntax`] supports like [`LitStr`](struct@LitStr) or [`Type`] or that
 //! have a direct equivalent in those like [`String`], [`char`] or [`f32`]. A
 //! special treatment have [`Vecs`](Vec) which are parsed as either `name = [a,
 //! b, c]` or `name(a, b, c)` and [`Options`](Option) that will be [`None`] if
@@ -50,7 +50,7 @@
 //! will copy the behavior of the contained field, e.g. for [`bool`]:
 //!
 //! ```
-//! use syn::{Attribute, parse_quote};
+//! use rust_syntax::{Attribute, parse_quote};
 //! use attribute_derive::FromAttr;
 //!
 //! #[derive(FromAttr, PartialEq, Debug)]    
@@ -128,10 +128,10 @@
 //!
 //! For helper attributes there is:
 //! - [`FromAttr::from_attributes`] which takes in an [`IntoIterator<Item = &'a
-//!   syn::Attribute`](syn::Attribute) (e.g. a
-//!   [`&Vec<syn::Attribute>`](syn::Attribute)). Most useful for derive macros.
+//!   rust_syntax::Attribute`](rust_syntax::Attribute) (e.g. a
+//!   [`&Vec<rust_syntax::Attribute>`](rust_syntax::Attribute)). Most useful for derive macros.
 //! - [`FromAttr::remove_attributes`] which takes a [`&mut
-//!   Vec<syn::Attribute>`](syn::Attribute) and does not only parse the
+//!   Vec<rust_syntax::Attribute>`](rust_syntax::Attribute) and does not only parse the
 //!   attributes, but also removes those matching. Useful for helper attributes
 //!   for attribute macros, where the helper attributes need to be removed.
 //!
@@ -140,8 +140,8 @@
 //!
 //! - [`FromAttr::from_args`] taking in a [`TokenStream`]
 //! - As `derive(FromAttr)` also derives [`Parse`] so you can use the
-//!   [parse](mod@syn::parse) API, e.g. with [`parse_macro_input!(tokens as
-//!   Attribute)`](syn::parse_macro_input!).
+//!   [parse](mod@rust_syntax::parse) API, e.g. with [`parse_macro_input!(tokens as
+//!   Attribute)`](rust_syntax::parse_macro_input!).
 //!
 //! [interpolator]: https://docs.rs/interpolator/latest/interpolator/
 use std::borrow::Borrow;
@@ -156,22 +156,22 @@ use manyhow::SpanRanged;
 use parsing::*;
 use parsing::{AttributeBase, SpannedValue};
 use proc_macro2::{Span, TokenStream};
-use syn::parse::{ParseStream, Parser, Result};
+use rust_syntax::parse::{ParseStream, Parser, Result};
 #[cfg(doc)]
-use syn::{parse::Parse, LitStr, Type};
-use syn::{Error, Path};
+use rust_syntax::{parse::Parse, LitStr, Type};
+use rust_syntax::{Error, Path};
 #[doc(hidden)]
 pub use tmp::FromAttr as Attribute;
 pub use tmp::FromAttr;
 
 #[doc(hidden)]
 pub mod __private {
-    pub use {proc_macro2, quote, syn};
+    pub use {proc_macro2, quote, rust_syntax};
 }
 
 mod std_impls;
 
-mod syn_impls;
+mod syntax_impls;
 
 pub mod utils;
 pub use utils::FlagOrValue;
@@ -183,7 +183,7 @@ pub use from_partial::FromPartial;
 
 mod tmp {
     use quote::ToTokens;
-    use syn::Meta;
+    use rust_syntax::Meta;
 
     use super::*;
     /// The trait you actually derive on your attribute struct.
@@ -191,7 +191,7 @@ mod tmp {
     /// Basic gist is a struct like this:
     /// ```
     /// # use attribute_derive::FromAttr;
-    /// # use syn::Type;
+    /// # use rust_syntax::Type;
     /// #[derive(FromAttr)]
     /// #[attribute(ident = collection)]
     /// #[attribute(error(missing_field = "`{field}` was not specified"))]
@@ -214,7 +214,7 @@ mod tmp {
     /// #[collection(authority="Some String", name = r#"Another string"#, views = [Option, ()], some_flag)]
     /// ```
     pub trait FromAttr: Sized + AttributeBase {
-        /// Parses an [`IntoIterator`] of [`syn::Attributes`](syn::Attribute)
+        /// Parses an [`IntoIterator`] of [`rust_syntax::Attributes`](rust_syntax::Attribute)
         /// e.g. [`Vec<Attribute>`](Vec). Only available if you specify
         /// the attribute ident: `#[attribute(ident="<ident>")]` when
         /// using the derive macro.
@@ -230,7 +230,7 @@ mod tmp {
         /// your attributes.
         ///
         /// # Errors
-        /// Fails with a [`syn::Error`] so you can conveniently return that as a
+        /// Fails with a [`rust_syntax::Error`] so you can conveniently return that as a
         /// compiler error in a proc macro in the following cases
         ///
         /// - A required parameter is omitted
@@ -238,7 +238,7 @@ mod tmp {
         /// - A non aggregating parameter is specified multiple times
         /// - An attribute called [`IDENTS`](const@AttributeIdent::IDENTS) has
         ///   invalid syntax (e.g. `#attr(a: "a")`)
-        fn from_attributes<A: Borrow<syn::Attribute>>(
+        fn from_attributes<A: Borrow<rust_syntax::Attribute>>(
             attrs: impl IntoIterator<Item = A>,
         ) -> Result<Self>
         where
@@ -263,7 +263,7 @@ mod tmp {
                 })
         }
 
-        /// Parses a [`&mut Vec<syn::Attributes>`](syn::Attribute). Removing
+        /// Parses a [`&mut Vec<rust_syntax::Attributes>`](rust_syntax::Attribute). Removing
         /// matching attributes. Only available if you specify an ident:
         /// `#[attribute(ident="<ident>")]` when using the derive macro.
         ///
@@ -278,7 +278,7 @@ mod tmp {
         /// remove your helper attributes.
         ///
         /// ```
-        /// use syn::parse_quote;
+        /// use rust_syntax::parse_quote;
         /// use attribute_derive::FromAttr;
         /// let mut attrs = vec![
         ///     parse_quote!(#[ignored]), parse_quote!(#[test]),
@@ -293,7 +293,7 @@ mod tmp {
         /// ```
         ///
         /// # Errors
-        /// Fails with a [`syn::Error`], so you can conveniently return that as
+        /// Fails with a [`rust_syntax::Error`], so you can conveniently return that as
         /// a compiler error in a proc macro in the following cases
         ///
         /// - A necessary parameter is omitted
@@ -301,7 +301,7 @@ mod tmp {
         /// - A non aggregating parameter is specified multiple times
         /// - An attribute called [`IDENTS`](const@AttributeIdent::IDENTS) has
         ///   invalid syntax (e.g. `#attr(a: "a")`)
-        fn remove_attributes(attrs: &mut Vec<syn::Attribute>) -> Result<Self>
+        fn remove_attributes(attrs: &mut Vec<rust_syntax::Attribute>) -> Result<Self>
         where
             Self: AttributeIdent,
         {
@@ -325,13 +325,13 @@ mod tmp {
         /// ```
         /// use attribute_derive::FromAttr;
         ///
-        /// let attr: syn::Attribute = syn::parse_quote!(#[test = "hello"]);
+        /// let attr: rust_syntax::Attribute = rust_syntax::parse_quote!(#[test = "hello"]);
         /// assert_eq!(String::from_attribute(attr).unwrap(), "hello");
         ///
-        /// let attr: syn::Attribute = syn::parse_quote!(#[test]);
+        /// let attr: rust_syntax::Attribute = rust_syntax::parse_quote!(#[test]);
         /// assert_eq!(bool::from_attribute(attr).unwrap(), true);
         /// ```
-        fn from_attribute(attr: impl Borrow<syn::Attribute>) -> Result<Self> {
+        fn from_attribute(attr: impl Borrow<rust_syntax::Attribute>) -> Result<Self> {
             Self::from_attribute_partial(attr).and_then(Self::from)
         }
 
@@ -358,7 +358,7 @@ mod tmp {
         /// able to aggregate input spread over multiple attributes.
         ///
         /// # Errors
-        /// Fails with a [`syn::Error`], so you can conveniently return that as
+        /// Fails with a [`rust_syntax::Error`], so you can conveniently return that as
         /// a compiler error in a proc macro in the following cases
         ///
         /// - A necessary parameter is omitted
@@ -369,11 +369,11 @@ mod tmp {
         }
 
         /// Like [`parse_partial`](Self::parse_partial) but instead takes an
-        /// [`Attribute`](syn::Attribute).
+        /// [`Attribute`](rust_syntax::Attribute).
         ///
         /// This allows it to support all three, `#[flag]`, `#[function(like)]`
         /// and `#[name = value]` attributes.
-        fn from_attribute_partial(attr: impl Borrow<syn::Attribute>) -> Result<Self::Partial> {
+        fn from_attribute_partial(attr: impl Borrow<rust_syntax::Attribute>) -> Result<Self::Partial> {
             let tokens = match attr.borrow().meta {
                 Meta::Path(_) => TokenStream::new(),
                 Meta::List(ref list) => list.tokens.clone(),

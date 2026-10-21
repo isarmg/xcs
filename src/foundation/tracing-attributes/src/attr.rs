@@ -1,11 +1,11 @@
 use std::collections::HashSet;
-use syn::{punctuated::Punctuated, Expr, Ident, LitInt, LitStr, Path, Token};
+use rust_syntax::{punctuated::Punctuated, Expr, Ident, LitInt, LitStr, Path, Token};
 
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned, ToTokens};
-use syn::ext::IdentExt as _;
-use syn::parse::{Parse, ParseStream};
-use syn::token::Brace;
+use rust_syntax::ext::IdentExt as _;
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::token::Brace;
 
 /// Arguments to `#[instrument(err(...))]` and `#[instrument(ret(...))]` which describe how the
 /// return value event should be emitted.
@@ -28,7 +28,7 @@ pub(crate) struct InstrumentArgs {
     pub(crate) err_args: Option<EventArgs>,
     pub(crate) ret_args: Option<EventArgs>,
     /// Errors describing any unrecognized parse inputs that we skipped.
-    parse_warnings: Vec<syn::Error>,
+    parse_warnings: Vec<rust_syntax::Error>,
 }
 
 impl InstrumentArgs {
@@ -74,7 +74,7 @@ impl InstrumentArgs {
 }
 
 impl Parse for InstrumentArgs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut args = Self::default();
         while !input.is_empty() {
             let lookahead = input.lookahead1();
@@ -172,12 +172,12 @@ impl EventArgs {
 }
 
 impl Parse for EventArgs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        if !input.peek(syn::token::Paren) {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
+        if !input.peek(rust_syntax::token::Paren) {
             return Ok(Self::default());
         }
         let content;
-        let _ = syn::parenthesized!(content in input);
+        let _ = rust_syntax::parenthesized!(content in input);
         let mut result = Self::default();
         let mut parse_one_arg =
             || {
@@ -193,7 +193,7 @@ impl Parse for EventArgs {
                     match ident.to_string().as_str() {
                         "Debug" => result.mode = FormatMode::Debug,
                         "Display" => result.mode = FormatMode::Display,
-                        _ => return Err(syn::Error::new(
+                        _ => return Err(rust_syntax::Error::new(
                             ident.span(),
                             "unknown event formatting mode, expected either `Debug` or `Display`",
                         )),
@@ -230,7 +230,7 @@ impl ToTokens for LitStrOrIdent {
 }
 
 impl Parse for LitStrOrIdent {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         input
             .parse::<LitStr>()
             .map(LitStrOrIdent::LitStr)
@@ -244,7 +244,7 @@ struct StrArg<T> {
 }
 
 impl<T: Parse> Parse for StrArg<T> {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let _ = input.parse::<T>()?;
         let _ = input.parse::<Token![=]>()?;
         let value = input.parse()?;
@@ -261,7 +261,7 @@ struct ExprArg<T> {
 }
 
 impl<T: Parse> Parse for ExprArg<T> {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let _ = input.parse::<T>()?;
         let _ = input.parse::<Token![=]>()?;
         let value = input.parse()?;
@@ -275,15 +275,15 @@ impl<T: Parse> Parse for ExprArg<T> {
 struct Skips(HashSet<Ident>);
 
 impl Parse for Skips {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let _ = input.parse::<kw::skip>();
         let content;
-        let _ = syn::parenthesized!(content in input);
+        let _ = rust_syntax::parenthesized!(content in input);
         let names = content.parse_terminated(Ident::parse_any, Token![,])?;
         let mut skips = HashSet::new();
         for name in names {
             if skips.contains(&name) {
-                return Err(syn::Error::new(
+                return Err(rust_syntax::Error::new(
                     name.span(),
                     "tried to skip the same field twice",
                 ));
@@ -338,10 +338,10 @@ impl ToTokens for FieldName {
 }
 
 impl Parse for Fields {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let _ = input.parse::<kw::fields>();
         let content;
-        let _ = syn::parenthesized!(content in input);
+        let _ = rust_syntax::parenthesized!(content in input);
         let fields = content.parse_terminated(Field::parse, Token![,])?;
         Ok(Self(fields))
     }
@@ -354,7 +354,7 @@ impl ToTokens for Fields {
 }
 
 impl Parse for Field {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut kind = FieldKind::Value;
         if input.peek(Token![%]) {
             input.parse::<Token![%]>()?;
@@ -364,9 +364,9 @@ impl Parse for Field {
             kind = FieldKind::Debug;
         };
         // Parse name as either an expr between braces or a dotted identifier.
-        let name = if input.peek(syn::token::Brace) {
+        let name = if input.peek(rust_syntax::token::Brace) {
             let content;
-            let _ = syn::braced!(content in input);
+            let _ = rust_syntax::braced!(content in input);
             let expr = content.call(Expr::parse)?;
             FieldName::Expr(expr)
         } else {
@@ -436,7 +436,7 @@ pub(crate) enum Level {
 }
 
 impl Parse for Level {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let _ = input.parse::<kw::level>()?;
         let _ = input.parse::<Token![=]>()?;
         let lookahead = input.lookahead1();
@@ -494,14 +494,14 @@ impl ToTokens for Level {
 }
 
 mod kw {
-    syn::custom_keyword!(fields);
-    syn::custom_keyword!(skip);
-    syn::custom_keyword!(skip_all);
-    syn::custom_keyword!(level);
-    syn::custom_keyword!(target);
-    syn::custom_keyword!(parent);
-    syn::custom_keyword!(follows_from);
-    syn::custom_keyword!(name);
-    syn::custom_keyword!(err);
-    syn::custom_keyword!(ret);
+    rust_syntax::custom_keyword!(fields);
+    rust_syntax::custom_keyword!(skip);
+    rust_syntax::custom_keyword!(skip_all);
+    rust_syntax::custom_keyword!(level);
+    rust_syntax::custom_keyword!(target);
+    rust_syntax::custom_keyword!(parent);
+    rust_syntax::custom_keyword!(follows_from);
+    rust_syntax::custom_keyword!(name);
+    rust_syntax::custom_keyword!(err);
+    rust_syntax::custom_keyword!(ret);
 }

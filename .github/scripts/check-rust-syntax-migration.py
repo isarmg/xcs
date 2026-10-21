@@ -54,8 +54,8 @@ def manifest():
     deps = {
         'tracing': ('tracing', []), 'tracing-attributes': ('tracing-attributes', []),
         'axum': ('axum', ['macros']), 'strum': ('strum', ['derive']),
-        'syn': ('syn-3.0.9', ['full']), 'prettyplease': ('prettyplease-0.3.0', []),
-        'cpufeatures': ('cpufeatures-0.3.1', []), 'typed-builder': ('typed-builder', []),
+        'rust-syntax': ('rust-syntax', ['full']), 'rust-source-format': ('rust-source-format', []),
+        'cpu-feature-detect': ('cpu-feature-detect', []), 'typed-builder': ('typed-builder', []),
         'argon2': ('argon2', []), 'password-hash': ('password-hash', []), 'base64ct': ('base64ct', []),
         'libsqlite3-sys': ('libsqlite3-sys', ['bundled', 'loadable_extension', 'buildtime_bindgen']),
     }

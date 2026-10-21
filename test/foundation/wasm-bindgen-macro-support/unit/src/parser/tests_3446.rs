@@ -20,11 +20,11 @@ mod tests {
     /// Return the namespace for each parsed import.
     fn import_namespaces(
         block_opts: proc_macro2::TokenStream,
-        block: syn::ItemForeignMod,
+        block: rust_syntax::ItemForeignMod,
     ) -> Result<Vec<Option<Vec<String>>>, super::Diagnostic> {
         use super::{ast, BindgenAttrs, MacroParse};
 
-        let opts: BindgenAttrs = syn::parse2(block_opts).unwrap();
+        let opts: BindgenAttrs = rust_syntax::parse2(block_opts).unwrap();
         let mut program = ast::Program::default();
         block.macro_parse(&mut program, opts)?;
         Ok(program
@@ -42,7 +42,7 @@ mod tests {
     fn js_namespace_only_on_block() {
         let namespaces = import_namespaces(
             quote::quote! { js_namespace = ["a"] },
-            syn::parse_quote! {
+            rust_syntax::parse_quote! {
                 extern "C" {
                     fn my_function();
                 }
@@ -56,7 +56,7 @@ mod tests {
     fn js_namespace_only_on_item() {
         let namespaces = import_namespaces(
             quote::quote! {},
-            syn::parse_quote! {
+            rust_syntax::parse_quote! {
                 extern "C" {
                     #[wasm_bindgen(js_namespace = ["b"])]
                     fn my_function();
@@ -71,7 +71,7 @@ mod tests {
     fn js_namespace_absent_everywhere() {
         let namespaces = import_namespaces(
             quote::quote! {},
-            syn::parse_quote! {
+            rust_syntax::parse_quote! {
                 extern "C" {
                     fn my_function();
                 }

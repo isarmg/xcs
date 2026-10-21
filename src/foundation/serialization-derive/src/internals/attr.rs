@@ -5,11 +5,11 @@ use proc_macro2::{Spacing, Span, TokenStream, TokenTree};
 use quote::ToTokens;
 use std::collections::BTreeSet;
 use std::iter::FromIterator;
-use syn::meta::ParseNestedMeta;
-use syn::parse::ParseStream;
-use syn::punctuated::Punctuated;
-use syn::spanned::Spanned;
-use syn::{token, Ident, Lifetime, Token};
+use rust_syntax::meta::ParseNestedMeta;
+use rust_syntax::parse::ParseStream;
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{token, Ident, Lifetime, Token};
 
 // This module handles parsing of `#[serialization(...)]` attributes. The entrypoints
 // are `attr::Container::from_ast`, `attr::Variant::from_ast`, and
@@ -159,15 +159,15 @@ pub struct Container {
     default: Default,
     rename_all_rules: RenameAllRules,
     rename_all_fields_rules: RenameAllRules,
-    ser_bound: Option<Vec<syn::WherePredicate>>,
-    de_bound: Option<Vec<syn::WherePredicate>>,
+    ser_bound: Option<Vec<rust_syntax::WherePredicate>>,
+    de_bound: Option<Vec<rust_syntax::WherePredicate>>,
     tag: TagType,
-    type_from: Option<syn::Type>,
-    type_try_from: Option<syn::Type>,
-    type_into: Option<syn::Type>,
-    remote: Option<syn::Path>,
+    type_from: Option<rust_syntax::Type>,
+    type_try_from: Option<rust_syntax::Type>,
+    type_into: Option<rust_syntax::Type>,
+    remote: Option<rust_syntax::Path>,
     identifier: Identifier,
-    serialization_path: Option<syn::Path>,
+    serialization_path: Option<rust_syntax::Path>,
     is_packed: bool,
     /// Error message generated when type can't be deserialized
     expecting: Option<String>,
@@ -234,7 +234,7 @@ impl Identifier {
 
 impl Container {
     /// Extract out the `#[serialization(...)]` attributes from an item.
-    pub fn from_ast(cx: &Ctxt, item: &syn::DeriveInput) -> Self {
+    pub fn from_ast(cx: &Ctxt, item: &rust_syntax::DeriveInput) -> Self {
         let mut ser_name = Attr::none(cx, RENAME);
         let mut de_name = Attr::none(cx, RENAME);
         let mut transparent = BoolAttr::none(cx, TRANSPARENT);
@@ -262,11 +262,11 @@ impl Container {
         for attr in &item.attrs {
             if attr.path() != SERIALIZATION {
                 non_exhaustive |=
-                    matches!(&attr.meta, syn::Meta::Path(path) if path == NON_EXHAUSTIVE);
+                    matches!(&attr.meta, rust_syntax::Meta::Path(path) if path == NON_EXHAUSTIVE);
                 continue;
             }
 
-            if let syn::Meta::List(meta) = &attr.meta {
+            if let rust_syntax::Meta::List(meta) = &attr.meta {
                 if meta.tokens.is_empty() {
                     continue;
                 }
@@ -307,7 +307,7 @@ impl Container {
                     let (ser, de) = get_renames(cx, RENAME_ALL_FIELDS, &meta)?;
 
                     match item.data {
-                        syn::Data::Enum(_) => {
+                        rust_syntax::Data::Enum(_) => {
                             if let Some(ser) = ser {
                                 match RenameRule::from_str(&ser.value()) {
                                     Ok(rename_rule) => {
@@ -329,13 +329,13 @@ impl Container {
                                 }
                             }
                         }
-                        syn::Data::Struct(_) => {
+                        rust_syntax::Data::Struct(_) => {
                             let msg = "#[serialization(rename_all_fields)] can only be used on enums";
-                            cx.syn_error(meta.error(msg));
+                            cx.syntax_error(meta.error(msg));
                         }
-                        syn::Data::Union(_) => {
+                        rust_syntax::Data::Union(_) => {
                             let msg = "#[serialization(rename_all_fields)] can only be used on enums";
-                            cx.syn_error(meta.error(msg));
+                            cx.syntax_error(meta.error(msg));
                         }
                     }
                 } else if meta.path == TRANSPARENT {
@@ -349,44 +349,44 @@ impl Container {
                         // #[serialization(default = "...")]
                         if let Some(path) = parse_lit_into_expr_path(cx, DEFAULT, &meta)? {
                             match &item.data {
-                                syn::Data::Struct(syn::DataStruct { fields, .. }) => match fields {
-                                    syn::Fields::Named(_) | syn::Fields::Unnamed(_) => {
+                                rust_syntax::Data::Struct(rust_syntax::DataStruct { fields, .. }) => match fields {
+                                    rust_syntax::Fields::Named(_) | rust_syntax::Fields::Unnamed(_) => {
                                         default.set(&meta.path, Default::Path(path));
                                     }
-                                    syn::Fields::Unit => {
+                                    rust_syntax::Fields::Unit => {
                                         let msg = "#[serialization(default = \"...\")] can only be used on structs that have fields";
-                                        cx.syn_error(meta.error(msg));
+                                        cx.syntax_error(meta.error(msg));
                                     }
                                 },
-                                syn::Data::Enum(_) => {
+                                rust_syntax::Data::Enum(_) => {
                                     let msg = "#[serialization(default = \"...\")] can only be used on structs";
-                                    cx.syn_error(meta.error(msg));
+                                    cx.syntax_error(meta.error(msg));
                                 }
-                                syn::Data::Union(_) => {
+                                rust_syntax::Data::Union(_) => {
                                     let msg = "#[serialization(default = \"...\")] can only be used on structs";
-                                    cx.syn_error(meta.error(msg));
+                                    cx.syntax_error(meta.error(msg));
                                 }
                             }
                         }
                     } else {
                         // #[serialization(default)]
                         match &item.data {
-                            syn::Data::Struct(syn::DataStruct { fields, .. }) => match fields {
-                                syn::Fields::Named(_) | syn::Fields::Unnamed(_) => {
+                            rust_syntax::Data::Struct(rust_syntax::DataStruct { fields, .. }) => match fields {
+                                rust_syntax::Fields::Named(_) | rust_syntax::Fields::Unnamed(_) => {
                                     default.set(meta.path, Default::Default);
                                 }
-                                syn::Fields::Unit => {
+                                rust_syntax::Fields::Unit => {
                                     let msg = "#[serialization(default)] can only be used on structs that have fields";
                                     cx.error_spanned_by(fields, msg);
                                 }
                             },
-                            syn::Data::Enum(_) => {
+                            rust_syntax::Data::Enum(_) => {
                                 let msg = "#[serialization(default)] can only be used on structs";
-                                cx.syn_error(meta.error(msg));
+                                cx.syntax_error(meta.error(msg));
                             }
-                            syn::Data::Union(_) => {
+                            rust_syntax::Data::Union(_) => {
                                 let msg = "#[serialization(default)] can only be used on structs";
-                                cx.syn_error(meta.error(msg));
+                                cx.syntax_error(meta.error(msg));
                             }
                         }
                     }
@@ -399,37 +399,37 @@ impl Container {
                 } else if meta.path == UNTAGGED {
                     // #[serialization(untagged)]
                     match item.data {
-                        syn::Data::Enum(_) => {
+                        rust_syntax::Data::Enum(_) => {
                             untagged.set_true(&meta.path);
                         }
-                        syn::Data::Struct(_) => {
+                        rust_syntax::Data::Struct(_) => {
                             let msg = "#[serialization(untagged)] can only be used on enums";
-                            cx.syn_error(meta.error(msg));
+                            cx.syntax_error(meta.error(msg));
                         }
-                        syn::Data::Union(_) => {
+                        rust_syntax::Data::Union(_) => {
                             let msg = "#[serialization(untagged)] can only be used on enums";
-                            cx.syn_error(meta.error(msg));
+                            cx.syntax_error(meta.error(msg));
                         }
                     }
                 } else if meta.path == TAG {
                     // #[serialization(tag = "type")]
                     if let Some(s) = get_lit_str(cx, TAG, &meta)? {
                         match &item.data {
-                            syn::Data::Enum(_) => {
+                            rust_syntax::Data::Enum(_) => {
                                 internal_tag.set(&meta.path, s.value());
                             }
-                            syn::Data::Struct(syn::DataStruct { fields, .. }) => match fields {
-                                syn::Fields::Named(_) => {
+                            rust_syntax::Data::Struct(rust_syntax::DataStruct { fields, .. }) => match fields {
+                                rust_syntax::Fields::Named(_) => {
                                     internal_tag.set(&meta.path, s.value());
                                 }
-                                syn::Fields::Unnamed(_) | syn::Fields::Unit => {
+                                rust_syntax::Fields::Unnamed(_) | rust_syntax::Fields::Unit => {
                                     let msg = "#[serialization(tag = \"...\")] can only be used on enums and structs with named fields";
-                                    cx.syn_error(meta.error(msg));
+                                    cx.syntax_error(meta.error(msg));
                                 }
                             },
-                            syn::Data::Union(_) => {
+                            rust_syntax::Data::Union(_) => {
                                 let msg = "#[serialization(tag = \"...\")] can only be used on enums and structs with named fields";
-                                cx.syn_error(meta.error(msg));
+                                cx.syntax_error(meta.error(msg));
                             }
                         }
                     }
@@ -437,16 +437,16 @@ impl Container {
                     // #[serialization(content = "c")]
                     if let Some(s) = get_lit_str(cx, CONTENT, &meta)? {
                         match &item.data {
-                            syn::Data::Enum(_) => {
+                            rust_syntax::Data::Enum(_) => {
                                 content.set(&meta.path, s.value());
                             }
-                            syn::Data::Struct(_) => {
+                            rust_syntax::Data::Struct(_) => {
                                 let msg = "#[serialization(content = \"...\")] can only be used on enums";
-                                cx.syn_error(meta.error(msg));
+                                cx.syntax_error(meta.error(msg));
                             }
-                            syn::Data::Union(_) => {
+                            rust_syntax::Data::Union(_) => {
                                 let msg = "#[serialization(content = \"...\")] can only be used on enums";
-                                cx.syn_error(meta.error(msg));
+                                cx.syntax_error(meta.error(msg));
                             }
                         }
                     }
@@ -498,7 +498,7 @@ impl Container {
                 }
                 Ok(())
             }) {
-                cx.syn_error(err);
+                cx.syntax_error(err);
             }
         }
 
@@ -568,11 +568,11 @@ impl Container {
         &self.default
     }
 
-    pub fn ser_bound(&self) -> Option<&[syn::WherePredicate]> {
+    pub fn ser_bound(&self) -> Option<&[rust_syntax::WherePredicate]> {
         self.ser_bound.as_ref().map(|vec| &vec[..])
     }
 
-    pub fn de_bound(&self) -> Option<&[syn::WherePredicate]> {
+    pub fn de_bound(&self) -> Option<&[rust_syntax::WherePredicate]> {
         self.de_bound.as_ref().map(|vec| &vec[..])
     }
 
@@ -580,19 +580,19 @@ impl Container {
         &self.tag
     }
 
-    pub fn type_from(&self) -> Option<&syn::Type> {
+    pub fn type_from(&self) -> Option<&rust_syntax::Type> {
         self.type_from.as_ref()
     }
 
-    pub fn type_try_from(&self) -> Option<&syn::Type> {
+    pub fn type_try_from(&self) -> Option<&rust_syntax::Type> {
         self.type_try_from.as_ref()
     }
 
-    pub fn type_into(&self) -> Option<&syn::Type> {
+    pub fn type_into(&self) -> Option<&rust_syntax::Type> {
         self.type_into.as_ref()
     }
 
-    pub fn remote(&self) -> Option<&syn::Path> {
+    pub fn remote(&self) -> Option<&rust_syntax::Path> {
         self.remote.as_ref()
     }
 
@@ -604,7 +604,7 @@ impl Container {
         self.identifier
     }
 
-    pub fn custom_serialization_path(&self) -> Option<&syn::Path> {
+    pub fn custom_serialization_path(&self) -> Option<&rust_syntax::Path> {
         self.serialization_path.as_ref()
     }
 
@@ -621,7 +621,7 @@ impl Container {
 
 fn decide_tag(
     cx: &Ctxt,
-    item: &syn::DeriveInput,
+    item: &rust_syntax::DeriveInput,
     untagged: BoolAttr,
     internal_tag: Attr<String>,
     content: Attr<String>,
@@ -635,11 +635,11 @@ fn decide_tag(
         (Some(_), None, None) => TagType::None,
         (None, Some((_, tag)), None) => {
             // Check that there are no tuple variants.
-            if let syn::Data::Enum(data) = &item.data {
+            if let rust_syntax::Data::Enum(data) = &item.data {
                 for variant in &data.variants {
                     match &variant.fields {
-                        syn::Fields::Named(_) | syn::Fields::Unit => {}
-                        syn::Fields::Unnamed(fields) => {
+                        rust_syntax::Fields::Named(_) | rust_syntax::Fields::Unit => {}
+                        rust_syntax::Fields::Unnamed(fields) => {
                             if fields.unnamed.len() != 1 {
                                 let msg =
                                     "#[serialization(tag = \"...\")] cannot be used with tuple variants";
@@ -682,7 +682,7 @@ fn decide_tag(
 
 fn decide_identifier(
     cx: &Ctxt,
-    item: &syn::DeriveInput,
+    item: &rust_syntax::DeriveInput,
     field_identifier: BoolAttr,
     variant_identifier: BoolAttr,
 ) -> Identifier {
@@ -699,24 +699,24 @@ fn decide_identifier(
             cx.error_spanned_by(variant_identifier_tokens, msg);
             Identifier::No
         }
-        (syn::Data::Enum(_), Some(_), None) => Identifier::Field,
-        (syn::Data::Enum(_), None, Some(_)) => Identifier::Variant,
-        (syn::Data::Struct(syn::DataStruct { struct_token, .. }), Some(_), None) => {
+        (rust_syntax::Data::Enum(_), Some(_), None) => Identifier::Field,
+        (rust_syntax::Data::Enum(_), None, Some(_)) => Identifier::Variant,
+        (rust_syntax::Data::Struct(rust_syntax::DataStruct { struct_token, .. }), Some(_), None) => {
             let msg = "#[serialization(field_identifier)] can only be used on an enum";
             cx.error_spanned_by(struct_token, msg);
             Identifier::No
         }
-        (syn::Data::Union(syn::DataUnion { union_token, .. }), Some(_), None) => {
+        (rust_syntax::Data::Union(rust_syntax::DataUnion { union_token, .. }), Some(_), None) => {
             let msg = "#[serialization(field_identifier)] can only be used on an enum";
             cx.error_spanned_by(union_token, msg);
             Identifier::No
         }
-        (syn::Data::Struct(syn::DataStruct { struct_token, .. }), None, Some(_)) => {
+        (rust_syntax::Data::Struct(rust_syntax::DataStruct { struct_token, .. }), None, Some(_)) => {
             let msg = "#[serialization(variant_identifier)] can only be used on an enum";
             cx.error_spanned_by(struct_token, msg);
             Identifier::No
         }
-        (syn::Data::Union(syn::DataUnion { union_token, .. }), None, Some(_)) => {
+        (rust_syntax::Data::Union(rust_syntax::DataUnion { union_token, .. }), None, Some(_)) => {
             let msg = "#[serialization(variant_identifier)] can only be used on an enum";
             cx.error_spanned_by(union_token, msg);
             Identifier::No
@@ -728,24 +728,24 @@ fn decide_identifier(
 pub struct Variant {
     name: MultiName,
     rename_all_rules: RenameAllRules,
-    ser_bound: Option<Vec<syn::WherePredicate>>,
-    de_bound: Option<Vec<syn::WherePredicate>>,
+    ser_bound: Option<Vec<rust_syntax::WherePredicate>>,
+    de_bound: Option<Vec<rust_syntax::WherePredicate>>,
     skip_deserializing: bool,
     skip_serializing: bool,
     other: bool,
-    serialize_with: Option<syn::ExprPath>,
-    deserialize_with: Option<syn::ExprPath>,
+    serialize_with: Option<rust_syntax::ExprPath>,
+    deserialize_with: Option<rust_syntax::ExprPath>,
     borrow: Option<BorrowAttribute>,
     untagged: bool,
 }
 
 struct BorrowAttribute {
-    path: syn::Path,
-    lifetimes: Option<BTreeSet<syn::Lifetime>>,
+    path: rust_syntax::Path,
+    lifetimes: Option<BTreeSet<rust_syntax::Lifetime>>,
 }
 
 impl Variant {
-    pub fn from_ast(cx: &Ctxt, variant: &syn::Variant) -> Self {
+    pub fn from_ast(cx: &Ctxt, variant: &rust_syntax::Variant) -> Self {
         let mut ser_name = Attr::none(cx, RENAME);
         let mut de_name = Attr::none(cx, RENAME);
         let mut de_aliases = VecAttr::none(cx, RENAME);
@@ -766,7 +766,7 @@ impl Variant {
                 continue;
             }
 
-            if let syn::Meta::List(meta) = &attr.meta {
+            if let rust_syntax::Meta::List(meta) = &attr.meta {
                 if meta.tokens.is_empty() {
                     continue;
                 }
@@ -869,7 +869,7 @@ impl Variant {
                         }
                     };
                     match &variant.fields {
-                        syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
+                        rust_syntax::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
                             borrow.set(&meta.path, borrow_attribute);
                         }
                         _ => {
@@ -887,7 +887,7 @@ impl Variant {
                 }
                 Ok(())
             }) {
-                cx.syn_error(err);
+                cx.syntax_error(err);
             }
         }
 
@@ -941,11 +941,11 @@ impl Variant {
         self.rename_all_rules
     }
 
-    pub fn ser_bound(&self) -> Option<&[syn::WherePredicate]> {
+    pub fn ser_bound(&self) -> Option<&[rust_syntax::WherePredicate]> {
         self.ser_bound.as_ref().map(|vec| &vec[..])
     }
 
-    pub fn de_bound(&self) -> Option<&[syn::WherePredicate]> {
+    pub fn de_bound(&self) -> Option<&[rust_syntax::WherePredicate]> {
         self.de_bound.as_ref().map(|vec| &vec[..])
     }
 
@@ -961,11 +961,11 @@ impl Variant {
         self.other
     }
 
-    pub fn serialize_with(&self) -> Option<&syn::ExprPath> {
+    pub fn serialize_with(&self) -> Option<&rust_syntax::ExprPath> {
         self.serialize_with.as_ref()
     }
 
-    pub fn deserialize_with(&self) -> Option<&syn::ExprPath> {
+    pub fn deserialize_with(&self) -> Option<&rust_syntax::ExprPath> {
         self.deserialize_with.as_ref()
     }
 
@@ -979,14 +979,14 @@ pub struct Field {
     name: MultiName,
     skip_serializing: bool,
     skip_deserializing: bool,
-    skip_serializing_if: Option<syn::ExprPath>,
+    skip_serializing_if: Option<rust_syntax::ExprPath>,
     default: Default,
-    serialize_with: Option<syn::ExprPath>,
-    deserialize_with: Option<syn::ExprPath>,
-    ser_bound: Option<Vec<syn::WherePredicate>>,
-    de_bound: Option<Vec<syn::WherePredicate>>,
-    borrowed_lifetimes: BTreeSet<syn::Lifetime>,
-    getter: Option<syn::ExprPath>,
+    serialize_with: Option<rust_syntax::ExprPath>,
+    deserialize_with: Option<rust_syntax::ExprPath>,
+    ser_bound: Option<Vec<rust_syntax::WherePredicate>>,
+    de_bound: Option<Vec<rust_syntax::WherePredicate>>,
+    borrowed_lifetimes: BTreeSet<rust_syntax::Lifetime>,
+    getter: Option<rust_syntax::ExprPath>,
     flatten: bool,
     transparent: bool,
 }
@@ -998,7 +998,7 @@ pub enum Default {
     /// The default is given by `std::default::Default::default()`.
     Default,
     /// The default is given by this function.
-    Path(syn::ExprPath),
+    Path(rust_syntax::ExprPath),
 }
 
 impl Default {
@@ -1015,7 +1015,7 @@ impl Field {
     pub fn from_ast(
         cx: &Ctxt,
         index: usize,
-        field: &syn::Field,
+        field: &rust_syntax::Field,
         attrs: Option<&Variant>,
         container_default: &Default,
         private: &Ident,
@@ -1065,7 +1065,7 @@ impl Field {
                 continue;
             }
 
-            if let syn::Meta::List(meta) = &attr.meta {
+            if let rust_syntax::Meta::List(meta) = &attr.meta {
                 if meta.tokens.is_empty() {
                     continue;
                 }
@@ -1181,7 +1181,7 @@ impl Field {
                 }
                 Ok(())
             }) {
-                cx.syn_error(err);
+                cx.syntax_error(err);
             }
         }
 
@@ -1204,7 +1204,7 @@ impl Field {
             //     impl<'de: 'a, 'a> Deserialize<'de> for Cow<'a, str>
             //     impl<'de: 'a, 'a> Deserialize<'de> for Cow<'a, [u8]>
             if is_cow(&field.ty, is_str) {
-                let mut path = syn::Path {
+                let mut path = rust_syntax::Path {
                     leading_colon: None,
                     segments: Punctuated::new(),
                 };
@@ -1214,14 +1214,14 @@ impl Field {
                 path.segments.push(Ident::new("de", span).into());
                 path.segments
                     .push(Ident::new("borrow_cow_str", span).into());
-                let expr = syn::ExprPath {
+                let expr = rust_syntax::ExprPath {
                     attrs: Vec::new(),
                     qself: None,
                     path,
                 };
                 deserialize_with.set_if_none(expr);
             } else if is_cow(&field.ty, is_slice_u8) {
-                let mut path = syn::Path {
+                let mut path = rust_syntax::Path {
                     leading_colon: None,
                     segments: Punctuated::new(),
                 };
@@ -1231,7 +1231,7 @@ impl Field {
                 path.segments.push(Ident::new("de", span).into());
                 path.segments
                     .push(Ident::new("borrow_cow_bytes", span).into());
-                let expr = syn::ExprPath {
+                let expr = rust_syntax::ExprPath {
                     attrs: Vec::new(),
                     qself: None,
                     path,
@@ -1291,7 +1291,7 @@ impl Field {
         self.skip_deserializing
     }
 
-    pub fn skip_serializing_if(&self) -> Option<&syn::ExprPath> {
+    pub fn skip_serializing_if(&self) -> Option<&rust_syntax::ExprPath> {
         self.skip_serializing_if.as_ref()
     }
 
@@ -1299,27 +1299,27 @@ impl Field {
         &self.default
     }
 
-    pub fn serialize_with(&self) -> Option<&syn::ExprPath> {
+    pub fn serialize_with(&self) -> Option<&rust_syntax::ExprPath> {
         self.serialize_with.as_ref()
     }
 
-    pub fn deserialize_with(&self) -> Option<&syn::ExprPath> {
+    pub fn deserialize_with(&self) -> Option<&rust_syntax::ExprPath> {
         self.deserialize_with.as_ref()
     }
 
-    pub fn ser_bound(&self) -> Option<&[syn::WherePredicate]> {
+    pub fn ser_bound(&self) -> Option<&[rust_syntax::WherePredicate]> {
         self.ser_bound.as_ref().map(|vec| &vec[..])
     }
 
-    pub fn de_bound(&self) -> Option<&[syn::WherePredicate]> {
+    pub fn de_bound(&self) -> Option<&[rust_syntax::WherePredicate]> {
         self.de_bound.as_ref().map(|vec| &vec[..])
     }
 
-    pub fn borrowed_lifetimes(&self) -> &BTreeSet<syn::Lifetime> {
+    pub fn borrowed_lifetimes(&self) -> &BTreeSet<rust_syntax::Lifetime> {
         &self.borrowed_lifetimes
     }
 
-    pub fn getter(&self) -> Option<&syn::ExprPath> {
+    pub fn getter(&self) -> Option<&rust_syntax::ExprPath> {
         self.getter.as_ref()
     }
 
@@ -1343,10 +1343,10 @@ fn get_ser_and_de<'c, T, F, R>(
     attr_name: Symbol,
     meta: &ParseNestedMeta,
     f: F,
-) -> syn::Result<(VecAttr<'c, T>, VecAttr<'c, T>)>
+) -> rust_syntax::Result<(VecAttr<'c, T>, VecAttr<'c, T>)>
 where
     T: Clone,
-    F: Fn(&Ctxt, Symbol, Symbol, &ParseNestedMeta) -> syn::Result<R>,
+    F: Fn(&Ctxt, Symbol, Symbol, &ParseNestedMeta) -> rust_syntax::Result<R>,
     R: Into<Option<T>>,
 {
     let mut ser_meta = VecAttr::none(cx, attr_name);
@@ -1387,7 +1387,7 @@ fn get_renames(
     cx: &Ctxt,
     attr_name: Symbol,
     meta: &ParseNestedMeta,
-) -> syn::Result<SerAndDe<syn::LitStr>> {
+) -> rust_syntax::Result<SerAndDe<rust_syntax::LitStr>> {
     let (ser, de) = get_ser_and_de(cx, attr_name, meta, get_lit_str2)?;
     Ok((ser.at_most_one(), de.at_most_one()))
 }
@@ -1395,7 +1395,7 @@ fn get_renames(
 fn get_multiple_renames(
     cx: &Ctxt,
     meta: &ParseNestedMeta,
-) -> syn::Result<(Option<syn::LitStr>, Vec<syn::LitStr>)> {
+) -> rust_syntax::Result<(Option<rust_syntax::LitStr>, Vec<rust_syntax::LitStr>)> {
     let (ser, de) = get_ser_and_de(cx, RENAME, meta, get_lit_str2)?;
     Ok((ser.at_most_one(), de.get()))
 }
@@ -1403,7 +1403,7 @@ fn get_multiple_renames(
 fn get_where_predicates(
     cx: &Ctxt,
     meta: &ParseNestedMeta,
-) -> syn::Result<SerAndDe<Vec<syn::WherePredicate>>> {
+) -> rust_syntax::Result<SerAndDe<Vec<rust_syntax::WherePredicate>>> {
     let (ser, de) = get_ser_and_de(cx, BOUND, meta, parse_lit_into_where)?;
     Ok((ser.at_most_one(), de.at_most_one()))
 }
@@ -1412,7 +1412,7 @@ fn get_lit_str(
     cx: &Ctxt,
     attr_name: Symbol,
     meta: &ParseNestedMeta,
-) -> syn::Result<Option<syn::LitStr>> {
+) -> rust_syntax::Result<Option<rust_syntax::LitStr>> {
     get_lit_str2(cx, attr_name, attr_name, meta)
 }
 
@@ -1421,14 +1421,14 @@ fn get_lit_str2(
     attr_name: Symbol,
     meta_item_name: Symbol,
     meta: &ParseNestedMeta,
-) -> syn::Result<Option<syn::LitStr>> {
-    let expr: syn::Expr = meta.value()?.parse()?;
+) -> rust_syntax::Result<Option<rust_syntax::LitStr>> {
+    let expr: rust_syntax::Expr = meta.value()?.parse()?;
     let mut value = &expr;
-    while let syn::Expr::Group(e) = value {
+    while let rust_syntax::Expr::Group(e) = value {
         value = &e.expr;
     }
-    if let syn::Expr::Lit(syn::ExprLit {
-        lit: syn::Lit::Str(lit),
+    if let rust_syntax::Expr::Lit(rust_syntax::ExprLit {
+        lit: rust_syntax::Lit::Str(lit),
         ..
     }) = value
     {
@@ -1456,7 +1456,7 @@ fn parse_lit_into_path(
     cx: &Ctxt,
     attr_name: Symbol,
     meta: &ParseNestedMeta,
-) -> syn::Result<Option<syn::Path>> {
+) -> rust_syntax::Result<Option<rust_syntax::Path>> {
     let Some(string) = get_lit_str(cx, attr_name, meta)? else {
         return Ok(None);
     };
@@ -1477,7 +1477,7 @@ fn parse_lit_into_expr_path(
     cx: &Ctxt,
     attr_name: Symbol,
     meta: &ParseNestedMeta,
-) -> syn::Result<Option<syn::ExprPath>> {
+) -> rust_syntax::Result<Option<rust_syntax::ExprPath>> {
     let Some(string) = get_lit_str(cx, attr_name, meta)? else {
         return Ok(None);
     };
@@ -1499,13 +1499,13 @@ fn parse_lit_into_where(
     attr_name: Symbol,
     meta_item_name: Symbol,
     meta: &ParseNestedMeta,
-) -> syn::Result<Vec<syn::WherePredicate>> {
+) -> rust_syntax::Result<Vec<rust_syntax::WherePredicate>> {
     let Some(string) = get_lit_str2(cx, attr_name, meta_item_name, meta)? else {
         return Ok(Vec::new());
     };
 
     Ok(
-        match string.parse_with(Punctuated::<syn::WherePredicate, Token![,]>::parse_terminated) {
+        match string.parse_with(Punctuated::<rust_syntax::WherePredicate, Token![,]>::parse_terminated) {
             Ok(predicates) => Vec::from_iter(predicates),
             Err(err) => {
                 cx.error_spanned_by(string, err);
@@ -1519,7 +1519,7 @@ fn parse_lit_into_ty(
     cx: &Ctxt,
     attr_name: Symbol,
     meta: &ParseNestedMeta,
-) -> syn::Result<Option<syn::Type>> {
+) -> rust_syntax::Result<Option<rust_syntax::Type>> {
     let Some(string) = get_lit_str(cx, attr_name, meta)? else {
         return Ok(None);
     };
@@ -1541,7 +1541,7 @@ fn parse_lit_into_ty(
 fn parse_lit_into_lifetimes(
     cx: &Ctxt,
     meta: &ParseNestedMeta,
-) -> syn::Result<BTreeSet<syn::Lifetime>> {
+) -> rust_syntax::Result<BTreeSet<rust_syntax::Lifetime>> {
     let Some(string) = get_lit_str(cx, BORROW, meta)? else {
         return Ok(BTreeSet::new());
     };
@@ -1576,11 +1576,11 @@ fn parse_lit_into_lifetimes(
     Ok(BTreeSet::new())
 }
 
-fn is_implicitly_borrowed(ty: &syn::Type) -> bool {
+fn is_implicitly_borrowed(ty: &rust_syntax::Type) -> bool {
     is_implicitly_borrowed_reference(ty) || is_option(ty, is_implicitly_borrowed_reference)
 }
 
-fn is_implicitly_borrowed_reference(ty: &syn::Type) -> bool {
+fn is_implicitly_borrowed_reference(ty: &rust_syntax::Type) -> bool {
     is_reference(ty, is_str) || is_reference(ty, is_slice_u8)
 }
 
@@ -1606,9 +1606,9 @@ fn is_implicitly_borrowed_reference(ty: &syn::Type) -> bool {
 //         #[serialization(borrow)]
 //         cow: Cow<'a, str>,
 //     }
-fn is_cow(ty: &syn::Type, elem: fn(&syn::Type) -> bool) -> bool {
+fn is_cow(ty: &rust_syntax::Type, elem: fn(&rust_syntax::Type) -> bool) -> bool {
     let path = match ungroup(ty) {
-        syn::Type::Path(ty) => &ty.path,
+        rust_syntax::Type::Path(ty) => &ty.path,
         _ => {
             return false;
         }
@@ -1617,7 +1617,7 @@ fn is_cow(ty: &syn::Type, elem: fn(&syn::Type) -> bool) -> bool {
         return false;
     };
     let args = match &seg.arguments {
-        syn::PathArguments::AngleBracketed(bracketed) => &bracketed.args,
+        rust_syntax::PathArguments::AngleBracketed(bracketed) => &bracketed.args,
         _ => {
             return false;
         }
@@ -1625,14 +1625,14 @@ fn is_cow(ty: &syn::Type, elem: fn(&syn::Type) -> bool) -> bool {
     seg.ident == "Cow"
         && args.len() == 2
         && match (&args[0], &args[1]) {
-            (syn::GenericArgument::Lifetime(_), syn::GenericArgument::Type(arg)) => elem(arg),
+            (rust_syntax::GenericArgument::Lifetime(_), rust_syntax::GenericArgument::Type(arg)) => elem(arg),
             _ => false,
         }
 }
 
-fn is_option(ty: &syn::Type, elem: fn(&syn::Type) -> bool) -> bool {
+fn is_option(ty: &rust_syntax::Type, elem: fn(&rust_syntax::Type) -> bool) -> bool {
     let path = match ungroup(ty) {
-        syn::Type::Path(ty) => &ty.path,
+        rust_syntax::Type::Path(ty) => &ty.path,
         _ => {
             return false;
         }
@@ -1641,7 +1641,7 @@ fn is_option(ty: &syn::Type, elem: fn(&syn::Type) -> bool) -> bool {
         return false;
     };
     let args = match &seg.arguments {
-        syn::PathArguments::AngleBracketed(bracketed) => &bracketed.args,
+        rust_syntax::PathArguments::AngleBracketed(bracketed) => &bracketed.args,
         _ => {
             return false;
         }
@@ -1649,7 +1649,7 @@ fn is_option(ty: &syn::Type, elem: fn(&syn::Type) -> bool) -> bool {
     seg.ident == "Option"
         && args.len() == 1
         && match &args[0] {
-            syn::GenericArgument::Type(arg) => elem(arg),
+            rust_syntax::GenericArgument::Type(arg) => elem(arg),
             _ => false,
         }
 }
@@ -1674,32 +1674,32 @@ fn is_option(ty: &syn::Type, elem: fn(&syn::Type) -> bool) -> bool {
 //     struct S<'a> {
 //         r: &'a str,
 //     }
-fn is_reference(ty: &syn::Type, elem: fn(&syn::Type) -> bool) -> bool {
+fn is_reference(ty: &rust_syntax::Type, elem: fn(&rust_syntax::Type) -> bool) -> bool {
     match ungroup(ty) {
-        syn::Type::Reference(ty) => ty.mutability.is_none() && elem(&ty.elem),
+        rust_syntax::Type::Reference(ty) => ty.mutability.is_none() && elem(&ty.elem),
         _ => false,
     }
 }
 
-fn is_str(ty: &syn::Type) -> bool {
+fn is_str(ty: &rust_syntax::Type) -> bool {
     is_primitive_type(ty, "str")
 }
 
-fn is_slice_u8(ty: &syn::Type) -> bool {
+fn is_slice_u8(ty: &rust_syntax::Type) -> bool {
     match ungroup(ty) {
-        syn::Type::Slice(ty) => is_primitive_type(&ty.elem, "u8"),
+        rust_syntax::Type::Slice(ty) => is_primitive_type(&ty.elem, "u8"),
         _ => false,
     }
 }
 
-fn is_primitive_type(ty: &syn::Type, primitive: &str) -> bool {
+fn is_primitive_type(ty: &rust_syntax::Type, primitive: &str) -> bool {
     match ungroup(ty) {
-        syn::Type::Path(ty) => ty.qself.is_none() && is_primitive_path(&ty.path, primitive),
+        rust_syntax::Type::Path(ty) => ty.qself.is_none() && is_primitive_path(&ty.path, primitive),
         _ => false,
     }
 }
 
-fn is_primitive_path(path: &syn::Path, primitive: &str) -> bool {
+fn is_primitive_path(path: &rust_syntax::Path, primitive: &str) -> bool {
     path.leading_colon.is_none()
         && path.segments.len() == 1
         && path.segments[0].ident == primitive
@@ -1716,8 +1716,8 @@ fn is_primitive_path(path: &syn::Path, primitive: &str) -> bool {
 fn borrowable_lifetimes(
     cx: &Ctxt,
     name: &Name,
-    field: &syn::Field,
-) -> Result<BTreeSet<syn::Lifetime>, ()> {
+    field: &rust_syntax::Field,
+) -> Result<BTreeSet<rust_syntax::Lifetime>, ()> {
     let mut lifetimes = BTreeSet::new();
     collect_lifetimes(&field.ty, &mut lifetimes);
     if lifetimes.is_empty() {
@@ -1729,80 +1729,80 @@ fn borrowable_lifetimes(
     }
 }
 
-fn collect_lifetimes(ty: &syn::Type, out: &mut BTreeSet<syn::Lifetime>) {
+fn collect_lifetimes(ty: &rust_syntax::Type, out: &mut BTreeSet<rust_syntax::Lifetime>) {
     match ty {
         #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
-        syn::Type::Slice(ty) => {
+        rust_syntax::Type::Slice(ty) => {
             collect_lifetimes(&ty.elem, out);
         }
-        syn::Type::Array(ty) => {
+        rust_syntax::Type::Array(ty) => {
             collect_lifetimes(&ty.elem, out);
         }
-        syn::Type::Ptr(ty) => {
+        rust_syntax::Type::Ptr(ty) => {
             collect_lifetimes(&ty.elem, out);
         }
-        syn::Type::Reference(ty) => {
+        rust_syntax::Type::Reference(ty) => {
             out.extend(ty.lifetime.iter().cloned());
             collect_lifetimes(&ty.elem, out);
         }
-        syn::Type::Tuple(ty) => {
+        rust_syntax::Type::Tuple(ty) => {
             for elem in &ty.elems {
                 collect_lifetimes(elem, out);
             }
         }
-        syn::Type::Path(ty) => {
+        rust_syntax::Type::Path(ty) => {
             if let Some(qself) = &ty.qself {
                 collect_lifetimes(&qself.ty, out);
             }
             for seg in &ty.path.segments {
-                if let syn::PathArguments::AngleBracketed(bracketed) = &seg.arguments {
+                if let rust_syntax::PathArguments::AngleBracketed(bracketed) = &seg.arguments {
                     for arg in &bracketed.args {
                         match arg {
-                            syn::GenericArgument::Lifetime(lifetime) => {
+                            rust_syntax::GenericArgument::Lifetime(lifetime) => {
                                 out.insert(lifetime.clone());
                             }
-                            syn::GenericArgument::Type(ty) => {
+                            rust_syntax::GenericArgument::Type(ty) => {
                                 collect_lifetimes(ty, out);
                             }
-                            syn::GenericArgument::AssocType(binding) => {
+                            rust_syntax::GenericArgument::AssocType(binding) => {
                                 collect_lifetimes(&binding.ty, out);
                             }
-                            syn::GenericArgument::Const(_)
-                            | syn::GenericArgument::AssocConst(_)
-                            | syn::GenericArgument::Constraint(_)
+                            rust_syntax::GenericArgument::Const(_)
+                            | rust_syntax::GenericArgument::AssocConst(_)
+                            | rust_syntax::GenericArgument::Constraint(_)
                             | _ => {}
                         }
                     }
                 }
             }
         }
-        syn::Type::Paren(ty) => {
+        rust_syntax::Type::Paren(ty) => {
             collect_lifetimes(&ty.elem, out);
         }
-        syn::Type::Group(ty) => {
+        rust_syntax::Type::Group(ty) => {
             collect_lifetimes(&ty.elem, out);
         }
-        syn::Type::Macro(ty) => {
+        rust_syntax::Type::Macro(ty) => {
             collect_lifetimes_from_tokens(ty.mac.tokens.clone(), out);
         }
-        syn::Type::FnPtr(_)
-        | syn::Type::Never(_)
-        | syn::Type::TraitObject(_)
-        | syn::Type::ImplTrait(_)
-        | syn::Type::Infer(_)
-        | syn::Type::Verbatim(_) => {}
+        rust_syntax::Type::FnPtr(_)
+        | rust_syntax::Type::Never(_)
+        | rust_syntax::Type::TraitObject(_)
+        | rust_syntax::Type::ImplTrait(_)
+        | rust_syntax::Type::Infer(_)
+        | rust_syntax::Type::Verbatim(_) => {}
 
         _ => {}
     }
 }
 
-fn collect_lifetimes_from_tokens(tokens: TokenStream, out: &mut BTreeSet<syn::Lifetime>) {
+fn collect_lifetimes_from_tokens(tokens: TokenStream, out: &mut BTreeSet<rust_syntax::Lifetime>) {
     let mut iter = tokens.into_iter();
     while let Some(tt) = iter.next() {
         match &tt {
             TokenTree::Punct(op) if op.as_char() == '\'' && op.spacing() == Spacing::Joint => {
                 if let Some(TokenTree::Ident(ident)) = iter.next() {
-                    out.insert(syn::Lifetime {
+                    out.insert(rust_syntax::Lifetime {
                         apostrophe: op.span(),
                         ident,
                     });

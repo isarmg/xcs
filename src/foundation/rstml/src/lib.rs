@@ -1,7 +1,7 @@
 //! Rust templating for XML-based formats (HTML, SVG, `MathML`) implemented on
 //! top of [`proc-macro::TokenStream`]s. Similar to JSX but for Rust (commonly
 //! named RSX). The parsed result is a nested [`Node`] structure, similar to the
-//! browser DOM, where node name and value are syn expressions to support
+//! browser DOM, where node name and value are rust_syntax expressions to support
 //! building proc macros.
 //!
 //! ```rust
@@ -134,7 +134,7 @@
 //!   # }).unwrap();
 //!   ```
 //!
-//! - **Attribute values can be any valid syn expression without requiring
+//! - **Attribute values can be any valid rust_syntax expression without requiring
 //!   braces**
 //!
 //!   ```rust
@@ -179,7 +179,7 @@
 //!   # use quote::quote;
 //!   # use rstml::{Parser, ParserConfig};
 //!   # Parser::new(ParserConfig::default()).parse_recoverable(quote! {
-//!  <div hello={world.} /> <!-- dot after world is invalid syn expression -->
+//!  <div hello={world.} /> <!-- dot after world is invalid rust_syntax expression -->
 //!   <>
 //!       <div>"1"</x> <!-- incorrect closed tag -->
 //!       <div>"2"</div>
@@ -210,7 +210,7 @@
 //!   Additionally, [`CustomNode`] can be used to implement fully custom
 //!   parsing.
 //!
-//! [`syn`]: /syn
+//! [`rust_syntax`]: /rust_syntax
 //! [`TokenStream`]: https://doc.rust-lang.org/proc_macro/struct.TokenStream.html
 //! [`Node`]: enum.Node.html
 //! [`CustomNode`]: trait.CustomNode.html
@@ -225,7 +225,7 @@
 
 extern crate proc_macro;
 
-use syn::Result;
+use rust_syntax::Result;
 
 mod config;
 mod error;
@@ -245,7 +245,7 @@ pub use parser::{recoverable, recoverable::ParsingResult, Parser};
 ///
 /// # Errors
 ///
-/// Returns a [`syn::Error`] if the input cannot be parsed as a valid node tree.
+/// Returns a [`rust_syntax::Error`] if the input cannot be parsed as a valid node tree.
 ///
 /// [`proc-macro::TokenStream`]: https://doc.rust-lang.org/proc_macro/struct.TokenStream.html
 /// [`Node`]: struct.Node.html
@@ -258,7 +258,7 @@ pub fn parse(tokens: proc_macro::TokenStream) -> Result<Vec<Node>> {
 ///
 /// # Errors
 ///
-/// Returns a [`syn::Error`] if the input cannot be parsed as a valid node tree.
+/// Returns a [`rust_syntax::Error`] if the input cannot be parsed as a valid node tree.
 ///
 /// [`proc-macro::TokenStream`]: https://doc.rust-lang.org/proc_macro/struct.TokenStream.html
 /// [`Node`]: struct.Node.html
@@ -274,7 +274,7 @@ pub fn parse_with_config<C: CustomNode + std::fmt::Debug>(
 ///
 /// # Errors
 ///
-/// Returns a [`syn::Error`] if the input cannot be parsed as a valid node tree.
+/// Returns a [`rust_syntax::Error`] if the input cannot be parsed as a valid node tree.
 ///
 /// [`proc-macro2::TokenStream`]: https://docs.rs/proc-macro2/latest/proc_macro2/struct.TokenStream.html
 /// [`Node`]: struct.Node.html
@@ -287,7 +287,7 @@ pub fn parse2(tokens: proc_macro2::TokenStream) -> Result<Vec<Node>> {
 ///
 /// # Errors
 ///
-/// Returns a [`syn::Error`] if the input cannot be parsed as a valid node tree.
+/// Returns a [`rust_syntax::Error`] if the input cannot be parsed as a valid node tree.
 ///
 /// [`proc-macro2::TokenStream`]: https://docs.rs/proc-macro2/latest/proc_macro2/struct.TokenStream.html
 /// [`Node`]: struct.Node.html

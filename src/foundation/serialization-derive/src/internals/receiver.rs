@@ -2,7 +2,7 @@ use crate::internals::respan::respan;
 use proc_macro2::Span;
 use quote::ToTokens;
 use std::mem;
-use syn::{
+use rust_syntax::{
     parse_quote, Data, DeriveInput, Expr, ExprPath, GenericArgument, GenericParam, Generics, Macro,
     Path, PathArguments, QSelf, ReturnType, Token, Type, TypeParamBound, TypePath, WherePredicate,
 };
@@ -24,7 +24,7 @@ impl ReplaceReceiver<'_> {
     fn self_ty(&self, span: Span) -> TypePath {
         let tokens = self.0.to_token_stream();
         let respanned = respan(tokens, span);
-        syn::parse2(respanned).unwrap()
+        rust_syntax::parse2(respanned).unwrap()
     }
 
     fn self_to_qself(&self, qself: &mut Option<QSelf>, path: &mut Path) {

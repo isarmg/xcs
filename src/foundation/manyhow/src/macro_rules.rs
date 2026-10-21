@@ -116,11 +116,11 @@ macro_rules! error_message {
 /// ```should_panic
 /// # use manyhow::bail;
 /// # use proc_macro2::Span;
-/// # use syn as syn;
+/// # use rust_syntax as rust_syntax;
 /// bail!("an error message"; error = "with attachments");
 /// let span = Span::call_site();
 /// bail!(span, "error message");
-/// let error = syn::Error::new(Span::call_site(), "an error");
+/// let error = rust_syntax::Error::new(Span::call_site(), "an error");
 /// bail!(error);
 /// # Ok::<_, manyhow::Error>(())
 /// ```
@@ -156,10 +156,10 @@ macro_rules! bail {
 /// ```should_panic
 /// # use manyhow::ensure;
 /// # use proc_macro2::Span;
-/// # use syn as syn;
+/// # use rust_syntax as rust_syntax;
 /// let span = Span::call_site();
 /// ensure!(false, span, "error message");
-/// let error = syn::Error::new(Span::call_site(), "an error");
+/// let error = rust_syntax::Error::new(Span::call_site(), "an error");
 /// ensure!(false, error);
 /// # Ok::<_, manyhow::Error>(())
 /// ```
@@ -184,13 +184,13 @@ macro_rules! ensure {
 /// ```
 /// # use manyhow::{emit, Emitter};
 /// # use proc_macro2::Span;
-/// # use syn as syn;
+/// # use rust_syntax as rust_syntax;
 /// let mut emitter = Emitter::new();
 /// emit!(emitter, "an error message");
 /// emit!(emitter, "an error message"; error = "with attachments");
 /// let span = Span::call_site();
 /// emit!(emitter, span, "error message");
-/// let error = syn::Error::new(Span::call_site(), "an error");
+/// let error = rust_syntax::Error::new(Span::call_site(), "an error");
 /// emit!(emitter, error);
 /// ```
 ///
@@ -198,7 +198,7 @@ macro_rules! ensure {
 /// ```
 /// # use manyhow::{emit, error_message, Error};
 /// # use proc_macro2::Span;
-/// # use syn as syn;
+/// # use rust_syntax as rust_syntax;
 /// let mut error: Error = error_message!("initial error").into();
 /// emit!(error, "an error message");
 /// ```
@@ -207,7 +207,7 @@ macro_rules! ensure {
 /// ```
 /// # use manyhow::emit;
 /// # use proc_macro2::Span;
-/// # use syn as syn;
+/// # use rust_syntax as rust_syntax;
 /// let mut errors = Vec::new();
 /// emit!(errors, "an error message");
 /// ```

@@ -10,7 +10,7 @@
 use proc_macro2::{Ident, TokenStream};
 use proc_macro2_diagnostics::{Diagnostic, Level};
 use quote::ToTokens;
-use syn::{ext::IdentExt, Token};
+use rust_syntax::{ext::IdentExt, Token};
 
 use crate::{
     node::{parse, NodeAttribute, NodeName},
@@ -18,10 +18,10 @@ use crate::{
 };
 
 pub(crate) mod tokens {
-    //! Custom syn punctuations
+    //! Custom rust_syntax punctuations
     use proc_macro2::TokenStream;
     use quote::ToTokens;
-    use syn::{
+    use rust_syntax::{
         custom_punctuation,
         parse::{Parse, ParseStream},
         Token,
@@ -69,7 +69,7 @@ pub(crate) mod tokens {
     }
 
     impl Parse for ComStart {
-        fn parse(input: ParseStream) -> syn::Result<Self> {
+        fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
             Ok(Self {
                 token_lt: input.parse()?,
                 token_not: input.parse()?,
@@ -95,7 +95,7 @@ pub(crate) mod tokens {
     }
 
     impl Parse for ComEnd {
-        fn parse(input: ParseStream) -> syn::Result<Self> {
+        fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
             Ok(Self {
                 token_minus: parse::parse_array_of2_tokens(input)?,
                 token_gt: input.parse()?,
@@ -166,7 +166,7 @@ impl FragmentClose {
     /// be unreachable).
     pub fn parse_with_start_tag(
         parser: &mut RecoverableContext,
-        input: syn::parse::ParseStream,
+        input: rust_syntax::parse::ParseStream,
         start_tag: Option<tokens::CloseTagStart>,
     ) -> Option<Self> {
         let start_tag = start_tag?;
@@ -189,53 +189,53 @@ impl FragmentClose {
 pub struct TagGenerics {
     // None if no generics
     pub lt_token: Option<Token![<]>,
-    pub args: syn::punctuated::Punctuated<syn::GenericArgument, Token![,]>,
+    pub args: rust_syntax::punctuated::Punctuated<rust_syntax::GenericArgument, Token![,]>,
     pub gt_token: Option<Token![>]>,
 }
 
 impl_to_tokens!(TagGenerics, lt_token, args, gt_token);
 
 impl TagGenerics {
-    pub fn type_params(&self) -> impl Iterator<Item = &syn::Type> {
+    pub fn type_params(&self) -> impl Iterator<Item = &rust_syntax::Type> {
         self.args.iter().filter_map(|arg| {
-            if let syn::GenericArgument::Type(ty) = arg {
+            if let rust_syntax::GenericArgument::Type(ty) = arg {
                 Some(ty)
             } else {
                 None
             }
         })
     }
-    pub fn lifetimes(&self) -> impl Iterator<Item = &syn::Lifetime> {
+    pub fn lifetimes(&self) -> impl Iterator<Item = &rust_syntax::Lifetime> {
         self.args.iter().filter_map(|arg| {
-            if let syn::GenericArgument::Lifetime(lt) = arg {
+            if let rust_syntax::GenericArgument::Lifetime(lt) = arg {
                 Some(lt)
             } else {
                 None
             }
         })
     }
-    pub fn const_params(&self) -> impl Iterator<Item = &syn::Expr> {
+    pub fn const_params(&self) -> impl Iterator<Item = &rust_syntax::Expr> {
         self.args.iter().filter_map(|arg| {
-            if let syn::GenericArgument::Const(expr) = arg {
+            if let rust_syntax::GenericArgument::Const(expr) = arg {
                 Some(expr)
             } else {
                 None
             }
         })
     }
-    pub fn all_params(&self) -> impl Iterator<Item = &syn::GenericArgument> {
+    pub fn all_params(&self) -> impl Iterator<Item = &rust_syntax::GenericArgument> {
         self.args.iter()
     }
 }
 
-impl syn::parse::Parse for TagGenerics {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+impl rust_syntax::parse::Parse for TagGenerics {
+    fn parse(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Self> {
         if !input.peek(Token![<]) {
             return Ok(TagGenerics::default());
         }
 
         let lt_token: Token![<] = input.parse()?;
-        let args = syn::punctuated::Punctuated::parse_separated_nonempty(input)?;
+        let args = rust_syntax::punctuated::Punctuated::parse_separated_nonempty(input)?;
         let gt_token: Token![>] = input.parse()?;
 
         Ok(Self {
@@ -289,7 +289,7 @@ impl_to_tokens!(CloseTag, start_tag, name, generics, token_gt);
 impl CloseTag {
     pub fn parse_with_start_tag(
         parser: &mut RecoverableContext,
-        input: syn::parse::ParseStream,
+        input: rust_syntax::parse::ParseStream,
         start_tag: Option<tokens::CloseTagStart>,
     ) -> Option<Self> {
         Some(Self {

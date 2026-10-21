@@ -391,20 +391,20 @@ impl ops::DerefMut for CodegenResult<'_> {
 /// A trait to convert a rust type into a pointer, optionally const, to the same
 /// type.
 trait ToPtr {
-    fn to_ptr(self, is_const: bool) -> syn::Type;
+    fn to_ptr(self, is_const: bool) -> rust_syntax::Type;
 }
 
-impl ToPtr for syn::Type {
-    fn to_ptr(self, is_const: bool) -> syn::Type {
+impl ToPtr for rust_syntax::Type {
+    fn to_ptr(self, is_const: bool) -> rust_syntax::Type {
         if is_const {
-            syn::parse_quote! { *const #self }
+            rust_syntax::parse_quote! { *const #self }
         } else {
-            syn::parse_quote! { *mut #self }
+            rust_syntax::parse_quote! { *mut #self }
         }
     }
 }
 
-/// An extension trait for `syn::Type` that lets us append any implicit
+/// An extension trait for `rust_syntax::Type` that lets us append any implicit
 /// template parameters that exist for some type, if necessary.
 trait WithImplicitTemplateParams {
     fn with_implicit_template_params(
@@ -414,7 +414,7 @@ trait WithImplicitTemplateParams {
     ) -> Self;
 }
 
-impl WithImplicitTemplateParams for syn::Type {
+impl WithImplicitTemplateParams for rust_syntax::Type {
     fn with_implicit_template_params(
         self,
         ctx: &BindgenContext,
@@ -460,7 +460,7 @@ impl WithImplicitTemplateParams for syn::Type {
         };
 
         if let Some(params) = params {
-            syn::parse_quote! { #self<#(#params),*> }
+            rust_syntax::parse_quote! { #self<#(#params),*> }
         } else {
             self
         }
@@ -1026,7 +1026,7 @@ impl CodeGenerator for Type {
 
                 // We prefer using `pub use` over `pub type` because of:
                 // https://github.com/rust-lang/rust/issues/26264
-                if matches!(inner_rust_type, syn::Type::Path(_)) &&
+                if matches!(inner_rust_type, rust_syntax::Type::Path(_)) &&
                     outer_params.is_empty() &&
                     !is_opaque &&
                     alias_style == AliasVariation::TypeAlias &&
@@ -1279,9 +1279,9 @@ impl TryToRustTy for Vtable<'_> {
         &self,
         ctx: &BindgenContext,
         _: &(),
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         let name = ctx.rust_ident(self.canonical_name(ctx));
-        Ok(syn::parse_quote! { #name })
+        Ok(rust_syntax::parse_quote! { #name })
     }
 }
 
@@ -1456,22 +1456,22 @@ impl FieldCodegen<'_> for Field {
 fn wrap_union_field_if_needed(
     ctx: &BindgenContext,
     struct_layout: &StructLayoutTracker,
-    ty: syn::Type,
+    ty: rust_syntax::Type,
     result: &mut CodegenResult,
-) -> syn::Type {
+) -> rust_syntax::Type {
     if struct_layout.is_rust_union() {
         if struct_layout.can_copy_union_fields() {
             ty
         } else {
             let prefix = ctx.trait_prefix();
-            syn::parse_quote! { ::#prefix::mem::ManuallyDrop<#ty> }
+            rust_syntax::parse_quote! { ::#prefix::mem::ManuallyDrop<#ty> }
         }
     } else {
         result.saw_bindgen_union();
         if ctx.options().enable_cxx_namespaces {
-            syn::parse_quote! { root::__BindgenUnionField<#ty> }
+            rust_syntax::parse_quote! { root::__BindgenUnionField<#ty> }
         } else {
-            syn::parse_quote! { __BindgenUnionField<#ty> }
+            rust_syntax::parse_quote! { __BindgenUnionField<#ty> }
         }
     }
 }
@@ -1515,16 +1515,16 @@ impl FieldCodegen<'_> for FieldData {
             // Only FAM if its the last field
             if ctx.options().flexarray_dst && last_field {
                 struct_layout.saw_flexible_array();
-                syn::parse_quote! { FAM }
+                rust_syntax::parse_quote! { FAM }
             } else {
                 result.saw_incomplete_array();
 
                 let inner = item.to_rust_ty_or_opaque(ctx, &());
 
                 if ctx.options().enable_cxx_namespaces {
-                    syn::parse_quote! { root::__IncompleteArrayField<#inner> }
+                    rust_syntax::parse_quote! { root::__IncompleteArrayField<#inner> }
                 } else {
-                    syn::parse_quote! { __IncompleteArrayField<#inner> }
+                    rust_syntax::parse_quote! { __IncompleteArrayField<#inner> }
                 }
             }
         } else {
@@ -1924,7 +1924,7 @@ fn bitfield_raw_setter_name(
 impl<'a> FieldCodegen<'a> for Bitfield {
     type Extra = (
         &'a str,
-        &'a syn::Type,
+        &'a rust_syntax::Type,
         &'a mut bool,
         &'a mut FieldVisibilityKind,
     );
@@ -1948,7 +1948,7 @@ impl<'a> FieldCodegen<'a> for Bitfield {
             bitfield_visibility,
         ): (
             &'a str,
-            &'a syn::Type,
+            &'a rust_syntax::Type,
             &mut bool,
             &'a mut FieldVisibilityKind,
         ),
@@ -3287,7 +3287,7 @@ struct EnumBuilder {
     /// Attributes applying to the enum type
     attrs: Vec<proc_macro2::TokenStream>,
     /// The representation of the enum, e.g. `u32`.
-    repr: syn::Type,
+    repr: rust_syntax::Type,
     /// The enum kind we are generating
     kind: EnumBuilderKind,
     /// A list of all variants this enum has.
@@ -3324,7 +3324,7 @@ impl EnumBuilder {
     fn new(
         name: &str,
         attrs: Vec<proc_macro2::TokenStream>,
-        repr: &syn::Type,
+        repr: &rust_syntax::Type,
         enum_variation: EnumVariation,
         has_typedef: bool,
         enum_is_anonymous: bool,
@@ -3378,7 +3378,7 @@ impl EnumBuilder {
         variant: &EnumVariant,
         variant_doc: proc_macro2::TokenStream,
         mangling_prefix: Option<&str>,
-        rust_ty: &syn::Type,
+        rust_ty: &rust_syntax::Type,
         is_ty_named: bool,
     ) -> Self {
         let variant_name = ctx.rust_mangle(variant.name());
@@ -3454,7 +3454,7 @@ impl EnumBuilder {
 
     fn newtype_bitfield_impl(
         prefix: &Ident,
-        rust_ty: &syn::Type,
+        rust_ty: &rust_syntax::Type,
     ) -> proc_macro2::TokenStream {
         let rust_ty_name = &rust_ty;
         quote! {
@@ -3492,7 +3492,7 @@ impl EnumBuilder {
     fn build(
         self,
         ctx: &BindgenContext,
-        rust_ty: &syn::Type,
+        rust_ty: &rust_syntax::Type,
     ) -> proc_macro2::TokenStream {
         let enum_ident = self.enum_type;
 
@@ -3782,7 +3782,7 @@ impl CodeGenerator for Enum {
             // value.
             variant_name: &Ident,
             referenced_name: &Ident,
-            enum_rust_ty: &syn::Type,
+            enum_rust_ty: &rust_syntax::Type,
             result: &mut CodegenResult<'_>,
         ) {
             let constant_name = if enum_.name().is_some() {
@@ -4128,7 +4128,7 @@ pub(crate) trait TryToOpaque {
         &self,
         ctx: &BindgenContext,
         extra: &Self::Extra,
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         self.try_get_layout(ctx, extra)
             .map(|layout| helpers::blob(ctx, layout, true))
     }
@@ -4154,7 +4154,7 @@ pub(crate) trait ToOpaque: TryToOpaque {
         &self,
         ctx: &BindgenContext,
         extra: &Self::Extra,
-    ) -> syn::Type {
+    ) -> rust_syntax::Type {
         let layout = self.get_layout(ctx, extra);
         helpers::blob(ctx, layout, true)
     }
@@ -4176,7 +4176,7 @@ pub(crate) trait TryToRustTy {
         &self,
         ctx: &BindgenContext,
         extra: &Self::Extra,
-    ) -> error::Result<syn::Type>;
+    ) -> error::Result<rust_syntax::Type>;
 }
 
 /// Fallible conversion to a Rust type or an opaque blob with the correct size
@@ -4191,7 +4191,7 @@ pub(crate) trait TryToRustTyOrOpaque: TryToRustTy + TryToOpaque {
         &self,
         ctx: &BindgenContext,
         extra: &<Self as TryToRustTyOrOpaque>::Extra,
-    ) -> error::Result<syn::Type>;
+    ) -> error::Result<rust_syntax::Type>;
 }
 
 impl<E, T> TryToRustTyOrOpaque for T
@@ -4204,7 +4204,7 @@ where
         &self,
         ctx: &BindgenContext,
         extra: &E,
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         self.try_to_rust_ty(ctx, extra).or_else(|_| {
             if let Ok(layout) = self.try_get_layout(ctx, extra) {
                 Ok(helpers::blob(ctx, layout, true))
@@ -4239,7 +4239,7 @@ pub(crate) trait ToRustTyOrOpaque: TryToRustTy + ToOpaque {
         &self,
         ctx: &BindgenContext,
         extra: &<Self as ToRustTyOrOpaque>::Extra,
-    ) -> syn::Type;
+    ) -> rust_syntax::Type;
 }
 
 impl<E, T> ToRustTyOrOpaque for T
@@ -4252,7 +4252,7 @@ where
         &self,
         ctx: &BindgenContext,
         extra: &E,
-    ) -> syn::Type {
+    ) -> rust_syntax::Type {
         self.try_to_rust_ty(ctx, extra)
             .unwrap_or_else(|_| self.to_opaque(ctx, extra))
     }
@@ -4283,7 +4283,7 @@ where
         &self,
         ctx: &BindgenContext,
         _: &(),
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         ctx.resolve_item((*self).into()).try_to_rust_ty(ctx, &())
     }
 }
@@ -4307,7 +4307,7 @@ impl TryToRustTy for Item {
         &self,
         ctx: &BindgenContext,
         _: &(),
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         self.kind().expect_type().try_to_rust_ty(ctx, self)
     }
 }
@@ -4331,7 +4331,7 @@ impl TryToRustTy for Type {
         &self,
         ctx: &BindgenContext,
         item: &Item,
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         use self::helpers::ast_ty::*;
 
         match *self.kind() {
@@ -4351,9 +4351,9 @@ impl TryToRustTy for Type {
 
                 ctx.generated_bindgen_complex();
                 Ok(if ctx.options().enable_cxx_namespaces {
-                    syn::parse_quote! { root::__BindgenComplex<#float_path> }
+                    rust_syntax::parse_quote! { root::__BindgenComplex<#float_path> }
                 } else {
-                    syn::parse_quote! { __BindgenComplex<#float_path> }
+                    rust_syntax::parse_quote! { __BindgenComplex<#float_path> }
                 })
             }
             TypeKind::Function(ref signature) => {
@@ -4364,17 +4364,17 @@ impl TryToRustTy for Type {
                 let ty = signature.try_to_rust_ty(ctx, item)?;
 
                 let prefix = ctx.trait_prefix();
-                Ok(syn::parse_quote! { ::#prefix::option::Option<#ty> })
+                Ok(rust_syntax::parse_quote! { ::#prefix::option::Option<#ty> })
             }
             TypeKind::Array(item, len) | TypeKind::Vector(item, len) => {
                 let ty = item.try_to_rust_ty(ctx, &())?;
-                Ok(syn::parse_quote! { [ #ty ; #len ] })
+                Ok(rust_syntax::parse_quote! { [ #ty ; #len ] })
             }
             TypeKind::Enum(..) => {
                 let path = item.namespace_aware_canonical_path(ctx);
                 let path = proc_macro2::TokenStream::from_str(&path.join("::"))
                     .unwrap();
-                Ok(syn::parse_quote!(#path))
+                Ok(rust_syntax::parse_quote!(#path))
             }
             TypeKind::TemplateInstantiation(ref inst) => {
                 inst.try_to_rust_ty(ctx, item)
@@ -4453,13 +4453,13 @@ impl TryToRustTy for Type {
             TypeKind::TypeParam => {
                 let name = item.canonical_name(ctx);
                 let ident = ctx.rust_ident(name);
-                Ok(syn::parse_quote! { #ident })
+                Ok(rust_syntax::parse_quote! { #ident })
             }
-            TypeKind::ObjCSel => Ok(syn::parse_quote! { objc::runtime::Sel }),
-            TypeKind::ObjCId => Ok(syn::parse_quote! { id }),
+            TypeKind::ObjCSel => Ok(rust_syntax::parse_quote! { objc::runtime::Sel }),
+            TypeKind::ObjCId => Ok(rust_syntax::parse_quote! { id }),
             TypeKind::ObjCInterface(ref interface) => {
                 let name = ctx.rust_ident(interface.name());
-                Ok(syn::parse_quote! { #name })
+                Ok(rust_syntax::parse_quote! { #name })
             }
             ref u @ TypeKind::UnresolvedTypeRef(..) => {
                 unreachable!("Should have been resolved after parsing {u:?}!")
@@ -4489,7 +4489,7 @@ impl TryToRustTy for TemplateInstantiation {
         &self,
         ctx: &BindgenContext,
         item: &Item,
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         if self.is_opaque(ctx, item) {
             return Err(Error::InstantiationOfOpaqueType);
         }
@@ -4541,9 +4541,9 @@ impl TryToRustTy for TemplateInstantiation {
             .collect::<error::Result<Vec<_>>>()?;
 
         Ok(if template_args.is_empty() {
-            syn::parse_quote! { #ty }
+            rust_syntax::parse_quote! { #ty }
         } else {
-            syn::parse_quote! { #ty<#(#template_args),*> }
+            rust_syntax::parse_quote! { #ty<#(#template_args),*> }
         })
     }
 }
@@ -4555,14 +4555,14 @@ impl TryToRustTy for FunctionSig {
         &self,
         ctx: &BindgenContext,
         item: &Item,
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         // TODO: we might want to consider ignoring the reference return value.
         let ret = utils::fnsig_return_ty(ctx, self);
         let arguments = utils::fnsig_arguments(ctx, self);
 
         match self.abi(ctx, None) {
             Ok(abi) => Ok(
-                syn::parse_quote! { unsafe extern #abi fn ( #( #arguments ),* ) #ret },
+                rust_syntax::parse_quote! { unsafe extern #abi fn ( #( #arguments ),* ) #ret },
             ),
             Err(err) => {
                 if matches!(err, Error::UnsupportedAbi(_)) {
@@ -5701,23 +5701,23 @@ pub(crate) mod utils {
     pub(crate) fn build_path(
         item: &Item,
         ctx: &BindgenContext,
-    ) -> error::Result<syn::Type> {
+    ) -> error::Result<rust_syntax::Type> {
         let path = item.namespace_aware_canonical_path(ctx);
         let tokens =
             proc_macro2::TokenStream::from_str(&path.join("::")).unwrap();
 
-        Ok(syn::parse_quote! { #tokens })
+        Ok(rust_syntax::parse_quote! { #tokens })
     }
 
-    fn primitive_ty(ctx: &BindgenContext, name: &str) -> syn::Type {
+    fn primitive_ty(ctx: &BindgenContext, name: &str) -> rust_syntax::Type {
         let ident = ctx.rust_ident_raw(name);
-        syn::parse_quote! { #ident }
+        rust_syntax::parse_quote! { #ident }
     }
 
     pub(crate) fn type_from_named(
         ctx: &BindgenContext,
         name: &str,
-    ) -> Option<syn::Type> {
+    ) -> Option<rust_syntax::Type> {
         // FIXME: We could use the inner item to check this is really a
         // primitive type but, who the heck overrides these anyway?
         Some(match name {
@@ -5746,9 +5746,9 @@ pub(crate) mod utils {
     fn fnsig_return_ty_internal(
         ctx: &BindgenContext,
         sig: &FunctionSig,
-    ) -> syn::Type {
+    ) -> rust_syntax::Type {
         if sig.is_divergent() {
-            return syn::parse_quote! { ! };
+            return rust_syntax::parse_quote! { ! };
         }
 
         let canonical_type_kind = sig
@@ -5762,7 +5762,7 @@ pub(crate) mod utils {
             .kind();
 
         match canonical_type_kind {
-            TypeKind::Void => syn::parse_quote! { () },
+            TypeKind::Void => rust_syntax::parse_quote! { () },
             _ => sig.return_type().to_rust_ty_or_opaque(ctx, &()),
         }
     }
@@ -5772,7 +5772,7 @@ pub(crate) mod utils {
         sig: &FunctionSig,
     ) -> proc_macro2::TokenStream {
         match fnsig_return_ty_internal(ctx, sig) {
-            syn::Type::Tuple(syn::TypeTuple { elems, .. })
+            rust_syntax::Type::Tuple(rust_syntax::TypeTuple { elems, .. })
                 if elems.is_empty() =>
             {
                 quote! {}
@@ -5784,7 +5784,7 @@ pub(crate) mod utils {
     pub(crate) fn fnsig_argument_type(
         ctx: &BindgenContext,
         ty: TypeId,
-    ) -> syn::Type {
+    ) -> rust_syntax::Type {
         use super::ToPtr;
 
         let arg_item = ctx.resolve_item(ty);
@@ -5815,7 +5815,7 @@ pub(crate) mod utils {
                     *inner_ty.canonical_type(ctx).kind()
                 {
                     let name = ctx.rust_ident(interface.name());
-                    syn::parse_quote! { #name }
+                    rust_syntax::parse_quote! { #name }
                 } else {
                     arg_item.to_rust_ty_or_opaque(ctx, &())
                 }

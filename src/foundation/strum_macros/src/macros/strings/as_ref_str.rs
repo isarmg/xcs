@@ -1,12 +1,12 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{parse_quote, Data, DeriveInput, Fields};
+use rust_syntax::{parse_quote, Data, DeriveInput, Fields};
 
 use crate::helpers::{
     non_enum_error, non_single_field_variant_error, HasStrumVariantProperties, HasTypeProperties,
 };
 
-fn get_arms<F>(ast: &DeriveInput, transparent_fn: F) -> syn::Result<Vec<TokenStream>>
+fn get_arms<F>(ast: &DeriveInput, transparent_fn: F) -> rust_syntax::Result<Vec<TokenStream>>
 where
     F: Fn(&TokenStream) -> TokenStream,
 {
@@ -66,7 +66,7 @@ where
     Ok(arms)
 }
 
-pub fn as_ref_str_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn as_ref_str_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let arms = get_arms(ast, |tok| {
@@ -94,7 +94,7 @@ pub enum GenerateTraitVariant {
 pub fn as_static_str_inner(
     ast: &DeriveInput,
     trait_variant: &GenerateTraitVariant,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let arms = &get_arms(ast, |tok| {
@@ -107,7 +107,7 @@ pub fn as_static_str_inner(
     let mut generics = ast.generics.clone();
     generics
         .params
-        .push(syn::GenericParam::Lifetime(syn::LifetimeParam::new(
+        .push(rust_syntax::GenericParam::Lifetime(rust_syntax::LifetimeParam::new(
             parse_quote!('_derivative_strum),
         )));
     let (impl_generics2, _, _) = generics.split_for_impl();

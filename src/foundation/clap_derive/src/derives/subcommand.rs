@@ -14,14 +14,14 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
-use syn::{Data, DeriveInput, FieldsUnnamed, Generics, Variant, spanned::Spanned};
+use rust_syntax::{Data, DeriveInput, FieldsUnnamed, Generics, Variant, spanned::Spanned};
 
 use crate::derives::args;
 use crate::derives::args::collect_args_fields;
 use crate::item::{Item, Kind, Name};
 use crate::utils::{is_simple_ty, subty_if_name};
 
-pub(crate) fn derive_subcommand(input: &DeriveInput) -> Result<TokenStream, syn::Error> {
+pub(crate) fn derive_subcommand(input: &DeriveInput) -> Result<TokenStream, rust_syntax::Error> {
     let ident = &input.ident;
 
     match input.data {
@@ -36,7 +36,7 @@ pub(crate) fn derive_subcommand(input: &DeriveInput) -> Result<TokenStream, syn:
                         Item::from_subcommand_variant(variant, item.casing(), item.env_casing())?;
                     Ok((variant, item))
                 })
-                .collect::<Result<Vec<_>, syn::Error>>()?;
+                .collect::<Result<Vec<_>, rust_syntax::Error>>()?;
             gen_for_enum(&item, ident, &input.generics, &variants)
         }
         _ => abort_call_site!("`#[derive(Subcommand)]` only supports enums"),
@@ -48,7 +48,7 @@ pub(crate) fn gen_for_enum(
     item_name: &Ident,
     generics: &Generics,
     variants: &[(&Variant, Item)],
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     if !matches!(&*item.kind(), Kind::Command(_)) {
         abort! { item.kind().span(),
             "`{}` cannot be used with `#[command]`",
@@ -145,8 +145,8 @@ fn gen_augment(
     variants: &[(&Variant, Item)],
     parent_item: &Item,
     override_required: bool,
-) -> Result<TokenStream, syn::Error> {
-    use syn::Fields::{Named, Unit, Unnamed};
+) -> Result<TokenStream, rust_syntax::Error> {
+    use rust_syntax::Fields::{Named, Unit, Unnamed};
 
     let app_var = Ident::new("__clap_app", Span::call_site());
 
@@ -373,8 +373,8 @@ fn gen_augment(
     }})
 }
 
-fn gen_has_subcommand(variants: &[(&Variant, Item)]) -> Result<TokenStream, syn::Error> {
-    use syn::Fields::Unnamed;
+fn gen_has_subcommand(variants: &[(&Variant, Item)]) -> Result<TokenStream, rust_syntax::Error> {
+    use rust_syntax::Fields::Unnamed;
 
     let mut ext_subcmd = false;
 
@@ -421,7 +421,7 @@ fn gen_has_subcommand(variants: &[(&Variant, Item)]) -> Result<TokenStream, syn:
                 "invalid variant for `#[command(flatten)]`, expected newtype variant"
             ),
         })
-        .collect::<Result<Vec<_>, syn::Error>>()?;
+        .collect::<Result<Vec<_>, rust_syntax::Error>>()?;
 
     let genned = if ext_subcmd {
         quote! { true }
@@ -437,8 +437,8 @@ fn gen_has_subcommand(variants: &[(&Variant, Item)]) -> Result<TokenStream, syn:
     Ok(genned)
 }
 
-fn gen_from_arg_matches(variants: &[(&Variant, Item)]) -> Result<TokenStream, syn::Error> {
-    use syn::Fields::{Named, Unit, Unnamed};
+fn gen_from_arg_matches(variants: &[(&Variant, Item)]) -> Result<TokenStream, rust_syntax::Error> {
+    use rust_syntax::Fields::{Named, Unit, Unnamed};
 
     let subcommand_name_var = format_ident!("__clap_name");
     let sub_arg_matches_var = format_ident!("__clap_arg_matches");
@@ -521,7 +521,7 @@ fn gen_from_arg_matches(variants: &[(&Variant, Item)]) -> Result<TokenStream, sy
                 return ::std::result::Result::Ok(Self :: #variant_name #constructor_block)
             }
         })
-    }).collect::<Result<Vec<_>, syn::Error>>()?;
+    }).collect::<Result<Vec<_>, rust_syntax::Error>>()?;
     let child_subcommands = flatten_variants.iter().map(|(variant, _attrs)| {
         let variant_name = &variant.ident;
         match variant.fields {
@@ -543,7 +543,7 @@ fn gen_from_arg_matches(variants: &[(&Variant, Item)]) -> Result<TokenStream, sy
                 "invalid variant for `#[command(flatten)]`, expected newtype variant"
             ),
         }
-    }).collect::<Result<Vec<_>, syn::Error>>()?;
+    }).collect::<Result<Vec<_>, rust_syntax::Error>>()?;
 
     let wildcard = match ext_subcmd {
         Some((span, var_name, str_ty)) => quote_spanned! { span=>
@@ -583,8 +583,8 @@ fn gen_from_arg_matches(variants: &[(&Variant, Item)]) -> Result<TokenStream, sy
     })
 }
 
-fn gen_update_from_arg_matches(variants: &[(&Variant, Item)]) -> Result<TokenStream, syn::Error> {
-    use syn::Fields::{Named, Unit, Unnamed};
+fn gen_update_from_arg_matches(variants: &[(&Variant, Item)]) -> Result<TokenStream, rust_syntax::Error> {
+    use rust_syntax::Fields::{Named, Unit, Unnamed};
 
     let (flatten, variants): (Vec<_>, Vec<_>) = variants
         .iter()

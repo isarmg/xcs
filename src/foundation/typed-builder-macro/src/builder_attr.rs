@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::parse::Error;
+use rust_syntax::parse::Error;
 
 use crate::field_info::FieldBuilderAttr;
 use crate::mutator::Mutator;
@@ -8,17 +8,17 @@ use crate::util::{ApplyMeta, AttrArg, path_to_single_string};
 
 #[derive(Debug, Default, Clone)]
 pub struct CommonDeclarationSettings {
-    pub vis: Option<syn::Visibility>,
-    pub name: Option<syn::Expr>,
-    pub doc: Option<syn::Expr>,
+    pub vis: Option<rust_syntax::Visibility>,
+    pub name: Option<rust_syntax::Expr>,
+    pub doc: Option<rust_syntax::Expr>,
 }
 
 impl ApplyMeta for CommonDeclarationSettings {
     fn apply_meta(&mut self, expr: AttrArg) -> Result<(), Error> {
         match expr.name().to_string().as_str() {
             "vis" => {
-                let expr_str = expr.key_value()?.parse_value::<syn::LitStr>()?.value();
-                self.vis = Some(syn::parse_str(&expr_str)?);
+                let expr_str = expr.key_value()?.parse_value::<rust_syntax::LitStr>()?.value();
+                self.vis = Some(rust_syntax::parse_str(&expr_str)?);
                 Ok(())
             }
             "name" => {
@@ -55,14 +55,14 @@ impl CommonDeclarationSettings {
 #[derive(Debug, Default, Clone)]
 pub struct BuilderTypeSettings {
     pub common: CommonDeclarationSettings,
-    pub attributes: Vec<syn::Attribute>,
+    pub attributes: Vec<rust_syntax::Attribute>,
 }
 
-struct InlineAttributes(Vec<syn::Attribute>);
+struct InlineAttributes(Vec<rust_syntax::Attribute>);
 
-impl syn::parse::Parse for InlineAttributes {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        Ok(Self(input.call(syn::Attribute::parse_outer)?))
+impl rust_syntax::parse::Parse for InlineAttributes {
+    fn parse(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Self> {
+        Ok(Self(input.call(rust_syntax::Attribute::parse_outer)?))
     }
 }
 
@@ -70,7 +70,7 @@ impl ApplyMeta for BuilderTypeSettings {
     fn apply_meta(&mut self, expr: AttrArg) -> Result<(), Error> {
         match expr.name().to_string().as_str() {
             "attributes" => {
-                let InlineAttributes(attributes) = syn::parse2(expr.sub_attr()?.args)?;
+                let InlineAttributes(attributes) = rust_syntax::parse2(expr.sub_attr()?.args)?;
                 self.attributes = attributes;
                 Ok(())
             }
@@ -88,7 +88,7 @@ pub enum IntoSetting {
     /// Convert the build value into the generic parameter passed to the `build` method.
     GenericConversion,
     /// Convert the build value into a specific type specified in the attribute.
-    TypeConversionToSpecificType(syn::TypePath),
+    TypeConversionToSpecificType(rust_syntax::TypePath),
 }
 
 #[derive(Debug, Default, Clone)]
@@ -108,7 +108,7 @@ impl ApplyMeta for BuildMethodSettings {
                     Ok(())
                 }
                 AttrArg::KeyValue(key_value) => {
-                    let type_path = key_value.parse_value::<syn::TypePath>()?;
+                    let type_path = key_value.parse_value::<rust_syntax::TypePath>()?;
                     self.into = IntoSetting::TypeConversionToSpecificType(type_path);
                     Ok(())
                 }
@@ -135,7 +135,7 @@ pub struct TypeBuilderAttr<'a> {
 
     pub field_defaults: FieldBuilderAttr<'a>,
 
-    pub crate_module_path: syn::Path,
+    pub crate_module_path: rust_syntax::Path,
 
     /// Functions that are able to mutate fields in the builder that are already set
     pub mutators: Vec<Mutator>,
@@ -149,19 +149,19 @@ impl Default for TypeBuilderAttr<'_> {
             builder_type: Default::default(),
             build_method: Default::default(),
             field_defaults: Default::default(),
-            crate_module_path: syn::parse_quote!(::typed_builder),
+            crate_module_path: rust_syntax::parse_quote!(::typed_builder),
             mutators: Default::default(),
         }
     }
 }
 
 impl<'a> TypeBuilderAttr<'a> {
-    pub fn new(attrs: &[syn::Attribute]) -> Result<Self, Error> {
+    pub fn new(attrs: &[rust_syntax::Attribute]) -> Result<Self, Error> {
         let mut result = Self::default();
 
         for attr in attrs {
             let list = match &attr.meta {
-                syn::Meta::List(list) => {
+                rust_syntax::Meta::List(list) => {
                     if path_to_single_string(&list.path).as_deref() != Some("builder") {
                         continue;
                     }
@@ -186,7 +186,7 @@ impl ApplyMeta for TypeBuilderAttr<'_> {
     fn apply_meta(&mut self, expr: AttrArg) -> Result<(), Error> {
         match expr.name().to_string().as_str() {
             "crate_module_path" => {
-                let crate_module_path = expr.key_value()?.parse_value::<syn::ExprPath>()?;
+                let crate_module_path = expr.key_value()?.parse_value::<rust_syntax::ExprPath>()?;
                 self.crate_module_path = crate_module_path.path;
                 Ok(())
             }

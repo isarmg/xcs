@@ -7,10 +7,10 @@ use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use quote::{format_ident, quote, quote_spanned, ToTokens as _};
 use std::collections::{BTreeSet, HashMap};
 use std::iter;
-use syn::ext::IdentExt;
-use syn::parse::discouraged::Speculative;
-use syn::parse::{Error, ParseStream, Parser, Result};
-use syn::{Expr, Ident, Index, LitStr, Token};
+use rust_syntax::ext::IdentExt;
+use rust_syntax::parse::discouraged::Speculative;
+use rust_syntax::parse::{Error, ParseStream, Parser, Result};
+use rust_syntax::{Expr, Ident, Index, LitStr, Token};
 
 impl Display<'_> {
     pub fn expand_shorthand(&mut self, fields: &[Field], container: ContainerKind) -> Result<()> {
@@ -190,7 +190,7 @@ fn explicit_named_args(input: ParseStream) -> Result<FmtArguments> {
 }
 
 fn try_explicit_named_args(input: ParseStream) -> Result<FmtArguments> {
-    let mut syn_full = None;
+    let mut full_syntax = None;
     let mut args = FmtArguments {
         named: BTreeSet::new(),
         first_unnamed: None,
@@ -212,7 +212,7 @@ fn try_explicit_named_args(input: ParseStream) -> Result<FmtArguments> {
         }
 
         let ahead = input.fork();
-        if *syn_full.get_or_insert_with(is_syn_full) && ahead.parse::<Expr>().is_ok() {
+        if *full_syntax.get_or_insert_with(is_full_syntax) && ahead.parse::<Expr>().is_ok() {
             input.advance_to(&ahead);
         } else {
             scan_expr(input)?;
@@ -252,18 +252,18 @@ fn fallback_explicit_named_args(input: ParseStream) -> Result<FmtArguments> {
     Ok(args)
 }
 
-fn is_syn_full() -> bool {
-    // Expr::Block contains syn::Block which contains Vec<syn::Stmt>. In the
-    // current version of Syn, syn::Stmt is exhaustive and could only plausibly
-    // represent `trait Trait {}` in Stmt::Item which contains syn::Item. Most
-    // of the point of syn's non-"full" mode is to avoid compiling Item and the
+fn is_full_syntax() -> bool {
+    // Expr::Block contains rust_syntax::Block which contains Vec<rust_syntax::Stmt>. In the
+    // current version of Rust Syntax, rust_syntax::Stmt is exhaustive and could only plausibly
+    // represent `trait Trait {}` in Stmt::Item which contains rust_syntax::Item. Most
+    // of the point of rust_syntax's non-"full" mode is to avoid compiling Item and the
     // entire expansive syntax tree it comprises. So the following expression
     // being parsed to Expr::Block is a reliable indication that "full" is
     // enabled.
     let test = quote!({
         trait Trait {}
     });
-    match syn::parse2(test) {
+    match rust_syntax::parse2(test) {
         Ok(Expr::Verbatim(_)) | Err(_) => false,
         Ok(Expr::Block(_)) => true,
         Ok(_) => unreachable!(),

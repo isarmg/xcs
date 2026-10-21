@@ -1,10 +1,10 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
-use syn::{parse::Parse, ItemStruct, LitStr, Token};
+use rust_syntax::{parse::Parse, ItemStruct, LitStr, Token};
 
 use crate::attr_parsing::{combine_attribute, parse_parenthesized_attribute, second, Combine};
 
-pub(crate) fn expand(item_struct: ItemStruct) -> syn::Result<TokenStream> {
+pub(crate) fn expand(item_struct: ItemStruct) -> rust_syntax::Result<TokenStream> {
     let ItemStruct {
         attrs,
         ident,
@@ -14,7 +14,7 @@ pub(crate) fn expand(item_struct: ItemStruct) -> syn::Result<TokenStream> {
     } = &item_struct;
 
     if !generics.params.is_empty() || generics.where_clause.is_some() {
-        return Err(syn::Error::new_spanned(
+        return Err(rust_syntax::Error::new_spanned(
             generics,
             "`#[derive(TypedPath)]` doesn't support generics",
         ));
@@ -23,7 +23,7 @@ pub(crate) fn expand(item_struct: ItemStruct) -> syn::Result<TokenStream> {
     let Attrs { path, rejection } = crate::attr_parsing::parse_attrs("typed_path", attrs)?;
 
     let path = path.ok_or_else(|| {
-        syn::Error::new(
+        rust_syntax::Error::new(
             Span::call_site(),
             "Missing path: `#[typed_path(\"/foo/bar\")]`",
         )
@@ -32,30 +32,30 @@ pub(crate) fn expand(item_struct: ItemStruct) -> syn::Result<TokenStream> {
     let rejection = rejection.map(second);
 
     match fields {
-        syn::Fields::Named(_) => {
+        rust_syntax::Fields::Named(_) => {
             let segments = parse_path(&path)?;
             Ok(expand_named_fields(ident, path, &segments, rejection))
         }
-        syn::Fields::Unnamed(fields) => {
+        rust_syntax::Fields::Unnamed(fields) => {
             let segments = parse_path(&path)?;
             expand_unnamed_fields(fields, ident, path, &segments, rejection)
         }
-        syn::Fields::Unit => expand_unit_fields(ident, path, rejection),
+        rust_syntax::Fields::Unit => expand_unit_fields(ident, path, rejection),
     }
 }
 
 mod kw {
-    syn::custom_keyword!(rejection);
+    rust_syntax::custom_keyword!(rejection);
 }
 
 #[derive(Default)]
 struct Attrs {
     path: Option<LitStr>,
-    rejection: Option<(kw::rejection, syn::Path)>,
+    rejection: Option<(kw::rejection, rust_syntax::Path)>,
 }
 
 impl Parse for Attrs {
-    fn parse(input: syn::parse::ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: rust_syntax::parse::ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut path = None;
         let mut rejection = None;
 
@@ -77,11 +77,11 @@ impl Parse for Attrs {
 }
 
 impl Combine for Attrs {
-    fn combine(mut self, other: Self) -> syn::Result<Self> {
+    fn combine(mut self, other: Self) -> rust_syntax::Result<Self> {
         let Self { path, rejection } = other;
         if let Some(path) = path {
             if self.path.is_some() {
-                return Err(syn::Error::new_spanned(
+                return Err(rust_syntax::Error::new_spanned(
                     path,
                     "path specified more than once",
                 ));
@@ -94,10 +94,10 @@ impl Combine for Attrs {
 }
 
 fn expand_named_fields(
-    ident: &syn::Ident,
+    ident: &rust_syntax::Ident,
     path: LitStr,
     segments: &[Segment],
-    rejection: Option<syn::Path>,
+    rejection: Option<rust_syntax::Path>,
 ) -> TokenStream {
     let format_str = format_str_from_path(segments);
     let captures = captures_from_path(segments);
@@ -162,12 +162,12 @@ fn expand_named_fields(
 }
 
 fn expand_unnamed_fields(
-    fields: &syn::FieldsUnnamed,
-    ident: &syn::Ident,
+    fields: &rust_syntax::FieldsUnnamed,
+    ident: &rust_syntax::Ident,
     path: LitStr,
     segments: &[Segment],
-    rejection: Option<syn::Path>,
-) -> syn::Result<TokenStream> {
+    rejection: Option<rust_syntax::Path>,
+) -> rust_syntax::Result<TokenStream> {
     let num_captures = segments
         .iter()
         .filter(|segment| match segment {
@@ -177,7 +177,7 @@ fn expand_unnamed_fields(
         .count();
     let num_fields = fields.unnamed.len();
     if num_fields != num_captures {
-        return Err(syn::Error::new_spanned(
+        return Err(rust_syntax::Error::new_spanned(
             fields,
             format!(
                 "Mismatch in number of captures and fields. Path has {} but struct has {}",
@@ -195,7 +195,7 @@ fn expand_unnamed_fields(
         })
         .enumerate()
         .map(|(idx, capture)| {
-            let idx = syn::Index {
+            let idx = rust_syntax::Index {
                 index: idx as _,
                 span: Span::call_site(),
             };
@@ -275,14 +275,14 @@ fn simple_pluralize(count: usize, word: &str) -> String {
 }
 
 fn expand_unit_fields(
-    ident: &syn::Ident,
+    ident: &rust_syntax::Ident,
     path: LitStr,
-    rejection: Option<syn::Path>,
-) -> syn::Result<TokenStream> {
+    rejection: Option<rust_syntax::Path>,
+) -> rust_syntax::Result<TokenStream> {
     for segment in parse_path(&path)? {
         match segment {
             Segment::Capture(_, span) => {
-                return Err(syn::Error::new(
+                return Err(rust_syntax::Error::new(
                     span,
                     "Typed paths for unit structs cannot contain captures",
                 ));
@@ -361,7 +361,7 @@ fn format_str_from_path(segments: &[Segment]) -> String {
         .join("/")
 }
 
-fn captures_from_path(segments: &[Segment]) -> Vec<syn::Ident> {
+fn captures_from_path(segments: &[Segment]) -> Vec<rust_syntax::Ident> {
     segments
         .iter()
         .filter_map(|segment| match segment {
@@ -371,15 +371,15 @@ fn captures_from_path(segments: &[Segment]) -> Vec<syn::Ident> {
         .collect::<Vec<_>>()
 }
 
-fn parse_path(path: &LitStr) -> syn::Result<Vec<Segment>> {
+fn parse_path(path: &LitStr) -> rust_syntax::Result<Vec<Segment>> {
     let value = path.value();
     if value.is_empty() {
-        return Err(syn::Error::new_spanned(
+        return Err(rust_syntax::Error::new_spanned(
             path,
             "paths must start with a `/`. Use \"/\" for root routes",
         ));
     } else if !path.value().starts_with('/') {
-        return Err(syn::Error::new_spanned(path, "paths must start with a `/`"));
+        return Err(rust_syntax::Error::new_spanned(path, "paths must start with a `/`"));
     }
 
     path.value()
@@ -412,14 +412,14 @@ fn path_rejection() -> TokenStream {
     }
 }
 
-fn rejection_assoc_type(rejection: &Option<syn::Path>) -> TokenStream {
+fn rejection_assoc_type(rejection: &Option<rust_syntax::Path>) -> TokenStream {
     match rejection {
         Some(rejection) => quote! { #rejection },
         None => path_rejection(),
     }
 }
 
-fn map_err_rejection(rejection: &Option<syn::Path>) -> TokenStream {
+fn map_err_rejection(rejection: &Option<rust_syntax::Path>) -> TokenStream {
     rejection
         .as_ref()
         .map(|rejection| {

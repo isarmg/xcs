@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use syn::ext::IdentExt;
+use rust_syntax::ext::IdentExt;
 
 use crate::ast;
 use crate::Diagnostic;
@@ -12,7 +12,7 @@ use crate::Diagnostic;
 #[derive(Clone)]
 pub enum EncodeChunk {
     EncodedBuf(Vec<u8>),
-    StrExpr(syn::Expr),
+    StrExpr(rust_syntax::Expr),
     // TODO: support more expr type;
 }
 
@@ -227,7 +227,7 @@ fn shared_function<'a>(func: &'a ast::Function, _intern: &'a Interner) -> Functi
                 // use argument's "js_name" if it was provided via attributes
                 // if not use the original Rust argument ident
                 name: arg.js_name.clone().unwrap_or(
-                    if let syn::Pat::Ident(x) = &*arg.pat_type.pat {
+                    if let rust_syntax::Pat::Ident(x) = &*arg.pat_type.pat {
                         x.ident.unraw().to_string()
                     } else {
                         format!("arg{idx}")
@@ -510,7 +510,7 @@ struct Encoder {
 }
 
 enum LitOrExpr<'a> {
-    Expr(&'a syn::Expr),
+    Expr(&'a rust_syntax::Expr),
     Lit(&'a str),
 }
 

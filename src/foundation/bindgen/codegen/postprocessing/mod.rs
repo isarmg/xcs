@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{parse2, File};
+use rust_syntax::{parse2, File};
 
 use crate::BindgenOptions;
 
@@ -40,8 +40,8 @@ pub(crate) fn postprocessing(
         return items;
     }
 
-    // This syn business is a hack, for now. This means that we are re-parsing already
-    // generated code using `syn` (as opposed to `quote`) because `syn` provides us more
+    // This rust_syntax business is a hack, for now. This means that we are re-parsing already
+    // generated code using `rust_syntax` (as opposed to `quote`) because `rust_syntax` provides us more
     // control over the elements.
     // The `unwrap` here is deliberate because bindgen should generate valid rust items at all
     // times.

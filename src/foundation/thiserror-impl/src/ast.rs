@@ -3,7 +3,7 @@ use crate::generics::ParamsInScope;
 use crate::unraw::{IdentUnraw, MemberUnraw};
 use proc_macro2::Span;
 use std::fmt::{self, Display};
-use syn::{
+use rust_syntax::{
     Data, DataEnum, DataStruct, DeriveInput, Error, Fields, Generics, Ident, Index, Result, Type,
 };
 
@@ -27,14 +27,14 @@ pub struct Enum<'a> {
 }
 
 pub struct Variant<'a> {
-    pub original: &'a syn::Variant,
+    pub original: &'a rust_syntax::Variant,
     pub attrs: Attrs<'a>,
     pub ident: Ident,
     pub fields: Vec<Field<'a>>,
 }
 
 pub struct Field<'a> {
-    pub original: &'a syn::Field,
+    pub original: &'a rust_syntax::Field,
     pub attrs: Attrs<'a>,
     pub member: MemberUnraw,
     pub ty: &'a Type,
@@ -116,7 +116,7 @@ impl<'a> Enum<'a> {
 }
 
 impl<'a> Variant<'a> {
-    fn from_syn(node: &'a syn::Variant, scope: &ParamsInScope<'a>) -> Result<Self> {
+    fn from_syn(node: &'a rust_syntax::Variant, scope: &ParamsInScope<'a>) -> Result<Self> {
         let attrs = attr::get(&node.attrs)?;
         Ok(Variant {
             original: node,
@@ -136,7 +136,7 @@ impl<'a> Field<'a> {
             .collect()
     }
 
-    fn from_syn(i: usize, node: &'a syn::Field, scope: &ParamsInScope<'a>) -> Result<Self> {
+    fn from_syn(i: usize, node: &'a rust_syntax::Field, scope: &ParamsInScope<'a>) -> Result<Self> {
         Ok(Field {
             original: node,
             attrs: attr::get(&node.attrs)?,
@@ -162,7 +162,7 @@ impl ContainerKind {
         }
     }
 
-    fn from_variant(node: &syn::Variant) -> Self {
+    fn from_variant(node: &rust_syntax::Variant) -> Self {
         match node.fields {
             Fields::Named(_) => ContainerKind::StructVariant,
             Fields::Unnamed(_) => ContainerKind::TupleVariant,

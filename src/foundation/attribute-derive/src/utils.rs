@@ -2,8 +2,8 @@
 use from_partial::{FromPartial, Partial};
 use manyhow::SpanRanged;
 use parsing::{AttributeNamed, AttributeValue};
-use syn::token::Paren;
-use syn::Token;
+use rust_syntax::token::Paren;
+use rust_syntax::Token;
 
 use self::parsing::parse_name;
 use crate::parsing::Named;
@@ -123,11 +123,11 @@ impl<T, E> Transpose<std::result::Result<FlagOrValue<T>, E>>
 }
 
 impl<T: FromPartial<P>, P> FromPartial<Partial<FlagOrValue<P>>> for FlagOrValue<T> {
-    fn from(partial: Partial<FlagOrValue<P>>) -> syn::Result<Self> {
+    fn from(partial: Partial<FlagOrValue<P>>) -> rust_syntax::Result<Self> {
         partial.0.map_value(T::from).transpose()
     }
 
-    fn from_option(partial: Option<Partial<FlagOrValue<P>>>, _: &str) -> syn::Result<Self> {
+    fn from_option(partial: Option<Partial<FlagOrValue<P>>>, _: &str) -> rust_syntax::Result<Self> {
         // Pass in surrounding span
         partial
             .map(FromPartial::from)
@@ -139,7 +139,7 @@ impl<T: FromPartial<P>, P> FromPartial<Partial<FlagOrValue<P>>> for FlagOrValue<
         first: Option<SpannedValue<Partial<FlagOrValue<P>>>>,
         second: SpannedValue<Partial<FlagOrValue<P>>>,
         specified_twice_error: &str,
-    ) -> syn::Result<Option<SpannedValue<Partial<FlagOrValue<P>>>>> {
+    ) -> rust_syntax::Result<Option<SpannedValue<Partial<FlagOrValue<P>>>>> {
         match (first, second) {
             (None, this) => Ok(Some(this)),
             (
@@ -179,8 +179,8 @@ impl<T: AttributeBase> AttributeBase for FlagOrValue<T> {
 impl<T: AttributeValue> AttributeNamed for FlagOrValue<T> {
     fn parse_named(
         name: &'static str,
-        input: syn::parse::ParseStream,
-    ) -> syn::Result<Option<Named<SpannedValue<Self::Partial>>>> {
+        input: rust_syntax::parse::ParseStream,
+    ) -> rust_syntax::Result<Option<Named<SpannedValue<Self::Partial>>>> {
         let Some(ident) = parse_name(input, name) else {
             return Ok(None);
         };

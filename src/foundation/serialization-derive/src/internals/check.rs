@@ -1,7 +1,7 @@
 use crate::internals::ast::{Container, Data, Field, Style};
 use crate::internals::attr::{Default, Identifier, TagType};
 use crate::internals::{ungroup, Ctxt, Derive};
-use syn::{Member, Type};
+use rust_syntax::{Member, Type};
 
 // Cross-cutting checks that require looking at more than a single attrs object.
 // Simpler checks should happen when parsing and building the attrs.

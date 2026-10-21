@@ -1766,7 +1766,7 @@ options! {
             ///
             /// The default formatter is [`Formatter::Rustfmt`].
             ///
-            /// To be able to use `prettyplease` as a formatter, the `"prettyplease"` feature for
+            /// To be able to use `rust_source_format` as a formatter, the `"rust_source_format"` feature for
             /// `bindgen` must be enabled in the Cargo manifest.
             pub fn formatter(mut self, formatter: Formatter) -> Self {
                 self.options.formatter = formatter;

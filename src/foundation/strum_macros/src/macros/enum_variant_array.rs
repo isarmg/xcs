@@ -1,10 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields};
+use rust_syntax::{Data, DeriveInput, Fields};
 
 use crate::helpers::{non_enum_error, non_unit_variant_error, HasTypeProperties};
 
-pub fn static_variants_array_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn static_variants_array_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let gen = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = gen.split_for_impl();
@@ -24,7 +24,7 @@ pub fn static_variants_array_inner(ast: &DeriveInput) -> syn::Result<TokenStream
             Fields::Unit => Ok(v.ident),
             _ => Err(non_unit_variant_error()),
         })
-        .collect::<syn::Result<Vec<_>>>()?;
+        .collect::<rust_syntax::Result<Vec<_>>>()?;
 
     Ok(quote! {
         #[automatically_derived]

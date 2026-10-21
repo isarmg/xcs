@@ -134,19 +134,19 @@ impl SpanRanged for proc_macro2::extra::DelimSpan {
     }
 }
 
-#[cfg(feature = "syn")]
+#[cfg(feature = "rust-syntax")]
 const _: () = {
-    impl SpanRanged for syn::token::Brace {
+    impl SpanRanged for rust_syntax::token::Brace {
         fn span_range(&self) -> Range<Span> {
             self.span.span_range()
         }
     }
-    impl SpanRanged for syn::token::Bracket {
+    impl SpanRanged for rust_syntax::token::Bracket {
         fn span_range(&self) -> Range<Span> {
             self.span.span_range()
         }
     }
-    impl SpanRanged for syn::token::Paren {
+    impl SpanRanged for rust_syntax::token::Paren {
         fn span_range(&self) -> Range<Span> {
             self.span.span_range()
         }

@@ -17,7 +17,7 @@ documentation = "https://docs.rs/quote/"
 readme = "../../../docs/upstream/quote-1.0.47/README.md"
 keywords = [
     "macros",
-    "syn",
+    "rust-syntax",
 ]
 categories = ["development-tools::procedural-macro-helpers"]
 license = "MIT OR Apache-2.0"

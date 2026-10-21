@@ -1,24 +1,24 @@
 use crate::attr_parsing::{combine_attribute, parse_parenthesized_attribute, Combine};
-use syn::{
+use rust_syntax::{
     parse::{Parse, ParseStream},
     Token,
 };
 
 pub(crate) mod kw {
-    syn::custom_keyword!(via);
-    syn::custom_keyword!(rejection);
-    syn::custom_keyword!(state);
+    rust_syntax::custom_keyword!(via);
+    rust_syntax::custom_keyword!(rejection);
+    rust_syntax::custom_keyword!(state);
 }
 
 #[derive(Default)]
 pub(super) struct FromRequestContainerAttrs {
-    pub(super) via: Option<(kw::via, syn::Path)>,
-    pub(super) rejection: Option<(kw::rejection, syn::Path)>,
-    pub(super) state: Option<(kw::state, syn::Type)>,
+    pub(super) via: Option<(kw::via, rust_syntax::Path)>,
+    pub(super) rejection: Option<(kw::rejection, rust_syntax::Path)>,
+    pub(super) state: Option<(kw::state, rust_syntax::Type)>,
 }
 
 impl Parse for FromRequestContainerAttrs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut via = None;
         let mut rejection = None;
         let mut state = None;
@@ -47,7 +47,7 @@ impl Parse for FromRequestContainerAttrs {
 }
 
 impl Combine for FromRequestContainerAttrs {
-    fn combine(mut self, other: Self) -> syn::Result<Self> {
+    fn combine(mut self, other: Self) -> rust_syntax::Result<Self> {
         let Self {
             via,
             rejection,
@@ -62,11 +62,11 @@ impl Combine for FromRequestContainerAttrs {
 
 #[derive(Default)]
 pub(super) struct FromRequestFieldAttrs {
-    pub(super) via: Option<(kw::via, syn::Path)>,
+    pub(super) via: Option<(kw::via, rust_syntax::Path)>,
 }
 
 impl Parse for FromRequestFieldAttrs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut via = None;
 
         while !input.is_empty() {
@@ -85,7 +85,7 @@ impl Parse for FromRequestFieldAttrs {
 }
 
 impl Combine for FromRequestFieldAttrs {
-    fn combine(mut self, other: Self) -> syn::Result<Self> {
+    fn combine(mut self, other: Self) -> rust_syntax::Result<Self> {
         let Self { via } = other;
         combine_attribute(&mut self.via, via)?;
         Ok(self)

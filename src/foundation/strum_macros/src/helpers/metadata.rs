@@ -1,4 +1,4 @@
-use syn::{
+use rust_syntax::{
     parenthesized,
     parse::{Parse, ParseStream},
     parse2, parse_str,
@@ -10,8 +10,8 @@ use syn::{
 use super::case_style::CaseStyle;
 
 pub mod kw {
-    use syn::custom_keyword;
-    pub use syn::token::Crate;
+    use rust_syntax::custom_keyword;
+    pub use rust_syntax::token::Crate;
 
     // enum metadata
     custom_keyword!(serialize_all);
@@ -72,7 +72,7 @@ pub enum EnumMeta {
 }
 
 impl Parse for EnumMeta {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::serialize_all) {
             let kw = input.parse::<kw::serialize_all>()?;
@@ -129,7 +129,7 @@ pub enum EnumDiscriminantsMeta {
 }
 
 impl Parse for EnumDiscriminantsMeta {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
         if input.peek(kw::derive) {
             let _kw = input.parse()?;
             let content;
@@ -160,18 +160,18 @@ impl Parse for EnumDiscriminantsMeta {
 
 pub trait DeriveInputExt {
     /// Get all the strum metadata associated with an enum.
-    fn get_metadata(&self) -> syn::Result<Vec<EnumMeta>>;
+    fn get_metadata(&self) -> rust_syntax::Result<Vec<EnumMeta>>;
 
     /// Get all the `strum_discriminants` metadata associated with an enum.
-    fn get_discriminants_metadata(&self) -> syn::Result<Vec<EnumDiscriminantsMeta>>;
+    fn get_discriminants_metadata(&self) -> rust_syntax::Result<Vec<EnumDiscriminantsMeta>>;
 }
 
 impl DeriveInputExt for DeriveInput {
-    fn get_metadata(&self) -> syn::Result<Vec<EnumMeta>> {
+    fn get_metadata(&self) -> rust_syntax::Result<Vec<EnumMeta>> {
         get_metadata_inner("strum", &self.attrs)
     }
 
-    fn get_discriminants_metadata(&self) -> syn::Result<Vec<EnumDiscriminantsMeta>> {
+    fn get_discriminants_metadata(&self) -> rust_syntax::Result<Vec<EnumDiscriminantsMeta>> {
         get_metadata_inner("strum_discriminants", &self.attrs)
     }
 }
@@ -214,7 +214,7 @@ pub enum VariantMeta {
 }
 
 impl Parse for VariantMeta {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::message) {
             let kw = input.parse()?;
@@ -277,8 +277,8 @@ impl Parse for VariantMeta {
 struct Prop(Ident, Lit);
 
 impl Parse for Prop {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        use syn::ext::IdentExt;
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
+        use rust_syntax::ext::IdentExt;
 
         let k = Ident::parse_any(input)?;
         let _: Token![=] = input.parse()?;
@@ -290,11 +290,11 @@ impl Parse for Prop {
 
 pub trait VariantExt {
     /// Get all the metadata associated with an enum variant.
-    fn get_metadata(&self) -> syn::Result<Vec<VariantMeta>>;
+    fn get_metadata(&self) -> rust_syntax::Result<Vec<VariantMeta>>;
 }
 
 impl VariantExt for Variant {
-    fn get_metadata(&self) -> syn::Result<Vec<VariantMeta>> {
+    fn get_metadata(&self) -> rust_syntax::Result<Vec<VariantMeta>> {
         let result = get_metadata_inner("strum", &self.attrs)?;
         self.attrs
             .iter()
@@ -321,7 +321,7 @@ impl VariantExt for Variant {
 fn get_metadata_inner<'a, T: Parse>(
     ident: &str,
     it: impl IntoIterator<Item = &'a Attribute>,
-) -> syn::Result<Vec<T>> {
+) -> rust_syntax::Result<Vec<T>> {
     it.into_iter()
         .filter(|attr| attr.path().is_ident(ident))
         .try_fold(Vec::new(), |mut vec, attr| {
@@ -335,7 +335,7 @@ pub enum InnerVariantMeta {
 }
 
 impl Parse for InnerVariantMeta {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::default_with) {
             let kw = input.parse()?;
@@ -350,11 +350,11 @@ impl Parse for InnerVariantMeta {
 
 pub trait InnerVariantExt {
     /// Get all the metadata associated with an enum variant inner.
-    fn get_named_metadata(&self) -> syn::Result<Vec<InnerVariantMeta>>;
+    fn get_named_metadata(&self) -> rust_syntax::Result<Vec<InnerVariantMeta>>;
 }
 
 impl InnerVariantExt for Field {
-    fn get_named_metadata(&self) -> syn::Result<Vec<InnerVariantMeta>> {
+    fn get_named_metadata(&self) -> rust_syntax::Result<Vec<InnerVariantMeta>> {
         let result = get_metadata_inner("strum", &self.attrs)?;
         self.attrs
             .iter()

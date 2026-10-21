@@ -88,12 +88,12 @@ impl<T> ManyhowTry<T> for &WhatType<T> {
     }
 }
 
-#[cfg(feature = "syn")]
-impl<T: syn::parse::Parse> ManyhowParse<T> for &WhatType<T> {
+#[cfg(feature = "rust-syntax")]
+impl<T: rust_syntax::parse::Parse> ManyhowParse<T> for &WhatType<T> {
     fn manyhow_parse(&self, input: impl AnyTokenStream, attr: bool) -> Result<T, TokenStream> {
         let input = input.into();
         let empty = input.is_empty();
-        syn::parse2(input).map_err(|e| {
+        rust_syntax::parse2(input).map_err(|e| {
             let mut e = e.into_compile_error();
             if attr && empty {
                 error_message!("while parsing attribute argument (`#[... (...)]`)")
@@ -103,7 +103,7 @@ impl<T: syn::parse::Parse> ManyhowParse<T> for &WhatType<T> {
         })
     }
 }
-#[cfg(feature = "syn")]
+#[cfg(feature = "rust-syntax")]
 impl<T: quote::ToTokens> ManyhowToTokens<T> for &WhatType<T> {
     fn manyhow_to_tokens(&self, input: T, tokens: &mut TokenStream) {
         input.to_tokens(tokens);

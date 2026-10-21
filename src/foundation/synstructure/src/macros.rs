@@ -5,7 +5,7 @@
 // Re-exports used by the decl_derive! and test_derive!
 pub use proc_macro2::TokenStream as TokenStream2;
 pub use quote::quote;
-pub use syn::{parse2, parse_str, DeriveInput};
+pub use rust_syntax::{parse2, parse_str, DeriveInput};
 
 #[cfg(all(
     not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "wasi"))),
@@ -16,7 +16,7 @@ pub use proc_macro::TokenStream;
     not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "wasi"))),
     feature = "proc-macro"
 ))]
-pub use syn::parse;
+pub use rust_syntax::parse;
 
 /// The `decl_derive!` macro declares a custom derive wrapper. It will parse the
 /// incoming `TokenStream` into a `synstructure::Structure` object, and pass it
@@ -31,7 +31,7 @@ pub use syn::parse;
 /// }
 ///
 /// fn derive_result(input: synstructure::Structure)
-///     -> syn::Result<proc_macro2::TokenStream>
+///     -> rust_syntax::Result<proc_macro2::TokenStream>
 /// {
 ///     unimplemented!()
 /// }
@@ -190,7 +190,7 @@ macro_rules! decl_attribute {
 ///
 /// ```
 /// fn test_derive_example(_s: synstructure::Structure)
-///     -> Result<proc_macro2::TokenStream, syn::Error>
+///     -> Result<proc_macro2::TokenStream, rust_syntax::Error>
 /// {
 ///     Ok(quote::quote! { const YOUR_OUTPUT: &'static str = "here"; })
 /// }

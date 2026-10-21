@@ -1,7 +1,7 @@
 //! Parses [`DeriveInput`] into something more useful.
 
 use proc_macro2::Span;
-use syn::{
+use rust_syntax::{
 	DeriveInput, GenericParam, Generics, ImplGenerics, Path, Result, TypeGenerics, WhereClause,
 };
 
@@ -51,7 +51,7 @@ impl<'a> Input<'a> {
 
 		// Extract fields and variants of this item.
 		let item = match &data {
-			syn::Data::Struct(data) => Data::from_struct(
+			rust_syntax::Data::Struct(data) => Data::from_struct(
 				span,
 				&derive_wheres,
 				skip_inner,
@@ -60,7 +60,7 @@ impl<'a> Input<'a> {
 				&data.fields,
 			)
 			.map(Item::Item)?,
-			syn::Data::Enum(data) => {
+			rust_syntax::Data::Enum(data) => {
 				#[cfg(not(feature = "nightly"))]
 				let discriminant = Discriminant::parse(attrs, &data.variants)?;
 
@@ -117,7 +117,7 @@ impl<'a> Input<'a> {
 					incomparable,
 				}
 			}
-			syn::Data::Union(data) => Data::from_union(
+			rust_syntax::Data::Union(data) => Data::from_union(
 				span,
 				&derive_wheres,
 				skip_inner,

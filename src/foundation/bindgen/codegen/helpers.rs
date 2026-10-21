@@ -84,7 +84,7 @@ pub(crate) fn blob(
     ctx: &BindgenContext,
     layout: Layout,
     ffi_safe: bool,
-) -> syn::Type {
+) -> rust_syntax::Type {
     let opaque = layout.opaque();
 
     // FIXME(emilio, #412): We fall back to byte alignment, but there are
@@ -93,7 +93,7 @@ pub(crate) fn blob(
     // Eventually we should be able to `unwrap` here, but...
     let ty = opaque.known_rust_type_for_array().unwrap_or_else(|| {
         warn!("Found unknown alignment on code generation!");
-        syn::parse_quote! { u8 }
+        rust_syntax::parse_quote! { u8 }
     });
 
     let data_len = opaque.array_size().unwrap_or(layout.size);
@@ -103,32 +103,32 @@ pub(crate) fn blob(
     } else if ffi_safe && ctx.options().rust_features().min_const_generics {
         ctx.generated_opaque_array();
         if ctx.options().enable_cxx_namespaces {
-            syn::parse_quote! { root::__BindgenOpaqueArray<#ty, #data_len> }
+            rust_syntax::parse_quote! { root::__BindgenOpaqueArray<#ty, #data_len> }
         } else {
-            syn::parse_quote! { __BindgenOpaqueArray<#ty, #data_len> }
+            rust_syntax::parse_quote! { __BindgenOpaqueArray<#ty, #data_len> }
         }
     } else {
         // This is not FFI safe as an argument; the struct above is
         // preferable.
-        syn::parse_quote! { [ #ty ; #data_len ] }
+        rust_syntax::parse_quote! { [ #ty ; #data_len ] }
     }
 }
 
 /// Integer type of the same size as the given `Layout`.
-pub(crate) fn integer_type(layout: Layout) -> Option<syn::Type> {
+pub(crate) fn integer_type(layout: Layout) -> Option<rust_syntax::Type> {
     Layout::known_type_for_size(layout.size)
 }
 
 pub(crate) const BITFIELD_UNIT: &str = "__BindgenBitfieldUnit";
 
 /// Generates a bitfield allocation unit type for a type with the given `Layout`.
-pub(crate) fn bitfield_unit(ctx: &BindgenContext, layout: Layout) -> syn::Type {
+pub(crate) fn bitfield_unit(ctx: &BindgenContext, layout: Layout) -> rust_syntax::Type {
     let size = layout.size;
     let bitfield_unit_name = Ident::new(BITFIELD_UNIT, Span::call_site());
-    let ty = syn::parse_quote! { #bitfield_unit_name<[u8; #size]> };
+    let ty = rust_syntax::parse_quote! { #bitfield_unit_name<[u8; #size]> };
 
     if ctx.options().enable_cxx_namespaces {
-        return syn::parse_quote! { root::#ty };
+        return rust_syntax::parse_quote! { root::#ty };
     }
 
     ty
@@ -143,37 +143,37 @@ pub(crate) mod ast_ty {
     use proc_macro2::TokenStream;
     use std::str::FromStr;
 
-    pub(crate) fn c_void(ctx: &BindgenContext) -> syn::Type {
+    pub(crate) fn c_void(ctx: &BindgenContext) -> rust_syntax::Type {
         // ctypes_prefix takes precedence
         match ctx.options().ctypes_prefix {
             Some(ref prefix) => {
                 let prefix = TokenStream::from_str(prefix.as_str()).unwrap();
-                syn::parse_quote! { #prefix::c_void }
+                rust_syntax::parse_quote! { #prefix::c_void }
             }
             None => {
                 if ctx.options().use_core {
-                    syn::parse_quote! { ::core::ffi::c_void }
+                    rust_syntax::parse_quote! { ::core::ffi::c_void }
                 } else {
-                    syn::parse_quote! { ::std::os::raw::c_void }
+                    rust_syntax::parse_quote! { ::std::os::raw::c_void }
                 }
             }
         }
     }
 
-    pub(crate) fn raw_type(ctx: &BindgenContext, name: &str) -> syn::Type {
+    pub(crate) fn raw_type(ctx: &BindgenContext, name: &str) -> rust_syntax::Type {
         let ident = ctx.rust_ident_raw(name);
         match ctx.options().ctypes_prefix {
             Some(ref prefix) => {
                 let prefix = TokenStream::from_str(prefix.as_str()).unwrap();
-                syn::parse_quote! { #prefix::#ident }
+                rust_syntax::parse_quote! { #prefix::#ident }
             }
             None => {
                 if ctx.options().use_core &&
                     ctx.options().rust_features().core_ffi_c
                 {
-                    syn::parse_quote! { ::core::ffi::#ident }
+                    rust_syntax::parse_quote! { ::core::ffi::#ident }
                 } else {
-                    syn::parse_quote! { ::std::os::raw::#ident }
+                    rust_syntax::parse_quote! { ::std::os::raw::#ident }
                 }
             }
         }
@@ -183,16 +183,16 @@ pub(crate) mod ast_ty {
         ctx: &BindgenContext,
         ik: IntKind,
         layout: Option<Layout>,
-    ) -> syn::Type {
+    ) -> rust_syntax::Type {
         match ik {
-            IntKind::Bool => syn::parse_quote! { bool },
+            IntKind::Bool => rust_syntax::parse_quote! { bool },
             IntKind::Char { .. } => raw_type(ctx, "c_char"),
             // The following is used only when an unusual command-line
             // argument is used. bindgen_cchar16_t is not a real type;
             // but this allows downstream postprocessors to distinguish
             // this case and do something special for C++ bindings
             // containing the C++ type char16_t.
-            IntKind::Char16 => syn::parse_quote! { bindgen_cchar16_t },
+            IntKind::Char16 => rust_syntax::parse_quote! { bindgen_cchar16_t },
             IntKind::SChar => raw_type(ctx, "c_schar"),
             IntKind::UChar => raw_type(ctx, "c_uchar"),
             IntKind::Short => raw_type(ctx, "c_short"),
@@ -210,31 +210,31 @@ pub(crate) mod ast_ty {
                     .expect("Non-representable wchar_t?")
             }
 
-            IntKind::I8 => syn::parse_quote! { i8 },
-            IntKind::U8 => syn::parse_quote! { u8 },
-            IntKind::I16 => syn::parse_quote! { i16 },
-            IntKind::U16 => syn::parse_quote! { u16 },
-            IntKind::I32 => syn::parse_quote! { i32 },
-            IntKind::U32 => syn::parse_quote! { u32 },
-            IntKind::I64 => syn::parse_quote! { i64 },
-            IntKind::U64 => syn::parse_quote! { u64 },
+            IntKind::I8 => rust_syntax::parse_quote! { i8 },
+            IntKind::U8 => rust_syntax::parse_quote! { u8 },
+            IntKind::I16 => rust_syntax::parse_quote! { i16 },
+            IntKind::U16 => rust_syntax::parse_quote! { u16 },
+            IntKind::I32 => rust_syntax::parse_quote! { i32 },
+            IntKind::U32 => rust_syntax::parse_quote! { u32 },
+            IntKind::I64 => rust_syntax::parse_quote! { i64 },
+            IntKind::U64 => rust_syntax::parse_quote! { u64 },
             IntKind::Custom { name, .. } => {
-                syn::parse_str(name).expect("Invalid integer type.")
+                rust_syntax::parse_str(name).expect("Invalid integer type.")
             }
             IntKind::U128 => {
                 if true {
-                    syn::parse_quote! { u128 }
+                    rust_syntax::parse_quote! { u128 }
                 } else {
                     // Best effort thing, but wrong alignment
                     // unfortunately.
-                    syn::parse_quote! { [u64; 2] }
+                    rust_syntax::parse_quote! { [u64; 2] }
                 }
             }
             IntKind::I128 => {
                 if true {
-                    syn::parse_quote! { i128 }
+                    rust_syntax::parse_quote! { i128 }
                 } else {
-                    syn::parse_quote! { [u64; 2] }
+                    rust_syntax::parse_quote! { [u64; 2] }
                 }
             }
         }
@@ -244,7 +244,7 @@ pub(crate) mod ast_ty {
         ctx: &BindgenContext,
         fk: FloatKind,
         layout: Option<Layout>,
-    ) -> syn::Type {
+    ) -> rust_syntax::Type {
         // TODO: we probably should take the type layout into account more
         // often?
         //
@@ -254,38 +254,38 @@ pub(crate) mod ast_ty {
                 // TODO: do f16 when rust lands it
                 ctx.generated_bindgen_float16();
                 if ctx.options().enable_cxx_namespaces {
-                    syn::parse_quote! { root::__BindgenFloat16 }
+                    rust_syntax::parse_quote! { root::__BindgenFloat16 }
                 } else {
-                    syn::parse_quote! { __BindgenFloat16 }
+                    rust_syntax::parse_quote! { __BindgenFloat16 }
                 }
             }
-            (FloatKind::Float, true) => syn::parse_quote! { f32 },
-            (FloatKind::Double, true) => syn::parse_quote! { f64 },
+            (FloatKind::Float, true) => rust_syntax::parse_quote! { f32 },
+            (FloatKind::Double, true) => rust_syntax::parse_quote! { f64 },
             (FloatKind::Float, false) => raw_type(ctx, "c_float"),
             (FloatKind::Double, false) => raw_type(ctx, "c_double"),
             (FloatKind::LongDouble, _) => {
                 if let Some(layout) = layout {
                     match layout.size {
-                        4 => syn::parse_quote! { f32 },
-                        8 => syn::parse_quote! { f64 },
+                        4 => rust_syntax::parse_quote! { f32 },
+                        8 => rust_syntax::parse_quote! { f64 },
                         // TODO(emilio): If rust ever gains f128 we should
                         // use it here and below.
                         _ => super::integer_type(layout)
-                            .unwrap_or(syn::parse_quote! { f64 }),
+                            .unwrap_or(rust_syntax::parse_quote! { f64 }),
                     }
                 } else {
                     debug_assert!(
                         false,
                         "How didn't we know the layout for a primitive type?"
                     );
-                    syn::parse_quote! { f64 }
+                    rust_syntax::parse_quote! { f64 }
                 }
             }
             (FloatKind::Float128, _) => {
                 if true {
-                    syn::parse_quote! { u128 }
+                    rust_syntax::parse_quote! { u128 }
                 } else {
-                    syn::parse_quote! { [u64; 2] }
+                    rust_syntax::parse_quote! { [u64; 2] }
                 }
             }
         }

@@ -77,9 +77,9 @@ mod test {
         match () {
             () => emit!(emitter, span, "error message"),
         }
-        #[cfg(feature = "syn")]
+        #[cfg(feature = "rust-syntax")]
         {
-            let error = syn::Error::new(proc_macro2::Span::call_site(), "an error");
+            let error = rust_syntax::Error::new(proc_macro2::Span::call_site(), "an error");
             emit!(emitter, error);
         }
     }

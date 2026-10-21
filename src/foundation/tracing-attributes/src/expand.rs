@@ -3,8 +3,8 @@ use std::iter;
 use proc_macro2::TokenStream;
 use quote::TokenStreamExt;
 use quote::{quote, quote_spanned, ToTokens};
-use syn::visit_mut::VisitMut;
-use syn::{
+use rust_syntax::visit_mut::VisitMut;
+use rust_syntax::{
     punctuated::Punctuated, spanned::Spanned, Expr, ExprAsync, ExprCall, FieldPat, FnArg, Ident,
     Item, ItemFn, Pat, PatIdent, PatReference, PatStruct, PatTuple, PatTupleStruct, PatType, Path,
     ReturnType, Signature, Stmt, Token, Type, TypePath,
@@ -24,7 +24,7 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
 ) -> proc_macro2::TokenStream {
     // these are needed ahead of time, as ItemFn contains the function body _and_
     // isn't representable inside a quote!/quote_spanned! macro
-    // (Syn's ToTokens isn't implemented for ItemFn)
+    // (Rust Syntax's ToTokens isn't implemented for ItemFn)
     let MaybeItemFnRef {
         outer_attrs,
         inner_attrs,
@@ -43,7 +43,7 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
         abi,
         ident,
         generics:
-            syn::Generics {
+            rust_syntax::Generics {
                 params: gen_params,
                 where_clause,
                 lt_token,
@@ -60,7 +60,7 @@ pub(crate) fn gen_function<'a, B: ToTokens + 'a>(
         (erase_impl_trait(return_type), return_type.span())
     } else {
         // Point at function name if we don't have an explicit return type
-        (syn::parse_quote! { () }, ident.span())
+        (rust_syntax::parse_quote! { () }, ident.span())
     };
     // Install a fake return statement as the first thing in the function
     // body, so that we eagerly infer that the return type is what we
@@ -246,7 +246,7 @@ fn gen_block<B: ToTokens>(
             }
 
             for e in fields.iter_mut().filter_map(|f| f.value.as_mut()) {
-                syn::visit_mut::visit_expr_mut(&mut replacer, e);
+                rust_syntax::visit_mut::visit_expr_mut(&mut replacer, e);
             }
         }
 
@@ -491,7 +491,7 @@ impl RecordType {
             {
                 RecordType::Value
             }
-            Type::Reference(syn::TypeReference { elem, .. }) => RecordType::parse_from_ty(elem),
+            Type::Reference(rust_syntax::TypeReference { elem, .. }) => RecordType::parse_from_ty(elem),
             _ => RecordType::Debug,
         }
     }
@@ -502,7 +502,7 @@ fn param_names(pat: Pat, record_type: RecordType) -> Box<dyn Iterator<Item = (Id
         Pat::Ident(PatIdent { ident, .. }) => Box::new(iter::once((ident, record_type))),
         Pat::Reference(PatReference { pat, .. }) => param_names(*pat, record_type),
         // We can't get the concrete type of fields in the struct/tuple
-        // patterns by using `syn`. e.g. `fn foo(Foo { x, y }: Foo) {}`.
+        // patterns by using `rust_syntax`. e.g. `fn foo(Foo { x, y }: Foo) {}`.
         // Therefore, the struct/tuple patterns in the arguments will just
         // always be recorded as `RecordType::Debug`.
         Pat::Struct(PatStruct { fields, .. }) => Box::new(
@@ -682,7 +682,7 @@ impl<'block> AsyncInfo<'block> {
                     if ident == "_self" {
                         let mut ty = *ty.ty.clone();
                         // extract the inner type if the argument is "&self" or "&mut self"
-                        if let Type::Reference(syn::TypeReference { elem, .. }) = ty {
+                        if let Type::Reference(rust_syntax::TypeReference { elem, .. }) = ty {
                             ty = *elem;
                         }
 
@@ -707,7 +707,7 @@ impl<'block> AsyncInfo<'block> {
         self,
         args: InstrumentArgs,
         instrumented_function_name: &str,
-    ) -> Result<proc_macro::TokenStream, syn::Error> {
+    ) -> Result<proc_macro::TokenStream, rust_syntax::Error> {
         // let's rewrite some statements!
         let mut out_stmts: Vec<TokenStream> = self
             .input
@@ -831,12 +831,12 @@ struct ImplTraitEraser;
 impl VisitMut for ImplTraitEraser {
     fn visit_type_mut(&mut self, t: &mut Type) {
         if let Type::ImplTrait(impl_trait) = t {
-            *t = Type::Infer(syn::TypeInfer {
+            *t = Type::Infer(rust_syntax::TypeInfer {
                 attrs: impl_trait.attrs.clone(),
                 underscore_token: Token![_](impl_trait.span()),
             });
         } else {
-            syn::visit_mut::visit_type_mut(self, t);
+            rust_syntax::visit_mut::visit_type_mut(self, t);
         }
     }
 }

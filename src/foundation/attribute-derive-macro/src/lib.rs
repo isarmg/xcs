@@ -10,8 +10,8 @@ use proc_macro2::{Literal, Span, TokenStream};
 use proc_macro_utils::{TokenParser, TokenStream2Ext};
 use quote::{format_ident, ToTokens};
 use quote_use::quote_use as quote;
-use syn::spanned::Spanned;
-use syn::{DataStruct, DeriveInput, Field, Fields, Generics, Ident, LitStr, Type, Visibility};
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{DataStruct, DeriveInput, Field, Fields, Generics, Ident, LitStr, Type, Visibility};
 
 const ATTRIBUTE_IDENTS: &[&str] = &["from_attr", "attribute", "attr"];
 
@@ -173,7 +173,7 @@ struct StructAttrs {
 impl StructAttrs {
     fn from_attrs(
         struct_ident: &Ident,
-        attrs: impl IntoIterator<Item = syn::Attribute>,
+        attrs: impl IntoIterator<Item = rust_syntax::Attribute>,
     ) -> Result<Self> {
         const VALID_FORMAT: &str = r#"expected `#[attribute(ident=attribute_name/!ident, aliases=[alias1, alias2], error="..", error(unknown_field="..", unknown_field_single="..", unknown_field_empty="..", duplicate_field="..", missing_field="..", field_help=".."))]`"#;
 
@@ -359,7 +359,7 @@ struct FieldAttrs {
 }
 
 impl FieldAttrs {
-    fn from_attrs(attrs: impl IntoIterator<Item = syn::Attribute>) -> Result<Self> {
+    fn from_attrs(attrs: impl IntoIterator<Item = rust_syntax::Attribute>) -> Result<Self> {
         const VALID_FORMAT: &str = r#"expected `#[attribute(optional, positional, default=1+5, conflicts=[a, b], example="22")]`"#;
 
         let mut optional = false;
@@ -482,7 +482,7 @@ impl Conflicts {
 
                 Ok(quote! {
                     # use ::attribute_derive::__private::proc_macro2;
-                    # use ::attribute_derive::__private::syn::{Error, Spanned};
+                    # use ::attribute_derive::__private::rust_syntax::{Error, Spanned};
                     if let (Some(__a), Some(__b)) = (&__partial.#a, &__partial.#b) {
                         if let Some(__joined_span) = __a.error_span().join(__b.error_span()) {
                             return Err(Error::new(__joined_span, #error_a_to_b));
@@ -650,7 +650,7 @@ impl AttrField {
                 let fmt = format!("{{__error}}{help}{{open_or_eq:.0}}{{close_or_empty:.0}}");
                 let ty = quote!(<#ty as ::attribute_derive::parsing::AttributeNamed>);
                 quote! { .map_err(|__error| {
-                    ::attribute_derive::__private::syn::Error::new(
+                    ::attribute_derive::__private::rust_syntax::Error::new(
                         __error.span(),
                         format!(#fmt,
                             open_or_eq=#ty::PREFERRED_OPEN_DELIMITER,
@@ -801,8 +801,8 @@ fn parse_comma() -> TokenStream {
         if __input.is_empty() {
             return Ok(__partial);
         } else {
-            <::attribute_derive::__private::syn::Token![,] as
-            ::attribute_derive::__private::syn::parse::Parse>::parse(__input)?;
+            <::attribute_derive::__private::rust_syntax::Token![,] as
+            ::attribute_derive::__private::rust_syntax::parse::Parse>::parse(__input)?;
         }
     }
 }
@@ -877,7 +877,7 @@ pub fn from_attr_derive(
     };
 
     let (fields, conflicts) = match data {
-        syn::Data::Struct(DataStruct {
+        rust_syntax::Data::Struct(DataStruct {
             fields: fields @ (Fields::Named(_) | Fields::Unnamed(_)),
             ..
         }) => AttrField::parse_fields(fields, struct_error, attribute_ident)?,
@@ -899,8 +899,8 @@ pub fn from_attr_derive(
         quote! {
             # use ::attribute_derive::FromAttr;
             # use ::attribute_derive::parsing::SpannedValue;
-            # use ::attribute_derive::__private::syn::parse::{ParseStream, Parse};
-            # use ::attribute_derive::__private::syn::{Result, Error};
+            # use ::attribute_derive::__private::rust_syntax::parse::{ParseStream, Parse};
+            # use ::attribute_derive::__private::rust_syntax::{Result, Error};
             impl #impl_generics FromAttr for #ident #ty_generics #where_clause {
                 fn parse_partial(input: ParseStream) -> Result<Self::Partial> {
                     <#ty as FromAttr>::parse_partial(input)
@@ -919,8 +919,8 @@ pub fn from_attr_derive(
         let parse_named: Vec<_> = fields.iter().filter_map(AttrField::parse_named).collect();
         quote! {
             # use ::attribute_derive::parsing::AttributeMeta;
-            # use ::attribute_derive::__private::syn::parse::{ParseStream, Parse};
-            # use ::attribute_derive::__private::syn::{Result, Error};
+            # use ::attribute_derive::__private::rust_syntax::parse::{ParseStream, Parse};
+            # use ::attribute_derive::__private::rust_syntax::{Result, Error};
             impl #impl_generics AttributeMeta for #ident #ty_generics #where_clause {
                fn parse_inner(__input: ParseStream) -> Result<Self::Partial> {
                    let mut __partial = #partial_ident::default();
@@ -937,8 +937,8 @@ pub fn from_attr_derive(
     Ok(quote! {
         # use ::attribute_derive::parsing::{AttributeBase, SpannedValue};
         # use ::attribute_derive::from_partial::FromPartial;
-        # use ::attribute_derive::__private::syn::parse::{ParseStream, Parse};
-        # use ::attribute_derive::__private::syn::{Result, Error};
+        # use ::attribute_derive::__private::rust_syntax::parse::{ParseStream, Parse};
+        # use ::attribute_derive::__private::rust_syntax::{Result, Error};
         #[allow(clippy::field_reassign_with_default, remove_unnecessary_else)]
         const _: () = {
             #attribute_ident_trait

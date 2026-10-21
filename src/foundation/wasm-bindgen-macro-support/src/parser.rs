@@ -6,12 +6,12 @@ use std::{char, iter};
 use ast::OperationKind;
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use quote::ToTokens;
-use syn::ext::IdentExt;
-use syn::parse::{Parse, ParseStream, Result as SynResult};
-use syn::spanned::Spanned;
-use syn::visit_mut::VisitMut;
-use syn::Token;
-use syn::{ItemFn, Lit, MacroDelimiter, ReturnType};
+use rust_syntax::ext::IdentExt;
+use rust_syntax::parse::{Parse, ParseStream, Result as SyntaxResult};
+use rust_syntax::spanned::Spanned;
+use rust_syntax::visit_mut::VisitMut;
+use rust_syntax::Token;
+use rust_syntax::{ItemFn, Lit, MacroDelimiter, ReturnType};
 use wasm_bindgen_shared::identifier::{is_js_keyword, is_non_value_js_keyword, is_valid_ident};
 
 use crate::ast::{self, ThreadLocal};
@@ -77,7 +77,7 @@ macro_rules! attrgen {
             (constructor, false, Constructor(Span)),
             (method, false, Method(Span)),
             (r#this, false, This(Span)),
-            (static_method_of, false, StaticMethodOf(Span, syn::TypePath)),
+            (static_method_of, false, StaticMethodOf(Span, rust_syntax::TypePath)),
             (js_namespace, false, JsNamespace(Span, JsNamespace, Vec<Span>)),
             (module, true, Module(Span, String, Span)),
             (raw_module, true, RawModule(Span, String, Span)),
@@ -94,8 +94,8 @@ macro_rules! attrgen {
             (js_class, false, JsClass(Span, String, Span)),
             (reexport, false, Reexport(Span, Option<String>)),
             (inspectable, false, Inspectable(Span)),
-            (is_type_of, false, IsTypeOf(Span, syn::Expr)),
-            (extends, false, Extends(Span, syn::Path)),
+            (is_type_of, false, IsTypeOf(Span, rust_syntax::Expr)),
+            (extends, false, Extends(Span, rust_syntax::Path)),
             (extends_js_class, false, ExtendsJsClass(Span, String, Span)),
             (extends_js_namespace, false, ExtendsJsNamespace(Span, JsNamespace, Vec<Span>)),
             (no_deref, false, NoDeref(Span)),
@@ -112,9 +112,9 @@ macro_rules! attrgen {
             (main, false, Main(Span)),
             (start, false, Start(Span)),
             (experimental_tokio, false, ExperimentalTokio(Span, Option<String>)),
-            (wasm_bindgen, false, WasmBindgen(Span, syn::Path)),
-            (js_sys, false, JsSys(Span, syn::Path)),
-            (wasm_bindgen_futures, false, WasmBindgenFutures(Span, syn::Path)),
+            (wasm_bindgen, false, WasmBindgen(Span, rust_syntax::Path)),
+            (js_sys, false, JsSys(Span, rust_syntax::Path)),
+            (wasm_bindgen_futures, false, WasmBindgenFutures(Span, rust_syntax::Path)),
             (skip, false, Skip(Span)),
             (slice_to_array, false, SliceToArray(Span)),
             (typescript_type, false, TypeScriptType(Span, String, Span)),
@@ -178,7 +178,7 @@ macro_rules! methods {
                             $(BindgenAttr::$variant(span, ..) => {
                                 UnusedState {
                                     error: $invalid_unused,
-                                    ident: syn::parse_quote_spanned!(*span => $name)
+                                    ident: rust_syntax::parse_quote_spanned!(*span => $name)
                                 }
                             })*
                         }
@@ -249,7 +249,7 @@ macro_rules! methods {
 
 impl BindgenAttrs {
     /// Find and parse the wasm_bindgen attributes.
-    fn find(attrs: &mut Vec<syn::Attribute>) -> Result<BindgenAttrs, Diagnostic> {
+    fn find(attrs: &mut Vec<rust_syntax::Attribute>) -> Result<BindgenAttrs, Diagnostic> {
         let mut ret = BindgenAttrs::default();
         loop {
             let pos = attrs
@@ -263,17 +263,17 @@ impl BindgenAttrs {
             };
             let attr = attrs.remove(pos);
             let tokens = match attr.meta {
-                syn::Meta::Path(_) => continue,
-                syn::Meta::List(syn::MetaList {
+                rust_syntax::Meta::Path(_) => continue,
+                rust_syntax::Meta::List(rust_syntax::MetaList {
                     delimiter: MacroDelimiter::Paren(_),
                     tokens,
                     ..
                 }) => tokens,
-                syn::Meta::List(_) | syn::Meta::NameValue(_) => {
+                rust_syntax::Meta::List(_) | rust_syntax::Meta::NameValue(_) => {
                     bail_span!(attr, "malformed #[wasm_bindgen] attribute")
                 }
             };
-            let mut attrs: BindgenAttrs = syn::parse2(tokens)?;
+            let mut attrs: BindgenAttrs = rust_syntax::parse2(tokens)?;
             ret.attrs.append(&mut attrs.attrs);
             attrs.check_used();
         }
@@ -336,13 +336,13 @@ impl Default for BindgenAttrs {
 }
 
 impl Parse for BindgenAttrs {
-    fn parse(input: ParseStream) -> SynResult<Self> {
+    fn parse(input: ParseStream) -> SyntaxResult<Self> {
         let mut attrs = BindgenAttrs::default();
         if input.is_empty() {
             return Ok(attrs);
         }
 
-        let opts = syn::punctuated::Punctuated::<_, syn::token::Comma>::parse_terminated(input)?;
+        let opts = rust_syntax::punctuated::Punctuated::<_, rust_syntax::token::Comma>::parse_terminated(input)?;
         attrs.attrs = opts.into_iter().map(|c| (Cell::new(false), c)).collect();
         Ok(attrs)
     }
@@ -360,7 +360,7 @@ macro_rules! gen_bindgen_attr {
 attrgen!(gen_bindgen_attr);
 
 impl Parse for BindgenAttr {
-    fn parse(input: ParseStream) -> SynResult<Self> {
+    fn parse(input: ParseStream) -> SyntaxResult<Self> {
         let original = input.fork();
         let attr: AnyIdent = input.parse()?;
         let attr = attr.0;
@@ -389,10 +389,10 @@ impl Parse for BindgenAttr {
                 // Accept either a bare ident or a string literal containing one.
                 // The string-literal form lets `rustfmt` format the surrounding
                 // attribute, since rustfmt only handles `name = <literal>` arms.
-                let ident = if input.peek(syn::LitStr) {
-                    let litstr = input.parse::<syn::LitStr>()?;
-                    syn::parse_str::<Ident>(&litstr.value()).map_err(|e| {
-                        syn::Error::new(litstr.span(), format!("expected an identifier: {e}"))
+                let ident = if input.peek(rust_syntax::LitStr) {
+                    let litstr = input.parse::<rust_syntax::LitStr>()?;
+                    rust_syntax::parse_str::<Ident>(&litstr.value()).map_err(|e| {
+                        rust_syntax::Error::new(litstr.span(), format!("expected an identifier: {e}"))
                     })?
                 } else {
                     input.parse::<AnyIdent>()?.0
@@ -400,14 +400,14 @@ impl Parse for BindgenAttr {
                 return Ok(BindgenAttr::$variant(attr_span, ident))
             });
 
-            (@parser $variant:ident(Span, syn::TypePath)) => ({
+            (@parser $variant:ident(Span, rust_syntax::TypePath)) => ({
                 input.parse::<Token![=]>()?;
                 // Preserve the string-literal spelling accepted by the former
                 // identifier parser while also allowing generic arguments.
-                let path = if input.peek(syn::LitStr) {
-                    let litstr = input.parse::<syn::LitStr>()?;
-                    syn::parse_str::<syn::TypePath>(&litstr.value()).map_err(|e| {
-                        syn::Error::new(litstr.span(), format!("expected a type path: {e}"))
+                let path = if input.peek(rust_syntax::LitStr) {
+                    let litstr = input.parse::<rust_syntax::LitStr>()?;
+                    rust_syntax::parse_str::<rust_syntax::TypePath>(&litstr.value()).map_err(|e| {
+                        rust_syntax::Error::new(litstr.span(), format!("expected a type path: {e}"))
                     })?
                 } else {
                     input.parse()?
@@ -417,8 +417,8 @@ impl Parse for BindgenAttr {
 
             (@parser $variant:ident(Span, Option<String>)) => ({
                 if input.parse::<Token![=]>().is_ok() {
-                    if input.peek(syn::LitStr) {
-                        let litstr = input.parse::<syn::LitStr>()?;
+                    if input.peek(rust_syntax::LitStr) {
+                        let litstr = input.parse::<rust_syntax::LitStr>()?;
                         return Ok(BindgenAttr::$variant(attr_span, Some(litstr.value())))
                     }
 
@@ -429,15 +429,15 @@ impl Parse for BindgenAttr {
                 }
             });
 
-            (@parser $variant:ident(Span, syn::Path)) => ({
+            (@parser $variant:ident(Span, rust_syntax::Path)) => ({
                 input.parse::<Token![=]>()?;
                 // Accept either a bare path or a string literal containing one.
                 // The string-literal form lets `rustfmt` format the surrounding
                 // attribute, since rustfmt only handles `name = <literal>` arms.
-                let path = if input.peek(syn::LitStr) {
-                    let litstr = input.parse::<syn::LitStr>()?;
-                    syn::parse_str::<syn::Path>(&litstr.value()).map_err(|e| {
-                        syn::Error::new(litstr.span(), format!("expected a path: {e}"))
+                let path = if input.peek(rust_syntax::LitStr) {
+                    let litstr = input.parse::<rust_syntax::LitStr>()?;
+                    rust_syntax::parse_str::<rust_syntax::Path>(&litstr.value()).map_err(|e| {
+                        rust_syntax::Error::new(litstr.span(), format!("expected a path: {e}"))
                     })?
                 } else {
                     input.parse()?
@@ -445,14 +445,14 @@ impl Parse for BindgenAttr {
                 return Ok(BindgenAttr::$variant(attr_span, path));
             });
 
-            (@parser $variant:ident(Span, syn::Expr)) => ({
+            (@parser $variant:ident(Span, rust_syntax::Expr)) => ({
                 input.parse::<Token![=]>()?;
                 return Ok(BindgenAttr::$variant(attr_span, input.parse()?));
             });
 
             (@parser $variant:ident(Span, String, Span)) => ({
                 input.parse::<Token![=]>()?;
-                let (val, span) = match input.parse::<syn::LitStr>() {
+                let (val, span) = match input.parse::<rust_syntax::LitStr>() {
                     Ok(str) => (str.value(), str.span()),
                     Err(_) => {
                         let ident = input.parse::<AnyIdent>()?.0;
@@ -464,31 +464,31 @@ impl Parse for BindgenAttr {
 
             (@parser $variant:ident(Span, JsNamespace, Vec<Span>)) => ({
                 input.parse::<Token![=]>()?;
-                let (vals, spans) = match input.parse::<syn::ExprArray>() {
+                let (vals, spans) = match input.parse::<rust_syntax::ExprArray>() {
                     Ok(exprs) => {
                         let mut vals = vec![];
                         let mut spans = vec![];
 
                         for expr in exprs.elems.iter() {
-                            if let syn::Expr::Lit(syn::ExprLit {
-                                lit: syn::Lit::Str(ref str),
+                            if let rust_syntax::Expr::Lit(rust_syntax::ExprLit {
+                                lit: rust_syntax::Lit::Str(ref str),
                                 ..
                             }) = expr {
                                 vals.push(str.value());
                                 spans.push(str.span());
                             } else {
-                                return Err(syn::Error::new(expr.span(), "expected string literals"));
+                                return Err(rust_syntax::Error::new(expr.span(), "expected string literals"));
                             }
                         }
 
                         if vals.is_empty() {
-                            return Err(syn::Error::new(exprs.span(), "Empty namespace lists are not allowed."));
+                            return Err(rust_syntax::Error::new(exprs.span(), "Empty namespace lists are not allowed."));
                         }
 
                         (vals, spans)
                     },
                     // Try parsing as a string literal, then fall back to identifier
-                    Err(_) => match input.parse::<syn::LitStr>() {
+                    Err(_) => match input.parse::<rust_syntax::LitStr>() {
                         Ok(str) => (vec![str.value()], vec![str.span()]),
                         Err(_) => {
                             let ident = input.parse::<AnyIdent>()?.0;
@@ -500,7 +500,7 @@ impl Parse for BindgenAttr {
                 let first = &vals[0];
                 if is_non_value_js_keyword(first) && first != "default" {
                     let msg = format!("Namespace cannot start with the JS keyword `{}`", first);
-                    return Err(syn::Error::new(spans[0], msg));
+                    return Err(rust_syntax::Error::new(spans[0], msg));
                 }
 
                 return Ok(BindgenAttr::$variant(attr_span, JsNamespace(vals), spans))
@@ -551,7 +551,7 @@ fn validate_computed_key(attr: &str, value: &str, span: Span) -> Result<(), Diag
 struct AnyIdent(Ident);
 
 impl Parse for AnyIdent {
-    fn parse(input: ParseStream) -> SynResult<Self> {
+    fn parse(input: ParseStream) -> SyntaxResult<Self> {
         input.step(|cursor| match cursor.ident() {
             Some((ident, remaining)) => Ok((AnyIdent(ident), remaining)),
             None => Err(cursor.error("expected an identifier")),
@@ -561,7 +561,7 @@ impl Parse for AnyIdent {
 
 /// Conversion trait with context.
 ///
-/// Used to convert syn tokens into an AST, that we can then use to generate glue code. The context
+/// Used to convert rust_syntax tokens into an AST, that we can then use to generate glue code. The context
 /// (`Ctx`) is used to pass in the attributes from the `#[wasm_bindgen]`, if needed.
 pub(crate) trait ConvertToAst<Ctx> {
     /// What we are converting to.
@@ -572,7 +572,7 @@ pub(crate) trait ConvertToAst<Ctx> {
     fn convert(self, context: Ctx) -> Result<Self::Target, Diagnostic>;
 }
 
-impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
+impl ConvertToAst<&ast::Program> for &mut rust_syntax::ItemStruct {
     type Target = ast::Struct;
 
     fn convert(self, program: &ast::Program) -> Result<Self::Target, Diagnostic> {
@@ -594,7 +594,7 @@ impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
         // injected `parent: Parent<Foo>` field is infinitely-sized at the
         // type level, and the emitted JS would be `class Foo extends Foo`
         // which fails at module load with a TDZ ReferenceError.
-        let mut extends: Option<syn::Path> = None;
+        let mut extends: Option<rust_syntax::Path> = None;
         for (used, attr) in attrs.attrs.iter() {
             if let BindgenAttr::Extends(span, path) = attr {
                 if extends.is_some() {
@@ -677,15 +677,15 @@ impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
                 parent_count += 1;
             }
 
-            let is_public = matches!(field.vis, syn::Visibility::Public(..));
+            let is_public = matches!(field.vis, rust_syntax::Visibility::Public(..));
             if !is_public && !is_parent {
                 field_attrs.check_used();
                 continue;
             }
 
             let (js_field_name, member) = match &field.ident {
-                Some(ident) => (ident.unraw().to_string(), syn::Member::Named(ident.clone())),
-                None => (i.to_string(), syn::Member::Unnamed(i.into())),
+                Some(ident) => (ident.unraw().to_string(), rust_syntax::Member::Named(ident.clone())),
+                None => (i.to_string(), rust_syntax::Member::Unnamed(i.into())),
             };
 
             if field_attrs.skip().is_some() && !is_parent {
@@ -762,8 +762,8 @@ impl ConvertToAst<&ast::Program> for &mut syn::ItemStruct {
     }
 }
 
-fn get_ty(mut ty: &syn::Type) -> &syn::Type {
-    while let syn::Type::Group(g) = ty {
+fn get_ty(mut ty: &rust_syntax::Type) -> &rust_syntax::Type {
+    while let rust_syntax::Type::Group(g) = ty {
         ty = &g.elem;
     }
 
@@ -778,9 +778,9 @@ fn get_ty(mut ty: &syn::Type) -> &syn::Type {
 /// Called from the macro entry point before the struct tokens are re-emitted,
 /// so downstream type-checking sees the injected field.
 pub fn inject_parent_field(
-    s: &mut syn::ItemStruct,
-    extends_path: Option<&syn::Path>,
-    wasm_bindgen: &syn::Path,
+    s: &mut rust_syntax::ItemStruct,
+    extends_path: Option<&rust_syntax::Path>,
+    wasm_bindgen: &rust_syntax::Path,
 ) -> Result<(), Diagnostic> {
     for field in s.fields.iter() {
         if is_parent_wrapper_type(&field.ty) {
@@ -820,24 +820,24 @@ pub fn inject_parent_field(
         }
     }
 
-    let injected: syn::Field = syn::parse_quote! {
+    let injected: rust_syntax::Field = rust_syntax::parse_quote! {
         parent: #wasm_bindgen::Parent<#parent_path>
     };
 
     match &mut s.fields {
-        syn::Fields::Named(named) => {
+        rust_syntax::Fields::Named(named) => {
             named.named.insert(0, injected);
         }
-        syn::Fields::Unit => {
-            let mut named = syn::FieldsNamed {
+        rust_syntax::Fields::Unit => {
+            let mut named = rust_syntax::FieldsNamed {
                 brace_token: Default::default(),
-                named: syn::punctuated::Punctuated::new(),
+                named: rust_syntax::punctuated::Punctuated::new(),
             };
             named.named.push(injected);
-            s.fields = syn::Fields::Named(named);
+            s.fields = rust_syntax::Fields::Named(named);
             s.semi_token = None;
         }
-        syn::Fields::Unnamed(_) => {
+        rust_syntax::Fields::Unnamed(_) => {
             bail_span!(
                 &s.ident,
                 "tuple structs cannot use `#[wasm_bindgen(extends = ...)]`; \
@@ -862,7 +862,7 @@ pub fn inject_parent_field(
 ///
 /// This is intentionally conservative: a user with their own
 /// `my_crate::tree::Parent<T>` field is left alone.
-fn is_parent_wrapper_type(ty: &syn::Type) -> bool {
+fn is_parent_wrapper_type(ty: &rust_syntax::Type) -> bool {
     let path = match field_type_path(ty) {
         Some(p) => p,
         None => return false,
@@ -875,10 +875,10 @@ fn is_parent_wrapper_type(ty: &syn::Type) -> bool {
         return false;
     }
     let one_type_arg = match &last.arguments {
-        syn::PathArguments::AngleBracketed(args) => {
+        rust_syntax::PathArguments::AngleBracketed(args) => {
             args.args
                 .iter()
-                .filter(|a| matches!(a, syn::GenericArgument::Type(_)))
+                .filter(|a| matches!(a, rust_syntax::GenericArgument::Type(_)))
                 .count()
                 == 1
         }
@@ -900,15 +900,15 @@ fn is_parent_wrapper_type(ty: &syn::Type) -> bool {
 }
 
 /// Extract the path of a `Type::Path`, peeling off any leading groups.
-fn field_type_path(ty: &syn::Type) -> Option<&syn::Path> {
+fn field_type_path(ty: &rust_syntax::Type) -> Option<&rust_syntax::Path> {
     match get_ty(ty) {
-        syn::Type::Path(p) => Some(&p.path),
+        rust_syntax::Type::Path(p) => Some(&p.path),
         _ => None,
     }
 }
 
 /// Stringify a path's segment idents (without generic args) for diagnostics.
-fn path_to_string(path: Option<&syn::Path>) -> String {
+fn path_to_string(path: Option<&rust_syntax::Path>) -> String {
     let Some(path) = path else {
         return String::from("<unknown>");
     };
@@ -921,8 +921,8 @@ fn path_to_string(path: Option<&syn::Path>) -> String {
     out
 }
 
-fn get_expr(mut expr: &syn::Expr) -> &syn::Expr {
-    while let syn::Expr::Group(g) = expr {
+fn get_expr(mut expr: &rust_syntax::Expr) -> &rust_syntax::Expr {
+    while let rust_syntax::Expr::Group(g) = expr {
         expr = &g.expr;
     }
 
@@ -937,7 +937,7 @@ impl<'a>
         bool,
         bool,
         Option<&'a [String]>,
-    )> for syn::ForeignItemFn
+    )> for rust_syntax::ForeignItemFn
 {
     type Target = ast::ImportKind;
 
@@ -990,7 +990,7 @@ impl<'a>
                 err_span!(self, "imported methods must have at least one argument")
             })?;
             let class = match get_ty(&class.pat_type.ty) {
-                syn::Type::Reference(syn::TypeReference {
+                rust_syntax::Type::Reference(rust_syntax::TypeReference {
                     mutability: None,
                     elem,
                     ..
@@ -1008,7 +1008,7 @@ impl<'a>
             });
 
             let class_name = match class_ty {
-                syn::Type::Path(syn::TypePath {
+                rust_syntax::Type::Path(rust_syntax::TypePath {
                     attrs: _,
                     qself: None,
                     ref path,
@@ -1037,7 +1037,7 @@ impl<'a>
                 .map(|p| p.0.into())
                 .unwrap_or_else(|| cls.path.segments.last().unwrap().ident.unraw().to_string());
 
-            let ty = syn::Type::Path(cls.clone());
+            let ty = rust_syntax::Type::Path(cls.clone());
 
             let kind = ast::MethodKind::Operation(ast::Operation {
                 is_static: true,
@@ -1051,7 +1051,7 @@ impl<'a>
                 _ => bail_span!(self, "constructor returns must be bare types"),
             };
             let class_name = match get_ty(class) {
-                syn::Type::Path(syn::TypePath {
+                rust_syntax::Type::Path(rust_syntax::TypePath {
                     attrs: _,
                     qself: None,
                     ref path,
@@ -1106,8 +1106,8 @@ impl<'a>
         // supporting it; see `codegen::try_to_tokens_generic`).
         let is_generic = self.sig.generics.type_params().next().is_some()
             || self.sig.inputs.iter().any(|arg| match arg {
-                syn::FnArg::Typed(pat_type) => crate::generics::has_impl_trait(&pat_type.ty),
-                syn::FnArg::Receiver(_) => false,
+                rust_syntax::FnArg::Typed(pat_type) => crate::generics::has_impl_trait(&pat_type.ty),
+                rust_syntax::FnArg::Receiver(_) => false,
             });
         let generic_per_mono = fn_generic_per_mono || (block_generic_per_mono && is_generic);
 
@@ -1213,11 +1213,11 @@ impl<'a>
         wasm.rust_attrs.retain(|attr| {
             /// Returns the contents of the passed `#[doc = "..."]` attribute,
             /// or `None` if it isn't one.
-            fn get_docs(attr: &syn::Attribute) -> Option<String> {
+            fn get_docs(attr: &rust_syntax::Attribute) -> Option<String> {
                 if attr.path().is_ident("doc") {
-                    if let syn::Meta::NameValue(syn::MetaNameValue {
+                    if let rust_syntax::Meta::NameValue(rust_syntax::MetaNameValue {
                         value:
-                            syn::Expr::Lit(syn::ExprLit {
+                            rust_syntax::Expr::Lit(rust_syntax::ExprLit {
                                 lit: Lit::Str(str), ..
                             }),
                         ..
@@ -1273,7 +1273,7 @@ impl<'a>
     }
 }
 
-impl ConvertToAst<(&ast::Program, BindgenAttrs)> for syn::ForeignItemType {
+impl ConvertToAst<(&ast::Program, BindgenAttrs)> for rust_syntax::ForeignItemType {
     type Target = ast::ImportKind;
 
     fn convert(
@@ -1333,7 +1333,7 @@ impl ConvertToAst<(&ast::Program, BindgenAttrs)> for syn::ForeignItemType {
             if param.default.is_none() {
                 let generics = generics.get_or_insert_with(|| self.generics.clone());
                 let type_param_mut = generics.type_params_mut().nth(n).unwrap();
-                type_param_mut.default = Some((Default::default(), syn::parse_quote! { JsValue }));
+                type_param_mut.default = Some((Default::default(), rust_syntax::parse_quote! { JsValue }));
             }
         }
 
@@ -1364,7 +1364,7 @@ impl<'a>
         BindgenAttrs,
         &'a Option<ast::ImportModule>,
         Option<&'a [String]>,
-    )> for syn::ForeignItemStatic
+    )> for rust_syntax::ForeignItemStatic
 {
     type Target = ast::ImportKind;
 
@@ -1377,7 +1377,7 @@ impl<'a>
             Option<&'a [String]>,
         ),
     ) -> Result<Self::Target, Diagnostic> {
-        if let syn::StaticMutability::Mut(_) = self.mutability {
+        if let rust_syntax::StaticMutability::Mut(_) = self.mutability {
             bail_span!(self.mutability, "cannot import mutable globals yet")
         }
 
@@ -1417,7 +1417,7 @@ impl<'a>
 }
 
 impl<'a> ConvertToAst<(&ast::Program, BindgenAttrs, &'a Option<ast::ImportModule>)>
-    for syn::ItemStatic
+    for rust_syntax::ItemStatic
 {
     type Target = ast::ImportKind;
 
@@ -1425,12 +1425,12 @@ impl<'a> ConvertToAst<(&ast::Program, BindgenAttrs, &'a Option<ast::ImportModule
         self,
         (program, opts, module): (&ast::Program, BindgenAttrs, &'a Option<ast::ImportModule>),
     ) -> Result<Self::Target, Diagnostic> {
-        if let syn::StaticMutability::Mut(_) = self.mutability {
+        if let rust_syntax::StaticMutability::Mut(_) = self.mutability {
             bail_span!(self.mutability, "cannot import mutable globals yet")
         }
 
-        let string = if let syn::Expr::Lit(syn::ExprLit {
-            lit: syn::Lit::Str(string),
+        let string = if let rust_syntax::Expr::Lit(rust_syntax::ExprLit {
+            lit: rust_syntax::Lit::Str(string),
             ..
         }) = *self.expr.clone()
         {
@@ -1475,7 +1475,7 @@ impl<'a> ConvertToAst<(&ast::Program, BindgenAttrs, &'a Option<ast::ImportModule
     }
 }
 
-impl ConvertToAst<(BindgenAttrs, Vec<FnArgAttrs>)> for syn::ItemFn {
+impl ConvertToAst<(BindgenAttrs, Vec<FnArgAttrs>)> for rust_syntax::ItemFn {
     type Target = ast::Function;
 
     fn convert(
@@ -1483,7 +1483,7 @@ impl ConvertToAst<(BindgenAttrs, Vec<FnArgAttrs>)> for syn::ItemFn {
         (attrs, args_attrs): (BindgenAttrs, Vec<FnArgAttrs>),
     ) -> Result<Self::Target, Diagnostic> {
         match self.vis {
-            syn::Visibility::Public(_) => {}
+            rust_syntax::Visibility::Public(_) => {}
             _ if attrs.start().is_some() => {}
             _ => bail_span!(self, "can only #[wasm_bindgen] public functions"),
         }
@@ -1517,22 +1517,22 @@ impl ConvertToAst<(BindgenAttrs, Vec<FnArgAttrs>)> for syn::ItemFn {
 }
 
 /// Returns whether `self` is passed by reference or by value.
-fn get_self_method(r: syn::Receiver) -> ast::MethodSelf {
+fn get_self_method(r: rust_syntax::Receiver) -> ast::MethodSelf {
     // The tricky part here is that `r` can have many forms. E.g. `self`,
     // `&self`, `&mut self`, `self: Self`, `self: &Self`, `self: &mut Self`,
     // `self: Box<Self>`, `self: Rc<Self>`, etc. The shorthand forms are
     // covered by `ReceiverKind::Value`/`ReceiverKind::Reference`; for the
     // `self: Ty` forms we check whether the explicit type is a reference.
     match &r.kind {
-        syn::ReceiverKind::Reference(_, _, mutability) => {
+        rust_syntax::ReceiverKind::Reference(_, _, mutability) => {
             if mutability.is_some() {
                 ast::MethodSelf::RefMutable
             } else {
                 ast::MethodSelf::RefShared
             }
         }
-        syn::ReceiverKind::Typed(_, ty) => match &**ty {
-            syn::Type::Reference(ty) => {
+        rust_syntax::ReceiverKind::Typed(_, ty) => match &**ty {
+            rust_syntax::Type::Reference(ty) => {
                 if ty.mutability.is_some() {
                     ast::MethodSelf::RefMutable
                 } else {
@@ -1551,14 +1551,14 @@ enum FunctionPosition<'a> {
     Impl { self_ty: &'a Ident },
 }
 
-/// Construct a function (and gets the self type if appropriate) for our AST from a syn function.
+/// Construct a function (and gets the self type if appropriate) for our AST from a rust_syntax function.
 #[allow(clippy::too_many_arguments)]
 fn function_from_decl(
-    decl_name: &syn::Ident,
+    decl_name: &rust_syntax::Ident,
     opts: &BindgenAttrs,
-    sig: syn::Signature,
-    attrs: Vec<syn::Attribute>,
-    vis: syn::Visibility,
+    sig: rust_syntax::Signature,
+    attrs: Vec<rust_syntax::Attribute>,
+    vis: rust_syntax::Visibility,
     position: FunctionPosition,
     args_attrs: Option<Vec<FnArgAttrs>>,
 ) -> Result<(ast::Function, Option<ast::MethodSelf>), Diagnostic> {
@@ -1574,13 +1574,13 @@ fn function_from_decl(
         );
     }
 
-    let syn::Signature { inputs, output, .. } = sig;
+    let rust_syntax::Signature { inputs, output, .. } = sig;
 
     // A helper function to replace `Self` in the function signature of methods.
     // E.g. `fn get(&self) -> Option<Self>` to `fn get(&self) -> Option<MyType>`
     // The following comment explains why this is necessary:
     // https://github.com/wasm-bindgen/wasm-bindgen/issues/3105#issuecomment-1275160744
-    let replace_self = |mut t: syn::Type| {
+    let replace_self = |mut t: rust_syntax::Type| {
         if let FunctionPosition::Impl { self_ty } = position {
             // This uses a visitor to replace all occurrences of `Self` with
             // the actual type identifier. The visitor guarantees that we find
@@ -1603,8 +1603,8 @@ fn function_from_decl(
 
     // A helper function to replace argument names that are JS keywords.
     // E.g. this will replace `fn foo(class: u32)` to `fn foo(_class: u32)`
-    let replace_colliding_arg = |i: &mut syn::PatType| {
-        if let syn::Pat::Ident(ref mut i) = *i.pat {
+    let replace_colliding_arg = |i: &mut rust_syntax::PatType| {
+        if let rust_syntax::Pat::Ident(ref mut i) = *i.pat {
             let ident = i.ident.unraw().to_string();
             // JS keywords are NEVER allowed as argument names. Since argument
             // names are considered an implementation detail in JS, we can
@@ -1619,13 +1619,13 @@ fn function_from_decl(
     let mut arguments = Vec::new();
     for arg in inputs.into_iter() {
         match arg {
-            syn::FnArg::Typed(mut c) => {
+            rust_syntax::FnArg::Typed(mut c) => {
                 // typical arguments like foo: u32
                 replace_colliding_arg(&mut c);
                 *c.ty = replace_self(*c.ty);
                 arguments.push(c);
             }
-            syn::FnArg::Receiver(r) => {
+            rust_syntax::FnArg::Receiver(r) => {
                 // the self argument, so self, &self, &mut self, self: Box<Self>, etc.
 
                 // `self` is only allowed for `fn`s inside an `impl` block.
@@ -1660,8 +1660,8 @@ fn function_from_decl(
     let ret_ty_override = opts.unchecked_return_type();
     let ret_desc = opts.return_description();
     let ret = match output {
-        syn::ReturnType::Default => None,
-        syn::ReturnType::Type(_, ty) => Some(ast::FunctionReturnData {
+        rust_syntax::ReturnType::Default => None,
+        rust_syntax::ReturnType::Type(_, ty) => Some(ast::FunctionReturnData {
             r#type: replace_self(*ty),
             js_type: ret_ty_override
                 .as_ref()
@@ -1722,7 +1722,7 @@ fn function_from_decl(
             name,
             rust_attrs: attrs,
             rust_vis: vis,
-            r#unsafe: matches!(sig.safety, syn::Safety::Unsafe(_)),
+            r#unsafe: matches!(sig.safety, rust_syntax::Safety::Unsafe(_)),
             r#async: sig.asyncness.is_some(),
             jspi: opts.jspi().is_some(),
             tokio: match opts.experimental_tokio() {
@@ -1811,7 +1811,7 @@ struct FnArgAttrs {
 ///   `<#elem_ty as VectorRefIntoWasmAbi>`, which no user-writable bound can
 ///   satisfy since the impls are keyed on concrete ABI shapes. Left
 ///   unchecked, the user sees `E0277`s naming private traits.
-fn check_slice_to_array_arg(ty: &syn::Type, type_param_names: &[&Ident]) -> Result<(), Diagnostic> {
+fn check_slice_to_array_arg(ty: &rust_syntax::Type, type_param_names: &[&Ident]) -> Result<(), Diagnostic> {
     let Some(slice) = crate::codegen::detect_slice_or_option_slice(ty) else {
         return Ok(());
     };
@@ -1849,7 +1849,7 @@ fn check_slice_to_array_arg(ty: &syn::Type, type_param_names: &[&Ident]) -> Resu
 /// no-op: a misapplied `slice_to_array` there stays inert instead of tripping
 /// the import-only shape checks.
 fn extract_args_attrs(
-    sig: &mut syn::Signature,
+    sig: &mut rust_syntax::Signature,
     import_slice_to_array: Option<bool>,
 ) -> Result<Vec<FnArgAttrs>, Diagnostic> {
     let type_param_names: Vec<&Ident> = sig.generics.type_params().map(|tp| &tp.ident).collect();
@@ -1859,7 +1859,7 @@ fn extract_args_attrs(
     // `slice_to_array` argument in the signature is reported in one compile.
     let mut slice_to_array_errors = vec![];
     for input in sig.inputs.iter_mut() {
-        if let syn::FnArg::Typed(pat_type) = input {
+        if let rust_syntax::FnArg::Typed(pat_type) = input {
             let attrs = BindgenAttrs::find(&mut pat_type.attrs)?;
 
             // Check for mutually exclusive param type attributes
@@ -1975,14 +1975,14 @@ pub(crate) trait MacroParse<Ctx> {
     fn macro_parse(self, program: &mut ast::Program, context: Ctx) -> Result<(), Diagnostic>;
 }
 
-impl<'a> MacroParse<(Option<BindgenAttrs>, &'a mut TokenStream)> for syn::Item {
+impl<'a> MacroParse<(Option<BindgenAttrs>, &'a mut TokenStream)> for rust_syntax::Item {
     fn macro_parse(
         self,
         program: &mut ast::Program,
         (opts, tokens): (Option<BindgenAttrs>, &'a mut TokenStream),
     ) -> Result<(), Diagnostic> {
         match self {
-            syn::Item::Fn(mut f) => {
+            rust_syntax::Item::Fn(mut f) => {
                 let opts = opts.unwrap_or_default();
                 if let Some(path) = opts.wasm_bindgen() {
                     program.wasm_bindgen = path.clone();
@@ -2063,7 +2063,7 @@ impl<'a> MacroParse<(Option<BindgenAttrs>, &'a mut TokenStream)> for syn::Item {
                     js_sys: program.js_sys.clone(),
                 });
             }
-            syn::Item::Impl(mut i) => {
+            rust_syntax::Item::Impl(mut i) => {
                 let opts = opts.unwrap_or_default();
                 // The methods take their crate paths from the class marker,
                 // which reads them off `program`.
@@ -2079,21 +2079,21 @@ impl<'a> MacroParse<(Option<BindgenAttrs>, &'a mut TokenStream)> for syn::Item {
                 (&mut i).macro_parse(program, opts)?;
                 i.to_tokens(tokens);
             }
-            syn::Item::ForeignMod(mut f) => {
+            rust_syntax::Item::ForeignMod(mut f) => {
                 let opts = match opts {
                     Some(opts) => opts,
                     None => BindgenAttrs::find(&mut f.attrs)?,
                 };
                 f.macro_parse(program, opts)?;
             }
-            syn::Item::Enum(mut e) => {
+            rust_syntax::Item::Enum(mut e) => {
                 let opts = match opts {
                     Some(opts) => opts,
                     None => BindgenAttrs::find(&mut e.attrs)?,
                 };
                 e.macro_parse(program, (tokens, opts))?;
             }
-            syn::Item::Const(mut c) => {
+            rust_syntax::Item::Const(mut c) => {
                 let opts = match opts {
                     Some(opts) => opts,
                     None => BindgenAttrs::find(&mut c.attrs)?,
@@ -2113,7 +2113,7 @@ impl<'a> MacroParse<(Option<BindgenAttrs>, &'a mut TokenStream)> for syn::Item {
     }
 }
 
-impl MacroParse<BindgenAttrs> for &mut syn::ItemImpl {
+impl MacroParse<BindgenAttrs> for &mut rust_syntax::ItemImpl {
     fn macro_parse(self, program: &mut ast::Program, opts: BindgenAttrs) -> Result<(), Diagnostic> {
         if self.modifiers.defaultness.is_some() {
             bail_span!(
@@ -2137,7 +2137,7 @@ impl MacroParse<BindgenAttrs> for &mut syn::ItemImpl {
             );
         }
         let name = match get_ty(&self.self_ty) {
-            syn::Type::Path(syn::TypePath {
+            rust_syntax::Type::Path(rust_syntax::TypePath {
                 attrs: _,
                 qself: None,
                 ref path,
@@ -2168,31 +2168,31 @@ impl MacroParse<BindgenAttrs> for &mut syn::ItemImpl {
 // on them, so we want to expand the impl first, let the insides get cfg'd, and
 // then go for the rest.
 fn prepare_for_impl_recursion(
-    item: &mut syn::ImplItem,
-    class: &syn::Path,
+    item: &mut rust_syntax::ImplItem,
+    class: &rust_syntax::Path,
     program: &ast::Program,
     impl_opts: &BindgenAttrs,
 ) -> Result<(), Diagnostic> {
     let method = match item {
-        syn::ImplItem::Fn(m) => m,
-        syn::ImplItem::Const(_) => {
+        rust_syntax::ImplItem::Fn(m) => m,
+        rust_syntax::ImplItem::Const(_) => {
             bail_span!(
                 &*item,
                 "const definitions aren't supported with #[wasm_bindgen]"
             );
         }
-        syn::ImplItem::Type(_) => bail_span!(
+        rust_syntax::ImplItem::Type(_) => bail_span!(
             &*item,
             "type definitions in impls aren't supported with #[wasm_bindgen]"
         ),
-        syn::ImplItem::Macro(_) => {
+        rust_syntax::ImplItem::Macro(_) => {
             // In theory we want to allow this, but we have no way of expanding
             // the macro and then placing our magical attributes on the expanded
             // functions. As a result, just disallow it for now to hopefully
             // ward off buggy results from this macro.
             bail_span!(&*item, "macros in impls aren't supported");
         }
-        syn::ImplItem::Verbatim(_) => panic!("unparsed impl item?"),
+        rust_syntax::ImplItem::Verbatim(_) => panic!("unparsed impl item?"),
         other => bail_span!(other, "failed to parse this item as a known item"),
     };
 
@@ -2237,7 +2237,7 @@ fn prepare_for_impl_recursion(
         .unwrap_or_default();
     let js_namespace_lits = js_namespace_segments
         .iter()
-        .map(|s| syn::LitStr::new(s, proc_macro2::Span::call_site()))
+        .map(|s| rust_syntax::LitStr::new(s, proc_macro2::Span::call_site()))
         .collect::<Vec<_>>();
     let js_namespace_tokens = if js_namespace_lits.is_empty() {
         quote::quote! {}
@@ -2250,18 +2250,18 @@ fn prepare_for_impl_recursion(
     let js_sys = &program.js_sys;
     method.attrs.insert(
         0,
-        syn::Attribute {
+        rust_syntax::Attribute {
             pound_token: Default::default(),
-            style: syn::AttrStyle::Outer,
+            style: rust_syntax::AttrStyle::Outer,
             bracket_token: Default::default(),
-            meta: syn::parse_quote! { #wasm_bindgen::prelude::__wasm_bindgen_class_marker(#class = #js_class #js_namespace_tokens, wasm_bindgen = #wasm_bindgen, wasm_bindgen_futures = #wasm_bindgen_futures, js_sys = #js_sys) },
+            meta: rust_syntax::parse_quote! { #wasm_bindgen::prelude::__wasm_bindgen_class_marker(#class = #js_class #js_namespace_tokens, wasm_bindgen = #wasm_bindgen, wasm_bindgen_futures = #wasm_bindgen_futures, js_sys = #js_sys) },
         },
     );
 
     Ok(())
 }
 
-impl MacroParse<&ClassMarker> for &mut syn::ImplItemFn {
+impl MacroParse<&ClassMarker> for &mut rust_syntax::ImplItemFn {
     fn macro_parse(
         self,
         program: &mut ast::Program,
@@ -2279,7 +2279,7 @@ impl MacroParse<&ClassMarker> for &mut syn::ImplItemFn {
         program.js_sys = js_sys.clone();
 
         match self.vis {
-            syn::Visibility::Public(_) => {}
+            rust_syntax::Visibility::Public(_) => {}
             _ => return Ok(()),
         }
         if self.modifiers.defaultness.is_some() {
@@ -2386,7 +2386,7 @@ impl MacroParse<&ClassMarker> for &mut syn::ImplItemFn {
 }
 
 fn string_enum(
-    enum_: syn::ItemEnum,
+    enum_: rust_syntax::ItemEnum,
     program: &mut ast::Program,
     js_name: String,
     generate_typescript: bool,
@@ -2405,9 +2405,9 @@ fn string_enum(
             }
         };
         match get_expr(expr) {
-            syn::Expr::Lit(syn::ExprLit {
+            rust_syntax::Expr::Lit(rust_syntax::ExprLit {
                 attrs: _,
-                lit: syn::Lit::Str(str_lit),
+                lit: rust_syntax::Lit::Str(str_lit),
             }) => {
                 variants.push(v.ident.clone());
                 variant_values.push(str_lit.value());
@@ -2442,7 +2442,7 @@ fn string_enum(
 }
 
 fn dynamic_union(
-    enum_: syn::ItemEnum,
+    enum_: rust_syntax::ItemEnum,
     program: &mut ast::Program,
     js_name: String,
     generate_typescript: bool,
@@ -2457,7 +2457,7 @@ fn dynamic_union(
     for v in enum_.variants.iter() {
         // Check if this is a fallback variant (has fields)
         match &v.fields {
-            syn::Fields::Unit => {
+            rust_syntax::Fields::Unit => {
                 // Regular string enum variant - must have a discriminant
                 let (_, expr) = match &v.discriminant {
                     Some(pair) => pair,
@@ -2469,9 +2469,9 @@ fn dynamic_union(
                     }
                 };
                 match get_expr(expr) {
-                    syn::Expr::Lit(syn::ExprLit {
+                    rust_syntax::Expr::Lit(rust_syntax::ExprLit {
                         attrs: _,
-                        lit: syn::Lit::Str(str_lit),
+                        lit: rust_syntax::Lit::Str(str_lit),
                     }) => {
                         variants.push(v.ident.clone());
                         variant_values.push(str_lit.value());
@@ -2483,7 +2483,7 @@ fn dynamic_union(
                     ),
                 }
             }
-            syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
+            rust_syntax::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
                 // Fallback variant - add it with an empty string value and the field type
                 // (we'll handle this specially in codegen)
                 variants.push(v.ident.clone());
@@ -2528,17 +2528,17 @@ struct NumericValue<'a> {
     base10_digits: &'a str,
 }
 impl<'a> NumericValue<'a> {
-    fn from_expr(expr: &'a syn::Expr) -> Option<Self> {
+    fn from_expr(expr: &'a rust_syntax::Expr) -> Option<Self> {
         match get_expr(expr) {
-            syn::Expr::Lit(syn::ExprLit {
-                lit: syn::Lit::Int(int_lit),
+            rust_syntax::Expr::Lit(rust_syntax::ExprLit {
+                lit: rust_syntax::Lit::Int(int_lit),
                 ..
             }) => Some(Self {
                 negative: false,
                 base10_digits: int_lit.base10_digits(),
             }),
-            syn::Expr::Unary(syn::ExprUnary {
-                op: syn::UnOp::Neg(_),
+            rust_syntax::Expr::Unary(rust_syntax::ExprUnary {
+                op: rust_syntax::UnOp::Neg(_),
                 expr,
                 ..
             }) => Self::from_expr(expr).map(|n| n.neg()),
@@ -2562,7 +2562,7 @@ impl<'a> NumericValue<'a> {
     }
 }
 
-impl<'a> MacroParse<(&'a mut TokenStream, BindgenAttrs)> for syn::ItemEnum {
+impl<'a> MacroParse<(&'a mut TokenStream, BindgenAttrs)> for rust_syntax::ItemEnum {
     fn macro_parse(
         self,
         program: &mut ast::Program,
@@ -2594,15 +2594,15 @@ impl<'a> MacroParse<(&'a mut TokenStream, BindgenAttrs)> for syn::ItemEnum {
         let mut has_unnamed_fields = false;
         for variant in self.variants.iter() {
             match &variant.fields {
-                syn::Fields::Unit => (), // Unit variants are always allowed
-                syn::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
+                rust_syntax::Fields::Unit => (), // Unit variants are always allowed
+                rust_syntax::Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
                     has_unnamed_fields = true;
                 }
-                syn::Fields::Unnamed(_) => bail_span!(
+                rust_syntax::Fields::Unnamed(_) => bail_span!(
                     variant.fields,
                     "enum variants with fields must have exactly one unnamed field"
                 ),
-                syn::Fields::Named(_) => {
+                rust_syntax::Fields::Named(_) => {
                     bail_span!(variant.fields, "enum variants cannot have named fields")
                 }
             }
@@ -2631,8 +2631,8 @@ impl<'a> MacroParse<(&'a mut TokenStream, BindgenAttrs)> for syn::ItemEnum {
         // Check if the enum is a string enum, by checking whether any variant has a string discriminant.
         let is_string_enum = self.variants.iter().any(|v| {
             if let Some((_, expr)) = &v.discriminant {
-                if let syn::Expr::Lit(syn::ExprLit {
-                    lit: syn::Lit::Str(_),
+                if let rust_syntax::Expr::Lit(rust_syntax::ExprLit {
+                    lit: rust_syntax::Lit::Str(_),
                     ..
                 }) = get_expr(expr)
                 {
@@ -2654,7 +2654,7 @@ impl<'a> MacroParse<(&'a mut TokenStream, BindgenAttrs)> for syn::ItemEnum {
         }
 
         match self.vis {
-            syn::Visibility::Public(_) => {}
+            rust_syntax::Visibility::Public(_) => {}
             _ => bail_span!(self, "only public enums are allowed with #[wasm_bindgen]"),
         }
 
@@ -2674,7 +2674,7 @@ impl<'a> MacroParse<(&'a mut TokenStream, BindgenAttrs)> for syn::ItemEnum {
         };
 
         let mut last_discriminant: Option<i64> = None;
-        let mut discriminant_map: HashMap<i64, &syn::Variant> = HashMap::new();
+        let mut discriminant_map: HashMap<i64, &rust_syntax::Variant> = HashMap::new();
 
         let variants = self
             .variants
@@ -2769,7 +2769,7 @@ impl<'a> MacroParse<(&'a mut TokenStream, BindgenAttrs)> for syn::ItemEnum {
     }
 }
 
-impl MacroParse<BindgenAttrs> for syn::ItemConst {
+impl MacroParse<BindgenAttrs> for rust_syntax::ItemConst {
     fn macro_parse(self, program: &mut ast::Program, opts: BindgenAttrs) -> Result<(), Diagnostic> {
         // Shortcut
         if opts.typescript_custom_section().is_none() {
@@ -2777,8 +2777,8 @@ impl MacroParse<BindgenAttrs> for syn::ItemConst {
         }
 
         let typescript_custom_section = match get_expr(&self.expr) {
-            syn::Expr::Lit(syn::ExprLit {
-                lit: syn::Lit::Str(litstr),
+            rust_syntax::Expr::Lit(rust_syntax::ExprLit {
+                lit: rust_syntax::Lit::Str(litstr),
                 ..
             }) => ast::LitOrExpr::Lit(litstr.value()),
             expr => ast::LitOrExpr::Expr(expr.clone()),
@@ -2794,7 +2794,7 @@ impl MacroParse<BindgenAttrs> for syn::ItemConst {
     }
 }
 
-impl MacroParse<BindgenAttrs> for syn::ItemForeignMod {
+impl MacroParse<BindgenAttrs> for rust_syntax::ItemForeignMod {
     fn macro_parse(self, program: &mut ast::Program, opts: BindgenAttrs) -> Result<(), Diagnostic> {
         let mut errors = Vec::new();
         let import_start = program.imports.len();
@@ -2853,7 +2853,7 @@ fn add_class_cfg_to_function_shims(imports: &mut [ast::Import]) {
         let ast::ImportFunctionKind::Method { ty, kind, .. } = &function.kind else {
             continue;
         };
-        let syn::Type::Path(syn::TypePath {
+        let rust_syntax::Type::Path(rust_syntax::TypePath {
             attrs: _,
             qself: None,
             path,
@@ -2911,7 +2911,7 @@ struct ForeignItemCtx {
     generic_per_mono: bool,
 }
 
-impl MacroParse<ForeignItemCtx> for syn::ForeignItem {
+impl MacroParse<ForeignItemCtx> for rust_syntax::ForeignItem {
     fn macro_parse(
         mut self,
         program: &mut ast::Program,
@@ -2919,12 +2919,12 @@ impl MacroParse<ForeignItemCtx> for syn::ForeignItem {
     ) -> Result<(), Diagnostic> {
         let item_opts = {
             let attrs = match self {
-                syn::ForeignItem::Fn(ref mut f) => &mut f.attrs,
-                syn::ForeignItem::Type(ref mut t) => &mut t.attrs,
-                syn::ForeignItem::Static(ref mut s) => &mut s.attrs,
-                syn::ForeignItem::Verbatim(v) => {
-                    let mut item: syn::ItemStatic =
-                        syn::parse(v.into()).expect("only foreign functions/types allowed for now");
+                rust_syntax::ForeignItem::Fn(ref mut f) => &mut f.attrs,
+                rust_syntax::ForeignItem::Type(ref mut t) => &mut t.attrs,
+                rust_syntax::ForeignItem::Static(ref mut s) => &mut s.attrs,
+                rust_syntax::ForeignItem::Verbatim(v) => {
+                    let mut item: rust_syntax::ItemStatic =
+                        rust_syntax::parse(v.into()).expect("only foreign functions/types allowed for now");
                     let item_opts = BindgenAttrs::find(&mut item.attrs)?;
                     let reexport = item_opts.reexport().cloned();
                     let kind = item.convert((program, item_opts, &ctx.module))?;
@@ -2969,7 +2969,7 @@ impl MacroParse<ForeignItemCtx> for syn::ForeignItem {
         // accesses like `<namespace>[Symbol.<x>]`. Without a namespace there
         // is no object to read the symbol-keyed property off, so reject early
         // with a position-specific error.
-        if let syn::ForeignItem::Fn(_) = &self {
+        if let rust_syntax::ForeignItem::Fn(_) = &self {
             let is_method_like = item_opts.method().is_some()
                 || item_opts.constructor().is_some()
                 || item_opts.static_method_of().is_some()
@@ -2988,7 +2988,7 @@ impl MacroParse<ForeignItemCtx> for syn::ForeignItem {
         }
 
         let kind = match self {
-            syn::ForeignItem::Fn(f) => f.convert((
+            rust_syntax::ForeignItem::Fn(f) => f.convert((
                 program,
                 item_opts,
                 &module,
@@ -2996,8 +2996,8 @@ impl MacroParse<ForeignItemCtx> for syn::ForeignItem {
                 block_generic_per_mono,
                 js_namespace.as_deref(),
             ))?,
-            syn::ForeignItem::Type(t) => t.convert((program, item_opts))?,
-            syn::ForeignItem::Static(s) => {
+            rust_syntax::ForeignItem::Type(t) => t.convert((program, item_opts))?,
+            rust_syntax::ForeignItem::Static(s) => {
                 s.convert((program, item_opts, &module, js_namespace.as_deref()))?
             }
             _ => panic!("only foreign functions/types allowed for now"),
@@ -3109,13 +3109,13 @@ pub fn module_from_opts(
 }
 
 /// Get the first type parameter of a generic type, errors on incorrect input.
-fn extract_first_ty_param(ty: Option<&syn::Type>) -> Result<Option<syn::Type>, Diagnostic> {
+fn extract_first_ty_param(ty: Option<&rust_syntax::Type>) -> Result<Option<rust_syntax::Type>, Diagnostic> {
     let t = match ty {
         Some(t) => t,
         None => return Ok(None),
     };
     let path = match *get_ty(t) {
-        syn::Type::Path(syn::TypePath {
+        rust_syntax::Type::Path(rust_syntax::TypePath {
             attrs: _,
             qself: None,
             ref path,
@@ -3127,7 +3127,7 @@ fn extract_first_ty_param(ty: Option<&syn::Type>) -> Result<Option<syn::Type>, D
         .last()
         .ok_or_else(|| err_span!(t, "must have at least one segment"))?;
     let generics = match seg.arguments {
-        syn::PathArguments::AngleBracketed(ref t) => t,
+        rust_syntax::PathArguments::AngleBracketed(ref t) => t,
         _ => bail_span!(t, "must be Result<...>"),
     };
     let generic = generics
@@ -3135,18 +3135,18 @@ fn extract_first_ty_param(ty: Option<&syn::Type>) -> Result<Option<syn::Type>, D
         .first()
         .ok_or_else(|| err_span!(t, "must have at least one generic parameter"))?;
     let ty = match generic {
-        syn::GenericArgument::Type(t) => t,
+        rust_syntax::GenericArgument::Type(t) => t,
         other => bail_span!(other, "must be a type parameter"),
     };
     match get_ty(ty) {
-        syn::Type::Tuple(t) if t.elems.is_empty() => return Ok(None),
+        rust_syntax::Type::Tuple(t) if t.elems.is_empty() => return Ok(None),
         _ => {}
     }
     Ok(Some(ty.clone()))
 }
 
 /// Extract the documentation comments from a Vec of attributes
-fn extract_doc_comments(attrs: &[syn::Attribute]) -> Vec<String> {
+fn extract_doc_comments(attrs: &[rust_syntax::Attribute]) -> Vec<String> {
     attrs
         .iter()
         .filter_map(|a| {
@@ -3154,9 +3154,9 @@ fn extract_doc_comments(attrs: &[syn::Attribute]) -> Vec<String> {
             // this is a doc comment
             if a.path().segments.iter().any(|s| s.ident == "doc") {
                 let tokens = match &a.meta {
-                    syn::Meta::Path(_) => None,
-                    syn::Meta::List(list) => Some(list.tokens.clone()),
-                    syn::Meta::NameValue(name_value) => Some(name_value.value.to_token_stream()),
+                    rust_syntax::Meta::Path(_) => None,
+                    rust_syntax::Meta::List(list) => Some(list.tokens.clone()),
+                    rust_syntax::Meta::NameValue(name_value) => Some(name_value.value.to_token_stream()),
                 };
 
                 Some(
@@ -3227,11 +3227,11 @@ fn unescape_unicode(chars: &mut Chars) -> Option<(char, char)> {
 
 /// Extracts the last ident from the path
 /// If generics is enabled, generics are validated
-fn extract_path_ident(path: &syn::Path, allow_generics: bool) -> Result<Ident, Diagnostic> {
+fn extract_path_ident(path: &rust_syntax::Path, allow_generics: bool) -> Result<Ident, Diagnostic> {
     for segment in path.segments.iter() {
         match &segment.arguments {
-            syn::PathArguments::None => {}
-            syn::PathArguments::AngleBracketed(_) => {
+            rust_syntax::PathArguments::None => {}
+            rust_syntax::PathArguments::AngleBracketed(_) => {
                 if !allow_generics {
                     bail_span!(
                         path,
@@ -3239,7 +3239,7 @@ fn extract_path_ident(path: &syn::Path, allow_generics: bool) -> Result<Ident, D
                     )
                 }
             }
-            syn::PathArguments::Parenthesized(_) => {
+            rust_syntax::PathArguments::Parenthesized(_) => {
                 bail_span!(path, "parenthesized paths are not supported yet")
             }
         }
@@ -3257,18 +3257,18 @@ fn bail_generic_unsupported(span: impl Spanned + ToTokens) -> Result<(), Diagnos
     bail_span!(span, "unsupported in wasm-bindgen generics");
 }
 
-fn validate_generic_type_param_bound(bound: &syn::TypeParamBound) -> Result<(), Diagnostic> {
+fn validate_generic_type_param_bound(bound: &rust_syntax::TypeParamBound) -> Result<(), Diagnostic> {
     match bound {
-        syn::TypeParamBound::Trait(trait_bound) => {
+        rust_syntax::TypeParamBound::Trait(trait_bound) => {
             // Higher-ranked trait bounds (for<'a>) are now supported
             if let Some(question) = &trait_bound.maybe {
                 bail_generic_unsupported(question)?;
             }
         }
-        syn::TypeParamBound::Lifetime(_) => {
+        rust_syntax::TypeParamBound::Lifetime(_) => {
             // Lifetime bounds (e.g., T: 'a) are now supported
         }
-        syn::TypeParamBound::Verbatim(_) => {}
+        rust_syntax::TypeParamBound::Verbatim(_) => {}
         _ => {}
     }
     Ok(())
@@ -3276,18 +3276,18 @@ fn validate_generic_type_param_bound(bound: &syn::TypeParamBound) -> Result<(), 
 
 /// Validates generic type parameters and their bounds both for inline parameters and where clauses.
 /// Bails for const params. Lifetimes are supported via hoisting.
-fn validate_generics(generics: &syn::Generics) -> Result<(), Diagnostic> {
+fn validate_generics(generics: &rust_syntax::Generics) -> Result<(), Diagnostic> {
     if let Some(where_clause) = &generics.where_clause {
         for predicate in &where_clause.predicates {
             match predicate {
-                syn::WherePredicate::Type(predicate_type) => {
+                rust_syntax::WherePredicate::Type(predicate_type) => {
                     // Lifetime bounds on types (for<'a>) are now supported
                     predicate_type
                         .bounds
                         .iter()
                         .try_for_each(validate_generic_type_param_bound)?;
                 }
-                syn::WherePredicate::Lifetime(_) => {
+                rust_syntax::WherePredicate::Lifetime(_) => {
                     // Lifetime bounds (e.g., 'a: 'b) are now supported
                 }
                 _ => bail_generic_unsupported(predicate)?,
@@ -3297,16 +3297,16 @@ fn validate_generics(generics: &syn::Generics) -> Result<(), Diagnostic> {
 
     for param in &generics.params {
         match param {
-            syn::GenericParam::Lifetime(_) => {
+            rust_syntax::GenericParam::Lifetime(_) => {
                 // Lifetimes are now supported via hoisting
             }
-            syn::GenericParam::Type(type_param) => {
+            rust_syntax::GenericParam::Type(type_param) => {
                 type_param
                     .bounds
                     .iter()
                     .try_for_each(validate_generic_type_param_bound)?;
             }
-            syn::GenericParam::Const(const_param) => bail_generic_unsupported(const_param)?,
+            rust_syntax::GenericParam::Const(const_param) => bail_generic_unsupported(const_param)?,
         }
     }
 
@@ -3413,7 +3413,7 @@ fn main(program: &ast::Program, mut f: ItemFn, tokens: &mut TokenStream) -> Resu
     };
 
     if f.sig.asyncness.take().is_some() {
-        *f.block = syn::parse2(quote::quote! {
+        *f.block = rust_syntax::parse2(quote::quote! {
                 {
                     async fn __wasm_bindgen_generated_main() #r#return #body
                     #futures::spawn_local(
@@ -3427,7 +3427,7 @@ fn main(program: &ast::Program, mut f: ItemFn, tokens: &mut TokenStream) -> Resu
             })
             .unwrap();
     } else {
-        *f.block = syn::parse2(quote::quote! {
+        *f.block = rust_syntax::parse2(quote::quote! {
             {
                 fn __wasm_bindgen_generated_main() #r#return #body
                 use #wasm_bindgen::__rt::Main;

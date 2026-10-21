@@ -1,10 +1,10 @@
 use proc_macro2::{Span, TokenStream, TokenTree};
 use quote::{quote, quote_spanned, ToTokens};
-use syn::parse::{Parse, ParseStream, Parser};
-use syn::{braced, Attribute, Ident, Path, Signature, Visibility};
+use rust_syntax::parse::{Parse, ParseStream, Parser};
+use rust_syntax::{braced, Attribute, Ident, Path, Signature, Visibility};
 
-// syn::AttributeArgs does not implement syn::Parse
-type AttributeArgs = syn::punctuated::Punctuated<syn::Meta, syn::Token![,]>;
+// rust_syntax::AttributeArgs does not implement rust_syntax::Parse
+type AttributeArgs = rust_syntax::punctuated::Punctuated<rust_syntax::Meta, rust_syntax::Token![,]>;
 
 #[derive(Clone, Copy, PartialEq)]
 enum RuntimeFlavor {
@@ -101,9 +101,9 @@ impl Configuration {
         }
     }
 
-    fn set_name(&mut self, name: syn::Lit, span: Span) -> Result<(), syn::Error> {
+    fn set_name(&mut self, name: rust_syntax::Lit, span: Span) -> Result<(), rust_syntax::Error> {
         if self.name.is_some() {
-            return Err(syn::Error::new(span, "`name` set multiple times."));
+            return Err(rust_syntax::Error::new(span, "`name` set multiple times."));
         }
 
         let runtime_name = parse_string(name, span, "name")?;
@@ -111,25 +111,25 @@ impl Configuration {
         Ok(())
     }
 
-    fn set_flavor(&mut self, runtime: syn::Lit, span: Span) -> Result<(), syn::Error> {
+    fn set_flavor(&mut self, runtime: rust_syntax::Lit, span: Span) -> Result<(), rust_syntax::Error> {
         if self.flavor.is_some() {
-            return Err(syn::Error::new(span, "`flavor` set multiple times."));
+            return Err(rust_syntax::Error::new(span, "`flavor` set multiple times."));
         }
 
         let runtime_str = parse_string(runtime, span, "flavor")?;
         let runtime =
-            RuntimeFlavor::from_str(&runtime_str).map_err(|err| syn::Error::new(span, err))?;
+            RuntimeFlavor::from_str(&runtime_str).map_err(|err| rust_syntax::Error::new(span, err))?;
         self.flavor = Some(runtime);
         Ok(())
     }
 
     fn set_worker_threads(
         &mut self,
-        worker_threads: syn::Lit,
+        worker_threads: rust_syntax::Lit,
         span: Span,
-    ) -> Result<(), syn::Error> {
+    ) -> Result<(), rust_syntax::Error> {
         if self.worker_threads.is_some() {
-            return Err(syn::Error::new(
+            return Err(rust_syntax::Error::new(
                 span,
                 "`worker_threads` set multiple times.",
             ));
@@ -137,15 +137,15 @@ impl Configuration {
 
         let worker_threads = parse_int(worker_threads, span, "worker_threads")?;
         if worker_threads == 0 {
-            return Err(syn::Error::new(span, "`worker_threads` may not be 0."));
+            return Err(rust_syntax::Error::new(span, "`worker_threads` may not be 0."));
         }
         self.worker_threads = Some((worker_threads, span));
         Ok(())
     }
 
-    fn set_start_paused(&mut self, start_paused: syn::Lit, span: Span) -> Result<(), syn::Error> {
+    fn set_start_paused(&mut self, start_paused: rust_syntax::Lit, span: Span) -> Result<(), rust_syntax::Error> {
         if self.start_paused.is_some() {
-            return Err(syn::Error::new(span, "`start_paused` set multiple times."));
+            return Err(rust_syntax::Error::new(span, "`start_paused` set multiple times."));
         }
 
         let start_paused = parse_bool(start_paused, span, "start_paused")?;
@@ -153,9 +153,9 @@ impl Configuration {
         Ok(())
     }
 
-    fn set_crate_name(&mut self, name: syn::Lit, span: Span) -> Result<(), syn::Error> {
+    fn set_crate_name(&mut self, name: rust_syntax::Lit, span: Span) -> Result<(), rust_syntax::Error> {
         if self.crate_name.is_some() {
-            return Err(syn::Error::new(span, "`crate` set multiple times."));
+            return Err(rust_syntax::Error::new(span, "`crate` set multiple times."));
         }
         let name_path = parse_path(name, span, "crate")?;
         self.crate_name = Some(name_path);
@@ -164,11 +164,11 @@ impl Configuration {
 
     fn set_unhandled_panic(
         &mut self,
-        unhandled_panic: syn::Lit,
+        unhandled_panic: rust_syntax::Lit,
         span: Span,
-    ) -> Result<(), syn::Error> {
+    ) -> Result<(), rust_syntax::Error> {
         if self.unhandled_panic.is_some() {
-            return Err(syn::Error::new(
+            return Err(rust_syntax::Error::new(
                 span,
                 "`unhandled_panic` set multiple times.",
             ));
@@ -176,7 +176,7 @@ impl Configuration {
 
         let unhandled_panic = parse_string(unhandled_panic, span, "unhandled_panic")?;
         let unhandled_panic =
-            UnhandledPanic::from_str(&unhandled_panic).map_err(|err| syn::Error::new(span, err))?;
+            UnhandledPanic::from_str(&unhandled_panic).map_err(|err| rust_syntax::Error::new(span, err))?;
         self.unhandled_panic = Some((unhandled_panic, span));
         Ok(())
     }
@@ -189,7 +189,7 @@ impl Configuration {
         }
     }
 
-    fn build(&self) -> Result<FinalConfig, syn::Error> {
+    fn build(&self) -> Result<FinalConfig, rust_syntax::Error> {
         use RuntimeFlavor as F;
 
         let flavor = self.flavor.unwrap_or(self.default_flavor);
@@ -200,7 +200,7 @@ impl Configuration {
                     "The `worker_threads` option requires the `multi_thread` runtime flavor. Use `#[{}(flavor = \"multi_thread\")]`",
                     self.macro_name(),
                 );
-                return Err(syn::Error::new(worker_threads_span, msg));
+                return Err(rust_syntax::Error::new(worker_threads_span, msg));
             }
             (F::CurrentThread | F::Local, None) => None,
             (F::Threaded, worker_threads) if self.rt_multi_thread_available => {
@@ -212,7 +212,7 @@ impl Configuration {
                 } else {
                     "The runtime flavor `multi_thread` requires the `rt-multi-thread` feature."
                 };
-                return Err(syn::Error::new(Span::call_site(), msg));
+                return Err(rust_syntax::Error::new(Span::call_site(), msg));
             }
         };
 
@@ -222,7 +222,7 @@ impl Configuration {
                     "The `start_paused` option requires the `current_thread` runtime flavor. Use `#[{}(flavor = \"current_thread\")]`",
                     self.macro_name(),
                 );
-                return Err(syn::Error::new(start_paused_span, msg));
+                return Err(rust_syntax::Error::new(start_paused_span, msg));
             }
             (F::CurrentThread | F::Local, Some((start_paused, _))) => Some(start_paused),
             (_, None) => None,
@@ -234,7 +234,7 @@ impl Configuration {
                     "The `unhandled_panic` option requires the `current_thread` runtime flavor. Use `#[{}(flavor = \"current_thread\")]`",
                     self.macro_name(),
                 );
-                return Err(syn::Error::new(unhandled_panic_span, msg));
+                return Err(rust_syntax::Error::new(unhandled_panic_span, msg));
             }
             (F::CurrentThread | F::Local, Some((unhandled_panic, _))) => Some(unhandled_panic),
             (_, None) => None,
@@ -251,37 +251,37 @@ impl Configuration {
     }
 }
 
-fn parse_int(int: syn::Lit, span: Span, field: &str) -> Result<usize, syn::Error> {
+fn parse_int(int: rust_syntax::Lit, span: Span, field: &str) -> Result<usize, rust_syntax::Error> {
     match int {
-        syn::Lit::Int(lit) => match lit.base10_parse::<usize>() {
+        rust_syntax::Lit::Int(lit) => match lit.base10_parse::<usize>() {
             Ok(value) => Ok(value),
-            Err(e) => Err(syn::Error::new(
+            Err(e) => Err(rust_syntax::Error::new(
                 span,
                 format!("Failed to parse value of `{field}` as integer: {e}"),
             )),
         },
-        _ => Err(syn::Error::new(
+        _ => Err(rust_syntax::Error::new(
             span,
             format!("Failed to parse value of `{field}` as integer."),
         )),
     }
 }
 
-fn parse_string(int: syn::Lit, span: Span, field: &str) -> Result<String, syn::Error> {
+fn parse_string(int: rust_syntax::Lit, span: Span, field: &str) -> Result<String, rust_syntax::Error> {
     match int {
-        syn::Lit::Str(s) => Ok(s.value()),
-        syn::Lit::Verbatim(s) => Ok(s.to_string()),
-        _ => Err(syn::Error::new(
+        rust_syntax::Lit::Str(s) => Ok(s.value()),
+        rust_syntax::Lit::Verbatim(s) => Ok(s.to_string()),
+        _ => Err(rust_syntax::Error::new(
             span,
             format!("Failed to parse value of `{field}` as string."),
         )),
     }
 }
 
-fn parse_path(lit: syn::Lit, span: Span, field: &str) -> Result<Path, syn::Error> {
+fn parse_path(lit: rust_syntax::Lit, span: Span, field: &str) -> Result<Path, rust_syntax::Error> {
     match lit {
-        syn::Lit::Str(s) => {
-            let err = syn::Error::new(
+        rust_syntax::Lit::Str(s) => {
+            let err = rust_syntax::Error::new(
                 span,
                 format!(
                     "Failed to parse value of `{}` as path: \"{}\"",
@@ -289,47 +289,47 @@ fn parse_path(lit: syn::Lit, span: Span, field: &str) -> Result<Path, syn::Error
                     s.value()
                 ),
             );
-            s.parse::<syn::Path>().map_err(|_| err.clone())
+            s.parse::<rust_syntax::Path>().map_err(|_| err.clone())
         }
-        _ => Err(syn::Error::new(
+        _ => Err(rust_syntax::Error::new(
             span,
             format!("Failed to parse value of `{field}` as path."),
         )),
     }
 }
 
-fn parse_bool(bool: syn::Lit, span: Span, field: &str) -> Result<bool, syn::Error> {
+fn parse_bool(bool: rust_syntax::Lit, span: Span, field: &str) -> Result<bool, rust_syntax::Error> {
     match bool {
-        syn::Lit::Bool(b) => Ok(b.value),
-        _ => Err(syn::Error::new(
+        rust_syntax::Lit::Bool(b) => Ok(b.value),
+        _ => Err(rust_syntax::Error::new(
             span,
             format!("Failed to parse value of `{field}` as bool."),
         )),
     }
 }
 
-fn contains_impl_trait(ty: &syn::Type) -> bool {
+fn contains_impl_trait(ty: &rust_syntax::Type) -> bool {
     match ty {
-        syn::Type::ImplTrait(_) => true,
-        syn::Type::Array(t) => contains_impl_trait(&t.elem),
-        syn::Type::Ptr(t) => contains_impl_trait(&t.elem),
-        syn::Type::Reference(t) => contains_impl_trait(&t.elem),
-        syn::Type::Slice(t) => contains_impl_trait(&t.elem),
-        syn::Type::Tuple(t) => t.elems.iter().any(contains_impl_trait),
-        syn::Type::Paren(t) => contains_impl_trait(&t.elem),
-        syn::Type::Group(t) => contains_impl_trait(&t.elem),
-        syn::Type::Path(t) => match t.path.segments.last() {
+        rust_syntax::Type::ImplTrait(_) => true,
+        rust_syntax::Type::Array(t) => contains_impl_trait(&t.elem),
+        rust_syntax::Type::Ptr(t) => contains_impl_trait(&t.elem),
+        rust_syntax::Type::Reference(t) => contains_impl_trait(&t.elem),
+        rust_syntax::Type::Slice(t) => contains_impl_trait(&t.elem),
+        rust_syntax::Type::Tuple(t) => t.elems.iter().any(contains_impl_trait),
+        rust_syntax::Type::Paren(t) => contains_impl_trait(&t.elem),
+        rust_syntax::Type::Group(t) => contains_impl_trait(&t.elem),
+        rust_syntax::Type::Path(t) => match t.path.segments.last() {
             Some(segment) => match &segment.arguments {
-                syn::PathArguments::AngleBracketed(args) => args.args.iter().any(|arg| match arg {
-                    syn::GenericArgument::Type(t) => contains_impl_trait(t),
-                    syn::GenericArgument::AssocType(t) => contains_impl_trait(&t.ty),
+                rust_syntax::PathArguments::AngleBracketed(args) => args.args.iter().any(|arg| match arg {
+                    rust_syntax::GenericArgument::Type(t) => contains_impl_trait(t),
+                    rust_syntax::GenericArgument::AssocType(t) => contains_impl_trait(&t.ty),
                     _ => false,
                 }),
-                syn::PathArguments::Parenthesized(args) => {
+                rust_syntax::PathArguments::Parenthesized(args) => {
                     args.inputs.iter().any(|arg| contains_impl_trait(&arg.ty))
-                        || matches!(&args.output, syn::ReturnType::Type(_, t) if contains_impl_trait(t))
+                        || matches!(&args.output, rust_syntax::ReturnType::Type(_, t) if contains_impl_trait(t))
                 }
-                syn::PathArguments::None => false,
+                rust_syntax::PathArguments::None => false,
             },
             None => false,
         },
@@ -342,10 +342,10 @@ fn build_config(
     args: AttributeArgs,
     is_test: bool,
     rt_multi_thread: bool,
-) -> Result<FinalConfig, syn::Error> {
+) -> Result<FinalConfig, rust_syntax::Error> {
     if input.sig.asyncness.is_none() {
         let msg = "the `async` keyword is missing from the function declaration";
-        return Err(syn::Error::new_spanned(input.sig.fn_token, msg));
+        return Err(rust_syntax::Error::new_spanned(input.sig.fn_token, msg));
     }
 
     let mut config = Configuration::new(is_test, rt_multi_thread);
@@ -353,55 +353,55 @@ fn build_config(
 
     for arg in args {
         match arg {
-            syn::Meta::NameValue(namevalue) => {
+            rust_syntax::Meta::NameValue(namevalue) => {
                 let ident = namevalue
                     .path
                     .get_ident()
                     .ok_or_else(|| {
-                        syn::Error::new_spanned(&namevalue, "Must have specified ident")
+                        rust_syntax::Error::new_spanned(&namevalue, "Must have specified ident")
                     })?
                     .to_string()
                     .to_lowercase();
                 let lit = match &namevalue.value {
-                    syn::Expr::Lit(syn::ExprLit { lit, .. }) => lit,
-                    expr => return Err(syn::Error::new_spanned(expr, "Must be a literal")),
+                    rust_syntax::Expr::Lit(rust_syntax::ExprLit { lit, .. }) => lit,
+                    expr => return Err(rust_syntax::Error::new_spanned(expr, "Must be a literal")),
                 };
                 match ident.as_str() {
                     "worker_threads" => {
-                        config.set_worker_threads(lit.clone(), syn::spanned::Spanned::span(lit))?;
+                        config.set_worker_threads(lit.clone(), rust_syntax::spanned::Spanned::span(lit))?;
                     }
                     "flavor" => {
-                        config.set_flavor(lit.clone(), syn::spanned::Spanned::span(lit))?;
+                        config.set_flavor(lit.clone(), rust_syntax::spanned::Spanned::span(lit))?;
                     }
                     "start_paused" => {
-                        config.set_start_paused(lit.clone(), syn::spanned::Spanned::span(lit))?;
+                        config.set_start_paused(lit.clone(), rust_syntax::spanned::Spanned::span(lit))?;
                     }
                     "core_threads" => {
                         let msg = "Attribute `core_threads` is renamed to `worker_threads`";
-                        return Err(syn::Error::new_spanned(namevalue, msg));
+                        return Err(rust_syntax::Error::new_spanned(namevalue, msg));
                     }
                     "crate" => {
-                        config.set_crate_name(lit.clone(), syn::spanned::Spanned::span(lit))?;
+                        config.set_crate_name(lit.clone(), rust_syntax::spanned::Spanned::span(lit))?;
                     }
                     "unhandled_panic" => {
                         config
-                            .set_unhandled_panic(lit.clone(), syn::spanned::Spanned::span(lit))?;
+                            .set_unhandled_panic(lit.clone(), rust_syntax::spanned::Spanned::span(lit))?;
                     }
                     "name" => {
-                        config.set_name(lit.clone(), syn::spanned::Spanned::span(lit))?;
+                        config.set_name(lit.clone(), rust_syntax::spanned::Spanned::span(lit))?;
                     }
                     name => {
                         let msg = format!(
                             "Unknown attribute {name} is specified; expected one of: `flavor`, `worker_threads`, `start_paused`, `crate`, `unhandled_panic`, `name`.",
                         );
-                        return Err(syn::Error::new_spanned(namevalue, msg));
+                        return Err(rust_syntax::Error::new_spanned(namevalue, msg));
                     }
                 }
             }
-            syn::Meta::Path(path) => {
+            rust_syntax::Meta::Path(path) => {
                 let name = path
                     .get_ident()
-                    .ok_or_else(|| syn::Error::new_spanned(&path, "Must have specified ident"))?
+                    .ok_or_else(|| rust_syntax::Error::new_spanned(&path, "Must have specified ident"))?
                     .to_string()
                     .to_lowercase();
                 let msg = match name.as_str() {
@@ -423,10 +423,10 @@ fn build_config(
                         format!("Unknown attribute {name} is specified; expected one of: `flavor`, `worker_threads`, `start_paused`, `crate`, `unhandled_panic`, `name`.")
                     }
                 };
-                return Err(syn::Error::new_spanned(path, msg));
+                return Err(rust_syntax::Error::new_spanned(path, msg));
             }
             other => {
-                return Err(syn::Error::new_spanned(
+                return Err(rust_syntax::Error::new_spanned(
                     other,
                     "Unknown attribute inside the macro",
                 ));
@@ -447,7 +447,7 @@ fn parse_knobs(mut input: ItemFn, is_test: bool, config: FinalConfig) -> TokenSt
         // `Span` on stable Rust has a limitation that only points to the first
         // token, not the whole tokens. We can work around this limitation by
         // using the first/last span of the tokens like
-        // `syn::Error::new_spanned` does.
+        // `rust_syntax::Error::new_spanned` does.
         let start = last_stmt.next().map_or_else(Span::call_site, |t| t.span());
         let end = last_stmt.last().map_or(start, |t| t.span());
         (start, end)
@@ -533,11 +533,11 @@ fn parse_knobs(mut input: ItemFn, is_test: bool, config: FinalConfig) -> TokenSt
     // We don't do this for the main function as it should only be used once so
     // there will be no benefit.
     let output_type = match &input.sig.output {
-        // For functions with no return value syn doesn't print anything,
+        // For functions with no return value rust_syntax doesn't print anything,
         // but that doesn't work as `Output` for our boxed `Future`, so
         // default to `()` (the same type as the function output).
-        syn::ReturnType::Default => quote! { () },
-        syn::ReturnType::Type(_, ret_type) => quote! { #ret_type },
+        rust_syntax::ReturnType::Default => quote! { () },
+        rust_syntax::ReturnType::Type(_, ret_type) => quote! { #ret_type },
     };
 
     let body = if is_test {
@@ -549,8 +549,8 @@ fn parse_knobs(mut input: ItemFn, is_test: bool, config: FinalConfig) -> TokenSt
     } else {
         // force typecheck without runtime overhead
         let check_block = match &input.sig.output {
-            syn::ReturnType::Type(_, t)
-                if matches!(**t, syn::Type::Never(_)) || contains_impl_trait(t) =>
+            rust_syntax::ReturnType::Type(_, t)
+                if matches!(**t, rust_syntax::Type::Never(_)) || contains_impl_trait(t) =>
             {
                 quote! {}
             }
@@ -574,7 +574,7 @@ fn parse_knobs(mut input: ItemFn, is_test: bool, config: FinalConfig) -> TokenSt
     input.into_tokens(generated_attrs, body, last_block)
 }
 
-fn token_stream_with_error(mut tokens: TokenStream, error: syn::Error) -> TokenStream {
+fn token_stream_with_error(mut tokens: TokenStream, error: rust_syntax::Error) -> TokenStream {
     tokens.extend(error.into_compile_error());
     tokens
 }
@@ -583,14 +583,14 @@ pub(crate) fn main(args: TokenStream, item: TokenStream, rt_multi_thread: bool) 
     // If any of the steps for this macro fail, we still want to expand to an item that is as close
     // to the expected output as possible. This helps out IDEs such that completions and other
     // related features keep working.
-    let input: ItemFn = match syn::parse2(item.clone()) {
+    let input: ItemFn = match rust_syntax::parse2(item.clone()) {
         Ok(it) => it,
         Err(e) => return token_stream_with_error(item, e),
     };
 
     let config = if input.sig.ident == "main" && !input.sig.inputs.is_empty() {
         let msg = "the main function cannot accept arguments";
-        Err(syn::Error::new_spanned(&input.sig.ident, msg))
+        Err(rust_syntax::Error::new_spanned(&input.sig.ident, msg))
     } else {
         AttributeArgs::parse_terminated
             .parse2(args)
@@ -609,7 +609,7 @@ pub(crate) fn main(args: TokenStream, item: TokenStream, rt_multi_thread: bool) 
 // * `#[std::prelude::*::test]` or `#[::std::prelude::*::test]`
 fn is_test_attribute(attr: &Attribute) -> bool {
     let path = match &attr.meta {
-        syn::Meta::Path(path) => path,
+        rust_syntax::Meta::Path(path) => path,
         _ => return false,
     };
     let candidates = [
@@ -636,13 +636,13 @@ pub(crate) fn test(args: TokenStream, item: TokenStream, rt_multi_thread: bool) 
     // If any of the steps for this macro fail, we still want to expand to an item that is as close
     // to the expected output as possible. This helps out IDEs such that completions and other
     // related features keep working.
-    let input: ItemFn = match syn::parse2(item.clone()) {
+    let input: ItemFn = match rust_syntax::parse2(item.clone()) {
         Ok(it) => it,
         Err(e) => return token_stream_with_error(item, e),
     };
     let config = if let Some(attr) = input.attrs().find(|attr| is_test_attribute(attr)) {
         let msg = "second test attribute is supplied, consider removing or changing the order of your test attributes";
-        Err(syn::Error::new_spanned(attr, msg))
+        Err(rust_syntax::Error::new_spanned(attr, msg))
     } else {
         AttributeArgs::parse_terminated
             .parse2(args)
@@ -659,7 +659,7 @@ struct ItemFn {
     outer_attrs: Vec<Attribute>,
     vis: Visibility,
     sig: Signature,
-    brace_token: syn::token::Brace,
+    brace_token: rust_syntax::token::Brace,
     inner_attrs: Vec<Attribute>,
     stmts: Vec<proc_macro2::TokenStream>,
 }
@@ -694,9 +694,9 @@ impl ItemFn {
 
         // Inner attributes require extra care, since they're not supported on
         // blocks (which is what we're expanded into) we instead lift them
-        // outside of the function. This matches the behavior of `syn`.
+        // outside of the function. This matches the behavior of `rust_syntax`.
         for mut attr in self.inner_attrs {
-            attr.style = syn::AttrStyle::Outer;
+            attr.style = rust_syntax::AttrStyle::Outer;
             attr.to_tokens(&mut tokens);
         }
 
@@ -717,8 +717,8 @@ impl ItemFn {
 
 impl Parse for ItemFn {
     #[inline]
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        // This parse implementation has been largely lifted from `syn`, with
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
+        // This parse implementation has been largely lifted from `rust_syntax`, with
         // the exception of:
         // * We don't have access to the plumbing necessary to parse inner
         //   attributes in-place.
@@ -737,7 +737,7 @@ impl Parse for ItemFn {
         let mut stmts = Vec::new();
 
         while !content.is_empty() {
-            if let Some(semi) = content.parse::<Option<syn::Token![;]>>()? {
+            if let Some(semi) = content.parse::<Option<rust_syntax::Token![;]>>()? {
                 semi.to_tokens(&mut buf);
                 stmts.push(buf);
                 buf = proc_macro2::TokenStream::new();
@@ -765,7 +765,7 @@ impl Parse for ItemFn {
 }
 
 struct Body<'a> {
-    brace_token: syn::token::Brace,
+    brace_token: rust_syntax::token::Brace,
     // Statements, with terminating `;`.
     stmts: &'a [TokenStream],
 }

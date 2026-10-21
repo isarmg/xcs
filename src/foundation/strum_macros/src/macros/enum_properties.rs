@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, Lit};
+use rust_syntax::{Data, DeriveInput, Fields, Lit};
 
 use crate::helpers::{non_enum_error, HasStrumVariantProperties, HasTypeProperties};
 
@@ -19,7 +19,7 @@ const PROPERTY_TYPES: [PropertyType; 3] = [
     PropertyType::Bool,
 ];
 
-pub fn enum_properties_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn enum_properties_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let variants = match &ast.data {

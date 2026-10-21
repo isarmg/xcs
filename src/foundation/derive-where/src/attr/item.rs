@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 
 use proc_macro2::Span;
-use syn::{
+use rust_syntax::{
 	parse::{discouraged::Speculative, Parse, ParseStream},
 	punctuated::Punctuated,
 	spanned::Spanned,

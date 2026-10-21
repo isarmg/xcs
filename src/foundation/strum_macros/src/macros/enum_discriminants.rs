@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream, TokenTree};
 use quote::{quote, ToTokens};
-use syn::parse_quote;
-use syn::{Data, DeriveInput, Fields};
+use rust_syntax::parse_quote;
+use rust_syntax::{Data, DeriveInput, Fields};
 
 use crate::helpers::{non_enum_error, strum_discriminants_passthrough_error, HasTypeProperties};
 
@@ -11,7 +11,7 @@ use crate::helpers::{non_enum_error, strum_discriminants_passthrough_error, HasT
 /// compilation problems when copied across.
 const ATTRIBUTES_TO_COPY: &[&str] = &["doc", "cfg", "allow", "deny", "strum_discriminants"];
 
-pub fn enum_discriminants_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn enum_discriminants_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let vis = &ast.vis;
 
@@ -104,7 +104,7 @@ pub fn enum_discriminants_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
     };
 
     // Work out the name
-    let default_name = syn::Ident::new(&format!("{}Discriminants", name), Span::call_site());
+    let default_name = rust_syntax::Ident::new(&format!("{}Discriminants", name), Span::call_site());
 
     let discriminants_name = type_properties.discriminant_name.unwrap_or(default_name);
     let discriminants_vis = type_properties.discriminant_vis.as_ref().unwrap_or(vis);
@@ -204,7 +204,7 @@ pub fn enum_discriminants_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
     // For now, only implement IntoDiscriminant if the user has not overriden the visibility.
     let impl_into_discriminant = match type_properties.discriminant_vis {
         // If the visibilty is unspecified or `pub` then we implement IntoDiscriminant
-        None | Some(syn::Visibility::Public(..)) => quote! {
+        None | Some(rust_syntax::Visibility::Public(..)) => quote! {
             #[automatically_derived]
             impl #impl_generics #strum_module_path::IntoDiscriminant for #name #ty_generics #where_clause {
                 type Discriminant = #discriminants_name;

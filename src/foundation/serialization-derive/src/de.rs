@@ -8,9 +8,9 @@ use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned, ToTokens};
 use std::collections::BTreeSet;
 use std::ptr;
-use syn::punctuated::Punctuated;
-use syn::spanned::Spanned;
-use syn::{parse_quote, Ident, Index, Member};
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{parse_quote, Ident, Index, Member};
 
 mod enum_;
 mod enum_adjacently;
@@ -22,7 +22,7 @@ mod struct_;
 mod tuple;
 mod unit;
 
-pub fn expand_derive_deserialize(input: &mut syn::DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_derive_deserialize(input: &mut rust_syntax::DeriveInput) -> rust_syntax::Result<TokenStream> {
     replace_receiver(input);
 
     let ctxt = Ctxt::new();
@@ -89,7 +89,7 @@ fn precondition(cx: &Ctxt, cont: &Container) {
 fn precondition_sized(cx: &Ctxt, cont: &Container) {
     if let Data::Struct(_, fields) = &cont.data {
         if let Some(last) = fields.last() {
-            if let syn::Type::Slice(_) = ungroup(last.ty) {
+            if let rust_syntax::Type::Slice(_) = ungroup(last.ty) {
                 cx.error_spanned_by(
                     cont.original,
                     "cannot deserialize a dynamically sized struct",
@@ -115,19 +115,19 @@ fn precondition_no_de_lifetime(cx: &Ctxt, cont: &Container) {
 
 struct Parameters {
     /// Name of the type the `derive` is on.
-    local: syn::Ident,
+    local: rust_syntax::Ident,
 
     /// Path to the type the impl is for. Either a single `Ident` for local
     /// types (does not include generic parameters) or `some::remote::Path` for
     /// remote types.
-    this_type: syn::Path,
+    this_type: rust_syntax::Path,
 
     /// Same as `this_type` but using `::<T>` for generic parameters for use in
     /// expression position.
-    this_value: syn::Path,
+    this_value: rust_syntax::Path,
 
     /// Generics including any explicit and inferred bounds for the impl.
-    generics: syn::Generics,
+    generics: rust_syntax::Generics,
 
     /// Lifetimes borrowed from the deserializer. These will become bounds on
     /// the `'de` lifetime of the deserializer.
@@ -176,8 +176,8 @@ impl Parameters {
     ) -> (
         DeImplGenerics,
         DeTypeGenerics,
-        syn::TypeGenerics,
-        Option<&syn::WhereClause>,
+        rust_syntax::TypeGenerics,
+        Option<&rust_syntax::WhereClause>,
     ) {
         let de_impl_generics = DeImplGenerics(self);
         let de_ty_generics = DeTypeGenerics(self);
@@ -189,7 +189,7 @@ impl Parameters {
 // All the generics in the input, plus a bound `T: Deserialize` for each generic
 // field type that will be deserialized by us, plus a bound `T: Default` for
 // each generic field type that will be set to a default value.
-fn build_generics(cont: &Container, borrowed: &BorrowedLifetimes) -> syn::Generics {
+fn build_generics(cont: &Container, borrowed: &BorrowedLifetimes) -> rust_syntax::Generics {
     let generics = bound::without_defaults(cont.generics);
 
     let generics = bound::with_where_predicates_from_fields(cont, &generics, attr::Field::de_bound);
@@ -255,23 +255,23 @@ fn requires_default(field: &attr::Field, _variant: Option<&attr::Variant>) -> bo
 }
 
 enum BorrowedLifetimes {
-    Borrowed(BTreeSet<syn::Lifetime>),
+    Borrowed(BTreeSet<rust_syntax::Lifetime>),
     Static,
 }
 
 impl BorrowedLifetimes {
-    fn de_lifetime(&self) -> syn::Lifetime {
+    fn de_lifetime(&self) -> rust_syntax::Lifetime {
         match *self {
-            BorrowedLifetimes::Borrowed(_) => syn::Lifetime::new("'de", Span::call_site()),
-            BorrowedLifetimes::Static => syn::Lifetime::new("'static", Span::call_site()),
+            BorrowedLifetimes::Borrowed(_) => rust_syntax::Lifetime::new("'de", Span::call_site()),
+            BorrowedLifetimes::Static => rust_syntax::Lifetime::new("'static", Span::call_site()),
         }
     }
 
-    fn de_lifetime_param(&self) -> Option<syn::LifetimeParam> {
+    fn de_lifetime_param(&self) -> Option<rust_syntax::LifetimeParam> {
         match self {
-            BorrowedLifetimes::Borrowed(bounds) => Some(syn::LifetimeParam {
+            BorrowedLifetimes::Borrowed(bounds) => Some(rust_syntax::LifetimeParam {
                 attrs: Vec::new(),
-                lifetime: syn::Lifetime::new("'de", Span::call_site()),
+                lifetime: rust_syntax::Lifetime::new("'de", Span::call_site()),
                 colon_token: None,
                 bounds: bounds.iter().cloned().collect(),
             }),
@@ -423,7 +423,7 @@ fn deserialize_transparent(cont: &Container, params: &Parameters) -> Fragment {
 }
 
 /// Generates `Deserialize::deserialize` body for a type with `#[serialization(from)]` attribute
-fn deserialize_from(type_from: &syn::Type) -> Fragment {
+fn deserialize_from(type_from: &rust_syntax::Type) -> Fragment {
     quote_block! {
         _serialization::#private::Result::map(
             <#type_from as _serialization::Deserialize>::deserialize(__deserializer),
@@ -432,7 +432,7 @@ fn deserialize_from(type_from: &syn::Type) -> Fragment {
 }
 
 /// Generates `Deserialize::deserialize` body for a type with `#[serialization(try_from)]` attribute
-fn deserialize_try_from(type_try_from: &syn::Type) -> Fragment {
+fn deserialize_try_from(type_try_from: &rust_syntax::Type) -> Fragment {
     quote_block! {
         _serialization::#private::Result::and_then(
             <#type_try_from as _serialization::Deserialize>::deserialize(__deserializer),
@@ -443,9 +443,9 @@ fn deserialize_try_from(type_try_from: &syn::Type) -> Fragment {
 enum TupleForm<'a> {
     Tuple,
     /// Contains a variant name
-    ExternallyTagged(&'a syn::Ident),
+    ExternallyTagged(&'a rust_syntax::Ident),
     /// Contains a variant name
-    Untagged(&'a syn::Ident),
+    Untagged(&'a rust_syntax::Ident),
 }
 
 fn deserialize_seq(
@@ -643,11 +643,11 @@ fn deserialize_seq_in_place(
 enum StructForm<'a> {
     Struct,
     /// Contains a variant name
-    ExternallyTagged(&'a syn::Ident),
+    ExternallyTagged(&'a rust_syntax::Ident),
     /// Contains a variant name
-    InternallyTagged(&'a syn::Ident),
+    InternallyTagged(&'a rust_syntax::Ident),
     /// Contains a variant name
-    Untagged(&'a syn::Ident),
+    Untagged(&'a rust_syntax::Ident),
 }
 
 struct FieldWithAliases<'a> {
@@ -664,7 +664,7 @@ pub(crate) fn field_i(i: usize) -> Ident {
 fn wrap_deserialize_with(
     params: &Parameters,
     value_ty: &TokenStream,
-    deserialize_with: &syn::ExprPath,
+    deserialize_with: &rust_syntax::ExprPath,
 ) -> (TokenStream, TokenStream) {
     let this_type = &params.this_type;
     let (de_impl_generics, de_ty_generics, ty_generics, where_clause) =
@@ -709,8 +709,8 @@ fn wrap_deserialize_with(
 
 fn wrap_deserialize_field_with(
     params: &Parameters,
-    field_ty: &syn::Type,
-    deserialize_with: &syn::ExprPath,
+    field_ty: &rust_syntax::Type,
+    deserialize_with: &rust_syntax::ExprPath,
 ) -> (TokenStream, TokenStream) {
     wrap_deserialize_with(params, &quote!(#field_ty), deserialize_with)
 }
@@ -861,7 +861,7 @@ impl<'a> ToTokens for DeImplGenerics<'a> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let mut generics = self.0.generics.clone();
         if let Some(de_lifetime) = self.0.borrowed.de_lifetime_param() {
-            generics.params = Some(syn::GenericParam::Lifetime(de_lifetime))
+            generics.params = Some(rust_syntax::GenericParam::Lifetime(de_lifetime))
                 .into_iter()
                 .chain(generics.params)
                 .collect();
@@ -880,23 +880,23 @@ impl<'a> ToTokens for InPlaceImplGenerics<'a> {
         // Add lifetime for `&'place mut Self, and `'a: 'place`
         for param in &mut generics.params {
             match param {
-                syn::GenericParam::Lifetime(param) => {
+                rust_syntax::GenericParam::Lifetime(param) => {
                     param.bounds.push(place_lifetime.lifetime.clone());
                 }
-                syn::GenericParam::Type(param) => {
-                    param.bounds.push(syn::TypeParamBound::Lifetime(
+                rust_syntax::GenericParam::Type(param) => {
+                    param.bounds.push(rust_syntax::TypeParamBound::Lifetime(
                         place_lifetime.lifetime.clone(),
                     ));
                 }
-                syn::GenericParam::Const(_) => {}
+                rust_syntax::GenericParam::Const(_) => {}
             }
         }
-        generics.params = Some(syn::GenericParam::Lifetime(place_lifetime))
+        generics.params = Some(rust_syntax::GenericParam::Lifetime(place_lifetime))
             .into_iter()
             .chain(generics.params)
             .collect();
         if let Some(de_lifetime) = self.0.borrowed.de_lifetime_param() {
-            generics.params = Some(syn::GenericParam::Lifetime(de_lifetime))
+            generics.params = Some(rust_syntax::GenericParam::Lifetime(de_lifetime))
                 .into_iter()
                 .chain(generics.params)
                 .collect();
@@ -918,19 +918,19 @@ struct DeTypeGenerics<'a>(&'a Parameters);
 struct InPlaceTypeGenerics<'a>(&'a Parameters);
 
 fn de_type_generics_to_tokens(
-    mut generics: syn::Generics,
+    mut generics: rust_syntax::Generics,
     borrowed: &BorrowedLifetimes,
     tokens: &mut TokenStream,
 ) {
     if borrowed.de_lifetime_param().is_some() {
-        let def = syn::LifetimeParam {
+        let def = rust_syntax::LifetimeParam {
             attrs: Vec::new(),
-            lifetime: syn::Lifetime::new("'de", Span::call_site()),
+            lifetime: rust_syntax::Lifetime::new("'de", Span::call_site()),
             colon_token: None,
             bounds: Punctuated::new(),
         };
         // Prepend 'de lifetime to list of generics
-        generics.params = Some(syn::GenericParam::Lifetime(def))
+        generics.params = Some(rust_syntax::GenericParam::Lifetime(def))
             .into_iter()
             .chain(generics.params)
             .collect();
@@ -949,7 +949,7 @@ impl<'a> ToTokens for DeTypeGenerics<'a> {
 impl<'a> ToTokens for InPlaceTypeGenerics<'a> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let mut generics = self.0.generics.clone();
-        generics.params = Some(syn::GenericParam::Lifetime(place_lifetime()))
+        generics.params = Some(rust_syntax::GenericParam::Lifetime(place_lifetime()))
             .into_iter()
             .chain(generics.params)
             .collect();
@@ -966,10 +966,10 @@ impl<'a> DeTypeGenerics<'a> {
 }
 
 #[cfg(feature = "deserialize_in_place")]
-fn place_lifetime() -> syn::LifetimeParam {
-    syn::LifetimeParam {
+fn place_lifetime() -> rust_syntax::LifetimeParam {
+    rust_syntax::LifetimeParam {
         attrs: Vec::new(),
-        lifetime: syn::Lifetime::new("'place", Span::call_site()),
+        lifetime: rust_syntax::Lifetime::new("'place", Span::call_site()),
         colon_token: None,
         bounds: Punctuated::new(),
     }

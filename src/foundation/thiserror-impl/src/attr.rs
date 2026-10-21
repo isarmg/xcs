@@ -1,9 +1,9 @@
 use proc_macro2::{Delimiter, Group, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use std::collections::BTreeSet as Set;
-use syn::parse::discouraged::Speculative;
-use syn::parse::{End, ParseStream};
-use syn::{
+use rust_syntax::parse::discouraged::Speculative;
+use rust_syntax::parse::{End, ParseStream};
+use rust_syntax::{
     braced, bracketed, parenthesized, token, Attribute, Error, ExprPath, Ident, Index, LitFloat,
     LitInt, LitStr, Meta, Result, Token,
 };
@@ -123,8 +123,8 @@ pub fn get(input: &[Attribute]) -> Result<Attrs> {
 
 fn parse_error_attribute<'a>(attrs: &mut Attrs<'a>, attr: &'a Attribute) -> Result<()> {
     mod kw {
-        syn::custom_keyword!(transparent);
-        syn::custom_keyword!(fmt);
+        rust_syntax::custom_keyword!(transparent);
+        rust_syntax::custom_keyword!(fmt);
     }
 
     attr.parse_args_with(|input: ParseStream| {
@@ -223,7 +223,7 @@ fn parse_token_expr(input: ParseStream, mut begin_expr: bool) -> Result<TokenStr
                 ahead.parse::<Token![.]>()?;
                 let float: LitFloat = ahead.parse()?;
                 let repr = float.to_string();
-                let mut indices = repr.split('.').map(syn::parse_str::<Index>);
+                let mut indices = repr.split('.').map(rust_syntax::parse_str::<Index>);
                 if let (Some(Ok(first)), Some(Ok(second)), None) =
                     (indices.next(), indices.next(), indices.next())
                 {

@@ -27,7 +27,7 @@ repository = "https://github.com/ModProg/manyhow"
 
 [features]
 darling = []
-default = ["syn", "macros"]
+default = ["rust-syntax", "macros"]
 
 [lib]
 name = "manyhow"
@@ -47,7 +47,7 @@ path = "../proc-macro2"
 version = "1"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3"
 features = [
     "printing",
@@ -55,5 +55,5 @@ features = [
 ]
 optional = true
 default-features = false
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 

@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use proc_macro2::Ident;
-use syn::{
+use rust_syntax::{
     Error, Expr, FnArg, ItemFn, PatIdent, ReturnType, Signature, Token, Type,
     parse::{Parse, ParseStream},
     parse_quote,
@@ -29,7 +29,7 @@ impl ApplyMeta for MutatorAttribute {
         }
 
         match expr.key_value()?.parse_value()? {
-            Expr::Array(syn::ExprArray { elems, .. }) => self.requires.extend(
+            Expr::Array(rust_syntax::ExprArray { elems, .. }) => self.requires.extend(
                 elems
                     .into_iter()
                     .map(|expr| match expr {
@@ -52,7 +52,7 @@ impl ApplyMeta for MutatorAttribute {
 }
 
 impl Parse for Mutator {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
         let mut fun: ItemFn = input.parse()?;
 
         let mut attribute = MutatorAttribute::default();
@@ -73,7 +73,7 @@ impl Parse for Mutator {
             *receiver = parse_quote!(&mut self);
         } else {
             // Error either on first argument or `()`
-            return Err(syn::Error::new(
+            return Err(rust_syntax::Error::new(
                 fun.sig
                     .inputs
                     .first()
@@ -104,7 +104,7 @@ impl Mutator {
                 FnArg::Receiver(_) => parse_quote!(self),
                 FnArg::Typed(mut input) => {
                     input.pat = Box::new(
-                        syn::Pat::Ident(PatIdent {
+                        rust_syntax::Pat::Ident(PatIdent {
                             attrs: Vec::new(),
                             by_ref: None,
                             mutability: None,

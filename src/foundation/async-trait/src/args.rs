@@ -1,6 +1,6 @@
 use proc_macro2::Span;
-use syn::parse::{Error, Parse, ParseStream, Result};
-use syn::Token;
+use rust_syntax::parse::{Error, Parse, ParseStream, Result};
+use rust_syntax::Token;
 
 #[derive(Copy, Clone)]
 pub struct Args {
@@ -8,7 +8,7 @@ pub struct Args {
 }
 
 mod kw {
-    syn::custom_keyword!(Send);
+    rust_syntax::custom_keyword!(Send);
 }
 
 impl Parse for Args {

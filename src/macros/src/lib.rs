@@ -7,8 +7,8 @@ use component::DummyModel;
 use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenTree};
 use quote::quote;
+use rust_syntax::{spanned::Spanned, token::Pub, Visibility};
 use std::str::FromStr;
-use syn::{spanned::Spanned, token::Pub, Visibility};
 
 mod view;
 use crate::component::unmodified_fn_name_from_fn_name;
@@ -276,7 +276,7 @@ pub fn template(tokens: TokenStream) -> TokenStream {
     view_macro_output(view_macro_impl(tokens, true))
 }
 
-fn view_macro_output(result: syn::Result<proc_macro2::TokenStream>) -> TokenStream {
+fn view_macro_output(result: rust_syntax::Result<proc_macro2::TokenStream>) -> TokenStream {
     result
         .unwrap_or_else(|error| {
             let errors = error.into_compile_error();
@@ -288,11 +288,16 @@ fn view_macro_output(result: syn::Result<proc_macro2::TokenStream>) -> TokenStre
         .into()
 }
 
-fn macro_output(result: syn::Result<proc_macro2::TokenStream>) -> TokenStream {
-    result.unwrap_or_else(syn::Error::into_compile_error).into()
+fn macro_output(result: rust_syntax::Result<proc_macro2::TokenStream>) -> TokenStream {
+    result
+        .unwrap_or_else(rust_syntax::Error::into_compile_error)
+        .into()
 }
 
-fn view_macro_impl(tokens: TokenStream, template: bool) -> syn::Result<proc_macro2::TokenStream> {
+fn view_macro_impl(
+    tokens: TokenStream,
+    template: bool,
+) -> rust_syntax::Result<proc_macro2::TokenStream> {
     let tokens: proc_macro2::TokenStream = tokens.into();
     let mut tokens = tokens.into_iter();
 
@@ -307,7 +312,7 @@ fn view_macro_impl(tokens: TokenStream, template: bool) -> syn::Result<proc_macr
             match &fourth {
                 Some(TokenTree::Punct(comma)) if comma.as_char() == ',' => third.clone(),
                 _ => {
-                    return Err(syn::Error::new(
+                    return Err(rust_syntax::Error::new(
                         second.span(),
                         diagnostics::message_with_help(
                             "To create a scope class with the view! macro you \
@@ -387,31 +392,31 @@ pub fn include_view(tokens: TokenStream) -> TokenStream {
     view_macro_output(include_view_impl(tokens))
 }
 
-fn include_view_impl(tokens: TokenStream) -> syn::Result<proc_macro2::TokenStream> {
-    let file_name = syn::parse::<syn::LitStr>(tokens).map_err(|_| {
-        syn::Error::new(
+fn include_view_impl(tokens: TokenStream) -> rust_syntax::Result<proc_macro2::TokenStream> {
+    let file_name = rust_syntax::parse::<rust_syntax::LitStr>(tokens).map_err(|_| {
+        rust_syntax::Error::new(
             Span::call_site(),
             "the only supported argument is a string literal",
         )
     })?;
     let manifest_dir = std::env::var_os("CARGO_MANIFEST_DIR").ok_or_else(|| {
-        syn::Error::new(
+        rust_syntax::Error::new(
             file_name.span(),
             "include_view! requires CARGO_MANIFEST_DIR",
         )
     })?;
     let path = std::path::PathBuf::from(manifest_dir).join(file_name.value());
     let path = path.to_str().ok_or_else(|| {
-        syn::Error::new(file_name.span(), "the view file path must be valid UTF-8")
+        rust_syntax::Error::new(file_name.span(), "the view file path must be valid UTF-8")
     })?;
     let file = std::fs::read_to_string(path).map_err(|error| {
-        syn::Error::new(
+        rust_syntax::Error::new(
             file_name.span(),
             format!("could not read view file: {error}"),
         )
     })?;
     let tokens = proc_macro2::TokenStream::from_str(&file)
-        .map_err(|e| syn::Error::new(Span::call_site(), e))?;
+        .map_err(|e| rust_syntax::Error::new(Span::call_site(), e))?;
     let view = view_macro_impl(tokens.into(), false)?;
     Ok(quote! {{
         const _: &str = include_str!(#path);
@@ -582,12 +587,12 @@ pub fn component(args: proc_macro::TokenStream, s: TokenStream) -> TokenStream {
 fn component_impl(
     args: proc_macro::TokenStream,
     s: TokenStream,
-) -> syn::Result<proc_macro2::TokenStream> {
+) -> rust_syntax::Result<proc_macro2::TokenStream> {
     let is_transparent = if !args.is_empty() {
-        let transparent = syn::parse::<syn::Ident>(args)?;
+        let transparent = rust_syntax::parse::<rust_syntax::Ident>(args)?;
 
         if transparent != "transparent" {
-            return Err(syn::Error::new_spanned(
+            return Err(rust_syntax::Error::new_spanned(
                 transparent,
                 diagnostics::message_with_help(
                     "only `transparent` is supported",
@@ -604,9 +609,12 @@ fn component_impl(
     component_macro(s, is_transparent)
 }
 
-fn component_macro(s: TokenStream, is_transparent: bool) -> syn::Result<proc_macro2::TokenStream> {
-    let mut dummy = syn::parse::<DummyModel>(s.clone());
-    let parse_result = syn::parse::<component::Model>(s);
+fn component_macro(
+    s: TokenStream,
+    is_transparent: bool,
+) -> rust_syntax::Result<proc_macro2::TokenStream> {
+    let mut dummy = rust_syntax::parse::<DummyModel>(s.clone());
+    let parse_result = rust_syntax::parse::<component::Model>(s);
 
     if let (Ok(ref mut unexpanded), Ok(model)) = (&mut dummy, parse_result) {
         let mut errors = diagnostics::Errors::default();
@@ -746,15 +754,15 @@ pub fn slot(args: proc_macro::TokenStream, s: TokenStream) -> TokenStream {
 fn slot_impl(
     args: proc_macro::TokenStream,
     s: TokenStream,
-) -> syn::Result<proc_macro2::TokenStream> {
+) -> rust_syntax::Result<proc_macro2::TokenStream> {
     if !args.is_empty() {
-        return Err(syn::Error::new(
+        return Err(rust_syntax::Error::new(
             Span::call_site(),
             diagnostics::message_with_help("no arguments are supported", "try just `#[slot]`"),
         ));
     }
 
-    syn::parse::<slot::Model>(s)?.expand()
+    rust_syntax::parse::<slot::Model>(s)?.expand()
 }
 
 /// Generates a `slice` into a struct with a default getter and setter.

@@ -1,9 +1,9 @@
 use crate::helpers::{case_style::snakify, non_enum_error, HasStrumVariantProperties};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
-use syn::{Data, DeriveInput};
+use rust_syntax::{Data, DeriveInput};
 
-pub fn enum_try_as_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn enum_try_as_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let variants = match &ast.data {
         Data::Enum(v) => &v.variants,
         _ => return Err(non_enum_error()),
@@ -20,7 +20,7 @@ pub fn enum_try_as_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
             }
 
             match &variant.fields {
-                syn::Fields::Unnamed(values) => {
+                rust_syntax::Fields::Unnamed(values) => {
                     let variant_name = &variant.ident;
                     let types: Vec<_> = values.unnamed.iter().map(|field| {
                         field.ty.to_token_stream()

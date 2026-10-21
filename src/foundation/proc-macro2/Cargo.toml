@@ -20,7 +20,7 @@ documentation = "https://docs.rs/proc-macro2"
 readme = "../../../docs/upstream/proc-macro2-1.0.107/README.md"
 keywords = [
     "macros",
-    "syn",
+    "rust-syntax",
 ]
 categories = ["development-tools::procedural-macro-helpers"]
 license = "MIT OR Apache-2.0"

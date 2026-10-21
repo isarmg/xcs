@@ -1,13 +1,13 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields};
+use rust_syntax::{Data, DeriveInput, Fields};
 
 use crate::helpers::{
     missing_parse_err_attr_error, non_enum_error, occurrence_error, HasInnerVariantProperties,
     HasStrumVariantProperties, HasTypeProperties,
 };
 
-pub fn from_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn from_string_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let variants = match &ast.data {
@@ -54,7 +54,7 @@ pub fn from_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                     default_match_arm = Some(quote! { #name::#ident { #field_name : s.into() } });
                 }
                 _ => {
-                    return Err(syn::Error::new_spanned(
+                    return Err(rust_syntax::Error::new_spanned(
                         variant,
                         "Default only works on newtype structs with a single String field",
                     ))
@@ -112,9 +112,9 @@ pub fn from_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                     let ser_string = serialization.value();
 
                     let lower =
-                        syn::LitStr::new(&ser_string.to_ascii_lowercase(), serialization.span());
+                        rust_syntax::LitStr::new(&ser_string.to_ascii_lowercase(), serialization.span());
                     let upper =
-                        syn::LitStr::new(&ser_string.to_ascii_uppercase(), serialization.span());
+                        rust_syntax::LitStr::new(&ser_string.to_ascii_uppercase(), serialization.span());
                     phf_exact_match_arms.push(quote! { #lower => #name::#ident #params, });
                     phf_exact_match_arms.push(quote! { #upper => #name::#ident #params, });
                     standard_match_arms.push(quote! { s if s.eq_ignore_ascii_case(#serialization) => #name::#ident #params, });

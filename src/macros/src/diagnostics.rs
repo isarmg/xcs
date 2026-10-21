@@ -1,15 +1,15 @@
 #[derive(Default)]
-pub(crate) struct Errors(Option<syn::Error>);
+pub(crate) struct Errors(Option<rust_syntax::Error>);
 
 impl Errors {
-    pub(crate) fn push(&mut self, error: syn::Error) {
+    pub(crate) fn push(&mut self, error: rust_syntax::Error) {
         match &mut self.0 {
             Some(existing) => existing.combine(error),
             None => self.0 = Some(error),
         }
     }
 
-    pub(crate) fn finish<T>(self, result: syn::Result<T>) -> syn::Result<T> {
+    pub(crate) fn finish<T>(self, result: rust_syntax::Result<T>) -> rust_syntax::Result<T> {
         match (self.0, result) {
             (None, result) => result,
             (Some(error), Ok(_)) => Err(error),

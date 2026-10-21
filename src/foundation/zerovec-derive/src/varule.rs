@@ -6,8 +6,8 @@ use crate::utils::{self, FieldInfo};
 use proc_macro2::Span;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::spanned::Spanned;
-use syn::{Data, DeriveInput, Error, Ident};
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{Data, DeriveInput, Error, Ident};
 
 /// Implementation for derive(VarULE). `custom_varule_validator` validates the last field bytes `last_field_bytes`
 /// if specified, if not, the `VarULE` implementation will be used.

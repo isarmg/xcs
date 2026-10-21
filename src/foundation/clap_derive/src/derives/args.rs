@@ -14,7 +14,7 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
-use syn::{
+use rust_syntax::{
     Data, DataStruct, DeriveInput, Field, Fields, FieldsNamed, Generics, punctuated::Punctuated,
     spanned::Spanned, token::Comma,
 };
@@ -22,7 +22,7 @@ use syn::{
 use crate::item::{Item, Kind, Name};
 use crate::utils::{Sp, Ty, inner_type, sub_type};
 
-pub(crate) fn derive_args(input: &DeriveInput) -> Result<TokenStream, syn::Error> {
+pub(crate) fn derive_args(input: &DeriveInput) -> Result<TokenStream, rust_syntax::Error> {
     let ident = &input.ident;
 
     match input.data {
@@ -48,7 +48,7 @@ pub(crate) fn derive_args(input: &DeriveInput) -> Result<TokenStream, syn::Error
                     let item = Item::from_args_field(field, item.casing(), item.env_casing())?;
                     Ok((field, item))
                 })
-                .collect::<Result<Vec<_>, syn::Error>>()?;
+                .collect::<Result<Vec<_>, rust_syntax::Error>>()?;
             gen_for_struct(&item, ident, &input.generics, &fields)
         }
         _ => abort_call_site!("`#[derive(Args)]` only supports non-tuple structs"),
@@ -60,7 +60,7 @@ pub(crate) fn gen_for_struct(
     item_name: &Ident,
     generics: &Generics,
     fields: &[(&Field, Item)],
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     if !matches!(&*item.kind(), Kind::Command(_)) {
         abort! { item.kind().span(),
             "`{}` cannot be used with `#[command]`",
@@ -177,7 +177,7 @@ pub(crate) fn gen_augment(
     app_var: &Ident,
     parent_item: &Item,
     override_required: bool,
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     let mut subcommand_specified = false;
     let mut args = Vec::new();
     for (field, item) in fields {
@@ -443,7 +443,7 @@ pub(crate) fn gen_augment(
     }})
 }
 
-pub(crate) fn gen_constructor(fields: &[(&Field, Item)]) -> Result<TokenStream, syn::Error> {
+pub(crate) fn gen_constructor(fields: &[(&Field, Item)]) -> Result<TokenStream, rust_syntax::Error> {
     let fields = fields.iter().map(|(field, item)| {
         let field_name = field.ident.as_ref().unwrap();
         let kind = item.kind();
@@ -547,7 +547,7 @@ pub(crate) fn gen_constructor(fields: &[(&Field, Item)]) -> Result<TokenStream, 
             }
         };
         Ok(genned)
-    }).collect::<Result<Vec<_>, syn::Error>>()?;
+    }).collect::<Result<Vec<_>, rust_syntax::Error>>()?;
 
     Ok(quote! {{
         #( #fields ),*
@@ -557,7 +557,7 @@ pub(crate) fn gen_constructor(fields: &[(&Field, Item)]) -> Result<TokenStream, 
 pub(crate) fn gen_updater(
     fields: &[(&Field, Item)],
     use_self: bool,
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     let mut genned_fields = Vec::new();
     for (field, item) in fields {
         let field_name = field.ident.as_ref().unwrap();
@@ -666,7 +666,7 @@ fn gen_parsers(
     field_name: &Ident,
     field: &Field,
     update: Option<&TokenStream>,
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     let span = ty.span();
     let convert_type = inner_type(&field.ty);
     let id = item.id();
@@ -780,7 +780,7 @@ pub(crate) fn raw_deprecated() -> TokenStream {
 pub(crate) fn collect_args_fields<'a>(
     item: &'a Item,
     fields: &'a FieldsNamed,
-) -> Result<Vec<(&'a Field, Item)>, syn::Error> {
+) -> Result<Vec<(&'a Field, Item)>, rust_syntax::Error> {
     fields
         .named
         .iter()

@@ -2,19 +2,19 @@ use crate::internals::ast::{Container, Data};
 use crate::internals::{attr, ungroup};
 use proc_macro2::Span;
 use std::collections::HashSet;
-use syn::punctuated::{Pair, Punctuated};
-use syn::Token;
+use rust_syntax::punctuated::{Pair, Punctuated};
+use rust_syntax::Token;
 
 // Remove the default from every type parameter because in the generated impls
 // they look like associated types: "error: associated type bindings are not
 // allowed here".
-pub fn without_defaults(generics: &syn::Generics) -> syn::Generics {
-    syn::Generics {
+pub fn without_defaults(generics: &rust_syntax::Generics) -> rust_syntax::Generics {
+    rust_syntax::Generics {
         params: generics
             .params
             .iter()
             .map(|param| match param {
-                syn::GenericParam::Type(param) => syn::GenericParam::Type(syn::TypeParam {
+                rust_syntax::GenericParam::Type(param) => rust_syntax::GenericParam::Type(rust_syntax::TypeParam {
                     default: None,
                     ..param.clone()
                 }),
@@ -26,9 +26,9 @@ pub fn without_defaults(generics: &syn::Generics) -> syn::Generics {
 }
 
 pub fn with_where_predicates(
-    generics: &syn::Generics,
-    predicates: &[syn::WherePredicate],
-) -> syn::Generics {
+    generics: &rust_syntax::Generics,
+    predicates: &[rust_syntax::WherePredicate],
+) -> rust_syntax::Generics {
     let mut generics = generics.clone();
     let dst_predicates = &mut generics.make_where_clause().predicates;
 
@@ -40,9 +40,9 @@ pub fn with_where_predicates(
 
 pub fn with_where_predicates_from_fields(
     cont: &Container,
-    generics: &syn::Generics,
-    from_field: fn(&attr::Field) -> Option<&[syn::WherePredicate]>,
-) -> syn::Generics {
+    generics: &rust_syntax::Generics,
+    from_field: fn(&attr::Field) -> Option<&[rust_syntax::WherePredicate]>,
+) -> rust_syntax::Generics {
     let mut generics = generics.clone();
     let dst_predicates = &mut generics.make_where_clause().predicates;
 
@@ -59,9 +59,9 @@ pub fn with_where_predicates_from_fields(
 
 pub fn with_where_predicates_from_variants(
     cont: &Container,
-    generics: &syn::Generics,
-    from_variant: fn(&attr::Variant) -> Option<&[syn::WherePredicate]>,
-) -> syn::Generics {
+    generics: &rust_syntax::Generics,
+    from_variant: fn(&attr::Variant) -> Option<&[rust_syntax::WherePredicate]>,
+) -> rust_syntax::Generics {
     let variants = match &cont.data {
         Data::Enum(variants) => variants,
         Data::Struct(_, _) => {
@@ -96,28 +96,28 @@ pub fn with_where_predicates_from_variants(
 //     }
 pub fn with_bound(
     cont: &Container,
-    generics: &syn::Generics,
+    generics: &rust_syntax::Generics,
     filter: fn(&attr::Field, Option<&attr::Variant>) -> bool,
-    bound: &syn::Path,
-) -> syn::Generics {
+    bound: &rust_syntax::Path,
+) -> rust_syntax::Generics {
     struct FindTyParams<'ast> {
         // Set of all generic type parameters on the current struct (A, B, C in
         // the example). Initialized up front.
-        all_type_params: HashSet<syn::Ident>,
+        all_type_params: HashSet<rust_syntax::Ident>,
 
         // Set of generic type parameters used in fields for which filter
         // returns true (A and B in the example). Filled in as the visitor sees
         // them.
-        relevant_type_params: HashSet<syn::Ident>,
+        relevant_type_params: HashSet<rust_syntax::Ident>,
 
         // Fields whose type is an associated type of one of the generic type
         // parameters.
-        associated_type_usage: Vec<&'ast syn::TypePath>,
+        associated_type_usage: Vec<&'ast rust_syntax::TypePath>,
     }
 
     impl<'ast> FindTyParams<'ast> {
-        fn visit_field(&mut self, field: &'ast syn::Field) {
-            if let syn::Type::Path(ty) = ungroup(&field.ty) {
+        fn visit_field(&mut self, field: &'ast rust_syntax::Field) {
+            if let rust_syntax::Type::Path(ty) = ungroup(&field.ty) {
                 if let Some(Pair::Punctuated(t, _)) = ty.path.segments.pairs().next() {
                     if self.all_type_params.contains(&t.ident) {
                         self.associated_type_usage.push(ty);
@@ -127,7 +127,7 @@ pub fn with_bound(
             self.visit_type(&field.ty);
         }
 
-        fn visit_path(&mut self, path: &'ast syn::Path) {
+        fn visit_path(&mut self, path: &'ast rust_syntax::Path) {
             if let Some(seg) = path.segments.last() {
                 if seg.ident == "PhantomData" {
                     // Hardcoded exception, because PhantomData<T> implements
@@ -148,72 +148,72 @@ pub fn with_bound(
 
         // Everything below is simply traversing the syntax tree.
 
-        fn visit_type(&mut self, ty: &'ast syn::Type) {
+        fn visit_type(&mut self, ty: &'ast rust_syntax::Type) {
             match ty {
                 #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
-                syn::Type::Array(ty) => self.visit_type(&ty.elem),
-                syn::Type::FnPtr(ty) => {
+                rust_syntax::Type::Array(ty) => self.visit_type(&ty.elem),
+                rust_syntax::Type::FnPtr(ty) => {
                     for arg in &ty.inputs {
                         self.visit_type(&arg.ty);
                     }
                     self.visit_return_type(&ty.output);
                 }
-                syn::Type::Group(ty) => self.visit_type(&ty.elem),
-                syn::Type::ImplTrait(ty) => {
+                rust_syntax::Type::Group(ty) => self.visit_type(&ty.elem),
+                rust_syntax::Type::ImplTrait(ty) => {
                     for bound in &ty.bounds {
                         self.visit_type_param_bound(bound);
                     }
                 }
-                syn::Type::Macro(ty) => self.visit_macro(&ty.mac),
-                syn::Type::Paren(ty) => self.visit_type(&ty.elem),
-                syn::Type::Path(ty) => {
+                rust_syntax::Type::Macro(ty) => self.visit_macro(&ty.mac),
+                rust_syntax::Type::Paren(ty) => self.visit_type(&ty.elem),
+                rust_syntax::Type::Path(ty) => {
                     if let Some(qself) = &ty.qself {
                         self.visit_type(&qself.ty);
                     }
                     self.visit_path(&ty.path);
                 }
-                syn::Type::Ptr(ty) => self.visit_type(&ty.elem),
-                syn::Type::Reference(ty) => self.visit_type(&ty.elem),
-                syn::Type::Slice(ty) => self.visit_type(&ty.elem),
-                syn::Type::TraitObject(ty) => {
+                rust_syntax::Type::Ptr(ty) => self.visit_type(&ty.elem),
+                rust_syntax::Type::Reference(ty) => self.visit_type(&ty.elem),
+                rust_syntax::Type::Slice(ty) => self.visit_type(&ty.elem),
+                rust_syntax::Type::TraitObject(ty) => {
                     for bound in &ty.bounds {
                         self.visit_type_param_bound(bound);
                     }
                 }
-                syn::Type::Tuple(ty) => {
+                rust_syntax::Type::Tuple(ty) => {
                     for elem in &ty.elems {
                         self.visit_type(elem);
                     }
                 }
 
-                syn::Type::Infer(_) | syn::Type::Never(_) | syn::Type::Verbatim(_) => {}
+                rust_syntax::Type::Infer(_) | rust_syntax::Type::Never(_) | rust_syntax::Type::Verbatim(_) => {}
 
                 _ => {}
             }
         }
 
-        fn visit_path_segment(&mut self, segment: &'ast syn::PathSegment) {
+        fn visit_path_segment(&mut self, segment: &'ast rust_syntax::PathSegment) {
             self.visit_path_arguments(&segment.arguments);
         }
 
-        fn visit_path_arguments(&mut self, arguments: &'ast syn::PathArguments) {
+        fn visit_path_arguments(&mut self, arguments: &'ast rust_syntax::PathArguments) {
             match arguments {
-                syn::PathArguments::None => {}
-                syn::PathArguments::AngleBracketed(arguments) => {
+                rust_syntax::PathArguments::None => {}
+                rust_syntax::PathArguments::AngleBracketed(arguments) => {
                     for arg in &arguments.args {
                         match arg {
                             #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
-                            syn::GenericArgument::Type(arg) => self.visit_type(arg),
-                            syn::GenericArgument::AssocType(arg) => self.visit_type(&arg.ty),
-                            syn::GenericArgument::Lifetime(_)
-                            | syn::GenericArgument::Const(_)
-                            | syn::GenericArgument::AssocConst(_)
-                            | syn::GenericArgument::Constraint(_) => {}
+                            rust_syntax::GenericArgument::Type(arg) => self.visit_type(arg),
+                            rust_syntax::GenericArgument::AssocType(arg) => self.visit_type(&arg.ty),
+                            rust_syntax::GenericArgument::Lifetime(_)
+                            | rust_syntax::GenericArgument::Const(_)
+                            | rust_syntax::GenericArgument::AssocConst(_)
+                            | rust_syntax::GenericArgument::Constraint(_) => {}
                             _ => {}
                         }
                     }
                 }
-                syn::PathArguments::Parenthesized(arguments) => {
+                rust_syntax::PathArguments::Parenthesized(arguments) => {
                     for argument in &arguments.inputs {
                         self.visit_type(&argument.ty);
                     }
@@ -222,20 +222,20 @@ pub fn with_bound(
             }
         }
 
-        fn visit_return_type(&mut self, return_type: &'ast syn::ReturnType) {
+        fn visit_return_type(&mut self, return_type: &'ast rust_syntax::ReturnType) {
             match return_type {
-                syn::ReturnType::Default => {}
-                syn::ReturnType::Type(_, output) => self.visit_type(output),
+                rust_syntax::ReturnType::Default => {}
+                rust_syntax::ReturnType::Type(_, output) => self.visit_type(output),
             }
         }
 
-        fn visit_type_param_bound(&mut self, bound: &'ast syn::TypeParamBound) {
+        fn visit_type_param_bound(&mut self, bound: &'ast rust_syntax::TypeParamBound) {
             match bound {
                 #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
-                syn::TypeParamBound::Trait(bound) => self.visit_path(&bound.path),
-                syn::TypeParamBound::Lifetime(_)
-                | syn::TypeParamBound::PreciseCapture(_)
-                | syn::TypeParamBound::Verbatim(_) => {}
+                rust_syntax::TypeParamBound::Trait(bound) => self.visit_path(&bound.path),
+                rust_syntax::TypeParamBound::Lifetime(_)
+                | rust_syntax::TypeParamBound::PreciseCapture(_)
+                | rust_syntax::TypeParamBound::Verbatim(_) => {}
                 _ => {}
             }
         }
@@ -246,7 +246,7 @@ pub fn with_bound(
         //         mac: T!(),
         //         marker: PhantomData<T>,
         //     }
-        fn visit_macro(&mut self, _mac: &'ast syn::Macro) {}
+        fn visit_macro(&mut self, _mac: &'ast rust_syntax::Macro) {}
     }
 
     let all_type_params = generics
@@ -282,22 +282,22 @@ pub fn with_bound(
     let associated_type_usage = visitor.associated_type_usage;
 
     fn make_where_bounded_type(
-        bounded_ty: syn::TypePath,
-        bound: &syn::Path,
-    ) -> syn::WherePredicate {
-        syn::WherePredicate::Type(syn::PredicateType {
+        bounded_ty: rust_syntax::TypePath,
+        bound: &rust_syntax::Path,
+    ) -> rust_syntax::WherePredicate {
+        rust_syntax::WherePredicate::Type(rust_syntax::PredicateType {
             attrs: Vec::new(),
             lifetimes: None,
             // the type parameter that is being bounded e.g. T
-            bounded_ty: syn::Type::Path(bounded_ty),
+            bounded_ty: rust_syntax::Type::Path(bounded_ty),
             colon_token: <Token![:]>::default(),
             // the bound e.g. Serialize
             bounds: {
                 let mut punct = Punctuated::new();
-                punct.push(syn::TypeParamBound::Trait(syn::TraitBound {
+                punct.push(rust_syntax::TypeParamBound::Trait(rust_syntax::TraitBound {
                     paren_token: None,
                     lifetimes: None,
-                    modifiers: syn::TraitBoundModifiers::default(),
+                    modifiers: rust_syntax::TraitBoundModifiers::default(),
                     maybe: None,
                     path: bound.clone(),
                 }));
@@ -313,7 +313,7 @@ pub fn with_bound(
         if !relevant_type_params.contains(id) {
             continue;
         }
-        let bounded_ty = syn::TypePath {
+        let bounded_ty = rust_syntax::TypePath {
             attrs: Vec::new(),
             qself: None,
             path: id.clone().into(),
@@ -328,24 +328,24 @@ pub fn with_bound(
 
 pub fn with_self_bound(
     cont: &Container,
-    generics: &syn::Generics,
-    bound: &syn::Path,
-) -> syn::Generics {
+    generics: &rust_syntax::Generics,
+    bound: &rust_syntax::Path,
+) -> rust_syntax::Generics {
     let mut generics = generics.clone();
     generics
         .make_where_clause()
         .predicates
-        .push(syn::WherePredicate::Type(syn::PredicateType {
+        .push(rust_syntax::WherePredicate::Type(rust_syntax::PredicateType {
             attrs: Vec::new(),
             lifetimes: None,
             // the type that is being bounded e.g. MyStruct<'a, T>
             bounded_ty: type_of_item(cont),
             colon_token: <Token![:]>::default(),
             // the bound e.g. Default
-            bounds: vec![syn::TypeParamBound::Trait(syn::TraitBound {
+            bounds: vec![rust_syntax::TypeParamBound::Trait(rust_syntax::TraitBound {
                 paren_token: None,
                 lifetimes: None,
-                modifiers: syn::TraitBoundModifiers::default(),
+                modifiers: rust_syntax::TraitBoundModifiers::default(),
                 maybe: None,
                 path: bound.clone(),
             })]
@@ -355,49 +355,49 @@ pub fn with_self_bound(
     generics
 }
 
-pub fn with_lifetime_bound(generics: &syn::Generics, lifetime: &str) -> syn::Generics {
-    let bound = syn::Lifetime::new(lifetime, Span::call_site());
-    let def = syn::LifetimeParam {
+pub fn with_lifetime_bound(generics: &rust_syntax::Generics, lifetime: &str) -> rust_syntax::Generics {
+    let bound = rust_syntax::Lifetime::new(lifetime, Span::call_site());
+    let def = rust_syntax::LifetimeParam {
         attrs: Vec::new(),
         lifetime: bound.clone(),
         colon_token: None,
         bounds: Punctuated::new(),
     };
 
-    let params = Some(syn::GenericParam::Lifetime(def))
+    let params = Some(rust_syntax::GenericParam::Lifetime(def))
         .into_iter()
         .chain(generics.params.iter().cloned().map(|mut param| {
             match &mut param {
-                syn::GenericParam::Lifetime(param) => {
+                rust_syntax::GenericParam::Lifetime(param) => {
                     param.bounds.push(bound.clone());
                 }
-                syn::GenericParam::Type(param) => {
+                rust_syntax::GenericParam::Type(param) => {
                     param
                         .bounds
-                        .push(syn::TypeParamBound::Lifetime(bound.clone()));
+                        .push(rust_syntax::TypeParamBound::Lifetime(bound.clone()));
                 }
-                syn::GenericParam::Const(_) => {}
+                rust_syntax::GenericParam::Const(_) => {}
             }
             param
         }))
         .collect();
 
-    syn::Generics {
+    rust_syntax::Generics {
         params,
         ..generics.clone()
     }
 }
 
-fn type_of_item(cont: &Container) -> syn::Type {
-    syn::Type::Path(syn::TypePath {
+fn type_of_item(cont: &Container) -> rust_syntax::Type {
+    rust_syntax::Type::Path(rust_syntax::TypePath {
         attrs: Vec::new(),
         qself: None,
-        path: syn::Path {
+        path: rust_syntax::Path {
             leading_colon: None,
-            segments: vec![syn::PathSegment {
+            segments: vec![rust_syntax::PathSegment {
                 ident: cont.ident.clone(),
-                arguments: syn::PathArguments::AngleBracketed(
-                    syn::AngleBracketedGenericArguments {
+                arguments: rust_syntax::PathArguments::AngleBracketed(
+                    rust_syntax::AngleBracketedGenericArguments {
                         colon2_token: None,
                         lt_token: <Token![<]>::default(),
                         args: cont
@@ -405,17 +405,17 @@ fn type_of_item(cont: &Container) -> syn::Type {
                             .params
                             .iter()
                             .map(|param| match param {
-                                syn::GenericParam::Type(param) => {
-                                    syn::GenericArgument::Type(syn::Type::Path(syn::TypePath {
+                                rust_syntax::GenericParam::Type(param) => {
+                                    rust_syntax::GenericArgument::Type(rust_syntax::Type::Path(rust_syntax::TypePath {
                                         attrs: Vec::new(),
                                         qself: None,
                                         path: param.ident.clone().into(),
                                     }))
                                 }
-                                syn::GenericParam::Lifetime(param) => {
-                                    syn::GenericArgument::Lifetime(param.lifetime.clone())
+                                rust_syntax::GenericParam::Lifetime(param) => {
+                                    rust_syntax::GenericArgument::Lifetime(param.lifetime.clone())
                                 }
-                                syn::GenericParam::Const(_) => {
+                                rust_syntax::GenericParam::Const(_) => {
                                     panic!("Serialization does not support const generics yet");
                                 }
                             })

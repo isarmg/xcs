@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, format_ident, quote};
-use syn::{GenericArgument, ItemFn, Token, parse::Error, parse_quote, punctuated::Punctuated};
+use rust_syntax::{GenericArgument, ItemFn, Token, parse::Error, parse_quote, punctuated::Punctuated};
 
 use crate::{
     builder_attr::{IntoSetting, TypeBuilderAttr},
@@ -14,13 +14,13 @@ use crate::{
 
 #[derive(Debug)]
 pub struct StructInfo<'a> {
-    vis: &'a syn::Visibility,
-    pub name: &'a syn::Ident,
-    pub generics: &'a syn::Generics,
+    vis: &'a rust_syntax::Visibility,
+    pub name: &'a rust_syntax::Ident,
+    pub generics: &'a rust_syntax::Generics,
     pub fields: Vec<FieldInfo<'a>>,
 
     pub builder_attr: TypeBuilderAttr<'a>,
-    builder_name: syn::Ident,
+    builder_name: rust_syntax::Ident,
 }
 
 impl<'a> StructInfo<'a> {
@@ -36,20 +36,20 @@ impl<'a> StructInfo<'a> {
             .params
             .iter()
             .map(|generic_param| match generic_param {
-                syn::GenericParam::Type(type_param) => {
+                rust_syntax::GenericParam::Type(type_param) => {
                     let ident = type_param.ident.to_token_stream();
-                    syn::parse2(ident).unwrap()
+                    rust_syntax::parse2(ident).unwrap()
                 }
-                syn::GenericParam::Lifetime(lifetime_def) => syn::GenericArgument::Lifetime(lifetime_def.lifetime.clone()),
-                syn::GenericParam::Const(const_param) => {
+                rust_syntax::GenericParam::Lifetime(lifetime_def) => rust_syntax::GenericArgument::Lifetime(lifetime_def.lifetime.clone()),
+                rust_syntax::GenericParam::Const(const_param) => {
                     let ident = const_param.ident.to_token_stream();
-                    syn::parse2(ident).unwrap()
+                    rust_syntax::parse2(ident).unwrap()
                 }
             })
             .collect()
     }
 
-    pub fn new(ast: &'a syn::DeriveInput, fields: impl Iterator<Item = &'a syn::Field>) -> syn::Result<StructInfo<'a>> {
+    pub fn new(ast: &'a rust_syntax::DeriveInput, fields: impl Iterator<Item = &'a rust_syntax::Field>) -> rust_syntax::Result<StructInfo<'a>> {
         let builder_attr = TypeBuilderAttr::new(&ast.attrs)?;
         let builder_name = builder_attr
             .builder_type
@@ -66,11 +66,11 @@ impl<'a> StructInfo<'a> {
                 .map(|(i, f)| FieldInfo::new(i, f, builder_attr.field_defaults.clone()))
                 .collect::<Result<_, _>>()?,
             builder_attr,
-            builder_name: syn::Ident::new(&builder_name, proc_macro2::Span::call_site()),
+            builder_name: rust_syntax::Ident::new(&builder_name, proc_macro2::Span::call_site()),
         })
     }
 
-    fn builder_creation_impl(&self) -> syn::Result<TokenStream> {
+    fn builder_creation_impl(&self) -> rust_syntax::Result<TokenStream> {
         let StructInfo {
             vis,
             ref name,
@@ -94,17 +94,17 @@ impl<'a> StructInfo<'a> {
                 },
             )
         });
-        let mut all_fields_param_type: syn::TypeParam =
-            syn::Ident::new("TypedBuilderFields", proc_macro2::Span::call_site()).into();
-        let all_fields_param = syn::GenericParam::Type(all_fields_param_type.clone());
-        all_fields_param_type.default = Some((Default::default(), syn::Type::Tuple(init_fields_type.clone())));
+        let mut all_fields_param_type: rust_syntax::TypeParam =
+            rust_syntax::Ident::new("TypedBuilderFields", proc_macro2::Span::call_site()).into();
+        let all_fields_param = rust_syntax::GenericParam::Type(all_fields_param_type.clone());
+        all_fields_param_type.default = Some((Default::default(), rust_syntax::Type::Tuple(init_fields_type.clone())));
         let b_generics = {
             let mut generics = self.generics.clone();
-            generics.params.push(syn::GenericParam::Type(all_fields_param_type));
+            generics.params.push(rust_syntax::GenericParam::Type(all_fields_param_type));
             generics
         };
         let generics_with_empty = modify_types_generics_hack(&ty_generics, |args| {
-            args.push(syn::GenericArgument::Type(syn::Type::Tuple(init_fields_type.clone())));
+            args.push(rust_syntax::GenericArgument::Type(rust_syntax::Type::Tuple(init_fields_type.clone())));
         });
         let phantom_data = phantom_data_for_generics(self.generics);
 
@@ -161,7 +161,7 @@ impl<'a> StructInfo<'a> {
         };
 
         let (b_generics_impl, b_generics_ty, b_generics_where_extras_predicates) = b_generics.split_for_impl();
-        let mut b_generics_where: syn::WhereClause = syn::parse2(quote! {
+        let mut b_generics_where: rust_syntax::WhereClause = rust_syntax::parse2(quote! {
             where TypedBuilderFields: Clone
         })?;
         if let Some(predicates) = b_generics_where_extras_predicates {
@@ -205,7 +205,7 @@ impl<'a> StructInfo<'a> {
         })
     }
 
-    fn field_impl(&self, field: &FieldInfo) -> syn::Result<TokenStream> {
+    fn field_impl(&self, field: &FieldInfo) -> rust_syntax::Result<TokenStream> {
         let StructInfo { ref builder_name, .. } = *self;
 
         let destructuring = self
@@ -237,7 +237,7 @@ impl<'a> StructInfo<'a> {
                     target_generics_tuple.elems.push_value(f.tuplized_type_ty_param());
                 } else {
                     generics.params.push(f.generic_ty_param());
-                    let generic_argument: syn::Type = f.type_ident();
+                    let generic_argument: rust_syntax::Type = f.type_ident();
                     ty_generics_tuple.elems.push_value(generic_argument.clone());
                     target_generics_tuple.elems.push_value(generic_argument);
                 }
@@ -247,8 +247,8 @@ impl<'a> StructInfo<'a> {
             generics
         };
         let mut target_generics = ty_generics.clone();
-        target_generics.push(syn::GenericArgument::Type(syn::Type::Tuple(target_generics_tuple)));
-        ty_generics.push(syn::GenericArgument::Type(syn::Type::Tuple(ty_generics_tuple)));
+        target_generics.push(rust_syntax::GenericArgument::Type(rust_syntax::Type::Tuple(target_generics_tuple)));
+        ty_generics.push(rust_syntax::GenericArgument::Type(rust_syntax::Type::Tuple(ty_generics_tuple)));
         let (impl_generics, _, where_clause) = generics.split_for_impl();
         let doc = if let Some(doc) = field.builder_attr.setter.doc.as_ref() {
             Some(quote!(#[doc = #doc]))
@@ -314,7 +314,7 @@ impl<'a> StructInfo<'a> {
                 let method = strip_raw_ident_prefix(field_name.to_string());
                 let prefix = strip_option.fallback_prefix.as_deref().unwrap_or_default();
                 let suffix = strip_option.fallback_suffix.as_deref().unwrap_or_default();
-                let fallback_name = syn::Ident::new(&format!("{}{}{}", prefix, method, suffix), field_name.span());
+                let fallback_name = rust_syntax::Ident::new(&format!("{}{}{}", prefix, method, suffix), field_name.span());
                 Some((fallback_name, quote!(#field_name: #field_type), quote!(#arg_expr)))
             }
         });
@@ -332,8 +332,8 @@ impl<'a> StructInfo<'a> {
                 .map_or(quote!(), |w| w.to_token_stream());
 
             let body = match &transform.return_type {
-                syn::ReturnType::Default => quote!({ #body }),
-                syn::ReturnType::Type(_, ty) => quote!({
+                rust_syntax::ReturnType::Default => quote!({ #body }),
+                rust_syntax::ReturnType::Type(_, ty) => quote!({
                     let value: #ty = { #body };
                     value
                 }),
@@ -346,7 +346,7 @@ impl<'a> StructInfo<'a> {
             (quote!(), quote!(#field_name: #arg_type), arg_expr, quote!())
         };
 
-        let repeated_fields_error_type_name = syn::Ident::new(
+        let repeated_fields_error_type_name = rust_syntax::Ident::new(
             &format!(
                 "{}_Error_Repeated_field_{}",
                 builder_name,
@@ -443,19 +443,19 @@ impl<'a> StructInfo<'a> {
         let StructInfo { builder_name, .. } = &self;
 
         let FieldInfo { name: field_name, .. } = field;
-        let mut builder_generics: Vec<syn::GenericArgument> = self
+        let mut builder_generics: Vec<rust_syntax::GenericArgument> = self
             .generics
             .params
             .iter()
             .map(|generic_param| match generic_param {
-                syn::GenericParam::Type(type_param) => {
+                rust_syntax::GenericParam::Type(type_param) => {
                     let ident = type_param.ident.to_token_stream();
-                    syn::parse2(ident).unwrap()
+                    rust_syntax::parse2(ident).unwrap()
                 }
-                syn::GenericParam::Lifetime(lifetime_def) => syn::GenericArgument::Lifetime(lifetime_def.lifetime.clone()),
-                syn::GenericParam::Const(const_param) => {
+                rust_syntax::GenericParam::Lifetime(lifetime_def) => rust_syntax::GenericArgument::Lifetime(lifetime_def.lifetime.clone()),
+                rust_syntax::GenericParam::Const(const_param) => {
                     let ident = const_param.ident.to_token_stream();
-                    syn::parse2(ident).unwrap()
+                    rust_syntax::parse2(ident).unwrap()
                 }
             })
             .collect();
@@ -492,10 +492,10 @@ impl<'a> StructInfo<'a> {
             generics
         };
 
-        builder_generics.push(syn::GenericArgument::Type(syn::Type::Tuple(builder_generics_tuple)));
+        builder_generics.push(rust_syntax::GenericArgument::Type(rust_syntax::Type::Tuple(builder_generics_tuple)));
         let (impl_generics, _, where_clause) = generics.split_for_impl();
 
-        let early_build_error_type_name = syn::Ident::new(
+        let early_build_error_type_name = rust_syntax::Ident::new(
             &format!(
                 "{}_Error_Missing_required_field_{}",
                 builder_name,
@@ -533,7 +533,7 @@ impl<'a> StructInfo<'a> {
             fun: mutator_fn,
             required_fields,
         }: &Mutator,
-    ) -> syn::Result<TokenStream> {
+    ) -> rust_syntax::Result<TokenStream> {
         let StructInfo { ref builder_name, .. } = *self;
 
         let mut required_fields = required_fields.clone();
@@ -552,12 +552,12 @@ impl<'a> StructInfo<'a> {
                 quote!((#name,),).to_tokens(&mut destructuring);
             } else {
                 generics.params.push(f.generic_ty_param());
-                let generic_argument: syn::Type = f.type_ident();
+                let generic_argument: rust_syntax::Type = f.type_ident();
                 ty_generics_tuple.elems.push(generic_argument.clone());
                 quote!(#name,).to_tokens(&mut destructuring);
             }
         }
-        ty_generics.push(syn::GenericArgument::Type(syn::Type::Tuple(ty_generics_tuple)));
+        ty_generics.push(rust_syntax::GenericArgument::Type(rust_syntax::Type::Tuple(ty_generics_tuple)));
         let (impl_generics, _, where_clause) = generics.split_for_impl();
 
         let mutator_struct_name = format_ident!("TypedBuilderFieldMutator");
@@ -636,8 +636,8 @@ impl<'a> StructInfo<'a> {
             let mut generics = self.generics.clone();
             for field in self.included_fields() {
                 if field.builder_attr.default.is_some() {
-                    let generic_param: syn::TypeParam = field.generic_ident.clone().into();
-                    generics.params.push(syn::GenericParam::Type(generic_param));
+                    let generic_param: rust_syntax::TypeParam = field.generic_ident.clone().into();
+                    generics.params.push(rust_syntax::GenericParam::Type(generic_param));
                 }
             }
             generics
@@ -649,8 +649,8 @@ impl<'a> StructInfo<'a> {
         let name_with_generics = quote!(#name #ty_generics);
 
         let modified_ty_generics = modify_types_generics_hack(&ty_generics, |args| {
-            args.push(syn::GenericArgument::Type(
-                syn::Type::Tuple(type_tuple(self.included_fields().map(|field| {
+            args.push(rust_syntax::GenericArgument::Type(
+                rust_syntax::Type::Tuple(type_tuple(self.included_fields().map(|field| {
                     if field.builder_attr.default.is_some() {
                         field.type_ident()
                     } else {
@@ -664,7 +664,7 @@ impl<'a> StructInfo<'a> {
 
         let crate_module_path = &self.builder_attr.crate_module_path;
 
-        let where_predicates_for_defaults: Vec<syn::WherePredicate> = self.fields.iter().enumerate()
+        let where_predicates_for_defaults: Vec<rust_syntax::WherePredicate> = self.fields.iter().enumerate()
             .filter(|(_, field)| field.builder_attr.default.is_some() && field.builder_attr.setter.skip.is_none())
             .map(|(field_index, field)| {
                 let types = self.fields.iter().take(field_index).map(|dep_field| {
@@ -672,7 +672,7 @@ impl<'a> StructInfo<'a> {
                     let dep_mut = dep_field.maybe_mut();
                     quote!(&'__typed_builder_lifetime_for_default #dep_mut #dep_type)
                 }).chain(core::iter::once({
-                    let generic_argument: syn::Type = field.type_ident();
+                    let generic_argument: rust_syntax::Type = field.type_ident();
                     quote!(#generic_argument)
                 }));
                 let field_type = field.ty;
@@ -690,7 +690,7 @@ impl<'a> StructInfo<'a> {
                 predicates.extend(where_clause.predicates.iter().cloned());
             }
             predicates.extend(where_predicates_for_defaults);
-            where_clause_storage = syn::WhereClause {
+            where_clause_storage = rust_syntax::WhereClause {
                 where_token: Default::default(),
                 predicates,
             };
@@ -738,7 +738,7 @@ impl<'a> StructInfo<'a> {
                                 (quote!(&#dep_mut #dep_type), quote!(&#dep_mut #dep_name))
                             })
                             .chain(core::iter::once({
-                                let generic_argument: syn::Type = field.type_ident();
+                                let generic_argument: rust_syntax::Type = field.type_ident();
                                 (quote!(#generic_argument), quote!(#name))
                             }))
                             .unzip();
@@ -802,7 +802,7 @@ impl<'a> StructInfo<'a> {
         )
     }
 
-    pub fn derive(&self) -> syn::Result<TokenStream> {
+    pub fn derive(&self) -> rust_syntax::Result<TokenStream> {
         let builder_creation = self.builder_creation_impl()?;
 
         let fields = self

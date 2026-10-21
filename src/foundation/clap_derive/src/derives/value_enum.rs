@@ -11,11 +11,11 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 use quote::quote_spanned;
-use syn::{Data, DeriveInput, Fields, Ident, Variant, spanned::Spanned};
+use rust_syntax::{Data, DeriveInput, Fields, Ident, Variant, spanned::Spanned};
 
 use crate::item::{Item, Kind, Name};
 
-pub(crate) fn derive_value_enum(input: &DeriveInput) -> Result<TokenStream, syn::Error> {
+pub(crate) fn derive_value_enum(input: &DeriveInput) -> Result<TokenStream, rust_syntax::Error> {
     let ident = &input.ident;
 
     match input.data {
@@ -38,7 +38,7 @@ pub(crate) fn gen_for_enum(
     item: &Item,
     item_name: &Ident,
     variants: &[(&Variant, Item)],
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     if !matches!(&*item.kind(), Kind::Value) {
         abort! { item.kind().span(),
             "`{}` cannot be used with `#[value]`",
@@ -79,7 +79,7 @@ pub(crate) fn gen_for_enum(
     })
 }
 
-fn lits(variants: &[(&Variant, Item)]) -> Result<Vec<(TokenStream, Ident)>, syn::Error> {
+fn lits(variants: &[(&Variant, Item)]) -> Result<Vec<(TokenStream, Ident)>, rust_syntax::Error> {
     let mut genned = Vec::new();
     for (variant, item) in variants {
         if let Kind::Skip(_, _) = &*item.kind() {

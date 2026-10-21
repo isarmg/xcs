@@ -2,9 +2,9 @@ use crate::expand::call_site_ident;
 use crate::private;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::DeriveInput;
+use rust_syntax::DeriveInput;
 
-pub(crate) fn expand(input: &DeriveInput, error: syn::Error) -> TokenStream {
+pub(crate) fn expand(input: &DeriveInput, error: rust_syntax::Error) -> TokenStream {
     let ty = call_site_ident(&input.ident);
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 

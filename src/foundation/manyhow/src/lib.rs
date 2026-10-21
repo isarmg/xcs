@@ -15,7 +15,7 @@
 //! ```
 //! # use proc_macro2::TokenStream;
 //! # use quote::quote;
-//! # use syn as syn;
+//! # use rust_syntax as rust_syntax;
 //! use proc_macro2::TokenStream as TokenStream2;
 //!
 //! # let _ = quote!{
@@ -29,7 +29,7 @@
 //!     .into()
 //! }
 //!
-//! fn actual_implementation(input: TokenStream2) -> syn::Result<TokenStream2> {
+//! fn actual_implementation(input: TokenStream2) -> rust_syntax::Result<TokenStream2> {
 //!     // ..
 //! #   Ok(quote!())
 //! }
@@ -41,7 +41,7 @@
 //!
 //! ```
 //! # use quote::quote;
-//! # use syn as syn;
+//! # use rust_syntax as rust_syntax;
 //! use manyhow::manyhow;
 //! use proc_macro2::TokenStream as TokenStream2;
 //!
@@ -50,7 +50,7 @@
 //! #[proc_macro]
 //! # };
 //! // You can also merge the two attributes: #[manyhow(proc_macro)]
-//! fn my_macro(input: TokenStream2) -> syn::Result<TokenStream2> {
+//! fn my_macro(input: TokenStream2) -> rust_syntax::Result<TokenStream2> {
 //!     // ..
 //! #   Ok(quote!())
 //! }
@@ -61,7 +61,7 @@
 //! #[proc_macro]
 //! # };
 //! // The output can also be anything that implements `quote::ToTokens`
-//! fn my_derive_macro(input: syn::DeriveInput) -> manyhow::Result<syn::ItemImpl> {
+//! fn my_derive_macro(input: rust_syntax::DeriveInput) -> manyhow::Result<rust_syntax::ItemImpl> {
 //!     // ..
 //! #   manyhow::bail!{"hello"}
 //! }
@@ -79,10 +79,10 @@
 //!
 //! mod module {
 //!     # use quote::quote;
-//!     # use syn as syn;
+//!     # use rust_syntax as rust_syntax;
 //!     use proc_macro2::TokenStream as TokenStream2;
 //!
-//!     pub fn my_macro(input: TokenStream2) -> syn::Result<TokenStream2> {
+//!     pub fn my_macro(input: TokenStream2) -> rust_syntax::Result<TokenStream2> {
 //!         // ..
 //!     #   Ok(quote!())
 //!     }
@@ -151,7 +151,7 @@
 //! ```
 //! # use proc_macro2::TokenStream;
 //! # use quote::quote;
-//! # use syn as syn;
+//! # use rust_syntax as rust_syntax;
 //! use proc_macro2::TokenStream as TokenStream2;
 //!
 //! # let _ = quote!{
@@ -163,7 +163,7 @@
 //!     manyhow::function(
 //!         input,
 //!         false,
-//!         |input: TokenStream2| -> syn::Result<TokenStream2> {
+//!         |input: TokenStream2| -> rust_syntax::Result<TokenStream2> {
 //!             // ..
 //! #           Ok(quote!())
 //!         },
@@ -173,7 +173,7 @@
 //!     // Or
 //!     manyhow::function!(
 //!         input,
-//!         |input: syn::DeriveInput| -> manyhow::Result<syn::ItemImpl> {
+//!         |input: rust_syntax::DeriveInput| -> manyhow::Result<rust_syntax::ItemImpl> {
 //!             // ..
 //! #           manyhow::bail!{"error"}
 //!         },
@@ -196,7 +196,7 @@
 //!
 //! ```
 //! # use quote::quote;
-//! # use syn as syn;
+//! # use rust_syntax as rust_syntax;
 //! use manyhow::{Emitter, ErrorMessage, manyhow};
 //! use proc_macro2::TokenStream as TokenStream2;
 //!
@@ -225,14 +225,14 @@
 //!
 //! - `macros` **default** Enables [`#[manyhow]`](macros::manyhow) attribute
 //!   macro.
-//! - `syn` **default** Enables errors for [`syn`](https://docs.rs/syn/latest/syn/).
+//! - `rust_syntax` **default** Enables errors for [`rust_syntax`](https://docs.rs/syn/latest/syn/).
 //! - `darling` Enables errors for [`darling`](https://docs.rs/darling/latest/index.html).
 
 #[cfg(feature = "macros")]
 pub use macros::manyhow;
 use proc_macro2::TokenStream;
 #[cfg(doc)]
-use {quote::ToTokens, syn::parse::Parse};
+use {quote::ToTokens, rust_syntax::parse::Parse};
 
 extern crate proc_macro;
 
@@ -448,7 +448,7 @@ pub fn attribute<
 /// be initialized with `item`. To override assign a new `TokenStream`:
 /// ```
 /// # use proc_macro_utils::assert_tokens;
-/// # use syn as syn;
+/// # use rust_syntax as rust_syntax;
 /// use manyhow::{Result, SilentError, attribute};
 /// use proc_macro2::TokenStream;
 /// use quote::{ToTokens, quote};
@@ -461,9 +461,9 @@ pub fn attribute<
 ///     #[as_dummy]
 ///     item,
 ///     |input: TokenStream,
-///      item: syn::ItemStruct,
+///      item: rust_syntax::ItemStruct,
 ///      dummy: &mut TokenStream|
-///      -> Result<syn::ItemStruct, SilentError> {
+///      -> Result<rust_syntax::ItemStruct, SilentError> {
 ///         assert_tokens!(dummy.to_token_stream(), {
 ///             struct Struct;
 ///         });
@@ -549,12 +549,12 @@ pub fn derive<
 /// ```
 /// # use proc_macro_utils::assert_tokens;
 /// # use quote::{quote, ToTokens};
-/// # use syn as syn;
+/// # use rust_syntax as rust_syntax;
 /// use manyhow::{Emitter, Result, derive};
 /// use proc_macro2::TokenStream;
 /// # let item = quote!();
 /// # let output: TokenStream =
-/// derive!(item, |item: syn::DeriveInput,
+/// derive!(item, |item: rust_syntax::DeriveInput,
 ///                dummy: &mut TokenStream,
 ///                emitter: &mut Emitter|
 ///  -> Result {
@@ -667,15 +667,15 @@ pub fn function<
 /// ```
 /// # use proc_macro_utils::assert_tokens;
 /// # use quote::{quote, ToTokens};
-/// # use syn as syn;
+/// # use rust_syntax as rust_syntax;
 /// use manyhow::{Emitter, Result, function};
 /// use proc_macro2::TokenStream;
 /// # let input = quote!();
 /// # let output: TokenStream =
-/// function!(input, |input: syn::Item,
+/// function!(input, |input: rust_syntax::Item,
 ///                   dummy: &mut TokenStream,
 ///                   emitter: &mut Emitter|
-///  -> Result<syn::ItemImpl> {
+///  -> Result<rust_syntax::ItemImpl> {
 ///     // ..
 ///         # manyhow::bail!{"unimplemented"}
 /// });

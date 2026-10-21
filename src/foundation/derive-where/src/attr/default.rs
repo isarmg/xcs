@@ -1,7 +1,7 @@
 //! Attribute parsing for the `default` option.
 
 use proc_macro2::Span;
-use syn::{spanned::Spanned, Meta, Result};
+use rust_syntax::{spanned::Spanned, Meta, Result};
 
 use crate::{DeriveWhere, Error, Trait};
 

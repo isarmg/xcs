@@ -2,7 +2,7 @@
 mod tests {
     use proc_macro2::Span;
     use std::collections::HashSet;
-    use syn::{parse_quote, Ident};
+    use rust_syntax::{parse_quote, Ident};
 
     use super::{check_type_for_parameters, CheckResult};
 

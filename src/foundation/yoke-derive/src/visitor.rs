@@ -9,12 +9,12 @@
 //! compiler errors at worst, not unsoundness.
 
 use std::collections::HashSet;
-use syn::ext::IdentExt as _;
-use syn::visit::{
+use rust_syntax::ext::IdentExt as _;
+use rust_syntax::visit::{
     visit_bound_lifetimes, visit_generic_param, visit_lifetime, visit_type, visit_type_path,
     visit_where_clause, Visit,
 };
-use syn::{GenericParam, Ident, Lifetime, Type, TypePath, WhereClause};
+use rust_syntax::{GenericParam, Ident, Lifetime, Type, TypePath, WhereClause};
 
 use super::lifetimes::ignored_lifetime_ident;
 
@@ -58,7 +58,7 @@ impl<'ast> Visit<'ast> for Visitor<'_> {
         visit_type_path(self, ty)
     }
 
-    fn visit_bound_lifetimes(&mut self, lts: &'ast syn::BoundLifetimes) {
+    fn visit_bound_lifetimes(&mut self, lts: &'ast rust_syntax::BoundLifetimes) {
         for lt in &lts.lifetimes {
             if let GenericParam::Lifetime(lt) = lt {
                 let maybe_underscores_yoke = lt.lifetime.ident.unraw().to_string();

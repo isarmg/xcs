@@ -8,15 +8,15 @@ use quote::{format_ident, quote, quote_spanned};
 use rstml::node::{
     CustomNode, KeyedAttributeValue, Node, NodeAttribute, NodeBlock, NodeElement, NodeName,
 };
+use rust_syntax::{spanned::Spanned, Expr, ExprPath, ExprRange, Item, RangeLimits, Stmt};
 use std::collections::HashMap;
-use syn::{spanned::Spanned, Expr, ExprPath, ExprRange, Item, RangeLimits, Stmt};
 
 pub(crate) fn component_to_tokens(
     node: &mut NodeElement<impl CustomNode>,
     global_class: Option<&TokenTree>,
     disable_inert_html: bool,
     errors: &mut Errors,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     // Keep debug identifier diagnostics even while view-marker emission is disabled.
     #[cfg(debug_assertions)]
     let _ = super::ident_from_tag_name(node.name(), errors);
@@ -169,7 +169,7 @@ pub(crate) fn component_to_tokens(
                 None
             }
         })
-        .collect::<syn::Result<Vec<_>>>()?;
+        .collect::<rust_syntax::Result<Vec<_>>>()?;
 
     let spreads = (!(spreads.is_empty())).then(|| {
         quote! {
@@ -321,12 +321,12 @@ pub fn maybe_optimised_component_children(
             Node::Text(text) => text_to_tokens(&text.value),
             Node::RawText(raw) => {
                 let text = raw.to_string_best();
-                let text = syn::LitStr::new(&text, raw.span());
+                let text = rust_syntax::LitStr::new(&text, raw.span());
                 text_to_tokens(&text)
             }
             // Specifically allow std macros that produce strings:
             Node::Block(NodeBlock::ValidBlock(block)) => {
-                fn is_supported(mac: &syn::Macro) -> bool {
+                fn is_supported(mac: &rust_syntax::Macro) -> bool {
                     for string_macro in ["format", "include_str"] {
                         if mac.path.is_ident(string_macro) {
                             return true;

@@ -15,7 +15,7 @@ use proc_macro2::{Punct, Spacing};
 #[cfg(feature = "proc-macro")]
 extern crate proc_macro;
 
-/// Parsing of simple rust structures without syn
+/// Parsing of simple rust structures without rust_syntax
 #[cfg(feature = "parser")]
 mod parser;
 #[cfg(feature = "parser")]

@@ -11,12 +11,12 @@ use crate::{
 };
 
 /// Enum that represents the different types with valid Rust code that can be
-/// visited using `syn::Visitor`. Usually `syn::Block` or `syn::Expr`.
+/// visited using `rust_syntax::Visitor`. Usually `rust_syntax::Block` or `rust_syntax::Expr`.
 pub enum RustCode<'a> {
-    Block(&'a mut syn::Block),
-    Expr(&'a mut syn::Expr),
-    LitStr(&'a mut syn::LitStr),
-    Pat(&'a mut syn::Pat),
+    Block(&'a mut rust_syntax::Block),
+    Expr(&'a mut rust_syntax::Expr),
+    LitStr(&'a mut rust_syntax::LitStr),
+    Pat(&'a mut rust_syntax::Pat),
 }
 /// Visitor api provide a way to traverse the node tree and modify its
 /// components. The api allows modification of all types of nodes, and some
@@ -140,7 +140,7 @@ macro_rules! try_visit {
 
 /// Wrapper for visitor that calls inner visitors.
 /// Inner visitor should implement `Visitor` trait and
-/// `syn::visit_mut::VisitMut`.
+/// `rust_syntax::visit_mut::VisitMut`.
 ///
 /// For regular usecases it is recommended to use `visit_nodes`,
 /// `visit_nodes_with_custom` or `visit_attributes` functions.
@@ -155,7 +155,7 @@ macro_rules! try_visit {
 ///     visitor::{Visitor, Walker},
 ///     Infallible,
 /// };
-/// use syn::parse_quote;
+/// use rust_syntax::parse_quote;
 ///
 /// struct TestVisitor;
 /// impl<C> Visitor<C> for TestVisitor {
@@ -164,7 +164,7 @@ macro_rules! try_visit {
 ///         true
 ///     }
 /// }
-/// impl syn::visit_mut::VisitMut for TestVisitor {}
+/// impl rust_syntax::visit_mut::VisitMut for TestVisitor {}
 ///
 /// let mut visitor = Walker::new(TestVisitor);
 ///
@@ -195,7 +195,7 @@ macro_rules! try_visit {
 pub struct Walker<V, C = Infallible, CW = AnyWalker<C>>
 where
     C: CustomNode,
-    V: Visitor<C> + syn::visit_mut::VisitMut,
+    V: Visitor<C> + rust_syntax::visit_mut::VisitMut,
     CW: CustomNodeWalker<Custom = C>,
 {
     visitor: V,
@@ -208,7 +208,7 @@ where
 impl<V, C> Walker<V, C>
 where
     C: CustomNode,
-    V: Visitor<C> + syn::visit_mut::VisitMut,
+    V: Visitor<C> + rust_syntax::visit_mut::VisitMut,
 {
     pub fn new(visitor: V) -> Self {
         Self {
@@ -231,7 +231,7 @@ where
 impl<V, C, CW> Walker<V, C, CW>
 where
     C: CustomNode,
-    V: Visitor<C> + syn::visit_mut::VisitMut,
+    V: Visitor<C> + rust_syntax::visit_mut::VisitMut,
     CW: CustomNodeWalker<Custom = C>,
 {
     pub fn destruct(self) -> V {
@@ -242,7 +242,7 @@ where
 impl<V, C, CW> Visitor<C> for Walker<V, C, CW>
 where
     C: CustomNode,
-    V: Visitor<C> + syn::visit_mut::VisitMut,
+    V: Visitor<C> + rust_syntax::visit_mut::VisitMut,
     CW: CustomNodeWalker<Custom = C>,
 {
     fn visit_node(&mut self, node: &mut Node<C>) -> bool {
@@ -416,7 +416,7 @@ where
 pub fn visit_nodes<V, C>(nodes: &mut [Node<C>], visitor: V) -> V
 where
     C: CustomNode,
-    V: Visitor<C> + syn::visit_mut::VisitMut,
+    V: Visitor<C> + rust_syntax::visit_mut::VisitMut,
 {
     let mut visitor = Walker::<V, C>::new(visitor);
     for node in nodes {
@@ -436,7 +436,7 @@ where
 pub fn visit_nodes_with_custom<V, C, CW>(nodes: &mut [Node<C>], visitor: V) -> V
 where
     C: CustomNode,
-    V: Visitor<C> + syn::visit_mut::VisitMut,
+    V: Visitor<C> + rust_syntax::visit_mut::VisitMut,
     CW: CustomNodeWalker<Custom = C>,
 {
     let mut visitor = Walker::with_custom_handler::<CW>(visitor);
@@ -449,7 +449,7 @@ where
 /// Visit attributes in array calling visitor methods.
 pub fn visit_attributes<V>(attributes: &mut [NodeAttribute], visitor: V) -> V
 where
-    V: Visitor<Infallible> + syn::visit_mut::VisitMut,
+    V: Visitor<Infallible> + rust_syntax::visit_mut::VisitMut,
     Walker<V>: Visitor<Infallible>,
 {
     let mut visitor = Walker::new(visitor);

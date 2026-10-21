@@ -9,9 +9,9 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2, TokenTree};
 use quote::{quote, quote_spanned, ToTokens, TokenStreamExt as _};
-use syn::parse::{Nothing, ParseStream, Parser};
-use syn::punctuated::Punctuated;
-use syn::{
+use rust_syntax::parse::{Nothing, ParseStream, Parser};
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::{
     parenthesized, parse_macro_input, token, Abi, Attribute, Data, DeriveInput, Error, Expr, Field,
     Generics, Path, Result, Token, Type, Visibility,
 };
@@ -160,7 +160,7 @@ pub fn ref_cast_custom(args: TokenStream, input: TokenStream) -> TokenStream {
         generics.where_clause = input.parse()?;
         let semi_token: Token![;] = input.parse()?;
 
-        let _: Nothing = syn::parse::<Nothing>(args)?;
+        let _: Nothing = rust_syntax::parse::<Nothing>(args)?;
 
         Ok(Function {
             attrs,
@@ -467,7 +467,7 @@ fn check_repr(input: &DeriveInput) -> Result<()> {
 type Fields = Punctuated<Field, Token![,]>;
 
 fn fields(input: &DeriveInput) -> Result<&Fields> {
-    use syn::Fields;
+    use rust_syntax::Fields;
 
     match &input.data {
         Data::Struct(data) => match &data.fields {

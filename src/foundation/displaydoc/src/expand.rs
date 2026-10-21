@@ -1,7 +1,7 @@
 use super::attr::AttrsHelper;
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{
+use rust_syntax::{
     punctuated::Punctuated,
     token::{Colon, Comma, PathSep, Plus, Where},
     Data, DataEnum, DataStruct, DeriveInput, Error, Fields, Generics, Ident, Path, PathArguments,
@@ -345,9 +345,9 @@ fn ensure_where_clause_has_display_for_all_unconstrained_members(
 /// In fact, we would preferably only require `where _: Display` or `where _: Debug` where the
 /// format string actually requires it. However, while [`std::fmt` defines a formal syntax for
 /// `format!()`][format syntax], it *doesn't* expose the actual logic to parse the format string,
-/// which appears to live in [`rustc_parse_format`]. While we use the [`syn`] crate to parse rust
+/// which appears to live in [`rustc_parse_format`]. While we use the [`rust_syntax`] crate to parse rust
 /// syntax, it also doesn't currently provide any method to introspect a `format!()` string. It
-/// would be nice to contribute this upstream in [`syn`].
+/// would be nice to contribute this upstream in [`rust_syntax`].
 ///
 /// [format syntax]: std::fmt#syntax
 /// [`rustc_parse_format`]: https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse_format/index.html

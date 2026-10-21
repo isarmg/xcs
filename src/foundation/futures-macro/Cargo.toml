@@ -34,10 +34,10 @@ path = "../proc-macro2"
 version = "1.0"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3.0"
 features = ["full"]
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 
 [lints.rust]
 missing_debug_implementations = "warn"

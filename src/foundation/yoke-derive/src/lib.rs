@@ -23,9 +23,9 @@ mod visitor;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::ext::IdentExt as _;
-use syn::spanned::Spanned;
-use syn::{parse_macro_input, parse_quote, DeriveInput, GenericParam, Ident, WherePredicate};
+use rust_syntax::ext::IdentExt as _;
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{parse_macro_input, parse_quote, DeriveInput, GenericParam, Ident, WherePredicate};
 use synstructure::Structure;
 
 use self::lifetimes::{custom_lt, ignored_lifetime_ident, replace_lifetime, static_lt};
@@ -248,7 +248,7 @@ fn yokeable_derive_impl(input: &DeriveInput) -> TokenStream2 {
     if lts.next().is_some() {
         // We already extracted one lifetime into `source_lt`, so this means there are
         // multiple lifetimes.
-        return syn::Error::new(
+        return rust_syntax::Error::new(
             input.generics.span(),
             "derive(Yokeable) cannot have multiple lifetime parameters",
         )

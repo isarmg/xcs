@@ -6,7 +6,7 @@ use crate::{
 };
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned};
-use syn::{parse::Parse, spanned::Spanned, FnArg, ItemFn, ReturnType, Token, Type};
+use rust_syntax::{parse::Parse, spanned::Spanned, FnArg, ItemFn, ReturnType, Token, Type};
 
 pub(crate) fn expand(attr: Attrs, item_fn: ItemFn, kind: FunctionKind) -> TokenStream {
     let Attrs { state_ty } = attr;
@@ -35,7 +35,7 @@ pub(crate) fn expand(attr: Attrs, item_fn: ItemFn, kind: FunctionKind) -> TokenS
                 state_ty = state_types_from_args.into_iter().next();
             } else if state_types_from_args.len() > 1 {
                 err = Some(
-                    syn::Error::new(
+                    rust_syntax::Error::new(
                         Span::call_site(),
                         format!(
                             "can't infer state type, please add set it explicitly, as in \
@@ -48,7 +48,7 @@ pub(crate) fn expand(attr: Attrs, item_fn: ItemFn, kind: FunctionKind) -> TokenS
         }
 
         err.unwrap_or_else(|| {
-            let state_ty = state_ty.unwrap_or_else(|| syn::parse_quote!(()));
+            let state_ty = state_ty.unwrap_or_else(|| rust_syntax::parse_quote!(()));
 
             let check_future_send = check_future_send(&item_fn, kind);
 
@@ -68,7 +68,7 @@ pub(crate) fn expand(attr: Attrs, item_fn: ItemFn, kind: FunctionKind) -> TokenS
             }
         })
     } else {
-        syn::Error::new_spanned(
+        rust_syntax::Error::new_spanned(
             &item_fn.sig.generics,
             format!("`#[axum_macros::debug_{kind}]` doesn't support generic functions"),
         )
@@ -113,8 +113,8 @@ impl FunctionKind {
 }
 
 mod kw {
-    syn::custom_keyword!(body);
-    syn::custom_keyword!(state);
+    rust_syntax::custom_keyword!(body);
+    rust_syntax::custom_keyword!(state);
 }
 
 pub(crate) struct Attrs {
@@ -122,7 +122,7 @@ pub(crate) struct Attrs {
 }
 
 impl Parse for Attrs {
-    fn parse(input: syn::parse::ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: rust_syntax::parse::ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut state_ty = None;
 
         while !input.is_empty() {
@@ -156,7 +156,7 @@ fn check_extractor_count(item_fn: &ItemFn, kind: FunctionKind) -> Option<TokenSt
             Use `(a, b): (ExtractorA, ExtractorA)` to further nest extractors",
             kind.name_uppercase_plural(),
         );
-        let error = syn::Error::new_spanned(&item_fn.sig.inputs, error_message).to_compile_error();
+        let error = rust_syntax::Error::new_spanned(&item_fn.sig.inputs, error_message).to_compile_error();
         Some(error)
     }
 }
@@ -164,7 +164,7 @@ fn check_extractor_count(item_fn: &ItemFn, kind: FunctionKind) -> Option<TokenSt
 fn extractor_idents(
     item_fn: &ItemFn,
     kind: FunctionKind,
-) -> impl Iterator<Item = (usize, &syn::FnArg, &syn::Ident)> {
+) -> impl Iterator<Item = (usize, &rust_syntax::FnArg, &rust_syntax::Ident)> {
     item_fn
         .sig
         .inputs
@@ -196,7 +196,7 @@ fn check_path_extractor(item_fn: &ItemFn, kind: FunctionKind) -> TokenStream {
         path_extractors
             .into_iter()
             .map(|(_, arg, _)| {
-                syn::Error::new_spanned(
+                rust_syntax::Error::new_spanned(
                     arg,
                     "Multiple parameters must be extracted with a tuple \
                     `Path<(_, _)>` or a struct `Path<YourParams>`, not by applying \
@@ -210,8 +210,8 @@ fn check_path_extractor(item_fn: &ItemFn, kind: FunctionKind) -> TokenStream {
     }
 }
 
-fn is_self_pat_type(typed: &syn::PatType) -> bool {
-    let ident = if let syn::Pat::Ident(ident) = &*typed.pat {
+fn is_self_pat_type(typed: &rust_syntax::PatType) -> bool {
+    let ident = if let rust_syntax::Pat::Ident(ident) = &*typed.pat {
         &ident.ident
     } else {
         return false;
@@ -248,8 +248,8 @@ fn check_inputs_impls_from_request(
 
         let (span, ty) = match arg {
             FnArg::Receiver(receiver) => {
-                if matches!(receiver.kind, syn::ReceiverKind::Reference(..)) {
-                    return syn::Error::new_spanned(
+                if matches!(receiver.kind, rust_syntax::ReceiverKind::Reference(..)) {
+                    return rust_syntax::Error::new_spanned(
                         receiver,
                         "Handlers must only take owned values",
                     )
@@ -257,14 +257,14 @@ fn check_inputs_impls_from_request(
                 }
 
                 let span = receiver.span();
-                (span, syn::parse_quote!(Self))
+                (span, rust_syntax::parse_quote!(Self))
             }
             FnArg::Typed(typed) => {
                 let ty = &typed.ty;
                 let span = ty.span();
 
                 if is_self_pat_type(typed) {
-                    (span, syn::parse_quote!(Self))
+                    (span, rust_syntax::parse_quote!(Self))
                 } else {
                     (span, ty.clone())
                 }
@@ -351,7 +351,7 @@ fn check_output_tuples(item_fn: &ItemFn) -> TokenStream {
 
     match elems.len() {
         0 => quote! {},
-        n if n > 17 => syn::Error::new_spanned(
+        n if n > 17 => rust_syntax::Error::new_spanned(
             &item_fn.sig.output,
             "Cannot return tuples with more than 17 elements",
         )
@@ -364,7 +364,7 @@ fn check_output_tuples(item_fn: &ItemFn) -> TokenStream {
                     Some("Parts") => check_is_response_parts(ty, handler_ident, idx),
                     Some(_) | None => {
                         if let Some(tn) = well_known_last_response_type(ty) {
-                            syn::Error::new_spanned(
+                            rust_syntax::Error::new_spanned(
                                 ty,
                                 format!(
                                     "`{tn}` must be the last element \
@@ -379,7 +379,7 @@ fn check_output_tuples(item_fn: &ItemFn) -> TokenStream {
                 },
                 Position::Middle(ty) => {
                     if let Some(tn) = well_known_last_response_type(ty) {
-                        syn::Error::new_spanned(
+                        rust_syntax::Error::new_spanned(
                             ty,
                             format!("`{tn}` must be the last element in a response tuple"),
                         )
@@ -621,8 +621,8 @@ fn well_known_last_response_type(ty: &Type) -> Option<&'static str> {
 
 fn check_output_impls_into_response(item_fn: &ItemFn) -> TokenStream {
     let ty = match &item_fn.sig.output {
-        syn::ReturnType::Default => return quote! {},
-        syn::ReturnType::Type(_, ty) => ty,
+        rust_syntax::ReturnType::Default => return quote! {},
+        rust_syntax::ReturnType::Type(_, ty) => ty,
     };
     let span = ty.span();
 
@@ -711,14 +711,14 @@ fn check_output_impls_into_response(item_fn: &ItemFn) -> TokenStream {
 fn check_future_send(item_fn: &ItemFn, kind: FunctionKind) -> TokenStream {
     if item_fn.sig.asyncness.is_none() {
         match &item_fn.sig.output {
-            syn::ReturnType::Default => {
-                return syn::Error::new_spanned(
+            rust_syntax::ReturnType::Default => {
+                return rust_syntax::Error::new_spanned(
                     item_fn.sig.fn_token,
                     format!("{} must be `async fn`s", kind.name_uppercase_plural()),
                 )
                 .into_compile_error();
             }
-            syn::ReturnType::Type(_, ty) => ty,
+            rust_syntax::ReturnType::Type(_, ty) => ty,
         };
     }
 
@@ -778,13 +778,13 @@ fn self_receiver(item_fn: &ItemFn) -> Option<TokenStream> {
         return Some(quote! { Self:: });
     }
 
-    if let syn::ReturnType::Type(_, ty) = &item_fn.sig.output {
-        if let syn::Type::Path(path) = &**ty {
+    if let rust_syntax::ReturnType::Type(_, ty) = &item_fn.sig.output {
+        if let rust_syntax::Type::Path(path) = &**ty {
             let segments = &path.path.segments;
             if segments.len() == 1 {
                 if let Some(last) = segments.last() {
                     match &last.arguments {
-                        syn::PathArguments::None if last.ident == "Self" => {
+                        rust_syntax::PathArguments::None if last.ident == "Self" => {
                             return Some(quote! { Self:: });
                         }
                         _ => {}

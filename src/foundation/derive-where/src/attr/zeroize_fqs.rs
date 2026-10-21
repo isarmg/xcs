@@ -1,6 +1,6 @@
 //! Attribute parsing for the `Zeroize(fqs)` option.
 
-use syn::{spanned::Spanned, Meta, Result};
+use rust_syntax::{spanned::Spanned, Meta, Result};
 
 use crate::{util::MetaListExt, DeriveWhere, Error, Trait};
 

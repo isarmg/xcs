@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use proc_macro2::Span;
-    use syn::{parse_quote, Ident};
+    use rust_syntax::{parse_quote, Ident};
 
     use super::{custom_lt, replace_lifetime};
 

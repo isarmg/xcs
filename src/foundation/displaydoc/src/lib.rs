@@ -121,7 +121,7 @@ mod expand;
 mod fmt;
 
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, DeriveInput};
+use rust_syntax::{parse_macro_input, DeriveInput};
 
 /// [Custom `#[derive(...)]` macro](https://doc.rust-lang.org/edition-guide/rust-2018/macros/custom-derive.html)
 /// for implementing [`fmt::Display`][core::fmt::Display] via doc comment attributes.

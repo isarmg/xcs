@@ -5,7 +5,7 @@ use std::{
 
 use proc_macro2::{Punct, TokenStream};
 use quote::ToTokens;
-use syn::{
+use rust_syntax::{
     ext::IdentExt,
     parse::{discouraged::Speculative, Parse, ParseStream, Peek},
     punctuated::{Pair, Punctuated},
@@ -141,7 +141,7 @@ impl NodeName {
     pub(crate) fn node_name_punctuated_ident<T: Parse, F: Peek, X: From<Ident>>(
         input: ParseStream,
         punct: F,
-    ) -> syn::Result<Punctuated<X, T>> {
+    ) -> rust_syntax::Result<Punctuated<X, T>> {
         let fork = &input.fork();
         let mut segments = Punctuated::<X, T>::new();
 
@@ -177,7 +177,7 @@ impl NodeName {
         punct: F,
         alternate_punct: G,
         alternate_punct2: H,
-    ) -> syn::Result<Punctuated<X, T>> {
+    ) -> rust_syntax::Result<Punctuated<X, T>> {
         let fork = &input.fork();
         let mut segments = Punctuated::<X, T>::new();
 
@@ -272,9 +272,9 @@ impl fmt::Display for NodeName {
 }
 
 impl Parse for NodeName {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+    fn parse(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Self> {
         if input.peek(LitInt) {
-            Err(syn::Error::new(
+            Err(rust_syntax::Error::new(
                 input.span(),
                 "Name must start with latin character",
             ))
@@ -325,7 +325,7 @@ impl Parse for NodeName {
 }
 
 impl Parse for NodeNameFragment {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> rust_syntax::Result<Self> {
         if input.peek(Ident::peek_any) {
             Ok(Self::Ident(input.call(Ident::parse_any)?))
         } else if input.peek(LitInt) {

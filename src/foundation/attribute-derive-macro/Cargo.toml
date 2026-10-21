@@ -61,6 +61,6 @@ path = "../quote"
 version = "0.9"
 path = "../quote-use"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3"
-path = "../syn-3.0.9"
+path = "../rust-syntax"

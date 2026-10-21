@@ -1,21 +1,21 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
-use syn::{Data, DeriveInput, Fields, Type};
+use rust_syntax::{Data, DeriveInput, Fields, Type};
 
 use crate::helpers::{non_enum_error, HasStrumVariantProperties, HasTypeProperties};
 
-pub fn from_repr_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn from_repr_inner(ast: &DeriveInput) -> rust_syntax::Result<TokenStream> {
     let name = &ast.ident;
     let gen = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = gen.split_for_impl();
     let vis = &ast.vis;
 
-    let mut discriminant_type: Type = syn::parse("usize".parse().unwrap()).unwrap();
+    let mut discriminant_type: Type = rust_syntax::parse("usize".parse().unwrap()).unwrap();
     if let Some(type_path) = ast
         .get_type_properties()
         .ok()
         .and_then(|tp| tp.enum_repr)
-        .and_then(|repr_ts| syn::parse2::<Type>(repr_ts).ok())
+        .and_then(|repr_ts| rust_syntax::parse2::<Type>(repr_ts).ok())
     {
         if let Type::Path(path) = type_path.clone() {
             if let Some(seg) = path.path.segments.last() {
@@ -32,7 +32,7 @@ pub fn from_repr_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
     }
 
     if gen.lifetimes().count() > 0 {
-        return Err(syn::Error::new(
+        return Err(rust_syntax::Error::new(
             Span::call_site(),
             "This macro doesn't support enums with lifetimes. \
              The resulting enums would be unbounded.",

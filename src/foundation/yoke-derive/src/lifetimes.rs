@@ -3,8 +3,8 @@
 // (online at: https://github.com/unicode-org/icu4x/blob/main/LICENSE ).
 
 use proc_macro2::Span;
-use syn::ext::IdentExt as _;
-use syn::{Ident, Lifetime, Type};
+use rust_syntax::ext::IdentExt as _;
+use rust_syntax::{Ident, Lifetime, Type};
 
 pub fn static_lt() -> Lifetime {
     Lifetime::new("'static", Span::call_site())
@@ -23,7 +23,7 @@ pub fn ignored_lifetime_ident() -> Ident {
 /// This function replaces all (possibly raw) occurrences of `lt_param` in the type `x` with the
 /// `lt` lifetime.
 pub fn replace_lifetime(lt_param: &Ident, x: &Type, lt: Lifetime) -> Type {
-    use syn::fold::Fold;
+    use rust_syntax::fold::Fold;
     struct ReplaceLifetime<'a>(&'a Ident, Lifetime);
 
     impl Fold for ReplaceLifetime<'_> {

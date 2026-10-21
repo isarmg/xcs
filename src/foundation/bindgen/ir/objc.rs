@@ -270,13 +270,13 @@ impl ObjCMethod {
                     // suffix to it and parse again. If this also fails, we panic with the first
                     // error.
                     Some(
-                        syn::parse_str::<Ident>(name)
+                        rust_syntax::parse_str::<Ident>(name)
                             .or_else(|err| {
-                                syn::parse_str::<Ident>(&format!("r#{name}"))
+                                rust_syntax::parse_str::<Ident>(&format!("r#{name}"))
                                     .map_err(|_| err)
                             })
                             .or_else(|err| {
-                                syn::parse_str::<Ident>(&format!("{name}_"))
+                                rust_syntax::parse_str::<Ident>(&format!("{name}_"))
                                     .map_err(|_| err)
                             })
                             .expect("Invalid identifier"),

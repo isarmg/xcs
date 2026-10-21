@@ -1,4 +1,4 @@
-use syn::{
+use rust_syntax::{
     visit_mut::{visit_file_mut, visit_item_mod_mut, VisitMut},
     File, Item, ItemMod,
 };

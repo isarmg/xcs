@@ -35,7 +35,7 @@ fn macro_runtime_semantics() {
     drop(async_identity(3));
     drop(handler());
 }
-cpufeatures::new!(avx2_dispatch, "avx2");
+cpu_feature_detect::new!(avx2_dispatch, "avx2");
 #[test]
 fn cpu_dispatch_preserves_runtime_and_token_results() {
     assert_eq!(avx2_dispatch::get(), std::is_x86_feature_detected!("avx2"));
@@ -49,14 +49,14 @@ fn syntax_formatter_preserves_approved_source() {
         "pub unsafe fn call<'a, T: Copy>(x: &'a T) -> T {\n    *x\n}\n",
         "pub struct Foo<T> {\n    pub value: Option<T>,\n}\nimpl<T> Foo<T> {\n    pub fn new(v: T) -> Self {\n        Self { value: Some(v) }\n    }\n}\n",
     ] {
-        let parsed = syn::parse_file(expected).unwrap();
-        assert_eq!(prettyplease::unparse(&parsed), expected);
+        let parsed = rust_syntax::parse_file(expected).unwrap();
+        assert_eq!(rust_source_format::unparse(&parsed), expected);
     }
 }
 #[test]
 fn sqlite_function_pointer_shape_and_generated_api() {
-    let ty: syn::Type = syn::parse_str("unsafe extern \"C\" fn(arg: *const u8) -> i32").unwrap();
-    let syn::Type::FnPtr(pointer) = ty else { panic!("not a function pointer") };
+    let ty: rust_syntax::Type = rust_syntax::parse_str("unsafe extern \"C\" fn(arg: *const u8) -> i32").unwrap();
+    let rust_syntax::Type::FnPtr(pointer) = ty else { panic!("not a function pointer") };
     assert!(pointer.unsafety.is_some());
     assert_eq!(pointer.abi.as_ref().unwrap().name.as_ref().unwrap().value(), "C");
     assert_eq!(pointer.inputs.first().unwrap().name.as_ref().unwrap().0, "arg");

@@ -42,10 +42,10 @@ path = "../proc-macro2"
 version = "1.0.44"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3.0"
 features = ["extra-traits"]
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 
 [lints.clippy]
 alloc_instead_of_core = "warn"

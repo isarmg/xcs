@@ -9,7 +9,7 @@ mod receiver;
 mod respan;
 mod symbol;
 
-use syn::Type;
+use rust_syntax::Type;
 
 pub use self::ctxt::Ctxt;
 pub use self::receiver::replace_receiver;

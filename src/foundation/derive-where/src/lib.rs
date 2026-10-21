@@ -416,7 +416,7 @@ use std::{borrow::Cow, iter};
 use input::SplitGenerics;
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned, ToTokens};
-use syn::{
+use rust_syntax::{
 	spanned::Spanned, Attribute, DataEnum, DataStruct, DataUnion, DeriveInput, Fields, FieldsNamed,
 	FieldsUnnamed, Meta, Path, Result, Variant,
 };
@@ -482,7 +482,7 @@ pub fn derive_where(
 	let mut input = quote_spanned! { attr.span()=> #[derive_where(#attr)] };
 	input.extend(original_input.clone());
 
-	match syn::parse2::<DeriveInput>(input) {
+	match rust_syntax::parse2::<DeriveInput>(input) {
 		Ok(input) => match derive_where_internal(input.clone()) {
 			Ok(item) => item.into(),
 			Err(error) => {
@@ -541,7 +541,7 @@ fn derive_where_internal(mut item: DeriveInput) -> Result<TokenStream> {
 
 	// Mark this as visited to prevent duplicate `derive_where` attributes.
 	item.attrs
-		.push(syn::parse_quote! { #[#derive_where_visited] });
+		.push(rust_syntax::parse_quote! { #[#derive_where_visited] });
 
 	// Build `DeriveWhere` path.
 	let derive_where = util::path_from_root_and_strs(crate_, &[DERIVE_WHERE_FORWARD]);
@@ -567,7 +567,7 @@ fn derive_where_internal(mut item: DeriveInput) -> Result<TokenStream> {
 #[cfg_attr(feature = "nightly", allow_internal_unstable(core_intrinsics))]
 pub fn derive_where_actual(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 	let input = TokenStream::from(input);
-	let full_item = match syn::parse2::<DeriveInput>(input) {
+	let full_item = match rust_syntax::parse2::<DeriveInput>(input) {
 		Ok(item) => item,
 		Err(error) => {
 			return error.into_compile_error().into();
@@ -693,7 +693,7 @@ fn generate_body(
 /// This is necessary because Rust currently does not support helper attributes
 /// for attribute proc-macros and therefore doesn't automatically remove them.
 fn input_without_derive_where_attributes(mut input: DeriveInput) -> DeriveInput {
-	use syn::Data;
+	use rust_syntax::Data;
 
 	let DeriveInput { data, attrs, .. } = &mut input;
 

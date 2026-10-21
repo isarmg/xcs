@@ -3,8 +3,8 @@
 use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::{format_ident, quote};
-use syn::parse::{Parse, ParseStream};
-use syn::{Expr, Ident, Token};
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::{Expr, Ident, Token};
 
 #[derive(Default)]
 struct Join {
@@ -12,7 +12,7 @@ struct Join {
 }
 
 impl Parse for Join {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+    fn parse(input: ParseStream<'_>) -> rust_syntax::Result<Self> {
         let mut join = Self::default();
 
         while !input.is_empty() {
@@ -49,7 +49,7 @@ fn bind_futures(fut_exprs: Vec<Expr>, span: Span) -> (Vec<TokenStream2>, Vec<Ide
 
 /// The `join!` macro.
 pub(crate) fn join(input: TokenStream) -> TokenStream {
-    let parsed = syn::parse_macro_input!(input as Join);
+    let parsed = rust_syntax::parse_macro_input!(input as Join);
 
     // should be def_site, but that's unstable
     let span = Span::call_site();
@@ -87,7 +87,7 @@ pub(crate) fn join(input: TokenStream) -> TokenStream {
 
 /// The `try_join!` macro.
 pub(crate) fn try_join(input: TokenStream) -> TokenStream {
-    let parsed = syn::parse_macro_input!(input as Join);
+    let parsed = rust_syntax::parse_macro_input!(input as Join);
 
     // should be def_site, but that's unstable
     let span = Span::call_site();

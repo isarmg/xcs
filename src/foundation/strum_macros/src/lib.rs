@@ -17,7 +17,7 @@ mod macros;
 
 use proc_macro2::TokenStream;
 use std::env;
-use syn::DeriveInput;
+use rust_syntax::DeriveInput;
 
 fn debug_print_generated(ast: &DeriveInput, toks: &TokenStream) {
     let debug = env::var("STRUM_DEBUG");
@@ -132,7 +132,7 @@ fn debug_print_generated(ast: &DeriveInput, toks: &TokenStream) {
 /// ```
 #[proc_macro_derive(EnumString, attributes(strum))]
 pub fn from_string(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks =
         macros::from_string::from_string_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
@@ -207,7 +207,7 @@ pub fn from_string(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(AsRefStr, attributes(strum))]
 pub fn as_ref_str(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks =
         macros::as_ref_str::as_ref_str_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
@@ -238,7 +238,7 @@ pub fn as_ref_str(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(VariantNames, attributes(strum))]
 pub fn variant_names(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::enum_variant_names::enum_variant_names_inner(&ast)
         .unwrap_or_else(|err| err.to_compile_error());
@@ -253,7 +253,7 @@ pub fn variant_names(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
     note = "please use `#[derive(VariantNames)]` instead"
 )]
 pub fn variant_names_deprecated(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::enum_variant_names::enum_variant_names_inner(&ast)
         .unwrap_or_else(|err| err.to_compile_error());
@@ -285,7 +285,7 @@ pub fn variant_names_deprecated(input: proc_macro::TokenStream) -> proc_macro::T
 /// ```
 #[proc_macro_derive(VariantArray, attributes(strum))]
 pub fn static_variants_array(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::enum_variant_array::static_variants_array_inner(&ast)
         .unwrap_or_else(|err| err.to_compile_error());
@@ -300,7 +300,7 @@ pub fn static_variants_array(input: proc_macro::TokenStream) -> proc_macro::Toke
     note = "please use `#[derive(IntoStaticStr)]` instead"
 )]
 pub fn as_static_str(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::as_ref_str::as_static_str_inner(
         &ast,
@@ -342,7 +342,7 @@ pub fn as_static_str(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 /// ```
 #[proc_macro_derive(IntoStaticStr, attributes(strum))]
 pub fn into_static_str(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::as_ref_str::as_static_str_inner(
         &ast,
@@ -385,7 +385,7 @@ pub fn into_static_str(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 #[doc(hidden)]
 #[proc_macro_derive(ToString, attributes(strum))]
 pub fn to_string(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks =
         macros::to_string::to_string_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
@@ -461,7 +461,7 @@ pub fn to_string(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(Display, attributes(strum))]
 pub fn display(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::display::display_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
     debug_print_generated(&ast, &toks);
@@ -503,7 +503,7 @@ pub fn display(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(EnumIter, attributes(strum))]
 pub fn enum_iter(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks =
         macros::enum_iter::enum_iter_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
@@ -529,7 +529,7 @@ pub fn enum_iter(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(EnumIs, attributes(strum))]
 pub fn enum_is(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::enum_is::enum_is_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
     debug_print_generated(&ast, &toks);
@@ -563,7 +563,7 @@ pub fn enum_is(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(EnumTryAs, attributes(strum))]
 pub fn enum_try_as(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks =
         macros::enum_try_as::enum_try_as_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
@@ -617,7 +617,7 @@ pub fn enum_try_as(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 #[doc(hidden)]
 #[proc_macro_derive(EnumTable, attributes(strum))]
 pub fn enum_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks =
         macros::enum_table::enum_table_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
@@ -696,7 +696,7 @@ pub fn enum_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(FromRepr, attributes(strum))]
 pub fn from_repr(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks =
         macros::from_repr::from_repr_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
@@ -784,7 +784,7 @@ pub fn from_repr(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// ```
 #[proc_macro_derive(EnumMessage, attributes(strum))]
 pub fn enum_messages(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::enum_messages::enum_message_inner(&ast)
         .unwrap_or_else(|err| err.to_compile_error());
@@ -835,7 +835,7 @@ pub fn enum_messages(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 /// ```
 #[proc_macro_derive(EnumProperty, attributes(strum))]
 pub fn enum_properties(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::enum_properties::enum_properties_inner(&ast)
         .unwrap_or_else(|err| err.to_compile_error());
@@ -949,7 +949,7 @@ pub fn enum_properties(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 /// ```
 #[proc_macro_derive(EnumDiscriminants, attributes(strum, strum_discriminants))]
 pub fn enum_discriminants(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
 
     let toks = macros::enum_discriminants::enum_discriminants_inner(&ast)
         .unwrap_or_else(|err| err.to_compile_error());
@@ -983,7 +983,7 @@ pub fn enum_discriminants(input: proc_macro::TokenStream) -> proc_macro::TokenSt
 /// ```
 #[proc_macro_derive(EnumCount, attributes(strum))]
 pub fn enum_count(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let ast = syn::parse_macro_input!(input as DeriveInput);
+    let ast = rust_syntax::parse_macro_input!(input as DeriveInput);
     let toks =
         macros::enum_count::enum_count_inner(&ast).unwrap_or_else(|err| err.to_compile_error());
     debug_print_generated(&ast, &toks);

@@ -4,7 +4,7 @@ use std::fmt::{self, Display, Formatter};
 
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, IdentFragment, ToTokens};
-use syn::{ext::IdentExt, Attribute, FieldsNamed, FieldsUnnamed, Ident, Index, Result, Type};
+use rust_syntax::{ext::IdentExt, Attribute, FieldsNamed, FieldsUnnamed, Ident, Index, Result, Type};
 
 use crate::{DeriveWhere, FieldAttr, Skip, Trait};
 
@@ -23,7 +23,7 @@ pub struct Field<'a> {
 	pub type_: &'a Type,
 }
 
-/// Borrowed version of [`syn::Member`], to avoid unnecessary allocations.
+/// Borrowed version of [`rust_syntax::Member`], to avoid unnecessary allocations.
 #[cfg_attr(test, derive(Debug))]
 pub enum Member<'a> {
 	/// Named field.
@@ -57,7 +57,7 @@ impl Display for Member<'_> {
 }
 
 impl<'a> Field<'a> {
-	/// Create [`Field`]s from [`syn::FieldsNamed`].
+	/// Create [`Field`]s from [`rust_syntax::FieldsNamed`].
 	pub fn from_named(
 		derive_wheres: &[DeriveWhere],
 		skip_inner: &Skip,
@@ -78,7 +78,7 @@ impl<'a> Field<'a> {
 			.collect()
 	}
 
-	/// Create [`Field`]s from [`syn::FieldsUnnamed`].
+	/// Create [`Field`]s from [`rust_syntax::FieldsUnnamed`].
 	pub fn from_unnamed(
 		derive_wheres: &[DeriveWhere],
 		skip_inner: &Skip,
@@ -101,7 +101,7 @@ impl<'a> Field<'a> {
 			.collect()
 	}
 
-	/// Create [`Field`] from [`syn::Field`].
+	/// Create [`Field`] from [`rust_syntax::Field`].
 	fn from_field(
 		derive_wheres: &[DeriveWhere],
 		skip_inner: &Skip,
@@ -122,11 +122,11 @@ impl<'a> Field<'a> {
 		})
 	}
 
-	/// Convert to [`syn::Member`].
-	pub fn to_member(&self) -> syn::Member {
+	/// Convert to [`rust_syntax::Member`].
+	pub fn to_member(&self) -> rust_syntax::Member {
 		match self.member {
-			Member::Named(ident) => syn::Member::Named(ident.clone()),
-			Member::Unnamed(ref index) => syn::Member::Unnamed(index.clone()),
+			Member::Named(ident) => rust_syntax::Member::Named(ident.clone()),
+			Member::Unnamed(ref index) => rust_syntax::Member::Unnamed(index.clone()),
 		}
 	}
 

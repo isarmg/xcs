@@ -6,7 +6,7 @@ use std::borrow::Cow;
 
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
-use syn::{
+use rust_syntax::{
 	punctuated::Punctuated, spanned::Spanned, Attribute, DeriveInput, Expr, ExprLit, Ident, Lit,
 	Meta, Path, Token, WhereClause,
 };

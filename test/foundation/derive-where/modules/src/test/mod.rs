@@ -19,7 +19,7 @@ use std::iter;
 use pretty_assertions::assert_eq;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{spanned::Spanned, DeriveInput, Result};
+use rust_syntax::{spanned::Spanned, DeriveInput, Result};
 
 use crate::{generate_impl, input::Input};
 
@@ -39,7 +39,7 @@ fn compiles(input: TokenStream) -> Result<()> {
 fn derive_where_internal(input: TokenStream) -> Result<TokenStream> {
 	// Save `Span` before we consume `input` when parsing it.
 	let span = input.span();
-	let full_item = syn::parse2::<DeriveInput>(input).expect("derive on unparsable item");
+	let full_item = rust_syntax::parse2::<DeriveInput>(input).expect("derive on unparsable item");
 
 	let Input {
 		crate_,

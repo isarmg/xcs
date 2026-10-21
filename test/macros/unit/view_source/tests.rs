@@ -34,7 +34,7 @@ fn literal_text_preserves_escapes_unicode_and_numeric_normalization() {
         ("1_024usize", "1024"),
         ("1.25f32", "1.25"),
     ] {
-        let expression = syn::parse_str(source).unwrap();
+        let expression = rust_syntax::parse_str(source).unwrap();
         assert_eq!(
             value_to_string(&expression).as_deref(),
             Some(expected),
@@ -74,7 +74,7 @@ fn unsupported_expressions_stay_unconverted() {
         "b\"text\"",
         "b'a'",
     ] {
-        let expression = syn::parse_str(source).unwrap();
+        let expression = rust_syntax::parse_str(source).unwrap();
         assert_eq!(value_to_string(&expression), None, "{source}");
     }
 }

@@ -7,9 +7,9 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use std::collections::BTreeSet as Set;
 use std::mem;
-use syn::punctuated::Punctuated;
-use syn::visit_mut::{self, VisitMut};
-use syn::{
+use rust_syntax::punctuated::Punctuated;
+use rust_syntax::visit_mut::{self, VisitMut};
+use rust_syntax::{
     parse_quote, parse_quote_spanned, Attribute, Block, FnArg, GenericArgument, GenericParam,
     Generics, Ident, ImplItem, Lifetime, LifetimeParam, Pat, PatIdent, PathArguments, Receiver,
     ReceiverKind, ReturnType, Signature, Token, TraitItem, Type, TypeInfer, TypePath, WhereClause,
@@ -104,7 +104,7 @@ pub fn expand(input: &mut Item, is_local: bool) {
                         method.attrs.push(lint_suppress_with_body());
                     }
                     ImplItem::Verbatim(tokens) => {
-                        let mut method = match syn::parse2::<VerbatimFn>(tokens.clone()) {
+                        let mut method = match rust_syntax::parse2::<VerbatimFn>(tokens.clone()) {
                             Ok(method) if method.sig.asyncness.is_some() => method,
                             _ => continue,
                         };
@@ -448,7 +448,7 @@ fn transform_block(context: Context, sig: &mut Signature, block: &mut Block) {
 }
 
 fn positional_arg(i: usize, pat: &Pat) -> Ident {
-    let span = syn::spanned::Spanned::span(pat).resolved_at(Span::mixed_site());
+    let span = rust_syntax::spanned::Spanned::span(pat).resolved_at(Span::mixed_site());
     format_ident!("__arg{}", i, span = span)
 }
 

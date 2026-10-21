@@ -2,7 +2,7 @@ use crate::component::{convert_from_snake_case, drain_filter, is_option, unwrap_
 use attribute_derive::FromAttr;
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
-use syn::{parse::Parse, parse_quote, Field, ItemStruct, LitStr, Meta, Type, Visibility};
+use rust_syntax::{parse::Parse, parse_quote, Field, ItemStruct, LitStr, Meta, Type, Visibility};
 
 pub struct Model {
     docs: Docs,
@@ -13,7 +13,7 @@ pub struct Model {
 }
 
 impl Parse for Model {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+    fn parse(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Self> {
         let mut item = ItemStruct::parse(input)?;
 
         let docs = Docs::new(&item.attrs)?;
@@ -23,7 +23,7 @@ impl Parse for Model {
             .clone()
             .into_iter()
             .map(Prop::new)
-            .collect::<syn::Result<Vec<_>>>()?;
+            .collect::<rust_syntax::Result<Vec<_>>>()?;
 
         // We need to remove the `#[doc = ""]` and `#[builder(_)]`
         // attrs from the function signature
@@ -51,7 +51,7 @@ impl Parse for Model {
 }
 
 impl Model {
-    pub(crate) fn expand(&self) -> syn::Result<TokenStream> {
+    pub(crate) fn expand(&self) -> rust_syntax::Result<TokenStream> {
         let Self {
             docs,
             vis,
@@ -110,11 +110,11 @@ struct Prop {
 }
 
 impl Prop {
-    fn new(arg: Field) -> syn::Result<Self> {
+    fn new(arg: Field) -> rust_syntax::Result<Self> {
         let prop_opts = PropOpt::from_attributes(&arg.attrs)?;
 
         let Some(name) = arg.ident.clone() else {
-            return Err(syn::Error::new_spanned(
+            return Err(rust_syntax::Error::new_spanned(
                 &arg,
                 "only `prop: bool` style types are allowed within the \
                  `#[slot]` macro",
@@ -140,14 +140,14 @@ struct PropOpt {
     #[attribute(conflicts = [optional, optional_no_strip])]
     pub strip_option: bool,
     #[attribute(example = "5 * 10")]
-    pub default: Option<syn::Expr>,
+    pub default: Option<rust_syntax::Expr>,
     pub into: bool,
     pub attrs: bool,
 }
 
 struct TypedBuilderOpts<'a> {
     default: bool,
-    default_with_value: Option<syn::Expr>,
+    default_with_value: Option<rust_syntax::Expr>,
     strip_option: bool,
     into: bool,
     ty: &'a Type,
@@ -166,7 +166,7 @@ impl<'a> TypedBuilderOpts<'a> {
 }
 
 impl TypedBuilderOpts<'_> {
-    fn expand(&self) -> syn::Result<TokenStream> {
+    fn expand(&self) -> rust_syntax::Result<TokenStream> {
         let default = if let Some(v) = &self.default_with_value {
             let v = v.to_token_stream().to_string();
             quote! { default_code=#v, }
@@ -219,7 +219,7 @@ impl TypedBuilderOpts<'_> {
     }
 }
 
-fn prop_builder_fields(vis: &Visibility, props: &[Prop]) -> syn::Result<TokenStream> {
+fn prop_builder_fields(vis: &Visibility, props: &[Prop]) -> rust_syntax::Result<TokenStream> {
     props
         .iter()
         .map(|prop| {
@@ -244,18 +244,18 @@ fn prop_builder_fields(vis: &Visibility, props: &[Prop]) -> syn::Result<TokenStr
         .collect()
 }
 
-fn generate_prop_docs(props: &[Prop]) -> syn::Result<TokenStream> {
+fn generate_prop_docs(props: &[Prop]) -> rust_syntax::Result<TokenStream> {
     let required_prop_docs = props
         .iter()
         .filter(|Prop { prop_opts, .. }| !(prop_opts.optional || prop_opts.optional_no_strip))
         .map(|p| prop_to_doc(p, PropDocStyle::List))
-        .collect::<syn::Result<TokenStream>>()?;
+        .collect::<rust_syntax::Result<TokenStream>>()?;
 
     let optional_prop_docs = props
         .iter()
         .filter(|Prop { prop_opts, .. }| prop_opts.optional || prop_opts.optional_no_strip)
         .map(|p| prop_to_doc(p, PropDocStyle::List))
-        .collect::<syn::Result<TokenStream>>()?;
+        .collect::<rust_syntax::Result<TokenStream>>()?;
 
     let required_prop_docs = if !required_prop_docs.is_empty() {
         quote! {
@@ -295,25 +295,25 @@ fn prop_to_doc(
         prop_opts,
     }: &Prop,
     style: PropDocStyle,
-) -> syn::Result<TokenStream> {
+) -> rust_syntax::Result<TokenStream> {
     let ty = if (prop_opts.optional || prop_opts.strip_option) && is_option(ty) {
         unwrap_option(ty)?
     } else {
         ty.to_owned()
     };
 
-    let type_item: syn::Item = parse_quote! {
+    let type_item: rust_syntax::Item = parse_quote! {
         type SomeType = #ty;
     };
 
-    let file = syn::File {
+    let file = rust_syntax::File {
         shebang: None,
         frontmatter: None,
         attrs: vec![],
         items: vec![type_item],
     };
 
-    let pretty_ty = prettyplease::unparse(&file);
+    let pretty_ty = rust_source_format::unparse(&file);
 
     let pretty_ty = &pretty_ty[16..&pretty_ty.len() - 2];
 

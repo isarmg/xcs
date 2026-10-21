@@ -6,8 +6,8 @@
 //! (duplicated in yoke/derive/src/visitor.rs)
 
 use std::collections::HashMap;
-use syn::visit::{visit_lifetime, visit_type, visit_type_path, Visit};
-use syn::{Ident, Lifetime, Type, TypePath};
+use rust_syntax::visit::{visit_lifetime, visit_type, visit_type_path, Visit};
+use rust_syntax::{Ident, Lifetime, Type, TypePath};
 
 struct TypeVisitor<'a> {
     /// The type parameters in scope

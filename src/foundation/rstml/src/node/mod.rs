@@ -5,13 +5,13 @@ use std::{convert, fmt};
 use atoms::{tokens, FragmentClose, FragmentOpen};
 use proc_macro2::{Ident, TokenStream};
 use quote::ToTokens;
-use syn::{parse::ParseStream, ExprPath, LitStr, Token};
+use rust_syntax::{parse::ParseStream, ExprPath, LitStr, Token};
 
 // Parse fields in the listed order, stopping at the first error.
 macro_rules! impl_parse {
     ($ty:ident, $($field:ident),+ $(,)?) => {
-        impl syn::parse::Parse for $ty {
-            fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        impl rust_syntax::parse::Parse for $ty {
+            fn parse(input: rust_syntax::parse::ParseStream) -> rust_syntax::Result<Self> {
                 Ok(Self {
                     $($field: input.parse()?,)*
                 })
@@ -302,7 +302,7 @@ pub trait CustomNode: ParseRecoverable + ToTokens {
     ///
     /// Recieves a [`ParseStream::fork`].
     ///
-    /// [`ParseStream::fork`]: syn::parse::ParseBuffer::fork
+    /// [`ParseStream::fork`]: rust_syntax::parse::ParseBuffer::fork
     fn peek_element(input: ParseStream) -> bool;
 }
 

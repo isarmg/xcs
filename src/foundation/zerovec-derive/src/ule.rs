@@ -6,8 +6,8 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
 use crate::utils::{self, FieldInfo};
-use syn::spanned::Spanned;
-use syn::{Data, DeriveInput, Error};
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{Data, DeriveInput, Error};
 
 pub fn derive_impl(input: &DeriveInput) -> TokenStream2 {
     if !utils::ReprInfo::compute(&input.attrs).cpacked_or_transparent() {
@@ -82,7 +82,7 @@ pub fn derive_impl(input: &DeriveInput) -> TokenStream2 {
 pub(crate) fn generate_ule_validators(
     fields: &[FieldInfo],
     // (validators, remaining_offset)
-) -> (TokenStream2, syn::Ident) {
+) -> (TokenStream2, rust_syntax::Ident) {
     utils::generate_per_field_offsets(fields, false, |field, prev_offset_ident, size_ident| {
         let ty = &field.field.ty;
         quote! {

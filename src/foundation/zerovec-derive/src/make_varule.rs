@@ -6,8 +6,8 @@ use crate::utils::{self, FieldInfo};
 use proc_macro2::Span;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{quote, ToTokens};
-use syn::spanned::Spanned;
-use syn::{
+use rust_syntax::spanned::Spanned;
+use rust_syntax::{
     parse_quote, Data, DeriveInput, Error, Field, Fields, GenericArgument, Ident, Lifetime,
     PathArguments, Type, TypePath,
 };

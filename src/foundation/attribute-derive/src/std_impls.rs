@@ -1,8 +1,8 @@
 use manyhow::{span_range, SpanRanged};
-use syn::parse::discouraged::{AnyDelimiter, Speculative};
-use syn::parse::{Parse, ParseStream};
-use syn::token::{Bracket, Paren};
-use syn::{bracketed, parenthesized, LitBool, LitChar, LitFloat, LitInt, LitStr, Result, Token};
+use rust_syntax::parse::discouraged::{AnyDelimiter, Speculative};
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::token::{Bracket, Paren};
+use rust_syntax::{bracketed, parenthesized, LitBool, LitChar, LitFloat, LitInt, LitStr, Result, Token};
 
 use super::FromAttr;
 use crate::from_partial::{Defaulting, FromPartial, Partial};

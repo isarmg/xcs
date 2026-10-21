@@ -2,7 +2,7 @@
 
 use super::spanned::Sp;
 
-use syn::{
+use rust_syntax::{
     GenericArgument, Path, PathArguments, PathArguments::AngleBracketed, PathSegment, Type,
     TypePath, spanned::Spanned,
 };
@@ -75,7 +75,7 @@ pub(crate) fn sub_type(ty: &Type) -> Option<&Type> {
 }
 
 fn only_last_segment(mut ty: &Type) -> Option<&PathSegment> {
-    while let Type::Group(syn::TypeGroup { elem, .. }) = ty {
+    while let Type::Group(rust_syntax::TypeGroup { elem, .. }) = ty {
         ty = elem;
     }
     match ty {

@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn allow_deprecated(input: &syn::DeriveInput) -> Option<TokenStream> {
+pub fn allow_deprecated(input: &rust_syntax::DeriveInput) -> Option<TokenStream> {
     if should_allow_deprecated(input) {
         Some(quote! { #[allow(deprecated)] })
     } else {
@@ -15,11 +15,11 @@ pub fn allow_deprecated(input: &syn::DeriveInput) -> Option<TokenStream> {
 /// one of:
 ///   - `#[deprecated]`
 ///   - `#[allow(deprecated)]`
-fn should_allow_deprecated(input: &syn::DeriveInput) -> bool {
+fn should_allow_deprecated(input: &rust_syntax::DeriveInput) -> bool {
     if contains_deprecated(&input.attrs) {
         return true;
     }
-    if let syn::Data::Enum(data_enum) = &input.data {
+    if let rust_syntax::Data::Enum(data_enum) = &input.data {
         for variant in &data_enum.variants {
             if contains_deprecated(&variant.attrs) {
                 return true;
@@ -32,12 +32,12 @@ fn should_allow_deprecated(input: &syn::DeriveInput) -> bool {
 /// Check whether the given attributes contains one of:
 ///   - `#[deprecated]`
 ///   - `#[allow(deprecated)]`
-fn contains_deprecated(attrs: &[syn::Attribute]) -> bool {
+fn contains_deprecated(attrs: &[rust_syntax::Attribute]) -> bool {
     for attr in attrs {
         if attr.path().is_ident("deprecated") {
             return true;
         }
-        if let syn::Meta::List(meta_list) = &attr.meta {
+        if let rust_syntax::Meta::List(meta_list) = &attr.meta {
             if meta_list.path.is_ident("allow") {
                 let mut allow_deprecated = false;
                 let _ = meta_list.parse_nested_meta(|meta| {

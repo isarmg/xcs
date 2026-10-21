@@ -4,7 +4,7 @@ use std::{borrow::Cow, ops::Deref};
 
 use proc_macro2::{Span, TokenStream};
 use quote::format_ident;
-use syn::{
+use rust_syntax::{
 	punctuated::Punctuated, Attribute, DeriveInput, Ident, ImplGenerics, Meta, Path, Result,
 	TypeGenerics, WhereClause,
 };
@@ -37,7 +37,7 @@ impl TraitImpl for Serialize {
 	fn parse_derive_trait(
 		attrs: &[Attribute],
 		span: Span,
-		list: Option<Punctuated<Meta, syn::Token![,]>>,
+		list: Option<Punctuated<Meta, rust_syntax::Token![,]>>,
 	) -> Result<DeriveTrait>
 	where
 		Self: Sized,

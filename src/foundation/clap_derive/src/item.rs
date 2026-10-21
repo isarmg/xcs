@@ -17,8 +17,8 @@ use std::env;
 use heck::{ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use proc_macro2::{self, Span, TokenStream};
 use quote::{ToTokens, format_ident, quote, quote_spanned};
-use syn::DeriveInput;
-use syn::{self, Attribute, Field, Ident, LitStr, Type, Variant, ext::IdentExt, spanned::Spanned};
+use rust_syntax::DeriveInput;
+use rust_syntax::{self, Attribute, Field, Ident, LitStr, Type, Variant, ext::IdentExt, spanned::Spanned};
 
 use crate::attr::{AttrKind, AttrValue, ClapAttr, MagicAttrName};
 use crate::utils::{Sp, Ty, extract_doc_comment, format_doc_comment, inner_type, is_simple_ty};
@@ -54,7 +54,7 @@ pub(crate) struct Item {
 }
 
 impl Item {
-    pub(crate) fn from_args_struct(input: &DeriveInput, name: Name) -> Result<Self, syn::Error> {
+    pub(crate) fn from_args_struct(input: &DeriveInput, name: Name) -> Result<Self, rust_syntax::Error> {
         let ident = input.ident.clone();
         let span = input.ident.span();
         let attrs = &input.attrs;
@@ -75,7 +75,7 @@ impl Item {
     pub(crate) fn from_subcommand_enum(
         input: &DeriveInput,
         name: Name,
-    ) -> Result<Self, syn::Error> {
+    ) -> Result<Self, rust_syntax::Error> {
         let ident = input.ident.clone();
         let span = input.ident.span();
         let attrs = &input.attrs;
@@ -92,7 +92,7 @@ impl Item {
         Ok(res)
     }
 
-    pub(crate) fn from_value_enum(input: &DeriveInput, name: Name) -> Result<Self, syn::Error> {
+    pub(crate) fn from_value_enum(input: &DeriveInput, name: Name) -> Result<Self, rust_syntax::Error> {
         let ident = input.ident.clone();
         let span = input.ident.span();
         let attrs = &input.attrs;
@@ -123,15 +123,15 @@ impl Item {
         variant: &Variant,
         struct_casing: Sp<CasingStyle>,
         env_casing: Sp<CasingStyle>,
-    ) -> Result<Self, syn::Error> {
+    ) -> Result<Self, rust_syntax::Error> {
         let name = variant.ident.clone();
         let ident = variant.ident.clone();
         let span = variant.span();
         let ty = match variant.fields {
-            syn::Fields::Unnamed(syn::FieldsUnnamed { ref unnamed, .. }) if unnamed.len() == 1 => {
+            rust_syntax::Fields::Unnamed(rust_syntax::FieldsUnnamed { ref unnamed, .. }) if unnamed.len() == 1 => {
                 Ty::from_syn_ty(&unnamed[0].ty)
             }
-            syn::Fields::Named(_) | syn::Fields::Unnamed(..) | syn::Fields::Unit => {
+            rust_syntax::Fields::Named(_) | rust_syntax::Fields::Unnamed(..) | rust_syntax::Fields::Unit => {
                 Sp::new(Ty::Other, span)
             }
         };
@@ -178,7 +178,7 @@ impl Item {
         variant: &Variant,
         argument_casing: Sp<CasingStyle>,
         env_casing: Sp<CasingStyle>,
-    ) -> Result<Self, syn::Error> {
+    ) -> Result<Self, rust_syntax::Error> {
         let ident = variant.ident.clone();
         let span = variant.span();
         let kind = Sp::new(Kind::Value, span);
@@ -205,7 +205,7 @@ impl Item {
         field: &Field,
         struct_casing: Sp<CasingStyle>,
         env_casing: Sp<CasingStyle>,
-    ) -> Result<Self, syn::Error> {
+    ) -> Result<Self, rust_syntax::Error> {
         let name = field.ident.clone().unwrap();
         let ident = field.ident.clone().unwrap();
         let span = field.span();
@@ -352,7 +352,7 @@ impl Item {
         }
     }
 
-    fn infer_kind(&mut self, attrs: &[ClapAttr]) -> Result<(), syn::Error> {
+    fn infer_kind(&mut self, attrs: &[ClapAttr]) -> Result<(), rust_syntax::Error> {
         for attr in attrs {
             if let Some(AttrValue::Call(_)) = &attr.value {
                 continue;
@@ -423,7 +423,7 @@ impl Item {
         Ok(())
     }
 
-    fn push_attrs(&mut self, attrs: &[ClapAttr]) -> Result<(), syn::Error> {
+    fn push_attrs(&mut self, attrs: &[ClapAttr]) -> Result<(), rust_syntax::Error> {
         for attr in attrs {
             let actual_attr_kind = *attr.kind.get();
             let expected_attr_kind = self.kind.attr_kind();
@@ -946,7 +946,7 @@ impl Item {
         }
     }
 
-    fn set_kind(&mut self, kind: Sp<Kind>) -> Result<(), syn::Error> {
+    fn set_kind(&mut self, kind: Sp<Kind>) -> Result<(), rust_syntax::Error> {
         match (self.kind.get(), kind.get()) {
             (Kind::Arg(_), Kind::FromGlobal(_))
             | (Kind::Arg(_), Kind::Subcommand(_))
@@ -1110,7 +1110,7 @@ impl Item {
             .unwrap_or(cfg!(feature = "unstable-v5"))
     }
 
-    fn assert_no_defer(&self) -> Result<(), syn::Error> {
+    fn assert_no_defer(&self) -> Result<(), rust_syntax::Error> {
         if let Some(defer) = &self.defer {
             abort!(
                 defer.span(),
@@ -1268,7 +1268,7 @@ impl Method {
         Self { name, args }
     }
 
-    fn from_env(ident: Ident, env_var: &str) -> Result<Option<Self>, syn::Error> {
+    fn from_env(ident: Ident, env_var: &str) -> Result<Option<Self>, rust_syntax::Error> {
         let mut lit = match env::var(env_var) {
             Ok(val) => {
                 if val.is_empty() {
@@ -1365,7 +1365,7 @@ impl ToTokens for Deprecation {
     }
 }
 
-fn assert_attr_kind(attr: &ClapAttr, possible_kind: &[AttrKind]) -> Result<(), syn::Error> {
+fn assert_attr_kind(attr: &ClapAttr, possible_kind: &[AttrKind]) -> Result<(), rust_syntax::Error> {
     if *attr.kind.get() == AttrKind::Clap || *attr.kind.get() == AttrKind::StructOpt {
         // deprecated
     } else if !possible_kind.contains(attr.kind.get()) {
@@ -1431,7 +1431,7 @@ pub(crate) enum CasingStyle {
 }
 
 impl CasingStyle {
-    fn from_lit(name: &LitStr) -> Result<Sp<Self>, syn::Error> {
+    fn from_lit(name: &LitStr) -> Result<Sp<Self>, rust_syntax::Error> {
         use self::CasingStyle::{
             Camel, Kebab, Lower, Pascal, ScreamingSnake, Snake, Upper, Verbatim,
         };

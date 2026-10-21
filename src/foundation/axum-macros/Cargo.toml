@@ -24,7 +24,7 @@ license = "MIT"
 repository = "https://github.com/tokio-rs/axum"
 
 [features]
-__private = ["syn/visit-mut"]
+__private = ["rust-syntax/visit-mut"]
 default = []
 
 [lib]
@@ -40,14 +40,14 @@ path = "../proc-macro2"
 version = "1.0"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3"
 features = [
     "full",
     "parsing",
     "extra-traits",
 ]
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 
 [lints.clippy]
 await_holding_lock = "warn"

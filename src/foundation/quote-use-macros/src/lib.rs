@@ -3,8 +3,8 @@
 use proc_macro2::{Spacing, TokenStream, TokenTree};
 use proc_macro_utils::TokenStreamExt;
 use quote::{quote, ToTokens};
-use syn::parse::{Parse, ParseStream};
-use syn::{Result, Token};
+use rust_syntax::parse::{Parse, ParseStream};
+use rust_syntax::{Result, Token};
 use use_parser::{Use, UseItem};
 
 mod prelude;
@@ -30,7 +30,7 @@ pub fn quote_use_impl(input: proc_macro::TokenStream) -> proc_macro::TokenStream
         .next_group()
         .expect("there should be three `(...)`")
         .stream();
-    let uses: QuoteUse = match syn::parse2(uses) {
+    let uses: QuoteUse = match rust_syntax::parse2(uses) {
         Ok(uses) => uses,
         Err(err) => return err.into_compile_error().into(),
     };

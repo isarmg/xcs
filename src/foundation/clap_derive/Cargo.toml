@@ -68,10 +68,10 @@ path = "../proc-macro2"
 version = "1.0.45"
 path = "../quote"
 
-[dependencies.syn]
+[dependencies.rust-syntax]
 version = "3.0.2"
 features = ["full"]
-path = "../syn-3.0.9"
+path = "../rust-syntax"
 
 [lints.clippy]
 assigning_clones = "allow"

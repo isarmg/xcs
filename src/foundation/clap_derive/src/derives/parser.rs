@@ -14,9 +14,9 @@
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::Ident;
-use syn::Variant;
-use syn::{
+use rust_syntax::Ident;
+use rust_syntax::Variant;
+use rust_syntax::{
     self, Data, DataStruct, DeriveInput, Field, Fields, Generics, punctuated::Punctuated,
     token::Comma,
 };
@@ -26,7 +26,7 @@ use crate::derives::{args, into_app, subcommand};
 use crate::item::Item;
 use crate::item::Name;
 
-pub(crate) fn derive_parser(input: &DeriveInput) -> Result<TokenStream, syn::Error> {
+pub(crate) fn derive_parser(input: &DeriveInput) -> Result<TokenStream, rust_syntax::Error> {
     let ident = &input.ident;
     let pkg_name = std::env::var("CARGO_PKG_NAME").ok().unwrap_or_default();
 
@@ -61,7 +61,7 @@ pub(crate) fn derive_parser(input: &DeriveInput) -> Result<TokenStream, syn::Err
                     let item = Item::from_args_field(field, item.casing(), item.env_casing())?;
                     Ok((field, item))
                 })
-                .collect::<Result<Vec<_>, syn::Error>>()?;
+                .collect::<Result<Vec<_>, rust_syntax::Error>>()?;
             gen_for_struct(&item, ident, &input.generics, &fields)
         }
         Data::Enum(ref e) => {
@@ -75,7 +75,7 @@ pub(crate) fn derive_parser(input: &DeriveInput) -> Result<TokenStream, syn::Err
                         Item::from_subcommand_variant(variant, item.casing(), item.env_casing())?;
                     Ok((variant, item))
                 })
-                .collect::<Result<Vec<_>, syn::Error>>()?;
+                .collect::<Result<Vec<_>, rust_syntax::Error>>()?;
             gen_for_enum(&item, ident, &input.generics, &variants)
         }
         _ => abort_call_site!("`#[derive(Parser)]` only supports non-tuple structs and enums"),
@@ -87,7 +87,7 @@ fn gen_for_struct(
     item_name: &Ident,
     generics: &Generics,
     fields: &[(&Field, Item)],
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let into_app = into_app::gen_for_struct(item, item_name, generics)?;
@@ -111,7 +111,7 @@ fn gen_for_enum(
     item_name: &Ident,
     generics: &Generics,
     variants: &[(&Variant, Item)],
-) -> Result<TokenStream, syn::Error> {
+) -> Result<TokenStream, rust_syntax::Error> {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let into_app = into_app::gen_for_enum(item, item_name, generics)?;

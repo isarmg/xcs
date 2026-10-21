@@ -8,8 +8,8 @@ use std::ops::{Add, AddAssign, Range};
 use darling_core::Error as DarlingError;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote_spanned};
-#[cfg(feature = "syn")]
-use syn::Error as SynError;
+#[cfg(feature = "rust-syntax")]
+use rust_syntax::Error as SyntaxError;
 
 #[cfg(doc)]
 use crate::MacroOutput;
@@ -27,9 +27,9 @@ pub struct SilentError;
 #[derive(Debug)]
 #[must_use]
 pub struct Error(Vec<Box<dyn ToTokensError>>);
-#[cfg(feature = "syn")]
-impl From<SynError> for Error {
-    fn from(error: SynError) -> Self {
+#[cfg(feature = "rust-syntax")]
+impl From<SyntaxError> for Error {
+    fn from(error: SyntaxError) -> Self {
         Self::from(error)
     }
 }
@@ -143,8 +143,8 @@ impl ToTokensError for ErrorMessage {
     }
 }
 
-#[cfg(feature = "syn")]
-impl From<ErrorMessage> for SynError {
+#[cfg(feature = "rust-syntax")]
+impl From<ErrorMessage> for SyntaxError {
     fn from(value: ErrorMessage) -> Self {
         Self::new_spanned(value.to_token_stream(), value)
     }
@@ -371,8 +371,8 @@ impl ToTokensError for Infallible {
         unreachable!()
     }
 }
-#[cfg(feature = "syn")]
-impl ToTokensError for SynError {
+#[cfg(feature = "rust-syntax")]
+impl ToTokensError for SyntaxError {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.to_compile_error().to_tokens(tokens);
     }
