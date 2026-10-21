@@ -1,4 +1,4 @@
-#![allow(unused_qualifications)] // Clap somehow generates a lot of these
+#![allow(unused_qualifications)] // CommandLine somehow generates a lot of these
 
 use crate::{
     builder,
@@ -11,7 +11,7 @@ use crate::{
     FieldVisibilityKind, Formatter, MacroTypeVariation, NonCopyUnionStyle,
     RustTarget,
 };
-use clap::{
+use command_line::{
     error::{Error, ErrorKind},
     CommandFactory, Parser,
 };
@@ -138,7 +138,7 @@ fn parse_custom_attribute(
 }
 
 #[derive(Parser, Debug)]
-#[clap(
+#[command(
     about = "Generates Rust bindings from C/C++ headers.",
     override_usage = "bindgen <FLAGS> <OPTIONS> <HEADER> -- <CLANG_ARGS>...",
     trailing_var_arg = true

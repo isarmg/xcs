@@ -1,4 +1,19 @@
 #[test]
+fn embedded_command_reference_is_a_declared_build_input() {
+    let specification: json_codec::Value = json_codec::from_str(include_str!(
+        "../../../../tools/web-build/build-inputs.json"
+    ))
+    .unwrap();
+    assert!(
+        specification["directories"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|path| path.as_str() == Some("docs/architecture/command-line-reference"))
+    );
+}
+
+#[test]
 fn sha256_hex_preserves_canonical_checksum_bytes() {
     assert_eq!(
         super::sha256_hex(b""),

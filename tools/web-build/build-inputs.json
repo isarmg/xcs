@@ -11,6 +11,7 @@
     "tools/web-bindings/src",
     "compliance",
     "docs/components",
+    "docs/architecture/command-line-reference",
     "test/tools/web-build",
     "test/tools/web-bindings",
     "test/foundation",

@@ -34,7 +34,7 @@ license = "BSD-3-Clause"
 repository = "https://github.com/rust-lang/rust-bindgen"
 
 [features]
-__cli = ["dep:clap"]
+__cli = ["dep:command-line"]
 __testing_only_extra_assertions = []
 __testing_only_libclang_16 = []
 __testing_only_libclang_9 = []
@@ -61,11 +61,11 @@ version = "1"
 features = ["clang_11_0"]
 path = "../clang-sys"
 
-[dependencies.clap]
+[dependencies.command-line]
 version = "4"
 features = ["derive"]
 optional = true
-path = "../clap"
+path = "../command-line"
 
 [dependencies.iterator-toolkit]
 version = "0.14"

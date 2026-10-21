@@ -6,7 +6,7 @@ mod private_io;
 mod remote;
 
 use args::Args;
-use clap::Parser;
+use command_line::Parser;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 fn print(value: impl data_serialization::Serialize) -> Result<()> {

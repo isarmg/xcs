@@ -2,7 +2,7 @@
 //! Upstream copyright/license material and exact source mapping: ../PROVENANCE.json.
 //! ZXS only generates browser bindings; test servers and other targets are absent.
 use anyhow::{bail, Result};
-use clap::{Parser, ValueEnum};
+use command_line::{Parser, ValueEnum};
 use std::{ffi::OsString, path::PathBuf};
 use wasm_bindgen_cli_support::Bindgen;
 
@@ -37,7 +37,8 @@ where
     let args = match Args::try_parse_from(arguments) {
         Ok(args) => args,
         Err(error) => match error.kind() {
-            clap::error::ErrorKind::DisplayHelp | clap::error::ErrorKind::DisplayVersion => {
+            command_line::error::ErrorKind::DisplayHelp
+            | command_line::error::ErrorKind::DisplayVersion => {
                 print!("{error}");
                 return Ok(());
             }

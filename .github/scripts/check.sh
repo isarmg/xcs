@@ -48,6 +48,7 @@ case "${1:-}" in
     python3 .github/scripts/check-serialization-family.py
     python3 .github/scripts/check-error-definition-family.py
     python3 .github/scripts/check-crypto-consolidation.py
+    python3 .github/scripts/check-command-line-family.py
     python3 .github/scripts/check-web-bindgen-scope.py
     # Focused regressions for maintained foundation changes. Do not restore
     # retired upstream dev dependencies or run unrelated upstream test suites.

@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use command_line::{Parser, Subcommand};
 use std::{net::SocketAddr, path::PathBuf};
 
 #[derive(Parser)]
@@ -222,7 +222,7 @@ pub(crate) enum Command {
     SmbBinding {
         repository: String,
         branch: String,
-        #[arg(long,action=clap::ArgAction::Set,required=true)]
+        #[arg(long,action=command_line::ArgAction::Set,required=true)]
         enabled: bool,
         #[arg(long)]
         expected_history_generation: String,

@@ -60,7 +60,7 @@ sqlx = { version = "=0.9.0", default-features = false, features = ["sqlite-bundl
 tokio = { version = "1.53.2", features = ["fs", "io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"], path = "src/foundation/tokio"}
 rustix = { version = "1.1.5", features = ["fs", "process", "mount"], path = "src/foundation/rustix"}
 tempfile = {version = "3", path = "src/foundation/tempfile"}
-clap = { version = "4.6.7", features = ["derive"], path = "src/foundation/clap"}
+command-line = { version = "4.6.7", features = ["derive"], path = "src/foundation/command-line"}
 
 [profile.release]
 lto = "thin"

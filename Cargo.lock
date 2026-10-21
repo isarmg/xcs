@@ -310,25 +310,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "clap"
-version = "4.6.7"
-dependencies = [
- "clap_builder",
- "clap_derive",
-]
+name = "cmov"
+version = "0.5.4"
 
 [[package]]
-name = "clap_builder"
-version = "4.6.7"
-dependencies = [
- "anstream",
- "anstyle",
- "clap_lex",
- "strsim",
-]
+name = "colorchoice"
+version = "1.0.5"
 
 [[package]]
-name = "clap_derive"
+name = "command-derive"
 version = "4.6.7"
 dependencies = [
  "heck",
@@ -338,16 +328,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "clap_lex"
-version = "1.1.1"
-
-[[package]]
-name = "cmov"
-version = "0.5.4"
-
-[[package]]
-name = "colorchoice"
-version = "1.0.5"
+name = "command-line"
+version = "4.6.7"
+dependencies = [
+ "anstream",
+ "anstyle",
+ "command-derive",
+ "strsim",
+]
 
 [[package]]
 name = "console_error_panic_hook"
@@ -1905,7 +1893,7 @@ name = "storage-admin"
 version = "0.1.0"
 dependencies = [
  "authentication",
- "clap",
+ "command-line",
  "data-serialization",
  "json-codec",
  "platform-io",
@@ -2567,7 +2555,7 @@ name = "web-bindings"
 version = "0.2.129"
 dependencies = [
  "anyhow",
- "clap",
+ "command-line",
  "env_logger",
  "log",
  "wasm-bindgen-cli-support",
