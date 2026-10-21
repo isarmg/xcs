@@ -16,7 +16,7 @@ SPEC.loader.exec_module(module)
 
 class SqliteFamily(unittest.TestCase):
     def test_foundation_gate_is_wired_after_root_lock_units(self):
-        script = (ROOT / ".github/scripts/check.sh").read_text()
+        script = (ROOT / ".github/scripts/check-foundation.sh").read_text()
         self.assertIn("cargo test --locked --offline --lib -p sqlite-access\n    python3 .github/scripts/check-sqlite-family.py", script)
 
     def test_all_executable_commands_require_existing_offline_lock(self):

@@ -54,6 +54,10 @@ jobs:
     needs: version
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [rust-sources, quality, security, workspace, foundation-platform, foundation-crypto, foundation-data, foundation-language, foundation-async, web, contracts, build-tools, smb-protocol]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -63,11 +67,16 @@ jobs:
       - run: |
           rustup show active-toolchain
           rustup target add wasm32-unknown-unknown
-      - name: Run all portable test suites and contract checks
+      - name: Install system SQLite SDK for unbundled validation
+        if: matrix.suite == 'foundation-data'
         run: |
-          for suite in rust-sources quality security workspace foundation web contracts build-tools smb-protocol; do
-            bash .github/scripts/check.sh "$suite"
-          done
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libsqlite3-dev clang libclang-dev pkg-config
+      - name: Run portable test suite and contract checks
+        run: bash .github/scripts/check.sh "${{ matrix.suite }}"
+      - name: Verify isolated system SQLite consumer
+        if: matrix.suite == 'foundation-data'
+        run: python3 .github/scripts/check-sqlite-system.py
 
   linux-web:
     needs: version

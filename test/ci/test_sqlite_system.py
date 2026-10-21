@@ -36,11 +36,11 @@ class SystemSqlite(unittest.TestCase):
         with self.assertRaises(AssertionError):
             module.verify_features(metadata)
 
-    def test_workflow_provisions_sdk_only_for_foundation(self):
+    def test_workflow_provisions_sdk_only_for_foundation_data(self):
         workflow = (ROOT / '.github/workflows/ci.yml').read_text()
-        self.assertIn("name: Install system SQLite SDK for unbundled validation\n        if: matrix.suite == 'foundation'", workflow)
+        self.assertIn("name: Install system SQLite SDK for unbundled validation\n        if: matrix.suite == 'foundation-data'", workflow)
         self.assertIn('libsqlite3-dev clang libclang-dev pkg-config', workflow)
-        self.assertIn("name: Verify isolated system SQLite consumer\n        if: matrix.suite == 'foundation'", workflow)
+        self.assertIn("name: Verify isolated system SQLite consumer\n        if: matrix.suite == 'foundation-data'", workflow)
         self.assertIn('python3 .github/scripts/check-sqlite-system.py', workflow)
 
 if __name__ == '__main__':

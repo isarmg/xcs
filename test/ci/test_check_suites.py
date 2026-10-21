@@ -1,4 +1,5 @@
 """Exercise CI suite commands without a compiler, network or product data."""
+from collections import Counter
 import hashlib
 import json
 import os
@@ -18,7 +19,8 @@ class SuiteCoverageTests(unittest.TestCase):
         scripts = self.root / ".github/scripts"
         scripts.mkdir(parents=True)
         (self.root / "test/ci").mkdir(parents=True)
-        shutil.copy2((Path(__file__).resolve().parents[2] / ".github/scripts") / "check.sh", scripts)
+        for name in ("check.sh", "check-foundation.sh"):
+            shutil.copy2((Path(__file__).resolve().parents[2] / ".github/scripts") / name, scripts)
         for name in ("release-package.sh", "release-publish.sh"):
             (self.root / "test/ci" / name).write_text("#!/bin/sh\nexit 0\n")
         binary_directory = self.root / "bin"
@@ -41,6 +43,7 @@ class SuiteCoverageTests(unittest.TestCase):
         )
 
     def suite(self, name):
+        self.receipt.unlink(missing_ok=True)
         subprocess.run(
             ["bash", str(self.root / ".github/scripts/check.sh"), name],
             cwd="/tmp", env=self.environment, capture_output=True, text=True, check=True,
@@ -112,46 +115,32 @@ class SuiteCoverageTests(unittest.TestCase):
             for call in calls
         ))
 
-    def test_foundation_runs_only_selected_library_regressions(self):
-        sqlite, sqlite_units, sqlite_family, consumers, serialization, error_definition, crypto, numeric, precision, command_line, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, join_map, futures, http_body, random_backends, entropy_consumers, system_units, ring, password, idna, numeric_tests, helpers = self.suite("foundation")
-        self.assertEqual(sqlite, {"tool": "python3", "args": [".github/scripts/check-sqlite-scope.py"]})
-        self.assertEqual(sqlite_units, {"tool": "cargo", "args": ["test", "--locked", "--offline", "--lib", "-p", "sqlite-access"]})
-        self.assertEqual(sqlite_family, {"tool": "python3", "args": [".github/scripts/check-sqlite-family.py"]})
-        self.assertEqual(consumers, {"tool": "python3", "args": [".github/scripts/check-foundation-consumers.py"]})
-        self.assertEqual(serialization, {"tool": "python3", "args": [".github/scripts/check-serialization-family.py"]})
-        self.assertEqual(error_definition, {"tool": "python3", "args": [".github/scripts/check-error-definition-family.py"]})
-        self.assertEqual(crypto, {"tool": "python3", "args": [".github/scripts/check-crypto-consolidation.py"]})
-        self.assertEqual(numeric, {"tool": "python3", "args": [".github/scripts/check-numeric-consolidation.py"]})
-        self.assertEqual(precision, {"tool": "python3", "args": [".github/scripts/check-numeric-precision.py"]})
-        self.assertEqual(command_line, {"tool": "python3", "args": [".github/scripts/check-command-line-family.py"]})
-        self.assertEqual(web_bindgen, {"tool": "python3", "args": [".github/scripts/check-web-bindgen-scope.py"]})
-        self.assertEqual(uapi, {"tool": "python3", "args": [".github/scripts/check-linux-uapi.py"]})
-        self.assertEqual(libc, {"tool": "python3", "args": ["tools/rust-sources/check_libc_abi.py"]})
-        self.assertEqual(syscalls, {"tool": "python3", "args": [".github/scripts/check-linux-syscalls.py"]})
-        self.assertEqual(system_units, {"tool": "cargo", "args": ["test", "--locked", "--offline", "--lib", "-p", "socket2", "-p", "mio", "-p", "parking_lot_core"]})
-        self.assertEqual(systems, {"tool": "python3", "args": [".github/scripts/check-linux-system-backends.py"]})
-        self.assertEqual(parking, {"tool": "python3", "args": [".github/scripts/check-linux-parking.py"]})
-        self.assertEqual(search_process, {"tool": "python3", "args": [".github/scripts/check-linux-search-process.py"]})
-        self.assertEqual(join_map, {"tool": "python3", "args": [".github/scripts/check-runtime-join-map.py"]})
-        self.assertEqual(futures, {"tool": "python3", "args": [".github/scripts/check-futures-consolidation.py"]})
-        self.assertEqual(http_body, {"tool": "python3", "args": [".github/scripts/check-http-body-consolidation.py"]})
-        self.assertEqual(random_backends, {"tool": "python3", "args": [".github/scripts/check-linux-random-backends.py"]})
-        self.assertEqual(entropy_consumers, {"tool": "python3", "args": [".github/scripts/check-entropy-consumers.py"]})
-        self.assertEqual(ring, {"tool": "python3", "args": ["tools/rust-sources/check_ring_tests.py"]})
-        for call in (password, idna, helpers):
-            self.assertEqual(call["tool"], "cargo")
-            self.assertEqual(call["args"][0], "test")
-            self.assertTrue({"--locked", "--offline", "--lib"}.issubset(call["args"]))
-            self.assertFalse({"--workspace", "--all-features", "--all-targets"}.intersection(call["args"]))
-        self.assertEqual(password["args"], ["test", "--locked", "--offline", "--lib",
-                                            "-p", "password-hash"])
-        self.assertEqual(idna["args"], ["test", "--locked", "--offline", "--lib", "-p",
-                                        "idna_adapter", "-p", "storage-client",
-                                        "property_masks_preserve_all_unicode_scalars"])
-        self.assertEqual(numeric_tests, {"tool": "cargo", "args": ["test", "--locked", "--offline", "--tests", "-p", "numeric"]})
-        self.assertEqual(helpers["args"], ["test", "--locked", "--offline", "--lib",
-                                           "-p", "bit-set", "-p", "bit-vec",
-                                           "-p", "id-arena", "-p", "rustc-demangle"])
+    def test_foundation_shards_match_explicit_command_inventory(self):
+        inventory = json.loads((Path(__file__).with_name("foundation-commands.json")).read_text())
+        for name, expected in inventory.items():
+            with self.subTest(suite=name):
+                self.assertEqual(self.suite(name), expected)
+
+    def test_foundation_aggregate_is_exactly_once_union_of_shards(self):
+        inventory = json.loads((Path(__file__).with_name("foundation-commands.json")).read_text())
+        expected = [call for calls in inventory.values() for call in calls]
+        self.assertEqual(self.suite("foundation"), expected)
+        identities = Counter(json.dumps(call, sort_keys=True) for call in expected)
+        self.assertTrue(identities)
+        self.assertTrue(all(count == 1 for count in identities.values()))
+        for call in expected:
+            if call["tool"] == "cargo":
+                self.assertEqual(call["args"][0], "test")
+                self.assertTrue({"--locked", "--offline"}.issubset(call["args"]))
+                self.assertFalse({"--workspace", "--all-features", "--all-targets"}.intersection(call["args"]))
+
+    def test_unknown_foundation_shard_fails_before_running_tools(self):
+        result = subprocess.run(
+            ["bash", str(self.root / ".github/scripts/check-foundation.sh"), "foundation-missing"],
+            cwd="/tmp", env=self.environment, capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertFalse(self.receipt.exists())
 
 
 class DiagnosticGateCommands(unittest.TestCase):

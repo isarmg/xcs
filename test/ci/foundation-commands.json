@@ -1,0 +1,223 @@
+{
+  "foundation-platform": [
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-linux-uapi.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        "tools/rust-sources/check_libc_abi.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-linux-syscalls.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-linux-system-backends.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-linux-parking.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-linux-search-process.py"
+      ]
+    },
+    {
+      "tool": "cargo",
+      "args": [
+        "test",
+        "--locked",
+        "--offline",
+        "--lib",
+        "-p",
+        "socket2",
+        "-p",
+        "mio",
+        "-p",
+        "parking_lot_core"
+      ]
+    },
+    {
+      "tool": "cargo",
+      "args": [
+        "test",
+        "--locked",
+        "--offline",
+        "--lib",
+        "-p",
+        "bit-set",
+        "-p",
+        "bit-vec",
+        "-p",
+        "id-arena",
+        "-p",
+        "rustc-demangle"
+      ]
+    }
+  ],
+  "foundation-crypto": [
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-crypto-consolidation.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-linux-random-backends.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-entropy-consumers.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        "tools/rust-sources/check_ring_tests.py"
+      ]
+    },
+    {
+      "tool": "cargo",
+      "args": [
+        "test",
+        "--locked",
+        "--offline",
+        "--lib",
+        "-p",
+        "password-hash"
+      ]
+    }
+  ],
+  "foundation-data": [
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-sqlite-scope.py"
+      ]
+    },
+    {
+      "tool": "cargo",
+      "args": [
+        "test",
+        "--locked",
+        "--offline",
+        "--lib",
+        "-p",
+        "sqlite-access"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-sqlite-family.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-numeric-consolidation.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-numeric-precision.py"
+      ]
+    },
+    {
+      "tool": "cargo",
+      "args": [
+        "test",
+        "--locked",
+        "--offline",
+        "--tests",
+        "-p",
+        "numeric"
+      ]
+    }
+  ],
+  "foundation-language": [
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-foundation-consumers.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-serialization-family.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-error-definition-family.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-command-line-family.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-web-bindgen-scope.py"
+      ]
+    },
+    {
+      "tool": "cargo",
+      "args": [
+        "test",
+        "--locked",
+        "--offline",
+        "--lib",
+        "-p",
+        "idna_adapter",
+        "-p",
+        "storage-client",
+        "property_masks_preserve_all_unicode_scalars"
+      ]
+    }
+  ],
+  "foundation-async": [
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-runtime-join-map.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-futures-consolidation.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-http-body-consolidation.py"
+      ]
+    }
+  ]
+}

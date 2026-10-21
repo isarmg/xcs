@@ -42,42 +42,8 @@ case "${1:-}" in
       history_package::graph::tests::distributed_history_larger_than_real_reader_limit_roundtrips \
       -- --ignored --exact --test-threads=1
     ;;
-  foundation)
-    python3 .github/scripts/check-sqlite-scope.py
-    cargo test --locked --offline --lib -p sqlite-access
-    python3 .github/scripts/check-sqlite-family.py
-    python3 .github/scripts/check-foundation-consumers.py
-    python3 .github/scripts/check-serialization-family.py
-    python3 .github/scripts/check-error-definition-family.py
-    python3 .github/scripts/check-crypto-consolidation.py
-    python3 .github/scripts/check-numeric-consolidation.py
-    python3 .github/scripts/check-numeric-precision.py
-    python3 .github/scripts/check-command-line-family.py
-    python3 .github/scripts/check-web-bindgen-scope.py
-    # Focused regressions for maintained foundation changes. Do not restore
-    # retired upstream dev dependencies or run unrelated upstream test suites.
-    # All preserved Linux ABI features, not only today's enabled dependency set.
-    python3 .github/scripts/check-linux-uapi.py
-    python3 tools/rust-sources/check_libc_abi.py
-    python3 .github/scripts/check-linux-syscalls.py
-    python3 .github/scripts/check-linux-system-backends.py
-    python3 .github/scripts/check-linux-parking.py
-    python3 .github/scripts/check-linux-search-process.py
-    python3 .github/scripts/check-runtime-join-map.py
-    python3 .github/scripts/check-futures-consolidation.py
-    python3 .github/scripts/check-http-body-consolidation.py
-    python3 .github/scripts/check-linux-random-backends.py
-    python3 .github/scripts/check-entropy-consumers.py
-    cargo test --locked --offline --lib -p socket2 -p mio -p parking_lot_core
-    python3 tools/rust-sources/check_ring_tests.py
-    cargo test --locked --offline --lib -p password-hash
-    # An external workspace package cannot receive --features directly. Its
-    # actual storage-client consumer enables compiled_data in the shared graph.
-    cargo test --locked --offline --lib -p idna_adapter -p storage-client \
-      property_masks_preserve_all_unicode_scalars
-    cargo test --locked --offline --tests -p numeric
-    cargo test --locked --offline --lib \
-      -p bit-set -p bit-vec -p id-arena -p rustc-demangle
+  foundation|foundation-platform|foundation-crypto|foundation-data|foundation-language|foundation-async)
+    bash .github/scripts/check-foundation.sh "$1"
     ;;
   web)
     cargo test --locked --offline -p web-app -p web-interface -p view-macros
@@ -122,7 +88,7 @@ case "${1:-}" in
     python3 .github/scripts/check-csr-browser.py
     ;;
   *)
-    echo 'Usage: check.sh {static|rust-sources|quality|security|workspace|foundation|web|contracts|build-tools|smb-protocol|web-production|browser-smoke}' >&2
+    echo 'Usage: check.sh {static|rust-sources|quality|security|workspace|foundation|foundation-platform|foundation-crypto|foundation-data|foundation-language|foundation-async|web|contracts|build-tools|smb-protocol|web-production|browser-smoke}' >&2
     exit 2
     ;;
 esac
