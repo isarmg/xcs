@@ -78,9 +78,9 @@ This crate has the following Cargo features:
 
 Licensed under either of:
 
- * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+ * Apache License, Version 2.0, ([LICENSE-APACHE](../../compliance/licenses/upstream/hashbrown-0.17.1/LICENSE-APACHE) or
    https://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](LICENSE-MIT) or
+ * MIT license ([LICENSE-MIT](../../compliance/licenses/upstream/hashbrown-0.17.1/LICENSE-MIT) or
    https://opensource.org/license/mit)
 
 at your option.
