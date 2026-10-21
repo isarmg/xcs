@@ -4,8 +4,8 @@ use crate::{Encoding, Error, Result, Value};
 use core::{fmt, str};
 
 use crate::errors::InvalidValue;
-#[cfg(feature = "rand_core")]
-use rand_core::CryptoRngCore;
+#[cfg(feature = "random-generator-core")]
+use random_generator_core::CryptoRngCore;
 
 /// Error message used with `expect` for when internal invariants are violated
 /// (i.e. the contents of a [`Salt`] should always be valid)
@@ -202,7 +202,7 @@ pub struct SaltString {
 #[allow(clippy::len_without_is_empty)]
 impl SaltString {
     /// Generate a random B64-encoded [`SaltString`].
-    #[cfg(feature = "rand_core")]
+    #[cfg(feature = "random-generator-core")]
     pub fn generate(mut rng: impl CryptoRngCore) -> Self {
         let mut bytes = [0u8; Salt::RECOMMENDED_LENGTH];
         rng.fill_bytes(&mut bytes);

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Compile and test every retained Linux amd64 UAPI in std and no_std modes."""
 from pathlib import Path
+import os
 import subprocess
 import tempfile
 import tomllib
@@ -11,6 +12,8 @@ TARGET = "x86_64-unknown-linux-gnu"
 
 def check(root):
     directory = root / "src/foundation/linux-raw-sys"
+    # Direct rustc does not provide Cargo's per-package compile-time context.
+    environment = os.environ | {"CARGO_MANIFEST_DIR": str(directory.resolve())}
     manifest = tomllib.loads((directory / "Cargo.toml").read_text(encoding="utf-8"))
     if any(manifest.get(kind) for kind in ("dependencies", "build-dependencies", "dev-dependencies", "target")):
         raise ValueError("direct UAPI regression requires a dependency-free library")
@@ -27,8 +30,8 @@ def check(root):
             for feature in [*common, mode]:
                 command += ["--cfg", f'feature="{feature}"']
             print(f"Checking every retained Linux amd64 UAPI with {mode}", flush=True)
-            subprocess.run(command, cwd=root, check=True)
-            subprocess.run([executable], cwd=root, check=True)
+            subprocess.run(command, cwd=root, env=environment, check=True)
+            subprocess.run([executable], cwd=root, env=environment, check=True)
 
 
 if __name__ == "__main__":

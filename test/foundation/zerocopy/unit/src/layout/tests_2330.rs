@@ -995,7 +995,7 @@ mod tests {
                     layout($size:tt, $align:tt)
                     .validate($addr:tt, $bytes_len:tt, $cast_type:tt), $expect:pat $(,)?
                 ) => {
-                    itertools::iproduct!(
+                    iterator_toolkit::iproduct!(
                         test!(@generate_size $size),
                         test!(@generate_align $align),
                         test!(@generate_usize $addr),
@@ -1043,7 +1043,7 @@ mod tests {
                 (@generate_size ($sizes:expr)) => { $sizes.into_iter().map(Into::<SizeInfo>::into) };
                 // Generate sizes for !Sized types.
                 (@generate_size ($min_sizes:tt, $elem_sizes:tt)) => {
-                    itertools::iproduct!(
+                    iterator_toolkit::iproduct!(
                         test!(@generate_min_size $min_sizes),
                         test!(@generate_elem_size $elem_sizes)
                     ).map(Into::<SizeInfo>::into)
@@ -1210,11 +1210,11 @@ mod tests {
         let size_infos = sizes
             .clone()
             .map(Into::<SizeInfo>::into)
-            .chain(itertools::iproduct!(sizes, elem_sizes).map(Into::<SizeInfo>::into));
-        let layouts = itertools::iproduct!(size_infos, [1, 2, 4, 8, 16, 32])
+            .chain(iterator_toolkit::iproduct!(sizes, elem_sizes).map(Into::<SizeInfo>::into));
+        let layouts = iterator_toolkit::iproduct!(size_infos, [1, 2, 4, 8, 16, 32])
                 .filter(|(size_info, align)| !matches!(size_info, SizeInfo::Sized { size } if size % align != 0))
                 .map(|(size_info, align)| layout(size_info, align));
-        itertools::iproduct!(layouts, 0..8, 0..8, [CastType::Prefix, CastType::Suffix])
+        iterator_toolkit::iproduct!(layouts, 0..8, 0..8, [CastType::Prefix, CastType::Suffix])
             .for_each(validate_behavior);
 
         // Exercise a normalized formula which cannot be represented as
@@ -1234,7 +1234,7 @@ mod tests {
             }),
             statically_shallow_unpadded: false,
         };
-        itertools::iproduct!([nested_packed], 0..8, 0..24, [CastType::Prefix, CastType::Suffix])
+        iterator_toolkit::iproduct!([nested_packed], 0..8, 0..24, [CastType::Prefix, CastType::Suffix])
             .for_each(validate_behavior);
 
         assert!(matches!(

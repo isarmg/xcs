@@ -2,8 +2,8 @@
 // called LICENSE at the top level of the ICU4X source tree
 // (online at: https://github.com/unicode-org/icu4x/blob/main/LICENSE ).
 
-use itertools::Either;
-use itertools::Itertools;
+use iterator_toolkit::Either;
+use iterator_toolkit::Itertools;
 use rand::Rng;
 use rand::SeedableRng;
 use std::collections::BTreeMap;

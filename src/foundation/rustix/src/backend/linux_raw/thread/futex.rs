@@ -1,4 +1,4 @@
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `FUTEX_*` flags for use with the functions in [`futex`].
     ///
     /// [`futex`]: mod@crate::thread::futex
@@ -15,7 +15,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `FUTEX2_*` flags for use with the functions in [`Waitv`].
     ///
     /// Not to be confused with [`WaitvFlags`], which is passed as an argument

@@ -1,5 +1,5 @@
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `EPOLL_*` for use with [`epoll::create`].

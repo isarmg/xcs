@@ -1,7 +1,7 @@
 use super::{add_attr::AddAnyAttr, Mountable, Position, PositionState, Render, RenderHtml};
 use crate::{html::attribute::Attribute, hydration::Cursor, renderer::Rndr};
 use either_of::Either;
-use itertools::Itertools;
+use iterator_toolkit::Itertools;
 
 /// Retained view state for an `Option`.
 pub type OptionState<T> = Either<<T as Render>::State, <() as Render>::State>;
@@ -98,13 +98,13 @@ where
             let mut removes_at_end = 0;
             for item in self.into_iter().zip_longest(old.iter_mut()) {
                 match item {
-                    itertools::EitherOrBoth::Both(new, old) => T::rebuild(new, old),
-                    itertools::EitherOrBoth::Left(new) => {
+                    iterator_toolkit::EitherOrBoth::Both(new, old) => T::rebuild(new, old),
+                    iterator_toolkit::EitherOrBoth::Left(new) => {
                         let mut new_state = new.build();
                         Rndr::try_mount_before(&mut new_state, marker.as_ref());
                         adds.push(new_state);
                     }
-                    itertools::EitherOrBoth::Right(old) => {
+                    iterator_toolkit::EitherOrBoth::Right(old) => {
                         removes_at_end += 1;
                         old.unmount()
                     }
@@ -331,13 +331,13 @@ where
             let mut removes_at_end = 0;
             for item in self.0.into_iter().zip_longest(old.iter_mut()) {
                 match item {
-                    itertools::EitherOrBoth::Both(new, old) => T::rebuild(new, old),
-                    itertools::EitherOrBoth::Left(new) => {
+                    iterator_toolkit::EitherOrBoth::Both(new, old) => T::rebuild(new, old),
+                    iterator_toolkit::EitherOrBoth::Left(new) => {
                         let mut new_state = new.build();
                         Rndr::mount_before(&mut new_state, marker.as_ref());
                         adds.push(new_state);
                     }
-                    itertools::EitherOrBoth::Right(old) => {
+                    iterator_toolkit::EitherOrBoth::Right(old) => {
                         removes_at_end += 1;
                         old.unmount()
                     }

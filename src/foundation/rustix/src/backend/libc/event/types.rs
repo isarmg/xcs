@@ -6,7 +6,7 @@ use crate::backend::c;
     target_os = "illumos",
     target_os = "espidf"
 ))]
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 #[cfg(any(
     linux_kernel,

@@ -8,7 +8,7 @@
 #![allow(unsafe_code)]
 use crate::process::Pid;
 use crate::{backend, io};
-use bitflags::bitflags;
+use flag_set::bitflags;
 use core::fmt;
 
 #[cfg(target_os = "linux")]

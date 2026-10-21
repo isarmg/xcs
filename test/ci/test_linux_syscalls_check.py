@@ -1,6 +1,7 @@
 """The syscall regression must use both current Cargo artifacts, never a glob."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import unittest
@@ -36,6 +37,19 @@ class LinuxSyscallsCheck(unittest.TestCase):
             self.assertIn("rustix=/tmp/deps/librustix-current.rlib", rustc)
             self.assertIn("libc=/tmp/deps/liblibc-current.rlib", rustc)
             self.assertEqual(run.call_args_list[offset + 2].args[0], [rustc[rustc.index("-o") + 1]])
+
+    def test_direct_rustc_contexts_override_inherited_manifest_directory(self):
+        output = "\n".join([artifact("rustix"), artifact("libc")])
+        for inherited in ({}, {"CARGO_MANIFEST_DIR": "/unrelated/package"}):
+            with self.subTest(inherited=inherited), patch.dict(os.environ, inherited, clear=True):
+                with patch.object(checker.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, output)) as run:
+                    checker.check(Path("/repo"))
+                for offset in (0, 1):
+                    self.assertEqual(run.call_args_list[offset].kwargs["env"]["CARGO_MANIFEST_DIR"],
+                                     "/repo/src/foundation/rustix")
+                for offset in (3, 4, 6, 7):
+                    self.assertEqual(run.call_args_list[offset].kwargs["env"]["CARGO_MANIFEST_DIR"], "/repo")
+                self.assertEqual(dict(os.environ), inherited)
 
     def test_missing_or_ambiguous_artifacts_fail_closed(self):
         for output in ("", artifact("rustix"), "\n".join([artifact("rustix"), artifact("rustix"), artifact("libc")])):

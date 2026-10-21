@@ -6,7 +6,7 @@ use crate::{backend, io};
 pub use backend::thread::types::MembarrierCommand;
 
 #[cfg(linux_kernel)]
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// A result from [`membarrier_query`].
     ///
     /// These flags correspond to values of [`MembarrierCommand`] which are

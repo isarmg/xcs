@@ -30,7 +30,7 @@ fn test_disks() {
 #[test]
 #[cfg(all(feature = "system", feature = "disk"))]
 fn test_disk_refresh_kind() {
-    use itertools::Itertools;
+    use iterator_toolkit::Itertools;
 
     use sysinfo::{DiskKind, DiskRefreshKind, Disks};
 

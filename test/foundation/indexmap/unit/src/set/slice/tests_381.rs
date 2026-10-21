@@ -6,7 +6,7 @@ mod tests {
     fn slice_index() {
         fn check(vec_slice: &[i32], set_slice: &Slice<i32>, sub_slice: &Slice<i32>) {
             assert_eq!(set_slice as *const _, sub_slice as *const _);
-            itertools::assert_equal(vec_slice, set_slice);
+            iterator_toolkit::assert_equal(vec_slice, set_slice);
         }
 
         let vec: Vec<i32> = (0..10).map(|i| i * i).collect();

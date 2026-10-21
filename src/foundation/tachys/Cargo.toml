@@ -63,10 +63,10 @@ version = "2.13"
 default-features = true
 path = "../indexmap"
 
-[dependencies.itertools]
+[dependencies.iterator-toolkit]
 version = "0.14"
 default-features = true
-path = "../itertools-0.14.0"
+path = "../iterator-toolkit"
 
 [dependencies.js-sys]
 version = "0.3"

@@ -107,7 +107,10 @@ sys/syscall.h sys/wait.h
 """.split()
 
 
-def run(args, *, cwd=ROOT, env=None):
+def run(args, *, cwd=ROOT, env=None, manifest_dir=None):
+    if manifest_dir is not None:
+        env = (os.environ.copy() if env is None else env.copy())
+        env["CARGO_MANIFEST_DIR"] = str(Path(manifest_dir).resolve())
     result = subprocess.run(args, cwd=cwd, env=env, text=True, capture_output=True)
     if result.returncode:
         raise RuntimeError(f"{shlex.join(map(str, args))}\n{result.stdout}\n{result.stderr}")
@@ -210,10 +213,10 @@ def check_host_abi(temp):
     expected = run([str(c_probe)])
     for variant, features in VARIANTS.items():
         rlib = temp / f"liblibc_{variant}.rlib"
-        run([*rustc_args(features), "--crate-type=rlib", "src/lib.rs", "-o", str(rlib)], cwd=LIBC)
+        run([*rustc_args(features), "--crate-type=rlib", "src/lib.rs", "-o", str(rlib)], cwd=LIBC, manifest_dir=LIBC)
         binary = temp / f"rust-probe-{variant}"
         run(["rustc", "--edition=2021", "--deny=warnings", "--target", NATIVE, str(temp / "probe.rs"),
-             "--extern", f"libc={rlib}", "-o", str(binary)])
+             "--extern", f"libc={rlib}", "-o", str(binary)], manifest_dir=ROOT)
         actual = run([str(binary)])
         if actual != expected:
             import difflib
@@ -222,7 +225,7 @@ def check_host_abi(temp):
         print(f"GNU amd64 {variant}: {len(actual.splitlines())} layout/constant/helper checks match C headers.")
     # The supported Web surface is intentionally empty, but must still compile.
     run(["rustc", "--edition=2021", "--deny=warnings", "--target", WEB, "--cfg", 'feature="std"',
-         "--emit=metadata", "src/lib.rs", "-o", str(temp / "web.rmeta")], cwd=LIBC)
+         "--emit=metadata", "src/lib.rs", "-o", str(temp / "web.rmeta")], cwd=LIBC, manifest_dir=LIBC)
     print("wasm32-unknown-unknown: empty libc surface compiles.")
 
 
@@ -234,7 +237,7 @@ def expanded(source, features, target=NATIVE):
         args.remove("--cfg")
     env = os.environ.copy()
     env["RUSTC_BOOTSTRAP"] = "1"  # Inspection only, not the product build.
-    output = run([*args, "-Zunpretty=expanded", "src/lib.rs"], cwd=source, env=env)
+    output = run([*args, "-Zunpretty=expanded", "src/lib.rs"], cwd=source, env=env, manifest_dir=source)
     # Only blank lines and full-line comments are excluded. All Rust definitions,
     # attributes, constant data, signatures, and function bodies remain compared.
     return "\n".join(line for line in output.splitlines()
@@ -263,7 +266,7 @@ def compare_revision(revision, temp):
     build_scripts = []
     for label, source in (("old", old_libc), ("new", LIBC)):
         build = temp / f"build-script-{label}"
-        run(["rustc", "--edition=2021", "--deny=warnings", str(source / "build.rs"), "-o", str(build)])
+        run(["rustc", "--edition=2021", "--deny=warnings", str(source / "build.rs"), "-o", str(build)], manifest_dir=source)
         build_scripts.append(build)
     targets = [("linux", "x86_64", "64", libc_env) for libc_env in ("gnu", "musl", "ohos", "uclibc", "")]
     targets.append(("unknown", "wasm32", "32", ""))
@@ -303,7 +306,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="zxs-libc-abi-") as directory:
         temp = Path(directory)
         build = temp / "build-script"
-        run(["rustc", "--edition=2021", "--deny=warnings", str(LIBC / "build.rs"), "-o", str(build)])
+        run(["rustc", "--edition=2021", "--deny=warnings", str(LIBC / "build.rs"), "-o", str(build)], manifest_dir=LIBC)
         check_target_gate(build)
         check_host_abi(temp)
         if args.compare_revision:

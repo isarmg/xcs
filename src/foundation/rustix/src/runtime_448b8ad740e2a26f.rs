@@ -82,7 +82,7 @@ pub struct KernelSigaction {
     pub sa_mask: KernelSigSet,
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// Flags for use with [`KernelSigaction`].
     ///
     /// This type does not have the same layout as `sa_flags` field in

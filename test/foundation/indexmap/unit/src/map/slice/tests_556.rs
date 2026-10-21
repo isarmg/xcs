@@ -10,12 +10,12 @@ mod tests {
             sub_slice: &Slice<i32, i32>,
         ) {
             assert_eq!(map_slice as *const _, sub_slice as *const _);
-            itertools::assert_equal(
+            iterator_toolkit::assert_equal(
                 vec_slice.iter().copied(),
                 map_slice.iter().map(|(&k, &v)| (k, v)),
             );
-            itertools::assert_equal(vec_slice.iter().map(|(k, _)| k), map_slice.keys());
-            itertools::assert_equal(vec_slice.iter().map(|(_, v)| v), map_slice.values());
+            iterator_toolkit::assert_equal(vec_slice.iter().map(|(k, _)| k), map_slice.keys());
+            iterator_toolkit::assert_equal(vec_slice.iter().map(|(_, v)| v), map_slice.values());
         }
 
         let vec: Vec<(i32, i32)> = (0..10).map(|i| (i, i * i)).collect();
@@ -66,11 +66,11 @@ mod tests {
             sub_slice: &mut Slice<i32, i32>,
         ) {
             assert_eq!(map_slice, sub_slice);
-            itertools::assert_equal(
+            iterator_toolkit::assert_equal(
                 vec_slice.iter().copied(),
                 map_slice.iter_mut().map(|(&k, &mut v)| (k, v)),
             );
-            itertools::assert_equal(
+            iterator_toolkit::assert_equal(
                 vec_slice.iter().map(|&(_, v)| v),
                 map_slice.values_mut().map(|&mut v| v),
             );

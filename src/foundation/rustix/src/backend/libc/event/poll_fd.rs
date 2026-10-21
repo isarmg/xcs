@@ -4,7 +4,7 @@ use crate::backend::fd::{AsFd, AsRawFd as _, BorrowedFd, LibcFd};
 #[cfg(windows)]
 use crate::backend::fd::{AsSocket, RawFd};
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 use core::fmt;
 use core::marker::PhantomData;
 

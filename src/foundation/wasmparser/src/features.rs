@@ -9,7 +9,7 @@ macro_rules! define_wasm_features {
         }
     ) => {
         #[cfg(feature = "features")]
-        bitflags::bitflags! {
+        flag_set::bitflags! {
             $(#[$outer])*
             pub struct WasmFeatures: $repr {
                 $(

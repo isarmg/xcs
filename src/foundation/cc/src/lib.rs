@@ -347,7 +347,7 @@ use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 
-use shlex::Shlex;
+use shell_tokenizer::Shlex;
 
 #[cfg(feature = "parallel")]
 mod parallel;

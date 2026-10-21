@@ -4,7 +4,7 @@ use crate::{
 };
 use core::ops::Range;
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// Flags for WebAssembly symbols.
     ///
     /// These flags correspond to those described in

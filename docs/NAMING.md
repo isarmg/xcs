@@ -6,7 +6,7 @@
 
 内部组件按功能和职责命名，不再把上游仓库品牌或发布版本嵌入活动目录、Cargo 包名及内部代码标识。来源身份、原始版本、许可证、版权和修改记录完整保留；改名不是重新许可，也不是抹去来源。
 
-本文制定规范，并登记首批迁移计划。**下文标为“计划”的映射不代表已经实施或验收**；实际活动路径及身份以 [当前来源清单](../compliance/rust-sources.json)、Cargo manifest 和对应验证记录为准。现有第一方组件已使用 authentication、storage-engine、web-interface、view-macros 等职责名称，不为统一外观重复改名。
+本文制定规范，并登记分批实施状态。**下文标为“计划”的映射不代表已经实施或验收**；实际活动路径及身份以 [当前来源清单](../compliance/rust-sources.json)、Cargo manifest 和对应验证记录为准。现有第一方组件已使用 authentication、storage-engine、web-interface、view-macros 等职责名称，不为统一外观重复改名。
 
 这里的“合并”指源码、依赖图、文档、构建及治理入口纳入本仓库，不涉及删除上游托管仓库、修改上游账号或移除许可证。
 
@@ -34,11 +34,11 @@
 | 界面与浏览器 | 响应式状态、视图渲染、DOM 辅助、浏览器绑定 |
 | 编译与开发工具 | Rust 语法解析、过程宏、源代码格式化、构建工具 |
 
-## 首批计划：六个单版本组件
+## 首批实施：六个单版本组件
 
-Base64 旧实现经差异验证合并后，这批不存在同名多版本冲突，先修复既有验证问题，再实施命名迁移。四个组件同时更改包和内部命名；SHA-2 和合并后的 Base64 组件只去掉目录中的发布版本。
+Base64 旧实现经差异验证合并后，这批不存在同名多版本冲突，已实施协调命名迁移。四个组件同时更改包和内部命名；SHA-2 和合并后的 Base64 组件只去掉目录中的发布版本。
 
-| 迁移前目录（相对 src/foundation） | 计划目录 / Cargo 包 | 计划 Rust crate 标识 | 原始身份 |
+| 迁移前目录（相对 src/foundation） | 当前目录 / Cargo 包 | 当前 Rust crate 标识 | 原始身份 |
 | --- | --- | --- | --- |
 | bitflags-2.13.2 | flag-set | flag_set | bitflags 2.13.2 |
 | itertools-0.14.0 | iterator-toolkit | iterator_toolkit | itertools 0.14.0 |

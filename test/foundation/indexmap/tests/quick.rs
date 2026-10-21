@@ -1,5 +1,5 @@
 use indexmap::{IndexMap, IndexSet};
-use itertools::Itertools;
+use iterator_toolkit::Itertools;
 
 use quickcheck::Arbitrary;
 use quickcheck::Gen;
@@ -109,7 +109,7 @@ quickcheck_limit! {
         for &key in &insert {
             map.insert(key, ());
         }
-        itertools::assert_equal(insert.iter().unique(), map.keys());
+        iterator_toolkit::assert_equal(insert.iter().unique(), map.keys());
         true
     }
 
@@ -125,8 +125,8 @@ quickcheck_limit! {
                 Entry::Vacant(e) => { e.insert_sorted(value); }
             }
         }
-        itertools::assert_equal(hmap.iter().sorted(), &map);
-        itertools::assert_equal(&map, &map2);
+        iterator_toolkit::assert_equal(hmap.iter().sorted(), &map);
+        iterator_toolkit::assert_equal(&map, &map2);
         true
     }
 
@@ -145,8 +145,8 @@ quickcheck_limit! {
             }
         }
         let hsorted = hmap.iter().sorted_by(|(key1, _), (key2, _)| key2.cmp(key1));
-        itertools::assert_equal(hsorted, &map);
-        itertools::assert_equal(&map, &map2);
+        iterator_toolkit::assert_equal(hsorted, &map);
+        iterator_toolkit::assert_equal(&map, &map2);
         true
     }
 
@@ -165,8 +165,8 @@ quickcheck_limit! {
             }
         }
         let hsorted = hmap.iter().sorted_by_key(|&(&k, _)| (k.unsigned_abs(), k));
-        itertools::assert_equal(hsorted, &map);
-        itertools::assert_equal(&map, &map2);
+        iterator_toolkit::assert_equal(hsorted, &map);
+        iterator_toolkit::assert_equal(&map, &map2);
         true
     }
 
@@ -235,7 +235,7 @@ quickcheck_limit! {
         }
         pops.reverse();
 
-        itertools::assert_equal(insert.iter().unique(), &pops);
+        iterator_toolkit::assert_equal(insert.iter().unique(), &pops);
         true
     }
 
@@ -736,7 +736,7 @@ quickcheck_limit! {
             assert!(map.contains_key(key));
         }
         // check the order
-        itertools::assert_equal(map.keys(), initial_map.keys().filter(|&k| !remove_map.contains_key(k)));
+        iterator_toolkit::assert_equal(map.keys(), initial_map.keys().filter(|&k| !remove_map.contains_key(k)));
     }
 
     fn sort_1(keyvals: Large<Vec<(i8, i8)>>) -> () {

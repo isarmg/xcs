@@ -55,7 +55,7 @@ path = "src/lib.rs"
 [dependencies.base64]
 version = "0.23"
 optional = true
-path = "../base64-0.23.1"
+path = "../base64"
 
 [dependencies.bytes]
 version = "1.7.1"

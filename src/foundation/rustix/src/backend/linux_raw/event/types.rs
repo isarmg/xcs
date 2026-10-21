@@ -1,5 +1,5 @@
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `EFD_*` flags for use with [`eventfd`].

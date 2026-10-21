@@ -2266,99 +2266,99 @@
       ]
     },
     {
-      "directory": "src/foundation/base64-0.23.1",
+      "directory": "src/foundation/base64",
       "roots": [
-        "test/foundation/base64-0.23.1"
+        "test/foundation/base64"
       ],
       "files": [
         {
           "source": "src/foundation/base64-0.23.1/src/engine/naive.rs",
           "source_sha256_before": "1afa649f854d05753b465d0da57d5c1ecf8bc507cbf8c6bc26973f324f9f87c6",
-          "path": "test/foundation/base64-0.23.1/modules/src/engine/naive.rs",
+          "path": "test/foundation/base64/modules/src/engine/naive.rs",
           "sha256": "1afa649f854d05753b465d0da57d5c1ecf8bc507cbf8c6bc26973f324f9f87c6"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/engine/tests.rs",
           "source_sha256_before": "2e2dc283e0147f622154b0d0a715100a9d4407e2fb898cab7c4163196c024b7f",
-          "path": "test/foundation/base64-0.23.1/modules/src/engine/tests.rs",
+          "path": "test/foundation/base64/modules/src/engine/tests.rs",
           "sha256": "2e2dc283e0147f622154b0d0a715100a9d4407e2fb898cab7c4163196c024b7f"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/read/decoder_tests.rs",
           "source_sha256_before": "3c685f5d08caf7d379c41c256d6d4d534d86b7c4f28aa304aee5290df2f9e942",
-          "path": "test/foundation/base64-0.23.1/modules/src/read/decoder_tests.rs",
+          "path": "test/foundation/base64/modules/src/read/decoder_tests.rs",
           "sha256": "3c685f5d08caf7d379c41c256d6d4d534d86b7c4f28aa304aee5290df2f9e942"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/tests.rs",
           "source_sha256_before": "daa2fa7edcd33e32991d86e750da3075c3c49934b1d2c50e9741485474c2ad6b",
-          "path": "test/foundation/base64-0.23.1/modules/src/tests.rs",
+          "path": "test/foundation/base64/modules/src/tests.rs",
           "sha256": "daa2fa7edcd33e32991d86e750da3075c3c49934b1d2c50e9741485474c2ad6b"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/write/encoder_tests.rs",
           "source_sha256_before": "9a730fbd91305609b36716568ac862419e8b25524f4d93d8ae84f6764972890f",
-          "path": "test/foundation/base64-0.23.1/modules/src/write/encoder_tests.rs",
+          "path": "test/foundation/base64/modules/src/write/encoder_tests.rs",
           "sha256": "9a730fbd91305609b36716568ac862419e8b25524f4d93d8ae84f6764972890f"
         },
         {
           "source": "src/foundation/base64-0.23.1/tests/encode.rs",
           "source_sha256_before": "5309f4538b1df611436f7bfba7409c725161b6f841b1bbf8d9890ae185de7d88",
-          "path": "test/foundation/base64-0.23.1/tests/encode.rs",
+          "path": "test/foundation/base64/tests/encode.rs",
           "sha256": "5309f4538b1df611436f7bfba7409c725161b6f841b1bbf8d9890ae185de7d88"
         },
         {
           "source": "src/foundation/base64-0.23.1/tests/tests.rs",
           "source_sha256_before": "0f9ec361f9c87a2c629c433fe4a179b66162d5d8f33caa57660f4714ff1d6e8b",
-          "path": "test/foundation/base64-0.23.1/tests/tests.rs",
+          "path": "test/foundation/base64/tests/tests.rs",
           "sha256": "0f9ec361f9c87a2c629c433fe4a179b66162d5d8f33caa57660f4714ff1d6e8b"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/alphabet.rs",
           "source_sha256_before": "57c482d72d440b6d9f14916f20ec37c441a06908304e3752249969a5096abd81",
-          "path": "test/foundation/base64-0.23.1/unit/src/alphabet/tests_294.rs",
+          "path": "test/foundation/base64/unit/src/alphabet/tests_294.rs",
           "sha256": "525e13dcb79726458d94eff2b98238a382ddf8001123519ee603f6f464e6af7a"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/chunked_encoder.rs",
           "source_sha256_before": "5fcb620338587fd04874ba60ce665004b1a0936e305269057532052b95f10ce6",
-          "path": "test/foundation/base64-0.23.1/unit/src/chunked_encoder/tests_73.rs",
+          "path": "test/foundation/base64/unit/src/chunked_encoder/tests_73.rs",
           "sha256": "f313bcdfa00f1dd47051c96ea25aa78be8ba0db34c14c87e925ff85d8f5daed2"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/decode.rs",
           "source_sha256_before": "f739f2d143700cd8fec8c299e61bb500ab4bced6f8a9a0f5f75e4681cdea9515",
-          "path": "test/foundation/base64-0.23.1/unit/src/decode/coverage_gaming_397.rs",
+          "path": "test/foundation/base64/unit/src/decode/coverage_gaming_397.rs",
           "sha256": "7bb5ed357ca826c3e1709390169f8e97a70fd6a8ebe7638e8a17023336401497"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/decode.rs",
           "source_sha256_before": "f739f2d143700cd8fec8c299e61bb500ab4bced6f8a9a0f5f75e4681cdea9515",
-          "path": "test/foundation/base64-0.23.1/unit/src/decode/tests_195.rs",
+          "path": "test/foundation/base64/unit/src/decode/tests_195.rs",
           "sha256": "301f89a7f91c14e3964f542575067615d9f42455b54750a9f3ddbd83950d96a6"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/display.rs",
           "source_sha256_before": "31bf3e19274a0b80dd8948a81ea535944f756ef5b88736124c940f5fe1e8c71c",
-          "path": "test/foundation/base64-0.23.1/unit/src/display/tests_55.rs",
+          "path": "test/foundation/base64/unit/src/display/tests_55.rs",
           "sha256": "86326a17a83ca2f12d28d336bd3865cdb18a37ada5b805066ea04da033d325dc"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/encode.rs",
           "source_sha256_before": "77048ba481faa9ee8f69a2e50a455cf2054c4e4b568a7e2509954e904954345a",
-          "path": "test/foundation/base64-0.23.1/unit/src/encode/tests_166.rs",
+          "path": "test/foundation/base64/unit/src/encode/tests_166.rs",
           "sha256": "a637c9355ad44d8cc14f48b7a3dcc47deaaf1f26d86f4b0bb15faaa6bff28c9f"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/engine/general_purpose/decode.rs",
           "source_sha256_before": "43309c606181b6bb67ebd25867df1a2c0ba708423f5e822bfddc87ad07092dbf",
-          "path": "test/foundation/base64-0.23.1/unit/src/engine/general_purpose/decode/tests_354.rs",
+          "path": "test/foundation/base64/unit/src/engine/general_purpose/decode/tests_354.rs",
           "sha256": "7daba3e2c6a7ae8bc0f8a0b63738a7dd725c02e5f5910f9950cc43f222a0c242"
         },
         {
           "source": "src/foundation/base64-0.23.1/src/write/encoder_string_writer.rs",
           "source_sha256_before": "77cd9faaa52e5feeed51c27e3d9d16d48a7fa0610a7d97c31374c7900cae5191",
-          "path": "test/foundation/base64-0.23.1/unit/src/write/encoder_string_writer/tests_136.rs",
+          "path": "test/foundation/base64/unit/src/write/encoder_string_writer/tests_136.rs",
           "sha256": "a88e8fc725cd12cb7b882a09a92caa064f951a288d006a0f033d3a0d4aac0a86"
         }
       ]
@@ -2612,219 +2612,219 @@
       ]
     },
     {
-      "directory": "src/foundation/bitflags-2.13.2",
+      "directory": "src/foundation/flag-set",
       "roots": [
-        "test/foundation/bitflags-2.13.2"
+        "test/foundation/flag-set"
       ],
       "files": [
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests.rs",
           "source_sha256_before": "98d87786aa2c3b851e9560d8a130c9e53b170fd98c22ea48ff7c9b624420526a",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests.rs",
+          "path": "test/foundation/flag-set/modules/src/tests.rs",
           "sha256": "98d87786aa2c3b851e9560d8a130c9e53b170fd98c22ea48ff7c9b624420526a"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/all.rs",
           "source_sha256_before": "e99a865cd4271a524c2fe95503e96d851b35990570aed6fb2e9dac7a14da31b6",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/all.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/all.rs",
           "sha256": "e99a865cd4271a524c2fe95503e96d851b35990570aed6fb2e9dac7a14da31b6"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/all_named.rs",
           "source_sha256_before": "532cd2548a34aaa8ee1b283558f8910184fcaeb773ce33c806e21bd1896f2d4d",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/all_named.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/all_named.rs",
           "sha256": "532cd2548a34aaa8ee1b283558f8910184fcaeb773ce33c806e21bd1896f2d4d"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/bitflags_match.rs",
           "source_sha256_before": "601ad186930908b681f24312132000518fc927ba569d394e5c4440462f037aec",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/bitflags_match.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/bitflags_match.rs",
           "sha256": "601ad186930908b681f24312132000518fc927ba569d394e5c4440462f037aec"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/bits.rs",
           "source_sha256_before": "3840c34b2ea5d1802404b9ce5bcc1d3fa6ccd8dfba2e29e6d07c605f817d90df",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/bits.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/bits.rs",
           "sha256": "3840c34b2ea5d1802404b9ce5bcc1d3fa6ccd8dfba2e29e6d07c605f817d90df"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/clear.rs",
           "source_sha256_before": "6976fcda2f3367c8219485d33bd5d754da6769770cf164c12baace010ad7686d",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/clear.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/clear.rs",
           "sha256": "6976fcda2f3367c8219485d33bd5d754da6769770cf164c12baace010ad7686d"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/complement.rs",
           "source_sha256_before": "d0e6d4c3daf49e0a7438c9f1c1ac91fad1b37f258c03593f6cd6a695ee626f5e",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/complement.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/complement.rs",
           "sha256": "d0e6d4c3daf49e0a7438c9f1c1ac91fad1b37f258c03593f6cd6a695ee626f5e"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/contains.rs",
           "source_sha256_before": "58bb3cb8c86550e775d11134da1d4aca85c83f943ea454e3a5f222772c674a24",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/contains.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/contains.rs",
           "sha256": "58bb3cb8c86550e775d11134da1d4aca85c83f943ea454e3a5f222772c674a24"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/difference.rs",
           "source_sha256_before": "d0d2b96bb52658b8ac019210da74ca75a53e76622f668855142ea6e97c28cb0e",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/difference.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/difference.rs",
           "sha256": "d0d2b96bb52658b8ac019210da74ca75a53e76622f668855142ea6e97c28cb0e"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/empty.rs",
           "source_sha256_before": "817d6e93ced7cb7576ff0e334aa1a44703f3f96871ff2c6bdcb8f207e6551f67",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/empty.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/empty.rs",
           "sha256": "817d6e93ced7cb7576ff0e334aa1a44703f3f96871ff2c6bdcb8f207e6551f67"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/eq.rs",
           "source_sha256_before": "b816767680a029e9c163e37af074dd4e604c4a3e4936f829f0ca3774fd5f0e37",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/eq.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/eq.rs",
           "sha256": "b816767680a029e9c163e37af074dd4e604c4a3e4936f829f0ca3774fd5f0e37"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/extend.rs",
           "source_sha256_before": "5fabb9fd0254c64da019149c24063fceff72da3eb4ad73b57c1cc4c04b008364",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/extend.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/extend.rs",
           "sha256": "5fabb9fd0254c64da019149c24063fceff72da3eb4ad73b57c1cc4c04b008364"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/flag_name.rs",
           "source_sha256_before": "b9e84e45252e740a8c44e3555c7356c3a2982bb12ebdc38502996fda9848799c",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/flag_name.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/flag_name.rs",
           "sha256": "b9e84e45252e740a8c44e3555c7356c3a2982bb12ebdc38502996fda9848799c"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/flags.rs",
           "source_sha256_before": "2f48d3a25db1cf66fe98c9959abc70875deb9f7b38b2c278dc70c46e0d4ec277",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/flags.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/flags.rs",
           "sha256": "2f48d3a25db1cf66fe98c9959abc70875deb9f7b38b2c278dc70c46e0d4ec277"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/fmt.rs",
           "source_sha256_before": "a2d4148491f3202f030f63633eee941b741e3be29a68cf376f008dbe5cb11e5c",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/fmt.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/fmt.rs",
           "sha256": "a2d4148491f3202f030f63633eee941b741e3be29a68cf376f008dbe5cb11e5c"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/from_bits.rs",
           "source_sha256_before": "d94c65b88bf89961d0cfc1b3152a7f1acc285bae160a1628438effda11b8e2c1",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/from_bits.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/from_bits.rs",
           "sha256": "d94c65b88bf89961d0cfc1b3152a7f1acc285bae160a1628438effda11b8e2c1"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/from_bits_retain.rs",
           "source_sha256_before": "980591dfaf91e940f42d9a1ce890f237514dd59d458fc264abcf9ceabbc40677",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/from_bits_retain.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/from_bits_retain.rs",
           "sha256": "980591dfaf91e940f42d9a1ce890f237514dd59d458fc264abcf9ceabbc40677"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/from_bits_truncate.rs",
           "source_sha256_before": "d3406b5e107ebb6449b98a59eee6cc5d84f947d4aaee1ee7e80dc7202de179f0",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/from_bits_truncate.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/from_bits_truncate.rs",
           "sha256": "d3406b5e107ebb6449b98a59eee6cc5d84f947d4aaee1ee7e80dc7202de179f0"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/from_name.rs",
           "source_sha256_before": "f4a055d1f3c86decef70ef8f3020cef5c4e229718c20b3d59d5a3abc3a8b1298",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/from_name.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/from_name.rs",
           "sha256": "f4a055d1f3c86decef70ef8f3020cef5c4e229718c20b3d59d5a3abc3a8b1298"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/insert.rs",
           "source_sha256_before": "3fab5da800a6fc0654dfb5f859f95da65a507eb9fda8695083c2712266dff0b9",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/insert.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/insert.rs",
           "sha256": "3fab5da800a6fc0654dfb5f859f95da65a507eb9fda8695083c2712266dff0b9"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/intersection.rs",
           "source_sha256_before": "baf1454c9e4eba552264870a556ee0032d9f2bb8cac361833d571235e0b52221",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/intersection.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/intersection.rs",
           "sha256": "baf1454c9e4eba552264870a556ee0032d9f2bb8cac361833d571235e0b52221"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/intersects.rs",
           "source_sha256_before": "c55e36179fd8bc636f04ea9bbce346dcaafe57915d13f1df28c5b83117dbd08e",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/intersects.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/intersects.rs",
           "sha256": "c55e36179fd8bc636f04ea9bbce346dcaafe57915d13f1df28c5b83117dbd08e"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/is_all.rs",
           "source_sha256_before": "b2f11faa7c954bd85c8fb39999e0c37d983cf7895152bc13c7ddde106aa33b6d",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/is_all.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/is_all.rs",
           "sha256": "b2f11faa7c954bd85c8fb39999e0c37d983cf7895152bc13c7ddde106aa33b6d"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/is_empty.rs",
           "source_sha256_before": "11f21323cdca7ff92dd89e09de667dba69e8dce88e2d3e27ea68ace91d15d070",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/is_empty.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/is_empty.rs",
           "sha256": "11f21323cdca7ff92dd89e09de667dba69e8dce88e2d3e27ea68ace91d15d070"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/iter.rs",
           "source_sha256_before": "db96736e94686f4c66c012b20e4059fc3e61205feda8b4f1ad7aa16615071c18",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/iter.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/iter.rs",
           "sha256": "db96736e94686f4c66c012b20e4059fc3e61205feda8b4f1ad7aa16615071c18"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/iter_equal_names.rs",
           "source_sha256_before": "33d122bd49c59b94bbacbd8bad74dd831241e429904470c3720958a4030a7184",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/iter_equal_names.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/iter_equal_names.rs",
           "sha256": "33d122bd49c59b94bbacbd8bad74dd831241e429904470c3720958a4030a7184"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/known_bits.rs",
           "source_sha256_before": "37399438c7c89aae34bbf1917c636ea29b44383bf4aede46b62221a8b7d73cae",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/known_bits.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/known_bits.rs",
           "sha256": "37399438c7c89aae34bbf1917c636ea29b44383bf4aede46b62221a8b7d73cae"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/parser.rs",
           "source_sha256_before": "fa2fb8dedcf16601af609a5e21d9c5840c7f96a1e3a587f7f2ea3dc8387f7628",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/parser.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/parser.rs",
           "sha256": "fa2fb8dedcf16601af609a5e21d9c5840c7f96a1e3a587f7f2ea3dc8387f7628"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/remove.rs",
           "source_sha256_before": "6e75f8508d2dc1a2cba89ef691f4387a665a4fd13853bb1dd0fd80c783b89947",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/remove.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/remove.rs",
           "sha256": "6e75f8508d2dc1a2cba89ef691f4387a665a4fd13853bb1dd0fd80c783b89947"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/symmetric_difference.rs",
           "source_sha256_before": "0a89f084f9de1dd5b1932fe72c3b10a3c93cbaa16832b3a31b6a85e3bbd3ba6e",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/symmetric_difference.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/symmetric_difference.rs",
           "sha256": "0a89f084f9de1dd5b1932fe72c3b10a3c93cbaa16832b3a31b6a85e3bbd3ba6e"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/truncate.rs",
           "source_sha256_before": "683430af4a0e47ec73c737a6908fac5d851bed7c41d47c73a642e96d966aa5ae",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/truncate.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/truncate.rs",
           "sha256": "683430af4a0e47ec73c737a6908fac5d851bed7c41d47c73a642e96d966aa5ae"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/union.rs",
           "source_sha256_before": "88f398ee4600bb1e59bf6d02d1f6ff33f5f853eab5a6c700bd8a683c6ee4651a",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/union.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/union.rs",
           "sha256": "88f398ee4600bb1e59bf6d02d1f6ff33f5f853eab5a6c700bd8a683c6ee4651a"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/unknown.rs",
           "source_sha256_before": "fa9e8ee461f176c0d892cde487fef0fe66df2aa5906aaef21b093102e590f5f5",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/unknown.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/unknown.rs",
           "sha256": "fa9e8ee461f176c0d892cde487fef0fe66df2aa5906aaef21b093102e590f5f5"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/tests/unknown_bits.rs",
           "source_sha256_before": "4108713e5c4903112cca1d0b49ce1a6cc6d9764824138248e5396adb889a5b5f",
-          "path": "test/foundation/bitflags-2.13.2/modules/src/tests/unknown_bits.rs",
+          "path": "test/foundation/flag-set/modules/src/tests/unknown_bits.rs",
           "sha256": "4108713e5c4903112cca1d0b49ce1a6cc6d9764824138248e5396adb889a5b5f"
         },
         {
           "source": "src/foundation/bitflags-2.13.2/src/external/serde.rs",
           "source_sha256_before": "0f7339036f41cd93f29b21b954bc1f0fd747762f7a4f20d4ebfc848b20584dc8",
-          "path": "test/foundation/bitflags-2.13.2/unit/src/external/serde/tests_69.rs",
+          "path": "test/foundation/flag-set/unit/src/external/serde/tests_69.rs",
           "sha256": "6a7dcdbdac942c68a768dc2b2ab7d48e7aacb31a2fdade9c634dbe0f5b9f2e17"
         }
       ]
@@ -8635,19 +8635,19 @@
           "source": "src/foundation/indexmap/tests/quick.rs",
           "source_sha256_before": "11d165014ed1f73b5a03ce240750c3143b0111470aa846ca92c2b398f961499f",
           "path": "test/foundation/indexmap/tests/quick.rs",
-          "sha256": "11d165014ed1f73b5a03ce240750c3143b0111470aa846ca92c2b398f961499f"
+          "sha256": "4db450d7f8e83a94b3c6e91fdcca0141502610bdc15ddd9b48f5bf4bebe150e6"
         },
         {
           "source": "src/foundation/indexmap/tests/tests.rs",
           "source_sha256_before": "f6dbeeb0e2950402b0e66ac52bf74c9e4197d3c5d9c0dde64a7998a2ef74d327",
           "path": "test/foundation/indexmap/tests/tests.rs",
-          "sha256": "f6dbeeb0e2950402b0e66ac52bf74c9e4197d3c5d9c0dde64a7998a2ef74d327"
+          "sha256": "b34395400e2bbc724df224e133df7c7f8f1c277e3a01c36504bbb3d5c8da3d8b"
         },
         {
           "source": "src/foundation/indexmap/src/map/slice.rs",
           "source_sha256_before": "0e2e6850dc9e66453596fbd9c0d77699deb46bde5f9e257caa3c6a7435d86dd3",
           "path": "test/foundation/indexmap/unit/src/map/slice/tests_556.rs",
-          "sha256": "2407cc34dba960f8376343aaecfbf61f92db9c1f9c504b14dd8bbaf59f427e00"
+          "sha256": "c37d91ea3f132cae743ee356495c673f79da4023c53bebd865e909b34a4449ea"
         },
         {
           "source": "src/foundation/indexmap/src/rayon/map.rs",
@@ -8665,7 +8665,7 @@
           "source": "src/foundation/indexmap/src/set/slice.rs",
           "source_sha256_before": "87465db8991917d23eff6e37ab1f8c677443cdf1dbee109eff3a8ad8d3cf5960",
           "path": "test/foundation/indexmap/unit/src/set/slice/tests_381.rs",
-          "sha256": "30804f22123ac47a5fbca7135a9dd30f0a9b20d03b5f4dc7f09b722e24aebc95"
+          "sha256": "65f7b845fd29afc8eeecfb051b5e060b5e804542af5672a951cb5e9e0d6ad282"
         }
       ]
     },
@@ -8728,99 +8728,99 @@
       ]
     },
     {
-      "directory": "src/foundation/itertools-0.14.0",
+      "directory": "src/foundation/iterator-toolkit",
       "roots": [
-        "test/foundation/itertools-0.14.0"
+        "test/foundation/iterator-toolkit"
       ],
       "files": [
         {
           "source": "src/foundation/itertools-0.14.0/src/adaptors/mod.rs",
           "source_sha256_before": "5ef2867ad2b1d5af5376d5f1c0e9a338d3864320d3e9c9b51782d27b1264b48b",
-          "path": "test/foundation/itertools-0.14.0/functions/src/adaptors/mod/test_checked_binomial_854.rs",
+          "path": "test/foundation/iterator-toolkit/functions/src/adaptors/mod/test_checked_binomial_854.rs",
           "sha256": "d137c9d25667184f0f273f378b7b29309e63bc484afb093cdc4de03785b2b1a2"
         },
         {
           "source": "src/foundation/itertools-0.14.0/src/size_hint.rs",
           "source_sha256_before": "6022c2327ddc6df7e7b939eb60a93ee66ea9aa4d3aab49b9952e663ff4bff10b",
-          "path": "test/foundation/itertools-0.14.0/functions/src/size_hint/mul_size_hints_89.rs",
+          "path": "test/foundation/iterator-toolkit/functions/src/size_hint/mul_size_hints_89.rs",
           "sha256": "fb3cbe9862c0df24913d051f1793aecacd451094eca6d5606858ee3d765e3605"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/adaptors_no_collect.rs",
           "source_sha256_before": "7e6240878b1fc13b6384fdde0317d5d7ccca3e417b10a201ba61eb5255400fda",
-          "path": "test/foundation/itertools-0.14.0/tests/adaptors_no_collect.rs",
-          "sha256": "7e6240878b1fc13b6384fdde0317d5d7ccca3e417b10a201ba61eb5255400fda"
+          "path": "test/foundation/iterator-toolkit/tests/adaptors_no_collect.rs",
+          "sha256": "4f2e2d8f44f5b62af6cca867f39b48e3199d9de0247db741609b0933c38141ac"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/flatten_ok.rs",
           "source_sha256_before": "b7894874132918b8229c7150b2637511d8e3e14197d8eeb9382d46b2a514efa2",
-          "path": "test/foundation/itertools-0.14.0/tests/flatten_ok.rs",
-          "sha256": "b7894874132918b8229c7150b2637511d8e3e14197d8eeb9382d46b2a514efa2"
+          "path": "test/foundation/iterator-toolkit/tests/flatten_ok.rs",
+          "sha256": "22e7b0bbf5b92f2b307547f0805e4414861ae247f0ba4584b48a7a60a6ec13fc"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/laziness.rs",
           "source_sha256_before": "89e6caec10da3d7aeadf9e30d5caf03cda36d07cee8415ff134b5b8e2a2cf144",
-          "path": "test/foundation/itertools-0.14.0/tests/laziness.rs",
-          "sha256": "89e6caec10da3d7aeadf9e30d5caf03cda36d07cee8415ff134b5b8e2a2cf144"
+          "path": "test/foundation/iterator-toolkit/tests/laziness.rs",
+          "sha256": "7c1f3a96ac1a988a9b10b48847e6c0ae54a0c2967974d8d13cd68fc39018ce55"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/macros_hygiene.rs",
           "source_sha256_before": "c2d517badf593c0ba9b70e987a6f8482ed8997547b2e88bbec70babd9b677aa2",
-          "path": "test/foundation/itertools-0.14.0/tests/macros_hygiene.rs",
-          "sha256": "c2d517badf593c0ba9b70e987a6f8482ed8997547b2e88bbec70babd9b677aa2"
+          "path": "test/foundation/iterator-toolkit/tests/macros_hygiene.rs",
+          "sha256": "6be94ff293c658d9724a3b4456ae672611657854d613090858450ee40ed9a840"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/merge_join.rs",
           "source_sha256_before": "5fb506b989f4a331d46cdec5775ea594656985134196099eaf8d3905bdddcdd5",
-          "path": "test/foundation/itertools-0.14.0/tests/merge_join.rs",
-          "sha256": "5fb506b989f4a331d46cdec5775ea594656985134196099eaf8d3905bdddcdd5"
+          "path": "test/foundation/iterator-toolkit/tests/merge_join.rs",
+          "sha256": "ae873d88f0013c1cc2af0054df2d44087bdbd9e06392d42b628f06098d58d67a"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/peeking_take_while.rs",
           "source_sha256_before": "f834361c5520dda15eb9e9ebe87507c905462201412b21859d9f83dab91d0e0b",
-          "path": "test/foundation/itertools-0.14.0/tests/peeking_take_while.rs",
-          "sha256": "f834361c5520dda15eb9e9ebe87507c905462201412b21859d9f83dab91d0e0b"
+          "path": "test/foundation/iterator-toolkit/tests/peeking_take_while.rs",
+          "sha256": "3ea9f48ca7d9febe419a69fa91b6c2dfa6a3dc2ebf4add9be9e82293ce7e2a9b"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/quick.rs",
           "source_sha256_before": "d463bf8712b32742c93bc2cf3993031aeaba1f5b0505ca0ecd347313c3da0582",
-          "path": "test/foundation/itertools-0.14.0/tests/quick.rs",
-          "sha256": "d463bf8712b32742c93bc2cf3993031aeaba1f5b0505ca0ecd347313c3da0582"
+          "path": "test/foundation/iterator-toolkit/tests/quick.rs",
+          "sha256": "0937df8b0ee64485358a754b9f3d1c7470b3d686b629a52a0aac08323cec2c94"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/specializations.rs",
           "source_sha256_before": "fefbdac83bb774186882e3d31be619c9ce1dbfc4191a99ed2ac90aa764737a8f",
-          "path": "test/foundation/itertools-0.14.0/tests/specializations.rs",
-          "sha256": "fefbdac83bb774186882e3d31be619c9ce1dbfc4191a99ed2ac90aa764737a8f"
+          "path": "test/foundation/iterator-toolkit/tests/specializations.rs",
+          "sha256": "93170278995b87ce3f17672b254f6999deca6b5f50cb056a75167e1b1029ed2c"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/test_core.rs",
           "source_sha256_before": "9bbc6772e97a60d93d4021c184b9e4de1c0440a1c48b991a92edc189699fd20d",
-          "path": "test/foundation/itertools-0.14.0/tests/test_core.rs",
+          "path": "test/foundation/iterator-toolkit/tests/test_core.rs",
           "sha256": "9bbc6772e97a60d93d4021c184b9e4de1c0440a1c48b991a92edc189699fd20d"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/test_std.rs",
           "source_sha256_before": "b0e56deefe309b9c11804bd069c744b5caea7960cd4b68244531f6edf38b9741",
-          "path": "test/foundation/itertools-0.14.0/tests/test_std.rs",
-          "sha256": "b0e56deefe309b9c11804bd069c744b5caea7960cd4b68244531f6edf38b9741"
+          "path": "test/foundation/iterator-toolkit/tests/test_std.rs",
+          "sha256": "65c278e10afe14f4aa4431276fc1c6f5932da30136d85071be19265d957cc80e"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/tuples.rs",
           "source_sha256_before": "014e4da776174bfe923270e2a359cd9c95b372fce4b952b8138909d6e2c52762",
-          "path": "test/foundation/itertools-0.14.0/tests/tuples.rs",
-          "sha256": "014e4da776174bfe923270e2a359cd9c95b372fce4b952b8138909d6e2c52762"
+          "path": "test/foundation/iterator-toolkit/tests/tuples.rs",
+          "sha256": "009e22f0f89a5ccdb26d0a1c2d95f35a4131f560b7a08cdd0089ed3da6d4a681"
         },
         {
           "source": "src/foundation/itertools-0.14.0/tests/zip.rs",
           "source_sha256_before": "457e34761d9bf2943a43abd9020d2b1a4492ebff9e4d94efe4c730652fbf62af",
-          "path": "test/foundation/itertools-0.14.0/tests/zip.rs",
-          "sha256": "457e34761d9bf2943a43abd9020d2b1a4492ebff9e4d94efe4c730652fbf62af"
+          "path": "test/foundation/iterator-toolkit/tests/zip.rs",
+          "sha256": "13973811e09375a56e005d2dee84d2753b69ee380ab373e60ce323da1ec88cf0"
         },
         {
           "source": "src/foundation/itertools-0.14.0/src/next_array.rs",
           "source_sha256_before": "295924058891c08f9fe6313a1d9dd0042dcf60f0a514c6a6e009a1396d804fc9",
-          "path": "test/foundation/itertools-0.14.0/unit/src/next_array/test_148.rs",
+          "path": "test/foundation/iterator-toolkit/unit/src/next_array/test_148.rs",
           "sha256": "eaefcb018c33c67abfa7164a33fa63662851f72ff68703e1bcac8a818b5f96bc"
         }
       ]
@@ -12650,51 +12650,51 @@
       ]
     },
     {
-      "directory": "src/foundation/rand_core-0.6.4",
+      "directory": "src/foundation/random-generator-core",
       "roots": [
-        "test/foundation/rand_core-0.6.4"
+        "test/foundation/random-generator-core"
       ],
       "files": [
         {
           "source": "src/foundation/rand_core-0.6.4/src/le.rs",
           "source_sha256_before": "f302239d09cc8d915aa8d4fe46c32c8981900cb20d42b12eef9c34e2e820bc88",
-          "path": "test/foundation/rand_core-0.6.4/functions/src/le/test_read_34.rs",
+          "path": "test/foundation/random-generator-core/functions/src/le/test_read_34.rs",
           "sha256": "ee83d05289ca4a728b7e628cc58f6f6cb733a6e033bcf9eac873ee5a152d56a6"
         },
         {
           "source": "src/foundation/rand_core-0.6.4/src/os.rs",
           "source_sha256_before": "ab5abf6e6a6fbec79a7132b1ea39dce27103e5a795023f7edd29ccdd1809742f",
-          "path": "test/foundation/rand_core-0.6.4/functions/src/os/test_construction_81.rs",
+          "path": "test/foundation/random-generator-core/functions/src/os/test_construction_81.rs",
           "sha256": "ad1dd9d7b9c121b038f00f7b43326974eefe554b030e1aec7b501ec159e09343"
         },
         {
           "source": "src/foundation/rand_core-0.6.4/src/os.rs",
           "source_sha256_before": "ab5abf6e6a6fbec79a7132b1ea39dce27103e5a795023f7edd29ccdd1809742f",
-          "path": "test/foundation/rand_core-0.6.4/functions/src/os/test_os_rng_73.rs",
+          "path": "test/foundation/random-generator-core/functions/src/os/test_os_rng_73.rs",
           "sha256": "a2eebd16bcb01f04e2f58079d35dd6b722ef5377f9ed0b31171bb22ea017b75d"
         },
         {
           "source": "src/foundation/rand_core-0.6.4/src/block.rs",
           "source_sha256_before": "c0b606dc404a1f4b25eebf388e9c0da583ee571214cdcb0bac1b592450d6b4fa",
-          "path": "test/foundation/rand_core-0.6.4/unit/src/block/test_433.rs",
+          "path": "test/foundation/random-generator-core/unit/src/block/test_433.rs",
           "sha256": "8d18212a40a8db85e5f0b20519345007c2e8ee46135058338390af966329fe1f"
         },
         {
           "source": "src/foundation/rand_core-0.6.4/src/error.rs",
           "source_sha256_before": "01524968b3b67e34f54b38b371c1ee7b6805d9718029904de682734d4fb2a666",
-          "path": "test/foundation/rand_core-0.6.4/unit/src/error/test_219.rs",
+          "path": "test/foundation/random-generator-core/unit/src/error/test_219.rs",
           "sha256": "39674521b6438cf637ae5f9d981d30d0b421d371e16d8b923f092fea9ae306b0"
         },
         {
           "source": "src/foundation/rand_core-0.6.4/src/impls.rs",
           "source_sha256_before": "b861532f8a3500de6bd0e926b3677a15261df4b12d253e4a8fd6acc5e64f1d36",
-          "path": "test/foundation/rand_core-0.6.4/unit/src/impls/test_172.rs",
+          "path": "test/foundation/random-generator-core/unit/src/impls/test_172.rs",
           "sha256": "6019ceb3186971cca226998b5a5619e419e0f010b087b17fe0b006733ed0f743"
         },
         {
           "source": "src/foundation/rand_core-0.6.4/src/lib.rs",
           "source_sha256_before": "631b4c1d8fdb6ff3188eecd530ad3fa51762b5014b9b1f0f1f8ddaf13e25b03d",
-          "path": "test/foundation/rand_core-0.6.4/unit/src/lib/test_487.rs",
+          "path": "test/foundation/random-generator-core/unit/src/lib/test_487.rs",
           "sha256": "ebe508450126cfebf7bf7f288ecb27039fcaeea5abb7073cff8189ad400d13ff"
         }
       ]
@@ -16238,87 +16238,87 @@
       ]
     },
     {
-      "directory": "src/foundation/sha2-0.11.1",
+      "directory": "src/foundation/sha2",
       "roots": [
-        "test/foundation/sha2-0.11.1"
+        "test/foundation/sha2"
       ],
       "files": [
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha224_kat.blb",
           "source_sha256_before": "0404ce7dbf64488c74237f06c0925468f75539aee9d647461edf3324c7411833",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha224_kat.blb",
+          "path": "test/foundation/sha2/tests/data/sha224_kat.blb",
           "sha256": "0404ce7dbf64488c74237f06c0925468f75539aee9d647461edf3324c7411833"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha224_serialization.bin",
           "source_sha256_before": "6b7164859b4c83edda87ca1bab9b07afb6ba5eae77cc242b04be6ca7f122abba",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha224_serialization.bin",
+          "path": "test/foundation/sha2/tests/data/sha224_serialization.bin",
           "sha256": "6b7164859b4c83edda87ca1bab9b07afb6ba5eae77cc242b04be6ca7f122abba"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha256_kat.blb",
           "source_sha256_before": "f947b01761a4cd1324d5021852bcec19d07f193ea034b43bf34b08f1fb1bbf2f",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha256_kat.blb",
+          "path": "test/foundation/sha2/tests/data/sha256_kat.blb",
           "sha256": "f947b01761a4cd1324d5021852bcec19d07f193ea034b43bf34b08f1fb1bbf2f"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha256_serialization.bin",
           "source_sha256_before": "6a44d0e8c9d089de8df7f7e848a016127bb2b85608c73e19a0f898c77a283f19",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha256_serialization.bin",
+          "path": "test/foundation/sha2/tests/data/sha256_serialization.bin",
           "sha256": "6a44d0e8c9d089de8df7f7e848a016127bb2b85608c73e19a0f898c77a283f19"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha384_kat.blb",
           "source_sha256_before": "2fafeb11ed81abf78a33b3e098269b0add361e8855e394293a5d7e5e57fddab9",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha384_kat.blb",
+          "path": "test/foundation/sha2/tests/data/sha384_kat.blb",
           "sha256": "2fafeb11ed81abf78a33b3e098269b0add361e8855e394293a5d7e5e57fddab9"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha384_serialization.bin",
           "source_sha256_before": "299df90bb78d579d7d303985b1bd9e1a9dd205d48b888d87350dc887511886b4",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha384_serialization.bin",
+          "path": "test/foundation/sha2/tests/data/sha384_serialization.bin",
           "sha256": "299df90bb78d579d7d303985b1bd9e1a9dd205d48b888d87350dc887511886b4"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha512_224_kat.blb",
           "source_sha256_before": "3c3c0c408eda6d2d264d50bd1fa5c012f1c5dc2f5bf625ca471fcccebd476870",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha512_224_kat.blb",
+          "path": "test/foundation/sha2/tests/data/sha512_224_kat.blb",
           "sha256": "3c3c0c408eda6d2d264d50bd1fa5c012f1c5dc2f5bf625ca471fcccebd476870"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha512_224_serialization.bin",
           "source_sha256_before": "0be3e7d9cf7821a4e031e2c5b1609006b15995a4553691f9be311f4a87bd5f70",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha512_224_serialization.bin",
+          "path": "test/foundation/sha2/tests/data/sha512_224_serialization.bin",
           "sha256": "0be3e7d9cf7821a4e031e2c5b1609006b15995a4553691f9be311f4a87bd5f70"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha512_256_kat.blb",
           "source_sha256_before": "10dcef0cb0a381d2e4e336e88cb23b38859d3a5c894a3658aaef37a83c058cfb",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha512_256_kat.blb",
+          "path": "test/foundation/sha2/tests/data/sha512_256_kat.blb",
           "sha256": "10dcef0cb0a381d2e4e336e88cb23b38859d3a5c894a3658aaef37a83c058cfb"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha512_256_serialization.bin",
           "source_sha256_before": "fc6735a14cbd66dcd9111021a26fa70373c5dd245272fd4874268a6622f7d97f",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha512_256_serialization.bin",
+          "path": "test/foundation/sha2/tests/data/sha512_256_serialization.bin",
           "sha256": "fc6735a14cbd66dcd9111021a26fa70373c5dd245272fd4874268a6622f7d97f"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha512_kat.blb",
           "source_sha256_before": "4963aa09edeb0c39efa94e397551a2b0018f4a3bd5f343e21010a264db8cc2e9",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha512_kat.blb",
+          "path": "test/foundation/sha2/tests/data/sha512_kat.blb",
           "sha256": "4963aa09edeb0c39efa94e397551a2b0018f4a3bd5f343e21010a264db8cc2e9"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/data/sha512_serialization.bin",
           "source_sha256_before": "d4ad28878dce9ac24ee8cc27622fc758b9db070406cad37eb89518f33f012604",
-          "path": "test/foundation/sha2-0.11.1/tests/data/sha512_serialization.bin",
+          "path": "test/foundation/sha2/tests/data/sha512_serialization.bin",
           "sha256": "d4ad28878dce9ac24ee8cc27622fc758b9db070406cad37eb89518f33f012604"
         },
         {
           "source": "src/foundation/sha2-0.11.1/tests/mod.rs",
           "source_sha256_before": "d417a8068dde4a83a1ab8ede2ebacfb38329f67118dd3327b33e73960c4ace79",
-          "path": "test/foundation/sha2-0.11.1/tests/mod.rs",
+          "path": "test/foundation/sha2/tests/mod.rs",
           "sha256": "d417a8068dde4a83a1ab8ede2ebacfb38329f67118dd3327b33e73960c4ace79"
         }
       ]
@@ -16380,51 +16380,51 @@
       ]
     },
     {
-      "directory": "src/foundation/shlex-2.0.1",
+      "directory": "src/foundation/shell-tokenizer",
       "roots": [
-        "test/foundation/shlex-2.0.1"
+        "test/foundation/shell-tokenizer"
       ],
       "files": [
         {
           "source": "src/foundation/shlex-2.0.1/src/bytes.rs",
           "source_sha256_before": "14ac6d79be6cd93543de6cbba8a4c07181aacf7d02d01a1e5f51b63a89bf11c0",
-          "path": "test/foundation/shlex-2.0.1/functions/src/bytes/test_invalid_utf8_469.rs",
+          "path": "test/foundation/shell-tokenizer/functions/src/bytes/test_invalid_utf8_469.rs",
           "sha256": "78584cb97e4c07ab90089efd8f35d0c9ecaa6686513347322a500297f661c487"
         },
         {
           "source": "src/foundation/shlex-2.0.1/src/bytes.rs",
           "source_sha256_before": "14ac6d79be6cd93543de6cbba8a4c07181aacf7d02d01a1e5f51b63a89bf11c0",
-          "path": "test/foundation/shlex-2.0.1/functions/src/bytes/test_lineno_508.rs",
+          "path": "test/foundation/shell-tokenizer/functions/src/bytes/test_lineno_508.rs",
           "sha256": "ee2774188c85a693af6fa8903c04f20858007636a6c01f4b44a7ba24adf2e831"
         },
         {
           "source": "src/foundation/shlex-2.0.1/src/bytes.rs",
           "source_sha256_before": "14ac6d79be6cd93543de6cbba8a4c07181aacf7d02d01a1e5f51b63a89bf11c0",
-          "path": "test/foundation/shlex-2.0.1/functions/src/bytes/test_split_501.rs",
+          "path": "test/foundation/shell-tokenizer/functions/src/bytes/test_split_501.rs",
           "sha256": "25b080475038b576489af5ab10e3340487b6edea51d7a96ba63d0d7b2bc4fdd5"
         },
         {
           "source": "src/foundation/shlex-2.0.1/src/lib.rs",
           "source_sha256_before": "4504f7ab5627468eb529e0398141fc4a2759c219193e00626d2be498775bb95b",
-          "path": "test/foundation/shlex-2.0.1/functions/src/lib/test_fallible_320.rs",
+          "path": "test/foundation/shell-tokenizer/functions/src/lib/test_fallible_320.rs",
           "sha256": "d091373752eca262970fe5f66c35c17285b998603cba0cafd950bb2e63a570b5"
         },
         {
           "source": "src/foundation/shlex-2.0.1/src/lib.rs",
           "source_sha256_before": "4504f7ab5627468eb529e0398141fc4a2759c219193e00626d2be498775bb95b",
-          "path": "test/foundation/shlex-2.0.1/functions/src/lib/test_lineno_251.rs",
+          "path": "test/foundation/shell-tokenizer/functions/src/lib/test_lineno_251.rs",
           "sha256": "9a52dd55bbfd5f582125723c5b437f7b5a0b1f13317cf146c88ac587e2824e63"
         },
         {
           "source": "src/foundation/shlex-2.0.1/src/lib.rs",
           "source_sha256_before": "4504f7ab5627468eb529e0398141fc4a2759c219193e00626d2be498775bb95b",
-          "path": "test/foundation/shlex-2.0.1/functions/src/lib/test_quote_261.rs",
+          "path": "test/foundation/shell-tokenizer/functions/src/lib/test_quote_261.rs",
           "sha256": "448d799184cdc7deb42f18d04a337499356d396143616d77909a89cda791ee19"
         },
         {
           "source": "src/foundation/shlex-2.0.1/src/lib.rs",
           "source_sha256_before": "4504f7ab5627468eb529e0398141fc4a2759c219193e00626d2be498775bb95b",
-          "path": "test/foundation/shlex-2.0.1/functions/src/lib/test_split_244.rs",
+          "path": "test/foundation/shell-tokenizer/functions/src/lib/test_split_244.rs",
           "sha256": "25b080475038b576489af5ab10e3340487b6edea51d7a96ba63d0d7b2bc4fdd5"
         }
       ]
@@ -17587,7 +17587,7 @@
           "source": "src/foundation/sysinfo/tests/disk.rs",
           "source_sha256_before": "2d7ea9a3bcd4e228430b630422c88ec2c02ac2577406aa426eeb9de4785fde9f",
           "path": "test/foundation/sysinfo/tests/disk.rs",
-          "sha256": "2d7ea9a3bcd4e228430b630422c88ec2c02ac2577406aa426eeb9de4785fde9f"
+          "sha256": "4f594a87b6cfc34b2a79df8d72e2b4f90620a4c0c886fc9b7ce05d30e9d7de30"
         },
         {
           "source": "src/foundation/sysinfo/tests/extras.rs",
@@ -24267,7 +24267,7 @@
           "source": "src/foundation/zerocopy/src/layout.rs",
           "source_sha256_before": "1cdab31448fcc0d0c6851cab67d825ea556945610e22bc6e5ba66ccb401aa5ad",
           "path": "test/foundation/zerocopy/unit/src/layout/tests_2330.rs",
-          "sha256": "a5a8426f410e844b22ef523991dc936cbf14bbad75a17d7230c9c5c9fc143453"
+          "sha256": "ec1076d4b0e05b96f841d988b9b25ee4ce474a737bc9e85f015eede65b9bb045"
         },
         {
           "source": "src/foundation/zerocopy/src/lib.rs",
@@ -24417,7 +24417,7 @@
           "source": "src/foundation/zerotrie/tests/dense_test.rs",
           "source_sha256_before": "4b73c60599927b74e5766cb02b5f74769e5b5681192c0dc6eebde1788eeba562",
           "path": "test/foundation/zerotrie/tests/dense_test.rs",
-          "sha256": "4b73c60599927b74e5766cb02b5f74769e5b5681192c0dc6eebde1788eeba562"
+          "sha256": "400b6baadd6755a69037207247f810aac42b8a15ff6042eedd64cbbe24ef08f8"
         },
         {
           "source": "src/foundation/zerotrie/tests/derive_test.rs",

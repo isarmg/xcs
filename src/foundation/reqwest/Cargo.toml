@@ -50,7 +50,7 @@ path = "src/lib.rs"
 
 [dependencies.base64]
 version = "0.23.1"
-path = "../base64-0.23.1"
+path = "../base64"
 default-features = false
 features = ["std"]
 

@@ -3,7 +3,7 @@ use crate::backend::termios::types;
 #[cfg(target_os = "nto")]
 use crate::ffi;
 use crate::{backend, io};
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 /// `struct termios` for use with [`tcgetattr`] and [`tcsetattr`].
 ///

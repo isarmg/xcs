@@ -53,7 +53,7 @@ fn only_the_current_password_policy_verifies() {
     )
     .hash_password(
         b"correct horse battery staple",
-        &SaltString::generate(&mut argon2::password_hash::rand_core::OsRng),
+        &SaltString::generate(&mut argon2::password_hash::random_generator_core::OsRng),
     )
     .unwrap()
     .to_string();

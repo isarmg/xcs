@@ -9,7 +9,7 @@ use {
     crate::{backend, ffi, io, ioctl},
 };
 
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 #[cfg(all(linux_kernel, not(any(target_arch = "sparc", target_arch = "sparc64"))))]
 use crate::fd::{AsRawFd as _, BorrowedFd};

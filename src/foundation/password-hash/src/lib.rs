@@ -25,8 +25,8 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-#[cfg(feature = "rand_core")]
-pub use rand_core;
+#[cfg(feature = "random-generator-core")]
+pub use random_generator_core;
 
 pub mod errors;
 

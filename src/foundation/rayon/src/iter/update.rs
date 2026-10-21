@@ -261,7 +261,7 @@ where
     }
 }
 
-/// Standard Update adaptor, based on `itertools::adaptors::Update`
+/// Standard Update adaptor, based on `iterator_toolkit::adaptors::Update`
 #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 #[derive(Debug, Clone)]
 struct UpdateSeq<I, F> {

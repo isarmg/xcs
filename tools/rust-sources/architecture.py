@@ -72,7 +72,7 @@ def document(root, catalog, policy):
         '  web --> foundation', '  macros --> foundation',
         '  tools[Web 构建 / Unicode / 契约 / 浏览器校验工具] --> foundation',
         '  ring[ring 显式回归成员] --> foundation', '```', '',
-        '物理目录保留上游 crate 的可识别边界；跨网络、加密、Web 的共享库不按业务领域硬搬目录。'
+        '物理目录按职责维护独立 crate 边界，当前名称与原始身份通过来源清单关联；跨网络、加密、Web 的共享库不按业务领域硬搬目录。'
         '项目需要的微型实现合并到真实消费者，来源身份继续登记。'
         '原生验收仅 `x86_64-unknown-linux-gnu`；浏览器为 `wasm32-unknown-unknown`。', '',
         '## 登记入口与保守功能闭包', '',

@@ -1,4 +1,4 @@
-use bitflags::bitflags;
+use flag_set::bitflags;
 use core::mem::MaybeUninit;
 
 use crate::pid::Pid;

@@ -1,4 +1,4 @@
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `GRND_*` flags for use with [`getrandom`].

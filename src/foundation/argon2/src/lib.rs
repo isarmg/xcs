@@ -35,7 +35,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use argon2::{
 //!     password_hash::{
-//!         rand_core::OsRng,
+//!         random_generator_core::OsRng,
 //!         PasswordHash, PasswordHasher, PasswordVerifier, SaltString
 //!     },
 //!     Argon2

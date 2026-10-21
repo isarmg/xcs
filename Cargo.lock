@@ -222,17 +222,17 @@ version = "1.8.3"
 name = "bindgen"
 version = "0.72.1"
 dependencies = [
- "bitflags",
  "cexpr",
  "clang-sys",
- "itertools",
+ "flag-set",
+ "iterator-toolkit",
  "log",
  "prettyplease 0.2.37",
  "proc-macro2",
  "quote",
  "regex",
  "rustc-hash",
- "shlex",
+ "shell-tokenizer",
  "syn 2.0.119",
 ]
 
@@ -246,10 +246,6 @@ dependencies = [
 [[package]]
 name = "bit-vec"
 version = "0.8.0"
-
-[[package]]
-name = "bitflags"
-version = "2.13.2"
 
 [[package]]
 name = "blake2"
@@ -313,7 +309,7 @@ name = "cc"
 version = "1.8.0"
 dependencies = [
  "find-msvc-tools",
- "shlex",
+ "shell-tokenizer",
 ]
 
 [[package]]
@@ -627,6 +623,10 @@ version = "2.5.0"
 [[package]]
 name = "find-msvc-tools"
 version = "0.1.14"
+
+[[package]]
+name = "flag-set"
+version = "2.13.2"
 
 [[package]]
 name = "flate2"
@@ -1075,7 +1075,7 @@ name = "ipnet"
 version = "2.12.2"
 
 [[package]]
-name = "itertools"
+name = "iterator-toolkit"
 version = "0.14.0"
 dependencies = [
  "either",
@@ -1409,7 +1409,7 @@ name = "password-hash"
 version = "0.5.0"
 dependencies = [
  "base64ct",
- "rand_core",
+ "random-generator-core",
  "subtle",
 ]
 
@@ -1539,7 +1539,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rand_core"
+name = "random-generator-core"
 version = "0.6.4"
 dependencies = [
  "getrandom 0.2.17",
@@ -1719,8 +1719,8 @@ dependencies = [
 name = "rustix"
 version = "1.1.5"
 dependencies = [
- "bitflags",
  "errno",
+ "flag-set",
  "libc",
  "linux-raw-sys",
 ]
@@ -1853,7 +1853,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "shlex"
+name = "shell-tokenizer"
 version = "2.0.1"
 
 [[package]]
@@ -2146,7 +2146,7 @@ dependencies = [
  "erased",
  "futures",
  "indexmap",
- "itertools",
+ "iterator-toolkit",
  "js-sys",
  "next_tuple",
  "oco_ref",
@@ -2319,8 +2319,8 @@ dependencies = [
 name = "tower-http"
 version = "0.6.11"
 dependencies = [
- "bitflags",
  "bytes",
+ "flag-set",
  "futures-core",
  "futures-util",
  "http",
@@ -2498,7 +2498,7 @@ dependencies = [
  "convert_case",
  "convert_case_extras",
  "html-escape",
- "itertools",
+ "iterator-toolkit",
  "prettyplease 0.3.0",
  "proc-macro2",
  "quote",
@@ -2623,7 +2623,7 @@ dependencies = [
 name = "wasmparser"
 version = "0.245.1"
 dependencies = [
- "bitflags",
+ "flag-set",
  "hashbrown 0.16.1",
  "indexmap",
  "semver",

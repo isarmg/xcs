@@ -76,13 +76,13 @@ path = "src/lib.rs"
 [dependencies.base64]
 version = "0.23.1"
 optional = true
-path = "../base64-0.23.1"
+path = "../base64"
 default-features = false
 features = ["std"]
 
-[dependencies.bitflags]
+[dependencies.flag-set]
 version = "2.0.2"
-path = "../bitflags-2.13.2"
+path = "../flag-set"
 
 [dependencies.bytes]
 version = "1"

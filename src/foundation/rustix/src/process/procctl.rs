@@ -11,7 +11,7 @@ use core::mem::MaybeUninit;
 use core::num::NonZeroI32;
 use core::ptr;
 
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 use crate::backend::process::syscalls;
 use crate::backend::process::types::RawId;

@@ -41,9 +41,9 @@ path = "src/lib.rs"
 version = "0.1.14"
 path = "../find-msvc-tools"
 
-[dependencies.shlex]
+[dependencies.shell-tokenizer]
 version = "2.0.1"
-path = "../shlex-2.0.1"
+path = "../shell-tokenizer"
 
 [target."cfg(unix)".dependencies.libc]
 version = "0.2.168"

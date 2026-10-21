@@ -236,7 +236,7 @@ pub fn validate_password(password: &str) -> Result<(), Error> {
 /// salt. There is no verifier fallback for hashes using another policy.
 pub fn hash_password(password: &str) -> Result<String, Error> {
     validate_password(password)?;
-    let salt = SaltString::generate(&mut argon2::password_hash::rand_core::OsRng);
+    let salt = SaltString::generate(&mut argon2::password_hash::random_generator_core::OsRng);
     current_argon2()
         .hash_password(password.as_bytes(), &salt)
         .map(|hash| hash.to_string())

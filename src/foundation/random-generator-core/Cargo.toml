@@ -1,0 +1,45 @@
+# Internal source component. Original manifest and origin: compliance/provenance.
+
+[package]
+edition = "2018"
+name = "random-generator-core"
+version = "0.6.4"
+authors = [
+    "The Rand Project Developers",
+    "The Rust Project Developers",
+]
+description = """
+Core random number generator traits and tools for implementation.
+"""
+homepage = "https://rust-random.github.io/book"
+documentation = "https://docs.rs/rand_core"
+readme = "../../../docs/upstream/rand_core-0.6.4/README.md"
+keywords = [
+    "random",
+    "rng",
+]
+categories = [
+    "algorithms",
+    "no-std",
+]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rust-random/rand"
+autotests = false
+autobenches = false
+autoexamples = false
+
+[dependencies.getrandom]
+version = "0.2"
+optional = true
+path = "../getrandom-0.2.17"
+
+[dependencies.serde]
+version = "1"
+features = ["derive"]
+optional = true
+path = "../serde"
+
+[features]
+alloc = []
+serde1 = ["serde"]
+std = ["alloc", "getrandom", "getrandom/std"]

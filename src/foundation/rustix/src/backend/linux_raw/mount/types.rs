@@ -1,5 +1,5 @@
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `MS_*` constants for use with [`mount`].

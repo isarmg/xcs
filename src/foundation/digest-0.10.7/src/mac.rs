@@ -1,8 +1,8 @@
 use crate::{FixedOutput, FixedOutputReset, Update};
 use crypto_common::{InvalidLength, Key, KeyInit, Output, OutputSizeUser, Reset};
 
-#[cfg(feature = "rand_core")]
-use crate::rand_core::{CryptoRng, RngCore};
+#[cfg(feature = "random-generator-core")]
+use crate::random_generator_core::{CryptoRng, RngCore};
 use core::fmt;
 use crypto_common::typenum::Unsigned;
 use subtle::{Choice, ConstantTimeEq};
@@ -23,8 +23,8 @@ pub trait Mac: OutputSizeUser + Sized {
         Self: KeyInit;
 
     /// Generate random key using the provided [`CryptoRng`].
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    #[cfg(feature = "random-generator-core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "random-generator-core")))]
     fn generate_key(rng: impl CryptoRng + RngCore) -> Key<Self>
     where
         Self: KeyInit;
@@ -224,8 +224,8 @@ impl<T: Update + FixedOutput + MacMarker> Mac for T {
         }
     }
 
-    #[cfg(feature = "rand_core")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "rand_core")))]
+    #[cfg(feature = "random-generator-core")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "random-generator-core")))]
     #[inline]
     fn generate_key(rng: impl CryptoRng + RngCore) -> Key<Self>
     where

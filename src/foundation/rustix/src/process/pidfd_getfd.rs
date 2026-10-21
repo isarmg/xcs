@@ -13,7 +13,7 @@ use backend::fd::{AsFd, RawFd};
 /// table of an entirely different process.
 pub type ForeignRawFd = RawFd;
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// All flags are reserved for future use.
     #[repr(transparent)]
     #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

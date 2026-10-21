@@ -52,7 +52,7 @@ path = "../zeroize"
 [features]
 alloc = ["password-hash/alloc"]
 default = ["alloc", "password-hash", "rand"]
-rand = ["password-hash/rand_core"]
+rand = ["password-hash/random-generator-core"]
 simple = ["password-hash"]
 std = ["alloc", "password-hash/std"]
 

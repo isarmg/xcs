@@ -6,7 +6,7 @@ use convert_case::{
     Casing,
 };
 use convert_case_extras::is_case;
-use itertools::Itertools;
+use iterator_toolkit::Itertools;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens, TokenStreamExt};
 use syn::{

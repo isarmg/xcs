@@ -26,7 +26,7 @@ use {crate::ffi::CString, alloc::vec::Vec};
 #[cfg(target_os = "linux")]
 use crate::{fd::FromRawFd as _, ioctl};
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `O_*` flags for use with [`openpt`] and [`ioctl_tiocgptpeer`].
     #[repr(transparent)]
     #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

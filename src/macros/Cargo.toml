@@ -15,7 +15,7 @@ attribute-derive = { version = "0.11", features = ["syn-full"], path = "../found
 convert_case = {version = "0.11", path = "../foundation/convert_case"}
 convert_case_extras = {version = "0.2", path = "../foundation/convert_case_extras"}
 html-escape = {version = "0.2", path = "../foundation/html-escape"}
-itertools = {version = "0.14", path = "../foundation/itertools-0.14.0"}
+iterator-toolkit = {version = "0.14", path = "../foundation/iterator-toolkit"}
 prettyplease = {version = "0.3", path = "../foundation/prettyplease-0.3.0"}
 proc-macro2 = {version = "1", path = "../foundation/proc-macro2"}
 quote = {version = "1", path = "../foundation/quote"}

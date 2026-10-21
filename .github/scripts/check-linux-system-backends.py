@@ -2,6 +2,7 @@
 """Exercise retained system/socket/poll APIs without upstream dev dependencies."""
 from pathlib import Path
 import json
+import os
 import re
 import runpy
 import sys
@@ -39,7 +40,8 @@ def check_target_contract(root, work):
             command = ["rustc", str(probe_path), "--deny=warnings", "--emit=metadata", "-o", str(work / "probe.rmeta")]
             for key, value in [("os", target_os), ("arch", arch), ("pointer_width", width)]:
                 command += ["--cfg", f'probe_{key}="{value}"']
-            result = subprocess.run(command, capture_output=True, text=True)
+            environment = os.environ | {"CARGO_MANIFEST_DIR": str((root / "src/foundation" / crate).resolve())}
+            result = subprocess.run(command, env=environment, capture_output=True, text=True)
             if (result.returncode == 0) != allowed:
                 raise AssertionError(f"{crate}: wrong target contract for {target_os}/{arch}/{width}: {result.stderr}")
     for path in ("sysinfo/src/windows", "sysinfo/src/unix/apple", "sysinfo/src/unix/bsd", "socket2/src/sys/windows.rs", "mio/src/sys/windows"):

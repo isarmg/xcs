@@ -1,6 +1,6 @@
 //! Compound types (unions and structs) in our intermediate representation.
 
-use itertools::Itertools;
+use iterator_toolkit::Itertools;
 
 use super::analysis::Sizedness;
 use super::annotations::Annotations;

@@ -5,7 +5,7 @@
 //! The `unshare` function can cause threads to use different file descriptor tables.
 #![allow(unsafe_code)]
 
-use bitflags::bitflags;
+use flag_set::bitflags;
 use linux_raw_sys::general::{
     CLONE_FILES, CLONE_FS, CLONE_NEWCGROUP, CLONE_NEWIPC, CLONE_NEWNET, CLONE_NEWNS, CLONE_NEWPID,
     CLONE_NEWTIME, CLONE_NEWUSER, CLONE_NEWUTS, CLONE_SYSVSEM,

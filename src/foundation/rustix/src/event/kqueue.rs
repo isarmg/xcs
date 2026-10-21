@@ -231,7 +231,7 @@ pub enum EventFilter {
     Unknown,
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// The flags for a `kqueue` event specifying actions to perform.
     #[repr(transparent)]
     #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -268,7 +268,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// The flags for a virtual node event.
     #[repr(transparent)]
     #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -299,7 +299,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// The flags for a process event.
     #[repr(transparent)]
     #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -325,7 +325,7 @@ bitflags::bitflags! {
 }
 
 #[cfg(any(apple, freebsdlike))]
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// The flags for a user event.
     #[repr(transparent)]
     #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

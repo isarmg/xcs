@@ -1,5 +1,5 @@
 use crate::backend::c;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `PROT_*` flags for use with [`mmap`].

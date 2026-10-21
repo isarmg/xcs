@@ -1,5 +1,5 @@
 use crate::backend::c;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `MSG_*` flags for use with [`send`], [`sendto`], and related

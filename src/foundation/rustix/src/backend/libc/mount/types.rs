@@ -1,6 +1,6 @@
 use crate::backend::c;
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 #[cfg(linux_kernel)]
 bitflags! {

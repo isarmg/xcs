@@ -42,9 +42,9 @@ validate = []
 name = "wasmparser"
 path = "src/lib.rs"
 
-[dependencies.bitflags]
+[dependencies.flag-set]
 version = "2.4.1"
-path = "../bitflags-2.13.2"
+path = "../flag-set"
 
 [dependencies.hashbrown]
 version = "0.16.1"

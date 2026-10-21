@@ -3,7 +3,7 @@ use crate::process::{Pid, Signal};
 use crate::{backend, ffi, io};
 use backend::fd::AsFd;
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `PIDFD_*` flags for use with [`pidfd_open`].
     ///
     /// [`pidfd_open`]: crate::process::pidfd_open

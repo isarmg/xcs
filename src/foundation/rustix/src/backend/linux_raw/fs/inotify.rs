@@ -1,7 +1,7 @@
 //! inotify support for working with inotify objects.
 
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `IN_*` for use with [`inotify::init`].

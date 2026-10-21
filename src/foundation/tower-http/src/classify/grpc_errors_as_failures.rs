@@ -1,5 +1,5 @@
 use super::{ClassifiedResponse, ClassifyEos, ClassifyResponse, SharedClassifier};
-use bitflags::bitflags;
+use flag_set::bitflags;
 use http::{HeaderMap, Response};
 use std::{fmt, num::NonZeroI32};
 

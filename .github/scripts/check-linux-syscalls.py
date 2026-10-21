@@ -34,14 +34,16 @@ def libraries(output):
 
 def check(root):
     environment = matrix_environment()
+    rustix_environment = environment | {"CARGO_MANIFEST_DIR": str((root / "src/foundation/rustix").resolve())}
+    fixture_environment = environment | {"CARGO_MANIFEST_DIR": str(root.resolve())}
     with tempfile.TemporaryDirectory(prefix="zxs-linux-syscalls-") as temporary:
         guard_test = str(Path(temporary) / "target-guard")
         subprocess.run([
             "rustc", "--edition=2021", "--test",
             str(root / "src/foundation/rustix/build.rs"),
             "--cfg", 'feature="std"', "--deny", "warnings", "-o", guard_test,
-        ], cwd=root, check=True)
-        subprocess.run([guard_test], cwd=root, check=True)
+        ], cwd=root, env=rustix_environment, check=True)
+        subprocess.run([guard_test], cwd=root, env=rustix_environment, check=True)
         for mode, features in (
             ("linux-raw", "rustix/all-apis"),
             ("libc", "rustix/all-apis,rustix/use-libc"),
@@ -71,8 +73,8 @@ def check(root):
                 command += ["--extern", f"{name}={path}"]
             for directory in sorted({path.parent for path in artifacts.values()}):
                 command += ["-L", f"dependency={directory}"]
-            subprocess.run(command, cwd=root, check=True)
-            subprocess.run([executable], cwd=root, check=True)
+            subprocess.run(command, cwd=root, env=fixture_environment, check=True)
+            subprocess.run([executable], cwd=root, env=fixture_environment, check=True)
 
 
 if __name__ == "__main__":

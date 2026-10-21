@@ -1,5 +1,5 @@
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `TFD_*` flags for use with [`timerfd_create`].

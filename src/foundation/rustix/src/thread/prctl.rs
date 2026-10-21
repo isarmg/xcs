@@ -14,7 +14,7 @@ use core::ptr;
 use core::ptr::NonNull;
 use core::sync::atomic::AtomicU8;
 
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 use crate::backend::prctl::syscalls;
 #[cfg(feature = "alloc")]

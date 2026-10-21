@@ -30,7 +30,7 @@ use crate::timespec::LibcTimespec;
     target_os = "illumos",
     target_os = "netbsd"
 ))]
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 /// On most platforms, `LibcItimerspec` is just `Itimerspec`.
 #[cfg(any(

@@ -6,7 +6,7 @@ use crate::buffer::Buffer;
 use crate::{backend, ffi, io, path};
 use backend::c;
 use backend::fd::AsFd;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `XATTR_*` constants for use with [`setxattr`], and other `*setxattr`

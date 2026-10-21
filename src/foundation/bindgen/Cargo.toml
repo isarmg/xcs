@@ -48,9 +48,9 @@ static = ["clang-sys/static"]
 name = "bindgen"
 path = "lib.rs"
 
-[dependencies.bitflags]
+[dependencies.flag-set]
 version = "2.2.1"
-path = "../bitflags-2.13.2"
+path = "../flag-set"
 
 [dependencies.cexpr]
 version = "0.6"
@@ -67,10 +67,10 @@ features = ["derive"]
 optional = true
 path = "../clap"
 
-[dependencies.itertools]
+[dependencies.iterator-toolkit]
 version = "0.14"
 default-features = false
-path = "../itertools-0.14.0"
+path = "../iterator-toolkit"
 
 [dependencies.log]
 version = "0.4"
@@ -105,9 +105,9 @@ path = "../regex"
 version = "2.1.0"
 path = "../rustc-hash"
 
-[dependencies.shlex]
+[dependencies.shell-tokenizer]
 version = "2"
-path = "../shlex-2.0.1"
+path = "../shell-tokenizer"
 
 [dependencies.syn]
 version = "2.0"

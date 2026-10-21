@@ -1,5 +1,6 @@
 """Ensure all preserved UAPI features receive both ABI regression modes."""
 import importlib.util
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -39,7 +40,18 @@ class LinuxUapiCheck(unittest.TestCase):
             enabled = [command[index + 1] for index, value in enumerate(command) if value == "--cfg"]
             self.assertEqual(set(enabled), {f'feature="{mode}"', 'feature="general"', 'feature="future_api"'})
             self.assertEqual(run.call_args_list[offset + 1].args[0], [command[command.index("-o") + 1]])
-            self.assertEqual(build.kwargs, dict(cwd=self.root, check=True))
+            self.assertEqual(build.kwargs["cwd"], self.root)
+            self.assertTrue(build.kwargs["check"])
+            self.assertEqual(build.kwargs["env"]["CARGO_MANIFEST_DIR"], str(self.directory))
+
+    def test_manifest_directory_overrides_missing_or_unrelated_cargo_context(self):
+        for inherited in ({}, {"CARGO_MANIFEST_DIR": "/unrelated/package"}):
+            with self.subTest(inherited=inherited), patch.dict(os.environ, inherited, clear=True):
+                with patch.object(checker.subprocess, "run") as run:
+                    checker.check(self.root)
+                for call in run.call_args_list:
+                    self.assertEqual(call.kwargs["env"]["CARGO_MANIFEST_DIR"], str(self.directory))
+                self.assertEqual(dict(os.environ), inherited)
 
     def test_new_dependencies_require_a_cargo_based_review(self):
         with self.manifest.open("a") as manifest:

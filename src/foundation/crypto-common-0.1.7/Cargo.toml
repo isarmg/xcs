@@ -27,7 +27,7 @@ repository = "https://github.com/RustCrypto/traits"
 resolver = "2"
 
 [features]
-getrandom = ["rand_core/getrandom"]
+getrandom = ["random-generator-core/getrandom"]
 std = []
 
 [lib]
@@ -39,10 +39,10 @@ version = "=0.14.7"
 features = ["more_lengths"]
 path = "../generic-array"
 
-[dependencies.rand_core]
+[dependencies.random-generator-core]
 version = "0.6"
 optional = true
-path = "../rand_core-0.6.4"
+path = "../random-generator-core"
 
 [dependencies.typenum]
 version = "1.14"

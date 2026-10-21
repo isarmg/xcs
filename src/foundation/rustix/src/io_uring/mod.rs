@@ -324,7 +324,7 @@ pub unsafe fn io_uring_enter_reg_wait<Fd: AsFd>(
 }
 */
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_ENTER_*` flags for use with [`io_uring_enter`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -461,7 +461,7 @@ pub enum IoringRegisterOp {
     RegisterResizeRings = sys::io_uring_register_op::IORING_REGISTER_RESIZE_RINGS as _,
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_REGISTER_*` flags for use with [`io_uring_register_with`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -701,7 +701,7 @@ pub enum IoringMsgringCmds {
     SendFd = sys::io_uring_msg_ring_flags::IORING_MSG_SEND_FD as _,
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_SETUP_*` flags for use with [`io_uring_params`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -762,7 +762,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IOSQE_*` flags for use with [`io_uring_sqe`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -793,7 +793,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_CQE_F_*` flags for use with [`io_uring_cqe`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -815,7 +815,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_FSYNC_*` flags for use with [`io_uring_sqe`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -828,7 +828,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_TIMEOUT_*` and `IORING_LINK_TIMEOUT_UPDATE` flags for use with
     /// [`io_uring_sqe`].
     #[repr(transparent)]
@@ -863,7 +863,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `SPLICE_F_*` flags for use with [`io_uring_sqe`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -876,7 +876,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_MSG_RING_*` flags for use with [`io_uring_sqe`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -892,7 +892,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_URING_CMD_*` flags for use with [`io_uring_sqe`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -908,7 +908,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_ASYNC_CANCEL_*` flags for use with [`io_uring_sqe`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -930,7 +930,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_FIXED_FD_*` flags for use with [`io_uring_sqe`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -943,7 +943,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_FEAT_*` flags for use with [`io_uring_params`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -998,7 +998,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IO_URING_OP_*` flags for use with [`io_uring_probe_op`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -1011,7 +1011,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_RSRC_*` flags for use with [`io_uring_rsrc_register`].
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -1024,7 +1024,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_SQ_*` flags.
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -1043,7 +1043,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_CQ_*` flags.
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -1056,7 +1056,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// `IORING_POLL_*` flags.
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -1078,7 +1078,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// send/sendmsg flags (`sqe.ioprio`)
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -1106,7 +1106,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// recv/recvmsg flags (`sqe.ioprio`)
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -1134,7 +1134,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// accept flags (`sqe.ioprio`)
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -1147,7 +1147,7 @@ bitflags::bitflags! {
     }
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// recvmsg out flags
     #[repr(transparent)]
     #[derive(Default, Copy, Clone, Eq, PartialEq, Hash, Debug)]

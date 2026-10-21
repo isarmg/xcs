@@ -1,5 +1,5 @@
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `FD_*` constants for use with [`fcntl_getfd`] and [`fcntl_setfd`].

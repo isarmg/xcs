@@ -574,7 +574,7 @@ pub fn waitv(
     backend::thread::syscalls::futex_waitv(waiters, flags, timeout, clockid)
 }
 
-bitflags::bitflags! {
+flag_set::bitflags! {
     /// Flags for use with the flags argument in [`waitv`].
     ///
     /// At this time, no flags are defined.

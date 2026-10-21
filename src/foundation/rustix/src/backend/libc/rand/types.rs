@@ -1,7 +1,7 @@
 #[cfg(linux_kernel)]
 use crate::backend::c;
 #[cfg(linux_kernel)]
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 #[cfg(linux_kernel)]
 bitflags! {

@@ -17,7 +17,7 @@
 #![recursion_limit = "128"]
 
 #[macro_use]
-extern crate bitflags;
+extern crate flag_set;
 #[macro_use]
 extern crate quote;
 
@@ -310,7 +310,7 @@ fn get_extra_clang_args(
     };
 
     // Try to parse it with shell quoting. If we fail, make it one single big argument.
-    if let Some(strings) = shlex::split(&extra_clang_args) {
+    if let Some(strings) = shell_tokenizer::split(&extra_clang_args) {
         return strings;
     }
     vec![extra_clang_args]

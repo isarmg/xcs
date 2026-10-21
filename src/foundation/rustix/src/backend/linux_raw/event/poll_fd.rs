@@ -1,5 +1,5 @@
 use crate::fd::{AsFd, BorrowedFd};
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 bitflags! {
     /// `POLL*` flags for use with [`poll`].

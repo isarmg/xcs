@@ -64,7 +64,7 @@ pty = ["fs"]
 rand = []
 runtime = ["linux-raw-sys/prctl"]
 shm = ["fs"]
-std = ["bitflags/std", "alloc", "libc?/std", "libc_errno?/std"]
+std = ["flag-set/std", "alloc", "libc?/std", "libc_errno?/std"]
 stdio = []
 system = ["linux-raw-sys/system"]
 termios = []
@@ -79,10 +79,10 @@ use-libc-auxv = []
 name = "rustix"
 path = "src/lib.rs"
 
-[dependencies.bitflags]
+[dependencies.flag-set]
 version = "2.4.0"
 default-features = false
-path = "../bitflags-2.13.2"
+path = "../flag-set"
 
 [target.'cfg(all(target_os = "linux", target_arch = "x86_64", target_pointer_width = "64", any(rustix_use_libc, miri)))'.dependencies.linux-raw-sys]
 version = "0.12"

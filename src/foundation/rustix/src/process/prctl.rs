@@ -9,7 +9,7 @@ use core::mem::size_of;
 use core::num::NonZeroI32;
 use core::ptr::{null, null_mut, NonNull};
 
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 use crate::backend::prctl::syscalls;
 use crate::fd::{AsRawFd as _, BorrowedFd, RawFd};

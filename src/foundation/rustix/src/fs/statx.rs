@@ -4,7 +4,7 @@ use crate::fd::AsFd;
 use crate::fs::AtFlags;
 use crate::{backend, io, path};
 use backend::c;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 #[cfg(feature = "linux_4_11")]
 use backend::fs::syscalls::statx as _statx;

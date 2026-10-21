@@ -1,7 +1,7 @@
 use crate::backend::c;
 #[cfg(not(target_os = "horizon"))]
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 #[cfg(not(any(target_os = "espidf", target_os = "horizon", target_os = "vita")))]
 bitflags! {

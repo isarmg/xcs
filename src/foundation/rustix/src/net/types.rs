@@ -2,7 +2,7 @@
 
 use crate::backend::c;
 use crate::ffi;
-use bitflags::bitflags;
+use flag_set::bitflags;
 
 /// A type for holding raw integer socket types.
 pub type RawSocketType = u32;

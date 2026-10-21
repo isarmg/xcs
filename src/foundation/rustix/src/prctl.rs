@@ -6,7 +6,7 @@ use crate::backend::prctl::syscalls;
 use crate::ffi::{c_int, c_void};
 use crate::io;
 use crate::utils::as_mut_ptr;
-use bitflags::bitflags;
+use flag_set::bitflags;
 use core::mem::MaybeUninit;
 use core::ptr::null_mut;
 
