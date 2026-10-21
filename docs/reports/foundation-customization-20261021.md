@@ -142,9 +142,31 @@ env_filter 的现有测试原先因缺 snapbox 无法编译；审查确认它只
 
 ### 已分析但本阶段保留的部分
 
-SQLx migrate 跨 sqlx/core/sqlite 的模块、Any 后端、配置、错误和测试辅助 API；CRC/CRC-catalog 仍由该功能实际启用。
-本阶段未修改 SQLite 或 SQLx 功能表面，完整删除迁移支持留给独立的存储验收批次。
-因此 sha2 0.10 及其三个直接消费者 sqlx-core、web-build、unicode-build 仍保留；没有声称迁移自有工具即可删除旧 SHA-2。
+**SQLx 结论：本阶段保留完整 migrate 能力及当前启用方式，不实施只关 feature 的局部裁剪。它不是当前产品运行必需能力；保留是本阶段的验证边界决定，不是兼容旧数据库版本的要求。**
+
+证据：根 workspace 与 src/platform 的 SQLx 声明均为 default-features=false，仅选 runtime-tokio/sqlite-bundled；src/engine 继承根声明。
+产品/工具 Rust 源码（排除 foundation）未发现 sqlx::migrate、Migrator、MigrateDatabase 或 migrate! 调用。
+`src/platform/src/sqlite/mod.rs` 明确不拥有产品 DDL/migrations；项目 SQLx 访问与可信 DDL 校验并不调用 SQLx Migrator。
+当前 Cargo 图仍在 sqlx-core 启用 migrate、crc、sha2：crc 的唯一直接消费者是 sqlx-core，crc-catalog 的唯一消费者是 crc；sha2 0.10.9 还有 web-build 与 unicode-build 两个消费者。
+这是实际当前图的证据，不把文本零匹配单独作为删除证明。
+
+| 可量化候选成本 | 当前文件数 | 当前字节 | 判定 |
+| --- | ---: | ---: | --- |
+| core/migrate + core/any/migrate.rs + sqlite/migrate.rs | 9 | 47732 | 1450 行；不含配置、错误和测试辅助的关联修改，不能当作完整删除清单 |
+| crc | 11 | 64354 | 完整移除迁移功能后有条件退役 |
+| crc-catalog | 6 | 97138 | 随 CRC 唯一消费链一并评估 |
+| sha2 0.10.9 | 24 | 89290 | 移除 SQLx 迁移仍不能退役，两个工具必须另行迁移并核验摘要结果 |
+
+预期收益是减少未使用迁移/checksum 分支的编译输入、源文件和依赖边。是否改善最终链接体积、内存或耗时没有实测证据，不能据上述源码数字作运行时承诺。
+风险集中在保留特性的代码清理完整性：`sqlx-core/src/error.rs` 的 MigrateError 变体与转换、`src/lib.rs` 的 migration/testing 模块、
+`any/driver.rs` 的驱动构造和数据库 create/drop 回调、Any 连接转换、SQLite Migrate 实现、配置解析都参与该 API 表面。
+这不是修改当前 SQLite 文件格式的必要步骤，也不需要引入 v1/v2 或旧版本兼容层；但只删模块或只跑产品默认入口不能验证这些保留特性的完整性。
+
+小幅取消 facade 对 core 的强制 migrate 会让 CRC 两个来源退出登记入口闭包，却仍留下 optional path/feature 边；直接删除这两个目录会违反休眠边检查。
+为“保留以后可能用到”而新造一个没有真实用途的验证入口、放松 require_reachable_sources 或留下空 migrate feature，都会损坏本轮既定治理约束，本阶段不采用。
+因此这里明确保留完整功能并记录成本，SQLx 的 facade/core/sqlite 同步 API 收窄属于一个独立的存储验收单元，
+其准入条件是完整消除迁移 API 与所有休眠边、为 Any/config 负向构建建立证据、核验现有 SQLite/可信 DDL/存储全套，并将工具 SHA-2 迁移作为单独可验证决策。
+这一决定保留了可运行的现状，没有制造半退役来源，也不声称整个旧加密栈可删除。
 digest 0.10 另有 Argon2 → blake2 消费者，继续保留。syn、prettyplease、getrandom、base64 的代际并存依据见前表与生成索引。
 
 ### 验收边界
@@ -179,3 +201,10 @@ git diff --check
 独立复核发现 env_logger 开头 14 个默认日志示例仍含旧墙上时钟时间戳，已同步为当前默认输出，并保留 INFO 级别的实际宽度补齐。
 原始 docs/upstream 文档及许可证字节不变；更新的只是活跃库说明及当前来源摘要。上表累计字节数已包含本次文档收尾。
 该收尾单独提交，重新验证格式器单元、文档示例、真实工具日志回归、来源闭包与静态门禁；最终 CI 跟踪收尾提交。
+
+
+### 结构调整的实际边界
+
+真实的职责归并发生在宏消费者：三个纯 helper 合并入 src/macros，原热重载 crate 被撤销；并非仅改名称或搬目录。
+architecture.py 与生成的 foundation-consumers.md 提供按实际消费者查找的架构索引，属于维护工具与文档分组，没有把数百个 crate 物理重排为 network/crypto/web。
+foundation 继续采用可识别的上游直接子目录，以保留精确来源边界和现有 source_directories/path 管理收益。
