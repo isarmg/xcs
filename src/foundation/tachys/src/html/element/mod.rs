@@ -516,12 +516,11 @@ where
         },
     );
 
-    #[allow(unused)] // the variables `class` and `style` might be used, but only with `nightly` feature
     fn to_template(
         buf: &mut String,
-        class: &mut String,
-        style: &mut String,
-        inner_html: &mut String,
+        _class: &mut String,
+        _style: &mut String,
+        _inner_html: &mut String,
         position: &mut Position,
     ) {
         // for custom elements without type known at compile time, do nothing

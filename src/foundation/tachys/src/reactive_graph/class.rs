@@ -31,7 +31,7 @@ where
     type CloneableOwned = SharedReactiveFunction<C>;
 
     fn hydrate(mut self, el: &crate::renderer::types::Element) -> Self::State {
-                let el = el.clone();
+        let el = el.clone();
         RenderEffect::new(move |prev| {
             let value = self.invoke();
             if let Some(mut state) = prev {
@@ -105,7 +105,7 @@ where
     type CloneableOwned = (&'static str, SharedReactiveFunction<T>);
 
     fn hydrate(self, el: &crate::renderer::types::Element) -> Self::State {
-                let (name, mut f) = self;
+        let (name, mut f) = self;
         let class_list = Rndr::class_list(el);
         let name = Rndr::intern(name);
 
@@ -353,7 +353,6 @@ macro_rules!  class_reactive {
     };
 }
 
-#[cfg(not(all(feature = "nightly", rustc_nightly)))]
 mod stable {
     use super::{RenderEffect, RenderEffectWithClassName};
     use crate::{html::class::IntoClass, renderer::Rndr};

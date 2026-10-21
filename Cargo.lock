@@ -2158,7 +2158,6 @@ dependencies = [
  "pastey",
  "reactive_graph",
  "rustc-hash",
- "rustc_version",
  "send_wrapper",
  "throw_error",
  "wasm-bindgen",

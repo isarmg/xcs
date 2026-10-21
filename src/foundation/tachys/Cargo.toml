@@ -6,7 +6,7 @@ rust-version = "1.88"
 name = "tachys"
 version = "0.2.19"
 authors = ["Greg Johnston"]
-build = "build.rs"
+build = false
 autolib = false
 autobins = false
 autoexamples = false
@@ -19,7 +19,6 @@ repository = "https://github.com/leptos-rs/leptos"
 
 [features]
 delegation = []
-nightly = ["reactive_graph/nightly"]
 oco = ["dep:oco_ref"]
 reactive_graph = ["dep:reactive_graph", "dep:any_spawner"]
 tracing = ["dep:tracing"]
@@ -249,18 +248,12 @@ features = [
 default-features = true
 path = "../web-sys"
 
-[build-dependencies.rustc_version]
-version = "0.4"
-default-features = true
-path = "../rustc_version"
-
 [lints.rust.unexpected_cfgs]
 level = "warn"
 priority = 0
 check-cfg = [
     "cfg(leptos_debuginfo)",
     "cfg(erase_components)",
-    "cfg(rustc_nightly)",
 ]
 
 # Maintained independently of the enclosing application workspace.

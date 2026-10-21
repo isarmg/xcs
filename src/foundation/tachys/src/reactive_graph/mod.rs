@@ -574,7 +574,6 @@ macro_rules! reactive_impl {
     };
 }
 
-#[cfg(not(all(feature = "nightly", rustc_nightly)))]
 mod stable {
     use super::RenderEffectState;
     use crate::{

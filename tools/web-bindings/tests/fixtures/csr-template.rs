@@ -30,6 +30,14 @@ fn template(label: String, counter: Arc<AtomicUsize>) -> impl RenderHtml + ToTem
         ))
 }
 
+fn boolean_template(value: bool) -> impl RenderHtml + ToTemplate {
+    input()
+        .r#type("checkbox")
+        .disabled(value)
+        .checked(value)
+        .required(value)
+}
+
 async fn settle_properties() {
     let _ =
         wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&JsValue::UNDEFINED)).await;
@@ -45,6 +53,20 @@ pub async fn run_template_probe() -> Result<String, JsValue> {
         let parent = document.body().unwrap();
         state.mount(parent.as_ref(), None);
         let root = state.elements().into_iter().next().unwrap();
+        let mut flags = ViewTemplate::new(boolean_template(false)).build();
+        flags.mount(parent.as_ref(), None);
+        let flag_node = flags.elements().into_iter().next().unwrap();
+        for key in ["disabled", "checked", "required"] {
+            if flag_node.has_attribute(key) { return Err(format!("boolean initial false: {key}").into()); }
+        }
+        for value in [false, true, false] {
+            ViewTemplate::new(boolean_template(value)).rebuild(&mut flags);
+            for key in ["disabled", "checked", "required"] {
+                if flag_node.has_attribute(key) != value { return Err(format!("boolean rebuild {value}: {key}").into()); }
+            }
+        }
+        flags.unmount();
+        drop(flags);
         let button = root.query_selector("button")?.unwrap();
         let input: web_sys::HtmlInputElement = root.query_selector("input")?.unwrap().unchecked_into();
         if root.id() != "csr-template-probe" || !root.class_list().contains("template-probe") || !root.class_list().contains("active") {
@@ -81,7 +103,7 @@ pub async fn run_template_probe() -> Result<String, JsValue> {
         if document.get_element_by_id("csr-template-probe").is_some() { return Err("template unmount".into()); }
         button.dispatch_event(&web_sys::Event::new("click")?)?;
         if counter.load(Ordering::SeqCst) != 2 { return Err("template handler cleanup".into()); }
-        Ok("{\"status\":\"passed\",\"checks\":[\"template attributes\",\"dynamic text\",\"DOM property\",\"primitive text and escaping\",\"style\",\"class toggle rebuild\",\"text escaping\",\"event listener\",\"rebuild\",\"node retention\",\"focus retention\",\"listener replacement\",\"unmount and cleanup\"]}".into())
+        Ok("{\"status\":\"passed\",\"checks\":[\"boolean initial false\",\"boolean false→false\",\"boolean false→true\",\"boolean true→false\",\"template attributes\",\"dynamic text\",\"DOM property\",\"primitive text and escaping\",\"style\",\"class toggle rebuild\",\"text escaping\",\"event listener\",\"rebuild\",\"node retention\",\"focus retention\",\"listener replacement\",\"unmount and cleanup\"]}".into())
     })).await
 }
 

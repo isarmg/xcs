@@ -166,37 +166,6 @@ impl<'a> AttributeValue for Cow<'a, str> {
     }
 }
 
-#[cfg(all(feature = "nightly", rustc_nightly))]
-impl<const V: &'static str> AttributeValue for crate::view::static_types::Static<V> {
-    type State = ();
-    type Cloneable = Self;
-    type CloneableOwned = Self;
-
-    fn to_template(key: &str, buf: &mut String) {
-        buf.push(' ');
-        buf.push_str(key);
-        buf.push_str("=\"");
-        buf.push_str(V);
-        buf.push('"');
-    }
-
-    fn hydrate(self, _key: &str, _el: &crate::renderer::types::Element) -> Self::State {}
-
-    fn build(self, el: &crate::renderer::types::Element, key: &str) -> Self::State {
-        <&str as AttributeValue>::build(V, el, key);
-    }
-
-    fn rebuild(self, _key: &str, _state: &mut Self::State) {}
-
-    fn into_cloneable(self) -> Self::Cloneable {
-        self
-    }
-
-    fn into_cloneable_owned(self) -> Self::CloneableOwned {
-        self
-    }
-}
-
 impl<'a> AttributeValue for &'a String {
     type State = (crate::renderer::types::Element, &'a String);
     type Cloneable = Self;
@@ -308,11 +277,7 @@ impl AttributeValue for bool {
     fn to_template(_key: &str, _buf: &mut String) {}
 
     fn hydrate(self, key: &str, el: &crate::renderer::types::Element) -> Self::State {
-        // Restore the dynamic attribute on the browser template clone.
-        {
-            Rndr::set_attribute(el, key, "");
-        }
-        (el.clone(), self)
+        self.build(el, key)
     }
 
     fn build(self, el: &crate::renderer::types::Element, key: &str) -> Self::State {

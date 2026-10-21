@@ -119,8 +119,7 @@ pub trait IntoClass: Send {
     }
 
     /// Renders the class to HTML for a `<template>`.
-    #[allow(unused)] // it's used with `nightly` feature
-    fn to_template(class: &mut String) {}
+    fn to_template(_class: &mut String) {}
 
     /// Adds interactivity as necessary, given DOM nodes that were created from HTML that has
     /// either been rendered on the server, or cloned for a `<template>`.
@@ -428,35 +427,4 @@ impl IntoClass for (&'static str, bool) {
         let (class_list, _, name) = state;
         Rndr::remove_class(class_list, name);
     }
-}
-
-#[cfg(all(feature = "nightly", rustc_nightly))]
-impl<const V: &'static str> IntoClass for crate::view::static_types::Static<V> {
-    const TEMPLATE: &'static str = V;
-
-    type State = ();
-    type Cloneable = Self;
-    type CloneableOwned = Self;
-
-    fn to_template(class: &mut String) {
-        class.push_str(V);
-    }
-
-    fn hydrate(self, _el: &crate::renderer::types::Element) -> Self::State {}
-
-    fn build(self, el: &crate::renderer::types::Element) -> Self::State {
-        Rndr::set_attribute(el, "class", V);
-    }
-
-    fn rebuild(self, _state: &mut Self::State) {}
-
-    fn into_cloneable(self) -> Self::Cloneable {
-        self
-    }
-
-    fn into_cloneable_owned(self) -> Self::CloneableOwned {
-        self
-    }
-
-    fn reset(_state: &mut Self::State) {}
 }

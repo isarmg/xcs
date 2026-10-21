@@ -1,8 +1,7 @@
 use super::attribute::{
     maybe_next_attr_erasure_macros::next_attr_output_type, Attribute, NextAttribute,
 };
-#[cfg(all(feature = "nightly", rustc_nightly))]
-use crate::view::static_types::Static;
+
 use crate::{
     html::attribute::{maybe_next_attr_erasure_macros::next_attr_combine, NamedAttributeKey},
     renderer::{dom::CssStyleDeclaration, Rndr},
@@ -426,80 +425,3 @@ impl_style_value!(Arc<str>);
 impl_style_value!(String);
 #[cfg(feature = "oco")]
 impl_style_value!(oco_ref::Oco<'static, str>);
-
-#[cfg(all(feature = "nightly", rustc_nightly))]
-impl<const V: &'static str> IntoStyleValue for Static<V> {
-    type State = Self;
-    type Cloneable = Self;
-    type CloneableOwned = Self;
-
-    fn build(self, style: &CssStyleDeclaration, name: &str) -> Self::State {
-        Rndr::set_css_property(style, name, V);
-        self
-    }
-
-    fn rebuild(self, _style: &CssStyleDeclaration, _name: &str, _state: &mut Self::State) {}
-
-    fn into_cloneable(self) -> Self::Cloneable {
-        self
-    }
-
-    fn into_cloneable_owned(self) -> Self::CloneableOwned {
-        self
-    }
-}
-
-#[cfg(all(feature = "nightly", rustc_nightly))]
-impl<const V: &'static str> IntoStyleValue for Option<Static<V>> {
-    type State = Self;
-    type Cloneable = Self;
-    type CloneableOwned = Self;
-
-    fn build(self, style: &CssStyleDeclaration, name: &str) -> Self::State {
-        if self.is_some() {
-            Rndr::set_css_property(style, name, V);
-        }
-        self
-    }
-
-    fn rebuild(self, style: &CssStyleDeclaration, name: &str, state: &mut Self::State) {
-        match (&state, &self) {
-            (None, None) => {}
-            (Some(_), None) => Rndr::remove_css_property(style, name),
-            (None, Some(_)) => Rndr::set_css_property(style, name, V),
-            (Some(_), Some(_)) => {}
-        }
-        *state = self;
-    }
-
-    fn into_cloneable(self) -> Self::Cloneable {
-        self
-    }
-
-    fn into_cloneable_owned(self) -> Self::CloneableOwned {
-        self
-    }
-}
-
-#[cfg(all(feature = "nightly", rustc_nightly))]
-impl<const V: &'static str> IntoStyle for crate::view::static_types::Static<V> {
-    type State = ();
-    type Cloneable = Self;
-    type CloneableOwned = Self;
-
-    fn build(self, el: &crate::renderer::types::Element) -> Self::State {
-        Rndr::set_attribute(el, "style", V);
-    }
-
-    fn rebuild(self, _state: &mut Self::State) {}
-
-    fn into_cloneable(self) -> Self::Cloneable {
-        self
-    }
-
-    fn into_cloneable_owned(self) -> Self::CloneableOwned {
-        self
-    }
-
-    fn reset(_state: &mut Self::State) {}
-}

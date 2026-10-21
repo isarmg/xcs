@@ -56,6 +56,8 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
 </script>''')
         retired = {
             'server_module': 'use tachys::ssr;',
+            'nightly_static_views': 'use tachys::view::static_types;',
+            'nightly_static_attributes': 'use tachys::html::attribute::StaticAttr;',
             'islands': 'use tachys::html::islands;',
             'serialized_keys': 'use tachys::view::keyed::SerializableKey;',
             'doctype': 'pub fn old() { tachys::html::doctype("html"); }',
@@ -71,7 +73,7 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
             if not result.returncode or not any(code in result.stderr for code in ['error[E0432]', 'error[E0425]', 'error[E0599]', 'error[E0107]']):
                 raise AssertionError(f'{name} accepted or failed for another reason: {result.stderr}')
         source.write_text('')
-        for feature in ['ssr', 'hydrate', 'islands', 'mark_branches', 'testing', 'sledgehammer', 'reactive_stores', 'error-hook']:
+        for feature in ['ssr', 'hydrate', 'islands', 'mark_branches', 'testing', 'sledgehammer', 'reactive_stores', 'error-hook', 'nightly']:
             result = cargo(*command, '--features', 'tachys/' + feature, capture=True)
             if not result.returncode or 'does not have that feature' not in result.stderr:
                 raise AssertionError(f'{feature} accepted or failed for another reason: {result.stderr}')
@@ -86,7 +88,7 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
                                for name in ['fixture.js', 'fixture_bg.wasm']},
         }
         (output / 'validation.json').write_text(json.dumps(record, indent=2) + '\n')
-        print(f'CSR contract: browser template compiled; {len(retired)} retired API and eight feature checks passed')
+        print(f'CSR contract: browser template compiled; {len(retired)} retired API and nine feature checks passed')
 
 
 if __name__ == '__main__':

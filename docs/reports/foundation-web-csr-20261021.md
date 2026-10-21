@@ -67,3 +67,14 @@ CSR/流式 HTML 和 web-sys/tachys 实际闭包仍是后续已授权批次，尚
 本批 foundation 从 10,642 文件 / 148,516,376 字节降至 10,638 / 148,264,661，减少 4 文件与 251,715 字节；相对 a04 共减少 371 文件、2,184,541 字节。根 Cargo 包仍为 344、活动来源仍为 326、退休身份仍为 76，多版本统计不变。来源收据、合并来源、架构索引和界面说明已同步，原始 provenance/许可证/上游身份及来源门禁保持不变。
 
 全 workspace quality、来源/静态门禁与 Web 宿主测试已通过。最终生产构建、产品 Chrome/G4/字体/六视口/生命周期及同构建的 13 项模板断言全部通过；本地证据见 [CSR 验证收据](evidence/foundation-csr-local-validation-20261021.json)。产品 WASM 从 2,205,316 到 2,191,592 字节，减少 13,724；当前 gzip 为 659,482 字节。不据此推断运行时延迟、内存或吞吐收益。保留客户端 Suspend、owner 与 Abortable 清理，不把服务端解析清理扩展成取消客户端异步 UI。
+
+
+## 第七批：模板布尔属性与未使用 nightly 表面
+
+第六批精确 SHA `9e54eca136b03baa6264c0f9efa5406b5811c274` 的 CI [39547939294](https://github.com/isarmg/zxs/actions/runs/39547939294) 已 completed/success，13/13 项成功，包括同次生产资产的 13 项模板真实浏览器检查。
+
+独立复核发现既有 bool hydration 缺陷：false 的 disabled 等布尔属性也会被无条件写入，而状态记录 false 使 false→false 重建不能纠正。该行为在旧 1f67340c 已存在，不是 CSR 收窄引入。hydrate 现复用正常 build；新增真实 input checkbox 模板，逐项检查 disabled、checked、required 初始 false，以及 false→false、false→true、true→false。原 13 项模板断言全部保留，扩展为 17 组，未为过门禁删除场景。
+
+本项目未使用 tachys/nightly；其 Static 文本/属性还沿用未转义输出假设。本批诚实撤销该特性、Static 类型和分支、构建通道探测及 tachys→rustc_version 边，不新增 nightly 支持或留下空特性。rustc_version 仍有 reactive_graph 的真实构建消费者，故保留该来源。来源/架构/静态、全 quality、Web 单元/集成/doctest、生产构建及完整 Chrome/G4/字体/六视口/生命周期全部通过；模板检查扩展为 17 组负向 API、9 组负向特性。
+
+foundation 为 10,636 文件 / 148,253,403 字节，本批减少 2 文件 / 11,258 字节；根包仍为 344、来源仍为 326、退役身份仍为 76。此构建产品 WASM 为 2,192,963 字节，较上批增加 1,371 字节，未把源码减少等同运行时或产物必然改善。17 组真实模板结果和验证源码身份见 [本地收据](evidence/foundation-template-bool-local-20261021.json)；最终 CI 在精确提交上另行生成干净树身份与资产映射。
