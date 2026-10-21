@@ -97,6 +97,12 @@
     {
       "tool": "python3",
       "args": [
+        "test/entropy/check.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
         "tools/rust-sources/check_ring_tests.py"
       ]
     },

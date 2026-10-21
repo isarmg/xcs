@@ -27,7 +27,7 @@ class BackendEnvironment(unittest.TestCase):
                     helper.matrix_environment()
 
     def test_external_backend_or_optimization_flags_are_not_silently_discarded(self):
-        for flags in ("--cfg rustix_use_libc", '--cfg getrandom_backend="unsupported"',
+        for flags in ("--cfg rustix_use_libc", '--cfg system_entropy_backend="unsupported"',
                       "--cfg mio_unsupported_force_poll_poll", "-C opt-level=2", " "):
             with self.subTest(flags=flags), patch.dict(os.environ, {"RUSTFLAGS": flags}, clear=True):
                 with self.assertRaisesRegex(RuntimeError, "unset RUSTFLAGS"):

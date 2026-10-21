@@ -12,24 +12,14 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 matrix_environment = runpy.run_path(str(Path(__file__).with_name("backend_environment.py")))["matrix_environment"]
-VERSIONS = ("0.2.17", "0.4.3")
+PACKAGES = ("system-entropy",)
 RETIRED = ("rndr", "efi_rng", "windows_legacy")
 DIAGNOSTIC = "this getrandom backend was retired"
 
 
-def consumer(version):
-    old = version.startswith("0.2")
-    code = (ROOT / "test/ci/fixtures/linux-random-boundaries.rs").read_text().replace("FILL", "getrandom" if old else "fill").replace(
-        "UNINIT", "getrandom_uninit" if old else "fill_uninit"
-    )
-    if old:
-        code = re.sub(r'        #\[cfg\(not\(getrandom_backend = "unsupported"\)\)\]\n', "", code)
-        code = re.sub(r'        #\[cfg\(getrandom_backend = "unsupported"\)\]\n        assert!\(result.is_err\(\)\);\n', "", code)
-    else:
-        code += (ROOT / "test/ci/fixtures/linux-random-custom.rs").read_text()
-        if version.startswith("0.4"):
-            code = code.replace("#[no_mangle]", "#[unsafe(no_mangle)]")
-    return code
+def consumer():
+    code = (ROOT / "test/ci/fixtures/linux-random-boundaries.rs").read_text()
+    return code + (ROOT / "test/ci/fixtures/linux-random-custom.rs").read_text()
 
 
 def run(command, env, expected_error=None):
@@ -85,10 +75,11 @@ def main():
     base_env = matrix_environment()
     base_env["RUSTFLAGS"] = "--deny=warnings"
     with tempfile.TemporaryDirectory(prefix="zxs-random-backends-") as directory:
-        for version in VERSIONS:
-            source = ROOT / "src" / "foundation" / ("getrandom-" + version)
-            isolated = Path(directory) / version
+        for package in PACKAGES:
+            source = ROOT / "src" / "foundation" / package
+            isolated = Path(directory) / package
             isolated.mkdir()
+            (isolated / "rust-toolchain.toml").write_bytes((ROOT / "rust-toolchain.toml").read_bytes())
             manifest = re.sub(
                 r'(path|readme) = "([^"]+)"',
                 lambda m: m[1] + ' = "' + str((source / m[2]).resolve()) + '"',
@@ -97,35 +88,31 @@ def main():
             manifest += '\n[workspace]\n[[test]]\nname = "isolated_consumer"\npath = "consumer.rs"\n'
             path = isolated / "Cargo.toml"
             path.write_text(manifest)
-            (isolated / "consumer.rs").write_text(consumer(version))
+            (isolated / "consumer.rs").write_text(consumer())
             run(["cargo", "generate-lockfile", "--offline", "--manifest-path", str(path)], base_env)
             common = ["--locked", "--offline", "-j2", "--manifest-path", str(path),
                       "--target-dir", str(args.target_dir.resolve()), "--message-format=json"]
-            modes = [("default", "", [])]
-            if version.startswith("0.2"):
-                modes.append(("no-fallback", "", ["--features", "linux_disable_fallback"]))
-            else:
-                modes.extend([
-                    ("fallback", "--cfg getrandom_test_linux_fallback", []),
-                    ("syscall", "--cfg getrandom_test_linux_without_fallback", []),
-                    *[(backend, '--cfg getrandom_backend="' + backend + '"', [])
-                      for backend in ("linux_getrandom", "linux_raw", "custom", "unsupported")],
-                ])
+            modes = [
+                ("default", "", []),
+                ("fallback", "--cfg system_entropy_test_linux_fallback", []),
+                ("syscall", "--cfg system_entropy_test_linux_without_fallback", []),
+                *[(backend, '--cfg system_entropy_backend="' + backend + '"', [])
+                  for backend in ("linux_getrandom", "linux_raw", "custom", "unsupported")],
+            ]
             for name, flags, features in modes:
-                print(f"{version}: {name}", flush=True)
+                print(f"{package}: {name}", flush=True)
                 env = base_env | {"RUSTFLAGS": base_env["RUSTFLAGS"] + " " + flags}
                 run(["cargo", "test", "--no-run", *common, "--test", "isolated_consumer", *features], env)
-            feature = "js" if version.startswith("0.2") else "wasm_js"
-            print(f"{version}: browser wasm compile", flush=True)
+            feature = "wasm_js"
+            print(f"{package}: browser wasm compile", flush=True)
             run(["cargo", "check", *common, "--lib", "--target", "wasm32-unknown-unknown",
                  "--features", feature], base_env)
-            if not version.startswith("0.2"):
-                for backend in RETIRED:
-                    print(f"{version}: reject {backend}", flush=True)
-                    env = base_env | {"RUSTFLAGS": base_env["RUSTFLAGS"] +
-                                     ' --cfg getrandom_backend="' + backend + '"'}
-                    run(["cargo", "check", *common, "--lib"], env, DIAGNOSTIC)
-    print("PASS: 9 native component modes, 2 wasm compile checks, 3 retired-backend rejections")
+            for backend in RETIRED:
+                print(f"{package}: reject {backend}", flush=True)
+                env = base_env | {"RUSTFLAGS": base_env["RUSTFLAGS"] +
+                                 ' --cfg system_entropy_backend="' + backend + '"'}
+                run(["cargo", "check", *common, "--lib"], env, DIAGNOSTIC)
+    print("PASS: 7 native component modes, 1 wasm compile check, 3 retired-backend rejections")
     print("This matrix is not a production closure check or a browser runtime smoke test.")
 
 

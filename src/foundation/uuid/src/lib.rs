@@ -109,7 +109,7 @@
 //!   This feature requires more dependencies to compile, but is just as suitable for
 //!   UUIDs as the default algorithm.
 //! * `rng-rand` - forces `rand` as the backend for randomness.
-//! * `rng-getrandom` - forces `getrandom` as the backend for randomness.
+//! * `rng-system-entropy` - forces `getrandom` as the backend for randomness.
 //! * `bytemuck` - adds a `Pod` trait implementation to `Uuid` for byte manipulation
 //!
 //! # Unstable features
@@ -166,7 +166,7 @@
 //! produce random bytes yourself and then pass them to [`Builder::from_random_bytes`]
 //! without enabling the `v4` or `v7` features.
 //!
-//! If you're using `getrandom`, you can specify the `rng-getrandom` or `rng-rand`
+//! If you're using `getrandom`, you can specify the `rng-system-entropy` or `rng-rand`
 //! features of `uuid` and configure `getrandom`'s provider per its docs. `uuid`
 //! may upgrade its version of `getrandom` in minor releases.
 //!

@@ -74,6 +74,14 @@ class SourceNaming(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, pattern or '.'):
             self.apply()
 
+    def test_prepare_preserves_newer_catalog_schema(self):
+        self.previous['schema'] = 8
+        with patch.object(naming, 'validate_history', wraps=naming.validate_history) as validate:
+            self.apply()
+        self.assertGreaterEqual(len(validate.call_args_list), 2)
+        for call in validate.call_args_list:
+            self.assertEqual(call.args[1]['schema'], 8)
+
     def test_exact_reviewed_move_and_content_edits(self):
         baseline = deepcopy(self.previous)
         active, records = self.apply()

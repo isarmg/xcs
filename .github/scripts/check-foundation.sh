@@ -24,6 +24,7 @@ case "${1:-}" in
     python3 .github/scripts/check-crypto-consolidation.py
     python3 .github/scripts/check-linux-random-backends.py
     python3 .github/scripts/check-entropy-consumers.py
+    python3 test/entropy/check.py
     python3 tools/rust-sources/check_ring_tests.py
     cargo test --locked --offline --lib -p password-hash
     ;;

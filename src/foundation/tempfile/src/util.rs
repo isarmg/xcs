@@ -54,11 +54,11 @@ pub fn create_helper<R>(
         // 2. We're failing to create random files for some other reason. This shouldn't be the case
         //    given that we're checking error kinds, but it could happen.
         #[cfg(all(
-            feature = "getrandom",
+            feature = "system-entropy",
             any(windows, unix, target_os = "redox", target_os = "wasi")
         ))]
         if i == 3 {
-            if let Ok(seed) = getrandom::u64() {
+            if let Ok(seed) = system_entropy::u64() {
                 rng.seed(seed);
             }
         }

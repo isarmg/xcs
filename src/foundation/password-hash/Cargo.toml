@@ -49,5 +49,5 @@ path = "../subtle"
 [features]
 alloc = ["base64ct/alloc"]
 default = ["random-generator-core"]
-getrandom = ["random-generator-core/getrandom"]
+system-entropy = ["random-generator-core/system-entropy"]
 std = ["alloc", "base64ct/std", "random-generator-core/std"]

@@ -236,7 +236,7 @@ repeat renames and sources with upgrade histories until their chain model exists
         if new in active:
             raise ValueError('duplicate rename destination')
         active[new] = after
-        temporary = dict(previous, schema=5, packages=active, renames=records, rename_records_sha256=hashes(records))
+        temporary = dict(previous, schema=max(previous.get('schema', 0), 5), packages=active, renames=records, rename_records_sha256=hashes(records))
         validate_history(root, temporary)
         if file_inventory(new_path) != item['files_sha256']:
             raise ValueError('renamed source content differs from reviewed plan')

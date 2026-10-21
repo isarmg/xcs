@@ -69,7 +69,7 @@ pub fn write_full(
     expectation: Expectation,
 ) -> Result<Receipt, Error> {
     let mut nonce = [0u8; 16];
-    getrandom::fill(&mut nonce).map_err(|_| Error::Randomness)?;
+    system_entropy::fill(&mut nonce).map_err(|_| Error::Randomness)?;
     let mut name = String::from(".zxs-payload-");
     use std::fmt::Write as _;
     for byte in nonce {

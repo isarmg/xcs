@@ -25190,7 +25190,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "3960db3036001189decf1b1c319d1a6d6c1c85e8dcac65d014c95a0d078703d4",
+    "compliance/external-tests/foundation.json": "1b720e78bf07628aeb8728b10844739f1b0cbe9c864699cac62e65a2678ab405",
     "compliance/external-tests/integrated.json": "61167faf558a55d73b6f9312ff3635e5dfb01309856c499e3c4f365c1080c208",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -31833,70 +31833,6 @@
       "origin_directory": "vendor/rust/futures-intrusive-0.5.0",
       "roots": [
         "test/foundation/futures-intrusive"
-      ]
-    },
-    "src/foundation/getrandom-0.2.17": {
-      "bytes": 5482,
-      "directory": "src/foundation/getrandom-0.2.17",
-      "file_count": 5,
-      "files": [
-        {
-          "path": "test/foundation/getrandom-0.2.17/tests/common/mod.rs",
-          "sha256": "b9a36043d71963ba43a9e2899ba8eea80ff9f3284d243d9b9b9f941afa4f4aa4",
-          "source": "src/foundation/getrandom-0.2.17/tests/common/mod.rs",
-          "source_sha256_before": "b9a36043d71963ba43a9e2899ba8eea80ff9f3284d243d9b9b9f941afa4f4aa4"
-        },
-        {
-          "path": "test/foundation/getrandom-0.2.17/tests/custom.rs",
-          "sha256": "1e944ae523b62dba53fe3daf1b964a2498c8fdd21dfa7afe53781bff2fcf276e",
-          "source": "src/foundation/getrandom-0.2.17/tests/custom.rs",
-          "source_sha256_before": "1e944ae523b62dba53fe3daf1b964a2498c8fdd21dfa7afe53781bff2fcf276e"
-        },
-        {
-          "path": "test/foundation/getrandom-0.2.17/tests/normal.rs",
-          "sha256": "9e1c4b1e468a09ed0225370dfb6608f8b8135e0fabb09bbc1a718105164aade6",
-          "source": "src/foundation/getrandom-0.2.17/tests/normal.rs",
-          "source_sha256_before": "9e1c4b1e468a09ed0225370dfb6608f8b8135e0fabb09bbc1a718105164aade6"
-        },
-        {
-          "path": "test/foundation/getrandom-0.2.17/tests/rdrand.rs",
-          "sha256": "61981bd03032d604f1e5ec6de0d3aebdb72ad53c4b74239eee56dd7182cdf518",
-          "source": "src/foundation/getrandom-0.2.17/tests/rdrand.rs",
-          "source_sha256_before": "fcf3f78e3078e1b262d0efae8f3c4a730f3fbf68df656fceb78e22ee4cc98990"
-        },
-        {
-          "path": "test/foundation/getrandom-0.2.17/unit/src/error/tests_179.rs",
-          "sha256": "1d37c5292b66dfb0948b848ab6459685695aab3173d4941a7f4912d2d754d133",
-          "source": "src/foundation/getrandom-0.2.17/src/error.rs",
-          "source_sha256_before": "ab5b82ddb8304e8ad75d905d7dc5ba8deec92096930e81e87d7a28f3da382dee"
-        }
-      ],
-      "origin_directory": "vendor/rust/getrandom-0.2.17",
-      "roots": [
-        "test/foundation/getrandom-0.2.17"
-      ]
-    },
-    "src/foundation/getrandom-0.4.3": {
-      "bytes": 6025,
-      "directory": "src/foundation/getrandom-0.4.3",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/getrandom-0.4.3/tests/mod.rs",
-          "sha256": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67",
-          "source": "src/foundation/getrandom-0.4.3/tests/mod.rs",
-          "source_sha256_before": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67"
-        },
-        {
-          "path": "test/foundation/getrandom-0.4.3/tests/sys_rng.rs",
-          "sha256": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466",
-          "source": "src/foundation/getrandom-0.4.3/tests/sys_rng.rs",
-          "source_sha256_before": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466"
-        }
-      ],
-      "origin_directory": "vendor/rust/getrandom-0.4.3",
-      "roots": [
-        "test/foundation/getrandom-0.4.3"
       ]
     },
     "src/foundation/gimli": {
@@ -44771,6 +44707,29 @@
         "test/foundation/sysinfo"
       ]
     },
+    "src/foundation/system-entropy": {
+      "bytes": 6060,
+      "directory": "src/foundation/system-entropy",
+      "file_count": 2,
+      "files": [
+        {
+          "path": "test/foundation/system-entropy/tests/mod.rs",
+          "sha256": "9eb08614fe6f7f4d1adf7a5dd0c977f6972ec39dbf0a7374c7734c884b5099f5",
+          "source": "src/foundation/getrandom-0.4.3/tests/mod.rs",
+          "source_sha256_before": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67"
+        },
+        {
+          "path": "test/foundation/system-entropy/tests/sys_rng.rs",
+          "sha256": "a7837582c10a1de8aaf5c861cff234c26d505eb31a771834eb8f7e006e884f16",
+          "source": "src/foundation/getrandom-0.4.3/tests/sys_rng.rs",
+          "source_sha256_before": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466"
+        }
+      ],
+      "origin_directory": "vendor/rust/getrandom-0.4.3",
+      "roots": [
+        "test/foundation/system-entropy"
+      ]
+    },
     "src/foundation/task-dispatch": {
       "bytes": 18968,
       "directory": "src/foundation/task-dispatch",
@@ -51733,17 +51692,17 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "1c5a4afab11f14950f4fcda620558f13a3277c491dc2cdfcfc87d1f426d27a71"
+    "Cargo.lock": "4f9c07dd15eafdf8592bf63bbb3f003e174c164043638ebfc7297825acfb4890"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
     "src/admin/Cargo.toml": "a762023b0d0985bbf1c25ca90f28dc0527f69690580dc0a834f8da1b73325bf7",
-    "src/auth/Cargo.toml": "2589d11078bd4287ec2cf50a7e27c74bad2d345b5afdb60b42af9f11b72d5217",
+    "src/auth/Cargo.toml": "801e02ea2837c09f3066fd66ac6d3768d3e912b33cb5b9b54b7ea66f1a486470",
     "src/client/Cargo.toml": "be8abfad7e33a2796fdc387dc25f59b8578188bda9044716ebdcb2201279ee78",
     "src/contract/Cargo.toml": "3cdb429c2617fb934312c73d89045b838d1329b4db8e317701fa4daa04c95d8f",
     "src/engine/Cargo.toml": "64645023b2f7aef83ded188f12c23cf0c58bbf202181dc17913ea788d3a87745",
     "src/foundation/adler2/Cargo.toml": "6fe5eda8f0c1ccf3225d155f562cb523cf25488e37a34984e856ced9f2dcff1c",
-    "src/foundation/ahash/Cargo.toml": "4e8a1ec27c49d739af052736eb28ec4b9763d1c6f2d4056db1146f030fed38b3",
+    "src/foundation/ahash/Cargo.toml": "389da41047121eca069180e5c73a5b5d408bbd171b59e5c4c72c8a85ab8455f1",
     "src/foundation/allocator-api2/Cargo.toml": "d3a2e919bdfed4776e9d0c68c6467d30335ca7d78f30ef277da034fce35afe69",
     "src/foundation/anstream/Cargo.toml": "1b4a5447407982ffd2b6c19c44c84145968f8110461026fd2927ff6d598ff3c8",
     "src/foundation/anstyle-parse/Cargo.toml": "3068edd1ffeae19bc234a2c022a1609c64f255c472302dd865ee0311e5e5cf1d",
@@ -51809,7 +51768,7 @@
     "src/foundation/event-listener/Cargo.toml": "950407569cae95670ade8033a7c17e646a3d30d24a97552c2e8eaf59a61a4a6d",
     "src/foundation/fallible-iterator/Cargo.toml": "692f59bb96003626649210374e97a557b9a2816c02283e2c829de55da20963c0",
     "src/foundation/fancy-regex/Cargo.toml": "b3031887d58c372eff4f7113449a69dcc313079fc7c57f7a5e1eaed08a1e7496",
-    "src/foundation/fastrand/Cargo.toml": "a30bd99b5e7c1b19b195c1acb79b21c4360253c80a7d9ee72a4fec11c0e7873c",
+    "src/foundation/fastrand/Cargo.toml": "cae6792a5a7309564b7e258f32624287b687068520cede651733a4674c01284c",
     "src/foundation/find-msvc-tools/Cargo.toml": "bca586d6655f4992269c223c6d39f52d50be7b0b0da526cae9c62e0eb7b0a672",
     "src/foundation/flag-set/Cargo.toml": "109b29fdae9bfa348f38072e9dd18f9afb974c6c99d04343c0bb0e610a369759",
     "src/foundation/flate2/Cargo.toml": "9e11e54f8e2b0f25f64f628fcb6baa6b04e437b5ae0ca7d837392f8c3e335e86",
@@ -51822,8 +51781,6 @@
     "src/foundation/futures-intrusive/Cargo.toml": "be262a474612f1b367d512c8a8527a05161d8d53f73f26941c73dbd3ff4bd6ad",
     "src/foundation/futures-macro/Cargo.toml": "0d1662f1717dfa40934c1571305a99fa73a6bfccc7ef39ebd5aaa59037bc5665",
     "src/foundation/futures/Cargo.toml": "8b5ce61ab8e51d8995b4e6c63e411b739663c54fa8b911fbbddcfe8adce6b3d1",
-    "src/foundation/getrandom-0.2.17/Cargo.toml": "343a500ff60a657dae7cd4dfbbca349e474473bbeddfa26bab6065d8f842669c",
-    "src/foundation/getrandom-0.4.3/Cargo.toml": "6e3eb9b5f452fcc904633c89c0c1fcb368e18f1a347bc1ed651b6037cf6b5d32",
     "src/foundation/gimli/Cargo.toml": "bef81f95876ce5612c8c2449e99fce212aaa662b54ac173c7c1387ba02c74030",
     "src/foundation/glob/Cargo.toml": "fb4768e511e05b58c5f45460b6a473caf01654707dba3397db0834da75815c8c",
     "src/foundation/gloo-events/Cargo.toml": "934077162367a8f0543342f8bff4f569f2ece368e2751c3a75c2b742a5c6c667",
@@ -51861,8 +51818,8 @@
     "src/foundation/js-sys/Cargo.toml": "e115355f0b67560fce3b1c11b07a4a36de8369a2d3d77fafc000543dcdcd2eb1",
     "src/foundation/json-codec/Cargo.toml": "a8e04769846396d763eb1de4c49ccce641983a9a9403717a60e017c1f55bf00e",
     "src/foundation/jsonschema-regex/Cargo.toml": "dc40fcc0087fa6d212a94be74ee5fdeeb24be92f1563eaddd96ce8d8fab3b0f1",
-    "src/foundation/jsonschema-value/Cargo.toml": "676937292b482963a7853b7651cb69d717ba33b500f0fa03755568acd166e06b",
-    "src/foundation/jsonschema/Cargo.toml": "54f253cd2c58219a4af6846989c09c1a2c571acc74abd1c912a3c1f3b850ec32",
+    "src/foundation/jsonschema-value/Cargo.toml": "733fa89f6954234f8e1d45c26c68101fa962dd33a1a5fe4c1d986cfc0594afc1",
+    "src/foundation/jsonschema/Cargo.toml": "35214cfed9e9a66f45d0f3ff7b4577613e964ad104d440f2680b81e4f6e72432",
     "src/foundation/lazy_static/Cargo.toml": "52e3d1cbd8ad7145b35b8c175ef1a0484e4c3a7e2750f6cde542c1c9e17daca7",
     "src/foundation/leb128/Cargo.toml": "9ae03997e60622923cea16931a313d4b6fa2805224ccdd031d4a90d1abc08148",
     "src/foundation/leb128fmt/Cargo.toml": "b9fb8a6dc7caec07b0bb91b6e2948adceb92c51d6dd4afb7fca372903c3d4414",
@@ -51892,7 +51849,7 @@
     "src/foundation/or_poisoned/Cargo.toml": "7c1464d214f3debd34b394ee2a20c67d2d31f501a98c4b56317530e4a34937e2",
     "src/foundation/outref/Cargo.toml": "c0a5c6ed2853888211e6e68b31655b69fc1cd45345a76211d47ca7d3d7026e89",
     "src/foundation/parking/Cargo.toml": "1be835d946f46f7f147673d4caa27432b10e929d2c7636ad155ed8fd6c462740",
-    "src/foundation/password-hash/Cargo.toml": "2ce38d29523fe4594a317bb8d1515ec58d970a0b5baef1e3c4c17c6724e6866b",
+    "src/foundation/password-hash/Cargo.toml": "09686deaeb147194d2cc2286842d6b0c097214c09bdc876c0e7ee4ef54b55b35",
     "src/foundation/pastey/Cargo.toml": "7c01c4cfa53b556cd03be7ac262bf5b06ed726a078ba6ab9105be4b177519ed7",
     "src/foundation/percent-encoding/Cargo.toml": "5caf12b5a6b05dab1bd67aa3c8ccd6fe8c673a6700eda159e97ebcc95cbfc5ac",
     "src/foundation/pin-project-lite/Cargo.toml": "e3bf7b881836004c8be84237691474f43e50815fafc73b911c5c7f9065feedf8",
@@ -51905,16 +51862,16 @@
     "src/foundation/quote-use-macros/Cargo.toml": "2d2c52f3431ea930dd9ae2eea96ef1aaf9b9a694192fec9914d24f32ed977ecb",
     "src/foundation/quote-use/Cargo.toml": "76731ced54f44d7f2df6b48402e3b5c4f9c15d9497bd69201db35f39736c81b4",
     "src/foundation/quote/Cargo.toml": "b56481fbbe2846c7db15fadaee878e62c4b49b0ffb9a30d3d52663b6e7fd8292",
-    "src/foundation/random-generator-core/Cargo.toml": "89d80064dc2e7c16d40ba1637d18b291b0e7edb973408c96c65f9a0b22478523",
+    "src/foundation/random-generator-core/Cargo.toml": "7eec94598ffd4e8672d36cc2051e0f60248ce2e17afacd4838589087b4ab21c1",
     "src/foundation/rayon-core/Cargo.toml": "ec99da3c7e92b7454834e615d0a0e2407bb7b1fd1877607c00c8f1e3bc98985f",
     "src/foundation/rayon/Cargo.toml": "fbdb1891ba970b009e5d85e78d8f8ead0e716f2b376fb30bcb04023c1bbba919",
     "src/foundation/reactive-state/Cargo.toml": "97fcef25a6146688dd4322db95696b55f0aceba2ab70149490efeb44dfa1d87a",
     "src/foundation/ref-cast-impl/Cargo.toml": "15ba9d3c503960ea47843072982d4e1c9095fb6a2b67063cd0ccdb94268f992a",
     "src/foundation/ref-cast/Cargo.toml": "1291fdd6c5162dc8a1dd02103dd516846fdeb82f4b6d8b1f114c32e644a4701f",
-    "src/foundation/referencing/Cargo.toml": "13ea8df027eeca7c1f6b156731bd146958391c6f51fb6e51165cf2e6877b5d5c",
+    "src/foundation/referencing/Cargo.toml": "a9e416fbf7f78521b04a11a4cca76773ab819250abb5e4ee73a315e73bf78e45",
     "src/foundation/regex/Cargo.toml": "7243083d5898fd6ee10adb616bf724f1fe0b9877befcb5b6a76b164b2aa1ae74",
     "src/foundation/reqwest/Cargo.toml": "a63912f4ebd177aa12558cae2e6c00addc464361fe1ab3dca729640e452c5fb2",
-    "src/foundation/ring/Cargo.toml": "8f465a642f461a274d10a62a2ffdd58292a1f45b553aa715bcb734864d34d9d2",
+    "src/foundation/ring/Cargo.toml": "e39511b3c2f540b2c7d01191ad8b0fc0d95a624d90d2bd6b22687ca397b4aa54",
     "src/foundation/rstml/Cargo.toml": "4e0405d8bf062a49cce19f873d4efc3786599965457e60324c425a626f4561a9",
     "src/foundation/rust-source-format/Cargo.toml": "295ae9c97d9e1f38df6ba8048c7796a65a6e6d7d062183e4860bfece9a212f15",
     "src/foundation/rust-syntax/Cargo.toml": "56613dfaf8d7481213641c0fdc28878de46a909beef15081f8383ada66fe2b6f",
@@ -51956,8 +51913,9 @@
     "src/foundation/synchronization/Cargo.toml": "067b41cc4cc8fc7c098dfa7305910232364ea2820bc2bae431ee299f06b05871",
     "src/foundation/synstructure/Cargo.toml": "035e480439f3ce5e9840bcfa08ae1c917ab4322317b89cc2ec5d31c1c805a542",
     "src/foundation/sysinfo/Cargo.toml": "fd035afc120bbd2ae0f1d85a645ed94898c704b040ac0a436163afc1850674b7",
+    "src/foundation/system-entropy/Cargo.toml": "6f80d8b67297956fe84dded22c94656eec80a824c9aadf1a7e86975e659d2221",
     "src/foundation/task-dispatch/Cargo.toml": "33fd519e179cb46ee3100a11dc6cf7c172beea3c8b5fe2a5ab3297cbcbcbc6d0",
-    "src/foundation/tempfile/Cargo.toml": "c4bf18aeccfd20b569c8b74f4d202108ea5fff5466b58614d7a06d55ff3c7f78",
+    "src/foundation/tempfile/Cargo.toml": "fa30af4edb4e6ea33aa4812a0fd00c3bce99a818372538976dc43fd3aa14b1cb",
     "src/foundation/thread_local/Cargo.toml": "7efef2ab12c7f2b364ab0d12a9bbf10144b943eee6d23629fdc88a69937e033c",
     "src/foundation/throw_error/Cargo.toml": "706e50e541bc1be149097732096bdfb9dd42f118036f65acfb9d742abe03aedb",
     "src/foundation/time-core/Cargo.toml": "b5e23a9d9387eb9fd51f1dd5ed16b8ad930a0f3ce7ce0b49059c977d007e956f",
@@ -51985,7 +51943,7 @@
     "src/foundation/utf8_iter/Cargo.toml": "7d9b9e216d200199808660be718472f80737d42b5e995cb5e9e59a171f69b321",
     "src/foundation/utf8parse/Cargo.toml": "52ccf4c19a7d0ce3d56c3ae7ff8344ea6e748a5bd53b6d04b0a0b546436b7c4a",
     "src/foundation/uuid-simd/Cargo.toml": "eb0d0896501394f3d5e824eed0fc84c3d87ae99d6d10d2cc2a403f84ea4e3c19",
-    "src/foundation/uuid/Cargo.toml": "11e4b0915cd19291affcce1cd88d1303b341cc127753516b3aaba5b5c368b4a0",
+    "src/foundation/uuid/Cargo.toml": "94a8c54b98f0999ff4f1ec7f3b9ddc5741db641da0e75d6a602c6cb23b0c481e",
     "src/foundation/version_check/Cargo.toml": "7687d1f1999db3568ef5049ae658291b1c519931f819d1cd47707f9a87d6990e",
     "src/foundation/view-alternatives/Cargo.toml": "6e5019fd2c08432eb4b5082d751114f98f1700b39b389a8343c024e4a91c87e0",
     "src/foundation/view-renderer/Cargo.toml": "e1a0774563898f664a99446d36d54f76f8027a4737b9e222d40bda208b7ebafe",
@@ -52019,11 +51977,11 @@
     "src/interface/Cargo.toml": "610da0e4dc1ef135758334ed121d4955da88c373736655140ea3f6459ac9b872",
     "src/macros/Cargo.toml": "fa641aa7517eed12651a1021de7001c5e70316c1f265b133981743cbd5268af9",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
-    "src/platform/Cargo.toml": "9a98e356a4176018b003357375a0e6d07f0592d62b918afb4be2b186110b8d40",
+    "src/platform/Cargo.toml": "d05e09ce14b91d6e1e0bd96eb6fe0fc2c822edff592fe6dbf4e7f4c5f4404953",
     "src/server/Cargo.toml": "e000f225a33889d78527118b781c0cb146292b9b50c89d37dd82c645fcbfdf01",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
-    "src/web/Cargo.toml": "03a1470b57854c0cd7129a70d017530f10b2412dd6a38ef84b9769531f97b13f",
+    "src/web/Cargo.toml": "9c7d8395c5ba4d89a1b6b38f95f6302262b21acf2f454e14b1a7a55915abffff",
     "tools/browser-smoke/Cargo.toml": "09a7d3f638680b1f0a3b3f56c28f829df299c99e981bece677c5c9ff509c66ad",
     "tools/contract-check/Cargo.toml": "4a0e0b4fe16226a16c029a8804d7b7f009dda49b37575e79b335c2ef3029d556",
     "tools/perf-check/Cargo.toml": "1d43415d20414747a8ca1c5bb74a940ac0ff773226778906f4d6a5325a945e02",
@@ -58146,7 +58104,7 @@
       "description": "A non-cryptographic hash function using AES-NI for high performance",
       "directory": "src/foundation/ahash",
       "files_sha256": {
-        "Cargo.toml": "4e8a1ec27c49d739af052736eb28ec4b9763d1c6f2d4056db1146f030fed38b3",
+        "Cargo.toml": "389da41047121eca069180e5c73a5b5d408bbd171b59e5c4c72c8a85ab8455f1",
         "build.rs": "7cb4efa0a4d25b40c47540150a5fac627c9fa8134b499d827d2740fd9f35c7bc",
         "src/aes_hash.rs": "01503b0c8c834fb06d54889c552f3bd4be81dd3e5fd0f36222c652d45dbdb243",
         "src/convert.rs": "0f509841ab05d450f62e511fbbd78d791e53f6435d5eb4ad6811fb25ba24826e",
@@ -58155,7 +58113,7 @@
         "src/hash_set.rs": "a59e9bf62ee9d12ee33717cf89bc6553ce6bd34002969c5857f7a3152a5e5c8f",
         "src/lib.rs": "57fe2e66ff6a2131bb56d37c929a0487c15d7560cd934caab413f5719f27fff7",
         "src/operations.rs": "1e3140dc467d02bf70743a5f5897d94ce24c34976d4c14a203f178528f7895f2",
-        "src/random_state.rs": "bea7ebc0240322fa63d4c4a5527e36b62622bc96aa013f9e64cbb07e2036fe40"
+        "src/random_state.rs": "0853889d4e545c2347c6bccfa5176f4a8520725b28f3a7e52f4c6249eb428c32"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -60986,9 +60944,9 @@
       "description": "A simple and fast random number generator",
       "directory": "src/foundation/fastrand",
       "files_sha256": {
-        "Cargo.toml": "a30bd99b5e7c1b19b195c1acb79b21c4360253c80a7d9ee72a4fec11c0e7873c",
+        "Cargo.toml": "cae6792a5a7309564b7e258f32624287b687068520cede651733a4674c01284c",
         "benches/bench.rs": "9613f3e9f893ef0c227c158be2c91d766e60b80ce11faf226ac490057ee38546",
-        "src/global_rng.rs": "f14c504601f9273bf6fa49621cc9dad2329092fd87d35fe8963e55d99f597de2",
+        "src/global_rng.rs": "ec34aa365e1584aead08a41e1fb1f09c67c45ee25b5e57da6ddcfb32c1c2e441",
         "src/lib.rs": "858da6a3831589762ec2214df3f8e8b09a1262708fb08072f1cf13c1260d6ce1"
       },
       "license": "Apache-2.0 OR MIT",
@@ -61761,102 +61719,6 @@
         "path_in_vcs": "futures-macro"
       },
       "version": "0.3.34"
-    },
-    "src/foundation/getrandom-0.2.17": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
-      "description": "A small cross-platform library for retrieving random data from system source",
-      "directory": "src/foundation/getrandom-0.2.17",
-      "files_sha256": {
-        "Cargo.toml": "343a500ff60a657dae7cd4dfbbca349e474473bbeddfa26bab6065d8f842669c",
-        "benches/buffer.rs": "242f56eaeecd1d0a0f6f9419d1bf312b8d211215355022bd4aef5e5e0f53e2a5",
-        "src/custom.rs": "ae5dc94bc12a4a284762e99891b013c509942b1a802ea559e04e572ed44479dc",
-        "src/error.rs": "67b49af2c69066416522023a3937fa3976a464b5a637ed699a9a05f68da362d4",
-        "src/error_impls.rs": "4c068e81d876237a7e0a0e91519896bd670c2f999ca729f7fb970caf888cab46",
-        "src/js.rs": "4306b7a49441e0da2a0737f92f56d3258ddcd1566ec3aea4a4f4a865bbf0ff87",
-        "src/lazy.rs": "092a015128757f56ca6e300f886d41cde294f246e8bc0f5af6da8b660288992c",
-        "src/lib.rs": "c9b35f8e88e861d887dd8940eb5460b86b323518fb3ee90773eae0ae67750ebf",
-        "src/linux_android.rs": "92c71e68adcb9bc4ee39e6b2db730e06af1e0c8db0389712b5ea8a1d86991277",
-        "src/linux_android_with_fallback.rs": "620577d889d92916aeed62ac0e4f711725fddb7e7bb331f02474160104354e8e",
-        "src/rdrand.rs": "ffbe1bfb8f5b30a95f462fa85db07e251f63248c6c0daf3b5f586034cedfa976",
-        "src/use_file.rs": "5dfb8446ccc48eefc3d4c81d7436dd6c0fd76419836b8ba18fe062424dfe5be1",
-        "src/util.rs": "e2c1b86ea97ca5c61d562182890cbe24c7eaa37ff8945c17fcfa665b767da1b0",
-        "src/util_libc.rs": "39fddfc06948dbd65c4dc696f71d32cf158c5ca91632afa78cbc4c22e0192502"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/getrandom-0.2.17/LICENSE-APACHE",
-        "compliance/licenses/upstream/getrandom-0.2.17/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "getrandom",
-      "origin_directory": "vendor/rust/getrandom-0.2.17",
-      "repository": "https://github.com/rust-random/getrandom",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "ff2abc00be7fca6ebc474524697ae276ad847ad0a6b3faa4bcb027e9a4614ad0",
-        "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.2.17.crate",
-        "name": "getrandom",
-        "version": "0.2.17"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "b625985d852600a3eeb68556811e59e7c9a6a098"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.2.17"
-    },
-    "src/foundation/getrandom-0.4.3": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
-      "description": "A small cross-platform library for retrieving random data from system source",
-      "directory": "src/foundation/getrandom-0.4.3",
-      "files_sha256": {
-        "Cargo.toml": "6e3eb9b5f452fcc904633c89c0c1fcb368e18f1a347bc1ed651b6037cf6b5d32",
-        "benches/buffer.rs": "cae45dc9e4fa0db8206f76a0a9b4b7a05f9cd0eda33d42f29887ca76f949522c",
-        "build.rs": "662faa06d7b2a9c5bea2c17a127a90e00b9f9b31105b0360da516e47cf816e95",
-        "src/backends.rs": "d0c72864b67f1c330aab01289d9a30ab447f34482379f18c6461023c7824b881",
-        "src/backends/custom.rs": "448b44a9800b3be95f91a85e35f1f313894bbd4e64e3751afaecf15b3f3532b3",
-        "src/backends/extern_impl.rs": "0a13d8e059ee5203cf414101017a92d9f7289f86451a23d872c471b24279ece1",
-        "src/backends/getrandom.rs": "da934695a424479f4eb80ba3a2aab97316f3bb6ed158523160eae1e3670e2b40",
-        "src/backends/linux_android_with_fallback.rs": "78a5c62a17d654cccb66bc0772c7017e57b0b6451e0d7135f834917456f343fb",
-        "src/backends/linux_raw.rs": "94f6a494edd6ab99eca1989294b1064b58ba502f401b642aedbc3b97e98c0bf7",
-        "src/backends/rdrand.rs": "013c90b04f882ea82a73cc82b8d282227e2cfe9fe7d4f8eae9020a1b17aeb3b1",
-        "src/backends/unsupported.rs": "a531ab9883b7d7b584c6f37a5c13543ec63d25d3acc36608d57d5d82ef44cbff",
-        "src/backends/use_file.rs": "c4333e73138dd67f7068aa09aa30c7e48e77671fec654cb817e01bfc55c2ab52",
-        "src/backends/wasm_js.rs": "4a9bf118575514709adf807cf6a4bd4e248b0e02f2a292bd32a01af2ad99e51c",
-        "src/error.rs": "0d4033976dda1a4f1d98006a755bb51af8669fe1ad20298570eded9fcafdc186",
-        "src/error_std_impls.rs": "32a3469b0a1291f2182d9bd98b9bdb6232ed259b7747b3665cbe8c3124483957",
-        "src/lib.rs": "d65a4ab2d10e2eebfcb62d89b46d1ebe1cc780321a2c00caf864af14a34623d2",
-        "src/util.rs": "b1f6bb46c35e1bc71faed96aaaac82be99df636b2e6bdcd676e898a669dee37f",
-        "src/utils/get_errno.rs": "d5afe0e5e41a32a85105fb5242156fc1c15096fd0ebb20363cb3368a5e63c7b2",
-        "src/utils/lazy_bool.rs": "573d5575c859c816262f44875f36c6aa8c58ecd5b2b1cf484d2415a6a41957d7",
-        "src/utils/lazy_ptr.rs": "5c0c29f1d636f303f65be626c998f0ef7f3e3329d6be1696479af07e53370920",
-        "src/utils/sanitizer.rs": "f9db2840b940d620efef7c5b6ab3a25ba24c46a15fdb5aecb37a22ed249d4bad",
-        "src/utils/sys_fill_exact.rs": "d18e26399844e96b0a8e6ff0e82a9d7d3ee315e97e31eb51498430b201cb768c"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/getrandom-0.4.3/LICENSE-APACHE",
-        "compliance/licenses/upstream/getrandom-0.4.3/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "getrandom",
-      "origin_directory": "vendor/rust/getrandom-0.4.3",
-      "repository": "https://github.com/rust-random/getrandom",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099",
-        "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.4.3.crate",
-        "name": "getrandom",
-        "version": "0.4.3"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "5e7cd5733536844a9856dc7259bd4696bbe5e3ae"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.4.3"
     },
     "src/foundation/gimli": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -63825,7 +63687,7 @@
       "description": "JSON schema validaton library",
       "directory": "src/foundation/jsonschema",
       "files_sha256": {
-        "Cargo.toml": "54f253cd2c58219a4af6846989c09c1a2c571acc74abd1c912a3c1f3b850ec32",
+        "Cargo.toml": "35214cfed9e9a66f45d0f3ff7b4577613e964ad104d440f2680b81e4f6e72432",
         "benches/canonicalize.rs": "5bdc5145914465dfd1b5cfdeb747f67e1683e963088d13244dbefe0d1660b9d2",
         "benches/canonicalize_many.rs": "136b77fa29d67d5e0e58e02a9950d137f7d5cbba1f6c2fe1ac1aab5d425659e5",
         "benches/codegen.rs": "e48a1710ac2c0386ab80357b31da914d6f45d2f8d8c2e178434d2692a7979e68",
@@ -64018,7 +63880,7 @@
       "description": "JSON value representations and semantics shared by the jsonschema validator and its bindings",
       "directory": "src/foundation/jsonschema-value",
       "files_sha256": {
-        "Cargo.toml": "676937292b482963a7853b7651cb69d717ba33b500f0fa03755568acd166e06b",
+        "Cargo.toml": "733fa89f6954234f8e1d45c26c68101fa962dd33a1a5fe4c1d986cfc0594afc1",
         "build.rs": "eaf4038e865deb416425dc3cc3f0bd8afdc580481f82cdd487913c87ed14aab6",
         "src/cmp.rs": "fd4694e1c4866b5a0854369fab8f556fd58da67b42aa4776aa296c43e8380801",
         "src/conformance.rs": "3f529c8425703559598c835920b5f06418807dbb031d47dc372c4c6df9535a04",
@@ -65457,7 +65319,7 @@
       "description": "Traits which describe the functionality of password hashing algorithms,\nas well as a `no_std`-friendly implementation of the PHC string format\n(a well-defined subset of the Modular Crypt Format a.k.a. MCF)",
       "directory": "src/foundation/password-hash",
       "files_sha256": {
-        "Cargo.toml": "2ce38d29523fe4594a317bb8d1515ec58d970a0b5baef1e3c4c17c6724e6866b",
+        "Cargo.toml": "09686deaeb147194d2cc2286842d6b0c097214c09bdc876c0e7ee4ef54b55b35",
         "src/encoding.rs": "b0d48a1cb332298b56008869e6d19585165c24d87944a2b5b2f00781ff955e15",
         "src/errors.rs": "14137cdcd7e0137f806e6664f17f6d17e5b0e55b946898a1b2c02bfa086dd39b",
         "src/ident.rs": "2192d56f4211e216f45370fc4cb2445b4416d28f20dd0620b3a214c02f3cfcac",
@@ -65925,13 +65787,13 @@
       "description": "Core random number generator traits and tools for implementation.",
       "directory": "src/foundation/random-generator-core",
       "files_sha256": {
-        "Cargo.toml": "89d80064dc2e7c16d40ba1637d18b291b0e7edb973408c96c65f9a0b22478523",
+        "Cargo.toml": "7eec94598ffd4e8672d36cc2051e0f60248ce2e17afacd4838589087b4ab21c1",
         "src/block.rs": "404acda262124855f7a258b58c1463d7cc76fa3d61306d840e1e60b6b7b550c3",
-        "src/error.rs": "bea70094df084193d26215fb4da016d240df5121d134e51d0420258f9b1730fe",
+        "src/error.rs": "f6359c2bbf520d7137d13d51fc985dd4e16068c067f74537d457e2eab5f86d5f",
         "src/impls.rs": "c6749a23f401fa5b304d864fb44777376b794bc7f72ed24d3c7460ac13d49583",
         "src/le.rs": "55236074df96c912939b5dfc6a0cd3482a3db872cd00dab6f4bd45c4c233427b",
-        "src/lib.rs": "f9b6587ae179e85909ce32c16b7d0cd4c95398c507ee8c27f4f990e93a6c8c9f",
-        "src/os.rs": "d1a7888a44b375a8c56ce4b3c4b22644ee54919ebc19509042375b327a8e6500"
+        "src/lib.rs": "02b935e0cdba31ea41159a9c0eab632486d2bff294c05d8afd8f38f237dad558",
+        "src/os.rs": "34bb19dee8e834667db5d69722f8272d28b06fcea332140ec89aea4dac0ee52c"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -66298,7 +66160,7 @@
       "description": "An implementation-agnostic JSON reference resolution library for Rust.",
       "directory": "src/foundation/referencing",
       "files_sha256": {
-        "Cargo.toml": "13ea8df027eeca7c1f6b156731bd146958391c6f51fb6e51165cf2e6877b5d5c",
+        "Cargo.toml": "a9e416fbf7f78521b04a11a4cca76773ab819250abb5e4ee73a315e73bf78e45",
         "benches/anchor.rs": "8f1133ec8acb74014b3c7f4785377040a4969aab38463730500502c225e68fa7",
         "benches/pointer.rs": "33c14ca95c803d520c269fd4aed0d702bdb3e7cce64594a1e4636807967697c4",
         "benches/registry.rs": "f55162ae1d19d2970b85d9eb15a4ecd7c220b271ec3dda9ee050b63fd1be0ed5",
@@ -66608,7 +66470,7 @@
       "description": "An experiment.",
       "directory": "src/foundation/ring",
       "files_sha256": {
-        "Cargo.toml": "8f465a642f461a274d10a62a2ffdd58292a1f45b553aa715bcb734864d34d9d2",
+        "Cargo.toml": "e39511b3c2f540b2c7d01191ad8b0fc0d95a624d90d2bd6b22687ca397b4aa54",
         "build.rs": "2b48a26fd55a6dc28020cf370515177d81ea17bb7660603e44fcd593f61121bf",
         "crypto/chacha/asm/chacha-x86_64.pl": "24e536daad8464a6daea17de527b02f9c3ebe1f09356dd5e48cfdfa04abb955a",
         "crypto/cipher/asm/chacha20_poly1305_x86_64.pl": "48f2a06a297d3575a760d01e219b0b8d8f8733c1e7b6d2aa6e7949cc12c1a9ae",
@@ -66817,7 +66679,7 @@
         "src/polyfill/sliceutil.rs": "ee91dae6c2c1a8af1165d4e9ec429bc59b5d1688d0473f12c1bbe89d72a6880d",
         "src/polyfill/unwrap_const.rs": "658081fd2d7cf6f6d3b6a75c61fd56b0d61508d1b26ce403f7b10e1ac68cdcbe",
         "src/prefixed.rs": "affcb8d80b9548f3f1d6a93d9460732dfb701627dda6274de7a8d07274bb02dc",
-        "src/rand.rs": "ce36bf91b2fa71321c89a0efe3b58f134bfb3a342a28915307ccb3e48c758a06",
+        "src/rand.rs": "17c6aa0c31dda4d494440fe0fa1b6d1cc0dc9a795134f443c73025569dbd07c2",
         "src/rsa.rs": "fe62407793ae487d663404dfe5642a7d4e8bc86db4ae70538781d35ea5626cf0",
         "src/rsa/keypair.rs": "9084e9593628575675ef799a4c55d8240911ebe6a64fda86e6bcce72c92cd185",
         "src/rsa/keypair_components.rs": "b3ce592439de54153b89c80e86165e8405f86c710e283d456b8cd5da5ad6ac65",
@@ -69201,6 +69063,58 @@
       },
       "version": "0.39.6"
     },
+    "src/foundation/system-entropy": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
+      "description": "A small cross-platform library for retrieving random data from system source",
+      "directory": "src/foundation/system-entropy",
+      "files_sha256": {
+        "Cargo.toml": "6f80d8b67297956fe84dded22c94656eec80a824c9aadf1a7e86975e659d2221",
+        "benches/buffer.rs": "72d87839cd5e44a6e246523562054346ba5205d833cddc9efc7d991bdb881cba",
+        "build.rs": "45baa6ca4f4039c62ce422ef4c1460e246c9bdda7a636a9733a0681092990e9b",
+        "src/backends.rs": "5bc7a5e60ddf37d1c91ca1d4a6812e118c46affd355ef185c66242bf843b38d7",
+        "src/backends/custom.rs": "d4d4d86fad3cc6965b204f07ab53b0078622d174074f7ab25c517901b5d60b0e",
+        "src/backends/extern_impl.rs": "0a13d8e059ee5203cf414101017a92d9f7289f86451a23d872c471b24279ece1",
+        "src/backends/getrandom.rs": "da934695a424479f4eb80ba3a2aab97316f3bb6ed158523160eae1e3670e2b40",
+        "src/backends/linux_android_with_fallback.rs": "27592e6ae1f0a84402ab43aef255579ae4ef3e25dbc251bfd783d0755c7f919f",
+        "src/backends/linux_raw.rs": "94f6a494edd6ab99eca1989294b1064b58ba502f401b642aedbc3b97e98c0bf7",
+        "src/backends/rdrand.rs": "013c90b04f882ea82a73cc82b8d282227e2cfe9fe7d4f8eae9020a1b17aeb3b1",
+        "src/backends/unsupported.rs": "a531ab9883b7d7b584c6f37a5c13543ec63d25d3acc36608d57d5d82ef44cbff",
+        "src/backends/use_file.rs": "c4333e73138dd67f7068aa09aa30c7e48e77671fec654cb817e01bfc55c2ab52",
+        "src/backends/wasm_js.rs": "4a9bf118575514709adf807cf6a4bd4e248b0e02f2a292bd32a01af2ad99e51c",
+        "src/error.rs": "0a3ee74007c259bf16e73ad616d28afa99005adbfb008a75d238a9b8604b10e0",
+        "src/error_std_impls.rs": "32a3469b0a1291f2182d9bd98b9bdb6232ed259b7747b3665cbe8c3124483957",
+        "src/lib.rs": "122a7b1fb259668780f4f1e27437c13c1bf0b0de22079a896654f6b294e11487",
+        "src/util.rs": "b1f6bb46c35e1bc71faed96aaaac82be99df636b2e6bdcd676e898a669dee37f",
+        "src/utils/get_errno.rs": "d5afe0e5e41a32a85105fb5242156fc1c15096fd0ebb20363cb3368a5e63c7b2",
+        "src/utils/lazy_bool.rs": "573d5575c859c816262f44875f36c6aa8c58ecd5b2b1cf484d2415a6a41957d7",
+        "src/utils/lazy_ptr.rs": "5c0c29f1d636f303f65be626c998f0ef7f3e3329d6be1696479af07e53370920",
+        "src/utils/sanitizer.rs": "e1712cd8f5bea1517c2588903c956f4281416d6d23b45627977f4a6593fbd297",
+        "src/utils/sys_fill_exact.rs": "d18e26399844e96b0a8e6ff0e82a9d7d3ee315e97e31eb51498430b201cb768c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/getrandom-0.4.3/LICENSE-APACHE",
+        "compliance/licenses/upstream/getrandom-0.4.3/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "system-entropy",
+      "origin_directory": "vendor/rust/getrandom-0.4.3",
+      "repository": "https://github.com/rust-random/getrandom",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099",
+        "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.4.3.crate",
+        "name": "getrandom",
+        "version": "0.4.3"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "5e7cd5733536844a9856dc7259bd4696bbe5e3ae"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.4.3"
+    },
     "src/foundation/task-dispatch": {
       "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "Spawn asynchronous tasks in an executor-independent way.",
@@ -69237,7 +69151,7 @@
       "description": "A library for managing temporary files and directories.",
       "directory": "src/foundation/tempfile",
       "files_sha256": {
-        "Cargo.toml": "c4bf18aeccfd20b569c8b74f4d202108ea5fff5466b58614d7a06d55ff3c7f78",
+        "Cargo.toml": "fa30af4edb4e6ea33aa4812a0fd00c3bce99a818372538976dc43fd3aa14b1cb",
         "src/dir/imp/any.rs": "744ee1f31d934f8acf54e1412fee93def3321b153b33c28ace71b12c65cf1e4b",
         "src/dir/imp/mod.rs": "4df49b0c0e25a436ceaf566cfc0ca3da6793a91e6e29774d5628a482848f630c",
         "src/dir/imp/unix.rs": "fd1f2162b5fd741f6395c8ef0b34c2430fe9ffb1414bc381c17d5193828e3806",
@@ -69251,7 +69165,7 @@
         "src/file/mod.rs": "b6752b11a575021eeab87cb8b5b6914aaff86ad8d49a9678a8f4c95b5a21ef81",
         "src/lib.rs": "d182721b62c126916b73bb4865ced5d3637bd1a4a77d27ea9e9708973e5f9493",
         "src/spooled.rs": "f53a0dbff8a596ca3728f28744ee4b89a31ea5f903d6501c8396fd328b663208",
-        "src/util.rs": "f70d9ecc5a778a01c783dd84baaa6ab81ab48a6faac0693cfec124ee42db421b"
+        "src/util.rs": "7d87d2fdac63c24bae1596a7bce48e6a8253c8008c00213b433c2e3c2266d302"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -71011,19 +70925,19 @@
       "description": "A library to generate and parse UUIDs.",
       "directory": "src/foundation/uuid",
       "files_sha256": {
-        "Cargo.toml": "11e4b0915cd19291affcce1cd88d1303b341cc127753516b3aaba5b5c368b4a0",
+        "Cargo.toml": "94a8c54b98f0999ff4f1ec7f3b9ddc5741db641da0e75d6a602c6cb23b0c481e",
         "src/builder.rs": "d332dbf9380bd6275f8c416758a8971db875ce2a661440c8e476cc6f827736c9",
         "src/error.rs": "bb2156d5924cbd8957ffeed4506edcc66b4a325e22f1e0456ef9bc45facfb0f2",
         "src/external.rs": "a371663c5ff5d99066199e2219e97425c785929626b469d31966ad1a50dc4b99",
         "src/external/borsh_support.rs": "c791a3abce423bc8268c91173394e33330f2dd09dc45d8f26e75f12d8db80545",
         "src/external/serialization_support.rs": "3412cdc90cb9345cab8f953a8c5aee14dd7a3e3fb531360f09399abfd33969de",
         "src/fmt.rs": "6f1f700f858ce30323cf53d6ab1ba92902b2a3b73ad4e8b4709e6cb927ea3677",
-        "src/lib.rs": "494d98ff2c2ba71deb704f3ae10fbfdf422ad4fc828163668f7449e2ac7a635e",
+        "src/lib.rs": "e85fd77ad3a57f53b093973fea11a52e30b927cab5ea41df5f538194e1e28f7e",
         "src/macros.rs": "44183cc3dccd3a0766eb6e869ea8d75a553d0a5403ea6d812371581c91e1f5af",
         "src/md5.rs": "316d65b760ffa58beb6aa678be24359eb21a744e9e143bc99c11fe1907659245",
         "src/non_nil.rs": "23126192cc6a689e7005e711a47761eec01b8e95cc9a2f64590502c038b52db4",
         "src/parser.rs": "bb3d9b6e64a945eb5cf6f5c06de07acd8a115c17e587dd5182a802e3d29e0bcf",
-        "src/rng.rs": "21cf5c1f3128ba7c01fd18310d9c1300580dd874ab39c47092fa709e5633b7f3",
+        "src/rng.rs": "26333ba5727fd9ddef8bd93d1ee141d04d6bce54a5240cb47085d9fb15de226d",
         "src/sha1.rs": "e1a9657e11f1ed1ede33c0655f9c2641059b7c24f17be4ac425c930cc216e019",
         "src/timestamp.rs": "32be8aecd6c7e24ca90b696b3cf94701d3a8c264a40771dc9e40da79a398e692",
         "src/v1.rs": "7fd8008f0144b46ed5b3329fd601e4d81bf7f2747d0e3e3bda5038806da7f010",
@@ -73061,7 +72975,9 @@
   "policy_sha256": "1068f87354319b7cc37085969d24cd40bb3e2384355aab284ae7a9919d015a58",
   "proof_routing_receipts": [
     "42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0",
-    "f22401d8de23ba2f0f8af6447b300206aa5257f8c9a173b1f47541ec587d3a21"
+    "f22401d8de23ba2f0f8af6447b300206aa5257f8c9a173b1f47541ec587d3a21",
+    "1c36e75fd2f038976efc3d62f0137291aa8129c58d904c0052be5197bbb32174",
+    "21b9ca69f0feeb8a6c30ad45ab630d900f1a6fdab01478182f5a9c6f0a1bbbee"
   ],
   "provenance_sha256": {
     "compliance/licenses/fonts/UPSTREAM-NOTICES.md": "b75234cc83050a72140d442025ffd696fd7d75c17a08ce974f94ab60f06e5460",
@@ -76905,6 +76821,7 @@
     "src/foundation/clap_derive": "8e9ea3e4441861e112f4957ba04c6c776071918573b923790e4cb0ad99ea5ba8",
     "src/foundation/cpufeatures-0.3.1": "63f30d7cc379dc542d95474372626f2b0e4bf3342a0228e268ea6cbc27b0b835",
     "src/foundation/either_of": "1a1244d4cca0441be6a629f2b32719fed03feb1b3882c5c0f3e2ee33992e4e20",
+    "src/foundation/getrandom-0.4.3": "d52ec9d3b14285e44bb76df79d7f904b12f8c0eeb96b09488998fd7b9ec3f729",
     "src/foundation/hashbrown-0.17.1": "b45044f46630ed6ff0c00017e42897c1137ddc96f851f36ba314bb89aafd8987",
     "src/foundation/itertools-0.14.0": "90e82dd2ef2db85ef7f1d269e1c0ee363c75a3961e76eed6843e6692c6692ff6",
     "src/foundation/leptos_dom": "60842b005126467443f3bb816edf69a81c22be2084bc89a96c43098292969a45",
@@ -78166,6 +78083,133 @@
         "version": "0.1.9"
       },
       "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
+    },
+    "src/foundation/getrandom-0.4.3": {
+      "destination_directory": "src/foundation/system-entropy",
+      "destination_external_tests": {
+        "bytes": 6060,
+        "directory": "src/foundation/system-entropy",
+        "file_count": 2,
+        "files": [
+          {
+            "path": "test/foundation/system-entropy/tests/mod.rs",
+            "sha256": "9eb08614fe6f7f4d1adf7a5dd0c977f6972ec39dbf0a7374c7734c884b5099f5",
+            "source": "src/foundation/getrandom-0.4.3/tests/mod.rs",
+            "source_sha256_before": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67"
+          },
+          {
+            "path": "test/foundation/system-entropy/tests/sys_rng.rs",
+            "sha256": "a7837582c10a1de8aaf5c861cff234c26d505eb31a771834eb8f7e006e884f16",
+            "source": "src/foundation/getrandom-0.4.3/tests/sys_rng.rs",
+            "source_sha256_before": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466"
+          }
+        ],
+        "origin_directory": "vendor/rust/getrandom-0.4.3",
+        "roots": [
+          "test/foundation/system-entropy"
+        ]
+      },
+      "destination_name": "system-entropy",
+      "external_tests": {
+        "bytes": 6025,
+        "directory": "src/foundation/getrandom-0.4.3",
+        "file_count": 2,
+        "files": [
+          {
+            "path": "test/foundation/getrandom-0.4.3/tests/mod.rs",
+            "sha256": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67",
+            "source": "src/foundation/getrandom-0.4.3/tests/mod.rs",
+            "source_sha256_before": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67"
+          },
+          {
+            "path": "test/foundation/getrandom-0.4.3/tests/sys_rng.rs",
+            "sha256": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466",
+            "source": "src/foundation/getrandom-0.4.3/tests/sys_rng.rs",
+            "source_sha256_before": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466"
+          }
+        ],
+        "origin_directory": "vendor/rust/getrandom-0.4.3",
+        "roots": [
+          "test/foundation/getrandom-0.4.3"
+        ]
+      },
+      "files_sha256": {
+        "Cargo.toml": "6f80d8b67297956fe84dded22c94656eec80a824c9aadf1a7e86975e659d2221",
+        "benches/buffer.rs": "72d87839cd5e44a6e246523562054346ba5205d833cddc9efc7d991bdb881cba",
+        "build.rs": "45baa6ca4f4039c62ce422ef4c1460e246c9bdda7a636a9733a0681092990e9b",
+        "src/backends.rs": "5bc7a5e60ddf37d1c91ca1d4a6812e118c46affd355ef185c66242bf843b38d7",
+        "src/backends/custom.rs": "d4d4d86fad3cc6965b204f07ab53b0078622d174074f7ab25c517901b5d60b0e",
+        "src/backends/extern_impl.rs": "0a13d8e059ee5203cf414101017a92d9f7289f86451a23d872c471b24279ece1",
+        "src/backends/getrandom.rs": "da934695a424479f4eb80ba3a2aab97316f3bb6ed158523160eae1e3670e2b40",
+        "src/backends/linux_android_with_fallback.rs": "27592e6ae1f0a84402ab43aef255579ae4ef3e25dbc251bfd783d0755c7f919f",
+        "src/backends/linux_raw.rs": "94f6a494edd6ab99eca1989294b1064b58ba502f401b642aedbc3b97e98c0bf7",
+        "src/backends/rdrand.rs": "013c90b04f882ea82a73cc82b8d282227e2cfe9fe7d4f8eae9020a1b17aeb3b1",
+        "src/backends/unsupported.rs": "a531ab9883b7d7b584c6f37a5c13543ec63d25d3acc36608d57d5d82ef44cbff",
+        "src/backends/use_file.rs": "c4333e73138dd67f7068aa09aa30c7e48e77671fec654cb817e01bfc55c2ab52",
+        "src/backends/wasm_js.rs": "4a9bf118575514709adf807cf6a4bd4e248b0e02f2a292bd32a01af2ad99e51c",
+        "src/error.rs": "0a3ee74007c259bf16e73ad616d28afa99005adbfb008a75d238a9b8604b10e0",
+        "src/error_std_impls.rs": "32a3469b0a1291f2182d9bd98b9bdb6232ed259b7747b3665cbe8c3124483957",
+        "src/lib.rs": "122a7b1fb259668780f4f1e27437c13c1bf0b0de22079a896654f6b294e11487",
+        "src/util.rs": "b1f6bb46c35e1bc71faed96aaaac82be99df636b2e6bdcd676e898a669dee37f",
+        "src/utils/get_errno.rs": "d5afe0e5e41a32a85105fb5242156fc1c15096fd0ebb20363cb3368a5e63c7b2",
+        "src/utils/lazy_bool.rs": "573d5575c859c816262f44875f36c6aa8c58ecd5b2b1cf484d2415a6a41957d7",
+        "src/utils/lazy_ptr.rs": "5c0c29f1d636f303f65be626c998f0ef7f3e3329d6be1696479af07e53370920",
+        "src/utils/sanitizer.rs": "e1712cd8f5bea1517c2588903c956f4281416d6d23b45627977f4a6593fbd297",
+        "src/utils/sys_fill_exact.rs": "d18e26399844e96b0a8e6ff0e82a9d7d3ee315e97e31eb51498430b201cb768c"
+      },
+      "package": {
+        "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
+        "description": "A small cross-platform library for retrieving random data from system source",
+        "directory": "src/foundation/getrandom-0.4.3",
+        "files_sha256": {
+          "Cargo.toml": "6e3eb9b5f452fcc904633c89c0c1fcb368e18f1a347bc1ed651b6037cf6b5d32",
+          "benches/buffer.rs": "cae45dc9e4fa0db8206f76a0a9b4b7a05f9cd0eda33d42f29887ca76f949522c",
+          "build.rs": "662faa06d7b2a9c5bea2c17a127a90e00b9f9b31105b0360da516e47cf816e95",
+          "src/backends.rs": "d0c72864b67f1c330aab01289d9a30ab447f34482379f18c6461023c7824b881",
+          "src/backends/custom.rs": "448b44a9800b3be95f91a85e35f1f313894bbd4e64e3751afaecf15b3f3532b3",
+          "src/backends/extern_impl.rs": "0a13d8e059ee5203cf414101017a92d9f7289f86451a23d872c471b24279ece1",
+          "src/backends/getrandom.rs": "da934695a424479f4eb80ba3a2aab97316f3bb6ed158523160eae1e3670e2b40",
+          "src/backends/linux_android_with_fallback.rs": "78a5c62a17d654cccb66bc0772c7017e57b0b6451e0d7135f834917456f343fb",
+          "src/backends/linux_raw.rs": "94f6a494edd6ab99eca1989294b1064b58ba502f401b642aedbc3b97e98c0bf7",
+          "src/backends/rdrand.rs": "013c90b04f882ea82a73cc82b8d282227e2cfe9fe7d4f8eae9020a1b17aeb3b1",
+          "src/backends/unsupported.rs": "a531ab9883b7d7b584c6f37a5c13543ec63d25d3acc36608d57d5d82ef44cbff",
+          "src/backends/use_file.rs": "c4333e73138dd67f7068aa09aa30c7e48e77671fec654cb817e01bfc55c2ab52",
+          "src/backends/wasm_js.rs": "4a9bf118575514709adf807cf6a4bd4e248b0e02f2a292bd32a01af2ad99e51c",
+          "src/error.rs": "0d4033976dda1a4f1d98006a755bb51af8669fe1ad20298570eded9fcafdc186",
+          "src/error_std_impls.rs": "32a3469b0a1291f2182d9bd98b9bdb6232ed259b7747b3665cbe8c3124483957",
+          "src/lib.rs": "d65a4ab2d10e2eebfcb62d89b46d1ebe1cc780321a2c00caf864af14a34623d2",
+          "src/util.rs": "b1f6bb46c35e1bc71faed96aaaac82be99df636b2e6bdcd676e898a669dee37f",
+          "src/utils/get_errno.rs": "d5afe0e5e41a32a85105fb5242156fc1c15096fd0ebb20363cb3368a5e63c7b2",
+          "src/utils/lazy_bool.rs": "573d5575c859c816262f44875f36c6aa8c58ecd5b2b1cf484d2415a6a41957d7",
+          "src/utils/lazy_ptr.rs": "5c0c29f1d636f303f65be626c998f0ef7f3e3329d6be1696479af07e53370920",
+          "src/utils/sanitizer.rs": "f9db2840b940d620efef7c5b6ab3a25ba24c46a15fdb5aecb37a22ed249d4bad",
+          "src/utils/sys_fill_exact.rs": "d18e26399844e96b0a8e6ff0e82a9d7d3ee315e97e31eb51498430b201cb768c"
+        },
+        "license": "MIT OR Apache-2.0",
+        "license_materials": [
+          "compliance/licenses/upstream/getrandom-0.4.3/LICENSE-APACHE",
+          "compliance/licenses/upstream/getrandom-0.4.3/LICENSE-MIT"
+        ],
+        "merged_into": "无；通过统一内部源码源接入",
+        "name": "getrandom",
+        "origin_directory": "vendor/rust/getrandom-0.4.3",
+        "repository": "https://github.com/rust-random/getrandom",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099",
+          "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.4.3.crate",
+          "name": "getrandom",
+          "version": "0.4.3"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "5e7cd5733536844a9856dc7259bd4696bbe5e3ae"
+          },
+          "path_in_vcs": ""
+        },
+        "version": "0.4.3"
+      },
+      "reason": "Name the sole system CSPRNG provider by function and retain immutable upstream identity, algorithm and historical evidence."
     },
     "src/foundation/hashbrown-0.17.1": {
       "destination_directory": "src/foundation/hash-table",
@@ -83660,22 +83704,6 @@
             "compile"
           ]
         },
-        "src/foundation/getrandom-0.2.17": {
-          "features": [
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/getrandom-0.4.3": {
-          "features": [
-            "wasm_js"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/hash-table": {
           "features": [
             "allocator-api2",
@@ -84117,8 +84145,8 @@
         "src/foundation/random-generator-core": {
           "features": [
             "alloc",
-            "getrandom",
-            "std"
+            "std",
+            "system-entropy"
           ],
           "roles": [
             "runtime"
@@ -84446,10 +84474,19 @@
             "runtime"
           ]
         },
+        "src/foundation/system-entropy": {
+          "features": [
+            "std",
+            "wasm_js"
+          ],
+          "roles": [
+            "runtime"
+          ]
+        },
         "src/foundation/tempfile": {
           "features": [
             "default",
-            "getrandom"
+            "system-entropy"
           ],
           "roles": [
             "runtime"
@@ -84980,14 +85017,6 @@
             "compile"
           ]
         },
-        "src/foundation/getrandom-0.4.3": {
-          "features": [
-            "wasm_js"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/gloo-events": {
           "features": [],
           "roles": [
@@ -85340,6 +85369,15 @@
           ],
           "roles": [
             "compile"
+          ]
+        },
+        "src/foundation/system-entropy": {
+          "features": [
+            "std",
+            "wasm_js"
+          ],
+          "roles": [
+            "runtime"
           ]
         },
         "src/foundation/task-dispatch": {
@@ -85735,14 +85773,6 @@
             "compile"
           ]
         },
-        "src/foundation/getrandom-0.4.3": {
-          "features": [
-            "wasm_js"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/glob": {
           "features": [],
           "roles": [
@@ -85954,6 +85984,15 @@
           ],
           "roles": [
             "compile"
+          ]
+        },
+        "src/foundation/system-entropy": {
+          "features": [
+            "std",
+            "wasm_js"
+          ],
+          "roles": [
+            "runtime"
           ]
         },
         "src/foundation/unicode-ident": {
@@ -86613,10 +86652,10 @@
         "src/foundation/ahash": {
           "features": [
             "default",
-            "getrandom",
             "runtime-rng",
             "serialization",
-            "std"
+            "std",
+            "system-entropy"
           ],
           "roles": [
             "compile"
@@ -86983,14 +87022,6 @@
         },
         "src/foundation/futures-macro": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/getrandom-0.4.3": {
-          "features": [
-            "wasm_js"
-          ],
           "roles": [
             "compile"
           ]
@@ -87591,10 +87622,19 @@
             "compile"
           ]
         },
+        "src/foundation/system-entropy": {
+          "features": [
+            "std",
+            "wasm_js"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/tempfile": {
           "features": [
             "default",
-            "getrandom"
+            "system-entropy"
           ],
           "roles": [
             "compile"
@@ -89082,6 +89122,101 @@
         "path_in_vcs": ""
       },
       "version": "0.14.7"
+    },
+    "src/foundation/getrandom-0.2.17": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
+      "description": "A small cross-platform library for retrieving random data from system source",
+      "directory": "src/foundation/getrandom-0.2.17",
+      "files_sha256": {
+        "Cargo.toml": "343a500ff60a657dae7cd4dfbbca349e474473bbeddfa26bab6065d8f842669c",
+        "benches/buffer.rs": "242f56eaeecd1d0a0f6f9419d1bf312b8d211215355022bd4aef5e5e0f53e2a5",
+        "src/custom.rs": "ae5dc94bc12a4a284762e99891b013c509942b1a802ea559e04e572ed44479dc",
+        "src/error.rs": "67b49af2c69066416522023a3937fa3976a464b5a637ed699a9a05f68da362d4",
+        "src/error_impls.rs": "4c068e81d876237a7e0a0e91519896bd670c2f999ca729f7fb970caf888cab46",
+        "src/js.rs": "4306b7a49441e0da2a0737f92f56d3258ddcd1566ec3aea4a4f4a865bbf0ff87",
+        "src/lazy.rs": "092a015128757f56ca6e300f886d41cde294f246e8bc0f5af6da8b660288992c",
+        "src/lib.rs": "c9b35f8e88e861d887dd8940eb5460b86b323518fb3ee90773eae0ae67750ebf",
+        "src/linux_android.rs": "92c71e68adcb9bc4ee39e6b2db730e06af1e0c8db0389712b5ea8a1d86991277",
+        "src/linux_android_with_fallback.rs": "620577d889d92916aeed62ac0e4f711725fddb7e7bb331f02474160104354e8e",
+        "src/rdrand.rs": "ffbe1bfb8f5b30a95f462fa85db07e251f63248c6c0daf3b5f586034cedfa976",
+        "src/use_file.rs": "5dfb8446ccc48eefc3d4c81d7436dd6c0fd76419836b8ba18fe062424dfe5be1",
+        "src/util.rs": "e2c1b86ea97ca5c61d562182890cbe24c7eaa37ff8945c17fcfa665b767da1b0",
+        "src/util_libc.rs": "39fddfc06948dbd65c4dc696f71d32cf158c5ca91632afa78cbc4c22e0192502"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/getrandom-0.2.17/LICENSE-APACHE",
+        "compliance/licenses/upstream/getrandom-0.2.17/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "getrandom",
+      "origin_directory": "vendor/rust/getrandom-0.2.17",
+      "repository": "https://github.com/rust-random/getrandom",
+      "retirement": {
+        "bytes": 60553,
+        "category": "duplicate-implementation-consolidation",
+        "external_tests": {
+          "bytes": 5482,
+          "directory": "src/foundation/getrandom-0.2.17",
+          "file_count": 5,
+          "files": [
+            {
+              "path": "test/foundation/getrandom-0.2.17/tests/common/mod.rs",
+              "sha256": "b9a36043d71963ba43a9e2899ba8eea80ff9f3284d243d9b9b9f941afa4f4aa4",
+              "source": "src/foundation/getrandom-0.2.17/tests/common/mod.rs",
+              "source_sha256_before": "b9a36043d71963ba43a9e2899ba8eea80ff9f3284d243d9b9b9f941afa4f4aa4"
+            },
+            {
+              "path": "test/foundation/getrandom-0.2.17/tests/custom.rs",
+              "sha256": "1e944ae523b62dba53fe3daf1b964a2498c8fdd21dfa7afe53781bff2fcf276e",
+              "source": "src/foundation/getrandom-0.2.17/tests/custom.rs",
+              "source_sha256_before": "1e944ae523b62dba53fe3daf1b964a2498c8fdd21dfa7afe53781bff2fcf276e"
+            },
+            {
+              "path": "test/foundation/getrandom-0.2.17/tests/normal.rs",
+              "sha256": "9e1c4b1e468a09ed0225370dfb6608f8b8135e0fabb09bbc1a718105164aade6",
+              "source": "src/foundation/getrandom-0.2.17/tests/normal.rs",
+              "source_sha256_before": "9e1c4b1e468a09ed0225370dfb6608f8b8135e0fabb09bbc1a718105164aade6"
+            },
+            {
+              "path": "test/foundation/getrandom-0.2.17/tests/rdrand.rs",
+              "sha256": "61981bd03032d604f1e5ec6de0d3aebdb72ad53c4b74239eee56dd7182cdf518",
+              "source": "src/foundation/getrandom-0.2.17/tests/rdrand.rs",
+              "source_sha256_before": "fcf3f78e3078e1b262d0efae8f3c4a730f3fbf68df656fceb78e22ee4cc98990"
+            },
+            {
+              "path": "test/foundation/getrandom-0.2.17/unit/src/error/tests_179.rs",
+              "sha256": "1d37c5292b66dfb0948b848ab6459685695aab3173d4941a7f4912d2d754d133",
+              "source": "src/foundation/getrandom-0.2.17/src/error.rs",
+              "source_sha256_before": "ab5b82ddb8304e8ad75d905d7dc5ba8deec92096930e81e87d7a28f3da382dee"
+            }
+          ],
+          "origin_directory": "vendor/rust/getrandom-0.2.17",
+          "roots": [
+            "test/foundation/getrandom-0.2.17"
+          ]
+        },
+        "file_count": 14,
+        "reason": "Consolidate ring and random-generator-core onto system-entropy (upstream getrandom 0.4.3), retaining typed no_std errors, native OS CSPRNG and browser Web Crypto failure semantics; preserve removed source and test bytes in this pinned non-build archive.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "ff2abc00be7fca6ebc474524697ae276ad847ad0a6b3faa4bcb027e9a4614ad0",
+        "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.2.17.crate",
+        "name": "getrandom",
+        "version": "0.2.17"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "b625985d852600a3eeb68556811e59e7c9a6a098"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.2.17"
     },
     "src/foundation/getrandom-0.3.4": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
@@ -98917,6 +99052,7 @@
     "src/foundation/dotenvy": "cd5f14644b5a7aa236d7018bb77f9a1ad3c2fd719762e2320713321205c28e3f",
     "src/foundation/drain_filter_polyfill": "9bd00168d21cdc708296eb316c673e738cfa0a9665c99d49ae248a7331325e99",
     "src/foundation/generic-array": "3006cfbbf2c7c9706af46cae70553154c1d927d06b011e6866c9f3d4a64b8379",
+    "src/foundation/getrandom-0.2.17": "bf48c35770ec28b7c256d25aaca90f7a9824b205547279d536553257dfe18e43",
     "src/foundation/getrandom-0.3.4": "134390924fc2ba79a7633d5166c36f4ff84f84111edcfe0bc576eef4b897c537",
     "src/foundation/hashbrown-0.16.1": "79cdc46d22754ec4dc3289737115e2bceb5bc1ad1fc6863183230495337d6df3",
     "src/foundation/hex": "37146935caac26425e292364a000256037ac1737af648797011f3538a82dccab",

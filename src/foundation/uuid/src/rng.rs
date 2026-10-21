@@ -40,8 +40,8 @@ mod imp {
         fn u128() -> u128 {
             let mut bytes = [0u8; 16];
 
-            getrandom::fill(&mut bytes).unwrap_or_else(|err| {
-                // NB: getrandom::Error has no source; this is adequate display
+            system_entropy::fill(&mut bytes).unwrap_or_else(|err| {
+                // NB: system_entropy::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
 
@@ -51,8 +51,8 @@ mod imp {
         fn u64() -> u64 {
             let mut bytes = [0u8; 8];
 
-            getrandom::fill(&mut bytes).unwrap_or_else(|err| {
-                // NB: getrandom::Error has no source; this is adequate display
+            system_entropy::fill(&mut bytes).unwrap_or_else(|err| {
+                // NB: system_entropy::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
 
@@ -62,8 +62,8 @@ mod imp {
         fn u16() -> u16 {
             let mut bytes = [0u8; 2];
 
-            getrandom::fill(&mut bytes).unwrap_or_else(|err| {
-                // NB: getrandom::Error has no source; this is adequate display
+            system_entropy::fill(&mut bytes).unwrap_or_else(|err| {
+                // NB: system_entropy::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
 
@@ -82,8 +82,8 @@ mod imp {
 
     use super::*;
 
-    #[cfg(all(not (feature = "js"),not (feature = "rng-getrandom")))]
-    compile_error!("to use `uuid` on `wasm32-unknown-unknown`, specify a source of randomness using one of the `js`, `rng-getrandom`, or `rng-rand` features");
+    #[cfg(all(not (feature = "js"),not (feature = "rng-system-entropy")))]
+    compile_error!("to use `uuid` on `wasm32-unknown-unknown`, specify a source of randomness using one of the `js`, `rng-system-entropy`, or `rng-rand` features");
 
     // Using `rand`
 
@@ -91,16 +91,16 @@ mod imp {
 
 
     // Using `getrandom`
-    #[cfg(all(feature = "rng-getrandom"))]
+    #[cfg(all(feature = "rng-system-entropy"))]
     pub(super) struct RngImp;
 
-    #[cfg(all(feature = "rng-getrandom"))]
+    #[cfg(all(feature = "rng-system-entropy"))]
     impl Rng for RngImp {
         fn u128() -> u128 {
             let mut bytes = [0u8; 16];
 
             uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
-                // NB: getrandom::Error has no source; this is adequate display
+                // NB: system_entropy::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
 
@@ -111,7 +111,7 @@ mod imp {
             let mut bytes = [0u8; 8];
 
             uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
-                // NB: getrandom::Error has no source; this is adequate display
+                // NB: system_entropy::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
 
@@ -122,7 +122,7 @@ mod imp {
             let mut bytes = [0u8; 2];
 
             uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
-                // NB: getrandom::Error has no source; this is adequate display
+                // NB: system_entropy::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
 
@@ -131,10 +131,10 @@ mod imp {
     }
 
     // Using WebCrypto via `wasm-bindgen`
-    #[cfg(all(feature = "js",not (feature = "rng-getrandom")))]
+    #[cfg(all(feature = "js",not (feature = "rng-system-entropy")))]
     pub(super) struct RngImp;
 
-    #[cfg(all(feature = "js",not (feature = "rng-getrandom")))]
+    #[cfg(all(feature = "js",not (feature = "rng-system-entropy")))]
     impl Rng for RngImp {
         fn u128() -> u128 {
             let mut bytes = [0u8; 16];

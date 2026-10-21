@@ -153,10 +153,10 @@ optional = true
 default-features = false
 path = "../rustls"
 
-[target.'cfg(target_arch = "wasm32")'.dependencies.getrandom]
+[target.'cfg(target_arch = "wasm32")'.dependencies.system-entropy]
 version = "0.4.3"
 features = ["wasm_js"]
-path = "../getrandom-0.4.3"
+path = "../system-entropy"
 
 [lints.clippy]
 dbg_macro = "warn"

@@ -46,14 +46,14 @@ use core::default::Default;
 #[cfg(feature = "alloc")] use alloc::boxed::Box;
 
 pub use error::Error;
-#[cfg(feature = "getrandom")] pub use os::OsRng;
+#[cfg(feature = "system-entropy")] pub use os::OsRng;
 
 
 pub mod block;
 mod error;
 pub mod impls;
 pub mod le;
-#[cfg(feature = "getrandom")] mod os;
+#[cfg(feature = "system-entropy")] mod os;
 
 
 /// The core of a random number generator.
@@ -411,11 +411,11 @@ pub trait SeedableRng: Sized {
     /// If [`getrandom`] is unable to provide secure entropy this method will panic.
     ///
     /// [`getrandom`]: https://docs.rs/getrandom
-    #[cfg(feature = "getrandom")]
+    #[cfg(feature = "system-entropy")]
 
     fn from_entropy() -> Self {
         let mut seed = Self::Seed::default();
-        if let Err(err) = getrandom::getrandom(seed.as_mut()) {
+        if let Err(err) = system_entropy::fill(seed.as_mut()) {
             panic!("from_entropy failed: {}", err);
         }
         Self::from_seed(seed)

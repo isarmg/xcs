@@ -25,20 +25,17 @@ class RuntimePlatformScope(unittest.TestCase):
             self.assertEqual(hashlib.sha256(read(path)).hexdigest(), evidence['after_sha256'], path)
 
     def test_retired_random_overrides_fail_closed(self):
-        # Historical 0.3 implementation remains verified by the pinned proof above.
-        for version in ('0.4.3',):
-            crate = ROOT / 'src/foundation' / ('getrandom-' + version)
-            source = (crate / 'src/backends.rs').read_text()
-            self.assertIn('this getrandom backend was retired', source)
-            for backend in ('rndr', 'efi_rng', 'windows_legacy'):
-                self.assertIn(f'getrandom_backend = "{backend}"', source)
-                self.assertNotIn(f'mod {backend};', source)
-            self.assertIn('all(target_os = "linux", target_env = "")', source)
-            for backend in ('linux_raw', 'linux_android_with_fallback', 'getrandom', 'custom', 'wasm_js', 'rdrand', 'unsupported'):
-                self.assertIn(f'mod {backend};', source)
-            self.assertNotIn('feature(uefi_std)', (crate / 'src/lib.rs').read_text())
-            if version == '0.4.3':
-                self.assertIn('mod extern_impl;', source)
+        # Removed 0.2/0.3 implementations stay authenticated by the pinned proof above.
+        crate = ROOT / 'src/foundation/system-entropy'
+        source = (crate / 'src/backends.rs').read_text()
+        self.assertIn('this getrandom backend was retired', source)
+        for backend in ('rndr', 'efi_rng', 'windows_legacy'):
+            self.assertIn(f'system_entropy_backend = "{backend}"', source)
+            self.assertNotIn(f'mod {backend};', source)
+        self.assertIn('all(target_os = "linux", target_env = "")', source)
+        for backend in ('linux_raw', 'linux_android_with_fallback', 'getrandom', 'custom', 'wasm_js', 'rdrand', 'unsupported', 'extern_impl'):
+            self.assertIn(f'mod {backend};', source)
+        self.assertNotIn('feature(uefi_std)', (crate / 'src/lib.rs').read_text())
 
     def test_required_future_and_documentation_surfaces_remain(self):
         paths = ('mio/src/sys/unix/selector/poll.rs', 'mio/src/sys/unix/waker/pipe.rs',

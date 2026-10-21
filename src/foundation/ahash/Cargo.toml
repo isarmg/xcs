@@ -45,10 +45,10 @@ doc = true
 version = "1.0"
 path = "../cfg-if"
 
-[dependencies.getrandom]
+[dependencies.system-entropy]
 version = "0.4.3"
 optional = true
-path = "../getrandom-0.4.3"
+path = "../system-entropy"
 
 [dependencies.data-serialization]
 version = "1.0.117"
@@ -65,7 +65,7 @@ path = "../zerocopy"
 serialization = ["dep:data-serialization"]
 default = ["std", "runtime-rng"]
 no-rng = []
-runtime-rng = ["getrandom"]
+runtime-rng = ["system-entropy"]
 std = []
 
 [target.'cfg(not(all(target_arch = "arm", target_os = "none")))'.dependencies.once_cell]

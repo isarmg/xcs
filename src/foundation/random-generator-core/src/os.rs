@@ -9,7 +9,7 @@
 //! Interface to the random number generator of the operating system.
 
 use crate::{impls, CryptoRng, Error, RngCore};
-use getrandom::getrandom;
+use system_entropy::fill;
 
 /// A random number generator that retrieves randomness from the
 /// operating system.
@@ -19,7 +19,7 @@ use getrandom::getrandom;
 /// The implementation is provided by the [getrandom] crate. Refer to
 /// [getrandom] documentation for details.
 ///
-/// This struct is only available when specifying the crate feature `getrandom`
+/// This struct is only available when specifying the crate feature `system-entropy`
 /// or `std`. When using the `rand` lib, it is also available as `rand::rngs::OsRng`.
 ///
 /// # Blocking and error handling
@@ -65,7 +65,7 @@ impl RngCore for OsRng {
     }
 
     fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-        getrandom(dest)?;
+        fill(dest)?;
         Ok(())
     }
 }

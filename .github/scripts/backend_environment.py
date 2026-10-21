@@ -8,7 +8,7 @@ def matrix_environment():
     # it set silently disables the RUSTFLAGS used to select each matrix case.
     if "CARGO_ENCODED_RUSTFLAGS" in environment:
         raise RuntimeError("unset CARGO_ENCODED_RUSTFLAGS before this backend matrix")
-    # A caller could otherwise force rustix_use_libc, getrandom_backend or mio
+    # A caller could otherwise force rustix_use_libc, system_entropy_backend or mio
     # overrides, making supposedly distinct cases exercise the same backend.
     if environment.get("RUSTFLAGS"):
         raise RuntimeError("unset RUSTFLAGS before this backend matrix; case flags are controlled by the checker")

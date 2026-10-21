@@ -6606,61 +6606,23 @@
       ]
     },
     {
-      "directory": "src/foundation/getrandom-0.2.17",
-      "roots": [
-        "test/foundation/getrandom-0.2.17"
-      ],
+      "directory": "src/foundation/system-entropy",
       "files": [
         {
-          "source": "src/foundation/getrandom-0.2.17/tests/common/mod.rs",
-          "source_sha256_before": "b9a36043d71963ba43a9e2899ba8eea80ff9f3284d243d9b9b9f941afa4f4aa4",
-          "path": "test/foundation/getrandom-0.2.17/tests/common/mod.rs",
-          "sha256": "b9a36043d71963ba43a9e2899ba8eea80ff9f3284d243d9b9b9f941afa4f4aa4"
-        },
-        {
-          "source": "src/foundation/getrandom-0.2.17/tests/custom.rs",
-          "source_sha256_before": "1e944ae523b62dba53fe3daf1b964a2498c8fdd21dfa7afe53781bff2fcf276e",
-          "path": "test/foundation/getrandom-0.2.17/tests/custom.rs",
-          "sha256": "1e944ae523b62dba53fe3daf1b964a2498c8fdd21dfa7afe53781bff2fcf276e"
-        },
-        {
-          "source": "src/foundation/getrandom-0.2.17/tests/normal.rs",
-          "source_sha256_before": "9e1c4b1e468a09ed0225370dfb6608f8b8135e0fabb09bbc1a718105164aade6",
-          "path": "test/foundation/getrandom-0.2.17/tests/normal.rs",
-          "sha256": "9e1c4b1e468a09ed0225370dfb6608f8b8135e0fabb09bbc1a718105164aade6"
-        },
-        {
-          "source": "src/foundation/getrandom-0.2.17/tests/rdrand.rs",
-          "source_sha256_before": "fcf3f78e3078e1b262d0efae8f3c4a730f3fbf68df656fceb78e22ee4cc98990",
-          "path": "test/foundation/getrandom-0.2.17/tests/rdrand.rs",
-          "sha256": "61981bd03032d604f1e5ec6de0d3aebdb72ad53c4b74239eee56dd7182cdf518"
-        },
-        {
-          "source": "src/foundation/getrandom-0.2.17/src/error.rs",
-          "source_sha256_before": "ab5b82ddb8304e8ad75d905d7dc5ba8deec92096930e81e87d7a28f3da382dee",
-          "path": "test/foundation/getrandom-0.2.17/unit/src/error/tests_179.rs",
-          "sha256": "1d37c5292b66dfb0948b848ab6459685695aab3173d4941a7f4912d2d754d133"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/getrandom-0.4.3",
-      "roots": [
-        "test/foundation/getrandom-0.4.3"
-      ],
-      "files": [
-        {
+          "path": "test/foundation/system-entropy/tests/mod.rs",
+          "sha256": "9eb08614fe6f7f4d1adf7a5dd0c977f6972ec39dbf0a7374c7734c884b5099f5",
           "source": "src/foundation/getrandom-0.4.3/tests/mod.rs",
-          "source_sha256_before": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67",
-          "path": "test/foundation/getrandom-0.4.3/tests/mod.rs",
-          "sha256": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67"
+          "source_sha256_before": "6f8ffe1b36d104906e5ed6f8f189c2c51e6b6135a564d218609d3b74a9ac6c67"
         },
         {
+          "path": "test/foundation/system-entropy/tests/sys_rng.rs",
+          "sha256": "a7837582c10a1de8aaf5c861cff234c26d505eb31a771834eb8f7e006e884f16",
           "source": "src/foundation/getrandom-0.4.3/tests/sys_rng.rs",
-          "source_sha256_before": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466",
-          "path": "test/foundation/getrandom-0.4.3/tests/sys_rng.rs",
-          "sha256": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466"
+          "source_sha256_before": "25aab3742e8c927a2f15a668d5d0808d4fd54cf69c07be9ea794d5bf30f66466"
         }
+      ],
+      "roots": [
+        "test/foundation/system-entropy"
       ]
     },
     {

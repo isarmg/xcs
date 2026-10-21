@@ -13,14 +13,15 @@ def main():
     args = parser.parse_args()
     backend = runpy.run_path(str(ROOT / '.github/scripts/check-linux-random-backends.py'))
     env = backend['matrix_environment']()
-    env['RUSTFLAGS'] = '--deny=warnings --cfg getrandom_backend="unsupported"'
+    env['RUSTFLAGS'] = '--deny=warnings --cfg system_entropy_backend="unsupported"'
     with tempfile.TemporaryDirectory(prefix='entropy-consumers-') as directory:
+        (Path(directory) / 'rust-toolchain.toml').write_bytes((ROOT / 'rust-toolchain.toml').read_bytes())
         manifest = Path(directory) / 'Cargo.toml'
         # Path identities must track the separately reviewed role-naming change.
         manifest.write_text('[package]\nname="entropy-consumer-regression"\nversion="0.0.0"\nedition="2024"\n'
-                            '[workspace]\n[features]\nbrowser=["getrandom/wasm_js"]\n[dependencies]\n'
+                            '[workspace]\n[features]\nbrowser=["system-entropy/wasm_js"]\n[dependencies]\n'
                             f'ahash={{path="{ROOT / "src/foundation/ahash"}"}}\n'
-                            f'getrandom={{path="{ROOT / "src/foundation/getrandom-0.4.3"}"}}\n'
+                            f'system-entropy={{path="{ROOT / "src/foundation/system-entropy"}"}}\n'
                             '[[test]]\nname="isolated_consumer"\n'
                             f'path="{ROOT / "test/ci/fixtures/entropy-fail-closed.rs"}"\n')
         backend['run'](['cargo', 'generate-lockfile', '--offline', '--manifest-path', str(manifest)], env)

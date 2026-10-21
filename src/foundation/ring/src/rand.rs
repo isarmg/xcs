@@ -125,6 +125,6 @@ impl crate::sealed::Sealed for SystemRandom {}
 impl sealed::SecureRandom for SystemRandom {
     #[inline(always)]
     fn fill_impl(&self, dest: &mut [u8]) -> Result<(), error::Unspecified> {
-        getrandom::getrandom(dest).map_err(|_| error::Unspecified)
+        system_entropy::fill(dest).map_err(|_| error::Unspecified)
     }
 }

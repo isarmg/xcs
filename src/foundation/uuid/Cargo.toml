@@ -55,8 +55,8 @@ default = ["std"]
 js = ["dep:wasm-bindgen", "dep:js-sys"]
 macro-diagnostics = []
 md5 = []
-rng = ["dep:getrandom"]
-rng-getrandom = ["rng", "dep:getrandom"]
+rng = ["dep:system-entropy"]
+rng-system-entropy = ["rng", "dep:system-entropy"]
 serialization = ["dep:serialization-core"]
 sha1 = []
 std = ["wasm-bindgen?/std", "js-sys?/std"]
@@ -90,10 +90,10 @@ optional = true
 default-features = false
 path = "../js-sys"
 
-[target.'cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))'.dependencies.getrandom]
+[target.'cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))'.dependencies.system-entropy]
 version = "0.4"
 optional = true
-path = "../getrandom-0.4.3"
+path = "../system-entropy"
 
 [lints.rust.unexpected_cfgs]
 level = "allow"

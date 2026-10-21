@@ -12,8 +12,8 @@ version = "0.8.12"
 dependencies = [
  "cfg-if",
  "data-serialization",
- "getrandom 0.4.3",
  "once_cell",
+ "system-entropy",
  "zerocopy",
 ]
 
@@ -125,11 +125,11 @@ dependencies = [
  "argon2",
  "base64",
  "error-definition",
- "getrandom 0.4.3",
  "hmac",
  "json-codec",
  "sha2",
  "subtle",
+ "system-entropy",
 ]
 
 [[package]]
@@ -592,24 +592,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "getrandom"
-version = "0.2.17"
-dependencies = [
- "cfg-if",
- "libc",
-]
-
-[[package]]
-name = "getrandom"
-version = "0.4.3"
-dependencies = [
- "cfg-if",
- "js-sys",
- "libc",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "gimli"
 version = "0.32.3"
 dependencies = [
@@ -928,7 +910,6 @@ dependencies = [
  "email_address",
  "fancy-regex",
  "fraction",
- "getrandom 0.4.3",
  "itoa",
  "json-codec",
  "jsonschema-regex",
@@ -939,6 +920,7 @@ dependencies = [
  "referencing",
  "regex",
  "strum",
+ "system-entropy",
  "unicode-general-category",
  "uuid-simd",
 ]
@@ -957,10 +939,10 @@ dependencies = [
  "ahash",
  "bytecount",
  "fraction",
- "getrandom 0.4.3",
  "json-codec",
  "num-cmp",
  "numeric",
+ "system-entropy",
  "zmij",
 ]
 
@@ -1168,13 +1150,13 @@ dependencies = [
  "data-serialization",
  "error-definition",
  "futures",
- "getrandom 0.4.3",
  "json-codec",
  "libc",
  "libsqlite3-sys",
  "rustix",
  "sha2",
  "sqlite-access",
+ "system-entropy",
  "tempfile",
  "tokio",
  "zeroize",
@@ -1246,7 +1228,7 @@ dependencies = [
 name = "random-generator-core"
 version = "0.6.4"
 dependencies = [
- "getrandom 0.2.17",
+ "system-entropy",
 ]
 
 [[package]]
@@ -1307,13 +1289,13 @@ version = "0.58.6"
 dependencies = [
  "ahash",
  "fluent-uri",
- "getrandom 0.4.3",
  "hash-table",
  "itoa",
  "json-codec",
  "micromap",
  "percent-encoding",
  "synchronization",
+ "system-entropy",
 ]
 
 [[package]]
@@ -1366,8 +1348,8 @@ version = "0.17.14"
 dependencies = [
  "cc",
  "cfg-if",
- "getrandom 0.2.17",
  "libc",
+ "system-entropy",
  "untrusted",
 ]
 
@@ -1789,6 +1771,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "system-entropy"
+version = "0.4.3"
+dependencies = [
+ "cfg-if",
+ "js-sys",
+ "libc",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "task-dispatch"
 version = "0.3.0"
 dependencies = [
@@ -1802,9 +1794,9 @@ name = "tempfile"
 version = "3.27.0"
 dependencies = [
  "fastrand",
- "getrandom 0.4.3",
  "once_cell",
  "rustix",
+ "system-entropy",
 ]
 
 [[package]]
@@ -2016,8 +2008,8 @@ version = "0.2.2"
 name = "uuid"
 version = "1.28.0"
 dependencies = [
- "getrandom 0.4.3",
  "js-sys",
+ "system-entropy",
  "wasm-bindgen",
 ]
 
@@ -2211,13 +2203,13 @@ name = "web-app"
 version = "0.1.0"
 dependencies = [
  "blake3",
- "getrandom 0.4.3",
  "gloo-timers",
  "js-sys",
  "json-codec",
  "name-policy",
  "send_wrapper",
  "storage-contract",
+ "system-entropy",
  "uuid",
  "wasm-bindgen",
  "wasm-bindgen-futures",

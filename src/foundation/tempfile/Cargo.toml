@@ -38,7 +38,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/Stebalien/tempfile"
 
 [features]
-default = ["getrandom"]
+default = ["system-entropy"]
 nightly = []
 
 [lib]
@@ -60,8 +60,8 @@ version = "1.1.4"
 features = ["fs"]
 path = "../rustix"
 
-[target.'cfg(any(unix, windows, target_os = "wasi"))'.dependencies.getrandom]
+[target.'cfg(any(unix, windows, target_os = "wasi"))'.dependencies.system-entropy]
 version = ">=0.3.0, <0.5"
 optional = true
 default-features = false
-path = "../getrandom-0.4.3"
+path = "../system-entropy"

@@ -275,7 +275,7 @@ pub fn require_current_password_hash(encoded: &str) -> Result<(), Error> {
 /// Generate a 256-bit URL-safe token without padding.
 pub fn random_token() -> Result<String, Error> {
     let mut bytes = [0_u8; SESSION_TOKEN_BYTES];
-    getrandom::fill(&mut bytes).map_err(|error| Error::Random(error.to_string()))?;
+    system_entropy::fill(&mut bytes).map_err(|error| Error::Random(error.to_string()))?;
     Ok(URL_SAFE_NO_PAD.encode(bytes))
 }
 
