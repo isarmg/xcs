@@ -80,10 +80,8 @@ pub(crate) fn submit(
     mut body: Value,
 ) {
     if state.with_untracked(|s| {
-        !s.files.writable
+        !actions::write_allowed(s)
             || kind != Kind::Backup && super::model::selected_entry_read_only(&s.files)
-            || s.files.loading
-            || actions::pending(s)
             || s.files
                 .publications
                 .get(&kind)

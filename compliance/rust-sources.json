@@ -421,7 +421,7 @@
       "version": "0.1.24"
     },
     {
-      "changes": "Leptos CSR 内核整合进共享界面，统一生命周期及 ForSnapshot 键控快照更新；删除未声明 islands/tracing/nightly/shadow-dom 死分支、空模块、无效构建探测及未使用直接依赖；常规 DOM Portal 保留，use_shadow=true 显式拒绝；详见 docs/components/interface.md；独立包已删除，算法与业务组件合并。",
+      "changes": "Leptos CSR 内核整合进共享界面，统一生命周期及 ForSnapshot 键控快照更新；删除未声明 islands/tracing/nightly/shadow-dom 死分支、空模块、无效构建探测及未使用直接依赖；常规 DOM Portal 保留，use_shadow=true 显式拒绝；详见 docs/components/interface.md；独立包已删除，算法与业务组件合并。；退出等待与未确认退出期间关闭新的业务写入和内容交付准入，保留凭据仅供撤销重试",
       "description": "Project-specific browser CSR runtime",
       "directory": "src/interface",
       "files_sha256": {
@@ -437,7 +437,7 @@
         "src/components/mod.rs": "e537b01801ccab0ece8765799f905d73c5c759e9ed69063fb7bf34bb5f6cc9b0",
         "src/components/notification.rs": "755a948303774a91acaab8ba6f80737ced90ff769ff310dcec3739b18c128259",
         "src/components/select.rs": "ce98cea42803fc3a36960d1743f30e6b675825d8b1ed11e03acd239e98da4e4f",
-        "src/components/shell.rs": "0749fda316b671f1c4ffc55e8b4b416fd1d0eca16930ff3ec852e360a24bc80c",
+        "src/components/shell.rs": "27d468f61cf33d23e61a58728398f11e78932f3f53e48f61b1488d9ee99b8eb7",
         "src/components/state.rs": "fa0fb1063c77d3823f267acc184c0956897f5b685d173c0e789cc2649ae06012",
         "src/contours/controller.rs": "14f18e7de4c27674505855fdd0036794e623aaff88185e9fe8c32d429eaa64c2",
         "src/contours/geometry.rs": "b8dd508ef652ea2ae7c8c0d7303dbff9917727956bc604ab48bd14e8dbb7bcf1",

@@ -24,7 +24,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
                 .unwrap_or_default()
         })
     });
-    let disabled = Signal::derive(move || state.with(|s| !s.files.writable || actions::pending(s)));
+    let disabled = Signal::derive(move || state.with(|s| !actions::write_allowed(s)));
     let branch_options = Signal::derive(move || {
         state.with(|s| {
             s.files

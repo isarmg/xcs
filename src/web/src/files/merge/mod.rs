@@ -53,9 +53,8 @@ pub(crate) fn available(model: &Model) -> bool {
 }
 pub(crate) fn start(state: RwSignal<State>) {
     let snapshot = state.get_untracked();
-    if !snapshot.files.writable
+    if !actions::write_allowed(&snapshot)
         || super::model::selected_entry_read_only(&snapshot.files)
-        || actions::pending(&snapshot)
         || !available(&snapshot.files)
     {
         return;

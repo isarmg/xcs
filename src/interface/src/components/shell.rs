@@ -63,7 +63,7 @@ pub fn AppShell(
                     </div>
                     <div class="authentication-content">
                         {(!current.message.is_empty() && current.phase==SessionPhase::Anonymous).then(||view!{<p role="status">{current.message.clone()}</p>})}
-                        {(current.phase==SessionPhase::LogoutUnconfirmed).then(||view!{<div><ErrorState message=t("退出请求尚未确认，当前界面已锁定。请重试注销服务器会话。","Sign out is unconfirmed and this view is locked. Retry server session revocation.")/><button class="zxs-button" on:click=move |_|on_logout.run(())>{t("重试退出","Retry sign out")}</button></div>})}
+                        {(current.phase==SessionPhase::LogoutUnconfirmed).then(||view!{<div><ErrorState message=t("退出请求尚未确认，当前界面已锁定。请重试注销服务器会话。","Sign out is unconfirmed and this view is locked. Retry server session revocation.")/><button class="zxs-button" disabled=move ||pending_logout.get() on:click=move |_|if !pending_logout.get_untracked(){on_logout.run(());}>{t("重试退出","Retry sign out")}</button></div>})}
                         <div class="authentication-card">
                             <div class="zxs-product-identity"><strong>{product}</strong></div>
                             {if current.phase==SessionPhase::Error {

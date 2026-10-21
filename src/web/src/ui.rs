@@ -30,9 +30,17 @@ pub(crate) struct State {
     pub activity: history::Model,
 }
 
+impl State {
+    /// Business work belongs only to a settled, authenticated session. Logout
+    /// retains credentials for revocation retries, not for admitting new work.
+    pub(crate) fn session_active(&self) -> bool {
+        self.authenticated && !self.logout_pending && !self.restoring
+    }
+}
+
 pub(crate) fn current_session(state: RwSignal<State>, epoch: u64) -> bool {
     state
-        .try_with_untracked(|s| s.authenticated && !s.logout_pending && s.session_epoch == epoch)
+        .try_with_untracked(|s| s.session_active() && s.session_epoch == epoch)
         .unwrap_or(false)
 }
 
@@ -91,7 +99,8 @@ pub fn app() -> impl IntoView {
     on_cleanup(move || drop(telemetry));
     let session = Memo::new(move |_| state.with(session_view));
     let logout_pending = Memo::new(move |_| state.with(|s| s.logout_pending));
-    let login_pending = Memo::new(move |_| state.with(|s| s.busy > 0));
+    let login_pending =
+        Memo::new(move |_| state.with(|s| s.busy > 0 || s.restoring || s.logout_pending));
     let login_failure = Memo::new(move |_| state.with(|s| s.login_failure.clone()));
     let on_login = Callback::new(move |credentials: LoginCredentials| {
         let Some(epoch) = state.try_update(begin_login).flatten() else {
@@ -297,10 +306,10 @@ fn end_session(state: RwSignal<State>, notice: String) {
 }
 fn account(state: RwSignal<State>) -> impl IntoView {
     let username = Memo::new(move |_| state.with(|s| s.principal.clone()));
-    let pending = Memo::new(move |_| state.with(|s| s.password_pending));
+    let pending = Memo::new(move |_| state.with(|s| !s.session_active() || s.password_pending));
     let failure = Memo::new(move |_| state.with(|s| s.password_failure.clone()));
     let change = Callback::new(move |credentials: PasswordChange| {
-        if state.with_untracked(|s| !s.authenticated || s.password_pending || s.logout_pending) {
+        if state.with_untracked(|s| !s.session_active() || s.password_pending) {
             return;
         }
         state.update(|s| {

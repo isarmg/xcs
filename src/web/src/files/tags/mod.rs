@@ -75,10 +75,9 @@ pub(crate) fn edit_node(state: RwSignal<State>, id: String) {
 }
 pub(crate) fn start(state: RwSignal<State>) {
     let snapshot = state.get_untracked();
-    if !snapshot.files.writable
+    if !actions::write_allowed(&snapshot)
         || super::model::selected_entry_read_only(&snapshot.files)
         || snapshot.files.history_loading
-        || actions::pending(&snapshot)
         || snapshot.files.checked_nodes.is_empty()
     {
         return;

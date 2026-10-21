@@ -2,7 +2,7 @@
 use super::*;
 pub(crate) fn start(state: RwSignal<State>, kind: Kind, entry: Option<Value>) {
     let snapshot = state.get_untracked();
-    if !snapshot.files.writable || snapshot.files.loading || file_actions::pending(&snapshot) {
+    if !file_actions::write_allowed(&snapshot) {
         return;
     }
     let entries = if let Some(entry) = entry {
@@ -253,7 +253,7 @@ pub(super) fn load_target(state: RwSignal<State>) {
 }
 pub(super) fn initialize_scope(state: RwSignal<State>, destination: bool) {
     let snapshot = state.get_untracked();
-    if file_actions::pending(&snapshot) || !snapshot.files.writable {
+    if !file_actions::write_allowed(&snapshot) {
         return;
     }
     let Some(draft) = snapshot.files.batch else {
@@ -369,7 +369,7 @@ pub(super) fn initialize_scope(state: RwSignal<State>, destination: bool) {
 }
 pub(super) fn submit(state: RwSignal<State>) {
     let snapshot = state.get_untracked();
-    if !snapshot.files.writable || snapshot.files.loading || file_actions::pending(&snapshot) {
+    if !file_actions::write_allowed(&snapshot) {
         return;
     }
     let Some(draft) = snapshot.files.batch else {

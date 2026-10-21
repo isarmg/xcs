@@ -7,7 +7,8 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     let active = Memo::new(move |_| state.with(|s| s.files.batch.is_some()));
     let blocked = Signal::derive(move || {
         state.with(|s| {
-            file_actions::pending(s) || s.files.batch.as_ref().is_some_and(|draft| draft.loading)
+            !file_actions::write_allowed(s)
+                || s.files.batch.as_ref().is_some_and(|draft| draft.loading)
         })
     });
     let sources = Memo::new(move |_| {

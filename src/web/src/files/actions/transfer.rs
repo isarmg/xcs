@@ -1,5 +1,5 @@
 //! Sequential uploads, verified content reads and downloads.
-use super::{browse::load_entries, disk_path, pending};
+use super::{browse::load_entries, disk_path, write_allowed};
 use crate::{
     api,
     files::model::{
@@ -45,19 +45,13 @@ impl PickerContext {
         }
     }
     fn current(&self, state: &State) -> bool {
-        state.authenticated && !state.logout_pending && *self == Self::capture(state, self.replace)
+        state.session_active() && *self == Self::capture(state, self.replace)
     }
 }
 /// Returns true only when the view should open its browser file input.
 pub(crate) fn pick_upload(state: RwSignal<State>, replace: bool) -> bool {
     let snapshot = state.get_untracked();
-    if !snapshot.authenticated
-        || snapshot.logout_pending
-        || !snapshot.files.writable
-        || snapshot.files.loading
-        || pending(&snapshot)
-        || (replace && snapshot.files.history_loading)
-    {
+    if !write_allowed(&snapshot) || (replace && snapshot.files.history_loading) {
         return false;
     }
     let context = PickerContext::capture(&snapshot, replace);
@@ -200,11 +194,7 @@ fn preflight_failure(
 
 fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, context: PickerContext) {
     let snapshot = state.get_untracked();
-    if !context.current(&snapshot)
-        || !snapshot.files.writable
-        || snapshot.files.loading
-        || pending(&snapshot)
-    {
+    if !context.current(&snapshot) || !write_allowed(&snapshot) {
         return;
     }
     if sources.is_empty() {
@@ -440,7 +430,7 @@ pub(super) fn apply_upload_result(state: RwSignal<State>, id: &str, value: Value
     }
 }
 pub(crate) fn preview(state: RwSignal<State>, entry: Value) {
-    if !visible_content(&entry) {
+    if !state.with_untracked(State::session_active) || !visible_content(&entry) {
         return;
     }
     let version = text(&entry, &["version_id"]);
@@ -463,7 +453,7 @@ pub(crate) fn preview(state: RwSignal<State>, entry: Value) {
     });
 }
 pub(crate) fn download(state: RwSignal<State>, entry: Value) {
-    if !visible_content(&entry) {
+    if !state.with_untracked(State::session_active) || !visible_content(&entry) {
         return;
     }
     let version = text(&entry, &["version_id"]);
@@ -487,6 +477,7 @@ pub(crate) fn download(state: RwSignal<State>, entry: Value) {
 
 #[cfg(test)]
 mod tests {
+    use super::super::pending;
     use super::*;
 
     #[test]
@@ -795,11 +786,29 @@ mod tests {
     fn missing_visible_versions_never_start_preview_or_content_download_requests() {
         Owner::new().with(|| {
             let state = RwSignal::new(State {
+                authenticated: true,
                 files: pending_model(),
                 ..Default::default()
             });
             let mut entry = state.with_untracked(|s| s.files.selected.clone().unwrap());
             entry["version_id"] = Value::Null;
+            preview(state, entry.clone());
+            download(state, entry);
+            assert_eq!(state.with_untracked(|s| s.files.preview_generation), 0);
+            assert!(state.with_untracked(|s| s.files.preview.is_none()));
+        });
+    }
+
+    #[test]
+    fn sign_out_pending_rejects_new_content_delivery_before_scheduling() {
+        Owner::new().with(|| {
+            let state = RwSignal::new(State {
+                authenticated: true,
+                logout_pending: true,
+                files: pending_model(),
+                ..Default::default()
+            });
+            let entry = json!({"name":"private.txt","version_id":"private-version"});
             preview(state, entry.clone());
             download(state, entry);
             assert_eq!(state.with_untracked(|s| s.files.preview_generation), 0);

@@ -21,6 +21,7 @@ mod diagnostics;
 mod fonts;
 mod lifecycle;
 mod session_delivery;
+mod session_logout;
 mod viewport_previews;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -409,6 +410,7 @@ fn exercise(
             Err("unblocked download differs".into())
         }
     })?;
+    session_logout::run(browser, password)?;
     let stale_download = session_delivery::begin_paused_download(browser)?;
     browser.click(&browser.button("Sign out", "退出")?)?;
     browser.css("input[autocomplete='current-password']")?;

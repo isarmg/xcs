@@ -84,29 +84,22 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
     });
     let folder_disabled = Signal::derive(move || {
         state.with(|s| {
-            !s.files.writable
+            !actions::write_allowed(s)
                 || !s.files.loaded
-                || s.files.loading
                 || !s.files.directory_branches_supported
                 || s.files.directory_branches.is_empty()
-                || actions::pending(s)
         })
     });
     let create_branch_disabled = Signal::derive(move || {
         state.with(|s| {
-            !s.files.writable
-                || !s.files.loaded
-                || s.files.loading
-                || !s.files.directory_branches_supported
-                || actions::pending(s)
+            !actions::write_allowed(s) || !s.files.loaded || !s.files.directory_branches_supported
         })
     });
 
-    let mutation_disabled = Signal::derive(move || {
-        state.with(|s| !s.files.writable || s.files.loading || actions::pending(s))
+    let mutation_disabled = Signal::derive(move || state.with(|s| !actions::write_allowed(s)));
+    let batch_disabled = Signal::derive(move || {
+        state.with(|s| !actions::write_allowed(s) || !batch::available(&s.files))
     });
-    let batch_disabled =
-        Signal::derive(move || state.with(|s| !batch::available(&s.files) || actions::pending(s)));
     view! {
         <nav class="zxs-breadcrumb zxs-flow" aria-label=t("当前位置","Current location")>
             <button class="zxs-button" on:click=move |_|actions::go_root(state)><FileIcon name="home"/>{t("所有硬盘","All disks")}</button><span aria-hidden="true">"/"</span>
@@ -114,7 +107,7 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
             {move ||breadcrumbs(&state.with(|s|s.files.directory.clone())).into_iter().map(move |(name,path)|view!{<span aria-hidden="true">"/"</span><button class="zxs-button" on:click=move |_|actions::go_directory(state,path.clone())>{name}</button>}).collect_view()}
         </nav>
         <div class="zxs-file-toolbar zxs-flow">
-            <button class="zxs-button" disabled=move ||state.with(|s|!s.files.writable||s.files.loading||actions::pending(s)) on:click=move |_|{if actions::pick_upload(state,false)&& let Some(input)=file_input.get_untracked(){input.click();}}><FileIcon name="upload"/>{t("上传文件","Upload files")}</button>
+            <button class="zxs-button" disabled=move ||state.with(|s|!actions::write_allowed(s)) on:click=move |_|{if actions::pick_upload(state,false)&& let Some(input)=file_input.get_untracked(){input.click();}}><FileIcon name="upload"/>{t("上传文件","Upload files")}</button>
             <input node_ref=file_input hidden type="file" on:cancel=move |_: web_sys::Event|actions::cancel_picker(state) multiple on:change=move |_|{if let Some(input)=file_input.get_untracked(){actions::upload_files(state,input.files());input.set_value("");}}/>
             {inline::control(state,t("新建文件夹","New folder"),Some("create"),inline::Target::CreateDirectory,mutation_disabled)}
             <button class="zxs-button" disabled=move ||batch_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Move,None)>{t("移动","Move")}</button>

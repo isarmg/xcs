@@ -369,7 +369,7 @@ runtime 是 normal 边可达的运行候选；compile 包括 build/proc-macro �
 这些实现保留来源身份与当前文件摘要，已经没有独立 Cargo 包或独立工作区。
 
 - `unicode-normalization@0.1.24` → `src/naming`；将 NFC→固定映射→NFC 迭代流水线整合进 ZXS 命名组件；保留 Unicode 表和规范化算法；详见 docs/components/naming.md；独立包已删除，算法与业务组件合并。；本地 lint 兼容性整理：Hangul 整除判断使用 is_multiple_of，Option 传播使用 ?，assigned 范围使用 matches!；命名/规范化算法与行为保持原有语义，当前字节由本清单独立记录。；实际闭包：root-native@x86_64-unknown-linux-gnu (runtime), web@wasm32-unknown-unknown (runtime), validation-tools@x86_64-unknown-linux-gnu (compile)；法律材料：compliance/licenses/upstream/unicode-normalization-0.1.24/COPYRIGHT, compliance/licenses/upstream/unicode-normalization-0.1.24/LICENSE-APACHE, compliance/licenses/upstream/unicode-normalization-0.1.24/LICENSE-MIT。
-- `leptos@0.8.19` → `src/interface`；Leptos CSR 内核整合进共享界面，统一生命周期及 ForSnapshot 键控快照更新；删除未声明 islands/tracing/nightly/shadow-dom 死分支、空模块、无效构建探测及未使用直接依赖；常规 DOM Portal 保留，use_shadow=true 显式拒绝；详见 docs/components/interface.md；独立包已删除，算法与业务组件合并。；实际闭包：web@wasm32-unknown-unknown (runtime)；法律材料：compliance/licenses/upstream/zxs-web-core-0.8.19/UPSTREAM-NOTICE.md。
+- `leptos@0.8.19` → `src/interface`；Leptos CSR 内核整合进共享界面，统一生命周期及 ForSnapshot 键控快照更新；删除未声明 islands/tracing/nightly/shadow-dom 死分支、空模块、无效构建探测及未使用直接依赖；常规 DOM Portal 保留，use_shadow=true 显式拒绝；详见 docs/components/interface.md；独立包已删除，算法与业务组件合并。；退出等待与未确认退出期间关闭新的业务写入和内容交付准入，保留凭据仅供撤销重试；实际闭包：web@wasm32-unknown-unknown (runtime)；法律材料：compliance/licenses/upstream/zxs-web-core-0.8.19/UPSTREAM-NOTICE.md。
 
 ## 已升级替换的历史来源
 

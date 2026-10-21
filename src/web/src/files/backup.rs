@@ -247,8 +247,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     let open = Memo::new(move |_| state.with(|s| s.files.backup.is_some()));
     let disabled = Signal::derive(move || {
         state.with(|s| {
-            actions::pending(s)
-                || !s.files.writable
+            !actions::write_allowed(s)
                 || s.files
                     .backup
                     .as_ref()

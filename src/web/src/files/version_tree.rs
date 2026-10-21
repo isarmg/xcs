@@ -596,7 +596,7 @@ fn node(state: RwSignal<State>, version_id: String) -> impl IntoView {
     let can_modify = Signal::derive(move || {
         state.with(|s| s.files.writable && !super::model::selected_entry_read_only(&s.files))
     });
-    let disabled = Signal::derive(move || !can_modify.get() || state.with(actions::pending));
+    let disabled = Signal::derive(move || !can_modify.get() || !state.with(actions::write_allowed));
     let inherited =
         Signal::derive(move || state.with(|s| inherited_current(&s.files, &id.get_value())));
     let note_target = version.with_untracked(|node| {

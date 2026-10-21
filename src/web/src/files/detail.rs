@@ -71,32 +71,24 @@ fn entry_view(state: RwSignal<State>, entry: Value) -> impl IntoView {
     let rename_branch = Memo::new(move |_| state.with(|s| selected_file_branch_record(&s.files)));
     let disabled = Signal::derive(move || {
         state.with(|s| {
-            !s.files.writable
-                || s.files.loading
-                || actions::pending(s)
+            !actions::write_allowed(s)
                 || s.files.history_loading
                 || list(&s.files.file_history, "branches").is_empty()
         })
     });
     let merge_disabled = Signal::derive(move || {
-        state.with(|s| {
-            !s.files.writable
-                || s.files.loading
-                || actions::pending(s)
-                || !merge::available(&s.files)
-        })
+        state.with(|s| !actions::write_allowed(s) || !merge::available(&s.files))
     });
     let can_modify = Signal::derive(move || {
         state.with(|s| s.files.writable && !selected_entry_read_only(&s.files))
     });
-    let mutation_disabled = Signal::derive(move || {
-        !can_modify.get() || state.with(|s| s.files.loading || actions::pending(s))
-    });
+    let mutation_disabled =
+        Signal::derive(move || !can_modify.get() || !state.with(actions::write_allowed));
     let note_disabled = Signal::derive(move || {
         mutation_disabled.get() || state.with(|s| !file_note_ready(&s.files))
     });
     let content_ready = Signal::derive(move || {
-        state.with(|s| s.files.selected.as_ref().is_some_and(visible_content))
+        state.with(|s| s.session_active() && s.files.selected.as_ref().is_some_and(visible_content))
     });
     let inherited = Signal::derive(move || {
         state.with(|s| s.files.selected.as_ref().is_some_and(inherited_content))
