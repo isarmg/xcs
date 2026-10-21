@@ -7,12 +7,12 @@ use self::{
     slot_helper::{get_slot, slot_to_tokens},
 };
 use crate::diagnostics::Errors;
+use crate::view_source::{is_component_node, value_to_string};
 use convert_case::{
     Case::{Snake, UpperCamel},
     Casing,
 };
 use convert_case_extras::is_case;
-use leptos_hot_reload::parsing::{is_component_node, value_to_string};
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use rstml::node::{

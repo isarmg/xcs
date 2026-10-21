@@ -17,6 +17,7 @@ mod diagnostics;
 mod memo;
 mod slice;
 mod slot;
+mod view_source;
 
 /// The `view` macro uses RSX (like JSX, but Rust!) It follows most of the
 /// same rules as HTML, with the following differences:
@@ -363,7 +364,7 @@ fn view_macro_impl(tokens: TokenStream, template: bool) -> syn::Result<proc_macr
 
 fn normalized_call_site(site: proc_macro::Span) -> Option<String> {
     if cfg!(debug_assertions) {
-        Some(leptos_hot_reload::span_to_stable_id(
+        Some(view_source::span_to_stable_id(
             site.file(),
             site.start().line(),
         ))

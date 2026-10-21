@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "lockfiles_sha256": {
-    "Cargo.lock": "27fb8c9fee1a43d12b7ef7104205b731d55e8be0b85ad757046b41460dd9f8a9"
+    "Cargo.lock": "b28e242a40ce14a95ee95a84050de6c74c93959980c9b3b54b9005f3e436cf97"
   },
   "manifests_sha256": {
     "Cargo.toml": "6079ee1ce3bdccdba31bb917fb80d916fbaebf8e9fffd893670b67dc086da9c3",
@@ -47,7 +47,6 @@
     "src/foundation/bumpalo/Cargo.toml": "69c9a66257e5cc2b045fdd765b95aa09a834da4eed8b16130a7400f75b1f44dd",
     "src/foundation/bytecount/Cargo.toml": "2f5c85dc6f296dcdba075bafc6a2cadb30292083fe0163e458e9ffe7bc07f8f4",
     "src/foundation/bytes/Cargo.toml": "3d51015d4d17fa05a5aa9a606d357db9a97f7264966a941543d3e5191438e72f",
-    "src/foundation/camino/Cargo.toml": "91d20ba2140c269875b7cf08000b54de0289c5663ed7504558c05928e985bbcb",
     "src/foundation/cc/Cargo.toml": "7d3903b5d11f3b968e4b8ef01ac547a797cfa165eac2a90ed79e61a186a49c1d",
     "src/foundation/cexpr/Cargo.toml": "f1edf129aadabddb43a51c8c24803bded38e6a2948d2d3a9f5f8c1e68d0e6dc2",
     "src/foundation/cfg-if/Cargo.toml": "5e6e62b7a2f061788516151826275f98605b95936d388934ab3e89b3a2fa453e",
@@ -166,7 +165,6 @@
     "src/foundation/leb128/Cargo.toml": "9ae03997e60622923cea16931a313d4b6fa2805224ccdd031d4a90d1abc08148",
     "src/foundation/leb128fmt/Cargo.toml": "b9fb8a6dc7caec07b0bb91b6e2948adceb92c51d6dd4afb7fca372903c3d4414",
     "src/foundation/leptos_dom/Cargo.toml": "0c46f8c177711ad00998228b8b70ed692793cd22c166506ca92ec2ba7dc8d5c2",
-    "src/foundation/leptos_hot_reload/Cargo.toml": "7954e9b466d76acf69b27b98070906fe5b378e4a2a606d13ab719262c6bee905",
     "src/foundation/libc/Cargo.toml": "785e92ecf42190cc839d22b411fbb3fd8a66ab969c62717e6d69bc1053cf589b",
     "src/foundation/libloading/Cargo.toml": "756740d3836f92c7c7fb86125bd2055b6fd6a1b7dd27743e411415dedcf49731",
     "src/foundation/libsqlite3-sys/Cargo.toml": "879b204cd64b3c0564f2dffa854bce4883d003c3c735bb508418cbb747b0df33",
@@ -348,7 +346,7 @@
     "src/foundation/zerovec/Cargo.toml": "ae90ef519d64167cb4da2054f1a0efcb99dbb05b2001ef9c36a3c6378c45eb56",
     "src/foundation/zmij/Cargo.toml": "9230831f8b50f7ac0b50a32d458f95f0e758ef847a81b15cbae9b84a6dd44df4",
     "src/interface/Cargo.toml": "2731fc8399b75d8b5cc0aa872130def5853aadf3464b8c8898e4b15797dfc195",
-    "src/macros/Cargo.toml": "d53b22dedc5a87f5ad70b022f35acda7a1a651158ef347037ca52f3a992078ec",
+    "src/macros/Cargo.toml": "3ce9a06bc75113ab2114ef953f6c6a3e6ded478a088a2f6a9f333769e1ab6ba3",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "f6e10e7eaa2d5c169e73603e8b2190dd05e4ca5d7344cc6396dd459470787bd6",
     "src/server/Cargo.toml": "4f8c63e496c8a9317d1453f70fe72a6cbd712f250007e6a04e06ee87902f6c06",
@@ -484,6 +482,59 @@
       },
       "vcs": null,
       "version": "0.8.19"
+    },
+    {
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；仅保留 value_to_string、span_to_stable_id 与组件节点判定，合并至 src/macros/src/view_source.rs；删除未被项目消费的文件扫描、视图 diff 和浏览器热补丁实现。",
+      "description": "Utility types used for dev mode and hot-reloading for the Leptos web framework.",
+      "directory": "src/macros",
+      "files_sha256": {
+        "Cargo.toml": "3ce9a06bc75113ab2114ef953f6c6a3e6ded478a088a2f6a9f333769e1ab6ba3",
+        "src/component.rs": "61b00057c8b23158e698a184f791194c336148162d1514abd5e5b4478916cc11",
+        "src/diagnostics.rs": "f475c804c45337cff5c3a23bdc5be2bc2c9b2d36b1f189f129cb8fb51f336157",
+        "src/lib.rs": "beb1d3eb2526c4e63f832f2888452fc97b862b4d8649bf69ca8abeaa27b38caa",
+        "src/memo.rs": "811fb68d656bdbc111516c16aafdbcd2caa78bbae4589f433d9da55725be6afc",
+        "src/slice.rs": "277ca38d1afda01dd6058e464f0a0d236507e45da3aa932ce4d902b453c47f4a",
+        "src/slot.rs": "1f5f59c8eff9523a341716c01f6dba9431bf1247c8edc604e7e8962aef52b777",
+        "src/view/component_builder.rs": "ef68d1ecf60cbd7dd60ea2f33e93d3137e8a53bafb191dad2f223e3960f67de2",
+        "src/view/mod.rs": "adea7eb9dc7fd64ec5268156607e7992b54363e1660f4da5ada6e77681a119b6",
+        "src/view/slot_helper.rs": "6c15e192889d03d673bb0e9067eb20d7a8ac01a2e5a80b3b0421d1073fe61d6c",
+        "src/view/utils.rs": "d4679c4a8984014adb88f61937fc1bebdc5b1b59734cc76b31e23e65534cdf9e",
+        "src/view_source.rs": "2b591d8f856bff3271bafe3aac28f0e116e8b11396857800b4ef336e71f28068"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+      ],
+      "merge_receipt": {
+        "directory": "src/foundation/leptos_hot_reload",
+        "files_sha256": {
+          "Cargo.toml": "7954e9b466d76acf69b27b98070906fe5b378e4a2a606d13ab719262c6bee905",
+          "src/diff.rs": "9ee40aee917f36eeea9f84165feb239eb38b98e307973675dde7deaf8b56316a",
+          "src/lib.rs": "df628636817b439afa0147d9b5706ac5c0f6148a67994b88b7d30981b9e3e8ef",
+          "src/node.rs": "5de21a07e40e3889d5224b25065471887b8ecda84199b9228fcb4a8350772c99",
+          "src/parsing.rs": "4ebaff14f0c29ccc80cd8b6f754620db09cb570548d88fa3f20cad8787661331",
+          "src/patch.js": "328bffda5736f8eff26499ac5acb805d0e0a3524cb040d6ba1abe32d711547ef"
+        },
+        "reason": "唯一消费者 view-macros 仅需要字面量转换、debug ID 和组件标签判定纯函数；保持已有行为。"
+      },
+      "merged_into": "src/macros/src/view_source.rs",
+      "name": "leptos_hot_reload",
+      "origin_directory": "vendor/web/dependencies/leptos_hot_reload-0.8.7",
+      "repository": "https://github.com/leptos-rs/leptos",
+      "status": "项目宏辅助函数合并",
+      "upstream": {
+        "archive_sha256": "d84989bd3d604e66adbfe13a32bec2ea47bdcb6c9fcd643f784facbb32f6ef10",
+        "archive_url": "https://static.crates.io/crates/leptos_hot_reload/leptos_hot_reload-0.8.7.crate",
+        "name": "leptos_hot_reload",
+        "version": "0.8.7"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "58fe6c1ad0cd175e9c8ec204895a9739d52fda16"
+        },
+        "path_in_vcs": "leptos_hot_reload"
+      },
+      "version": "0.8.7"
     }
   ],
   "origin_records_sha256": {
@@ -2855,43 +2906,6 @@
         "path_in_vcs": ""
       },
       "version": "1.12.1"
-    },
-    "src/foundation/camino": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "UTF-8 paths",
-      "directory": "src/foundation/camino",
-      "files_sha256": {
-        "Cargo.toml": "91d20ba2140c269875b7cf08000b54de0289c5663ed7504558c05928e985bbcb",
-        "build.rs": "5bc29910c9644c320a7cceed121474915f7e832f484f1bf694dec80a45182aa0",
-        "src/lib.rs": "8f9c6b55fd919e1186cf46e960e24bdd31fb1778c26e3fa46a14cf2ec002500c",
-        "src/proptest_impls.rs": "323cc7a5bb2016555a343b0b64404930b52ff0d328473fb91353bd8ccbb97234",
-        "src/serde_impls.rs": "831dcdd10bdfbd11296d34c551df59aaa4c1ea29c7429dd7b41340fd82828adf",
-        "src/tests.rs": "9955e9b5aa3009592b2486a9d94bca923d1e60c935cfb05c320cc731d2b19450",
-        "tests/integration_tests.rs": "2611c2b6c577a48202a00ba8e0dde4fa9697d3de20b80dfde00e7f66bcfe5ead"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/camino-1.2.6/LICENSE-APACHE",
-        "compliance/licenses/upstream/camino-1.2.6/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "camino",
-      "origin_directory": "vendor/rust/camino-1.2.6",
-      "repository": "https://github.com/camino-rs/camino",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "bbbad30e4b4c14a39e3cc8aed085a12a327257c316619c93581e017bc52be591",
-        "archive_url": "https://static.crates.io/crates/camino/camino-1.2.6.crate",
-        "name": "camino",
-        "version": "1.2.6"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "86ed28351d83fa7ef8287bcd5af36b8a4f073c0c"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "1.2.6"
     },
     "src/foundation/cc": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -9009,41 +9023,6 @@
         "path_in_vcs": "leptos_dom"
       },
       "version": "0.8.8"
-    },
-    "src/foundation/leptos_hot_reload": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Utility types used for dev mode and hot-reloading for the Leptos web framework.",
-      "directory": "src/foundation/leptos_hot_reload",
-      "files_sha256": {
-        "Cargo.toml": "7954e9b466d76acf69b27b98070906fe5b378e4a2a606d13ab719262c6bee905",
-        "src/diff.rs": "9ee40aee917f36eeea9f84165feb239eb38b98e307973675dde7deaf8b56316a",
-        "src/lib.rs": "df628636817b439afa0147d9b5706ac5c0f6148a67994b88b7d30981b9e3e8ef",
-        "src/node.rs": "5de21a07e40e3889d5224b25065471887b8ecda84199b9228fcb4a8350772c99",
-        "src/parsing.rs": "4ebaff14f0c29ccc80cd8b6f754620db09cb570548d88fa3f20cad8787661331",
-        "src/patch.js": "328bffda5736f8eff26499ac5acb805d0e0a3524cb040d6ba1abe32d711547ef"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
-      ],
-      "merged_into": "src/interface + src/macros",
-      "name": "leptos_hot_reload",
-      "origin_directory": "vendor/web/dependencies/leptos_hot_reload-0.8.7",
-      "repository": "https://github.com/leptos-rs/leptos",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "d84989bd3d604e66adbfe13a32bec2ea47bdcb6c9fcd643f784facbb32f6ef10",
-        "archive_url": "https://static.crates.io/crates/leptos_hot_reload/leptos_hot_reload-0.8.7.crate",
-        "name": "leptos_hot_reload",
-        "version": "0.8.7"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "58fe6c1ad0cd175e9c8ec204895a9739d52fda16"
-        },
-        "path_in_vcs": "leptos_hot_reload"
-      },
-      "version": "0.8.7"
     },
     "src/foundation/libc": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20 第二批：仅退役经分派证明不属于 Linux amd64/Web 的 OS、GNU 架构与 x32 绑定 306 文件，同时删除对应模块引用；保留 Linux amd64 GNU、musl/ohos、uclibc 与 linux_l4re_shared 等共享 ABI 及 wasm32 空表面。GNU std/no_std/extra_traits 与 Web 展开代码等价，并对照 GNU C 头文件回归；其他 ABI 不声明已验收。",
@@ -22183,17 +22162,18 @@
       "description": "Project CSR view and component macros",
       "directory": "src/macros",
       "files_sha256": {
-        "Cargo.toml": "d53b22dedc5a87f5ad70b022f35acda7a1a651158ef347037ca52f3a992078ec",
-        "src/component.rs": "d2145d8e4086d898a287e3c92dc7dec61250db2f81fb2e46de3c88bcae06eff1",
+        "Cargo.toml": "3ce9a06bc75113ab2114ef953f6c6a3e6ded478a088a2f6a9f333769e1ab6ba3",
+        "src/component.rs": "61b00057c8b23158e698a184f791194c336148162d1514abd5e5b4478916cc11",
         "src/diagnostics.rs": "f475c804c45337cff5c3a23bdc5be2bc2c9b2d36b1f189f129cb8fb51f336157",
-        "src/lib.rs": "0f5310b42a1f7e2fa16fa0c6cecad5cd47f2857f4f3a131310d55d56e56ecfd6",
+        "src/lib.rs": "beb1d3eb2526c4e63f832f2888452fc97b862b4d8649bf69ca8abeaa27b38caa",
         "src/memo.rs": "811fb68d656bdbc111516c16aafdbcd2caa78bbae4589f433d9da55725be6afc",
         "src/slice.rs": "277ca38d1afda01dd6058e464f0a0d236507e45da3aa932ce4d902b453c47f4a",
         "src/slot.rs": "1f5f59c8eff9523a341716c01f6dba9431bf1247c8edc604e7e8962aef52b777",
         "src/view/component_builder.rs": "ef68d1ecf60cbd7dd60ea2f33e93d3137e8a53bafb191dad2f223e3960f67de2",
-        "src/view/mod.rs": "3331b1f81d34b1ca70f6ec6047d7467b571a5b6952cc3a299bb5a0195ac3d4e3",
+        "src/view/mod.rs": "adea7eb9dc7fd64ec5268156607e7992b54363e1660f4da5ada6e77681a119b6",
         "src/view/slot_helper.rs": "6c15e192889d03d673bb0e9067eb20d7a8ac01a2e5a80b3b0421d1073fe61d6c",
-        "src/view/utils.rs": "d4679c4a8984014adb88f61937fc1bebdc5b1b59734cc76b31e23e65534cdf9e"
+        "src/view/utils.rs": "d4679c4a8984014adb88f61937fc1bebdc5b1b59734cc76b31e23e65534cdf9e",
+        "src/view_source.rs": "2b591d8f856bff3271bafe3aac28f0e116e8b11396857800b4ef336e71f28068"
       },
       "license": "license-file: README.md",
       "license_materials": [
@@ -27116,7 +27096,6 @@
         "src/foundation/proc-macro2": {
           "features": [
             "default",
-            "nightly",
             "proc-macro",
             "span-locations"
           ],
@@ -27939,7 +27918,6 @@
             "alloc"
           ],
           "roles": [
-            "compile",
             "runtime"
           ]
         },
@@ -27949,15 +27927,6 @@
           ],
           "roles": [
             "runtime"
-          ]
-        },
-        "src/foundation/anyhow": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
           ]
         },
         "src/foundation/arrayvec": {
@@ -28008,12 +27977,6 @@
           "features": [
             "default"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/camino": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -28103,7 +28066,6 @@
         "src/foundation/equivalent": {
           "features": [],
           "roles": [
-            "compile",
             "runtime"
           ]
         },
@@ -28140,7 +28102,6 @@
         "src/foundation/foldhash": {
           "features": [],
           "roles": [
-            "compile",
             "runtime"
           ]
         },
@@ -28284,7 +28245,6 @@
             "raw-entry"
           ],
           "roles": [
-            "compile",
             "runtime"
           ]
         },
@@ -28305,7 +28265,6 @@
             "std"
           ],
           "roles": [
-            "compile",
             "runtime"
           ]
         },
@@ -28350,12 +28309,6 @@
           ],
           "roles": [
             "runtime"
-          ]
-        },
-        "src/foundation/leptos_hot_reload": {
-          "features": [],
-          "roles": [
-            "compile"
           ]
         },
         "src/foundation/manyhow": {
@@ -28410,7 +28363,6 @@
         "src/foundation/or_poisoned": {
           "features": [],
           "roles": [
-            "compile",
             "runtime"
           ]
         },
@@ -28448,7 +28400,6 @@
         "src/foundation/proc-macro2": {
           "features": [
             "default",
-            "nightly",
             "proc-macro",
             "span-locations"
           ],
@@ -28523,12 +28474,6 @@
             "compile"
           ]
         },
-        "src/foundation/same-file": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/semver": {
           "features": [
             "default",
@@ -28556,7 +28501,6 @@
             "std"
           ],
           "roles": [
-            "compile",
             "runtime"
           ]
         },
@@ -28568,7 +28512,6 @@
             "std"
           ],
           "roles": [
-            "compile",
             "runtime"
           ]
         },
@@ -28740,12 +28683,6 @@
           ]
         },
         "src/foundation/version_check": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/walkdir": {
           "features": [],
           "roles": [
             "compile"
@@ -29189,7 +29126,6 @@
         "src/foundation/proc-macro2": {
           "features": [
             "default",
-            "nightly",
             "proc-macro",
             "span-locations"
           ],
@@ -29857,7 +29793,6 @@
         "src/foundation/proc-macro2": {
           "features": [
             "default",
-            "nightly",
             "proc-macro",
             "span-locations"
           ],
@@ -31152,7 +31087,6 @@
         "src/foundation/proc-macro2": {
           "features": [
             "default",
-            "nightly",
             "proc-macro",
             "span-locations"
           ],
@@ -31988,6 +31922,53 @@
         }
       },
       "version": "1.3.2"
+    },
+    "src/foundation/camino": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "UTF-8 paths",
+      "directory": "src/foundation/camino",
+      "files_sha256": {
+        "Cargo.toml": "91d20ba2140c269875b7cf08000b54de0289c5663ed7504558c05928e985bbcb",
+        "build.rs": "5bc29910c9644c320a7cceed121474915f7e832f484f1bf694dec80a45182aa0",
+        "src/lib.rs": "8f9c6b55fd919e1186cf46e960e24bdd31fb1778c26e3fa46a14cf2ec002500c",
+        "src/proptest_impls.rs": "323cc7a5bb2016555a343b0b64404930b52ff0d328473fb91353bd8ccbb97234",
+        "src/serde_impls.rs": "831dcdd10bdfbd11296d34c551df59aaa4c1ea29c7429dd7b41340fd82828adf",
+        "src/tests.rs": "9955e9b5aa3009592b2486a9d94bca923d1e60c935cfb05c320cc731d2b19450",
+        "tests/integration_tests.rs": "2611c2b6c577a48202a00ba8e0dde4fa9697d3de20b80dfde00e7f66bcfe5ead"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/camino-1.2.6/LICENSE-APACHE",
+        "compliance/licenses/upstream/camino-1.2.6/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "camino",
+      "origin_directory": "vendor/rust/camino-1.2.6",
+      "repository": "https://github.com/camino-rs/camino",
+      "retirement": {
+        "bytes": 141429,
+        "category": "unused-hot-reload-infrastructure",
+        "file_count": 7,
+        "reason": "唯一消费者 leptos_hot_reload 的文件扫描功能未被项目使用；所需纯函数已合并到 src/macros，项目不再需要 UTF-8 路径包装库。",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "bbbad30e4b4c14a39e3cc8aed085a12a327257c316619c93581e017bc52be591",
+        "archive_url": "https://static.crates.io/crates/camino/camino-1.2.6.crate",
+        "name": "camino",
+        "version": "1.2.6"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "86ed28351d83fa7ef8287bcd5af36b8a4f073c0c"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "1.2.6"
     },
     "src/foundation/cfg_aliases": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -40953,6 +40934,7 @@
   "retired_records_sha256": {
     "src/foundation/anstyle-wincon": "5a0150bb732478959f49ff460a2811133143119a34db1df32dea36dbf73edd6b",
     "src/foundation/bitflags-1.3.2": "ac778507e82d947908dc49d1656946beb62148438d79ce43146662308cc05e3b",
+    "src/foundation/camino": "e01c43d23e823827c1d36e74f3e07b18152c3f34fabe9b17349fedac73ba5293",
     "src/foundation/cfg_aliases": "b31405fde7e9450ac4f6e6d8e00d8b93c7725cf821bc2724675421b636ce87b5",
     "src/foundation/chacha20": "9abe1e2a5d044b44929e83ea540b127980e98f97f20e4cbfcb2445e572449a6f",
     "src/foundation/defmt": "cbe4bc06b61a18683eda2187eb48c07105aa29ffefb487dd5f5a53a64ffe8eea",

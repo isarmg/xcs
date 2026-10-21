@@ -1,4 +1,5 @@
 use crate::diagnostics::{message_with_help, Errors};
+use crate::view_source::value_to_string;
 use attribute_derive::FromAttr;
 use convert_case::{
     Case::{Pascal, Snake},
@@ -6,7 +7,6 @@ use convert_case::{
 };
 use convert_case_extras::is_case;
 use itertools::Itertools;
-use leptos_hot_reload::parsing::value_to_string;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens, TokenStreamExt};
 use syn::{

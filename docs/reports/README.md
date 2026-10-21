@@ -4,6 +4,7 @@
 
 | 报告 | 范围 |
 | --- | --- |
+| [Foundation 项目定制与架构优化](foundation-customization-20261021.md) | c6421fb5 后的新一轮消费者地图、微型职责归并、构建依赖裁剪、量化结果与验证边界 |
 | [架构与本轮改造说明](engineering-refactor-20261020.md) | 当前模块、存储真相、正确性/资源边界、foundation职责与验收限制的完整汇总 |
 | [ring Linux amd64 构建输入收敛](ring-linux-amd64-target-20261020.md) | 116 非目标文件退役、选中输入与生成字节等价、不可变历史来源与当前源码双视图校验 |
 | [Linux amd64 runtime 最终收敛](linux-amd64-runtime-final-20261020.md) | 60 平台实现退役、熵源显式拒绝、Linux/Web 源码等价与严格离线消费者；保留 docsrs 壳和已知环境限制 |

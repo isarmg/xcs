@@ -8,6 +8,7 @@ case "${1:-}" in
     # No Rust toolchain, registry, package installer or live browser required.
     python3 .github/scripts/check-workflows.py
     python3 tools/rust-sources/manage.py verify
+    python3 tools/rust-sources/architecture.py verify
     python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
     python3 -m unittest discover -s .github/scripts/tests -p 'test_*.py'
     python3 -m unittest discover -s tools/perf-check -p 'test_*.py'
@@ -20,6 +21,7 @@ case "${1:-}" in
     ;;
   rust-sources)
     python3 tools/rust-sources/manage.py verify --metadata
+    python3 tools/rust-sources/architecture.py verify
     python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
     python3 -m unittest discover -s .github/scripts/tests -p 'test_offline_builds.py'
     python3 -m unittest discover -s .github/scripts/tests -p 'test_check_suites.py'
@@ -82,6 +84,7 @@ case "${1:-}" in
     ;;
   web-production)
     python3 tools/rust-sources/manage.py verify
+    python3 tools/rust-sources/architecture.py verify
     ZXS_WEB_BINDGEN="$(bash .github/scripts/rust-build-tool.sh wasm-bindgen)"
     export ZXS_WEB_BINDGEN
     cargo run --locked --offline -p web-build -- build --product-root .
