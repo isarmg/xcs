@@ -14,7 +14,7 @@ impl Engine {
                 self.state
                     .content_states
                     .get(&p.version_id)
-                    .is_none_or(|s| s != "PURGED")
+                    .is_none_or(|s| s != "PURGED" && s != "MIGRATED")
             })
             .filter_map(|p| self.state.versions.get(&p.version_id))
             .fold(0u64, |sum, v| sum.saturating_add(v.logical_size))

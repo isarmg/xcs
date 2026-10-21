@@ -395,9 +395,21 @@ impl Engine {
                             "stored local receipt differs",
                         ));
                     }
-                    let proof_dir = local_proof_directory(&dir, hash)?;
-                    write_json(&proof_dir.join("commit-proof.json"), &proof, false)?;
-                    write_json(
+                    // The first published placement on this slot owns the root
+                    // proof. Derive that fact from the replayed prefix, not a
+                    // possibly corrupt local commit-proof candidate pointer.
+                    let first_on_slot = self
+                        .state
+                        .placements
+                        .get(&evidence.version.version_id)
+                        .is_none_or(|placement| !placement.route_slot_ids.contains(slot));
+                    let proof_dir = if first_on_slot {
+                        dir
+                    } else {
+                        local_proof_directory(&dir, hash)?
+                    };
+                    repair_local_proof(&proof_dir.join("commit-proof.json"), &proof)?;
+                    repair_local_proof(
                         &proof_dir.join("publication-proof.json"),
                         &LocalPublication {
                             candidate: c.clone(),
@@ -405,7 +417,6 @@ impl Engine {
                             commit_proof: proof,
                             publication_receipts: publication_receipts.clone(),
                         },
-                        false,
                     )?;
                 }
             }
@@ -523,6 +534,67 @@ impl Engine {
         self.failpoint("after_local_publications")?;
         Ok(())
     }
+}
+
+/// Restore only a proof reconstructed from a verified published closure.
+/// Conflicting local material is retained under the same version directory;
+/// recovery never deletes it or treats it as authority for a different result.
+fn repair_local_proof<T: serde::Serialize>(path: &std::path::Path, value: &T) -> Result<()> {
+    use platform_io::fs_safety::linux::{FileIdentity, MountPolicy, OpenAt2Root};
+    let expected = encode_metadata(value, MAX_METADATA)?;
+    match std::fs::symlink_metadata(path) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return write_atomic(path, &expected, false);
+        }
+        Err(error) => return Err(error.into()),
+        Ok(_) => {}
+    }
+    // Fail closed on links/special files and I/O errors. An oversized proof can
+    // be retained by rename without allocating or interpreting its whole body.
+    let original = open_regular(path)?;
+    match read_bytes(path, MAX_METADATA) {
+        Ok(bytes) if bytes == expected => return Ok(()),
+        Ok(_) => {}
+        Err(error) if error.code() == "RESOURCE_LIMIT" => {}
+        Err(error) => return Err(error),
+    }
+    let parent = path.parent().expect("proof parent");
+    let quarantine = parent.join("proof-quarantine");
+    private_dir(&quarantine)?;
+    let source = OpenAt2Root::open(parent, MountPolicy::SameMount)
+        .map_err(|error| Error::new("UNSAFE_PATH", error.to_string()))?;
+    let destination = OpenAt2Root::open(&quarantine, MountPolicy::SameMount)
+        .map_err(|error| Error::new("UNSAFE_PATH", error.to_string()))?;
+    if FileIdentity::from_fd(&original)? != FileIdentity::from_fd(open_regular(path)?)? {
+        return Err(Error::new(
+            "UNSAFE_PATH",
+            "local proof identity changed before repair",
+        ));
+    }
+    let name = format!(
+        "{}-{}",
+        path.file_name().expect("proof name").to_string_lossy(),
+        new_id("req")
+    );
+    rustix::fs::renameat_with(
+        source.directory(),
+        path.file_name().expect("proof name"),
+        destination.directory(),
+        name.as_str(),
+        rustix::fs::RenameFlags::NOREPLACE,
+    )
+    .map_err(std::io::Error::from)?;
+    destination.directory().sync_all()?;
+    source.directory().sync_all()?;
+    if FileIdentity::from_fd(&original)?
+        != FileIdentity::from_fd(open_regular(&quarantine.join(name))?)?
+    {
+        return Err(Error::new(
+            "UNSAFE_PATH",
+            "local proof identity changed during repair",
+        ));
+    }
+    write_atomic(path, &expected, false)
 }
 
 /// Bounded scoped workers are fully joined before returning, even on failure.

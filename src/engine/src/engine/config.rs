@@ -73,6 +73,16 @@ pub(super) fn validate_config(c: &Config) -> Result<()> {
     for d in &c.disks {
         name_policy::validate_slot(&d.slot_id)?;
         validate_id(&d.disk_id, "disk")?;
+        if !d.root.is_absolute()
+            || d.root
+                .components()
+                .any(|part| part == std::path::Component::ParentDir)
+        {
+            return Err(Error::new(
+                "CONFIG_INVALID",
+                "disk roots must be absolute and contain no parent traversal",
+            ));
+        }
         if !slots.insert(d.slot_id.to_ascii_lowercase())
             || !ids.insert(&d.disk_id)
             || !roots.insert(&d.root)
@@ -100,7 +110,9 @@ pub(super) fn validate_config(c: &Config) -> Result<()> {
                 .iter()
                 .find(|s| s.slot_id.eq_ignore_ascii_case(up))
                 .ok_or_else(|| Error::new("TOPOLOGY_INVALID", "upstream slot missing"))?;
-            if source.level + 1 != d.level || !successors.insert(up.to_ascii_lowercase()) {
+            if source.level.checked_add(1) != Some(d.level)
+                || !successors.insert(up.to_ascii_lowercase())
+            {
                 return Err(Error::new(
                     "TOPOLOGY_INVALID",
                     "route skips a level or source has multiple successors",
@@ -118,4 +130,36 @@ pub(super) fn validate_config(c: &Config) -> Result<()> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn public_validation_checks_paths_without_creating_them() {
+        let root = tempfile::tempdir().unwrap();
+        let mut config = Config::development([
+            root.path().join("p"),
+            root.path().join("b"),
+            root.path().join("c"),
+        ]);
+        Engine::validate_configuration(&config).unwrap();
+        for path in ["relative", "/draft/../p"] {
+            config.disks[0].root = path.into();
+            assert!(Engine::validate_configuration(&config).is_err());
+        }
+        assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 0);
+    }
+
+    #[test]
+    fn impossible_upstream_level_is_rejected_without_overflow() {
+        let mut config =
+            Config::development(["/draft/p".into(), "/draft/b".into(), "/draft/c".into()]);
+        config.disks[0].level = 2;
+        config.disks[0].upstream_slot_id = Some("B01".into());
+        config.disks[1].level = u32::MAX;
+        config.disks[1].upstream_slot_id = Some("C01".into());
+        assert!(validate_config(&config).is_err());
+    }
 }

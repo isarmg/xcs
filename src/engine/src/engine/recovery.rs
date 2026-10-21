@@ -7,18 +7,18 @@ use crate::{disk::*, journal::*, *};
 use std::collections::{BTreeMap, BTreeSet};
 
 impl Engine {
-    /// Read only a complete, verified replica of the exact candidate-bound root.
-    /// A damaged preferred member must not hide healthy metadata replicas.
+    /// Read the complete exact candidate-bound object closure across replicas.
+    /// A damaged preferred member must not hide healthy metadata dependencies.
     pub(crate) fn load_bound_snapshot(&self, hash: &str) -> Result<State> {
-        verified_snapshot(&self.members(), hash).map(|(state, _)| state)
+        verified_snapshot(&self.members(), hash)
     }
 
     /// Preserve the candidate's original snapshot layout when completing a
     /// persisted decision, including decisions made by an older page writer.
     pub(crate) fn repair_bound_snapshot(&self, hash: &str) -> Result<()> {
         let members = self.members();
-        let (_, source) = verified_snapshot(&members, hash)?;
-        repair_snapshot_copies(&source, &members, hash, &mut BTreeSet::new())
+        verified_snapshot(&members, hash)?;
+        repair_snapshot_copies(&members, &members, hash, &mut BTreeSet::new())
     }
 
     pub(super) fn recover_mode(&mut self, complete_unpublished: bool) -> Result<()> {
@@ -136,7 +136,7 @@ impl Engine {
                             "checkpoint boundary differs from journal",
                         ));
                     }
-                    let (mut next, _) = verified_snapshot(&online, &candidate.snapshot_hash)?;
+                    let mut next = verified_snapshot(&online, &candidate.snapshot_hash)?;
                     if publication.recovery.is_some() {
                         next.operations
                             .insert(candidate.operation_id.clone(), publication.result.clone());
@@ -146,7 +146,7 @@ impl Engine {
                 self.snapshot = Some(candidate.snapshot_hash);
                 continue;
             }
-            let (mut next, snapshot_source) = verified_snapshot(&online, &candidate.snapshot_hash)?;
+            let mut next = verified_snapshot(&online, &candidate.snapshot_hash)?;
             let history_objects =
                 crate::history_package::bound_history_objects(&online, &candidate, Some(&next))?;
             if publication.is_none() && !complete_unpublished {
@@ -172,7 +172,7 @@ impl Engine {
                 // Repair only replicas of the exact hash-bound snapshot. Never
                 // manufacture a replacement state from an unverifiable copy.
                 repair_snapshot_copies(
-                    &snapshot_source,
+                    &online,
                     &members,
                     &candidate.snapshot_hash,
                     &mut repaired_pages,
@@ -260,25 +260,25 @@ fn remember_repaired_page(repaired: &mut BTreeSet<String>, hash: &str) {
 }
 
 fn repair_snapshot_copies(
-    source: &DiskConfig,
+    sources: &[DiskConfig],
     members: &[DiskConfig],
     hash: &str,
     repaired_pages: &mut BTreeSet<String>,
 ) -> Result<()> {
     fn install<T: serde::Serialize + serde::de::DeserializeOwned>(
-        source: &DiskConfig,
+        sources: &[DiskConfig],
         members: &[DiskConfig],
         kind: &str,
         hash: &str,
     ) -> Result<()> {
-        let value: T = load_object(source, kind, hash)?;
+        let value: T = verified_object(sources, kind, hash)?;
         repair_object_copies(members, kind, hash, &value)
     }
-    let snapshot: Snapshot = load_object(source, "snapshot", hash)?;
+    let snapshot: Snapshot = verified_object(sources, "snapshot", hash)?;
     for hash in snapshot.pages.values().flatten() {
         if !repaired_pages.contains(hash) {
             install::<serde_json::Map<String, serde_json::Value>>(
-                source,
+                sources,
                 members,
                 "state-page",
                 hash,
@@ -289,7 +289,7 @@ fn repair_snapshot_copies(
             PAGE_REPAIR_COUNT.with(|count| count.set(count.get() + 1));
         }
     }
-    install::<Snapshot>(source, members, "snapshot", hash)
+    install::<Snapshot>(sources, members, "snapshot", hash)
 }
 
 #[cfg(test)]
@@ -626,14 +626,14 @@ mod tests {
         std::fs::create_dir(&target).unwrap();
         let mut repaired = BTreeSet::new();
         assert_eq!(
-            repair_snapshot_copies(&members[0], &members, &hash, &mut repaired)
+            repair_snapshot_copies(&members, &members, &hash, &mut repaired)
                 .unwrap_err()
                 .code,
             "UNSAFE_PATH"
         );
         assert!(!repaired.contains(page));
         std::fs::remove_dir(&target).unwrap();
-        repair_snapshot_copies(&members[0], &members, &hash, &mut repaired).unwrap();
+        repair_snapshot_copies(&members, &members, &hash, &mut repaired).unwrap();
         assert!(repaired.contains(page));
         assert_eq!(std::fs::read(&target).unwrap(), original);
     }

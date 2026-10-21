@@ -79,6 +79,12 @@ pub(crate) enum MutationPlan {
 }
 
 impl Engine {
+    /// Validate a candidate without creating directories, opening disks or
+    /// acquiring writer locks. Filesystem identity is checked when opening it.
+    pub fn validate_configuration(config: &Config) -> Result<()> {
+        validate_config(config)
+    }
+
     pub fn initialize(root: &Path, mut config: Config) -> Result<Self> {
         if root.join("config.json").exists() {
             return Err(Error::new(
@@ -90,9 +96,6 @@ impl Engine {
         private_dir(root)?;
         let root = existing_private_dir(root)?.path().to_path_buf();
         for d in &mut config.disks {
-            if !d.root.is_absolute() {
-                return Err(Error::new("CONFIG_INVALID", "disk roots must be absolute"));
-            }
             private_dir(&d.root)?;
             d.root = d.root.canonicalize()?;
             if d.root.join("disk.json").exists() {
@@ -215,6 +218,20 @@ impl Engine {
         for path in disks {
             let seal: DiskSeal = read_json(&path.join("disk.json"))?;
             let config: Config = read_json(&path.join("metadata/pool-membership/config.json"))?;
+            validate_config(&config)?;
+            let mut member = config
+                .disks
+                .iter()
+                .find(|disk| disk.disk_id == seal.disk_id && disk.metadata_member)
+                .cloned()
+                .ok_or_else(|| {
+                    Error::new(
+                        "CONFIG_CONFLICT",
+                        "recovery input is not a metadata member of its saved configuration",
+                    )
+                })?;
+            member.root = path.canonicalize()?;
+            validate_seal(&config, &member)?;
             let hash = object_hash("pool-config", &config)?;
             configs
                 .entry(hash)
@@ -227,21 +244,41 @@ impl Engine {
                 ));
             }
         }
-        let mut config = configs
+        let mut agreed = configs
             .into_values()
             .filter(|(_, n)| *n >= 2)
-            .map(|(c, _)| c)
-            .next()
-            .ok_or_else(|| {
-                Error::new(
-                    "CONFIG_CONFLICT",
-                    "two metadata members do not agree on pool configuration",
-                )
-            })?;
+            .map(|(c, _)| c);
+        let mut config = agreed.next().ok_or_else(|| {
+            Error::new(
+                "CONFIG_CONFLICT",
+                "two metadata members do not agree on pool configuration",
+            )
+        })?;
+        if agreed.next().is_some()
+            || seals.keys().any(|id| {
+                !config
+                    .disks
+                    .iter()
+                    .any(|disk| disk.metadata_member && &disk.disk_id == id)
+            })
+        {
+            return Err(Error::new(
+                "CONFIG_CONFLICT",
+                "recovery inputs identify more than one pool configuration or membership",
+            ));
+        }
         for d in &mut config.disks {
             if let Some(path) = seals.get(&d.disk_id) {
                 d.root = path.clone();
             }
+        }
+        validate_config(&config)?;
+        for member in config
+            .disks
+            .iter()
+            .filter(|disk| seals.contains_key(&disk.disk_id))
+        {
+            validate_seal(&config, member)?;
         }
         private_dir(root)?;
         write_json(&root.join("config.json"), &config, false)?;

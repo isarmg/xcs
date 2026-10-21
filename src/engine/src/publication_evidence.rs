@@ -23,22 +23,15 @@ pub(crate) fn verified_object<T: serde::Serialize + serde::de::DeserializeOwned>
     Err(first_error.unwrap_or_else(|| Error::new("RECOVERY_REQUIRED", "no trusted object replica")))
 }
 
-// A candidate binds one snapshot root. Try only replicas of that exact root;
-// never substitute a different state or advance past a failed dependency.
-pub(crate) fn verified_snapshot(members: &[DiskConfig], hash: &str) -> Result<(State, DiskConfig)> {
-    let mut first_error = None;
-    for member in members {
-        match load_snapshot(member, hash) {
-            Ok(state) => return Ok((state, member.clone())),
-            Err(error) => {
-                if first_error.is_none() {
-                    first_error = Some(error);
-                }
-            }
-        }
-    }
-    Err(first_error
-        .unwrap_or_else(|| Error::new("RECOVERY_REQUIRED", "no trusted snapshot replica")))
+// A candidate binds one exact root and every referenced page digest. Resolve
+// each object independently across trusted members: no member needs to retain
+// the whole closure, but every dependency must authenticate before returning.
+// This read path never repairs or rewrites any replica.
+pub(crate) fn verified_snapshot(members: &[DiskConfig], hash: &str) -> Result<State> {
+    let snapshot: Snapshot = verified_object(members, "snapshot", hash)?;
+    resolve_snapshot(snapshot, |hash| {
+        verified_object(members, "state-page", hash)
+    })
 }
 /// A seal has no independently supplied digest: validate its complete receipt
 /// barrier against the exact candidate and publication before accepting a copy.
@@ -104,3 +97,7 @@ pub(crate) fn repair_object_copies<T: serde::Serialize>(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "publication_evidence_tests.rs"]
+mod tests;

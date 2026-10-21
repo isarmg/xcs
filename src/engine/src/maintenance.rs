@@ -405,30 +405,47 @@ impl Engine {
         // tombstone, so an offline disk can distinguish intentional removal
         // from lost bytes without consulting another disk or SQLite.
         let mut published = None;
-        for member in self.members() {
-            if validate_seal(&self.config, &member).is_err() {
-                continue;
-            }
-            let scanned = scan(&member)?;
+        let members = self.trusted_evidence_members();
+        for member in &members {
+            let scanned = scan(member)?;
             if let Some((record, _)) =
                 scanned.records.iter().rev().find(|(r, _)| {
                     r.sequence == self.state.sequence && r.record_type == "PUBLICATION"
                 })
             {
-                let candidate: Candidate =
-                    load_object(&member, "candidate", &record.candidate_hash)?;
-                let publication: Publication =
-                    load_object(&member, "publication", &record.object_hash)?;
-                let seal: PublicationSeal =
-                    read_json(&publication_seal_path(&member, &record.candidate_hash))?;
-                verify_publication_seal(&candidate, &publication, &seal)?;
-                let snapshot: Snapshot =
-                    load_object(&member, "snapshot", &candidate.snapshot_hash)?;
-                published = Some((member, candidate, publication, seal, snapshot));
+                let candidate: Candidate = crate::publication_evidence::verified_object(
+                    &members,
+                    "candidate",
+                    &record.candidate_hash,
+                )?;
+                let publication: Publication = crate::publication_evidence::verified_object(
+                    &members,
+                    "publication",
+                    &record.object_hash,
+                )?;
+                let seal = crate::publication_evidence::verified_publication_seal(
+                    &members,
+                    &candidate,
+                    &publication,
+                )?;
+                if candidate.sequence != self.state.sequence
+                    || self.snapshot.as_deref() != Some(candidate.snapshot_hash.as_str())
+                {
+                    return Err(Error::new(
+                        "TOMBSTONE_INVALID",
+                        "tombstone publication differs from recovered state",
+                    ));
+                }
+                let snapshot: Snapshot = crate::publication_evidence::verified_object(
+                    &members,
+                    "snapshot",
+                    &candidate.snapshot_hash,
+                )?;
+                published = Some((candidate, publication, seal, snapshot));
                 break;
             }
         }
-        let (member, candidate, publication, seal, snapshot) = published.ok_or_else(|| {
+        let (candidate, publication, seal, snapshot) = published.ok_or_else(|| {
             Error::new(
                 "RECOVERY_REQUIRED",
                 "published tombstone evidence is unavailable",
@@ -447,7 +464,7 @@ impl Engine {
             let mut inclusion = None;
             for hash in snapshot.pages.get("content_states").into_iter().flatten() {
                 let page: serde_json::Map<String, serde_json::Value> =
-                    load_object(&member, "state-page", hash)?;
+                    crate::publication_evidence::verified_object(&members, "state-page", hash)?;
                 if page.get(id).and_then(|v| v.as_str()) == Some(state.as_str()) {
                     inclusion = Some(page);
                     break;

@@ -557,10 +557,20 @@ fn prepare_snapshot_reference(state: &State, maximum: usize) -> Result<PreparedS
 thread_local! {
     pub(crate) static SNAPSHOT_LOAD_COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
+#[cfg(test)]
 pub(crate) fn load_snapshot(d: &DiskConfig, hash: &str) -> Result<State> {
+    let snapshot: Snapshot = load_object(d, "snapshot", hash)?;
+    resolve_snapshot(snapshot, |hash| load_object(d, "state-page", hash))
+}
+
+/// Decode the complete exact root using only authenticated page objects. The
+/// resolver may select different replicas, never alternate roots or page hashes.
+pub(crate) fn resolve_snapshot(
+    snapshot: Snapshot,
+    mut page: impl FnMut(&str) -> Result<serde_json::Map<String, serde_json::Value>>,
+) -> Result<State> {
     #[cfg(test)]
     SNAPSHOT_LOAD_COUNT.with(|count| count.set(count.get() + 1));
-    let snapshot: Snapshot = load_object(d, "snapshot", hash)?;
     if snapshot.scalars.contains_key("events") && snapshot.pages.contains_key("events") {
         return Err(Error::new(
             "OBJECT_CORRUPT",
@@ -577,9 +587,7 @@ pub(crate) fn load_snapshot(d: &DiskConfig, hash: &str) -> Result<State> {
     for (field, hashes) in snapshot.pages {
         let mut map = serde_json::Map::new();
         for h in hashes {
-            let page: serde_json::Map<String, serde_json::Value> =
-                load_object(d, "state-page", &h)?;
-            for (k, v) in page {
+            for (k, v) in page(&h)? {
                 if map.insert(k, v).is_some() {
                     return Err(Error::new("OBJECT_CORRUPT", "duplicate snapshot entity"));
                 }
