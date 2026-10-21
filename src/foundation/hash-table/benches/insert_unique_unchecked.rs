@@ -1,6 +1,6 @@
 //! Compare `insert` and `insert_unique_unchecked` operations performance.
 use criterion::Criterion;
-use hashbrown::HashMap;
+use hash_table::HashMap;
 use std::hint::black_box;
 
 pub(crate) fn register_benches(c: &mut Criterion) {

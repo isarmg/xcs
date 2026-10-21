@@ -1797,7 +1797,7 @@ where
     /// equivalents of a key occur more than once, the last corresponding value
     /// prevails.
     fn extend<I: IntoIterator<Item = (K, V)>>(&mut self, iterable: I) {
-        // (Note: this is a copy of `std`/`hashbrown`'s reservation logic.)
+        // (Note: this is a copy of `std`/`hash_table`'s reservation logic.)
         // Keys may be already present or show multiple times in the iterator.
         // Reserve the entire hint lower bound if the map is empty.
         // Otherwise reserve half the hint (rounded up), so the map

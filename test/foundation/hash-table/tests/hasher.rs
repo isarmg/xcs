@@ -2,7 +2,7 @@
 
 #![cfg(not(miri))] // FIXME: takes too long
 
-use hashbrown::HashSet;
+use hash_table::HashSet;
 use std::hash::{BuildHasher, BuildHasherDefault, Hasher};
 
 fn check<S: BuildHasher + Default>() {
@@ -20,10 +20,10 @@ fn check<S: BuildHasher + Default>() {
     assert!(!set.contains(&i32::MAX));
 }
 
-/// Use hashbrown's default hasher.
+/// Use hash_table's default hasher.
 #[test]
 fn default() {
-    check::<hashbrown::DefaultHashBuilder>();
+    check::<hash_table::DefaultHashBuilder>();
 }
 
 /// Use std's default hasher.

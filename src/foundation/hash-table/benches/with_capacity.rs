@@ -1,5 +1,5 @@
 use criterion::Criterion;
-use hashbrown::HashMap;
+use hash_table::HashMap;
 use std::hint::black_box;
 
 type Map<K, V> = HashMap<K, V>;

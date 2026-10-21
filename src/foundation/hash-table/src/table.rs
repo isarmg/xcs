@@ -61,7 +61,7 @@ impl<T> HashTable<T, Global> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashTable;
+    /// use hash_table::HashTable;
     /// let mut table: HashTable<&str> = HashTable::new();
     /// assert_eq!(table.len(), 0);
     /// assert_eq!(table.capacity(), 0);
@@ -81,7 +81,7 @@ impl<T> HashTable<T, Global> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashTable;
+    /// use hash_table::HashTable;
     /// let mut table: HashTable<&str> = HashTable::with_capacity(10);
     /// assert_eq!(table.len(), 0);
     /// assert!(table.capacity() >= 10);
@@ -109,7 +109,7 @@ where
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
     /// use bumpalo::Bump;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let bump = Bump::new();
@@ -153,7 +153,7 @@ where
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
     /// use bumpalo::Bump;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let bump = Bump::new();
@@ -208,7 +208,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -245,7 +245,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -283,7 +283,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -330,7 +330,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -385,8 +385,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::Entry;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -436,7 +436,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -492,7 +492,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -529,7 +529,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -569,7 +569,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -603,7 +603,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -647,7 +647,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -685,7 +685,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut v = HashTable::new();
@@ -718,7 +718,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut v = HashTable::new();
@@ -749,7 +749,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::with_capacity(100);
@@ -785,7 +785,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::with_capacity(100);
@@ -828,7 +828,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<i32> = HashTable::new();
@@ -863,7 +863,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<i32> = HashTable::new();
@@ -897,7 +897,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -929,7 +929,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashTable;
+    /// use hash_table::HashTable;
     /// let table: HashTable<i32> = HashTable::with_capacity(100);
     /// assert!(table.capacity() >= 100);
     /// ```
@@ -944,7 +944,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let hasher = DefaultHashBuilder::default();
@@ -970,7 +970,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let hasher = DefaultHashBuilder::default();
@@ -997,7 +997,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1032,7 +1032,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1107,7 +1107,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1145,7 +1145,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1184,7 +1184,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1239,7 +1239,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1275,7 +1275,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1310,7 +1310,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1356,7 +1356,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1410,8 +1410,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::Entry;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut libraries: HashTable<(&str, u32)> = HashTable::new();
@@ -1447,7 +1447,7 @@ where
     /// ```should_panic
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// # use hashbrown::{HashTable, DefaultHashBuilder};
+    /// # use hash_table::{HashTable, DefaultHashBuilder};
     /// # use std::hash::BuildHasher;
     ///
     /// let mut libraries: HashTable<(&str, u32)> = HashTable::new();
@@ -1512,8 +1512,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::Entry;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut libraries: HashTable<(&str, u32)> = HashTable::new();
@@ -1661,8 +1661,8 @@ where
 /// ```
 /// # #[cfg(feature = "nightly")]
 /// # fn test() {
-/// use hashbrown::hash_table::{Entry, OccupiedEntry};
-/// use hashbrown::{HashTable, DefaultHashBuilder};
+/// use hash_table::hash_table::{Entry, OccupiedEntry};
+/// use hash_table::{HashTable, DefaultHashBuilder};
 /// use std::hash::BuildHasher;
 ///
 /// let mut table = HashTable::new();
@@ -1713,8 +1713,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::{Entry, OccupiedEntry};
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::{Entry, OccupiedEntry};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -1743,8 +1743,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::{Entry, OccupiedEntry};
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::{Entry, OccupiedEntry};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::<&str>::new();
@@ -1785,7 +1785,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<&str> = HashTable::new();
@@ -1822,7 +1822,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<&str> = HashTable::new();
@@ -1867,7 +1867,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<String> = HashTable::new();
@@ -1902,7 +1902,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<(&str, u32)> = HashTable::new();
@@ -1967,8 +1967,8 @@ where
 /// ```
 /// # #[cfg(feature = "nightly")]
 /// # fn test() {
-/// use hashbrown::hash_table::{Entry, OccupiedEntry};
-/// use hashbrown::{HashTable, DefaultHashBuilder};
+/// use hash_table::hash_table::{Entry, OccupiedEntry};
+/// use hash_table::{HashTable, DefaultHashBuilder};
 /// use std::hash::BuildHasher;
 ///
 /// let mut table = HashTable::new();
@@ -2049,8 +2049,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::Entry;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<&str> = HashTable::new();
@@ -2097,8 +2097,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::Entry;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<&str> = HashTable::new();
@@ -2133,8 +2133,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::Entry;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<(&str, u32)> = HashTable::new();
@@ -2186,8 +2186,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::Entry;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<(&str, u32)> = HashTable::new();
@@ -2245,7 +2245,7 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -2288,8 +2288,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
-    /// use hashbrown::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
     /// use std::hash::BuildHasher;
     ///
     /// let mut table = HashTable::new();
@@ -2360,8 +2360,8 @@ where
 /// ```
 /// # #[cfg(feature = "nightly")]
 /// # fn test() {
-/// use hashbrown::hash_table::{Entry, VacantEntry};
-/// use hashbrown::{HashTable, DefaultHashBuilder};
+/// use hash_table::hash_table::{Entry, VacantEntry};
+/// use hash_table::{HashTable, DefaultHashBuilder};
 /// use std::hash::BuildHasher;
 ///
 /// let mut table: HashTable<&str> = HashTable::new();
@@ -2418,8 +2418,8 @@ where
     /// ```
     /// # #[cfg(feature = "nightly")]
     /// # fn test() {
-    /// use hashbrown::hash_table::Entry;
-    /// use hashbrown::{HashTable, DefaultHashBuilder};
+    /// use hash_table::hash_table::Entry;
+    /// use hash_table::{HashTable, DefaultHashBuilder};
     /// use std::hash::BuildHasher;
     ///
     /// let mut table: HashTable<&str> = HashTable::new();
@@ -2473,8 +2473,8 @@ where
 /// ```
 /// # #[cfg(feature = "nightly")]
 /// # fn test() {
-/// use hashbrown::hash_table::{AbsentEntry, Entry};
-/// use hashbrown::{HashTable, DefaultHashBuilder};
+/// use hash_table::hash_table::{AbsentEntry, Entry};
+/// use hash_table::{HashTable, DefaultHashBuilder};
 /// use std::hash::BuildHasher;
 ///
 /// let mut table: HashTable<&str> = HashTable::new();
@@ -2700,7 +2700,7 @@ where
 ///
 /// ```rust
 /// use core::marker::PhantomData;
-/// use hashbrown::hash_table;
+/// use ::hash_table::hash_table;
 ///
 /// pub struct IterMut<'a, K, V> {
 ///     inner: hash_table::UnsafeIter<'a, (K, V)>,
@@ -3185,4 +3185,4 @@ where
 impl<T, F, A: Allocator> FusedIterator for ExtractIf<'_, T, F, A> where F: FnMut(&mut T) -> bool {}
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hashbrown-0.17.1/unit/src/table/tests_3187.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hash-table/unit/src/table/tests_3187.rs"));

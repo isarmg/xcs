@@ -4,8 +4,8 @@
 //! These types are thin-wrappers around either hash-map based or B-tree-map based data structures.
 //! Users can strictly use the `btree`-map based variants by enabling the `no-hash-maps` crate feature.
 //!
-//! - [`Map`]: Either backed by [`hashbrown::HashMap`] or Rust's [`BTreeMap`].
-//! - [`Set`]: Either backed by [`hashbrown::HashSet`] or Rust's [`BTreeSet`].
+//! - [`Map`]: Either backed by [`hash_table::HashMap`] or Rust's [`BTreeMap`].
+//! - [`Set`]: Either backed by [`hash_table::HashSet`] or Rust's [`BTreeSet`].
 //! - [`IndexMap`]: Either backed by [`indexmap::IndexMap`] or a custom implementation based on Rust's [`BTreeMap`].
 //! - [`IndexSet`]: Either backed by [`indexmap::IndexSet`] or a custom implementation based on Rust's [`BTreeMap`].
 //!

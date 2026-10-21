@@ -313,7 +313,7 @@ class SourcePolicy(unittest.TestCase):
         self.catalog['schema'] = 4
         self.catalog.pop('renames', None); self.catalog.pop('rename_records_sha256', None)
         self.save_catalog(); self.verify(); self.refresh(); self.verify()
-        self.assertEqual(self.catalog['schema'], 5)
+        self.assertEqual(self.catalog['schema'], 6)
         self.assertEqual(self.catalog['renames'], {})
 
     def rename_mini(self):
@@ -350,7 +350,7 @@ class SourcePolicy(unittest.TestCase):
         origins = (self.root / manager.ORIGINS).read_bytes()
         self.refresh(rename_plan_data=plan)
         self.verify()
-        self.assertEqual(self.catalog['schema'], 5)
+        self.assertEqual(self.catalog['schema'], 6)
         self.assertEqual(self.catalog['renames']['src/foundation/mini']['package'], plan['packages'][0]['package'])
         owner = self.catalog['external_tests']['src/foundation/value-core']
         self.assertEqual(owner['files'][0]['source'], 'src/foundation/mini/lib.rs')
@@ -400,6 +400,103 @@ class SourcePolicy(unittest.TestCase):
         for key in ('retire_plan', 'upgrade_plan_data'):
             with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'separate reviewed'):
                 self.refresh(rename_plan_data=plan, **{key: dict(packages=[dict(directory='src/foundation/value-core')])})
+
+    def internal_move_plan(self, before_file='lib.rs', after_file='value.rs', move_external=False):
+        directory = self.source.relative_to(self.root).as_posix()
+        package = deepcopy(self.catalog['packages'][directory])
+        (self.source / before_file).rename(self.source / after_file)
+        owner = deepcopy(self.catalog.get('external_tests', {}).get(directory))
+        after_owner = deepcopy(owner)
+        external_moves = {}
+        if move_external:
+            old_path = owner['files'][0]['path']
+            new_path = str(Path(old_path).with_name('value_test.rs'))
+            (self.root / old_path).rename(self.root / new_path)
+            after_owner['files'][0]['path'] = new_path
+            external_moves[old_path] = new_path
+            mapping = {k: v for k, v in after_owner.items() if k not in ('origin_directory', 'bytes', 'file_count')}
+            self.external_mapping.write_text(json.dumps(dict(schema_version=1, owners=[mapping])))
+        return dict(schema=1, packages=[dict(directory=directory, package=package,
+            merged_packages=[deepcopy(p) for p in self.catalog.get('merges', []) if p['directory'] == directory],
+            reason='Functional internal filenames', files_sha256=manager.files(self.source),
+            file_moves={before_file: after_file}, external_tests=owner,
+            destination_external_tests=after_owner, external_file_moves=external_moves)])
+
+    def test_internal_move_refresh_verify_and_repeat_preserve_history(self):
+        plan = self.internal_move_plan()
+        original = (self.root / manager.ORIGINS).read_bytes()
+        self.refresh(move_plan_data=plan); self.verify()
+        self.assertEqual(self.catalog['schema'], 6)
+        history = deepcopy(self.catalog['source_moves'])
+        self.refresh(); self.verify()
+        self.assertEqual(self.catalog['source_moves'], history)
+        second = self.internal_move_plan('value.rs', 'codec.rs')
+        self.refresh(move_plan_data=second); self.verify()
+        self.assertEqual(len(self.catalog['source_moves']), 2)
+        for key, value in history.items():
+            self.assertEqual(self.catalog['source_moves'][key], value)
+        self.assertEqual((self.root / manager.ORIGINS).read_bytes(), original)
+
+    def test_internal_move_after_root_rename_keeps_rename_receipt(self):
+        rename = self.rename_mini(); self.refresh(rename_plan_data=rename)
+        frozen = deepcopy(self.catalog['renames'])
+        plan = self.internal_move_plan(move_external=True)
+        old_source = plan['packages'][0]['external_tests']['files'][0]['source']
+        self.refresh(move_plan_data=plan); self.verify(); self.refresh(); self.verify()
+        self.assertEqual(self.catalog['renames'], frozen)
+        self.assertEqual(self.catalog['external_tests']['src/foundation/value-core']['files'][0]['source'], old_source)
+        self.assertEqual(len(self.catalog['source_moves']), 1)
+
+    def test_internal_move_without_plan_rejected(self):
+        self.internal_move_plan()
+        with self.assertRaisesRegex(ValueError, 'unaccounted source removal'):
+            self.refresh()
+
+    def test_internal_move_tamper_rejected(self):
+        self.refresh(move_plan_data=self.internal_move_plan())
+        next(iter(self.catalog['source_moves'].values()))['reason'] = 'changed history'
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, 'internal move receipt drift'):
+            self.verify()
+        with self.assertRaisesRegex(ValueError, 'internal move receipt drift'):
+            self.refresh()
+
+    def test_internal_move_cannot_combine_same_owner_retirement(self):
+        plan = self.internal_move_plan()
+        with self.assertRaisesRegex(ValueError, 'separate reviewed'):
+            self.refresh(move_plan_data=plan, retire_plan=dict(schema=1, packages=[dict(directory='src/foundation/mini')]))
+
+    def test_internal_move_integrated_source_and_merged_overlap(self):
+        new = 'tools/helper'
+        destination = self.root / new
+        self.source.rename(destination); self.source = destination
+        package = self.catalog['packages'].pop('src/foundation/mini')
+        package['directory'] = new
+        self.catalog['packages'][new] = package
+        self.catalog['merges'][0].update(directory=new, files_sha256=deepcopy(package['files_sha256']))
+        self.policy['integrated_sources'] = [new]
+        self.write_json(manager.POLICY, self.policy)
+        app = self.root / 'src/app/Cargo.toml'
+        app.write_text(app.read_text().replace('../foundation/mini', '../../tools/helper'))
+        root = self.root / 'Cargo.toml'
+        root.write_text(root.read_text().replace('src/foundation/mini', new))
+        self.metadata['packages'][1]['manifest_path'] = str(destination / 'Cargo.toml')
+        self.save_catalog(); self.refresh(); self.verify()
+        plan = self.internal_move_plan()
+        self.assertEqual(len(plan['packages'][0]['merged_packages']), 1)
+        self.refresh(move_plan_data=plan); self.verify(); self.refresh(); self.verify()
+        self.assertEqual(self.catalog['merges'][0]['files_sha256'], self.catalog['packages'][new]['files_sha256'])
+        receipt = next(iter(self.catalog['source_moves'].values()))
+        self.assertEqual(receipt['merged_packages'], plan['packages'][0]['merged_packages'])
+
+    def test_move_plan_cli_refresh_routing_and_verify_rejection(self):
+        path = self.root / 'move-plan.json'
+        self.write_json('move-plan.json', dict(schema=1, packages=[]))
+        with patch.object(manager.sys, 'argv', ['manage.py', 'refresh', '--move-plan', str(path)]), patch.object(manager, 'refresh') as call:
+            self.assertEqual(manager.main(), 0)
+            self.assertEqual(call.call_args.args[-1], dict(schema=1, packages=[]))
+        with patch.object(manager.sys, 'argv', ['manage.py', 'verify', '--move-plan', str(path)]), patch.object(manager.sys, 'stderr', io.StringIO()):
+            self.assertEqual(manager.main(), 1)
 
     def remove_external_tests(self):
         shutil.rmtree(self.external_root)

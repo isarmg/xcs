@@ -1,7 +1,7 @@
 //! First-party regression contracts for consolidated hash-table dependencies.
 //! Unordered tables preserve contents, not bucket/iteration order. Linked tables
 //! preserve their distinct ordering, equality, LRU and ownership semantics.
-use hashbrown::{HashMap, HashSet};
+use hash_table::{HashMap, HashSet};
 use hashlink::{LinkedHashMap, LruCache};
 use sqlx_core::common::StatementCache;
 use std::{

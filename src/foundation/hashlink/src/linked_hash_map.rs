@@ -11,8 +11,8 @@ use core::{
     ptr::{self, NonNull},
 };
 
+use ::hash_table::hash_table::{self, HashTable};
 use alloc::boxed::Box;
-use hashbrown::hash_table::{self, HashTable};
 
 use crate::DefaultHashBuilder;
 
@@ -450,8 +450,10 @@ where
         self.table
             .try_reserve(additional, move |&n| unsafe { hash_node(hash_builder, n) })
             .map_err(|e| match e {
-                hashbrown::TryReserveError::CapacityOverflow => TryReserveError::CapacityOverflow,
-                hashbrown::TryReserveError::AllocError { layout } => {
+                ::hash_table::TryReserveError::CapacityOverflow => {
+                    TryReserveError::CapacityOverflow
+                }
+                ::hash_table::TryReserveError::AllocError { layout } => {
                     TryReserveError::AllocError { layout }
                 }
             })
@@ -1729,7 +1731,7 @@ pub struct CursorMut<'a, K, V, S> {
     hash_builder: &'a S,
     free: &'a mut Option<NonNull<Node<K, V>>>,
     values: &'a mut Option<NonNull<Node<K, V>>>,
-    table: &'a mut hashbrown::HashTable<NonNull<Node<K, V>>>,
+    table: &'a mut ::hash_table::HashTable<NonNull<Node<K, V>>>,
 }
 
 impl<K, V, S> CursorMut<'_, K, V, S> {

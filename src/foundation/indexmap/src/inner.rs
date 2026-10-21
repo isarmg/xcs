@@ -10,10 +10,10 @@
 mod entry;
 mod extract;
 
+use ::hash_table::hash_table;
 use alloc::vec::{self, Vec};
 use core::mem;
 use core::ops::RangeBounds;
-use hashbrown::hash_table;
 
 use crate::util::{assert_index_le, assert_index_lt, simplify_range};
 use crate::{Bucket, Equivalent, HashValue, TryReserveError};
@@ -247,7 +247,7 @@ impl<K, V> Core<K, V> {
     pub(crate) fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
         self.indices
             .try_reserve(additional, get_hash(&self.entries))
-            .map_err(TryReserveError::from_hashbrown)?;
+            .map_err(TryReserveError::from_hash_table)?;
         // Only grow entries if necessary, since we also round up capacity.
         if additional > self.entries.capacity() - self.entries.len() {
             self.try_reserve_entries(additional)
@@ -274,7 +274,7 @@ impl<K, V> Core<K, V> {
     pub(crate) fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
         self.indices
             .try_reserve(additional, get_hash(&self.entries))
-            .map_err(TryReserveError::from_hashbrown)?;
+            .map_err(TryReserveError::from_hash_table)?;
         self.entries
             .try_reserve_exact(additional)
             .map_err(TryReserveError::from_alloc)
@@ -508,7 +508,7 @@ impl<K, V> Core<K, V> {
     #[track_caller]
     pub(crate) fn replace_index_unique(&mut self, index: usize, hash: HashValue, key: K) -> K {
         // NB: This removal and insertion isn't "no grow" (with unreachable hasher)
-        // because hashbrown's tombstones might force a resize anyway.
+        // because hash_table's tombstones might force a resize anyway.
         erase_index(&mut self.indices, self.entries[index].hash, index);
         self.indices
             .insert_unique(hash.get(), index, get_hash(&self.entries));

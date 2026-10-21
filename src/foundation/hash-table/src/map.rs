@@ -48,7 +48,7 @@ pub use crate::raw_entry::*;
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// // Type inference lets us omit an explicit type signature (which
 /// // would be `HashMap<String, String>` in this example).
@@ -106,7 +106,7 @@ pub use crate::raw_entry::*;
 /// their values:
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// // type inference lets us omit an explicit type signature (which
 /// // would be `HashMap<&str, u8>` in this example).
@@ -142,7 +142,7 @@ pub use crate::raw_entry::*;
 /// [`foldhash`]: https://crates.io/crates/foldhash
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// #[derive(Hash, Eq, PartialEq, Debug)]
 /// struct Viking {
@@ -173,7 +173,7 @@ pub use crate::raw_entry::*;
 /// A `HashMap` with fixed list of elements can be initialized from an array:
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)]
 ///     .into_iter().collect();
@@ -262,7 +262,7 @@ impl<K, V> HashMap<K, V, DefaultHashBuilder> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// let mut map: HashMap<&str, i32> = HashMap::new();
     /// assert_eq!(map.len(), 0);
     /// assert_eq!(map.capacity(), 0);
@@ -292,7 +292,7 @@ impl<K, V> HashMap<K, V, DefaultHashBuilder> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// let mut map: HashMap<&str, i32> = HashMap::with_capacity(10);
     /// assert_eq!(map.len(), 0);
     /// assert!(map.capacity() >= 10);
@@ -325,7 +325,7 @@ impl<K, V, A: Allocator> HashMap<K, V, DefaultHashBuilder, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// use bumpalo::Bump;
     ///
     /// let bump = Bump::new();
@@ -369,7 +369,7 @@ impl<K, V, A: Allocator> HashMap<K, V, DefaultHashBuilder, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// use bumpalo::Bump;
     ///
     /// let bump = Bump::new();
@@ -423,8 +423,8 @@ impl<K, V, S> HashMap<K, V, S> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashMap;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let s = DefaultHashBuilder::default();
     /// let mut map = HashMap::with_hasher(s);
@@ -465,8 +465,8 @@ impl<K, V, S> HashMap<K, V, S> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashMap;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let s = DefaultHashBuilder::default();
     /// let mut map = HashMap::with_capacity_and_hasher(10, s);
@@ -511,8 +511,8 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashMap;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let s = DefaultHashBuilder::default();
     /// let mut map = HashMap::with_hasher(s);
@@ -547,8 +547,8 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashMap;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let s = DefaultHashBuilder::default();
     /// let mut map = HashMap::with_capacity_and_hasher(10, s);
@@ -568,8 +568,8 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashMap;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let hasher = DefaultHashBuilder::default();
     /// let map: HashMap<i32, i32> = HashMap::with_hasher(hasher);
@@ -588,7 +588,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// let map: HashMap<i32, i32> = HashMap::with_capacity(100);
     /// assert_eq!(map.len(), 0);
     /// assert!(map.capacity() >= 100);
@@ -604,7 +604,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -636,7 +636,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -668,7 +668,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     ///
@@ -708,7 +708,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -747,7 +747,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -796,7 +796,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut a = HashMap::new();
     /// assert_eq!(a.len(), 0);
@@ -813,7 +813,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut a = HashMap::new();
     /// assert!(a.is_empty());
@@ -835,7 +835,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut a = HashMap::new();
     /// a.insert(1, "a");
@@ -879,7 +879,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<i32, i32> = (0..8).map(|x|(x, x*10)).collect();
     /// assert_eq!(map.len(), 8);
@@ -928,7 +928,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<i32, i32> = (0..8).map(|x| (x, x)).collect();
     ///
@@ -971,7 +971,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut a = HashMap::new();
     /// a.insert(1, "a");
@@ -996,7 +996,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -1024,7 +1024,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert("a", 1);
@@ -1067,7 +1067,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// let mut map: HashMap<&str, i32> = HashMap::new();
     /// // Map is empty and doesn't allocate memory
     /// assert_eq!(map.capacity(), 0);
@@ -1095,7 +1095,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, isize> = HashMap::new();
     /// // Map is empty and doesn't allocate memory
@@ -1110,8 +1110,8 @@ where
     /// is returned:
     /// ```
     /// # fn test() {
-    /// use hashbrown::HashMap;
-    /// use hashbrown::TryReserveError;
+    /// use hash_table::HashMap;
+    /// use hash_table::TryReserveError;
     /// let mut map: HashMap<i32, i32> = HashMap::new();
     ///
     /// match map.try_reserve(usize::MAX) {
@@ -1140,7 +1140,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<i32, i32> = HashMap::with_capacity(100);
     /// map.insert(1, 2);
@@ -1165,7 +1165,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<i32, i32> = HashMap::with_capacity(100);
     /// map.insert(1, 2);
@@ -1189,7 +1189,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut letters = HashMap::new();
     ///
@@ -1226,7 +1226,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut words: HashMap<String, usize> = HashMap::new();
     /// let source = ["poneyland", "horseyland", "poneyland", "poneyland"];
@@ -1268,7 +1268,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1301,7 +1301,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1334,7 +1334,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1371,7 +1371,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1400,7 +1400,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, "a");
@@ -1440,7 +1440,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut libraries = HashMap::new();
     /// libraries.insert("Bodleian Library".to_string(), 1602);
@@ -1482,7 +1482,7 @@ where
     /// ```
     ///
     /// ```should_panic
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut libraries = HashMap::new();
     /// libraries.insert("Athenæum".to_string(), 1807);
@@ -1528,7 +1528,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut libraries = HashMap::new();
     /// libraries.insert("Bodleian Library".to_string(), 1602);
@@ -1602,7 +1602,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut libraries = HashMap::new();
     /// libraries.insert("Bodleian Library".to_string(), 1602);
@@ -1630,7 +1630,7 @@ where
     /// ```
     ///
     /// ```should_panic
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut libraries = HashMap::new();
     /// libraries.insert("Bodleian Library".to_string(), 1602);
@@ -1685,7 +1685,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut libraries = HashMap::new();
     /// libraries.insert("Bodleian Library".to_string(), 1602);
@@ -1792,7 +1792,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// assert_eq!(map.insert(37, "a"), None);
@@ -1851,7 +1851,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map1 = HashMap::new();
     /// assert_eq!(map1.insert(1, "a"), None);
@@ -1901,8 +1901,8 @@ where
     /// Basic usage:
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::OccupiedError;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::OccupiedError;
     ///
     /// let mut map = HashMap::new();
     /// assert_eq!(map.try_insert(37, "a").unwrap(), &"a");
@@ -1938,7 +1938,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// // The map is empty
@@ -1974,7 +1974,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// // The map is empty
@@ -2055,7 +2055,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// use std::hash::RandomState;
     ///
     /// // You can specify all types of HashMap, including hasher and allocator.
@@ -2089,7 +2089,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let map: HashMap<_, _> = [("a", "One"), ("b", "Two")].into();
     ///
@@ -2112,7 +2112,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let map1 = HashMap::from([(1, 2), (3, 4)]);
     /// let map2: HashMap<_, _> = [(1, 2), (3, 4)].into();
@@ -2134,7 +2134,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let map: HashMap<_, _> = [(1, "a"), (2, "b"), (3, "c")].into();
 ///
@@ -2183,7 +2183,7 @@ impl<K: Debug, V: Debug> fmt::Debug for Iter<'_, K, V> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let mut map: HashMap<_, _> = [(1, "One".to_owned()), (2, "Two".into())].into();
 ///
@@ -2232,7 +2232,7 @@ impl<K, V> IterMut<'_, K, V> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let map: HashMap<_, _> = [(1, "a"), (2, "b"), (3, "c")].into();
 ///
@@ -2275,7 +2275,7 @@ impl<K, V, A: Allocator> IntoIter<K, V, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let map: HashMap<_, _> = [(1, "a"), (2, "b"), (3, "c")].into();
 ///
@@ -2352,7 +2352,7 @@ impl<K: Debug, V: Debug, A: Allocator> fmt::Debug for IntoKeys<K, V, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let map: HashMap<_, _> = [(1, "a"), (2, "b"), (3, "c")].into();
 ///
@@ -2429,7 +2429,7 @@ impl<K, V: Debug, A: Allocator> fmt::Debug for IntoValues<K, V, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let map: HashMap<_, _> = [(1, "a"), (2, "b"), (3, "c")].into();
 ///
@@ -2476,7 +2476,7 @@ impl<K: Debug, V> fmt::Debug for Keys<'_, K, V> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let map: HashMap<_, _> = [(1, "a"), (2, "b"), (3, "c")].into();
 ///
@@ -2523,7 +2523,7 @@ impl<K, V: Debug> fmt::Debug for Values<'_, K, V> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let mut map: HashMap<_, _> = [(1, "a"), (2, "b"), (3, "c")].into();
 ///
@@ -2565,7 +2565,7 @@ impl<K, V, A: Allocator> Drain<'_, K, V, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let mut map: HashMap<i32, &str> = [(1, "a"), (2, "b"), (3, "c")].into();
 ///
@@ -2621,7 +2621,7 @@ impl<K, V, F> FusedIterator for ExtractIf<'_, K, V, F> where F: FnMut(&K, &mut V
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashMap;
+/// use hash_table::HashMap;
 ///
 /// let mut map: HashMap<_, _> = [(1, "One".to_owned()), (2, "Two".into())].into();
 ///
@@ -2649,7 +2649,7 @@ pub struct ValuesMut<'a, K, V> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_map::{Entry, HashMap, OccupiedEntry};
+/// use hash_table::hash_map::{Entry, HashMap, OccupiedEntry};
 ///
 /// let mut map = HashMap::new();
 /// map.extend([("a", 10), ("b", 20), ("c", 30)]);
@@ -2691,7 +2691,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{Entry, HashMap};
+    /// use hash_table::hash_map::{Entry, HashMap};
     /// let mut map: HashMap<_, _> = [("a", 100), ("b", 200)].into();
     ///
     /// match map.entry("a") {
@@ -2706,7 +2706,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{Entry, HashMap};
+    /// use hash_table::hash_map::{Entry, HashMap};
     /// let mut map: HashMap<&str, i32> = HashMap::new();
     ///
     /// match map.entry("a") {
@@ -2732,7 +2732,7 @@ impl<K: Debug, V: Debug, S, A: Allocator> Debug for Entry<'_, K, V, S, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_map::{Entry, HashMap, OccupiedEntry};
+/// use hash_table::hash_map::{Entry, HashMap, OccupiedEntry};
 ///
 /// let mut map = HashMap::new();
 /// map.extend([("a", 10), ("b", 20), ("c", 30)]);
@@ -2802,7 +2802,7 @@ impl<K: Debug, V: Debug, S, A: Allocator> Debug for OccupiedEntry<'_, K, V, S, A
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_map::{Entry, HashMap, VacantEntry};
+/// use hash_table::hash_map::{Entry, HashMap, VacantEntry};
 ///
 /// let mut map = HashMap::<&str, i32>::new();
 ///
@@ -2851,7 +2851,7 @@ impl<K: Debug, V, S, A: Allocator> Debug for VacantEntry<'_, K, V, S, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_map::{EntryRef, HashMap, OccupiedEntry};
+/// use hash_table::hash_map::{EntryRef, HashMap, OccupiedEntry};
 ///
 /// let mut map = HashMap::new();
 /// map.extend([("a".to_owned(), 10), ("b".into(), 20), ("c".into(), 30)]);
@@ -2893,7 +2893,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{EntryRef, HashMap};
+    /// use hash_table::hash_map::{EntryRef, HashMap};
     /// let mut map: HashMap<_, _> = [("a".to_owned(), 100), ("b".into(), 200)].into();
     ///
     /// match map.entry_ref("a") {
@@ -2908,7 +2908,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{EntryRef, HashMap};
+    /// use hash_table::hash_map::{EntryRef, HashMap};
     /// let mut map: HashMap<String, i32> = HashMap::new();
     ///
     /// match map.entry_ref("a") {
@@ -2940,7 +2940,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_map::{EntryRef, HashMap, VacantEntryRef};
+/// use hash_table::hash_map::{EntryRef, HashMap, VacantEntryRef};
 ///
 /// let mut map = HashMap::<String, i32>::new();
 ///
@@ -2986,7 +2986,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_map::{HashMap, OccupiedError};
+/// use hash_table::hash_map::{HashMap, OccupiedError};
 ///
 /// let mut map: HashMap<_, _> = [("a", 10), ("b", 20)].into();
 ///
@@ -3046,7 +3046,7 @@ impl<'a, K, V, S, A: Allocator> IntoIterator for &'a HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// let map_one: HashMap<_, _> = [(1, "a"), (2, "b"), (3, "c")].into();
     /// let mut map_two = HashMap::new();
     ///
@@ -3079,7 +3079,7 @@ impl<'a, K, V, S, A: Allocator> IntoIterator for &'a mut HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     /// let mut map: HashMap<_, _> = [("a", 1), ("b", 2), ("c", 3)].into();
     ///
     /// for (key, value) in &mut map {
@@ -3110,7 +3110,7 @@ impl<K, V, S, A: Allocator> IntoIterator for HashMap<K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let map: HashMap<_, _> = [("a", 1), ("b", 2), ("c", 3)].into();
     ///
@@ -3449,7 +3449,7 @@ impl<'a, K, V, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// let entry = map.entry("horseyland").insert(37);
@@ -3477,7 +3477,7 @@ impl<'a, K, V, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -3507,7 +3507,7 @@ impl<'a, K, V, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -3539,7 +3539,7 @@ impl<'a, K, V, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -3573,7 +3573,7 @@ impl<'a, K, V, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, usize> = HashMap::new();
     ///
@@ -3605,7 +3605,7 @@ impl<'a, K, V, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(3);
@@ -3628,7 +3628,7 @@ impl<'a, K, V, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -3663,8 +3663,8 @@ impl<'a, K, V, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -3737,7 +3737,7 @@ impl<'a, K, V: Default, S, A: Allocator> Entry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, Option<u32>> = HashMap::new();
     ///
@@ -3769,7 +3769,7 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{Entry, HashMap};
+    /// use hash_table::hash_map::{Entry, HashMap};
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -3793,7 +3793,7 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{Entry, HashMap};
+    /// use hash_table::hash_map::{Entry, HashMap};
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -3848,7 +3848,7 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{Entry, HashMap};
+    /// use hash_table::hash_map::{Entry, HashMap};
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -3881,8 +3881,8 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// // The map is empty
@@ -3909,8 +3909,8 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -3935,8 +3935,8 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -3967,7 +3967,7 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{Entry, HashMap};
+    /// use hash_table::hash_map::{Entry, HashMap};
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -4001,7 +4001,7 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{Entry, HashMap};
+    /// use hash_table::hash_map::{Entry, HashMap};
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -4029,8 +4029,8 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.entry("poneyland").or_insert(12);
@@ -4052,8 +4052,8 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// // The map is empty
@@ -4081,8 +4081,8 @@ impl<'a, K, V, S, A: Allocator> OccupiedEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// map.insert("poneyland", 42);
@@ -4166,7 +4166,7 @@ impl<'a, K, V, S, A: Allocator> VacantEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// assert_eq!(map.entry("poneyland").key(), &"poneyland");
@@ -4181,7 +4181,7 @@ impl<'a, K, V, S, A: Allocator> VacantEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{Entry, HashMap};
+    /// use hash_table::hash_map::{Entry, HashMap};
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -4201,8 +4201,8 @@ impl<'a, K, V, S, A: Allocator> VacantEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -4232,8 +4232,8 @@ impl<'a, K, V, S, A: Allocator> VacantEntry<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::Entry;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::Entry;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -4272,7 +4272,7 @@ impl<'a, 'b, K, Q: ?Sized, V, S, A: Allocator> EntryRef<'a, 'b, K, Q, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, u32> = HashMap::new();
     /// let entry = map.entry_ref("horseyland").insert(37);
@@ -4301,7 +4301,7 @@ impl<'a, 'b, K, Q: ?Sized, V, S, A: Allocator> EntryRef<'a, 'b, K, Q, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, u32> = HashMap::new();
     ///
@@ -4332,7 +4332,7 @@ impl<'a, 'b, K, Q: ?Sized, V, S, A: Allocator> EntryRef<'a, 'b, K, Q, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, u32> = HashMap::new();
     ///
@@ -4364,7 +4364,7 @@ impl<'a, 'b, K, Q: ?Sized, V, S, A: Allocator> EntryRef<'a, 'b, K, Q, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, usize> = HashMap::new();
     ///
@@ -4397,7 +4397,7 @@ impl<'a, 'b, K, Q: ?Sized, V, S, A: Allocator> EntryRef<'a, 'b, K, Q, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, u32> = HashMap::new();
     /// map.entry_ref("poneyland").or_insert(3);
@@ -4423,7 +4423,7 @@ impl<'a, 'b, K, Q: ?Sized, V, S, A: Allocator> EntryRef<'a, 'b, K, Q, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, u32> = HashMap::new();
     ///
@@ -4467,7 +4467,7 @@ impl<'a, 'b, K, Q: ?Sized, V: Default, S, A: Allocator> EntryRef<'a, 'b, K, Q, V
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, Option<u32>> = HashMap::new();
     ///
@@ -4499,7 +4499,7 @@ impl<'a, 'b, K, Q: ?Sized, V: Default, S, A: Allocator> EntryRef<'a, 'b, K, Q, V
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, Option<u32>> = HashMap::new();
     ///
@@ -4535,7 +4535,7 @@ impl<'map, 'key, K, Q: ?Sized, V, S, A: Allocator> VacantEntryRef<'map, 'key, K,
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<String, u32> = HashMap::new();
     /// let key: &str = "poneyland";
@@ -4552,8 +4552,8 @@ impl<'map, 'key, K, Q: ?Sized, V, S, A: Allocator> VacantEntryRef<'map, 'key, K,
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::EntryRef;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::EntryRef;
     ///
     /// let mut map: HashMap<String, u32> = HashMap::new();
     /// let key: &str = "poneyland";
@@ -4594,8 +4594,8 @@ impl<'map, 'key, K, Q: ?Sized, V, S, A: Allocator> VacantEntryRef<'map, 'key, K,
     /// # Example
     ///
     /// ```
-    /// use hashbrown::hash_map::EntryRef;
-    /// use hashbrown::HashMap;
+    /// use hash_table::hash_map::EntryRef;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::<(String, String), char>::new();
     /// let k = ("c".to_string(), "C".to_string());
@@ -4639,8 +4639,8 @@ impl<'map, 'key, K, Q: ?Sized, V, S, A: Allocator> VacantEntryRef<'map, 'key, K,
     /// # Example
     ///
     /// ```
-    /// use hashbrown::hash_map::EntryRef;
-    /// use hashbrown::HashMap;
+    /// use hash_table::hash_map::EntryRef;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::<(String, String), char>::new();
     /// let k = ("c".to_string(), "C".to_string());
@@ -4668,8 +4668,8 @@ impl<'map, 'key, K, Q: ?Sized, V, S, A: Allocator> VacantEntryRef<'map, 'key, K,
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::EntryRef;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::EntryRef;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -4711,8 +4711,8 @@ impl<'map, 'key, K, Q: ?Sized, V, S, A: Allocator> VacantEntryRef<'map, 'key, K,
     /// # Example
     ///
     /// ```
-    /// use hashbrown::hash_map::EntryRef;
-    /// use hashbrown::HashMap;
+    /// use hash_table::hash_map::EntryRef;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::<(String, String), char>::new();
     /// let k = ("c".to_string(), "C".to_string());
@@ -4761,8 +4761,8 @@ impl<'map, 'key, K, Q: ?Sized, V, S, A: Allocator> VacantEntryRef<'map, 'key, K,
     /// # Example
     ///
     /// ```
-    /// use hashbrown::hash_map::EntryRef;
-    /// use hashbrown::HashMap;
+    /// use hash_table::hash_map::EntryRef;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::<(String, String), char>::new();
     /// let k = ("c".to_string(), "C".to_string());
@@ -4834,7 +4834,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::HashMap;
+    /// use hash_table::hash_map::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, 100);
@@ -4919,7 +4919,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::HashMap;
+    /// use hash_table::hash_map::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, 100);
@@ -4982,7 +4982,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::HashMap;
+    /// use hash_table::hash_map::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.insert(1, 100);
@@ -5068,7 +5068,7 @@ fn assert_covariance() {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hashbrown-0.17.1/unit/src/map/test_map_5070.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hash-table/unit/src/map/test_map_5070.rs"));
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hashbrown-0.17.1/unit/src/map/all_test_map_with_mmap_allocations_5073.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hash-table/unit/src/map/all_test_map_with_mmap_allocations_5073.rs"));

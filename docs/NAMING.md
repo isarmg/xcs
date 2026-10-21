@@ -67,6 +67,10 @@ Base64 旧实现经差异验证合并后，这批不存在同名多版本冲突�
 
 DOM 辅助、视图渲染、响应式状态、任务调度、视图分支和共享值六个组件已完成内部协调改名，具体映射和验证见[界面迁移记录](reports/interface-naming-20261021.md)。渲染器内部模块与 SharedValue 类型同步更新，不保留上游品牌兼容别名。
 
+## 第三批实施：共享哈希表
+
+两套 hashbrown 实现完成合并后，存续实现的活动目录和包名改为 `hash-table`，crate 标识为 `hash_table`；原始身份 hashbrown 0.17.1 保留。HashMap/HashSet 等标准功能类型名称不变，hashlink/indexmap 的顺序语义包装不合并进无序表。消费者内部 `from_hashbrown` 辅助名称及所有活跃依赖和特性路径同步更改。当前使用文档见 [hash-table](components/hash-table.md)，上游原始文档保留原样。
+
 ## 后续组件族：仅为计划
 
 以下是需要联合评审的候选，不是已落地清单，也不要求把所有有明确领域含义的名称强行替换。

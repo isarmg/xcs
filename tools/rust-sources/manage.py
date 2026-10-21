@@ -15,6 +15,7 @@ import tomllib
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import external_tests
 import source_naming
+import source_moves
 import source_relocation
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -642,7 +643,7 @@ def upgrade_plan(root, previous, plan, records):
     return packages, superseded
 
 
-def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None):
+def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=None, move_plan_data=None):
     policy = read_json(root / POLICY)
     structure(root, policy)
     previous = read_json(root / CATALOG)
@@ -667,6 +668,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
         return {item.get("directory") for item in plan["packages"] if isinstance(item, dict)}
     upgrade_paths = plan_paths(upgrade_plan_data)
     retirement_paths = plan_paths(retire_plan)
+    move_paths = plan_paths(move_plan_data)
     if upgrade_paths & retirement_paths:
         raise ValueError("upgrade and retirement of one source require separate reviewed refreshes")
     renamed, renames = source_naming.prepare(root, previous, rename_plan_data, files)
@@ -676,7 +678,11 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
         raise ValueError('rename and retirement/upgrade require separate reviewed refreshes')
     if upgrade_paths & {row['destination_directory'] for row in renames.values()}:
         raise ValueError('upgrading renamed source requires chain-aware migration')
-    transition = dict(previous, schema=5 if renames else previous.get("schema", 0), packages=renamed, renames=renames,
+    if move_paths & (rename_paths | upgrade_paths | retirement_paths):
+        raise ValueError('internal moves and rename/retirement/upgrade require separate reviewed refreshes')
+    moved, move_history, moved_now = source_moves.prepare(root, dict(previous, packages=renamed), move_plan_data, files)
+    source_moves.validate_origins(move_history, records)
+    transition = dict(previous, schema=max(previous.get("schema", 0), 6 if move_history else 5 if renames else 0), packages=moved, renames=renames,
                       rename_records_sha256=source_naming.hashes(renames))
     active, superseded = upgrade_plan(root, transition, upgrade_plan_data, records)
     active, retired = retirement_plan(root, dict(transition, packages=active), retire_plan, records, policy)
@@ -713,6 +719,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
         merges.append(merged)
     external, external_receipts = external_tests.load(root, dict(packages, **{m["directory"]: m for m in merges}), renames)
     source_naming.check_current_external(previous, external, renames)
+    source_moves.check_current_external(external, moved_now)
     if external:
         if not external_tests.has_history(previous):
             baseline_packages = [*previous["packages"].values(), *previous.get("merges", [])]
@@ -727,8 +734,8 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     external_tests.check_previous(
         retained_external, external, root,
         dict(packages, **{m["directory"]: m for m in merges}),
-        source_naming.remap_previous(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), renames))
-    catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=5, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
+        source_moves.remap_previous(source_naming.remap_previous(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), renames), moved_now))
+    catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=6, source_moves=move_history, renames=renames, rename_records_sha256=source_naming.hashes(renames), policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
                    lockfiles_sha256={"Cargo.lock": digest((root / "Cargo.lock").read_bytes())},
@@ -740,10 +747,11 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None, rename_plan_data=Non
     if external or external_tests.has_history(previous):
         catalog["initial_test_relocation_sha256"] = source_relocation.RECEIPT_SHA256
     source_naming.validate_history(root, catalog)
+    source_moves.validate_origins(source_moves.validate_history(root, catalog), records)
     retired_sources(root, catalog, records)
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
-    external_tests.check_removed(source_naming.remap_previous(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), renames), dict(packages, **{m["directory"]: m for m in merges}), external, renames)
+    external_tests.check_removed(source_moves.remap_previous(source_naming.remap_previous(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), renames), moved_now), dict(packages, **{m["directory"]: m for m in merges}), external, renames)
     verify_retained_closure(catalog, policy)
     (root / CATALOG).write_text(json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (root / DOC).write_text(document(catalog, policy), encoding="utf-8", newline="\n")
@@ -822,6 +830,12 @@ def document(catalog, policy):
         for old, record in sorted(catalog['renames'].items()):
             lines.append("| " + " | ".join(map(cell, [f"{record['package']['upstream']['name']}@{record['package']['upstream']['version']}", old, record['destination_directory'],
                          record['destination_name'], record['reason']])) + " |")
+    if catalog.get('source_moves'):
+        lines += ["", "## 已登记的内部文件迁移", "",
+                  "内部文件和外置测试路径通过显式 move-plan 一一迁移；包名、目录、版本及原始来源标签不变。连续迁移追加内容寻址收据，不改写旧命名收据。", "",
+                  "| 源码目录 | 生产路径数 | 测试路径数 | 原因 | 收据 |", "| --- | --- | --- | --- | --- |"]
+        for key, record in sorted(catalog['source_moves'].items()):
+            lines.append("| " + " | ".join(map(cell, [record['directory'], len(record['file_moves']), len(record['external_file_moves']), record['reason'], key])) + " |")
     lines += ["", "## 完整性、安全与验收", "",
               f"共 {len(catalog['packages'])} 个活动源码树、{len(catalog.get('retired', {}))} 个已移除来源、{len(catalog.get('superseded', {}))} 个已升级替换来源，{len(catalog['resolutions'])} 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。", "",
               "`.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口的保守可达超集；该记录不证明每个入口实际编译或链接了这些源码。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。", ""]
@@ -855,6 +869,7 @@ def verify(root, metadata=False):
         if catalog[key] != digest(safe_path(root, relative).read_bytes()):
             raise ValueError(f"policy/config/origin content drift: {relative}")
     records = origins(root)
+    source_moves.validate_origins(source_moves.validate_history(root, catalog), records)
     if origin_hashes(records) != catalog["origin_records_sha256"] or provenance(root) != catalog["provenance_sha256"]:
         raise ValueError("centralized original provenance/license inventory drift")
     external, external_receipts = external_tests.load(root, dict(catalog["packages"], **{m["directory"]: m for m in catalog.get("merges", [])}), renames)
@@ -914,13 +929,15 @@ def main():
     parser.add_argument("--retire-plan", type=Path, help="explicit reviewed removal plan; refresh only")
     parser.add_argument("--upgrade-plan", type=Path, help="explicit reviewed upstream replacement plan; refresh only")
     parser.add_argument("--rename-plan", type=Path, help="explicit reviewed lossless source naming plan; refresh only")
+    parser.add_argument("--move-plan", type=Path, help="explicit reviewed identity-preserving internal file move plan; refresh only")
     arguments = parser.parse_args()
     try:
-        if (arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan) and arguments.command != "refresh":
-            raise ValueError("--retire-plan, --upgrade-plan and --rename-plan are only accepted by refresh")
+        if (arguments.retire_plan or arguments.upgrade_plan or arguments.rename_plan or arguments.move_plan) and arguments.command != "refresh":
+            raise ValueError("--retire-plan, --upgrade-plan, --rename-plan and --move-plan are only accepted by refresh")
         (refresh(ROOT, read_json(arguments.retire_plan) if arguments.retire_plan else None,
                  read_json(arguments.upgrade_plan) if arguments.upgrade_plan else None,
-                 read_json(arguments.rename_plan) if arguments.rename_plan else None)
+                 read_json(arguments.rename_plan) if arguments.rename_plan else None,
+                 read_json(arguments.move_plan) if arguments.move_plan else None)
          if arguments.command == "refresh" else verify(ROOT, arguments.metadata))
     except (ValueError, OSError, KeyError, TypeError) as error:
         print(f"Rust source check failed: {error}", file=sys.stderr)

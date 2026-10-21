@@ -3,7 +3,7 @@
 
 use core::hash::BuildHasherDefault;
 use fnv::FnvHasher;
-use hashbrown::{HashMap, HashSet};
+use hash_table::{HashMap, HashSet};
 use serde_test::{Token, assert_tokens};
 
 // We use FnvHash for this test because we rely on the ordering

@@ -37,7 +37,7 @@
           "source": "src/foundation/ahash/tests/bench.rs",
           "source_sha256_before": "222457a049e060c17aceb1ad68229267a59bc010c40da3566189aad272449b70",
           "path": "test/foundation/ahash/tests/bench.rs",
-          "sha256": "222457a049e060c17aceb1ad68229267a59bc010c40da3566189aad272449b70"
+          "sha256": "813c40f7f37ea8b9a2d572babe3c82780ab6db57355958a9650addec52d1a318"
         },
         {
           "source": "src/foundation/ahash/tests/map_tests.rs",
@@ -6666,99 +6666,99 @@
       ]
     },
     {
-      "directory": "src/foundation/hashbrown-0.17.1",
+      "directory": "src/foundation/hash-table",
       "roots": [
-        "test/foundation/hashbrown-0.17.1"
+        "test/foundation/hash-table"
       ],
       "files": [
         {
           "source": "src/foundation/hashbrown-0.17.1/tests/equivalent_trait.rs",
           "source_sha256_before": "092e4b137b6abf7d57277f77ebc4f3641eba22a650dade79f2b0d793062627fb",
-          "path": "test/foundation/hashbrown-0.17.1/tests/equivalent_trait.rs",
-          "sha256": "092e4b137b6abf7d57277f77ebc4f3641eba22a650dade79f2b0d793062627fb"
+          "path": "test/foundation/hash-table/tests/equivalent_trait.rs",
+          "sha256": "9c8ade75397d01ce1cf27c085e92da29cb43e58fe8bdfde9064181b2ea19a953"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/tests/hasher.rs",
           "source_sha256_before": "fd06130f011660743202904221f3f7487d8d143d8903c73cd3a76d079ebbe9fb",
-          "path": "test/foundation/hashbrown-0.17.1/tests/hasher.rs",
-          "sha256": "fd06130f011660743202904221f3f7487d8d143d8903c73cd3a76d079ebbe9fb"
+          "path": "test/foundation/hash-table/tests/hasher.rs",
+          "sha256": "6deb22f5a816ce883b74303f861e407210cb6531c18664dcbab451e567f31bee"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/tests/hasher_unwind.rs",
           "source_sha256_before": "d36a1650a5cf7a5f424250d80abe8496385f6395e37fd9262262724c22306a0f",
-          "path": "test/foundation/hashbrown-0.17.1/tests/hasher_unwind.rs",
-          "sha256": "d36a1650a5cf7a5f424250d80abe8496385f6395e37fd9262262724c22306a0f"
+          "path": "test/foundation/hash-table/tests/hasher_unwind.rs",
+          "sha256": "beb2ab9f05b5306d4dc608bb798b8e2f126e4a3580224161664f8dd546b78d02"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/tests/rayon.rs",
           "source_sha256_before": "5470842da0372b03059de3c8eaeb59b72bfd52eb76026d0eda51cf4634047add",
-          "path": "test/foundation/hashbrown-0.17.1/tests/rayon.rs",
-          "sha256": "5470842da0372b03059de3c8eaeb59b72bfd52eb76026d0eda51cf4634047add"
+          "path": "test/foundation/hash-table/tests/rayon.rs",
+          "sha256": "4dc038a96333d0c53a615fec106cd53265e90075dce82bd4755296fba7490f67"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/tests/serde.rs",
           "source_sha256_before": "27689fe22b6301db7fdf01de19be621b2d9af7d2ad157c000600bfe760f1cbb3",
-          "path": "test/foundation/hashbrown-0.17.1/tests/serde.rs",
-          "sha256": "27689fe22b6301db7fdf01de19be621b2d9af7d2ad157c000600bfe760f1cbb3"
+          "path": "test/foundation/hash-table/tests/serde.rs",
+          "sha256": "7467223732b6a97a14c500d071e9a4e7dec8f166a42f7cd888a5672184f7e12d"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/tests/set.rs",
           "source_sha256_before": "dc4e546c94f95869ce85f55ce8e10b9d100b7b0ef6e80e1720b94af621f45ed0",
-          "path": "test/foundation/hashbrown-0.17.1/tests/set.rs",
-          "sha256": "dc4e546c94f95869ce85f55ce8e10b9d100b7b0ef6e80e1720b94af621f45ed0"
+          "path": "test/foundation/hash-table/tests/set.rs",
+          "sha256": "e578c2ffc79b51ba00450076f6821209dbaac07aa954957c0b3cc4b44cc518f6"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/external_trait_impls/rayon/map.rs",
           "source_sha256_before": "2819b0e7bb77594710a0173d2a7bda318350096f79d0e0e3be4e92c616d38f69",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/external_trait_impls/rayon/map/test_par_map_457.rs",
+          "path": "test/foundation/hash-table/unit/src/external_trait_impls/rayon/map/test_par_map_457.rs",
           "sha256": "618cab0c75687eac141d811018d398beb4ead0c8ccbd14a28ec78ddc857051e5"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/external_trait_impls/rayon/set.rs",
           "source_sha256_before": "f58a884cb2d74ecb6e165d4f63710199db8b4c4e9935e355e258ae7eb9d76fa8",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/external_trait_impls/rayon/set/test_par_set_387.rs",
+          "path": "test/foundation/hash-table/unit/src/external_trait_impls/rayon/set/test_par_set_387.rs",
           "sha256": "e2c01b738f402cab042982d4311685a5689d7cc0d35bae4be79e9bc725960bca"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/external_trait_impls/rayon/table.rs",
           "source_sha256_before": "6703ed24b69510b74a6777388d6fe303f8838c740c809ea4ce5e9c87aec088df",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/external_trait_impls/rayon/table/test_par_table_207.rs",
+          "path": "test/foundation/hash-table/unit/src/external_trait_impls/rayon/table/test_par_table_207.rs",
           "sha256": "eff11cd984ad416d97eff9468693f9f53d4c1a07017ade012d1124e480399dae"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/map.rs",
           "source_sha256_before": "b79497ce537ffc5ed4f8f3399434b9216c01e7927fdc434fee190e9e9ce2abb0",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/map/all_test_map_with_mmap_allocations_5073.rs",
+          "path": "test/foundation/hash-table/unit/src/map/all_test_map_with_mmap_allocations_5073.rs",
           "sha256": "3e609258d2551a767c9aab5a9ab5f3e7215d72750c305d7b3db134d4463814ed"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/map.rs",
           "source_sha256_before": "b79497ce537ffc5ed4f8f3399434b9216c01e7927fdc434fee190e9e9ce2abb0",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/map/test_map_5070.rs",
+          "path": "test/foundation/hash-table/unit/src/map/test_map_5070.rs",
           "sha256": "04e365dbdf17c46694f441733336767f9bfb01c1d880fa9abe85b5e701e459a4"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/raw.rs",
           "source_sha256_before": "0c8ad353ba95817e72b0a8fea48fa2599099ea3def374f254ab6402a9c468d22",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/raw/test_map_4341.rs",
+          "path": "test/foundation/hash-table/unit/src/raw/test_map_4341.rs",
           "sha256": "ba7764d72286c32b1aace26c611d0e2c1a648b9baf7502fe9efaf50f31802a29"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/raw_entry.rs",
           "source_sha256_before": "6393317a9818e2a9121b76d53083cd5ce358bc63e2702e17b9c138914d6842ee",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/raw_entry/test_map_1474.rs",
+          "path": "test/foundation/hash-table/unit/src/raw_entry/test_map_1474.rs",
           "sha256": "09f5eaef855a6fd0190e0df7304119eb8c01b5f5c084e9f929834a5d651dad22"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/set.rs",
           "source_sha256_before": "71485eb08e622a7aeb1978817233f0e9c75f4daec87d2d6fa6eba6e0aaf80f2f",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/set/test_set_2544.rs",
+          "path": "test/foundation/hash-table/unit/src/set/test_set_2544.rs",
           "sha256": "f0cb35e1c9ae750dd75a4d6fd1b9dcef6f5a1efd341aa76f5cad5edd21de2f07"
         },
         {
           "source": "src/foundation/hashbrown-0.17.1/src/table.rs",
           "source_sha256_before": "9d37739758f9df08d23c3ab792d29547b04bfd29b08900407a0d2b8ecd26cda9",
-          "path": "test/foundation/hashbrown-0.17.1/unit/src/table/tests_3187.rs",
+          "path": "test/foundation/hash-table/unit/src/table/tests_3187.rs",
           "sha256": "d463fd1bc1bd29e801be5e4ff44e11f4a619f5d23f9c950332a08e2da0cae517"
         }
       ]
@@ -10213,7 +10213,7 @@
           "source": "src/foundation/micromap/tests/benchmark.rs",
           "source_sha256_before": "ccf806b113cdf364383cdea4c5adfcaba03a5338f29c2a3fa766fbed4c84c1c6",
           "path": "test/foundation/micromap/tests/benchmark.rs",
-          "sha256": "ccf806b113cdf364383cdea4c5adfcaba03a5338f29c2a3fa766fbed4c84c1c6"
+          "sha256": "84dbb6826900a8994703d4edc48305f7e24a585822e1bf2238a6d03fb2b4ce0a"
         },
         {
           "source": "src/foundation/micromap/tests/random.rs",

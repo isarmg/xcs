@@ -4,7 +4,7 @@ use std::{
 };
 
 use fluent_uri::Uri;
-use hashbrown::{Equivalent, HashMap};
+use hash_table::{Equivalent, HashMap};
 use parking_lot::{RwLock, RwLockUpgradableReadGuard};
 
 use crate::{uri, Error};

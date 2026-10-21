@@ -382,7 +382,7 @@ impl<'a, K, V> VacantEntry<'a, K, V> {
         assert_index_lt(index, map.len());
 
         // NB: This removal and insertion isn't "no grow" (with unreachable hasher)
-        // because hashbrown's tombstones might force a resize anyway.
+        // because hash_table's tombstones might force a resize anyway.
         let old_hash = map.entries[index].hash;
         map.indices
             .find_entry(old_hash.get(), move |&i| i == index)

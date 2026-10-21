@@ -119,3 +119,37 @@ renames, upstream upgrades after renaming, renames of already-upgraded sources,
 and sources covered by fixed ring/platform live-view proofs fail closed until a
 chain-aware or historical-view adapter is supplied. Original upstream names,
 archives, licenses and security identities are never renamed or overwritten.
+
+## Identity-preserving internal file moves
+
+`refresh --move-plan PLAN.json` moves internal production filenames or external
+test filenames without changing the package root, name, version or upstream
+identity. This also applies after a previous package-root rename. Plans use
+`schema: 1` and `packages` entries containing `directory`, exact previous
+`package`, all exact overlapping `merged_packages` (or an empty list), `reason`,
+full reviewed post-move `files_sha256`, `file_moves`, exact previous
+`external_tests` (or null), reviewed `destination_external_tests` (or null), and
+`external_file_moves`.
+
+Production file maps use package-relative paths; external maps use repository-
+relative paths. Enumerate every changed file, including each descendant of a
+moved directory. Unlisted files remain at their current paths. The implicit and
+explicit maps together must be bijections: no lost file, invented source,
+unknown destination, or overwrite of an unmoved file is accepted. After content
+hashes and byte totals are checked against disk. External owner roots, original
+`source` labels, original hashes, fragment counts and ownership remain unchanged.
+At least one map must be nonempty; an external-only move is supported.
+
+Schema 6 catalogs append content-addressed `source_moves` receipts containing the
+exact before snapshots and reviewed maps. Subsequent moves append new receipts,
+never rewrite old source moves or root-renaming records. Ordinary content edits
+remain possible through explicit refresh. Historical receipt origins are checked
+against the independently authenticated origin inventory; a move does not create
+or remove an origin. Schemas 4 and 5 remain readable, and refresh emits schema 6.
+
+A source cannot be internally moved and root-renamed, upgraded or retired in the
+same refresh. First finish the root-identity transition, then snapshot its current
+receipt for a separate move plan. Disjoint owners may use different explicit plans
+in one refresh. This accounting proves declared file preservation, not behavioral
+compatibility; affected consumers and protocol/format invariants still require
+their normal tests.

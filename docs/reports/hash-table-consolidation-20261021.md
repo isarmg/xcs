@@ -37,3 +37,9 @@ Cargo.lock resolves one hashbrown package, version 0.17.1. The serde_core depend
 ## Applied accounting
 
 The reviewed retirement is applied: 324 active source trees and 78 retired identities remain. The complete last production and external-test inventories are embedded in the immutable retirement receipt; original provenance and legal material are unchanged. Metadata/architecture verification and the complete static suite passed. Maintained-package formatting, Clippy, all supported host-target diagnostics and release WASM checking passed after the merge. Remote CI is checked separately for the published commit.
+
+## Subsequent functional naming
+
+The surviving source/test roots and package are renamed to hash-table, Rust crate hash_table, at unchanged version 0.17.1. All active consumers, features, doctests and internal from_hashbrown helper names are coordinated. Absolute ::hash_table paths resolve existing local module name collisions in hashlink and indexmap. Upstream README remains immutable; docs/components/hash-table.md is the adapted current-use document and its actual doctest passes. The six engine regressions, native consumers and browser-Wasm checks also pass after naming. This transition is recorded independently from the earlier semantic consolidation.
+
+The naming transition also passes complete static validation, current metadata/architecture verification, maintained-package Clippy/format checks, supported host-target diagnostics and release WASM checking. Identity-preserving internal file moves now have a separate explicit --move-plan lifecycle with bijective source/test inventories and append-only receipts; it does not rewrite the earlier root-rename histories.

@@ -13,11 +13,11 @@ pub use linked_hash_map::LinkedHashMap;
 pub use linked_hash_set::LinkedHashSet;
 pub use lru_cache::LruCache;
 
-/// Default hash builder, matches hashbrown's default hasher.
+/// Default hash builder, matches hash_table's default hasher.
 ///
 /// See [`DefaultHasher`] for more details.
 #[derive(Clone, Default, Debug)]
-pub struct DefaultHashBuilder(hashbrown::DefaultHashBuilder);
+pub struct DefaultHashBuilder(hash_table::DefaultHashBuilder);
 
 impl BuildHasher for DefaultHashBuilder {
     type Hasher = DefaultHasher;
@@ -28,9 +28,9 @@ impl BuildHasher for DefaultHashBuilder {
     }
 }
 
-/// Default hasher, as selected by hashbrown.
+/// Default hasher, as selected by hash_table.
 #[derive(Clone)]
-pub struct DefaultHasher(<hashbrown::DefaultHashBuilder as BuildHasher>::Hasher);
+pub struct DefaultHasher(<hash_table::DefaultHashBuilder as BuildHasher>::Hasher);
 
 impl Hasher for DefaultHasher {
     #[inline]

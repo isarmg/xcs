@@ -205,4 +205,4 @@ impl<'a, T: Send, A: Allocator> IntoParallelIterator for &'a mut HashTable<T, A>
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hashbrown-0.17.1/unit/src/external_trait_impls/rayon/table/test_par_table_207.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hash-table/unit/src/external_trait_impls/rayon/table/test_par_table_207.rs"));

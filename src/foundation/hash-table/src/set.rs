@@ -45,7 +45,7 @@ use crate::raw::RawExtractIf;
 /// # Examples
 ///
 /// ```
-/// use hashbrown::HashSet;
+/// use hash_table::HashSet;
 /// // Type inference lets us omit an explicit type signature (which
 /// // would be `HashSet<String>` in this example).
 /// let mut books = HashSet::new();
@@ -76,7 +76,7 @@ use crate::raw::RawExtractIf;
 /// future be implied by [`Eq`].
 ///
 /// ```
-/// use hashbrown::HashSet;
+/// use hash_table::HashSet;
 /// #[derive(Hash, Eq, PartialEq, Debug)]
 /// struct Viking {
 ///     name: String,
@@ -99,7 +99,7 @@ use crate::raw::RawExtractIf;
 /// A `HashSet` with fixed list of elements can be initialized from an array:
 ///
 /// ```
-/// use hashbrown::HashSet;
+/// use hash_table::HashSet;
 ///
 /// let viking_names: HashSet<&'static str> =
 ///     [ "Einar", "Olaf", "Harald" ].into_iter().collect();
@@ -145,7 +145,7 @@ impl<T> HashSet<T, DefaultHashBuilder> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let set: HashSet<i32> = HashSet::new();
     /// ```
     #[must_use]
@@ -175,7 +175,7 @@ impl<T> HashSet<T, DefaultHashBuilder> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let set: HashSet<i32> = HashSet::with_capacity(10);
     /// assert!(set.capacity() >= 10);
     /// ```
@@ -209,7 +209,7 @@ impl<T: Hash + Eq, A: Allocator> HashSet<T, DefaultHashBuilder, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let set: HashSet<i32> = HashSet::new();
     /// ```
     #[must_use]
@@ -239,7 +239,7 @@ impl<T: Hash + Eq, A: Allocator> HashSet<T, DefaultHashBuilder, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let set: HashSet<i32> = HashSet::with_capacity(10);
     /// assert!(set.capacity() >= 10);
     /// ```
@@ -258,7 +258,7 @@ impl<T, S, A: Allocator> HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let set: HashSet<i32> = HashSet::with_capacity(100);
     /// assert!(set.capacity() >= 100);
     /// ```
@@ -273,7 +273,7 @@ impl<T, S, A: Allocator> HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let mut set = HashSet::new();
     /// set.insert("a");
     /// set.insert("b");
@@ -295,7 +295,7 @@ impl<T, S, A: Allocator> HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut v = HashSet::new();
     /// assert_eq!(v.len(), 0);
@@ -312,7 +312,7 @@ impl<T, S, A: Allocator> HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut v = HashSet::new();
     /// assert!(v.is_empty());
@@ -329,7 +329,7 @@ impl<T, S, A: Allocator> HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// assert!(!set.is_empty());
@@ -355,7 +355,7 @@ impl<T, S, A: Allocator> HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let xs = [1,2,3,4,5,6];
     /// let mut set: HashSet<i32> = xs.into_iter().collect();
@@ -384,7 +384,7 @@ impl<T, S, A: Allocator> HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<i32> = (0..8).collect();
     /// let drained: HashSet<i32> = set.extract_if(|v| v % 2 == 0).collect();
@@ -416,7 +416,7 @@ impl<T, S, A: Allocator> HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut v = HashSet::new();
     /// v.insert(1);
@@ -452,8 +452,8 @@ impl<T, S> HashSet<T, S, Global> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashSet;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let s = DefaultHashBuilder::default();
     /// let mut set = HashSet::with_hasher(s);
@@ -490,8 +490,8 @@ impl<T, S> HashSet<T, S, Global> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashSet;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let s = DefaultHashBuilder::default();
     /// let mut set = HashSet::with_capacity_and_hasher(10, s);
@@ -538,8 +538,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashSet;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let s = DefaultHashBuilder::default();
     /// let mut set = HashSet::with_hasher(s);
@@ -576,8 +576,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashSet;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let s = DefaultHashBuilder::default();
     /// let mut set = HashSet::with_capacity_and_hasher(10, s);
@@ -596,8 +596,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
-    /// use hashbrown::DefaultHashBuilder;
+    /// use hash_table::HashSet;
+    /// use hash_table::DefaultHashBuilder;
     ///
     /// let hasher = DefaultHashBuilder::default();
     /// let set: HashSet<i32> = HashSet::with_hasher(hasher);
@@ -630,7 +630,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let mut set: HashSet<i32> = HashSet::new();
     /// set.reserve(10);
     /// assert!(set.capacity() >= 10);
@@ -652,7 +652,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let mut set: HashSet<i32> = HashSet::new();
     /// set.try_reserve(10).expect("why is the test harness OOMing on 10 bytes?");
     /// ```
@@ -668,7 +668,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set = HashSet::with_capacity(100);
     /// set.insert(1);
@@ -692,7 +692,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set = HashSet::with_capacity(100);
     /// set.insert(1);
@@ -714,7 +714,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let a: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = [4, 2, 3, 4].into_iter().collect();
     ///
@@ -745,7 +745,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let a: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = [4, 2, 3, 4].into_iter().collect();
     ///
@@ -773,7 +773,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let a: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = [4, 2, 3, 4].into_iter().collect();
     ///
@@ -804,7 +804,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let a: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = [4, 2, 3, 4].into_iter().collect();
     ///
@@ -839,7 +839,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let set: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// assert_eq!(set.contains(&1), true);
@@ -863,7 +863,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let set: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// assert_eq!(set.get(&2), Some(&2));
@@ -888,7 +888,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// assert_eq!(set.len(), 3);
@@ -912,7 +912,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<String> = ["cat", "dog", "horse"]
     ///     .iter().map(|&pet| pet.to_owned()).collect();
@@ -928,7 +928,7 @@ where
     /// The following example will panic because the new value doesn't match.
     ///
     /// ```should_panic
-    /// let mut set = hashbrown::HashSet::new();
+    /// let mut set = hash_table::HashSet::new();
     /// set.get_or_insert_with("rust", |_| String::new());
     /// ```
     #[cfg_attr(feature = "inline-more", inline)]
@@ -950,8 +950,8 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
-    /// use hashbrown::hash_set::Entry::*;
+    /// use hash_table::HashSet;
+    /// use hash_table::hash_set::Entry::*;
     ///
     /// let mut singles = HashSet::new();
     /// let mut dupes = HashSet::new();
@@ -992,7 +992,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let a: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// let mut b = HashSet::new();
@@ -1013,7 +1013,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let sup: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// let mut set = HashSet::new();
@@ -1034,7 +1034,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let sub: HashSet<_> = [1, 2].into_iter().collect();
     /// let mut set = HashSet::new();
@@ -1062,7 +1062,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set = HashSet::new();
     ///
@@ -1109,7 +1109,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set = HashSet::new();
     /// set.insert(Vec::<i32>::new());
@@ -1148,7 +1148,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set = HashSet::new();
     ///
@@ -1174,7 +1174,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<_> = [1, 2, 3].into_iter().collect();
     /// assert_eq!(set.take(&2), Some(2));
@@ -1270,7 +1270,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let set1 = HashSet::from([1, 2, 3, 4]);
     /// let set2: HashSet<_> = [1, 2, 3, 4].into();
@@ -1356,7 +1356,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -1389,7 +1389,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![2, 3, 4].into_iter().collect();
@@ -1422,7 +1422,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -1455,7 +1455,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -1486,7 +1486,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -1521,7 +1521,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![2, 3, 4].into_iter().collect();
@@ -1552,7 +1552,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -1592,7 +1592,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut a: HashSet<_> = vec![1, 2, 3].into_iter().collect();
     /// let b: HashSet<_> = vec![3, 4, 5].into_iter().collect();
@@ -1727,7 +1727,7 @@ impl<T, S, A: Allocator> IntoIterator for HashSet<T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     /// let mut set = HashSet::new();
     /// set.insert("a".to_string());
     /// set.insert("b".to_string());
@@ -2164,7 +2164,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_set::{Entry, HashSet, OccupiedEntry};
+/// use hash_table::hash_set::{Entry, HashSet, OccupiedEntry};
 ///
 /// let mut set = HashSet::new();
 /// set.extend(["a", "b", "c"]);
@@ -2199,7 +2199,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_set::{Entry, HashSet};
+    /// use hash_table::hash_set::{Entry, HashSet};
     /// let mut set: HashSet<_> = ["a", "b"].into();
     ///
     /// match set.entry("a") {
@@ -2214,7 +2214,7 @@ where
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_set::{Entry, HashSet};
+    /// use hash_table::hash_set::{Entry, HashSet};
     /// let mut set: HashSet<&str> = HashSet::new();
     ///
     /// match set.entry("a") {
@@ -2240,7 +2240,7 @@ impl<T: fmt::Debug, S, A: Allocator> fmt::Debug for Entry<'_, T, S, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_set::{Entry, HashSet, OccupiedEntry};
+/// use hash_table::hash_set::{Entry, HashSet, OccupiedEntry};
 ///
 /// let mut set = HashSet::new();
 /// set.extend(["a", "b", "c"]);
@@ -2286,7 +2286,7 @@ impl<T: fmt::Debug, S, A: Allocator> fmt::Debug for OccupiedEntry<'_, T, S, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_set::{Entry, HashSet, VacantEntry};
+/// use hash_table::hash_set::{Entry, HashSet, VacantEntry};
 ///
 /// let mut set = HashSet::<&str>::new();
 ///
@@ -2320,7 +2320,7 @@ impl<'a, T, S, A: Allocator> Entry<'a, T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<&str> = HashSet::new();
     /// let entry = set.entry("horseyland").insert();
@@ -2344,7 +2344,7 @@ impl<'a, T, S, A: Allocator> Entry<'a, T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<&str> = HashSet::new();
     ///
@@ -2373,7 +2373,7 @@ impl<'a, T, S, A: Allocator> Entry<'a, T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<&str> = HashSet::new();
     /// set.entry("poneyland").or_insert();
@@ -2397,7 +2397,7 @@ impl<T, S, A: Allocator> OccupiedEntry<'_, T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_set::{Entry, HashSet};
+    /// use hash_table::hash_set::{Entry, HashSet};
     ///
     /// let mut set: HashSet<&str> = HashSet::new();
     /// set.entry("poneyland").or_insert();
@@ -2418,8 +2418,8 @@ impl<T, S, A: Allocator> OccupiedEntry<'_, T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
-    /// use hashbrown::hash_set::Entry;
+    /// use hash_table::HashSet;
+    /// use hash_table::hash_set::Entry;
     ///
     /// let mut set: HashSet<&str> = HashSet::new();
     /// // The set is empty
@@ -2449,7 +2449,7 @@ impl<'a, T, S, A: Allocator> VacantEntry<'a, T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
+    /// use hash_table::HashSet;
     ///
     /// let mut set: HashSet<&str> = HashSet::new();
     /// assert_eq!(set.entry("poneyland").get(), &"poneyland");
@@ -2464,7 +2464,7 @@ impl<'a, T, S, A: Allocator> VacantEntry<'a, T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_set::{Entry, HashSet};
+    /// use hash_table::hash_set::{Entry, HashSet};
     ///
     /// let mut set: HashSet<&str> = HashSet::new();
     ///
@@ -2483,8 +2483,8 @@ impl<'a, T, S, A: Allocator> VacantEntry<'a, T, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashSet;
-    /// use hashbrown::hash_set::Entry;
+    /// use hash_table::HashSet;
+    /// use hash_table::hash_set::Entry;
     ///
     /// let mut set: HashSet<&str> = HashSet::new();
     ///
@@ -2542,4 +2542,4 @@ fn assert_covariance() {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hashbrown-0.17.1/unit/src/set/test_set_2544.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hash-table/unit/src/set/test_set_2544.rs"));

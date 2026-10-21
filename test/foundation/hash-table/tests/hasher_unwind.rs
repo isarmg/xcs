@@ -9,7 +9,7 @@
 //! lookups can no longer find the original keys and iteration starts yielding
 //! repeated garbage-like entries.
 
-use hashbrown::HashMap;
+use hash_table::HashMap;
 use std::collections::BTreeSet;
 use std::{
     hash::{BuildHasher, Hash, Hasher},
@@ -94,7 +94,7 @@ fn hashmap_reserve_survives_panicking_build_hasher_inner(count: usize) {
     assert_eq!(
         (map.len(), map.capacity()),
         (224, 224),
-        "this minimized workload is tuned for the validated std/hashbrown layout"
+        "this minimized workload is tuned for the validated std/hash_table layout"
     );
 
     for i in 1..114 {

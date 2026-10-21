@@ -43,7 +43,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     ///
     /// ```
     /// use core::hash::{BuildHasher, Hash};
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map = HashMap::new();
     /// map.extend([("a", 100), ("b", 200), ("c", 300)]);
@@ -129,7 +129,7 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
     ///
     /// ```
     /// use core::hash::{BuildHasher, Hash};
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map = HashMap::new();
     /// map.extend([("a", 100), ("b", 200), ("c", 300)]);
@@ -168,8 +168,8 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_map::{RawEntryBuilderMut, RawEntryMut::Vacant, RawEntryMut::Occupied};
-/// use hashbrown::HashMap;
+/// use hash_table::hash_map::{RawEntryBuilderMut, RawEntryMut::Vacant, RawEntryMut::Occupied};
+/// use hash_table::HashMap;
 /// use core::hash::{BuildHasher, Hash};
 ///
 /// let mut map = HashMap::new();
@@ -233,7 +233,7 @@ pub struct RawEntryBuilderMut<'a, K, V, S, A: Allocator = Global> {
 ///
 /// ```
 /// use core::hash::{BuildHasher, Hash};
-/// use hashbrown::hash_map::{HashMap, RawEntryMut, RawOccupiedEntryMut};
+/// use hash_table::hash_map::{HashMap, RawEntryMut, RawOccupiedEntryMut};
 ///
 /// let mut map = HashMap::new();
 /// map.extend([('a', 1), ('b', 2), ('c', 3)]);
@@ -307,7 +307,7 @@ pub enum RawEntryMut<'a, K, V, S, A: Allocator = Global> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::{hash_map::RawEntryMut, HashMap};
+    /// use hash_table::{hash_map::RawEntryMut, HashMap};
     /// let mut map: HashMap<_, _> = [("a", 100), ("b", 200)].into();
     ///
     /// match map.raw_entry_mut().from_key(&"a") {
@@ -321,7 +321,7 @@ pub enum RawEntryMut<'a, K, V, S, A: Allocator = Global> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::{hash_map::RawEntryMut, HashMap};
+    /// use hash_table::{hash_map::RawEntryMut, HashMap};
     /// let mut map: HashMap<&str, i32> = HashMap::new();
     ///
     /// match map.raw_entry_mut().from_key("a") {
@@ -339,7 +339,7 @@ pub enum RawEntryMut<'a, K, V, S, A: Allocator = Global> {
 ///
 /// ```
 /// use core::hash::{BuildHasher, Hash};
-/// use hashbrown::hash_map::{HashMap, RawEntryMut, RawOccupiedEntryMut};
+/// use hash_table::hash_map::{HashMap, RawEntryMut, RawOccupiedEntryMut};
 ///
 /// let mut map = HashMap::new();
 /// map.extend([("a", 10), ("b", 20), ("c", 30)]);
@@ -420,7 +420,7 @@ where
 ///
 /// ```
 /// use core::hash::{BuildHasher, Hash};
-/// use hashbrown::hash_map::{HashMap, RawEntryMut, RawVacantEntryMut};
+/// use hash_table::hash_map::{HashMap, RawEntryMut, RawVacantEntryMut};
 ///
 /// let mut map = HashMap::<&str, i32>::new();
 ///
@@ -473,7 +473,7 @@ pub struct RawVacantEntryMut<'a, K, V, S, A: Allocator = Global> {
 /// # Examples
 ///
 /// ```
-/// use hashbrown::hash_map::{HashMap, RawEntryBuilder};
+/// use hash_table::hash_map::{HashMap, RawEntryBuilder};
 /// use core::hash::{BuildHasher, Hash};
 ///
 /// let mut map = HashMap::new();
@@ -508,7 +508,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryBuilderMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// let key = "a";
@@ -532,7 +532,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryBuilderMut<'a, K, V, S, A> {
     ///
     /// ```
     /// use core::hash::{BuildHasher, Hash};
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// fn compute_hash<K: Hash + ?Sized, S: BuildHasher>(hash_builder: &S, key: &K) -> u64 {
     ///     use core::hash::Hasher;
@@ -564,7 +564,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryBuilderMut<'a, K, V, S, A> {
     ///
     /// ```
     /// use core::hash::{BuildHasher, Hash};
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// fn compute_hash<K: Hash + ?Sized, S: BuildHasher>(hash_builder: &S, key: &K) -> u64 {
     ///     use core::hash::Hasher;
@@ -613,7 +613,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryBuilder<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     /// let key = "a";
@@ -635,7 +635,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryBuilder<'a, K, V, S, A> {
     ///
     /// ```
     /// use core::hash::{BuildHasher, Hash};
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// fn compute_hash<K: Hash + ?Sized, S: BuildHasher>(hash_builder: &S, key: &K) -> u64 {
     ///     use core::hash::Hasher;
@@ -674,7 +674,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryBuilder<'a, K, V, S, A> {
     ///
     /// ```
     /// use core::hash::{BuildHasher, Hash};
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// fn compute_hash<K: Hash + ?Sized, S: BuildHasher>(hash_builder: &S, key: &K) -> u64 {
     ///     use core::hash::Hasher;
@@ -703,7 +703,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// let entry = map.raw_entry_mut().from_key("horseyland").insert("horseyland", 37);
@@ -731,7 +731,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -759,7 +759,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, String> = HashMap::new();
     ///
@@ -791,7 +791,7 @@ impl<'a, K, V, S, A: Allocator> RawEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
+    /// use hash_table::HashMap;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -831,8 +831,8 @@ impl<'a, K, V, S, A: Allocator> RawEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::RawEntryMut;
+    /// use hash_table::HashMap;
+    /// use hash_table::hash_map::RawEntryMut;
     ///
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     ///
@@ -897,7 +897,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -916,7 +916,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     /// use std::rc::Rc;
     ///
     /// let key_one = Rc::new("a");
@@ -948,7 +948,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     /// use std::rc::Rc;
     ///
     /// let key_one = Rc::new("a");
@@ -981,7 +981,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1001,7 +1001,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1025,7 +1025,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1046,7 +1046,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1068,7 +1068,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     /// use std::rc::Rc;
     ///
     /// let key_one = Rc::new("a");
@@ -1105,7 +1105,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     /// use std::rc::Rc;
     ///
     /// let key_one = Rc::new("a");
@@ -1145,7 +1145,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1166,7 +1166,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     /// use std::rc::Rc;
     ///
     /// let key_one = Rc::new("a");
@@ -1198,7 +1198,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1218,7 +1218,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1240,7 +1240,7 @@ impl<'a, K, V, S, A: Allocator> RawOccupiedEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1297,7 +1297,7 @@ impl<'a, K, V, S, A: Allocator> RawVacantEntryMut<'a, K, V, S, A> {
     /// # Examples
     ///
     /// ```
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// let mut map: HashMap<&str, u32> = [("a", 100), ("b", 200)].into();
     ///
@@ -1325,7 +1325,7 @@ impl<'a, K, V, S, A: Allocator> RawVacantEntryMut<'a, K, V, S, A> {
     ///
     /// ```
     /// use core::hash::{BuildHasher, Hash};
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// fn compute_hash<K: Hash + ?Sized, S: BuildHasher>(hash_builder: &S, key: &K) -> u64 {
     ///     use core::hash::Hasher;
@@ -1368,7 +1368,7 @@ impl<'a, K, V, S, A: Allocator> RawVacantEntryMut<'a, K, V, S, A> {
     ///
     /// ```
     /// use core::hash::{BuildHasher, Hash};
-    /// use hashbrown::hash_map::{HashMap, RawEntryMut};
+    /// use hash_table::hash_map::{HashMap, RawEntryMut};
     ///
     /// fn make_hasher<K, S>(hash_builder: &S) -> impl Fn(&K) -> u64 + '_
     /// where
@@ -1472,4 +1472,4 @@ impl<K, V, S, A: Allocator> Debug for RawEntryBuilder<'_, K, V, S, A> {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hashbrown-0.17.1/unit/src/raw_entry/test_map_1474.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hash-table/unit/src/raw_entry/test_map_1474.rs"));

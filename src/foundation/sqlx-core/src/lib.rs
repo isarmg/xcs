@@ -82,7 +82,7 @@ pub mod value_debug;
 pub use error::{Error, Result};
 
 pub use either::Either;
-pub use hashbrown::{hash_map, HashMap};
+pub use hash_table::{hash_map, HashMap};
 pub use indexmap::IndexMap;
 pub use percent_encoding;
 pub use smallvec::SmallVec;

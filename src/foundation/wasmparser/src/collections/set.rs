@@ -14,7 +14,7 @@ use core::{
 ))]
 mod detail {
     use crate::collections::hash;
-    use hashbrown::hash_set;
+    use hash_table::hash_set;
 
     pub type SetImpl<T> = hash_set::HashSet<T, hash::RandomState>;
     pub type IterImpl<'a, T> = hash_set::Iter<'a, T>;
@@ -46,7 +46,7 @@ mod detail {
 ///
 /// Provides an API compatible with both [`HashSet`] and [`BTreeSet`].
 ///
-/// [`HashSet`]: hashbrown::HashSet
+/// [`HashSet`]: hash_table::HashSet
 /// [`BTreeSet`]: alloc::collections::BTreeSet
 #[derive(Debug, Clone)]
 pub struct Set<T> {

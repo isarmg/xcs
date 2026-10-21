@@ -42,7 +42,7 @@ extern crate std;
 #[cfg_attr(feature = "rustc-dep-of-std", allow(unused_extern_crates))]
 extern crate alloc as stdalloc;
 
-#[doc = include_str!("../../../../docs/upstream/hashbrown-0.17.1/README.md")]
+#[doc = include_str!("../../../../docs/components/hash-table.md")]
 #[cfg(doctest)]
 pub struct ReadmeDoctests;
 

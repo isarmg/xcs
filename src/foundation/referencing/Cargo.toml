@@ -46,10 +46,10 @@ version = "0.3.31"
 optional = true
 path = "../futures"
 
-[dependencies.hashbrown]
+[dependencies.hash-table]
 version = "0.17"
 features = ["equivalent"]
-path = "../hashbrown-0.17.1"
+path = "../hash-table"
 
 [dependencies.itoa]
 version = "1"

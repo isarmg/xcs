@@ -42,7 +42,7 @@
 //! implementation like [`hashbrown`](https://docs.rs/hashbrown/):
 //!
 //! ```rust
-//! use hashbrown::HashMap;
+//! use hash_table::HashMap;
 //! use foldhash::fast::RandomState;
 //!
 //! let mut hm = HashMap::with_hasher(RandomState::default());

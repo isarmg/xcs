@@ -3,7 +3,7 @@
 [package]
 edition = "2024"
 rust-version = "1.85.0"
-name = "hashbrown"
+name = "hash-table"
 version = "0.17.1"
 build = false
 exclude = [
@@ -16,7 +16,7 @@ autoexamples = false
 autotests = false
 autobenches = false
 description = "A Rust port of Google's SwissTable hash map"
-readme = "../../../docs/upstream/hashbrown-0.17.1/README.md"
+readme = "../../../docs/components/hash-table.md"
 keywords = [
     "hash",
     "no_std",
@@ -41,7 +41,7 @@ rustc-internal-api = []
 serde = ["dep:serde_core"]
 
 [lib]
-name = "hashbrown"
+name = "hash_table"
 path = "src/lib.rs"
 
 [dependencies.allocator-api2]

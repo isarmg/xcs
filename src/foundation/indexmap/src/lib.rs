@@ -221,13 +221,13 @@ impl TryReserveError {
         }
     }
 
-    fn from_hashbrown(error: hashbrown::TryReserveError) -> Self {
+    fn from_hash_table(error: hash_table::TryReserveError) -> Self {
         Self {
             kind: match error {
-                hashbrown::TryReserveError::CapacityOverflow => {
+                hash_table::TryReserveError::CapacityOverflow => {
                     TryReserveErrorKind::CapacityOverflow
                 }
-                hashbrown::TryReserveError::AllocError { layout } => {
+                hash_table::TryReserveError::AllocError { layout } => {
                     TryReserveErrorKind::AllocError { layout }
                 }
             },

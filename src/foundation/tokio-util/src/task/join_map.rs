@@ -1,5 +1,5 @@
-use hashbrown::hash_table::Entry;
-use hashbrown::{HashMap, HashTable};
+use hash_table::hash_table::Entry;
+use hash_table::{HashMap, HashTable};
 use std::borrow::Borrow;
 use std::collections::hash_map::RandomState;
 use std::fmt;
@@ -877,7 +877,7 @@ impl<K, V> Default for JoinMap<K, V> {
 /// An iterator over the keys of a [`JoinMap`].
 #[derive(Debug, Clone)]
 pub struct JoinMapKeys<'a, K, V> {
-    iter: hashbrown::hash_table::Iter<'a, (K, AbortHandle)>,
+    iter: hash_table::hash_table::Iter<'a, (K, AbortHandle)>,
     /// To make it easier to change `JoinMap` in the future, keep V as a generic
     /// parameter.
     _value: PhantomData<&'a V>,

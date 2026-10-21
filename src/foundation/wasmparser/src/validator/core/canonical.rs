@@ -44,7 +44,7 @@
 //!   duplicate the `Vec<SubType>` key in that hash map since those elements are
 //!   already stored in the `TypeList`'s internal `SnapshotList<CoreType>`. This
 //!   means we need to do some low-level hash table fiddling with the
-//!   `hashbrown` crate.
+//!   `hash_table` crate.
 //!
 //! And that's it! That is the whole canonicalization algorithm.
 //!

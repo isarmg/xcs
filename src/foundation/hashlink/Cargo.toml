@@ -28,11 +28,11 @@ serde_impl = ["serde"]
 name = "hashlink"
 path = "src/lib.rs"
 
-[dependencies.hashbrown]
+[dependencies.hash-table]
 version = "0.17.1"
 features = ["default-hasher"]
 default-features = false
-path = "../hashbrown-0.17.1"
+path = "../hash-table"
 
 [dependencies.serde]
 version = "1.0"

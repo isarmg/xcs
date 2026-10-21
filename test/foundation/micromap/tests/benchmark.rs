@@ -61,9 +61,9 @@ fn benchmark(total: usize) -> HashMap<&'static str, Duration> {
         total
     );
     insert!(
-        "hashbrown::HashMap",
+        "hash_table::HashMap",
         ret,
-        hashbrown::HashMap::<u32, i64>::new(),
+        hash_table::HashMap::<u32, i64>::new(),
         total
     );
     insert!(

@@ -455,4 +455,4 @@ where
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hashbrown-0.17.1/unit/src/external_trait_impls/rayon/map/test_par_map_457.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hash-table/unit/src/external_trait_impls/rayon/map/test_par_map_457.rs"));

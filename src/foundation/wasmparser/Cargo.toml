@@ -30,9 +30,9 @@ repository = "https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wa
 component-model = ["dep:semver"]
 default = ["std", "validate", "serde", "features", "component-model", "hash-collections", "simd"]
 features = []
-hash-collections = ["dep:hashbrown", "dep:indexmap"]
+hash-collections = ["dep:hash-table", "dep:indexmap"]
 prefer-btree-collections = []
-serde = ["dep:serde", "indexmap?/serde", "hashbrown?/serde"]
+serde = ["dep:serde", "indexmap?/serde", "hash-table?/serde"]
 simd = []
 std = ["indexmap?/std"]
 try-op = []
@@ -46,12 +46,12 @@ path = "src/lib.rs"
 version = "2.4.1"
 path = "../flag-set"
 
-[dependencies.hashbrown]
+[dependencies.hash-table]
 version = "0.17.1"
 features = ["default-hasher"]
 optional = true
 default-features = false
-path = "../hashbrown-0.17.1"
+path = "../hash-table"
 
 [dependencies.indexmap]
 version = "2.13.0"

@@ -122,7 +122,7 @@ fn bench_map(c: &mut Criterion) {
         });
         group.bench_function("aHash-hashBrown", |b| {
             b.iter(|| {
-                let hm: hashbrown::HashMap<i32, i32> = (0..1_000_000).map(|i| (i, i)).collect();
+                let hm: hash_table::HashMap<i32, i32> = (0..1_000_000).map(|i| (i, i)).collect();
                 let mut sum = 0;
                 for i in 0..1_000_000 {
                     if let Some(x) = hm.get(&i) {
@@ -133,7 +133,7 @@ fn bench_map(c: &mut Criterion) {
         });
         group.bench_function("aHash-hashBrown-explicit", |b| {
             b.iter(|| {
-                let hm: hashbrown::HashMap<i32, i32, RandomState> = (0..1_000_000).map(|i| (i, i)).collect();
+                let hm: hash_table::HashMap<i32, i32, RandomState> = (0..1_000_000).map(|i| (i, i)).collect();
                 let mut sum = 0;
                 for i in 0..1_000_000 {
                     if let Some(x) = hm.get(&i) {

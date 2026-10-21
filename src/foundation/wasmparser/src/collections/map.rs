@@ -9,7 +9,7 @@ use core::{borrow::Borrow, hash::Hash, iter::FusedIterator, ops::Index};
 ))]
 mod detail {
     use crate::collections::hash;
-    use hashbrown::hash_map;
+    use hash_table::hash_map;
 
     pub type MapImpl<K, V> = hash_map::HashMap<K, V, hash::RandomState>;
     pub type EntryImpl<'a, K, V> = hash_map::Entry<'a, K, V, hash::RandomState>;
@@ -50,7 +50,7 @@ mod detail {
 ///
 /// Provides an API compatible with both [`HashMap`] and [`BTreeMap`].
 ///
-/// [`HashMap`]: hashbrown::HashMap
+/// [`HashMap`]: hash_table::HashMap
 /// [`BTreeMap`]: alloc::collections::BTreeMap
 #[derive(Debug, Clone)]
 pub struct Map<K, V> {
