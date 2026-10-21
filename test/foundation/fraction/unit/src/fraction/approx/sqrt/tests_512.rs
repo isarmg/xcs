@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{approx::Accuracy, BigFraction, GenericFraction};
-    use num::{traits::Pow, BigUint, Zero};
+    use ::numeric::collection::{traits::Pow, BigUint, Zero};
     use std::str::FromStr;
 
     /// Converts `f` to a string. This is useful because `f.to_string()` will round sometimes.

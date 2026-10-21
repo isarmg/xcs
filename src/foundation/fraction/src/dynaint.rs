@@ -26,7 +26,7 @@
 
 use std::mem;
 
-use num::{
+use ::numeric::collection::{
     bigint::{ToBigInt, ToBigUint},
     Bounded, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, Integer, Num, One, ToPrimitive, Zero,
 };
@@ -41,7 +41,7 @@ use super::Sign;
 use crate::error::ParseError;
 
 #[cfg(feature = "with-bigint")]
-use num::BigUint;
+use ::numeric::collection::BigUint;
 
 use convert::TryToConvertFrom;
 use generic::{read_generic_integer, GenericInteger};
@@ -919,7 +919,7 @@ where
     T: Copy + GenericInteger + Into<G> + TryToConvertFrom<G> + From<u8> + ToBigInt,
     G: Clone + GenericInteger + ToBigInt,
 {
-    fn to_bigint(&self) -> Option<num::BigInt> {
+    fn to_bigint(&self) -> Option<::numeric::collection::BigInt> {
         match self {
             DynaInt::S(s) => s.to_bigint(),
             DynaInt::__H(h) => h.to_bigint(),

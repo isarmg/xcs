@@ -31,12 +31,12 @@ repository = "https://github.com/dnsl48/fraction.git"
 serialization = ["dep:data-serialization"]
 default = ["with-bigint", "with-decimal", "with-dynaint"]
 with-approx = ["with-bigint"]
-with-bigint = ["num/num-bigint", "num/std", "num-bigint"]
+with-bigint = ["numeric/bigint", "numeric/std", "numeric/bigint"]
 with-decimal = []
 with-dynaint = []
 with-juniper-support = []
 with-postgres-support = ["bytes"]
-with-serialization-support = ["serialization", "serialization-derive", "num/serialization"]
+with-serialization-support = ["serialization", "serialization-derive", "numeric/serialization"]
 with-unicode = []
 
 [lib]
@@ -48,16 +48,6 @@ version = "1"
 optional = true
 path = "../bytes"
 
-[dependencies.num]
-version = "0.4.3"
-default-features = false
-path = "../num"
-
-[dependencies.num-bigint]
-version = "0.4.8"
-optional = true
-path = "../num-bigint"
-
 [dependencies.data-serialization]
 version = "1"
 optional = true
@@ -68,3 +58,9 @@ version = "1"
 optional = true
 path = "../serialization-derive"
 
+
+[dependencies.numeric]
+version = "0.2.19"
+path = "../numeric"
+default-features = false
+features = ["collection"]

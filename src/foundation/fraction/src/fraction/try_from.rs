@@ -1,4 +1,4 @@
-use num::ToPrimitive;
+use ::numeric::collection::ToPrimitive;
 
 use crate::{generic::GenericInteger, GenericFraction};
 
@@ -39,7 +39,7 @@ generic_fraction_into_primitive!(
 
 #[cfg(feature = "with-bigint")]
 pub mod with_bigint {
-    use num::BigInt;
+    use ::numeric::collection::BigInt;
 
     use crate::{
         generic::{read_generic_integer, GenericInteger},

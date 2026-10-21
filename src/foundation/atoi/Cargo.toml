@@ -18,10 +18,11 @@ autotests = false
 autobenches = false
 autoexamples = false
 
-[dependencies.num-traits]
-version = "0.2.14"
-default-features = false
-path = "../num-traits"
 [features]
 default = ["std"]
-std = ["num-traits/std"]
+std = ["numeric/std"]
+
+[dependencies.numeric]
+version = "0.2.19"
+path = "../numeric"
+default-features = false

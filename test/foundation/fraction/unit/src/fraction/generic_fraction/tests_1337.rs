@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use num::Integer;
+    use ::numeric::collection::Integer;
     #[cfg(feature = "with-bigint")]
     use prelude::BigFraction;
 

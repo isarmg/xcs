@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 
 use fraction::{BigFraction, BigInt, Integer, Sign};
 use jsonschema_value::numeric_check::{divisor_kind, satisfies_multiple_of, DivisorKind};
-use num_traits::{One, Signed, Zero};
+use ::numeric::traits::{One, Signed, Zero};
 use json_codec::Number;
 
 use super::{normalized_number, BoundInteger};
@@ -319,10 +319,10 @@ fn exact(number: &Number) -> Option<BigFraction> {
 /// The rational a whole number denotes. `BigFraction::from` writes the integer out in decimal and
 /// reads it back one digit at a time, while a magnitude over one is already the reduced form.
 #[cfg(feature = "arbitrary-precision")]
-fn whole(value: num_bigint::BigInt) -> BigFraction {
+fn whole(value: ::numeric::bigint::BigInt) -> BigFraction {
     let (sign, magnitude) = value.into_parts();
     let fraction = BigFraction::new_raw(magnitude, fraction::BigUint::one());
-    if sign == num_bigint::Sign::Minus {
+    if sign == ::numeric::bigint::Sign::Minus {
         -fraction
     } else {
         fraction

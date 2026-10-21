@@ -216,7 +216,7 @@ pub fn number_is_integer(n: &json_codec::Number) -> bool {
     #[cfg(feature = "arbitrary-precision")]
     {
         use crate::numeric::bignum;
-        use num_traits::One;
+        use ::numeric::traits::One;
 
         if n.is_i64() || n.is_u64() {
             return true;

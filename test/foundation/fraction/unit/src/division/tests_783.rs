@@ -2,12 +2,12 @@
 mod tests {
     use super::*;
     use error::DivisionError;
-    use num::Zero;
+    use ::numeric::collection::Zero;
 
     // mod divide_to_string_u8;
 
     #[cfg(feature = "with-bigint")]
-    use num::{bigint::BigUint, Num};
+    use ::numeric::collection::{bigint::BigUint, Num};
 
     #[test]
     fn test_division() {

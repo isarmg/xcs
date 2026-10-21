@@ -1,7 +1,7 @@
 use crate::fraction::{generic_fraction::parse_magnitude, GenericFraction};
 use crate::{error::ParseError, Sign};
-use num::rational::Ratio;
-use num::{CheckedAdd, CheckedMul, Zero};
+use ::numeric::collection::rational::Ratio;
+use ::numeric::collection::{CheckedAdd, CheckedMul, Zero};
 use std::{fmt, str};
 use Integer;
 

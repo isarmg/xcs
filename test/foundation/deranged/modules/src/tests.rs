@@ -763,8 +763,8 @@ macro_rules! tests {
         #[cfg(feature = "num")]
         #[test]
         fn num() {$(
-            assert_eq!(<$t<5, 10> as num_traits::Bounded>::min_value(), $t::<5, 10>::MIN);
-            assert_eq!(<$t<5, 10> as num_traits::Bounded>::max_value(), $t::<5, 10>::MAX);
+            assert_eq!(<$t<5, 10> as ::numeric::traits::Bounded>::min_value(), $t::<5, 10>::MIN);
+            assert_eq!(<$t<5, 10> as ::numeric::traits::Bounded>::max_value(), $t::<5, 10>::MAX);
         )*}
 
         #[cfg(feature = "quickcheck")]

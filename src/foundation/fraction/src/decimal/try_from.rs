@@ -1,6 +1,6 @@
 use super::GenericDecimal;
 use generic::GenericInteger;
-use num::ToPrimitive;
+use ::numeric::collection::ToPrimitive;
 use std::convert::TryFrom;
 
 macro_rules! generic_decimal_into_primitive {
@@ -39,7 +39,7 @@ generic_decimal_into_primitive!(
 
 #[cfg(feature = "with-bigint")]
 pub mod with_bigint {
-    use num::BigInt;
+    use ::numeric::collection::BigInt;
 
     use crate::{generic::GenericInteger, BigUint, GenericDecimal};
     use std::convert::TryFrom;

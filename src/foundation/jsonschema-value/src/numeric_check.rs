@@ -45,7 +45,7 @@ pub enum CompiledBound {
     #[cfg(feature = "arbitrary-precision")]
     BigInt {
         op: BoundOp,
-        limit: num_bigint::BigInt,
+        limit: ::numeric::bigint::BigInt,
     },
     #[cfg(feature = "arbitrary-precision")]
     BigFrac {
@@ -59,7 +59,7 @@ pub enum CompiledBound {
 #[derive(Clone, Debug, PartialEq)]
 pub enum CompiledMultipleOf {
     #[cfg(feature = "arbitrary-precision")]
-    BigInt(num_bigint::BigInt),
+    BigInt(::numeric::bigint::BigInt),
     #[cfg(feature = "arbitrary-precision")]
     BigFrac(fraction::BigFraction),
     Unsupported,
@@ -68,7 +68,7 @@ pub enum CompiledMultipleOf {
 #[inline]
 fn check_primitive_bound<T>(op: BoundOp, value: &Number, limit: T) -> bool
 where
-    T: Copy + num_traits::ToPrimitive,
+    T: Copy + ::numeric::traits::ToPrimitive,
     u64: num_cmp::NumCmp<T>,
     i64: num_cmp::NumCmp<T>,
     f64: num_cmp::NumCmp<T>,
@@ -92,7 +92,7 @@ fn infinity_cmp(op: BoundOp, is_negative: bool) -> bool {
 
 #[cfg(feature = "arbitrary-precision")]
 #[inline]
-fn check_bigint_bound(op: BoundOp, limit: &num_bigint::BigInt, value: &Number) -> bool {
+fn check_bigint_bound(op: BoundOp, limit: &::numeric::bigint::BigInt, value: &Number) -> bool {
     use fraction::BigFraction;
 
     if let Some(instance_bigint) = numeric::bignum::try_parse_bigint(value) {
@@ -275,7 +275,7 @@ pub fn check_multiple_of(compiled: &CompiledMultipleOf, value: &Number) -> bool 
     match compiled {
         #[cfg(feature = "arbitrary-precision")]
         CompiledMultipleOf::BigInt(multiple) => {
-            use num_bigint::BigInt;
+            use ::numeric::bigint::BigInt;
 
             if let Some(instance_bigint) = numeric::bignum::try_parse_bigint(value) {
                 return numeric::bignum::is_multiple_of_bigint(&instance_bigint, multiple);
@@ -295,7 +295,7 @@ pub fn check_multiple_of(compiled: &CompiledMultipleOf, value: &Number) -> bool 
         }
         #[cfg(feature = "arbitrary-precision")]
         CompiledMultipleOf::BigFrac(multiple) => {
-            use num_traits::ToPrimitive;
+            use ::numeric::traits::ToPrimitive;
 
             if let Some(instance_bigfrac) = numeric::bignum::try_parse_bigfraction(value) {
                 return numeric::bignum::is_multiple_of_bigfrac(&instance_bigfrac, multiple);

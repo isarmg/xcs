@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::Accuracy;
-    use num::BigUint;
+    use ::numeric::collection::BigUint;
 
     #[test]
     fn decimal_places_uses_precomputed_multipliers() {

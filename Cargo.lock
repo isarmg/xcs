@@ -94,7 +94,7 @@ dependencies = [
 name = "atoi"
 version = "2.0.0"
 dependencies = [
- "num-traits",
+ "numeric",
 ]
 
 [[package]]
@@ -639,8 +639,7 @@ dependencies = [
 name = "fraction"
 version = "0.17.0"
 dependencies = [
- "num",
- "num-bigint",
+ "numeric",
 ]
 
 [[package]]
@@ -1055,7 +1054,7 @@ dependencies = [
  "jsonschema-regex",
  "jsonschema-value",
  "num-cmp",
- "num-traits",
+ "numeric",
  "percent-encoding",
  "referencing",
  "regex",
@@ -1081,7 +1080,7 @@ dependencies = [
  "getrandom 0.4.3",
  "json-codec",
  "num-cmp",
- "num-traits",
+ "numeric",
  "zmij",
 ]
 
@@ -1229,66 +1228,15 @@ name = "nu-ansi-term"
 version = "0.50.3"
 
 [[package]]
-name = "num"
-version = "0.4.3"
-dependencies = [
- "num-bigint",
- "num-complex",
- "num-integer",
- "num-iter",
- "num-rational",
- "num-traits",
-]
-
-[[package]]
-name = "num-bigint"
-version = "0.4.8"
-dependencies = [
- "num-integer",
- "num-traits",
-]
-
-[[package]]
 name = "num-cmp"
 version = "0.1.0"
-
-[[package]]
-name = "num-complex"
-version = "0.4.6"
-dependencies = [
- "num-traits",
-]
 
 [[package]]
 name = "num-conv"
 version = "0.2.2"
 
 [[package]]
-name = "num-integer"
-version = "0.1.47"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "num-iter"
-version = "0.1.46"
-dependencies = [
- "num-integer",
- "num-traits",
-]
-
-[[package]]
-name = "num-rational"
-version = "0.4.2"
-dependencies = [
- "num-bigint",
- "num-integer",
- "num-traits",
-]
-
-[[package]]
-name = "num-traits"
+name = "numeric"
 version = "0.2.19"
 dependencies = [
  "autocfg",

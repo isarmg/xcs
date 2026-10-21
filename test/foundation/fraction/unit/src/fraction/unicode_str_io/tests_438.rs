@@ -2,7 +2,7 @@
 mod tests {
 
     use crate::{error::ParseError, Fraction, GenericFraction, Sign};
-    use num::{One, Zero};
+    use ::numeric::collection::{One, Zero};
     #[cfg(feature = "with-bigint")]
     use std::str::FromStr;
 

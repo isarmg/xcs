@@ -1,7 +1,7 @@
 extern crate bytes;
 
 use self::bytes::BytesMut;
-use num::traits::Bounded;
+use ::numeric::collection::traits::Bounded;
 use postgres_types::{FromSql, IsNull, ToSql, Type};
 
 use std::error::Error;

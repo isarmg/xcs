@@ -8,8 +8,8 @@
 )]
 // `i64` has inherent sign predicates; `BigInt` takes them from `Signed`.
 #[cfg(feature = "arbitrary-precision")]
-use num_traits::Signed;
-use num_traits::{One, Zero};
+use ::numeric::traits::Signed;
+use ::numeric::traits::{One, Zero};
 
 /// Which way [`BoundInteger::multiple_beyond`] rounds.
 #[derive(Clone, Copy)]
@@ -18,7 +18,7 @@ pub(crate) enum Round {
     Down,
 }
 #[cfg(feature = "arbitrary-precision")]
-type InnerInteger = num_bigint::BigInt;
+type InnerInteger = ::numeric::bigint::BigInt;
 #[cfg(not(feature = "arbitrary-precision"))]
 type InnerInteger = i64;
 
@@ -34,7 +34,7 @@ impl BoundInteger {
         }
         #[cfg(feature = "arbitrary-precision")]
         {
-            match num_traits::ToPrimitive::to_i64(&self.0) {
+            match ::numeric::traits::ToPrimitive::to_i64(&self.0) {
                 Some(value) => json_codec::Number::from(value),
                 None => json_codec::Number::from_string_unchecked(self.0.to_string()),
             }
@@ -53,7 +53,7 @@ impl BoundInteger {
         }
         #[cfg(feature = "arbitrary-precision")]
         {
-            num_traits::ToPrimitive::to_u64(&(&end.0 - &self.0 + InnerInteger::one()))
+            ::numeric::traits::ToPrimitive::to_u64(&(&end.0 - &self.0 + InnerInteger::one()))
         }
     }
 
@@ -67,7 +67,7 @@ impl BoundInteger {
         }
         #[cfg(feature = "arbitrary-precision")]
         {
-            self.0.magnitude() <= &num_bigint::BigUint::from(LIMIT.unsigned_abs())
+            self.0.magnitude() <= &::numeric::bigint::BigUint::from(LIMIT.unsigned_abs())
         }
     }
 
@@ -103,7 +103,7 @@ impl BoundInteger {
                 Round::Down => value.floor(),
             };
             // Rounding leaves a denominator of one, so the numerator is the magnitude already.
-            let magnitude = num_bigint::BigInt::from(rounded.numer()?.clone());
+            let magnitude = ::numeric::bigint::BigInt::from(rounded.numer()?.clone());
             Some(Self(
                 if matches!(rounded.sign(), Some(fraction::Sign::Minus)) {
                     -magnitude
@@ -148,7 +148,7 @@ impl BoundInteger {
             let integer = canonical.as_deref().unwrap_or(text);
             let digits = integer.strip_prefix('-').unwrap_or(integer);
             if !digits.is_empty() && digits.bytes().all(|byte| byte.is_ascii_digit()) {
-                integer.parse::<num_bigint::BigInt>().ok().map(Self)
+                integer.parse::<::numeric::bigint::BigInt>().ok().map(Self)
             } else {
                 None
             }

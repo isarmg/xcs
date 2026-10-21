@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::prelude::Fraction;
-    use num::{One, Zero};
+    use ::numeric::collection::{One, Zero};
     use std::convert::TryInto;
 
     #[test]
@@ -305,7 +305,7 @@ mod test {
     #[test]
     fn bigintfraction_to_i() {
         use crate::GenericFraction;
-        use num::BigInt;
+        use ::numeric::collection::BigInt;
 
         type BigFraction = GenericFraction<BigInt>;
 
@@ -450,7 +450,7 @@ mod test {
     #[test]
     fn bigintfraction_to_u() {
         use crate::GenericFraction;
-        use num::BigInt;
+        use ::numeric::collection::BigInt;
 
         type BigFraction = GenericFraction<BigInt>;
 
@@ -548,7 +548,7 @@ mod test {
     #[test]
     fn bigintfraction_to_f32() {
         use crate::GenericFraction;
-        use num::BigInt;
+        use ::numeric::collection::BigInt;
 
         type BigFraction = GenericFraction<BigInt>;
 
@@ -599,7 +599,7 @@ mod test {
     #[test]
     fn bigintfraction_to_f64() {
         use crate::GenericFraction;
-        use num::BigInt;
+        use ::numeric::collection::BigInt;
 
         type BigFraction = GenericFraction<BigInt>;
 

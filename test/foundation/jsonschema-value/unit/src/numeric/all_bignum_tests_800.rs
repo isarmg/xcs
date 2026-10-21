@@ -2,7 +2,7 @@
 mod bignum_tests {
     use crate::numeric::bignum;
     use fraction::BigFraction;
-    use num_bigint::BigInt;
+    use ::numeric::bigint::BigInt;
     use json_codec::{Number, Value};
     use std::cmp::Ordering;
     use test_case::test_case;

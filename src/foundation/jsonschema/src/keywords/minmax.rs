@@ -30,7 +30,7 @@ macro_rules! define_numeric_keywords {
 
             impl<T, F> Validate<F> for $struct_name<T>
             where
-                T: Copy + Send + Sync + num_traits::ToPrimitive,
+                T: Copy + Send + Sync + ::numeric::traits::ToPrimitive,
                 u64: NumCmp<T>,
                 i64: NumCmp<T>,
                 f64: NumCmp<T>,
@@ -90,7 +90,7 @@ pub(crate) mod bigint_validators {
         i64_lt_bigint, try_parse_bigfraction, u64_ge_bigfrac, u64_ge_bigint, u64_gt_bigfrac,
         u64_gt_bigint, u64_le_bigfrac, u64_le_bigint, u64_lt_bigfrac, u64_lt_bigint,
     };
-    use num_bigint::BigInt;
+    use ::numeric::bigint::BigInt;
 
     macro_rules! define_bigint_validator {
         ($struct_name:ident, $u64_cmp:path, $i64_cmp:path, $f64_cmp:path, $bigint_op:tt, $error_fn:ident, $infinity_fn:expr) => {

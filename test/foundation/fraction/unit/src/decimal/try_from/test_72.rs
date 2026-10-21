@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::prelude::Decimal;
-    use num::{One, Zero};
+    use ::numeric::collection::{One, Zero};
     use std::convert::TryInto;
 
     #[test]
@@ -305,7 +305,7 @@ mod test {
     #[test]
     fn bigintdecimal_to_i() {
         use crate::GenericDecimal;
-        use num::BigInt;
+        use ::numeric::collection::BigInt;
 
         type BigDecimal = GenericDecimal<BigInt, u8>;
 
@@ -450,7 +450,7 @@ mod test {
     #[test]
     fn bigintdecimal_to_u() {
         use crate::GenericDecimal;
-        use num::BigInt;
+        use ::numeric::collection::BigInt;
 
         type BigDecimal = GenericDecimal<BigInt, u8>;
 
@@ -548,7 +548,7 @@ mod test {
     #[test]
     fn bigintdecimal_to_f32() {
         use crate::GenericDecimal;
-        use num::BigInt;
+        use ::numeric::collection::BigInt;
 
         type BigDecimal = GenericDecimal<BigInt, u8>;
 
@@ -599,7 +599,7 @@ mod test {
     #[test]
     fn bigintdecimal_to_f64() {
         use crate::GenericDecimal;
-        use num::BigInt;
+        use ::numeric::collection::BigInt;
 
         type BigDecimal = GenericDecimal<BigInt, u8>;
 

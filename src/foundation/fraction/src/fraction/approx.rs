@@ -8,7 +8,7 @@
 //! of approximations, consult the relevant module's documentation.
 
 use crate::{generic::GenericInteger, BigFraction, GenericFraction};
-use num::{rational::Ratio, traits::Pow, BigUint, Integer};
+use ::numeric::collection::{rational::Ratio, traits::Pow, BigUint, Integer};
 
 pub mod sqrt;
 

@@ -3661,7 +3661,7 @@ pub mod __private {
         /// Compare `value` >= `limit` using runtime numeric semantics.
         pub fn ge<T>(value: &json_codec::Number, limit: T) -> bool
         where
-            T: Copy + num_traits::ToPrimitive,
+            T: Copy + ::numeric::traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
             i64: num_cmp::NumCmp<T>,
             f64: num_cmp::NumCmp<T>,
@@ -3672,7 +3672,7 @@ pub mod __private {
         /// Compare `value` <= `limit` using runtime numeric semantics.
         pub fn le<T>(value: &json_codec::Number, limit: T) -> bool
         where
-            T: Copy + num_traits::ToPrimitive,
+            T: Copy + ::numeric::traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
             i64: num_cmp::NumCmp<T>,
             f64: num_cmp::NumCmp<T>,
@@ -3682,7 +3682,7 @@ pub mod __private {
 
         pub fn eq<T>(value: &json_codec::Number, limit: T) -> bool
         where
-            T: Copy + num_traits::ToPrimitive,
+            T: Copy + ::numeric::traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
             i64: num_cmp::NumCmp<T>,
             f64: num_cmp::NumCmp<T>,
@@ -3693,7 +3693,7 @@ pub mod __private {
         /// Compare `value` > `limit` using runtime numeric semantics.
         pub fn gt<T>(value: &json_codec::Number, limit: T) -> bool
         where
-            T: Copy + num_traits::ToPrimitive,
+            T: Copy + ::numeric::traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
             i64: num_cmp::NumCmp<T>,
             f64: num_cmp::NumCmp<T>,
@@ -3704,7 +3704,7 @@ pub mod __private {
         /// Compare `value` < `limit` using runtime numeric semantics.
         pub fn lt<T>(value: &json_codec::Number, limit: T) -> bool
         where
-            T: Copy + num_traits::ToPrimitive,
+            T: Copy + ::numeric::traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
             i64: num_cmp::NumCmp<T>,
             f64: num_cmp::NumCmp<T>,

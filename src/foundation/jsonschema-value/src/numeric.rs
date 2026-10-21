@@ -22,7 +22,7 @@ use std::cmp::Ordering;
 fn exact_ordering<N, T>(value: &N, rounded: f64, limit: T) -> Option<Ordering>
 where
     N: crate::JsonNumber,
-    T: Copy + num_traits::ToPrimitive,
+    T: Copy + ::numeric::traits::ToPrimitive,
     f64: num_cmp::NumCmp<T>,
 {
     let saturated = rounded <= i64::MIN as f64 || rounded >= u64::MAX as f64;
@@ -38,7 +38,7 @@ macro_rules! define_num_cmp {
             pub fn $fn_name<N, T>(value: &N, limit: T) -> bool
             where
                 N: crate::JsonNumber,
-                T: Copy + num_traits::ToPrimitive,
+                T: Copy + ::numeric::traits::ToPrimitive,
                 u64: num_cmp::NumCmp<T>,
                 i64: num_cmp::NumCmp<T>,
                 f64: num_cmp::NumCmp<T>,
@@ -56,7 +56,7 @@ macro_rules! define_num_cmp {
                 } else {
                     #[cfg(feature = "arbitrary-precision")]
                     if let Some(big_value) = bignum::try_parse_bigfraction(&value.to_number()) {
-                        if let Some(limit_f64) = num_traits::ToPrimitive::to_f64(&limit) {
+                        if let Some(limit_f64) = ::numeric::traits::ToPrimitive::to_f64(&limit) {
                             let limit_frac = BigFraction::from(limit_f64);
                             return big_value $op limit_frac;
                         }
@@ -85,7 +85,7 @@ define_num_cmp!(
 pub fn eq<N, T>(value: &N, limit: T) -> bool
 where
     N: crate::JsonNumber,
-    T: Copy + num_traits::ToPrimitive,
+    T: Copy + ::numeric::traits::ToPrimitive,
     u64: num_cmp::NumCmp<T>,
     i64: num_cmp::NumCmp<T>,
     f64: num_cmp::NumCmp<T>,
@@ -103,7 +103,7 @@ where
     } else {
         #[cfg(feature = "arbitrary-precision")]
         if let Some(big_value) = bignum::try_parse_bigfraction(&value.to_number()) {
-            if let Some(limit_f64) = num_traits::ToPrimitive::to_f64(&limit) {
+            if let Some(limit_f64) = ::numeric::traits::ToPrimitive::to_f64(&limit) {
                 return big_value == BigFraction::from(limit_f64);
             }
         }
@@ -275,7 +275,7 @@ pub fn is_multiple_of_integer<N: crate::JsonNumber>(value: &N, multiple: f64) ->
         // value it rounds to instead.
         #[cfg(feature = "arbitrary-precision")]
         if let Some(big_value) = bignum::try_parse_bigint(&value.to_number()) {
-            let divisor = num_bigint::BigInt::from(multiple as i64);
+            let divisor = ::numeric::bigint::BigInt::from(multiple as i64);
             return bignum::is_multiple_of_bigint(&big_value, &divisor);
         }
         // Only where `f64` cannot answer exactly, so the literal is not rendered on the hot path.
@@ -306,7 +306,7 @@ pub fn is_multiple_of_integer<N: crate::JsonNumber>(value: &N, multiple: f64) ->
         {
             // Try parsing as BigInt first for large integers
             if let Some(big_value) = bignum::try_parse_bigint(&value.to_number()) {
-                use num_bigint::BigInt;
+                use ::numeric::bigint::BigInt;
                 // Convert the multiple to BigInt.
                 // Note: For large divisors beyond i64/u64 range, the schema compilation
                 // should have created a MultipleOfBigIntValidator instead, which stores
@@ -333,8 +333,8 @@ pub fn is_multiple_of_integer<N: crate::JsonNumber>(value: &N, multiple: f64) ->
 #[cfg(feature = "arbitrary-precision")]
 pub mod bignum {
     use fraction::BigFraction;
-    use num_bigint::BigInt;
-    use num_traits::{ToPrimitive, Zero};
+    use ::numeric::bigint::BigInt;
+    use ::numeric::traits::{ToPrimitive, Zero};
     use json_codec::Number;
     use std::str::FromStr;
 
@@ -685,18 +685,18 @@ pub mod bignum {
     }
 
     define_bigint_cmp!(
-        bigint_ge_u64, u64, to_u64, >=, num_bigint::Sign::Plus;
-        bigint_le_u64, u64, to_u64, <=, num_bigint::Sign::Minus;
-        bigint_gt_u64, u64, to_u64, >, num_bigint::Sign::Plus;
-        bigint_lt_u64, u64, to_u64, <, num_bigint::Sign::Minus;
-        bigint_ge_i64, i64, to_i64, >=, num_bigint::Sign::Plus;
-        bigint_le_i64, i64, to_i64, <=, num_bigint::Sign::Minus;
-        bigint_gt_i64, i64, to_i64, >, num_bigint::Sign::Plus;
-        bigint_lt_i64, i64, to_i64, <, num_bigint::Sign::Minus;
-        bigint_ge_f64, f64, to_f64, >=, num_bigint::Sign::Plus;
-        bigint_le_f64, f64, to_f64, <=, num_bigint::Sign::Minus;
-        bigint_gt_f64, f64, to_f64, >, num_bigint::Sign::Plus;
-        bigint_lt_f64, f64, to_f64, <, num_bigint::Sign::Minus;
+        bigint_ge_u64, u64, to_u64, >=, ::numeric::bigint::Sign::Plus;
+        bigint_le_u64, u64, to_u64, <=, ::numeric::bigint::Sign::Minus;
+        bigint_gt_u64, u64, to_u64, >, ::numeric::bigint::Sign::Plus;
+        bigint_lt_u64, u64, to_u64, <, ::numeric::bigint::Sign::Minus;
+        bigint_ge_i64, i64, to_i64, >=, ::numeric::bigint::Sign::Plus;
+        bigint_le_i64, i64, to_i64, <=, ::numeric::bigint::Sign::Minus;
+        bigint_gt_i64, i64, to_i64, >, ::numeric::bigint::Sign::Plus;
+        bigint_lt_i64, i64, to_i64, <, ::numeric::bigint::Sign::Minus;
+        bigint_ge_f64, f64, to_f64, >=, ::numeric::bigint::Sign::Plus;
+        bigint_le_f64, f64, to_f64, <=, ::numeric::bigint::Sign::Minus;
+        bigint_gt_f64, f64, to_f64, >, ::numeric::bigint::Sign::Plus;
+        bigint_lt_f64, f64, to_f64, <, ::numeric::bigint::Sign::Minus;
     );
 
     // Generate reverse comparison functions (primitive op BigType -> BigType op primitive)

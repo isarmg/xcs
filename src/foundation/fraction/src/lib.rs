@@ -28,7 +28,7 @@
 //! Bug reports and contributions are appreciated.
 //!
 //! # Crate features
-//! - `with-bigint` (default) integration with [num::BigInt] and [num::BigUint] data types
+//! - `with-bigint` (default) integration with [::numeric::collection::BigInt] and [::numeric::collection::BigUint] data types
 //! - `with-decimal` (default) [Decimal] type implemented upon [GenericFraction]
 //! - `with-dynaint` (default) dynamically growing integer avoiding stack overflows
 //! - `with-unicode` Unicode formatting and parsing options
@@ -38,7 +38,7 @@
 //! - `with-serde-support` [Serde](https://crates.io/crates/serde) traits implementation
 //!
 //! # Implementation
-//! Basic math implemented upon the [num] crate (in particular the [num::rational] module).
+//! Basic math implemented upon the [num] crate (in particular the [::numeric::collection::rational] module).
 //! The utilised traits from the [num] crate are re-exported, so you don't have to explicitly depend on that crate however,
 //! you may import them from either of crates if necessary.
 //!
@@ -84,7 +84,7 @@
 //! use std::str::FromStr;
 //! use fraction::{Fraction, Sign};
 //!
-//! // fraction crate also re-exports num::{One, Zero} traits for convenience.
+//! // fraction crate also re-exports ::numeric::collection::{One, Zero} traits for convenience.
 //! use fraction::{One, Zero};
 //!
 //!
@@ -116,10 +116,10 @@
 //! // WARNING: Only use if you are sure numerator/denominator are already normalized.
 //! assert_eq!(f, Fraction::new_raw(1u64, 2u64));
 //!
-//! // `one` - implements num::One trait
+//! // `one` - implements ::numeric::collection::One trait
 //! assert_eq!(f * 2, Fraction::one());
 //!
-//! // `zero` - implements num::Zero trait
+//! // `zero` - implements ::numeric::collection::Zero trait
 //! assert_eq!(f - f, Fraction::zero());
 //! ```
 //!
@@ -237,20 +237,20 @@
 //! Both types (fractions and decimals) should work transparently
 //! in accordance with Postgres crate documentation
 
-extern crate num;
+extern crate numeric;
 
 #[cfg(feature = "with-bigint")]
-pub use num::bigint::{BigInt, BigUint};
+pub use ::numeric::collection::bigint::{BigInt, BigUint};
 
 /// The upstream error returned by [`Ratio::from_str_radix`] and the `FromStr`
 /// implementation for [`Ratio`].
 ///
 /// [`GenericFraction::from_str_radix`] uses this crate's [`error::ParseError`]
 /// instead, including its explicit zero-denominator and unsupported-base errors.
-pub use num::rational::ParseRatioError;
-pub use num::rational::Ratio;
+pub use ::numeric::collection::rational::ParseRatioError;
+pub use ::numeric::collection::rational::Ratio;
 
-pub use num::{
+pub use ::numeric::collection::{
     traits::{ConstOne, ConstZero},
     Bounded, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, FromPrimitive, Integer, Num, One,
     Signed, ToPrimitive, Zero,

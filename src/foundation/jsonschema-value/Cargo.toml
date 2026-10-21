@@ -19,7 +19,7 @@ repository = "https://github.com/Stranger6667/jsonschema"
 resolver = "3"
 
 [features]
-arbitrary-precision = ["json-codec/arbitrary_precision", "dep:num-bigint"]
+arbitrary-precision = ["json-codec/arbitrary_precision", "numeric/bigint"]
 conformance = []
 default = ["json-codec"]
 jsonb = ["json-codec"]
@@ -52,18 +52,9 @@ features = ["with-bigint"]
 default-features = false
 path = "../fraction"
 
-[dependencies.num-bigint]
-version = "0.4"
-optional = true
-path = "../num-bigint"
-
 [dependencies.num-cmp]
 version = "0.1"
 path = "../num-cmp"
-
-[dependencies.num-traits]
-version = "0.2.19"
-path = "../num-traits"
 
 [dependencies.json-codec]
 version = "1"
@@ -102,3 +93,9 @@ priority = -2
 [lints.rust]
 unreachable_pub = "warn"
 unsafe_code = "warn"
+
+[dependencies.numeric]
+version = "0.2.19"
+path = "../numeric"
+default-features = false
+features = ["std"]

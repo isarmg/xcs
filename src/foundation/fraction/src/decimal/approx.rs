@@ -1,7 +1,7 @@
 use crate::{
     approx::sqrt::RawApprox, fraction::approx::Accuracy, generic::GenericInteger, GenericDecimal,
 };
-use num::{
+use ::numeric::collection::{
     bigint::{ToBigInt, ToBigUint},
     BigUint, Integer,
 };

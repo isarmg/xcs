@@ -3,14 +3,14 @@
 //!   (although underlying integer type implementation may perform those)
 //! - Linear in the number of produced digits: O(n), where n is the count of
 //!   integral digits plus the requested fractional precision. Note that for
-//!   arbitrary-precision integer types (e.g. `num::BigInt`/`num::BigUint`)
+//!   arbitrary-precision integer types (e.g. `::numeric::collection::BigInt`/`::numeric::collection::BigUint`)
 //!   each per-digit step is itself not O(1), so the overall cost is
 //!   O(n · cost_of_integer_op).
 //! - Abstract from a particular integer implementation, may be used on primitive types
-//!   (as i32 or u32) as well as complex ones (num::BigInt, num::BigUint)
+//!   (as i32 or u32) as well as complex ones (::numeric::collection::BigInt, ::numeric::collection::BigUint)
 //!
 //! Thus can be efficiently used on any integer type implementing a bunch of required traits
-//! (which all primitive ints and num::bigint implement out of the box).
+//! (which all primitive ints and ::numeric::collection::bigint implement out of the box).
 //! Although in that case the underlying math will be using heap.
 
 use error::DivisionError;

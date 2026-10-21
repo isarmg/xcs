@@ -1,6 +1,6 @@
 //! A non-negative count bound on a string, array, or object size.
 #[cfg(feature = "arbitrary-precision")]
-type InnerCardinality = num_bigint::BigInt;
+type InnerCardinality = ::numeric::bigint::BigInt;
 #[cfg(not(feature = "arbitrary-precision"))]
 type InnerCardinality = u64;
 
@@ -16,7 +16,7 @@ impl BoundCardinality {
         }
         #[cfg(feature = "arbitrary-precision")]
         {
-            match num_traits::ToPrimitive::to_u64(&self.0) {
+            match ::numeric::traits::ToPrimitive::to_u64(&self.0) {
                 Some(value) => json_codec::Number::from(value),
                 None => json_codec::Number::from_string_unchecked(self.0.to_string()),
             }
@@ -43,7 +43,7 @@ impl BoundCardinality {
             let canonical = crate::canonical::json::canonical_number(text);
             let integer = canonical.as_deref().unwrap_or(text);
             if integer.bytes().all(|byte| byte.is_ascii_digit()) {
-                integer.parse::<num_bigint::BigInt>().ok().map(Self)
+                integer.parse::<::numeric::bigint::BigInt>().ok().map(Self)
             } else {
                 None
             }
@@ -58,7 +58,7 @@ impl BoundCardinality {
         }
         #[cfg(feature = "arbitrary-precision")]
         {
-            if num_traits::Zero::is_zero(&self.0) {
+            if ::numeric::traits::Zero::is_zero(&self.0) {
                 None
             } else {
                 Some(Self(self.0 - 1))
@@ -85,7 +85,7 @@ impl BoundCardinality {
         }
         #[cfg(feature = "arbitrary-precision")]
         {
-            num_traits::Zero::is_zero(&self.0)
+            ::numeric::traits::Zero::is_zero(&self.0)
         }
     }
 }

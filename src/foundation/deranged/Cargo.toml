@@ -32,7 +32,7 @@ resolver = "2"
 alloc = []
 default = []
 macros = []
-num = ["dep:num-traits"]
+num = ["dep:numeric"]
 powerfmt = ["dep:powerfmt"]
 quickcheck = ["alloc"]
 rand = ["rand08", "rand09"]
@@ -43,12 +43,6 @@ serialization = ["dep:serialization-core"]
 [lib]
 name = "deranged"
 path = "src/lib.rs"
-
-[dependencies.num-traits]
-version = "0.2.15"
-optional = true
-default-features = false
-path = "../num-traits"
 
 [dependencies.powerfmt]
 version = "0.2.0"
@@ -157,3 +151,9 @@ priority = -1
 [lints.rustdoc]
 private_doc_tests = "warn"
 unescaped_backticks = "warn"
+
+[dependencies.numeric]
+version = "0.2.19"
+path = "../numeric"
+default-features = false
+optional = true

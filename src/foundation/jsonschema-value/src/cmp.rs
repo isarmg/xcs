@@ -56,9 +56,9 @@ pub fn equal_numbers<L: crate::JsonNumber>(left: &L, right: &json_codec::Number)
             if let Some(right_bigint) = bignum::try_parse_bigint(right) {
                 left_bigint == right_bigint
             } else if let Some(b) = right.as_u64() {
-                left_bigint == num_bigint::BigInt::from(b)
+                left_bigint == ::numeric::bigint::BigInt::from(b)
             } else if let Some(b) = right.as_i64() {
-                left_bigint == num_bigint::BigInt::from(b)
+                left_bigint == ::numeric::bigint::BigInt::from(b)
             } else if let Some(right_frac) = bignum::try_parse_bigfraction(right) {
                 BigFraction::from(left_bigint) == right_frac
             } else if let Some(b) = right.as_f64() {

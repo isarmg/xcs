@@ -141,7 +141,7 @@ mod tests {
 
     #[test]
     fn comparison_negative_and_zero() {
-        use num::traits::Zero;
+        use ::numeric::collection::traits::Zero;
 
         let negative_zero = -Decimal::zero();
         let negative_zero_p0 = -Decimal::from_str("0.9").unwrap().set_precision(0);

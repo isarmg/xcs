@@ -145,7 +145,7 @@ impl<F: Json> Validate<F> for MultipleOfIntegerValidator {
 
 #[cfg(feature = "arbitrary-precision")]
 pub(crate) struct MultipleOfBigIntValidator {
-    multiple_of: num_bigint::BigInt,
+    multiple_of: ::numeric::bigint::BigInt,
     original_value: json_codec::Number,
     location: Location,
 }
@@ -154,7 +154,7 @@ pub(crate) struct MultipleOfBigIntValidator {
 impl MultipleOfBigIntValidator {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
-        multiple_of: num_bigint::BigInt,
+        multiple_of: ::numeric::bigint::BigInt,
         original_value: &json_codec::Number,
         location: Location,
     ) -> CompilationResult<'a, F> {
@@ -169,8 +169,8 @@ impl MultipleOfBigIntValidator {
 #[cfg(feature = "arbitrary-precision")]
 impl<F: Json> Validate<F> for MultipleOfBigIntValidator {
     fn is_valid(&self, instance: &F::Node<'_>, _ctx: &mut ValidationContext) -> bool {
-        use num_bigint::BigInt;
-        use num_traits::One;
+        use ::numeric::bigint::BigInt;
+        use ::numeric::traits::One;
         if let Some(item) = instance.as_number() {
             if let Some(instance_bigint) = numeric::bignum::try_parse_bigint(&item.to_number()) {
                 numeric::bignum::is_multiple_of_bigint(&instance_bigint, &self.multiple_of)
@@ -270,7 +270,7 @@ impl MultipleOfBigFracValidator {
 #[cfg(feature = "arbitrary-precision")]
 impl<F: Json> Validate<F> for MultipleOfBigFracValidator {
     fn is_valid(&self, instance: &F::Node<'_>, _ctx: &mut ValidationContext) -> bool {
-        use num_traits::ToPrimitive;
+        use ::numeric::traits::ToPrimitive;
         if let Some(item) = instance.as_number() {
             // Try to parse instance as BigFraction for exact precision
             if let Some(instance_bigfrac) =

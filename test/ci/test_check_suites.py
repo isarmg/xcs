@@ -113,12 +113,14 @@ class SuiteCoverageTests(unittest.TestCase):
         ))
 
     def test_foundation_runs_only_selected_library_regressions(self):
-        sqlite, consumers, serialization, error_definition, crypto, command_line, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, join_map, http_body, random_backends, entropy_consumers, system_units, ring, password, idna, helpers = self.suite("foundation")
+        sqlite, consumers, serialization, error_definition, crypto, numeric, precision, command_line, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, join_map, http_body, random_backends, entropy_consumers, system_units, ring, password, idna, numeric_tests, helpers = self.suite("foundation")
         self.assertEqual(sqlite, {"tool": "python3", "args": [".github/scripts/check-sqlite-scope.py"]})
         self.assertEqual(consumers, {"tool": "python3", "args": [".github/scripts/check-foundation-consumers.py"]})
         self.assertEqual(serialization, {"tool": "python3", "args": [".github/scripts/check-serialization-family.py"]})
         self.assertEqual(error_definition, {"tool": "python3", "args": [".github/scripts/check-error-definition-family.py"]})
         self.assertEqual(crypto, {"tool": "python3", "args": [".github/scripts/check-crypto-consolidation.py"]})
+        self.assertEqual(numeric, {"tool": "python3", "args": [".github/scripts/check-numeric-consolidation.py"]})
+        self.assertEqual(precision, {"tool": "python3", "args": [".github/scripts/check-numeric-precision.py"]})
         self.assertEqual(command_line, {"tool": "python3", "args": [".github/scripts/check-command-line-family.py"]})
         self.assertEqual(web_bindgen, {"tool": "python3", "args": [".github/scripts/check-web-bindgen-scope.py"]})
         self.assertEqual(uapi, {"tool": "python3", "args": [".github/scripts/check-linux-uapi.py"]})
@@ -143,9 +145,8 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertEqual(idna["args"], ["test", "--locked", "--offline", "--lib", "-p",
                                         "idna_adapter", "-p", "storage-client",
                                         "property_masks_preserve_all_unicode_scalars"])
+        self.assertEqual(numeric_tests, {"tool": "cargo", "args": ["test", "--locked", "--offline", "--tests", "-p", "numeric"]})
         self.assertEqual(helpers["args"], ["test", "--locked", "--offline", "--lib",
-                                           "-p", "num-traits", "-p", "num-integer",
-                                           "-p", "num-iter", "-p", "num-rational",
                                            "-p", "bit-set", "-p", "bit-vec",
                                            "-p", "id-arena", "-p", "rustc-demangle"])
 

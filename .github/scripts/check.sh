@@ -48,6 +48,8 @@ case "${1:-}" in
     python3 .github/scripts/check-serialization-family.py
     python3 .github/scripts/check-error-definition-family.py
     python3 .github/scripts/check-crypto-consolidation.py
+    python3 .github/scripts/check-numeric-consolidation.py
+    python3 .github/scripts/check-numeric-precision.py
     python3 .github/scripts/check-command-line-family.py
     python3 .github/scripts/check-web-bindgen-scope.py
     # Focused regressions for maintained foundation changes. Do not restore
@@ -70,8 +72,8 @@ case "${1:-}" in
     # actual storage-client consumer enables compiled_data in the shared graph.
     cargo test --locked --offline --lib -p idna_adapter -p storage-client \
       property_masks_preserve_all_unicode_scalars
+    cargo test --locked --offline --tests -p numeric
     cargo test --locked --offline --lib \
-      -p num-traits -p num-integer -p num-iter -p num-rational \
       -p bit-set -p bit-vec -p id-arena -p rustc-demangle
     ;;
   web)

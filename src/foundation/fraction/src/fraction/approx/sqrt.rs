@@ -56,19 +56,19 @@
 //! ## `raw`
 //! `raw` methods return the approximation in unsimplified form via [`RawApprox`], which can (in
 //! most cases; see its documentation for more details) be destructured into a
-//! [`Ratio`](num::rational::Ratio). These methods are typically faster than non-`raw` ones by an
+//! [`Ratio`](::numeric::collection::rational::Ratio). These methods are typically faster than non-`raw` ones by an
 //! order of magnitude or more, especially for extreme inputs (very large or very small). Do not
 //! use `raw` methods unless you are writing *very* performance-critical code: most arithmetic
-//! operations on [`Ratio`](num::rational::Ratio) and [`GenericFraction`] will automatically
+//! operations on [`Ratio`](::numeric::collection::rational::Ratio) and [`GenericFraction`] will automatically
 //! simplify the result so although the `sqrt_raw` method will still be faster than the non-`raw`
 //! version, you will still incur the overhead of simplification, just somewhere else instead.
 //!
 //! ```no_run
-//! # extern crate num;
+//! # extern crate numeric;
 //! # use crate::fraction::approx::sqrt::RawApprox;
-//! # use num::rational::Ratio;
-//! # use num::BigUint;
-//! # use num::Zero;
+//! # use ::numeric::collection::rational::Ratio;
+//! # use ::numeric::collection::BigUint;
+//! # use ::numeric::collection::Zero;
 //! # let x: crate::fraction::GenericFraction<u8> = 2.into();
 //! // We save time here by using `raw`...
 //! match x.sqrt_raw(10_000) {
@@ -85,7 +85,7 @@
 //! particularly when high levels of accuracy are used).
 //!
 //! For a few (limited) examples of how you can write performance-critical code with
-//! [`Ratio`](num::rational::Ratio) and [`GenericFraction`], see this module's own implementation.
+//! [`Ratio`](::numeric::collection::rational::Ratio) and [`GenericFraction`], see this module's own implementation.
 //!
 //! ## `with_accuracy`
 //! These methods accept an [`Accuracy`] value instead of a `u32` representing a number of decimal
@@ -95,7 +95,7 @@
 //! ```no_run
 //! # use crate::fraction::GenericFraction;
 //! # use crate::fraction::approx::Accuracy;
-//! # fn some_fn(_: GenericFraction<num::BigUint>) {}
+//! # fn some_fn(_: GenericFraction<::numeric::collection::BigUint>) {}
 //! // Don't do this! `sqrt` allocates a new `Accuracy` each time.
 //! for n in 0..100 {
 //!     let x: GenericFraction<u8> = n.into();
@@ -151,7 +151,7 @@
 
 use super::Accuracy;
 use crate::{generic::GenericInteger, GenericFraction, Sign};
-use num::{
+use ::numeric::collection::{
     bigint::{ToBigInt, ToBigUint},
     rational::Ratio,
     BigUint, Integer, ToPrimitive, Zero,
@@ -249,7 +249,7 @@ impl SqrtSetup {
                         // Note: We use `abs` here even though `float` will never reasonably be
                         // negative. This is because `Nd` could *technically* be a signed type,
                         // in which case `float` is not guaranteed to be positive.
-                        let (n, d) = Ratio::<num::BigInt>::from_float(float.abs())?.into();
+                        let (n, d) = Ratio::<::numeric::collection::BigInt>::from_float(float.abs())?.into();
 
                         // Using `into_parts` allows us to avoid having to clone the underlying
                         // `BigUint` data within the two values.

@@ -21,7 +21,7 @@
 //! ```
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use num_traits::{
+use ::numeric::traits::{
     ops::checked::{CheckedAdd, CheckedMul},
     Bounded, CheckedSub, One, Signed, Zero,
 };

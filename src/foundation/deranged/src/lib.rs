@@ -1718,7 +1718,7 @@ macro_rules! impl_ranged {
 
 
         #[cfg(feature = "num")]
-        impl<const MIN: $internal, const MAX: $internal> num_traits::Bounded for $type<MIN, MAX> {
+        impl<const MIN: $internal, const MAX: $internal> ::numeric::traits::Bounded for $type<MIN, MAX> {
             #[inline(always)]
             fn min_value() -> Self {
                 const { assert!(MIN <= MAX); }

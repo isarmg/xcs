@@ -1,8 +1,8 @@
 use convert::TryToConvertFrom;
 use error;
 
-use num::integer::Integer;
-use num::traits::{
+use ::numeric::collection::integer::Integer;
+use ::numeric::collection::traits::{
     Bounded, CheckedAdd, CheckedMul, CheckedSub, FromPrimitive, Num, One, Signed, ToPrimitive, Zero,
 };
 

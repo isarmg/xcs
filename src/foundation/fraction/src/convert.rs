@@ -35,7 +35,7 @@
 //! ```
 
 use generic::{read_generic_integer, GenericInteger};
-use num::{CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, Integer, One};
+use ::numeric::collection::{CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, Integer, One};
 
 use super::GenericFraction;
 

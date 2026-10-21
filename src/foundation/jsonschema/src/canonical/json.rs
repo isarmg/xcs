@@ -423,7 +423,7 @@ fn canonical_fractional_number(
 /// `digits` carry `digits x 10^(exponent - fraction_len)`, so `E = exponent + len(digits) - fraction_len - 1`.
 #[cfg(feature = "arbitrary-precision")]
 fn canonical_scientific_number(digits: &[u8], parts: &NumberParts<'_>) -> Option<String> {
-    use num_bigint::BigInt;
+    use ::numeric::bigint::BigInt;
 
     // The plain-decimal re-dispatch has no exponent; `parse_bytes` on an empty slice gives `None`.
     let mut exponent = if parts.exponent_digits.is_empty() {
