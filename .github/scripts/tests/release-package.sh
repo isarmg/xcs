@@ -23,6 +23,7 @@ done
 printf '[SMB integration](components/smb.md)\n' >> "$fixture/docs/release.md"
 printf '[Operations](../25-operation-manual.md)\n' > "$fixture/docs/components/smb.md"
 cp docs/templates/release-install.md "$fixture/docs/templates/"
+python3 .github/scripts/tests/web_dist_fixture.py "$fixture"
 RELEASE_VERSION=0.1.0 bash "$fixture/.github/scripts/release-package.sh"
 for archive in "$fixture"/release-assets/*.tar.gz; do
   output=$(mktemp -d "$fixture/extract.XXXXXX")

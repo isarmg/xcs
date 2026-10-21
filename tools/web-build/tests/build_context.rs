@@ -25,40 +25,21 @@ fn cargo_uses_product_configuration_but_relative_output_stays_caller_relative() 
     let bin = root.join("bin");
     fs::create_dir_all(&caller).unwrap();
     fs::create_dir_all(&bin).unwrap();
-    for directory in [
-        "src/web/src",
-        "src/interface",
-        "src/web/public",
-        "src/foundation",
-        "src/macros",
-        "src/contract",
-        "src/naming",
-        "tools/web-build/src",
-        "tools/web-bindings/src",
-        "compliance",
-        ".cargo",
-        "docs",
-        "tools/rust-sources",
-        ".github/scripts",
-    ] {
-        fs::create_dir_all(product.join(directory)).unwrap();
+    let specification = include_str!("../build-inputs.json");
+    let spec: serde_json::Value = serde_json::from_str(specification).unwrap();
+    for directory in spec["directories"].as_array().unwrap() {
+        fs::create_dir_all(product.join(directory.as_str().unwrap())).unwrap();
     }
-    for file in [
-        "Cargo.toml",
-        "rust-toolchain.toml",
-        ".cargo/config.toml",
-        "compliance/rust-sources.json",
-        "docs/THIRD_PARTY_RUST_SOURCES.md",
-        "tools/rust-sources/manage.py",
-        ".github/scripts/rust-build-tool.sh",
-        "src/web/Cargo.toml",
-        "Cargo.lock",
-        "src/web/styles.css",
-        "tools/web-build/Cargo.toml",
-        "tools/web-bindings/Cargo.toml",
-    ] {
-        fs::write(product.join(file), "fixture").unwrap();
+    for file in spec["files"].as_array().unwrap() {
+        let file = product.join(file.as_str().unwrap());
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, "fixture").unwrap();
     }
+    fs::write(
+        product.join("tools/web-build/build-inputs.json"),
+        specification,
+    )
+    .unwrap();
     let cargo = bin.join("cargo");
     fs::write(
         &cargo,

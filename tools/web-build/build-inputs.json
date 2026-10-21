@@ -1,0 +1,30 @@
+{
+  "directories": [
+    "src/web/src",
+    "src/interface",
+    "src/web/public",
+    "src/foundation",
+    "src/macros",
+    "src/contract",
+    "src/naming",
+    "tools/web-build/src",
+    "tools/web-bindings/src",
+    "compliance"
+  ],
+  "files": [
+    "Cargo.toml",
+    "rust-toolchain.toml",
+    ".cargo/config.toml",
+    "docs/THIRD_PARTY_RUST_SOURCES.md",
+    "tools/rust-sources/manage.py",
+    ".github/scripts/rust-build-tool.sh",
+    ".github/scripts/release-package.sh",
+    ".github/scripts/verify-web-dist.py",
+    "src/web/Cargo.toml",
+    "Cargo.lock",
+    "src/web/styles.css",
+    "tools/web-build/Cargo.toml",
+    "tools/web-bindings/Cargo.toml",
+    "tools/web-build/build-inputs.json"
+  ]
+}

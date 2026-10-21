@@ -5,7 +5,7 @@ mod bootstrap;
 mod wasm_release;
 use sha2::{Digest, Sha256};
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     fs,
     io::Write,
     path::{Path, PathBuf},
@@ -201,41 +201,64 @@ impl Drop for BuildLock {
         let _ = fs::remove_file(&self.path);
     }
 }
+const INPUT_SPEC_PATH: &str = "tools/web-build/build-inputs.json";
+const INPUT_SPEC: &str = include_str!("../build-inputs.json");
+
 fn source_inventory(root: &Path) -> Result<BTreeMap<String, String>> {
-    let mut inventory = BTreeMap::new();
-    for path in [
-        "src/web/src",
-        "src/interface",
-        "src/web/public",
-        "src/foundation",
-        "src/macros",
-        "src/contract",
-        "src/naming",
-        "tools/web-build/src",
-        "tools/web-bindings/src",
-        "compliance",
-    ] {
-        inventory_tree(root, &root.join(path), &mut inventory)?;
+    // The release validator consumes this same source-owned specification. Do
+    // not accept a stale builder paired with a newer inventory definition.
+    if read_input(&root.join(INPUT_SPEC_PATH))? != INPUT_SPEC.as_bytes() {
+        bail!("Web input specification changed; rebuild web-build first");
     }
-    for path in [
-        "Cargo.toml",
-        "rust-toolchain.toml",
-        ".cargo/config.toml",
-        "compliance/rust-sources.json",
-        "docs/THIRD_PARTY_RUST_SOURCES.md",
-        "tools/rust-sources/manage.py",
-        ".github/scripts/rust-build-tool.sh",
-        "src/web/Cargo.toml",
-        "Cargo.lock",
-        "src/web/styles.css",
-        "tools/web-build/Cargo.toml",
-        "tools/web-bindings/Cargo.toml",
-    ] {
-        let input = root.join(path);
-        inventory.insert(
-            path.into(),
-            format!("{:x}", Sha256::digest(read_input(&input)?)),
-        );
+    let spec: serde_json::Value = serde_json::from_str(INPUT_SPEC)?;
+    let object = spec
+        .as_object()
+        .context("Web input specification must be an object")?;
+    if object.len() != 2 || !object.contains_key("directories") || !object.contains_key("files") {
+        bail!("invalid Web input specification fields");
+    }
+    let mut seen = BTreeSet::new();
+    let mut directories = Vec::new();
+    let mut inventory = BTreeMap::new();
+    for kind in ["directories", "files"] {
+        let paths = spec[kind]
+            .as_array()
+            .context("Web input paths must be arrays")?;
+        for path in paths {
+            let path = path.as_str().context("Web input paths must be strings")?;
+            if path.is_empty()
+                || path.contains(['\\', ':'])
+                || path.chars().any(char::is_control)
+                || path.split('/').any(|part| matches!(part, "" | "." | ".."))
+                || !seen.insert(path)
+            {
+                bail!("invalid or duplicate Web input path: {path}");
+            }
+            if directories
+                .iter()
+                .any(|parent: &&str| path.starts_with(&format!("{parent}/")))
+            {
+                bail!("overlapping Web input path: {path}");
+            }
+            if kind == "directories" {
+                if seen
+                    .iter()
+                    .any(|other| *other != path && other.starts_with(&format!("{path}/")))
+                {
+                    bail!("overlapping Web input directory: {path}");
+                }
+                directories.push(path);
+                inventory_tree(root, &root.join(path), &mut inventory)?;
+            } else {
+                inventory.insert(
+                    path.into(),
+                    format!("{:x}", Sha256::digest(read_input(&root.join(path))?)),
+                );
+            }
+        }
+    }
+    if !inventory.contains_key(INPUT_SPEC_PATH) {
+        bail!("Web input specification must inventory itself");
     }
     Ok(inventory)
 }
@@ -376,40 +399,16 @@ mod tests {
     #[test]
     fn inventory_tracks_cargo_configuration_and_toolchain() {
         let fixture = Fixture::new();
-        for directory in [
-            "src/web/src",
-            "src/interface",
-            "src/web/public",
-            "src/foundation",
-            "src/macros",
-            "src/contract",
-            "src/naming",
-            "tools/web-build/src",
-            "tools/web-bindings/src",
-            "compliance",
-            ".cargo",
-            "docs",
-            "tools/rust-sources",
-            ".github/scripts",
-        ] {
-            fs::create_dir_all(fixture.0.join(directory)).unwrap();
+        let spec: serde_json::Value = serde_json::from_str(INPUT_SPEC).unwrap();
+        for directory in spec["directories"].as_array().unwrap() {
+            fs::create_dir_all(fixture.0.join(directory.as_str().unwrap())).unwrap();
         }
-        for file in [
-            "Cargo.toml",
-            "src/web/Cargo.toml",
-            "Cargo.lock",
-            "src/web/styles.css",
-            "tools/web-build/Cargo.toml",
-            "tools/web-bindings/Cargo.toml",
-            "rust-toolchain.toml",
-            ".cargo/config.toml",
-            "compliance/rust-sources.json",
-            "docs/THIRD_PARTY_RUST_SOURCES.md",
-            "tools/rust-sources/manage.py",
-            ".github/scripts/rust-build-tool.sh",
-        ] {
-            fs::write(fixture.0.join(file), "initial").unwrap();
+        for file in spec["files"].as_array().unwrap() {
+            let file = fixture.0.join(file.as_str().unwrap());
+            fs::create_dir_all(file.parent().unwrap()).unwrap();
+            fs::write(file, "initial").unwrap();
         }
+        fs::write(fixture.0.join(INPUT_SPEC_PATH), INPUT_SPEC).unwrap();
         for file in [
             "rust-toolchain.toml",
             ".cargo/config.toml",
@@ -430,6 +429,18 @@ mod tests {
             before,
             source_inventory(&fixture.0).unwrap(),
             "Nested framework dependency changes must invalidate production assets"
+        );
+        assert!(
+            source_inventory(&fixture.0)
+                .unwrap()
+                .contains_key(INPUT_SPEC_PATH)
+        );
+        fs::write(fixture.0.join(INPUT_SPEC_PATH), format!("{INPUT_SPEC}\n")).unwrap();
+        assert!(
+            source_inventory(&fixture.0)
+                .unwrap_err()
+                .to_string()
+                .contains("rebuild web-build")
         );
     }
 

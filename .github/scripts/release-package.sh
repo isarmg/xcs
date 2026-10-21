@@ -1,16 +1,23 @@
 #!/usr/bin/env bash
-# Every distribution carries the same centralized legal and operating material.
+# Package verified snapshots, never a mutable or stale distribution tree.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 : "${RELEASE_VERSION:?}"
-test -s target/native/release/zxs
-test -s build/web/index.html
-test -s build/web/build-manifest.json
-test -s compliance/NOTICE.md
+# release-tools performs canonical SemVer validation in CI. Independently bound
+# the filename here so direct invocations cannot redirect archive output paths.
+[[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][A-Za-z0-9.+-]+)?$ ]] || {
+  echo 'RELEASE_VERSION must be a safe version filename' >&2
+  exit 1
+}
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+python3 .github/scripts/verify-web-dist.py --root "$PWD" --stage "$work/snapshot"
 material=(compliance README.md docs)
-for path in "${material[@]}"; do test -e "$path"; done
+tar -czf "$work/native.tar.gz" \
+  -C "$work/snapshot/native" zxs -C "$work/snapshot/material" "${material[@]}"
+tar -czf "$work/web.tar.gz" \
+  --exclude=./compliance -C "$work/snapshot/web" . -C "$work/snapshot/material" "${material[@]}"
+[[ ! -L release-assets ]]
 mkdir -p release-assets
-tar -czf "release-assets/zxs-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
-  -C target/native/release zxs -C "$PWD" "${material[@]}"
-tar -czf "release-assets/web-interface-${RELEASE_VERSION}.tar.gz" \
-  --exclude=./compliance -C build/web . -C "$PWD" "${material[@]}"
+mv -T -- "$work/native.tar.gz" "release-assets/zxs-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+mv -T -- "$work/web.tar.gz" "release-assets/web-interface-${RELEASE_VERSION}.tar.gz"
