@@ -54,13 +54,5 @@ impl std::fmt::Display for MatchesError {
     }
 }
 
-#[test]
-fn check_auto_traits() {
-    static_assertions::assert_impl_all!(
-        MatchesError: Send,
-        Sync,
-        std::panic::RefUnwindSafe,
-        std::panic::UnwindSafe,
-        Unpin
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/clap_builder/functions/src/parser/error/check_auto_traits_57.rs"));

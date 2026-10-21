@@ -1416,4 +1416,5 @@ pub(super) fn call(
 }
 
 #[cfg(test)]
+#[path = "../../../../test/server/unit/engine_backend/file_manager/request_tests.rs"]
 mod request_tests;

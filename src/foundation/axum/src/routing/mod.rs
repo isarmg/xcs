@@ -35,6 +35,7 @@ mod strip_prefix;
 pub(crate) mod url_params;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/axum/modules/src/routing/tests/mod.rs"]
 mod tests;
 
 pub use self::{into_make_service::IntoMakeService, method_filter::MethodFilter, route::Route};
@@ -795,13 +796,5 @@ impl<S> fmt::Debug for Endpoint<S> {
     }
 }
 
-#[test]
-fn traits() {
-    use crate::test_helpers::*;
-    assert_send::<Router<()>>();
-    assert_sync::<Router<()>>();
-    assert_send::<RouterAsService<'static, Body, ()>>();
-    assert_sync::<RouterAsService<'static, Body, ()>>();
-    assert_send::<RouterIntoService<Body, ()>>();
-    assert_sync::<RouterIntoService<Body, ()>>();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum/functions/src/routing/mod/traits_799.rs"));

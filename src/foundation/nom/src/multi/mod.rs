@@ -1,6 +1,7 @@
 //! Combinators applying their child parser multiple times
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/nom/modules/src/multi/tests.rs"]
 mod tests;
 
 use crate::error::ErrorKind;

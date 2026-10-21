@@ -98,8 +98,5 @@ pub type TinyStr8 = TinyAsciiStr<8>;
 /// in a future version.
 pub type TinyStr16 = TinyAsciiStr<16>;
 
-#[test]
-fn test_size() {
-    assert_eq!(size_of::<TinyStr4>(), size_of::<Option<TinyStr4>>());
-    assert_eq!(size_of::<TinyStr8>(), size_of::<Option<TinyStr8>>());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tinystr/functions/src/lib/test_size_101.rs"));

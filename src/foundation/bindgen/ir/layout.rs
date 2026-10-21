@@ -17,19 +17,8 @@ pub(crate) struct Layout {
     pub(crate) packed: bool,
 }
 
-#[test]
-fn test_layout_for_size() {
-    use std::mem::size_of;
-    let ptr_size = size_of::<*mut ()>();
-    assert_eq!(
-        Layout::for_size_internal(ptr_size, ptr_size),
-        Layout::new(ptr_size, ptr_size)
-    );
-    assert_eq!(
-        Layout::for_size_internal(ptr_size, 3 * ptr_size),
-        Layout::new(3 * ptr_size, ptr_size)
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/ir/layout/test_layout_for_size_20.rs"));
 
 impl Layout {
     /// Gets the integer type name for a given known size.

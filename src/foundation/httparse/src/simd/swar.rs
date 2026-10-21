@@ -175,61 +175,11 @@ fn offsetnz(block: usize) -> usize {
     unreachable!()
 }
 
-#[test]
-fn test_is_header_value_block() {
-    let is_header_value_block = |b| match_header_value_char_8_swar(b) == BLOCK_SIZE;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/httparse/functions/src/simd/swar/test_is_header_value_block_178.rs"));
 
-    // 0..32 => false
-    for b in 0..32_u8 {
-        assert!(!is_header_value_block([b; BLOCK_SIZE]), "b={}", b);
-    }
-    // 32..=126 => true
-    for b in 32..=126_u8 {
-        assert!(is_header_value_block([b; BLOCK_SIZE]), "b={}", b);
-    }
-    // 127 => false
-    assert!(!is_header_value_block([b'\x7F'; BLOCK_SIZE]), "b={}", b'\x7F');
-    // 128..=255 => true
-    for b in 128..=255_u8 {
-        assert!(is_header_value_block([b; BLOCK_SIZE]), "b={}", b);
-    }
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/httparse/functions/src/simd/swar/test_is_uri_block_206.rs"));
 
-
-    #[cfg(target_pointer_width = "64")]
-    {
-        // A few sanity checks on non-uniform bytes for safe-measure
-        assert!(!is_header_value_block(*b"foo.com\n"));
-        assert!(!is_header_value_block(*b"o.com\r\nU"));
-    }
-}
-
-#[test]
-fn test_is_uri_block() {
-    let is_uri_block = |b| match_uri_char_8_swar(b) == BLOCK_SIZE;
-
-    // 0..33 => false
-    for b in 0..33_u8 {
-        assert!(!is_uri_block([b; BLOCK_SIZE]), "b={}", b);
-    }
-    // 33..=126 => true
-    for b in 33..=126_u8 {
-        assert!(is_uri_block([b; BLOCK_SIZE]), "b={}", b);
-    }
-    // 127 => false
-    assert!(!is_uri_block([b'\x7F'; BLOCK_SIZE]), "b={}", b'\x7F');
-    // 128..=255 => true
-    for b in 128..=255_u8 {
-        assert!(is_uri_block([b; BLOCK_SIZE]), "b={}", b);
-    }
-}
-
-#[test]
-fn test_offsetnz() {
-    let seq = [0_u8; BLOCK_SIZE];
-    for i in 0..BLOCK_SIZE {
-        let mut seq = seq;
-        seq[i] = 1;
-        let x = usize::from_ne_bytes(seq);
-        assert_eq!(offsetnz(x), i);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/httparse/functions/src/simd/swar/test_offsetnz_226.rs"));

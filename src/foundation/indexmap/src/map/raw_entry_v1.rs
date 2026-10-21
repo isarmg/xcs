@@ -629,8 +629,5 @@ trait Sealed {}
 
 impl<K, V, S> Sealed for IndexMap<K, V, S> {}
 
-#[test]
-fn assert_send_sync() {
-    fn assert_send_sync<T: Send + Sync>() {}
-    assert_send_sync::<RawEntryMut<'_, i32, i32, ()>>();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/indexmap/functions/src/map/raw_entry_v1/assert_send_sync_632.rs"));

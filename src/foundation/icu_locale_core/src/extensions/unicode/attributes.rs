@@ -195,12 +195,4 @@ impl Deref for Attributes {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_attributes_fromstr() {
-        let attrs: Attributes = "foo-bar".parse().expect("Failed to parse Attributes");
-        assert_eq!(attrs.to_string(), "bar-foo");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_locale_core/unit/src/extensions/unicode/attributes/tests_197.rs"));

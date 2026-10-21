@@ -32,12 +32,12 @@
 
 降级发布和发布后损坏的提示差异由三份真实服务端 wire 数据的 Rust 回归验证；本次浏览器保存使用完整保护成功路径，没有通过浏览器制造磁盘损坏。
 
-[业务结果](../../../tests/evidence/web/result.json)、[启动故障结果](../../../tests/evidence/web/startup-result.json)、[主题与语言结果](../../../tests/evidence/web/preferences-result.json)、[资源校验结果](../../../tests/evidence/web/asset-result.json)、[资源响应头](../../../tests/evidence/web/wasm-response-headers.txt)、[构建清单](../../../tests/evidence/web/build-manifest.json)、[Rust 测试输出](../../../tests/evidence/web/rust-tests.txt)、[WASM 检查](../../../tests/evidence/web/wasm-check.txt)、[最终构建](web/release-build.txt)、[Linux 宿主重链](../../../tests/evidence/web/linux-host-build.txt)。这些文件不包含密码、Cookie、会话令牌或私有认证请求。
+[业务结果](../../../test/evidence/web/result.json)、[启动故障结果](../../../test/evidence/web/startup-result.json)、[主题与语言结果](../../../test/evidence/web/preferences-result.json)、[资源校验结果](../../../test/evidence/web/asset-result.json)、[资源响应头](../../../test/evidence/web/wasm-response-headers.txt)、[构建清单](../../../test/evidence/web/build-manifest.json)、[Rust 测试输出](../../../test/evidence/web/rust-tests.txt)、[WASM 检查](../../../test/evidence/web/wasm-check.txt)、[最终构建](web/release-build.txt)、[Linux 宿主重链](../../../test/evidence/web/linux-host-build.txt)。这些文件不包含密码、Cookie、会话令牌或私有认证请求。
 
-启动探针的[首次最终产物复跑](../../../tests/evidence/web/startup-first-final-attempt.json)有 1 项断言失败，原始记录缺少失败现场，不能据此确定其精确时序。随后[受控诊断](../../../tests/evidence/web/startup-probe-setup-race.json)复现了测试前提的问题：CSS 提前请求常规字体，但 WASM 尚未开始粗体加载时就推进时钟，会使“迟到后两个字重均解码”的断言失败；现场启动终态仍为 failed，没有被迟到结果覆盖。最终探针明确等待两种字体真实请求后才快进，6 项全部通过；此过程只修正临时测试的同步，没有修改产品代码。
+启动探针的[首次最终产物复跑](../../../test/evidence/web/startup-first-final-attempt.json)有 1 项断言失败，原始记录缺少失败现场，不能据此确定其精确时序。随后[受控诊断](../../../test/evidence/web/startup-probe-setup-race.json)复现了测试前提的问题：CSS 提前请求常规字体，但 WASM 尚未开始粗体加载时就推进时钟，会使“迟到后两个字重均解码”的断言失败；现场启动终态仍为 failed，没有被迟到结果覆盖。最终探针明确等待两种字体真实请求后才快进，6 项全部通过；此过程只修正临时测试的同步，没有修改产品代码。
 
-截图：[公共登录页](../../../tests/evidence/web/login.png)、[文件列表](../../../tests/evidence/web/files.png)、[只读预览](../../../tests/evidence/web/preview.png)、[拆分边界审计](../../../tests/evidence/web/boundary.png)、[桌面磁盘管理](../../../tests/evidence/web/desktop.png)、[390 px 磁盘管理](../../../tests/evidence/web/mobile.png)、[公共账户页](../../../tests/evidence/web/account.png)。
+截图：[公共登录页](../../../test/evidence/web/login.png)、[文件列表](../../../test/evidence/web/files.png)、[只读预览](../../../test/evidence/web/preview.png)、[拆分边界审计](../../../test/evidence/web/boundary.png)、[桌面磁盘管理](../../../test/evidence/web/desktop.png)、[390 px 磁盘管理](../../../test/evidence/web/mobile.png)、[公共账户页](../../../test/evidence/web/account.png)。
 
-浏览器业务测试使用单独初始化的临时开发池；7400 用户预览池只执行就绪、资源校验和新建探测会话的登录/退出，原管理员密码和用户数据保持不变。三成员改密恢复、最大长度 JSON 转义与 CSRF 边界另见[服务端测试](../../../tests/evidence/native/server-ui-tests.txt)。
+浏览器业务测试使用单独初始化的临时开发池；7400 用户预览池只执行就绪、资源校验和新建探测会话的登录/退出，原管理员密码和用户数据保持不变。三成员改密恢复、最大长度 JSON 转义与 CSRF 边界另见[服务端测试](../../../test/evidence/native/server-ui-tests.txt)。
 
 重新验收时，先按 `web/README.md` 构建，再以 `zxs --root ROOT serve --listen 127.0.0.1:PORT --web-dir ABSOLUTE_DIST` 启动服务，通过浏览器完成上表操作。初始化开发池的参数见根项目文档。验收登录信息应放在仓库外的限制权限文件中；不应将运行时凭据写入证据。

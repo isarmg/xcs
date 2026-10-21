@@ -22,6 +22,7 @@ mod headers;
 mod open_file;
 
 #[cfg(test)]
+#[path = "../../../../../../../test/foundation/tower-http/modules/src/services/fs/serve_dir/tests.rs"]
 mod tests;
 
 // default capacity 64KiB

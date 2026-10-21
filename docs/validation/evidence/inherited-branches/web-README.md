@@ -10,9 +10,9 @@
 
 ## 验证
 
-- [Rust 测试](../../../../tests/evidence/inherited-branches/web-tests.log)：84 项通过，包括公共运行时 26 项、组件 3 项、响应状态 2 项、应用 53 项。新增回归检查覆盖可读继承与正文所有权分离、真实树节点身份不变，以及同一目录继承／自身文件分别捕获写入分支。
-- [生产构建](../../../../tests/evidence/inherited-branches/web-build.log)：指定 wasm-bindgen 0.2.129 的 Rust/WASM release 构建成功。[候选收据](../../../../tests/evidence/inherited-branches/web-candidate.json)记录 WASM、HTML、CSS 与构建清单的 SHA-256。
-- [实际 Chromium 交互](../../../../tests/evidence/inherited-branches/web-result.json)：中文浅色 1440px、英文暗色 390px，两场各 5 组检查通过。实际加载的 WASM 字节与候选匹配，无页面异常、无未预计的 API 请求。
+- [Rust 测试](../../../../test/evidence/inherited-branches/web-tests.log)：84 项通过，包括公共运行时 26 项、组件 3 项、响应状态 2 项、应用 53 项。新增回归检查覆盖可读继承与正文所有权分离、真实树节点身份不变，以及同一目录继承／自身文件分别捕获写入分支。
+- [生产构建](../../../../test/evidence/inherited-branches/web-build.log)：指定 wasm-bindgen 0.2.129 的 Rust/WASM release 构建成功。[候选收据](../../../../test/evidence/inherited-branches/web-candidate.json)记录 WASM、HTML、CSS 与构建清单的 SHA-256。
+- [实际 Chromium 交互](../../../../test/evidence/inherited-branches/web-result.json)：中文浅色 1440px、英文暗色 390px，两场各 5 组检查通过。实际加载的 WASM 字节与候选匹配，无页面异常、无未预计的 API 请求。
 
 每场顺序验证：
 
@@ -22,9 +22,9 @@
 4. 使用不同本地名称的零字节文件写入当前受管文件，请求准确使用原路径及捕获的分支 ID，首次写入新增且只新增一个真实内容节点，父节点向新节点的连线向上。
 5. 写入后不再标继承，零字节正文通过完整性校验并可预览。
 
-截图为 [中文待写入详情](../../../../tests/evidence/inherited-branches/pending-zh-light-1440.png)、[英文混合目录](../../../../tests/evidence/inherited-branches/mixed-directory-en-dark-390.png)、[英文首次写入后](../../../../tests/evidence/inherited-branches/written-en-dark-390.png)。
+截图为 [中文待写入详情](../../../../test/evidence/inherited-branches/pending-zh-light-1440.png)、[英文混合目录](../../../../test/evidence/inherited-branches/mixed-directory-en-dark-390.png)、[英文首次写入后](../../../../test/evidence/inherited-branches/written-en-dark-390.png)。
 
-全部 `/v1/` 请求，包括认证恢复、登记、选择、写入、封存、提交和内容读取，均被 [测试程序](../../../../tests/evidence/inherited-branches/web-probe.mjs)拦截。测试只连接临时本机静态服务器，不读取真实账户凭据，不访问运行中业务服务或修改用户文件。实际文件占位、发布和恢复由核心及服务端测试另行验证；本证据不构成六平台实机或发行验收。
+全部 `/v1/` 请求，包括认证恢复、登记、选择、写入、封存、提交和内容读取，均被 [测试程序](../../../../test/evidence/inherited-branches/web-probe.mjs)拦截。测试只连接临时本机静态服务器，不读取真实账户凭据，不访问运行中业务服务或修改用户文件。实际文件占位、发布和恢复由核心及服务端测试另行验证；本证据不构成六平台实机或发行验收。
 
 ## 复现
 
@@ -37,7 +37,7 @@ python3 -m http.server 17401 --bind 127.0.0.1 --directory web/dist
 另一个终端运行：
 
 ```sh
-ZXS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs ZXS_PREVIEW_URL=http://127.0.0.1:17401 node tests/evidence/inherited-branches/web-probe.mjs
+ZXS_PLAYWRIGHT_MODULE=/absolute/path/playwright/index.mjs ZXS_PREVIEW_URL=http://127.0.0.1:17401 node test/evidence/inherited-branches/web-probe.mjs
 ```
 
 结束后关闭临时静态服务器。

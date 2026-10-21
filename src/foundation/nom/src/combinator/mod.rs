@@ -17,6 +17,7 @@ use crate::traits::{AsChar, InputIter, InputLength, InputTakeAtPosition, ParseTo
 use crate::traits::{Compare, CompareResult, Offset, Slice};
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/nom/modules/src/combinator/tests.rs"]
 mod tests;
 
 /// Return the remaining input.

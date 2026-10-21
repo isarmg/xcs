@@ -131,4 +131,5 @@ impl Engine {
 }
 
 #[cfg(test)]
+#[path = "../../../../test/engine/unit/business/file_tags/tests.rs"]
 mod tests;

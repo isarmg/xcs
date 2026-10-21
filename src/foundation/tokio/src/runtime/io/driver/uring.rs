@@ -356,4 +356,5 @@ impl Handle {
 }
 
 #[cfg(all(test))]
+#[path = "../../../../../../../test/foundation/tokio/modules/src/runtime/io/driver/uring/tests.rs"]
 mod tests;

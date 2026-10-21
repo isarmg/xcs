@@ -172,6 +172,7 @@ pub(crate) mod utils;
 pub(crate) mod maybe_polyfill;
 #[cfg(test)]
 #[macro_use]
+#[path = "../../../../test/foundation/rustix/modules/src/check_types.rs"]
 pub(crate) mod check_types;
 #[macro_use]
 pub(crate) mod bitcast;

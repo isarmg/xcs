@@ -492,4 +492,5 @@ impl fmt::Debug for Inner {
 }
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/tokio/modules/src/runtime/time/tests/mod.rs"]
 mod tests;

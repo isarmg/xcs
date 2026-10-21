@@ -305,9 +305,5 @@ impl<'a, K, V> From<OccupiedEntry<'a, K, V>> for IndexedEntry<'a, K, V> {
     }
 }
 
-#[test]
-fn assert_send_sync() {
-    fn assert_send_sync<T: Send + Sync>() {}
-    assert_send_sync::<Entry<'_, i32, i32>>();
-    assert_send_sync::<IndexedEntry<'_, i32, i32>>();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/indexmap/functions/src/map/entry/assert_send_sync_308.rs"));

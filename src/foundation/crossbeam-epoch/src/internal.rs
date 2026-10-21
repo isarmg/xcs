@@ -315,15 +315,8 @@ pub(crate) struct Local {
 
 // Make sure `Local` is less than or equal to 2048 bytes.
 // https://github.com/crossbeam-rs/crossbeam/issues/551
-#[cfg(not(any(crossbeam_sanitize, miri)))] // `crossbeam_sanitize` and `miri` reduce the size of `Local`
-#[test]
-fn local_size() {
-    // TODO: https://github.com/crossbeam-rs/crossbeam/issues/869
-    // assert!(
-    //     core::mem::size_of::<Local>() <= 2048,
-    //     "An allocation of `Local` should be <= 2048 bytes."
-    // );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/crossbeam-epoch/functions/src/internal/local_size_318.rs"));
 
 impl Local {
     /// Number of pinnings after which a participant will execute some deferred functions from the
@@ -572,47 +565,5 @@ impl IsElement<Self> for Local {
     }
 }
 
-#[cfg(all(test, not(crossbeam_loom)))]
-mod tests {
-    use std::sync::atomic::AtomicUsize;
-
-    use super::*;
-
-    #[test]
-    fn check_defer() {
-        static FLAG: AtomicUsize = AtomicUsize::new(0);
-        fn set() {
-            FLAG.store(42, Ordering::Relaxed);
-        }
-
-        let d = Deferred::new(set);
-        assert_eq!(FLAG.load(Ordering::Relaxed), 0);
-        d.call();
-        assert_eq!(FLAG.load(Ordering::Relaxed), 42);
-    }
-
-    #[test]
-    fn check_bag() {
-        static FLAG: AtomicUsize = AtomicUsize::new(0);
-        fn incr() {
-            FLAG.fetch_add(1, Ordering::Relaxed);
-        }
-
-        let mut bag = Bag::new();
-        assert!(bag.is_empty());
-
-        for _ in 0..MAX_OBJECTS {
-            assert!(unsafe { bag.try_push(Deferred::new(incr)).is_ok() });
-            assert!(!bag.is_empty());
-            assert_eq!(FLAG.load(Ordering::Relaxed), 0);
-        }
-
-        let result = unsafe { bag.try_push(Deferred::new(incr)) };
-        assert!(result.is_err());
-        assert!(!bag.is_empty());
-        assert_eq!(FLAG.load(Ordering::Relaxed), 0);
-
-        drop(bag);
-        assert_eq!(FLAG.load(Ordering::Relaxed), MAX_OBJECTS);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/crossbeam-epoch/unit/src/internal/all_tests_575.rs"));

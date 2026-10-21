@@ -13,16 +13,16 @@
 
 | 验证 | 结果 |
 | --- | --- |
-| [Rust workspace测试](../../../../tests/evidence/merge-tags-backup/web/rust-tests.log) | 111项通过：应用80、共享运行时26、组件3、响应式状态2；无警告 |
-| [新功能浏览器](../../../../tests/evidence/merge-tags-backup/web/browser-result.json) | 中文1440px浅色、英文390px深色各11组交互，加载的真实WASM哈希与候选一致，无页面异常、未预期请求或输入弹窗 |
-| [备份浏览回归](../../../../tests/evidence/merge-tags-backup/web/backup-browse/browser-result.json) | 两场各3组：用户逻辑前缀、派生目录只读、主alias精确上下文、无alias历史读取、固定旧备份正文的当前标记及校验预览下载 |
-| [批量文件操作回归](../../../../tests/evidence/merge-tags-backup/web/regression-batch/browser-result.json) | 两场各9组；移动/复制/删除/改名、冲突/未知结果、公共文件分支内联改名 |
-| [路径节点回归](../../../../tests/evidence/merge-tags-backup/web/regression-path-nodes/browser-result.json) | 两场各5组；改名节点、备注、来源节点分支、随后真实写入及下载 |
-| [目录控制回归](../../../../tests/evidence/merge-tags-backup/web/regression-directory/browser-result.json) | 两场各5组；目录组合、SMB默认选择、空目录、原位改名及审计 |
-| [复杂历史树回归](../../../../tests/evidence/merge-tags-backup/web/regression-tree/browser-result.json) | 两场各3种几何状态；父下子上、跨层绕行、文本编辑和改变宽度后的等粗正交圆角线 |
-| [候选回执](../../../../tests/evidence/merge-tags-backup/web/candidate.json)、[资源与源码清单](../../../../tests/evidence/merge-tags-backup/web/build-manifest.json) | 152个输入与当前源码逐项一致，资源摘要逐项一致；既有公共几何、登录和选择器源码与上次候选一致 |
+| [Rust workspace测试](../../../../test/evidence/merge-tags-backup/web/rust-tests.log) | 111项通过：应用80、共享运行时26、组件3、响应式状态2；无警告 |
+| [新功能浏览器](../../../../test/evidence/merge-tags-backup/web/browser-result.json) | 中文1440px浅色、英文390px深色各11组交互，加载的真实WASM哈希与候选一致，无页面异常、未预期请求或输入弹窗 |
+| [备份浏览回归](../../../../test/evidence/merge-tags-backup/web/backup-browse/browser-result.json) | 两场各3组：用户逻辑前缀、派生目录只读、主alias精确上下文、无alias历史读取、固定旧备份正文的当前标记及校验预览下载 |
+| [批量文件操作回归](../../../../test/evidence/merge-tags-backup/web/regression-batch/browser-result.json) | 两场各9组；移动/复制/删除/改名、冲突/未知结果、公共文件分支内联改名 |
+| [路径节点回归](../../../../test/evidence/merge-tags-backup/web/regression-path-nodes/browser-result.json) | 两场各5组；改名节点、备注、来源节点分支、随后真实写入及下载 |
+| [目录控制回归](../../../../test/evidence/merge-tags-backup/web/regression-directory/browser-result.json) | 两场各5组；目录组合、SMB默认选择、空目录、原位改名及审计 |
+| [复杂历史树回归](../../../../test/evidence/merge-tags-backup/web/regression-tree/browser-result.json) | 两场各3种几何状态；父下子上、跨层绕行、文本编辑和改变宽度后的等粗正交圆角线 |
+| [候选回执](../../../../test/evidence/merge-tags-backup/web/candidate.json)、[资源与源码清单](../../../../test/evidence/merge-tags-backup/web/build-manifest.json) | 152个输入与当前源码逐项一致，资源摘要逐项一致；既有公共几何、登录和选择器源码与上次候选一致 |
 
-候选位置为 当时的临时测试目录或日志，WASM SHA-256为 `2491cb2a7a0abf2413b8c19c4f7a288393ffdccfbfa2080a302e8d6e6f4433d2`。新功能实际请求摘录保存在 [wire/](../../../../tests/evidence/merge-tags-backup/web/wire)。截图在本目录及各回归子目录。
+候选位置为 当时的临时测试目录或日志，WASM SHA-256为 `2491cb2a7a0abf2413b8c19c4f7a288393ffdccfbfa2080a302e8d6e6f4433d2`。新功能实际请求摘录保存在 [wire/](../../../../test/evidence/merge-tags-backup/web/wire)。截图在本目录及各回归子目录。
 
 浏览器API全部由本地夹具响应；测试证明页面交互、发布恢复、请求契约和真实WASM显示几何，**不代表实际服务端合并、物理副本或SMB验收**。服务端证据由对应核心/API/存储测试提供。Web子任务没有替换项目 `web/dist` 或重启真实预览服务。
 
@@ -32,8 +32,8 @@
 
 ```sh
 cargo test --locked --offline --manifest-path web/Cargo.toml --workspace
-node tests/evidence/merge-tags-backup/web/browser-probe.mjs
-node tests/evidence/merge-tags-backup/web/backup-browse-probe.mjs
+node test/evidence/merge-tags-backup/web/browser-probe.mjs
+node test/evidence/merge-tags-backup/web/backup-browse-probe.mjs
 ```
 
 浏览器探针默认读取上述隔离候选。可用 `ZXS_BROWSER_DIST`、`ZXS_WEB_EVIDENCE` 和 `ZXS_PLAYWRIGHT_MODULE` 指定其他位置。复杂树探针为 `regression-tree-probe.mjs`，使用回环静态服务，需设置 `ZXS_PRODUCT_ROOT`、`ZXS_PREVIEW_URL`、`ZXS_TREE_EVIDENCE` 和 `ZXS_PLAYWRIGHT_MODULE`；详见其顶部环境变量。

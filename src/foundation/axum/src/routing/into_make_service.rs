@@ -44,13 +44,4 @@ opaque_future! {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn traits() {
-        use crate::test_helpers::*;
-
-        assert_send::<IntoMakeService<()>>();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum/unit/src/routing/into_make_service/tests_46.rs"));

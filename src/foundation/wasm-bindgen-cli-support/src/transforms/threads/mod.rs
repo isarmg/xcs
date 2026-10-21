@@ -453,4 +453,5 @@ fn with_temp_stack(
 }
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/wasm-bindgen-cli-support/modules/src/transforms/threads/tests/mod.rs"]
 mod tests;

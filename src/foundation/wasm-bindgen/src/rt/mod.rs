@@ -455,19 +455,8 @@ impl<T> WasmAbi for WasmPtr<T> {
 // The wasm64 representation of `WasmWord` is `f64`, which has enough
 // mantissa precision to roundtrip any in-range pointer value. On wasm32
 // the representation is `u32`, so this test is only meaningful on wasm64.
-#[cfg(all(test, target_arch = "wasm64"))]
-mod tests {
-    use super::WasmWord;
-
-    #[test]
-    fn wasm_word_roundtrips_large_pointer_values() {
-        let value = 1usize << 60;
-        assert_eq!(WasmWord::from_usize(value).into_usize(), value);
-
-        let signed = -(1isize << 40);
-        assert_eq!(WasmWord::from_isize(signed).into_isize(), signed);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/wasm-bindgen/unit/src/rt/mod/all_tests_458.rs"));
 
 #[cold]
 #[inline(never)]

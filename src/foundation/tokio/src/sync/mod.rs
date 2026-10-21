@@ -521,4 +521,5 @@ cfg_not_sync! {
 
 /// Unit tests
 #[cfg(test)]
+#[path = "../../../../../test/foundation/tokio/modules/src/sync/tests/mod.rs"]
 mod tests;

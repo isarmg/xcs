@@ -20,4 +20,5 @@ mod wake_queue;
 pub(crate) use wake_queue::WakeQueue;
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/tokio/modules/src/runtime/time_alt/tests.rs"]
 mod tests;

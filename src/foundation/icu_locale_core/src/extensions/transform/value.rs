@@ -132,34 +132,8 @@ impl FromStr for Value {
 
 impl_writeable_for_each_subtag_str_no_test!(Value, selff, selff.0.is_empty() => Some("true"));
 
-#[test]
-fn test_writeable() {
-    use writeable::assert_writeable_eq;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_locale_core/functions/src/extensions/transform/value/test_writeable_135.rs"));
 
-    let hybrid = "hybrid".parse().unwrap();
-    let foobar = "foobar".parse().unwrap();
-
-    assert_writeable_eq!(Value::default(), "true");
-    assert_writeable_eq!(
-        Value::from_short_slice_unchecked(vec![hybrid].into()),
-        "hybrid"
-    );
-    assert_writeable_eq!(
-        Value::from_short_slice_unchecked(vec![hybrid, foobar].into()),
-        "hybrid-foobar"
-    );
-}
-
-#[test]
-fn test_short_tvalue() {
-    let value = Value::try_from_str("foo-longstag");
-    assert!(value.is_ok());
-    let value = value.unwrap();
-    assert_eq!(value.0.len(), 2);
-    for (s, reference) in value.0.iter().zip(&[subtag!("foo"), subtag!("longstag")]) {
-        assert_eq!(s, reference);
-    }
-
-    let value = Value::try_from_str("foo-ba");
-    assert!(value.is_err());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_locale_core/functions/src/extensions/transform/value/test_short_tvalue_153.rs"));

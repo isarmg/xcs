@@ -132,48 +132,11 @@ tuple_ule!(Tuple4ULE, "4", [ A 0, B 1, C 2, D 3 ]);
 tuple_ule!(Tuple5ULE, "5", [ A 0, B 1, C 2, D 3, E 4 ]);
 tuple_ule!(Tuple6ULE, "6", [ A 0, B 1, C 2, D 3, E 4, F 5 ]);
 
-#[test]
-fn test_pairule_validate() {
-    use crate::ZeroVec;
-    let vec: Vec<(u32, char)> = vec![(1, 'a'), (1234901, '啊'), (100, 'अ')];
-    let zerovec: ZeroVec<(u32, char)> = vec.iter().copied().collect();
-    let bytes = zerovec.as_bytes();
-    let zerovec2 = ZeroVec::parse_bytes(bytes).unwrap();
-    assert_eq!(zerovec, zerovec2);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/ule/tuple/test_pairule_validate_135.rs"));
 
-    // Test failed validation with a correctly sized but differently constrained tuple
-    // Note: 1234901 is not a valid char
-    let zerovec3 = ZeroVec::<(char, u32)>::parse_bytes(bytes);
-    assert!(zerovec3.is_err());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/ule/tuple/test_tripleule_validate_150.rs"));
 
-#[test]
-fn test_tripleule_validate() {
-    use crate::ZeroVec;
-    let vec: Vec<(u32, char, i8)> = vec![(1, 'a', -5), (1234901, '啊', 3), (100, 'अ', -127)];
-    let zerovec: ZeroVec<(u32, char, i8)> = vec.iter().copied().collect();
-    let bytes = zerovec.as_bytes();
-    let zerovec2 = ZeroVec::parse_bytes(bytes).unwrap();
-    assert_eq!(zerovec, zerovec2);
-
-    // Test failed validation with a correctly sized but differently constrained tuple
-    // Note: 1234901 is not a valid char
-    let zerovec3 = ZeroVec::<(char, i8, u32)>::parse_bytes(bytes);
-    assert!(zerovec3.is_err());
-}
-
-#[test]
-fn test_quadule_validate() {
-    use crate::ZeroVec;
-    let vec: Vec<(u32, char, i8, u16)> =
-        vec![(1, 'a', -5, 3), (1234901, '啊', 3, 11), (100, 'अ', -127, 0)];
-    let zerovec: ZeroVec<(u32, char, i8, u16)> = vec.iter().copied().collect();
-    let bytes = zerovec.as_bytes();
-    let zerovec2 = ZeroVec::parse_bytes(bytes).unwrap();
-    assert_eq!(zerovec, zerovec2);
-
-    // Test failed validation with a correctly sized but differently constrained tuple
-    // Note: 1234901 is not a valid char
-    let zerovec3 = ZeroVec::<(char, i8, u16, u32)>::parse_bytes(bytes);
-    assert!(zerovec3.is_err());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/ule/tuple/test_quadule_validate_165.rs"));

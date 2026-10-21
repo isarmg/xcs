@@ -434,4 +434,5 @@ impl<T: AsyncWrite + Unpin> Write for SyncWriteAdapter<'_, '_, T> {
 }
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/tokio-rustls/modules/src/common/test_stream.rs"]
 mod test_stream;

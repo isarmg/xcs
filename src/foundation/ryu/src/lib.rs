@@ -124,6 +124,7 @@ mod f2s;
 mod f2s_intrinsics;
 mod pretty;
 #[cfg(test)]
+#[path = "../../../../test/foundation/ryu/modules/src/tests.rs"]
 mod tests;
 
 pub use crate::buffer::{Buffer, Float};

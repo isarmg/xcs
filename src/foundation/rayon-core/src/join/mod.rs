@@ -7,6 +7,7 @@ use std::any::Any;
 use crate::FnContext;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/rayon-core/modules/src/join/test.rs"]
 mod test;
 
 /// Takes two closures and *potentially* runs them in parallel. It

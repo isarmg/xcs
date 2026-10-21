@@ -112,37 +112,11 @@ macro_rules! bounded_tuple {
 for_each_tuple!(bounded_tuple);
 bounded_impl!(f64, f64::MIN, f64::MAX);
 
-#[test]
-fn wrapping_bounded() {
-    macro_rules! test_wrapping_bounded {
-        ($($t:ty)+) => {
-            $(
-                assert_eq!(<Wrapping<$t> as Bounded>::min_value().0, <$t>::MIN);
-                assert_eq!(<Wrapping<$t> as Bounded>::max_value().0, <$t>::MAX);
-            )+
-        };
-    }
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/bounds/wrapping_bounded_115.rs"));
 
-    test_wrapping_bounded!(usize u8 u16 u32 u64 isize i8 i16 i32 i64);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/bounds/wrapping_bounded_i128_129.rs"));
 
-#[test]
-fn wrapping_bounded_i128() {
-    macro_rules! test_wrapping_bounded {
-        ($($t:ty)+) => {
-            $(
-                assert_eq!(<Wrapping<$t> as Bounded>::min_value().0, <$t>::MIN);
-                assert_eq!(<Wrapping<$t> as Bounded>::max_value().0, <$t>::MAX);
-            )+
-        };
-    }
-
-    test_wrapping_bounded!(u128 i128);
-}
-
-#[test]
-fn wrapping_is_bounded() {
-    fn require_bounded<T: Bounded>(_: &T) {}
-    require_bounded(&Wrapping(42_u32));
-    require_bounded(&Wrapping(-42));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/bounds/wrapping_is_bounded_143.rs"));

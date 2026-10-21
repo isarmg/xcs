@@ -18,11 +18,11 @@
 )]
 
 #[macro_use]
-#[path = "../tests/macros/mod.rs"]
+#[path = "../../../../test/foundation/syn-2.0.119/tests/macros/mod.rs"]
 mod macros;
 
 #[allow(dead_code)]
-#[path = "../tests/repo/mod.rs"]
+#[path = "../../../../test/foundation/syn-2.0.119/tests/repo/mod.rs"]
 mod repo;
 
 use std::fs;
@@ -116,7 +116,7 @@ fn exec(mut codepath: impl FnMut(&Path, &str) -> Result<(), ()>) -> Duration {
     let mut success = 0;
     let mut total = 0;
 
-    ["tests/rust/compiler", "tests/rust/library"]
+    ["../../../test/foundation/syn-2.0.119/tests/rust/compiler", "../../../test/foundation/syn-2.0.119/tests/rust/library"]
         .iter()
         .flat_map(|dir| {
             walkdir::WalkDir::new(dir)

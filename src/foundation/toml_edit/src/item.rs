@@ -442,9 +442,5 @@ pub fn array() -> Item {
     Item::ArrayOfTables(ArrayOfTables::new())
 }
 
-#[test]
-#[cfg(feature = "parse")]
-#[cfg(feature = "display")]
-fn string_roundtrip() {
-    value("hello").to_string().parse::<Item>().unwrap();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/toml_edit/functions/src/item/string_roundtrip_445.rs"));

@@ -17,6 +17,7 @@ use std::sync::atomic::{AtomicPtr, Ordering};
 use std::sync::Arc;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/rayon-core/modules/src/scope/test.rs"]
 mod test;
 
 /// Represents a fork-join scope which can be used to spawn any number of tasks.

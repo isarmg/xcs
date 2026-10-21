@@ -264,20 +264,5 @@ macro_rules! assert_tokens {
     };
 }
 
-#[test]
-fn test() {
-    // TODO testing with quote is incomplete `":::"` can be joint joint alone if
-    // produced directly not with quote.
-    use quote::quote;
-    assert_tokens!(quote!(ident ident, { group/test, vec![a, (a + b)] }, "literal" $), {
-        ident ident, { group /test, vec![a,(a+b)] }, "literal" $
-    });
-    assert_tokens!(quote!(:::), {
-        :::
-    });
-    assert_tokens!(quote!(more:::test::test:: hello :-D $$$ It should just work), {
-        more ::: test ::test:: hello :-D $$$ It should just work
-    });
-
-    assert_tokens!(quote!(:$), {: $});
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/proc-macro-utils/functions/src/assert/test_267.rs"));

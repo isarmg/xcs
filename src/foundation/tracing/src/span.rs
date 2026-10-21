@@ -1604,12 +1604,4 @@ const PhantomNotSend: PhantomNotSend = PhantomNotSend { ghost: PhantomData };
 unsafe impl Sync for PhantomNotSend {}
 
 #[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_record_backwards_compat() {
-        Span::current().record("some-key", "some text");
-        Span::current().record("some-key", false);
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tracing/unit/src/span/test_1606.rs"));

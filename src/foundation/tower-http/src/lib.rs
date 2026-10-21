@@ -205,6 +205,7 @@
 pub(crate) mod macros;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/tower-http/modules/src/test_helpers.rs"]
 mod test_helpers;
 
 #[cfg(feature = "auth")]

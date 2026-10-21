@@ -106,12 +106,4 @@ where
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn assert_unpin() {
-        use std::marker::PhantomPinned;
-        crate::is_unpin::<CopyBuf<'_, PhantomPinned, PhantomPinned>>();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/unit/src/io/util/copy_buf/tests_108.rs"));

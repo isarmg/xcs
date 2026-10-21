@@ -1,6 +1,7 @@
 //! Combinators applying parsers in sequence
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/nom/modules/src/sequence/tests.rs"]
 mod tests;
 
 use crate::error::ParseError;

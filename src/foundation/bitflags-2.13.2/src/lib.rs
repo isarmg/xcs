@@ -1241,4 +1241,5 @@ mod external;
 pub mod example_generated;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/bitflags-2.13.2/modules/src/tests.rs"]
 mod tests;

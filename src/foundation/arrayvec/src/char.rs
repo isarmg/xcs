@@ -55,38 +55,9 @@ pub unsafe fn encode_utf8(ch: char, ptr: *mut u8, len: usize) -> Result<usize, E
 }
 
 
-#[test]
-#[cfg_attr(miri, ignore)] // Miri is too slow
-fn test_encode_utf8() {
-    // Test that all codepoints are encoded correctly
-    let mut data = [0u8; 16];
-    for codepoint in 0..=(std::char::MAX as u32) {
-        if let Some(ch) = std::char::from_u32(codepoint) {
-            for elt in &mut data { *elt = 0; }
-            let ptr = data.as_mut_ptr();
-            let len = data.len();
-            unsafe {
-                let res = encode_utf8(ch, ptr, len).ok().unwrap();
-                assert_eq!(res, ch.len_utf8());
-            }
-            let string = std::str::from_utf8(&data).unwrap();
-            assert_eq!(string.chars().next(), Some(ch));
-        }
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/arrayvec/functions/src/char/test_encode_utf8_58.rs"));
 
-#[test]
-fn test_encode_utf8_oob() {
-    // test that we report oob if the buffer is too short
-    let mut data = [0u8; 16];
-    let chars = ['a', 'α', '�', '𐍈'];
-    for (len, &ch) in (1..=4).zip(&chars) {
-        assert_eq!(len, ch.len_utf8(), "Len of ch={}", ch);
-        let ptr = data.as_mut_ptr();
-        unsafe {
-            assert!(matches::matches!(encode_utf8(ch, ptr, len - 1), Err(_)));
-            assert!(matches::matches!(encode_utf8(ch, ptr, len), Ok(_)));
-        }
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/arrayvec/functions/src/char/test_encode_utf8_oob_78.rs"));
 

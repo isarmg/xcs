@@ -133,6 +133,7 @@ mod common;
 mod error;
 pub mod ext;
 #[cfg(test)]
+#[path = "../../../../test/foundation/hyper/modules/src/mock.rs"]
 mod mock;
 pub mod rt;
 pub mod service;

@@ -336,4 +336,5 @@ fn xform_one(
 }
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/wasm-bindgen-cli-support/modules/src/transforms/multi_value/tests/mod.rs"]
 mod tests;

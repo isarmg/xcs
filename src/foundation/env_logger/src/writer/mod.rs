@@ -163,28 +163,4 @@ fn parse_write_style(spec: &str) -> WriteStyle {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parse_write_style_valid() {
-        let inputs = vec![
-            ("auto", WriteStyle::Auto),
-            ("always", WriteStyle::Always),
-            ("never", WriteStyle::Never),
-        ];
-
-        for (input, expected) in inputs {
-            assert_eq!(expected, parse_write_style(input));
-        }
-    }
-
-    #[test]
-    fn parse_write_style_invalid() {
-        let inputs = vec!["", "true", "false", "NEVER!!"];
-
-        for input in inputs {
-            assert_eq!(WriteStyle::Auto, parse_write_style(input));
-        }
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/env_logger/unit/src/writer/mod/tests_165.rs"));

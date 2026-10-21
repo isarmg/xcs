@@ -488,53 +488,11 @@ impl<'a, T: VarULE + ?Sized + Ord, F: VarZeroVecFormat> Ord for VarZeroVec<'a, T
     }
 }
 
-#[test]
-fn assert_single_empty_representation() {
-    assert_eq!(
-        VarZeroVec::<str>::new().as_bytes(),
-        VarZeroVec::<str>::from(&[] as &[&str]).as_bytes()
-    );
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/varzerovec/vec/assert_single_empty_representation_491.rs"));
 
-    use crate::map::MutableZeroVecLike;
-    let mut vzv = VarZeroVec::<str>::from(&["hello", "world"][..]);
-    assert_eq!(vzv.len(), 2);
-    assert!(!vzv.as_bytes().is_empty());
-    vzv.zvl_remove(0);
-    assert_eq!(vzv.len(), 1);
-    assert!(!vzv.as_bytes().is_empty());
-    vzv.zvl_remove(0);
-    assert_eq!(vzv.len(), 0);
-    assert!(vzv.as_bytes().is_empty());
-    vzv.zvl_insert(0, "something");
-    assert_eq!(vzv.len(), 1);
-    assert!(!vzv.as_bytes().is_empty());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/varzerovec/vec/weird_empty_representation_equality_513.rs"));
 
-#[test]
-fn weird_empty_representation_equality() {
-    assert_eq!(
-        VarZeroVec::<str>::parse_bytes(&[0, 0, 0, 0]).unwrap(),
-        VarZeroVec::<str>::parse_bytes(&[]).unwrap()
-    );
-}
-
-#[test]
-fn test_overflow_parse_bytes_with_length() {
-    use super::components::{Index32, VarZeroVecComponents};
-    // Tests that you can't try to construct a VZV that is too big to store its length
-    // as a u32.
-
-    // We want to distinguish between "failed because of slice bounds" and "failed because of u32 overflow".
-    // On 64-bit, 4 * 0x4000_0000 = 4GB.
-    // If we had the u32 check, it would return Metadata error regardless of slice size.
-    // If we didn't, it would only return Metadata error if slice size < 4GB.
-
-    // We don't use a fully valid VZV here because we just want to ensure the first few lines of code
-    // return the metadata error without panicking. Actually allocating and instantiating
-    // a 4GB VZV candidate is very slow.
-
-    let mut bytes = vec![0u8; 4];
-    bytes.copy_from_slice(&0x4000_0001u32.to_le_bytes());
-    let result = VarZeroVecComponents::<str, Index32>::parse_bytes(&bytes);
-    assert!(matches!(result, Err(VarZeroVecFormatError::Metadata)));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/varzerovec/vec/test_overflow_parse_bytes_with_length_521.rs"));

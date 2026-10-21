@@ -309,90 +309,22 @@ impl IndexedParallelIterator for Iter<char> {
     }
 }
 
-#[test]
-fn test_char_range_inclusive_at_surrogate_boundary() {
-    use crate::prelude::*;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/range_inclusive/test_char_range_inclusive_at_surrogate_boundary_312.rs"));
 
-    // Ranges ending exactly at '\u{E000}' must not produce surrogate codepoints.
-    let chars: Vec<char> = ('\u{D7FE}'..='\u{E000}').into_par_iter().collect();
-    assert_eq!(chars, vec!['\u{D7FE}', '\u{D7FF}', '\u{E000}']);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/range_inclusive/test_u32_opt_len_329.rs"));
 
-    // Ranges starting at '\u{E000}' are entirely above surrogates.
-    let chars: Vec<char> = ('\u{E000}'..='\u{E001}').into_par_iter().collect();
-    assert_eq!(chars, vec!['\u{E000}', '\u{E001}']);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/range_inclusive/test_u64_opt_len_343.rs"));
 
-    // A range that spans the surrogate gap should skip it.
-    let chars: Vec<char> = ('\u{D7FE}'..='\u{E001}').into_par_iter().collect();
-    assert_eq!(chars, vec!['\u{D7FE}', '\u{D7FF}', '\u{E000}', '\u{E001}']);
-}
-
-#[test]
-#[cfg(target_pointer_width = "64")]
-fn test_u32_opt_len() {
-    assert_eq!(Some(101), (0..=100u32).into_par_iter().opt_len());
-    assert_eq!(
-        Some(u32::MAX as usize),
-        (0..=u32::MAX - 1).into_par_iter().opt_len()
-    );
-    assert_eq!(
-        Some(u32::MAX as usize + 1),
-        (0..=u32::MAX).into_par_iter().opt_len()
-    );
-}
-
-#[test]
-fn test_u64_opt_len() {
-    assert_eq!(Some(101), (0..=100u64).into_par_iter().opt_len());
-    assert_eq!(
-        Some(usize::MAX),
-        (0..=usize::MAX as u64 - 1).into_par_iter().opt_len()
-    );
-    assert_eq!(None, (0..=usize::MAX as u64).into_par_iter().opt_len());
-    assert_eq!(None, (0..=u64::MAX).into_par_iter().opt_len());
-}
-
-#[test]
-fn test_u128_opt_len() {
-    assert_eq!(Some(101), (0..=100u128).into_par_iter().opt_len());
-    assert_eq!(
-        Some(usize::MAX),
-        (0..=usize::MAX as u128 - 1).into_par_iter().opt_len()
-    );
-    assert_eq!(None, (0..=usize::MAX as u128).into_par_iter().opt_len());
-    assert_eq!(None, (0..=u128::MAX).into_par_iter().opt_len());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/range_inclusive/test_u128_opt_len_354.rs"));
 
 // `usize as i64` can overflow, so make sure to wrap it appropriately
 // when using the `opt_len` "indexed" mode.
-#[test]
-#[cfg(target_pointer_width = "64")]
-fn test_usize_i64_overflow() {
-    use crate::ThreadPoolBuilder;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/range_inclusive/test_usize_i64_overflow_367.rs"));
 
-    let iter = (-2..=i64::MAX).into_par_iter();
-    assert_eq!(iter.opt_len(), Some(i64::MAX as usize + 3));
-
-    // always run with multiple threads to split into, or this will take forever...
-    let pool = ThreadPoolBuilder::new().num_threads(8).build().unwrap();
-    pool.install(|| assert_eq!(iter.find_last(|_| true), Some(i64::MAX)));
-}
-
-#[test]
-fn test_issue_833() {
-    fn is_even(n: i64) -> bool {
-        n % 2 == 0
-    }
-
-    // The integer type should be inferred from `is_even`
-    let v: Vec<_> = (1..=100).into_par_iter().filter(|&x| is_even(x)).collect();
-    assert!(v.into_iter().eq((2..=100).step_by(2)));
-
-    // Try examples with indexed iterators too
-    let pos = (0..=100).into_par_iter().position_any(|x| x == 50i16);
-    assert_eq!(pos, Some(50usize));
-
-    assert!((0..=100)
-        .into_par_iter()
-        .zip(0..=100)
-        .all(|(a, b)| i16::eq(&a, &b)));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/range_inclusive/test_issue_833_380.rs"));

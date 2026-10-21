@@ -15,11 +15,11 @@
     clippy::needless_pass_by_value,
 )]
 
-#[path = "../tests/fst/mod.rs"]
+#[path = "../../../../test/foundation/unicode-ident/tests/fst/mod.rs"]
 mod fst;
-#[path = "../tests/roaring/mod.rs"]
+#[path = "../../../../test/foundation/unicode-ident/tests/roaring/mod.rs"]
 mod roaring;
-#[path = "../tests/trie/mod.rs"]
+#[path = "../../../../test/foundation/unicode-ident/tests/trie/mod.rs"]
 mod trie;
 
 use criterion::{criterion_group, criterion_main, Criterion};

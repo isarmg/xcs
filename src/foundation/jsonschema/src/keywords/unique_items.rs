@@ -70,16 +70,4 @@ pub(crate) fn compile<'a, F: Json>(
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::tests_util;
-    use serde_json::json;
-
-    #[test]
-    fn location() {
-        tests_util::assert_schema_location(
-            &json!({"uniqueItems": true}),
-            &json!([1, 1]),
-            "/uniqueItems",
-        );
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/jsonschema/unit/src/keywords/unique_items/tests_72.rs"));

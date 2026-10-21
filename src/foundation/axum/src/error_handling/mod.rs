@@ -253,10 +253,5 @@ pub mod future {
     }
 }
 
-#[test]
-fn traits() {
-    use crate::test_helpers::*;
-
-    assert_send::<HandleError<(), (), NotSendSync>>();
-    assert_sync::<HandleError<(), (), NotSendSync>>();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum/functions/src/error_handling/mod/traits_256.rs"));

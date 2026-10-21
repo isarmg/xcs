@@ -519,4 +519,5 @@ impl Engine {
 }
 
 #[cfg(test)]
+#[path = "../../../../test/engine/unit/protection/backup_paths/tests.rs"]
 mod tests;

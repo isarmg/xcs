@@ -21,6 +21,7 @@ mod option;
 mod plain;
 mod slices;
 #[cfg(test)]
+#[path = "../../../../../test/foundation/zerovec/modules/src/ule/test_utils.rs"]
 pub mod test_utils;
 
 pub mod tuple;

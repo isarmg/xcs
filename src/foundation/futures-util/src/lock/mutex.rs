@@ -545,16 +545,4 @@ unsafe impl<T: ?Sized + Send, U: ?Sized + Send> Send for MappedMutexGuard<'_, T,
 unsafe impl<T: ?Sized + Sync, U: ?Sized + Sync> Sync for MappedMutexGuard<'_, T, U> {}
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::format;
-
-    #[test]
-    fn test_mutex_guard_debug_not_recurse() {
-        let mutex = Mutex::new(42);
-        let guard = mutex.try_lock().unwrap();
-        let _ = format!("{guard:?}");
-        let guard = MutexGuard::map(guard, |n| n);
-        let _ = format!("{guard:?}");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/futures-util/unit/src/lock/mutex/tests_547.rs"));

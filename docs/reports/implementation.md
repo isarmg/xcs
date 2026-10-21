@@ -86,7 +86,7 @@
 
 以下表格保留初始实现阶段的执行快照，旧版本计数和创建即复制语义不作为当前结果；最新继承、旧快照兼容及首写验证见[本轮证据](../validation/evidence/inherited-branches.md)。
 
-证据分为五类：Rust 单元/集成测试，真实 loopback HTTP 与 CLI，真实 Chromium 的 WASM 运行与业务交互，Linux 原生宿主编译和链接，以及目标 SDK 加载下的真实 SMB3 客户端往返。命令、结果和限制分别保存在 `tests/evidence/` 与组件 README。
+证据分为五类：Rust 单元/集成测试，真实 loopback HTTP 与 CLI，真实 Chromium 的 WASM 运行与业务交互，Linux 原生宿主编译和链接，以及目标 SDK 加载下的真实 SMB3 客户端往返。命令、结果和限制分别保存在 `test/evidence/` 与组件 README。
 
 | 检查 | 初始执行范围（历史记录） |
 | --- | --- |

@@ -609,57 +609,14 @@ impl<DataStruct: for<'a> Yokeable<'a>> DynamicDataMarker for ErasedMarker<DataSt
     type DataStruct = DataStruct;
 }
 
-#[test]
-fn test_marker_syntax() {
-    // Valid markers:
-    DataMarkerId::from_name("HelloWorldV1").unwrap();
-    DataMarkerId::from_name("HelloWorldFooV1").unwrap();
-    DataMarkerId::from_name("HelloWorldV999").unwrap();
-    DataMarkerId::from_name("Hello485FooV1").unwrap();
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/marker/test_marker_syntax_612.rs"));
 
-    // No version:
-    assert_eq!(
-        DataMarkerId::from_name("HelloWorld"),
-        Err(("[0-9]", "HelloWorld".len()))
-    );
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/marker/test_id_debug_640.rs"));
 
-    assert_eq!(
-        DataMarkerId::from_name("HelloWorldV"),
-        Err(("[0-9]", "HelloWorldV".len()))
-    );
-    assert_eq!(
-        DataMarkerId::from_name("HelloWorldVFoo"),
-        Err(("[0-9]", "HelloWorldVFoo".len()))
-    );
-    assert_eq!(
-        DataMarkerId::from_name("HelloWorldV1Foo"),
-        Err(("[0-9]", "HelloWorldV1Foo".len()))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/marker/test_hash_word_32_645.rs"));
 
-#[test]
-fn test_id_debug() {
-    assert_eq!(DataMarkerId::from_name("BarV1").unwrap().debug, "BarV1");
-}
-
-#[test]
-fn test_hash_word_32() {
-    assert_eq!(0, fxhash_32(b""));
-    assert_eq!(0xF3051F19, fxhash_32(b"a"));
-    assert_eq!(0x2F9DF119, fxhash_32(b"ab"));
-    assert_eq!(0xCB1D9396, fxhash_32(b"abc"));
-    assert_eq!(0x8628F119, fxhash_32(b"abcd"));
-    assert_eq!(0xBEBDB56D, fxhash_32(b"abcde"));
-    assert_eq!(0x1CE8476D, fxhash_32(b"abcdef"));
-    assert_eq!(0xC0F176A4, fxhash_32(b"abcdefg"));
-    assert_eq!(0x09AB476D, fxhash_32(b"abcdefgh"));
-    assert_eq!(0xB72F5D88, fxhash_32(b"abcdefghi"));
-}
-
-#[test]
-fn test_id_hash() {
-    assert_eq!(
-        DataMarkerId::from_name("BarV1").unwrap().hashed(),
-        DataMarkerIdHash([212, 77, 158, 241]),
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/marker/test_id_hash_659.rs"));

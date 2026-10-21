@@ -384,20 +384,7 @@ pub(crate) fn get_token_tree_string_value(t: &TokenTree) -> Result<String> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::is_quoted_string_or_char;
-
-    #[test]
-    fn test_is_quoted_string_or_char() {
-        assert!(is_quoted_string_or_char("\"hello\"", false));
-        assert!(!is_quoted_string_or_char("abc", false));
-        assert!(!is_quoted_string_or_char("\"", false));
-        assert!(!is_quoted_string_or_char("\"abc", false));
-        assert!(is_quoted_string_or_char("'a'", true));
-        assert!(!is_quoted_string_or_char("'abc", true));
-        assert!(!is_quoted_string_or_char("abc", true));
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/pastey/unit/src/segment/tests_386.rs"));
 
 #[cfg(doctest)]
 #[doc(hidden)]

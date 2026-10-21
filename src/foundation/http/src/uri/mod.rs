@@ -46,6 +46,7 @@ mod path;
 mod port;
 mod scheme;
 #[cfg(test)]
+#[path = "../../../../../test/foundation/http/modules/src/uri/tests.rs"]
 mod tests;
 
 /// The URI component of a request.

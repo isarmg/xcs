@@ -154,63 +154,20 @@ where
     }
 }
 
-#[test]
-fn test_debug() {
-    let local_data = "foo".to_owned();
-    let y1 = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(
-        Rc::new(local_data),
-    );
-    assert_eq!(
-        format!("{y1:?}"),
-        r#"Yoke { yokeable: "foo", cart: "foo" }"#,
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/yoke/functions/src/yoke/test_debug_157.rs"));
 
-#[test]
-fn test_display() {
-    let local_data = "hello".to_owned();
-    let y = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(
-        Rc::new(local_data),
-    );
-    assert_eq!(format!("{}", y), "hello");
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/yoke/functions/src/yoke/test_display_169.rs"));
 
-#[test]
-fn test_partialeq() {
-    let a = Rc::new("same".to_string());
-    let b = Rc::new("same".to_string());
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/yoke/functions/src/yoke/test_partialeq_178.rs"));
 
-    let y1 = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(a);
-    let y2 = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(b);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/yoke/functions/src/yoke/test_eq_trait_189.rs"));
 
-    assert_eq!(y1, y2);
-}
-
-#[test]
-fn test_eq_trait() {
-    let x = Rc::new("equal".to_string());
-    let y = Rc::new("equal".to_string());
-
-    let y1 = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(x);
-    let y2 = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(y);
-
-    assert!(y1 == y2);
-
-    let vec = [y1];
-    assert!(vec.contains(&y2));
-}
-
-#[test]
-fn test_partialord_ord() {
-    let a = Rc::new("a".to_string());
-    let b = Rc::new("b".to_string());
-
-    let y1 = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(a);
-    let y2 = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(b);
-
-    assert!(y1 < y2);
-    assert_eq!(y1.partial_cmp(&y2), Some(core::cmp::Ordering::Less));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/yoke/functions/src/yoke/test_partialord_ord_203.rs"));
 
 impl<Y: for<'a> Yokeable<'a>, C: StableDeref> Yoke<Y, C>
 where
@@ -815,37 +772,8 @@ where
     }
 }
 
-#[test]
-fn test_clone() {
-    let local_data = "foo".to_owned();
-    let y1 = Yoke::<alloc::borrow::Cow<'static, str>, Rc<String>>::attach_to_zero_copy_cart(
-        Rc::new(local_data),
-    );
-
-    // Test basic clone
-    let y2 = y1.clone();
-    assert_eq!(y1.get(), "foo");
-    assert_eq!(y2.get(), "foo");
-
-    // Test clone with mutation on target
-    let mut y3 = y1.clone();
-    y3.with_mut(|y| {
-        y.to_mut().push_str("bar");
-    });
-    assert_eq!(y1.get(), "foo");
-    assert_eq!(y2.get(), "foo");
-    assert_eq!(y3.get(), "foobar");
-
-    // Test that mutations on source do not affect target
-    let y4 = y3.clone();
-    y3.with_mut(|y| {
-        y.to_mut().push_str("baz");
-    });
-    assert_eq!(y1.get(), "foo");
-    assert_eq!(y2.get(), "foo");
-    assert_eq!(y3.get(), "foobarbaz");
-    assert_eq!(y4.get(), "foobar");
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/yoke/functions/src/yoke/test_clone_818.rs"));
 
 impl<Y: for<'a> Yokeable<'a>, C> Yoke<Y, C> {
     /// Allows one to "project" a yoke to perform a transformation on the data, potentially

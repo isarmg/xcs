@@ -55,4 +55,5 @@ macro_rules! impl_partial_ord {
 }
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/src/macros/tests.rs"]
 mod tests;

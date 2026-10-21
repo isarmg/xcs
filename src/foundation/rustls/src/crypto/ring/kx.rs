@@ -152,14 +152,7 @@ impl ActiveKeyExchange for KeyExchange {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::format;
-
-    #[test]
-    fn kxgroup_fmt_yields_name() {
-        assert_eq!("X25519", format!("{:?}", super::X25519));
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/unit/src/crypto/ring/kx/tests_154.rs"));
 
 #[cfg(bench)]
 mod benchmarks {

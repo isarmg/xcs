@@ -1806,15 +1806,4 @@ pub fn xdp_options<Fd: AsFd>(fd: Fd) -> io::Result<XdpOptionsFlags> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_sizes() {
-        use c::c_int;
-
-        // Backend code needs to cast these to `c_int` so make sure that cast
-        // isn't lossy.
-        static_assertions::assert_eq_size!(Timeout, c_int);
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustix/unit/src/net/sockopt/tests_1808.rs"));

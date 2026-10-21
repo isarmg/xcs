@@ -51,6 +51,7 @@ mod range;
 mod recoverable;
 mod stateful;
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/src/stream/tests.rs"]
 mod tests;
 mod token;
 

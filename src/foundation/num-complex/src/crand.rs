@@ -80,70 +80,17 @@ fn test_rng() -> impl RngCore {
     }
 }
 
-#[test]
-fn standard_f64() {
-    let mut rng = test_rng();
-    for _ in 0..100 {
-        let c: Complex<f64> = rng.gen();
-        assert!(c.re >= 0.0 && c.re < 1.0);
-        assert!(c.im >= 0.0 && c.im < 1.0);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-complex/functions/src/crand/standard_f64_83.rs"));
 
-#[test]
-fn generic_standard_f64() {
-    let mut rng = test_rng();
-    let dist = ComplexDistribution::new(Standard, Standard);
-    for _ in 0..100 {
-        let c: Complex<f64> = rng.sample(dist);
-        assert!(c.re >= 0.0 && c.re < 1.0);
-        assert!(c.im >= 0.0 && c.im < 1.0);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-complex/functions/src/crand/generic_standard_f64_93.rs"));
 
-#[test]
-fn generic_uniform_f64() {
-    use rand::distributions::Uniform;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-complex/functions/src/crand/generic_uniform_f64_104.rs"));
 
-    let mut rng = test_rng();
-    let re = Uniform::new(-100.0, 0.0);
-    let im = Uniform::new(0.0, 100.0);
-    let dist = ComplexDistribution::new(re, im);
-    for _ in 0..100 {
-        // no type annotation required, since `Uniform` only produces one type.
-        let c = rng.sample(dist);
-        assert!(c.re >= -100.0 && c.re < 0.0);
-        assert!(c.im >= 0.0 && c.im < 100.0);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-complex/functions/src/crand/generic_mixed_f64_120.rs"));
 
-#[test]
-fn generic_mixed_f64() {
-    use rand::distributions::Uniform;
-
-    let mut rng = test_rng();
-    let re = Uniform::new(-100.0, 0.0);
-    let dist = ComplexDistribution::new(re, Standard);
-    for _ in 0..100 {
-        // no type annotation required, since `Uniform` only produces one type.
-        let c = rng.sample(dist);
-        assert!(c.re >= -100.0 && c.re < 0.0);
-        assert!(c.im >= 0.0 && c.im < 1.0);
-    }
-}
-
-#[test]
-fn generic_uniform_i32() {
-    use rand::distributions::Uniform;
-
-    let mut rng = test_rng();
-    let re = Uniform::new(-100, 0);
-    let im = Uniform::new(0, 100);
-    let dist = ComplexDistribution::new(re, im);
-    for _ in 0..100 {
-        // no type annotation required, since `Uniform` only produces one type.
-        let c = rng.sample(dist);
-        assert!(c.re >= -100 && c.re < 0);
-        assert!(c.im >= 0 && c.im < 100);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-complex/functions/src/crand/generic_uniform_i32_135.rs"));

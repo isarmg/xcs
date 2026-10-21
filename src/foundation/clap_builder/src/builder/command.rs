@@ -5290,7 +5290,5 @@ where
     }
 }
 
-#[test]
-fn check_auto_traits() {
-    static_assertions::assert_impl_all!(Command: Send, Sync, Unpin);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/clap_builder/functions/src/builder/command/check_auto_traits_5293.rs"));

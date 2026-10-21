@@ -187,34 +187,5 @@ pub(super) fn add_chunked(mut entry: http::header::OccupiedEntry<'_, HeaderValue
     entry.insert(HeaderValue::from_static(CHUNKED));
 }
 
-#[cfg(all(test, feature = "http1"))]
-mod tests {
-    use super::te_is_trailers;
-    use http::header::{HeaderValue, TE};
-    use http::HeaderMap;
-
-    #[test]
-    fn te_is_trailers_accepts_comma_separated_values() {
-        let mut headers = HeaderMap::new();
-        headers.insert(TE, HeaderValue::from_static("gzip, Trailers"));
-
-        assert!(te_is_trailers(&headers));
-    }
-
-    #[test]
-    fn te_is_trailers_accepts_multiple_header_lines() {
-        let mut headers = HeaderMap::new();
-        headers.append(TE, HeaderValue::from_static("gzip"));
-        headers.append(TE, HeaderValue::from_static("trailers"));
-
-        assert!(te_is_trailers(&headers));
-    }
-
-    #[test]
-    fn te_is_trailers_rejects_missing_trailers_token() {
-        let mut headers = HeaderMap::new();
-        headers.insert(TE, HeaderValue::from_static("gzip"));
-
-        assert!(!te_is_trailers(&headers));
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper/unit/src/headers/all_tests_190.rs"));

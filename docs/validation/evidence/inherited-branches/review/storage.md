@@ -8,4 +8,4 @@ Regression updates: both purge scenarios now reject CONTENT_PINNED before first 
 
 Validation: container_storage 6/6, history_package 4/4 and maintenance::split_tests 7/7 passed (17 total). Log: the historical temporary test directory/log No live runtime/data accessed or modified. Production source frozen after this pass.
 
-Docs and schema now distinguish version_id (visible real parent or own), own_version_id (null until first write), materialized, inherited, and visible_content_state (real parent or own logical content state). Branch/Commit pending maps remain canonical-compatible ownership/inheritance records. Evidence lives in tests/evidence/inherited-branches/contract; previous lazy-branches evidence left intact.
+Docs and schema now distinguish version_id (visible real parent or own), own_version_id (null until first write), materialized, inherited, and visible_content_state (real parent or own logical content state). Branch/Commit pending maps remain canonical-compatible ownership/inheritance records. Evidence lives in test/evidence/inherited-branches/contract; previous lazy-branches evidence left intact.

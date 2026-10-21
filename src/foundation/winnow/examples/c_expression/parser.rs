@@ -113,27 +113,8 @@ use winnow::error::{ContextError, ErrMode};
 use winnow::prelude::*;
 use winnow::token::{any, one_of, take, take_while};
 
-#[test]
-fn parse_example() {
-    // Check out the [`crate::parser::test`] in this example for more samples.
-    let result = pratt_parser
-        .parse("a*a + b - c")
-        .map(|r| format!("{}", r))
-        .unwrap();
-
-    let expect = "\
-SUB
-  ADD
-    MUL
-      NAME a
-      NAME a
-    NAME b
-  NAME c
-
-(- (+ (* a a) b) c)";
-
-    assert_eq!(result, expect);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/winnow/functions/examples/c_expression/parser/parse_example_116.rs"));
 
 // Abstract syntax tree for an expression
 pub(crate) enum Expr {

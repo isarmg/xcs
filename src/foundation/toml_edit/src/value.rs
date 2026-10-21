@@ -371,22 +371,7 @@ pub(crate) const DEFAULT_TRAILING_VALUE_DECOR: (&str, &str) = (" ", " ");
 pub(crate) const DEFAULT_LEADING_VALUE_DECOR: (&str, &str) = ("", "");
 
 #[cfg(test)]
-#[cfg(feature = "parse")]
-#[cfg(feature = "display")]
-mod tests {
-    use super::*;
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/toml_edit/unit/src/value/tests_373.rs"));
 
-    #[test]
-    fn from_iter_formatting() {
-        let features = ["node".to_owned(), "mouth".to_owned()];
-        let features: Value = features.iter().cloned().collect();
-        assert_eq!(features.to_string(), r#"["node", "mouth"]"#);
-    }
-}
-
-#[test]
-#[cfg(feature = "parse")]
-#[cfg(feature = "display")]
-fn string_roundtrip() {
-    Value::from("hello").to_string().parse::<Value>().unwrap();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/toml_edit/functions/src/value/string_roundtrip_376.rs"));

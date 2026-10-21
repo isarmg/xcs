@@ -1,0 +1,397 @@
+use super::*;
+use std::collections::BTreeSet;
+
+fn partition(
+    map: &serde_json::Map<String, serde_json::Value>,
+) -> Vec<serde_json::Map<String, serde_json::Value>> {
+    state_pages(map).collect()
+}
+
+fn synthetic_map() -> serde_json::Map<String, serde_json::Value> {
+    (0u32..4096)
+        .map(|n| {
+            let key = blake3::hash(&n.to_le_bytes()).to_hex().to_string();
+            (key, serde_json::json!({"data": "immutable".repeat(64)}))
+        })
+        .collect()
+}
+fn hashes(pages: &[serde_json::Map<String, serde_json::Value>]) -> BTreeSet<String> {
+    pages
+        .iter()
+        .map(|page| object_hash("state-page", page).unwrap())
+        .collect()
+}
+
+#[test]
+fn deterministic_random_key_insertion_and_update_reuse_unaffected_pages() {
+    let original = synthetic_map();
+    let pages = partition(&original);
+    assert!(pages.len() > 50);
+    assert!(
+        pages
+            .iter()
+            .all(|page| !page.is_empty() && page.len() <= STATE_PAGE_ENTRIES)
+    );
+    assert_eq!(
+        pages
+            .iter()
+            .flat_map(|p| p.clone())
+            .collect::<serde_json::Map<_, _>>(),
+        original
+    );
+    let before = hashes(&pages);
+    // Choose a non-boundary new key inside a page that cannot overflow.
+    let key = (4096u32..8192)
+        .map(|n| blake3::hash(&n.to_le_bytes()).to_hex().to_string())
+        .find(|key| {
+            blake3::hash(key.as_bytes()).as_bytes()[0] & 31 != 0
+                && pages.iter().any(|page| {
+                    page.len() < STATE_PAGE_ENTRIES
+                        && page.keys().next().unwrap() < key
+                        && key < page.keys().next_back().unwrap()
+                })
+        })
+        .unwrap();
+    let mut changed = original.clone();
+    changed.insert(key.clone(), serde_json::json!("new"));
+    let after = hashes(&partition(&changed));
+    assert_eq!(before.difference(&after).count(), 1);
+    assert_eq!(after.difference(&before).count(), 1);
+    // Values cannot influence boundaries, even when their size changes.
+    changed.insert(key, serde_json::json!("updated".repeat(1024)));
+    let updated = hashes(&partition(&changed));
+    assert_eq!(after.difference(&updated).count(), 1);
+    assert_eq!(updated.difference(&after).count(), 1);
+    // Insertion order has no influence on the content-addressed pages.
+    let reverse = changed.into_iter().rev().collect();
+    assert_eq!(updated, hashes(&partition(&reverse)));
+}
+
+#[test]
+fn adversarial_boundary_free_keys_remain_bounded_and_lossless() {
+    let map = (0..10000)
+        .map(|n| format!("key-{n:05}"))
+        .filter(|key| blake3::hash(key.as_bytes()).as_bytes()[0] & 31 != 0)
+        .take(STATE_PAGE_ENTRIES * 3 + 1)
+        .map(|key| (key, serde_json::json!("value")))
+        .collect::<serde_json::Map<_, _>>();
+    let pages = partition(&map);
+    assert_eq!(
+        pages.iter().map(|p| p.len()).collect::<Vec<_>>(),
+        vec![128, 128, 128, 1]
+    );
+    assert_eq!(
+        pages
+            .into_iter()
+            .flatten()
+            .collect::<serde_json::Map<_, _>>(),
+        map
+    );
+    assert!(partition(&serde_json::Map::new()).is_empty());
+}
+
+fn event_state(count: usize) -> State {
+    State {
+        events: (0..count)
+            .map(|index| Event {
+                sequence: index as u64,
+                operation_id: format!("op-{index}"),
+                kind: "MUTATION".into(),
+                object_id: "retained-history".into(),
+            })
+            .collect(),
+        ..Default::default()
+    }
+}
+
+#[test]
+fn event_pages_remove_scalar_cap_preserve_order_and_append_locality() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        temp.path().join("one"),
+        temp.path().join("two"),
+        temp.path().join("three"),
+    ]);
+    let state = event_state(2000);
+    let maximum = 20_000;
+    assert!(encode_metadata(&state.events, maximum).is_err());
+    let prepared = prepare_snapshot(&state, maximum).unwrap();
+    assert!(!prepared.descriptor.scalars.contains_key("events"));
+    assert!(prepared.descriptor.pages["events"].len() > 1);
+    let hash = prepared.store(&config.disks).unwrap();
+    for disk in &config.disks {
+        assert_eq!(load_snapshot(disk, &hash).unwrap(), state);
+        assert_eq!(
+            read_bytes(&object_path(disk, "snapshot", &hash), MAX_METADATA).unwrap(),
+            encode_metadata(&prepared.descriptor, maximum).unwrap()
+        );
+    }
+    let next = prepare_snapshot(&event_state(2001), maximum).unwrap();
+    let old = &prepared.descriptor.pages["events"];
+    let new = &next.descriptor.pages["events"];
+    assert_eq!(&old[..old.len() - 1], &new[..old.len() - 1]);
+    // Prepared objects remain immutable, and installation still refuses
+    // conflicting disk bytes rather than overwriting or trusting a cache.
+    let page = &old[0];
+    let path = object_path(&config.disks[0], "state-page", page);
+    std::fs::write(&path, b"corrupt").unwrap();
+    assert_eq!(
+        prepared.store(&config.disks).unwrap_err().code(),
+        "OBJECT_COLLISION"
+    );
+    assert_eq!(std::fs::read(path).unwrap(), b"corrupt");
+}
+
+#[test]
+fn current_snapshot_and_candidate_are_strict_unversioned_structures() {
+    let prepared = prepare_snapshot(&State::default(), MAX_METADATA).unwrap();
+    let mut snapshot = serde_json::to_value(&prepared.descriptor).unwrap();
+    assert!(snapshot.get("format_version").is_none());
+    snapshot["format_version"] = serde_json::json!(2);
+    assert!(serde_json::from_value::<Snapshot>(snapshot).is_err());
+    let candidate = Candidate {
+        pool_id: new_id("pool"),
+        sequence: 1,
+        transaction_id: new_id("tx"),
+        operation_id: new_id("op"),
+        request_digest: "a".repeat(64),
+        previous_snapshot: None,
+        snapshot_hash: prepared.hash,
+        versions: Vec::new(),
+        metadata_disk_ids: Vec::new(),
+        history_manifest_hashes: BTreeMap::new(),
+    };
+    let mut candidate = serde_json::to_value(candidate).unwrap();
+    assert!(candidate.get("format_version").is_none());
+    candidate["format_version"] = serde_json::json!(2);
+    assert!(serde_json::from_value::<Candidate>(candidate).is_err());
+    let config = Config::development(["a".into(), "b".into(), "c".into()]);
+    let mut config = serde_json::to_value(config).unwrap();
+    assert!(config.get("format_version").is_none());
+    config["format_version"] = serde_json::json!(2);
+    assert!(serde_json::from_value::<Config>(config).is_err());
+}
+
+#[test]
+fn scalar_event_snapshots_are_rejected_without_rewriting_evidence() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        temp.path().join("one"),
+        temp.path().join("two"),
+        temp.path().join("three"),
+    ]);
+    let disk = &config.disks[0];
+    let state = event_state(1);
+    let mut descriptor = prepare_snapshot(&state, MAX_METADATA).unwrap().descriptor;
+    descriptor.pages.remove("events");
+    descriptor.scalars.insert(
+        "events".into(),
+        serde_json::to_value(&state.events).unwrap(),
+    );
+    let hash = store_object(disk, "snapshot", &descriptor).unwrap();
+    let path = object_path(disk, "snapshot", &hash);
+    let bytes = std::fs::read(&path).unwrap();
+    assert_eq!(
+        load_snapshot(disk, &hash).unwrap_err().code(),
+        "FORMAT_UNSUPPORTED"
+    );
+    assert_eq!(std::fs::read(path).unwrap(), bytes);
+    descriptor.scalars.remove("events");
+    let absent_hash = store_object(disk, "snapshot", &descriptor).unwrap();
+    assert_eq!(
+        load_snapshot(disk, &absent_hash).unwrap_err().code(),
+        "FORMAT_UNSUPPORTED"
+    );
+}
+
+#[test]
+fn event_snapshot_rejects_gaps_and_ambiguous_scalar_page_fields() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        temp.path().join("one"),
+        temp.path().join("two"),
+        temp.path().join("three"),
+    ]);
+    let disk = &config.disks[0];
+    let prepared = prepare_snapshot(&event_state(1), MAX_METADATA).unwrap();
+    prepared.store(std::slice::from_ref(disk)).unwrap();
+    let mut descriptor = prepared.descriptor;
+    let original_pages = descriptor.pages["events"].clone();
+    descriptor
+        .pages
+        .get_mut("events")
+        .unwrap()
+        .extend(original_pages);
+    let duplicate_hash = store_object(disk, "snapshot", &descriptor).unwrap();
+    assert_eq!(
+        load_snapshot(disk, &duplicate_hash).unwrap_err().code(),
+        "OBJECT_CORRUPT"
+    );
+    let bad_page = serde_json::json!({"00000000000000000001": event_state(1).events[0]});
+    descriptor.pages.insert(
+        "events".into(),
+        vec![store_object(disk, "state-page", &bad_page).unwrap()],
+    );
+    let hash = store_object(disk, "snapshot", &descriptor).unwrap();
+    assert_eq!(
+        load_snapshot(disk, &hash).unwrap_err().code(),
+        "OBJECT_CORRUPT"
+    );
+    descriptor
+        .scalars
+        .insert("events".into(), serde_json::json!([]));
+    let hash = store_object(disk, "snapshot", &descriptor).unwrap();
+    assert_eq!(
+        load_snapshot(disk, &hash).unwrap_err().code(),
+        "OBJECT_CORRUPT"
+    );
+}
+
+fn assert_prepared_snapshot_identity(state: &State) {
+    let reference = prepare_snapshot_reference(state, MAX_METADATA).unwrap();
+    let actual = prepare_snapshot(state, MAX_METADATA).unwrap();
+    assert_eq!(actual.hash, reference.hash);
+    assert_eq!(
+        canonical_json(&actual.descriptor).unwrap(),
+        canonical_json(&reference.descriptor).unwrap()
+    );
+    let objects = |snapshot: PreparedSnapshot| {
+        let mut objects = snapshot
+            .objects
+            .into_iter()
+            .map(|object| ((object.kind, object.hash), object.bytes))
+            .collect::<Vec<_>>();
+        objects.sort();
+        objects
+    };
+    assert_eq!(objects(actual), objects(reference));
+}
+
+#[test]
+fn typed_snapshot_matches_full_value_encoder_exactly() {
+    // Empty required maps and omitted optional maps have different wire rules.
+    assert_prepared_snapshot_identity(&State::default());
+    let mut state = event_state(2000);
+    state.sequence = u64::MAX;
+    state.business_generation = u64::MAX - 1;
+    state.topology_generation = u64::MAX - 2;
+    state
+        .file_selection_generations
+        .insert("unicode-文件".into(), u64::MAX);
+    state
+        .directory_selection_generations
+        .insert("directory".into(), 9_007_199_254_740_992);
+    state.file_notes = synthetic_map()
+        .into_iter()
+        .map(|(key, _)| (key, "note".into()))
+        .collect();
+    state
+        .file_names
+        .insert("\u{10000}".into(), "supplementary".into());
+    state.file_names.insert("\u{e000}".into(), "bmp".into());
+    for auth in [
+        None,
+        Some(serde_json::json!({})),
+        Some(serde_json::json!({"nested": {"roles": ["reader"]}, "name": "用户"})),
+        Some(serde_json::json!([{"nested": true}, null, "scalar"])),
+        Some(serde_json::json!("legacy scalar")),
+        Some(serde_json::json!(null)),
+    ] {
+        state.control_auth = auth;
+        assert_prepared_snapshot_identity(&state);
+    }
+}
+
+#[test]
+fn typed_snapshot_only_buffers_one_page_of_borrowed_entries() {
+    let state = State {
+        content_states: (0..20_000)
+            .map(|i| (format!("version-{i:020}"), "AVAILABLE".into()))
+            .collect(),
+        ..event_state(20_000)
+    };
+    assert_prepared_snapshot_identity(&state);
+    let peak = snapshot::SNAPSHOT_PEAK_PAGE_ENTRIES.with(|peak| peak.get());
+    assert!(
+        peak > 0 && peak <= STATE_PAGE_ENTRIES,
+        "peak buffered entries: {peak}"
+    );
+    // The previous encoder first materialized both whole collections as JSON,
+    // before page clones. This is structural evidence, not an RSS/timing claim.
+    let old_value = serde_json::to_value(&state).unwrap();
+    assert_eq!(
+        old_value["content_states"].as_object().unwrap().len(),
+        20_000
+    );
+    assert_eq!(old_value["events"].as_array().unwrap().len(), 20_000);
+}
+
+#[test]
+fn alternate_page_partitions_preserve_exact_bound_current_snapshots() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = Config::development([
+        temp.path().join("one"),
+        temp.path().join("two"),
+        temp.path().join("three"),
+    ]);
+    let disk = &config.disks[0];
+    let state = State {
+        sequence: 123,
+        business_generation: 19,
+        events: event_state(300).events,
+        content_states: synthetic_map()
+            .into_iter()
+            .map(|(key, _)| key)
+            .enumerate()
+            .map(|(n, key)| (key, if n % 3 == 0 { "PURGED" } else { "AVAILABLE" }.into()))
+            .collect(),
+        file_notes: [("文件".into(), "preserved note".into())].into(),
+        control_auth: Some(serde_json::json!({"nested": {"roles": ["reader"]}})),
+        ..Default::default()
+    };
+    let value = serde_json::to_value(&state).unwrap();
+    let mut alternate = Snapshot {
+        sequence: state.sequence,
+        pages: BTreeMap::new(),
+        scalars: serde_json::Map::new(),
+    };
+    for (field, value) in value.as_object().unwrap() {
+        if let Some(map) = value.as_object() {
+            let entries = map.iter().collect::<Vec<_>>();
+            let pages = entries
+                .chunks(STATE_PAGE_ENTRIES)
+                .map(|chunk| {
+                    let page = chunk
+                        .iter()
+                        .map(|(k, v)| ((*k).clone(), (*v).clone()))
+                        .collect::<serde_json::Map<_, _>>();
+                    store_object(disk, "state-page", &page).unwrap()
+                })
+                .collect();
+            alternate.pages.insert(field.clone(), pages);
+        } else {
+            alternate.scalars.insert(field.clone(), value.clone());
+        }
+    }
+    // Different map partitions remain valid current-format evidence, but
+    // scalar event arrays are no longer an accepted representation.
+    alternate.scalars.remove("events");
+    let modern = prepare_snapshot(&state, MAX_METADATA).unwrap();
+    alternate
+        .pages
+        .insert("events".into(), modern.descriptor.pages["events"].clone());
+    let modern_hash = modern.store(std::slice::from_ref(disk)).unwrap();
+    let alternate_hash = store_object(disk, "snapshot", &alternate).unwrap();
+    assert_ne!(alternate_hash, modern_hash);
+    assert_eq!(load_snapshot(disk, &alternate_hash).unwrap(), state);
+    assert_eq!(load_snapshot(disk, &modern_hash).unwrap(), state);
+    // Writing a later state must not change either retained snapshot.
+    let mut next = state.clone();
+    next.sequence += 1;
+    next.content_states
+        .insert("new-version".into(), "MIGRATED".into());
+    let next_hash = store_snapshot(std::slice::from_ref(disk), &next).unwrap();
+    assert_eq!(load_snapshot(disk, &next_hash).unwrap(), next);
+    assert_eq!(load_snapshot(disk, &alternate_hash).unwrap(), state);
+    assert_eq!(load_snapshot(disk, &modern_hash).unwrap(), state);
+}

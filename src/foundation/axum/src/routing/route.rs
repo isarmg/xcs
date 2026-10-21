@@ -233,12 +233,4 @@ impl Future for InfallibleRouteFuture {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn traits() {
-        use crate::test_helpers::*;
-        assert_send::<Route<()>>();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum/unit/src/routing/route/tests_235.rs"));

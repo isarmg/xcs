@@ -219,8 +219,5 @@ pub mod log {
     pub use crate::_internal_noop_log as trace;
 }
 
-#[test]
-fn test_logging() {
-    // This should compile on all combinations of features
-    crate::log::info!("Hello World");
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/lib/test_logging_222.rs"));

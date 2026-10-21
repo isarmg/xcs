@@ -46,29 +46,13 @@ pub(crate) mod message;
 pub(crate) mod persist;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/rustls/modules/src/msgs/handshake_test.rs"]
 mod handshake_test;
 
 pub mod ffdhe_groups;
 #[cfg(test)]
+#[path = "../../../../../test/foundation/rustls/modules/src/msgs/message_test.rs"]
 mod message_test;
 
 #[cfg(test)]
-mod tests {
-    use super::codec::Reader;
-    use super::message::{Message, OutboundOpaqueMessage};
-
-    #[test]
-    fn smoketest() {
-        let bytes = include_bytes!("../testdata/handshake-test.1.bin");
-        let mut r = Reader::init(bytes);
-
-        while r.any_left() {
-            let m = OutboundOpaqueMessage::read(&mut r).unwrap();
-
-            let out = m.clone().encode();
-            assert!(!out.is_empty());
-
-            Message::try_from(m.into_plain_message()).unwrap();
-        }
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/unit/src/msgs/mod/tests_55.rs"));

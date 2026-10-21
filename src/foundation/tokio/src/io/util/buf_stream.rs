@@ -197,11 +197,4 @@ impl<RW: AsyncRead + AsyncWrite> AsyncBufRead for BufStream<RW> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn assert_unpin() {
-        crate::is_unpin::<BufStream<()>>();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/unit/src/io/util/buf_stream/tests_199.rs"));

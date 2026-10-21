@@ -83,12 +83,4 @@ pub(crate) fn compile<'a, F: Json>(
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::tests_util;
-    use serde_json::json;
-
-    #[test]
-    fn location() {
-        tests_util::assert_schema_location(&json!({"minItems": 1}), &json!([]), "/minItems");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/jsonschema/unit/src/keywords/min_items/tests_85.rs"));

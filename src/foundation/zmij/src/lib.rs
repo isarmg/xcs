@@ -73,6 +73,7 @@
 #[cfg(all(target_arch = "x86_64", target_feature = "sse2", not(miri)))]
 mod stdarch_x86;
 #[cfg(test)]
+#[path = "../../../../test/foundation/zmij/modules/src/tests.rs"]
 mod tests;
 mod traits;
 

@@ -11,28 +11,4 @@ impl<T: Debug, const N: usize> Debug for Set<T, N> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn debugs_set() {
-        let mut m: Set<String, 10> = Set::new();
-        m.insert("one".to_string());
-        m.insert("two".to_string());
-        assert_eq!(r#"{"one", "two"}"#, format!("{:?}", m));
-    }
-
-    #[test]
-    fn debug_alternate_set() {
-        let mut m: Set<String, 10> = Set::new();
-        m.insert("one".to_string());
-        m.insert("two".to_string());
-        assert_eq!(
-            r#"{
-    "one",
-    "two",
-}"#,
-            format!("{:#?}", m)
-        );
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/micromap/unit/src/set/debug/tests_13.rs"));

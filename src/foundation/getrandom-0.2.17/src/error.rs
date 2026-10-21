@@ -177,13 +177,4 @@ fn internal_desc(error: Error) -> Option<&'static str> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::Error;
-    use core::mem::size_of;
-
-    #[test]
-    fn test_size() {
-        assert_eq!(size_of::<Error>(), 4);
-        assert_eq!(size_of::<Result<(), Error>>(), 4);
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/getrandom-0.2.17/unit/src/error/tests_179.rs"));

@@ -111,6 +111,7 @@ pub extern crate alloc;
 extern crate std;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/smallvec/modules/src/tests.rs"]
 mod tests;
 
 #[cfg(feature = "drain_keep_rest")]

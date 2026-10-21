@@ -15,3 +15,23 @@ rustix.workspace = true
 sqlx.workspace = true
 tempfile.workspace = true
 time = { version = "=0.3.55", features = ["formatting", "parsing"], path = "../foundation/time"}
+
+[[test]]
+name = "branch_alias_operations"
+path = "../../test/engine/integration/branch_alias_operations.rs"
+
+[[test]]
+name = "directory_selection_limits"
+path = "../../test/engine/integration/directory_selection_limits.rs"
+
+[[test]]
+name = "workspace_commit_replay"
+path = "../../test/engine/integration/workspace_commit_replay.rs"
+
+[[test]]
+name = "workspace_namespace_preconditions"
+path = "../../test/engine/integration/workspace_namespace_preconditions.rs"
+
+[[test]]
+name = "workspace_upload_retries"
+path = "../../test/engine/integration/workspace_upload_retries.rs"

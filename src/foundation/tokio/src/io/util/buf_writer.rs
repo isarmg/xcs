@@ -300,11 +300,4 @@ impl<W: fmt::Debug> fmt::Debug for BufWriter<W> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn assert_unpin() {
-        crate::is_unpin::<BufWriter<()>>();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/unit/src/io/util/buf_writer/tests_302.rs"));

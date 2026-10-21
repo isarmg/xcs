@@ -58,12 +58,4 @@ pub fn parse<'s>(_input: &mut &'s str) -> ModalResult<&'s str, CustomError<&'s s
 fn main() {}
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let err = parse.parse_next(&mut "").unwrap_err();
-        assert!(matches!(err, ErrMode::Backtrack(CustomError::MyError)));
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/winnow/unit/examples/custom_error/tests_60.rs"));

@@ -888,4 +888,5 @@ async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiE
 }
 
 #[cfg(test)]
+#[path = "../../../test/server/unit/tests.rs"]
 mod tests;

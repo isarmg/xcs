@@ -132,6 +132,7 @@ pub mod rsa;
 pub mod signature;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/ring/unit/tests/mod.rs"]
 mod tests;
 
 mod sealed {

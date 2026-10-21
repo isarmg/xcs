@@ -451,6 +451,13 @@ runtime 是统一工作区特性图中 normal 边可达的运行候选；compile
 | zerocopy-derive@0.8.63 | src/foundation/zerocopy-derive | Not activated by any workspace normal/build/dev dependency tree, including all targets; removed with all dependency and feature forwarding edges. | 169 / 1910272 |
 | zlib-rs@0.6.8 | src/foundation/zlib-rs | Not activated by any workspace normal/build/dev dependency tree, including all targets; removed with all dependency and feature forwarding edges. | 48 / 779026 |
 
+## 根测试目录的来源核算
+
+包内当前文件 6981 个，另有 279 个原始身份所属的外置测试文件 3939 个、40630177 字节；当前来源文件总计 10920 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。
+
+JSON external_tests 按原包目录和原始身份登记精确根目录、原路径、当前路径及逐文件摘要；external_test_mappings_sha256 固定当前映射文档。refresh 先验证外置清单，不能静默吞入新增文件或因目录迁移缩减来源核算。独立说明见 docs/EXTERNAL_TEST_SOURCES.md。
+
+
 ## 完整性、安全与验收
 
 共 326 个活动源码树、76 个已移除来源、2 个已升级替换来源，5 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。

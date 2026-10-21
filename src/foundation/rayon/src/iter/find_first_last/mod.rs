@@ -3,6 +3,7 @@ use std::cell::Cell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/rayon/modules/src/iter/find_first_last/test.rs"]
 mod test;
 
 // The key optimization for find_first is that a consumer can stop its search if

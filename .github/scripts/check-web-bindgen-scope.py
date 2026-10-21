@@ -49,7 +49,7 @@ def check():
         fixture_manifest.write_text('[package]\nname="web-binding-contract-fixture"\nversion="0.0.0"\nedition="2021"\n'
                                     '[workspace]\n[lib]\ncrate-type=["cdylib"]\n[dependencies]\nwasm-bindgen={path="' +
                                     str(ROOT / 'src/foundation/wasm-bindgen') + '"}\n')
-        (fixture / 'src/lib.rs').write_text((ROOT / 'tools/web-bindings/tests/fixtures/contract.rs').read_text())
+        (fixture / 'src/lib.rs').write_text((ROOT / 'test/tools/web-bindings/fixtures/contract.rs').read_text())
         cargo('generate-lockfile', '--offline', '--manifest-path', str(fixture_manifest))
         target = ROOT / 'target/web-binding-contract'
         cargo('build', '--locked', '--offline', '--release', '--target', 'wasm32-unknown-unknown',

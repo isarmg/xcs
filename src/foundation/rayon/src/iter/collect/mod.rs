@@ -5,6 +5,7 @@ use self::consumer::CollectConsumer;
 use self::consumer::CollectResult;
 use super::unzip::unzip_indexed;
 
+#[path = "../../../../../../test/foundation/rayon/modules/src/iter/collect/test.rs"]
 mod test;
 
 /// Collects the results of the exact iterator into the specified vector.

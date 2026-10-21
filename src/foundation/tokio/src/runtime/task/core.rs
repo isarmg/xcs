@@ -586,8 +586,5 @@ impl Trailer {
     }
 }
 
-#[test]
-
-fn header_lte_cache_line() {
-    assert!(std::mem::size_of::<Header>() <= 8 * std::mem::size_of::<*const ()>());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/runtime/task/core/header_lte_cache_line_589.rs"));

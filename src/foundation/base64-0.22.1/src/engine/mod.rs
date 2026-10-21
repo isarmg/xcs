@@ -14,9 +14,11 @@ use alloc::{string::String, vec};
 pub mod general_purpose;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/base64-0.22.1/modules/src/engine/naive.rs"]
 mod naive;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/base64-0.22.1/modules/src/engine/tests.rs"]
 mod tests;
 
 pub use general_purpose::{GeneralPurpose, GeneralPurposeConfig};

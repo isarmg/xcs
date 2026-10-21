@@ -60,50 +60,8 @@ macro_rules! delegate_indexed_iterator {
     }
 }
 
-#[test]
-fn unindexed_example() {
-    use crate::collections::btree_map::IntoIter;
-    use crate::iter::plumbing::*;
-    use crate::prelude::*;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/delegate/unindexed_example_63.rs"));
 
-    use std::collections::BTreeMap;
-
-    struct MyIntoIter<T: Ord + Send, U: Send> {
-        inner: IntoIter<T, U>,
-    }
-
-    delegate_iterator! {
-        MyIntoIter<T, U> => (T, U),
-        impl<T: Ord + Send, U: Send>
-    }
-
-    let map = BTreeMap::from([(1, 'a'), (2, 'b'), (3, 'c')]);
-    let iter = MyIntoIter {
-        inner: map.into_par_iter(),
-    };
-    let vec: Vec<_> = iter.map(|(k, _)| k).collect();
-    assert_eq!(vec, &[1, 2, 3]);
-}
-
-#[test]
-fn indexed_example() {
-    use crate::iter::plumbing::*;
-    use crate::prelude::*;
-    use crate::vec::IntoIter;
-
-    struct MyIntoIter<T: Send> {
-        inner: IntoIter<T>,
-    }
-
-    delegate_indexed_iterator! {
-        MyIntoIter<T> => T,
-        impl<T: Send>
-    }
-
-    let iter = MyIntoIter {
-        inner: vec![1, 2, 3].into_par_iter(),
-    };
-    let mut vec = vec![];
-    iter.collect_into_vec(&mut vec);
-    assert_eq!(vec, &[1, 2, 3]);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rayon/functions/src/delegate/indexed_example_88.rs"));

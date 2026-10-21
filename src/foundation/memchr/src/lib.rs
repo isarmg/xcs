@@ -211,6 +211,7 @@ mod macros;
 
 #[cfg(test)]
 #[macro_use]
+#[path = "../../../../test/foundation/memchr/modules/src/tests/mod.rs"]
 mod tests;
 
 pub mod arch;

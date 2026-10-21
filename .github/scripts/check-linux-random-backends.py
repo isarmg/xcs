@@ -19,52 +19,14 @@ DIAGNOSTIC = "this getrandom backend was retired"
 
 def consumer(version):
     old = version.startswith("0.2")
-    code = '''//! Isolated entropy consumer boundary and error checks.
-use core::mem::MaybeUninit;
-#[test]
-fn boundaries() {
-    assert!(getrandom::FILL(&mut []).is_ok());
-    for n in [1, 7, 256, 4096, 65537] {
-        let mut b = vec![0xA5; n + 2];
-        let result = getrandom::FILL(&mut b[1..n + 1]);
-        #[cfg(not(getrandom_backend = "unsupported"))]
-        result.unwrap();
-        #[cfg(getrandom_backend = "unsupported")]
-        assert!(result.is_err());
-        assert_eq!(b[0], 0xA5);
-        assert_eq!(b[n + 1], 0xA5);
-        let mut u = vec![MaybeUninit::uninit(); n];
-        let result = getrandom::UNINIT(&mut u);
-        #[cfg(not(getrandom_backend = "unsupported"))]
-        assert_eq!(result.unwrap().len(), n);
-        #[cfg(getrandom_backend = "unsupported")]
-        assert!(result.is_err());
-    }
-}
-'''.replace("FILL", "getrandom" if old else "fill").replace(
+    code = (ROOT / "test/ci/fixtures/linux-random-boundaries.rs").read_text().replace("FILL", "getrandom" if old else "fill").replace(
         "UNINIT", "getrandom_uninit" if old else "fill_uninit"
     )
     if old:
         code = re.sub(r'        #\[cfg\(not\(getrandom_backend = "unsupported"\)\)\]\n', "", code)
         code = re.sub(r'        #\[cfg\(getrandom_backend = "unsupported"\)\]\n        assert!\(result.is_err\(\)\);\n', "", code)
     else:
-        code += '''
-#[cfg(getrandom_backend = "custom")]
-#[no_mangle]
-unsafe fn __getrandom_v03_custom(dest: *mut u8, len: usize) -> Result<(), getrandom::Error> {
-    if len == 13 { return Err(getrandom::Error::UNSUPPORTED); }
-    unsafe { core::ptr::write_bytes(dest, 0x6D, len); }
-    Ok(())
-}
-#[cfg(getrandom_backend = "custom")]
-#[test]
-fn custom_exact_and_error() {
-    let mut b = [0; 7];
-    getrandom::fill(&mut b).unwrap();
-    assert_eq!(b, [0x6D; 7]);
-    assert_eq!(getrandom::fill(&mut [0; 13]), Err(getrandom::Error::UNSUPPORTED));
-}
-'''
+        code += (ROOT / "test/ci/fixtures/linux-random-custom.rs").read_text()
         if version.startswith("0.4"):
             code = code.replace("#[no_mangle]", "#[unsafe(no_mangle)]")
     return code

@@ -83,43 +83,11 @@ unsafe fn match_header_value_char_16_sse(buf: &[u8]) -> usize {
     (!res).trailing_zeros() as usize
 }
 
-#[test]
-fn sse_code_matches_uri_chars_table() {
-    if !is_x86_feature_detected!("sse4.2") {
-        return;
-    }
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/httparse/functions/src/simd/sse42/sse_code_matches_uri_chars_table_86.rs"));
 
-    #[allow(clippy::undocumented_unsafe_blocks)]
-    unsafe {
-        assert!(byte_is_allowed(b'_', match_uri_vectored));
-
-        for (b, allowed) in crate::URI_MAP.iter().cloned().enumerate() {
-            assert_eq!(
-                byte_is_allowed(b as u8, match_uri_vectored), allowed,
-                "byte_is_allowed({:?}) should be {:?}", b, allowed,
-            );
-        }
-    }
-}
-
-#[test]
-fn sse_code_matches_header_value_chars_table() {
-    if !is_x86_feature_detected!("sse4.2") {
-        return;
-    }
-
-    #[allow(clippy::undocumented_unsafe_blocks)]
-    unsafe {
-        assert!(byte_is_allowed(b'_', match_header_value_vectored));
-
-        for (b, allowed) in crate::HEADER_VALUE_MAP.iter().cloned().enumerate() {
-            assert_eq!(
-                byte_is_allowed(b as u8, match_header_value_vectored), allowed,
-                "byte_is_allowed({:?}) should be {:?}", b, allowed,
-            );
-        }
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/httparse/functions/src/simd/sse42/sse_code_matches_header_value_chars_table_105.rs"));
 
 #[allow(clippy::missing_safety_doc)]
 #[cfg(test)]

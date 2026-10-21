@@ -940,7 +940,5 @@ impl Display for Backtrace {
     }
 }
 
-#[test]
-fn check_auto_traits() {
-    static_assertions::assert_impl_all!(Error: Send, Sync, Unpin);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/clap_builder/functions/src/error/mod/check_auto_traits_943.rs"));

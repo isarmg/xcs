@@ -43,40 +43,11 @@ where
     <(CowWrap<'de>, CowWrap<'de>)>::deserialize(deserializer).map(|x| (x.0.0, x.1.0))
 }
 
-#[test]
-fn test_option() {
-    #[derive(Debug, PartialEq, serde::Serialize, serde::Deserialize)]
-    struct Demo<'s>(#[serde(borrow, deserialize_with = "option_of_cow")] Option<Cow<'s, str>>);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/serde_borrow_de_utils/test_option_46.rs"));
 
-    let data_orig = Demo(Some("Hello world".into()));
-    let json = serde_json::to_string(&data_orig).expect("serialize");
-    let data_new = serde_json::from_str::<Demo>(&json).expect("deserialize");
-    assert_eq!(data_orig, data_new);
-    assert!(matches!(data_new.0, Some(Cow::Borrowed(_))));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/serde_borrow_de_utils/test_tuple_58.rs"));
 
-#[test]
-fn test_tuple() {
-    #[derive(Debug, PartialEq, serde::Serialize, serde::Deserialize)]
-    struct Demo<'s>(
-        #[serde(borrow, deserialize_with = "tuple_of_cow")] (Cow<'s, str>, Cow<'s, str>),
-    );
-
-    let data_orig = Demo(("Hello world".into(), "Hello earth".into()));
-    let json = serde_json::to_string(&data_orig).expect("serialize");
-    let data_new = serde_json::from_str::<Demo>(&json).expect("deserialize");
-    assert_eq!(data_orig, data_new);
-    assert!(matches!(data_new.0, (Cow::Borrowed(_), Cow::Borrowed(_))));
-}
-
-#[test]
-fn test_array() {
-    #[derive(Debug, PartialEq, serde::Serialize, serde::Deserialize)]
-    struct Demo<'s>(#[serde(borrow, deserialize_with = "array_of_cow")] [Cow<'s, str>; 1]);
-
-    let data_orig = Demo(["Hello world".into()]);
-    let json = serde_json::to_string(&data_orig).expect("serialize");
-    let data_new = serde_json::from_str::<Demo>(&json).expect("deserialize");
-    assert_eq!(data_orig, data_new);
-    assert!(matches!(data_new.0, [Cow::Borrowed(_)]));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/serde_borrow_de_utils/test_array_72.rs"));

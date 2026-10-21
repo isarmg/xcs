@@ -96,65 +96,7 @@ mod cache {
     }
 
     #[cfg(test)]
-    mod tests {
-        use std::vec;
-
-        use super::*;
-        use crate::server::StoresServerSessions;
-
-        #[test]
-        fn test_serversessionmemorycache_accepts_put() {
-            let c = ServerSessionMemoryCache::new(4);
-            assert!(c.put(vec![0x01], vec![0x02]));
-        }
-
-        #[test]
-        fn test_serversessionmemorycache_persists_put() {
-            let c = ServerSessionMemoryCache::new(4);
-            assert!(c.put(vec![0x01], vec![0x02]));
-            assert_eq!(c.get(&[0x01]), Some(vec![0x02]));
-            assert_eq!(c.get(&[0x01]), Some(vec![0x02]));
-        }
-
-        #[test]
-        fn test_serversessionmemorycache_overwrites_put() {
-            let c = ServerSessionMemoryCache::new(4);
-            assert!(c.put(vec![0x01], vec![0x02]));
-            assert!(c.put(vec![0x01], vec![0x04]));
-            assert_eq!(c.get(&[0x01]), Some(vec![0x04]));
-        }
-
-        /// After five sessions are put into a cache of size 2, exactly the
-        /// two most recently added sessions remain.
-        #[test]
-        fn test_serversessionmemorycache_drops_to_maintain_size_invariant() {
-            let c = ServerSessionMemoryCache::new(2);
-            assert!(c.put(vec![0x01], vec![0x02]));
-            assert!(c.put(vec![0x03], vec![0x04]));
-            assert!(c.put(vec![0x05], vec![0x06]));
-            assert!(c.put(vec![0x07], vec![0x08]));
-            assert!(c.put(vec![0x09], vec![0x0a]));
-
-            assert_eq!(c.get(&[0x01]), None);
-            assert_eq!(c.get(&[0x03]), None);
-            assert_eq!(c.get(&[0x05]), None);
-            assert_eq!(c.get(&[0x07]), Some(vec![0x08]));
-            assert_eq!(c.get(&[0x09]), Some(vec![0x0a]));
-        }
-
-        /// A cache of size 1 keeps the session put into it, and a second
-        /// put replaces it.
-        #[test]
-        fn test_serversessionmemorycache_size_one_retains_session() {
-            let c = ServerSessionMemoryCache::new(1);
-            assert!(c.put(vec![0x01], vec![0x02]));
-            assert_eq!(c.get(&[0x01]), Some(vec![0x02]));
-
-            assert!(c.put(vec![0x03], vec![0x04]));
-            assert_eq!(c.get(&[0x01]), None);
-            assert_eq!(c.get(&[0x03]), Some(vec![0x04]));
-        }
-    }
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/unit/src/server/handy/tests_98.rs"));
 }
 
 #[cfg(any(feature = "std"))]
@@ -278,92 +220,11 @@ mod sni_resolver {
     }
 
     #[cfg(test)]
-    mod tests {
-        use super::*;
-        use crate::server::ResolvesServerCert;
-
-        #[test]
-        fn test_resolvesservercertusingsni_requires_sni() {
-            let rscsni = ResolvesServerCertUsingSni::new();
-            assert!(
-                rscsni
-                    .resolve(ClientHello {
-                        server_name: &None,
-                        signature_schemes: &[],
-                        alpn: None,
-                        server_cert_types: None,
-                        client_cert_types: None,
-                        cipher_suites: &[],
-                        certificate_authorities: None,
-                        named_groups: None,
-                    })
-                    .is_none()
-            );
-        }
-
-        #[test]
-        fn test_resolvesservercertusingsni_handles_unknown_name() {
-            let rscsni = ResolvesServerCertUsingSni::new();
-            let name = DnsName::try_from("hello.com")
-                .unwrap()
-                .to_owned();
-            assert!(
-                rscsni
-                    .resolve(ClientHello {
-                        server_name: &Some(name),
-                        signature_schemes: &[],
-                        alpn: None,
-                        server_cert_types: None,
-                        client_cert_types: None,
-                        cipher_suites: &[],
-                        certificate_authorities: None,
-                        named_groups: None,
-                    })
-                    .is_none()
-            );
-        }
-    }
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/unit/src/server/handy/tests_280.rs"));
 }
 
 #[cfg(any(feature = "std"))]
 pub use sni_resolver::ResolvesServerCertUsingSni;
 
 #[cfg(test)]
-mod tests {
-    use std::vec;
-
-    use super::*;
-    use crate::server::{ProducesTickets, StoresServerSessions};
-
-    #[test]
-    fn test_noserversessionstorage_drops_put() {
-        let c = NoServerSessionStorage {};
-        assert!(!c.put(vec![0x01], vec![0x02]));
-    }
-
-    #[test]
-    fn test_noserversessionstorage_denies_gets() {
-        let c = NoServerSessionStorage {};
-        c.put(vec![0x01], vec![0x02]);
-        assert_eq!(c.get(&[]), None);
-        assert_eq!(c.get(&[0x01]), None);
-        assert_eq!(c.get(&[0x02]), None);
-    }
-
-    #[test]
-    fn test_noserversessionstorage_denies_takes() {
-        let c = NoServerSessionStorage {};
-        assert_eq!(c.take(&[]), None);
-        assert_eq!(c.take(&[0x01]), None);
-        assert_eq!(c.take(&[0x02]), None);
-    }
-
-    #[test]
-    fn test_neverproducestickets_does_nothing() {
-        let npt = NeverProducesTickets {};
-        assert!(!npt.enabled());
-        assert_eq!(0, npt.lifetime());
-        assert_eq!(None, npt.encrypt(&[]));
-        assert_eq!(None, npt.decrypt(&[]));
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/unit/src/server/handy/tests_331.rs"));

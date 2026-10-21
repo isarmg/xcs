@@ -468,53 +468,26 @@ impl TypeKind {
     }
 }
 
-#[test]
-fn is_invalid_type_param_valid() {
-    let ty = Type::new(Some("foo".into()), None, TypeKind::TypeParam, false);
-    assert!(!ty.is_invalid_type_param());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_471.rs"));
 
-#[test]
-fn is_invalid_type_param_valid_underscore_and_numbers() {
-    let ty = Type::new(
-        Some("_foo123456789_".into()),
-        None,
-        TypeKind::TypeParam,
-        false,
-    );
-    assert!(!ty.is_invalid_type_param());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_underscore_and_numbers_477.rs"));
 
-#[test]
-fn is_invalid_type_param_valid_unnamed_kind() {
-    let ty = Type::new(Some("foo".into()), None, TypeKind::Void, false);
-    assert!(!ty.is_invalid_type_param());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_unnamed_kind_488.rs"));
 
-#[test]
-fn is_invalid_type_param_invalid_start() {
-    let ty = Type::new(Some("1foo".into()), None, TypeKind::TypeParam, false);
-    assert!(ty.is_invalid_type_param());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_start_494.rs"));
 
-#[test]
-fn is_invalid_type_param_invalid_remaining() {
-    let ty = Type::new(Some("foo-".into()), None, TypeKind::TypeParam, false);
-    assert!(ty.is_invalid_type_param());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_remaining_500.rs"));
 
-#[test]
-#[should_panic(expected = "Unnamed named type")]
-fn is_invalid_type_param_unnamed() {
-    let ty = Type::new(None, None, TypeKind::TypeParam, false);
-    assert!(ty.is_invalid_type_param());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_unnamed_506.rs"));
 
-#[test]
-fn is_invalid_type_param_empty_name() {
-    let ty = Type::new(Some(String::new()), None, TypeKind::TypeParam, false);
-    assert!(ty.is_invalid_type_param());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_empty_name_513.rs"));
 
 impl TemplateParameters for Type {
     fn self_template_params(&self, ctx: &BindgenContext) -> Vec<TypeId> {

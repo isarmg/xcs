@@ -302,60 +302,7 @@ where
 }
 
 #[cfg(test)]
-mod fmt_tests {
-    use super::*;
-    use crate::consts::*;
-    use core::fmt::Write;
-
-    struct LimitedString {
-        len: usize,
-        buffer: [u8; 64],
-    }
-
-    impl LimitedString {
-        fn new() -> Self {
-            Self {
-                len: 0,
-                buffer: [0u8; 64],
-            }
-        }
-
-        fn as_str(&self) -> &str {
-            core::str::from_utf8(&self.buffer[..self.len]).unwrap()
-        }
-    }
-
-    impl core::fmt::Write for LimitedString {
-        fn write_str(&mut self, s: &str) -> core::fmt::Result {
-            self.buffer[self.len..self.len + s.len()].copy_from_slice(s.as_bytes());
-            self.len += s.len();
-            Ok(())
-        }
-    }
-
-    fn assert_binary_fmt<U: Unsigned + core::fmt::Binary>(expected: &str) {
-        let mut s = LimitedString::new();
-        write!(&mut s, "{:b}", U::default()).unwrap();
-        assert_eq!(s.as_str(), expected);
-    }
-
-    #[test]
-    fn binary() {
-        assert_binary_fmt::<U0>("0");
-        assert_binary_fmt::<U1>("1");
-        assert_binary_fmt::<U2>("10");
-        assert_binary_fmt::<U3>("11");
-        assert_binary_fmt::<U4>("100");
-        assert_binary_fmt::<U5>("101");
-        assert_binary_fmt::<U6>("110");
-        assert_binary_fmt::<U7>("111");
-        assert_binary_fmt::<U8>("1000");
-        assert_binary_fmt::<U9>("1001");
-        assert_binary_fmt::<U10>("1010");
-
-        assert_binary_fmt::<U2147483648>("10000000000000000000000000000000");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/typenum/unit/src/uint/fmt_tests_304.rs"));
 
 // ---------------------------------------------------------------------------------------
 // Adding bits to unsigned integers
@@ -1528,34 +1475,7 @@ where
 }
 
 #[cfg(test)]
-mod gcd_tests {
-    use super::*;
-    use crate::consts::*;
-
-    macro_rules! gcd_test {
-        (
-            $( $a:ident, $b:ident => $c:ident ),* $(,)*
-        ) => {
-            $(
-                assert_eq!(<Gcf<$a, $b> as Unsigned>::to_usize(), $c::to_usize());
-                assert_eq!(<Gcf<$b, $a> as Unsigned>::to_usize(), $c::to_usize());
-             )*
-        }
-    }
-
-    #[test]
-    fn gcd() {
-        gcd_test! {
-            U0,   U0    => U0,
-            U0,   U42   => U42,
-            U12,  U8    => U4,
-            U13,  U1013 => U1,  // Two primes
-            U9,   U26   => U1,  // Not prime but coprime
-            U143, U273  => U13,
-            U117, U273  => U39,
-        }
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/typenum/unit/src/uint/gcd_tests_1530.rs"));
 
 // -----------------------------------------
 // GetBit
@@ -1609,18 +1529,8 @@ impl<I> GetBit<I> for UTerm {
     }
 }
 
-#[test]
-fn test_get_bit() {
-    use crate::consts::*;
-    use crate::Same;
-    type T1 = <GetBitOut<U2, U0> as Same<B0>>::Output;
-    type T2 = <GetBitOut<U2, U1> as Same<B1>>::Output;
-    type T3 = <GetBitOut<U2, U2> as Same<B0>>::Output;
-
-    <T1 as Bit>::to_bool();
-    <T2 as Bit>::to_bool();
-    <T3 as Bit>::to_bool();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/typenum/functions/src/uint/test_get_bit_1532.rs"));
 
 // -----------------------------------------
 // SetBit
@@ -1706,35 +1616,8 @@ where
     }
 }
 
-#[test]
-fn test_set_bit() {
-    use crate::consts::*;
-    use crate::Same;
-    type T1 = <SetBitOut<U2, U0, B0> as Same<U2>>::Output;
-    type T2 = <SetBitOut<U2, U0, B1> as Same<U3>>::Output;
-    type T3 = <SetBitOut<U2, U1, B0> as Same<U0>>::Output;
-    type T4 = <SetBitOut<U2, U1, B1> as Same<U2>>::Output;
-    type T5 = <SetBitOut<U2, U2, B0> as Same<U2>>::Output;
-    type T6 = <SetBitOut<U2, U2, B1> as Same<U6>>::Output;
-    type T7 = <SetBitOut<U2, U3, B0> as Same<U2>>::Output;
-    type T8 = <SetBitOut<U2, U3, B1> as Same<U10>>::Output;
-    type T9 = <SetBitOut<U2, U4, B0> as Same<U2>>::Output;
-    type T10 = <SetBitOut<U2, U4, B1> as Same<U18>>::Output;
-
-    type T11 = <SetBitOut<U3, U0, B0> as Same<U2>>::Output;
-
-    <T1 as Unsigned>::to_u32();
-    <T2 as Unsigned>::to_u32();
-    <T3 as Unsigned>::to_u32();
-    <T4 as Unsigned>::to_u32();
-    <T5 as Unsigned>::to_u32();
-    <T6 as Unsigned>::to_u32();
-    <T7 as Unsigned>::to_u32();
-    <T8 as Unsigned>::to_u32();
-    <T9 as Unsigned>::to_u32();
-    <T10 as Unsigned>::to_u32();
-    <T11 as Unsigned>::to_u32();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/typenum/functions/src/uint/test_set_bit_1629.rs"));
 
 // -----------------------------------------
 
@@ -1751,40 +1634,7 @@ fn test_set_bit() {
 //     Q[i] = 1
 
 #[cfg(test)]
-mod div_tests {
-    use crate::Unsigned;
-
-    use super::SetBitOut;
-
-    macro_rules! test_div {
-        ($a:ident / $b:ident = $c:ident) => {{
-            type R = Quot<$a, $b>;
-            assert_eq!(<R as Unsigned>::to_usize(), $c::to_usize());
-        }};
-    }
-    #[test]
-    fn test_div() {
-        use crate::consts::*;
-        use crate::{Quot, Same};
-
-        test_div!(U0 / U1 = U0);
-        test_div!(U1 / U1 = U1);
-        test_div!(U2 / U1 = U2);
-        test_div!(U3 / U1 = U3);
-        test_div!(U4 / U1 = U4);
-
-        test_div!(U0 / U2 = U0);
-        test_div!(U1 / U2 = U0);
-        test_div!(U2 / U2 = U1);
-        test_div!(U3 / U2 = U1);
-        test_div!(U4 / U2 = U2);
-        test_div!(U6 / U2 = U3);
-        test_div!(U7 / U2 = U3);
-
-        type T = <SetBitOut<U0, U1, B1> as Same<U2>>::Output;
-        <T as Unsigned>::to_u32();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/typenum/unit/src/uint/div_tests_1753.rs"));
 // -----------------------------------------
 // Div
 use core::ops::Div;
@@ -2356,44 +2206,8 @@ where
     type Output = Sum<Double<Sqrt<U>>, GrEq<Self, Square<Add1<Double<Sqrt<U>>>>>>;
 }
 
-#[test]
-fn sqrt_test() {
-    use crate::consts::*;
-
-    assert_eq!(0, <Sqrt<U0>>::to_u32());
-
-    assert_eq!(1, <Sqrt<U1>>::to_u32());
-    assert_eq!(1, <Sqrt<U2>>::to_u32());
-    assert_eq!(1, <Sqrt<U3>>::to_u32());
-
-    assert_eq!(2, <Sqrt<U4>>::to_u32());
-    assert_eq!(2, <Sqrt<U5>>::to_u32());
-    assert_eq!(2, <Sqrt<U6>>::to_u32());
-    assert_eq!(2, <Sqrt<U7>>::to_u32());
-    assert_eq!(2, <Sqrt<U8>>::to_u32());
-
-    assert_eq!(3, <Sqrt<U9>>::to_u32());
-    assert_eq!(3, <Sqrt<U10>>::to_u32());
-    assert_eq!(3, <Sqrt<U11>>::to_u32());
-    assert_eq!(3, <Sqrt<U12>>::to_u32());
-    assert_eq!(3, <Sqrt<U13>>::to_u32());
-    assert_eq!(3, <Sqrt<U14>>::to_u32());
-    assert_eq!(3, <Sqrt<U15>>::to_u32());
-
-    assert_eq!(4, <Sqrt<U16>>::to_u32());
-    assert_eq!(4, <Sqrt<U17>>::to_u32());
-    assert_eq!(4, <Sqrt<U18>>::to_u32());
-    assert_eq!(4, <Sqrt<U19>>::to_u32());
-    assert_eq!(4, <Sqrt<U20>>::to_u32());
-    assert_eq!(4, <Sqrt<U21>>::to_u32());
-    assert_eq!(4, <Sqrt<U22>>::to_u32());
-    assert_eq!(4, <Sqrt<U23>>::to_u32());
-    assert_eq!(4, <Sqrt<U24>>::to_u32());
-
-    assert_eq!(5, <Sqrt<U25>>::to_u32());
-    assert_eq!(5, <Sqrt<U26>>::to_u32());
-    // ...
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/typenum/functions/src/uint/sqrt_test_2246.rs"));
 
 // -----------------------------------------
 // Logarithm2
@@ -2668,204 +2482,4 @@ where
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::consts::*;
-    use crate::{Log2, ToInt, Unsigned};
-
-    #[test]
-    fn log2_test() {
-        assert_eq!(0, <Log2<U1>>::to_u32());
-
-        assert_eq!(1, <Log2<U2>>::to_u32());
-        assert_eq!(1, <Log2<U3>>::to_u32());
-
-        assert_eq!(2, <Log2<U4>>::to_u32());
-        assert_eq!(2, <Log2<U5>>::to_u32());
-        assert_eq!(2, <Log2<U6>>::to_u32());
-        assert_eq!(2, <Log2<U7>>::to_u32());
-
-        assert_eq!(3, <Log2<U8>>::to_u32());
-        assert_eq!(3, <Log2<U9>>::to_u32());
-        assert_eq!(3, <Log2<U10>>::to_u32());
-        assert_eq!(3, <Log2<U11>>::to_u32());
-        assert_eq!(3, <Log2<U12>>::to_u32());
-        assert_eq!(3, <Log2<U13>>::to_u32());
-        assert_eq!(3, <Log2<U14>>::to_u32());
-        assert_eq!(3, <Log2<U15>>::to_u32());
-
-        assert_eq!(4, <Log2<U16>>::to_u32());
-        assert_eq!(4, <Log2<U17>>::to_u32());
-        assert_eq!(4, <Log2<U18>>::to_u32());
-        assert_eq!(4, <Log2<U19>>::to_u32());
-        assert_eq!(4, <Log2<U20>>::to_u32());
-        assert_eq!(4, <Log2<U21>>::to_u32());
-        assert_eq!(4, <Log2<U22>>::to_u32());
-        assert_eq!(4, <Log2<U23>>::to_u32());
-        assert_eq!(4, <Log2<U24>>::to_u32());
-        assert_eq!(4, <Log2<U25>>::to_u32());
-        assert_eq!(4, <Log2<U26>>::to_u32());
-        assert_eq!(4, <Log2<U27>>::to_u32());
-        assert_eq!(4, <Log2<U28>>::to_u32());
-        assert_eq!(4, <Log2<U29>>::to_u32());
-        assert_eq!(4, <Log2<U30>>::to_u32());
-        assert_eq!(4, <Log2<U31>>::to_u32());
-
-        assert_eq!(5, <Log2<U32>>::to_u32());
-        assert_eq!(5, <Log2<U33>>::to_u32());
-
-        // ...
-    }
-
-    #[test]
-    fn uint_toint_test() {
-        // i8
-        assert_eq!(0_i8, U0::to_int());
-        assert_eq!(1_i8, U1::to_int());
-        assert_eq!(2_i8, U2::to_int());
-        assert_eq!(3_i8, U3::to_int());
-        assert_eq!(4_i8, U4::to_int());
-        assert_eq!(0_i8, U0::INT);
-        assert_eq!(1_i8, U1::INT);
-        assert_eq!(2_i8, U2::INT);
-        assert_eq!(3_i8, U3::INT);
-        assert_eq!(4_i8, U4::INT);
-
-        // i16
-        assert_eq!(0_i16, U0::to_int());
-        assert_eq!(1_i16, U1::to_int());
-        assert_eq!(2_i16, U2::to_int());
-        assert_eq!(3_i16, U3::to_int());
-        assert_eq!(4_i16, U4::to_int());
-        assert_eq!(0_i16, U0::INT);
-        assert_eq!(1_i16, U1::INT);
-        assert_eq!(2_i16, U2::INT);
-        assert_eq!(3_i16, U3::INT);
-        assert_eq!(4_i16, U4::INT);
-
-        // i32
-        assert_eq!(0_i32, U0::to_int());
-        assert_eq!(1_i32, U1::to_int());
-        assert_eq!(2_i32, U2::to_int());
-        assert_eq!(3_i32, U3::to_int());
-        assert_eq!(4_i32, U4::to_int());
-        assert_eq!(0_i32, U0::INT);
-        assert_eq!(1_i32, U1::INT);
-        assert_eq!(2_i32, U2::INT);
-        assert_eq!(3_i32, U3::INT);
-        assert_eq!(4_i32, U4::INT);
-
-        // i64
-        assert_eq!(0_i64, U0::to_int());
-        assert_eq!(1_i64, U1::to_int());
-        assert_eq!(2_i64, U2::to_int());
-        assert_eq!(3_i64, U3::to_int());
-        assert_eq!(4_i64, U4::to_int());
-        assert_eq!(0_i64, U0::INT);
-        assert_eq!(1_i64, U1::INT);
-        assert_eq!(2_i64, U2::INT);
-        assert_eq!(3_i64, U3::INT);
-        assert_eq!(4_i64, U4::INT);
-
-        // isize
-        assert_eq!(0_isize, U0::to_int());
-        assert_eq!(1_isize, U1::to_int());
-        assert_eq!(2_isize, U2::to_int());
-        assert_eq!(3_isize, U3::to_int());
-        assert_eq!(4_isize, U4::to_int());
-        assert_eq!(0_isize, U0::INT);
-        assert_eq!(1_isize, U1::INT);
-        assert_eq!(2_isize, U2::INT);
-        assert_eq!(3_isize, U3::INT);
-        assert_eq!(4_isize, U4::INT);
-
-        // i128
-        #[cfg(feature = "i128")]
-        {
-            assert_eq!(0_i128, U0::to_int());
-            assert_eq!(1_i128, U1::to_int());
-            assert_eq!(2_i128, U2::to_int());
-            assert_eq!(3_i128, U3::to_int());
-            assert_eq!(4_i128, U4::to_int());
-            assert_eq!(0_i128, U0::INT);
-            assert_eq!(1_i128, U1::INT);
-            assert_eq!(2_i128, U2::INT);
-            assert_eq!(3_i128, U3::INT);
-            assert_eq!(4_i128, U4::INT);
-        }
-
-        // u8
-        assert_eq!(0_u8, U0::to_int());
-        assert_eq!(1_u8, U1::to_int());
-        assert_eq!(2_u8, U2::to_int());
-        assert_eq!(3_u8, U3::to_int());
-        assert_eq!(4_u8, U4::to_int());
-        assert_eq!(0_u8, U0::INT);
-        assert_eq!(1_u8, U1::INT);
-        assert_eq!(2_u8, U2::INT);
-        assert_eq!(3_u8, U3::INT);
-        assert_eq!(4_u8, U4::INT);
-
-        // u16
-        assert_eq!(0_u16, U0::to_int());
-        assert_eq!(1_u16, U1::to_int());
-        assert_eq!(2_u16, U2::to_int());
-        assert_eq!(3_u16, U3::to_int());
-        assert_eq!(4_u16, U4::to_int());
-        assert_eq!(0_u16, U0::INT);
-        assert_eq!(1_u16, U1::INT);
-        assert_eq!(2_u16, U2::INT);
-        assert_eq!(3_u16, U3::INT);
-        assert_eq!(4_u16, U4::INT);
-
-        // u32
-        assert_eq!(0_u32, U0::to_int());
-        assert_eq!(1_u32, U1::to_int());
-        assert_eq!(2_u32, U2::to_int());
-        assert_eq!(3_u32, U3::to_int());
-        assert_eq!(4_u32, U4::to_int());
-        assert_eq!(0_u32, U0::INT);
-        assert_eq!(1_u32, U1::INT);
-        assert_eq!(2_u32, U2::INT);
-        assert_eq!(3_u32, U3::INT);
-        assert_eq!(4_u32, U4::INT);
-
-        // u64
-        assert_eq!(0_u64, U0::to_int());
-        assert_eq!(1_u64, U1::to_int());
-        assert_eq!(2_u64, U2::to_int());
-        assert_eq!(3_u64, U3::to_int());
-        assert_eq!(4_u64, U4::to_int());
-        assert_eq!(0_u64, U0::INT);
-        assert_eq!(1_u64, U1::INT);
-        assert_eq!(2_u64, U2::INT);
-        assert_eq!(3_u64, U3::INT);
-        assert_eq!(4_u64, U4::INT);
-
-        // usize
-        assert_eq!(0_usize, U0::to_int());
-        assert_eq!(1_usize, U1::to_int());
-        assert_eq!(2_usize, U2::to_int());
-        assert_eq!(3_usize, U3::to_int());
-        assert_eq!(4_usize, U4::to_int());
-        assert_eq!(0_usize, U0::INT);
-        assert_eq!(1_usize, U1::INT);
-        assert_eq!(2_usize, U2::INT);
-        assert_eq!(3_usize, U3::INT);
-        assert_eq!(4_usize, U4::INT);
-
-        // u128
-        #[cfg(feature = "i128")]
-        {
-            assert_eq!(0_u128, U0::to_int());
-            assert_eq!(1_u128, U1::to_int());
-            assert_eq!(2_u128, U2::to_int());
-            assert_eq!(3_u128, U3::to_int());
-            assert_eq!(4_u128, U4::to_int());
-            assert_eq!(0_u128, U0::INT);
-            assert_eq!(1_u128, U1::INT);
-            assert_eq!(2_u128, U2::INT);
-            assert_eq!(3_u128, U3::INT);
-            assert_eq!(4_u128, U4::INT);
-        }
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/typenum/unit/src/uint/tests_2670.rs"));

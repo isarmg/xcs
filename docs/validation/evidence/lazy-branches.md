@@ -20,18 +20,18 @@
 
 | 范围 | 结果 | 记录 |
 | --- | --- | --- |
-| 原生工作区 | 238 项通过：含核心 73、服务端 52、真实 HTTP 12 及其余共享层与 CLI | [原始日志](../../../tests/evidence/lazy-branches/native-workspace.log) |
-| 原生 App 桥接 | 11 项通过，共享契约变更后重新编译及执行 | [原始日志](../../../tests/evidence/lazy-branches/app-bridge.log) |
+| 原生工作区 | 238 项通过：含核心 73、服务端 52、真实 HTTP 12 及其余共享层与 CLI | [原始日志](../../../test/evidence/lazy-branches/native-workspace.log) |
+| 原生 App 桥接 | 11 项通过，共享契约变更后重新编译及执行 | [原始日志](../../../test/evidence/lazy-branches/app-bridge.log) |
 | Web | 82 项测试通过；两场实际候选 WASM 共 6 组行为通过 | [Web 验收](lazy-branches/web-README.md) |
-| SMB 服务端 / 协议客户端 | 12／6 项通过；服务端结果已包含在原生工作区中 | [服务日志](../../../tests/evidence/lazy-branches/smb-server-tests.log)、[客户端日志](../../../tests/evidence/lazy-branches/smb-client-tests.log) |
-| 快照与存储专项 | 11 项通过；属于核心回归子集，不重复累计 | [专项日志](../../../tests/evidence/lazy-branches/snapshot-storage-tests.log) |
+| SMB 服务端 / 协议客户端 | 12／6 项通过；服务端结果已包含在原生工作区中 | [服务日志](../../../test/evidence/lazy-branches/smb-server-tests.log)、[客户端日志](../../../test/evidence/lazy-branches/smb-client-tests.log) |
+| 快照与存储专项 | 11 项通过；属于核心回归子集，不重复累计 | [专项日志](../../../test/evidence/lazy-branches/snapshot-storage-tests.log) |
 | 机器契约 | 8 项测试通过，47 组字段/语义向量及文档链接检查通过 | [契约验收](lazy-branches/contract.md) |
-| 原生构建 / 可移植 server | 锁定离线原生构建、无默认功能检查通过 | [构建日志](../../../tests/evidence/lazy-branches/native-build.log)、[可移植检查](../../../tests/evidence/lazy-branches/server-portable-check.log) |
+| 原生构建 / 可移植 server | 锁定离线原生构建、无默认功能检查通过 | [构建日志](../../../test/evidence/lazy-branches/native-build.log)、[可移植检查](../../../test/evidence/lazy-branches/server-portable-check.log) |
 
 独立审查记录：[核心边界复核](lazy-branches/review/cross-review.md)、[Server/SMB 适配](lazy-branches/review/server.md)、[占位存储](lazy-branches/review/storage.md)。复核发现的选择代理、范围基底、历史编辑兼容及历史占位回读问题均已修复，并进入最终回归。
 
-[候选收据](../../../tests/evidence/lazy-branches/candidate-receipt.json)记录本轮核心源文件、原生二进制、WASM 和构建清单的 SHA-256；[Web 收据](../../../tests/evidence/lazy-branches/web-candidate.json)及[契约收据](../../../tests/evidence/lazy-branches/contract/source-receipt.json)分别记录各自输入与输出身份。最终补充 Commit 快照字段后，Web 重建的 WASM 字节与已经验收的候选完全一致，仅构建清单输入摘要更新，没有据此增加浏览器执行次数。
+[候选收据](../../../test/evidence/lazy-branches/candidate-receipt.json)记录本轮核心源文件、原生二进制、WASM 和构建清单的 SHA-256；[Web 收据](../../../test/evidence/lazy-branches/web-candidate.json)及[契约收据](../../../test/evidence/lazy-branches/contract/source-receipt.json)分别记录各自输入与输出身份。最终补充 Commit 快照字段后，Web 重建的 WASM 字节与已经验收的候选完全一致，仅构建清单输入摘要更新，没有据此增加浏览器执行次数。
 
 验证使用临时目录、临时 HTTP/Unix 套接字及独立静态浏览器夹具。需要主机权限的 FIFO、所有权及 Unix socket 测试获批后运行，不将沙箱拒绝算作通过。SDK、物理盘和六平台实机验收不因本轮回归而被声明完成。
 
-本地预览已加载最终原生二进制及 Web 包，并成功恢复已有历史；[实际资源检查](../../../tests/evidence/lazy-branches/served-assets.json)确认 HTTP 200、进程二进制及 17 项 CSS/WASM 响应均匹配候选。未在用户数据上创建测试分支或上传测试内容。
+本地预览已加载最终原生二进制及 Web 包，并成功恢复已有历史；[实际资源检查](../../../test/evidence/lazy-branches/served-assets.json)确认 HTTP 200、进程二进制及 17 项 CSS/WASM 响应均匹配候选。未在用户数据上创建测试分支或上传测试内容。

@@ -167,6 +167,7 @@ mod multi;
 mod sequence;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/src/combinator/tests.rs"]
 mod tests;
 
 pub mod impls;

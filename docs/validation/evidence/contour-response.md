@@ -8,7 +8,7 @@
 
 CPU 使用率响应是合法有限小数（真实复现 20.600000381469727、3.5），但 Web 原先对所有响应使用禁止浮点的存储契约解析器。后台返回200 application/json，界面却显示CPU不可用及INVALID_RESPONSE；错误包装还把实际200记录为0。新 `web/src/api/response.rs` 专门解析响应中的有限数值，继续递归拒绝重复键、BOM、异常数值、孤立代理项和尾随垃圾，原始响应正文不会进入错误信息。磁盘、写请求、整数 JCS 校验保持原限制；错误保留真实 HTTP 状态。
 
-没有证据表明该报错由200 HTML引起：实时检查监控、磁盘、历史接口均为JSON，未知API是404。具体复现见[修复前结果](../../../tests/evidence/contour-response/before-result.json)和[原错误条](../../../tests/evidence/contour-response/before-error.png)。
+没有证据表明该报错由200 HTML引起：实时检查监控、磁盘、历史接口均为JSON，未知API是404。具体复现见[修复前结果](../../../test/evidence/contour-response/before-result.json)和[原错误条](../../../test/evidence/contour-response/before-error.png)。
 
 旧文件管理浏览器脚本只检查网络层采样，没有检查实际页面CPU值与错误提示，因而遗漏此问题；旧记录已补充更正。新版验收要求实际页面显示百分比且 `role=alert` 为0。
 
@@ -21,7 +21,7 @@ CPU 使用率响应是合法有限小数（真实复现 20.600000381469727、3.5
 
 正式 WASM 绘制器在横向1728×63/65和纵向63/65×850、明暗主题下，读取到真实百分比切片（49.2647%/49.2857%），逐像素扫描中心十字，5380次采样无缺色；独立多DPR与分数尺寸矩阵另见前述轮廓记录。
 
-[测试输出](../../../tests/evidence/contour-response/web-tests.txt)、[业务回归](../../../tests/evidence/contour-response/file-regression.txt)、[业务结果](../../../tests/evidence/contour-response/file-regression-result.json)、[修复后CPU页面](../../../tests/evidence/contour-response/after-result.json)、[正式渲染器像素结果](../../../tests/evidence/contour-response/actual-contours.json)、[修复前页面](../../../tests/evidence/contour-response/before-status.png)、[修复后页面](../../../tests/evidence/contour-response/after-status.png)。
+[测试输出](../../../test/evidence/contour-response/web-tests.txt)、[业务回归](../../../test/evidence/contour-response/file-regression.txt)、[业务结果](../../../test/evidence/contour-response/file-regression-result.json)、[修复后CPU页面](../../../test/evidence/contour-response/after-result.json)、[正式渲染器像素结果](../../../test/evidence/contour-response/actual-contours.json)、[修复前页面](../../../test/evidence/contour-response/before-status.png)、[修复后页面](../../../test/evidence/contour-response/after-status.png)。
 
 
 ## 菜单页面标题
@@ -30,8 +30,8 @@ CPU 使用率响应是合法有限小数（真实复现 20.600000381469727、3.5
 
 文件、状态、历史记录及账户页面不再显示大字页面标题。保留无障碍语义标题，三页刷新按钮行高44px并靠右；文件详情和指标的内容标题不变。真实 Chromium 验证了隐藏标题的1×1裁切、右对齐和1440/390/320px布局，账户外层标题也已覆盖。
 
-[页面检查](../../../tests/evidence/contour-response/menu-headings-result.json)、[文件页](../../../tests/evidence/contour-response/menu-files-1440.png)、[390px文件页](../../../tests/evidence/contour-response/menu-files-390.png)、[状态页](../../../tests/evidence/contour-response/menu-status-1440.png)、[历史页](../../../tests/evidence/contour-response/menu-history-1440.png)、[账户页](../../../tests/evidence/contour-response/menu-account.png)。
+[页面检查](../../../test/evidence/contour-response/menu-headings-result.json)、[文件页](../../../test/evidence/contour-response/menu-files-1440.png)、[390px文件页](../../../test/evidence/contour-response/menu-files-390.png)、[状态页](../../../test/evidence/contour-response/menu-status-1440.png)、[历史页](../../../test/evidence/contour-response/menu-history-1440.png)、[账户页](../../../test/evidence/contour-response/menu-account.png)。
 
 最终运行的7400预览保留原有数据池与凭据，22份资源匹配当前清单，WASM MIME/magic、gzip、ETag/304、CSP与nosniff通过，源文件逐项匹配构建清单。Linux宿主重新嵌入并完成链接，未运行桌面或验收六平台发行包。
 
-[最终构建](../../../tests/evidence/contour-response/web-build.txt)、[最终资源身份](../../../tests/evidence/contour-response/asset-result.json)、[响应头](../../../tests/evidence/contour-response/wasm-response-headers.txt)、[构建清单](../../../tests/evidence/contour-response/build-manifest.json)、[源文件核对](../../../tests/evidence/contour-response/source-inputs-result.json)、[Linux宿主链接](../../../tests/evidence/contour-response/linux-host-build.txt)。没有记录密码、Cookie或令牌。测试使用隔离开发目录池，不构成物理盘验收。
+[最终构建](../../../test/evidence/contour-response/web-build.txt)、[最终资源身份](../../../test/evidence/contour-response/asset-result.json)、[响应头](../../../test/evidence/contour-response/wasm-response-headers.txt)、[构建清单](../../../test/evidence/contour-response/build-manifest.json)、[源文件核对](../../../test/evidence/contour-response/source-inputs-result.json)、[Linux宿主链接](../../../test/evidence/contour-response/linux-host-build.txt)。没有记录密码、Cookie或令牌。测试使用隔离开发目录池，不构成物理盘验收。

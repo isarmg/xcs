@@ -60,4 +60,4 @@
 
 [验收材料与执行结果](../validation/evidence/branch-operations.md)分别列出 Rust、HTTP、SMB SDK、实际 WASM 浏览器和本地服务的证据。临时目录的三成员测试不是三块物理设备的断电验收；Unix 描述符测试不是部署 smbd 和六平台设备验收。
 
-本地预览已使用包含文件合并、标签与备份浏览修正的最终候选更新并恢复，入口为 [http://127.0.0.1:7400](http://127.0.0.1:7400)。[最新服务核验](../../tests/evidence/merge-tags-backup/served-assets.json)记录 HTTP 200、进程摘要、严格 CSP、实际静态资源和构建输入匹配；此前记录保留为历史验收。
+本地预览已使用包含文件合并、标签与备份浏览修正的最终候选更新并恢复，入口为 [http://127.0.0.1:7400](http://127.0.0.1:7400)。[最新服务核验](../../test/evidence/merge-tags-backup/served-assets.json)记录 HTTP 200、进程摘要、严格 CSP、实际静态资源和构建输入匹配；此前记录保留为历史验收。

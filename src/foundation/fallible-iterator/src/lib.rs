@@ -79,6 +79,7 @@ extern crate alloc;
 use alloc::boxed::Box;
 
 #[cfg(all(test, feature = "alloc"))]
+#[path = "../../../../test/foundation/fallible-iterator/modules/src/test.rs"]
 mod test;
 
 enum FoldStop<T, E> {

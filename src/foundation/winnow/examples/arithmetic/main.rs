@@ -4,10 +4,13 @@ mod parser;
 mod parser_ast;
 mod parser_lexer;
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/examples/arithmetic/test_parser.rs"]
 mod test_parser;
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/examples/arithmetic/test_parser_ast.rs"]
 mod test_parser_ast;
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/examples/arithmetic/test_parser_lexer.rs"]
 mod test_parser_lexer;
 
 fn main() -> Result<(), lexopt::Error> {

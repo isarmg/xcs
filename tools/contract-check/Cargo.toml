@@ -15,3 +15,11 @@ serde_json = {version = "1", path = "../../src/foundation/serde_json"}
 toml = {version = "0.8.23", path = "../../src/foundation/toml"}
 walkdir = {version = "2", path = "../../src/foundation/walkdir"}
 storage-contract.workspace = true
+
+[[test]]
+name = "gitignore"
+path = "../../test/tools/contract-check/gitignore.rs"
+
+[[test]]
+name = "source_export"
+path = "../../test/tools/contract-check/source_export.rs"

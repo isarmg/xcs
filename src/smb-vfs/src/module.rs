@@ -1179,4 +1179,5 @@ pub unsafe extern "C" fn samba_init_module() -> sdk::NTSTATUS {
 }
 
 #[cfg(test)]
+#[path = "../../../test/smb-vfs/unit/module/tests.rs"]
 mod tests;

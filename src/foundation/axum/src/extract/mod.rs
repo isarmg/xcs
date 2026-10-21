@@ -97,17 +97,4 @@ pub(super) fn has_content_type(headers: &HeaderMap, expected_content_type: &mime
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::{routing::get, test_helpers::*, Router};
-
-    #[crate::test]
-    async fn consume_body() {
-        let app = Router::new().route("/", get(|body: String| async { body }));
-
-        let client = TestClient::new(app);
-        let res = client.get("/").body("foo").await;
-        let body = res.text().await;
-
-        assert_eq!(body, "foo");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum/unit/src/extract/mod/tests_99.rs"));

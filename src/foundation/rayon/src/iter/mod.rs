@@ -89,6 +89,7 @@ use std::ops::{Fn, RangeBounds};
 pub mod plumbing;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/rayon/modules/src/iter/test.rs"]
 mod test;
 
 // There is a method to the madness here:

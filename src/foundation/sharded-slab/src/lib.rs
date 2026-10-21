@@ -1103,4 +1103,5 @@ impl<C: cfg::Config> Pack<C> for () {
 pub(crate) use self::tests::util as test_util;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/sharded-slab/modules/src/tests/mod.rs"]
 mod tests;

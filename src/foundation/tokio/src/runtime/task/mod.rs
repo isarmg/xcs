@@ -659,10 +659,7 @@ mod spawn_location {
     }
 
     #[cfg(test)]
-    #[test]
-    fn spawn_location_is_zero_sized() {
-        assert_eq!(std::mem::size_of::<SpawnLocation>(), 0);
-    }
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/runtime/task/mod/spawn_location_is_zero_sized_661.rs"));
 }
 
 impl SpawnLocation {

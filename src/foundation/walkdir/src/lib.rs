@@ -128,6 +128,7 @@ pub use crate::error::Error;
 mod dent;
 mod error;
 #[cfg(test)]
+#[path = "../../../../test/foundation/walkdir/modules/src/tests/mod.rs"]
 mod tests;
 mod util;
 

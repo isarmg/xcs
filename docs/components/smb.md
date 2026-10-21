@@ -111,7 +111,7 @@ CARGO_INCREMENTAL=0 cargo build --locked --offline \
 - 历史文档报告的官方客户端（原始日志当前不可用，本轮未重跑）：`SMB3_11`、模块加载、新文件 83 字节保存并成功 CLOSE、3407872 字节往返比对、43 字节原子覆盖、仅大小写改名及不区分大小写再打开。子目录创建与子文件另在扩展测试执行；原始批次当前不在 checkout，不能当作本轮可复核证据。
 - 测试命令：`cargo test --locked --offline -p smb-protocol`；`cargo test --locked --offline -p storage-server smb_rpc::tests`。环境隔离禁止 Unix socket 时需在具备对应能力的测试环境运行，不能将该限制写成测试通过。
 
-关闭生命周期回归源码位于 `src/server/src/smb_rpc/close_tests.rs`：实际 Unix RPC 和真实开发核心共用 VFS 的描述符关闭策略，覆盖上传拒绝、未决操作、工作区清理失败、丢失已发布回执和锁中毒；检查原字节/恢复记录、同连接及另一连接重新写打开、无关句柄继续保存、终结 handle 不再重提交。该链路不加载 Samba，不能替代固定 SDK ABI 和真实客户端验收。
+关闭生命周期回归源码位于 `test/server/unit/smb_rpc/close_tests.rs`：实际 Unix RPC 和真实开发核心共用 VFS 的描述符关闭策略，覆盖上传拒绝、未决操作、工作区清理失败、丢失已发布回执和锁中毒；检查原字节/恢复记录、同连接及另一连接重新写打开、无关句柄继续保存、终结 handle 不再重提交。该链路不加载 Samba，不能替代固定 SDK ABI 和真实客户端验收。
 
 尚未执行：真实客户端 write-through/FLUSH、Windows/macOS/移动端应用保存与临时文件多句柄矩阵、断网重连、故障注入、真实设备掉电及多账户认证部署。文件存在活动写句柄时，覆盖该路径的命名空间变更会拒绝，不能将已测的关闭后改名解释为所有编辑器保存模式均可用。当前未完整建模文件系统时间戳，剩余空间报告仍来自宿主文件系统，不能当作保护路由可用容量。
 
@@ -149,4 +149,4 @@ bash .github/scripts/smb-sdk.sh
 
 `*.namespace.json` 使用 `smb-protocol-namespace` 格式，包含身份、分支、操作种类、源/目标路径及 `commit_request`。`publication_outcome: "unconfirmed"` 仅表示已建立意图关联，不能证明准备变更或提交已经执行。记录可先于 Tree 检查和 Namespace staging；因此不能直接重放 `commit_request`。文件或父目录同步失败时虽保留已写证据，但不承诺掉电后的耐久性。先用原 `operation_id` 查询权威操作状态，未决或未知时走核心恢复流程，不重放该文件或另造操作号，也不把存在记录当作失败证明。确认成功后桥接会删除记录；若删除或目录同步失败，残留记录仍应按原操作查询，不重复提交。
 
-相关回归位于 `src/server/src/smb_rpc/namespace_tests.rs`，覆盖目标种类拒绝、旧模糊删除命令拒绝、实际发布前/后返回错误时保留原操作和工作区、不错误 Abort、成功后的记录清理、成功 RPC 帧丢弃后按客户端原操作号查询、准备/Abort 及文件/父目录同步故障，以及 write-through 新一代操作号。协议测试复用 VFS 实际调用的 flags/操作号构造函数，并用真实 Unix socketpair 验证传输错误保留原操作号和全克隆断开。socketpair 桥接测试不等于真实监听 socket 的进程/权限生命周期，也不等于固定 Samba SDK/客户端互操作；这些仍须独立验证。
+相关回归位于 `test/server/unit/smb_rpc/namespace_tests.rs`，覆盖目标种类拒绝、旧模糊删除命令拒绝、实际发布前/后返回错误时保留原操作和工作区、不错误 Abort、成功后的记录清理、成功 RPC 帧丢弃后按客户端原操作号查询、准备/Abort 及文件/父目录同步故障，以及 write-through 新一代操作号。协议测试复用 VFS 实际调用的 flags/操作号构造函数，并用真实 Unix socketpair 验证传输错误保留原操作号和全克隆断开。socketpair 桥接测试不等于真实监听 socket 的进程/权限生命周期，也不等于固定 Samba SDK/客户端互操作；这些仍须独立验证。

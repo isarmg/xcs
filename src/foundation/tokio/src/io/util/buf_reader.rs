@@ -301,11 +301,4 @@ impl<R: fmt::Debug> fmt::Debug for BufReader<R> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn assert_unpin() {
-        crate::is_unpin::<BufReader<()>>();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/unit/src/io/util/buf_reader/tests_303.rs"));

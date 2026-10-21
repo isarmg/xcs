@@ -496,20 +496,4 @@ unsafe impl<T> linked_list::Link for ListEntry<T> {
 }
 
 #[cfg(all(test))]
-mod tests {
-    use crate::runtime::Builder;
-    use crate::task::JoinSet;
-
-    // A test that runs under miri.
-    //
-    // https://github.com/tokio-rs/tokio/pull/5693
-    #[test]
-    fn join_set_test() {
-        let rt = Builder::new_current_thread().build().unwrap();
-
-        let mut set = JoinSet::new();
-        set.spawn_on(futures::future::ready(()), rt.handle());
-
-        rt.block_on(set.join_next()).unwrap().unwrap();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/unit/src/util/idle_notified_set/guarded_tests_498.rs"));

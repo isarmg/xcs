@@ -885,28 +885,8 @@ const fn generate_radix_bases(max: BigDigit) -> [(BigDigit, usize); 257] {
     bases
 }
 
-#[test]
-fn test_radix_bases() {
-    for radix in 3u32..256 {
-        if !radix.is_power_of_two() {
-            let (base, power) = get_radix_base(radix);
-            let radix = BigDigit::from(radix);
-            let power = u32::try_from(power).unwrap();
-            assert_eq!(base, radix.pow(power));
-            assert!(radix.checked_pow(power + 1).is_none());
-        }
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-bigint/functions/src/biguint/convert/test_radix_bases_888.rs"));
 
-#[test]
-fn test_half_radix_bases() {
-    for radix in 3u32..256 {
-        if !radix.is_power_of_two() {
-            let (base, power) = get_half_radix_base(radix);
-            let radix = BigDigit::from(radix);
-            let power = u32::try_from(power).unwrap();
-            assert_eq!(base, radix.pow(power));
-            assert!(radix.pow(power + 1) > big_digit::HALF);
-        }
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-bigint/functions/src/biguint/convert/test_half_radix_bases_901.rs"));

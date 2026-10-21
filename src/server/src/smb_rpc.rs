@@ -30,6 +30,7 @@ use session::Session;
 use transport::run_connection;
 pub use transport::serve;
 #[cfg(all(test, feature = "core"))]
+#[path = "../../../test/server/unit/smb_rpc/tests.rs"]
 mod tests;
 
 struct Shared {

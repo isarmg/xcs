@@ -12,6 +12,10 @@ import sys
 import tempfile
 import tomllib
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import external_tests
+import source_relocation
+
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = "compliance/rust-sources.json"
 ORIGINS = "compliance/provenance/origins.json"
@@ -81,7 +85,7 @@ def safe_path(root, relative):
 
 def project_manifests(root):
     result = {"Cargo.toml"}
-    for base in ("src", "tools", "examples"):
+    for base in ("src", "tools", "examples", "test"):
         for path in (root / base).rglob("Cargo.toml"):
             result.add(path.relative_to(root).as_posix())
     return result
@@ -97,6 +101,8 @@ def structure(root, policy):
     if [workspace["manifest"] for workspace in policy["workspaces"]] != ["Cargo.toml"]:
         raise ValueError("exactly one root Cargo workspace is required")
     verify_target_policy(policy)
+    if any(path.startswith("test/") for path in project_manifests(root)):
+        raise ValueError("Cargo package manifests are forbidden beneath test/")
     if manifests(root) != {"Cargo.toml"}:
         raise ValueError("nested/independent Cargo workspace")
     skipped = {".git", "target", "build", "runtime", "zxs-data", "xcs-data", ".agents", ".aws", ".codex"}
@@ -113,7 +119,11 @@ def structure(root, policy):
             raise ValueError(f"nested Git repository: {relative}")
         if "Cargo.lock" in names and relative != Path("."):
             raise ValueError(f"nested Cargo.lock: {relative}")
-        if relative.parts and relative.parts[0] in ("src", "tools", "tests", "deploy", "examples"):
+        if relative.parts and relative.parts[0] == "test":
+            for name in children + names:
+                if (root / relative / name).is_symlink():
+                    raise ValueError(f"test source symlink: {relative / name}")
+        if relative.parts and relative.parts[0] in ("src", "tools", "test", "tests", "deploy", "examples"):
             for name in names:
                 if Path(name).suffix.lower() in (".md", ".rst", ".adoc"):
                     raise ValueError(f"scattered documentation outside docs/: {relative / name}")
@@ -665,7 +675,17 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
             if key in merged:
                 merged[key] = current_description(merged[key])
         merges.append(merged)
-    catalog = dict(schema=4, policy_sha256=digest((root / POLICY).read_bytes()),
+    external, external_receipts = external_tests.load(root, dict(packages, **{m["directory"]: m for m in merges}))
+    if external:
+        if not previous.get("external_tests"):
+            baseline_packages = [*previous["packages"].values(), *previous.get("merges", [])]
+            baseline = {item["directory"] + "/" + path: value
+                        for item in baseline_packages for path, value in item["files_sha256"].items()}
+            source_relocation.verify(root, external, safe_path, baseline)
+        else:
+            source_relocation.read_receipt(root, safe_path)
+    external_tests.check_previous(previous.get("external_tests", {}), external)
+    catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=4, policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
                    lockfiles_sha256={"Cargo.lock": digest((root / "Cargo.lock").read_bytes())},
@@ -677,6 +697,7 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
     retired_sources(root, catalog, records)
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
+    external_tests.check_removed(dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}), dict(packages, **{m["directory"]: m for m in merges}), external)
     verify_retained_closure(catalog, policy)
     (root / CATALOG).write_text(json.dumps(catalog, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (root / DOC).write_text(document(catalog, policy), encoding="utf-8", newline="\n")
@@ -734,6 +755,13 @@ def document(catalog, policy):
         upstream, retired = package["upstream"], package["retirement"]
         lines.append("| " + " | ".join(map(cell, [f"{upstream['name']}@{upstream['version']}", relative,
                      retired["reason"], f"{retired['file_count']} / {retired['bytes']}"])) + " |")
+    external = catalog.get("external_tests", {})
+    external_count = sum(item["file_count"] for item in external.values())
+    external_bytes = sum(item["bytes"] for item in external.values())
+    production_count = sum(len(item["files_sha256"]) for item in catalog["packages"].values()) + sum(len(item["files_sha256"]) for item in catalog.get("merges", []))
+    lines += ["", "## 根测试目录的来源核算", "",
+              f"包内当前文件 {production_count} 个，另有 {len(external)} 个原始身份所属的外置测试文件 {external_count} 个、{external_bytes} 字节；当前来源文件总计 {production_count + external_count} 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。", "",
+              "JSON external_tests 按原包目录和原始身份登记精确根目录、原路径、当前路径及逐文件摘要；external_test_mappings_sha256 固定当前映射文档。refresh 先验证外置清单，不能静默吞入新增文件或因目录迁移缩减来源核算。独立说明见 docs/EXTERNAL_TEST_SOURCES.md。", ""]
     lines += ["", "## 完整性、安全与验收", "",
               f"共 {len(catalog['packages'])} 个活动源码树、{len(catalog.get('retired', {}))} 个已移除来源、{len(catalog.get('superseded', {}))} 个已升级替换来源，{len(catalog['resolutions'])} 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。", "",
               "`.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口的保守可达超集；该记录不证明每个入口实际编译或链接了这些源码。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。", ""]
@@ -766,6 +794,11 @@ def verify(root, metadata=False):
     records = origins(root)
     if origin_hashes(records) != catalog["origin_records_sha256"] or provenance(root) != catalog["provenance_sha256"]:
         raise ValueError("centralized original provenance/license inventory drift")
+    external, external_receipts = external_tests.load(root, dict(catalog["packages"], **{m["directory"]: m for m in catalog.get("merges", [])}))
+    if external:
+        source_relocation.read_receipt(root, safe_path)
+    if external != catalog.get("external_tests", {}) or external_receipts != catalog.get("external_test_mappings_sha256", {}):
+        raise ValueError("external test source accounting drift")
     current_manifests = project_manifests(root)
     if current_manifests != set(catalog["manifests_sha256"]):
         raise ValueError("manifest inventory drift")

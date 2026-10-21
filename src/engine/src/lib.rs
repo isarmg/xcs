@@ -31,4 +31,5 @@ pub use protection::{
 pub use storage_contract::*;
 pub use wire::{commit_request_digest, manifest_hash as workspace_manifest_hash};
 #[cfg(test)]
+#[path = "../../../test/engine/unit/tests.rs"]
 mod tests;

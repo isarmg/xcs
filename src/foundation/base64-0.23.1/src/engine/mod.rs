@@ -24,9 +24,11 @@ pub mod general_purpose;
 pub mod simd;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/base64-0.23.1/modules/src/engine/naive.rs"]
 mod naive;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/base64-0.23.1/modules/src/engine/tests.rs"]
 mod tests;
 
 pub use general_purpose::{GeneralPurpose, GeneralPurposeConfig, Scalar};

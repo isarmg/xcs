@@ -323,13 +323,4 @@ impl Component {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::*;
-
-    #[test]
-    fn test_components_mac_m1() {
-        let mut components = Components::new();
-        components.refresh(false);
-        components.refresh(false);
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/sysinfo/unit/src/common/component/tests_325.rs"));

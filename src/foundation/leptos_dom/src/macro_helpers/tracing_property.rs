@@ -72,99 +72,11 @@ impl<T> DefaultMatch for Match<&T> {
     }
 }
 
-#[test]
-fn match_primitive() {
-    // String
-    let test = String::from("string");
-    let prop = (&&Match {
-        name: stringify! {test},
-        value: std::cell::Cell::new(Some(&test)),
-    })
-        .spez();
-    assert_eq!(prop, r#"{"name": "test", "value": "string"}"#);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_primitive_75.rs"));
 
-    // &str
-    let test = "string";
-    let prop = (&&Match {
-        name: stringify! {test},
-        value: std::cell::Cell::new(Some(&test)),
-    })
-        .spez();
-    assert_eq!(prop, r#"{"name": "test", "value": "string"}"#);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_serialize_132.rs"));
 
-    // u128
-    let test: u128 = 1;
-    let prop = (&&Match {
-        name: stringify! {test},
-        value: std::cell::Cell::new(Some(&test)),
-    })
-        .spez();
-    assert_eq!(prop, r#"{"name": "test", "value": 1}"#);
-
-    // i128
-    let test: i128 = -1;
-    let prop = (&&Match {
-        name: stringify! {test},
-        value: std::cell::Cell::new(Some(&test)),
-    })
-        .spez();
-    assert_eq!(prop, r#"{"name": "test", "value": -1}"#);
-
-    // f64
-    let test = 3.25;
-    let prop = (&&Match {
-        name: stringify! {test},
-        value: std::cell::Cell::new(Some(&test)),
-    })
-        .spez();
-    assert_eq!(prop, r#"{"name": "test", "value": 3.25}"#);
-
-    // bool
-    let test = true;
-    let prop = (&&Match {
-        name: stringify! {test},
-        value: std::cell::Cell::new(Some(&test)),
-    })
-        .spez();
-    assert_eq!(prop, r#"{"name": "test", "value": true}"#);
-}
-
-#[test]
-fn match_serialize() {
-    use serde::Serialize;
-    #[derive(Serialize)]
-    struct CustomStruct {
-        field: &'static str,
-    }
-
-    let test = CustomStruct { field: "field" };
-    let prop = (&&Match {
-        name: stringify! {test},
-        value: std::cell::Cell::new(Some(&test)),
-    })
-        .spez();
-    assert_eq!(prop, r#"{"name": "test", "value": {"field":"field"}}"#);
-    // Verification of ownership
-    assert_eq!(test.field, "field");
-}
-
-#[test]
-#[allow(clippy::needless_borrow)]
-fn match_no_serialize() {
-    struct CustomStruct {
-        field: &'static str,
-    }
-
-    let test = CustomStruct { field: "field" };
-    let prop = (&&Match {
-        name: stringify! {test},
-        value: std::cell::Cell::new(Some(&test)),
-    })
-        .spez();
-    assert_eq!(
-        prop,
-        r#"{"name": "test", "value": "[unserializable value]"}"#
-    );
-    // Verification of ownership
-    assert_eq!(test.field, "field");
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_no_serialize_151.rs"));

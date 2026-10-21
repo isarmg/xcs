@@ -347,25 +347,4 @@ pub(crate) fn compile<'a, F: Json>(
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::tests_util;
-    use serde_json::{json, Value};
-    use test_case::test_case;
-
-    #[test_case(&json!({"if": {"minimum": 0}, "else": {"multipleOf": 2}}), &json!(-1), "/else/multipleOf")]
-    #[test_case(&json!({"if": {"minimum": 0}, "then": {"multipleOf": 2}}), &json!(3), "/then/multipleOf")]
-    #[test_case(&json!({"if": {"minimum": 0}, "then": {"multipleOf": 2}, "else": {"multipleOf": 2}}), &json!(-1), "/else/multipleOf")]
-    #[test_case(&json!({"if": {"minimum": 0}, "then": {"multipleOf": 2}, "else": {"multipleOf": 2}}), &json!(3), "/then/multipleOf")]
-    fn location(schema: &Value, instance: &Value, expected: &str) {
-        tests_util::assert_schema_location(schema, instance, expected);
-    }
-
-    #[test]
-    fn malformed() {
-        tests_util::assert_compile_error(
-            &json!({"if": 5, "then": {}}),
-            "5 is not of types \"boolean\", \"object\"",
-            "/if",
-        );
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/jsonschema/unit/src/keywords/if_/tests_349.rs"));

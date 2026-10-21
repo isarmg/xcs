@@ -84,6 +84,7 @@ mod errors;
 mod line_ending;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/base64ct/modules/src/test_vectors.rs"]
 mod test_vectors;
 
 pub use crate::{

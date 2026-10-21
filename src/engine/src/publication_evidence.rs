@@ -99,5 +99,5 @@ pub(crate) fn repair_object_copies<T: serde::Serialize>(
 }
 
 #[cfg(test)]
-#[path = "publication_evidence_tests.rs"]
+#[path = "../../../test/engine/unit/publication_evidence_tests.rs"]
 mod tests;

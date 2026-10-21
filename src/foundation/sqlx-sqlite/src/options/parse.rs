@@ -180,52 +180,14 @@ impl FromStr for SqliteConnectOptions {
     }
 }
 
-#[test]
-fn test_parse_in_memory() -> Result<(), Error> {
-    let options: SqliteConnectOptions = "sqlite::memory:".parse()?;
-    assert!(options.in_memory);
-    assert!(options.shared_cache);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/sqlx-sqlite/functions/src/options/parse/test_parse_in_memory_183.rs"));
 
-    let options: SqliteConnectOptions = "sqlite://?mode=memory".parse()?;
-    assert!(options.in_memory);
-    assert!(options.shared_cache);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/sqlx-sqlite/functions/src/options/parse/test_parse_read_only_204.rs"));
 
-    let options: SqliteConnectOptions = "sqlite://:memory:".parse()?;
-    assert!(options.in_memory);
-    assert!(options.shared_cache);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/sqlx-sqlite/functions/src/options/parse/test_parse_shared_in_memory_213.rs"));
 
-    let options: SqliteConnectOptions = "sqlite://?mode=memory&cache=private".parse()?;
-    assert!(options.in_memory);
-    assert!(!options.shared_cache);
-
-    Ok(())
-}
-
-#[test]
-fn test_parse_read_only() -> Result<(), Error> {
-    let options: SqliteConnectOptions = "sqlite://a.db?mode=ro".parse()?;
-    assert!(options.read_only);
-    assert_eq!(&*options.filename.to_string_lossy(), "a.db");
-
-    Ok(())
-}
-
-#[test]
-fn test_parse_shared_in_memory() -> Result<(), Error> {
-    let options: SqliteConnectOptions = "sqlite://a.db?cache=shared".parse()?;
-    assert!(options.shared_cache);
-    assert_eq!(&*options.filename.to_string_lossy(), "a.db");
-
-    Ok(())
-}
-
-#[test]
-fn it_returns_the_parsed_url() -> Result<(), Error> {
-    let url = "sqlite://test.db?mode=rw&cache=shared";
-    let options: SqliteConnectOptions = url.parse()?;
-
-    let expected_url = Url::parse(url).unwrap();
-    assert_eq!(options.build_url(), expected_url);
-
-    Ok(())
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/sqlx-sqlite/functions/src/options/parse/it_returns_the_parsed_url_222.rs"));

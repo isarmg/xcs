@@ -46,17 +46,5 @@ impl Args {
     }
 }
 
-#[test]
-fn parse_color() {
-    assert_eq!(
-        hex_color.parse_peek("#2F14DF"),
-        Ok((
-            "",
-            parser::Color {
-                red: 47,
-                green: 20,
-                blue: 223,
-            }
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/winnow/functions/examples/css/main/parse_color_49.rs"));

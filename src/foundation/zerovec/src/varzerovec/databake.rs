@@ -94,39 +94,8 @@ impl<T: VarULE + ?Sized> BakeSize for &VarZeroSlice<T, Index32> {
     }
 }
 
-#[test]
-fn test_baked_vec() {
-    test_bake!(
-        VarZeroVec<str>,
-        const,
-        crate::vecs::VarZeroVec16::new(),
-        zerovec
-    );
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/varzerovec/databake/test_baked_vec_97.rs"));
 
-    test_bake!(
-        VarZeroVec<str>,
-        const,
-        unsafe {
-            crate::vecs::VarZeroVec16::from_bytes_unchecked(b"\x02\0\0\0\0\0\x05\0helloworld")
-        },
-        zerovec
-    );
-}
-
-#[test]
-fn test_baked_slice() {
-    test_bake!(
-        &VarZeroSlice<str>,
-        const,
-        crate::vecs::VarZeroSlice16::new_empty(),
-        zerovec
-    );
-    test_bake!(
-        &VarZeroSlice<str>,
-        const,
-        unsafe {
-            crate::vecs::VarZeroSlice16::from_bytes_unchecked(b"\x02\0\0\0\0\0\x05\0helloworld")
-        },
-        zerovec
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/varzerovec/databake/test_baked_slice_116.rs"));

@@ -13,8 +13,5 @@ fn main() {
     println!("PORT = {}", cli.port);
 }
 
-#[test]
-fn verify_cli() {
-    use clap::CommandFactory;
-    Cli::command().debug_assert();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/clap/functions/examples/tutorial_derive/05_01_assert/verify_cli_16.rs"));

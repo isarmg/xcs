@@ -128,6 +128,7 @@ pub mod serde;
 mod signed_duration;
 mod sys;
 #[cfg(test)]
+#[path = "../../../../test/foundation/time/modules/src/tests.rs"]
 mod tests;
 mod time;
 mod timestamp;

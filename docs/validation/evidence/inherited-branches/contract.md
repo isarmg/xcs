@@ -12,7 +12,7 @@
 
 本轮实际通过 **8 项工具测试**、**52 组字段/语义向量**、3 个 JCS 向量、2 个二进制清单向量、5 个严格 JSON 拒绝样例；2 份 schema、20 条 OpenAPI 路径与当时 541 条本地链接检查均为 PASS。
 
-结果保存在 [check.json](../../../../tests/evidence/inherited-branches/contract/check.json)、[tests.log](../../../../tests/evidence/inherited-branches/contract/tests.log)；[source-receipt.json](../../../../tests/evidence/inherited-branches/contract/source-receipt.json)固定本轮源文件身份。本轮新记录不覆盖[之前禁止继承读取的方案](../lazy-branches/contract.md)及其日志。
+结果保存在 [check.json](../../../../test/evidence/inherited-branches/contract/check.json)、[tests.log](../../../../test/evidence/inherited-branches/contract/tests.log)；[source-receipt.json](../../../../test/evidence/inherited-branches/contract/source-receipt.json)固定本轮源文件身份。本轮新记录不覆盖[之前禁止继承读取的方案](../lazy-branches/contract.md)及其日志。
 
 ```sh
 cargo test --locked --offline --manifest-path tools/contract-check/Cargo.toml --target-dir target/native

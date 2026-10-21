@@ -10,9 +10,9 @@
 
 - 修复场景：448,564 次像素采样，60/60 无缺色。
 - 原始对照：24/60 稳定出现缺色。
-- 真实浏览器版本、尺寸、采样方法及计数见 [summary.json](../../../tests/evidence/contour-slices/summary.json)。
-- 每组原始结果见 [matrix-results.json](../../../tests/evidence/contour-slices/matrix-results.json)。
-- [横向前后对比](../../../tests/evidence/contour-slices/before-after-wide.png)；[纵向前后对比](../../../tests/evidence/contour-slices/before-after-tall.png)。
+- 真实浏览器版本、尺寸、采样方法及计数见 [summary.json](../../../test/evidence/contour-slices/summary.json)。
+- 每组原始结果见 [matrix-results.json](../../../test/evidence/contour-slices/matrix-results.json)。
+- [横向前后对比](../../../test/evidence/contour-slices/before-after-wide.png)；[纵向前后对比](../../../test/evidence/contour-slices/before-after-tall.png)。
 
 该记录验证绘制算法的浏览器像素结果；部署后的应用验证由主流程另行记录。临时探针保存在 当时的临时测试目录或日志，产品中没有新增维护的 JavaScript。
 

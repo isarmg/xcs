@@ -25,18 +25,18 @@
 | Backend 永久丢失恢复 | after_accept_2 中断后丢失某文件三份固定内容及暂存源，显式恢复返回降级发布和真实 UNAVAILABLE 槽 |
 | Backend 成功后损坏 | 正常发布后损坏一槽，原成功 TARGET_MET 证据保持，当前健康度变为 DEGRADED |
 
-两份实际操作响应均按未修改的原始 SaveOperation schema 验证通过，见 [校验结果](../../../tests/evidence/api/save-wire-validation.json)、[降级发布](../../../tests/evidence/api/degraded-save-operation.json) 与 [成功后损坏](../../../tests/evidence/api/damaged-published-save-operation.json)。前者冻结三槽 UNAVAILABLE、返回 PUBLISHED_DEGRADED/COMMITTED_DEGRADED/BELOW_TARGET；后者保留原 PUBLISHED/TARGET_MET/COMPLETE_VERIFIED，当前健康度单独为 DEGRADED，不重写历史成功证据。
+两份实际操作响应均按未修改的原始 SaveOperation schema 验证通过，见 [校验结果](../../../test/evidence/api/save-wire-validation.json)、[降级发布](../../../test/evidence/api/degraded-save-operation.json) 与 [成功后损坏](../../../test/evidence/api/damaged-published-save-operation.json)。前者冻结三槽 UNAVAILABLE、返回 PUBLISHED_DEGRADED/COMMITTED_DEGRADED/BELOW_TARGET；后者保留原 PUBLISHED/TARGET_MET/COMPLETE_VERIFIED，当前健康度单独为 DEGRADED，不重写历史成功证据。
 
 另外 2 项历史保存核心测试验证不变文件也重新生成独立完整副本（不同 inode、nlink=1）；PURGED 历史内容缺失时拒绝，显式完整替换后可建立新分支。
 
 ## 真实 TCP 与 CLI
 
-已在仅回环的临时服务上执行实际客户端请求：账号登录、建仓、589824 字节完整上传、seal/JCS/发布、全量下载 BLAKE3 一致、单段 Range、历史查询和原操作查询。保留的 [save-operation.json](../../../tests/evidence/api/save-operation.json) 已按原始 `docs/contracts/core.schema.json` 的 SaveOperation 定义、Draft 2020-12 与格式检查验证通过；没有修改规范来迁就实现。该文件只包含随机业务 ID、发布保护证据及检查时间。
+已在仅回环的临时服务上执行实际客户端请求：账号登录、建仓、589824 字节完整上传、seal/JCS/发布、全量下载 BLAKE3 一致、单段 Range、历史查询和原操作查询。保留的 [save-operation.json](../../../test/evidence/api/save-operation.json) 已按原始 `docs/contracts/core.schema.json` 的 SaveOperation 定义、Draft 2020-12 与格式检查验证通过；没有修改规范来迁就实现。该文件只包含随机业务 ID、发布保护证据及检查时间。
 
 另一轮真实 TCP 验证通过：完整分支、仅关联 merge-link 且 HEAD 不变、命名空间独立 mkdir/rename、独立 JCS/BLAKE3 实现生成摘要、compare、purge 后内容 410 且保留历史图、登录不会使业务预览失效、只读权限拒写、重复 JSON 键错误带 request_id、取消后禁止执行、split、Cookie CSRF 与跨源拒绝、禁用账号撤销已有 token。随后新增的历史计划、策略和准入检查由上述最终 4 项真实 Engine HTTP 测试覆盖。
 
-最终二进制再次经过实际 Rust CLI/client → TCP → HTTP → 三盘 Engine：544000 字节完整保存、原始 SaveOperation schema 验证、校验下载、磁盘保留的固定请求重发、历史计划原子分支、Range 和退出均通过，见 [native-tcp.json](../../../tests/evidence/api/native-tcp.json)。
+最终二进制再次经过实际 Rust CLI/client → TCP → HTTP → 三盘 Engine：544000 字节完整保存、原始 SaveOperation schema 验证、校验下载、磁盘保留的固定请求重发、历史计划原子分支、Range 和退出均通过，见 [native-tcp.json](../../../test/evidence/api/native-tcp.json)。
 
-CLI 已通过实际二进制验证：开发池初始化、建仓、完整保存、固定版本读取；新系统盘从数据盘恢复并读回原内容及认证；重复输入同盘不能凑成元数据多数；删除本地认证后从权威快照恢复；单盘离线检查和离线导出字节一致。最终扩展命令实测另见 [cli-smoke.json](../../../tests/evidence/api/cli-smoke.json)。
+CLI 已通过实际二进制验证：开发池初始化、建仓、完整保存、固定版本读取；新系统盘从数据盘恢复并读回原内容及认证；重复输入同盘不能凑成元数据多数；删除本地认证后从权威快照恢复；单盘离线检查和离线导出字节一致。最终扩展命令实测另见 [cli-smoke.json](../../../test/evidence/api/cli-smoke.json)。
 
 浏览器 WASM、同工作区中文目录上传、下载、窄屏、退出刷新和静态交付证据独立保存在 [Web 验收目录](web.md)。

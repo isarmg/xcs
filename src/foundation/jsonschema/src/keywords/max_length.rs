@@ -93,12 +93,4 @@ pub(crate) fn compile<'a, F: Json>(
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::tests_util;
-    use serde_json::json;
-
-    #[test]
-    fn location() {
-        tests_util::assert_schema_location(&json!({"maxLength": 1}), &json!("ab"), "/maxLength");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/jsonschema/unit/src/keywords/max_length/tests_95.rs"));

@@ -160,4 +160,5 @@ where
 }
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/rayon-core/modules/src/spawn/test.rs"]
 mod test;

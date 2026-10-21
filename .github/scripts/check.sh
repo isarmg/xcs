@@ -9,26 +9,26 @@ case "${1:-}" in
     python3 .github/scripts/check-workflows.py
     python3 tools/rust-sources/manage.py verify
     python3 tools/rust-sources/architecture.py verify
-    python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
-    python3 -m unittest discover -s .github/scripts/tests -p 'test_*.py'
-    python3 -m unittest discover -s tools/perf-check -p 'test_*.py'
-    for script in .github/scripts/*.sh .github/scripts/tests/*.sh; do
+    python3 -m unittest discover -s test/tools/rust-sources -p 'test_*.py'
+    python3 -m unittest discover -s test/ci -p 'test_*.py'
+    python3 -m unittest discover -s test/tools/perf-check -p 'test_*.py'
+    for script in .github/scripts/*.sh test/ci/*.sh; do
       bash -n "$script"
     done
-    bash .github/scripts/tests/release-package.sh
-    bash .github/scripts/tests/release-publish.sh
+    bash test/ci/release-package.sh
+    bash test/ci/release-publish.sh
     node .github/scripts/check-evidence-probes.mjs
     ;;
   rust-sources)
     python3 tools/rust-sources/manage.py verify --metadata
     python3 tools/rust-sources/architecture.py verify
-    python3 -m unittest discover -s tools/rust-sources -p 'test_*.py'
-    python3 -m unittest discover -s .github/scripts/tests -p 'test_offline_builds.py'
-    python3 -m unittest discover -s .github/scripts/tests -p 'test_check_suites.py'
-    python3 -m unittest discover -s .github/scripts/tests -p 'test_rust_diagnostics.py'
+    python3 -m unittest discover -s test/tools/rust-sources -p 'test_*.py'
+    python3 -m unittest discover -s test/ci -p 'test_offline_builds.py'
+    python3 -m unittest discover -s test/ci -p 'test_check_suites.py'
+    python3 -m unittest discover -s test/ci -p 'test_rust_diagnostics.py'
     ;;
   quality)
-    python3 -m unittest discover -s .github/scripts/tests -p 'test_rust_diagnostics.py'
+    python3 -m unittest discover -s test/ci -p 'test_rust_diagnostics.py'
     bash .github/scripts/quality.sh
     ;;
   security)
@@ -77,10 +77,10 @@ case "${1:-}" in
   build-tools)
     cargo test --locked --offline -p web-bindings -p release-tools -p web-build -p unicode-build -p perf-check
     cargo test --locked --offline --lib -p env_logger -p env_filter
-    bash .github/scripts/tests/release-package.sh
-    bash .github/scripts/tests/release-publish.sh
-    python3 -m unittest discover -s .github/scripts/tests -p 'test_offline_builds.py'
-    python3 -m unittest discover -s tools/perf-check -p 'test_*.py'
+    bash test/ci/release-package.sh
+    bash test/ci/release-publish.sh
+    python3 -m unittest discover -s test/ci -p 'test_offline_builds.py'
+    python3 -m unittest discover -s test/tools/perf-check -p 'test_*.py'
     cargo run --locked --offline -p unicode-build -- --check
     ;;
   smb-protocol)

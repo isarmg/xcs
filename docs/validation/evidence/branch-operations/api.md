@@ -8,13 +8,13 @@
 
 随后补充的公开核心 API 集成测试 6 项通过，覆盖文件夹共享复制身份、别名重命名、无效目标的原子拒绝、部分删除以及 P2 文件分支标签改名。新增的文件分支标签 HTTP 回归 1 项通过，当时 HTTP 测试文件共 16 项；随后新增的路径节点 HTTP 综合回归也已通过：文件夹及后代文件改名复用原正文、独立备注、来源节点建分支和后续写入的真实父边、错误身份及只读权限拒绝。HTTP 测试文件现共 17 项；最终整体执行记录由上级证据目录保存。
 
-- [服务端与客户端输出](../../../../tests/evidence/branch-operations/api/server-client-tests.txt)
-- [独立 SMB SDK 输出](../../../../tests/evidence/branch-operations/api/smb-sdk-tests.txt)
-- [机器契约输出](../../../../tests/evidence/branch-operations/api/contract-tests.txt)
-- [公开核心 API 别名回归](../../../../tests/evidence/branch-operations/api/core-alias-tests.txt)
-- [文件分支标签 HTTP 回归](../../../../tests/evidence/branch-operations/api/file-label-http-test.txt)
-- [路径节点 HTTP 回归](../../../../tests/evidence/branch-operations/api/path-node-http-tests.txt)
-- [统一文件历史图](../../../../tests/evidence/branch-operations/api/wire/file-path-history.json)
-- [批量移动回执](../../../../tests/evidence/branch-operations/api/wire/branch-namespace-batch.json)
+- [服务端与客户端输出](../../../../test/evidence/branch-operations/api/server-client-tests.txt)
+- [独立 SMB SDK 输出](../../../../test/evidence/branch-operations/api/smb-sdk-tests.txt)
+- [机器契约输出](../../../../test/evidence/branch-operations/api/contract-tests.txt)
+- [公开核心 API 别名回归](../../../../test/evidence/branch-operations/api/core-alias-tests.txt)
+- [文件分支标签 HTTP 回归](../../../../test/evidence/branch-operations/api/file-label-http-test.txt)
+- [路径节点 HTTP 回归](../../../../test/evidence/branch-operations/api/path-node-http-tests.txt)
+- [统一文件历史图](../../../../test/evidence/branch-operations/api/wire/file-path-history.json)
+- [批量移动回执](../../../../test/evidence/branch-operations/api/wire/branch-namespace-batch.json)
 
 `wire/` 仅包含合成测试池的操作回执。Unix 描述符测试覆盖本机桥接协议，不代表部署的 smbd 或六平台设备验收。

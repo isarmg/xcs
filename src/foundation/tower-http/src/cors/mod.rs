@@ -75,6 +75,7 @@ mod max_age;
 mod vary;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/tower-http/modules/src/cors/tests.rs"]
 mod tests;
 
 pub use self::{

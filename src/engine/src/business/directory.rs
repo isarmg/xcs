@@ -1268,5 +1268,5 @@ impl Engine {
 }
 
 #[cfg(test)]
-#[path = "directory_corruption_tests.rs"]
+#[path = "../../../../test/engine/unit/business/directory_corruption_tests.rs"]
 mod corruption_tests;

@@ -455,6 +455,7 @@ pub mod bytes;
 pub mod character;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/nom/modules/src/str.rs"]
 mod str;
 
 pub mod number;

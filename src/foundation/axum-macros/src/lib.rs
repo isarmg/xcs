@@ -820,8 +820,8 @@ fn run_ui_tests(directory: &str) {
                 panic!()
             }
         } else {
-            t.compile_fail(format!("tests/{directory}/fail/*.rs"));
-            t.pass(format!("tests/{directory}/pass/*.rs"));
+            t.compile_fail(format!("../../../test/foundation/axum-macros/tests/{directory}/fail/*.rs"));
+            t.pass(format!("../../../test/foundation/axum-macros/tests/{directory}/pass/*.rs"));
         }
     }
 

@@ -1312,111 +1312,17 @@ impl callbacks::ParseCallbacks for CargoCallbacks {
     }
 }
 
-/// Test `command_line_flag` function.
-#[test]
-fn commandline_flag_unit_test_function() {
-    //Test 1
-    let bindings = builder();
-    let command_line_flags = bindings.command_line_flags();
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/lib/commandline_flag_unit_test_function_1315.rs"));
 
-    let test_cases = [
-        "--rust-target",
-        "--no-derive-default",
-        "--generate",
-        "functions,types,vars,methods,constructors,destructors",
-    ]
-    .iter()
-    .map(|&x| x.into())
-    .collect::<Vec<String>>();
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/lib/test_rust_to_clang_target_1360.rs"));
 
-    assert!(test_cases.iter().all(|x| command_line_flags.contains(x)));
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/lib/test_rust_to_clang_target_riscv_1368.rs"));
 
-    //Test 2
-    let bindings = builder()
-        .header("input_header")
-        .allowlist_type("Distinct_Type")
-        .allowlist_function("safe_function");
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/lib/test_rust_to_clang_target_espidf_1396.rs"));
 
-    let command_line_flags = bindings.command_line_flags();
-    let test_cases = [
-        "--rust-target",
-        "input_header",
-        "--no-derive-default",
-        "--generate",
-        "functions,types,vars,methods,constructors,destructors",
-        "--allowlist-type",
-        "Distinct_Type",
-        "--allowlist-function",
-        "safe_function",
-    ]
-    .iter()
-    .map(|&x| x.into())
-    .collect::<Vec<String>>();
-    println!("{command_line_flags:?}");
-
-    assert!(test_cases.iter().all(|x| command_line_flags.contains(x)));
-}
-
-#[test]
-fn test_rust_to_clang_target() {
-    assert_eq!(
-        rust_to_clang_target("aarch64-apple-ios").as_ref(),
-        "arm64-apple-ios"
-    );
-}
-
-#[test]
-fn test_rust_to_clang_target_riscv() {
-    assert_eq!(
-        rust_to_clang_target("riscv64gc-unknown-linux-gnu").as_ref(),
-        "riscv64-unknown-linux-gnu"
-    );
-    assert_eq!(
-        rust_to_clang_target("riscv64imac-unknown-none-elf").as_ref(),
-        "riscv64-unknown-none-elf"
-    );
-    assert_eq!(
-        rust_to_clang_target("riscv32imc-unknown-none-elf").as_ref(),
-        "riscv32-unknown-none-elf"
-    );
-    assert_eq!(
-        rust_to_clang_target("riscv32imac-unknown-none-elf").as_ref(),
-        "riscv32-unknown-none-elf"
-    );
-    assert_eq!(
-        rust_to_clang_target("riscv32imafc-unknown-none-elf").as_ref(),
-        "riscv32-unknown-none-elf"
-    );
-    assert_eq!(
-        rust_to_clang_target("riscv32i-unknown-none-elf").as_ref(),
-        "riscv32-unknown-none-elf"
-    );
-}
-
-#[test]
-fn test_rust_to_clang_target_espidf() {
-    assert_eq!(
-        rust_to_clang_target("riscv32imc-esp-espidf").as_ref(),
-        "riscv32-esp-elf"
-    );
-    assert_eq!(
-        rust_to_clang_target("xtensa-esp32-espidf").as_ref(),
-        "xtensa-esp32-elf"
-    );
-}
-
-#[test]
-fn test_rust_to_clang_target_simulator() {
-    assert_eq!(
-        rust_to_clang_target("aarch64-apple-ios-sim").as_ref(),
-        "arm64-apple-ios-simulator"
-    );
-    assert_eq!(
-        rust_to_clang_target("aarch64-apple-tvos-sim").as_ref(),
-        "arm64-apple-tvos-simulator"
-    );
-    assert_eq!(
-        rust_to_clang_target("aarch64-apple-watchos-sim").as_ref(),
-        "arm64-apple-watchos-simulator"
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/lib/test_rust_to_clang_target_simulator_1408.rs"));

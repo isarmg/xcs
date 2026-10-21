@@ -309,15 +309,5 @@ pub const FFDHE8192: FfdheGroup<'static> = FfdheGroup {
     g: &[2],
 };
 
-#[test]
-fn named_group_ffdhe_group_roundtrip() {
-    use NamedGroup::*;
-    let ffdhe_groups = [FFDHE2048, FFDHE3072, FFDHE4096, FFDHE6144, FFDHE8192];
-    for g in ffdhe_groups {
-        #[allow(deprecated)]
-        let roundtrip = FfdheGroup::from_named_group(g)
-            .unwrap()
-            .named_group();
-        assert_eq!(roundtrip, Some(g));
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/functions/src/msgs/ffdhe_groups/named_group_ffdhe_group_roundtrip_312.rs"));

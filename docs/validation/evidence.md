@@ -1,7 +1,7 @@
 # 历史验证材料与当前回归的边界
 
 本目录保留历次检查脚本、说明和结果的来源，**不是当前生产验收套件**。
-[完整脚本清单](../../tests/evidence/probes.json) 逐一登记 26 个原始 JavaScript 模块，新增或移除脚本必须同步分类。
+[完整脚本清单](../../test/evidence/probes.json) 逐一登记 26 个原始 JavaScript 模块，新增或移除脚本必须同步分类。
 历史结论只适用于原报告中的源码、构建、输入和运行环境；静态检查通过不表示浏览器验收通过。
 
 当前维护的实际生产 WASM / Chrome 验收见 [browser-smoke](../tools/browser-smoke.md)。

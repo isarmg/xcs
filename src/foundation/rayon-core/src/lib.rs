@@ -83,6 +83,7 @@ mod thread_pool;
 mod unwind;
 
 mod compile_fail;
+#[path = "../../../../test/foundation/rayon-core/modules/src/test.rs"]
 mod test;
 
 pub use self::broadcast::{broadcast, spawn_broadcast, BroadcastContext};

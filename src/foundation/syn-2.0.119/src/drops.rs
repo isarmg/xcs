@@ -37,22 +37,5 @@ impl<T> TrivialDrop for slice::IterMut<'_, T> {}
 impl<T> TrivialDrop for option::IntoIter<&T> {}
 impl<T> TrivialDrop for option::IntoIter<&mut T> {}
 
-#[test]
-fn test_needs_drop() {
-    use core::mem::needs_drop;
-
-    struct NeedsDrop;
-
-    impl Drop for NeedsDrop {
-        fn drop(&mut self) {}
-    }
-
-    assert!(needs_drop::<NeedsDrop>());
-
-    // Test each of the types with a handwritten TrivialDrop impl above.
-    assert!(!needs_drop::<iter::Empty<NeedsDrop>>());
-    assert!(!needs_drop::<slice::Iter<NeedsDrop>>());
-    assert!(!needs_drop::<slice::IterMut<NeedsDrop>>());
-    assert!(!needs_drop::<option::IntoIter<&NeedsDrop>>());
-    assert!(!needs_drop::<option::IntoIter<&mut NeedsDrop>>());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/syn-2.0.119/functions/src/drops/test_needs_drop_40.rs"));

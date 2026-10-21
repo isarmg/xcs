@@ -2,6 +2,7 @@ use winnow::prelude::*;
 
 mod parser;
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/examples/c_expression/test.rs"]
 mod test;
 
 fn main() -> Result<(), lexopt::Error> {

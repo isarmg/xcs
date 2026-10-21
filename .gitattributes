@@ -19,3 +19,17 @@
 # blank lines. Hash verification, not cosmetic rewriting, protects these bytes.
 /src/foundation/ring/**/*tests.txt whitespace=-blank-at-eof
 /src/foundation/ring/cavp/third_party/NIST/SHAVS/*.rsp whitespace=-blank-at-eol,-blank-at-eof
+
+# Relocated upstream tests remain byte-exact under their current source receipts.
+/test/foundation/** -text
+/test/tools/web-bindings/** -text
+/test/foundation/ring/**/*tests.txt whitespace=-blank-at-eof
+/test/foundation/ring/cavp/third_party/NIST/SHAVS/*.rsp whitespace=-blank-at-eol,-blank-at-eof
+
+# Exact extracted upstream fragments contain original literal/comment whitespace.
+# Their preserved bytes are authenticated by the external-test receipts.
+/test/foundation/find-msvc-tools/unit/src/vs_instances/tests__94.rs whitespace=-blank-at-eol
+/test/foundation/jsonschema/unit/src/error/tests_1859.rs whitespace=-blank-at-eol
+/test/foundation/rstml/unit/src/node/atoms/test_304.rs whitespace=-blank-at-eol
+/test/foundation/sysinfo/unit/src/unix/linux/cpu/test_886.rs whitespace=-blank-at-eol
+/test/foundation/winnow/unit/examples/ndjson/parser/test_210.rs whitespace=-blank-at-eol

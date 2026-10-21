@@ -34,3 +34,15 @@ tempfile.workspace = true
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"], path = "../foundation/tower"}
+
+[[test]]
+name = "http_engine"
+path = "../../test/server/integration/http_engine.rs"
+
+[[test]]
+name = "login_admission"
+path = "../../test/server/integration/login_admission.rs"
+
+[[test]]
+name = "telemetry_status"
+path = "../../test/server/integration/telemetry_status.rs"

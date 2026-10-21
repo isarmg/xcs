@@ -77,4 +77,5 @@ pub use crate::read::*;
 pub mod write;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/gimli/modules/src/test_util.rs"]
 mod test_util;

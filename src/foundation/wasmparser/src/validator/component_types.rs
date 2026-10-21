@@ -665,10 +665,8 @@ pub struct ComponentDefinedTypeId {
     alias_id: u32,
 }
 
-#[test]
-fn assert_defined_type_small() {
-    assert!(core::mem::size_of::<ComponentDefinedTypeId>() <= 8);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/wasmparser/functions/src/validator/component_types/assert_defined_type_small_668.rs"));
 
 impl TypeIdentifier for ComponentDefinedTypeId {
     type Data = ComponentDefinedType;

@@ -21,12 +21,12 @@
 
 | 记录 | 结果及范围 |
 | --- | --- |
-| [Rust 测试](../../../../tests/evidence/branch-operations/web-rust-tests.log) | 101 项通过、无警告：公共运行时 26、组件 3、响应式状态 2、应用 70 |
-| [批量浏览器结果](../../../../tests/evidence/branch-operations/web/browser-result.json) | 中文／1440px／浅色与英文／390px／深色各 9 组交互；含双源双目标移动、一源多目标复制、取消、冲突、删除、基线登记、未确认结果、逻辑路径选择与公共文件分支内联改名 |
-| [路径节点结果](../../../../tests/evidence/branch-operations/web-path-nodes/browser-result.json) | 两场各 5 组：改名复用正文、节点备注、从路径节点分支、随后写入形成 F1→路径节点→F2、正确下载名称及正文 ID |
-| [目录控制结果](../../../../tests/evidence/branch-operations/web-directory/browser-result.json) | 两场各 5 组：真实目录 ID 默认选择、空目录分支、128 字节原位改名及审计标签 |
-| [版本树结果](../../../../tests/evidence/branch-operations/web-tree/browser-result.json) | 两场各 3 种几何状态：父下子上、跨层绕行、圆角转弯、均匀实线和节点边界 |
-| [候选摘要](../../../../tests/evidence/branch-operations/web-candidate.json)、[构建清单](../../../../tests/evidence/branch-operations/web-build-manifest.json) | 真实生产 WASM 与全部 146 个构建输入摘要；记录时与项目源码全部一致 |
+| [Rust 测试](../../../../test/evidence/branch-operations/web-rust-tests.log) | 101 项通过、无警告：公共运行时 26、组件 3、响应式状态 2、应用 70 |
+| [批量浏览器结果](../../../../test/evidence/branch-operations/web/browser-result.json) | 中文／1440px／浅色与英文／390px／深色各 9 组交互；含双源双目标移动、一源多目标复制、取消、冲突、删除、基线登记、未确认结果、逻辑路径选择与公共文件分支内联改名 |
+| [路径节点结果](../../../../test/evidence/branch-operations/web-path-nodes/browser-result.json) | 两场各 5 组：改名复用正文、节点备注、从路径节点分支、随后写入形成 F1→路径节点→F2、正确下载名称及正文 ID |
+| [目录控制结果](../../../../test/evidence/branch-operations/web-directory/browser-result.json) | 两场各 5 组：真实目录 ID 默认选择、空目录分支、128 字节原位改名及审计标签 |
+| [版本树结果](../../../../test/evidence/branch-operations/web-tree/browser-result.json) | 两场各 3 种几何状态：父下子上、跨层绕行、圆角转弯、均匀实线和节点边界 |
+| [候选摘要](../../../../test/evidence/branch-operations/web-candidate.json)、[构建清单](../../../../test/evidence/branch-operations/web-build-manifest.json) | 真实生产 WASM 与全部 146 个构建输入摘要；记录时与项目源码全部一致 |
 
 浏览器加载真实生产 WASM。批量探针对所有网络请求本地响应，使用与服务一致的 CSP；其业务 API 为隔离夹具，不接触实际用户文件。目录及树回归探针使用临时候选静态服务，也将所有业务 API 拦截。截图位于各结果目录。
 
@@ -38,10 +38,10 @@
 cargo test --manifest-path web/Cargo.toml --locked --offline --workspace
 ZXS_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
 ZXS_BROWSER_DIST=/absolute/path/to/candidate/web/dist \
-node tests/evidence/branch-operations/web-browser-probe.mjs
+node test/evidence/branch-operations/web-browser-probe.mjs
 ZXS_PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
 ZXS_BROWSER_DIST=/absolute/path/to/candidate/web/dist \
-node tests/evidence/branch-operations/web-path-nodes-probe.mjs
+node test/evidence/branch-operations/web-path-nodes-probe.mjs
 ```
 
-可用 `ZXS_BRANCH_WEB_EVIDENCE` 指定新输出目录。树和目录探针分别复用 `tests/evidence/version-tree-connectors/browser-probe.mjs` 与 `tests/evidence/directory-compositions/browser-probe.mjs`；通过 `ZXS_PREVIEW_URL` 指向隔离静态服务，`ZXS_PRODUCT_ROOT` 指向相应候选根，再用 `ZXS_TREE_EVIDENCE`／`ZXS_DIRECTORY_EVIDENCE` 指定输出目录。Playwright 是测试工具，不是产品构建或运行依赖。
+可用 `ZXS_BRANCH_WEB_EVIDENCE` 指定新输出目录。树和目录探针分别复用 `test/evidence/version-tree-connectors/browser-probe.mjs` 与 `test/evidence/directory-compositions/browser-probe.mjs`；通过 `ZXS_PREVIEW_URL` 指向隔离静态服务，`ZXS_PRODUCT_ROOT` 指向相应候选根，再用 `ZXS_TREE_EVIDENCE`／`ZXS_DIRECTORY_EVIDENCE` 指定输出目录。Playwright 是测试工具，不是产品构建或运行依赖。

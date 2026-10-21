@@ -595,7 +595,5 @@ fn pack(steal: UnsignedShort, real: UnsignedShort) -> UnsignedLong {
     (real as UnsignedLong) | ((steal as UnsignedLong) << (mem::size_of::<UnsignedShort>() * 8))
 }
 
-#[test]
-fn test_local_queue_capacity() {
-    assert!(LOCAL_QUEUE_CAPACITY - 1 <= u8::MAX as usize);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/runtime/scheduler/multi_thread/queue/test_local_queue_capacity_598.rs"));

@@ -630,4 +630,5 @@ impl Frame<'_> {
 }
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/wasm-bindgen-cli-support/modules/src/interpreter/smoke_tests.rs"]
 mod smoke_tests;

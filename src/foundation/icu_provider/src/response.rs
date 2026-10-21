@@ -328,32 +328,8 @@ where
 {
 }
 
-#[test]
-fn test_clone_eq() {
-    use crate::hello_world::*;
-    let p1 = DataPayload::<HelloWorldV1>::from_static_str("Demo");
-    let p2 = p1.clone();
-    assert_eq!(p1, p2);
-
-    let p1 = DataPayloadOr::<HelloWorldV1, usize>::from_payload(p1);
-    let p2 = p1.clone();
-    assert_eq!(p1, p2);
-
-    let p3 = DataPayloadOr::<HelloWorldV1, usize>::from_other(555);
-    let p4 = p3.clone();
-    assert_eq!(p3, p4);
-
-    let p5 = DataPayloadOr::<HelloWorldV1, usize>::from_other(666);
-    assert_ne!(p3, p5);
-    assert_ne!(p4, p5);
-
-    assert_ne!(p1, p3);
-    assert_ne!(p1, p4);
-    assert_ne!(p1, p5);
-    assert_ne!(p2, p3);
-    assert_ne!(p2, p4);
-    assert_ne!(p2, p5);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/response/test_clone_eq_331.rs"));
 
 impl<M> DataPayload<M>
 where
@@ -1137,18 +1113,5 @@ where
     }
 }
 
-#[test]
-fn test_debug() {
-    use crate::hello_world::*;
-    use crate::prelude::*;
-    let resp = HelloWorldProvider
-        .load(DataRequest {
-            id: DataIdentifierBorrowed::for_locale(&icu_locale_core::data_locale!("en")),
-            ..Default::default()
-        })
-        .unwrap();
-    assert_eq!(
-        "DataResponse { metadata: DataResponseMetadata { locale: None, buffer_format: None, checksum: Some(1234) }, payload: HelloWorld { message: \"Hello World\" } }",
-        format!("{resp:?}")
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/response/test_debug_1140.rs"));

@@ -9,7 +9,15 @@
     "src/naming",
     "tools/web-build/src",
     "tools/web-bindings/src",
-    "compliance"
+    "compliance",
+    "test/tools/web-build",
+    "test/tools/web-bindings",
+    "test/foundation",
+    "test/interface",
+    "test/macros",
+    "test/contract",
+    "test/naming",
+    "test/web"
   ],
   "files": [
     "Cargo.toml",

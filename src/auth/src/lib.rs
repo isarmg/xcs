@@ -675,4 +675,5 @@ fn password_hash_uses_current_policy(hash: &PasswordHash<'_>) -> bool {
 }
 
 #[cfg(test)]
+#[path = "../../../test/auth/unit/tests.rs"]
 mod tests;

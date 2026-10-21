@@ -70,16 +70,8 @@ impl RngCore for OsRng {
     }
 }
 
-#[test]
-fn test_os_rng() {
-    let x = OsRng.next_u64();
-    let y = OsRng.next_u64();
-    assert!(x != 0);
-    assert!(x != y);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rand_core-0.6.4/functions/src/os/test_os_rng_73.rs"));
 
-#[test]
-fn test_construction() {
-    let mut rng = OsRng::default();
-    assert!(rng.next_u64() != 0);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rand_core-0.6.4/functions/src/os/test_construction_81.rs"));

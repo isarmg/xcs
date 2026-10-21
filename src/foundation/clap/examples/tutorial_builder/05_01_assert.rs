@@ -19,7 +19,5 @@ fn cmd() -> clap::Command {
         )
 }
 
-#[test]
-fn verify_cmd() {
-    cmd().debug_assert();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/clap/functions/examples/tutorial_builder/05_01_assert/verify_cmd_22.rs"));

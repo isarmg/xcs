@@ -1,6 +1,6 @@
 # Offline TLS regression fixtures
 
-The files in `src/client/tests/fixtures/tls/` are test-only. They are not used by
+The files in `test/client/integration/fixtures/tls/` are test-only. They are not used by
 product code or installed in an operating-system trust store. The synthetic
 certificates and test key must never be used for a production service.
 
@@ -44,7 +44,7 @@ Regeneration is optional and requires Python's `cryptography` package; the test
 run uses the committed DER files and does not require Python or OpenSSL:
 
 ```sh
-python3 src/client/tests/fixtures/tls/generate.py
+python3 test/client/integration/fixtures/tls/generate.py
 ```
 
 Regeneration creates fresh synthetic keys but does not modify the public

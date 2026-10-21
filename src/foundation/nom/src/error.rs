@@ -605,18 +605,7 @@ where
 }
 
 #[cfg(test)]
-#[cfg(feature = "alloc")]
-mod tests {
-  use super::*;
-  use crate::character::complete::char;
-
-  #[test]
-  fn convert_error_panic() {
-    let input = "";
-
-    let _result: IResult<_, _, VerboseError<&str>> = char('x')(input);
-  }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/nom/unit/src/error/tests_607.rs"));
 
 /*
 #[cfg(feature = "alloc")]

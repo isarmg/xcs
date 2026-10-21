@@ -10,6 +10,7 @@ cfg_io_uring! {
 }
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/tokio/modules/src/fs/open_options/mock_open_options.rs"]
 mod mock_open_options;
 #[cfg(test)]
 use mock_open_options::MockOpenOptions as StdOpenOptions;

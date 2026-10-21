@@ -22,16 +22,4 @@ impl<T: Display, const N: usize> Display for Set<T, N> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn displays_set() {
-        let mut m: Set<String, 10> = Set::new();
-        assert_eq!(r#"{}"#, format!("{}", m));
-        m.insert("one".to_string());
-        m.insert("two".to_string());
-        assert_eq!(r#"{"one", "two"}"#, format!("{:?}", m));
-        assert_eq!(r#"{one, two}"#, format!("{}", m));
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/micromap/unit/src/set/display/tests_24.rs"));

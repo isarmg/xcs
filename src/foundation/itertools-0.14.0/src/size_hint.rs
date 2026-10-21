@@ -86,9 +86,5 @@ pub fn min(a: SizeHint, b: SizeHint) -> SizeHint {
     (lower, upper)
 }
 
-#[test]
-fn mul_size_hints() {
-    assert_eq!(mul((3, Some(4)), (3, Some(4))), (9, Some(16)));
-    assert_eq!(mul((3, Some(4)), (usize::MAX, None)), (usize::MAX, None));
-    assert_eq!(mul((3, None), (0, Some(0))), (0, Some(0)));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/itertools-0.14.0/functions/src/size_hint/mul_size_hints_89.rs"));

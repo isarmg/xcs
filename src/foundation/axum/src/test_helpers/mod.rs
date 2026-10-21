@@ -6,9 +6,11 @@ mod test_client;
 pub use self::test_client::*;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/axum/modules/src/test_helpers/tracing_helpers.rs"]
 pub(crate) mod tracing_helpers;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/axum/modules/src/test_helpers/counting_cloneable_state.rs"]
 pub(crate) mod counting_cloneable_state;
 
 #[cfg(test)]

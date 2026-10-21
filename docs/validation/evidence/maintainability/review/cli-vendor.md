@@ -110,7 +110,7 @@ In this table, `core/src` abbreviates `web-interface-core/src` and `macro/src` a
 - Fixture WASM loaded HTTP 200 as `application/wasm`, SHA-256 `6def2bfe3e5220efaa2cdf0dfd7593939b86ad1818a8689c375c391b92044725`.
 - Browser sequence one: hide at 0.8 ms, repeated false notification at 51.7 ms, show at 102.2 ms; at 352.4 ms the child remained present, beyond both previous hide deadlines.
 - Browser sequence two: hide, repeated false notification, unmount; after 305.2 ms the mount target had zero children, empty text and no child element.
-- Both sequences passed with empty `pageErrors` and `consoleErrors`. Durable sanitized evidence is `tests/evidence/maintainability/animated-show-probe.mjs` and `animated-show-result.json`. The Web reviewer executed the probe and closed its disposable HTTP server. It did not access the user's current service.
+- Both sequences passed with empty `pageErrors` and `consoleErrors`. Durable sanitized evidence is `test/evidence/maintainability/animated-show-probe.mjs` and `animated-show-result.json`. The Web reviewer executed the probe and closed its disposable HTTP server. It did not access the user's current service.
 
 ## Remaining boundaries
 

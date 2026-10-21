@@ -63,26 +63,4 @@ impl<T: AsRef<str>> fmt::Display for AsLowerCamelCase<T> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::ToLowerCamelCase;
-
-    macro_rules! t {
-        ($t:ident : $s1:expr => $s2:expr) => {
-            #[test]
-            fn $t() {
-                assert_eq!($s1.to_lower_camel_case(), $s2)
-            }
-        };
-    }
-
-    t!(test1: "CamelCase" => "camelCase");
-    t!(test2: "This is Human case." => "thisIsHumanCase");
-    t!(test3: "MixedUP CamelCase, with some Spaces" => "mixedUpCamelCaseWithSomeSpaces");
-    t!(test4: "mixed_up_ snake_case, with some _spaces" => "mixedUpSnakeCaseWithSomeSpaces");
-    t!(test5: "kebab-case" => "kebabCase");
-    t!(test6: "SHOUTY_SNAKE_CASE" => "shoutySnakeCase");
-    t!(test7: "snake_case" => "snakeCase");
-    t!(test8: "this-contains_ ALLKinds OfWord_Boundaries" => "thisContainsAllKindsOfWordBoundaries");
-    t!(test9: "XΣXΣ baﬄe" => "xσxςBaﬄe");
-    t!(test10: "XMLHttpRequest" => "xmlHttpRequest");
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/heck/unit/src/lower_camel/tests_65.rs"));

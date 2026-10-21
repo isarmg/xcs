@@ -103,9 +103,5 @@ impl<T, U, E> fmt::Debug for BoxService<T, U, E> {
     }
 }
 
-#[test]
-fn is_sync() {
-    fn assert_sync<T: Sync>() {}
-
-    assert_sync::<BoxService<(), (), ()>>();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tower/functions/src/util/boxed/sync/is_sync_106.rs"));

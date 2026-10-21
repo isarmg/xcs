@@ -278,6 +278,7 @@ mod try_exists;
 pub use self::try_exists::try_exists;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/tokio/modules/src/fs/mocks.rs"]
 mod mocks;
 
 feature! {

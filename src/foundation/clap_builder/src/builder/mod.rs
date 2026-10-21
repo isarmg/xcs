@@ -21,6 +21,7 @@ mod value_parser;
 mod debug_asserts;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/clap_builder/modules/src/builder/tests.rs"]
 mod tests;
 
 pub mod styling;

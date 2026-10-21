@@ -457,20 +457,8 @@ pub struct OwnedSemaphorePermit {
     permits: u32,
 }
 
-#[test]
-
-fn bounds() {
-    fn check_unpin<T: Unpin>() {}
-    // This has to take a value, since the async fn's return type is unnameable.
-    fn check_send_sync_val<T: Send + Sync>(_t: T) {}
-    fn check_send_sync<T: Send + Sync>() {}
-    check_unpin::<Semaphore>();
-    check_unpin::<SemaphorePermit<'_>>();
-    check_send_sync::<Semaphore>();
-
-    let semaphore = Semaphore::new(0);
-    check_send_sync_val(semaphore.acquire());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/sync/semaphore/bounds_460.rs"));
 
 impl Semaphore {
     /// The maximum number of permits which a semaphore can hold. It is `usize::MAX >> 3`.

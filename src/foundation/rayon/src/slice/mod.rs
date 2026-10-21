@@ -11,6 +11,7 @@ mod rchunks;
 mod sort;
 mod windows;
 
+#[path = "../../../../../test/foundation/rayon/modules/src/slice/test.rs"]
 mod test;
 
 use self::sort::par_mergesort;

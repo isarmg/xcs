@@ -5,6 +5,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
+#[path = "../../../../../test/foundation/rayon-core/modules/src/broadcast/test.rs"]
 mod test;
 
 /// Executes `op` within every thread in the current thread pool. If this is

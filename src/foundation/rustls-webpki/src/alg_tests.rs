@@ -108,440 +108,139 @@ fn test_parse_spki_bad_outer(file_contents: &[u8]) -> Result<(), Error> {
 
 // XXX: We should have a variant of this test with a SHA-256 digest that gives
 // `Error::UnsupportedSignatureAlgorithmForPublicKey`.
-#[test]
-fn test_ecdsa_prime256v1_sha512_spki_params_null() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ecdsa-prime256v1-sha512-spki-params-null.pem"
-        )),
-        Err(unsupported_for_ecdsa(
-            &alg_id::ECDSA_SHA512,
-            include_bytes!("../tests/signatures/alg-id-ecpublickey-params-null.der")
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha512_spki_params_null_111.rs"));
 
-#[test]
-fn test_ecdsa_prime256v1_sha512_unused_bits_signature() {
-    assert_eq!(
-        test_verify_signed_data_signature_outer(test_file_bytes!(
-            "ecdsa-prime256v1-sha512-unused-bits-signature.pem"
-        )),
-        Err(Error::BadDer)
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha512_unused_bits_signature_124.rs"));
 
 // XXX: We should have a variant of this test with a SHA-256 digest that gives
 // `Error::UnsupportedSignatureAlgorithmForPublicKey`.
-#[test]
-fn test_ecdsa_prime256v1_sha512_using_ecdh_key() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ecdsa-prime256v1-sha512-using-ecdh-key.pem"
-        )),
-        Err(unsupported_for_ecdsa(
-            &alg_id::ECDSA_SHA512,
-            include_bytes!("../tests/signatures/alg-ecdh-secp256r1.der")
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha512_using_ecdh_key_136.rs"));
 
 // XXX: We should have a variant of this test with a SHA-256 digest that gives
 // `Error::UnsupportedSignatureAlgorithmForPublicKey`.
-#[test]
-fn test_ecdsa_prime256v1_sha512_using_ecmqv_key() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ecdsa-prime256v1-sha512-using-ecmqv-key.pem"
-        )),
-        Err(unsupported_for_ecdsa(
-            &alg_id::ECDSA_SHA512,
-            include_bytes!("../tests/signatures/alg-ecmqv-secp256r1.der")
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha512_using_ecmqv_key_151.rs"));
 
-#[test]
-fn test_ecdsa_prime256v1_sha512_using_rsa_algorithm() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ecdsa-prime256v1-sha512-using-rsa-algorithm.pem"
-        ),),
-        Err(unsupported_for_rsa(
-            &alg_id::RSA_PKCS1_SHA512,
-            &alg_id::ECDSA_P256,
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha512_using_rsa_algorithm_164.rs"));
 
 // XXX: We should have a variant of this test with a SHA-256 digest that gives
 // `Error::InvalidSignatureForPublicKey`.
-#[test]
-fn test_ecdsa_prime256v1_sha512_wrong_signature_format() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ecdsa-prime256v1-sha512-wrong-signature-format.pem"
-        )),
-        Err(unsupported_for_ecdsa(
-            &alg_id::ECDSA_SHA512,
-            &alg_id::ECDSA_P256,
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha512_wrong_signature_format_179.rs"));
 
 // Differs from Chromium because we don't support P-256 with SHA-512.
-#[test]
-fn test_ecdsa_prime256v1_sha512() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("ecdsa-prime256v1-sha512.pem")),
-        Err(unsupported_for_ecdsa(
-            &alg_id::ECDSA_SHA512,
-            &alg_id::ECDSA_P256,
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha512_193.rs"));
 
-#[test]
-fn test_ecdsa_secp384r1_sha256_corrupted_data() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ecdsa-secp384r1-sha256-corrupted-data.pem"
-        )),
-        Err(Error::InvalidSignatureForPublicKey)
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_secp384r1_sha256_corrupted_data_204.rs"));
 
-#[test]
-fn test_ecdsa_secp384r1_sha256() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("ecdsa-secp384r1-sha256.pem")),
-        Ok(())
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_secp384r1_sha256_214.rs"));
 
-#[test]
-fn test_ecdsa_using_rsa_key() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("ecdsa-using-rsa-key.pem")),
-        Err(Error::UnsupportedSignatureAlgorithmForPublicKeyContext(
-            UnsupportedSignatureAlgorithmForPublicKeyContext {
-                #[cfg(feature = "alloc")]
-                signature_algorithm_id: alg_id::ECDSA_SHA256.as_ref().to_vec(),
-                #[cfg(feature = "alloc")]
-                public_key_algorithm_id: alg_id::RSA_ENCRYPTION.as_ref().to_vec(),
-            }
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_using_rsa_key_222.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha1_bad_key_der_length() {
-    assert_eq!(
-        test_parse_spki_bad_outer(test_file_bytes!("rsa-pkcs1-sha1-bad-key-der-length.pem")),
-        Err(Error::BadDer)
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha1_bad_key_der_length_237.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha1_bad_key_der_null() {
-    assert_eq!(
-        test_parse_spki_bad_outer(test_file_bytes!("rsa-pkcs1-sha1-bad-key-der-null.pem")),
-        Err(Error::BadDer)
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha1_bad_key_der_null_245.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha1_key_params_absent() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pkcs1-sha1-key-params-absent.pem")),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsae-sha1.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha1_key_params_absent_253.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha1_using_pss_key_no_params() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "rsa-pkcs1-sha1-using-pss-key-no-params.pem"
-        )),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsae-sha1.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha1_using_pss_key_no_params_263.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha1_wrong_algorithm() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pkcs1-sha1-wrong-algorithm.pem")),
-        Err(invalid_rsa_signature())
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha1_wrong_algorithm_275.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha1() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pkcs1-sha1.pem")),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsae-sha1.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha1_283.rs"));
 
 // XXX: RSA PKCS#1 with SHA-1 is a supported algorithm, but we only accept
 // 2048-8192 bit keys, and this test file is using a 1024 bit key. Thus,
 // our results differ from Chromium's. TODO: this means we need a 2048+ bit
 // version of this test.
 
-#[test]
-fn test_rsa_pkcs1_sha256() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pkcs1-sha256.pem")),
-        Err(invalid_rsa_signature())
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha256_298.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha256_key_encoded_ber() {
-    assert_eq!(
-        test_parse_spki_bad_outer(test_file_bytes!("rsa-pkcs1-sha256-key-encoded-ber.pem")),
-        Err(Error::BadDer)
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha256_key_encoded_ber_306.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha256_spki_non_null_params() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "rsa-pkcs1-sha256-spki-non-null-params.pem"
-        )),
-        Err(unsupported_for_rsa(
-            &alg_id::RSA_PKCS1_SHA256,
-            include_bytes!("../tests/signatures/alg-rsae-bad-params.der")
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha256_spki_non_null_params_314.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha256_using_ecdsa_algorithm() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "rsa-pkcs1-sha256-using-ecdsa-algorithm.pem"
-        )),
-        Err(Error::UnsupportedSignatureAlgorithmForPublicKeyContext(
-            UnsupportedSignatureAlgorithmForPublicKeyContext {
-                #[cfg(feature = "alloc")]
-                signature_algorithm_id: alg_id::ECDSA_SHA256.as_ref().to_vec(),
-                #[cfg(feature = "alloc")]
-                public_key_algorithm_id: alg_id::RSA_ENCRYPTION.as_ref().to_vec(),
-            }
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha256_using_ecdsa_algorithm_327.rs"));
 
-#[test]
-fn test_rsa_pkcs1_sha256_using_id_ea_rsa() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pkcs1-sha256-using-id-ea-rsa.pem")),
-        Err(unsupported_for_rsa(
-            &alg_id::RSA_PKCS1_SHA256,
-            include_bytes!("../tests/signatures/alg-rsa-null-params.der")
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pkcs1_sha256_using_id_ea_rsa_344.rs"));
 
 // Chromium's PSS test are for parameter combinations we don't support.
 
-#[test]
-fn test_rsa_pss_sha1_salt20_using_pss_key_no_params() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "rsa-pss-sha1-salt20-using-pss-key-no-params.pem"
-        )),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsapss-defaults.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha1_salt20_using_pss_key_no_params_357.rs"));
 
-#[test]
-fn test_rsa_pss_sha1_salt20_using_pss_key_with_null_params() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "rsa-pss-sha1-salt20-using-pss-key-with-null-params.pem"
-        )),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsapss-defaults.der"
-        )))
-    );
-}
-#[test]
-fn test_rsa_pss_sha1_salt20() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pss-sha1-salt20.pem")),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsapss-defaults.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha1_salt20_using_pss_key_with_null_params_369.rs"));
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha1_salt20_380.rs"));
 
-#[test]
-fn test_rsa_pss_sha1_wrong_salt() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pss-sha1-wrong-salt.pem")),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsapss-salt23.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha1_wrong_salt_390.rs"));
 
-#[test]
-fn test_rsa_pss_sha256_mgf1_sha512_salt33() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pss-sha256-mgf1-sha512-salt33.pem")),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsapss-sha256-mgf1-sha512-salt33.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha256_mgf1_sha512_salt33_400.rs"));
 
-#[test]
-fn test_rsa_pss_sha256_salt10_using_pss_key_with_params() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "rsa-pss-sha256-salt10-using-pss-key-with-params.pem"
-        )),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsapss-sha256-mgf1-sha256-salt10.der"
-        )))
-    );
-}
-#[test]
-fn test_rsa_pss_sha256_salt10_using_pss_key_with_wrong_params() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "rsa-pss-sha256-salt10-using-pss-key-with-wrong-params.pem"
-        )),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsapss-sha256-mgf1-sha256-salt10.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha256_salt10_using_pss_key_with_params_410.rs"));
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha256_salt10_using_pss_key_with_wrong_params_421.rs"));
 
-#[test]
-fn test_rsa_pss_sha256_salt10() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-pss-sha256-salt10.pem")),
-        Err(unsupported(include_bytes!(
-            "../tests/signatures/alg-rsapss-sha256-mgf1-sha256-salt10.der"
-        )))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha256_salt10_433.rs"));
 
 // Our PSS tests that should work.
 
-#[test]
-fn test_rsa_pss_sha256_salt32() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("ours/rsa-pss-sha256-salt32.pem")),
-        maybe_rsa()
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha256_salt32_445.rs"));
 
-#[test]
-fn test_rsa_pss_sha384_salt48() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("ours/rsa-pss-sha384-salt48.pem")),
-        maybe_rsa()
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha384_salt48_453.rs"));
 
-#[test]
-fn test_rsa_pss_sha512_salt64() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("ours/rsa-pss-sha512-salt64.pem")),
-        maybe_rsa()
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha512_salt64_461.rs"));
 
-#[test]
-fn test_rsa_pss_sha256_salt32_corrupted_data() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ours/rsa-pss-sha256-salt32-corrupted-data.pem"
-        )),
-        Err(invalid_rsa_signature())
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha256_salt32_corrupted_data_469.rs"));
 
-#[test]
-fn test_rsa_pss_sha384_salt48_corrupted_data() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ours/rsa-pss-sha384-salt48-corrupted-data.pem"
-        )),
-        Err(invalid_rsa_signature())
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha384_salt48_corrupted_data_479.rs"));
 
-#[test]
-fn test_rsa_pss_sha512_salt64_corrupted_data() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ours/rsa-pss-sha512-salt64-corrupted-data.pem"
-        )),
-        Err(invalid_rsa_signature())
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_pss_sha512_salt64_corrupted_data_489.rs"));
 
-#[test]
-fn test_rsa_using_ec_key() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa-using-ec-key.pem")),
-        Err(unsupported_for_rsa(
-            &alg_id::RSA_PKCS1_SHA256,
-            &alg_id::ECDSA_P256
-        ))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa_using_ec_key_499.rs"));
 
-#[test]
-fn test_rsa2048_pkcs1_sha512() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("rsa2048-pkcs1-sha512.pem")),
-        maybe_rsa()
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_rsa2048_pkcs1_sha512_510.rs"));
 
-#[test]
-fn test_ecdsa_prime256v1_sha256() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!("ours/ecdsa-prime256v1-sha256.pem")),
-        (Ok(()))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha256_518.rs"));
 
-#[test]
-fn test_ecdsa_prime256v1_sha256_compressed() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ours/ecdsa-prime256v1-sha256-compressed.pem"
-        )),
-        OK_IF_POINT_COMPRESSION_SUPPORTED
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha256_compressed_526.rs"));
 
-#[test]
-fn test_ecdsa_prime256v1_sha256_spki_inside_spki() {
-    assert_eq!(
-        test_verify_signed_data(test_file_bytes!(
-            "ours/ecdsa-prime256v1-sha256-spki-inside-spki.pem"
-        )),
-        Err(Error::InvalidSignatureForPublicKey)
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/test_ecdsa_prime256v1_sha256_spki_inside_spki_536.rs"));
 
 #[cfg(all(feature = "aws-lc-rs", not(feature = "aws-lc-rs-fips")))]
 mod ml_dsa {
@@ -554,49 +253,16 @@ mod ml_dsa {
     use crate::signed_data::verify_signed_data;
 
     /// From <https://www.ietf.org/archive/id/draft-ietf-lamps-dilithium-certificates-11.html#name-example-certificates>.
-    #[test]
-    fn self_signed_ml_dsa_44() {
-        let pem = include_bytes!("../tests/tls_server_certs/ml-dsa-44-certificate.pem");
-        let der = CertificateDer::from_pem_slice(pem).unwrap();
-        let cert = Cert::from_der(Input::from(&der)).unwrap();
-        verify_signed_data(
-            SUPPORTED_ALGORITHMS_IN_TESTS,
-            cert.spki,
-            &cert.signed_data,
-            &mut Budget::default(),
-        )
-        .unwrap();
-    }
+    #[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/self_signed_ml_dsa_44_557.rs"));
 
     /// From <https://www.ietf.org/archive/id/draft-ietf-lamps-dilithium-certificates-11.html#name-example-certificates>.
-    #[test]
-    fn self_signed_ml_dsa_65() {
-        let pem = include_bytes!("../tests/tls_server_certs/ml-dsa-65-certificate.pem");
-        let der = CertificateDer::from_pem_slice(pem).unwrap();
-        let cert = Cert::from_der(Input::from(&der)).unwrap();
-        verify_signed_data(
-            SUPPORTED_ALGORITHMS_IN_TESTS,
-            cert.spki,
-            &cert.signed_data,
-            &mut Budget::default(),
-        )
-        .unwrap();
-    }
+    #[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/self_signed_ml_dsa_65_572.rs"));
 
     /// From <https://www.ietf.org/archive/id/draft-ietf-lamps-dilithium-certificates-11.html#name-example-certificates>.
-    #[test]
-    fn self_signed_ml_dsa_87() {
-        let pem = include_bytes!("../tests/tls_server_certs/ml-dsa-87-certificate.pem");
-        let der = CertificateDer::from_pem_slice(pem).unwrap();
-        let cert = Cert::from_der(Input::from(&der)).unwrap();
-        verify_signed_data(
-            SUPPORTED_ALGORITHMS_IN_TESTS,
-            cert.spki,
-            &cert.signed_data,
-            &mut Budget::default(),
-        )
-        .unwrap();
-    }
+    #[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls-webpki/functions/src/alg_tests/self_signed_ml_dsa_87_587.rs"));
 }
 
 struct TestSignedData {

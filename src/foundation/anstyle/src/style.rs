@@ -428,10 +428,5 @@ impl core::fmt::Display for StyleDisplay {
     }
 }
 
-#[test]
-#[cfg(feature = "std")]
-fn print_size_of() {
-    use core::mem::size_of;
-    dbg!(size_of::<Style>());
-    dbg!(size_of::<StyleDisplay>());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/anstyle/functions/src/style/print_size_of_431.rs"));

@@ -317,4 +317,5 @@ pub use crate::decode::{decode_engine_slice, decoded_len_estimate, DecodeError, 
 pub mod prelude;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/base64-0.23.1/modules/src/tests.rs"]
 mod tests;

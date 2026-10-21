@@ -5,6 +5,7 @@
 pub mod bits;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/src/binary/tests.rs"]
 mod tests;
 
 use crate::combinator::repeat;

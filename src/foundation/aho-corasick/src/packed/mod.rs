@@ -116,5 +116,6 @@ mod pattern;
 mod rabinkarp;
 mod teddy;
 #[cfg(all(feature = "std", test))]
+#[path = "../../../../../test/foundation/aho-corasick/modules/src/packed/tests.rs"]
 mod tests;
 mod vector;

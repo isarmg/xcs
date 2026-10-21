@@ -88,6 +88,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/blake3/modules/src/test.rs"]
 mod test;
 
 #[doc(hidden)]

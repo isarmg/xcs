@@ -275,41 +275,8 @@ where
     }
 }
 
-#[test]
-fn test_simple() {
-    let var_tuple = VarTuple {
-        sized: 1500u16,
-        variable: "hello",
-    };
-    let var_tuple_ule = super::encode_varule_to_box(&var_tuple);
-    assert_eq!(var_tuple_ule.sized.as_unsigned_int(), 1500);
-    assert_eq!(&var_tuple_ule.variable, "hello");
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/ule/vartuple/test_simple_278.rs"));
 
-    // Can't use inference due to https://github.com/rust-lang/rust/issues/130180
-    #[cfg(feature = "serde")]
-    crate::ule::test_utils::assert_serde_roundtrips::<VarTupleULE<u16, str>>(&var_tuple_ule);
-}
-
-#[test]
-fn test_nested() {
-    use crate::{ZeroSlice, ZeroVec};
-    let var_tuple = VarTuple {
-        sized: 2000u16,
-        variable: VarTuple {
-            sized: '🦙',
-            variable: ZeroVec::alloc_from_slice(b"ICU"),
-        },
-    };
-    let var_tuple_ule = super::encode_varule_to_box(&var_tuple);
-    assert_eq!(var_tuple_ule.sized.as_unsigned_int(), 2000u16);
-    assert_eq!(var_tuple_ule.variable.sized.to_char(), '🦙');
-    assert_eq!(
-        &var_tuple_ule.variable.variable,
-        ZeroSlice::from_ule_slice(b"ICU")
-    );
-    // Can't use inference due to https://github.com/rust-lang/rust/issues/130180
-    #[cfg(feature = "serde")]
-    crate::ule::test_utils::assert_serde_roundtrips::<
-        VarTupleULE<u16, VarTupleULE<char, ZeroSlice<_>>>,
-    >(&var_tuple_ule);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerovec/functions/src/ule/vartuple/test_nested_293.rs"));

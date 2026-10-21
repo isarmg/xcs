@@ -34,6 +34,7 @@ mod make;
 mod service;
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/tower/modules/src/balance/p2c/test.rs"]
 mod test;
 
 pub use layer::MakeBalanceLayer;

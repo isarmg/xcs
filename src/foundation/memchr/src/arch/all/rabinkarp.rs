@@ -364,27 +364,4 @@ unsafe fn is_equal_raw(x: *const u8, y: *const u8, n: usize) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    define_substring_forward_quickcheck!(|h, n| Some(
-        Finder::new(n).find(h, n)
-    ));
-    define_substring_reverse_quickcheck!(|h, n| Some(
-        FinderRev::new(n).rfind(h, n)
-    ));
-
-    #[test]
-    fn forward() {
-        crate::tests::substring::Runner::new()
-            .fwd(|h, n| Some(Finder::new(n).find(h, n)))
-            .run();
-    }
-
-    #[test]
-    fn reverse() {
-        crate::tests::substring::Runner::new()
-            .rev(|h, n| Some(FinderRev::new(n).rfind(h, n)))
-            .run();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/memchr/unit/src/arch/all/rabinkarp/tests_366.rs"));

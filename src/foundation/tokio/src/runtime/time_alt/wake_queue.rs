@@ -45,4 +45,5 @@ impl WakeQueue {
 }
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/tokio/modules/src/runtime/time_alt/wake_queue/tests.rs"]
 mod tests;

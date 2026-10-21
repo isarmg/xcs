@@ -13,6 +13,7 @@ use std::error::Error;
 use std::fmt;
 use std::sync::Arc;
 
+#[path = "../../../../../test/foundation/rayon-core/modules/src/thread_pool/test.rs"]
 mod test;
 
 /// Represents a user-created [thread pool].

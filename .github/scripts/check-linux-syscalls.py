@@ -64,7 +64,7 @@ def check(root):
             executable = str(Path(temporary) / mode)
             command = [
                 "rustc", "--edition=2021", "--target", TARGET, "--test",
-                str(root / "tools/rust-sources/fixtures/linux_syscalls.rs"),
+                str(root / "test/tools/rust-sources/fixtures/linux_syscalls.rs"),
                 "--deny", "warnings", "-o", executable,
             ]
             for name, path in sorted(artifacts.items()):

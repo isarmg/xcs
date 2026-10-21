@@ -625,14 +625,8 @@ macro_rules! assert_try_writeable_parts_eq {
     }};
 }
 
-#[test]
-fn test_result_try_writeable() {
-    let mut result: Result<&str, usize> = Ok("success");
-    assert_try_writeable_eq!(result, "success");
-    result = Err(44);
-    assert_try_writeable_eq!(result, "44", Err(44));
-    assert_try_writeable_parts_eq!(result, "44", Err(44), [(0, 2, Part::ERROR)])
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/writeable/functions/src/try_writeable/test_result_try_writeable_628.rs"));
 
 #[cfg(test)]
 struct DelegatedTryMessage<'s>(Result<&'s str, usize>);
@@ -640,10 +634,5 @@ struct DelegatedTryMessage<'s>(Result<&'s str, usize>);
 #[cfg(test)]
 impl_try_writeable_delegate!(DelegatedTryMessage<'_>, |&self| &self.0, Error = usize);
 
-#[test]
-fn test_delegated_try_writeable() {
-    let mut message = DelegatedTryMessage(Ok("success"));
-    assert_try_writeable_eq!(message, "success");
-    message = DelegatedTryMessage(Err(44));
-    assert_try_writeable_eq!(message, "44", Err(44));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/writeable/functions/src/try_writeable/test_delegated_try_writeable_643.rs"));

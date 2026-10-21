@@ -91,7 +91,7 @@ const SHA512_X86_64: &str = "crypto/fipsmodule/sha/asm/sha512-x86_64.pl";
 
 // ARM generator dispatch was retired; shared translators remain unchanged.
 
-const RING_TEST_SRCS: &[&str] = &[("crypto/constant_time_test.c")];
+const RING_TEST_SRCS: &[&str] = &[("../../../test/foundation/ring/crypto/constant_time_test.c")];
 
 const PREGENERATED: &str = "pregenerated";
 

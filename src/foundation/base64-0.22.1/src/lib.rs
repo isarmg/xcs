@@ -272,6 +272,7 @@ pub use crate::decode::{decode_engine_slice, decoded_len_estimate, DecodeError, 
 pub mod prelude;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/base64-0.22.1/modules/src/tests.rs"]
 mod tests;
 
 const PAD_BYTE: u8 = b'=';

@@ -1,6 +1,7 @@
 //! Choice combinators
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/nom/modules/src/branch/tests.rs"]
 mod tests;
 
 use crate::error::ErrorKind;

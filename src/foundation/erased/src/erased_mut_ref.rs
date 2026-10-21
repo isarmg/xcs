@@ -65,16 +65,4 @@ impl<'a, T> From<&'a mut T> for ErasedMut<'a> {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::ErasedMut;
-
-    #[test]
-    fn basic_test() {
-        let r1 = &mut 5usize;
-        let mut erased = ErasedMut::new(r1);
-        let r2 = unsafe { erased.get::<usize>() };
-        *r2 = 42;
-        assert_eq!(*unsafe { erased.get_ref::<usize>() }, 42);
-        assert_eq!(*r1, 42);
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/erased/unit/src/erased_mut_ref/tests_67.rs"));

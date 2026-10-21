@@ -258,6 +258,7 @@ pub use num::{
 
 #[cfg(test)]
 #[macro_use]
+#[path = "../../../../test/foundation/fraction/modules/src/tests/mod.rs"]
 mod tests;
 
 pub mod convert;

@@ -61,7 +61,7 @@ flowchart TD
 
 目录分支选择按替换子树后的完整仓库树检查 `max_directory_entries`，而不是仅检查被选择子树。超限在发布前拒绝，不留下部分状态或消耗成功操作回执；释放额度后可按原操作 ID 重试。相关回归覆盖合并后超限、边界切换及重启恢复。
 
-源码：[目录选择](../../src/engine/src/business/directory.rs)、[容量回归](../../src/engine/tests/directory_selection_limits.rs)。
+源码：[目录选择](../../src/engine/src/business/directory.rs)、[容量回归](../../test/engine/integration/directory_selection_limits.rs)。
 
 ### HTTP 上传预算、公平准入与时限
 
@@ -81,7 +81,7 @@ HTTP 请求在响应开始前统一输出 `error.code/message/retryable/request_
 
 SMB Close 正常尝试 Flush；失败仍移除本次句柄并释放路径占用，同时保留可恢复工作及错误，不返回虚假的保存成功。Detach 与 Abort 分离：前者保留未确认字节，不自动发布。直接写入 FD 可能先于 Dirty 通知，因此断连不能以“尚未收到 Dirty”为由删除工作副本。写打开还核对观察到的条目与固定基础提交，防止并发更新造成旧正文搭配新基础。
 
-源码：[HTTP 边界](../../src/server/src/http_boundary.rs)、[SMB 发布与关闭](../../src/server/src/smb_rpc/publication.rs)、[关闭回归](../../src/server/src/smb_rpc/close_tests.rs)。背景见[协议审查](server-protocol-review-20261020.md)及[架构复核](architecture-followup-20261020.md)。
+源码：[HTTP 边界](../../src/server/src/http_boundary.rs)、[SMB 发布与关闭](../../src/server/src/smb_rpc/publication.rs)、[关闭回归](../../test/server/unit/smb_rpc/close_tests.rs)。背景见[协议审查](server-protocol-review-20261020.md)及[架构复核](architecture-followup-20261020.md)。
 
 ## 四、foundation 的维护与证据职责
 

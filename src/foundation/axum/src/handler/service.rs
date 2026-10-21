@@ -108,12 +108,8 @@ impl<H, T, S> HandlerService<H, T, S> {
     }
 }
 
-#[test]
-fn traits() {
-    use crate::test_helpers::*;
-    assert_send::<HandlerService<(), NotSendSync, ()>>();
-    assert_sync::<HandlerService<(), NotSendSync, ()>>();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum/functions/src/handler/service/traits_111.rs"));
 
 impl<H, T, S> HandlerService<H, T, S> {
     pub(super) fn new(handler: H, state: S) -> Self {

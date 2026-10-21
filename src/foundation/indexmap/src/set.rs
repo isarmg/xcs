@@ -5,6 +5,7 @@ mod mutable;
 mod slice;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/indexmap/modules/src/set/tests.rs"]
 mod tests;
 
 pub use self::iter::{

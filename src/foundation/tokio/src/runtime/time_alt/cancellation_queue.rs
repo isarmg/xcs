@@ -87,4 +87,5 @@ pub(crate) fn new() -> (Sender, Receiver) {
 }
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/tokio/modules/src/runtime/time_alt/cancellation_queue/tests.rs"]
 mod tests;

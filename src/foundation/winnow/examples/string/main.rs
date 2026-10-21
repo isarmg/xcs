@@ -52,19 +52,8 @@ impl Args {
     }
 }
 
-#[test]
-fn simple() {
-    let data = "\"abc\"";
-    let result = parser::parse_string::<()>.parse(data);
-    assert_eq!(result, Ok(String::from("abc")));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/winnow/functions/examples/string/main/simple_55.rs"));
 
-#[test]
-fn escaped() {
-    let data = "\"tab:\\tafter tab, newline:\\nnew line, quote: \\\", emoji: \\u{1F602}, newline:\\nescaped whitespace: \\    abc\"";
-    let result = parser::parse_string::<()>.parse(data);
-    assert_eq!(
-        result,
-        Ok(String::from("tab:\tafter tab, newline:\nnew line, quote: \", emoji: 😂, newline:\nescaped whitespace: abc"))
-    );
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/winnow/functions/examples/string/main/escaped_62.rs"));

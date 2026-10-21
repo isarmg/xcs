@@ -224,10 +224,4 @@ impl<A: ToTokens, B: ToTokens> ToTokensTupleToSpanRange for (A, B) {
 }
 
 #[cfg(test)]
-mod test {
-    #[test]
-    fn test() {
-        span_range!(1);
-        span_range!((1, 2));
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/manyhow/unit/src/span_ranged/test_226.rs"));

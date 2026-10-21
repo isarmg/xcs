@@ -683,4 +683,5 @@ impl Transform<'_> {
 }
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/wasm-bindgen-cli-support/modules/src/transforms/externref/tests/mod.rs"]
 mod tests;

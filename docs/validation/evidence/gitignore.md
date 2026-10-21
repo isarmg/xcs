@@ -2,7 +2,7 @@
 
 2026-10-19，用户确认：排除验证生成物，只保留测试代码、说明及必要固定样例。本轮修改忽略规则、对应回归及文档附件校验，不删除本机文件，也不修改存储服务行为。
 
-- `tests/evidence/`、演示的 `tests/evidence/` 与 `tests/history/` 按目录排除结果 JSON、截图、日志、trace、下载文件及其他生成物；Markdown 说明与 Rust/MJS/Python/Shell 检查程序继续入库。
+- `test/evidence/`、演示的 `test/evidence/` 与 `tests/history/` 按目录排除结果 JSON、截图、日志、trace、下载文件及其他生成物；Markdown 说明与 Rust/MJS/Python/Shell 检查程序继续入库。
 - 各工作区 `target/`、根 `build/dist/out/artifacts`、发布临时目录、Cargo 下载缓存、覆盖率和浏览器缓存、本地环境、签名私钥、临时文件及嵌套编辑器状态均排除。
 - Cargo 锁文件、共享编辑器配置、环境示例、公开验签密钥、`web/runtime/`、字体、App 图标、schema、固定输入样例和静态参考图保留；上游 `Cargo.toml.orig` 作为来源材料保留。
 - 文档检查单独统计本地生成附件链接及缺失数量。源码副本不含验证附件时可校验规范；Markdown、源码、检查程序、schema 和固定样例缺失仍报错，路径越界仍拒绝。
@@ -13,7 +13,7 @@
 cargo test --locked --offline --manifest-path tools/contract-check/Cargo.toml --target-dir target/native
 cargo run --locked --offline --manifest-path tools/contract-check/Cargo.toml --target-dir target/native
 git status --short --untracked-files=all
-git check-ignore -v tests/evidence/merge-tags-backup/candidate-receipt.json
+git check-ignore -v test/evidence/merge-tags-backup/candidate-receipt.json
 git check-ignore -v web/runtime/src/lib.rs
 ```
 

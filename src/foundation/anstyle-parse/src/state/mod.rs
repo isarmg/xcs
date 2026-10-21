@@ -1,6 +1,7 @@
 //! ANSI escape code parsing state machine
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/anstyle-parse/modules/src/state/codegen.rs"]
 mod codegen;
 mod definitions;
 mod table;

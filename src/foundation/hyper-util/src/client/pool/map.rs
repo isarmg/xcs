@@ -221,10 +221,4 @@ mod builder {
 }
 
 #[cfg(test)]
-mod tests {
-    #[test]
-    fn smoke() {
-        let mut pool = super::Map::builder().keys(|_| "a").values(|_| "b").build();
-        pool.service(&"hello");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/hyper-util/unit/src/client/pool/map/tests_223.rs"));

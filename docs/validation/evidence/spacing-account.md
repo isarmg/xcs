@@ -9,11 +9,11 @@
 - Web 工作区 64 项单测通过（Runtime 26、应用 38）。新增真实 18px 层间距下的相邻曲线、跨层线与较高兄弟节点避障检查，路径单调且不穿节点。
 - 账户源 CSS 夹具八组通过：中文／英文 × 1440／800／390／320px，覆盖正式间距 token、36px 输入与标签、14.4px 字号、18px G4 范围、灰框、面板宽度、只读／自动填充、pending 与错误布局。
 
-- 最终服务 [14 份 CSS/WASM 资源验证](../../../tests/evidence/spacing-account/asset-result.json)通过：资源与本轮构建逐字节一致，MIME 与严格 CSP 正常。
+- 最终服务 [14 份 CSS/WASM 资源验证](../../../test/evidence/spacing-account/asset-result.json)通过：资源与本轮构建逐字节一致，MIME 与严格 CSP 正常。
 
 ## 实际浏览器结果
 
-[汇总](../../../tests/evidence/spacing-account/summary.json)与[完整记录](../../../tests/evidence/spacing-account/result.json)全部通过。只使用正常桌面和手机窗口，没有执行浏览器过度缩放测试。
+[汇总](../../../test/evidence/spacing-account/summary.json)与[完整记录](../../../test/evidence/spacing-account/result.json)全部通过。只使用正常桌面和手机窗口，没有执行浏览器过度缩放测试。
 
 | 语言／主题／宽度 | 通过组数 | 监测列数 | 账户面板宽度 | 模拟改密拦截 | 会话注销 |
 | --- | ---: | ---: | ---: | ---: | --- |
@@ -29,6 +29,6 @@
 - 版本树 mock 保留跨层三父关系及高低不同节点，横纵间距均为 18px；每条连接采样检查仍不穿节点，箭头正确指向子版本。mock 仅验证显示，不写入用户版本。文件列表行高保持 36px，内容可容纳时没有多余横向滚动条，末行没有重复底边。
 - 登录字号和既定 G4 尺寸保持。36 个页面状态记录 1829 项字体测量及 604 个实际 G4 轮廓，无旧字号，最大轮廓误差 0.00934px（容差 0.02px）。浏览器另完成 56 次资源 SHA-256 比对，均与当前 dist 相同；无页面异常、CSP 违规、文档横向溢出或意外写请求。控制台仅含初次未登录恢复的 401 与主动模拟的 400，四个测试会话全部注销。
 
-截图：[桌面真实状态](../../../tests/evidence/spacing-account/status-zh-light-1440.png)、[手机真实状态](../../../tests/evidence/spacing-account/status-zh-dark-390.png)、[桌面账户](../../../tests/evidence/spacing-account/account-zh-light-1440.png)、[手机账户](../../../tests/evidence/spacing-account/account-en-dark-320.png)、[手机模拟错误](../../../tests/evidence/spacing-account/account-error-mock-en-dark-320.png)、[18px 树间距 mock](../../../tests/evidence/spacing-account/details-tree-mock-en-dark-320.png)。
+截图：[桌面真实状态](../../../test/evidence/spacing-account/status-zh-light-1440.png)、[手机真实状态](../../../test/evidence/spacing-account/status-zh-dark-390.png)、[桌面账户](../../../test/evidence/spacing-account/account-zh-light-1440.png)、[手机账户](../../../test/evidence/spacing-account/account-en-dark-320.png)、[手机模拟错误](../../../test/evidence/spacing-account/account-error-mock-en-dark-320.png)、[18px 树间距 mock](../../../test/evidence/spacing-account/details-tree-mock-en-dark-320.png)。
 
-可复核脚本：[browser-probe.mjs](../../../tests/evidence/spacing-account/browser-probe.mjs)与[独立 G4 数值参考](../../../tests/evidence/spacing-account/g4-reference.mjs)。脚本仅允许登录、登出真实写入，其余业务写入全部拦截，不在产物中记录密码或会话令牌。
+可复核脚本：[browser-probe.mjs](../../../test/evidence/spacing-account/browser-probe.mjs)与[独立 G4 数值参考](../../../test/evidence/spacing-account/g4-reference.mjs)。脚本仅允许登录、登出真实写入，其余业务写入全部拦截，不在产物中记录密码或会话令牌。

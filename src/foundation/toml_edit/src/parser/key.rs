@@ -98,27 +98,4 @@ const UNQUOTED_CHAR: (
 const DOT_SEP: u8 = b'.';
 
 #[cfg(test)]
-#[cfg(feature = "parse")]
-#[cfg(feature = "display")]
-mod test {
-    use super::*;
-
-    #[test]
-    fn keys() {
-        let cases = [
-            ("a", "a"),
-            (r#""hello\n ""#, "hello\n "),
-            (r"'hello\n '", "hello\\n "),
-        ];
-
-        for (input, expected) in cases {
-            dbg!(input);
-            let parsed = simple_key.parse(new_input(input));
-            assert_eq!(
-                parsed,
-                Ok((RawString::with_span(0..(input.len())), expected.into())),
-                "Parsing {input:?}"
-            );
-        }
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/toml_edit/unit/src/parser/key/test_100.rs"));

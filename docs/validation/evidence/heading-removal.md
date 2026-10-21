@@ -7,4 +7,4 @@
 
 真实 Chromium 检查通过：四页×五种宽度共20组布局检查，页面无标题节点、无独立刷新行、无横向溢出。业务内容从菜单栏下直接开始，左右各16px；宽屏正文无居中留白。刷新请求分别命中磁盘列表、当前P01目录、状态及历史接口。状态卡片按实际数量自动分配列宽。Linux宿主重新嵌入本次资源并链接，未执行桌面或六平台发行验收。
 
-[浏览器结果](../../../tests/evidence/heading-removal/menu-headings-result.json)、[源文件身份核对](../../../tests/evidence/heading-removal/source-inputs-result.json)、[最终构建](../../../tests/evidence/heading-removal/web-build.txt)、[构建清单](../../../tests/evidence/heading-removal/build-manifest.json)、[Linux链接](../../../tests/evidence/heading-removal/linux-host-build.txt)、[2560px状态页](../../../tests/evidence/heading-removal/menu-status-2560.png)、[320px文件页](../../../tests/evidence/heading-removal/menu-files-320.png)。
+[浏览器结果](../../../test/evidence/heading-removal/menu-headings-result.json)、[源文件身份核对](../../../test/evidence/heading-removal/source-inputs-result.json)、[最终构建](../../../test/evidence/heading-removal/web-build.txt)、[构建清单](../../../test/evidence/heading-removal/build-manifest.json)、[Linux链接](../../../test/evidence/heading-removal/linux-host-build.txt)、[2560px状态页](../../../test/evidence/heading-removal/menu-status-2560.png)、[320px文件页](../../../test/evidence/heading-removal/menu-files-320.png)。

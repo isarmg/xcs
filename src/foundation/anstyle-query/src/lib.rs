@@ -139,24 +139,7 @@ fn non_empty(var: Option<&std::ffi::OsStr>) -> bool {
 }
 
 #[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn non_empty_not_present() {
-        assert!(!non_empty(None));
-    }
-
-    #[test]
-    fn non_empty_empty() {
-        assert!(!non_empty(Some(std::ffi::OsStr::new(""))));
-    }
-
-    #[test]
-    fn non_empty_texty() {
-        assert!(non_empty(Some(std::ffi::OsStr::new("hello"))));
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/anstyle-query/unit/src/lib/test_141.rs"));
 
 #[doc = include_str!("../../../../docs/upstream/anstyle-query-1.1.5/README.md")]
 #[cfg(doctest)]

@@ -41,10 +41,13 @@ pub fn validate_branch_name(name: &str) -> Result<()> {
 }
 
 #[cfg(test)]
+#[path = "../../../../test/engine/unit/business/composition_tests.rs"]
 mod composition_tests;
 
 #[cfg(test)]
+#[path = "../../../../test/engine/unit/business/file_paths_tests.rs"]
 mod file_paths_tests;
 
 #[cfg(test)]
+#[path = "../../../../test/engine/unit/business/reference_corruption_tests.rs"]
 mod reference_corruption_tests;

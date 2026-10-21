@@ -62,28 +62,11 @@ pub(crate) fn bytes_from_bits_pow2(mut n: usize) -> usize {
     n / 8
 }
 
-#[test]
-fn test_align_to() {
-    assert_eq!(align_to(1, 1), 1);
-    assert_eq!(align_to(1, 2), 2);
-    assert_eq!(align_to(1, 4), 4);
-    assert_eq!(align_to(5, 1), 5);
-    assert_eq!(align_to(17, 4), 20);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/codegen/struct_layout/test_align_to_65.rs"));
 
-#[test]
-fn test_bytes_from_bits_pow2() {
-    assert_eq!(bytes_from_bits_pow2(0), 0);
-    for i in 1..9 {
-        assert_eq!(bytes_from_bits_pow2(i), 1);
-    }
-    for i in 9..17 {
-        assert_eq!(bytes_from_bits_pow2(i), 2);
-    }
-    for i in 17..33 {
-        assert_eq!(bytes_from_bits_pow2(i), 4);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/bindgen/functions/codegen/struct_layout/test_bytes_from_bits_pow2_74.rs"));
 
 impl<'a> StructLayoutTracker<'a> {
     pub(crate) fn new(

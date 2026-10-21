@@ -11,7 +11,7 @@
 
 ## 实际浏览器
 
-在独立临时池的 7401 本地服务验收真实操作，种子包含 7 个版本、6 条父子关系。正式四场全部通过：[汇总](../../../tests/evidence/version-tree/summary.json)与[完整记录](../../../tests/evidence/version-tree/result.json)。未访问日常预览 7400，未修改其用户文件。
+在独立临时池的 7401 本地服务验收真实操作，种子包含 7 个版本、6 条父子关系。正式四场全部通过：[汇总](../../../test/evidence/version-tree/summary.json)与[完整记录](../../../test/evidence/version-tree/result.json)。未访问日常预览 7400，未修改其用户文件。
 
 | 语言／主题／宽度 | 通过组数 | 正式运行版本数变化 | 真实备注提交 | 真实分支创建 | 正式会话注销 |
 | --- | ---: | --- | ---: | ---: | --- |
@@ -30,18 +30,18 @@
 
 首次手机视图根节点原先可能处于局部滚动区外；最终实现只在树首次装载时将首个真实根居中，随后按上一层真实父节点位置分组排列同父子节点，多父使用父位置重心，保留全部真实连接。当前标记与日期之间保留间距且标记不拆字。
 
-[此前 36 组行为结果](../../../tests/evidence/version-tree/four-scene-behavior-result.json)完整保留。最终布局另在四种原窗口执行只读专项，每场 4 组全部通过；[专项结果](../../../tests/evidence/version-tree/layout-result.json)不包含任何业务写入。初始根完整可见，中心误差均为 0px；实际鼠标横向滚动后，刷新元数据和调整窗口均保留用户位置，不再次抢回根。真实父节点分组与三父跨层 mock 的重心顺序一致，箭头端点、避障、三行结构、字号、SVG、CSP 和局部滚动回归通过。合计 52 组独立检查，备注和创建分支没有重复提交。
+[此前 36 组行为结果](../../../test/evidence/version-tree/four-scene-behavior-result.json)完整保留。最终布局另在四种原窗口执行只读专项，每场 4 组全部通过；[专项结果](../../../test/evidence/version-tree/layout-result.json)不包含任何业务写入。初始根完整可见，中心误差均为 0px；实际鼠标横向滚动后，刷新元数据和调整窗口均保留用户位置，不再次抢回根。真实父节点分组与三父跨层 mock 的重心顺序一致，箭头端点、避障、三行结构、字号、SVG、CSP 和局部滚动回归通过。合计 52 组独立检查，备注和创建分支没有重复提交。
 
-专项首次桌面运行时，Playwright 悬停已把滚动区移到最左侧，随后向左滚轮因抵达边界被脚本误判；该上下文正常注销。修正测试滚动方向后仅补测桌面，其他三场保留通过结果，见[历史测试工具记录](../../../tests/evidence/version-tree/historical-layout-wheel-boundary.json)。行为阶段 4 个会话、专项 4 个通过会话及该额外桌面会话均已注销。
+专项首次桌面运行时，Playwright 悬停已把滚动区移到最左侧，随后向左滚轮因抵达边界被脚本误判；该上下文正常注销。修正测试滚动方向后仅补测桌面，其他三场保留通过结果，见[历史测试工具记录](../../../test/evidence/version-tree/historical-layout-wheel-boundary.json)。行为阶段 4 个会话、专项 4 个通过会话及该额外桌面会话均已注销。
 
-初步运行的测试脚本在重载页面时读取已卸载响应体，导致 Node 监听器异常；发生前已在独立 fixture 创建一个附加分支，所以正式运行从 8 个版本开始。移除该非必要监听后，四场正式运行均完成并注销。最终根任务已关闭独立 7401，并离线随机更换该池管理员密码，确认全部旧 fixture 会话（含初步异常残留）撤销，见[清理记录](../../../tests/evidence/version-tree/fixture-cleanup.json)。7400 用户账号与凭据未变。
+初步运行的测试脚本在重载页面时读取已卸载响应体，导致 Node 监听器异常；发生前已在独立 fixture 创建一个附加分支，所以正式运行从 8 个版本开始。移除该非必要监听后，四场正式运行均完成并注销。最终根任务已关闭独立 7401，并离线随机更换该池管理员密码，确认全部旧 fixture 会话（含初步异常残留）撤销，见[清理记录](../../../test/evidence/version-tree/fixture-cleanup.json)。7400 用户账号与凭据未变。
 
-最终截图：[桌面真实树且首根居中](../../../tests/evidence/version-tree/centered-real-tree-zh-light-1440.png)、[手机真实树且首根可见](../../../tests/evidence/version-tree/centered-real-tree-en-dark-320.png)、[按父节点分组的跨层多父 mock](../../../tests/evidence/version-tree/grouped-multiparent-mock-zh-light-1440.png)。先前行为截图仍保留用于对应各阶段结果。
+最终截图：[桌面真实树且首根居中](../../../test/evidence/version-tree/centered-real-tree-zh-light-1440.png)、[手机真实树且首根可见](../../../test/evidence/version-tree/centered-real-tree-en-dark-320.png)、[按父节点分组的跨层多父 mock](../../../test/evidence/version-tree/grouped-multiparent-mock-zh-light-1440.png)。先前行为截图仍保留用于对应各阶段结果。
 
-验收脚本为 [browser-probe.mjs](../../../tests/evidence/version-tree/browser-probe.mjs)，独立轮廓数值参考为 [g4-reference.mjs](../../../tests/evidence/version-tree/g4-reference.mjs)。只测试正常桌面及手机窗口，不测试或补偿浏览器过度缩放。
+验收脚本为 [browser-probe.mjs](../../../test/evidence/version-tree/browser-probe.mjs)，独立轮廓数值参考为 [g4-reference.mjs](../../../test/evidence/version-tree/g4-reference.mjs)。只测试正常桌面及手机窗口，不测试或补偿浏览器过度缩放。
 
-最终布局只读脚本为 [browser-layout-probe.mjs](../../../tests/evidence/version-tree/browser-layout-probe.mjs)。脚本只允许独立 7401，使用 `ZXS_TREE_SEED` 指定临时种子 JSON；密码从其 `password_file` 内部读取，不写入验收产物。
+最终布局只读脚本为 [browser-layout-probe.mjs](../../../test/evidence/version-tree/browser-layout-probe.mjs)。脚本只允许独立 7401，使用 `ZXS_TREE_SEED` 指定临时种子 JSON；密码从其 `password_file` 内部读取，不写入验收产物。
 
 ## 日常预览最终确认
 
-最终构建已在 7400 启动并完成恢复。[主服务只读检查](../../../tests/evidence/version-tree/main-preview-result.json)通过：真实用户文件的 2 个版本与 1 条父子边均与 API 一致，各节点为三个逻辑行，无业务写入或页面异常，测试会话已注销。[资源核验](../../../tests/evidence/version-tree/asset-result.json)确认 14 份 CSS/WASM 与最终构建逐字节一致，严格 CSP 保持。日常预览的用户账号、密码及文件内容未修改；运行服务保持开启。[实际文件版本树截图](../../../tests/evidence/version-tree/main-preview-tree.png)。
+最终构建已在 7400 启动并完成恢复。[主服务只读检查](../../../test/evidence/version-tree/main-preview-result.json)通过：真实用户文件的 2 个版本与 1 条父子边均与 API 一致，各节点为三个逻辑行，无业务写入或页面异常，测试会话已注销。[资源核验](../../../test/evidence/version-tree/asset-result.json)确认 14 份 CSS/WASM 与最终构建逐字节一致，严格 CSP 保持。日常预览的用户账号、密码及文件内容未修改；运行服务保持开启。[实际文件版本树截图](../../../test/evidence/version-tree/main-preview-tree.png)。

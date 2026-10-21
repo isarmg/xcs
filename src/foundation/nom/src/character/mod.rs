@@ -3,6 +3,7 @@
 //! Functions recognizing specific characters
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/nom/modules/src/character/tests.rs"]
 mod tests;
 
 pub mod complete;

@@ -1159,75 +1159,15 @@ cfg_32_or_test!(
 );
 
 cfg_digit!(
-    #[test]
-    fn test_from_slice() {
-        fn check(slice: &[u32], data: &[BigDigit]) {
-            assert_eq!(*BigUint::from_slice(slice).data, *data);
-        }
-        check(&[1], &[1]);
-        check(&[0, 0, 0], &[]);
-        check(&[1, 2, 0, 0], &[1, 2]);
-        check(&[0, 0, 1, 2], &[0, 0, 1, 2]);
-        check(&[0, 0, 1, 2, 0, 0], &[0, 0, 1, 2]);
-        check(&[-1i32 as u32], &[-1i32 as BigDigit]);
-    }
+    #[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-bigint/functions/src/biguint/test_from_slice_1162.rs"));
 
-    #[test]
-    fn test_from_slice() {
-        fn check(slice: &[u32], data: &[BigDigit]) {
-            assert_eq!(
-                *BigUint::from_slice(slice).data,
-                *data,
-                "from {:?}, to {:?}",
-                slice,
-                data
-            );
-        }
-        check(&[1], &[1]);
-        check(&[0, 0, 0], &[]);
-        check(&[1, 2], &[8_589_934_593]);
-        check(&[1, 2, 0, 0], &[8_589_934_593]);
-        check(&[0, 0, 1, 2], &[0, 8_589_934_593]);
-        check(&[0, 0, 1, 2, 0, 0], &[0, 8_589_934_593]);
-        check(&[-1i32 as u32], &[(-1i32 as u32) as BigDigit]);
-    }
+    #[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-bigint/functions/src/biguint/test_from_slice_1175.rs"));
 );
 
-#[test]
-fn test_u32_u128() {
-    assert_eq!(u32_from_u128(0u128), (0, 0, 0, 0));
-    assert_eq!(
-        u32_from_u128(u128::MAX),
-        (u32::MAX, u32::MAX, u32::MAX, u32::MAX)
-    );
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-bigint/functions/src/biguint/test_u32_u128_1196.rs"));
 
-    assert_eq!(u32_from_u128(u32::MAX as u128), (0, 0, 0, u32::MAX));
-
-    assert_eq!(u32_from_u128(u64::MAX as u128), (0, 0, u32::MAX, u32::MAX));
-
-    assert_eq!(
-        u32_from_u128((u64::MAX as u128) + u32::MAX as u128),
-        (0, 1, 0, u32::MAX - 1)
-    );
-
-    assert_eq!(u32_from_u128(36_893_488_151_714_070_528), (0, 2, 1, 0));
-}
-
-#[test]
-fn test_u128_u32_roundtrip() {
-    // roundtrips
-    let values = vec![
-        0u128,
-        1u128,
-        u64::MAX as u128 * 3,
-        u32::MAX as u128,
-        u64::MAX as u128,
-        (u64::MAX as u128) + u32::MAX as u128,
-        u128::MAX,
-    ];
-
-    for val in &values {
-        let (a, b, c, d) = u32_from_u128(*val);
-        assert_eq!(u32_to_u128(a, b, c, d), *val);
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-bigint/functions/src/biguint/test_u128_u32_roundtrip_1216.rs"));

@@ -224,12 +224,5 @@ impl From<Table> for DocumentMut {
     }
 }
 
-#[test]
-#[cfg(feature = "parse")]
-#[cfg(feature = "display")]
-fn default_roundtrip() {
-    DocumentMut::default()
-        .to_string()
-        .parse::<DocumentMut>()
-        .unwrap();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/toml_edit/functions/src/document/default_roundtrip_227.rs"));

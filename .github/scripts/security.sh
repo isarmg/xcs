@@ -4,10 +4,10 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 audit_root="$PWD/target/security-tools"
 audit="$audit_root/bin/cargo-audit"
-python3 .github/scripts/tests/test_security_audit_install.py
+python3 test/ci/test_security_audit_install.py
 python3 .github/scripts/install-security-audit.py
-python3 .github/scripts/tests/test_security_gate.py
-python3 -m unittest discover -s tools/rust-sources -p 'test_audit.py'
+python3 test/ci/test_security_gate.py
+python3 -m unittest discover -s test/tools/rust-sources -p 'test_audit.py'
 reports=$(mktemp -d)
 trap 'rm -rf "$reports"' EXIT
 # cargo-audit selects this cwd-local policy instead of any inherited audit.toml.

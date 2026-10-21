@@ -382,57 +382,8 @@ impl ToOwned for DataMarkerAttributes {
     }
 }
 
-#[test]
-fn test_data_marker_attributes_from_utf8() {
-    let bytes_vec: Vec<&[u8]> = vec![
-        b"long-meter",
-        b"long",
-        b"meter",
-        b"short-meter-second",
-        b"usd",
-    ];
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/request/test_data_marker_attributes_from_utf8_385.rs"));
 
-    for bytes in bytes_vec {
-        let marker = DataMarkerAttributes::try_from_utf8(bytes).unwrap();
-        assert_eq!(marker.to_string().as_bytes(), bytes);
-    }
-}
-
-#[test]
-fn test_data_marker_attributes_syntax() {
-    let valid_cases = [
-        "long-meter",
-        "long",
-        "meter",
-        "short-meter-second",
-        "usd",
-        "nested/part",
-        "foo/bar/baz",
-        "",
-    ];
-
-    let invalid_cases = [
-        "/leading",
-        "trailing/",
-        "double//slash",
-        "invalid space",
-        "invalid$character",
-        "invalid\\backslash",
-    ];
-
-    for s in valid_cases {
-        assert!(
-            DataMarkerAttributes::try_from_str(s).is_ok(),
-            "Expected valid: {}",
-            s
-        );
-    }
-
-    for s in invalid_cases {
-        assert!(
-            DataMarkerAttributes::try_from_str(s).is_err(),
-            "Expected invalid: {}",
-            s
-        );
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_provider/functions/src/request/test_data_marker_attributes_syntax_401.rs"));

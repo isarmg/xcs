@@ -433,7 +433,5 @@ fn map_err_rejection(rejection: &Option<syn::Path>) -> TokenStream {
         .unwrap_or_default()
 }
 
-#[test]
-fn ui() {
-    crate::run_ui_tests("typed_path");
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum-macros/functions/src/typed_path/ui_436.rs"));

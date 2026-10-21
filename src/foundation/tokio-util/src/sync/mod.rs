@@ -17,4 +17,5 @@ mod reusable_box;
 pub use reusable_box::ReusableBoxFuture;
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/tokio-util/modules/src/sync/tests/mod.rs"]
 mod tests;

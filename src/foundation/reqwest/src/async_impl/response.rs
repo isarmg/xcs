@@ -416,23 +416,4 @@ impl From<Response> for http::Response<Body> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::Response;
-    use crate::ResponseBuilderExt;
-    use http::response::Builder;
-    use url::Url;
-
-    #[test]
-    fn test_from_http_response() {
-        let url = Url::parse("http://example.com").unwrap();
-        let response = Builder::new()
-            .status(200)
-            .url(url.clone())
-            .body("foo")
-            .unwrap();
-        let response = Response::from(response);
-
-        assert_eq!(response.status(), 200);
-        assert_eq!(*response.url(), url);
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/reqwest/unit/src/async_impl/response/tests_418.rs"));

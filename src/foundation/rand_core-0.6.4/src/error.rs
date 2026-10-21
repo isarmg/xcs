@@ -217,12 +217,4 @@ impl fmt::Display for ErrorCode {
 impl std::error::Error for ErrorCode {}
 
 #[cfg(test)]
-mod test {
-    #[cfg(feature = "getrandom")]
-    #[test]
-    fn test_error_codes() {
-        // Make sure the values are the same as in `getrandom`.
-        assert_eq!(super::Error::CUSTOM_START, getrandom::Error::CUSTOM_START);
-        assert_eq!(super::Error::INTERNAL_START, getrandom::Error::INTERNAL_START);
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rand_core-0.6.4/unit/src/error/test_219.rs"));

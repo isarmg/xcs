@@ -415,6 +415,7 @@ mod log {
 
 #[cfg(test)]
 #[macro_use]
+#[path = "../../../../test/foundation/rustls/modules/src/test_macros.rs"]
 mod test_macros;
 
 /// This internal `sync` module aliases the `Arc` implementation to allow downstream forks
@@ -448,6 +449,7 @@ mod tls13;
 mod vecbuf;
 mod verify;
 #[cfg(test)]
+#[path = "../../../../test/foundation/rustls/modules/src/verifybench.rs"]
 mod verifybench;
 mod x509;
 #[macro_use]
@@ -587,6 +589,7 @@ pub mod client {
     pub(super) mod handy;
     mod hs;
     #[cfg(test)]
+    #[path = "../../../../../test/foundation/rustls/modules/src/client/test.rs"]
     mod test;
     #[cfg(feature = "tls12")]
     mod tls12;
@@ -630,6 +633,7 @@ pub mod server {
     mod hs;
     mod server_conn;
     #[cfg(test)]
+    #[path = "../../../../../test/foundation/rustls/modules/src/server/test.rs"]
     mod test;
     #[cfg(feature = "tls12")]
     mod tls12;

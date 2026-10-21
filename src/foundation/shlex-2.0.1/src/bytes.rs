@@ -466,12 +466,8 @@ pub fn try_quote(in_bytes: &[u8]) -> Result<Cow<'_, [u8]>, QuoteError> {
 #[cfg(test)]
 const INVALID_UTF8: &[u8] = b"\xa1";
 
-#[test]
-#[allow(invalid_from_utf8)]
-fn test_invalid_utf8() {
-    // Check that our test string is actually invalid UTF-8.
-    assert!(core::str::from_utf8(INVALID_UTF8).is_err());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/shlex-2.0.1/functions/src/bytes/test_invalid_utf8_469.rs"));
 
 #[cfg(test)]
 static SPLIT_TEST_ITEMS: &[(&[u8], Option<&[&[u8]]>)] = &[
@@ -498,19 +494,8 @@ static SPLIT_TEST_ITEMS: &[(&[u8], Option<&[&[u8]]>)] = &[
     (INVALID_UTF8, Some(&[INVALID_UTF8])),
 ];
 
-#[test]
-fn test_split() {
-    for &(input, output) in SPLIT_TEST_ITEMS {
-        assert_eq!(split(input), output.map(|o| o.iter().map(|&x| x.to_owned()).collect()));
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/shlex-2.0.1/functions/src/bytes/test_split_501.rs"));
 
-#[test]
-fn test_lineno() {
-    let mut sh = Shlex::new(b"\nfoo\nbar");
-    while let Some(word) = sh.next() {
-        if word == b"bar" {
-            assert_eq!(sh.line_no, 3);
-        }
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/shlex-2.0.1/functions/src/bytes/test_lineno_508.rs"));

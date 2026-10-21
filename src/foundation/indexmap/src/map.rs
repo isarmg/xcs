@@ -14,6 +14,7 @@ pub mod raw_entry_v1;
 pub mod serde_seq;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/indexmap/modules/src/map/tests.rs"]
 mod tests;
 
 pub use self::entry::{Entry, IndexedEntry};

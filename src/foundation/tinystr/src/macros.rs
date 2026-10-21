@@ -18,13 +18,4 @@ macro_rules! tinystr {
 }
 
 #[cfg(test)]
-mod tests {
-    #[test]
-    fn test_macro_construction() {
-        let s1 = tinystr!(8, "foobar");
-        assert_eq!(&*s1, "foobar");
-
-        let s1 = tinystr!(12, "foobarbaz");
-        assert_eq!(&*s1, "foobarbaz");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tinystr/unit/src/macros/tests_20.rs"));

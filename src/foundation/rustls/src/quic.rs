@@ -1041,16 +1041,4 @@ impl Version {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::prelude::v1::*;
-
-    use super::PacketKey;
-    use crate::quic::HeaderProtectionKey;
-
-    #[test]
-    fn auto_traits() {
-        fn assert_auto<T: Send + Sync>() {}
-        assert_auto::<Box<dyn PacketKey>>();
-        assert_auto::<Box<dyn HeaderProtectionKey>>();
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/rustls/unit/src/quic/tests_1043.rs"));

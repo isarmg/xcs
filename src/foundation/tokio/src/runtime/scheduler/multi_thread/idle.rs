@@ -229,12 +229,5 @@ impl fmt::Debug for State {
     }
 }
 
-#[test]
-fn test_state() {
-    assert_eq!(0, UNPARK_MASK & SEARCH_MASK);
-    assert_eq!(0, !(UNPARK_MASK | SEARCH_MASK));
-
-    let state = State::new(10);
-    assert_eq!(10, state.num_unparked());
-    assert_eq!(0, state.num_searching());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/tokio/functions/src/runtime/scheduler/multi_thread/idle/test_state_232.rs"));

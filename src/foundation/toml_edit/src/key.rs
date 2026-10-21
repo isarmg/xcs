@@ -422,9 +422,5 @@ impl std::fmt::Display for KeyMut<'_> {
     }
 }
 
-#[test]
-#[cfg(feature = "parse")]
-#[cfg(feature = "display")]
-fn string_roundtrip() {
-    Key::new("hello").to_string().parse::<Key>().unwrap();
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/toml_edit/functions/src/key/string_roundtrip_425.rs"));

@@ -3,6 +3,7 @@
 //! Functions recognizing specific characters
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/src/ascii/tests.rs"]
 mod tests;
 
 use core::ops::{Add, Shl};

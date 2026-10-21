@@ -7,13 +7,13 @@
 ## 自动化检查
 
 - Web 工作区 66 项单元测试通过（Runtime 26、应用 40），包含最新版本拓扑、向上箭头及现有组件回归。
-- [源 CSS 夹具结果](../../../tests/evidence/page-format-newest-tree/source-css-result.json)八组通过，覆盖中英文和正常桌面／手机窗口；[夹具脚本](../../../tests/evidence/page-format-newest-tree/source-css-probe.mjs)保留供复核。
+- [源 CSS 夹具结果](../../../test/evidence/page-format-newest-tree/source-css-result.json)八组通过，覆盖中英文和正常桌面／手机窗口；[夹具脚本](../../../test/evidence/page-format-newest-tree/source-css-probe.mjs)保留供复核。
 - `tools/web-build check` 通过，14 份 CSS 的源码与 dist 逐字节一致；契约工具验证 522 个文档链接通过。
-- 最终服务 [15 份 CSS/WASM 资源验证](../../../tests/evidence/page-format-newest-tree/asset-result.json)通过，包含新增 `history.css`，与最终构建逐字节一致，MIME 与 CSP 正常。
+- 最终服务 [15 份 CSS/WASM 资源验证](../../../test/evidence/page-format-newest-tree/asset-result.json)通过，包含新增 `history.css`，与最终构建逐字节一致，MIME 与 CSP 正常。
 
 ## 浏览器范围
 
-四种组合均已完成，每场 9 组、合计 36 组通过：[汇总](../../../tests/evidence/page-format-newest-tree/summary.json)与[完整记录](../../../tests/evidence/page-format-newest-tree/result.json)。没有执行浏览器过度缩放测试。
+四种组合均已完成，每场 9 组、合计 36 组通过：[汇总](../../../test/evidence/page-format-newest-tree/summary.json)与[完整记录](../../../test/evidence/page-format-newest-tree/result.json)。没有执行浏览器过度缩放测试。
 
 | 语言／主题／宽度 | 通过组数 | 真实版本／连接 | 真实历史事件 | 测试会话注销 |
 | --- | ---: | --- | ---: | --- |
@@ -33,6 +33,6 @@
 - 监测底部采样时间采用 36px／14.4px、10.8px 内缩；英文 320px 自然换为两行，高 57.625px。卡片内部标题和副标题各以 36px 为行基准，卡片上下内边距为 0、左右为 9.8px；9 卡保持 3:2、桌面四列、手机一列及 18px 间隔。
 - 32 个页面状态记录 1754 个字号及 536 个实际 G4 轮廓，未发现旧字号；最大轮廓误差 0.00934px（容差 0.02px）。60 次浏览器资源 SHA-256 比对全部匹配当前 dist；无页面异常、CSP 违规、文档横向溢出、黑色 SVG 填充或业务写请求。控制台仅记录 401 未授权响应，原始记录保留在结果中。四个测试会话全部注销，登录既定尺寸保持。
 
-截图：[真实文件详情](../../../tests/evidence/page-format-newest-tree/file-details-real-zh-light-1440.png)、[真实历史](../../../tests/evidence/page-format-newest-tree/history-real-zh-light-1440.png)、[最新在上树 mock](../../../tests/evidence/page-format-newest-tree/file-details-newest-tree-mock-zh-light-1440.png)、[手机长路径历史 mock](../../../tests/evidence/page-format-newest-tree/history-mock-en-dark-320.png)、[真实状态](../../../tests/evidence/page-format-newest-tree/status-real-en-light-800.png)、[手机底部采样时间](../../../tests/evidence/page-format-newest-tree/status-footer-en-dark-320.png)。mock 截图仅证明边界布局，不代表真实用户数据。
+截图：[真实文件详情](../../../test/evidence/page-format-newest-tree/file-details-real-zh-light-1440.png)、[真实历史](../../../test/evidence/page-format-newest-tree/history-real-zh-light-1440.png)、[最新在上树 mock](../../../test/evidence/page-format-newest-tree/file-details-newest-tree-mock-zh-light-1440.png)、[手机长路径历史 mock](../../../test/evidence/page-format-newest-tree/history-mock-en-dark-320.png)、[真实状态](../../../test/evidence/page-format-newest-tree/status-real-en-light-800.png)、[手机底部采样时间](../../../test/evidence/page-format-newest-tree/status-footer-en-dark-320.png)。mock 截图仅证明边界布局，不代表真实用户数据。
 
-可复核脚本：[browser-probe.mjs](../../../tests/evidence/page-format-newest-tree/browser-probe.mjs)及[独立 G4 轮廓参考](../../../tests/evidence/page-format-newest-tree/g4-reference.mjs)。
+可复核脚本：[browser-probe.mjs](../../../test/evidence/page-format-newest-tree/browser-probe.mjs)及[独立 G4 轮廓参考](../../../test/evidence/page-format-newest-tree/g4-reference.mjs)。

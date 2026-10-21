@@ -29,15 +29,64 @@ TARGET_SHA256 = 'dad19ddfdd538ef971c275a61101fab798b23ec7edcdcf1494cd4401383f1d8
 RETIRED_ARCHIVE = Path('compliance/provenance/supplemental/ring-0.17.14-linux-amd64-retired.zip')
 
 
+RELOCATION = Path('compliance/ring-test-relocation.json')
+RELOCATION_SHA256 = '178ec0e2f7a74909cd037f3d2eda20ef50911d305effcd78311267addb273a5c'
+
+
+def relocated_sources(root):
+    """Authenticate exact live inventories and reverse only pinned routing edits."""
+    content = checked_path(root, str(RELOCATION)).read_bytes()
+    if hashlib.sha256(content).hexdigest() != RELOCATION_SHA256:
+        raise ValueError('ring relocation receipt changed')
+    receipt = json.loads(content)
+    if receipt['schema_version'] != 1:
+        raise ValueError('unexpected ring relocation schema')
+    current = {}
+    for base in (RING, Path('test/foundation/ring')):
+        directory = checked_path(root, str(base))
+        for path in directory.rglob('*'):
+            checked_path(root, path.relative_to(root).as_posix())
+            if path.is_file():
+                current[path.relative_to(root).as_posix()] = path.read_bytes()
+            elif not path.is_dir():
+                raise ValueError('special file in ring sources')
+    expected = {row['path']: row['sha256'] for row in receipt['files']}
+    expected.update(receipt['external_files'])
+    if {path: hashlib.sha256(data).hexdigest() for path, data in current.items()} != expected:
+        raise ValueError('current ring source inventory/content changed')
+    historical = {}
+    for row in receipt['files']:
+        source = row['source']
+        checked_path(root, source)
+        if source in historical or not source.startswith(str(RING) + '/'):
+            raise ValueError('invalid ring relocation source')
+        data = current[row['path']]
+        if 'replacement' in row:
+            old, new = (row['replacement'][key].encode() for key in ('old', 'new'))
+            if not new or data.count(new) != 1:
+                raise ValueError('ring relocation is not uniquely reversible')
+            before = data.replace(new, old)
+            if before.count(old) != 1 or before.replace(old, new) != data:
+                raise ValueError('ring relocation is not reversible')
+            data = before
+        historical[source] = data
+    return historical
+
+
 def object_hash(kind, content):
     return hashlib.sha1(kind.encode() + b' ' + str(len(content)).encode() + b'\0' + content).hexdigest()
 
 
 def checked_path(root, relative):
     path = PurePosixPath(relative)
-    if path.is_absolute() or '..' in path.parts or str(path) != relative:
+    if path.is_absolute() or '..' in path.parts or str(path) != relative or '\\' in relative or any(':' in part for part in path.parts):
         raise ValueError(f'unsafe material path: {relative}')
     result = root / relative
+    current = root
+    for part in path.parts:
+        current /= part
+        if current.is_symlink():
+            raise ValueError(f'material path symlink: {relative}')
     if not result.resolve().is_relative_to(root.resolve()) or result.is_symlink():
         raise ValueError(f'material escaped source tree: {relative}')
     return result
@@ -100,19 +149,19 @@ def target_sources(root):
             or set(deleted) & set(retained)):
         raise ValueError('unexpected target-pruning source inventory')
     source_root = checked_path(root, str(RING))
-    paths = list(source_root.rglob('*'))
-    if any(path.is_symlink() for path in paths):
-        raise ValueError('symlink in current ring source tree')
-    actual = {path.relative_to(source_root).as_posix() for path in paths if path.is_file()}
+    relocated = relocated_sources(root)
+    actual = {str(Path(path).relative_to(RING)) for path in relocated}
     if actual != set(retained) | {'build.rs'}:
         raise ValueError('current ring source inventory changed')
+    def source(path):
+        return relocated[str(RING / path)]
     for path, entry in retained.items():
-        check_content(checked_path(source_root, path).read_bytes(), entry)
+        check_content(source(path), entry)
     for path in deleted:
-        if checked_path(source_root, path).exists():
+        if str(RING / path) in relocated:
             raise ValueError(f'retired source reappeared: {path}')
     patch = record['build_patch']
-    before = checked_path(source_root, 'build.rs').read_bytes()
+    before = source('build.rs')
     check_content(before, patch['after'])
     for replacement in reversed(patch['replacements']):
         old, new = replacement['old'].encode(), replacement['new'].encode()
@@ -132,7 +181,7 @@ def target_sources(root):
         raise ValueError('unexpected target metadata patch source set')
     for patch in patches:
         path = patch['path']
-        before = checked_path(source_root, path).read_bytes()
+        before = source(path)
         check_content(before, patch['after'])
         if object_hash('blob', before) != patch['after']['blob']:
             raise ValueError(f'target metadata after blob changed: {path}')
@@ -170,11 +219,12 @@ def historical_sources(root):
     if len(patches) != len(allowed) or {p['path'] for p in patches} != set(allowed):
         raise ValueError('style patch source set changed')
     baseline = {}
+    relocated = relocated_sources(root)
     for patch in patches:
         path = patch['path']
         if (patch['old'], patch['new']) != allowed[path]:
             raise ValueError(f'unapproved style transformation: {path}')
-        current = checked_path(root / RING, path).read_bytes()
+        current = relocated[str(RING / path)]
         old, new = patch['old'].encode(), patch['new'].encode()
         if current.count(new) != 1:
             raise ValueError(f'style replacement is not unique: {path}')
@@ -198,6 +248,8 @@ def historical_sources(root):
             return baseline[path]
         if path in retired:
             return retired[path]
+        if path in relocated:
+            return relocated[path]
         return checked_path(root, path).read_bytes()
     return read
 
@@ -275,7 +327,7 @@ def verify(root=ROOT):
             raise ValueError(f'restoration changed an existing implementation: {source["path"]}')
     manifest = tomllib.loads((root / RING / 'Cargo.toml').read_text())
     wanted = {source['path'] for source in proof['test_sources']} | {'cavp/tests/shavs.rs'}
-    actual = [entry['path'] for entry in manifest['test']]
+    actual = [str((RING / entry['path']).relative_to(RING)) if not entry['path'].startswith('../../../test/foundation/ring/') else entry['path'][len('../../../test/foundation/ring/'):] for entry in manifest['test']]
     if set(actual) != wanted or len(actual) != len(wanted):
         raise ValueError('upstream integration test entry set changed')
     if len(seen) != 69:

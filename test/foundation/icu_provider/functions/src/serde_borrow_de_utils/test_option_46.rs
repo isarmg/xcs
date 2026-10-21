@@ -1,0 +1,11 @@
+#[test]
+fn test_option() {
+    #[derive(Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+    struct Demo<'s>(#[serde(borrow, deserialize_with = "option_of_cow")] Option<Cow<'s, str>>);
+
+    let data_orig = Demo(Some("Hello world".into()));
+    let json = serde_json::to_string(&data_orig).expect("serialize");
+    let data_new = serde_json::from_str::<Demo>(&json).expect("deserialize");
+    assert_eq!(data_orig, data_new);
+    assert!(matches!(data_new.0, Some(Cow::Borrowed(_))));
+}

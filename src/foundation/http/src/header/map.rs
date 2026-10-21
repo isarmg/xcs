@@ -4015,30 +4015,8 @@ mod as_header_name {
     impl AsHeaderName for &String {}
 }
 
-#[test]
-fn test_bounds() {
-    fn check_bounds<T: Send + Send>() {}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http/functions/src/header/map/test_bounds_4018.rs"));
 
-    check_bounds::<HeaderMap<()>>();
-    check_bounds::<Iter<'static, ()>>();
-    check_bounds::<IterMut<'static, ()>>();
-    check_bounds::<Keys<'static, ()>>();
-    check_bounds::<Values<'static, ()>>();
-    check_bounds::<ValuesMut<'static, ()>>();
-    check_bounds::<Drain<'static, ()>>();
-    check_bounds::<GetAll<'static, ()>>();
-    check_bounds::<Entry<'static, ()>>();
-    check_bounds::<VacantEntry<'static, ()>>();
-    check_bounds::<OccupiedEntry<'static, ()>>();
-    check_bounds::<ValueIter<'static, ()>>();
-    check_bounds::<ValueIterMut<'static, ()>>();
-    check_bounds::<ValueDrain<'static, ()>>();
-}
-
-#[test]
-fn skip_duplicates_during_key_iteration() {
-    let mut map = HeaderMap::new();
-    map.try_append("a", HeaderValue::from_static("a")).unwrap();
-    map.try_append("a", HeaderValue::from_static("b")).unwrap();
-    assert_eq!(map.keys().count(), map.keys_len());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http/functions/src/header/map/skip_duplicates_during_key_iteration_4038.rs"));

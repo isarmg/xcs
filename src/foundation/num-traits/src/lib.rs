@@ -446,190 +446,53 @@ pub fn clamp_max<T: PartialOrd>(input: T, max: T) -> T {
     }
 }
 
-#[test]
-fn clamp_test() {
-    // Int test
-    assert_eq!(1, clamp(1, -1, 2));
-    assert_eq!(-1, clamp(-2, -1, 2));
-    assert_eq!(2, clamp(3, -1, 2));
-    assert_eq!(1, clamp_min(1, -1));
-    assert_eq!(-1, clamp_min(-2, -1));
-    assert_eq!(-1, clamp_max(1, -1));
-    assert_eq!(-2, clamp_max(-2, -1));
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/clamp_test_449.rs"));
 
-    // Float test
-    assert_eq!(1.0, clamp(1.0, -1.0, 2.0));
-    assert_eq!(-1.0, clamp(-2.0, -1.0, 2.0));
-    assert_eq!(2.0, clamp(3.0, -1.0, 2.0));
-    assert_eq!(1.0, clamp_min(1.0, -1.0));
-    assert_eq!(-1.0, clamp_min(-2.0, -1.0));
-    assert_eq!(-1.0, clamp_max(1.0, -1.0));
-    assert_eq!(-2.0, clamp_max(-2.0, -1.0));
-    assert!(clamp(f32::NAN, -1.0, 1.0).is_nan());
-    assert!(clamp_min(f32::NAN, 1.0).is_nan());
-    assert!(clamp_max(f32::NAN, 1.0).is_nan());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/clamp_nan_min_473.rs"));
 
-#[test]
-#[should_panic]
-#[cfg(debug_assertions)]
-fn clamp_nan_min() {
-    clamp(0., f32::NAN, 1.);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/clamp_nan_max_480.rs"));
 
-#[test]
-#[should_panic]
-#[cfg(debug_assertions)]
-fn clamp_nan_max() {
-    clamp(0., -1., f32::NAN);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/clamp_nan_min_max_487.rs"));
 
-#[test]
-#[should_panic]
-#[cfg(debug_assertions)]
-fn clamp_nan_min_max() {
-    clamp(0., f32::NAN, f32::NAN);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/clamp_min_nan_min_494.rs"));
 
-#[test]
-#[should_panic]
-#[cfg(debug_assertions)]
-fn clamp_min_nan_min() {
-    clamp_min(0., f32::NAN);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/clamp_max_nan_max_501.rs"));
 
-#[test]
-#[should_panic]
-#[cfg(debug_assertions)]
-fn clamp_max_nan_max() {
-    clamp_max(0., f32::NAN);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/from_str_radix_unwrap_508.rs"));
 
-#[test]
-fn from_str_radix_unwrap() {
-    // The Result error must impl Debug to allow unwrap()
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/from_str_radix_multi_byte_fail_519.rs"));
 
-    let i: i32 = Num::from_str_radix("0", 10).unwrap();
-    assert_eq!(i, 0);
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/from_str_radix_ignore_case_528.rs"));
 
-    let f: f32 = Num::from_str_radix("0.0", 10).unwrap();
-    assert_eq!(f, 0.0);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/wrapping_is_num_550.rs"));
 
-#[test]
-fn from_str_radix_multi_byte_fail() {
-    // Ensure parsing doesn't panic, even on invalid sign characters
-    assert!(f32::from_str_radix("™0.2", 10).is_err());
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/wrapping_from_str_radix_479.rs"));
 
-    // Even when parsing the exponent sign
-    assert!(f32::from_str_radix("0.2E™1", 10).is_err());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/check_num_ops_573.rs"));
 
-#[test]
-fn from_str_radix_ignore_case() {
-    assert_eq!(
-        f32::from_str_radix("InF", 16).unwrap(),
-        f32::INFINITY
-    );
-    assert_eq!(
-        f32::from_str_radix("InfinitY", 16).unwrap(),
-        f32::INFINITY
-    );
-    assert_eq!(
-        f32::from_str_radix("-InF", 8).unwrap(),
-        f32::NEG_INFINITY
-    );
-    assert_eq!(
-        f32::from_str_radix("-InfinitY", 8).unwrap(),
-        f32::NEG_INFINITY
-    );
-    assert!(f32::from_str_radix("nAn", 4).unwrap().is_nan());
-    assert!(f32::from_str_radix("-nAn", 4).unwrap().is_nan());
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/check_numref_ops_581.rs"));
 
-#[test]
-fn wrapping_is_num() {
-    fn require_num<T: Num>(_: &T) {}
-    require_num(&Wrapping(42_u32));
-    require_num(&Wrapping(-42));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/check_refnum_ops_589.rs"));
 
-#[test]
-fn wrapping_from_str_radix() {
-    macro_rules! test_wrapping_from_str_radix {
-        ($($t:ty)+) => {
-            $(
-                for &(s, r) in &[("42", 10), ("42", 2), ("-13.0", 10), ("foo", 10)] {
-                    let w = Wrapping::<$t>::from_str_radix(s, r).map(|w| w.0);
-                    assert_eq!(w, <$t as Num>::from_str_radix(s, r));
-                }
-            )+
-        };
-    }
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/check_refref_ops_600.rs"));
 
-    test_wrapping_from_str_radix!(usize u8 u16 u32 u64 isize i8 i16 i32 i64);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/check_numassign_ops_611.rs"));
 
-#[test]
-fn check_num_ops() {
-    fn compute<T: Num + Copy>(x: T, y: T) -> T {
-        x * y / y % y + y - y
-    }
-    assert_eq!(compute(1, 2), 1)
-}
-
-#[test]
-fn check_numref_ops() {
-    fn compute<T: NumRef>(x: T, y: &T) -> T {
-        x * y / y % y + y - y
-    }
-    assert_eq!(compute(1, &2), 1)
-}
-
-#[test]
-fn check_refnum_ops() {
-    fn compute<T: Copy>(x: &T, y: T) -> T
-    where
-        for<'a> &'a T: RefNum<T>,
-    {
-        &(&(&(&(x * y) / y) % y) + y) - y
-    }
-    assert_eq!(compute(&1, 2), 1)
-}
-
-#[test]
-fn check_refref_ops() {
-    fn compute<T>(x: &T, y: &T) -> T
-    where
-        for<'a> &'a T: RefNum<T>,
-    {
-        &(&(&(&(x * y) / y) % y) + y) - y
-    }
-    assert_eq!(compute(&1, &2), 1)
-}
-
-#[test]
-fn check_numassign_ops() {
-    fn compute<T: NumAssign + Copy>(mut x: T, y: T) -> T {
-        x *= y;
-        x /= y;
-        x %= y;
-        x += y;
-        x -= y;
-        x
-    }
-    assert_eq!(compute(1, 2), 1)
-}
-
-#[test]
-fn check_numassignref_ops() {
-    fn compute<T: NumAssignRef + Copy>(mut x: T, y: &T) -> T {
-        x *= y;
-        x /= y;
-        x %= y;
-        x += y;
-        x -= y;
-        x
-    }
-    assert_eq!(compute(1, &2), 1)
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/lib/check_numassignref_ops_624.rs"));

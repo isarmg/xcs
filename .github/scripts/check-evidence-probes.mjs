@@ -7,7 +7,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const evidence = resolve(root, 'tests/evidence');
+const evidence = resolve(root, 'test/evidence');
 async function walk(directory) {
   const paths = [];
   for (const entry of await readdir(directory, {withFileTypes: true})) {
@@ -43,7 +43,7 @@ for (const probe of inventory.probes) {
     assert.match(source, /const probe = await configureProbe\(import.meta.url\);/);
     assert.match(source, /await loadPlaywright\(\)/);
     assert.doesNotMatch(source, /import\([^)]*playwright|from ['"][^'"]*playwright/i);
-    assert.doesNotMatch(source, /(?:writeFile|screenshot)\([^\n]*\$\{root\}\/tests\/evidence/);
+    assert.doesNotMatch(source, /(?:writeFile|screenshot)\([^\n]*\$\{root\}\/tests?\/evidence/);
     if (probe.kind === 'historical-service') assert.match(source, /fixtureOrigin\(\)/);
   }
 }

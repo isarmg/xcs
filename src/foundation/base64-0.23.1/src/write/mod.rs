@@ -8,4 +8,5 @@ pub use self::{
 };
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/base64-0.23.1/modules/src/write/encoder_tests.rs"]
 mod encoder_tests;

@@ -1,6 +1,7 @@
 //! Parsers extracting tokens from the stream
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/winnow/modules/src/token/tests.rs"]
 mod tests;
 
 use crate::error::Needed;

@@ -847,150 +847,29 @@ impl GraphemeCursor {
     }
 }
 
-#[test]
-fn test_grapheme_cursor_ris_precontext() {
-    let s = "\u{1f1fa}\u{1f1f8}\u{1f1fa}\u{1f1f8}\u{1f1fa}\u{1f1f8}";
-    let mut c = GraphemeCursor::new(8, s.len(), true);
-    assert_eq!(
-        c.is_boundary(&s[4..], 4),
-        Err(GraphemeIncomplete::PreContext(4))
-    );
-    c.provide_context(&s[..4], 0);
-    assert_eq!(c.is_boundary(&s[4..], 4), Ok(true));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_ris_precontext_850.rs"));
 
-#[test]
-fn test_grapheme_cursor_chunk_start_require_precontext() {
-    let s = "\r\n";
-    let mut c = GraphemeCursor::new(1, s.len(), true);
-    assert_eq!(
-        c.is_boundary(&s[1..], 1),
-        Err(GraphemeIncomplete::PreContext(1))
-    );
-    c.provide_context(&s[..1], 0);
-    assert_eq!(c.is_boundary(&s[1..], 1), Ok(false));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_chunk_start_require_precontext_862.rs"));
 
-#[test]
-fn test_grapheme_cursor_prev_boundary() {
-    let s = "abcd";
-    let mut c = GraphemeCursor::new(3, s.len(), true);
-    assert_eq!(
-        c.prev_boundary(&s[2..], 2),
-        Err(GraphemeIncomplete::PrevChunk)
-    );
-    assert_eq!(c.prev_boundary(&s[..2], 0), Ok(Some(2)));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_prev_boundary_874.rs"));
 
-#[test]
-fn test_grapheme_cursor_prev_boundary_chunk_start() {
-    let s = "abcd";
-    let mut c = GraphemeCursor::new(2, s.len(), true);
-    assert_eq!(
-        c.prev_boundary(&s[2..], 2),
-        Err(GraphemeIncomplete::PrevChunk)
-    );
-    assert_eq!(c.prev_boundary(&s[..2], 0), Ok(Some(1)));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_prev_boundary_chunk_start_885.rs"));
 
-#[test]
-fn test_grapheme_cursor_boundary_with_zwj_on_chunk_start() {
-    use GraphemeIncomplete::*;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_boundary_with_zwj_on_chunk_start_896.rs"));
 
-    let chunk0 = "👩"; // 4 bytes
-    let chunk1 = "\u{200d}🔬"; // 3 bytes + 4 bytes
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_emoji_no_zwj_917.rs"));
 
-    let full_len = chunk0.len() + chunk1.len();
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_emoji_chunk_boundary_before_zwj_936.rs"));
 
-    let mut cur = GraphemeCursor::new(0, full_len, true);
-    assert_eq!(cur.next_boundary(chunk0, 0), Err(NextChunk));
-    match cur.next_boundary(chunk1, chunk0.len()) {
-        Ok(res) => assert_eq!(res, Some(11)),
-        Err(PreContext(_)) => {
-            cur.provide_context(chunk0, 0);
-            assert_eq!(cur.next_boundary(chunk1, chunk0.len()), Ok(Some(11)));
-        }
-        _ => unreachable!(),
-    }
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_emoji_chunk_boundary_after_zwj_954.rs"));
 
-#[test]
-fn test_grapheme_cursor_emoji_no_zwj() {
-    use GraphemeIncomplete::*;
-    let chunk0 = "🍒"; // 4 bytes
-    let chunk1 = "🥑"; // 4 bytes
-    let full_len = chunk0.len() + chunk1.len();
-
-    let mut c = GraphemeCursor::new(0, full_len, true);
-    assert_eq!(c.next_boundary(chunk0, 0), Err(NextChunk));
-    assert_eq!(
-        c.next_boundary(chunk1, chunk0.len()),
-        Err(PreContext(chunk0.len()))
-    );
-    c.provide_context(chunk0, 0);
-    assert_eq!(c.next_boundary(chunk1, chunk0.len()), Ok(Some(4)));
-    assert_eq!(c.next_boundary(chunk1, chunk0.len()), Ok(Some(8)));
-    assert_eq!(c.next_boundary(chunk1, chunk0.len()), Ok(None));
-}
-
-#[test]
-fn test_grapheme_cursor_emoji_chunk_boundary_before_zwj() {
-    use GraphemeIncomplete::*;
-    let chunk0 = "🍒"; // 4 bytes
-    let chunk1 = "\u{200d}🥑"; // 3 + 4 bytes
-    let full_len = chunk0.len() + chunk1.len(); // 11
-
-    let mut c = GraphemeCursor::new(0, full_len, true);
-    assert_eq!(c.next_boundary(chunk0, 0), Err(NextChunk));
-    assert_eq!(
-        c.next_boundary(chunk1, chunk0.len()),
-        Err(PreContext(chunk0.len()))
-    );
-    c.provide_context(chunk0, 0);
-    assert_eq!(c.next_boundary(chunk1, chunk0.len()), Ok(Some(11)));
-    assert_eq!(c.next_boundary(chunk1, chunk0.len()), Ok(None));
-}
-
-#[test]
-fn test_grapheme_cursor_emoji_chunk_boundary_after_zwj() {
-    use GraphemeIncomplete::*;
-    let chunk0 = "🍒\u{200d}"; // 4 + 3 bytes
-    let chunk1 = "🥑"; // 4 bytes
-    let full_len = chunk0.len() + chunk1.len(); // 11
-
-    let mut c = GraphemeCursor::new(0, full_len, true);
-    assert_eq!(c.next_boundary(chunk0, 0), Err(NextChunk));
-    assert_eq!(
-        c.next_boundary(chunk1, chunk0.len()),
-        Err(PreContext(chunk0.len()))
-    );
-    c.provide_context(chunk0, 0);
-    assert_eq!(c.next_boundary(chunk1, chunk0.len()), Ok(Some(11)));
-    assert_eq!(c.next_boundary(chunk1, chunk0.len()), Ok(None));
-}
-
-#[test]
-fn test_grapheme_cursor_emoji_zwj_across_chunks() {
-    use GraphemeIncomplete::*;
-    let chunk0 = "🍒"; // 4 bytes
-    let chunk1 = "\u{200d}"; // 3 bytes
-    let chunk2 = "🥑"; // 4 bytes
-    let full_len = chunk0.len() + chunk1.len() + chunk2.len(); // 11
-    let chunk2_start = chunk0.len() + chunk1.len();
-
-    let mut c = GraphemeCursor::new(0, full_len, true);
-    assert_eq!(c.next_boundary(chunk0, 0), Err(NextChunk));
-    assert_eq!(c.next_boundary(chunk1, chunk0.len()), Err(NextChunk));
-    assert_eq!(
-        c.next_boundary(chunk2, chunk2_start),
-        Err(PreContext(chunk2_start))
-    );
-    c.provide_context(chunk1, chunk0.len());
-    assert_eq!(
-        c.next_boundary(chunk2, chunk2_start),
-        Err(PreContext(chunk0.len()))
-    );
-    c.provide_context(chunk0, 0);
-    assert_eq!(c.next_boundary(chunk2, chunk2_start), Ok(Some(11)));
-    assert_eq!(c.next_boundary(chunk2, chunk2_start), Ok(None));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/unicode-segmentation/functions/src/grapheme/test_grapheme_cursor_emoji_zwj_across_chunks_972.rs"));

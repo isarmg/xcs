@@ -406,6 +406,7 @@ mod error;
 mod input;
 mod item;
 #[cfg(test)]
+#[path = "../../../../test/foundation/derive-where/modules/src/test/mod.rs"]
 mod test;
 mod trait_;
 mod util;

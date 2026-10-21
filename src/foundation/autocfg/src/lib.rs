@@ -81,6 +81,7 @@ mod version;
 use version::Version;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/autocfg/modules/src/tests.rs"]
 mod tests;
 
 /// Helper to detect compiler features for `cfg` output in build scripts.

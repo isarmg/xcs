@@ -2,6 +2,7 @@
 //!
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/winnow/modules/src/binary/bits/tests.rs"]
 mod tests;
 
 use crate::error::{ErrorConvert, Needed, ParserError};

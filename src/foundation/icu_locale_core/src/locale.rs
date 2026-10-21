@@ -106,29 +106,8 @@ pub struct Locale {
     pub extensions: extensions::Extensions,
 }
 
-#[test]
-// Expected sizes are based on a 64-bit architecture
-#[cfg(target_pointer_width = "64")]
-fn test_sizes() {
-    assert_eq!(size_of::<subtags::Language>(), 3);
-    assert_eq!(size_of::<subtags::Script>(), 4);
-    assert_eq!(size_of::<subtags::Region>(), 3);
-    assert_eq!(size_of::<subtags::Variant>(), 8);
-    assert_eq!(size_of::<subtags::Variants>(), 16);
-    assert_eq!(size_of::<LanguageIdentifier>(), 32);
-
-    assert_eq!(size_of::<extensions::transform::Transform>(), 56);
-    assert_eq!(size_of::<Option<LanguageIdentifier>>(), 32);
-    assert_eq!(size_of::<extensions::transform::Fields>(), 24);
-
-    assert_eq!(size_of::<extensions::unicode::Attributes>(), 16);
-    assert_eq!(size_of::<extensions::unicode::Keywords>(), 24);
-    assert_eq!(size_of::<Vec<extensions::other::Other>>(), 24);
-    assert_eq!(size_of::<extensions::private::Private>(), 16);
-    assert_eq!(size_of::<extensions::Extensions>(), 136);
-
-    assert_eq!(size_of::<Locale>(), 168);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_locale_core/functions/src/locale/test_sizes_109.rs"));
 
 impl Locale {
     /// The unknown locale "und".
@@ -515,35 +494,8 @@ impl core::fmt::Debug for Locale {
 
 impl_writeable_for_each_subtag_str_no_test!(Locale, selff, selff.extensions.is_empty() => selff.id.writeable_borrow());
 
-#[test]
-fn test_writeable() {
-    use writeable::assert_writeable_eq;
-    assert_writeable_eq!(Locale::UNKNOWN, "und");
-    assert_writeable_eq!("und-001".parse::<Locale>().unwrap(), "und-001");
-    assert_writeable_eq!("und-Mymr".parse::<Locale>().unwrap(), "und-Mymr");
-    assert_writeable_eq!("my-Mymr-MM".parse::<Locale>().unwrap(), "my-Mymr-MM");
-    assert_writeable_eq!(
-        "my-Mymr-MM-posix".parse::<Locale>().unwrap(),
-        "my-Mymr-MM-posix",
-    );
-    assert_writeable_eq!(
-        "zh-macos-posix".parse::<Locale>().unwrap(),
-        "zh-macos-posix",
-    );
-    assert_writeable_eq!(
-        "my-t-my-d0-zawgyi".parse::<Locale>().unwrap(),
-        "my-t-my-d0-zawgyi",
-    );
-    assert_writeable_eq!(
-        "ar-SA-u-ca-islamic-civil".parse::<Locale>().unwrap(),
-        "ar-SA-u-ca-islamic-civil",
-    );
-    assert_writeable_eq!(
-        "en-001-x-foo-bar".parse::<Locale>().unwrap(),
-        "en-001-x-foo-bar",
-    );
-    assert_writeable_eq!("und-t-m0-true".parse::<Locale>().unwrap(), "und-t-m0-true",);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/icu_locale_core/functions/src/locale/test_writeable_518.rs"));
 
 /// # Examples
 ///

@@ -210,29 +210,10 @@ pub fn one<T: One>() -> T {
     One::one()
 }
 
-#[test]
-fn wrapping_identities() {
-    macro_rules! test_wrapping_identities {
-        ($($t:ty)+) => {
-            $(
-                assert_eq!(zero::<$t>(), zero::<Wrapping<$t>>().0);
-                assert_eq!(one::<$t>(), one::<Wrapping<$t>>().0);
-                assert_eq!((0 as $t).is_zero(), Wrapping(0 as $t).is_zero());
-                assert_eq!((1 as $t).is_zero(), Wrapping(1 as $t).is_zero());
-            )+
-        };
-    }
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/identities/wrapping_identities_213.rs"));
 
-    test_wrapping_identities!(isize i8 i16 i32 i64 usize u8 u16 u32 u64);
-}
-
-#[test]
-fn wrapping_is_zero() {
-    fn require_zero<T: Zero>(_: &T) {}
-    require_zero(&Wrapping(42));
-}
-#[test]
-fn wrapping_is_one() {
-    fn require_one<T: One>(_: &T) {}
-    require_one(&Wrapping(42));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/identities/wrapping_is_zero_229.rs"));
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/num-traits/functions/src/identities/wrapping_is_one_234.rs"));

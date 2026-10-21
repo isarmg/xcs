@@ -105,9 +105,5 @@ pub(crate) const fn const_fmt_int<const M: usize, const N: usize>(
     output
 }
 
-#[test]
-fn test_const_fmt_int() {
-    assert_eq!(*b"123", const_fmt_int::<0, 3>(*b"", 123));
-    assert_eq!(*b"123   ", const_fmt_int::<0, 6>(*b"", 123));
-    assert_eq!(*b"abc123", const_fmt_int::<3, 6>(*b"abc", 123));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/zerotrie/functions/src/helpers/test_const_fmt_int_108.rs"));

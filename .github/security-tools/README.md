@@ -98,8 +98,8 @@ Regenerate and review the snapshot and metadata together. Do not remove
 Run the network-free regression checks with:
 
 ```sh
-python3 .github/scripts/tests/test_security_audit_install.py
-python3 .github/scripts/tests/test_security_gate.py
+python3 test/ci/test_security_audit_install.py
+python3 test/ci/test_security_gate.py
 ```
 
 These tests mock compilation; they are not evidence of a real scanner build or

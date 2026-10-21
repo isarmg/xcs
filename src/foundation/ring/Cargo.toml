@@ -12,7 +12,6 @@ include = [
     "pregenerated/*",
     "build.rs",
     "crypto/chacha/asm/chacha-x86_64.pl",
-    "crypto/constant_time_test.c",
     "crypto/cpu_intel.c",
     "crypto/crypto.c",
     "crypto/curve25519/curve25519.c",
@@ -44,7 +43,6 @@ include = [
     "crypto/fipsmodule/ec/p256_shared.h",
     "crypto/fipsmodule/ec/p256_table.h",
     "crypto/fipsmodule/ec/util.h",
-    "crypto/fipsmodule/ecdsa/ecdsa_verify_tests.txt",
     "crypto/fipsmodule/sha/asm/sha512-x86_64.pl",
     "crypto/internal.h",
     "crypto/limbs/limbs.c",
@@ -66,25 +64,12 @@ include = [
     "include/ring-core/target.h",
     "include/ring-core/type_check.h",
     "src/**/*.rs",
-    "src/aead/poly1305_test.txt",
     "src/data/alg-rsa-encryption.der",
     "src/ec/curve25519/ed25519/ed25519_pkcs8_v2_template.der",
     "src/ec/suite_b/ecdsa/ecPublicKey_p256_pkcs8_v1_template.der",
     "src/ec/suite_b/ecdsa/ecPublicKey_p384_pkcs8_v1_template.der",
     "src/rsa/signature_rsa_example_private_key.der",
     "src/rsa/signature_rsa_example_public_key.der",
-    "tests/**/*.rs",
-    "tests/ecdsa_test_private_key_p256.p8",
-    "tests/ecdsa_test_public_key_p256.der",
-    "tests/ecdsa_test_public_key_p256_debug.txt",
-    "tests/ed25519_test_private_key.bin",
-    "tests/ed25519_test_private_key.p8",
-    "tests/ed25519_test_public_key.bin",
-    "tests/ed25519_test_public_key.der",
-    "tests/rsa_test_private_key_2048.p8",
-    "tests/rsa_test_public_key_2048.der",
-    "tests/rsa_test_public_key_2048_debug.txt",
-    "tests/rsa_test_public_modulus.bin",
     "third_party/fiat/asm/fiat_curve25519_adx_mul.S",
     "third_party/fiat/asm/fiat_curve25519_adx_square.S",
     "third_party/fiat/curve25519_32.h",
@@ -156,61 +141,61 @@ path = "../libc"
 
 [[test]]
 name = "aead_tests"
-path = "tests/aead_tests.rs"
+path = "../../../test/foundation/ring/tests/aead_tests.rs"
 
 [[test]]
 name = "agreement_tests"
-path = "tests/agreement_tests.rs"
+path = "../../../test/foundation/ring/tests/agreement_tests.rs"
 
 [[test]]
 name = "constant_time_tests"
-path = "tests/constant_time_tests.rs"
+path = "../../../test/foundation/ring/tests/constant_time_tests.rs"
 
 [[test]]
 name = "digest_tests"
-path = "tests/digest_tests.rs"
+path = "../../../test/foundation/ring/tests/digest_tests.rs"
 
 [[test]]
 name = "ecdsa_tests"
-path = "tests/ecdsa_tests.rs"
+path = "../../../test/foundation/ring/tests/ecdsa_tests.rs"
 
 [[test]]
 name = "ed25519_tests"
-path = "tests/ed25519_tests.rs"
+path = "../../../test/foundation/ring/tests/ed25519_tests.rs"
 
 [[test]]
 name = "error_tests"
-path = "tests/error_tests.rs"
+path = "../../../test/foundation/ring/tests/error_tests.rs"
 
 [[test]]
 name = "hkdf_tests"
-path = "tests/hkdf_tests.rs"
+path = "../../../test/foundation/ring/tests/hkdf_tests.rs"
 
 [[test]]
 name = "hmac_tests"
-path = "tests/hmac_tests.rs"
+path = "../../../test/foundation/ring/tests/hmac_tests.rs"
 
 [[test]]
 name = "pbkdf2_tests"
-path = "tests/pbkdf2_tests.rs"
+path = "../../../test/foundation/ring/tests/pbkdf2_tests.rs"
 
 [[test]]
 name = "quic_tests"
-path = "tests/quic_tests.rs"
+path = "../../../test/foundation/ring/tests/quic_tests.rs"
 
 [[test]]
 name = "rand_tests"
-path = "tests/rand_tests.rs"
+path = "../../../test/foundation/ring/tests/rand_tests.rs"
 
 [[test]]
 name = "rsa_tests"
-path = "tests/rsa_tests.rs"
+path = "../../../test/foundation/ring/tests/rsa_tests.rs"
 
 [[test]]
 name = "signature_tests"
-path = "tests/signature_tests.rs"
+path = "../../../test/foundation/ring/tests/signature_tests.rs"
 
 # Original ring-cavp SHAVS source, not a second Cargo workspace/package.
 [[test]]
 name = "cavp_shavs"
-path = "cavp/tests/shavs.rs"
+path = "../../../test/foundation/ring/cavp/tests/shavs.rs"

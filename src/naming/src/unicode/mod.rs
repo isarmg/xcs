@@ -43,8 +43,10 @@ mod tables;
 
 #[cfg(test)]
 #[doc(hidden)]
+#[path = "../../../../test/naming/unit/unicode/__test_api.rs"]
 pub mod __test_api;
 #[cfg(test)]
+#[path = "../../../../test/naming/unit/unicode/test.rs"]
 mod test;
 
 /// Methods for composing and decomposing characters.

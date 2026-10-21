@@ -412,6 +412,7 @@
 #[cfg(test)]
 #[cfg(not(target_family = "wasm"))]
 #[macro_use]
+#[path = "../../../../../test/foundation/tokio/modules/src/runtime/tests/mod.rs"]
 mod tests;
 
 pub(crate) mod context;

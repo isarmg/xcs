@@ -693,5 +693,6 @@ impl_for_int_and_float_types_with_bounds_check! {
     f64, i128, (-I128_BOUND_IN_F64) <= _ < (I128_BOUND_IN_F64);
 }
 
-#[cfg(test)] mod tests;
+#[cfg(test)] #[path = "../../../../test/foundation/num-cmp/modules/src/tests.rs"]
+mod tests;
 

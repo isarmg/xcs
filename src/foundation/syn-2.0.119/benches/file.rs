@@ -16,11 +16,11 @@
 extern crate test;
 
 #[macro_use]
-#[path = "../tests/macros/mod.rs"]
+#[path = "../../../../test/foundation/syn-2.0.119/tests/macros/mod.rs"]
 mod macros;
 
 #[allow(dead_code)]
-#[path = "../tests/repo/mod.rs"]
+#[path = "../../../../test/foundation/syn-2.0.119/tests/repo/mod.rs"]
 mod repo;
 
 use proc_macro2::{Span, TokenStream};
@@ -29,7 +29,7 @@ use std::str::FromStr;
 use syn::parse::{ParseStream, Parser};
 use test::Bencher;
 
-const FILE: &str = "tests/rust/library/core/src/str/mod.rs";
+const FILE: &str = "../../../test/foundation/syn-2.0.119/tests/rust/library/core/src/str/mod.rs";
 
 fn get_tokens() -> TokenStream {
     repo::clone_rust();

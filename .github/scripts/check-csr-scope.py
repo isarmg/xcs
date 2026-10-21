@@ -35,7 +35,7 @@ def check():
             'web-sys={path="' + str(ROOT / 'src/foundation/web-sys') + '",features=["Window","Document","HtmlInputElement","Event"]}',
         ]) + '\n')
         source = work / 'src/lib.rs'
-        source.write_text((ROOT / 'tools/web-bindings/tests/fixtures/csr-template.rs').read_text())
+        source.write_text((ROOT / 'test/tools/web-bindings/fixtures/csr-template.rs').read_text())
         cargo('generate-lockfile', '--offline', '--manifest-path', str(manifest))
         command = ['check', '--locked', '--offline', '--manifest-path', str(manifest), '--target-dir', str(TARGET)]
         cargo(*command)
@@ -112,7 +112,7 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
             'retired_api_checks': len(retired),
             'retired_feature_checks': 13,
             'cargo_lock_sha256': hashlib.sha256((ROOT / 'Cargo.lock').read_bytes()).hexdigest(),
-            'fixture_source_sha256': hashlib.sha256((ROOT / 'tools/web-bindings/tests/fixtures/csr-template.rs').read_bytes()).hexdigest(),
+            'fixture_source_sha256': hashlib.sha256((ROOT / 'test/tools/web-bindings/fixtures/csr-template.rs').read_bytes()).hexdigest(),
             'outputs_sha256': {name: hashlib.sha256((output / name).read_bytes()).hexdigest()
                                for name in ['fixture.js', 'fixture_bg.wasm']},
         }

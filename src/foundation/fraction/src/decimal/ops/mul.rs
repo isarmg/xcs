@@ -60,23 +60,4 @@ where
 }
 
 #[cfg(test)]
-mod tests {
-    use super::GenericDecimal;
-
-    type F = GenericDecimal<u8, u8>;
-
-    #[test]
-    fn mul_scalar() {
-        assert_eq!(F::from(1.5) * 2, F::from(3));
-        assert_eq!(F::from(2) * 1.5, F::from(3));
-
-        assert_eq!(&F::from(1.5) * 2, F::from(3));
-        assert_eq!(&F::from(2) * 1.5, F::from(3));
-
-        assert_eq!(F::from(1.5) * F::from(2), F::from(3));
-        assert_eq!(F::from(2) * F::from(1.5), F::from(3));
-
-        assert_eq!(&F::from(1.5) * &F::from(2), F::from(3));
-        assert_eq!(&F::from(2) * &F::from(1.5), F::from(3));
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/fraction/unit/src/decimal/ops/mul/tests_62.rs"));

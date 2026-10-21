@@ -1144,4 +1144,5 @@ impl Inner {
 }
 
 #[cfg(test)]
+#[path = "../../../../../test/foundation/tokio/modules/src/fs/file/tests.rs"]
 mod tests;

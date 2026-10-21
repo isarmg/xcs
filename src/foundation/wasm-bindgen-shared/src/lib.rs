@@ -7,6 +7,7 @@ use alloc::string::{String, ToString};
 
 pub mod identifier;
 #[cfg(test)]
+#[path = "../../../../test/foundation/wasm-bindgen-shared/modules/src/schema_hash_approval.rs"]
 mod schema_hash_approval;
 pub mod tys;
 

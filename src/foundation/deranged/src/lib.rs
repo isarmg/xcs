@@ -8,6 +8,7 @@
 extern crate alloc;
 
 #[cfg(test)]
+#[path = "../../../../test/foundation/deranged/modules/src/tests.rs"]
 mod tests;
 mod unsafe_wrapper;
 

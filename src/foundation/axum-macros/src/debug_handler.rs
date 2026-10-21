@@ -880,12 +880,8 @@ fn skip_next_arg(arg: &FnArg, kind: FunctionKind) -> bool {
     }
 }
 
-#[test]
-fn ui_debug_handler() {
-    crate::run_ui_tests("debug_handler");
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum-macros/functions/src/debug_handler/ui_debug_handler_883.rs"));
 
-#[test]
-fn ui_debug_middleware() {
-    crate::run_ui_tests("debug_middleware");
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum-macros/functions/src/debug_handler/ui_debug_middleware_888.rs"));

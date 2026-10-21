@@ -8,20 +8,20 @@
 
 ## 全项目范围与验证
 
-[source-inventory.json](../../../tests/evidence/maintainability/source-inventory.json) 记录 250 个活动源码、清单、配置与模块文档的 SHA-256，其中 168 个 Rust 文件、59,127 行；另记录本地原生二进制、生产 WASM 与构建清单身份。上游依赖源码、旧验收记录、运行目录与用户数据不计入该范围，生成 Unicode 表由复现工具验证。清单说明本轮阅读和验证边界，不是外部依赖全部安全审计的证明。
+[source-inventory.json](../../../test/evidence/maintainability/source-inventory.json) 记录 250 个活动源码、清单、配置与模块文档的 SHA-256，其中 168 个 Rust 文件、59,127 行；另记录本地原生二进制、生产 WASM 与构建清单身份。上游依赖源码、旧验收记录、运行目录与用户数据不计入该范围，生成 Unicode 表由复现工具验证。清单说明本轮阅读和验证边界，不是外部依赖全部安全审计的证明。
 
 | 范围 | 已执行结果 | 记录 |
 | --- | --- | --- |
-| 根原生 workspace | 219 项测试通过，含核心、认证、平台、服务、客户端、CLI 及 HTTP/监测集成 | [原始输出](../../../tests/evidence/maintainability/native-workspace.log) |
-| Web workspace | 74 项测试通过：runtime 26、app 43、集成 5 | [原始输出](../../../tests/evidence/maintainability/web-workspace.log) |
-| App bridge | 11 项测试通过，包含真实本机 HTTP 会话隔离及后台导入取消 | [原始输出](../../../tests/evidence/maintainability/app-bridge.log)、[审读记录](maintainability/review/native.md) |
+| 根原生 workspace | 219 项测试通过，含核心、认证、平台、服务、客户端、CLI 及 HTTP/监测集成 | [原始输出](../../../test/evidence/maintainability/native-workspace.log) |
+| Web workspace | 74 项测试通过：runtime 26、app 43、集成 5 | [原始输出](../../../test/evidence/maintainability/web-workspace.log) |
+| App bridge | 11 项测试通过，包含真实本机 HTTP 会话隔离及后台导入取消 | [原始输出](../../../test/evidence/maintainability/app-bridge.log)、[审读记录](maintainability/review/native.md) |
 | Linux Tauri 宿主 | 锁定离线检查通过，使用本机已有 GTK/WebKit SDK | [环境与限制](maintainability/review/native.md) |
-| 可移植 server | 无默认功能检查及 39 项库测试通过 | [检查输出](../../../tests/evidence/maintainability/server-no-core-check.log)、[测试输出](../../../tests/evidence/maintainability/server-no-core-tests.log) |
-| 自维护 CSR/宏 | 4 项库测试通过；另有 2 项实际 WASM 计时生命周期回归 | [库测试输出](../../../tests/evidence/maintainability/vendor-component-tests.log)、[WASM 结果](../../../tests/evidence/maintainability/animated-show-result.json) |
+| 可移植 server | 无默认功能检查及 39 项库测试通过 | [检查输出](../../../test/evidence/maintainability/server-no-core-check.log)、[测试输出](../../../test/evidence/maintainability/server-no-core-tests.log) |
+| 自维护 CSR/宏 | 4 项库测试通过；另有 2 项实际 WASM 计时生命周期回归 | [库测试输出](../../../test/evidence/maintainability/vendor-component-tests.log)、[WASM 结果](../../../test/evidence/maintainability/animated-show-result.json) |
 | SMB 协议 / VFS SDK | 6 项协议测试、5 项实际 Samba 4.23 SDK 库测试通过 | [命令、环境与工具回执摘要](maintainability/review/tools-smb.md) |
 | 构建及契约工具 | web-build 2 项、contract-check 6 项通过，固定 Unicode 输出复现通过 | [命令与工具回执摘要](maintainability/review/tools-smb.md) |
-| Clippy | 根 workspace/all-targets 退出 0；41 项非阻断建议，未用 allow 隐藏 | [原始输出](../../../tests/evidence/maintainability/clippy.log)、[分类与处理依据](maintainability/review/clippy.md) |
-| 最终浏览器与实际资源 | 四场 60 组通过；17 项 CSS/WASM 响应匹配最终构建 | 下方专项、[资源结果](../../../tests/evidence/maintainability/asset-result.json) |
+| Clippy | 根 workspace/all-targets 退出 0；41 项非阻断建议，未用 allow 隐藏 | [原始输出](../../../test/evidence/maintainability/clippy.log)、[分类与处理依据](maintainability/review/clippy.md) |
+| 最终浏览器与实际资源 | 四场 60 组通过；17 项 CSS/WASM 响应匹配最终构建 | 下方专项、[资源结果](../../../test/evidence/maintainability/asset-result.json) |
 
 根 workspace 的复现命令为 `cargo test --locked --offline --workspace`；Web 和 App 分别增加 `--manifest-path web/Cargo.toml --workspace`、`--manifest-path apps/Cargo.toml --workspace`。各独立 SDK 和工具命令保存在对应审读记录。部分临时 FIFO、所有权和本机套接字夹具需要主机系统调用权限；沙箱拒绝的首次结果没有被算作通过，获授权后相同检查的主机运行才是上述结果。
 
@@ -38,7 +38,7 @@
 
 源码夹具是独立 HTML 的样式验证，不代替下述最终候选的真实 WASM 验收。
 
-`source-table-alignment-probe.mjs` 另将真实浏览器脚本中的 `fileRows` 检查原样用于本地静态 DOM，对磁盘／文件表 × 36／40px 各做一次正、负对照：[8 项均通过](../../../tests/evidence/maintainability/source-table-alignment-result.json)。4 个负对照保留浏览器默认的 th 居中，均被新增 computed text-align 断言拒绝；4 个正对照在 cell 层继承表格对齐，首字 Range 起点符合左内缩，名称列计入前置图标和图标间距。夹具不访问业务服务、不登录，也不修改生产 CSS。
+`source-table-alignment-probe.mjs` 另将真实浏览器脚本中的 `fileRows` 检查原样用于本地静态 DOM，对磁盘／文件表 × 36／40px 各做一次正、负对照：[8 项均通过](../../../test/evidence/maintainability/source-table-alignment-result.json)。4 个负对照保留浏览器默认的 th 居中，均被新增 computed text-align 断言拒绝；4 个正对照在 cell 层继承表格对齐，首字 Range 起点符合左内缩，名称列计入前置图标和图标间距。夹具不访问业务服务、不登录，也不修改生产 CSS。
 
 ## AnimatedShow 独立 WASM 验证
 
@@ -48,7 +48,7 @@
 
 ## 最终候选的真实浏览器验证
 
-统一构建并切换至最终 native 二进制及 WASM 后，`browser-probe.mjs` 已在 `http://127.0.0.1:7400` 完成全部四场验证，**60／60 组通过**。完整结果见 [result.json](../../../tests/evidence/maintainability/result.json)，汇总见 [summary.json](../../../tests/evidence/maintainability/summary.json)；分场结果、DOM／曲线清单及截图均保存在本目录。首轮目视发现表头受浏览器 th 默认居中影响，修正 cell 的对齐继承并增加字形守卫后，最终候选已完整重跑四场；本目录的实际页面结果及截图全部来自这次重跑，没有复用首轮结果。
+统一构建并切换至最终 native 二进制及 WASM 后，`browser-probe.mjs` 已在 `http://127.0.0.1:7400` 完成全部四场验证，**60／60 组通过**。完整结果见 [result.json](../../../test/evidence/maintainability/result.json)，汇总见 [summary.json](../../../test/evidence/maintainability/summary.json)；分场结果、DOM／曲线清单及截图均保存在本目录。首轮目视发现表头受浏览器 th 默认居中影响，修正 cell 的对齐继承并增加字形守卫后，最终候选已完整重跑四场；本目录的实际页面结果及截图全部来自这次重跑，没有复用首轮结果。
 
 四场组合为中文／浅色 1440px、中文／深色 390px、英文／浅色 800px、英文／深色 320px。每场 15 组检查，覆盖：
 
@@ -70,8 +70,8 @@
 安全边界：只允许真实登录和退出两个写接口。四场共 8 次真实登录及 8 次真实退出，退出均为 HTTP 200，所有会话已撤销；4 次改密请求只使用 dummy 文本，均由浏览器本地返回模拟错误。其他业务写请求零放行，真实密码和用户文件没有被修改。截图和清单不记录输入框内容、登录响应、令牌或 Cookie。
 
 ```sh
-node --check tests/evidence/maintainability/browser-probe.mjs
-ZXS_PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node tests/evidence/maintainability/browser-probe.mjs
+node --check test/evidence/maintainability/browser-probe.mjs
+ZXS_PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node test/evidence/maintainability/browser-probe.mjs
 ```
 
 项目根默认由脚本相对位置解析，也可用 `ZXS_PRODUCT_ROOT` 指定；服务默认 `http://127.0.0.1:7400`，`ZXS_PREVIEW_URL` 可指定本地候选地址。演示记录默认 `/tmp/zxs-demo-seed/result.json`，可用 `ZXS_BROWSER_SEED` 指定，前置是已有只读可访问的演示目录和文件；脚本不会生成或修改演示文件。`ZXS_MAINT_SCENES` 可指定需要复测的场次。Playwright 默认按已安装包 `playwright` 导入，或通过 `ZXS_PLAYWRIGHT_MODULE` 指定工具模块；不是产品构建或运行依赖。

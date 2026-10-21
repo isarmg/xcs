@@ -99,7 +99,5 @@ impl Combine for FieldAttrs {
     }
 }
 
-#[test]
-fn ui() {
-    crate::run_ui_tests("from_ref");
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/axum-macros/functions/src/from_ref/ui_102.rs"));

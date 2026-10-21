@@ -38,4 +38,5 @@ impl RegistrationQueue {
 }
 
 #[cfg(test)]
+#[path = "../../../../../../test/foundation/tokio/modules/src/runtime/time_alt/registration_queue/tests.rs"]
 mod tests;

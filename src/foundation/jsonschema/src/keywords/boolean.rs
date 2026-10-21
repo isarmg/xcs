@@ -38,12 +38,4 @@ impl<F: Json> Validate<F> for FalseValidator {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::tests_util;
-    use serde_json::json;
-
-    #[test]
-    fn location() {
-        tests_util::assert_schema_location(&json!(false), &json!(1), "");
-    }
-}
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/jsonschema/unit/src/keywords/boolean/tests_40.rs"));

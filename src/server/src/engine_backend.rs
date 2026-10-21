@@ -1203,6 +1203,8 @@ impl Backend for EngineBackend {
 }
 
 #[cfg(test)]
+#[path = "../../../test/server/unit/engine_backend/authorization_tests.rs"]
 mod authorization_tests;
 #[cfg(test)]
+#[path = "../../../test/server/unit/engine_backend/revocation_tests.rs"]
 mod revocation_tests;

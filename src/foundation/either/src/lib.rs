@@ -1720,155 +1720,29 @@ where
     }
 }
 
-#[test]
-fn basic() {
-    let mut e = Left(2);
-    let r = Right(2);
-    assert_eq!(e, Left(2));
-    e = r;
-    assert_eq!(e, Right(2));
-    assert_eq!(e.left(), None);
-    assert_eq!(e.right(), Some(2));
-    assert_eq!(e.as_ref().right(), Some(&2));
-    assert_eq!(e.as_mut().right(), Some(&mut 2));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/either/functions/src/lib/basic_1723.rs"));
 
-#[test]
-fn macros() {
-    use std::string::String;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/either/functions/src/lib/macros_1736.rs"));
 
-    fn a() -> Either<u32, u32> {
-        let x: u32 = try_left!(Right(1337u32));
-        Left(x * 2)
-    }
-    assert_eq!(a(), Right(1337));
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/either/functions/src/lib/deref_1752.rs"));
 
-    fn b() -> Either<String, &'static str> {
-        Right(try_right!(Left("foo bar")))
-    }
-    assert_eq!(b(), Left(String::from("foo bar")));
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/either/functions/src/lib/fmt_traits_1761.rs"));
 
-#[test]
-fn deref() {
-    use std::string::String;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/either/functions/src/lib/iter_1786.rs"));
 
-    fn is_str(_: &str) {}
-    let value: Either<String, &str> = Left(String::from("test"));
-    is_str(&value);
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/either/functions/src/lib/seek_1798.rs"));
 
-#[test]
-fn fmt_traits() {
-    use std::format;
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/either/functions/src/lib/read_write_1829.rs"));
 
-    let value: Either<u32, i32> = Left(0xC0DE);
-    // fmt::Binary
-    assert_eq!("1100000011011110", format!("{value:b}"));
-    // fmt::Display
-    assert_eq!("49374", format!("{value}"));
-    // fmt::LowerExp
-    assert_eq!("4.9374e4", format!("{value:e}"));
-    // fmt::LowerHex
-    assert_eq!("c0de", format!("{value:x}"));
-    // fmt::Octal
-    assert_eq!("140336", format!("{value:o}"));
-    // fmt::UpperExp
-    assert_eq!("4.9374E4", format!("{value:E}"));
-    // fmt::UpperHex
-    assert_eq!("C0DE", format!("{value:X}"));
-
-    // fmt::Pointer
-    let pointer: Either<*const u32, &mut i32> = Left(std::ptr::null());
-    assert_eq!("0x0", format!("{pointer:p}"));
-}
-
-#[test]
-fn iter() {
-    let x = 3;
-    let mut iter = match x {
-        3 => Left(0..10),
-        _ => Right(17..),
-    };
-
-    assert_eq!(iter.next(), Some(0));
-    assert_eq!(iter.count(), 9);
-}
-
-#[test]
-fn seek() {
-    use std::io;
-
-    let use_empty = false;
-    let mut mockdata = [0x00; 256];
-    for (i, data) in mockdata.iter_mut().enumerate() {
-        *data = i as u8;
-    }
-
-    let mut reader = if use_empty {
-        // Empty didn't impl Seek until Rust 1.51
-        Left(io::Cursor::new([]))
-    } else {
-        Right(io::Cursor::new(&mockdata[..]))
-    };
-
-    let mut buf = [0u8; 16];
-    assert_eq!(reader.read(&mut buf).unwrap(), buf.len());
-    assert_eq!(buf, mockdata[..buf.len()]);
-
-    // the first read should advance the cursor and return the next 16 bytes thus the `ne`
-    assert_eq!(reader.read(&mut buf).unwrap(), buf.len());
-    assert_ne!(buf, mockdata[..buf.len()]);
-
-    // if the seek operation fails it should read 16..31 instead of 0..15
-    reader.seek(io::SeekFrom::Start(0)).unwrap();
-    assert_eq!(reader.read(&mut buf).unwrap(), buf.len());
-    assert_eq!(buf, mockdata[..buf.len()]);
-}
-
-#[test]
-fn read_write() {
-    use std::io;
-
-    let use_stdio = false;
-    let mockdata = [0xff; 256];
-
-    let mut reader = if use_stdio {
-        Left(io::stdin())
-    } else {
-        Right(&mockdata[..])
-    };
-
-    let mut buf = [0u8; 16];
-    assert_eq!(reader.read(&mut buf).unwrap(), buf.len());
-    assert_eq!(&buf, &mockdata[..buf.len()]);
-
-    let mut mockbuf = [0u8; 256];
-    let mut writer = if use_stdio {
-        Left(io::stdout())
-    } else {
-        Right(&mut mockbuf[..])
-    };
-
-    let buf = [1u8; 16];
-    assert_eq!(writer.write(&buf).unwrap(), buf.len());
-}
-
-#[test]
-fn error() {
-    let invalid_utf8 = b"\xff";
-    #[allow(invalid_from_utf8)]
-    let res = if let Err(error) = ::std::str::from_utf8(invalid_utf8) {
-        Err(Left(error))
-    } else if let Err(error) = "x".parse::<i32>() {
-        Err(Right(error))
-    } else {
-        Ok(())
-    };
-    assert!(res.is_err());
-    #[allow(deprecated)]
-    res.unwrap_err().description(); // make sure this can be called
-}
+#[cfg(test)]
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/either/functions/src/lib/error_1857.rs"));
 
 /// A helper macro to check if AsRef and AsMut are implemented for a given type.
 macro_rules! check_t {
