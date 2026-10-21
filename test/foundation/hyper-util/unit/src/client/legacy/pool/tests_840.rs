@@ -203,8 +203,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_pool_checkout_task_unparked() {
-        use futures_util::FutureExt;
-        use futures_util::future::join;
+        use futures::FutureExt;
+        use futures::future::join;
 
         let pool = pool_no_timer();
         let key = host_key("foo");

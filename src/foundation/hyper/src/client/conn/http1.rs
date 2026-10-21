@@ -8,7 +8,7 @@ use std::task::{Context, Poll};
 
 use crate::rt::{Read, Write};
 use bytes::Bytes;
-use futures_core::ready;
+use futures::ready;
 use http::{Request, Response};
 use httparse::ParserConfig;
 
@@ -636,7 +636,7 @@ mod upgrades {
     use crate::body::Body;
     use crate::proto::Dispatched;
     use crate::upgrade::Upgraded;
-    use futures_core::ready;
+    use futures::ready;
     // A future binding a connection with a Service with Upgrade support.
     //
     // This type is unnameable outside the crate.

@@ -9,9 +9,9 @@ use std::{
 
 use crate::rt::{Read, Write};
 use bytes::Bytes;
-use futures_channel::mpsc::{Receiver, Sender};
-use futures_channel::{mpsc, oneshot};
-use futures_core::{ready, FusedFuture, FusedStream, Stream};
+use futures::channel::mpsc::{Receiver, Sender};
+use futures::channel::{mpsc, oneshot};
+use futures::{ready, FusedFuture, FusedStream, Stream};
 use h2::client::{Builder, Connection, SendRequest};
 use h2::SendStream;
 use http::{Method, StatusCode};

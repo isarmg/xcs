@@ -12,7 +12,7 @@ use std::convert::Infallible;
 ///     routing::get,
 ///     Router,
 /// };
-/// use futures_util::StreamExt;
+/// use futures::StreamExt;
 ///
 /// async fn handler(RawQuery(query): RawQuery) {
 ///     // ...

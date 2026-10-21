@@ -7,7 +7,7 @@ use crate::{
     NoopLock,
 };
 use core::{marker::PhantomData, pin::Pin};
-use futures_core::{
+use futures::{
     future::Future,
     stream::{FusedStream, Stream},
     task::{Context, Poll, Waker},

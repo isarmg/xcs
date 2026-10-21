@@ -1,7 +1,7 @@
 #![cfg(all(target_family = "wasm", feature = "futures"))]
 
-use futures_channel::{mpsc, oneshot};
-use futures_util::{
+use futures::channel::{mpsc, oneshot};
+use futures::{
     future::{select, Either, FutureExt},
     stream::StreamExt,
 };

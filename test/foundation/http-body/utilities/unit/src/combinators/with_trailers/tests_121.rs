@@ -23,8 +23,8 @@ mod tests {
                 Ok::<_, Infallible>(trailers.clone()),
             )));
 
-        futures_util::pin_mut!(body);
-        let waker = futures_util::task::noop_waker();
+        futures::pin_mut!(body);
+        let waker = futures::task::noop_waker();
         let mut cx = Context::from_waker(&waker);
 
         let data = unwrap_ready(body.as_mut().poll_frame(&mut cx))
@@ -66,8 +66,8 @@ mod tests {
                 trailers_2.clone(),
             ))));
 
-        futures_util::pin_mut!(body);
-        let waker = futures_util::task::noop_waker();
+        futures::pin_mut!(body);
+        let waker = futures::task::noop_waker();
         let mut cx = Context::from_waker(&waker);
 
         let body_trailers = unwrap_ready(body.as_mut().poll_frame(&mut cx))

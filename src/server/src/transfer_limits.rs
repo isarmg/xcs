@@ -1,6 +1,6 @@
 //! HTTP-only admission and wall-clock body lifetime bounds.
 use crate::{ApiError, lock};
-use futures_util::Stream;
+use futures::Stream;
 use std::{
     collections::BTreeMap,
     pin::Pin,

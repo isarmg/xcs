@@ -104,7 +104,7 @@ pub trait ServiceExt<Request>: tower_service::Service<Request> {
     fn call_all<S>(self, reqs: S) -> CallAll<Self, S>
     where
         Self: Sized,
-        S: futures_core::Stream<Item = Request>,
+        S: futures::Stream<Item = Request>,
     {
         CallAll::new(self, reqs)
     }

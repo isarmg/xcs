@@ -6,7 +6,7 @@ use std::task::{Context, Poll};
 
 use crate::rt::{Read, ReadBuf, Write};
 use bytes::{Buf, BufMut, Bytes, BytesMut};
-use futures_core::ready;
+use futures::ready;
 
 use super::{Http1Transaction, ParseContext, ParsedMessage};
 use crate::common::buf::BufList;
@@ -341,7 +341,7 @@ where
 
     #[cfg(test)]
     fn flush(&mut self) -> impl std::future::Future<Output = io::Result<()>> + '_ {
-        futures_util::future::poll_fn(move |cx| self.poll_flush(cx))
+        futures::future::poll_fn(move |cx| self.poll_flush(cx))
     }
 }
 

@@ -2,11 +2,11 @@ use crate::codec::decoder::Decoder;
 use crate::codec::encoder::Encoder;
 use crate::codec::framed_impl::{FramedImpl, RWFrames, ReadFrame, WriteFrame};
 
-use futures_core::Stream;
+use futures::Stream;
 use tokio::io::{AsyncRead, AsyncWrite};
 
 use bytes::BytesMut;
-use futures_sink::Sink;
+use futures::sink::Sink;
 use pin_project_lite::pin_project;
 use std::fmt;
 use std::io;
@@ -22,18 +22,18 @@ pin_project! {
     ///
     /// # Cancellation safety
     ///
-    /// * [`futures_util::sink::SinkExt::send`]: if send is used as the event in a
+    /// * [`futures::sink::SinkExt::send`]: if send is used as the event in a
     /// `tokio::select!` statement and some other branch completes first, then it is
     /// guaranteed that the message was not sent, but the message itself is lost.
     /// * [`tokio_stream::StreamExt::next`]: This method is cancel safe. The returned
     /// future only holds onto a reference to the underlying stream, so dropping it will
     /// never lose a value.
     ///
-    /// [`Stream`]: futures_core::Stream
-    /// [`Sink`]: futures_sink::Sink
+    /// [`Stream`]: futures::Stream
+    /// [`Sink`]: futures::sink::Sink
     /// [`AsyncRead`]: tokio::io::AsyncRead
     /// [`Decoder::framed`]: crate::codec::Decoder::framed()
-    /// [`futures_util::sink::SinkExt::send`]: futures_util::sink::SinkExt::send
+    /// [`futures::sink::SinkExt::send`]: futures::sink::SinkExt::send
     /// [`tokio_stream::StreamExt::next`]: https://docs.rs/tokio-stream/latest/tokio_stream/trait.StreamExt.html#method.next
     pub struct Framed<T, U> {
         #[pin]
@@ -65,8 +65,8 @@ impl<T, U> Framed<T, U> {
     /// to do so, without new data available, continue to return `None` without
     /// creating more (closing) frames.
     ///
-    /// [`Stream`]: futures_core::Stream
-    /// [`Sink`]: futures_sink::Sink
+    /// [`Stream`]: futures::Stream
+    /// [`Sink`]: futures::sink::Sink
     /// [`Decode`]: crate::codec::Decoder
     /// [`Encoder`]: crate::codec::Encoder
     /// [`split`]: https://docs.rs/futures/0.3/futures/stream/trait.StreamExt.html#method.split
@@ -99,8 +99,8 @@ impl<T, U> Framed<T, U> {
     /// calling [`split`] on the `Framed` returned by this method, which will
     /// break them into separate objects, allowing them to interact more easily.
     ///
-    /// [`Stream`]: futures_core::Stream
-    /// [`Sink`]: futures_sink::Sink
+    /// [`Stream`]: futures::Stream
+    /// [`Sink`]: futures::sink::Sink
     /// [`Decode`]: crate::codec::Decoder
     /// [`Encoder`]: crate::codec::Encoder
     /// [`split`]: https://docs.rs/futures/0.3/futures/stream/trait.StreamExt.html#method.split
@@ -146,8 +146,8 @@ impl<T, U> Framed<T, U> {
     /// calling [`split`] on the `Framed` returned by this method, which will
     /// break them into separate objects, allowing them to interact more easily.
     ///
-    /// [`Stream`]: futures_core::Stream
-    /// [`Sink`]: futures_sink::Sink
+    /// [`Stream`]: futures::Stream
+    /// [`Sink`]: futures::sink::Sink
     /// [`Decoder`]: crate::codec::Decoder
     /// [`Encoder`]: crate::codec::Encoder
     /// [`into_parts`]: crate::codec::Framed::into_parts()

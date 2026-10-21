@@ -31,9 +31,9 @@ repository = "https://github.com/hyperium/hyper-util"
 
 [features]
 __internal_happy_eyeballs_tests = []
-client = ["hyper/client", "dep:tracing", "dep:futures-channel", "dep:tower-service"]
-client-legacy = ["client", "tokio/net", "dep:socket2", "tokio/sync", "dep:libc", "dep:futures-util", "dep:httparse"]
-client-pool = ["client", "dep:futures-util", "dep:tower-layer", "tokio/sync"]
+client = ["hyper/client", "dep:tracing", "dep:futures", "futures/channel", "futures/std", "dep:tower-service"]
+client-legacy = ["client", "tokio/net", "dep:socket2", "tokio/sync", "dep:libc", "dep:futures", "futures/utilities", "dep:httparse"]
+client-pool = ["client", "dep:futures", "futures/utilities", "dep:tower-layer", "tokio/sync"]
 client-proxy = ["client", "dep:base64", "dep:ipnet", "dep:percent-encoding"]
 client-proxy-system = []
 default = []
@@ -61,16 +61,11 @@ path = "../base64"
 version = "1.7.1"
 path = "../bytes"
 
-[dependencies.futures-channel]
-version = "0.3"
-optional = true
-path = "../futures-channel"
-
-[dependencies.futures-util]
-version = "0.3.16"
-optional = true
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-util"
+optional = true
 
 [dependencies.http]
 version = "1.0"

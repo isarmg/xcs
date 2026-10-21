@@ -182,14 +182,14 @@ impl<'c, DB: Database> crate::acquire::Acquire<'c> for &'c mut PoolConnection<DB
     type Connection = &'c mut <DB as Database>::Connection;
 
     #[inline]
-    fn acquire(self) -> futures_core::future::BoxFuture<'c, Result<Self::Connection, Error>> {
+    fn acquire(self) -> futures::future::BoxFuture<'c, Result<Self::Connection, Error>> {
         Box::pin(future::ready(Ok(&mut **self)))
     }
 
     #[inline]
     fn begin(
         self,
-    ) -> futures_core::future::BoxFuture<'c, Result<crate::transaction::Transaction<'c, DB>, Error>>
+    ) -> futures::future::BoxFuture<'c, Result<crate::transaction::Transaction<'c, DB>, Error>>
     {
         crate::transaction::Transaction::begin(&mut **self, None)
     }

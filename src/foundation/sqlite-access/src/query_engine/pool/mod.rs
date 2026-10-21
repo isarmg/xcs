@@ -62,8 +62,8 @@ use std::task::{ready, Context, Poll};
 use std::time::{Duration, Instant};
 
 use event_listener::EventListener;
-use futures_core::FusedFuture;
-use futures_util::FutureExt;
+use futures::FusedFuture;
+use futures::FutureExt;
 
 use crate::connection::Connection;
 use crate::database::Database;
@@ -597,14 +597,14 @@ impl CloseEvent {
         //
         // We use `poll_immediate()` as it will use the correct waker instead of
         // a no-op one like `.now_or_never()`, but it won't actually suspend execution here.
-        futures_util::future::poll_immediate(&mut *self)
+        futures::future::poll_immediate(&mut *self)
             .await
             .map_or(Ok(()), |_| Err(Error::PoolClosed))?;
 
         let mut fut = pin!(fut);
 
-        // I find that this is clearer in intent than `futures_util::future::select()`
-        // or `futures_util::select_biased!{}` (which isn't enabled anyway).
+        // I find that this is clearer in intent than `futures::future::select()`
+        // or `futures::select_biased!{}` (which isn't enabled anyway).
         std::future::poll_fn(|cx| {
             // Poll `fut` first as the wakeup event is more likely for it than `self`.
             if let Poll::Ready(ret) = fut.as_mut().poll(cx) {

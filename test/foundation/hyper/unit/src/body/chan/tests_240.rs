@@ -8,7 +8,7 @@ mod tests {
     use super::*;
 
     async fn recv(rx: &mut Receiver) -> Option<Result<Bytes, crate::Error>> {
-        futures_util::future::poll_fn(|cx| rx.poll_next(cx)).await
+        futures::future::poll_fn(|cx| rx.poll_next(cx)).await
     }
 
     #[tokio::test]

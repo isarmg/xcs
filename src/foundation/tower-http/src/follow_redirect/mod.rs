@@ -95,7 +95,7 @@
 pub mod policy;
 
 use self::policy::{Action, Attempt, Policy, Standard};
-use futures_util::future::Either;
+use futures::future::Either;
 use http::{
     header::CONTENT_ENCODING, header::CONTENT_LENGTH, header::CONTENT_TYPE, header::LOCATION,
     header::TRANSFER_ENCODING, HeaderMap, HeaderValue, Method, Request, Response, StatusCode, Uri,

@@ -8,7 +8,7 @@
 //! use tower_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
 //! use http::{Request, Response, StatusCode, header::AUTHORIZATION};
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn, BoxError};
-//! use futures_core::future::BoxFuture;
+//! use futures::future::BoxFuture;
 //! use bytes::Bytes;
 //! use http_body::Full;
 //!
@@ -80,7 +80,7 @@
 //! use tower_http::auth::{AsyncRequireAuthorizationLayer, AsyncAuthorizeRequest};
 //! use http::{Request, Response, StatusCode};
 //! use tower::{Service, ServiceExt, ServiceBuilder, BoxError};
-//! use futures_core::future::BoxFuture;
+//! use futures::future::BoxFuture;
 //! use http_body::Full;
 //! use bytes::Bytes;
 //!

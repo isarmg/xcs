@@ -128,7 +128,7 @@ mod test {
                 futures.push(conn);
             }
             tokio::spawn(async move {
-                futures_util::future::join_all(futures).await;
+                futures::future::join_all(futures).await;
             });
         }
 

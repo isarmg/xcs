@@ -953,7 +953,7 @@
           "source": "src/foundation/axum/src/routing/tests/mod.rs",
           "source_sha256_before": "48c54f725094786e778cd8bb79c96dd2c31d760187a64962c403477e805538c9",
           "path": "test/foundation/axum/modules/src/routing/tests/mod.rs",
-          "sha256": "31e55e98f96cb723968340bef040ec919b2bd53d2875695056d551d4876c4dc4"
+          "sha256": "5cc3352cd828d9d12805b22db574a41f59b5dd2f4e39162534e8f9c3598b270a"
         },
         {
           "source": "src/foundation/axum/src/routing/tests/nest.rs",
@@ -1103,7 +1103,7 @@
           "source": "src/foundation/axum/src/response/sse.rs",
           "source_sha256_before": "7df949388820fb32ddb6726a6860832cf588abcb4f3302d235c57f0a99ac6bcb",
           "path": "test/foundation/axum/unit/src/response/sse/tests_637.rs",
-          "sha256": "fcc45b9cb5f0160e625120c46c8d9557d90e7d8829c0c73399b8338c43d6e93a"
+          "sha256": "329fecd44fbe91d0af7cc8fb480925f0aa4fb53f3f9bedcf09bc8d60f434c8d5"
         },
         {
           "source": "src/foundation/axum/src/routing/into_make_service.rs",
@@ -5793,662 +5793,781 @@
       ],
       "files": [
         {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/flatten_91.rs",
-          "sha256": "0fff3a26b1dc8099865a9c2f555a813596908e0f2e99cb62d8327d530f8d325c"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/join_cancels_190.rs",
-          "sha256": "f4f10216a3e8fedb3e66728876414f642127baa38263da900f52b14cca24e1ef"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/join_incomplete_236.rs",
-          "sha256": "20284c27f8c27fbaa3b27076e1e7a10f9efc018e80f508497280cebad769e3e2"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/option_396.rs",
-          "sha256": "4eb01eb15007c4f3cffa76170d05a0159f815d51df0968645c31d5bc4e49c873"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/result_smoke_16.rs",
-          "sha256": "6a2eb2683f9c14a66857e33c0adc64bf7e91646b621e6eca12984c62476ca9cc"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/select2_277.rs",
-          "sha256": "617921ee54d602452f7fb4a9feadbdd054a8be552e1d402219e4267796619f1f"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/select_cancels_144.rs",
-          "sha256": "2b6c97a007fdcfc81b636872ee66162e51add0ea4cd01660d9d3897f275fbc21"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/smoke_oneshot_108.rs",
-          "sha256": "e0f3ef6e91f41302adcc14e40e8033a3b1dea8044d0cba061a9da6270b4b3f6c"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/test_empty_65.rs",
-          "sha256": "708afa43ec6eb173b2ce06d11727c1a04209acd59511a39452082d76d272b5d4"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/all.rs",
-          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
-          "path": "test/foundation/futures/functions/tests_disabled/all/test_ok_85.rs",
-          "sha256": "dc52279ce4dc462f34c520611174d75171f5470ce2f6b06807674932c4cac348"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/and_then_92.rs",
-          "sha256": "da3258f2f20fb5cf1d54e174cf1ee41f7f7ca1b3e6ef4ccfb21fc164ff90c989"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/buffered_171.rs",
-          "sha256": "7e160150190fcf5e8a7bd33f9bcbe3b516e1c06e4b5e77417a159c0124161ece"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/chunks_287.rs",
-          "sha256": "4075db9d02206926b971b2434c1504ed38b5acb26bea6b19de6b330890da9f52"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/chunks_panic_on_cap_zero_299.rs",
-          "sha256": "aff018b7c82a903bc4b1fb4c4be9b9fdb5dedda221393e9aca765e723c03127e"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/concat2_329.rs",
-          "sha256": "9fd6a70a9de98707d4f422a6b90fff59d6828810f937d48b65c9d1c77eda0fec"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/concat_320.rs",
-          "sha256": "a9c47897aca100ce6f61dc39bfe26cce45058993fa0fdf8a89ff63db8289b8fc"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/filter_79.rs",
-          "sha256": "a74e2d3b87d9fcb6354d0d730d88eee27bba2821f761044b95b39b022e9e59ff"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/filter_map_84.rs",
-          "sha256": "d63e6bcfe54c88e2287854f91a7cb00bb1e7351a86fe91eb490bb5fb2fbf9a22"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/flatten_108.rs",
-          "sha256": "9222667386eca945abff095d7ec1588c68c747fd62d12767acb810b08f279548"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/fold_73.rs",
-          "sha256": "32671aa584bd43b2eaf19c559a535b3a6cd79011b4dd933ff37ae9a9135e01ff"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/forward_305.rs",
-          "sha256": "8cfa75170ae915a728e0731a29519bbdcd939afbedbfcf6e6275b0759870880e"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/from_err_68.rs",
-          "sha256": "bfa0295ac698899cb52cb2e10cb3e0fb2edadce29950dd6f49cdeb4aa621a2bb"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/fuse_160.rs",
-          "sha256": "8110ceb1461cd8911a988809f3a732a9bdd8f987d53834569b9915b051f4759b"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/inspect_356.rs",
-          "sha256": "612511cd1010a44b079013723f52317b941e2b39292c79966b04dd74d1e73c0d"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/inspect_err_363.rs",
-          "sha256": "bff84d5639347a2b82cd01812c8b9b9c8b1ed2475328a7f840b46004f8cbef18"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/map_49.rs",
-          "sha256": "8433703429b9b22a02d2eef28c9c7d73992f38044355171ce2e7a6d827d52654"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/map_err_54.rs",
-          "sha256": "d1f2fc3e556827aa30c5bef34ff689cb58b4627a677813f67e761cbaa086dc3c"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/or_else_103.rs",
-          "sha256": "75e9e387b84354f856d6a259d37d21c1c807573adcd13d50642e86aff58e6176"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/peek_258.rs",
-          "sha256": "2d938cc57103c49fff4855009fbfa4d99022f8353a4d9eaf0fcae0d02520c899"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/peekable_155.rs",
-          "sha256": "610a3cf8bd4878bc35a3a48826e2fea3c44e7650458ab887e9b057e1bdeb671c"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/skip_113.rs",
-          "sha256": "33f1921681c8ad7da0df428baf4b8e00cd5a1de5ce7e259606ac86e60d3843cb"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/skip_passes_errors_through_118.rs",
-          "sha256": "a6a240a4c0446148085f6787d787c8b8fcbb66d09495824689e4de22cf54b56d"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/skip_while_128.rs",
-          "sha256": "6102f501dca60938a5731ccb6f2678dd2b23f20a020e5b0fe088cd0614a5aacc"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/stream_poll_fn_341.rs",
-          "sha256": "cf1bb142d5b06ce8ad5901d1957fb9e98c27d39f9877d1205278a3e530586d51"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/take_132.rs",
-          "sha256": "18771284f7bb7a9478232d375bf51ec758c8de75037fdd8dec26777782d84e95"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/take_passes_errors_through_142.rs",
-          "sha256": "e2aee7c605f7e6c021416892b81538a717f48fc4f3adb5d9b823e912a2424ba5"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/take_while_137.rs",
-          "sha256": "5a57d073ce5271569a700e2adbee65ad50f868f582fcbe8d9df712d0c8a72bc0"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/then_98.rs",
-          "sha256": "a2306ce2f593f212bd438d2778180b96ef027d1af1f568491e1a133c461b0d37"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/unordered_210.rs",
-          "sha256": "dfaa98248747ec51ec7b5996b8565078b859f204dfca7aa9b8cd86843bd4d290"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/wait_282.rs",
-          "sha256": "5348743cb1b589df027d9eabb56ce0c9d38f7a75b3912e46824cdf0f63864fd7"
-        },
-        {
-          "source": "src/foundation/futures/tests_disabled/stream.rs",
-          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
-          "path": "test/foundation/futures/functions/tests_disabled/stream/zip_249.rs",
-          "sha256": "5bd441ca3a9c32e68576916776151ea9d982c1e18b9e7fdc3d1d20c3785ad22d"
-        },
-        {
-          "source": "src/foundation/futures/tests/_require_features.rs",
-          "source_sha256_before": "5ad24019430b498addfc1fd853e955c7b646d78d0727a8ca29f586c9aab45cff",
-          "path": "test/foundation/futures/tests/_require_features.rs",
-          "sha256": "5ad24019430b498addfc1fd853e955c7b646d78d0727a8ca29f586c9aab45cff"
-        },
-        {
-          "source": "src/foundation/futures/tests/async_await_macros.rs",
-          "source_sha256_before": "299ba04655e2e65658c19b955381d457b8ef0d65cba60ac2cd66eb5eea64e287",
-          "path": "test/foundation/futures/tests/async_await_macros.rs",
-          "sha256": "299ba04655e2e65658c19b955381d457b8ef0d65cba60ac2cd66eb5eea64e287"
-        },
-        {
-          "source": "src/foundation/futures/tests/auto_traits.rs",
-          "source_sha256_before": "31ddd7e374fa38a3d0f29f20e04bd7c3c2ce10590934cac18e7ebd18355bbe2f",
-          "path": "test/foundation/futures/tests/auto_traits.rs",
-          "sha256": "31ddd7e374fa38a3d0f29f20e04bd7c3c2ce10590934cac18e7ebd18355bbe2f"
-        },
-        {
-          "source": "src/foundation/futures/tests/bilock.rs",
-          "source_sha256_before": "bd0bf617352528f686b3fbb1847f4da9f6fe351e456e0bdce888bc738311fa83",
-          "path": "test/foundation/futures/tests/bilock.rs",
-          "sha256": "bd0bf617352528f686b3fbb1847f4da9f6fe351e456e0bdce888bc738311fa83"
-        },
-        {
-          "source": "src/foundation/futures/tests/compat.rs",
-          "source_sha256_before": "556db898497eb8139f1ae62b0f88ba2524aef6eda3740255a08388245963bfee",
-          "path": "test/foundation/futures/tests/compat.rs",
-          "sha256": "556db898497eb8139f1ae62b0f88ba2524aef6eda3740255a08388245963bfee"
-        },
-        {
-          "source": "src/foundation/futures/tests/compat_miri.rs",
-          "source_sha256_before": "fab2869cca30ffdf8e2a46e9218e62203d2e24873997d7fba8c829d9718fc954",
-          "path": "test/foundation/futures/tests/compat_miri.rs",
-          "sha256": "fab2869cca30ffdf8e2a46e9218e62203d2e24873997d7fba8c829d9718fc954"
-        },
-        {
-          "source": "src/foundation/futures/tests/eager_drop.rs",
-          "source_sha256_before": "dc25d067207c06bbe094752d70bf161e206f00e162ffa3219583c8b4eb0816a1",
-          "path": "test/foundation/futures/tests/eager_drop.rs",
-          "sha256": "dc25d067207c06bbe094752d70bf161e206f00e162ffa3219583c8b4eb0816a1"
-        },
-        {
-          "source": "src/foundation/futures/tests/eventual.rs",
-          "source_sha256_before": "9050809e5196d0870a3ee2a268a5b4b398739b01617e1e317a673ac0660974cf",
-          "path": "test/foundation/futures/tests/eventual.rs",
-          "sha256": "9050809e5196d0870a3ee2a268a5b4b398739b01617e1e317a673ac0660974cf"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_abortable.rs",
-          "source_sha256_before": "4c81607472a85c5d87a5fe8a510a24cf1e8793fedf7f6cd6741ba1efd66615cd",
-          "path": "test/foundation/futures/tests/future_abortable.rs",
-          "sha256": "4c81607472a85c5d87a5fe8a510a24cf1e8793fedf7f6cd6741ba1efd66615cd"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_basic_combinators.rs",
-          "source_sha256_before": "4508c1250b85a4f749b7261bbd0ba728d3970e7ba277e84a006e76cf068fb54f",
-          "path": "test/foundation/futures/tests/future_basic_combinators.rs",
-          "sha256": "4508c1250b85a4f749b7261bbd0ba728d3970e7ba277e84a006e76cf068fb54f"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_fuse.rs",
-          "source_sha256_before": "bb63141f1486e755d0cdea1d93e302ad864a2186aa5287f909a0b3a922e82065",
-          "path": "test/foundation/futures/tests/future_fuse.rs",
-          "sha256": "bb63141f1486e755d0cdea1d93e302ad864a2186aa5287f909a0b3a922e82065"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_inspect.rs",
-          "source_sha256_before": "9c03ceb770ce04fe9fd88a3489362642a0e34ae86a7b4958703e89e8b7a1ecf4",
-          "path": "test/foundation/futures/tests/future_inspect.rs",
-          "sha256": "9c03ceb770ce04fe9fd88a3489362642a0e34ae86a7b4958703e89e8b7a1ecf4"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_join.rs",
-          "source_sha256_before": "d346945889b7a28e774d6a19ce62d839c1213103b13b7cf9d62fbb03005713cd",
-          "path": "test/foundation/futures/tests/future_join.rs",
-          "sha256": "d346945889b7a28e774d6a19ce62d839c1213103b13b7cf9d62fbb03005713cd"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_join_all.rs",
-          "source_sha256_before": "4dec7ab7633f3591e4aed6b99aa3924e127f99d668dc5c6d7bc83532d65f1cb7",
-          "path": "test/foundation/futures/tests/future_join_all.rs",
-          "sha256": "4dec7ab7633f3591e4aed6b99aa3924e127f99d668dc5c6d7bc83532d65f1cb7"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_obj.rs",
-          "source_sha256_before": "a6aae88a194dc7d3bb961c20db78f180a01796cf7ea4bf106da98c40d89ed36d",
-          "path": "test/foundation/futures/tests/future_obj.rs",
-          "sha256": "a6aae88a194dc7d3bb961c20db78f180a01796cf7ea4bf106da98c40d89ed36d"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_select_all.rs",
-          "source_sha256_before": "4cefc84d6b7ae2cf0007912cd0325fff6b926a4c26310e7b14a21868de61616f",
-          "path": "test/foundation/futures/tests/future_select_all.rs",
-          "sha256": "4cefc84d6b7ae2cf0007912cd0325fff6b926a4c26310e7b14a21868de61616f"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_select_ok.rs",
-          "source_sha256_before": "1cabd03268641e1ac42b880344528bad73e3aeb6d6a8a141e652f339dd40184b",
-          "path": "test/foundation/futures/tests/future_select_ok.rs",
-          "sha256": "1cabd03268641e1ac42b880344528bad73e3aeb6d6a8a141e652f339dd40184b"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_shared.rs",
-          "source_sha256_before": "4f2cba1e74dacc4fc6b92eef04700df832533efe4fe6a392e3fd0f655b5b8450",
-          "path": "test/foundation/futures/tests/future_shared.rs",
-          "sha256": "4f2cba1e74dacc4fc6b92eef04700df832533efe4fe6a392e3fd0f655b5b8450"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_try_flatten_stream.rs",
-          "source_sha256_before": "aa4542b5d88f62522b736fac4567613081df45ad3eb54b0b659cdadc9409c4db",
-          "path": "test/foundation/futures/tests/future_try_flatten_stream.rs",
-          "sha256": "aa4542b5d88f62522b736fac4567613081df45ad3eb54b0b659cdadc9409c4db"
-        },
-        {
-          "source": "src/foundation/futures/tests/future_try_join_all.rs",
-          "source_sha256_before": "28684cd3d07217001321e71b69b4b7551a7b862188208ef4ec3fdb95b6b3fcd6",
-          "path": "test/foundation/futures/tests/future_try_join_all.rs",
-          "sha256": "28684cd3d07217001321e71b69b4b7551a7b862188208ef4ec3fdb95b6b3fcd6"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_buf_reader.rs",
-          "source_sha256_before": "f4124633f6a9515c7b459ea086cdeff3ec9a9400aca40d112caceb16b69bd05f",
-          "path": "test/foundation/futures/tests/io_buf_reader.rs",
-          "sha256": "f4124633f6a9515c7b459ea086cdeff3ec9a9400aca40d112caceb16b69bd05f"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_buf_writer.rs",
-          "source_sha256_before": "8f7a78ab2955d2beb69d0881321d4191235540aef6448e875e7f76a2ffc55b89",
-          "path": "test/foundation/futures/tests/io_buf_writer.rs",
-          "sha256": "8f7a78ab2955d2beb69d0881321d4191235540aef6448e875e7f76a2ffc55b89"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_cursor.rs",
-          "source_sha256_before": "cba5a7b968b9f816ac33316ce1e4da67cb320aa5a21332c0f9a45694fa445dd7",
-          "path": "test/foundation/futures/tests/io_cursor.rs",
-          "sha256": "cba5a7b968b9f816ac33316ce1e4da67cb320aa5a21332c0f9a45694fa445dd7"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_line_writer.rs",
-          "source_sha256_before": "5b1140de776a721a677911496daa4e7956cc52cc08838d593ab300a93e0d7984",
-          "path": "test/foundation/futures/tests/io_line_writer.rs",
-          "sha256": "5b1140de776a721a677911496daa4e7956cc52cc08838d593ab300a93e0d7984"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_lines.rs",
-          "source_sha256_before": "793ddd1192bb6bc60d430120dff6c0d3757b5eb4f2b09c2279512faeea9585ae",
-          "path": "test/foundation/futures/tests/io_lines.rs",
-          "sha256": "793ddd1192bb6bc60d430120dff6c0d3757b5eb4f2b09c2279512faeea9585ae"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_read.rs",
-          "source_sha256_before": "e0a8fa9b27e042f03c9fe14e8f0f329a67e24afad1ce40b906a1ab4d2abef23a",
-          "path": "test/foundation/futures/tests/io_read.rs",
-          "sha256": "e0a8fa9b27e042f03c9fe14e8f0f329a67e24afad1ce40b906a1ab4d2abef23a"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_read_exact.rs",
-          "source_sha256_before": "42049cd67589992dc09764ffb3836c475115b26dee441fd4cc7e847b2d166667",
-          "path": "test/foundation/futures/tests/io_read_exact.rs",
-          "sha256": "42049cd67589992dc09764ffb3836c475115b26dee441fd4cc7e847b2d166667"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_read_line.rs",
-          "source_sha256_before": "461063632eab3528def121652119a8ef7db0fc49cb81961a04e89cc2434a0218",
-          "path": "test/foundation/futures/tests/io_read_line.rs",
-          "sha256": "461063632eab3528def121652119a8ef7db0fc49cb81961a04e89cc2434a0218"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_read_to_end.rs",
-          "source_sha256_before": "19ea908be8365e0c080e354f5c5705b2ab3f21611feecc5dea82dedb7bd62ef6",
-          "path": "test/foundation/futures/tests/io_read_to_end.rs",
-          "sha256": "19ea908be8365e0c080e354f5c5705b2ab3f21611feecc5dea82dedb7bd62ef6"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_read_to_string.rs",
-          "source_sha256_before": "824921601ac49f15b9a0b349c900f9cc9081cf2646e6a86f443166f841f1320e",
-          "path": "test/foundation/futures/tests/io_read_to_string.rs",
-          "sha256": "824921601ac49f15b9a0b349c900f9cc9081cf2646e6a86f443166f841f1320e"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_read_until.rs",
-          "source_sha256_before": "ba743cce9c838043b2f825d27ed7bae0cdd6d6bec893ca2a778486fe826e159a",
-          "path": "test/foundation/futures/tests/io_read_until.rs",
-          "sha256": "ba743cce9c838043b2f825d27ed7bae0cdd6d6bec893ca2a778486fe826e159a"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_window.rs",
-          "source_sha256_before": "0d18334b1eb35f5e93099e19c0cab22abe5971d8531176b81345fc89d07692a8",
-          "path": "test/foundation/futures/tests/io_window.rs",
-          "sha256": "0d18334b1eb35f5e93099e19c0cab22abe5971d8531176b81345fc89d07692a8"
-        },
-        {
-          "source": "src/foundation/futures/tests/io_write.rs",
-          "source_sha256_before": "701032ff3d5a6e6a3d8cb4e373d1c93e4708f2e5ee0a6742fa626f27b6094b4d",
-          "path": "test/foundation/futures/tests/io_write.rs",
-          "sha256": "701032ff3d5a6e6a3d8cb4e373d1c93e4708f2e5ee0a6742fa626f27b6094b4d"
-        },
-        {
-          "source": "src/foundation/futures/tests/lock_mutex.rs",
-          "source_sha256_before": "eb47121b842096353165b1444bf679a2df0103b181f811b40042f5c3f1d00c73",
-          "path": "test/foundation/futures/tests/lock_mutex.rs",
-          "sha256": "eb47121b842096353165b1444bf679a2df0103b181f811b40042f5c3f1d00c73"
-        },
-        {
-          "source": "src/foundation/futures/tests/macro_comma_support.rs",
-          "source_sha256_before": "627024ccadfe95194469d5bae2cc29b897b0118a664d7222408a2e234a10e939",
-          "path": "test/foundation/futures/tests/macro_comma_support.rs",
-          "sha256": "627024ccadfe95194469d5bae2cc29b897b0118a664d7222408a2e234a10e939"
-        },
-        {
-          "source": "src/foundation/futures/tests/object_safety.rs",
-          "source_sha256_before": "9d047190387ed8334113687003c23407c80c858411f5ec7d5c505500f9639dfc",
-          "path": "test/foundation/futures/tests/object_safety.rs",
-          "sha256": "9d047190387ed8334113687003c23407c80c858411f5ec7d5c505500f9639dfc"
-        },
-        {
-          "source": "src/foundation/futures/tests/oneshot.rs",
-          "source_sha256_before": "d2ccd1a175576a3841e5bc76ecc7b1603f22ec6311f827b0e12fbd4d2c0001bc",
-          "path": "test/foundation/futures/tests/oneshot.rs",
-          "sha256": "d2ccd1a175576a3841e5bc76ecc7b1603f22ec6311f827b0e12fbd4d2c0001bc"
-        },
-        {
-          "source": "src/foundation/futures/tests/ready_queue.rs",
-          "source_sha256_before": "6380025061025c27cb3b521df9520f169c7aa8e1802b881d539023bb4651744a",
-          "path": "test/foundation/futures/tests/ready_queue.rs",
-          "sha256": "6380025061025c27cb3b521df9520f169c7aa8e1802b881d539023bb4651744a"
-        },
-        {
-          "source": "src/foundation/futures/tests/recurse.rs",
-          "source_sha256_before": "b01b3d73b69ad90a767d297f974dac435817c39e12556fa6a3e6c725dd84f706",
-          "path": "test/foundation/futures/tests/recurse.rs",
-          "sha256": "b01b3d73b69ad90a767d297f974dac435817c39e12556fa6a3e6c725dd84f706"
-        },
-        {
-          "source": "src/foundation/futures/tests/sink.rs",
-          "source_sha256_before": "9be61c4916a07ab07151212b2f20c2348553a8435bac48a9d978b3b6319327b1",
-          "path": "test/foundation/futures/tests/sink.rs",
-          "sha256": "9be61c4916a07ab07151212b2f20c2348553a8435bac48a9d978b3b6319327b1"
-        },
-        {
-          "source": "src/foundation/futures/tests/sink_fanout.rs",
-          "source_sha256_before": "67ab58422040308353955311f75222e55378e4cc34557c7b34140bd20c259132",
-          "path": "test/foundation/futures/tests/sink_fanout.rs",
-          "sha256": "67ab58422040308353955311f75222e55378e4cc34557c7b34140bd20c259132"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream.rs",
-          "source_sha256_before": "17247f3237250562df2ff3feb0ddc715302d74b06ea207402b8d32f0f543bd90",
-          "path": "test/foundation/futures/tests/stream.rs",
-          "sha256": "17247f3237250562df2ff3feb0ddc715302d74b06ea207402b8d32f0f543bd90"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_abortable.rs",
-          "source_sha256_before": "60052b83b5eeb2395b77bc213f35098d2d5880529f0d83884582a8bbff78b139",
-          "path": "test/foundation/futures/tests/stream_abortable.rs",
-          "sha256": "60052b83b5eeb2395b77bc213f35098d2d5880529f0d83884582a8bbff78b139"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_buffer_unordered.rs",
-          "source_sha256_before": "143ee19056b9ee9e480903cf4a1b00da7d4e528c5804569bf8c40869e6ac6eed",
-          "path": "test/foundation/futures/tests/stream_buffer_unordered.rs",
-          "sha256": "143ee19056b9ee9e480903cf4a1b00da7d4e528c5804569bf8c40869e6ac6eed"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_catch_unwind.rs",
-          "source_sha256_before": "5cdaaf70436c49d3a7107bdc5547ddb8757c3d2057635aded70e485d0cb9cbfc",
-          "path": "test/foundation/futures/tests/stream_catch_unwind.rs",
-          "sha256": "5cdaaf70436c49d3a7107bdc5547ddb8757c3d2057635aded70e485d0cb9cbfc"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_futures_ordered.rs",
-          "source_sha256_before": "34037034ff9c88173eecea93190bb3d87f7261ad03b01303f94f838ead0226a8",
-          "path": "test/foundation/futures/tests/stream_futures_ordered.rs",
-          "sha256": "34037034ff9c88173eecea93190bb3d87f7261ad03b01303f94f838ead0226a8"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_futures_unordered.rs",
-          "source_sha256_before": "6b40acf833fb8192e9d0a921375f0596db60324f288e323f85a2512906303549",
-          "path": "test/foundation/futures/tests/stream_futures_unordered.rs",
-          "sha256": "6b40acf833fb8192e9d0a921375f0596db60324f288e323f85a2512906303549"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_into_async_read.rs",
-          "source_sha256_before": "00ecb18289ebc8f46ea0cf43e0dce0631d7698bd1303a7bcd84d0addc9d8b645",
-          "path": "test/foundation/futures/tests/stream_into_async_read.rs",
-          "sha256": "00ecb18289ebc8f46ea0cf43e0dce0631d7698bd1303a7bcd84d0addc9d8b645"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_peekable.rs",
-          "source_sha256_before": "07655a6e8d969075e05c5e03c9dca67e70a2836b96fa0242d4ed4d47ae9b637a",
-          "path": "test/foundation/futures/tests/stream_peekable.rs",
-          "sha256": "07655a6e8d969075e05c5e03c9dca67e70a2836b96fa0242d4ed4d47ae9b637a"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_select_all.rs",
-          "source_sha256_before": "3a9045754939da5b30305e78f0571d79a03aaa77030c6ccf82225f076e9843c9",
-          "path": "test/foundation/futures/tests/stream_select_all.rs",
-          "sha256": "3a9045754939da5b30305e78f0571d79a03aaa77030c6ccf82225f076e9843c9"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_select_next_some.rs",
-          "source_sha256_before": "871edcee3ffc16c697251b29c9ba500aa4e3e503aa738748d7392e3462c82dce",
-          "path": "test/foundation/futures/tests/stream_select_next_some.rs",
-          "sha256": "871edcee3ffc16c697251b29c9ba500aa4e3e503aa738748d7392e3462c82dce"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_split.rs",
-          "source_sha256_before": "074e9c9b51b6f7ea83d77347b5a0c8d414ca32b90445fec9b85f7f4cd2a6049f",
-          "path": "test/foundation/futures/tests/stream_split.rs",
-          "sha256": "074e9c9b51b6f7ea83d77347b5a0c8d414ca32b90445fec9b85f7f4cd2a6049f"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_try_stream.rs",
-          "source_sha256_before": "e618fffcbdddafea29198f0063f31d3e30b3335df577f2170b400945c2c86de8",
-          "path": "test/foundation/futures/tests/stream_try_stream.rs",
-          "sha256": "e618fffcbdddafea29198f0063f31d3e30b3335df577f2170b400945c2c86de8"
-        },
-        {
-          "source": "src/foundation/futures/tests/stream_unfold.rs",
-          "source_sha256_before": "7c6fbd10c782828793cbe1eb347ec776d99b185dad498e886f7161da76f76880",
-          "path": "test/foundation/futures/tests/stream_unfold.rs",
-          "sha256": "7c6fbd10c782828793cbe1eb347ec776d99b185dad498e886f7161da76f76880"
-        },
-        {
-          "source": "src/foundation/futures/tests/task_arc_wake.rs",
-          "source_sha256_before": "5a49d074d1d5d9d5ec383dcd9a3868f636c1d7e34662e2573e467948db126206",
-          "path": "test/foundation/futures/tests/task_arc_wake.rs",
-          "sha256": "5a49d074d1d5d9d5ec383dcd9a3868f636c1d7e34662e2573e467948db126206"
-        },
-        {
-          "source": "src/foundation/futures/tests/task_atomic_waker.rs",
-          "source_sha256_before": "8e85b4bc1360788646a52633dfe896d852773d6b482f81626cf534b97b7d937a",
-          "path": "test/foundation/futures/tests/task_atomic_waker.rs",
-          "sha256": "8e85b4bc1360788646a52633dfe896d852773d6b482f81626cf534b97b7d937a"
-        },
-        {
-          "source": "src/foundation/futures/tests/test_macro.rs",
-          "source_sha256_before": "a46a946169c342c576936b60909165a50b94350501280ed9bba89d365af69287",
-          "path": "test/foundation/futures/tests/test_macro.rs",
-          "sha256": "a46a946169c342c576936b60909165a50b94350501280ed9bba89d365af69287"
-        },
-        {
-          "source": "src/foundation/futures/tests/try_join.rs",
-          "source_sha256_before": "65f282f8351bd9a74642f2465c7aaf72ee7097002920989f156d60271652549e",
-          "path": "test/foundation/futures/tests/try_join.rs",
-          "sha256": "65f282f8351bd9a74642f2465c7aaf72ee7097002920989f156d60271652549e"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/futures-channel",
-      "roots": [
-        "test/foundation/futures-channel"
-      ],
-      "files": [
-        {
+          "path": "test/foundation/futures/channel/tests/channel.rs",
+          "sha256": "88f4a41d82b5c1b01e153d071a2bf48e0697355908c55ca42342ed45e63fdec8",
           "source": "src/foundation/futures-channel/tests/channel.rs",
           "source_sha256_before": "88f4a41d82b5c1b01e153d071a2bf48e0697355908c55ca42342ed45e63fdec8",
-          "path": "test/foundation/futures-channel/tests/channel.rs",
-          "sha256": "88f4a41d82b5c1b01e153d071a2bf48e0697355908c55ca42342ed45e63fdec8"
+          "origin_directory": "vendor/rust/futures-channel-0.3.34"
         },
         {
+          "path": "test/foundation/futures/channel/tests/mpsc-close.rs",
+          "sha256": "1a4369aa887bc4e0cab23bdd9f6958d6435cd520a7ad0de8ec90a006aa358242",
           "source": "src/foundation/futures-channel/tests/mpsc-close.rs",
           "source_sha256_before": "4b934c6f3c4bd2333b9b41e4c4b3a23395271e146cb0caec89d64f6a66031861",
-          "path": "test/foundation/futures-channel/tests/mpsc-close.rs",
-          "sha256": "4b934c6f3c4bd2333b9b41e4c4b3a23395271e146cb0caec89d64f6a66031861"
+          "origin_directory": "vendor/rust/futures-channel-0.3.34"
         },
         {
+          "path": "test/foundation/futures/channel/tests/mpsc-size_hint.rs",
+          "sha256": "b1a25850e60bd902d4c499e8163739a0b34ebec972202b72669238968cc8beaf",
           "source": "src/foundation/futures-channel/tests/mpsc-size_hint.rs",
           "source_sha256_before": "b1a25850e60bd902d4c499e8163739a0b34ebec972202b72669238968cc8beaf",
-          "path": "test/foundation/futures-channel/tests/mpsc-size_hint.rs",
-          "sha256": "b1a25850e60bd902d4c499e8163739a0b34ebec972202b72669238968cc8beaf"
+          "origin_directory": "vendor/rust/futures-channel-0.3.34"
         },
         {
+          "path": "test/foundation/futures/channel/tests/mpsc.rs",
+          "sha256": "009d2e8ff0539876817fcd3ca3d1f7bacb50c351a5925dea20ab09f972569e76",
           "source": "src/foundation/futures-channel/tests/mpsc.rs",
           "source_sha256_before": "3853d3fbda7442f5f4faa8e46dc6b7354b35b2fec0e6aeb7aace528a709a822d",
-          "path": "test/foundation/futures-channel/tests/mpsc.rs",
-          "sha256": "3853d3fbda7442f5f4faa8e46dc6b7354b35b2fec0e6aeb7aace528a709a822d"
+          "origin_directory": "vendor/rust/futures-channel-0.3.34"
         },
         {
+          "path": "test/foundation/futures/channel/tests/oneshot.rs",
+          "sha256": "0f97d28852a1fd1327211772f43322c93916a639be3f2581e49ad37c9f8a2f88",
           "source": "src/foundation/futures-channel/tests/oneshot.rs",
           "source_sha256_before": "0f97d28852a1fd1327211772f43322c93916a639be3f2581e49ad37c9f8a2f88",
-          "path": "test/foundation/futures-channel/tests/oneshot.rs",
-          "sha256": "0f97d28852a1fd1327211772f43322c93916a639be3f2581e49ad37c9f8a2f88"
+          "origin_directory": "vendor/rust/futures-channel-0.3.34"
         },
         {
+          "path": "test/foundation/futures/channel/unit/src/lock/tests_87.rs",
+          "sha256": "43d44c08b2783123f5b6b34e8dc58ca8b5ed82d5ac564ca29f8ed1127047ffe2",
           "source": "src/foundation/futures-channel/src/lock.rs",
           "source_sha256_before": "38655a797456ea4f67d132c42055cf74f18195e875c3b337fc81a12901f79292",
-          "path": "test/foundation/futures-channel/unit/src/lock/tests_87.rs",
-          "sha256": "43d44c08b2783123f5b6b34e8dc58ca8b5ed82d5ac564ca29f8ed1127047ffe2"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/futures-executor",
-      "roots": [
-        "test/foundation/futures-executor"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/futures-executor/tests/local_pool.rs",
-          "source_sha256_before": "f14fd260fd445c3b043f9a1bf73f149d5bb6867a84748be05bf7c68c93c7408c",
-          "path": "test/foundation/futures-executor/tests/local_pool.rs",
-          "sha256": "f14fd260fd445c3b043f9a1bf73f149d5bb6867a84748be05bf7c68c93c7408c"
+          "origin_directory": "vendor/rust/futures-channel-0.3.34"
         },
         {
+          "path": "test/foundation/futures/executor/tests/local_pool.rs",
+          "sha256": "f14fd260fd445c3b043f9a1bf73f149d5bb6867a84748be05bf7c68c93c7408c",
+          "source": "src/foundation/futures-executor/tests/local_pool.rs",
+          "source_sha256_before": "f14fd260fd445c3b043f9a1bf73f149d5bb6867a84748be05bf7c68c93c7408c",
+          "origin_directory": "vendor/rust/futures-executor-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/executor/unit/src/thread_pool/tests_354.rs",
+          "sha256": "67c3fbd55fbc6dd7bede30fbdf42683dd2a6a0574547d92d65574ae194e4d87b",
           "source": "src/foundation/futures-executor/src/thread_pool.rs",
           "source_sha256_before": "b8468c274db32af6809304add2d129616de0c5c3e79fb291892a4456d61c864f",
-          "path": "test/foundation/futures-executor/unit/src/thread_pool/tests_354.rs",
-          "sha256": "67c3fbd55fbc6dd7bede30fbdf42683dd2a6a0574547d92d65574ae194e4d87b"
+          "origin_directory": "vendor/rust/futures-executor-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/flatten_91.rs",
+          "sha256": "0fff3a26b1dc8099865a9c2f555a813596908e0f2e99cb62d8327d530f8d325c",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/join_cancels_190.rs",
+          "sha256": "f4f10216a3e8fedb3e66728876414f642127baa38263da900f52b14cca24e1ef",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/join_incomplete_236.rs",
+          "sha256": "20284c27f8c27fbaa3b27076e1e7a10f9efc018e80f508497280cebad769e3e2",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/option_396.rs",
+          "sha256": "4eb01eb15007c4f3cffa76170d05a0159f815d51df0968645c31d5bc4e49c873",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/result_smoke_16.rs",
+          "sha256": "6a2eb2683f9c14a66857e33c0adc64bf7e91646b621e6eca12984c62476ca9cc",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/select2_277.rs",
+          "sha256": "617921ee54d602452f7fb4a9feadbdd054a8be552e1d402219e4267796619f1f",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/select_cancels_144.rs",
+          "sha256": "2b6c97a007fdcfc81b636872ee66162e51add0ea4cd01660d9d3897f275fbc21",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/smoke_oneshot_108.rs",
+          "sha256": "e0f3ef6e91f41302adcc14e40e8033a3b1dea8044d0cba061a9da6270b4b3f6c",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/test_empty_65.rs",
+          "sha256": "708afa43ec6eb173b2ce06d11727c1a04209acd59511a39452082d76d272b5d4",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/all/test_ok_85.rs",
+          "sha256": "dc52279ce4dc462f34c520611174d75171f5470ce2f6b06807674932c4cac348",
+          "source": "src/foundation/futures/tests_disabled/all.rs",
+          "source_sha256_before": "ddcd8fefb0d4a4a91a78328e7e652c35f93dc3669639d76fa0f56452b51abc23",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/and_then_92.rs",
+          "sha256": "da3258f2f20fb5cf1d54e174cf1ee41f7f7ca1b3e6ef4ccfb21fc164ff90c989",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/buffered_171.rs",
+          "sha256": "7e160150190fcf5e8a7bd33f9bcbe3b516e1c06e4b5e77417a159c0124161ece",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/chunks_287.rs",
+          "sha256": "4075db9d02206926b971b2434c1504ed38b5acb26bea6b19de6b330890da9f52",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/chunks_panic_on_cap_zero_299.rs",
+          "sha256": "aff018b7c82a903bc4b1fb4c4be9b9fdb5dedda221393e9aca765e723c03127e",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/concat2_329.rs",
+          "sha256": "9fd6a70a9de98707d4f422a6b90fff59d6828810f937d48b65c9d1c77eda0fec",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/concat_320.rs",
+          "sha256": "a9c47897aca100ce6f61dc39bfe26cce45058993fa0fdf8a89ff63db8289b8fc",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/filter_79.rs",
+          "sha256": "a74e2d3b87d9fcb6354d0d730d88eee27bba2821f761044b95b39b022e9e59ff",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/filter_map_84.rs",
+          "sha256": "d63e6bcfe54c88e2287854f91a7cb00bb1e7351a86fe91eb490bb5fb2fbf9a22",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/flatten_108.rs",
+          "sha256": "9222667386eca945abff095d7ec1588c68c747fd62d12767acb810b08f279548",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/fold_73.rs",
+          "sha256": "32671aa584bd43b2eaf19c559a535b3a6cd79011b4dd933ff37ae9a9135e01ff",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/forward_305.rs",
+          "sha256": "8cfa75170ae915a728e0731a29519bbdcd939afbedbfcf6e6275b0759870880e",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/from_err_68.rs",
+          "sha256": "bfa0295ac698899cb52cb2e10cb3e0fb2edadce29950dd6f49cdeb4aa621a2bb",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/fuse_160.rs",
+          "sha256": "8110ceb1461cd8911a988809f3a732a9bdd8f987d53834569b9915b051f4759b",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/inspect_356.rs",
+          "sha256": "612511cd1010a44b079013723f52317b941e2b39292c79966b04dd74d1e73c0d",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/inspect_err_363.rs",
+          "sha256": "bff84d5639347a2b82cd01812c8b9b9c8b1ed2475328a7f840b46004f8cbef18",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/map_49.rs",
+          "sha256": "8433703429b9b22a02d2eef28c9c7d73992f38044355171ce2e7a6d827d52654",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/map_err_54.rs",
+          "sha256": "d1f2fc3e556827aa30c5bef34ff689cb58b4627a677813f67e761cbaa086dc3c",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/or_else_103.rs",
+          "sha256": "75e9e387b84354f856d6a259d37d21c1c807573adcd13d50642e86aff58e6176",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/peek_258.rs",
+          "sha256": "2d938cc57103c49fff4855009fbfa4d99022f8353a4d9eaf0fcae0d02520c899",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/peekable_155.rs",
+          "sha256": "610a3cf8bd4878bc35a3a48826e2fea3c44e7650458ab887e9b057e1bdeb671c",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/skip_113.rs",
+          "sha256": "33f1921681c8ad7da0df428baf4b8e00cd5a1de5ce7e259606ac86e60d3843cb",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/skip_passes_errors_through_118.rs",
+          "sha256": "a6a240a4c0446148085f6787d787c8b8fcbb66d09495824689e4de22cf54b56d",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/skip_while_128.rs",
+          "sha256": "6102f501dca60938a5731ccb6f2678dd2b23f20a020e5b0fe088cd0614a5aacc",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/stream_poll_fn_341.rs",
+          "sha256": "cf1bb142d5b06ce8ad5901d1957fb9e98c27d39f9877d1205278a3e530586d51",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/take_132.rs",
+          "sha256": "18771284f7bb7a9478232d375bf51ec758c8de75037fdd8dec26777782d84e95",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/take_passes_errors_through_142.rs",
+          "sha256": "e2aee7c605f7e6c021416892b81538a717f48fc4f3adb5d9b823e912a2424ba5",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/take_while_137.rs",
+          "sha256": "5a57d073ce5271569a700e2adbee65ad50f868f582fcbe8d9df712d0c8a72bc0",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/then_98.rs",
+          "sha256": "a2306ce2f593f212bd438d2778180b96ef027d1af1f568491e1a133c461b0d37",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/unordered_210.rs",
+          "sha256": "dfaa98248747ec51ec7b5996b8565078b859f204dfca7aa9b8cd86843bd4d290",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/wait_282.rs",
+          "sha256": "5348743cb1b589df027d9eabb56ce0c9d38f7a75b3912e46824cdf0f63864fd7",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/functions/tests_disabled/stream/zip_249.rs",
+          "sha256": "5bd441ca3a9c32e68576916776151ea9d982c1e18b9e7fdc3d1d20c3785ad22d",
+          "source": "src/foundation/futures/tests_disabled/stream.rs",
+          "source_sha256_before": "8a615a472a35053d12b269d40fe244dfb3ba66fb78d217323aa2be177d5a111e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/task/unit/src/noop_waker/tests_56.rs",
+          "sha256": "c01b1372c5250b08c0b0bf897764e0a8f6fcaf2a958dfef3a8ac29f0ef51dd31",
+          "source": "src/foundation/futures-task/src/noop_waker.rs",
+          "source_sha256_before": "8e3cfb3c0bf5efb1f7a82819a8e4d9133bb6eca6b7c02d0062db8442dd8b6bef",
+          "origin_directory": "vendor/rust/futures-task-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/_require_features.rs",
+          "sha256": "5ad24019430b498addfc1fd853e955c7b646d78d0727a8ca29f586c9aab45cff",
+          "source": "src/foundation/futures/tests/_require_features.rs",
+          "source_sha256_before": "5ad24019430b498addfc1fd853e955c7b646d78d0727a8ca29f586c9aab45cff",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/async_await_macros.rs",
+          "sha256": "299ba04655e2e65658c19b955381d457b8ef0d65cba60ac2cd66eb5eea64e287",
+          "source": "src/foundation/futures/tests/async_await_macros.rs",
+          "source_sha256_before": "299ba04655e2e65658c19b955381d457b8ef0d65cba60ac2cd66eb5eea64e287",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/auto_traits.rs",
+          "sha256": "31ddd7e374fa38a3d0f29f20e04bd7c3c2ce10590934cac18e7ebd18355bbe2f",
+          "source": "src/foundation/futures/tests/auto_traits.rs",
+          "source_sha256_before": "31ddd7e374fa38a3d0f29f20e04bd7c3c2ce10590934cac18e7ebd18355bbe2f",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/bilock.rs",
+          "sha256": "bcb3eaeb4e1e9a873aea2ac55775a58ae158f12e8e048c4a8a2b5104a73e20d3",
+          "source": "src/foundation/futures/tests/bilock.rs",
+          "source_sha256_before": "bd0bf617352528f686b3fbb1847f4da9f6fe351e456e0bdce888bc738311fa83",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/compat.rs",
+          "sha256": "556db898497eb8139f1ae62b0f88ba2524aef6eda3740255a08388245963bfee",
+          "source": "src/foundation/futures/tests/compat.rs",
+          "source_sha256_before": "556db898497eb8139f1ae62b0f88ba2524aef6eda3740255a08388245963bfee",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/compat_miri.rs",
+          "sha256": "fab2869cca30ffdf8e2a46e9218e62203d2e24873997d7fba8c829d9718fc954",
+          "source": "src/foundation/futures/tests/compat_miri.rs",
+          "source_sha256_before": "fab2869cca30ffdf8e2a46e9218e62203d2e24873997d7fba8c829d9718fc954",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/eager_drop.rs",
+          "sha256": "dc25d067207c06bbe094752d70bf161e206f00e162ffa3219583c8b4eb0816a1",
+          "source": "src/foundation/futures/tests/eager_drop.rs",
+          "source_sha256_before": "dc25d067207c06bbe094752d70bf161e206f00e162ffa3219583c8b4eb0816a1",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/eventual.rs",
+          "sha256": "9050809e5196d0870a3ee2a268a5b4b398739b01617e1e317a673ac0660974cf",
+          "source": "src/foundation/futures/tests/eventual.rs",
+          "source_sha256_before": "9050809e5196d0870a3ee2a268a5b4b398739b01617e1e317a673ac0660974cf",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_abortable.rs",
+          "sha256": "4c81607472a85c5d87a5fe8a510a24cf1e8793fedf7f6cd6741ba1efd66615cd",
+          "source": "src/foundation/futures/tests/future_abortable.rs",
+          "source_sha256_before": "4c81607472a85c5d87a5fe8a510a24cf1e8793fedf7f6cd6741ba1efd66615cd",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_basic_combinators.rs",
+          "sha256": "4508c1250b85a4f749b7261bbd0ba728d3970e7ba277e84a006e76cf068fb54f",
+          "source": "src/foundation/futures/tests/future_basic_combinators.rs",
+          "source_sha256_before": "4508c1250b85a4f749b7261bbd0ba728d3970e7ba277e84a006e76cf068fb54f",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_fuse.rs",
+          "sha256": "bb63141f1486e755d0cdea1d93e302ad864a2186aa5287f909a0b3a922e82065",
+          "source": "src/foundation/futures/tests/future_fuse.rs",
+          "source_sha256_before": "bb63141f1486e755d0cdea1d93e302ad864a2186aa5287f909a0b3a922e82065",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_inspect.rs",
+          "sha256": "9c03ceb770ce04fe9fd88a3489362642a0e34ae86a7b4958703e89e8b7a1ecf4",
+          "source": "src/foundation/futures/tests/future_inspect.rs",
+          "source_sha256_before": "9c03ceb770ce04fe9fd88a3489362642a0e34ae86a7b4958703e89e8b7a1ecf4",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_join.rs",
+          "sha256": "d346945889b7a28e774d6a19ce62d839c1213103b13b7cf9d62fbb03005713cd",
+          "source": "src/foundation/futures/tests/future_join.rs",
+          "source_sha256_before": "d346945889b7a28e774d6a19ce62d839c1213103b13b7cf9d62fbb03005713cd",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_join_all.rs",
+          "sha256": "4dec7ab7633f3591e4aed6b99aa3924e127f99d668dc5c6d7bc83532d65f1cb7",
+          "source": "src/foundation/futures/tests/future_join_all.rs",
+          "source_sha256_before": "4dec7ab7633f3591e4aed6b99aa3924e127f99d668dc5c6d7bc83532d65f1cb7",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_obj.rs",
+          "sha256": "a6aae88a194dc7d3bb961c20db78f180a01796cf7ea4bf106da98c40d89ed36d",
+          "source": "src/foundation/futures/tests/future_obj.rs",
+          "source_sha256_before": "a6aae88a194dc7d3bb961c20db78f180a01796cf7ea4bf106da98c40d89ed36d",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_select_all.rs",
+          "sha256": "4cefc84d6b7ae2cf0007912cd0325fff6b926a4c26310e7b14a21868de61616f",
+          "source": "src/foundation/futures/tests/future_select_all.rs",
+          "source_sha256_before": "4cefc84d6b7ae2cf0007912cd0325fff6b926a4c26310e7b14a21868de61616f",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_select_ok.rs",
+          "sha256": "1cabd03268641e1ac42b880344528bad73e3aeb6d6a8a141e652f339dd40184b",
+          "source": "src/foundation/futures/tests/future_select_ok.rs",
+          "source_sha256_before": "1cabd03268641e1ac42b880344528bad73e3aeb6d6a8a141e652f339dd40184b",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_shared.rs",
+          "sha256": "4f2cba1e74dacc4fc6b92eef04700df832533efe4fe6a392e3fd0f655b5b8450",
+          "source": "src/foundation/futures/tests/future_shared.rs",
+          "source_sha256_before": "4f2cba1e74dacc4fc6b92eef04700df832533efe4fe6a392e3fd0f655b5b8450",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_try_flatten_stream.rs",
+          "sha256": "aa4542b5d88f62522b736fac4567613081df45ad3eb54b0b659cdadc9409c4db",
+          "source": "src/foundation/futures/tests/future_try_flatten_stream.rs",
+          "source_sha256_before": "aa4542b5d88f62522b736fac4567613081df45ad3eb54b0b659cdadc9409c4db",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/future_try_join_all.rs",
+          "sha256": "28684cd3d07217001321e71b69b4b7551a7b862188208ef4ec3fdb95b6b3fcd6",
+          "source": "src/foundation/futures/tests/future_try_join_all.rs",
+          "source_sha256_before": "28684cd3d07217001321e71b69b4b7551a7b862188208ef4ec3fdb95b6b3fcd6",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_buf_reader.rs",
+          "sha256": "f4124633f6a9515c7b459ea086cdeff3ec9a9400aca40d112caceb16b69bd05f",
+          "source": "src/foundation/futures/tests/io_buf_reader.rs",
+          "source_sha256_before": "f4124633f6a9515c7b459ea086cdeff3ec9a9400aca40d112caceb16b69bd05f",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_buf_writer.rs",
+          "sha256": "8f7a78ab2955d2beb69d0881321d4191235540aef6448e875e7f76a2ffc55b89",
+          "source": "src/foundation/futures/tests/io_buf_writer.rs",
+          "source_sha256_before": "8f7a78ab2955d2beb69d0881321d4191235540aef6448e875e7f76a2ffc55b89",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_cursor.rs",
+          "sha256": "cba5a7b968b9f816ac33316ce1e4da67cb320aa5a21332c0f9a45694fa445dd7",
+          "source": "src/foundation/futures/tests/io_cursor.rs",
+          "source_sha256_before": "cba5a7b968b9f816ac33316ce1e4da67cb320aa5a21332c0f9a45694fa445dd7",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_line_writer.rs",
+          "sha256": "5b1140de776a721a677911496daa4e7956cc52cc08838d593ab300a93e0d7984",
+          "source": "src/foundation/futures/tests/io_line_writer.rs",
+          "source_sha256_before": "5b1140de776a721a677911496daa4e7956cc52cc08838d593ab300a93e0d7984",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_lines.rs",
+          "sha256": "793ddd1192bb6bc60d430120dff6c0d3757b5eb4f2b09c2279512faeea9585ae",
+          "source": "src/foundation/futures/tests/io_lines.rs",
+          "source_sha256_before": "793ddd1192bb6bc60d430120dff6c0d3757b5eb4f2b09c2279512faeea9585ae",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_read.rs",
+          "sha256": "e0a8fa9b27e042f03c9fe14e8f0f329a67e24afad1ce40b906a1ab4d2abef23a",
+          "source": "src/foundation/futures/tests/io_read.rs",
+          "source_sha256_before": "e0a8fa9b27e042f03c9fe14e8f0f329a67e24afad1ce40b906a1ab4d2abef23a",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_read_exact.rs",
+          "sha256": "42049cd67589992dc09764ffb3836c475115b26dee441fd4cc7e847b2d166667",
+          "source": "src/foundation/futures/tests/io_read_exact.rs",
+          "source_sha256_before": "42049cd67589992dc09764ffb3836c475115b26dee441fd4cc7e847b2d166667",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_read_line.rs",
+          "sha256": "461063632eab3528def121652119a8ef7db0fc49cb81961a04e89cc2434a0218",
+          "source": "src/foundation/futures/tests/io_read_line.rs",
+          "source_sha256_before": "461063632eab3528def121652119a8ef7db0fc49cb81961a04e89cc2434a0218",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_read_to_end.rs",
+          "sha256": "19ea908be8365e0c080e354f5c5705b2ab3f21611feecc5dea82dedb7bd62ef6",
+          "source": "src/foundation/futures/tests/io_read_to_end.rs",
+          "source_sha256_before": "19ea908be8365e0c080e354f5c5705b2ab3f21611feecc5dea82dedb7bd62ef6",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_read_to_string.rs",
+          "sha256": "824921601ac49f15b9a0b349c900f9cc9081cf2646e6a86f443166f841f1320e",
+          "source": "src/foundation/futures/tests/io_read_to_string.rs",
+          "source_sha256_before": "824921601ac49f15b9a0b349c900f9cc9081cf2646e6a86f443166f841f1320e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_read_until.rs",
+          "sha256": "ba743cce9c838043b2f825d27ed7bae0cdd6d6bec893ca2a778486fe826e159a",
+          "source": "src/foundation/futures/tests/io_read_until.rs",
+          "source_sha256_before": "ba743cce9c838043b2f825d27ed7bae0cdd6d6bec893ca2a778486fe826e159a",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_window.rs",
+          "sha256": "0d18334b1eb35f5e93099e19c0cab22abe5971d8531176b81345fc89d07692a8",
+          "source": "src/foundation/futures/tests/io_window.rs",
+          "source_sha256_before": "0d18334b1eb35f5e93099e19c0cab22abe5971d8531176b81345fc89d07692a8",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/io_write.rs",
+          "sha256": "701032ff3d5a6e6a3d8cb4e373d1c93e4708f2e5ee0a6742fa626f27b6094b4d",
+          "source": "src/foundation/futures/tests/io_write.rs",
+          "source_sha256_before": "701032ff3d5a6e6a3d8cb4e373d1c93e4708f2e5ee0a6742fa626f27b6094b4d",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/lock_mutex.rs",
+          "sha256": "eb47121b842096353165b1444bf679a2df0103b181f811b40042f5c3f1d00c73",
+          "source": "src/foundation/futures/tests/lock_mutex.rs",
+          "source_sha256_before": "eb47121b842096353165b1444bf679a2df0103b181f811b40042f5c3f1d00c73",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/macro_comma_support.rs",
+          "sha256": "627024ccadfe95194469d5bae2cc29b897b0118a664d7222408a2e234a10e939",
+          "source": "src/foundation/futures/tests/macro_comma_support.rs",
+          "source_sha256_before": "627024ccadfe95194469d5bae2cc29b897b0118a664d7222408a2e234a10e939",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/object_safety.rs",
+          "sha256": "9d047190387ed8334113687003c23407c80c858411f5ec7d5c505500f9639dfc",
+          "source": "src/foundation/futures/tests/object_safety.rs",
+          "source_sha256_before": "9d047190387ed8334113687003c23407c80c858411f5ec7d5c505500f9639dfc",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/oneshot.rs",
+          "sha256": "d2ccd1a175576a3841e5bc76ecc7b1603f22ec6311f827b0e12fbd4d2c0001bc",
+          "source": "src/foundation/futures/tests/oneshot.rs",
+          "source_sha256_before": "d2ccd1a175576a3841e5bc76ecc7b1603f22ec6311f827b0e12fbd4d2c0001bc",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/ready_queue.rs",
+          "sha256": "6380025061025c27cb3b521df9520f169c7aa8e1802b881d539023bb4651744a",
+          "source": "src/foundation/futures/tests/ready_queue.rs",
+          "source_sha256_before": "6380025061025c27cb3b521df9520f169c7aa8e1802b881d539023bb4651744a",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/recurse.rs",
+          "sha256": "b01b3d73b69ad90a767d297f974dac435817c39e12556fa6a3e6c725dd84f706",
+          "source": "src/foundation/futures/tests/recurse.rs",
+          "source_sha256_before": "b01b3d73b69ad90a767d297f974dac435817c39e12556fa6a3e6c725dd84f706",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/sink.rs",
+          "sha256": "9be61c4916a07ab07151212b2f20c2348553a8435bac48a9d978b3b6319327b1",
+          "source": "src/foundation/futures/tests/sink.rs",
+          "source_sha256_before": "9be61c4916a07ab07151212b2f20c2348553a8435bac48a9d978b3b6319327b1",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/sink_fanout.rs",
+          "sha256": "67ab58422040308353955311f75222e55378e4cc34557c7b34140bd20c259132",
+          "source": "src/foundation/futures/tests/sink_fanout.rs",
+          "source_sha256_before": "67ab58422040308353955311f75222e55378e4cc34557c7b34140bd20c259132",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream.rs",
+          "sha256": "df6789769d00bbf17ddec08052ab630cafe80930115723c3c8c528a89888a49b",
+          "source": "src/foundation/futures/tests/stream.rs",
+          "source_sha256_before": "17247f3237250562df2ff3feb0ddc715302d74b06ea207402b8d32f0f543bd90",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_abortable.rs",
+          "sha256": "60052b83b5eeb2395b77bc213f35098d2d5880529f0d83884582a8bbff78b139",
+          "source": "src/foundation/futures/tests/stream_abortable.rs",
+          "source_sha256_before": "60052b83b5eeb2395b77bc213f35098d2d5880529f0d83884582a8bbff78b139",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_buffer_unordered.rs",
+          "sha256": "143ee19056b9ee9e480903cf4a1b00da7d4e528c5804569bf8c40869e6ac6eed",
+          "source": "src/foundation/futures/tests/stream_buffer_unordered.rs",
+          "source_sha256_before": "143ee19056b9ee9e480903cf4a1b00da7d4e528c5804569bf8c40869e6ac6eed",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_catch_unwind.rs",
+          "sha256": "5cdaaf70436c49d3a7107bdc5547ddb8757c3d2057635aded70e485d0cb9cbfc",
+          "source": "src/foundation/futures/tests/stream_catch_unwind.rs",
+          "source_sha256_before": "5cdaaf70436c49d3a7107bdc5547ddb8757c3d2057635aded70e485d0cb9cbfc",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_futures_ordered.rs",
+          "sha256": "34037034ff9c88173eecea93190bb3d87f7261ad03b01303f94f838ead0226a8",
+          "source": "src/foundation/futures/tests/stream_futures_ordered.rs",
+          "source_sha256_before": "34037034ff9c88173eecea93190bb3d87f7261ad03b01303f94f838ead0226a8",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_futures_unordered.rs",
+          "sha256": "6b40acf833fb8192e9d0a921375f0596db60324f288e323f85a2512906303549",
+          "source": "src/foundation/futures/tests/stream_futures_unordered.rs",
+          "source_sha256_before": "6b40acf833fb8192e9d0a921375f0596db60324f288e323f85a2512906303549",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_into_async_read.rs",
+          "sha256": "00ecb18289ebc8f46ea0cf43e0dce0631d7698bd1303a7bcd84d0addc9d8b645",
+          "source": "src/foundation/futures/tests/stream_into_async_read.rs",
+          "source_sha256_before": "00ecb18289ebc8f46ea0cf43e0dce0631d7698bd1303a7bcd84d0addc9d8b645",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_peekable.rs",
+          "sha256": "07655a6e8d969075e05c5e03c9dca67e70a2836b96fa0242d4ed4d47ae9b637a",
+          "source": "src/foundation/futures/tests/stream_peekable.rs",
+          "source_sha256_before": "07655a6e8d969075e05c5e03c9dca67e70a2836b96fa0242d4ed4d47ae9b637a",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_select_all.rs",
+          "sha256": "3a9045754939da5b30305e78f0571d79a03aaa77030c6ccf82225f076e9843c9",
+          "source": "src/foundation/futures/tests/stream_select_all.rs",
+          "source_sha256_before": "3a9045754939da5b30305e78f0571d79a03aaa77030c6ccf82225f076e9843c9",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_select_next_some.rs",
+          "sha256": "481ef76ad3ef9725ff23a5e3a3ab1857c2d40a59f966dbeb8f99b8909aae0d3b",
+          "source": "src/foundation/futures/tests/stream_select_next_some.rs",
+          "source_sha256_before": "871edcee3ffc16c697251b29c9ba500aa4e3e503aa738748d7392e3462c82dce",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_split.rs",
+          "sha256": "074e9c9b51b6f7ea83d77347b5a0c8d414ca32b90445fec9b85f7f4cd2a6049f",
+          "source": "src/foundation/futures/tests/stream_split.rs",
+          "source_sha256_before": "074e9c9b51b6f7ea83d77347b5a0c8d414ca32b90445fec9b85f7f4cd2a6049f",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_try_stream.rs",
+          "sha256": "452c55c70f910de0e0f60e243df0b65b9c7d97332ba606f12eecbe97c8d5b4b8",
+          "source": "src/foundation/futures/tests/stream_try_stream.rs",
+          "source_sha256_before": "e618fffcbdddafea29198f0063f31d3e30b3335df577f2170b400945c2c86de8",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/stream_unfold.rs",
+          "sha256": "7c6fbd10c782828793cbe1eb347ec776d99b185dad498e886f7161da76f76880",
+          "source": "src/foundation/futures/tests/stream_unfold.rs",
+          "source_sha256_before": "7c6fbd10c782828793cbe1eb347ec776d99b185dad498e886f7161da76f76880",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/task_arc_wake.rs",
+          "sha256": "5a49d074d1d5d9d5ec383dcd9a3868f636c1d7e34662e2573e467948db126206",
+          "source": "src/foundation/futures/tests/task_arc_wake.rs",
+          "source_sha256_before": "5a49d074d1d5d9d5ec383dcd9a3868f636c1d7e34662e2573e467948db126206",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/task_atomic_waker.rs",
+          "sha256": "8e85b4bc1360788646a52633dfe896d852773d6b482f81626cf534b97b7d937a",
+          "source": "src/foundation/futures/tests/task_atomic_waker.rs",
+          "source_sha256_before": "8e85b4bc1360788646a52633dfe896d852773d6b482f81626cf534b97b7d937a",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/test_macro.rs",
+          "sha256": "a46a946169c342c576936b60909165a50b94350501280ed9bba89d365af69287",
+          "source": "src/foundation/futures/tests/test_macro.rs",
+          "source_sha256_before": "a46a946169c342c576936b60909165a50b94350501280ed9bba89d365af69287",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/tests/try_join.rs",
+          "sha256": "65f282f8351bd9a74642f2465c7aaf72ee7097002920989f156d60271652549e",
+          "source": "src/foundation/futures/tests/try_join.rs",
+          "source_sha256_before": "65f282f8351bd9a74642f2465c7aaf72ee7097002920989f156d60271652549e",
+          "origin_directory": "vendor/rust/futures-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/util/unit/src/io/write_all_vectored/tests_45.rs",
+          "sha256": "0e2a78eb6c4c85fc88e5d7d75c6309b0aff2e8f4d94cb8000b64f0ec3ab2f67a",
+          "source": "src/foundation/futures-util/src/io/write_all_vectored.rs",
+          "source_sha256_before": "02fd19815a7d1b9ad61d14169743f6b0b4efe2ac2b127a03e6b24a039f498863",
+          "origin_directory": "vendor/rust/futures-util-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/util/unit/src/lock/mutex/tests_547.rs",
+          "sha256": "3bcefa200f987a84e07372eceb952a508d0540b907505f2ca1e4fead0efe09f3",
+          "source": "src/foundation/futures-util/src/lock/mutex.rs",
+          "source_sha256_before": "9ec6ca7274dbc53b864152e096ecc41709a9875d0612fc3a1b157ed6faaa004b",
+          "origin_directory": "vendor/rust/futures-util-0.3.34"
+        },
+        {
+          "path": "test/foundation/futures/util/unit/src/stream/stream/split/tests_160.rs",
+          "sha256": "7a962d53e977b4acd0078118d22435764b8f0959b6c3b53ece02aa128cefcdbd",
+          "source": "src/foundation/futures-util/src/stream/stream/split.rs",
+          "source_sha256_before": "1f575a11cb0c286b06c2730c328c256a01b9b067609ed2ffd590f2b615c394b9",
+          "origin_directory": "vendor/rust/futures-util-0.3.34"
         }
       ]
     },
@@ -6517,46 +6636,6 @@
           "source_sha256_before": "dee582e8d1b16e5894733f0f7d19bfa7e5e27bfcf254ce1b088e284af094ba0b",
           "path": "test/foundation/futures-intrusive/unit/src/intrusive_pairing_heap/all_tests_304.rs",
           "sha256": "973ebd15553fcafd9e7f4516671f43b4e1b7fe349b4215d5428bab30e489346f"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/futures-task",
-      "roots": [
-        "test/foundation/futures-task"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/futures-task/src/noop_waker.rs",
-          "source_sha256_before": "8e3cfb3c0bf5efb1f7a82819a8e4d9133bb6eca6b7c02d0062db8442dd8b6bef",
-          "path": "test/foundation/futures-task/unit/src/noop_waker/tests_56.rs",
-          "sha256": "c01b1372c5250b08c0b0bf897764e0a8f6fcaf2a958dfef3a8ac29f0ef51dd31"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/futures-util",
-      "roots": [
-        "test/foundation/futures-util"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/futures-util/src/io/write_all_vectored.rs",
-          "source_sha256_before": "02fd19815a7d1b9ad61d14169743f6b0b4efe2ac2b127a03e6b24a039f498863",
-          "path": "test/foundation/futures-util/unit/src/io/write_all_vectored/tests_45.rs",
-          "sha256": "0e2a78eb6c4c85fc88e5d7d75c6309b0aff2e8f4d94cb8000b64f0ec3ab2f67a"
-        },
-        {
-          "source": "src/foundation/futures-util/src/lock/mutex.rs",
-          "source_sha256_before": "9ec6ca7274dbc53b864152e096ecc41709a9875d0612fc3a1b157ed6faaa004b",
-          "path": "test/foundation/futures-util/unit/src/lock/mutex/tests_547.rs",
-          "sha256": "3bcefa200f987a84e07372eceb952a508d0540b907505f2ca1e4fead0efe09f3"
-        },
-        {
-          "source": "src/foundation/futures-util/src/stream/stream/split.rs",
-          "source_sha256_before": "1f575a11cb0c286b06c2730c328c256a01b9b067609ed2ffd590f2b615c394b9",
-          "path": "test/foundation/futures-util/unit/src/stream/stream/split/tests_160.rs",
-          "sha256": "7a962d53e977b4acd0078118d22435764b8f0959b6c3b53ece02aa128cefcdbd"
         }
       ]
     },
@@ -6874,13 +6953,13 @@
           "source": "src/foundation/gloo-timers/tests/node.rs",
           "source_sha256_before": "ae75baa4822d722b0e3b81a594908d76bd04433fa20b95af98336b7ca289d754",
           "path": "test/foundation/gloo-timers/tests/node.rs",
-          "sha256": "ae75baa4822d722b0e3b81a594908d76bd04433fa20b95af98336b7ca289d754"
+          "sha256": "399e1c69844ddf3da673f74dbd202726e16fe3ca941d00bd3dc440c241a9e923"
         },
         {
           "source": "src/foundation/gloo-timers/tests/web.rs",
           "source_sha256_before": "a91c8fe5dd83f72add4c726fbd57d3d2dd650829c11030a197969858d04f1107",
           "path": "test/foundation/gloo-timers/tests/web.rs",
-          "sha256": "a91c8fe5dd83f72add4c726fbd57d3d2dd650829c11030a197969858d04f1107"
+          "sha256": "6c92a1e0a311e27e9d861738ae5f93ee70b25ac1bedfd9f67452af961e339ea1"
         }
       ]
     },
@@ -7341,21 +7420,21 @@
         {
           "origin_directory": "vendor/rust/http-body-util-0.1.5",
           "path": "test/foundation/http-body/utilities/unit/src/collected/tests_95.rs",
-          "sha256": "0c489fa85068d576e14a1e5f93f49ec5822b954a9e9ee2bd98e2b7eb9fc0a6ef",
+          "sha256": "67aeff59f3aa3538b7ef8f7d2ef7ea3a1e2616717af8ed83c5867dd972a7d2bc",
           "source": "src/foundation/http-body-util/src/collected.rs",
           "source_sha256_before": "23d193d5c44cc80b14cc2f7c469a13634acd1fe577b985bcb476010ed7f8c6fb"
         },
         {
           "origin_directory": "vendor/rust/http-body-util-0.1.5",
           "path": "test/foundation/http-body/utilities/unit/src/combinators/fuse/tests_82.rs",
-          "sha256": "bd36b946530528f0e8b8161b320ddedb00684fe29779a06fca60424ffd4594b7",
+          "sha256": "8ef4921084787ff932a63158842b840327da1d1b22d57316e059f3113ddeb6a9",
           "source": "src/foundation/http-body-util/src/combinators/fuse.rs",
           "source_sha256_before": "f8e1a8568a07a2a0d4ab811ca027edcbf14c980822e95c18a64371a3fe138d30"
         },
         {
           "origin_directory": "vendor/rust/http-body-util-0.1.5",
           "path": "test/foundation/http-body/utilities/unit/src/combinators/with_trailers/tests_121.rs",
-          "sha256": "e720a558a1426afbddbdb5220bb3aa75e1cef56eceb0febe43fd6ab8a5f6d437",
+          "sha256": "5f3e82f177e8e09e925063a61dc8ff0dce4d8c8a9f4d0aadb8265fdce497ae61",
           "source": "src/foundation/http-body-util/src/combinators/with_trailers.rs",
           "source_sha256_before": "c8fdc73fef609f5c444502f26caf8527ad275e7588743eeaf7d20251ab08de17"
         },
@@ -7376,14 +7455,14 @@
         {
           "origin_directory": "vendor/rust/http-body-util-0.1.5",
           "path": "test/foundation/http-body/utilities/unit/src/limited/tests_103.rs",
-          "sha256": "e7b9eedb4a8c0afb7e047294328a8bd31e1440bc884e2a4be64fcb18cb7e30a9",
+          "sha256": "2646f669145e3ac2c899c2be5d5cc7b06d2a753ad35d16def3af5493ee103d9c",
           "source": "src/foundation/http-body-util/src/limited.rs",
           "source_sha256_before": "c12ee827d8e09935a96f7ff9bdc9ccc6a5f0bbdc061faa4a3519fa738c49491e"
         },
         {
           "origin_directory": "vendor/rust/http-body-util-0.1.5",
           "path": "test/foundation/http-body/utilities/unit/src/stream/tests_140.rs",
-          "sha256": "99e69ccb7dd4704a06d6e5424d48a73b406ab2fb421581d25b6ae48c0a2658b3",
+          "sha256": "403149f8c6685fab4bdcfd72be8c12d6c56b976a7ff0e4e933a008b5cd22c11b",
           "source": "src/foundation/http-body-util/src/stream.rs",
           "source_sha256_before": "09e9ea1380a306dfa96a98e742113022a76a16d707aae3bfde91f7af60e383d0"
         },
@@ -7576,7 +7655,7 @@
           "source": "src/foundation/hyper/src/body/chan.rs",
           "source_sha256_before": "3e95f496a94e6881e2121b8e40e6d6b233e80a40ada76e92aa0d39419943644b",
           "path": "test/foundation/hyper/unit/src/body/chan/tests_240.rs",
-          "sha256": "b0fc6fa098b1eefe160e11f9c161abeabc99783e098600c750218933596a1270"
+          "sha256": "41b7130d087517d793450faddd9feef38eeac1aa71d8881b7d38c7a967520e01"
         },
         {
           "source": "src/foundation/hyper/src/body/incoming.rs",
@@ -7648,13 +7727,13 @@
           "source": "src/foundation/hyper/src/proto/h1/conn.rs",
           "source_sha256_before": "59a6db81bd098c126d7929e1996a3a6bf9d6e997da76b47d88178fd8206ad44a",
           "path": "test/foundation/hyper/unit/src/proto/h1/conn/tests_1183.rs",
-          "sha256": "95e531dd8ecabb6c0a834e6e0efd4fdb20acc506b87f3503fc726741421d881f"
+          "sha256": "81d89e260d8ebdc65f54678f8be1b112f94a0fdcdf7b97b72cf41b8212fd2e5c"
         },
         {
           "source": "src/foundation/hyper/src/proto/h1/decode.rs",
           "source_sha256_before": "5fc4f3a580cdeef18ad986fac7d63099637d0482acfd54f78d7ec08de40b295a",
           "path": "test/foundation/hyper/unit/src/proto/h1/decode/tests_694.rs",
-          "sha256": "4a619f4d6f981fe9f182d95f2ce06a253acad7e22716e5ef2ba61dc572f5b934"
+          "sha256": "19dfe3f4842668b436ff86e18c95e728375c2c809314a24e5990648db2a2c3ab"
         },
         {
           "source": "src/foundation/hyper/src/proto/h1/dispatch.rs",
@@ -7672,7 +7751,7 @@
           "source": "src/foundation/hyper/src/proto/h1/io.rs",
           "source_sha256_before": "27287bec2aeb9d23fbf3440b5eea5186a1826301f7de2d855e78fcfce465c745",
           "path": "test/foundation/hyper/unit/src/proto/h1/io/tests_654.rs",
-          "sha256": "e4d67dc2a1c2791e2331a0289d1e9f70b681a16c3923ded62f253dc4800957a5"
+          "sha256": "27c7f401a2f9398c5929fcc06ab5c062edfe82d0137d7e9c0dd203da663f009e"
         },
         {
           "source": "src/foundation/hyper/src/proto/h1/role.rs",
@@ -7778,7 +7857,7 @@
           "source": "src/foundation/hyper-util/tests/legacy_client.rs",
           "source_sha256_before": "58f889ce2f6fc51cfb02c6b7a08f80d8f059e85ba98275ec3353af460622fdb6",
           "path": "test/foundation/hyper-util/tests/legacy_client.rs",
-          "sha256": "e501eef019fb9cae86e553bddc1e7973f7fd2cf0a90f9db5aeb739e6cf62bac3"
+          "sha256": "1648a3c165627fda95cc9f0609229d10244b26d8ab734b44eabd945090ceb216"
         },
         {
           "source": "src/foundation/hyper-util/tests/proxy.rs",
@@ -7790,7 +7869,7 @@
           "source": "src/foundation/hyper-util/tests/test_utils/mod.rs",
           "source_sha256_before": "9f922de06ad05d8c88e31d08850b4d48e751726c503cb3fc661c69431bb428d1",
           "path": "test/foundation/hyper-util/tests/test_utils/mod.rs",
-          "sha256": "9f922de06ad05d8c88e31d08850b4d48e751726c503cb3fc661c69431bb428d1"
+          "sha256": "6d8d9ab135c341ff8f544f0a143a373edfbba9bc7e99e53eb09a20bfe7eb7d73"
         },
         {
           "source": "src/foundation/hyper-util/src/client/legacy/connect/capture.rs",
@@ -7844,7 +7923,7 @@
           "source": "src/foundation/hyper-util/src/client/legacy/pool.rs",
           "source_sha256_before": "7154a4688d94c5ac199e31560c1a6bda33dce5aaa4e3b10f38a22f9d37851191",
           "path": "test/foundation/hyper-util/unit/src/client/legacy/pool/tests_840.rs",
-          "sha256": "845ee0f926ca59de8e011da5e2ab16b49300b3a5026f08f35d39f378ea1b430f"
+          "sha256": "faffb017980a94a00d39476be8ae2d211e87fe63fe0b7c0db2e9a60513bb5840"
         },
         {
           "source": "src/foundation/hyper-util/src/client/mod.rs",
@@ -7856,7 +7935,7 @@
           "source": "src/foundation/hyper-util/src/client/pool/cache.rs",
           "source_sha256_before": "e3a2ef6305d6cbb0ab3832c113a7201a8f949139aa6f977074768b7ffc66c343",
           "path": "test/foundation/hyper-util/unit/src/client/pool/cache/tests_568.rs",
-          "sha256": "8651962ce61826b52d5b4613ec1312b5393e2eee8173fbaf11d6991a41f50595"
+          "sha256": "4adee16072261694c54a030992a22141a975c478e4f33c2e6e80efa65a6a8103"
         },
         {
           "source": "src/foundation/hyper-util/src/client/pool/map.rs",
@@ -7868,7 +7947,7 @@
           "source": "src/foundation/hyper-util/src/client/pool/negotiate.rs",
           "source_sha256_before": "ac747a3e229ed246641d66dfd32d93bc41bba1f16d85e54504c871da41399524",
           "path": "test/foundation/hyper-util/unit/src/client/pool/negotiate/tests_564.rs",
-          "sha256": "4802cf4a58869ebd4b4ce56dbe06c3b8415f3eaadf5479a7c9046a4a671c0686"
+          "sha256": "56b5a22ca213ea227ff83071eb03c78bd55f02d09751820e0cf23ba47d347955"
         },
         {
           "source": "src/foundation/hyper-util/src/client/pool/singleton.rs",
@@ -7904,7 +7983,7 @@
           "source": "src/foundation/hyper-util/src/server/graceful.rs",
           "source_sha256_before": "39d6fc356a4112125ae61e1a083e0875a486ffc55904aa4697165b80df957e45",
           "path": "test/foundation/hyper-util/unit/src/server/graceful/test_307.rs",
-          "sha256": "ee5d17b1df8d5e0287de0c5af86ec2d116ed8e13bb0ca2f5afe51cc3a6ff9fdf"
+          "sha256": "c017c8f5e4dd4eba1ba8e865f16598fa7f42b6a04ee65267ef332adb5c5b4f4f"
         }
       ]
     },
@@ -14736,7 +14815,7 @@
           "source": "src/foundation/reqwest/src/async_impl/request.rs",
           "source_sha256_before": "794ad90f621d5da7dd57ac994a62ca6f4326e16f482d65bf108abf1d448f3519",
           "path": "test/foundation/reqwest/unit/src/async_impl/request/tests_621.rs",
-          "sha256": "2e5a24d2880f6b2d96305de4e4f3ac8bf68b741df4df8268e56eedc3dfe57622"
+          "sha256": "cd3c8ec95a359fd6e95247f04402fa4dd131ebcbb824ae7fc05a2566bbf547ad"
         },
         {
           "source": "src/foundation/reqwest/src/async_impl/response.rs",
@@ -16514,7 +16593,7 @@
           "source": "src/foundation/send_wrapper/src/futures.rs",
           "source_sha256_before": "72537ec5ce8c5fd5e6fd3bc7f4e417a359b9618d442ea8236c1b9dc4028d8799",
           "path": "test/foundation/send_wrapper/unit/src/futures/tests_57.rs",
-          "sha256": "ea6c1941def293a793cb0e5ca1930e0678eea42c518f84f7850b592555cd7ecf"
+          "sha256": "1d013e0cc20e60e68ee9891aedd8cceeea905929d07a74a37d6bc50e06ac5a3c"
         },
         {
           "source": "src/foundation/send_wrapper/src/lib.rs",
@@ -17141,7 +17220,7 @@
         },
         {
           "path": "test/foundation/sqlite-access/facade/tests/sqlite/sqlite.rs",
-          "sha256": "f4da9bc8c92057a97c0541b3501156aef90c499cc7c8782effaea081090dbce3",
+          "sha256": "228c65781002068d8c6c0224f370c0d73f501920b1ae3cf69b53ff91240a889b",
           "source": "src/foundation/sqlx/tests/sqlite/sqlite.rs",
           "source_sha256_before": "77734910f4237861ac75786a29975464b73a67a9cd788a2f6bc3a90af3d200fe",
           "origin_directory": "vendor/rust/sqlx-0.9.0"
@@ -19974,7 +20053,7 @@
           "source": "src/foundation/tokio-rustls/src/common/test_stream.rs",
           "source_sha256_before": "cfece8da03b19f748343718fba322c14652c5bbcf537ea4ef2402696ae58d0cd",
           "path": "test/foundation/tokio-rustls/modules/src/common/test_stream.rs",
-          "sha256": "fe024c093965564e75db4906733f13bc9752ca80977698752a7c483f128c3dd6"
+          "sha256": "a8bd4ccd16694b9b1cff01d243de8796467a255ded14091972cc43cd400dabcf"
         }
       ]
     },
@@ -20048,7 +20127,7 @@
           "source": "src/foundation/tokio-util/tests/compat.rs",
           "source_sha256_before": "caba7ad4156cc03fed01c04eca21f6d2284c490a868be35bcf56136368db178e",
           "path": "test/foundation/tokio-util/tests/compat.rs",
-          "sha256": "caba7ad4156cc03fed01c04eca21f6d2284c490a868be35bcf56136368db178e"
+          "sha256": "c9f0750d00d82fbdc0853835a85791529bb0e61a96b04fbef8192bc92ebee98c"
         },
         {
           "source": "src/foundation/tokio-util/tests/context.rs",
@@ -20072,13 +20151,13 @@
           "source": "src/foundation/tokio-util/tests/framed_stream.rs",
           "source_sha256_before": "e4dfeb8aa7777d00644cb63baf718edeb986e00d17a6a044c11051da216ddece",
           "path": "test/foundation/tokio-util/tests/framed_stream.rs",
-          "sha256": "e4dfeb8aa7777d00644cb63baf718edeb986e00d17a6a044c11051da216ddece"
+          "sha256": "94ebdf37722f83364057ebe5ae9594c36206f93eb9bf5a1ef93be52f9a1598dc"
         },
         {
           "source": "src/foundation/tokio-util/tests/framed_write.rs",
           "source_sha256_before": "843276123c53a4303f15a6ccbc3279bc73a20d1596b7d366673b0efda97d5034",
           "path": "test/foundation/tokio-util/tests/framed_write.rs",
-          "sha256": "843276123c53a4303f15a6ccbc3279bc73a20d1596b7d366673b0efda97d5034"
+          "sha256": "1d33a9ebc96ba7801f05c615f4a6ea0efc5dd0aae8329711a4f09eca343f2cdf"
         },
         {
           "source": "src/foundation/tokio-util/tests/future.rs",
@@ -20114,7 +20193,7 @@
           "source": "src/foundation/tokio-util/tests/io_sink_writer.rs",
           "source_sha256_before": "797657df0470db646249dd2ffae24e15a8c24eaeccd4718c9a6d54aeccdfb3f8",
           "path": "test/foundation/tokio-util/tests/io_sink_writer.rs",
-          "sha256": "797657df0470db646249dd2ffae24e15a8c24eaeccd4718c9a6d54aeccdfb3f8"
+          "sha256": "dc55e538545a48fb5ec2a89f2f3426e4f3b07bc9a96bb1de248a660574da7d8a"
         },
         {
           "source": "src/foundation/tokio-util/tests/io_stream_reader.rs",
@@ -20364,7 +20443,7 @@
           "source": "src/foundation/tower/src/balance/p2c/test.rs",
           "source_sha256_before": "7351bd8528b713352d7195d41ad7840e655d106c72a863dc428ddee4f5ec5261",
           "path": "test/foundation/tower/modules/src/balance/p2c/test.rs",
-          "sha256": "7351bd8528b713352d7195d41ad7840e655d106c72a863dc428ddee4f5ec5261"
+          "sha256": "b401df038f9972bd1f7d9344bd846dd534bf92f2449e52d76b25ec45c49db440"
         },
         {
           "source": "src/foundation/tower/tests/balance/main.rs",
@@ -20382,13 +20461,13 @@
           "source": "src/foundation/tower/tests/builder.rs",
           "source_sha256_before": "59f266b3f958cf21fa95c00ce18cdce93e5dc7de56bc598f81cab683abd502f5",
           "path": "test/foundation/tower/tests/builder.rs",
-          "sha256": "59f266b3f958cf21fa95c00ce18cdce93e5dc7de56bc598f81cab683abd502f5"
+          "sha256": "c5abfb03ce1c0eac71d2957e7e446ab1caee51cef21d478df2f78a32f5e58807"
         },
         {
           "source": "src/foundation/tower/tests/filter/async_filter.rs",
           "source_sha256_before": "0ec09ae2ffc190b1fac3ce11854d42fd3745d932dbba4bdce8ecc124ca98f4f7",
           "path": "test/foundation/tower/tests/filter/async_filter.rs",
-          "sha256": "0ec09ae2ffc190b1fac3ce11854d42fd3745d932dbba4bdce8ecc124ca98f4f7"
+          "sha256": "5dbb03995117a71fc2d437e5c0c28ba74f99f53344a3a34a576b0ecdbf00103d"
         },
         {
           "source": "src/foundation/tower/tests/hedge/main.rs",
@@ -20442,7 +20521,7 @@
           "source": "src/foundation/tower/tests/steer/main.rs",
           "source_sha256_before": "e1dbc9684b522bd3fd5ad9713aad59a7f3726ba6ff7950e68bdf34d8892874b9",
           "path": "test/foundation/tower/tests/steer/main.rs",
-          "sha256": "e1dbc9684b522bd3fd5ad9713aad59a7f3726ba6ff7950e68bdf34d8892874b9"
+          "sha256": "d13820dc68654e97d29bbadcc0841346efe82f810544e49cfea215732383a6ff"
         },
         {
           "source": "src/foundation/tower/tests/support.rs",
@@ -20454,7 +20533,7 @@
           "source": "src/foundation/tower/tests/util/call_all.rs",
           "source_sha256_before": "9a299bc212da3f79b2444a8a64c570348be411993f4b79e888ab818c4b27496d",
           "path": "test/foundation/tower/tests/util/call_all.rs",
-          "sha256": "9a299bc212da3f79b2444a8a64c570348be411993f4b79e888ab818c4b27496d"
+          "sha256": "51ede6347e94e780bd4d829da1179a7dbdd3d37d3d11dbe42ef090068d1cf1c1"
         },
         {
           "source": "src/foundation/tower/tests/util/main.rs",
@@ -20552,7 +20631,7 @@
           "source": "src/foundation/tower-http/src/test_helpers.rs",
           "source_sha256_before": "31db04c69cc898baa7dd6c33a42356324585c98d4e120fa45a3c1b00da336fd5",
           "path": "test/foundation/tower-http/modules/src/test_helpers.rs",
-          "sha256": "c65cf2eadabcc0cb36d735214c838138ac92f9051e68c901b51afa6535ba96c1"
+          "sha256": "0da715969c15b0e514c65251e2b34e0b227cdaa55fc018fbe4bca217d797b749"
         },
         {
           "source": "src/foundation/tower-http/src/add_extension.rs",
@@ -20570,7 +20649,7 @@
           "source": "src/foundation/tower-http/src/auth/async_require_authorization.rs",
           "source_sha256_before": "92a6bff979155de818f12b7d72841e0917a58789656bd7f6b06f3ad8a325857f",
           "path": "test/foundation/tower-http/unit/src/auth/async_require_authorization/tests_310.rs",
-          "sha256": "bcce491d05e7d1b4b5fd9941bb9180475291c6c8107db4ce2efa8829b8cb4452"
+          "sha256": "cfc4af3fc2f297abecc7becda13275ff478f02d2cbc7b30877b526cd4081969f"
         },
         {
           "source": "src/foundation/tower-http/src/auth/require_authorization.rs",
@@ -20612,7 +20691,7 @@
           "source": "src/foundation/tower-http/src/compression/mod.rs",
           "source_sha256_before": "46bc9fffc6e94a74011ef73305809f733ac1cc946970963a58aecbd513ea3f98",
           "path": "test/foundation/tower-http/unit/src/compression/mod/tests_90.rs",
-          "sha256": "d4841ea98b0d789d824d3a7e5075fba87e49020d8fb66154e59917222ce996b2"
+          "sha256": "40c6c89592b23a77f77d51320e8ea57dd3f8703c2b2fd1cd6b46b1e25a29e419"
         },
         {
           "source": "src/foundation/tower-http/src/content_encoding.rs",
@@ -20774,7 +20853,7 @@
           "source": "src/foundation/tower-http/src/trace/mod.rs",
           "source_sha256_before": "0e46dc5cdf9999345002976fb8e352eb47b2cc097abb6ba069070aff4985f220",
           "path": "test/foundation/tower-http/unit/src/trace/mod/tests_491.rs",
-          "sha256": "f37600459fa4d1e438010199280cd46b8bbf452c9806a694ea73e116a93cd8d1"
+          "sha256": "26e30c925ae8ef95e196e99972e0e77de0d7e667aed965286cd6c1e9da31a09d"
         },
         {
           "source": "src/foundation/tower-http/src/validate_request.rs",

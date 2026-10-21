@@ -1,11 +1,11 @@
 use crate::codec::decoder::Decoder;
 use crate::codec::encoder::Encoder;
 
-use futures_core::Stream;
+use futures::Stream;
 use tokio::io::{AsyncRead, AsyncWrite};
 
 use bytes::BytesMut;
-use futures_sink::Sink;
+use futures::sink::Sink;
 use pin_project_lite::pin_project;
 use std::borrow::{Borrow, BorrowMut};
 use std::io;

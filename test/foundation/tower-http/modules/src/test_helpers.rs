@@ -4,7 +4,7 @@ use std::{
 };
 
 use bytes::Bytes;
-use futures_util::TryStream;
+use futures::TryStream;
 use http::HeaderMap;
 use http_body::Frame;
 use http_body::BodyExt;

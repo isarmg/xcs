@@ -167,10 +167,10 @@ where
     }
 }
 
-impl<L, R> futures_core::stream::Stream for Either<L, R>
+impl<L, R> futures::stream::Stream for Either<L, R>
 where
-    L: futures_core::stream::Stream,
-    R: futures_core::stream::Stream<Item = L::Item>,
+    L: futures::stream::Stream,
+    R: futures::stream::Stream<Item = L::Item>,
 {
     type Item = L::Item;
 
@@ -179,10 +179,10 @@ where
     }
 }
 
-impl<L, R, Item, Error> futures_sink::Sink<Item> for Either<L, R>
+impl<L, R, Item, Error> futures::sink::Sink<Item> for Either<L, R>
 where
-    L: futures_sink::Sink<Item, Error = Error>,
-    R: futures_sink::Sink<Item, Error = Error>,
+    L: futures::sink::Sink<Item, Error = Error>,
+    R: futures::sink::Sink<Item, Error = Error>,
 {
     type Error = Error;
 

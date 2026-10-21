@@ -20,8 +20,10 @@ name = "task_dispatch"
 path = "src/lib.rs"
 
 [dependencies.futures]
-version = "0.3.31"
+version = "0.3.34"
 path = "../futures"
+default-features = false
+features = ["async-await-macro", "channel", "executor", "io", "shared-state", "sink", "std", "utilities"]
 
 [dependencies.error-definition]
 version = "2.0.12"
@@ -46,7 +48,7 @@ path = "../wasm-bindgen-futures"
 
 [features]
 async-executor = []
-futures-executor = ["futures/thread-pool", "futures/executor"]
+futures-executor = ["futures/async-await-macro", "futures/channel", "futures/executor", "futures/io", "futures/shared-state", "futures/sink", "futures/std", "futures/thread-pool", "futures/utilities"]
 glib = []
 tokio = ["dep:tokio"]
 tracing = ["dep:tracing"]

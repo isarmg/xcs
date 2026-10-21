@@ -1,6 +1,6 @@
 use bytes::Buf;
-use futures_core::stream::Stream;
-use futures_sink::Sink;
+use futures::stream::Stream;
+use futures::sink::Sink;
 use std::io;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -149,7 +149,7 @@ use tokio::io::{AsyncBufRead, AsyncRead, ReadBuf};
 ///
 /// [`AsyncRead`]: tokio::io::AsyncRead
 /// [`AsyncBufRead`]: tokio::io::AsyncBufRead
-/// [`Stream`]: futures_core::Stream
+/// [`Stream`]: futures::Stream
 /// [`ReaderStream`]: crate::io::ReaderStream
 /// [`StreamExt`]: https://docs.rs/tokio-stream/latest/tokio_stream/trait.StreamExt.html
 #[derive(Debug)]

@@ -1,6 +1,6 @@
 use either::Either;
-use futures_core::future::BoxFuture;
-use futures_core::stream::BoxStream;
+use futures::future::BoxFuture;
+use futures::stream::BoxStream;
 
 use crate::database::Database;
 use crate::error::BoxDynError;

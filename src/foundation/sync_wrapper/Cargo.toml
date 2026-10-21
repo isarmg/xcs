@@ -17,11 +17,11 @@ autotests = false
 autobenches = false
 autoexamples = false
 
-[dependencies.futures-core]
-version = "0.3"
-optional = true
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-core"
+optional = true
 
 [features]
-futures = ["futures-core"]
+futures = ["dep:futures"]

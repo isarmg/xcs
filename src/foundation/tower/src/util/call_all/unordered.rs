@@ -4,8 +4,8 @@
 //! [stream]: https://docs.rs/futures/latest/futures/stream/trait.Stream.html
 
 use super::common;
-use futures_core::Stream;
-use futures_util::stream::FuturesUnordered;
+use futures::Stream;
+use futures::stream::FuturesUnordered;
 use pin_project_lite::pin_project;
 use std::{
     future::Future,

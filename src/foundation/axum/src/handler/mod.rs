@@ -327,7 +327,7 @@ where
     type Future = future::LayeredFuture<L::Service>;
 
     fn call(self, req: Request, state: S) -> Self::Future {
-        use futures_util::future::{FutureExt, Map};
+        use futures::future::{FutureExt, Map};
 
         let svc = self.handler.with_state(state);
         let svc = self.layer.layer(svc);

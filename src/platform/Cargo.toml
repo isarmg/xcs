@@ -8,7 +8,7 @@ description = "ZXS filesystem durability, SQLite index, and credential primitive
 
 [dependencies]
 blake3.workspace = true
-futures-executor = {version = "0.3", path = "../foundation/futures-executor"}
+futures = { version = "0.3.34", path = "../foundation/futures", default-features = false, features = ["executor", "std"] }
 getrandom = {version = "0.4", path = "../foundation/getrandom-0.4.3"}
 libc = {version = "0.2", path = "../foundation/libc"}
 libsqlite3-sys = { version = "=0.37.0", features = ["bundled"], path = "../foundation/libsqlite3-sys"}

@@ -1,4 +1,4 @@
-use futures_util::future::{AbortHandle, Abortable};
+use futures::future::{AbortHandle, Abortable};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::future::Future;

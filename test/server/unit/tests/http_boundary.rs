@@ -211,7 +211,7 @@ async fn head_errors_retain_status_and_headers_without_a_body() {
 async fn bounded_body_counts_streamed_bytes_and_preserves_read_failures() {
     let request = Request::new(Body::from("1234"));
     assert_eq!(read_body(request, 4).await.unwrap(), "1234");
-    let chunks = futures_util::stream::iter([
+    let chunks = futures::stream::iter([
         Ok::<_, std::io::Error>(Bytes::from_static(b"12")),
         Ok(Bytes::from_static(b"345")),
     ]);
@@ -227,7 +227,7 @@ async fn bounded_body_counts_streamed_bytes_and_preserves_read_failures() {
     )
     .await;
 
-    let chunks = futures_util::stream::iter([
+    let chunks = futures::stream::iter([
         Ok(Bytes::from_static(b"12")),
         Err(std::io::Error::other("private transport detail")),
     ]);
@@ -312,7 +312,7 @@ async fn blocking_task_panics_are_internal_errors_not_client_errors() {
 
 #[tokio::test]
 async fn cancellation_and_missing_router_state_are_internal_errors() {
-    let task = tokio::spawn(futures_util::future::pending::<()>());
+    let task = tokio::spawn(futures::future::pending::<()>());
     task.abort();
     let error = task.await.unwrap_err();
     assert!(error.is_cancelled());

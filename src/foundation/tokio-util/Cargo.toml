@@ -22,16 +22,16 @@ license = "MIT"
 repository = "https://github.com/tokio-rs/tokio"
 
 [features]
-__docs_rs = ["futures-util"]
+__docs_rs = ["futures/async-await-macro", "futures/shared-state", "futures/std", "futures/utilities"]
 codec = ["libc"]
-compat = ["futures-io"]
+compat = ["futures/std"]
 default = []
 full = ["codec", "compat", "io-util", "time", "net", "rt", "join-map"]
 io = []
 io-util = ["io", "tokio/rt", "tokio/io-util"]
 join-map = ["rt", "dep:hash-table"]
 net = ["tokio/net"]
-rt = ["tokio/rt", "tokio/sync", "futures-util"]
+rt = ["tokio/rt", "tokio/sync", "futures/async-await-macro", "futures/shared-state", "futures/std", "futures/utilities"]
 time = ["tokio/time", "slab"]
 
 [lib]
@@ -48,23 +48,11 @@ optional = true
 default-features = false
 path = "../hash-table"
 
-[dependencies.futures-core]
-version = "0.3.0"
-path = "../futures-core"
-
-[dependencies.futures-io]
-version = "0.3.0"
-optional = true
-path = "../futures-io"
-
-[dependencies.futures-sink]
-version = "0.3.0"
-path = "../futures-sink"
-
-[dependencies.futures-util]
-version = "0.3.0"
-optional = true
-path = "../futures-util"
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
+default-features = false
+features = ["std"]
 
 [dependencies.pin-project-lite]
 version = "0.2.11"

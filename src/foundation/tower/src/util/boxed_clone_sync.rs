@@ -1,5 +1,5 @@
 use super::ServiceExt;
-use futures_util::future::BoxFuture;
+use futures::future::BoxFuture;
 use std::{
     fmt,
     task::{Context, Poll},

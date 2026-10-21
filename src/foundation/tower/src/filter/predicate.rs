@@ -43,11 +43,11 @@ where
     U: Future<Output = Result<R, E>>,
     E: Into<BoxError>,
 {
-    type Future = futures_util::future::ErrInto<U, BoxError>;
+    type Future = futures::future::ErrInto<U, BoxError>;
     type Request = R;
 
     fn check(&mut self, request: T) -> Self::Future {
-        use futures_util::TryFutureExt;
+        use futures::TryFutureExt;
         self(request).err_into()
     }
 }

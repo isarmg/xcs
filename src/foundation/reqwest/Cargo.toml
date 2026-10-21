@@ -41,7 +41,7 @@ json = ["dep:json-codec"]
 rustls-tls = ["rustls-tls-webpki-roots"]
 rustls-tls-webpki-roots = ["rustls-tls-webpki-roots-no-provider", "__rustls-ring"]
 rustls-tls-webpki-roots-no-provider = ["dep:webpki-roots", "hyper-rustls?/webpki-tokio", "__rustls"]
-stream = ["tokio/fs", "dep:futures-util", "dep:tokio-util"]
+stream = ["tokio/fs", "futures/utilities", "dep:tokio-util"]
 default = []
 
 [lib]
@@ -58,16 +58,10 @@ features = ["std"]
 version = "1.2"
 path = "../bytes"
 
-[dependencies.futures-core]
-version = "0.3.28"
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-core"
-
-[dependencies.futures-util]
-version = "0.3.28"
-optional = true
-default-features = false
-path = "../futures-util"
 
 [dependencies.http]
 version = "1.1"

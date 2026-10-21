@@ -114,7 +114,7 @@
 //! ```no_run
 //! use tokio::io::AsyncReadExt;
 //! # // This uses async_stream to create an example that compiles.
-//! # fn foo() -> impl futures_core::Stream<Item = std::io::Result<bytes::BytesMut>> { async_stream::try_stream! {
+//! # fn foo() -> impl futures::Stream<Item = std::io::Result<bytes::BytesMut>> { async_stream::try_stream! {
 //! # use tokio_util::codec::Decoder;
 //! # let mut decoder = tokio_util::codec::BytesCodec::new();
 //! # let io_resource = &mut &[0u8, 1, 2, 3][..];
@@ -311,8 +311,8 @@
 //!
 //! [`AsyncRead`]: tokio::io::AsyncRead
 //! [`AsyncWrite`]: tokio::io::AsyncWrite
-//! [`Stream`]: futures_core::Stream
-//! [`Sink`]: futures_sink::Sink
+//! [`Stream`]: futures::Stream
+//! [`Sink`]: futures::sink::Sink
 //! [`SinkExt`]: https://docs.rs/futures/0.3/futures/sink/trait.SinkExt.html
 //! [`SinkExt::close`]: https://docs.rs/futures/0.3/futures/sink/trait.SinkExt.html#method.close
 //! [`FramedRead`]: struct@crate::codec::FramedRead

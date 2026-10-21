@@ -40,9 +40,10 @@ default-features = true
 path = "../async-lock"
 
 [dependencies.futures]
-version = "0.3"
-default-features = true
+version = "0.3.34"
 path = "../futures"
+default-features = false
+features = ["async-await-macro", "channel", "executor", "io", "shared-state", "sink", "std", "utilities"]
 
 [dependencies.guardian]
 version = "1.3"

@@ -1,6 +1,6 @@
 //! Native HTTP streaming adapter for the shared client protocol.
 use super::Error;
-use futures_util::StreamExt;
+use futures::StreamExt;
 use json_codec::Value;
 use storage_contract::client_protocol::{self, MAX_RESPONSE_BYTES, ResponseError};
 

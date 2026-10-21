@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::thread;
 
-use futures_channel::oneshot;
+use futures::channel::oneshot;
 use futures_intrusive::sync::{Mutex, MutexGuard};
 use crate::sql_str::SqlStr;
 use tracing::span::Span;
@@ -327,7 +327,7 @@ impl ConnectionWorker {
                         }
                         Command::UnlockDb => {
                             drop(conn);
-                            conn = futures_executor::block_on(shared.conn.lock());
+                            conn = futures::executor::block_on(shared.conn.lock());
                         }
                         Command::Ping { tx } => {
                             tx.send(()).ok();
@@ -471,7 +471,7 @@ impl ConnectionWorker {
     }
 
     pub(crate) async fn unlock_db(&mut self) -> Result<MutexGuard<'_, ConnectionState>, Error> {
-        let (guard, res) = futures_util::future::join(
+        let (guard, res) = futures::future::join(
             // we need to join the wait queue for the lock before we send the message
             self.shared.conn.lock(),
             self.command_tx
@@ -555,7 +555,7 @@ mod rendezvous_oneshot {
         }
 
         pub fn blocking_send(self, value: T) -> Result<(), Canceled> {
-            futures_executor::block_on(self.send(value))
+            futures::executor::block_on(self.send(value))
         }
     }
 

@@ -18,7 +18,7 @@ use std::task::Poll;
 use crate::logger::private_level_filter_to_trace_level;
 use crate::pool::options::PoolConnectionMetadata;
 use crate::private_tracing_dynamic_event;
-use futures_util::FutureExt;
+use futures::FutureExt;
 use std::time::{Duration, Instant};
 use tracing::Level;
 

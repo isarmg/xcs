@@ -1,6 +1,6 @@
-use futures_sink::Sink;
+use futures::sink::Sink;
 
-use futures_core::stream::Stream;
+use futures::stream::Stream;
 use pin_project_lite::pin_project;
 use std::io;
 use std::pin::Pin;
@@ -30,7 +30,7 @@ pin_project! {
     ///
     /// ```
     /// use bytes::Bytes;
-    /// use futures_util::SinkExt;
+    /// use futures::SinkExt;
     /// use std::io::{Error, ErrorKind};
     /// use tokio::io::AsyncWriteExt;
     /// use tokio_util::io::{SinkWriter, CopyToBytes};
@@ -58,7 +58,7 @@ pin_project! {
     /// [`AsyncWrite`]: tokio::io::AsyncWrite
     /// [`CopyToBytes`]: crate::io::CopyToBytes
     /// [`Encoder`]: crate::codec::Encoder
-    /// [`Sink`]: futures_sink::Sink
+    /// [`Sink`]: futures::sink::Sink
     /// [`codec`]: crate::codec
     #[derive(Debug)]
     pub struct SinkWriter<S> {

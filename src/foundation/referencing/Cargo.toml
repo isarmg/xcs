@@ -20,7 +20,7 @@ resolver = "3"
 
 [features]
 default = []
-retrieve-async = ["dep:async-trait", "dep:futures"]
+retrieve-async = ["dep:async-trait", "dep:futures", "futures/async-await-macro", "futures/channel", "futures/executor", "futures/io", "futures/shared-state", "futures/sink", "futures/std", "futures/utilities"]
 
 [lib]
 name = "referencing"
@@ -42,9 +42,10 @@ features = ["serialization"]
 path = "../fluent-uri"
 
 [dependencies.futures]
-version = "0.3.31"
-optional = true
+version = "0.3.34"
 path = "../futures"
+default-features = false
+optional = true
 
 [dependencies.hash-table]
 version = "0.17"

@@ -3,9 +3,9 @@ use crate::error::{BoxDynError, Error};
 use crate::sql_str::{SqlSafeStr, SqlStr};
 
 use either::Either;
-use futures_core::future::BoxFuture;
-use futures_core::stream::BoxStream;
-use futures_util::{FutureExt, StreamExt, TryFutureExt, TryStreamExt};
+use futures::future::BoxFuture;
+use futures::stream::BoxStream;
+use futures::{FutureExt, StreamExt, TryFutureExt, TryStreamExt};
 use std::{fmt::Debug, future};
 
 /// A type that contains or can provide a database

@@ -1,5 +1,5 @@
 use super::Change;
-use futures_core::Stream;
+use futures::Stream;
 use pin_project_lite::pin_project;
 use std::convert::Infallible;
 use std::iter::{Enumerate, IntoIterator};

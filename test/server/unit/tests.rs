@@ -360,7 +360,7 @@ async fn interrupted_upload_retains_durable_bytes_and_rejects_different_retry() 
     let root = tempfile::tempdir().unwrap();
     let app = application(root.path());
     let (token, _, _) = authenticated(&app).await;
-    let stream = futures_util::stream::iter([
+    let stream = futures::stream::iter([
         Ok(Bytes::from_static(b"original")),
         Err(std::io::Error::other("connection interrupted")),
     ]);
@@ -424,7 +424,7 @@ async fn durable_retry_progress_appends_without_copying_the_same_generation() {
     let (token, _, _) = authenticated(&app).await;
     let spool = root.path().join("api-spool");
     for content in ["original", "original plus", "original plus more"] {
-        let stream = futures_util::stream::iter([
+        let stream = futures::stream::iter([
             Ok(Bytes::copy_from_slice(content.as_bytes())),
             Err(std::io::Error::other("interrupted")),
         ]);
@@ -492,7 +492,7 @@ async fn unpublished_retry_cleanup_covers_short_long_and_cancelled_bodies() {
     for body in [
         Body::from(vec![42u8; 1024]),
         Body::from(vec![42u8; bytes.len() + 1]),
-        Body::from_stream(futures_util::stream::iter([
+        Body::from_stream(futures::stream::iter([
             Ok(Bytes::from(vec![42u8; 1024])),
             Err(std::io::Error::other("interrupted")),
         ])),
@@ -507,11 +507,11 @@ async fn unpublished_retry_cleanup_covers_short_long_and_cancelled_bodies() {
         );
     }
     let (sent, received) = tokio::sync::oneshot::channel();
-    let stream = futures_util::stream::once(async move {
+    let stream = futures::stream::once(async move {
         let _ = sent.send(());
         Ok::<_, std::io::Error>(Bytes::from(vec![42u8; 1024]))
     });
-    let stream = futures_util::StreamExt::chain(stream, futures_util::stream::pending());
+    let stream = futures::StreamExt::chain(stream, futures::stream::pending());
     let retry_app = app.clone();
     let retry_request = request(Body::from_stream(stream));
     let retry = tokio::spawn(async move { retry_app.oneshot(retry_request).await });

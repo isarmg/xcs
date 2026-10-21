@@ -1,5 +1,5 @@
 use bytes::Buf;
-use futures_core::{ready, stream::Stream};
+use futures::{ready, stream::Stream};
 use crate::{Body, Frame};
 use pin_project_lite::pin_project;
 use std::{

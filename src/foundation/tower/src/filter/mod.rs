@@ -34,7 +34,7 @@ pub use self::{
 
 use self::future::{AsyncResponseFuture, ResponseFuture};
 use crate::BoxError;
-use futures_util::{future::Either, TryFutureExt};
+use futures::{future::Either, TryFutureExt};
 use std::task::{Context, Poll};
 use tower_service::Service;
 

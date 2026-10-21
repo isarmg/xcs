@@ -11,7 +11,7 @@ use std::pin::Pin;
 use std::task::{self, Poll};
 use std::time::Duration;
 
-use futures_util::future::{self, Either, FutureExt, TryFutureExt};
+use futures::future::{self, Either, FutureExt, TryFutureExt};
 use http::uri::Scheme;
 use hyper::client::conn::TrySendError as ConnTrySendError;
 use hyper::header::{HOST, HeaderValue};

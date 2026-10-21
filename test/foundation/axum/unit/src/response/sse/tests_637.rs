@@ -2,7 +2,7 @@
 mod tests {
     use super::*;
     use crate::{routing::get, test_helpers::*, Router};
-    use futures_util::stream;
+    use futures::stream;
     use json_codec::value::RawValue;
     use std::{collections::HashMap, convert::Infallible};
     use tokio_stream::StreamExt as _;

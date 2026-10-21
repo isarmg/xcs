@@ -148,7 +148,7 @@ mod tests {
     #[cfg(feature = "stream")]
     fn try_clone_stream() {
         let chunks: Vec<Result<_, ::std::io::Error>> = vec![Ok("hello"), Ok(" "), Ok("world")];
-        let stream = futures_util::stream::iter(chunks);
+        let stream = futures::stream::iter(chunks);
         let client = Client::new();
         let builder = client
             .get("http://httpbin.org/get")

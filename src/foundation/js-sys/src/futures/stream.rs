@@ -10,7 +10,7 @@ use crate::{AsyncIterator, IteratorNext};
 use core::future::Future;
 use core::pin::Pin;
 use core::task::{Context, Poll};
-use futures_core::stream::Stream;
+use futures::stream::Stream;
 use wasm_bindgen::convert::FromWasmAbi;
 use wasm_bindgen::{prelude::*, JsGeneric};
 

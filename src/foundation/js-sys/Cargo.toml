@@ -29,8 +29,8 @@ repository = "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/js
 
 [features]
 default = ["std", "unsafe-eval"]
-futures-core-03-stream = ["dep:futures-util", "dep:futures-core"]
-std = ["wasm-bindgen/std", "futures-util/std"]
+futures-core-03-stream = ["dep:futures", "futures/utilities"]
+std = ["wasm-bindgen/std", "dep:futures", "futures/shared-state", "futures/std", "futures/utilities"]
 unsafe-eval = []
 
 [lib]
@@ -43,17 +43,11 @@ doctest = false
 version = "1.0.0"
 path = "../cfg-if"
 
-[dependencies.futures-core]
-version = "0.3.8"
-optional = true
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-core"
-
-[dependencies.futures-util]
-version = "0.3.31"
 optional = true
-default-features = false
-path = "../futures-util"
 
 [dependencies.wasm-bindgen]
 version = "=0.2.129"

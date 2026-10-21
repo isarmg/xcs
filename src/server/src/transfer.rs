@@ -18,7 +18,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use data_serialization::Deserialize;
-use futures_util::StreamExt;
+use futures::StreamExt;
 use json_codec::{Value, json};
 use std::{
     io::{Read, Seek, SeekFrom},
@@ -642,7 +642,7 @@ pub(crate) async fn checksums(
     .map_err(|_| timeout_error())?
     .map_err(ApiError::join)??;
     let length = bytes.len();
-    let stream = futures_util::stream::try_unfold(
+    let stream = futures::stream::try_unfold(
         (bytes::Bytes::from(bytes), permit),
         |(mut bytes, permit)| async move {
             if bytes.is_empty() {
@@ -732,7 +732,7 @@ fn content_response_with_limits(
         // One bounded chunk per blocking job. The state, lease and admission
         // permit travel with that job, including after HTTP cancellation.
         let stream =
-            futures_util::stream::try_unfold((reader, lease), |(mut reader, lease)| async move {
+            futures::stream::try_unfold((reader, lease), |(mut reader, lease)| async move {
                 tokio::task::spawn_blocking(move || {
                     reader.next_chunk().map(|chunk| {
                         chunk.map(|chunk| (bytes::Bytes::from(chunk), (reader, lease)))
@@ -744,7 +744,7 @@ fn content_response_with_limits(
         Body::from_stream(BoundedStream::new(stream, limits, deadline))
     } else {
         file.seek(SeekFrom::Start(start)).map_err(ApiError::io)?;
-        let stream = futures_util::stream::try_unfold(
+        let stream = futures::stream::try_unfold(
             (file, length, lease),
             |(mut file, remaining, lease)| async move {
                 if remaining == 0 {

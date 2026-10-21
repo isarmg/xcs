@@ -85,7 +85,7 @@
 //! ```
 
 use bytes::Bytes;
-use futures_util::future::{CatchUnwind, FutureExt};
+use futures::future::{CatchUnwind, FutureExt};
 use http::{HeaderValue, Request, Response, StatusCode};
 use http_body::Body;
 use http_body::BodyExt;

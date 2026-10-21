@@ -4,8 +4,8 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 use bytes::{Buf, Bytes};
-use futures_channel::{mpsc, oneshot};
-use futures_core::{ready, Stream};
+use futures::channel::{mpsc, oneshot};
+use futures::{ready, Stream};
 use h2::{Reason, RecvStream, SendStream};
 use pin_project_lite::pin_project;
 

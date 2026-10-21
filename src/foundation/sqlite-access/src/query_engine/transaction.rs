@@ -2,7 +2,7 @@ use std::fmt::{self, Debug, Formatter};
 use std::future::{self, Future};
 use std::ops::{Deref, DerefMut};
 
-use futures_core::future::BoxFuture;
+use futures::future::BoxFuture;
 
 use crate::database::Database;
 use crate::error::Error;
@@ -146,7 +146,7 @@ where
 //     fn fetch_many<'e, 'q: 'e, E: 'q>(
 //         self,
 //         query: E,
-//     ) -> futures_core::stream::BoxStream<
+//     ) -> futures::stream::BoxStream<
 //         'e,
 //         Result<
 //             crate::Either<<DB as crate::database::Database>::QueryResult, DB::Row>,
@@ -163,7 +163,7 @@ where
 //     fn fetch_optional<'e, 'q: 'e, E: 'q>(
 //         self,
 //         query: E,
-//     ) -> futures_core::future::BoxFuture<'e, Result<Option<DB::Row>, crate::error::Error>>
+//     ) -> futures::future::BoxFuture<'e, Result<Option<DB::Row>, crate::error::Error>>
 //     where
 //         't: 'e,
 //         E: crate::executor::Execute<'q, Self::Database>,
@@ -175,7 +175,7 @@ where
 //         self,
 //         sql: &'q str,
 //         parameters: &'e [<Self::Database as crate::database::Database>::TypeInfo],
-//     ) -> futures_core::future::BoxFuture<
+//     ) -> futures::future::BoxFuture<
 //         'e,
 //         Result<
 //             <Self::Database as crate::database::Database>::Statement<'q>,
@@ -193,7 +193,7 @@ where
 //     fn describe<'e, 'q: 'e>(
 //         self,
 //         query: &'q str,
-//     ) -> futures_core::future::BoxFuture<
+//     ) -> futures::future::BoxFuture<
 //         'e,
 //         Result<crate::describe::Describe<Self::Database>, crate::error::Error>,
 //     >

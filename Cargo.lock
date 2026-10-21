@@ -152,7 +152,7 @@ dependencies = [
  "bytes",
  "form-codec",
  "form_urlencoded",
- "futures-util",
+ "futures",
  "http",
  "http-body",
  "hyper",
@@ -179,7 +179,7 @@ name = "axum-core"
 version = "0.5.6"
 dependencies = [
  "bytes",
- "futures-core",
+ "futures",
  "http",
  "http-body",
  "mime",
@@ -609,8 +609,7 @@ dependencies = [
 name = "flume"
 version = "0.12.0"
 dependencies = [
- "futures-core",
- "futures-sink",
+ "futures",
  "spin",
 ]
 
@@ -646,48 +645,20 @@ dependencies = [
 name = "futures"
 version = "0.3.34"
 dependencies = [
- "futures-channel",
- "futures-core",
- "futures-executor",
- "futures-io",
- "futures-sink",
- "futures-task",
- "futures-util",
-]
-
-[[package]]
-name = "futures-channel"
-version = "0.3.34"
-dependencies = [
- "futures-core",
- "futures-sink",
-]
-
-[[package]]
-name = "futures-core"
-version = "0.3.34"
-
-[[package]]
-name = "futures-executor"
-version = "0.3.34"
-dependencies = [
- "futures-core",
- "futures-task",
- "futures-util",
+ "futures-macro",
+ "memchr",
+ "pin-project-lite",
+ "slab",
 ]
 
 [[package]]
 name = "futures-intrusive"
 version = "0.5.0"
 dependencies = [
- "futures-core",
+ "futures",
  "lock_api",
  "parking_lot",
 ]
-
-[[package]]
-name = "futures-io"
-version = "0.3.34"
 
 [[package]]
 name = "futures-macro"
@@ -696,29 +667,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rust-syntax",
-]
-
-[[package]]
-name = "futures-sink"
-version = "0.3.34"
-
-[[package]]
-name = "futures-task"
-version = "0.3.34"
-
-[[package]]
-name = "futures-util"
-version = "0.3.34"
-dependencies = [
- "futures-channel",
- "futures-core",
- "futures-io",
- "futures-macro",
- "futures-sink",
- "futures-task",
- "memchr",
- "pin-project-lite",
- "slab",
 ]
 
 [[package]]
@@ -764,8 +712,7 @@ dependencies = [
 name = "gloo-timers"
 version = "0.3.0"
 dependencies = [
- "futures-channel",
- "futures-core",
+ "futures",
  "js-sys",
  "wasm-bindgen",
 ]
@@ -819,7 +766,7 @@ name = "http-body"
 version = "1.1.0"
 dependencies = [
  "bytes",
- "futures-core",
+ "futures",
  "http",
  "pin-project-lite",
 ]
@@ -849,7 +796,7 @@ version = "1.12.0"
 dependencies = [
  "atomic-waker",
  "bytes",
- "futures-core",
+ "futures",
  "http",
  "http-body",
  "httparse",
@@ -881,8 +828,7 @@ version = "0.1.21"
 dependencies = [
  "base64",
  "bytes",
- "futures-channel",
- "futures-util",
+ "futures",
  "http",
  "http-body",
  "httparse",
@@ -1023,7 +969,7 @@ name = "js-sys"
 version = "0.3.106"
 dependencies = [
  "cfg-if",
- "futures-util",
+ "futures",
  "wasm-bindgen",
 ]
 
@@ -1318,7 +1264,7 @@ dependencies = [
  "blake3",
  "data-serialization",
  "error-definition",
- "futures-executor",
+ "futures",
  "getrandom 0.4.3",
  "json-codec",
  "libc",
@@ -1507,8 +1453,7 @@ dependencies = [
  "bytes",
  "data-serialization",
  "form-codec",
- "futures-core",
- "futures-util",
+ "futures",
  "http",
  "http-body",
  "hyper",
@@ -1648,7 +1593,7 @@ version = "1.0.28"
 name = "send_wrapper"
 version = "0.6.0"
 dependencies = [
- "futures-core",
+ "futures",
 ]
 
 [[package]]
@@ -1781,11 +1726,8 @@ dependencies = [
  "event-listener",
  "flume",
  "form_urlencoded",
- "futures-channel",
- "futures-core",
- "futures-executor",
+ "futures",
  "futures-intrusive",
- "futures-util",
  "hash-table",
  "hashlink",
  "indexmap",
@@ -1827,7 +1769,7 @@ dependencies = [
  "blake3",
  "data-serialization",
  "error-definition",
- "futures-util",
+ "futures",
  "json-codec",
  "reqwest",
  "rustix",
@@ -1880,7 +1822,7 @@ dependencies = [
  "blake3",
  "bytes",
  "data-serialization",
- "futures-util",
+ "futures",
  "http",
  "json-codec",
  "name-policy",
@@ -1928,7 +1870,7 @@ version = "2.6.1"
 name = "sync_wrapper"
 version = "1.0.2"
 dependencies = [
- "futures-core",
+ "futures",
 ]
 
 [[package]]
@@ -2043,8 +1985,7 @@ name = "tokio-util"
 version = "0.7.20"
 dependencies = [
  "bytes",
- "futures-core",
- "futures-sink",
+ "futures",
  "pin-project-lite",
  "tokio",
 ]
@@ -2086,8 +2027,7 @@ version = "0.1.2"
 name = "tower"
 version = "0.5.3"
 dependencies = [
- "futures-core",
- "futures-util",
+ "futures",
  "pin-project-lite",
  "sync_wrapper",
  "tokio",
@@ -2102,8 +2042,7 @@ version = "0.6.11"
 dependencies = [
  "bytes",
  "flag-set",
- "futures-core",
- "futures-util",
+ "futures",
  "http",
  "http-body",
  "http-range-header",

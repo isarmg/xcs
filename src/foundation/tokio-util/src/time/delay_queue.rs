@@ -1204,7 +1204,7 @@ impl<T> Default for DelayQueue<T> {
     }
 }
 
-impl<T> futures_core::Stream for DelayQueue<T> {
+impl<T> futures::Stream for DelayQueue<T> {
     // DelayQueue seems much more specific, where a user may care that it
     // has reached capacity, so return those errors instead of panicking.
     type Item = Expired<T>;

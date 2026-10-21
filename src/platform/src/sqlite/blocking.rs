@@ -14,7 +14,7 @@ use std::future::Future;
 /// outside this contract. The caller must explicitly close every connection
 /// before completing its future; this function does not replace that ownership.
 pub fn block_on_sqlite_connection<F: Future>(future: F) -> F::Output {
-    futures_executor::block_on(future)
+    futures::executor::block_on(future)
 }
 
 #[cfg(test)]

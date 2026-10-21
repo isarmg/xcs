@@ -15,9 +15,11 @@ repository = "https://github.com/thk1/send_wrapper"
 autotests = false
 autobenches = false
 autoexamples = false
-[dependencies.futures-core]
-version = "0.3"
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
+default-features = false
 optional = true
-path = "../futures-core"
+
 [features]
-futures = ["futures-core"]
+futures = ["dep:futures", "futures/std"]

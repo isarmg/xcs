@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::task::{self, Poll, ready};
 use std::time::Duration;
 
-use futures_util::future::Either;
+use futures::future::Either;
 use http::uri::{Scheme, Uri};
 use pin_project_lite::pin_project;
 use socket2::TcpKeepalive;
@@ -985,13 +985,13 @@ impl ConnectingTcp<'_> {
                 let fallback_delay = pin!(fallback.delay);
 
                 let (result, future) =
-                    match futures_util::future::select(preferred_fut, fallback_delay).await {
+                    match futures::future::select(preferred_fut, fallback_delay).await {
                         Either::Left((result, _fallback_delay)) => {
                             (result, Either::Right(fallback_fut))
                         }
                         Either::Right(((), preferred_fut)) => {
                             // Delay is done, start polling both the preferred and the fallback
-                            futures_util::future::select(preferred_fut, fallback_fut)
+                            futures::future::select(preferred_fut, fallback_fut)
                                 .await
                                 .factor_first()
                         }

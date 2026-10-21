@@ -12,7 +12,7 @@ json-codec.workspace = true
 error-definition.workspace = true
 tokio = { version = "1.53.2", features = ["fs", "io-util"], path = "../foundation/tokio"}
 tokio-util = { version = "0.7", features = ["io"], path = "../foundation/tokio-util"}
-futures-util = {version = "0.3", path = "../foundation/futures-util"}
+futures = { version = "0.3.34", path = "../foundation/futures", default-features = false, features = ["async-await-macro", "shared-state", "std", "utilities"] }
 url = {version = "2", path = "../foundation/url"}
 blake3.workspace = true
 storage-contract = { path = "../contract" }

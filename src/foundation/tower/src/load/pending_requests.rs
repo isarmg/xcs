@@ -3,7 +3,7 @@
 #[cfg(feature = "discover")]
 use crate::discover::{Change, Discover};
 #[cfg(feature = "discover")]
-use futures_core::Stream;
+use futures::Stream;
 #[cfg(feature = "discover")]
 use pin_project_lite::pin_project;
 #[cfg(feature = "discover")]

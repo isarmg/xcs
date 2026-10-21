@@ -11,7 +11,7 @@ use std::time::Duration;
 use crate::rt::{Read, Write};
 use crate::upgrade::Upgraded;
 use bytes::Bytes;
-use futures_core::ready;
+use futures::ready;
 use httparse::ParserConfig;
 
 use crate::body::{Body, Incoming as IncomingBody};

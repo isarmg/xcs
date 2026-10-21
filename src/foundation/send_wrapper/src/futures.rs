@@ -6,7 +6,7 @@ use std::{
 	task,
 };
 
-use futures_core::Stream;
+use futures::Stream;
 
 use crate::SendWrapper;
 

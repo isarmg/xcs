@@ -1,4 +1,4 @@
-use futures_sink::Sink;
+use futures::sink::Sink;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::{fmt, mem};

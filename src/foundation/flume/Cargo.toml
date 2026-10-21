@@ -33,7 +33,7 @@ license = "Apache-2.0/MIT"
 repository = "https://github.com/zesterer/flume"
 
 [features]
-async = ["futures-sink", "futures-core"]
+async = ["dep:futures"]
 default = ["async", "select", "eventual-fairness"]
 eventual-fairness = ["select", "fastrand"]
 select = []
@@ -52,17 +52,11 @@ features = [
 optional = true
 path = "../fastrand"
 
-[dependencies.futures-core]
-version = "0.3"
-optional = true
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-core"
-
-[dependencies.futures-sink]
-version = "0.3"
 optional = true
-default-features = false
-path = "../futures-sink"
 
 [dependencies.spin1]
 version = "0.9.8"

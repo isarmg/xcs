@@ -51,7 +51,7 @@ impl AtomicWaker {
     }
 
     /// Same as the singlethread module, this creates a standard library
-    /// `RawWaker`. We could use `futures_util::task::ArcWake` but it's small
+    /// `RawWaker`. We could use `futures::task::ArcWake` but it's small
     /// enough that we just inline it for now.
     unsafe fn into_raw_waker(this: Arc<Self>) -> RawWaker {
         unsafe fn raw_clone(ptr: *const ()) -> RawWaker {

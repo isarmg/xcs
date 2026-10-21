@@ -1,11 +1,11 @@
 use crate::codec::encoder::Encoder;
 use crate::codec::framed_impl::{FramedImpl, WriteFrame};
 
-use futures_core::Stream;
+use futures::Stream;
 use tokio::io::AsyncWrite;
 
 use bytes::BytesMut;
-use futures_sink::Sink;
+use futures::sink::Sink;
 use pin_project_lite::pin_project;
 use std::fmt;
 use std::io;
@@ -22,13 +22,13 @@ pin_project! {
     ///
     /// # Cancellation safety
     ///
-    /// * [`futures_util::sink::SinkExt::send`]: if send is used as the event in a
+    /// * [`futures::sink::SinkExt::send`]: if send is used as the event in a
     /// `tokio::select!` statement and some other branch completes first, then it is
     /// guaranteed that the message was not sent, but the message itself is lost.
     ///
-    /// [`Sink`]: futures_sink::Sink
+    /// [`Sink`]: futures::sink::Sink
     /// [`codec`]: crate::codec
-    /// [`futures_util::sink::SinkExt::send`]: futures_util::sink::SinkExt::send
+    /// [`futures::sink::SinkExt::send`]: futures::sink::SinkExt::send
     pub struct FramedWrite<T, E> {
         #[pin]
         inner: FramedImpl<T, E, WriteFrame>,

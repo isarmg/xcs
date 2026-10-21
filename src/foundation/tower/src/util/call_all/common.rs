@@ -1,4 +1,4 @@
-use futures_core::Stream;
+use futures::Stream;
 use pin_project_lite::pin_project;
 use std::{
     fmt,

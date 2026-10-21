@@ -10,7 +10,7 @@
 //! };
 //! use std::{time::Duration, convert::Infallible};
 //! use tokio_stream::StreamExt as _ ;
-//! use futures_util::stream::{self, Stream};
+//! use futures::stream::{self, Stream};
 //!
 //! let app = Router::new().route("/sse", get(sse_handler));
 //!
@@ -34,7 +34,7 @@ use axum_core::{
     response::{IntoResponse, Response},
 };
 use bytes::{BufMut, BytesMut};
-use futures_util::stream::{Stream, TryStream};
+use futures::stream::{Stream, TryStream};
 use http_body::Frame;
 use pin_project_lite::pin_project;
 use std::{

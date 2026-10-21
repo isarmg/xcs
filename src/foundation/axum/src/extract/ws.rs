@@ -70,7 +70,7 @@
 //!
 //! ```rust,no_run
 //! use axum::{Error, extract::ws::{WebSocket, Message}};
-//! use futures_util::{sink::SinkExt, stream::{StreamExt, SplitSink, SplitStream}};
+//! use futures::{sink::SinkExt, stream::{StreamExt, SplitSink, SplitStream}};
 //!
 //! async fn handle_socket(mut socket: WebSocket) {
 //!     let (mut sender, mut receiver) = socket.split();
@@ -94,7 +94,7 @@ use self::rejection::*;
 use super::FromRequestParts;
 use crate::{body::Bytes, response::Response, Error};
 use axum_core::body::Body;
-use futures_util::{
+use futures::{
     sink::{Sink, SinkExt},
     stream::{FusedStream, Stream, StreamExt},
 };

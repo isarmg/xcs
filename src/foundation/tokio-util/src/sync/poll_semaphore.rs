@@ -1,4 +1,4 @@
-use futures_core::Stream;
+use futures::Stream;
 use std::fmt;
 use std::pin::Pin;
 use std::sync::Arc;

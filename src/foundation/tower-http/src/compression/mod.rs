@@ -14,7 +14,7 @@
 //! use tokio_util::io::ReaderStream;
 //! use tower::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::{compression::CompressionLayer, BoxError};
-//! use futures_util::TryStreamExt;
+//! use futures::TryStreamExt;
 //!
 //! type BoxBody = UnsyncBoxBody<Bytes, std::io::Error>;
 //!

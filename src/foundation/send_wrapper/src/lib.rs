@@ -88,7 +88,7 @@
 //! [`GTK+`]: https://www.gtk.org/
 //! [using `Glib`]: http://gtk-rs.org/docs/glib/source/fn.idle_add.html
 //! [`Future`]: std::future::Future
-//! [`Stream`]: futures_core::Stream
+//! [`Stream`]: futures::Stream
 // To build docs locally use `RUSTDOCFLAGS="--cfg docsrs" cargo doc --open --all-features`
 #![cfg_attr(docsrs, feature(doc_cfg))]
 

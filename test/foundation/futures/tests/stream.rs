@@ -13,8 +13,8 @@ use futures::sink::SinkExt;
 use futures::stream::{self, StreamExt};
 use futures::task::Poll;
 use futures::{ready, FutureExt};
-use futures_core::Stream;
-use futures_executor::ThreadPool;
+use futures::Stream;
+use futures::executor::ThreadPool;
 use futures_test::task::noop_context;
 
 #[test]
@@ -225,7 +225,7 @@ fn flatten_unordered() {
         });
 
         block_on(async {
-            let (mut fm_unordered, mut fl_unordered) = futures_util::join!(
+            let (mut fm_unordered, mut fl_unordered) = futures::join!(
                 Interchanger { polled: false, base: 0, wake_immediately: false }
                     .take(10)
                     .flat_map_unordered(10, |s| s.map(identity))

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use futures_util::future;
+    use futures::future;
     use tower_service::Service;
     use tower_test::assert_request_eq;
 

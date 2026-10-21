@@ -234,7 +234,7 @@ pub struct SyncStream<S> {
     inner: SyncWrapper<S>
 }
 #[cfg(feature = "futures")]
-impl <S: futures_core::Stream> SyncStream<S> {
+impl <S: futures::Stream> SyncStream<S> {
     pub fn new(inner: S) -> Self {
         Self { inner: SyncWrapper::new(inner) }
     }
@@ -243,7 +243,7 @@ impl <S: futures_core::Stream> SyncStream<S> {
     }
 }
 #[cfg(feature = "futures")]
-impl <S: futures_core::Stream> futures_core::Stream for SyncStream<S> {
+impl <S: futures::Stream> futures::Stream for SyncStream<S> {
     type Item = S::Item;
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let inner = unsafe { self.map_unchecked_mut(|x| x.inner.get_mut()) };

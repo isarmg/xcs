@@ -5,7 +5,7 @@ use tokio_test::{assert_ready, task};
 use tokio_util::codec::{Encoder, FramedWrite};
 
 use bytes::{BufMut, BytesMut};
-use futures_sink::Sink;
+use futures::sink::Sink;
 use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::pin::Pin;

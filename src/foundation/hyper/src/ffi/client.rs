@@ -148,8 +148,8 @@ ffi_fn! {
         req.finalize_request();
 
         let fut = match &mut non_null! { &mut *conn ?= ptr::null_mut() }.tx {
-            Tx::Http1(tx) => futures_util::future::Either::Left(tx.send_request(req.0)),
-            Tx::Http2(tx) => futures_util::future::Either::Right(tx.send_request(req.0)),
+            Tx::Http1(tx) => futures::future::Either::Left(tx.send_request(req.0)),
+            Tx::Http2(tx) => futures::future::Either::Right(tx.send_request(req.0)),
         };
 
         let fut = async move {

@@ -1,6 +1,6 @@
 use super::support;
-use futures_core::Stream;
-use futures_util::pin_mut;
+use futures::Stream;
+use futures::pin_mut;
 use std::fmt;
 use std::future::{ready, Future, Ready};
 use std::task::{Context, Poll};
@@ -113,7 +113,7 @@ async fn unordered() {
     pin_mut!(handle);
 
     let mut task = task::spawn(());
-    let requests = futures_util::stream::iter(&["one", "two"]);
+    let requests = futures::stream::iter(&["one", "two"]);
 
     let svc = mock.call_all(requests).unordered();
     pin_mut!(svc);
@@ -214,7 +214,7 @@ async fn poll_ready_error() {
 
     // "req0" is called, then "req1" receives a poll_ready error so "req2" will never be called.
     // Still the response from "req0" is waited on before ending the `call_all` stream.
-    let requests = futures_util::stream::iter(vec!["req0", "req1", "req2"]);
+    let requests = futures::stream::iter(vec!["req0", "req1", "req2"]);
     let ca = svc.call_all(requests);
     pin_mut!(ca);
     let err = assert_ready!(task.enter(|cx, _| ca.as_mut().poll_next(cx)));
@@ -238,7 +238,7 @@ async fn stream_does_not_block_service() {
     let svc = Buffer::new(ConcurrencyLimit::new(mock, 1), 1);
 
     // Always pending, but should not occupy a concurrency slot.
-    let pending = svc.clone().call_all(futures_util::stream::pending());
+    let pending = svc.clone().call_all(futures::stream::pending());
     pin_mut!(pending);
     assert_pending!(task.enter(|cx, _| pending.as_mut().poll_next(cx)));
 

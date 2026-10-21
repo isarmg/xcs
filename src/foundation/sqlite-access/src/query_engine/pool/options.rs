@@ -3,7 +3,7 @@ use crate::database::Database;
 use crate::error::Error;
 use crate::pool::inner::PoolInner;
 use crate::pool::Pool;
-use futures_core::future::BoxFuture;
+use futures::future::BoxFuture;
 use log::LevelFilter;
 use std::fmt::{self, Debug, Formatter};
 use std::sync::Arc;

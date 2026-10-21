@@ -39,9 +39,11 @@ path = "src/lib.rs"
 version = "1.2"
 path = "../bytes"
 
-[dependencies.futures-core]
-version = "0.3"
-path = "../futures-core"
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
+default-features = false
+features = ["std"]
 
 [dependencies.http]
 version = "1.0.0"

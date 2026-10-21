@@ -3,7 +3,7 @@ use crate::discover::{Change, Discover};
 use crate::load::Load;
 use crate::ready_cache::{error::Failed, ReadyCache};
 use crate::util::rng::{sample_floyd2, HasherRng, Rng};
-use futures_util::future::{self, TryFutureExt};
+use futures::future::{self, TryFutureExt};
 use std::hash::Hash;
 use std::marker::PhantomData;
 use std::{

@@ -6,8 +6,8 @@ use futures::{
     task::Poll,
     Stream,
 };
-use futures_executor::block_on;
-use futures_task::Context;
+use futures::executor::block_on;
+use futures::task::Context;
 use futures_test::task::noop_context;
 
 #[test]

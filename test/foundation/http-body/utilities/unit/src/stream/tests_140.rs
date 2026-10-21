@@ -2,7 +2,7 @@
 mod tests {
     use crate::{BodyExt, BodyStream, StreamBody};
     use bytes::Bytes;
-    use futures_util::StreamExt;
+    use futures::StreamExt;
     use crate::Frame;
     use std::convert::Infallible;
 
@@ -13,7 +13,7 @@ mod tests {
             Ok(Frame::data(Bytes::from(vec![2]))),
             Ok(Frame::data(Bytes::from(vec![3]))),
         ];
-        let stream = futures_util::stream::iter(chunks);
+        let stream = futures::stream::iter(chunks);
         let mut body = StreamBody::new(stream);
 
         assert_eq!(
@@ -57,7 +57,7 @@ mod tests {
             Ok(Frame::data(Bytes::from(vec![2]))),
             Ok(Frame::data(Bytes::from(vec![3]))),
         ];
-        let stream = futures_util::stream::iter(chunks);
+        let stream = futures::stream::iter(chunks);
         let body = StreamBody::new(stream);
 
         let mut stream = BodyStream::new(body);

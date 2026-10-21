@@ -113,7 +113,7 @@ class SuiteCoverageTests(unittest.TestCase):
         ))
 
     def test_foundation_runs_only_selected_library_regressions(self):
-        sqlite, sqlite_units, sqlite_family, consumers, serialization, error_definition, crypto, numeric, precision, command_line, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, join_map, http_body, random_backends, entropy_consumers, system_units, ring, password, idna, numeric_tests, helpers = self.suite("foundation")
+        sqlite, sqlite_units, sqlite_family, consumers, serialization, error_definition, crypto, numeric, precision, command_line, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, join_map, futures, http_body, random_backends, entropy_consumers, system_units, ring, password, idna, numeric_tests, helpers = self.suite("foundation")
         self.assertEqual(sqlite, {"tool": "python3", "args": [".github/scripts/check-sqlite-scope.py"]})
         self.assertEqual(sqlite_units, {"tool": "cargo", "args": ["test", "--locked", "--offline", "--lib", "-p", "sqlite-access"]})
         self.assertEqual(sqlite_family, {"tool": "python3", "args": [".github/scripts/check-sqlite-family.py"]})
@@ -133,6 +133,7 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertEqual(parking, {"tool": "python3", "args": [".github/scripts/check-linux-parking.py"]})
         self.assertEqual(search_process, {"tool": "python3", "args": [".github/scripts/check-linux-search-process.py"]})
         self.assertEqual(join_map, {"tool": "python3", "args": [".github/scripts/check-runtime-join-map.py"]})
+        self.assertEqual(futures, {"tool": "python3", "args": [".github/scripts/check-futures-consolidation.py"]})
         self.assertEqual(http_body, {"tool": "python3", "args": [".github/scripts/check-http-body-consolidation.py"]})
         self.assertEqual(random_backends, {"tool": "python3", "args": [".github/scripts/check-linux-random-backends.py"]})
         self.assertEqual(entropy_consumers, {"tool": "python3", "args": [".github/scripts/check-entropy-consumers.py"]})

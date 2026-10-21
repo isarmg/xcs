@@ -20,15 +20,11 @@ autotests = false
 autobenches = false
 autoexamples = false
 
-[dependencies.futures-channel]
-version = "0.3"
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
+default-features = false
 optional = true
-path = "../futures-channel"
-
-[dependencies.futures-core]
-version = "0.3"
-optional = true
-path = "../futures-core"
 
 [dependencies.js-sys]
 version = "0.3.31"
@@ -40,4 +36,4 @@ path = "../wasm-bindgen"
 
 [features]
 default = []
-futures = ["futures-core", "futures-channel"]
+futures = ["dep:futures", "futures/std", "futures/channel"]

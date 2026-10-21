@@ -1,4 +1,4 @@
-use futures_util::{future, TryFutureExt};
+use futures::{future, TryFutureExt};
 use std::fmt;
 use std::task::{Context, Poll};
 use tower_layer::Layer;

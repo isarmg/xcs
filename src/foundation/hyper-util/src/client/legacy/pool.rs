@@ -12,7 +12,7 @@ use std::task::{self, Poll, ready};
 
 use std::time::{Duration, Instant};
 
-use futures_channel::oneshot;
+use futures::channel::oneshot;
 use tracing::{debug, trace};
 
 use hyper::rt::Timer as _;
@@ -789,7 +789,7 @@ struct IdleTask<T, K: Key> {
 
 impl<T: Poolable + 'static, K: Key> IdleTask<T, K> {
     async fn run(self) {
-        use futures_util::future;
+        use futures::future;
 
         let mut sleep = self.timer.sleep_until(self.timer.now() + self.duration);
         let mut on_pool_drop = self.pool_drop_notifier;

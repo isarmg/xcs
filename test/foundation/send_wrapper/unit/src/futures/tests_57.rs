@@ -2,8 +2,8 @@
 mod tests {
 	use std::thread;
 
-	use futures_executor as executor;
-	use futures_util::{future, stream, StreamExt};
+	use futures::executor;
+	use futures::{future, stream, StreamExt};
 
 	use crate::SendWrapper;
 

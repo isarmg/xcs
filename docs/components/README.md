@@ -18,3 +18,5 @@
 | [SMB 桥接](smb.md) | Samba 协议桥接、VFS 与 SDK 边界 |
 
 业务契约的唯一机器可读入口见 [contracts](../contracts/README.md)；Rust 类型位于 `src/contract/`。过程宏由 `src/macros/` 编译，原始许可与来源见 [集中通知](../../compliance/NOTICE.md)。基础实现的逐项来源、许可和当前路径见 [Rust 来源清单](../THIRD_PARTY_RUST_SOURCES.md)。
+
+基础异步库的能力与来源边界见 [Futures](futures.md)。

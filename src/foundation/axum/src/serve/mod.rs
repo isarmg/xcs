@@ -10,7 +10,7 @@ use std::{
 };
 
 use axum_core::{body::Body, extract::Request, response::Response};
-use futures_util::FutureExt;
+use futures::FutureExt;
 use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 #[cfg(any(feature = "http1", feature = "http2"))]
@@ -452,7 +452,7 @@ mod private {
         task::{Context, Poll},
     };
 
-    pub struct ServeFuture(pub(super) futures_util::future::BoxFuture<'static, io::Result<()>>);
+    pub struct ServeFuture(pub(super) futures::future::BoxFuture<'static, io::Result<()>>);
 
     impl Future for ServeFuture {
         type Output = io::Result<()>;

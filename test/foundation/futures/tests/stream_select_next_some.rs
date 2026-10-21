@@ -56,10 +56,10 @@ fn select() {
     });
 }
 
-// Check that `select!` macro does not fail when importing from `futures_util`.
+// Check that importing the `select!` macro at the call site works.
 #[test]
-fn futures_util_select() {
-    use futures_util::select;
+fn imported_select_macro() {
+    use futures::select;
 
     // Checks that even though `async_tasks` will yield a `None` and return
     // `is_terminated() == true` during the first poll, it manages to toggle

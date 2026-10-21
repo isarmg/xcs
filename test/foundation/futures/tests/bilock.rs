@@ -7,7 +7,7 @@ use futures::task::{Context, Poll};
 use futures::Future;
 use futures::StreamExt;
 use futures_test::task::noop_context;
-use futures_util::lock::BiLock;
+use futures::lock::BiLock;
 use std::pin::Pin;
 use std::thread;
 

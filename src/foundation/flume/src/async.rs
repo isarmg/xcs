@@ -1,11 +1,11 @@
 //! Futures and other types that allow asynchronous interaction with channels.
 
 use crate::*;
-use futures_core::{
+use futures::{
     future::FusedFuture,
     stream::{FusedStream, Stream},
 };
-use futures_sink::Sink;
+use futures::sink::Sink;
 use spin1::Mutex as Spinlock;
 use std::fmt::{Debug, Formatter};
 use std::{

@@ -38,10 +38,10 @@ repository = "https://github.com/hyperium/hyper"
 capi = []
 client = ["dep:want", "dep:pin-project-lite", "dep:smallvec"]
 default = []
-ffi = ["http-body/utilities", "dep:futures-util"]
+ffi = ["http-body/utilities", "dep:futures", "futures/alloc", "futures/utilities"]
 full = ["client", "http1", "http2", "server"]
-http1 = ["dep:atomic-waker", "dep:futures-core", "dep:httparse", "dep:itoa"]
-http2 = ["dep:atomic-waker", "dep:futures-channel", "dep:futures-core"]
+http1 = ["dep:atomic-waker", "dep:futures", "futures/std", "dep:httparse", "dep:itoa"]
+http2 = ["dep:atomic-waker", "dep:futures", "futures/channel", "futures/std"]
 nightly = []
 server = ["dep:httpdate", "dep:pin-project-lite", "dep:smallvec"]
 tracing = ["dep:tracing"]
@@ -59,22 +59,11 @@ path = "../atomic-waker"
 version = "1.2"
 path = "../bytes"
 
-[dependencies.futures-channel]
-version = "0.3"
-optional = true
-path = "../futures-channel"
-
-[dependencies.futures-core]
-version = "0.3.31"
-optional = true
-path = "../futures-core"
-
-[dependencies.futures-util]
-version = "0.3"
-features = ["alloc"]
-optional = true
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-util"
+optional = true
 
 [dependencies.http]
 version = "1"

@@ -2,8 +2,8 @@ use super::ChannelSendError;
 use crate::intrusive_double_linked_list::ListNode;
 use core::marker::PhantomData;
 use core::pin::Pin;
-use futures_core::future::{FusedFuture, Future};
-use futures_core::task::{Context, Poll, Waker};
+use futures::future::{FusedFuture, Future};
+use futures::task::{Context, Poll, Waker};
 
 /// Conveys additional information regarding the status of a channel
 /// following a `close` operation.

@@ -8,7 +8,7 @@ use std::sync::{
 };
 use std::task::{Context, Poll};
 
-use futures_util::stream::{FuturesUnordered, Stream};
+use futures::stream::{FuturesUnordered, Stream};
 
 use crate::common::lock::LockResultExt;
 
@@ -206,7 +206,7 @@ impl hyper_executor {
         // Drain the queue first.
         self.drain_queue();
 
-        let waker = futures_util::task::waker_ref(&self.is_woken);
+        let waker = futures::task::waker_ref(&self.is_woken);
         let mut cx = Context::from_waker(&waker);
 
         loop {
@@ -255,7 +255,7 @@ impl hyper_executor {
     }
 }
 
-impl futures_util::task::ArcWake for ExecWaker {
+impl futures::task::ArcWake for ExecWaker {
     fn wake_by_ref(me: &Arc<ExecWaker>) {
         me.0.store(true, Ordering::SeqCst);
     }

@@ -4,7 +4,7 @@ use std::io;
 use std::task::{Context, Poll};
 
 use bytes::{BufMut, Bytes, BytesMut};
-use futures_core::ready;
+use futures::ready;
 use http::{HeaderMap, HeaderName, HeaderValue};
 use http_body::Frame;
 
@@ -239,7 +239,7 @@ impl Decoder {
 
     #[cfg(test)]
     async fn decode_fut<R: MemRead>(&mut self, body: &mut R) -> Result<Frame<Bytes>, io::Error> {
-        futures_util::future::poll_fn(move |cx| self.decode(cx, body)).await
+        futures::future::poll_fn(move |cx| self.decode(cx, body)).await
     }
 }
 

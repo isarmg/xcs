@@ -13,7 +13,7 @@ mod tests {
         // // First, let's just check that the Mock would normally return an
         // // error on an unexpected write, even if the buffer is empty...
         // let mut mock = Mock::new().build();
-        // futures_util::future::poll_fn(|cx| {
+        // futures::future::poll_fn(|cx| {
         //     Pin::new(&mut mock).poll_write_buf(cx, &mut Cursor::new(&[]))
         // })
         // .await
@@ -45,7 +45,7 @@ mod tests {
 
         // We expect a `parse` to be not ready, and so can't await it directly.
         // Rather, this `poll_fn` will wrap the `Poll` result.
-        futures_util::future::poll_fn(|cx| {
+        futures::future::poll_fn(|cx| {
             let parse_ctx = ParseContext {
                 cached_headers: &mut None,
                 req_method: &mut None,

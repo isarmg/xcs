@@ -8,7 +8,7 @@ use crate::{
 };
 use core::marker::PhantomData;
 use core::pin::Pin;
-use futures_core::{
+use futures::{
     future::{FusedFuture, Future},
     task::{Context, Poll, Waker},
 };

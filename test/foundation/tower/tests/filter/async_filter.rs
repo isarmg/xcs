@@ -1,7 +1,7 @@
 #![cfg(feature = "filter")]
 #[path = "../support.rs"]
 mod support;
-use futures_util::future::pin_mut;
+use futures::future::pin_mut;
 use std::future::{poll_fn, Future};
 use tower::filter::{error::Error, AsyncFilter};
 use tower_service::Service;
@@ -36,7 +36,7 @@ async fn passthrough_sync() {
         responses.push(exchange);
     }
 
-    futures_util::future::join_all(responses).await;
+    futures::future::join_all(responses).await;
     th.await.unwrap();
 }
 

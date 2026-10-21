@@ -1,8 +1,8 @@
 //! A cache of services.
 
 use super::error;
-use futures_core::Stream;
-use futures_util::{stream::FuturesUnordered, task::AtomicWaker};
+use futures::Stream;
+use futures::{stream::FuturesUnordered, task::AtomicWaker};
 pub use indexmap::Equivalent;
 use indexmap::IndexMap;
 use std::fmt;

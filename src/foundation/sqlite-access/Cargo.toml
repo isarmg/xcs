@@ -60,16 +60,11 @@ path = "../either"
 version = "5.2.0"
 path = "../event-listener"
 
-[dependencies.futures-core]
-version = "0.3.32"
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-core"
-
-[dependencies.futures-util]
-version = "0.3.32"
-features = ["alloc", "sink"]
-default-features = false
-path = "../futures-util"
+features = ["alloc", "channel", "executor", "sink", "std", "utilities"]
 
 [dependencies.hash-table]
 version = "0.17.1"
@@ -155,16 +150,6 @@ path = "../flume"
 [dependencies.form_urlencoded]
 version = "1.2.2"
 path = "../form_urlencoded"
-
-[dependencies.futures-channel]
-version = "0.3.32"
-features = ["sink", "alloc", "std"]
-default-features = false
-path = "../futures-channel"
-
-[dependencies.futures-executor]
-version = "0.3.32"
-path = "../futures-executor"
 
 [dependencies.futures-intrusive]
 version = "0.5.0"

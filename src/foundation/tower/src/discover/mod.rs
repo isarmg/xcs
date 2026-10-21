@@ -13,7 +13,7 @@
 //!
 //! ```rust
 //! use std::future::poll_fn;
-//! use futures_util::pin_mut;
+//! use futures::pin_mut;
 //! use tower::discover::{Change, Discover};
 //! async fn services_monitor<D: Discover>(services: D) {
 //!     pin_mut!(services);
@@ -39,7 +39,7 @@ mod list;
 pub use self::list::ServiceList;
 
 use crate::sealed::Sealed;
-use futures_core::TryStream;
+use futures::TryStream;
 use std::{
     pin::Pin,
     task::{Context, Poll},

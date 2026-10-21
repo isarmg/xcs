@@ -4,7 +4,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use futures_core::ready;
+use futures::ready;
 use crate::Body;
 use pin_project_lite::pin_project;
 

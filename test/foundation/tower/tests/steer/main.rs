@@ -49,7 +49,7 @@ async fn pending_all_ready() {
     let srvs = vec![MyService(42, true), MyService(57, false)];
     let mut st = Steer::new(srvs, |_: &_, _: &[_]| 0);
 
-    let p = futures_util::poll!(std::future::poll_fn(|cx| st.poll_ready(cx)));
+    let p = futures::poll!(std::future::poll_fn(|cx| st.poll_ready(cx)));
     match p {
         Poll::Pending => (),
         _ => panic!(

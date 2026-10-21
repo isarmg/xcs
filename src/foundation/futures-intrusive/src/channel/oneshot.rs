@@ -10,7 +10,7 @@ use crate::{
     NoopLock,
 };
 use core::marker::PhantomData;
-use futures_core::task::{Context, Poll};
+use futures::task::{Context, Poll};
 use lock_api::{Mutex, RawMutex};
 
 fn wake_waiters(waiters: &mut LinkedList<RecvWaitQueueEntry>) {

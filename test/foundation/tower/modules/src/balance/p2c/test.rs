@@ -1,6 +1,6 @@
 use crate::discover::ServiceList;
 use crate::load;
-use futures_util::pin_mut;
+use futures::pin_mut;
 use std::task::Poll;
 use tokio_test::{assert_pending, assert_ready, assert_ready_ok, task};
 use tower_test::{assert_request_eq, mock};

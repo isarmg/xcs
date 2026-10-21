@@ -1,5 +1,5 @@
 use super::*;
-use futures_util::{StreamExt, stream};
+use futures::{StreamExt, stream};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[test]

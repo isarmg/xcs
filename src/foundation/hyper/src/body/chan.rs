@@ -77,7 +77,7 @@ impl Sender {
 
     #[cfg(test)]
     pub(crate) async fn ready(&mut self) -> crate::Result<()> {
-        futures_util::future::poll_fn(|cx| self.poll_ready(cx)).await
+        futures::future::poll_fn(|cx| self.poll_ready(cx)).await
     }
 
     #[cfg(test)]

@@ -11,7 +11,7 @@ use core::{
     ops::{Deref, DerefMut},
     pin::Pin,
 };
-use futures_core::{
+use futures::{
     future::{FusedFuture, Future},
     task::{Context, Poll, Waker},
 };

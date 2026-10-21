@@ -1,7 +1,7 @@
 #![warn(rust_2018_idioms)]
 
 use bytes::Bytes;
-use futures_util::SinkExt;
+use futures::SinkExt;
 use std::io::{self, Error, ErrorKind};
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{Encoder, FramedWrite};

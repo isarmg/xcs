@@ -1,5 +1,5 @@
 use bytes::{Bytes, BytesMut};
-use futures_core::stream::Stream;
+use futures::stream::Stream;
 use pin_project_lite::pin_project;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -40,7 +40,7 @@ pin_project! {
     ///
     /// [`AsyncRead`]: tokio::io::AsyncRead
     /// [`StreamReader`]: crate::io::StreamReader
-    /// [`Stream`]: futures_core::Stream
+    /// [`Stream`]: futures::Stream
     #[derive(Debug)]
     pub struct ReaderStream<R> {
         // Reader itself.
@@ -64,7 +64,7 @@ impl<R: AsyncRead> ReaderStream<R> {
     /// requiring a major version bump.
     ///
     /// [`AsyncRead`]: tokio::io::AsyncRead
-    /// [`Stream`]: futures_core::Stream
+    /// [`Stream`]: futures::Stream
     pub fn new(reader: R) -> Self {
         ReaderStream {
             reader: Some(reader),
@@ -78,7 +78,7 @@ impl<R: AsyncRead> ReaderStream<R> {
     /// with a specific read buffer initial capacity.
     ///
     /// [`AsyncRead`]: tokio::io::AsyncRead
-    /// [`Stream`]: futures_core::Stream
+    /// [`Stream`]: futures::Stream
     pub fn with_capacity(reader: R, capacity: usize) -> Self {
         ReaderStream {
             reader: Some(reader),

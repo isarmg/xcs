@@ -5,7 +5,7 @@ use crate::{
     set_status::SetStatus,
 };
 use bytes::Bytes;
-use futures_util::FutureExt;
+use futures::FutureExt;
 use http::{header, HeaderValue, Method, Request, Response, StatusCode};
 use http_body::{BodyExt, Empty};
 use percent_encoding::percent_decode;
@@ -434,7 +434,7 @@ where
 opaque_future! {
     /// Response future of [`ServeDir`].
     pub type InfallibleResponseFuture<ReqBody, F> =
-        futures_util::future::Map<
+        futures::future::Map<
             ResponseFuture<ReqBody, F>,
             fn(Result<Response<ResponseBody>, io::Error>) -> Result<Response<ResponseBody>, Infallible>,
         >;

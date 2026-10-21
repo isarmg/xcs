@@ -40,15 +40,15 @@ path = "../http"
 
 [features]
 default = []
-utilities = ["dep:futures-core", "dep:pin-project-lite"]
+utilities = ["dep:futures", "dep:pin-project-lite"]
 channel = ["utilities", "dep:tokio"]
 full = ["channel"]
 
-[dependencies.futures-core]
-version = "0.3"
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
 optional = true
-path = "../futures-core"
 
 [dependencies.pin-project-lite]
 version = "0.2"

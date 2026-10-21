@@ -1,4 +1,4 @@
-use futures_util::TryStreamExt;
+use futures::TryStreamExt;
 use rand::{rngs::Xoshiro256PlusPlus, RngExt, SeedableRng};
 use sqlite_access::sqlite::{SqliteConnectOptions, SqliteOperation, SqlitePoolOptions};
 use sqlite_access::SqlSafeStr;

@@ -161,7 +161,7 @@ where
     }
 
     fn call(&mut self, req: Request<B>) -> Self::Future {
-        use futures_util::future::FutureExt;
+        use futures::future::FutureExt;
 
         let req = req.map(Body::new);
 

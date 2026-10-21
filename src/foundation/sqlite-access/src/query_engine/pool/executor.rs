@@ -1,7 +1,7 @@
 use either::Either;
-use futures_core::future::BoxFuture;
-use futures_core::stream::BoxStream;
-use futures_util::TryStreamExt;
+use futures::future::BoxFuture;
+use futures::stream::BoxStream;
+use futures::TryStreamExt;
 
 use crate::database::Database;
 use crate::error::Error;
@@ -88,7 +88,7 @@ where
 //     fn fetch_many<'e, 'q: 'e, E: 'q>(
 //         self,
 //         query: E,
-//     ) -> futures_core::stream::BoxStream<
+//     ) -> futures::stream::BoxStream<
 //         'e,
 //         Result<
 //             either::Either<<DB as crate::database::Database>::QueryResult, DB::Row>,
@@ -106,7 +106,7 @@ where
 //     fn fetch_optional<'e, 'q: 'e, E: 'q>(
 //         self,
 //         query: E,
-//     ) -> futures_core::future::BoxFuture<'e, Result<Option<DB::Row>, crate::error::Error>>
+//     ) -> futures::future::BoxFuture<'e, Result<Option<DB::Row>, crate::error::Error>>
 //     where
 //         'c: 'e,
 //         E: crate::executor::Execute<'q, DB>,
@@ -119,7 +119,7 @@ where
 //         self,
 //         sql: &'q str,
 //         parameters: &'e [<DB as crate::database::Database>::TypeInfo],
-//     ) -> futures_core::future::BoxFuture<
+//     ) -> futures::future::BoxFuture<
 //         'e,
 //         Result<<DB as crate::database::Database>::Statement<'q>, crate::error::Error>,
 //     >
@@ -135,7 +135,7 @@ where
 //     fn describe<'e, 'q: 'e>(
 //         self,
 //         sql: &'q str,
-//     ) -> futures_core::future::BoxFuture<
+//     ) -> futures::future::BoxFuture<
 //         'e,
 //         Result<crate::describe::Describe<DB>, crate::error::Error>,
 //     >

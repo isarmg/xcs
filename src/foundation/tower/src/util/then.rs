@@ -1,4 +1,4 @@
-use futures_util::{future, FutureExt};
+use futures::{future, FutureExt};
 use std::{
     fmt,
     future::Future,

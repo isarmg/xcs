@@ -2,8 +2,8 @@
 
 use crate::callback::{Interval, Timeout};
 
-use futures_channel::{mpsc, oneshot};
-use futures_core::stream::Stream;
+use futures::channel::{mpsc, oneshot};
+use futures::stream::Stream;
 use std::convert::TryFrom;
 use std::future::Future;
 use std::pin::Pin;
@@ -25,7 +25,7 @@ use wasm_bindgen::prelude::*;
 ///
 /// ```no_run
 /// use gloo_timers::future::TimeoutFuture;
-/// use futures_util::future::{select, Either};
+/// use futures::future::{select, Either};
 /// use wasm_bindgen_futures::spawn_local;
 ///
 /// spawn_local(async {
@@ -129,7 +129,7 @@ impl IntervalStream {
     /// # Example
     ///
     /// ```compile_fail
-    /// use futures_util::stream::StreamExt;
+    /// use futures::stream::StreamExt;
     /// use gloo_timers::future::IntervalStream;
     /// use wasm_bindgen_futures::spawn_local;
     ///

@@ -63,7 +63,7 @@ impl Body {
     ///
     /// ```
     /// # use reqwest::Body;
-    /// # use futures_util;
+    /// # use futures;
     /// # fn main() {
     /// let chunks: Vec<Result<_, ::std::io::Error>> = vec![
     ///     Ok("hello"),
@@ -71,7 +71,7 @@ impl Body {
     ///     Ok("world"),
     /// ];
     ///
-    /// let stream = futures_util::stream::iter(chunks);
+    /// let stream = futures::stream::iter(chunks);
     ///
     /// let body = Body::wrap_stream(stream);
     /// # }
@@ -84,7 +84,7 @@ impl Body {
     #[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
     pub fn wrap_stream<S>(stream: S) -> Body
     where
-        S: futures_core::stream::TryStream + Send + 'static,
+        S: futures::stream::TryStream + Send + 'static,
         S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
         Bytes: From<S::Ok>,
     {
@@ -94,11 +94,11 @@ impl Body {
     #[cfg(any(feature = "stream"))]
     pub(crate) fn stream<S>(stream: S) -> Body
     where
-        S: futures_core::stream::TryStream + Send + 'static,
+        S: futures::stream::TryStream + Send + 'static,
         S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
         Bytes: From<S::Ok>,
     {
-        use futures_util::TryStreamExt;
+        use futures::TryStreamExt;
         use http_body::Frame;
         use http_body::StreamBody;
 
@@ -128,7 +128,7 @@ impl Body {
     ///
     /// ```
     /// # use reqwest::Body;
-    /// # use futures_util;
+    /// # use futures;
     /// # fn main() {
     /// let content = "hello,world!".to_string();
     ///

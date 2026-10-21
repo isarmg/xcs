@@ -4,7 +4,7 @@
 #![warn(missing_debug_implementations, missing_docs, unreachable_pub)]
 
 use crate::filter::AsyncFilter;
-use futures_util::future::Either;
+use futures::future::Either;
 use pin_project_lite::pin_project;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;

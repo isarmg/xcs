@@ -28,7 +28,7 @@ compile_error!("the internal reqwest component is native-only; use the Web Fetch
 
 // Ignore `unused_crate_dependencies` warnings.
 // Used in many features that they're not worth making it optional.
-use futures_core as _;
+use futures as _;
 use sync_wrapper as _;
 
 

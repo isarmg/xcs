@@ -1,6 +1,6 @@
 use super::{future::ResponseFuture, SpawnReadyLayer};
 use crate::{util::ServiceExt, BoxError};
-use futures_util::future::TryFutureExt;
+use futures::future::TryFutureExt;
 use std::{
     future::Future,
     pin::Pin,

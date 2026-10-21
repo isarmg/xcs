@@ -94,7 +94,7 @@ async fn completed_and_old_generations_use_quota_before_body_poll_and_survive_re
     assert_eq!(response.status(), StatusCode::OK);
     let polled = Arc::new(AtomicBool::new(false));
     let observed = polled.clone();
-    let body = Body::from_stream(futures_util::stream::poll_fn(move |_| {
+    let body = Body::from_stream(futures::stream::poll_fn(move |_| {
         observed.store(true, Ordering::SeqCst);
         std::task::Poll::Ready(Some(Ok::<_, std::io::Error>(Bytes::from_static(b"data"))))
     }));
@@ -126,7 +126,7 @@ async fn interrupted_and_checksum_failed_bytes_remain_charged_after_restart() {
     let limit = 2 * METADATA_ALLOWANCE + 8;
     let app = application_config(root.path(), config(root.path(), limit));
     let (token, _, _) = authenticated(&app).await;
-    let body = Body::from_stream(futures_util::stream::iter([
+    let body = Body::from_stream(futures::stream::iter([
         Ok(Bytes::from_static(b"abc")),
         Err(std::io::Error::other("disconnect")),
     ]));
@@ -182,9 +182,9 @@ async fn cancellation_settles_actual_unknown_tail_and_retry_never_overwrites_it(
     let (token, _, _) = authenticated(&app).await;
     let expected = b"abcdefghij";
     let hash = blake3::hash(expected).to_hex().to_string();
-    let stream = futures_util::StreamExt::chain(
-        futures_util::stream::once(async { Ok::<_, std::io::Error>(Bytes::from_static(b"abc")) }),
-        futures_util::stream::pending(),
+    let stream = futures::StreamExt::chain(
+        futures::stream::once(async { Ok::<_, std::io::Error>(Bytes::from_static(b"abc")) }),
+        futures::stream::pending(),
     );
     let upload_app = app.clone();
     let upload_request = request(&token, "item", 1, 10, &hash, Body::from_stream(stream));
@@ -288,9 +288,9 @@ async fn upload_idle_timeout_preserves_tail_and_allows_verified_retry() {
     let app = application_config(root.path(), settings);
     let (token, _, _) = authenticated(&app).await;
     let hash = blake3::hash(b"abcdefghij").to_hex().to_string();
-    let stream = futures_util::StreamExt::chain(
-        futures_util::stream::once(async { Ok::<_, std::io::Error>(Bytes::from_static(b"abc")) }),
-        futures_util::stream::pending(),
+    let stream = futures::StreamExt::chain(
+        futures::stream::once(async { Ok::<_, std::io::Error>(Bytes::from_static(b"abc")) }),
+        futures::stream::pending(),
     );
     let response = app
         .clone()
@@ -344,7 +344,7 @@ async fn upload_total_timeout_retains_unfinished_evidence_despite_progress() {
     let app = application_config(root.path(), settings);
     let (token, _, _) = authenticated(&app).await;
     let hash = blake3::hash(&[b'x'; 100]).to_hex().to_string();
-    let stream = futures_util::stream::unfold((), |_| async {
+    let stream = futures::stream::unfold((), |_| async {
         tokio::time::sleep(Duration::from_millis(10)).await;
         Some((Ok::<_, std::io::Error>(Bytes::from_static(b"x")), ()))
     });
@@ -380,7 +380,7 @@ async fn account_upload_slots_are_shared_across_items_and_released_on_cancel() {
     for item in ["one", "two"] {
         let (ready_tx, ready_rx) = tokio::sync::oneshot::channel();
         let mut ready = Some(ready_tx);
-        let stream = futures_util::stream::poll_fn(move |_| {
+        let stream = futures::stream::poll_fn(move |_| {
             if let Some(ready) = ready.take() {
                 let _ = ready.send(());
             }

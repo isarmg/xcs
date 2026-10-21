@@ -11,10 +11,10 @@ use std::task::Poll;
 use std::thread;
 use std::time::Duration;
 
-use futures_channel::{mpsc, oneshot};
-use futures_util::future::{self, FutureExt, TryFutureExt};
-use futures_util::stream::StreamExt;
-use futures_util::{self, Stream};
+use futures::channel::{mpsc, oneshot};
+use futures::future::{self, FutureExt, TryFutureExt};
+use futures::stream::StreamExt;
+use futures::{self, Stream};
 use http_body::BodyExt;
 use http_body::{Empty, Full, StreamBody};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};

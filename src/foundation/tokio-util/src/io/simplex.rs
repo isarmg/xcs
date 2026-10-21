@@ -4,7 +4,7 @@ use crate::util::poll_proceed;
 
 use bytes::Buf;
 use bytes::BytesMut;
-use futures_core::ready;
+use futures::ready;
 use std::io::Error as IoError;
 use std::io::ErrorKind as IoErrorKind;
 use std::io::IoSlice;

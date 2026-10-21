@@ -1,6 +1,6 @@
 use bytes::Bytes;
-use futures_core::stream::Stream;
-use futures_sink::Sink;
+use futures::stream::Stream;
+use futures::sink::Sink;
 use pin_project_lite::pin_project;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -13,7 +13,7 @@ pin_project! {
     ///
     /// [`Bytes`]: bytes::Bytes
     /// [`SinkWriter`]: crate::io::SinkWriter
-    /// [`Sink`]: futures_sink::Sink
+    /// [`Sink`]: futures::sink::Sink
     #[derive(Debug)]
     pub struct CopyToBytes<S> {
         #[pin]

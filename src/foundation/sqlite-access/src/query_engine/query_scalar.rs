@@ -1,6 +1,6 @@
 use either::Either;
-use futures_core::stream::BoxStream;
-use futures_util::{StreamExt, TryFutureExt, TryStreamExt};
+use futures::stream::BoxStream;
+use futures::{StreamExt, TryFutureExt, TryStreamExt};
 
 use crate::arguments::IntoArguments;
 use crate::database::{Database, HasStatementCache};

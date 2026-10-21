@@ -58,7 +58,7 @@ mod tests {
             let mut ext_cnt = 0;
             let mut trailers_cnt = 0;
             loop {
-                let result = futures_util::future::poll_fn(|cx| {
+                let result = futures::future::poll_fn(|cx| {
                     state.step(
                         cx,
                         rdr,
@@ -90,7 +90,7 @@ mod tests {
             let mut ext_cnt = 0;
             let mut trailers_cnt = 0;
             loop {
-                let result = futures_util::future::poll_fn(|cx| {
+                let result = futures::future::poll_fn(|cx| {
                     state.step(
                         cx,
                         rdr,

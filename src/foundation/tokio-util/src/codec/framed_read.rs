@@ -1,11 +1,11 @@
 use crate::codec::framed_impl::{FramedImpl, ReadFrame};
 use crate::codec::Decoder;
 
-use futures_core::Stream;
+use futures::Stream;
 use tokio::io::AsyncRead;
 
 use bytes::BytesMut;
-use futures_sink::Sink;
+use futures::sink::Sink;
 use pin_project_lite::pin_project;
 use std::fmt;
 use std::pin::Pin;
@@ -24,7 +24,7 @@ pin_project! {
     /// future only holds onto a reference to the underlying stream, so dropping it will
     /// never lose a value.
     ///
-    /// [`Stream`]: futures_core::Stream
+    /// [`Stream`]: futures::Stream
     /// [`AsyncRead`]: tokio::io::AsyncRead
     /// [`codec`]: crate::codec
     /// [`tokio_stream::StreamExt::next`]: https://docs.rs/tokio-stream/latest/tokio_stream/trait.StreamExt.html#method.next

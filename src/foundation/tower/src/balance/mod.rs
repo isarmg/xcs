@@ -22,9 +22,9 @@
 //! use tower::balance::p2c::Balance;
 //! use tower::load::Load;
 //! use tower::{Service, ServiceExt};
-//! use futures_util::pin_mut;
-//! # use futures_core::Stream;
-//! # use futures_util::StreamExt;
+//! use futures::pin_mut;
+//! # use futures::Stream;
+//! # use futures::StreamExt;
 //!
 //! async fn spread<Req, S: Service<Req> + Load>(svc1: S, svc2: S, reqs: impl Stream<Item = Req>)
 //! where

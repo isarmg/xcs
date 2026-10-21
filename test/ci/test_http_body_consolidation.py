@@ -23,13 +23,13 @@ class HttpBodyDependencyTests(unittest.TestCase):
         GATE.validate_dependencies(metadata(["http-body", "bytes", "http"]), ())
 
     def test_utilities_do_not_activate_runtime(self):
-        names = ["http-body", "futures-core", "pin-project-lite"]
+        names = ["http-body", "futures", "pin-project-lite"]
         GATE.validate_dependencies(metadata(names), ("utilities",))
         with self.assertRaisesRegex(AssertionError, "Tokio"):
             GATE.validate_dependencies(metadata(names + ["tokio"]), ("utilities",))
 
     def test_channel_requires_runtime(self):
-        names = ["http-body", "futures-core", "pin-project-lite", "tokio"]
+        names = ["http-body", "futures", "pin-project-lite", "tokio"]
         GATE.validate_dependencies(metadata(names), ("channel",))
         with self.assertRaisesRegex(AssertionError, "Tokio"):
             GATE.validate_dependencies(metadata(names[:-1]), ("channel",))
@@ -38,7 +38,7 @@ class HttpBodyDependencyTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "absorbed"):
             GATE.validate_dependencies(metadata(["http-body", "http-body-util"]), ())
         with self.assertRaisesRegex(AssertionError, "isolation"):
-            GATE.validate_dependencies(metadata(["http-body", "futures-core"]), ())
+            GATE.validate_dependencies(metadata(["http-body", "futures"]), ())
 
 
 if __name__ == "__main__":

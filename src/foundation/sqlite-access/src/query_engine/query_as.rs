@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use either::Either;
-use futures_core::stream::BoxStream;
-use futures_util::{StreamExt, TryStreamExt};
+use futures::stream::BoxStream;
+use futures::{StreamExt, TryStreamExt};
 
 use crate::arguments::IntoArguments;
 use crate::database::{Database, HasStatementCache};

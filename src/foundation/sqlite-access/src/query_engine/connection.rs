@@ -3,7 +3,7 @@ use crate::error::Error;
 
 use crate::sql_str::SqlSafeStr;
 use crate::transaction::{Transaction, TransactionManager};
-use futures_core::future::BoxFuture;
+use futures::future::BoxFuture;
 use log::LevelFilter;
 use std::fmt::Debug;
 use std::future::Future;

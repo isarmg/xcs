@@ -1,6 +1,6 @@
 //! Streaming transfer and atomic publication of verified immutable downloads.
 use super::{Client, Error, response::decode, segment};
-use futures_util::StreamExt;
+use futures::StreamExt;
 use json_codec::Value;
 use std::path::Path;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};

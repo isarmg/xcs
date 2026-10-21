@@ -3,7 +3,7 @@ use crate::error::Error;
 use crate::pool::{MaybePoolConnection, Pool, PoolConnection};
 
 use crate::transaction::Transaction;
-use futures_core::future::BoxFuture;
+use futures::future::BoxFuture;
 use std::ops::{Deref, DerefMut};
 
 /// Acquire connections or transactions from a database in a generic way.
@@ -106,7 +106,7 @@ macro_rules! impl_acquire {
             #[inline]
             fn acquire(
                 self,
-            ) -> futures_core::future::BoxFuture<'c, Result<Self::Connection, $crate::error::Error>>
+            ) -> futures::future::BoxFuture<'c, Result<Self::Connection, $crate::error::Error>>
             {
                 Box::pin(std::future::ready(Ok(self)))
             }
@@ -114,7 +114,7 @@ macro_rules! impl_acquire {
             #[inline]
             fn begin(
                 self,
-            ) -> futures_core::future::BoxFuture<
+            ) -> futures::future::BoxFuture<
                 'c,
                 Result<$crate::transaction::Transaction<'c, $DB>, $crate::error::Error>,
             > {

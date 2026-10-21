@@ -7,7 +7,7 @@ mod tests {
     };
     use std::task::{self, Poll};
 
-    use futures_util::future;
+    use futures::future;
     use tower_service::Service;
     use tower_test::assert_request_eq;
 

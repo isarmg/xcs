@@ -1,5 +1,5 @@
-use futures_core::TryFuture;
-use futures_util::{future, TryFutureExt};
+use futures::TryFuture;
+use futures::{future, TryFutureExt};
 use std::fmt;
 use std::future::Future;
 use std::pin::Pin;

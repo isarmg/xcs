@@ -48,7 +48,7 @@ use core::task::{Context, Poll, Waker};
     feature = "std",
     panic = "unwind"
 ))]
-use futures_util::FutureExt;
+use futures::FutureExt;
 use wasm_bindgen::__rt::marker::ErasableGeneric;
 #[cfg(all(
     all(target_family = "wasm", not(target_os = "wasi")),

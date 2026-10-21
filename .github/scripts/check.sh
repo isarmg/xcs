@@ -64,6 +64,7 @@ case "${1:-}" in
     python3 .github/scripts/check-linux-parking.py
     python3 .github/scripts/check-linux-search-process.py
     python3 .github/scripts/check-runtime-join-map.py
+    python3 .github/scripts/check-futures-consolidation.py
     python3 .github/scripts/check-http-body-consolidation.py
     python3 .github/scripts/check-linux-random-backends.py
     python3 .github/scripts/check-entropy-consumers.py

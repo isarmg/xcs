@@ -18,10 +18,10 @@ autoexamples = false
 [lib]
 name = "futures_intrusive"
 
-[dependencies.futures-core]
-version = "^0.3"
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-core"
 
 [dependencies.lock_api]
 version = "0.4.1"
@@ -33,6 +33,6 @@ optional = true
 path = "../parking_lot"
 
 [features]
-alloc = ["futures-core/alloc"]
+alloc = ["futures/alloc"]
 default = ["std"]
 std = ["alloc", "parking_lot"]

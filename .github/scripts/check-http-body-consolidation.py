@@ -32,7 +32,7 @@ def validate_dependencies(metadata, features):
     if "http-body-util" in names:
         raise AssertionError("absorbed utility package remains in the dependency graph")
     has_utilities = bool(features)
-    for dependency in ("futures-core", "pin-project-lite"):
+    for dependency in ("futures", "pin-project-lite"):
         if (dependency in names) != has_utilities:
             raise AssertionError(f"HTTP body utility dependency isolation failed: {dependency}")
     if ("tokio" in names) != bool(set(features) & {"channel", "full"}):
@@ -87,8 +87,8 @@ def check_retained_tests(root, temporary, target_dir):
         manifest,
     )
     manifest += (
-        '\n[workspace]\n[dev-dependencies.futures-util]\n'
-        f'path = {json.dumps(str(root / "src/foundation/futures-util"))}\nfeatures = ["std"]\n'
+        '\n[workspace]\n[dev-dependencies.futures]\n'
+        f'path = {json.dumps(str(root / "src/foundation/futures"))}\ndefault-features = false\nfeatures = ["std", "utilities", "async-await-macro", "shared-state"]\n'
         '[dev-dependencies.tokio]\n'
         f'path = {json.dumps(str(root / "src/foundation/tokio"))}\nfeatures = ["full"]\n'
         '[[test]]\nname = "is_end_stream"\n'

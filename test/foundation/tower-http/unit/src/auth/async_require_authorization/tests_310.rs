@@ -3,7 +3,7 @@ mod tests {
     #[allow(unused_imports)]
     use super::*;
     use crate::test_helpers::Body;
-    use futures_core::future::BoxFuture;
+    use futures::future::BoxFuture;
     use http::{header, StatusCode};
     use tower::{BoxError, ServiceBuilder, ServiceExt};
 

@@ -5,8 +5,8 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 
-use futures_util::future::poll_fn;
-use futures_util::task::noop_waker_ref;
+use futures::future::poll_fn;
+use futures::task::noop_waker_ref;
 use rustls::pki_types::ServerName;
 use rustls::{ClientConnection, Connection, ServerConnection};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};

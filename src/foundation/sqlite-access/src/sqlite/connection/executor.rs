@@ -1,9 +1,9 @@
 use crate::sqlite::{
     Sqlite, SqliteConnection, SqliteQueryResult, SqliteRow, SqliteStatement, SqliteTypeInfo,
 };
-use futures_core::future::BoxFuture;
-use futures_core::stream::BoxStream;
-use futures_util::{stream, FutureExt, StreamExt, TryFutureExt, TryStreamExt};
+use futures::future::BoxFuture;
+use futures::stream::BoxStream;
+use futures::{stream, FutureExt, StreamExt, TryFutureExt, TryStreamExt};
 use crate::error::Error;
 use crate::executor::{Execute, Executor};
 use crate::sql_str::SqlStr;

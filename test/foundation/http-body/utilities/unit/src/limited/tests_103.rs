@@ -48,7 +48,7 @@ mod tests {
             .map(|it| Frame::data(it.into()))
             .map(Ok::<_, Infallible>);
 
-        StreamBody::new(futures_util::stream::iter(iter))
+        StreamBody::new(futures::stream::iter(iter))
     }
 
     #[tokio::test]

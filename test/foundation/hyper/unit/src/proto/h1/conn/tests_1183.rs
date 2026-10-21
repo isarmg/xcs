@@ -21,7 +21,7 @@ mod tests {
             .unwrap();
 
         b.iter(|| {
-            rt.block_on(futures_util::future::poll_fn(|cx| {
+            rt.block_on(futures::future::poll_fn(|cx| {
                 match conn.poll_read_head(cx) {
                     Poll::Ready(Some(Ok(x))) => {
                         ::test::black_box(&x);

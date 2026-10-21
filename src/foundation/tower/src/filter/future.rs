@@ -33,9 +33,9 @@ opaque_future! {
     ///
     /// [`Filter`]: crate::filter::Filter
     pub type ResponseFuture<R, F> =
-        futures_util::future::Either<
+        futures::future::Either<
             std::future::Ready<Result<R, crate::BoxError>>,
-            futures_util::future::ErrInto<F, crate::BoxError>
+            futures::future::ErrInto<F, crate::BoxError>
         >;
 }
 

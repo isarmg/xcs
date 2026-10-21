@@ -2,7 +2,7 @@
 mod tests {
     use std::convert::TryInto;
 
-    use futures_util::stream;
+    use futures::stream;
 
     use crate::{BodyExt, Full, StreamBody};
 
@@ -39,7 +39,7 @@ mod tests {
             tokio::task::yield_now().await;
             Ok::<_, Infallible>(Frame::data(&b"world!"[..]))
         });
-        let stream = futures_util::StreamExt::chain(one, two);
+        let stream = futures::StreamExt::chain(one, two);
 
         let body = StreamBody::new(stream);
 

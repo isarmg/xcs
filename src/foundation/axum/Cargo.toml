@@ -75,11 +75,11 @@ version = "1.1.0"
 optional = true
 path = "../form_urlencoded"
 
-[dependencies.futures-util]
-version = "0.3"
-features = ["alloc"]
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
 default-features = false
-path = "../futures-util"
+features = ["alloc", "utilities"]
 
 [dependencies.http]
 version = "1.0.0"

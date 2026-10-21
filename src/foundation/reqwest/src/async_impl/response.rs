@@ -270,7 +270,7 @@ impl Response {
     /// # Example
     ///
     /// ```
-    /// use futures_util::StreamExt;
+    /// use futures::StreamExt;
     ///
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut stream = reqwest::get("http://httpbin.org/ip")
@@ -289,7 +289,7 @@ impl Response {
     /// This requires the optional `stream` feature to be enabled.
     #[cfg(feature = "stream")]
     #[cfg_attr(docsrs, doc(cfg(feature = "stream")))]
-    pub fn bytes_stream(self) -> impl futures_core::Stream<Item = crate::Result<Bytes>> {
+    pub fn bytes_stream(self) -> impl futures::Stream<Item = crate::Result<Bytes>> {
         http_body::BodyDataStream::new(self.res.into_body().map_err(crate::error::decode))
     }
 

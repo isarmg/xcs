@@ -1,4 +1,4 @@
-use futures_core::stream::Stream;
+use futures::stream::Stream;
 use std::{io, pin::Pin};
 use tokio_test::{assert_ready, io::Builder, task};
 use tokio_util::codec::{BytesCodec, FramedRead};

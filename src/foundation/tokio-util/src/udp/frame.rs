@@ -1,10 +1,10 @@
 use crate::codec::{Decoder, Encoder};
 
-use futures_core::Stream;
+use futures::Stream;
 use tokio::{io::ReadBuf, net::UdpSocket};
 
 use bytes::{BufMut, BytesMut};
-use futures_sink::Sink;
+use futures::sink::Sink;
 use std::io;
 use std::pin::Pin;
 use std::task::{ready, Context, Poll};
@@ -36,8 +36,8 @@ use std::{
 /// calling [`split`] on the `UdpFramed` returned by this method, which will break
 /// them into separate objects, allowing them to interact more easily.
 ///
-/// [`Stream`]: futures_core::Stream
-/// [`Sink`]: futures_sink::Sink
+/// [`Stream`]: futures::Stream
+/// [`Sink`]: futures::sink::Sink
 /// [`split`]: https://docs.rs/futures/0.3/futures/stream/trait.StreamExt.html#method.split
 #[must_use = "sinks do nothing unless polled"]
 #[derive(Debug)]

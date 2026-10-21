@@ -10,7 +10,7 @@ use axum_core::{
     response::{IntoResponse, Response},
     RequestExt,
 };
-use futures_util::stream::Stream;
+use futures::stream::Stream;
 use http::{
     header::{HeaderMap, CONTENT_TYPE},
     StatusCode,
@@ -38,7 +38,7 @@ use std::{
 ///     routing::post,
 ///     Router,
 /// };
-/// use futures_util::stream::StreamExt;
+/// use futures::stream::StreamExt;
 ///
 /// async fn upload(mut multipart: Multipart) {
 ///     while let Some(mut field) = multipart.next_field().await.unwrap() {

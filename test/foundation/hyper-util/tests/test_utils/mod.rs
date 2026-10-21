@@ -3,8 +3,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::task::{Context, Poll};
 
-use futures_channel::mpsc;
-use futures_util::TryFutureExt;
+use futures::channel::mpsc;
+use futures::TryFutureExt;
 use hyper::Uri;
 use tokio::io::{self, AsyncRead, AsyncWrite, ReadBuf};
 use tokio::net::TcpStream;

@@ -192,7 +192,7 @@ impl<T> JoinQueue<T> {
             return None;
         }
 
-        let waker = futures_util::task::noop_waker();
+        let waker = futures::task::noop_waker();
         let mut cx = Context::from_waker(&waker);
 
         // Since this function is not async and cannot be forced to yield, we should
