@@ -137,6 +137,24 @@ def check_consumers(directory):
         )
 
 
+def check_crypto_namespace(directory):
+    # lock_api is a substring of block_api: compile real unrelated consumers so
+    # an over-broad migration cannot silently corrupt exported crypto macros.
+    extra = ''.join(dependency(name) for name in ('sha2', 'hmac', 'blake2'))
+    extra += dependency('cryptographic-core', ('block-api',))
+    prepare(directory, (), extra_dependencies=extra)
+    fixture = directory / 'tests/crypto_namespace.rs'
+    fixture.write_bytes((FIXTURES / 'crypto_namespace.rs').read_bytes())
+    try:
+        run(
+            ['cargo', 'test', '--offline', '--locked', '--jobs', '1',
+             '--test', 'crypto_namespace', '--', '--test-threads=1'],
+            directory,
+        )
+    finally:
+        fixture.unlink()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--matrix-only', action='store_true')
@@ -149,9 +167,10 @@ def main():
         if not arguments.matrix_only:
             check_behavior(directory)
             check_consumers(directory)
+            check_crypto_namespace(directory)
     print('Synchronization feature graphs, capability negatives and guard-send contract passed')
     if not arguments.matrix_only:
-        print('Six lock behaviors and real native/no-std consumers passed')
+        print('Six lock behaviors, real native/no-std consumers and crypto namespace guard passed')
 
 
 if __name__ == '__main__':

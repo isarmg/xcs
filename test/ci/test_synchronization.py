@@ -22,6 +22,39 @@ class SynchronizationGateTests(unittest.TestCase):
         self.assertEqual(sum(values.count(entry) for values in rows.values()), 1)
         self.assertIn(entry, rows['foundation-platform'])
 
+    def test_full_gate_invokes_crypto_namespace_guard(self):
+        # Execute the entry point, rather than merely looking for its spelling.
+        with patch('sys.argv', ['check-synchronization.py']), \
+                patch.object(gate, 'check_matrix'), \
+                patch.object(gate, 'check_behavior'), \
+                patch.object(gate, 'check_consumers'), \
+                patch.object(gate, 'check_crypto_namespace') as crypto:
+            gate.main()
+        crypto.assert_called_once()
+
+    def test_crypto_namespace_guard_runs_real_fixture(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            (directory / 'tests').mkdir()
+            def inspect_fixture(*args):
+                self.assertEqual(
+                    (directory / 'tests/crypto_namespace.rs').read_bytes(),
+                    (gate.FIXTURES / 'crypto_namespace.rs').read_bytes(),
+                )
+
+            with patch.object(gate, 'prepare') as prepare, \
+                    patch.object(gate, 'run', side_effect=inspect_fixture) as run:
+                gate.check_crypto_namespace(directory)
+            dependencies = prepare.call_args.kwargs['extra_dependencies']
+            for name in ('cryptographic-core', 'sha2', 'hmac', 'blake2'):
+                self.assertIn(name + '={path=', dependencies)
+            self.assertEqual(run.call_args.args[0], [
+                'cargo', 'test', '--offline', '--locked', '--jobs', '1',
+                '--test', 'crypto_namespace', '--', '--test-threads=1',
+            ])
+            self.assertFalse((directory / 'tests/crypto_namespace.rs').exists())
+
     def test_no_std_and_low_level_boundaries(self):
         manifest = tomllib.loads((ROOT / 'src/foundation/synchronization/Cargo.toml').read_text())
         self.assertEqual(manifest['features']['default'], ['locks'])

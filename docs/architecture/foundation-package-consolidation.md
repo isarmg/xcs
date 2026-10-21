@@ -87,3 +87,19 @@
 先处理密码学公共层、命令行、异步运行时及熵源等边界已审查的组合，并补齐多来源测试迁移支持。随后逐批评审解析、配置、数学和其他同族组合；存在构建、依赖或安全问题时调整分组。
 
 包数量减少表示 manifest、依赖边和维护入口减少，不等于删除同等比例源码，也不保证编译时间、二进制体积或运行速度改善。这些收益需要分别测量。
+
+## Namespace migration boundaries
+
+- Match Rust identifiers and the owning namespace, not arbitrary substrings.
+  `lock_api` must never match the suffix of `block_api`; a dependency rename
+  must not rewrite `std::time` or another crate's private nested module.
+- Audit every changed consumer against actual dependency and module ownership.
+  Exact input/output hashes and provenance validation do not prove semantic
+  correctness. Family-only tests are not a substitute for real product consumers.
+- Compile exported macro paths and representative native/WASM consumers before
+  publishing a namespace migration. The synchronization gate also compiles an
+  unrelated cryptographic boundary fixture to detect this regression class; it
+  does not add cryptography to the synchronization package's dependency graph.
+- Review documentation separately: executable doctests need the public crate
+  path, while implementation modules may correctly use `crate::`. Preserve
+  canonical feature names, protocol identifiers, schema URLs and origin notices.

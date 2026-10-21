@@ -16,8 +16,8 @@ macro_rules! buffer_ct_variable {
         where
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
-            core: $crate::bsynchronization::api::CtOutWrapper<$core_ty, $out_size>,
-            buffer: $crate::bsynchronization::api::Buffer<$core_ty>,
+            core: $crate::block_api::CtOutWrapper<$core_ty, $out_size>,
+            buffer: $crate::block_api::Buffer<$core_ty>,
         }
 
         impl<$out_size> core::fmt::Debug for $name<$out_size>
@@ -77,7 +77,7 @@ macro_rules! buffer_ct_variable {
             }
         }
 
-        impl<$out_size> $crate::bsynchronization::api::BlockSizeUser for $name<$out_size>
+        impl<$out_size> $crate::block_api::BlockSizeUser for $name<$out_size>
         where
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
@@ -107,15 +107,15 @@ macro_rules! buffer_ct_variable {
             }
         };
 
-        impl<$out_size> $crate::bsynchronization::api::CoreProxy for $name<$out_size>
+        impl<$out_size> $crate::block_api::CoreProxy for $name<$out_size>
         where
             $out_size: $crate::array::ArraySize + $crate::typenum::IsLessOrEqual<$max_size, Output = $crate::typenum::True>,
         {
-            type Core = $crate::bsynchronization::api::CtOutWrapper<$core_ty, $out_size>;
-            fn compose(core: Self::Core, buffer: $crate::bsynchronization::api::Buffer<Self::Core>) -> Self {
+            type Core = $crate::block_api::CtOutWrapper<$core_ty, $out_size>;
+            fn compose(core: Self::Core, buffer: $crate::block_api::Buffer<Self::Core>) -> Self {
                 Self { core, buffer }
             }
-            fn decompose(self) -> (Self::Core, $crate::bsynchronization::api::Buffer<Self::Core>) {
+            fn decompose(self) -> (Self::Core, $crate::block_api::Buffer<Self::Core>) {
                 let Self { core, buffer } = self;
                 (core, buffer)
             }
@@ -129,7 +129,7 @@ macro_rules! buffer_ct_variable {
             fn update(&mut self, data: &[u8]) {
                 let Self { core, buffer } = self;
                 buffer.digest_blocks(data, |blocks| {
-                    $crate::bsynchronization::api::UpdateCore::update_blocks(core, blocks)
+                    $crate::block_api::UpdateCore::update_blocks(core, blocks)
                 });
             }
         }
@@ -141,7 +141,7 @@ macro_rules! buffer_ct_variable {
             #[inline]
             fn finalize_into(mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = &mut self;
-                $crate::bsynchronization::api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
+                $crate::block_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
             }
         }
 
@@ -152,7 +152,7 @@ macro_rules! buffer_ct_variable {
             #[inline]
             fn finalize_into_reset(&mut self, out: &mut $crate::Output<Self>) {
                 let Self { core, buffer } = self;
-                $crate::bsynchronization::api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
+                $crate::block_api::FixedOutputCore::finalize_fixed_core(core, buffer, out);
                 $crate::Reset::reset(self);
             }
         }
@@ -179,8 +179,8 @@ macro_rules! buffer_ct_variable {
             type SerializedStateSize = $crate::typenum::Sum<
                 <$core_ty as $crate::common_types::hazmat::SerializableState>::SerializedStateSize,
                 $crate::buffer::SerializedBufferSize<
-                    <$core_ty as $crate::bsynchronization::api::BlockSizeUser>::BlockSize,
-                    <$core_ty as $crate::bsynchronization::api::BufferKindUser>::BufferKind,
+                    <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize,
+                    <$core_ty as $crate::block_api::BufferKindUser>::BufferKind,
                 >
             >;
 

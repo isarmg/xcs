@@ -3439,7 +3439,7 @@
         },
         {
           "path": "test/foundation/cryptographic-core/hash/tests/dummy_fixed.rs",
-          "sha256": "4b0e35ba5685131ecd602c8d133285aa5e69624559cca52c834e043099c16092",
+          "sha256": "b4961486a19454c32efed9a5e9fed3b4a7ad3c6c8acc8d0b4cda372fdadc3f66",
           "source": "src/foundation/digest-0.11.3/tests/dummy_fixed.rs",
           "source_sha256_before": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab",
           "origin_directory": "vendor/rust/digest-0.11.3"

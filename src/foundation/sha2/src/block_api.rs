@@ -3,7 +3,7 @@ use core::fmt;
 use cryptographic_core::{
     HashMarker, InvalidOutputSize, Output,
     array::Array,
-    bsynchronization::api::{
+    block_api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, Eager, OutputSizeUser,
         TruncSide, UpdateCore, VariableOutputCore,
     },

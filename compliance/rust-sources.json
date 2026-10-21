@@ -25190,7 +25190,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "d9c9a8ba1cf40b218dd4cc0b21dd0c6adbd2c9382a405ecadd2ffc4e145b7c6c",
+    "compliance/external-tests/foundation.json": "3960db3036001189decf1b1c319d1a6d6c1c85e8dcac65d014c95a0d078703d4",
     "compliance/external-tests/integrated.json": "61167faf558a55d73b6f9312ff3635e5dfb01309856c499e3c4f365c1080c208",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -28564,7 +28564,7 @@
       ]
     },
     "src/foundation/cryptographic-core": {
-      "bytes": 16660,
+      "bytes": 16600,
       "directory": "src/foundation/cryptographic-core",
       "file_count": 3,
       "files": [
@@ -28585,7 +28585,7 @@
         {
           "origin_directory": "vendor/rust/digest-0.11.3",
           "path": "test/foundation/cryptographic-core/hash/tests/dummy_fixed.rs",
-          "sha256": "4b0e35ba5685131ecd602c8d133285aa5e69624559cca52c834e043099c16092",
+          "sha256": "b4961486a19454c32efed9a5e9fed3b4a7ad3c6c8acc8d0b4cda372fdadc3f66",
           "source": "src/foundation/digest-0.11.3/tests/dummy_fixed.rs",
           "source_sha256_before": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab"
         }
@@ -52208,9 +52208,9 @@
         "Cargo.toml": "e0aa604e41e20e2c68c43e02ccddd00d4c33c135607e9acd9a9720959dd0729b",
         "benches/mod.rs": "7471bea770ee4430369760192a51141d82f224a1052f71587e0d4ef2751b6680",
         "src/as_bytes.rs": "4e00472aa326ad60bbaf9fafc8456c886f081ba1a8ae8614b1b6d7dbb93533fc",
-        "src/buffered.rs": "f174a94dc73f6edffbd715480b00721e772aa91074757b5c357bc375d86cc737",
+        "src/buffered.rs": "329cfa2f230c97eb9f6dbb7c48d4e6f599fe59568a9af528f9451c1804759984",
         "src/consts.rs": "03edc1d4697a6074c9389202324444f27625ef11f17d34cc86b83d0dda920e79",
-        "src/lib.rs": "605dadb54c250cb1710bde8f11e27df67b25ed3a860f79c45a8a3d4ce26c2151",
+        "src/lib.rs": "751d91d97fbe74e226bd769fcaf771a0955259dca0966fe3103fe8e0ebf55a46",
         "src/macros.rs": "fb094835a032540296ca9752334734caa33c23372282d90036cba4ddadc8c2bf",
         "src/simd.rs": "79d6d11d14664c908c2f6a2120c23e8de0e0422b610a8b838aa95ba469ef43fc",
         "src/simd/simd_opt.rs": "b254d82005e288f1d07531ef71b2468be0bc70ae9bdba1b46001acac4db283fe",
@@ -52219,7 +52219,7 @@
         "src/simd/simdint.rs": "3b506bb05761752142f61ca8de138958af9a050ddcfe5bbf454dd9a003bf71c3",
         "src/simd/simdop.rs": "6154f31c9675f33ba476eb6d5378deda657afc79ad43be1c9257f4f4306e43ce",
         "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13",
-        "src/variable.rs": "30f275fe60ff4a7140f1f2507f68a965cc7e4f8b8acb5dcd25b534ecae42c0b5"
+        "src/variable.rs": "2dbbf27348cfe22c588d1bf46ca6d468d76808967449b0c49e89a0d3f05e948d"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -52280,9 +52280,9 @@
         "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
         "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
         "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
-        "src/hash/buffer_macros/fixed.rs": "4fc5b83b607fd17f1f4320ab21d90cacc7d3b286c00d9b8c1c9caf6f187ce7e7",
-        "src/hash/buffer_macros/variable.rs": "d2921761290197eb79ad61d2c4a5b2e9b4738ee7a5a079b2a34261e39d222fc9",
-        "src/hash/buffer_macros/xof.rs": "91bfebf405f030fdd5bb8f45c6645185b842626bd8fbb16f4732f345f2dbeb4a",
+        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
+        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
+        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
         "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
         "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
         "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
@@ -52333,9 +52333,9 @@
         "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
         "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
         "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
-        "src/hash/buffer_macros/fixed.rs": "4fc5b83b607fd17f1f4320ab21d90cacc7d3b286c00d9b8c1c9caf6f187ce7e7",
-        "src/hash/buffer_macros/variable.rs": "d2921761290197eb79ad61d2c4a5b2e9b4738ee7a5a079b2a34261e39d222fc9",
-        "src/hash/buffer_macros/xof.rs": "91bfebf405f030fdd5bb8f45c6645185b842626bd8fbb16f4732f345f2dbeb4a",
+        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
+        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
+        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
         "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
         "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
         "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
@@ -59042,9 +59042,9 @@
         "Cargo.toml": "e0aa604e41e20e2c68c43e02ccddd00d4c33c135607e9acd9a9720959dd0729b",
         "benches/mod.rs": "7471bea770ee4430369760192a51141d82f224a1052f71587e0d4ef2751b6680",
         "src/as_bytes.rs": "4e00472aa326ad60bbaf9fafc8456c886f081ba1a8ae8614b1b6d7dbb93533fc",
-        "src/buffered.rs": "f174a94dc73f6edffbd715480b00721e772aa91074757b5c357bc375d86cc737",
+        "src/buffered.rs": "329cfa2f230c97eb9f6dbb7c48d4e6f599fe59568a9af528f9451c1804759984",
         "src/consts.rs": "03edc1d4697a6074c9389202324444f27625ef11f17d34cc86b83d0dda920e79",
-        "src/lib.rs": "605dadb54c250cb1710bde8f11e27df67b25ed3a860f79c45a8a3d4ce26c2151",
+        "src/lib.rs": "751d91d97fbe74e226bd769fcaf771a0955259dca0966fe3103fe8e0ebf55a46",
         "src/macros.rs": "fb094835a032540296ca9752334734caa33c23372282d90036cba4ddadc8c2bf",
         "src/simd.rs": "79d6d11d14664c908c2f6a2120c23e8de0e0422b610a8b838aa95ba469ef43fc",
         "src/simd/simd_opt.rs": "b254d82005e288f1d07531ef71b2468be0bc70ae9bdba1b46001acac4db283fe",
@@ -59053,7 +59053,7 @@
         "src/simd/simdint.rs": "3b506bb05761752142f61ca8de138958af9a050ddcfe5bbf454dd9a003bf71c3",
         "src/simd/simdop.rs": "6154f31c9675f33ba476eb6d5378deda657afc79ad43be1c9257f4f4306e43ce",
         "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13",
-        "src/variable.rs": "30f275fe60ff4a7140f1f2507f68a965cc7e4f8b8acb5dcd25b534ecae42c0b5"
+        "src/variable.rs": "2dbbf27348cfe22c588d1bf46ca6d468d76808967449b0c49e89a0d3f05e948d"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -60165,9 +60165,9 @@
         "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
         "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
         "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
-        "src/hash/buffer_macros/fixed.rs": "4fc5b83b607fd17f1f4320ab21d90cacc7d3b286c00d9b8c1c9caf6f187ce7e7",
-        "src/hash/buffer_macros/variable.rs": "d2921761290197eb79ad61d2c4a5b2e9b4738ee7a5a079b2a34261e39d222fc9",
-        "src/hash/buffer_macros/xof.rs": "91bfebf405f030fdd5bb8f45c6645185b842626bd8fbb16f4732f345f2dbeb4a",
+        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
+        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
+        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
         "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
         "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
         "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
@@ -62226,11 +62226,11 @@
       "directory": "src/foundation/hmac",
       "files_sha256": {
         "Cargo.toml": "89c0ceb1bc5264439eb84a729e136f41aa2fe1fec2b48e50922b8d40cf326a48",
-        "src/block_api.rs": "579313e8093b52d66a628d372849c7edb1f72d9bd3c07eca2d65d5fe82c7cf12",
-        "src/lib.rs": "8aaed31ba5f64f3a4fbde510799dd10fd1ffb1ca14271c9bc9463183a2971a66",
+        "src/block_api.rs": "ec324b884dd722784cbdc19c0cd4991eb6b55fa0117afbd30688e2a588d79c97",
+        "src/lib.rs": "4aafe4c10e46707fd9e760947ec92d0af764536d1befeac9ec06b12d78510231",
         "src/simple.rs": "d093d331d50760478c20a446aee858e4193bf103430e712037b4d382beffbeda",
         "src/simple_reset.rs": "625d4d9330edae93829afa03687b2398c768891c34569c185240f383f2b1d4c8",
-        "src/utils.rs": "02e935317f7939e9c0f75744b27d0b2f29af2aa44959153bf96d7c80bd339a97"
+        "src/utils.rs": "edacd27afe98c09bd89df95575f5852e20f1a6c1ce4780ef34ddf85a0a01d1a9"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -68281,9 +68281,9 @@
       "files_sha256": {
         "Cargo.toml": "2306cf2e5f4a79ea9a0738e879090c445b0802fc14a26245528f0da7c3f345ec",
         "benches/mod.rs": "4a9c0829be58eaf311384d10472d74a3ddb428c3cec7bbefe4516187d6943bd8",
-        "src/block_api.rs": "831458b8a00309db24d6b717f90a8f79186be03a2a684bcd316f0fb6bbb74d54",
+        "src/block_api.rs": "4de522a068d0422336213053ad2d26f2aba217d7b6a3803ab3247d67f1de5f42",
         "src/consts.rs": "a70aa1d4f798b619e5332fd81162b10e73c02b3adbdbb3b69b6d17781437e073",
-        "src/lib.rs": "4c1be47c09368b0e050e9a43d95d923df4a910300cb9809b3afb274c61290328",
+        "src/lib.rs": "571550a06332fb6dba10e49bbd4573d27c908dc421f87c23ba332b0f3b8dfe87",
         "src/sha256.rs": "42a12c10acb714cba558ec7b0e56dfd6e37569ba67916ab1ef228c36592a17c4",
         "src/sha256/aarch64_sha2.rs": "4bddcedd5bb92a3b3768880ec3d077d7495b95c238aab3150ced25cc905a1826",
         "src/sha256/loongarch64_asm.rs": "eda57073e3dbcadca88e908dd261a2782b2bb89c06f1b97468a6ffd1cad407ff",
