@@ -29,7 +29,7 @@ default = []
 full = ["codec", "compat", "io-util", "time", "net", "rt", "join-map"]
 io = []
 io-util = ["io", "tokio/rt", "tokio/io-util"]
-join-map = ["rt"]
+join-map = ["rt", "dep:hash-table"]
 net = ["tokio/net"]
 rt = ["tokio/rt", "tokio/sync", "futures-util"]
 time = ["tokio/time", "slab"]
@@ -41,6 +41,12 @@ path = "src/lib.rs"
 [dependencies.bytes]
 version = "1.5.0"
 path = "../bytes"
+
+[dependencies.hash-table]
+version = "0.17.1"
+optional = true
+default-features = false
+path = "../hash-table"
 
 [dependencies.futures-core]
 version = "0.3.0"

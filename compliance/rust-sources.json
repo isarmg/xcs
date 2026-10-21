@@ -26414,7 +26414,7 @@
     "src/foundation/tinyvec/Cargo.toml": "2af4d2c70cc88ff89339ecc88a78bd3c22f22318cb08218eb6c6950a61593f92",
     "src/foundation/tokio-macros/Cargo.toml": "9a842bdb485a4ef793b0911d7d56eb521f774b01acc871bc124a693f07b9b18a",
     "src/foundation/tokio-rustls/Cargo.toml": "ffe52e32ef343a360eb59d8b7e3ba218035be532306d0789168059953eaf6c11",
-    "src/foundation/tokio-util/Cargo.toml": "b60b1fb3b65525bf8affd2b47224b4212ea51220823e421844981c39337ca9a7",
+    "src/foundation/tokio-util/Cargo.toml": "3a859c8c78905f62af47c07119c3341b4041f07f6226dc6695908c7244e7721f",
     "src/foundation/tokio/Cargo.toml": "41dd9aa6a303b0f1c546227bf126784c26f853df595d039b0fd32c0acfb02c06",
     "src/foundation/toml/Cargo.toml": "ebb85b921abe2d2f9de563060a573ea0349666d6d3a9d9b22a5ea14b02fa2bb4",
     "src/foundation/toml_datetime/Cargo.toml": "88542cb3c50669836fb660a41279d3296c04c5c37ac27f5aae843e710b7da548",
@@ -39972,7 +39972,7 @@
       "description": "Additional utilities for working with Tokio.",
       "directory": "src/foundation/tokio-util",
       "files_sha256": {
-        "Cargo.toml": "b60b1fb3b65525bf8affd2b47224b4212ea51220823e421844981c39337ca9a7",
+        "Cargo.toml": "3a859c8c78905f62af47c07119c3341b4041f07f6226dc6695908c7244e7721f",
         "src/cfg.rs": "3be7063d3989d99505d8d282b4c1c8671ed69db1899985e327aa0bf74cd531d0",
         "src/codec/any_delimiter_codec.rs": "90d2639c4433dcc5a6d637aa0955216bc1576a0a6610c24aeb108d5e9f11a68f",
         "src/codec/bytes_codec.rs": "e8f14a93415768f5a8736cbcc0a1684742e3be6df1a6b60cb95bd146544eee74",

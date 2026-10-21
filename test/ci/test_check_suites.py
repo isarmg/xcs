@@ -113,7 +113,7 @@ class SuiteCoverageTests(unittest.TestCase):
         ))
 
     def test_foundation_runs_only_selected_library_regressions(self):
-        sqlite, consumers, serialization, error_definition, crypto, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, random_backends, entropy_consumers, system_units, ring, password, idna, helpers = self.suite("foundation")
+        sqlite, consumers, serialization, error_definition, crypto, web_bindgen, uapi, libc, syscalls, systems, parking, search_process, join_map, random_backends, entropy_consumers, system_units, ring, password, idna, helpers = self.suite("foundation")
         self.assertEqual(sqlite, {"tool": "python3", "args": [".github/scripts/check-sqlite-scope.py"]})
         self.assertEqual(consumers, {"tool": "python3", "args": [".github/scripts/check-foundation-consumers.py"]})
         self.assertEqual(serialization, {"tool": "python3", "args": [".github/scripts/check-serialization-family.py"]})
@@ -127,6 +127,7 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertEqual(systems, {"tool": "python3", "args": [".github/scripts/check-linux-system-backends.py"]})
         self.assertEqual(parking, {"tool": "python3", "args": [".github/scripts/check-linux-parking.py"]})
         self.assertEqual(search_process, {"tool": "python3", "args": [".github/scripts/check-linux-search-process.py"]})
+        self.assertEqual(join_map, {"tool": "python3", "args": [".github/scripts/check-runtime-join-map.py"]})
         self.assertEqual(random_backends, {"tool": "python3", "args": [".github/scripts/check-linux-random-backends.py"]})
         self.assertEqual(entropy_consumers, {"tool": "python3", "args": [".github/scripts/check-entropy-consumers.py"]})
         self.assertEqual(ring, {"tool": "python3", "args": ["tools/rust-sources/check_ring_tests.py"]})

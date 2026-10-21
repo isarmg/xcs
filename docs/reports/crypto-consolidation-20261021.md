@@ -25,4 +25,4 @@ BLAKE2 与 Argon2 改用与 SHA-2、HMAC 和 BLAKE3 可选摘要接口相同的 
 
 ### 后续边界修复已完成
 
-独立修复仅调整返回 Result 的高层构造接口：非法密钥、盐和个性化长度现在返回 InvalidLength，不再落入底层断言。每种测试配置覆盖 1,176 个长度组合及同时达到边界的组合；完整 518 + 1,206 向量、功能矩阵、Argon2、原生/WASM no_std 和质量检查重新通过。低层返回 Self 的显式断言接口及合法输出不变，详见[当前参数约束](../components/crypto-consolidation.md#separate-parameter-validation-fix)。
+独立修复仅调整返回 Result 的高层构造接口：非法密钥、盐和个性化长度现在返回 InvalidLength，不再落入底层断言。每种测试配置覆盖 1,176 个长度组合及同时达到边界的组合；完整 518 + 1,206 向量、功能矩阵、Argon2、原生/WASM no_std 和质量检查重新通过。低层返回 Self 的显式断言接口及合法输出不变，详见[当前参数约束](../components/crypto-consolidation.md#blake2-parameter-limits)。

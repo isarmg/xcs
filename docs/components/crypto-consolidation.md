@@ -22,6 +22,8 @@ The maintained test/ci/crypto_vectors.py generator decodes all five preserved BL
 
 Capability tests cover fixed/runtime output, invalid length without state consumption on reset APIs, keyed/personalized reset, constant-time MAC verification interfaces, boxed output and Write. The runner checks default, reset, no-default, no-default+reset, no-default+alloc, size_opt, and native/WASM no_std configurations. Existing nightly SIMD source is unchanged; this consolidation does not assert that its historical platform_intrinsics API works on the current stable compiler.
 
+<a id="blake2-parameter-limits"></a>
+
 ## Separate parameter-validation fix
 
 After consolidation, a focused fix makes the fallible BLAKE2 new_with_salt_and_personal constructor return InvalidLength for all oversized key, salt and persona inputs instead of allowing intermediate lengths to reach core assertions. Keys are limited to 64 bytes for BLAKE2b and 32 for BLAKE2s; salt/persona fields are limited to 16 and 8 bytes respectively. These limits do not shrink with truncated output sizes. The low-level Self-returning new_with_params constructor intentionally retains its assertions.
