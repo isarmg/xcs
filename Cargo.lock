@@ -3,10 +3,6 @@
 version = 3
 
 [[package]]
-name = "adler2"
-version = "2.0.1"
-
-[[package]]
 name = "ahash"
 version = "0.8.12"
 dependencies = [
@@ -282,6 +278,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "compression"
+version = "1.1.10"
+dependencies = [
+ "crc32fast",
+]
+
+[[package]]
 name = "concurrent-collections"
 version = "0.8.23"
 
@@ -510,14 +513,6 @@ version = "0.1.14"
 [[package]]
 name = "flag-set"
 version = "2.13.2"
-
-[[package]]
-name = "flate2"
-version = "1.1.10"
-dependencies = [
- "crc32fast",
- "miniz_oxide",
-]
 
 [[package]]
 name = "fluent-uri"
@@ -976,14 +971,6 @@ dependencies = [
 [[package]]
 name = "minimal-lexical"
 version = "0.2.1"
-
-[[package]]
-name = "miniz_oxide"
-version = "0.9.1"
-dependencies = [
- "adler2",
- "simd-adler32",
-]
 
 [[package]]
 name = "mio"
@@ -1453,10 +1440,6 @@ dependencies = [
  "errno",
  "libc",
 ]
-
-[[package]]
-name = "simd-adler32"
-version = "0.3.10"
 
 [[package]]
 name = "slab"
@@ -2178,7 +2161,7 @@ name = "web-build"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "flate2",
+ "compression",
  "json-codec",
  "sha2",
 ]

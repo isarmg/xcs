@@ -209,3 +209,18 @@ fn inventory_rejects_linked_roots_children_and_nonregular_inputs() {
     fs::create_dir(&output).unwrap();
     assert!(copy_tree(&root, &output).is_err());
 }
+
+#[test]
+fn gzip_assets_are_reproducible_and_roundtrip() {
+    use std::io::Read;
+    for bytes in [b"".as_slice(), b"\0asm\x01\0\0\0", b"release web asset"] {
+        let encoded = super::gzip_asset(bytes).unwrap();
+        assert_eq!(encoded, super::gzip_asset(bytes).unwrap());
+        assert_eq!(&encoded[4..8], &[0; 4]);
+        let mut restored = Vec::new();
+        compression::streams::read::GzDecoder::new(encoded.as_slice())
+            .read_to_end(&mut restored)
+            .unwrap();
+        assert_eq!(restored, bytes);
+    }
+}

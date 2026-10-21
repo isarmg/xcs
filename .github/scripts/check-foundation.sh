@@ -35,6 +35,7 @@ case "${1:-}" in
     python3 .github/scripts/check-numeric-consolidation.py
     python3 .github/scripts/check-numeric-precision.py
     cargo test --locked --offline --tests -p numeric
+    python3 .github/scripts/check-compression-family.py
     ;;
   foundation-language)
     python3 .github/scripts/check-foundation-consumers.py

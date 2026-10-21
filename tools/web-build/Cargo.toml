@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [dependencies]
 anyhow = {version = "1", path = "../../src/foundation/anyhow"}
-flate2 = {version = "1", path = "../../src/foundation/flate2"}
+compression = { path = "../../src/foundation/compression", features = ["streams", "simd", "runtime-detection"] }
 json-codec = {version = "1", path = "../../src/foundation/json-codec"}
 sha2 = {version = "0.11", path = "../../src/foundation/sha2"}
 

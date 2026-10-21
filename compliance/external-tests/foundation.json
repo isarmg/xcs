@@ -2,20 +2,6 @@
   "schema_version": 1,
   "owners": [
     {
-      "directory": "src/foundation/adler2",
-      "roots": [
-        "test/foundation/adler2"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/adler2/src/lib.rs",
-          "source_sha256_before": "4acd41668fe30daffa37084e7e223f268957b816afc1864ffb3f5d6d7adf0890",
-          "path": "test/foundation/adler2/unit/src/lib/tests_222.rs",
-          "sha256": "568895839c7ae5afe452f947d32bf8d0bc9bf29ed4bc8b809d38d8a7bd4d9e9c"
-        }
-      ]
-    },
-    {
       "directory": "src/foundation/ahash",
       "roots": [
         "test/foundation/ahash"
@@ -5177,136 +5163,269 @@
       ]
     },
     {
-      "directory": "src/foundation/flate2",
+      "directory": "src/foundation/compression",
       "roots": [
-        "test/foundation/flate2"
+        "test/foundation/compression"
       ],
       "files": [
         {
+          "path": "test/foundation/compression/accelerated_checksum/unit/src/imp/avx2/tests_164.rs",
+          "sha256": "82199a02d21e05fa2704060e5a1e3ef3dbe7bca690bf79fcdcb73f3c19557303",
+          "source": "src/foundation/simd-adler32/src/imp/avx2.rs",
+          "source_sha256_before": "a3c11163ab0c1a72d43a5d4d1ecc8baa1376261cd0a0ef8525c91d8f4a3a2858",
+          "origin_directory": "vendor/rust/simd-adler32-0.3.10"
+        },
+        {
+          "path": "test/foundation/compression/accelerated_checksum/unit/src/imp/avx512/tests_192.rs",
+          "sha256": "82199a02d21e05fa2704060e5a1e3ef3dbe7bca690bf79fcdcb73f3c19557303",
+          "source": "src/foundation/simd-adler32/src/imp/avx512.rs",
+          "source_sha256_before": "8fbd3d9a70a410f2345a7c9e614166a77a0f5a26dc8f1ba26b85cb10abae7b84",
+          "origin_directory": "vendor/rust/simd-adler32-0.3.10"
+        },
+        {
+          "path": "test/foundation/compression/accelerated_checksum/unit/src/imp/neon/tests_151.rs",
+          "sha256": "e3ee71d642d8efc301217d2e10719df14ec0eab34e71fc1b76358cdbfd0a75c6",
+          "source": "src/foundation/simd-adler32/src/imp/neon.rs",
+          "source_sha256_before": "41a418417214ca11634d93d38824fbb51edfa7e77b874aba7f36c4e89665c2e3",
+          "origin_directory": "vendor/rust/simd-adler32-0.3.10"
+        },
+        {
+          "path": "test/foundation/compression/accelerated_checksum/unit/src/imp/scalar/tests_32.rs",
+          "sha256": "6f37c2d9249777b1ae27bddfa819f99aacaca9d8e970229da3609636dd394d72",
+          "source": "src/foundation/simd-adler32/src/imp/scalar.rs",
+          "source_sha256_before": "b76bbe1a726b1307746c9492ce821f986d043a925cdf056c099d2b76da96b462",
+          "origin_directory": "vendor/rust/simd-adler32-0.3.10"
+        },
+        {
+          "path": "test/foundation/compression/accelerated_checksum/unit/src/imp/sse2/tests_183.rs",
+          "sha256": "82199a02d21e05fa2704060e5a1e3ef3dbe7bca690bf79fcdcb73f3c19557303",
+          "source": "src/foundation/simd-adler32/src/imp/sse2.rs",
+          "source_sha256_before": "4c42661c6ac33f2f9aef3ecc946f07507b5a24f476b0f4281168e52a9e7c6e19",
+          "origin_directory": "vendor/rust/simd-adler32-0.3.10"
+        },
+        {
+          "path": "test/foundation/compression/accelerated_checksum/unit/src/imp/ssse3/tests_169.rs",
+          "sha256": "82199a02d21e05fa2704060e5a1e3ef3dbe7bca690bf79fcdcb73f3c19557303",
+          "source": "src/foundation/simd-adler32/src/imp/ssse3.rs",
+          "source_sha256_before": "bd8220e4ae030fe21075de95fbef4cc9e6218103fff4e8004262563d2a08d0af",
+          "origin_directory": "vendor/rust/simd-adler32-0.3.10"
+        },
+        {
+          "path": "test/foundation/compression/accelerated_checksum/unit/src/imp/wasm/tests_185.rs",
+          "sha256": "159bb92cfeb5e551624c43c57f34ad63d319b097a6de75e66a06301f4f3995da",
+          "source": "src/foundation/simd-adler32/src/imp/wasm.rs",
+          "source_sha256_before": "8399d32827f2ddfceb1d8b1103e22c6db27051b52f291e92f99cf2c558f4ed63",
+          "origin_directory": "vendor/rust/simd-adler32-0.3.10"
+        },
+        {
+          "path": "test/foundation/compression/accelerated_checksum/unit/src/lib/tests_306.rs",
+          "sha256": "18583f05147bc7fbd1a7ee2e2774054aa9e3c09fd661ff473d8e8fb8ca9daa7f",
+          "source": "src/foundation/simd-adler32/src/lib.rs",
+          "source_sha256_before": "f224c758c75bd6c5b491c0e1d8235e4b920ee966612a1cecdf0ed63838becd15",
+          "origin_directory": "vendor/rust/simd-adler32-0.3.10"
+        },
+        {
+          "path": "test/foundation/compression/checksum/unit/src/lib/tests_222.rs",
+          "sha256": "568895839c7ae5afe452f947d32bf8d0bc9bf29ed4bc8b809d38d8a7bd4d9e9c",
+          "source": "src/foundation/adler2/src/lib.rs",
+          "source_sha256_before": "4acd41668fe30daffa37084e7e223f268957b816afc1864ffb3f5d6d7adf0890",
+          "origin_directory": "vendor/rust/adler2-2.0.1"
+        },
+        {
+          "path": "test/foundation/compression/codec/unit/src/deflate/core/test_2598.rs",
+          "sha256": "5558e6e05fcdfd3dc8d2a510f18d44f2f60cdec6571c1d0dffe12b86cee4a87d",
+          "source": "src/foundation/miniz_oxide/src/deflate/core.rs",
+          "source_sha256_before": "69224613e89fa46fe8f7429b374d27416ab05237682a12678ac58c6f253f6d09",
+          "origin_directory": "vendor/rust/miniz_oxide-0.9.1"
+        },
+        {
+          "path": "test/foundation/compression/codec/unit/src/deflate/mod/test_185.rs",
+          "sha256": "07aab5f9ae5fc216e73f792d64ffbd41d33f09b631ad78151afb6caeccf1db51",
+          "source": "src/foundation/miniz_oxide/src/deflate/mod.rs",
+          "source_sha256_before": "adedff53960b3fbef46cc83d907131c69b379e72668a116d1cc090fec4276504",
+          "origin_directory": "vendor/rust/miniz_oxide-0.9.1"
+        },
+        {
+          "path": "test/foundation/compression/codec/unit/src/deflate/stream/test_99.rs",
+          "sha256": "3ce8db7c9b721ca97bdc0bd20fe5a5166b809b433e534a8612cc4f778fa0f4da",
+          "source": "src/foundation/miniz_oxide/src/deflate/stream.rs",
+          "source_sha256_before": "abd7c0475fe85aaf8640d845a2a5e63096dfdcefd6c4ac875a7f2feccad952f6",
+          "origin_directory": "vendor/rust/miniz_oxide-0.9.1"
+        },
+        {
+          "path": "test/foundation/compression/codec/unit/src/deflate/zlib/test_64.rs",
+          "sha256": "e990065816a42a2ffe143c150fd9f9a8c24bc8e65578dc5f1cd347c15f738c2b",
+          "source": "src/foundation/miniz_oxide/src/deflate/zlib.rs",
+          "source_sha256_before": "ee4226bf52b7c1111844733de7ba38d86c9e4d2f3d24744c0d068224f35e6b70",
+          "origin_directory": "vendor/rust/miniz_oxide-0.9.1"
+        },
+        {
+          "path": "test/foundation/compression/codec/unit/src/inflate/core/test_2094.rs",
+          "sha256": "05473837445fd08dd1b44ee14c908ec2e946b85c00f1df5e8dcc91f16ad8cd82",
+          "source": "src/foundation/miniz_oxide/src/inflate/core.rs",
+          "source_sha256_before": "41a52ea2145885701df41e77b4427aecfa0669971bbc7abb7c90bfe2cfe9fd74",
+          "origin_directory": "vendor/rust/miniz_oxide-0.9.1"
+        },
+        {
+          "path": "test/foundation/compression/codec/unit/src/inflate/mod/all_test_331.rs",
+          "sha256": "ec853443fb0f2e49fe2d6b71ff4619772131e6cfab730a57bcc2504f67667562",
+          "source": "src/foundation/miniz_oxide/src/inflate/mod.rs",
+          "source_sha256_before": "24a041eeb9404079395fd8ac5a51b8e2494fdf46a511681bb727e0b2b7017b57",
+          "origin_directory": "vendor/rust/miniz_oxide-0.9.1"
+        },
+        {
+          "path": "test/foundation/compression/codec/unit/src/inflate/stream/all_test_381.rs",
+          "sha256": "025efc088eb9b887ea33c22d38e958250d4285ee4376e814a30e97ad758e95fd",
+          "source": "src/foundation/miniz_oxide/src/inflate/stream.rs",
+          "source_sha256_before": "e6dd9e06e927dbe5a59299db1bc96bf1c55cad8ef995fccec314ecf056622884",
+          "origin_directory": "vendor/rust/miniz_oxide-0.9.1"
+        },
+        {
+          "path": "test/foundation/compression/streams/tests/capabilities.rs",
+          "sha256": "99b35152615f5cbc31ca74e0dedbb244ffee4ef225dcd7cb7ab844fe807796f4",
           "source": "src/foundation/flate2/tests/capabilities.rs",
           "source_sha256_before": "99b35152615f5cbc31ca74e0dedbb244ffee4ef225dcd7cb7ab844fe807796f4",
-          "path": "test/foundation/flate2/tests/capabilities.rs",
-          "sha256": "99b35152615f5cbc31ca74e0dedbb244ffee4ef225dcd7cb7ab844fe807796f4"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/tests/early-flush.rs",
+          "sha256": "892ed59f5e4e7b2236f1e0e6e035d6fc1b3ebab84482e97ebbaa79b193dccae6",
           "source": "src/foundation/flate2/tests/early-flush.rs",
           "source_sha256_before": "9a4db8fcbac659c52cafe5e1ab647d86781cf8b1f298d8dee34223c0292e0d74",
-          "path": "test/foundation/flate2/tests/early-flush.rs",
-          "sha256": "9a4db8fcbac659c52cafe5e1ab647d86781cf8b1f298d8dee34223c0292e0d74"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/tests/empty-read.rs",
+          "sha256": "383fd9fd79b136a9937783aae63204194d9ffda8503359f7e3d6ccade059a7bf",
           "source": "src/foundation/flate2/tests/empty-read.rs",
           "source_sha256_before": "39143ff0383655bb115e995b2a953f11e82d0ac03b4bec080973be7c2d421054",
-          "path": "test/foundation/flate2/tests/empty-read.rs",
-          "sha256": "39143ff0383655bb115e995b2a953f11e82d0ac03b4bec080973be7c2d421054"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/tests/good-file.gz",
+          "sha256": "87296963e53024a74752179ce7e54087565d358a85d3e65c3b37ef36eaa3d4a6",
           "source": "src/foundation/flate2/tests/good-file.gz",
           "source_sha256_before": "87296963e53024a74752179ce7e54087565d358a85d3e65c3b37ef36eaa3d4a6",
-          "path": "test/foundation/flate2/tests/good-file.gz",
-          "sha256": "87296963e53024a74752179ce7e54087565d358a85d3e65c3b37ef36eaa3d4a6"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/tests/good-file.txt",
+          "sha256": "bc4e03658a441fe2ad2df7cd2197144b87e41696f01e327b380e869cd9b485a0",
           "source": "src/foundation/flate2/tests/good-file.txt",
           "source_sha256_before": "bc4e03658a441fe2ad2df7cd2197144b87e41696f01e327b380e869cd9b485a0",
-          "path": "test/foundation/flate2/tests/good-file.txt",
-          "sha256": "bc4e03658a441fe2ad2df7cd2197144b87e41696f01e327b380e869cd9b485a0"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/tests/gunzip.rs",
+          "sha256": "b55530cb54f693b1141e56783a4acc0152adee306d8b1ddef40ebabe44baab82",
           "source": "src/foundation/flate2/tests/gunzip.rs",
           "source_sha256_before": "8662f1ccf172cf87b654c2540d7ac309bca1a476f8982c6969b12fe5bacbe50c",
-          "path": "test/foundation/flate2/tests/gunzip.rs",
-          "sha256": "c9cad1b1ed006b6d5edeac08ed61d8a44fb2506048fb10716de08788f65ca62f"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/tests/multi.gz",
+          "sha256": "efa3341da052f95056314cc6920e02a3da15bdef30234b2552fb407812db5cc6",
           "source": "src/foundation/flate2/tests/multi.gz",
           "source_sha256_before": "efa3341da052f95056314cc6920e02a3da15bdef30234b2552fb407812db5cc6",
-          "path": "test/foundation/flate2/tests/multi.gz",
-          "sha256": "efa3341da052f95056314cc6920e02a3da15bdef30234b2552fb407812db5cc6"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/tests/multi.txt",
+          "sha256": "dbea9325179efe46ea2add94f7b6b745ca983fabb208dc6d34aa064623d7ee23",
           "source": "src/foundation/flate2/tests/multi.txt",
           "source_sha256_before": "dbea9325179efe46ea2add94f7b6b745ca983fabb208dc6d34aa064623d7ee23",
-          "path": "test/foundation/flate2/tests/multi.txt",
-          "sha256": "dbea9325179efe46ea2add94f7b6b745ca983fabb208dc6d34aa064623d7ee23"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/tests/zero-write.rs",
+          "sha256": "a9a8b30331aad4a9276918f7fea8fd2daac0d08f001e4a085d556f48173b5cc0",
           "source": "src/foundation/flate2/tests/zero-write.rs",
           "source_sha256_before": "3c37b5e7566bd25c3337ac4397d20274b983c06eaf2e2a41d41b1b4cb1c8ccb8",
-          "path": "test/foundation/flate2/tests/zero-write.rs",
-          "sha256": "3c37b5e7566bd25c3337ac4397d20274b983c06eaf2e2a41d41b1b4cb1c8ccb8"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/crc/tests_214.rs",
+          "sha256": "70c804829cc6d379b6b8a675ea265e4b9b74f6a31cf9d907f8620053db1ad006",
           "source": "src/foundation/flate2/src/crc.rs",
           "source_sha256_before": "d325cab6618c5dda2023c3ae3d46e8139e466f58c598523d123e6a2b7ab5bbf0",
-          "path": "test/foundation/flate2/unit/src/crc/tests_214.rs",
-          "sha256": "70c804829cc6d379b6b8a675ea265e4b9b74f6a31cf9d907f8620053db1ad006"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/deflate/bufread/test_258.rs",
+          "sha256": "2096bb717d38b7565b3036da0a52af9906ea45d68ef74f47ddcb7bd10a97a7f9",
           "source": "src/foundation/flate2/src/deflate/bufread.rs",
           "source_sha256_before": "11d568b35dcdf403c139fcef4be814fc96abf01d3d1411ff8e0a53c35143ec89",
-          "path": "test/foundation/flate2/unit/src/deflate/bufread/test_258.rs",
-          "sha256": "92591bb5ec41937abc03cbc82d9bd46a575858f27fb68dd9c1cce3cb9dc712ca"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/deflate/mod/tests_5.rs",
+          "sha256": "18fae6cf313ba502f0bacbb0abea89da857fc7081fce7e85c2239c04cd277762",
           "source": "src/foundation/flate2/src/deflate/mod.rs",
           "source_sha256_before": "5d59db1eb65875d2bb8812ca5b989e922dd1d3116e83986beebbe9f0368da06f",
-          "path": "test/foundation/flate2/unit/src/deflate/mod/tests_5.rs",
-          "sha256": "18fae6cf313ba502f0bacbb0abea89da857fc7081fce7e85c2239c04cd277762"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/deflate/write/tests_347.rs",
+          "sha256": "f294fdbb9493a510dec3d63eb4f38a845f8adc43f12f3594142fc2b5a092bcff",
           "source": "src/foundation/flate2/src/deflate/write.rs",
           "source_sha256_before": "b9bc5cfc4bc6515e2e82c430bdecd4b9cc5986234756802a48a4258ee468f372",
-          "path": "test/foundation/flate2/unit/src/deflate/write/tests_347.rs",
-          "sha256": "59edffd0cef73786fe7d8ae287541a03bd8b2b25b7adfca655fe6450e49ae8b6"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/gz/bufread/test_465.rs",
+          "sha256": "d05a1abf301652d63cc329663c0efd56c5464b1ed0952a378aa593bc5a8bb34c",
           "source": "src/foundation/flate2/src/gz/bufread.rs",
           "source_sha256_before": "e9d05085fe3bffd6c138c00f7ae6a728468d2575227819325adc31a2f9ce6aab",
-          "path": "test/foundation/flate2/unit/src/gz/bufread/test_465.rs",
-          "sha256": "d44e078df614d97cc44a17908a8ae633b564e139144fe86ca8ab355d7ad882e9"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/gz/mod/tests_467.rs",
+          "sha256": "dab02d5b1538329449b12bbcab49af38b2d7e5f35fd9ae354964be95fcb88027",
           "source": "src/foundation/flate2/src/gz/mod.rs",
           "source_sha256_before": "4e7c40f63c24dbc6b2a0cd831431283a82fce7c693e259e59113a0c85ed73094",
-          "path": "test/foundation/flate2/unit/src/gz/mod/tests_467.rs",
-          "sha256": "dab02d5b1538329449b12bbcab49af38b2d7e5f35fd9ae354964be95fcb88027"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/gz/read/tests_323.rs",
+          "sha256": "1165464cfcdfe5d23fd9015fb71ffe2fa786d78e5c14ec72a632b37c2fc713e0",
           "source": "src/foundation/flate2/src/gz/read.rs",
           "source_sha256_before": "5397522b06d660bba339d9a28e2056c86c59c59332e74ad4acd6594df4cec277",
-          "path": "test/foundation/flate2/unit/src/gz/read/tests_323.rs",
-          "sha256": "95f66dcd996804b286c8178c5294d01f73250a0be1581f7392d71928a6d3a5c3"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/gz/write/tests_508.rs",
+          "sha256": "256e221f5715768d8a074efe5b7dc7b160b43115aabefc51c930d01997a375c4",
           "source": "src/foundation/flate2/src/gz/write.rs",
           "source_sha256_before": "99566a064bc30a054a8a3bbafdb6303c8b2f089001e82c902b8ffae9ce485d08",
-          "path": "test/foundation/flate2/unit/src/gz/write/tests_508.rs",
-          "sha256": "256e221f5715768d8a074efe5b7dc7b160b43115aabefc51c930d01997a375c4"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/mem/tests_647.rs",
+          "sha256": "f8f82eb846b3b51fcdbd3ca71adc912b313f3332d3c59d7156fc55060a24f085",
           "source": "src/foundation/flate2/src/mem.rs",
           "source_sha256_before": "92ba56393156782ed24621e7ed4468a12f410b9a1d1060e8baa933f7464f8b54",
-          "path": "test/foundation/flate2/unit/src/mem/tests_647.rs",
-          "sha256": "2ac1ddcc3af15d0c64d22572b289f6492e176c5d8d3a0c43426c45da1d26e7c5"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/zlib/bufread/test_266.rs",
+          "sha256": "7f471ccf9b5082109dfae8d892b52b2d276e6f821ab2461f41d6ec0ffb30ec2b",
           "source": "src/foundation/flate2/src/zlib/bufread.rs",
           "source_sha256_before": "9231f4b860e25322339343e307187abdd63dcba329c2de2e06434f6579b32ecd",
-          "path": "test/foundation/flate2/unit/src/zlib/bufread/test_266.rs",
-          "sha256": "b9476d1058888849bdea007d6a06e98be5168e48e13d2029468585435abc3516"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/zlib/mod/tests_5.rs",
+          "sha256": "519407b0953193dc34d296aa2bd963aaa959c0d15346a0c1d92bf5f5f1c1596c",
           "source": "src/foundation/flate2/src/zlib/mod.rs",
           "source_sha256_before": "3f1df624fcd70c560a1173a8f03906411077ba250d2687b0378718273bb2e3aa",
-          "path": "test/foundation/flate2/unit/src/zlib/mod/tests_5.rs",
-          "sha256": "519407b0953193dc34d296aa2bd963aaa959c0d15346a0c1d92bf5f5f1c1596c"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         },
         {
+          "path": "test/foundation/compression/streams/unit/src/zlib/write/tests_365.rs",
+          "sha256": "6e38305677f971b132de494bea6146d1c8ef8d73725d57bcaba4ea22a77cc085",
           "source": "src/foundation/flate2/src/zlib/write.rs",
           "source_sha256_before": "4de6f8820807e33ed616b6fa79a26f4515b550143be9416ed82bb8b99fc1db7e",
-          "path": "test/foundation/flate2/unit/src/zlib/write/tests_365.rs",
-          "sha256": "1ef3cdc01948bfb828f7e84e741042668a74fa9d11a37372174f6e5cfe150dc3"
+          "origin_directory": "vendor/rust/flate2-1.1.10"
         }
       ]
     },
@@ -10981,56 +11100,6 @@
           "source_sha256_before": "09b561160df3b1385876db452bb5a67ef2c9fd2cc36b5687e1dfaf8c58947782",
           "path": "test/foundation/minimal-lexical/tests/vec_tests.rs",
           "sha256": "09b561160df3b1385876db452bb5a67ef2c9fd2cc36b5687e1dfaf8c58947782"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/miniz_oxide",
-      "roots": [
-        "test/foundation/miniz_oxide"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/miniz_oxide/src/deflate/core.rs",
-          "source_sha256_before": "69224613e89fa46fe8f7429b374d27416ab05237682a12678ac58c6f253f6d09",
-          "path": "test/foundation/miniz_oxide/unit/src/deflate/core/test_2598.rs",
-          "sha256": "6ce2a74ed85a969e554128e282c2db7521b0343f8fe19c04fd234ad22a317097"
-        },
-        {
-          "source": "src/foundation/miniz_oxide/src/deflate/mod.rs",
-          "source_sha256_before": "adedff53960b3fbef46cc83d907131c69b379e72668a116d1cc090fec4276504",
-          "path": "test/foundation/miniz_oxide/unit/src/deflate/mod/test_185.rs",
-          "sha256": "862a96d37bd48fe0fda8217ab1b61968ca8d423d648e78a324f3e2261982a732"
-        },
-        {
-          "source": "src/foundation/miniz_oxide/src/deflate/stream.rs",
-          "source_sha256_before": "abd7c0475fe85aaf8640d845a2a5e63096dfdcefd6c4ac875a7f2feccad952f6",
-          "path": "test/foundation/miniz_oxide/unit/src/deflate/stream/test_99.rs",
-          "sha256": "856ee4003ddcac7fc0b1d86d7a1c61ef2cbed01edf3faa85721e1bb541c6369b"
-        },
-        {
-          "source": "src/foundation/miniz_oxide/src/deflate/zlib.rs",
-          "source_sha256_before": "ee4226bf52b7c1111844733de7ba38d86c9e4d2f3d24744c0d068224f35e6b70",
-          "path": "test/foundation/miniz_oxide/unit/src/deflate/zlib/test_64.rs",
-          "sha256": "a745253dafd9223bac77abca45583ac2552be1db3eceaf1a8df278dc049b6f61"
-        },
-        {
-          "source": "src/foundation/miniz_oxide/src/inflate/core.rs",
-          "source_sha256_before": "41a52ea2145885701df41e77b4427aecfa0669971bbc7abb7c90bfe2cfe9fd74",
-          "path": "test/foundation/miniz_oxide/unit/src/inflate/core/test_2094.rs",
-          "sha256": "ff5a57bc069f9dba4877935fe97505687d8b5faf5b1cf8db1fa2d4acc1bff1ab"
-        },
-        {
-          "source": "src/foundation/miniz_oxide/src/inflate/mod.rs",
-          "source_sha256_before": "24a041eeb9404079395fd8ac5a51b8e2494fdf46a511681bb727e0b2b7017b57",
-          "path": "test/foundation/miniz_oxide/unit/src/inflate/mod/all_test_331.rs",
-          "sha256": "1130a43b6928a9349ff3ddfd0e80e0aefa40d8194529ff4e939631d9e0d5c93c"
-        },
-        {
-          "source": "src/foundation/miniz_oxide/src/inflate/stream.rs",
-          "source_sha256_before": "e6dd9e06e927dbe5a59299db1bc96bf1c55cad8ef995fccec314ecf056622884",
-          "path": "test/foundation/miniz_oxide/unit/src/inflate/stream/all_test_381.rs",
-          "sha256": "171536d7e9eb271575469bbf2ee1da94b4ec0d20a34442f11cf721b20b7dbc70"
         }
       ]
     },
@@ -16897,62 +16966,6 @@
           "source_sha256_before": "39876dc8381e1823da2f0cfb2a329bf62c13c21eb1857b5b7c4ff84e8c77b50d",
           "path": "test/foundation/signal-hook-registry/unit/src/vec_map/tests_70.rs",
           "sha256": "79ceb70abbdaa95a164566c0e1000c44bb40a7691554e958ded922cba5d7ec5c"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/simd-adler32",
-      "roots": [
-        "test/foundation/simd-adler32"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/simd-adler32/src/imp/avx2.rs",
-          "source_sha256_before": "a3c11163ab0c1a72d43a5d4d1ecc8baa1376261cd0a0ef8525c91d8f4a3a2858",
-          "path": "test/foundation/simd-adler32/unit/src/imp/avx2/tests_164.rs",
-          "sha256": "82199a02d21e05fa2704060e5a1e3ef3dbe7bca690bf79fcdcb73f3c19557303"
-        },
-        {
-          "source": "src/foundation/simd-adler32/src/imp/avx512.rs",
-          "source_sha256_before": "8fbd3d9a70a410f2345a7c9e614166a77a0f5a26dc8f1ba26b85cb10abae7b84",
-          "path": "test/foundation/simd-adler32/unit/src/imp/avx512/tests_192.rs",
-          "sha256": "82199a02d21e05fa2704060e5a1e3ef3dbe7bca690bf79fcdcb73f3c19557303"
-        },
-        {
-          "source": "src/foundation/simd-adler32/src/imp/neon.rs",
-          "source_sha256_before": "41a418417214ca11634d93d38824fbb51edfa7e77b874aba7f36c4e89665c2e3",
-          "path": "test/foundation/simd-adler32/unit/src/imp/neon/tests_151.rs",
-          "sha256": "e3ee71d642d8efc301217d2e10719df14ec0eab34e71fc1b76358cdbfd0a75c6"
-        },
-        {
-          "source": "src/foundation/simd-adler32/src/imp/scalar.rs",
-          "source_sha256_before": "b76bbe1a726b1307746c9492ce821f986d043a925cdf056c099d2b76da96b462",
-          "path": "test/foundation/simd-adler32/unit/src/imp/scalar/tests_32.rs",
-          "sha256": "6f37c2d9249777b1ae27bddfa819f99aacaca9d8e970229da3609636dd394d72"
-        },
-        {
-          "source": "src/foundation/simd-adler32/src/imp/sse2.rs",
-          "source_sha256_before": "4c42661c6ac33f2f9aef3ecc946f07507b5a24f476b0f4281168e52a9e7c6e19",
-          "path": "test/foundation/simd-adler32/unit/src/imp/sse2/tests_183.rs",
-          "sha256": "82199a02d21e05fa2704060e5a1e3ef3dbe7bca690bf79fcdcb73f3c19557303"
-        },
-        {
-          "source": "src/foundation/simd-adler32/src/imp/ssse3.rs",
-          "source_sha256_before": "bd8220e4ae030fe21075de95fbef4cc9e6218103fff4e8004262563d2a08d0af",
-          "path": "test/foundation/simd-adler32/unit/src/imp/ssse3/tests_169.rs",
-          "sha256": "82199a02d21e05fa2704060e5a1e3ef3dbe7bca690bf79fcdcb73f3c19557303"
-        },
-        {
-          "source": "src/foundation/simd-adler32/src/imp/wasm.rs",
-          "source_sha256_before": "8399d32827f2ddfceb1d8b1103e22c6db27051b52f291e92f99cf2c558f4ed63",
-          "path": "test/foundation/simd-adler32/unit/src/imp/wasm/tests_185.rs",
-          "sha256": "159bb92cfeb5e551624c43c57f34ad63d319b097a6de75e66a06301f4f3995da"
-        },
-        {
-          "source": "src/foundation/simd-adler32/src/lib.rs",
-          "source_sha256_before": "f224c758c75bd6c5b491c0e1d8235e4b920ee966612a1cecdf0ed63838becd15",
-          "path": "test/foundation/simd-adler32/unit/src/lib/tests_306.rs",
-          "sha256": "d99ba94427be64cb7cb19fd6b74528264784d17bce0ecd997d365957567dd0bc"
         }
       ]
     },

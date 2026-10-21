@@ -28,3 +28,4 @@
 - [Tracing instrumentation and collectors](../components/tracing.md): explicit capabilities, direct JSON fields, source origins and retained verification.
 - [Unicode 数据职责包](unicode-data-families.md)：能力边界、来源与验证范围。
 - [URL 与编码职责包](url-encoding.md)：能力边界、来源与验证范围。
+- [压缩与校验整合](compression.md)：能力边界、来源与验证范围。

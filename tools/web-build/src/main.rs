@@ -21,6 +21,14 @@ fn sha256_hex(bytes: impl AsRef<[u8]>) -> String {
     hex
 }
 
+fn gzip_asset(bytes: &[u8]) -> Result<Vec<u8>> {
+    let mut gzip = compression::streams::GzBuilder::new()
+        .mtime(0)
+        .write(Vec::new(), compression::streams::Compression::best());
+    gzip.write_all(bytes)?;
+    Ok(gzip.finish()?)
+}
+
 fn main() -> Result<()> {
     let mut args = std::env::args().skip(1);
     let command = args.next().unwrap_or_else(|| "build".into());
@@ -117,11 +125,10 @@ fn main() -> Result<()> {
     fs::write(staging.join("boot.js"), bootstrap::loader())?;
     fs::write(staging.join("index.html"), bootstrap::index())?;
     let wasm = staging.join("pkg/zxs_bg.wasm");
-    let mut gzip = flate2::GzBuilder::new()
-        .mtime(0)
-        .write(Vec::new(), flate2::Compression::best());
-    gzip.write_all(&fs::read(&wasm)?)?;
-    fs::write(wasm.with_extension("wasm.gz"), gzip.finish()?)?;
+    fs::write(
+        wasm.with_extension("wasm.gz"),
+        gzip_asset(&fs::read(&wasm)?)?,
+    )?;
     verify_rust_sources(&root)?;
     let inputs_after = source_inventory(&root)?;
     if inputs_before != inputs_after {

@@ -164,6 +164,12 @@
         "-p",
         "numeric"
       ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-compression-family.py"
+      ]
     }
   ],
   "foundation-language": [

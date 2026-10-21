@@ -50,7 +50,7 @@ def manifest(root, no_std=False):
         "json-codec": (['alloc'] if no_std else ['raw_value', 'arbitrary_precision'], not no_std),
     }
     if not no_std:
-        for name in ('flag-set', 'miniz_oxide', 'icu_collections', 'random-generator-core',
+        for name in ('flag-set', 'compression', 'icu_collections', 'random-generator-core',
                      'derive-where'):
             dependencies[name] = (['serialization'], True)
         dependencies['toml'] = (['serialization'], False)
