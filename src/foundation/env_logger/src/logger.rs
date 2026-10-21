@@ -304,32 +304,6 @@ impl Builder {
         self
     }
 
-    /// Configures if timestamp should be included and in what precision.
-    pub fn format_timestamp(&mut self, timestamp: Option<fmt::TimestampPrecision>) -> &mut Self {
-        self.format.default_format.timestamp(timestamp);
-        self
-    }
-
-    /// Configures the timestamp to use second precision.
-    pub fn format_timestamp_secs(&mut self) -> &mut Self {
-        self.format_timestamp(Some(fmt::TimestampPrecision::Seconds))
-    }
-
-    /// Configures the timestamp to use millisecond precision.
-    pub fn format_timestamp_millis(&mut self) -> &mut Self {
-        self.format_timestamp(Some(fmt::TimestampPrecision::Millis))
-    }
-
-    /// Configures the timestamp to use microsecond precision.
-    pub fn format_timestamp_micros(&mut self) -> &mut Self {
-        self.format_timestamp(Some(fmt::TimestampPrecision::Micros))
-    }
-
-    /// Configures the timestamp to use nanosecond precision.
-    pub fn format_timestamp_nanos(&mut self) -> &mut Self {
-        self.format_timestamp(Some(fmt::TimestampPrecision::Nanos))
-    }
-
     /// Configures the end of line suffix.
     pub fn format_suffix(&mut self, suffix: &'static str) -> &mut Self {
         self.format.default_format.suffix(suffix);

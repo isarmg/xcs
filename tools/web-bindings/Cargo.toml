@@ -16,9 +16,12 @@ path = "src/main.rs"
 [dependencies]
 anyhow = {version = "1", path = "../../src/foundation/anyhow"}
 clap = { version = "4", features = ["derive"], path = "../../src/foundation/clap"}
-env_logger = {version = "0.11.5", path = "../../src/foundation/env_logger"}
+env_logger = {version = "0.11.5", default-features = false, features = ["auto-color", "regex"], path = "../../src/foundation/env_logger"}
 wasm-bindgen-cli-support = {version = "=0.2.129", path = "../../src/foundation/wasm-bindgen-cli-support"}
 
 
 [lints.rust]
 unsafe_code = "forbid"
+
+[dev-dependencies]
+log = { version = "0.4", path = "../../src/foundation/log" }

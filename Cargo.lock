@@ -598,7 +598,6 @@ dependencies = [
  "anstream",
  "anstyle",
  "env_filter",
- "jiff",
  "log",
 ]
 
@@ -1121,22 +1120,6 @@ dependencies = [
 [[package]]
 name = "itoa"
 version = "1.0.18"
-
-[[package]]
-name = "jiff"
-version = "0.2.38"
-dependencies = [
- "jiff-core",
- "log",
- "serde_core",
-]
-
-[[package]]
-name = "jiff-core"
-version = "0.1.1"
-dependencies = [
- "log",
-]
 
 [[package]]
 name = "js-sys"
@@ -2744,6 +2727,7 @@ dependencies = [
  "anyhow",
  "clap",
  "env_logger",
+ "log",
  "wasm-bindgen-cli-support",
 ]
 

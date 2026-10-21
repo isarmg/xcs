@@ -108,3 +108,67 @@ debug ID 继续逐字符替换正反斜杠，不规范化路径；非 UTF-8 路�
 各 `.github/scripts/check-linux-*.py` 在临时消费者里验证保留后端，不是新的活动产品工作区；临时锁不替代根锁。
 `backend_environment.py` 的 CARGO_ENCODED_RUSTFLAGS/非空 RUSTFLAGS 拒绝逻辑保持原样，不通过继承 flags 让矩阵失去覆盖。
 本轮第一批宏包的全部目标 Clippy 与生产 WASM 分发构建均通过。G4/字体/视口及真实 Samba SDK 仍须由本轮 GitHub CI 给出结果。
+
+
+## 第二批：构建日志职责收窄
+
+`tools/web-bindings` 是 env_logger 唯一直接消费者，入口只调用 init。当前只需要构建诊断的级别、目标、RUST_LOG 正则及颜色。
+删除时间戳 feature、TimestampPrecision/Formatter/Builder 时间戳 API、默认格式字段与写出分支、humantime 实现，以及 optional jiff path 边。
+没有留下空 humantime feature 或不再工作的时间戳 setter。消费方显式选择 auto-color 与 regex；服务端日志、SQLite 与认证链没有改变。
+
+根工作区内 jiff、jiff-core 的唯一消费链消失，两者按最后文件摘要及字节数显式退役。原始身份、许可证与 docs/upstream 原始文档继续保留。
+外部 cargo-audit 安装锁与原始发布材料中的锁完全没有修改；“退役”只描述产品/工具活动源码，不宣称外部审计工具也没有同名依赖。
+
+新增两个绑定工具可观测行为回归：级别/目标/消息正则共同过滤，输出不含时间戳；显式颜色仍产生 ANSI 样式。
+env_filter 的现有测试原先因缺 snapbox 无法编译；审查确认它只用于 15 个错误字符串比较。
+保留全部测试用例及全部预期文本，将这 15 处改为标准 assert_eq，不恢复测试框架依赖。
+格式器与过滤器 48 + 18 项单测通过，绑定工具 4 项测试通过；两库回归已加入 build-tools CI。
+
+## 阶段累计结果
+
+| 指标 | c6421fb5 基线 | 两批累计 | 差额 |
+| --- | ---: | ---: | ---: |
+| Cargo 完整根 metadata 包数 | 357 | 353 | -4 |
+| 活动来源树 | 339 | 335 | -4 |
+| merged 来源身份 | 2 | 3 | 1 |
+| retired 历史身份 | 64 | 67 | 3 |
+| foundation 文件数 | 11142 | 11009 | -133 |
+| foundation 字节 | 154448935 | 150449365 | -3999570 |
+
+本轮合并一个来源身份，退役 camino、jiff、jiff-core 三个来源；未引入新的第三方实现、凭据或兼容层。
+上表是活动源码目录统计，包含随功能退役的上游测试材料，不能当作运行时内存/二进制/耗时收益。
+密码、安全、ring、G4、字体、几何和既有存储回归均保留。
+对 c6421fb5 的程序化比较确认 origins 记录摘要、原始 provenance/license 全部字节摘要、ring 当前源码及 src/naming/src/interface 既有 merged 当前摘要未变。
+
+### 已分析但本阶段保留的部分
+
+SQLx migrate 跨 sqlx/core/sqlite 的模块、Any 后端、配置、错误和测试辅助 API；CRC/CRC-catalog 仍由该功能实际启用。
+本阶段未修改 SQLite 或 SQLx 功能表面，完整删除迁移支持留给独立的存储验收批次。
+因此 sha2 0.10 及其三个直接消费者 sqlx-core、web-build、unicode-build 仍保留；没有声称迁移自有工具即可删除旧 SHA-2。
+digest 0.10 另有 Argon2 → blake2 消费者，继续保留。syn、prettyplease、getrandom、base64 的代际并存依据见前表与生成索引。
+
+### 验收边界
+
+第二批发布前验证来源/metadata、生成索引、静态门禁、构建工具全套、绑定工具 Clippy 和生产 WASM。
+最终 13 项 GitHub CI（含真实 Chrome、G4/字体/视口、Samba SDK、原生存储与后端矩阵）以本轮最后代码提交为准；最终状态与运行链接在交付回报中提供。
+本机未运行物理盘故障注入或产品部署，未把上轮 CI 当作本轮结果。
+
+
+第二批本地实际通过的命令：
+
+```sh
+python3 tools/rust-sources/manage.py verify --metadata
+python3 tools/rust-sources/architecture.py verify
+cargo test --locked --offline --lib -p env_logger -p env_filter
+cargo test --locked --offline -p web-bindings
+cargo test --locked --offline --doc -p env_logger -p env_filter
+bash .github/scripts/check.sh build-tools
+bash .github/scripts/check.sh static
+cargo clippy --locked --offline -p web-bindings --all-targets -- -D warnings
+bash .github/scripts/check.sh web-production
+git diff --check
+```
+
+静态套件使用机器已有 Node 的 PATH；148 + 87 + 5 项 Python 回归及 5 项 Node 回归通过。
+修正了原有 suite 测试对“只有一条 cargo test 命令”的假定：现在分别核对工具套件与日志基础库套件，原有 perf-check 解析覆盖和禁止执行工作负载的断言仍保留。
+第一批独立提交为 `c68115eaa9b67797e7521dd93c68c6d1c5cc90d9`，已推送 GitHub；第二批单独提交。

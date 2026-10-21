@@ -227,11 +227,10 @@
 //! ## Tweaking the default format
 //!
 //! Parts of the default format can be excluded from the log output using the [`Builder`].
-//! The following example excludes the timestamp from the log output:
+//! The project default emits level and target without wall-clock timestamps:
 //!
 //! ```
 //! env_logger::builder()
-//!     .format_timestamp(None)
 //!     .init();
 //! ```
 //!
@@ -288,7 +287,7 @@ mod writer;
 
 pub mod fmt;
 
-pub use self::fmt::{Target, TimestampPrecision, WriteStyle};
+pub use self::fmt::{Target, WriteStyle};
 pub use self::logger::*;
 
 #[doc = include_str!("../../../../docs/upstream/env_logger-0.11.11/README.md")]

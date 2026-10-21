@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "lockfiles_sha256": {
-    "Cargo.lock": "b28e242a40ce14a95ee95a84050de6c74c93959980c9b3b54b9005f3e436cf97"
+    "Cargo.lock": "d120ad11ea8d06e667e8a10285a26496a5361337c4632cf24137eb23797baaf9"
   },
   "manifests_sha256": {
     "Cargo.toml": "6079ee1ce3bdccdba31bb917fb80d916fbaebf8e9fffd893670b67dc086da9c3",
@@ -87,7 +87,7 @@
     "src/foundation/either_of/Cargo.toml": "d27a2340cb4aa94eb70a62469d8759bc6a53c3932a15f53dbe21a4fbf4d227f0",
     "src/foundation/email_address/Cargo.toml": "79f69636c2f2476824dbea81ab6766e43ddcc68eafe4c35af9b16db421f06003",
     "src/foundation/env_filter/Cargo.toml": "7afbf7124e3ae7daf8b3e0a58e60e47cfcb3dcbcff2e137a7c19e8e53aa3f9cb",
-    "src/foundation/env_logger/Cargo.toml": "9e3a0a5e9c4a09ee946d52813a6172c1fdeeb53ba190180ba30f3a8089c62fe3",
+    "src/foundation/env_logger/Cargo.toml": "e15628c7b1c5c021c25f4f39220537ce7dba9d5eed145a86ea1654d9a93c5f4e",
     "src/foundation/equivalent/Cargo.toml": "aa0ce4f3911f935d92dc95ec1e0ff23ddde7bc2079f4bdbec220053fbd66cd94",
     "src/foundation/erased/Cargo.toml": "8f61e858b325f73d075c22e770c6e3c922768c5f5f9879c1034ff1e9bfe69130",
     "src/foundation/errno/Cargo.toml": "6124cd43b52f4fc37ca8d3153197e8a5f8d47769b48dad4f8a115d2040053e98",
@@ -155,8 +155,6 @@
     "src/foundation/itertools-0.13.0/Cargo.toml": "a5685fc3649df7bbaa29cbc2530846efbe8b24ee8c434d9d884c5bd3be9f6f61",
     "src/foundation/itertools-0.14.0/Cargo.toml": "6285d8db16db663fdf3c9a9a72072597c59cee04faa3db569a84e4f3e83918df",
     "src/foundation/itoa/Cargo.toml": "91e17d7f7f5a0353ea808436775e7c02ddb18e4fc5c0e1126ee2f507574c541a",
-    "src/foundation/jiff-core/Cargo.toml": "3b0d321654b46c3cdd049ff8c616134dfaf62513961afe966b4b3a57b4166591",
-    "src/foundation/jiff/Cargo.toml": "70037fa632ac0c17bab5ddde6f3d55ee4e28732101879f58d0b9025442425e97",
     "src/foundation/js-sys/Cargo.toml": "378a0a3c01b93d9aef98924e7c96a97d269a70566d8542f2aa19754144b09e55",
     "src/foundation/jsonschema-regex/Cargo.toml": "58e9c97c1cb94e8505d444ce0e0951ca318df3223c2f61b17d7bbeb6b54c9a27",
     "src/foundation/jsonschema-value/Cargo.toml": "f8af66c87c3e7c2ff57793361cfc6f8963ea2e3ece842272cd80d511fa15f54a",
@@ -358,7 +356,7 @@
     "tools/perf-check/Cargo.toml": "4de1de5fcb2384bcd865c1f8533b79fcc1606a006f8c1baf1d6026da19456e65",
     "tools/release-tools/Cargo.toml": "389ade4140b92ee59d358dc15f3b929f743de4d1987313fd1453e6508400676e",
     "tools/unicode-build/Cargo.toml": "c5173d842d3a7bdb01a4687c3c0958482be3dfdbc89a8ea8e0293102342717e0",
-    "tools/web-bindings/Cargo.toml": "3f5facaf987ec3956717cd419a43cdb3e7ea732d1b66ed9006a15b61a8bee7db",
+    "tools/web-bindings/Cargo.toml": "9e4fa929ef20246d202c133c361afe22fb59f05c90d16f5a3352bf301f5bbf34",
     "tools/web-build/Cargo.toml": "efb457397643fdb7037759a198e638af0cd823cd234946687b31c3f1f7325ef7"
   },
   "merges": [
@@ -4614,17 +4612,17 @@
       "version": "0.2.9"
     },
     "src/foundation/env_filter": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；保留上游全部过滤/解析用例与错误预期，将仅比较字符串的 snapbox 断言改为标准 assert_eq，离线测试不恢复上游测试框架依赖。",
       "description": "Filter log events using environment variables",
       "directory": "src/foundation/env_filter",
       "files_sha256": {
         "Cargo.toml": "7afbf7124e3ae7daf8b3e0a58e60e47cfcb3dcbcff2e137a7c19e8e53aa3f9cb",
         "src/directive.rs": "45695d91e33dcf93251542ded1930835a2dd4b231dd8826e77b1dad82b918235",
-        "src/filter.rs": "41231fb0d732271b8400633a4e7a148f3af37d5b76ce27ffe9381706845b4f57",
+        "src/filter.rs": "8d6309b9ebac3ab997dabc78b464066cfae8d07bd7a66bc8990bd5592c3bbd8e",
         "src/filtered_log.rs": "5a2c431b7967e288cba7d0ba4f327c12cb399b8fbe9107c9c7af64d014da7053",
         "src/lib.rs": "cd4aa9c4107b38aeded899f62eae7204c47c48bcc7a5e8d6e41d6711f1b22df6",
         "src/op.rs": "9ccc08ebf820494aa788ac09b09f7d28f4632dc6dbdcc1ee8197bb98cef4ebb2",
-        "src/parser.rs": "4223a5eeb2b1c75f25536922e784b0b86c8c9b75f68c762c715d5a1198409d7c"
+        "src/parser.rs": "c17b96969c5c298ce82338c179f6130ae98a9bd4ed20566e6710aed5f235586b"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -4651,16 +4649,15 @@
       "version": "2.0.0"
     },
     "src/foundation/env_logger": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 8 个独立示例程序及专属输入（7409 字节）；保留文档编译、真实测试及性能基准输入。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 8 个独立示例程序及专属输入（7409 字节）；保留文档编译、真实测试及性能基准输入。；构建工具日志只保留 RUST_LOG 正则、级别/目标和颜色；删除未消费的时间戳 feature、API、实现与 jiff 可选边。",
       "description": "A logging implementation for `log` which is configured via an environment\nvariable.",
       "directory": "src/foundation/env_logger",
       "files_sha256": {
-        "Cargo.toml": "9e3a0a5e9c4a09ee946d52813a6172c1fdeeb53ba190180ba30f3a8089c62fe3",
-        "src/fmt/humantime.rs": "065fafd124e935e3e7ccad6050d2d50acb7e3920ad7df6994d6f992b55e5c244",
+        "Cargo.toml": "e15628c7b1c5c021c25f4f39220537ce7dba9d5eed145a86ea1654d9a93c5f4e",
         "src/fmt/kv.rs": "1a15b740f4b5a67014e3627bd30b5c7583d576ba06fdf6484a2bd95f20f05eb1",
-        "src/fmt/mod.rs": "f851afe481106d1f5ece196f70abc4c7e62b489c5daaffb943e45de40c653a23",
-        "src/lib.rs": "4972855a198d9dc93a6c3ce6b36483e1bf36b3375113fcf14c31fab396259f29",
-        "src/logger.rs": "aef2731d9348ac4b5f9cbc5c556de7a2e2c51c7c34376a9ed8cf3af01f39bcfa",
+        "src/fmt/mod.rs": "33f4faa8323ad49b91b5b129d36ff11909e206d8e67e7f333a2d94e0b6229382",
+        "src/lib.rs": "20696e159ce96a5a895a7bc7b28793786da65162168bdd5825a32092231a7658",
+        "src/logger.rs": "41ea3c1ccabd992f8dfa8fee4626be338f704c40189e725d47c6367bb5350698",
         "src/writer/buffer.rs": "ccb9e7962e707c66aafd36df471f11843f15c8026b1b8c53204f7d8efbe4ecff",
         "src/writer/mod.rs": "e1b92ece9c76e7c3d45338330e3d55b248f104ef781b621283ec8fcb4f9898be",
         "src/writer/target.rs": "34d65a0db699a3848d26027c08246dd2753e395841a5614bf8325f23ed08c206"
@@ -8336,187 +8333,6 @@
         "path_in_vcs": ""
       },
       "version": "1.0.18"
-    },
-    "src/foundation/jiff": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "A date-time library that encourages you to jump into the pit of success.\n\nThis library is heavily inspired by the Temporal project.",
-      "directory": "src/foundation/jiff",
-      "files_sha256": {
-        "Cargo.toml": "70037fa632ac0c17bab5ddde6f3d55ee4e28732101879f58d0b9025442425e97",
-        "src/civil/date.rs": "08259a1897548b191ecf3a9157cdacaf633831fe8346c604066209574300a1b6",
-        "src/civil/datetime.rs": "98b1293476c4f9f04089e7046ca38d9eeee406f4f324cc8bebc7455f5e4e1721",
-        "src/civil/iso_week_date.rs": "c20da6cdde5fa3f3242e6fb37148d1630b5f46ea2d1fed47010a43d90e074436",
-        "src/civil/mod.rs": "a15541cba1256f0adc5840059354fd39b9539c03512747b97f8e86912f014f67",
-        "src/civil/time.rs": "8f4b90ab1ccda4af377577d1636374f9a40856231782c115b41111c9f2eee7da",
-        "src/civil/weekday.rs": "22292b51d1ba3176976673bae3e6d27d052bce2a31825837fb4e910010b861c7",
-        "src/duration.rs": "eefb1080fda30471c26ff2d1b9c4a6a8f1e048b3a5d209edf37841875cddc6f6",
-        "src/error/civil.rs": "ab5f52154d38aba68145717ca81a20bf0c20c5960c44eeb0597fa57777dee347",
-        "src/error/duration.rs": "a0a8577b3973c3781dcfb56e33b95537a8e35bad5fc09842e80dcc39d7e39429",
-        "src/error/fmt/friendly.rs": "66cd210e26e0216b171e7d16cfa861b7175d11699977f2b9d81e6f46fd78125c",
-        "src/error/fmt/mod.rs": "dd28cac0b43645634632601d586ac8902eb26160c098c72b83e90a80df700bb7",
-        "src/error/fmt/offset.rs": "491c0b365f9bd99e1afb96ca330124edfe7d8ce364ee553b14f9d010a86ff885",
-        "src/error/fmt/rfc2822.rs": "9024a0a26da16a65dd2484fcd68a39547dec23bc46245e292616dcfc920d94c5",
-        "src/error/fmt/rfc9557.rs": "d4723e9c15b64613855a329983bbec0f186c1c1c23b9d2194de9346b940f9840",
-        "src/error/fmt/strtime.rs": "e6bd9edb77c9a4b7200cee231f34dbbf400e952ef300fbfe7d4a4f8486f88d16",
-        "src/error/fmt/temporal.rs": "3d64e9b78dfd15213ba6779408d5c8c563658726ab3239c451c4925c97815a6c",
-        "src/error/fmt/util.rs": "bdbd8e7cedd82f7e27e20343a8bf342410eb93d3dfdcc1c22f3ee5ef1496ed90",
-        "src/error/mod.rs": "9afe28f7d258b7be36d52141654ac989a8779fa572c520f8b3efbf0d4e606ef0",
-        "src/error/signed_duration.rs": "6e73cb049a985c1d36b7d760b6431c7edf48dfba9e5fda37d2e3e32b6ae8d1ff",
-        "src/error/span.rs": "a7f51d7324b2ce3722cdeeac075b578dcd4ab61d861f1b1679a15eda3e6016f2",
-        "src/error/timestamp.rs": "f383836cec95725b620de2692a8e61e5c82769fc498d6e859d23c20b1726010d",
-        "src/error/tz/ambiguous.rs": "de52291bb72060fa636f2de6873509e2bd5c64d1685fe2a4218bd8c349c90e68",
-        "src/error/tz/concatenated.rs": "12d0e5c8b94dff85f181ff311c84fbca01f9011882bcad6a4b3d12206884bead",
-        "src/error/tz/db.rs": "a0b13e7081271eac55c2a24a6ac6519622c78551c4e737d15ea882194f12ceec",
-        "src/error/tz/mod.rs": "286f506443da7a0a1f1191c22e95e9781379eb22a71e90f89683baf843743836",
-        "src/error/tz/offset.rs": "8b54ecf5ca39a405f9f59a8d652e5615365cb157e9c57600d4c373784c4523df",
-        "src/error/tz/system.rs": "8c9166d7e15c4929445142345e23917a6a7dc7a44a510809dac357bdb815332f",
-        "src/error/tz/timezone.rs": "86430a29077a2915ddfad38c90bc99020aa6bad128cc671662288b9d05cfaaf9",
-        "src/error/tz/zic.rs": "5f3ab1dd4d438529894e0cd17ec0c9ac8f2fce28dd50e3cb53198638c1a55cf5",
-        "src/error/unit.rs": "cacc3080702618ec8565fd22a1f8ea00a9eef396617cdf4416d2b60d93a50c1c",
-        "src/error/util.rs": "13f845d7dfc5cda7a35443b3114874678f2dd5691d012317f7f5e67f89eb3474",
-        "src/error/zoned.rs": "542e8b3c4194d99b81bce09659791d5cda9eb5b69e2019d9b43dd9f7bcff9079",
-        "src/fmt/buffer.rs": "e305a7b2401f48821fec31d13add58f0eaf6648fbe4304e37b2ec87092d1f8d6",
-        "src/fmt/friendly/mod.rs": "c22216f172c5d945f19fbe60a36789d1c071b7365b88ad108a51325386564cfc",
-        "src/fmt/friendly/parser.rs": "0824eeff16f7d6da0bbd3fa4c9df3368b2f08d6ca96ec39c02b649332f0908e4",
-        "src/fmt/friendly/parser_label.rs": "e4a155bccc9968583d69773547160924813aab412b47cbd9c1e09446b0d34305",
-        "src/fmt/friendly/printer.rs": "70af3f7d27eb64e0e114fe37a64f943b47382b079f3c0efd63bd0119216acbdb",
-        "src/fmt/mod.rs": "b14ad051f233111a37233e9b47e63fae557175a7714f3bf94d7562e34458a31c",
-        "src/fmt/offset.rs": "f656a1b2a7c3c720300bf1ed984f14de4a34fe4501f3c52bb03ce503930471bc",
-        "src/fmt/rfc2822.rs": "87718120243804eea40cd75a28005ba9d54edabc1c96d20b79b528f9d7a7530e",
-        "src/fmt/rfc9557.rs": "6d07fcebf288ed0c422f988a18426aad2f4e6cc723e5b120b88b1ab9f70021ed",
-        "src/fmt/serde.rs": "f12eb07f5b987cf1be4bd88b924f88d076c391bc9930be9d32b4df55101f3197",
-        "src/fmt/strtime/mod.rs": "255ab58b5975cecc7b57d3da315815bbfe93c4f30780d5f6688b67d178d6dcf9",
-        "src/fmt/strtime/parse.rs": "c6cf2b8903827613bae559a73674afc2ac6202558551e483463645da3923de16",
-        "src/fmt/strtime/printer.rs": "7faa6812ffa0719d2c6e09e8364785cbcc36cab7774368d78b8a2d527fe82406",
-        "src/fmt/temporal/mod.rs": "e18c2dae11a4ff643204d773b52fd2a27d9e70d065838915051325c4bff98033",
-        "src/fmt/temporal/parser.rs": "5866b5f7b0e93a7a46247d235b9d305422c99ed6164e75a2155b5e25eeafb350",
-        "src/fmt/temporal/pieces.rs": "f1412de90cf165e738a0ef019cd9527ab9033968c8c64943f2d55e710f1f8d84",
-        "src/fmt/temporal/printer.rs": "0866a28da6f0be1e8c3d962a3e771c2af06667c9be70f76bb8a8242ecb88d660",
-        "src/fmt/util.rs": "08a09fc7812a14ee77631c50d2a8c1d0138150211a2891638dc5f578c7387df0",
-        "src/lib.rs": "672c1547b330b1ff3709d1d1c6c6fbfbef866da06f1336a84dd417a32161547c",
-        "src/logging.rs": "95afe00674ee99240ff3e5cef6b349a1540930d59ce089a429d1d9fa0543a693",
-        "src/now.rs": "722f5edfb097103f83898631156601aae8dda1244301febf9706fac31c22cace",
-        "src/signed_duration.rs": "91cc9f957a8757a7f1f947451f0dc4154cbae2971709702550ed1fc12be902d4",
-        "src/span.rs": "fed8a1496c8bf068e22e9353f08348945e6d46cdbd8876a757898c58d286fa0f",
-        "src/timestamp.rs": "5b938f76d63f7d7b5b6c54dea10b703ed2ab3439b935dc37b666694581b0c03e",
-        "src/tz/ambiguous.rs": "d8e51b6fb682656e85def78ddddb6a862f27385cabf2409dae399e89f545b332",
-        "src/tz/concatenated.rs": "be47d60cdd284924bec1ccf7f8b3e18f1b476ba569de98caf1cb98fc37a881f6",
-        "src/tz/db/bundled/disabled.rs": "c984f14f1f346f874f4a427cf176b559e014ee34faab2520e8b9e617993d812f",
-        "src/tz/db/bundled/enabled.rs": "9a1ceac4b8809831a1b96af9d6495b9300a02b8462296c56d29b8db4eb7bafc6",
-        "src/tz/db/bundled/mod.rs": "be47b2a9f1047d5bf43a53d82245d40bfa7c064af133cf4f0a4cd6e430a5c049",
-        "src/tz/db/concatenated/disabled.rs": "2bb5ab1200a2fd8de977625e5ed6e6e1b70e4eba5b9f7b7754e2906ced0cd423",
-        "src/tz/db/concatenated/enabled.rs": "fcd7940adcb1155f6a53a14d7010534b20a8f3c600ad36bfd551b5427a242a4f",
-        "src/tz/db/concatenated/mod.rs": "6a57f4796c0a2c9b9f3b13a50050bb0b6946ce6c8590e2de5b0141076960246a",
-        "src/tz/db/mod.rs": "1eb6313e2c2dad5067d1c83499003cb97e098e54745546de456187c99f758232",
-        "src/tz/db/zoneinfo/disabled.rs": "aa84ebfa9fbc73c7a29600bc28ac41b5df296d6a36cbc35e0dabbf7542b89488",
-        "src/tz/db/zoneinfo/enabled.rs": "94d525d703a6ab06d6130523d90ccd10479254fbabd86b207f0ee29f2fd5d521",
-        "src/tz/db/zoneinfo/mod.rs": "41653636523558b0c563b6132dd05379e1ca5d77f9ca3ecf6d540ff4a4b84aa3",
-        "src/tz/mod.rs": "2372bcf0665363712346640ccbc9030508b38b9e27ee6f1d1daf8254dbabb148",
-        "src/tz/offset.rs": "297c253dfa4c02d2b5976fedfc1eed7c4db67cd2083448c2170a64a4cd6192dc",
-        "src/tz/posix.rs": "30672dd1e504c4b728be3784f741163f5142f84ee027b46327bb22faed8684aa",
-        "src/tz/system/android.rs": "f407f1dfd1e5ba6ee38cee76de028109f9a8cc5aeeb0c4c5b2f3ff16c98f9abb",
-        "src/tz/system/mod.rs": "62b8561fa6718291203ff41e29f726107d216113424e8f233d72d077561b815d",
-        "src/tz/system/unix.rs": "37e440380315e922996514e1c5dbb8f298cc0a34ca8bf4617ab7f2b949f1c57b",
-        "src/tz/system/wasm_emscripten.rs": "04398a08f6943381f19649c14fce43ed8397de1a52e5e6c3db013dc76b70b074",
-        "src/tz/system/wasm_js.rs": "484dbc81f18c3f6d600879541cecc7dca5d4e0dc316587b3df532ab4dc09ea1a",
-        "src/tz/system/windows/ffi.rs": "e3c2121db444eb9aba3ef7b01072f9a4d203015d93f798c3486daf0bdeedabcc",
-        "src/tz/system/windows/mod.rs": "f1e9f4c1f6a9395c86f222ef880aa58603b7e4adf6e18b01566f2c805f20f20d",
-        "src/tz/system/windows/windows_zones.rs": "b29a64e0677dfa6fe11f79a267d0b9401a400c6ee770a619766d78eec1c20445",
-        "src/tz/testdata.rs": "9027d4d8472d6144ac836d3961c7688d6484eccea0fd9d75d0ecd07dc3311fa6",
-        "src/tz/timezone.rs": "cf6e7e5c0e750fbb5053097f2621a7cc08996e86a04cfecb893e2225bdb83b67",
-        "src/tz/tzif.rs": "ad848b81d3aa011846af3a3dd7ddc7863194b80a8d45e4abaf4c017c94219e67",
-        "src/tz/zic.rs": "bd6205fa2d75deaf760f2eaf2bc48fcc2fa154622481f5655702bd03662b4e8f",
-        "src/util/b.rs": "c801d19833070a6476c66725aca3a6a8dc700ca68c4ea8d6397d28cf2a93fc79",
-        "src/util/borrow.rs": "d03200cbf7c3a778a53ffb952e55fe90922051ab18f1de2a8101b1148110854d",
-        "src/util/cache.rs": "b4506e3fd63b6ce0ef2d5272ece73a71894f3c59dd952507f40d22944b9a5b51",
-        "src/util/constant.rs": "3b7770b3a8743582c794295679493d9f82017685e7d8b49b62f201dc77b1f608",
-        "src/util/escape.rs": "75c47b446f6c279459a4f6f49d547de485cb17e661419aebd21e7dcefcfb7519",
-        "src/util/fs.rs": "9f722129a91aa0d80e60c6171127d4b330cc1f88504d54e5528c4f68f1540ef6",
-        "src/util/libm.rs": "5dc6d82d684a604ce1158a88b81ad09915626211e4f76197d4892c03456a3452",
-        "src/util/mod.rs": "703f22c19a7454430cfbd94d2beb976f2b5cd759f77d5e792ff76dd65024240c",
-        "src/util/parse.rs": "9ed56b145b4f04de9902461c1a5e556f594a7986a88ed64ddcb90843641f3875",
-        "src/util/round.rs": "06e8115488979cc15324d07647d9fa4f6d6853ac47fd4477ef4d4509482e7145",
-        "src/util/sync.rs": "6c251c21c756851edc6bb5b4642ecea51a4730a2ea1eec9c8970ada508a215a9",
-        "src/util/utf8.rs": "c86ee661e9ba9749fdb66640ffc719143e5784eaebc2df94e702c622e85c4fc9",
-        "src/zoned.rs": "bb4bfc1c7e9eaf445a283cbd7065836066f7a9c1a70319d6190dde30adff7dbc",
-        "tests/lib.rs": "e3677c0f1ab7de936a9f556644b7864f53fbdad9a15d773313ee77b3eb2e1a7c"
-      },
-      "license": "Unlicense OR MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/jiff-0.2.38/COPYING",
-        "compliance/licenses/upstream/jiff-0.2.38/LICENSE-MIT",
-        "compliance/licenses/upstream/jiff-0.2.38/UNLICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "jiff",
-      "origin_directory": "vendor/rust/jiff-0.2.38",
-      "repository": "https://github.com/BurntSushi/jiff",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "b2b005715dcbeb0089a3c0dab99f2ff1cc3b2525323552703d648585d342a383",
-        "archive_url": "https://static.crates.io/crates/jiff/jiff-0.2.38.crate",
-        "name": "jiff",
-        "version": "0.2.38"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "4ce3e20ecd3930b6f18cee5b9e4f0270287ea2d9"
-        },
-        "path_in_vcs": "crates/jiff"
-      },
-      "version": "0.2.38"
-    },
-    "src/foundation/jiff-core": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Low level datetime primitives for the Jiff library.",
-      "directory": "src/foundation/jiff-core",
-      "files_sha256": {
-        "Cargo.toml": "3b0d321654b46c3cdd049ff8c616134dfaf62513961afe966b4b3a57b4166591",
-        "src/bounds.rs": "ddca4fa6fcb207525e0a5853208dbba33506041254f0418e665c27006db29554",
-        "src/civil/date.rs": "d49c9d1b078f1f6bb8d11e81e20471fdc4f3ba390e225dcce790330c21ccf5fb",
-        "src/civil/datetime.rs": "d52ef181343c132405c8e2ea0c297cb5b8bc6b7d9fc3059719b1291ac4a4a884",
-        "src/civil/mod.rs": "ff12a3c1babafdcfcf29572815fa58f7c99bc8768cacc2fa4b200e35c3a8d300",
-        "src/civil/time.rs": "39736d076d9cce98febd3584f3d459fe6b0dedc852954b7a411bb91b52a6d32f",
-        "src/civil/weekday.rs": "9765ae19259703645d7e0d728a4522af19e90fb922e987d6fe4c097d7a40241c",
-        "src/constants.rs": "95a93060d6c1530c9262de9696590e619c5c60927a83df8d03aa4212c9b1deac",
-        "src/lib.rs": "ae1e5caed8dac3cb547fbe6ddd4329d4c389419754dd9ec081d2400fc5112978",
-        "src/logging.rs": "8bbba4860a26d229a342aa84fb442d872bc76c5273d7c480d2a5cf0f7c4cc180",
-        "src/macros.rs": "43df251b37f50329b7c79517b9acbb92873a248c7b23cf74f47265d406bede18",
-        "src/timestamp.rs": "b5e6d9df5b58a2e3a634f21168dffb6ade6ed375b46b60214159a7aa9e0cc5a5",
-        "src/tz/mod.rs": "9a5940159f21f7cc399d1fa68c6881304c768d8829910d8c5ca68f8b6d2a4ccf",
-        "src/tz/offset.rs": "9ff3f2c190da97ce2dab76286bd1929287aef9d5a7b4a67b2da5d6adb9f18883",
-        "src/tz/posix.rs": "11c009f67530a5a82adf59acee4d5b3673ec1a1674f3faa2d5e4fbb75b5a7564",
-        "src/tz/tzif/mod.rs": "6ab340ebe715edf76b161b68dc4c89b3f8f8e6980ff107ac04df572af1d4df4d",
-        "src/tz/tzif/parser.rs": "23605c3c53b31ad887366386d780420e3ca18c693ef40499ac22bfa967baa4be",
-        "src/tz/tzif/query.rs": "5e3aba46095ab890eb81dd13b54b3bed5d6bb266272ce28aeaa41b36e73b2886",
-        "src/util/crc32/mod.rs": "398b03985ae57a2ede9f173ee3b8f0538b4c715dae98b4b5f043a0b77b86140d",
-        "src/util/crc32/table.rs": "a8552e6af79d33cb5b59ccc078cd1139d0f981f3d27851af3918c87fd1c4df61",
-        "src/util/mod.rs": "7d8f7315b86066c8fa7b684794fa84b284db5d982d606f432d51150af7d697c6"
-      },
-      "license": "Unlicense OR MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/jiff-core-0.1.1/COPYING",
-        "compliance/licenses/upstream/jiff-core-0.1.1/LICENSE-MIT",
-        "compliance/licenses/upstream/jiff-core-0.1.1/UNLICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "jiff-core",
-      "origin_directory": "vendor/rust/jiff-core-0.1.1",
-      "repository": "https://github.com/BurntSushi/jiff",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "5e52fe76043ccecc9005d2305ebaadf7d7fc0cc89ca6baa10a94d6bc68c7128c",
-        "archive_url": "https://static.crates.io/crates/jiff-core/jiff-core-0.1.1.crate",
-        "name": "jiff-core",
-        "version": "0.1.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "7e8133168382ab8d65a795126c2c9624f61e9e89"
-        },
-        "path_in_vcs": "crates/jiff-core"
-      },
-      "version": "0.1.1"
     },
     "src/foundation/js-sys": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -22201,8 +22017,9 @@
       "description": "ZXS Web-only binding generator derived from wasm-bindgen-cli",
       "directory": "tools/web-bindings",
       "files_sha256": {
-        "Cargo.toml": "3f5facaf987ec3956717cd419a43cdb3e7ea732d1b66ed9006a15b61a8bee7db",
-        "src/main.rs": "5205327444132c0f6144947d3ffa98170f29ebf91f09556b233bd32632fe40a7"
+        "Cargo.toml": "9e4fa929ef20246d202c133c361afe22fb59f05c90d16f5a3352bf301f5bbf34",
+        "src/logging_tests.rs": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9",
+        "src/main.rs": "a233144dc5ef51ceebf1633d79620f9416308ba7c674a87868149f4cb8b0c8bb"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -29599,8 +29416,6 @@
           "features": [
             "auto-color",
             "color",
-            "default",
-            "humantime",
             "regex"
           ],
           "roles": [
@@ -29726,24 +29541,6 @@
         },
         "src/foundation/itoa": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/jiff": {
-          "features": [
-            "alloc",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/jiff-core": {
-          "features": [
-            "alloc",
-            "std"
-          ],
           "roles": [
             "compile"
           ]
@@ -32425,6 +32222,207 @@
         }
       },
       "version": "0.4.3"
+    },
+    "src/foundation/jiff": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "A date-time library that encourages you to jump into the pit of success.\n\nThis library is heavily inspired by the Temporal project.",
+      "directory": "src/foundation/jiff",
+      "files_sha256": {
+        "Cargo.toml": "70037fa632ac0c17bab5ddde6f3d55ee4e28732101879f58d0b9025442425e97",
+        "src/civil/date.rs": "08259a1897548b191ecf3a9157cdacaf633831fe8346c604066209574300a1b6",
+        "src/civil/datetime.rs": "98b1293476c4f9f04089e7046ca38d9eeee406f4f324cc8bebc7455f5e4e1721",
+        "src/civil/iso_week_date.rs": "c20da6cdde5fa3f3242e6fb37148d1630b5f46ea2d1fed47010a43d90e074436",
+        "src/civil/mod.rs": "a15541cba1256f0adc5840059354fd39b9539c03512747b97f8e86912f014f67",
+        "src/civil/time.rs": "8f4b90ab1ccda4af377577d1636374f9a40856231782c115b41111c9f2eee7da",
+        "src/civil/weekday.rs": "22292b51d1ba3176976673bae3e6d27d052bce2a31825837fb4e910010b861c7",
+        "src/duration.rs": "eefb1080fda30471c26ff2d1b9c4a6a8f1e048b3a5d209edf37841875cddc6f6",
+        "src/error/civil.rs": "ab5f52154d38aba68145717ca81a20bf0c20c5960c44eeb0597fa57777dee347",
+        "src/error/duration.rs": "a0a8577b3973c3781dcfb56e33b95537a8e35bad5fc09842e80dcc39d7e39429",
+        "src/error/fmt/friendly.rs": "66cd210e26e0216b171e7d16cfa861b7175d11699977f2b9d81e6f46fd78125c",
+        "src/error/fmt/mod.rs": "dd28cac0b43645634632601d586ac8902eb26160c098c72b83e90a80df700bb7",
+        "src/error/fmt/offset.rs": "491c0b365f9bd99e1afb96ca330124edfe7d8ce364ee553b14f9d010a86ff885",
+        "src/error/fmt/rfc2822.rs": "9024a0a26da16a65dd2484fcd68a39547dec23bc46245e292616dcfc920d94c5",
+        "src/error/fmt/rfc9557.rs": "d4723e9c15b64613855a329983bbec0f186c1c1c23b9d2194de9346b940f9840",
+        "src/error/fmt/strtime.rs": "e6bd9edb77c9a4b7200cee231f34dbbf400e952ef300fbfe7d4a4f8486f88d16",
+        "src/error/fmt/temporal.rs": "3d64e9b78dfd15213ba6779408d5c8c563658726ab3239c451c4925c97815a6c",
+        "src/error/fmt/util.rs": "bdbd8e7cedd82f7e27e20343a8bf342410eb93d3dfdcc1c22f3ee5ef1496ed90",
+        "src/error/mod.rs": "9afe28f7d258b7be36d52141654ac989a8779fa572c520f8b3efbf0d4e606ef0",
+        "src/error/signed_duration.rs": "6e73cb049a985c1d36b7d760b6431c7edf48dfba9e5fda37d2e3e32b6ae8d1ff",
+        "src/error/span.rs": "a7f51d7324b2ce3722cdeeac075b578dcd4ab61d861f1b1679a15eda3e6016f2",
+        "src/error/timestamp.rs": "f383836cec95725b620de2692a8e61e5c82769fc498d6e859d23c20b1726010d",
+        "src/error/tz/ambiguous.rs": "de52291bb72060fa636f2de6873509e2bd5c64d1685fe2a4218bd8c349c90e68",
+        "src/error/tz/concatenated.rs": "12d0e5c8b94dff85f181ff311c84fbca01f9011882bcad6a4b3d12206884bead",
+        "src/error/tz/db.rs": "a0b13e7081271eac55c2a24a6ac6519622c78551c4e737d15ea882194f12ceec",
+        "src/error/tz/mod.rs": "286f506443da7a0a1f1191c22e95e9781379eb22a71e90f89683baf843743836",
+        "src/error/tz/offset.rs": "8b54ecf5ca39a405f9f59a8d652e5615365cb157e9c57600d4c373784c4523df",
+        "src/error/tz/system.rs": "8c9166d7e15c4929445142345e23917a6a7dc7a44a510809dac357bdb815332f",
+        "src/error/tz/timezone.rs": "86430a29077a2915ddfad38c90bc99020aa6bad128cc671662288b9d05cfaaf9",
+        "src/error/tz/zic.rs": "5f3ab1dd4d438529894e0cd17ec0c9ac8f2fce28dd50e3cb53198638c1a55cf5",
+        "src/error/unit.rs": "cacc3080702618ec8565fd22a1f8ea00a9eef396617cdf4416d2b60d93a50c1c",
+        "src/error/util.rs": "13f845d7dfc5cda7a35443b3114874678f2dd5691d012317f7f5e67f89eb3474",
+        "src/error/zoned.rs": "542e8b3c4194d99b81bce09659791d5cda9eb5b69e2019d9b43dd9f7bcff9079",
+        "src/fmt/buffer.rs": "e305a7b2401f48821fec31d13add58f0eaf6648fbe4304e37b2ec87092d1f8d6",
+        "src/fmt/friendly/mod.rs": "c22216f172c5d945f19fbe60a36789d1c071b7365b88ad108a51325386564cfc",
+        "src/fmt/friendly/parser.rs": "0824eeff16f7d6da0bbd3fa4c9df3368b2f08d6ca96ec39c02b649332f0908e4",
+        "src/fmt/friendly/parser_label.rs": "e4a155bccc9968583d69773547160924813aab412b47cbd9c1e09446b0d34305",
+        "src/fmt/friendly/printer.rs": "70af3f7d27eb64e0e114fe37a64f943b47382b079f3c0efd63bd0119216acbdb",
+        "src/fmt/mod.rs": "b14ad051f233111a37233e9b47e63fae557175a7714f3bf94d7562e34458a31c",
+        "src/fmt/offset.rs": "f656a1b2a7c3c720300bf1ed984f14de4a34fe4501f3c52bb03ce503930471bc",
+        "src/fmt/rfc2822.rs": "87718120243804eea40cd75a28005ba9d54edabc1c96d20b79b528f9d7a7530e",
+        "src/fmt/rfc9557.rs": "6d07fcebf288ed0c422f988a18426aad2f4e6cc723e5b120b88b1ab9f70021ed",
+        "src/fmt/serde.rs": "f12eb07f5b987cf1be4bd88b924f88d076c391bc9930be9d32b4df55101f3197",
+        "src/fmt/strtime/mod.rs": "255ab58b5975cecc7b57d3da315815bbfe93c4f30780d5f6688b67d178d6dcf9",
+        "src/fmt/strtime/parse.rs": "c6cf2b8903827613bae559a73674afc2ac6202558551e483463645da3923de16",
+        "src/fmt/strtime/printer.rs": "7faa6812ffa0719d2c6e09e8364785cbcc36cab7774368d78b8a2d527fe82406",
+        "src/fmt/temporal/mod.rs": "e18c2dae11a4ff643204d773b52fd2a27d9e70d065838915051325c4bff98033",
+        "src/fmt/temporal/parser.rs": "5866b5f7b0e93a7a46247d235b9d305422c99ed6164e75a2155b5e25eeafb350",
+        "src/fmt/temporal/pieces.rs": "f1412de90cf165e738a0ef019cd9527ab9033968c8c64943f2d55e710f1f8d84",
+        "src/fmt/temporal/printer.rs": "0866a28da6f0be1e8c3d962a3e771c2af06667c9be70f76bb8a8242ecb88d660",
+        "src/fmt/util.rs": "08a09fc7812a14ee77631c50d2a8c1d0138150211a2891638dc5f578c7387df0",
+        "src/lib.rs": "672c1547b330b1ff3709d1d1c6c6fbfbef866da06f1336a84dd417a32161547c",
+        "src/logging.rs": "95afe00674ee99240ff3e5cef6b349a1540930d59ce089a429d1d9fa0543a693",
+        "src/now.rs": "722f5edfb097103f83898631156601aae8dda1244301febf9706fac31c22cace",
+        "src/signed_duration.rs": "91cc9f957a8757a7f1f947451f0dc4154cbae2971709702550ed1fc12be902d4",
+        "src/span.rs": "fed8a1496c8bf068e22e9353f08348945e6d46cdbd8876a757898c58d286fa0f",
+        "src/timestamp.rs": "5b938f76d63f7d7b5b6c54dea10b703ed2ab3439b935dc37b666694581b0c03e",
+        "src/tz/ambiguous.rs": "d8e51b6fb682656e85def78ddddb6a862f27385cabf2409dae399e89f545b332",
+        "src/tz/concatenated.rs": "be47d60cdd284924bec1ccf7f8b3e18f1b476ba569de98caf1cb98fc37a881f6",
+        "src/tz/db/bundled/disabled.rs": "c984f14f1f346f874f4a427cf176b559e014ee34faab2520e8b9e617993d812f",
+        "src/tz/db/bundled/enabled.rs": "9a1ceac4b8809831a1b96af9d6495b9300a02b8462296c56d29b8db4eb7bafc6",
+        "src/tz/db/bundled/mod.rs": "be47b2a9f1047d5bf43a53d82245d40bfa7c064af133cf4f0a4cd6e430a5c049",
+        "src/tz/db/concatenated/disabled.rs": "2bb5ab1200a2fd8de977625e5ed6e6e1b70e4eba5b9f7b7754e2906ced0cd423",
+        "src/tz/db/concatenated/enabled.rs": "fcd7940adcb1155f6a53a14d7010534b20a8f3c600ad36bfd551b5427a242a4f",
+        "src/tz/db/concatenated/mod.rs": "6a57f4796c0a2c9b9f3b13a50050bb0b6946ce6c8590e2de5b0141076960246a",
+        "src/tz/db/mod.rs": "1eb6313e2c2dad5067d1c83499003cb97e098e54745546de456187c99f758232",
+        "src/tz/db/zoneinfo/disabled.rs": "aa84ebfa9fbc73c7a29600bc28ac41b5df296d6a36cbc35e0dabbf7542b89488",
+        "src/tz/db/zoneinfo/enabled.rs": "94d525d703a6ab06d6130523d90ccd10479254fbabd86b207f0ee29f2fd5d521",
+        "src/tz/db/zoneinfo/mod.rs": "41653636523558b0c563b6132dd05379e1ca5d77f9ca3ecf6d540ff4a4b84aa3",
+        "src/tz/mod.rs": "2372bcf0665363712346640ccbc9030508b38b9e27ee6f1d1daf8254dbabb148",
+        "src/tz/offset.rs": "297c253dfa4c02d2b5976fedfc1eed7c4db67cd2083448c2170a64a4cd6192dc",
+        "src/tz/posix.rs": "30672dd1e504c4b728be3784f741163f5142f84ee027b46327bb22faed8684aa",
+        "src/tz/system/android.rs": "f407f1dfd1e5ba6ee38cee76de028109f9a8cc5aeeb0c4c5b2f3ff16c98f9abb",
+        "src/tz/system/mod.rs": "62b8561fa6718291203ff41e29f726107d216113424e8f233d72d077561b815d",
+        "src/tz/system/unix.rs": "37e440380315e922996514e1c5dbb8f298cc0a34ca8bf4617ab7f2b949f1c57b",
+        "src/tz/system/wasm_emscripten.rs": "04398a08f6943381f19649c14fce43ed8397de1a52e5e6c3db013dc76b70b074",
+        "src/tz/system/wasm_js.rs": "484dbc81f18c3f6d600879541cecc7dca5d4e0dc316587b3df532ab4dc09ea1a",
+        "src/tz/system/windows/ffi.rs": "e3c2121db444eb9aba3ef7b01072f9a4d203015d93f798c3486daf0bdeedabcc",
+        "src/tz/system/windows/mod.rs": "f1e9f4c1f6a9395c86f222ef880aa58603b7e4adf6e18b01566f2c805f20f20d",
+        "src/tz/system/windows/windows_zones.rs": "b29a64e0677dfa6fe11f79a267d0b9401a400c6ee770a619766d78eec1c20445",
+        "src/tz/testdata.rs": "9027d4d8472d6144ac836d3961c7688d6484eccea0fd9d75d0ecd07dc3311fa6",
+        "src/tz/timezone.rs": "cf6e7e5c0e750fbb5053097f2621a7cc08996e86a04cfecb893e2225bdb83b67",
+        "src/tz/tzif.rs": "ad848b81d3aa011846af3a3dd7ddc7863194b80a8d45e4abaf4c017c94219e67",
+        "src/tz/zic.rs": "bd6205fa2d75deaf760f2eaf2bc48fcc2fa154622481f5655702bd03662b4e8f",
+        "src/util/b.rs": "c801d19833070a6476c66725aca3a6a8dc700ca68c4ea8d6397d28cf2a93fc79",
+        "src/util/borrow.rs": "d03200cbf7c3a778a53ffb952e55fe90922051ab18f1de2a8101b1148110854d",
+        "src/util/cache.rs": "b4506e3fd63b6ce0ef2d5272ece73a71894f3c59dd952507f40d22944b9a5b51",
+        "src/util/constant.rs": "3b7770b3a8743582c794295679493d9f82017685e7d8b49b62f201dc77b1f608",
+        "src/util/escape.rs": "75c47b446f6c279459a4f6f49d547de485cb17e661419aebd21e7dcefcfb7519",
+        "src/util/fs.rs": "9f722129a91aa0d80e60c6171127d4b330cc1f88504d54e5528c4f68f1540ef6",
+        "src/util/libm.rs": "5dc6d82d684a604ce1158a88b81ad09915626211e4f76197d4892c03456a3452",
+        "src/util/mod.rs": "703f22c19a7454430cfbd94d2beb976f2b5cd759f77d5e792ff76dd65024240c",
+        "src/util/parse.rs": "9ed56b145b4f04de9902461c1a5e556f594a7986a88ed64ddcb90843641f3875",
+        "src/util/round.rs": "06e8115488979cc15324d07647d9fa4f6d6853ac47fd4477ef4d4509482e7145",
+        "src/util/sync.rs": "6c251c21c756851edc6bb5b4642ecea51a4730a2ea1eec9c8970ada508a215a9",
+        "src/util/utf8.rs": "c86ee661e9ba9749fdb66640ffc719143e5784eaebc2df94e702c622e85c4fc9",
+        "src/zoned.rs": "bb4bfc1c7e9eaf445a283cbd7065836066f7a9c1a70319d6190dde30adff7dbc",
+        "tests/lib.rs": "e3677c0f1ab7de936a9f556644b7864f53fbdad9a15d773313ee77b3eb2e1a7c"
+      },
+      "license": "Unlicense OR MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/jiff-0.2.38/COPYING",
+        "compliance/licenses/upstream/jiff-0.2.38/LICENSE-MIT",
+        "compliance/licenses/upstream/jiff-0.2.38/UNLICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "jiff",
+      "origin_directory": "vendor/rust/jiff-0.2.38",
+      "repository": "https://github.com/BurntSushi/jiff",
+      "retirement": {
+        "bytes": 3241731,
+        "category": "unused-build-log-timestamps",
+        "file_count": 98,
+        "reason": "唯一消费链为 web-bindings → env_logger 的日志时间戳；构建工具无需日历/时区格式化，时间戳 API、feature 与可选 path 边已整体移除，RUST_LOG 正则与颜色保留。",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "b2b005715dcbeb0089a3c0dab99f2ff1cc3b2525323552703d648585d342a383",
+        "archive_url": "https://static.crates.io/crates/jiff/jiff-0.2.38.crate",
+        "name": "jiff",
+        "version": "0.2.38"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "4ce3e20ecd3930b6f18cee5b9e4f0270287ea2d9"
+        },
+        "path_in_vcs": "crates/jiff"
+      },
+      "version": "0.2.38"
+    },
+    "src/foundation/jiff-core": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Low level datetime primitives for the Jiff library.",
+      "directory": "src/foundation/jiff-core",
+      "files_sha256": {
+        "Cargo.toml": "3b0d321654b46c3cdd049ff8c616134dfaf62513961afe966b4b3a57b4166591",
+        "src/bounds.rs": "ddca4fa6fcb207525e0a5853208dbba33506041254f0418e665c27006db29554",
+        "src/civil/date.rs": "d49c9d1b078f1f6bb8d11e81e20471fdc4f3ba390e225dcce790330c21ccf5fb",
+        "src/civil/datetime.rs": "d52ef181343c132405c8e2ea0c297cb5b8bc6b7d9fc3059719b1291ac4a4a884",
+        "src/civil/mod.rs": "ff12a3c1babafdcfcf29572815fa58f7c99bc8768cacc2fa4b200e35c3a8d300",
+        "src/civil/time.rs": "39736d076d9cce98febd3584f3d459fe6b0dedc852954b7a411bb91b52a6d32f",
+        "src/civil/weekday.rs": "9765ae19259703645d7e0d728a4522af19e90fb922e987d6fe4c097d7a40241c",
+        "src/constants.rs": "95a93060d6c1530c9262de9696590e619c5c60927a83df8d03aa4212c9b1deac",
+        "src/lib.rs": "ae1e5caed8dac3cb547fbe6ddd4329d4c389419754dd9ec081d2400fc5112978",
+        "src/logging.rs": "8bbba4860a26d229a342aa84fb442d872bc76c5273d7c480d2a5cf0f7c4cc180",
+        "src/macros.rs": "43df251b37f50329b7c79517b9acbb92873a248c7b23cf74f47265d406bede18",
+        "src/timestamp.rs": "b5e6d9df5b58a2e3a634f21168dffb6ade6ed375b46b60214159a7aa9e0cc5a5",
+        "src/tz/mod.rs": "9a5940159f21f7cc399d1fa68c6881304c768d8829910d8c5ca68f8b6d2a4ccf",
+        "src/tz/offset.rs": "9ff3f2c190da97ce2dab76286bd1929287aef9d5a7b4a67b2da5d6adb9f18883",
+        "src/tz/posix.rs": "11c009f67530a5a82adf59acee4d5b3673ec1a1674f3faa2d5e4fbb75b5a7564",
+        "src/tz/tzif/mod.rs": "6ab340ebe715edf76b161b68dc4c89b3f8f8e6980ff107ac04df572af1d4df4d",
+        "src/tz/tzif/parser.rs": "23605c3c53b31ad887366386d780420e3ca18c693ef40499ac22bfa967baa4be",
+        "src/tz/tzif/query.rs": "5e3aba46095ab890eb81dd13b54b3bed5d6bb266272ce28aeaa41b36e73b2886",
+        "src/util/crc32/mod.rs": "398b03985ae57a2ede9f173ee3b8f0538b4c715dae98b4b5f043a0b77b86140d",
+        "src/util/crc32/table.rs": "a8552e6af79d33cb5b59ccc078cd1139d0f981f3d27851af3918c87fd1c4df61",
+        "src/util/mod.rs": "7d8f7315b86066c8fa7b684794fa84b284db5d982d606f432d51150af7d697c6"
+      },
+      "license": "Unlicense OR MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/jiff-core-0.1.1/COPYING",
+        "compliance/licenses/upstream/jiff-core-0.1.1/LICENSE-MIT",
+        "compliance/licenses/upstream/jiff-core-0.1.1/UNLICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "jiff-core",
+      "origin_directory": "vendor/rust/jiff-core-0.1.1",
+      "repository": "https://github.com/BurntSushi/jiff",
+      "retirement": {
+        "bytes": 559006,
+        "category": "unused-build-log-timestamps",
+        "file_count": 21,
+        "reason": "唯一消费链为 web-bindings → env_logger 的日志时间戳；构建工具无需日历/时区格式化，时间戳 API、feature 与可选 path 边已整体移除，RUST_LOG 正则与颜色保留。",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "5e52fe76043ccecc9005d2305ebaadf7d7fc0cc89ca6baa10a94d6bc68c7128c",
+        "archive_url": "https://static.crates.io/crates/jiff-core/jiff-core-0.1.1.crate",
+        "name": "jiff-core",
+        "version": "0.1.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "7e8133168382ab8d65a795126c2c9624f61e9e89"
+        },
+        "path_in_vcs": "crates/jiff-core"
+      },
+      "version": "0.1.1"
     },
     "src/foundation/jiff-static": {
       "changes": "锁文件超集保留，未在登记的 normal/build 闭包选中；未声称属于生产运行代码。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -40942,6 +40940,8 @@
     "src/foundation/defmt-parser": "13fb36063c62bb805fbe9a25c5fa8f5867cd67c88399ade25dc43767a9a0b35a",
     "src/foundation/dotenvy": "cd5f14644b5a7aa236d7018bb77f9a1ad3c2fd719762e2320713321205c28e3f",
     "src/foundation/hex": "37146935caac26425e292364a000256037ac1737af648797011f3538a82dccab",
+    "src/foundation/jiff": "897579d87e1f93cdc3350b1e28126d371c8d8ace10305016e130362e1cc0c928",
+    "src/foundation/jiff-core": "84153b337c3b4d6a08ae32b16e48148c4ae55028eb9d8f729d6a85ee71335f26",
     "src/foundation/jiff-static": "a5c7f332c971252392426c6cba3d526166cc12fe3675a67671e1d9c64134db35",
     "src/foundation/lru-slab": "3e22d7677884e82f33389c358d993d081571bd032c688d442c058ee9703ecc70",
     "src/foundation/ntapi": "9d9471eee04e049fbe93c13484d10bad6a3e7d688c64b426d902b8a817612b99",

@@ -37,8 +37,7 @@ repository = "https://github.com/rust-cli/env_logger"
 [features]
 auto-color = ["color", "anstream/auto"]
 color = ["dep:anstream", "dep:anstyle"]
-default = ["auto-color", "humantime", "regex"]
-humantime = ["dep:jiff"]
+default = ["auto-color", "regex"]
 kv = ["log/kv"]
 regex = ["env_filter/regex"]
 unstable-kv = ["kv"]
@@ -64,13 +63,6 @@ version = "2.0.0"
 features = ["std"]
 default-features = false
 path = "../env_filter"
-
-[dependencies.jiff]
-version = "0.2.22"
-features = ["std"]
-optional = true
-default-features = false
-path = "../jiff"
 
 [dependencies.log]
 version = "0.4.29"

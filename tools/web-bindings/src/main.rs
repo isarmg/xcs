@@ -105,3 +105,6 @@ mod tests {
         assert!(run(["wasm-bindgen", "--help"]).is_ok());
     }
 }
+
+#[cfg(test)]
+mod logging_tests;

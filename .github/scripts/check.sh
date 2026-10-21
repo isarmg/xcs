@@ -73,6 +73,7 @@ case "${1:-}" in
     ;;
   build-tools)
     cargo test --locked --offline -p web-bindings -p release-tools -p web-build -p unicode-build -p perf-check
+    cargo test --locked --offline --lib -p env_logger -p env_filter
     bash .github/scripts/tests/release-package.sh
     bash .github/scripts/tests/release-publish.sh
     python3 -m unittest discover -s .github/scripts/tests -p 'test_offline_builds.py'

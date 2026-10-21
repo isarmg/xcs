@@ -55,6 +55,11 @@ class SuiteCoverageTests(unittest.TestCase):
         self.assertIn("--offline", call["args"])
         self.assertFalse({"--tests", "--lib", "--bins", "--no-run", "--doc"}.intersection(call["args"]))
 
+    def test_build_tools_keep_log_filter_and_formatter_regressions(self):
+        calls = self.suite("build-tools")
+        self.assertIn({"tool": "cargo", "args": ["test", "--locked", "--offline", "--lib", "-p", "env_logger", "-p", "env_filter"]}, calls)
+        self.assertTrue(any(call["tool"] == "cargo" and "web-bindings" in call["args"] for call in calls))
+
     def test_removed_demo_suite_fails_before_running_tools(self):
         result = subprocess.run(
             ["bash", str(self.root / ".github/scripts/check.sh"), "demo"],
@@ -92,7 +97,8 @@ class SuiteCoverageTests(unittest.TestCase):
     def test_build_tools_cover_report_parsing_without_running_a_workload(self):
         calls = self.suite("build-tools")
         tests = [call for call in calls
-                 if call["tool"] == "cargo" and call["args"][0] == "test"]
+                 if call["tool"] == "cargo" and call["args"][0] == "test"
+                 and "perf-check" in call["args"]]
         self.assertEqual(len(tests), 1)
         self.assertIn("perf-check", tests[0]["args"])
         self.assertTrue(any(

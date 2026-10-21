@@ -262,7 +262,6 @@ impl fmt::Debug for Filter {
 #[cfg(test)]
 mod tests {
     use log::{Level, LevelFilter};
-    use snapbox::{assert_data_eq, str};
 
     use super::{enabled, Builder, Directive, Filter};
 
@@ -493,9 +492,9 @@ mod tests {
     #[test]
     fn try_parse_invalid_filter() {
         let error = Builder::new().try_parse("info,crate1=invalid").unwrap_err();
-        assert_data_eq!(
-            error,
-            str!["error parsing logger filter: invalid logging spec 'invalid'"]
+        assert_eq!(
+            (error).to_string(),
+            "error parsing logger filter: invalid logging spec 'invalid'"
         );
     }
 

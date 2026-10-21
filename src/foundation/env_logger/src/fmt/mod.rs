@@ -67,47 +67,18 @@ use std::{fmt, io, mem};
 use log::Level;
 use log::Record;
 
-#[cfg(feature = "humantime")]
-mod humantime;
 #[cfg(feature = "kv")]
 mod kv;
 
 #[cfg(feature = "color")]
 pub use anstyle as style;
 
-#[cfg(feature = "humantime")]
-pub use self::humantime::Timestamp;
 #[cfg(feature = "kv")]
 pub use self::kv::*;
 pub use crate::writer::Target;
 pub use crate::writer::WriteStyle;
 
 use crate::writer::{Buffer, Writer};
-
-/// Formatting precision of timestamps.
-///
-/// Seconds give precision of full seconds, milliseconds give thousands of a
-/// second (3 decimal digits), microseconds are millionth of a second (6 decimal
-/// digits) and nanoseconds are billionth of a second (9 decimal digits).
-#[allow(clippy::exhaustive_enums)] // compatibility
-#[derive(Copy, Clone, Debug)]
-pub enum TimestampPrecision {
-    /// Full second precision (0 decimal digits)
-    Seconds,
-    /// Millisecond precision (3 decimal digits)
-    Millis,
-    /// Microsecond precision (6 decimal digits)
-    Micros,
-    /// Nanosecond precision (9 decimal digits)
-    Nanos,
-}
-
-/// The default timestamp precision is seconds.
-impl Default for TimestampPrecision {
-    fn default() -> Self {
-        TimestampPrecision::Seconds
-    }
-}
 
 /// A formatter to write logs into.
 ///
@@ -278,7 +249,6 @@ type StyledValue<T> = T;
 /// A [custom format][crate::Builder::format] with settings for which fields to show
 pub struct ConfigurableFormat {
     // This format needs to work with any combination of crate features.
-    pub(crate) timestamp: Option<TimestampPrecision>,
     pub(crate) module_path: bool,
     pub(crate) target: bool,
     pub(crate) level: bool,
@@ -343,12 +313,6 @@ impl ConfigurableFormat {
         self
     }
 
-    /// Configures if timestamp should be included and in what precision.
-    pub fn timestamp(&mut self, timestamp: Option<TimestampPrecision>) -> &mut Self {
-        self.timestamp = timestamp;
-        self
-    }
-
     /// Configures the end of line suffix.
     pub fn suffix(&mut self, suffix: &'static str) -> &mut Self {
         self.suffix = suffix;
@@ -378,7 +342,6 @@ impl ConfigurableFormat {
 impl Default for ConfigurableFormat {
     fn default() -> Self {
         Self {
-            timestamp: Some(Default::default()),
             module_path: false,
             target: true,
             level: true,
@@ -409,7 +372,6 @@ struct ConfigurableFormatWriter<'a> {
 
 impl ConfigurableFormatWriter<'_> {
     fn write(mut self, record: &Record<'_>) -> io::Result<()> {
-        self.write_timestamp()?;
         self.write_level(record)?;
         self.write_module_path(record)?;
         self.write_source_location(record)?;
@@ -475,29 +437,6 @@ impl ConfigurableFormatWriter<'_> {
         };
 
         self.write_header_value(format_args!("{level:<5}"))
-    }
-
-    fn write_timestamp(&mut self) -> io::Result<()> {
-        #[cfg(feature = "humantime")]
-        {
-            use self::TimestampPrecision::{Micros, Millis, Nanos, Seconds};
-            let ts = match self.format.timestamp {
-                None => return Ok(()),
-                Some(Seconds) => self.buf.timestamp_seconds(),
-                Some(Millis) => self.buf.timestamp_millis(),
-                Some(Micros) => self.buf.timestamp_micros(),
-                Some(Nanos) => self.buf.timestamp_nanos(),
-            };
-
-            self.write_header_value(ts)
-        }
-        #[cfg(not(feature = "humantime"))]
-        {
-            // Trick the compiler to think we have used self.timestamp
-            // Workaround for "field is never used: `timestamp`" compiler nag.
-            let _ = self.format.timestamp;
-            Ok(())
-        }
     }
 
     fn write_module_path(&mut self, record: &Record<'_>) -> io::Result<()> {
@@ -662,7 +601,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: true,
                 target: false,
                 level: true,
@@ -686,7 +624,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: false,
                 target: false,
                 level: false,
@@ -710,7 +647,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: true,
                 target: false,
                 level: true,
@@ -734,7 +670,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: true,
                 target: false,
                 level: true,
@@ -758,7 +693,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: false,
                 target: false,
                 level: false,
@@ -782,7 +716,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: false,
                 target: false,
                 level: false,
@@ -806,7 +739,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: false,
                 target: false,
                 level: false,
@@ -832,7 +764,6 @@ mod tests {
             "target",
             ConfigurableFormatWriter {
                 format: &ConfigurableFormat {
-                    timestamp: None,
                     module_path: true,
                     target: true,
                     level: true,
@@ -857,7 +788,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: true,
                 target: true,
                 level: true,
@@ -883,7 +813,6 @@ mod tests {
             "target",
             ConfigurableFormatWriter {
                 format: &ConfigurableFormat {
-                    timestamp: None,
                     module_path: true,
                     target: false,
                     level: true,
@@ -908,7 +837,6 @@ mod tests {
 
         let written = write(ConfigurableFormatWriter {
             format: &ConfigurableFormat {
-                timestamp: None,
                 module_path: false,
                 target: false,
                 level: true,
@@ -942,7 +870,6 @@ mod tests {
             record,
             ConfigurableFormatWriter {
                 format: &ConfigurableFormat {
-                    timestamp: None,
                     module_path: false,
                     target: false,
                     level: true,
@@ -979,7 +906,6 @@ mod tests {
             record,
             ConfigurableFormatWriter {
                 format: &ConfigurableFormat {
-                    timestamp: None,
                     module_path: true,
                     target: true,
                     level: true,
