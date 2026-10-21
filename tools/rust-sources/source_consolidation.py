@@ -11,6 +11,7 @@ from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
+import posixpath
 import re
 import tomllib
 
@@ -118,6 +119,7 @@ def _archive(route, expected):
         raise ValueError('archived consolidation manifest is not valid TOML') from error
     if not isinstance(manifest.get('package'), dict):
         raise ValueError('archived consolidation manifest lacks package identity')
+    return manifest['package']
 
 
 
@@ -130,6 +132,10 @@ def _source_archive(relative, route, expected):
                 'legal', 'license', 'licenses', 'licensing', 'copyright', 'notice',
                 'provenance', 'compliance'}):
         raise ValueError('source archive requires a non-entrypoint Rust implementation path')
+    return _source_archive_bytes(route, expected)
+
+
+def _source_archive_bytes(route, expected):
     reason = route['reason']
     if not isinstance(reason, str) or not 40 <= len(reason.strip()) <= 10000:
         raise ValueError('source archive requires a substantive reviewed reason')
@@ -148,6 +154,90 @@ def _source_archive(relative, route, expected):
             or hashlib.sha256(raw).hexdigest() != expected):
         raise ValueError('source archive bytes differ from exact input hash/bound')
     return len(raw)
+
+
+def _build_script_archive(relative, route, expected, directory, package, record):
+    """Archive only an authenticated secondary build entrypoint into inert evidence."""
+    if (route['kind'] != 'archived-build-script' or relative != 'build.rs'
+            or directory == record['primary_directory']):
+        raise ValueError('build script archive requires a secondary root build.rs')
+    manifest_route = record['file_routes'][directory].get('Cargo.toml')
+    if not isinstance(manifest_route, dict) or set(manifest_route) != {'archive_base64'}:
+        raise ValueError('build script archive requires the exact archived input manifest')
+    manifest = _archive(manifest_route, package['files_sha256']['Cargo.toml'])
+    if (manifest.get('name') != package['name'] or manifest.get('version') != package['version']
+            or manifest.get('build', 'build.rs') != 'build.rs'
+            or 'links' in manifest
+            or (isinstance(manifest.get('license-file'), str)
+                and posixpath.normpath(manifest['license-file']) == 'build.rs')
+            or any(posixpath.normpath(path) in ('build.rs', directory + '/build.rs')
+                   for path in package.get('license_materials', []))):
+        raise ValueError('build script archive input identity/build/legal ownership mismatch')
+    after = record['destination_files_sha256']
+    destination_manifest = _archive({'archive_base64': route['destination_manifest_base64']},
+                                    after['Cargo.toml'])
+    if (destination_manifest.get('name') != record['destination_name']
+            or destination_manifest.get('build') is not False
+            or 'links' in destination_manifest or 'build.rs' in after
+            or expected in after.values()):
+        raise ValueError('build script archive requires an explicitly inert destination')
+    return _source_archive_bytes(route, expected)
+
+
+def _primary_build_retirement(root, relative, route, expected, directory, package, record):
+    """Authenticate a reviewed static replacement, not behavioral equivalence."""
+    if (route['kind'] != 'primary-build-script-retirement' or relative != 'build.rs'
+            or directory != record['primary_directory']):
+        raise ValueError('primary build retirement requires the primary root build.rs')
+    if record['file_routes'][directory].get('Cargo.toml') != {'destination': 'Cargo.toml'}:
+        raise ValueError('primary build retirement must retain the primary manifest route')
+    manifest = _archive({'archive_base64': route['original_manifest_base64']},
+                        package['files_sha256']['Cargo.toml'])
+    if (manifest.get('name') != package['name'] or manifest.get('version') != package['version']
+            or manifest.get('build', 'build.rs') != 'build.rs' or 'links' in manifest
+            or (isinstance(manifest.get('license-file'), str)
+                and posixpath.normpath(manifest['license-file']) == 'build.rs')
+            or any(posixpath.normpath(path) in ('build.rs', directory + '/build.rs')
+                   for path in package.get('license_materials', []))):
+        raise ValueError('primary build retirement input identity/build/legal ownership mismatch')
+    after = record['destination_files_sha256']
+    destination = _archive({'archive_base64': route['destination_manifest_base64']}, after['Cargo.toml'])
+    if (destination.get('name') != record['destination_name']
+            or destination.get('version') != package['version']
+            or destination.get('build') is not False or 'links' in destination
+            or 'build.rs' in after or expected in after.values()):
+        raise ValueError('primary build retirement requires an explicitly inert destination')
+    toolchain = route['toolchain']
+    if (not isinstance(toolchain, dict) or set(toolchain) != {'rust_version', 'targets', 'assumptions'}
+            or toolchain['rust_version'] != '1.99' or destination.get('rust-version') != '1.99'
+            or toolchain['targets'] != ['x86_64-unknown-linux-gnu', 'wasm32-unknown-unknown']
+            or not isinstance(toolchain['assumptions'], str)
+            or not 40 <= len(toolchain['assumptions'].strip()) <= 10000):
+        raise ValueError('primary build retirement requires explicit supported toolchain assumptions')
+    replacements = route['replacement_sources']
+    if (not isinstance(replacements, dict) or not 1 <= len(replacements) <= 16
+            or 'src/lib.rs' not in replacements):
+        raise ValueError('primary build retirement requires bounded static replacement sources')
+    total = 0
+    for path, evidence in replacements.items():
+        _safe(root, path)
+        if (not path.startswith('src/') or not path.endswith('.rs') or path in ('src/main.rs', 'src/build.rs')
+                or {part.lower().split('.', 1)[0] for part in path.split('/')} & {
+                    'test', 'tests', 'bench', 'benches', 'example', 'examples', 'fixture', 'fixtures',
+                    'legal', 'license', 'licenses', 'licensing', 'copyright', 'notice', 'provenance', 'compliance'}
+                or path not in after or not isinstance(evidence, dict)
+                or set(evidence) != {'sha256', 'archive_base64'}):
+            raise ValueError('primary build retirement replacement must be an inventoried Rust production source')
+        size = _source_archive_bytes(dict(evidence, reason=route['reason']), after[path])
+        total += size
+        if size > 256 * 1024 or total > 1024 * 1024:
+            raise ValueError('primary build retirement replacement byte bound exceeded')
+    return _source_archive_bytes(route, expected)
+
+
+def _has_build_script_archive(record):
+    return any(route.get('kind') in ('archived-build-script', 'primary-build-script-retirement')
+               for mapping in record['file_routes'].values() for route in mapping.values())
 
 
 def _record(root, record):
@@ -201,6 +291,19 @@ def _record(root, record):
                 if target not in after:
                     raise ValueError('consolidation production route target missing from destination')
                 mapped.add(target)
+            elif set(route) == {'kind', 'sha256', 'archive_base64', 'reason', 'destination_manifest_base64',
+                                'original_manifest_base64', 'replacement_sources', 'toolchain'}:
+                archived_bytes += _primary_build_retirement(root, relative, route, package['files_sha256'][relative],
+                                                           directory, package, record)
+                archived_count += 1
+                if archived_count > MAX_SOURCE_ARCHIVES or archived_bytes > MAX_SOURCE_ARCHIVE_TOTAL:
+                    raise ValueError('aggregate source archive bound exceeded')
+            elif set(route) == {'kind', 'sha256', 'archive_base64', 'reason', 'destination_manifest_base64'}:
+                archived_bytes += _build_script_archive(relative, route, package['files_sha256'][relative],
+                                                       directory, package, record)
+                archived_count += 1
+                if archived_count > MAX_SOURCE_ARCHIVES or archived_bytes > MAX_SOURCE_ARCHIVE_TOTAL:
+                    raise ValueError('aggregate source archive bound exceeded')
             elif set(route) == {'kind', 'sha256', 'archive_base64', 'reason'}:
                 archived_bytes += _source_archive(relative, route, package['files_sha256'][relative])
                 archived_count += 1
@@ -258,6 +361,9 @@ def _manifest(root, record, primary):
         raise ValueError('invalid consolidation destination manifest') from error
     if manifest.get('name') != record['destination_name'] or version != primary['version']:
         raise ValueError('consolidation manifest name/version identity drift')
+    if _has_build_script_archive(record) and (manifest.get('build') is not False
+            or 'links' in manifest or (directory / 'build.rs').exists()):
+        raise ValueError('archived build script destination must remain explicitly inert')
 
 
 def _origin_rows(catalog):
@@ -362,8 +468,8 @@ def _unhandled_history(root, previous, inputs, destination, records, record=None
         if (row.get('package', {}).get('directory') in directories | {destination}
                 or row.get('successor_origin_directory') in origins):
             raise ValueError('consolidating upgraded inputs requires a chain-aware adapter')
-    for record in records.values():
-        used = {item['package']['directory'] for item in record['inputs']} | {record['destination_directory']}
+    for prior_record in records.values():
+        used = {item['package']['directory'] for item in prior_record['inputs']} | {prior_record['destination_directory']}
         if used & (directories | {destination}):
             raise ValueError('consolidating prior consolidation inputs requires a chain-aware adapter')
     for receipt in ('compliance/ring-test-relocation.json', 'compliance/platform-test-relocation.json'):
@@ -371,6 +477,9 @@ def _unhandled_history(root, previous, inputs, destination, records, record=None
         if path.exists():
             content = path.read_text(encoding='utf-8')
             if any(directory in content or 'test/foundation/' + directory.rsplit('/', 1)[1] in content for directory in directories):
+                if any(route.get('kind') == 'primary-build-script-retirement'
+                       for mapping in (record or {}).get('file_routes', {}).values() for route in mapping.values()):
+                    raise ValueError('primary build retirement cannot authorize pinned source')
                 if authorize_pinned is None or authorize_pinned(root, previous, record) is not True:
                     raise ValueError('consolidating pinned source requires a historical-view adapter')
 

@@ -213,6 +213,39 @@ encoded sizes are checked before decoding. Missing bytes, generic discard routes
 and source-to-test archive substitutions are rejected. Existing redundant-root-
 manifest archives keep their separate format and identity checks.
 
+A separate `archived-build-script` disposition can preserve only a secondary
+input's exact root `build.rs`. Its fields are `kind`, `sha256`, `archive_base64`,
+`reason`, and `destination_manifest_base64`. The original root manifest must be
+archived with its exact input hash; its package name/version and explicit or
+implicit `build.rs` declaration must match. Primary scripts, custom build paths,
+native `links` owners and legal-material ownership are rejected. The extra
+manifest archive must match the destination Cargo.toml hash and name and declare
+`build = false`; the destination must contain neither root `build.rs` nor an
+exact copy of the retired script. Current manifest validation also requires this
+destination to remain build-disabled and without `links` or root `build.rs`.
+The same source UTF-8, reason, per-file and aggregate bounds apply. This does not
+relax `archived-source`, authorize arbitrary entrypoint deletion or grant test
+migration permissions. Both manifests and the script remain immutable evidence.
+
+A primary script cannot use the secondary disposition. Its separate
+`primary-build-script-retirement` route must additionally contain
+`original_manifest_base64`, `replacement_sources`, and `toolchain`. The original
+manifest is authenticated against the primary input hash and identity while its
+normal manifest destination route remains intact. The destination must also
+retain the primary version. `replacement_sources` records exact UTF-8 bytes and
+SHA-256 hashes for 1–16 inventoried production Rust files, including `src/lib.rs`,
+with a 256 KiB per-file and 1 MiB aggregate limit. Tests, fixtures, legal files,
+custom build entrypoints and non-source paths are not replacement evidence.
+`toolchain` declares `rust_version: "1.99"`, the ordered targets
+`["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]`, and substantive
+`assumptions` (40–10,000 characters); the destination manifest must declare that
+Rust version. This project-specific bounded disposition does not authorize other
+toolchains or targets. It retains the original script and replacement evidence
+without claiming their behavioral or bytecode equivalence; feature, generated
+API and target-behavior tests remain mandatory engineering review evidence.
+Pinned-source consolidation cannot use this route, even with a pinned-source
+authorizer. Existing pinned projection still forbids every primary archive.
+
 Archived implementation bytes live only in the explicit consolidation receipt,
 not disguised as maintained files in `src/`. They are historical material, not
 active production inventory or evidence of functional equivalence. Original
