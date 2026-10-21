@@ -42,6 +42,7 @@
     "tools/web-bindings/Cargo.toml",
     "tools/web-build/build-inputs.json",
     "tools/rust-sources/source_consolidation.py",
-    "tools/rust-sources/external_transfers.py"
+    "tools/rust-sources/external_transfers.py",
+    "tools/rust-sources/source_history_chain.py"
   ]
 }

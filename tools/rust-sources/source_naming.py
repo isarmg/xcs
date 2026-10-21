@@ -165,6 +165,10 @@ def validate_history(root, catalog, check_manifests=True):
         mapped_inventory(package['files_sha256'], record['files_sha256'], record.get('file_moves', {}))
         _external(root, record['external_tests'], record['destination_external_tests'], package, new)
         current = catalog.get('packages', {}).get(new) or catalog.get('retired', {}).get(new)
+        if current is None and catalog.get('consolidations'):
+            import source_history_chain
+            current = source_history_chain.consumed_successor(
+                root, catalog, new, record, check_manifests=check_manifests)
         if current is None or current.get('origin_directory') != package['origin_directory'] or current.get('upstream') != package['upstream']:
             raise ValueError('rename has no same-origin active or retired successor')
         if (current.get('directory') != new or current.get('name') != record['destination_name']

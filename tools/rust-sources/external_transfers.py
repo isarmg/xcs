@@ -85,7 +85,9 @@ def validate(root, record, check_current=True):
         package, owner = item['package'], item['external_tests']
         if owner is None:
             continue
-        external_tests.validate_archived(root, owner, package)
+        import source_history_chain
+        external_tests.validate_archived(root, owner, package,
+            renames=source_history_chain.renames_for(root, record, package['directory']))
         prior_roots.update(owner['roots'])
         for row in owner['files']:
             if row['path'] in before or row.get('origin_directory', package['origin_directory']) != package['origin_directory']:

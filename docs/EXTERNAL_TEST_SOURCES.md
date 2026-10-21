@@ -190,7 +190,7 @@ materials are immutable. Later reviewed current-file edits use ordinary refresh
 without rewriting initial transfer evidence or dropping origin tags.
 
 The initial bounded implementation rejects pinned proof families, previously
-renamed/moved/upgraded/merged inputs and chained consolidated-owner lifecycle
+upgraded/merged inputs and chained consolidated-owner lifecycle
 changes until an authenticated adapter supports them. Disjoint ordinary lifecycle
 plans may run together, but overlapping plans never silently bypass checks.
 
@@ -219,3 +219,31 @@ active production inventory or evidence of functional equivalence. Original
 origin/version/license identities remain represented by the primary or merged
 owner; independently frozen upstream evidence is never changed. External test
 transfers still require their complete exact bijection and reversible proof.
+
+### Consolidation after an ordinary rename or internal move
+
+The optional `input_history` field binds each affected current input directory to
+exact `renames` and `source_moves` receipt maps, copied unchanged from the last
+catalog. All intersecting receipts are required; arbitrary subsets, unrelated
+origins, stale current snapshots and ambiguous rename chains are rejected. The
+binding is part of the content-addressed consolidation receipt and remains equal
+to the original history on every later verification. At most 64 linked receipts
+and one rename per input are supported, within the existing 32 MiB receipt bound.
+
+Earlier snapshots are historical inventories, not claims that every old file is
+still maintained. Legitimately reviewed changes or trims between the original
+move and consolidation do not require deleted files to reappear. The complete
+last-current package and external snapshots must match the pre-consolidation
+catalog exactly, and every current file still requires an explicit disposition.
+Original versions, legal identities and origin records remain unchanged.
+
+A renamed input consumed by consolidation resolves through its authenticated
+last-current snapshot to its separately checked current primary or merged origin.
+The verifier does not open the vanished renamed root as though it were live. Both
+old rename roots and removed consolidation roots must remain absent. Historical
+external labels receive only that exact input's validated rename prefix before
+the existing per-origin, per-file transfer proof is checked.
+
+Upgraded inputs, previously merged inputs, repeated consolidations and pinned
+proof families still require separately reviewed adapters; this history binding
+does not authorize any of them or weaken physical inventory checks.

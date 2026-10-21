@@ -15,6 +15,7 @@ import re
 import tomllib
 
 import external_tests
+import source_history_chain
 
 SCHEMA = 8
 HEX = re.compile(r'[0-9a-f]{64}')
@@ -150,7 +151,7 @@ def _source_archive(relative, route, expected):
 
 
 def _record(root, record):
-    if not isinstance(record, dict) or set(record) != FIELDS:
+    if not isinstance(record, dict) or not FIELDS <= set(record) or set(record) - FIELDS - {'input_history'}:
         raise ValueError('invalid explicit consolidation record fields')
     _encoded(record)
     primary, destination = record['primary_directory'], record['destination_directory']
@@ -303,6 +304,7 @@ def validate_history(root, catalog, check_manifests=True, validate_external=None
         if not isinstance(key, str) or not HEX.fullmatch(key) or key != receipt_id(record):
             raise ValueError('immutable content-addressed consolidation receipt drift')
         inputs = _record(root, record)
+        source_history_chain.validate(root, record, catalog)
         primary, destination = record['primary_directory'], record['destination_directory']
         origins = {row['origin_directory'] for row in inputs.values()}
         if (seen_inputs & set(inputs) or seen_origins & origins
@@ -356,15 +358,10 @@ def _unhandled_history(root, previous, inputs, destination, records):
     if any(p.get('directory') in directories | {destination} or p.get('origin_directory') in origins
            for p in previous.get('merges', [])):
         raise ValueError('consolidating already merged inputs requires a chain-aware adapter')
-    for row in previous.get('renames', {}).values():
-        if row.get('destination_directory') in directories | {destination} or row.get('package', {}).get('directory') in directories | {destination}:
-            raise ValueError('consolidating renamed inputs requires a chain-aware adapter')
     for row in previous.get('superseded', {}).values():
         if (row.get('package', {}).get('directory') in directories | {destination}
                 or row.get('successor_origin_directory') in origins):
             raise ValueError('consolidating upgraded inputs requires a chain-aware adapter')
-    if any(row.get('directory') in directories | {destination} for row in previous.get('source_moves', {}).values()):
-        raise ValueError('consolidating internally moved inputs requires a chain-aware adapter')
     for record in records.values():
         used = {item['package']['directory'] for item in record['inputs']} | {record['destination_directory']}
         if used & (directories | {destination}):
@@ -412,6 +409,7 @@ validator is mandatory whenever any external data exists, even for old history.
         if ((destination in previous['packages'] and destination != primary)
                 or destination in previous.get('retired', {})):
             raise ValueError('consolidation destination identity is already registered')
+        source_history_chain.validate(root, record, previous)
         _unhandled_history(root, previous, inputs, destination, history)
         _absence(root, record)
         destination_path = _foundation(root, destination)

@@ -264,7 +264,7 @@ class SourceConsolidation(unittest.TestCase):
 
     def test_previously_renamed_input_is_rejected(self):
         self.previous['renames'] = {'old': {'destination_directory': self.old[0], 'package': {'directory': 'old'}}}
-        self.reject('renamed inputs')
+        self.reject('history|receipt')
 
     def test_previously_upgraded_input_is_rejected(self):
         self.previous['superseded'] = {'vendor/earlier': {'package': {'directory': self.old[0], 'origin_directory': 'vendor/earlier'}}}
@@ -272,7 +272,7 @@ class SourceConsolidation(unittest.TestCase):
 
     def test_previously_moved_input_is_rejected(self):
         self.previous['source_moves'] = {'hash': {'directory': self.old[0]}}
-        self.reject('internally moved')
+        self.reject('history|receipt')
 
     def test_pinned_input_is_rejected(self):
         path = self.root / 'compliance/platform-test-relocation.json'
