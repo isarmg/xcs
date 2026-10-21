@@ -193,3 +193,29 @@ The initial bounded implementation rejects pinned proof families, previously
 renamed/moved/upgraded/merged inputs and chained consolidated-owner lifecycle
 changes until an authenticated adapter supports them. Disjoint ordinary lifecycle
 plans may run together, but overlapping plans never silently bypass checks.
+
+### Explicit removed implementation archives
+
+A consolidation may remove an unsupported, unreferenced Rust implementation
+without pretending its bytes were integrated into a current file. Its production
+route must instead contain exactly `kind: "archived-source"`, `sha256`,
+`archive_base64`, and `reason`. The hash and decoded bytes must match the exact
+last-current input inventory. The review reason must be substantive (40–10,000
+characters) and explain the removal; it is immutable with the receipt.
+
+This narrow disposition accepts only UTF-8 `.rs` implementation files beneath
+`src/`, not crate entrypoints (`src/lib.rs`, `src/main.rs`), tests, fixtures,
+examples, benches, manifests, legal material or provenance. Protected path
+segments and file stems are rejected case-insensitively (including tests.rs,
+fixtures.rs, license.rs and provenance.rs). Archives are bounded
+to 1 MiB decoded per file, 64 files and 4 MiB decoded total per consolidation;
+encoded sizes are checked before decoding. Missing bytes, generic discard routes
+and source-to-test archive substitutions are rejected. Existing redundant-root-
+manifest archives keep their separate format and identity checks.
+
+Archived implementation bytes live only in the explicit consolidation receipt,
+not disguised as maintained files in `src/`. They are historical material, not
+active production inventory or evidence of functional equivalence. Original
+origin/version/license identities remain represented by the primary or merged
+owner; independently frozen upstream evidence is never changed. External test
+transfers still require their complete exact bijection and reversible proof.

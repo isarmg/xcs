@@ -28,6 +28,8 @@ MAX_INPUTS = 64
 MAX_FILES = 100000
 MAX_RECORDS = 1024
 MAX_ARCHIVE_BYTES = 1024 * 1024
+MAX_SOURCE_ARCHIVES = 64
+MAX_SOURCE_ARCHIVE_TOTAL = 4 * 1024 * 1024
 MAX_RECEIPT_BYTES = 32 * 1024 * 1024
 MAX_PATH_BYTES = 1024
 
@@ -117,6 +119,36 @@ def _archive(route, expected):
         raise ValueError('archived consolidation manifest lacks package identity')
 
 
+
+def _source_archive(relative, route, expected):
+    """Keep removed optional implementation bytes, never discard or test routes."""
+    if (route['kind'] != 'archived-source' or not relative.startswith('src/')
+            or not relative.endswith('.rs') or relative in ('src/lib.rs', 'src/main.rs')
+            or {part.lower().split('.', 1)[0] for part in relative.split('/')} & {
+                'test', 'tests', 'bench', 'benches', 'example', 'examples', 'fixture', 'fixtures',
+                'legal', 'license', 'licenses', 'licensing', 'copyright', 'notice',
+                'provenance', 'compliance'}):
+        raise ValueError('source archive requires a non-entrypoint Rust implementation path')
+    reason = route['reason']
+    if not isinstance(reason, str) or not 40 <= len(reason.strip()) <= 10000:
+        raise ValueError('source archive requires a substantive reviewed reason')
+    if route['sha256'] != expected:
+        raise ValueError('source archive hash differs from exact input inventory')
+    value = route['archive_base64']
+    if not isinstance(value, str) or len(value) > 4 * ((MAX_ARCHIVE_BYTES + 2) // 3):
+        raise ValueError('source archive encoded size bound exceeded')
+    try:
+        raw = base64.b64decode(value, validate=True)
+        raw.decode('utf-8')
+    except (ValueError, binascii.Error, UnicodeError) as error:
+        raise ValueError('source archive requires canonical base64 UTF-8 source bytes') from error
+    if (not raw or len(raw) > MAX_ARCHIVE_BYTES
+            or base64.b64encode(raw).decode('ascii') != value
+            or hashlib.sha256(raw).hexdigest() != expected):
+        raise ValueError('source archive bytes differ from exact input hash/bound')
+    return len(raw)
+
+
 def _record(root, record):
     if not isinstance(record, dict) or set(record) != FIELDS:
         raise ValueError('invalid explicit consolidation record fields')
@@ -154,6 +186,7 @@ def _record(root, record):
     if not isinstance(routes, dict) or set(routes) != set(packages):
         raise ValueError('consolidation production routes must cover exact input directories')
     mapped = set()
+    archived_count = archived_bytes = 0
     for directory, package in packages.items():
         mapping = routes[directory]
         if not isinstance(mapping, dict) or set(mapping) != set(package['files_sha256']):
@@ -167,6 +200,11 @@ def _record(root, record):
                 if target not in after:
                     raise ValueError('consolidation production route target missing from destination')
                 mapped.add(target)
+            elif set(route) == {'kind', 'sha256', 'archive_base64', 'reason'}:
+                archived_bytes += _source_archive(relative, route, package['files_sha256'][relative])
+                archived_count += 1
+                if archived_count > MAX_SOURCE_ARCHIVES or archived_bytes > MAX_SOURCE_ARCHIVE_TOTAL:
+                    raise ValueError('aggregate source archive bound exceeded')
             elif set(route) == {'archive_base64'}:
                 if relative != 'Cargo.toml' or directory == primary:
                     raise ValueError('only redundant input root Cargo.toml may be archived')
