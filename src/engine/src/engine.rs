@@ -311,6 +311,11 @@ impl Engine {
     pub fn auth_state(&self) -> Option<json_codec::Value> {
         self.state.control_auth.clone()
     }
+    /// Borrow the current authoritative control snapshot while the caller holds
+    /// its engine guard. Owned recovery consumers should use `auth_state`.
+    pub fn auth_state_ref(&self) -> Option<&json_codec::Value> {
+        self.state.control_auth.as_ref()
+    }
     /// Trusted local control-plane hook; this method is never a public route.
     pub fn persist_auth_state(
         &mut self,

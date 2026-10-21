@@ -52,8 +52,8 @@ impl Tree {
 
 // Taking ownership of the guard makes the release point explicit. Projections
 // must own their data: borrowing from this guard cannot survive its drop.
-pub(super) fn render_unlocked<T: Serialize>(
-    engine: MutexGuard<'_, Engine>,
+pub(super) fn render_unlocked<T: Serialize, E>(
+    engine: MutexGuard<'_, E>,
     projection: T,
 ) -> Result<Value, ApiError> {
     drop(engine);

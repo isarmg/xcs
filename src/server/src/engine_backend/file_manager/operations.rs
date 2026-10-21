@@ -104,17 +104,6 @@ pub(super) fn call(
                 .map_err(error)?;
             operation_wire(result)
         }
-        crate::BackendAction::FileManagerBackupConfiguration => {
-            let repo = field(input, "repository_id")?;
-            authorize(identity, repository(engine, repo)?, false, false)?;
-            engine
-                .backup_configuration_for(
-                    repo,
-                    query(input, "path").unwrap_or(""),
-                    &identity.principal,
-                )
-                .map_err(error)
-        }
         crate::BackendAction::FileManagerConfigureBackups => {
             keys(
                 input,

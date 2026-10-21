@@ -3,6 +3,8 @@ use crate::{ApiError, Backend, Content, auth::Identity};
 use json_codec::{Value, json};
 use std::{path::Path, sync::Mutex};
 use storage_engine::{Engine, Grants, NamespaceOperation, Repository};
+mod admission;
+use admission::AdmissionEngine;
 pub mod application;
 use application::Application;
 mod content;
@@ -17,7 +19,7 @@ use wire::{
 };
 
 pub struct EngineBackend {
-    engine: Mutex<Engine>,
+    engine: Mutex<AdmissionEngine>,
     #[cfg(test)]
     commit_preparation_hook: Mutex<Option<std::sync::Arc<dyn Fn() + Send + Sync>>>,
     #[cfg(test)]
@@ -26,7 +28,7 @@ pub struct EngineBackend {
 impl EngineBackend {
     pub fn new(engine: Engine) -> Self {
         Self {
-            engine: Mutex::new(engine),
+            engine: Mutex::new(AdmissionEngine::new(engine)),
             #[cfg(test)]
             commit_preparation_hook: Mutex::new(None),
             #[cfg(test)]
@@ -42,7 +44,7 @@ impl EngineBackend {
             let mut engine = backend.engine.lock().map_err(|_| {
                 ApiError::new(500, "INTERNAL_ERROR", "storage engine requires restart")
             })?;
-            if engine.auth_state().as_ref() == Some(&snapshot) {
+            if engine.auth_state_ref() == Some(&snapshot) {
                 return Ok(());
             }
             engine
@@ -158,17 +160,15 @@ fn workspace_authorize(
 /// Refresh account admission while holding the engine lock, before capturing a
 /// read plan or publishing a mutation, and again after unlocked preparation.
 /// Account publication takes auth -> engine; never acquire auth in this path.
-fn current_protected_identity(engine: &Engine, identity: &Identity) -> Result<Identity, ApiError> {
-    match engine.auth_state() {
-        Some(snapshot) => {
-            crate::auth::AuthStore::identity_from_snapshot(snapshot, &identity.principal)
-        }
-        None => Ok(identity.clone()), // Embedded engines without a protected account store.
-    }
+fn current_protected_identity(
+    engine: &AdmissionEngine,
+    identity: &Identity,
+) -> Result<Identity, ApiError> {
+    engine.identity(identity)
 }
 
 fn finish_authorized_upload(
-    engine: &mut Engine,
+    engine: &mut AdmissionEngine,
     identity: &Identity,
     workspace: &str,
     prepared: storage_engine::PreparedUpload,
@@ -211,15 +211,17 @@ impl Backend for EngineBackend {
                 Ok(json!({"disks":disks}))
             }
             crate::BackendAction::FileManagerBackupConfiguration
-            | crate::BackendAction::FileManagerBranch
-            | crate::BackendAction::FileManagerConfigureBackups
-            | crate::BackendAction::FileManagerDirectoryBranches
-            | crate::BackendAction::FileManagerDirectorySelect
             | crate::BackendAction::FileManagerDownloadContext
             | crate::BackendAction::FileManagerEntries
             | crate::BackendAction::FileManagerFileHistory
+            | crate::BackendAction::FileManagerHistory => {
+                file_manager::read(&engine, identity, action, input)
+            }
+            crate::BackendAction::FileManagerBranch
+            | crate::BackendAction::FileManagerConfigureBackups
+            | crate::BackendAction::FileManagerDirectoryBranches
+            | crate::BackendAction::FileManagerDirectorySelect
             | crate::BackendAction::FileManagerFileMetadata
-            | crate::BackendAction::FileManagerHistory
             | crate::BackendAction::FileManagerMerge
             | crate::BackendAction::FileManagerNamespace
             | crate::BackendAction::FileManagerNamespaceBatch

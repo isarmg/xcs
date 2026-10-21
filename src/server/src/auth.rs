@@ -57,6 +57,43 @@ pub struct Identity {
     pub repositories: BTreeSet<String>,
 }
 
+/// Schema-validated snapshot projection. Sessions and private credential strings
+/// are parsed for validation, then discarded rather than retained for admission.
+#[cfg(feature = "core")]
+pub(crate) struct AdmissionSnapshot {
+    identities: BTreeMap<String, Identity>,
+}
+
+#[cfg(feature = "core")]
+impl AdmissionSnapshot {
+    pub(crate) fn from_snapshot(snapshot: &json_codec::Value) -> Result<Self, String> {
+        let database = Database::deserialize(snapshot).map_err(|error| error.to_string())?;
+        let identities = database
+            .accounts
+            .into_iter()
+            .filter(|(_, account)| !account.disabled)
+            .map(|(name, account)| {
+                (
+                    name,
+                    Identity {
+                        principal: account.username,
+                        admin: account.admin,
+                        repositories: account.repositories,
+                    },
+                )
+            })
+            .collect();
+        Ok(Self { identities })
+    }
+
+    pub(crate) fn identity(&self, principal: &str) -> Result<Identity, ApiError> {
+        self.identities
+            .get(principal)
+            .cloned()
+            .ok_or_else(ApiError::unauthorized)
+    }
+}
+
 impl Identity {
     pub fn can_access(&self, repository: &str) -> bool {
         self.admin || self.repositories.contains(repository)
@@ -121,15 +158,6 @@ impl AuthStore {
     pub fn identity_for_principal(&self, username: &str) -> Result<Identity, ApiError> {
         self.require_available()?;
         Self::database_identity(&self.db, username)
-    }
-    /// Read the engine's authoritative protected snapshot without taking the
-    /// mutable authentication-store lock (account publication uses auth -> engine).
-    pub(crate) fn identity_from_snapshot(
-        snapshot: json_codec::Value,
-        username: &str,
-    ) -> Result<Identity, ApiError> {
-        let database: Database = json_codec::from_value(snapshot).map_err(ApiError::invalid)?;
-        Self::database_identity(&database, username)
     }
     fn database_identity(database: &Database, username: &str) -> Result<Identity, ApiError> {
         let account = database
