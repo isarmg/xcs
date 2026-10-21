@@ -22,6 +22,7 @@ mod base64_compatibility_tests;
 
 mod accessibility;
 mod diagnostics;
+mod file_rows;
 mod fonts;
 mod lifecycle;
 mod session_delivery;
@@ -347,6 +348,7 @@ fn exercise(
         "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
     )?;
     println!("PASS browser file upload and directory publication");
+    file_rows::run(browser)?;
     if let Some(path) = screenshot {
         // Save the real regression view without adding presentation-only data.
         wait_for("loaded screenshot fonts", || {

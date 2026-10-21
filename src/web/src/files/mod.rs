@@ -7,6 +7,7 @@ mod inline;
 mod merge;
 mod model;
 mod review;
+mod rows;
 mod tags;
 mod version_tree;
 mod view;

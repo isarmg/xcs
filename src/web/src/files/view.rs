@@ -1,9 +1,9 @@
 use super::{
     actions, backup, batch, branch, inline,
     model::{
-        breadcrumbs, directory_branch_name, directory_branch_value, entry_key, file_kind,
-        selected_directory_branch,
+        breadcrumbs, directory_branch_name, directory_branch_value, selected_directory_branch,
     },
+    rows::{Row, visible_rows},
 };
 use crate::{
     format,
@@ -129,29 +129,67 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
     }
 }
 fn file_table(state: RwSignal<State>) -> impl IntoView {
+    let rows = visible_rows(state);
+    let disabled = Memo::new(move |_| state.with(|s| !s.files.writable || actions::pending(s)));
+    let selected = Memo::new(move |_| {
+        state.with(|s| {
+            s.files
+                .selected
+                .as_ref()
+                .map(|entry| text(entry, &["entry_id", "path"]))
+        })
+    });
     view! {
         <div aria-busy=move ||state.with(|s|s.files.loading).to_string()>
             <Show when=move ||state.with(|s|s.files.loading&&!s.files.loaded)><LoadingState/></Show>
-            <div class="zxs-table-scroll"><table class="zxs-table zxs-file-table"><thead><tr><th scope="col"><label class="zxs-file-check zxs-flow"><input type="checkbox" aria-label=t("选择当前显示的全部条目","Select all visible entries") disabled=move ||state.with(|s|!s.files.writable||actions::pending(s)) prop:checked=move ||state.with(|s|{let shown=s.files.entries.iter().filter(|entry|text(entry,&["name"]).to_lowercase().contains(&s.files.query.to_lowercase())).collect::<Vec<_>>();!shown.is_empty()&&shown.iter().all(|entry|s.files.checked_entries.contains(&entry_key(entry)))}) on:change=move |event|{let checked=event_target_checked(&event);state.update(|s|{for entry in s.files.entries.iter().filter(|entry|text(entry,&["name"]).to_lowercase().contains(&s.files.query.to_lowercase())){let id=entry_key(entry);if checked{s.files.checked_entries.insert(id);}else{s.files.checked_entries.remove(&id);}}});}/><span>{t("名称","Name")}</span></label></th><th scope="col">{t("类型","Type")}</th><th scope="col">{t("大小","Size")}</th><th scope="col">{t("操作","Actions")}</th></tr></thead>
-                <tbody>{move ||{
-                    let model=state.with(|s|s.files.clone());
-                    let query=model.query.to_lowercase();let selected=model.selected.as_ref().map(|entry|text(entry,&["entry_id","path"]));
-                    let mut entries=model.entries.into_iter().filter(|entry|text(entry,&["name"]).to_lowercase().contains(&query)).collect::<Vec<_>>();
-                    entries.sort_by_key(|entry|(file_kind(entry),text(entry,&["name"]).to_lowercase()));
-                    entries.into_iter().map(move |entry|{
-                        let name=text(&entry,&["name"]);let title=name.clone();let directory=!file_kind(&entry);let selected=selected.as_ref()==Some(&text(&entry,&["entry_id","path"]));
-                        let row_entry=entry.clone();let name_entry=entry.clone();let detail_entry=entry.clone();let path=text(&entry,&["path"]);let check_id=entry_key(&entry);let input_id=check_id.clone();let check_name=format!("{} {}",t("选择","Select"),name);
-                        view!{<tr class:is-selected=selected aria-selected=selected.to_string() on:click=move |_|actions::select_entry(state,row_entry.clone())>
-                            <td><div class="zxs-file-select-name zxs-flow"><input class="zxs-entry-checkbox" type="checkbox" aria-label=check_name disabled=move ||state.with(|s|!s.files.writable||actions::pending(s)) prop:checked=move ||state.with(|s|s.files.checked_entries.contains(&check_id)) on:click=move |event|event.stop_propagation() on:change=move |event|{let checked=event_target_checked(&event);state.update(|s|{if checked{s.files.checked_entries.insert(input_id.clone());}else{s.files.checked_entries.remove(&input_id);}});}/><button class="zxs-button zxs-file-name" title=title on:click=move |event|{event.stop_propagation();if directory{actions::go_directory(state,path.clone())}else{actions::select_entry(state,name_entry.clone())}}><FileIcon name=if directory{"folder"}else{"file"}/><span>{name}</span></button></div></td>
-                            <td>{if directory{t("文件夹","Folder")}else{t("文件","File")}}</td><td>{if directory{"—".into()}else{format::parse_u64(&entry["size"]).map(format::bytes).unwrap_or_else(||"—".into())}}</td>
-                            <td><div class="zxs-entry-actions zxs-flow"><button class="zxs-button" on:click=move |event|{event.stop_propagation();actions::select_entry(state,detail_entry.clone());}>{t("详情","Details")}</button></div></td>
-                        </tr>}
-                    }).collect_view()
-                }}</tbody>
+            <div class="zxs-table-scroll"><table class="zxs-table zxs-file-table"><thead><tr><th scope="col"><label class="zxs-file-check zxs-flow"><input type="checkbox" aria-label=t("选择当前显示的全部条目","Select all visible entries") disabled=move ||disabled.get() prop:checked=move ||rows.with(|rows|!rows.is_empty()&&state.with(|s|rows.iter().all(|row|s.files.checked_entries.contains(&row.check_id)))) on:change=move |event|{
+                let checked=event_target_checked(&event);
+                rows.with_untracked(|rows|state.update(|s|{for row in rows {if row.current_context(s){if checked{s.files.checked_entries.insert(row.check_id.clone());}else{s.files.checked_entries.remove(&row.check_id);}}}}));
+            }/><span>{t("名称","Name")}</span></label></th><th scope="col">{t("类型","Type")}</th><th scope="col">{t("大小","Size")}</th><th scope="col">{t("操作","Actions")}</th></tr></thead>
+                <tbody><ForSnapshot each=move ||rows.get() key=|row|row.key.clone() children=move |row|file_row(state,row,disabled,selected)/></tbody>
             </table></div>
             <Show when=move ||state.with(|s|s.files.loaded&&s.files.entries.is_empty())><p class="zxs-file-empty">{t("这个文件夹是空的。","This folder is empty.")}</p></Show>
-            <Show when=move ||state.with(|s|s.files.loaded&&!s.files.entries.is_empty()&&!s.files.entries.iter().any(|entry|text(entry,&["name"]).to_lowercase().contains(&s.files.query.to_lowercase())))><p class="zxs-file-empty">{t("没有匹配的文件。","No files match your search.")}</p></Show>
+            <Show when=move ||rows.with(|rows|rows.is_empty())&&state.with(|s|s.files.loaded&&!s.files.entries.is_empty())><p class="zxs-file-empty">{t("没有匹配的文件。","No files match your search.")}</p></Show>
         </div>
+    }
+}
+
+fn activate_row(
+    state: RwSignal<State>,
+    row: ReadSignal<std::sync::Arc<Row>>,
+    open_directory: bool,
+) {
+    let entry = row.with_untracked(|row| state.with_untracked(|s| row.current_entry(s).cloned()));
+    if let Some(entry) = entry {
+        if open_directory && !super::model::file_kind(&entry) {
+            actions::go_directory(state, text(&entry, &["path"]));
+        } else {
+            actions::select_entry(state, entry);
+        }
+    }
+}
+
+fn file_row(
+    state: RwSignal<State>,
+    row: ReadSignal<std::sync::Arc<Row>>,
+    disabled: Memo<bool>,
+    selected: Memo<Option<String>>,
+) -> impl IntoView {
+    let is_selected = Memo::new(move |_| {
+        row.with(|row| selected.with(|selected| selected.as_ref() == Some(&row.selection_id)))
+    });
+    let checked = Memo::new(move |_| {
+        row.with(|row| state.with(|s| s.files.checked_entries.contains(&row.check_id)))
+    });
+    view! {
+        <tr class:is-selected=move ||is_selected.get() aria-selected=move ||is_selected.get().to_string() on:click=move |_|activate_row(state,row,false)>
+            <td><div class="zxs-file-select-name zxs-flow"><input class="zxs-entry-checkbox" type="checkbox" aria-label=move ||row.with(|row|format!("{} {}",t("选择","Select"),row.name)) disabled=move ||disabled.get() prop:checked=move ||checked.get() on:click=move |event|event.stop_propagation() on:change=move |event|{
+                let checked=event_target_checked(&event);
+                row.with_untracked(|row|state.update(|s|{if row.current_entry(s).is_some(){if checked{s.files.checked_entries.insert(row.check_id.clone());}else{s.files.checked_entries.remove(&row.check_id);}}}));
+            }/><button class="zxs-button zxs-file-name" title=move ||row.with(|row|row.name.clone()) on:click=move |event|{event.stop_propagation();activate_row(state,row,true)}>{move ||row.with(|row|view!{<FileIcon name=if row.directory{"folder"}else{"file"}/>})}<span>{move ||row.with(|row|row.name.clone())}</span></button></div></td>
+            <td>{move ||row.with(|row|if row.directory{t("文件夹","Folder")}else{t("文件","File")})}</td><td>{move ||row.with(|row|if row.directory{"—".into()}else{row.size.map(format::bytes).unwrap_or_else(||"—".into())})}</td>
+            <td><div class="zxs-entry-actions zxs-flow"><button class="zxs-button" on:click=move |event|{event.stop_propagation();activate_row(state,row,false)}>{t("详情","Details")}</button></div></td>
+        </tr>
     }
 }
 fn upload_queue(state: RwSignal<State>) -> impl IntoView {

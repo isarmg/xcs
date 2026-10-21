@@ -284,7 +284,7 @@ fn regular_uploads_respect_existing_file_selections_without_reusing_another_file
     let mut model = pending_model();
     model.entries = vec![
         json!({"kind":"file","name":"other.txt","path":"reports/other.txt","selected_branch_id":"other-draft"}),
-    ];
+    ].into();
     assert_eq!(
         upload_target(&model, "report.txt", false)
             .unwrap()
@@ -342,7 +342,7 @@ fn directory_uploads_keep_independent_inherited_and_owned_file_branches() {
     model.entries = vec![
         json!({"kind":"file","name":"report.txt","path":"reports/report.txt","selected_branch_id":"report-draft","version_id":"report-parent","inherited":true,"materialized":false,"own_version_id":null}),
         json!({"kind":"file","name":"other.txt","path":"reports/other.txt","selected_branch_id":"other-draft","version_id":"other-own","inherited":false,"materialized":true,"own_version_id":"other-own"}),
-    ];
+    ].into();
     assert!(model.entries.iter().all(visible_content));
     assert_eq!(
         upload_target(&model, "report.txt", false)

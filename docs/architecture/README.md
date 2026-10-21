@@ -16,6 +16,7 @@
 - [写入准入](detached-write-admission.md)：准备期间允许和阻止的并发行为。
 - [恢复检查点](verified-recovery-checkpoints.md)：校验与回放条件。
 - [历史增长优化](history-growth-optimization.md)：分页与历史成本。
+- [文件列表投影与键控行](file-list-projections.md)：不可变列表快照、排序与筛选缓存、事件时读取及 DOM 验证边界。
 - [优化状态](optimization-status.md)：已实现项与仍存在的限制。
 
 描述实现时链接实际代码；测量和检查结果保留执行时点，进入 [reports](../reports/README.md) 或对应测试证据目录。未经执行的设备实验保持待验证。

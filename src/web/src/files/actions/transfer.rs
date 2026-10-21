@@ -24,7 +24,7 @@ pub(crate) struct PickerContext {
     directory: String,
     selected: Option<Value>,
     branch: String,
-    entries: Vec<Value>,
+    entries: std::sync::Arc<[Value]>,
     directory_branches: Vec<Value>,
     replace: bool,
 }

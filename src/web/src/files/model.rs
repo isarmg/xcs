@@ -1,5 +1,5 @@
 use json_codec::Value;
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, sync::Arc};
 use web_interface::i18n::t;
 
 #[derive(Clone, Default)]
@@ -10,7 +10,8 @@ pub(crate) struct Model {
     pub slot: String,
     pub directory: String,
     pub writable: bool,
-    pub entries: Vec<Value>,
+    /// Immutable server listing, shared by rows and pending picker contexts.
+    pub entries: Arc<[Value]>,
     pub directory_branches: Vec<Value>,
     pub directory_file_count: u64,
     pub directory_branches_supported: bool,

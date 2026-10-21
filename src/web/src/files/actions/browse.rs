@@ -45,7 +45,7 @@ pub(crate) fn open_disk(state: RwSignal<State>, slot: String) {
         s.files.clear_selection();
         s.files.checked_entries.clear();
         s.files.batch = None;
-        s.files.entries.clear();
+        s.files.entries = Default::default();
         s.files.loaded = false;
     });
     load_entries(state);
@@ -63,7 +63,7 @@ pub(crate) fn go_root(state: RwSignal<State>) {
         s.files.writable = false;
         s.files.loading = false;
         s.files.directory.clear();
-        s.files.entries.clear();
+        s.files.entries = Default::default();
         s.files.clear_selection();
         s.files.checked_entries.clear();
         s.files.batch = None;
@@ -76,7 +76,7 @@ pub(crate) fn go_directory(state: RwSignal<State>, directory: String) {
         s.page = "files".into();
         s.files.directory = directory;
         s.files.writable = false;
-        s.files.entries.clear();
+        s.files.entries = Default::default();
         s.files.query.clear();
         s.files.directory_branches.clear();
         s.files.directory_file_count = 0;
@@ -124,7 +124,7 @@ pub(crate) fn load_entries(state: RwSignal<State>) {
         let refreshed = result.is_ok();
         match result {
             Ok(value) => state.update(|s| {
-                s.files.entries = list(&value, "entries");
+                s.files.entries = list(&value, "entries").into();
                 s.files.directory_branches = list(&value, "directory_branches");
                 s.files.repository_id = text(&value["context"], &["repository_id"]);
                 s.files.repository_path = text(&value["context"], &["repository_path"]);

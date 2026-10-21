@@ -5,7 +5,7 @@ fn refreshed_selection_invalidates_old_history_and_preview_only_when_context_cha
     let original = json_codec::json!({"entry_id":"entry", "file_id":"file", "path":"a.txt", "version_id":"v1", "selected_branch_id":"main"});
     let mut model = Model {
         selected: Some(original.clone()),
-        entries: vec![original.clone()],
+        entries: vec![original.clone()].into(),
         file_history: json_codec::json!({"selected_branch_id":"main"}),
         preview: Some(("a.txt".into(), "old content".into())),
         history_loading: true,
@@ -14,8 +14,8 @@ fn refreshed_selection_invalidates_old_history_and_preview_only_when_context_cha
     model.reconcile_selection();
     assert!(model.preview.is_some());
     assert_eq!(model.history_generation, 0);
-    model.entries[0]["selected_branch_id"] = "draft".into();
-    model.entries[0]["version_id"] = "v2".into();
+    Arc::make_mut(&mut model.entries)[0]["selected_branch_id"] = "draft".into();
+    Arc::make_mut(&mut model.entries)[0]["version_id"] = "v2".into();
     model.checked_nodes.insert("old-node".into());
     model.reconcile_selection();
     assert_eq!(model.selected.as_ref().unwrap()["version_id"], "v2");
@@ -232,7 +232,8 @@ fn root_default_selection_uses_real_directory_ids_and_subfolders_keep_names() {
 fn renaming_an_entry_preserves_selection_and_file_history() {
     let mut model = Model {
         selected: Some(json_codec::json!({"entry_id":"file-a","name":"old.txt","path":"old.txt"})),
-        entries: vec![json_codec::json!({"entry_id":"file-a","name":"new.txt","path":"new.txt"})],
+        entries: vec![json_codec::json!({"entry_id":"file-a","name":"new.txt","path":"new.txt"})]
+            .into(),
         file_history: json_codec::json!({"versions":[{"version_id":"v1"}]}),
         ..Default::default()
     };
@@ -272,7 +273,8 @@ fn two_aliases_of_one_file_keep_the_selected_logical_path() {
         entries: vec![
             json_codec::json!({"entry_id":"f","path":"a/f.txt","version_id":"F1"}),
             json_codec::json!({"entry_id":"f","path":"b/f.txt","version_id":"F2"}),
-        ],
+        ]
+        .into(),
         ..Default::default()
     };
     model.reconcile_selection();
