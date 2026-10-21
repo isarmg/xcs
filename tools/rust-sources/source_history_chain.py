@@ -86,22 +86,34 @@ def renames_for(root, record, directory):
     return links.get(directory, {}).get('renames', {})
 
 
-def consumed_successor(root, catalog, directory, rename, check_manifests=True):
-    """Authenticate an absent renamed successor via its consolidation snapshot."""
+def consumed_successors(root, catalog, renames, check_manifests=True):
+    """Authenticate requested consumed renames in one read-only validation pass.
+
+    The caller supplies this operation's complete pending rename set. No result
+    is retained across calls: current manifests, paths, receipts, and ownership
+    are freshly validated by consolidation.validate_history every time.
+    """
     import source_consolidation as consolidation
     import external_transfers
     records = consolidation.validate_history(root, catalog, check_manifests=check_manifests,
                                               validate_external=external_transfers.validate)
-    found = []
+    found = {directory: [] for directory in renames}
     for record in records.values():
-        for item in record['inputs']:
-            package = item['package']
-            if package['directory'] != directory:
-                continue
-            links = validate(root, record, catalog)
-            if rename not in links.get(directory, {}).get('renames', {}).values():
+        matching = [item['package'] for item in record['inputs']
+                    if item['package']['directory'] in renames]
+        if not matching:
+            continue
+        links = validate(root, record, catalog)
+        for package in matching:
+            directory = package['directory']
+            if renames[directory] not in links.get(directory, {}).get('renames', {}).values():
                 raise ValueError('consumed rename lacks exact authenticated history binding')
-            found.append(package)
-    if len(found) != 1:
+            found[directory].append(package)
+    if any(len(packages) != 1 for packages in found.values()):
         raise ValueError('rename lacks unique authenticated consolidated successor')
-    return found[0]
+    return {directory: packages[0] for directory, packages in found.items()}
+
+
+def consumed_successor(root, catalog, directory, rename, check_manifests=True):
+    """Authenticate an absent renamed successor via its consolidation snapshot."""
+    return consumed_successors(root, catalog, {directory: rename}, check_manifests)[directory]

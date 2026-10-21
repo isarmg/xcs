@@ -73,6 +73,62 @@ class SourceHistoryChain(unittest.TestCase):
         self.assertEqual(source_naming.validate_history(self.root, catalog), self.previous['renames'])
         self.assertEqual(catalog['merges'][0]['origin_directory'], row['package']['origin_directory'])
 
+    def two_renames(self):
+        first, _ = self.rename()
+        old, new = self.old[2], 'src/foundation/current-common'
+        package = self.previous['packages'].pop(old)
+        before = deepcopy(package)
+        before.update(directory='src/foundation/original-common', name='original-common')
+        package.update(directory=new, name='current-common')
+        self.previous['packages'][new] = package
+        self.item['inputs'][2]['package'] = deepcopy(package)
+        self.item['file_routes'][new] = self.item['file_routes'].pop(old)
+        row = dict(package=before, destination_directory=new, destination_name='current-common',
+            reason='Reviewed common identity', files_sha256=deepcopy(package['files_sha256']),
+            external_tests=None, destination_external_tests=None)
+        self.previous['renames'][before['directory']] = row
+        self.previous['rename_records_sha256'] = source_naming.hashes(self.previous['renames'])
+        self.bind()
+        return first, new
+
+    def test_consumed_renames_share_one_fresh_validation_pass(self):
+        from unittest.mock import patch
+        self.two_renames(); catalog = self.catalog()
+        with patch.object(consolidation, 'validate_history', wraps=consolidation.validate_history) as check:
+            for expected_calls in (1, 2):
+                self.assertEqual(source_naming.validate_history(self.root, catalog), catalog['renames'])
+                self.assertEqual(check.call_count, expected_calls)
+
+    def test_second_call_rechecks_changed_manifest_at_same_path(self):
+        self.two_renames(); catalog = self.catalog()
+        source_naming.validate_history(self.root, catalog)
+        manifest = self.root / self.destination / 'Cargo.toml'
+        manifest.write_text('[package]\nname="tampered"\nversion="1.0.0"\n')
+        with self.assertRaisesRegex(ValueError, 'manifest name/version'):
+            source_naming.validate_history(self.root, catalog)
+
+    def test_second_call_rechecks_returned_path(self):
+        self.two_renames(); catalog = self.catalog()
+        source_naming.validate_history(self.root, catalog)
+        (self.root / 'src/foundation/current-common').mkdir()
+        with self.assertRaisesRegex(ValueError, 'consolidated source root'):
+            source_naming.validate_history(self.root, catalog)
+
+    def test_second_call_rechecks_mutated_receipt(self):
+        self.two_renames(); catalog = self.catalog()
+        source_naming.validate_history(self.root, catalog)
+        next(iter(catalog['consolidations'].values()))['reason'] += ' tampered'
+        with self.assertRaisesRegex(ValueError, 'receipt hash drift'):
+            source_naming.validate_history(self.root, catalog)
+
+    def test_batch_does_not_ignore_unqueried_malformed_consolidation(self):
+        self.two_renames(); catalog = self.catalog()
+        bad = {'malformed': 'unrelated'}
+        catalog['consolidations'][consolidation.receipt_id(bad)] = bad
+        catalog['consolidation_records_sha256'] = consolidation.hashes(catalog['consolidations'])
+        with self.assertRaisesRegex(ValueError, 'consolidation.*fields'):
+            source_naming.validate_history(self.root, catalog)
+
     def test_missing_move_binding_rejected(self):
         self.move(); del self.item['input_history']
         self.reject('exact immutable')

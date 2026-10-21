@@ -137,6 +137,7 @@ def validate_history(root, catalog, check_manifests=True):
     if not isinstance(records, dict) or hashes(records) != catalog.get('rename_records_sha256', {}):
         raise ValueError('immutable source rename receipt drift')
     destinations, origins = set(), set()
+    pending = {}
     for old, record in records.items():
         required = {'package', 'destination_directory', 'destination_name', 'reason',
                     'files_sha256', 'external_tests', 'destination_external_tests'}
@@ -166,9 +167,10 @@ def validate_history(root, catalog, check_manifests=True):
         _external(root, record['external_tests'], record['destination_external_tests'], package, new)
         current = catalog.get('packages', {}).get(new) or catalog.get('retired', {}).get(new)
         if current is None and catalog.get('consolidations'):
-            import source_history_chain
-            current = source_history_chain.consumed_successor(
-                root, catalog, new, record, check_manifests=check_manifests)
+            # Defer only the consolidated successor lookup. All local rename
+            # fields/path guards above still run for every receipt.
+            pending[new] = record
+            continue
         if current is None or current.get('origin_directory') != package['origin_directory'] or current.get('upstream') != package['upstream']:
             raise ValueError('rename has no same-origin active or retired successor')
         if (current.get('directory') != new or current.get('name') != record['destination_name']
@@ -180,6 +182,20 @@ def validate_history(root, catalog, check_manifests=True):
                 raise ValueError('renamed manifest name drift; explicit migration required')
         if old in catalog.get('packages', {}) or old in catalog.get('retired', {}):
             raise ValueError('renamed identity remains registered at old path')
+    if pending:
+        import source_history_chain
+        successors = source_history_chain.consumed_successors(
+            root, catalog, pending, check_manifests=check_manifests)
+        for new, record in pending.items():
+            current, package = successors[new], record['package']
+            if (current.get('origin_directory') != package['origin_directory']
+                    or current.get('upstream') != package['upstream']):
+                raise ValueError('rename has no same-origin active or retired successor')
+            if current.get('directory') != new or current.get('name') != record['destination_name']:
+                raise ValueError('renamed current directory/name identity drift')
+            old = package['directory']
+            if old in catalog.get('packages', {}) or old in catalog.get('retired', {}):
+                raise ValueError('renamed identity remains registered at old path')
     return records
 
 

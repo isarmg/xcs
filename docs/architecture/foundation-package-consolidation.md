@@ -103,3 +103,24 @@
 - Review documentation separately: executable doctests need the public crate
   path, while implementation modules may correctly use `crate::`. Preserve
   canonical feature names, protocol identifiers, schema URLs and origin notices.
+
+## Batch authentication of consumed rename history
+
+A single source-naming validation now collects consumed rename lookups and
+validates the complete consolidation history once for that call. Each requested
+rename still requires its exact embedded history binding, unique successor and
+unchanged origin/name identity. Unqueried malformed consolidation records remain
+errors; batching does not limit validation to requested rows.
+
+No cache survives the call, and filesystem checks are not cached. A subsequent
+operation rechecks manifests, paths, ownership and immutable receipts, even when
+the same pathname or Python catalog object is reused. Live source-inventory
+verification remains a separate required check. Error ordering may differ when
+several records are invalid; the acceptance predicates are unchanged.
+
+Five maintained regressions cover one-pass batching and subsequent manifest,
+path and receipt changes, plus malformed unqueried history. The receiving-tree
+run passed 182 focused history/naming/consolidation/move tests, independent
+baseline/candidate corruption comparisons, full metadata verification and the
+consumer-index check. This removes redundant verification work; it is not a
+claim of a measured application-runtime or end-to-end build speedup.
