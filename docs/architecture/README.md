@@ -5,6 +5,7 @@
 这些页面解释当前代码的实现边界与优化，不替代编号规范。现有英文专题保留术语和证据引用；此中文索引统一入口，新读者可先阅读写入流程，再按源码研究专题。
 
 - [源码命名迁移与来源架构](source-naming.md)：活动身份、原始来源与互操作边界；配套[职责命名规范](../NAMING.md)。
+- [Foundation 按职能整合方案](foundation-package-consolidation.md)：包数口径、分批合并候选、技术边界与验收标准。
 - [一次写入的完整流程](write-flow.md)：规划、准备、决定、发布和失败边界。
 - [分离工作区准备](detached-workspace-commits.md)：引擎锁、冻结基线、取消和校验凭据。
 - [写入准入](detached-write-admission.md)：准备期间允许和阻止的并发行为。
