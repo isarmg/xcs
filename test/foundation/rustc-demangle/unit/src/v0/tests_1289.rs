@@ -259,7 +259,7 @@ mod tests {
     fn demangling_limits() {
         // Stress tests found via fuzzing.
 
-        for sym in include_str!("v0-large-test-symbols/early-recursion-limit")
+        for sym in include_str!("../../../fixtures/early-recursion-limit")
             .lines()
             .filter(|line| !line.is_empty() && !line.starts_with('#'))
         {

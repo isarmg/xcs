@@ -105,6 +105,12 @@ class SourcePolicy(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "symlink"):
             manager.structure(self.root, self.policy)
 
+    def test_root_test_itself_cannot_be_a_symlink(self):
+        with tempfile.TemporaryDirectory() as outside:
+            (self.root / "test").symlink_to(outside, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "test source root symlink"):
+                manager.structure(self.root, self.policy)
+
     def test_complete_fixture_passes_without_registry_cache(self):
         self.verify()
         with patch.object(manager, "cargo_metadata", return_value=self.metadata):
@@ -279,6 +285,172 @@ class SourcePolicy(unittest.TestCase):
             '[package]\nname = "app"\nversion = "1.0.0"\n[dependencies]\nmini = { path = "../foundation/mini" }\n')
         with self.assertRaisesRegex(ValueError, "missing local dependency"):
             manager.refresh(self.root, plan)
+
+    def install_external_tests(self):
+        directory = "src/foundation/mini"
+        self.external_root = self.root / "test/foundation/mini"
+        self.external_root.mkdir(parents=True)
+        data = b"assert!(true);\n"
+        (self.external_root / "tests.rs").write_bytes(data)
+        owner = dict(directory=directory, roots=["test/foundation/mini"], files=[dict(
+            source=directory + "/lib.rs", path="test/foundation/mini/tests.rs",
+            source_sha256_before=self.catalog["packages"][directory]["files_sha256"]["lib.rs"],
+            sha256=manager.digest(data))])
+        self.external_mapping = self.root / "compliance/external-tests/mini.json"
+        self.external_mapping.parent.mkdir(parents=True)
+        self.external_mapping.write_text(json.dumps(dict(schema_version=1, owners=[owner])))
+        owners, receipts = manager.external_tests.load(self.root, self.catalog["packages"])
+        self.catalog.update(external_tests=owners, external_test_mappings_sha256=receipts)
+        self.save_catalog()
+        # This is an already-verified synthetic last receipt, not the repository's
+        # real bootstrap corpus. Only the unrelated initial-proof reader is stubbed.
+        stub = patch.object(manager.source_relocation, "read_receipt", return_value={})
+        stub.start(); self.addCleanup(stub.stop)
+        self.verify()
+        return deepcopy(owners[directory])
+
+    def remove_external_tests(self):
+        shutil.rmtree(self.external_root)
+        self.external_mapping.write_text(json.dumps(dict(schema_version=1, owners=[])))
+
+    def test_external_retirement_archives_exact_last_material_and_is_idempotent(self):
+        old = self.install_external_tests()
+        plan = self.retire_mini()
+        plan["packages"][0].update(external_action="remove", external_tests=old)
+        self.remove_external_tests()
+        self.refresh(retire_plan=plan)
+        self.verify()
+        archived = self.catalog["retired"]["src/foundation/mini"]["retirement"]["external_tests"]
+        self.assertEqual(archived, old)
+        self.assertEqual(archived["file_count"], 1)
+        self.assertEqual(archived["bytes"], len(b"assert!(true);\n"))
+        self.assertEqual(self.catalog["external_tests"], {})
+        before = deepcopy(self.catalog["retired_records_sha256"])
+        self.refresh(); self.verify()
+        self.assertEqual(self.catalog["retired_records_sha256"], before)
+
+    def test_external_retirement_requires_exact_explicit_disposition(self):
+        old = self.install_external_tests()
+        plan = self.retire_mini(); self.remove_external_tests()
+        with self.assertRaisesRegex(ValueError, "explicit external test removal"):
+            self.refresh(retire_plan=plan)
+        plan["packages"][0].update(external_action="remove", external_tests=dict(old, bytes=0))
+        with self.assertRaisesRegex(ValueError, "explicit external test removal"):
+            self.refresh(retire_plan=plan)
+
+    def test_external_retirement_rejects_leftover_material_or_mapping(self):
+        old = self.install_external_tests(); plan = self.retire_mini()
+        plan["packages"][0].update(external_action="remove", external_tests=old)
+        with self.assertRaisesRegex(ValueError, "requires absent root"):
+            self.refresh(retire_plan=plan)
+        shutil.rmtree(self.external_root)
+        with self.assertRaisesRegex(ValueError, "unknown/duplicate external test owner"):
+            self.refresh(retire_plan=plan)
+
+    def test_external_ordinary_refresh_still_rejects_owner_disappearance(self):
+        self.install_external_tests(); self.remove_external_tests()
+        with self.assertRaisesRegex(ValueError, "accounting shrank"):
+            self.refresh()
+
+    def test_external_retirement_rejects_history_tampering_and_reappearance(self):
+        old = self.install_external_tests(); plan = self.retire_mini()
+        plan["packages"][0].update(external_action="remove", external_tests=old)
+        self.remove_external_tests(); self.refresh(retire_plan=plan)
+        self.external_root.mkdir()
+        with self.assertRaisesRegex(ValueError, "requires absent root"):
+            self.verify()
+        self.external_root.rmdir()
+        self.catalog["retired"]["src/foundation/mini"]["retirement"]["external_tests"]["bytes"] += 1
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "immutable retired source receipt"):
+            self.refresh()
+
+    def test_external_upgrade_requires_removal_and_archives_prior_identity(self):
+        old = self.install_external_tests(); plan = self.upgrade_mini()
+        with self.assertRaisesRegex(ValueError, "explicit external test removal"):
+            self.refresh(upgrade_plan_data=plan)
+        plan["packages"][0].update(external_action="remove", external_tests=old)
+        with self.assertRaisesRegex(ValueError, "requires absent root"):
+            self.refresh(upgrade_plan_data=plan)
+        self.remove_external_tests(); self.refresh(upgrade_plan_data=plan); self.verify()
+        record = self.catalog["superseded"][old["origin_directory"]]
+        self.assertEqual(record["external_tests"], old)
+        self.assertNotEqual(record["external_tests"]["origin_directory"], self.catalog["packages"]["src/foundation/mini"]["origin_directory"])
+        self.refresh(); self.verify()
+        self.catalog["superseded"][old["origin_directory"]]["external_tests"]["files"][0]["sha256"] = "0" * 64
+        self.save_catalog()
+        with self.assertRaisesRegex(ValueError, "immutable superseded source receipt"):
+            self.refresh()
+
+    def test_successor_tests_can_be_separately_relocated_without_relabeling_history(self):
+        old = self.install_external_tests(); plan = self.upgrade_mini()
+        plan["packages"][0].update(external_action="remove", external_tests=old)
+        self.remove_external_tests(); self.refresh(upgrade_plan_data=plan)
+        historical = deepcopy(self.catalog["superseded"])
+        directory = "src/foundation/mini"
+        source = "src/lib.rs"
+        data = (self.source / source).read_bytes()
+        self.external_root.mkdir()
+        (self.external_root / "successor.rs").write_bytes(data)
+        owner = dict(directory=directory, roots=["test/foundation/mini"], files=[dict(
+            source=directory + "/" + source, path="test/foundation/mini/successor.rs",
+            source_sha256_before=manager.digest(data), sha256=manager.digest(data))])
+        self.external_mapping.write_text(json.dumps(dict(schema_version=1, owners=[owner])))
+        (self.source / source).unlink()
+        self.refresh(); self.verify()
+        self.assertEqual(self.catalog["superseded"], historical)
+        self.assertEqual(self.catalog["external_tests"][directory]["origin_directory"], "releases/mini-1.1.0")
+        self.assertEqual(historical[old["origin_directory"]]["external_tests"]["origin_directory"], old["origin_directory"])
+
+    def test_explicit_removal_does_not_exempt_an_unrelated_external_owner(self):
+        old = self.install_external_tests()
+        other_root = self.root / "test/merged"
+        other_root.mkdir()
+        data = b"assert!(true);\n"; (other_root / "tests.rs").write_bytes(data)
+        other = dict(directory="src/merged", roots=["test/merged"], files=[dict(
+            source="src/merged/algorithm.rs", path="test/merged/tests.rs",
+            source_sha256_before=self.catalog["merges"][0]["files_sha256"]["algorithm.rs"], sha256=manager.digest(data))])
+        mapping = json.loads(self.external_mapping.read_text()); mapping["owners"].append(other)
+        self.external_mapping.write_text(json.dumps(mapping))
+        packages = dict(self.catalog["packages"], **{m["directory"]: m for m in self.catalog["merges"]})
+        owners, hashes = manager.external_tests.load(self.root, packages)
+        self.catalog.update(external_tests=owners, external_test_mappings_sha256=hashes); self.save_catalog()
+        plan = self.retire_mini(); plan["packages"][0].update(external_action="remove", external_tests=old)
+        self.remove_external_tests(); shutil.rmtree(other_root)
+        with self.assertRaisesRegex(ValueError, "accounting shrank: src/merged"):
+            self.refresh(retire_plan=plan)
+
+    def test_external_removal_rejects_symlinked_former_root(self):
+        old = self.install_external_tests(); plan = self.retire_mini()
+        plan["packages"][0].update(external_action="remove", external_tests=old)
+        self.remove_external_tests()
+        with tempfile.TemporaryDirectory() as outside:
+            self.external_root.symlink_to(outside, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                self.refresh(retire_plan=plan)
+
+    def test_full_file_restoration_preserves_source_and_bootstrap_history(self):
+        self.install_external_tests()
+        data = (self.source / "lib.rs").read_bytes(); digest = manager.digest(data)
+        (self.external_root / "tests.rs").write_bytes(data)
+        (self.source / "lib.rs").unlink()
+        mapping = json.loads(self.external_mapping.read_text())
+        mapping["owners"][0]["files"][0].update(sha256=digest, source_sha256_before=digest)
+        self.external_mapping.write_text(json.dumps(mapping))
+        self.catalog["packages"]["src/foundation/mini"]["files_sha256"].pop("lib.rs")
+        owners, hashes = manager.external_tests.load(self.root, self.catalog["packages"])
+        self.catalog.update(external_tests=owners, external_test_mappings_sha256=hashes)
+        self.save_catalog(); self.verify()
+        (self.external_root / "tests.rs").rename(self.source / "lib.rs")
+        self.external_mapping.write_text(json.dumps(dict(schema_version=1, owners=[])))
+        self.refresh(); self.verify()
+        self.assertEqual(self.catalog["external_tests"], {})
+        self.assertEqual(self.catalog["packages"]["src/foundation/mini"]["files_sha256"]["lib.rs"], digest)
+        self.assertEqual(self.catalog["initial_test_relocation_sha256"], manager.source_relocation.RECEIPT_SHA256)
+        with patch.object(manager.source_relocation, "read_receipt", side_effect=ValueError("proof removed")):
+            with self.assertRaisesRegex(ValueError, "proof removed"):
+                self.refresh()
+        self.refresh(); self.verify()
 
     def upgrade_mini(self, version="1.1.0"):
         before = deepcopy(self.catalog["packages"]["src/foundation/mini"])

@@ -102,11 +102,104 @@ def check_removed(previous, current, owners):
             raise ValueError(f'unaccounted source removal during test separation: {directory}: {sorted(removed - attributed)}')
 
 
-def check_previous(previous, current):
-    """Relocation may rename destinations, but must not silently lose fragments."""
+def check_previous(previous, current, root=None, packages=None, previous_packages=None):
+    """Allow exact whole-file restoration, never disappearance of test fragments."""
     from collections import Counter
     for directory, owner in previous.items():
         old = Counter((row['source'], row['source_sha256_before']) for row in owner['files'])
         new = Counter((row['source'], row['source_sha256_before']) for row in current.get(directory, {}).get('files', []))
-        if old - new:
+        missing = old - new
+        for (source, before_hash), count in list(missing.items()):
+            candidates = [row for row in owner['files']
+                          if row['source'] == source and row['source_sha256_before'] == before_hash]
+            # Only a single whole-file move can be reversed this way. Multiple
+            # extracted fragments cannot collapse into one restored production file.
+            if count != 1 or len(candidates) != 1 or root is None:
+                continue
+            row = candidates[0]
+            package = (packages or {}).get(directory, {})
+            prior = (previous_packages or {}).get(directory, {})
+            if (not source.startswith(directory + '/')
+                    or package.get('origin_directory') != owner.get('origin_directory')
+                    or prior.get('origin_directory') != owner.get('origin_directory')
+                    or current.get(directory, {}).get('origin_directory', owner.get('origin_directory')) != owner.get('origin_directory')
+                    or row['sha256'] != before_hash):
+                continue
+            relative = source[len(directory) + 1:]
+            if (relative in prior.get('files_sha256', {})
+                    or package.get('files_sha256', {}).get(relative) != row['sha256']):
+                continue
+            restored, external = safe(root, source), safe(root, row['path'])
+            if (external.exists() or not restored.is_file()
+                    or hashlib.sha256(restored.read_bytes()).hexdigest() != row['sha256']):
+                continue
+            del missing[(source, before_hash)]
+        if missing:
             raise ValueError(f'external test source accounting shrank: {directory}')
+
+
+def validate_archived(root, owner, package, removed=False):
+    """Validate a last-current receipt without learning bytes from absent files."""
+    directory = package['directory']
+    if (not isinstance(owner, dict) or owner.get('directory') != directory
+            or owner.get('origin_directory') != package['origin_directory']
+            or not isinstance(owner.get('files'), list) or not owner['files']
+            or owner.get('file_count') != len(owner['files'])
+            or type(owner.get('bytes')) is not int or owner['bytes'] < 0
+            or not isinstance(owner.get('roots'), list) or not owner['roots']):
+        raise ValueError(f'incomplete archived external test receipt: {directory}')
+    roots, paths = [], set()
+    for relative in owner['roots']:
+        path = safe(root, relative)
+        if not relative.startswith('test/') or any(relative == p or relative.startswith(p + '/') or p.startswith(relative + '/') for p in roots):
+            raise ValueError(f'invalid archived external test root: {relative}')
+        if removed and path.exists():
+            raise ValueError(f'external test removal requires absent root: {relative}')
+        roots.append(relative)
+    for entry in owner['files']:
+        source, path = entry['source'], entry['path']
+        safe(root, source); safe(root, path)
+        if (not source.startswith(directory + '/') or path in paths
+                or not any(path.startswith(p + '/') for p in roots)
+                or any(not re.fullmatch(r'[0-9a-f]{64}', entry.get(key, ''))
+                       for key in ('sha256', 'source_sha256_before'))):
+            raise ValueError(f'invalid archived external test source: {path}')
+        paths.add(path)
+
+
+def archive_removal(root, previous, item, package):
+    """Only a matching reviewed plan can dispose of the last external inventory."""
+    directory = package['directory']
+    owner = previous.get('external_tests', {}).get(directory)
+    if owner is None:
+        if 'external_tests' in item or 'external_action' in item:
+            raise ValueError(f'no prior external test receipt for disposition: {directory}')
+        return None
+    if item.get('external_action') != 'remove' or item.get('external_tests') != owner:
+        raise ValueError(f'explicit external test removal required for {directory}: '
+                         'set external_action=remove and external_tests to the exact last catalog receipt; '
+                         'remove its mapping and roots. For an upgrade, restore successor tests in '
+                         'the authenticated source_prefixes before a separate reviewed relocation.')
+    validate_archived(root, owner, package, removed=True)
+    return owner
+
+
+def transition_previous(previous, retired, superseded, current):
+    """Exclude only exact archived dispositions, never all owners in a plan."""
+    retained = {}
+    for directory, owner in previous.items():
+        archived = retired.get(directory, {}).get('retirement', {}).get('external_tests')
+        if archived != owner:
+            archived = superseded.get(owner['origin_directory'], {}).get('external_tests')
+        if archived == owner:
+            if directory in current:
+                raise ValueError(f'removed external test mapping remains active: {directory}')
+        else:
+            retained[directory] = owner
+    return retained
+
+
+def has_history(catalog):
+    return bool(catalog.get('initial_test_relocation_sha256') or catalog.get('external_tests') or any(
+        'external_tests' in package.get('retirement', {}) for package in catalog.get('retired', {}).values()) or any(
+        'external_tests' in record for record in catalog.get('superseded', {}).values()))

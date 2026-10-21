@@ -85,6 +85,67 @@ class ExternalTestAccounting(unittest.TestCase):
         external.check_removed(previous, self.packages, owners)
 
 
+class FullFileRestoration(unittest.TestCase):
+    setUp = ExternalTestAccounting.setUp
+    save = ExternalTestAccounting.save
+    def restoration(self):
+        row = self.record['owners'][0]['files'][0]
+        row['source_sha256_before'] = row['sha256']
+        self.save()
+        owners, _ = external.load(self.root, self.packages)
+        prior = json.loads(json.dumps(self.packages))
+        data = self.file.read_bytes(); self.file.unlink()
+        restored = self.root / row['source']
+        restored.parent.mkdir(parents=True, exist_ok=True); restored.write_bytes(data)
+        self.packages[self.owner]['files_sha256']['tests.rs'] = row['sha256']
+        return owners, prior, restored
+
+    def test_exact_full_file_restoration_is_not_source_loss(self):
+        owners, prior, _ = self.restoration()
+        external.check_previous(owners, {}, self.root, self.packages, prior)
+
+    def test_altered_restoration_rejected(self):
+        owners, prior, restored = self.restoration()
+        restored.write_bytes(b'changed')
+        self.packages[self.owner]['files_sha256']['tests.rs'] = hashlib.sha256(restored.read_bytes()).hexdigest()
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            external.check_previous(owners, {}, self.root, self.packages, prior)
+
+    def test_wrong_owner_and_wrong_path_restorations_rejected(self):
+        owners, prior, restored = self.restoration()
+        self.packages[self.owner]['origin_directory'] = 'different-release'
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            external.check_previous(owners, {}, self.root, self.packages, prior)
+        self.packages[self.owner]['origin_directory'] = 'vendor/mini'
+        restored.rename(restored.with_name('wrong.rs'))
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            external.check_previous(owners, {}, self.root, self.packages, prior)
+
+    def test_external_copy_must_disappear(self):
+        owners, prior, restored = self.restoration()
+        self.file.write_bytes(restored.read_bytes())
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            external.check_previous(owners, {}, self.root, self.packages, prior)
+
+    def test_fragment_or_existing_production_copy_cannot_be_dropped(self):
+        owners, prior, _ = self.restoration()
+        row = owners[self.owner]['files'][0]
+        original = row['source_sha256_before']; row['source_sha256_before'] = '0' * 64
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            external.check_previous(owners, {}, self.root, self.packages, prior)
+        row['source_sha256_before'] = original
+        prior[self.owner]['files_sha256']['tests.rs'] = row['sha256']
+        with self.assertRaisesRegex(ValueError, 'accounting shrank'):
+            external.check_previous(owners, {}, self.root, self.packages, prior)
+
+    def test_restored_source_symlink_rejected(self):
+        owners, prior, restored = self.restoration()
+        data = restored.read_bytes(); restored.unlink()
+        target = restored.with_name('target.rs'); target.write_bytes(data); restored.symlink_to(target)
+        with self.assertRaisesRegex(ValueError, 'symlink'):
+            external.check_previous(owners, {}, self.root, self.packages, prior)
+
+
 class ExternalSourceAttributes(unittest.TestCase):
     def test_relocated_upstream_bytes_disable_git_text_normalization(self):
         root = Path(__file__).resolve().parents[3]

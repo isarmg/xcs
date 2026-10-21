@@ -641,5 +641,5 @@ fn main() {
 }
 
 #[cfg(test)]
-#[path = "../../../test/tools/browser-smoke/unit/main_tests.rs"]
+#[path = "../unit/main_tests.rs"]
 mod tests;

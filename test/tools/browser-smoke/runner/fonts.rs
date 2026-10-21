@@ -289,5 +289,5 @@ fn validate_paint(paint: &Value) -> std::result::Result<(), &'static str> {
 }
 
 #[cfg(test)]
-#[path = "../../../test/tools/browser-smoke/unit/fonts_tests.rs"]
+#[path = "../unit/fonts_tests.rs"]
 mod tests;

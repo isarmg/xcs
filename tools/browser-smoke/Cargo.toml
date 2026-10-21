@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 
+[[bin]]
+name = "browser-smoke"
+path = "../../test/tools/browser-smoke/runner/main.rs"
 
 [dependencies]
 base64 = {version = "0.22.1", path = "../../src/foundation/base64-0.22.1"}

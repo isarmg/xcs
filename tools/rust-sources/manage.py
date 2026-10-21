@@ -100,6 +100,8 @@ def structure(root, policy):
     """No nested Git roots, Cargo workspaces, registry edges, or package locks."""
     if [workspace["manifest"] for workspace in policy["workspaces"]] != ["Cargo.toml"]:
         raise ValueError("exactly one root Cargo workspace is required")
+    if (root / "test").is_symlink():
+        raise ValueError("test source root symlink")
     verify_target_policy(policy)
     if any(path.startswith("test/") for path in project_manifests(root)):
         raise ValueError("Cargo package manifests are forbidden beneath test/")
@@ -473,6 +475,8 @@ def retired_sources(root, catalog, records):
                 or not isinstance(retirement.get("bytes"), int) or retirement["bytes"] < 0
                 or any(not HEX.fullmatch(value) for value in package["files_sha256"].values())):
             raise ValueError(f"incomplete retired source receipt: {relative}")
+        if "external_tests" in retirement:
+            external_tests.validate_archived(root, retirement["external_tests"], package, removed=True)
     expected = catalog.get("retired_records_sha256", {})
     actual = origin_hashes(retired)
     if actual != expected:
@@ -504,6 +508,9 @@ def retirement_plan(root, previous, plan, records, policy):
         package = dict(before)
         package["retirement"] = dict(reason=item["reason"], category=item["category"],
                                      bytes=item["bytes"], file_count=item["file_count"], targets=targets)
+        external = external_tests.archive_removal(root, previous, item, before)
+        if external is not None:
+            package["retirement"]["external_tests"] = external
         retired[relative] = package
         del packages[relative]
     return packages, retired
@@ -544,6 +551,8 @@ def superseded_sources(root, catalog, records, check_manifests=True):
             raise ValueError(f"incomplete superseded source receipt: {origin}")
         safe_path(root, relative)
         upgrade_source_prefixes(root, receipt)
+        if "external_tests" in receipt:
+            external_tests.validate_archived(root, receipt["external_tests"], package)
         match_origin(package, records)
         record = records.get(successor)
         if (record is None or successor == origin or successor in successors
@@ -615,6 +624,9 @@ def upgrade_plan(root, previous, plan, records):
             raise ValueError(f"upgraded source differs from successor release: {relative}")
         superseded[prior_origin] = dict(package=before, successor_origin_directory=successor,
                                        reason=item["reason"], source_prefixes=list(prefixes))
+        external = external_tests.archive_removal(root, previous, item, before)
+        if external is not None:
+            superseded[prior_origin]["external_tests"] = external
         package = dict(before, origin_directory=successor, upstream=record["upstream"])
         for key in ("vcs", "license", "repository"):
             package.pop(key, None)
@@ -629,6 +641,8 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
     policy = read_json(root / POLICY)
     structure(root, policy)
     previous = read_json(root / CATALOG)
+    if previous.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
+        raise ValueError("initial test relocation history identity drift")
     records = origins(root)
     hashes = origin_hashes(records)
     for key, expected in previous.get("origin_records_sha256", {}).items():
@@ -642,6 +656,14 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
             continue
         if material.get(path) != expected:
             raise ValueError(f"immutable original material drift: {path}")
+    def plan_paths(plan):
+        if not isinstance(plan, dict) or not isinstance(plan.get("packages"), list):
+            return set()
+        return {item.get("directory") for item in plan["packages"] if isinstance(item, dict)}
+    upgrade_paths = plan_paths(upgrade_plan_data)
+    retirement_paths = plan_paths(retire_plan)
+    if upgrade_paths & retirement_paths:
+        raise ValueError("upgrade and retirement of one source require separate reviewed refreshes")
     active, superseded = upgrade_plan(root, previous, upgrade_plan_data, records)
     active, retired = retirement_plan(root, dict(previous, packages=active), retire_plan, records, policy)
     actual = source_directories(root, policy)
@@ -677,14 +699,20 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
         merges.append(merged)
     external, external_receipts = external_tests.load(root, dict(packages, **{m["directory"]: m for m in merges}))
     if external:
-        if not previous.get("external_tests"):
+        if not external_tests.has_history(previous):
             baseline_packages = [*previous["packages"].values(), *previous.get("merges", [])]
             baseline = {item["directory"] + "/" + path: value
                         for item in baseline_packages for path, value in item["files_sha256"].items()}
             source_relocation.verify(root, external, safe_path, baseline)
         else:
             source_relocation.read_receipt(root, safe_path)
-    external_tests.check_previous(previous.get("external_tests", {}), external)
+    elif external_tests.has_history(previous):
+        source_relocation.read_receipt(root, safe_path)
+    retained_external = external_tests.transition_previous(previous.get("external_tests", {}), retired, superseded, external)
+    external_tests.check_previous(
+        retained_external, external, root,
+        dict(packages, **{m["directory"]: m for m in merges}),
+        dict(previous["packages"], **{m["directory"]: m for m in previous.get("merges", [])}))
     catalog = dict(external_tests=external, external_test_mappings_sha256=external_receipts, schema=4, policy_sha256=digest((root / POLICY).read_bytes()),
                    config_sha256=digest((root / ".cargo/config.toml").read_bytes()),
                    manifests_sha256={path: digest(safe_path(root, path).read_bytes()) for path in sorted(project_manifests(root))},
@@ -694,6 +722,8 @@ def refresh(root, retire_plan=None, upgrade_plan_data=None):
                    upstream_identities=[record["upstream"] for record in records.values()], merges=merges,
                    retired=retired, retired_records_sha256=origin_hashes(retired),
                    superseded=superseded, superseded_records_sha256=origin_hashes(superseded))
+    if external or external_tests.has_history(previous):
+        catalog["initial_test_relocation_sha256"] = source_relocation.RECEIPT_SHA256
     retired_sources(root, catalog, records)
     superseded_sources(root, catalog, records)
     verify_origin_coverage(catalog, records)
@@ -746,15 +776,22 @@ def document(catalog, policy):
     for _, receipt in sorted(catalog.get("superseded", {}).items()):
         package = receipt["package"]
         upstream = package["upstream"]
+        external = receipt.get("external_tests", {})
+        reason = receipt["reason"]
+        if external:
+            reason += f"；已归档并移除旧版本外置测试 {external['file_count']} 文件 / {external['bytes']} 字节"
         lines.append("| " + " | ".join(map(cell, [f"{upstream['name']}@{upstream['version']}", package["directory"],
-                     receipt["successor_origin_directory"], receipt["reason"], ", ".join(receipt["source_prefixes"])])) + " |")
+                     receipt["successor_origin_directory"], reason, ", ".join(receipt["source_prefixes"])])) + " |")
     lines += ["", "## 已移除的非目标平台与可选实现", "",
               "以下实现已从活动源码及依赖声明中移除，不参与构建或当前依赖公告扫描。最后源码摘要、移除原因与原始来源仍在 JSON retired 中，原始材料继续保留。重新引入必须经过显式来源登记，不能悄悄恢复目录。", "",
               "| 原始身份 | 原目录 | 移除原因 | 最后文件数 / 字节 |", "| --- | --- | --- | --- |"]
     for relative, package in sorted(catalog.get("retired", {}).items()):
         upstream, retired = package["upstream"], package["retirement"]
+        external = retired.get("external_tests", {})
+        total_files = retired["file_count"] + external.get("file_count", 0)
+        total_bytes = retired["bytes"] + external.get("bytes", 0)
         lines.append("| " + " | ".join(map(cell, [f"{upstream['name']}@{upstream['version']}", relative,
-                     retired["reason"], f"{retired['file_count']} / {retired['bytes']}"])) + " |")
+                     retired["reason"], f"{total_files} / {total_bytes}"])) + " |")
     external = catalog.get("external_tests", {})
     external_count = sum(item["file_count"] for item in external.values())
     external_bytes = sum(item["bytes"] for item in external.values())
@@ -787,6 +824,8 @@ def verify_retained_closure(catalog, policy):
 
 def verify(root, metadata=False):
     catalog, policy = read_json(root / CATALOG), read_json(root / POLICY)
+    if catalog.get("initial_test_relocation_sha256") not in (None, source_relocation.RECEIPT_SHA256):
+        raise ValueError("initial test relocation history identity drift")
     structure(root, policy)
     for key, relative in (("policy_sha256", POLICY), ("config_sha256", ".cargo/config.toml"), ("origins_sha256", ORIGINS)):
         if catalog[key] != digest(safe_path(root, relative).read_bytes()):
@@ -795,7 +834,7 @@ def verify(root, metadata=False):
     if origin_hashes(records) != catalog["origin_records_sha256"] or provenance(root) != catalog["provenance_sha256"]:
         raise ValueError("centralized original provenance/license inventory drift")
     external, external_receipts = external_tests.load(root, dict(catalog["packages"], **{m["directory"]: m for m in catalog.get("merges", [])}))
-    if external:
+    if external or external_tests.has_history(catalog):
         source_relocation.read_receipt(root, safe_path)
     if external != catalog.get("external_tests", {}) or external_receipts != catalog.get("external_test_mappings_sha256", {}):
         raise ValueError("external test source accounting drift")

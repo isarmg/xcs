@@ -31,6 +31,57 @@ class HistoricalReconstruction(unittest.TestCase):
         self.receipt.write_text(json.dumps(record))
         patched = patch.object(history, 'RECEIPT_SHA256', hashlib.sha256(self.receipt.read_bytes()).hexdigest())
         patched.start(); self.addCleanup(patched.stop)
+        self.corrections = self.root / history.CORRECTIONS
+        self.save_corrections([])
+
+    def save_corrections(self, rows):
+        self.corrections.write_text(json.dumps({'schema_version': 1, 'files': rows}))
+        patched = patch.object(history, 'CORRECTIONS_SHA256', hashlib.sha256(self.corrections.read_bytes()).hexdigest())
+        patched.start(); self.addCleanup(patched.stop)
+
+    def routing_fix(self):
+        old = self.test.read_bytes()
+        self.test.write_bytes(b'assert!(true); // routed')
+        row = {'source': 'test/mini/tests.rs', 'path': 'test/mini/tests.rs',
+               'sha256': hashlib.sha256(self.test.read_bytes()).hexdigest(),
+               'before_sha256': hashlib.sha256(old).hexdigest(),
+               'replacement': {'old': 'assert!(true);', 'new': 'assert!(true); // routed'}}
+        self.save_corrections([row])
+        return row
+
+    def test_authenticated_routing_correction_preserves_original_receipt(self):
+        original_receipt = self.receipt.read_bytes()
+        self.routing_fix()
+        self.assertEqual(history.historical_reader(self.root)('test/mini/tests.rs'), b'assert!(true);')
+        self.assertEqual(self.receipt.read_bytes(), original_receipt)
+
+    def test_correction_current_tamper_rejected(self):
+        self.routing_fix()
+        self.test.write_text('assert!(false); // routed')
+        with self.assertRaisesRegex(ValueError, 'corrected source content'):
+            history.historical_reader(self.root)
+
+    def test_wrong_correction_and_receipt_tamper_rejected(self):
+        row = self.routing_fix()
+        row['replacement']['old'] = 'assert!(false);'
+        self.save_corrections([row])
+        with self.assertRaisesRegex(ValueError, 'historical content'):
+            history.historical_reader(self.root)
+        self.corrections.write_bytes(self.corrections.read_bytes() + b' ')
+        with self.assertRaisesRegex(ValueError, 'correction receipt changed'):
+            history.historical_reader(self.root)
+
+    def test_exact_fixture_move_and_old_path_reappearance(self):
+        path = self.root / 'test/mini/fixture'
+        path.write_bytes(b'fixture')
+        source = self.root / 'src/mini/fixture'
+        sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        self.save_corrections([{'source': 'src/mini/fixture', 'path': 'test/mini/fixture',
+                                'sha256': sha, 'before_sha256': sha}])
+        self.assertEqual(history.historical_reader(self.root)('src/mini/fixture'), b'fixture')
+        source.write_bytes(b'fixture')
+        with self.assertRaisesRegex(ValueError, 'absent-source'):
+            history.historical_reader(self.root)
 
     def test_exact_live_sources_reconstruct_prior_view(self):
         read = history.historical_reader(self.root)

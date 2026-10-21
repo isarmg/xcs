@@ -7,6 +7,7 @@
 | `test/<组件>/unit/` | 原组件内部的单元测试，仍由原模块的 `cfg(test)` 入口编译 |
 | `test/<组件>/integration/` | 业务集成测试，通过原 Cargo 包的显式测试目标运行 |
 | `test/tools/<工具>/` | 工具单元、集成测试及其夹具 |
+| `test/tools/browser-smoke/runner/` | 实际浏览器验收场景和运行入口，原工具 manifest 通过显式 binary 目标接线 |
 | `test/ci/` | CI 脚本回归和独立消费者夹具 |
 | `test/foundation/<包>/` | 对应上游身份的当前维护测试、语料与单元片段 |
 | `test/evidence/` | 历史检查脚本与受保护的参考实现；不是当前浏览器验收的替代品 |

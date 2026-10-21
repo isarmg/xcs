@@ -7,7 +7,7 @@ mod benches {
 
     use self::test::{black_box, Bencher};
 
-    static UTF8_DEMO: &[u8] = include_bytes!("../../../../test/foundation/utf8parse/tests/UTF-8-demo.txt");
+    static UTF8_DEMO: &[u8] = include_bytes!("../../../tests/UTF-8-demo.txt");
 
     impl Receiver for () {
         fn codepoint(&mut self, c: char) {

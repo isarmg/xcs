@@ -10,7 +10,6 @@ pub(crate) mod struct_layout;
 
 #[cfg(test)]
 #[allow(warnings)]
-#[path = "../../../../test/foundation/bindgen/modules/codegen/bitfield_unit.rs"]
 pub(crate) mod bitfield_unit;
 #[cfg(all(test, target_endian = "little"))]
 #[path = "../../../../test/foundation/bindgen/modules/codegen/bitfield_unit_tests.rs"]

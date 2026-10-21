@@ -654,7 +654,7 @@ mod tests {
     #[test]
     fn test_legacy_wrapper_body() {
         let wat = build_wrapper_wat(super::super::ExceptionHandlingVersion::Legacy);
-        let expected = include_str!("test-data/catch_handler_legacy.wat");
+        let expected = include_str!("../../../../fixtures/catch_handler_legacy.wat");
         assert_eq!(
             wat.trim(),
             expected.trim(),
@@ -666,7 +666,7 @@ mod tests {
     #[test]
     fn test_modern_wrapper_body() {
         let wat = build_wrapper_wat(super::super::ExceptionHandlingVersion::Modern);
-        let expected = include_str!("test-data/catch_handler_modern.wat");
+        let expected = include_str!("../../../../fixtures/catch_handler_modern.wat");
         assert_eq!(
             wat.trim(),
             expected.trim(),
