@@ -12,7 +12,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 matrix_environment = runpy.run_path(str(Path(__file__).with_name("backend_environment.py")))["matrix_environment"]
-VERSIONS = ("0.2.17", "0.3.4", "0.4.3")
+VERSIONS = ("0.2.17", "0.4.3")
 RETIRED = ("rndr", "efi_rng", "windows_legacy")
 DIAGNOSTIC = "this getrandom backend was retired"
 
@@ -125,7 +125,7 @@ def main():
                     env = base_env | {"RUSTFLAGS": base_env["RUSTFLAGS"] +
                                      ' --cfg getrandom_backend="' + backend + '"'}
                     run(["cargo", "check", *common, "--lib"], env, DIAGNOSTIC)
-    print("PASS: 16 native component modes, 3 wasm compile checks, 6 retired-backend rejections")
+    print("PASS: 9 native component modes, 2 wasm compile checks, 3 retired-backend rejections")
     print("This matrix is not a production closure check or a browser runtime smoke test.")
 
 

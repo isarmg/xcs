@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "329acb6284f48c8380718afb14952ed39b3df597c2593f1386af68dda338b023",
+    "compliance/external-tests/foundation.json": "32e36b79f18c7399a2bf0bec71baca3acce8f28e210d7fac0df5e8389e829471",
     "compliance/external-tests/integrated.json": "67ed91584b1ee64659b809f4e803bd03ffd9d5ff5db9f6f536ef50f5929af604",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -6529,23 +6529,6 @@
       "origin_directory": "vendor/rust/getrandom-0.2.17",
       "roots": [
         "test/foundation/getrandom-0.2.17"
-      ]
-    },
-    "src/foundation/getrandom-0.3.4": {
-      "bytes": 8132,
-      "directory": "src/foundation/getrandom-0.3.4",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/getrandom-0.3.4/tests/mod.rs",
-          "sha256": "b8e88300a1ec0b2f6cbc03d40cc66eacae625d1fdc1163f4cf50fae7712d2bdc",
-          "source": "src/foundation/getrandom-0.3.4/tests/mod.rs",
-          "source_sha256_before": "b8e88300a1ec0b2f6cbc03d40cc66eacae625d1fdc1163f4cf50fae7712d2bdc"
-        }
-      ],
-      "origin_directory": "vendor/rust/getrandom-0.3.4",
-      "roots": [
-        "test/foundation/getrandom-0.3.4"
       ]
     },
     "src/foundation/getrandom-0.4.3": {
@@ -26528,7 +26511,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "aae8b1b564e2547d4e0610b4a6ad29e6f6c9b4c35217d84c84f269e66ef2da3c"
+    "Cargo.lock": "8639f5005ccf9e98f25a374fc844d4692104ea9daa412d172486bf1b97147bb6"
   },
   "manifests_sha256": {
     "Cargo.toml": "1c6472894378c77e0b3e3c52b586039cdc6b030bada2609b3bbe9f719be96455",
@@ -26538,7 +26521,7 @@
     "src/contract/Cargo.toml": "137efe70893b3f3e7c09bba1a36a5bd27daefef190b2dbbf07afdf809b05677a",
     "src/engine/Cargo.toml": "ee14d06fee77768b4ab38c6b112a919130cdca7a2a2eb467fa194e91215d5b58",
     "src/foundation/adler2/Cargo.toml": "6fe5eda8f0c1ccf3225d155f562cb523cf25488e37a34984e856ced9f2dcff1c",
-    "src/foundation/ahash/Cargo.toml": "57975d1fef1abd92d478feb15244cd25376ae20a00e07d0db08e0e3ff8709b73",
+    "src/foundation/ahash/Cargo.toml": "9a439a33342a63762afcd15009b52da7cfe52e860cce575c566c01503045f2dd",
     "src/foundation/aho-corasick/Cargo.toml": "9e02f34d2fc0d8cef568a463881053f8037fe4ecfe3a32175fe781ea6aa3d0ce",
     "src/foundation/allocator-api2/Cargo.toml": "f60856ad89db6774871a4634bd8dd0c95c80337e94d2192ca061afd410cbe7cc",
     "src/foundation/anstream/Cargo.toml": "1b4a5447407982ffd2b6c19c44c84145968f8110461026fd2927ff6d598ff3c8",
@@ -26636,7 +26619,6 @@
     "src/foundation/futures/Cargo.toml": "a8a42e45bed24464515b214dc7fca55678b7a417d349dfca1c029fe66a091fa1",
     "src/foundation/generic-array/Cargo.toml": "eba2f25719509d9ee6ccd8925146e2ca7f67580344d4cb4d14ba05b7961846e8",
     "src/foundation/getrandom-0.2.17/Cargo.toml": "343a500ff60a657dae7cd4dfbbca349e474473bbeddfa26bab6065d8f842669c",
-    "src/foundation/getrandom-0.3.4/Cargo.toml": "3865e699cb667e159a382a37b0ef011c9d49bfefae82d026488ea843ee2a126d",
     "src/foundation/getrandom-0.4.3/Cargo.toml": "6e3eb9b5f452fcc904633c89c0c1fcb368e18f1a347bc1ed651b6037cf6b5d32",
     "src/foundation/gimli/Cargo.toml": "bef81f95876ce5612c8c2449e99fce212aaa662b54ac173c7c1387ba02c74030",
     "src/foundation/glob/Cargo.toml": "fb4768e511e05b58c5f45460b6a473caf01654707dba3397db0834da75815c8c",
@@ -26675,8 +26657,8 @@
     "src/foundation/itoa/Cargo.toml": "91e17d7f7f5a0353ea808436775e7c02ddb18e4fc5c0e1126ee2f507574c541a",
     "src/foundation/js-sys/Cargo.toml": "378a0a3c01b93d9aef98924e7c96a97d269a70566d8542f2aa19754144b09e55",
     "src/foundation/jsonschema-regex/Cargo.toml": "58e9c97c1cb94e8505d444ce0e0951ca318df3223c2f61b17d7bbeb6b54c9a27",
-    "src/foundation/jsonschema-value/Cargo.toml": "f8af66c87c3e7c2ff57793361cfc6f8963ea2e3ece842272cd80d511fa15f54a",
-    "src/foundation/jsonschema/Cargo.toml": "5ee0539b471984b2b324595bb59b40b45ff13b82198331166ce0dd433f85d093",
+    "src/foundation/jsonschema-value/Cargo.toml": "b20e3bb231b4567585784436a260b93fbafb1a4b81d0d495b75e6d48d9956519",
+    "src/foundation/jsonschema/Cargo.toml": "fb3be877d3f75f5a4eaf622e49bae86e3d870792eaaf216697e40656a318dd31",
     "src/foundation/lazy_static/Cargo.toml": "52e3d1cbd8ad7145b35b8c175ef1a0484e4c3a7e2750f6cde542c1c9e17daca7",
     "src/foundation/leb128/Cargo.toml": "9ae03997e60622923cea16931a313d4b6fa2805224ccdd031d4a90d1abc08148",
     "src/foundation/leb128fmt/Cargo.toml": "b9fb8a6dc7caec07b0bb91b6e2948adceb92c51d6dd4afb7fca372903c3d4414",
@@ -26737,7 +26719,7 @@
     "src/foundation/reactive-state/Cargo.toml": "bb171e1277547ace0cd1bb36d3d11366408e6f59bc32c5029e4a2b56bfa1541b",
     "src/foundation/ref-cast-impl/Cargo.toml": "14dd0654f9cefb90dcc826432ae1b2b7c2801c5aa55832e112b5b99d501eda64",
     "src/foundation/ref-cast/Cargo.toml": "1291fdd6c5162dc8a1dd02103dd516846fdeb82f4b6d8b1f114c32e644a4701f",
-    "src/foundation/referencing/Cargo.toml": "2a11a51287abdb142aa82034effe680aa973161a7436e4cc3613bccf13ec3349",
+    "src/foundation/referencing/Cargo.toml": "0f03074b53a2f47b8c53cb442f6a29aaa3902892a13cc072caab5dd5c9bf9a04",
     "src/foundation/regex-automata/Cargo.toml": "cf79f831f3458734483607c91c1e1aa687974d4c930fd7753ba783e85361371b",
     "src/foundation/regex-syntax/Cargo.toml": "6e1e9781822dbd258bb510477cd72a1b45da59eae23b242296188848a6c8691d",
     "src/foundation/regex/Cargo.toml": "ca514f446b32a15e9e004c8b12f4d11201d9fed20828225d2b9ab5c8b8c94217",
@@ -27495,7 +27477,7 @@
       "description": "A non-cryptographic hash function using AES-NI for high performance",
       "directory": "src/foundation/ahash",
       "files_sha256": {
-        "Cargo.toml": "57975d1fef1abd92d478feb15244cd25376ae20a00e07d0db08e0e3ff8709b73",
+        "Cargo.toml": "9a439a33342a63762afcd15009b52da7cfe52e860cce575c566c01503045f2dd",
         "build.rs": "7cb4efa0a4d25b40c47540150a5fac627c9fa8134b499d827d2740fd9f35c7bc",
         "src/aes_hash.rs": "01503b0c8c834fb06d54889c552f3bd4be81dd3e5fd0f36222c652d45dbdb243",
         "src/convert.rs": "0f509841ab05d450f62e511fbbd78d791e53f6435d5eb4ad6811fb25ba24826e",
@@ -31795,55 +31777,6 @@
       },
       "version": "0.2.17"
     },
-    "src/foundation/getrandom-0.3.4": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
-      "description": "A small cross-platform library for retrieving random data from system source",
-      "directory": "src/foundation/getrandom-0.3.4",
-      "files_sha256": {
-        "Cargo.toml": "3865e699cb667e159a382a37b0ef011c9d49bfefae82d026488ea843ee2a126d",
-        "benches/buffer.rs": "20fb7dd9edafe0c182f1fe037b28d7542f8e0ae742d51e97aeebf418edde49aa",
-        "build.rs": "662faa06d7b2a9c5bea2c17a127a90e00b9f9b31105b0360da516e47cf816e95",
-        "src/backends.rs": "706555e0bdbe59be63a7d24e5221838ba7c6af5c21b9c332df8df92ed5ea762d",
-        "src/backends/custom.rs": "c8776ff0dda65cef1373b8624043f8a42ce4fd6183fbeb8918f9df5d4a13d457",
-        "src/backends/getrandom.rs": "49a7ca8cc47178b47339ee4aeb59e11b629735eb9fedaa21ee2da7073b2574c5",
-        "src/backends/linux_android_with_fallback.rs": "af1e4fdd6904f8c78c6cef9af21c626bf4ba1b38d4bf8cd081cb739acc0a34b2",
-        "src/backends/linux_raw.rs": "2647e9492e46afdb1838c824094f6ab6e14fb4a82fa8274bea8dd2d4151f32dd",
-        "src/backends/rdrand.rs": "2a06eb62ad7e97c2486ab1b0159e4b9fe3a1c0a39d479a836d23051f89cb9aed",
-        "src/backends/sanitizer.rs": "ea6d986ccacc31d2efdf116e7f0ef509845f596b4f8aced11c622df12a13be25",
-        "src/backends/unsupported.rs": "a531ab9883b7d7b584c6f37a5c13543ec63d25d3acc36608d57d5d82ef44cbff",
-        "src/backends/use_file.rs": "313b8ce2ffd68d59b60dd252783d6f10eea71ff5304e5531fbb3f5d23e8ddb76",
-        "src/backends/wasm_js.rs": "5913b33ec9cb4076cef65d461ce82af98e9233f621eac8fab44b68fd37080927",
-        "src/error.rs": "f89ed0bbe29289fbddd5bf315561c9feae67bf196a3a4d1bed05105f3d13c329",
-        "src/error_std_impls.rs": "4c068e81d876237a7e0a0e91519896bd670c2f999ca729f7fb970caf888cab46",
-        "src/lazy.rs": "9c7e3efcc7b4cc2252751d29e42465bae8cbe49461a4a81a006d8d2c45003fd1",
-        "src/lib.rs": "76c7350de932bfbbe7d88596b480bced7799a7eb3a8738c33ef336c0ac082c61",
-        "src/util.rs": "207e21353f4e402daf84ff137c8d4aa4ffafa48141194ae7148252e06dcadd9f",
-        "src/util_libc.rs": "1d3f16d8996295822e6cbfc848e90912795f378913627c6b765f47b2185d9480"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/getrandom-0.3.4/LICENSE-APACHE",
-        "compliance/licenses/upstream/getrandom-0.3.4/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "getrandom",
-      "origin_directory": "vendor/rust/getrandom-0.3.4",
-      "repository": "https://github.com/rust-random/getrandom",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd",
-        "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.3.4.crate",
-        "name": "getrandom",
-        "version": "0.3.4"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "38e4ad38309a85b56eef4fc759535ccfc322ba9a"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.3.4"
-    },
     "src/foundation/getrandom-0.4.3": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
       "description": "A small cross-platform library for retrieving random data from system source",
@@ -33763,7 +33696,7 @@
       "description": "JSON schema validaton library",
       "directory": "src/foundation/jsonschema",
       "files_sha256": {
-        "Cargo.toml": "5ee0539b471984b2b324595bb59b40b45ff13b82198331166ce0dd433f85d093",
+        "Cargo.toml": "fb3be877d3f75f5a4eaf622e49bae86e3d870792eaaf216697e40656a318dd31",
         "benches/canonicalize.rs": "af90e45611fc54a11a824e1762c89ccfbf144627b56e51f1db53d011cd9ea88c",
         "benches/canonicalize_many.rs": "d25276375069379d329d81a516090c4428cd50e599a02103d25c89ca9144df17",
         "benches/codegen.rs": "5553726ddd936fa2c2bdaa3f26fc0965d918ffb78b59629ee7732bfe9d639da9",
@@ -33956,7 +33889,7 @@
       "description": "JSON value representations and semantics shared by the jsonschema validator and its bindings",
       "directory": "src/foundation/jsonschema-value",
       "files_sha256": {
-        "Cargo.toml": "f8af66c87c3e7c2ff57793361cfc6f8963ea2e3ece842272cd80d511fa15f54a",
+        "Cargo.toml": "b20e3bb231b4567585784436a260b93fbafb1a4b81d0d495b75e6d48d9956519",
         "build.rs": "eaf4038e865deb416425dc3cc3f0bd8afdc580481f82cdd487913c87ed14aab6",
         "src/cmp.rs": "aa5f9f0bee8f2fcf282cb77b1fd01a2f45171e018f900c8548fb28b0ba33046b",
         "src/conformance.rs": "3851e3e8d354cdfe70c47c2fab4d5dc6e248b419fb02389eb2c13fbea8bc72b6",
@@ -36696,7 +36629,7 @@
       "description": "An implementation-agnostic JSON reference resolution library for Rust.",
       "directory": "src/foundation/referencing",
       "files_sha256": {
-        "Cargo.toml": "2a11a51287abdb142aa82034effe680aa973161a7436e4cc3613bccf13ec3349",
+        "Cargo.toml": "0f03074b53a2f47b8c53cb442f6a29aaa3902892a13cc072caab5dd5c9bf9a04",
         "benches/anchor.rs": "7ab8b6c5644364d31cb9c7c5b7c66935b04383c9d925f75a3409b1be81aac030",
         "benches/pointer.rs": "bdfd4c203ab72c64614efceed36204cfc489379ca4b39416fdf4e662a9c7eaa2",
         "benches/registry.rs": "f55162ae1d19d2970b85d9eb15a4ecd7c220b271ec3dda9ee050b63fd1be0ed5",
@@ -55184,14 +55117,6 @@
             "compile"
           ]
         },
-        "src/foundation/getrandom-0.3.4": {
-          "features": [
-            "wasm_js"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/getrandom-0.4.3": {
           "features": [
             "wasm_js"
@@ -57179,6 +57104,82 @@
         "path_in_vcs": ""
       },
       "version": "0.1.3"
+    },
+    "src/foundation/getrandom-0.3.4": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
+      "description": "A small cross-platform library for retrieving random data from system source",
+      "directory": "src/foundation/getrandom-0.3.4",
+      "files_sha256": {
+        "Cargo.toml": "3865e699cb667e159a382a37b0ef011c9d49bfefae82d026488ea843ee2a126d",
+        "benches/buffer.rs": "20fb7dd9edafe0c182f1fe037b28d7542f8e0ae742d51e97aeebf418edde49aa",
+        "build.rs": "662faa06d7b2a9c5bea2c17a127a90e00b9f9b31105b0360da516e47cf816e95",
+        "src/backends.rs": "706555e0bdbe59be63a7d24e5221838ba7c6af5c21b9c332df8df92ed5ea762d",
+        "src/backends/custom.rs": "c8776ff0dda65cef1373b8624043f8a42ce4fd6183fbeb8918f9df5d4a13d457",
+        "src/backends/getrandom.rs": "49a7ca8cc47178b47339ee4aeb59e11b629735eb9fedaa21ee2da7073b2574c5",
+        "src/backends/linux_android_with_fallback.rs": "af1e4fdd6904f8c78c6cef9af21c626bf4ba1b38d4bf8cd081cb739acc0a34b2",
+        "src/backends/linux_raw.rs": "2647e9492e46afdb1838c824094f6ab6e14fb4a82fa8274bea8dd2d4151f32dd",
+        "src/backends/rdrand.rs": "2a06eb62ad7e97c2486ab1b0159e4b9fe3a1c0a39d479a836d23051f89cb9aed",
+        "src/backends/sanitizer.rs": "ea6d986ccacc31d2efdf116e7f0ef509845f596b4f8aced11c622df12a13be25",
+        "src/backends/unsupported.rs": "a531ab9883b7d7b584c6f37a5c13543ec63d25d3acc36608d57d5d82ef44cbff",
+        "src/backends/use_file.rs": "313b8ce2ffd68d59b60dd252783d6f10eea71ff5304e5531fbb3f5d23e8ddb76",
+        "src/backends/wasm_js.rs": "5913b33ec9cb4076cef65d461ce82af98e9233f621eac8fab44b68fd37080927",
+        "src/error.rs": "f89ed0bbe29289fbddd5bf315561c9feae67bf196a3a4d1bed05105f3d13c329",
+        "src/error_std_impls.rs": "4c068e81d876237a7e0a0e91519896bd670c2f999ca729f7fb970caf888cab46",
+        "src/lazy.rs": "9c7e3efcc7b4cc2252751d29e42465bae8cbe49461a4a81a006d8d2c45003fd1",
+        "src/lib.rs": "76c7350de932bfbbe7d88596b480bced7799a7eb3a8738c33ef336c0ac082c61",
+        "src/util.rs": "207e21353f4e402daf84ff137c8d4aa4ffafa48141194ae7148252e06dcadd9f",
+        "src/util_libc.rs": "1d3f16d8996295822e6cbfc848e90912795f378913627c6b765f47b2185d9480"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/getrandom-0.3.4/LICENSE-APACHE",
+        "compliance/licenses/upstream/getrandom-0.3.4/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "getrandom",
+      "origin_directory": "vendor/rust/getrandom-0.3.4",
+      "repository": "https://github.com/rust-random/getrandom",
+      "retirement": {
+        "bytes": 65595,
+        "category": "duplicate-implementation-consolidation",
+        "external_tests": {
+          "bytes": 8132,
+          "directory": "src/foundation/getrandom-0.3.4",
+          "file_count": 1,
+          "files": [
+            {
+              "path": "test/foundation/getrandom-0.3.4/tests/mod.rs",
+              "sha256": "b8e88300a1ec0b2f6cbc03d40cc66eacae625d1fdc1163f4cf50fae7712d2bdc",
+              "source": "src/foundation/getrandom-0.3.4/tests/mod.rs",
+              "source_sha256_before": "b8e88300a1ec0b2f6cbc03d40cc66eacae625d1fdc1163f4cf50fae7712d2bdc"
+            }
+          ],
+          "origin_directory": "vendor/rust/getrandom-0.3.4",
+          "roots": [
+            "test/foundation/getrandom-0.3.4"
+          ]
+        },
+        "file_count": 19,
+        "reason": "Consolidate ahash and JSON schema browser entropy onto retained getrandom 0.4.3 without changing default runtime-rng, wasm_js feature gates, OS CSPRNG or fail-closed behavior; retain separate 0.2 legacy API compatibility. Historical runtime proof bytes remain in a separately pinned, non-build retirement archive.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd",
+        "archive_url": "https://static.crates.io/crates/getrandom/getrandom-0.3.4.crate",
+        "name": "getrandom",
+        "version": "0.3.4"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "38e4ad38309a85b56eef4fc759535ccfc322ba9a"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.3.4"
     },
     "src/foundation/hashbrown-0.16.1": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -66486,6 +66487,7 @@
     "src/foundation/defmt-parser": "13fb36063c62bb805fbe9a25c5fa8f5867cd67c88399ade25dc43767a9a0b35a",
     "src/foundation/dotenvy": "cd5f14644b5a7aa236d7018bb77f9a1ad3c2fd719762e2320713321205c28e3f",
     "src/foundation/drain_filter_polyfill": "9bd00168d21cdc708296eb316c673e738cfa0a9665c99d49ae248a7331325e99",
+    "src/foundation/getrandom-0.3.4": "134390924fc2ba79a7633d5166c36f4ff84f84111edcfe0bc576eef4b897c537",
     "src/foundation/hashbrown-0.16.1": "79cdc46d22754ec4dc3289737115e2bceb5bc1ad1fc6863183230495337d6df3",
     "src/foundation/hex": "37146935caac26425e292364a000256037ac1737af648797011f3538a82dccab",
     "src/foundation/is_terminal_polyfill": "c7eff78a05c7f9d66148372cab1c3d140d2ff77b3c35f62f153debcec5831b57",

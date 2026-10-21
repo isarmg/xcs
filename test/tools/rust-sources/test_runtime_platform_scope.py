@@ -25,7 +25,8 @@ class RuntimePlatformScope(unittest.TestCase):
             self.assertEqual(hashlib.sha256(read(path)).hexdigest(), evidence['after_sha256'], path)
 
     def test_retired_random_overrides_fail_closed(self):
-        for version in ('0.3.4', '0.4.3'):
+        # Historical 0.3 implementation remains verified by the pinned proof above.
+        for version in ('0.4.3',):
             crate = ROOT / 'src/foundation' / ('getrandom-' + version)
             source = (crate / 'src/backends.rs').read_text()
             self.assertIn('this getrandom backend was retired', source)

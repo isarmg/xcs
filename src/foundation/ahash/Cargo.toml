@@ -46,9 +46,9 @@ version = "1.0"
 path = "../cfg-if"
 
 [dependencies.getrandom]
-version = "0.3.1"
+version = "0.4.3"
 optional = true
-path = "../getrandom-0.3.4"
+path = "../getrandom-0.4.3"
 
 [dependencies.serde]
 version = "1.0.117"

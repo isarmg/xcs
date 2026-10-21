@@ -6352,20 +6352,6 @@
       ]
     },
     {
-      "directory": "src/foundation/getrandom-0.3.4",
-      "roots": [
-        "test/foundation/getrandom-0.3.4"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/getrandom-0.3.4/tests/mod.rs",
-          "source_sha256_before": "b8e88300a1ec0b2f6cbc03d40cc66eacae625d1fdc1163f4cf50fae7712d2bdc",
-          "path": "test/foundation/getrandom-0.3.4/tests/mod.rs",
-          "sha256": "b8e88300a1ec0b2f6cbc03d40cc66eacae625d1fdc1163f4cf50fae7712d2bdc"
-        }
-      ]
-    },
-    {
       "directory": "src/foundation/getrandom-0.4.3",
       "roots": [
         "test/foundation/getrandom-0.4.3"

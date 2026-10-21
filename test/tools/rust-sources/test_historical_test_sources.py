@@ -17,6 +17,8 @@ class HistoricalReconstruction(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
+        archived = patch.object(history, "RETIREMENT_ARCHIVES", {})
+        archived.start(); self.addCleanup(archived.stop)
         self.source = self.root / 'src/mini/lib.rs'
         self.source.parent.mkdir(parents=True)
         self.source.write_text('include!("tests.rs");')

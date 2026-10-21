@@ -11,7 +11,7 @@ name = "ahash"
 version = "0.8.12"
 dependencies = [
  "cfg-if",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "once_cell",
  "serde",
  "zerocopy",
@@ -766,16 +766,6 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.3.4"
-dependencies = [
- "cfg-if",
- "js-sys",
- "libc",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "getrandom"
 version = "0.4.3"
 dependencies = [
  "cfg-if",
@@ -1091,7 +1081,7 @@ dependencies = [
  "email_address",
  "fancy-regex",
  "fraction",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "itoa",
  "jsonschema-regex",
  "jsonschema-value",
@@ -1121,7 +1111,7 @@ dependencies = [
  "ahash",
  "bytecount",
  "fraction",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "num-cmp",
  "num-traits",
  "serde_json",
@@ -1570,7 +1560,7 @@ version = "0.58.6"
 dependencies = [
  "ahash",
  "fluent-uri",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "hash-table",
  "itoa",
  "micromap",
