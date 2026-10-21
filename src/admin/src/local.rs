@@ -228,32 +228,11 @@ pub(crate) async fn run(args: Args) -> Result<()> {
             if config.to_str().is_none() || path.to_str().is_none() {
                 return Err("configuration and disk paths must be valid UTF-8 for JSON output; the draft was not changed".into());
             }
-            if root.join("auth.json").exists() {
-                return Err("disk registration modifies only an uninitialized configuration draft; live migration requires a protected topology plan".into());
-            }
-            let original = std::fs::read(&config)?;
+            // Match the engine's bounded metadata reader, including whitespace
+            // in hand-written drafts. Never read a link or unowned input first.
+            const MAX_DRAFT_BYTES: usize = 64 * 1024 * 1024;
+            let original = private_io::read_owned_bytes(&config, MAX_DRAFT_BYTES)?;
             let mut draft: Config = storage_engine::decode_strict(&original)?;
-            if draft
-                .disks
-                .iter()
-                .any(|disk| disk.slot_id == slot || disk.disk_id == disk_id || disk.root == path)
-            {
-                return Err("slot, disk identity and root must be unique".into());
-            }
-            if level == 0 || (level == 1 && upstream.is_some()) || (level > 1 && upstream.is_none())
-            {
-                return Err(
-                    "primary disks have no upstream; higher levels require an upstream".into(),
-                );
-            }
-            if let Some(source) = &upstream
-                && !draft
-                    .disks
-                    .iter()
-                    .any(|disk| &disk.slot_id == source && disk.level.checked_add(1) == Some(level))
-            {
-                return Err("upstream must name a disk in the immediately previous level".into());
-            }
             draft.disks.push(storage_engine::DiskConfig {
                 slot_id: slot.clone(),
                 disk_id,
@@ -264,6 +243,12 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                 binding_generation: 1,
                 capacity_bytes: None,
             });
+            Engine::validate_configuration(&draft)?;
+            ensure_uninitialized_draft(&config, &draft)?;
+            let candidate = serde_json::to_vec_pretty(&draft)?;
+            if candidate.len() > MAX_DRAFT_BYTES {
+                return Err("configuration draft exceeds its byte limit".into());
+            }
             let backup = registration_backup(&config)?;
             let backup_result = if backup.symlink_metadata().is_ok() {
                 private_io::replace_private(&backup, &original)
@@ -276,7 +261,7 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                     backup.display()
                 )
             })?;
-            private_io::replace_private(&config, &serde_json::to_vec_pretty(&draft)?)?;
+            private_io::replace_private(&config, &candidate)?;
             print(
                 json!({"slot_id":slot,"draft":config,"backup":backup,"live_binding_changed":false}),
             )
@@ -285,6 +270,76 @@ pub(crate) async fn run(args: Args) -> Result<()> {
             Err("login/logout/whoami require --server".into())
         }
         command => local_operation(&root, &args.principal, command),
+    }
+}
+
+/// The selected configuration, not an unrelated --root argument, determines
+/// whether this is an offline draft. Stat only: never initialize or lock disks.
+fn ensure_uninitialized_draft(path: &Path, config: &Config) -> Result<()> {
+    let parent = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."))
+        .canonicalize()?;
+    for marker in ["auth.json", "writer.lock", "index.sqlite", "workspaces"] {
+        reject_initialized_marker(&parent.join(marker))?;
+    }
+    let mut resolved = config.clone();
+    for disk in &mut resolved.disks {
+        disk.root = resolve_draft_disk_root(&disk.root)?;
+        // An enrolled disk remains enrolled when the draft was copied outside
+        // the system root, or when the new path is nested inside its root.
+        for ancestor in disk.root.ancestors() {
+            for marker in ["disk.json", ".writer.lock"] {
+                reject_initialized_marker(&ancestor.join(marker))?;
+            }
+        }
+        reject_initialized_marker(&disk.root.join("metadata/pool-membership/config.json"))?;
+    }
+    // Existing directory aliases and aliases of a not-yet-created child must
+    // not hide overlapping disk roots from the shared topology validation.
+    Engine::validate_configuration(&resolved)?;
+    Ok(())
+}
+
+fn reject_initialized_marker(path: &Path) -> Result<()> {
+    match path.symlink_metadata() {
+        Ok(_) => Err("disk registration modifies only an uninitialized configuration draft; live migration requires a protected topology plan".into()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(error.into()),
+    }
+}
+
+fn resolve_draft_disk_root(path: &Path) -> Result<std::path::PathBuf> {
+    let mut existing = path;
+    let mut suffix = Vec::new();
+    loop {
+        match existing.canonicalize() {
+            Ok(mut resolved) => {
+                if !resolved.is_dir() {
+                    return Err("disk root must name a directory".into());
+                }
+                for name in suffix.into_iter().rev() {
+                    resolved.push(name);
+                }
+                return Ok(resolved);
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                // A dangling symlink is not a missing, safely creatable root.
+                if existing.symlink_metadata().is_ok() {
+                    return Err("disk root contains a dangling link".into());
+                }
+                suffix.push(
+                    existing
+                        .file_name()
+                        .ok_or("disk root has no existing parent")?,
+                );
+                existing = existing
+                    .parent()
+                    .ok_or("disk root has no existing parent")?;
+            }
+            Err(error) => return Err(error.into()),
+        }
     }
 }
 
@@ -576,6 +631,9 @@ fn local_operation(root: &Path, principal: &str, command: Command) -> Result<()>
 }
 
 #[cfg(test)]
+mod registration_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -590,8 +648,8 @@ mod tests {
                 slot: "D01".into(),
                 disk_id: storage_engine::new_id("disk"),
                 path: root.join("fourth"),
-                level: 2,
-                upstream: Some("P01".into()),
+                level: 1,
+                upstream: None,
                 metadata_member: false,
             },
         }

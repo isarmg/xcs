@@ -54,6 +54,30 @@ pub(crate) fn read_private(path: &Path, maximum: usize) -> Result<String> {
     AnchoredPath::open(path)?.read_private(maximum)
 }
 
+/// Read an explicitly selected owned draft without following links. Drafts
+/// need not have secret-file permissions, but still use the regular-file and
+/// single-link checks of the descriptor-anchored I/O layer.
+pub(crate) fn read_owned_bytes(path: &Path, maximum: usize) -> Result<Vec<u8>> {
+    let target = AnchoredPath::open(path)?;
+    let file = target
+        .directory
+        .open_file(&target.name.as_relative(), false)?;
+    let metadata = file.metadata()?;
+    if metadata.uid() != rustix::process::geteuid().as_raw() {
+        return Err("configuration draft must belong to this user".into());
+    }
+    if metadata.len() > maximum as u64 {
+        return Err("configuration draft exceeds its byte limit".into());
+    }
+    let mut bytes = Vec::new();
+    file.take((maximum as u64).saturating_add(1))
+        .read_to_end(&mut bytes)?;
+    if bytes.len() > maximum {
+        return Err("configuration draft exceeds its byte limit".into());
+    }
+    Ok(bytes)
+}
+
 struct StagingCleanup<'a> {
     directory: &'a File,
     name: String,
@@ -138,6 +162,21 @@ mod tests {
         os::unix::fs::{PermissionsExt, symlink},
         sync::Arc,
     };
+
+    #[test]
+    fn owned_draft_reads_are_bounded_and_reject_links_without_requiring_secret_mode() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("draft.json");
+        fs::write(&path, b"draft").unwrap();
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+        assert_eq!(read_owned_bytes(&path, 5).unwrap(), b"draft");
+        assert!(read_owned_bytes(&path, 4).is_err());
+        symlink(&path, root.path().join("alias")).unwrap();
+        assert!(read_owned_bytes(&root.path().join("alias"), 5).is_err());
+        fs::hard_link(&path, root.path().join("hard")).unwrap();
+        assert!(read_owned_bytes(&path, 5).is_err());
+        assert!(read_owned_bytes(root.path(), 5).is_err());
+    }
 
     #[test]
     fn private_reads_validate_the_opened_file_and_bound_its_bytes() {
