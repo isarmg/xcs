@@ -8310,7 +8310,7 @@
           "source": "src/foundation/icu_collections/src/iterator_utils.rs",
           "source_sha256_before": "6be1d4da0c061cc711e8279e790894786cf631f0d2252787fe8d11af154179d9",
           "path": "test/foundation/icu_collections/unit/src/iterator_utils/tests_59.rs",
-          "sha256": "d0a4e68315ed901ded06dad1ba3ef6c728de4d13785075af2ad98bc918e44454"
+          "sha256": "c36a034fa2036a58606598d1b10c31747d3713958a329106671d6d75e5758dd1"
         }
       ]
     },
@@ -8551,54 +8551,60 @@
       ]
     },
     {
-      "directory": "src/foundation/icu_normalizer",
+      "directory": "src/foundation/unicode-normalizer",
       "roots": [
-        "test/foundation/icu_normalizer"
+        "test/foundation/unicode-normalizer"
       ],
       "files": [
         {
+          "path": "test/foundation/unicode-normalizer/tests/data/NormalizationTest.txt",
+          "sha256": "5019ffd530751a741900c849c0e010332f142a3612234639bd200b82138a87db",
           "source": "src/foundation/icu_normalizer/tests/data/NormalizationTest.txt",
           "source_sha256_before": "5019ffd530751a741900c849c0e010332f142a3612234639bd200b82138a87db",
-          "path": "test/foundation/icu_normalizer/tests/data/NormalizationTest.txt",
-          "sha256": "5019ffd530751a741900c849c0e010332f142a3612234639bd200b82138a87db"
+          "origin_directory": "vendor/rust/icu_normalizer-2.3.0"
         },
         {
+          "path": "test/foundation/unicode-normalizer/tests/tests.rs",
+          "sha256": "bf939b49f52a41fafb152db3274fc6cdcc514403a280eb79a9c9353ea9475b22",
           "source": "src/foundation/icu_normalizer/tests/tests.rs",
           "source_sha256_before": "0572606ed5ec8c43d94cf3a2215d37d31da590e208f2753bc024c248bba189c1",
-          "path": "test/foundation/icu_normalizer/tests/tests.rs",
-          "sha256": "0572606ed5ec8c43d94cf3a2215d37d31da590e208f2753bc024c248bba189c1"
+          "origin_directory": "vendor/rust/icu_normalizer-2.3.0"
         }
       ]
     },
     {
-      "directory": "src/foundation/icu_properties",
+      "directory": "src/foundation/unicode-properties",
       "roots": [
-        "test/foundation/icu_properties"
+        "test/foundation/unicode-properties"
       ],
       "files": [
         {
+          "path": "test/foundation/unicode-properties/tests/data/PropertyDiscriminants.txt",
+          "sha256": "23b3059c19cff54b791872d05447108568742bbcff662fd74d010c0b89703b78",
           "source": "src/foundation/icu_properties/tests/data/PropertyDiscriminants.txt",
           "source_sha256_before": "23b3059c19cff54b791872d05447108568742bbcff662fd74d010c0b89703b78",
-          "path": "test/foundation/icu_properties/tests/data/PropertyDiscriminants.txt",
-          "sha256": "23b3059c19cff54b791872d05447108568742bbcff662fd74d010c0b89703b78"
+          "origin_directory": "vendor/rust/icu_properties-2.3.0"
         },
         {
+          "path": "test/foundation/unicode-properties/unit/src/code_point_set/tests_253.rs",
+          "sha256": "2d52da7bc398b3f02e30a425c12a5d62d49d6fcf44899fc59b29c5dd9fac2033",
           "source": "src/foundation/icu_properties/src/code_point_set.rs",
           "source_sha256_before": "b32c7ab10b0cbbefd49f352360cf6366fd5095abc84f120a0d4028fb133e33c0",
-          "path": "test/foundation/icu_properties/unit/src/code_point_set/tests_253.rs",
-          "sha256": "2d52da7bc398b3f02e30a425c12a5d62d49d6fcf44899fc59b29c5dd9fac2033"
+          "origin_directory": "vendor/rust/icu_properties-2.3.0"
         },
         {
+          "path": "test/foundation/unicode-properties/unit/src/script/tests_708.rs",
+          "sha256": "78a92bd31f44b39babe4c15810cca6cb7c045416bf364af978efd0097d8c56c3",
           "source": "src/foundation/icu_properties/src/script.rs",
           "source_sha256_before": "a1f1ae643dbcff412ac702621dc0e76192513121e485999a19337c0522743060",
-          "path": "test/foundation/icu_properties/unit/src/script/tests_708.rs",
-          "sha256": "78a92bd31f44b39babe4c15810cca6cb7c045416bf364af978efd0097d8c56c3"
+          "origin_directory": "vendor/rust/icu_properties-2.3.0"
         },
         {
+          "path": "test/foundation/unicode-properties/unit/src/unicodeset_parse/parse/tests_1949.rs",
+          "sha256": "470eccafe34690f16b5b26f422116013f62e14fc5a940364ad281fba4e5d7115",
           "source": "src/foundation/icu_properties/src/unicodeset_parse/parse.rs",
           "source_sha256_before": "33de6b733b633beeb5f27c365d45c2cc07e9b7e254885446c33b1671d84f98b0",
-          "path": "test/foundation/icu_properties/unit/src/unicodeset_parse/parse/tests_1949.rs",
-          "sha256": "470eccafe34690f16b5b26f422116013f62e14fc5a940364ad281fba4e5d7115"
+          "origin_directory": "vendor/rust/icu_properties-2.3.0"
         }
       ]
     },
@@ -8798,7 +8804,7 @@
           "source": "src/foundation/idna_adapter/src/lib.rs",
           "source_sha256_before": "fca6f35c8902c91e84e0e9700b86a401b041f1a77912ef7c3d65a1fcdf5bffd8",
           "path": "test/foundation/idna_adapter/unit/src/lib/all_tests_320.rs",
-          "sha256": "887920dc76b11cc962d2d6804d4639d47c27cc659eed308020298aa315728d6d"
+          "sha256": "5f8413d25c02387e812ce480ecc485e242475d6ebd49e5b5795aec1ba33b0fc7"
         }
       ]
     },

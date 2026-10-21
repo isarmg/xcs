@@ -22,126 +22,126 @@
 
 #![no_std]
 
-use icu_normalizer::uts46::Uts46MapperBorrowed;
-use icu_properties::props::GeneralCategory;
-use icu_properties::CodePointMapDataBorrowed;
+use unicode_normalizer::uts46::Uts46MapperBorrowed;
+use unicode_properties::props::GeneralCategory;
+use unicode_properties::CodePointMapDataBorrowed;
 
 /// Turns a joining type into a mask for comparing with multiple type at once.
-const fn joining_type_to_mask(jt: icu_properties::props::JoiningType) -> u32 {
+const fn joining_type_to_mask(jt: unicode_properties::props::JoiningType) -> u32 {
     // These private mask bits encode semantic property values, independently of
     // ICU4C's deprecated numeric representation. Unrecognized future values
     // do not intersect any mask used by the current IDNA rules.
     match jt {
-        icu_properties::props::JoiningType::NonJoining => 1 << 0,
-        icu_properties::props::JoiningType::JoinCausing => 1 << 1,
-        icu_properties::props::JoiningType::DualJoining => 1 << 2,
-        icu_properties::props::JoiningType::LeftJoining => 1 << 3,
-        icu_properties::props::JoiningType::RightJoining => 1 << 4,
-        icu_properties::props::JoiningType::Transparent => 1 << 5,
+        unicode_properties::props::JoiningType::NonJoining => 1 << 0,
+        unicode_properties::props::JoiningType::JoinCausing => 1 << 1,
+        unicode_properties::props::JoiningType::DualJoining => 1 << 2,
+        unicode_properties::props::JoiningType::LeftJoining => 1 << 3,
+        unicode_properties::props::JoiningType::RightJoining => 1 << 4,
+        unicode_properties::props::JoiningType::Transparent => 1 << 5,
         _ => 0,
     }
 }
 
 /// Mask for checking for both left and dual joining.
 pub const LEFT_OR_DUAL_JOINING_MASK: JoiningTypeMask = JoiningTypeMask(
-    joining_type_to_mask(icu_properties::props::JoiningType::LeftJoining)
-        | joining_type_to_mask(icu_properties::props::JoiningType::DualJoining),
+    joining_type_to_mask(unicode_properties::props::JoiningType::LeftJoining)
+        | joining_type_to_mask(unicode_properties::props::JoiningType::DualJoining),
 );
 
 /// Mask for checking for both left and dual joining.
 pub const RIGHT_OR_DUAL_JOINING_MASK: JoiningTypeMask = JoiningTypeMask(
-    joining_type_to_mask(icu_properties::props::JoiningType::RightJoining)
-        | joining_type_to_mask(icu_properties::props::JoiningType::DualJoining),
+    joining_type_to_mask(unicode_properties::props::JoiningType::RightJoining)
+        | joining_type_to_mask(unicode_properties::props::JoiningType::DualJoining),
 );
 
 /// Turns a bidi class into a mask for comparing with multiple classes at once.
-const fn bidi_class_to_mask(bc: icu_properties::props::BidiClass) -> u32 {
+const fn bidi_class_to_mask(bc: unicode_properties::props::BidiClass) -> u32 {
     // These private mask bits encode semantic property values, independently of
     // ICU4C's deprecated numeric representation. Unrecognized future values
     // do not intersect any mask used by the current IDNA rules.
     match bc {
-        icu_properties::props::BidiClass::LeftToRight => 1 << 0,
-        icu_properties::props::BidiClass::RightToLeft => 1 << 1,
-        icu_properties::props::BidiClass::EuropeanNumber => 1 << 2,
-        icu_properties::props::BidiClass::EuropeanSeparator => 1 << 3,
-        icu_properties::props::BidiClass::EuropeanTerminator => 1 << 4,
-        icu_properties::props::BidiClass::ArabicNumber => 1 << 5,
-        icu_properties::props::BidiClass::CommonSeparator => 1 << 6,
-        icu_properties::props::BidiClass::ParagraphSeparator => 1 << 7,
-        icu_properties::props::BidiClass::SegmentSeparator => 1 << 8,
-        icu_properties::props::BidiClass::WhiteSpace => 1 << 9,
-        icu_properties::props::BidiClass::OtherNeutral => 1 << 10,
-        icu_properties::props::BidiClass::LeftToRightEmbedding => 1 << 11,
-        icu_properties::props::BidiClass::LeftToRightOverride => 1 << 12,
-        icu_properties::props::BidiClass::ArabicLetter => 1 << 13,
-        icu_properties::props::BidiClass::RightToLeftEmbedding => 1 << 14,
-        icu_properties::props::BidiClass::RightToLeftOverride => 1 << 15,
-        icu_properties::props::BidiClass::PopDirectionalFormat => 1 << 16,
-        icu_properties::props::BidiClass::NonspacingMark => 1 << 17,
-        icu_properties::props::BidiClass::BoundaryNeutral => 1 << 18,
-        icu_properties::props::BidiClass::FirstStrongIsolate => 1 << 19,
-        icu_properties::props::BidiClass::LeftToRightIsolate => 1 << 20,
-        icu_properties::props::BidiClass::RightToLeftIsolate => 1 << 21,
-        icu_properties::props::BidiClass::PopDirectionalIsolate => 1 << 22,
+        unicode_properties::props::BidiClass::LeftToRight => 1 << 0,
+        unicode_properties::props::BidiClass::RightToLeft => 1 << 1,
+        unicode_properties::props::BidiClass::EuropeanNumber => 1 << 2,
+        unicode_properties::props::BidiClass::EuropeanSeparator => 1 << 3,
+        unicode_properties::props::BidiClass::EuropeanTerminator => 1 << 4,
+        unicode_properties::props::BidiClass::ArabicNumber => 1 << 5,
+        unicode_properties::props::BidiClass::CommonSeparator => 1 << 6,
+        unicode_properties::props::BidiClass::ParagraphSeparator => 1 << 7,
+        unicode_properties::props::BidiClass::SegmentSeparator => 1 << 8,
+        unicode_properties::props::BidiClass::WhiteSpace => 1 << 9,
+        unicode_properties::props::BidiClass::OtherNeutral => 1 << 10,
+        unicode_properties::props::BidiClass::LeftToRightEmbedding => 1 << 11,
+        unicode_properties::props::BidiClass::LeftToRightOverride => 1 << 12,
+        unicode_properties::props::BidiClass::ArabicLetter => 1 << 13,
+        unicode_properties::props::BidiClass::RightToLeftEmbedding => 1 << 14,
+        unicode_properties::props::BidiClass::RightToLeftOverride => 1 << 15,
+        unicode_properties::props::BidiClass::PopDirectionalFormat => 1 << 16,
+        unicode_properties::props::BidiClass::NonspacingMark => 1 << 17,
+        unicode_properties::props::BidiClass::BoundaryNeutral => 1 << 18,
+        unicode_properties::props::BidiClass::FirstStrongIsolate => 1 << 19,
+        unicode_properties::props::BidiClass::LeftToRightIsolate => 1 << 20,
+        unicode_properties::props::BidiClass::RightToLeftIsolate => 1 << 21,
+        unicode_properties::props::BidiClass::PopDirectionalIsolate => 1 << 22,
         _ => 0,
     }
 }
 
 /// Mask for checking if the domain is a bidi domain.
 pub const RTL_MASK: BidiClassMask = BidiClassMask(
-    bidi_class_to_mask(icu_properties::props::BidiClass::RightToLeft)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::ArabicLetter)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::ArabicNumber),
+    bidi_class_to_mask(unicode_properties::props::BidiClass::RightToLeft)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::ArabicLetter)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::ArabicNumber),
 );
 
 /// Mask for allowable bidi classes in the first character of a label
 /// (either LTR or RTL) in a bidi domain.
 pub const FIRST_BC_MASK: BidiClassMask = BidiClassMask(
-    bidi_class_to_mask(icu_properties::props::BidiClass::LeftToRight)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::RightToLeft)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::ArabicLetter),
+    bidi_class_to_mask(unicode_properties::props::BidiClass::LeftToRight)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::RightToLeft)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::ArabicLetter),
 );
 
 // Mask for allowable bidi classes of the last (non-Non-Spacing Mark)
 // character in an LTR label in a bidi domain.
 pub const LAST_LTR_MASK: BidiClassMask = BidiClassMask(
-    bidi_class_to_mask(icu_properties::props::BidiClass::LeftToRight)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::EuropeanNumber),
+    bidi_class_to_mask(unicode_properties::props::BidiClass::LeftToRight)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::EuropeanNumber),
 );
 
 // Mask for allowable bidi classes of the last (non-Non-Spacing Mark)
 // character in an RTL label in a bidi domain.
 pub const LAST_RTL_MASK: BidiClassMask = BidiClassMask(
-    bidi_class_to_mask(icu_properties::props::BidiClass::RightToLeft)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::ArabicLetter)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::EuropeanNumber)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::ArabicNumber),
+    bidi_class_to_mask(unicode_properties::props::BidiClass::RightToLeft)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::ArabicLetter)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::EuropeanNumber)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::ArabicNumber),
 );
 
 // Mask for allowable bidi classes of the middle characters in an LTR label in a bidi domain.
 pub const MIDDLE_LTR_MASK: BidiClassMask = BidiClassMask(
-    bidi_class_to_mask(icu_properties::props::BidiClass::LeftToRight)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::EuropeanNumber)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::EuropeanSeparator)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::CommonSeparator)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::EuropeanTerminator)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::OtherNeutral)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::BoundaryNeutral)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::NonspacingMark),
+    bidi_class_to_mask(unicode_properties::props::BidiClass::LeftToRight)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::EuropeanNumber)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::EuropeanSeparator)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::CommonSeparator)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::EuropeanTerminator)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::OtherNeutral)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::BoundaryNeutral)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::NonspacingMark),
 );
 
 // Mask for allowable bidi classes of the middle characters in an RTL label in a bidi domain.
 pub const MIDDLE_RTL_MASK: BidiClassMask = BidiClassMask(
-    bidi_class_to_mask(icu_properties::props::BidiClass::RightToLeft)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::ArabicLetter)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::ArabicNumber)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::EuropeanNumber)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::EuropeanSeparator)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::CommonSeparator)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::EuropeanTerminator)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::OtherNeutral)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::BoundaryNeutral)
-        | bidi_class_to_mask(icu_properties::props::BidiClass::NonspacingMark),
+    bidi_class_to_mask(unicode_properties::props::BidiClass::RightToLeft)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::ArabicLetter)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::ArabicNumber)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::EuropeanNumber)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::EuropeanSeparator)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::CommonSeparator)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::EuropeanTerminator)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::OtherNeutral)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::BoundaryNeutral)
+        | bidi_class_to_mask(unicode_properties::props::BidiClass::NonspacingMark),
 );
 
 /// Turns a genecal category into a mask for comparing with multiple categories at once.
@@ -157,7 +157,7 @@ const MARK_MASK: u32 = general_category_to_mask(GeneralCategory::NonspacingMark)
 /// Value for the Joining_Type Unicode property.
 #[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct JoiningType(icu_properties::props::JoiningType);
+pub struct JoiningType(unicode_properties::props::JoiningType);
 
 impl JoiningType {
     /// Returns the corresponding `JoiningTypeMask`.
@@ -169,7 +169,7 @@ impl JoiningType {
     // `true` iff this value is the Transparent value.
     #[inline(always)]
     pub fn is_transparent(self) -> bool {
-        self.0 == icu_properties::props::JoiningType::Transparent
+        self.0 == unicode_properties::props::JoiningType::Transparent
     }
 }
 
@@ -190,7 +190,7 @@ impl JoiningTypeMask {
 /// Value for the Bidi_Class Unicode property.
 #[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct BidiClass(icu_properties::props::BidiClass);
+pub struct BidiClass(unicode_properties::props::BidiClass);
 
 impl BidiClass {
     /// Returns the corresponding `BidiClassMask`.
@@ -202,25 +202,25 @@ impl BidiClass {
     /// `true` iff this value is Left_To_Right
     #[inline(always)]
     pub fn is_ltr(self) -> bool {
-        self.0 == icu_properties::props::BidiClass::LeftToRight
+        self.0 == unicode_properties::props::BidiClass::LeftToRight
     }
 
     /// `true` iff this value is Nonspacing_Mark
     #[inline(always)]
     pub fn is_nonspacing_mark(self) -> bool {
-        self.0 == icu_properties::props::BidiClass::NonspacingMark
+        self.0 == unicode_properties::props::BidiClass::NonspacingMark
     }
 
     /// `true` iff this value is European_Number
     #[inline(always)]
     pub fn is_european_number(self) -> bool {
-        self.0 == icu_properties::props::BidiClass::EuropeanNumber
+        self.0 == unicode_properties::props::BidiClass::EuropeanNumber
     }
 
     /// `true` iff this value is Arabic_Number
     #[inline(always)]
     pub fn is_arabic_number(self) -> bool {
-        self.0 == icu_properties::props::BidiClass::ArabicNumber
+        self.0 == unicode_properties::props::BidiClass::ArabicNumber
     }
 }
 
@@ -242,8 +242,8 @@ impl BidiClassMask {
 pub struct Adapter {
     mapper: Uts46MapperBorrowed<'static>,
     general_category: CodePointMapDataBorrowed<'static, GeneralCategory>,
-    bidi_class: CodePointMapDataBorrowed<'static, icu_properties::props::BidiClass>,
-    joining_type: CodePointMapDataBorrowed<'static, icu_properties::props::JoiningType>,
+    bidi_class: CodePointMapDataBorrowed<'static, unicode_properties::props::BidiClass>,
+    joining_type: CodePointMapDataBorrowed<'static, unicode_properties::props::JoiningType>,
 }
 
 #[cfg(feature = "compiled_data")]
@@ -260,10 +260,10 @@ impl Adapter {
     pub const fn new() -> Self {
         Self {
             mapper: Uts46MapperBorrowed::new(),
-            general_category: icu_properties::CodePointMapData::<GeneralCategory>::new(),
-            bidi_class: icu_properties::CodePointMapData::<icu_properties::props::BidiClass>::new(),
+            general_category: unicode_properties::CodePointMapData::<GeneralCategory>::new(),
+            bidi_class: unicode_properties::CodePointMapData::<unicode_properties::props::BidiClass>::new(),
             joining_type:
-                icu_properties::CodePointMapData::<icu_properties::props::JoiningType>::new(),
+                unicode_properties::CodePointMapData::<unicode_properties::props::JoiningType>::new(),
         }
     }
 
@@ -292,7 +292,7 @@ impl Adapter {
         JoiningType(self.joining_type.get(c))
     }
 
-    /// See the [method of the same name in `icu_normalizer`][1] for the
+    /// See the [method of the same name in `unicode_normalizer`][1] for the
     /// exact semantics.
     ///
     /// [1]: https://docs.rs/icu_normalizer/latest/icu_normalizer/uts46/struct.Uts46Mapper.html#method.map_normalize
@@ -304,7 +304,7 @@ impl Adapter {
         self.mapper.map_normalize(iter)
     }
 
-    /// See the [method of the same name in `icu_normalizer`][1] for the
+    /// See the [method of the same name in `unicode_normalizer`][1] for the
     /// exact semantics.
     ///
     /// [1]: https://docs.rs/icu_normalizer/latest/icu_normalizer/uts46/struct.Uts46Mapper.html#method.normalize_validate

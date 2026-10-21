@@ -46,6 +46,7 @@ case "${1:-}" in
     python3 .github/scripts/check-pattern-matching.py
     python3 .github/scripts/check-web-bindgen-scope.py
     cargo test --locked --offline --lib -p idna_adapter -p storage-client property_masks_preserve_all_unicode_scalars
+    python3 .github/scripts/check-unicode-data-family.py
     ;;
   foundation-async)
     python3 .github/scripts/check-tracing-family.py

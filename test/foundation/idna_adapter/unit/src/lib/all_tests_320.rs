@@ -5,8 +5,8 @@ mod tests {
     #[test]
     #[expect(deprecated, reason = "compare every Unicode scalar against the original ICU4C bit representation")]
     fn property_masks_preserve_all_unicode_scalars() {
-        let bidi = icu_properties::CodePointMapData::<icu_properties::props::BidiClass>::new();
-        let joining = icu_properties::CodePointMapData::<icu_properties::props::JoiningType>::new();
+        let bidi = unicode_properties::CodePointMapData::<unicode_properties::props::BidiClass>::new();
+        let joining = unicode_properties::CodePointMapData::<unicode_properties::props::JoiningType>::new();
         let mut checked = 0;
         for scalar in 0..=0x10ffff {
             let Some(c) = char::from_u32(scalar) else { continue };

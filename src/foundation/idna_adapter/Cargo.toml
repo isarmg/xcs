@@ -29,18 +29,18 @@ license = "Apache-2.0 OR MIT"
 repository = "https://github.com/hsivonen/idna_adapter"
 
 [features]
-compiled_data = ["icu_normalizer/compiled_data", "icu_properties/compiled_data"]
+compiled_data = ["unicode-normalizer/compiled_data", "unicode-properties/compiled_data"]
 
 [lib]
 name = "idna_adapter"
 path = "src/lib.rs"
 
-[dependencies.icu_normalizer]
+[dependencies.unicode-normalizer]
 version = "2.2"
 default-features = false
-path = "../icu_normalizer"
+path = "../unicode-normalizer"
 
-[dependencies.icu_properties]
+[dependencies.unicode-properties]
 version = "2.2"
 default-features = false
-path = "../icu_properties"
+path = "../unicode-properties"

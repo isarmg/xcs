@@ -2,8 +2,8 @@
 mod tests {
     use crate::codepointinvlist::CodePointInversionListBuilder;
     use core::fmt::Debug;
-    use icu_properties::props::{BinaryProperty, EnumeratedProperty};
-    use icu_properties::{CodePointMapData, CodePointSetData};
+    use unicode_properties::props::{BinaryProperty, EnumeratedProperty};
+    use unicode_properties::{CodePointMapData, CodePointSetData};
 
     fn test_set<P: BinaryProperty>(name: &str) {
         let mut builder = CodePointInversionListBuilder::new();
@@ -46,7 +46,7 @@ mod tests {
 
     #[test]
     fn test_complement_sets() {
-        use icu_properties::props::*;
+        use unicode_properties::props::*;
         // Stress test the RangeListIteratorComplementer logic by ensuring it works for
         // a whole bunch of binary properties
         test_set::<AsciiHexDigit>("ASCII_Hex_Digit");
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_complement_maps() {
-        use icu_properties::props::{GeneralCategory, Script};
+        use unicode_properties::props::{GeneralCategory, Script};
         test_map(GeneralCategory::UppercaseLetter, "gc");
         test_map(GeneralCategory::OtherPunctuation, "gc");
         test_map(Script::Devanagari, "script");

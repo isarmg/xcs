@@ -782,39 +782,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "icu_normalizer"
-version = "2.3.0"
-dependencies = [
- "icu_collections",
- "icu_normalizer_data",
- "icu_properties",
- "icu_provider",
- "smallvec",
- "zerovec",
-]
-
-[[package]]
-name = "icu_normalizer_data"
-version = "2.3.0"
-
-[[package]]
-name = "icu_properties"
-version = "2.3.0"
-dependencies = [
- "displaydoc",
- "icu_collections",
- "icu_locale_core",
- "icu_properties_data",
- "icu_provider",
- "zerotrie",
- "zerovec",
-]
-
-[[package]]
-name = "icu_properties_data"
-version = "2.3.0"
-
-[[package]]
 name = "icu_provider"
 version = "2.3.1"
 dependencies = [
@@ -847,8 +814,8 @@ dependencies = [
 name = "idna_adapter"
 version = "1.2.2"
 dependencies = [
- "icu_normalizer",
- "icu_properties",
+ "unicode-normalizer",
+ "unicode-properties",
 ]
 
 [[package]]
@@ -1964,6 +1931,29 @@ version = "1.1.0"
 [[package]]
 name = "unicode-ident"
 version = "1.0.27"
+
+[[package]]
+name = "unicode-normalizer"
+version = "2.3.0"
+dependencies = [
+ "icu_collections",
+ "icu_provider",
+ "smallvec",
+ "unicode-properties",
+ "zerovec",
+]
+
+[[package]]
+name = "unicode-properties"
+version = "2.3.0"
+dependencies = [
+ "displaydoc",
+ "icu_collections",
+ "icu_locale_core",
+ "icu_provider",
+ "zerotrie",
+ "zerovec",
+]
 
 [[package]]
 name = "unicode-segmentation"
