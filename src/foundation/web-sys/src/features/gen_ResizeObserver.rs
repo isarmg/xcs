@@ -38,18 +38,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Element`, `ResizeObserver`*"]
     pub fn observe(this: &ResizeObserver, target: &Element);
-    #[cfg(all(feature = "Element", feature = "ResizeObserverOptions",))]
-    #[wasm_bindgen(method, js_class = "ResizeObserver", js_name = "observe")]
-    #[doc = "The `observe()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/observe)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Element`, `ResizeObserver`, `ResizeObserverOptions`*"]
-    pub fn observe_with_options(
-        this: &ResizeObserver,
-        target: &Element,
-        options: &ResizeObserverOptions,
-    );
+
     #[cfg(feature = "Element")]
     #[wasm_bindgen(method, js_class = "ResizeObserver")]
     #[doc = "The `unobserve()` method."]

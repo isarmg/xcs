@@ -38,7 +38,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `MutationObserver`, `Node`*"]
     pub fn observe(this: &MutationObserver, target: &Node) -> Result<(), JsValue>;
-    #[cfg(all(feature = "MutationObserverInit", feature = "Node",))]
+    #[cfg(all(feature = "MutationObserverInit", feature = "Node"))]
     #[wasm_bindgen(catch, method, js_class = "MutationObserver", js_name = "observe")]
     #[doc = "The `observe()` method."]
     #[doc = ""]

@@ -78,3 +78,20 @@ CSR/流式 HTML 和 web-sys/tachys 实际闭包仍是后续已授权批次，尚
 本项目未使用 tachys/nightly；其 Static 文本/属性还沿用未转义输出假设。本批诚实撤销该特性、Static 类型和分支、构建通道探测及 tachys→rustc_version 边，不新增 nightly 支持或留下空特性。rustc_version 仍有 reactive_graph 的真实构建消费者，故保留该来源。来源/架构/静态、全 quality、Web 单元/集成/doctest、生产构建及完整 Chrome/G4/字体/六视口/生命周期全部通过；模板检查扩展为 17 组负向 API、9 组负向特性。
 
 foundation 为 10,636 文件 / 148,253,403 字节，本批减少 2 文件 / 11,258 字节；根包仍为 344、来源仍为 326、退役身份仍为 76。此构建产品 WASM 为 2,192,963 字节，较上批增加 1,371 字节，未把源码减少等同运行时或产物必然改善。17 组真实模板结果和验证源码身份见 [本地收据](evidence/foundation-template-bool-local-20261021.json)；最终 CI 在精确提交上另行生成干净树身份与资产映射。
+
+
+## 第八批：按实际浏览器接口闭包裁剪
+
+第七批精确 SHA `0de18785ef56f845096d76419edc346e33874ad7` 的 CI [39550891109](https://github.com/isarmg/zxs/actions/runs/39550891109) 已 completed/success，13/13 项成功。本批实现时并行观察 CI，没有等待它阻塞独立工作。
+
+本批以稳定 Rust 对实际 Web/WASM 调用方生成的 MIR、维护源码/文档和浏览器夹具为依据，将支持范围写入 `tools/rust-sources/web-scope.json`，记录推导输入 SHA-256。typed HTML 从原表及特殊构造器中保留 42 个，typed SVG 保留 17 个，预定义属性键保留 55 个，事件描述符保留 10 个；class/style/property、自定义属性与事件、目标类型、捕获和监听清理继续沿用真实实现。移除未使用 MathML 公开模块与界面转发、SVG use 特殊构造器、字符串内联事件属性 trait。宏不再输出已退役的 MathML 路径，而是给出明确诊断；保留 inert HTML/SVG、自定义元素及 SVG 命名空间处理。该清单是维护的类型化接口范围，不是浏览器标记白名单，也不宣称是逐机器指令的最小集合。
+
+收窄 tachys 的 web-sys 直接特性从 116 个到 49 个，再遍历所有当前登记 manifest，包括可选、休眠、目标条件与转发特性，并展开父类边，得到完整 web-sys 保守闭包：1,727 → 99 个特性。物理删除对应 1,628 个生成绑定文件，保留类中引用退役特性的签名和条件实现同时删除；没有保留同名空特性。保留 DOM/template、网络/HTTPS、字体、几何、存储、生命周期、ShadowRoot 及真实浏览器回退所需接口，未更改产品 G4/字体/布局算法。当前来源收据、合并来源收据、架构索引与组件说明同步更新，原始身份、provenance 和法律材料未改。
+
+现有 Web 宿主测试仍为 236 项（含 31 项 doctest）；原生和 WASM 编译、完整 quality、静态及来源/metadata 门禁通过。原 17 组真实浏览器模板断言全部保留，新增自定义元素/Unicode 属性、自定义事件与清理、inert SVG 命名空间 3 组；负向检查扩展为 28 组 API 和 13 组特性，并核对 web-sys 策略/manifest/生成文件闭包一致，防止恢复伪接口。首次扩展夹具误用未重导出的 custom_attribute 路径，修正为既有 custom 模块后，实际原生/WASM 消费者通过，未更改生产接口来迎合测试。
+
+本批 foundation 为 9,007 文件 / 138,493,617 字节，较上批减少 1,629 文件 / 9,759,786 字节；相对 a04 减少 2,002 文件 / 11,955,585 字节。根锁仍为 344 包，活动来源 326，退休身份 76。相对基线 353 包 / 335 来源 / 67 退休，净去掉 9 个包，原始来源身份继续可追溯。多版本名称从 12 组到 9 组，额外版本实例从 13 到 10：本轮实际统一 sha2、itertools、shlex，未把移动目录计作去重。
+
+仍保留的 9 组多版本：base64、hashbrown、getrandom、prettyplease、syn、block-buffer、crypto-common、digest、cpufeatures。密码链 digest 0.10/Argon2/blake2 与较新的 SHA-256 链有真实 API 边界；syn/prettyplease 需要 AST 代际配套迁移；getrandom 0.2 的 rand_core 错误契约与后代不同；base64 的 SIMD 默认策略及 hashbrown/hashlink 的 HashTable、顺序和析构需要单独调用方迁移实证。本轮没有仅改版本号，也未为了包数把并发或密码算法拼成巨型 crate。JSON Schema 子集仍只是候选，契约校验未弱化。
+
+最终产品生产 WASM 为 2,192,568 字节、gzip 659,633 字节；相对上批 WASM 变化 -395 字节。完整 Chrome/G4/字体/六视口/生命周期及 20 组模板/自定义 DOM 断言全部通过。见 [本地验证收据](evidence/foundation-web-api-local-20261021.json)。该记录明确为提交前脏树验证，最终提交的精确 SHA/树与资产对应由该提交 CI 另行记录，不以源码减少推断运行时性能收益。

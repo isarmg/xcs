@@ -18,20 +18,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub type Document;
-    #[cfg(feature = "DomImplementation")]
-    #[wasm_bindgen(
-        catch,
-        method,
-        getter,
-        js_class = "Document",
-        js_name = "implementation"
-    )]
-    #[doc = "Getter for the `implementation` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/implementation)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomImplementation`*"]
-    pub fn implementation(this: &Document) -> Result<DomImplementation, JsValue>;
+
     #[wasm_bindgen(catch, method, getter, js_class = "Document", js_name = "URL")]
     #[doc = "Getter for the `URL` field of this object."]
     #[doc = ""]
@@ -81,14 +68,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub fn content_type(this: &Document) -> ::alloc::string::String;
-    #[cfg(feature = "DocumentType")]
-    #[wasm_bindgen(method, getter, js_class = "Document", js_name = "doctype")]
-    #[doc = "Getter for the `doctype` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/doctype)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DocumentType`*"]
-    pub fn doctype(this: &Document) -> Option<DocumentType>;
+
     #[cfg(feature = "Element")]
     #[wasm_bindgen(method, getter, js_class = "Document", js_name = "documentElement")]
     #[doc = "Getter for the `documentElement` field of this object."]
@@ -170,14 +150,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`, `HtmlElement`*"]
     pub fn set_body(this: &Document, value: Option<&HtmlElement>);
-    #[cfg(feature = "HtmlHeadElement")]
-    #[wasm_bindgen(method, getter, js_class = "Document", js_name = "head")]
-    #[doc = "Getter for the `head` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/head)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `HtmlHeadElement`*"]
-    pub fn head(this: &Document) -> Option<HtmlHeadElement>;
+
     #[cfg(feature = "HtmlCollection")]
     #[wasm_bindgen(method, getter, js_class = "Document", js_name = "images")]
     #[doc = "Getter for the `images` field of this object."]
@@ -411,14 +384,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub fn hidden(this: &Document) -> bool;
-    #[cfg(feature = "VisibilityState")]
-    #[wasm_bindgen(method, getter, js_class = "Document", js_name = "visibilityState")]
-    #[doc = "Getter for the `visibilityState` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/visibilityState)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `VisibilityState`*"]
-    pub fn visibility_state(this: &Document) -> VisibilityState;
+
     #[wasm_bindgen(method, getter, js_class = "Document", js_name = "onvisibilitychange")]
     #[doc = "Getter for the `onvisibilitychange` field of this object."]
     #[doc = ""]
@@ -476,14 +442,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub fn preferred_style_sheet_set(this: &Document) -> Option<::alloc::string::String>;
-    #[cfg(feature = "DomStringList")]
-    #[wasm_bindgen(method, getter, js_class = "Document", js_name = "styleSheetSets")]
-    #[doc = "Getter for the `styleSheetSets` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/styleSheetSets)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomStringList`*"]
-    pub fn style_sheet_sets(this: &Document) -> DomStringList;
+
     #[cfg(feature = "Element")]
     #[wasm_bindgen(method, getter, js_class = "Document", js_name = "scrollingElement")]
     #[doc = "Getter for the `scrollingElement` field of this object."]
@@ -492,14 +451,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`, `Element`*"]
     pub fn scrolling_element(this: &Document) -> Option<Element>;
-    #[cfg(feature = "DocumentTimeline")]
-    #[wasm_bindgen(method, getter, js_class = "Document", js_name = "timeline")]
-    #[doc = "Getter for the `timeline` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/timeline)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DocumentTimeline`*"]
-    pub fn timeline(this: &Document) -> DocumentTimeline;
+
     #[cfg(feature = "SvgsvgElement")]
     #[wasm_bindgen(method, getter, js_class = "Document", js_name = "rootElement")]
     #[doc = "Getter for the `rootElement` field of this object."]
@@ -524,23 +476,7 @@ extern "C" {
     #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
     #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
     pub fn picture_in_picture_enabled(this: &Document) -> bool;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "ViewTransition")]
-    #[wasm_bindgen(
-        method,
-        getter,
-        js_class = "Document",
-        js_name = "activeViewTransition"
-    )]
-    #[doc = "Getter for the `activeViewTransition` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/activeViewTransition)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `ViewTransition`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn active_view_transition(this: &Document) -> Option<ViewTransition>;
+
     #[wasm_bindgen(method, getter, js_class = "Document", js_name = "oncopy")]
     #[doc = "Getter for the `oncopy` field of this object."]
     #[doc = ""]
@@ -607,14 +543,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`, `Element`*"]
     pub fn fullscreen_element(this: &Document) -> Option<Element>;
-    #[cfg(feature = "StyleSheetList")]
-    #[wasm_bindgen(method, getter, js_class = "Document", js_name = "styleSheets")]
-    #[doc = "Getter for the `styleSheets` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/styleSheets)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `StyleSheetList`*"]
-    pub fn style_sheets(this: &Document) -> StyleSheetList;
+
     #[wasm_bindgen(method, getter, js_class = "Document", js_name = "adoptedStyleSheets")]
     #[doc = "Getter for the `adoptedStyleSheets` field of this object."]
     #[doc = ""]
@@ -2019,42 +1948,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub fn adopt_node(this: &Document, node: &Node) -> Result<Node, JsValue>;
-    #[cfg(feature = "CaretPosition")]
-    #[wasm_bindgen(method, js_class = "Document", js_name = "caretPositionFromPoint")]
-    #[doc = "The `caretPositionFromPoint()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/caretPositionFromPoint)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `CaretPosition`, `Document`*"]
-    pub fn caret_position_from_point(this: &Document, x: f32, y: f32) -> Option<CaretPosition>;
-    #[cfg(feature = "Attr")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createAttribute")]
-    #[doc = "The `createAttribute()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createAttribute)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Attr`, `Document`*"]
-    pub fn create_attribute(this: &Document, name: &str) -> Result<Attr, JsValue>;
-    #[cfg(feature = "Attr")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createAttributeNS")]
-    #[doc = "The `createAttributeNS()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createAttributeNS)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Attr`, `Document`*"]
-    pub fn create_attribute_ns(
-        this: &Document,
-        namespace: Option<&str>,
-        name: &str,
-    ) -> Result<Attr, JsValue>;
-    #[cfg(feature = "CdataSection")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createCDATASection")]
-    #[doc = "The `createCDATASection()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createCDATASection)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `CdataSection`, `Document`*"]
-    pub fn create_cdata_section(this: &Document, data: &str) -> Result<CdataSection, JsValue>;
+
     #[cfg(feature = "Comment")]
     #[wasm_bindgen(method, js_class = "Document", js_name = "createComment")]
     #[doc = "The `createComment()` method."]
@@ -2079,18 +1973,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`, `Element`*"]
     pub fn create_element(this: &Document, local_name: &str) -> Result<Element, JsValue>;
-    #[cfg(all(feature = "Element", feature = "ElementCreationOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createElement")]
-    #[doc = "The `createElement()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `Element`, `ElementCreationOptions`*"]
-    pub fn create_element_with_element_creation_options(
-        this: &Document,
-        local_name: &str,
-        options: &ElementCreationOptions,
-    ) -> Result<Element, JsValue>;
+
     #[cfg(feature = "Element")]
     #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createElement")]
     #[doc = "The `createElement()` method."]
@@ -2115,19 +1998,7 @@ extern "C" {
         namespace: Option<&str>,
         qualified_name: &str,
     ) -> Result<Element, JsValue>;
-    #[cfg(all(feature = "Element", feature = "ElementCreationOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createElementNS")]
-    #[doc = "The `createElementNS()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createElementNS)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `Element`, `ElementCreationOptions`*"]
-    pub fn create_element_ns_with_element_creation_options(
-        this: &Document,
-        namespace: Option<&str>,
-        qualified_name: &str,
-        options: &ElementCreationOptions,
-    ) -> Result<Element, JsValue>;
+
     #[cfg(feature = "Element")]
     #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createElementNS")]
     #[doc = "The `createElementNS()` method."]
@@ -2149,64 +2020,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`, `Event`*"]
     pub fn create_event(this: &Document, interface: &str) -> Result<Event, JsValue>;
-    #[cfg(feature = "NodeIterator")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createNodeIterator")]
-    #[doc = "The `createNodeIterator()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createNodeIterator)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `NodeIterator`*"]
-    pub fn create_node_iterator(this: &Document, root: &Node) -> Result<NodeIterator, JsValue>;
-    #[cfg(feature = "NodeIterator")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createNodeIterator")]
-    #[doc = "The `createNodeIterator()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createNodeIterator)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `NodeIterator`*"]
-    pub fn create_node_iterator_with_what_to_show(
-        this: &Document,
-        root: &Node,
-        what_to_show: u32,
-    ) -> Result<NodeIterator, JsValue>;
-    #[cfg(all(feature = "NodeFilter", feature = "NodeIterator",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createNodeIterator")]
-    #[doc = "The `createNodeIterator()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createNodeIterator)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `NodeFilter`, `NodeIterator`*"]
-    pub fn create_node_iterator_with_what_to_show_and_filter(
-        this: &Document,
-        root: &Node,
-        what_to_show: u32,
-        filter: Option<&NodeFilter>,
-    ) -> Result<NodeIterator, JsValue>;
-    #[cfg(feature = "ProcessingInstruction")]
-    #[wasm_bindgen(
-        catch,
-        method,
-        js_class = "Document",
-        js_name = "createProcessingInstruction"
-    )]
-    #[doc = "The `createProcessingInstruction()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createProcessingInstruction)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `ProcessingInstruction`*"]
-    pub fn create_processing_instruction(
-        this: &Document,
-        target: &str,
-        data: &str,
-    ) -> Result<ProcessingInstruction, JsValue>;
-    #[cfg(feature = "Range")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createRange")]
-    #[doc = "The `createRange()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createRange)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `Range`*"]
-    pub fn create_range(this: &Document) -> Result<Range, JsValue>;
+
     #[cfg(feature = "Text")]
     #[wasm_bindgen(method, js_class = "Document", js_name = "createTextNode")]
     #[doc = "The `createTextNode()` method."]
@@ -2215,39 +2029,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`, `Text`*"]
     pub fn create_text_node(this: &Document, data: &str) -> Text;
-    #[cfg(feature = "TreeWalker")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createTreeWalker")]
-    #[doc = "The `createTreeWalker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createTreeWalker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `TreeWalker`*"]
-    pub fn create_tree_walker(this: &Document, root: &Node) -> Result<TreeWalker, JsValue>;
-    #[cfg(feature = "TreeWalker")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createTreeWalker")]
-    #[doc = "The `createTreeWalker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createTreeWalker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `TreeWalker`*"]
-    pub fn create_tree_walker_with_what_to_show(
-        this: &Document,
-        root: &Node,
-        what_to_show: u32,
-    ) -> Result<TreeWalker, JsValue>;
-    #[cfg(all(feature = "NodeFilter", feature = "TreeWalker",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createTreeWalker")]
-    #[doc = "The `createTreeWalker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createTreeWalker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `NodeFilter`, `TreeWalker`*"]
-    pub fn create_tree_walker_with_what_to_show_and_filter(
-        this: &Document,
-        root: &Node,
-        what_to_show: u32,
-        filter: Option<&NodeFilter>,
-    ) -> Result<TreeWalker, JsValue>;
+
     #[wasm_bindgen(method, js_class = "Document", js_name = "enableStyleSheetsForSet")]
     #[doc = "The `enableStyleSheetsForSet()` method."]
     #[doc = ""]
@@ -2336,14 +2118,7 @@ extern "C" {
         namespace: Option<&str>,
         local_name: &str,
     ) -> Result<HtmlCollection, JsValue>;
-    #[cfg(feature = "Selection")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "getSelection")]
-    #[doc = "The `getSelection()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/getSelection)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `Selection`*"]
-    pub fn get_selection(this: &Document) -> Result<Option<Selection>, JsValue>;
+
     #[wasm_bindgen(catch, method, js_class = "Document", js_name = "hasFocus")]
     #[doc = "The `hasFocus()` method."]
     #[doc = ""]
@@ -2389,48 +2164,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub fn release_capture(this: &Document);
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "ViewTransition")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "startViewTransition")]
-    #[doc = "The `startViewTransition()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `ViewTransition`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn start_view_transition(this: &Document) -> Result<ViewTransition, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "ViewTransition")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "startViewTransition")]
-    #[doc = "The `startViewTransition()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `ViewTransition`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn start_view_transition_with_callback(
-        this: &Document,
-        callback_options: &::js_sys::Function<fn() -> ::js_sys::Promise>,
-    ) -> Result<ViewTransition, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(all(feature = "StartViewTransitionOptions", feature = "ViewTransition",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "startViewTransition")]
-    #[doc = "The `startViewTransition()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/startViewTransition)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `StartViewTransitionOptions`, `ViewTransition`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn start_view_transition_with_start_view_transition_options(
-        this: &Document,
-        callback_options: &StartViewTransitionOptions,
-    ) -> Result<ViewTransition, JsValue>;
+
     #[cfg(feature = "Element")]
     #[wasm_bindgen(method, js_class = "Document", js_name = "elementFromPoint")]
     #[doc = "The `elementFromPoint()` method."]
@@ -2446,267 +2180,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub fn elements_from_point(this: &Document, x: f32, y: f32) -> ::js_sys::Array;
-    #[cfg(all(feature = "DomPoint", feature = "DomPointInit", feature = "Text",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertPointFromNode")]
-    #[doc = "The `convertPointFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertPointFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomPoint`, `DomPointInit`, `Text`*"]
-    pub fn convert_point_from_node_with_text(
-        this: &Document,
-        point: &DomPointInit,
-        from: &Text,
-    ) -> Result<DomPoint, JsValue>;
-    #[cfg(all(feature = "DomPoint", feature = "DomPointInit", feature = "Element",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertPointFromNode")]
-    #[doc = "The `convertPointFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertPointFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomPoint`, `DomPointInit`, `Element`*"]
-    pub fn convert_point_from_node_with_element(
-        this: &Document,
-        point: &DomPointInit,
-        from: &Element,
-    ) -> Result<DomPoint, JsValue>;
-    #[cfg(all(feature = "DomPoint", feature = "DomPointInit",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertPointFromNode")]
-    #[doc = "The `convertPointFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertPointFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomPoint`, `DomPointInit`*"]
-    pub fn convert_point_from_node_with_document(
-        this: &Document,
-        point: &DomPointInit,
-        from: &Document,
-    ) -> Result<DomPoint, JsValue>;
-    #[cfg(all(
-        feature = "ConvertCoordinateOptions",
-        feature = "DomPoint",
-        feature = "DomPointInit",
-        feature = "Text",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertPointFromNode")]
-    #[doc = "The `convertPointFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertPointFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomPoint`, `DomPointInit`, `Text`*"]
-    pub fn convert_point_from_node_with_text_and_options(
-        this: &Document,
-        point: &DomPointInit,
-        from: &Text,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomPoint, JsValue>;
-    #[cfg(all(
-        feature = "ConvertCoordinateOptions",
-        feature = "DomPoint",
-        feature = "DomPointInit",
-        feature = "Element",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertPointFromNode")]
-    #[doc = "The `convertPointFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertPointFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomPoint`, `DomPointInit`, `Element`*"]
-    pub fn convert_point_from_node_with_element_and_options(
-        this: &Document,
-        point: &DomPointInit,
-        from: &Element,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomPoint, JsValue>;
-    #[cfg(all(
-        feature = "ConvertCoordinateOptions",
-        feature = "DomPoint",
-        feature = "DomPointInit",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertPointFromNode")]
-    #[doc = "The `convertPointFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertPointFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomPoint`, `DomPointInit`*"]
-    pub fn convert_point_from_node_with_document_and_options(
-        this: &Document,
-        point: &DomPointInit,
-        from: &Document,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomPoint, JsValue>;
-    #[cfg(all(feature = "DomQuad", feature = "Text",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertQuadFromNode")]
-    #[doc = "The `convertQuadFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertQuadFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomQuad`, `Text`*"]
-    pub fn convert_quad_from_node_with_text(
-        this: &Document,
-        quad: &DomQuad,
-        from: &Text,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(feature = "DomQuad", feature = "Element",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertQuadFromNode")]
-    #[doc = "The `convertQuadFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertQuadFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomQuad`, `Element`*"]
-    pub fn convert_quad_from_node_with_element(
-        this: &Document,
-        quad: &DomQuad,
-        from: &Element,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(feature = "DomQuad")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertQuadFromNode")]
-    #[doc = "The `convertQuadFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertQuadFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomQuad`*"]
-    pub fn convert_quad_from_node_with_document(
-        this: &Document,
-        quad: &DomQuad,
-        from: &Document,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(
-        feature = "ConvertCoordinateOptions",
-        feature = "DomQuad",
-        feature = "Text",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertQuadFromNode")]
-    #[doc = "The `convertQuadFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertQuadFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomQuad`, `Text`*"]
-    pub fn convert_quad_from_node_with_text_and_options(
-        this: &Document,
-        quad: &DomQuad,
-        from: &Text,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(
-        feature = "ConvertCoordinateOptions",
-        feature = "DomQuad",
-        feature = "Element",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertQuadFromNode")]
-    #[doc = "The `convertQuadFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertQuadFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomQuad`, `Element`*"]
-    pub fn convert_quad_from_node_with_element_and_options(
-        this: &Document,
-        quad: &DomQuad,
-        from: &Element,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(feature = "ConvertCoordinateOptions", feature = "DomQuad",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertQuadFromNode")]
-    #[doc = "The `convertQuadFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertQuadFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomQuad`*"]
-    pub fn convert_quad_from_node_with_document_and_options(
-        this: &Document,
-        quad: &DomQuad,
-        from: &Document,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(feature = "DomQuad", feature = "DomRectReadOnly", feature = "Text",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertRectFromNode")]
-    #[doc = "The `convertRectFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertRectFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomQuad`, `DomRectReadOnly`, `Text`*"]
-    pub fn convert_rect_from_node_with_text(
-        this: &Document,
-        rect: &DomRectReadOnly,
-        from: &Text,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(feature = "DomQuad", feature = "DomRectReadOnly", feature = "Element",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertRectFromNode")]
-    #[doc = "The `convertRectFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertRectFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomQuad`, `DomRectReadOnly`, `Element`*"]
-    pub fn convert_rect_from_node_with_element(
-        this: &Document,
-        rect: &DomRectReadOnly,
-        from: &Element,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(feature = "DomQuad", feature = "DomRectReadOnly",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertRectFromNode")]
-    #[doc = "The `convertRectFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertRectFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `DomQuad`, `DomRectReadOnly`*"]
-    pub fn convert_rect_from_node_with_document(
-        this: &Document,
-        rect: &DomRectReadOnly,
-        from: &Document,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(
-        feature = "ConvertCoordinateOptions",
-        feature = "DomQuad",
-        feature = "DomRectReadOnly",
-        feature = "Text",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertRectFromNode")]
-    #[doc = "The `convertRectFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertRectFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomQuad`, `DomRectReadOnly`, `Text`*"]
-    pub fn convert_rect_from_node_with_text_and_options(
-        this: &Document,
-        rect: &DomRectReadOnly,
-        from: &Text,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(
-        feature = "ConvertCoordinateOptions",
-        feature = "DomQuad",
-        feature = "DomRectReadOnly",
-        feature = "Element",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertRectFromNode")]
-    #[doc = "The `convertRectFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertRectFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomQuad`, `DomRectReadOnly`, `Element`*"]
-    pub fn convert_rect_from_node_with_element_and_options(
-        this: &Document,
-        rect: &DomRectReadOnly,
-        from: &Element,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomQuad, JsValue>;
-    #[cfg(all(
-        feature = "ConvertCoordinateOptions",
-        feature = "DomQuad",
-        feature = "DomRectReadOnly",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "convertRectFromNode")]
-    #[doc = "The `convertRectFromNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/convertRectFromNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ConvertCoordinateOptions`, `Document`, `DomQuad`, `DomRectReadOnly`*"]
-    pub fn convert_rect_from_node_with_document_and_options(
-        this: &Document,
-        rect: &DomRectReadOnly,
-        from: &Document,
-        options: &ConvertCoordinateOptions,
-    ) -> Result<DomQuad, JsValue>;
+
     #[wasm_bindgen(catch, method, js_class = "Document", js_name = "getBoxQuads")]
     #[doc = "The `getBoxQuads()` method."]
     #[doc = ""]
@@ -2714,17 +2188,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub fn get_box_quads(this: &Document) -> Result<::js_sys::Array, JsValue>;
-    #[cfg(feature = "BoxQuadOptions")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "getBoxQuads")]
-    #[doc = "The `getBoxQuads()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/getBoxQuads)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BoxQuadOptions`, `Document`*"]
-    pub fn get_box_quads_with_options(
-        this: &Document,
-        options: &BoxQuadOptions,
-    ) -> Result<::js_sys::Array, JsValue>;
+
     #[wasm_bindgen(catch, method, variadic, js_class = "Document", js_name = "append")]
     #[doc = "The `append()` method."]
     #[doc = ""]
@@ -3322,39 +2786,7 @@ extern "C" {
         nodes_6: &str,
         nodes_7: &str,
     );
-    #[cfg(feature = "XPathExpression")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createExpression")]
-    #[doc = "The `createExpression()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createExpression)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathExpression`*"]
-    pub fn create_expression(this: &Document, expression: &str)
-        -> Result<XPathExpression, JsValue>;
-    #[cfg(feature = "XPathExpression")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createExpression")]
-    #[doc = "The `createExpression()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createExpression)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathExpression`*"]
-    pub fn create_expression_with_opt_callback(
-        this: &Document,
-        expression: &str,
-        resolver: Option<&::js_sys::Function>,
-    ) -> Result<XPathExpression, JsValue>;
-    #[cfg(all(feature = "XPathExpression", feature = "XPathNsResolver",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "createExpression")]
-    #[doc = "The `createExpression()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/createExpression)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathExpression`, `XPathNsResolver`*"]
-    pub fn create_expression_with_opt_x_path_ns_resolver(
-        this: &Document,
-        expression: &str,
-        resolver: Option<&XPathNsResolver>,
-    ) -> Result<XPathExpression, JsValue>;
+
     #[wasm_bindgen(method, js_class = "Document", js_name = "createNSResolver")]
     #[doc = "The `createNSResolver()` method."]
     #[doc = ""]
@@ -3362,100 +2794,5 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Document`*"]
     pub fn create_ns_resolver(this: &Document, node_resolver: &Node) -> Node;
-    #[cfg(feature = "XPathResult")]
-    #[wasm_bindgen(catch, method, js_class = "Document")]
-    #[doc = "The `evaluate()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathResult`*"]
-    pub fn evaluate(
-        this: &Document,
-        expression: &str,
-        context_node: &Node,
-    ) -> Result<XPathResult, JsValue>;
-    #[cfg(feature = "XPathResult")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "evaluate")]
-    #[doc = "The `evaluate()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathResult`*"]
-    pub fn evaluate_with_opt_callback(
-        this: &Document,
-        expression: &str,
-        context_node: &Node,
-        resolver: Option<&::js_sys::Function>,
-    ) -> Result<XPathResult, JsValue>;
-    #[cfg(all(feature = "XPathNsResolver", feature = "XPathResult",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "evaluate")]
-    #[doc = "The `evaluate()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathNsResolver`, `XPathResult`*"]
-    pub fn evaluate_with_opt_x_path_ns_resolver(
-        this: &Document,
-        expression: &str,
-        context_node: &Node,
-        resolver: Option<&XPathNsResolver>,
-    ) -> Result<XPathResult, JsValue>;
-    #[cfg(feature = "XPathResult")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "evaluate")]
-    #[doc = "The `evaluate()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathResult`*"]
-    pub fn evaluate_with_opt_callback_and_type(
-        this: &Document,
-        expression: &str,
-        context_node: &Node,
-        resolver: Option<&::js_sys::Function>,
-        type_: u16,
-    ) -> Result<XPathResult, JsValue>;
-    #[cfg(all(feature = "XPathNsResolver", feature = "XPathResult",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "evaluate")]
-    #[doc = "The `evaluate()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathNsResolver`, `XPathResult`*"]
-    pub fn evaluate_with_opt_x_path_ns_resolver_and_type(
-        this: &Document,
-        expression: &str,
-        context_node: &Node,
-        resolver: Option<&XPathNsResolver>,
-        type_: u16,
-    ) -> Result<XPathResult, JsValue>;
-    #[cfg(feature = "XPathResult")]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "evaluate")]
-    #[doc = "The `evaluate()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathResult`*"]
-    pub fn evaluate_with_opt_callback_and_type_and_result(
-        this: &Document,
-        expression: &str,
-        context_node: &Node,
-        resolver: Option<&::js_sys::Function>,
-        type_: u16,
-        result: Option<&::js_sys::Object>,
-    ) -> Result<XPathResult, JsValue>;
-    #[cfg(all(feature = "XPathNsResolver", feature = "XPathResult",))]
-    #[wasm_bindgen(catch, method, js_class = "Document", js_name = "evaluate")]
-    #[doc = "The `evaluate()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Document/evaluate)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Document`, `XPathNsResolver`, `XPathResult`*"]
-    pub fn evaluate_with_opt_x_path_ns_resolver_and_type_and_result(
-        this: &Document,
-        expression: &str,
-        context_node: &Node,
-        resolver: Option<&XPathNsResolver>,
-        type_: u16,
-        result: Option<&::js_sys::Object>,
-    ) -> Result<XPathResult, JsValue>;
+
 }

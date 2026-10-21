@@ -109,9 +109,6 @@ pub use tachys::html::element as html;
 /// HTML event types.
 #[doc(no_inline)]
 pub use tachys::html::event as ev;
-/// MathML element types.
-#[doc(inline)]
-pub use tachys::mathml as math;
 /// SVG element types.
 #[doc(inline)]
 pub use tachys::svg;

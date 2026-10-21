@@ -16,38 +16,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`*"]
     pub type Navigator;
-    #[cfg(feature = "Clipboard")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "clipboard")]
-    #[doc = "Getter for the `clipboard` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/clipboard)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Clipboard`, `Navigator`*"]
-    pub fn clipboard(this: &Navigator) -> Clipboard;
-    #[cfg(feature = "Permissions")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Navigator", js_name = "permissions")]
-    #[doc = "Getter for the `permissions` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/permissions)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `Permissions`*"]
-    pub fn permissions(this: &Navigator) -> Result<Permissions, JsValue>;
-    #[cfg(feature = "MimeTypeArray")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Navigator", js_name = "mimeTypes")]
-    #[doc = "Getter for the `mimeTypes` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/mimeTypes)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `MimeTypeArray`, `Navigator`*"]
-    pub fn mime_types(this: &Navigator) -> Result<MimeTypeArray, JsValue>;
-    #[cfg(feature = "PluginArray")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Navigator", js_name = "plugins")]
-    #[doc = "Getter for the `plugins` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/plugins)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `PluginArray`*"]
-    pub fn plugins(this: &Navigator) -> Result<PluginArray, JsValue>;
+
     #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "doNotTrack")]
     #[doc = "Getter for the `doNotTrack` field of this object."]
     #[doc = ""]
@@ -62,22 +31,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`*"]
     pub fn max_touch_points(this: &Navigator) -> i32;
-    #[cfg(feature = "MediaCapabilities")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "mediaCapabilities")]
-    #[doc = "Getter for the `mediaCapabilities` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/mediaCapabilities)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `MediaCapabilities`, `Navigator`*"]
-    pub fn media_capabilities(this: &Navigator) -> MediaCapabilities;
-    #[cfg(feature = "NetworkInformation")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Navigator", js_name = "connection")]
-    #[doc = "Getter for the `connection` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `NetworkInformation`*"]
-    pub fn connection(this: &Navigator) -> Result<NetworkInformation, JsValue>;
+
     #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "activeVRDisplays")]
     #[doc = "Getter for the `activeVRDisplays` field of this object."]
     #[doc = ""]
@@ -85,154 +39,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`*"]
     pub fn active_vr_displays(this: &Navigator) -> ::js_sys::Array;
-    #[cfg(feature = "MediaDevices")]
-    #[wasm_bindgen(
-        catch,
-        method,
-        getter,
-        js_class = "Navigator",
-        js_name = "mediaDevices"
-    )]
-    #[doc = "Getter for the `mediaDevices` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/mediaDevices)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `MediaDevices`, `Navigator`*"]
-    pub fn media_devices(this: &Navigator) -> Result<MediaDevices, JsValue>;
-    #[cfg(feature = "ServiceWorkerContainer")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "serviceWorker")]
-    #[doc = "Getter for the `serviceWorker` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/serviceWorker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `ServiceWorkerContainer`*"]
-    pub fn service_worker(this: &Navigator) -> ServiceWorkerContainer;
-    #[cfg(feature = "Presentation")]
-    #[wasm_bindgen(
-        catch,
-        method,
-        getter,
-        js_class = "Navigator",
-        js_name = "presentation"
-    )]
-    #[doc = "Getter for the `presentation` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/presentation)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `Presentation`*"]
-    pub fn presentation(this: &Navigator) -> Result<Option<Presentation>, JsValue>;
-    #[cfg(feature = "CredentialsContainer")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "credentials")]
-    #[doc = "Getter for the `credentials` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/credentials)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `CredentialsContainer`, `Navigator`*"]
-    pub fn credentials(this: &Navigator) -> CredentialsContainer;
-    #[cfg(feature = "UserActivation")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "userActivation")]
-    #[doc = "Getter for the `userActivation` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userActivation)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `UserActivation`*"]
-    pub fn user_activation(this: &Navigator) -> UserActivation;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "Bluetooth")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "bluetooth")]
-    #[doc = "Getter for the `bluetooth` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/bluetooth)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Bluetooth`, `Navigator`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn bluetooth(this: &Navigator) -> Option<Bluetooth>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "MediaSession")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "mediaSession")]
-    #[doc = "Getter for the `mediaSession` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/mediaSession)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `MediaSession`, `Navigator`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn media_session(this: &Navigator) -> MediaSession;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "WakeLock")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "wakeLock")]
-    #[doc = "Getter for the `wakeLock` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/wakeLock)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `WakeLock`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn wake_lock(this: &Navigator) -> WakeLock;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "Hid")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "hid")]
-    #[doc = "Getter for the `hid` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hid)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Hid`, `Navigator`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn hid(this: &Navigator) -> Hid;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "Serial")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "serial")]
-    #[doc = "Getter for the `serial` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/serial)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `Serial`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn serial(this: &Navigator) -> Serial;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "Usb")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "usb")]
-    #[doc = "Getter for the `usb` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/usb)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `Usb`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn usb(this: &Navigator) -> Usb;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "XrSystem")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "xr")]
-    #[doc = "Getter for the `xr` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/xr)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `XrSystem`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn xr(this: &Navigator) -> XrSystem;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "Scheduling")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "scheduling")]
-    #[doc = "Getter for the `scheduling` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/scheduling)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `Scheduling`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn scheduling(this: &Navigator) -> Scheduling;
+
     #[wasm_bindgen(
         method,
         getter,
@@ -256,26 +63,7 @@ extern "C" {
     #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
     #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
     pub fn device_memory(this: &Navigator) -> f64;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "Gpu")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "gpu")]
-    #[doc = "Getter for the `gpu` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/gpu)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Gpu`, `Navigator`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn gpu(this: &Navigator) -> Gpu;
-    #[cfg(feature = "Geolocation")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Navigator", js_name = "geolocation")]
-    #[doc = "Getter for the `geolocation` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/geolocation)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Geolocation`, `Navigator`*"]
-    pub fn geolocation(this: &Navigator) -> Result<Geolocation, JsValue>;
+
     #[wasm_bindgen(catch, method, getter, js_class = "Navigator", js_name = "appCodeName")]
     #[doc = "Getter for the `appCodeName` field of this object."]
     #[doc = ""]
@@ -332,18 +120,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`*"]
     pub fn languages(this: &Navigator) -> ::js_sys::Array;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "LockManager")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "locks")]
-    #[doc = "Getter for the `locks` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/locks)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `LockManager`, `Navigator`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn locks(this: &Navigator) -> LockManager;
+
     #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "onLine")]
     #[doc = "Getter for the `onLine` field of this object."]
     #[doc = ""]
@@ -351,26 +128,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`*"]
     pub fn on_line(this: &Navigator) -> bool;
-    #[cfg(feature = "StorageManager")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "storage")]
-    #[doc = "Getter for the `storage` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/storage)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `StorageManager`*"]
-    pub fn storage(this: &Navigator) -> StorageManager;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "NavigatorUaData")]
-    #[wasm_bindgen(method, getter, js_class = "Navigator", js_name = "userAgentData")]
-    #[doc = "Getter for the `userAgentData` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgentData)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `NavigatorUaData`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn user_agent_data(this: &Navigator) -> NavigatorUaData;
+
     #[wasm_bindgen(method, js_class = "Navigator", js_name = "canShare")]
     #[doc = "The `canShare()` method."]
     #[doc = ""]
@@ -378,14 +136,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`*"]
     pub fn can_share(this: &Navigator) -> bool;
-    #[cfg(feature = "ShareData")]
-    #[wasm_bindgen(method, js_class = "Navigator", js_name = "canShare")]
-    #[doc = "The `canShare()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/canShare)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `ShareData`*"]
-    pub fn can_share_with_data(this: &Navigator, data: &ShareData) -> bool;
+
     #[wasm_bindgen(catch, method, js_class = "Navigator", js_name = "getGamepads")]
     #[doc = "The `getGamepads()` method."]
     #[doc = ""]
@@ -407,17 +158,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`*"]
     pub fn request_midi_access(this: &Navigator) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "MidiOptions")]
-    #[wasm_bindgen(catch, method, js_class = "Navigator", js_name = "requestMIDIAccess")]
-    #[doc = "The `requestMIDIAccess()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `MidiOptions`, `Navigator`*"]
-    pub fn request_midi_access_with_options(
-        this: &Navigator,
-        options: &MidiOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
+
     #[wasm_bindgen(
         method,
         js_class = "Navigator",
@@ -433,14 +174,7 @@ extern "C" {
         key_system: &str,
         supported_configurations: &::wasm_bindgen::JsValue,
     ) -> ::js_sys::Promise;
-    #[cfg(feature = "VrServiceTest")]
-    #[wasm_bindgen(method, js_class = "Navigator", js_name = "requestVRServiceTest")]
-    #[doc = "The `requestVRServiceTest()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestVRServiceTest)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `VrServiceTest`*"]
-    pub fn request_vr_service_test(this: &Navigator) -> VrServiceTest;
+
     #[wasm_bindgen(catch, method, js_class = "Navigator", js_name = "sendBeacon")]
     #[doc = "The `sendBeacon()` method."]
     #[doc = ""]
@@ -493,18 +227,7 @@ extern "C" {
         url: &str,
         data: Option<&::js_sys::Uint8Array>,
     ) -> Result<bool, JsValue>;
-    #[cfg(feature = "FormData")]
-    #[wasm_bindgen(catch, method, js_class = "Navigator", js_name = "sendBeacon")]
-    #[doc = "The `sendBeacon()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FormData`, `Navigator`*"]
-    pub fn send_beacon_with_opt_form_data(
-        this: &Navigator,
-        url: &str,
-        data: Option<&FormData>,
-    ) -> Result<bool, JsValue>;
+
     #[cfg(feature = "UrlSearchParams")]
     #[wasm_bindgen(catch, method, js_class = "Navigator", js_name = "sendBeacon")]
     #[doc = "The `sendBeacon()` method."]
@@ -547,14 +270,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`*"]
     pub fn share(this: &Navigator) -> ::js_sys::Promise;
-    #[cfg(feature = "ShareData")]
-    #[wasm_bindgen(method, js_class = "Navigator", js_name = "share")]
-    #[doc = "The `share()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigator`, `ShareData`*"]
-    pub fn share_with_data(this: &Navigator, data: &ShareData) -> ::js_sys::Promise;
+
     #[wasm_bindgen(method, js_class = "Navigator", js_name = "vibrate")]
     #[doc = "The `vibrate()` method."]
     #[doc = ""]

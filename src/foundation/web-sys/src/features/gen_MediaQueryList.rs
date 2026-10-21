@@ -55,17 +55,7 @@ extern "C" {
         this: &MediaQueryList,
         listener: Option<&::js_sys::Function>,
     ) -> Result<(), JsValue>;
-    #[cfg(feature = "EventListener")]
-    #[wasm_bindgen(catch, method, js_class = "MediaQueryList", js_name = "addListener")]
-    #[doc = "The `addListener()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/addListener)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `EventListener`, `MediaQueryList`*"]
-    pub fn add_listener_with_opt_event_listener(
-        this: &MediaQueryList,
-        listener: Option<&EventListener>,
-    ) -> Result<(), JsValue>;
+
     #[wasm_bindgen(catch, method, js_class = "MediaQueryList", js_name = "removeListener")]
     #[doc = "The `removeListener()` method."]
     #[doc = ""]
@@ -76,15 +66,5 @@ extern "C" {
         this: &MediaQueryList,
         listener: Option<&::js_sys::Function>,
     ) -> Result<(), JsValue>;
-    #[cfg(feature = "EventListener")]
-    #[wasm_bindgen(catch, method, js_class = "MediaQueryList", js_name = "removeListener")]
-    #[doc = "The `removeListener()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/removeListener)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `EventListener`, `MediaQueryList`*"]
-    pub fn remove_listener_with_opt_event_listener(
-        this: &MediaQueryList,
-        listener: Option<&EventListener>,
-    ) -> Result<(), JsValue>;
+
 }

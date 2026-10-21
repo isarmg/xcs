@@ -19,14 +19,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `ShadowRoot`*"]
     pub type ShadowRoot;
-    #[cfg(feature = "ShadowRootMode")]
-    #[wasm_bindgen(method, getter, js_class = "ShadowRoot", js_name = "mode")]
-    #[doc = "Getter for the `mode` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/mode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ShadowRoot`, `ShadowRootMode`*"]
-    pub fn mode(this: &ShadowRoot) -> ShadowRootMode;
+
     #[cfg(feature = "Element")]
     #[wasm_bindgen(method, getter, js_class = "ShadowRoot", js_name = "host")]
     #[doc = "Getter for the `host` field of this object."]
@@ -78,14 +71,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Element`, `ShadowRoot`*"]
     pub fn fullscreen_element(this: &ShadowRoot) -> Option<Element>;
-    #[cfg(feature = "StyleSheetList")]
-    #[wasm_bindgen(method, getter, js_class = "ShadowRoot", js_name = "styleSheets")]
-    #[doc = "Getter for the `styleSheets` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/styleSheets)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ShadowRoot`, `StyleSheetList`*"]
-    pub fn style_sheets(this: &ShadowRoot) -> StyleSheetList;
+
     #[wasm_bindgen(
         method,
         getter,

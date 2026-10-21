@@ -32,15 +32,5 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SubmitEvent`*"]
     pub fn new(type_: &str) -> Result<SubmitEvent, JsValue>;
-    #[cfg(feature = "SubmitEventInit")]
-    #[wasm_bindgen(catch, constructor, js_class = "SubmitEvent")]
-    #[doc = "The `new SubmitEvent(..)` constructor, creating a new instance of `SubmitEvent`."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SubmitEvent/SubmitEvent)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SubmitEvent`, `SubmitEventInit`*"]
-    pub fn new_with_event_init_dict(
-        type_: &str,
-        event_init_dict: &SubmitEventInit,
-    ) -> Result<SubmitEvent, JsValue>;
+
 }

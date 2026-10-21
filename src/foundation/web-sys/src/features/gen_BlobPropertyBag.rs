@@ -10,18 +10,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `BlobPropertyBag`*"]
     pub type BlobPropertyBag;
-    #[cfg(feature = "EndingTypes")]
-    #[doc = "Get the `endings` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BlobPropertyBag`, `EndingTypes`*"]
-    #[wasm_bindgen(method, getter = "endings")]
-    pub fn get_endings(this: &BlobPropertyBag) -> Option<EndingTypes>;
-    #[cfg(feature = "EndingTypes")]
-    #[doc = "Change the `endings` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BlobPropertyBag`, `EndingTypes`*"]
-    #[wasm_bindgen(method, setter = "endings")]
-    pub fn set_endings(this: &BlobPropertyBag, val: EndingTypes);
+
     #[doc = "Get the `type` field of this object."]
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `BlobPropertyBag`*"]
@@ -42,12 +31,7 @@ impl BlobPropertyBag {
         let mut ret: Self = ::wasm_bindgen::JsCast::unchecked_into(::js_sys::Object::new());
         ret
     }
-    #[cfg(feature = "EndingTypes")]
-    #[deprecated = "Use `set_endings()` instead."]
-    pub fn endings(&mut self, val: EndingTypes) -> &mut Self {
-        self.set_endings(val);
-        self
-    }
+
     #[deprecated = "Use `set_type()` instead."]
     pub fn type_(&mut self, val: &str) -> &mut Self {
         self.set_type(val);

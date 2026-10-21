@@ -487,22 +487,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `DomMatrixReadOnly`*"]
     pub fn to_json(this: &DomMatrixReadOnly) -> ::js_sys::Object;
-    #[cfg(feature = "DomPoint")]
-    #[wasm_bindgen(method, js_class = "DOMMatrixReadOnly", js_name = "transformPoint")]
-    #[doc = "The `transformPoint()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/DOMMatrixReadOnly/transformPoint)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `DomMatrixReadOnly`, `DomPoint`*"]
-    pub fn transform_point(this: &DomMatrixReadOnly) -> DomPoint;
-    #[cfg(all(feature = "DomPoint", feature = "DomPointInit",))]
-    #[wasm_bindgen(method, js_class = "DOMMatrixReadOnly", js_name = "transformPoint")]
-    #[doc = "The `transformPoint()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/DOMMatrixReadOnly/transformPoint)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `DomMatrixReadOnly`, `DomPoint`, `DomPointInit`*"]
-    pub fn transform_point_with_point(this: &DomMatrixReadOnly, point: &DomPointInit) -> DomPoint;
+
     #[cfg(feature = "DomMatrix")]
     #[wasm_bindgen(method, js_class = "DOMMatrixReadOnly")]
     #[doc = "The `translate()` method."]

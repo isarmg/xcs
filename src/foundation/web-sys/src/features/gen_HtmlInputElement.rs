@@ -620,14 +620,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `HtmlInputElement`*"]
     pub fn will_validate(this: &HtmlInputElement) -> bool;
-    #[cfg(feature = "ValidityState")]
-    #[wasm_bindgen(method, getter, js_class = "HTMLInputElement", js_name = "validity")]
-    #[doc = "Getter for the `validity` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/validity)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlInputElement`, `ValidityState`*"]
-    pub fn validity(this: &HtmlInputElement) -> ValidityState;
+
     #[wasm_bindgen(
         catch,
         method,
@@ -891,20 +884,7 @@ extern "C" {
         start: u32,
         end: u32,
     ) -> Result<(), JsValue>;
-    #[cfg(feature = "SelectionMode")]
-    #[wasm_bindgen(catch, method, js_class = "HTMLInputElement", js_name = "setRangeText")]
-    #[doc = "The `setRangeText()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/setRangeText)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlInputElement`, `SelectionMode`*"]
-    pub fn set_range_text_with_start_and_end_and_selection_mode(
-        this: &HtmlInputElement,
-        replacement: &str,
-        start: u32,
-        end: u32,
-        selection_mode: SelectionMode,
-    ) -> Result<(), JsValue>;
+
     #[wasm_bindgen(
         catch,
         method,

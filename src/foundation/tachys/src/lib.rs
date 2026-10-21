@@ -14,8 +14,8 @@ pub mod prelude {
                 aria::AriaAttributes,
                 custom::CustomAttribute,
                 global::{
-                    ClassAttribute, GlobalAttributes, GlobalOnAttributes, OnAttribute,
-                    OnTargetAttribute, PropAttribute, StyleAttribute,
+                    ClassAttribute, GlobalAttributes, OnAttribute, OnTargetAttribute,
+                    PropAttribute, StyleAttribute,
                 },
                 IntoAttributeValue,
             },
@@ -41,8 +41,6 @@ pub mod dom;
 pub mod html;
 /// Supports adding interactivity to HTML.
 pub mod hydration;
-/// Types for MathML.
-pub mod mathml;
 /// Defines various backends that can render views.
 pub mod renderer;
 /// Types for SVG.

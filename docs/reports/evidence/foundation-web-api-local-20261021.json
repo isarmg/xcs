@@ -1,0 +1,66 @@
+{
+  "stage": "web-api-closure",
+  "git_head": "0de18785ef56f845096d76419edc346e33874ad7",
+  "worktree_has_changes": true,
+  "source_receipt_sha256": "be3aa20225b86f540e24b2a55ec794a403df4f94efcefecb816d9bcb9ac9748b",
+  "web_scope_sha256": "3164d33f35c61602e8aa24c10844177aad9f223b6bf652bb724071f6c073b202",
+  "original_provenance_unchanged_from_a04": true,
+  "foundation_files": 9007,
+  "foundation_bytes": 138493617,
+  "locked_packages": 344,
+  "web_manifest_sha256": "736e585b45548b348954edbb075deb2bf90477fcc7b933869535d60df407ef86",
+  "wasm_bytes": 2192568,
+  "gzip_bytes": 659633,
+  "wasm_sha256": "95a7fadac07d8f68411b8722b0f7ded08038690ecf22f1db4a6acd8231e16264",
+  "browser_template": {
+    "status": "passed",
+    "checks": [
+      "custom element and Unicode attribute",
+      "custom event and cleanup",
+      "inert SVG namespace",
+      "boolean initial false",
+      "boolean false→false",
+      "boolean false→true",
+      "boolean true→false",
+      "template attributes",
+      "dynamic text",
+      "DOM property",
+      "primitive text and escaping",
+      "style",
+      "class toggle rebuild",
+      "text escaping",
+      "event listener",
+      "rebuild",
+      "node retention",
+      "focus retention",
+      "listener replacement",
+      "unmount and cleanup"
+    ],
+    "browser": "154.0.8037.57",
+    "sandbox_disabled": false,
+    "validation": {
+      "git_head": "0de18785ef56f845096d76419edc346e33874ad7",
+      "git_tree": "69455e37fee3384a01ba1b2892624a9b01d0b673",
+      "worktree_has_changes": true,
+      "source_receipt_sha256": "be3aa20225b86f540e24b2a55ec794a403df4f94efcefecb816d9bcb9ac9748b",
+      "web_scope_sha256": "3164d33f35c61602e8aa24c10844177aad9f223b6bf652bb724071f6c073b202",
+      "retired_api_checks": 28,
+      "retired_feature_checks": 13,
+      "cargo_lock_sha256": "d90915df60a92d75568cfb5b6a8c7bfc1e67391f5db9014b626a81466e97db54",
+      "fixture_source_sha256": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281",
+      "outputs_sha256": {
+        "fixture.js": "8e3fa04081b9db7ffadc361886150e5abc5ef4339314223b3667d131c945c3a5",
+        "fixture_bg.wasm": "b2ab0f71ecd12f9cc149582af50717eed90bd60a3d443d2cec9cb306e0bcd490"
+      }
+    }
+  },
+  "local_checks": [
+    "native/WASM check",
+    "236 web unit/integration/doc tests",
+    "static",
+    "source metadata",
+    "workspace quality",
+    "production build and 28 API/13 feature scope checks",
+    "full Chrome/G4/fonts/viewport/lifecycle browser suite"
+  ]
+}

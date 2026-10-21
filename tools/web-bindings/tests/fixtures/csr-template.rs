@@ -51,6 +51,32 @@ pub async fn run_template_probe() -> Result<String, JsValue> {
         let mut state = ViewTemplate::new(template("初始 <&> Ω".into(), counter.clone())).build();
         let document = web_sys::window().unwrap().document().unwrap();
         let parent = document.body().unwrap();
+        // The typed API closure must not become a markup or custom-event whitelist.
+        let custom_counter = counter.clone();
+        let mut custom = tachys::html::element::custom("zxs-scope-probe")
+            .add_any_attr(tachys::html::attribute::custom::custom_attribute("data-文件", "Ω"))
+            .on(event::Custom::<web_sys::Event>::new("zxs-scope-event"), move |_| {
+                custom_counter.fetch_add(1, Ordering::SeqCst);
+            }).build();
+        custom.mount(parent.as_ref(), None);
+        let custom_node = custom.elements().into_iter().next().unwrap();
+        if custom_node.tag_name() != "ZXS-SCOPE-PROBE" || custom_node.get_attribute("data-文件").as_deref() != Some("Ω") {
+            return Err("custom element and Unicode attribute".into());
+        }
+        custom_node.dispatch_event(&web_sys::Event::new("zxs-scope-event")?)?;
+        if counter.load(Ordering::SeqCst) != 1 { return Err("custom event".into()); }
+        custom.unmount();
+        drop(custom);
+        custom_node.dispatch_event(&web_sys::Event::new("zxs-scope-event")?)?;
+        if counter.load(Ordering::SeqCst) != 1 { return Err("custom event cleanup".into()); }
+        counter.store(0, Ordering::SeqCst);
+        let mut svg = tachys::svg::InertElement::new("<svg xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 0L1 1\"/></svg>").build();
+        svg.mount(parent.as_ref(), None);
+        let svg_node = svg.elements().into_iter().next().unwrap();
+        if svg_node.namespace_uri().as_deref() != Some("http://www.w3.org/2000/svg") || svg_node.query_selector("path")?.is_none() {
+            return Err("inert SVG namespace".into());
+        }
+        svg.unmount();
         state.mount(parent.as_ref(), None);
         let root = state.elements().into_iter().next().unwrap();
         let mut flags = ViewTemplate::new(boolean_template(false)).build();
@@ -103,7 +129,7 @@ pub async fn run_template_probe() -> Result<String, JsValue> {
         if document.get_element_by_id("csr-template-probe").is_some() { return Err("template unmount".into()); }
         button.dispatch_event(&web_sys::Event::new("click")?)?;
         if counter.load(Ordering::SeqCst) != 2 { return Err("template handler cleanup".into()); }
-        Ok("{\"status\":\"passed\",\"checks\":[\"boolean initial false\",\"boolean false→false\",\"boolean false→true\",\"boolean true→false\",\"template attributes\",\"dynamic text\",\"DOM property\",\"primitive text and escaping\",\"style\",\"class toggle rebuild\",\"text escaping\",\"event listener\",\"rebuild\",\"node retention\",\"focus retention\",\"listener replacement\",\"unmount and cleanup\"]}".into())
+        Ok("{\"status\":\"passed\",\"checks\":[\"custom element and Unicode attribute\",\"custom event and cleanup\",\"inert SVG namespace\",\"boolean initial false\",\"boolean false→false\",\"boolean false→true\",\"boolean true→false\",\"template attributes\",\"dynamic text\",\"DOM property\",\"primitive text and escaping\",\"style\",\"class toggle rebuild\",\"text escaping\",\"event listener\",\"rebuild\",\"node retention\",\"focus retention\",\"listener replacement\",\"unmount and cleanup\"]}".into())
     })).await
 }
 

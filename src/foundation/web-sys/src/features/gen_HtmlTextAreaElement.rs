@@ -323,14 +323,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `HtmlTextAreaElement`*"]
     pub fn will_validate(this: &HtmlTextAreaElement) -> bool;
-    #[cfg(feature = "ValidityState")]
-    #[wasm_bindgen(method, getter, js_class = "HTMLTextAreaElement", js_name = "validity")]
-    #[doc = "Getter for the `validity` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/HTMLTextAreaElement/validity)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlTextAreaElement`, `ValidityState`*"]
-    pub fn validity(this: &HtmlTextAreaElement) -> ValidityState;
+
     #[wasm_bindgen(
         catch,
         method,

@@ -41,12 +41,7 @@ extern "C" {
     #[doc = "*This API requires the following crate features to be activated: `RequestInit`*"]
     #[wasm_bindgen(method, setter = "body")]
     pub fn set_body_opt_u8_array(this: &RequestInit, val: Option<&::js_sys::Uint8Array>);
-    #[cfg(feature = "FormData")]
-    #[doc = "Change the `body` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FormData`, `RequestInit`*"]
-    #[wasm_bindgen(method, setter = "body")]
-    pub fn set_body_opt_form_data(this: &RequestInit, val: Option<&FormData>);
+
     #[cfg(feature = "UrlSearchParams")]
     #[doc = "Change the `body` field of this object."]
     #[doc = ""]
@@ -64,18 +59,7 @@ extern "C" {
     #[doc = "*This API requires the following crate features to be activated: `ReadableStream`, `RequestInit`*"]
     #[wasm_bindgen(method, setter = "body")]
     pub fn set_body_opt_readable_stream(this: &RequestInit, val: Option<&ReadableStream>);
-    #[cfg(feature = "RequestCache")]
-    #[doc = "Get the `cache` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `RequestCache`, `RequestInit`*"]
-    #[wasm_bindgen(method, getter = "cache")]
-    pub fn get_cache(this: &RequestInit) -> Option<RequestCache>;
-    #[cfg(feature = "RequestCache")]
-    #[doc = "Change the `cache` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `RequestCache`, `RequestInit`*"]
-    #[wasm_bindgen(method, setter = "cache")]
-    pub fn set_cache(this: &RequestInit, val: RequestCache);
+
     #[cfg(feature = "RequestCredentials")]
     #[doc = "Get the `credentials` field of this object."]
     #[doc = ""]
@@ -146,29 +130,13 @@ extern "C" {
     #[doc = "*This API requires the following crate features to be activated: `RequestInit`, `RequestMode`*"]
     #[wasm_bindgen(method, setter = "mode")]
     pub fn set_mode(this: &RequestInit, val: RequestMode);
-    #[cfg(feature = "ObserverCallback")]
-    #[doc = "Get the `observe` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ObserverCallback`, `RequestInit`*"]
-    #[wasm_bindgen(method, getter = "observe")]
-    pub fn get_observe(this: &RequestInit) -> Option<ObserverCallback>;
-    #[cfg(feature = "ObserverCallback")]
-    #[doc = "Change the `observe` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ObserverCallback`, `RequestInit`*"]
-    #[wasm_bindgen(method, setter = "observe")]
-    pub fn set_observe(this: &RequestInit, val: &ObserverCallback);
+
     #[doc = "Change the `observe` field of this object."]
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `RequestInit`*"]
     #[wasm_bindgen(method, setter = "observe")]
     pub fn set_observe_callback(this: &RequestInit, val: &::js_sys::Function);
-    #[cfg(feature = "ObserverCallback")]
-    #[doc = "Change the `observe` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ObserverCallback`, `RequestInit`*"]
-    #[wasm_bindgen(method, setter = "observe")]
-    pub fn set_observe_observer_callback(this: &RequestInit, val: &ObserverCallback);
+
     #[cfg(feature = "RequestRedirect")]
     #[doc = "Get the `redirect` field of this object."]
     #[doc = ""]
@@ -191,18 +159,7 @@ extern "C" {
     #[doc = "*This API requires the following crate features to be activated: `RequestInit`*"]
     #[wasm_bindgen(method, setter = "referrer")]
     pub fn set_referrer(this: &RequestInit, val: &str);
-    #[cfg(feature = "ReferrerPolicy")]
-    #[doc = "Get the `referrerPolicy` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ReferrerPolicy`, `RequestInit`*"]
-    #[wasm_bindgen(method, getter = "referrerPolicy")]
-    pub fn get_referrer_policy(this: &RequestInit) -> Option<ReferrerPolicy>;
-    #[cfg(feature = "ReferrerPolicy")]
-    #[doc = "Change the `referrerPolicy` field of this object."]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ReferrerPolicy`, `RequestInit`*"]
-    #[wasm_bindgen(method, setter = "referrerPolicy")]
-    pub fn set_referrer_policy(this: &RequestInit, val: ReferrerPolicy);
+
     #[cfg(feature = "AbortSignal")]
     #[doc = "Get the `signal` field of this object."]
     #[doc = ""]
@@ -230,12 +187,7 @@ impl RequestInit {
         self.set_body(val.unwrap_or(&::wasm_bindgen::JsValue::NULL));
         self
     }
-    #[cfg(feature = "RequestCache")]
-    #[deprecated = "Use `set_cache()` instead."]
-    pub fn cache(&mut self, val: RequestCache) -> &mut Self {
-        self.set_cache(val);
-        self
-    }
+
     #[cfg(feature = "RequestCredentials")]
     #[deprecated = "Use `set_credentials()` instead."]
     pub fn credentials(&mut self, val: RequestCredentials) -> &mut Self {
@@ -263,12 +215,7 @@ impl RequestInit {
         self.set_mode(val);
         self
     }
-    #[cfg(feature = "ObserverCallback")]
-    #[deprecated = "Use `set_observe()` instead."]
-    pub fn observe(&mut self, val: &ObserverCallback) -> &mut Self {
-        self.set_observe(val);
-        self
-    }
+
     #[cfg(feature = "RequestRedirect")]
     #[deprecated = "Use `set_redirect()` instead."]
     pub fn redirect(&mut self, val: RequestRedirect) -> &mut Self {
@@ -280,12 +227,7 @@ impl RequestInit {
         self.set_referrer(val);
         self
     }
-    #[cfg(feature = "ReferrerPolicy")]
-    #[deprecated = "Use `set_referrer_policy()` instead."]
-    pub fn referrer_policy(&mut self, val: ReferrerPolicy) -> &mut Self {
-        self.set_referrer_policy(val);
-        self
-    }
+
     #[cfg(feature = "AbortSignal")]
     #[deprecated = "Use `set_signal()` instead."]
     pub fn signal(&mut self, val: Option<&AbortSignal>) -> &mut Self {

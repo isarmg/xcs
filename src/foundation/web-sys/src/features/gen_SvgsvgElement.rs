@@ -21,38 +21,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SvgsvgElement`*"]
     pub type SvgsvgElement;
-    #[cfg(feature = "SvgAnimatedLength")]
-    #[wasm_bindgen(method, getter, js_class = "SVGSVGElement", js_name = "x")]
-    #[doc = "Getter for the `x` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/x)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgAnimatedLength`, `SvgsvgElement`*"]
-    pub fn x(this: &SvgsvgElement) -> SvgAnimatedLength;
-    #[cfg(feature = "SvgAnimatedLength")]
-    #[wasm_bindgen(method, getter, js_class = "SVGSVGElement", js_name = "y")]
-    #[doc = "Getter for the `y` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/y)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgAnimatedLength`, `SvgsvgElement`*"]
-    pub fn y(this: &SvgsvgElement) -> SvgAnimatedLength;
-    #[cfg(feature = "SvgAnimatedLength")]
-    #[wasm_bindgen(method, getter, js_class = "SVGSVGElement", js_name = "width")]
-    #[doc = "Getter for the `width` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/width)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgAnimatedLength`, `SvgsvgElement`*"]
-    pub fn width(this: &SvgsvgElement) -> SvgAnimatedLength;
-    #[cfg(feature = "SvgAnimatedLength")]
-    #[wasm_bindgen(method, getter, js_class = "SVGSVGElement", js_name = "height")]
-    #[doc = "Getter for the `height` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/height)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgAnimatedLength`, `SvgsvgElement`*"]
-    pub fn height(this: &SvgsvgElement) -> SvgAnimatedLength;
+
     #[wasm_bindgen(method, getter, js_class = "SVGSVGElement", js_name = "useCurrentView")]
     #[doc = "Getter for the `useCurrentView` field of this object."]
     #[doc = ""]
@@ -74,19 +43,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SvgsvgElement`*"]
     pub fn set_current_scale(this: &SvgsvgElement, value: f32);
-    #[cfg(feature = "SvgPoint")]
-    #[wasm_bindgen(
-        method,
-        getter,
-        js_class = "SVGSVGElement",
-        js_name = "currentTranslate"
-    )]
-    #[doc = "Getter for the `currentTranslate` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/currentTranslate)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgPoint`, `SvgsvgElement`*"]
-    pub fn current_translate(this: &SvgsvgElement) -> SvgPoint;
+
     #[cfg(feature = "SvgAnimatedRect")]
     #[wasm_bindgen(method, getter, js_class = "SVGSVGElement", js_name = "viewBox")]
     #[doc = "Getter for the `viewBox` field of this object."]
@@ -95,19 +52,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SvgAnimatedRect`, `SvgsvgElement`*"]
     pub fn view_box(this: &SvgsvgElement) -> SvgAnimatedRect;
-    #[cfg(feature = "SvgAnimatedPreserveAspectRatio")]
-    #[wasm_bindgen(
-        method,
-        getter,
-        js_class = "SVGSVGElement",
-        js_name = "preserveAspectRatio"
-    )]
-    #[doc = "Getter for the `preserveAspectRatio` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/preserveAspectRatio)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgAnimatedPreserveAspectRatio`, `SvgsvgElement`*"]
-    pub fn preserve_aspect_ratio(this: &SvgsvgElement) -> SvgAnimatedPreserveAspectRatio;
+
     #[wasm_bindgen(method, getter, js_class = "SVGSVGElement", js_name = "zoomAndPan")]
     #[doc = "Getter for the `zoomAndPan` field of this object."]
     #[doc = ""]
@@ -129,22 +74,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SvgsvgElement`*"]
     pub fn animations_paused(this: &SvgsvgElement) -> bool;
-    #[cfg(feature = "SvgAngle")]
-    #[wasm_bindgen(method, js_class = "SVGSVGElement", js_name = "createSVGAngle")]
-    #[doc = "The `createSVGAngle()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/createSVGAngle)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgAngle`, `SvgsvgElement`*"]
-    pub fn create_svg_angle(this: &SvgsvgElement) -> SvgAngle;
-    #[cfg(feature = "SvgLength")]
-    #[wasm_bindgen(method, js_class = "SVGSVGElement", js_name = "createSVGLength")]
-    #[doc = "The `createSVGLength()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/createSVGLength)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgLength`, `SvgsvgElement`*"]
-    pub fn create_svg_length(this: &SvgsvgElement) -> SvgLength;
+
     #[cfg(feature = "SvgMatrix")]
     #[wasm_bindgen(method, js_class = "SVGSVGElement", js_name = "createSVGMatrix")]
     #[doc = "The `createSVGMatrix()` method."]
@@ -153,22 +83,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SvgMatrix`, `SvgsvgElement`*"]
     pub fn create_svg_matrix(this: &SvgsvgElement) -> SvgMatrix;
-    #[cfg(feature = "SvgNumber")]
-    #[wasm_bindgen(method, js_class = "SVGSVGElement", js_name = "createSVGNumber")]
-    #[doc = "The `createSVGNumber()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/createSVGNumber)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgNumber`, `SvgsvgElement`*"]
-    pub fn create_svg_number(this: &SvgsvgElement) -> SvgNumber;
-    #[cfg(feature = "SvgPoint")]
-    #[wasm_bindgen(method, js_class = "SVGSVGElement", js_name = "createSVGPoint")]
-    #[doc = "The `createSVGPoint()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/createSVGPoint)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgPoint`, `SvgsvgElement`*"]
-    pub fn create_svg_point(this: &SvgsvgElement) -> SvgPoint;
+
     #[cfg(feature = "SvgRect")]
     #[wasm_bindgen(method, js_class = "SVGSVGElement", js_name = "createSVGRect")]
     #[doc = "The `createSVGRect()` method."]
@@ -177,29 +92,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SvgRect`, `SvgsvgElement`*"]
     pub fn create_svg_rect(this: &SvgsvgElement) -> SvgRect;
-    #[cfg(feature = "SvgTransform")]
-    #[wasm_bindgen(method, js_class = "SVGSVGElement", js_name = "createSVGTransform")]
-    #[doc = "The `createSVGTransform()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/createSVGTransform)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgTransform`, `SvgsvgElement`*"]
-    pub fn create_svg_transform(this: &SvgsvgElement) -> SvgTransform;
-    #[cfg(all(feature = "SvgMatrix", feature = "SvgTransform",))]
-    #[wasm_bindgen(
-        method,
-        js_class = "SVGSVGElement",
-        js_name = "createSVGTransformFromMatrix"
-    )]
-    #[doc = "The `createSVGTransformFromMatrix()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGSVGElement/createSVGTransformFromMatrix)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgMatrix`, `SvgTransform`, `SvgsvgElement`*"]
-    pub fn create_svg_transform_from_matrix(
-        this: &SvgsvgElement,
-        matrix: &SvgMatrix,
-    ) -> SvgTransform;
+
     #[wasm_bindgen(method, js_class = "SVGSVGElement", js_name = "deselectAll")]
     #[doc = "The `deselectAll()` method."]
     #[doc = ""]

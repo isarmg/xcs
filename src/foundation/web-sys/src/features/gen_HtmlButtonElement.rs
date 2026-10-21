@@ -206,14 +206,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `HtmlButtonElement`*"]
     pub fn will_validate(this: &HtmlButtonElement) -> bool;
-    #[cfg(feature = "ValidityState")]
-    #[wasm_bindgen(method, getter, js_class = "HTMLButtonElement", js_name = "validity")]
-    #[doc = "Getter for the `validity` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/HTMLButtonElement/validity)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlButtonElement`, `ValidityState`*"]
-    pub fn validity(this: &HtmlButtonElement) -> ValidityState;
+
     #[wasm_bindgen(
         catch,
         method,

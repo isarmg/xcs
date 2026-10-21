@@ -24,22 +24,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Performance`*"]
     pub fn time_origin(this: &Performance) -> f64;
-    #[cfg(feature = "PerformanceTiming")]
-    #[wasm_bindgen(method, getter, js_class = "Performance", js_name = "timing")]
-    #[doc = "Getter for the `timing` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/timing)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Performance`, `PerformanceTiming`*"]
-    pub fn timing(this: &Performance) -> PerformanceTiming;
-    #[cfg(feature = "PerformanceNavigation")]
-    #[wasm_bindgen(method, getter, js_class = "Performance", js_name = "navigation")]
-    #[doc = "Getter for the `navigation` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/navigation)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Performance`, `PerformanceNavigation`*"]
-    pub fn navigation(this: &Performance) -> PerformanceNavigation;
+
     #[wasm_bindgen(
         method,
         getter,
@@ -139,34 +124,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Performance`*"]
     pub fn mark(this: &Performance, mark_name: &str) -> Result<(), JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "PerformanceMark")]
-    #[wasm_bindgen(catch, method, js_class = "Performance")]
-    #[doc = "The `mark()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Performance`, `PerformanceMark`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn mark(this: &Performance, mark_name: &str) -> Result<PerformanceMark, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(all(feature = "PerformanceMark", feature = "PerformanceMarkOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Performance", js_name = "mark")]
-    #[doc = "The `mark()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Performance`, `PerformanceMark`, `PerformanceMarkOptions`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn mark_with_mark_options(
-        this: &Performance,
-        mark_name: &str,
-        mark_options: &PerformanceMarkOptions,
-    ) -> Result<PerformanceMark, JsValue>;
+
     #[cfg(not(web_sys_unstable_apis))]
     #[wasm_bindgen(catch, method, js_class = "Performance")]
     #[doc = "The `measure()` method."]
@@ -200,85 +158,7 @@ extern "C" {
         start_mark: &str,
         end_mark: &str,
     ) -> Result<(), JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "PerformanceMeasure")]
-    #[wasm_bindgen(catch, method, js_class = "Performance")]
-    #[doc = "The `measure()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Performance`, `PerformanceMeasure`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn measure(this: &Performance, measure_name: &str) -> Result<PerformanceMeasure, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "PerformanceMeasure")]
-    #[wasm_bindgen(catch, method, js_class = "Performance", js_name = "measure")]
-    #[doc = "The `measure()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Performance`, `PerformanceMeasure`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn measure_with_str(
-        this: &Performance,
-        measure_name: &str,
-        start_or_measure_options: &str,
-    ) -> Result<PerformanceMeasure, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "PerformanceMeasure")]
-    #[wasm_bindgen(catch, method, js_class = "Performance", js_name = "measure")]
-    #[doc = "The `measure()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Performance`, `PerformanceMeasure`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn measure_with_str_and_end_mark(
-        this: &Performance,
-        measure_name: &str,
-        start_or_measure_options: &str,
-        end_mark: &str,
-    ) -> Result<PerformanceMeasure, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(all(feature = "PerformanceMeasure", feature = "PerformanceMeasureOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Performance", js_name = "measure")]
-    #[doc = "The `measure()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Performance`, `PerformanceMeasure`, `PerformanceMeasureOptions`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn measure_with_performance_measure_options(
-        this: &Performance,
-        measure_name: &str,
-        start_or_measure_options: &PerformanceMeasureOptions,
-    ) -> Result<PerformanceMeasure, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "MemoryMeasurement")]
-    #[wasm_bindgen(
-        method,
-        js_class = "Performance",
-        js_name = "measureUserAgentSpecificMemory"
-    )]
-    #[doc = "The `measureUserAgentSpecificMemory()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Performance/measureUserAgentSpecificMemory)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `MemoryMeasurement`, `Performance`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn measure_user_agent_specific_memory(
-        this: &Performance,
-    ) -> ::js_sys::Promise<MemoryMeasurement>;
+
     #[wasm_bindgen(method, js_class = "Performance")]
     #[doc = "The `now()` method."]
     #[doc = ""]

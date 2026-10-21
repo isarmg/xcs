@@ -262,17 +262,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `MouseEvent`*"]
     pub fn new(type_arg: &str) -> Result<MouseEvent, JsValue>;
-    #[cfg(feature = "MouseEventInit")]
-    #[wasm_bindgen(catch, constructor, js_class = "MouseEvent")]
-    #[doc = "The `new MouseEvent(..)` constructor, creating a new instance of `MouseEvent`."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `MouseEvent`, `MouseEventInit`*"]
-    pub fn new_with_mouse_event_init_dict(
-        type_arg: &str,
-        mouse_event_init_dict: &MouseEventInit,
-    ) -> Result<MouseEvent, JsValue>;
+
     #[wasm_bindgen(method, js_class = "MouseEvent", js_name = "getModifierState")]
     #[doc = "The `getModifierState()` method."]
     #[doc = ""]
@@ -519,7 +509,7 @@ extern "C" {
         meta_key_arg: bool,
         button_arg: i16,
     );
-    #[cfg(all(feature = "EventTarget", feature = "Window",))]
+    #[cfg(all(feature = "EventTarget", feature = "Window"))]
     #[wasm_bindgen(method, js_class = "MouseEvent", js_name = "initMouseEvent")]
     #[doc = "The `initMouseEvent()` method."]
     #[doc = ""]

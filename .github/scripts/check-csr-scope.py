@@ -7,6 +7,7 @@ import json
 import shutil
 import subprocess
 import tempfile
+import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / 'target/csr-template-check'
@@ -67,6 +68,20 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
         for method in ['to_html', 'to_html_with_buf', 'to_html_branching', 'to_html_stream_in_order',
                        'to_html_stream_out_of_order', 'to_html_async_with_buf', 'resolve', 'dry_resolve', 'hydrate_async']:
             retired[method] = f'pub fn old<T:tachys::view::RenderHtml>(mut value:T) {{ value.{method}(); }}'
+        for name, code in {
+            'typed_canvas': 'use tachys::html::element::canvas;',
+            'typed_audio': 'use tachys::html::element::audio;',
+            'typed_select': 'use tachys::html::element::select;',
+            'typed_svg_animation': 'use tachys::svg::animate;',
+            'typed_svg_use': 'use tachys::svg::Use;',
+            'typed_mathml': 'use tachys::mathml;',
+            'inline_event_attributes': 'use tachys::html::attribute::GlobalOnAttributes;',
+            'typed_touch_event': 'use tachys::html::event::touchstart;',
+            'typed_touch_type': 'use tachys::html::event::TouchEvent;',
+            'unused_attribute': 'use tachys::html::attribute::accept;',
+            'removed_web_api': 'use web_sys::WebGlRenderingContext;',
+        }.items():
+            retired[name] = code
         for name, code in retired.items():
             source.write_text(code)
             result = cargo(*command, capture=True)
@@ -77,18 +92,32 @@ catch(error) { document.body.textContent=JSON.stringify({status:'failed',message
             result = cargo(*command, '--features', 'tachys/' + feature, capture=True)
             if not result.returncode or 'does not have that feature' not in result.stderr:
                 raise AssertionError(f'{feature} accepted or failed for another reason: {result.stderr}')
+        for feature in ['AudioContext', 'WebGlRenderingContext', 'Gamepad', 'XrSession']:
+            result = cargo(*command, '--features', 'web-sys/' + feature, capture=True)
+            if not result.returncode or 'does not have that feature' not in result.stderr:
+                raise AssertionError(f'{feature} accepted or failed for another reason: {result.stderr}')
+        policy = json.loads((ROOT / 'tools/rust-sources/web-scope.json').read_text())
+        declared = tomllib.loads((ROOT / 'src/foundation/web-sys/Cargo.toml').read_text())['features']
+        if set(declared) != set(policy['web_sys_features']):
+            raise AssertionError('web-sys feature policy drift')
+        generated = {p.stem.removeprefix('gen_') for p in (ROOT / 'src/foundation/web-sys/src/features').glob('gen_*.rs')}
+        if generated != set(declared) - {'default', 'std'}:
+            raise AssertionError('web-sys source/feature closure drift')
         record = {
             'git_head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
             'git_tree': subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], cwd=ROOT, text=True).strip(),
             'worktree_has_changes': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT)),
             'source_receipt_sha256': hashlib.sha256((ROOT / 'compliance/rust-sources.json').read_bytes()).hexdigest(),
+            'web_scope_sha256': hashlib.sha256((ROOT / 'tools/rust-sources/web-scope.json').read_bytes()).hexdigest(),
+            'retired_api_checks': len(retired),
+            'retired_feature_checks': 13,
             'cargo_lock_sha256': hashlib.sha256((ROOT / 'Cargo.lock').read_bytes()).hexdigest(),
             'fixture_source_sha256': hashlib.sha256((ROOT / 'tools/web-bindings/tests/fixtures/csr-template.rs').read_bytes()).hexdigest(),
             'outputs_sha256': {name: hashlib.sha256((output / name).read_bytes()).hexdigest()
                                for name in ['fixture.js', 'fixture_bg.wasm']},
         }
         (output / 'validation.json').write_text(json.dumps(record, indent=2) + '\n')
-        print(f'CSR contract: browser template compiled; {len(retired)} retired API and nine feature checks passed')
+        print(f'CSR contract: browser template compiled; {len(retired)} retired API and 13 feature checks passed')
 
 
 if __name__ == '__main__':

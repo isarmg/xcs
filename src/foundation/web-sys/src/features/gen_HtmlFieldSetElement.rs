@@ -83,14 +83,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `HtmlFieldSetElement`*"]
     pub fn will_validate(this: &HtmlFieldSetElement) -> bool;
-    #[cfg(feature = "ValidityState")]
-    #[wasm_bindgen(method, getter, js_class = "HTMLFieldSetElement", js_name = "validity")]
-    #[doc = "Getter for the `validity` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/HTMLFieldSetElement/validity)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlFieldSetElement`, `ValidityState`*"]
-    pub fn validity(this: &HtmlFieldSetElement) -> ValidityState;
+
     #[wasm_bindgen(
         catch,
         method,

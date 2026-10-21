@@ -33,14 +33,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SvgElement`*"]
     pub fn set_id(this: &SvgElement, value: &str);
-    #[cfg(feature = "SvgAnimatedString")]
-    #[wasm_bindgen(method, getter, js_class = "SVGElement", js_name = "className")]
-    #[doc = "Getter for the `className` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGElement/className)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgAnimatedString`, `SvgElement`*"]
-    pub fn class_name(this: &SvgElement) -> SvgAnimatedString;
+
     #[cfg(feature = "SvgsvgElement")]
     #[wasm_bindgen(method, getter, js_class = "SVGElement", js_name = "ownerSVGElement")]
     #[doc = "Getter for the `ownerSVGElement` field of this object."]
@@ -1510,12 +1503,5 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `SvgElement`*"]
     pub fn focus(this: &SvgElement) -> Result<(), JsValue>;
-    #[cfg(feature = "FocusOptions")]
-    #[wasm_bindgen(catch, method, js_class = "SVGElement", js_name = "focus")]
-    #[doc = "The `focus()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/SVGElement/focus)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FocusOptions`, `SvgElement`*"]
-    pub fn focus_with_options(this: &SvgElement, options: &FocusOptions) -> Result<(), JsValue>;
+
 }

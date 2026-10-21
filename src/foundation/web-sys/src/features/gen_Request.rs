@@ -38,14 +38,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Headers`, `Request`*"]
     pub fn headers(this: &Request) -> Headers;
-    #[cfg(feature = "RequestDestination")]
-    #[wasm_bindgen(method, getter, js_class = "Request", js_name = "destination")]
-    #[doc = "Getter for the `destination` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Request/destination)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Request`, `RequestDestination`*"]
-    pub fn destination(this: &Request) -> RequestDestination;
+
     #[wasm_bindgen(method, getter, js_class = "Request", js_name = "referrer")]
     #[doc = "Getter for the `referrer` field of this object."]
     #[doc = ""]
@@ -53,14 +46,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Request`*"]
     pub fn referrer(this: &Request) -> ::alloc::string::String;
-    #[cfg(feature = "ReferrerPolicy")]
-    #[wasm_bindgen(method, getter, js_class = "Request", js_name = "referrerPolicy")]
-    #[doc = "Getter for the `referrerPolicy` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Request/referrerPolicy)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ReferrerPolicy`, `Request`*"]
-    pub fn referrer_policy(this: &Request) -> ReferrerPolicy;
+
     #[cfg(feature = "RequestMode")]
     #[wasm_bindgen(method, getter, js_class = "Request", js_name = "mode")]
     #[doc = "Getter for the `mode` field of this object."]
@@ -77,14 +63,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Request`, `RequestCredentials`*"]
     pub fn credentials(this: &Request) -> RequestCredentials;
-    #[cfg(feature = "RequestCache")]
-    #[wasm_bindgen(method, getter, js_class = "Request", js_name = "cache")]
-    #[doc = "Getter for the `cache` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Request/cache)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Request`, `RequestCache`*"]
-    pub fn cache(this: &Request) -> RequestCache;
+
     #[cfg(feature = "RequestRedirect")]
     #[wasm_bindgen(method, getter, js_class = "Request", js_name = "redirect")]
     #[doc = "Getter for the `redirect` field of this object."]

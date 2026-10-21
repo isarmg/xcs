@@ -16,14 +16,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Crypto`*"]
     pub type Crypto;
-    #[cfg(feature = "SubtleCrypto")]
-    #[wasm_bindgen(method, getter, js_class = "Crypto", js_name = "subtle")]
-    #[doc = "Getter for the `subtle` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Crypto/subtle)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Crypto`, `SubtleCrypto`*"]
-    pub fn subtle(this: &Crypto) -> SubtleCrypto;
+
     #[wasm_bindgen(catch, method, js_class = "Crypto", js_name = "getRandomValues")]
     #[doc = "The `getRandomValues()` method."]
     #[doc = ""]

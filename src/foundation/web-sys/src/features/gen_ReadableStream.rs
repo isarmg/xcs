@@ -39,17 +39,7 @@ extern "C" {
     pub fn new_with_underlying_source(
         underlying_source: &::js_sys::Object,
     ) -> Result<ReadableStream, JsValue>;
-    #[cfg(feature = "QueuingStrategy")]
-    #[wasm_bindgen(catch, constructor, js_class = "ReadableStream")]
-    #[doc = "The `new ReadableStream(..)` constructor, creating a new instance of `ReadableStream`."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `QueuingStrategy`, `ReadableStream`*"]
-    pub fn new_with_underlying_source_and_strategy(
-        underlying_source: &::js_sys::Object,
-        strategy: &QueuingStrategy,
-    ) -> Result<ReadableStream, JsValue>;
+
     #[wasm_bindgen(method, js_class = "ReadableStream")]
     #[doc = "The `cancel()` method."]
     #[doc = ""]
@@ -74,57 +64,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `ReadableStream`*"]
     pub fn get_reader(this: &ReadableStream) -> ::js_sys::Object;
-    #[cfg(feature = "ReadableStreamGetReaderOptions")]
-    #[wasm_bindgen(method, js_class = "ReadableStream", js_name = "getReader")]
-    #[doc = "The `getReader()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/getReader)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ReadableStream`, `ReadableStreamGetReaderOptions`*"]
-    pub fn get_reader_with_options(
-        this: &ReadableStream,
-        options: &ReadableStreamGetReaderOptions,
-    ) -> ::js_sys::Object;
-    #[cfg(feature = "ReadableWritablePair")]
-    #[wasm_bindgen(method, js_class = "ReadableStream", js_name = "pipeThrough")]
-    #[doc = "The `pipeThrough()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/pipeThrough)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ReadableStream`, `ReadableWritablePair`*"]
-    pub fn pipe_through(this: &ReadableStream, transform: &ReadableWritablePair) -> ReadableStream;
-    #[cfg(all(feature = "ReadableWritablePair", feature = "StreamPipeOptions",))]
-    #[wasm_bindgen(method, js_class = "ReadableStream", js_name = "pipeThrough")]
-    #[doc = "The `pipeThrough()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/pipeThrough)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ReadableStream`, `ReadableWritablePair`, `StreamPipeOptions`*"]
-    pub fn pipe_through_with_options(
-        this: &ReadableStream,
-        transform: &ReadableWritablePair,
-        options: &StreamPipeOptions,
-    ) -> ReadableStream;
-    #[cfg(feature = "WritableStream")]
-    #[wasm_bindgen(method, js_class = "ReadableStream", js_name = "pipeTo")]
-    #[doc = "The `pipeTo()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/pipeTo)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ReadableStream`, `WritableStream`*"]
-    pub fn pipe_to(this: &ReadableStream, destination: &WritableStream) -> ::js_sys::Promise;
-    #[cfg(all(feature = "StreamPipeOptions", feature = "WritableStream",))]
-    #[wasm_bindgen(method, js_class = "ReadableStream", js_name = "pipeTo")]
-    #[doc = "The `pipeTo()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/pipeTo)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ReadableStream`, `StreamPipeOptions`, `WritableStream`*"]
-    pub fn pipe_to_with_options(
-        this: &ReadableStream,
-        destination: &WritableStream,
-        options: &StreamPipeOptions,
-    ) -> ::js_sys::Promise;
+
     #[wasm_bindgen(method, js_class = "ReadableStream")]
     #[doc = "The `tee()` method."]
     #[doc = ""]

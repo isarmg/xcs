@@ -32,7 +32,6 @@ pub(crate) enum TagType {
     Unknown,
     Html,
     Svg,
-    Math,
 }
 
 pub fn render_view(
@@ -885,8 +884,10 @@ pub(crate) fn element_to_tokens(
             };
             quote_spanned! { node.name().span() => ::web_interface::tachys::svg::#name() }
         } else if is_math_ml_element(&tag) {
-            parent_type = TagType::Math;
-            quote_spanned! { node.name().span() => ::web_interface::tachys::mathml::#name() }
+            return Err(syn::Error::new(
+                node.name().span(),
+                "typed MathML elements are not supported by this browser interface",
+            ));
         } else if is_ambiguous_element(&tag) {
             match parent_type {
                 TagType::Unknown => {
@@ -900,9 +901,6 @@ pub(crate) fn element_to_tokens(
                 }
                 TagType::Svg => {
                     quote_spanned! { node.name().span() => ::web_interface::tachys::svg::#name() }
-                }
-                TagType::Math => {
-                    quote_spanned! { node.name().span() => ::web_interface::tachys::math::#name() }
                 }
             }
         } else {

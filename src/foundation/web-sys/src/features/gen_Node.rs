@@ -174,14 +174,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Node`*"]
     pub fn get_root_node(this: &Node) -> Node;
-    #[cfg(feature = "GetRootNodeOptions")]
-    #[wasm_bindgen(method, js_class = "Node", js_name = "getRootNode")]
-    #[doc = "The `getRootNode()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `GetRootNodeOptions`, `Node`*"]
-    pub fn get_root_node_with_options(this: &Node, options: &GetRootNodeOptions) -> Node;
+
     #[wasm_bindgen(method, js_class = "Node", js_name = "hasChildNodes")]
     #[doc = "The `hasChildNodes()` method."]
     #[doc = ""]

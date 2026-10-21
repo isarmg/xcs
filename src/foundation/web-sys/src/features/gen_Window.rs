@@ -17,14 +17,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub type Window;
-    #[cfg(feature = "CookieStore")]
-    #[wasm_bindgen(method, getter, js_class = "Window", js_name = "cookieStore")]
-    #[doc = "Getter for the `cookieStore` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/cookieStore)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `CookieStore`, `Window`*"]
-    pub fn cookie_store(this: &Window) -> CookieStore;
+
     #[wasm_bindgen(method, getter, js_class = "Window", js_name = "window")]
     #[doc = "Getter for the `window` field of this object."]
     #[doc = ""]
@@ -69,78 +62,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Location`, `Window`*"]
     pub fn location(this: &Window) -> Location;
-    #[cfg(feature = "History")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "history")]
-    #[doc = "Getter for the `history` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/history)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `History`, `Window`*"]
-    pub fn history(this: &Window) -> Result<History, JsValue>;
-    #[cfg(feature = "Navigation")]
-    #[wasm_bindgen(method, getter, js_class = "Window", js_name = "navigation")]
-    #[doc = "Getter for the `navigation` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/navigation)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Navigation`, `Window`*"]
-    pub fn navigation(this: &Window) -> Navigation;
-    #[cfg(feature = "CustomElementRegistry")]
-    #[wasm_bindgen(method, getter, js_class = "Window", js_name = "customElements")]
-    #[doc = "Getter for the `customElements` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/customElements)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `CustomElementRegistry`, `Window`*"]
-    pub fn custom_elements(this: &Window) -> CustomElementRegistry;
-    #[cfg(feature = "BarProp")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "locationbar")]
-    #[doc = "Getter for the `locationbar` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/locationbar)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BarProp`, `Window`*"]
-    pub fn locationbar(this: &Window) -> Result<BarProp, JsValue>;
-    #[cfg(feature = "BarProp")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "menubar")]
-    #[doc = "Getter for the `menubar` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/menubar)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BarProp`, `Window`*"]
-    pub fn menubar(this: &Window) -> Result<BarProp, JsValue>;
-    #[cfg(feature = "BarProp")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "personalbar")]
-    #[doc = "Getter for the `personalbar` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/personalbar)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BarProp`, `Window`*"]
-    pub fn personalbar(this: &Window) -> Result<BarProp, JsValue>;
-    #[cfg(feature = "BarProp")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "scrollbars")]
-    #[doc = "Getter for the `scrollbars` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollbars)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BarProp`, `Window`*"]
-    pub fn scrollbars(this: &Window) -> Result<BarProp, JsValue>;
-    #[cfg(feature = "BarProp")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "statusbar")]
-    #[doc = "Getter for the `statusbar` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/statusbar)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BarProp`, `Window`*"]
-    pub fn statusbar(this: &Window) -> Result<BarProp, JsValue>;
-    #[cfg(feature = "BarProp")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "toolbar")]
-    #[doc = "Getter for the `toolbar` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/toolbar)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `BarProp`, `Window`*"]
-    pub fn toolbar(this: &Window) -> Result<BarProp, JsValue>;
+
     #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "status")]
     #[doc = "Getter for the `status` field of this object."]
     #[doc = ""]
@@ -227,14 +149,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Navigator`, `Window`*"]
     pub fn navigator(this: &Window) -> Navigator;
-    #[cfg(feature = "External")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "external")]
-    #[doc = "Getter for the `external` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/external)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `External`, `Window`*"]
-    pub fn external(this: &Window) -> Result<External, JsValue>;
+
     #[wasm_bindgen(method, getter, js_class = "Window", js_name = "onappinstalled")]
     #[doc = "Getter for the `onappinstalled` field of this object."]
     #[doc = ""]
@@ -249,22 +164,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn set_onappinstalled(this: &Window, value: Option<&::js_sys::Function>);
-    #[cfg(feature = "Screen")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "screen")]
-    #[doc = "Getter for the `screen` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/screen)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Screen`, `Window`*"]
-    pub fn screen(this: &Window) -> Result<Screen, JsValue>;
-    #[cfg(feature = "VisualViewport")]
-    #[wasm_bindgen(method, getter, js_class = "Window", js_name = "visualViewport")]
-    #[doc = "Getter for the `visualViewport` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/visualViewport)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `VisualViewport`, `Window`*"]
-    pub fn visual_viewport(this: &Window) -> Option<VisualViewport>;
+
     #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "innerWidth")]
     #[doc = "Getter for the `innerWidth` field of this object."]
     #[doc = ""]
@@ -485,14 +385,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn set_onvrdisplaypresentchange(this: &Window, value: Option<&::js_sys::Function>);
-    #[cfg(feature = "Worklet")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "paintWorklet")]
-    #[doc = "Getter for the `paintWorklet` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/paintWorklet)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Window`, `Worklet`*"]
-    pub fn paint_worklet(this: &Window) -> Result<Worklet, JsValue>;
+
     #[cfg(feature = "Crypto")]
     #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "crypto")]
     #[doc = "Getter for the `crypto` field of this object."]
@@ -1711,14 +1604,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn set_onwebkittransitionend(this: &Window, value: Option<&::js_sys::Function>);
-    #[cfg(feature = "U2f")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "u2f")]
-    #[doc = "Getter for the `u2f` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/u2f)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `U2f`, `Window`*"]
-    pub fn u2f(this: &Window) -> Result<U2f, JsValue>;
+
     #[wasm_bindgen(method, getter, js_class = "Window", js_name = "onerror")]
     #[doc = "Getter for the `onerror` field of this object."]
     #[doc = ""]
@@ -1733,20 +1619,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn set_onerror(this: &Window, value: Option<&::js_sys::Function>);
-    #[cfg(feature = "SpeechSynthesis")]
-    #[wasm_bindgen(
-        catch,
-        method,
-        getter,
-        js_class = "Window",
-        js_name = "speechSynthesis"
-    )]
-    #[doc = "Getter for the `speechSynthesis` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/speechSynthesis)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SpeechSynthesis`, `Window`*"]
-    pub fn speech_synthesis(this: &Window) -> Result<SpeechSynthesis, JsValue>;
+
     #[wasm_bindgen(method, getter, js_class = "Window", js_name = "ontouchstart")]
     #[doc = "Getter for the `ontouchstart` field of this object."]
     #[doc = ""]
@@ -2051,14 +1924,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Storage`, `Window`*"]
     pub fn local_storage(this: &Window) -> Result<Option<Storage>, JsValue>;
-    #[cfg(feature = "IdbFactory")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "indexedDB")]
-    #[doc = "Getter for the `indexedDB` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/indexedDB)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `IdbFactory`, `Window`*"]
-    pub fn indexed_db(this: &Window) -> Result<Option<IdbFactory>, JsValue>;
+
     #[cfg(feature = "Performance")]
     #[wasm_bindgen(method, getter, js_class = "Window", js_name = "performance")]
     #[doc = "Getter for the `performance` field of this object."]
@@ -2081,26 +1947,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn is_secure_context(this: &Window) -> bool;
-    #[cfg(feature = "CacheStorage")]
-    #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "caches")]
-    #[doc = "Getter for the `caches` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/caches)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `CacheStorage`, `Window`*"]
-    pub fn caches(this: &Window) -> Result<CacheStorage, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "Scheduler")]
-    #[wasm_bindgen(method, getter, js_class = "Window", js_name = "scheduler")]
-    #[doc = "Getter for the `scheduler` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/scheduler)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Scheduler`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn scheduler(this: &Window) -> Scheduler;
+
     #[cfg(feature = "Storage")]
     #[wasm_bindgen(catch, method, getter, js_class = "Window", js_name = "sessionStorage")]
     #[doc = "Getter for the `sessionStorage` field of this object."]
@@ -2172,7 +2019,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn focus(this: &Window) -> Result<(), JsValue>;
-    #[cfg(all(feature = "CssStyleDeclaration", feature = "Element",))]
+    #[cfg(all(feature = "CssStyleDeclaration", feature = "Element"))]
     #[wasm_bindgen(catch, method, js_class = "Window", js_name = "getComputedStyle")]
     #[doc = "The `getComputedStyle()` method."]
     #[doc = ""]
@@ -2183,7 +2030,7 @@ extern "C" {
         this: &Window,
         elt: &Element,
     ) -> Result<Option<CssStyleDeclaration>, JsValue>;
-    #[cfg(all(feature = "CssStyleDeclaration", feature = "Element",))]
+    #[cfg(all(feature = "CssStyleDeclaration", feature = "Element"))]
     #[wasm_bindgen(catch, method, js_class = "Window", js_name = "getComputedStyle")]
     #[doc = "The `getComputedStyle()` method."]
     #[doc = ""]
@@ -2195,26 +2042,7 @@ extern "C" {
         elt: &Element,
         pseudo_elt: &str,
     ) -> Result<Option<CssStyleDeclaration>, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "ScreenDetails")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "getScreenDetails")]
-    #[doc = "The `getScreenDetails()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/getScreenDetails)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ScreenDetails`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn get_screen_details(this: &Window) -> Result<::js_sys::Promise<ScreenDetails>, JsValue>;
-    #[cfg(feature = "Selection")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "getSelection")]
-    #[doc = "The `getSelection()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Selection`, `Window`*"]
-    pub fn get_selection(this: &Window) -> Result<Option<Selection>, JsValue>;
+
     #[cfg(feature = "MediaQueryList")]
     #[wasm_bindgen(catch, method, js_class = "Window", js_name = "matchMedia")]
     #[doc = "The `matchMedia()` method."]
@@ -2332,35 +2160,7 @@ extern "C" {
         message: &str,
         default: &str,
     ) -> Result<Option<::alloc::string::String>, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "FontData")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "queryLocalFonts")]
-    #[doc = "The `queryLocalFonts()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/queryLocalFonts)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FontData`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn query_local_fonts(
-        this: &Window,
-    ) -> Result<::js_sys::Promise<::js_sys::Array<FontData>>, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(all(feature = "FontData", feature = "QueryOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "queryLocalFonts")]
-    #[doc = "The `queryLocalFonts()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/queryLocalFonts)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FontData`, `QueryOptions`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn query_local_fonts_with_options(
-        this: &Window,
-        options: &QueryOptions,
-    ) -> Result<::js_sys::Promise<::js_sys::Array<FontData>>, JsValue>;
+
     #[wasm_bindgen(method, js_class = "Window", js_name = "releaseEvents")]
     #[doc = "The `releaseEvents()` method."]
     #[doc = ""]
@@ -2378,18 +2178,7 @@ extern "C" {
         this: &Window,
         callback: &::js_sys::Function,
     ) -> Result<u32, JsValue>;
-    #[cfg(feature = "IdleRequestOptions")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "requestIdleCallback")]
-    #[doc = "The `requestIdleCallback()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `IdleRequestOptions`, `Window`*"]
-    pub fn request_idle_callback_with_options(
-        this: &Window,
-        callback: &::js_sys::Function,
-        options: &IdleRequestOptions,
-    ) -> Result<u32, JsValue>;
+
     #[wasm_bindgen(catch, method, js_class = "Window", js_name = "resizeBy")]
     #[doc = "The `resizeBy()` method."]
     #[doc = ""]
@@ -2418,14 +2207,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn scroll(this: &Window);
-    #[cfg(feature = "ScrollToOptions")]
-    #[wasm_bindgen(method, js_class = "Window", js_name = "scroll")]
-    #[doc = "The `scroll()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/scroll)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ScrollToOptions`, `Window`*"]
-    pub fn scroll_with_scroll_to_options(this: &Window, options: &ScrollToOptions);
+
     #[wasm_bindgen(method, js_class = "Window", js_name = "scrollBy")]
     #[doc = "The `scrollBy()` method."]
     #[doc = ""]
@@ -2440,14 +2222,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn scroll_by(this: &Window);
-    #[cfg(feature = "ScrollToOptions")]
-    #[wasm_bindgen(method, js_class = "Window", js_name = "scrollBy")]
-    #[doc = "The `scrollBy()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollBy)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ScrollToOptions`, `Window`*"]
-    pub fn scroll_by_with_scroll_to_options(this: &Window, options: &ScrollToOptions);
+
     #[wasm_bindgen(method, js_class = "Window", js_name = "scrollTo")]
     #[doc = "The `scrollTo()` method."]
     #[doc = ""]
@@ -2462,104 +2237,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn scroll_to(this: &Window);
-    #[cfg(feature = "ScrollToOptions")]
-    #[wasm_bindgen(method, js_class = "Window", js_name = "scrollTo")]
-    #[doc = "The `scrollTo()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/scrollTo)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ScrollToOptions`, `Window`*"]
-    pub fn scroll_to_with_scroll_to_options(this: &Window, options: &ScrollToOptions);
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "FileSystemDirectoryHandle")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "showDirectoryPicker")]
-    #[doc = "The `showDirectoryPicker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FileSystemDirectoryHandle`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn show_directory_picker(
-        this: &Window,
-    ) -> Result<::js_sys::Promise<FileSystemDirectoryHandle>, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(all(
-        feature = "DirectoryPickerOptions",
-        feature = "FileSystemDirectoryHandle",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "showDirectoryPicker")]
-    #[doc = "The `showDirectoryPicker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `DirectoryPickerOptions`, `FileSystemDirectoryHandle`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn show_directory_picker_with_options(
-        this: &Window,
-        options: &DirectoryPickerOptions,
-    ) -> Result<::js_sys::Promise<FileSystemDirectoryHandle>, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "FileSystemFileHandle")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "showOpenFilePicker")]
-    #[doc = "The `showOpenFilePicker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FileSystemFileHandle`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn show_open_file_picker(
-        this: &Window,
-    ) -> Result<::js_sys::Promise<::js_sys::Array<FileSystemFileHandle>>, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(all(feature = "FileSystemFileHandle", feature = "OpenFilePickerOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "showOpenFilePicker")]
-    #[doc = "The `showOpenFilePicker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/showOpenFilePicker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FileSystemFileHandle`, `OpenFilePickerOptions`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn show_open_file_picker_with_options(
-        this: &Window,
-        options: &OpenFilePickerOptions,
-    ) -> Result<::js_sys::Promise<::js_sys::Array<FileSystemFileHandle>>, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(feature = "FileSystemFileHandle")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "showSaveFilePicker")]
-    #[doc = "The `showSaveFilePicker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/showSaveFilePicker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FileSystemFileHandle`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn show_save_file_picker(
-        this: &Window,
-    ) -> Result<::js_sys::Promise<FileSystemFileHandle>, JsValue>;
-    #[cfg(web_sys_unstable_apis)]
-    #[cfg(all(feature = "FileSystemFileHandle", feature = "SaveFilePickerOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "showSaveFilePicker")]
-    #[doc = "The `showSaveFilePicker()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/showSaveFilePicker)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FileSystemFileHandle`, `SaveFilePickerOptions`, `Window`*"]
-    #[doc = ""]
-    #[doc = "*This API is unstable and requires `--cfg=web_sys_unstable_apis` to be activated, as"]
-    #[doc = "[described in the `wasm-bindgen` guide](https://wasm-bindgen.github.io/wasm-bindgen/web-sys/unstable-apis.html)*"]
-    pub fn show_save_file_picker_with_options(
-        this: &Window,
-        options: &SaveFilePickerOptions,
-    ) -> Result<::js_sys::Promise<FileSystemFileHandle>, JsValue>;
+
     #[wasm_bindgen(catch, method, js_class = "Window")]
     #[doc = "The `stop()` method."]
     #[doc = ""]
@@ -2643,72 +2321,7 @@ extern "C" {
         this: &Window,
         a_image: &HtmlImageElement,
     ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "SvgImageElement")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgImageElement`, `Window`*"]
-    pub fn create_image_bitmap_with_svg_image_element(
-        this: &Window,
-        a_image: &SvgImageElement,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "HtmlCanvasElement")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlCanvasElement`, `Window`*"]
-    pub fn create_image_bitmap_with_html_canvas_element(
-        this: &Window,
-        a_image: &HtmlCanvasElement,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "HtmlVideoElement")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlVideoElement`, `Window`*"]
-    pub fn create_image_bitmap_with_html_video_element(
-        this: &Window,
-        a_image: &HtmlVideoElement,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "ImageBitmap")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmap`, `Window`*"]
-    pub fn create_image_bitmap_with_image_bitmap(
-        this: &Window,
-        a_image: &ImageBitmap,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "OffscreenCanvas")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `OffscreenCanvas`, `Window`*"]
-    pub fn create_image_bitmap_with_offscreen_canvas(
-        this: &Window,
-        a_image: &OffscreenCanvas,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmap", feature = "VideoFrame",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmap`, `VideoFrame`, `Window`*"]
-    pub fn create_image_bitmap_with_video_frame(
-        this: &Window,
-        a_image: &VideoFrame,
-    ) -> Result<::js_sys::Promise<ImageBitmap>, JsValue>;
+
     #[cfg(feature = "Blob")]
     #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
     #[doc = "The `createImageBitmap()` method."]
@@ -2720,129 +2333,7 @@ extern "C" {
         this: &Window,
         a_image: &Blob,
     ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "ImageData")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageData`, `Window`*"]
-    pub fn create_image_bitmap_with_image_data(
-        this: &Window,
-        a_image: &ImageData,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "HtmlImageElement", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlImageElement`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_html_image_element_and_image_bitmap_options(
-        this: &Window,
-        a_image: &HtmlImageElement,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmapOptions", feature = "SvgImageElement",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmapOptions`, `SvgImageElement`, `Window`*"]
-    pub fn create_image_bitmap_with_svg_image_element_and_image_bitmap_options(
-        this: &Window,
-        a_image: &SvgImageElement,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "HtmlCanvasElement", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlCanvasElement`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_html_canvas_element_and_image_bitmap_options(
-        this: &Window,
-        a_image: &HtmlCanvasElement,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "HtmlVideoElement", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlVideoElement`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_html_video_element_and_image_bitmap_options(
-        this: &Window,
-        a_image: &HtmlVideoElement,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmap", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmap`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_image_bitmap_and_image_bitmap_options(
-        this: &Window,
-        a_image: &ImageBitmap,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmapOptions", feature = "OffscreenCanvas",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmapOptions`, `OffscreenCanvas`, `Window`*"]
-    pub fn create_image_bitmap_with_offscreen_canvas_and_image_bitmap_options(
-        this: &Window,
-        a_image: &OffscreenCanvas,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(
-        feature = "ImageBitmap",
-        feature = "ImageBitmapOptions",
-        feature = "VideoFrame",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmap`, `ImageBitmapOptions`, `VideoFrame`, `Window`*"]
-    pub fn create_image_bitmap_with_video_frame_and_image_bitmap_options(
-        this: &Window,
-        a_image: &VideoFrame,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise<ImageBitmap>, JsValue>;
-    #[cfg(all(feature = "Blob", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Blob`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_blob_and_image_bitmap_options(
-        this: &Window,
-        a_image: &Blob,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmapOptions", feature = "ImageData",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmapOptions`, `ImageData`, `Window`*"]
-    pub fn create_image_bitmap_with_image_data_and_image_bitmap_options(
-        this: &Window,
-        a_image: &ImageData,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
+
     #[cfg(feature = "HtmlImageElement")]
     #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
     #[doc = "The `createImageBitmap()` method."]
@@ -2858,96 +2349,7 @@ extern "C" {
         a_sw: i32,
         a_sh: i32,
     ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "SvgImageElement")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `SvgImageElement`, `Window`*"]
-    pub fn create_image_bitmap_with_svg_image_element_and_a_sx_and_a_sy_and_a_sw_and_a_sh(
-        this: &Window,
-        a_image: &SvgImageElement,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "HtmlCanvasElement")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlCanvasElement`, `Window`*"]
-    pub fn create_image_bitmap_with_html_canvas_element_and_a_sx_and_a_sy_and_a_sw_and_a_sh(
-        this: &Window,
-        a_image: &HtmlCanvasElement,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "HtmlVideoElement")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlVideoElement`, `Window`*"]
-    pub fn create_image_bitmap_with_html_video_element_and_a_sx_and_a_sy_and_a_sw_and_a_sh(
-        this: &Window,
-        a_image: &HtmlVideoElement,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "ImageBitmap")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmap`, `Window`*"]
-    pub fn create_image_bitmap_with_image_bitmap_and_a_sx_and_a_sy_and_a_sw_and_a_sh(
-        this: &Window,
-        a_image: &ImageBitmap,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "OffscreenCanvas")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `OffscreenCanvas`, `Window`*"]
-    pub fn create_image_bitmap_with_offscreen_canvas_and_a_sx_and_a_sy_and_a_sw_and_a_sh(
-        this: &Window,
-        a_image: &OffscreenCanvas,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmap", feature = "VideoFrame",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmap`, `VideoFrame`, `Window`*"]
-    pub fn create_image_bitmap_with_video_frame_and_a_sx_and_a_sy_and_a_sw_and_a_sh(
-        this: &Window,
-        a_image: &VideoFrame,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-    ) -> Result<::js_sys::Promise<ImageBitmap>, JsValue>;
+
     #[cfg(feature = "Blob")]
     #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
     #[doc = "The `createImageBitmap()` method."]
@@ -2963,169 +2365,7 @@ extern "C" {
         a_sw: i32,
         a_sh: i32,
     ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "ImageData")]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageData`, `Window`*"]
-    pub fn create_image_bitmap_with_image_data_and_a_sx_and_a_sy_and_a_sw_and_a_sh(
-        this: &Window,
-        a_image: &ImageData,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "HtmlImageElement", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlImageElement`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_html_image_element_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &HtmlImageElement,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmapOptions", feature = "SvgImageElement",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmapOptions`, `SvgImageElement`, `Window`*"]
-    pub fn create_image_bitmap_with_svg_image_element_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &SvgImageElement,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "HtmlCanvasElement", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlCanvasElement`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_html_canvas_element_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &HtmlCanvasElement,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "HtmlVideoElement", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `HtmlVideoElement`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_html_video_element_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &HtmlVideoElement,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmap", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmap`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_image_bitmap_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &ImageBitmap,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmapOptions", feature = "OffscreenCanvas",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmapOptions`, `OffscreenCanvas`, `Window`*"]
-    pub fn create_image_bitmap_with_offscreen_canvas_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &OffscreenCanvas,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(
-        feature = "ImageBitmap",
-        feature = "ImageBitmapOptions",
-        feature = "VideoFrame",
-    ))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmap`, `ImageBitmapOptions`, `VideoFrame`, `Window`*"]
-    pub fn create_image_bitmap_with_video_frame_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &VideoFrame,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise<ImageBitmap>, JsValue>;
-    #[cfg(all(feature = "Blob", feature = "ImageBitmapOptions",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Blob`, `ImageBitmapOptions`, `Window`*"]
-    pub fn create_image_bitmap_with_blob_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &Blob,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(all(feature = "ImageBitmapOptions", feature = "ImageData",))]
-    #[wasm_bindgen(catch, method, js_class = "Window", js_name = "createImageBitmap")]
-    #[doc = "The `createImageBitmap()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `ImageBitmapOptions`, `ImageData`, `Window`*"]
-    pub fn create_image_bitmap_with_image_data_and_a_sx_and_a_sy_and_a_sw_and_a_sh_and_a_options(
-        this: &Window,
-        a_image: &ImageData,
-        a_sx: i32,
-        a_sy: i32,
-        a_sw: i32,
-        a_sh: i32,
-        a_options: &ImageBitmapOptions,
-    ) -> Result<::js_sys::Promise, JsValue>;
+
     #[cfg(feature = "Request")]
     #[wasm_bindgen(method, js_class = "Window", js_name = "fetch")]
     #[doc = "The `fetch()` method."]
@@ -3141,7 +2381,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Window`*"]
     pub fn fetch_with_str(this: &Window, input: &str) -> ::js_sys::Promise;
-    #[cfg(all(feature = "Request", feature = "RequestInit",))]
+    #[cfg(all(feature = "Request", feature = "RequestInit"))]
     #[wasm_bindgen(method, js_class = "Window", js_name = "fetch")]
     #[doc = "The `fetch()` method."]
     #[doc = ""]

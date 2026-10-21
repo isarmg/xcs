@@ -109,17 +109,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `Event`*"]
     pub fn new(type_: &str) -> Result<Event, JsValue>;
-    #[cfg(feature = "EventInit")]
-    #[wasm_bindgen(catch, constructor, js_class = "Event")]
-    #[doc = "The `new Event(..)` constructor, creating a new instance of `Event`."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Event/Event)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `Event`, `EventInit`*"]
-    pub fn new_with_event_init_dict(
-        type_: &str,
-        event_init_dict: &EventInit,
-    ) -> Result<Event, JsValue>;
+
     #[wasm_bindgen(method, js_class = "Event", js_name = "composedPath")]
     #[doc = "The `composedPath()` method."]
     #[doc = ""]

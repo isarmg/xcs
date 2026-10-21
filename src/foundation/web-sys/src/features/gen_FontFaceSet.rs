@@ -73,14 +73,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `FontFaceSet`*"]
     pub fn ready(this: &FontFaceSet) -> Result<::js_sys::Promise, JsValue>;
-    #[cfg(feature = "FontFaceSetLoadStatus")]
-    #[wasm_bindgen(method, getter, js_class = "FontFaceSet", js_name = "status")]
-    #[doc = "Getter for the `status` field of this object."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/FontFaceSet/status)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FontFaceSet`, `FontFaceSetLoadStatus`*"]
-    pub fn status(this: &FontFaceSet) -> FontFaceSetLoadStatus;
+
     #[cfg(feature = "FontFace")]
     #[wasm_bindgen(catch, method, js_class = "FontFaceSet")]
     #[doc = "The `add()` method."]
@@ -118,14 +111,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `FontFace`, `FontFaceSet`*"]
     pub fn delete(this: &FontFaceSet, font: &FontFace) -> bool;
-    #[cfg(feature = "FontFaceSetIterator")]
-    #[wasm_bindgen(method, js_class = "FontFaceSet")]
-    #[doc = "The `entries()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/FontFaceSet/entries)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FontFaceSet`, `FontFaceSetIterator`*"]
-    pub fn entries(this: &FontFaceSet) -> FontFaceSetIterator;
+
     #[wasm_bindgen(catch, method, js_class = "FontFaceSet", js_name = "forEach")]
     #[doc = "The `forEach()` method."]
     #[doc = ""]
@@ -166,12 +152,5 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `FontFaceSet`*"]
     pub fn load_with_text(this: &FontFaceSet, font: &str, text: &str) -> ::js_sys::Promise;
-    #[cfg(feature = "FontFaceSetIterator")]
-    #[wasm_bindgen(method, js_class = "FontFaceSet")]
-    #[doc = "The `values()` method."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/FontFaceSet/values)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `FontFaceSet`, `FontFaceSetIterator`*"]
-    pub fn values(this: &FontFaceSet) -> FontFaceSetIterator;
+
 }

@@ -89,17 +89,7 @@ extern "C" {
     #[doc = ""]
     #[doc = "*This API requires the following crate features to be activated: `UiEvent`*"]
     pub fn new(type_: &str) -> Result<UiEvent, JsValue>;
-    #[cfg(feature = "UiEventInit")]
-    #[wasm_bindgen(catch, constructor, js_class = "UIEvent")]
-    #[doc = "The `new UiEvent(..)` constructor, creating a new instance of `UiEvent`."]
-    #[doc = ""]
-    #[doc = "[MDN Documentation](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/UIEvent)"]
-    #[doc = ""]
-    #[doc = "*This API requires the following crate features to be activated: `UiEvent`, `UiEventInit`*"]
-    pub fn new_with_event_init_dict(
-        type_: &str,
-        event_init_dict: &UiEventInit,
-    ) -> Result<UiEvent, JsValue>;
+
     #[wasm_bindgen(method, js_class = "UIEvent", js_name = "initUIEvent")]
     #[doc = "The `initUIEvent()` method."]
     #[doc = ""]
