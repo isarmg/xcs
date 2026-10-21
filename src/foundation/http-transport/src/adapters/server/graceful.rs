@@ -181,7 +181,7 @@ where
 }
 
 #[cfg(feature = "server-auto")]
-impl<I, B, S, E> GracefulConnection for crate::adapters::server::conn::auto::Connection<'_, I, S, E>
+impl<I, B, S> GracefulConnection for crate::adapters::server::conn::auto::Connection<'_, I, S>
 where
     S: crate::service::Service<http::Request<crate::body::Incoming>, Response = http::Response<B>>,
     S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
@@ -189,7 +189,6 @@ where
     I: crate::rt::Read + crate::rt::Write + Unpin + 'static,
     B: crate::body::Body + 'static,
     B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    E: crate::adapters::server::conn::auto::HttpServerConnExec<S::Future, B>,
 {
     type Error = Box<dyn std::error::Error + Send + Sync>;
 
@@ -199,8 +198,8 @@ where
 }
 
 #[cfg(feature = "server-auto")]
-impl<I, B, S, E> GracefulConnection
-    for crate::adapters::server::conn::auto::UpgradeableConnection<'_, I, S, E>
+impl<I, B, S> GracefulConnection
+    for crate::adapters::server::conn::auto::UpgradeableConnection<'_, I, S>
 where
     S: crate::service::Service<http::Request<crate::body::Incoming>, Response = http::Response<B>>,
     S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
@@ -208,7 +207,6 @@ where
     I: crate::rt::Read + crate::rt::Write + Unpin + Send + 'static,
     B: crate::body::Body + 'static,
     B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    E: crate::adapters::server::conn::auto::HttpServerConnExec<S::Future, B>,
 {
     type Error = Box<dyn std::error::Error + Send + Sync>;
 
@@ -243,7 +241,7 @@ mod private {
     }
 
     #[cfg(feature = "server-auto")]
-    impl<I, B, S, E> Sealed for crate::adapters::server::conn::auto::Connection<'_, I, S, E>
+    impl<I, B, S> Sealed for crate::adapters::server::conn::auto::Connection<'_, I, S>
     where
         S: crate::service::Service<
             http::Request<crate::body::Incoming>,
@@ -254,12 +252,11 @@ mod private {
         I: crate::rt::Read + crate::rt::Write + Unpin + 'static,
         B: crate::body::Body + 'static,
         B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-        E: crate::adapters::server::conn::auto::HttpServerConnExec<S::Future, B>,
     {
     }
 
     #[cfg(feature = "server-auto")]
-    impl<I, B, S, E> Sealed for crate::adapters::server::conn::auto::UpgradeableConnection<'_, I, S, E>
+    impl<I, B, S> Sealed for crate::adapters::server::conn::auto::UpgradeableConnection<'_, I, S>
     where
         S: crate::service::Service<
             http::Request<crate::body::Incoming>,
@@ -270,7 +267,6 @@ mod private {
         I: crate::rt::Read + crate::rt::Write + Unpin + Send + 'static,
         B: crate::body::Body + 'static,
         B::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-        E: crate::adapters::server::conn::auto::HttpServerConnExec<S::Future, B>,
     {
     }
 }

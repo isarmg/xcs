@@ -24,7 +24,7 @@
 //! use std::net::{SocketAddr, Ipv6Addr};
 //! use bytes::Bytes;
 //! use http_body::Full;
-//! use http_transport::adapters::rt::{TokioIo, TokioExecutor};
+//! use http_transport::adapters::rt::TokioIo;
 //! use http_transport::adapters::service::TowerToHyperService;
 //!
 //! # async fn handler(_: Request<http_transport::body::Incoming>) -> Result<Response<Full<Bytes>>, BoxError> {
@@ -52,7 +52,7 @@
 //!             // Wrap it for hyper
 //!             let hyper_service = TowerToHyperService::new(service);
 //!
-//!             if let Err(err) = http_transport::adapters::server::conn::auto::Builder::new(TokioExecutor::new())
+//!             if let Err(err) = http_transport::adapters::server::conn::auto::Builder::new()
 //!                 .serve_connection(socket, hyper_service)
 //!                 .await
 //!             {

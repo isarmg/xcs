@@ -17,8 +17,8 @@ use serialization_core::{de::DeserializeOwned, Serialize};
 ///   from the query string (same as with [`Query`])
 /// - If the request has a different method, the form will be read from the body
 ///   of the request. It must have a `content-type` of
-///   `application/x-www-form-urlencoded` for this to work. If you want to parse
-///   `multipart/form-data` request bodies, use [`Multipart`] instead.
+///   `application/x-www-form-urlencoded` for this to work. This component does
+///   not provide a `multipart/form-data` parser.
 ///
 /// This matches how HTML forms are sent by browsers by default.
 /// In both cases, the inner type `T` must implement [`data_serialization::Deserialize`].
@@ -64,7 +64,6 @@ use serialization_core::{de::DeserializeOwned, Serialize};
 /// ```
 ///
 /// [`Query`]: crate::extract::Query
-/// [`Multipart`]: crate::extract::Multipart
 #[cfg_attr(docsrs, doc(cfg(feature = "form")))]
 #[derive(Debug, Clone, Copy, Default)]
 #[must_use]
@@ -83,8 +82,7 @@ where
 
         match req.extract().await {
             Ok(RawForm(bytes)) => {
-                let deserializer =
-                    form_codec::Deserializer::new(form_urlencoded::parse(&bytes));
+                let deserializer = form_codec::Deserializer::new(form_urlencoded::parse(&bytes));
                 let value = serialization_error_path::deserialize(deserializer).map_err(
                     |err| -> FormRejection {
                         if is_get_or_head {
@@ -127,4 +125,7 @@ where
 crate::__impl_deref!(Form);
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-routing/unit/src/form/tests_129.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/http-routing/unit/src/form/tests_129.rs"
+));

@@ -7,9 +7,6 @@ pub mod connect_info;
 pub mod path;
 pub mod rejection;
 
-#[cfg(feature = "ws")]
-pub mod ws;
-
 pub(crate) mod nested_path;
 #[cfg(feature = "original-uri")]
 mod original_uri;
@@ -57,13 +54,6 @@ pub(crate) mod matched_path;
 #[doc(inline)]
 pub use self::matched_path::MatchedPath;
 
-#[cfg(feature = "multipart")]
-pub mod multipart;
-
-#[cfg(feature = "multipart")]
-#[doc(inline)]
-pub use self::multipart::Multipart;
-
 #[cfg(feature = "query")]
 mod query;
 
@@ -74,10 +64,6 @@ pub use self::query::Query;
 #[cfg(feature = "original-uri")]
 #[doc(inline)]
 pub use self::original_uri::OriginalUri;
-
-#[cfg(feature = "ws")]
-#[doc(inline)]
-pub use self::ws::WebSocketUpgrade;
 
 // this is duplicated in `axum-extra/src/extract/form.rs`
 pub(super) fn has_content_type(headers: &HeaderMap, expected_content_type: &mime::Mime) -> bool {
@@ -97,4 +83,7 @@ pub(super) fn has_content_type(headers: &HeaderMap, expected_content_type: &mime
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-routing/unit/src/extract/mod/tests_99.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/http-routing/unit/src/extract/mod/tests_99.rs"
+));

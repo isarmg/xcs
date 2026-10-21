@@ -11,21 +11,8 @@ pub struct MethodFilter(u16);
 impl MethodFilter {
     /// Match `CONNECT` requests.
     ///
-    /// This is useful for implementing HTTP/2's [extended CONNECT method],
-    /// in which the `:protocol` pseudoheader is read
-    /// (using [`http_transport::ext::Protocol`])
-    /// and the connection upgraded to a bidirectional byte stream
-    /// (using [`http_transport::upgrade::on`]).
-    ///
-    /// As seen in the [HTTP Upgrade Token Registry],
-    /// common uses include WebSockets and proxying UDP or IP –
-    /// though note that when using [`WebSocketUpgrade`]
-    /// it's more useful to use [`any`](crate::routing::any)
-    /// as HTTP/1.1 WebSockets need to support `GET`.
-    ///
-    /// [extended CONNECT]: https://www.rfc-editor.org/rfc/rfc8441.html#section-4
-    /// [HTTP Upgrade Token Registry]: https://www.iana.org/assignments/http-upgrade-tokens/http-upgrade-tokens.xhtml
-    /// [`WebSocketUpgrade`]: crate::extract::WebSocketUpgrade
+    /// This filter only selects the method; it does not implement a tunnel,
+    /// an HTTP/2 extended CONNECT protocol, or WebSocket support.
     pub const CONNECT: Self = Self::from_bits(0b0_0000_0001);
     /// Match `DELETE` requests.
     pub const DELETE: Self = Self::from_bits(0b0_0000_0010);
@@ -105,4 +92,7 @@ impl TryFrom<Method> for MethodFilter {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/http-routing/unit/src/routing/method_filter/tests_107.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/http-routing/unit/src/routing/method_filter/tests_107.rs"
+));

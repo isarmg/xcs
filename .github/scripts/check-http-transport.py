@@ -54,8 +54,8 @@ def main():
             f'http-body={{path={json.dumps(str(ROOT/"src/foundation/http-body"))},features=["utilities"]}}\n'+
             f'service-stack={{path={json.dumps(str(ROOT/"src/foundation/service-stack"))},features=["util"]}}\n'+
             '[[test]]\nname="behavior"\npath="test/behavior.rs"\n')
-        (work/'test/behavior.rs').write_bytes((ROOT/'test/architecture/http-transport/behavior.rs').read_bytes() + (ROOT/'test/architecture/http-transport/combined.rs').read_bytes())
+        (work/'test/behavior.rs').write_bytes((ROOT/'test/architecture/http-transport/behavior.rs').read_bytes() + (ROOT/'test/architecture/http-transport/combined.rs').read_bytes() + (ROOT/'test/architecture/http-transport/upgrade.rs').read_bytes() + (ROOT/'test/architecture/http-transport/client_state.rs').read_bytes())
         run(work,'generate-lockfile');output=run(work,'test','--locked','--test','behavior')
-        assert re.search(r'test result: ok\. 6 passed; 0 failed',output),output
-        print(f'http-transport: {count} native/WASM feature checks, absent HTTP2 rejection 6 transport/routing/readiness tests and 2 FFI allocation/ABI tests passed')
+        assert re.search(r'test result: ok\. 15 passed; 0 failed',output),output
+        print(f'http-transport: {count} native/WASM feature checks, absent HTTP2 rejection, 15 transport/routing/readiness/upgrade/state tests and 2 FFI allocation/ABI tests passed')
 if __name__=='__main__':main()

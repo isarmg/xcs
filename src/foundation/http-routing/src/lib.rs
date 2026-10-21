@@ -426,22 +426,18 @@
 //!
 //! Name | Description | Default?
 //! ---|---|---
-//! `http1` | Enables hyper's `http1` feature | <span role="img" aria-label="Default feature">✔</span>
-//! `http2` | Enables hyper's `http2` feature |
+//! `http1` | Enables the HTTP/1 transport engine | <span role="img" aria-label="Default feature">✔</span>
 //! `json` | Enables the [`Json`] type and some similar convenience functionality | <span role="img" aria-label="Default feature">✔</span>
 //! `macros` | Enables optional utility macros |
 //! `matched-path` | Enables capturing of every request's router path and the [`MatchedPath`] extractor | <span role="img" aria-label="Default feature">✔</span>
-//! `multipart` | Enables parsing `multipart/form-data` requests with [`Multipart`] |
 //! `original-uri` | Enables capturing of every request's original URI and the [`OriginalUri`] extractor | <span role="img" aria-label="Default feature">✔</span>
 //! `tokio` | Enables `tokio` as a dependency and `http_routing::serve`, `SSE` and `extract::connect_info` types. | <span role="img" aria-label="Default feature">✔</span>
 //! `tower-log` | Enables `tower`'s `log` feature | <span role="img" aria-label="Default feature">✔</span>
 //! `tracing` | Log rejections from built-in extractors | <span role="img" aria-label="Default feature">✔</span>
-//! `ws` | Enables WebSockets support via [`extract::ws`] |
 //! `form` | Enables the `Form` extractor | <span role="img" aria-label="Default feature">✔</span>
 //! `query` | Enables the `Query` extractor | <span role="img" aria-label="Default feature">✔</span>
 //!
 //! [`MatchedPath`]: crate::extract::MatchedPath
-//! [`Multipart`]: crate::extract::Multipart
 //! [`OriginalUri`]: crate::extract::OriginalUri
 //! [`tower`]: https://crates.io/crates/tower
 //! [`tower-http`]: https://crates.io/crates/tower-http
@@ -500,12 +496,8 @@ pub mod handler;
 pub mod middleware;
 pub mod response;
 pub mod routing;
-# [cfg (all (feature = "tokio" , feature = "http1"))]
+#[cfg(all(feature = "tokio", feature = "http1"))]
 pub mod serve;
-
-#[cfg(any(test, feature = "__private"))]
-#[allow(missing_docs, missing_debug_implementations, clippy::print_stdout)]
-pub mod test_helpers;
 
 #[doc(no_inline)]
 pub use http;
@@ -528,7 +520,7 @@ pub use crate::kernel::{BoxError, Error, RequestExt, RequestPartsExt};
 #[cfg(feature = "macros")]
 pub use axum_macros::{debug_handler, debug_middleware};
 
-# [cfg (all (feature = "tokio" , feature = "http1"))]
+#[cfg(all(feature = "tokio", feature = "http1"))]
 #[doc(inline)]
 pub use self::serve::serve;
 

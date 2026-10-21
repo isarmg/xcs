@@ -1,0 +1,109 @@
+"""Inactive HTTP source is exact historical evidence, never advertised support."""
+import importlib.util
+import json
+from pathlib import Path
+import shutil
+import tempfile
+import unittest
+
+ROOT = Path(__file__).resolve().parents[2]
+SPEC = importlib.util.spec_from_file_location('routing_gate', ROOT / '.github/scripts/check-http-routing.py')
+GATE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(GATE)
+
+
+class InactiveHttpSources(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.component = self.root / 'src/foundation/http-routing'
+        for relative in (*GATE.INACTIVE_SOURCES, 'Cargo.toml', 'src/lib.rs', 'src/extract/mod.rs'):
+            target = self.component / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / 'src/foundation/http-routing' / relative, target)
+
+    def check(self):
+        GATE.verify_inactive_sources(self.root)
+
+    def test_exact_four_original_sources_remain_inactive(self):
+        self.assertEqual(len(GATE.INACTIVE_SOURCES), 4)
+        self.check()
+        GATE.verify_inactive_sources(ROOT)
+
+    def test_current_catalog_retains_exact_source_identity(self):
+        catalog = json.loads((ROOT / 'compliance/rust-sources.json').read_text())
+        owner = catalog['packages']['src/foundation/http-routing']
+        for relative, expected in GATE.INACTIVE_SOURCES.items():
+            self.assertEqual(owner['files_sha256'][relative], expected)
+        for relative, expected in catalog['provenance_sha256'].items():
+            if '/axum-0.8.9/' in relative:
+                self.assertEqual(GATE.hashlib.sha256((ROOT / relative).read_bytes()).hexdigest(), expected)
+
+    def test_changed_bytes_rejected_for_each_source(self):
+        for relative in GATE.INACTIVE_SOURCES:
+            with self.subTest(relative=relative):
+                path = self.component / relative
+                before = path.read_bytes()
+                path.write_bytes(before + b'\n// unauthorized drift\n')
+                with self.assertRaisesRegex(ValueError, 'changed or missing'):
+                    self.check()
+                path.write_bytes(before)
+
+    def test_missing_source_rejected_for_each_source(self):
+        for relative in GATE.INACTIVE_SOURCES:
+            with self.subTest(relative=relative):
+                path = self.component / relative
+                before = path.read_bytes()
+                path.unlink()
+                with self.assertRaisesRegex(ValueError, 'changed or missing'):
+                    self.check()
+                path.write_bytes(before)
+
+    def test_symlink_is_not_exact_evidence(self):
+        path = self.component / 'src/extract/ws.rs'
+        target = self.root / 'copied.rs'
+        path.rename(target)
+        path.symlink_to(target)
+        with self.assertRaisesRegex(ValueError, 'symlink'):
+            self.check()
+
+    def test_each_unsupported_feature_rejected(self):
+        path = self.component / 'Cargo.toml'
+        before = path.read_text()
+        for feature in GATE.UNSUPPORTED_FEATURES:
+            with self.subTest(feature=feature):
+                path.write_text(before.replace('[features]', f'[features]\n{feature} = []'))
+                with self.assertRaisesRegex(ValueError, 'capability advertised'):
+                    self.check()
+        path.write_text(before)
+
+    def test_each_inactive_dependency_rejected(self):
+        path = self.component / 'Cargo.toml'
+        before = path.read_text()
+        for dependency in ('base64', 'reqwest', 'tower-http'):
+            with self.subTest(dependency=dependency):
+                path.write_text(before + f'\n[dependencies.{dependency}]\nversion = "1"\n')
+                with self.assertRaisesRegex(ValueError, 'dependency restored'):
+                    self.check()
+        path.write_text(before)
+
+    def test_restored_module_declarations_rejected(self):
+        for relative, module in (('src/lib.rs', 'test_helpers'), ('src/extract/mod.rs', 'ws'), ('src/extract/mod.rs', 'multipart')):
+            path = self.component / relative
+            before = path.read_text()
+            path.write_text(before + f'\npub mod {module};\n')
+            with self.assertRaisesRegex(ValueError, 'module restored'):
+                self.check()
+            path.write_text(before)
+
+    def test_duplicate_archive_rejected(self):
+        path = self.root / 'compliance/provenance/retired/http-routing/source.txt'
+        path.parent.mkdir(parents=True)
+        path.write_text('duplicated historical material')
+        with self.assertRaisesRegex(ValueError, 'duplicate'):
+            self.check()
+
+
+if __name__ == '__main__':
+    unittest.main()

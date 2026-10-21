@@ -32,7 +32,7 @@ type BoxSendFuture = Pin<Box<dyn Future<Output = ()> + Send>>;
 ///
 /// `Client` is cheap to clone and cloning is the recommended way to share a `Client`. The
 /// underlying connection pool will be reused.
-#[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
+#[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
 pub struct Client<C, B> {
     config: Config,
     connector: C,
@@ -47,7 +47,6 @@ pub struct Client<C, B> {
 struct Config {
     retry_canceled_requests: bool,
     set_host: bool,
-    ver: Ver,
 }
 
 /// Client errors
@@ -116,7 +115,7 @@ impl Client<(), ()> {
     /// # Example
     ///
     /// ```
-    /// # #[cfg(all(feature = "tokio", feature = "http2"))]
+    /// # #[cfg(all(feature = "tokio", feature = "http1"))]
     /// # fn run () {
     /// use std::time::Duration;
     /// use http_transport::adapters::client::legacy::Client;
@@ -125,7 +124,6 @@ impl Client<(), ()> {
     /// let client = Client::builder(TokioExecutor::new())
     ///     .pool_timer(TokioTimer::new())
     ///     .pool_idle_timeout(Duration::from_secs(30))
-    ///     .http2_only(true)
     ///     .build_http();
     /// # let infer: Client<_, http_body::Full<bytes::Bytes>> = client;
     /// # drop(infer);
@@ -221,7 +219,6 @@ where
                     return ResponseFuture::new(future::err(e!(UserUnsupportedRequestMethod)));
                 }
             }
-            Version::HTTP_2 => (),
             // completely unsupported HTTP version (like HTTP/0.9)!
             other => return ResponseFuture::error_version(other),
         };
@@ -285,38 +282,27 @@ where
             conn.set(&pooled.conn_info);
         }
 
-        if pooled.is_http1() {
-            if req.version() == Version::HTTP_2 {
-                tracing::warn!("Connection is HTTP/1, but request requires HTTP/2");
-                return Err(TrySendError::Nope(
-                    e!(UserUnsupportedVersion).with_connect_info(pooled.conn_info.clone()),
-                ));
-            }
+        if self.config.set_host {
+            let uri = req.uri().clone();
+            req.headers_mut().entry(HOST).or_insert_with(|| {
+                let hostname = uri.host().expect("authority implies host");
+                if let Some(port) = get_non_default_port(&uri) {
+                    let s = format!("{hostname}:{port}");
+                    HeaderValue::from_maybe_shared(bytes::Bytes::from(s))
+                } else {
+                    HeaderValue::from_str(hostname)
+                }
+                .expect("uri host is valid header value")
+            });
+        }
 
-            if self.config.set_host {
-                let uri = req.uri().clone();
-                req.headers_mut().entry(HOST).or_insert_with(|| {
-                    let hostname = uri.host().expect("authority implies host");
-                    if let Some(port) = get_non_default_port(&uri) {
-                        let s = format!("{hostname}:{port}");
-                        HeaderValue::from_maybe_shared(bytes::Bytes::from(s))
-                    } else {
-                        HeaderValue::from_str(hostname)
-                    }
-                    .expect("uri host is valid header value")
-                });
-            }
-
-            // CONNECT always sends authority-form, so check it first...
-            if req.method() == Method::CONNECT {
-                authority_form(req.uri_mut());
-            } else if pooled.conn_info.is_proxied {
-                absolute_form(req.uri_mut());
-            } else {
-                origin_form(req.uri_mut());
-            }
-        } else if req.method() == Method::CONNECT && !pooled.is_http2() {
+        // CONNECT always sends authority-form, so check it first...
+        if req.method() == Method::CONNECT {
             authority_form(req.uri_mut());
+        } else if pooled.conn_info.is_proxied {
+            absolute_form(req.uri_mut());
+        } else {
+            origin_form(req.uri_mut());
         }
 
         let mut res = match pooled.try_send_request(req).await {
@@ -353,7 +339,7 @@ where
         // for a new request to start.
         //
         // It won't be ready if there is a body to stream.
-        if pooled.is_http2() || !pooled.is_pool_enabled() || pooled.is_ready() {
+        if !pooled.is_pool_enabled() || pooled.is_ready() {
             drop(pooled);
         } else {
             let on_idle = poll_fn(move |cx| pooled.poll_ready(cx)).map(|_| ());
@@ -367,35 +353,9 @@ where
         &self,
         pool_key: PoolKey,
     ) -> Result<pool::Pooled<PoolClient<B>, PoolKey>, Error> {
-        loop {
-            match self.one_connection_for(pool_key.clone()).await {
-                Ok(pooled) => return Ok(pooled),
-                Err(ClientConnectError::Normal(err)) => return Err(err),
-                Err(ClientConnectError::CheckoutIsClosed(reason)) => {
-                    if !self.config.retry_canceled_requests {
-                        return Err(e!(Connect, reason));
-                    }
-
-                    tracing::trace!(
-                        "unstarted request canceled, trying again (reason={:?})",
-                        reason,
-                    );
-                    continue;
-                }
-            };
-        }
-    }
-
-    async fn one_connection_for(
-        &self,
-        pool_key: PoolKey,
-    ) -> Result<pool::Pooled<PoolClient<B>, PoolKey>, ClientConnectError> {
         // Return a single connection if pooling is not enabled
         if !self.pool.is_enabled() {
-            return self
-                .connect_to(pool_key)
-                .await
-                .map_err(ClientConnectError::Normal);
+            return self.connect_to(pool_key).await;
         }
 
         // This actually races 2 different futures to try to get a ready
@@ -413,7 +373,6 @@ where
         //   and then be inserted into the pool as an idle connection.
         let checkout = self.pool.checkout(pool_key.clone());
         let connect = self.connect_to(pool_key);
-        let is_ver_h2 = self.config.ver == Ver::Http2;
 
         // The order of the `select` is depended on below...
 
@@ -447,32 +406,20 @@ where
             }
             // Connect won, checkout can just be dropped.
             Either::Right((Ok(connected), _checkout)) => Ok(connected),
-            // Either checkout or connect could get canceled:
-            //
-            // 1. Connect is canceled if this is HTTP/2 and there is
-            //    an outstanding HTTP/2 connecting task.
-            // 2. Checkout is canceled if the pool cannot deliver an
-            //    idle connection reliably.
-            //
-            // In both cases, we should just wait for the other future.
+            // If checkout cannot provide a connection, keep the connector
+            // running. Preserve cancellation handling for connector failures too.
             Either::Left((Err(err), connecting)) => {
                 if err.is_canceled() {
-                    connecting.await.map_err(ClientConnectError::Normal)
+                    connecting.await
                 } else {
-                    Err(ClientConnectError::Normal(e!(Connect, err)))
+                    Err(e!(Connect, err))
                 }
             }
             Either::Right((Err(err), checkout)) => {
                 if err.is_canceled() {
-                    checkout.await.map_err(move |err| {
-                        if is_ver_h2 && err.is_canceled() {
-                            ClientConnectError::CheckoutIsClosed(err)
-                        } else {
-                            ClientConnectError::Normal(e!(Connect, err))
-                        }
-                    })
+                    checkout.await.map_err(|err| e!(Connect, err))
                 } else {
-                    Err(ClientConnectError::Normal(err))
+                    Err(err)
                 }
             }
         }
@@ -489,158 +436,52 @@ where
         #[cfg(feature = "http1")]
         let h1_builder = self.h1_builder.clone();
 
-        let ver = self.config.ver;
-        let is_ver_h2 = ver == Ver::Http2;
         let connector = self.connector.clone();
         hyper_lazy(move || {
-            // Try to take a "connecting lock".
-            //
-            // If the pool_key is for HTTP/2, and there is already a
-            // connection being established, then this can't take a
-            // second lock. The "connect_to" future is Canceled.
-            let connecting = match pool.connecting(&pool_key, ver) {
-                Some(lock) => lock,
-                None => {
-                    let canceled = e!(Canceled);
-                    // TODO
-                    //crate::adapters::Error::new_canceled().with("HTTP/2 connection in progress");
-                    return Either::Right(future::err(canceled));
-                }
-            };
-            let dst = domain_as_uri(pool_key);
-            Either::Left(
-                connector
+            Box::pin(async move {
+                let dst = domain_as_uri(pool_key.clone());
+                let io = connector
                     .connect(super::connect::sealed::Internal, dst)
-                    .map_err(|src| e!(Connect, src))
-                    .and_then(move |io| {
-                        let connected = io.connected();
-                        // If ALPN is h2 and we aren't http2_only already,
-                        // then we need to convert our pool checkout into
-                        // a single HTTP2 one.
-                        let connecting = if connected.alpn == Alpn::H2 && !is_ver_h2 {
-                            match connecting.alpn_h2(&pool) {
-                                Some(lock) => {
-                                    tracing::trace!("ALPN negotiated h2, updating pool");
-                                    lock
-                                }
-                                None => {
-                                    // Another connection has already upgraded,
-                                    // the pool checkout should finish up for us.
-                                    let canceled = e!(Canceled, "ALPN upgraded to HTTP/2");
-                                    return Either::Right(future::err(canceled));
-                                }
-                            }
-                        } else {
-                            connecting
-                        };
-
-                        # [allow (unused)]
-                        let is_h2 = is_ver_h2 || connected.alpn == Alpn::H2;
-
-                        Either::Left(Box::pin(async move {
-                            let tx = if is_h2 {
-                                panic!("http2 feature is not enabled");
-                            } else {
-                                #[cfg(feature = "http1")] {
-                                    // Perform the HTTP/1.1 handshake on the provided I/O stream.
-                                    // Uses the h1_builder to establish a connection, returning a sender (tx) for requests
-                                    // and a connection task (conn) that manages the connection lifecycle.
-                                    let (mut tx, conn) =
-                                        h1_builder.handshake(io).await.map_err(crate::adapters::client::legacy::client::Error::tx)?;
-
-                                    // Log that the HTTP/1.1 handshake has completed successfully.
-                                    // This indicates the connection is established and ready for request processing.
-                                    tracing::trace!(
-                                        "http1 handshake complete, spawning background dispatcher task"
-                                    );
-                                    // Create a oneshot channel to communicate errors from the connection task.
-                                    // err_tx sends errors from the connection task, and err_rx receives them
-                                    // to correlate connection failures with request readiness errors.
-                                    let (err_tx, err_rx) = tokio::sync::oneshot::channel();
-                                    // Spawn the connection task in the background using the executor.
-                                    // The task manages the HTTP/1.1 connection, including upgrades (e.g., WebSocket).
-                                    // Errors are sent via err_tx to ensure they can be checked if the sender (tx) fails.
-                                    executor.execute(
-                                        conn.with_upgrades()
-                                            .map_err(|e| {
-                                                // Log the connection error at debug level for diagnostic purposes.
-                                                tracing::debug!("client connection error: {:?}", e);
-                                                // Log that the error is being sent to the error channel.
-                                                tracing::trace!("sending connection error to error channel");
-                                                // Send the error via the oneshot channel, ignoring send failures
-                                                // (e.g., if the receiver is dropped, which is handled later).
-                                                let _ =err_tx.send(e);
-                                            })
-                                            .map(|_| ()),
-                                    );
-                                    // Log that the client is waiting for the connection to be ready.
-                                    // Readiness indicates the sender (tx) can accept a request without blocking.
-                                    tracing::trace!("waiting for connection to be ready");
-                                    // Check if the sender is ready to accept a request.
-                                    // This ensures the connection is fully established before proceeding.
-                                    // aka:
-                                    // Wait for 'conn' to ready up before we
-                                    // declare this tx as usable
-                                    match tx.ready().await {
-                                        // If ready, the connection is usable for sending requests.
-                                        Ok(_) => {
-                                            // Log that the connection is ready for use.
-                                            tracing::trace!("connection is ready");
-                                            // Drop the error receiver, as it’s no longer needed since the sender is ready.
-                                            // This prevents waiting for errors that won’t occur in a successful case.
-                                            drop(err_rx);
-                                            // Wrap the sender in PoolTx::Http1 for use in the connection pool.
-                                            PoolTx::Http1(tx)
-                                        }
-                                        // If the sender fails with a closed channel error, check for a specific connection error.
-                                        // This distinguishes between a vague ChannelClosed error and an actual connection failure.
-                                        Err(e) if e.is_closed() => {
-                                            // Log that the channel is closed, indicating a potential connection issue.
-                                            tracing::trace!("connection channel closed, checking for connection error");
-                                            // Check the oneshot channel for a specific error from the connection task.
-                                            match err_rx.await {
-                                                // If an error was received, it’s a specific connection failure.
-                                                Ok(err) => {
-                                                     // Log the specific connection error for diagnostics.
-                                                    tracing::trace!("received connection error: {:?}", err);
-                                                    // Return the error wrapped in Error::tx to propagate it.
-                                                    return Err(crate::adapters::client::legacy::client::Error::tx(err));
-                                                }
-                                                // If the error channel is closed, no specific error was sent.
-                                                // Fall back to the vague ChannelClosed error.
-                                                Err(_) => {
-                                                    // Log that the error channel is closed, indicating no specific error.
-                                                    tracing::trace!("error channel closed, returning the vague ChannelClosed error");
-                                                    // Return the original error wrapped in Error::tx.
-                                                    return Err(crate::adapters::client::legacy::client::Error::tx(e));
-                                                }
-                                            }
-                                        }
-                                        // For other errors (e.g., timeout, I/O issues), propagate them directly.
-                                        // These are not ChannelClosed errors and don’t require error channel checks.
-                                        Err(e) => {
-                                            // Log the specific readiness failure for diagnostics.
-                                            tracing::trace!("connection readiness failed: {:?}", e);
-                                            // Return the error wrapped in Error::tx to propagate it.
-                                            return Err(crate::adapters::client::legacy::client::Error::tx(e));
-                                        }
-                                    }
-                                }
-                                #[cfg(not(feature = "http1"))] {
-                                    panic!("http1 feature is not enabled");
-                                }
-                            };
-
-                            Ok(pool.pooled(
-                                connecting,
-                                PoolClient {
-                                    conn_info: connected,
-                                    tx,
-                                },
-                            ))
-                        }))
-                    }),
-            )
+                    .await
+                    .map_err(|src| e!(Connect, src))?;
+                let connected = io.connected();
+                // A custom connector may negotiate an unsupported protocol. Reject
+                // it before sending HTTP/1 bytes or entering the connection pool.
+                if connected.alpn == Alpn::H2 {
+                    return Err(
+                        e!(Connect, "HTTP/2 ALPN is not supported").with_connect_info(connected)
+                    );
+                }
+                let connecting = pool
+                    .connecting(&pool_key, Ver::Auto)
+                    .expect("HTTP/1 connecting does not require a shared lock");
+                let (mut tx, conn) = h1_builder.handshake(io).await.map_err(Error::tx)?;
+                let (err_tx, err_rx) = tokio::sync::oneshot::channel();
+                executor.execute(
+                    conn.with_upgrades()
+                        .map_err(|error| {
+                            tracing::debug!("client connection error: {:?}", error);
+                            let _ = err_tx.send(error);
+                        })
+                        .map(|_| ()),
+                );
+                // Wait until the dispatcher can accept requests before pooling.
+                // Prefer its original connection error to a closed-channel error.
+                match tx.ready().await {
+                    Ok(_) => drop(err_rx),
+                    Err(error) if error.is_closed() => {
+                        return Err(Error::tx(err_rx.await.unwrap_or(error)));
+                    }
+                    Err(error) => return Err(Error::tx(error)),
+                }
+                Ok(pool.pooled(
+                    connecting,
+                    PoolClient {
+                        conn_info: connected,
+                        tx,
+                    },
+                ))
+            })
         })
     }
 }
@@ -743,34 +584,12 @@ impl Future for ResponseFuture {
 #[allow(missing_debug_implementations)]
 struct PoolClient<B> {
     conn_info: Connected,
-    tx: PoolTx<B>,
-}
-
-enum PoolTx<B> {
-    #[cfg(feature = "http1")]
-    Http1(crate::client::conn::http1::SendRequest<B>),
+    tx: crate::client::conn::http1::SendRequest<B>,
 }
 
 impl<B> PoolClient<B> {
-    fn poll_ready(
-        &mut self,
-        #[allow(unused_variables)] cx: &mut task::Context<'_>,
-    ) -> Poll<Result<(), Error>> {
-        match self.tx {
-            #[cfg(feature = "http1")]
-            PoolTx::Http1(ref mut tx) => tx.poll_ready(cx).map_err(Error::closed),
-        }
-    }
-
-    fn is_http1(&self) -> bool {
-        !self.is_http2()
-    }
-
-    fn is_http2(&self) -> bool {
-        match self.tx {
-            #[cfg(feature = "http1")]
-            PoolTx::Http1(_) => false,
-        }
+    fn poll_ready(&mut self, cx: &mut task::Context<'_>) -> Poll<Result<(), Error>> {
+        self.tx.poll_ready(cx).map_err(Error::closed)
     }
 
     fn is_poisoned(&self) -> bool {
@@ -778,10 +597,7 @@ impl<B> PoolClient<B> {
     }
 
     fn is_ready(&self) -> bool {
-        match self.tx {
-            #[cfg(feature = "http1")]
-            PoolTx::Http1(ref tx) => tx.is_ready(),
-        }
+        self.tx.is_ready()
     }
 }
 
@@ -793,11 +609,7 @@ impl<B: Body + 'static> PoolClient<B> {
     where
         B: Send,
     {
-        #[cfg(feature = "http1")]
-        return match self.tx {
-            #[cfg(feature = "http1")]
-            PoolTx::Http1(ref mut tx) => tx.try_send_request(req),
-        };
+        self.tx.try_send_request(req)
     }
 }
 
@@ -810,23 +622,12 @@ where
     }
 
     fn reserve(self) -> pool::Reservation<Self> {
-        match self.tx {
-            #[cfg(feature = "http1")]
-            PoolTx::Http1(tx) => pool::Reservation::Unique(PoolClient {
-                conn_info: self.conn_info,
-                tx: PoolTx::Http1(tx),
-            }),
-        }
+        pool::Reservation::Unique(self)
     }
 
     fn can_share(&self) -> bool {
-        self.is_http2()
+        false
     }
-}
-
-enum ClientConnectError {
-    Normal(Error),
-    CheckoutIsClosed(pool::Error),
 }
 
 fn origin_form(uri: &mut Uri) {
@@ -936,7 +737,7 @@ fn is_schema_secure(uri: &Uri) -> bool {
 /// # Example
 ///
 /// ```
-/// # #[cfg(all(feature = "tokio", feature = "http2"))]
+/// # #[cfg(all(feature = "tokio", feature = "http1"))]
 /// # fn run () {
 /// use std::time::Duration;
 /// use http_transport::adapters::client::legacy::Client;
@@ -944,14 +745,13 @@ fn is_schema_secure(uri: &Uri) -> bool {
 ///
 /// let client = Client::builder(TokioExecutor::new())
 ///     .pool_idle_timeout(Duration::from_secs(30))
-///     .http2_only(true)
 ///     .build_http();
 /// # let infer: Client<_, http_body::Full<bytes::Bytes>> = client;
 /// # drop(infer);
 /// # }
 /// # fn main() {}
 /// ```
-#[cfg_attr(docsrs, doc(cfg(any(feature = "http1", feature = "http2"))))]
+#[cfg_attr(docsrs, doc(cfg(feature = "http1")))]
 #[derive(Clone)]
 pub struct Builder {
     client_config: Config,
@@ -974,7 +774,6 @@ impl Builder {
             client_config: Config {
                 retry_canceled_requests: true,
                 set_host: true,
-                ver: Ver::Auto,
             },
             exec: exec.clone(),
             #[cfg(feature = "http1")]
@@ -997,7 +796,7 @@ impl Builder {
     /// # Example
     ///
     /// ```
-    /// # #[cfg(all(feature = "tokio", feature = "http2"))]
+    /// # #[cfg(all(feature = "tokio", feature = "http1"))]
     /// # fn run () {
     /// use std::time::Duration;
     /// use http_transport::adapters::client::legacy::Client;

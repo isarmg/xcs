@@ -1,4 +1,4 @@
-//! Http1 or Http2 connection.
+//! HTTP/1 connections with explicit rejection of the HTTP/2 preface.
 
 pub mod upgrade;
 
@@ -21,8 +21,6 @@ use http_body::Body;
 #[cfg(feature = "http1")]
 use crate::server::conn::http1;
 
-use std::marker::PhantomData;
-
 use pin_project_lite::pin_project;
 
 use crate::adapters::common::rewind::Rewind;
@@ -33,35 +31,26 @@ type Result<T> = std::result::Result<T, Error>;
 
 const H2_PREFACE: &[u8] = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
 
-/// Executor marker for the maintained HTTP/1 connection builder.
-
-pub trait HttpServerConnExec<A, B: Body> {}
-
-impl<A, B: Body, T> HttpServerConnExec<A, B> for T {}
-
 /// HTTP/1 connection builder.
 #[derive(Clone, Debug)]
-pub struct Builder<E> {
+pub struct Builder {
     #[cfg(feature = "http1")]
     http1: http1::Builder,
 
     #[cfg(feature = "http1")]
     version: Option<Version>,
-
-    _executor: E,
 }
 
-impl<E: Default> Default for Builder<E> {
+impl Default for Builder {
     fn default() -> Self {
-        Self::new(E::default())
+        Self::new()
     }
 }
 
-impl<E> Builder<E> {
+impl Builder {
     /// Create a new auto connection builder.
     ///
-    /// `executor` parameter should be a type that implements
-    /// [`Executor`](crate::rt::Executor) trait.
+    /// The connection is driven by polling its future; no executor is needed.
     ///
     /// # Example
     ///
@@ -69,28 +58,25 @@ impl<E> Builder<E> {
     /// # #[cfg(feature = "tokio")]
     /// # {
     /// use http_transport::adapters::{
-    ///     rt::TokioExecutor,
     ///     server::conn::auto,
     /// };
     ///
-    /// auto::Builder::new(TokioExecutor::new());
+    /// auto::Builder::new();
     /// # }
     /// ```
-    pub fn new(executor: E) -> Self {
+    pub fn new() -> Self {
         Self {
             #[cfg(feature = "http1")]
             http1: http1::Builder::new(),
 
             #[cfg(feature = "http1")]
             version: None,
-
-            _executor: executor,
         }
     }
 
     /// Http1 configuration.
     #[cfg(feature = "http1")]
-    pub fn http1(&mut self) -> Http1Builder<'_, E> {
+    pub fn http1(&mut self) -> Http1Builder<'_> {
         Http1Builder { inner: self }
     }
 
@@ -108,24 +94,12 @@ impl<E> Builder<E> {
 
     /// Returns `true` if this builder can serve an HTTP/1.1-based connection.
     pub fn is_http1_available(&self) -> bool {
-        match self.version {
-            #[cfg(feature = "http1")]
-            Some(Version::H1) => true,
-
-            #[cfg(feature = "http1")]
-            _ => true,
-        }
+        true
     }
 
-    /// Returns `true` if this builder can serve an HTTP/2-based connection.
+    /// Returns `false`: HTTP/2 transport is not supported.
     pub fn is_http2_available(&self) -> bool {
-        match self.version {
-            #[cfg(feature = "http1")]
-            Some(Version::H1) => false,
-
-            #[cfg(feature = "http1")]
-            _ => true,
-        }
+        false
     }
 
     /// Set whether HTTP/1 connections will write header names as title case at
@@ -142,11 +116,10 @@ impl<E> Builder<E> {
     /// # #[cfg(feature = "tokio")]
     /// # {
     /// use http_transport::adapters::{
-    ///     rt::TokioExecutor,
     ///     server::conn::auto,
     /// };
     ///
-    /// auto::Builder::new(TokioExecutor::new())
+    /// auto::Builder::new()
     ///     .title_case_headers(true);
     /// # }
     /// ```
@@ -169,11 +142,10 @@ impl<E> Builder<E> {
     /// # #[cfg(feature = "tokio")]
     /// # {
     /// use http_transport::adapters::{
-    ///     rt::TokioExecutor,
     ///     server::conn::auto,
     /// };
     ///
-    /// auto::Builder::new(TokioExecutor::new())
+    /// auto::Builder::new()
     ///     .preserve_header_case(true);
     /// # }
     /// ```
@@ -184,7 +156,7 @@ impl<E> Builder<E> {
     }
 
     /// Bind a connection together with a [`Service`].
-    pub fn serve_connection<I, S, B>(&self, io: I, service: S) -> Connection<'_, I, S, E>
+    pub fn serve_connection<I, S, B>(&self, io: I, service: S) -> Connection<'_, I, S>
     where
         S: Service<Request<Incoming>, Response = Response<B>>,
         S::Future: 'static,
@@ -192,7 +164,6 @@ impl<E> Builder<E> {
         B: Body + 'static,
         B::Error: Into<Box<dyn StdError + Send + Sync>>,
         I: Read + Write + Unpin + 'static,
-        E: HttpServerConnExec<S::Future, B>,
     {
         let state = match self.version {
             #[cfg(feature = "http1")]
@@ -226,7 +197,7 @@ impl<E> Builder<E> {
         &self,
         io: I,
         service: S,
-    ) -> UpgradeableConnection<'_, I, S, E>
+    ) -> UpgradeableConnection<'_, I, S>
     where
         S: Service<Request<Incoming>, Response = Response<B>>,
         S::Future: 'static,
@@ -234,7 +205,6 @@ impl<E> Builder<E> {
         B: Body + 'static,
         B::Error: Into<Box<dyn StdError + Send + Sync>>,
         I: Read + Write + Unpin + Send + 'static,
-        E: HttpServerConnExec<S::Future, B>,
     {
         UpgradeableConnection {
             state: UpgradeableConnState::ReadVersion {
@@ -347,12 +317,12 @@ pin_project! {
     /// To drive HTTP on this connection this future **must be polled**, typically with
     /// `.await`. If it isn't polled, no progress will be made on this connection.
     #[must_use = "futures do nothing unless polled"]
-    pub struct Connection<'a, I, S, E>
+    pub struct Connection<'a, I, S>
     where
         S: HttpService<Incoming>,
     {
         #[pin]
-        state: ConnState<'a, I, S, E>,
+        state: ConnState<'a, I, S>,
     }
 }
 
@@ -375,42 +345,32 @@ impl<T> std::ops::Deref for Cow<'_, T> {
 #[cfg(feature = "http1")]
 type Http1Connection<I, S> = crate::server::conn::http1::Connection<Rewind<I>, S>;
 
-#[cfg(not(feature = "http1"))]
-type Http1Connection<I, S> = (PhantomData<I>, PhantomData<S>);
-
-type Http2Connection<I, S, E> = (PhantomData<I>, PhantomData<S>, PhantomData<E>);
-
 pin_project! {
     #[project = ConnStateProj]
-    enum ConnState<'a, I, S, E>
+    enum ConnState<'a, I, S>
     where
         S: HttpService<Incoming>,
     {
         ReadVersion {
             #[pin]
             read_version: ReadVersion<I>,
-            builder: Cow<'a, Builder<E>>,
+            builder: Cow<'a, Builder>,
             service: Option<S>,
         },
         H1 {
             #[pin]
             conn: Http1Connection<I, S>,
         },
-        H2 {
-            #[pin]
-            conn: Http2Connection<I, S, E>,
-        },
     }
 }
 
-impl<I, S, E, B> Connection<'_, I, S, E>
+impl<I, S, B> Connection<'_, I, S>
 where
     S: HttpService<Incoming, ResBody = B>,
     S::Error: Into<Box<dyn StdError + Send + Sync>>,
     I: Read + Write + Unpin,
     B: Body + 'static,
     B::Error: Into<Box<dyn StdError + Send + Sync>>,
-    E: HttpServerConnExec<S::Future, B>,
 {
     /// Start a graceful shutdown process for this connection.
     ///
@@ -425,16 +385,11 @@ where
             ConnStateProj::ReadVersion { read_version, .. } => read_version.cancel(),
             #[cfg(feature = "http1")]
             ConnStateProj::H1 { conn } => conn.graceful_shutdown(),
-
-            _ => unreachable!(),
         }
     }
 
     /// Make this Connection static, instead of borrowing from Builder.
-    pub fn into_owned(self) -> Connection<'static, I, S, E>
-    where
-        Builder<E>: Clone,
-    {
+    pub fn into_owned(self) -> Connection<'static, I, S> {
         Connection {
             state: match self.state {
                 ConnState::ReadVersion {
@@ -448,14 +403,12 @@ where
                 },
                 #[cfg(feature = "http1")]
                 ConnState::H1 { conn } => ConnState::H1 { conn },
-
-                _ => unreachable!(),
             },
         }
     }
 }
 
-impl<I, S, E, B> Future for Connection<'_, I, S, E>
+impl<I, S, B> Future for Connection<'_, I, S>
 where
     S: Service<Request<Incoming>, Response = Response<B>>,
     S::Future: 'static,
@@ -463,7 +416,6 @@ where
     B: Body + 'static,
     B::Error: Into<Box<dyn StdError + Send + Sync>>,
     I: Read + Write + Unpin + 'static,
-    E: HttpServerConnExec<S::Future, B>,
 {
     type Output = Result<()>;
 
@@ -493,8 +445,6 @@ where
                 ConnStateProj::H1 { conn } => {
                     return conn.poll(cx).map_err(Into::into);
                 }
-
-                _ => unreachable!(),
             }
         }
     }
@@ -507,12 +457,12 @@ pin_project! {
     /// To drive HTTP on this connection this future **must be polled**, typically with
     /// `.await`. If it isn't polled, no progress will be made on this connection.
     #[must_use = "futures do nothing unless polled"]
-    pub struct UpgradeableConnection<'a, I, S, E>
+    pub struct UpgradeableConnection<'a, I, S>
     where
         S: HttpService<Incoming>,
     {
         #[pin]
-        state: UpgradeableConnState<'a, I, S, E>,
+        state: UpgradeableConnState<'a, I, S>,
     }
 }
 
@@ -524,35 +474,30 @@ type Http1UpgradeableConnection<I, S> = (PhantomData<I>, PhantomData<S>);
 
 pin_project! {
     #[project = UpgradeableConnStateProj]
-    enum UpgradeableConnState<'a, I, S, E>
+    enum UpgradeableConnState<'a, I, S>
     where
         S: HttpService<Incoming>,
     {
         ReadVersion {
             #[pin]
             read_version: ReadVersion<I>,
-            builder: Cow<'a, Builder<E>>,
+            builder: Cow<'a, Builder>,
             service: Option<S>,
         },
         H1 {
             #[pin]
             conn: Http1UpgradeableConnection<Rewind<I>, S>,
         },
-        H2 {
-            #[pin]
-            conn: Http2Connection<I, S, E>,
-        },
     }
 }
 
-impl<I, S, E, B> UpgradeableConnection<'_, I, S, E>
+impl<I, S, B> UpgradeableConnection<'_, I, S>
 where
     S: HttpService<Incoming, ResBody = B>,
     S::Error: Into<Box<dyn StdError + Send + Sync>>,
     I: Read + Write + Unpin,
     B: Body + 'static,
     B::Error: Into<Box<dyn StdError + Send + Sync>>,
-    E: HttpServerConnExec<S::Future, B>,
 {
     /// Start a graceful shutdown process for this connection.
     ///
@@ -567,16 +512,11 @@ where
             UpgradeableConnStateProj::ReadVersion { read_version, .. } => read_version.cancel(),
             #[cfg(feature = "http1")]
             UpgradeableConnStateProj::H1 { conn } => conn.graceful_shutdown(),
-
-            _ => unreachable!(),
         }
     }
 
     /// Make this Connection static, instead of borrowing from Builder.
-    pub fn into_owned(self) -> UpgradeableConnection<'static, I, S, E>
-    where
-        Builder<E>: Clone,
-    {
+    pub fn into_owned(self) -> UpgradeableConnection<'static, I, S> {
         UpgradeableConnection {
             state: match self.state {
                 UpgradeableConnState::ReadVersion {
@@ -590,14 +530,12 @@ where
                 },
                 #[cfg(feature = "http1")]
                 UpgradeableConnState::H1 { conn } => UpgradeableConnState::H1 { conn },
-
-                _ => unreachable!(),
             },
         }
     }
 }
 
-impl<I, S, E, B> Future for UpgradeableConnection<'_, I, S, E>
+impl<I, S, B> Future for UpgradeableConnection<'_, I, S>
 where
     S: Service<Request<Incoming>, Response = Response<B>>,
     S::Future: 'static,
@@ -605,7 +543,6 @@ where
     B: Body + 'static,
     B::Error: Into<Box<dyn StdError + Send + Sync>>,
     I: Read + Write + Unpin + Send + 'static,
-    E: HttpServerConnExec<S::Future, B>,
 {
     type Output = Result<()>;
 
@@ -635,8 +572,6 @@ where
                 UpgradeableConnStateProj::H1 { conn } => {
                     return conn.poll(cx).map_err(Into::into);
                 }
-
-                _ => unreachable!(),
             }
         }
     }
@@ -644,12 +579,12 @@ where
 
 /// Http1 part of builder.
 #[cfg(feature = "http1")]
-pub struct Http1Builder<'a, E> {
-    inner: &'a mut Builder<E>,
+pub struct Http1Builder<'a> {
+    inner: &'a mut Builder,
 }
 
 #[cfg(feature = "http1")]
-impl<E> Http1Builder<'_, E> {
+impl Http1Builder<'_> {
     /// Set whether the `date` header should be included in HTTP responses.
     ///
     /// Note that including the `date` header is recommended by RFC 7231.
