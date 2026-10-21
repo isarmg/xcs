@@ -116,7 +116,7 @@ async fn invalid_registration_candidates_preserve_the_draft_and_backup_namespace
             "level_overflow" => config.disks[0].level = u32::MAX,
             _ => unreachable!(),
         }
-        let original = serde_json::to_vec(&config).unwrap();
+        let original = json_codec::to_vec(&config).unwrap();
         private_io::write_new(&path, &original).unwrap();
         assert!(
             run(args).await.is_err(),
@@ -136,7 +136,7 @@ async fn newly_added_disk_cannot_already_belong_to_another_pool() {
     let engine = Engine::initialize(&other.join("system"), draft(&other)).unwrap();
     let config = draft(root.path());
     let path = root.path().join("draft.json");
-    let original = serde_json::to_vec(&config).unwrap();
+    let original = json_codec::to_vec(&config).unwrap();
     private_io::write_new(&path, &original).unwrap();
     let mut args = registration(root.path(), path.clone());
     if let Command::RegisterDisk { path, .. } = &mut args.command {
@@ -165,7 +165,7 @@ async fn aliases_overlapping_roots_and_existing_markers_preserve_a_previous_back
         let root = tempfile::tempdir().unwrap();
         let config = draft(root.path());
         let path = root.path().join("draft.json");
-        let original = serde_json::to_vec(&config).unwrap();
+        let original = json_codec::to_vec(&config).unwrap();
         private_io::write_new(&path, &original).unwrap();
         let backup = registration_backup(&path).unwrap();
         private_io::write_new(&backup, b"earlier recovery draft").unwrap();
@@ -218,7 +218,7 @@ async fn ordinary_draft_permissions_remain_supported_without_initializing_disks(
 
     let root = tempfile::tempdir().unwrap();
     let path = root.path().join("draft.json");
-    let original = serde_json::to_vec(&draft(root.path())).unwrap();
+    let original = json_codec::to_vec(&draft(root.path())).unwrap();
     fs::write(&path, &original).unwrap();
     fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
     run(registration(root.path(), path.clone())).await.unwrap();

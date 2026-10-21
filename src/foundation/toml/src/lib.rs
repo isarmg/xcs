@@ -73,7 +73,7 @@
 //!
 #![cfg_attr(not(feature = "parse"), doc = " ```ignore")]
 #![cfg_attr(feature = "parse", doc = " ```")]
-//! use serde::Deserialize;
+//! use data_serialization::Deserialize;
 //!
 //! #[derive(Deserialize)]
 //! struct Config {
@@ -106,7 +106,7 @@
 //!
 #![cfg_attr(not(feature = "display"), doc = " ```ignore")]
 #![cfg_attr(feature = "display", doc = " ```")]
-//! use serde::Serialize;
+//! use data_serialization::Serialize;
 //!
 //! #[derive(Serialize)]
 //! struct Config {
@@ -171,7 +171,7 @@ pub use crate::ser::{to_string, to_string_pretty, Serializer};
 #[doc(inline)]
 pub use crate::value::Value;
 
-pub use serde_spanned::Spanned;
+pub use source_spanned_value::Spanned;
 pub use table::Table;
 
 // Shortcuts for the module doc-comment

@@ -23,8 +23,9 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/launchbadge/sqlx"
 
 [features]
-json = ["serde", "serde_json"]
-offline = ["serde", "either/serde"]
+serialization = ["dep:data-serialization"]
+json = ["serialization", "json-codec"]
+offline = ["serialization", "either/serialization"]
 
 [lib]
 name = "sqlx_core"
@@ -87,20 +88,20 @@ path = "../log"
 version = "2.3.0"
 path = "../percent-encoding"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.219"
 features = [
     "derive",
     "rc",
 ]
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_json]
+[dependencies.json-codec]
 version = "1.0.142"
 features = ["raw_value"]
 optional = true
-path = "../serde_json"
+path = "../json-codec"
 
 [dependencies.smallvec]
 version = "1.13.1"

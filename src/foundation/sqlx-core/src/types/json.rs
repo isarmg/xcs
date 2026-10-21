@@ -1,8 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
-use serde::{Deserialize, Serialize};
-pub use serde_json::value::RawValue as JsonRawValue;
-pub use serde_json::Value as JsonValue;
+use data_serialization::{Deserialize, Serialize};
+pub use json_codec::value::RawValue as JsonRawValue;
+pub use json_codec::Value as JsonValue;
 
 use crate::database::Database;
 use crate::decode::Decode;
@@ -23,7 +23,7 @@ use crate::types::Type;
 /// # Example
 ///
 /// ```
-/// # use serde::Deserialize;
+/// # use data_serialization::Deserialize;
 /// #[derive(Deserialize)]
 /// struct Book {
 ///   name: String
@@ -39,7 +39,7 @@ use crate::types::Type;
 /// Can also be used to turn the json/jsonb into a hashmap
 /// ```
 /// use std::collections::HashMap;
-/// use serde::Deserialize;
+/// use data_serialization::Deserialize;
 ///
 /// #[derive(Deserialize)]
 /// struct Book {
@@ -83,7 +83,7 @@ use crate::types::Type;
 #[derive(
     Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize,
 )]
-#[serde(transparent)]
+#[serialization(transparent)]
 pub struct Json<T: ?Sized>(pub T);
 
 impl<T> Json<T> {
@@ -128,12 +128,12 @@ impl<T> AsMut<T> for Json<T> {
 // UNSTABLE: for driver use only!
 #[doc(hidden)]
 impl<T: Serialize> Json<T> {
-    pub fn encode_to_string(&self) -> Result<String, serde_json::Error> {
-        serde_json::to_string(self)
+    pub fn encode_to_string(&self) -> Result<String, json_codec::Error> {
+        json_codec::to_string(self)
     }
 
-    pub fn encode_to(&self, buf: &mut Vec<u8>) -> Result<(), serde_json::Error> {
-        serde_json::to_writer(buf, self)
+    pub fn encode_to(&self, buf: &mut Vec<u8>) -> Result<(), json_codec::Error> {
+        json_codec::to_writer(buf, self)
     }
 }
 
@@ -144,11 +144,11 @@ where
     T: Deserialize<'a>,
 {
     pub fn decode_from_string(s: &'a str) -> Result<Self, BoxDynError> {
-        serde_json::from_str(s).map_err(Into::into)
+        json_codec::from_str(s).map_err(Into::into)
     }
 
     pub fn decode_from_bytes(bytes: &'a [u8]) -> Result<Self, BoxDynError> {
-        serde_json::from_slice(bytes).map_err(Into::into)
+        json_codec::from_slice(bytes).map_err(Into::into)
     }
 }
 

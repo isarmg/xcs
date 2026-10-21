@@ -6,7 +6,7 @@ use axum::{
     extract::ConnectInfo,
     http::{Request, StatusCode},
 };
-use serde_json::json;
+use json_codec::json;
 use std::{net::SocketAddr, path::Path, sync::Arc};
 use storage_contract::Config;
 use storage_engine::Engine;

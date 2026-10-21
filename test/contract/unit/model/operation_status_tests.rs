@@ -43,8 +43,8 @@ fn operation_status_rejects_unknown_or_malformed_values() {
         );
     }
     for invalid in ["null", "0", "{}", "[]"] {
-        assert!(serde_json::from_str::<CommitState>(invalid).is_err());
-        assert!(serde_json::from_str::<ProtectionAtPublish>(invalid).is_err());
+        assert!(json_codec::from_str::<CommitState>(invalid).is_err());
+        assert!(json_codec::from_str::<ProtectionAtPublish>(invalid).is_err());
     }
 }
 

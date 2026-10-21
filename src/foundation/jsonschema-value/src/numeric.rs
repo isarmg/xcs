@@ -335,7 +335,7 @@ pub mod bignum {
     use fraction::BigFraction;
     use num_bigint::BigInt;
     use num_traits::{ToPrimitive, Zero};
-    use serde_json::Number;
+    use json_codec::Number;
     use std::str::FromStr;
 
     /// Guardrail for how many decimal shifts we are willing to perform when normalizing

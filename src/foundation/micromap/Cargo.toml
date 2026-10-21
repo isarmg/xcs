@@ -27,16 +27,16 @@ repository = "https://github.com/yegor256/micromap"
 
 [features]
 default = []
-serde = ["dep:serde"]
+serialization = ["dep:data-serialization"]
 std = []
 
 [lib]
 name = "micromap"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.228"
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 

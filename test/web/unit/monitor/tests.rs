@@ -8,7 +8,7 @@ fn missing_or_invalid_samples_are_never_reported_as_zero_usage_or_power() {
     assert_eq!(power(&Value::Null), None);
     assert_eq!(power(&Value::from(-1)), None);
     assert_eq!(
-        Metric::CpuPower.value(&serde_json::json!({"cpu":{"power_watts":0.0}})),
+        Metric::CpuPower.value(&json_codec::json!({"cpu":{"power_watts":0.0}})),
         Some(0.)
     );
     assert_eq!(
@@ -17,7 +17,7 @@ fn missing_or_invalid_samples_are_never_reported_as_zero_usage_or_power() {
             name: "P01".into(),
             power: true
         }
-        .value(&serde_json::json!({"disks":[{"id":"B01","power_watts":12.0}]})),
+        .value(&json_codec::json!({"disks":[{"id":"B01","power_watts":12.0}]})),
         None
     );
 }

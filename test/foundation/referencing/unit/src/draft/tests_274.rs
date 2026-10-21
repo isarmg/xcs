@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::Draft;
-    use serde_json::json;
+    use json_codec::json;
     use test_case::test_case;
 
     #[test_case(&json!({"$schema": "https://json-schema.org/draft/2020-12/schema"}), Draft::Draft202012; "detect Draft 2020-12")]
@@ -17,7 +17,7 @@ mod tests {
     #[test_case(&json!({"$schema": "http://json-schema.org/schema#"}), Draft::Draft202012; "detect the version-less URI with fragment")]
     #[test_case(&json!({"$schema": "https://json-schema.org/schema"}), Draft::Draft202012; "detect the version-less URI https")]
     #[test_case(&json!({}), Draft::Draft7; "default to Draft 7 when no $schema")]
-    fn test_detect(contents: &serde_json::Value, expected: Draft) {
+    fn test_detect(contents: &json_codec::Value, expected: Draft) {
         let result = Draft::Draft7.detect(contents);
         assert_eq!(result, expected);
     }

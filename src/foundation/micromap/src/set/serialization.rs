@@ -4,9 +4,9 @@
 use super::Set;
 use core::fmt::Formatter;
 use core::marker::PhantomData;
-use serde::de::{SeqAccess, Visitor};
-use serde::ser::SerializeSeq;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use data_serialization::de::{SeqAccess, Visitor};
+use data_serialization::ser::SerializeSeq;
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 impl<T: Serialize, const N: usize> Serialize for Set<T, N> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

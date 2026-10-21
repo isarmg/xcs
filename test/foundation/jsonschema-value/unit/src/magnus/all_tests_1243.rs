@@ -2,7 +2,7 @@
 mod tests {
     use super::*;
     use ::magnus::{rb_sys::AsRawValue as _, Ruby};
-    use serde_json::json;
+    use json_codec::json;
 
     fn eval(ruby: &Ruby, code: &str) -> VALUE {
         ruby.eval::<::magnus::Value>(code)
@@ -11,7 +11,7 @@ mod tests {
     }
 
     fn parsed(ruby: &Ruby, value: &Value) -> VALUE {
-        let text = serde_json::to_string(value).expect("serialize");
+        let text = json_codec::to_string(value).expect("serialize");
         let json: ::magnus::Value = ruby.eval("require 'json'; JSON").expect("json module");
         json.funcall::<_, _, ::magnus::Value>("parse", (text,))
             .expect("parse")
@@ -505,7 +505,7 @@ mod tests {
         // Compared against the same parser the schema side uses, so this holds with and without
         // arbitrary precision.
         let expected: Value =
-            serde_json::from_str("1000000000000000000000000000000").expect("parse");
+            json_codec::from_str("1000000000000000000000000000000").expect("parse");
         assert!(node.equals_value(&expected));
         assert_eq!(pending(), None);
     }

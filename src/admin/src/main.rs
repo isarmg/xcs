@@ -9,8 +9,8 @@ use args::Args;
 use clap::Parser;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
-fn print(value: impl serde::Serialize) -> Result<()> {
-    println!("{}", serde_json::to_string_pretty(&value)?);
+fn print(value: impl data_serialization::Serialize) -> Result<()> {
+    println!("{}", json_codec::to_string_pretty(&value)?);
     Ok(())
 }
 fn op(value: Option<String>) -> String {

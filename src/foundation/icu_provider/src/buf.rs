@@ -6,10 +6,10 @@
 
 use crate::prelude::*;
 
-#[cfg(feature = "serde")]
-mod serde;
-#[cfg(feature = "serde")]
-pub use self::serde::*;
+#[cfg(feature = "serialization")]
+mod data_serialization;
+#[cfg(feature = "serialization")]
+pub use self::data_serialization::*;
 
 /// [`DynamicDataMarker`] for raw buffers. Returned by [`BufferProvider`].
 ///
@@ -51,7 +51,7 @@ impl DynamicDataMarker for BufferMarker {
 ///
 /// // Deserializing manually
 /// assert_eq!(
-///     serde_json::from_slice::<HelloWorld>(
+///     json_codec::from_slice::<HelloWorld>(
 ///         buffer_provider
 ///             .load_data(
 ///                 HelloWorldV1::INFO,
@@ -99,7 +99,7 @@ impl<P: DynamicDataProvider<BufferMarker> + ?Sized> BufferProvider for P {}
 
 /// An enum expressing all Serde formats known to ICU4X.
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
-#[cfg_attr(feature = "serde", derive(::serde::Serialize, ::serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(::data_serialization::Serialize, ::data_serialization::Deserialize))]
 #[non_exhaustive]
 pub enum BufferFormat {
     /// Serialize using JavaScript Object Notation (JSON), using the [`serde_json`] crate.

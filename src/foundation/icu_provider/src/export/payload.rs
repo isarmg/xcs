@@ -35,7 +35,7 @@ trait ExportableDataPayload {
 impl<M: DynamicDataMarker> ExportableDataPayload for DataPayload<M>
 where
     for<'a> <M::DataStruct as Yokeable<'a>>::Output:
-        Bake + BakeSize + serde::Serialize + MaybeEncodeAsVarULE + PartialEq,
+        Bake + BakeSize + data_serialization::Serialize + MaybeEncodeAsVarULE + PartialEq,
 {
     fn bake_yoke(&self, ctx: &CrateEnv) -> TokenStream {
         self.get().bake(ctx)
@@ -132,7 +132,7 @@ where
     M: DynamicDataMarker,
     M::DataStruct: Sync + Send,
     for<'a> <M::DataStruct as Yokeable<'a>>::Output:
-        Bake + BakeSize + serde::Serialize + MaybeEncodeAsVarULE + PartialEq,
+        Bake + BakeSize + data_serialization::Serialize + MaybeEncodeAsVarULE + PartialEq,
 {
     fn upcast(other: DataPayload<M>) -> DataPayload<ExportMarker> {
         DataPayload::from_owned(ExportBox {
@@ -159,13 +159,13 @@ impl DataPayload<ExportMarker> {
     /// // Serialize the payload to a JSON string
     /// let mut buffer: Vec<u8> = vec![];
     /// export
-    ///     .serialize(&mut serde_json::Serializer::new(&mut buffer))
+    ///     .serialize(&mut json_codec::Serializer::new(&mut buffer))
     ///     .expect("Serialization should succeed");
     /// assert_eq!(r#"{"message":"(und) Hello World"}"#.as_bytes(), buffer);
     /// ```
     pub fn serialize<S>(&self, serializer: S) -> Result<(), DataError>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
         S::Ok: 'static, // erased_serde requirement, cannot return values in `Ok`
     {
         self.get()

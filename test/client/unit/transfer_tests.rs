@@ -315,7 +315,7 @@ async fn upload_sends_raw_bytes_with_matching_length_hash_and_bearer() {
             )
             .await
             .unwrap(),
-        serde_json::json!({"staged":true})
+        json_codec::json!({"staged":true})
     );
     server.await.unwrap();
 }
@@ -323,7 +323,7 @@ async fn upload_sends_raw_bytes_with_matching_length_hash_and_bearer() {
 #[tokio::test]
 async fn upload_integrity_rejections_preserve_server_error_details() {
     for code in ["SIZE_MISMATCH", "CHECKSUM_MISMATCH"] {
-        let body = serde_json::json!({"error":{"code":code,"message":"upload rejected","retryable":false,"request_id":"req_synthetic"}}).to_string();
+        let body = json_codec::json!({"error":{"code":code,"message":"upload rejected","retryable":false,"request_id":"req_synthetic"}}).to_string();
         let (client, server) = reply(format!("HTTP/1.1 422 Unprocessable Entity\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len()).into_bytes()).await;
         let source = tempfile::NamedTempFile::new().unwrap();
         std::fs::write(source.path(), b"source is preserved").unwrap();

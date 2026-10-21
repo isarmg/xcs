@@ -1,5 +1,5 @@
-use serde::Deserialize;
-use serde_json::json;
+use data_serialization::Deserialize;
+use json_codec::json;
 
 use super::*;
 
@@ -22,7 +22,7 @@ fn error_codes_are_bounded_machine_identifiers() {
     }
     assert!(ErrorCode::new("a".repeat(MAX_ERROR_CODE_BYTES)).is_ok());
     assert!(ErrorCode::new("a".repeat(MAX_ERROR_CODE_BYTES + 1)).is_err());
-    assert!(serde_json::from_str::<ErrorCode>(r#""Bad Request""#).is_err());
+    assert!(json_codec::from_str::<ErrorCode>(r#""Bad Request""#).is_err());
 }
 
 #[test]
@@ -32,7 +32,7 @@ fn envelope_has_one_stable_wire_shape() {
         .unwrap()
         .with_detail("retry_after", 5);
     assert_eq!(
-        serde_json::to_value(&envelope).unwrap(),
+        json_codec::to_value(&envelope).unwrap(),
         json!({
             "code": "too_many_requests",
             "message": "try later",
@@ -42,7 +42,7 @@ fn envelope_has_one_stable_wire_shape() {
         })
     );
     assert_eq!(
-        serde_json::from_value::<ErrorEnvelope>(json!({
+        json_codec::from_value::<ErrorEnvelope>(json!({
             "code": "not_found",
             "message": "missing",
             "retryable": false
@@ -55,21 +55,21 @@ fn envelope_has_one_stable_wire_shape() {
 #[test]
 fn shared_error_fixtures_match_the_rust_wire_contract() {
     #[derive(Deserialize)]
-    #[serde(deny_unknown_fields)]
+    #[serialization(deny_unknown_fields)]
     struct FixtureSet {
         valid: Vec<Value>,
         invalid: Vec<Value>,
     }
 
     let fixtures: FixtureSet =
-        serde_json::from_str(include_str!("fixtures/error-envelope.json")).unwrap();
+        json_codec::from_str(include_str!("fixtures/error-envelope.json")).unwrap();
     for (index, value) in fixtures.valid.into_iter().enumerate() {
-        serde_json::from_value::<ErrorEnvelope>(value)
+        json_codec::from_value::<ErrorEnvelope>(value)
             .unwrap_or_else(|error| panic!("rejected valid shared fixture {index}: {error}"));
     }
     for (index, value) in fixtures.invalid.into_iter().enumerate() {
         assert!(
-            serde_json::from_value::<ErrorEnvelope>(value).is_err(),
+            json_codec::from_value::<ErrorEnvelope>(value).is_err(),
             "accepted invalid shared fixture {index}"
         );
     }

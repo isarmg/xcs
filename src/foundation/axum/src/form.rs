@@ -4,7 +4,7 @@ use axum_core::response::{IntoResponse, Response};
 use axum_core::RequestExt;
 use http::header::CONTENT_TYPE;
 use http::StatusCode;
-use serde_core::{de::DeserializeOwned, Serialize};
+use serialization_core::{de::DeserializeOwned, Serialize};
 
 /// URL encoded extractor and response.
 ///
@@ -21,7 +21,7 @@ use serde_core::{de::DeserializeOwned, Serialize};
 ///   `multipart/form-data` request bodies, use [`Multipart`] instead.
 ///
 /// This matches how HTML forms are sent by browsers by default.
-/// In both cases, the inner type `T` must implement [`serde::Deserialize`].
+/// In both cases, the inner type `T` must implement [`data_serialization::Deserialize`].
 ///
 /// ⚠️ Since parsing form data might require consuming the request body, the `Form` extractor must be
 /// *last* if there are multiple extractors in a handler. See ["the order of
@@ -31,7 +31,7 @@ use serde_core::{de::DeserializeOwned, Serialize};
 ///
 /// ```rust
 /// use axum::Form;
-/// use serde::Deserialize;
+/// use data_serialization::Deserialize;
 ///
 /// #[derive(Deserialize)]
 /// struct SignUp {
@@ -47,11 +47,11 @@ use serde_core::{de::DeserializeOwned, Serialize};
 /// # As response
 ///
 /// `Form` can also be used to encode any type that implements
-/// [`serde::Serialize`] as `application/x-www-form-urlencoded`
+/// [`data_serialization::Serialize`] as `application/x-www-form-urlencoded`
 ///
 /// ```rust
 /// use axum::Form;
-/// use serde::Serialize;
+/// use data_serialization::Serialize;
 ///
 /// #[derive(Serialize)]
 /// struct Payload {
@@ -84,8 +84,8 @@ where
         match req.extract().await {
             Ok(RawForm(bytes)) => {
                 let deserializer =
-                    serde_urlencoded::Deserializer::new(form_urlencoded::parse(&bytes));
-                let value = serde_path_to_error::deserialize(deserializer).map_err(
+                    form_codec::Deserializer::new(form_urlencoded::parse(&bytes));
+                let value = serialization_error_path::deserialize(deserializer).map_err(
                     |err| -> FormRejection {
                         if is_get_or_head {
                             FailedToDeserializeForm::from_err(err).into()
@@ -110,7 +110,7 @@ where
 {
     fn into_response(self) -> Response {
         // Extracted into separate fn so it's only compiled once for all T.
-        fn make_response(ser_result: Result<String, serde_urlencoded::ser::Error>) -> Response {
+        fn make_response(ser_result: Result<String, form_codec::ser::Error>) -> Response {
             match ser_result {
                 Ok(body) => (
                     [(CONTENT_TYPE, mime::APPLICATION_WWW_FORM_URLENCODED.as_ref())],
@@ -121,7 +121,7 @@ where
             }
         }
 
-        make_response(serde_urlencoded::to_string(&self.0))
+        make_response(form_codec::to_string(&self.0))
     }
 }
 axum_core::__impl_deref!(Form);

@@ -1,4 +1,4 @@
-use serde_json::Value;
+use json_codec::Value;
 use std::collections::BTreeSet;
 use web_interface::i18n::t;
 

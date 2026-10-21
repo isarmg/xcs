@@ -22,11 +22,11 @@ use crate::{
     regex::RegexEngine,
     types::JsonType,
     validator::{EvaluationResult, Validate, ValidationContext},
-    Json, LazyInstance, Node, Object, SerdeJson,
+    Json, LazyInstance, Node, Object, JsonValueBackend,
 };
 use ahash::AHashMap;
 use referencing::{Uri, Vocabulary};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::{borrow::Cow, sync::Arc};
 
 /// # Schema example
@@ -44,7 +44,7 @@ use std::{borrow::Cow, sync::Arc};
 ///     "bar": 6
 /// }
 /// ```
-pub(crate) struct AdditionalPropertiesValidator<F: Json = SerdeJson> {
+pub(crate) struct AdditionalPropertiesValidator<F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
 }
 impl AdditionalPropertiesValidator {
@@ -124,9 +124,9 @@ impl<F: Json> Validate<F> for AdditionalPropertiesValidator<F> {
             let mut result = EvaluationResult::from_children(children);
             let annotated_props = object
                 .members()
-                .map(|(name, _)| serde_json::Value::String(name.as_ref().to_owned()))
+                .map(|(name, _)| json_codec::Value::String(name.as_ref().to_owned()))
                 .collect();
-            result.annotate(Annotations::new(serde_json::Value::Array(annotated_props)));
+            result.annotate(Annotations::new(json_codec::Value::Array(annotated_props)));
             result
         } else {
             EvaluationResult::valid_empty()
@@ -599,7 +599,7 @@ impl<F: Json, M: PropertiesValidatorsMap<F>> Validate<F>
 ///     "bar": 6
 /// }
 /// ```
-pub(crate) struct AdditionalPropertiesNotEmptyValidator<M, F: Json = SerdeJson> {
+pub(crate) struct AdditionalPropertiesNotEmptyValidator<M, F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
     properties: M,
 }
@@ -757,7 +757,7 @@ impl<F: Json, M: PropertiesValidatorsMap<F>> Validate<F>
 ///     "bar": 8
 /// }
 /// ```
-pub(crate) struct AdditionalPropertiesWithPatternsValidator<R, F: Json = SerdeJson> {
+pub(crate) struct AdditionalPropertiesWithPatternsValidator<R, F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
     patterns: Vec<(R, SchemaNode<F>)>,
     /// We need this because `compiler::compile` uses the additionalProperties keyword to compile
@@ -930,7 +930,7 @@ impl<F: Json, R: RegexEngine> Validate<F> for AdditionalPropertiesWithPatternsVa
 ///     "x-baz-x": 8,
 /// }
 /// ```
-pub(crate) struct AdditionalPropertiesWithPatternsFalseValidator<R, F: Json = SerdeJson> {
+pub(crate) struct AdditionalPropertiesWithPatternsFalseValidator<R, F: Json = JsonValueBackend> {
     patterns: Vec<(R, SchemaNode<F>)>,
     location: Location,
     pattern_keyword_path: Location,
@@ -1118,7 +1118,7 @@ impl<F: Json, R: RegexEngine> Validate<F> for AdditionalPropertiesWithPatternsFa
 ///     "bar": 42
 /// }
 /// ```
-pub(crate) struct AdditionalPropertiesWithPatternsNotEmptyValidator<M, R, F: Json = SerdeJson> {
+pub(crate) struct AdditionalPropertiesWithPatternsNotEmptyValidator<M, R, F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
     properties: M,
     patterns: Vec<(R, SchemaNode<F>)>,
@@ -1347,7 +1347,7 @@ impl<F: Json, M: PropertiesValidatorsMap<F>, R: RegexEngine> Validate<F>
 ///     "x-baz-x": 8,
 /// }
 /// ```
-pub(crate) struct AdditionalPropertiesWithPatternsNotEmptyFalseValidator<M, R, F: Json = SerdeJson>
+pub(crate) struct AdditionalPropertiesWithPatternsNotEmptyFalseValidator<M, R, F: Json = JsonValueBackend>
 {
     properties: M,
     patterns: Vec<(R, SchemaNode<F>)>,

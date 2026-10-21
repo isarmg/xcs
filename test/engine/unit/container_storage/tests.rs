@@ -89,23 +89,23 @@ fn current_version_requires_storage_name_and_creation_time() {
         b"body",
     );
     for field in ["storage_name", "created_at"] {
-        let mut missing = serde_json::to_value(&item).unwrap();
+        let mut missing = json_codec::to_value(&item).unwrap();
         missing.as_object_mut().unwrap().remove(field);
-        let error = serde_json::from_value::<FileVersion>(missing).unwrap_err();
+        let error = json_codec::from_value::<FileVersion>(missing).unwrap_err();
         assert!(
             error
                 .to_string()
                 .contains(&format!("missing field `{field}`"))
         );
-        let mut null = serde_json::to_value(&item).unwrap();
-        null[field] = serde_json::Value::Null;
-        assert!(serde_json::from_value::<FileVersion>(null).is_err());
+        let mut null = json_codec::to_value(&item).unwrap();
+        null[field] = json_codec::Value::Null;
+        assert!(json_codec::from_value::<FileVersion>(null).is_err());
     }
-    let mut tagged = serde_json::to_value(&item).unwrap();
+    let mut tagged = json_codec::to_value(&item).unwrap();
     tagged["format_version"] = json!(2);
-    assert!(serde_json::from_value::<FileVersion>(tagged).is_err());
+    assert!(json_codec::from_value::<FileVersion>(tagged).is_err());
     assert!(
-        serde_json::to_value(item)
+        json_codec::to_value(item)
             .unwrap()
             .get("format_version")
             .is_none()
@@ -199,7 +199,7 @@ fn inherited_references_update_cache_without_creating_files_and_follow_rename() 
     assert!(!named.join("pending-branches").exists());
     synchronize_names(&config, &previous, &pending).unwrap();
     assert!(!named.join("pending-branches").exists());
-    let cached: serde_json::Value = read_json(&named.join("container.json")).unwrap();
+    let cached: json_codec::Value = read_json(&named.join("container.json")).unwrap();
     assert_eq!(cached["inherited_branches"][0]["branch_id"], branch);
     assert_eq!(
         cached["inherited_branches"][0]["source_version_id"],
@@ -236,7 +236,7 @@ fn inherited_references_update_cache_without_creating_files_and_follow_rename() 
     synchronize_names(&config, &renamed, &written).unwrap();
     assert!(!new_named.join("pending-branches").exists());
     assert_eq!(fs::metadata(&new_body).unwrap().ino(), body_inode);
-    let cached: serde_json::Value = read_json(&new_named.join("container.json")).unwrap();
+    let cached: json_codec::Value = read_json(&new_named.join("container.json")).unwrap();
     assert_eq!(cached["inherited_branches"], json!([]));
 }
 
@@ -293,7 +293,7 @@ fn physical_move_preserves_one_body_and_old_version_identity_across_replay() {
     synchronize_names(&config, &State::default(), &in_b).unwrap();
     assert_eq!(content_path(&directory, &item).unwrap(), b);
     assert_eq!(fs::metadata(&b).unwrap().ino(), inode);
-    let cache: serde_json::Value =
+    let cache: json_codec::Value =
         read_json(&b.parent().unwrap().parent().unwrap().join("container.json")).unwrap();
     assert_eq!(cache["location"], "b/报告.txt");
 }
@@ -631,7 +631,7 @@ fn rename_and_note_projection_replays_without_changing_body_identity() {
         .parent()
         .unwrap()
         .join("container.json");
-    let cached: serde_json::Value = read_json(&cache).unwrap();
+    let cached: json_codec::Value = read_json(&cache).unwrap();
     assert_eq!(cached["name"], "重命名.md");
     assert_eq!(cached["note"], "文件备注");
     assert_eq!(cached["versions"][0]["note"], "版本备注");

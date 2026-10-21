@@ -629,10 +629,10 @@ impl<'a> From<LocationSegment<'a>> for JsonPointerSegment<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Location(Arc<str>);
 
-impl serde::Serialize for Location {
+impl data_serialization::Serialize for Location {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         serializer.serialize_str(&self.0)
     }

@@ -28,7 +28,7 @@ mod arbitrary;
 mod bits;
 mod convert;
 mod power;
-mod serde;
+mod data_serialization;
 mod shift;
 
 /// A `Sign` is a [`BigInt`]'s composing element.

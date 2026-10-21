@@ -189,7 +189,7 @@ fn capture_views(browser: &Browser, output: Option<&Path>) -> Result<()> {
         let browser_version = browser.cdp("Browser.getVersion", json!({}))?;
         fs::write(
             dir.join("source.json"),
-            serde_json::to_vec_pretty(&json!({
+            json_codec::to_vec_pretty(&json!({
                 "schema":1,"source_commit":String::from_utf8(commit.stdout)?.trim(),
                 "source_worktree_dirty":!dirty.stdout.is_empty(),"browser":browser_version,
                 "renderer":"real Chrome rendering production WASM against a real temporary ZXS service",

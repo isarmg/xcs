@@ -12,7 +12,7 @@ use std::{collections::VecDeque, num::NonZeroUsize, sync::Arc};
 
 use ahash::{AHashMap, AHashSet};
 use fluent_uri::Uri;
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{
     cache::UriCache,

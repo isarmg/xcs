@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 
 use jsonschema_value::{conformance, types::JsonType, Array, Json, Node, NodeIdentity, Object};
-use serde_json::{Number, Value};
+use json_codec::{Number, Value};
 
 // A second representation, owning its data instead of borrowing `serde_json`. It implements only
 // the methods without a default, so the defaults stay exercised.
@@ -467,7 +467,7 @@ fn simple_representation_conforms() {
 }
 
 #[test]
-fn serde_json_representation_conforms() {
+fn serialization_json_representation_conforms() {
     let document = conformance::document();
-    conformance::assert_conformance::<jsonschema_value::SerdeJson>(&&document);
+    conformance::assert_conformance::<jsonschema_value::JsonValueBackend>(&&document);
 }

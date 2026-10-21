@@ -497,18 +497,18 @@ mod tests {
         assert_eq!(s.len(), 0);
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
     fn test_serialization() {
         let bset: BitSet = BitSet::new();
-        let serialized = serde_json::to_string(&bset).unwrap();
-        let unserialized: BitSet = serde_json::from_str(&serialized).unwrap();
+        let serialized = json_codec::to_string(&bset).unwrap();
+        let unserialized: BitSet = json_codec::from_str(&serialized).unwrap();
         assert_eq!(bset, unserialized);
 
         let elems: Vec<usize> = vec![11, 42, 100, 101];
         let bset: BitSet = elems.iter().map(|n| *n).collect();
-        let serialized = serde_json::to_string(&bset).unwrap();
-        let unserialized = serde_json::from_str(&serialized).unwrap();
+        let serialized = json_codec::to_string(&bset).unwrap();
+        let unserialized = json_codec::from_str(&serialized).unwrap();
         assert_eq!(bset, unserialized);
     }
 

@@ -82,8 +82,8 @@ pub mod effect;
 pub mod graph;
 pub mod owner;
 pub mod send_wrapper_ext;
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 pub mod signal;
 mod trait_options;
 pub mod traits;

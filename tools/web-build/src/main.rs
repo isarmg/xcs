@@ -131,7 +131,7 @@ fn main() -> Result<()> {
     inventory_tree(&staging, &staging, &mut inventory)?;
     fs::write(
         staging.join("build-manifest.json"),
-        serde_json::to_vec_pretty(&build_manifest(&inventory, &inputs_after))?,
+        json_codec::to_vec_pretty(&build_manifest(&inventory, &inputs_after))?,
     )?;
     let dist = build.join("web");
     let backup = build.join(".web-backup");
@@ -157,7 +157,7 @@ fn main() -> Result<()> {
     }
     println!(
         "{}",
-        serde_json::json!({"event":"built","dist":dist,"runtime":"web-interface"})
+        json_codec::json!({"event":"built","dist":dist,"runtime":"web-interface"})
     );
     Ok(())
 }
@@ -197,8 +197,8 @@ fn copy_distribution_material(root: &Path, staging: &Path) -> Result<()> {
 fn build_manifest(
     files: &BTreeMap<String, String>,
     inputs: &BTreeMap<String, String>,
-) -> serde_json::Value {
-    serde_json::json!({"runtime":"web-interface","files":files,"inputs":inputs,"target":"wasm32-unknown-unknown","wasm_bindgen":"0.2.129"})
+) -> json_codec::Value {
+    json_codec::json!({"runtime":"web-interface","files":files,"inputs":inputs,"target":"wasm32-unknown-unknown","wasm_bindgen":"0.2.129"})
 }
 
 struct BuildLock {
@@ -219,7 +219,7 @@ fn source_inventory(root: &Path) -> Result<BTreeMap<String, String>> {
     if read_input(&root.join(INPUT_SPEC_PATH))? != INPUT_SPEC.as_bytes() {
         bail!("Web input specification changed; rebuild web-build first");
     }
-    let spec: serde_json::Value = serde_json::from_str(INPUT_SPEC)?;
+    let spec: json_codec::Value = json_codec::from_str(INPUT_SPEC)?;
     let object = spec
         .as_object()
         .context("Web input specification must be an object")?;

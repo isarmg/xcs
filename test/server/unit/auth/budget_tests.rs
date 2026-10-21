@@ -45,7 +45,7 @@ fn oversized_authoritative_snapshot_never_replaces_existing_credentials() {
     drop(store);
     let local = root.path().join("auth.json");
     let previous = fs::read(&local).unwrap();
-    snapshot["accounts"]["admin"]["repositories"] = serde_json::json!(["r".repeat(STORE_LIMIT)]);
+    snapshot["accounts"]["admin"]["repositories"] = json_codec::json!(["r".repeat(STORE_LIMIT)]);
     assert_eq!(
         AuthStore::open_with_snapshot(root.path(), Some(snapshot))
             .err()
@@ -143,13 +143,13 @@ fn fill_to_limit(store: &mut AuthStore) {
         account.repositories = BTreeSet::from(["r".repeat(6900)]);
         store.db.accounts.insert(username, account);
     }
-    let current = serde_json::to_vec(&store.db).unwrap().len();
+    let current = json_codec::to_vec(&store.db).unwrap().len();
     assert!(current < STORE_LIMIT);
     store.db.accounts.get_mut("admin").unwrap().repositories = BTreeSet::from([String::new()]);
-    let current = serde_json::to_vec(&store.db).unwrap().len();
+    let current = json_codec::to_vec(&store.db).unwrap().len();
     store.db.accounts.get_mut("admin").unwrap().repositories =
         BTreeSet::from(["p".repeat(STORE_LIMIT - current)]);
-    assert_eq!(serde_json::to_vec(&store.db).unwrap().len(), STORE_LIMIT);
+    assert_eq!(json_codec::to_vec(&store.db).unwrap().len(), STORE_LIMIT);
 }
 
 #[test]

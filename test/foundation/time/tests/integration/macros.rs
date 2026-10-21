@@ -365,7 +365,7 @@ mod demo {
     #[expect(dead_code)]
     fn deserialize() {}
 
-    time::serde::format_description!(
+    time::data_serialization::format_description!(
         seconds,
         OffsetDateTime,
         "[year]-[month]-[day]T[hour]:[minute]:[second]Z"

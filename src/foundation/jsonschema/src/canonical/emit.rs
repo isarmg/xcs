@@ -3,7 +3,7 @@
 use std::{borrow::Cow, sync::Arc};
 
 use referencing::Draft;
-use serde_json::{json, Map, Value};
+use json_codec::{json, Map, Value};
 
 use crate::{
     canonical::{

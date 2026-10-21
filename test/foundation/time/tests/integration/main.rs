@@ -16,11 +16,11 @@
     feature = "macros",
     feature = "parsing",
     feature = "quickcheck",
-    feature = "serde-human-readable",
-    feature = "serde-well-known",
+    feature = "serialization-human-readable",
+    feature = "serialization-well-known",
     feature = "std",
     feature = "rand",
-    feature = "serde",
+    feature = "serialization",
 )))]
 #[rstest]
 fn run_with_all_features() -> Result<(), Box<dyn std::error::Error>> {
@@ -62,11 +62,11 @@ macro_rules! require_all_features {
             feature = "macros",
             feature = "parsing",
             feature = "quickcheck",
-            feature = "serde-human-readable",
-            feature = "serde-well-known",
+            feature = "serialization-human-readable",
+            feature = "serialization-well-known",
             feature = "std",
             feature = "rand",
-            feature = "serde",
+            feature = "serialization",
         ))]
         $x
     )*};
@@ -112,8 +112,8 @@ require_all_features! {
     #[path = "quickcheck.rs"]
     mod quickcheck_mod;
     mod rand;
-    mod serde;
-    mod serde_helpers;
+    mod data_serialization;
+    mod serialization_helpers;
     mod time;
     mod timestamp;
     mod utc_date_time;

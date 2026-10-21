@@ -27,7 +27,7 @@ repository = "https://github.com/indexmap-rs/indexmap"
 
 [features]
 default = ["std"]
-serde = ["dep:serde_core"]
+serialization = ["dep:serialization-core"]
 std = []
 test_debug = []
 
@@ -51,11 +51,11 @@ version = "1.9"
 optional = true
 path = "../rayon"
 
-[dependencies.serde_core]
+[dependencies.serialization-core]
 version = "1.0.220"
 optional = true
 default-features = false
-path = "../serde_core"
+path = "../serialization-core"
 
 [lints.clippy]
 style = "allow"

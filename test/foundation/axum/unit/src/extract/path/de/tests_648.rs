@@ -1,14 +1,14 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde::Deserialize;
+    use data_serialization::Deserialize;
     use std::collections::HashMap;
 
     #[derive(Debug, Deserialize, Eq, PartialEq)]
     enum MyEnum {
         A,
         B,
-        #[serde(rename = "c")]
+        #[serialization(rename = "c")]
         C,
     }
 

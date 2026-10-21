@@ -1,6 +1,6 @@
 //! Independent file branches: metadata first, complete content on first save.
 use super::*;
-use serde_json::json;
+use json_codec::json;
 
 pub(crate) fn selected_file_branch<'a>(
     state: &'a State,
@@ -386,7 +386,7 @@ pub(crate) fn create_file_branch_change(
     name: &str,
     principal: &str,
     operation: &str,
-) -> Result<serde_json::Value> {
+) -> Result<json_codec::Value> {
     let source = state
         .versions
         .get(source_version)

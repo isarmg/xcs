@@ -372,7 +372,7 @@ impl std::ops::DerefMut for Disks {
 /// }
 /// ```
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 pub enum DiskKind {
     /// HDD type.
     HDD,

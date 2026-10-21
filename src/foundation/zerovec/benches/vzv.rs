@@ -58,9 +58,9 @@ fn overview_bench(c: &mut Criterion) {
         vzv_precompute_bench(c);
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     {
-        serde_benches(c);
+        serialization_benches(c);
     }
 }
 
@@ -128,8 +128,8 @@ fn binary_search_benches(c: &mut Criterion) {
     });
 }
 
-#[cfg(feature = "serde")]
-fn serde_benches(c: &mut Criterion) {
+#[cfg(feature = "serialization")]
+fn serialization_benches(c: &mut Criterion) {
     let seed = 2021;
     let (string_vec, _) = random_alphanums(2..=20, 100, seed);
     let bincode_vec = bincode::serialize(&string_vec).unwrap();

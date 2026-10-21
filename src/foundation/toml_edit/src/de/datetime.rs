@@ -1,5 +1,5 @@
-use serde::de::value::BorrowedStrDeserializer;
-use serde::de::IntoDeserializer;
+use data_serialization::de::value::BorrowedStrDeserializer;
+use data_serialization::de::IntoDeserializer;
 
 use crate::de::Error;
 
@@ -13,12 +13,12 @@ impl DatetimeDeserializer {
     }
 }
 
-impl<'de> serde::de::MapAccess<'de> for DatetimeDeserializer {
+impl<'de> data_serialization::de::MapAccess<'de> for DatetimeDeserializer {
     type Error = Error;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Error>
     where
-        K: serde::de::DeserializeSeed<'de>,
+        K: data_serialization::de::DeserializeSeed<'de>,
     {
         if self.date.is_some() {
             seed.deserialize(BorrowedStrDeserializer::new(
@@ -32,7 +32,7 @@ impl<'de> serde::de::MapAccess<'de> for DatetimeDeserializer {
 
     fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Error>
     where
-        V: serde::de::DeserializeSeed<'de>,
+        V: data_serialization::de::DeserializeSeed<'de>,
     {
         if let Some(date) = self.date.take() {
             seed.deserialize(date.to_string().into_deserializer())

@@ -1,7 +1,7 @@
 //! Engine errors, request fields, and public response projections.
 use crate::ApiError;
-use serde::Serialize;
-use serde_json::{Value, json};
+use data_serialization::Serialize;
+use json_codec::{Value, json};
 use storage_engine::Engine;
 
 pub(super) fn error(error: storage_engine::Error) -> ApiError {
@@ -99,7 +99,7 @@ pub(super) fn error(error: storage_engine::Error) -> ApiError {
 }
 
 pub(super) fn encode(value: impl Serialize) -> Result<Value, ApiError> {
-    serde_json::to_value(value).map_err(ApiError::invalid)
+    json_codec::to_value(value).map_err(ApiError::invalid)
 }
 /// Response ownership is independent from the version currently visible in a
 /// branch. An unwritten branch reads its parent's immutable version.

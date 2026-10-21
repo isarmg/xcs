@@ -1,6 +1,6 @@
 //! Real Chrome/WebDriver smoke test; no mock server or generated application JS.
 use base64::{Engine as _, engine::general_purpose::STANDARD};
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::{
     env,
     error::Error,
@@ -157,7 +157,7 @@ impl Browser {
             &format!("/session/{}{path}", self.session),
             body,
         )?;
-        let response: Value = serde_json::from_slice(&bytes)?;
+        let response: Value = json_codec::from_slice(&bytes)?;
         if status >= 400 || response["value"]["error"].is_string() {
             return Err(format!("WebDriver {method} {path}: {}", response["value"]).into());
         }
@@ -436,7 +436,7 @@ fn exercise(
     let logs = browser.command("POST", "/log", Some(json!({"type":"performance"})))?;
     let mut responses = Vec::new();
     for entry in logs.as_array().ok_or("invalid performance log")? {
-        let event: Value = serde_json::from_str(
+        let event: Value = json_codec::from_str(
             entry["message"]
                 .as_str()
                 .ok_or("missing network log message")?,
@@ -606,7 +606,7 @@ fn run() -> Result<()> {
                 json!({"capabilities":{"alwaysMatch":{"browserName":"chrome","pageLoadStrategy":"eager","goog:chromeOptions":chrome,"goog:loggingPrefs":{"browser":"ALL","performance":"ALL"}}}}),
             ),
         )?;
-        let response: Value = serde_json::from_slice(&body)?;
+        let response: Value = json_codec::from_slice(&body)?;
         if status >= 400 {
             return Err(format!("Chrome startup failed (never skipped): {response}").into());
         }

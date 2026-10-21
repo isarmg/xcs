@@ -9,7 +9,7 @@ use crate::{
     Json, LazyInstance, Node,
 };
 use num_cmp::NumCmp;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::borrow::Cow;
 
 macro_rules! define_numeric_keywords {
@@ -390,7 +390,7 @@ macro_rules! create_numeric_validator {
 fn create_bigint_validator<F: Json>(
     ctx: &compiler::Context<F>,
     keyword: &str,
-    limit: &serde_json::Number,
+    limit: &json_codec::Number,
     schema: &Value,
 ) -> Option<CompilationResult<'static, F>> {
     use bigint_validators::{

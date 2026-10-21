@@ -87,8 +87,8 @@ pub use crate::bytes::Bytes;
 pub use crate::bytes_mut::BytesMut;
 
 // Optional Serde support
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 #[inline(never)]
 #[cold]

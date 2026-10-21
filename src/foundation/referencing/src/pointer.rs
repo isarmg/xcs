@@ -1,4 +1,4 @@
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{
     path::{JsonPointerNode, JsonPointerSegment},

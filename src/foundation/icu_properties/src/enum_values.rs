@@ -510,7 +510,7 @@ impl EastAsianWidth {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_enums)] // this type is stable
 #[zerovec::make_ule(GeneralCategoryULE)]
 #[cfg_attr(not(feature = "alloc"), zerovec::skip_derive(ZeroMapKV))]

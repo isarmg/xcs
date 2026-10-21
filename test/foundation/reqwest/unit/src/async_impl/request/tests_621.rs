@@ -4,7 +4,7 @@ mod tests {
 
     use super::{Client, HttpRequest, Request, RequestBuilder, Version};
     use crate::Method;
-    use serde::Serialize;
+    use data_serialization::Serialize;
     use std::collections::BTreeMap;
     use std::convert::TryFrom;
 
@@ -435,7 +435,7 @@ mod tests {
 
         let buf = body::read_to_string(r.body.unwrap()).unwrap();
 
-        let body_should_be = serde_urlencoded::to_string(&form_data).unwrap();
+        let body_should_be = form_codec::to_string(&form_data).unwrap();
         assert_eq!(buf, body_should_be);
     }
 
@@ -455,14 +455,14 @@ mod tests {
 
         let buf = body::read_to_string(r.body.unwrap()).unwrap();
 
-        let body_should_be = serde_json::to_string(&json_data).unwrap();
+        let body_should_be = json_codec::to_string(&json_data).unwrap();
         assert_eq!(buf, body_should_be);
     }
 
     #[test]
     fn add_json_fail() {
-        use serde::{Serialize, Serializer};
-        use serde::ser::Error;
+        use data_serialization::{Serialize, Serializer};
+        use data_serialization::ser::Error;
         struct MyStruct;
         impl Serialize for MyStruct {
             fn serialize<S>(&self, _serializer: S) -> Result<S::Ok, S::Error>

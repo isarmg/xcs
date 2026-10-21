@@ -5,7 +5,7 @@ mod tests {
     use super::*;
     use axum_core::{body::Body, extract::FromRequest};
     use http::{Request, StatusCode};
-    use serde::Deserialize;
+    use data_serialization::Deserialize;
     use std::fmt::Debug;
 
     async fn check<T>(uri: impl AsRef<str>, value: T)

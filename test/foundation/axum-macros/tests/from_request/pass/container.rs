@@ -2,7 +2,7 @@ use axum::{
     extract::{FromRequest, Json},
     response::Response,
 };
-use serde::Deserialize;
+use data_serialization::Deserialize;
 
 #[derive(Deserialize, FromRequest)]
 #[from_request(via(Json))]

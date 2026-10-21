@@ -40,7 +40,7 @@ pub(super) fn call(
                 ],
             )?;
             let file = field(input, "file_id")?;
-            let inputs: Vec<storage_contract::FileMergeInput> = serde_json::from_value(
+            let inputs: Vec<storage_contract::FileMergeInput> = json_codec::from_value(
                 input
                     .get("inputs")
                     .cloned()
@@ -76,7 +76,7 @@ pub(super) fn call(
             let file = field(input, "file_id")?;
             Application::new(engine, identity)
                 .authorize_file_location(file, location(input)?.as_ref())?;
-            let targets: Vec<storage_contract::FileTagTarget> = serde_json::from_value(
+            let targets: Vec<storage_contract::FileTagTarget> = json_codec::from_value(
                 input
                     .get("targets")
                     .cloned()
@@ -84,7 +84,7 @@ pub(super) fn call(
             )
             .map_err(ApiError::invalid)?;
             let strings = |key: &str| -> Result<Vec<String>, ApiError> {
-                serde_json::from_value(
+                json_codec::from_value(
                     input
                         .get(key)
                         .cloned()
@@ -135,7 +135,7 @@ pub(super) fn call(
                 .and_then(Value::as_u64)
                 .and_then(|value| u32::try_from(value).ok())
                 .ok_or_else(|| ApiError::invalid("target_copies must be a positive integer"))?;
-            let prefixes: BTreeMap<String, String> = serde_json::from_value(
+            let prefixes: BTreeMap<String, String> = json_codec::from_value(
                 input
                     .get("backup_prefixes")
                     .cloned()

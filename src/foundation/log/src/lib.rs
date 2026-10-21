@@ -95,7 +95,7 @@
 //! some additional context besides what's in the formatted message:
 //!
 //! ```
-//! # use serde::Serialize;
+//! # use data_serialization::Serialize;
 //! # #[derive(Debug, Serialize)] pub struct Yak(String);
 //! # impl Yak { fn shave(&mut self, _: u32) {} }
 //! # fn find_a_razor() -> Result<u32, std::io::Error> { Ok(1) }
@@ -413,7 +413,7 @@ use std::{cmp, fmt, mem};
 
 #[macro_use]
 mod macros;
-mod serde;
+mod data_serialization;
 
 #[cfg(feature = "kv")]
 pub mod kv;

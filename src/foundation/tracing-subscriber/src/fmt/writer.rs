@@ -672,7 +672,7 @@ pub struct ArcWriter<W>(Arc<W>);
 /// This is used by the timestamp formatting implementation for the `time`
 /// crate and by the JSON formatter. In both cases, this is needed because
 /// `tracing-subscriber`'s `FormatEvent`/`FormatTime` traits expect a
-/// `fmt::Write` implementation, while `serde_json::Serializer` and `time`'s
+/// `fmt::Write` implementation, while `json_codec::Serializer` and `time`'s
 /// `format_into` methods expect an `io::Write`.
 #[cfg(any(feature = "json", feature = "time"))]
 pub(in crate::fmt) struct WriteAdaptor<'a> {

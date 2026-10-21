@@ -1,5 +1,5 @@
 use super::*;
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 fn config(temp: &tempfile::TempDir) -> Config {
     Config::development([
         temp.path().join("a"),

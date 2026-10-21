@@ -8,7 +8,7 @@ use std::{collections::BTreeSet, sync::Arc};
 use ahash::{AHashMap, AHashSet};
 
 use referencing::Resolver;
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::canonical::{
     context::CanonicalizationContext,

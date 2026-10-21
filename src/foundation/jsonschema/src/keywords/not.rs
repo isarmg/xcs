@@ -5,9 +5,9 @@ use crate::{
     node::SchemaNode,
     paths::{LazyLocation, RefTracker},
     validator::{Validate, ValidationContext},
-    Json, Node, SerdeJson,
+    Json, Node, JsonValueBackend,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 pub(crate) struct NotValidator<F: Json> {
     // needed only for error representation
@@ -15,7 +15,7 @@ pub(crate) struct NotValidator<F: Json> {
     node: SchemaNode<F>,
 }
 
-impl NotValidator<SerdeJson> {
+impl NotValidator<JsonValueBackend> {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         ctx: &compiler::Context<F>,

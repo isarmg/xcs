@@ -946,18 +946,18 @@ mod tests {
         let _a: Iter = b.iter();
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
     fn test_serialization() {
         let bit_vec: BitVec = BitVec::new();
-        let serialized = serde_json::to_string(&bit_vec).unwrap();
-        let unserialized: BitVec = serde_json::from_str(&serialized).unwrap();
+        let serialized = json_codec::to_string(&bit_vec).unwrap();
+        let unserialized: BitVec = json_codec::from_str(&serialized).unwrap();
         assert_eq!(bit_vec, unserialized);
 
         let bools = vec![true, false, true, true];
         let bit_vec: BitVec = bools.iter().map(|n| *n).collect();
-        let serialized = serde_json::to_string(&bit_vec).unwrap();
-        let unserialized = serde_json::from_str(&serialized).unwrap();
+        let serialized = json_codec::to_string(&bit_vec).unwrap();
+        let unserialized = json_codec::from_str(&serialized).unwrap();
         assert_eq!(bit_vec, unserialized);
     }
 

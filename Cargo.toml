@@ -51,8 +51,8 @@ platform-io = { path = "src/platform" }
 storage-engine = { path = "src/engine" }
 storage-client = { path = "src/client" }
 storage-server = { path = "src/server" }
-serde = { version = "1", features = ["derive"], path = "src/foundation/serde"}
-serde_json = {version = "1", path = "src/foundation/serde_json"}
+data-serialization = { version = "1", features = ["derive"], path = "src/foundation/data-serialization"}
+json-codec = {version = "1", path = "src/foundation/json-codec"}
 thiserror = {version = "2", path = "src/foundation/thiserror"}
 blake3 = {version = "=1.8.7", path = "src/foundation/blake3"}
 uuid = { version = "1", features = ["v4"], path = "src/foundation/uuid"}

@@ -144,9 +144,9 @@ mod kv_support {
         Value::from_sval(v)
     }
 
-    #[cfg(feature = "kv_serde")]
-    pub fn capture_serde<'a, V: serde_core::Serialize + ?Sized>(v: &'a &'a V) -> Value<'a> {
-        Value::from_serde(v)
+    #[cfg(feature = "kv_serialization")]
+    pub fn capture_serialization<'a, V: serialization_core::Serialize + ?Sized>(v: &'a &'a V) -> Value<'a> {
+        Value::from_serialization(v)
     }
 }
 

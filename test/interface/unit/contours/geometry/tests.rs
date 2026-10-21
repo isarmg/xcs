@@ -479,16 +479,16 @@ fn svg_decimal_format_preserves_javascript_rounding_and_negative_zero() {
 #[test]
 fn serialized_public_shapes_match_browser_contracts() {
     let geometry = create(200.0, 120.0, 42.0, 0.05).unwrap();
-    let json = serde_json::to_value(geometry.as_ref()).unwrap();
+    let json = json_codec::to_value(geometry.as_ref()).unwrap();
     assert!(json.get("errorBound").is_some());
     assert!(json.get("tolerance").is_none());
     assert!(json.get("offset_paths").is_none());
     assert!(json["points"][0].get("parameter").is_none());
     assert!(json["corners"][0]["points"][0].get("parameter").is_some());
-    let profile = serde_json::to_value(profile(0.5).unwrap()).unwrap();
+    let profile = json_codec::to_value(profile(0.5).unwrap()).unwrap();
     assert!(profile.get("curvatureDerivative").is_some());
     assert!(profile.get("curvatureSecondDerivative").is_some());
-    let bounds = serde_json::to_value(bounds()).unwrap();
+    let bounds = json_codec::to_value(bounds()).unwrap();
     assert_eq!(bounds["intervals"], 512);
     assert!(bounds.get("minimumRadius").is_some());
 }

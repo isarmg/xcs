@@ -13,7 +13,7 @@ storage-contract = { path = "../contract" }
 name-policy = { path = "../naming" }
 getrandom = { version = "0.4", features = ["wasm_js"], path = "../foundation/getrandom-0.4.3"}
 uuid = { version = "1", features = ["js"], path = "../foundation/uuid"}
-serde_json = {version = "1", path = "../foundation/serde_json"}
+json-codec = {version = "1", path = "../foundation/json-codec"}
 blake3 = {version = "1.8.7", path = "../foundation/blake3"}
 wasm-bindgen = {version = "=0.2.129", path = "../foundation/wasm-bindgen"}
 wasm-bindgen-futures = {version = "=0.4.79", path = "../foundation/wasm-bindgen-futures"}

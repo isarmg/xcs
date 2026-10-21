@@ -364,9 +364,9 @@ criterion_main!(benches);
 /// <https://github.com/unicode-org/icu4x/issues/2310> tracks being able to do this with derive(ULE)
 #[zerovec::make_varule(Index32Str)]
 #[zerovec::skip_derive(ZeroMapKV)]
-#[derive(Eq, PartialEq, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::derive(Serialize, Deserialize, Hash)]
-pub(crate) struct Index32StrBorrowed<'a>(#[serde(borrow)] pub &'a str);
+pub(crate) struct Index32StrBorrowed<'a>(#[serialization(borrow)] pub &'a str);
 
 impl<'a> ZeroMapKV<'a> for Index32Str {
     type Container = VarZeroVec<'a, Index32Str, Index32>;

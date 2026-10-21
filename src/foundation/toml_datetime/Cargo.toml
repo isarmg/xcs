@@ -39,10 +39,10 @@ repository = "https://github.com/toml-rs/toml"
 name = "toml_datetime"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.145"
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
 [lints.clippy]
 bool_assert_comparison = "allow"
@@ -116,3 +116,6 @@ unused_qualifications = "warn"
 [lints.rust.rust_2018_idioms]
 level = "warn"
 priority = -1
+
+[features]
+serialization = ["dep:data-serialization"]

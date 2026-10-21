@@ -57,7 +57,7 @@ macro-diagnostics = []
 md5 = []
 rng = ["dep:getrandom"]
 rng-getrandom = ["rng", "dep:getrandom"]
-serde = ["dep:serde_core"]
+serialization = ["dep:serialization-core"]
 sha1 = []
 std = ["wasm-bindgen?/std", "js-sys?/std"]
 v1 = ["atomic"]
@@ -72,11 +72,11 @@ v8 = []
 name = "uuid"
 path = "src/lib.rs"
 
-[dependencies.serde_core]
+[dependencies.serialization-core]
 version = "1.0.221"
 optional = true
 default-features = false
-path = "../serde_core"
+path = "../serialization-core"
 
 [target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dependencies.wasm-bindgen]
 version = "0.2"

@@ -76,23 +76,23 @@ impl TryFrom<crate::Error> for ComponentRange {
 }
 
 /// **This trait implementation is deprecated and will be removed in a future breaking release.**
-#[cfg(feature = "serde")]
-impl serde_core::de::Expected for ComponentRange {
+#[cfg(feature = "serialization")]
+impl serialization_core::de::Expected for ComponentRange {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("an in-range value")
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl ComponentRange {
     /// Convert the error to a deserialization error.
     #[inline]
     pub(crate) fn into_de_error<E>(self) -> E
     where
-        E: serde_core::de::Error,
+        E: serialization_core::de::Error,
     {
-        serde_core::de::Error::custom(format_args!(
+        serialization_core::de::Error::custom(format_args!(
             "invalid {}, expected an in-range value",
             self.name
         ))

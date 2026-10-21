@@ -1,5 +1,5 @@
 use js_sys::{Reflect, Uint8Array};
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::cell::RefCell;
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;

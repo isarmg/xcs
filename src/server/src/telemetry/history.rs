@@ -1,6 +1,6 @@
 //! Bounded, rebuildable monitoring cache; never part of storage publication.
 use super::{Snapshot, statistics::Statistics};
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, VecDeque},
     fs::{self, OpenOptions},
@@ -17,11 +17,11 @@ const MAX_CACHE_LINE: usize = 64 * 1024;
 const MAX_MEMORY_BYTES: usize = 128 * 1024 * 1024;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(super) struct Sample {
     pub unix_seconds: i64,
     pub observations: u32,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serialization(default, skip_serializing_if = "Option::is_none")]
     pub statistics: Option<Statistics>,
     pub status: Snapshot,
 }
@@ -129,7 +129,7 @@ impl HistoryStore {
                 {
                     continue;
                 }
-                let Ok(sample) = serde_json::from_slice::<Sample>(line) else {
+                let Ok(sample) = json_codec::from_slice::<Sample>(line) else {
                     continue;
                 };
                 if !sample.valid_at(now) {
@@ -286,7 +286,7 @@ impl HistoryStore {
             points
                 .iter()
                 .map(|sample| {
-                    serde_json::to_vec(sample).map_or(MAX_CACHE_LINE, |bytes| bytes.len())
+                    json_codec::to_vec(sample).map_or(MAX_CACHE_LINE, |bytes| bytes.len())
                 })
                 .sum::<usize>()
         };
@@ -297,14 +297,14 @@ impl HistoryStore {
             while bytes > MAX_MEMORY_BYTES && !self.minutes.is_empty() {
                 if let Some(sample) = self.minutes.pop_front() {
                     bytes = bytes.saturating_sub(
-                        serde_json::to_vec(&sample).map_or(MAX_CACHE_LINE, |value| value.len()),
+                        json_codec::to_vec(&sample).map_or(MAX_CACHE_LINE, |value| value.len()),
                     );
                 }
             }
             while bytes > MAX_MEMORY_BYTES && self.recent.len() > 1 {
                 if let Some(sample) = self.recent.pop_front() {
                     bytes = bytes.saturating_sub(
-                        serde_json::to_vec(&sample).map_or(MAX_CACHE_LINE, |value| value.len()),
+                        json_codec::to_vec(&sample).map_or(MAX_CACHE_LINE, |value| value.len()),
                     );
                 }
             }
@@ -315,7 +315,7 @@ impl HistoryStore {
         let Some(directory) = &self.directory else {
             return Ok(());
         };
-        let bytes = serde_json::to_vec(sample)?;
+        let bytes = json_codec::to_vec(sample)?;
         if bytes.len() > MAX_CACHE_LINE {
             return Err(io::Error::other("telemetry sample exceeds cache admission"));
         }

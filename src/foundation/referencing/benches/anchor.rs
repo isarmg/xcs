@@ -2,7 +2,7 @@ use codspeed_criterion_compat::{
     black_box, criterion_group, criterion_main, BenchmarkId, Criterion,
 };
 use referencing::{Draft, Registry};
-use serde_json::json;
+use json_codec::json;
 
 fn bench_anchor_lookup(c: &mut Criterion) {
     let data = json!({

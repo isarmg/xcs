@@ -4,7 +4,7 @@ use std::{borrow::Cow, collections::BTreeSet, sync::Arc};
 use ahash::{AHashMap, AHashSet};
 
 use referencing::{Draft, Resolver};
-use serde_json::{json, Map, Number, Value};
+use json_codec::{json, Map, Number, Value};
 
 use crate::{
     canonical::{

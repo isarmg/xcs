@@ -7,7 +7,7 @@ use crate::{
     pending::save_pending,
     print,
 };
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 pub(crate) async fn run(args: &Args, address: &str) -> Result<()> {
     let mut client = storage_client::Client::connect(address)?;
     if let Some(file) = &args.token_file {

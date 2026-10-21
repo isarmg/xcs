@@ -8,16 +8,16 @@ use crate::{
     paths::{LazyLocation, Location, RefTracker},
     types::JsonType,
     validator::{EvaluationResult, Validate, ValidationContext},
-    Array, Draft, Json, Node, SerdeJson, ValidationError,
+    Array, Draft, Json, Node, JsonValueBackend, ValidationError,
 };
 use referencing::{Uri, Vocabulary};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::{
     marker::PhantomData,
     sync::{Arc, OnceLock},
 };
 
-pub(crate) struct ItemsArrayValidator<F: Json = SerdeJson> {
+pub(crate) struct ItemsArrayValidator<F: Json = JsonValueBackend> {
     items: Vec<SchemaNode<F>>,
 }
 impl ItemsArrayValidator {
@@ -118,11 +118,11 @@ fn evaluate_each_item<F: Json>(
         children.push(&mut ctx.arena, child);
     }
     let mut result = EvaluationResult::from_children(children);
-    result.annotate(Annotations::new(serde_json::json!(array.len() != 0)));
+    result.annotate(Annotations::new(json_codec::json!(array.len() != 0)));
     result
 }
 
-pub(crate) struct ItemsObjectValidator<F: Json = SerdeJson> {
+pub(crate) struct ItemsObjectValidator<F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
 }
 
@@ -190,7 +190,7 @@ impl<F: Json> Validate<F> for ItemsObjectValidator<F> {
     }
 }
 
-pub(crate) struct ItemsObjectSkipPrefixValidator<F: Json = SerdeJson> {
+pub(crate) struct ItemsObjectSkipPrefixValidator<F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
     skip_prefix: usize,
 }
@@ -278,7 +278,7 @@ impl<F: Json> Validate<F> for ItemsObjectSkipPrefixValidator<F> {
             }
             let schema_was_applied = array.len() > self.skip_prefix;
             let mut result = EvaluationResult::from_children(children);
-            result.annotate(Annotations::new(serde_json::json!(schema_was_applied)));
+            result.annotate(Annotations::new(json_codec::json!(schema_was_applied)));
             result
         } else {
             EvaluationResult::valid_empty()
@@ -392,7 +392,7 @@ impl SchemaSite {
 /// `items: {"type": <T>}` with the type check inlined. Output matches the generic `items`: each
 /// element gets the subschema node and its `type` keyword node, and failures come from the same
 /// `type` validator the generic compiler builds.
-pub(crate) struct ItemsTypeValidator<T: ItemType, F: Json = SerdeJson> {
+pub(crate) struct ItemsTypeValidator<T: ItemType, F: Json = JsonValueBackend> {
     items: SchemaSite,
     type_: SchemaSite,
     type_validator: BoxedValidator<F>,
@@ -577,7 +577,7 @@ impl<T: ItemType, F: Json> Validate<F> for ItemsTypeValidator<T, F> {
             children.push(&mut ctx.arena, child);
         }
         let mut result = EvaluationResult::from_children(children);
-        result.annotate(Annotations::new(serde_json::json!(array.len() != 0)));
+        result.annotate(Annotations::new(json_codec::json!(array.len() != 0)));
         result
     }
 }
@@ -629,7 +629,7 @@ impl<F: Json> FusedItems<F> {
 
 /// Fused `type: "array"` + optional `minItems`/`maxItems` + schema-form `items`: one `as_array`,
 /// one length check, and one element pass instead of three validators re-reading the same node.
-pub(crate) struct ArrayShapeValidator<F: Json = SerdeJson> {
+pub(crate) struct ArrayShapeValidator<F: Json = JsonValueBackend> {
     items: FusedItems<F>,
     /// `minItems`, or 0 without one.
     min_items: u64,

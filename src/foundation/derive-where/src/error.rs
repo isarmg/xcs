@@ -193,9 +193,9 @@ impl Error {
 	}
 
 	/// Requires crate feature `serde`.
-	#[cfg(not(feature = "serde"))]
-	pub fn serde_feature(span: Span) -> syn::Error {
-		syn::Error::new(span, "requires crate feature `serde`")
+	#[cfg(not(feature = "serialization"))]
+	pub fn serialization_feature(span: Span) -> syn::Error {
+		syn::Error::new(span, "requires crate feature `serialization`")
 	}
 
 	/// Requires crate feature `zeroize`.
@@ -302,9 +302,9 @@ impl Error {
 	}
 
 	/// Conflicting `serde(bound ...)` when deriving `De/Serialize`.
-	#[cfg(feature = "serde")]
-	pub fn serde_bound(serde: Span) -> syn::Error {
-		syn::Error::new(serde, "Found conflicting `#[serde(bound ...)]`")
+	#[cfg(feature = "serialization")]
+	pub fn serialization_bound(data_serialization: Span) -> syn::Error {
+		syn::Error::new(data_serialization, "Found conflicting `#[serialization(bound ...)]`")
 	}
 
 	/// List of available [`Trait`](crate::Trait)s.

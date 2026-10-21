@@ -7,7 +7,7 @@
 //!
 //! [`AnchorIter`] avoids a heap allocation for the common case of 0–2 anchors per schema object.
 
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{Draft, Error, Resolved, Resolver, ResourceRef};
 

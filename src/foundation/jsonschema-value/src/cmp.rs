@@ -1,5 +1,5 @@
 use num_cmp::NumCmp;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 macro_rules! num_cmp {
     ($left:expr, $right:expr) => {
@@ -45,7 +45,7 @@ macro_rules! num_cmp {
 #[inline]
 #[doc(hidden)]
 #[must_use]
-pub fn equal_numbers<L: crate::JsonNumber>(left: &L, right: &serde_json::Number) -> bool {
+pub fn equal_numbers<L: crate::JsonNumber>(left: &L, right: &json_codec::Number) -> bool {
     #[cfg(feature = "arbitrary-precision")]
     {
         use crate::numeric::bignum;

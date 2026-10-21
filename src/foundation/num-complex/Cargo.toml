@@ -36,11 +36,11 @@ features = ["i128"]
 default-features = false
 path = "../num-traits"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [features]
 bytecheck = []
@@ -49,5 +49,5 @@ default = ["std"]
 libm = ["num-traits/libm"]
 rand = []
 rkyv = []
-serde = ["dep:serde"]
+serialization = ["dep:data-serialization"]
 std = ["num-traits/std"]

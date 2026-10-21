@@ -97,7 +97,7 @@ impl Backend for NamespaceFailure {
                 "{}.namespace.json",
                 input["operation_id"].as_str().unwrap()
             ));
-            let record: Value = serde_json::from_slice(
+            let record: Value = json_codec::from_slice(
                 &fs::read(&path).expect("recovery record must precede submission"),
             )
             .unwrap();
@@ -191,7 +191,7 @@ fn namespace_submission_errors_retain_original_operation_without_abort() {
             })
             .collect::<Vec<_>>();
         assert_eq!(records.len(), 1);
-        let record: Value = serde_json::from_slice(&fs::read(&records[0]).unwrap()).unwrap();
+        let record: Value = json_codec::from_slice(&fs::read(&records[0]).unwrap()).unwrap();
         assert_eq!(record["commit_request"], commit);
         assert_eq!(record["principal"], "alice");
         assert_eq!(record["branch_id"], branch);
@@ -260,7 +260,7 @@ fn uncertain_namespace_dispatch_never_aborts_its_workspace() {
             "{}.namespace.json",
             error.operation_id.as_deref().unwrap()
         ));
-        let record: Value = serde_json::from_slice(&fs::read(record_path).unwrap()).unwrap();
+        let record: Value = json_codec::from_slice(&fs::read(record_path).unwrap()).unwrap();
         assert_eq!(record["commit_request"], commit);
         assert_eq!(record["path"], "report.txt");
         assert_eq!(record["destination"], "renamed.txt");
@@ -408,7 +408,7 @@ fn write_through_dirty_error_identifies_the_new_submitted_generation() {
     let (opened, file) = session
         .open("report.txt".into(), true, false, false, false, true)
         .unwrap();
-    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let opened: OpenResult = json_codec::from_value(opened).unwrap();
     let file = File::from(file.unwrap());
     file.write_all_at(b"one", 0).unwrap();
     session
@@ -552,7 +552,7 @@ fn preparation_and_record_sync_failures_keep_unresolved_recovery_evidence() {
             );
             if record_path.exists() {
                 let record: Value =
-                    serde_json::from_slice(&fs::read(record_path).unwrap()).unwrap();
+                    json_codec::from_slice(&fs::read(record_path).unwrap()).unwrap();
                 assert_eq!(record["operation_id"], operation_id);
                 assert_eq!(record["path"], "new");
                 assert!(

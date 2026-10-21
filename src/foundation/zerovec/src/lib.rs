@@ -33,7 +33,7 @@
 //!
 //! The first two are intended as close-to-drop-in replacements for `Vec<T>` in Serde structs. The third and fourth are
 //! intended as a replacement for `HashMap` or [`LiteMap`](https://docs.rs/litemap). When used with Serde derives, **be sure to apply
-//! `#[serde(borrow)]` to these types**, same as one would for [`Cow<'a, T>`].
+//! `#[serialization(borrow)]` to these types**, same as one would for [`Cow<'a, T>`].
 //!
 //! [`ZeroVec<'a, T>`], [`VarZeroVec<'a, T>`], [`ZeroMap<'a, K, V>`], and [`ZeroMap2d<'a, K0, K1, V>`] all behave like
 //! [`Cow<'a, T>`] in that they abstract over either borrowed or owned data. When performing deserialization
@@ -71,13 +71,13 @@
 //! use zerovec::{VarZeroVec, ZeroVec};
 //!
 //! // This example requires the "serde" feature
-//! #[derive(serde::Serialize, serde::Deserialize)]
+//! #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 //! pub struct DataStruct<'data> {
-//!     #[serde(borrow)]
+//!     #[serialization(borrow)]
 //!     nums: ZeroVec<'data, u32>,
-//!     #[serde(borrow)]
+//!     #[serialization(borrow)]
 //!     chars: ZeroVec<'data, char>,
-//!     #[serde(borrow)]
+//!     #[serialization(borrow)]
 //!     strs: VarZeroVec<'data, str>,
 //! }
 //!
@@ -110,7 +110,7 @@
 //!
 //! // custom fixed-size ULE type for ZeroVec
 //! #[zerovec::make_ule(DateULE)]
-//! #[derive(Copy, Clone, PartialEq, Eq, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
+//! #[derive(Copy, Clone, PartialEq, Eq, Ord, PartialOrd, data_serialization::Serialize, data_serialization::Deserialize)]
 //! struct Date {
 //!     y: u64,
 //!     m: u8,
@@ -120,22 +120,22 @@
 //! // custom variable sized VarULE type for VarZeroVec
 //! #[zerovec::make_varule(PersonULE)]
 //! #[zerovec::derive(Serialize, Deserialize)] // add Serde impls to PersonULE
-//! #[derive(Clone, PartialEq, Eq, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
+//! #[derive(Clone, PartialEq, Eq, Ord, PartialOrd, data_serialization::Serialize, data_serialization::Deserialize)]
 //! struct Person<'a> {
 //!     birthday: Date,
 //!     favorite_character: char,
-//!     #[serde(borrow)]
+//!     #[serialization(borrow)]
 //!     name: Cow<'a, str>,
 //! }
 //!
-//! #[derive(serde::Serialize, serde::Deserialize)]
+//! #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 //! struct Data<'a> {
-//!     #[serde(borrow)]
+//!     #[serialization(borrow)]
 //!     important_dates: ZeroVec<'a, Date>,
 //!     // note: VarZeroVec always must reference the ULE type directly
-//!     #[serde(borrow)]
+//!     #[serialization(borrow)]
 //!     important_people: VarZeroVec<'a, PersonULE>,
-//!     #[serde(borrow)]
+//!     #[serialization(borrow)]
 //!     birthdays_to_people: ZeroMap<'a, Date, PersonULE>
 //! }
 //!
@@ -254,8 +254,8 @@ pub mod __zerovec_internal_reexport {
     #[cfg(feature = "alloc")]
     pub use alloc::boxed;
 
-    #[cfg(feature = "serde")]
-    pub use serde;
+    #[cfg(feature = "serialization")]
+    pub use data_serialization;
 }
 
 #[cfg(feature = "alloc")]
@@ -364,8 +364,8 @@ pub mod vecs {
 ///     Eq,
 ///     Ord,
 ///     PartialOrd,
-///     serde::Serialize,
-///     serde::Deserialize,
+///     data_serialization::Serialize,
+///     data_serialization::Deserialize,
 /// )]
 /// struct Date {
 ///     y: u64,
@@ -373,9 +373,9 @@ pub mod vecs {
 ///     d: u8,
 /// }
 ///
-/// #[derive(serde::Serialize, serde::Deserialize)]
+/// #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 /// struct Dates<'a> {
-///     #[serde(borrow)]
+///     #[serialization(borrow)]
 ///     dates: ZeroVec<'a, Date>,
 /// }
 ///
@@ -439,8 +439,8 @@ pub use zerovec_derive::make_ule;
 /// The following traits are available to derive, but not automatic:
 ///
 /// - [`Debug`]
-/// - [`Serialize`](serde::Serialize)
-/// - [`Deserialize`](serde::Deserialize)
+/// - [`Serialize`](data_serialization::Serialize)
+/// - [`Deserialize`](data_serialization::Deserialize)
 ///
 /// To enable one of these additional derives, use `#[zerovec::derive(...)]` like so: `#[zerovec::derive(Debug)]`.
 ///
@@ -472,7 +472,7 @@ pub use zerovec_derive::make_ule;
 ///
 /// // custom fixed-size ULE type for ZeroVec
 /// #[zerovec::make_ule(DateULE)]
-/// #[derive(Copy, Clone, PartialEq, Eq, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
+/// #[derive(Copy, Clone, PartialEq, Eq, Ord, PartialOrd, data_serialization::Serialize, data_serialization::Deserialize)]
 /// struct Date {
 ///     y: u64,
 ///     m: u8,
@@ -482,18 +482,18 @@ pub use zerovec_derive::make_ule;
 /// // custom variable sized VarULE type for VarZeroVec
 /// #[zerovec::make_varule(PersonULE)]
 /// #[zerovec::derive(Serialize, Deserialize)]
-/// #[derive(Clone, PartialEq, Eq, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
+/// #[derive(Clone, PartialEq, Eq, Ord, PartialOrd, data_serialization::Serialize, data_serialization::Deserialize)]
 /// struct Person<'a> {
 ///     birthday: Date,
 ///     favorite_character: char,
-///     #[serde(borrow)]
+///     #[serialization(borrow)]
 ///     name: Cow<'a, str>,
 /// }
 ///
-/// #[derive(serde::Serialize, serde::Deserialize)]
+/// #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 /// struct Data<'a> {
 ///     // note: VarZeroVec always must reference the ULE type directly
-///     #[serde(borrow)]
+///     #[serialization(borrow)]
 ///     important_people: VarZeroVec<'a, PersonULE>,
 /// }
 ///

@@ -2,11 +2,11 @@ use super::*;
 use std::cell::Cell;
 
 struct CountedValue {
-    value: serde_json::Value,
+    value: json_codec::Value,
     serializations: Cell<usize>,
 }
 impl Serialize for CountedValue {
-    fn serialize<S: serde::Serializer>(
+    fn serialize<S: data_serialization::Serializer>(
         &self,
         serializer: S,
     ) -> std::result::Result<S::Ok, S::Error> {
@@ -24,7 +24,7 @@ fn replicated_metadata_matches_original_bytes_and_hash_with_less_serialization()
         temp.path().join("tertiary"),
     ]);
     let value = CountedValue {
-        value: serde_json::json!({"z": "18446744073709551615", "名字": [true, null, "data"], "a": 1}),
+        value: json_codec::json!({"z": "18446744073709551615", "名字": [true, null, "data"], "a": 1}),
         serializations: Cell::new(0),
     };
     // Reproduce the prior snapshot/history-manifest storage algorithm.
@@ -54,7 +54,7 @@ fn replicated_metadata_matches_original_bytes_and_hash_with_less_serialization()
             original_bytes
         );
         assert_eq!(
-            load_object::<serde_json::Value>(disk, "state-page", &hash).unwrap(),
+            load_object::<json_codec::Value>(disk, "state-page", &hash).unwrap(),
             value.value
         );
     }
@@ -81,7 +81,7 @@ fn prepared_metadata_serializes_only_at_preflight_and_reuses_exact_bytes() {
         temp.path().join("three"),
     ]);
     let value = CountedValue {
-        value: serde_json::json!({"retained": ["history", "events", "idempotency"]}),
+        value: json_codec::json!({"retained": ["history", "events", "idempotency"]}),
         serializations: Cell::new(0),
     };
     let prepared = PreparedMetadataObject::new("state-page", &value, MAX_METADATA).unwrap();
@@ -117,7 +117,7 @@ fn replicated_metadata_rejects_oversize_before_creating_any_object() {
         temp.path().join("backup"),
         temp.path().join("tertiary"),
     ]);
-    let value = serde_json::json!({"content": "bounded"});
+    let value = json_codec::json!({"content": "bounded"});
     let bytes = canonical_json(&value).unwrap();
     let error = store_object_replicas_bounded(&config.disks, "snapshot", &value, bytes.len() - 1)
         .unwrap_err();

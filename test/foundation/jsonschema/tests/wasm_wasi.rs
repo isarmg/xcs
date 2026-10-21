@@ -2,7 +2,7 @@
 
 use futures::executor::block_on;
 use jsonschema::{async_options, AsyncRetrieve, Uri};
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 use std::collections::HashMap;
 
 struct MapAsyncRetriever {

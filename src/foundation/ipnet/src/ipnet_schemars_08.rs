@@ -29,8 +29,8 @@ impl JsonSchema for Ipv4Net {
                 title: Some("IPv4 network".to_string()),
                 description: Some("An IPv4 address with prefix length".to_string()),
                 examples: vec![
-                    schemars::_serde_json::Value::String("0.0.0.0/0".to_string()),
-                    schemars::_serde_json::Value::String("192.168.0.0/24".to_string()),
+                    schemars::_serialization_json::Value::String("0.0.0.0/0".to_string()),
+                    schemars::_serialization_json::Value::String("192.168.0.0/24".to_string()),
                 ],
                 ..Default::default()
             })),
@@ -56,8 +56,8 @@ impl JsonSchema for Ipv6Net {
                 title: Some("IPv6 network".to_string()),
                 description: Some("An IPv6 address with prefix length".to_string()),
                 examples: vec![
-                    schemars::_serde_json::Value::String("::/0".to_string()),
-                    schemars::_serde_json::Value::String("fd00::/32".to_string()),
+                    schemars::_serialization_json::Value::String("::/0".to_string()),
+                    schemars::_serialization_json::Value::String("fd00::/32".to_string()),
                 ],
                 ..Default::default()
             })),
@@ -85,8 +85,8 @@ impl JsonSchema for IpNet {
                 title: Some("IP network".to_string()),
                 description: Some("An IPv4 or IPv6 address with prefix length".to_string()),
                 examples: vec![
-                    schemars::_serde_json::Value::String("192.168.0.0/24".to_string()),
-                    schemars::_serde_json::Value::String("fd00::/32".to_string()),
+                    schemars::_serialization_json::Value::String("192.168.0.0/24".to_string()),
+                    schemars::_serialization_json::Value::String("fd00::/32".to_string()),
                 ],
                 ..Default::default()
             })),

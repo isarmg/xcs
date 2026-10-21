@@ -95,8 +95,8 @@ mod identifier;
 mod impls;
 mod parse;
 
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 use crate::identifier::Identifier;
 use alloc::vec::Vec;

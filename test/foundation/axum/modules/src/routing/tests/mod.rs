@@ -23,8 +23,8 @@ use http::{
     HeaderMap, Method, StatusCode, Uri,
 };
 use http_body_util::BodyExt;
-use serde::Deserialize;
-use serde_json::json;
+use data_serialization::Deserialize;
+use json_codec::json;
 use std::{
     convert::Infallible,
     future::{ready, IntoFuture, Ready},
@@ -638,7 +638,7 @@ async fn body_limited_by_default() {
     let app = Router::new()
         .route("/bytes", post(|_: Bytes| async {}))
         .route("/string", post(|_: String| async {}))
-        .route("/json", post(|_: Json<serde_json::Value>| async {}));
+        .route("/json", post(|_: Json<json_codec::Value>| async {}));
 
     let client = TestClient::new(app);
 
@@ -952,7 +952,7 @@ async fn state_isnt_cloned_too_much_in_layer() {
 #[crate::test]
 async fn logging_rejections() {
     #[derive(Deserialize, Eq, PartialEq, Debug)]
-    #[serde(deny_unknown_fields)]
+    #[serialization(deny_unknown_fields)]
     struct RejectionEvent {
         message: String,
         status: u16,

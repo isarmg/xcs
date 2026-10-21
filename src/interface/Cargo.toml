@@ -15,7 +15,7 @@ view-alternatives = { path = "../foundation/view-alternatives", version = "0.1.9
 dom-helpers = { path = "../foundation/dom-helpers", version = "0.8.8" }
 view_macros = { package = "view-macros", path = "../macros" }
 shared-value = { path = "../foundation/shared-value", version = "0.2.1" }
-reactive-state = { path = "../foundation/reactive-state", version = "0.2.14", features = ["serde"] }
+reactive-state = { path = "../foundation/reactive-state", version = "0.2.14", features = ["serialization"] }
 view-renderer = { path = "../foundation/view-renderer", version = "0.2.15", features = ["reactive-state", "shared-value"] }
 throw_error = { path = "../foundation/throw_error", version = "0.3.1" }
 typed-builder = {version = "0.23", path = "../foundation/typed-builder"}
@@ -26,8 +26,8 @@ gloo-timers = { version = "0.3", features = ["futures"], path = "../foundation/g
 futures = {version = "0.3", path = "../foundation/futures"}
 js-sys = {version = "=0.3.106", path = "../foundation/js-sys"}
 send_wrapper = {version = "0.6", path = "../foundation/send_wrapper"}
-serde = { version = "1", features = ["derive"], path = "../foundation/serde"}
-serde_json = {version = "1", path = "../foundation/serde_json"}
+data-serialization = { version = "1", features = ["derive"], path = "../foundation/data-serialization"}
+json-codec = {version = "1", path = "../foundation/json-codec"}
 wasm-bindgen = {version = "=0.2.129", path = "../foundation/wasm-bindgen"}
 wasm-bindgen-futures = {version = "=0.4.79", path = "../foundation/wasm-bindgen-futures"}
 web-sys = { version = "=0.3.106", features = [

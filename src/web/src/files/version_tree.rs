@@ -8,7 +8,7 @@ use crate::{
     format,
     ui::{State, text},
 };
-use serde_json::Value;
+use json_codec::Value;
 use std::collections::{BTreeMap, BTreeSet};
 use wasm_bindgen::{JsCast, closure::Closure};
 use web_interface::{html, i18n::t, prelude::*};

@@ -839,7 +839,7 @@ pub(super) fn call(
             keys(&input, &["slot_id", "kind", "items", "operation_id"])?;
             let slot = field(&input, "slot_id")?;
             let request: storage_contract::DirectoryNamespaceBatch =
-                serde_json::from_value(json!({
+                json_codec::from_value(json!({
                     "kind":input.get("kind"), "items":input.get("items")
                 }))
                 .map_err(ApiError::invalid)?;

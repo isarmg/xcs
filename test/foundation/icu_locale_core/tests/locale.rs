@@ -40,7 +40,7 @@ fn test_langid_fixtures(tests: Vec<fixtures::LocaleTest>) {
 
 #[test]
 fn test_locale_parsing() {
-    let data = serde_json::from_str(include_str!("fixtures/locale.json"))
+    let data = json_codec::from_str(include_str!("fixtures/locale.json"))
         .expect("Failed to read a fixture");
 
     test_langid_fixtures(data);
@@ -48,7 +48,7 @@ fn test_locale_parsing() {
 
 #[test]
 fn test_locale_invalid() {
-    let data = serde_json::from_str(include_str!("fixtures/invalid-extensions.json"))
+    let data = json_codec::from_str(include_str!("fixtures/invalid-extensions.json"))
         .expect("Failed to read a fixture");
 
     test_langid_fixtures(data);
@@ -71,7 +71,7 @@ fn test_locale_conversions() {
 
 #[test]
 fn test_locale_canonicalize() {
-    let data = serde_json::from_str(include_str!("fixtures/canonicalize.json"))
+    let data = json_codec::from_str(include_str!("fixtures/canonicalize.json"))
         .expect("Failed to read a fixture");
 
     test_langid_fixtures(data);
@@ -80,7 +80,7 @@ fn test_locale_canonicalize() {
 #[test]
 fn test_locale_normalizing_eq_str() {
     let tests: Vec<fixtures::LocaleTest> =
-        serde_json::from_str(include_str!("fixtures/locale.json"))
+        json_codec::from_str(include_str!("fixtures/locale.json"))
             .expect("Failed to read a fixture");
     for test in tests {
         let parsed: Locale = test.input.try_into().expect("Parsing failed.");
@@ -95,7 +95,7 @@ fn test_locale_normalizing_eq_str() {
 #[test]
 fn test_locale_strict_cmp() {
     let tests: Vec<fixtures::LocaleTest> =
-        serde_json::from_str(include_str!("fixtures/locale.json"))
+        json_codec::from_str(include_str!("fixtures/locale.json"))
             .expect("Failed to read a fixture");
     let bcp47_strings = tests
         .iter()

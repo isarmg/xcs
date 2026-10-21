@@ -4,7 +4,7 @@ use crate::{
     journal::*,
     *,
 };
-use serde_json::json;
+use json_codec::json;
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs,
@@ -147,7 +147,7 @@ impl Engine {
             json!({"history_tree_id":history,"cut_commit_id":cut}),
         )
     }
-    fn save_plan(&mut self, kind: &str, principal: &str, input: serde_json::Value) -> Result<Plan> {
+    fn save_plan(&mut self, kind: &str, principal: &str, input: json_codec::Value) -> Result<Plan> {
         let plan = Plan {
             plan_id: new_id("plan"),
             kind: kind.into(),
@@ -463,7 +463,7 @@ impl Engine {
             };
             let mut inclusion = None;
             for hash in snapshot.pages.get("content_states").into_iter().flatten() {
-                let page: serde_json::Map<String, serde_json::Value> =
+                let page: json_codec::Map<String, json_codec::Value> =
                     crate::publication_evidence::verified_object(&members, "state-page", hash)?;
                 if page.get(id).and_then(|v| v.as_str()) == Some(state.as_str()) {
                     inclusion = Some(page);

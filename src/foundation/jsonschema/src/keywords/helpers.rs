@@ -3,7 +3,7 @@
 use crate::LazyInstance;
 use std::borrow::Cow;
 
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 use crate::{compiler, paths::Location, types::JsonType, Json, ValidationError};
 

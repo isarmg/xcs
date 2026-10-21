@@ -50,7 +50,7 @@ test_type!(bytes<Vec<u8>>(Sqlite,
 #[cfg(feature = "json")]
 mod json_tests {
     use super::*;
-    use serde_json::{json, Value as JsonValue};
+    use json_codec::{json, Value as JsonValue};
     use sqlx::types::Json;
     use sqlx_test::test_type;
 
@@ -62,7 +62,7 @@ mod json_tests {
         "'[\"Hello\",\"World!\"]'" == json!(["Hello", "World!"])
     ));
 
-    #[derive(serde::Deserialize, serde::Serialize, Debug, PartialEq)]
+    #[derive(data_serialization::Deserialize, data_serialization::Serialize, Debug, PartialEq)]
     struct Friend {
         name: String,
         age: u32,
@@ -76,7 +76,7 @@ mod json_tests {
     // NOTE: This is testing recursive (and transparent) usage of the `Json` wrapper. You don't
     //       need to wrap the Vec in Json<_> to make the example work.
 
-    #[derive(Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+    #[derive(Debug, PartialEq, data_serialization::Serialize, data_serialization::Deserialize)]
     struct Customer {
         json_column: Json<Vec<i64>>,
     }

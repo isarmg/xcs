@@ -127,12 +127,12 @@ fn recovery_rejects_all_digest_mismatched_object_replicas_without_rewriting_them
         } else {
             record.object_hash
         };
-        let mut wrong: serde_json::Value =
+        let mut wrong: json_codec::Value =
             read_json(&object_path(&members[0], kind, &hash)).unwrap();
         if kind == "candidate" {
-            wrong["operation_id"] = serde_json::json!(new_id("op"));
+            wrong["operation_id"] = json_codec::json!(new_id("op"));
         } else {
-            wrong["candidate_hash"] = serde_json::json!("0".repeat(64));
+            wrong["candidate_hash"] = json_codec::json!("0".repeat(64));
         }
         let wrong = canonical_json(&wrong).unwrap();
         let journals = members
@@ -207,7 +207,7 @@ fn object_repair_does_not_replace_symlink_or_hardlink() {
         ]);
         let engine = Engine::initialize(&temp.path().join("system"), config).unwrap();
         let members = engine.members();
-        let value = serde_json::json!({"data": "verified"});
+        let value = json_codec::json!({"data": "verified"});
         let hash = store_object(&members[0], "candidate", &value).unwrap();
         let target = object_path(&members[0], "candidate", &hash);
         std::fs::remove_file(&target).unwrap();
@@ -240,9 +240,9 @@ fn bound_snapshot_repair_preserves_alternate_page_partition() {
             .file_notes
             .insert(format!("file_{n:04}"), format!("note {n}"));
     }
-    let value = serde_json::to_value(&state).unwrap();
+    let value = json_codec::to_value(&state).unwrap();
     let mut pages = BTreeMap::new();
-    let mut scalars = serde_json::Map::new();
+    let mut scalars = json_codec::Map::new();
     // Page partitioning is not a version discriminator. Repair must retain
     // the bound root rather than regenerate content-defined boundaries.
     for (field, value) in value.as_object().unwrap() {
@@ -250,7 +250,7 @@ fn bound_snapshot_repair_preserves_alternate_page_partition() {
             let entries = map.iter().collect::<Vec<_>>();
             let mut hashes = Vec::new();
             for chunk in entries.chunks(128) {
-                let page: serde_json::Map<_, _> = chunk
+                let page: json_codec::Map<_, _> = chunk
                     .iter()
                     .map(|(key, value)| ((*key).clone(), (*value).clone()))
                     .collect();

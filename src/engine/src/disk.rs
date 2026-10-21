@@ -1,9 +1,9 @@
 use crate::*;
+use data_serialization::{Deserialize, Serialize};
 use platform_io::fs_safety::{
     AtomicFile, EntryName, PrivateDirectory, RelativePath,
     linux::{MountPolicy, OpenAt2Root, SingleLinkRequirement},
 };
-use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
     io::{Read, Write},
@@ -56,16 +56,16 @@ pub(crate) const MAX_METADATA: usize = 64 * 1024 * 1024;
 // 512 MiB plus its fixed checksum header. Keep this separate from JSON metadata.
 pub(crate) const MAX_CHECKSUM_MANIFEST: usize = 512 * 1024 * 1024 + CHECKSUM_HEADER_BYTES;
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct DiskSeal {
     pub pool_id: String,
     pub disk_id: String,
     pub slot_id: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub binding_generation: u64,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub device: u64,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub inode: u64,
     pub physical_device: String,
     pub filesystem_uuid: String,
@@ -158,7 +158,7 @@ pub(crate) fn read_bytes(path: &Path, maximum: usize) -> Result<Vec<u8>> {
     }
     Ok(out)
 }
-pub(crate) fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
+pub(crate) fn read_json<T: data_serialization::de::DeserializeOwned>(path: &Path) -> Result<T> {
     decode_strict(&read_bytes(path, MAX_METADATA)?)
 }
 pub(crate) fn write_atomic(path: &Path, bytes: &[u8], replace: bool) -> Result<()> {

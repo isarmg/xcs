@@ -5,8 +5,8 @@
 #[cfg(feature = "databake")]
 mod databake;
 
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 mod slice;
 
@@ -54,9 +54,9 @@ use core::ptr::NonNull;
 /// // The little-endian bytes correspond to the numbers on the following line.
 /// let nums: &[u16] = &[211, 281, 421, 461];
 ///
-/// #[derive(serde::Serialize, serde::Deserialize)]
+/// #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 /// struct Data<'a> {
-///     #[serde(borrow)]
+///     #[serialization(borrow)]
 ///     nums: ZeroVec<'a, u16>,
 /// }
 ///

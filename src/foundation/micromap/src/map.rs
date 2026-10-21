@@ -15,8 +15,8 @@ mod index;
 mod iterators;
 pub(crate) mod keys;
 mod methods;
-#[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+#[cfg(feature = "serialization")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serialization")))]
 mod serialization;
 mod values;
 

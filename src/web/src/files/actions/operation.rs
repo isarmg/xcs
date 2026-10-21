@@ -8,7 +8,7 @@ use crate::{
     files::model::{SaveStatus, operation_status, publication_notice},
     ui::{State, current_session, fail, text},
 };
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use web_interface::prelude::*;
 use web_interface::tasks::spawn_local;
 

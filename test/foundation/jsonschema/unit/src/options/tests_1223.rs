@@ -2,7 +2,7 @@
 mod tests {
     use super::*;
     use referencing::{Registry, Resource, Retrieve, Uri};
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     fn custom(s: &str) -> bool {

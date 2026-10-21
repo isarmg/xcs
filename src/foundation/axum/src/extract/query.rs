@@ -1,10 +1,10 @@
 use super::{rejection::*, FromRequestParts};
 use http::{request::Parts, Uri};
-use serde_core::de::DeserializeOwned;
+use serialization_core::de::DeserializeOwned;
 
 /// Extractor that deserializes query strings into some type.
 ///
-/// `T` is expected to implement [`serde::Deserialize`].
+/// `T` is expected to implement [`data_serialization::Deserialize`].
 ///
 /// # Examples
 ///
@@ -14,7 +14,7 @@ use serde_core::de::DeserializeOwned;
 ///     routing::get,
 ///     Router,
 /// };
-/// use serde::Deserialize;
+/// use data_serialization::Deserialize;
 ///
 /// #[derive(Deserialize)]
 /// struct Pagination {
@@ -72,7 +72,7 @@ where
     /// ```
     /// use axum::extract::Query;
     /// use http::Uri;
-    /// use serde::Deserialize;
+    /// use data_serialization::Deserialize;
     ///
     /// #[derive(Deserialize)]
     /// struct ExampleParams {
@@ -88,8 +88,8 @@ where
     pub fn try_from_uri(value: &Uri) -> Result<Self, QueryRejection> {
         let query = value.query().unwrap_or_default();
         let deserializer =
-            serde_urlencoded::Deserializer::new(form_urlencoded::parse(query.as_bytes()));
-        let params = serde_path_to_error::deserialize(deserializer)
+            form_codec::Deserializer::new(form_urlencoded::parse(query.as_bytes()));
+        let params = serialization_error_path::deserialize(deserializer)
             .map_err(FailedToDeserializeQueryString::from_err)?;
         Ok(Query(params))
     }

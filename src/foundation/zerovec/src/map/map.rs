@@ -31,9 +31,9 @@ use core::iter::FromIterator;
 /// ```
 /// use zerovec::ZeroMap;
 ///
-/// #[derive(serde::Serialize, serde::Deserialize)]
+/// #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 /// struct Data<'a> {
-///     #[serde(borrow)]
+///     #[serialization(borrow)]
 ///     map: ZeroMap<'a, u32, str>,
 /// }
 ///

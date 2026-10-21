@@ -7,7 +7,7 @@
 //! The implementation eagerly compiles a recursive `ItemsValidators` structure during
 //! schema compilation, using `Arc<OnceLock>` for circular reference handling.
 use referencing::{Draft, Vocabulary};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::{
     fmt,
     sync::{Arc, OnceLock},
@@ -19,18 +19,18 @@ use crate::{
     node::SchemaNode,
     paths::{LazyLocation, Location, RefTracker},
     validator::{EvaluationResult, Validate, ValidationContext},
-    Array, Json, Node, SerdeJson, ValidationError,
+    Array, Json, Node, JsonValueBackend, ValidationError,
 };
 
 use super::CompilationResult;
 
 /// Lazy items validators that are compiled on first access.
 /// Used for $recursiveRef and circular references to handle cycles during compilation.
-pub(crate) type PendingItemsValidators<F = SerdeJson> = Arc<OnceLock<ItemsValidators<F>>>;
+pub(crate) type PendingItemsValidators<F = JsonValueBackend> = Arc<OnceLock<ItemsValidators<F>>>;
 
 /// Holds compiled validators for items evaluation in unevaluatedItems.
 /// This structure is built during schema compilation and used during validation.
-pub(crate) struct ItemsValidators<F: Json = SerdeJson> {
+pub(crate) struct ItemsValidators<F: Json = JsonValueBackend> {
     /// Validator from "unevaluatedItems" keyword itself
     unevaluated: Option<SchemaNode<F>>,
     /// Validator from "contains" keyword
@@ -88,7 +88,7 @@ impl<F: Json> fmt::Debug for ItemsValidators<F> {
 }
 
 /// Conditional validators from "if/then/else" keywords
-struct ConditionalValidators<F: Json = SerdeJson> {
+struct ConditionalValidators<F: Json = JsonValueBackend> {
     condition: SchemaNode<F>,
     /// `None` for a boolean `if`, which evaluates nothing.
     if_: Option<ItemsValidators<F>>,
@@ -724,7 +724,7 @@ fn compile_one_of<'a, F: Json>(
 }
 
 /// Validator for the `unevaluatedItems` keyword.
-pub(crate) struct UnevaluatedItemsValidator<F: Json = SerdeJson> {
+pub(crate) struct UnevaluatedItemsValidator<F: Json = JsonValueBackend> {
     location: Location,
     validators: ItemsValidators<F>,
 }

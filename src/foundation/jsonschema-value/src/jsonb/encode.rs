@@ -18,7 +18,7 @@ pub const JB_FSCALAR: u32 = super::JB_FSCALAR;
 pub const JENTRY_HAS_OFF: u32 = super::JENTRY_HAS_OFF;
 use std::fmt::Write as _;
 
-use serde_json::Value;
+use json_codec::Value;
 
 pub const JB_FARRAY: u32 = 0x4000_0000;
 
@@ -163,7 +163,7 @@ fn encode_array(items: &[Value], form: NumericForm) -> Vec<u8> {
     assemble(JB_FARRAY | items.len() as u32, &entries, &data)
 }
 
-fn encode_object(members: &serde_json::Map<String, Value>, form: NumericForm) -> Vec<u8> {
+fn encode_object(members: &json_codec::Map<String, Value>, form: NumericForm) -> Vec<u8> {
     let mut entries = Vec::new();
     let mut data = Vec::new();
     let mut total = 0_u32;
@@ -303,7 +303,7 @@ pub fn encode_numeric(text: &str, form: NumericForm) -> Vec<u8> {
     out
 }
 
-// Numerics from decimal text, so a magnitude `serde_json::Number` cannot hold still encodes.
+// Numerics from decimal text, so a magnitude `json_codec::Number` cannot hold still encodes.
 pub fn encode_numeric_text_array(texts: &[&str], form: NumericForm) -> Vec<u8> {
     let mut entries = Vec::new();
     let mut data = Vec::new();

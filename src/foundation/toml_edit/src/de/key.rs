@@ -1,4 +1,4 @@
-use serde::de::IntoDeserializer;
+use data_serialization::de::IntoDeserializer;
 
 use super::Error;
 
@@ -21,12 +21,12 @@ impl IntoDeserializer<'_, Error> for KeyDeserializer {
     }
 }
 
-impl<'de> serde::de::Deserializer<'de> for KeyDeserializer {
+impl<'de> data_serialization::de::Deserializer<'de> for KeyDeserializer {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         self.key.into_deserializer().deserialize_any(visitor)
     }
@@ -38,7 +38,7 @@ impl<'de> serde::de::Deserializer<'de> for KeyDeserializer {
         visitor: V,
     ) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let _ = name;
         let _ = variants;
@@ -52,9 +52,9 @@ impl<'de> serde::de::Deserializer<'de> for KeyDeserializer {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
-        if serde_spanned::__unstable::is_spanned(name, fields) {
+        if source_spanned_value::__unstable::is_spanned(name, fields) {
             if let Some(span) = self.span.clone() {
                 return visitor.visit_map(super::SpannedDeserializer::new(self.key.get(), span));
             }
@@ -68,25 +68,25 @@ impl<'de> serde::de::Deserializer<'de> for KeyDeserializer {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         visitor.visit_newtype_struct(self)
     }
 
-    serde::forward_to_deserialize_any! {
+    data_serialization::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map option unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
 
-impl<'de> serde::de::EnumAccess<'de> for KeyDeserializer {
+impl<'de> data_serialization::de::EnumAccess<'de> for KeyDeserializer {
     type Error = Error;
     type Variant = UnitOnly<Self::Error>;
 
     fn variant_seed<T>(self, seed: T) -> Result<(T::Value, Self::Variant), Self::Error>
     where
-        T: serde::de::DeserializeSeed<'de>,
+        T: data_serialization::de::DeserializeSeed<'de>,
     {
         seed.deserialize(self).map(unit_only)
     }
@@ -105,9 +105,9 @@ fn unit_only<T, E>(t: T) -> (T, UnitOnly<E>) {
     )
 }
 
-impl<'de, E> serde::de::VariantAccess<'de> for UnitOnly<E>
+impl<'de, E> data_serialization::de::VariantAccess<'de> for UnitOnly<E>
 where
-    E: serde::de::Error,
+    E: data_serialization::de::Error,
 {
     type Error = E;
 
@@ -117,20 +117,20 @@ where
 
     fn newtype_variant_seed<T>(self, _seed: T) -> Result<T::Value, Self::Error>
     where
-        T: serde::de::DeserializeSeed<'de>,
+        T: data_serialization::de::DeserializeSeed<'de>,
     {
-        Err(serde::de::Error::invalid_type(
-            serde::de::Unexpected::UnitVariant,
+        Err(data_serialization::de::Error::invalid_type(
+            data_serialization::de::Unexpected::UnitVariant,
             &"newtype variant",
         ))
     }
 
     fn tuple_variant<V>(self, _len: usize, _visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
-        Err(serde::de::Error::invalid_type(
-            serde::de::Unexpected::UnitVariant,
+        Err(data_serialization::de::Error::invalid_type(
+            data_serialization::de::Unexpected::UnitVariant,
             &"tuple variant",
         ))
     }
@@ -141,10 +141,10 @@ where
         _visitor: V,
     ) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
-        Err(serde::de::Error::invalid_type(
-            serde::de::Unexpected::UnitVariant,
+        Err(data_serialization::de::Error::invalid_type(
+            data_serialization::de::Unexpected::UnitVariant,
             &"struct variant",
         ))
     }

@@ -1,14 +1,14 @@
 use super::*;
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct GoldenVectors {
     algorithm_version: u32,
     vectors: Vec<GoldenVector>,
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct GoldenVector {
     name: String,
     rows: Vec<SchemaRow>,
@@ -26,7 +26,7 @@ fn identity() -> Result<SchemaIdentity, Error> {
 
 #[test]
 fn golden_vectors_lock_binary_framing_and_utf8_lengths() -> Result<(), Box<dyn std::error::Error>> {
-    let fixtures: GoldenVectors = serde_json::from_str(SCHEMA_FINGERPRINT_GOLDEN_VECTORS_JSON)?;
+    let fixtures: GoldenVectors = json_codec::from_str(SCHEMA_FINGERPRINT_GOLDEN_VECTORS_JSON)?;
     assert_eq!(
         fixtures.algorithm_version,
         SCHEMA_FINGERPRINT_ALGORITHM_VERSION
@@ -189,7 +189,7 @@ fn invalid_identity_values_are_rejected() {
         Err(Error::InvalidSchemaSha256 { .. })
     ));
     assert!(
-            serde_json::from_str::<SchemaIdentity>(
+            json_codec::from_str::<SchemaIdentity>(
                 r#"{
                     "application":"wrong product",
                     "application_version":"1.0.0",
@@ -200,7 +200,7 @@ fn invalid_identity_values_are_rejected() {
             .is_err()
         );
     assert!(
-            serde_json::from_str::<SchemaIdentity>(
+            json_codec::from_str::<SchemaIdentity>(
                 r#"{
                     "application":"product",
                     "application_version":"1.0.0",

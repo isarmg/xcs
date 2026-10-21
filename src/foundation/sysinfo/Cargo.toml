@@ -37,7 +37,7 @@ linux-netdevs = []
 linux-tmpfs = []
 multithread = ["dep:rayon"]
 network = []
-serde = ["dep:serde"]
+serialization = ["dep:data-serialization"]
 system = ["dep:memchr"]
 unknown-ci = []
 user = []
@@ -56,11 +56,11 @@ version = "^1.8"
 optional = true
 path = "../rayon"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "^1.0.190"
 features = ["derive"]
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
 [target.'cfg(not(any(target_os = "unknown", target_arch = "wasm32")))'.dependencies.libc]
 version = "^0.2.173"

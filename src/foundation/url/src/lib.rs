@@ -83,7 +83,7 @@ provides no_std support.
 
 ## Serde
 
-Enable the `serde` feature to include `Deserialize` and `Serialize` implementations for `url::Url`.
+Enable the `serialization` feature to include `Deserialize` and `Serialize` implementations for `url::Url`.
 
 # Base URL
 
@@ -116,15 +116,15 @@ assert_eq!(css_url.as_str(), "http://servo.github.io/rust-url/main.css");
 # run().unwrap();
 ```
 
-# Feature: `serde`
+# Feature: `serialization`
 
-If you enable the `serde` feature, [`Url`](struct.Url.html) will implement
-[`serde::Serialize`](https://docs.rs/serde/1/serde/trait.Serialize.html) and
-[`serde::Deserialize`](https://docs.rs/serde/1/serde/trait.Deserialize.html).
+If you enable the `serialization` feature, [`Url`](struct.Url.html) will implement
+[`data_serialization::Serialize`](https://docs.rs/serde/1/serde/trait.Serialize.html) and
+[`data_serialization::Deserialize`](https://docs.rs/serde/1/serde/trait.Deserialize.html).
 See [serde documentation](https://serde.rs) for more information.
 
 ```toml
-url = { version = "2", features = ["serde"] }
+url = { version = "2", features = ["serialization"] }
 ```
 
 # Feature: `debugger_visualizer`
@@ -158,8 +158,8 @@ extern crate std;
 #[macro_use]
 extern crate alloc;
 
-#[cfg(feature = "serde")]
-extern crate serde;
+#[cfg(feature = "serialization")]
+extern crate data_serialization;
 
 use crate::host::HostInternal;
 
@@ -2612,13 +2612,13 @@ impl Url {
     /// for speed, compared to the `Deserialize` trait impl.
     ///
     /// This method is only available if the `serde` Cargo feature is enabled.
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[deny(unused)]
     pub fn serialize_internal<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
-        use serde::Serialize;
+        use data_serialization::Serialize;
         // Destructuring first lets us ensure that adding or removing fields forces this method
         // to be updated
         let Url {
@@ -2654,13 +2654,13 @@ impl Url {
     /// for speed, compared to the `Deserialize` trait impl.
     ///
     /// This method is only available if the `serde` Cargo feature is enabled.
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[deny(unused)]
     pub fn deserialize_internal<'de, D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
-        use serde::de::{Deserialize, Error};
+        use data_serialization::de::{Deserialize, Error};
         let (
             serialization,
             scheme_end,
@@ -2899,11 +2899,11 @@ impl RangeArg for RangeTo<u32> {
 /// Serializes this URL into a `serde` stream.
 ///
 /// This implementation is only available if the `serde` Cargo feature is enabled.
-#[cfg(feature = "serde")]
-impl serde::Serialize for Url {
+#[cfg(feature = "serialization")]
+impl data_serialization::Serialize for Url {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         serializer.serialize_str(self.as_str())
     }
@@ -2912,13 +2912,13 @@ impl serde::Serialize for Url {
 /// Deserializes this URL from a `serde` stream.
 ///
 /// This implementation is only available if the `serde` Cargo feature is enabled.
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for Url {
+#[cfg(feature = "serialization")]
+impl<'de> data_serialization::Deserialize<'de> for Url {
     fn deserialize<D>(deserializer: D) -> Result<Url, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
-        use serde::de::{Error, Visitor};
+        use data_serialization::de::{Error, Visitor};
 
         struct UrlVisitor;
 

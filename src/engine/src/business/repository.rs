@@ -1,6 +1,6 @@
 //! Repository ownership and explicit SMB binding.
 use crate::*;
-use serde_json::json;
+use json_codec::json;
 impl Engine {
     /// Rebind an SMB share only after the manager explicitly selects a live
     /// branch. A history split never invokes this operation implicitly.

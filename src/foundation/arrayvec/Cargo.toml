@@ -30,6 +30,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/bluss/arrayvec"
 
 [features]
+serialization = ["dep:data-serialization"]
 default = ["std"]
 std = []
 
@@ -37,11 +38,11 @@ std = []
 name = "arrayvec"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.zeroize]
 version = "1.4"

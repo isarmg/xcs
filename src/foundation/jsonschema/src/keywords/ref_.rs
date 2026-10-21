@@ -10,7 +10,7 @@ use crate::{
     Json, ValidationError,
 };
 use referencing::{unescape_segment, uri, Resolved, Uri};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::sync::Arc;
 
 /// Tracks `$ref` traversals for recursive references where the target is behind `BoxedValidator<F>`

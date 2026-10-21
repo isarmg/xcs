@@ -26,11 +26,11 @@ repository = "https://github.com/rust-lang/log"
 [features]
 alloc = []
 kv = []
-kv_serde = ["kv_std", "serde"]
+kv_serialization = ["kv_std", "serialization"]
 kv_std = ["std", "kv"]
 kv_sval = ["kv"]
 kv_unstable = ["kv"]
-kv_unstable_serde = ["kv_serde", "kv_unstable_std"]
+kv_unstable_serialization = ["kv_serialization", "kv_unstable_std"]
 kv_unstable_std = ["kv_std", "kv_unstable"]
 kv_unstable_sval = ["kv_sval", "kv_unstable"]
 max_level_debug = []
@@ -45,16 +45,16 @@ release_max_level_info = []
 release_max_level_off = []
 release_max_level_trace = []
 release_max_level_warn = []
-serde = ["serde_core"]
+serialization = ["serialization-core"]
 std = ["alloc"]
 
 [lib]
 name = "log"
 path = "src/lib.rs"
 
-[dependencies.serde_core]
+[dependencies.serialization-core]
 version = "1.0"
 optional = true
 default-features = false
-path = "../serde_core"
+path = "../serialization-core"
 

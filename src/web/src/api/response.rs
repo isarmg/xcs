@@ -1,6 +1,6 @@
 //! Browser adapter for the shared client protocol.
 use super::Error;
-use serde_json::Value;
+use json_codec::Value;
 
 pub(super) fn decode(status: u16, bytes: &[u8]) -> Result<Value, Error> {
     storage_contract::client_protocol::decode_response(status, bytes).map_err(from_protocol)

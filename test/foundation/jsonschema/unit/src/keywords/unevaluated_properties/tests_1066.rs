@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::error::ValidationErrorKind;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     fn errors(schema: &Value, instance: &Value) -> Vec<(String, String, String)> {

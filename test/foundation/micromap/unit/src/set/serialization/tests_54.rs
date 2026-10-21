@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::Set;
-    use bincode::serde::{decode_from_slice, encode_into_slice};
+    use bincode::data_serialization::{decode_from_slice, encode_into_slice};
 
     #[test]
     fn serialize_and_deserialize() {
@@ -17,7 +17,7 @@ mod tests {
     }
 
     #[test]
-    fn empty_set_serde() {
+    fn empty_set_serialization() {
         let config = bincode::config::legacy();
         let before: Set<u8, 8> = Set::new();
         let mut bytes: [u8; 1024] = [0; 1024];

@@ -85,8 +85,8 @@ pub mod subtags;
 pub mod preferences;
 pub mod zerovec;
 
-#[cfg(all(feature = "alloc", feature = "serde"))]
-mod serde;
+#[cfg(all(feature = "alloc", feature = "serialization"))]
+mod data_serialization;
 
 #[cfg(feature = "databake")]
 mod databake;

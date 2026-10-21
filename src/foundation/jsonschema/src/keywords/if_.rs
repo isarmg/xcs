@@ -5,16 +5,16 @@ use crate::{
     node::SchemaNode,
     paths::{LazyLocation, Location, RefTracker},
     validator::{EvaluationResult, Validate, ValidationContext},
-    Json, SerdeJson, ValidationError,
+    Json, JsonValueBackend, ValidationError,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 pub(crate) struct IfThenValidator<F: Json> {
     schema: SchemaNode<F>,
     then_schema: SchemaNode<F>,
 }
 
-impl IfThenValidator<SerdeJson> {
+impl IfThenValidator<JsonValueBackend> {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         ctx: &compiler::Context<F>,
@@ -115,7 +115,7 @@ pub(crate) struct IfElseValidator<F: Json> {
     else_schema: SchemaNode<F>,
 }
 
-impl IfElseValidator<SerdeJson> {
+impl IfElseValidator<JsonValueBackend> {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         ctx: &compiler::Context<F>,
@@ -214,7 +214,7 @@ pub(crate) struct IfThenElseValidator<F: Json> {
     else_schema: SchemaNode<F>,
 }
 
-impl IfThenElseValidator<SerdeJson> {
+impl IfThenElseValidator<JsonValueBackend> {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         ctx: &compiler::Context<F>,

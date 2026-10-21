@@ -1,6 +1,6 @@
 //! Conditional policy updates affect future full versions only.
 use crate::*;
-use serde_json::json;
+use json_codec::json;
 mod backup_paths;
 pub(crate) use backup_paths::apply_backup_paths;
 pub use backup_paths::{BackupConfigurationRequest, ScopedBackupConfigurationRequest};

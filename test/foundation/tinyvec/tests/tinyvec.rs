@@ -4,7 +4,7 @@
 
 #[cfg(feature = "bin-proto")]
 use bin_proto::{BigEndian, BitDecodeExt, BitEncodeExt, Tag, Untagged};
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 use serde_test::{assert_tokens, Token};
 use std::iter::FromIterator;
 use tinyvec::*;
@@ -416,7 +416,7 @@ fn TinyVec_try_move_to_heap_and_shrink() {
   assert_eq!(tv.as_slice(), [1, 2, 3, 4]);
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[test]
 fn TinyVec_ser_de_empty() {
   let tv: TinyVec<[i32; 0]> = tiny_vec![];
@@ -424,7 +424,7 @@ fn TinyVec_ser_de_empty() {
   assert_tokens(&tv, &[Token::Seq { len: Some(0) }, Token::SeqEnd]);
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[test]
 fn TinyVec_ser_de() {
   let tv: TinyVec<[i32; 4]> = tiny_vec![1, 2, 3, 4];
@@ -442,7 +442,7 @@ fn TinyVec_ser_de() {
   );
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[test]
 fn TinyVec_ser_de_heap() {
   let mut tv: TinyVec<[i32; 4]> = tiny_vec![1, 2, 3, 4];

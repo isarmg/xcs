@@ -2246,26 +2246,26 @@ impl From<&core::ffi::CStr> for Box<core::ffi::CStr> {
     }
 }
 
-#[cfg(feature = "serde")]
-impl<T, A> serde::Serialize for Box<T, A>
+#[cfg(feature = "serialization")]
+impl<T, A> data_serialization::Serialize for Box<T, A>
 where
-    T: serde::Serialize,
+    T: data_serialization::Serialize,
     A: Allocator,
 {
     #[inline(always)]
-    fn serialize<S: serde::ser::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    fn serialize<S: data_serialization::ser::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         (**self).serialize(serializer)
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'de, T, A> serde::Deserialize<'de> for Box<T, A>
+#[cfg(feature = "serialization")]
+impl<'de, T, A> data_serialization::Deserialize<'de> for Box<T, A>
 where
-    T: serde::Deserialize<'de>,
+    T: data_serialization::Deserialize<'de>,
     A: Allocator + Default,
 {
     #[inline(always)]
-    fn deserialize<D: serde::de::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+    fn deserialize<D: data_serialization::de::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let value = T::deserialize(deserializer)?;
         Ok(Box::new_in(value, A::default()))
     }

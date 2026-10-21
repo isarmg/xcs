@@ -11,7 +11,7 @@ use crate::{
     validator::{EvaluationResult, Validate, ValidationContext},
     Json, LazyInstance, Node,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::{borrow::Cow, sync::Arc};
 
 /// Validator for `contentMediaType` keyword.

@@ -6,7 +6,7 @@
 use core::fmt;
 use std::str::FromStr;
 
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{Json, Node};
 
@@ -212,7 +212,7 @@ impl JsonTypeSet {
 
 /// Whether `n` holds an integer value per drafts 6+ (floats with a zero fractional part count as integers).
 #[must_use]
-pub fn number_is_integer(n: &serde_json::Number) -> bool {
+pub fn number_is_integer(n: &json_codec::Number) -> bool {
     #[cfg(feature = "arbitrary-precision")]
     {
         use crate::numeric::bignum;
@@ -223,7 +223,7 @@ pub fn number_is_integer(n: &serde_json::Number) -> bool {
         }
         // With no exponent to shift the point the fractional digits settle it, which skips the
         // bignum parses below.
-        let text = serde_json::Number::as_str(n);
+        let text = json_codec::Number::as_str(n);
         if let Some((integer, fraction)) = text.split_once('.') {
             if !fraction.contains(['e', 'E']) {
                 return fraction.bytes().all(|byte| byte == b'0')

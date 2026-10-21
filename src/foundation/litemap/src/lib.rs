@@ -68,10 +68,10 @@ extern crate alloc;
 #[path = "databake.rs"] // to not conflict with `databake` as used in the docs
 mod databake_impls;
 mod map;
-#[cfg(feature = "serde")]
-mod serde;
-#[cfg(feature = "serde")]
-mod serde_helpers;
+#[cfg(feature = "serialization")]
+mod data_serialization;
+#[cfg(feature = "serialization")]
+mod serialization_helpers;
 pub mod store;
 
 #[cfg(any(test, feature = "testing"))]

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::tests_util;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     fn evaluation_entry_sort_key(value: &Value) -> (&str, &str, &str) {
@@ -91,7 +91,7 @@ mod tests {
         let validator = crate::validator_for(&schema).expect("schema compiles");
         let evaluation = validator.evaluate(&json!({"name": "Alice", "age": 1}));
 
-        let mut actual = serde_json::to_value(evaluation.list()).unwrap();
+        let mut actual = json_codec::to_value(evaluation.list()).unwrap();
         normalize_evaluation_output(&mut actual);
         let mut expected = json!({
             "valid": true,
@@ -152,7 +152,7 @@ mod tests {
         normalize_evaluation_output(&mut expected);
         assert_eq!(actual, expected);
 
-        let mut actual = serde_json::to_value(evaluation.hierarchical()).unwrap();
+        let mut actual = json_codec::to_value(evaluation.hierarchical()).unwrap();
         normalize_evaluation_output(&mut actual);
         let mut expected = json!({
             "valid": true,

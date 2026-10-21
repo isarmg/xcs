@@ -31,7 +31,7 @@ use pyo3::{
     types::{PyDict, PyString, PyType},
     Borrowed,
 };
-use serde_json::{Map, Number, Value};
+use json_codec::{Map, Number, Value};
 
 use crate::{cmp, types::JsonType, Array, Json, JsonNumber, Node, NodeIdentity, Object};
 

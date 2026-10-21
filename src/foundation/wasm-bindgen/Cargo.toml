@@ -28,12 +28,13 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/wasm-bindgen/wasm-bindgen"
 
 [features]
+serialization = ["dep:data-serialization"]
 default = ["std"]
 enable-interning = ["std"]
 gg-alloc = []
 msrv = []
 rustversion = []
-serde-serialize = ["serde", "serde_json", "std"]
+serialization-serialize = ["serialization", "json-codec", "std"]
 spans = []
 std = []
 strict-macro = ["wasm-bindgen-macro/strict-macro"]
@@ -53,15 +54,15 @@ version = "1.12"
 default-features = false
 path = "../once_cell"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_json]
+[dependencies.json-codec]
 version = "1.0"
 optional = true
-path = "../serde_json"
+path = "../json-codec"
 
 [dependencies.wasm-bindgen-macro]
 version = "=0.2.129"

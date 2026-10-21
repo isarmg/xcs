@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(&json!({"prefixItems": [{}], "items": {"type": "integer"}}), &json!([ null, 2, 3, "foo" ]), r#""foo" is not of type "integer""#)]
@@ -159,7 +159,7 @@ mod tests {
                 ));
             }
             for (schema, expected) in cases {
-                let schema: Value = serde_json::from_str(&schema).expect("Invalid JSON");
+                let schema: Value = json_codec::from_str(&schema).expect("Invalid JSON");
                 let validator = crate::options()
                     .with_draft(draft)
                     .build(&schema)
@@ -180,7 +180,7 @@ mod tests {
     #[cfg_attr(feature = "arbitrary-precision", test_case("18446744073709551616.0"))]
     fn invalid_size_bounds_still_rejected(limit: &str) {
         for keyword in ["maxLength", "minItems", "maxProperties"] {
-            let schema: Value = serde_json::from_str(&format!(r#"{{"{keyword}": {limit}}}"#))
+            let schema: Value = json_codec::from_str(&format!(r#"{{"{keyword}": {limit}}}"#))
                 .expect("Invalid JSON");
             assert!(
                 crate::options()

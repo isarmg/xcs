@@ -8,7 +8,7 @@ mod tests {
     use std::thread;
     use std::time::Duration;
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     use bincode::{deserialize, serialize};
 
     #[derive(Eq, PartialEq, Debug)]
@@ -458,9 +458,9 @@ mod tests {
         assert_eq!(Arc::strong_count(&b), 2);
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
-    fn test_serde() {
+    fn test_serialization() {
         let contents: Vec<u8> = vec![0, 1, 2];
         let mutex = RwLock::new(contents.clone());
 

@@ -8,7 +8,7 @@ use crate::{
     validator::{EvaluationResult, Validate, ValidationContext},
     Json, Node, Object,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 pub(crate) struct PropertyNamesObjectValidator<F: Json> {
     node: SchemaNode<F>,

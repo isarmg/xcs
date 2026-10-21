@@ -6,7 +6,7 @@ use crate::{
     validator::{Validate, ValidationContext},
     Array, Json, Node,
 };
-use serde_json::{Map, Number, Value};
+use json_codec::{Map, Number, Value};
 
 use crate::paths::{LazyLocation, RefTracker};
 

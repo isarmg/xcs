@@ -7,7 +7,7 @@ use std::{
 };
 
 use referencing::Draft;
-use serde_json::Value;
+use json_codec::Value;
 use strum::{IntoStaticStr, VariantArray};
 
 use crate::{

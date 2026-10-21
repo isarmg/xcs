@@ -3,7 +3,7 @@ mod tests {
     use crate::tests_util;
     use ahash::HashMap;
     use referencing::{Retrieve, Uri};
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     struct MyRetrieve;
@@ -500,7 +500,7 @@ mod tests {
     ; "$recursiveRef to another resource")]
     fn reference_node_schema_location(schema: &Value, instance: &Value, expected: &[(&str, &str)]) {
         let validator = crate::validator_for(schema).expect("Invalid schema");
-        let output = serde_json::to_value(validator.evaluate(instance).list())
+        let output = json_codec::to_value(validator.evaluate(instance).list())
             .expect("Output should serialize");
         let locations: Vec<(&str, &str)> = output["details"]
             .as_array()
@@ -676,7 +676,7 @@ mod tests {
             .build(schema)
             .expect("Invalid schema");
         let instance = json!({"a": 1});
-        let output = serde_json::to_value(validator.evaluate(&instance).list())
+        let output = json_codec::to_value(validator.evaluate(&instance).list())
             .expect("Output should serialize");
         let evaluation: Vec<(&str, &str)> = output["details"]
             .as_array()

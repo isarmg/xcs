@@ -279,7 +279,7 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///     Json,
 ///     http::StatusCode,
 /// };
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// // This will extracted via `Extension::<State>::from_request`
 /// #[derive(Clone, FromRequest)]
@@ -325,8 +325,8 @@ use from_request::Trait::{FromRequest, FromRequestParts};
 ///     response::{IntoResponse, Response},
 ///     http::StatusCode,
 /// };
-/// use serde_json::json;
-/// use serde::Deserialize;
+/// use json_codec::json;
+/// use data_serialization::Deserialize;
 ///
 /// // create an extractor that internally uses `axum::Json` but has a custom rejection
 /// #[derive(FromRequest)]

@@ -1,6 +1,6 @@
 use super::*;
 use crate::{Backend, engine_backend::EngineBackend};
-use serde_json::json;
+use json_codec::json;
 use std::collections::BTreeSet;
 use storage_contract::{Config, new_id};
 
@@ -35,11 +35,11 @@ fn protection_commands_validate_wire_types_and_unknown_fields() {
     let rule = json!({"rule_id":new_id("rule"),"repository_id":new_id("repo"),
             "path_prefix":"","primary_slot_id":"P01","expected_generation":"0","operation_id":new_id("op")});
     for (is_policy, valid) in [(true, policy), (false, rule)] {
-        let decode = |value: serde_json::Value| {
+        let decode = |value: json_codec::Value| {
             if is_policy {
-                serde_json::from_value::<UpdateProtectionPolicy>(value).map(|_| ())
+                json_codec::from_value::<UpdateProtectionPolicy>(value).map(|_| ())
             } else {
-                serde_json::from_value::<UpdatePlacementRule>(value).map(|_| ())
+                json_codec::from_value::<UpdatePlacementRule>(value).map(|_| ())
             }
         };
         assert!(decode(valid.clone()).is_ok());
@@ -172,10 +172,10 @@ fn protection_commands_preserve_core_replay_and_transport_contract() {
         let mut engine = backend.engine.lock().unwrap();
         let denied = if is_policy {
             Application::new(&mut engine, &stranger)
-                .update_protection_policy(serde_json::from_value(input).unwrap())
+                .update_protection_policy(json_codec::from_value(input).unwrap())
         } else {
             Application::new(&mut engine, &stranger)
-                .update_placement_rule(serde_json::from_value(input).unwrap())
+                .update_placement_rule(json_codec::from_value(input).unwrap())
         };
         assert_eq!(denied.unwrap_err().status, 403);
         assert_eq!(
@@ -234,8 +234,8 @@ fn public_commit_roundtrip_preserves_canonical_envelope_and_executes() {
     body["request_digest"] = storage_engine::commit_request_digest(&workspace.workspace_id, &body)
         .unwrap()
         .into();
-    let command: PublicCommitWorkspace = serde_json::from_value(body.clone()).unwrap();
-    assert_eq!(serde_json::to_value(&command).unwrap(), body);
+    let command: PublicCommitWorkspace = json_codec::from_value(body.clone()).unwrap();
+    assert_eq!(json_codec::to_value(&command).unwrap(), body);
     let result = Application::new(&mut engine, &identity)
         .commit_workspace_public(command.clone())
         .unwrap();
@@ -310,7 +310,7 @@ fn public_commit_decode_rejects_unknown_missing_and_numeric_decimal_fields() {
     let body = json!({"workspace_id":"ws", "operation_id":"op", "repository_id":"repo", "branch_id":"branch",
             "expected_head":"head", "fencing_token":"1", "message":"", "requested_protection":"strict",
             "file_placement":{}, "expected_topology_generation":"1", "sealed_manifest_hash":"hash", "request_digest":"digest"});
-    assert!(serde_json::from_value::<PublicCommitWorkspace>(body.clone()).is_ok());
+    assert!(json_codec::from_value::<PublicCommitWorkspace>(body.clone()).is_ok());
     for field in [
         "workspace_id",
         "operation_id",
@@ -321,7 +321,7 @@ fn public_commit_decode_rejects_unknown_missing_and_numeric_decimal_fields() {
         let mut missing = body.clone();
         missing.as_object_mut().unwrap().remove(field);
         assert!(
-            serde_json::from_value::<PublicCommitWorkspace>(missing).is_err(),
+            json_codec::from_value::<PublicCommitWorkspace>(missing).is_err(),
             "{field}"
         );
     }
@@ -329,13 +329,13 @@ fn public_commit_decode_rejects_unknown_missing_and_numeric_decimal_fields() {
         let mut numeric = body.clone();
         numeric[field] = json!(1);
         assert!(
-            serde_json::from_value::<PublicCommitWorkspace>(numeric).is_err(),
+            json_codec::from_value::<PublicCommitWorkspace>(numeric).is_err(),
             "{field}"
         );
     }
     let mut extra = body;
     extra["principal"] = "someone-else".into();
-    assert!(serde_json::from_value::<PublicCommitWorkspace>(extra).is_err());
+    assert!(json_codec::from_value::<PublicCommitWorkspace>(extra).is_err());
 }
 
 #[test]

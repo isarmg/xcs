@@ -140,7 +140,7 @@ pub(super) fn prepare(state: &State, maximum: usize) -> Result<PreparedSnapshot>
             .enumerate()
             .map(|(index, event)| (format!("{index:020}"), event)),
     )?;
-    let mut scalars = serde_json::Map::new();
+    let mut scalars = json_codec::Map::new();
     scalars.insert("sequence".into(), sequence.to_string().into());
     scalars.insert(
         "business_generation".into(),
@@ -152,10 +152,10 @@ pub(super) fn prepare(state: &State, maximum: usize) -> Result<PreparedSnapshot>
     );
     // Preserve the old encoder's treatment of any top-level object as pages,
     // including optional authentication JSON; other JSON shapes remain scalars.
-    if let Some(serde_json::Value::Object(map)) = control_auth {
+    if let Some(json_codec::Value::Object(map)) = control_auth {
         builder.map("control_auth", map.iter())?;
     } else {
-        scalars.insert("control_auth".into(), serde_json::to_value(control_auth)?);
+        scalars.insert("control_auth".into(), json_codec::to_value(control_auth)?);
     }
     let descriptor = Snapshot {
         sequence,

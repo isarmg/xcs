@@ -1,5 +1,5 @@
 use crate::{disk::*, *};
-use serde_json::json;
+use json_codec::json;
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs::File,
@@ -308,13 +308,13 @@ impl Engine {
     pub fn is_read_only(&self) -> bool {
         self.blocked
     }
-    pub fn auth_state(&self) -> Option<serde_json::Value> {
+    pub fn auth_state(&self) -> Option<json_codec::Value> {
         self.state.control_auth.clone()
     }
     /// Trusted local control-plane hook; this method is never a public route.
     pub fn persist_auth_state(
         &mut self,
-        snapshot: serde_json::Value,
+        snapshot: json_codec::Value,
         principal: &str,
         operation: &str,
     ) -> Result<()> {
@@ -479,11 +479,11 @@ impl Engine {
         kind: &str,
         principal: &str,
         operation_id: &str,
-        input: serde_json::Value,
+        input: json_codec::Value,
         change: F,
     ) -> Result<OperationResult>
     where
-        F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<serde_json::Value>,
+        F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<json_codec::Value>,
     {
         self.mutate_digest(kind, principal, operation_id, input, None, change)
     }
@@ -492,12 +492,12 @@ impl Engine {
         kind: &str,
         principal: &str,
         operation_id: &str,
-        input: serde_json::Value,
+        input: json_codec::Value,
         digest_override: Option<String>,
         change: F,
     ) -> Result<OperationResult>
     where
-        F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<serde_json::Value>,
+        F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<json_codec::Value>,
     {
         match self.plan_mutation_digest(
             kind,
@@ -523,12 +523,12 @@ impl Engine {
         kind: &str,
         principal: &str,
         operation_id: &str,
-        input: serde_json::Value,
+        input: json_codec::Value,
         digest_override: Option<String>,
         change: F,
     ) -> Result<MutationPlan>
     where
-        F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<serde_json::Value>,
+        F: FnOnce(&Self, &mut State, &mut Vec<Prepared>) -> Result<json_codec::Value>,
     {
         validate_id(operation_id, "op")?;
         if principal.is_empty() {
@@ -564,7 +564,7 @@ impl Engine {
         let mut prepared = Vec::new();
         let mut result = change(self, &mut next, &mut prepared)?;
         crate::container_storage::capture_names(&mut next);
-        result["timestamp"] = serde_json::json!(crate::business::now().to_string());
+        result["timestamp"] = json_codec::json!(crate::business::now().to_string());
         if let Some(branch_id) = result
             .get("branch_id")
             .and_then(|v| v.as_str())

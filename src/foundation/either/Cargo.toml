@@ -28,6 +28,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/rayon-rs/either"
 
 [features]
+serialization = ["dep:data-serialization"]
 default = ["std"]
 std = []
 use_std = ["std"]
@@ -36,7 +37,7 @@ use_std = ["std"]
 name = "either"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.95"
 features = [
     "alloc",
@@ -44,5 +45,5 @@ features = [
 ]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 

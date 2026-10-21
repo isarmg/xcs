@@ -1,5 +1,5 @@
 use axum_extra::routing::{RouterExt, TypedPath};
-use serde::Deserialize;
+use data_serialization::Deserialize;
 
 #[derive(TypedPath, Deserialize)]
 #[typed_path("/{*rest}")]

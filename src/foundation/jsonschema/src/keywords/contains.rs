@@ -6,10 +6,10 @@ use crate::{
     node::SchemaNode,
     paths::{LazyLocation, Location, RefTracker},
     validator::{EvaluationResult, Validate, ValidationContext},
-    Array, Draft, Json, Node, SerdeJson,
+    Array, Draft, Json, Node, JsonValueBackend,
 };
 use referencing::{Uri, Vocabulary};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::sync::Arc;
 
 use super::helpers::map_get_u64;
@@ -47,7 +47,7 @@ impl Site {
     }
 }
 
-pub(crate) struct ContainsValidator<F: Json = SerdeJson> {
+pub(crate) struct ContainsValidator<F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
 }
 
@@ -148,7 +148,7 @@ impl<F: Json> Validate<F> for ContainsValidator<F> {
 /// `minContains` validation. Used only if there is no `maxContains` present.
 ///
 /// Docs: <https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.4.5>
-pub(crate) struct MinContainsValidator<F: Json = SerdeJson> {
+pub(crate) struct MinContainsValidator<F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
     min_contains: u64,
     min: Site,
@@ -228,7 +228,7 @@ impl<F: Json> Validate<F> for MinContainsValidator<F> {
 /// `maxContains` validation. Used only if there is no `minContains` present.
 ///
 /// Docs: <https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.4.4>
-pub(crate) struct MaxContainsValidator<F: Json = SerdeJson> {
+pub(crate) struct MaxContainsValidator<F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
     max_contains: u64,
     max: Site,
@@ -310,7 +310,7 @@ impl<F: Json> Validate<F> for MaxContainsValidator<F> {
 /// Docs:
 ///   `maxContains` - <https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.4.4>
 ///   `minContains` - <https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.4.5>
-pub(crate) struct MinMaxContainsValidator<F: Json = SerdeJson> {
+pub(crate) struct MinMaxContainsValidator<F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
     min_contains: u64,
     max_contains: u64,

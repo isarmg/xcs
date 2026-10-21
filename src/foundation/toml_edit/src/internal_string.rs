@@ -109,32 +109,32 @@ impl std::fmt::Display for InternalString {
     }
 }
 
-#[cfg(feature = "serde")]
-impl serde::Serialize for InternalString {
+#[cfg(feature = "serialization")]
+impl data_serialization::Serialize for InternalString {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         serializer.serialize_str(self.as_str())
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for InternalString {
+#[cfg(feature = "serialization")]
+impl<'de> data_serialization::Deserialize<'de> for InternalString {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         deserializer.deserialize_string(StringVisitor)
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 struct StringVisitor;
 
-#[cfg(feature = "serde")]
-impl serde::de::Visitor<'_> for StringVisitor {
+#[cfg(feature = "serialization")]
+impl data_serialization::de::Visitor<'_> for StringVisitor {
     type Value = InternalString;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -143,26 +143,26 @@ impl serde::de::Visitor<'_> for StringVisitor {
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
-        E: serde::de::Error,
+        E: data_serialization::de::Error,
     {
         Ok(InternalString::from(v))
     }
 
     fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
     where
-        E: serde::de::Error,
+        E: data_serialization::de::Error,
     {
         Ok(InternalString::from(v))
     }
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
     where
-        E: serde::de::Error,
+        E: data_serialization::de::Error,
     {
         match std::str::from_utf8(v) {
             Ok(s) => Ok(InternalString::from(s)),
-            Err(_) => Err(serde::de::Error::invalid_value(
-                serde::de::Unexpected::Bytes(v),
+            Err(_) => Err(data_serialization::de::Error::invalid_value(
+                data_serialization::de::Unexpected::Bytes(v),
                 &self,
             )),
         }
@@ -170,12 +170,12 @@ impl serde::de::Visitor<'_> for StringVisitor {
 
     fn visit_byte_buf<E>(self, v: Vec<u8>) -> Result<Self::Value, E>
     where
-        E: serde::de::Error,
+        E: data_serialization::de::Error,
     {
         match String::from_utf8(v) {
             Ok(s) => Ok(InternalString::from(s)),
-            Err(e) => Err(serde::de::Error::invalid_value(
-                serde::de::Unexpected::Bytes(&e.into_bytes()),
+            Err(e) => Err(data_serialization::de::Error::invalid_value(
+                data_serialization::de::Unexpected::Bytes(&e.into_bytes()),
                 &self,
             )),
         }

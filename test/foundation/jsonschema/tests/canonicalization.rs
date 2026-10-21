@@ -12,7 +12,7 @@ use jsonschema::{
     canonicalize, validator_for, CanonicalizationError, Draft, JsonType, PatternOptions, Registry,
     Retrieve, Uri,
 };
-use serde_json::{json, Map, Number, Value};
+use json_codec::{json, Map, Number, Value};
 use test_case::test_case;
 
 #[test_case(&json!({"dependencies": {}, "unevaluatedProperties": false}); "unevaluated properties beside an applicator")]
@@ -141,7 +141,7 @@ fn canonicalize_at(
 }
 
 fn pet_document() -> Value {
-    serde_json::from_str(PET_DOCUMENT).expect("valid JSON")
+    json_codec::from_str(PET_DOCUMENT).expect("valid JSON")
 }
 
 // Preparing once and selecting many times must answer exactly as the one-shot entry points do.
@@ -1655,7 +1655,7 @@ fn uncheckable_format_scan_walks_a_typed_group() {
 #[test]
 fn unsupported_documents_hash_by_document_identity() {
     let canonical = |text: &str| {
-        canonicalize(&serde_json::from_str::<Value>(text).expect("valid schema JSON"))
+        canonicalize(&json_codec::from_str::<Value>(text).expect("valid schema JSON"))
             .expect("canonicalizes")
     };
     let integer = canonical(
@@ -1699,7 +1699,7 @@ fn number_view_exposes_bounds() {
 #[test_case(r#"{"type": "number", "maximum": 18446744073709551615}"#, CanonicalKind::Number, "maximum", "18446744073709551615"; "number maximum at u64 max")]
 #[test_case(r#"{"type": "integer", "minimum": -99999999999999999999999}"#, CanonicalKind::Integer, "minimum", "-99999999999999999999999"; "integer minimum below negative i64")]
 fn past_range_bound_round_trips(text: &str, kind: CanonicalKind, keyword: &str, bound: &str) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let canonical = canonicalize(&schema).expect("canonicalizes");
     assert_eq!(canonical.kind(), kind);
     assert_eq!(canonical.to_json_schema()[keyword].to_string(), bound);
@@ -1712,7 +1712,7 @@ fn past_range_bound_round_trips(text: &str, kind: CanonicalKind, keyword: &str, 
 #[test_case(r#"{"minimum": -18446744073709551615}"#, "minimum", "-18446744073709551615"; "untyped minimum below negative i64")]
 #[test_case(r#"{"maximum": -99999999999999999999999}"#, "maximum", "-99999999999999999999999"; "untyped maximum below negative i64")]
 fn untyped_past_range_numeric_bound_round_trips(text: &str, keyword: &str, bound: &str) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let canonical = canonicalize(&schema).expect("canonicalizes");
     assert_eq!(canonical.kind(), CanonicalKind::AnyOf);
     let emitted = canonical.to_json_schema();
@@ -1730,7 +1730,7 @@ fn untyped_past_range_numeric_bound_round_trips(text: &str, keyword: &str, bound
 #[test_case(r#"{"type": "number", "maximum": 1e400, "exclusiveMaximum": 0.1}"#, "exclusiveMaximum", "0.1"; "maximum past f64 range")]
 #[test_case(r#"{"type": "number", "minimum": -1e400, "exclusiveMinimum": 0.1}"#, "exclusiveMinimum", "0.1"; "minimum past f64 range")]
 fn past_range_bound_keeps_its_tighter_partner(text: &str, keyword: &str, bound: &str) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let emitted = canonicalize(&schema)
         .expect("canonicalizes")
         .to_json_schema();
@@ -1745,7 +1745,7 @@ fn past_range_bound_keeps_its_tighter_partner(text: &str, keyword: &str, bound: 
 #[test_case("object", "minProperties")]
 #[test_case("object", "maxProperties")]
 fn huge_count_bound_stays_raw(ty: &str, keyword: &str) {
-    let schema: Value = serde_json::from_str(&format!(
+    let schema: Value = json_codec::from_str(&format!(
         r#"{{"type": "{ty}", "{keyword}": 99999999999999999999999}}"#
     ))
     .unwrap();
@@ -1770,7 +1770,7 @@ fn huge_count_bound_stays_raw(ty: &str, keyword: &str) {
 #[test_case(r#"{"type": "number", "maximum": 18446744073709551615}"#; "number maximum at u64 max")]
 #[test_case(r#"{"type": "integer", "minimum": -99999999999999999999999}"#; "integer minimum below negative i64")]
 fn huge_numeric_bound_stays_raw(text: &str) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     assert_eq!(canonicalize(&schema).unwrap().kind(), CanonicalKind::Raw);
 }
 
@@ -1784,7 +1784,7 @@ fn huge_numeric_bound_stays_raw(text: &str) {
 #[test_case(r#"{"minimum": -9223372036854775809}"#, false; "minimum one past i64 min rounds to i64 min")]
 #[test_case(r#"{"minimum": -9223372036854777856}"#, true; "minimum at first float below i64 min stays raw")]
 fn representable_range_boundary(text: &str, stays_raw: bool) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let is_raw = canonicalize(&schema).unwrap().kind() == CanonicalKind::Raw;
     assert_eq!(is_raw, stays_raw);
 }
@@ -1860,7 +1860,7 @@ fn view_matches_expected(schema: &Value, expected: &CanonicalView) {
 #[test_case(r#"{"type":"integer","enum":[1,2,-10000000000000000000],"maximum":5}"#, &json!({"enum":[1,2,-1e19]}); "maximum keeps undersized")]
 #[test_case(r#"{"type":"integer","enum":[1,2,-10000000000000000000],"minimum":0}"#, &json!({"enum":[1,2]}); "minimum drops undersized")]
 fn oversized_integer_compares_by_overflow_direction(text: &str, expected: &Value) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let canonical = canonicalize(&schema).expect("canonicalizes");
     let mut expected = expected.as_object().expect("object").clone();
     expected.insert(
@@ -1876,7 +1876,7 @@ fn oversized_integer_compares_by_overflow_direction(text: &str, expected: &Value
 #[test_case(r#"{"anyOf":[{"type":"integer","minimum":2},{"const":1e30}]}"#, CanonicalKind::Integer; "absorbed above every maximum")]
 #[test_case(r#"{"anyOf":[{"type":"integer","maximum":5},{"const":1e30}]}"#, CanonicalKind::AnyOf; "kept beyond the maximum")]
 fn oversized_member_absorption(text: &str, kind: CanonicalKind) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     assert_eq!(canonicalize(&schema).expect("canonicalizes").kind(), kind);
 }
 
@@ -2018,7 +2018,7 @@ fn negated_type_set_converges_with_the_direct_form() {
 #[test_case(&format!(r#"{{"const":0.{}1}}"#, "0".repeat(1 << 20)); "huge_fraction_digit_count")]
 #[test_case(&format!(r#"{{"enum":[0.{}1]}}"#, "0".repeat(1 << 20)); "huge_fraction_digit_count_enum")]
 fn numerals_without_exact_comparison_stay_raw(text: &str) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let canonical = canonicalize(&schema).expect("canonicalizes");
     assert!(matches!(canonical.view(), CanonicalView::Raw(_)));
     assert_eq!(canonical.to_json_schema(), schema);
@@ -2055,7 +2055,7 @@ fn count_bound_without_modeled_form_stays_raw(ty: &str, keyword: &str) {
         r#"{{"type":"{ty}"{},"{keyword}":{count}}}"#,
         contains.unwrap_or_default()
     );
-    let schema: Value = serde_json::from_str(&text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(&text).expect("valid schema JSON");
     let canonical = canonicalize(&schema).expect("canonicalizes");
     assert!(matches!(canonical.view(), CanonicalView::Raw(_)));
     assert_eq!(canonical.to_json_schema(), schema);
@@ -2120,7 +2120,7 @@ fn canonical_schema_ordering() {
     assert!(one < two);
     assert!(two > one);
 
-    let raw = |text: &str| canonicalize(&serde_json::from_str(text).unwrap()).unwrap();
+    let raw = |text: &str| canonicalize(&json_codec::from_str(text).unwrap()).unwrap();
     let raw_one = raw(r#"{"dependencies":{},"unevaluatedProperties":{"const":1}}"#);
     let raw_two = raw(r#"{"dependencies":{},"unevaluatedProperties":{"const":2}}"#);
     assert_eq!(raw_one.kind(), CanonicalKind::Raw);
@@ -2182,7 +2182,7 @@ fn draft_stamps_its_schema_uri(draft: Draft, uri: &str) {
     "divisors whose common multiple no decimal writes stay apart"
 )]
 fn divisors_past_exact_precision(text: &str, expected: &Value) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let mut form = canonicalize(&schema)
         .expect("canonicalizes")
         .to_json_schema();
@@ -2233,10 +2233,10 @@ fn divisor_oracle_matches_the_validator(divisor: &str) {
         "1e30",
         "-9007199254740993",
     ];
-    let divisor: serde_json::Number = divisor.parse().expect("divisor");
+    let divisor: json_codec::Number = divisor.parse().expect("divisor");
     let validator = jsonschema::validator_for(&json!({"multipleOf": divisor})).expect("compiles");
     for instance in INSTANCES {
-        let instance: serde_json::Number = instance.parse().expect("instance");
+        let instance: json_codec::Number = instance.parse().expect("instance");
         assert_eq!(
             jsonschema_value::numeric_check::satisfies_multiple_of(&divisor, &instance),
             validator.is_valid(&Value::Number(instance.clone())),
@@ -2286,12 +2286,12 @@ fn divisor_no_decimal_writes_is_modeled() {
     "an integer bound with no representable multiple"
 )]
 fn wide_bounds_keep_validation(text: &str, instances: &[&str]) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let emitted = canonicalize(&schema)
         .expect("canonicalizes")
         .to_json_schema();
     for instance in instances {
-        let instance: Value = serde_json::from_str(instance).expect("instance");
+        let instance: Value = json_codec::from_str(instance).expect("instance");
         assert_eq!(
             jsonschema::is_valid(&schema, &instance),
             jsonschema::is_valid(&emitted, &instance),
@@ -2333,7 +2333,7 @@ fn identity_divisor_drops_beside_a_whole_one() {
     "unlike divisors fold to their common multiple"
 )]
 fn unlike_divisors_fold_under_arbitrary_precision(text: &str, expected: &Value) {
-    let schema: Value = serde_json::from_str(text).expect("valid schema JSON");
+    let schema: Value = json_codec::from_str(text).expect("valid schema JSON");
     let mut form = canonicalize(&schema)
         .expect("canonicalizes")
         .to_json_schema();
@@ -2376,7 +2376,7 @@ const BUNDLED_METASCHEMAS: &[(&str, &str)] = bundled_metaschemas![
 fn bundled_metaschemas_are_modeled() {
     let mut raw = Vec::new();
     for (name, text) in BUNDLED_METASCHEMAS {
-        let schema: Value = serde_json::from_str(text).expect("a bundled metaschema is valid JSON");
+        let schema: Value = json_codec::from_str(text).expect("a bundled metaschema is valid JSON");
         match options().canonicalize(&schema) {
             Ok(canonical) if canonical.kind() == CanonicalKind::Raw => raw.push(*name),
             Ok(_) => {}
@@ -5884,7 +5884,7 @@ fn negation_intersects_to_nothing(schema: &Value) {
 #[test]
 fn unevaluated_properties_beside_a_fanout_reference_graph_does_not_blow_up() {
     let depth = 24;
-    let mut defs = serde_json::Map::new();
+    let mut defs = json_codec::Map::new();
     defs.insert("d24".to_string(), json!({"type": "integer"}));
     for level in (0..depth).rev() {
         defs.insert(
@@ -5908,7 +5908,7 @@ fn unevaluated_properties_beside_a_fanout_reference_graph_does_not_blow_up() {
 #[test]
 fn unevaluated_items_beside_a_fanout_reference_graph_does_not_blow_up() {
     let depth = 24;
-    let mut defs = serde_json::Map::new();
+    let mut defs = json_codec::Map::new();
     defs.insert("d24".to_string(), json!({"type": "integer"}));
     for level in (0..depth).rev() {
         defs.insert(
@@ -7002,7 +7002,7 @@ fn a_draft_4_member_half_a_demand_admits_is_not_admitted_whole() {
 fn an_edited_entry_is_renamed_apart_wherever_it_is_reached_from(shape: &Value) {
     let version = |ty: &str| {
         let source: Value =
-            serde_json::from_str(&shape.to_string().replace("TYPE", ty)).expect("a schema");
+            json_codec::from_str(&shape.to_string().replace("TYPE", ty)).expect("a schema");
         (
             canonicalize(&source).expect("canonicalizes"),
             validator_for(&source).expect("builds"),

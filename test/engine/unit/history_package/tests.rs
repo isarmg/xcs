@@ -187,7 +187,7 @@ fn paged_package_missing_leaf_and_flat_proof_substitution_fail_closed() {
     let (manifest, proof, _) = load_package(&package).unwrap();
     assert_eq!(proof.manifest_hash, report.manifest_hash);
     let proof_bytes = fs::read(package.join("publication.json")).unwrap();
-    let mut unsupported = serde_json::to_value(&proof).unwrap();
+    let mut unsupported = json_codec::to_value(&proof).unwrap();
     unsupported["unexpected"] = json!(true);
     write_json(&package.join("publication.json"), &unsupported, true).unwrap();
     assert!(offline_check_history_package(&package).is_err());
@@ -660,7 +660,7 @@ fn rename_nodes_preserve_body_proofs_and_mixed_lineage_through_purge_export_and_
         )
         .unwrap();
     let body = engine.valid_replica(&old.version_id).unwrap().0;
-    let cache: serde_json::Value = read_json(
+    let cache: json_codec::Value = read_json(
         &body
             .parent()
             .unwrap()
@@ -931,13 +931,13 @@ fn composed_directory_records_validate_and_restore_frozen_shared_file_references
         .directory_selection_generations
         .insert(new_id("entry"), 1);
     bad(&invalid);
-    let mut invalid_json = serde_json::to_value(&manifest).unwrap();
+    let mut invalid_json = json_codec::to_value(&manifest).unwrap();
     assert_eq!(
         invalid_json["directory_selection_generations"][&repo.repository_id],
         "42"
     );
     invalid_json["directory_selection_generations"][&repo.repository_id] = json!(42);
-    assert!(serde_json::from_value::<HistoryManifest>(invalid_json).is_err());
+    assert!(json_codec::from_value::<HistoryManifest>(invalid_json).is_err());
     let mut invalid = manifest.clone();
     invalid
         .file_locations
@@ -1154,7 +1154,7 @@ fn package_preserves_inherited_references_without_inventing_files_or_versions() 
             .parent()
             .unwrap()
             .join("container.json");
-        let metadata: serde_json::Value = read_json(&cache).unwrap();
+        let metadata: json_codec::Value = read_json(&cache).unwrap();
         assert_eq!(
             metadata["inherited_branches"][0]["version_id"],
             file.version_id
@@ -1180,7 +1180,7 @@ fn package_preserves_inherited_references_without_inventing_files_or_versions() 
             .parent()
             .unwrap()
             .join("container.json");
-        let metadata: serde_json::Value = read_json(&cache).unwrap();
+        let metadata: json_codec::Value = read_json(&cache).unwrap();
         assert_eq!(
             metadata["inherited_branches"][0]["source_version_id"],
             file.version_id
@@ -1271,7 +1271,7 @@ fn inherited_metadata_replays_after_decision_without_preparing_payloads_or_stubs
                 .parent()
                 .unwrap()
                 .join("container.json");
-            let metadata: serde_json::Value = read_json(&cache).unwrap();
+            let metadata: json_codec::Value = read_json(&cache).unwrap();
             assert_eq!(
                 metadata["inherited_branches"][0]["source_version_id"],
                 file.version_id
@@ -1605,7 +1605,7 @@ fn package_preserves_purge_and_rejects_missing_bytes_or_unpublished_manifest() {
     );
     let original = fs::read(package.join("manifest.json")).unwrap();
     let manifest = load_package(&package).unwrap().0;
-    let mut root: serde_json::Value = decode_strict(&original).unwrap();
+    let mut root: json_codec::Value = decode_strict(&original).unwrap();
     root["repository"]["name"] = json!("被修改的名字");
     write_json(&package.join("manifest.json"), &root, true).unwrap();
     assert_eq!(

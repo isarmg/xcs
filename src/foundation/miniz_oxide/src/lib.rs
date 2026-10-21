@@ -31,8 +31,8 @@ extern crate alloc;
 #[cfg(feature = "with-alloc")]
 pub mod deflate;
 pub mod inflate;
-#[cfg(feature = "serde")]
-pub mod serde;
+#[cfg(feature = "serialization")]
+pub mod data_serialization;
 mod shared;
 
 pub use crate::shared::update_adler32 as mz_adler32_oxide;

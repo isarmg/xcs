@@ -1,6 +1,6 @@
 #[test]
 fn match_serialize() {
-    use serde::Serialize;
+    use data_serialization::Serialize;
     #[derive(Serialize)]
     struct CustomStruct {
         field: &'static str,

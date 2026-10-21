@@ -10,13 +10,13 @@ use crate::{
 };
 #[cfg(feature = "arbitrary-precision")]
 use jsonschema_value::JsonNumber;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::borrow::Cow;
 
 pub(crate) struct MultipleOfFloatValidator {
     multiple_of: f64,
     #[cfg(feature = "arbitrary-precision")]
-    original_value: serde_json::Number,
+    original_value: json_codec::Number,
     location: Location,
 }
 
@@ -24,7 +24,7 @@ impl MultipleOfFloatValidator {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         multiple_of: f64,
-        #[cfg(feature = "arbitrary-precision")] original_value: &serde_json::Number,
+        #[cfg(feature = "arbitrary-precision")] original_value: &json_codec::Number,
         location: Location,
     ) -> CompilationResult<'a, F> {
         Ok(Box::new(MultipleOfFloatValidator {
@@ -81,7 +81,7 @@ impl<F: Json> Validate<F> for MultipleOfFloatValidator {
 pub(crate) struct MultipleOfIntegerValidator {
     multiple_of: f64,
     #[cfg(feature = "arbitrary-precision")]
-    original_value: serde_json::Number,
+    original_value: json_codec::Number,
     location: Location,
 }
 
@@ -89,7 +89,7 @@ impl MultipleOfIntegerValidator {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         multiple_of: f64,
-        #[cfg(feature = "arbitrary-precision")] original_value: &serde_json::Number,
+        #[cfg(feature = "arbitrary-precision")] original_value: &json_codec::Number,
         location: Location,
     ) -> CompilationResult<'a, F> {
         Ok(Box::new(MultipleOfIntegerValidator {
@@ -146,7 +146,7 @@ impl<F: Json> Validate<F> for MultipleOfIntegerValidator {
 #[cfg(feature = "arbitrary-precision")]
 pub(crate) struct MultipleOfBigIntValidator {
     multiple_of: num_bigint::BigInt,
-    original_value: serde_json::Number,
+    original_value: json_codec::Number,
     location: Location,
 }
 
@@ -155,7 +155,7 @@ impl MultipleOfBigIntValidator {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         multiple_of: num_bigint::BigInt,
-        original_value: &serde_json::Number,
+        original_value: &json_codec::Number,
         location: Location,
     ) -> CompilationResult<'a, F> {
         Ok(Box::new(MultipleOfBigIntValidator {
@@ -247,7 +247,7 @@ impl<F: Json> Validate<F> for MultipleOfBigIntValidator {
 #[cfg(feature = "arbitrary-precision")]
 pub(crate) struct MultipleOfBigFracValidator {
     multiple_of: fraction::BigFraction,
-    original_value: serde_json::Number,
+    original_value: json_codec::Number,
     location: Location,
 }
 
@@ -256,7 +256,7 @@ impl MultipleOfBigFracValidator {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         multiple_of: fraction::BigFraction,
-        original_value: &serde_json::Number,
+        original_value: &json_codec::Number,
         location: Location,
     ) -> CompilationResult<'a, F> {
         Ok(Box::new(MultipleOfBigFracValidator {

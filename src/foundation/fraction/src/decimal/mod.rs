@@ -63,7 +63,7 @@ mod try_from;
 /// assert_eq!(add, Decimal::from(12.5));
 /// ```
 #[derive(Clone)]
-#[cfg_attr(feature = "with-serde-support", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "with-serialization-support", derive(Serialize, Deserialize))]
 pub struct GenericDecimal<T, P>(pub(crate) GenericFraction<T>, pub(crate) P)
 where
     T: Clone + Integer,

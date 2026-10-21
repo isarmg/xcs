@@ -42,12 +42,12 @@ license = "Unicode-3.0"
 repository = "https://github.com/unicode-org/icu4x"
 
 [features]
-alloc = ["serde?/alloc"]
+alloc = ["data-serialization?/alloc"]
 databake = []
 derive = ["dep:zerovec-derive"]
 hashmap = ["alloc"]
 schemars = ["alloc"]
-serde = ["dep:serde"]
+serialization = ["dep:data-serialization"]
 std = []
 yoke = ["dep:yoke"]
 
@@ -56,12 +56,12 @@ name = "zerovec"
 path = "src/lib.rs"
 bench = false
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.220"
 features = ["derive"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.yoke]
 version = "0.8.3"

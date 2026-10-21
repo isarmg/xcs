@@ -7,13 +7,13 @@ use std::{
     sync::Once,
 };
 
-use hegel::{extras::serde_json as json_gs, TestCase};
+use hegel::{extras::json_codec as json_gs, TestCase};
 use jsonschema_value::{
     cmp,
     jsonb::encode::{decode_hex, encode, strip_varlena, to_hex},
     Jsonb, Node,
 };
-use serde_json::Value;
+use json_codec::Value;
 
 const PG_URL_VAR: &str = "JSONB_LIVE_PG_URL";
 // One psql round trip per draw, which a local server answers in single-digit milliseconds.
@@ -125,7 +125,7 @@ fn run_reader_matches_postgres_rendering(tc: TestCase, url: String) {
     }
     let (text, stored) = query(&url, &value);
     let decoded = Jsonb::root(strip_varlena(&stored)).to_value();
-    let expected: Value = serde_json::from_str(&text).expect("postgres text parses");
+    let expected: Value = json_codec::from_str(&text).expect("postgres text parses");
     assert!(
         cmp::equal(decoded.as_ref(), &expected),
         "reader diverges from postgres for drawn {value:?}\n  ours:     {decoded:?}\n  postgres: {expected:?}"

@@ -18,11 +18,11 @@
 #[cfg(any(test, feature = "std"))]
 extern crate std;
 
-#[cfg(feature = "serde")]
-pub mod serde_untagged;
+#[cfg(feature = "serialization")]
+pub mod serialization_untagged;
 
-#[cfg(feature = "serde")]
-pub mod serde_untagged_optional;
+#[cfg(feature = "serialization")]
+pub mod serialization_untagged_optional;
 
 use core::convert::{AsMut, AsRef};
 use core::fmt;
@@ -44,7 +44,7 @@ pub use crate::Either::{Left, Right};
 /// The `Either` type is symmetric and treats its variants the same way, without
 /// preference.
 /// (For representing success or error, use the regular `Result` enum instead.)
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[derive(Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Either<L, R> {
     /// A value of type `L`.

@@ -3,7 +3,7 @@ use super::{Error, Serializer};
 use crate::fmt::DocumentFormatter;
 
 type InnerSerializeDocumentTable =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeMap;
+    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeMap;
 
 #[doc(hidden)]
 pub struct SerializeDocumentTable<'d> {
@@ -22,20 +22,20 @@ impl<'d> SerializeDocumentTable<'d> {
     }
 }
 
-impl serde::ser::SerializeMap for SerializeDocumentTable<'_> {
+impl data_serialization::ser::SerializeMap for SerializeDocumentTable<'_> {
     type Ok = ();
     type Error = Error;
 
     fn serialize_key<T>(&mut self, input: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         self.inner.serialize_key(input).map_err(Error::wrap)
     }
 
     fn serialize_value<T>(&mut self, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         self.inner.serialize_value(value).map_err(Error::wrap)
     }
@@ -45,13 +45,13 @@ impl serde::ser::SerializeMap for SerializeDocumentTable<'_> {
     }
 }
 
-impl serde::ser::SerializeStruct for SerializeDocumentTable<'_> {
+impl data_serialization::ser::SerializeStruct for SerializeDocumentTable<'_> {
     type Ok = ();
     type Error = Error;
 
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         self.inner.serialize_field(key, value).map_err(Error::wrap)
     }
@@ -61,26 +61,26 @@ impl serde::ser::SerializeStruct for SerializeDocumentTable<'_> {
     }
 }
 
-impl serde::ser::SerializeStructVariant for SerializeDocumentTable<'_> {
+impl data_serialization::ser::SerializeStructVariant for SerializeDocumentTable<'_> {
     type Ok = ();
     type Error = Error;
 
     #[inline]
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeStruct::serialize_field(self, key, value)
+        data_serialization::ser::SerializeStruct::serialize_field(self, key, value)
     }
 
     #[inline]
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        serde::ser::SerializeStruct::end(self)
+        data_serialization::ser::SerializeStruct::end(self)
     }
 }
 
 type InnerSerializeDocumentStructVariant =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeStructVariant;
+    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeStructVariant;
 
 #[doc(hidden)]
 pub struct SerializeDocumentStructVariant<'d> {
@@ -99,14 +99,14 @@ impl<'d> SerializeDocumentStructVariant<'d> {
     }
 }
 
-impl serde::ser::SerializeStructVariant for SerializeDocumentStructVariant<'_> {
+impl data_serialization::ser::SerializeStructVariant for SerializeDocumentStructVariant<'_> {
     type Ok = ();
     type Error = Error;
 
     #[inline]
     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         self.inner.serialize_field(key, value).map_err(Error::wrap)
     }

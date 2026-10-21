@@ -11,27 +11,27 @@ use icu_locale_core::extensions::private;
 use icu_locale_core::extensions::transform;
 use icu_locale_core::extensions::unicode;
 use icu_locale_core::{LanguageIdentifier, Locale, ParseError, subtags};
-use serde::Deserialize;
+use data_serialization::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct LocaleIdentifier {
-    #[serde(rename = "type")]
+    #[serialization(rename = "type")]
     pub field_type: String,
     pub identifier: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct LocaleExtensionUnicode {
-    #[serde(default)]
+    #[serialization(default)]
     keywords: HashMap<String, Option<String>>,
-    #[serde(default)]
+    #[serialization(default)]
     attributes: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct LocaleExtensionTransform {
     tlang: Option<String>,
-    #[serde(default)]
+    #[serialization(default)]
     tfields: HashMap<String, Option<String>>,
 }
 
@@ -39,9 +39,9 @@ pub struct LocaleExtensionTransform {
 pub struct LocaleExtensions {
     unicode: Option<LocaleExtensionUnicode>,
     transform: Option<LocaleExtensionTransform>,
-    #[serde(default)]
+    #[serialization(default)]
     private: Vec<String>,
-    #[serde(default)]
+    #[serialization(default)]
     other: Vec<String>,
 }
 
@@ -110,12 +110,12 @@ impl TryFrom<LocaleExtensions> for Extensions {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct LocaleSubtags {
-    #[serde(rename = "type")]
+    #[serialization(rename = "type")]
     pub field_type: String,
     pub language: Option<String>,
     pub script: Option<String>,
     pub region: Option<String>,
-    #[serde(default)]
+    #[serialization(default)]
     pub variants: Vec<String>,
     pub extensions: Option<LocaleExtensions>,
 }
@@ -127,7 +127,7 @@ pub struct LocaleError {
 }
 
 #[derive(Debug, Deserialize, Clone)]
-#[serde(untagged)]
+#[serialization(untagged)]
 #[expect(clippy::large_enum_variant)] // test code
 pub enum LocaleInfo {
     String(String),

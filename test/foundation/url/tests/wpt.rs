@@ -8,7 +8,7 @@
 
 //! Data-driven tests imported from web-platform-tests
 
-use serde_json::Value;
+use json_codec::Value;
 use std::collections::HashMap;
 use std::fmt::Write;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
@@ -64,23 +64,23 @@ macro_rules! println {
     }
 }
 
-#[derive(Debug, serde_derive::Deserialize)]
+#[derive(Debug, serialization_derive::Deserialize)]
 struct UrlTest {
     input: String,
     base: Option<String>,
-    #[serde(flatten)]
+    #[serialization(flatten)]
     result: UrlTestResult,
 }
 
-#[derive(Debug, serde_derive::Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, serialization_derive::Deserialize)]
+#[serialization(untagged)]
 #[allow(clippy::large_enum_variant)]
 enum UrlTestResult {
     Ok(UrlTestOk),
     Fail(UrlTestFail),
 }
 
-#[derive(Debug, serde_derive::Deserialize)]
+#[derive(Debug, serialization_derive::Deserialize)]
 struct UrlTestOk {
     href: String,
     protocol: String,
@@ -94,19 +94,19 @@ struct UrlTestOk {
     hash: String,
 }
 
-#[derive(Debug, serde_derive::Deserialize)]
+#[derive(Debug, serialization_derive::Deserialize)]
 struct UrlTestFail {
     failure: bool,
 }
 
-#[derive(Debug, serde_derive::Deserialize)]
+#[derive(Debug, serialization_derive::Deserialize)]
 struct SetterTest {
     href: String,
     new_value: String,
     expected: SetterTestExpected,
 }
 
-#[derive(Debug, serde_derive::Deserialize)]
+#[derive(Debug, serialization_derive::Deserialize)]
 struct SetterTestExpected {
     href: Option<String>,
     protocol: Option<String>,
@@ -143,22 +143,22 @@ fn main() {
     let mut errors = vec![];
 
     // Copied from https://github.com/web-platform-tests/wpt/blob/master/url/
-    let url_json: Vec<Value> = serde_json::from_str(include_str!("urltestdata.json"))
+    let url_json: Vec<Value> = json_codec::from_str(include_str!("urltestdata.json"))
         .expect("JSON parse error in urltestdata.json");
     let url_tests = url_json
         .into_iter()
         .filter(|val| val.is_object())
-        .map(|val| serde_json::from_value::<UrlTest>(val).expect("parsing failed"))
+        .map(|val| json_codec::from_value::<UrlTest>(val).expect("parsing failed"))
         .collect::<Vec<_>>();
 
     let setter_json: HashMap<String, Value> =
-        serde_json::from_str(include_str!("setters_tests.json"))
+        json_codec::from_str(include_str!("setters_tests.json"))
             .expect("JSON parse error in setters_tests.json");
     let setter_tests = setter_json
         .into_iter()
         .filter(|(k, _)| k != "comment")
         .map(|(k, v)| {
-            let test = serde_json::from_value::<Vec<SetterTest>>(v).expect("parsing failed");
+            let test = json_codec::from_value::<Vec<SetterTest>>(v).expect("parsing failed");
             (k, test)
         })
         .collect::<HashMap<_, _>>();

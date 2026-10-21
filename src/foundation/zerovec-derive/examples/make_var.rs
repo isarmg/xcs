@@ -9,92 +9,92 @@ use zerofrom::ZeroFrom;
 use zerovec::{ule::AsULE, *};
 
 #[make_varule(VarStructULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
 struct VarStruct<'a> {
     a: u32,
     b: char,
-    #[serde(borrow)]
+    #[serialization(borrow)]
     c: Cow<'a, str>,
 }
 
 #[make_varule(VarStructOutOfOrderULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
 struct VarStructOutOfOrder<'a> {
     a: u32,
-    #[serde(borrow)]
+    #[serialization(borrow)]
     b: Cow<'a, str>,
     c: char,
     d: u8,
 }
 
 #[make_varule(VarTupleStructULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
-struct VarTupleStruct<'a>(u32, char, #[serde(borrow)] VarZeroVec<'a, str>);
+struct VarTupleStruct<'a>(u32, char, #[serialization(borrow)] VarZeroVec<'a, str>);
 
 #[make_varule(NoKVULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::skip_derive(ZeroMapKV)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
-struct NoKV<'a>(u32, char, #[serde(borrow)] VarZeroVec<'a, str>);
+struct NoKV<'a>(u32, char, #[serialization(borrow)] VarZeroVec<'a, str>);
 
 #[make_varule(NoOrdULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::skip_derive(ZeroMapKV, Ord)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
-struct NoOrd<'a>(u32, char, #[serde(borrow)] VarZeroVec<'a, str>);
+struct NoOrd<'a>(u32, char, #[serialization(borrow)] VarZeroVec<'a, str>);
 
 #[make_varule(MultiFieldStructULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
 struct MultiFieldStruct<'a> {
     a: u32,
     b: char,
-    #[serde(borrow)]
+    #[serialization(borrow)]
     c: Cow<'a, str>,
     d: u8,
-    #[serde(borrow)]
+    #[serialization(borrow)]
     e: Cow<'a, str>,
     f: char,
 }
 
 #[make_varule(MultiFieldConsecutiveStructULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
 #[zerovec::format(vecs::Index8)]
 struct MultiFieldConsecutiveStruct<'a> {
-    #[serde(borrow)]
+    #[serialization(borrow)]
     a: Cow<'a, str>,
-    #[serde(borrow)]
+    #[serialization(borrow)]
     b: Cow<'a, str>,
-    #[serde(borrow)]
+    #[serialization(borrow)]
     c: Cow<'a, str>,
-    #[serde(borrow)]
+    #[serialization(borrow)]
     d: Cow<'a, str>,
 }
 
 #[make_varule(CustomVarFieldULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
 struct CustomVarField<'a> {
     #[zerovec::varule(MultiFieldStructULE)]
-    #[serde(borrow)]
+    #[serialization(borrow)]
     a: MultiFieldStruct<'a>,
     b: u32,
 }
 
 #[make_varule(MultiFieldTupleULE)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, data_serialization::Serialize, data_serialization::Deserialize)]
 #[zerovec::derive(Serialize, Deserialize, Debug)]
 #[zerovec::format(vecs::Index32)]
 struct MultiFieldTuple<'a>(
     u8,
     char,
-    #[serde(borrow)] VarZeroVec<'a, str>,
-    #[serde(borrow)] VarZeroVec<'a, [u8]>,
-    #[serde(borrow)] Cow<'a, str>,
+    #[serialization(borrow)] VarZeroVec<'a, str>,
+    #[serialization(borrow)] VarZeroVec<'a, [u8]>,
+    #[serialization(borrow)] Cow<'a, str>,
 );
 
 /// The `assert` function should have the body `|(stack, zero)| assert_eq!(stack, &U::zero_from(&zero))`
@@ -104,11 +104,11 @@ struct MultiFieldTuple<'a>(
 /// not important to get this 100% perfect
 fn assert_zerovec<T, U, F>(slice: &[U], assert: F)
 where
-    T: ule::VarULE + ?Sized + serde::Serialize,
-    U: ule::EncodeAsVarULE<T> + serde::Serialize,
+    T: ule::VarULE + ?Sized + data_serialization::Serialize,
+    U: ule::EncodeAsVarULE<T> + data_serialization::Serialize,
     F: Fn(&U, &T),
-    for<'a> Box<T>: serde::Deserialize<'a>,
-    for<'a> &'a T: serde::Deserialize<'a>,
+    for<'a> Box<T>: data_serialization::Deserialize<'a>,
+    for<'a> &'a T: data_serialization::Deserialize<'a>,
     T: PartialEq + Debug,
 {
     let varzerovec: VarZeroVec<T> = slice.into();
@@ -137,12 +137,12 @@ where
         assert(stack, zero)
     }
 
-    let json_slice = serde_json::to_string(&slice).unwrap();
-    let json_vzv = serde_json::to_string(&varzerovec).unwrap();
+    let json_slice = json_codec::to_string(&slice).unwrap();
+    let json_vzv = json_codec::to_string(&varzerovec).unwrap();
 
     assert_eq!(json_slice, json_vzv);
 
-    let deserialized: VarZeroVec<T> = serde_json::from_str(&json_vzv).unwrap();
+    let deserialized: VarZeroVec<T> = json_codec::from_str(&json_vzv).unwrap();
 
     for (stack, zero) in slice.iter().zip(deserialized.iter()) {
         assert(stack, zero)
@@ -161,8 +161,8 @@ where
             "Single element roundtrips with bincode"
         );
 
-        let json = serde_json::to_string(first).unwrap();
-        let deserialized: Box<T> = serde_json::from_str(&json).unwrap();
+        let json = json_codec::to_string(first).unwrap();
+        let deserialized: Box<T> = json_codec::from_str(&json).unwrap();
         assert_eq!(
             first, &*deserialized,
             "Single element roundtrips with serde"

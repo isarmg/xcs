@@ -71,7 +71,7 @@ impl Session {
                 workspace_id: None,
             };
             return Ok((
-                serde_json::to_value(result).map_err(ApiError::invalid)?,
+                json_codec::to_value(result).map_err(ApiError::invalid)?,
                 Some(fd),
             ));
         }
@@ -91,7 +91,7 @@ impl Session {
                         "branch_id":self.branch,"query":{"commit_id":workspace.base_head}
                     }),
                 )?;
-                let entries: Vec<Entry> = serde_json::from_value(snapshot["entries"].clone())
+                let entries: Vec<Entry> = json_codec::from_value(snapshot["entries"].clone())
                     .map_err(ApiError::invalid)?;
                 let baseline = entries
                     .iter()
@@ -217,7 +217,7 @@ impl Session {
             workspace_id,
         };
         Ok((
-            serde_json::to_value(result).map_err(ApiError::invalid)?,
+            json_codec::to_value(result).map_err(ApiError::invalid)?,
             Some(fd),
         ))
     }

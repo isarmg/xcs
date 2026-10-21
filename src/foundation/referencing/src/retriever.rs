@@ -1,7 +1,7 @@
 use core::fmt;
 
 use fluent_uri::Uri;
-use serde_json::Value;
+use json_codec::Value;
 
 #[cfg(target_family = "wasm")]
 pub trait RetrieverBounds {}

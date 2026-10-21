@@ -1,12 +1,12 @@
 //! Explicit loss acknowledgement for an already decided, unpublished candidate.
 //! This path never authorizes a new business write with fewer required copies.
 use crate::{disk::*, journal::*, *};
-use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use data_serialization::{Deserialize, Serialize};
+use json_codec::{Value, json};
 use std::{collections::BTreeSet, fs};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct RecoveryPlan {
     pub recovery_id: String,
     pub digest: String,
@@ -16,7 +16,7 @@ pub struct RecoveryPlan {
     pub reason: String,
     /// A unique fence persisted by every current member while all original OS locks are held.
     pub isolation_generation: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub sequence: u64,
     pub version_protection: Vec<Value>,
     pub loss_details: Vec<Value>,
@@ -24,19 +24,19 @@ pub struct RecoveryPlan {
     original_accepts: Vec<Receipt>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct MemberWitness {
     disk_id: String,
     slot_id: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     binding_generation: u64,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     log_bytes: u64,
     last_frame_hash: String,
     records: Vec<Receipt>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct RecoveryProof {
     pub plan: RecoveryPlan,
     pub reprotect: Vec<Receipt>,

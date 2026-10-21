@@ -4,7 +4,7 @@ mod bench {
 
     use benchmark::Benchmark;
     use codspeed_criterion_compat::{criterion_group, BenchmarkId, Criterion};
-    use serde_json::Value;
+    use json_codec::Value;
 
     #[jsonschema::validator(path = "../benchmark/data/fast_schema.json")]
     struct FastSchemaValidator;

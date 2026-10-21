@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use serde_json::Value;
+use data_serialization::{Deserialize, Serialize, de::DeserializeOwned};
+use json_codec::Value;
 use std::{
     io::{self, Read, Write},
     mem,
@@ -19,7 +19,7 @@ pub fn effective_uid() -> u32 {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(tag = "op", rename_all = "snake_case", deny_unknown_fields)]
+#[serialization(tag = "op", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Request {
     Hello {
         protocol: String,
@@ -35,28 +35,28 @@ pub enum Request {
         write_through: bool,
     },
     Dirty {
-        #[serde(with = "storage_contract::u64_string")]
+        #[serialization(with = "storage_contract::u64_string")]
         handle: u64,
     },
     AuthorizeRead {
-        #[serde(with = "storage_contract::u64_string")]
+        #[serialization(with = "storage_contract::u64_string")]
         handle: u64,
     },
     Flush {
-        #[serde(with = "storage_contract::u64_string")]
+        #[serialization(with = "storage_contract::u64_string")]
         handle: u64,
     },
     Close {
-        #[serde(with = "storage_contract::u64_string")]
+        #[serialization(with = "storage_contract::u64_string")]
         handle: u64,
     },
     /// Release a handle without publishing or discarding its retained work.
     Detach {
-        #[serde(with = "storage_contract::u64_string")]
+        #[serialization(with = "storage_contract::u64_string")]
         handle: u64,
     },
     Abort {
-        #[serde(with = "storage_contract::u64_string")]
+        #[serialization(with = "storage_contract::u64_string")]
         handle: u64,
     },
     Stat {
@@ -110,7 +110,7 @@ pub fn remove_request(path: String, flags: i32) -> io::Result<Request> {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(tag = "status", rename_all = "snake_case", deny_unknown_fields)]
+#[serialization(tag = "status", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Response {
     Ok {
         result: Value,
@@ -124,16 +124,16 @@ pub enum Response {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct OpenResult {
     pub entry_id: String,
     pub kind: String,
     pub path: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub handle: u64,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub size: u64,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub max_file_bytes: u64,
     pub version_id: Option<String>,
     pub workspace_id: Option<String>,
@@ -151,7 +151,7 @@ impl FrameStream {
     }
 
     pub fn send<T: Serialize>(&mut self, value: &T, fd: Option<BorrowedFd<'_>>) -> io::Result<()> {
-        let payload = serde_json::to_vec(value).map_err(io::Error::other)?;
+        let payload = json_codec::to_vec(value).map_err(io::Error::other)?;
         if payload.is_empty() || payload.len() > MAX_FRAME_BYTES {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,

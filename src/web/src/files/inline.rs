@@ -4,7 +4,7 @@ use crate::{
     icons::FileIcon,
     ui::{State, list, text},
 };
-use serde_json::Value;
+use json_codec::Value;
 use web_interface::{html, i18n::t, prelude::*};
 
 // The UI applies the shared metadata byte bound to newly entered names too.

@@ -16,7 +16,7 @@ struct EvenKeyword;
 impl<'i> jsonschema::Keyword<'i> for EvenKeyword {
     fn validate(
         &self,
-        instance: &'i serde_json::Value,
+        instance: &'i json_codec::Value,
     ) -> Result<(), jsonschema::ValidationError<'i>> {
         if self.is_valid(instance) {
             Ok(())
@@ -25,14 +25,14 @@ impl<'i> jsonschema::Keyword<'i> for EvenKeyword {
         }
     }
 
-    fn is_valid(&self, instance: &'i serde_json::Value) -> bool {
+    fn is_valid(&self, instance: &'i json_codec::Value) -> bool {
         instance.as_u64().is_none_or(|n| n % 2 == 0)
     }
 }
 
 fn even_factory<'a>(
-    _parent: &'a serde_json::Map<String, serde_json::Value>,
-    value: &'a serde_json::Value,
+    _parent: &'a json_codec::Map<String, json_codec::Value>,
+    value: &'a json_codec::Value,
     _path: jsonschema::paths::Location,
 ) -> Result<Box<dyn for<'i> jsonschema::Keyword<'i>>, jsonschema::ValidationError<'a>> {
     if value.as_bool() == Some(true) {
@@ -47,7 +47,7 @@ struct MultiErrorKeyword;
 impl<'i> jsonschema::Keyword<'i> for MultiErrorKeyword {
     fn validate(
         &self,
-        instance: &'i serde_json::Value,
+        instance: &'i json_codec::Value,
     ) -> Result<(), jsonschema::ValidationError<'i>> {
         if self.is_valid(instance) {
             Ok(())
@@ -56,13 +56,13 @@ impl<'i> jsonschema::Keyword<'i> for MultiErrorKeyword {
         }
     }
 
-    fn is_valid(&self, instance: &'i serde_json::Value) -> bool {
+    fn is_valid(&self, instance: &'i json_codec::Value) -> bool {
         instance.as_i64().is_none_or(|n| n > 100)
     }
 
     fn iter_errors(
         &self,
-        instance: &'i serde_json::Value,
+        instance: &'i json_codec::Value,
     ) -> Box<dyn Iterator<Item = jsonschema::ValidationError<'i>> + 'i> {
         if self.is_valid(instance) {
             Box::new(std::iter::empty())
@@ -81,8 +81,8 @@ impl<'i> jsonschema::Keyword<'i> for MultiErrorKeyword {
 // The Result wrapping is required by the keyword factory signature.
 #[allow(clippy::unnecessary_wraps)]
 fn multi_error_factory<'a>(
-    _parent: &'a serde_json::Map<String, serde_json::Value>,
-    _value: &'a serde_json::Value,
+    _parent: &'a json_codec::Map<String, json_codec::Value>,
+    _value: &'a json_codec::Value,
     _path: jsonschema::paths::Location,
 ) -> Result<Box<dyn for<'i> jsonschema::Keyword<'i>>, jsonschema::ValidationError<'a>> {
     Ok(Box::new(MultiErrorKeyword))
@@ -106,7 +106,7 @@ fn assert_validate_parity(
     generated_is_valid: bool,
     generated: Result<(), jsonschema::ValidationError<'_>>,
     runtime: &jsonschema::Validator,
-    instance: &serde_json::Value,
+    instance: &json_codec::Value,
 ) {
     assert_eq!(generated_is_valid, runtime.is_valid(instance));
     match (generated, runtime.validate(instance)) {
@@ -124,10 +124,10 @@ fn assert_validate_parity(
 
 // Builds the default runtime validator from `schema` and defers to `assert_validate_parity`.
 fn assert_validate_parity_for(
-    schema: &serde_json::Value,
+    schema: &json_codec::Value,
     generated_is_valid: bool,
     generated: Result<(), jsonschema::ValidationError<'_>>,
-    instance: &serde_json::Value,
+    instance: &json_codec::Value,
 ) {
     let runtime = jsonschema::validator_for(schema).expect("valid schema");
     assert_validate_parity(generated_is_valid, generated, &runtime, instance);
@@ -137,7 +137,7 @@ fn assert_validate_parity_for(
 fn assert_iter_errors_parity<'i>(
     generated: impl Iterator<Item = jsonschema::ValidationError<'i>>,
     runtime: &jsonschema::Validator,
-    instance: &serde_json::Value,
+    instance: &json_codec::Value,
 ) {
     let generated: Vec<_> = generated.collect();
     let expected: Vec<_> = runtime.iter_errors(instance).collect();
@@ -203,7 +203,7 @@ struct NestedAnyOfContextValidator;
 
 #[test]
 fn test_nested_any_of_error_context_matches_runtime() {
-    let schema = serde_json::json!({
+    let schema = json_codec::json!({
         "anyOf": [
             {"type": "integer", "minimum": 10},
             {"oneOf": [
@@ -212,7 +212,7 @@ fn test_nested_any_of_error_context_matches_runtime() {
             ]}
         ]
     });
-    let instance = serde_json::json!(false);
+    let instance = json_codec::json!(false);
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
 
     assert_error_parity(
@@ -233,14 +233,14 @@ struct OneOfMultipleValidContextValidator;
 
 #[test]
 fn test_one_of_multiple_valid_error_context_matches_runtime() {
-    let schema = serde_json::json!({
+    let schema = json_codec::json!({
         "oneOf": [
             {},
             {"anyOf": [{"type": "integer"}, {"type": "string"}]},
             {"type": "boolean"}
         ]
     });
-    let instance = serde_json::json!("value");
+    let instance = json_codec::json!("value");
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
 
     assert_error_parity(
@@ -261,7 +261,7 @@ struct OneOfDiscriminatorContextValidator;
 
 #[test]
 fn test_one_of_discriminator_error_context_matches_runtime() {
-    let schema = serde_json::json!({
+    let schema = json_codec::json!({
         "$defs": {
             "circle": {
                 "type": "object",
@@ -276,7 +276,7 @@ fn test_one_of_discriminator_error_context_matches_runtime() {
         },
         "oneOf": [{"$ref": "#/$defs/circle"}, {"$ref": "#/$defs/square"}]
     });
-    let instance = serde_json::json!({"kind": "circle", "radius": "large"});
+    let instance = json_codec::json!({"kind": "circle", "radius": "large"});
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
 
     assert_error_parity(
@@ -297,7 +297,7 @@ struct OneOfDirectDiscriminatorContextValidator;
 
 #[test]
 fn test_one_of_direct_discriminator_keeps_non_implied_checks_and_context() {
-    let schema = serde_json::json!({
+    let schema = json_codec::json!({
         "oneOf": [
             {
                 "type": "object",
@@ -314,7 +314,7 @@ fn test_one_of_direct_discriminator_keeps_non_implied_checks_and_context() {
             }
         ]
     });
-    let instance = serde_json::json!({"kind": "circle", "radius": 1});
+    let instance = json_codec::json!({"kind": "circle", "radius": 1});
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
 
     assert_error_parity(
@@ -336,11 +336,11 @@ struct AnyOfDynamicRefContextValidator;
 
 #[test]
 fn test_any_of_dynamic_ref_error_context_matches_runtime() {
-    let schema = serde_json::json!({
+    let schema = json_codec::json!({
         "$defs": {"node": {"$dynamicAnchor": "node", "type": "integer"}},
         "anyOf": [{"$dynamicRef": "#node"}, {"type": "string"}]
     });
-    let instance = serde_json::json!(false);
+    let instance = json_codec::json!(false);
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
 
     assert_error_parity(
@@ -357,9 +357,9 @@ fn test_any_of_dynamic_ref_error_context_matches_runtime() {
 // Asserts that the generated `is_valid` result agrees with the default runtime
 // validator built from `schema`.
 fn assert_is_valid_parity(
-    schema: &serde_json::Value,
+    schema: &json_codec::Value,
     generated_is_valid: bool,
-    instance: &serde_json::Value,
+    instance: &json_codec::Value,
 ) {
     let runtime = jsonschema::validator_for(schema).expect("valid schema");
     assert_eq!(
@@ -370,15 +370,15 @@ fn assert_is_valid_parity(
 }
 
 #[cfg(feature = "arbitrary-precision")]
-fn runtime_valid(schema: &serde_json::Value, instance: &serde_json::Value) -> bool {
+fn runtime_valid(schema: &json_codec::Value, instance: &json_codec::Value) -> bool {
     jsonschema::validator_for(schema)
         .expect("valid schema")
         .is_valid(instance)
 }
 
 fn build_runtime_with_resources(
-    schema: serde_json::Value,
-    resources: impl IntoIterator<Item = (&'static str, serde_json::Value)>,
+    schema: json_codec::Value,
+    resources: impl IntoIterator<Item = (&'static str, json_codec::Value)>,
 ) -> jsonschema::Validator {
     let resources: Vec<_> = resources.into_iter().collect();
     let mut builder = jsonschema::Registry::new();
@@ -400,8 +400,8 @@ struct MultiErrorCustomValidator;
 
 #[test]
 fn test_custom_keyword_iter_errors_multi() {
-    let schema = serde_json::json!({"multi": true});
-    let instance = serde_json::json!(1);
+    let schema = json_codec::json!({"multi": true});
+    let instance = json_codec::json!(1);
     let runtime = jsonschema::options()
         .with_keyword("multi", multi_error_factory)
         .build(&schema)
@@ -419,11 +419,11 @@ fn test_custom_keyword_iter_errors_multi() {
 )]
 struct CustomKeywordValidator;
 
-#[test_case(serde_json::json!(4) ; "even_integer")]
-#[test_case(serde_json::json!(3) ; "odd_integer")]
-#[test_case(serde_json::json!("x") ; "non_integer")]
-fn test_custom_keyword_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"integer","even":true});
+#[test_case(json_codec::json!(4) ; "even_integer")]
+#[test_case(json_codec::json!(3) ; "odd_integer")]
+#[test_case(json_codec::json!("x") ; "non_integer")]
+fn test_custom_keyword_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"integer","even":true});
     let runtime = jsonschema::options()
         .with_keyword("even", even_factory)
         .build(&schema)
@@ -475,14 +475,14 @@ struct BuiltinContentEncodingValidator;
 #[jsonschema::validator(schema = r#"{"contentEncoding":"BASE64"}"#, draft = Draft7)]
 struct UppercaseContentEncodingValidator;
 
-#[test_case(serde_json::json!("deadBEEF") ; "valid_hex")]
-#[test_case(serde_json::json!("xyz") ; "invalid_hex")]
-#[test_case(serde_json::json!(5) ; "non_string")]
-fn test_custom_content_media_type_matches_runtime(instance: serde_json::Value) {
+#[test_case(json_codec::json!("deadBEEF") ; "valid_hex")]
+#[test_case(json_codec::json!("xyz") ; "invalid_hex")]
+#[test_case(json_codec::json!(5) ; "non_string")]
+fn test_custom_content_media_type_matches_runtime(instance: json_codec::Value) {
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
         .with_content_media_type("text/hex", is_hex_content)
-        .build(&serde_json::json!({"contentMediaType":"text/hex"}))
+        .build(&json_codec::json!({"contentMediaType":"text/hex"}))
         .expect("valid schema");
     assert_validate_parity(
         CustomContentMediaTypeValidator::is_valid(&instance),
@@ -492,13 +492,13 @@ fn test_custom_content_media_type_matches_runtime(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!("p:payload") ; "valid_prefixed")]
-#[test_case(serde_json::json!("payload") ; "missing_prefix")]
-fn test_custom_content_encoding_matches_runtime(instance: serde_json::Value) {
+#[test_case(json_codec::json!("p:payload") ; "valid_prefixed")]
+#[test_case(json_codec::json!("payload") ; "missing_prefix")]
+fn test_custom_content_encoding_matches_runtime(instance: json_codec::Value) {
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
         .with_content_encoding("prefixed", check_prefixed, convert_prefixed)
-        .build(&serde_json::json!({"contentEncoding":"prefixed"}))
+        .build(&json_codec::json!({"contentEncoding":"prefixed"}))
         .expect("valid schema");
     assert_validate_parity(
         CustomContentEncodingValidator::is_valid(&instance),
@@ -508,14 +508,14 @@ fn test_custom_content_encoding_matches_runtime(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!("p:{\"a\":1}") ; "decodes_to_json")]
-#[test_case(serde_json::json!("p:not json") ; "decodes_to_non_json")]
-#[test_case(serde_json::json!("no prefix") ; "conversion_fails")]
-fn test_custom_encoding_with_builtin_media_matches_runtime(instance: serde_json::Value) {
+#[test_case(json_codec::json!("p:{\"a\":1}") ; "decodes_to_json")]
+#[test_case(json_codec::json!("p:not json") ; "decodes_to_non_json")]
+#[test_case(json_codec::json!("no prefix") ; "conversion_fails")]
+fn test_custom_encoding_with_builtin_media_matches_runtime(instance: json_codec::Value) {
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
         .with_content_encoding("prefixed", check_prefixed, convert_prefixed)
-        .build(&serde_json::json!({"contentEncoding":"prefixed","contentMediaType":"application/json"}))
+        .build(&json_codec::json!({"contentEncoding":"prefixed","contentMediaType":"application/json"}))
         .expect("valid schema");
     assert_validate_parity(
         CustomEncodingBuiltinMediaValidator::is_valid(&instance),
@@ -525,12 +525,12 @@ fn test_custom_encoding_with_builtin_media_matches_runtime(instance: serde_json:
     );
 }
 
-#[test_case(serde_json::json!("aGVsbG8=") ; "valid_base64")]
-#[test_case(serde_json::json!("!!!") ; "invalid_base64")]
-fn test_builtin_content_encoding_matches_runtime(instance: serde_json::Value) {
+#[test_case(json_codec::json!("aGVsbG8=") ; "valid_base64")]
+#[test_case(json_codec::json!("!!!") ; "invalid_base64")]
+fn test_builtin_content_encoding_matches_runtime(instance: json_codec::Value) {
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
-        .build(&serde_json::json!({"contentEncoding":"base64"}))
+        .build(&json_codec::json!({"contentEncoding":"base64"}))
         .expect("valid schema");
     assert_validate_parity(
         BuiltinContentEncodingValidator::is_valid(&instance),
@@ -544,10 +544,10 @@ fn test_builtin_content_encoding_matches_runtime(instance: serde_json::Value) {
 // validates nothing, exactly like the runtime validator.
 #[test]
 fn test_unknown_uppercase_content_encoding_is_ignored() {
-    let instance = serde_json::json!("!!!");
+    let instance = json_codec::json!("!!!");
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
-        .build(&serde_json::json!({"contentEncoding":"BASE64"}))
+        .build(&json_codec::json!({"contentEncoding":"BASE64"}))
         .expect("valid schema");
     assert!(runtime.is_valid(&instance));
     assert!(UppercaseContentEncodingValidator::is_valid(&instance));
@@ -563,8 +563,8 @@ struct PatternPrefixParityValidator;
 
 #[test]
 fn test_pattern_validate_parity() {
-    let schema = serde_json::json!({"type":"string","pattern":"^ab+$"});
-    let instance = serde_json::json!("xyz");
+    let schema = json_codec::json!({"type":"string","pattern":"^ab+$"});
+    let instance = json_codec::json!("xyz");
     assert_validate_parity_for(
         &schema,
         PatternRegexParityValidator::is_valid(&instance),
@@ -573,8 +573,8 @@ fn test_pattern_validate_parity() {
     );
 
     // Prefix-optimized check must still report the original pattern `^abc`.
-    let schema = serde_json::json!({"type":"string","pattern":"^abc"});
-    let instance = serde_json::json!("xyz");
+    let schema = json_codec::json!({"type":"string","pattern":"^abc"});
+    let instance = json_codec::json!("xyz");
     assert_validate_parity_for(
         &schema,
         PatternPrefixParityValidator::is_valid(&instance),
@@ -589,14 +589,14 @@ struct FormatBuiltinParityValidator;
 #[test]
 fn test_format_validate_parity() {
     // custom format (Draft7 validates formats by default)
-    let schema = serde_json::json!({"type":"string","format":"currency"});
+    let schema = json_codec::json!({"type":"string","format":"currency"});
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
         .with_format("currency", is_currency_format)
         .should_validate_formats(true)
         .build(&schema)
         .expect("valid schema");
-    let instance = serde_json::json!("nope");
+    let instance = json_codec::json!("nope");
     assert_validate_parity(
         CustomFormatDraft7Validator::is_valid(&instance),
         CustomFormatDraft7Validator::validate(&instance),
@@ -605,13 +605,13 @@ fn test_format_validate_parity() {
     );
 
     // builtin format
-    let schema = serde_json::json!({"type":"string","format":"ipv4"});
+    let schema = json_codec::json!({"type":"string","format":"ipv4"});
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
         .should_validate_formats(true)
         .build(&schema)
         .expect("valid schema");
-    let instance = serde_json::json!("not-an-ip");
+    let instance = json_codec::json!("not-an-ip");
     assert_validate_parity(
         FormatBuiltinParityValidator::is_valid(&instance),
         FormatBuiltinParityValidator::validate(&instance),
@@ -623,8 +623,8 @@ fn test_format_validate_parity() {
 #[test]
 fn test_unevaluated_properties_validate_parity() {
     // Plain `unevaluatedProperties: false` (offender via allOf-tracked properties).
-    let schema = serde_json::json!({"type":"object","allOf":[{"properties":{"a":{}}}],"unevaluatedProperties":false});
-    let instance = serde_json::json!({"a":1,"b":2});
+    let schema = json_codec::json!({"type":"object","allOf":[{"properties":{"a":{}}}],"unevaluatedProperties":false});
+    let instance = json_codec::json!({"a":1,"b":2});
     assert_validate_parity_for(
         &schema,
         UnevalPropsAllOfValidator::is_valid(&instance),
@@ -633,8 +633,8 @@ fn test_unevaluated_properties_validate_parity() {
     );
 
     // `unevaluatedProperties` as a schema: offender is the key whose value fails the schema.
-    let schema = serde_json::json!({"type":"object","properties":{"a":{}},"unevaluatedProperties":{"type":"integer"}});
-    let instance = serde_json::json!({"a":1,"b":"x"});
+    let schema = json_codec::json!({"type":"object","properties":{"a":{}},"unevaluatedProperties":{"type":"integer"}});
+    let instance = json_codec::json!({"a":1,"b":"x"});
     assert_validate_parity_for(
         &schema,
         UnevalPropsSchemaValidator::is_valid(&instance),
@@ -643,8 +643,8 @@ fn test_unevaluated_properties_validate_parity() {
     );
 
     // Self-referential `$dynamicRef` cycle (regression for the cycle fix).
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.com/root","$dynamicAnchor":"node","type":"object","$dynamicRef":"#node","unevaluatedProperties":false});
-    let instance = serde_json::json!({"a":1});
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.com/root","$dynamicAnchor":"node","type":"object","$dynamicRef":"#node","unevaluatedProperties":false});
+    let instance = json_codec::json!({"a":1});
     assert_validate_parity_for(
         &schema,
         DynamicAnchorCycleUnevalPropsValidator::is_valid(&instance),
@@ -655,8 +655,8 @@ fn test_unevaluated_properties_validate_parity() {
 
 #[test]
 fn test_unevaluated_items_validate_parity() {
-    let schema = serde_json::json!({"type":"array","allOf":[{"prefixItems":[{"type":"integer"}]}],"unevaluatedItems":false});
-    let instance = serde_json::json!([1, 2]);
+    let schema = json_codec::json!({"type":"array","allOf":[{"prefixItems":[{"type":"integer"}]}],"unevaluatedItems":false});
+    let instance = json_codec::json!([1, 2]);
     assert_validate_parity_for(
         &schema,
         UnevalItemsAllOfValidator::is_valid(&instance),
@@ -665,8 +665,8 @@ fn test_unevaluated_items_validate_parity() {
     );
 
     // Self-referential `$dynamicRef` cycle (regression for the cycle fix).
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.com/root","$dynamicAnchor":"node","type":"array","$dynamicRef":"#node","unevaluatedItems":false});
-    let instance = serde_json::json!([1]);
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.com/root","$dynamicAnchor":"node","type":"array","$dynamicRef":"#node","unevaluatedItems":false});
+    let instance = json_codec::json!([1]);
     assert_validate_parity_for(
         &schema,
         DynamicAnchorCycleUnevalItemsValidator::is_valid(&instance),
@@ -683,8 +683,8 @@ struct PropertyNamesMaxLengthParityValidator;
 
 #[test]
 fn test_property_names_validate_parity() {
-    let schema = serde_json::json!({"propertyNames":{"pattern":"^a+$"}});
-    let instance = serde_json::json!({"aaA": {}});
+    let schema = json_codec::json!({"propertyNames":{"pattern":"^a+$"}});
+    let instance = json_codec::json!({"aaA": {}});
     assert_validate_parity_for(
         &schema,
         PropertyNamesPatternParityValidator::is_valid(&instance),
@@ -692,8 +692,8 @@ fn test_property_names_validate_parity() {
         &instance,
     );
 
-    let schema = serde_json::json!({"propertyNames":{"maxLength":3}});
-    let instance = serde_json::json!({"foobar": {}});
+    let schema = json_codec::json!({"propertyNames":{"maxLength":3}});
+    let instance = json_codec::json!({"foobar": {}});
     assert_validate_parity_for(
         &schema,
         PropertyNamesMaxLengthParityValidator::is_valid(&instance),
@@ -707,8 +707,8 @@ struct PropertyNamesFalseParityValidator;
 
 #[test]
 fn test_property_names_false_validate_parity() {
-    let schema = serde_json::json!({"propertyNames":false});
-    let instance = serde_json::json!({"foo":"bar"});
+    let schema = json_codec::json!({"propertyNames":false});
+    let instance = json_codec::json!({"foo":"bar"});
     assert_validate_parity_for(
         &schema,
         PropertyNamesFalseParityValidator::is_valid(&instance),
@@ -717,9 +717,9 @@ fn test_property_names_false_validate_parity() {
     );
     // empty object is valid
     assert!(PropertyNamesFalseParityValidator::is_valid(
-        &serde_json::json!({})
+        &json_codec::json!({})
     ));
-    assert!(PropertyNamesFalseParityValidator::validate(&serde_json::json!({})).is_ok());
+    assert!(PropertyNamesFalseParityValidator::validate(&json_codec::json!({})).is_ok());
 }
 
 #[jsonschema::validator(
@@ -729,8 +729,8 @@ struct AdditionalItemsFalseParityValidator;
 
 #[test]
 fn test_additional_items_validate_parity() {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","type":"array","items":[{"type":"integer"}],"additionalItems":false});
-    let instance = serde_json::json!([1, 2, "x"]);
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","type":"array","items":[{"type":"integer"}],"additionalItems":false});
+    let instance = json_codec::json!([1, 2, "x"]);
     assert_validate_parity_for(
         &schema,
         AdditionalItemsFalseParityValidator::is_valid(&instance),
@@ -748,8 +748,8 @@ struct AdditionalPropsFalseParityValidator;
 fn test_additional_properties_false_validate_parity() {
     // properties + additionalProperties:false, no patternProperties (known-keys precheck)
     let schema =
-        serde_json::json!({"type":"object","properties":{"a":{}},"additionalProperties":false});
-    let instance = serde_json::json!({"a":1,"b":2,"c":3});
+        json_codec::json!({"type":"object","properties":{"a":{}},"additionalProperties":false});
+    let instance = json_codec::json!({"a":1,"b":2,"c":3});
     assert_validate_parity_for(
         &schema,
         AdditionalPropsFalseParityValidator::is_valid(&instance),
@@ -771,8 +771,8 @@ struct AdditionalPropsPatternOnlyParityValidator;
 #[test]
 fn test_additional_properties_pattern_validate_parity() {
     // properties + patternProperties + additionalProperties:false
-    let schema = serde_json::json!({"type":"object","properties":{"a":{}},"patternProperties":{"^x_":{}},"additionalProperties":false});
-    let instance = serde_json::json!({"a":1,"x_ok":2,"bad":3});
+    let schema = json_codec::json!({"type":"object","properties":{"a":{}},"patternProperties":{"^x_":{}},"additionalProperties":false});
+    let instance = json_codec::json!({"a":1,"x_ok":2,"bad":3});
     assert_validate_parity_for(
         &schema,
         AdditionalPropsPatternParityValidator::is_valid(&instance),
@@ -781,8 +781,8 @@ fn test_additional_properties_pattern_validate_parity() {
     );
 
     // patternProperties only + additionalProperties:false (no `properties`)
-    let schema = serde_json::json!({"type":"object","patternProperties":{"^x_":{}},"additionalProperties":false});
-    let instance = serde_json::json!({"x_ok":2,"bad":3});
+    let schema = json_codec::json!({"type":"object","patternProperties":{"^x_":{}},"additionalProperties":false});
+    let instance = json_codec::json!({"x_ok":2,"bad":3});
     assert_validate_parity_for(
         &schema,
         AdditionalPropsPatternOnlyParityValidator::is_valid(&instance),
@@ -799,13 +799,13 @@ fn test_additional_properties_pattern_validate_parity() {
 )]
 struct AdditionalPropsFalseNonTrivialParityValidator;
 
-#[test_case(serde_json::json!({"m":"x","z":1}) ; "covered_value_before_additional")]
-#[test_case(serde_json::json!({"a":1,"m":"x"}) ; "additional_before_covered_value")]
-#[test_case(serde_json::json!({"m":"x"}) ; "only_value_error")]
-#[test_case(serde_json::json!({"z":1}) ; "only_additional_error")]
-fn test_additional_properties_false_nontrivial_validate_parity(instance: serde_json::Value) {
+#[test_case(json_codec::json!({"m":"x","z":1}) ; "covered_value_before_additional")]
+#[test_case(json_codec::json!({"a":1,"m":"x"}) ; "additional_before_covered_value")]
+#[test_case(json_codec::json!({"m":"x"}) ; "only_value_error")]
+#[test_case(json_codec::json!({"z":1}) ; "only_additional_error")]
+fn test_additional_properties_false_nontrivial_validate_parity(instance: json_codec::Value) {
     let schema =
-        serde_json::json!({"properties":{"m":{"type":"integer"}},"additionalProperties":false});
+        json_codec::json!({"properties":{"m":{"type":"integer"}},"additionalProperties":false});
     assert_validate_parity_for(
         &schema,
         AdditionalPropsFalseNonTrivialParityValidator::is_valid(&instance),
@@ -820,11 +820,11 @@ fn test_additional_properties_false_nontrivial_validate_parity(instance: serde_j
 )]
 struct AdditionalPropsFalseRequiredParityValidator;
 
-#[test_case(serde_json::json!({"m":"x","z":1}) ; "value_error_first")]
-#[test_case(serde_json::json!({"z":1}) ; "additional_before_missing_required")]
-#[test_case(serde_json::json!({}) ; "missing_required_only")]
-fn test_additional_properties_false_required_validate_parity(instance: serde_json::Value) {
-    let schema = serde_json::json!({"properties":{"m":{"type":"integer"}},"required":["m"],"additionalProperties":false});
+#[test_case(json_codec::json!({"m":"x","z":1}) ; "value_error_first")]
+#[test_case(json_codec::json!({"z":1}) ; "additional_before_missing_required")]
+#[test_case(json_codec::json!({}) ; "missing_required_only")]
+fn test_additional_properties_false_required_validate_parity(instance: json_codec::Value) {
+    let schema = json_codec::json!({"properties":{"m":{"type":"integer"}},"required":["m"],"additionalProperties":false});
     assert_validate_parity_for(
         &schema,
         AdditionalPropsFalseRequiredParityValidator::is_valid(&instance),
@@ -840,12 +840,12 @@ fn test_additional_properties_false_required_validate_parity(instance: serde_jso
 )]
 struct RequiredBeforePropertiesParityValidator;
 
-#[test_case(serde_json::json!({"a":"x"}) ; "missing_required_before_bad_value")]
-#[test_case(serde_json::json!({"a":"x","b":2}) ; "bad_value_when_required_met")]
-#[test_case(serde_json::json!({}) ; "first_missing_required")]
-#[test_case(serde_json::json!({"a":1}) ; "second_missing_required")]
-fn test_required_before_properties_validate_parity(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"]});
+#[test_case(json_codec::json!({"a":"x"}) ; "missing_required_before_bad_value")]
+#[test_case(json_codec::json!({"a":"x","b":2}) ; "bad_value_when_required_met")]
+#[test_case(json_codec::json!({}) ; "first_missing_required")]
+#[test_case(json_codec::json!({"a":1}) ; "second_missing_required")]
+fn test_required_before_properties_validate_parity(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"]});
     assert_validate_parity_for(
         &schema,
         RequiredBeforePropertiesParityValidator::is_valid(&instance),
@@ -859,16 +859,16 @@ fn test_required_before_properties_validate_parity(instance: serde_json::Value) 
 )]
 struct RequiredWithAdditionalSchemaParityValidator;
 
-#[test_case(serde_json::json!({"a":1,"z":true}) ; "valid")]
-#[test_case(serde_json::json!({"a":1,"z":0}) ; "required_key_checked_by_additional_properties")]
-#[test_case(serde_json::json!({"a":"x","z":true}) ; "bad_value")]
-#[test_case(serde_json::json!({"a":1,"b":{"c":1},"z":true}) ; "nested_bad_value")]
-#[test_case(serde_json::json!({"b":{"c":1},"a":"x","z":true}) ; "first_bad_value_in_instance_order")]
-#[test_case(serde_json::json!({"a":1,"y":1,"z":true}) ; "bad_additional_value")]
-#[test_case(serde_json::json!({"a":"x","y":1}) ; "missing_required_not_in_properties")]
-#[test_case(serde_json::json!({"z":0,"y":1}) ; "missing_required_in_properties")]
-fn test_required_with_additional_schema_validate_parity(instance: serde_json::Value) {
-    let schema = serde_json::json!({"properties":{"a":{"type":"integer"},"b":{"properties":{"c":{"type":"string"}}}},"required":["a","z"],"additionalProperties":{"type":"boolean"}});
+#[test_case(json_codec::json!({"a":1,"z":true}) ; "valid")]
+#[test_case(json_codec::json!({"a":1,"z":0}) ; "required_key_checked_by_additional_properties")]
+#[test_case(json_codec::json!({"a":"x","z":true}) ; "bad_value")]
+#[test_case(json_codec::json!({"a":1,"b":{"c":1},"z":true}) ; "nested_bad_value")]
+#[test_case(json_codec::json!({"b":{"c":1},"a":"x","z":true}) ; "first_bad_value_in_instance_order")]
+#[test_case(json_codec::json!({"a":1,"y":1,"z":true}) ; "bad_additional_value")]
+#[test_case(json_codec::json!({"a":"x","y":1}) ; "missing_required_not_in_properties")]
+#[test_case(json_codec::json!({"z":0,"y":1}) ; "missing_required_in_properties")]
+fn test_required_with_additional_schema_validate_parity(instance: json_codec::Value) {
+    let schema = json_codec::json!({"properties":{"a":{"type":"integer"},"b":{"properties":{"c":{"type":"string"}}}},"required":["a","z"],"additionalProperties":{"type":"boolean"}});
     assert_validate_parity_for(
         &schema,
         RequiredWithAdditionalSchemaParityValidator::is_valid(&instance),
@@ -882,12 +882,12 @@ fn test_required_with_additional_schema_validate_parity(instance: serde_json::Va
 )]
 struct RequiredWithAdditionalFalseParityValidator;
 
-#[test_case(serde_json::json!({"a":1,"b":2}) ; "valid")]
-#[test_case(serde_json::json!({"a":1,"b":2,"x":0}) ; "unexpected_key")]
-#[test_case(serde_json::json!({"a":1,"x":0}) ; "missing_required_and_unexpected_key")]
-#[test_case(serde_json::json!({"x":0,"a":"y","b":2}) ; "unexpected_key_before_bad_value")]
-fn test_required_with_additional_false_validate_parity(instance: serde_json::Value) {
-    let schema = serde_json::json!({"properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"],"additionalProperties":false});
+#[test_case(json_codec::json!({"a":1,"b":2}) ; "valid")]
+#[test_case(json_codec::json!({"a":1,"b":2,"x":0}) ; "unexpected_key")]
+#[test_case(json_codec::json!({"a":1,"x":0}) ; "missing_required_and_unexpected_key")]
+#[test_case(json_codec::json!({"x":0,"a":"y","b":2}) ; "unexpected_key_before_bad_value")]
+fn test_required_with_additional_false_validate_parity(instance: json_codec::Value) {
+    let schema = json_codec::json!({"properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"],"additionalProperties":false});
     assert_validate_parity_for(
         &schema,
         RequiredWithAdditionalFalseParityValidator::is_valid(&instance),
@@ -903,11 +903,11 @@ fn test_required_with_additional_false_validate_parity(instance: serde_json::Val
 )]
 struct PatternsApFalseParityValidator;
 
-#[test_case(serde_json::json!({"!":1,"x_y":true}) ; "uncovered_before_bad_pattern")]
-#[test_case(serde_json::json!({"x_y":true,"z":1}) ; "bad_pattern_before_uncovered")]
-#[test_case(serde_json::json!({"a":"s","x_y":true}) ; "bad_property_before_bad_pattern")]
-fn test_patterns_ap_false_validate_parity(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"integer"}},"patternProperties":{"^x_":{"type":"string"}},"additionalProperties":false});
+#[test_case(json_codec::json!({"!":1,"x_y":true}) ; "uncovered_before_bad_pattern")]
+#[test_case(json_codec::json!({"x_y":true,"z":1}) ; "bad_pattern_before_uncovered")]
+#[test_case(json_codec::json!({"a":"s","x_y":true}) ; "bad_property_before_bad_pattern")]
+fn test_patterns_ap_false_validate_parity(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"integer"}},"patternProperties":{"^x_":{"type":"string"}},"additionalProperties":false});
     assert_validate_parity_for(
         &schema,
         PatternsApFalseParityValidator::is_valid(&instance),
@@ -921,9 +921,9 @@ fn test_patterns_ap_false_validate_parity(instance: serde_json::Value) {
 )]
 struct PatternsApTrueParityValidator;
 
-#[test_case(serde_json::json!({"a":"s","x_y":true}) ; "bad_property_before_bad_pattern")]
-fn test_patterns_ap_true_validate_parity(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"integer"}},"patternProperties":{"^x_":{"type":"string"}}});
+#[test_case(json_codec::json!({"a":"s","x_y":true}) ; "bad_property_before_bad_pattern")]
+fn test_patterns_ap_true_validate_parity(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"integer"}},"patternProperties":{"^x_":{"type":"string"}}});
     assert_validate_parity_for(
         &schema,
         PatternsApTrueParityValidator::is_valid(&instance),
@@ -937,10 +937,10 @@ fn test_patterns_ap_true_validate_parity(instance: serde_json::Value) {
 )]
 struct PatternsApSchemaParityValidator;
 
-#[test_case(serde_json::json!({"a":"s","x_y":true,"z":1}) ; "property_pattern_additional")]
-#[test_case(serde_json::json!({"x_y":true,"z":1}) ; "pattern_before_additional")]
-fn test_patterns_ap_schema_validate_parity(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"integer"}},"patternProperties":{"^x_":{"type":"string"}},"additionalProperties":{"type":"boolean"}});
+#[test_case(json_codec::json!({"a":"s","x_y":true,"z":1}) ; "property_pattern_additional")]
+#[test_case(json_codec::json!({"x_y":true,"z":1}) ; "pattern_before_additional")]
+fn test_patterns_ap_schema_validate_parity(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"integer"}},"patternProperties":{"^x_":{"type":"string"}},"additionalProperties":{"type":"boolean"}});
     assert_validate_parity_for(
         &schema,
         PatternsApSchemaParityValidator::is_valid(&instance),
@@ -957,11 +957,11 @@ struct InlineValidator;
 
 #[test]
 fn test_inline_validator_accepts_benchmark_instance() {
-    let instance: serde_json::Value =
-        serde_json::from_str(include_str!("../../../../src/foundation/benchmark/data/recursive_instance.json"))
+    let instance: json_codec::Value =
+        json_codec::from_str(include_str!("../../../../src/foundation/benchmark/data/recursive_instance.json"))
             .expect("valid JSON");
     assert!(InlineValidator::is_valid(&instance));
-    assert!(!InlineValidator::is_valid(&serde_json::json!(null)));
+    assert!(!InlineValidator::is_valid(&json_codec::json!(null)));
 }
 
 #[jsonschema::validator(
@@ -972,9 +972,9 @@ struct OpenApiValidator;
 
 #[test]
 fn test_openapi_validator_accepts_minimal_valid_document() {
-    let valid = serde_json::json!({"openapi": "3.0.0", "info": {"title": "Test", "version": "0"}, "paths": {}});
+    let valid = json_codec::json!({"openapi": "3.0.0", "info": {"title": "Test", "version": "0"}, "paths": {}});
     assert!(OpenApiValidator::is_valid(&valid));
-    assert!(!OpenApiValidator::is_valid(&serde_json::json!({})));
+    assert!(!OpenApiValidator::is_valid(&json_codec::json!({})));
 }
 
 #[jsonschema::validator(
@@ -1643,17 +1643,17 @@ struct DeclaredVocabularyValidator;
 #[test]
 fn test_external_resources() {
     assert!(AddressValidator::is_valid(
-        &serde_json::json!({"street": "Main St"})
+        &json_codec::json!({"street": "Main St"})
     ));
-    assert!(!AddressValidator::is_valid(&serde_json::json!({})));
+    assert!(!AddressValidator::is_valid(&json_codec::json!({})));
 }
 
 // `is_valid()` and `validate()` must agree, including for an unconstrained-but-allowed type.
-#[test_case(serde_json::json!("ab"), true ; "string_meets_min_length")]
-#[test_case(serde_json::json!(42), true ; "integer_without_number_keywords")]
-#[test_case(serde_json::json!("a"), false ; "string_too_short")]
-#[test_case(serde_json::json!(1.5), false ; "non_integer_number")]
-fn test_typed_fallback_is_valid_and_validate_agree(instance: serde_json::Value, valid: bool) {
+#[test_case(json_codec::json!("ab"), true ; "string_meets_min_length")]
+#[test_case(json_codec::json!(42), true ; "integer_without_number_keywords")]
+#[test_case(json_codec::json!("a"), false ; "string_too_short")]
+#[test_case(json_codec::json!(1.5), false ; "non_integer_number")]
+fn test_typed_fallback_is_valid_and_validate_agree(instance: json_codec::Value, valid: bool) {
     assert_eq!(
         MixedTypeWithStringKeywordValidator::is_valid(&instance),
         valid
@@ -1665,74 +1665,74 @@ fn test_typed_fallback_is_valid_and_validate_agree(instance: serde_json::Value, 
 }
 
 // A required property whose `const` kinds disagree across `oneOf` branches.
-#[test_case(serde_json::json!({"k": "a"}), true ; "string_branch_a")]
-#[test_case(serde_json::json!({"k": true}), true ; "bool_branch")]
-#[test_case(serde_json::json!({"k": "c"}), true ; "string_branch_c")]
-#[test_case(serde_json::json!({"k": "x"}), false ; "unmatched_string")]
-#[test_case(serde_json::json!({"k": false}), false ; "unmatched_bool")]
-fn test_one_of_mixed_const_kinds_discriminator(instance: serde_json::Value, valid: bool) {
+#[test_case(json_codec::json!({"k": "a"}), true ; "string_branch_a")]
+#[test_case(json_codec::json!({"k": true}), true ; "bool_branch")]
+#[test_case(json_codec::json!({"k": "c"}), true ; "string_branch_c")]
+#[test_case(json_codec::json!({"k": "x"}), false ; "unmatched_string")]
+#[test_case(json_codec::json!({"k": false}), false ; "unmatched_bool")]
+fn test_one_of_mixed_const_kinds_discriminator(instance: json_codec::Value, valid: bool) {
     assert_eq!(OneOfMixedConstKindsValidator::is_valid(&instance), valid);
 }
 
 #[test]
 fn test_integer_type_is_not_redundant_with_number_enum() {
     assert!(!IntegerTypeWithNumberEnumValidator::is_valid(
-        &serde_json::json!(1.5)
+        &json_codec::json!(1.5)
     ));
 }
 
 #[test]
 fn test_string_pattern_alternation_validator_compiles_and_validates() {
     assert!(StringAlternationPatternValidator::is_valid(
-        &serde_json::json!("a")
+        &json_codec::json!("a")
     ));
     assert!(StringAlternationPatternValidator::is_valid(
-        &serde_json::json!("b")
+        &json_codec::json!("b")
     ));
     assert!(!StringAlternationPatternValidator::is_valid(
-        &serde_json::json!("c")
+        &json_codec::json!("c")
     ));
 }
 
-#[test_case(serde_json::json!("proj:epsg"), true ; "lookaround_accepts_non_eo")]
-#[test_case(serde_json::json!("eo:bands"), false ; "lookaround_rejects_eo_prefix")]
-fn test_valid_ecma_pattern_does_not_panic(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("proj:epsg"), true ; "lookaround_accepts_non_eo")]
+#[test_case(json_codec::json!("eo:bands"), false ; "lookaround_rejects_eo_prefix")]
+fn test_valid_ecma_pattern_does_not_panic(instance: json_codec::Value, expected: bool) {
     assert_eq!(LookaroundPatternValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!("ab"), true ; "regex_engine_accepts_matching")]
-#[test_case(serde_json::json!("abbb"), true ; "regex_engine_accepts_longer_match")]
-#[test_case(serde_json::json!("a"), false ; "regex_engine_rejects_non_match")]
-fn test_pattern_options_regex_engine(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("ab"), true ; "regex_engine_accepts_matching")]
+#[test_case(json_codec::json!("abbb"), true ; "regex_engine_accepts_longer_match")]
+#[test_case(json_codec::json!("a"), false ; "regex_engine_rejects_non_match")]
+fn test_pattern_options_regex_engine(instance: json_codec::Value, expected: bool) {
     assert_eq!(RegexEnginePatternValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!("a"), false ; "below_minimum")]
-#[test_case(serde_json::json!("abc"), true ; "within_range")]
-#[test_case(serde_json::json!("abcdef"), false ; "above_maximum")]
-fn test_string_min_and_max_length_match_runtime(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({"type":"string","minLength":2,"maxLength":5});
+#[test_case(json_codec::json!("a"), false ; "below_minimum")]
+#[test_case(json_codec::json!("abc"), true ; "within_range")]
+#[test_case(json_codec::json!("abcdef"), false ; "above_maximum")]
+fn test_string_min_and_max_length_match_runtime(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({"type":"string","minLength":2,"maxLength":5});
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
     assert_eq!(runtime.is_valid(&instance), expected);
     assert_eq!(StringMinMaxLengthValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!(""), true ; "empty_allowed")]
-#[test_case(serde_json::json!("a"), false ; "non_empty_rejected")]
-fn test_string_empty_only_match_runtime(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({"type":"string","minLength":0,"maxLength":0});
+#[test_case(json_codec::json!(""), true ; "empty_allowed")]
+#[test_case(json_codec::json!("a"), false ; "non_empty_rejected")]
+fn test_string_empty_only_match_runtime(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({"type":"string","minLength":0,"maxLength":0});
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
     assert_eq!(runtime.is_valid(&instance), expected);
     assert_eq!(StringEmptyOnlyValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!(4) ; "below_reports_minimum")]
-#[test_case(serde_json::json!(5) ; "equal_is_valid")]
-#[test_case(serde_json::json!(6) ; "above_reports_maximum")]
-#[test_case(serde_json::json!(5.5) ; "float_instance_skipped")]
-#[test_case(serde_json::json!("x") ; "non_number_skipped")]
-fn test_numeric_equal_bounds_match_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"number","minimum":5,"maximum":5});
+#[test_case(json_codec::json!(4) ; "below_reports_minimum")]
+#[test_case(json_codec::json!(5) ; "equal_is_valid")]
+#[test_case(json_codec::json!(6) ; "above_reports_maximum")]
+#[test_case(json_codec::json!(5.5) ; "float_instance_skipped")]
+#[test_case(json_codec::json!("x") ; "non_number_skipped")]
+fn test_numeric_equal_bounds_match_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"number","minimum":5,"maximum":5});
     assert_validate_parity_for(
         &schema,
         NumericEqualBoundsValidator::is_valid(&instance),
@@ -1741,11 +1741,11 @@ fn test_numeric_equal_bounds_match_runtime(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!(-3) ; "equal_is_valid")]
-#[test_case(serde_json::json!(-4) ; "below_reports_minimum")]
-#[test_case(serde_json::json!(-3.5) ; "fractional_below")]
-fn test_numeric_equal_negative_bounds_match_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"number","minimum":-3,"maximum":-3});
+#[test_case(json_codec::json!(-3) ; "equal_is_valid")]
+#[test_case(json_codec::json!(-4) ; "below_reports_minimum")]
+#[test_case(json_codec::json!(-3.5) ; "fractional_below")]
+fn test_numeric_equal_negative_bounds_match_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"number","minimum":-3,"maximum":-3});
     assert_validate_parity_for(
         &schema,
         NumericEqualNegativeBoundsValidator::is_valid(&instance),
@@ -1760,8 +1760,8 @@ fn test_numeric_equal_negative_bounds_match_runtime(instance: serde_json::Value)
 fn test_numeric_equal_bounds_arbitrary_precision(positive: bool) {
     let sign = if positive { "" } else { "-" };
     let raw = format!("{sign}{}.5", "9".repeat(320));
-    let instance: serde_json::Value = serde_json::from_str(&raw).expect("valid number");
-    let schema = serde_json::json!({"type":"number","minimum":5,"maximum":5});
+    let instance: json_codec::Value = json_codec::from_str(&raw).expect("valid number");
+    let schema = json_codec::json!({"type":"number","minimum":5,"maximum":5});
     assert_validate_parity_for(
         &schema,
         NumericEqualBoundsValidator::is_valid(&instance),
@@ -1770,12 +1770,12 @@ fn test_numeric_equal_bounds_arbitrary_precision(positive: bool) {
     );
 }
 
-#[test_case(serde_json::json!({"abc": "x"}) ; "all_keys_covered_valid")]
-#[test_case(serde_json::json!({"AB": "x"}) ; "key_fails_pattern_reports_property_names")]
-#[test_case(serde_json::json!({"abc": 5}) ; "covered_key_wrong_type")]
-#[test_case(serde_json::json!({"abc": "x", "9": 1}) ; "mixed_name_failure_first")]
-fn test_property_names_covered_by_pattern_match_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","additionalProperties":false,"patternProperties":{"^[a-z]{2,}$":{"type":"string"}},"propertyNames":{"pattern":"^[a-z]{2,}$"}});
+#[test_case(json_codec::json!({"abc": "x"}) ; "all_keys_covered_valid")]
+#[test_case(json_codec::json!({"AB": "x"}) ; "key_fails_pattern_reports_property_names")]
+#[test_case(json_codec::json!({"abc": 5}) ; "covered_key_wrong_type")]
+#[test_case(json_codec::json!({"abc": "x", "9": 1}) ; "mixed_name_failure_first")]
+fn test_property_names_covered_by_pattern_match_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","additionalProperties":false,"patternProperties":{"^[a-z]{2,}$":{"type":"string"}},"propertyNames":{"pattern":"^[a-z]{2,}$"}});
     assert_validate_parity_for(
         &schema,
         PropertyNamesCoveredByPatternValidator::is_valid(&instance),
@@ -1784,11 +1784,11 @@ fn test_property_names_covered_by_pattern_match_runtime(instance: serde_json::Va
     );
 }
 
-#[test_case(serde_json::json!({}), true ; "empty_allowed")]
-#[test_case(serde_json::json!({"a": 1}), false ; "any_property_rejected")]
-#[test_case(serde_json::json!("not an object"), false ; "non_object_rejected_by_type")]
-fn test_additional_properties_false_match_runtime(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({"type":"object","additionalProperties":false});
+#[test_case(json_codec::json!({}), true ; "empty_allowed")]
+#[test_case(json_codec::json!({"a": 1}), false ; "any_property_rejected")]
+#[test_case(json_codec::json!("not an object"), false ; "non_object_rejected_by_type")]
+fn test_additional_properties_false_match_runtime(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({"type":"object","additionalProperties":false});
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
     assert_eq!(runtime.is_valid(&instance), expected);
     assert_eq!(
@@ -1797,12 +1797,12 @@ fn test_additional_properties_false_match_runtime(instance: serde_json::Value, e
     );
 }
 
-#[test_case(serde_json::json!({}) ; "empty_object")]
-#[test_case(serde_json::json!({"child": {}}) ; "evaluated_child")]
-#[test_case(serde_json::json!({"other": 1}) ; "unevaluated_key")]
-#[test_case(serde_json::json!({"child": {"other": 1}}) ; "nested_unevaluated_key")]
-fn test_recursive_unevaluated_properties_match_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"type":"object","properties":{"child":{"$recursiveRef":"#"}},"unevaluatedProperties":false});
+#[test_case(json_codec::json!({}) ; "empty_object")]
+#[test_case(json_codec::json!({"child": {}}) ; "evaluated_child")]
+#[test_case(json_codec::json!({"other": 1}) ; "unevaluated_key")]
+#[test_case(json_codec::json!({"child": {"other": 1}}) ; "nested_unevaluated_key")]
+fn test_recursive_unevaluated_properties_match_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"type":"object","properties":{"child":{"$recursiveRef":"#"}},"unevaluatedProperties":false});
     assert_is_valid_parity(
         &schema,
         RecursiveUnevaluatedPropertiesValidator::is_valid(&instance),
@@ -1812,8 +1812,8 @@ fn test_recursive_unevaluated_properties_match_runtime(instance: serde_json::Val
 
 #[test]
 fn test_recursive_unevaluated_properties_validate_parity() {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"type":"object","properties":{"child":{"$recursiveRef":"#"}},"unevaluatedProperties":false});
-    let instance = serde_json::json!({"other": 1});
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"type":"object","properties":{"child":{"$recursiveRef":"#"}},"unevaluatedProperties":false});
+    let instance = json_codec::json!({"other": 1});
     assert_validate_parity_for(
         &schema,
         RecursiveUnevaluatedPropertiesValidator::is_valid(&instance),
@@ -1822,10 +1822,10 @@ fn test_recursive_unevaluated_properties_validate_parity() {
     );
 }
 
-#[test_case(serde_json::json!({"child": {"value": "bad"}}), false ; "cross_resource_recurses_to_root_reject")]
-#[test_case(serde_json::json!({"child": {"value": 5}}), true ; "cross_resource_recurses_to_root_accept")]
-fn test_recursive_ref_cross_resource_match_runtime(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({"$id":"https://ex/root","$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"properties":{"value":{"type":"integer"}},"allOf":[{"$ref":"https://ex/sub"}],"$defs":{"sub":{"$id":"https://ex/sub","$recursiveAnchor":true,"properties":{"child":{"$ref":"#/$defs/wrapper"}},"$defs":{"wrapper":{"$recursiveRef":"#"}}}}});
+#[test_case(json_codec::json!({"child": {"value": "bad"}}), false ; "cross_resource_recurses_to_root_reject")]
+#[test_case(json_codec::json!({"child": {"value": 5}}), true ; "cross_resource_recurses_to_root_accept")]
+fn test_recursive_ref_cross_resource_match_runtime(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({"$id":"https://ex/root","$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"properties":{"value":{"type":"integer"}},"allOf":[{"$ref":"https://ex/sub"}],"$defs":{"sub":{"$id":"https://ex/sub","$recursiveAnchor":true,"properties":{"child":{"$ref":"#/$defs/wrapper"}},"$defs":{"wrapper":{"$recursiveRef":"#"}}}}});
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
     assert_eq!(
         runtime.is_valid(&instance),
@@ -1839,18 +1839,18 @@ fn test_recursive_ref_cross_resource_match_runtime(instance: serde_json::Value, 
     );
 }
 
-#[test_case(serde_json::json!({"$schema": "https://json-schema.org/draft/2019-09/schema", "anyOf": [{"type": "string"}, {"type": 1}]}), false ; "nested_illegal_type_rejected")]
-#[test_case(serde_json::json!({"$schema": "https://json-schema.org/draft/2019-09/schema", "anyOf": [{"type": "string"}, {"type": "integer"}]}), true ; "nested_legal_type_accepted")]
-fn test_generated_2019_09_metaschema(schema: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!({"$schema": "https://json-schema.org/draft/2019-09/schema", "anyOf": [{"type": "string"}, {"type": 1}]}), false ; "nested_illegal_type_rejected")]
+#[test_case(json_codec::json!({"$schema": "https://json-schema.org/draft/2019-09/schema", "anyOf": [{"type": "string"}, {"type": "integer"}]}), true ; "nested_legal_type_accepted")]
+fn test_generated_2019_09_metaschema(schema: json_codec::Value, expected: bool) {
     assert_eq!(jsonschema::meta::is_valid(&schema), expected);
 }
 
-#[test_case(serde_json::json!([]) ; "empty_array")]
-#[test_case(serde_json::json!([5]) ; "only_prefix_item")]
-#[test_case(serde_json::json!([5, [3]]) ; "recursive_unevaluated_item")]
-#[test_case(serde_json::json!([5, "x"]) ; "unevaluated_non_array")]
-fn test_recursive_unevaluated_items_match_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"items":[{"type":"integer"}],"unevaluatedItems":{"$recursiveRef":"#"}});
+#[test_case(json_codec::json!([]) ; "empty_array")]
+#[test_case(json_codec::json!([5]) ; "only_prefix_item")]
+#[test_case(json_codec::json!([5, [3]]) ; "recursive_unevaluated_item")]
+#[test_case(json_codec::json!([5, "x"]) ; "unevaluated_non_array")]
+fn test_recursive_unevaluated_items_match_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"items":[{"type":"integer"}],"unevaluatedItems":{"$recursiveRef":"#"}});
     assert_is_valid_parity(
         &schema,
         RecursiveUnevaluatedItemsValidator::is_valid(&instance),
@@ -1860,8 +1860,8 @@ fn test_recursive_unevaluated_items_match_runtime(instance: serde_json::Value) {
 
 #[test]
 fn test_recursive_unevaluated_items_validate_parity() {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"items":[{"type":"integer"}],"unevaluatedItems":{"$recursiveRef":"#"}});
-    let instance = serde_json::json!([5, ["x"]]);
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","$recursiveAnchor":true,"items":[{"type":"integer"}],"unevaluatedItems":{"$recursiveRef":"#"}});
+    let instance = json_codec::json!([5, ["x"]]);
     assert_validate_parity_for(
         &schema,
         RecursiveUnevaluatedItemsValidator::is_valid(&instance),
@@ -1871,11 +1871,11 @@ fn test_recursive_unevaluated_items_validate_parity() {
     assert!(RecursiveUnevaluatedItemsValidator::validate(&instance).is_err());
 }
 
-#[test_case(serde_json::json!({"a": 1}) ; "evaluated_property")]
-#[test_case(serde_json::json!({"a": 1, "other": 2}) ; "unevaluated_property")]
-#[test_case(serde_json::json!({}) ; "empty")]
-fn test_non_anchor_recursive_ref_uneval_props(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","type":"object","properties":{"a":{"type":"integer"}},"$recursiveRef":"#","unevaluatedProperties":false});
+#[test_case(json_codec::json!({"a": 1}) ; "evaluated_property")]
+#[test_case(json_codec::json!({"a": 1, "other": 2}) ; "unevaluated_property")]
+#[test_case(json_codec::json!({}) ; "empty")]
+fn test_non_anchor_recursive_ref_uneval_props(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","type":"object","properties":{"a":{"type":"integer"}},"$recursiveRef":"#","unevaluatedProperties":false});
     assert_is_valid_parity(
         &schema,
         NonAnchorRecursiveRefUnevalPropsValidator::is_valid(&instance),
@@ -1883,11 +1883,11 @@ fn test_non_anchor_recursive_ref_uneval_props(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!([1]) ; "evaluated_item")]
-#[test_case(serde_json::json!([1, 2]) ; "unevaluated_item")]
-#[test_case(serde_json::json!([]) ; "empty")]
-fn test_non_anchor_recursive_ref_uneval_items(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","items":[{"type":"integer"}],"$recursiveRef":"#","unevaluatedItems":false});
+#[test_case(json_codec::json!([1]) ; "evaluated_item")]
+#[test_case(json_codec::json!([1, 2]) ; "unevaluated_item")]
+#[test_case(json_codec::json!([]) ; "empty")]
+fn test_non_anchor_recursive_ref_uneval_items(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2019-09/schema","items":[{"type":"integer"}],"$recursiveRef":"#","unevaluatedItems":false});
     assert_is_valid_parity(
         &schema,
         NonAnchorRecursiveRefUnevalItemsValidator::is_valid(&instance),
@@ -1895,11 +1895,11 @@ fn test_non_anchor_recursive_ref_uneval_items(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!({"b": 1}) ; "evaluated_property")]
-#[test_case(serde_json::json!({"b": 1, "other": 2}) ; "unevaluated_property")]
-#[test_case(serde_json::json!({}) ; "empty")]
-fn test_static_dynamic_ref_uneval_props(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","$dynamicRef":"#t","$defs":{"t":{"$anchor":"t","properties":{"b":{"type":"integer"}}}},"unevaluatedProperties":false});
+#[test_case(json_codec::json!({"b": 1}) ; "evaluated_property")]
+#[test_case(json_codec::json!({"b": 1, "other": 2}) ; "unevaluated_property")]
+#[test_case(json_codec::json!({}) ; "empty")]
+fn test_static_dynamic_ref_uneval_props(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","$dynamicRef":"#t","$defs":{"t":{"$anchor":"t","properties":{"b":{"type":"integer"}}}},"unevaluatedProperties":false});
     assert_is_valid_parity(
         &schema,
         StaticDynamicRefUnevalPropsValidator::is_valid(&instance),
@@ -1907,11 +1907,11 @@ fn test_static_dynamic_ref_uneval_props(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!([1]) ; "evaluated_item")]
-#[test_case(serde_json::json!([1, 2]) ; "unevaluated_item")]
-#[test_case(serde_json::json!([]) ; "empty")]
-fn test_static_dynamic_ref_uneval_items(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$dynamicRef":"#t","$defs":{"t":{"$anchor":"t","prefixItems":[{"type":"integer"}]}},"unevaluatedItems":false});
+#[test_case(json_codec::json!([1]) ; "evaluated_item")]
+#[test_case(json_codec::json!([1, 2]) ; "unevaluated_item")]
+#[test_case(json_codec::json!([]) ; "empty")]
+fn test_static_dynamic_ref_uneval_items(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$dynamicRef":"#t","$defs":{"t":{"$anchor":"t","prefixItems":[{"type":"integer"}]}},"unevaluatedItems":false});
     assert_is_valid_parity(
         &schema,
         StaticDynamicRefUnevalItemsValidator::is_valid(&instance),
@@ -1919,11 +1919,11 @@ fn test_static_dynamic_ref_uneval_items(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!({"a": 1}) ; "evaluated_property")]
-#[test_case(serde_json::json!({"a": 1, "other": 2}) ; "unevaluated_property")]
-#[test_case(serde_json::json!({}) ; "empty")]
-fn test_dynamic_ref_uneval_props(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$dynamicRef":"#","type":"object","properties":{"a":{"type":"integer"}},"unevaluatedProperties":false});
+#[test_case(json_codec::json!({"a": 1}) ; "evaluated_property")]
+#[test_case(json_codec::json!({"a": 1, "other": 2}) ; "unevaluated_property")]
+#[test_case(json_codec::json!({}) ; "empty")]
+fn test_dynamic_ref_uneval_props(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$dynamicRef":"#","type":"object","properties":{"a":{"type":"integer"}},"unevaluatedProperties":false});
     assert_is_valid_parity(
         &schema,
         DynamicRefUnevalPropsValidator::is_valid(&instance),
@@ -1931,11 +1931,11 @@ fn test_dynamic_ref_uneval_props(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!([1]) ; "evaluated_item")]
-#[test_case(serde_json::json!([1, 2]) ; "unevaluated_item")]
-#[test_case(serde_json::json!([]) ; "empty")]
-fn test_dynamic_ref_uneval_items(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$dynamicRef":"#","prefixItems":[{"type":"integer"}],"unevaluatedItems":false});
+#[test_case(json_codec::json!([1]) ; "evaluated_item")]
+#[test_case(json_codec::json!([1, 2]) ; "unevaluated_item")]
+#[test_case(json_codec::json!([]) ; "empty")]
+fn test_dynamic_ref_uneval_items(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$dynamicRef":"#","prefixItems":[{"type":"integer"}],"unevaluatedItems":false});
     assert_is_valid_parity(
         &schema,
         DynamicRefUnevalItemsValidator::is_valid(&instance),
@@ -1943,10 +1943,10 @@ fn test_dynamic_ref_uneval_items(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!({}) ; "empty")]
-#[test_case(serde_json::json!({"a": 1}) ; "unevaluated_property")]
-fn test_dynamic_anchor_cycle_uneval_props(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.com/root","$dynamicAnchor":"node","type":"object","$dynamicRef":"#node","unevaluatedProperties":false});
+#[test_case(json_codec::json!({}) ; "empty")]
+#[test_case(json_codec::json!({"a": 1}) ; "unevaluated_property")]
+fn test_dynamic_anchor_cycle_uneval_props(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.com/root","$dynamicAnchor":"node","type":"object","$dynamicRef":"#node","unevaluatedProperties":false});
     assert_is_valid_parity(
         &schema,
         DynamicAnchorCycleUnevalPropsValidator::is_valid(&instance),
@@ -1954,10 +1954,10 @@ fn test_dynamic_anchor_cycle_uneval_props(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!([]) ; "empty")]
-#[test_case(serde_json::json!([1]) ; "unevaluated_item")]
-fn test_dynamic_anchor_cycle_uneval_items(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.com/root","$dynamicAnchor":"node","type":"array","$dynamicRef":"#node","unevaluatedItems":false});
+#[test_case(json_codec::json!([]) ; "empty")]
+#[test_case(json_codec::json!([1]) ; "unevaluated_item")]
+fn test_dynamic_anchor_cycle_uneval_items(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.com/root","$dynamicAnchor":"node","type":"array","$dynamicRef":"#node","unevaluatedItems":false});
     assert_is_valid_parity(
         &schema,
         DynamicAnchorCycleUnevalItemsValidator::is_valid(&instance),
@@ -1965,11 +1965,11 @@ fn test_dynamic_anchor_cycle_uneval_items(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!({}) ; "empty_matches_true_branch")]
-#[test_case(serde_json::json!({"a": 1}) ; "unevaluated_property")]
-fn test_boolean_one_of_uneval_props(instance: serde_json::Value) {
+#[test_case(json_codec::json!({}) ; "empty_matches_true_branch")]
+#[test_case(json_codec::json!({"a": 1}) ; "unevaluated_property")]
+fn test_boolean_one_of_uneval_props(instance: json_codec::Value) {
     let schema =
-        serde_json::json!({"type":"object","oneOf":[true,false],"unevaluatedProperties":false});
+        json_codec::json!({"type":"object","oneOf":[true,false],"unevaluatedProperties":false});
     assert_is_valid_parity(
         &schema,
         BooleanOneOfUnevalPropsValidator::is_valid(&instance),
@@ -1981,8 +1981,8 @@ macro_rules! uneval_differential {
     ($name:ident, $validator:ty, $schema:literal, [$($inst:expr),+ $(,)?]) => {
         #[test]
         fn $name() {
-            let schema: serde_json::Value =
-                serde_json::from_str($schema).expect("valid schema json");
+            let schema: json_codec::Value =
+                json_codec::from_str($schema).expect("valid schema json");
             let runtime = jsonschema::validator_for(&schema).expect("valid schema");
             for inst in [$($inst),+] {
                 assert_eq!(
@@ -2000,11 +2000,11 @@ uneval_differential!(
     UnevalPropsSiblingsValidator,
     r#"{"type":"object","properties":{"a":{"type":"integer"}},"patternProperties":{"^x_":{"type":"string"}},"additionalProperties":{"type":"boolean"},"unevaluatedProperties":false}"#,
     [
-        serde_json::json!({"a":1}),
-        serde_json::json!({"x_1":"s"}),
-        serde_json::json!({"z":true}),
-        serde_json::json!({"a":"x"}),
-        serde_json::json!({"x_1":5})
+        json_codec::json!({"a":1}),
+        json_codec::json!({"x_1":"s"}),
+        json_codec::json!({"z":true}),
+        json_codec::json!({"a":"x"}),
+        json_codec::json!({"x_1":5})
     ]
 );
 uneval_differential!(
@@ -2012,9 +2012,9 @@ uneval_differential!(
     UnevalPropsAllOfValidator,
     r#"{"type":"object","allOf":[{"properties":{"a":{}}}],"unevaluatedProperties":false}"#,
     [
-        serde_json::json!({"a":1}),
-        serde_json::json!({"b":1}),
-        serde_json::json!({})
+        json_codec::json!({"a":1}),
+        json_codec::json!({"b":1}),
+        json_codec::json!({})
     ]
 );
 uneval_differential!(
@@ -2022,10 +2022,10 @@ uneval_differential!(
     UnevalPropsAnyOfValidator,
     r#"{"type":"object","anyOf":[{"properties":{"a":{"type":"integer"}},"required":["a"]},{"properties":{"b":{}},"required":["b"]}],"unevaluatedProperties":false}"#,
     [
-        serde_json::json!({"a":1}),
-        serde_json::json!({"b":2}),
-        serde_json::json!({"a":1,"c":3}),
-        serde_json::json!({})
+        json_codec::json!({"a":1}),
+        json_codec::json!({"b":2}),
+        json_codec::json!({"a":1,"c":3}),
+        json_codec::json!({})
     ]
 );
 uneval_differential!(
@@ -2033,10 +2033,10 @@ uneval_differential!(
     UnevalPropsOneOfValidator,
     r#"{"type":"object","oneOf":[{"properties":{"a":{}},"required":["a"]},{"properties":{"b":{}},"required":["b"]}],"unevaluatedProperties":false}"#,
     [
-        serde_json::json!({"a":1}),
-        serde_json::json!({"b":1}),
-        serde_json::json!({"a":1,"b":1}),
-        serde_json::json!({"a":1,"c":1})
+        json_codec::json!({"a":1}),
+        json_codec::json!({"b":1}),
+        json_codec::json!({"a":1,"b":1}),
+        json_codec::json!({"a":1,"c":1})
     ]
 );
 uneval_differential!(
@@ -2044,10 +2044,10 @@ uneval_differential!(
     UnevalPropsIfThenElseValidator,
     r#"{"type":"object","if":{"properties":{"kind":{"const":"x"}},"required":["kind"]},"then":{"properties":{"x_val":{}}},"else":{"properties":{"y_val":{}}},"unevaluatedProperties":false}"#,
     [
-        serde_json::json!({"kind":"x","x_val":1}),
-        serde_json::json!({"y_val":1}),
-        serde_json::json!({"kind":"x","y_val":1}),
-        serde_json::json!({"z":1})
+        json_codec::json!({"kind":"x","x_val":1}),
+        json_codec::json!({"y_val":1}),
+        json_codec::json!({"kind":"x","y_val":1}),
+        json_codec::json!({"z":1})
     ]
 );
 uneval_differential!(
@@ -2055,26 +2055,26 @@ uneval_differential!(
     UnevalPropsDependentSchemasValidator,
     r#"{"type":"object","dependentSchemas":{"a":{"properties":{"b":{}}}},"unevaluatedProperties":false}"#,
     [
-        serde_json::json!({"a":1,"b":2}),
-        serde_json::json!({"b":2}),
-        serde_json::json!({"c":1}),
-        serde_json::json!({})
+        json_codec::json!({"a":1,"b":2}),
+        json_codec::json!({"b":2}),
+        json_codec::json!({"c":1}),
+        json_codec::json!({})
     ]
 );
 uneval_differential!(
     test_uneval_props_ref,
     UnevalPropsRefValidator,
     r##"{"type":"object","$ref":"#/$defs/base","$defs":{"base":{"properties":{"a":{}}}},"unevaluatedProperties":false}"##,
-    [serde_json::json!({"a":1}), serde_json::json!({"b":1})]
+    [json_codec::json!({"a":1}), json_codec::json!({"b":1})]
 );
 uneval_differential!(
     test_uneval_props_nested_guard,
     UnevalPropsNestedGuardValidator,
     r#"{"type":"object","anyOf":[{"allOf":[{"properties":{"a":{}}}],"not":{"required":["z"]}}],"unevaluatedProperties":false}"#,
     [
-        serde_json::json!({"a":1}),
-        serde_json::json!({"z":1}),
-        serde_json::json!({"a":1,"b":2})
+        json_codec::json!({"a":1}),
+        json_codec::json!({"z":1}),
+        json_codec::json!({"a":1,"b":2})
     ]
 );
 uneval_differential!(
@@ -2082,9 +2082,9 @@ uneval_differential!(
     UnevalPropsSchemaValidator,
     r#"{"type":"object","properties":{"a":{}},"unevaluatedProperties":{"type":"integer"}}"#,
     [
-        serde_json::json!({"a":1}),
-        serde_json::json!({"b":5}),
-        serde_json::json!({"b":"s"})
+        json_codec::json!({"a":1}),
+        json_codec::json!({"b":5}),
+        json_codec::json!({"b":"s"})
     ]
 );
 uneval_differential!(
@@ -2092,10 +2092,10 @@ uneval_differential!(
     UnevalItemsPrefixContainsValidator,
     r#"{"type":"array","prefixItems":[{"type":"integer"}],"contains":{"type":"string"},"unevaluatedItems":false}"#,
     [
-        serde_json::json!([1, "s"]),
-        serde_json::json!([1, 2]),
-        serde_json::json!([1, "s", 3]),
-        serde_json::json!([1])
+        json_codec::json!([1, "s"]),
+        json_codec::json!([1, 2]),
+        json_codec::json!([1, "s", 3]),
+        json_codec::json!([1])
     ]
 );
 uneval_differential!(
@@ -2103,9 +2103,9 @@ uneval_differential!(
     UnevalItemsAllOfValidator,
     r#"{"type":"array","allOf":[{"prefixItems":[{"type":"integer"}]}],"unevaluatedItems":false}"#,
     [
-        serde_json::json!([1]),
-        serde_json::json!([1, 2]),
-        serde_json::json!([])
+        json_codec::json!([1]),
+        json_codec::json!([1, 2]),
+        json_codec::json!([])
     ]
 );
 uneval_differential!(
@@ -2113,9 +2113,9 @@ uneval_differential!(
     UnevalItemsAnyOfValidator,
     r#"{"type":"array","anyOf":[{"prefixItems":[{}]},{"prefixItems":[{},{}]}],"unevaluatedItems":false}"#,
     [
-        serde_json::json!([1]),
-        serde_json::json!([1, 2]),
-        serde_json::json!([1, 2, 3])
+        json_codec::json!([1]),
+        json_codec::json!([1, 2]),
+        json_codec::json!([1, 2, 3])
     ]
 );
 uneval_differential!(
@@ -2123,9 +2123,9 @@ uneval_differential!(
     UnevalItemsOneOfValidator,
     r#"{"type":"array","oneOf":[{"prefixItems":[{"const":1}]},{"prefixItems":[{"const":2},{}]}],"unevaluatedItems":false}"#,
     [
-        serde_json::json!([1]),
-        serde_json::json!([2, 3]),
-        serde_json::json!([1, 2])
+        json_codec::json!([1]),
+        json_codec::json!([2, 3]),
+        json_codec::json!([1, 2])
     ]
 );
 uneval_differential!(
@@ -2133,9 +2133,9 @@ uneval_differential!(
     UnevalItemsTupleValidator,
     r#"{"$schema":"https://json-schema.org/draft/2019-09/schema","type":"array","items":[{"type":"integer"}],"unevaluatedItems":false}"#,
     [
-        serde_json::json!([1]),
-        serde_json::json!([1, 2]),
-        serde_json::json!([])
+        json_codec::json!([1]),
+        json_codec::json!([1, 2]),
+        json_codec::json!([])
     ]
 );
 uneval_differential!(
@@ -2143,9 +2143,9 @@ uneval_differential!(
     UnevalItemsTupleAdditionalValidator,
     r#"{"$schema":"https://json-schema.org/draft/2019-09/schema","type":"array","items":[{"type":"integer"}],"additionalItems":{"type":"string"},"unevaluatedItems":false}"#,
     [
-        serde_json::json!([1]),
-        serde_json::json!([1, "s"]),
-        serde_json::json!([1, 2])
+        json_codec::json!([1]),
+        json_codec::json!([1, "s"]),
+        json_codec::json!([1, 2])
     ]
 );
 uneval_differential!(
@@ -2153,31 +2153,31 @@ uneval_differential!(
     UnevalItemsSchemaValidator,
     r#"{"type":"array","prefixItems":[{}],"unevaluatedItems":{"type":"integer"}}"#,
     [
-        serde_json::json!([1]),
-        serde_json::json!([1, 2]),
-        serde_json::json!([1, "s"])
+        json_codec::json!([1]),
+        json_codec::json!([1, 2]),
+        json_codec::json!([1, "s"])
     ]
 );
 
-#[test_case(serde_json::json!("ab"), true ; "fancy_engine_accepts_matching")]
-#[test_case(serde_json::json!("abbb"), true ; "fancy_engine_accepts_longer_match")]
-#[test_case(serde_json::json!("a"), false ; "fancy_engine_rejects_non_match")]
-fn test_pattern_options_fancy_engine(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("ab"), true ; "fancy_engine_accepts_matching")]
+#[test_case(json_codec::json!("abbb"), true ; "fancy_engine_accepts_longer_match")]
+#[test_case(json_codec::json!("a"), false ; "fancy_engine_rejects_non_match")]
+fn test_pattern_options_fancy_engine(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         FancyRegexPatternOptionsValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!(9_007_199_254_740_992.0), false ; "below_minimum_decimal_form")]
-#[test_case(serde_json::json!(9_007_199_254_740_994.0), true ; "above_minimum_decimal_form")]
-#[test_case(serde_json::json!(9_007_199_254_740_992_u64), false ; "below_minimum_integer_form")]
-#[test_case(serde_json::json!(9_007_199_254_740_994_u64), true ; "above_minimum_integer_form")]
+#[test_case(json_codec::json!(9_007_199_254_740_992.0), false ; "below_minimum_decimal_form")]
+#[test_case(json_codec::json!(9_007_199_254_740_994.0), true ; "above_minimum_decimal_form")]
+#[test_case(json_codec::json!(9_007_199_254_740_992_u64), false ; "below_minimum_integer_form")]
+#[test_case(json_codec::json!(9_007_199_254_740_994_u64), true ; "above_minimum_integer_form")]
 fn test_numeric_minimum_mixed_representations_match_runtime(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
-    let schema = serde_json::json!({"type":"number","minimum":9_007_199_254_740_993_u64});
+    let schema = json_codec::json!({"type":"number","minimum":9_007_199_254_740_993_u64});
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
     assert_eq!(runtime.is_valid(&instance), expected);
     assert_eq!(
@@ -2202,16 +2202,16 @@ struct ArbitraryPrecisionDraft4IntegerTypeValidator;
 #[test_case("1e308" ; "in_f64_range_scientific")]
 #[test_case("1.5" ; "fractional")]
 fn test_arbitrary_precision_integer_type_matches_runtime(instance_json: &str) {
-    let instance: serde_json::Value =
-        serde_json::from_str(instance_json).expect("valid instance json");
+    let instance: json_codec::Value =
+        json_codec::from_str(instance_json).expect("valid instance json");
     assert_eq!(
         ArbitraryPrecisionIntegerTypeValidator::is_valid(&instance),
-        runtime_valid(&serde_json::json!({"type":"integer"}), &instance),
+        runtime_valid(&json_codec::json!({"type":"integer"}), &instance),
         "draft 2020-12 divergence for {instance_json}"
     );
     let draft4_runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft4)
-        .build(&serde_json::json!({"type":"integer"}))
+        .build(&json_codec::json!({"type":"integer"}))
         .expect("valid schema")
         .is_valid(&instance);
     assert_eq!(
@@ -2306,9 +2306,9 @@ fn test_arbitrary_precision_integer_type_matches_runtime(instance_json: &str) {
 // A lower bound whose negative exponent overflows f64 accepts every instance.
 #[test_case(r#"{"type":"number","minimum":-1e2000000}"#, "0"; "huge_negative_minimum_vs_zero")]
 fn test_arbitrary_precision_codegen_matches_runtime(schema_json: &str, instance_json: &str) {
-    let schema: serde_json::Value = serde_json::from_str(schema_json).expect("valid schema json");
-    let instance: serde_json::Value =
-        serde_json::from_str(instance_json).expect("valid instance json");
+    let schema: json_codec::Value = json_codec::from_str(schema_json).expect("valid schema json");
+    let instance: json_codec::Value =
+        json_codec::from_str(instance_json).expect("valid instance json");
     let runtime = runtime_valid(&schema, &instance);
 
     let generated = match schema_json {
@@ -2395,27 +2395,27 @@ fn test_arbitrary_precision_codegen_matches_runtime(schema_json: &str, instance_
 )]
 fn test_bigint_bound_vs_huge_non_integer_decimal(
     schema_json: &str,
-    generated: fn(&serde_json::Value) -> bool,
+    generated: fn(&json_codec::Value) -> bool,
 ) {
     let instance_json = format!("{}.5", "9".repeat(320));
-    let instance: serde_json::Value =
-        serde_json::from_str(&instance_json).expect("valid instance json");
-    let schema: serde_json::Value = serde_json::from_str(schema_json).expect("valid schema json");
+    let instance: json_codec::Value =
+        json_codec::from_str(&instance_json).expect("valid instance json");
+    let schema: json_codec::Value = json_codec::from_str(schema_json).expect("valid schema json");
     assert_eq!(generated(&instance), runtime_valid(&schema, &instance));
 }
 
 #[test]
 fn test_self_ref_schema_does_not_emit_runtime_self_calls() {
-    assert!(SelfRefValidator::is_valid(&serde_json::json!({"a": 1})));
-    assert!(SelfRefValidator::is_valid(&serde_json::json!(null)));
+    assert!(SelfRefValidator::is_valid(&json_codec::json!({"a": 1})));
+    assert!(SelfRefValidator::is_valid(&json_codec::json!(null)));
 }
 
-#[test_case(serde_json::json!("x"); "string_instance")]
-#[test_case(serde_json::json!({"kind":"a"}); "object_discriminator_a")]
-#[test_case(serde_json::json!({"kind":"b"}); "object_discriminator_b")]
-#[test_case(serde_json::json!({"kind":"c"}); "object_discriminator_unknown")]
-fn test_one_of_discriminator_optimization_keeps_non_object_semantics(instance: serde_json::Value) {
-    let schema = serde_json::json!({
+#[test_case(json_codec::json!("x"); "string_instance")]
+#[test_case(json_codec::json!({"kind":"a"}); "object_discriminator_a")]
+#[test_case(json_codec::json!({"kind":"b"}); "object_discriminator_b")]
+#[test_case(json_codec::json!({"kind":"c"}); "object_discriminator_unknown")]
+fn test_one_of_discriminator_optimization_keeps_non_object_semantics(instance: json_codec::Value) {
+    let schema = json_codec::json!({
         "oneOf": [
             {"required":["kind"],"properties":{"kind":{"const":"a"}}},
             {"required":["kind"],"properties":{"kind":{"const":"b"}}},
@@ -2431,14 +2431,14 @@ fn test_one_of_discriminator_optimization_keeps_non_object_semantics(instance: s
 
 // JSON Schema `const: 1` matches `1.0`, so a float-valued integer tag must select
 // the same `oneOf` branch as its integer form.
-#[test_case(serde_json::json!({"tag": 1, "a": "x"}) ; "integer_form")]
-#[test_case(serde_json::json!({"tag": 1.0, "a": "x"}) ; "float_integer_form")]
-#[test_case(serde_json::json!({"tag": 2.0, "a": 3}) ; "float_integer_second_branch")]
-#[test_case(serde_json::json!({"tag": 1.5}) ; "non_integer_tag")]
-#[test_case(serde_json::json!({"tag": 3}) ; "unmatched_tag")]
-#[test_case(serde_json::json!({"tag": 1.0, "a": 3}) ; "float_tag_body_mismatch")]
-fn test_one_of_int_discriminator_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({
+#[test_case(json_codec::json!({"tag": 1, "a": "x"}) ; "integer_form")]
+#[test_case(json_codec::json!({"tag": 1.0, "a": "x"}) ; "float_integer_form")]
+#[test_case(json_codec::json!({"tag": 2.0, "a": 3}) ; "float_integer_second_branch")]
+#[test_case(json_codec::json!({"tag": 1.5}) ; "non_integer_tag")]
+#[test_case(json_codec::json!({"tag": 3}) ; "unmatched_tag")]
+#[test_case(json_codec::json!({"tag": 1.0, "a": 3}) ; "float_tag_body_mismatch")]
+fn test_one_of_int_discriminator_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({
         "oneOf": [
             {"type":"object","required":["tag"],"properties":{"tag":{"const":1},"a":{"type":"string"}}},
             {"type":"object","required":["tag"],"properties":{"tag":{"const":2},"a":{"type":"integer"}}}
@@ -2457,15 +2457,15 @@ fn test_one_of_int_discriminator_matches_runtime(instance: serde_json::Value) {
 }
 
 // Draft 4 defines only `id`; a modern `$id` key must not shift the base URI.
-#[test_case(serde_json::json!({"x": {"in": "text"}}) ; "string_per_root_base")]
-#[test_case(serde_json::json!({"x": {"in": 5}}) ; "integer_rejected_per_root_base")]
-fn test_draft4_ignores_modern_dollar_id(instance: serde_json::Value) {
-    let schema = serde_json::json!(
+#[test_case(json_codec::json!({"x": {"in": "text"}}) ; "string_per_root_base")]
+#[test_case(json_codec::json!({"x": {"in": 5}}) ; "integer_rejected_per_root_base")]
+fn test_draft4_ignores_modern_dollar_id(instance: json_codec::Value) {
+    let schema = json_codec::json!(
         {"properties":{"x":{"$id":"http://example.com/nested/anchor.json","properties":{"in":{"$ref":"item.json"}}}}}
     );
-    let anchor = serde_json::json!({"type":"object"});
-    let root_item = serde_json::json!({"type":"string"});
-    let nested_item = serde_json::json!({"type":"integer"});
+    let anchor = json_codec::json!({"type":"object"});
+    let root_item = json_codec::json!({"type":"string"});
+    let nested_item = json_codec::json!({"type":"integer"});
     let registry = jsonschema::Registry::new()
         .add("http://example.com/nested/anchor.json", &anchor)
         .expect("resource accepted")
@@ -2487,23 +2487,23 @@ fn test_draft4_ignores_modern_dollar_id(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!("abc"), true ; "string_branch")]
-#[test_case(serde_json::json!(42), true ; "integer_branch")]
-#[test_case(serde_json::json!(true), false ; "bool_rejected")]
-fn test_external_ref_fragments_use_distinct_helpers(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("abc"), true ; "string_branch")]
+#[test_case(json_codec::json!(42), true ; "integer_branch")]
+#[test_case(json_codec::json!(true), false ; "bool_rejected")]
+fn test_external_ref_fragments_use_distinct_helpers(instance: json_codec::Value, expected: bool) {
     assert_eq!(ExternalRefFragmentsValidator::is_valid(&instance), expected);
 }
 
 // The dynamic target's `$ref` resolves against the document holding the target
-#[test_case(serde_json::json!({"child": {"v": 1}}), None ; "target_relative_ref_accepts_integer")]
+#[test_case(json_codec::json!({"child": {"v": 1}}), None ; "target_relative_ref_accepts_integer")]
 #[test_case(
-    serde_json::json!({"child": {"v": "x"}}),
+    json_codec::json!({"child": {"v": "x"}}),
     Some(("\"x\" is not of type \"integer\"", "/$defs/leaf/properties/v/type"))
     ; "target_relative_ref_rejects_string"
 )]
-#[test_case(serde_json::json!({"child": "str"}), None ; "target_permits_non_object")]
+#[test_case(json_codec::json!({"child": "str"}), None ; "target_permits_non_object")]
 fn test_cross_document_dynamic_ref_uses_target_base(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected_error: Option<(&str, &str)>,
 ) {
     assert_eq!(
@@ -2521,29 +2521,29 @@ fn test_cross_document_dynamic_ref_uses_target_base(
     }
 }
 
-#[test_case(serde_json::json!(1), true ; "const_value")]
-#[test_case(serde_json::json!("anything"), true ; "other_value")]
-fn test_draft4_ignores_const_keyword(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!(1), true ; "const_value")]
+#[test_case(json_codec::json!("anything"), true ; "other_value")]
+fn test_draft4_ignores_const_keyword(instance: json_codec::Value, expected: bool) {
     assert_eq!(Draft4ConstIgnoredValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!({"a": 1}), true ; "required present")]
-#[test_case(serde_json::json!({}), false ; "required missing")]
-fn test_required_tracking_when_properties_are_trivial(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!({"a": 1}), true ; "required present")]
+#[test_case(json_codec::json!({}), false ; "required missing")]
+fn test_required_tracking_when_properties_are_trivial(instance: json_codec::Value, expected: bool) {
     assert_eq!(RequiredInPropertiesValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!(0.3), true ; "0_3_is_multiple_of_0_1")]
-#[test_case(serde_json::json!(0.35), false ; "0_35_not_multiple_of_0_1")]
-fn test_multiple_of_decimal_matches_runtime_semantics(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!(0.3), true ; "0_3_is_multiple_of_0_1")]
+#[test_case(json_codec::json!(0.35), false ; "0_35_not_multiple_of_0_1")]
+fn test_multiple_of_decimal_matches_runtime_semantics(instance: json_codec::Value, expected: bool) {
     assert_eq!(DecimalMultipleOfValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!(4), true ; "above_bound_accepted")]
-#[test_case(serde_json::json!(3), false ; "equal_to_bound_rejected")]
-#[test_case(serde_json::json!(2), false ; "below_bound_rejected")]
-fn test_integer_exclusive_minimum_matches_runtime(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({"type":"number","exclusiveMinimum":3});
+#[test_case(json_codec::json!(4), true ; "above_bound_accepted")]
+#[test_case(json_codec::json!(3), false ; "equal_to_bound_rejected")]
+#[test_case(json_codec::json!(2), false ; "below_bound_rejected")]
+fn test_integer_exclusive_minimum_matches_runtime(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({"type":"number","exclusiveMinimum":3});
     let runtime = jsonschema::validator_for(&schema).expect("valid schema");
     assert_eq!(runtime.is_valid(&instance), expected);
     assert_eq!(
@@ -2552,79 +2552,79 @@ fn test_integer_exclusive_minimum_matches_runtime(instance: serde_json::Value, e
     );
 }
 
-#[test_case(serde_json::json!([]), true ; "empty_array")]
-#[test_case(serde_json::json!([[]]), true ; "nested_empty_array")]
-#[test_case(serde_json::json!([1]), false ; "array_with_scalar_fails")]
+#[test_case(json_codec::json!([]), true ; "empty_array")]
+#[test_case(json_codec::json!([[]]), true ; "nested_empty_array")]
+#[test_case(json_codec::json!([1]), false ; "array_with_scalar_fails")]
 fn test_recursive_ref_constraints_are_not_compiled_away(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     assert_eq!(RecursiveNodeValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!(1), false ; "number_rejected")]
-#[test_case(serde_json::json!("x"), false ; "string_rejected")]
-fn test_ref_siblings_are_enforced_in_draft_201909(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!(1), false ; "number_rejected")]
+#[test_case(json_codec::json!("x"), false ; "string_rejected")]
+fn test_ref_siblings_are_enforced_in_draft_201909(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         RefSiblingDraft201909Validator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!(1), false ; "number_rejected")]
-#[test_case(serde_json::json!("x"), false ; "string_rejected")]
-fn test_ref_siblings_are_enforced_in_draft_202012(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!(1), false ; "number_rejected")]
+#[test_case(json_codec::json!("x"), false ; "string_rejected")]
+fn test_ref_siblings_are_enforced_in_draft_202012(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         RefSiblingDraft202012Validator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!({"foo": 1, "bar": 2}), true ; "dependent_schema_satisfied")]
-#[test_case(serde_json::json!({"foo": 1}), false ; "dependent_schema_missing_bar")]
-#[test_case(serde_json::json!({"bar": 2}), true ; "dependent_schema_not_triggered")]
-fn test_dependent_schemas_draft_201909(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!({"foo": 1, "bar": 2}), true ; "dependent_schema_satisfied")]
+#[test_case(json_codec::json!({"foo": 1}), false ; "dependent_schema_missing_bar")]
+#[test_case(json_codec::json!({"bar": 2}), true ; "dependent_schema_not_triggered")]
+fn test_dependent_schemas_draft_201909(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         DependentSchemasDraft201909Validator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!([1, 2]), true ; "within_min_max")]
-#[test_case(serde_json::json!([1]), false ; "below_min")]
-#[test_case(serde_json::json!([1, 2, 3, 4]), false ; "above_max")]
-#[test_case(serde_json::json!(["x", 1, 2]), true ; "counts_only_matching_items")]
-fn test_contains_min_max_bounds_draft_201909(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!([1, 2]), true ; "within_min_max")]
+#[test_case(json_codec::json!([1]), false ; "below_min")]
+#[test_case(json_codec::json!([1, 2, 3, 4]), false ; "above_max")]
+#[test_case(json_codec::json!(["x", 1, 2]), true ; "counts_only_matching_items")]
+fn test_contains_min_max_bounds_draft_201909(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         ContainsBoundsDraft201909Validator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!("not an ip"), true ; "default_off_ignores_format")]
-#[test_case(serde_json::json!("127.0.0.1"), true ; "default_off_still_accepts_valid")]
-fn test_draft_201909_format_validation_default_off(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("not an ip"), true ; "default_off_ignores_format")]
+#[test_case(json_codec::json!("127.0.0.1"), true ; "default_off_still_accepts_valid")]
+fn test_draft_201909_format_validation_default_off(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         Draft201909FormatDefaultOffValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!("not an ip"), false ; "enabled_rejects_invalid_format")]
-#[test_case(serde_json::json!("127.0.0.1"), true ; "enabled_accepts_valid_format")]
-fn test_draft_201909_format_validation_override(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("not an ip"), false ; "enabled_rejects_invalid_format")]
+#[test_case(json_codec::json!("127.0.0.1"), true ; "enabled_accepts_valid_format")]
+fn test_draft_201909_format_validation_override(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         Draft201909FormatEnabledValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!("user@example.com"); "valid_email")]
-#[test_case(serde_json::json!("user@localhost"); "missing_tld")]
-#[test_case(serde_json::json!("Name <user@example.com>"); "display_text_disallowed")]
-#[test_case(serde_json::json!("user@[127.0.0.1]"); "domain_literal_disallowed")]
-fn test_email_options_codegen_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"string","format":"email"});
+#[test_case(json_codec::json!("user@example.com"); "valid_email")]
+#[test_case(json_codec::json!("user@localhost"); "missing_tld")]
+#[test_case(json_codec::json!("Name <user@example.com>"); "display_text_disallowed")]
+#[test_case(json_codec::json!("user@[127.0.0.1]"); "domain_literal_disallowed")]
+fn test_email_options_codegen_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"string","format":"email"});
     let runtime = jsonschema::options()
         .with_draft(referencing::Draft::Draft7)
         .should_validate_formats(true)
@@ -2642,11 +2642,11 @@ fn test_email_options_codegen_matches_runtime(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!("user@example.com"); "two_segment_domain")]
-#[test_case(serde_json::json!("user@localhost"); "single_segment_domain")]
-#[test_case(serde_json::json!("user@sub.example.com"); "three_segment_domain")]
-fn test_email_options_sub_domain_variants_match_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"string","format":"email"});
+#[test_case(json_codec::json!("user@example.com"); "two_segment_domain")]
+#[test_case(json_codec::json!("user@localhost"); "single_segment_domain")]
+#[test_case(json_codec::json!("user@sub.example.com"); "three_segment_domain")]
+fn test_email_options_sub_domain_variants_match_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"string","format":"email"});
 
     let runtime = jsonschema::options()
         .with_draft(referencing::Draft::Draft7)
@@ -2676,12 +2676,12 @@ fn test_email_options_sub_domain_variants_match_runtime(instance: serde_json::Va
     );
 }
 
-#[test_case(serde_json::json!(1); "valid_integer")]
-#[test_case(serde_json::json!(0); "minimum_violation")]
-#[test_case(serde_json::json!("x"); "wrong_type")]
-fn test_base_uri_codegen_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$ref":"defs.json#/$defs/item"});
-    let defs_schema = serde_json::json!({"$defs":{"item":{"type":"integer","minimum":1}}});
+#[test_case(json_codec::json!(1); "valid_integer")]
+#[test_case(json_codec::json!(0); "minimum_violation")]
+#[test_case(json_codec::json!("x"); "wrong_type")]
+fn test_base_uri_codegen_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$ref":"defs.json#/$defs/item"});
+    let defs_schema = json_codec::json!({"$defs":{"item":{"type":"integer","minimum":1}}});
     let defs_registry = jsonschema::Registry::new()
         .add("json-schema:///root/defs.json", &defs_schema)
         .expect("resource accepted")
@@ -2698,17 +2698,17 @@ fn test_base_uri_codegen_matches_runtime(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!("$12"), true ; "custom_format_accepts_matching")]
-#[test_case(serde_json::json!("12"), false ; "custom_format_rejects_non_matching")]
-#[test_case(serde_json::json!(12), false ; "type_still_applies")]
-fn test_custom_format_with_draft7_default_validation(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("$12"), true ; "custom_format_accepts_matching")]
+#[test_case(json_codec::json!("12"), false ; "custom_format_rejects_non_matching")]
+#[test_case(json_codec::json!(12), false ; "type_still_applies")]
+fn test_custom_format_with_draft7_default_validation(instance: json_codec::Value, expected: bool) {
     assert_eq!(CustomFormatDraft7Validator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!("12"), true ; "draft2019_default_off_ignores_custom")]
-#[test_case(serde_json::json!("$12"), true ; "draft2019_default_off_accepts_any_string")]
+#[test_case(json_codec::json!("12"), true ; "draft2019_default_off_ignores_custom")]
+#[test_case(json_codec::json!("$12"), true ; "draft2019_default_off_accepts_any_string")]
 fn test_custom_format_is_ignored_by_default_in_draft201909(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     assert_eq!(
@@ -2717,10 +2717,10 @@ fn test_custom_format_is_ignored_by_default_in_draft201909(
     );
 }
 
-#[test_case(serde_json::json!("$12"), true ; "draft2019_enabled_accepts_matching")]
-#[test_case(serde_json::json!("12"), false ; "draft2019_enabled_rejects_non_matching")]
+#[test_case(json_codec::json!("$12"), true ; "draft2019_enabled_accepts_matching")]
+#[test_case(json_codec::json!("12"), false ; "draft2019_enabled_rejects_non_matching")]
 fn test_custom_format_validation_override_in_draft201909(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     assert_eq!(
@@ -2729,34 +2729,34 @@ fn test_custom_format_validation_override_in_draft201909(
     );
 }
 
-#[test_case(serde_json::json!("x"), true ; "custom_overrides_builtin_accepts_x")]
-#[test_case(serde_json::json!("foo@example.com"), false ; "custom_overrides_builtin_rejects_email")]
-fn test_custom_format_overrides_builtin(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("x"), true ; "custom_overrides_builtin_accepts_x")]
+#[test_case(json_codec::json!("foo@example.com"), false ; "custom_overrides_builtin_rejects_email")]
+fn test_custom_format_overrides_builtin(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         CustomFormatOverrideBuiltInValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!("anything"), true ; "unknown_format_ignored")]
-#[test_case(serde_json::json!(1), false ; "type_still_enforced_for_unknown_format")]
-fn test_unknown_format_ignored_when_configured(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("anything"), true ; "unknown_format_ignored")]
+#[test_case(json_codec::json!(1), false ; "type_still_enforced_for_unknown_format")]
+fn test_unknown_format_ignored_when_configured(instance: json_codec::Value, expected: bool) {
     assert_eq!(UnknownFormatIgnoredValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!("x"), true ; "sibling_min_length_satisfied_format_ignored")]
-#[test_case(serde_json::json!(""), false ; "sibling_min_length_enforced")]
-fn test_unknown_format_ignored_with_string_sibling(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!("x"), true ; "sibling_min_length_satisfied_format_ignored")]
+#[test_case(json_codec::json!(""), false ; "sibling_min_length_enforced")]
+fn test_unknown_format_ignored_with_string_sibling(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         UnknownFormatIgnoredWithSiblingValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!(1), true ; "number_valid_when_format_ignored")]
-#[test_case(serde_json::json!("x"), false ; "string_rejected_by_type_when_format_ignored")]
+#[test_case(json_codec::json!(1), true ; "number_valid_when_format_ignored")]
+#[test_case(json_codec::json!("x"), false ; "string_rejected_by_type_when_format_ignored")]
 fn test_unknown_format_does_not_widen_type_in_draft201909(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     assert_eq!(
@@ -2765,40 +2765,40 @@ fn test_unknown_format_does_not_widen_type_in_draft201909(
     );
 }
 
-#[test_case(serde_json::json!(1), true ; "number_valid_when_unknown_format_ignored")]
-#[test_case(serde_json::json!("x"), false ; "string_rejected_by_type_with_unknown_format_ignored")]
-fn test_unknown_format_does_not_widen_type_in_draft7(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!(1), true ; "number_valid_when_unknown_format_ignored")]
+#[test_case(json_codec::json!("x"), false ; "string_rejected_by_type_with_unknown_format_ignored")]
+fn test_unknown_format_does_not_widen_type_in_draft7(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         NumberTypeUnknownFormatDraft7Validator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!({"foo": 1}), true ; "ignored_when_keyword_unsupported")]
-#[test_case(serde_json::json!({"foo": 1, "bar": 2}), true ; "also_valid_when_present")]
-fn test_dependent_required_is_ignored_in_draft7(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!({"foo": 1}), true ; "ignored_when_keyword_unsupported")]
+#[test_case(json_codec::json!({"foo": 1, "bar": 2}), true ; "also_valid_when_present")]
+fn test_dependent_required_is_ignored_in_draft7(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         Draft7DependentRequiredIgnoredValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!(1), true ; "draft4_if_then_ignored")]
-#[test_case(serde_json::json!("x"), true ; "draft4_if_then_ignored_other_value")]
-fn test_if_then_is_ignored_in_draft4_codegen(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!(1), true ; "draft4_if_then_ignored")]
+#[test_case(json_codec::json!("x"), true ; "draft4_if_then_ignored_other_value")]
+fn test_if_then_is_ignored_in_draft4_codegen(instance: json_codec::Value, expected: bool) {
     assert_eq!(Draft4IfThenIgnoredValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!(1), true ; "draft6_if_then_ignored")]
-#[test_case(serde_json::json!("x"), true ; "draft6_if_then_ignored_other_value")]
-fn test_if_then_is_ignored_in_draft6_codegen(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!(1), true ; "draft6_if_then_ignored")]
+#[test_case(json_codec::json!("x"), true ; "draft6_if_then_ignored_other_value")]
+fn test_if_then_is_ignored_in_draft6_codegen(instance: json_codec::Value, expected: bool) {
     assert_eq!(Draft6IfThenIgnoredValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!("ok"), true ; "string_valid")]
-#[test_case(serde_json::json!({"foo":1}), false ; "object_rejected_by_type")]
+#[test_case(json_codec::json!("ok"), true ; "string_valid")]
+#[test_case(json_codec::json!({"foo":1}), false ; "object_rejected_by_type")]
 fn test_dependent_schemas_is_ignored_in_draft7_typed_dispatch(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     assert_eq!(
@@ -2807,19 +2807,19 @@ fn test_dependent_schemas_is_ignored_in_draft7_typed_dispatch(
     );
 }
 
-#[test_case(serde_json::json!({"y": 1}), true ; "draft4_property_names_ignored")]
-#[test_case(serde_json::json!({"x": 1}), true ; "draft4_property_names_ignored_even_when_matching")]
-fn test_property_names_is_ignored_in_draft4_codegen(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!({"y": 1}), true ; "draft4_property_names_ignored")]
+#[test_case(json_codec::json!({"x": 1}), true ; "draft4_property_names_ignored_even_when_matching")]
+fn test_property_names_is_ignored_in_draft4_codegen(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         Draft4PropertyNamesIgnoredValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!("not base64"), true ; "draft4_content_encoding_ignored")]
-#[test_case(serde_json::json!(1), false ; "type_still_enforced")]
+#[test_case(json_codec::json!("not base64"), true ; "draft4_content_encoding_ignored")]
+#[test_case(json_codec::json!(1), false ; "type_still_enforced")]
 fn test_content_keywords_are_ignored_in_draft4_codegen(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     assert_eq!(
@@ -2828,29 +2828,29 @@ fn test_content_keywords_are_ignored_in_draft4_codegen(
     );
 }
 
-#[test_case(serde_json::json!([]), true ; "draft4_contains_ignored_empty")]
-#[test_case(serde_json::json!(["x"]), true ; "draft4_contains_ignored_non_matching")]
-fn test_contains_is_ignored_in_draft4_codegen(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!([]), true ; "draft4_contains_ignored_empty")]
+#[test_case(json_codec::json!(["x"]), true ; "draft4_contains_ignored_non_matching")]
+fn test_contains_is_ignored_in_draft4_codegen(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         Draft4ContainsIgnoredValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!([1]), true ; "draft7_min_contains_ignored")]
-#[test_case(serde_json::json!(["x"]), false ; "contains_still_applies")]
-fn test_min_contains_is_ignored_before_201909_codegen(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!([1]), true ; "draft7_min_contains_ignored")]
+#[test_case(json_codec::json!(["x"]), false ; "contains_still_applies")]
+fn test_min_contains_is_ignored_before_201909_codegen(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         Draft7MinContainsIgnoredValidator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!(["x", 2]), true ; "first_item_string_is_valid")]
-#[test_case(serde_json::json!([1, 2]), false ; "first_item_non_string_is_invalid")]
-#[test_case(serde_json::json!("not array"), false ; "adjacent_type_still_applies")]
+#[test_case(json_codec::json!(["x", 2]), true ; "first_item_string_is_valid")]
+#[test_case(json_codec::json!([1, 2]), false ; "first_item_non_string_is_invalid")]
+#[test_case(json_codec::json!("not array"), false ; "adjacent_type_still_applies")]
 fn test_cross_draft_ref_uses_referenced_prefix_items_semantics(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     assert_eq!(
@@ -2859,33 +2859,33 @@ fn test_cross_draft_ref_uses_referenced_prefix_items_semantics(
     );
 }
 
-#[test_case(serde_json::json!({}), true ; "empty_object")]
-#[test_case(serde_json::json!({"child": {}}), true ; "nested_object")]
-#[test_case(serde_json::json!({"child": 1}), false ; "non_object_child")]
-fn test_recursive_ref_keyword_in_draft_201909(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!({}), true ; "empty_object")]
+#[test_case(json_codec::json!({"child": {}}), true ; "nested_object")]
+#[test_case(json_codec::json!({"child": 1}), false ; "non_object_child")]
+fn test_recursive_ref_keyword_in_draft_201909(instance: json_codec::Value, expected: bool) {
     assert_eq!(
         RecursiveRefDraft201909Validator::is_valid(&instance),
         expected
     );
 }
 
-#[test_case(serde_json::json!(0), true ; "zero_is_valid")]
-#[test_case(serde_json::json!(1), true ; "positive_integer_is_valid")]
-#[test_case(serde_json::json!(-1), false ; "below_minimum_integer_is_invalid")]
-#[test_case(serde_json::json!(1.5), false ; "fractional_number_is_invalid")]
-#[test_case(serde_json::json!("1"), false ; "wrong_type_is_invalid")]
-fn test_numeric_keywords_respect_integer_only_type(instance: serde_json::Value, expected: bool) {
+#[test_case(json_codec::json!(0), true ; "zero_is_valid")]
+#[test_case(json_codec::json!(1), true ; "positive_integer_is_valid")]
+#[test_case(json_codec::json!(-1), false ; "below_minimum_integer_is_invalid")]
+#[test_case(json_codec::json!(1.5), false ; "fractional_number_is_invalid")]
+#[test_case(json_codec::json!("1"), false ; "wrong_type_is_invalid")]
+fn test_numeric_keywords_respect_integer_only_type(instance: json_codec::Value, expected: bool) {
     assert_eq!(IntegerMinimumValidator::is_valid(&instance), expected);
 }
 
-#[test_case(serde_json::json!("abc"), true ; "string_type_branch_is_valid")]
-#[test_case(serde_json::json!(0), true ; "integer_at_max_is_valid")]
-#[test_case(serde_json::json!(-1), true ; "integer_below_max_is_valid")]
-#[test_case(serde_json::json!(1), false ; "integer_above_max_is_invalid")]
-#[test_case(serde_json::json!(1.5), false ; "fractional_number_is_invalid_even_with_numeric_keyword")]
-#[test_case(serde_json::json!(true), false ; "non_declared_type_is_invalid")]
+#[test_case(json_codec::json!("abc"), true ; "string_type_branch_is_valid")]
+#[test_case(json_codec::json!(0), true ; "integer_at_max_is_valid")]
+#[test_case(json_codec::json!(-1), true ; "integer_below_max_is_valid")]
+#[test_case(json_codec::json!(1), false ; "integer_above_max_is_invalid")]
+#[test_case(json_codec::json!(1.5), false ; "fractional_number_is_invalid_even_with_numeric_keyword")]
+#[test_case(json_codec::json!(true), false ; "non_declared_type_is_invalid")]
 fn test_numeric_keywords_do_not_widen_integer_in_union_types(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     assert_eq!(
@@ -2894,15 +2894,15 @@ fn test_numeric_keywords_do_not_widen_integer_in_union_types(
     );
 }
 
-#[test_case(serde_json::json!({"foo": 1, "bar": 2}), false ; "dependency_schema_does_not_evaluate_bar")]
-#[test_case(serde_json::json!({"foo": 1}), true ; "no_extra_properties")]
-#[test_case(serde_json::json!({"foo": 1, "baz": 2}), false ; "baz_is_unevaluated")]
-#[test_case(serde_json::json!({"bar": 2}), false ; "bar_unevaluated_when_dependency_not_triggered")]
+#[test_case(json_codec::json!({"foo": 1, "bar": 2}), false ; "dependency_schema_does_not_evaluate_bar")]
+#[test_case(json_codec::json!({"foo": 1}), true ; "no_extra_properties")]
+#[test_case(json_codec::json!({"foo": 1, "baz": 2}), false ; "baz_is_unevaluated")]
+#[test_case(json_codec::json!({"bar": 2}), false ; "bar_unevaluated_when_dependency_not_triggered")]
 fn test_dependencies_affect_unevaluated_properties_like_runtime(
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
-    let schema = serde_json::json!({
+    let schema = json_codec::json!({
         "type":"object",
         "properties":{"foo":true},
         "dependencies":{"foo":{"properties":{"bar":true}}},
@@ -2924,19 +2924,19 @@ fn test_dependencies_affect_unevaluated_properties_like_runtime(
     );
 }
 
-#[test_case(jsonschema::Draft::Draft4, serde_json::json!(1), true ; "draft4_const_value")]
+#[test_case(jsonschema::Draft::Draft4, json_codec::json!(1), true ; "draft4_const_value")]
 #[test_case(
     jsonschema::Draft::Draft4,
-    serde_json::json!("anything"),
+    json_codec::json!("anything"),
     true
 ; "draft4_const_is_ignored"
 )]
 fn test_runtime_validator_draft_based_const_behavior(
     draft: jsonschema::Draft,
-    instance: serde_json::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
-    let schema = serde_json::json!({"const": 1});
+    let schema = json_codec::json!({"const": 1});
     let validator = jsonschema::options()
         .with_draft(draft)
         .build(&schema)
@@ -2948,8 +2948,8 @@ fn test_runtime_validator_draft_based_const_behavior(
 #[test_case(jsonschema::Draft::Draft201909 ; "runtime_2019_09_ref_siblings")]
 #[test_case(jsonschema::Draft::Draft202012 ; "runtime_2020_12_ref_siblings")]
 fn test_runtime_validator_ref_sibling_behavior(draft: jsonschema::Draft) {
-    let schema = serde_json::json!({"$ref":"urn:num","type":"string"});
-    let num_schema = serde_json::json!({"type":"number"});
+    let schema = json_codec::json!({"$ref":"urn:num","type":"string"});
+    let num_schema = json_codec::json!({"type":"number"});
     let num_registry = jsonschema::Registry::new()
         .add("urn:num", &num_schema)
         .expect("resource accepted")
@@ -2961,70 +2961,70 @@ fn test_runtime_validator_ref_sibling_behavior(draft: jsonschema::Draft) {
         .build(&schema)
         .expect("schema should build");
 
-    assert!(!validator.is_valid(&serde_json::json!(1)));
-    assert!(!validator.is_valid(&serde_json::json!("x")));
+    assert!(!validator.is_valid(&json_codec::json!(1)));
+    assert!(!validator.is_valid(&json_codec::json!("x")));
 }
 
 #[test_case(
     jsonschema::Draft::Draft4,
-    serde_json::json!({"if":{"const":1},"then":false}),
-    serde_json::json!(1),
+    json_codec::json!({"if":{"const":1},"then":false}),
+    json_codec::json!(1),
     true
 ; "runtime_draft4_if_then_ignored"
 )]
 #[test_case(
     jsonschema::Draft::Draft6,
-    serde_json::json!({"if":{"const":1},"then":false}),
-    serde_json::json!(1),
+    json_codec::json!({"if":{"const":1},"then":false}),
+    json_codec::json!(1),
     true
 ; "runtime_draft6_if_then_ignored"
 )]
 #[test_case(
     jsonschema::Draft::Draft7,
-    serde_json::json!({"type":"string","dependentSchemas":{"foo":{"required":["bar"]}}}),
-    serde_json::json!({"foo":1}),
+    json_codec::json!({"type":"string","dependentSchemas":{"foo":{"required":["bar"]}}}),
+    json_codec::json!({"foo":1}),
     false
 ; "runtime_draft7_dependent_schemas_ignored_type_applies"
 )]
 #[test_case(
     jsonschema::Draft::Draft4,
-    serde_json::json!({"propertyNames":{"pattern":"^x"}}),
-    serde_json::json!({"y":1}),
+    json_codec::json!({"propertyNames":{"pattern":"^x"}}),
+    json_codec::json!({"y":1}),
     true
 ; "runtime_draft4_property_names_ignored"
 )]
 #[test_case(
     jsonschema::Draft::Draft4,
-    serde_json::json!({"type":"string","contentEncoding":"base64"}),
-    serde_json::json!("not base64"),
+    json_codec::json!({"type":"string","contentEncoding":"base64"}),
+    json_codec::json!("not base64"),
     true
 ; "runtime_draft4_content_encoding_ignored"
 )]
 #[test_case(
     jsonschema::Draft::Draft7,
-    serde_json::json!({"type":"array","contains":{"type":"integer"},"minContains":2}),
-    serde_json::json!([1]),
+    json_codec::json!({"type":"array","contains":{"type":"integer"},"minContains":2}),
+    json_codec::json!([1]),
     true
 ; "runtime_draft7_min_contains_ignored"
 )]
 #[test_case(
     jsonschema::Draft::Draft7,
-    serde_json::json!({"type":"integer","minimum":0}),
-    serde_json::json!(1.5),
+    json_codec::json!({"type":"integer","minimum":0}),
+    json_codec::json!(1.5),
     false
 ; "runtime_integer_type_rejects_fractional_numbers_with_numeric_keywords"
 )]
 #[test_case(
     jsonschema::Draft::Draft7,
-    serde_json::json!({"type":["integer","string"],"maximum":0}),
-    serde_json::json!(1.5),
+    json_codec::json!({"type":["integer","string"],"maximum":0}),
+    json_codec::json!(1.5),
     false
 ; "runtime_union_with_integer_and_numeric_keywords_rejects_fractional_numbers"
 )]
 fn test_runtime_validator_draft_keyword_gating(
     draft: jsonschema::Draft,
-    schema: serde_json::Value,
-    instance: serde_json::Value,
+    schema: json_codec::Value,
+    instance: json_codec::Value,
     expected: bool,
 ) {
     let validator = jsonschema::options()
@@ -3035,17 +3035,17 @@ fn test_runtime_validator_draft_keyword_gating(
 }
 
 #[test_case(
-    serde_json::json!("a"),
+    json_codec::json!("a"),
     true
 ; "string_short_still_valid_when_validation_vocab_disabled"
 )]
 #[test_case(
-    serde_json::json!(1),
+    json_codec::json!(1),
     true
 ; "non_string_still_valid_when_validation_vocab_disabled"
 )]
-fn test_validation_vocabulary_gating_parity(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({
+fn test_validation_vocabulary_gating_parity(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({
         "$schema": "json-schema:///meta/no-validation",
         "type": "string",
         "minLength": 2,
@@ -3055,7 +3055,7 @@ fn test_validation_vocabulary_gating_parity(instance: serde_json::Value, expecte
         schema,
         [(
             "json-schema:///meta/no-validation",
-            serde_json::json!({
+            json_codec::json!({
                 "$id": "json-schema:///meta/no-validation",
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "$vocabulary": {
@@ -3080,10 +3080,10 @@ fn test_validation_vocabulary_gating_parity(instance: serde_json::Value, expecte
     );
 }
 
-#[test_case(serde_json::json!("2026-08-22T12:00:00Z"), true ; "well_formed_date_time")]
-#[test_case(serde_json::json!("not-a-date"), false ; "malformed_date_time_rejected_by_assertion_vocab")]
-fn test_format_assertion_vocabulary_parity(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({
+#[test_case(json_codec::json!("2026-08-22T12:00:00Z"), true ; "well_formed_date_time")]
+#[test_case(json_codec::json!("not-a-date"), false ; "malformed_date_time_rejected_by_assertion_vocab")]
+fn test_format_assertion_vocabulary_parity(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({
         "$schema": "json-schema:///meta/format-assertion",
         "type": "string",
         "format": "date-time"
@@ -3092,7 +3092,7 @@ fn test_format_assertion_vocabulary_parity(instance: serde_json::Value, expected
         schema,
         [(
             "json-schema:///meta/format-assertion",
-            serde_json::json!({
+            json_codec::json!({
                 "$id": "json-schema:///meta/format-assertion",
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "$vocabulary": {
@@ -3114,7 +3114,7 @@ fn test_format_assertion_vocabulary_parity(instance: serde_json::Value, expected
 #[test_case(
     OptionalFormatAssertionVocabularyValidator::is_valid,
     "json-schema:///meta/optional-format-assertion",
-    serde_json::json!({
+    json_codec::json!({
         "$id": "json-schema:///meta/optional-format-assertion",
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$vocabulary": {
@@ -3128,7 +3128,7 @@ fn test_format_assertion_vocabulary_parity(instance: serde_json::Value, expected
 #[test_case(
     Draft201909FormatVocabularyValidator::is_valid,
     "json-schema:///meta/draft2019-format",
-    serde_json::json!({
+    json_codec::json!({
         "$id": "json-schema:///meta/draft2019-format",
         "$schema": "https://json-schema.org/draft/2019-09/schema",
         "$vocabulary": {
@@ -3140,11 +3140,11 @@ fn test_format_assertion_vocabulary_parity(instance: serde_json::Value, expected
     ; "draft2019_format_vocab_required"
 )]
 fn test_dialect_asserts_formats_parity(
-    is_valid: fn(&serde_json::Value) -> bool,
+    is_valid: fn(&json_codec::Value) -> bool,
     meta_uri: &'static str,
-    meta: serde_json::Value,
+    meta: json_codec::Value,
 ) {
-    let schema = serde_json::json!({
+    let schema = json_codec::json!({
         "$schema": meta_uri,
         "type": "string",
         "format": "date-time"
@@ -3152,8 +3152,8 @@ fn test_dialect_asserts_formats_parity(
     let runtime = build_runtime_with_resources(schema, [(meta_uri, meta)]);
 
     for (instance, expected) in [
-        (serde_json::json!("2026-08-22T12:00:00Z"), true),
-        (serde_json::json!("not-a-date"), false),
+        (json_codec::json!("2026-08-22T12:00:00Z"), true),
+        (json_codec::json!("not-a-date"), false),
     ] {
         assert_eq!(runtime.is_valid(&instance), expected);
         assert_eq!(is_valid(&instance), expected);
@@ -3162,31 +3162,31 @@ fn test_dialect_asserts_formats_parity(
 
 #[test]
 fn test_declared_vocabulary_compiles() {
-    assert!(DeclaredVocabularyValidator::is_valid(&serde_json::json!(
+    assert!(DeclaredVocabularyValidator::is_valid(&json_codec::json!(
         "text"
     )));
-    assert!(!DeclaredVocabularyValidator::is_valid(&serde_json::json!(
+    assert!(!DeclaredVocabularyValidator::is_valid(&json_codec::json!(
         1
     )));
 }
 
 #[test_case(
-    serde_json::json!({"a": 1, "b": 2}),
+    json_codec::json!({"a": 1, "b": 2}),
     true
 ; "properties_additional_allof_are_ignored_when_applicator_vocab_disabled"
 )]
 #[test_case(
-    serde_json::json!({}),
+    json_codec::json!({}),
     true
 ; "empty_object_still_valid_when_only_type_applies"
 )]
 #[test_case(
-    serde_json::json!(1),
+    json_codec::json!(1),
     false
 ; "type_keyword_from_validation_vocab_still_applies"
 )]
-fn test_applicator_vocabulary_gating_parity(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({
+fn test_applicator_vocabulary_gating_parity(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({
         "$schema": "json-schema:///meta/no-applicator",
         "type": "object",
         "properties": {"a": {"type": "string"}},
@@ -3197,7 +3197,7 @@ fn test_applicator_vocabulary_gating_parity(instance: serde_json::Value, expecte
         schema,
         [(
             "json-schema:///meta/no-applicator",
-            serde_json::json!({
+            json_codec::json!({
                 "$id": "json-schema:///meta/no-applicator",
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "$vocabulary": {
@@ -3223,17 +3223,17 @@ fn test_applicator_vocabulary_gating_parity(instance: serde_json::Value, expecte
 }
 
 #[test_case(
-    serde_json::json!({"a":"ok","extra":1}),
+    json_codec::json!({"a":"ok","extra":1}),
     true
 ; "unevaluated_properties_ignored_when_unevaluated_vocab_disabled"
 )]
 #[test_case(
-    serde_json::json!({"a": 1}),
+    json_codec::json!({"a": 1}),
     false
 ; "properties_still_apply_with_applicator_vocab_enabled"
 )]
-fn test_unevaluated_vocabulary_gating_parity(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({
+fn test_unevaluated_vocabulary_gating_parity(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({
         "$schema": "json-schema:///meta/no-unevaluated",
         "type": "object",
         "properties": {"a": {"type": "string"}},
@@ -3243,7 +3243,7 @@ fn test_unevaluated_vocabulary_gating_parity(instance: serde_json::Value, expect
         schema,
         [(
             "json-schema:///meta/no-unevaluated",
-            serde_json::json!({
+            json_codec::json!({
                 "$id": "json-schema:///meta/no-unevaluated",
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "$vocabulary": {
@@ -3269,22 +3269,22 @@ fn test_unevaluated_vocabulary_gating_parity(instance: serde_json::Value, expect
 }
 
 #[test_case(
-    serde_json::json!(["x"]),
+    json_codec::json!(["x"]),
     true
 ; "array_items_and_contains_ignored_when_applicator_vocab_disabled"
 )]
 #[test_case(
-    serde_json::json!([1]),
+    json_codec::json!([1]),
     true
 ; "non_string_items_allowed_when_applicator_vocab_disabled"
 )]
 #[test_case(
-    serde_json::json!("not array"),
+    json_codec::json!("not array"),
     false
 ; "type_still_enforced_with_validation_vocab_enabled"
 )]
-fn test_array_applicator_vocabulary_gating_parity(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({
+fn test_array_applicator_vocabulary_gating_parity(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({
         "$schema": "json-schema:///meta/no-applicator",
         "type": "array",
         "items": {"type": "string"},
@@ -3294,7 +3294,7 @@ fn test_array_applicator_vocabulary_gating_parity(instance: serde_json::Value, e
         schema,
         [(
             "json-schema:///meta/no-applicator",
-            serde_json::json!({
+            json_codec::json!({
                 "$id": "json-schema:///meta/no-applicator",
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "$vocabulary": {
@@ -3320,17 +3320,17 @@ fn test_array_applicator_vocabulary_gating_parity(instance: serde_json::Value, e
 }
 
 #[test_case(
-    serde_json::json!(["ok", 1]),
+    json_codec::json!(["ok", 1]),
     true
 ; "unevaluated_items_ignored_when_unevaluated_vocab_disabled"
 )]
 #[test_case(
-    serde_json::json!([1]),
+    json_codec::json!([1]),
     false
 ; "prefix_items_still_applies_via_applicator_vocab"
 )]
-fn test_array_unevaluated_vocabulary_gating_parity(instance: serde_json::Value, expected: bool) {
-    let schema = serde_json::json!({
+fn test_array_unevaluated_vocabulary_gating_parity(instance: json_codec::Value, expected: bool) {
+    let schema = json_codec::json!({
         "$schema": "json-schema:///meta/no-unevaluated",
         "type": "array",
         "prefixItems": [{"type": "string"}],
@@ -3340,7 +3340,7 @@ fn test_array_unevaluated_vocabulary_gating_parity(instance: serde_json::Value, 
         schema,
         [(
             "json-schema:///meta/no-unevaluated",
-            serde_json::json!({
+            json_codec::json!({
                 "$id": "json-schema:///meta/no-unevaluated",
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "$vocabulary": {
@@ -3381,12 +3381,12 @@ struct RecursiveRefPathValidator;
 fn test_recursive_ref_validate_emits_proper_schema_path() {
     // The innermost violation is at `child.child = 42`, which fails the top-level
     // `type: object` constraint at schema path `/type`.
-    let invalid = serde_json::json!({"child": {"child": 42}});
+    let invalid = json_codec::json!({"child": {"child": 42}});
     let err = RecursiveRefPathValidator::validate(&invalid).expect_err("should fail");
     let codegen_sp = err.schema_path().to_string();
 
     // Compare against runtime engine for the same schema.
-    let schema: serde_json::Value = serde_json::from_str(
+    let schema: json_codec::Value = json_codec::from_str(
         r##"{
             "$id": "json-schema:///root",
             "type": "object",
@@ -3453,11 +3453,11 @@ struct MutualRefPathValidator;
 
 #[test]
 fn test_mutual_ref_validate_schema_path_matches_runtime() {
-    let invalid = serde_json::json!({"next": {"next": 42}});
+    let invalid = json_codec::json!({"next": {"next": 42}});
     let codegen_err = MutualRefPathValidator::validate(&invalid).expect_err("should fail");
     let codegen_sp = codegen_err.schema_path().to_string();
 
-    let schema: serde_json::Value = serde_json::from_str(
+    let schema: json_codec::Value = json_codec::from_str(
         r##"{
             "$defs": {
                 "a": {
@@ -3511,31 +3511,31 @@ struct AnyOfSelfRefCycleValidator;
 )]
 struct TriangleRefCycleValidator;
 
-#[test_case(serde_json::json!(42) ; "integer")]
-#[test_case(serde_json::json!("string") ; "string")]
-#[test_case(serde_json::json!(null) ; "null")]
-#[test_case(serde_json::json!({"nested": [1, 2, 3]}) ; "object")]
-fn test_pure_ref_cycles_match_runtime(instance: serde_json::Value) {
+#[test_case(json_codec::json!(42) ; "integer")]
+#[test_case(json_codec::json!("string") ; "string")]
+#[test_case(json_codec::json!(null) ; "null")]
+#[test_case(json_codec::json!({"nested": [1, 2, 3]}) ; "object")]
+fn test_pure_ref_cycles_match_runtime(instance: json_codec::Value) {
     assert_validate_parity_for(
-        &serde_json::json!({"$defs":{"a":{"$ref":"#/$defs/b"},"b":{"$ref":"#/$defs/a"}},"$ref":"#/$defs/a"}),
+        &json_codec::json!({"$defs":{"a":{"$ref":"#/$defs/b"},"b":{"$ref":"#/$defs/a"}},"$ref":"#/$defs/a"}),
         PureMutualRefCycleValidator::is_valid(&instance),
         PureMutualRefCycleValidator::validate(&instance),
         &instance,
     );
     assert_validate_parity_for(
-        &serde_json::json!({"$defs":{"x":{"allOf":[{"$ref":"#/$defs/x"}]}},"$ref":"#/$defs/x"}),
+        &json_codec::json!({"$defs":{"x":{"allOf":[{"$ref":"#/$defs/x"}]}},"$ref":"#/$defs/x"}),
         AllOfSelfRefCycleValidator::is_valid(&instance),
         AllOfSelfRefCycleValidator::validate(&instance),
         &instance,
     );
     assert_validate_parity_for(
-        &serde_json::json!({"$defs":{"x":{"anyOf":[{"$ref":"#/$defs/x"}]}},"$ref":"#/$defs/x"}),
+        &json_codec::json!({"$defs":{"x":{"anyOf":[{"$ref":"#/$defs/x"}]}},"$ref":"#/$defs/x"}),
         AnyOfSelfRefCycleValidator::is_valid(&instance),
         AnyOfSelfRefCycleValidator::validate(&instance),
         &instance,
     );
     assert_validate_parity_for(
-        &serde_json::json!({"$defs":{"a":{"$ref":"#/$defs/b"},"b":{"$ref":"#/$defs/c"},"c":{"$ref":"#/$defs/a"}},"$ref":"#/$defs/a"}),
+        &json_codec::json!({"$defs":{"a":{"$ref":"#/$defs/b"},"b":{"$ref":"#/$defs/c"},"c":{"$ref":"#/$defs/a"}},"$ref":"#/$defs/a"}),
         TriangleRefCycleValidator::is_valid(&instance),
         TriangleRefCycleValidator::validate(&instance),
         &instance,
@@ -3544,11 +3544,11 @@ fn test_pure_ref_cycles_match_runtime(instance: serde_json::Value) {
 
 #[test]
 fn test_dynamic_ref_validate_emits_proper_schema_path() {
-    let invalid = serde_json::json!({"value": 1, "child": {"value": "not-int"}});
+    let invalid = json_codec::json!({"value": 1, "child": {"value": "not-int"}});
     let err = DynamicRefPathValidator::validate(&invalid).expect_err("should fail");
     let codegen_sp = err.schema_path().to_string();
 
-    let schema: serde_json::Value = serde_json::from_str(
+    let schema: json_codec::Value = json_codec::from_str(
         r##"{
             "$id": "json-schema:///dynroot",
             "$defs": {
@@ -3586,13 +3586,13 @@ fn test_dynamic_ref_validate_emits_proper_schema_path() {
 )]
 struct PrefixItemsOrderValidator;
 
-#[test_case(serde_json::json!([1, 9, 0.0]) ; "prefix_and_items_both_fail")]
-#[test_case(serde_json::json!([1, "x", true]) ; "items_fails_after_valid_prefix")]
-#[test_case(serde_json::json!([true]) ; "prefix_fails_alone")]
-fn test_prefix_items_error_order_matches_runtime(instance: serde_json::Value) {
+#[test_case(json_codec::json!([1, 9, 0.0]) ; "prefix_and_items_both_fail")]
+#[test_case(json_codec::json!([1, "x", true]) ; "items_fails_after_valid_prefix")]
+#[test_case(json_codec::json!([true]) ; "prefix_fails_alone")]
+fn test_prefix_items_error_order_matches_runtime(instance: json_codec::Value) {
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft202012)
-        .build(&serde_json::json!({
+        .build(&json_codec::json!({
             "type": "array",
             "prefixItems": [{"type": "integer"}, {"type": "string"}],
             "items": false
@@ -3612,13 +3612,13 @@ fn test_prefix_items_error_order_matches_runtime(instance: serde_json::Value) {
 )]
 struct ArrayKeywordOrderValidator;
 
-#[test_case(serde_json::json!(["a", "a"]) ; "unique_and_items_both_fail")]
-#[test_case(serde_json::json!([0, 1, 2, 3, 4, "a"]) ; "max_and_items_both_fail")]
-#[test_case(serde_json::json!(["a"]) ; "items_fails_alone")]
-fn test_array_keyword_error_order_matches_runtime(instance: serde_json::Value) {
+#[test_case(json_codec::json!(["a", "a"]) ; "unique_and_items_both_fail")]
+#[test_case(json_codec::json!([0, 1, 2, 3, 4, "a"]) ; "max_and_items_both_fail")]
+#[test_case(json_codec::json!(["a"]) ; "items_fails_alone")]
+fn test_array_keyword_error_order_matches_runtime(instance: json_codec::Value) {
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
-        .build(&serde_json::json!({
+        .build(&json_codec::json!({
             "type": "array",
             "items": {"type": "integer"},
             "minItems": 1,
@@ -3640,12 +3640,12 @@ fn test_array_keyword_error_order_matches_runtime(instance: serde_json::Value) {
 )]
 struct ObjectCountBoundsValidator;
 
-#[test_case(serde_json::json!({}) ; "below_minimum")]
-#[test_case(serde_json::json!({"a":1,"b":2,"c":3}) ; "above_maximum")]
-fn test_object_count_bounds_error_matches_runtime(instance: serde_json::Value) {
+#[test_case(json_codec::json!({}) ; "below_minimum")]
+#[test_case(json_codec::json!({"a":1,"b":2,"c":3}) ; "above_maximum")]
+fn test_object_count_bounds_error_matches_runtime(instance: json_codec::Value) {
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
-        .build(&serde_json::json!({"type": "object", "minProperties": 1, "maxProperties": 2}))
+        .build(&json_codec::json!({"type": "object", "minProperties": 1, "maxProperties": 2}))
         .expect("valid schema");
     assert_validate_parity(
         ObjectCountBoundsValidator::is_valid(&instance),
@@ -3662,13 +3662,13 @@ fn test_object_count_bounds_error_matches_runtime(instance: serde_json::Value) {
 )]
 struct PropAndPattern;
 
-#[test_case(serde_json::json!({"xkey":"abcd"}) ; "prop_pattern_both_ok")]
-#[test_case(serde_json::json!({"xkey":"ab"}) ; "prop_ok_pattern_fails")]
-#[test_case(serde_json::json!({"xkey":5}) ; "prop_type_fails")]
-#[test_case(serde_json::json!({"x1":"abc"}) ; "pattern_only_covered")]
-#[test_case(serde_json::json!({"other":1}) ; "uncovered_no_ap")]
-fn single_pass_prop_and_pattern(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"xkey":{"type":"string"}},"patternProperties":{"^x":{"minLength":3}}});
+#[test_case(json_codec::json!({"xkey":"abcd"}) ; "prop_pattern_both_ok")]
+#[test_case(json_codec::json!({"xkey":"ab"}) ; "prop_ok_pattern_fails")]
+#[test_case(json_codec::json!({"xkey":5}) ; "prop_type_fails")]
+#[test_case(json_codec::json!({"x1":"abc"}) ; "pattern_only_covered")]
+#[test_case(json_codec::json!({"other":1}) ; "uncovered_no_ap")]
+fn single_pass_prop_and_pattern(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"xkey":{"type":"string"}},"patternProperties":{"^x":{"minLength":3}}});
     assert_is_valid_parity(&schema, PropAndPattern::is_valid(&instance), &instance);
 }
 
@@ -3677,12 +3677,12 @@ fn single_pass_prop_and_pattern(instance: serde_json::Value) {
 )]
 struct MultiPattern;
 
-#[test_case(serde_json::json!({"ab":"abcdef"}) ; "two_patterns_both_ok")]
-#[test_case(serde_json::json!({"ab":"abc"}) ; "two_patterns_min_fails")]
-#[test_case(serde_json::json!({"ab":"abcdefg"}) ; "two_patterns_max_fails")]
-#[test_case(serde_json::json!({"xy":"z"}) ; "no_pattern_match")]
-fn single_pass_multi_pattern(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","patternProperties":{"^ab":{"minLength":4},"b$":{"maxLength":6}}});
+#[test_case(json_codec::json!({"ab":"abcdef"}) ; "two_patterns_both_ok")]
+#[test_case(json_codec::json!({"ab":"abc"}) ; "two_patterns_min_fails")]
+#[test_case(json_codec::json!({"ab":"abcdefg"}) ; "two_patterns_max_fails")]
+#[test_case(json_codec::json!({"xy":"z"}) ; "no_pattern_match")]
+fn single_pass_multi_pattern(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","patternProperties":{"^ab":{"minLength":4},"b$":{"maxLength":6}}});
     assert_is_valid_parity(&schema, MultiPattern::is_valid(&instance), &instance);
 }
 
@@ -3691,11 +3691,11 @@ fn single_pass_multi_pattern(instance: serde_json::Value) {
 )]
 struct UncoveredToApSchema;
 
-#[test_case(serde_json::json!({"a":"s","x-1":"t","other":5}) ; "additional_is_integer")]
-#[test_case(serde_json::json!({"a":"s","x-1":"t","other":"no"}) ; "additional_not_integer")]
-#[test_case(serde_json::json!({"a":"s","x-1":"t"}) ; "all_covered")]
-fn single_pass_uncovered_ap_schema(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"string"}},"patternProperties":{"^x-":{"type":"string"}},"additionalProperties":{"type":"integer"}});
+#[test_case(json_codec::json!({"a":"s","x-1":"t","other":5}) ; "additional_is_integer")]
+#[test_case(json_codec::json!({"a":"s","x-1":"t","other":"no"}) ; "additional_not_integer")]
+#[test_case(json_codec::json!({"a":"s","x-1":"t"}) ; "all_covered")]
+fn single_pass_uncovered_ap_schema(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"string"}},"patternProperties":{"^x-":{"type":"string"}},"additionalProperties":{"type":"integer"}});
     assert_is_valid_parity(&schema, UncoveredToApSchema::is_valid(&instance), &instance);
 }
 
@@ -3704,11 +3704,11 @@ fn single_pass_uncovered_ap_schema(instance: serde_json::Value) {
 )]
 struct UncoveredToApFalse;
 
-#[test_case(serde_json::json!({"a":"s","x-1":"t"}) ; "all_covered_ok")]
-#[test_case(serde_json::json!({"a":"s","x-1":"t","other":5}) ; "extra_key_rejected")]
-#[test_case(serde_json::json!({"x-1":"t"}) ; "pattern_only_ok")]
-fn single_pass_uncovered_ap_false(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"string"}},"patternProperties":{"^x-":{"type":"string"}},"additionalProperties":false});
+#[test_case(json_codec::json!({"a":"s","x-1":"t"}) ; "all_covered_ok")]
+#[test_case(json_codec::json!({"a":"s","x-1":"t","other":5}) ; "extra_key_rejected")]
+#[test_case(json_codec::json!({"x-1":"t"}) ; "pattern_only_ok")]
+fn single_pass_uncovered_ap_false(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"string"}},"patternProperties":{"^x-":{"type":"string"}},"additionalProperties":false});
     assert_is_valid_parity(&schema, UncoveredToApFalse::is_valid(&instance), &instance);
 }
 
@@ -3717,12 +3717,12 @@ fn single_pass_uncovered_ap_false(instance: serde_json::Value) {
 )]
 struct RequiredMix;
 
-#[test_case(serde_json::json!({"a":"s","b":1}) ; "both_required_present")]
-#[test_case(serde_json::json!({"a":"s"}) ; "required_only_missing")]
-#[test_case(serde_json::json!({"b":1}) ; "required_in_props_missing")]
-#[test_case(serde_json::json!({"a":"s","b":1,"x-1":"t"}) ; "with_pattern_key")]
-fn single_pass_required_mix(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"string"}},"patternProperties":{"^x-":{"type":"string"}},"required":["a","b"]});
+#[test_case(json_codec::json!({"a":"s","b":1}) ; "both_required_present")]
+#[test_case(json_codec::json!({"a":"s"}) ; "required_only_missing")]
+#[test_case(json_codec::json!({"b":1}) ; "required_in_props_missing")]
+#[test_case(json_codec::json!({"a":"s","b":1,"x-1":"t"}) ; "with_pattern_key")]
+fn single_pass_required_mix(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"string"}},"patternProperties":{"^x-":{"type":"string"}},"required":["a","b"]});
     assert_is_valid_parity(&schema, RequiredMix::is_valid(&instance), &instance);
 }
 
@@ -3730,10 +3730,10 @@ fn single_pass_required_mix(instance: serde_json::Value) {
 #[jsonschema::validator(schema = r#"{"type":"array","items":{}}"#)]
 struct TrivialItems;
 
-#[test_case(serde_json::json!([1, "x", true]) ; "any_items")]
-#[test_case(serde_json::json!("not_array") ; "non_array")]
-fn trivial_items_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"array","items":{}});
+#[test_case(json_codec::json!([1, "x", true]) ; "any_items")]
+#[test_case(json_codec::json!("not_array") ; "non_array")]
+fn trivial_items_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"array","items":{}});
     assert_is_valid_parity(&schema, TrivialItems::is_valid(&instance), &instance);
 }
 
@@ -3743,10 +3743,10 @@ fn trivial_items_matches_runtime(instance: serde_json::Value) {
 )]
 struct TrivialAdditionalItems;
 
-#[test_case(serde_json::json!(["s", 1, true]) ; "extra_items_any")]
-#[test_case(serde_json::json!([5]) ; "prefix_type_fails")]
-fn trivial_additional_items_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"http://json-schema.org/draft-07/schema#","type":"array","items":[{"type":"string"}],"additionalItems":{}});
+#[test_case(json_codec::json!(["s", 1, true]) ; "extra_items_any")]
+#[test_case(json_codec::json!([5]) ; "prefix_type_fails")]
+fn trivial_additional_items_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"http://json-schema.org/draft-07/schema#","type":"array","items":[{"type":"string"}],"additionalItems":{}});
     assert_is_valid_parity(
         &schema,
         TrivialAdditionalItems::is_valid(&instance),
@@ -3760,10 +3760,10 @@ fn trivial_additional_items_matches_runtime(instance: serde_json::Value) {
 )]
 struct Draft4ContentIgnored;
 
-#[test_case(serde_json::json!("not base64!!") ; "any_string_ok")]
-#[test_case(serde_json::json!(5) ; "non_string_ok")]
-fn draft4_content_ignored_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"http://json-schema.org/draft-04/schema#","contentEncoding":"base64"});
+#[test_case(json_codec::json!("not base64!!") ; "any_string_ok")]
+#[test_case(json_codec::json!(5) ; "non_string_ok")]
+fn draft4_content_ignored_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"http://json-schema.org/draft-04/schema#","contentEncoding":"base64"});
     assert_is_valid_parity(
         &schema,
         Draft4ContentIgnored::is_valid(&instance),
@@ -3777,11 +3777,11 @@ fn draft4_content_ignored_matches_runtime(instance: serde_json::Value) {
 )]
 struct PropertiesTrivialAdditional;
 
-#[test_case(serde_json::json!({"a":"s"}) ; "known_ok")]
-#[test_case(serde_json::json!({"a":5}) ; "known_bad")]
-#[test_case(serde_json::json!({"extra":1}) ; "additional_allowed")]
-fn properties_trivial_additional_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"string"}},"additionalProperties":{}});
+#[test_case(json_codec::json!({"a":"s"}) ; "known_ok")]
+#[test_case(json_codec::json!({"a":5}) ; "known_bad")]
+#[test_case(json_codec::json!({"extra":1}) ; "additional_allowed")]
+fn properties_trivial_additional_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"string"}},"additionalProperties":{}});
     assert_is_valid_parity(
         &schema,
         PropertiesTrivialAdditional::is_valid(&instance),
@@ -3794,10 +3794,10 @@ fn properties_trivial_additional_matches_runtime(instance: serde_json::Value) {
 )]
 struct UnevalPropsEmptyProperties;
 
-#[test_case(serde_json::json!({}) ; "empty_ok")]
-#[test_case(serde_json::json!({"a":1}) ; "any_key_unevaluated")]
-fn uneval_props_empty_properties_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{},"unevaluatedProperties":false});
+#[test_case(json_codec::json!({}) ; "empty_ok")]
+#[test_case(json_codec::json!({"a":1}) ; "any_key_unevaluated")]
+fn uneval_props_empty_properties_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{},"unevaluatedProperties":false});
     assert_is_valid_parity(
         &schema,
         UnevalPropsEmptyProperties::is_valid(&instance),
@@ -3810,11 +3810,11 @@ fn uneval_props_empty_properties_matches_runtime(instance: serde_json::Value) {
 )]
 struct NestedUnevalPropsSchema;
 
-#[test_case(serde_json::json!({}) ; "empty_ok")]
-#[test_case(serde_json::json!({"a":1,"b":"s"}) ; "extra_string_ok")]
-#[test_case(serde_json::json!({"a":1,"b":2}) ; "extra_non_string_bad")]
-fn nested_uneval_props_schema_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","allOf":[{"properties":{"a":{}},"unevaluatedProperties":{"type":"string"}}],"unevaluatedProperties":false});
+#[test_case(json_codec::json!({}) ; "empty_ok")]
+#[test_case(json_codec::json!({"a":1,"b":"s"}) ; "extra_string_ok")]
+#[test_case(json_codec::json!({"a":1,"b":2}) ; "extra_non_string_bad")]
+fn nested_uneval_props_schema_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","allOf":[{"properties":{"a":{}},"unevaluatedProperties":{"type":"string"}}],"unevaluatedProperties":false});
     assert_is_valid_parity(
         &schema,
         NestedUnevalPropsSchema::is_valid(&instance),
@@ -3826,11 +3826,11 @@ fn nested_uneval_props_schema_matches_runtime(instance: serde_json::Value) {
 #[jsonschema::validator(schema = r#"{"type":"number","minimum":1.5}"#)]
 struct FractionalMinimum;
 
-#[test_case(serde_json::json!(2) ; "above")]
-#[test_case(serde_json::json!(1.5) ; "equal")]
-#[test_case(serde_json::json!(1) ; "below")]
-fn fractional_minimum_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"number","minimum":1.5});
+#[test_case(json_codec::json!(2) ; "above")]
+#[test_case(json_codec::json!(1.5) ; "equal")]
+#[test_case(json_codec::json!(1) ; "below")]
+fn fractional_minimum_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"number","minimum":1.5});
     assert_is_valid_parity(&schema, FractionalMinimum::is_valid(&instance), &instance);
 }
 
@@ -3840,12 +3840,12 @@ fn fractional_minimum_matches_runtime(instance: serde_json::Value) {
 )]
 struct StringDiscriminator;
 
-#[test_case(serde_json::json!({"kind":"a","v":"s"}) ; "a_ok")]
-#[test_case(serde_json::json!({"kind":"a","v":5}) ; "a_bad")]
-#[test_case(serde_json::json!({"kind":"b","v":5}) ; "b_ok")]
-#[test_case(serde_json::json!({"kind":"c"}) ; "no_branch")]
-fn string_discriminator_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["kind"],"properties":{"kind":{"const":"a"},"v":{"type":"string"}}},{"type":"object","required":["kind"],"properties":{"kind":{"const":"b"},"v":{"type":"integer"}}}]});
+#[test_case(json_codec::json!({"kind":"a","v":"s"}) ; "a_ok")]
+#[test_case(json_codec::json!({"kind":"a","v":5}) ; "a_bad")]
+#[test_case(json_codec::json!({"kind":"b","v":5}) ; "b_ok")]
+#[test_case(json_codec::json!({"kind":"c"}) ; "no_branch")]
+fn string_discriminator_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["kind"],"properties":{"kind":{"const":"a"},"v":{"type":"string"}}},{"type":"object","required":["kind"],"properties":{"kind":{"const":"b"},"v":{"type":"integer"}}}]});
     assert_is_valid_parity(&schema, StringDiscriminator::is_valid(&instance), &instance);
 }
 
@@ -3855,12 +3855,12 @@ fn string_discriminator_matches_runtime(instance: serde_json::Value) {
 )]
 struct BoolDiscriminator;
 
-#[test_case(serde_json::json!({"flag":true,"v":"s"}) ; "true_branch_ok")]
-#[test_case(serde_json::json!({"flag":true,"v":5}) ; "true_branch_bad")]
-#[test_case(serde_json::json!({"flag":false,"v":5}) ; "false_branch_ok")]
-#[test_case(serde_json::json!({"flag":false,"v":"s"}) ; "false_branch_bad")]
-fn bool_discriminator_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","properties":{"flag":{"const":true},"v":{"type":"string"}},"required":["flag"]},{"type":"object","properties":{"flag":{"const":false},"v":{"type":"integer"}},"required":["flag"]}]});
+#[test_case(json_codec::json!({"flag":true,"v":"s"}) ; "true_branch_ok")]
+#[test_case(json_codec::json!({"flag":true,"v":5}) ; "true_branch_bad")]
+#[test_case(json_codec::json!({"flag":false,"v":5}) ; "false_branch_ok")]
+#[test_case(json_codec::json!({"flag":false,"v":"s"}) ; "false_branch_bad")]
+fn bool_discriminator_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","properties":{"flag":{"const":true},"v":{"type":"string"}},"required":["flag"]},{"type":"object","properties":{"flag":{"const":false},"v":{"type":"integer"}},"required":["flag"]}]});
     assert_is_valid_parity(&schema, BoolDiscriminator::is_valid(&instance), &instance);
 }
 
@@ -3870,12 +3870,12 @@ fn bool_discriminator_matches_runtime(instance: serde_json::Value) {
 )]
 struct ExactPatternCoverage;
 
-#[test_case(serde_json::json!({"foo":"s"}) ; "exact_key_ok")]
-#[test_case(serde_json::json!({"foo":5}) ; "exact_key_bad_type")]
-#[test_case(serde_json::json!({"other":1}) ; "extra_key_rejected")]
-#[test_case(serde_json::json!({}) ; "empty")]
-fn exact_pattern_coverage_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","additionalProperties":false,"patternProperties":{"^foo$":{"type":"string"}}});
+#[test_case(json_codec::json!({"foo":"s"}) ; "exact_key_ok")]
+#[test_case(json_codec::json!({"foo":5}) ; "exact_key_bad_type")]
+#[test_case(json_codec::json!({"other":1}) ; "extra_key_rejected")]
+#[test_case(json_codec::json!({}) ; "empty")]
+fn exact_pattern_coverage_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","additionalProperties":false,"patternProperties":{"^foo$":{"type":"string"}}});
     assert_is_valid_parity(
         &schema,
         ExactPatternCoverage::is_valid(&instance),
@@ -3890,14 +3890,14 @@ fn exact_pattern_coverage_matches_runtime(instance: serde_json::Value) {
 )]
 struct AdditionalSchemaWithLiteralAndRegexPatterns;
 
-#[test_case(serde_json::json!({"foo": 1}) ; "literal_pattern_ok")]
-#[test_case(serde_json::json!({"foo": "x"}) ; "literal_pattern_bad")]
-#[test_case(serde_json::json!({"xbary": true}) ; "regex_pattern_ok")]
-#[test_case(serde_json::json!({"xbary": 1}) ; "regex_pattern_bad")]
-#[test_case(serde_json::json!({"other": "s"}) ; "additional_ok")]
-#[test_case(serde_json::json!({"other": 1}) ; "additional_bad")]
-fn test_additional_schema_with_literal_and_regex_patterns(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","additionalProperties":{"type":"string"},"patternProperties":{"^foo$":{"type":"integer"},"bar":{"type":"boolean"}}});
+#[test_case(json_codec::json!({"foo": 1}) ; "literal_pattern_ok")]
+#[test_case(json_codec::json!({"foo": "x"}) ; "literal_pattern_bad")]
+#[test_case(json_codec::json!({"xbary": true}) ; "regex_pattern_ok")]
+#[test_case(json_codec::json!({"xbary": 1}) ; "regex_pattern_bad")]
+#[test_case(json_codec::json!({"other": "s"}) ; "additional_ok")]
+#[test_case(json_codec::json!({"other": 1}) ; "additional_bad")]
+fn test_additional_schema_with_literal_and_regex_patterns(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","additionalProperties":{"type":"string"},"patternProperties":{"^foo$":{"type":"integer"},"bar":{"type":"boolean"}}});
     assert_is_valid_parity(
         &schema,
         AdditionalSchemaWithLiteralAndRegexPatterns::is_valid(&instance),
@@ -3909,11 +3909,11 @@ fn test_additional_schema_with_literal_and_regex_patterns(instance: serde_json::
 #[jsonschema::validator(schema = r#"{"type":["string","number"]}"#)]
 struct StringOrNumber;
 
-#[test_case(serde_json::json!(1.5) ; "number")]
-#[test_case(serde_json::json!("s") ; "string")]
-#[test_case(serde_json::json!(true) ; "bool_rejected")]
-fn string_or_number_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":["string","number"]});
+#[test_case(json_codec::json!(1.5) ; "number")]
+#[test_case(json_codec::json!("s") ; "string")]
+#[test_case(json_codec::json!(true) ; "bool_rejected")]
+fn string_or_number_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":["string","number"]});
     assert_is_valid_parity(&schema, StringOrNumber::is_valid(&instance), &instance);
 }
 
@@ -3923,11 +3923,11 @@ fn string_or_number_matches_runtime(instance: serde_json::Value) {
 )]
 struct OneOfDiscriminatorEdges;
 
-#[test_case(serde_json::json!({"k":true}) ; "enum_bool")]
-#[test_case(serde_json::json!({"x":1}) ; "required_missing_branch")]
-#[test_case(serde_json::json!({}) ; "empty")]
-fn one_of_discriminator_edges_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"const":null}}},{"type":"object","required":["k"],"properties":{"k":{"enum":[true,false]}}},{"type":"object","required":["k"],"properties":{"k":{"enum":[null]}}},{"type":"object","required":["k"],"properties":{"k":{"enum":[]}}},{"type":"object","required":["x"],"properties":{}}]});
+#[test_case(json_codec::json!({"k":true}) ; "enum_bool")]
+#[test_case(json_codec::json!({"x":1}) ; "required_missing_branch")]
+#[test_case(json_codec::json!({}) ; "empty")]
+fn one_of_discriminator_edges_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"const":null}}},{"type":"object","required":["k"],"properties":{"k":{"enum":[true,false]}}},{"type":"object","required":["k"],"properties":{"k":{"enum":[null]}}},{"type":"object","required":["k"],"properties":{"k":{"enum":[]}}},{"type":"object","required":["x"],"properties":{}}]});
     assert_is_valid_parity(
         &schema,
         OneOfDiscriminatorEdges::is_valid(&instance),
@@ -3941,10 +3941,10 @@ fn one_of_discriminator_edges_matches_runtime(instance: serde_json::Value) {
 )]
 struct OneOfBranchMissingKey;
 
-#[test_case(serde_json::json!({"a":"a1"}) ; "keyed_branch")]
-#[test_case(serde_json::json!({"b":"b1"}) ; "unkeyed_branch")]
-fn one_of_branch_missing_key_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["a"],"properties":{"a":{"const":"a1"}}},{"type":"object","required":["a"],"properties":{"a":{"const":"a2"}}},{"type":"object","required":["b"],"properties":{"b":{"const":"b1"}}}]});
+#[test_case(json_codec::json!({"a":"a1"}) ; "keyed_branch")]
+#[test_case(json_codec::json!({"b":"b1"}) ; "unkeyed_branch")]
+fn one_of_branch_missing_key_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["a"],"properties":{"a":{"const":"a1"}}},{"type":"object","required":["a"],"properties":{"a":{"const":"a2"}}},{"type":"object","required":["b"],"properties":{"b":{"const":"b1"}}}]});
     assert_is_valid_parity(
         &schema,
         OneOfBranchMissingKey::is_valid(&instance),
@@ -3958,10 +3958,10 @@ fn one_of_branch_missing_key_matches_runtime(instance: serde_json::Value) {
 )]
 struct OneOfDiscriminatorTiebreak;
 
-#[test_case(serde_json::json!({"a":"a1","b":"b1"}) ; "first")]
-#[test_case(serde_json::json!({"b":"b3"}) ; "third")]
-fn one_of_discriminator_tiebreak_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["a","b"],"properties":{"a":{"const":"a1"},"b":{"const":"b1"}}},{"type":"object","required":["a","b"],"properties":{"a":{"const":"a2"},"b":{"const":"b2"}}},{"type":"object","required":["b"],"properties":{"b":{"const":"b3"}}}]});
+#[test_case(json_codec::json!({"a":"a1","b":"b1"}) ; "first")]
+#[test_case(json_codec::json!({"b":"b3"}) ; "third")]
+fn one_of_discriminator_tiebreak_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["a","b"],"properties":{"a":{"const":"a1"},"b":{"const":"b1"}}},{"type":"object","required":["a","b"],"properties":{"a":{"const":"a2"},"b":{"const":"b2"}}},{"type":"object","required":["b"],"properties":{"b":{"const":"b3"}}}]});
     assert_is_valid_parity(
         &schema,
         OneOfDiscriminatorTiebreak::is_valid(&instance),
@@ -3974,13 +3974,13 @@ fn one_of_discriminator_tiebreak_matches_runtime(instance: serde_json::Value) {
 )]
 struct OneOfEnumTypedDiscriminator;
 
-#[test_case(serde_json::json!({"type":"Point","c":1}) ; "first_branch")]
-#[test_case(serde_json::json!({"type":"MultiLineString","c":"x"}) ; "second_branch_second_literal")]
-#[test_case(serde_json::json!({"type":"Point","c":"x"}) ; "matched_tag_body_mismatch")]
-#[test_case(serde_json::json!({"type":5}) ; "non_string_tag")]
-#[test_case(serde_json::json!({"c":1}) ; "missing_tag")]
-fn one_of_enum_typed_discriminator_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["type"],"properties":{"type":{"type":"string","enum":["Point"]},"c":{"type":"number"}}},{"type":"object","required":["type"],"properties":{"type":{"type":"string","enum":["LineString","MultiLineString"]},"c":{"type":"string"}}}]});
+#[test_case(json_codec::json!({"type":"Point","c":1}) ; "first_branch")]
+#[test_case(json_codec::json!({"type":"MultiLineString","c":"x"}) ; "second_branch_second_literal")]
+#[test_case(json_codec::json!({"type":"Point","c":"x"}) ; "matched_tag_body_mismatch")]
+#[test_case(json_codec::json!({"type":5}) ; "non_string_tag")]
+#[test_case(json_codec::json!({"c":1}) ; "missing_tag")]
+fn one_of_enum_typed_discriminator_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["type"],"properties":{"type":{"type":"string","enum":["Point"]},"c":{"type":"number"}}},{"type":"object","required":["type"],"properties":{"type":{"type":"string","enum":["LineString","MultiLineString"]},"c":{"type":"string"}}}]});
     assert_is_valid_parity(
         &schema,
         OneOfEnumTypedDiscriminator::is_valid(&instance),
@@ -3999,12 +3999,12 @@ fn one_of_enum_typed_discriminator_matches_runtime(instance: serde_json::Value) 
 )]
 struct OneOfDiscriminatorAdditionalFalse;
 
-#[test_case(serde_json::json!({"tag":"br"}) ; "tag_only_branch")]
-#[test_case(serde_json::json!({"tag":"br","extra":1}) ; "unexpected_key")]
-#[test_case(serde_json::json!({"tag":"p","data":"x"}) ; "second_branch")]
-#[test_case(serde_json::json!({"tag":"p","data":5}) ; "second_branch_bad_value")]
-fn one_of_discriminator_additional_false_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["tag"],"additionalProperties":false,"properties":{"tag":{"const":"br"}}},{"type":"object","required":["tag"],"additionalProperties":false,"properties":{"tag":{"const":"p"},"data":{"type":"string"}}}]});
+#[test_case(json_codec::json!({"tag":"br"}) ; "tag_only_branch")]
+#[test_case(json_codec::json!({"tag":"br","extra":1}) ; "unexpected_key")]
+#[test_case(json_codec::json!({"tag":"p","data":"x"}) ; "second_branch")]
+#[test_case(json_codec::json!({"tag":"p","data":5}) ; "second_branch_bad_value")]
+fn one_of_discriminator_additional_false_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["tag"],"additionalProperties":false,"properties":{"tag":{"const":"br"}}},{"type":"object","required":["tag"],"additionalProperties":false,"properties":{"tag":{"const":"p"},"data":{"type":"string"}}}]});
     assert_is_valid_parity(
         &schema,
         OneOfDiscriminatorAdditionalFalse::is_valid(&instance),
@@ -4023,11 +4023,11 @@ fn one_of_discriminator_additional_false_matches_runtime(instance: serde_json::V
 )]
 struct OneOfDiscriminatorSiblingConstraints;
 
-#[test_case(serde_json::json!({"k":"a"}) ; "const_passes_enum_sibling_fails")]
-#[test_case(serde_json::json!({"k":"abcdef"}) ; "const_and_sibling_pass")]
-#[test_case(serde_json::json!({"k":"b"}) ; "no_tag_match")]
-fn one_of_discriminator_sibling_constraints_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"const":"a","enum":["b"]}}},{"type":"object","required":["k"],"properties":{"k":{"const":"abcdef","minLength":3}}}]});
+#[test_case(json_codec::json!({"k":"a"}) ; "const_passes_enum_sibling_fails")]
+#[test_case(json_codec::json!({"k":"abcdef"}) ; "const_and_sibling_pass")]
+#[test_case(json_codec::json!({"k":"b"}) ; "no_tag_match")]
+fn one_of_discriminator_sibling_constraints_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"const":"a","enum":["b"]}}},{"type":"object","required":["k"],"properties":{"k":{"const":"abcdef","minLength":3}}}]});
     assert_is_valid_parity(
         &schema,
         OneOfDiscriminatorSiblingConstraints::is_valid(&instance),
@@ -4042,12 +4042,12 @@ fn one_of_discriminator_sibling_constraints_matches_runtime(instance: serde_json
 )]
 struct OneOfConstTagsDraft4;
 
-#[test_case(serde_json::json!({"k":"zzz","x":"s"}) ; "const_inert_first_branch_valid")]
-#[test_case(serde_json::json!({"k":"a","x":"s"}) ; "tag_and_body_valid")]
-#[test_case(serde_json::json!({"k":"a","x":1}) ; "second_body_valid_despite_first_tag")]
-#[test_case(serde_json::json!({"x":"s"}) ; "missing_tag")]
-fn one_of_const_tags_draft4_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"const":"a"},"x":{"type":"string"}}},{"type":"object","required":["k"],"properties":{"k":{"const":"b"},"x":{"type":"number"}}}]});
+#[test_case(json_codec::json!({"k":"zzz","x":"s"}) ; "const_inert_first_branch_valid")]
+#[test_case(json_codec::json!({"k":"a","x":"s"}) ; "tag_and_body_valid")]
+#[test_case(json_codec::json!({"k":"a","x":1}) ; "second_body_valid_despite_first_tag")]
+#[test_case(json_codec::json!({"x":"s"}) ; "missing_tag")]
+fn one_of_const_tags_draft4_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"const":"a"},"x":{"type":"string"}}},{"type":"object","required":["k"],"properties":{"k":{"const":"b"},"x":{"type":"number"}}}]});
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft4)
         .build(&schema)
@@ -4062,13 +4062,13 @@ fn one_of_const_tags_draft4_matches_runtime(instance: serde_json::Value) {
 )]
 struct OneOfOverlappingEnumTags;
 
-#[test_case(serde_json::json!({"k":"a","x":"s"}) ; "unshared_tag")]
-#[test_case(serde_json::json!({"k":"b","x":"s"}) ; "shared_tag_first_body")]
-#[test_case(serde_json::json!({"k":"b","x":1}) ; "shared_tag_second_body")]
-#[test_case(serde_json::json!({"k":"b"}) ; "shared_tag_both_bodies")]
-#[test_case(serde_json::json!({"k":"z"}) ; "unknown_tag")]
-fn one_of_overlapping_enum_tags_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"enum":["a","b"]},"x":{"type":"string"}}},{"type":"object","required":["k"],"properties":{"k":{"enum":["b","c"]},"x":{"type":"number"}}}]});
+#[test_case(json_codec::json!({"k":"a","x":"s"}) ; "unshared_tag")]
+#[test_case(json_codec::json!({"k":"b","x":"s"}) ; "shared_tag_first_body")]
+#[test_case(json_codec::json!({"k":"b","x":1}) ; "shared_tag_second_body")]
+#[test_case(json_codec::json!({"k":"b"}) ; "shared_tag_both_bodies")]
+#[test_case(json_codec::json!({"k":"z"}) ; "unknown_tag")]
+fn one_of_overlapping_enum_tags_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"enum":["a","b"]},"x":{"type":"string"}}},{"type":"object","required":["k"],"properties":{"k":{"enum":["b","c"]},"x":{"type":"number"}}}]});
     assert_is_valid_parity(
         &schema,
         OneOfOverlappingEnumTags::is_valid(&instance),
@@ -4094,9 +4094,9 @@ struct OneOfHugeIntTags;
 #[test_case(r#"{"k":9007199254740992.0,"x":"s"}"# ; "adjacent_float")]
 #[test_case(r#"{"k":2,"x":1}"# ; "small_tag")]
 fn one_of_huge_int_tags_matches_runtime(instance_json: &str) {
-    let schema = serde_json::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"const":9_007_199_254_740_993_i64},"x":{"type":"string"}}},{"type":"object","required":["k"],"properties":{"k":{"const":2},"x":{"type":"number"}}}]});
-    let instance: serde_json::Value =
-        serde_json::from_str(instance_json).expect("valid instance json");
+    let schema = json_codec::json!({"oneOf":[{"type":"object","required":["k"],"properties":{"k":{"const":9_007_199_254_740_993_i64},"x":{"type":"string"}}},{"type":"object","required":["k"],"properties":{"k":{"const":2},"x":{"type":"number"}}}]});
+    let instance: json_codec::Value =
+        json_codec::from_str(instance_json).expect("valid instance json");
     let expected = runtime_valid(&schema, &instance);
     assert_eq!(OneOfHugeIntTags::is_valid(&instance), expected);
     assert_eq!(OneOfHugeIntTags::validate(&instance).is_ok(), expected);
@@ -4107,11 +4107,11 @@ fn one_of_huge_int_tags_matches_runtime(instance_json: &str) {
 )]
 struct PatternTrivialAp;
 
-#[test_case(serde_json::json!({"x-1":"t"}) ; "pattern_ok")]
-#[test_case(serde_json::json!({"x-1":5}) ; "pattern_fails")]
-#[test_case(serde_json::json!({"other":123}) ; "uncovered_trivial_ap")]
-fn single_pass_pattern_trivial_ap(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","patternProperties":{"^x-":{"type":"string"}},"additionalProperties":{}});
+#[test_case(json_codec::json!({"x-1":"t"}) ; "pattern_ok")]
+#[test_case(json_codec::json!({"x-1":5}) ; "pattern_fails")]
+#[test_case(json_codec::json!({"other":123}) ; "uncovered_trivial_ap")]
+fn single_pass_pattern_trivial_ap(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","patternProperties":{"^x-":{"type":"string"}},"additionalProperties":{}});
     assert_is_valid_parity(&schema, PatternTrivialAp::is_valid(&instance), &instance);
 }
 
@@ -4121,11 +4121,11 @@ fn single_pass_pattern_trivial_ap(instance: serde_json::Value) {
 )]
 struct EmptyPatternProps;
 
-#[test_case(serde_json::json!({"a":"s"}) ; "prop_ok")]
-#[test_case(serde_json::json!({"a":5}) ; "prop_fails")]
-#[test_case(serde_json::json!({"other":1}) ; "extra_key_allowed")]
-fn single_pass_empty_pattern_props(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{"a":{"type":"string"}},"patternProperties":{}});
+#[test_case(json_codec::json!({"a":"s"}) ; "prop_ok")]
+#[test_case(json_codec::json!({"a":5}) ; "prop_fails")]
+#[test_case(json_codec::json!({"other":1}) ; "extra_key_allowed")]
+fn single_pass_empty_pattern_props(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{"a":{"type":"string"}},"patternProperties":{}});
     assert_is_valid_parity(&schema, EmptyPatternProps::is_valid(&instance), &instance);
 }
 
@@ -4137,12 +4137,12 @@ struct RefDefinitionSchemaPath;
 
 #[test]
 fn test_ref_error_reports_definition_site_schema_path() {
-    let schema = serde_json::json!({"definitions":{"pos":{"type":"integer","minimum":1}},"type":"object","properties":{"id":{"$ref":"#/definitions/pos"}},"required":["id"]});
+    let schema = json_codec::json!({"definitions":{"pos":{"type":"integer","minimum":1}},"type":"object","properties":{"id":{"$ref":"#/definitions/pos"}},"required":["id"]});
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft7)
         .build(&schema)
         .expect("valid schema");
-    let instance = serde_json::json!({"id":0});
+    let instance = json_codec::json!({"id":0});
     let generated = RefDefinitionSchemaPath::validate(&instance).expect_err("invalid");
     let expected = runtime.validate(&instance).expect_err("invalid");
     assert_eq!(
@@ -4168,17 +4168,17 @@ fn test_ref_error_reports_definition_site_schema_path() {
 )]
 struct NoValidationVocabAllFamilies;
 
-#[test_case(serde_json::json!(3) ; "number")]
-#[test_case(serde_json::json!("a") ; "string")]
-#[test_case(serde_json::json!([]) ; "array")]
-#[test_case(serde_json::json!({}) ; "object")]
-fn test_no_validation_vocabulary_drops_all_keyword_families(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"json-schema:///meta/no-validation","type":["number","string","array","object"],"minimum":5,"minLength":2,"minItems":1,"required":["x"],"multipleOf":2});
+#[test_case(json_codec::json!(3) ; "number")]
+#[test_case(json_codec::json!("a") ; "string")]
+#[test_case(json_codec::json!([]) ; "array")]
+#[test_case(json_codec::json!({}) ; "object")]
+fn test_no_validation_vocabulary_drops_all_keyword_families(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"json-schema:///meta/no-validation","type":["number","string","array","object"],"minimum":5,"minLength":2,"minItems":1,"required":["x"],"multipleOf":2});
     let runtime = build_runtime_with_resources(
         schema,
         [(
             "json-schema:///meta/no-validation",
-            serde_json::json!({"$id":"json-schema:///meta/no-validation","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/applicator":true,"https://json-schema.org/draft/2020-12/vocab/validation":false,"https://json-schema.org/draft/2020-12/vocab/unevaluated":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
+            json_codec::json!({"$id":"json-schema:///meta/no-validation","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/applicator":true,"https://json-schema.org/draft/2020-12/vocab/validation":false,"https://json-schema.org/draft/2020-12/vocab/unevaluated":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
         )],
     );
     // Validation vocab off -> no constraints enforced -> everything valid, codegen == runtime.
@@ -4198,16 +4198,16 @@ fn test_no_validation_vocabulary_drops_all_keyword_families(instance: serde_json
 )]
 struct NoValidationVocabArrayApplicator;
 
-#[test_case(serde_json::json!([1]) ; "below_dropped_min_items")]
-#[test_case(serde_json::json!([]) ; "contains_unsatisfied")]
-#[test_case(serde_json::json!([1, 2]) ; "contains_satisfied")]
-fn test_no_validation_vocab_array_applicator(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"json-schema:///meta/no-validation","type":"array","contains":{},"minItems":5});
+#[test_case(json_codec::json!([1]) ; "below_dropped_min_items")]
+#[test_case(json_codec::json!([]) ; "contains_unsatisfied")]
+#[test_case(json_codec::json!([1, 2]) ; "contains_satisfied")]
+fn test_no_validation_vocab_array_applicator(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"json-schema:///meta/no-validation","type":"array","contains":{},"minItems":5});
     let runtime = build_runtime_with_resources(
         schema,
         [(
             "json-schema:///meta/no-validation",
-            serde_json::json!({"$id":"json-schema:///meta/no-validation","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/applicator":true,"https://json-schema.org/draft/2020-12/vocab/validation":false,"https://json-schema.org/draft/2020-12/vocab/unevaluated":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
+            json_codec::json!({"$id":"json-schema:///meta/no-validation","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/applicator":true,"https://json-schema.org/draft/2020-12/vocab/validation":false,"https://json-schema.org/draft/2020-12/vocab/unevaluated":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
         )],
     );
     assert_eq!(
@@ -4224,12 +4224,12 @@ fn test_no_validation_vocab_array_applicator(instance: serde_json::Value) {
 )]
 struct OneOfRefBranches;
 
-#[test_case(serde_json::json!({"kind":"a","x":1}) ; "branch_a")]
-#[test_case(serde_json::json!({"kind":"b","y":"s"}) ; "branch_b")]
-#[test_case(serde_json::json!({"kind":"a","x":"nope"}) ; "branch_a_bad")]
-#[test_case(serde_json::json!({"kind":"c"}) ; "no_branch")]
-fn test_one_of_ref_branches_match_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$defs":{"a":{"type":"object","properties":{"kind":{"const":"a"},"x":{"type":"integer"}},"required":["kind","x"]},"b":{"type":"object","properties":{"kind":{"const":"b"},"y":{"type":"string"}},"required":["kind","y"]}},"oneOf":[{"$ref":"#/$defs/a"},{"$ref":"#/$defs/b"}]});
+#[test_case(json_codec::json!({"kind":"a","x":1}) ; "branch_a")]
+#[test_case(json_codec::json!({"kind":"b","y":"s"}) ; "branch_b")]
+#[test_case(json_codec::json!({"kind":"a","x":"nope"}) ; "branch_a_bad")]
+#[test_case(json_codec::json!({"kind":"c"}) ; "no_branch")]
+fn test_one_of_ref_branches_match_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$defs":{"a":{"type":"object","properties":{"kind":{"const":"a"},"x":{"type":"integer"}},"required":["kind","x"]},"b":{"type":"object","properties":{"kind":{"const":"b"},"y":{"type":"string"}},"required":["kind","y"]}},"oneOf":[{"$ref":"#/$defs/a"},{"$ref":"#/$defs/b"}]});
     assert_is_valid_parity(&schema, OneOfRefBranches::is_valid(&instance), &instance);
 }
 
@@ -4241,15 +4241,15 @@ fn test_one_of_ref_branches_match_runtime(instance: serde_json::Value) {
 )]
 struct EmptyFragmentRef;
 
-#[test_case(serde_json::json!(1) ; "integer_ok")]
-#[test_case(serde_json::json!("x") ; "string_bad")]
-fn test_empty_fragment_ref_matches_runtime(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$ref":"json-schema:///thing#"});
+#[test_case(json_codec::json!(1) ; "integer_ok")]
+#[test_case(json_codec::json!("x") ; "string_bad")]
+fn test_empty_fragment_ref_matches_runtime(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$ref":"json-schema:///thing#"});
     let runtime = build_runtime_with_resources(
         schema,
         [(
             "json-schema:///thing",
-            serde_json::json!({"type":"integer"}),
+            json_codec::json!({"type":"integer"}),
         )],
     );
     assert_eq!(
@@ -4264,10 +4264,10 @@ fn test_empty_fragment_ref_matches_runtime(instance: serde_json::Value) {
 )]
 struct UnevalPropsRefBoolTarget;
 
-#[test_case(serde_json::json!({}) ; "empty")]
-#[test_case(serde_json::json!({"x":1}) ; "unevaluated_property")]
-fn test_uneval_props_ref_bool_target(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$defs":{"b":true},"type":"object","allOf":[{"$ref":"#/$defs/b"}],"unevaluatedProperties":false});
+#[test_case(json_codec::json!({}) ; "empty")]
+#[test_case(json_codec::json!({"x":1}) ; "unevaluated_property")]
+fn test_uneval_props_ref_bool_target(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$defs":{"b":true},"type":"object","allOf":[{"$ref":"#/$defs/b"}],"unevaluatedProperties":false});
     assert_validate_parity_for(
         &schema,
         UnevalPropsRefBoolTarget::is_valid(&instance),
@@ -4282,10 +4282,10 @@ fn test_uneval_props_ref_bool_target(instance: serde_json::Value) {
 )]
 struct UnevalItemsRefBoolTarget;
 
-#[test_case(serde_json::json!([]) ; "empty")]
-#[test_case(serde_json::json!([1]) ; "unevaluated_item")]
-fn test_uneval_items_ref_bool_target(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$defs":{"b":true},"type":"array","allOf":[{"$ref":"#/$defs/b"}],"unevaluatedItems":false});
+#[test_case(json_codec::json!([]) ; "empty")]
+#[test_case(json_codec::json!([1]) ; "unevaluated_item")]
+fn test_uneval_items_ref_bool_target(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$defs":{"b":true},"type":"array","allOf":[{"$ref":"#/$defs/b"}],"unevaluatedItems":false});
     assert_validate_parity_for(
         &schema,
         UnevalItemsRefBoolTarget::is_valid(&instance),
@@ -4297,10 +4297,10 @@ fn test_uneval_items_ref_bool_target(instance: serde_json::Value) {
 #[jsonschema::validator(schema = r#"{"type":"object","properties":{},"additionalProperties":false}"#, draft = Draft202012)]
 struct EmptyPropertiesAdditionalFalse;
 
-#[test_case(serde_json::json!({}) ; "empty")]
-#[test_case(serde_json::json!({"a":1}) ; "extra_key")]
-fn test_empty_properties_additional_false(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{},"additionalProperties":false});
+#[test_case(json_codec::json!({}) ; "empty")]
+#[test_case(json_codec::json!({"a":1}) ; "extra_key")]
+fn test_empty_properties_additional_false(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{},"additionalProperties":false});
     assert_validate_parity_for(
         &schema,
         EmptyPropertiesAdditionalFalse::is_valid(&instance),
@@ -4315,11 +4315,11 @@ fn test_empty_properties_additional_false(instance: serde_json::Value) {
 )]
 struct UnevalGuardBranchWithSiblingKeyword;
 
-#[test_case(serde_json::json!({"a":1}) ; "evaluated")]
-#[test_case(serde_json::json!({"a":1,"b":2}) ; "extra_unevaluated")]
-#[test_case(serde_json::json!({"a":"x"}) ; "branch_fails")]
-fn test_uneval_guard_branch_with_sibling_keyword(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","anyOf":[{"type":"object","allOf":[{"properties":{"a":{"type":"integer"}}}]}],"unevaluatedProperties":false});
+#[test_case(json_codec::json!({"a":1}) ; "evaluated")]
+#[test_case(json_codec::json!({"a":1,"b":2}) ; "extra_unevaluated")]
+#[test_case(json_codec::json!({"a":"x"}) ; "branch_fails")]
+fn test_uneval_guard_branch_with_sibling_keyword(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","anyOf":[{"type":"object","allOf":[{"properties":{"a":{"type":"integer"}}}]}],"unevaluatedProperties":false});
     assert_validate_parity_for(
         &schema,
         UnevalGuardBranchWithSiblingKeyword::is_valid(&instance),
@@ -4334,11 +4334,11 @@ fn test_uneval_guard_branch_with_sibling_keyword(instance: serde_json::Value) {
 )]
 struct UnevalEmptyProperties;
 
-#[test_case(serde_json::json!({}) ; "empty")]
-#[test_case(serde_json::json!({"x":"s"}) ; "additional_covers")]
-#[test_case(serde_json::json!({"x":1}) ; "additional_fails")]
-fn test_uneval_empty_properties(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","properties":{},"additionalProperties":{"type":"string"},"unevaluatedProperties":false});
+#[test_case(json_codec::json!({}) ; "empty")]
+#[test_case(json_codec::json!({"x":"s"}) ; "additional_covers")]
+#[test_case(json_codec::json!({"x":1}) ; "additional_fails")]
+fn test_uneval_empty_properties(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","properties":{},"additionalProperties":{"type":"string"},"unevaluatedProperties":false});
     assert_validate_parity_for(
         &schema,
         UnevalEmptyProperties::is_valid(&instance),
@@ -4356,15 +4356,15 @@ fn test_uneval_empty_properties(instance: serde_json::Value) {
 )]
 struct UnevalNoApplicatorVocabProps;
 
-#[test_case(serde_json::json!({}) ; "empty")]
-#[test_case(serde_json::json!({"a":1}) ; "any_property_unevaluated")]
-fn test_uneval_no_applicator_vocab_props(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"json-schema:///meta/no-applicator","type":"object","unevaluatedProperties":false});
+#[test_case(json_codec::json!({}) ; "empty")]
+#[test_case(json_codec::json!({"a":1}) ; "any_property_unevaluated")]
+fn test_uneval_no_applicator_vocab_props(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"json-schema:///meta/no-applicator","type":"object","unevaluatedProperties":false});
     let runtime = build_runtime_with_resources(
         schema,
         [(
             "json-schema:///meta/no-applicator",
-            serde_json::json!({"$id":"json-schema:///meta/no-applicator","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/validation":true,"https://json-schema.org/draft/2020-12/vocab/unevaluated":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
+            json_codec::json!({"$id":"json-schema:///meta/no-applicator","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/validation":true,"https://json-schema.org/draft/2020-12/vocab/unevaluated":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
         )],
     );
     assert_eq!(
@@ -4382,15 +4382,15 @@ fn test_uneval_no_applicator_vocab_props(instance: serde_json::Value) {
 )]
 struct UnevalNoApplicatorVocabItems;
 
-#[test_case(serde_json::json!([]) ; "empty")]
-#[test_case(serde_json::json!([1]) ; "any_item_unevaluated")]
-fn test_uneval_no_applicator_vocab_items(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"json-schema:///meta/no-applicator","type":"array","unevaluatedItems":false});
+#[test_case(json_codec::json!([]) ; "empty")]
+#[test_case(json_codec::json!([1]) ; "any_item_unevaluated")]
+fn test_uneval_no_applicator_vocab_items(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"json-schema:///meta/no-applicator","type":"array","unevaluatedItems":false});
     let runtime = build_runtime_with_resources(
         schema,
         [(
             "json-schema:///meta/no-applicator",
-            serde_json::json!({"$id":"json-schema:///meta/no-applicator","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/validation":true,"https://json-schema.org/draft/2020-12/vocab/unevaluated":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
+            json_codec::json!({"$id":"json-schema:///meta/no-applicator","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/validation":true,"https://json-schema.org/draft/2020-12/vocab/unevaluated":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
         )],
     );
     assert_eq!(
@@ -4408,16 +4408,16 @@ fn test_uneval_no_applicator_vocab_items(instance: serde_json::Value) {
 )]
 struct DynamicRefNoUnevaluatedVocab;
 
-#[test_case(serde_json::json!({}) ; "empty")]
-#[test_case(serde_json::json!({"children":[{}]}) ; "nested")]
-#[test_case(serde_json::json!({"children":[{"children":[{}]}]}) ; "deep")]
-fn test_dynamic_ref_no_unevaluated_vocab(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"json-schema:///meta/no-unevaluated","$id":"json-schema:///tree-no-uneval","$dynamicAnchor":"node","type":"object","properties":{"children":{"type":"array","items":{"$dynamicRef":"#node"}}}});
+#[test_case(json_codec::json!({}) ; "empty")]
+#[test_case(json_codec::json!({"children":[{}]}) ; "nested")]
+#[test_case(json_codec::json!({"children":[{"children":[{}]}]}) ; "deep")]
+fn test_dynamic_ref_no_unevaluated_vocab(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"json-schema:///meta/no-unevaluated","$id":"json-schema:///tree-no-uneval","$dynamicAnchor":"node","type":"object","properties":{"children":{"type":"array","items":{"$dynamicRef":"#node"}}}});
     let runtime = build_runtime_with_resources(
         schema,
         [(
             "json-schema:///meta/no-unevaluated",
-            serde_json::json!({"$id":"json-schema:///meta/no-unevaluated","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/applicator":true,"https://json-schema.org/draft/2020-12/vocab/validation":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
+            json_codec::json!({"$id":"json-schema:///meta/no-unevaluated","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{"https://json-schema.org/draft/2020-12/vocab/core":true,"https://json-schema.org/draft/2020-12/vocab/applicator":true,"https://json-schema.org/draft/2020-12/vocab/validation":true,"https://json-schema.org/draft/2020-12/vocab/format-annotation":true}}),
         )],
     );
     assert_eq!(
@@ -4429,11 +4429,11 @@ fn test_dynamic_ref_no_unevaluated_vocab(instance: serde_json::Value) {
 #[jsonschema::validator(schema = r#"{"type":["number","string"],"minLength":1}"#, draft = Draft202012)]
 struct MultiTypeNumberFallbackWithStringKeyword;
 
-#[test_case(serde_json::json!(3.5) ; "number")]
-#[test_case(serde_json::json!("hi") ; "string_ok")]
-#[test_case(serde_json::json!("") ; "string_too_short")]
-fn test_multi_type_number_fallback(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":["number","string"],"minLength":1});
+#[test_case(json_codec::json!(3.5) ; "number")]
+#[test_case(json_codec::json!("hi") ; "string_ok")]
+#[test_case(json_codec::json!("") ; "string_too_short")]
+fn test_multi_type_number_fallback(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":["number","string"],"minLength":1});
     assert_validate_parity_for(
         &schema,
         MultiTypeNumberFallbackWithStringKeyword::is_valid(&instance),
@@ -4445,9 +4445,9 @@ fn test_multi_type_number_fallback(instance: serde_json::Value) {
 #[jsonschema::validator(schema = r#"{"type":42,"minLength":1}"#, draft = Draft202012)]
 struct TypeNonStringArrayValue;
 
-#[test_case(serde_json::json!(5) ; "number_rejected")]
-#[test_case(serde_json::json!(true) ; "bool_rejected")]
-fn test_type_non_string_array_value(instance: serde_json::Value) {
+#[test_case(json_codec::json!(5) ; "number_rejected")]
+#[test_case(json_codec::json!(true) ; "bool_rejected")]
+fn test_type_non_string_array_value(instance: json_codec::Value) {
     // A `type` whose value is neither a string nor an array is malformed; codegen emits a
     // reject-everything validator rather than a compile error.
     assert!(!TypeNonStringArrayValue::is_valid(&instance));
@@ -4459,16 +4459,16 @@ fn test_type_non_string_array_value(instance: serde_json::Value) {
 )]
 struct OneOfVacuousRefBranches;
 
-#[test_case(serde_json::json!({"resourceType":"A","x":1}) ; "branch_a")]
-#[test_case(serde_json::json!({"resourceType":"B","y":"s"}) ; "branch_b")]
-#[test_case(serde_json::json!({"resourceType":"A","x":"bad"}) ; "branch_a_body_mismatch")]
-#[test_case(serde_json::json!({"resourceType":"C"}) ; "unknown_tag")]
-#[test_case(serde_json::json!({}) ; "missing_tag")]
-#[test_case(serde_json::json!("text") ; "string_matches_both_vacuously")]
-#[test_case(serde_json::json!(5) ; "number_matches_both_vacuously")]
-#[test_case(serde_json::json!([1]) ; "array_matches_both_vacuously")]
-fn test_one_of_vacuous_ref_branches(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$schema":"http://json-schema.org/draft-06/schema#","definitions":{"a":{"properties":{"resourceType":{"const":"A"},"x":{"type":"integer"}},"required":["resourceType"],"additionalProperties":false},"b":{"properties":{"resourceType":{"const":"B"},"y":{"type":"string"}},"required":["resourceType"],"additionalProperties":false}},"oneOf":[{"$ref":"#/definitions/a"},{"$ref":"#/definitions/b"}]});
+#[test_case(json_codec::json!({"resourceType":"A","x":1}) ; "branch_a")]
+#[test_case(json_codec::json!({"resourceType":"B","y":"s"}) ; "branch_b")]
+#[test_case(json_codec::json!({"resourceType":"A","x":"bad"}) ; "branch_a_body_mismatch")]
+#[test_case(json_codec::json!({"resourceType":"C"}) ; "unknown_tag")]
+#[test_case(json_codec::json!({}) ; "missing_tag")]
+#[test_case(json_codec::json!("text") ; "string_matches_both_vacuously")]
+#[test_case(json_codec::json!(5) ; "number_matches_both_vacuously")]
+#[test_case(json_codec::json!([1]) ; "array_matches_both_vacuously")]
+fn test_one_of_vacuous_ref_branches(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$schema":"http://json-schema.org/draft-06/schema#","definitions":{"a":{"properties":{"resourceType":{"const":"A"},"x":{"type":"integer"}},"required":["resourceType"],"additionalProperties":false},"b":{"properties":{"resourceType":{"const":"B"},"y":{"type":"string"}},"required":["resourceType"],"additionalProperties":false}},"oneOf":[{"$ref":"#/definitions/a"},{"$ref":"#/definitions/b"}]});
     assert_is_valid_parity(
         &schema,
         OneOfVacuousRefBranches::is_valid(&instance),
@@ -4487,14 +4487,14 @@ fn test_one_of_vacuous_ref_branches(instance: serde_json::Value) {
 )]
 struct OneOfVacuousInlineBranches;
 
-#[test_case(serde_json::json!({"k":"a","x":1}) ; "branch_a")]
-#[test_case(serde_json::json!({"k":"a","x":"bad"}) ; "branch_a_body_mismatch")]
-#[test_case(serde_json::json!({"k":"b"}) ; "branch_b")]
-#[test_case(serde_json::json!({"k":"b","extra":1}) ; "additional_property_rejected")]
-#[test_case(serde_json::json!("text") ; "string_matches_both_vacuously")]
-#[test_case(serde_json::json!(null) ; "null_matches_both_vacuously")]
-fn test_one_of_vacuous_inline_branches(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"properties":{"k":{"const":"a"},"x":{"type":"integer"}},"required":["k"],"additionalProperties":false},{"properties":{"k":{"const":"b"}},"required":["k"],"additionalProperties":false}]});
+#[test_case(json_codec::json!({"k":"a","x":1}) ; "branch_a")]
+#[test_case(json_codec::json!({"k":"a","x":"bad"}) ; "branch_a_body_mismatch")]
+#[test_case(json_codec::json!({"k":"b"}) ; "branch_b")]
+#[test_case(json_codec::json!({"k":"b","extra":1}) ; "additional_property_rejected")]
+#[test_case(json_codec::json!("text") ; "string_matches_both_vacuously")]
+#[test_case(json_codec::json!(null) ; "null_matches_both_vacuously")]
+fn test_one_of_vacuous_inline_branches(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"properties":{"k":{"const":"a"},"x":{"type":"integer"}},"required":["k"],"additionalProperties":false},{"properties":{"k":{"const":"b"}},"required":["k"],"additionalProperties":false}]});
     assert_is_valid_parity(
         &schema,
         OneOfVacuousInlineBranches::is_valid(&instance),
@@ -4513,13 +4513,13 @@ fn test_one_of_vacuous_inline_branches(instance: serde_json::Value) {
 )]
 struct OneOfSingleVacuousBranch;
 
-#[test_case(serde_json::json!("text") ; "string_valid_via_vacuous_branch")]
-#[test_case(serde_json::json!(7) ; "number_valid_via_vacuous_branch")]
-#[test_case(serde_json::json!({"k":"a"}) ; "branch_a")]
-#[test_case(serde_json::json!({"k":"b"}) ; "branch_b")]
-#[test_case(serde_json::json!({}) ; "missing_tag")]
-fn test_one_of_single_vacuous_branch(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"properties":{"k":{"const":"a"}},"required":["k"]},{"type":"object","properties":{"k":{"const":"b"}},"required":["k"]}]});
+#[test_case(json_codec::json!("text") ; "string_valid_via_vacuous_branch")]
+#[test_case(json_codec::json!(7) ; "number_valid_via_vacuous_branch")]
+#[test_case(json_codec::json!({"k":"a"}) ; "branch_a")]
+#[test_case(json_codec::json!({"k":"b"}) ; "branch_b")]
+#[test_case(json_codec::json!({}) ; "missing_tag")]
+fn test_one_of_single_vacuous_branch(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"properties":{"k":{"const":"a"}},"required":["k"]},{"type":"object","properties":{"k":{"const":"b"}},"required":["k"]}]});
     assert_is_valid_parity(
         &schema,
         OneOfSingleVacuousBranch::is_valid(&instance),
@@ -4532,11 +4532,11 @@ fn test_one_of_single_vacuous_branch(instance: serde_json::Value) {
 )]
 struct OneOfVacuousWithStringBranch;
 
-#[test_case(serde_json::json!("text") ; "string_matches_three_branches")]
-#[test_case(serde_json::json!(7) ; "number_matches_two_branches")]
-#[test_case(serde_json::json!({"k":"a"}) ; "branch_a")]
-fn test_one_of_vacuous_with_string_branch(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"properties":{"k":{"const":"a"}},"required":["k"]},{"properties":{"k":{"const":"b"}},"required":["k"]},{"type":"string"}]});
+#[test_case(json_codec::json!("text") ; "string_matches_three_branches")]
+#[test_case(json_codec::json!(7) ; "number_matches_two_branches")]
+#[test_case(json_codec::json!({"k":"a"}) ; "branch_a")]
+fn test_one_of_vacuous_with_string_branch(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"properties":{"k":{"const":"a"}},"required":["k"]},{"properties":{"k":{"const":"b"}},"required":["k"]},{"type":"string"}]});
     assert_is_valid_parity(
         &schema,
         OneOfVacuousWithStringBranch::is_valid(&instance),
@@ -4556,7 +4556,7 @@ struct StringGateKeyword {
 impl<'i> jsonschema::Keyword<'i> for StringGateKeyword {
     fn validate(
         &self,
-        instance: &'i serde_json::Value,
+        instance: &'i json_codec::Value,
     ) -> Result<(), jsonschema::ValidationError<'i>> {
         if self.is_valid(instance) {
             Ok(())
@@ -4565,7 +4565,7 @@ impl<'i> jsonschema::Keyword<'i> for StringGateKeyword {
         }
     }
 
-    fn is_valid(&self, instance: &'i serde_json::Value) -> bool {
+    fn is_valid(&self, instance: &'i json_codec::Value) -> bool {
         !instance.is_string() || self.allow_strings
     }
 }
@@ -4573,8 +4573,8 @@ impl<'i> jsonschema::Keyword<'i> for StringGateKeyword {
 // The Result wrapping is required by the keyword factory signature.
 #[allow(clippy::unnecessary_wraps)]
 fn string_gate_factory<'a>(
-    _parent: &'a serde_json::Map<String, serde_json::Value>,
-    value: &'a serde_json::Value,
+    _parent: &'a json_codec::Map<String, json_codec::Value>,
+    value: &'a json_codec::Value,
     _path: jsonschema::paths::Location,
 ) -> Result<Box<dyn for<'i> jsonschema::Keyword<'i>>, jsonschema::ValidationError<'a>> {
     Ok(Box::new(StringGateKeyword {
@@ -4588,12 +4588,12 @@ fn string_gate_factory<'a>(
 )]
 struct OneOfVacuousWithCustomKeyword;
 
-#[test_case(serde_json::json!("text") ; "string_valid_via_custom_keyword_gate")]
-#[test_case(serde_json::json!(7) ; "number_matches_both_vacuously")]
-#[test_case(serde_json::json!({"k":"a"}) ; "branch_a")]
-#[test_case(serde_json::json!({"k":"b"}) ; "branch_b")]
-fn test_one_of_vacuous_with_custom_keyword(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"properties":{"k":{"const":"a"}},"required":["k"],"description":"strings-ok"},{"properties":{"k":{"const":"b"}},"required":["k"],"description":"strings-bad"}]});
+#[test_case(json_codec::json!("text") ; "string_valid_via_custom_keyword_gate")]
+#[test_case(json_codec::json!(7) ; "number_matches_both_vacuously")]
+#[test_case(json_codec::json!({"k":"a"}) ; "branch_a")]
+#[test_case(json_codec::json!({"k":"b"}) ; "branch_b")]
+fn test_one_of_vacuous_with_custom_keyword(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"properties":{"k":{"const":"a"}},"required":["k"],"description":"strings-ok"},{"properties":{"k":{"const":"b"}},"required":["k"],"description":"strings-bad"}]});
     let runtime = jsonschema::options()
         .with_keyword("description", string_gate_factory)
         .build(&schema)
@@ -4605,11 +4605,11 @@ fn test_one_of_vacuous_with_custom_keyword(instance: serde_json::Value) {
     );
 }
 
-#[test_case(serde_json::json!(7) ; "number_matches_three_branches")]
-#[test_case(serde_json::json!({"k":"a"}) ; "branch_a_also_matches_uncovered")]
-#[test_case(serde_json::json!({"z":1}) ; "uncovered_branch_only")]
-fn test_one_of_vacuous_uncovered_branch(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"properties":{"k":{"const":"a"}},"required":["k"]},{"properties":{"k":{"const":"b"}},"required":["k"]},{"properties":{"z":{"type":"integer"}}}]});
+#[test_case(json_codec::json!(7) ; "number_matches_three_branches")]
+#[test_case(json_codec::json!({"k":"a"}) ; "branch_a_also_matches_uncovered")]
+#[test_case(json_codec::json!({"z":1}) ; "uncovered_branch_only")]
+fn test_one_of_vacuous_uncovered_branch(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"properties":{"k":{"const":"a"}},"required":["k"]},{"properties":{"k":{"const":"b"}},"required":["k"]},{"properties":{"z":{"type":"integer"}}}]});
     assert_is_valid_parity(
         &schema,
         OneOfVacuousUncoveredBranch::is_valid(&instance),
@@ -4622,15 +4622,15 @@ fn test_one_of_vacuous_uncovered_branch(instance: serde_json::Value) {
 )]
 struct RequiredFusedIntoProperties;
 
-#[test_case(serde_json::json!({"a":"x","b":1}) ; "all_required_present")]
-#[test_case(serde_json::json!({"a":"x"}) ; "missing_scan_only_required")]
-#[test_case(serde_json::json!({"b":1}) ; "missing_property_required")]
-#[test_case(serde_json::json!({"a":1,"b":1}) ; "property_check_fails")]
-#[test_case(serde_json::json!({"a":"x","b":1,"extra":true}) ; "extra_key")]
-#[test_case(serde_json::json!({}) ; "empty_object")]
-#[test_case(serde_json::json!("text") ; "non_object")]
-fn test_required_fused_into_properties(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","required":["a","b"],"properties":{"a":{"type":"string"}}});
+#[test_case(json_codec::json!({"a":"x","b":1}) ; "all_required_present")]
+#[test_case(json_codec::json!({"a":"x"}) ; "missing_scan_only_required")]
+#[test_case(json_codec::json!({"b":1}) ; "missing_property_required")]
+#[test_case(json_codec::json!({"a":1,"b":1}) ; "property_check_fails")]
+#[test_case(json_codec::json!({"a":"x","b":1,"extra":true}) ; "extra_key")]
+#[test_case(json_codec::json!({}) ; "empty_object")]
+#[test_case(json_codec::json!("text") ; "non_object")]
+fn test_required_fused_into_properties(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","required":["a","b"],"properties":{"a":{"type":"string"}}});
     assert_is_valid_parity(
         &schema,
         RequiredFusedIntoProperties::is_valid(&instance),
@@ -4649,11 +4649,11 @@ fn test_required_fused_into_properties(instance: serde_json::Value) {
 )]
 struct RequiredFusedWithAdditionalFalse;
 
-#[test_case(serde_json::json!({"a":"x","b":1}) ; "valid")]
-#[test_case(serde_json::json!({"a":"x"}) ; "missing_required")]
-#[test_case(serde_json::json!({"a":"x","b":1,"extra":true}) ; "additional_rejected")]
-fn test_required_fused_with_additional_false(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","required":["a","b"],"properties":{"a":{"type":"string"},"b":{"type":"integer"}},"additionalProperties":false});
+#[test_case(json_codec::json!({"a":"x","b":1}) ; "valid")]
+#[test_case(json_codec::json!({"a":"x"}) ; "missing_required")]
+#[test_case(json_codec::json!({"a":"x","b":1,"extra":true}) ; "additional_rejected")]
+fn test_required_fused_with_additional_false(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","required":["a","b"],"properties":{"a":{"type":"string"},"b":{"type":"integer"}},"additionalProperties":false});
     assert_is_valid_parity(
         &schema,
         RequiredFusedWithAdditionalFalse::is_valid(&instance),
@@ -4672,11 +4672,11 @@ fn test_required_fused_with_additional_false(instance: serde_json::Value) {
 )]
 struct RequiredFusedWithAdditionalSchema;
 
-#[test_case(serde_json::json!({"a":"x"}) ; "valid")]
-#[test_case(serde_json::json!({"b":"x"}) ; "missing_required")]
-#[test_case(serde_json::json!({"a":1}) ; "additional_check_fails")]
-fn test_required_fused_with_additional_schema(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","required":["a"],"additionalProperties":{"type":"string"}});
+#[test_case(json_codec::json!({"a":"x"}) ; "valid")]
+#[test_case(json_codec::json!({"b":"x"}) ; "missing_required")]
+#[test_case(json_codec::json!({"a":1}) ; "additional_check_fails")]
+fn test_required_fused_with_additional_schema(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","required":["a"],"additionalProperties":{"type":"string"}});
     assert_is_valid_parity(
         &schema,
         RequiredFusedWithAdditionalSchema::is_valid(&instance),
@@ -4690,12 +4690,12 @@ fn test_required_fused_with_additional_schema(instance: serde_json::Value) {
 )]
 struct OneOfRefBranchWithSibling;
 
-#[test_case(serde_json::json!(5) ; "number_matches_bare_ref_branch_only")]
-#[test_case(serde_json::json!("text") ; "string_matches_both_branches")]
-#[test_case(serde_json::json!({"k":"a"}) ; "branch_a")]
-#[test_case(serde_json::json!({"k":"b"}) ; "branch_b")]
-fn test_one_of_ref_branch_with_sibling(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$defs":{"a":{"properties":{"k":{"const":"a"}},"required":["k"]},"b":{"properties":{"k":{"const":"b"}},"required":["k"]}},"oneOf":[{"$ref":"#/$defs/a","type":"string"},{"$ref":"#/$defs/b"}]});
+#[test_case(json_codec::json!(5) ; "number_matches_bare_ref_branch_only")]
+#[test_case(json_codec::json!("text") ; "string_matches_both_branches")]
+#[test_case(json_codec::json!({"k":"a"}) ; "branch_a")]
+#[test_case(json_codec::json!({"k":"b"}) ; "branch_b")]
+fn test_one_of_ref_branch_with_sibling(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$defs":{"a":{"properties":{"k":{"const":"a"}},"required":["k"]},"b":{"properties":{"k":{"const":"b"}},"required":["k"]}},"oneOf":[{"$ref":"#/$defs/a","type":"string"},{"$ref":"#/$defs/b"}]});
     assert_is_valid_parity(
         &schema,
         OneOfRefBranchWithSibling::is_valid(&instance),
@@ -4709,11 +4709,11 @@ fn test_one_of_ref_branch_with_sibling(instance: serde_json::Value) {
 )]
 struct PropertyNamesRefStringOnly;
 
-#[test_case(serde_json::json!({"any key at all":1}) ; "keys_always_pass")]
-#[test_case(serde_json::json!({}) ; "empty_object")]
-#[test_case(serde_json::json!("text") ; "non_object")]
-fn test_property_names_ref_string_only(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$defs":{"s":{"type":"string","format":"uri"}},"type":"object","propertyNames":{"$ref":"#/$defs/s"}});
+#[test_case(json_codec::json!({"any key at all":1}) ; "keys_always_pass")]
+#[test_case(json_codec::json!({}) ; "empty_object")]
+#[test_case(json_codec::json!("text") ; "non_object")]
+fn test_property_names_ref_string_only(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$defs":{"s":{"type":"string","format":"uri"}},"type":"object","propertyNames":{"$ref":"#/$defs/s"}});
     assert_is_valid_parity(
         &schema,
         PropertyNamesRefStringOnly::is_valid(&instance),
@@ -4733,11 +4733,11 @@ fn test_property_names_ref_string_only(instance: serde_json::Value) {
 )]
 struct PropertyNamesRefPattern;
 
-#[test_case(serde_json::json!({"abc":1}) ; "matching_key")]
-#[test_case(serde_json::json!({"xbc":1}) ; "failing_key")]
-#[test_case(serde_json::json!({}) ; "empty_object")]
-fn test_property_names_ref_pattern(instance: serde_json::Value) {
-    let schema = serde_json::json!({"$defs":{"s":{"type":"string","pattern":"^a"}},"type":"object","propertyNames":{"$ref":"#/$defs/s"}});
+#[test_case(json_codec::json!({"abc":1}) ; "matching_key")]
+#[test_case(json_codec::json!({"xbc":1}) ; "failing_key")]
+#[test_case(json_codec::json!({}) ; "empty_object")]
+fn test_property_names_ref_pattern(instance: json_codec::Value) {
+    let schema = json_codec::json!({"$defs":{"s":{"type":"string","pattern":"^a"}},"type":"object","propertyNames":{"$ref":"#/$defs/s"}});
     assert_is_valid_parity(
         &schema,
         PropertyNamesRefPattern::is_valid(&instance),
@@ -4754,10 +4754,10 @@ fn test_property_names_ref_pattern(instance: serde_json::Value) {
 #[jsonschema::validator(schema = r#"{"type":"object","propertyNames":{"type":"string"}}"#)]
 struct PropertyNamesTypeStringOnly;
 
-#[test_case(serde_json::json!({"k":1}) ; "keys_always_pass")]
-#[test_case(serde_json::json!(5) ; "non_object")]
-fn test_property_names_type_string_only(instance: serde_json::Value) {
-    let schema = serde_json::json!({"type":"object","propertyNames":{"type":"string"}});
+#[test_case(json_codec::json!({"k":1}) ; "keys_always_pass")]
+#[test_case(json_codec::json!(5) ; "non_object")]
+fn test_property_names_type_string_only(instance: json_codec::Value) {
+    let schema = json_codec::json!({"type":"object","propertyNames":{"type":"string"}});
     assert_is_valid_parity(
         &schema,
         PropertyNamesTypeStringOnly::is_valid(&instance),
@@ -4826,8 +4826,8 @@ struct ParityEnumValidator;
 #[cfg(not(target_arch = "wasm32"))]
 struct ParityTarget {
     source: &'static str,
-    generated_is_valid: fn(&serde_json::Value) -> bool,
-    generated_validate: fn(&serde_json::Value) -> Result<(), jsonschema::ValidationError<'_>>,
+    generated_is_valid: fn(&json_codec::Value) -> bool,
+    generated_validate: fn(&json_codec::Value) -> Result<(), jsonschema::ValidationError<'_>>,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -4898,7 +4898,7 @@ fn codegen_agrees_with_runtime_on_drawn_instances(tc: hegel::TestCase) {
             .max_value(targets.len() - 1),
     );
     let target = &targets[index];
-    let schema: serde_json::Value = serde_json::from_str(target.source).expect("valid schema JSON");
+    let schema: json_codec::Value = json_codec::from_str(target.source).expect("valid schema JSON");
     let canonical = jsonschema::canonical::options()
         .canonicalize(&schema)
         .expect("the schema canonicalizes");
@@ -4946,14 +4946,14 @@ struct MethodsIterErrorsOff;
 )]
 struct MethodsOnlyIsValid;
 
-fn methods_schema() -> serde_json::Value {
-    serde_json::json!({"type":"object","properties":{"a":{"anyOf":[{"type":"string"},{"type":"number"}]},"b":{"$ref":"#/properties/a"}}})
+fn methods_schema() -> json_codec::Value {
+    json_codec::json!({"type":"object","properties":{"a":{"anyOf":[{"type":"string"},{"type":"number"}]},"b":{"$ref":"#/properties/a"}}})
 }
 
-#[test_case(serde_json::json!({"a":"x","b":1}) ; "valid")]
-#[test_case(serde_json::json!({"a":[],"b":true}) ; "invalid_both")]
-#[test_case(serde_json::json!("text") ; "non_object")]
-fn test_methods_subsets(instance: serde_json::Value) {
+#[test_case(json_codec::json!({"a":"x","b":1}) ; "valid")]
+#[test_case(json_codec::json!({"a":[],"b":true}) ; "invalid_both")]
+#[test_case(json_codec::json!("text") ; "non_object")]
+fn test_methods_subsets(instance: json_codec::Value) {
     let runtime = jsonschema::validator_for(&methods_schema()).expect("valid schema");
     assert_validate_parity(
         runtime.is_valid(&instance),
@@ -4999,13 +4999,13 @@ struct MethodsRecursiveValidateOff;
 )]
 struct MethodsRecursiveOnlyIsValid;
 
-fn methods_recursive_schema() -> serde_json::Value {
-    serde_json::json!({"type":"object","properties":{"child":{"$ref":"#"},"kind":{"anyOf":[{"type":"string"},{"type":"integer"}]}}})
+fn methods_recursive_schema() -> json_codec::Value {
+    json_codec::json!({"type":"object","properties":{"child":{"$ref":"#"},"kind":{"anyOf":[{"type":"string"},{"type":"integer"}]}}})
 }
 
-#[test_case(serde_json::json!({"kind":"x","child":{"kind":3}}) ; "valid")]
-#[test_case(serde_json::json!({"kind":"x","child":{"kind":[]}}) ; "invalid_nested")]
-fn test_methods_recursive_subsets(instance: serde_json::Value) {
+#[test_case(json_codec::json!({"kind":"x","child":{"kind":3}}) ; "valid")]
+#[test_case(json_codec::json!({"kind":"x","child":{"kind":[]}}) ; "invalid_nested")]
+fn test_methods_recursive_subsets(instance: json_codec::Value) {
     let runtime = jsonschema::validator_for(&methods_recursive_schema()).expect("valid schema");
     assert_eq!(
         MethodsRecursiveValidateOff::is_valid(&instance),
@@ -5038,10 +5038,10 @@ struct MethodsRecursiveRefOnlyIsValid;
 )]
 struct MethodsDynamicRefOnlyIsValid;
 
-#[test_case(serde_json::json!({"allOf":[true, {"allOf":[false]}]}) ; "valid")]
-#[test_case(serde_json::json!({"allOf":[true, {"allOf":[1]}]}) ; "invalid_nested")]
-fn test_methods_stack_refs_only_is_valid(instance: serde_json::Value) {
-    let recursive = serde_json::json!({"$id":"https://ex/m","$recursiveAnchor":true,"type":["object","boolean"],"properties":{"allOf":{"type":"array","items":{"$recursiveRef":"#"}}}});
+#[test_case(json_codec::json!({"allOf":[true, {"allOf":[false]}]}) ; "valid")]
+#[test_case(json_codec::json!({"allOf":[true, {"allOf":[1]}]}) ; "invalid_nested")]
+fn test_methods_stack_refs_only_is_valid(instance: json_codec::Value) {
+    let recursive = json_codec::json!({"$id":"https://ex/m","$recursiveAnchor":true,"type":["object","boolean"],"properties":{"allOf":{"type":"array","items":{"$recursiveRef":"#"}}}});
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft201909)
         .build(&recursive)
@@ -5050,7 +5050,7 @@ fn test_methods_stack_refs_only_is_valid(instance: serde_json::Value) {
         MethodsRecursiveRefOnlyIsValid::is_valid(&instance),
         runtime.is_valid(&instance)
     );
-    let dynamic = serde_json::json!({"$id":"https://ex/d","$dynamicAnchor":"node","type":["object","boolean"],"properties":{"allOf":{"type":"array","items":{"$dynamicRef":"#node"}}}});
+    let dynamic = json_codec::json!({"$id":"https://ex/d","$dynamicAnchor":"node","type":["object","boolean"],"properties":{"allOf":{"type":"array","items":{"$dynamicRef":"#node"}}}});
     let runtime = jsonschema::options()
         .with_draft(jsonschema::Draft::Draft202012)
         .build(&dynamic)
@@ -5068,11 +5068,11 @@ fn test_methods_stack_refs_only_is_valid(instance: serde_json::Value) {
 )]
 struct MethodsOneOfOnlyIsValid;
 
-#[test_case(serde_json::json!({"a":1}) ; "one_branch")]
-#[test_case(serde_json::json!({"a":1,"b":2}) ; "both_branches")]
-#[test_case(serde_json::json!({}) ; "no_branch")]
-fn test_methods_one_of_only_is_valid(instance: serde_json::Value) {
-    let schema = serde_json::json!({"oneOf":[{"properties":{"a":{}},"required":["a"]},{"properties":{"b":{}},"required":["b"]}]});
+#[test_case(json_codec::json!({"a":1}) ; "one_branch")]
+#[test_case(json_codec::json!({"a":1,"b":2}) ; "both_branches")]
+#[test_case(json_codec::json!({}) ; "no_branch")]
+fn test_methods_one_of_only_is_valid(instance: json_codec::Value) {
+    let schema = json_codec::json!({"oneOf":[{"properties":{"a":{}},"required":["a"]},{"properties":{"b":{}},"required":["b"]}]});
     assert_is_valid_parity(
         &schema,
         MethodsOneOfOnlyIsValid::is_valid(&instance),

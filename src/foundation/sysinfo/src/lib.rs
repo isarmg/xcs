@@ -13,7 +13,7 @@
     )),
     doc = "For crate-level documentation, all features need to be enabled."
 )]
-#![cfg_attr(feature = "serde", doc = include_str!("../../../../docs/upstream/sysinfo-0.39.6/md_doc/serde.md"))]
+#![cfg_attr(feature = "serialization", doc = include_str!("../../../../docs/upstream/sysinfo-0.39.6/md_doc/serde.md"))]
 #![allow(unknown_lints)]
 #![deny(missing_docs)]
 #![deny(rustdoc::broken_intra_doc_links)]
@@ -110,8 +110,8 @@ pub use crate::c_interface::*;
 mod c_interface;
 mod common;
 mod debug;
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 pub(crate) mod utils;
 
 // Make formattable by rustfmt.

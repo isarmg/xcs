@@ -8,6 +8,6 @@ description = "ZXS local Samba bridge protocol and file descriptor transport"
 
 [dependencies]
 libc = {version = "0.2", path = "../foundation/libc"}
-serde = { version = "1", features = ["derive"], path = "../foundation/serde"}
-serde_json = {version = "1", path = "../foundation/serde_json"}
+data-serialization = { version = "1", features = ["derive"], path = "../foundation/data-serialization"}
+json-codec = {version = "1", path = "../foundation/json-codec"}
 storage-contract.workspace = true

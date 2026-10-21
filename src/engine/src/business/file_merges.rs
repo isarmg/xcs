@@ -1,6 +1,6 @@
 //! Explicit file-branch adoption with immutable bodies and durable provenance.
 use super::*;
-use serde_json::json;
+use json_codec::json;
 use std::collections::BTreeSet;
 
 fn reaches(state: &State, start: &str, needle: &str) -> bool {

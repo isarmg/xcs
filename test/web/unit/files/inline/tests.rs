@@ -29,7 +29,7 @@ fn clearing_a_note_is_distinct_from_cancelling_a_name() {
 #[test]
 fn a_path_nodes_generated_caption_is_display_only_and_note_input_starts_from_metadata() {
     let mut state = State::default();
-    state.files.file_history = serde_json::json!({"nodes":[{"node_id":"fnode-rename","version_id":"ver-one","kind":"rename","previous_path":"old/report.txt","path":"new/report.txt","note":""}]});
+    state.files.file_history = json_codec::json!({"nodes":[{"node_id":"fnode-rename","version_id":"ver-one","kind":"rename","previous_path":"old/report.txt","path":"new/report.txt","note":""}]});
     let target = Target::NodeNote("fnode-rename".into());
     assert_eq!(target.initial(&state), "");
     assert_eq!(
@@ -45,7 +45,7 @@ fn a_path_nodes_generated_caption_is_display_only_and_note_input_starts_from_met
 fn legacy_notes_are_displayed_without_silent_truncation() {
     let original = format!("{}\nlegacy", "文".repeat(60));
     let mut state = State::default();
-    state.files.file_history = serde_json::json!({
+    state.files.file_history = json_codec::json!({
         "note": original,
         "versions": [{"version_id": "old", "note": original}],
     });

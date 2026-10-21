@@ -8,7 +8,7 @@ use std::{
 };
 
 use email_address::{EmailAddress, Options as EmailAddressOptions};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use strum::VariantArray;
 use unicode_general_category::{get_general_category, GeneralCategory};
 use uuid_simd::{parse_hyphenated, Out};

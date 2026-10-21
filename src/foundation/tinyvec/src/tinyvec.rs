@@ -6,12 +6,12 @@ use core::convert::TryFrom;
 #[cfg(feature = "rustc_1_57")]
 use alloc::collections::TryReserveError;
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 use core::marker::PhantomData;
-#[cfg(feature = "serde")]
-use serde_core::de::{Deserialize, Deserializer, SeqAccess, Visitor};
-#[cfg(feature = "serde")]
-use serde_core::ser::{Serialize, SerializeSeq, Serializer};
+#[cfg(feature = "serialization")]
+use serialization_core::de::{Deserialize, Deserializer, SeqAccess, Visitor};
+#[cfg(feature = "serialization")]
+use serialization_core::ser::{Serialize, SerializeSeq, Serializer};
 
 macro_rules! impl_mirrored {
   {
@@ -202,8 +202,8 @@ impl<A: Array<Item = u8>> std::io::Write for TinyVec<A> {
   }
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docs_rs, doc(cfg(feature = "serde")))]
+#[cfg(feature = "serialization")]
+#[cfg_attr(docs_rs, doc(cfg(feature = "serialization")))]
 impl<A: Array> Serialize for TinyVec<A>
 where
   A::Item: Serialize,
@@ -220,8 +220,8 @@ where
   }
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docs_rs, doc(cfg(feature = "serde")))]
+#[cfg(feature = "serialization")]
+#[cfg_attr(docs_rs, doc(cfg(feature = "serialization")))]
 impl<'de, A: Array> Deserialize<'de> for TinyVec<A>
 where
   A::Item: Deserialize<'de>,
@@ -242,7 +242,7 @@ where
 /// read. The reservation is limited to `MAX_PREALLOC_BYTES` worth of items; the
 /// container still grows to the real length via `push` as elements actually
 /// arrive, so well-formed input is unaffected.
-#[cfg(any(feature = "serde"))]
+#[cfg(any(feature = "serialization"))]
 fn cautious_capacity<T>(len: usize) -> usize {
   // Mirrors serde's `size_hint::cautious`: never trust a wire-provided length
   // as an allocation size.
@@ -1890,11 +1890,11 @@ where
   }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[cfg_attr(docs_rs, doc(cfg(feature = "alloc")))]
 struct TinyVecVisitor<A: Array>(PhantomData<A>);
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de, A: Array> Visitor<'de> for TinyVecVisitor<A>
 where
   A::Item: Deserialize<'de>,

@@ -6,13 +6,13 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use serde::{de::DeserializeOwned, Deserialize};
+use data_serialization::{de::DeserializeOwned, Deserialize};
 use tracing::instrument::WithSubscriber;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::Targets, fmt::MakeWriter};
 
 #[derive(Deserialize, Eq, PartialEq, Debug)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct TracingEvent<T> {
     pub(crate) fields: T,
     pub(crate) target: String,
@@ -79,7 +79,7 @@ where
             handle
                 .take()
                 .lines()
-                .map(|line| serde_json::from_str(line).unwrap())
+                .map(|line| json_codec::from_str(line).unwrap())
                 .collect()
         })
     }

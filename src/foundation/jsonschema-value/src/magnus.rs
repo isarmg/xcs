@@ -31,7 +31,7 @@ use rb_sys::{
     rb_id2sym, rb_intern3, rb_obj_class, rb_obj_is_kind_of, rb_sym2str, rb_utf8_encoding,
     rb_utf8_str_new, ruby_coderange_type, ruby_value_type, special_consts, VALUE,
 };
-use serde_json::{Map, Number, Value};
+use json_codec::{Map, Number, Value};
 
 use crate::{cmp, types::JsonType, Array, Json, JsonNumber, Node, NodeIdentity, Object};
 

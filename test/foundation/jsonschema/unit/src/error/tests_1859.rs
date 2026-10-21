@@ -2,7 +2,7 @@
 mod tests {
     use super::*;
     use referencing::{Registry, Resource};
-    use serde_json::json;
+    use json_codec::json;
 
     use test_case::test_case;
 
@@ -551,19 +551,19 @@ mod tests {
 
     #[test]
     fn test_absolute_keyword_location_absent_for_schema_without_base_uri() {
-        let schema = serde_json::json!({"type": "string"});
-        let instance = serde_json::json!(42);
+        let schema = json_codec::json!({"type": "string"});
+        let instance = json_codec::json!(42);
         let err = crate::validate(&schema, &instance).unwrap_err();
         assert!(err.absolute_keyword_location().is_none());
     }
 
     #[test]
     fn test_absolute_keyword_location_present_for_schema_with_base_uri() {
-        let schema = serde_json::json!({
+        let schema = json_codec::json!({
             "$id": "https://example.com/schema.json",
             "type": "string"
         });
-        let instance = serde_json::json!(42);
+        let instance = json_codec::json!(42);
         let validator = crate::options()
             .build(&schema)
             .expect("schema should compile");
@@ -579,11 +579,11 @@ mod tests {
 
     #[test]
     fn test_absolute_keyword_location_from_iter_errors() {
-        let schema = serde_json::json!({
+        let schema = json_codec::json!({
             "$id": "https://example.com/schema.json",
             "type": "string"
         });
-        let instance = serde_json::json!(42);
+        let instance = json_codec::json!(42);
         let validator = crate::options()
             .build(&schema)
             .expect("schema should compile");
@@ -600,8 +600,8 @@ mod tests {
 
     #[test]
     fn test_absolute_keyword_location_false_schema() {
-        let schema = serde_json::json!(false);
-        let instance = serde_json::json!(42);
+        let schema = json_codec::json!(false);
+        let instance = json_codec::json!(42);
         let validator = crate::options()
             .with_base_uri("https://example.com/schema.json")
             .build(&schema)
@@ -618,11 +618,11 @@ mod tests {
 
     #[test]
     fn test_absolute_keyword_location_preserved_by_to_owned() {
-        let schema = serde_json::json!({
+        let schema = json_codec::json!({
             "$id": "https://example.com/schema.json",
             "type": "string"
         });
-        let instance = serde_json::json!(42);
+        let instance = json_codec::json!(42);
         let validator = crate::options()
             .build(&schema)
             .expect("schema should compile");
@@ -639,15 +639,15 @@ mod tests {
 
     #[test]
     fn test_absolute_keyword_location_external_ref() {
-        let external = serde_json::json!({
+        let external = json_codec::json!({
             "$id": "https://example.com/string.json",
             "type": "string"
         });
-        let schema = serde_json::json!({
+        let schema = json_codec::json!({
             "$id": "https://example.com/root.json",
             "$ref": "https://example.com/string.json"
         });
-        let instance = serde_json::json!(42);
+        let instance = json_codec::json!(42);
         let registry = Registry::new()
             .add(
                 "https://example.com/string.json",

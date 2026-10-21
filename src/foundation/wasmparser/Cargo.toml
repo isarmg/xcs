@@ -28,11 +28,11 @@ repository = "https://github.com/bytecodealliance/wasm-tools/tree/main/crates/wa
 
 [features]
 component-model = ["dep:semver"]
-default = ["std", "validate", "serde", "features", "component-model", "hash-collections", "simd"]
+default = ["std", "validate", "serialization", "features", "component-model", "hash-collections", "simd"]
 features = []
 hash-collections = ["dep:hash-table", "dep:indexmap"]
 prefer-btree-collections = []
-serde = ["dep:serde", "indexmap?/serde", "hash-table?/serde"]
+serialization = ["dep:data-serialization", "indexmap?/serialization", "hash-table?/serialization"]
 simd = []
 std = ["indexmap?/std"]
 try-op = []
@@ -65,12 +65,12 @@ optional = true
 default-features = false
 path = "../semver"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.166"
 features = ["alloc"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [lints.clippy]
 clone_on_copy = "warn"

@@ -1,5 +1,5 @@
 use crate::{disk::*, *};
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
     io::{Read, Write},
@@ -12,10 +12,10 @@ const LOG_MAGIC: &[u8; 8] = b"ZXSLOG\0\0";
 const LOG_HEADER_BYTES: usize = 12;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct Record {
     pub record_type: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub sequence: u64,
     pub candidate_hash: String,
     pub object_hash: String,
@@ -420,7 +420,7 @@ impl PreparedMetadataObject {
     }
 }
 
-pub(crate) fn load_object<T: serde::de::DeserializeOwned + Serialize>(
+pub(crate) fn load_object<T: data_serialization::de::DeserializeOwned + Serialize>(
     d: &DiskConfig,
     kind: &str,
     hash: &str,
@@ -436,12 +436,12 @@ pub(crate) fn load_object<T: serde::de::DeserializeOwned + Serialize>(
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct Snapshot {
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub sequence: u64,
     pub pages: BTreeMap<String, Vec<String>>,
-    pub scalars: serde_json::Map<String, serde_json::Value>,
+    pub scalars: json_codec::Map<String, json_codec::Value>,
 }
 pub(crate) const STATE_PAGE_ENTRIES: usize = 128;
 /// Content-defined key boundaries keep an insertion from shifting every later
@@ -450,11 +450,11 @@ pub(crate) const STATE_PAGE_ENTRIES: usize = 128;
 /// The hard cap bounds adversarial keys within the single current on-disk format.
 /// Readers verify exact bound pages; partitioning is not a format discriminator.
 pub(crate) fn state_pages(
-    map: &serde_json::Map<String, serde_json::Value>,
-) -> impl Iterator<Item = serde_json::Map<String, serde_json::Value>> + '_ {
+    map: &json_codec::Map<String, json_codec::Value>,
+) -> impl Iterator<Item = json_codec::Map<String, json_codec::Value>> + '_ {
     let mut entries = map.iter().peekable();
     std::iter::from_fn(move || {
-        let mut page = serde_json::Map::new();
+        let mut page = json_codec::Map::new();
         while let Some((key, _)) = entries.peek() {
             let boundary = blake3::hash(key.as_bytes()).as_bytes()[0] & 31 == 0;
             if !page.is_empty() && (page.len() == STATE_PAGE_ENTRIES || boundary) {
@@ -506,12 +506,12 @@ pub(crate) fn prepare_snapshot(state: &State, maximum: usize) -> Result<Prepared
 // Differential oracle for exact current bytes and field-specific serde rules.
 #[cfg(test)]
 fn prepare_snapshot_reference(state: &State, maximum: usize) -> Result<PreparedSnapshot> {
-    let value = serde_json::to_value(state)?;
+    let value = json_codec::to_value(state)?;
     let obj = value
         .as_object()
         .ok_or_else(|| Error::new("STATE_INVALID", "state is not an object"))?;
     let mut pages = BTreeMap::new();
-    let mut scalars = serde_json::Map::new();
+    let mut scalars = json_codec::Map::new();
     let mut objects = Vec::new();
     for (field, value) in obj {
         // Event indexes are fixed-width, so lexical order is chronological.
@@ -524,7 +524,7 @@ fn prepare_snapshot_reference(state: &State, maximum: usize) -> Result<PreparedS
                 .iter()
                 .enumerate()
                 .map(|(i, event)| (format!("{i:020}"), event.clone()))
-                .collect::<serde_json::Map<_, _>>()
+                .collect::<json_codec::Map<_, _>>()
         });
         if let Some(map) = events.as_ref().or_else(|| value.as_object()) {
             let mut hashes = Vec::new();
@@ -567,7 +567,7 @@ pub(crate) fn load_snapshot(d: &DiskConfig, hash: &str) -> Result<State> {
 /// resolver may select different replicas, never alternate roots or page hashes.
 pub(crate) fn resolve_snapshot(
     snapshot: Snapshot,
-    mut page: impl FnMut(&str) -> Result<serde_json::Map<String, serde_json::Value>>,
+    mut page: impl FnMut(&str) -> Result<json_codec::Map<String, json_codec::Value>>,
 ) -> Result<State> {
     #[cfg(test)]
     SNAPSHOT_LOAD_COUNT.with(|count| count.set(count.get() + 1));
@@ -585,7 +585,7 @@ pub(crate) fn resolve_snapshot(
     }
     let mut out = snapshot.scalars;
     for (field, hashes) in snapshot.pages {
-        let mut map = serde_json::Map::new();
+        let mut map = json_codec::Map::new();
         for h in hashes {
             for (k, v) in page(&h)? {
                 if map.insert(k, v).is_some() {
@@ -610,13 +610,13 @@ pub(crate) fn resolve_snapshot(
                 }
                 events.push(value);
             }
-            serde_json::Value::Array(events)
+            json_codec::Value::Array(events)
         } else {
-            serde_json::Value::Object(map)
+            json_codec::Value::Object(map)
         };
         out.insert(field, value);
     }
-    let state: State = serde_json::from_value(serde_json::Value::Object(out))?;
+    let state: State = json_codec::from_value(json_codec::Value::Object(out))?;
     if state.sequence != snapshot.sequence {
         return Err(Error::new("OBJECT_CORRUPT", "snapshot sequence differs"));
     }
@@ -629,10 +629,10 @@ pub(crate) struct VersionEvidence {
     pub placement: Placement,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct Candidate {
     pub pool_id: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub sequence: u64,
     pub transaction_id: String,
     pub operation_id: String,
@@ -641,14 +641,14 @@ pub(crate) struct Candidate {
     pub snapshot_hash: String,
     pub versions: Vec<VersionEvidence>,
     pub metadata_disk_ids: Vec<String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub history_manifest_hashes: BTreeMap<String, String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Finalize {
     pub candidate_hash: String,
     pub accepts: Vec<Receipt>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serialization(default, skip_serializing_if = "Option::is_none")]
     pub recovery_id: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -674,11 +674,11 @@ pub(crate) struct Publication {
     pub finalize_receipts: Vec<Receipt>,
     pub payload_receipts: Vec<PayloadReceipt>,
     pub result: OperationResult,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serialization(default, skip_serializing_if = "Option::is_none")]
     pub recovery: Option<crate::degraded_recovery::RecoveryProof>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct PublicationSeal {
     pub candidate_hash: String,
     pub publication_hash: String,
@@ -805,7 +805,7 @@ pub(crate) struct LocalPublication {
     pub publication_receipts: Vec<Receipt>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct ContentTombstone {
     pub version_id: String,
     pub state: String,
@@ -813,7 +813,7 @@ pub(crate) struct ContentTombstone {
     pub publication: Publication,
     pub publication_seal: PublicationSeal,
     pub snapshot: Snapshot,
-    pub content_state_page: serde_json::Map<String, serde_json::Value>,
+    pub content_state_page: json_codec::Map<String, json_codec::Value>,
 }
 pub(crate) fn verify_tombstone(directory: &Path, version: &FileVersion) -> Result<()> {
     let t: ContentTombstone = read_json(&directory.join("purged.json"))?;

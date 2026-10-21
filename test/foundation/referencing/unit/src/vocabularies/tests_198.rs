@@ -81,22 +81,22 @@ mod tests {
     }
 
     #[test_case(
-        &serde_json::json!({"$id": "https://json-schema.org/draft/2020-12/schema"}),
+        &json_codec::json!({"$id": "https://json-schema.org/draft/2020-12/schema"}),
         "Some([\"core\", \"applicator\", \"unevaluated\", \"validation\", \"meta-data\", \"format-annotation\", \"content\"])"
         ; "2020-12 draft"
     )]
     #[test_case(
-        &serde_json::json!({"$id": "https://json-schema.org/draft/2019-09/schema"}),
+        &json_codec::json!({"$id": "https://json-schema.org/draft/2019-09/schema"}),
         "Some([\"core\", \"applicator\", \"validation\", \"meta-data\", \"content\"])"
         ; "2019-09 draft"
     )]
     #[test_case(
-        &serde_json::json!({"$id": "https://json-schema.org/draft-07/schema"}),
+        &json_codec::json!({"$id": "https://json-schema.org/draft-07/schema"}),
         "None"
         ; "draft-07"
     )]
     #[test_case(
-        &serde_json::json!({
+        &json_codec::json!({
             "$id": "https://example.com/format-assertion-dialect",
             "$vocabulary": {
                 "https://json-schema.org/draft/2020-12/vocab/core": true,
@@ -107,7 +107,7 @@ mod tests {
         ; "format-assertion dialect"
     )]
     #[test_case(
-        &serde_json::json!({
+        &json_codec::json!({
             "$id": "https://example.com/format-assertion-dialect",
             "$vocabulary": {
                 "https://json-schema.org/draft/2020-12/vocab/core": true,
@@ -118,7 +118,7 @@ mod tests {
         ; "optional format-assertion dialect"
     )]
     #[test_case(
-        &serde_json::json!({
+        &json_codec::json!({
             "$id": "https://example.com/custom-schema",
             "$vocabulary": {
                 "https://example.com/custom-vocab1": true,
@@ -130,7 +130,7 @@ mod tests {
         ; "custom schema"
     )]
     #[test_case(
-        &serde_json::json!({
+        &json_codec::json!({
             "$vocabulary": {
                 "https://json-schema.org/draft/2020-12/vocab/core": true,
                 "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
@@ -140,11 +140,11 @@ mod tests {
         ; "no $id keyword with vocabularies"
     )]
     #[test_case(
-        &serde_json::json!({}),
+        &json_codec::json!({}),
         "None"
         ; "no $id keyword"
     )]
-    fn test_find(schema: &serde_json::Value, expected: &str) {
+    fn test_find(schema: &json_codec::Value, expected: &str) {
         let set = find(schema).expect("Invalid vocabulary");
         assert_eq!(format!("{set:?}"), expected);
     }

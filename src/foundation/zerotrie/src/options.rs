@@ -17,7 +17,7 @@ pub(crate) enum PhfMode {
 }
 
 impl PhfMode {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     const fn to_u8_flag(self) -> u8 {
         match self {
             Self::BinaryOnly => 0,
@@ -36,7 +36,7 @@ pub(crate) enum AsciiMode {
 }
 
 impl AsciiMode {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     const fn to_u8_flag(self) -> u8 {
         match self {
             Self::AsciiOnly => 0,
@@ -55,7 +55,7 @@ pub(crate) enum CapacityMode {
 }
 
 impl CapacityMode {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     const fn to_u8_flag(self) -> u8 {
         match self {
             Self::Normal => 0,
@@ -74,7 +74,7 @@ pub(crate) enum CaseSensitivity {
 }
 
 impl CaseSensitivity {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     const fn to_u8_flag(self) -> u8 {
         match self {
             Self::Sensitive => 0,
@@ -92,7 +92,7 @@ pub(crate) struct ZeroTrieBuilderOptions {
 }
 
 impl ZeroTrieBuilderOptions {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     pub(crate) const fn to_u8_flags(self) -> u8 {
         self.phf_mode.to_u8_flag()
             | self.ascii_mode.to_u8_flag()
@@ -117,7 +117,7 @@ impl<S: ?Sized> ZeroTrieWithOptions for crate::ZeroTrieSimpleAscii<S> {
 }
 
 impl<S: ?Sized> crate::ZeroTrieSimpleAscii<S> {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     pub(crate) const FLAGS: u8 = Self::OPTIONS.to_u8_flags();
 }
 

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::tests_util;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(&json!({"type": "array"}), &json!(1), "/type")]
@@ -27,7 +27,7 @@ mod tests {
     }
 
     fn parse_json(s: &str) -> Value {
-        serde_json::from_str(s).unwrap()
+        json_codec::from_str(s).unwrap()
     }
 
     #[test_case(r#"{"type": "integer"}"#, "42", true; "plain integer")]
@@ -64,11 +64,11 @@ mod tests {
     #[cfg(feature = "arbitrary-precision")]
     mod arbitrary_precision {
         use crate::tests_util;
-        use serde_json::Value;
+        use json_codec::Value;
         use test_case::test_case;
 
         fn parse_json(s: &str) -> Value {
-            serde_json::from_str(s).unwrap()
+            json_codec::from_str(s).unwrap()
         }
 
         #[test_case(r#"{"type": "integer"}"#, "18446744073709551616", true; "u64_max_plus_1_plain")]

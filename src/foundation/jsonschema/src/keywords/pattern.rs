@@ -15,7 +15,7 @@ use crate::{
     validator::{Validate, ValidationContext},
     Json, Node,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 /// Validator for patterns that are simple prefixes (optimized path).
 pub(crate) struct PrefixPatternValidator {

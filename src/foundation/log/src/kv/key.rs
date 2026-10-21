@@ -149,11 +149,11 @@ mod sval_support {
     }
 }
 
-#[cfg(feature = "kv_serde")]
-mod serde_support {
+#[cfg(feature = "kv_serialization")]
+mod serialization_support {
     use super::*;
 
-    use serde_core::{Serialize, Serializer};
+    use serialization_core::{Serialize, Serializer};
 
     impl<'a> Serialize for Key<'a> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

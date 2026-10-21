@@ -68,21 +68,21 @@ mod tests {
         let _ = sscm.iter().clone();
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
-    fn key_serde() {
+    fn key_serialization() {
         use super::*;
 
         // Check round-trip through serde.
         let mut sm = SlotMap::new();
         let k = sm.insert(42);
-        let ser = serde_json::to_string(&k).unwrap();
-        let de: DefaultKey = serde_json::from_str(&ser).unwrap();
+        let ser = json_codec::to_string(&k).unwrap();
+        let de: DefaultKey = json_codec::from_str(&ser).unwrap();
         assert_eq!(k, de);
 
         // Even if a malicious entity sends up even (unoccupied) versions in the
         // key, we make the version point to the occupied version.
-        let malicious: KeyData = serde_json::from_str(&r#"{"idx":0,"version":4}"#).unwrap();
+        let malicious: KeyData = json_codec::from_str(&r#"{"idx":0,"version":4}"#).unwrap();
         assert_eq!(malicious.version.get(), 5);
     }
 }

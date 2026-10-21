@@ -3,12 +3,12 @@ use std::borrow::Cow;
 use std::{cell::RefCell, fmt, io, mem};
 
 #[cfg(feature = "arbitrary-precision")]
-use serde::ser::SerializeStruct;
-use serde::{
+use data_serialization::ser::SerializeStruct;
+use data_serialization::{
     ser::{self, Serialize, SerializeMap, SerializeSeq},
     Serializer,
 };
-use serde_json::{
+use json_codec::{
     ser::{CompactFormatter, Formatter},
     Number, Value,
 };
@@ -20,7 +20,7 @@ const RECURSION_LIMIT: u16 = 255;
 const MAX_SCRATCH_POOL_SIZE: usize = 8;
 const MAX_SCRATCH_CAPACITY: usize = 16_384;
 #[cfg(feature = "arbitrary-precision")]
-const SERDE_JSON_NUMBER_TOKEN: &str = "$serde_json::private::Number";
+const JSON_NUMBER_TOKEN: &str = "$serde_json::private::Number";
 #[cfg(feature = "arbitrary-precision")]
 const MAX_EXPANDED_INTEGER_DIGITS: usize = 1 << 20;
 
@@ -48,7 +48,7 @@ pub(crate) fn integer_valued_i64(value: f64) -> Option<i64> {
 /// Error returned by [`to_string`].
 #[derive(Debug)]
 pub struct Error {
-    inner: serde_json::Error,
+    inner: json_codec::Error,
 }
 
 impl fmt::Display for Error {
@@ -63,8 +63,8 @@ impl std::error::Error for Error {
     }
 }
 
-impl From<serde_json::Error> for Error {
-    fn from(inner: serde_json::Error) -> Self {
+impl From<json_codec::Error> for Error {
+    fn from(inner: json_codec::Error) -> Self {
         Error { inner }
     }
 }
@@ -82,7 +82,7 @@ impl From<serde_json::Error> for Error {
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"b": 1, "a": {"y": 2, "x": 3}});
 /// let canonical = jsonschema::canonical::json::to_string(&schema).unwrap();
@@ -102,7 +102,7 @@ pub fn to_string(value: &Value) -> Result<String, Error> {
         default: CompactFormatter,
     };
     let scratch_pool = RefCell::new(Vec::new());
-    let mut serializer = serde_json::Serializer::with_formatter(&mut output, formatter);
+    let mut serializer = json_codec::Serializer::with_formatter(&mut output, formatter);
     CanonicalValue::new(value, 0, &scratch_pool)
         .serialize(&mut serializer)
         .map_err(Error::from)?;
@@ -225,8 +225,8 @@ impl Serialize for BorrowedNumber<'_> {
     where
         S: Serializer,
     {
-        let mut serialized = serializer.serialize_struct(SERDE_JSON_NUMBER_TOKEN, 1)?;
-        serialized.serialize_field(SERDE_JSON_NUMBER_TOKEN, self.0)?;
+        let mut serialized = serializer.serialize_struct(JSON_NUMBER_TOKEN, 1)?;
+        serialized.serialize_field(JSON_NUMBER_TOKEN, self.0)?;
         serialized.end()
     }
 }

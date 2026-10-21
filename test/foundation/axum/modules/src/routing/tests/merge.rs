@@ -1,6 +1,6 @@
 use super::*;
 use crate::extract::OriginalUri;
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 use tower::limit::ConcurrencyLimitLayer;
 
 #[crate::test]

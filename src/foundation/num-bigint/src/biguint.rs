@@ -25,7 +25,7 @@ mod convert;
 mod iter;
 mod monty;
 mod power;
-mod serde;
+mod data_serialization;
 mod shift;
 
 pub(crate) use self::convert::to_str_radix_reversed;

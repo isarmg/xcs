@@ -88,7 +88,7 @@ fn files_for_test(root: &Path) -> BTreeMap<String, String> {
 #[test]
 fn inventory_tracks_cargo_configuration_and_toolchain() {
     let fixture = Fixture::new();
-    let spec: serde_json::Value = serde_json::from_str(INPUT_SPEC).unwrap();
+    let spec: json_codec::Value = json_codec::from_str(INPUT_SPEC).unwrap();
     for directory in spec["directories"].as_array().unwrap() {
         fs::create_dir_all(fixture.0.join(directory.as_str().unwrap())).unwrap();
     }

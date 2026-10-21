@@ -33,6 +33,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/servo/rust-smallvec"
 
 [features]
+serialization = ["dep:data-serialization"]
 const_generics = []
 const_new = ["const_generics"]
 drain_filter = []
@@ -47,9 +48,9 @@ write = []
 name = "smallvec"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1"
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 

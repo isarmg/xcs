@@ -1,7 +1,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod bench {
     use codspeed_criterion_compat::{criterion_group, BenchmarkId, Criterion};
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use std::hint::black_box;
 
     fn large_schema() -> Value {

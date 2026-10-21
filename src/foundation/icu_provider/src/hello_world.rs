@@ -20,16 +20,16 @@ use zerofrom::*;
 
 /// A struct containing "Hello World" in the requested language.
 #[derive(Debug, PartialEq, Clone, Yokeable, ZeroFrom)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[cfg_attr(
     any(feature = "deserialize_json", feature = "export"),
-    derive(serde::Serialize)
+    derive(data_serialization::Serialize)
 )]
 #[cfg_attr(feature = "export", derive(databake::Bake))]
 #[cfg_attr(feature = "export", databake(path = icu_provider::hello_world))]
 pub struct HelloWorld<'data> {
     /// The translation of "Hello World".
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub message: Cow<'data, str>,
 }
 
@@ -255,7 +255,7 @@ impl DynamicDataProvider<BufferMarker> for HelloWorldJsonProvider {
             },
             #[expect(clippy::unwrap_used)] // HelloWorld::serialize is infallible
             payload: DataPayload::from_owned_buffer(
-                serde_json::to_string(result.payload.get())
+                json_codec::to_string(result.payload.get())
                     .unwrap()
                     .into_bytes()
                     .into_boxed_slice(),

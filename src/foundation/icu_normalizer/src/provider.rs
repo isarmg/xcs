@@ -119,12 +119,12 @@ pub const MARKERS: &[DataMarkerInfo] = &[
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, PartialEq, Clone, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_normalizer::provider))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 pub struct DecompositionData<'data> {
     /// Trie for decomposition.
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub trie: CodePointTrie<'data, u32>,
     /// The passthrough bounds of NFD/NFC are lowered to this
     /// maximum instead. (16-bit, because cannot be higher
@@ -146,16 +146,16 @@ icu_provider::data_struct!(
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, PartialEq, Clone, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_normalizer::provider))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 pub struct DecompositionTables<'data> {
     /// Decompositions that are fully within the BMP
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub scalars16: ZeroVec<'data, u16>,
     /// Decompositions with at least one character outside
     /// the BMP
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub scalars24: ZeroVec<'data, char>,
 }
 
@@ -172,14 +172,14 @@ icu_provider::data_struct!(
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, PartialEq, Clone, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_normalizer::provider))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 pub struct CanonicalCompositions<'data> {
     /// Trie keys are two-`char` strings with the second
     /// character coming first. The value, if any, is the
     /// (non-Hangul) canonical composition.
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub canonical_compositions: Char16Trie<'data>,
 }
 
@@ -197,16 +197,16 @@ icu_provider::data_struct!(
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, PartialEq, Clone, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_normalizer::provider))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 pub struct NonRecursiveDecompositionSupplement<'data> {
     /// Trie for the supplementary non-recursive decompositions
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub trie: CodePointTrie<'data, u32>,
     /// Decompositions with at least one character outside
     /// the BMP
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub scalars24: ZeroVec<'data, char>,
 }
 

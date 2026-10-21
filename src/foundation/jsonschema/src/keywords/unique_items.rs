@@ -6,7 +6,7 @@ use crate::{
     validator::{Validate, ValidationContext},
     Array, Json, Node,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 fn has_unique_items<F: Json>(instance: &F::Node<'_>) -> bool {
     let Some(array) = instance.as_array() else {

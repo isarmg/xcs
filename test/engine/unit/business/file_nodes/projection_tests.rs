@@ -129,11 +129,11 @@ fn projection_matches_uncached_nodes_and_serialized_bytes() {
     ];
     let mut projection = NodeProjection::new(&state);
     for node in nodes.into_iter().chain(nodes.into_iter().rev()) {
-        let expected = serde_json::json!({"parent_node_ids": node_parents(&state, node), "tags": node_tags(&state, node)});
-        let actual = serde_json::json!({"parent_node_ids": projection.parents(node), "tags": projection.tags(node)});
+        let expected = json_codec::json!({"parent_node_ids": node_parents(&state, node), "tags": node_tags(&state, node)});
+        let actual = json_codec::json!({"parent_node_ids": projection.parents(node), "tags": projection.tags(node)});
         assert_eq!(
-            serde_json::to_vec(&actual).unwrap(),
-            serde_json::to_vec(&expected).unwrap(),
+            json_codec::to_vec(&actual).unwrap(),
+            json_codec::to_vec(&expected).unwrap(),
             "{node}"
         );
     }

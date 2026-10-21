@@ -132,7 +132,7 @@ fn source(shared: &Shared, opened: &OpenResult) -> PathBuf {
             if !path.to_string_lossy().ends_with(".work.json") {
                 return None;
             }
-            let record: Value = serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
+            let record: Value = json_codec::from_slice(&fs::read(path).unwrap()).unwrap();
             (record["workspace_id"].as_str() == opened.workspace_id.as_deref())
                 .then(|| PathBuf::from(record["source_path"].as_str().unwrap()))
         })
@@ -141,7 +141,7 @@ fn source(shared: &Shared, opened: &OpenResult) -> PathBuf {
 }
 
 fn record(source: &Path) -> Value {
-    serde_json::from_slice(&fs::read(source.with_extension("work.json")).unwrap()).unwrap()
+    json_codec::from_slice(&fs::read(source.with_extension("work.json")).unwrap()).unwrap()
 }
 
 fn remote(error: &io::Error) -> &RemoteError {

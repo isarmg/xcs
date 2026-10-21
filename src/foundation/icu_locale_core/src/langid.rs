@@ -42,7 +42,7 @@ use alloc::borrow::Cow;
 ///
 /// # Serde
 ///
-/// This type implements `serde::Serialize` and `serde::Deserialize` if the
+/// This type implements `data_serialization::Serialize` and `data_serialization::Deserialize` if the
 /// `"serde"` Cargo feature is enabled on the crate.
 ///
 /// The value will be serialized as a string and parsed when deserialized.

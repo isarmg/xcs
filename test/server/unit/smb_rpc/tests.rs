@@ -32,7 +32,7 @@ impl Backend for LostCommitReply {
             && self.change_before_workspace.swap(false, Ordering::SeqCst)
         {
             let workspace: Workspace =
-                serde_json::from_value(self.inner.call(action, identity, input.clone())?).unwrap();
+                json_codec::from_value(self.inner.call(action, identity, input.clone())?).unwrap();
             let source = tempfile::NamedTempFile::new().unwrap();
             fs::write(source.path(), b"new").unwrap();
             self.inner.upload(
@@ -145,7 +145,7 @@ fn open_file(session: &mut Session, writable: bool) -> (OpenResult, File) {
         .open("report.txt".into(), writable, false, false, false, false)
         .unwrap();
     (
-        serde_json::from_value(result).unwrap(),
+        json_codec::from_value(result).unwrap(),
         File::from(fd.unwrap()),
     )
 }
@@ -279,7 +279,7 @@ fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle(
         let (opened, fd) = client
             .open(path.into(), true, true, false, false, false)
             .unwrap();
-        let opened: OpenResult = serde_json::from_value(opened).unwrap();
+        let opened: OpenResult = json_codec::from_value(opened).unwrap();
         File::from(fd.unwrap()).write_all_at(bytes, 0).unwrap();
         client.dirty(opened.handle).unwrap();
         client.close(opened.handle, false).unwrap();
@@ -330,7 +330,7 @@ fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle(
     let (opened, fd) = client
         .open("a/report.txt".into(), false, false, false, false, false)
         .unwrap();
-    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let opened: OpenResult = json_codec::from_value(opened).unwrap();
     let reader = File::from(fd.unwrap());
     client
         .dispatch(Request::Namespace {
@@ -358,7 +358,7 @@ fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle(
     let (opened, fd) = client
         .open("b/report.txt".into(), true, false, false, false, false)
         .unwrap();
-    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let opened: OpenResult = json_codec::from_value(opened).unwrap();
     File::from(fd.unwrap()).write_all_at(b"edited", 0).unwrap();
     client.dirty(opened.handle).unwrap();
     client.close(opened.handle, false).unwrap();
@@ -382,13 +382,13 @@ fn newly_created_ancestor_selection_fences_an_existing_create_handle() {
     let (opened, file) = original
         .open("future/new.txt".into(), true, true, false, false, false)
         .unwrap();
-    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let opened: OpenResult = json_codec::from_value(opened).unwrap();
     let file = File::from(file.unwrap());
     let mut creator = session(shared.clone(), &branch);
     let (other, other_fd) = creator
         .open("future/other.txt".into(), true, true, false, false, false)
         .unwrap();
-    let other: OpenResult = serde_json::from_value(other).unwrap();
+    let other: OpenResult = json_codec::from_value(other).unwrap();
     File::from(other_fd.unwrap())
         .write_all_at(b"other", 0)
         .unwrap();
@@ -435,7 +435,7 @@ fn nested_directory_switch_does_not_fence_an_unrelated_open_file() {
     let (opened, file) = creator
         .open("nested/other.txt".into(), true, true, false, false, false)
         .unwrap();
-    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let opened: OpenResult = json_codec::from_value(opened).unwrap();
     File::from(file.unwrap()).write_all_at(b"other", 0).unwrap();
     creator.dirty(opened.handle).unwrap();
     creator.close(opened.handle, false).unwrap();
@@ -513,7 +513,7 @@ fn unix_rpc_default_switch_preserves_read_fds_and_targets_new_writes() {
     let (Response::Ok { result }, pinned) = rpc(&mut wire, open()) else {
         panic!("read open failed")
     };
-    let pinned_open: OpenResult = serde_json::from_value(result).unwrap();
+    let pinned_open: OpenResult = json_codec::from_value(result).unwrap();
     let pinned = File::from(pinned.unwrap());
     let mut bytes = [0; 3];
     pinned.read_exact_at(&mut bytes, 0).unwrap();
@@ -522,7 +522,7 @@ fn unix_rpc_default_switch_preserves_read_fds_and_targets_new_writes() {
     let (Response::Ok { result }, visible) = rpc(&mut wire, open()) else {
         panic!("read after switch failed")
     };
-    let visible_open: OpenResult = serde_json::from_value(result).unwrap();
+    let visible_open: OpenResult = json_codec::from_value(result).unwrap();
     File::from(visible.unwrap())
         .read_exact_at(&mut bytes, 0)
         .unwrap();
@@ -542,7 +542,7 @@ fn unix_rpc_default_switch_preserves_read_fds_and_targets_new_writes() {
     ) else {
         panic!("write after switch failed")
     };
-    let writable: OpenResult = serde_json::from_value(result).unwrap();
+    let writable: OpenResult = json_codec::from_value(result).unwrap();
     let writable_fd = File::from(writable_fd.unwrap());
     writable_fd.write_all_at(b"smb", 0).unwrap();
     assert!(matches!(
@@ -685,7 +685,7 @@ fn explicit_truncation_materializes_an_empty_pending_branch() {
     let (opened, descriptor) = session
         .open("report.txt".into(), true, false, true, false, false)
         .unwrap();
-    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let opened: OpenResult = json_codec::from_value(opened).unwrap();
     drop(descriptor);
     session.close(opened.handle, false).unwrap();
     let history = shared
@@ -803,7 +803,7 @@ fn different_files_publish_concurrently_and_reopen_workspace_after_unrelated_sav
     let (result, fd) = two
         .open("other.txt".into(), true, true, false, false, false)
         .unwrap();
-    let second: OpenResult = serde_json::from_value(result).unwrap();
+    let second: OpenResult = json_codec::from_value(result).unwrap();
     let second_file = File::from(fd.unwrap());
     first_file.write_all_at(b"one", 0).unwrap();
     one.dirty(first.handle).unwrap();
@@ -849,7 +849,7 @@ fn namespace_locks_cover_only_affected_paths_and_case_only_replace_preserves_ent
     let (opened, fd) = one
         .open("dir/file.txt".into(), true, true, false, false, false)
         .unwrap();
-    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let opened: OpenResult = json_codec::from_value(opened).unwrap();
     let file = File::from(fd.unwrap());
     assert_eq!(
         two.dispatch(Request::Namespace {
@@ -923,7 +923,7 @@ fn listing_uses_portable_lookup_keys_and_rejects_files_or_missing_directories() 
             false,
         )
         .unwrap();
-    let opened: OpenResult = serde_json::from_value(opened).unwrap();
+    let opened: OpenResult = json_codec::from_value(opened).unwrap();
     let file = File::from(fd.unwrap());
     file.write_all_at(b"content", 0).unwrap();
     session.dirty(opened.handle).unwrap();
@@ -996,7 +996,7 @@ fn external_same_file_change_rejects_rebase_and_preserves_work_bytes() {
     file.write_all_at(b"one", 0).unwrap();
     one.dirty(opened.handle).unwrap();
     one.flush(opened.handle).unwrap();
-    let workspace: Workspace = serde_json::from_value(
+    let workspace: Workspace = json_codec::from_value(
         backend
             .call(
                 crate::BackendAction::CreateWorkspace,
@@ -1219,7 +1219,7 @@ fn disconnect_before_dirty_delivery_retains_unacknowledged_fd_bytes() {
         );
         assert_eq!(fs::read(&source).unwrap(), b"two");
         let record: Value =
-            serde_json::from_slice(&fs::read(source.with_extension("work.json")).unwrap()).unwrap();
+            json_codec::from_slice(&fs::read(source.with_extension("work.json")).unwrap()).unwrap();
         assert_eq!(record["descriptor_changes_unconfirmed"], true);
         assert_eq!(record["published"], published);
         assert_eq!(record["dirty"], false);

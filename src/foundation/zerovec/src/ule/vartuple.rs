@@ -62,7 +62,7 @@ use super::{AsULE, EncodeAsVarULE, UleError, VarULE, ULE};
 /// See the module for examples.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 #[allow(clippy::exhaustive_structs)] // well-defined type
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 pub struct VarTuple<A, B> {
     pub sized: A,
     pub variable: B,
@@ -205,17 +205,17 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
-impl<A, V> serde::Serialize for VarTupleULE<A, V>
+#[cfg(feature = "serialization")]
+impl<A, V> data_serialization::Serialize for VarTupleULE<A, V>
 where
     A: AsULE + 'static,
     V: VarULE + ?Sized,
-    A: serde::Serialize,
-    V: serde::Serialize,
+    A: data_serialization::Serialize,
+    V: data_serialization::Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         if serializer.is_human_readable() {
             let this = VarTuple {
@@ -229,39 +229,39 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'a, 'de: 'a, A, V> serde::Deserialize<'de> for &'a VarTupleULE<A, V>
+#[cfg(feature = "serialization")]
+impl<'a, 'de: 'a, A, V> data_serialization::Deserialize<'de> for &'a VarTupleULE<A, V>
 where
     A: AsULE + 'static,
     V: VarULE + ?Sized,
-    A: serde::Deserialize<'de>,
+    A: data_serialization::Deserialize<'de>,
 {
     fn deserialize<Des>(deserializer: Des) -> Result<Self, Des::Error>
     where
-        Des: serde::Deserializer<'de>,
+        Des: data_serialization::Deserializer<'de>,
     {
         if !deserializer.is_human_readable() {
             let bytes = <&[u8]>::deserialize(deserializer)?;
-            VarTupleULE::<A, V>::parse_bytes(bytes).map_err(serde::de::Error::custom)
+            VarTupleULE::<A, V>::parse_bytes(bytes).map_err(data_serialization::de::Error::custom)
         } else {
-            Err(serde::de::Error::custom(
+            Err(data_serialization::de::Error::custom(
                 "&VarTupleULE can only deserialize in zero-copy ways",
             ))
         }
     }
 }
 
-#[cfg(all(feature = "serde", feature = "alloc"))]
-impl<'de, A, V> serde::Deserialize<'de> for Box<VarTupleULE<A, V>>
+#[cfg(all(feature = "serialization", feature = "alloc"))]
+impl<'de, A, V> data_serialization::Deserialize<'de> for Box<VarTupleULE<A, V>>
 where
     A: AsULE + 'static,
     V: VarULE + ?Sized,
-    A: serde::Deserialize<'de>,
-    Box<V>: serde::Deserialize<'de>,
+    A: data_serialization::Deserialize<'de>,
+    Box<V>: data_serialization::Deserialize<'de>,
 {
     fn deserialize<Des>(deserializer: Des) -> Result<Self, Des::Error>
     where
-        Des: serde::Deserializer<'de>,
+        Des: data_serialization::Deserializer<'de>,
     {
         if deserializer.is_human_readable() {
             let this = VarTuple::<A, Box<V>>::deserialize(deserializer)?;

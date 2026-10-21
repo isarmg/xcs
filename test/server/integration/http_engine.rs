@@ -4,7 +4,7 @@ use axum::{
     body::Body,
     http::{Request, StatusCode},
 };
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::{path::Path, sync::Arc};
 use storage_contract::{Config, new_id, request_digest};
 use storage_engine::{CommitRequest, Engine};
@@ -26,7 +26,7 @@ fn fixture_payload(
     state: &storage_contract::State,
 ) -> std::path::PathBuf {
     let version: storage_contract::FileVersion =
-        serde_json::from_slice(&std::fs::read(version_directory.join("version.json")).unwrap())
+        json_codec::from_slice(&std::fs::read(version_directory.join("version.json")).unwrap())
             .unwrap();
     let storage_name = version.storage_name;
     let history = version_directory.parent().unwrap().parent().unwrap();
@@ -63,7 +63,7 @@ async fn send(
         .oneshot(
             builder
                 .body(Body::from(
-                    serde_json::to_vec(&body.unwrap_or_else(|| json!({}))).unwrap(),
+                    json_codec::to_vec(&body.unwrap_or_else(|| json!({}))).unwrap(),
                 ))
                 .unwrap(),
         )
@@ -73,7 +73,7 @@ async fn send(
     let bytes = axum::body::to_bytes(response.into_body(), 8 * 1024 * 1024)
         .await
         .unwrap();
-    (status, serde_json::from_slice(&bytes).unwrap())
+    (status, json_codec::from_slice(&bytes).unwrap())
 }
 async fn success(
     app: &Router,
@@ -241,7 +241,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
             .clone()
             .oneshot(
                 request
-                    .body(Body::from(serde_json::to_vec(&body).unwrap()))
+                    .body(Body::from(json_codec::to_vec(&body).unwrap()))
                     .unwrap(),
             )
             .await
@@ -274,7 +274,7 @@ async fn self_password_change_is_csrf_protected_and_restored_from_pool_control_s
                 .header("cookie", &cookie)
                 .header("x-csrf-token", session["csrf_token"].as_str().unwrap())
                 .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_vec(&body).unwrap()))
+                .body(Body::from(json_codec::to_vec(&body).unwrap()))
                 .unwrap(),
         )
         .await
@@ -368,7 +368,7 @@ async fn maximum_password_change_accepts_escaped_json_and_rejects_errors_without
         .oneshot(
             request()
                 .body(Body::from(
-                    serde_json::to_vec(&json!({
+                    json_codec::to_vec(&json!({
                         "current_password":"incorrect-current-password",
                         "new_password":new_password
                     }))
@@ -446,7 +446,7 @@ async fn upload(
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
-    serde_json::from_slice(
+    json_codec::from_slice(
         &axum::body::to_bytes(response.into_body(), 65536)
             .await
             .unwrap(),
@@ -2134,7 +2134,7 @@ fn capture_wire(name: &str, wire: &Value) {
         std::fs::create_dir_all(&directory).unwrap();
         std::fs::write(
             directory.join(name),
-            serde_json::to_vec_pretty(wire).unwrap(),
+            json_codec::to_vec_pretty(wire).unwrap(),
         )
         .unwrap();
     }
@@ -2203,7 +2203,7 @@ fn recovered_permanent_loss_returns_degraded_save_wire_with_frozen_unavailable_s
         for version in std::fs::read_dir(directory).unwrap() {
             let directory = version.unwrap().path();
             let metadata: storage_contract::FileVersion =
-                serde_json::from_slice(&std::fs::read(directory.join("version.json")).unwrap())
+                json_codec::from_slice(&std::fs::read(directory.join("version.json")).unwrap())
                     .unwrap();
             if metadata.creation_name != "lost.txt" {
                 continue;
@@ -3598,7 +3598,7 @@ async fn engine_upload_generation_conflicts_reach_http_as_conflicts() {
             StatusCode::CONFLICT,
             "generation {generation}"
         );
-        let body: Value = serde_json::from_slice(
+        let body: Value = json_codec::from_slice(
             &axum::body::to_bytes(response.into_body(), 8192)
                 .await
                 .unwrap(),

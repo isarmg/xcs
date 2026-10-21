@@ -26,7 +26,7 @@ struct PlanningSnapshot {
 pub struct WorkspaceCommitPreparation {
     snapshot: PlanningSnapshot,
     request: CommitRequest,
-    wire_body: Option<serde_json::Value>,
+    wire_body: Option<json_codec::Value>,
     frozen_workspace: Vec<u8>,
     admission: PreparationAdmission,
 }
@@ -146,7 +146,7 @@ impl Engine {
     pub fn prepare_workspace_commit(
         &self,
         request: CommitRequest,
-        wire_body: Option<serde_json::Value>,
+        wire_body: Option<json_codec::Value>,
     ) -> Result<WorkspaceCommitPreparation> {
         let workspace = self.workspace(&request.workspace_id)?;
         if workspace.principal != request.principal {

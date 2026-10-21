@@ -14,8 +14,8 @@ authentication.workspace = true
 platform-io.workspace = true
 rustix.workspace = true
 clap = { workspace = true, features = ["env"] }
-serde.workspace = true
-serde_json.workspace = true
+data-serialization.workspace = true
+json-codec.workspace = true
 tokio.workspace = true
 tracing-subscriber = { version = "0.3", features = ["env-filter"], path = "../foundation/tracing-subscriber"}
 storage-client = { path = "../client" }

@@ -9,11 +9,11 @@ mod test {
     // duplicate tests elsewhere in this crate, but they are here for completeness.
 
     #[derive(yoke::Yokeable, zerofrom::ZeroFrom)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     struct DeriveTest_ZeroVec<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: ZeroVec<'data, u16>,
     }
 
@@ -29,11 +29,11 @@ mod test {
     }
 
     #[derive(yoke::Yokeable)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     struct DeriveTest_ZeroSlice<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: &'data ZeroSlice<u16>,
     }
 
@@ -49,11 +49,11 @@ mod test {
     }
 
     #[derive(yoke::Yokeable, zerofrom::ZeroFrom)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     struct DeriveTest_VarZeroVec<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: VarZeroVec<'data, str>,
     }
 
@@ -69,11 +69,11 @@ mod test {
     }
 
     #[derive(yoke::Yokeable)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     struct DeriveTest_VarZeroSlice<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: &'data VarZeroSlice<str>,
     }
 
@@ -89,12 +89,12 @@ mod test {
     }
 
     #[derive(yoke::Yokeable, zerofrom::ZeroFrom)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     #[yoke(prove_covariance_manually)]
     struct DeriveTest_ZeroMap<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: ZeroMap<'data, [u8], str>,
     }
 
@@ -116,12 +116,12 @@ mod test {
     }
 
     #[derive(yoke::Yokeable)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     #[yoke(prove_covariance_manually)]
     struct DeriveTest_ZeroMapBorrowed<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: ZeroMapBorrowed<'data, [u8], str>,
     }
 
@@ -143,12 +143,12 @@ mod test {
     }
 
     #[derive(yoke::Yokeable, zerofrom::ZeroFrom)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     #[yoke(prove_covariance_manually)]
     struct DeriveTest_ZeroMapWithULE<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: ZeroMap<'data, ZeroSlice<u32>, str>,
     }
 
@@ -170,12 +170,12 @@ mod test {
     }
 
     #[derive(yoke::Yokeable, zerofrom::ZeroFrom)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     #[yoke(prove_covariance_manually)]
     struct DeriveTest_ZeroMap2d<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: ZeroMap2d<'data, u16, u16, str>,
     }
 
@@ -199,12 +199,12 @@ mod test {
     }
 
     #[derive(yoke::Yokeable)]
-    #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+    #[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
     #[cfg_attr(feature = "databake", derive(databake::Bake))]
     #[cfg_attr(feature = "databake", databake(path = zerovec::yoke_impls::test))]
     #[yoke(prove_covariance_manually)]
     struct DeriveTest_ZeroMap2dBorrowed<'data> {
-        #[cfg_attr(feature = "serde", serde(borrow))]
+        #[cfg_attr(feature = "serialization", serialization(borrow))]
         pub _data: ZeroMap2dBorrowed<'data, u16, u16, str>,
     }
 

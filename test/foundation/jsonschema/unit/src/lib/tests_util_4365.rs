@@ -2,7 +2,7 @@
 pub(crate) mod tests_util {
     use super::Validator;
     use crate::ValidationError;
-    use serde_json::Value;
+    use json_codec::Value;
 
     #[track_caller]
     pub(crate) fn is_not_valid_with(validator: &Validator, instance: &Value) {
@@ -33,7 +33,7 @@ pub(crate) mod tests_util {
         instances: &[Value],
     ) -> Vec<(bool, Vec<(String, String)>)> {
         let meta_id = format!("json-schema:///meta/only-{vocabulary}");
-        let meta = serde_json::json!({
+        let meta = json_codec::json!({
             "$id": meta_id,
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "$vocabulary": {
@@ -187,7 +187,7 @@ pub(crate) mod tests_util {
         let mut root = schema.clone();
         root["$id"] = Value::from(BASE);
         let behind_ref =
-            serde_json::json!({"$id": BASE, "$defs": {"t": schema}, "$ref": "#/$defs/t"});
+            json_codec::json!({"$id": BASE, "$defs": {"t": schema}, "$ref": "#/$defs/t"});
         for (schema, prefix) in [(root, ""), (behind_ref, "/$defs/t")] {
             let validator = crate::validator_for(&schema).expect("Invalid schema");
             let expected: Vec<ErrorLocations> = expected
@@ -251,7 +251,7 @@ pub(crate) mod tests_util {
 
         let evaluation = validator.evaluate(instance);
         let serialized =
-            serde_json::to_value(evaluation.list()).expect("List output should be serializable");
+            json_codec::to_value(evaluation.list()).expect("List output should be serializable");
         let details = serialized
             .get("details")
             .and_then(|value| value.as_array())
@@ -314,7 +314,7 @@ pub(crate) mod tests_util {
         location: &str,
     ) {
         let error = options
-            .build(&serde_json::json!({"$ref": "#/x", "x": subschema}))
+            .build(&json_codec::json!({"$ref": "#/x", "x": subschema}))
             .expect_err("Should fail to compile");
         let location = format!("/x{location}");
         assert_eq!(

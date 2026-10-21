@@ -9,7 +9,7 @@ use syn::{
 	TypeGenerics, WhereClause,
 };
 
-use super::serde;
+use super::data_serialization;
 use crate::{util, DeriveTrait, Trait, TraitImpl};
 
 /// [`TraitImpl`] for [`Deserialize`](https://docs.rs/serde/latest/serde/derive.Deserialize.html).
@@ -43,7 +43,7 @@ impl TraitImpl for Deserialize {
 		Self: Sized,
 	{
 		Ok(DeriveTrait::Deserialize(Self {
-			crate_: serde::parse_derive_trait(Trait::Deserialize, attrs, span, list)?,
+			crate_: data_serialization::parse_derive_trait(Trait::Deserialize, attrs, span, list)?,
 		}))
 	}
 
@@ -62,7 +62,7 @@ impl TraitImpl for Deserialize {
 		where_clause: &Option<Cow<'_, WhereClause>>,
 		_: TokenStream,
 	) -> TokenStream {
-		serde::impl_item(
+		data_serialization::impl_item(
 			crate_,
 			&self.crate_(),
 			format_ident!("Deserialize"),
@@ -79,7 +79,7 @@ impl Deserialize {
 		if let Some(crate_) = &self.crate_ {
 			crate_.clone()
 		} else {
-			util::path_from_strs(&["serde"])
+			util::path_from_strs(&["data_serialization"])
 		}
 	}
 }

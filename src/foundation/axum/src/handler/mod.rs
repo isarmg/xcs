@@ -113,7 +113,7 @@ pub use self::service::HandlerService;
 ///     Json,
 ///     http::StatusCode,
 /// };
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let app = Router::new()
 ///     // respond with a fixed string

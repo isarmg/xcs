@@ -4,7 +4,7 @@ mod bench {
         read_json, FHIR_SCHEMA, GEOJSON, KUBERNETES, OPEN_API, RECURSIVE_SCHEMA, SWAGGER,
     };
     use codspeed_criterion_compat::{criterion_group, Criterion};
-    use serde_json::{json, Map, Value};
+    use json_codec::{json, Map, Value};
 
     // Each `$def` references the two before it, so canonicalizing the tail resolves a dense chain.
     fn chained_ref_defs(n: usize) -> Value {

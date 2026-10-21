@@ -5,7 +5,7 @@ use crate::{
 };
 use ahash::AHashMap;
 use referencing::Uri;
-use serde::{
+use data_serialization::{
     ser::{SerializeMap, SerializeSeq, SerializeStruct},
     Serialize,
 };
@@ -13,39 +13,39 @@ use std::{fmt, sync::Arc};
 
 /// Annotations associated with an output unit.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Annotations(Arc<serde_json::Value>);
+pub struct Annotations(Arc<json_codec::Value>);
 
 impl Annotations {
     /// Create a new `Annotations` instance.
     #[must_use]
-    pub(crate) fn new(v: serde_json::Value) -> Self {
+    pub(crate) fn new(v: json_codec::Value) -> Self {
         Annotations(Arc::new(v))
     }
 
     /// Create a new `Annotations` instance from an Arc.
     #[must_use]
-    pub(crate) fn from_arc(v: Arc<serde_json::Value>) -> Self {
+    pub(crate) fn from_arc(v: Arc<json_codec::Value>) -> Self {
         Annotations(v)
     }
 
-    /// Returns the inner [`serde_json::Value`] of the annotation.
+    /// Returns the inner [`json_codec::Value`] of the annotation.
     #[inline]
     #[must_use]
-    pub fn into_inner(self) -> serde_json::Value {
+    pub fn into_inner(self) -> json_codec::Value {
         Arc::try_unwrap(self.0).unwrap_or_else(|arc| (*arc).clone())
     }
 
-    /// The `serde_json::Value` of the annotation.
+    /// The `json_codec::Value` of the annotation.
     #[must_use]
-    pub fn value(&self) -> &serde_json::Value {
+    pub fn value(&self) -> &json_codec::Value {
         &self.0
     }
 }
 
-impl serde::Serialize for Annotations {
+impl data_serialization::Serialize for Annotations {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         self.0.serialize(serializer)
     }
@@ -321,7 +321,7 @@ impl EvaluationNode {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "string", "minLength": 3});
 /// let validator = jsonschema::validator_for(&schema)?;
@@ -335,8 +335,8 @@ impl EvaluationNode {
 /// assert!(!flag.valid);
 ///
 /// // Get structured output as JSON
-/// let list_output = serde_json::to_value(evaluation.list())?;
-/// println!("{}", serde_json::to_string_pretty(&list_output)?);
+/// let list_output = json_codec::to_value(evaluation.list())?;
+/// println!("{}", json_codec::to_string_pretty(&list_output)?);
 ///
 /// // Iterate over errors
 /// for error in evaluation.iter_errors() {
@@ -374,7 +374,7 @@ impl Evaluation {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"type": "number"});
     /// let validator = jsonschema::validator_for(&schema)?;
@@ -401,7 +401,7 @@ impl Evaluation {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let validator = jsonschema::validator_for(&json!({"type": "number"}))?;
     ///
@@ -424,7 +424,7 @@ impl Evaluation {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({
     ///     "type": "array",
@@ -435,7 +435,7 @@ impl Evaluation {
     /// let evaluation = validator.evaluate(&json!(["hello", "oops"]));
     ///
     /// assert_eq!(
-    ///     serde_json::to_value(evaluation.list())?,
+    ///     json_codec::to_value(evaluation.list())?,
     ///     json!({
     ///         "valid": false,
     ///         "details": [
@@ -508,7 +508,7 @@ impl Evaluation {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({
     ///     "type": "array",
@@ -519,7 +519,7 @@ impl Evaluation {
     /// let evaluation = validator.evaluate(&json!(["hello", "oops"]));
     ///
     /// assert_eq!(
-    ///     serde_json::to_value(evaluation.hierarchical())?,
+    ///     json_codec::to_value(evaluation.hierarchical())?,
     ///     json!({
     ///         "valid": false,
     ///         "evaluationPath": "",
@@ -603,7 +603,7 @@ impl Evaluation {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({
     ///     "type": "object",
@@ -644,7 +644,7 @@ impl Evaluation {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({
     ///     "type": "object",
@@ -687,7 +687,7 @@ impl Evaluation {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "string"});
 /// let validator = jsonschema::validator_for(&schema)?;
@@ -696,7 +696,7 @@ impl Evaluation {
 /// let flag = evaluation.flag();
 /// assert_eq!(flag.valid, true);
 ///
-/// let output = serde_json::to_value(flag)?;
+/// let output = json_codec::to_value(flag)?;
 /// assert_eq!(output, json!({"valid": true}));
 /// # Ok(())
 /// # }
@@ -736,7 +736,7 @@ pub struct HierarchicalOutput<'a> {
 impl Serialize for ListOutput<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         serialize_list(self.arena, self.root, serializer)
     }
@@ -745,7 +745,7 @@ impl Serialize for ListOutput<'_> {
 impl Serialize for HierarchicalOutput<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         serialize_hierarchical(self.arena, self.root, serializer)
     }
@@ -753,7 +753,7 @@ impl Serialize for HierarchicalOutput<'_> {
 
 fn serialize_list<S>(arena: &EvaluationArena, root: u32, serializer: S) -> Result<S::Ok, S::Error>
 where
-    S: serde::Serializer,
+    S: data_serialization::Serializer,
 {
     let mut state = serializer.serialize_struct("ListOutput", 2)?;
     state.serialize_field("valid", &arena.node(root).valid)?;
@@ -769,7 +769,7 @@ fn serialize_hierarchical<S>(
     serializer: S,
 ) -> Result<S::Ok, S::Error>
 where
-    S: serde::Serializer,
+    S: data_serialization::Serializer,
 {
     serialize_unit(arena, root, serializer, true)
 }
@@ -791,7 +791,7 @@ fn serialize_unit<S>(
     include_children: bool,
 ) -> Result<S::Ok, S::Error>
 where
-    S: serde::Serializer,
+    S: data_serialization::Serializer,
 {
     let node = arena.node(index);
     let mut state = serializer.serialize_struct("OutputUnit", 7)?;
@@ -860,7 +860,7 @@ impl<'a> ListEntry<'a> {
 impl Serialize for ListEntry<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         serialize_unit(self.arena, self.index, serializer, false)
     }
@@ -874,7 +874,7 @@ struct DetailsSerializer<'a> {
 impl Serialize for DetailsSerializer<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         let mut seq = serializer.serialize_seq(None)?;
         for child in self.arena.child_indices(self.index) {
@@ -895,7 +895,7 @@ struct SeqEntry<'a> {
 impl Serialize for SeqEntry<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         serialize_unit(self.arena, self.index, serializer, true)
     }
@@ -911,7 +911,7 @@ impl Serialize for SeqEntry<'_> {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({
 ///     "type": "object",
@@ -961,7 +961,7 @@ pub struct AnnotationEntry<'a> {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({
 ///     "type": "object",
@@ -1057,7 +1057,7 @@ impl<'a> Iterator for NodeIter<'a> {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({
 ///     "type": "object",
@@ -1128,7 +1128,7 @@ impl<'a> Iterator for AnnotationIter<'a> {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({
 ///     "type": "object",
@@ -1199,7 +1199,7 @@ struct ErrorEntriesSerializer<'a>(&'a [ErrorDescription]);
 impl<'a> Serialize for ErrorEntriesSerializer<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         let mut grouped: Vec<(&'a str, Vec<&'a str>)> = Vec::new();
         let mut indexes: AHashMap<&'a str, usize> = AHashMap::new();

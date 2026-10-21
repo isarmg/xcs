@@ -17,8 +17,8 @@ use std::io;
 use std::mem::ManuallyDrop;
 use std::mem::MaybeUninit;
 
-#[cfg(feature="serde")]
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+#[cfg(feature="serialization")]
+use data_serialization::{Serialize, Deserialize, Serializer, Deserializer};
 
 use crate::LenUint;
 use crate::errors::CapacityError;
@@ -1306,7 +1306,7 @@ impl<const CAP: usize> io::Write for ArrayVec<u8, CAP> {
     fn flush(&mut self) -> io::Result<()> { Ok(()) }
 }
 
-#[cfg(feature="serde")]
+#[cfg(feature="serialization")]
 /// Requires crate feature `"serde"`
 impl<T: Serialize, const CAP: usize> Serialize for ArrayVec<T, CAP> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -1316,13 +1316,13 @@ impl<T: Serialize, const CAP: usize> Serialize for ArrayVec<T, CAP> {
     }
 }
 
-#[cfg(feature="serde")]
+#[cfg(feature="serialization")]
 /// Requires crate feature `"serde"`
 impl<'de, T: Deserialize<'de>, const CAP: usize> Deserialize<'de> for ArrayVec<T, CAP> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: Deserializer<'de>
     {
-        use serde::de::{Visitor, SeqAccess, Error};
+        use data_serialization::de::{Visitor, SeqAccess, Error};
         use std::marker::PhantomData;
 
         struct ArrayVecVisitor<'de, T: Deserialize<'de>, const CAP: usize>(PhantomData<(&'de (), [T; CAP])>);

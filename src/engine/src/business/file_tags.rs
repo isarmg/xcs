@@ -1,6 +1,6 @@
 //! Version labels are immutable metadata children, never mutable file-global state.
 use super::*;
-use serde_json::json;
+use json_codec::json;
 use std::collections::BTreeSet;
 
 struct TagChange {

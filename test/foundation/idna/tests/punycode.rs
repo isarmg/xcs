@@ -8,8 +8,8 @@
 
 use crate::test::TestFn;
 use idna::punycode::{decode, decode_to_string, encode_str};
-use serde_json::map::Map;
-use serde_json::Value;
+use json_codec::map::Map;
+use json_codec::Value;
 use std::panic::catch_unwind;
 use std::str::FromStr;
 

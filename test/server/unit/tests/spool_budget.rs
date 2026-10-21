@@ -243,7 +243,7 @@ async fn cancellation_settles_actual_unknown_tail_and_retry_never_overwrites_it(
                 let bytes = axum::body::to_bytes(response.into_body(), 8192)
                     .await
                     .unwrap();
-                let error: Value = serde_json::from_slice(&bytes).unwrap();
+                let error: Value = json_codec::from_slice(&bytes).unwrap();
                 if error["error"]["code"] == "UPLOAD_RANGE_CONFLICT" {
                     break;
                 }
@@ -305,7 +305,7 @@ async fn upload_idle_timeout_preserves_tail_and_allows_verified_retry() {
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
-    let body: Value = serde_json::from_slice(
+    let body: Value = json_codec::from_slice(
         &axum::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),

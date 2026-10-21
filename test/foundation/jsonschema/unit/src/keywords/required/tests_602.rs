@@ -2,7 +2,7 @@
 mod tests {
     use super::HASHMAP_THRESHOLD;
     use crate::tests_util;
-    use serde_json::{json, Map, Value};
+    use json_codec::{json, Map, Value};
     use test_case::test_case;
 
     #[test_case(&json!({"required": ["a"]}), &json!({}), "/required")]
@@ -192,7 +192,7 @@ mod tests {
     // is not used; the standalone required validator must still fire.
     #[test]
     fn required_2_enforced_with_large_properties_map() {
-        let mut props = serde_json::Map::new();
+        let mut props = json_codec::Map::new();
         for i in 0..HASHMAP_THRESHOLD {
             props.insert(format!("prop{i}"), json!({"type": "string"}));
         }

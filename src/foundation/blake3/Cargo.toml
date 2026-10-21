@@ -21,6 +21,7 @@ license = "CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception"
 repository = "https://github.com/BLAKE3-team/BLAKE3"
 
 [features]
+serialization = ["dep:data-serialization"]
 default = ["std"]
 digest = ["dep:digest"]
 mmap = ["std"]
@@ -67,12 +68,12 @@ version = "1.12.1"
 optional = true
 path = "../rayon-core"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 features = ["derive"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.zeroize]
 version = "1"

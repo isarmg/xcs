@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 
 use crate::arguments::SqliteArgumentsBuffer;
 use crate::decode::Decode;

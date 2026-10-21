@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::tests_util;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(&json!({"const": 1}), &json!(2), "/const")]
@@ -18,11 +18,11 @@ mod tests {
     #[cfg(feature = "arbitrary-precision")]
     mod arbitrary_precision {
         use crate::tests_util;
-        use serde_json::Value;
+        use json_codec::Value;
         use test_case::test_case;
 
         fn parse_json(json: &str) -> Value {
-            serde_json::from_str(json).unwrap()
+            json_codec::from_str(json).unwrap()
         }
 
         #[test_case(r#"{"const": 18446744073709551617}"#, "18446744073709551617", true; "large int exact match")]

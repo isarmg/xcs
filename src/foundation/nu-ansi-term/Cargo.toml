@@ -23,8 +23,9 @@ license = "MIT"
 repository = "https://github.com/nushell/nu-ansi-term"
 
 [features]
+serialization = ["dep:data-serialization"]
 default = ["std"]
-derive_serde_style = ["serde"]
+derive_serialization_style = ["serialization"]
 gnu_legacy = []
 std = []
 
@@ -33,8 +34,8 @@ name = "nu_ansi_term"
 path = "src/lib.rs"
 doctest = true
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.152"
 features = ["derive"]
 optional = true
-path = "../serde"
+path = "../data-serialization"

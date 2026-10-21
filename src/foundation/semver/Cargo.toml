@@ -26,17 +26,17 @@ repository = "https://github.com/dtolnay/semver"
 
 [features]
 default = ["std"]
-serde = ["dep:serde"]
+serialization = ["dep:data-serialization"]
 std = []
 
 [lib]
 name = "semver"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.220"
 optional = true
 default-features = false
-package = "serde_core"
-path = "../serde_core"
+package = "serialization-core"
+path = "../serialization-core"
 

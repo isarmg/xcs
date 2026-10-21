@@ -3,7 +3,7 @@ mod tests {
     use super::*;
     use crate::{routing::get, test_helpers::*, Router};
     use futures_util::stream;
-    use serde_json::value::RawValue;
+    use json_codec::value::RawValue;
     use std::{collections::HashMap, convert::Infallible};
     use tokio_stream::StreamExt as _;
 
@@ -46,7 +46,7 @@ mod tests {
     fn valid_json_raw_value_chars_handled() {
         let json_string = "{\r\"foo\":  \n\r\r   \"bar\\n\"\n}";
         let json_raw_value_event = Event::default()
-            .json_data(serde_json::from_str::<&RawValue>(json_string).unwrap())
+            .json_data(json_codec::from_str::<&RawValue>(json_string).unwrap())
             .unwrap();
         assert_eq!(
             &*json_raw_value_event.finalize(),
@@ -62,7 +62,7 @@ mod tests {
                 let stream = stream::iter(vec![
                     Event::default().data("one").comment("this is a comment"),
                     Event::default()
-                        .json_data(serde_json::json!({ "foo": "bar" }))
+                        .json_data(json_codec::json!({ "foo": "bar" }))
                         .unwrap(),
                     Event::default()
                         .event("three")

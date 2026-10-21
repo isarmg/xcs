@@ -2,7 +2,7 @@
 //! publication; named branches retain their identities and gain subtree nodes.
 use super::*;
 use crate::engine::Prepared;
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 
 fn contains(scope: &str, path: &str) -> bool {

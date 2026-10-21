@@ -9,9 +9,9 @@ use zerovec::ule::{AsULE, RawBytesULE};
 /// This is a bitpacked combination of the `Bidi_Mirroring_Glyph`,
 /// `Bidi_Mirrored`, and `Bidi_Paired_Bracket_Type` properties.
 #[derive(Debug, Eq, PartialEq, Clone, Copy, Default)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::props))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // needed for baked construction
 pub struct BidiMirroringGlyph {
     /// The mirroring glyph
@@ -54,9 +54,9 @@ impl AsULE for BidiMirroringGlyph {
 /// If you have a use case this property without also needing the [`BidiMirroringGlyph`]
 /// property, and need to optimize data size, please file an issue.
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Default)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::props))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[non_exhaustive]
 pub enum BidiPairedBracketType {
     /// Represents `Bidi_Paired_Bracket_Type=Open`.

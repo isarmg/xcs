@@ -66,7 +66,7 @@ edition = "2021"
 [features]
 poll = ["mio/net", "mio/os-ext", "mio/os-poll"]
 [dependencies]
-sysinfo = {{ path = "{foundation / 'sysinfo'}", features = ["c-interface", "serde", "multithread", "linux-netdevs", "linux-tmpfs", "debug"] }}
+sysinfo = {{ path = "{foundation / 'sysinfo'}", features = ["c-interface", "serialization", "multithread", "linux-netdevs", "linux-tmpfs", "debug"] }}
 socket2 = {{ path = "{foundation / 'socket2'}", features = ["all"] }}
 mio = {{ path = "{foundation / 'mio'}", default-features = false }}
 ''')

@@ -7,7 +7,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"maxLength": 5});
 //! let instance = json!("sensitive data");
@@ -42,7 +42,7 @@ use crate::{
     LazyInstance,
 };
 use referencing::Uri;
-use serde_json::{Number, Value};
+use json_codec::{Number, Value};
 use std::{
     borrow::Cow,
     error,
@@ -92,7 +92,7 @@ impl fmt::Debug for ValidationErrorRepr<'_> {
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"maxLength": 5});
 /// let instance = json!("foo");

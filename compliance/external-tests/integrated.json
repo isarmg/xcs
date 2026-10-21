@@ -52,7 +52,7 @@
         {
           "source": "src/interface/src/contours/geometry.rs",
           "path": "test/interface/unit/contours/geometry/tests.rs",
-          "sha256": "926194b526c68e4852a2839e2f52da93914d360b2316daeb4788340f30efb7e5",
+          "sha256": "49d8a77fbdac00f7a13ef0c143bf8064eba4ef9c94e219a3702627c71f601b0e",
           "source_sha256_before": "b8dd508ef652ea2ae7c8c0d7303dbff9917727956bc604ab48bd14e8dbb7bcf1"
         },
         {

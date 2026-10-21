@@ -13,24 +13,24 @@ use crate::{
     properties::{KeyHead, PropertyName, HASHMAP_THRESHOLD},
     types::JsonType,
     validator::{EvaluationResult, Validate, ValidationContext},
-    Json, Node, Object, SerdeJson,
+    Json, Node, Object, JsonValueBackend,
 };
 use ahash::AHashMap;
 use referencing::{Uri, Vocabulary};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::sync::Arc;
 
-pub(crate) struct SmallPropertiesValidator<F: Json = SerdeJson> {
+pub(crate) struct SmallPropertiesValidator<F: Json = JsonValueBackend> {
     pub(crate) properties: Vec<(PropertyName, F::PreparedKey, SchemaNode<F>)>,
 }
 
-pub(crate) struct BigPropertiesValidator<F: Json = SerdeJson> {
+pub(crate) struct BigPropertiesValidator<F: Json = JsonValueBackend> {
     pub(crate) properties: AHashMap<String, SchemaNode<F>>,
 }
 
 /// Fused validator for `properties` + `required: [2 items]` (no `additionalProperties: false`).
 /// Eliminates separate required validation pass and duplicate `BTreeMap` lookups.
-pub(crate) struct SmallPropertiesWithRequired2Validator<F: Json = SerdeJson> {
+pub(crate) struct SmallPropertiesWithRequired2Validator<F: Json = JsonValueBackend> {
     pub(crate) properties: Vec<(PropertyName, F::PreparedKey, SchemaNode<F>)>,
     first: PropertyName,
     first_key: F::PreparedKey,

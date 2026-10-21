@@ -4,7 +4,7 @@ use std::str::FromStr;
 use crate::{uri, Error};
 use ahash::AHashSet;
 use fluent_uri::Uri;
-use serde_json::Value;
+use json_codec::Value;
 
 /// A JSON Schema vocabulary identifier, representing standard vocabularies (Core, Applicator, etc.)
 /// or custom ones via URI.

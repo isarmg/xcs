@@ -283,11 +283,11 @@ extern crate juniper;
 #[macro_use]
 extern crate postgres_types;
 
-#[cfg(feature = "with-serde-support")]
+#[cfg(feature = "with-serialization-support")]
 #[macro_use]
-extern crate serde_derive;
-#[cfg(feature = "with-serde-support")]
-extern crate serde;
+extern crate serialization_derive;
+#[cfg(feature = "with-serialization-support")]
+extern crate data_serialization;
 
 #[cfg(feature = "with-decimal")]
 mod decimal;

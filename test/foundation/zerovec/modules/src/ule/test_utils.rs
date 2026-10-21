@@ -7,12 +7,12 @@
 ///
 /// Note that the concrete type may need to be explicitly specified to prevent issues with
 /// <https://github.com/rust-lang/rust/issues/130180>
-#[cfg(feature = "serde")]
-pub(crate) fn assert_serde_roundtrips<T>(var: &T)
+#[cfg(feature = "serialization")]
+pub(crate) fn assert_serialization_roundtrips<T>(var: &T)
 where
-    T: crate::ule::VarULE + ?Sized + serde::Serialize,
-    for<'a> Box<T>: serde::Deserialize<'a>,
-    for<'a> &'a T: serde::Deserialize<'a>,
+    T: crate::ule::VarULE + ?Sized + data_serialization::Serialize,
+    for<'a> Box<T>: data_serialization::Deserialize<'a>,
+    for<'a> &'a T: data_serialization::Deserialize<'a>,
     T: core::fmt::Debug + PartialEq,
 {
     let bincode = bincode::serialize(var).unwrap();
@@ -24,7 +24,7 @@ where
         "Single element roundtrips with bincode"
     );
 
-    let json = serde_json::to_string(var).unwrap();
-    let deserialized: Box<T> = serde_json::from_str(&json).unwrap();
+    let json = json_codec::to_string(var).unwrap();
+    let deserialized: Box<T> = json_codec::from_str(&json).unwrap();
     assert_eq!(var, &*deserialized, "Single element roundtrips with serde");
 }

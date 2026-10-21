@@ -10,8 +10,8 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Response},
 };
-use serde::Deserialize;
-use serde_json::{Value, json};
+use data_serialization::Deserialize;
+use json_codec::{Value, json};
 use std::{
     collections::{HashMap, HashSet},
     net::{IpAddr, SocketAddr},
@@ -307,7 +307,7 @@ pub(crate) async fn authorize(
 pub(crate) struct SessionToken(String);
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct Login {
     username: String,
     password: String,
@@ -380,7 +380,7 @@ pub(crate) async fn logout(
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct PasswordChange {
     current_password: String,
     new_password: String,
@@ -443,15 +443,15 @@ pub(crate) async fn accounts(
     Ok(Json(json!({"accounts": accounts})))
 }
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct AccountUpdate {
     username: String,
     password: Option<String>,
-    #[serde(default)]
+    #[serialization(default)]
     admin: bool,
-    #[serde(default)]
+    #[serialization(default)]
     repositories: std::collections::BTreeSet<String>,
-    #[serde(default)]
+    #[serialization(default)]
     disabled: bool,
 }
 pub(crate) async fn account_upsert(

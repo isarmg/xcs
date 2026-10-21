@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use crate::{validator_for, Registry, SerdeJson, ValidationError};
+    use crate::{validator_for, Registry, JsonValueBackend, ValidationError};
 
     use super::Draft;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     // A build error judges the schema itself, so its instance path is the location that failed
@@ -245,7 +245,7 @@ mod tests {
         let validator =
             validator_for(&json!({"properties": {"tree": tree}})).expect("Should build validator");
         let evaluation = validator.evaluate(&json!({"tree": instance}));
-        let list = serde_json::to_value(evaluation.list()).expect("List output");
+        let list = json_codec::to_value(evaluation.list()).expect("List output");
         let locations: Vec<&str> = list["details"]
             .as_array()
             .expect("List output details")
@@ -265,7 +265,7 @@ mod tests {
         .expect("Should build validator");
 
         let evaluation = validator.evaluate(&json!({"tree": {"value": 1}}));
-        let list = serde_json::to_value(evaluation.list()).expect("List output");
+        let list = json_codec::to_value(evaluation.list()).expect("List output");
         let locations: Vec<&str> = list["details"]
             .as_array()
             .expect("List output details")
@@ -354,7 +354,7 @@ mod tests {
         let validator = property_with_space();
         let evaluation = validator.evaluate(&json!({"s p": 1}));
         assert_eq!(
-            serde_json::to_value(evaluation.list()).expect("List output"),
+            json_codec::to_value(evaluation.list()).expect("List output"),
             json!({
                 "valid": false,
                 "details": [
@@ -394,7 +394,7 @@ mod tests {
         let validator = property_with_space();
         let evaluation = validator.evaluate(&json!({"s p": 1}));
         assert_eq!(
-            serde_json::to_value(evaluation.hierarchical()).expect("Hierarchical output"),
+            json_codec::to_value(evaluation.hierarchical()).expect("Hierarchical output"),
             json!({
                 "valid": false,
                 "evaluationPath": "",
@@ -464,7 +464,7 @@ mod tests {
             ]
         );
         assert_eq!(
-            serde_json::to_value(evaluation.list()).expect("List output"),
+            json_codec::to_value(evaluation.list()).expect("List output"),
             json!({
                 "valid": true,
                 "details": [
@@ -567,7 +567,7 @@ mod tests {
             )]
         );
 
-        let list = serde_json::to_value(evaluation.list()).expect("List output");
+        let list = json_codec::to_value(evaluation.list()).expect("List output");
         let from_list: Vec<(String, String, String)> = list["details"]
             .as_array()
             .expect("List output details")
@@ -594,7 +594,7 @@ mod tests {
         }))
         .expect("Should build validator");
         let evaluation = validator.evaluate(&json!(1));
-        let list = serde_json::to_value(evaluation.list()).expect("List output");
+        let list = json_codec::to_value(evaluation.list()).expect("List output");
         let locations: Vec<(&str, &str)> = list["details"]
             .as_array()
             .expect("List output details")
@@ -684,7 +684,7 @@ mod tests {
     #[test_case(crate::draft7::is_valid ; "draft7")]
     #[test_case(crate::draft201909::is_valid ; "draft201909")]
     #[test_case(crate::draft202012::is_valid ; "draft202012")]
-    fn test_is_valid(is_valid_fn: fn(&serde_json::Value, &serde_json::Value) -> bool) {
+    fn test_is_valid(is_valid_fn: fn(&json_codec::Value, &json_codec::Value) -> bool) {
         let schema = json!({
             "type": "object",
             "properties": {
@@ -715,8 +715,8 @@ mod tests {
     #[test_case(crate::draft202012::validate ; "draft202012")]
     fn test_validate(
         validate_fn: for<'i> fn(
-            &serde_json::Value,
-            &'i serde_json::Value,
+            &json_codec::Value,
+            &'i json_codec::Value,
         ) -> Result<(), ValidationError<'i>>,
     ) {
         let schema = json!({
@@ -777,8 +777,8 @@ mod tests {
     #[test_case(crate::draft201909::meta::validate, crate::draft201909::meta::is_valid ; "draft201909")]
     #[test_case(crate::draft202012::meta::validate, crate::draft202012::meta::is_valid ; "draft202012")]
     fn test_meta_validation(
-        validate_fn: fn(&serde_json::Value) -> Result<(), ValidationError>,
-        is_valid_fn: fn(&serde_json::Value) -> bool,
+        validate_fn: fn(&json_codec::Value) -> Result<(), ValidationError>,
+        is_valid_fn: fn(&json_codec::Value) -> bool,
     ) {
         let valid = json!({
             "type": "object",
@@ -807,12 +807,12 @@ mod tests {
     #[test_case(&json!({"$schema": "http://json-schema.org/draft-04/schema#", "minimum": 5, "exclusiveMinimum": true}), true ; "draft4 boolean exclusive minimum")]
     #[test_case(&json!({"$schema": "http://json-schema.org/draft-04/schema#", "exclusiveMinimum": 5}), false ; "draft4 numeric exclusive minimum")]
     #[test_case(&json!({"$schema": "https://json-schema.org/draft/2020-12/schema", "exclusiveMinimum": 5}), true ; "draft2020-12 numeric exclusive minimum")]
-    fn test_meta_validate_for(schema: &serde_json::Value, expected: bool) {
-        let result = crate::meta::validate_for::<SerdeJson>(schema);
+    fn test_meta_validate_for(schema: &json_codec::Value, expected: bool) {
+        let result = crate::meta::validate_for::<JsonValueBackend>(schema);
         assert_eq!(result.is_ok(), expected);
         assert_eq!(result.is_ok(), crate::meta::validate(schema).is_ok());
         assert_eq!(
-            crate::meta::is_valid_for::<SerdeJson>(schema).expect("Meta-schema is resolvable"),
+            crate::meta::is_valid_for::<JsonValueBackend>(schema).expect("Meta-schema is resolvable"),
             expected
         );
     }
@@ -820,13 +820,13 @@ mod tests {
     #[test]
     fn test_meta_validate_for_unresolvable_meta_schema() {
         let schema = json!({"$schema": "htt://json-schema.org/draft-07/schema"});
-        let error = crate::meta::validate_for::<SerdeJson>(&schema)
+        let error = crate::meta::validate_for::<JsonValueBackend>(&schema)
             .expect_err("Unresolvable meta-schema should fail");
         assert!(matches!(
             error.kind(),
             crate::error::ValidationErrorKind::Referencing(_)
         ));
-        let error = crate::meta::is_valid_for::<SerdeJson>(&schema)
+        let error = crate::meta::is_valid_for::<JsonValueBackend>(&schema)
             .expect_err("Unresolvable meta-schema should fail");
         assert!(matches!(
             error.kind(),
@@ -931,8 +931,8 @@ mod tests {
     )]
     fn test_exclusive_minimum_detection(
         schema_uri: &str,
-        exclusive_minimum: impl Into<serde_json::Value>,
-        minimum: impl Into<serde_json::Value>,
+        exclusive_minimum: impl Into<json_codec::Value>,
+        minimum: impl Into<json_codec::Value>,
         expected: bool,
     ) {
         let schema = json!({

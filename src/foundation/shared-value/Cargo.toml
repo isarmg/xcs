@@ -24,10 +24,10 @@ repository = "https://github.com/leptos-rs/leptos"
 name = "shared_value"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.219"
 default-features = true
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.thiserror]
 version = "2.0.12"
@@ -35,6 +35,6 @@ default-features = true
 path = "../thiserror"
 
 
-[dev-dependencies.serde_json]
+[dev-dependencies.json-codec]
 version = "1"
-path = "../serde_json"
+path = "../json-codec"

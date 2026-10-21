@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::{options, PreparedDocument};
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
 
     /// Every pointer in `document`, deepest first.
     fn every_pointer(document: &Value) -> Vec<String> {

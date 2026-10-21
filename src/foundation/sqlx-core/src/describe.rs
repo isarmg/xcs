@@ -9,11 +9,11 @@ use std::convert::identity;
 /// The query macros (e.g., `query!`, `query_as!`, etc.) use the information here to validate
 /// output and parameter types; and, generate an anonymous record.
 #[derive(Debug)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "offline", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[cfg_attr(
     feature = "offline",
-    serde(bound(
-        serialize = "DB::TypeInfo: serde::Serialize, DB::Column: serde::Serialize",
+    serialization(bound(
+        serialize = "DB::TypeInfo: data_serialization::Serialize, DB::Column: data_serialization::Serialize",
         deserialize = "DB::TypeInfo: serde::de::DeserializeOwned, DB::Column: serde::de::DeserializeOwned",
     ))
 )]

@@ -79,7 +79,7 @@ impl Engine {
         // not merely its caller-supplied digest string. Missing legacy body
         // copies leave the workspace untouched rather than guessing its state.
         directories.iter().any(|directory| {
-            let Ok(body) = read_json::<serde_json::Value>(&directory.join("wire-request.json"))
+            let Ok(body) = read_json::<json_codec::Value>(&directory.join("wire-request.json"))
             else {
                 return false;
             };

@@ -9,9 +9,9 @@ mod slice;
 
 pub mod raw_entry_v1;
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
-pub mod serde_seq;
+#[cfg(feature = "serialization")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serialization")))]
+pub mod serialization_seq;
 
 #[cfg(test)]
 #[path = "../../../../test/foundation/indexmap/modules/src/map/tests.rs"]

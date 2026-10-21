@@ -5,7 +5,7 @@ use axum::{
     Router,
 };
 use axum_macros::FromRequest;
-use serde::Deserialize;
+use data_serialization::Deserialize;
 use std::collections::HashMap;
 
 fn main() {
@@ -18,7 +18,7 @@ async fn handler_result(_: Result<MyJson, MyJsonRejection>) {}
 
 #[derive(FromRequest, Deserialize)]
 #[from_request(via(axum::extract::Json), rejection(MyJsonRejection))]
-#[serde(transparent)]
+#[serialization(transparent)]
 struct MyJson(HashMap<String, String>);
 
 struct MyJsonRejection {}

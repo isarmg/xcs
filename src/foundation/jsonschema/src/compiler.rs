@@ -14,14 +14,14 @@ use crate::{
     paths::{Location, LocationSegment},
     types::{JsonType, JsonTypeSet},
     validator::Validate,
-    Json, LazyInstance, SerdeJson, ValidationError, Validator, ValidatorMap,
+    Json, LazyInstance, JsonValueBackend, ValidationError, Validator, ValidatorMap,
 };
 use ahash::{AHashMap, AHashSet};
 use referencing::{
     uri, write_escaped_str, Draft, List, Registry, Resolved, Resolver, ResourceRef, Uri,
     Vocabulary, VocabularySet,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::{
     borrow::Cow,
     cell::{Cell, RefCell},
@@ -276,7 +276,7 @@ fn deferred_key(resolved: &Resolved<'_>, alias: &Arc<Uri<String>>) -> AliasCache
 }
 
 /// Shared caches reused across every `Context` derived from a schema root.
-struct SharedContextState<'a, F: Json = SerdeJson> {
+struct SharedContextState<'a, F: Json = JsonValueBackend> {
     seen: SharedSet<Arc<Uri<String>>>,
     location_nodes: SharedCache<NodeCacheKey, CachedNode<F>>,
     alias_nodes: SharedCache<AliasCacheKey, CachedNode<F>>,
@@ -340,7 +340,7 @@ impl<F: Json> SharedContextState<'_, F> {
 }
 
 /// Per-location view used while compiling schemas into validators.
-pub(crate) struct Context<'a, F: Json = SerdeJson> {
+pub(crate) struct Context<'a, F: Json = JsonValueBackend> {
     config: &'a dyn CompilationOptions<F>,
     resolver: Resolver<'a>,
     vocabularies: VocabularySet,

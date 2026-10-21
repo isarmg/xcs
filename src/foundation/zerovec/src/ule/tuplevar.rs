@@ -178,35 +178,35 @@ macro_rules! tuple_varule {
             }
         }
 
-        #[cfg(feature = "serde")]
-        impl<$($T: serde::Serialize,)+ Format> serde::Serialize for $name<$($T,)+ Format>
+        #[cfg(feature = "serialization")]
+        impl<$($T: data_serialization::Serialize,)+ Format> data_serialization::Serialize for $name<$($T,)+ Format>
         where
             $($T: VarULE + ?Sized,)+
             // This impl should be present on almost all VarULE types. if it isn't, that is a bug
             $(for<'a> &'a $T: ZeroFrom<'a, $T>,)+
             Format: VarZeroVecFormat
         {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: data_serialization::Serializer {
                 if serializer.is_human_readable() {
                     let this = (
                         $(self.$t()),+
                     );
-                    <($(&$T),+) as serde::Serialize>::serialize(&this, serializer)
+                    <($(&$T),+) as data_serialization::Serialize>::serialize(&this, serializer)
                 } else {
                     serializer.serialize_bytes(self.multi.as_bytes())
                 }
             }
         }
 
-        #[cfg(all(feature = "serde", feature = "alloc"))]
-        impl<'de, $($T: VarULE + ?Sized,)+ Format> serde::Deserialize<'de> for alloc::boxed::Box<$name<$($T,)+ Format>>
+        #[cfg(all(feature = "serialization", feature = "alloc"))]
+        impl<'de, $($T: VarULE + ?Sized,)+ Format> data_serialization::Deserialize<'de> for alloc::boxed::Box<$name<$($T,)+ Format>>
             where
                 // This impl should be present on almost all deserializable VarULE types
-                $( alloc::boxed::Box<$T>: serde::Deserialize<'de>,)+
+                $( alloc::boxed::Box<$T>: data_serialization::Deserialize<'de>,)+
                 Format: VarZeroVecFormat {
-            fn deserialize<Des>(deserializer: Des) -> Result<Self, Des::Error> where Des: serde::Deserializer<'de> {
+            fn deserialize<Des>(deserializer: Des) -> Result<Self, Des::Error> where Des: data_serialization::Deserializer<'de> {
                 if deserializer.is_human_readable() {
-                    let this = <( $(alloc::boxed::Box<$T>),+) as serde::Deserialize>::deserialize(deserializer)?;
+                    let this = <( $(alloc::boxed::Box<$T>),+) as data_serialization::Deserialize>::deserialize(deserializer)?;
                     let this_ref = (
                         $(&*this.$i),+
                     );
@@ -220,16 +220,16 @@ macro_rules! tuple_varule {
             }
         }
 
-        #[cfg(feature = "serde")]
-        impl<'a, 'de: 'a, $($T: VarULE + ?Sized,)+ Format: VarZeroVecFormat> serde::Deserialize<'de> for &'a $name<$($T,)+ Format> {
-            fn deserialize<Des>(deserializer: Des) -> Result<Self, Des::Error> where Des: serde::Deserializer<'de> {
+        #[cfg(feature = "serialization")]
+        impl<'a, 'de: 'a, $($T: VarULE + ?Sized,)+ Format: VarZeroVecFormat> data_serialization::Deserialize<'de> for &'a $name<$($T,)+ Format> {
+            fn deserialize<Des>(deserializer: Des) -> Result<Self, Des::Error> where Des: data_serialization::Deserializer<'de> {
                 if deserializer.is_human_readable() {
-                    Err(serde::de::Error::custom(
+                    Err(data_serialization::de::Error::custom(
                         concat!("&", stringify!($name), " can only deserialize in zero-copy ways"),
                     ))
                 } else {
                     let bytes = <&[u8]>::deserialize(deserializer)?;
-                    $name::<$($T,)+ Format>::parse_bytes(bytes).map_err(serde::de::Error::custom)
+                    $name::<$($T,)+ Format>::parse_bytes(bytes).map_err(data_serialization::de::Error::custom)
                 }
             }
         }

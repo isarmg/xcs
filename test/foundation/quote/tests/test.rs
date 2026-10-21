@@ -130,9 +130,9 @@ fn test_advanced() {
             phantom: ::std::marker::PhantomData<#item_ty>,
         }
 
-        impl #generics ::serde::Serialize for SerializeWith #generics #where_clause {
+        impl #generics ::data_serialization::Serialize for SerializeWith #generics #where_clause {
             fn serialize<S>(&self, s: &mut S) -> Result<(), S::Error>
-                where S: ::serde::Serializer
+                where S: ::data_serialization::Serializer
             {
                 #path(self.value, s)
             }
@@ -149,9 +149,9 @@ fn test_advanced() {
         "value : & 'a String , ",
         "phantom : :: std :: marker :: PhantomData < Cow < 'a , str > > , ",
         "} ",
-        "impl < 'a , T > :: serde :: Serialize for SerializeWith < 'a , T > where T : Serialize { ",
+        "impl < 'a , T > :: data_serialization :: Serialize for SerializeWith < 'a , T > where T : Serialize { ",
         "fn serialize < S > (& self , s : & mut S) -> Result < () , S :: Error > ",
-        "where S : :: serde :: Serializer ",
+        "where S : :: data_serialization :: Serializer ",
         "{ ",
         "SomeTrait :: serialize_with (self . value , s) ",
         "} ",

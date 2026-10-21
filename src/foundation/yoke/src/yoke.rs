@@ -68,7 +68,7 @@ use alloc::sync::Arc;
 /// fn load_object(filename: &str) -> Yoke<Cow<'static, str>, Rc<[u8]>> {
 ///     let rc: Rc<[u8]> = load_from_cache(filename);
 ///     Yoke::<Cow<'static, str>, Rc<[u8]>>::attach_to_cart(rc, |data: &[u8]| {
-///         // essentially forcing a #[serde(borrow)]
+///         // essentially forcing a #[serialization(borrow)]
 ///         Cow::Borrowed(bincode::deserialize(data).unwrap())
 ///     })
 /// }
@@ -197,7 +197,7 @@ where
     /// fn load_object(filename: &str) -> Yoke<Cow<'static, str>, Rc<[u8]>> {
     ///     let rc: Rc<[u8]> = load_from_cache(filename);
     ///     Yoke::<Cow<'static, str>, Rc<[u8]>>::attach_to_cart(rc, |data: &[u8]| {
-    ///         // essentially forcing a #[serde(borrow)]
+    ///         // essentially forcing a #[serialization(borrow)]
     ///         Cow::Borrowed(bincode::deserialize(data).unwrap())
     ///     })
     /// }
@@ -228,7 +228,7 @@ where
     ///         rc,
     ///         |data: &[u8]| {
     ///             let mut d = postcard::Deserializer::from_bytes(data);
-    ///             let output = serde::Deserialize::deserialize(&mut d);
+    ///             let output = data_serialization::Deserialize::deserialize(&mut d);
     ///             *bytes_remaining = d.finalize().unwrap().len();
     ///             Cow::Borrowed(output.unwrap())
     ///         },

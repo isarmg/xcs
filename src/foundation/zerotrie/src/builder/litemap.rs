@@ -48,11 +48,11 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
-impl TryFrom<&LiteMap<crate::serde::SerdeByteStrOwned, usize>> for ZeroTrie<Vec<u8>> {
+#[cfg(feature = "serialization")]
+impl TryFrom<&LiteMap<crate::data_serialization::SerializedByteString, usize>> for ZeroTrie<Vec<u8>> {
     type Error = ZeroTrieBuildError;
     fn try_from(
-        items: &LiteMap<crate::serde::SerdeByteStrOwned, usize>,
+        items: &LiteMap<crate::data_serialization::SerializedByteString, usize>,
     ) -> Result<Self, ZeroTrieBuildError> {
         let tuples: Vec<(&[u8], usize)> = items.iter().map(|(k, v)| (k.as_bytes(), *v)).collect();
         let byte_str_slice = ByteSliceWithIndices::from_byte_slice(&tuples);

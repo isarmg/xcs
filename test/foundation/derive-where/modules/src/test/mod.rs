@@ -7,8 +7,8 @@ mod enum_;
 mod incomparable;
 mod misc;
 mod partial_ord;
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 mod skip;
 mod use_case;
 #[cfg(feature = "zeroize")]

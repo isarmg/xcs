@@ -1,6 +1,6 @@
 //! Authorization and wire adaptation for the storage engine.
 use crate::{ApiError, Backend, Content, auth::Identity};
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::{path::Path, sync::Mutex};
 use storage_engine::{Engine, Grants, NamespaceOperation, Repository};
 pub mod application;
@@ -426,7 +426,7 @@ impl Backend for EngineBackend {
                 keys(&input, &["repository_id", "grants", "operation_id"])?;
                 let repository_id = field(&input, "repository_id")?;
                 authorize(identity, repository(&engine, repository_id)?, true, true)?;
-                let grants: Grants = serde_json::from_value(
+                let grants: Grants = json_codec::from_value(
                     input
                         .get("grants")
                         .cloned()
@@ -618,7 +618,7 @@ impl Backend for EngineBackend {
                 let mut options = input.clone();
                 options.as_object_mut().unwrap().remove("history_tree_id");
                 let options: storage_engine::HistoricalSaveOptions =
-                    serde_json::from_value(options).map_err(ApiError::invalid)?;
+                    json_codec::from_value(options).map_err(ApiError::invalid)?;
                 encode(
                     engine
                         .create_historical_save_plan(history, options, &identity.principal)
@@ -764,7 +764,7 @@ impl Backend for EngineBackend {
                 }
                 let workspace_id = field(&input, "workspace_id")?.to_owned();
                 let plan = if action == crate::BackendAction::CommitWorkspace {
-                    let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                    let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                     Application::new(&mut engine, identity)
                         .prepare_commit_workspace_public(command)?
                 } else {
@@ -816,7 +816,7 @@ impl Backend for EngineBackend {
                 for key in ["repository_id", "source_commit_id", "name", "operation_id"] {
                     field(&input, key)?;
                 }
-                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                 let branch = Application::new(&mut engine, identity).create_branch(command)?;
                 branch_wire(&engine, &branch)
             }
@@ -824,7 +824,7 @@ impl Backend for EngineBackend {
                 for key in ["branch_id", "operation_id"] {
                     field(&input, key)?;
                 }
-                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                 encode(Application::new(&mut engine, identity).archive_branch(command)?)
             }
             crate::BackendAction::MergeLink => {
@@ -838,7 +838,7 @@ impl Backend for EngineBackend {
                 ] {
                     field(&input, key)?;
                 }
-                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                 encode(Application::new(&mut engine, identity).merge_link(command)?)
             }
             crate::BackendAction::History => {
@@ -937,7 +937,7 @@ impl Backend for EngineBackend {
                 keys(&input, &["history_tree_id", "version_ids"])?;
                 let history = field(&input, "history_tree_id")?;
                 authorize(identity, repo_for_history(&engine, history)?, true, true)?;
-                let versions: Vec<String> = serde_json::from_value(
+                let versions: Vec<String> = json_codec::from_value(
                     input
                         .get("version_ids")
                         .cloned()
@@ -968,7 +968,7 @@ impl Backend for EngineBackend {
                 for key in ["plan_id", "operation_id", "plan_digest"] {
                     field(&input, key)?;
                 }
-                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                 encode(Application::new(&mut engine, identity).commit_plan(command)?)
             }
             crate::BackendAction::Policy => {
@@ -1017,7 +1017,7 @@ impl Backend for EngineBackend {
                 authorize(identity, repository(&engine, repo)?, true, true)?;
                 // Retain the transport's key/admission error ordering while the
                 // application also enforces ACLs for non-HTTP callers.
-                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                 let result =
                     Application::new(&mut engine, identity).update_protection_policy(command)?;
                 operation_wire(result)
@@ -1038,7 +1038,7 @@ impl Backend for EngineBackend {
                 authorize(identity, repository(&engine, repo)?, true, true)?;
                 // Retain the transport's key/admission error ordering while the
                 // application also enforces ACLs for non-HTTP callers.
-                let command = serde_json::from_value(input).map_err(ApiError::invalid)?;
+                let command = json_codec::from_value(input).map_err(ApiError::invalid)?;
                 let result =
                     Application::new(&mut engine, identity).update_placement_rule(command)?;
                 operation_wire(result)

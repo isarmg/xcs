@@ -297,7 +297,7 @@ fn metadata_only_package_and_purge_tombstone_combinations_are_preflighted() {
     }
     // Keep each modern page below half the legacy cap so this fixture
     // deterministically distinguishes legacy and current tombstone sizes.
-    let values = serde_json::to_value(&wide_state.content_states).unwrap();
+    let values = json_codec::to_value(&wide_state.content_states).unwrap();
     let mut in_page = 0;
     for key in values.as_object().unwrap().keys() {
         if blake3::hash(key.as_bytes()).as_bytes()[0] & 31 == 0 {
@@ -313,7 +313,7 @@ fn metadata_only_package_and_purge_tombstone_combinations_are_preflighted() {
     assert!(snapshot.pages["content_states"].len() > 5);
     let mut actual_largest = package_size;
     for hash in &snapshot.pages["content_states"] {
-        let page: serde_json::Map<String, serde_json::Value> =
+        let page: json_codec::Map<String, json_codec::Value> =
             load_object(&disk, "state-page", hash).unwrap();
         for (id, status) in &page {
             if !matches!(status.as_str(), Some("PURGED" | "MIGRATED")) {
@@ -372,7 +372,7 @@ fn metadata_only_package_and_purge_tombstone_combinations_are_preflighted() {
     // A pre-upgrade decided candidate must keep its old, larger pages for
     // exact preflight, even though the current writer makes smaller ones.
     let mut legacy = snapshot.clone();
-    let states = serde_json::to_value(&wide_state.content_states).unwrap();
+    let states = json_codec::to_value(&wide_state.content_states).unwrap();
     let entries = states.as_object().unwrap().iter().collect::<Vec<_>>();
     let legacy_pages = entries
         .chunks(STATE_PAGE_ENTRIES)
@@ -380,7 +380,7 @@ fn metadata_only_package_and_purge_tombstone_combinations_are_preflighted() {
             let page = chunk
                 .iter()
                 .map(|(key, value)| ((*key).clone(), (*value).clone()))
-                .collect::<serde_json::Map<_, _>>();
+                .collect::<json_codec::Map<_, _>>();
             store_object(&disk, "state-page", &page).unwrap()
         })
         .collect::<Vec<_>>();
@@ -392,7 +392,7 @@ fn metadata_only_package_and_purge_tombstone_combinations_are_preflighted() {
     legacy_candidate.snapshot_hash = legacy_hash;
     // Preflight sizes proofs but does not authorize or publish recovery.
     let recovery = RecoveryProof {
-        plan: serde_json::from_value(serde_json::json!({
+        plan: json_codec::from_value(json_codec::json!({
             "recovery_id": "test-recovery", "digest": "0".repeat(64),
             "operation_id": candidate.operation_id, "candidate_hash": "0".repeat(64),
             "principal": "alice", "reason": "size regression", "isolation_generation": "1",
@@ -495,7 +495,7 @@ fn snapshot_page_and_common_metadata_encoder_reject_one_byte_over_boundary() {
             .code(),
         "RESOURCE_LIMIT"
     );
-    let object = serde_json::json!({"bytes":"full"});
+    let object = json_codec::json!({"bytes":"full"});
     let size = canonical_json(&object).unwrap().len();
     assert_eq!(encode_metadata(&object, size).unwrap().len(), size);
     assert_eq!(

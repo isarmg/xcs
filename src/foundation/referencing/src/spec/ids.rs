@@ -1,5 +1,5 @@
 //! Extracting schema ID.
-use serde_json::Value;
+use json_codec::Value;
 
 pub(crate) fn dollar_id(contents: &Value) -> Option<&str> {
     contents

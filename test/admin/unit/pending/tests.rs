@@ -1,5 +1,5 @@
 use super::*;
-use serde_json::json;
+use json_codec::json;
 use std::{
     fs,
     os::unix::fs::{PermissionsExt, symlink},
@@ -24,12 +24,12 @@ fn pending_requests_are_private_complete_and_never_replace_an_existing_request()
         0o600
     );
     assert_eq!(
-        serde_json::from_slice::<Value>(&fs::read(&path).unwrap()).unwrap(),
+        json_codec::from_slice::<Value>(&fs::read(&path).unwrap()).unwrap(),
         body
     );
     assert!(save_pending(root.path(), &operation, &json!({"changed":true})).is_err());
     assert_eq!(
-        serde_json::from_slice::<Value>(&fs::read(&path).unwrap()).unwrap(),
+        json_codec::from_slice::<Value>(&fs::read(&path).unwrap()).unwrap(),
         body
     );
 }

@@ -41,7 +41,7 @@ bench_allocator_api = ["allocator_api"]
 boxed = []
 collections = []
 default = []
-serde = ["dep:serde"]
+serialization = ["dep:data-serialization"]
 std = []
 
 [lib]
@@ -55,8 +55,8 @@ optional = true
 default-features = false
 path = "../allocator-api2"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.171"
 optional = true
-path = "../serde"
+path = "../data-serialization"
 

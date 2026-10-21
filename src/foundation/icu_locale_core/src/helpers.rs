@@ -223,25 +223,25 @@ macro_rules! impl_tinystr_subtag {
             )*
         }
 
-        #[cfg(feature = "serde")]
-        impl serde::Serialize for $name {
+        #[cfg(feature = "serialization")]
+        impl data_serialization::Serialize for $name {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
-                S: serde::Serializer,
+                S: data_serialization::Serializer,
             {
                 self.0.serialize(serializer)
             }
         }
 
-        #[cfg(feature = "serde")]
-        impl<'de> serde::Deserialize<'de> for $name {
+        #[cfg(feature = "serialization")]
+        impl<'de> data_serialization::Deserialize<'de> for $name {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
-                D: serde::de::Deserializer<'de>,
+                D: data_serialization::de::Deserializer<'de>,
             {
                 struct Visitor;
 
-                impl<'de> serde::de::Visitor<'de> for Visitor {
+                impl<'de> data_serialization::de::Visitor<'de> for Visitor {
                     type Value = $name;
 
                     fn expecting(
@@ -251,16 +251,16 @@ macro_rules! impl_tinystr_subtag {
                         write!(formatter, "a valid BCP-47 {}", stringify!($name))
                     }
 
-                    fn visit_str<E: serde::de::Error>(self, s: &str) -> Result<Self::Value, E> {
-                        s.parse().map_err(serde::de::Error::custom)
+                    fn visit_str<E: data_serialization::de::Error>(self, s: &str) -> Result<Self::Value, E> {
+                        s.parse().map_err(data_serialization::de::Error::custom)
                     }
                 }
 
                 if deserializer.is_human_readable() {
                     deserializer.deserialize_string(Visitor)
                 } else {
-                    Self::try_from_raw(serde::de::Deserialize::deserialize(deserializer)?)
-                        .map_err(serde::de::Error::custom)
+                    Self::try_from_raw(data_serialization::de::Deserialize::deserialize(deserializer)?)
+                        .map_err(data_serialization::de::Error::custom)
                 }
             }
         }

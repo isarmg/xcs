@@ -4,7 +4,7 @@ mod tests {
 
     use ahash::AHashMap;
     use fluent_uri::Uri;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     use crate::{
@@ -101,7 +101,7 @@ mod tests {
     fn nested_all_of(depth: usize) -> Value {
         let mut schema = json!({"type": "integer"});
         for _ in 0..depth {
-            let mut map = serde_json::Map::new();
+            let mut map = json_codec::Map::new();
             map.insert("allOf".to_string(), Value::Array(vec![schema]));
             schema = Value::Object(map);
         }

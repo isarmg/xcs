@@ -62,7 +62,7 @@ async fn failed_token_publication_revokes_only_the_new_fixture_session() {
                 assert!(read > 0);
                 bytes.extend_from_slice(&buffer[..read]);
             }
-            let payload = serde_json::to_vec(&payload).unwrap();
+            let payload = json_codec::to_vec(&payload).unwrap();
             let headers = format!(
                 "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
                 payload.len()

@@ -6,8 +6,8 @@ license.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-serde.workspace = true
-serde_json.workspace = true
+data-serialization.workspace = true
+json-codec.workspace = true
 thiserror.workspace = true
 blake3.workspace = true
 uuid.workspace = true

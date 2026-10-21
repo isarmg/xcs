@@ -10,11 +10,11 @@ use crate::{
     },
     node::SchemaNode,
     paths::{LazyLocation, Location, RefTracker},
-    Draft, Json, NodeIdentity, SerdeJson, ValidationError, ValidationOptions,
+    Draft, Json, NodeIdentity, JsonValueBackend, ValidationError, ValidationOptions,
 };
 use ahash::AHashMap;
 use referencing::Uri;
-use serde_json::Value;
+use json_codec::Value;
 
 // Re-export LazyEvaluationPath from paths module
 pub(crate) use crate::paths::LazyEvaluationPath;
@@ -240,7 +240,7 @@ impl ValidationContext {
 ///
 /// - `is_valid` takes `LightweightContext`: Only cycle detection, zero path tracking overhead.
 /// - `validate`, `collect_errors`, `evaluate` take `ValidationContext`: Cycle detection + evaluation path tracking.
-pub(crate) trait Validate<F: Json = SerdeJson>: Send + Sync {
+pub(crate) trait Validate<F: Json = JsonValueBackend>: Send + Sync {
     fn collect_errors<'i>(
         &self,
         instance: &F::Node<'i>,
@@ -442,7 +442,7 @@ impl EvaluationResult {
 /// This structure represents a JSON Schema that has been parsed and compiled into
 /// an efficient internal representation for validation. It contains the root node
 /// of the schema tree and the configuration options used during compilation.
-pub struct Validator<F: Json = SerdeJson> {
+pub struct Validator<F: Json = JsonValueBackend> {
     pub(crate) root: SchemaNode<F>,
     /// `$ref` targets compiled off the call stack. Owning them here drops a long `$ref` chain
     /// one target at a time; `root` drops first, so each target is released from this list.
@@ -469,7 +469,7 @@ impl<F: Json> std::fmt::Debug for Validator<F> {
     }
 }
 
-impl Validator<SerdeJson> {
+impl Validator<JsonValueBackend> {
     /// Create a default [`ValidationOptions`] for configuring JSON Schema validation.
     ///
     /// Use this to set the draft version and other validation parameters.
@@ -478,7 +478,7 @@ impl Validator<SerdeJson> {
     ///
     /// ```rust
     /// # use jsonschema::Draft;
-    /// # let schema = serde_json::json!({});
+    /// # let schema = json_codec::json!({});
     /// let validator = jsonschema::options()
     ///     .with_draft(Draft::Draft7)
     ///     .build(&schema);
@@ -495,7 +495,7 @@ impl Validator<SerdeJson> {
     /// # Example
     ///
     /// ```rust
-    /// # use serde_json::json;
+    /// # use json_codec::json;
     /// # use jsonschema::Draft;
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let schema = json!({
@@ -596,7 +596,7 @@ impl<F: Json> Validator<F> {
 ///
 /// Each key is a URI-fragment JSON pointer (e.g. `"#"`, `"#/$defs/User"`).
 /// The root schema is always present under the key `"#"`.
-pub struct ValidatorMap<F: Json = SerdeJson> {
+pub struct ValidatorMap<F: Json = JsonValueBackend> {
     pub(crate) validators: AHashMap<String, Validator<F>>,
 }
 

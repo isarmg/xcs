@@ -2,8 +2,8 @@ use super::*;
 #[test]
 fn obsolete_body_version_graph_fields_are_not_interpreted_as_nodes() {
     let records = vec![
-        serde_json::json!({"file_id":"file","version_id":"old","created_at":"1","source_version_ids":[]}),
-        serde_json::json!({"file_id":"file","node_id":"new","version_id":"body","created_at":2,"source_version_ids":["old"]}),
+        json_codec::json!({"file_id":"file","version_id":"old","created_at":"1","source_version_ids":[]}),
+        json_codec::json!({"file_id":"file","node_id":"new","version_id":"body","created_at":2,"source_version_ids":["old"]}),
     ];
     let parsed = metadata(&records, "file");
     assert_eq!(parsed.len(), 1);
@@ -15,9 +15,9 @@ fn obsolete_body_version_graph_fields_are_not_interpreted_as_nodes() {
 #[test]
 fn rename_nodes_reuse_body_versions_but_keep_their_own_ancestry() {
     let records = vec![
-        serde_json::json!({"file_id":"file","node_id":"ver-one","version_id":"ver-one","parent_node_ids":[],"kind":"content","created_at":"1"}),
-        serde_json::json!({"file_id":"file","node_id":"fnode-rename","version_id":"ver-one","parent_node_ids":["ver-one"],"kind":"rename","created_at":"2"}),
-        serde_json::json!({"file_id":"file","node_id":"ver-two","version_id":"ver-two","parent_node_ids":["fnode-rename"],"source_version_ids":["ver-one"],"kind":"content","created_at":"3"}),
+        json_codec::json!({"file_id":"file","node_id":"ver-one","version_id":"ver-one","parent_node_ids":[],"kind":"content","created_at":"1"}),
+        json_codec::json!({"file_id":"file","node_id":"fnode-rename","version_id":"ver-one","parent_node_ids":["ver-one"],"kind":"rename","created_at":"2"}),
+        json_codec::json!({"file_id":"file","node_id":"ver-two","version_id":"ver-two","parent_node_ids":["fnode-rename"],"source_version_ids":["ver-one"],"kind":"content","created_at":"3"}),
     ];
     let tree = layout(&metadata(&records, "file"));
     assert_eq!(
@@ -36,7 +36,7 @@ fn rename_nodes_reuse_body_versions_but_keep_their_own_ancestry() {
         ]
     );
     let model = Model {
-        file_history: serde_json::json!({"node_id":"fnode-rename","version_id":"ver-one","inherited":true}),
+        file_history: json_codec::json!({"node_id":"fnode-rename","version_id":"ver-one","inherited":true}),
         ..Default::default()
     };
     assert!(inherited_current(&model, "fnode-rename"));
@@ -320,9 +320,9 @@ fn orthogonal_turns_have_circular_arcs_and_short_runs_limit_both_corner_radii() 
 #[test]
 fn metadata_ignores_notes_current_markers_and_foreign_file_records() {
     let mut records = vec![
-        serde_json::json!({"file_id":"selected","node_id":"a","version_id":"a","created_at":"1","parent_node_ids":[],"note":"initial"}),
-        serde_json::json!({"file_id":"other","node_id":"foreign","version_id":"foreign","created_at":"0"}),
-        serde_json::json!({"file_id":"selected","node_id":"b","version_id":"b","created_at":"2","parent_node_ids":["foreign","a","a",null]}),
+        json_codec::json!({"file_id":"selected","node_id":"a","version_id":"a","created_at":"1","parent_node_ids":[],"note":"initial"}),
+        json_codec::json!({"file_id":"other","node_id":"foreign","version_id":"foreign","created_at":"0"}),
+        json_codec::json!({"file_id":"selected","node_id":"b","version_id":"b","created_at":"2","parent_node_ids":["foreign","a","a",null]}),
     ];
     let before = metadata(&records, "selected");
     records[0]["note"] = "typing stays mounted".into();
@@ -335,10 +335,10 @@ fn metadata_ignores_notes_current_markers_and_foreign_file_records() {
 #[test]
 fn placeholder_records_never_create_tree_nodes_or_source_aliases() {
     let records = vec![
-        serde_json::json!({"file_id":"selected","node_id":"source","version_id":"source","created_at":"1"}),
-        serde_json::json!({"file_id":"selected","branch_id":"pending","materialized":false,"content_state":"PENDING","version_id":null,"source_version_id":"source"}),
-        serde_json::json!({"file_id":"selected","node_id":"not-real","version_id":"not-real","materialized":false,"parent_node_ids":["source"]}),
-        serde_json::json!({"file_id":"selected","node_id":"first-write","version_id":"first-write","materialized":true,"created_at":"2","size":"0","parent_node_ids":["source"]}),
+        json_codec::json!({"file_id":"selected","node_id":"source","version_id":"source","created_at":"1"}),
+        json_codec::json!({"file_id":"selected","branch_id":"pending","materialized":false,"content_state":"PENDING","version_id":null,"source_version_id":"source"}),
+        json_codec::json!({"file_id":"selected","node_id":"not-real","version_id":"not-real","materialized":false,"parent_node_ids":["source"]}),
+        json_codec::json!({"file_id":"selected","node_id":"first-write","version_id":"first-write","materialized":true,"created_at":"2","size":"0","parent_node_ids":["source"]}),
     ];
     let tree = layout(&metadata(&records, "selected"));
     assert_eq!(
@@ -350,10 +350,10 @@ fn placeholder_records_never_create_tree_nodes_or_source_aliases() {
 #[test]
 fn inherited_current_markers_do_not_change_real_version_identity_or_ancestry() {
     let versions = vec![
-        serde_json::json!({"file_id":"file","node_id":"parent","version_id":"parent","created_at":"1","current":true}),
+        json_codec::json!({"file_id":"file","node_id":"parent","version_id":"parent","created_at":"1","current":true}),
     ];
     let mut model = Model {
-        file_history: serde_json::json!({"node_id":"parent","version_id":"parent","materialized":false,"inherited":true,"own_version_id":null,"source_version_id":"parent","nodes":versions}),
+        file_history: json_codec::json!({"node_id":"parent","version_id":"parent","materialized":false,"inherited":true,"own_version_id":null,"source_version_id":"parent","nodes":versions}),
         ..Default::default()
     };
     let before = metadata(&history_nodes(&model.file_history), "file");

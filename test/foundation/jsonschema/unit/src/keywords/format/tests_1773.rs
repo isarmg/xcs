@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use referencing::Draft;
-    use serde_json::json;
+    use json_codec::json;
     use test_case::test_case;
 
     use crate::{tests_util, EmailOptions};

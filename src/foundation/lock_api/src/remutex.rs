@@ -28,8 +28,8 @@ use core::ptr;
 
 
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "serialization")]
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Helper trait which returns a non-zero thread ID.
 ///
@@ -577,7 +577,7 @@ impl<R: RawMutex, G: GetThreadId, T: ?Sized + fmt::Debug> fmt::Debug for Reentra
 }
 
 // Copied and modified from serde
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<R, G, T> Serialize for ReentrantMutex<R, G, T>
 where
     R: RawMutex,
@@ -592,7 +592,7 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de, R, G, T> Deserialize<'de> for ReentrantMutex<R, G, T>
 where
     R: RawMutex,

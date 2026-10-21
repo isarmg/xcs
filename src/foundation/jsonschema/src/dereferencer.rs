@@ -5,7 +5,7 @@ use jsonschema_value::Json;
 #[cfg(feature = "resolve-async")]
 use referencing::AsyncRetrieve;
 use referencing::{Draft, Resolver, Retrieve};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 use crate::{compiler, options::ValidationOptions};
 

@@ -11,7 +11,7 @@ use crate::{
     icons::FileIcon,
     ui::{State, list, text},
 };
-use serde_json::Value;
+use json_codec::Value;
 use web_interface::components::{EmptyState, LoadingState, Select, SelectOption};
 use web_interface::{html, i18n::t, prelude::*};
 

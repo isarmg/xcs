@@ -405,7 +405,7 @@ fn arbitrary_fixed_route_copy_count_and_independent_prefixes_are_supported() {
 
 #[test]
 fn empty_extensions_preserve_legacy_canonical_state_and_policy_bytes() {
-    let state = serde_json::to_value(State::default()).unwrap();
+    let state = json_codec::to_value(State::default()).unwrap();
     for field in [
         "file_metadata_nodes",
         "file_branch_merges",
@@ -415,13 +415,13 @@ fn empty_extensions_preserve_legacy_canonical_state_and_policy_bytes() {
     ] {
         assert!(state.get(field).is_none());
     }
-    let recovered: State = serde_json::from_value(state.clone()).unwrap();
+    let recovered: State = json_codec::from_value(state.clone()).unwrap();
     assert_eq!(
         canonical_json(&recovered).unwrap(),
         canonical_json(&state).unwrap()
     );
     let legacy = json!({"policy_id":new_id("policy"),"repository_id":new_id("repo"),"path_prefix":"docs","target_copies":2,"generation":"1"});
-    let policy: ProtectionPolicy = serde_json::from_value(legacy.clone()).unwrap();
+    let policy: ProtectionPolicy = json_codec::from_value(legacy.clone()).unwrap();
     assert_eq!(
         canonical_json(&policy).unwrap(),
         canonical_json(&legacy).unwrap()

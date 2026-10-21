@@ -1,6 +1,6 @@
 use hegel::{generators as gs, TestCase};
 use jsonschema::canonical::{IntegerView, NumberView, StringView};
-use serde_json::{json, Number, Value};
+use json_codec::{json, Number, Value};
 
 use super::{
     fraction::{excluded_divisors, Fraction},
@@ -268,11 +268,11 @@ pub(crate) fn draw_string(tc: &TestCase, view: &StringView) -> Option<Value> {
             .any(|media| media == "application/json")
         {
             let mut decoded = tc.draw(arbitrary_instance());
-            let mut serialized = serde_json::to_string(&decoded).expect("JSON serializes");
+            let mut serialized = json_codec::to_string(&decoded).expect("JSON serializes");
             // Nesting grows the serialized text up to the length floor.
             while (serialized.chars().count() as u64) < floor {
                 decoded = Value::Array(vec![decoded]);
-                serialized = serde_json::to_string(&decoded).expect("JSON serializes");
+                serialized = json_codec::to_string(&decoded).expect("JSON serializes");
             }
             serialized
         } else {

@@ -466,8 +466,8 @@ fn deleting_one_inactive_root_alias_preserves_the_other_alias_and_its_context() 
         "legacy file index still covers retained alias"
     );
     assert_eq!(
-        serde_json::to_value(p.engine.list_tree(&p.repo.main_branch_id).unwrap()).unwrap(),
-        serde_json::to_value(selected_before).unwrap()
+        json_codec::to_value(p.engine.list_tree(&p.repo.main_branch_id).unwrap()).unwrap(),
+        json_codec::to_value(selected_before).unwrap()
     );
     assert_eq!(p.bytes(&original.version_id), b"original");
     p.reopen(|recovered| {
@@ -650,8 +650,8 @@ fn workspace_conflicting_alias_names_reject_the_complete_namespace_decision() {
         .unwrap_err();
     assert_eq!(error.code(), "BATCH_MAPPING_CONFLICT");
     assert_eq!(
-        serde_json::to_value(p.engine.list_tree(&p.repo.main_branch_id).unwrap()).unwrap(),
-        serde_json::to_value(before).unwrap()
+        json_codec::to_value(p.engine.list_tree(&p.repo.main_branch_id).unwrap()).unwrap(),
+        json_codec::to_value(before).unwrap()
     );
     assert_eq!(
         p.engine

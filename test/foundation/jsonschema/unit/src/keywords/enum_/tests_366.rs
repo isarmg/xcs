@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::tests_util;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(&json!({"enum": [1]}), &json!(2), "/enum")]
@@ -17,7 +17,7 @@ mod tests {
 
     #[test]
     fn big_string_enum_valid() {
-        let schema: Value = serde_json::from_str(BIG_STRING_ENUM).unwrap();
+        let schema: Value = json_codec::from_str(BIG_STRING_ENUM).unwrap();
         for s in &["a", "e", "j"] {
             tests_util::is_valid(&schema, &json!(s));
         }
@@ -25,20 +25,20 @@ mod tests {
 
     #[test]
     fn big_string_enum_invalid_string() {
-        let schema: Value = serde_json::from_str(BIG_STRING_ENUM).unwrap();
+        let schema: Value = json_codec::from_str(BIG_STRING_ENUM).unwrap();
         tests_util::is_not_valid(&schema, &json!("z"));
     }
 
     #[test]
     fn big_string_enum_invalid_type() {
-        let schema: Value = serde_json::from_str(BIG_STRING_ENUM).unwrap();
+        let schema: Value = json_codec::from_str(BIG_STRING_ENUM).unwrap();
         tests_util::is_not_valid(&schema, &json!(1));
         tests_util::is_not_valid(&schema, &json!(null));
     }
 
     #[test]
     fn big_string_enum_location() {
-        let schema: Value = serde_json::from_str(BIG_STRING_ENUM).unwrap();
+        let schema: Value = json_codec::from_str(BIG_STRING_ENUM).unwrap();
         tests_util::assert_schema_location(&schema, &json!("z"), "/enum");
     }
 
@@ -50,8 +50,8 @@ mod tests {
     #[test_case(&json!({"enum": ["a", "b", null]}), &json!(null); "small accepts null")]
     #[test_case(&json!({"enum": ["a", "b", null]}), &json!("b"); "small accepts string")]
     #[test_case(&json!({"enum": [null, "a"]}), &json!("a"); "null first accepts string")]
-    #[test_case(&serde_json::from_str(BIG_STRING_OR_NULL_ENUM).unwrap(), &json!(null); "big accepts null")]
-    #[test_case(&serde_json::from_str(BIG_STRING_OR_NULL_ENUM).unwrap(), &json!("k"); "big accepts string")]
+    #[test_case(&json_codec::from_str(BIG_STRING_OR_NULL_ENUM).unwrap(), &json!(null); "big accepts null")]
+    #[test_case(&json_codec::from_str(BIG_STRING_OR_NULL_ENUM).unwrap(), &json!("k"); "big accepts string")]
     fn string_or_null_enum_valid(schema: &Value, instance: &Value) {
         tests_util::is_valid(schema, instance);
     }
@@ -59,9 +59,9 @@ mod tests {
     #[test_case(&json!({"enum": ["a", "b", null]}), &json!("z"); "small rejects other string")]
     #[test_case(&json!({"enum": ["a", "b", null]}), &json!(1); "small rejects number")]
     #[test_case(&json!({"enum": ["a", "b"]}), &json!(null); "small without null rejects null")]
-    #[test_case(&serde_json::from_str(BIG_STRING_OR_NULL_ENUM).unwrap(), &json!("z"); "big rejects other string")]
-    #[test_case(&serde_json::from_str(BIG_STRING_OR_NULL_ENUM).unwrap(), &json!(false); "big rejects boolean")]
-    #[test_case(&serde_json::from_str(BIG_STRING_ENUM).unwrap(), &json!(null); "big without null rejects null")]
+    #[test_case(&json_codec::from_str(BIG_STRING_OR_NULL_ENUM).unwrap(), &json!("z"); "big rejects other string")]
+    #[test_case(&json_codec::from_str(BIG_STRING_OR_NULL_ENUM).unwrap(), &json!(false); "big rejects boolean")]
+    #[test_case(&json_codec::from_str(BIG_STRING_ENUM).unwrap(), &json!(null); "big without null rejects null")]
     fn string_or_null_enum_invalid(schema: &Value, instance: &Value) {
         tests_util::is_not_valid(schema, instance);
     }
@@ -99,7 +99,7 @@ mod tests {
 
     #[test]
     fn big_string_enum_error_message() {
-        let schema: Value = serde_json::from_str(BIG_STRING_ENUM).unwrap();
+        let schema: Value = json_codec::from_str(BIG_STRING_ENUM).unwrap();
         tests_util::expect_errors(
             &schema,
             &json!("z"),

@@ -9,7 +9,7 @@ use crate::{
     validator::{evaluate_assertion, EvaluationResult, Validate, ValidationContext},
     Array, Json, Node,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 pub(crate) struct MaxItemsValidator {
     limit: u64,

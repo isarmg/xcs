@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::equal;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(&json!(1), &json!(1.0))]
@@ -23,11 +23,11 @@ mod tests {
     #[cfg(feature = "arbitrary-precision")]
     mod arbitrary_precision {
         use super::equal;
-        use serde_json::Value;
+        use json_codec::Value;
         use test_case::test_case;
 
         fn parse_json(s: &str) -> Value {
-            serde_json::from_str(s).unwrap()
+            json_codec::from_str(s).unwrap()
         }
         #[test_case("0.1", "0.1", true; "exact decimal match")]
         #[test_case("0.1", "0.10", true; "decimal with trailing zero")]

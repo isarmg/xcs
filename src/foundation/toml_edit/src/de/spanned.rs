@@ -1,9 +1,9 @@
-use serde::de::value::BorrowedStrDeserializer;
-use serde::de::IntoDeserializer as _;
+use data_serialization::de::value::BorrowedStrDeserializer;
+use data_serialization::de::IntoDeserializer as _;
 
 use super::Error;
 
-pub(crate) struct SpannedDeserializer<'de, T: serde::de::IntoDeserializer<'de, Error>> {
+pub(crate) struct SpannedDeserializer<'de, T: data_serialization::de::IntoDeserializer<'de, Error>> {
     phantom_data: std::marker::PhantomData<&'de ()>,
     start: Option<usize>,
     end: Option<usize>,
@@ -12,7 +12,7 @@ pub(crate) struct SpannedDeserializer<'de, T: serde::de::IntoDeserializer<'de, E
 
 impl<'de, T> SpannedDeserializer<'de, T>
 where
-    T: serde::de::IntoDeserializer<'de, Error>,
+    T: data_serialization::de::IntoDeserializer<'de, Error>,
 {
     pub(crate) fn new(value: T, span: std::ops::Range<usize>) -> Self {
         Self {
@@ -24,28 +24,28 @@ where
     }
 }
 
-impl<'de, T> serde::de::MapAccess<'de> for SpannedDeserializer<'de, T>
+impl<'de, T> data_serialization::de::MapAccess<'de> for SpannedDeserializer<'de, T>
 where
-    T: serde::de::IntoDeserializer<'de, Error>,
+    T: data_serialization::de::IntoDeserializer<'de, Error>,
 {
     type Error = Error;
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Error>
     where
-        K: serde::de::DeserializeSeed<'de>,
+        K: data_serialization::de::DeserializeSeed<'de>,
     {
         if self.start.is_some() {
             seed.deserialize(BorrowedStrDeserializer::new(
-                serde_spanned::__unstable::START_FIELD,
+                source_spanned_value::__unstable::START_FIELD,
             ))
             .map(Some)
         } else if self.end.is_some() {
             seed.deserialize(BorrowedStrDeserializer::new(
-                serde_spanned::__unstable::END_FIELD,
+                source_spanned_value::__unstable::END_FIELD,
             ))
             .map(Some)
         } else if self.value.is_some() {
             seed.deserialize(BorrowedStrDeserializer::new(
-                serde_spanned::__unstable::VALUE_FIELD,
+                source_spanned_value::__unstable::VALUE_FIELD,
             ))
             .map(Some)
         } else {
@@ -55,7 +55,7 @@ where
 
     fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Error>
     where
-        V: serde::de::DeserializeSeed<'de>,
+        V: data_serialization::de::DeserializeSeed<'de>,
     {
         if let Some(start) = self.start.take() {
             seed.deserialize(start.into_deserializer())

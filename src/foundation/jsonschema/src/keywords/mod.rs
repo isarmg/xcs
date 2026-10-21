@@ -40,9 +40,9 @@ pub(crate) mod unique_items;
 use core::fmt;
 
 use referencing::{Draft, Vocabulary};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
-use crate::{compiler, error, validator::Validate, Json, SerdeJson};
+use crate::{compiler, error, validator::Validate, Json, JsonValueBackend};
 
 /// Whether a validator specialized for one type also accepts `null`
 pub(crate) trait Nullability: Send + Sync + fmt::Debug + 'static {
@@ -63,9 +63,9 @@ impl Nullability for NotNullable {
     const ACCEPTS_NULL: bool = false;
 }
 
-pub(crate) type CompilationResult<'a, F = SerdeJson> =
+pub(crate) type CompilationResult<'a, F = JsonValueBackend> =
     Result<BoxedValidator<F>, error::ValidationError<'a>>;
-pub(crate) type BoxedValidator<F = SerdeJson> = Box<dyn Validate<F>>;
+pub(crate) type BoxedValidator<F = JsonValueBackend> = Box<dyn Validate<F>>;
 
 type CompileFunc<'a, F> = fn(
     &'a compiler::Context<F>,

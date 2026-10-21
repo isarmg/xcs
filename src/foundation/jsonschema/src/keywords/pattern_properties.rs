@@ -12,12 +12,12 @@ use crate::{
     regex::{analyze_pattern, LiteralMatcher, PatternOptimization, RegexEngine},
     types::JsonType,
     validator::{EvaluationResult, Validate, ValidationContext},
-    Json, Node, Object, SerdeJson,
+    Json, Node, Object, JsonValueBackend,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 /// Validator for multiple patterns using compiled regex.
-pub(crate) struct PatternPropertiesValidator<R, F: Json = SerdeJson> {
+pub(crate) struct PatternPropertiesValidator<R, F: Json = JsonValueBackend> {
     patterns: Vec<(Arc<R>, SchemaNode<F>)>,
 }
 
@@ -109,7 +109,7 @@ impl<F: Json, R: RegexEngine> Validate<F> for PatternPropertiesValidator<R, F> {
     }
 }
 
-pub(crate) struct SingleValuePatternPropertiesValidator<R, F: Json = SerdeJson> {
+pub(crate) struct SingleValuePatternPropertiesValidator<R, F: Json = JsonValueBackend> {
     regex: Arc<R>,
     node: SchemaNode<F>,
 }

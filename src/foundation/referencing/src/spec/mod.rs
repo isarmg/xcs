@@ -12,7 +12,7 @@ pub(crate) mod draft6;
 pub(crate) mod draft7;
 pub(crate) mod ids;
 
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 /// Shared metadata extracted from one schema object.
 pub(crate) struct ObjectAnalysis<'a> {

@@ -1,11 +1,11 @@
 #[cfg(not(target_arch = "wasm32"))]
 mod bench {
     use codspeed_criterion_compat::{criterion_group, BenchmarkId, Criterion};
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use std::hint::black_box;
 
     fn large_schema() -> Value {
-        let mut properties = serde_json::Map::new();
+        let mut properties = json_codec::Map::new();
         for i in 0..50 {
             properties.insert(format!("prop{i}"), json!({"type": "string"}));
         }
@@ -61,7 +61,7 @@ mod bench {
     }
 
     fn large_invalid_instance() -> Value {
-        let mut obj = serde_json::Map::new();
+        let mut obj = json_codec::Map::new();
         for i in 0..50 {
             obj.insert(format!("prop{i}"), json!("value"));
         }

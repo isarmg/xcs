@@ -40,10 +40,10 @@ license = "Unicode-3.0"
 repository = "https://github.com/unicode-org/icu4x"
 
 [features]
-alloc = ["serde_core?/alloc", "writeable/alloc", "zerovec?/alloc"]
+alloc = ["serialization-core?/alloc", "writeable/alloc", "zerovec?/alloc"]
 databake = []
 default = ["alloc"]
-serde = ["dep:serde_core"]
+serialization = ["dep:serialization-core"]
 writeable = ["dep:writeable"]
 zerovec = ["dep:zerovec"]
 
@@ -51,11 +51,11 @@ zerovec = ["dep:zerovec"]
 name = "potential_utf"
 path = "src/lib.rs"
 
-[dependencies.serde_core]
+[dependencies.serialization-core]
 version = "1.0.220"
 optional = true
 default-features = false
-path = "../serde_core"
+path = "../serialization-core"
 
 [dependencies.writeable]
 version = "0.6.4"

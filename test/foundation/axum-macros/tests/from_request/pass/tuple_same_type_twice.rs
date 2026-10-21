@@ -1,6 +1,6 @@
 use axum::extract::Query;
 use axum_macros::FromRequest;
-use serde::Deserialize;
+use data_serialization::Deserialize;
 
 #[derive(FromRequest)]
 struct Extractor(Query<Payload>, axum::extract::Json<Payload>);

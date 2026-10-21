@@ -37,7 +37,7 @@ repository = "https://github.com/seanmonstar/reqwest"
 __rustls = ["dep:hyper-rustls", "dep:tokio-rustls", "dep:rustls", "__tls"]
 __rustls-ring = ["hyper-rustls?/ring", "tokio-rustls?/ring", "rustls?/ring"]
 __tls = ["dep:rustls-pki-types", "tokio/io-util"]
-json = ["dep:serde_json"]
+json = ["dep:json-codec"]
 rustls-tls = ["rustls-tls-webpki-roots"]
 rustls-tls-webpki-roots = ["rustls-tls-webpki-roots-no-provider", "__rustls-ring"]
 rustls-tls-webpki-roots-no-provider = ["dep:webpki-roots", "hyper-rustls?/webpki-tokio", "__rustls"]
@@ -73,18 +73,18 @@ path = "../futures-util"
 version = "1.1"
 path = "../http"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_json]
+[dependencies.json-codec]
 version = "1.0"
 optional = true
-path = "../serde_json"
+path = "../json-codec"
 
-[dependencies.serde_urlencoded]
+[dependencies.form-codec]
 version = "0.7.1"
-path = "../serde_urlencoded"
+path = "../form-codec"
 
 [dependencies.sync_wrapper]
 version = "1.0"

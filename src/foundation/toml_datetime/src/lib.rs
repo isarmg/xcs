@@ -21,7 +21,7 @@ pub use crate::datetime::Offset;
 pub use crate::datetime::Time;
 
 #[doc(hidden)]
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub mod __unstable {
     pub use crate::datetime::DatetimeFromString;
     pub use crate::datetime::FIELD;

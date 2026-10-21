@@ -50,10 +50,10 @@ version = "0.4.3"
 optional = true
 path = "../getrandom-0.4.3"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.117"
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.zerocopy]
 version = "0.8.24"
@@ -62,6 +62,7 @@ default-features = false
 path = "../zerocopy"
 
 [features]
+serialization = ["dep:data-serialization"]
 default = ["std", "runtime-rng"]
 no-rng = []
 runtime-rng = ["getrandom"]

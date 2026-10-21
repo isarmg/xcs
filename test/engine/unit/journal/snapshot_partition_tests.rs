@@ -2,20 +2,20 @@ use super::*;
 use std::collections::BTreeSet;
 
 fn partition(
-    map: &serde_json::Map<String, serde_json::Value>,
-) -> Vec<serde_json::Map<String, serde_json::Value>> {
+    map: &json_codec::Map<String, json_codec::Value>,
+) -> Vec<json_codec::Map<String, json_codec::Value>> {
     state_pages(map).collect()
 }
 
-fn synthetic_map() -> serde_json::Map<String, serde_json::Value> {
+fn synthetic_map() -> json_codec::Map<String, json_codec::Value> {
     (0u32..4096)
         .map(|n| {
             let key = blake3::hash(&n.to_le_bytes()).to_hex().to_string();
-            (key, serde_json::json!({"data": "immutable".repeat(64)}))
+            (key, json_codec::json!({"data": "immutable".repeat(64)}))
         })
         .collect()
 }
-fn hashes(pages: &[serde_json::Map<String, serde_json::Value>]) -> BTreeSet<String> {
+fn hashes(pages: &[json_codec::Map<String, json_codec::Value>]) -> BTreeSet<String> {
     pages
         .iter()
         .map(|page| object_hash("state-page", page).unwrap())
@@ -36,7 +36,7 @@ fn deterministic_random_key_insertion_and_update_reuse_unaffected_pages() {
         pages
             .iter()
             .flat_map(|p| p.clone())
-            .collect::<serde_json::Map<_, _>>(),
+            .collect::<json_codec::Map<_, _>>(),
         original
     );
     let before = hashes(&pages);
@@ -53,12 +53,12 @@ fn deterministic_random_key_insertion_and_update_reuse_unaffected_pages() {
         })
         .unwrap();
     let mut changed = original.clone();
-    changed.insert(key.clone(), serde_json::json!("new"));
+    changed.insert(key.clone(), json_codec::json!("new"));
     let after = hashes(&partition(&changed));
     assert_eq!(before.difference(&after).count(), 1);
     assert_eq!(after.difference(&before).count(), 1);
     // Values cannot influence boundaries, even when their size changes.
-    changed.insert(key, serde_json::json!("updated".repeat(1024)));
+    changed.insert(key, json_codec::json!("updated".repeat(1024)));
     let updated = hashes(&partition(&changed));
     assert_eq!(after.difference(&updated).count(), 1);
     assert_eq!(updated.difference(&after).count(), 1);
@@ -73,8 +73,8 @@ fn adversarial_boundary_free_keys_remain_bounded_and_lossless() {
         .map(|n| format!("key-{n:05}"))
         .filter(|key| blake3::hash(key.as_bytes()).as_bytes()[0] & 31 != 0)
         .take(STATE_PAGE_ENTRIES * 3 + 1)
-        .map(|key| (key, serde_json::json!("value")))
-        .collect::<serde_json::Map<_, _>>();
+        .map(|key| (key, json_codec::json!("value")))
+        .collect::<json_codec::Map<_, _>>();
     let pages = partition(&map);
     assert_eq!(
         pages.iter().map(|p| p.len()).collect::<Vec<_>>(),
@@ -84,10 +84,10 @@ fn adversarial_boundary_free_keys_remain_bounded_and_lossless() {
         pages
             .into_iter()
             .flatten()
-            .collect::<serde_json::Map<_, _>>(),
+            .collect::<json_codec::Map<_, _>>(),
         map
     );
-    assert!(partition(&serde_json::Map::new()).is_empty());
+    assert!(partition(&json_codec::Map::new()).is_empty());
 }
 
 fn event_state(count: usize) -> State {
@@ -145,10 +145,10 @@ fn event_pages_remove_scalar_cap_preserve_order_and_append_locality() {
 #[test]
 fn current_snapshot_and_candidate_are_strict_unversioned_structures() {
     let prepared = prepare_snapshot(&State::default(), MAX_METADATA).unwrap();
-    let mut snapshot = serde_json::to_value(&prepared.descriptor).unwrap();
+    let mut snapshot = json_codec::to_value(&prepared.descriptor).unwrap();
     assert!(snapshot.get("format_version").is_none());
-    snapshot["format_version"] = serde_json::json!(2);
-    assert!(serde_json::from_value::<Snapshot>(snapshot).is_err());
+    snapshot["format_version"] = json_codec::json!(2);
+    assert!(json_codec::from_value::<Snapshot>(snapshot).is_err());
     let candidate = Candidate {
         pool_id: new_id("pool"),
         sequence: 1,
@@ -161,15 +161,15 @@ fn current_snapshot_and_candidate_are_strict_unversioned_structures() {
         metadata_disk_ids: Vec::new(),
         history_manifest_hashes: BTreeMap::new(),
     };
-    let mut candidate = serde_json::to_value(candidate).unwrap();
+    let mut candidate = json_codec::to_value(candidate).unwrap();
     assert!(candidate.get("format_version").is_none());
-    candidate["format_version"] = serde_json::json!(2);
-    assert!(serde_json::from_value::<Candidate>(candidate).is_err());
+    candidate["format_version"] = json_codec::json!(2);
+    assert!(json_codec::from_value::<Candidate>(candidate).is_err());
     let config = Config::development(["a".into(), "b".into(), "c".into()]);
-    let mut config = serde_json::to_value(config).unwrap();
+    let mut config = json_codec::to_value(config).unwrap();
     assert!(config.get("format_version").is_none());
-    config["format_version"] = serde_json::json!(2);
-    assert!(serde_json::from_value::<Config>(config).is_err());
+    config["format_version"] = json_codec::json!(2);
+    assert!(json_codec::from_value::<Config>(config).is_err());
 }
 
 #[test]
@@ -186,7 +186,7 @@ fn scalar_event_snapshots_are_rejected_without_rewriting_evidence() {
     descriptor.pages.remove("events");
     descriptor.scalars.insert(
         "events".into(),
-        serde_json::to_value(&state.events).unwrap(),
+        json_codec::to_value(&state.events).unwrap(),
     );
     let hash = store_object(disk, "snapshot", &descriptor).unwrap();
     let path = object_path(disk, "snapshot", &hash);
@@ -227,7 +227,7 @@ fn event_snapshot_rejects_gaps_and_ambiguous_scalar_page_fields() {
         load_snapshot(disk, &duplicate_hash).unwrap_err().code(),
         "OBJECT_CORRUPT"
     );
-    let bad_page = serde_json::json!({"00000000000000000001": event_state(1).events[0]});
+    let bad_page = json_codec::json!({"00000000000000000001": event_state(1).events[0]});
     descriptor.pages.insert(
         "events".into(),
         vec![store_object(disk, "state-page", &bad_page).unwrap()],
@@ -239,7 +239,7 @@ fn event_snapshot_rejects_gaps_and_ambiguous_scalar_page_fields() {
     );
     descriptor
         .scalars
-        .insert("events".into(), serde_json::json!([]));
+        .insert("events".into(), json_codec::json!([]));
     let hash = store_object(disk, "snapshot", &descriptor).unwrap();
     assert_eq!(
         load_snapshot(disk, &hash).unwrap_err().code(),
@@ -291,11 +291,11 @@ fn typed_snapshot_matches_full_value_encoder_exactly() {
     state.file_names.insert("\u{e000}".into(), "bmp".into());
     for auth in [
         None,
-        Some(serde_json::json!({})),
-        Some(serde_json::json!({"nested": {"roles": ["reader"]}, "name": "用户"})),
-        Some(serde_json::json!([{"nested": true}, null, "scalar"])),
-        Some(serde_json::json!("legacy scalar")),
-        Some(serde_json::json!(null)),
+        Some(json_codec::json!({})),
+        Some(json_codec::json!({"nested": {"roles": ["reader"]}, "name": "用户"})),
+        Some(json_codec::json!([{"nested": true}, null, "scalar"])),
+        Some(json_codec::json!("legacy scalar")),
+        Some(json_codec::json!(null)),
     ] {
         state.control_auth = auth;
         assert_prepared_snapshot_identity(&state);
@@ -318,7 +318,7 @@ fn typed_snapshot_only_buffers_one_page_of_borrowed_entries() {
     );
     // The previous encoder first materialized both whole collections as JSON,
     // before page clones. This is structural evidence, not an RSS/timing claim.
-    let old_value = serde_json::to_value(&state).unwrap();
+    let old_value = json_codec::to_value(&state).unwrap();
     assert_eq!(
         old_value["content_states"].as_object().unwrap().len(),
         20_000
@@ -346,14 +346,14 @@ fn alternate_page_partitions_preserve_exact_bound_current_snapshots() {
             .map(|(n, key)| (key, if n % 3 == 0 { "PURGED" } else { "AVAILABLE" }.into()))
             .collect(),
         file_notes: [("文件".into(), "preserved note".into())].into(),
-        control_auth: Some(serde_json::json!({"nested": {"roles": ["reader"]}})),
+        control_auth: Some(json_codec::json!({"nested": {"roles": ["reader"]}})),
         ..Default::default()
     };
-    let value = serde_json::to_value(&state).unwrap();
+    let value = json_codec::to_value(&state).unwrap();
     let mut alternate = Snapshot {
         sequence: state.sequence,
         pages: BTreeMap::new(),
-        scalars: serde_json::Map::new(),
+        scalars: json_codec::Map::new(),
     };
     for (field, value) in value.as_object().unwrap() {
         if let Some(map) = value.as_object() {
@@ -364,7 +364,7 @@ fn alternate_page_partitions_preserve_exact_bound_current_snapshots() {
                     let page = chunk
                         .iter()
                         .map(|(k, v)| ((*k).clone(), (*v).clone()))
-                        .collect::<serde_json::Map<_, _>>();
+                        .collect::<json_codec::Map<_, _>>();
                     store_object(disk, "state-page", &page).unwrap()
                 })
                 .collect();

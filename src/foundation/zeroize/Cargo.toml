@@ -38,6 +38,7 @@ license = "Apache-2.0 OR MIT"
 repository = "https://github.com/RustCrypto/utils"
 
 [features]
+serialization = ["dep:data-serialization"]
 aarch64 = []
 alloc = []
 default = ["alloc"]
@@ -49,11 +50,11 @@ std = ["alloc"]
 name = "zeroize"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1"
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [lints.clippy]
 borrow_as_ptr = "warn"

@@ -6,7 +6,7 @@ mod test {
     use alloc::borrow::Cow;
     use alloc::string::String;
     use core::fmt::Debug;
-    use serde::{Deserialize, Serialize};
+    use data_serialization::{Deserialize, Serialize};
 
     // This tests DataProvider borrow semantics with a dummy data provider based on a
     // JSON string. It also exercises most of the data provider code paths.
@@ -21,7 +21,7 @@ mod test {
 
     #[derive(Deserialize, Debug, Clone, Default, PartialEq)]
     struct HelloCombined<'data> {
-        #[serde(borrow)]
+        #[serialization(borrow)]
         pub hello_v1: HelloWorld<'data>,
         pub hello_alt: HelloAlt,
     }
@@ -83,7 +83,7 @@ mod test {
     }"#;
 
     fn get_warehouse(data: &'static str) -> DataWarehouse {
-        let data: HelloCombined = serde_json::from_str(data).expect("Well-formed data");
+        let data: HelloCombined = json_codec::from_str(data).expect("Well-formed data");
         DataWarehouse {
             hello_v1: data.hello_v1,
             hello_alt: data.hello_alt,

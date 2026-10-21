@@ -227,15 +227,15 @@ pub fn make_varule_impl(ule_name: Ident, mut input: DeriveInput) -> TokenStream2
         )
     };
 
-    let serde_path = quote!(zerovec::__zerovec_internal_reexport::serde);
+    let serialization_path = quote!(zerovec::__zerovec_internal_reexport::data_serialization);
 
     let maybe_ser = if attrs.serialize {
         quote!(
-            impl #serde_path::Serialize for #ule_name {
-                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: #serde_path::Serializer {
+            impl #serialization_path::Serialize for #ule_name {
+                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: #serialization_path::Serializer {
                     if serializer.is_human_readable() {
                         let this = #zerofrom_fq_path::zero_from(self);
-                        <#name as #serde_path::Serialize>::serialize(&this, serializer)
+                        <#name as #serialization_path::Serialize>::serialize(&this, serializer)
                     } else {
                         serializer.serialize_bytes(zerovec::ule::VarULE::as_bytes(self))
                     }
@@ -250,10 +250,10 @@ pub fn make_varule_impl(ule_name: Ident, mut input: DeriveInput) -> TokenStream2
 
     let maybe_de = if attrs.deserialize {
         quote!(
-            impl<'de> #serde_path::Deserialize<'de> for zerovec::__zerovec_internal_reexport::boxed::Box<#ule_name> {
-                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: #serde_path::Deserializer<'de> {
+            impl<'de> #serialization_path::Deserialize<'de> for zerovec::__zerovec_internal_reexport::boxed::Box<#ule_name> {
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: #serialization_path::Deserializer<'de> {
                     if deserializer.is_human_readable() {
-                        let this = <#name as #serde_path::Deserialize>::deserialize(deserializer)?;
+                        let this = <#name as #serialization_path::Deserialize>::deserialize(deserializer)?;
                         Ok(zerovec::ule::encode_varule_to_box(&this))
                     } else {
                         // This branch should usually not be hit, since Cow-like use cases will hit the Deserialize impl for &'a ULEType instead.
@@ -262,13 +262,13 @@ pub fn make_varule_impl(ule_name: Ident, mut input: DeriveInput) -> TokenStream2
                     }
                 }
             }
-            impl<'a, 'de: 'a> #serde_path::Deserialize<'de> for &'a #ule_name {
-                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: #serde_path::Deserializer<'de> {
+            impl<'a, 'de: 'a> #serialization_path::Deserialize<'de> for &'a #ule_name {
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: #serialization_path::Deserializer<'de> {
                     if !deserializer.is_human_readable() {
                         let bytes = <&[u8]>::deserialize(deserializer)?;
-                        <#ule_name as zerovec::ule::VarULE>::parse_bytes(bytes).map_err(#serde_path::de::Error::custom)
+                        <#ule_name as zerovec::ule::VarULE>::parse_bytes(bytes).map_err(#serialization_path::de::Error::custom)
                     } else {
-                        Err(#serde_path::de::Error::custom(#deserialize_error))
+                        Err(#serialization_path::de::Error::custom(#deserialize_error))
                     }
                 }
             }

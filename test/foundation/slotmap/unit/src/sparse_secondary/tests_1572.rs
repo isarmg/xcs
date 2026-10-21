@@ -77,9 +77,9 @@ mod tests {
             let mut sec = SparseSecondaryMap::new();
             let mut sm_keys = Vec::new();
 
-            #[cfg(not(feature = "serde"))]
+            #[cfg(not(feature = "serialization"))]
             let num_ops = 4;
-            #[cfg(feature = "serde")]
+            #[cfg(feature = "serialization")]
             let num_ops = 5;
 
             for (op, val) in operations {
@@ -124,10 +124,10 @@ mod tests {
                     }
 
                     // Serde round-trip.
-                    #[cfg(feature = "serde")]
+                    #[cfg(feature = "serialization")]
                     4 => {
-                        let ser = serde_json::to_string(&sec).unwrap();
-                        sec = serde_json::from_str(&ser).unwrap();
+                        let ser = json_codec::to_string(&sec).unwrap();
+                        sec = json_codec::from_str(&ser).unwrap();
                     }
 
                     _ => unreachable!(),

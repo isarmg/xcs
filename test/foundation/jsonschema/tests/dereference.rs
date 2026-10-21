@@ -1,5 +1,5 @@
 use jsonschema::ReferencingError;
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 use test_case::test_case;
 
 const ADDR_URI: &str = "https://example.com/address.json";

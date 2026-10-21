@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
+    use json_codec::json;
     use test_case::test_case;
 
     #[test]

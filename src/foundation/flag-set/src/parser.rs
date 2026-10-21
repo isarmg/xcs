@@ -77,10 +77,10 @@ where
     fmt::Result::Ok(())
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub(crate) struct AsDisplay<'a, B>(pub(crate) &'a B);
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'a, B: Flags> fmt::Display for AsDisplay<'a, B>
 where
     B::Bits: WriteHex,

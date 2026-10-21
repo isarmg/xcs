@@ -26,8 +26,8 @@ use core::str::FromStr;
 #[cfg(feature = "net")]
 use crate::net::{Ipv4Addr, Ipv6Addr};
 
-#[cfg(feature = "serde")]
-use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "serialization")]
+use data_serialization::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 pub trait Value: Default {}
 
@@ -932,7 +932,7 @@ macro_rules! ri_maybe_ref {
             }
         }
 
-        #[cfg(feature = "serde")]
+        #[cfg(feature = "serialization")]
         impl<T: Bos<str>> Serialize for $Ty<T> {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -942,7 +942,7 @@ macro_rules! ri_maybe_ref {
             }
         }
 
-        #[cfg(feature = "serde")]
+        #[cfg(feature = "serialization")]
         impl<'de> Deserialize<'de> for $Ty<&'de str> {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -958,7 +958,7 @@ macro_rules! ri_maybe_ref {
             }
         }
 
-        #[cfg(feature = "serde")]
+        #[cfg(feature = "serialization")]
         impl<'de> Deserialize<'de> for $Ty<String> {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where

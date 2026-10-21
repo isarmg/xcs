@@ -104,9 +104,9 @@ pub mod export;
 pub mod hello_world;
 
 // TODO: put this in a separate crate
-#[cfg(all(feature = "serde", feature = "alloc"))]
+#[cfg(all(feature = "serialization", feature = "alloc"))]
 #[doc(hidden)]
-pub mod serde_borrow_de_utils;
+pub mod serialization_borrow_de_utils;
 
 mod data_provider;
 pub use data_provider::{
@@ -155,7 +155,7 @@ pub mod ule {
 /// Core selection of APIs and structures for the ICU4X data provider.
 pub mod prelude {
     #[doc(no_inline)]
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     pub use crate::buf::AsDeserializingBufferProvider;
     #[doc(no_inline)]
     pub use crate::buf::{BufferMarker, BufferProvider};

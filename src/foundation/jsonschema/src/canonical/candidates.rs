@@ -1,7 +1,7 @@
 //! Instances worth trying against a node, for the questions a form alone cannot answer.
 use std::cell::Cell;
 
-use serde_json::{Number, Value};
+use json_codec::{Number, Value};
 
 use crate::{
     canonical::{
@@ -146,7 +146,7 @@ pub(crate) fn instances<'a>(
             let Some(size) = demanded_length(leaf.sizes.minimum.as_ref()) else {
                 return Vec::new();
             };
-            let mut object = serde_json::Map::new();
+            let mut object = json_codec::Map::new();
             for key in candidate_keys(leaf, size, ctx) {
                 // A key answers to the entry declaring it, then a pattern entry it matches, then
                 // `additionalProperties`. Where several apply to one key, the check below turns
@@ -350,6 +350,6 @@ fn shortest_instance(ty: JsonType) -> Value {
         JsonType::String => Value::String(String::new()),
         JsonType::Integer | JsonType::Number => Value::Number(0.into()),
         JsonType::Array => Value::Array(Vec::new()),
-        JsonType::Object => Value::Object(serde_json::Map::new()),
+        JsonType::Object => Value::Object(json_codec::Map::new()),
     }
 }

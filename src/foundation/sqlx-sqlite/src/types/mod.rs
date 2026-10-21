@@ -159,8 +159,8 @@
 //! | Rust type                             | Sqlite type(s)                                       |
 //! |---------------------------------------|------------------------------------------------------|
 //! | [`Json<T>`]                           | TEXT                                                 |
-//! | `serde_json::JsonValue`               | TEXT                                                 |
-//! | `&serde_json::value::RawValue`        | TEXT                                                 |
+//! | `json_codec::JsonValue`               | TEXT                                                 |
+//! | `&json_codec::value::RawValue`        | TEXT                                                 |
 //!
 //! # Nullable
 //!

@@ -4,7 +4,7 @@ use std::{
     sync::Arc,
 };
 
-use serde_json::{Number, Value};
+use json_codec::{Number, Value};
 use strum::{EnumDiscriminants, IntoStaticStr, VariantArray};
 
 use crate::{

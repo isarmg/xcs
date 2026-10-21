@@ -5,7 +5,7 @@ mod tests {
     use crate::{Draft, Registry};
 
     use super::unescape_segment;
-    use serde_json::json;
+    use json_codec::json;
     use test_case::test_case;
 
     #[test_case("abc")]

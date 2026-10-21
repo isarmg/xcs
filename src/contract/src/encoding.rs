@@ -1,16 +1,18 @@
 use crate::{Error, Result};
-use serde::{
+use data_serialization::{
     Deserialize, Serialize,
     de::{self, MapAccess, SeqAccess, Visitor},
 };
-use serde_json::{Map, Number, Value};
+use json_codec::{Map, Number, Value};
 use std::fmt;
 
 /// Reject duplicate keys before a Value or typed DTO can erase the evidence.
 pub fn strict_json(bytes: &[u8]) -> Result<Value> {
     struct Strict(Value);
     impl<'de> Deserialize<'de> for Strict {
-        fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Self, D::Error> {
+        fn deserialize<D: data_serialization::Deserializer<'de>>(
+            d: D,
+        ) -> std::result::Result<Self, D::Error> {
             struct V;
             impl<'de> Visitor<'de> for V {
                 type Value = Strict;
@@ -65,14 +67,14 @@ pub fn strict_json(bytes: &[u8]) -> Result<Value> {
             d.deserialize_any(V)
         }
     }
-    let mut d = serde_json::Deserializer::from_slice(bytes);
+    let mut d = json_codec::Deserializer::from_slice(bytes);
     let v = Strict::deserialize(&mut d)?;
     d.end()?;
     Ok(v.0)
 }
 
-pub fn decode_strict<T: serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T> {
-    Ok(serde_json::from_value(strict_json(bytes)?)?)
+pub fn decode_strict<T: data_serialization::de::DeserializeOwned>(bytes: &[u8]) -> Result<T> {
+    Ok(json_codec::from_value(strict_json(bytes)?)?)
 }
 
 /// JCS for the integer-only ZXS schema. UTF-16 ordering is significant for keys.
@@ -97,7 +99,7 @@ pub fn canonical_json<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>> {
             Value::Null => out.extend_from_slice(b"null"),
             Value::Bool(true) => out.extend_from_slice(b"true"),
             Value::Bool(false) => out.extend_from_slice(b"false"),
-            Value::String(s) => out.extend(serde_json::to_vec(s)?),
+            Value::String(s) => out.extend(json_codec::to_vec(s)?),
             Value::Number(n) => out.extend(number(n)?.as_bytes()),
             Value::Array(a) => {
                 out.push(b'[');
@@ -117,7 +119,7 @@ pub fn canonical_json<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>> {
                     if i > 0 {
                         out.push(b',');
                     }
-                    out.extend(serde_json::to_vec(k)?);
+                    out.extend(json_codec::to_vec(k)?);
                     out.push(b':');
                     emit(&o[k], out)?;
                 }
@@ -127,7 +129,7 @@ pub fn canonical_json<T: Serialize + ?Sized>(value: &T) -> Result<Vec<u8>> {
         Ok(())
     }
     let mut out = Vec::new();
-    emit(&serde_json::to_value(value)?, &mut out)?;
+    emit(&json_codec::to_value(value)?, &mut out)?;
     Ok(out)
 }
 pub fn object_hash<T: Serialize + ?Sized>(kind: &str, value: &T) -> Result<String> {
@@ -164,15 +166,15 @@ pub fn request_digest(
         .remove("request_digest");
     object_hash(
         "request",
-        &serde_json::json!({"method":method.to_ascii_uppercase(),"route":route,"path_parameters":path_parameters,"query":query,"body":body}),
+        &json_codec::json!({"method":method.to_ascii_uppercase(),"route":route,"path_parameters":path_parameters,"query":query,"body":body}),
     )
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct ChecksumManifest {
     pub chunk_bytes: u32,
-    #[serde(with = "crate::u64_string")]
+    #[serialization(with = "crate::u64_string")]
     pub logical_size: u64,
     pub chunks: Vec<[u8; 32]>,
 }

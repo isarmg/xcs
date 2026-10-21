@@ -8,12 +8,12 @@ use std::sync::{
 fn an_unknown_or_loading_note_cannot_be_submitted_as_an_empty_note() {
     let mut model = Model::default();
     assert!(!file_note_ready(&model));
-    model.file_history = serde_json::json!({"note":"existing note"});
+    model.file_history = json_codec::json!({"note":"existing note"});
     model.history_loading = true;
     assert!(!file_note_ready(&model));
     model.history_loading = false;
     assert!(file_note_ready(&model));
-    model.file_history = serde_json::json!({"note":""});
+    model.file_history = json_codec::json!({"note":""});
     assert!(
         file_note_ready(&model),
         "a known empty note remains editable"
@@ -31,7 +31,7 @@ fn metadata_completion_keeps_the_current_detail_controls_mounted() {
         let state = RwSignal::new(State::default());
         state.update(|s| {
             s.files.selected = Some(
-                serde_json::json!({"entry_id":"a","file_id":"a","name":"a.txt","version_id":"v1"}),
+                json_codec::json!({"entry_id":"a","file_id":"a","name":"a.txt","version_id":"v1"}),
             )
         });
         let selected = detail_selection(state);
@@ -49,13 +49,13 @@ fn metadata_completion_keeps_the_current_detail_controls_mounted() {
         });
         state.update(|s| {
             s.files.file_history =
-                serde_json::json!({"branches":[{"name":"main"},{"name":"draft"}]});
+                json_codec::json!({"branches":[{"name":"main"},{"name":"draft"}]});
             s.files.history_loading = false;
             s.files.mutation_pending = false;
         });
         state.update(|s| {
             s.files.selected = Some(
-                serde_json::json!({"entry_id":"a","file_id":"a","name":"a.txt","version_id":"v1"}),
+                json_codec::json!({"entry_id":"a","file_id":"a","name":"a.txt","version_id":"v1"}),
             )
         });
         assert!(detail.get().is_some());

@@ -11,8 +11,8 @@
 /// ```
 #[derive(Eq, PartialEq, Clone, Copy)]
 #[cfg_attr(
-    feature = "derive_serde_style",
-    derive(serde::Deserialize, serde::Serialize)
+    feature = "derive_serialization_style",
+    derive(data_serialization::Deserialize, data_serialization::Serialize)
 )]
 pub struct Style {
     /// The style's foreground color, if it has one.
@@ -303,8 +303,8 @@ impl Default for Style {
 /// See <http://invisible-island.net/xterm/ctlseqs/ctlseqs.html>
 #[derive(Eq, PartialEq, Clone, Copy, Debug, Default)]
 #[cfg_attr(
-    feature = "derive_serde_style",
-    derive(serde::Deserialize, serde::Serialize)
+    feature = "derive_serialization_style",
+    derive(data_serialization::Deserialize, data_serialization::Serialize)
 )]
 pub enum Color {
     /// Color #0 (foreground code `30`, background code `40`).
@@ -619,4 +619,4 @@ impl From<Color> for Style {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/nu-ansi-term/unit/src/style/serde_json_tests_621.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/nu-ansi-term/unit/src/style/serialization_json_tests_621.rs"));

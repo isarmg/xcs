@@ -2,7 +2,7 @@
 mod tests {
     use crate::tests_util;
     use referencing::Draft;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     fn validator_with(draft: Draft, schema: &Value) -> crate::Validator {

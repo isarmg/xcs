@@ -1,7 +1,7 @@
 //! Fully offline documentation and published-contract checks.
 mod document_links;
-use serde::Serialize;
-use serde_json::{Value, json};
+use data_serialization::Serialize;
+use json_codec::{Value, json};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs,
@@ -19,7 +19,7 @@ fn require(condition: bool, message: impl Into<String>) -> Result {
 fn array(value: &Value) -> Result<&Vec<Value>> {
     value.as_array().ok_or_else(|| "expected array".into())
 }
-fn object(value: &Value) -> Result<&serde_json::Map<String, Value>> {
+fn object(value: &Value) -> Result<&json_codec::Map<String, Value>> {
     value.as_object().ok_or_else(|| "expected object".into())
 }
 fn text(value: &Value) -> Result<&str> {
@@ -599,10 +599,10 @@ fn run(root: &Path) -> Result<Report> {
         .find(|capture| &capture[1] == "toml")
         .ok_or("configuration TOML missing")?;
     let configuration: toml::Value = source[2].parse()?;
-    let configuration = serde_json::to_value(configuration)?;
-    let mut projection = serde_json::Map::new();
+    let configuration = json_codec::to_value(configuration)?;
+    let mut projection = json_codec::Map::new();
     for (section, shape) in object(&config["properties"])? {
-        let mut value = serde_json::Map::new();
+        let mut value = json_codec::Map::new();
         for key in object(&shape["properties"])?.keys() {
             value.insert(
                 key.clone(),
@@ -734,7 +734,7 @@ fn main() {
             [flag, path] if flag == "--root" => PathBuf::from(path),
             _ => return Err("usage: contract-check [--root PATH]".into()),
         };
-        println!("{}", serde_json::to_string_pretty(&run(&root)?)?);
+        println!("{}", json_codec::to_string_pretty(&run(&root)?)?);
         Ok(())
     })();
     if let Err(error) = result {

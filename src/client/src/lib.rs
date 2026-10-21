@@ -1,6 +1,6 @@
 //! Shared native client. Redirects are disabled and plain HTTP is restricted to loopback.
-use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use data_serialization::{Deserialize, Serialize};
+use json_codec::{Value, json};
 use std::time::Duration;
 
 mod response;
@@ -32,7 +32,7 @@ pub struct Session {
     pub csrf_token: String,
     pub principal: String,
     pub admin: bool,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub expires_at: u64,
 }
 impl std::fmt::Debug for Session {
@@ -129,7 +129,7 @@ impl Client {
             )
             .await?;
         let session: Session =
-            serde_json::from_value(value).map_err(|error| Error::Response(error.to_string()))?;
+            json_codec::from_value(value).map_err(|error| Error::Response(error.to_string()))?;
         self.token = Some(session.token.clone());
         Ok(session)
     }
@@ -213,7 +213,7 @@ impl Client {
         operation_id: &str,
     ) -> Result<Value, Error> {
         let mut body =
-            serde_json::to_value(request).map_err(|error| Error::Response(error.to_string()))?;
+            json_codec::to_value(request).map_err(|error| Error::Response(error.to_string()))?;
         body["operation_id"] = operation_id.into();
         self.request(
             "POST",

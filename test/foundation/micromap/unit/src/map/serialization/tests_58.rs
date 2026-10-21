@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::Map;
-    use bincode::serde::{decode_from_slice, encode_into_slice};
+    use bincode::data_serialization::{decode_from_slice, encode_into_slice};
 
     #[test]
     fn serialize_and_deserialize() {
@@ -17,7 +17,7 @@ mod tests {
     }
 
     #[test]
-    fn empty_map_serde() {
+    fn empty_map_serialization() {
         let config = bincode::config::legacy();
         let before: Map<u8, u8, 8> = Map::new();
         let mut bytes: [u8; 1024] = [0; 1024];

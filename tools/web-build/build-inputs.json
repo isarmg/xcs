@@ -10,6 +10,7 @@
     "tools/web-build/src",
     "tools/web-bindings/src",
     "compliance",
+    "docs/components",
     "test/tools/web-build",
     "test/tools/web-bindings",
     "test/foundation",

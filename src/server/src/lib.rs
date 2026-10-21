@@ -30,7 +30,7 @@ use axum::{
 };
 use http_auth::{account_upsert, accounts, authorize, change_password, login, logout, me};
 use http_boundary::{ApiPath, ApiQuery};
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap},
     net::SocketAddr,

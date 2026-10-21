@@ -4,7 +4,7 @@ use axum::{
     body::Body,
     http::{Request, StatusCode},
 };
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::sync::Arc;
 use storage_contract::Config;
 use storage_engine::Engine;
@@ -29,7 +29,7 @@ async fn request(
             request
                 .header("content-type", "application/json")
                 .body(
-                    body.map(|value| Body::from(serde_json::to_vec(&value).unwrap()))
+                    body.map(|value| Body::from(json_codec::to_vec(&value).unwrap()))
                         .unwrap_or_else(Body::empty),
                 )
                 .unwrap(),
@@ -37,7 +37,7 @@ async fn request(
         .await
         .unwrap();
     let status = response.status();
-    let value = serde_json::from_slice(
+    let value = json_codec::from_slice(
         &axum::body::to_bytes(response.into_body(), 2 * 1024 * 1024)
             .await
             .unwrap(),

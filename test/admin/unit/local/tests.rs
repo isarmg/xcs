@@ -26,7 +26,7 @@ async fn registering_a_disk_keeps_an_exact_backup_and_atomically_replaces_the_dr
         root.path().join("c"),
     ]);
     let path = root.path().join("config.json");
-    let original = serde_json::to_vec(&draft).unwrap();
+    let original = json_codec::to_vec(&draft).unwrap();
     private_io::write_new(&path, &original).unwrap();
     run(registration(root.path(), path.clone())).await.unwrap();
     let saved: Config = storage_engine::decode_strict(&std::fs::read(&path).unwrap()).unwrap();
@@ -47,11 +47,11 @@ async fn different_configuration_extensions_keep_independent_registration_backup
     ]);
     let first = root.path().join("config.json");
     let second = root.path().join("config.draft");
-    let original = serde_json::to_vec(&draft).unwrap();
+    let original = json_codec::to_vec(&draft).unwrap();
     private_io::write_new(&first, &original).unwrap();
     let mut other = draft.clone();
     other.pool_id = storage_engine::new_id("pool");
-    let other_original = serde_json::to_vec(&other).unwrap();
+    let other_original = json_codec::to_vec(&other).unwrap();
     private_io::write_new(&second, &other_original).unwrap();
     run(registration(root.path(), first)).await.unwrap();
     run(registration(root.path(), second)).await.unwrap();
@@ -94,7 +94,7 @@ async fn oversized_backup_name_fails_without_changing_the_draft() {
         root.path().join("c"),
     ]);
     let path = root.path().join("c".repeat(250));
-    let original = serde_json::to_vec(&draft).unwrap();
+    let original = json_codec::to_vec(&draft).unwrap();
     private_io::write_new(&path, &original).unwrap();
     let error = run(registration(root.path(), path.clone()))
         .await
@@ -116,7 +116,7 @@ async fn non_utf8_registration_path_is_rejected_before_any_write() {
     let path = root
         .path()
         .join(std::ffi::OsString::from_vec(b"config-\xff.json".to_vec()));
-    let original = serde_json::to_vec(&draft).unwrap();
+    let original = json_codec::to_vec(&draft).unwrap();
     private_io::write_new(&path, &original).unwrap();
     let error = run(registration(root.path(), path.clone()))
         .await
@@ -135,7 +135,7 @@ async fn repeated_registration_keeps_the_immediately_previous_draft() {
         root.path().join("c"),
     ]);
     let path = root.path().join("config.json");
-    private_io::write_new(&path, &serde_json::to_vec(&draft).unwrap()).unwrap();
+    private_io::write_new(&path, &json_codec::to_vec(&draft).unwrap()).unwrap();
     run(registration(root.path(), path.clone())).await.unwrap();
     let previous = std::fs::read(&path).unwrap();
     let mut args = registration(root.path(), path.clone());
@@ -160,7 +160,7 @@ async fn invalid_upstream_level_is_an_error_and_never_modifies_the_draft() {
     ]);
     draft.disks[0].level = u32::MAX;
     let path = root.path().join("config.json");
-    let original = serde_json::to_vec(&draft).unwrap();
+    let original = json_codec::to_vec(&draft).unwrap();
     private_io::write_new(&path, &original).unwrap();
     assert!(run(registration(root.path(), path.clone())).await.is_err());
     assert_eq!(std::fs::read(&path).unwrap(), original);

@@ -16,8 +16,8 @@ blake3.workspace = true
 bytes = {version = "1", path = "../foundation/bytes"}
 futures-util = {version = "0.3", path = "../foundation/futures-util"}
 http = {version = "1", path = "../foundation/http"}
-serde.workspace = true
-serde_json.workspace = true
+data-serialization.workspace = true
+json-codec.workspace = true
 sysinfo = { version = "=0.39.6", default-features = false, features = ["system"], path = "../foundation/sysinfo"}
 tokio.workspace = true
 tokio-util = { version = "0.7", features = ["io"], path = "../foundation/tokio-util"}

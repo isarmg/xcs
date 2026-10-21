@@ -3,7 +3,7 @@
 // (online at: https://github.com/unicode-org/icu4x/blob/main/LICENSE ).
 
 use postcard::ser_flavors::{AllocVec, Flavor};
-use serde::Serialize;
+use data_serialization::Serialize;
 use zerotrie::ZeroTriePerfectHash;
 use zerotrie::ZeroTrieSimpleAscii;
 use zerovec::ZeroMap;

@@ -4,9 +4,9 @@
 use super::Map;
 use core::fmt::Formatter;
 use core::marker::PhantomData;
-use serde::de::{MapAccess, Visitor};
-use serde::ser::SerializeMap;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use data_serialization::de::{MapAccess, Visitor};
+use data_serialization::ser::SerializeMap;
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 impl<K: Serialize, V: Serialize, const N: usize> Serialize for Map<K, V, N> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

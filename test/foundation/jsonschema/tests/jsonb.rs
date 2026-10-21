@@ -11,7 +11,7 @@ use jsonschema_value::jsonb::encode::{
     encode_numeric_text_array, encode_numeric_text_object, encode_numeric_text_scalar,
     encode_raw_key_object, NumericForm,
 };
-use serde_json::{json, Map, Value};
+use json_codec::{json, Map, Value};
 use test_case::test_case;
 
 // A flat (one-level) object member value.
@@ -132,7 +132,7 @@ fn embedded_numbers(node: &JsonbNode<'_>) -> Vec<String> {
     Vec::new()
 }
 
-// `serde_json::Number` cannot hold this at all, so `enum`/`const`/`uniqueItems` have to compare
+// `json_codec::Number` cannot hold this at all, so `enum`/`const`/`uniqueItems` have to compare
 // through `JsonNumber`.
 
 #[test_case(
@@ -218,8 +218,8 @@ fn validates_a_jsonb_instance() {
 )]
 #[allow(clippy::needless_pass_by_value)]
 fn instance_matches_across_representations(schema: Value, instance: Value, jsonb: Vec<u8>) {
-    let serde_validator = jsonschema::validator_for(&schema).expect("schema builds");
-    let serde_error = serde_validator
+    let serialization_validator = jsonschema::validator_for(&schema).expect("schema builds");
+    let serialization_error = serialization_validator
         .validate(&instance)
         .expect_err("instance is invalid");
 
@@ -232,15 +232,15 @@ fn instance_matches_across_representations(schema: Value, instance: Value, jsonb
 
     assert_eq!(
         jsonb_error.instance().as_ref(),
-        serde_error.instance().as_ref()
+        serialization_error.instance().as_ref()
     );
-    assert_eq!(jsonb_error.to_string(), serde_error.to_string());
+    assert_eq!(jsonb_error.to_string(), serialization_error.to_string());
     assert_eq!(
         format!("{:?}", jsonb_error.kind()),
-        format!("{:?}", serde_error.kind())
+        format!("{:?}", serialization_error.kind())
     );
-    assert_eq!(jsonb_error.instance_path(), serde_error.instance_path());
-    assert_eq!(jsonb_error.schema_path(), serde_error.schema_path());
+    assert_eq!(jsonb_error.instance_path(), serialization_error.instance_path());
+    assert_eq!(jsonb_error.schema_path(), serialization_error.schema_path());
 }
 
 // `instance()` builds the value once and returns the same storage on every later call: the

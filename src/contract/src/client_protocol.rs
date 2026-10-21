@@ -1,5 +1,5 @@
 //! Transport-independent client protocol. HTTP, credentials and I/O stay in adapters.
-use serde_json::json;
+use json_codec::json;
 
 /// Common JSON response cap, enforced while streaming and again when decoding.
 pub const MAX_RESPONSE_BYTES: usize = 8 * 1024 * 1024;
@@ -42,17 +42,19 @@ pub fn response_too_large(status: u16) -> ResponseError {
     )
 }
 
-use serde::{
+use data_serialization::{
     Deserialize,
     de::{self, MapAccess, SeqAccess, Visitor},
 };
-use serde_json::{Map, Number, Value};
+use json_codec::{Map, Number, Value};
 use std::fmt;
 
 struct ResponseJson(Value);
 
 impl<'de> Deserialize<'de> for ResponseJson {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+    fn deserialize<D: data_serialization::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Self, D::Error> {
         struct JsonVisitor;
         impl<'de> Visitor<'de> for JsonVisitor {
             type Value = ResponseJson;
@@ -105,8 +107,8 @@ impl<'de> Deserialize<'de> for ResponseJson {
     }
 }
 
-fn strict_response_json(bytes: &[u8]) -> Result<Value, serde_json::Error> {
-    let mut deserializer = serde_json::Deserializer::from_slice(bytes);
+fn strict_response_json(bytes: &[u8]) -> Result<Value, json_codec::Error> {
+    let mut deserializer = json_codec::Deserializer::from_slice(bytes);
     let value = ResponseJson::deserialize(&mut deserializer)?;
     deserializer.end()?;
     Ok(value.0)

@@ -34,7 +34,7 @@ repository = "https://github.com/ModProg/derive-where"
 [features]
 nightly = []
 safe = []
-serde = []
+serialization = []
 zeroize = []
 zeroize-on-drop = ["zeroize"]
 

@@ -1543,29 +1543,29 @@ impl<'a, T: 'a + Num + Clone> Product<&'a Complex<T>> for Complex<T> {
     }
 }
 
-#[cfg(feature = "serde")]
-impl<T> serde::Serialize for Complex<T>
+#[cfg(feature = "serialization")]
+impl<T> data_serialization::Serialize for Complex<T>
 where
-    T: serde::Serialize,
+    T: data_serialization::Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         (&self.re, &self.im).serialize(serializer)
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'de, T> serde::Deserialize<'de> for Complex<T>
+#[cfg(feature = "serialization")]
+impl<'de, T> data_serialization::Deserialize<'de> for Complex<T>
 where
-    T: serde::Deserialize<'de>,
+    T: data_serialization::Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
-        let (re, im) = serde::Deserialize::deserialize(deserializer)?;
+        let (re, im) = data_serialization::Deserialize::deserialize(deserializer)?;
         Ok(Self::new(re, im))
     }
 }

@@ -60,13 +60,13 @@
 //!         "Unknown panic message".to_string()
 //!     };
 //!
-//!     let body = serde_json::json!({
+//!     let body = json_codec::json!({
 //!         "error": {
 //!             "kind": "panic",
 //!             "details": details,
 //!         }
 //!     });
-//!     let body = serde_json::to_string(&body).unwrap();
+//!     let body = json_codec::to_string(&body).unwrap();
 //!
 //!     Response::builder()
 //!         .status(StatusCode::INTERNAL_SERVER_ERROR)

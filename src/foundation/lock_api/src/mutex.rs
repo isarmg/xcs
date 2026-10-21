@@ -20,8 +20,8 @@ use core::ptr;
 
 
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "serialization")]
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Basic operations for a mutex.
 ///
@@ -465,7 +465,7 @@ impl<R: RawMutex, T: ?Sized + fmt::Debug> fmt::Debug for Mutex<R, T> {
 }
 
 // Copied and modified from serde
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<R, T> Serialize for Mutex<R, T>
 where
     R: RawMutex,
@@ -479,7 +479,7 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de, R, T> Deserialize<'de> for Mutex<R, T>
 where
     R: RawMutex,

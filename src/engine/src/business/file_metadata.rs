@@ -1,6 +1,6 @@
 //! Public file-branch labels are metadata, independent of immutable content.
 use super::*;
-use serde_json::json;
+use json_codec::json;
 
 impl Engine {
     pub fn rename_file_branch(

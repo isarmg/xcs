@@ -583,9 +583,9 @@ macro_rules! impl_zerotrie_subtype {
             pub(crate) fn to_litemap_bytes(&self) -> LiteMap<Box<[u8]>, usize> {
                 self.iter().map(|(k, v)| ($cnv_fn(k), v)).collect()
             }
-            #[cfg(feature = "serde")]
-            pub(crate) fn to_litemap_serde(&self) -> LiteMap<crate::serde::SerdeByteStrOwned, usize> {
-                self.iter().map(|(k, v)| (crate::serde::SerdeByteStrOwned($cnv_fn(k)), v)).collect()
+            #[cfg(feature = "serialization")]
+            pub(crate) fn to_litemap_serialization(&self) -> LiteMap<crate::data_serialization::SerializedByteString, usize> {
+                self.iter().map(|(k, v)| (crate::data_serialization::SerializedByteString($cnv_fn(k)), v)).collect()
             }
         }
         #[cfg(feature = "litemap")]
@@ -601,8 +601,8 @@ macro_rules! impl_zerotrie_subtype {
         #[cfg(feature = "litemap")]
         impl $name<Vec<u8>>
         {
-            #[cfg(feature = "serde")]
-            pub(crate) fn try_from_serde_litemap(items: &LiteMap<crate::serde::SerdeByteStrOwned, usize>) -> Result<Self, ZeroTrieBuildError> {
+            #[cfg(feature = "serialization")]
+            pub(crate) fn try_from_serialization_litemap(items: &LiteMap<crate::data_serialization::SerializedByteString, usize>) -> Result<Self, ZeroTrieBuildError> {
                 let tuples: Vec<(&[u8], usize)> = items.iter().map(|(k, v)| (k.as_bytes(), *v)).collect();
                 let byte_str_slice = ByteSliceWithIndices::from_byte_slice(&tuples);
                 Self::try_from_tuple_slice(byte_str_slice)
@@ -838,15 +838,15 @@ where
     Store: AsRef<[u8]>,
 {
     /// Exports the data from this [`ZeroTrie`] into a `LiteMap`.
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     pub fn to_litemap(&self) -> LiteMap<Box<[u8]>, usize> {
         impl_dispatch!(&self, to_litemap_bytes())
     }
 
     /// Exports the data from this [`ZeroTrie`] into a `LiteMap` for Serde.
-    #[cfg(feature = "serde")]
-    pub(crate) fn to_litemap_serde(&self) -> LiteMap<crate::serde::SerdeByteStrOwned, usize> {
-        impl_dispatch!(&self, to_litemap_serde())
+    #[cfg(feature = "serialization")]
+    pub(crate) fn to_litemap_serialization(&self) -> LiteMap<crate::data_serialization::SerializedByteString, usize> {
+        impl_dispatch!(&self, to_litemap_serialization())
     }
 }
 #[cfg(feature = "alloc")]

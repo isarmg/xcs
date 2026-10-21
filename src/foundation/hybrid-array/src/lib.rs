@@ -105,8 +105,8 @@ mod from_fn;
 mod iter;
 mod traits;
 
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 pub use crate::{
     flatten::{Flatten, Unflatten},

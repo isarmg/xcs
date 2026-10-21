@@ -167,8 +167,8 @@ fn mixed_null_metrics_remain_exact_after_two_aggregations_and_persistence() {
     assert_eq!(twice.status.disks[0].power_watts, Some(expected));
     assert_eq!(twice.status.disks[0].used_bytes.as_deref(), Some("7"));
     assert_eq!(
-        serde_json::to_value(twice.status).unwrap(),
-        serde_json::to_value(direct.status).unwrap()
+        json_codec::to_value(twice.status).unwrap(),
+        json_codec::to_value(direct.status).unwrap()
     );
 }
 
@@ -183,9 +183,9 @@ fn byte_statistics_round_trip_u128_sums_and_avoid_repeated_integer_rounding() {
     assert_eq!(minute.status.memory.used_bytes.as_deref(), Some("0"));
     // total_bytes is u64::MAX per observation, so its serialized sum is
     // larger than u64. The cache must preserve that u128 integer exactly.
-    let encoded = serde_json::to_vec(&minute).unwrap();
+    let encoded = json_codec::to_vec(&minute).unwrap();
     assert!(String::from_utf8_lossy(&encoded).contains("36893488147419103230"));
-    let restored: Sample = serde_json::from_slice(&encoded).unwrap();
+    let restored: Sample = json_codec::from_slice(&encoded).unwrap();
     assert!(restored.valid_at(now + 60));
     let mut c = sample(now + 60, Some(1.0));
     c.status.memory.used_bytes = Some("2".into());
@@ -231,7 +231,7 @@ fn recovery_ignores_partial_invalid_and_future_samples() {
     writeln!(
         file,
         "{}",
-        serde_json::to_string(&sample(now + 100, Some(2.0))).unwrap()
+        json_codec::to_string(&sample(now + 100, Some(2.0))).unwrap()
     )
     .unwrap();
     write!(file, "{{\"unix_seconds\":").unwrap();

@@ -10,7 +10,7 @@ use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use icu_locale_core::LanguageIdentifier;
 
 fn langid_benches(c: &mut Criterion) {
-    let data = serde_json::from_str::<fixtures::LocaleList>(include_str!("fixtures/langid.json"))
+    let data = json_codec::from_str::<fixtures::LocaleList>(include_str!("fixtures/langid.json"))
         .expect("Failed to read a fixture");
 
     // Overview

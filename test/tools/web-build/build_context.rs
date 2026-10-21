@@ -26,7 +26,7 @@ fn cargo_uses_product_configuration_but_relative_output_stays_caller_relative() 
     fs::create_dir_all(&caller).unwrap();
     fs::create_dir_all(&bin).unwrap();
     let specification = include_str!("../../../tools/web-build/build-inputs.json");
-    let spec: serde_json::Value = serde_json::from_str(specification).unwrap();
+    let spec: json_codec::Value = json_codec::from_str(specification).unwrap();
     for directory in spec["directories"].as_array().unwrap() {
         fs::create_dir_all(product.join(directory.as_str().unwrap())).unwrap();
     }

@@ -72,8 +72,8 @@ mod error;
 mod int_ops;
 mod unvalidated;
 
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 #[cfg(feature = "databake")]
 mod databake;

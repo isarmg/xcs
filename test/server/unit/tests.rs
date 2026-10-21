@@ -94,7 +94,7 @@ async fn static_assets_never_shadow_unknown_api_routes_or_their_error_envelope()
         if http_boundary::is_api_path(path) {
             assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
         }
-        let error: Value = serde_json::from_slice(
+        let error: Value = json_codec::from_slice(
             &axum::body::to_bytes(response.into_body(), 8192)
                 .await
                 .unwrap(),
@@ -187,7 +187,7 @@ async fn authenticated(app: &Router) -> (String, String, String) {
         .next()
         .unwrap()
         .to_owned();
-    let body: Value = serde_json::from_slice(
+    let body: Value = json_codec::from_slice(
         &axum::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),
@@ -592,7 +592,7 @@ async fn successful_new_generation_preserves_old_bytes_and_retry_reuses_its_file
         .collect::<Vec<_>>();
     assert_eq!(retained.len(), 1);
     let retained: uploads::UploadRecord =
-        serde_json::from_slice(&std::fs::read(&retained[0]).unwrap()).unwrap();
+        json_codec::from_slice(&std::fs::read(&retained[0]).unwrap()).unwrap();
     assert_eq!(retained.generation, 1);
     assert_eq!(retained.data_file, records[0].data_file);
 }
@@ -684,7 +684,7 @@ async fn disconnected_upload_keeps_its_claim_until_publication_and_status_are_du
     let retry = app.clone().oneshot(request()).await.unwrap();
     assert_eq!(retry.status(), StatusCode::CONFLICT);
     let error: Value =
-        serde_json::from_slice(&axum::body::to_bytes(retry.into_body(), 8192).await.unwrap())
+        json_codec::from_slice(&axum::body::to_bytes(retry.into_body(), 8192).await.unwrap())
             .unwrap();
     assert_eq!(error["error"]["code"], "FILE_WRITE_BUSY");
     drop(release);

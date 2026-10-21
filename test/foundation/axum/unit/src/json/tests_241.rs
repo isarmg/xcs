@@ -2,8 +2,8 @@
 mod tests {
     use super::*;
     use crate::{routing::post, test_helpers::*, Router};
-    use serde::Deserialize;
-    use serde_json::{json, Value};
+    use data_serialization::Deserialize;
+    use json_codec::{json, Value};
 
     #[crate::test]
     async fn deserialize_body() {
@@ -63,7 +63,7 @@ mod tests {
 
     #[crate::test]
     async fn invalid_json_syntax() {
-        let app = Router::new().route("/", post(|_: Json<serde_json::Value>| async {}));
+        let app = Router::new().route("/", post(|_: Json<json_codec::Value>| async {}));
 
         let client = TestClient::new(app);
         let res = client

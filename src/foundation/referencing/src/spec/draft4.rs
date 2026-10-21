@@ -1,4 +1,4 @@
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 use crate::{draft::Draft, path::JsonPointerSegment, Error, Resolver, ResourceRef, Segments};
 

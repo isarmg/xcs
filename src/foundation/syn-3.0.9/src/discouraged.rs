@@ -116,7 +116,7 @@ pub trait Speculative: private::Sealed {
     /// as the turbofish above, take the following unfinished "turbofish":
     ///
     /// ```text
-    /// let _ = f<&'a fn(), for<'a> serde::>();
+    /// let _ = f<&'a fn(), for<'a> data_serialization::>();
     /// ```
     ///
     /// If this is parsed as generic arguments, we can provide the error message
@@ -125,7 +125,7 @@ pub trait Speculative: private::Sealed {
     /// error: expected identifier
     ///  --> src.rs:L:C
     ///   |
-    /// L | let _ = f<&'a fn(), for<'a> serde::>();
+    /// L | let _ = f<&'a fn(), for<'a> data_serialization::>();
     ///   |                                    ^
     /// ```
     ///
@@ -138,7 +138,7 @@ pub trait Speculative: private::Sealed {
     /// error: expected `:`
     ///  --> src.rs:L:C
     ///   |
-    /// L | let _ = f<&'a fn(), for<'a> serde::>();
+    /// L | let _ = f<&'a fn(), for<'a> data_serialization::>();
     ///   |               ^^
     /// ```
     ///

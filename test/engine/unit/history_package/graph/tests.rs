@@ -3,7 +3,7 @@ use crate::{
     Config,
     journal::{load_object, object_path},
 };
-use serde_json::json;
+use json_codec::json;
 
 fn manifest() -> HistoryManifest {
     let mut value = json!({
@@ -31,7 +31,7 @@ fn manifest() -> HistoryManifest {
     for &field in MAP_FIELDS {
         value[field] = json!({});
     }
-    serde_json::from_value(value).unwrap()
+    json_codec::from_value(value).unwrap()
 }
 
 fn encoded(
@@ -137,7 +137,7 @@ fn deterministic_bounded_graph_preserves_logical_wire_rules() {
                     .collect::<BTreeSet<_>>(),
                 BTreeSet::from(["children", "prefix"])
             );
-            let index: HistoryIndex = serde_json::from_value(value).unwrap();
+            let index: HistoryIndex = json_codec::from_value(value).unwrap();
             assert!(index.children.len() <= 16);
             for reference in index.children.values() {
                 assert!(
@@ -273,7 +273,7 @@ fn distributed_history_larger_than_real_reader_limit_roundtrips() {
 
 #[test]
 fn expanded_logical_model_is_not_a_paged_root() {
-    let root = serde_json::to_value(manifest()).unwrap();
+    let root = json_codec::to_value(manifest()).unwrap();
     let error = resolve_with_objects(root, |_, _| {
         panic!("invalid root shape must not load any dependencies")
     })

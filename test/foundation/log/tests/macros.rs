@@ -403,10 +403,10 @@ fn kv_sval() {
 }
 
 #[test]
-#[cfg(feature = "kv_serde")]
-fn kv_serde() {
+#[cfg(feature = "kv_serialization")]
+fn kv_serialization() {
     all_log_macros!(
-        a:serde = 42;
+        a:data_serialization = 42;
         "hello world"
     );
 }

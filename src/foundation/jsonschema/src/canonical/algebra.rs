@@ -3,7 +3,7 @@ use std::{cell::Cell, collections::BTreeSet, sync::Arc};
 
 use ahash::AHashSet;
 use referencing::Draft;
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{
     canonical::{
@@ -4019,7 +4019,7 @@ pub(crate) fn object_leaf(mut leaf: ObjectLeaf, ctx: &CanonicalizationContext) -
         .is_some_and(BoundCardinality::is_zero)
     {
         return Schema::new(SchemaKind::Const(CanonicalJson::from_value(
-            &Value::Object(serde_json::Map::new()),
+            &Value::Object(json_codec::Map::new()),
         )));
     }
     Schema::new(SchemaKind::Object(leaf))
@@ -5120,7 +5120,7 @@ fn restrict_object_member(
 /// property count in the window.
 fn object_leaf_admits(
     leaf: &ObjectLeaf,
-    map: &serde_json::Map<String, Value>,
+    map: &json_codec::Map<String, Value>,
     ctx: &CanonicalizationContext,
 ) -> Verdict {
     if !leaf
@@ -5230,7 +5230,7 @@ fn intersect_number_leaves(first: NumberLeaf, second: NumberLeaf) -> NumberLeaf 
 
 /// The divisor every whole-valued number is a multiple of.
 fn whole_divisor() -> BoundRational {
-    BoundRational::new(&serde_json::Number::from(1)).expect("one is a representable divisor")
+    BoundRational::new(&json_codec::Number::from(1)).expect("one is a representable divisor")
 }
 
 /// Pull each end onto the progression, so an interval and its divisor have one form. Only a
@@ -5488,7 +5488,7 @@ fn integer_leaf_admits(leaf: &IntegerLeaf, member: &CanonicalJson) -> bool {
 /// build it lies beyond one end of the `i64` range: above every representable maximum, below every
 /// representable minimum. A non-integer is never admitted.
 #[cfg(not(feature = "arbitrary-precision"))]
-fn admits_out_of_range(bounds: &IntegerBounds, number: &serde_json::Number) -> bool {
+fn admits_out_of_range(bounds: &IntegerBounds, number: &json_codec::Number) -> bool {
     if !jsonschema_value::types::number_is_integer(number) {
         return false;
     }
@@ -5501,7 +5501,7 @@ fn admits_out_of_range(bounds: &IntegerBounds, number: &serde_json::Number) -> b
 
 // Arbitrary precision holds every integer, so `from_number` only returns `None` for a non-integer.
 #[cfg(feature = "arbitrary-precision")]
-fn admits_out_of_range(_bounds: &IntegerBounds, _number: &serde_json::Number) -> bool {
+fn admits_out_of_range(_bounds: &IntegerBounds, _number: &json_codec::Number) -> bool {
     false
 }
 

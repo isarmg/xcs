@@ -38,7 +38,7 @@ pub trait Column: 'static + Send + Sync + Debug {
 
 /// A [`Column`] that originates from a table.
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "offline", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 pub struct TableColumn {
     /// The name of the table (optionally schema-qualified) that the column comes from.
     pub table: Arc<str>,
@@ -48,7 +48,7 @@ pub struct TableColumn {
 
 /// The possible statuses for our knowledge of the origin of a [`Column`].
 #[derive(Debug, Clone, Default)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "offline", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 pub enum ColumnOrigin {
     /// The column is known to originate from a table.
     ///

@@ -4,7 +4,7 @@
 //! blocking writer; dropping one settles to retained physical file length, not
 //! upload success. Unknown files and uncertain I/O never earn free capacity.
 use crate::{ApiError, lock, uploads::UploadRecord};
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
     fs::{self, OpenOptions},
@@ -50,7 +50,7 @@ impl SpoolLimits {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct Owner {
     data_file: String,
     principal: String,
@@ -169,7 +169,7 @@ pub(crate) struct SpoolBudget {
 fn valid_name(name: &str) -> bool {
     !name.is_empty() && !name.starts_with('.') && !name.contains(['/', '\\'])
 }
-fn metadata<T: serde::de::DeserializeOwned>(path: &Path) -> Option<T> {
+fn metadata<T: data_serialization::de::DeserializeOwned>(path: &Path) -> Option<T> {
     let mut bytes = Vec::new();
     fs::File::open(path)
         .ok()?
@@ -479,7 +479,7 @@ impl Reservation {
             options.mode(0o600);
         }
         let mut file = options.open(path).map_err(ApiError::io)?;
-        let bytes = serde_json::to_vec(&Owner {
+        let bytes = json_codec::to_vec(&Owner {
             data_file: self.name.clone(),
             principal: self.principal.clone(),
         })

@@ -2,7 +2,7 @@
 mod bench {
     pub(crate) use benchmark::run_error_formatting_benchmarks;
     pub(crate) use criterion::{criterion_group, BenchmarkId, Criterion};
-    pub(crate) use serde_json::Value;
+    pub(crate) use json_codec::Value;
 
     pub(crate) fn bench_error_formatting(
         c: &mut Criterion,

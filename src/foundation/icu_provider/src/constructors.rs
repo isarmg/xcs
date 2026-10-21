@@ -216,7 +216,7 @@ macro_rules! gen_buffer_data_constructors {
         );
     };
     (($($options_arg:ident: $options_ty:ty),*) -> result: $result_ty:ty, $(#[$doc:meta])* functions: [$baked:ident: skip, $buffer:ident, $unstable:ident $(, $struct:ident)? $(,)?]) => {
-        #[cfg(feature = "serde")]
+        #[cfg(feature = "serialization")]
         #[doc = $crate::gen_buffer_unstable_docs!(BUFFER, $($struct ::)? $baked)]
         pub fn $buffer(provider: &(impl $crate::buf::BufferProvider + ?Sized) $(, $options_arg: $options_ty)* ) -> $result_ty {
             use $crate::buf::AsDeserializingBufferProvider;

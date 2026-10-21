@@ -1,7 +1,7 @@
 //! Complete no-clobber publication of configuration and retry request files.
 use crate::{Result, private_io};
+use json_codec::Value;
 use platform_io::fs_safety::PrivateDirectory;
-use serde_json::Value;
 use std::path::{Path, PathBuf};
 
 pub(crate) fn save_pending(root: &Path, operation_id: &str, body: &Value) -> Result<PathBuf> {
@@ -15,7 +15,7 @@ pub(crate) fn save_pending(root: &Path, operation_id: &str, body: &Value) -> Res
 }
 
 pub(crate) fn save_json_private(path: &Path, value: &Value) -> Result<()> {
-    private_io::write_new(path, &serde_json::to_vec_pretty(value)?)
+    private_io::write_new(path, &json_codec::to_vec_pretty(value)?)
 }
 
 #[cfg(test)]

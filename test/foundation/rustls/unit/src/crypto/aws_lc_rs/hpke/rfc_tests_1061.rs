@@ -4,7 +4,7 @@ mod rfc_tests {
     use std::fs::File;
     use std::println;
 
-    use serde::Deserialize;
+    use data_serialization::Deserialize;
 
     use super::*;
 
@@ -98,11 +98,11 @@ mod rfc_tests {
         kdf_id: u16,
         aead_id: u16,
         info: String,
-        #[serde(rename(deserialize = "pkRm"))]
+        #[serialization(rename(deserialize = "pkRm"))]
         pk_rm: String,
-        #[serde(rename(deserialize = "skRm"))]
+        #[serialization(rename(deserialize = "skRm"))]
         sk_rm: String,
-        #[serde(rename(deserialize = "skEm"))]
+        #[serialization(rename(deserialize = "skEm"))]
         sk_em: String,
         enc: String,
         encryptions: Vec<TestEncryption>,
@@ -147,7 +147,7 @@ mod rfc_tests {
     }
 
     fn test_vectors() -> Vec<TestVector> {
-        serde_json::from_reader(
+        json_codec::from_reader(
             &mut File::open("../rustls-provider-test/tests/rfc-9180-test-vectors.json")
                 .expect("failed to open test vectors data file"),
         )

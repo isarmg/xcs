@@ -4,7 +4,7 @@ mod bench {
 
     use benchmark::{read_json, FHIR_SCHEMA, RECURSIVE_SCHEMA, SWAGGER};
     use codspeed_criterion_compat::{criterion_group, Criterion};
-    use serde_json::Value;
+    use json_codec::Value;
 
     type IsValidFn = fn(&Value) -> bool;
 

@@ -213,12 +213,12 @@ fn preflight_inner(
         } else {
             snapshot_descriptor(state, maximum)?
         };
-        let states = serde_json::to_value(&state.content_states)?;
+        let states = json_codec::to_value(&state.content_states)?;
         let states = states
             .as_object()
             .ok_or_else(|| Error::new("STATE_INVALID", "content states are not a map"))?;
         let pages: Box<
-            dyn Iterator<Item = Result<serde_json::Map<String, serde_json::Value>>> + '_,
+            dyn Iterator<Item = Result<json_codec::Map<String, json_codec::Value>>> + '_,
         > = if recovering {
             Box::new(
                 snapshot
@@ -245,7 +245,7 @@ fn preflight_inner(
                 // These are the only two fields that differ between tombstones
                 // embedding this exact page. Compare their encoded lengths.
                 let size = encode_metadata(
-                    &serde_json::json!({"version_id":id,"state":status}),
+                    &json_codec::json!({"version_id":id,"state":status}),
                     maximum,
                 )?
                 .len();

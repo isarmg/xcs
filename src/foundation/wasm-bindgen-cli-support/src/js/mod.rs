@@ -4659,7 +4659,7 @@ impl<'a> Context<'a> {
     fn process_package_json(&mut self, path: &Path) -> Result<(), Error> {
         let contents =
             fs::read_to_string(path).context(format!("failed to read `{}`", path.display()))?;
-        let json: serde_json::Value = serde_json::from_str(&contents)?;
+        let json: json_codec::Value = json_codec::from_str(&contents)?;
         let object = match json.as_object() {
             Some(s) => s,
             None => bail!(

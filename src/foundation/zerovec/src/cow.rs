@@ -331,35 +331,35 @@ unsafe impl<'a, V: VarULE + ?Sized> EncodeAsVarULE<V> for VarZeroCow<'a, V> {
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'a, V: VarULE + ?Sized + serde::Serialize> serde::Serialize for VarZeroCow<'a, V> {
+#[cfg(feature = "serialization")]
+impl<'a, V: VarULE + ?Sized + data_serialization::Serialize> data_serialization::Serialize for VarZeroCow<'a, V> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         if serializer.is_human_readable() {
-            <V as serde::Serialize>::serialize(self.deref(), serializer)
+            <V as data_serialization::Serialize>::serialize(self.deref(), serializer)
         } else {
             serializer.serialize_bytes(self.as_bytes())
         }
     }
 }
 
-#[cfg(all(feature = "serde", feature = "alloc"))]
-impl<'a, 'de: 'a, V: VarULE + ?Sized> serde::Deserialize<'de> for VarZeroCow<'a, V>
+#[cfg(all(feature = "serialization", feature = "alloc"))]
+impl<'a, 'de: 'a, V: VarULE + ?Sized> data_serialization::Deserialize<'de> for VarZeroCow<'a, V>
 where
-    Box<V>: serde::Deserialize<'de>,
+    Box<V>: data_serialization::Deserialize<'de>,
 {
     fn deserialize<Des>(deserializer: Des) -> Result<Self, Des::Error>
     where
-        Des: serde::Deserializer<'de>,
+        Des: data_serialization::Deserializer<'de>,
     {
         if deserializer.is_human_readable() {
             let b = Box::<V>::deserialize(deserializer)?;
             Ok(Self::new_owned(b))
         } else {
             let bytes = <&[u8]>::deserialize(deserializer)?;
-            Self::parse_bytes(bytes).map_err(serde::de::Error::custom)
+            Self::parse_bytes(bytes).map_err(data_serialization::de::Error::custom)
         }
     }
 }

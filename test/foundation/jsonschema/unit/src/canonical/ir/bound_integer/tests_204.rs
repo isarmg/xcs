@@ -11,7 +11,7 @@ mod tests {
     #[test_case("-0.5", 0, -1; "just below zero")]
     #[test_case("0", 0, 0; "zero")]
     fn rounds_toward_the_named_direction(text: &str, up: i64, down: i64) {
-        let number: serde_json::Number = text.parse().expect("number");
+        let number: json_codec::Number = text.parse().expect("number");
         let expected = |value: i64| BoundInteger::from_number(&value.into()).expect("whole");
         assert_eq!(
             BoundInteger::round_from_number(&number, Round::Up),

@@ -1,5 +1,5 @@
 use jsonschema::{ReferencingError, Registry};
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 
 const TEST_ROOT_URI: &str = "urn:jsonschema:test:root";
 

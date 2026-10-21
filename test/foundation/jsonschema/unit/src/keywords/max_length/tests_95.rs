@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::tests_util;
-    use serde_json::json;
+    use json_codec::json;
 
     #[test]
     fn location() {

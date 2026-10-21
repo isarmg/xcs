@@ -33,7 +33,7 @@
 //! For simple use cases where you need to validate an instance against a schema once, use [`is_valid`] or [`validate`] functions:
 //!
 //! ```rust
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"type": "string"});
 //! let instance = json!("Hello, world!");
@@ -47,7 +47,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"type": "string"});
 //! // Blocking construction - will fetch external references synchronously
@@ -81,7 +81,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # use serde_json::json;
+//! # use json_codec::json;
 //! #
 //! # let schema = json!({"type": "string"});
 //! let validator = jsonschema::draft202012::options()
@@ -104,7 +104,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let validator = jsonschema::validator_for(&json!({
 //!     "type": "object",
@@ -128,7 +128,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //! use jsonschema::error::ValidationErrorKind;
 //!
 //! let validator = jsonschema::validator_for(&json!({"minimum": 5}))?;
@@ -160,7 +160,7 @@
 //! // Or load it from a file:
 //! // #[jsonschema::validator(path = "schema.json")]
 //!
-//! let instance = serde_json::json!("value");
+//! let instance = json_codec::json!("value");
 //! assert!(Short::is_valid(&instance));
 //! Short::validate(&instance)?;
 //! ```
@@ -259,7 +259,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({
 //!     "type": "object",
@@ -281,14 +281,14 @@
 //! assert!(flag.valid);
 //!
 //! // List format: Flat list of all evaluation steps
-//! let list_output = serde_json::to_value(evaluation.list())?;
-//! println!("List output: {}", serde_json::to_string_pretty(&list_output)?);
+//! let list_output = json_codec::to_value(evaluation.list())?;
+//! println!("List output: {}", json_codec::to_string_pretty(&list_output)?);
 //!
 //! // Hierarchical format: Nested tree structure
-//! let hierarchical_output = serde_json::to_value(evaluation.hierarchical())?;
+//! let hierarchical_output = json_codec::to_value(evaluation.hierarchical())?;
 //! println!(
 //!     "Hierarchical output: {}",
-//!     serde_json::to_string_pretty(&hierarchical_output)?
+//!     json_codec::to_string_pretty(&hierarchical_output)?
 //! );
 //!
 //! // Iterate over annotations collected during validation
@@ -354,13 +354,13 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # use serde_json::json;
+//! # use json_codec::json;
 //! # let schema = json!({"type": "string"});
 //! # let validator = jsonschema::validator_for(&schema)?;
 //! let evaluation = validator.evaluate(&json!("hello"));
 //! let flag = evaluation.flag();
 //!
-//! let output = serde_json::to_value(flag)?;
+//! let output = json_codec::to_value(flag)?;
 //! // Output: {"valid": true}
 //! # Ok(())
 //! # }
@@ -372,7 +372,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # use serde_json::json;
+//! # use json_codec::json;
 //! let schema = json!({
 //!     "allOf": [
 //!         {"type": "number"},
@@ -383,7 +383,7 @@
 //! let evaluation = validator.evaluate(&json!(42));
 //!
 //! let list = evaluation.list();
-//! let output = serde_json::to_value(list)?;
+//! let output = json_codec::to_value(list)?;
 //! // Output includes all evaluation steps in a flat array
 //! # Ok(())
 //! # }
@@ -395,7 +395,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # use serde_json::json;
+//! # use json_codec::json;
 //! let schema = json!({
 //!     "allOf": [
 //!         {"type": "number"},
@@ -406,7 +406,7 @@
 //! let evaluation = validator.evaluate(&json!(42));
 //!
 //! let hierarchical = evaluation.hierarchical();
-//! let output = serde_json::to_value(hierarchical)?;
+//! let output = json_codec::to_value(hierarchical)?;
 //! // Output has nested "details" arrays for sub-schema evaluations
 //! # Ok(())
 //! # }
@@ -418,7 +418,7 @@
 //! This ensures your schema documents are valid according to the JSON Schema specification.
 //!
 //! ```rust
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({
 //!     "type": "object",
@@ -466,7 +466,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"type": "string"});
 //!
@@ -483,7 +483,7 @@
 //! You can also use the convenience [`is_valid`] and [`validate`] functions:
 //!
 //! ```rust
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"type": "number", "minimum": 0});
 //! let instance = json!(42);
@@ -496,7 +496,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"type": "string", "format": "ends-with-42"});
 //! let validator = jsonschema::draft202012::options()
@@ -518,7 +518,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"type": "string"});
 //! let validator = jsonschema::options()
@@ -539,7 +539,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"$schema": "http://json-schema.org/draft-07/schema#", "type": "string"});
 //! let validator = jsonschema::validator_for(&schema)?;
@@ -557,7 +557,7 @@
 //!
 //! ```rust
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"$schema": "http://json-schema.org/draft-07/schema#", "type": "string"});
 //!
@@ -599,7 +599,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! use std::{collections::HashMap, sync::Arc};
 //! use jsonschema::{Retrieve, Uri};
-//! use serde_json::{json, Value};
+//! use json_codec::{json, Value};
 //!
 //! struct InMemoryRetriever {
 //!     schemas: HashMap<String, Value>,
@@ -665,7 +665,7 @@
 //! # ))]
 //! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! use jsonschema::{AsyncRetrieve, Registry, Resource, Uri};
-//! use serde_json::{Value, json};
+//! use json_codec::{Value, json};
 //!
 //! struct HttpRetriever;
 //!
@@ -704,7 +704,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //! use jsonschema::{Registry, Resource};
 //!
 //! // Root schema with multiple definitions
@@ -761,7 +761,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let schema = json!({"$ref": "https://example.com/schema.json"});
 //! assert!(jsonschema::options().offline().build(&schema).is_err());
@@ -795,7 +795,7 @@
 //! ### Example: Configure `fancy-regex` with Backtracking Limit
 //!
 //! ```rust
-//! use serde_json::json;
+//! use json_codec::json;
 //! use jsonschema::PatternOptions;
 //!
 //! let schema = json!({
@@ -815,7 +815,7 @@
 //! ### Example: Use the `regex` Engine Instead
 //!
 //! ```rust
-//! use serde_json::json;
+//! use json_codec::json;
 //! use jsonschema::PatternOptions;
 //!
 //! let schema = json!({
@@ -849,7 +849,7 @@
 //!
 //! ```rust
 //! use jsonschema::{paths::Location, Keyword, ValidationError};
-//! use serde_json::{json, Map, Value};
+//! use json_codec::{json, Map, Value};
 //!
 //! struct EvenNumberValidator;
 //!
@@ -899,7 +899,7 @@
 //!
 //! ```rust
 //! # use jsonschema::{paths::Location, Keyword, ValidationError};
-//! # use serde_json::{json, Map, Value};
+//! # use json_codec::{json, Map, Value};
 //! #
 //! # struct EvenNumberValidator;
 //! #
@@ -933,7 +933,7 @@
 //! 2. Register the function with `jsonschema::options().with_format()`.
 //!
 //! ```rust
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! // Step 1: Define the custom format validator function
 //! fn ends_with_42(s: &str) -> bool {
@@ -987,8 +987,8 @@
 //! ```rust
 //! # use jsonschema::Validator;
 //! // Precision preserved - parsed from JSON string
-//! let schema = serde_json::from_str(r#"{"minimum": 0.1}"#)?;
-//! let instance = serde_json::from_str("0.3")?;
+//! let schema = json_codec::from_str(r#"{"minimum": 0.1}"#)?;
+//! let instance = json_codec::from_str("0.3")?;
 //! let validator = Validator::new(&schema)?;
 //! assert!(validator.is_valid(&instance));
 //! # Ok::<(), Box<dyn std::error::Error>>(())
@@ -997,14 +997,14 @@
 //! # Custom JSON Representations
 //!
 //! Validators can accept instances in any in-memory JSON representation, not just
-//! `serde_json::Value`. Implement the traits in the [`json`] module for your representation and
+//! `json_codec::Value`. Implement the traits in the [`json`] module for your representation and
 //! build validators with [`options_for`]:
 //!
 //! ```rust
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # type MyJson = jsonschema::json::SerdeJson;
-//! # let schema = serde_json::json!({"type": "string"});
-//! # let my_instance = &serde_json::json!("data");
+//! # let schema = json_codec::json!({"type": "string"});
+//! # let my_instance = &json_codec::json!("data");
 //! let validator = jsonschema::options_for::<MyJson>().build(&schema)?;
 //! assert!(validator.is_valid(my_instance));
 //! # Ok(())
@@ -1087,13 +1087,13 @@ pub(crate) mod dereferencer;
 pub mod error;
 mod evaluation;
 pub(crate) use jsonschema_value::{
-    cmp, numeric, unique, Array, Json, LazyInstance, Node, NodeIdentity, Object, SerdeJson,
+    cmp, numeric, unique, Array, Json, LazyInstance, Node, NodeIdentity, Object, JsonValueBackend,
 };
 /// Validating instances in a custom in-memory JSON representation.
 ///
 /// Implement [`Json`], [`Node`], [`Object`], [`Array`], and [`JsonNumber`](json::JsonNumber)
 /// for your representation, then build validators with [`options_for`]. Schemas are always
-/// `serde_json::Value`; only instances use the custom representation. [`SerdeJson`] is the
+/// `json_codec::Value`; only instances use the custom representation. [`SerdeJson`] is the
 /// built-in representation behind [`validator_for`] and the crate-level convenience functions.
 ///
 /// Enable the `jsonb` feature for `json::Jsonb`, which reads a Postgres `jsonb` value in
@@ -1123,7 +1123,7 @@ pub(crate) use jsonschema_value::{
 ///     json::{Array, Json, JsonNumber, Node, NodeIdentity, Object},
 ///     JsonType,
 /// };
-/// use serde_json::Value;
+/// use json_codec::Value;
 ///
 /// #[derive(Default)]
 /// enum ToyValue {
@@ -1139,7 +1139,7 @@ pub(crate) use jsonschema_value::{
 /// struct ToyJson;
 ///
 /// impl Json for ToyJson {
-///     // A cheap-to-`Clone` handle; `&ToyValue` plays the role `&serde_json::Value` does
+///     // A cheap-to-`Clone` handle; `&ToyValue` plays the role `&json_codec::Value` does
 ///     // for the built-in representation.
 ///     type Node<'a> = &'a ToyValue;
 ///     // Property names are prepared once at schema compile time.
@@ -1176,8 +1176,8 @@ pub(crate) use jsonschema_value::{
 ///     fn as_str(&self) -> Cow<'_, str> {
 ///         Cow::Owned(self.0.to_string())
 ///     }
-///     fn to_number(&self) -> Cow<'_, serde_json::Number> {
-///         Cow::Owned(serde_json::Number::from_f64(self.0).expect("finite"))
+///     fn to_number(&self) -> Cow<'_, json_codec::Number> {
+///         Cow::Owned(json_codec::Number::from_f64(self.0).expect("finite"))
 ///     }
 /// }
 ///
@@ -1234,7 +1234,7 @@ pub(crate) use jsonschema_value::{
 ///         Cow::Owned(match self {
 ///             ToyValue::Null => Value::Null,
 ///             ToyValue::Boolean(boolean) => Value::Bool(*boolean),
-///             ToyValue::Number(number) => serde_json::Number::from_f64(*number)
+///             ToyValue::Number(number) => json_codec::Number::from_f64(*number)
 ///                 .map(Value::Number)
 ///                 .expect("finite"),
 ///             ToyValue::String(string) => Value::String(string.clone()),
@@ -1293,7 +1293,7 @@ pub(crate) use jsonschema_value::{
 /// }
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let schema = serde_json::json!({
+/// let schema = json_codec::json!({
 ///     "type": "object",
 ///     "properties": {"name": {"type": "string", "minLength": 2}},
 ///     "required": ["name"]
@@ -1325,7 +1325,7 @@ pub mod json {
     #[cfg(feature = "conformance")]
     pub use jsonschema_value::conformance;
     pub use jsonschema_value::{
-        cmp, unique, Array, Json, JsonNumber, Node, NodeIdentity, Object, SerdeJson,
+        cmp, unique, Array, Json, JsonNumber, Node, NodeIdentity, Object, JsonValueBackend,
     };
     #[cfg(feature = "pyo3")]
     pub use jsonschema_value::{
@@ -1386,7 +1386,7 @@ pub use referencing::AsyncRetrieve;
 ))]
 pub use retriever::AsyncHttpRetriever;
 
-use serde_json::Value;
+use json_codec::Value;
 
 /// Validate `instance` against `schema` and get a `true` if the instance is valid and `false`
 /// otherwise. Draft is detected automatically.
@@ -1394,7 +1394,7 @@ use serde_json::Value;
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"maxLength": 5});
 /// let instance = json!("foo");
@@ -1422,7 +1422,7 @@ pub fn is_valid(schema: &Value, instance: &Value) -> bool {
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"maxLength": 5});
 /// let instance = json!("foo");
@@ -1456,7 +1456,7 @@ pub fn validate<'i>(schema: &Value, instance: &'i Value) -> Result<(), Validatio
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "string", "minLength": 3});
 /// let instance = json!("foo");
@@ -1486,7 +1486,7 @@ pub fn evaluate(schema: &Value, instance: &Value) -> Evaluation {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"minimum": 5});
 /// let instance = json!(42);
@@ -1522,7 +1522,7 @@ pub fn validator_for(schema: &Value) -> Result<Validator, ValidationError<'stati
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({
 ///     "$defs": {
@@ -1580,7 +1580,7 @@ pub fn validator_map_for(schema: &Value) -> Result<ValidatorMap, ValidationError
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "string"});
 /// let bundled = jsonschema::bundle(&schema).expect("bundling failed");
@@ -1605,7 +1605,7 @@ pub fn bundle(schema: &Value) -> Result<Value, ReferencingError> {
 /// # Example
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({
 ///     "$defs": {"tag": {"type": "string"}},
@@ -1656,7 +1656,7 @@ pub async fn async_dereference(schema: &Value) -> Result<Value, ReferencingError
 ///
 /// ```rust
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({
 ///     "type": "object",
@@ -1688,7 +1688,7 @@ pub async fn async_validator_for(schema: &Value) -> Result<Validator, Validation
 ///
 /// ```rust
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"$defs": {"User": {"type": "object", "required": ["name"]}}});
 /// let map = jsonschema::async_validator_map_for(&schema).await?;
@@ -1742,7 +1742,7 @@ pub fn canonicalize(value: &Value) -> Result<canonical::CanonicalSchema, Canonic
 ///
 /// ```
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 /// use jsonschema::Draft;
 ///
 /// let schema = json!({"type": "string"});
@@ -1759,7 +1759,7 @@ pub fn canonicalize(value: &Value) -> Result<canonical::CanonicalSchema, Canonic
 ///
 /// ```
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "string", "format": "custom"});
 /// let validator = jsonschema::options()
@@ -1809,7 +1809,7 @@ pub fn async_options_for<'i, F: Json>(
 ///
 /// ```rust
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({
 ///     "$ref": "https://example.com/user.json"
@@ -1828,7 +1828,7 @@ pub fn async_options_for<'i, F: Json>(
 ///
 /// ```rust
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::{Value, json};
+/// use json_codec::{Value, json};
 /// use jsonschema::{Draft, AsyncRetrieve, Uri};
 ///
 /// // Custom async retriever
@@ -1869,7 +1869,7 @@ pub mod meta {
     use crate::{error::ValidationError, Draft, Json, Node, Object, Registry, Validator};
     use ahash::AHashSet;
     use referencing::Retrieve;
-    use serde_json::Value;
+    use json_codec::Value;
     use std::{
         any::{Any, TypeId},
         borrow::Cow,
@@ -1881,7 +1881,7 @@ pub mod meta {
     /// Meta-schema validators that read a schema held as a Python object.
     ///
     /// The bundled drafts are compiled in, so a schema already in Python form is checked without
-    /// being converted to [`serde_json::Value`]. A `$schema` outside them is reached through
+    /// being converted to [`json_codec::Value`]. A `$schema` outside them is reached through
     /// [`is_valid_for`] / [`validate_for`] instead.
     ///
     /// Needs the `macros` feature; without it, use [`is_valid_for`] / [`validate_for`] with
@@ -1906,7 +1906,7 @@ pub mod meta {
     /// Meta-schema validators that read a schema held as a Ruby object.
     ///
     /// The bundled drafts are compiled in, so a schema already in Ruby form is checked without
-    /// being converted to [`serde_json::Value`]. A `$schema` outside them is reached through
+    /// being converted to [`json_codec::Value`]. A `$schema` outside them is reached through
     /// [`is_valid_for`] / [`validate_for`] instead.
     ///
     /// Needs the `macros` feature; without it, use [`is_valid_for`] / [`validate_for`] with
@@ -1932,7 +1932,7 @@ pub mod meta {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     /// use jsonschema::{Registry, Resource};
     ///
     /// let custom_meta = Resource::from_contents(json!({
@@ -1972,7 +1972,7 @@ pub mod meta {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         /// use jsonschema::{Registry, Resource};
         ///
         /// let custom_meta = Resource::from_contents(json!({
@@ -2024,7 +2024,7 @@ pub mod meta {
 
     mod validator_handle {
         use crate::{ValidationError, Validator};
-        use serde_json::Value;
+        use json_codec::Value;
         use std::{marker::PhantomData, ops::Deref};
 
         /// Handle to a draft-specific meta-schema [`Validator`]. Borrows cached validators on native
@@ -2136,7 +2136,7 @@ pub mod meta {
         #[cfg(not(target_family = "wasm"))]
         use std::sync::LazyLock;
 
-        fn build_validator(schema: &serde_json::Value) -> Validator {
+        fn build_validator(schema: &json_codec::Value) -> Validator {
             crate::options()
                 .without_schema_validation()
                 .build(schema)
@@ -2235,7 +2235,7 @@ pub mod meta {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({
     ///     "type": "string",
@@ -2266,7 +2266,7 @@ pub mod meta {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({
     ///     "type": "string",
@@ -2308,7 +2308,7 @@ pub mod meta {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({
     ///     "type": "string",
@@ -2572,7 +2572,7 @@ pub mod meta {
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "number", "multipleOf": 2});
 /// let instance = json!(4);
@@ -2588,7 +2588,7 @@ pub mod draft4 {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let instance = json!(42);
@@ -2611,7 +2611,7 @@ pub mod draft4 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -2633,7 +2633,7 @@ pub mod draft4 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -2661,7 +2661,7 @@ pub mod draft4 {
     ///
     /// ```
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"type": "string", "format": "ends-with-42"});
     /// let validator = jsonschema::draft4::options()
@@ -2684,7 +2684,7 @@ pub mod draft4 {
     /// Functionality for validating JSON Schema Draft 4 documents.
     pub mod meta {
         use crate::{meta::MetaValidator, ValidationError};
-        use serde_json::Value;
+        use json_codec::Value;
 
         /// Returns a handle to the Draft 4 meta-schema validator. Native targets borrow cached
         /// statics while `wasm32` builds an owned validator.
@@ -2699,7 +2699,7 @@ pub mod draft4 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -2718,7 +2718,7 @@ pub mod draft4 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -2753,7 +2753,7 @@ pub mod draft4 {
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "string", "format": "uri"});
 /// let instance = json!("https://www.example.com");
@@ -2769,7 +2769,7 @@ pub mod draft6 {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let instance = json!(42);
@@ -2792,7 +2792,7 @@ pub mod draft6 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -2814,7 +2814,7 @@ pub mod draft6 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -2842,7 +2842,7 @@ pub mod draft6 {
     ///
     /// ```
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"type": "string", "format": "ends-with-42"});
     /// let validator = jsonschema::draft6::options()
@@ -2865,7 +2865,7 @@ pub mod draft6 {
     /// Functionality for validating JSON Schema Draft 6 documents.
     pub mod meta {
         use crate::{meta::MetaValidator, ValidationError};
-        use serde_json::Value;
+        use json_codec::Value;
 
         /// Returns a handle to the Draft 6 meta-schema validator. Native targets borrow cached
         /// statics while `wasm32` builds an owned validator.
@@ -2880,7 +2880,7 @@ pub mod draft6 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -2899,7 +2899,7 @@ pub mod draft6 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -2934,7 +2934,7 @@ pub mod draft6 {
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "string", "pattern": "^[a-zA-Z0-9]+$"});
 /// let instance = json!("abc123");
@@ -2950,7 +2950,7 @@ pub mod draft7 {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let instance = json!(42);
@@ -2973,7 +2973,7 @@ pub mod draft7 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -2995,7 +2995,7 @@ pub mod draft7 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -3023,7 +3023,7 @@ pub mod draft7 {
     ///
     /// ```
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"type": "string", "format": "ends-with-42"});
     /// let validator = jsonschema::draft7::options()
@@ -3046,7 +3046,7 @@ pub mod draft7 {
     /// Functionality for validating JSON Schema Draft 7 documents.
     pub mod meta {
         use crate::{meta::MetaValidator, ValidationError};
-        use serde_json::Value;
+        use json_codec::Value;
 
         /// Returns a handle to the Draft 7 meta-schema validator. Native targets borrow cached
         /// statics while `wasm32` builds an owned validator.
@@ -3061,7 +3061,7 @@ pub mod draft7 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -3080,7 +3080,7 @@ pub mod draft7 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -3115,7 +3115,7 @@ pub mod draft7 {
 /// # Examples
 ///
 /// ```rust
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "array", "minItems": 2, "uniqueItems": true});
 /// let instance = json!([1, 2]);
@@ -3131,7 +3131,7 @@ pub mod draft201909 {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let instance = json!(42);
@@ -3154,7 +3154,7 @@ pub mod draft201909 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -3176,7 +3176,7 @@ pub mod draft201909 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -3204,7 +3204,7 @@ pub mod draft201909 {
     ///
     /// ```
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"type": "string", "format": "ends-with-42"});
     /// let validator = jsonschema::draft201909::options()
@@ -3227,7 +3227,7 @@ pub mod draft201909 {
     /// Functionality for validating JSON Schema Draft 2019-09 documents.
     pub mod meta {
         use crate::{meta::MetaValidator, ValidationError};
-        use serde_json::Value;
+        use json_codec::Value;
 
         /// Returns a handle to the Draft 2019-09 meta-schema validator. Native targets borrow cached
         /// statics while `wasm32` builds an owned validator.
@@ -3241,7 +3241,7 @@ pub mod draft201909 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -3260,7 +3260,7 @@ pub mod draft201909 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -3296,7 +3296,7 @@ pub mod draft201909 {
 ///
 /// ```rust
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]});
 /// let instance = json!({"name": "John Doe"});
@@ -3314,7 +3314,7 @@ pub mod draft202012 {
     ///
     /// ```rust
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let instance = json!(42);
@@ -3337,7 +3337,7 @@ pub mod draft202012 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -3359,7 +3359,7 @@ pub mod draft202012 {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"minimum": 5});
     /// let valid = json!(42);
@@ -3387,7 +3387,7 @@ pub mod draft202012 {
     ///
     /// ```
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"type": "string", "format": "ends-with-42"});
     /// let validator = jsonschema::draft202012::options()
@@ -3410,7 +3410,7 @@ pub mod draft202012 {
     /// Functionality for validating JSON Schema Draft 2020-12 documents.
     pub mod meta {
         use crate::{meta::MetaValidator, ValidationError};
-        use serde_json::Value;
+        use json_codec::Value;
 
         /// Returns a handle to the Draft 2020-12 meta-schema validator. Native targets borrow
         /// cached statics while `wasm32` builds an owned validator.
@@ -3425,7 +3425,7 @@ pub mod draft202012 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -3444,7 +3444,7 @@ pub mod draft202012 {
         /// # Examples
         ///
         /// ```rust
-        /// use serde_json::json;
+        /// use json_codec::json;
         ///
         /// let schema = json!({
         ///     "type": "string",
@@ -3520,7 +3520,7 @@ pub mod __private {
 
     pub use crate::__magnus_backend as magnus_backend;
 
-    pub use ::serde_json;
+    pub use ::json_codec;
 
     pub mod fancy_regex {
         pub use fancy_regex::{Regex, RegexBuilder};
@@ -3592,12 +3592,12 @@ pub mod __private {
     pub mod types {
         /// Integer check per drafts 6+: floats with zero fractional part count.
         #[must_use]
-        pub fn is_integer(n: &serde_json::Number) -> bool {
+        pub fn is_integer(n: &json_codec::Number) -> bool {
             jsonschema_value::types::number_is_integer(n)
         }
         /// Integer check per draft 4: numbers written with a decimal point are not integers.
         #[must_use]
-        pub fn is_integer_draft4(n: &serde_json::Number) -> bool {
+        pub fn is_integer_draft4(n: &json_codec::Number) -> bool {
             crate::keywords::legacy::type_draft_4::is_integer(n)
         }
     }
@@ -3659,7 +3659,7 @@ pub mod __private {
     }
     pub mod numeric {
         /// Compare `value` >= `limit` using runtime numeric semantics.
-        pub fn ge<T>(value: &serde_json::Number, limit: T) -> bool
+        pub fn ge<T>(value: &json_codec::Number, limit: T) -> bool
         where
             T: Copy + num_traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
@@ -3670,7 +3670,7 @@ pub mod __private {
         }
 
         /// Compare `value` <= `limit` using runtime numeric semantics.
-        pub fn le<T>(value: &serde_json::Number, limit: T) -> bool
+        pub fn le<T>(value: &json_codec::Number, limit: T) -> bool
         where
             T: Copy + num_traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
@@ -3680,7 +3680,7 @@ pub mod __private {
             crate::numeric::le(value, limit)
         }
 
-        pub fn eq<T>(value: &serde_json::Number, limit: T) -> bool
+        pub fn eq<T>(value: &json_codec::Number, limit: T) -> bool
         where
             T: Copy + num_traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
@@ -3691,7 +3691,7 @@ pub mod __private {
         }
 
         /// Compare `value` > `limit` using runtime numeric semantics.
-        pub fn gt<T>(value: &serde_json::Number, limit: T) -> bool
+        pub fn gt<T>(value: &json_codec::Number, limit: T) -> bool
         where
             T: Copy + num_traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
@@ -3702,7 +3702,7 @@ pub mod __private {
         }
 
         /// Compare `value` < `limit` using runtime numeric semantics.
-        pub fn lt<T>(value: &serde_json::Number, limit: T) -> bool
+        pub fn lt<T>(value: &json_codec::Number, limit: T) -> bool
         where
             T: Copy + num_traits::ToPrimitive,
             u64: num_cmp::NumCmp<T>,
@@ -3714,13 +3714,13 @@ pub mod __private {
 
         /// Check `multipleOf` with integer divisors using runtime numeric semantics.
         #[must_use]
-        pub fn is_multiple_of_integer(value: &serde_json::Number, multiple: f64) -> bool {
+        pub fn is_multiple_of_integer(value: &json_codec::Number, multiple: f64) -> bool {
             crate::numeric::is_multiple_of_integer(value, multiple)
         }
 
         /// Check `multipleOf` with fractional divisors using runtime numeric semantics.
         #[must_use]
-        pub fn is_multiple_of_float(value: &serde_json::Number, multiple: f64) -> bool {
+        pub fn is_multiple_of_float(value: &json_codec::Number, multiple: f64) -> bool {
             crate::numeric::is_multiple_of_float(value, multiple)
         }
 
@@ -3728,7 +3728,7 @@ pub mod __private {
         #[cfg(feature = "arbitrary-precision")]
         #[must_use]
         pub fn check_compiled_bound(
-            value: &serde_json::Number,
+            value: &json_codec::Number,
             op: u8,
             limit_literal: &'static str,
         ) -> bool {
@@ -3756,7 +3756,7 @@ pub mod __private {
             CACHE.with(|cache| {
                 let mut cache = cache.borrow_mut();
                 let compiled = cache.entry(key).or_insert_with(|| {
-                    let limit = serde_json::from_str::<serde_json::Number>(limit_literal)
+                    let limit = json_codec::from_str::<json_codec::Number>(limit_literal)
                         .expect("Codegen emitted an invalid numeric literal");
                     compile_bound(op, &limit)
                 });
@@ -3768,7 +3768,7 @@ pub mod __private {
         #[cfg(feature = "arbitrary-precision")]
         #[must_use]
         pub fn check_compiled_multiple_of(
-            value: &serde_json::Number,
+            value: &json_codec::Number,
             limit_literal: &'static str,
         ) -> bool {
             use jsonschema_value::numeric_check::{
@@ -3789,7 +3789,7 @@ pub mod __private {
             CACHE.with(|cache| {
                 let mut cache = cache.borrow_mut();
                 let compiled = cache.entry(key).or_insert_with(|| {
-                    let limit = serde_json::from_str::<serde_json::Number>(limit_literal)
+                    let limit = json_codec::from_str::<json_codec::Number>(limit_literal)
                         .expect("Codegen emitted an invalid numeric literal");
                     compile_multiple_of(&limit)
                 });
@@ -3800,7 +3800,7 @@ pub mod __private {
 
     /// Per-keyword error constructors for generated code; evaluation path always equals schema path.
     pub mod error {
-        use serde_json::Value;
+        use json_codec::Value;
 
         use crate::{
             paths::Location,

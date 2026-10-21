@@ -6,7 +6,7 @@ use jsonschema::{
     json::{Array, Json, JsonNumber, Node, NodeIdentity, Object},
     AsyncRetrieve, JsonType, Keyword, Uri, ValidationError,
 };
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 
 #[derive(Default)]
 enum ToyValue {
@@ -58,8 +58,8 @@ impl JsonNumber for ToyNumber {
     fn as_str(&self) -> Cow<'_, str> {
         Cow::Owned(self.0.to_string())
     }
-    fn to_number(&self) -> Cow<'_, serde_json::Number> {
-        Cow::Owned(serde_json::Number::from_f64(self.0).expect("finite"))
+    fn to_number(&self) -> Cow<'_, json_codec::Number> {
+        Cow::Owned(json_codec::Number::from_f64(self.0).expect("finite"))
     }
 }
 
@@ -115,7 +115,7 @@ impl<'a> Node<'a, ToyJson> for &'a ToyValue {
         Cow::Owned(match self {
             ToyValue::Null => Value::Null,
             ToyValue::Boolean(boolean) => Value::Bool(*boolean),
-            ToyValue::Number(number) => serde_json::Number::from_f64(*number)
+            ToyValue::Number(number) => json_codec::Number::from_f64(*number)
                 .map(Value::Number)
                 .expect("finite"),
             ToyValue::String(string) => Value::String(string.clone()),

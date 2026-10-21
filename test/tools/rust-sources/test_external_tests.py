@@ -5,9 +5,12 @@ import json
 from pathlib import Path
 import tempfile
 import subprocess
+import sys
 import unittest
 
-SPEC = importlib.util.spec_from_file_location('external_tests', Path(__file__).resolve().parents[3] / 'tools/rust-sources/external_tests.py')
+HELPERS = Path(__file__).resolve().parents[3] / 'tools/rust-sources'
+sys.path.insert(0, str(HELPERS))
+SPEC = importlib.util.spec_from_file_location('external_tests', HELPERS / 'external_tests.py')
 external = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(external)
 
@@ -156,6 +159,17 @@ class ExternalSourceAttributes(unittest.TestCase):
         fields = result.decode().strip('\0').split('\0')
         self.assertEqual([tuple(fields[i:i + 3]) for i in range(0, len(fields), 3)],
                          [(path, 'text', 'unset') for path in paths])
+
+    def test_original_crlf_sources_keep_text_and_space_checks(self):
+        root = Path(__file__).resolve().parents[3]
+        paths = ['src/foundation/allocator-api2/src/stable/boxed.rs',
+                 'src/foundation/allocator-api2/src/stable/vec/mod.rs']
+        result = subprocess.check_output(['git', 'check-attr', '-z', 'text', 'whitespace', '--', *paths], cwd=root)
+        fields = result.decode().strip('\0').split('\0')
+        rows = [tuple(fields[i:i + 3]) for i in range(0, len(fields), 3)]
+        for path in paths:
+            self.assertIn((path, 'text', 'unset'), rows)
+            self.assertIn((path, 'whitespace', 'blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol'), rows)
 
     def test_relocated_ring_vectors_preserve_whitespace_exceptions(self):
         root = Path(__file__).resolve().parents[3]

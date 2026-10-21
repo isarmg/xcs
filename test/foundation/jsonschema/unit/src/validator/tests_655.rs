@@ -6,7 +6,7 @@ mod tests {
     };
     use fancy_regex::Regex;
     use num_cmp::NumCmp;
-    use serde_json::{json, Map, Value};
+    use json_codec::{json, Map, Value};
     use std::sync::LazyLock;
     use test_case::test_case;
 
@@ -17,7 +17,7 @@ mod tests {
         let mut file = File::open(path).unwrap();
         let mut content = String::new();
         file.read_to_string(&mut content).ok().unwrap();
-        let data: Value = serde_json::from_str(&content).unwrap();
+        let data: Value = json_codec::from_str(&content).unwrap();
         let case = &data.as_array().unwrap()[idx];
         case.get("schema").unwrap().clone()
     }
@@ -42,7 +42,7 @@ mod tests {
         let instance = Value::Array((0..ELEMENTS).map(|_| json!({"value": "no"})).collect());
 
         let evaluation = validator.evaluate(&instance);
-        let list = serde_json::to_value(evaluation.list()).expect("Serializable");
+        let list = json_codec::to_value(evaluation.list()).expect("Serializable");
         let failures: Vec<_> = list["details"]
             .as_array()
             .expect("`details` is an array")
@@ -701,7 +701,7 @@ mod tests {
         instance: &Value,
         expected: bool,
     ) {
-        let schema: Value = serde_json::from_str(schema).expect("Invalid JSON");
+        let schema: Value = json_codec::from_str(schema).expect("Invalid JSON");
         let validator = crate::options()
             .with_keyword(keyword, |_, _, _| Ok(Box::new(AcceptAny)))
             .build(&schema)
@@ -1075,7 +1075,7 @@ mod tests {
     ]}); "maxProperties invalid")]
     fn size_keyword_output(schema: &Value, instance: &Value, expected: &Value) {
         let validator = crate::validator_for(schema).expect("Valid schema");
-        let list = serde_json::to_value(validator.evaluate(instance).list()).expect("List output");
+        let list = json_codec::to_value(validator.evaluate(instance).list()).expect("List output");
         assert_eq!(&list, expected);
     }
 }

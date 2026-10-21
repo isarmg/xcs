@@ -28,18 +28,19 @@ license = "MIT"
 repository = "https://github.com/tokio-rs/axum"
 
 [features]
+serialization = ["dep:data-serialization"]
 __private = ["tokio", "http1", "dep:reqwest"]
-__private_docs = ["axum-core/__private_docs", "tower/full", "dep:serde", "dep:tower-http"]
+__private_docs = ["axum-core/__private_docs", "tower/full", "dep:data-serialization", "dep:tower-http"]
 default = ["form", "http1", "json", "matched-path", "original-uri", "query", "tokio", "tower-log", "tracing"]
-form = ["dep:form_urlencoded", "dep:serde_urlencoded", "dep:serde_path_to_error"]
+form = ["dep:form_urlencoded", "dep:form-codec", "dep:serialization-error-path"]
 http1 = ["dep:hyper", "hyper?/http1", "hyper-util?/http1"]
 http2 = ["dep:hyper", "hyper?/http2", "hyper-util?/http2"]
-json = ["dep:serde_json", "dep:serde_path_to_error"]
+json = ["dep:json-codec", "dep:serialization-error-path"]
 macros = ["dep:axum-macros"]
 matched-path = []
 multipart = []
 original-uri = []
-query = ["dep:form_urlencoded", "dep:serde_urlencoded", "dep:serde_path_to_error"]
+query = ["dep:form_urlencoded", "dep:form-codec", "dep:serialization-error-path"]
 tokio = ["dep:hyper-util", "dep:tokio", "tokio/net", "tokio/rt", "tower/make", "tokio/macros"]
 tower-log = ["tower/log"]
 tracing = ["dep:tracing", "axum-core/tracing"]
@@ -141,30 +142,30 @@ optional = true
 default-features = false
 path = "../reqwest"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.211"
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_core]
+[dependencies.serialization-core]
 version = "1.0.221"
-path = "../serde_core"
+path = "../serialization-core"
 
-[dependencies.serde_json]
+[dependencies.json-codec]
 version = "1.0"
 features = ["raw_value"]
 optional = true
-path = "../serde_json"
+path = "../json-codec"
 
-[dependencies.serde_path_to_error]
+[dependencies.serialization-error-path]
 version = "0.1.8"
 optional = true
-path = "../serde_path_to_error"
+path = "../serialization-error-path"
 
-[dependencies.serde_urlencoded]
+[dependencies.form-codec]
 version = "0.7"
 optional = true
-path = "../serde_urlencoded"
+path = "../form-codec"
 
 [dependencies.sync_wrapper]
 version = "1.0.0"

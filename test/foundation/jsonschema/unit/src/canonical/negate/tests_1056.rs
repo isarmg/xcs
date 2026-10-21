@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use referencing::Draft;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
 
     use super::*;
     use crate::{canonical::ir::BoundRational, options::PatternEngineOptions};

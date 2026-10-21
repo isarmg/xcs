@@ -7,9 +7,9 @@ use std::mem::discriminant;
 use std::ops;
 use std::vec;
 
-use serde::de;
-use serde::de::IntoDeserializer;
-use serde::ser;
+use data_serialization::de;
+use data_serialization::de::IntoDeserializer;
+use data_serialization::ser;
 
 use toml_datetime::__unstable as datetime;
 pub use toml_datetime::{Date, Datetime, DatetimeParseError, Offset, Time};
@@ -378,7 +378,7 @@ where
 #[cfg(feature = "display")]
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use serde::Serialize as _;
+        use data_serialization::Serialize as _;
 
         let mut output = String::new();
         let serializer = crate::ser::ValueSerializer::new(&mut output);
@@ -605,7 +605,7 @@ impl<'de> de::Deserializer<'de> for Value {
         visitor.visit_newtype_struct(self)
     }
 
-    serde::forward_to_deserialize_any! {
+    data_serialization::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string unit seq
         bytes byte_buf map unit_struct tuple_struct struct
         tuple ignored_any identifier

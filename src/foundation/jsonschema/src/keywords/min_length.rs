@@ -11,7 +11,7 @@ use crate::{
     Json, Node,
 };
 use referencing::Uri;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::sync::Arc;
 
 pub(crate) struct MinLengthValidator {

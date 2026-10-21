@@ -1,6 +1,6 @@
 #![allow(clippy::must_use_candidate)]
 
-use serde_json::Number;
+use json_codec::Number;
 
 use super::numeric;
 

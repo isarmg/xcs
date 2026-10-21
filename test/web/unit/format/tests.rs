@@ -9,7 +9,7 @@ fn integer_parsing_retains_large_disk_capacities_without_javascript_rounding() {
         assert_eq!(parse_u64(&Value::String(invalid.into())), None);
     }
     let record = disk_record(
-        serde_json::json!({"total_bytes":"18446744073709551615","available_bytes":"1"}),
+        json_codec::json!({"total_bytes":"18446744073709551615","available_bytes":"1"}),
     );
     assert_eq!(record["used_bytes"], "18446744073709551614");
 }

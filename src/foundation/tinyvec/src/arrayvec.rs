@@ -1,14 +1,14 @@
 use super::*;
 use core::convert::{TryFrom, TryInto};
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 use core::marker::PhantomData;
-#[cfg(feature = "serde")]
-use serde_core::de::{
+#[cfg(feature = "serialization")]
+use serialization_core::de::{
   Deserialize, Deserializer, Error as DeserializeError, SeqAccess, Visitor,
 };
-#[cfg(feature = "serde")]
-use serde_core::ser::{Serialize, SerializeSeq, Serializer};
+#[cfg(feature = "serialization")]
+use serialization_core::ser::{Serialize, SerializeSeq, Serializer};
 
 /// Helper to make an `ArrayVec`.
 ///
@@ -182,8 +182,8 @@ impl<A: Array, I: SliceIndex<[A::Item]>> IndexMut<I> for ArrayVec<A> {
   }
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docs_rs, doc(cfg(feature = "serde")))]
+#[cfg(feature = "serialization")]
+#[cfg_attr(docs_rs, doc(cfg(feature = "serialization")))]
 impl<A: Array> Serialize for ArrayVec<A>
 where
   A::Item: Serialize,
@@ -200,8 +200,8 @@ where
   }
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docs_rs, doc(cfg(feature = "serde")))]
+#[cfg(feature = "serialization")]
+#[cfg_attr(docs_rs, doc(cfg(feature = "serialization")))]
 impl<'de, A: Array> Deserialize<'de> for ArrayVec<A>
 where
   A::Item: Deserialize<'de>,
@@ -1959,10 +1959,10 @@ impl<A: Array> ArrayVec<A> {
   }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 struct ArrayVecVisitor<A: Array>(PhantomData<A>);
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de, A: Array> Visitor<'de> for ArrayVecVisitor<A>
 where
   A::Item: Deserialize<'de>,

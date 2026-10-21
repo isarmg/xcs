@@ -118,7 +118,7 @@ use crate::{error::Error, row::Row};
 /// with `Default::default()`, but a manual `Default` implementation can provide
 /// different placeholder values, if applicable.
 ///
-/// This is similar to how `#[serde(default)]` behaves.
+/// This is similar to how `#[serialization(default)]` behaves.
 ///
 /// #### `flatten`
 ///
@@ -217,7 +217,7 @@ use crate::{error::Error, row::Row};
 /// to automatically integrate JSON deserialization in your [`FromRow`] implementation using [`serde`](https://docs.rs/serde/latest/serde/).
 ///
 /// ```rust,ignore
-/// #[derive(serde::Deserialize)]
+/// #[derive(data_serialization::Deserialize)]
 /// struct Data {
 ///     field1: String,
 ///     field2: u64
@@ -241,7 +241,7 @@ use crate::{error::Error, row::Row};
 ///     JSON_OBJECT('field1', 'value1', 'field2', 42) AS metadata
 /// ```
 ///
-/// The `metadata` field will be deserialized used its `serde::Deserialize` implementation:
+/// The `metadata` field will be deserialized used its `data_serialization::Deserialize` implementation:
 ///
 /// ```rust,ignore
 /// User {
@@ -263,7 +263,7 @@ use crate::{error::Error, row::Row};
 ///
 /// For example
 /// ```rust,ignore
-/// #[derive(serde::Deserialize)]
+/// #[derive(data_serialization::Deserialize)]
 /// struct Data {
 ///     field1: String,
 ///     field2: u64

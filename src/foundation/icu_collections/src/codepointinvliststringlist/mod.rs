@@ -31,17 +31,17 @@ use zerovec::{VarZeroSlice, VarZeroVec};
 #[derive(Debug, Eq, PartialEq, Clone, Yokeable, ZeroFrom)]
 #[cfg_attr(not(feature = "alloc"), zerovec::skip_derive(ZeroMapKV, ToOwned))]
 // Valid to auto-derive Deserialize because the invariants are weakly held
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "serde", zerovec::derive(Serialize, Deserialize, Debug))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
+#[cfg_attr(feature = "serialization", zerovec::derive(Serialize, Deserialize, Debug))]
 pub struct CodePointInversionListAndStringList<'data> {
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     #[zerovec::varule(CodePointInversionListULE)]
     cp_inv_list: CodePointInversionList<'data>,
     // Invariants (weakly held):
     //   - no input string is length 1 (a length 1 string should be a single code point)
     //   - the string list is sorted
     //   - the elements in the string list are unique
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     str_list: VarZeroVec<'data, str>,
 }
 

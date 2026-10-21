@@ -106,7 +106,7 @@ impl<'v> ToValue for Value<'v> {
 ///
 /// For more complex types one of the following traits can be used:
 ///  * `sval::Value`, requires the `kv_sval` feature.
-///  * `serde::Serialize`, requires the `kv_serde` feature.
+///  * `data_serialization::Serialize`, requires the `kv_serde` feature.
 ///
 /// You don't need a visitor to serialize values through `serde` or `sval`.
 ///
@@ -149,11 +149,11 @@ impl<'v> Value<'v> {
         }
     }
 
-    /// Get a value from a type implementing `serde::Serialize`.
-    #[cfg(feature = "kv_serde")]
-    pub fn from_serde<T>(value: &'v T) -> Self
+    /// Get a value from a type implementing `data_serialization::Serialize`.
+    #[cfg(feature = "kv_serialization")]
+    pub fn from_serialization<T>(value: &'v T) -> Self
     where
-        T: serde_core::Serialize,
+        T: serialization_core::Serialize,
     {
         Value {
             inner: inner::Inner::from_serde1(value),
@@ -231,11 +231,11 @@ impl<'v> fmt::Display for Value<'v> {
     }
 }
 
-#[cfg(feature = "kv_serde")]
-impl<'v> serde_core::Serialize for Value<'v> {
+#[cfg(feature = "kv_serialization")]
+impl<'v> serialization_core::Serialize for Value<'v> {
     fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
     where
-        S: serde_core::Serializer,
+        S: serialization_core::Serializer,
     {
         self.inner.serialize(s)
     }
@@ -495,7 +495,7 @@ pub trait VisitValue<'v> {
     /// This is the only required method on `VisitValue` and acts as a fallback for any
     /// more specific methods that aren't overridden.
     /// The `Value` may be formatted using its `fmt::Debug` or `fmt::Display` implementation,
-    /// or serialized using its `sval::Value` or `serde::Serialize` implementation.
+    /// or serialized using its `sval::Value` or `data_serialization::Serialize` implementation.
     fn visit_any(&mut self, value: Value) -> Result<(), Error>;
 
     /// Visit an empty value.
@@ -993,14 +993,14 @@ impl<'v> Value<'v> {
         Value::from_dyn_error(err)
     }
 
-    /// Get a value from a type implementing `serde::Serialize`.
-    #[cfg(feature = "kv_unstable_serde")]
+    /// Get a value from a type implementing `data_serialization::Serialize`.
+    #[cfg(feature = "kv_unstable_serialization")]
     #[deprecated(note = "use `from_serde` instead")]
-    pub fn capture_serde<T>(value: &'v T) -> Self
+    pub fn capture_serialization<T>(value: &'v T) -> Self
     where
-        T: serde_core::Serialize + 'static,
+        T: serialization_core::Serialize + 'static,
     {
-        Value::from_serde(value)
+        Value::from_serialization(value)
     }
 
     /// Get a value from a type implementing `sval::Value`.
@@ -1066,13 +1066,13 @@ macro_rules! as_error {
     };
 }
 
-#[cfg(feature = "kv_unstable_serde")]
+#[cfg(feature = "kv_unstable_serialization")]
 #[deprecated(note = "use the `key:serde = value` macro syntax instead")]
-/// Get a value from a type implementing `serde::Serialize`.
+/// Get a value from a type implementing `data_serialization::Serialize`.
 #[macro_export]
-macro_rules! as_serde {
+macro_rules! as_serialization {
     ($capture:expr) => {
-        $crate::kv::Value::from_serde(&$capture)
+        $crate::kv::Value::from_serialization(&$capture)
     };
 }
 

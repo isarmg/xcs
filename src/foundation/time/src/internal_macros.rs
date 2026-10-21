@@ -185,7 +185,7 @@ macro_rules! const_try {
 /// Try to unwrap an expression, returning if not possible.
 ///
 /// This is identical to `?` in terms of behavior, but marks the error path as cold.
-#[cfg(any(feature = "formatting", feature = "parsing", feature = "serde"))]
+#[cfg(any(feature = "formatting", feature = "parsing", feature = "serialization"))]
 macro_rules! try_likely_ok {
     ($e:expr) => {
         match $e {
@@ -231,5 +231,5 @@ pub(crate) use const_try;
 pub(crate) use const_try_opt;
 pub(crate) use div_floor;
 pub(crate) use ensure_ranged;
-#[cfg(any(feature = "formatting", feature = "parsing", feature = "serde"))]
+#[cfg(any(feature = "formatting", feature = "parsing", feature = "serialization"))]
 pub(crate) use try_likely_ok;

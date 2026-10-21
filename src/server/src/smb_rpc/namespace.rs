@@ -124,7 +124,7 @@ impl Session {
                 json!({"branch_id":self.branch,"query":{"commit_id":workspace.base_head}}),
             )?;
             let entries: Vec<Entry> =
-                serde_json::from_value(tree["entries"].clone()).map_err(ApiError::invalid)?;
+                json_codec::from_value(tree["entries"].clone()).map_err(ApiError::invalid)?;
             let find = |path: &str| {
                 let key = name_policy::path_key(path);
                 entries.iter().find(|entry| entry.lookup_key == key)
@@ -251,7 +251,7 @@ fn write_namespace_record(path: &Path, value: &Value) -> Result<(), ApiError> {
         .tempfile_in(parent)
         .map_err(ApiError::io)?;
     temporary
-        .write_all(&serde_json::to_vec(value).map_err(ApiError::invalid)?)
+        .write_all(&json_codec::to_vec(value).map_err(ApiError::invalid)?)
         .map_err(ApiError::io)?;
     // Keep the complete intent available even if either sync fails. No core
     // commit may begin until both the file and its directory are durable.

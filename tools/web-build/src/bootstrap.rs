@@ -6,7 +6,7 @@ pub fn loader() -> String {
     TEMPLATE
         .replace(
             "__ZXS_MODULE__",
-            &serde_json::to_string(MODULE).expect("literal module path"),
+            &json_codec::to_string(MODULE).expect("literal module path"),
         )
         .replace("__ZXS_TIMEOUT__", &TIMEOUT_MS.to_string())
 }

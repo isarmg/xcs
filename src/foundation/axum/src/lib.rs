@@ -89,9 +89,9 @@
 //! async fn query(Query(params): Query<HashMap<String, String>>) {}
 //!
 //! // Buffer the request body and deserialize it as JSON into a
-//! // `serde_json::Value`. `Json` supports any type that implements
-//! // `serde::Deserialize`.
-//! async fn json(Json(payload): Json<serde_json::Value>) {}
+//! // `json_codec::Value`. `Json` supports any type that implements
+//! // `data_serialization::Deserialize`.
+//! async fn json(Json(payload): Json<json_codec::Value>) {}
 //! ```
 //!
 //! See [`extract`](crate::extract) for more details on extractors.
@@ -107,7 +107,7 @@
 //!     response::Json,
 //!     Router,
 //! };
-//! use serde_json::{Value, json};
+//! use json_codec::{Value, json};
 //!
 //! // `&'static str` becomes a `200 OK` with `content-type: text/plain; charset=utf-8`
 //! async fn plain_text() -> &'static str {
@@ -115,7 +115,7 @@
 //! }
 //!
 //! // `Json` gives a content-type of `application/json` and works with any type
-//! // that implements `serde::Serialize`
+//! // that implements `data_serialization::Serialize`
 //! async fn json() -> Json<Value> {
 //!     Json(json!({ "data": 42 }))
 //! }
@@ -281,7 +281,7 @@
 //!     Router,
 //! };
 //! use std::sync::Arc;
-//! use serde::Deserialize;
+//! use data_serialization::Deserialize;
 //!
 //! struct AppState {
 //!     // ...

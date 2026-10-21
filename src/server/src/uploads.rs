@@ -1,6 +1,6 @@
 //! Durable full-upload staging. Interrupted uploads remain attributable and queryable.
 use crate::ApiError;
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::{
     fs::{self, OpenOptions},
     io::{Read, Write},
@@ -8,18 +8,18 @@ use std::{
 };
 
 #[derive(Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct UploadRecord {
     pub workspace_id: String,
     pub item_id: String,
     pub principal: String,
     pub path: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub generation: u64,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub logical_size: u64,
     pub content_hash: Option<String>,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub persisted_bytes: u64,
     pub persisted_hash: String,
     pub state: String,
@@ -188,7 +188,7 @@ fn persist_at(
     published: impl FnOnce(),
     sync: impl FnOnce() -> Result<(), ApiError>,
 ) -> Result<(), ApiError> {
-    let bytes = serde_json::to_vec(record).map_err(ApiError::invalid)?;
+    let bytes = json_codec::to_vec(record).map_err(ApiError::invalid)?;
     if bytes.len() > 16384 {
         return Err(ApiError::invalid("upload metadata exceeds limit"));
     }
@@ -217,8 +217,8 @@ fn persist_at(
     }
     result
 }
-pub(crate) fn status(record: &UploadRecord) -> serde_json::Value {
-    serde_json::json!({"workspace_id":record.workspace_id,"item_id":record.item_id,"upload_generation":record.generation.to_string(),"logical_size":record.logical_size.to_string(),"content_hash":record.content_hash,"state":if record.state=="complete"{"COMPLETE"}else{"RECEIVING"},"durable_ranges":if record.persisted_bytes>0{vec![serde_json::json!({"offset":"0","length":record.persisted_bytes.to_string(),"content_hash":record.persisted_hash})]}else{vec![]},"sealed_manifest_hash":null})
+pub(crate) fn status(record: &UploadRecord) -> json_codec::Value {
+    json_codec::json!({"workspace_id":record.workspace_id,"item_id":record.item_id,"upload_generation":record.generation.to_string(),"logical_size":record.logical_size.to_string(),"content_hash":record.content_hash,"state":if record.state=="complete"{"COMPLETE"}else{"RECEIVING"},"durable_ranges":if record.persisted_bytes>0{vec![json_codec::json!({"offset":"0","length":record.persisted_bytes.to_string(),"content_hash":record.persisted_hash})]}else{vec![]},"sealed_manifest_hash":null})
 }
 pub(crate) fn retain_generation(root: &Path, record: &UploadRecord) -> Result<(), ApiError> {
     let name = format!(

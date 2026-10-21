@@ -254,7 +254,7 @@ impl Event {
     #[cfg(feature = "json")]
     pub fn json_data<T>(self, data: T) -> Result<Self, axum_core::Error>
     where
-        T: serde_core::Serialize,
+        T: serialization_core::Serialize,
     {
         struct JsonWriter<'a>(&'a mut EventDataWriter);
         impl std::io::Write for JsonWriter<'_> {
@@ -270,7 +270,7 @@ impl Event {
         let mut writer = self.into_data_writer();
 
         let json_writer = JsonWriter(&mut writer);
-        serde_json::to_writer(json_writer, &data).map_err(axum_core::Error::new)?;
+        json_codec::to_writer(json_writer, &data).map_err(axum_core::Error::new)?;
 
         Ok(writer.into_event())
     }

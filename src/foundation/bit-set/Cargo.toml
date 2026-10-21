@@ -30,13 +30,13 @@ version = "0.8.0"
 default-features = false
 path = "../bit-vec"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 features = ["derive"]
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
 [features]
 default = ["std"]
-serde = ["dep:serde", "bit-vec/serde"]
+serialization = ["dep:data-serialization", "bit-vec/serialization"]
 std = ["bit-vec/std"]

@@ -7,7 +7,7 @@ use std::{
 
 use ahash::{AHashMap, AHashSet};
 use referencing::{Draft, Registry, Retrieve, Uri};
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{
     canonical::{
@@ -139,7 +139,7 @@ impl<'r> CanonicalizeOptions<'r> {
     ///
     /// ```
     /// use jsonschema::canonical::options;
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let document = json!({
     ///     "$defs": {

@@ -1,4 +1,4 @@
-use serde_json::Value;
+use json_codec::Value;
 use web_interface::i18n::t;
 
 pub fn bytes(value: u64) -> String {

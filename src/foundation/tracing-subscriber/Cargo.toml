@@ -40,12 +40,13 @@ resolver = "2"
 status = "experimental"
 
 [features]
+serialization = ["dep:data-serialization"]
 alloc = []
 ansi = ["fmt", "nu-ansi-term"]
 default = ["smallvec", "fmt", "ansi", "tracing-log", "std"]
 env-filter = ["matchers", "once_cell", "tracing", "std", "thread_local", "dep:regex-automata"]
 fmt = ["registry", "std"]
-json = ["serde", "serde_json"]
+json = ["serialization", "json-codec"]
 local-time = ["time/local-offset"]
 nu-ansi-term = ["dep:nu-ansi-term"]
 regex = []
@@ -83,15 +84,15 @@ optional = true
 default-features = false
 path = "../regex-automata"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.140"
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_json]
+[dependencies.json-codec]
 version = "1.0.82"
 optional = true
-path = "../serde_json"
+path = "../json-codec"
 
 [dependencies.sharded-slab]
 version = "0.1.4"

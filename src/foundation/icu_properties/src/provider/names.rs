@@ -324,12 +324,12 @@ icu_provider::data_marker!(
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, Clone, PartialEq, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::provider::names))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 pub struct PropertyValueNameToEnumMap<'data> {
     /// A map from names to their value discriminant
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub map: ZeroTrieSimpleAscii<ZeroVec<'data, u8>>,
 }
 
@@ -347,14 +347,14 @@ icu_provider::data_struct!(
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, Clone, PartialEq, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::provider::names))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[yoke(prove_covariance_manually)]
 #[cfg(feature = "alloc")]
 pub struct PropertyEnumToValueNameSparseMap<'data> {
     /// A map from the value discriminant to the names
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub map: zerovec::ZeroMap<'data, u16, str>,
 }
 
@@ -373,14 +373,14 @@ icu_provider::data_struct!(
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, Clone, PartialEq, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::provider::names))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[yoke(prove_covariance_manually)]
 pub struct PropertyEnumToValueNameLinearMap<'data> {
     /// A map from the value discriminant (the index) to the names, for mostly
     /// contiguous data. Empty strings count as missing.
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub map: VarZeroVec<'data, str>,
 }
 
@@ -398,14 +398,14 @@ icu_provider::data_struct!(
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, Clone, PartialEq, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::provider::names))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[yoke(prove_covariance_manually)]
 pub struct PropertyScriptToIcuScriptMap<'data> {
     /// A map from the value discriminant (the index) to the names, for mostly
     /// contiguous data. Empty strings count as missing.
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub map: ZeroVec<'data, NichedOption<Script, 4>>,
 }
 

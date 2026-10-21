@@ -12,10 +12,10 @@ mod vecs;
 
 #[cfg(feature = "databake")]
 mod databake;
-#[cfg(feature = "serde")]
-mod serde;
-#[cfg(feature = "serde")]
-mod serde_helpers;
+#[cfg(feature = "serialization")]
+mod data_serialization;
+#[cfg(feature = "serialization")]
+mod serialization_helpers;
 
 pub use crate::ZeroMap;
 pub use borrowed::ZeroMapBorrowed;

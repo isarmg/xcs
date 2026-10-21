@@ -18,7 +18,7 @@ use jsonschema::{
     canonical::{CanonicalSchema, CanonicalView},
     JsonType,
 };
-use serde_json::{Number, Value};
+use json_codec::{Number, Value};
 
 // Each mounting test target uses its own slice of the pool.
 #[allow(unused_imports)]

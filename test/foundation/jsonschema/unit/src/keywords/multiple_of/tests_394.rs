@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::tests_util;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(&json!({"multipleOf": 2}), &json!(4))]
@@ -54,11 +54,11 @@ mod tests {
     #[cfg(feature = "arbitrary-precision")]
     mod arbitrary_precision {
         use crate::tests_util;
-        use serde_json::Value;
+        use json_codec::Value;
         use test_case::test_case;
 
         fn parse_json(s: &str) -> Value {
-            serde_json::from_str(s).unwrap()
+            json_codec::from_str(s).unwrap()
         }
 
         #[test_case(r#"{"multipleOf": 0.1}"#, "0.3", true; "bigfrac 0.3 is multiple of 0.1")]
@@ -190,11 +190,11 @@ mod tests {
         }
 
         // Test non-number instances with MultipleOfFloatValidator
-        // Use serde_json::json! macro to avoid arbitrary-precision parsing
-        #[test_case(&serde_json::json!({"multipleOf": 2.5}), &serde_json::json!("string"); "float string")]
-        #[test_case(&serde_json::json!({"multipleOf": 2.5}), &serde_json::json!(true); "float bool")]
-        #[test_case(&serde_json::json!({"multipleOf": 2.5}), &serde_json::json!([]); "float array")]
-        #[test_case(&serde_json::json!({"multipleOf": 2.5}), &serde_json::json!({}); "float object")]
+        // Use json_codec::json! macro to avoid arbitrary-precision parsing
+        #[test_case(&json_codec::json!({"multipleOf": 2.5}), &json_codec::json!("string"); "float string")]
+        #[test_case(&json_codec::json!({"multipleOf": 2.5}), &json_codec::json!(true); "float bool")]
+        #[test_case(&json_codec::json!({"multipleOf": 2.5}), &json_codec::json!([]); "float array")]
+        #[test_case(&json_codec::json!({"multipleOf": 2.5}), &json_codec::json!({}); "float object")]
         fn non_number_with_float_validator(schema: &Value, instance: &Value) {
             tests_util::is_valid(schema, instance);
         }

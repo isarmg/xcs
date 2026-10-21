@@ -3,7 +3,7 @@
 //! branch alone decides.
 use ahash::{AHashMap, AHashSet};
 use referencing::{Draft, Resolver, Vocabulary};
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 use crate::{compiler, Json, Node, Object};
 

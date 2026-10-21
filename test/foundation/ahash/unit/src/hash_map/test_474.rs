@@ -8,19 +8,19 @@ mod test {
         map.insert("Bar".to_string(), map.get("foo").unwrap().to_owned());
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
-    fn test_serde() {
+    fn test_serialization() {
         let mut map = AHashMap::new();
         map.insert("for".to_string(), 0);
         map.insert("bar".to_string(), 1);
-        let mut serialization = serde_json::to_string(&map).unwrap();
-        let mut deserialization: AHashMap<String, u64> = serde_json::from_str(&serialization).unwrap();
+        let mut serialization = json_codec::to_string(&map).unwrap();
+        let mut deserialization: AHashMap<String, u64> = json_codec::from_str(&serialization).unwrap();
         assert_eq!(deserialization, map);
 
         map.insert("baz".to_string(), 2);
-        serialization = serde_json::to_string(&map).unwrap();
-        let mut deserializer = serde_json::Deserializer::from_str(&serialization);
+        serialization = json_codec::to_string(&map).unwrap();
+        let mut deserializer = json_codec::Deserializer::from_str(&serialization);
         AHashMap::deserialize_in_place(&mut deserializer, &mut deserialization).unwrap();
         assert_eq!(deserialization, map);
     }

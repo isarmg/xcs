@@ -1,10 +1,10 @@
 //! Sufficient per-metric statistics survive nulls and repeated aggregation.
 use super::Snapshot;
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(super) struct Statistics {
     // Each metric has its own valid observation count; an absent sensor never
     // contributes to another metric's denominator. Integer sums stay exact.

@@ -1,5 +1,5 @@
 use jsonschema::{Keyword, ValidationError};
-use serde_json::{json, Map, Value};
+use json_codec::{json, Map, Value};
 use std::sync::{Arc, Weak};
 use test_case::test_case;
 

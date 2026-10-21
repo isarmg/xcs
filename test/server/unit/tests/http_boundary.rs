@@ -10,7 +10,7 @@ async fn assert_error(
 ) -> Value {
     assert_eq!(response.status(), status);
     assert_eq!(response.headers()[header::CONTENT_TYPE], "application/json");
-    let body: Value = serde_json::from_slice(
+    let body: Value = json_codec::from_slice(
         &axum::body::to_bytes(response.into_body(), 8192)
             .await
             .unwrap(),

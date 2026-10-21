@@ -53,7 +53,7 @@ mod tests {
         if matches!(
             test.schema
                 .get("format")
-                .and_then(serde_json::Value::as_str),
+                .and_then(json_codec::Value::as_str),
             Some("idn-hostname" | "idn-email")
         ) {
             return;
@@ -241,8 +241,8 @@ mod tests {
                     pretty_json(&test.data),
                 );
                 let _ =
-                    serde_json::to_value(evaluation.list()).expect("List output should serialize");
-                let _ = serde_json::to_value(evaluation.hierarchical())
+                    json_codec::to_value(evaluation.list()).expect("List output should serialize");
+                let _ = json_codec::to_value(evaluation.hierarchical())
                     .expect("Hierarchical output should serialize");
             } else {
                 let mut errors = validator.iter_errors(&test.data);
@@ -404,26 +404,26 @@ mod tests {
                     pretty_json(&test.data),
                 );
                 let _ =
-                    serde_json::to_value(evaluation.list()).expect("List output should serialize");
-                let _ = serde_json::to_value(evaluation.hierarchical())
+                    json_codec::to_value(evaluation.list()).expect("List output should serialize");
+                let _ = json_codec::to_value(evaluation.hierarchical())
                     .expect("Hierarchical output should serialize");
             }
         }
     }
 
-    fn pretty_json(v: &serde_json::Value) -> String {
-        serde_json::to_string_pretty(v).expect("Failed to format JSON")
+    fn pretty_json(v: &json_codec::Value) -> String {
+        json_codec::to_string_pretty(v).expect("Failed to format JSON")
     }
 
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
     fn test_instance_path() {
-        let expectations: serde_json::Value =
-            serde_json::from_str(include_str!("draft7_instance_paths.json")).expect("Valid JSON");
+        let expectations: json_codec::Value =
+            json_codec::from_str(include_str!("draft7_instance_paths.json")).expect("Valid JSON");
         for (filename, expected) in expectations.as_object().expect("Is object") {
             let test_file = fs::read_to_string(format!("../../../test/foundation/jsonschema/tests/suite/tests/draft7/{filename}"))
                 .unwrap_or_else(|_| panic!("Valid file: {filename}"));
-            let data: serde_json::Value = serde_json::from_str(&test_file).expect("Valid JSON");
+            let data: json_codec::Value = json_codec::from_str(&test_file).expect("Valid JSON");
             for item in expected.as_array().expect("Is array") {
                 let suite_id = usize::try_from(item["suite_id"].as_u64().expect("Is integer"))
                     .expect("suite_id fits in usize");

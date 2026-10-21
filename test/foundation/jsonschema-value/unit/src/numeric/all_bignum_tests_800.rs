@@ -3,12 +3,12 @@ mod bignum_tests {
     use crate::numeric::bignum;
     use fraction::BigFraction;
     use num_bigint::BigInt;
-    use serde_json::{Number, Value};
+    use json_codec::{Number, Value};
     use std::cmp::Ordering;
     use test_case::test_case;
 
     fn number_from_str(raw: &str) -> Number {
-        match serde_json::from_str::<Value>(raw).expect("valid JSON number") {
+        match json_codec::from_str::<Value>(raw).expect("valid JSON number") {
             Value::Number(num) => num,
             _ => unreachable!(),
         }

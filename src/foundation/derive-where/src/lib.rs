@@ -233,7 +233,7 @@
 //! Deriving [`Deserialize`] and [`Serialize`] works as expected. While
 //! derive-where does not offer any attribute options, regular `serde`
 //! attributes can be used. Derive-where will respect
-//! [`#[serde(crate = "...")]`](https://serde.rs/container-attrs.html#crate).
+//! [`#[serialization(crate = "...")]`](https://serde.rs/container-attrs.html#crate).
 //!
 //! ## `Zeroize` options
 //!
@@ -557,12 +557,12 @@ fn derive_where_internal(mut item: DeriveInput) -> Result<TokenStream> {
 /// `cfg`s.
 #[doc(hidden)]
 #[cfg_attr(
-	not(feature = "serde"),
+	not(feature = "serialization"),
 	proc_macro_derive(DeriveWhere, attributes(derive_where))
 )]
 #[cfg_attr(
-	feature = "serde",
-	proc_macro_derive(DeriveWhere, attributes(derive_where, serde))
+	feature = "serialization",
+	proc_macro_derive(DeriveWhere, attributes(derive_where, serialization))
 )]
 #[cfg_attr(feature = "nightly", allow_internal_unstable(core_intrinsics))]
 pub fn derive_where_actual(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -742,10 +742,10 @@ fn input_without_derive_where_attributes(mut input: DeriveInput) -> DeriveInput 
 }
 
 /// This is used by the Serde implementation to remove the duplicate item.
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[doc(hidden)]
 #[proc_macro_attribute]
-pub fn derive_where_serde(
+pub fn derive_where_serialization(
 	_: proc_macro::TokenStream,
 	_: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {

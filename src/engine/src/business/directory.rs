@@ -1,6 +1,6 @@
 //! Frozen directory compositions over public file branches and immutable nodes.
 use super::*;
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 
 fn required<'a, T>(map: &'a BTreeMap<String, T>, id: &str, message: &str) -> Result<&'a T> {

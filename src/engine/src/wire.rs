@@ -1,6 +1,6 @@
 //! Frozen upload manifests and the public request digest envelope.
 use crate::{disk::*, *};
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::collections::BTreeMap;
 
 #[derive(Clone)]
@@ -52,7 +52,7 @@ impl Engine {
         w.state = "sealed".into();
         self.persist_workspace(&w)?;
         self.workspaces.insert(id.into(), w.clone());
-        let mut placement = serde_json::Map::new();
+        let mut placement = json_codec::Map::new();
         for f in w.files.values() {
             let (primary, copies) = self.new_file_placement(&repository.repository_id, &f.path)?;
             placement.insert(

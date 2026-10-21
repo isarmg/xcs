@@ -1,4 +1,4 @@
-use serde::de::IntoDeserializer as _;
+use data_serialization::de::IntoDeserializer as _;
 
 use crate::de::DatetimeDeserializer;
 use crate::de::Error;
@@ -6,14 +6,14 @@ use crate::de::Error;
 /// Deserialization implementation for TOML [values][crate::Value].
 ///
 /// Can be created either directly from TOML strings, using [`std::str::FromStr`],
-/// or from parsed [values][crate::Value] using [`serde::de::IntoDeserializer::into_deserializer`].
+/// or from parsed [values][crate::Value] using [`data_serialization::de::IntoDeserializer::into_deserializer`].
 ///
 /// # Example
 ///
 /// ```
 /// # #[cfg(feature = "parse")] {
 /// # #[cfg(feature = "display")] {
-/// use serde::Deserialize;
+/// use data_serialization::Deserialize;
 ///
 /// #[derive(Deserialize)]
 /// struct Config {
@@ -55,12 +55,12 @@ impl ValueDeserializer {
 
 // Note: this is wrapped by `toml::de::ValueDeserializer` and any trait methods
 // implemented here need to be wrapped there
-impl<'de> serde::Deserializer<'de> for ValueDeserializer {
+impl<'de> data_serialization::Deserializer<'de> for ValueDeserializer {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let span = self.input.span();
         match self.input {
@@ -93,7 +93,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
     // as a present field.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let span = self.input.span();
         visitor.visit_some(self).map_err(|mut e: Self::Error| {
@@ -110,7 +110,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let span = self.input.span();
         visitor
@@ -130,9 +130,9 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
-        if serde_spanned::__unstable::is_spanned(name, fields) {
+        if source_spanned_value::__unstable::is_spanned(name, fields) {
             if let Some(span) = self.input.span() {
                 return visitor.visit_map(super::SpannedDeserializer::new(self, span));
             }
@@ -180,7 +180,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let span = self.input.span();
         match self.input {
@@ -216,14 +216,14 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer {
         })
     }
 
-    serde::forward_to_deserialize_any! {
+    data_serialization::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for ValueDeserializer {
+impl data_serialization::de::IntoDeserializer<'_, Error> for ValueDeserializer {
     type Deserializer = Self;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -231,7 +231,7 @@ impl serde::de::IntoDeserializer<'_, Error> for ValueDeserializer {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::Value {
+impl data_serialization::de::IntoDeserializer<'_, Error> for crate::Value {
     type Deserializer = ValueDeserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

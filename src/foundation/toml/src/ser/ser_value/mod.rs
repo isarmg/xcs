@@ -16,7 +16,7 @@ use super::Error;
 /// # Examples
 ///
 /// ```
-/// use serde::Serialize;
+/// use data_serialization::Serialize;
 ///
 /// #[derive(Serialize)]
 /// struct Config {
@@ -41,7 +41,7 @@ use super::Error;
 /// };
 ///
 /// let mut value = String::new();
-/// serde::Serialize::serialize(
+/// data_serialization::Serialize::serialize(
 ///     &config,
 ///     toml::ser::ValueSerializer::new(&mut value)
 /// ).unwrap();
@@ -62,7 +62,7 @@ impl<'d> ValueSerializer<'d> {
     }
 }
 
-impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
+impl<'d> data_serialization::ser::Serializer for ValueSerializer<'d> {
     type Ok = ();
     type Error = Error;
     type SerializeSeq = array::SerializeValueArray<'d>;
@@ -180,7 +180,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
 
     fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         write_value(
             self.dst,
@@ -220,7 +220,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
 
     fn serialize_newtype_struct<T>(self, name: &'static str, v: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         write_value(
             self.dst,
@@ -236,7 +236,7 @@ impl<'d> serde::ser::Serializer for ValueSerializer<'d> {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         write_value(
             self.dst,

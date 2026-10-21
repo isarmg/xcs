@@ -4,7 +4,7 @@ use crate::{
     api, format,
     ui::{State, current_session, fail, text},
 };
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::collections::BTreeMap;
 use web_interface::components::{LoadingState, Select, SelectOption};
 use web_interface::tasks::spawn_local;

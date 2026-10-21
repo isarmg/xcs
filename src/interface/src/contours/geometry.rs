@@ -6,18 +6,18 @@ pub use super::profile::{
     CIRCULAR_ARC_RATIO, INTEGRATION_INTERVALS, NORMALIZED_MAX_CURVATURE, PROFILE,
     TRANSITION_PARAMETER,
 };
-use serde::Serialize;
+use data_serialization::Serialize;
 use std::{cell::RefCell, collections::VecDeque, f64::consts::PI, rc::Rc};
 
 #[derive(Clone, Copy, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serialization(rename_all = "camelCase")]
 pub struct Vector {
     pub x: f64,
     pub y: f64,
 }
 
 #[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serialization(rename_all = "camelCase")]
 pub struct Profile {
     pub x: f64,
     pub y: f64,
@@ -33,7 +33,7 @@ pub struct Profile {
 }
 
 #[derive(Clone, Copy, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serialization(rename_all = "camelCase")]
 pub struct Bounds {
     pub intervals: usize,
     pub minimum_speed: f64,
@@ -45,17 +45,17 @@ pub struct Bounds {
 }
 
 #[derive(Clone, Copy, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serialization(rename_all = "camelCase")]
 pub struct Point {
     pub x: f64,
     pub y: f64,
     pub heading: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serialization(skip_serializing_if = "Option::is_none")]
     pub parameter: Option<f64>,
 }
 
 #[derive(Clone, Copy, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serialization(rename_all = "camelCase")]
 pub struct Source {
     pub extent: f64,
     pub radius: f64,
@@ -63,7 +63,7 @@ pub struct Source {
 }
 
 #[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serialization(rename_all = "camelCase")]
 pub struct Curve {
     pub extent: f64,
     pub radius: f64,
@@ -72,7 +72,7 @@ pub struct Curve {
 }
 
 #[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serialization(rename_all = "camelCase")]
 pub struct Geometry {
     pub width: f64,
     pub height: f64,
@@ -83,9 +83,9 @@ pub struct Geometry {
     pub corners: Vec<Curve>,
     pub canonical: bool,
     pub error_bound: f64,
-    #[serde(skip)]
+    #[serialization(skip)]
     pub tolerance: f64,
-    #[serde(skip)]
+    #[serialization(skip)]
     offset_paths: RefCell<Cache<u64, String>>,
 }
 

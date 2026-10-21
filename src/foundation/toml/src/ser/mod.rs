@@ -25,7 +25,7 @@ pub use ser_value::ValueSerializer;
 /// # Examples
 ///
 /// ```
-/// use serde::Serialize;
+/// use data_serialization::Serialize;
 ///
 /// #[derive(Serialize)]
 /// struct Config {
@@ -55,7 +55,7 @@ pub use ser_value::ValueSerializer;
 #[cfg(feature = "display")]
 pub fn to_string<T>(value: &T) -> Result<String, Error>
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: data_serialization::ser::Serialize + ?Sized,
 {
     let mut output = String::new();
     let serializer = Serializer::new(&mut output);
@@ -75,7 +75,7 @@ where
 #[cfg(feature = "display")]
 pub fn to_string_pretty<T>(value: &T) -> Result<String, Error>
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: data_serialization::ser::Serialize + ?Sized,
 {
     let mut output = String::new();
     let serializer = Serializer::pretty(&mut output);
@@ -120,7 +120,7 @@ impl Error {
     }
 }
 
-impl serde::ser::Error for Error {
+impl data_serialization::ser::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
         T: std::fmt::Display,
@@ -185,7 +185,7 @@ impl<'d> Serializer<'d> {
 }
 
 #[cfg(feature = "display")]
-impl<'d> serde::ser::Serializer for Serializer<'d> {
+impl<'d> data_serialization::ser::Serializer for Serializer<'d> {
     type Ok = ();
     type Error = Error;
     type SerializeSeq = array::SerializeDocumentArray<'d>;
@@ -318,7 +318,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 
     fn serialize_some<T>(self, v: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         write_document(
             self.dst,
@@ -362,7 +362,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
 
     fn serialize_newtype_struct<T>(self, name: &'static str, v: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         write_document(
             self.dst,
@@ -379,7 +379,7 @@ impl<'d> serde::ser::Serializer for Serializer<'d> {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         write_document(
             self.dst,

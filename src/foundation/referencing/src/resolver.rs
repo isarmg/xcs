@@ -2,7 +2,7 @@ use core::fmt;
 use std::sync::Arc;
 
 use fluent_uri::Uri;
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{list::List, Anchor, Draft, Error, Registry, ResourceRef, VocabularySet};
 

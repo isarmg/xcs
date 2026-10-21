@@ -5,7 +5,7 @@ use std::{
 
 use ahash::AHashMap;
 use fluent_uri::Uri;
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{
     cache::{SharedUriCache, UriCache},
@@ -61,7 +61,7 @@ impl fmt::Debug for RegistryBuilder<'_> {
 /// use referencing::Registry;
 ///
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let schema = serde_json::json!({
+/// let schema = json_codec::json!({
 ///     "$schema": "https://json-schema.org/draft/2020-12/schema",
 ///     "$id": "https://example.com/root",
 ///     "$defs": { "item": { "type": "string" } },

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{Draft, Registry};
-    use serde_json::json;
+    use json_codec::json;
 
     #[test]
     fn test_lookup_trivial_dynamic_ref() {

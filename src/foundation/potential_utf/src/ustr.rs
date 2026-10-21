@@ -201,13 +201,13 @@ unsafe impl zerovec::ule::VarULE for PotentialUtf8 {
 }
 
 /// This impl requires enabling the optional `serde` Cargo feature
-#[cfg(feature = "serde")]
-impl serde_core::Serialize for PotentialUtf8 {
+#[cfg(feature = "serialization")]
+impl serialization_core::Serialize for PotentialUtf8 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde_core::Serializer,
+        S: serialization_core::Serializer,
     {
-        use serde_core::ser::Error;
+        use serialization_core::ser::Error;
         let s = self
             .try_as_str()
             .map_err(|_| S::Error::custom("invalid UTF-8 in PotentialUtf8"))?;
@@ -220,11 +220,11 @@ impl serde_core::Serialize for PotentialUtf8 {
 }
 
 /// This impl requires enabling the optional `serde` Cargo feature
-#[cfg(all(feature = "serde", feature = "alloc"))]
-impl<'de> serde_core::Deserialize<'de> for Box<PotentialUtf8> {
+#[cfg(all(feature = "serialization", feature = "alloc"))]
+impl<'de> serialization_core::Deserialize<'de> for Box<PotentialUtf8> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde_core::Deserializer<'de>,
+        D: serialization_core::Deserializer<'de>,
     {
         if deserializer.is_human_readable() {
             let boxed_str = Box::<str>::deserialize(deserializer)?;
@@ -237,14 +237,14 @@ impl<'de> serde_core::Deserialize<'de> for Box<PotentialUtf8> {
 }
 
 /// This impl requires enabling the optional `serde` Cargo feature
-#[cfg(feature = "serde")]
-impl<'de, 'a> serde_core::Deserialize<'de> for &'a PotentialUtf8
+#[cfg(feature = "serialization")]
+impl<'de, 'a> serialization_core::Deserialize<'de> for &'a PotentialUtf8
 where
     'de: 'a,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde_core::Deserializer<'de>,
+        D: serialization_core::Deserializer<'de>,
     {
         if deserializer.is_human_readable() {
             let s = <&str>::deserialize(deserializer)?;

@@ -20,7 +20,7 @@
 //! ### `serde`
 //!
 //! When this optional dependency is enabled, `SmallVec` implements the
-//! `serde::Serialize` and `serde::Deserialize` traits.
+//! `data_serialization::Serialize` and `data_serialization::Deserialize` traits.
 //!
 //! ### `write`
 //!
@@ -117,8 +117,8 @@ mod tests;
 #[cfg(feature = "drain_keep_rest")]
 use core::mem::ManuallyDrop;
 
-#[cfg(feature = "serde")]
-use serde::{
+#[cfg(feature = "serialization")]
+use data_serialization::{
     de::{Deserialize, Deserializer, SeqAccess, Visitor},
     ser::{Serialize, SerializeSeq, Serializer},
 };
@@ -2141,8 +2141,8 @@ impl<A: Array<Item = u8>> io::Write for SmallVec<A> {
     }
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+#[cfg(feature = "serialization")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serialization")))]
 impl<A: Array> Serialize for SmallVec<A>
 where
     A::Item: Serialize,
@@ -2156,8 +2156,8 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
-#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+#[cfg(feature = "serialization")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serialization")))]
 impl<'de, A: Array> Deserialize<'de> for SmallVec<A>
 where
     A::Item: Deserialize<'de>,
@@ -2169,12 +2169,12 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 struct SmallVecVisitor<A> {
     phantom: PhantomData<A>,
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de, A: Array> Visitor<'de> for SmallVecVisitor<A>
 where
     A::Item: Deserialize<'de>,
@@ -2189,7 +2189,7 @@ where
     where
         B: SeqAccess<'de>,
     {
-        use serde::de::Error;
+        use data_serialization::de::Error;
         let len = seq.size_hint().unwrap_or(0);
         let mut values = SmallVec::new();
         values.try_reserve(len).map_err(B::Error::custom)?;

@@ -4,10 +4,10 @@ use crate::{
     keywords::{items::AbsorbedKeywords, BoxedValidator, BuiltinKeyword, Keyword},
     paths::{LazyLocation, Location, RefTracker},
     validator::{EvaluationResult, Validate, ValidationContext},
-    Array, Json, Node, SerdeJson, ValidationError,
+    Array, Json, Node, JsonValueBackend, ValidationError,
 };
 use referencing::Uri;
-use serde_json::Value;
+use json_codec::Value;
 use std::{
     fmt,
     sync::{Arc, OnceLock, Weak},
@@ -27,7 +27,7 @@ impl<F: Json> fmt::Debug for SchemaNodeInner<F> {
 }
 
 /// A node in the schema tree, returned by `compiler::compile`
-pub(crate) struct SchemaNode<F: Json = SerdeJson> {
+pub(crate) struct SchemaNode<F: Json = JsonValueBackend> {
     inner: Arc<SchemaNodeInner<F>>,
     location: Location,
     absolute_path: Option<Arc<Uri<String>>>,
@@ -53,7 +53,7 @@ impl<F: Json> fmt::Debug for SchemaNode<F> {
 }
 
 // Separate type used only during compilation for handling recursive references
-pub(crate) struct PendingSchemaNode<F: Json = SerdeJson> {
+pub(crate) struct PendingSchemaNode<F: Json = JsonValueBackend> {
     cell: Arc<OnceLock<PendingTarget<F>>>,
 }
 

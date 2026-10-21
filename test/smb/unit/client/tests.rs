@@ -171,8 +171,8 @@ fn invalid_frame_closes_every_clone_before_a_stale_success_can_be_reused() {
     let (one, mut two) = UnixStream::pair().unwrap();
     // Queue the invalid header and a well-formed response together. Merely
     // returning the parse error would leave that success for the next call.
-    let stale = serde_json::to_vec(&Response::Ok {
-        result: serde_json::json!({"stale": true}),
+    let stale = json_codec::to_vec(&Response::Ok {
+        result: json_codec::json!({"stale": true}),
     })
     .unwrap();
     let mut frames = Vec::new();
@@ -226,7 +226,7 @@ fn remote_business_error_preserves_the_stream_for_the_next_call() {
         stream
             .send(
                 &Response::Ok {
-                    result: serde_json::json!({"found": true}),
+                    result: json_codec::json!({"found": true}),
                 },
                 None,
             )

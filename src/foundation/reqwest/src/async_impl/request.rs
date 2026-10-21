@@ -3,9 +3,9 @@ use std::fmt;
 use std::future::Future;
 use std::time::Duration;
 
-use serde::Serialize;
+use data_serialization::Serialize;
 #[cfg(feature = "json")]
-use serde_json;
+use json_codec;
 
 use super::body::Body;
 use super::client::{Client, Pending};
@@ -318,7 +318,7 @@ impl RequestBuilder {
         if let Ok(ref mut req) = self.request {
             let url = req.url_mut();
             let mut pairs = url.query_pairs_mut();
-            let serializer = serde_urlencoded::Serializer::new(&mut pairs);
+            let serializer = form_codec::Serializer::new(&mut pairs);
 
             if let Err(err) = query.serialize(serializer) {
                 error = Some(crate::error::builder(err));
@@ -373,7 +373,7 @@ impl RequestBuilder {
     pub fn form<T: Serialize + ?Sized>(mut self, form: &T) -> RequestBuilder {
         let mut error = None;
         if let Ok(ref mut req) = self.request {
-            match serde_urlencoded::to_string(form) {
+            match form_codec::to_string(form) {
                 Ok(body) => {
                     req.headers_mut()
                         .entry(CONTENT_TYPE)
@@ -406,7 +406,7 @@ impl RequestBuilder {
     pub fn json<T: Serialize + ?Sized>(mut self, json: &T) -> RequestBuilder {
         let mut error = None;
         if let Ok(ref mut req) = self.request {
-            match serde_json::to_vec(json) {
+            match json_codec::to_vec(json) {
                 Ok(body) => {
                     if !req.headers().contains_key(CONTENT_TYPE) {
                         req.headers_mut()

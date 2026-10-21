@@ -4,7 +4,7 @@ use crate::{
     api,
     ui::{State, current_session, fail, list, text},
 };
-use serde_json::Value;
+use json_codec::Value;
 use web_interface::prelude::*;
 use web_interface::tasks::spawn_local;
 

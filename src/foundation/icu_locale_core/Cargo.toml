@@ -42,9 +42,9 @@ repository = "https://github.com/unicode-org/icu4x"
 resolver = "2"
 
 [features]
-alloc = ["litemap/alloc", "tinystr/alloc", "writeable/alloc", "serde?/alloc"]
+alloc = ["litemap/alloc", "tinystr/alloc", "writeable/alloc", "data-serialization?/alloc"]
 databake = ["alloc"]
-serde = ["dep:serde", "tinystr/serde"]
+serialization = ["dep:data-serialization", "tinystr/serialization"]
 zerovec = ["dep:zerovec", "tinystr/zerovec"]
 
 [lib]
@@ -62,12 +62,12 @@ version = "0.8.0"
 default-features = false
 path = "../litemap"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.220"
 features = ["derive"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.tinystr]
 version = "0.8.4"

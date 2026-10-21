@@ -1,6 +1,6 @@
 use hegel::{generators as gs, TestCase};
 use jsonschema::JsonType;
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 
 pub(crate) fn small_int(tc: &TestCase) -> i32 {
     tc.draw(gs::integers::<i32>().min_value(-8).max_value(8))
@@ -20,7 +20,7 @@ pub(crate) const WIDE_INTEGERS: &[&str] = &[
 
 pub(crate) fn wide_number(tc: &TestCase) -> Value {
     let text = tc.draw(gs::sampled_from(WIDE_INTEGERS.to_vec()));
-    serde_json::from_str(text).expect("valid number literal")
+    json_codec::from_str(text).expect("valid number literal")
 }
 
 pub(crate) fn finite_float(tc: &TestCase) -> f64 {
@@ -43,7 +43,7 @@ pub(crate) fn aliased_number(tc: &TestCase) -> Value {
             .min_value(0)
             .max_value(family.len() - 1),
     );
-    serde_json::from_str(family[index]).expect("valid number literal")
+    json_codec::from_str(family[index]).expect("valid number literal")
 }
 
 // A bounded scalar for `const`/`enum`, across the primitive types.
@@ -74,7 +74,7 @@ pub(crate) fn arbitrary_instance(tc: &TestCase) -> Value {
         6 => wide_number(tc),
         7 => json!([]),
         8 => {
-            let mut object = serde_json::Map::new();
+            let mut object = json_codec::Map::new();
             for key in draw_keys(tc) {
                 object.insert(key.to_string(), tc.draw(arbitrary_scalar()));
             }
@@ -112,7 +112,7 @@ pub(crate) fn draw_unconstrained(tc: &TestCase, ty: JsonType) -> Value {
             Value::Array((0..count).map(|_| tc.draw(arbitrary_scalar())).collect())
         }
         JsonType::Object => {
-            let mut object = serde_json::Map::new();
+            let mut object = json_codec::Map::new();
             for key in draw_keys(tc) {
                 object.insert(key.to_string(), tc.draw(arbitrary_scalar()));
             }

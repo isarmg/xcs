@@ -821,32 +821,32 @@ impl<K, V> ExactSizeIterator for IntoValues<K, V> {
 
 impl<K, V> FusedIterator for IntoValues<K, V> where detail::IntoValuesImpl<K, V>: FusedIterator {}
 
-#[cfg(feature = "serde")]
-impl<K, V> serde::Serialize for Map<K, V>
+#[cfg(feature = "serialization")]
+impl<K, V> data_serialization::Serialize for Map<K, V>
 where
-    K: serde::Serialize + Eq + Hash + Ord,
-    V: serde::Serialize,
+    K: data_serialization::Serialize + Eq + Hash + Ord,
+    V: data_serialization::Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::ser::Serializer,
+        S: data_serialization::ser::Serializer,
     {
-        serde::Serialize::serialize(&self.inner, serializer)
+        data_serialization::Serialize::serialize(&self.inner, serializer)
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'a, K, V> serde::Deserialize<'a> for Map<K, V>
+#[cfg(feature = "serialization")]
+impl<'a, K, V> data_serialization::Deserialize<'a> for Map<K, V>
 where
-    K: serde::Deserialize<'a> + Eq + Hash + Ord,
-    V: serde::Deserialize<'a>,
+    K: data_serialization::Deserialize<'a> + Eq + Hash + Ord,
+    V: data_serialization::Deserialize<'a>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::de::Deserializer<'a>,
+        D: data_serialization::de::Deserializer<'a>,
     {
         Ok(Map {
-            inner: serde::Deserialize::deserialize(deserializer)?,
+            inner: data_serialization::Deserialize::deserialize(deserializer)?,
         })
     }
 }

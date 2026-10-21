@@ -5,10 +5,10 @@ mod statistics;
 
 use crate::{ApiError, AppState, Backend, auth::Identity, http_boundary::ApiQuery};
 use axum::{Extension, Json, extract::State};
+use data_serialization::{Deserialize, Serialize};
 use history::{HistoryStore, Sample};
+use json_codec::{Value, json};
 use power::CpuPowerSampler;
-use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
 use std::{
     path::Path,
     sync::{Arc, Mutex},
@@ -45,11 +45,11 @@ pub(super) struct DiskStatus {
     total_bytes: Option<String>,
     available_bytes: Option<String>,
     used_bytes: Option<String>,
-    #[serde(default)]
+    #[serialization(default)]
     usage_percent: Option<f64>,
-    #[serde(default)]
+    #[serialization(default)]
     power_watts: Option<f64>,
-    #[serde(default)]
+    #[serialization(default)]
     power_unavailable_reason: Option<String>,
 }
 
@@ -182,7 +182,7 @@ impl Telemetry {
         let disks = self
             .backend
             .observe_disks(&crate::InternalDiskObservation(()))?;
-        let disks = serde_json::from_value::<Vec<DiskStatus>>(disks["disks"].clone())
+        let disks = json_codec::from_value::<Vec<DiskStatus>>(disks["disks"].clone())
             .map_err(|_| unavailable("disk sampling is unavailable"))?;
         let (cpu, memory) = self
             .sampler
@@ -243,7 +243,7 @@ pub(crate) async fn status(
         require_current_administrator(&state.auth, &identity)?;
         state.telemetry.current().and_then(|status| {
             require_current_administrator(&state.auth, &identity)?;
-            serde_json::to_value(status)
+            json_codec::to_value(status)
                 .map(Json)
                 .map_err(|_| unavailable("host sampling is unavailable"))
         })
@@ -253,9 +253,9 @@ pub(crate) async fn status(
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct HistoryQuery {
-    #[serde(default = "default_range")]
+    #[serialization(default = "default_range")]
     range: String,
 }
 fn default_range() -> String {

@@ -1,7 +1,7 @@
 use core::slice;
 use std::iter::FlatMap;
 
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 use crate::{
     draft::Draft, path::JsonPointerSegment, segments::Segment, Error, Resolver, ResourceRef,
@@ -54,7 +54,7 @@ pub(crate) fn walk_children<'a>(
 }
 
 type ObjectChildIter<'a> = FlatMap<
-    serde_json::map::Iter<'a>,
+    json_codec::map::Iter<'a>,
     ChildIterInner<'a>,
     fn((&'a std::string::String, &'a Value)) -> ChildIterInner<'a>,
 >;
@@ -80,8 +80,8 @@ impl<'a> Iterator for ChildIter<'a> {
 pub(crate) enum ChildIterInner<'a> {
     Once(&'a Value),
     Array(slice::Iter<'a, Value>),
-    Object(serde_json::map::Values<'a>),
-    FilteredObject(serde_json::map::Values<'a>),
+    Object(json_codec::map::Values<'a>),
+    FilteredObject(json_codec::map::Values<'a>),
     Empty,
 }
 

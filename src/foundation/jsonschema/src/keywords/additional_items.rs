@@ -6,12 +6,12 @@ use crate::{
     paths::{LazyLocation, Location, RefTracker},
     types::{JsonType, JsonTypeSet},
     validator::{Validate, ValidationContext},
-    Array, Json, LazyInstance, Node, SerdeJson,
+    Array, Json, LazyInstance, Node, JsonValueBackend,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::borrow::Cow;
 
-pub(crate) struct AdditionalItemsObjectValidator<F: Json = SerdeJson> {
+pub(crate) struct AdditionalItemsObjectValidator<F: Json = JsonValueBackend> {
     node: SchemaNode<F>,
     items_count: usize,
 }

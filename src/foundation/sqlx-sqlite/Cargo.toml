@@ -24,13 +24,14 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/launchbadge/sqlx"
 
 [features]
+serialization = ["dep:data-serialization"]
 _unstable-all-sqlite-features = ["deserialize", "load-extension", "preupdate-hook", "unlock-notify"]
 _unstable-all-types = ["json", "uuid"]
 bundled = ["libsqlite3-sys/bundled"]
 deserialize = []
-json = ["sqlx-core/json", "serde"]
+json = ["sqlx-core/json", "serialization"]
 load-extension = []
-offline = ["sqlx-core/offline", "serde"]
+offline = ["sqlx-core/offline", "serialization"]
 preupdate-hook = ["libsqlite3-sys/preupdate_hook"]
 regexp = ["dep:regex"]
 unbundled = ["libsqlite3-sys/buildtime_bindgen"]
@@ -112,11 +113,11 @@ version = "1.6.0"
 optional = true
 path = "../regex"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.219"
 features = ["derive"]
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.sqlx-core]
 version = "=0.9.0"

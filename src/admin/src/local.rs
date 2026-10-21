@@ -7,7 +7,7 @@ use crate::{
     pending::save_json_private,
     print, private_io,
 };
-use serde_json::json;
+use json_codec::json;
 use std::{path::Path, sync::Arc};
 use storage_engine::{CommitRequest, Config, Engine, NamespaceOperation};
 use storage_server::{ServerConfig, auth::AuthStore, engine_backend::EngineBackend};
@@ -55,7 +55,7 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                 config.mode = storage_engine::Mode::Production;
             }
             if let Some(path) = output {
-                save_json_private(&path, &serde_json::to_value(config)?)?;
+                save_json_private(&path, &json_codec::to_value(config)?)?;
                 print(json!({"configuration_draft":path,"devices_initialized":false}))
             } else {
                 print(config)
@@ -245,7 +245,7 @@ pub(crate) async fn run(args: Args) -> Result<()> {
             });
             Engine::validate_configuration(&draft)?;
             ensure_uninitialized_draft(&config, &draft)?;
-            let candidate = serde_json::to_vec_pretty(&draft)?;
+            let candidate = json_codec::to_vec_pretty(&draft)?;
             if candidate.len() > MAX_DRAFT_BYTES {
                 return Err("configuration draft exceeds its byte limit".into());
             }

@@ -166,8 +166,8 @@ impl Fixture {
     fn snapshot(&self) -> (Value, Value, Vec<Vec<u8>>) {
         let engine = self.backend.engine.lock().unwrap();
         (
-            serde_json::to_value(engine.state()).unwrap(),
-            serde_json::to_value(engine.workspace(&self.workspace.workspace_id).unwrap()).unwrap(),
+            json_codec::to_value(engine.state()).unwrap(),
+            json_codec::to_value(engine.workspace(&self.workspace.workspace_id).unwrap()).unwrap(),
             engine
                 .config()
                 .disks

@@ -98,23 +98,23 @@ impl Display for UStr {
 // manual impls because otherwise things get a little screwy with lifetimes
 
 #[cfg(feature = "offline")]
-impl<'de> serde::Deserialize<'de> for UStr {
-    fn deserialize<D>(deserializer: D) -> Result<Self, <D as serde::Deserializer<'de>>::Error>
+impl<'de> data_serialization::Deserialize<'de> for UStr {
+    fn deserialize<D>(deserializer: D) -> Result<Self, <D as data_serialization::Deserializer<'de>>::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         Ok(String::deserialize(deserializer)?.into())
     }
 }
 
 #[cfg(feature = "offline")]
-impl serde::Serialize for UStr {
+impl data_serialization::Serialize for UStr {
     fn serialize<S>(
         &self,
         serializer: S,
-    ) -> Result<<S as serde::Serializer>::Ok, <S as serde::Serializer>::Error>
+    ) -> Result<<S as data_serialization::Serializer>::Ok, <S as data_serialization::Serializer>::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         serializer.serialize_str(self)
     }

@@ -81,13 +81,13 @@ impl<const N: usize> From<TinyAsciiStr<N>> for UnvalidatedTinyAsciiStr<N> {
     }
 }
 
-#[cfg(feature = "serde")]
-impl<const N: usize> serde_core::Serialize for UnvalidatedTinyAsciiStr<N> {
+#[cfg(feature = "serialization")]
+impl<const N: usize> serialization_core::Serialize for UnvalidatedTinyAsciiStr<N> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde_core::Serializer,
+        S: serialization_core::Serializer,
     {
-        use serde_core::ser::Error;
+        use serialization_core::ser::Error;
         self.try_into_tinystr()
             .map_err(|_| S::Error::custom("invalid ascii in UnvalidatedTinyAsciiStr"))?
             .serialize(serializer)
@@ -96,14 +96,14 @@ impl<const N: usize> serde_core::Serialize for UnvalidatedTinyAsciiStr<N> {
 
 macro_rules! deserialize {
     ($size:literal) => {
-        #[cfg(feature = "serde")]
-        impl<'de, 'a> serde_core::Deserialize<'de> for UnvalidatedTinyAsciiStr<$size>
+        #[cfg(feature = "serialization")]
+        impl<'de, 'a> serialization_core::Deserialize<'de> for UnvalidatedTinyAsciiStr<$size>
         where
             'de: 'a,
         {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
-                D: serde_core::Deserializer<'de>,
+                D: serialization_core::Deserializer<'de>,
             {
                 if deserializer.is_human_readable() {
                     Ok(TinyAsciiStr::deserialize(deserializer)?.to_unvalidated())

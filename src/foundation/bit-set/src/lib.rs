@@ -53,8 +53,8 @@
 
 extern crate bit_vec;
 
-#[cfg(feature = "serde")]
-extern crate serde;
+#[cfg(feature = "serialization")]
+extern crate data_serialization;
 
 #[cfg(any(test, feature = "std"))]
 extern crate std;
@@ -117,7 +117,7 @@ fn match_words<'a, 'b, B: BitBlock>(
     }
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize, data_serialization::Serialize))]
 pub struct BitSet<B = u32> {
     bit_vec: BitVec<B>,
 }

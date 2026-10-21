@@ -16,7 +16,7 @@ Next, define a macro like so:
 ```rust
 #[macro_export]
 #[doc(hidden)]
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 macro_rules! __impl_external_bitflags_my_library {
     (
         $InternalBitFlags:ident: $T:ty, $PublicBitFlags:ident {
@@ -66,8 +66,8 @@ __impl_external_bitflags_my_library! {
 */
 
 pub(crate) mod __private {
-    #[cfg(feature = "serde")]
-    pub use serde_core as serde;
+    #[cfg(feature = "serialization")]
+    pub use serialization_core as data_serialization;
 
 
 
@@ -90,7 +90,7 @@ macro_rules! __impl_external_bitflags {
         // Use `serde` as an example: generate code when the feature is available,
         // and a no-op when it isn't
 
-        $crate::__impl_external_bitflags_serde! {
+        $crate::__impl_external_bitflags_serialization! {
             $InternalBitFlags: $T, $PublicBitFlags {
                 $(
                     $(#[$inner $($args)*])*
@@ -119,14 +119,14 @@ macro_rules! __impl_external_bitflags {
     };
 }
 
-#[cfg(feature = "serde")]
-pub mod serde;
+#[cfg(feature = "serialization")]
+pub mod data_serialization;
 
 /// Implement `Serialize` and `Deserialize` for the internal bitflags type.
 #[macro_export]
 #[doc(hidden)]
-#[cfg(feature = "serde")]
-macro_rules! __impl_external_bitflags_serde {
+#[cfg(feature = "serialization")]
+macro_rules! __impl_external_bitflags_serialization {
     (
         $InternalBitFlags:ident: $T:ty, $PublicBitFlags:ident {
             $(
@@ -135,23 +135,23 @@ macro_rules! __impl_external_bitflags_serde {
             )*
         }
     ) => {
-        impl $crate::__private::serde::Serialize for $InternalBitFlags {
-            fn serialize<S: $crate::__private::serde::Serializer>(
+        impl $crate::__private::data_serialization::Serialize for $InternalBitFlags {
+            fn serialize<S: $crate::__private::data_serialization::Serializer>(
                 &self,
                 serializer: S,
             ) -> $crate::__private::core::result::Result<S::Ok, S::Error> {
-                $crate::serde::serialize(
+                $crate::data_serialization::serialize(
                     &$PublicBitFlags::from_bits_retain(self.bits()),
                     serializer,
                 )
             }
         }
 
-        impl<'de> $crate::__private::serde::Deserialize<'de> for $InternalBitFlags {
-            fn deserialize<D: $crate::__private::serde::Deserializer<'de>>(
+        impl<'de> $crate::__private::data_serialization::Deserialize<'de> for $InternalBitFlags {
+            fn deserialize<D: $crate::__private::data_serialization::Deserializer<'de>>(
                 deserializer: D,
             ) -> $crate::__private::core::result::Result<Self, D::Error> {
-                let flags: $PublicBitFlags = $crate::serde::deserialize(deserializer)?;
+                let flags: $PublicBitFlags = $crate::data_serialization::deserialize(deserializer)?;
 
                 $crate::__private::core::result::Result::Ok(flags.0)
             }
@@ -161,8 +161,8 @@ macro_rules! __impl_external_bitflags_serde {
 
 #[macro_export]
 #[doc(hidden)]
-#[cfg(not(feature = "serde"))]
-macro_rules! __impl_external_bitflags_serde {
+#[cfg(not(feature = "serialization"))]
+macro_rules! __impl_external_bitflags_serialization {
     (
         $InternalBitFlags:ident: $T:ty, $PublicBitFlags:ident {
             $(

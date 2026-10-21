@@ -986,18 +986,18 @@ fn test_mmap_rayon() -> Result<(), std::io::Error> {
 
 #[test]
 #[cfg(feature = "std")]
-#[cfg(feature = "serde")]
-fn test_serde() {
+#[cfg(feature = "serialization")]
+fn test_serialization() {
     // Henrik suggested that we use 0xfe / 254 for byte test data instead of 0xff / 255, due to the
     // fact that 0xfe is not a well formed CBOR item.
     let hash: crate::Hash = [0xfe; 32].into();
 
-    let json = serde_json::to_string(&hash).unwrap();
+    let json = json_codec::to_string(&hash).unwrap();
     assert_eq!(
         json,
         "[254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254,254]",
     );
-    let hash2: crate::Hash = serde_json::from_str(&json).unwrap();
+    let hash2: crate::Hash = json_codec::from_str(&json).unwrap();
     assert_eq!(hash, hash2);
 
     let mut cbor = Vec::<u8>::new();

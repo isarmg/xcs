@@ -5,8 +5,8 @@ mod tests {
     use alloc::vec::Vec;
 
     #[test]
-    #[cfg(feature = "serde")]
-    fn test_serde_with_postcard_roundtrip() -> Result<(), postcard::Error> {
+    #[cfg(feature = "serialization")]
+    fn test_serialization_with_postcard_roundtrip() -> Result<(), postcard::Error> {
         let trie = planes::get_planes_trie();
         let trie_serialized: Vec<u8> = postcard::to_allocvec(&trie).unwrap();
 

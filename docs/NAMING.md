@@ -60,7 +60,6 @@ Base64 旧实现经差异验证合并后，这批不存在同名多版本冲突�
 | [rand_core 0.6.4](https://static.crates.io/crates/rand_core/rand_core-0.6.4.crate) | vendor/rust/rand_core-0.6.4 | [Apache-2.0](../compliance/licenses/upstream/rand_core-0.6.4/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/rand_core-0.6.4/LICENSE-MIT)、[版权](../compliance/licenses/upstream/rand_core-0.6.4/COPYRIGHT) |
 | [sha2 0.11.1](https://static.crates.io/crates/sha2/sha2-0.11.1.crate) | vendor/rust/sha2-0.11.1 | [Apache-2.0](../compliance/licenses/upstream/sha2-0.11.1/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/sha2-0.11.1/LICENSE-MIT) |
 | [shlex 2.0.1](https://static.crates.io/crates/shlex/shlex-2.0.1.crate) | vendor/rust/shlex-2.0.1 | [Apache-2.0](../compliance/licenses/upstream/shlex-2.0.1/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/shlex-2.0.1/LICENSE-MIT) |
-
 | [base64 0.23.1](https://static.crates.io/crates/base64/base64-0.23.1.crate) | vendor/rust/base64-0.23.1 | [Apache-2.0](../compliance/licenses/upstream/base64-0.23.1/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/base64-0.23.1/LICENSE-MIT) |
 
 ## 第二批实施：界面组件族
@@ -71,6 +70,10 @@ DOM 辅助、视图渲染、响应式状态、任务调度、视图分支和共�
 
 两套 hashbrown 实现完成合并后，存续实现的活动目录和包名改为 `hash-table`，crate 标识为 `hash_table`；原始身份 hashbrown 0.17.1 保留。HashMap/HashSet 等标准功能类型名称不变，hashlink/indexmap 的顺序语义包装不合并进无序表。消费者内部 `from_hashbrown` 辅助名称及所有活跃依赖和特性路径同步更改。当前使用文档见 [hash-table](components/hash-table.md)，上游原始文档保留原样。
 
+## 第四批实施：序列化组件族
+
+七个组件及内部代码、辅助属性和 97 个内部文件路径已协调迁移，详细映射与格式保护见[序列化迁移记录](reports/serialization-naming-20261021.md)。私有支持模块不含版本后缀，但三方版本一致性与精确依赖固定由门禁保证；Cargo 版本元数据不被删除。漏洞审计继续使用原始上游名称和版本，改名不形成审计豁免。
+
 ## 后续组件族：仅为计划
 
 以下是需要联合评审的候选，不是已落地清单，也不要求把所有有明确领域含义的名称强行替换。
@@ -78,7 +81,6 @@ DOM 辅助、视图渲染、响应式状态、任务调度、视图分支和共�
 | 现有组件族 | 计划方向 | 必须协调的边界 |
 | --- | --- | --- |
 | tokio / tokio-macros / tokio-util | async-runtime / async-runtime-macros / async-runtime-utils | 属性宏默认 crate 路径、特性转发、调度和取消语义 |
-| serde / serde_core / serde_derive | data-serialization / serialization-core / serialization-derive | 派生宏、辅助属性、生成路径及所有序列化消费者；序列化字段和线格式不变 |
 | thiserror / thiserror-impl | error-definition / error-definition-macros | 宏中硬编码路径及隐藏支持模块 |
 | ring | native-cryptography | 原生符号前缀、预生成汇编、构建脚本和 links；不能仅改 Cargo 名称 |
 

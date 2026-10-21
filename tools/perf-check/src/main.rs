@@ -1,5 +1,5 @@
 //! Disposable Development-mode architecture probe, not a physical-storage benchmark.
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use sqlx::{Executor, Row};
 use std::{
     collections::BTreeMap,
@@ -170,13 +170,13 @@ fn main() -> Result<()> {
         if checkpoint {
             let writes = sql(&root.join("index.sqlite"), false)?;
             let id = version(&engine, &branch);
-            let before = serde_json::to_value(engine.state())?;
+            let before = json_codec::to_value(engine.state())?;
             drop(engine);
             let start = Instant::now();
             engine = Engine::open(&root)?;
             let restart_us = start.elapsed().as_micros();
             assert_eq!(
-                serde_json::to_value(engine.state())?,
+                json_codec::to_value(engine.state())?,
                 before,
                 "restart must recover identical state"
             );
@@ -213,7 +213,7 @@ fn main() -> Result<()> {
     assert!(engine.check()?.issues.is_empty(), "integrity check failed");
     println!(
         "{}",
-        serde_json::to_string_pretty(
+        json_codec::to_string_pretty(
             &json!({"mode":"Development","physical_redundancy_evidence":false,"timings_are_gates":false,"history_limit":history,"small_file_bytes":1024,"copies":3,"samples":samples,"large_range":{"file_bytes":big.len(),"range_bytes":64,"first_open_read_us":cold_us,"repeated_open_read_16_us":warm_us},"checks":{"restart_state_equality":true,"range_bytes_correct":true,"held_read_during_save":true,"historical_version_after_save":true,"integrity_check":true}})
         )?
     );

@@ -40,7 +40,7 @@ default = ["parse", "display"]
 display = ["dep:toml_write"]
 parse = ["dep:winnow"]
 perf = []
-serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
+serialization = ["dep:data-serialization", "toml_datetime/serialization", "dep:source-spanned-value"]
 unbounded = []
 
 [lib]
@@ -52,16 +52,16 @@ version = "2.3.0"
 features = ["std"]
 path = "../indexmap"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.145"
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_spanned]
+[dependencies.source-spanned-value]
 version = "0.6.9"
-features = ["serde"]
+features = ["serialization"]
 optional = true
-path = "../serde_spanned"
+path = "../source-spanned-value"
 
 [dependencies.toml_datetime]
 version = "0.6.11"

@@ -1,6 +1,6 @@
 //! Public immutable path events reuse real version bodies and proof identities.
 use super::*;
-use serde_json::json;
+use json_codec::json;
 
 pub(crate) fn source_node(state: &State, file: &str, version: &str, node: &str) -> Result<()> {
     let valid = file_nodes::node_version(state, file, node)? == version;

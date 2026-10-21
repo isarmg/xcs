@@ -15,12 +15,12 @@ use core::cmp;
 use core::fmt::{self, Formatter};
 
 use percent_encoding::{percent_decode, utf8_percent_encode, CONTROLS};
-#[cfg(feature = "serde")]
-use serde_derive::{Deserialize, Serialize};
+#[cfg(feature = "serialization")]
+use serialization_derive::{Deserialize, Serialize};
 
 use crate::parser::{ParseError, ParseResult};
 
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serialization", derive(Deserialize, Serialize))]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub(crate) enum HostInternal {
     None,
@@ -41,7 +41,7 @@ impl From<Host<Cow<'_, str>>> for HostInternal {
 }
 
 /// The host name of an URL.
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serialization", derive(Deserialize, Serialize))]
 #[derive(Clone, Debug, Eq, Ord, PartialOrd, Hash)]
 pub enum Host<S = String> {
     /// A DNS domain name, as '.' dot-separated labels.

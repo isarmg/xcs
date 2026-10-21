@@ -11,9 +11,9 @@ name = "ahash"
 version = "0.8.12"
 dependencies = [
  "cfg-if",
+ "data-serialization",
  "getrandom 0.4.3",
  "once_cell",
- "serde",
  "zerocopy",
 ]
 
@@ -133,7 +133,7 @@ dependencies = [
  "base64",
  "getrandom 0.4.3",
  "hmac",
- "serde_json",
+ "json-codec",
  "sha2",
  "subtle",
  "thiserror",
@@ -150,6 +150,7 @@ dependencies = [
  "axum-core",
  "axum-macros",
  "bytes",
+ "form-codec",
  "form_urlencoded",
  "futures-util",
  "http",
@@ -158,15 +159,14 @@ dependencies = [
  "hyper",
  "hyper-util",
  "itoa",
+ "json-codec",
  "matchit",
  "memchr",
  "mime",
  "percent-encoding",
  "pin-project-lite",
- "serde_core",
- "serde_json",
- "serde_path_to_error",
- "serde_urlencoded",
+ "serialization-core",
+ "serialization-error-path",
  "sync_wrapper",
  "tokio",
  "tower",
@@ -279,7 +279,7 @@ name = "browser-smoke"
 version = "0.1.0"
 dependencies = [
  "base64",
- "serde_json",
+ "json-codec",
  "tempfile",
 ]
 
@@ -388,11 +388,11 @@ name = "contract-check"
 version = "0.1.0"
 dependencies = [
  "blake3",
+ "data-serialization",
+ "json-codec",
  "jsonschema",
  "percent-encoding",
  "regex",
- "serde",
- "serde_json",
  "storage-contract",
  "toml",
  "walkdir",
@@ -486,6 +486,14 @@ name = "data-encoding"
 version = "2.11.1"
 
 [[package]]
+name = "data-serialization"
+version = "1.0.229"
+dependencies = [
+ "serialization-core",
+ "serialization-derive",
+]
+
+[[package]]
 name = "deranged"
 version = "0.5.9"
 
@@ -547,7 +555,7 @@ version = "1.19.0"
 name = "email_address"
 version = "0.2.9"
 dependencies = [
- "serde",
+ "data-serialization",
 ]
 
 [[package]]
@@ -637,8 +645,8 @@ name = "fluent-uri"
 version = "0.4.1"
 dependencies = [
  "borrow-or-share",
+ "data-serialization",
  "ref-cast",
- "serde",
 ]
 
 [[package]]
@@ -653,6 +661,16 @@ dependencies = [
 [[package]]
 name = "foldhash"
 version = "0.2.0"
+
+[[package]]
+name = "form-codec"
+version = "0.7.1"
+dependencies = [
+ "data-serialization",
+ "form_urlencoded",
+ "itoa",
+ "ryu",
+]
 
 [[package]]
 name = "form_urlencoded"
@@ -816,7 +834,7 @@ dependencies = [
  "allocator-api2",
  "equivalent",
  "foldhash",
- "serde_core",
+ "serialization-core",
 ]
 
 [[package]]
@@ -1040,7 +1058,7 @@ version = "2.14.2"
 dependencies = [
  "equivalent",
  "hash-table",
- "serde_core",
+ "serialization-core",
 ]
 
 [[package]]
@@ -1072,17 +1090,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "json-codec"
+version = "1.0.154"
+dependencies = [
+ "itoa",
+ "memchr",
+ "serialization-core",
+ "zmij",
+]
+
+[[package]]
 name = "jsonschema"
 version = "0.58.6"
 dependencies = [
  "ahash",
  "bytecount",
  "data-encoding",
+ "data-serialization",
  "email_address",
  "fancy-regex",
  "fraction",
  "getrandom 0.4.3",
  "itoa",
+ "json-codec",
  "jsonschema-regex",
  "jsonschema-value",
  "num-cmp",
@@ -1090,8 +1120,6 @@ dependencies = [
  "percent-encoding",
  "referencing",
  "regex",
- "serde",
- "serde_json",
  "strum",
  "unicode-general-category",
  "uuid-simd",
@@ -1112,9 +1140,9 @@ dependencies = [
  "bytecount",
  "fraction",
  "getrandom 0.4.3",
+ "json-codec",
  "num-cmp",
  "num-traits",
- "serde_json",
  "zmij",
 ]
 
@@ -1381,8 +1409,8 @@ version = "2.3.2"
 name = "perf-check"
 version = "0.1.0"
 dependencies = [
+ "json-codec",
  "platform-io",
- "serde_json",
  "sqlx",
  "storage-engine",
  "tempfile",
@@ -1401,13 +1429,13 @@ name = "platform-io"
 version = "0.1.0"
 dependencies = [
  "blake3",
+ "data-serialization",
  "futures-executor",
  "getrandom 0.4.3",
+ "json-codec",
  "libc",
  "libsqlite3-sys",
  "rustix",
- "serde",
- "serde_json",
  "sha2",
  "sqlx",
  "tempfile",
@@ -1522,6 +1550,7 @@ name = "reactive-state"
 version = "0.2.16"
 dependencies = [
  "async-lock",
+ "data-serialization",
  "futures",
  "guardian",
  "indexmap",
@@ -1531,7 +1560,6 @@ dependencies = [
  "rustc-hash",
  "rustc_version",
  "send_wrapper",
- "serde",
  "slotmap",
  "task-dispatch",
  "thiserror",
@@ -1563,10 +1591,10 @@ dependencies = [
  "getrandom 0.4.3",
  "hash-table",
  "itoa",
+ "json-codec",
  "micromap",
  "parking_lot",
  "percent-encoding",
- "serde_json",
 ]
 
 [[package]]
@@ -1606,6 +1634,8 @@ version = "0.12.28"
 dependencies = [
  "base64",
  "bytes",
+ "data-serialization",
+ "form-codec",
  "futures-core",
  "futures-util",
  "http",
@@ -1614,14 +1644,12 @@ dependencies = [
  "hyper",
  "hyper-rustls",
  "hyper-util",
+ "json-codec",
  "log",
  "percent-encoding",
  "pin-project-lite",
  "rustls",
  "rustls-pki-types",
- "serde",
- "serde_json",
- "serde_urlencoded",
  "sync_wrapper",
  "tokio",
  "tokio-rustls",
@@ -1737,19 +1765,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde"
-version = "1.0.229"
-dependencies = [
- "serde_core",
- "serde_derive",
-]
-
-[[package]]
-name = "serde_core"
+name = "serialization-core"
 version = "1.0.229"
 
 [[package]]
-name = "serde_derive"
+name = "serialization-derive"
 version = "1.0.229"
 dependencies = [
  "proc-macro2",
@@ -1758,38 +1778,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_json"
-version = "1.0.154"
-dependencies = [
- "itoa",
- "memchr",
- "serde_core",
- "zmij",
-]
-
-[[package]]
-name = "serde_path_to_error"
+name = "serialization-error-path"
 version = "0.1.20"
 dependencies = [
  "itoa",
- "serde_core",
-]
-
-[[package]]
-name = "serde_spanned"
-version = "0.6.9"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "serde_urlencoded"
-version = "0.7.1"
-dependencies = [
- "form_urlencoded",
- "itoa",
- "ryu",
- "serde",
+ "serialization-core",
 ]
 
 [[package]]
@@ -1812,7 +1805,7 @@ dependencies = [
 name = "shared-value"
 version = "0.2.1"
 dependencies = [
- "serde",
+ "data-serialization",
  "thiserror",
 ]
 
@@ -1851,9 +1844,9 @@ version = "1.16.3"
 name = "smb-protocol"
 version = "0.1.0"
 dependencies = [
+ "data-serialization",
+ "json-codec",
  "libc",
- "serde",
- "serde_json",
  "storage-contract",
 ]
 
@@ -1863,8 +1856,8 @@ version = "0.1.0"
 dependencies = [
  "bindgen",
  "blake3",
+ "json-codec",
  "libc",
- "serde_json",
  "smb-protocol",
 ]
 
@@ -1873,6 +1866,13 @@ name = "socket2"
 version = "0.6.5"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "source-spanned-value"
+version = "0.6.9"
+dependencies = [
+ "data-serialization",
 ]
 
 [[package]]
@@ -1943,10 +1943,10 @@ version = "0.1.0"
 dependencies = [
  "authentication",
  "clap",
+ "data-serialization",
+ "json-codec",
  "platform-io",
  "rustix",
- "serde",
- "serde_json",
  "storage-client",
  "storage-engine",
  "storage-server",
@@ -1960,14 +1960,14 @@ name = "storage-client"
 version = "0.1.0"
 dependencies = [
  "blake3",
+ "data-serialization",
  "futures-util",
+ "json-codec",
  "reqwest",
  "rustix",
  "rustls",
  "rustls-pki-types",
  "rustls-webpki",
- "serde",
- "serde_json",
  "storage-contract",
  "tempfile",
  "thiserror",
@@ -1982,8 +1982,8 @@ name = "storage-contract"
 version = "0.1.0"
 dependencies = [
  "blake3",
- "serde",
- "serde_json",
+ "data-serialization",
+ "json-codec",
  "thiserror",
  "uuid",
 ]
@@ -1993,13 +1993,13 @@ name = "storage-engine"
 version = "0.1.0"
 dependencies = [
  "blake3",
+ "data-serialization",
  "hash-table",
  "hashlink",
+ "json-codec",
  "name-policy",
  "platform-io",
  "rustix",
- "serde",
- "serde_json",
  "sqlx",
  "sqlx-core",
  "storage-contract",
@@ -2015,12 +2015,12 @@ dependencies = [
  "axum",
  "blake3",
  "bytes",
+ "data-serialization",
  "futures-util",
  "http",
+ "json-codec",
  "name-policy",
  "rustix",
- "serde",
- "serde_json",
  "smb-protocol",
  "storage-contract",
  "storage-engine",
@@ -2158,7 +2158,7 @@ dependencies = [
  "deranged",
  "num-conv",
  "powerfmt",
- "serde_core",
+ "serialization-core",
  "time-core",
 ]
 
@@ -2223,8 +2223,8 @@ dependencies = [
 name = "toml"
 version = "0.8.23"
 dependencies = [
- "serde",
- "serde_spanned",
+ "data-serialization",
+ "source-spanned-value",
  "toml_datetime",
  "toml_edit",
 ]
@@ -2233,16 +2233,16 @@ dependencies = [
 name = "toml_datetime"
 version = "0.6.11"
 dependencies = [
- "serde",
+ "data-serialization",
 ]
 
 [[package]]
 name = "toml_edit"
 version = "0.22.27"
 dependencies = [
+ "data-serialization",
  "indexmap",
- "serde",
- "serde_spanned",
+ "source-spanned-value",
  "toml_datetime",
  "toml_write",
  "winnow",
@@ -2406,10 +2406,10 @@ version = "0.9.0"
 name = "url"
 version = "2.5.8"
 dependencies = [
+ "data-serialization",
  "form_urlencoded",
  "idna",
  "percent-encoding",
- "serde",
 ]
 
 [[package]]
@@ -2550,11 +2550,11 @@ name = "wasm-bindgen-cli-support"
 version = "0.2.129"
 dependencies = [
  "anyhow",
+ "data-serialization",
+ "json-codec",
  "leb128",
  "log",
  "rustc-demangle",
- "serde",
- "serde_json",
  "walrus",
  "wasm-bindgen-shared",
  "wasmparser",
@@ -2607,11 +2607,11 @@ dependencies = [
 name = "wasmparser"
 version = "0.245.1"
 dependencies = [
+ "data-serialization",
  "flag-set",
  "hash-table",
  "indexmap",
  "semver",
- "serde",
 ]
 
 [[package]]
@@ -2622,9 +2622,9 @@ dependencies = [
  "getrandom 0.4.3",
  "gloo-timers",
  "js-sys",
+ "json-codec",
  "name-policy",
  "send_wrapper",
- "serde_json",
  "storage-contract",
  "uuid",
  "wasm-bindgen",
@@ -2650,7 +2650,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "flate2",
- "serde_json",
+ "json-codec",
  "sha2",
 ]
 
@@ -2659,15 +2659,15 @@ name = "web-interface"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "data-serialization",
  "dom-helpers",
  "futures",
  "gloo-events",
  "gloo-timers",
  "js-sys",
+ "json-codec",
  "reactive-state",
  "send_wrapper",
- "serde",
- "serde_json",
  "shared-value",
  "task-dispatch",
  "throw_error",

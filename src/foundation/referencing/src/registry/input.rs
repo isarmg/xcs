@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use ahash::AHashMap;
 use fluent_uri::Uri;
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{Resource, ResourceRef, Retrieve};
 

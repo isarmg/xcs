@@ -82,7 +82,7 @@ fn build_sdk() {
         );
     }
     if let Ok(extra) = env::var("ZXS_SMB_SDK_CLANG_ARGS_JSON") {
-        let arguments: Vec<String> = serde_json::from_str(&extra)
+        let arguments: Vec<String> = json_codec::from_str(&extra)
             .expect("ZXS_SMB_SDK_CLANG_ARGS_JSON must be a JSON array of clang arguments");
         generator = generator.clang_args(arguments);
     }

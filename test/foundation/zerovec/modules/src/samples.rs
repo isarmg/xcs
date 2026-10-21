@@ -61,7 +61,7 @@ fn validate() {
     assert_eq!(TEST_SLICE.iter().sum::<u32>(), TEST_SUM);
 
     assert_eq!(
-        serde_json::from_str::<ZeroVec::<u32>>(JSON_STR).unwrap(),
+        json_codec::from_str::<ZeroVec::<u32>>(JSON_STR).unwrap(),
         ZeroVec::alloc_from_slice(TEST_SLICE)
     );
 

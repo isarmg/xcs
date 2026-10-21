@@ -16,7 +16,7 @@
 //!
 //! ```
 //! use jsonschema::{canonicalize, canonical::{CanonicalKind, CanonicalView, Satisfiability}};
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! // Equivalent schemas share one canonical form.
 //! let interval = canonicalize(&json!({"type": "integer", "minimum": 1, "maximum": 1})).unwrap();
@@ -63,7 +63,7 @@
 //!
 //! ```
 //! use jsonschema::{canonicalize, canonical::Satisfiability};
-//! use serde_json::json;
+//! use json_codec::json;
 //!
 //! let old = canonicalize(&json!({"type": "string"}))?;
 //! let new = canonicalize(&json!({"type": "string", "maxLength": 50}))?;

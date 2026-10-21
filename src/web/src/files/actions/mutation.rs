@@ -9,7 +9,7 @@ use crate::{
     files::model::{NamespaceAction, SaveStatus, join_path},
     ui::{State, current_session, fail, set_notice, text},
 };
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use web_interface::tasks::spawn_local;
 use web_interface::{i18n::t, prelude::*};
 

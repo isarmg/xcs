@@ -33,6 +33,26 @@ class DirectRustcEnvironment(unittest.TestCase):
                     self.assertEqual(explicit, original)
                     self.assertEqual(dict(os.environ), inherited)
 
+    def test_system_probe_uses_current_serialization_feature(self):
+        import tomllib
+
+        class ManifestCaptured(Exception):
+            pass
+
+        def capture_manifest(command, **kwargs):
+            manifest = Path(command[command.index("--manifest-path") + 1])
+            dependency = tomllib.loads(manifest.read_text())["dependencies"]["sysinfo"]
+            features = dependency["features"]
+            self.assertIn("serialization", features)
+            self.assertNotIn("serde", features)
+            declared = tomllib.loads((Path(dependency["path"]) / "Cargo.toml").read_text())["features"]
+            self.assertTrue(set(features) <= set(declared))
+            raise ManifestCaptured
+
+        with patch.object(system, "check_target_contract"), patch.object(system.subprocess, "run", side_effect=capture_manifest):
+            with self.assertRaises(ManifestCaptured):
+                system.check(ROOT)
+
     def test_each_system_guard_probe_uses_its_package_directory(self):
         with tempfile.TemporaryDirectory() as temporary:
             work = Path(temporary)

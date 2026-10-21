@@ -46,8 +46,8 @@
 //!
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 //! [`no_std`]: #no-standard-library-targets
-//! [`Serialize`]: `::serde_core::Serialize`
-//! [`Deserialize`]: `::serde_core::Deserialize`
+//! [`Serialize`]: `::serialization_core::Serialize`
+//! [`Deserialize`]: `::serialization_core::Deserialize`
 //! [`BorshSerialize`]: `::borsh::BorshSerialize`
 //! [`BorshDeserialize`]: `::borsh::BorshDeserialize`
 //! [`borsh`]: `::borsh`
@@ -110,8 +110,8 @@ mod inner;
 #[macro_use]
 mod macros;
 
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 mod util;
 

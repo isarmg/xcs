@@ -9,7 +9,7 @@ use crate::{
     api, format,
     ui::{State, text},
 };
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::collections::BTreeSet;
 use web_interface::{i18n::t, prelude::*};
 mod view;

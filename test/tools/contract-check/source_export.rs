@@ -145,7 +145,7 @@ fn source_export_checks_without_generated_evidence_and_still_rejects_broken_sour
         "{}",
         String::from_utf8_lossy(&result.stderr)
     );
-    let report: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+    let report: json_codec::Value = json_codec::from_slice(&result.stdout).unwrap();
     assert_eq!(report["result"], "PASS");
     assert!(
         report["missing_local_generated_artifacts"]

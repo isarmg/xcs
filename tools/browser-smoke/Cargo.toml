@@ -10,5 +10,5 @@ path = "../../test/tools/browser-smoke/runner/main.rs"
 
 [dependencies]
 base64 = {version = "0.23.1", path = "../../src/foundation/base64", default-features = false, features = ["std"]}
-serde_json = {version = "1", path = "../../src/foundation/serde_json"}
+json-codec = {version = "1", path = "../../src/foundation/json-codec"}
 tempfile = {version = "3", path = "../../src/foundation/tempfile"}

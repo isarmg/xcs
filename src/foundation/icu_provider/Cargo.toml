@@ -41,14 +41,14 @@ repository = "https://github.com/unicode-org/icu4x"
 resolver = "2"
 
 [features]
-alloc = ["icu_locale_core/alloc", "serde?/alloc", "yoke/alloc", "zerofrom/alloc", "zerovec/alloc", "zerotrie?/alloc", "dep:stable_deref_trait", "dep:writeable"]
+alloc = ["icu_locale_core/alloc", "data-serialization?/alloc", "yoke/alloc", "zerofrom/alloc", "zerovec/alloc", "zerotrie?/alloc", "dep:stable_deref_trait", "dep:writeable"]
 baked = ["dep:zerotrie", "dep:writeable"]
-deserialize_bincode_1 = ["serde", "std"]
-deserialize_json = ["serde", "dep:serde_json"]
-deserialize_postcard_1 = ["serde"]
-export = ["serde", "std", "sync", "zerovec/databake"]
+deserialize_bincode_1 = ["serialization", "std"]
+deserialize_json = ["serialization", "dep:json-codec"]
+deserialize_postcard_1 = ["serialization"]
+export = ["serialization", "std", "sync", "zerovec/databake"]
 logging = ["dep:log"]
-serde = ["dep:serde", "yoke/serde"]
+serialization = ["dep:data-serialization", "yoke/serialization"]
 std = ["alloc"]
 sync = []
 zerotrie = []
@@ -74,17 +74,17 @@ optional = true
 default-features = false
 path = "../log"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.220"
 features = ["derive"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_json]
+[dependencies.json-codec]
 version = "1.0.45"
 optional = true
-path = "../serde_json"
+path = "../json-codec"
 
 [dependencies.stable_deref_trait]
 version = "1.2.0"

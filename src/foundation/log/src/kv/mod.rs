@@ -55,7 +55,7 @@
 //! - `:display` will capture the value using `Display`.
 //! - `:err` will capture the value using `std::error::Error` (requires the `kv_std` feature).
 //! - `:sval` will capture the value using `sval::Value` (requires the `kv_sval` feature).
-//! - `:serde` will capture the value using `serde::Serialize` (requires the `kv_serde` feature).
+//! - `:serde` will capture the value using `data_serialization::Serialize` (requires the `kv_serde` feature).
 //!
 //! ## Working with key-values on log records
 //!
@@ -194,7 +194,7 @@
 //! # #[cfg(feature = "kv_serde")]
 //! # {
 //! # use log::kv::Key;
-//! #[derive(serde::Serialize)]
+//! #[derive(data_serialization::Serialize)]
 //! struct Data {
 //!     a: i32, b: bool,
 //!     c: &'static str,
@@ -208,7 +208,7 @@
 //!
 //! let a = record.key_values().get(Key::from("a")).unwrap();
 //!
-//! assert_eq!("{\"a\":1,\"b\":true,\"c\":\"Some data\"}", serde_json::to_string(&a)?);
+//! assert_eq!("{\"a\":1,\"b\":true,\"c\":\"Some data\"}", json_codec::to_string(&a)?);
 //! # }
 //! # Ok(())
 //! # }
@@ -217,7 +217,7 @@
 //! The choice of serialization framework depends on the needs of the consumer.
 //! If you're in a no-std environment, you can use `sval`. In other cases, you can use `serde`.
 //! Log producers and log consumers don't need to agree on the serialization framework.
-//! A value can be captured using its `serde::Serialize` implementation and still be serialized
+//! A value can be captured using its `data_serialization::Serialize` implementation and still be serialized
 //! through `sval` without losing any structure or data.
 //!
 //! Values can also always be formatted using the standard `Debug` and `Display`

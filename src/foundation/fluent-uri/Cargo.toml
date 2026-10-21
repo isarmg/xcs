@@ -29,7 +29,8 @@ license = "MIT"
 repository = "https://github.com/yescallop/fluent-uri-rs"
 
 [features]
-alloc = ["borrow-or-share/alloc", "serde?/alloc"]
+serialization = ["dep:data-serialization"]
+alloc = ["borrow-or-share/alloc", "data-serialization?/alloc"]
 default = ["std"]
 impl-error = []
 net = []
@@ -48,11 +49,11 @@ path = "../borrow-or-share"
 version = "1.0"
 path = "../ref-cast"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [lints.rust.unexpected_cfgs]
 level = "warn"

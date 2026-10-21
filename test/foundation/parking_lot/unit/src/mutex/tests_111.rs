@@ -8,7 +8,7 @@ mod tests {
     use std::sync::Arc;
     use std::thread;
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     use bincode::{deserialize, serialize};
 
     struct Packet<T>(Arc<(Mutex<T>, Condvar)>);
@@ -188,9 +188,9 @@ mod tests {
         assert_eq!(format!("{:?}", mutex), "Mutex { data: <locked> }");
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
-    fn test_serde() {
+    fn test_serialization() {
         let contents: Vec<u8> = vec![0, 1, 2];
         let mutex = Mutex::new(contents.clone());
 

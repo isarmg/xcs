@@ -2,9 +2,9 @@
 // called LICENSE at the top level of the ICU4X source tree
 // (online at: https://github.com/unicode-org/icu4x/blob/main/LICENSE ).
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 use alloc::format;
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 use alloc::string::String;
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
@@ -45,13 +45,13 @@ pub struct CodePointInversionList<'data> {
     size: u32,
 }
 
-#[cfg(feature = "serde")]
-impl<'de: 'a, 'a> serde::Deserialize<'de> for CodePointInversionList<'a> {
+#[cfg(feature = "serialization")]
+impl<'de: 'a, 'a> data_serialization::Deserialize<'de> for CodePointInversionList<'a> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
-        use serde::de::Error;
+        use data_serialization::de::Error;
 
         let parsed_inv_list = if deserializer.is_human_readable() {
             let parsed_strings = Vec::<alloc::borrow::Cow<'de, str>>::deserialize(deserializer)?;
@@ -110,11 +110,11 @@ impl databake::BakeSize for CodePointInversionList<'_> {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[derive(Debug, Copy, Clone)]
 struct UnicodeCodePoint(u32);
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl UnicodeCodePoint {
     fn from_u32(cp: u32) -> Result<Self, String> {
         if cp <= char::MAX as u32 {
@@ -135,7 +135,7 @@ impl UnicodeCodePoint {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl core::fmt::Display for UnicodeCodePoint {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self.0 {
@@ -151,15 +151,15 @@ impl core::fmt::Display for UnicodeCodePoint {
     }
 }
 
-#[cfg(feature = "serde")]
-impl serde::Serialize for CodePointInversionList<'_> {
+#[cfg(feature = "serialization")]
+impl data_serialization::Serialize for CodePointInversionList<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         if serializer.is_human_readable() {
-            use serde::ser::Error;
-            use serde::ser::SerializeSeq;
+            use data_serialization::ser::Error;
+            use data_serialization::ser::SerializeSeq;
             let mut seq = serializer.serialize_seq(Some(self.inv_list.len() / 2))?;
             for range in self.iter_ranges() {
                 let start = UnicodeCodePoint::from_u32(*range.start()).map_err(S::Error::custom)?;

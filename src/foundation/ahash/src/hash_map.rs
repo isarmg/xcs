@@ -7,8 +7,8 @@ use std::iter::FromIterator;
 use std::ops::{Deref, DerefMut, Index};
 use std::panic::UnwindSafe;
 
-#[cfg(feature = "serde")]
-use serde::{
+#[cfg(feature = "serialization")]
+use data_serialization::{
     de::{Deserialize, Deserializer},
     ser::{Serialize, Serializer},
 };
@@ -414,7 +414,7 @@ impl<K, V> Default for AHashMap<K, V, RandomState> {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<K, V> Serialize for AHashMap<K, V>
 where
     K: Serialize + Eq + Hash,
@@ -425,7 +425,7 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de, K, V> Deserialize<'de> for AHashMap<K, V>
 where
     K: Deserialize<'de> + Eq + Hash,
@@ -437,7 +437,7 @@ where
     }
 
     fn deserialize_in_place<D: Deserializer<'de>>(deserializer: D, place: &mut Self) -> Result<(), D::Error> {
-        use serde::de::{MapAccess, Visitor};
+        use data_serialization::de::{MapAccess, Visitor};
 
         struct MapInPlaceVisitor<'a, K: 'a, V: 'a>(&'a mut AHashMap<K, V>);
 

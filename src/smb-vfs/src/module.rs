@@ -11,7 +11,7 @@
 //! Null checks defend optional arguments, not dangling pointers or a mismatched ABI.
 //! Workers receive owned descriptors/data, never these host pointers.
 #![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]
-use serde_json::Value;
+use json_codec::Value;
 use smb_protocol::{
     client::{Client, error_errno},
     protocol::{OpenResult, Request},
@@ -671,7 +671,7 @@ unsafe extern "C" fn fstat(
         // by fill_stat.
         unsafe {
             fill_stat(
-                &serde_json::json!({"kind":opened.info.kind,"entry_id":opened.info.entry_id,"size":if opened.info.kind=="directory"{"0".into()}else{metadata.st_size.to_string()}}),
+                &json_codec::json!({"kind":opened.info.kind,"entry_id":opened.info.entry_id,"size":if opened.info.kind=="directory"{"0".into()}else{metadata.st_size.to_string()}}),
                 stat,
             )
         }?;

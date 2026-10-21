@@ -574,7 +574,7 @@ fn split_remaps_inherited_references_without_creating_placeholder_files() {
             .join(&engine.state.file_locations[file])
             .join("container.json");
         assert!(!cache.parent().unwrap().join("pending-branches").exists());
-        let metadata: serde_json::Value = read_json(&cache).unwrap();
+        let metadata: json_codec::Value = read_json(&cache).unwrap();
         assert_eq!(
             metadata["inherited_branches"][0]["branch_id"],
             moved.branch_id

@@ -9,8 +9,8 @@ use axum::{
     http::{StatusCode, request::Parts},
     response::{IntoResponse, Response},
 };
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use serde_json::json;
+use data_serialization::{Deserialize, Serialize, de::DeserializeOwned};
+use json_codec::json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiError {
@@ -18,7 +18,7 @@ pub struct ApiError {
     pub message: String,
     pub retryable: bool,
     pub request_id: String,
-    #[serde(skip)]
+    #[serialization(skip)]
     pub status: u16,
 }
 impl ApiError {

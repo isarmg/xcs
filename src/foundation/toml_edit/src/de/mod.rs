@@ -2,7 +2,7 @@
 //!
 //! This module contains all the Serde support for deserializing TOML documents into Rust structures.
 
-use serde::de::DeserializeOwned;
+use data_serialization::de::DeserializeOwned;
 
 mod array;
 mod datetime;
@@ -56,7 +56,7 @@ impl Error {
     }
 }
 
-impl serde::de::Error for Error {
+impl data_serialization::de::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
         T: std::fmt::Display,
@@ -172,12 +172,12 @@ impl std::str::FromStr for Deserializer {
 
 // Note: this is wrapped by `toml::de::Deserializer` and any trait methods
 // implemented here need to be wrapped there
-impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
+impl<'de, S: Into<String>> data_serialization::Deserializer<'de> for Deserializer<S> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.root
@@ -193,7 +193,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
     // as a present field.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.root
@@ -211,7 +211,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.root
@@ -230,7 +230,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.root
@@ -250,7 +250,7 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let raw = self.raw;
         self.root
@@ -262,14 +262,14 @@ impl<'de, S: Into<String>> serde::Deserializer<'de> for Deserializer<S> {
             })
     }
 
-    serde::forward_to_deserialize_any! {
+    data_serialization::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for Deserializer {
+impl data_serialization::de::IntoDeserializer<'_, Error> for Deserializer {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -277,7 +277,7 @@ impl serde::de::IntoDeserializer<'_, Error> for Deserializer {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
+impl data_serialization::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {
@@ -285,7 +285,7 @@ impl serde::de::IntoDeserializer<'_, Error> for crate::DocumentMut {
     }
 }
 
-impl serde::de::IntoDeserializer<'_, Error> for crate::ImDocument<String> {
+impl data_serialization::de::IntoDeserializer<'_, Error> for crate::ImDocument<String> {
     type Deserializer = Deserializer;
 
     fn into_deserializer(self) -> Self::Deserializer {

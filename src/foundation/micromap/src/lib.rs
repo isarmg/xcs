@@ -54,7 +54,7 @@
 //!
 //! And no feature is enabled by default:
 //! - `serde`: When this optional dependency is enabled, micromap implements the
-//!   `serde::Serialize` and `serde::Deserialize` traits.
+//!   `data_serialization::Serialize` and `data_serialization::Deserialize` traits.
 //! - `std`: Currently no effect, you can just ignore it.
 //!
 //! ## Capacity and Allocation

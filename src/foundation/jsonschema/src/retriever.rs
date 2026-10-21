@@ -1,6 +1,6 @@
 //! Logic for retrieving external resources.
 use referencing::{Retrieve, Uri};
-use serde_json::Value;
+use json_codec::Value;
 
 #[cfg(all(feature = "resolve-http", not(target_arch = "wasm32")))]
 use crate::HttpOptions;
@@ -193,7 +193,7 @@ impl Retrieve for HttpRetriever {
                         }
                     };
                     let file = std::fs::File::open(path)?;
-                    Ok(serde_json::from_reader(file)?)
+                    Ok(json_codec::from_reader(file)?)
                 }
                 #[cfg(not(feature = "resolve-file"))]
                 {
@@ -274,7 +274,7 @@ impl referencing::AsyncRetrieve for AsyncHttpRetriever {
                                 }
                             };
                             let file = std::fs::File::open(path)?;
-                            Ok(serde_json::from_reader(file)?)
+                            Ok(json_codec::from_reader(file)?)
                         },
                     )
                     .await??;
@@ -335,7 +335,7 @@ impl Retrieve for DefaultRetriever {
                         }
                     };
                     let file = std::fs::File::open(path)?;
-                    Ok(serde_json::from_reader(file)?)
+                    Ok(json_codec::from_reader(file)?)
                 }
                 #[cfg(not(feature = "resolve-file"))]
                 {
@@ -407,7 +407,7 @@ impl referencing::AsyncRetrieve for DefaultRetriever {
                                 }
                             };
                             let file = std::fs::File::open(path)?;
-                            Ok(serde_json::from_reader(file)?)
+                            Ok(json_codec::from_reader(file)?)
                         },
                     )
                     .await??;

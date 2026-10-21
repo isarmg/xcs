@@ -1,7 +1,7 @@
 //! Ordinary version files in one renameable directory per stable file identity.
 use crate::{disk::*, *};
+use json_codec::json;
 use platform_io::fs_safety::linux::{MountPolicy, OpenAt2Root};
-use serde_json::json;
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs,

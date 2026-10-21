@@ -8,7 +8,7 @@ use jsonschema::{
     },
     Draft,
 };
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 
 use super::{
     fraction::Fraction, pool::arbitrary_scalar, size_ceiling, size_floor, Sampler, MAX_ATTEMPTS,
@@ -274,7 +274,7 @@ impl ObjectDraw<'_> {
 
     fn inject_name_violation(
         &self,
-        object: &mut serde_json::Map<String, Value>,
+        object: &mut json_codec::Map<String, Value>,
         bar: &CanonicalSchema,
     ) -> Option<()> {
         let refuses = node_validator(bar)?;
@@ -296,7 +296,7 @@ impl ObjectDraw<'_> {
 
     fn inject_undeclared_violation(
         &self,
-        object: &mut serde_json::Map<String, Value>,
+        object: &mut json_codec::Map<String, Value>,
         names: &[String],
         patterns: &[String],
         additional: &CanonicalSchema,
@@ -337,7 +337,7 @@ impl ObjectDraw<'_> {
 
     fn inject_pattern_violation(
         &self,
-        object: &mut serde_json::Map<String, Value>,
+        object: &mut json_codec::Map<String, Value>,
         pattern: &str,
         schema: &CanonicalSchema,
     ) -> Option<()> {
@@ -396,7 +396,7 @@ pub(crate) fn draw_object(sampler: &Sampler<'_>, draft: Draft, view: &ObjectView
         view,
         claims,
     };
-    let mut object = serde_json::Map::new();
+    let mut object = json_codec::Map::new();
     for key in &view.required {
         let value = draw.value_for(key)?;
         object.insert(key.clone(), value);

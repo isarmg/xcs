@@ -6,7 +6,7 @@ mod bench {
         canonical::{self, CanonicalSchema, CanonicalizeOptions},
         PatternOptions,
     };
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
 
     /// What a generator canonicalizing an `OpenAPI` document uses: formats assert, and the pattern
     /// engine is the backtracking one with the limits raised.

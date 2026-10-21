@@ -509,9 +509,9 @@ macro_rules! __log_value {
     (($args:expr):sval) => {
         $crate::__log_value_sval!($args)
     };
-    // serde::Serialize
-    (($args:expr):serde) => {
-        $crate::__log_value_serde!($args)
+    // data_serialization::Serialize
+    (($args:expr):data_serialization) => {
+        $crate::__log_value_serialization!($args)
     };
 }
 
@@ -544,20 +544,20 @@ macro_rules! __log_value_sval {
 
 #[doc(hidden)]
 #[macro_export]
-#[cfg(feature = "kv_serde")]
-macro_rules! __log_value_serde {
+#[cfg(feature = "kv_serialization")]
+macro_rules! __log_value_serialization {
     ($args:expr) => {
-        $crate::__private_api::capture_serde(&&$args)
+        $crate::__private_api::capture_serialization(&&$args)
     };
 }
 
 #[doc(hidden)]
 #[macro_export]
-#[cfg(not(feature = "kv_serde"))]
-macro_rules! __log_value_serde {
+#[cfg(not(feature = "kv_serialization"))]
+macro_rules! __log_value_serialization {
     ($args:expr) => {
         compile_error!(
-            "capturing values as `serde::Serialize` requires the `kv_serde` feature of `log`"
+            "capturing values as `data_serialization::Serialize` requires the `kv_serde` feature of `log`"
         )
     };
 }

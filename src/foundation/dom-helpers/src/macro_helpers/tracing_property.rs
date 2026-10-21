@@ -44,7 +44,7 @@ pub trait SerializeMatch {
     type Return;
     fn spez(&self) -> Self::Return;
 }
-impl<T: serde::Serialize> SerializeMatch for &Match<&T> {
+impl<T: data_serialization::Serialize> SerializeMatch for &Match<&T> {
     type Return = String;
     fn spez(&self) -> Self::Return {
         let name = self.name;
@@ -53,7 +53,7 @@ impl<T: serde::Serialize> SerializeMatch for &Match<&T> {
         #[cfg(debug_assertions)]
         let _z = reactive_state::diagnostics::SpecialNonReactiveZone::enter();
 
-        serde_json::to_string(self.value.get().unwrap_throw()).map_or_else(
+        json_codec::to_string(self.value.get().unwrap_throw()).map_or_else(
             |err| format!(r#"{{"name": "{name}", "error": "{err}"}}"#),
             |value| format!(r#"{{"name": "{name}", "value": {value}}}"#),
         )

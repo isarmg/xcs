@@ -47,7 +47,7 @@ fn write_recovery_record(
         .tempfile_in(parent)
         .map_err(ApiError::io)?;
     temporary
-        .write_all(&serde_json::to_vec(&value).map_err(ApiError::invalid)?)
+        .write_all(&json_codec::to_vec(&value).map_err(ApiError::invalid)?)
         .map_err(ApiError::io)?;
     temporary.as_file().sync_all().map_err(ApiError::io)?;
     temporary
@@ -107,7 +107,7 @@ pub(super) fn finish_publication(
         json!({"branch_id":branch,"query":{"commit_id":writer.last_head}}),
     )?;
     let entries: Vec<Entry> =
-        serde_json::from_value(tree["entries"].clone()).map_err(ApiError::invalid)?;
+        json_codec::from_value(tree["entries"].clone()).map_err(ApiError::invalid)?;
     let entry = entries
         .iter()
         .find(|entry| entry.entry_id == writer.item_id)
@@ -183,7 +183,7 @@ impl Session {
                     json!({"branch_id":self.branch,"query":{"commit_id":workspace.base_head}}),
                 )?;
                 let select = |tree: &Value| -> Result<Option<Entry>, ApiError> {
-                    let entries: Vec<Entry> = serde_json::from_value(tree["entries"].clone())
+                    let entries: Vec<Entry> = json_codec::from_value(tree["entries"].clone())
                         .map_err(ApiError::invalid)?;
                     Ok(entries
                         .into_iter()

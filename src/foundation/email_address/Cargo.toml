@@ -15,11 +15,12 @@ autotests = false
 autobenches = false
 autoexamples = false
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 optional = true
-path = "../serde"
+path = "../data-serialization"
 
 [features]
-default = ["serde_support"]
-serde_support = ["serde"]
+serialization = ["dep:data-serialization"]
+default = ["serialization_support"]
+serialization_support = ["serialization"]

@@ -1,6 +1,6 @@
 //! A real-interval endpoint over the `number` domain.
 use jsonschema_value::numeric_check::{check_bound, compile_bound, BoundOp};
-use serde_json::Number;
+use json_codec::Number;
 
 use std::cmp::Ordering;
 

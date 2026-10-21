@@ -979,15 +979,15 @@ impl TryFrom<std::vec::Vec<u8>> for Uuid {
     }
 }
 
-#[cfg(feature = "serde")]
-pub mod serde {
+#[cfg(feature = "serialization")]
+pub mod data_serialization {
     //! Adapters for alternative `serde` formats.
     //!
-    //! This module contains adapters you can use with [`#[serde(with)]`](https://serde.rs/field-attrs.html#with)
+    //! This module contains adapters you can use with [`#[serialization(with)]`](https://serde.rs/field-attrs.html#with)
     //! to change the way a [`Uuid`](../struct.Uuid.html) is serialized
     //! and deserialized.
 
-    pub use crate::external::serde_support::{braced, bytes, compact, hyphenated, simple, urn};
+    pub use crate::external::serialization_support::{braced, bytes, compact, hyphenated, simple, urn};
 }
 
 #[cfg(test)]

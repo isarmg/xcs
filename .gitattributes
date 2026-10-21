@@ -33,3 +33,7 @@
 /test/foundation/rstml/unit/src/node/atoms/test_304.rs whitespace=-blank-at-eol
 /test/foundation/sysinfo/unit/src/unix/linux/cpu/test_886.rs whitespace=-blank-at-eol
 /test/foundation/winnow/unit/examples/ndjson/parser/test_210.rs whitespace=-blank-at-eol
+
+# Preserve the original CRLF source without treating its CR as trailing space.
+/src/foundation/allocator-api2/src/stable/boxed.rs whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/src/foundation/allocator-api2/src/stable/vec/mod.rs whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

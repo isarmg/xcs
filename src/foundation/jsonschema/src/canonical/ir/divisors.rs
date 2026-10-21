@@ -96,7 +96,7 @@ impl Divisors {
     }
 
     /// Whether `value` is a multiple of every divisor, as the validator decides it.
-    pub(crate) fn divide(&self, value: &serde_json::Number) -> bool {
+    pub(crate) fn divide(&self, value: &json_codec::Number) -> bool {
         self.members.iter().all(|step| step.divides(value))
     }
 
@@ -162,7 +162,7 @@ impl ExcludedDivisors {
     }
 
     /// Whether `value` is a multiple of any barred divisor, as the validator decides it.
-    pub(crate) fn bars(&self, value: &serde_json::Number) -> bool {
+    pub(crate) fn bars(&self, value: &json_codec::Number) -> bool {
         self.members.iter().any(|step| step.divides(value))
     }
 

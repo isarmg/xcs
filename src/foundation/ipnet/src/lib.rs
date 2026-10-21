@@ -135,8 +135,8 @@ extern crate alloc;
 extern crate schemars08;
 #[cfg(feature = "schemars1")]
 extern crate schemars1;
-#[cfg(feature = "serde")]
-extern crate serde;
+#[cfg(feature = "serialization")]
+extern crate data_serialization;
 
 pub use self::ipext::{IpAdd, IpAddrRange, IpBitAnd, IpBitOr, IpSub, Ipv4AddrRange, Ipv6AddrRange};
 pub use self::ipnet::{
@@ -154,5 +154,5 @@ mod parser;
 mod ipnet_schemars_08;
 #[cfg(feature = "schemars1")]
 mod ipnet_schemars_1;
-#[cfg(feature = "serde")]
-mod ipnet_serde;
+#[cfg(feature = "serialization")]
+mod ipnet_serialization;

@@ -1,13 +1,13 @@
 #[cfg(all(test, feature = "pyo3-tests"))]
 mod tests {
     use super::*;
-    use serde_json::json;
+    use json_codec::json;
     use std::ffi::CString;
     use test_case::test_case;
 
     fn to_py<'py>(py: Python<'py>, value: &Value) -> Bound<'py, PyAny> {
         let json = py.import("json").expect("json module");
-        let text = serde_json::to_string(value).expect("serialize");
+        let text = json_codec::to_string(value).expect("serialize");
         json.call_method1("loads", (text,)).expect("loads")
     }
 

@@ -1521,9 +1521,9 @@ impl<'a, K: Key, V> ExactSizeIterator for Drain<'a, K, V> {}
 impl<K: Key, V> ExactSizeIterator for IntoIter<K, V> {}
 
 // Serialization with serde.
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 mod serialize {
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
     use super::*;
     use crate::SecondaryMap;
@@ -1538,12 +1538,12 @@ mod serialize {
         where
             S: Serializer,
         {
-            let mut serde_sec = SecondaryMap::new();
+            let mut serialization_sec = SecondaryMap::new();
             for (k, v) in self {
-                serde_sec.insert(k, v);
+                serialization_sec.insert(k, v);
             }
 
-            serde_sec.serialize(serializer)
+            serialization_sec.serialize(serializer)
         }
     }
 
@@ -1557,10 +1557,10 @@ mod serialize {
         where
             D: Deserializer<'de>,
         {
-            let serde_sec: SecondaryMap<K, V> = Deserialize::deserialize(deserializer)?;
+            let serialization_sec: SecondaryMap<K, V> = Deserialize::deserialize(deserializer)?;
             let mut sec = Self::default();
 
-            for (k, v) in serde_sec {
+            for (k, v) in serialization_sec {
                 sec.insert(k, v);
             }
 

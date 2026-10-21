@@ -120,7 +120,7 @@ impl ExportableProvider for Box<dyn ExportableProvider> {
 /// different sources and doesn't have to be efficient) to generate data structs, and then writing
 /// them to an efficient format like `BlobDataProvider` or `BakedDataProvider`. The requirements
 /// for `make_exportable_provider` are:
-/// * The data struct has to implement [`serde::Serialize`](::serde::Serialize) and [`databake::Bake`]
+/// * The data struct has to implement [`data_serialization::Serialize`](::data_serialization::Serialize) and [`databake::Bake`]
 /// * The provider needs to implement [`IterableDataProvider`] for all specified [`DataMarker`]s.
 ///   This allows the generating code to know which [`DataIdentifierCow`]s to export.
 #[macro_export]

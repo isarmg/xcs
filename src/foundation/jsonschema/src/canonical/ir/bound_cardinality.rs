@@ -9,16 +9,16 @@ pub(crate) struct BoundCardinality(InnerCardinality);
 
 impl BoundCardinality {
     /// This count as an exact JSON number.
-    pub(crate) fn to_number(&self) -> serde_json::Number {
+    pub(crate) fn to_number(&self) -> json_codec::Number {
         #[cfg(not(feature = "arbitrary-precision"))]
         {
-            serde_json::Number::from(self.0)
+            json_codec::Number::from(self.0)
         }
         #[cfg(feature = "arbitrary-precision")]
         {
             match num_traits::ToPrimitive::to_u64(&self.0) {
-                Some(value) => serde_json::Number::from(value),
-                None => serde_json::Number::from_string_unchecked(self.0.to_string()),
+                Some(value) => json_codec::Number::from(value),
+                None => json_codec::Number::from_string_unchecked(self.0.to_string()),
             }
         }
     }
@@ -29,7 +29,7 @@ impl BoundCardinality {
     }
 
     /// A non-negative integer count from a JSON number; `None` past `u64` in the default build.
-    pub(crate) fn from_number(number: &serde_json::Number) -> Option<Self> {
+    pub(crate) fn from_number(number: &json_codec::Number) -> Option<Self> {
         #[cfg(not(feature = "arbitrary-precision"))]
         {
             number

@@ -1,7 +1,7 @@
 //! Durable preparation, decision and publication of one frozen transaction.
 use super::{Engine, Prepared};
 use crate::{disk::*, journal::*, *};
-use serde_json::json;
+use json_codec::json;
 use std::collections::BTreeMap;
 #[path = "verified_payloads.rs"]
 mod verified_payloads;
@@ -539,7 +539,10 @@ impl Engine {
 /// Restore only a proof reconstructed from a verified published closure.
 /// Conflicting local material is retained under the same version directory;
 /// recovery never deletes it or treats it as authority for a different result.
-fn repair_local_proof<T: serde::Serialize>(path: &std::path::Path, value: &T) -> Result<()> {
+fn repair_local_proof<T: data_serialization::Serialize>(
+    path: &std::path::Path,
+    value: &T,
+) -> Result<()> {
     use platform_io::fs_safety::linux::{FileIdentity, MountPolicy, OpenAt2Root};
     let expected = encode_metadata(value, MAX_METADATA)?;
     match std::fs::symlink_metadata(path) {

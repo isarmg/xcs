@@ -19,17 +19,17 @@ repository = "https://github.com/Stranger6667/jsonschema"
 resolver = "3"
 
 [features]
-arbitrary-precision = ["serde_json/arbitrary_precision", "dep:num-bigint"]
+arbitrary-precision = ["json-codec/arbitrary_precision", "dep:num-bigint"]
 conformance = []
-default = ["serde_json"]
-jsonb = ["serde_json"]
+default = ["json-codec"]
+jsonb = ["json-codec"]
 jsonb-testkit = ["jsonb"]
 macros = []
 magnus = []
 magnus-tests = ["magnus"]
 pyo3 = []
 pyo3-tests = ["pyo3"]
-serde_json = ["dep:bytecount"]
+json-codec = ["dep:bytecount"]
 
 [lib]
 name = "jsonschema_value"
@@ -37,7 +37,7 @@ path = "src/lib.rs"
 
 [dependencies.ahash]
 version = "0.8"
-features = ["serde"]
+features = ["serialization"]
 path = "../ahash"
 
 [dependencies.bytecount]
@@ -65,10 +65,10 @@ path = "../num-cmp"
 version = "0.2.19"
 path = "../num-traits"
 
-[dependencies.serde_json]
+[dependencies.json-codec]
 version = "1"
 features = ["float_roundtrip"]
-path = "../serde_json"
+path = "../json-codec"
 
 [dependencies.zmij]
 version = "1.0.23"

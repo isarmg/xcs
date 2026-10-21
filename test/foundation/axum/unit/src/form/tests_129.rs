@@ -10,7 +10,7 @@ mod tests {
     use axum_core::body::Body;
     use http::{Method, Request};
     use mime::APPLICATION_WWW_FORM_URLENCODED;
-    use serde::{Deserialize, Serialize};
+    use data_serialization::{Deserialize, Serialize};
     use std::fmt::Debug;
 
     #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -32,7 +32,7 @@ mod tests {
             .uri("http://example.com/test")
             .method(Method::POST)
             .header(CONTENT_TYPE, APPLICATION_WWW_FORM_URLENCODED.as_ref())
-            .body(Body::from(serde_urlencoded::to_string(&value).unwrap()))
+            .body(Body::from(form_codec::to_string(&value).unwrap()))
             .unwrap();
         assert_eq!(Form::<T>::from_request(req, &()).await.unwrap().0, value);
     }
@@ -95,7 +95,7 @@ mod tests {
             .method(Method::POST)
             .header(CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
             .body(Body::from(
-                serde_urlencoded::to_string(&Pagination {
+                form_codec::to_string(&Pagination {
                     size: Some(10),
                     page: None,
                 })

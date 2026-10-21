@@ -5,7 +5,7 @@ use axum::{
     Router,
 };
 use axum_macros::FromRequest;
-use serde::Deserialize;
+use data_serialization::Deserialize;
 
 fn main() {
     let _: Router = Router::new().route("/", get(handler).post(handler_result));

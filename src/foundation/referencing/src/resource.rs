@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{Draft, Error, Resolved, Resolver, Segments};
 

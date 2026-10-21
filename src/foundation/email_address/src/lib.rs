@@ -295,8 +295,8 @@ An informal description can be found on [Wikipedia](https://en.wikipedia.org/wik
     dyn_drop,
 )]
 
-#[cfg(feature = "serde_support")]
-use serde::{Deserialize, Serialize, Serializer};
+#[cfg(feature = "serialization_support")]
+use data_serialization::{Deserialize, Serialize, Serializer};
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::Hash;
 use std::str::FromStr;
@@ -643,7 +643,7 @@ impl AsRef<str> for EmailAddress {
     }
 }
 
-#[cfg(feature = "serde_support")]
+#[cfg(feature = "serialization_support")]
 impl Serialize for EmailAddress {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -653,13 +653,13 @@ impl Serialize for EmailAddress {
     }
 }
 
-#[cfg(feature = "serde_support")]
+#[cfg(feature = "serialization_support")]
 impl<'de> Deserialize<'de> for EmailAddress {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
-        use serde::de::{Error, Unexpected, Visitor};
+        use data_serialization::de::{Error, Unexpected, Visitor};
 
         struct EmailAddressVisitor;
 
@@ -1193,9 +1193,9 @@ fn is_dtext_char(c: char) -> bool {
 // Unit Tests
 // ------------------------------------------------------------------------------------------------
 
-#[cfg(feature = "serde_support")]
+#[cfg(feature = "serialization_support")]
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/email_address/unit/src/lib/serde_tests_1197.rs"));
+include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/email_address/unit/src/lib/serialization_tests_1197.rs"));
 
 #[cfg(test)]
 include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/email_address/unit/src/lib/tests_1265.rs"));

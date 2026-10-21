@@ -5,8 +5,8 @@ use crate::{
     Error, HistoryTree, Repository, Result, canonical_json, disk::MAX_METADATA,
     encode_hashed_object, journal::PreparedMetadataObject, object_hash,
 };
-use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
+use data_serialization::{Deserialize, Serialize};
+use json_codec::{Map, Value};
 use std::collections::{BTreeMap, BTreeSet};
 
 const PAGE_ENTRIES: usize = 128;
@@ -50,9 +50,9 @@ const MAP_FIELDS: &[&str] = &[
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 enum ReferenceKind {
-    #[serde(rename = "state-page")]
+    #[serialization(rename = "state-page")]
     Page,
-    #[serde(rename = "history-index")]
+    #[serialization(rename = "history-index")]
     Index,
 }
 impl ReferenceKind {
@@ -65,7 +65,7 @@ impl ReferenceKind {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct Reference {
     kind: ReferenceKind,
     hash: String,
@@ -80,7 +80,7 @@ impl Reference {
 }
 
 #[derive(Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct PagedHistoryRoot {
     repository: Repository,
     history: HistoryTree,
@@ -88,7 +88,7 @@ struct PagedHistoryRoot {
 }
 
 #[derive(Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct HistoryIndex {
     prefix: String,
     children: BTreeMap<String, Reference>,
@@ -215,7 +215,7 @@ pub(super) fn prepare(
 ) -> Result<(String, Vec<PreparedMetadataObject>)> {
     // Going through the logical serializer preserves all field-specific wire
     // rules, especially omitted optional maps and decimal-string u64 values.
-    let Value::Object(mut logical) = serde_json::to_value(manifest)? else {
+    let Value::Object(mut logical) = json_codec::to_value(manifest)? else {
         return Err(invalid("history manifest is not an object"));
     };
     for field in ["repository", "history"] {
@@ -306,7 +306,7 @@ impl<F: FnMut(&str, &str) -> Result<Value>> Resolver<F> {
                 }
             }
             ReferenceKind::Index => {
-                let index: HistoryIndex = serde_json::from_value(value.clone())?;
+                let index: HistoryIndex = json_codec::from_value(value.clone())?;
                 if index.prefix != prefix
                     || prefix.len() >= RADIX_DEPTH
                     || index.children.is_empty()
@@ -359,7 +359,7 @@ pub(super) fn resolve_with_objects(
         }
         hash
     };
-    let decoded: PagedHistoryRoot = serde_json::from_value(root.clone())?;
+    let decoded: PagedHistoryRoot = json_codec::from_value(root.clone())?;
     if decoded.maps.len() != MAP_FIELDS.len()
         || MAP_FIELDS
             .iter()
@@ -373,9 +373,9 @@ pub(super) fn resolve_with_objects(
     let mut logical = Map::new();
     logical.insert(
         "repository".to_owned(),
-        serde_json::to_value(decoded.repository)?,
+        json_codec::to_value(decoded.repository)?,
     );
-    logical.insert("history".to_owned(), serde_json::to_value(decoded.history)?);
+    logical.insert("history".to_owned(), json_codec::to_value(decoded.history)?);
     let mut resolver = Resolver {
         load,
         objects: Vec::new(),
@@ -386,7 +386,7 @@ pub(super) fn resolve_with_objects(
         resolver.map(&reference, "", &mut entries)?;
         logical.insert(field, Value::Object(entries));
     }
-    let manifest = serde_json::from_value(Value::Object(logical))?;
+    let manifest = json_codec::from_value(Value::Object(logical))?;
     resolver
         .objects
         .push(("history-manifest".to_owned(), hash, root));

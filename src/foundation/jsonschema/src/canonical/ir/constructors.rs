@@ -3,7 +3,7 @@
 //! Convergence is an IR-equality contract: two written forms of one value set must land on the same
 //! node. A `SchemaKind` shape constructed in two or more modules gets its constructor here, and
 //! parse, algebra, and negate all call it.
-use serde_json::Value;
+use json_codec::Value;
 
 use super::{AtLeastTwo, CanonicalJson, Schema, SchemaKind};
 use crate::{JsonType, JsonTypeSet};

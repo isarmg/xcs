@@ -4,27 +4,27 @@ mod test {
     use zerovec::ZeroVec;
 
     #[test]
-    fn test_serde_fail() {
+    fn test_serialization_fail() {
         let uc = PotentialCodePoint([0xFF, 0xFF, 0xFF]);
-        serde_json::to_string(&uc).expect_err("serialize invalid char bytes");
+        json_codec::to_string(&uc).expect_err("serialize invalid char bytes");
         bincode::serialize(&uc).expect_err("serialize invalid char bytes");
     }
 
     #[test]
-    fn test_serde_json() {
+    fn test_serialization_json() {
         let c = '🙃';
         let uc = PotentialCodePoint::from_char(c);
-        let json_ser = serde_json::to_string(&uc).unwrap();
+        let json_ser = json_codec::to_string(&uc).unwrap();
 
         assert_eq!(json_ser, r#""🙃""#);
 
-        let json_de: PotentialCodePoint = serde_json::from_str(&json_ser).unwrap();
+        let json_de: PotentialCodePoint = json_codec::from_str(&json_ser).unwrap();
 
         assert_eq!(uc, json_de);
     }
 
     #[test]
-    fn test_serde_bincode() {
+    fn test_serialization_bincode() {
         let c = '🙃';
         let uc = PotentialCodePoint::from_char(c);
         let bytes_ser = bincode::serialize(&uc).unwrap();

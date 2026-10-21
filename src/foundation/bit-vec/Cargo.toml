@@ -28,16 +28,17 @@ repository = "https://github.com/contain-rs/bit-vec"
 name = "bit_vec"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 features = ["derive"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [features]
+serialization = ["dep:data-serialization"]
 borsh_std = []
 default = ["std"]
-serde_no_std = ["serde/alloc"]
-serde_std = ["std", "serde/std"]
+serialization_no_std = ["data-serialization/alloc"]
+serialization_std = ["std", "data-serialization/std"]
 std = []

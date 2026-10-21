@@ -10,7 +10,7 @@ mod tests {
     use crate::AsyncHttpRetriever;
     #[cfg(all(feature = "resolve-http", not(target_arch = "wasm32")))]
     use crate::{HttpOptions, HttpRetriever, HttpRetrieverError};
-    use serde_json::json;
+    use json_codec::json;
     #[cfg(all(not(target_arch = "wasm32"), feature = "resolve-file"))]
     use std::io::Write;
 
@@ -241,7 +241,7 @@ mod tests {
     ))]
     async fn test_async_http_retriever_retrieve_trait() {
         use referencing::AsyncRetrieve;
-        use serde_json::Value;
+        use json_codec::Value;
         use std::time::Duration;
 
         let options = HttpOptions::new().timeout(Duration::from_secs(30));
@@ -265,7 +265,7 @@ mod tests {
     ))]
     async fn test_async_http_retriever_file_scheme() {
         use referencing::AsyncRetrieve;
-        use serde_json::Value;
+        use json_codec::Value;
 
         let dir = tempfile::tempdir().unwrap();
         let schema_content = r#"{"type": "integer"}"#;
@@ -289,7 +289,7 @@ mod tests {
     ))]
     async fn test_async_http_retriever_unknown_scheme() {
         use referencing::AsyncRetrieve;
-        use serde_json::Value;
+        use json_codec::Value;
 
         let options = HttpOptions::new();
         let retriever = AsyncHttpRetriever::new(&options).unwrap();
@@ -324,10 +324,10 @@ mod tests {
         "#;
         let a_path = create_temp_file(&dir, "a.json", a_schema);
 
-        let valid_instance = serde_json::json!({ "age": 30 });
+        let valid_instance = json_codec::json!({ "age": 30 });
 
         let schema_str = std::fs::read_to_string(&a_path).unwrap();
-        let schema_json: serde_json::Value = serde_json::from_str(&schema_str).unwrap();
+        let schema_json: json_codec::Value = json_codec::from_str(&schema_str).unwrap();
 
         let base_uri = path_to_uri(dir.path());
         let validator = crate::options()
@@ -337,7 +337,7 @@ mod tests {
 
         assert!(validator.is_valid(&valid_instance));
 
-        let invalid_instance = serde_json::json!({ "age": "thirty" });
+        let invalid_instance = json_codec::json!({ "age": "thirty" });
         assert!(!validator.is_valid(&invalid_instance));
     }
 }

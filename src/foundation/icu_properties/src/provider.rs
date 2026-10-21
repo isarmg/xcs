@@ -902,13 +902,13 @@ pub const MARKERS: &[DataMarkerInfo] = &[
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, Eq, PartialEq, Clone, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::provider))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[non_exhaustive]
 pub enum PropertyCodePointSet<'data> {
     /// The set of characters, represented as an inversion list
-    InversionList(#[cfg_attr(feature = "serde", serde(borrow))] CodePointInversionList<'data>),
+    InversionList(#[cfg_attr(feature = "serialization", serialization(borrow))] CodePointInversionList<'data>),
     // new variants should go BELOW existing ones
     // Serde serializes based on variant name and index in the enum
     // https://docs.rs/serde/latest/serde/trait.Serializer.html#tymethod.serialize_unit_variant
@@ -986,13 +986,13 @@ impl<'data> PropertyCodePointSet<'data> {
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Clone, Debug, Eq, PartialEq, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::provider))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[non_exhaustive]
 pub enum PropertyCodePointMap<'data, T: TrieValue> {
     /// A codepoint trie storing the data
-    CodePointTrie(#[cfg_attr(feature = "serde", serde(borrow))] CodePointTrie<'data, T>),
+    CodePointTrie(#[cfg_attr(feature = "serialization", serialization(borrow))] CodePointTrie<'data, T>),
     // new variants should go BELOW existing ones
     // Serde serializes based on variant name and index in the enum
     // https://docs.rs/serde/latest/serde/trait.Serializer.html#tymethod.serialize_unit_variant
@@ -1088,14 +1088,14 @@ impl<'data, T: TrieValue> PropertyCodePointMap<'data, T> {
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, Eq, PartialEq, Clone, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::provider))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 #[non_exhaustive]
 pub enum PropertyUnicodeSet<'data> {
     /// A set representing characters in an inversion list, and the strings in a list.
     CPInversionListStrList(
-        #[cfg_attr(feature = "serde", serde(borrow))] CodePointInversionListAndStringList<'data>,
+        #[cfg_attr(feature = "serialization", serialization(borrow))] CodePointInversionListAndStringList<'data>,
     ),
     // new variants should go BELOW existing ones
     // Serde serializes based on variant name and index in the enum
@@ -1172,9 +1172,9 @@ impl<'data> PropertyUnicodeSet<'data> {
 /// to be stable, their Rust representation might not be. Use with caution.
 /// </div>
 #[derive(Debug, Eq, PartialEq, Clone, yoke::Yokeable, zerofrom::ZeroFrom)]
-#[cfg_attr(feature = "datagen", derive(serde::Serialize, databake::Bake))]
+#[cfg_attr(feature = "datagen", derive(data_serialization::Serialize, databake::Bake))]
 #[cfg_attr(feature = "datagen", databake(path = icu_properties::provider))]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Deserialize))]
 pub struct ScriptWithExtensionsProperty<'data> {
     /// Note: The `ScriptWithExt` values in this array will assume a 12-bit layout. The 2
     /// higher order bits 11..10 will indicate how to deduce the Script value and
@@ -1190,7 +1190,7 @@ pub struct ScriptWithExtensionsProperty<'data> {
     ///
     /// When the lower 10 bits of the value are used as an index, that index is
     /// used for the outer-level vector of the nested `extensions` structure.
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub trie: CodePointTrie<'data, ScriptWithExt>,
 
     /// This companion structure stores `Script_Extensions` values, which are
@@ -1198,7 +1198,7 @@ pub struct ScriptWithExtensionsProperty<'data> {
     /// cases in which `scx(cp) != [ sc(cp) ]`. Each sub-vector is distinct. The
     /// sub-vector represents the `Script_Extensions` array value for a code point,
     /// and may also indicate Script value, as described for the `trie` field.
-    #[cfg_attr(feature = "serde", serde(borrow))]
+    #[cfg_attr(feature = "serialization", serialization(borrow))]
     pub extensions: VarZeroVec<'data, ZeroSlice<Script>>,
 }
 

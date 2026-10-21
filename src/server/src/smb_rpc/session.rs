@@ -48,7 +48,7 @@ impl Session {
     }
     pub(super) fn entries(&self) -> Result<Vec<Entry>, ApiError> {
         let tree = self.call(crate::BackendAction::Tree, json!({"branch_id":self.branch}))?;
-        serde_json::from_value(
+        json_codec::from_value(
             tree.get("entries")
                 .cloned()
                 .ok_or_else(|| ApiError::invalid("missing tree entries"))?,
@@ -63,7 +63,7 @@ impl Session {
             .find(|entry| name_policy::path_key(&entry.path) == key))
     }
     pub(super) fn workspace(&self) -> Result<Workspace, ApiError> {
-        serde_json::from_value(self.call(
+        json_codec::from_value(self.call(
             crate::BackendAction::CreateWorkspace,
             json!({"branch_id":self.branch}),
         )?)
@@ -176,7 +176,7 @@ impl Session {
                     json!({"path":"","kind":"directory","size":"0","entry_id":self.branch})
                 } else {
                     name_policy::validate_path(&path).map_err(contract)?;
-                    serde_json::to_value(
+                    json_codec::to_value(
                         self.find(&path)?
                             .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "entry missing"))?,
                     )

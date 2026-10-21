@@ -265,7 +265,7 @@ fn repair_snapshot_copies(
     hash: &str,
     repaired_pages: &mut BTreeSet<String>,
 ) -> Result<()> {
-    fn install<T: serde::Serialize + serde::de::DeserializeOwned>(
+    fn install<T: data_serialization::Serialize + data_serialization::de::DeserializeOwned>(
         sources: &[DiskConfig],
         members: &[DiskConfig],
         kind: &str,
@@ -277,7 +277,7 @@ fn repair_snapshot_copies(
     let snapshot: Snapshot = verified_object(sources, "snapshot", hash)?;
     for hash in snapshot.pages.values().flatten() {
         if !repaired_pages.contains(hash) {
-            install::<serde_json::Map<String, serde_json::Value>>(
+            install::<json_codec::Map<String, json_codec::Value>>(
                 sources,
                 members,
                 "state-page",

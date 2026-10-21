@@ -4,11 +4,11 @@ use crate::{
     disk::*,
     engine::{MutationPlan, Prepared},
 };
+use json_codec::json;
 use platform_io::fs_safety::{
     EntryName, RelativePath,
     linux::{MountPolicy, OpenAt2Root},
 };
-use serde_json::json;
 use std::os::unix::ffi::OsStrExt;
 use std::{
     collections::BTreeMap,
@@ -206,7 +206,7 @@ pub(crate) struct WorkspaceMutation {
 fn workspace_commit_input(
     workspace: &Workspace,
     request: &CommitRequest,
-) -> Result<serde_json::Value> {
+) -> Result<json_codec::Value> {
     let sealed = object_hash(
         "workspace",
         &json!({"workspace_id":workspace.workspace_id,"base_head":workspace.base_head,"files":workspace.files.values().map(|f|json!({"item_id":f.item_id,"path":f.path,"hash":f.content_hash,"size":f.size.to_string(),"generation":f.dirty_generation.to_string()})).collect::<Vec<_>>(),"namespace_operations":workspace.namespace_operations}),

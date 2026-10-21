@@ -35,7 +35,7 @@ impl TomlError {
         }
     }
 
-    #[cfg(any(feature = "serde", feature = "parse"))]
+    #[cfg(any(feature = "serialization", feature = "parse"))]
     pub(crate) fn custom(message: String, span: Option<std::ops::Range<usize>>) -> Self {
         Self {
             message,
@@ -45,7 +45,7 @@ impl TomlError {
         }
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     pub(crate) fn add_key(&mut self, key: String) {
         self.keys.insert(0, key);
     }
@@ -60,12 +60,12 @@ impl TomlError {
         self.span.clone()
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     pub(crate) fn set_span(&mut self, span: Option<std::ops::Range<usize>>) {
         self.span = span;
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     pub(crate) fn set_raw(&mut self, raw: Option<String>) {
         self.raw = raw;
     }

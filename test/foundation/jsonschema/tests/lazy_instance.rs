@@ -11,7 +11,7 @@ use jsonschema::{
     JsonType,
 };
 use jsonschema_value::LazyInstance;
-use serde_json::{json, Number, Value};
+use json_codec::{json, Number, Value};
 
 // A node holding pre-serialized bytes rather than a live tree. The only representation here that
 // opts into `Deferred`, so it is what exercises that branch.
@@ -63,7 +63,7 @@ impl DeferredDoc {
                     .collect(),
             ),
         };
-        let bytes = serde_json::to_vec(value).expect("serializable");
+        let bytes = json_codec::to_vec(value).expect("serializable");
         let index = u32::try_from(self.slots.len()).expect("fits in u32");
         self.slots.push(DeferredSlot { bytes, make, shape });
         index
@@ -71,7 +71,7 @@ impl DeferredDoc {
 }
 
 fn deferred_make(bytes: &[u8], _tag: u32) -> Value {
-    serde_json::from_slice(bytes).expect("precomputed bytes are valid JSON")
+    json_codec::from_slice(bytes).expect("precomputed bytes are valid JSON")
 }
 
 #[derive(Clone, Copy)]
@@ -104,7 +104,7 @@ impl Json for DeferredJson {
     ) -> T {
         buffer.slots.clear();
         buffer.slots.push(DeferredSlot {
-            bytes: serde_json::to_vec(string).expect("serializable"),
+            bytes: json_codec::to_vec(string).expect("serializable"),
             make: deferred_make,
             shape: DeferredShape::String(string.to_owned()),
         });
@@ -304,7 +304,7 @@ fn deferred_instance_is_built_once_on_first_read() {
 
     fn counting_make(bytes: &[u8], _tag: u32) -> Value {
         DECODE_CALLS.fetch_add(1, Ordering::SeqCst);
-        serde_json::from_slice(bytes).expect("precomputed bytes are valid JSON")
+        json_codec::from_slice(bytes).expect("precomputed bytes are valid JSON")
     }
 
     let schema = json!({"type": "object", "required": ["name"]});

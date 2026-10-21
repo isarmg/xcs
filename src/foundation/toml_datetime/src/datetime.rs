@@ -2,8 +2,8 @@ use std::error;
 use std::fmt;
 use std::str::{self, FromStr};
 
-#[cfg(feature = "serde")]
-use serde::{de, ser};
+#[cfg(feature = "serialization")]
+use data_serialization::{de, ser};
 
 /// A parsed TOML datetime value
 ///
@@ -99,10 +99,10 @@ pub struct Datetime {
 // In general the TOML encoder/decoder will catch this and not literally emit
 // these strings but rather emit datetimes as they're intended.
 #[doc(hidden)]
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub const FIELD: &str = "$__toml_private_datetime";
 #[doc(hidden)]
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub const NAME: &str = "$__toml_private_Datetime";
 
 /// A parsed TOML date value
@@ -180,7 +180,7 @@ pub enum Offset {
 }
 
 impl Datetime {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     fn type_name(&self) -> &'static str {
         match (
             self.date.is_some(),
@@ -197,14 +197,14 @@ impl Datetime {
 }
 
 impl Date {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     fn type_name() -> &'static str {
         "local date"
     }
 }
 
 impl Time {
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     fn type_name() -> &'static str {
         "local time"
     }
@@ -764,13 +764,13 @@ impl fmt::Display for DatetimeParseError {
 
 impl error::Error for DatetimeParseError {}
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl ser::Serialize for Datetime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ser::Serializer,
     {
-        use serde::ser::SerializeStruct;
+        use data_serialization::ser::SerializeStruct;
 
         let mut s = serializer.serialize_struct(NAME, 1)?;
         s.serialize_field(FIELD, &self.to_string())?;
@@ -778,7 +778,7 @@ impl ser::Serialize for Datetime {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl ser::Serialize for Date {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -788,7 +788,7 @@ impl ser::Serialize for Date {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl ser::Serialize for Time {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -798,7 +798,7 @@ impl ser::Serialize for Time {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de> de::Deserialize<'de> for Datetime {
     fn deserialize<D>(deserializer: D) -> Result<Datetime, D::Error>
     where
@@ -831,7 +831,7 @@ impl<'de> de::Deserialize<'de> for Datetime {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de> de::Deserialize<'de> for Date {
     fn deserialize<D>(deserializer: D) -> Result<Date, D::Error>
     where
@@ -851,7 +851,7 @@ impl<'de> de::Deserialize<'de> for Date {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de> de::Deserialize<'de> for Time {
     fn deserialize<D>(deserializer: D) -> Result<Time, D::Error>
     where
@@ -871,10 +871,10 @@ impl<'de> de::Deserialize<'de> for Time {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 struct DatetimeKey;
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de> de::Deserialize<'de> for DatetimeKey {
     fn deserialize<D>(deserializer: D) -> Result<DatetimeKey, D::Error>
     where
@@ -907,12 +907,12 @@ impl<'de> de::Deserialize<'de> for DatetimeKey {
 }
 
 #[doc(hidden)]
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub struct DatetimeFromString {
     pub value: Datetime,
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de> de::Deserialize<'de> for DatetimeFromString {
     fn deserialize<D>(deserializer: D) -> Result<DatetimeFromString, D::Error>
     where

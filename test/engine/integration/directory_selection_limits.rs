@@ -88,7 +88,7 @@ impl Pool {
     }
 
     fn state_bytes(&self) -> Vec<u8> {
-        serde_json::to_vec(self.engine.state()).unwrap()
+        json_codec::to_vec(self.engine.state()).unwrap()
     }
 
     fn journals(&self) -> Vec<(String, Vec<u8>)> {

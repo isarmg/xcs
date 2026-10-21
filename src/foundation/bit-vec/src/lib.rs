@@ -95,10 +95,10 @@ use std::string::String;
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
-#[cfg(feature = "serde")]
-extern crate serde;
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
+#[cfg(feature = "serialization")]
+extern crate data_serialization;
+#[cfg(feature = "serialization")]
+use data_serialization::{Deserialize, Serialize};
 
 
 
@@ -229,7 +229,7 @@ static FALSE: bool = false;
 /// println!("{:?}", bv);
 /// println!("total bits set to true: {}", bv.iter().filter(|x| *x).count());
 /// ```
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serialization", derive(Serialize, Deserialize))]
 
 
 

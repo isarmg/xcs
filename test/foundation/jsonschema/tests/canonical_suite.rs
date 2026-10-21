@@ -6,8 +6,8 @@ use jsonschema::{
     },
     Draft, Validator,
 };
-use serde::Deserialize;
-use serde_json::Value;
+use data_serialization::Deserialize;
+use json_codec::Value;
 use testsuite::canonical_suite;
 
 #[canonical_suite(path = "crates/jsonschema/tests/canonical-suite")]
@@ -177,36 +177,36 @@ fn run_case(case: CanonicalCase) {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct CanonicalCase {
     description: String,
-    #[serde(default)]
+    #[serialization(default)]
     schema: Option<Value>,
-    #[serde(default)]
+    #[serialization(default)]
     schemas: Vec<Value>,
-    #[serde(default)]
+    #[serialization(default)]
     draft: Option<String>,
-    #[serde(default)]
+    #[serialization(default)]
     expected: Option<Value>,
     /// Overrides `expected` under `arbitrary-precision`, where wide literals survive as written
     /// instead of going through `f64`.
-    #[serde(default)]
+    #[serialization(default)]
     expected_arbitrary_precision: Option<Value>,
-    #[serde(default)]
+    #[serialization(default)]
     tests: Vec<SchemaTest>,
-    #[serde(default)]
+    #[serialization(default)]
     satisfiable: Option<bool>,
     /// Pins the exact three-valued answer, where `satisfiable` only asks whether it is `no`.
-    #[serde(default)]
+    #[serialization(default)]
     satisfiability: Option<String>,
     /// Pins the public structural kind label.
-    #[serde(default)]
+    #[serialization(default)]
     kind: Option<String>,
     /// Force `should_validate_formats`; `None` keeps the draft default.
-    #[serde(default)]
+    #[serialization(default)]
     validate_formats: Option<bool>,
     /// Every input must be rejected with this exact `CanonicalizationError` variant.
-    #[serde(default)]
+    #[serialization(default)]
     error: Option<String>,
 }
 
@@ -228,19 +228,19 @@ struct SchemaTest {
 }
 
 impl<'de> Deserialize<'de> for SchemaTest {
-    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+    fn deserialize<D: data_serialization::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
+        #[serialization(deny_unknown_fields)]
         struct Tagged {
             data: Value,
-            #[serde(default)]
+            #[serialization(default)]
             valid: Option<bool>,
         }
         let value = Value::deserialize(d)?;
         match &value {
             Value::Object(object) if object.contains_key("data") => {
                 let Tagged { data, valid } =
-                    serde_json::from_value(value).map_err(serde::de::Error::custom)?;
+                    json_codec::from_value(value).map_err(data_serialization::de::Error::custom)?;
                 Ok(SchemaTest { data, valid })
             }
             _ => Ok(SchemaTest {

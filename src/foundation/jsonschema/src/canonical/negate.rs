@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use ahash::AHashSet;
 
-use serde_json::{Number, Value};
+use json_codec::{Number, Value};
 
 use crate::{
     canonical::{

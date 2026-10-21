@@ -5,7 +5,7 @@ use axum::{
     Router,
 };
 use axum_macros::FromRequestParts;
-use serde::Deserialize;
+use data_serialization::Deserialize;
 use std::collections::HashMap;
 
 fn main() {
@@ -18,7 +18,7 @@ async fn handler_result(_: Result<MyQuery, MyQueryRejection>) {}
 
 #[derive(FromRequestParts, Deserialize)]
 #[from_request(via(axum::extract::Query), rejection(MyQueryRejection))]
-#[serde(transparent)]
+#[serialization(transparent)]
 struct MyQuery(HashMap<String, String>);
 
 struct MyQueryRejection {}

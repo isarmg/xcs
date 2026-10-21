@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use serde_json::{Number, Value};
+use json_codec::{Number, Value};
 
 use crate::{
     canonical::{

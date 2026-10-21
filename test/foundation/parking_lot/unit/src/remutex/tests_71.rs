@@ -7,7 +7,7 @@ mod tests {
     use std::sync::Arc;
     use std::thread;
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     use bincode::{deserialize, serialize};
 
     #[test]
@@ -86,9 +86,9 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
-    fn test_serde() {
+    fn test_serialization() {
         let contents: Vec<u8> = vec![0, 1, 2];
         let mutex = ReentrantMutex::new(contents.clone());
 

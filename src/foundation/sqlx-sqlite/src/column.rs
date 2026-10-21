@@ -4,13 +4,13 @@ use crate::{Sqlite, SqliteTypeInfo};
 pub(crate) use sqlx_core::column::*;
 
 #[derive(Debug, Clone)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "offline", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 pub struct SqliteColumn {
     pub(crate) name: UStr,
     pub(crate) ordinal: usize,
     pub(crate) type_info: SqliteTypeInfo,
 
-    #[cfg_attr(feature = "offline", serde(default))]
+    #[cfg_attr(feature = "offline", serialization(default))]
     pub(crate) origin: ColumnOrigin,
 }
 

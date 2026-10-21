@@ -1,5 +1,5 @@
 use crate::protocol::{FrameStream, OpenResult, PROTOCOL, Request, Response};
-use serde_json::Value;
+use json_codec::Value;
 use std::{
     io,
     net::Shutdown,
@@ -207,7 +207,7 @@ impl Client {
             ));
         }
         let (result, fd) = self.call(request)?;
-        let result = serde_json::from_value(result).map_err(io::Error::other)?;
+        let result = json_codec::from_value(result).map_err(io::Error::other)?;
         Ok((
             result,
             fd.ok_or_else(|| {

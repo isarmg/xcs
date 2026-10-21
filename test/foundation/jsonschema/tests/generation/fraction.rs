@@ -1,4 +1,4 @@
-use serde_json::Number;
+use json_codec::Number;
 
 fn gcd(mut a: i128, mut b: i128) -> i128 {
     while b != 0 {

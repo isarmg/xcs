@@ -4,7 +4,7 @@ use crate::{
     business::{find, now},
     engine::Prepared,
 };
-use serde_json::Value;
+use json_codec::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Backup placement for a path, fenced by the current policy generation.

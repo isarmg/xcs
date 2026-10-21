@@ -15,8 +15,8 @@ pub(crate) mod vec;
 #[cfg(feature = "databake")]
 mod databake;
 
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 pub use crate::{VarZeroSlice, VarZeroVec};
 

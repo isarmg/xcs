@@ -702,29 +702,29 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
-impl<Z> serde::Serialize for Zeroizing<Z>
+#[cfg(feature = "serialization")]
+impl<Z> data_serialization::Serialize for Zeroizing<Z>
 where
-    Z: Zeroize + serde::Serialize + ?Sized,
+    Z: Zeroize + data_serialization::Serialize + ?Sized,
 {
     #[inline(always)]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         self.0.serialize(serializer)
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'de, Z> serde::Deserialize<'de> for Zeroizing<Z>
+#[cfg(feature = "serialization")]
+impl<'de, Z> data_serialization::Deserialize<'de> for Zeroizing<Z>
 where
-    Z: Zeroize + serde::Deserialize<'de>,
+    Z: Zeroize + data_serialization::Deserialize<'de>,
 {
     #[inline(always)]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
         Ok(Self(Z::deserialize(deserializer)?))
     }

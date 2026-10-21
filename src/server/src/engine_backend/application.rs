@@ -9,12 +9,12 @@ use super::{
     workspace_authorize,
 };
 use crate::{ApiError, auth::Identity};
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use storage_engine::{CommitRequest, Engine, NamespaceOperation};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct CommitWorkspace {
     pub workspace_id: String,
     pub operation_id: String,
@@ -27,7 +27,7 @@ pub struct CommitWorkspace {
 /// The frozen public envelope uses decimal strings deliberately: their exact
 /// spelling participates in the canonical request digest and binding checks.
 #[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct PublicCommitWorkspace {
     pub workspace_id: String,
     pub operation_id: String,
@@ -44,7 +44,7 @@ pub struct PublicCommitWorkspace {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct FilePlacement {
     pub primary_slot_id: String,
     pub target_copies: u32,
@@ -56,7 +56,7 @@ pub struct StageNamespace {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct CreateBranch {
     pub repository_id: String,
     pub source_commit_id: String,
@@ -65,14 +65,14 @@ pub struct CreateBranch {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct ArchiveBranch {
     pub branch_id: String,
     pub operation_id: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct MergeLink {
     pub history_tree_id: String,
     pub source_branch_id: String,
@@ -89,7 +89,7 @@ pub struct NamespaceBatch {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct CommitPlan {
     pub plan_id: String,
     pub operation_id: String,
@@ -116,40 +116,44 @@ pub struct MergeFileBranches {
 /// These mutations bind their canonical request in the core, not to a lossy
 /// reserialization of a public envelope.
 #[derive(Debug, Clone, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct UpdateProtectionPolicy {
-    #[serde(deserialize_with = "nonempty_string")]
+    #[serialization(deserialize_with = "nonempty_string")]
     pub policy_id: String,
-    #[serde(deserialize_with = "nonempty_string")]
+    #[serialization(deserialize_with = "nonempty_string")]
     pub repository_id: String,
     pub path_prefix: String,
     pub target_copies: u32,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub expected_generation: u64,
-    #[serde(deserialize_with = "nonempty_string")]
+    #[serialization(deserialize_with = "nonempty_string")]
     pub operation_id: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct UpdatePlacementRule {
-    #[serde(deserialize_with = "nonempty_string")]
+    #[serialization(deserialize_with = "nonempty_string")]
     pub rule_id: String,
-    #[serde(deserialize_with = "nonempty_string")]
+    #[serialization(deserialize_with = "nonempty_string")]
     pub repository_id: String,
     pub path_prefix: String,
-    #[serde(deserialize_with = "nonempty_string")]
+    #[serialization(deserialize_with = "nonempty_string")]
     pub primary_slot_id: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub expected_generation: u64,
-    #[serde(deserialize_with = "nonempty_string")]
+    #[serialization(deserialize_with = "nonempty_string")]
     pub operation_id: String,
 }
 
-fn nonempty_string<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+fn nonempty_string<'de, D: data_serialization::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<String, D::Error> {
     let value = String::deserialize(deserializer)?;
     if value.is_empty() {
-        return Err(serde::de::Error::custom("expected nonempty string"));
+        return Err(data_serialization::de::Error::custom(
+            "expected nonempty string",
+        ));
     }
     Ok(value)
 }
@@ -234,10 +238,10 @@ impl<'a> Application<'a> {
     fn public_commit_request(
         &self,
         command: PublicCommitWorkspace,
-    ) -> Result<(CommitRequest, serde_json::Value), ApiError> {
+    ) -> Result<(CommitRequest, json_codec::Value), ApiError> {
         let fencing_token = storage_contract::parse_u64_decimal(&command.fencing_token)
             .map_err(ApiError::invalid)?;
-        let body = serde_json::to_value(&command).map_err(ApiError::invalid)?;
+        let body = json_codec::to_value(&command).map_err(ApiError::invalid)?;
         let request = self.commit_request(CommitWorkspace {
             workspace_id: command.workspace_id,
             operation_id: command.operation_id,

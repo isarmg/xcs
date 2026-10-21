@@ -18,8 +18,8 @@ use crate::LenUint;
 use crate::char::encode_utf8;
 use crate::utils::MakeMaybeUninit;
 
-#[cfg(feature="serde")]
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+#[cfg(feature="serialization")]
+use data_serialization::{Serialize, Deserialize, Serializer, Deserializer};
 
 
 /// A string with a fixed capacity.
@@ -588,7 +588,7 @@ impl<const CAP: usize> FromStr for ArrayString<CAP>
     }
 }
 
-#[cfg(feature="serde")]
+#[cfg(feature="serialization")]
 /// Requires crate feature `"serde"`
 impl<const CAP: usize> Serialize for ArrayString<CAP>
 {
@@ -599,14 +599,14 @@ impl<const CAP: usize> Serialize for ArrayString<CAP>
     }
 }
 
-#[cfg(feature="serde")]
+#[cfg(feature="serialization")]
 /// Requires crate feature `"serde"`
 impl<'de, const CAP: usize> Deserialize<'de> for ArrayString<CAP> 
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: Deserializer<'de>
     {
-        use serde::de::{self, Visitor};
+        use data_serialization::de::{self, Visitor};
         use std::marker::PhantomData;
 
         struct ArrayStringVisitor<const CAP: usize>(PhantomData<[u8; CAP]>);

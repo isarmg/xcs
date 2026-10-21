@@ -13,8 +13,8 @@ use alloc::{
     format,
     string::String,
 };
-use serde::ser::{SerializeMap, Serializer as _};
-use serde_json::Serializer;
+use data_serialization::ser::{SerializeMap, Serializer as _};
+use json_codec::Serializer;
 use tracing_core::{
     field::{self, Field},
     span::Record,
@@ -121,16 +121,16 @@ where
     Span: Subscriber + for<'lookup> crate::registry::LookupSpan<'lookup>,
     N: for<'writer> FormatFields<'writer> + 'static;
 
-impl<Span, N> serde::ser::Serialize for SerializableContext<'_, '_, Span, N>
+impl<Span, N> data_serialization::ser::Serialize for SerializableContext<'_, '_, Span, N>
 where
     Span: Subscriber + for<'lookup> crate::registry::LookupSpan<'lookup>,
     N: for<'writer> FormatFields<'writer> + 'static,
 {
     fn serialize<Ser>(&self, serializer_o: Ser) -> Result<Ser::Ok, Ser::Error>
     where
-        Ser: serde::ser::Serializer,
+        Ser: data_serialization::ser::Serializer,
     {
-        use serde::ser::SerializeSeq;
+        use data_serialization::ser::SerializeSeq;
         let mut serializer = serializer_o.serialize_seq(None)?;
 
         if let Some(leaf_span) = self.0.lookup_current() {
@@ -151,14 +151,14 @@ where
     Span: for<'lookup> crate::registry::LookupSpan<'lookup>,
     N: for<'writer> FormatFields<'writer> + 'static;
 
-impl<Span, N> serde::ser::Serialize for SerializableSpan<'_, '_, Span, N>
+impl<Span, N> data_serialization::ser::Serialize for SerializableSpan<'_, '_, Span, N>
 where
     Span: for<'lookup> crate::registry::LookupSpan<'lookup>,
     N: for<'writer> FormatFields<'writer> + 'static,
 {
     fn serialize<Ser>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error>
     where
-        Ser: serde::ser::Serializer,
+        Ser: data_serialization::ser::Serializer,
     {
         let mut serializer = serializer.serialize_map(None)?;
 
@@ -169,11 +169,11 @@ where
 
         // TODO: let's _not_ do this, but this resolves
         // https://github.com/tokio-rs/tracing/issues/391.
-        // We should probably rework this to use a `serde_json::Value` or something
+        // We should probably rework this to use a `json_codec::Value` or something
         // similar in a JSON-specific layer, but I'd (david)
         // rather have a uglier fix now rather than shipping broken JSON.
-        match serde_json::from_str::<serde_json::Value>(data) {
-            Ok(serde_json::Value::Object(fields)) => {
+        match json_codec::from_str::<json_codec::Value>(data) {
+            Ok(json_codec::Value::Object(fields)) => {
                 for field in fields {
                     serializer.serialize_entry(&field.0, &field.1)?;
                 }
@@ -407,8 +407,8 @@ impl<'a> FormatFields<'a> for JsonFields {
         // then, we could store fields as JSON values, and add to them
         // without having to parse and re-serialize.
         let mut new = String::new();
-        let map: BTreeMap<&'_ str, serde_json::Value> =
-            serde_json::from_str(current).map_err(|_| fmt::Error)?;
+        let map: BTreeMap<&'_ str, json_codec::Value> =
+            json_codec::from_str(current).map_err(|_| fmt::Error)?;
         let mut v = JsonVisitor::new(&mut new);
         v.values = map;
         fields.record(&mut v);
@@ -424,7 +424,7 @@ impl<'a> FormatFields<'a> for JsonFields {
 /// [visitor]: crate::field::Visit
 /// [`MakeVisitor`]: crate::field::MakeVisitor
 pub struct JsonVisitor<'a> {
-    values: BTreeMap<&'a str, serde_json::Value>,
+    values: BTreeMap<&'a str, json_codec::Value>,
     writer: &'a mut dyn Write,
 }
 
@@ -482,36 +482,36 @@ impl field::Visit for JsonVisitor<'_> {
     /// Visit a double precision floating point value.
     fn record_f64(&mut self, field: &Field, value: f64) {
         self.values
-            .insert(field.name(), serde_json::Value::from(value));
+            .insert(field.name(), json_codec::Value::from(value));
     }
 
     /// Visit a signed 64-bit integer value.
     fn record_i64(&mut self, field: &Field, value: i64) {
         self.values
-            .insert(field.name(), serde_json::Value::from(value));
+            .insert(field.name(), json_codec::Value::from(value));
     }
 
     /// Visit an unsigned 64-bit integer value.
     fn record_u64(&mut self, field: &Field, value: u64) {
         self.values
-            .insert(field.name(), serde_json::Value::from(value));
+            .insert(field.name(), json_codec::Value::from(value));
     }
 
     /// Visit a boolean value.
     fn record_bool(&mut self, field: &Field, value: bool) {
         self.values
-            .insert(field.name(), serde_json::Value::from(value));
+            .insert(field.name(), json_codec::Value::from(value));
     }
 
     /// Visit a string value.
     fn record_str(&mut self, field: &Field, value: &str) {
         self.values
-            .insert(field.name(), serde_json::Value::from(value));
+            .insert(field.name(), json_codec::Value::from(value));
     }
 
     fn record_bytes(&mut self, field: &Field, value: &[u8]) {
         self.values
-            .insert(field.name(), serde_json::Value::from(value));
+            .insert(field.name(), json_codec::Value::from(value));
     }
 
     fn record_debug(&mut self, field: &Field, value: &dyn fmt::Debug) {
@@ -521,11 +521,11 @@ impl field::Visit for JsonVisitor<'_> {
             name if name.starts_with("log.") => (),
             name if name.starts_with("r#") => {
                 self.values
-                    .insert(&name[2..], serde_json::Value::from(format!("{:?}", value)));
+                    .insert(&name[2..], json_codec::Value::from(format!("{:?}", value)));
             }
             name => {
                 self.values
-                    .insert(name, serde_json::Value::from(format!("{:?}", value)));
+                    .insert(name, json_codec::Value::from(format!("{:?}", value)));
             }
         };
     }

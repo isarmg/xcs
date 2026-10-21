@@ -78,8 +78,8 @@
 //! [`Builder::host`]: build::Builder::host
 //! [`Authority::socket_addrs`]: component::Authority::socket_addrs
 //! [`Error`]: core::error::Error
-//! [`Serialize`]: serde::Serialize
-//! [`Deserialize`]: serde::Deserialize
+//! [`Serialize`]: data_serialization::Serialize
+//! [`Deserialize`]: data_serialization::Deserialize
 
 #[cfg(feature = "alloc")]
 pub mod build;

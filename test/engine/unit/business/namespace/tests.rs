@@ -37,9 +37,9 @@ fn relocating_entry_updates_path_fields_without_changing_identity_or_body() {
         assert_eq!(file.kind, original.kind);
         assert_eq!(file.size, original.size);
     }
-    let before = serde_json::to_value(&file).unwrap();
+    let before = json_codec::to_value(&file).unwrap();
     assert!(relocate_entry(&mut file, "../escape".into()).is_err());
-    assert_eq!(serde_json::to_value(&file).unwrap(), before);
+    assert_eq!(json_codec::to_value(&file).unwrap(), before);
 }
 
 #[test]

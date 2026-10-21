@@ -6,7 +6,7 @@
 //! claim. No duplicate full-State snapshot is retained in SQLite.
 use super::Engine;
 use crate::*;
-use serde::Serialize;
+use data_serialization::Serialize;
 use sqlx::{Connection, Executor, Row};
 use std::{collections::BTreeMap, path::Path};
 

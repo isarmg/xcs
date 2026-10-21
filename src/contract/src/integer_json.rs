@@ -1,5 +1,5 @@
 //! Check the original Serde data model before JSON converts NaN/infinity to null.
-use serde::{
+use data_serialization::{
     Serialize,
     ser::{self, Serializer},
 };
@@ -10,9 +10,9 @@ pub(crate) fn validate<T: Serialize + ?Sized>(value: &T) -> Result {
 
 #[derive(Clone, Copy)]
 struct IntegerJson;
-type Result<T = ()> = std::result::Result<T, serde_json::Error>;
+type Result<T = ()> = std::result::Result<T, json_codec::Error>;
 
-fn invalid(message: &str) -> serde_json::Error {
+fn invalid(message: &str) -> json_codec::Error {
     ser::Error::custom(message)
 }
 
@@ -24,7 +24,7 @@ macro_rules! scalar {
 
 impl Serializer for IntegerJson {
     type Ok = ();
-    type Error = serde_json::Error;
+    type Error = json_codec::Error;
     type SerializeSeq = Self;
     type SerializeTuple = Self;
     type SerializeTupleStruct = Self;
@@ -138,7 +138,7 @@ macro_rules! sequence {
     ($trait:ident, $method:ident $(, $key:ident: $ty:ty)?) => {
         impl ser::$trait for IntegerJson {
             type Ok = ();
-            type Error = serde_json::Error;
+            type Error = json_codec::Error;
             fn $method<T: Serialize + ?Sized>(&mut self, $($key: $ty,)? value: &T) -> Result {
                 $(let _ = $key;)?
                 value.serialize(*self)
@@ -156,7 +156,7 @@ sequence!(SerializeStructVariant, serialize_field, key: &'static str);
 
 impl ser::SerializeMap for IntegerJson {
     type Ok = ();
-    type Error = serde_json::Error;
+    type Error = json_codec::Error;
     fn serialize_key<T: Serialize + ?Sized>(&mut self, value: &T) -> Result {
         value.serialize(*self)
     }

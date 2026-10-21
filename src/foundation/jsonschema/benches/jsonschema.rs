@@ -4,7 +4,7 @@ mod bench {
 
     pub(crate) use benchmark::Benchmark;
     pub(crate) use codspeed_criterion_compat::{criterion_group, BenchmarkId, Criterion};
-    pub(crate) use serde_json::Value;
+    pub(crate) use json_codec::Value;
 
     pub(crate) fn bench_build(c: &mut Criterion, name: &str, schema: &Value) {
         c.bench_with_input(BenchmarkId::new("build", name), schema, |b, schema| {

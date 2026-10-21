@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
+    use json_codec::json;
     use test_case::test_case;
 
     #[test]
@@ -72,7 +72,7 @@ mod tests {
         assert_eq!(set.len(), 1);
     }
 
-    #[cfg(feature = "serde_json")]
+    #[cfg(feature = "json-codec")]
     #[test_case(&json!(null), JsonType::Null.into() => true ; "null type")]
     #[test_case(&json!(true), JsonType::Boolean.into() => true ; "boolean type")]
     #[test_case(&json!("test"), JsonType::String.into() => true ; "string type")]
@@ -83,7 +83,7 @@ mod tests {
     #[test_case(&json!(1.23), JsonType::Number.into() => true ; "float matches number")]
     #[test_case(&json!(1.23), JsonType::Integer.into() => false ; "float doesn't match integer")]
     fn test_contains_value_type(value: &Value, set: JsonTypeSet) -> bool {
-        set.contains_value_type::<crate::SerdeJson>(&value)
+        set.contains_value_type::<crate::JsonValueBackend>(&value)
     }
 
     #[test]

@@ -5,11 +5,11 @@ use std::{fs::File, io::Seek, os::fd::AsFd};
 fn namespace_requests_require_a_preallocated_identity_on_the_wire() {
     for kind in ["mkdir", "rename", "unlink", "rmdir"] {
         let request = namespace_request(kind, "entry".into(), None, false);
-        let value = serde_json::to_value(&request).unwrap();
+        let value = json_codec::to_value(&request).unwrap();
         storage_contract::validate_id(value["operation_id"].as_str().unwrap(), "op").unwrap();
         let mut missing = value;
         missing.as_object_mut().unwrap().remove("operation_id");
-        assert!(serde_json::from_value::<Request>(missing).is_err());
+        assert!(json_codec::from_value::<Request>(missing).is_err());
     }
 }
 
@@ -52,7 +52,7 @@ fn framing_transfers_an_owned_cloexec_descriptor_without_a_path() {
     sender
         .send(
             &Response::Ok {
-                result: serde_json::json!({"handle":"18446744073709551615"}),
+                result: json_codec::json!({"handle":"18446744073709551615"}),
             },
             Some(source.as_fd()),
         )

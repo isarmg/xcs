@@ -4,8 +4,8 @@ pub mod cmp;
 #[cfg(feature = "conformance")]
 pub mod conformance;
 pub mod numeric;
-// The bound checks take a `serde_json::Number`, which only that feature makes a `JsonNumber`.
-#[cfg(feature = "serde_json")]
+// The bound checks take a `json_codec::Number`, which only that feature makes a `JsonNumber`.
+#[cfg(feature = "json-codec")]
 pub mod numeric_check;
 pub mod types;
 pub mod unique;
@@ -16,9 +16,9 @@ pub mod jsonb;
 mod magnus;
 #[cfg(feature = "pyo3")]
 mod pyo3;
-#[cfg(feature = "serde_json")]
-mod serde_json;
-mod serde_number;
+#[cfg(feature = "json-codec")]
+mod json_codec;
+mod serialization_number;
 
 #[cfg(feature = "jsonb")]
 pub use jsonb::{Jsonb, JsonbNode};
@@ -32,12 +32,12 @@ pub use magnus::{
 };
 #[cfg(feature = "pyo3")]
 pub use pyo3::{inspect, narrow_array, narrow_object, object_values, stock_enum_value, Pyo3};
-#[cfg(feature = "serde_json")]
-pub use serde_json::SerdeJson;
+#[cfg(feature = "json-codec")]
+pub use json_codec::JsonValueBackend;
 
 use std::{borrow::Cow, fmt, sync::OnceLock};
 
-use ::serde_json::Value;
+use ::json_codec::Value;
 
 use crate::types::JsonType;
 
@@ -153,7 +153,7 @@ impl NodeIdentity {
     }
 }
 
-/// A JSON number, readable without constructing a [`::serde_json::Number`].
+/// A JSON number, readable without constructing a [`::json_codec::Number`].
 pub trait JsonNumber {
     fn as_u64(&self) -> Option<u64>;
     fn as_i64(&self) -> Option<i64>;
@@ -163,7 +163,7 @@ pub trait JsonNumber {
     fn as_str(&self) -> Cow<'_, str>;
 
     /// For cold paths: error construction and annotations.
-    fn to_number(&self) -> Cow<'_, ::serde_json::Number>;
+    fn to_number(&self) -> Cow<'_, ::json_codec::Number>;
 
     /// `type: integer` checks call this per number: override it where the default's
     /// [`JsonNumber::to_number`] round-trip is not free (e.g. decimal representations).

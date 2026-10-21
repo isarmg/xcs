@@ -9,7 +9,7 @@ use crate::{
     validator::{evaluate_assertion, EvaluationResult, Validate, ValidationContext},
     Json, Node, Object,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 pub(crate) struct MinPropertiesValidator {
     limit: u64,

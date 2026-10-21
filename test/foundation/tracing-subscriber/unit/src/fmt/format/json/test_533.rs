@@ -279,13 +279,13 @@ mod test {
         });
     }
 
-    fn parse_as_json(buffer: &MockMakeWriter) -> serde_json::Value {
+    fn parse_as_json(buffer: &MockMakeWriter) -> json_codec::Value {
         let buf = String::from_utf8(buffer.buf().to_vec()).unwrap();
         let json = buf
             .lines()
             .last()
             .expect("expected at least one line to be written!");
-        match serde_json::from_str(json) {
+        match json_codec::from_str(json) {
             Ok(v) => v,
             Err(e) => panic!(
                 "assertion failed: JSON shouldn't be malformed\n  error: {}\n  json: {}",
@@ -310,9 +310,9 @@ mod test {
         let buf = make_writer.buf();
         let actual = std::str::from_utf8(&buf[..]).unwrap();
         assert_eq!(
-            serde_json::from_str::<std::collections::HashMap<&str, serde_json::Value>>(expected)
+            json_codec::from_str::<std::collections::HashMap<&str, json_codec::Value>>(expected)
                 .unwrap(),
-            serde_json::from_str(actual).unwrap()
+            json_codec::from_str(actual).unwrap()
         );
     }
 
@@ -332,11 +332,11 @@ mod test {
         let buf = make_writer.buf();
         let actual = std::str::from_utf8(&buf[..]).unwrap();
         let mut expected =
-            serde_json::from_str::<std::collections::HashMap<&str, serde_json::Value>>(expected)
+            json_codec::from_str::<std::collections::HashMap<&str, json_codec::Value>>(expected)
                 .unwrap();
         let expect_line_number = expected.remove("line_number").is_some();
-        let mut actual: std::collections::HashMap<&str, serde_json::Value> =
-            serde_json::from_str(actual).unwrap();
+        let mut actual: std::collections::HashMap<&str, json_codec::Value> =
+            json_codec::from_str(actual).unwrap();
         let line_number = actual.remove("line_number");
         if expect_line_number {
             assert_eq!(line_number.map(|x| x.is_number()), Some(true));

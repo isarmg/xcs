@@ -363,11 +363,11 @@ fn event(sequence: u64) -> Event {
 
 fn projected_state(path: &Path) -> State {
     let (sequence, rows) = rows(path);
-    let mut value = serde_json::to_value(State::default()).unwrap();
+    let mut value = json_codec::to_value(State::default()).unwrap();
     value["sequence"] = sequence.into();
     let mut events = BTreeMap::new();
     for (kind, id, bytes) in rows {
-        let row: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        let row: json_codec::Value = json_codec::from_slice(&bytes).unwrap();
         match kind.as_str() {
             "$state" => value[&id] = row,
             "$events" => {
@@ -378,13 +378,13 @@ fn projected_state(path: &Path) -> State {
                     .as_object_mut()
                     .unwrap()
                     .entry(kind)
-                    .or_insert_with(|| serde_json::json!({}));
+                    .or_insert_with(|| json_codec::json!({}));
                 map[&id] = row;
             }
         }
     }
     value["events"] = events.into_values().collect::<Vec<_>>().into();
-    serde_json::from_value(value).unwrap()
+    json_codec::from_value(value).unwrap()
 }
 
 #[test]
@@ -405,7 +405,7 @@ fn incremental_matches_full_projection_after_insert_update_delete_and_truncation
             .file_selection_generations
             .insert("file".into(), u64::MAX);
         state.events.push(event(sequence));
-        state.control_auth = Some(serde_json::json!({"nested": {"generation": sequence}}));
+        state.control_auth = Some(json_codec::json!({"nested": {"generation": sequence}}));
         if sequence == 2 {
             state
                 .file_notes

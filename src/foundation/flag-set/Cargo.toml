@@ -34,16 +34,16 @@ repository = "https://github.com/bitflags/bitflags"
 
 [features]
 example_generated = []
-serde = ["serde_core"]
+serialization = ["serialization-core"]
 std = []
 
 [lib]
 name = "flag_set"
 path = "src/lib.rs"
 
-[dependencies.serde_core]
+[dependencies.serialization-core]
 version = "1.0.228"
 optional = true
 default-features = false
-path = "../serde_core"
+path = "../serialization-core"
 

@@ -19,11 +19,11 @@
 //! use zerovec::ule::*;
 //! use zerovec::ZeroVec;
 //!
-//! #[derive(serde::Serialize, serde::Deserialize)]
+//! #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 //! struct Foo<'a> {
 //!     field1: char,
 //!     field2: u32,
-//!     #[serde(borrow)]
+//!     #[serialization(borrow)]
 //!     field3: ZeroVec<'a, u32>,
 //! }
 //! ```
@@ -39,11 +39,11 @@
 //! use zerofrom::ZeroFrom;
 //! use core::mem;
 //!
-//! # #[derive(serde::Serialize, serde::Deserialize)]
+//! # #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 //! # struct Foo<'a> {
 //! #    field1: char,
 //! #    field2: u32,
-//! #    #[serde(borrow)]
+//! #    #[serialization(borrow)]
 //! #    field3: ZeroVec<'a, u32>   
 //! # }
 //!
@@ -107,21 +107,21 @@
 //! }
 //!
 //!
-//! impl serde::Serialize for FooULE
+//! impl data_serialization::Serialize for FooULE
 //! {
 //!     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 //!     where
-//!         S: serde::Serializer,
+//!         S: data_serialization::Serializer,
 //!     {
 //!         Foo::zero_from(self).serialize(serializer)
 //!     }
 //! }
 //!
-//! impl<'de> serde::Deserialize<'de> for Box<FooULE>
+//! impl<'de> data_serialization::Deserialize<'de> for Box<FooULE>
 //! {
 //!     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 //!     where
-//!         D: serde::Deserializer<'de>,
+//!         D: data_serialization::Deserializer<'de>,
 //!     {
 //!         let mut foo = Foo::deserialize(deserializer)?;
 //!         Ok(encode_varule_to_box(&foo))

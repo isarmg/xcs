@@ -11,18 +11,18 @@ use crate::{
     },
     paths::Location,
     retriever::DefaultRetriever,
-    Json, Keyword, SerdeJson, ValidationError, Validator,
+    Json, Keyword, JsonValueBackend, ValidationError, Validator,
 };
 use ahash::{AHashMap, AHashSet};
 use email_address::Options as EmailAddressOptions;
 use referencing::{Draft, Retrieve};
-use serde_json::Value;
+use json_codec::Value;
 use std::{fmt, marker::PhantomData, sync::Arc};
 
 /// Configuration options for JSON Schema validation.
 ///
 /// `F` selects the JSON representation the built validator accepts.
-pub struct ValidationOptions<'i, R = Arc<dyn Retrieve>, F: Json = SerdeJson> {
+pub struct ValidationOptions<'i, R = Arc<dyn Retrieve>, F: Json = JsonValueBackend> {
     pub(crate) draft: Option<Draft>,
     content_media_type_checks: AHashMap<&'static str, Option<ContentMediaTypeCheckType>>,
     content_encoding_checks_and_converters:
@@ -302,7 +302,7 @@ impl<'i, R, F: Json> ValidationOptions<'i, R, F> {
     /// # Example
     ///
     /// ```rust
-    /// # use serde_json::json;
+    /// # use json_codec::json;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     ///
     /// let validator = jsonschema::options()
@@ -333,7 +333,7 @@ impl<'i, R, F: Json> ValidationOptions<'i, R, F> {
     /// # Example
     ///
     /// ```rust
-    /// # use serde_json::json;
+    /// # use json_codec::json;
     /// fn my_format(s: &str) -> bool {
     ///    // Your awesome format check!
     ///    s.ends_with("42!")
@@ -437,7 +437,7 @@ impl<'i, R, F: Json> ValidationOptions<'i, R, F> {
     ///
     /// ```rust
     /// # use jsonschema::{paths::Location, Keyword, ValidationError};
-    /// # use serde_json::{json, Map, Value};
+    /// # use json_codec::{json, Map, Value};
     ///
     /// struct MyCustomValidator;
     ///
@@ -475,7 +475,7 @@ impl<'i, R, F: Json> ValidationOptions<'i, R, F> {
     where
         N: Into<String>,
         Factory: for<'a> Fn(
-                &'a serde_json::Map<String, Value>,
+                &'a json_codec::Map<String, Value>,
                 &'a Value,
                 Location,
             )
@@ -502,7 +502,7 @@ impl<F: Json> ValidationOptions<'_, Arc<dyn referencing::Retrieve>, F> {
     /// # Example
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"type": "string"});
     /// let validator = jsonschema::options()
@@ -637,7 +637,7 @@ impl<F: Json> ValidationOptions<'_, Arc<dyn referencing::Retrieve>, F> {
     /// # Examples
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"$ref": "https://example.com/schema.json"});
     /// assert!(jsonschema::options().offline().build(&schema).is_err());
@@ -660,7 +660,7 @@ impl<F: Json> ValidationOptions<'_, Arc<dyn referencing::Retrieve>, F> {
     ///
     /// ```rust,no_run
     /// use std::time::Duration;
-    /// use serde_json::json;
+    /// use json_codec::json;
     /// use jsonschema::HttpOptions;
     ///
     /// let schema = json!({"$ref": "https://example.com/schema.json"});
@@ -698,7 +698,7 @@ impl<F: Json> ValidationOptions<'_, Arc<dyn referencing::Retrieve>, F> {
     /// # Example
     ///
     /// ```rust
-    /// use serde_json::json;
+    /// use json_codec::json;
     /// use jsonschema::PatternOptions;
     ///
     /// let schema = json!({"type": "string"});
@@ -726,7 +726,7 @@ impl<F: Json> ValidationOptions<'_, Arc<dyn referencing::Retrieve>, F> {
     /// ```rust
     /// use jsonschema::EmailOptions;
     ///
-    /// let schema = serde_json::json!({"format": "email", "type": "string"});
+    /// let schema = json_codec::json!({"format": "email", "type": "string"});
     /// let validator = jsonschema::options()
     ///     .with_email_options(EmailOptions::default())
     ///     .should_validate_formats(true)
@@ -1005,7 +1005,7 @@ impl Default for PatternEngineOptions {
 ///
 /// ```rust
 /// use jsonschema::EmailOptions;
-/// use serde_json::json;
+/// use json_codec::json;
 ///
 /// let schema = json!({"format": "email", "type": "string"});
 /// let validator = jsonschema::options()
@@ -1037,7 +1037,7 @@ impl EmailOptions {
     ///
     /// ```rust
     /// use jsonschema::EmailOptions;
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"format": "email", "type": "string"});
     /// let validator = jsonschema::options()
@@ -1062,7 +1062,7 @@ impl EmailOptions {
     ///
     /// ```rust
     /// use jsonschema::EmailOptions;
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"format": "email", "type": "string"});
     /// let validator = jsonschema::options()
@@ -1090,7 +1090,7 @@ impl EmailOptions {
     ///
     /// ```rust
     /// use jsonschema::EmailOptions;
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"format": "email", "type": "string"});
     /// let validator = jsonschema::options()
@@ -1117,7 +1117,7 @@ impl EmailOptions {
     ///
     /// ```rust
     /// use jsonschema::EmailOptions;
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"format": "email", "type": "string"});
     /// let validator = jsonschema::options()
@@ -1142,7 +1142,7 @@ impl EmailOptions {
     ///
     /// ```rust
     /// use jsonschema::EmailOptions;
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"format": "email", "type": "string"});
     /// let validator = jsonschema::options()
@@ -1169,7 +1169,7 @@ impl EmailOptions {
     ///
     /// ```rust
     /// use jsonschema::EmailOptions;
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"format": "email", "type": "string"});
     /// let validator = jsonschema::options()
@@ -1194,7 +1194,7 @@ impl EmailOptions {
     ///
     /// ```rust
     /// use jsonschema::EmailOptions;
-    /// use serde_json::json;
+    /// use json_codec::json;
     ///
     /// let schema = json!({"format": "email", "type": "string"});
     /// let validator = jsonschema::options()

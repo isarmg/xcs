@@ -1,8 +1,8 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use ahash::HashMap;
-use serde::Deserialize;
-use serde_json::Value;
+use data_serialization::Deserialize;
+use json_codec::Value;
 use std::{fs, path::Path};
 
 #[derive(Debug, Deserialize)]
@@ -119,7 +119,7 @@ fn test_annotation_suite() {
         let content = fs::read_to_string(&filepath)
             .unwrap_or_else(|err| panic!("Failed to read {}: {err}", filepath.display()));
 
-        let test_file: AnnotationTestFile = serde_json::from_str(&content)
+        let test_file: AnnotationTestFile = json_codec::from_str(&content)
             .unwrap_or_else(|err| panic!("Failed to parse {}: {err}", filepath.display()));
 
         for suite_case in &test_file.suite {
@@ -139,7 +139,7 @@ fn test_annotation_suite() {
                     let test_id = format!("{filename} / {description} / 0");
                     failures.push(format!(
                         "FAILED to build schema for {test_id}: {e}\nSchema: {}",
-                        serde_json::to_string_pretty(schema).unwrap()
+                        json_codec::to_string_pretty(schema).unwrap()
                     ));
                     continue;
                 }
@@ -184,7 +184,7 @@ fn test_annotation_suite() {
                 if test_failed {
                     failures.push(format!(
                         "FAILED: {test_id}\nInstance: {}\n{}",
-                        serde_json::to_string(&test_case.instance).unwrap(),
+                        json_codec::to_string(&test_case.instance).unwrap(),
                         test_errors.join("\n")
                     ));
                 }

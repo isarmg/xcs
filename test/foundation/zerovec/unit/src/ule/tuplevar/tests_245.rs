@@ -18,10 +18,10 @@ mod tests {
         let zerovec3 = VarZeroVec::<Tuple2VarULE<str, str>>::parse_bytes(bytes);
         assert!(zerovec3.is_err());
 
-        #[cfg(feature = "serde")]
+        #[cfg(feature = "serialization")]
         for val in zerovec.iter() {
             // Can't use inference due to https://github.com/rust-lang/rust/issues/130180
-            test_utils::assert_serde_roundtrips::<Tuple2VarULE<str, [u8]>>(val);
+            test_utils::assert_serialization_roundtrips::<Tuple2VarULE<str, [u8]>>(val);
         }
     }
     fn test_tripleule_validate_inner<Format: VarZeroVecFormat>() {
@@ -44,10 +44,10 @@ mod tests {
         let zerovec3 = VarZeroVec::<Tuple3VarULE<VarZeroSlice<str>, [u8], VarZeroSlice<str>, Format>>::parse_bytes(bytes);
         assert!(zerovec3.is_err());
 
-        #[cfg(feature = "serde")]
+        #[cfg(feature = "serialization")]
         for val in zerovec.iter() {
             // Can't use inference due to https://github.com/rust-lang/rust/issues/130180
-            test_utils::assert_serde_roundtrips::<Tuple3VarULE<str, [u8], VarZeroSlice<str>, Format>>(
+            test_utils::assert_serialization_roundtrips::<Tuple3VarULE<str, [u8], VarZeroSlice<str>, Format>>(
                 val,
             );
         }

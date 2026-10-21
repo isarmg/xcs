@@ -2,7 +2,7 @@
 //! Credentials and token hashes are local protected control data, never public API data.
 use crate::ApiError;
 use authentication as primitives;
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs::{self, OpenOptions},
@@ -22,29 +22,29 @@ const MAX_SESSIONS: usize = 4096;
 const MAX_STORE_BYTES: usize = 4 * 1024 * 1024;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct Account {
     pub username: String,
     pub password_hash: String,
     pub admin: bool,
     pub repositories: BTreeSet<String>,
     pub disabled: bool,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub generation: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct Session {
     username: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     generation: u64,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     expires_at: u64,
 }
 
 #[derive(Default, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct Database {
     accounts: BTreeMap<String, Account>,
     sessions: BTreeMap<String, Session>,
@@ -76,11 +76,11 @@ pub struct LoginResult {
     pub csrf_token: String,
     pub principal: String,
     pub admin: bool,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub expires_at: u64,
 }
 
-pub type BackupHook = Arc<dyn Fn(serde_json::Value) -> Result<(), ApiError> + Send + Sync>;
+pub type BackupHook = Arc<dyn Fn(json_codec::Value) -> Result<(), ApiError> + Send + Sync>;
 
 pub struct AuthStore {
     path: PathBuf,
@@ -110,8 +110,8 @@ impl AuthStore {
             Ok(())
         }
     }
-    pub fn snapshot(&self) -> Result<serde_json::Value, ApiError> {
-        serde_json::to_value(&self.db).map_err(ApiError::invalid)
+    pub fn snapshot(&self) -> Result<json_codec::Value, ApiError> {
+        json_codec::to_value(&self.db).map_err(ApiError::invalid)
     }
     pub fn attach_backup(&mut self, backup: BackupHook) -> Result<(), ApiError> {
         backup(self.snapshot()?)?;
@@ -125,10 +125,10 @@ impl AuthStore {
     /// Read the engine's authoritative protected snapshot without taking the
     /// mutable authentication-store lock (account publication uses auth -> engine).
     pub(crate) fn identity_from_snapshot(
-        snapshot: serde_json::Value,
+        snapshot: json_codec::Value,
         username: &str,
     ) -> Result<Identity, ApiError> {
-        let database: Database = serde_json::from_value(snapshot).map_err(ApiError::invalid)?;
+        let database: Database = json_codec::from_value(snapshot).map_err(ApiError::invalid)?;
         Self::database_identity(&database, username)
     }
     fn database_identity(database: &Database, username: &str) -> Result<Identity, ApiError> {
@@ -198,7 +198,7 @@ impl AuthStore {
     /// Missing local credentials never cause implicit account creation.
     pub fn open_with_snapshot(
         root: &Path,
-        authoritative: Option<serde_json::Value>,
+        authoritative: Option<json_codec::Value>,
     ) -> Result<Self, ApiError> {
         let auth_lock = Self::acquire_lock(root)?;
         let path = root.join("auth.json");
@@ -233,7 +233,7 @@ impl AuthStore {
         };
         let restore = authoritative.is_some();
         let db: Database = match authoritative {
-            Some(snapshot) => serde_json::from_value(snapshot).map_err(ApiError::invalid)?,
+            Some(snapshot) => json_codec::from_value(snapshot).map_err(ApiError::invalid)?,
             None => storage_contract::decode_strict(&local.ok_or_else(|| {
                 ApiError::new(
                     503,
@@ -286,7 +286,7 @@ impl AuthStore {
         // Reject an oversized candidate before creating even a temporary file
         // or publishing its protected backup. This is deterministic admission,
         // not an uncertain I/O outcome that should block existing credentials.
-        let bytes = serde_json::to_vec(&self.db).map_err(ApiError::invalid)?;
+        let bytes = json_codec::to_vec(&self.db).map_err(ApiError::invalid)?;
         if bytes.len() > MAX_STORE_BYTES {
             return Err(ApiError::limit(
                 "credential store exceeds serialized byte limit",
@@ -539,8 +539,8 @@ impl AuthStore {
         Ok(())
     }
 
-    pub fn list_accounts(&self) -> Vec<serde_json::Value> {
-        self.db.accounts.values().map(|account| serde_json::json!({"username":account.username,"admin":account.admin,"disabled":account.disabled,"repositories":account.repositories})).collect()
+    pub fn list_accounts(&self) -> Vec<json_codec::Value> {
+        self.db.accounts.values().map(|account| json_codec::json!({"username":account.username,"admin":account.admin,"disabled":account.disabled,"repositories":account.repositories})).collect()
     }
 }
 

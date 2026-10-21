@@ -61,10 +61,10 @@
 //!         phantom: core::marker::PhantomData<#item_ty>,
 //!     }
 //!
-//!     impl #generics serde::Serialize for SerializeWith #generics #where_clause {
+//!     impl #generics data_serialization::Serialize for SerializeWith #generics #where_clause {
 //!         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 //!         where
-//!             S: serde::Serializer,
+//!             S: data_serialization::Serializer,
 //!         {
 //!             #path(self.value, serializer)
 //!         }

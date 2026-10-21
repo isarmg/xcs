@@ -15,7 +15,7 @@
 //! [`IndexMap`]: https://docs.rs/indexmap
 
 use crate::value::Value;
-use serde::{de, ser};
+use data_serialization::{de, ser};
 use std::borrow::Borrow;
 use std::fmt::{self, Debug};
 use std::hash::Hash;
@@ -298,7 +298,7 @@ impl ser::Serialize for Map<String, Value> {
     where
         S: ser::Serializer,
     {
-        use serde::ser::SerializeMap;
+        use data_serialization::ser::SerializeMap;
         let mut map = serializer.serialize_map(Some(self.len()))?;
         for (k, v) in self {
             map.serialize_key(k)?;

@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use fluent_uri::Uri;
 
-use serde_json::Value;
+use json_codec::Value;
 
 use crate::{
     anchor::Anchor, draft::Draft, pointer::ParsedPointer, small_map::SmallMap, ResourceRef,

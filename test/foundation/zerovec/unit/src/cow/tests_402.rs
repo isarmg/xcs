@@ -14,7 +14,7 @@ mod tests {
         assert_eq!(messy.b(), b"g\xFF\xFFdbye");
         assert_eq!(&messy.c()[1], "two");
 
-        #[cfg(feature = "serde")]
+        #[cfg(feature = "serialization")]
         {
             let bincode = bincode::serialize(&messy).unwrap();
             let deserialized: VarZeroCow<Messy> = bincode::deserialize(&bincode).unwrap();
@@ -24,8 +24,8 @@ mod tests {
             );
             assert!(!deserialized.is_owned());
 
-            let json = serde_json::to_string(&messy).unwrap();
-            let deserialized: VarZeroCow<Messy> = serde_json::from_str(&json).unwrap();
+            let json = json_codec::to_string(&messy).unwrap();
+            let deserialized: VarZeroCow<Messy> = json_codec::from_str(&json).unwrap();
             assert_eq!(messy, deserialized, "Single element roundtrips with serde");
         }
     }

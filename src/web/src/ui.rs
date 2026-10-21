@@ -1,5 +1,5 @@
 use crate::{api, files, history, icons::FileIcon, monitor};
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use web_interface::components::{
     AccountPage, AppShell, ErrorState, Feedback, HeaderActions, HeaderNavigation, LoginCredentials,
     LoginPage, PasswordChange, SessionPhase, SessionView,

@@ -148,7 +148,7 @@ fn test_parse_path() {
         leading_colon: Some,
         segments: [
             PathSegment {
-                ident: "serde",
+                ident: "serialization",
             },
             Token![::],
             PathSegment {

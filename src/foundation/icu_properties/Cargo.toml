@@ -41,13 +41,13 @@ repository = "https://github.com/unicode-org/icu4x"
 resolver = "2"
 
 [features]
-alloc = ["zerovec/alloc", "icu_collections/alloc", "serde?/alloc"]
+alloc = ["zerovec/alloc", "icu_collections/alloc", "data-serialization?/alloc"]
 compiled_data = ["dep:icu_properties_data", "icu_provider/baked"]
-datagen = ["serde", "zerovec/databake", "icu_collections/databake", "icu_locale_core/databake", "zerotrie/databake", "icu_provider/export"]
+datagen = ["serialization", "zerovec/databake", "icu_collections/databake", "icu_locale_core/databake", "zerotrie/databake", "icu_provider/export"]
 default = ["compiled_data"]
 harfbuzz_traits = []
 log = ["dep:log"]
-serde = ["dep:serde", "icu_locale_core/serde", "zerovec/serde", "icu_collections/serde", "icu_provider/serde", "zerotrie/serde"]
+serialization = ["dep:data-serialization", "icu_locale_core/serialization", "zerovec/serialization", "icu_collections/serialization", "icu_provider/serialization", "zerotrie/serialization"]
 unicode_bidi = []
 unstable = []
 
@@ -88,12 +88,12 @@ optional = true
 default-features = false
 path = "../log"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.220"
 features = ["derive"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.zerotrie]
 version = "0.2.5"

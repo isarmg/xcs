@@ -14,7 +14,7 @@
 /// # Examples
 ///
 /// ```
-/// use serde::Deserialize;
+/// use data_serialization::Deserialize;
 ///
 /// #[derive(Deserialize)]
 /// struct Config {
@@ -40,7 +40,7 @@
 #[cfg(feature = "parse")]
 pub fn from_str<T>(s: &'_ str) -> Result<T, Error>
 where
-    T: serde::de::DeserializeOwned,
+    T: data_serialization::de::DeserializeOwned,
 {
     T::deserialize(Deserializer::new(s))
 }
@@ -72,7 +72,7 @@ impl Error {
     }
 }
 
-impl serde::de::Error for Error {
+impl data_serialization::de::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
         T: std::fmt::Display,
@@ -112,12 +112,12 @@ impl<'a> Deserializer<'a> {
 }
 
 #[cfg(feature = "parse")]
-impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
+impl<'de> data_serialization::Deserializer<'de> for Deserializer<'_> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner.deserialize_any(visitor).map_err(Error::new)
@@ -127,7 +127,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
     // as a present field.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner.deserialize_option(visitor).map_err(Error::new)
@@ -139,7 +139,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner
@@ -154,7 +154,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner
@@ -170,7 +170,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = toml_edit::de::Deserializer::parse(self.input).map_err(Error::new)?;
         inner
@@ -178,7 +178,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
             .map_err(Error::new)
     }
 
-    serde::forward_to_deserialize_any! {
+    data_serialization::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier
@@ -190,7 +190,7 @@ impl<'de> serde::Deserializer<'de> for Deserializer<'_> {
 /// # Example
 ///
 /// ```
-/// use serde::Deserialize;
+/// use data_serialization::Deserialize;
 ///
 /// #[derive(Deserialize)]
 /// struct Config {
@@ -224,12 +224,12 @@ impl<'a> ValueDeserializer<'a> {
 }
 
 #[cfg(feature = "parse")]
-impl<'de> serde::Deserializer<'de> for ValueDeserializer<'_> {
+impl<'de> data_serialization::Deserializer<'de> for ValueDeserializer<'_> {
     type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = self
             .input
@@ -242,7 +242,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'_> {
     // as a present field.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = self
             .input
@@ -257,7 +257,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'_> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = self
             .input
@@ -275,7 +275,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'_> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = self
             .input
@@ -294,7 +294,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'_> {
         visitor: V,
     ) -> Result<V::Value, Error>
     where
-        V: serde::de::Visitor<'de>,
+        V: data_serialization::de::Visitor<'de>,
     {
         let inner = self
             .input
@@ -305,7 +305,7 @@ impl<'de> serde::Deserializer<'de> for ValueDeserializer<'_> {
             .map_err(Error::new)
     }
 
-    serde::forward_to_deserialize_any! {
+    data_serialization::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string seq
         bytes byte_buf map unit
         ignored_any unit_struct tuple_struct tuple identifier

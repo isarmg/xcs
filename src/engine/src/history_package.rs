@@ -1,7 +1,7 @@
 //! Independently recoverable, publication-bound history packages.
 use crate::{business::validate_entries, disk::*, journal::*, *};
-use serde::{Deserialize, Serialize};
-use serde_json::json;
+use data_serialization::{Deserialize, Serialize};
+use json_codec::json;
 mod graph;
 use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
@@ -10,60 +10,60 @@ use std::{
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct HistoryManifest {
     pub repository: Repository,
     pub history: HistoryTree,
     pub branches: BTreeMap<String, Branch>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_selections: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub directory_branches: BTreeMap<String, DirectoryBranch>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub directory_trees: BTreeMap<String, DirectoryTree>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_write_origins: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_contexts: BTreeMap<String, FileContext>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_path_nodes: BTreeMap<String, FilePathNode>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_metadata_nodes: BTreeMap<String, FileMetadataNode>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_branch_merges: BTreeMap<String, FileBranchMerge>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_branch_aliases: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_node_parents: BTreeMap<String, Vec<String>>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_path_notes: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub directory_tree_selections: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_locations: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_backup_paths: BTreeMap<String, BTreeMap<String, String>>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_backup_policies: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub directory_selections: BTreeMap<String, String>,
-    #[serde(
+    #[serialization(
         default,
         skip_serializing_if = "BTreeMap::is_empty",
         with = "storage_contract::u64_string_map"
     )]
     pub directory_selection_generations: BTreeMap<String, u64>,
-    #[serde(
+    #[serialization(
         default,
         skip_serializing_if = "BTreeMap::is_empty",
         with = "storage_contract::u64_string_map"
     )]
     pub file_selection_generations: BTreeMap<String, u64>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_notes: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub version_notes: BTreeMap<String, String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serialization(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub file_names: BTreeMap<String, String>,
     pub commits: BTreeMap<String, Commit>,
     pub versions: BTreeMap<String, FileVersion>,
@@ -75,22 +75,22 @@ pub struct HistoryManifest {
     pub protection_policies: BTreeMap<String, ProtectionPolicy>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct HistoryPackageReport {
     pub history_tree_id: String,
     pub repository_id: String,
     pub manifest_hash: String,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub publication_sequence: u64,
     pub commits: usize,
     pub versions: usize,
     pub full_files: usize,
     pub tombstones: usize,
-    #[serde(with = "storage_contract::u64_string")]
+    #[serialization(with = "storage_contract::u64_string")]
     pub full_bytes: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct PackageProof {
     manifest_hash: String,
     candidate: Candidate,
@@ -1442,7 +1442,7 @@ pub(crate) fn prepare_history_manifests(
     Ok((hashes, objects))
 }
 
-type HistoryGraphObjects = Vec<(String, String, serde_json::Value)>;
+type HistoryGraphObjects = Vec<(String, String, json_codec::Value)>;
 
 /// Select every dependency independently from trusted replicas, without repair.
 fn bound_history_graph(
@@ -1546,7 +1546,7 @@ fn package_object(package: &Path, kind: &str, hash: &str) -> Result<PathBuf> {
 }
 
 fn load_package(package: &Path) -> Result<(HistoryManifest, PackageProof, HistoryPackageReport)> {
-    let root: serde_json::Value = read_json(&package.join("manifest.json"))?;
+    let root: json_codec::Value = read_json(&package.join("manifest.json"))?;
     let hash = object_hash("history-manifest", &root)?;
     let manifest = graph::resolve(root, |kind, hash| {
         read_json(&package_object(package, kind, hash)?)

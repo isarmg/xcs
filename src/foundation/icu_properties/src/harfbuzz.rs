@@ -161,7 +161,7 @@ impl HarfbuzzScriptData {
         })
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[doc = icu_provider::gen_buffer_unstable_docs!(BUFFER,Self::try_new_unstable)]
     pub fn try_new_with_buffer_provider(
         provider: &(impl BufferProvider + ?Sized),

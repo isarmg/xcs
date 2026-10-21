@@ -195,8 +195,8 @@ pub mod __impl {
     pub use core::convert::From;
     pub use core::result::Result;
 
-    #[cfg(feature = "serde")]
-    pub use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    #[cfg(feature = "serialization")]
+    pub use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 }
 
 pub mod basic;
@@ -471,7 +471,7 @@ macro_rules! new_key_type {
     () => {}
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __serialize_key {
@@ -498,7 +498,7 @@ macro_rules! __serialize_key {
     };
 }
 
-#[cfg(not(feature = "serde"))]
+#[cfg(not(feature = "serialization"))]
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __serialize_key {
@@ -511,9 +511,9 @@ new_key_type! {
 }
 
 // Serialization with serde.
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 mod serialize {
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
     use super::*;
 

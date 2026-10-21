@@ -6,7 +6,9 @@ use crate::{disk::*, journal::*, *};
 
 // The journal supplies the authoritative digest. A replica is usable only if
 // its decoded object matches that exact digest, never by majority agreement.
-pub(crate) fn verified_object<T: serde::Serialize + serde::de::DeserializeOwned>(
+pub(crate) fn verified_object<
+    T: data_serialization::Serialize + data_serialization::de::DeserializeOwned,
+>(
     members: &[DiskConfig],
     kind: &str,
     hash: &str,
@@ -58,7 +60,7 @@ pub(crate) fn verified_publication_seal(
         .unwrap_or_else(|| Error::new("RECOVERY_REQUIRED", "no trusted publication seal replica")))
 }
 
-pub(crate) fn repair_object_copies<T: serde::Serialize>(
+pub(crate) fn repair_object_copies<T: data_serialization::Serialize>(
     members: &[DiskConfig],
     kind: &str,
     hash: &str,

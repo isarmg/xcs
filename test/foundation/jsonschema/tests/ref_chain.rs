@@ -1,7 +1,7 @@
 // Spawning a thread with a set stack size is unsupported on wasm targets.
 #![cfg(not(target_arch = "wasm32"))]
 use jsonschema::{ValidationError, Validator};
-use serde_json::{json, Map, Value};
+use json_codec::{json, Map, Value};
 use test_case::test_case;
 
 /// Definitions in each generated `$ref` chain.

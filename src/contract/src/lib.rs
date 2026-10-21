@@ -45,8 +45,8 @@ impl From<std::io::Error> for Error {
         Self::new(code, error.to_string())
     }
 }
-impl From<serde_json::Error> for Error {
-    fn from(error: serde_json::Error) -> Self {
+impl From<json_codec::Error> for Error {
+    fn from(error: json_codec::Error) -> Self {
         Self::new("INVALID_JSON", error.to_string())
     }
 }
@@ -88,18 +88,18 @@ pub fn parse_u64_decimal(value: &str) -> Result<u64> {
 }
 
 pub mod u64_string {
-    use serde::{Deserialize, Deserializer, Serializer};
+    use data_serialization::{Deserialize, Deserializer, Serializer};
     pub fn serialize<S: Serializer>(value: &u64, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(&value.to_string())
     }
     pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
         let value = String::deserialize(deserializer)?;
-        crate::parse_u64_decimal(&value).map_err(serde::de::Error::custom)
+        crate::parse_u64_decimal(&value).map_err(data_serialization::de::Error::custom)
     }
 }
 
 pub mod optional_u64_string {
-    use serde::{Deserialize, Deserializer, Serializer};
+    use data_serialization::{Deserialize, Deserializer, Serializer};
     pub fn serialize<S: Serializer>(value: &Option<u64>, serializer: S) -> Result<S::Ok, S::Error> {
         match value {
             Some(value) => serializer.serialize_some(&value.to_string()),
@@ -110,13 +110,15 @@ pub mod optional_u64_string {
         deserializer: D,
     ) -> Result<Option<u64>, D::Error> {
         Option::<String>::deserialize(deserializer)?
-            .map(|value| crate::parse_u64_decimal(&value).map_err(serde::de::Error::custom))
+            .map(|value| {
+                crate::parse_u64_decimal(&value).map_err(data_serialization::de::Error::custom)
+            })
             .transpose()
     }
 }
 
 pub mod u64_string_map {
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
     use std::collections::BTreeMap;
     pub fn serialize<S: Serializer>(
         value: &BTreeMap<String, u64>,
@@ -136,7 +138,7 @@ pub mod u64_string_map {
             .map(|(key, value)| {
                 crate::parse_u64_decimal(&value)
                     .map(|value| (key, value))
-                    .map_err(serde::de::Error::custom)
+                    .map_err(data_serialization::de::Error::custom)
             })
             .collect()
     }

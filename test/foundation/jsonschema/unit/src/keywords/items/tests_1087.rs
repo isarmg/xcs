@@ -2,7 +2,7 @@
 mod tests {
     use crate::tests_util;
     use referencing::Draft;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(Draft::Draft201909, &json!([]), true; "2019-09 empty array")]
@@ -100,8 +100,8 @@ mod tests {
             .expect("schema compiles");
         let evaluation = validator.evaluate(instance);
         (
-            serde_json::to_value(evaluation.list()).expect("list output"),
-            serde_json::to_value(evaluation.hierarchical()).expect("hierarchical output"),
+            json_codec::to_value(evaluation.list()).expect("list output"),
+            json_codec::to_value(evaluation.hierarchical()).expect("hierarchical output"),
         )
     }
 
@@ -489,7 +489,7 @@ mod tests {
     }
 
     fn parse_json(s: &str) -> Value {
-        serde_json::from_str(s).unwrap()
+        json_codec::from_str(s).unwrap()
     }
 
     // Specialized string type validator tests
@@ -594,11 +594,11 @@ mod tests {
     #[cfg(feature = "arbitrary-precision")]
     mod arbitrary_precision {
         use crate::tests_util;
-        use serde_json::Value;
+        use json_codec::Value;
         use test_case::test_case;
 
         fn parse_json(s: &str) -> Value {
-            serde_json::from_str(s).unwrap()
+            json_codec::from_str(s).unwrap()
         }
 
         // Draft 7+ with huge integers

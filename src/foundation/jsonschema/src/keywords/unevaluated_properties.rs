@@ -8,7 +8,7 @@
 //! schema compilation, using `Arc<OnceLock>` for circular reference handling.
 use ahash::AHashSet;
 use referencing::Vocabulary;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::{
     borrow::Cow,
     fmt,
@@ -21,14 +21,14 @@ use crate::{
     node::SchemaNode,
     paths::{LazyLocation, Location, RefTracker},
     validator::{EvaluationResult, Validate, ValidationContext},
-    Json, Node, Object, SerdeJson, ValidationError,
+    Json, Node, Object, JsonValueBackend, ValidationError,
 };
 
 use super::{pattern_properties::invalid_regex, CompilationResult};
 
 /// Lazy property validators that are compiled on first access.
 /// Used for $recursiveRef and circular references to handle cycles during compilation.
-pub(crate) type PendingPropertyValidators<F = SerdeJson> = Arc<OnceLock<PropertyValidators<F>>>;
+pub(crate) type PendingPropertyValidators<F = JsonValueBackend> = Arc<OnceLock<PropertyValidators<F>>>;
 
 /// Evaluated properties for a schema whose set cannot depend on the instance.
 #[derive(Default)]
@@ -90,7 +90,7 @@ impl Patterns {
 
 /// Holds compiled validators for property evaluation in unevaluatedProperties.
 /// This structure is built during schema compilation and used during validation.
-pub(crate) struct PropertyValidators<F: Json = SerdeJson> {
+pub(crate) struct PropertyValidators<F: Json = JsonValueBackend> {
     /// Property names from "properties" keyword for O(1) lookup
     properties: AHashSet<String>,
     /// Validator from "additionalProperties" keyword
@@ -147,7 +147,7 @@ impl<F: Json> fmt::Debug for PropertyValidators<F> {
 }
 
 /// Conditional validators from "if/then/else" keywords
-struct ConditionalValidators<F: Json = SerdeJson> {
+struct ConditionalValidators<F: Json = JsonValueBackend> {
     condition: SchemaNode<F>,
     /// `None` for a boolean `if`, which evaluates nothing.
     if_: Option<PropertyValidators<F>>,
@@ -823,7 +823,7 @@ fn compile_dependent<'a, F: Json>(
 }
 
 /// Validator for the `unevaluatedProperties` keyword.
-pub(crate) struct UnevaluatedPropertiesValidator<F: Json = SerdeJson> {
+pub(crate) struct UnevaluatedPropertiesValidator<F: Json = JsonValueBackend> {
     location: Location,
     validators: PropertyValidators<F>,
     /// Filled on first use: `$ref` targets are wired up only after compilation.

@@ -2,7 +2,7 @@
 #![allow(clippy::must_use_candidate)]
 
 use ahash::AHashMap;
-use serde_json::{from_str, Value};
+use json_codec::{from_str, Value};
 use std::sync::LazyLock;
 
 pub(crate) type ContentMediaTypeCheckType = fn(&str) -> bool;

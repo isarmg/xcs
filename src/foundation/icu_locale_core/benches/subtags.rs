@@ -26,7 +26,7 @@ macro_rules! subtag_bench {
 }
 
 fn subtags_bench(c: &mut Criterion) {
-    let data = serde_json::from_str::<fixtures::Subtags>(include_str!("fixtures/subtags.json"))
+    let data = json_codec::from_str::<fixtures::Subtags>(include_str!("fixtures/subtags.json"))
         .expect("Failed to read a fixture");
 
     subtag_bench!(c, "language", Language, data.language);

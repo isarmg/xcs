@@ -1,15 +1,15 @@
 //! Built-in JSON Schema meta-schemas.
 //!
 //! This module provides access to the official JSON Schema meta-schemas for different draft versions.
-use serde_json::Value;
+use json_codec::Value;
 use std::sync::{Arc, LazyLock};
 
 use crate::Draft;
 
 macro_rules! schema {
     ($vis:vis $name:ident, $path:expr) => {
-        $vis static $name: LazyLock<Arc<serde_json::Value>> = LazyLock::new(|| {
-            Arc::new(serde_json::from_slice(include_bytes!($path)).expect("Invalid schema"))
+        $vis static $name: LazyLock<Arc<json_codec::Value>> = LazyLock::new(|| {
+            Arc::new(json_codec::from_slice(include_bytes!($path)).expect("Invalid schema"))
         });
     };
     ($name:ident, $path:expr) => {

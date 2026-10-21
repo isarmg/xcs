@@ -4,7 +4,7 @@ use std::{
     sync::Arc,
 };
 
-use serde_json::{Number, Value};
+use json_codec::{Number, Value};
 use strum::{IntoStaticStr, VariantArray};
 
 /// What stopped a run from modeling a document.

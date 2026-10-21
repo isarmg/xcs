@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::{is_unique, ITEMS_SIZE_THRESHOLD};
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(&[] => true; "empty array")]

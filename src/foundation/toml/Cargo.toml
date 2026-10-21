@@ -55,23 +55,23 @@ version = "2.0.0"
 optional = true
 path = "../indexmap"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.145"
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_spanned]
+[dependencies.source-spanned-value]
 version = "0.6.9"
-features = ["serde"]
-path = "../serde_spanned"
+features = ["serialization"]
+path = "../source-spanned-value"
 
 [dependencies.toml_datetime]
 version = "0.6.11"
-features = ["serde"]
+features = ["serialization"]
 path = "../toml_datetime"
 
 [dependencies.toml_edit]
 version = "0.22.27"
-features = ["serde"]
+features = ["serialization"]
 optional = true
 default-features = false
 path = "../toml_edit"

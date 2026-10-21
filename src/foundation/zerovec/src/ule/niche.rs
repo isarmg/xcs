@@ -161,7 +161,7 @@ unsafe impl<U: NicheBytes<N> + ULE, const N: usize> ULE for NichedOptionULE<U, N
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[repr(transparent)]
 #[allow(clippy::exhaustive_structs)] // newtype
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 pub struct NichedOption<U, const N: usize>(pub Option<U>);
 
 impl<U, const N: usize> Default for NichedOption<U, N> {

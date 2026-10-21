@@ -10,11 +10,11 @@ use crate::{
     paths::{LazyLocation, Location, RefTracker},
     types::JsonType,
     validator::{EvaluationResult, Validate, ValidationContext},
-    Json, Node, Object, SerdeJson,
+    Json, Node, Object, JsonValueBackend,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
-pub(crate) struct DependenciesValidator<F: Json = SerdeJson> {
+pub(crate) struct DependenciesValidator<F: Json = JsonValueBackend> {
     dependencies: Vec<(F::PreparedKey, SchemaNode<F>)>,
 }
 
@@ -145,7 +145,7 @@ impl<F: Json> Validate<F> for DependenciesValidator<F> {
     }
 }
 
-pub(crate) struct DependentRequiredValidator<F: Json = SerdeJson> {
+pub(crate) struct DependentRequiredValidator<F: Json = JsonValueBackend> {
     dependencies: Vec<(F::PreparedKey, SchemaNode<F>)>,
 }
 
@@ -293,7 +293,7 @@ impl<F: Json> Validate<F> for DependentRequiredValidator<F> {
     }
 }
 
-pub(crate) struct DependentSchemasValidator<F: Json = SerdeJson> {
+pub(crate) struct DependentSchemasValidator<F: Json = JsonValueBackend> {
     dependencies: Vec<(F::PreparedKey, SchemaNode<F>)>,
 }
 impl DependentSchemasValidator {

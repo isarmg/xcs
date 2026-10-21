@@ -4,16 +4,16 @@ use super::Error;
 
 pub(crate) struct KeySerializer;
 
-impl serde::ser::Serializer for KeySerializer {
+impl data_serialization::ser::Serializer for KeySerializer {
     type Ok = Key;
     type Error = Error;
-    type SerializeSeq = serde::ser::Impossible<Self::Ok, Error>;
-    type SerializeTuple = serde::ser::Impossible<Self::Ok, Error>;
-    type SerializeTupleStruct = serde::ser::Impossible<Self::Ok, Error>;
-    type SerializeTupleVariant = serde::ser::Impossible<Self::Ok, Error>;
-    type SerializeMap = serde::ser::Impossible<Self::Ok, Error>;
-    type SerializeStruct = serde::ser::Impossible<Self::Ok, Error>;
-    type SerializeStructVariant = serde::ser::Impossible<Self::Ok, Error>;
+    type SerializeSeq = data_serialization::ser::Impossible<Self::Ok, Error>;
+    type SerializeTuple = data_serialization::ser::Impossible<Self::Ok, Error>;
+    type SerializeTupleStruct = data_serialization::ser::Impossible<Self::Ok, Error>;
+    type SerializeTupleVariant = data_serialization::ser::Impossible<Self::Ok, Error>;
+    type SerializeMap = data_serialization::ser::Impossible<Self::Ok, Error>;
+    type SerializeStruct = data_serialization::ser::Impossible<Self::Ok, Error>;
+    type SerializeStructVariant = data_serialization::ser::Impossible<Self::Ok, Error>;
 
     fn serialize_bool(self, _v: bool) -> Result<Self::Ok, Self::Error> {
         Err(Error::key_not_string())
@@ -77,7 +77,7 @@ impl serde::ser::Serializer for KeySerializer {
 
     fn serialize_some<T>(self, _value: &T) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         Err(Error::key_not_string())
     }
@@ -105,7 +105,7 @@ impl serde::ser::Serializer for KeySerializer {
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         value.serialize(self)
     }
@@ -118,7 +118,7 @@ impl serde::ser::Serializer for KeySerializer {
         _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         Err(Error::key_not_string())
     }

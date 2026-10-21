@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod tests {
     use crate::tests_util;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[cfg(feature = "arbitrary-precision")]
     fn parse_json(json: &str) -> Value {
-        serde_json::from_str(json).unwrap()
+        json_codec::from_str(json).unwrap()
     }
 
     #[test_case(&json!({"minimum": 1_u64 << 54}), &json!((1_u64 << 54) - 1))]

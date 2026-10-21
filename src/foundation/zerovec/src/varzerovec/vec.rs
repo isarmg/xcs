@@ -62,9 +62,9 @@ use alloc::vec::Vec;
 /// // The little-endian bytes correspond to the list of strings.
 /// let strings = vec!["w", "ω", "文", "𑄃"];
 ///
-/// #[derive(serde::Serialize, serde::Deserialize)]
+/// #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 /// struct Data<'a> {
-///     #[serde(borrow)]
+///     #[serialization(borrow)]
 ///     strings: VarZeroVec<'a, str>,
 /// }
 ///
@@ -97,9 +97,9 @@ use alloc::vec::Vec;
 ///     &[12345, 54321, 9],
 /// ];
 ///
-/// #[derive(serde::Serialize, serde::Deserialize)]
+/// #[derive(data_serialization::Serialize, data_serialization::Deserialize)]
 /// struct Data<'a> {
-///     #[serde(borrow)]
+///     #[serialization(borrow)]
 ///     vecs: VarZeroVec<'a, ZeroSlice<u32>>,
 /// }
 ///

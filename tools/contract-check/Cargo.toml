@@ -10,8 +10,8 @@ blake3 = {version = "1.8.7", path = "../../src/foundation/blake3"}
 jsonschema = { version = "=0.58.6", default-features = false, path = "../../src/foundation/jsonschema"}
 percent-encoding = {version = "2.3", path = "../../src/foundation/percent-encoding"}
 regex = {version = "1", path = "../../src/foundation/regex"}
-serde = { version = "1", features = ["derive"], path = "../../src/foundation/serde"}
-serde_json = {version = "1", path = "../../src/foundation/serde_json"}
+data-serialization = { version = "1", features = ["derive"], path = "../../src/foundation/data-serialization"}
+json-codec = {version = "1", path = "../../src/foundation/json-codec"}
 toml = {version = "0.8.23", path = "../../src/foundation/toml"}
 walkdir = {version = "2", path = "../../src/foundation/walkdir"}
 storage-contract.workspace = true

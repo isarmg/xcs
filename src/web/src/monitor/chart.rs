@@ -1,6 +1,6 @@
 //! Missing samples and collection gaps stay gaps in the responsive SVG history.
 use super::{Metric, State};
-use serde_json::Value;
+use json_codec::Value;
 use wasm_bindgen::{JsCast, closure::Closure};
 use web_interface::{html, i18n::t, prelude::*};
 

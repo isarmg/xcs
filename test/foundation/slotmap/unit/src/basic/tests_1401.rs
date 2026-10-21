@@ -102,9 +102,9 @@ mod tests {
             let mut sm = SlotMap::new();
             let mut sm_keys = Vec::new();
 
-            #[cfg(not(feature = "serde"))]
+            #[cfg(not(feature = "serialization"))]
             let num_ops = 3;
-            #[cfg(feature = "serde")]
+            #[cfg(feature = "serialization")]
             let num_ops = 4;
 
             for (op, val) in operations {
@@ -149,10 +149,10 @@ mod tests {
                     }
 
                     // Serde round-trip.
-                    #[cfg(feature = "serde")]
+                    #[cfg(feature = "serialization")]
                     3 => {
-                        let ser = serde_json::to_string(&sm).unwrap();
-                        sm = serde_json::from_str(&ser).unwrap();
+                        let ser = json_codec::to_string(&sm).unwrap();
+                        sm = json_codec::from_str(&ser).unwrap();
                     }
 
                     _ => unreachable!(),
@@ -167,9 +167,9 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
-    fn slotmap_serde() {
+    fn slotmap_serialization() {
         let mut sm = SlotMap::new();
         // Self-referential structure.
         let first = sm.insert_with_key(|k| (k, 23i32));
@@ -184,8 +184,8 @@ mod tests {
         let third = sm.insert((second, 0));
         sm[first].0 = third;
 
-        let ser = serde_json::to_string(&sm).unwrap();
-        let de: SlotMap<DefaultKey, (DefaultKey, i32)> = serde_json::from_str(&ser).unwrap();
+        let ser = json_codec::to_string(&sm).unwrap();
+        let de: SlotMap<DefaultKey, (DefaultKey, i32)> = json_codec::from_str(&ser).unwrap();
         assert_eq!(de.len(), sm.len());
 
         let mut smkv: Vec<_> = sm.iter().collect();
@@ -195,15 +195,15 @@ mod tests {
         assert_eq!(smkv, dekv);
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[test]
-    fn slotmap_serde_freelist() {
+    fn slotmap_serialization_freelist() {
         let mut sm = SlotMap::new();
         let k = sm.insert(5i32);
         sm.remove(k);
 
-        let ser = serde_json::to_string(&sm).unwrap();
-        let mut de: SlotMap<DefaultKey, i32> = serde_json::from_str(&ser).unwrap();
+        let ser = json_codec::to_string(&sm).unwrap();
+        let mut de: SlotMap<DefaultKey, i32> = json_codec::from_str(&ser).unwrap();
 
         de.insert(0);
         de.insert(1);

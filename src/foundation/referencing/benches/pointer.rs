@@ -2,7 +2,7 @@ use codspeed_criterion_compat::{
     black_box, criterion_group, criterion_main, BenchmarkId, Criterion,
 };
 use referencing::{Draft, Registry};
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 
 fn create_deep_nested_json(depth: usize) -> Value {
     let mut current = json!({

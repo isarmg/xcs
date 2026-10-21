@@ -78,7 +78,7 @@ macro_rules! make_enumerated_property {
 /// ); // U+0639
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct BidiClass(pub(crate) u8);
@@ -137,7 +137,7 @@ make_enumerated_property! {
 /// ); // U+00BD
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct NumericType(pub(crate) u8);
@@ -643,7 +643,7 @@ impl From<GeneralCategoryGroup> for u32 {
 /// ```
 /// [`ScriptWithExtensionsBorrowed::has_script`]: crate::script::ScriptWithExtensionsBorrowed::has_script
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct Script(pub(crate) u16);
@@ -741,7 +741,7 @@ make_enumerated_property! {
 /// ); // U+AC00
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct HangulSyllableType(pub(crate) u8);
@@ -809,7 +809,7 @@ make_enumerated_property! {
 /// ); //U+30A2: Katakana Letter A
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct EastAsianWidth(pub(crate) u8);
@@ -872,7 +872,7 @@ make_enumerated_property! {
 /// ); //U+3041: Hiragana Letter Small A
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct LineBreak(pub(crate) u8);
@@ -934,7 +934,7 @@ make_enumerated_property! {
 /// ); //U+0E33: Thai Character Sara Am
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // this type is stable
 #[repr(transparent)]
 pub struct GraphemeClusterBreak(pub(crate) u8);
@@ -996,7 +996,7 @@ make_enumerated_property! {
 /// ); // U+FF0C: Fullwidth Comma
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct WordBreak(pub(crate) u8);
@@ -1058,7 +1058,7 @@ make_enumerated_property! {
 /// ); // U+002C: Comma
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct SentenceBreak(pub(crate) u8);
@@ -1124,7 +1124,7 @@ make_enumerated_property! {
 // or the crate-module-qualified name of this struct
 // without coordination.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct CanonicalCombiningClass(pub u8);
@@ -1190,7 +1190,7 @@ make_enumerated_property! {
 /// );
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct IndicConjunctBreak(pub(crate) u8);
@@ -1248,7 +1248,7 @@ make_enumerated_property! {
 /// ); // U+0900: DEVANAGARI SIGN INVERTED CANDRABINDU
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct IndicSyllabicCategory(pub(crate) u8);
@@ -1305,7 +1305,7 @@ make_enumerated_property! {
 /// ); // U+0638: Arabic Letter Zah
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct JoiningGroup(pub(crate) u8);
@@ -1364,7 +1364,7 @@ make_enumerated_property! {
 /// ); // U+10ACD: Manichaean Letter Heth
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct JoiningType(pub(crate) u8);
@@ -1431,7 +1431,7 @@ make_enumerated_property! {
 /// );
 /// ```
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serialization", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 #[allow(clippy::exhaustive_structs)] // newtype
 #[repr(transparent)]
 pub struct VerticalOrientation(pub(crate) u8);

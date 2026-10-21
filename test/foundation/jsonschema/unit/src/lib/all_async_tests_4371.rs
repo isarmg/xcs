@@ -2,14 +2,14 @@
 mod async_tests {
     use std::{collections::HashMap, sync::Arc};
 
-    use serde_json::json;
+    use json_codec::json;
 
     use crate::{AsyncRetrieve, Draft, Uri};
 
     /// Mock async retriever for testing
     #[derive(Clone)]
     struct TestRetriever {
-        schemas: HashMap<String, serde_json::Value>,
+        schemas: HashMap<String, json_codec::Value>,
     }
 
     impl TestRetriever {
@@ -36,7 +36,7 @@ mod async_tests {
         async fn retrieve(
             &self,
             uri: &Uri<String>,
-        ) -> Result<serde_json::Value, Box<dyn std::error::Error + Send + Sync>> {
+        ) -> Result<json_codec::Value, Box<dyn std::error::Error + Send + Sync>> {
             self.schemas
                 .get(uri.as_str())
                 .cloned()

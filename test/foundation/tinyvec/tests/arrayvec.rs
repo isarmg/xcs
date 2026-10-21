@@ -3,7 +3,7 @@
 
 #[cfg(feature = "bin-proto")]
 use bin_proto::{BigEndian, BitDecodeExt, BitEncodeExt, Tag, Untagged};
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 use serde_test::{assert_tokens, Token};
 use std::iter::FromIterator;
 use tinyvec::*;
@@ -419,7 +419,7 @@ fn reviter() {
   assert_eq!(iter.nth_back(99), None);
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[test]
 fn ArrayVec_ser_de_empty() {
   let tv: ArrayVec<[i32; 0]> = Default::default();
@@ -427,7 +427,7 @@ fn ArrayVec_ser_de_empty() {
   assert_tokens(&tv, &[Token::Seq { len: Some(0) }, Token::SeqEnd]);
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[test]
 fn ArrayVec_ser_de() {
   let mut tv: ArrayVec<[i32; 4]> = Default::default();

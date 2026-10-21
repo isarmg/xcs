@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn encoded_object_preserves_canonical_bytes_and_domain_digest() {
-    let value = serde_json::json!({"z": [true, null], "a": 1});
+    let value = json_codec::json!({"z": [true, null], "a": 1});
     let (bytes, hash) = encode_hashed_object("state-page", &value).unwrap();
     assert_eq!(bytes, br#"{"a":1,"z":[true,null]}"#);
     let mut expected = blake3::Hasher::new();
@@ -15,12 +15,12 @@ fn encoded_object_preserves_canonical_bytes_and_domain_digest() {
         encode_hashed_object("Invalid", &value).unwrap_err().code(),
         "INVALID_OBJECT_TYPE"
     );
-    assert!(encode_hashed_object("state-page", &serde_json::json!({"n": u64::MAX})).is_err());
+    assert!(encode_hashed_object("state-page", &json_codec::json!({"n": u64::MAX})).is_err());
 }
 #[test]
 fn published_vectors() {
     let v: Value =
-        serde_json::from_str(include_str!("../../../../docs/contracts/vectors.json")).unwrap();
+        json_codec::from_str(include_str!("../../../../docs/contracts/vectors.json")).unwrap();
     for c in v["canonical"].as_array().unwrap() {
         let bytes = canonical_json(&c["value"]).unwrap();
         let hex = bytes.iter().map(|b| format!("{b:02x}")).collect::<String>();
@@ -70,7 +70,7 @@ fn published_vectors() {
 }
 #[test]
 fn utf16_order() {
-    let v = serde_json::json!({"\u{e000}":1,"\u{10000}":2});
+    let v = json_codec::json!({"\u{e000}":1,"\u{10000}":2});
     assert_eq!(
         String::from_utf8(canonical_json(&v).unwrap()).unwrap(),
         "{\"𐀀\":2,\"\":1}"
@@ -93,7 +93,7 @@ fn canonical_json_rejects_float_types_and_unsafe_numeric_integers() {
         canonical_json(&(-9_007_199_254_740_991i64)).unwrap(),
         b"-9007199254740991"
     );
-    assert!(canonical_json(&serde_json::json!({"native_size": u64::MAX})).is_err());
+    assert!(canonical_json(&json_codec::json!({"native_size": u64::MAX})).is_err());
 }
 
 #[test]

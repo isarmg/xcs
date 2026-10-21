@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use fraction::{BigFraction, BigInt, Integer, Sign};
 use jsonschema_value::numeric_check::{divisor_kind, satisfies_multiple_of, DivisorKind};
 use num_traits::{One, Signed, Zero};
-use serde_json::Number;
+use json_codec::Number;
 
 use super::{normalized_number, BoundInteger};
 

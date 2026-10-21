@@ -7,12 +7,12 @@ use crate::{
     disk::*,
     *,
 };
-use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use data_serialization::{Deserialize, Serialize};
+use json_codec::{Value, json};
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct HistoricalSaveOptions {
     pub source_commit_id: String,
     pub name: String,

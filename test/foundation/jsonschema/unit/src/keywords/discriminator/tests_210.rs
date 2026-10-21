@@ -5,7 +5,7 @@ mod tests {
         Arc,
     };
 
-    use serde_json::{json, Map, Value};
+    use json_codec::{json, Map, Value};
     use test_case::test_case;
 
     use crate::{error::ValidationErrorKind, Draft, Keyword, ValidationError, Validator};

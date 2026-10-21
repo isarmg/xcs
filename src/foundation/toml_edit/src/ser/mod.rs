@@ -24,7 +24,7 @@ pub use value::ValueSerializer;
 #[cfg(feature = "display")]
 pub fn to_vec<T>(value: &T) -> Result<Vec<u8>, Error>
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: data_serialization::ser::Serialize + ?Sized,
 {
     to_string(value).map(|e| e.into_bytes())
 }
@@ -38,7 +38,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use serde::Serialize;
+/// use data_serialization::Serialize;
 ///
 /// #[derive(Serialize)]
 /// struct Config {
@@ -68,7 +68,7 @@ where
 #[cfg(feature = "display")]
 pub fn to_string<T>(value: &T) -> Result<String, Error>
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: data_serialization::ser::Serialize + ?Sized,
 {
     to_document(value).map(|e| e.to_string())
 }
@@ -80,7 +80,7 @@ where
 #[cfg(feature = "display")]
 pub fn to_string_pretty<T>(value: &T) -> Result<String, Error>
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: data_serialization::ser::Serialize + ?Sized,
 {
     let mut document = to_document(value)?;
     pretty::Pretty::new().visit_document_mut(&mut document);
@@ -92,7 +92,7 @@ where
 /// This would allow custom formatting to be applied, mixing with format preserving edits, etc.
 pub fn to_document<T>(value: &T) -> Result<crate::DocumentMut, Error>
 where
-    T: serde::ser::Serialize + ?Sized,
+    T: data_serialization::ser::Serialize + ?Sized,
 {
     let value = value.serialize(ValueSerializer::new())?;
     let item = crate::Item::Value(value);
@@ -149,7 +149,7 @@ impl Error {
     }
 }
 
-impl serde::ser::Error for Error {
+impl data_serialization::ser::Error for Error {
     fn custom<T>(msg: T) -> Self
     where
         T: std::fmt::Display,

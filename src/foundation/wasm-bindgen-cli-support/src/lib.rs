@@ -623,7 +623,7 @@ impl Output {
         }
 
         if !gen.npm_dependencies.is_empty() {
-            #[derive(serde::Serialize)]
+            #[derive(data_serialization::Serialize)]
             struct PackageJson<'a> {
                 dependencies: BTreeMap<&'a str, &'a str>,
             }
@@ -634,7 +634,7 @@ impl Output {
                     .map(|(k, v)| (k.as_str(), v.1.as_str()))
                     .collect(),
             };
-            let json = serde_json::to_string_pretty(&pj)?;
+            let json = json_codec::to_string_pretty(&pj)?;
             fs::write(out_dir.join("package.json"), json)?;
         }
 

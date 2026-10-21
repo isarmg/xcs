@@ -4,8 +4,8 @@ extern crate alloc;
 pub mod linked_hash_map;
 pub mod linked_hash_set;
 pub mod lru_cache;
-#[cfg(feature = "serde_impl")]
-pub mod serde;
+#[cfg(feature = "serialization_impl")]
+pub mod data_serialization;
 
 use core::hash::{BuildHasher, Hasher};
 

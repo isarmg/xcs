@@ -1,9 +1,9 @@
 use crate::{
     paths::{LazyLocation, Location, RefTracker},
     validator::{Validate, ValidationContext},
-    Json, Node, SerdeJson, ValidationError,
+    Json, Node, JsonValueBackend, ValidationError,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 pub(crate) struct CustomKeyword<F: Json> {
     inner: Box<dyn for<'i> Keyword<'i, F>>,
@@ -75,7 +75,7 @@ impl<F: Json> Validate<F> for CustomKeyword<F> {
 ///
 /// ```rust
 /// use jsonschema::{Keyword, ValidationError};
-/// use serde_json::Value;
+/// use json_codec::Value;
 ///
 /// struct EvenNumberValidator;
 ///
@@ -121,7 +121,7 @@ impl<F: Json> Validate<F> for CustomKeyword<F> {
 ///     }
 /// }
 /// ```
-pub trait Keyword<'i, F: Json = SerdeJson>: Send + Sync {
+pub trait Keyword<'i, F: Json = JsonValueBackend>: Send + Sync {
     /// Validate an instance against this custom keyword.
     ///
     /// Use [`ValidationError::custom`] for error messages. Path information

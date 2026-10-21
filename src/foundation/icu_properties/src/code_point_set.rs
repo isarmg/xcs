@@ -40,7 +40,7 @@ impl CodePointSetData {
         CodePointSetDataBorrowed::new::<P>()
     }
 
-    #[cfg(feature = "serde")]
+    #[cfg(feature = "serialization")]
     #[doc = icu_provider::gen_buffer_unstable_docs!(BUFFER, Self::new)]
     pub fn try_new_with_buffer_provider<P: BinaryProperty>(
         provider: &(impl BufferProvider + ?Sized),

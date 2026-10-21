@@ -30,24 +30,24 @@ repository = "krisprice/ipnet"
 
 [features]
 default = ["std"]
-heapless = ["serde"]
-json = ["schemars08", "serde"]
+heapless = ["serialization"]
+json = ["schemars08", "serialization"]
 schemars = ["schemars08"]
 schemars08 = []
 schemars1 = []
 ser_as_str = []
-serde = ["dep:serde"]
+serialization = ["dep:data-serialization"]
 std = []
 
 [lib]
 name = "ipnet"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1"
 features = ["derive"]
 optional = true
 default-features = false
-package = "serde"
-path = "../serde"
+package = "data-serialization"
+path = "../data-serialization"
 

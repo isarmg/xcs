@@ -8,9 +8,9 @@ use http_body_util::BodyExt;
 use hyper::{HeaderMap, StatusCode, Version};
 use hyper_util::client::legacy::connect::HttpInfo;
 #[cfg(feature = "json")]
-use serde::de::DeserializeOwned;
+use data_serialization::de::DeserializeOwned;
 #[cfg(feature = "json")]
-use serde_json;
+use json_codec;
 use tokio::time::Sleep;
 use url::Url;
 
@@ -172,7 +172,7 @@ impl Response {
     /// # extern crate serde;
     /// #
     /// # use reqwest::Error;
-    /// # use serde::Deserialize;
+    /// # use data_serialization::Deserialize;
     /// #
     /// // This `derive` requires the `serde` dependency.
     /// #[derive(Deserialize)]
@@ -197,15 +197,15 @@ impl Response {
     ///
     /// This method fails whenever the response body is not in JSON format,
     /// or it cannot be properly deserialized to target type `T`. For more
-    /// details please see [`serde_json::from_reader`].
+    /// details please see [`json_codec::from_reader`].
     ///
-    /// [`serde_json::from_reader`]: https://docs.serde.rs/serde_json/fn.from_reader.html
+    /// [`json_codec::from_reader`]: https://docs.serde.rs/serde_json/fn.from_reader.html
     #[cfg(feature = "json")]
     #[cfg_attr(docsrs, doc(cfg(feature = "json")))]
     pub async fn json<T: DeserializeOwned>(self) -> crate::Result<T> {
         let full = self.bytes().await?;
 
-        serde_json::from_slice(&full).map_err(crate::error::decode)
+        json_codec::from_slice(&full).map_err(crate::error::decode)
     }
 
     /// Get the full response body as `Bytes`.

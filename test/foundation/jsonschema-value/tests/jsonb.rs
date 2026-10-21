@@ -8,12 +8,12 @@
 #[cfg(feature = "conformance")]
 use jsonschema_value::conformance;
 
-use hegel::{extras::serde_json as json_gs, generators as gs, TestCase};
+use hegel::{extras::json_codec as json_gs, generators as gs, TestCase};
 use jsonschema_value::{
     cmp, jsonb::take_pending_error, types::JsonType, unique, Array, Json, JsonNumber, Jsonb,
     JsonbNode, LazyInstance, Node, Object,
 };
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 use test_case::test_case;
 
 use jsonschema_value::jsonb::encode::{
@@ -120,7 +120,7 @@ fn corpus_is_populated() {
 #[test]
 fn encoder_reproduces_postgres_bytes() {
     for (input, text, stored) in strict_corpus() {
-        let value: Value = serde_json::from_str(text).expect("postgres text parses");
+        let value: Value = json_codec::from_str(text).expect("postgres text parses");
         let ours = encode(&value);
         let theirs = strip_varlena(&stored);
         assert_eq!(
@@ -209,7 +209,7 @@ fn wide_numbers_keep_their_digits() {
     assert_eq!(number.as_str(), expected);
 }
 
-// `serde_json::Number` cannot hold this magnitude, so `equals_value` has to compare through
+// `json_codec::Number` cannot hold this magnitude, so `equals_value` has to compare through
 // `JsonNumber`.
 #[test_case(&json!(0), false; "instance is not the schema's small integer")]
 #[test_case(&json!(1), false; "instance is not another small integer")]
@@ -420,7 +420,7 @@ fn get_orders_keys_by_length_before_lexical() {
 // non-zero index.
 #[test]
 fn object_lookup_crosses_the_offset_stride() {
-    let members: serde_json::Map<String, Value> = (0..80)
+    let members: json_codec::Map<String, Value> = (0..80)
         .map(|index| (format!("k{index:03}"), json!(index)))
         .collect();
     let encoded = encode(&Value::Object(members));
@@ -677,10 +677,10 @@ fn any_document_round_trips(tc: TestCase) {
 #[test_case(1e17, "100000000000000000"; "1e17 decodes as the integer it names")]
 #[test_case(1.801_439_850_948_199e16, "18014398509481990"; "a float above 2^53 decodes as its text's value, not its own")]
 fn whole_number_float_loses_its_spelling(input: f64, expected_digits: &str) {
-    let value = Value::Number(serde_json::Number::from_f64(input).expect("finite"));
+    let value = Value::Number(json_codec::Number::from_f64(input).expect("finite"));
     let encoded = encode(&value);
     let node = Jsonb::root(&encoded);
-    let expected: Value = serde_json::from_str(expected_digits).expect("digits parse");
+    let expected: Value = json_codec::from_str(expected_digits).expect("digits parse");
     assert_eq!(node.to_value().as_ref(), &expected);
     assert_eq!(node.as_number().expect("number").as_str(), expected_digits);
 }
@@ -722,7 +722,7 @@ fn reader_corpus() -> Vec<(&'static str, &'static str, Vec<u8>)> {
 #[test]
 fn reader_decodes_postgres_bytes() {
     for (input, text, stored) in reader_corpus() {
-        let expected: Value = serde_json::from_str(text).expect("postgres text parses");
+        let expected: Value = json_codec::from_str(text).expect("postgres text parses");
         let container = strip_varlena(&stored);
         let actual = Jsonb::root(container).to_value();
         assert_eq!(
@@ -792,7 +792,7 @@ fn simultaneous_synthetic_empty_strings_have_distinct_stable_identities() {
     });
 }
 
-// Beyond `f64` the digits cannot survive into a `serde_json::Number`.
+// Beyond `f64` the digits cannot survive into a `json_codec::Number`.
 #[cfg(not(feature = "arbitrary-precision"))]
 #[test_case("1e400", false; "positive")]
 #[test_case("-1e400", true; "negative")]
@@ -951,7 +951,7 @@ fn is_unique_small_arrays(instance: &Value, expected: bool) {
 
 // Drawn from a small pool so duplicates are common, and long enough to reach hashing.
 #[hegel::test(test_cases = 2_000)]
-fn is_unique_agrees_with_serde_json(tc: TestCase) {
+fn is_unique_agrees_with_serialization_json(tc: TestCase) {
     let pool: Vec<Value> = tc.draw(gs::vecs(json_gs::values()).min_size(1).max_size(6));
     #[cfg(not(feature = "arbitrary-precision"))]
     let pool: Vec<Value> = pool.iter().map(unambiguous_numbers).collect();

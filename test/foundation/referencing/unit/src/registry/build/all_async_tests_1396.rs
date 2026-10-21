@@ -2,7 +2,7 @@
 mod async_tests {
     use crate::{uri, DefaultRetriever, Draft, Registry, Resource, Uri};
     use ahash::AHashMap;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use std::{
         error::Error,
         sync::atomic::{AtomicUsize, Ordering},

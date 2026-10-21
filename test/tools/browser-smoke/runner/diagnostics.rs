@@ -48,9 +48,9 @@ pub(super) fn failure(browser: &Browser, directory: &Path, password: &str) {
     if let Err(error) = fs::create_dir_all(directory) {
         eprintln!("failure artifact directory unavailable: {error}");
     }
-    let save = |name: &str, result: Result<serde_json::Value>| match result {
+    let save = |name: &str, result: Result<json_codec::Value>| match result {
         Ok(value) => {
-            let text = serde_json::to_string_pretty(&value)
+            let text = json_codec::to_string_pretty(&value)
                 .unwrap_or_default()
                 .replace(password, "[REDACTED]");
             eprintln!("--- browser failure {name} ---\n{text}");
@@ -70,7 +70,7 @@ pub(super) fn failure(browser: &Browser, directory: &Path, password: &str) {
     // response bodies (the login request contains the throwaway test password).
     let network = browser.command("POST", "/log", Some(json!({"type":"performance"}))).map(|logs| {
         let rows: Vec<_> = logs.as_array().into_iter().flatten().filter_map(|entry| {
-            let value: serde_json::Value = serde_json::from_str(entry["message"].as_str()?).ok()?;
+            let value: json_codec::Value = json_codec::from_str(entry["message"].as_str()?).ok()?;
             let message = &value["message"];
             let params = &message["params"];
             match message["method"].as_str()? {

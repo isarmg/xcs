@@ -730,11 +730,11 @@ impl<'a, T, const N: usize> TryFrom<Box<'a, [T]>> for Box<'a, [T; N]> {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 mod serialize {
     use super::*;
 
-    use serde::{Serialize, Serializer};
+    use data_serialization::{Serialize, Serializer};
 
     impl<'a, T> Serialize for Box<'a, T>
     where

@@ -7,7 +7,7 @@ use crate::{
     validator::{Validate, ValidationContext},
     Json, LazyInstance, Node,
 };
-use serde_json::{json, Map, Value};
+use json_codec::{json, Map, Value};
 use std::{borrow::Cow, str::FromStr};
 
 pub(crate) struct MultipleTypesValidator {

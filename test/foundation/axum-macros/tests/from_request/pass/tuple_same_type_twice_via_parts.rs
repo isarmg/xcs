@@ -1,7 +1,7 @@
 use axum::extract::Query;
 use axum::response::Response;
 use axum_macros::FromRequestParts;
-use serde::Deserialize;
+use data_serialization::Deserialize;
 
 #[derive(FromRequestParts)]
 struct Extractor(

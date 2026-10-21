@@ -11,8 +11,8 @@ use core::hash::Hash;
 pub mod algorithms;
 use algorithms::*;
 
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 /// A perfect zerohashmap optimized for lookups over immutable keys.
 ///

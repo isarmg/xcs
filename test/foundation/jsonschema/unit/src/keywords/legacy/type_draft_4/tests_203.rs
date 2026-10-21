@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod tests {
     use crate::tests_util;
-    use serde_json::Value;
+    use json_codec::Value;
     use test_case::test_case;
 
     fn parse_json(s: &str) -> Value {
-        serde_json::from_str(s).unwrap()
+        json_codec::from_str(s).unwrap()
     }
 
     // Draft 4 is strict: floats like 1.0 are NOT integers
@@ -60,11 +60,11 @@ mod tests {
     #[cfg(feature = "arbitrary-precision")]
     mod arbitrary_precision {
         use crate::tests_util;
-        use serde_json::Value;
+        use json_codec::Value;
         use test_case::test_case;
 
         fn parse_json(s: &str) -> Value {
-            serde_json::from_str(s).unwrap()
+            json_codec::from_str(s).unwrap()
         }
 
         // Tests for huge integers beyond i64/u64 range - these must be parsed from JSON string

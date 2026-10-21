@@ -9,7 +9,7 @@ use crate::error::BoxDynError;
 pub(crate) use sqlx_core::type_info::*;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "offline", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 pub(crate) enum DataType {
     // These variants should correspond to `SQLITE_*` type constants.
     Null,
@@ -39,7 +39,7 @@ pub(crate) enum DataType {
 
 /// Type information for a SQLite type.
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "offline", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "offline", derive(data_serialization::Serialize, data_serialization::Deserialize))]
 pub struct SqliteTypeInfo(pub(crate) DataType);
 
 impl Display for SqliteTypeInfo {

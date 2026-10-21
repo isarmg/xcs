@@ -13,9 +13,9 @@ use crate::{
     paths::{LazyLocation, Location, RefTracker},
     types::JsonType,
     validator::{EvaluationResult, Validate, ValidationContext},
-    Json, Node, SerdeJson,
+    Json, Node, JsonValueBackend,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 pub(crate) struct OneOfValidator<F: Json, D = NoDispatch> {
     schemas: Vec<SchemaNode<F>>,
@@ -23,7 +23,7 @@ pub(crate) struct OneOfValidator<F: Json, D = NoDispatch> {
     location: Location,
 }
 
-impl OneOfValidator<SerdeJson> {
+impl OneOfValidator<JsonValueBackend> {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         ctx: &compiler::Context<F>,
@@ -116,7 +116,7 @@ pub(crate) struct SingleOneOfValidator<F: Json> {
     location: Location,
 }
 
-impl SingleOneOfValidator<SerdeJson> {
+impl SingleOneOfValidator<JsonValueBackend> {
     #[inline]
     pub(crate) fn compile<'a, F: Json>(
         ctx: &compiler::Context<F>,

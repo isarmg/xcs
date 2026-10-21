@@ -1291,14 +1291,15 @@ impl<'a, K: Key, V> ExactSizeIterator for Drain<'a, K, V> {}
 impl<K: Key, V> ExactSizeIterator for IntoIter<K, V> {}
 
 // Serialization with serde.
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 mod serialize {
-    use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+    use data_serialization::{de, Deserialize, Deserializer, Serialize, Serializer};
 
     use super::*;
 
     #[derive(Serialize, Deserialize)]
-    struct SerdeSlot<T> {
+    #[serialization(rename = "SerdeSlot")]
+    struct SerializedSlot<T> {
         value: Option<T>,
         version: u32,
     }
@@ -1308,14 +1309,14 @@ mod serialize {
         where
             S: Serializer,
         {
-            let serde_slot = SerdeSlot {
+            let serialization_slot = SerializedSlot {
                 version: self.version,
                 value: match self.get() {
                     Occupied(value) => Some(value),
                     Vacant(_) => None,
                 },
             };
-            serde_slot.serialize(serializer)
+            serialization_slot.serialize(serializer)
         }
     }
 
@@ -1327,20 +1328,20 @@ mod serialize {
         where
             D: Deserializer<'de>,
         {
-            let serde_slot: SerdeSlot<T> = Deserialize::deserialize(deserializer)?;
-            let occupied = serde_slot.version % 2 == 1;
-            if occupied ^ serde_slot.value.is_some() {
+            let serialization_slot: SerializedSlot<T> = Deserialize::deserialize(deserializer)?;
+            let occupied = serialization_slot.version % 2 == 1;
+            if occupied ^ serialization_slot.value.is_some() {
                 return Err(de::Error::custom("inconsistent occupation in Slot"));
             }
 
             Ok(Self {
-                u: match serde_slot.value {
+                u: match serialization_slot.value {
                     Some(value) => SlotUnion {
                         value: ManuallyDrop::new(value),
                     },
                     None => SlotUnion { next_free: 0 },
                 },
-                version: serde_slot.version,
+                version: serialization_slot.version,
             })
         }
     }

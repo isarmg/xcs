@@ -38,8 +38,8 @@ repository = "https://github.com/servo/rust-url"
 debugger_visualizer = []
 default = ["std"]
 expose_internals = []
-serde = ["dep:serde", "dep:serde_derive"]
-std = ["idna/std", "percent-encoding/std", "form_urlencoded/std", "serde?/std"]
+serialization = ["dep:data-serialization", "dep:serialization-derive"]
+std = ["idna/std", "percent-encoding/std", "form_urlencoded/std", "data-serialization?/std"]
 
 [lib]
 name = "url"
@@ -66,15 +66,15 @@ features = ["alloc"]
 default-features = false
 path = "../percent-encoding"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
-[dependencies.serde_derive]
+[dependencies.serialization-derive]
 version = "1.0"
 optional = true
 default-features = false
-path = "../serde_derive"
+path = "../serialization-derive"
 

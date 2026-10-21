@@ -119,13 +119,13 @@ use crate::{Extensions, Result, Uri};
 ///
 /// ```
 /// use http::Request;
-/// use serde::de;
+/// use data_serialization::de;
 ///
-/// fn deserialize<T>(req: Request<Vec<u8>>) -> serde_json::Result<Request<T>>
+/// fn deserialize<T>(req: Request<Vec<u8>>) -> json_codec::Result<Request<T>>
 ///     where for<'de> T: de::Deserialize<'de>,
 /// {
 ///     let (parts, body) = req.into_parts();
-///     let body = serde_json::from_slice(&body)?;
+///     let body = json_codec::from_slice(&body)?;
 ///     Ok(Request::from_parts(parts, body))
 /// }
 /// #
@@ -136,13 +136,13 @@ use crate::{Extensions, Result, Uri};
 ///
 /// ```
 /// use http::Request;
-/// use serde::ser;
+/// use data_serialization::ser;
 ///
-/// fn serialize<T>(req: Request<T>) -> serde_json::Result<Request<Vec<u8>>>
+/// fn serialize<T>(req: Request<T>) -> json_codec::Result<Request<Vec<u8>>>
 ///     where T: ser::Serialize,
 /// {
 ///     let (parts, body) = req.into_parts();
-///     let body = serde_json::to_vec(&body)?;
+///     let body = json_codec::to_vec(&body)?;
 ///     Ok(Request::from_parts(parts, body))
 /// }
 /// #

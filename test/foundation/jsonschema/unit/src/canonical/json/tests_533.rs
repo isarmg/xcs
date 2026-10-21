@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use serde_json::{json, Map, Value};
+    use json_codec::{json, Map, Value};
     use test_case::test_case;
 
     use super::to_string;
@@ -8,9 +8,9 @@ mod tests {
     #[test]
     fn canonical_string_is_stable_for_equivalent_schemas() {
         let left: Value =
-            serde_json::from_str(r#"{"b":1,"a":{"z":3,"x":1,"y":2},"c":[{"d":4,"b":2}]}"#).unwrap();
+            json_codec::from_str(r#"{"b":1,"a":{"z":3,"x":1,"y":2},"c":[{"d":4,"b":2}]}"#).unwrap();
         let right: Value =
-            serde_json::from_str(r#"{"c":[{"b":2,"d":4}],"a":{"y":2,"x":1,"z":3},"b":1}"#).unwrap();
+            json_codec::from_str(r#"{"c":[{"b":2,"d":4}],"a":{"y":2,"x":1,"z":3},"b":1}"#).unwrap();
 
         assert_eq!(to_string(&left).unwrap(), to_string(&right).unwrap());
     }
@@ -21,17 +21,17 @@ mod tests {
     #[test_case(r#""hello""#; "simple")]
     #[test_case(r#""line\nbreak""#; "escaped_newline")]
     fn scalar_literals_roundtrip(raw: &str) {
-        let value: Value = serde_json::from_str(raw).unwrap();
+        let value: Value = json_codec::from_str(raw).unwrap();
         assert_eq!(to_string(&value).unwrap(), raw);
     }
 
     #[test]
     fn canonical_output_is_idempotent() {
         let value: Value =
-            serde_json::from_str(r#"{"z":{"b":1,"a":2},"a":[3,2,1],"f":1.0,"v":1.5}"#).unwrap();
+            json_codec::from_str(r#"{"z":{"b":1,"a":2},"a":[3,2,1],"f":1.0,"v":1.5}"#).unwrap();
 
         let first = to_string(&value).unwrap();
-        let parsed: Value = serde_json::from_str(&first).unwrap();
+        let parsed: Value = json_codec::from_str(&first).unwrap();
 
         assert_eq!(to_string(&parsed).unwrap(), first);
     }
@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn large_integer_valued_float_uses_integer_form() {
-        let value: Value = serde_json::from_str("1e300").unwrap();
+        let value: Value = json_codec::from_str("1e300").unwrap();
 
         #[cfg(feature = "arbitrary-precision")]
         let expected = {
@@ -109,7 +109,7 @@ mod tests {
 
     #[cfg(feature = "arbitrary-precision")]
     fn canonical(raw: &str) -> String {
-        to_string(&serde_json::from_str::<Value>(raw).unwrap()).unwrap()
+        to_string(&json_codec::from_str::<Value>(raw).unwrap()).unwrap()
     }
 
     // Plain expansion past the digit cap switches to scientific normal form.

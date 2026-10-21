@@ -1,7 +1,7 @@
 use std::{fmt, str::FromStr};
 
-use serde::{Deserialize, Deserializer, Serialize};
-use serde_json::{Map, Value};
+use data_serialization::{Deserialize, Deserializer, Serialize};
+use json_codec::{Map, Value};
 use thiserror::Error;
 
 pub const MAX_ERROR_CODE_BYTES: usize = 128;
@@ -15,7 +15,7 @@ pub const MAX_REQUEST_ID_BYTES: usize = 128;
 /// such as `DISK_UNAVAILABLE`, and lowercase transport identifiers are accepted;
 /// mixed case is rejected to prevent ambiguous client dispatch.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
-#[serde(transparent)]
+#[serialization(transparent)]
 pub struct ErrorCode(String);
 
 impl ErrorCode {
@@ -64,7 +64,7 @@ impl<'de> Deserialize<'de> for ErrorCode {
         D: Deserializer<'de>,
     {
         let value = String::deserialize(deserializer)?;
-        Self::new(value).map_err(serde::de::Error::custom)
+        Self::new(value).map_err(data_serialization::de::Error::custom)
     }
 }
 
@@ -95,7 +95,7 @@ fn validate_error_code(value: &str) -> Result<(), InvalidErrorCode> {
 
 /// A bounded ASCII correlation identifier safe to copy into logs and headers.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
-#[serde(transparent)]
+#[serialization(transparent)]
 pub struct RequestId(String);
 
 impl RequestId {
@@ -144,7 +144,7 @@ impl<'de> Deserialize<'de> for RequestId {
         D: Deserializer<'de>,
     {
         let value = String::deserialize(deserializer)?;
-        Self::new(value).map_err(serde::de::Error::custom)
+        Self::new(value).map_err(data_serialization::de::Error::custom)
     }
 }
 
@@ -170,18 +170,18 @@ fn validate_request_id(value: &str) -> Result<(), InvalidRequestId> {
 /// `details` is an object rather than arbitrary JSON so future fields remain
 /// additive. Sensitive diagnostics belong in server logs, not this envelope.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct ErrorEnvelope {
     pub code: ErrorCode,
     pub message: String,
-    #[serde(
+    #[serialization(
         default,
         skip_serializing_if = "Option::is_none",
         deserialize_with = "deserialize_present_request_id"
     )]
     pub request_id: Option<RequestId>,
     pub retryable: bool,
-    #[serde(default, skip_serializing_if = "Map::is_empty")]
+    #[serialization(default, skip_serializing_if = "Map::is_empty")]
     pub details: Map<String, Value>,
 }
 

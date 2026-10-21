@@ -5,7 +5,7 @@ use axum::{
     routing::{get, post},
     Extension, Json, Router,
 };
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::{
     future::IntoFuture,
     io::BufRead,

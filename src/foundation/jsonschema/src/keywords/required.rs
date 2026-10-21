@@ -9,15 +9,15 @@ use crate::{
     properties::{KeyHead, PropertyName, HASHMAP_THRESHOLD},
     types::JsonType,
     validator::{Validate, ValidationContext},
-    Json, Node, Object, SerdeJson,
+    Json, Node, Object, JsonValueBackend,
 };
 use referencing::Vocabulary;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 /// Longest `required` array scanned in one pass; beyond it the comparisons outgrow the lookups.
 const MAX_SCANNED_REQUIRED: usize = 16;
 
-pub(crate) struct RequiredValidator<F: Json = SerdeJson> {
+pub(crate) struct RequiredValidator<F: Json = JsonValueBackend> {
     required: Vec<(PropertyName, F::PreparedKey)>,
     location: Location,
 }
@@ -173,7 +173,7 @@ impl<F: Json> Validate<F> for RequiredValidator<F> {
     }
 }
 
-pub(crate) struct SingleItemRequiredValidator<F: Json = SerdeJson> {
+pub(crate) struct SingleItemRequiredValidator<F: Json = JsonValueBackend> {
     value: String,
     key: F::PreparedKey,
     location: Location,
@@ -224,7 +224,7 @@ impl<F: Json> Validate<F> for SingleItemRequiredValidator<F> {
 
 /// Specialized validator for exactly 2 required properties.
 /// Uses fixed-size array and unrolled checks to avoid Vec/iterator overhead.
-pub(crate) struct Required2Validator<F: Json = SerdeJson> {
+pub(crate) struct Required2Validator<F: Json = JsonValueBackend> {
     first: String,
     first_key: F::PreparedKey,
     second: String,
@@ -325,7 +325,7 @@ impl<F: Json> Validate<F> for Required2Validator<F> {
 
 /// Specialized validator for exactly 3 required properties.
 /// Uses fixed-size fields and unrolled checks to avoid Vec/iterator overhead.
-pub(crate) struct Required3Validator<F: Json = SerdeJson> {
+pub(crate) struct Required3Validator<F: Json = JsonValueBackend> {
     first: PropertyName,
     first_key: F::PreparedKey,
     second: PropertyName,

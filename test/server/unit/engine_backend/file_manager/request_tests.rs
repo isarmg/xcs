@@ -95,12 +95,12 @@ fn malformed_lazy_root_requests_do_not_publish_any_state() {
             admin: true,
             repositories: BTreeSet::new(),
         };
-        let before = serde_json::to_value(engine.state()).unwrap();
+        let before = json_codec::to_value(engine.state()).unwrap();
         let bytes = disk_files(&disks);
         let failure = call(&mut engine, &identity, action, input.clone()).unwrap_err();
         assert_eq!(failure.status, 400, "{input}: {failure:?}");
         assert_eq!(
-            serde_json::to_value(engine.state()).unwrap(),
+            json_codec::to_value(engine.state()).unwrap(),
             before,
             "{input}"
         );
@@ -160,10 +160,10 @@ fn missing_targets_and_cross_namespace_moves_do_not_create_a_disk_root() {
             &storage_engine::new_id("op"),
         )
         .unwrap();
-    let before = serde_json::to_value(engine.state()).unwrap();
+    let before = json_codec::to_value(engine.state()).unwrap();
     let bytes = disk_files(&disks);
     assert!(call(&mut engine, &identity, BackendAction::FileManagerNamespace, json!({"slot_id":"P01","kind":"rename","path":"Existing/folder","destination":"new-root-folder","operation_id":storage_engine::new_id("op")})).is_err());
-    assert_eq!(serde_json::to_value(engine.state()).unwrap(), before);
+    assert_eq!(json_codec::to_value(engine.state()).unwrap(), before);
     assert_eq!(disk_files(&disks), bytes);
 }
 
@@ -241,7 +241,7 @@ fn baseline_name_and_used_operation_are_rejected_before_root_initialization() {
     engine
         .create_repository("Existing", "P01", 3, "owner", &used)
         .unwrap();
-    let before = serde_json::to_value(engine.state()).unwrap();
+    let before = json_codec::to_value(engine.state()).unwrap();
     let bytes = disk_files(&disks);
     let error = call(
         &mut engine,
@@ -251,6 +251,6 @@ fn baseline_name_and_used_operation_are_rejected_before_root_initialization() {
     )
     .unwrap_err();
     assert_eq!(error.code, "IDEMPOTENCY_KEY_REUSED");
-    assert_eq!(serde_json::to_value(engine.state()).unwrap(), before);
+    assert_eq!(json_codec::to_value(engine.state()).unwrap(), before);
     assert_eq!(disk_files(&disks), bytes);
 }

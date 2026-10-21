@@ -1,6 +1,6 @@
 use crate::cmp;
 use ahash::{AHashSet, AHasher};
-use serde_json::Value;
+use json_codec::Value;
 use std::{
     borrow::Borrow,
     hash::{Hash, Hasher},

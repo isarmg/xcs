@@ -1284,14 +1284,15 @@ impl<'a, K: 'a + Key, V> ExactSizeIterator for Drain<'a, K, V> {}
 impl<K: Key, V> ExactSizeIterator for IntoIter<K, V> {}
 
 // Serialization with serde.
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 mod serialize {
-    use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+    use data_serialization::{de, Deserialize, Deserializer, Serialize, Serializer};
 
     use super::*;
 
     #[derive(Serialize, Deserialize)]
-    struct SerdeSlot<T> {
+    #[serialization(rename = "SerdeSlot")]
+    struct SerializedSlot<T> {
         value: Option<T>,
         version: u32,
     }
@@ -1301,10 +1302,10 @@ mod serialize {
         where
             S: Serializer,
         {
-            let serde_slots: Vec<_> = self
+            let serialization_slots: Vec<_> = self
                 .slots
                 .iter()
-                .map(|slot| SerdeSlot {
+                .map(|slot| SerializedSlot {
                     value: if slot.version % 2 == 1 {
                         self.values.get(slot.idx_or_free as usize)
                     } else {
@@ -1313,7 +1314,7 @@ mod serialize {
                     version: slot.version,
                 })
                 .collect();
-            serde_slots.serialize(serializer)
+            serialization_slots.serialize(serializer)
         }
     }
 
@@ -1322,13 +1323,13 @@ mod serialize {
         where
             D: Deserializer<'de>,
         {
-            let serde_slots: Vec<SerdeSlot<V>> = Deserialize::deserialize(deserializer)?;
-            if serde_slots.len() >= u32::MAX as usize {
+            let serialization_slots: Vec<SerializedSlot<V>> = Deserialize::deserialize(deserializer)?;
+            if serialization_slots.len() >= u32::MAX as usize {
                 return Err(de::Error::custom("too many slots"));
             }
 
             // Ensure the first slot exists and is empty for the sentinel.
-            if serde_slots
+            if serialization_slots
                 .first()
                 .map_or(true, |slot| slot.version % 2 == 1)
             {
@@ -1344,24 +1345,24 @@ mod serialize {
                 version: 0,
             });
 
-            let mut next_free = serde_slots.len();
-            for (i, serde_slot) in serde_slots.into_iter().enumerate().skip(1) {
-                let occupied = serde_slot.version % 2 == 1;
-                if occupied ^ serde_slot.value.is_some() {
+            let mut next_free = serialization_slots.len();
+            for (i, serialization_slot) in serialization_slots.into_iter().enumerate().skip(1) {
+                let occupied = serialization_slot.version % 2 == 1;
+                if occupied ^ serialization_slot.value.is_some() {
                     return Err(de::Error::custom("inconsistent occupation in Slot"));
                 }
 
-                if let Some(value) = serde_slot.value {
-                    let kd = KeyData::new(i as u32, serde_slot.version);
+                if let Some(value) = serialization_slot.value {
+                    let kd = KeyData::new(i as u32, serialization_slot.version);
                     keys.push(kd.into());
                     values.push(value);
                     slots.push(Slot {
-                        version: serde_slot.version,
+                        version: serialization_slot.version,
                         idx_or_free: (keys.len() - 1) as u32,
                     });
                 } else {
                     slots.push(Slot {
-                        version: serde_slot.version,
+                        version: serialization_slot.version,
                         idx_or_free: next_free as u32,
                     });
                     next_free = i;

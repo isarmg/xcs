@@ -1,6 +1,6 @@
 //! History queries, lazy branches and metadata-only relations.
 use super::*;
-use serde_json::json;
+use json_codec::json;
 fn branch_contains_commit(state: &State, branch: &Branch, target: &str) -> Result<bool> {
     if branch.state == "migrated" {
         return Err(Error::new("TREE_MOVED", "branch moved to another history"));
@@ -293,7 +293,7 @@ impl Engine {
             },
         )
     }
-    pub fn compare_commits(&self, left: &str, right: &str) -> Result<serde_json::Value> {
+    pub fn compare_commits(&self, left: &str, right: &str) -> Result<json_codec::Value> {
         let a = self
             .state
             .commits

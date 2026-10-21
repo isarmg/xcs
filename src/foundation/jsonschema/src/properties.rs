@@ -6,10 +6,10 @@ use crate::{
     node::SchemaNode,
     regex::{analyze_pattern, contains_ecma_whitespace, LiteralMatchError, PatternOptimization},
     validator::Validate as _,
-    Json, Object, SerdeJson, ValidationContext,
+    Json, Object, JsonValueBackend, ValidationContext,
 };
 use ahash::AHashMap;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 use crate::ValidationError;
 
@@ -44,13 +44,13 @@ impl<R: crate::regex::RegexEngine> crate::regex::RegexEngine for CompiledPattern
     }
 }
 
-pub(crate) type FancyRegexValidators<F = SerdeJson> =
+pub(crate) type FancyRegexValidators<F = JsonValueBackend> =
     Vec<(CompiledPattern<fancy_regex::Regex>, SchemaNode<F>)>;
-pub(crate) type RegexValidators<F = SerdeJson> =
+pub(crate) type RegexValidators<F = JsonValueBackend> =
     Vec<(CompiledPattern<regex::Regex>, SchemaNode<F>)>;
 
 /// A value that can look up property validators by name.
-pub(crate) trait PropertiesValidatorsMap<F: Json = SerdeJson>: Send + Sync {
+pub(crate) trait PropertiesValidatorsMap<F: Json = JsonValueBackend>: Send + Sync {
     fn get_validator(&self, property: &str) -> Option<&SchemaNode<F>>;
     fn get_key_validator(&self, property: &str) -> Option<(&str, &SchemaNode<F>)>;
 }
@@ -128,8 +128,8 @@ impl PropertyName {
     }
 }
 
-pub(crate) type SmallValidatorsMap<F = SerdeJson> = Vec<(PropertyName, SchemaNode<F>)>;
-pub(crate) type BigValidatorsMap<F = SerdeJson> = AHashMap<String, SchemaNode<F>>;
+pub(crate) type SmallValidatorsMap<F = JsonValueBackend> = Vec<(PropertyName, SchemaNode<F>)>;
+pub(crate) type BigValidatorsMap<F = JsonValueBackend> = AHashMap<String, SchemaNode<F>>;
 
 impl<F: Json> PropertiesValidatorsMap<F> for SmallValidatorsMap<F> {
     #[inline]

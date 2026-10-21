@@ -8,7 +8,7 @@ use crate::{
     api,
     ui::{State, current_session, fail, list, set_notice, text},
 };
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 use web_interface::tasks::spawn_local;
 use web_interface::{i18n::t, prelude::*};

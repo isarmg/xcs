@@ -16,8 +16,8 @@ fn test_nested() {
         ZeroSlice::from_ule_slice(b"ICU")
     );
     // Can't use inference due to https://github.com/rust-lang/rust/issues/130180
-    #[cfg(feature = "serde")]
-    crate::ule::test_utils::assert_serde_roundtrips::<
+    #[cfg(feature = "serialization")]
+    crate::ule::test_utils::assert_serialization_roundtrips::<
         VarTupleULE<u16, VarTupleULE<char, ZeroSlice<_>>>,
     >(&var_tuple_ule);
 }

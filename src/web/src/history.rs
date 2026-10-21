@@ -2,7 +2,7 @@ use crate::{
     api, format,
     ui::{State, current_session, fail, feedback, list, text},
 };
-use serde_json::Value;
+use json_codec::Value;
 use web_interface::components::{
     EmptyState, ErrorState, Feedback, LoadingState, Select, SelectOption,
 };

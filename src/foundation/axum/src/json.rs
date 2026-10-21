@@ -7,12 +7,12 @@ use http::{
     header::{self, HeaderMap, HeaderValue},
     StatusCode,
 };
-use serde_core::{de::DeserializeOwned, Serialize};
+use serialization_core::{de::DeserializeOwned, Serialize};
 
 /// JSON Extractor / Response.
 ///
 /// When used as an extractor, it can deserialize request bodies into some type that
-/// implements [`serde::de::DeserializeOwned`]. The request will be rejected (and a [`JsonRejection`] will
+/// implements [`data_serialization::de::DeserializeOwned`]. The request will be rejected (and a [`JsonRejection`] will
 /// be returned) if:
 ///
 /// - The request doesn't have a `Content-Type: application/json` (or similar) header.
@@ -36,7 +36,7 @@ use serde_core::{de::DeserializeOwned, Serialize};
 ///     routing::post,
 ///     Router,
 /// };
-/// use serde::Deserialize;
+/// use data_serialization::Deserialize;
 ///
 /// #[derive(Deserialize)]
 /// struct CreateUser {
@@ -52,7 +52,7 @@ use serde_core::{de::DeserializeOwned, Serialize};
 /// # let _: Router = app;
 /// ```
 ///
-/// When used as a response, it can serialize any type that implements [`serde::Serialize`] to
+/// When used as a response, it can serialize any type that implements [`data_serialization::Serialize`] to
 /// `JSON`, and will automatically set `Content-Type: application/json` header.
 ///
 /// If the [`Serialize`] implementation decides to fail
@@ -69,7 +69,7 @@ use serde_core::{de::DeserializeOwned, Serialize};
 ///     Router,
 ///     Json,
 /// };
-/// use serde::Serialize;
+/// use data_serialization::Serialize;
 /// use uuid::Uuid;
 ///
 /// #[derive(Serialize)]
@@ -171,15 +171,15 @@ where
     /// constructing a `Json<T>`.
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, JsonRejection> {
         // Extracted into separate fn so it's only compiled once for all T.
-        fn make_rejection(err: serde_path_to_error::Error<serde_json::Error>) -> JsonRejection {
+        fn make_rejection(err: serialization_error_path::Error<json_codec::Error>) -> JsonRejection {
             match err.inner().classify() {
-                serde_json::error::Category::Data => JsonDataError::from_err(err).into(),
-                serde_json::error::Category::Syntax | serde_json::error::Category::Eof => {
+                json_codec::error::Category::Data => JsonDataError::from_err(err).into(),
+                json_codec::error::Category::Syntax | json_codec::error::Category::Eof => {
                     JsonSyntaxError::from_err(err).into()
                 }
-                serde_json::error::Category::Io => {
+                json_codec::error::Category::Io => {
                     if cfg!(debug_assertions) {
-                        // we don't use `serde_json::from_reader` and instead always buffer
+                        // we don't use `json_codec::from_reader` and instead always buffer
                         // bodies first, so we shouldn't encounter any IO errors
                         unreachable!()
                     } else {
@@ -189,9 +189,9 @@ where
             }
         }
 
-        let mut deserializer = serde_json::Deserializer::from_slice(bytes);
+        let mut deserializer = json_codec::Deserializer::from_slice(bytes);
 
-        serde_path_to_error::deserialize(&mut deserializer)
+        serialization_error_path::deserialize(&mut deserializer)
             .map_err(make_rejection)
             .and_then(|value| {
                 deserializer
@@ -208,7 +208,7 @@ where
 {
     fn into_response(self) -> Response {
         // Extracted into separate fn so it's only compiled once for all T.
-        fn make_response(buf: BytesMut, ser_result: serde_json::Result<()>) -> Response {
+        fn make_response(buf: BytesMut, ser_result: json_codec::Result<()>) -> Response {
             match ser_result {
                 Ok(()) => (
                     [(
@@ -230,10 +230,10 @@ where
             }
         }
 
-        // Use a small initial capacity of 128 bytes like serde_json::to_vec
+        // Use a small initial capacity of 128 bytes like json_codec::to_vec
         // https://docs.rs/serde_json/1.0.82/src/serde_json/ser.rs.html#2189
         let mut buf = BytesMut::with_capacity(128).writer();
-        let res = serde_json::to_writer(&mut buf, &self.0);
+        let res = json_codec::to_writer(&mut buf, &self.0);
         make_response(buf.into_inner(), res)
     }
 }

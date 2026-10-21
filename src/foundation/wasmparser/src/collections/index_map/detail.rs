@@ -1029,13 +1029,13 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
-mod serde_impls {
+#[cfg(feature = "serialization")]
+mod serialization_impls {
     use super::IndexMap;
     use core::fmt;
     use core::marker::PhantomData;
-    use serde::de::{Deserialize, MapAccess, Visitor};
-    use serde::ser::{Serialize, SerializeMap, Serializer};
+    use data_serialization::de::{Deserialize, MapAccess, Visitor};
+    use data_serialization::ser::{Serialize, SerializeMap, Serializer};
 
     impl<K, V> Serialize for IndexMap<K, V>
     where
@@ -1061,7 +1061,7 @@ mod serde_impls {
     {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
-            D: serde::de::Deserializer<'a>,
+            D: data_serialization::de::Deserializer<'a>,
         {
             deserializer.deserialize_map(IndexMapVisitor {
                 _marker: PhantomData,

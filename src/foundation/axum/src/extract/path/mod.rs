@@ -14,7 +14,7 @@ use axum_core::{
     RequestPartsExt as _,
 };
 use http::{request::Parts, StatusCode};
-use serde_core::de::DeserializeOwned;
+use serialization_core::de::DeserializeOwned;
 use std::{fmt, sync::Arc};
 
 /// Extractor that will get captures from the URL and parse them using
@@ -76,7 +76,7 @@ use std::{fmt, sync::Arc};
 /// ```
 ///
 /// Path segments also can be deserialized into any type that implements
-/// [`serde::Deserialize`]. This includes tuples and structs:
+/// [`data_serialization::Deserialize`]. This includes tuples and structs:
 ///
 /// ```rust,no_run
 /// use axum::{
@@ -84,7 +84,7 @@ use std::{fmt, sync::Arc};
 ///     routing::get,
 ///     Router,
 /// };
-/// use serde::Deserialize;
+/// use data_serialization::Deserialize;
 /// use uuid::Uuid;
 ///
 /// // Path segment labels will be matched with struct field names
@@ -147,7 +147,7 @@ use std::{fmt, sync::Arc};
 /// error response will be returned. See [`customize-path-rejection`] for an example of how to customize that error.
 ///
 /// [`serde`]: https://crates.io/crates/serde
-/// [`serde::Deserialize`]: https://docs.rs/serde/1.0.127/serde/trait.Deserialize.html
+/// [`data_serialization::Deserialize`]: https://docs.rs/serde/1.0.127/serde/trait.Deserialize.html
 /// [`customize-path-rejection`]: https://github.com/tokio-rs/axum/blob/main/examples/customize-path-rejection/src/main.rs
 #[derive(Debug)]
 pub struct Path<T>(pub T);
@@ -212,7 +212,7 @@ where
     }
 }
 
-// this wrapper type is used as the deserializer error to hide the `serde::de::Error` impl which
+// this wrapper type is used as the deserializer error to hide the `data_serialization::de::Error` impl which
 // would otherwise be public if we used `ErrorKind` as the error directly
 #[derive(Debug)]
 pub(crate) struct PathDeserializationError {
@@ -254,7 +254,7 @@ impl WrongNumberOfParameters<usize> {
     }
 }
 
-impl serde_core::de::Error for PathDeserializationError {
+impl serialization_core::de::Error for PathDeserializationError {
     #[inline]
     fn custom<T>(msg: T) -> Self
     where

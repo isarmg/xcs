@@ -36,10 +36,10 @@ license = "Unicode-3.0"
 repository = "https://github.com/unicode-org/icu4x"
 
 [features]
-alloc = ["serde_core?/alloc", "zerovec?/alloc"]
+alloc = ["serialization-core?/alloc", "zerovec?/alloc"]
 databake = []
 default = ["alloc"]
-serde = ["dep:serde_core"]
+serialization = ["dep:serialization-core"]
 std = []
 zerovec = ["dep:zerovec"]
 
@@ -53,11 +53,11 @@ version = "0.2.3"
 default-features = false
 path = "../displaydoc"
 
-[dependencies.serde_core]
+[dependencies.serialization-core]
 version = "1.0.220"
 optional = true
 default-features = false
-path = "../serde_core"
+path = "../serialization-core"
 
 [dependencies.zerovec]
 version = "0.11.7"

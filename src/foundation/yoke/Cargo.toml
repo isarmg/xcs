@@ -44,7 +44,7 @@ repository = "https://github.com/unicode-org/icu4x"
 alloc = ["stable_deref_trait/alloc", "zerofrom/alloc"]
 default = ["alloc", "zerofrom"]
 derive = ["dep:yoke-derive", "zerofrom/derive"]
-serde = []
+serialization = []
 zerofrom = ["dep:zerofrom"]
 
 [lib]

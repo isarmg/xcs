@@ -41,9 +41,9 @@ repository = "https://github.com/unicode-org/icu4x"
 resolver = "2"
 
 [features]
-alloc = ["serde?/alloc", "zerovec/alloc"]
+alloc = ["data-serialization?/alloc", "zerovec/alloc"]
 databake = ["zerovec/databake"]
-serde = ["dep:serde", "zerovec/serde", "potential_utf/serde", "alloc"]
+serialization = ["dep:data-serialization", "zerovec/serialization", "potential_utf/serialization", "alloc"]
 
 [lib]
 name = "icu_collections"
@@ -61,12 +61,12 @@ features = ["zerovec"]
 default-features = false
 path = "../potential_utf"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.220"
 features = ["derive"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.utf8_iter]
 version = "1.0.2"

@@ -123,8 +123,8 @@ mod quickcheck;
 mod rand08;
 #[cfg(feature = "rand09")]
 mod rand09;
-#[cfg(feature = "serde")]
-pub mod serde;
+#[cfg(feature = "serialization")]
+pub mod data_serialization;
 mod signed_duration;
 mod sys;
 #[cfg(test)]

@@ -4,8 +4,8 @@
 //! private authentication data, content read plan, or publication capability.
 use super::{authorize, encode, error, field, pending_entry_source, repo_for_branch};
 use crate::{ApiError, auth::Identity};
-use serde::Serialize;
-use serde_json::Value;
+use data_serialization::Serialize;
+use json_codec::Value;
 use std::{collections::BTreeMap, sync::MutexGuard};
 use storage_engine::Engine;
 

@@ -1,7 +1,7 @@
 //! Protected local Samba bridge. Every operation is authorized by Backend;
 //! mutable files remain unpublished until the normal core commit succeeds.
 use crate::{ApiError, Backend, Content, auth::Identity};
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use smb_protocol::protocol::{FrameStream, OpenResult, PROTOCOL, Request, Response};
 use std::{
     collections::{BTreeMap, BTreeSet},

@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use jsonschema_value::{cmp, numeric, JsonNumber};
-use serde_json::Number;
+use json_codec::Number;
 use test_case::test_case;
 
 // A representation keeping the decimal literal, so a number past `f64` still has its digits.
@@ -83,7 +83,7 @@ fn multiple_of_float_reads_zero_from_the_digits(text: &'static str, expected: bo
 // before validation starts.
 #[cfg(feature = "arbitrary-precision")]
 #[test]
-fn serde_json_tiny_literal_is_not_a_multiple() {
-    let number: Number = serde_json::from_str("1e-400").expect("parses");
+fn serialization_json_tiny_literal_is_not_a_multiple() {
+    let number: Number = json_codec::from_str("1e-400").expect("parses");
     assert!(!numeric::is_multiple_of_float(&number, 0.5));
 }

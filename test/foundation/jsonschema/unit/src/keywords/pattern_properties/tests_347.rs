@@ -5,7 +5,7 @@ mod tests {
         regex::{analyze_pattern, PatternOptimization},
         tests_util, PatternOptions,
     };
-    use serde_json::{json, Map, Value};
+    use json_codec::{json, Map, Value};
     use test_case::test_case;
 
     #[test_case(&json!({"patternProperties": {"^f": {"type": "string"}}}), &json!({"f": 42}), "/patternProperties/^f/type")]

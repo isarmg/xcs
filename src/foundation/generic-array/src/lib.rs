@@ -70,8 +70,8 @@
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-#[cfg(feature = "serde")]
-extern crate serde;
+#[cfg(feature = "serialization")]
+extern crate data_serialization;
 
 #[cfg(feature = "zeroize")]
 extern crate zeroize;
@@ -84,8 +84,8 @@ pub extern crate typenum;
 mod hex;
 mod impls;
 
-#[cfg(feature = "serde")]
-mod impl_serde;
+#[cfg(feature = "serialization")]
+mod impl_serialization;
 
 #[cfg(feature = "zeroize")]
 mod impl_zeroize;

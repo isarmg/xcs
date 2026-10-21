@@ -18,7 +18,7 @@ use std::{
 };
 
 use ahash::AHasher;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 use crate::{
     cmp, types::JsonType, Array, Json, JsonNumber, LazyInstance, Node, NodeIdentity, Object,
@@ -63,7 +63,7 @@ fn record(message: impl FnOnce() -> String) {
     });
 }
 
-/// Take the error recorded while reporting an instance back as a `serde_json::Value`, if any.
+/// Take the error recorded while reporting an instance back as a `json_codec::Value`, if any.
 #[must_use]
 pub fn take_pending_error() -> Option<String> {
     PENDING_ERROR.with(|slot| slot.borrow_mut().take())
@@ -1020,13 +1020,13 @@ impl JsonNumber for JsonbNumber<'_> {
         Cow::Owned(out)
     }
 
-    fn to_number(&self) -> Cow<'_, serde_json::Number> {
-        if let Ok(number) = serde_json::from_str(&self.as_str()) {
+    fn to_number(&self) -> Cow<'_, json_codec::Number> {
+        if let Ok(number) = json_codec::from_str(&self.as_str()) {
             return Cow::Owned(number);
         }
         record(|| "Number out of range".to_string());
         let saturated = self.signed(f64::MAX);
-        Cow::Owned(serde_json::Number::from_f64(saturated).expect("f64::MAX is finite"))
+        Cow::Owned(json_codec::Number::from_f64(saturated).expect("f64::MAX is finite"))
     }
 
     // `dscale` keeps how many fraction digits were written, zeros included. An exponent does

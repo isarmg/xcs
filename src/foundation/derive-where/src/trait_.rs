@@ -5,16 +5,16 @@ mod common_ord;
 pub mod copy;
 pub mod debug;
 pub mod default;
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub mod deserialize;
 pub mod eq;
 pub mod hash;
 pub mod ord;
 pub mod partial_eq;
 pub mod partial_ord;
-#[cfg(feature = "serde")]
-mod serde;
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
+mod data_serialization;
+#[cfg(feature = "serialization")]
 pub mod serialize;
 #[cfg(feature = "zeroize")]
 pub mod zeroize;
@@ -48,7 +48,7 @@ pub enum Trait {
 	/// [`Default`].
 	Default,
 	/// [`Deserialize`](https://docs.rs/serde/latest/serde/derive.Deserialize.html).
-	#[cfg(feature = "serde")]
+	#[cfg(feature = "serialization")]
 	Deserialize,
 	/// [`Eq`].
 	Eq,
@@ -61,7 +61,7 @@ pub enum Trait {
 	/// [`PartialOrd`].
 	PartialOrd,
 	/// [`Serialize`](https://docs.rs/serde/latest/serde/derive.Serialize.html).
-	#[cfg(feature = "serde")]
+	#[cfg(feature = "serialization")]
 	Serialize,
 	/// [`Zeroize`](https://docs.rs/zeroize/latest/zeroize/trait.Zeroize.html).
 	#[cfg(feature = "zeroize")]
@@ -80,14 +80,14 @@ macro_rules! trait_dispatch {
 			Trait::Copy => copy::Copy::$method($($par),*),
 			Trait::Debug => debug::Debug::$method($($par),*),
 			Trait::Default => default::Default::$method($($par),*),
-			#[cfg(feature = "serde")]
+			#[cfg(feature = "serialization")]
 			Trait::Deserialize => deserialize::Deserialize::$method($($par),*),
 			Trait::Eq => eq::Eq::$method($($par),*),
 			Trait::Hash => hash::Hash::$method($($par),*),
 			Trait::Ord => ord::Ord::$method($($par),*),
 			Trait::PartialEq => partial_eq::PartialEq::$method($($par),*),
 			Trait::PartialOrd => partial_ord::PartialOrd::$method($($par),*),
-			#[cfg(feature = "serde")]
+			#[cfg(feature = "serialization")]
 			Trait::Serialize => serialize::Serialize::$method($($par),*),
 			#[cfg(feature = "zeroize")]
 			Trait::Zeroize => zeroize::Zeroize::$method($($par),*),
@@ -108,19 +108,19 @@ impl Trait {
 				"Copy" => Ok(Copy),
 				"Debug" => Ok(Debug),
 				"Default" => Ok(Default),
-				#[cfg(feature = "serde")]
+				#[cfg(feature = "serialization")]
 				"Deserialize" => Ok(Deserialize),
-				#[cfg(not(feature = "serde"))]
-				"Deserialize" => Err(Error::serde_feature(path.span())),
+				#[cfg(not(feature = "serialization"))]
+				"Deserialize" => Err(Error::serialization_feature(path.span())),
 				"Eq" => Ok(Eq),
 				"Hash" => Ok(Hash),
 				"Ord" => Ok(Ord),
 				"PartialEq" => Ok(PartialEq),
 				"PartialOrd" => Ok(PartialOrd),
-				#[cfg(feature = "serde")]
+				#[cfg(feature = "serialization")]
 				"Serialize" => Ok(Serialize),
-				#[cfg(not(feature = "serde"))]
-				"Serialize" => Err(Error::serde_feature(path.span())),
+				#[cfg(not(feature = "serialization"))]
+				"Serialize" => Err(Error::serialization_feature(path.span())),
 				#[cfg(feature = "zeroize")]
 				"Zeroize" => Ok(Zeroize),
 				#[cfg(not(feature = "zeroize"))]
@@ -180,7 +180,7 @@ pub enum DeriveTrait {
 	/// [`Default`].
 	Default,
 	/// [`Deserialize`](https://docs.rs/serde/latest/serde/derive.Deserialize.html).
-	#[cfg(feature = "serde")]
+	#[cfg(feature = "serialization")]
 	Deserialize(deserialize::Deserialize),
 	/// [`Eq`].
 	Eq,
@@ -193,7 +193,7 @@ pub enum DeriveTrait {
 	/// [`PartialOrd`].
 	PartialOrd,
 	/// [`Serialize`](https://docs.rs/serde/latest/serde/derive.Serialize.html).
-	#[cfg(feature = "serde")]
+	#[cfg(feature = "serialization")]
 	Serialize(serialize::Serialize),
 	/// [`Zeroize`](https://docs.rs/zeroize/latest/zeroize/trait.Zeroize.html).
 	#[cfg(feature = "zeroize")]
@@ -214,14 +214,14 @@ impl Deref for DeriveTrait {
 			Copy => &copy::Copy,
 			Debug => &debug::Debug,
 			Default => &default::Default,
-			#[cfg(feature = "serde")]
+			#[cfg(feature = "serialization")]
 			Deserialize(trait_) => trait_,
 			Eq => &eq::Eq,
 			Hash => &hash::Hash,
 			Ord => &ord::Ord,
 			PartialEq => &partial_eq::PartialEq,
 			PartialOrd => &partial_ord::PartialOrd,
-			#[cfg(feature = "serde")]
+			#[cfg(feature = "serialization")]
 			Serialize(trait_) => trait_,
 			#[cfg(feature = "zeroize")]
 			Zeroize(trait_) => trait_,

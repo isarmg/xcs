@@ -44,7 +44,7 @@ fn test_langid_fixtures(tests: Vec<fixtures::LocaleTest>) {
 
 #[test]
 fn test_langid_parsing() {
-    let data = serde_json::from_str(include_str!("fixtures/langid.json"))
+    let data = json_codec::from_str(include_str!("fixtures/langid.json"))
         .expect("Failed to read a fixture");
 
     test_langid_fixtures(data);
@@ -52,7 +52,7 @@ fn test_langid_parsing() {
 
 #[test]
 fn test_langid_invalid() {
-    let data = serde_json::from_str(include_str!("fixtures/invalid.json"))
+    let data = json_codec::from_str(include_str!("fixtures/invalid.json"))
         .expect("Failed to read a fixture");
 
     test_langid_fixtures(data);
@@ -60,7 +60,7 @@ fn test_langid_invalid() {
 
 #[test]
 fn test_langid_canonicalize() {
-    let data = serde_json::from_str(include_str!("fixtures/canonicalize.json"))
+    let data = json_codec::from_str(include_str!("fixtures/canonicalize.json"))
         .expect("Failed to read a fixture");
 
     test_langid_fixtures(data);
@@ -68,7 +68,7 @@ fn test_langid_canonicalize() {
 
 #[test]
 fn test_langid_from_locale() {
-    let data = serde_json::from_str(include_str!("fixtures/locale.json"))
+    let data = json_codec::from_str(include_str!("fixtures/locale.json"))
         .expect("Failed to read a fixture");
 
     test_langid_fixtures(data);
@@ -118,7 +118,7 @@ fn test_langid_subtag_variants() {
 #[test]
 fn test_langid_normalizing_eq_str() {
     let tests: Vec<fixtures::LocaleTest> =
-        serde_json::from_str(include_str!("fixtures/langid.json"))
+        json_codec::from_str(include_str!("fixtures/langid.json"))
             .expect("Failed to read a fixture");
     for test in tests {
         let parsed: LanguageIdentifier = test.input.try_into().expect("Parsing failed.");
@@ -133,7 +133,7 @@ fn test_langid_normalizing_eq_str() {
 #[test]
 fn test_langid_strict_cmp() {
     let tests: Vec<fixtures::LocaleTest> =
-        serde_json::from_str(include_str!("fixtures/langid.json"))
+        json_codec::from_str(include_str!("fixtures/langid.json"))
             .expect("Failed to read a fixture");
     let bcp47_strings = tests
         .iter()

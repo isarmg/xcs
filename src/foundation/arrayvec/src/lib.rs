@@ -22,8 +22,8 @@
 #![doc(html_root_url="https://docs.rs/arrayvec/0.7/")]
 #![cfg_attr(not(feature="std"), no_std)]
 
-#[cfg(feature="serde")]
-extern crate serde;
+#[cfg(feature="serialization")]
+extern crate data_serialization;
 
 #[cfg(not(feature="std"))]
 extern crate core as std;

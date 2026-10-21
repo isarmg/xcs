@@ -17,9 +17,9 @@ use axum::{
     http::{HeaderMap, HeaderValue, Method, StatusCode, header},
     response::{IntoResponse, Response},
 };
+use data_serialization::Deserialize;
 use futures_util::StreamExt;
-use serde::Deserialize;
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use std::{
     io::{Read, Seek, SeekFrom},
     path::Path,
@@ -90,7 +90,7 @@ pub(crate) async fn upload_status(
 }
 
 #[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct UploadQuery {
     path: String,
 }
@@ -541,7 +541,7 @@ fn unsatisfiable_range(error: ApiError, size: u64, method: &Method) -> Response 
     response
 }
 #[derive(Default, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(crate) struct ContentQuery {
     repository_id: Option<String>,
     path: Option<String>,

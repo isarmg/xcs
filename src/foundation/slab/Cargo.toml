@@ -29,6 +29,7 @@ license = "MIT"
 repository = "https://github.com/tokio-rs/slab"
 
 [features]
+serialization = ["dep:data-serialization"]
 default = ["std"]
 std = []
 
@@ -36,10 +37,10 @@ std = []
 name = "slab"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.95"
 features = ["alloc"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 

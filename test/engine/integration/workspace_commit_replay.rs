@@ -98,7 +98,7 @@ fn native_commit_replay_uses_only_exact_bound_request_copies() {
         } else {
             let mut other = request.clone();
             other.message = "different request".into();
-            serde_json::to_vec(&other).unwrap()
+            json_codec::to_vec(&other).unwrap()
         };
         fs::write(&paths[0], &bad).unwrap();
         assert_eq!(engine.commit_workspace(request.clone()).unwrap(), original);
@@ -117,7 +117,7 @@ fn native_commit_replay_does_not_trust_matching_but_unbound_saved_json() {
     let (_temp, mut engine, _repository, mut request) = saved();
     let paths = request_paths(&engine, &request);
     request.message = "not the published request".into();
-    let forged = serde_json::to_vec(&request).unwrap();
+    let forged = json_codec::to_vec(&request).unwrap();
     for path in paths {
         fs::write(path, &forged).unwrap();
     }
@@ -140,7 +140,7 @@ fn unrelated_saved_request_cannot_close_an_unsubmitted_workspace() {
     let mut target = request.clone();
     target.workspace_id = pending.workspace_id.clone();
     for path in request_paths(&engine, &target) {
-        fs::write(path, serde_json::to_vec(&request).unwrap()).unwrap();
+        fs::write(path, json_codec::to_vec(&request).unwrap()).unwrap();
     }
     let root = engine.root().to_owned();
     drop(engine);
@@ -172,7 +172,7 @@ fn forged_saved_request_identity_cannot_close_unsubmitted_bytes() {
             .request_digest,
     );
     for path in request_paths(&engine, &request) {
-        fs::write(path, serde_json::to_vec(&request).unwrap()).unwrap();
+        fs::write(path, json_codec::to_vec(&request).unwrap()).unwrap();
     }
     let root = engine.root().to_owned();
     drop(engine);
@@ -197,7 +197,7 @@ fn wire_commit_reconciles_after_publication_and_system_disk_loss() {
         let mut body = engine
             .seal_workspace(&workspace.workspace_id, "writer")
             .unwrap();
-        body["request_digest"] = serde_json::json!(
+        body["request_digest"] = json_codec::json!(
             storage_engine::commit_request_digest(&workspace.workspace_id, &body).unwrap()
         );
         let request = CommitRequest {
@@ -272,7 +272,7 @@ fn native_commit_replay_never_follows_unsafe_request_copy() {
     assert_eq!(fs::read(external).unwrap(), b"untouched");
 }
 
-fn saved_wire() -> (tempfile::TempDir, Engine, CommitRequest, serde_json::Value) {
+fn saved_wire() -> (tempfile::TempDir, Engine, CommitRequest, json_codec::Value) {
     let (temp, mut engine, repository, _) = saved();
     let branch = engine.state().repositories[&repository]
         .main_branch_id
@@ -284,7 +284,7 @@ fn saved_wire() -> (tempfile::TempDir, Engine, CommitRequest, serde_json::Value)
     let mut body = engine
         .seal_workspace(&workspace.workspace_id, "writer")
         .unwrap();
-    body["request_digest"] = serde_json::json!(
+    body["request_digest"] = json_codec::json!(
         storage_engine::commit_request_digest(&workspace.workspace_id, &body).unwrap()
     );
     let request = CommitRequest {
@@ -331,7 +331,7 @@ fn wire_receipt_cannot_close_a_different_manifest_with_the_same_workspace_id() {
         for path in request_paths(&engine, &request) {
             fs::write(
                 path.with_file_name("workspace.json"),
-                serde_json::to_vec(&workspace).unwrap(),
+                json_codec::to_vec(&workspace).unwrap(),
             )
             .unwrap();
         }

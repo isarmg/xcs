@@ -1,7 +1,7 @@
 use super::write_value;
 use super::{Error, ValueSerializer};
 
-type InnerSerializeValueSeq = <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeSeq;
+type InnerSerializeValueSeq = <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeSeq;
 
 #[doc(hidden)]
 pub struct SerializeValueArray<'d> {
@@ -18,13 +18,13 @@ impl<'d> SerializeValueArray<'d> {
     }
 }
 
-impl serde::ser::SerializeSeq for SerializeValueArray<'_> {
+impl data_serialization::ser::SerializeSeq for SerializeValueArray<'_> {
     type Ok = ();
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         self.inner.serialize_element(value).map_err(Error::wrap)
     }
@@ -34,13 +34,13 @@ impl serde::ser::SerializeSeq for SerializeValueArray<'_> {
     }
 }
 
-impl serde::ser::SerializeTuple for SerializeValueArray<'_> {
+impl data_serialization::ser::SerializeTuple for SerializeValueArray<'_> {
     type Ok = ();
     type Error = Error;
 
     fn serialize_element<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         self.inner.serialize_element(value).map_err(Error::wrap)
     }
@@ -50,13 +50,13 @@ impl serde::ser::SerializeTuple for SerializeValueArray<'_> {
     }
 }
 
-impl serde::ser::SerializeTupleStruct for SerializeValueArray<'_> {
+impl data_serialization::ser::SerializeTupleStruct for SerializeValueArray<'_> {
     type Ok = ();
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         self.inner.serialize_field(value).map_err(Error::wrap)
     }
@@ -67,7 +67,7 @@ impl serde::ser::SerializeTupleStruct for SerializeValueArray<'_> {
 }
 
 type InnerSerializeValueTupleVariant =
-    <toml_edit::ser::ValueSerializer as serde::Serializer>::SerializeTupleVariant;
+    <toml_edit::ser::ValueSerializer as data_serialization::Serializer>::SerializeTupleVariant;
 
 #[doc(hidden)]
 pub struct SerializeValueTupleVariant<'d> {
@@ -84,13 +84,13 @@ impl<'d> SerializeValueTupleVariant<'d> {
     }
 }
 
-impl serde::ser::SerializeTupleVariant for SerializeValueTupleVariant<'_> {
+impl data_serialization::ser::SerializeTupleVariant for SerializeValueTupleVariant<'_> {
     type Ok = ();
     type Error = Error;
 
     fn serialize_field<T>(&mut self, value: &T) -> Result<(), Error>
     where
-        T: serde::ser::Serialize + ?Sized,
+        T: data_serialization::ser::Serialize + ?Sized,
     {
         self.inner.serialize_field(value).map_err(Error::wrap)
     }

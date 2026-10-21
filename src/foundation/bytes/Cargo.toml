@@ -40,6 +40,7 @@ license = "MIT"
 repository = "https://github.com/tokio-rs/bytes"
 
 [features]
+serialization = ["dep:data-serialization"]
 default = ["std"]
 std = []
 
@@ -47,12 +48,12 @@ std = []
 name = "bytes"
 path = "src/lib.rs"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0.60"
 features = ["alloc"]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [lints.rust.unexpected_cfgs]
 level = "warn"

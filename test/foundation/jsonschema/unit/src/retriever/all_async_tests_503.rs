@@ -2,7 +2,7 @@
 mod async_tests {
     use super::*;
     use crate::Registry;
-    use serde_json::json;
+    use json_codec::json;
     #[cfg(feature = "resolve-file")]
     use std::io::Write;
 

@@ -1147,31 +1147,31 @@ impl<T> From<Ratio<T>> for (T, T) {
     }
 }
 
-#[cfg(feature = "serde")]
-impl<T> serde::Serialize for Ratio<T>
+#[cfg(feature = "serialization")]
+impl<T> data_serialization::Serialize for Ratio<T>
 where
-    T: serde::Serialize + Clone + Integer + PartialOrd,
+    T: data_serialization::Serialize + Clone + Integer + PartialOrd,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         (self.numer(), self.denom()).serialize(serializer)
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'de, T> serde::Deserialize<'de> for Ratio<T>
+#[cfg(feature = "serialization")]
+impl<'de, T> data_serialization::Deserialize<'de> for Ratio<T>
 where
-    T: serde::Deserialize<'de> + Clone + Integer + PartialOrd,
+    T: data_serialization::Deserialize<'de> + Clone + Integer + PartialOrd,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: data_serialization::Deserializer<'de>,
     {
-        use serde::de::Error;
-        use serde::de::Unexpected;
-        let (numer, denom): (T, T) = serde::Deserialize::deserialize(deserializer)?;
+        use data_serialization::de::Error;
+        use data_serialization::de::Unexpected;
+        let (numer, denom): (T, T) = data_serialization::Deserialize::deserialize(deserializer)?;
         if denom.is_zero() {
             Err(Error::invalid_value(
                 Unexpected::Signed(0),

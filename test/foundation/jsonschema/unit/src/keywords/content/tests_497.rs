@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use referencing::Draft;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use test_case::test_case;
 
     #[test_case(&json!({"contentEncoding": "base64"}), &json!("asd"), "/contentEncoding")]

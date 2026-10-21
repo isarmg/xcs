@@ -47,7 +47,7 @@ databake = ["zerovec?/databake"]
 default = []
 dense = ["dep:zerovec"]
 litemap = ["dep:litemap", "alloc"]
-serde = ["dep:serde_core", "dep:litemap", "alloc", "litemap/serde", "zerovec?/serde"]
+serialization = ["dep:serialization-core", "dep:litemap", "alloc", "litemap/serialization", "zerovec?/serialization"]
 yoke = ["dep:yoke"]
 zerofrom = ["dep:zerofrom"]
 zerovec = ["dep:zerovec"]
@@ -69,11 +69,11 @@ optional = true
 default-features = false
 path = "../litemap"
 
-[dependencies.serde_core]
+[dependencies.serialization-core]
 version = "1.0.220"
 optional = true
 default-features = false
-path = "../serde_core"
+path = "../serialization-core"
 
 [dependencies.yoke]
 version = "0.8.3"

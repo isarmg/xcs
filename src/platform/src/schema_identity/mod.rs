@@ -4,7 +4,7 @@
 //! This crate defines the current `product_metadata` contract and
 //! the byte-exact schema fingerprint shared by products and offline tooling.
 
-use serde::{Deserialize, Deserializer, Serialize};
+use data_serialization::{Deserialize, Deserializer, Serialize};
 use sha2::{Digest, Sha256};
 use std::fmt;
 use thiserror::Error;
@@ -50,7 +50,7 @@ impl<'de> Deserialize<'de> for SchemaIdentity {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
+        #[serialization(deny_unknown_fields)]
         struct UncheckedSchemaIdentity {
             application: String,
             application_version: String,
@@ -65,7 +65,7 @@ impl<'de> Deserialize<'de> for SchemaIdentity {
             value.schema_revision,
             value.schema_sha256,
         )
-        .map_err(serde::de::Error::custom)
+        .map_err(data_serialization::de::Error::custom)
     }
 }
 
@@ -171,7 +171,7 @@ pub fn schema_identity_from_metadata_rows(
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub struct SchemaRow {
     pub object_type: String,
     pub name: String,

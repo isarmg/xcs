@@ -242,49 +242,49 @@ mod tests {
     }
 
     #[test]
-    fn test_serde_serialize() {
+    fn test_serialization_serialize() {
         let inv_list = [0x41, 0x46, 0x4B, 0x55];
         let uniset = CodePointInversionList::try_from_u32_inversion_list_slice(&inv_list).unwrap();
-        let json_str = serde_json::to_string(&uniset).unwrap();
+        let json_str = json_codec::to_string(&uniset).unwrap();
         assert_eq!(json_str, r#"["A-E","K-T"]"#);
     }
 
     #[test]
-    fn test_serde_serialize_surrogates() {
+    fn test_serialization_serialize_surrogates() {
         let inv_list = [0xDFAB, 0xDFFF];
         let uniset = CodePointInversionList::try_from_u32_inversion_list_slice(&inv_list).unwrap();
-        let json_str = serde_json::to_string(&uniset).unwrap();
+        let json_str = json_codec::to_string(&uniset).unwrap();
         assert_eq!(json_str, r#"["U+DFAB-U+DFFE"]"#);
     }
 
     #[test]
-    fn test_serde_deserialize() {
+    fn test_serialization_deserialize() {
         let inv_list_str = r#"["A-E","K-T"]"#;
         let exp_inv_list = [0x41, 0x46, 0x4B, 0x55];
         let exp_uniset =
             CodePointInversionList::try_from_u32_inversion_list_slice(&exp_inv_list).unwrap();
-        let act_uniset: CodePointInversionList = serde_json::from_str(inv_list_str).unwrap();
+        let act_uniset: CodePointInversionList = json_codec::from_str(inv_list_str).unwrap();
         assert_eq!(act_uniset, exp_uniset);
     }
 
     #[test]
-    fn test_serde_deserialize_surrogates() {
+    fn test_serialization_deserialize_surrogates() {
         let inv_list_str = r#"["U+DFAB-U+DFFE"]"#;
         let exp_inv_list = [0xDFAB, 0xDFFF];
         let exp_uniset =
             CodePointInversionList::try_from_u32_inversion_list_slice(&exp_inv_list).unwrap();
-        let act_uniset: CodePointInversionList = serde_json::from_str(inv_list_str).unwrap();
+        let act_uniset: CodePointInversionList = json_codec::from_str(inv_list_str).unwrap();
         assert_eq!(act_uniset, exp_uniset);
     }
 
     #[test]
-    fn test_serde_deserialize_invalid() {
-        assert!(serde_json::from_str::<CodePointInversionList>("[65,70,98775,85]").is_err());
-        assert!(serde_json::from_str::<CodePointInversionList>("[65,70,U+FFFFFFFFFF,85]").is_err());
+    fn test_serialization_deserialize_invalid() {
+        assert!(json_codec::from_str::<CodePointInversionList>("[65,70,98775,85]").is_err());
+        assert!(json_codec::from_str::<CodePointInversionList>("[65,70,U+FFFFFFFFFF,85]").is_err());
     }
 
     #[test]
-    fn test_serde_with_postcard_roundtrip() -> Result<(), postcard::Error> {
+    fn test_serialization_with_postcard_roundtrip() -> Result<(), postcard::Error> {
         let set = CodePointInversionList::bmp();
         let set_serialized: Vec<u8> = postcard::to_allocvec(&set).unwrap();
         let set_deserialized: CodePointInversionList =

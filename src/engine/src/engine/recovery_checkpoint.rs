@@ -7,7 +7,7 @@
 //! historical state decoding, not verification work or total startup time.
 use super::Engine;
 use crate::{disk::*, journal::*, *};
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
     io::Read,
@@ -15,7 +15,7 @@ use std::{
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 pub(super) struct Checkpoint {
     config_hash: String,
     pub sequence: u64,
@@ -26,7 +26,7 @@ pub(super) struct Checkpoint {
     version_ids: BTreeSet<String>,
 }
 #[derive(Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct Envelope {
     checkpoint: Checkpoint,
     hash: String,
@@ -74,13 +74,13 @@ const MAX_COVERAGE_BYTES: usize = 8 * 1024 * 1024;
 const MAX_COVERAGE_ENTRIES: usize = 32_768;
 pub(super) type Records = BTreeMap<u64, BTreeMap<String, Vec<(String, Record)>>>;
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct CoverageEntry {
     path: String,
     value: Covered,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(tag = "kind", deny_unknown_fields)]
+#[serialization(tag = "kind", deny_unknown_fields)]
 enum Covered {
     Directory {
         children: Option<Vec<String>>,

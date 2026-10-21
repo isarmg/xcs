@@ -3027,11 +3027,11 @@ impl<'bump> io::Write for Vec<'bump, u8> {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 mod serialize {
     use super::*;
 
-    use serde::{ser::SerializeSeq, Serialize, Serializer};
+    use data_serialization::{ser::SerializeSeq, Serialize, Serializer};
 
     impl<'a, T> Serialize for Vec<'a, T>
     where

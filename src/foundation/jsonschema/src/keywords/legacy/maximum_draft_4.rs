@@ -3,7 +3,7 @@ use crate::{
     keywords::{minmax, CompilationResult},
     Json,
 };
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 
 #[inline]
 pub(crate) fn compile<'a, F: Json>(

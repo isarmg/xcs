@@ -34,11 +34,11 @@ mod error;
 mod impl_const;
 pub mod planes;
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub mod toml;
 
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 pub use cptrie::CodePointMapRange;
 pub use cptrie::CodePointMapRangeIterator;

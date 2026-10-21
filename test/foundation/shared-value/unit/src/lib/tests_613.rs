@@ -117,14 +117,14 @@ mod tests {
 
     #[test]
     fn serialization_works() {
-        let s = serde_json::to_string(&SharedValue::Borrowed("foo"))
+        let s = json_codec::to_string(&SharedValue::Borrowed("foo"))
             .expect("should serialize string");
         assert_eq!(s, "\"foo\"");
     }
 
     #[test]
     fn deserialization_works() {
-        let s: SharedValue<str> = serde_json::from_str("\"bar\"")
+        let s: SharedValue<str> = json_codec::from_str("\"bar\"")
             .expect("should deserialize from string");
         assert_eq!(s, SharedValue::from(String::from("bar")));
     }

@@ -173,7 +173,7 @@ impl Engine {
                             || snapshot
                                 .scalars
                                 .get("sequence")
-                                .and_then(serde_json::Value::as_str)
+                                .and_then(json_codec::Value::as_str)
                                 != Some(candidate.sequence.to_string().as_str())
                         {
                             return Err(Error::new("OBJECT_CORRUPT", "snapshot sequence differs"));
@@ -193,7 +193,7 @@ fn operation_not_found() -> Error {
 
 // Verify exact bounded pages one at a time. Do not materialize unrelated maps,
 // or trust an unverified index/cache as a substitute for the accepted root.
-fn snapshot_entry<T: serde::Serialize + serde::de::DeserializeOwned>(
+fn snapshot_entry<T: data_serialization::Serialize + data_serialization::de::DeserializeOwned>(
     members: &[DiskConfig],
     snapshot: &Snapshot,
     field: &str,

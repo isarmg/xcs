@@ -272,30 +272,30 @@ impl<T> ExactSizeIterator for IntoIter<T> {
 
 impl<T> FusedIterator for IntoIter<T> {}
 
-#[cfg(feature = "serde")]
-impl<T> serde::Serialize for IndexSet<T>
+#[cfg(feature = "serialization")]
+impl<T> data_serialization::Serialize for IndexSet<T>
 where
-    T: serde::Serialize + Eq + Hash + Ord,
+    T: data_serialization::Serialize + Eq + Hash + Ord,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::ser::Serializer,
+        S: data_serialization::ser::Serializer,
     {
-        serde::Serialize::serialize(&self.inner, serializer)
+        data_serialization::Serialize::serialize(&self.inner, serializer)
     }
 }
 
-#[cfg(feature = "serde")]
-impl<'a, T> serde::Deserialize<'a> for IndexSet<T>
+#[cfg(feature = "serialization")]
+impl<'a, T> data_serialization::Deserialize<'a> for IndexSet<T>
 where
-    T: serde::Deserialize<'a> + Eq + Hash + Ord + Clone,
+    T: data_serialization::Deserialize<'a> + Eq + Hash + Ord + Clone,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::de::Deserializer<'a>,
+        D: data_serialization::de::Deserializer<'a>,
     {
         Ok(IndexSet {
-            inner: serde::Deserialize::deserialize(deserializer)?,
+            inner: data_serialization::Deserialize::deserialize(deserializer)?,
         })
     }
 }

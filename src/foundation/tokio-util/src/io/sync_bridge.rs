@@ -178,7 +178,7 @@ use tokio::io::{
 /// #     impl<T: 'static> DeserializeOwned for T {}
 /// # }
 /// # mod serde_json {
-/// #     use super::serde::DeserializeOwned;
+/// #     use super::data_serialization::DeserializeOwned;
 /// #     pub fn from_slice<T: DeserializeOwned>(_: &[u8]) -> Result<T, std::io::Error> {
 /// #         unimplemented!()
 /// #     }
@@ -192,7 +192,7 @@ use tokio::io::{
 ///    reader.read_to_end(&mut data).await?;
 ///
 ///    // Deserialize the data from the Vec<u8> into a MyStruct instance.
-///    let value: MyStruct = serde_json::from_slice(&data)?;
+///    let value: MyStruct = json_codec::from_slice(&data)?;
 ///
 ///    Ok(value)
 ///}

@@ -5,8 +5,8 @@ use std::hash::{BuildHasher, Hash};
 use std::iter::FromIterator;
 use std::ops::{BitAnd, BitOr, BitXor, Deref, DerefMut, Sub};
 
-#[cfg(feature = "serde")]
-use serde::{
+#[cfg(feature = "serialization")]
+use data_serialization::{
     de::{Deserialize, Deserializer},
     ser::{Serialize, Serializer},
 };
@@ -304,7 +304,7 @@ impl<T> Default for AHashSet<T, RandomState> {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<T> Serialize for AHashSet<T>
 where
     T: Serialize + Eq + Hash,
@@ -314,7 +314,7 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de, T> Deserialize<'de> for AHashSet<T>
 where
     T: Deserialize<'de> + Eq + Hash,

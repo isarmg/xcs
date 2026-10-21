@@ -32,7 +32,7 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use data_serialization::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{
     borrow::{Borrow, Cow},
     ffi::{CStr, OsStr},
@@ -591,7 +591,7 @@ where
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'a>,
+        D: data_serialization::Deserializer<'a>,
     {
         <T::Owned>::deserialize(deserializer).map(SharedValue::Owned)
     }
@@ -604,7 +604,7 @@ where
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: data_serialization::Serializer,
     {
         self.as_ref().serialize(serializer)
     }

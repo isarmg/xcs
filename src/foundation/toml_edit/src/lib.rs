@@ -94,9 +94,9 @@ mod repr;
 mod table;
 mod value;
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub mod de;
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 pub mod ser;
 
 pub mod visit;

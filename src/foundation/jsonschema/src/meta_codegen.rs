@@ -2,7 +2,7 @@
 //! `meta::validator_for_draft` under the `macros` feature.
 
 use crate::{Draft, ErrorIterator, ValidationError};
-use serde_json::Value;
+use json_codec::Value;
 
 pub(crate) type ValidateFn = for<'i> fn(&'i Value) -> Result<(), ValidationError<'i>>;
 pub(crate) type IterErrorsFn = for<'i> fn(&'i Value) -> ErrorIterator<'i>;

@@ -73,8 +73,8 @@ mod error;
 mod helpers;
 mod options;
 mod reader;
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 mod varint;
 mod zerotrie;
 

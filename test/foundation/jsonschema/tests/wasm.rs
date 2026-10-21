@@ -1,7 +1,7 @@
 #![cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 
 use jsonschema::{self, Draft};
-use serde_json::json;
+use json_codec::json;
 use wasm_bindgen_test::wasm_bindgen_test;
 
 #[wasm_bindgen_test]

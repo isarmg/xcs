@@ -1,7 +1,7 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use jsonschema::{validator_for, Draft, Evaluation, Retrieve, Uri, Validator};
-use serde_json::Value;
+use json_codec::Value;
 use std::sync::OnceLock;
 use testsuite::{output_suite, OutputRemote, OutputTest};
 
@@ -115,7 +115,7 @@ fn normalize_output(value: &mut Value) {
 
             let mut keys: Vec<_> = map.keys().cloned().collect();
             keys.sort_unstable();
-            let mut sorted = serde_json::Map::new();
+            let mut sorted = json_codec::Map::new();
             for key in keys {
                 if let Some(value) = map.remove(&key) {
                     sorted.insert(key, value);
@@ -154,7 +154,7 @@ fn normalize_const_values(schema: &mut Value) {
 fn output_spec_validator() -> &'static Validator {
     static VALIDATOR: OnceLock<Validator> = OnceLock::new();
     VALIDATOR.get_or_init(|| {
-        let mut schema: Value = serde_json::from_str(include_str!("output_spec_schema.json"))
+        let mut schema: Value = json_codec::from_str(include_str!("output_spec_schema.json"))
             .expect("output spec schema JSON is valid");
         if let Value::Object(ref mut map) = schema {
             map.remove("$schema");
@@ -184,17 +184,17 @@ fn build_validator(schema: &Value, version: &str, file: &str) -> Validator {
 fn produce_output(evaluation: &Evaluation, format: &str) -> Option<Value> {
     match format {
         "flag" => {
-            let value = serde_json::to_value(evaluation.flag()).expect("flag output serializable");
+            let value = json_codec::to_value(evaluation.flag()).expect("flag output serializable");
             debug_output("flag", &value);
             Some(value)
         }
         "list" => {
-            let value = serde_json::to_value(evaluation.list()).expect("list output serializable");
+            let value = json_codec::to_value(evaluation.list()).expect("list output serializable");
             debug_output("list", &value);
             Some(value)
         }
         "hierarchical" => {
-            let value = serde_json::to_value(evaluation.hierarchical())
+            let value = json_codec::to_value(evaluation.hierarchical())
                 .expect("hierarchical output serializable");
             debug_output("hierarchical", &value);
             Some(value)
@@ -209,7 +209,7 @@ fn debug_output(format: &str, value: &Value) {
     if std::env::var("JSONSCHEMA_DEBUG_OUTPUT").is_ok() {
         eprintln!(
             "=== {format} ===\n{}",
-            serde_json::to_string_pretty(value).expect("output to stringify")
+            json_codec::to_string_pretty(value).expect("output to stringify")
         );
     }
 }
@@ -256,7 +256,7 @@ impl Retrieve for OutputSchemaRetriever {
             .iter()
             .find(|doc| doc.uri == uri.as_str())
             .map(|doc| {
-                serde_json::from_str(doc.contents).expect("Output schema must be valid JSON")
+                json_codec::from_str(doc.contents).expect("Output schema must be valid JSON")
             })
             .ok_or_else(|| format!("Unknown output schema reference: {uri}").into())
     }

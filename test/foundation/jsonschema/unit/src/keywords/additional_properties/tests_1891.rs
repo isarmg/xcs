@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{properties::HASHMAP_THRESHOLD, tests_util, PatternOptions};
-    use serde_json::{json, Map, Value};
+    use json_codec::{json, Map, Value};
     use test_case::test_case;
 
     // `properties` + `additionalProperties: false` + one `required` name. `a`..`e` are five

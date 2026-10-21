@@ -1,7 +1,7 @@
 //! Read-only sampling of an owned, detached disk observation plan.
 use super::error;
 use crate::ApiError;
-use serde_json::{Value, json};
+use json_codec::{Value, json};
 use storage_engine::DiskObservationPlan;
 
 pub(super) fn observe(observation: DiskObservationPlan) -> Result<Value, ApiError> {

@@ -1,5 +1,5 @@
-use serde::de;
-use serde::ser;
+use data_serialization::de;
+use data_serialization::ser;
 
 use crate::map::Map;
 use crate::Value;
@@ -99,7 +99,7 @@ impl<'de> de::Deserializer<'de> for Table {
         Value::Table(self).deserialize_newtype_struct(name, visitor)
     }
 
-    serde::forward_to_deserialize_any! {
+    data_serialization::forward_to_deserialize_any! {
         bool u8 u16 u32 u64 i8 i16 i32 i64 f32 f64 char str string unit seq
         bytes byte_buf map unit_struct tuple_struct struct
         tuple ignored_any identifier

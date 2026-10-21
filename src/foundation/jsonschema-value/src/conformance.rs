@@ -1,6 +1,6 @@
 //! Checks a representation against the contract the validator relies on.
 
-use serde_json::{json, Value};
+use json_codec::{json, Value};
 
 use crate::{types::JsonType, Array, Json, JsonNumber, Node, Object};
 
@@ -128,7 +128,7 @@ fn assert_scalars<'a, F: Json>(member: &impl Fn(&str) -> F::Node<'a>) {
     assert_eq!(member("string").as_boolean(), None, "as_boolean None");
 }
 
-// A number must be readable without building a `serde_json::Number`
+// A number must be readable without building a `json_codec::Number`
 fn assert_numbers<'a, F: Json>(member: &impl Fn(&str) -> F::Node<'a>) {
     let integer = member("integer").as_number().expect("integer");
     assert_eq!(integer.as_u64(), Some(42), "as_u64");
@@ -137,7 +137,7 @@ fn assert_numbers<'a, F: Json>(member: &impl Fn(&str) -> F::Node<'a>) {
     assert!(integer.is_integer(), "integer is_integer");
     assert_eq!(
         integer.to_number().as_ref(),
-        &serde_json::Number::from(42),
+        &json_codec::Number::from(42),
         "to_number"
     );
 

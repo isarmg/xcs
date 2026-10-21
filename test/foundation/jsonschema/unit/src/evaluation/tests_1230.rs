@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::{json, Value};
+    use json_codec::{json, Value};
     use std::sync::Arc;
     use test_case::test_case;
 
@@ -9,7 +9,7 @@ mod tests {
         Location::new()
     }
 
-    fn annotation(value: serde_json::Value) -> Annotations {
+    fn annotation(value: json_codec::Value) -> Annotations {
         Annotations::new(value)
     }
 
@@ -22,7 +22,7 @@ mod tests {
         }
     }
 
-    fn leaf_with_annotation(schema: &str, ann: serde_json::Value) -> EvaluationNode {
+    fn leaf_with_annotation(schema: &str, ann: json_codec::Value) -> EvaluationNode {
         EvaluationNode::valid(
             loc(),
             None,
@@ -130,7 +130,7 @@ mod tests {
         );
         let evaluation = Evaluation::with_root(arena, root);
         let flag = evaluation.flag();
-        let serialized = serde_json::to_value(flag).expect("serialization succeeds");
+        let serialized = json_codec::to_value(flag).expect("serialization succeeds");
         assert_eq!(serialized, json!({"valid": true}));
     }
 
@@ -147,7 +147,7 @@ mod tests {
         );
         let evaluation = Evaluation::with_root(arena, root);
         let list = evaluation.list();
-        let serialized = serde_json::to_value(list).expect("serialization succeeds");
+        let serialized = json_codec::to_value(list).expect("serialization succeeds");
         assert_eq!(
             serialized,
             json!({
@@ -179,7 +179,7 @@ mod tests {
         );
         let evaluation = Evaluation::with_root(arena, root);
         let list = evaluation.list();
-        let serialized = serde_json::to_value(list).expect("serialization succeeds");
+        let serialized = json_codec::to_value(list).expect("serialization succeeds");
         assert_eq!(
             serialized,
             json!({
@@ -225,7 +225,7 @@ mod tests {
         );
         let evaluation = Evaluation::with_root(arena, root);
         let hierarchical = evaluation.hierarchical();
-        let serialized = serde_json::to_value(hierarchical).expect("serialization succeeds");
+        let serialized = json_codec::to_value(hierarchical).expect("serialization succeeds");
         assert_eq!(
             serialized,
             json!({
@@ -270,7 +270,7 @@ mod tests {
             ChildList::from_nodes(&mut arena, vec![invalid_child, prefix_child]),
         );
         let evaluation = Evaluation::with_root(arena, root);
-        let list = serde_json::to_value(evaluation.list()).expect("serialization succeeds");
+        let list = json_codec::to_value(evaluation.list()).expect("serialization succeeds");
         assert_eq!(
             list,
             json!({
@@ -302,7 +302,7 @@ mod tests {
             })
         );
         let hierarchical =
-            serde_json::to_value(evaluation.hierarchical()).expect("serialization succeeds");
+            json_codec::to_value(evaluation.hierarchical()).expect("serialization succeeds");
         assert_eq!(
             hierarchical,
             json!({
@@ -529,7 +529,7 @@ mod tests {
     #[test]
     fn error_entries_serialization_empty() {
         let entries = ErrorEntriesSerializer(&[]);
-        let serialized = serde_json::to_value(&entries).expect("serialization succeeds");
+        let serialized = json_codec::to_value(&entries).expect("serialization succeeds");
         assert!(serialized.is_object());
         assert_eq!(serialized.as_object().unwrap().len(), 0);
     }
@@ -538,7 +538,7 @@ mod tests {
     fn error_entries_serialization_single() {
         let errors = vec![ErrorDescription::from_string("test error")];
         let entries = ErrorEntriesSerializer(&errors);
-        let serialized = serde_json::to_value(&entries).expect("serialization succeeds");
+        let serialized = json_codec::to_value(&entries).expect("serialization succeeds");
         assert!(serialized.is_object());
         assert_eq!(serialized.as_object().unwrap().len(), 1);
         assert!(serialized.get("error").is_some());
@@ -552,7 +552,7 @@ mod tests {
             ErrorDescription::new("gamma", "error 3".to_string()),
         ];
         let entries = ErrorEntriesSerializer(&errors);
-        let serialized = serde_json::to_value(&entries).expect("serialization succeeds");
+        let serialized = json_codec::to_value(&entries).expect("serialization succeeds");
         assert_eq!(serialized.as_object().unwrap().len(), 3);
         assert!(serialized.get("alpha").is_some());
         assert!(serialized.get("beta").is_some());
@@ -566,7 +566,7 @@ mod tests {
             ErrorDescription::new("required", "\"bar\" is required".to_string()),
         ];
         let entries = ErrorEntriesSerializer(&errors);
-        let serialized = serde_json::to_value(&entries).expect("serialization succeeds");
+        let serialized = json_codec::to_value(&entries).expect("serialization succeeds");
         let value = serialized
             .get("required")
             .expect("required keyword present")
@@ -595,7 +595,7 @@ mod tests {
         );
 
         let evaluation = Evaluation::with_root(arena, root);
-        let list = serde_json::to_value(evaluation.list()).expect("serialization succeeds");
+        let list = json_codec::to_value(evaluation.list()).expect("serialization succeeds");
         let root_unit = list
             .get("details")
             .and_then(|value| value.as_array())
@@ -678,7 +678,7 @@ mod tests {
 
     #[test]
     fn absolute_keyword_location_populated_with_id() {
-        use serde_json::json;
+        use json_codec::json;
 
         // Schema with $id should populate absoluteKeywordLocation
         let schema = json!({
@@ -833,8 +833,8 @@ mod tests {
         let validator = crate::validator_for(schema).expect("valid schema");
         let evaluation = validator.evaluate(&json!("x"));
         (
-            serde_json::to_value(evaluation.list()).expect("serialization succeeds"),
-            serde_json::to_value(evaluation.hierarchical()).expect("serialization succeeds"),
+            json_codec::to_value(evaluation.list()).expect("serialization succeeds"),
+            json_codec::to_value(evaluation.hierarchical()).expect("serialization succeeds"),
             evaluation.iter_annotations().count(),
         )
     }

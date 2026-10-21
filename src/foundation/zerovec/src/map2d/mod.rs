@@ -10,8 +10,8 @@ pub(crate) mod map;
 
 #[cfg(feature = "databake")]
 mod databake;
-#[cfg(feature = "serde")]
-mod serde;
+#[cfg(feature = "serialization")]
+mod data_serialization;
 
 pub use crate::ZeroMap2d;
 pub use borrowed::ZeroMap2dBorrowed;

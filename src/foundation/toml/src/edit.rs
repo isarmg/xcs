@@ -21,7 +21,7 @@ pub(crate) mod de {
         }
     }
 
-    impl serde::de::Error for Error {
+    impl data_serialization::de::Error for Error {
         fn custom<T>(msg: T) -> Self
         where
             T: std::fmt::Display,
@@ -66,7 +66,7 @@ pub(crate) mod ser {
         }
     }
 
-    impl serde::ser::Error for Error {
+    impl data_serialization::ser::Error for Error {
         fn custom<T>(msg: T) -> Self
         where
             T: std::fmt::Display,

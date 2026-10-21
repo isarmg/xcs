@@ -35,11 +35,12 @@ repository = "https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide"
 resolver = "1"
 
 [features]
+serialization = ["dep:data-serialization"]
 block-boundary = []
 default = ["with-alloc"]
 rustc-dep-of-std = ["adler2/rustc-dep-of-std"]
 simd = ["simd-adler32"]
-std = ["serde?/std"]
+std = ["data-serialization?/std"]
 with-alloc = []
 
 [lib]
@@ -51,7 +52,7 @@ version = "2.0"
 default-features = false
 path = "../adler2"
 
-[dependencies.serde]
+[dependencies.data-serialization]
 version = "1.0"
 features = [
     "derive",
@@ -59,7 +60,7 @@ features = [
 ]
 optional = true
 default-features = false
-path = "../serde"
+path = "../data-serialization"
 
 [dependencies.simd-adler32]
 version = "0.3.8"

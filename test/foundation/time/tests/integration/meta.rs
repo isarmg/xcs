@@ -15,7 +15,7 @@ use quickcheck::Arbitrary;
 use rand08::distributions::{Distribution as DistributionRand08, Standard as StandardRand08};
 use rand09::distr::{Distribution as DistributionRand09, StandardUniform as StandardUniformRand09};
 use rstest::rstest;
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 #[expect(deprecated)]
 use time::Instant;
 use time::format_description::well_known::iso8601;
@@ -473,7 +473,7 @@ assert_impl! { error::ComponentRange:
     Debug,
     Display,
     StdError,
-    serde::de::Expected,
+    data_serialization::de::Expected,
     Hash,
     PartialEq<error::ComponentRange>,
     TryFrom<Error, Error = error::DifferentVariant>,

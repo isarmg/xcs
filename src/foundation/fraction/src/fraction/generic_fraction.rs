@@ -68,7 +68,7 @@ where
 /// assert_eq! (first + second, F::new (3, 4));
 /// ```
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "with-serde-support", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "with-serialization-support", derive(Serialize, Deserialize))]
 pub enum GenericFraction<T>
 where
     T: Clone + Integer,

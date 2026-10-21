@@ -10,7 +10,7 @@ use crate::{
 };
 use ahash::AHashSet;
 use jsonschema_value::JsonNumber;
-use serde_json::{Map, Value};
+use json_codec::{Map, Value};
 use std::{borrow::Cow, marker::PhantomData};
 
 const STRING_ENUM_THRESHOLD: usize = 10;

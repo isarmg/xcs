@@ -2,7 +2,7 @@
 mod tests {
     use super::*;
     use crate::{routing::get, test_helpers::*, Router};
-    use serde::Deserialize;
+    use data_serialization::Deserialize;
     use std::collections::HashMap;
 
     #[crate::test]
@@ -167,12 +167,12 @@ mod tests {
     #[crate::test]
     async fn str_reference_deserialize() {
         struct Param(String);
-        impl<'de> serde::Deserialize<'de> for Param {
+        impl<'de> data_serialization::Deserialize<'de> for Param {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
-                D: serde::Deserializer<'de>,
+                D: data_serialization::Deserializer<'de>,
             {
-                let s = <&str as serde::Deserialize>::deserialize(deserializer)?;
+                let s = <&str as data_serialization::Deserialize>::deserialize(deserializer)?;
                 Ok(Param(s.to_owned()))
             }
         }
@@ -338,7 +338,7 @@ mod tests {
 
     #[crate::test]
     async fn wrong_number_of_parameters_json() {
-        use serde_json::Value;
+        use json_codec::Value;
 
         let app = Router::new()
             .route("/one/{a}", get(|_: Path<(Value, Value)>| async {}))

@@ -20,8 +20,8 @@ use core::ptr;
 
 
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "serialization")]
+use data_serialization::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// Basic operations for a reader-writer lock.
 ///
@@ -332,7 +332,7 @@ pub struct RwLock<R, T: ?Sized> {
 }
 
 // Copied and modified from serde
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<R, T> Serialize for RwLock<R, T>
 where
     R: RawRwLock,
@@ -346,7 +346,7 @@ where
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 impl<'de, R, T> Deserialize<'de> for RwLock<R, T>
 where
     R: RawRwLock,

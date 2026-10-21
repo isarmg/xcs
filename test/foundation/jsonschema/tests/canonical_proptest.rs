@@ -1,10 +1,10 @@
 #![cfg(not(target_arch = "wasm32"))]
-use hegel::{extras::serde_json as json_gs, generators as gs, generators::Generator, TestCase};
+use hegel::{extras::json_codec as json_gs, generators as gs, generators::Generator, TestCase};
 use jsonschema::{
     canonical::{CanonicalSchema, CanonicalView, Containment, Satisfiability},
     Draft, JsonType,
 };
-use serde_json::{json, Map, Value};
+use json_codec::{json, Map, Value};
 
 #[path = "generation/mod.rs"]
 mod generation;
@@ -72,7 +72,7 @@ const DIVISORS: &[&str] = &[
 
 fn divisor(tc: &TestCase) -> Value {
     let text = tc.draw(gs::sampled_from(DIVISORS.to_vec()));
-    serde_json::from_str(text).expect("valid number literal")
+    json_codec::from_str(text).expect("valid number literal")
 }
 
 fn ordered<T: Ord>(a: T, b: T) -> (T, T) {
@@ -1226,7 +1226,7 @@ fn a_union_keeps_no_leaf_a_sibling_of_its_kind_already_holds(tc: TestCase) {
 }
 
 /// The divisors a numeric leaf carries, required and barred.
-fn divisors(schema: &CanonicalSchema) -> (Vec<serde_json::Number>, Vec<serde_json::Number>) {
+fn divisors(schema: &CanonicalSchema) -> (Vec<json_codec::Number>, Vec<json_codec::Number>) {
     match schema.view() {
         CanonicalView::Integer(leaf) => (leaf.multiple_of, leaf.not_multiple_of),
         CanonicalView::Number(leaf) => (leaf.multiple_of, leaf.not_multiple_of),
@@ -1781,7 +1781,7 @@ fn definition_graph(tc: &TestCase, links: &'static [Link]) -> Value {
         let link = tc.draw(gs::sampled_from(links.to_vec()).print_as_debug());
         definition_body(link, &target(tc), &target(tc))
     };
-    let mut definitions = serde_json::Map::new();
+    let mut definitions = json_codec::Map::new();
     for index in 0..size {
         definitions.insert(format!("d{index}"), body(tc));
     }
@@ -2325,7 +2325,7 @@ fn metaschema_harnesses() -> &'static [MetaHarness] {
         ]
         .into_iter()
         .map(|(draft, dialect, source)| {
-            let meta: Value = serde_json::from_str(source).expect("valid metaschema JSON");
+            let meta: Value = json_codec::from_str(source).expect("valid metaschema JSON");
             let canonical = jsonschema::canonical::options()
                 .with_draft(draft)
                 .canonicalize(&meta)
@@ -2521,7 +2521,7 @@ fn drawn_instances_reach_modeled_leaves(tc: TestCase) {
             .max_value(REACH_CASES.len() - 1),
     );
     let case = &REACH_CASES[index];
-    let schema: Value = serde_json::from_str(case.source).expect("valid row");
+    let schema: Value = json_codec::from_str(case.source).expect("valid row");
     let canonical = jsonschema::canonical::options()
         .with_draft(Draft::Draft7)
         .canonicalize(&schema)

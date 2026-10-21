@@ -255,7 +255,7 @@ fn modified_local_maintenance_plan_cannot_execute_a_different_preview_after_rest
         .root
         .join("plans")
         .join(format!("{}.json", plan.plan_id));
-    plan.input["version_ids"] = serde_json::json!([second]);
+    plan.input["version_ids"] = json_codec::json!([second]);
     crate::disk::write_json(&plan_path, &plan, true).unwrap();
     drop(engine);
     let mut engine = Engine::open(&fixture.root).unwrap();
@@ -1336,7 +1336,7 @@ fn published_success_survives_later_content_damage() {
 
 #[test]
 fn explicit_upload_generations_and_sealed_wire_requests_are_stable() {
-    use serde_json::json;
+    use json_codec::json;
     let f = Fixture::new();
     let mut e = f.initialize();
     let r = repository(&mut e, 3);
@@ -1423,7 +1423,7 @@ fn system_disk_restore_recovers_auth_and_unsubmitted_full_bytes() {
     let mut e = f.initialize();
     let r = repository(&mut e, 3);
     e.persist_auth_state(
-        serde_json::json!({"users":{"admin":{"password_hash":"test-hash-only"}}}),
+        json_codec::json!({"users":{"admin":{"password_hash":"test-hash-only"}}}),
         "admin",
         &new_id("op"),
     )
@@ -1898,7 +1898,7 @@ fn auth_sessions_do_not_stale_plans_and_offline_tombstones_are_proven() {
         .create_purge_plan(&r.history_tree_id, vec![old.clone()], "admin")
         .unwrap();
     e.persist_auth_state(
-        serde_json::json!({"session_hashes":["not-raw-session-token"]}),
+        json_codec::json!({"session_hashes":["not-raw-session-token"]}),
         "admin",
         &new_id("op"),
     )
@@ -1909,10 +1909,10 @@ fn auth_sessions_do_not_stale_plans_and_offline_tombstones_are_proven() {
     assert_eq!(report.tombstoned_versions, 1);
     assert_eq!(report.healthy_replicas, 1);
     let dir = crate::disk::version_dir(&f.config.disks[0], &r.history_tree_id, &old);
-    let mut proof: serde_json::Value =
-        serde_json::from_slice(&fs::read(dir.join("purged.json")).unwrap()).unwrap();
-    proof["content_state_page"][&old] = serde_json::json!("AVAILABLE");
-    fs::write(dir.join("purged.json"), serde_json::to_vec(&proof).unwrap()).unwrap();
+    let mut proof: json_codec::Value =
+        json_codec::from_slice(&fs::read(dir.join("purged.json")).unwrap()).unwrap();
+    proof["content_state_page"][&old] = json_codec::json!("AVAILABLE");
+    fs::write(dir.join("purged.json"), json_codec::to_vec(&proof).unwrap()).unwrap();
     assert_eq!(
         offline_check(&f.config.disks[0].root).unwrap().issues.len(),
         1
@@ -1966,12 +1966,12 @@ fn partial_publication_is_not_visible_with_two_members_and_receipt_tampering_is_
             .version_id
             .clone();
         let dir = crate::disk::version_dir(&f.config.disks[0], &r.history_tree_id, &version);
-        let mut proof: serde_json::Value =
-            serde_json::from_slice(&fs::read(dir.join("publication-proof.json")).unwrap()).unwrap();
-        proof["publication_receipts"][0]["record"]["record_type"] = serde_json::json!("PREPARE");
+        let mut proof: json_codec::Value =
+            json_codec::from_slice(&fs::read(dir.join("publication-proof.json")).unwrap()).unwrap();
+        proof["publication_receipts"][0]["record"]["record_type"] = json_codec::json!("PREPARE");
         fs::write(
             dir.join("publication-proof.json"),
-            serde_json::to_vec(&proof).unwrap(),
+            json_codec::to_vec(&proof).unwrap(),
         )
         .unwrap();
         assert_eq!(
@@ -2002,23 +2002,23 @@ fn production_does_not_silently_accept_directory_simulation() {
 
 #[test]
 fn legacy_branch_and_workspace_json_keep_their_canonical_bytes() {
-    let old_branch = serde_json::json!({
+    let old_branch = json_codec::json!({
         "branch_id":new_id("br"),"history_tree_id":new_id("history"),"name":"legacy",
         "head_commit_id":new_id("commit"),"fork_commit_id":new_id("commit"),
         "branch_kind":"full","generation":"1","state":"active"
     });
-    let decoded: Branch = serde_json::from_value(old_branch.clone()).unwrap();
+    let decoded: Branch = json_codec::from_value(old_branch.clone()).unwrap();
     assert!(decoded.pending_file_versions.is_empty());
     assert_eq!(
         canonical_json(&decoded).unwrap(),
         canonical_json(&old_branch).unwrap()
     );
-    let old_workspace = serde_json::json!({
+    let old_workspace = json_codec::json!({
         "workspace_id":new_id("ws"),"purpose":"normal","branch_id":decoded.branch_id,
         "principal":"admin","base_head":decoded.head_commit_id,"fencing_token":"1",
         "files":{},"namespace_operations":[],"created_at":"1","state":"open"
     });
-    let decoded: Workspace = serde_json::from_value(old_workspace.clone()).unwrap();
+    let decoded: Workspace = json_codec::from_value(old_workspace.clone()).unwrap();
     assert!(decoded.selected_file_branches.is_empty());
     assert_eq!(
         canonical_json(&decoded).unwrap(),
@@ -3382,7 +3382,7 @@ fn detached_public_wire_commit_keeps_exact_digest_and_retry_binding() {
     request.operation_id = body["operation_id"].as_str().unwrap().into();
     request.message.clear();
     body["request_digest"] =
-        serde_json::json!(commit_request_digest(&workspace.workspace_id, &body).unwrap());
+        json_codec::json!(commit_request_digest(&workspace.workspace_id, &body).unwrap());
     let prepared = engine
         .prepare_workspace_commit(request.clone(), Some(body.clone()))
         .unwrap()
@@ -3402,7 +3402,7 @@ fn detached_public_wire_commit_keeps_exact_digest_and_retry_binding() {
         engine.finish_workspace_commit(retry).unwrap().commit_id,
         result.commit_id
     );
-    body["message"] = serde_json::json!("changed retry");
+    body["message"] = json_codec::json!("changed retry");
     let plan = engine
         .prepare_workspace_commit(request, Some(body))
         .unwrap();
@@ -3568,16 +3568,16 @@ fn history_export_reads_exact_evidence_replicas_without_repair() {
             _ => crate::journal::publication_seal_path(disk, &record.candidate_hash),
         };
         let path = path_for(&members[0]);
-        let mut damaged: serde_json::Value =
-            serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        let mut damaged: json_codec::Value =
+            json_codec::from_slice(&fs::read(&path).unwrap()).unwrap();
         if kind == "seal" {
-            damaged["receipts"] = serde_json::json!([]);
+            damaged["receipts"] = json_codec::json!([]);
         } else if kind == "candidate" {
-            damaged["request_digest"] = serde_json::json!("wrong digest");
+            damaged["request_digest"] = json_codec::json!("wrong digest");
         } else {
-            damaged["candidate_hash"] = serde_json::json!("0".repeat(64));
+            damaged["candidate_hash"] = json_codec::json!("0".repeat(64));
         }
-        let damaged = serde_json::to_vec(&damaged).unwrap();
+        let damaged = json_codec::to_vec(&damaged).unwrap();
         // A wrong but parseable majority must never defeat the one exact copy.
         for disk in &members[..2] {
             fs::write(path_for(disk), &damaged).unwrap();

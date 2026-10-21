@@ -1,7 +1,7 @@
 use super::*;
 use crate::{Backend, BackendAction, engine_backend::EngineBackend};
-use serde::{Serializer, ser::Error};
-use serde_json::json;
+use data_serialization::{Serializer, ser::Error};
+use json_codec::json;
 use std::{collections::BTreeSet, sync::Mutex};
 use storage_contract::{Config, new_id};
 

@@ -949,9 +949,9 @@ fn test_write() {
     assert_eq!(small_vec.as_ref(), data.as_ref());
 }
 
-#[cfg(feature = "serde")]
+#[cfg(feature = "serialization")]
 #[test]
-fn test_serde() {
+fn test_serialization() {
     #[allow(deprecated)]
     use bincode1::{config, deserialize};
     let mut small_vec: SmallVec<[i32; 2]> = SmallVec::new();

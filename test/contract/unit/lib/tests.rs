@@ -1,13 +1,13 @@
 use super::*;
-use serde::{Deserialize, Serialize};
+use data_serialization::{Deserialize, Serialize};
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serialization(deny_unknown_fields)]
 struct Integers {
-    #[serde(with = "crate::u64_string")]
+    #[serialization(with = "crate::u64_string")]
     value: u64,
-    #[serde(default, with = "crate::optional_u64_string")]
+    #[serialization(default, with = "crate::optional_u64_string")]
     optional: Option<u64>,
-    #[serde(with = "crate::u64_string_map")]
+    #[serialization(with = "crate::u64_string_map")]
     map: std::collections::BTreeMap<String, u64>,
 }
 #[test]
@@ -17,12 +17,12 @@ fn full_width_wire_integers_roundtrip_without_float_or_precision_loss() {
         optional: Some(u64::MAX),
         map: std::collections::BTreeMap::from([("P01".into(), u64::MAX)]),
     };
-    let json = serde_json::to_value(&value).unwrap();
+    let json = json_codec::to_value(&value).unwrap();
     assert_eq!(json["value"], u64::MAX.to_string());
     assert_eq!(json["optional"], u64::MAX.to_string());
     assert_eq!(json["map"]["P01"], u64::MAX.to_string());
     assert_eq!(
-        decode_strict::<Integers>(&serde_json::to_vec(&json).unwrap()).unwrap(),
+        decode_strict::<Integers>(&json_codec::to_vec(&json).unwrap()).unwrap(),
         value
     );
     for invalid in [

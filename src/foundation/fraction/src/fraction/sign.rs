@@ -11,7 +11,7 @@ use crate::display;
 /// Fractions keep the sign represented by this enum,
 /// so that we can use unsigned ints as base data types.
 #[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
-#[cfg_attr(feature = "with-serde-support", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "with-serialization-support", derive(Serialize, Deserialize))]
 pub enum Sign {
     Plus,
     Minus,
