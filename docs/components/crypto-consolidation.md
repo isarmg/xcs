@@ -22,6 +22,8 @@ The maintained test/ci/crypto_vectors.py generator decodes all five preserved BL
 
 Capability tests cover fixed/runtime output, invalid length without state consumption on reset APIs, keyed/personalized reset, constant-time MAC verification interfaces, boxed output and Write. The runner checks default, reset, no-default, no-default+reset, no-default+alloc, size_opt, and native/WASM no_std configurations. Existing nightly SIMD source is unchanged; this consolidation does not assert that its historical platform_intrinsics API works on the current stable compiler.
 
-## Separate existing validation issue
+## Separate parameter-validation fix
 
-BLAKE2 new_with_salt_and_personal checks key/salt/persona lengths against block-size bounds before stricter core assertions based on maximum output size. Some invalid intermediate lengths therefore panic instead of returning InvalidLength. This behavior is characterized rather than silently changed during consolidation. A separate fix should reject keys over the maximum key size and salt/persona over the actual parameter-field size, with boundary tests and no change to valid cryptographic outputs.
+After consolidation, a focused fix makes the fallible BLAKE2 new_with_salt_and_personal constructor return InvalidLength for all oversized key, salt and persona inputs instead of allowing intermediate lengths to reach core assertions. Keys are limited to 64 bytes for BLAKE2b and 32 for BLAKE2s; salt/persona fields are limited to 16 and 8 bytes respectively. These limits do not shrink with truncated output sizes. The low-level Self-returning new_with_params constructor intentionally retains its assertions.
+
+Maintained capability tests exhaust lengths from zero through one beyond the former block-sized bound for each parameter and both full/truncated BLAKE2b/BLAKE2s MACs, including simultaneous exact maxima and invalid maxima. The existing independent vectors and feature matrix prove valid cryptographic output, reset and no_std behavior remain unchanged. Original snapshots and provenance receipts are not rewritten by this correction.

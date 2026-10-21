@@ -27,23 +27,52 @@ fn runtime_lengths_and_errors() {
     assert!(Blake2sVar::new(33).is_err());
     assert!(blake2::Blake2bMac512::new_from_slice(&[0; 65]).is_err());
     assert!(blake2::Blake2sMac256::new_from_slice(&[0; 33]).is_err());
-    assert!(
-        std::panic::catch_unwind(|| blake2::Blake2bMac512::new_with_salt_and_personal(
-            &[1],
-            &[0; 17],
-            &[]
-        ))
-        .is_err()
-    );
-    assert!(
-        std::panic::catch_unwind(|| blake2::Blake2sMac256::new_with_salt_and_personal(
-            &[1],
-            &[],
-            &[0; 9]
-        ))
-        .is_err()
-    );
 }
+
+// Exhaust every length through the former block-sized acceptance range, plus
+// one above it. A panic fails the test: this Result API must return InvalidLength.
+#[test]
+fn personalized_mac_parameter_boundaries() {
+    macro_rules! check {
+        ($mac:ty, $maximum:expr) => {{
+            let max_key = $maximum;
+            let max_parameter = max_key / 4;
+            for length in 0..=2 * max_key + 1 {
+                let bytes = vec![0x42; length];
+                assert_eq!(
+                    <$mac>::new_with_salt_and_personal(&bytes, &[], &[]).is_ok(),
+                    length <= max_key,
+                    "key length {length}"
+                );
+                assert_eq!(
+                    <$mac>::new_with_salt_and_personal(&[1], &bytes, &[]).is_ok(),
+                    length <= max_parameter,
+                    "salt length {length}"
+                );
+                assert_eq!(
+                    <$mac>::new_with_salt_and_personal(&[1], &[], &bytes).is_ok(),
+                    length <= max_parameter,
+                    "persona length {length}"
+                );
+            }
+            // Simultaneous exact maxima are valid, independently of output size.
+            let key = vec![1; max_key];
+            let parameter = vec![2; max_parameter];
+            assert!(<$mac>::new_with_salt_and_personal(&key, &parameter, &parameter).is_ok());
+            assert!(<$mac>::new_with_salt_and_personal(
+                &vec![1; max_key + 1],
+                &vec![2; max_parameter + 1],
+                &vec![3; max_parameter + 1]
+            )
+            .is_err());
+        }};
+    }
+    check!(blake2::Blake2bMac512, 64);
+    check!(blake2::Blake2sMac256, 32);
+    check!(blake2::Blake2bMac<blake2::digest::consts::U16>, 64);
+    check!(blake2::Blake2sMac<blake2::digest::consts::U16>, 32);
+}
+
 #[test]
 fn fixed_types() {
     let data = [42u8; 257];
