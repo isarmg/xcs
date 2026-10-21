@@ -29,10 +29,10 @@ name = "hashlink"
 path = "src/lib.rs"
 
 [dependencies.hashbrown]
-version = "0.16"
+version = "0.17.1"
 features = ["default-hasher"]
 default-features = false
-path = "../hashbrown-0.16.1"
+path = "../hashbrown-0.17.1"
 
 [dependencies.serde]
 version = "1.0"

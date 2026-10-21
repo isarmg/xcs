@@ -47,11 +47,11 @@ version = "2.4.1"
 path = "../flag-set"
 
 [dependencies.hashbrown]
-version = "0.16.1"
+version = "0.17.1"
 features = ["default-hasher"]
 optional = true
 default-features = false
-path = "../hashbrown-0.16.1"
+path = "../hashbrown-0.17.1"
 
 [dependencies.indexmap]
 version = "2.13.0"

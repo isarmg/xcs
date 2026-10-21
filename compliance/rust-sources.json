@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "2a2b012a4567ef838869512d1aa503e719bc5857c5099bedf557197acf88c1ba",
+    "compliance/external-tests/foundation.json": "ab6d25243869b4a05a503c0dd51ef8babef143644e0fdf25459a2c751ac1dd96",
     "compliance/external-tests/integrated.json": "67ed91584b1ee64659b809f4e803bd03ffd9d5ff5db9f6f536ef50f5929af604",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -6864,101 +6864,6 @@
       "origin_directory": "vendor/rust/guardian-1.3.0",
       "roots": [
         "test/foundation/guardian"
-      ]
-    },
-    "src/foundation/hashbrown-0.16.1": {
-      "bytes": 125149,
-      "directory": "src/foundation/hashbrown-0.16.1",
-      "file_count": 14,
-      "files": [
-        {
-          "path": "test/foundation/hashbrown-0.16.1/tests/equivalent_trait.rs",
-          "sha256": "84faa3fe9d67c375d03fec81f0f1412c47862477d42e84e7d235258236338d5b",
-          "source": "src/foundation/hashbrown-0.16.1/tests/equivalent_trait.rs",
-          "source_sha256_before": "84faa3fe9d67c375d03fec81f0f1412c47862477d42e84e7d235258236338d5b"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/tests/hasher.rs",
-          "sha256": "fd06130f011660743202904221f3f7487d8d143d8903c73cd3a76d079ebbe9fb",
-          "source": "src/foundation/hashbrown-0.16.1/tests/hasher.rs",
-          "source_sha256_before": "fd06130f011660743202904221f3f7487d8d143d8903c73cd3a76d079ebbe9fb"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/tests/rayon.rs",
-          "sha256": "39cb24ab45fce8087bb54948715c8b6973ebfba1a325292b5b3cd9aab50b5fd2",
-          "source": "src/foundation/hashbrown-0.16.1/tests/rayon.rs",
-          "source_sha256_before": "39cb24ab45fce8087bb54948715c8b6973ebfba1a325292b5b3cd9aab50b5fd2"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/tests/serde.rs",
-          "sha256": "6bac8054db722dd049901b37a6e006535bac30f425eb5cd91af19b5bc1dfe78e",
-          "source": "src/foundation/hashbrown-0.16.1/tests/serde.rs",
-          "source_sha256_before": "6bac8054db722dd049901b37a6e006535bac30f425eb5cd91af19b5bc1dfe78e"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/tests/set.rs",
-          "sha256": "fd9ffc6f8a435f2fbcada826c33599d682d9f688f0f8dbb14fcd1e442d4c2647",
-          "source": "src/foundation/hashbrown-0.16.1/tests/set.rs",
-          "source_sha256_before": "fd9ffc6f8a435f2fbcada826c33599d682d9f688f0f8dbb14fcd1e442d4c2647"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/external_trait_impls/rayon/map/test_par_map_465.rs",
-          "sha256": "b85c2df626cf78c21dc74188be2d6d1101fa99f315752b0d09d01edf9c2a9554",
-          "source": "src/foundation/hashbrown-0.16.1/src/external_trait_impls/rayon/map.rs",
-          "source_sha256_before": "e1e08653c6c3d2f0586638ab7baf082c06fdc5551b5852b0f9e73aa9484b4955"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/external_trait_impls/rayon/set/test_par_set_394.rs",
-          "sha256": "347fca5cb31ebaf8cb9b109756a65e562ebe7d9bb3f3f592f9f94dcc101f5202",
-          "source": "src/foundation/hashbrown-0.16.1/src/external_trait_impls/rayon/set.rs",
-          "source_sha256_before": "7539348ff7bc6e3cce6b3c019d62dc401eea0138c578fef729c2593e8ead1cfa"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/external_trait_impls/rayon/table/test_par_table_211.rs",
-          "sha256": "30225cd723ee7036761d76c3fd11254d1ed56ecffe82b1147224caf5dab08a1c",
-          "source": "src/foundation/hashbrown-0.16.1/src/external_trait_impls/rayon/table.rs",
-          "source_sha256_before": "aebd92261f44aef2e4c13a80a566e0308655396a3cc6f973d330d2f5ba26fc45"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/map/all_test_map_with_mmap_allocations_4859.rs",
-          "sha256": "8e55b544265696cfbd7116b5677e5b6b28819b15a9b9f7b9029f7d75adef7481",
-          "source": "src/foundation/hashbrown-0.16.1/src/map.rs",
-          "source_sha256_before": "2f42092439f327756317ea15a32983cfd29503add8a6ff9716b92e50c03dfd7b"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/map/test_map_4856.rs",
-          "sha256": "7045266c9b178fe2674c07fa7f67b46767ed4352dbae8998d684d6fac7afbfd8",
-          "source": "src/foundation/hashbrown-0.16.1/src/map.rs",
-          "source_sha256_before": "2f42092439f327756317ea15a32983cfd29503add8a6ff9716b92e50c03dfd7b"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/raw/mod/test_map_4337.rs",
-          "sha256": "445276dfc4e379d0e262c4af024497e73c875a2ad486d7833fcf5a9fe8adc704",
-          "source": "src/foundation/hashbrown-0.16.1/src/raw/mod.rs",
-          "source_sha256_before": "c24d6b9c8a9456505fa7a5b7c42b85468e6dd76bd49af54d17696c16dec4d2e8"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/raw_entry/test_map_1485.rs",
-          "sha256": "09f5eaef855a6fd0190e0df7304119eb8c01b5f5c084e9f929834a5d651dad22",
-          "source": "src/foundation/hashbrown-0.16.1/src/raw_entry.rs",
-          "source_sha256_before": "41f54fabf968b6ba19a6fbb41372f7e86e1ccd221622591816fe48bcc3797369"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/set/test_set_2576.rs",
-          "sha256": "b864620ace97c46eb508ef0168f9cb120c8e60dc6cd219c1c1e6a5e1830e9ecf",
-          "source": "src/foundation/hashbrown-0.16.1/src/set.rs",
-          "source_sha256_before": "1a4f3a1bfc5cfb3707172a1fcf16fc9d2190d97562ad544f8fc581e43a4d57c0"
-        },
-        {
-          "path": "test/foundation/hashbrown-0.16.1/unit/src/table/tests_2952.rs",
-          "sha256": "d463fd1bc1bd29e801be5e4ff44e11f4a619f5d23f9c950332a08e2da0cae517",
-          "source": "src/foundation/hashbrown-0.16.1/src/table.rs",
-          "source_sha256_before": "3bd787d9fe89e1ec9e62d7f70441c6711d9978473b5d7569e91b9a13cbe2b3eb"
-        }
-      ],
-      "origin_directory": "vendor/rust/hashbrown-0.16.1",
-      "roots": [
-        "test/foundation/hashbrown-0.16.1"
       ]
     },
     "src/foundation/hashbrown-0.17.1": {
@@ -26623,7 +26528,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "fb23e844e5a0c56e673169f302b481f413f316c13adf2dad5646b5496f9b9632"
+    "Cargo.lock": "cf2d89533b0fc7f1316ade84ca6ec43cd8194ece8af615aa9814cf64c46b21d9"
   },
   "manifests_sha256": {
     "Cargo.toml": "1c6472894378c77e0b3e3c52b586039cdc6b030bada2609b3bbe9f719be96455",
@@ -26631,7 +26536,7 @@
     "src/auth/Cargo.toml": "c3c91c8dbe8520c54d43ceef76bc8d609efbd00fa43d5b94da96c64a74982079",
     "src/client/Cargo.toml": "a26c90ef1fe5ee279580087896ddf171db67d14f26db63bcf923606284a25d8b",
     "src/contract/Cargo.toml": "137efe70893b3f3e7c09bba1a36a5bd27daefef190b2dbbf07afdf809b05677a",
-    "src/engine/Cargo.toml": "67a02aa82237a8e99b7b3a2f6741886baeffd974277b9118f52f999634c8240f",
+    "src/engine/Cargo.toml": "b08315d69437bc5b1dbdafa51f2a6e2982a6ddd1ec92d6d2a72357cef0647cc9",
     "src/foundation/adler2/Cargo.toml": "6fe5eda8f0c1ccf3225d155f562cb523cf25488e37a34984e856ced9f2dcff1c",
     "src/foundation/ahash/Cargo.toml": "57975d1fef1abd92d478feb15244cd25376ae20a00e07d0db08e0e3ff8709b73",
     "src/foundation/aho-corasick/Cargo.toml": "9e02f34d2fc0d8cef568a463881053f8037fe4ecfe3a32175fe781ea6aa3d0ce",
@@ -26738,9 +26643,8 @@
     "src/foundation/gloo-events/Cargo.toml": "934077162367a8f0543342f8bff4f569f2ece368e2751c3a75c2b742a5c6c667",
     "src/foundation/gloo-timers/Cargo.toml": "e23b19b2d100e3d8882efc8682a237994b734bd284e1d29f6b97827a131b98e4",
     "src/foundation/guardian/Cargo.toml": "66211cd39bf38b8e6d66155755c99c56c81b27eabf0ab7356ef2e22243497400",
-    "src/foundation/hashbrown-0.16.1/Cargo.toml": "5781910776989c2e3e73eedaa85103bc90bab26f57d47d8dc523aee5c3553841",
     "src/foundation/hashbrown-0.17.1/Cargo.toml": "2e271a93092b3265843dc703b17f3728231458df4b121354718107edca1cd53e",
-    "src/foundation/hashlink/Cargo.toml": "3cdd86a584559103cea3fcb5d710fdf6d065fd80f4ff6a7e9ca3fa7cc8473df4",
+    "src/foundation/hashlink/Cargo.toml": "a1e4ae605f5ce3feeac314595097f353e0179eb27e4f2e90c968881f8d8c399c",
     "src/foundation/heck/Cargo.toml": "0f65dd57bb1c314e8779ec19a23d59174e05212c02c58ecab348fc4ed00e57ae",
     "src/foundation/hmac/Cargo.toml": "31f95d4dc27609d4de9daa327209189e73d731ef42d647fcc4724fef468f0c1a",
     "src/foundation/html-escape/Cargo.toml": "b70fe2ac0acc7a16274f227e9b3d641d442e81680167d832f9af8d1c62719714",
@@ -26871,7 +26775,7 @@
     "src/foundation/smallvec/Cargo.toml": "87981b23967cecc464e5976a6ab35c0421c21949eaf1b755753d09b0f27db06a",
     "src/foundation/socket2/Cargo.toml": "a748169b0a61eda1988393bf74d1a3f13b9033cb29b83240a74eb7b2be808a92",
     "src/foundation/spin/Cargo.toml": "dc8a44bf0030e39b3b5fe56e278ad50ba9fa9e67bb46dc1afbbcb7984a4791be",
-    "src/foundation/sqlx-core/Cargo.toml": "9855fee4d895c801eb42107f3cd938164d7d26e72c90dd6bebf6d990f774a404",
+    "src/foundation/sqlx-core/Cargo.toml": "f4d34a0b61ba1c5ae255988bd5d9199261a743f37c6a310aa9754acf07a44824",
     "src/foundation/sqlx-sqlite/Cargo.toml": "b98374d160052b74a4951e03b170d358c4300e37eac371c042464ee0c1045822",
     "src/foundation/sqlx/Cargo.toml": "81162d2fb949baf868ed90848e5195bdcdd4127aa6a508cc41f90abd7eee0e8c",
     "src/foundation/stable_deref_trait/Cargo.toml": "4f080b924f2ae5fa6c2a7fd2d5fdcc08728c189503b520c2fec8132495f21256",
@@ -26940,7 +26844,7 @@
     "src/foundation/wasm-bindgen-shared/Cargo.toml": "2ac59793219a07b62a58cba208e349310ab05a4faedc8a1bd4824296d84f7b74",
     "src/foundation/wasm-bindgen/Cargo.toml": "07edaa752b92b8a395b7f83e2d9c4ea5cc6c26f899e34c7a194cace2d8c5e716",
     "src/foundation/wasm-encoder/Cargo.toml": "e1d54f6793283fc8d13eae42277dd7a843884d8de6be845d08478f9789a90b86",
-    "src/foundation/wasmparser/Cargo.toml": "5fd535f0bb56eb43757d2eff2bdd74d14240805e0860459dcee618037cf58c88",
+    "src/foundation/wasmparser/Cargo.toml": "68c7946ab34b70e0eee0703146121f599905837e6e7b7e181c67400b4324e314",
     "src/foundation/web-sys/Cargo.toml": "77f1cb6dc9dbed3bdf9983483c8fb1087a6e8e9c309dc1e177ec99f6993fceb8",
     "src/foundation/webpki-roots/Cargo.toml": "655e506d8dbfec7d359a53129c0da03b84ecf68f31bbfa09ee1a56f4aaf59644",
     "src/foundation/winnow/Cargo.toml": "b0cb2055f98f838c3baf14b1527a45190459f886ebcd4ea19951220aa536a7bc",
@@ -32214,69 +32118,6 @@
       },
       "version": "1.3.0"
     },
-    "src/foundation/hashbrown-0.16.1": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "A Rust port of Google's SwissTable hash map",
-      "directory": "src/foundation/hashbrown-0.16.1",
-      "files_sha256": {
-        "Cargo.toml": "5781910776989c2e3e73eedaa85103bc90bab26f57d47d8dc523aee5c3553841",
-        "benches/bench.rs": "288e88b0e3021a781a0b49a2a8ca4c390b76a63fd05cd7b524b64a7e988b841a",
-        "benches/insert_unique_unchecked.rs": "dfe644035cad6ff13b280e3d72c9df2569491ecddc84f7c2502daf940814a63e",
-        "benches/set_ops.rs": "936cd15055c25d42aabc6bde738e3135da541520b40633c4fba940eb73e06f4d",
-        "benches/with_capacity.rs": "a017f770f47f7941ac4404c0f4f36d2118949c587ae807302137c321ca911494",
-        "src/control/bitmask.rs": "53dcdac056620f02c475b618d33e69f34152ea559d86bd4545546144f017baa0",
-        "src/control/group/generic.rs": "41163fb7e5b4749f46521a1b142d43205d3e7416c3a85219eb2001577225bf3b",
-        "src/control/group/lsx.rs": "99c308a2e07133dce18b88230fbb054d5d1edcf465b87ee9fb1f409eacc4f241",
-        "src/control/group/mod.rs": "03d5cacaf762fcb0c9878e9f56355c7c9d0935d688d01c5e0d12aa673e16795d",
-        "src/control/group/neon.rs": "bde7726d321bd036cb9001818f962784346b932087b9f655c85ab26667d55fbb",
-        "src/control/group/sse2.rs": "833da90ab3fd72d306d5b999de96a4b6b52aa1a16ee7273c89bd12c9ead3bc45",
-        "src/control/mod.rs": "83fede19e9c5a26fd2c7372e6cf92547d32ade4cd69fde8a0eaaeb1be6ddc2ba",
-        "src/control/tag.rs": "9c94ab42aad3918bd77ffafdeb253f7f773a8f98bf56e36b85ebdc7a11ef676b",
-        "src/external_trait_impls/mod.rs": "d69528827794524cfd9acbeacc1ac4f6131e3c7574311e6d919f818f65fbff07",
-        "src/external_trait_impls/rayon/helpers.rs": "f69637231d76d413bd37c608fafb372e1147f9e9c8be2ba24ec47c6d2f005548",
-        "src/external_trait_impls/rayon/map.rs": "6579a98810e9776d6f807312ed40fee5e28a34040bad3193a61b833a933a4f61",
-        "src/external_trait_impls/rayon/mod.rs": "126edc882501dddd25e442d9236508b5b386eb8c0a9f5d654f2dd081086c1616",
-        "src/external_trait_impls/rayon/raw.rs": "04012fb2e99648819b4bc0044107ed3cb94013e242b7865075c5bd9ebf1b6865",
-        "src/external_trait_impls/rayon/set.rs": "cba2201e9ec424066f761eb2caba212c3e15ab23ae92cfcc728c3864dce3de1b",
-        "src/external_trait_impls/rayon/table.rs": "b5ded99d4014f66ce1eebacf0d842bb17132e8e9ad89c1c9a161227182501808",
-        "src/external_trait_impls/serde.rs": "eb17886c8d8e156b3e4068d87b0eb4900464d5d0a71ffae472fee90c735aaa02",
-        "src/hasher.rs": "939bc4f8c9e2d7e7ace266a8c121360ab4b44ad0540cdee06951e0197d96bc3c",
-        "src/lib.rs": "b60e28111c7f8cf4c2d3b1622dc93a7d3aa80d783617486a4e5149aaf482adbf",
-        "src/macros.rs": "98a26b908fc0fbe6a58d008a317e550013d615eb3cc17a5054a573c62c1d74cb",
-        "src/map.rs": "904dbe29c617ad0e4fa7b6e2185d7903220c564a34c8f24e26b748f8e73cb7a4",
-        "src/raw/alloc.rs": "4a1ba016f0932495bcec6007674bf4043543084cd04f4fe9cd5796013296e857",
-        "src/raw/mod.rs": "511b42ebc425b29eec6799da671264c835ab2155c2668ece0c7a6c81dc60f982",
-        "src/raw_entry.rs": "d06bf4f540412ef51bbb5aeccb3a7084d0c51e689e9cee4990037f433b248e45",
-        "src/rustc_entry.rs": "9c189a957af1ec5ff3549d15176c1608ca1c68330604a50b2ea19316a5dd14e2",
-        "src/scopeguard.rs": "1a246e08a63c06cd8ad934bd7da229421bf804f991ae93cd7e242da27ca6c601",
-        "src/set.rs": "43f59357c6f77e271078298382bb30592a566e0bc2d3cbbb1c490074b84a696f",
-        "src/table.rs": "e7fd15aba85e14c84259c25cfbf30458fd6cc75502e51373bfa266b80b34191e",
-        "src/util.rs": "c929f855589653727016bd8577db7ca234e7e0820f1f2dc0cfe49f13f5056168"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/hashbrown-0.16.1/LICENSE-APACHE",
-        "compliance/licenses/upstream/hashbrown-0.16.1/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "hashbrown",
-      "origin_directory": "vendor/rust/hashbrown-0.16.1",
-      "repository": "https://github.com/rust-lang/hashbrown",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100",
-        "archive_url": "https://static.crates.io/crates/hashbrown/hashbrown-0.16.1.crate",
-        "name": "hashbrown",
-        "version": "0.16.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "1876e4f02708b93903d55ef598f68e82a826518f"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.16.1"
-    },
     "src/foundation/hashbrown-0.17.1": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "A Rust port of Google's SwissTable hash map",
@@ -32346,7 +32187,7 @@
       "description": "HashMap-like containers that hold their key-value pairs in a user controllable order",
       "directory": "src/foundation/hashlink",
       "files_sha256": {
-        "Cargo.toml": "3cdd86a584559103cea3fcb5d710fdf6d065fd80f4ff6a7e9ca3fa7cc8473df4",
+        "Cargo.toml": "a1e4ae605f5ce3feeac314595097f353e0179eb27e4f2e90c968881f8d8c399c",
         "src/lib.rs": "a4a18633d598bd1940a868b2d93b57bedec6ffdeee3275264e69ec134789bdb9",
         "src/linked_hash_map.rs": "9b1157819d897eae1d48679caac12c2fafd98509c9c4e8b29ea4aa77ca19df17",
         "src/linked_hash_set.rs": "42cb9c01d80744c04144b5acef50353d915c01d7e1fc669ef1258e39c6df5e87",
@@ -39244,7 +39085,7 @@
       "description": "Core of SQLx, the rust SQL toolkit. Not intended to be used directly.",
       "directory": "src/foundation/sqlx-core",
       "files_sha256": {
-        "Cargo.toml": "9855fee4d895c801eb42107f3cd938164d7d26e72c90dd6bebf6d990f774a404",
+        "Cargo.toml": "f4d34a0b61ba1c5ae255988bd5d9199261a743f37c6a310aa9754acf07a44824",
         "src/acquire.rs": "0bf5340d56ca77941023f154e33cf008779ed49e95381d6ed9bc882732c48e72",
         "src/arguments.rs": "988065552995906e6cd4b6d5dbf7bb35c47a69a173336460b39975bdb9dc7fa4",
         "src/column.rs": "c2a3bd28ed0586d8c1777372bfb16b87842bf3526a8c7fa6633ee510bb3961f2",
@@ -42955,7 +42796,7 @@
       "description": "A simple event-driven library for parsing WebAssembly binary files.",
       "directory": "src/foundation/wasmparser",
       "files_sha256": {
-        "Cargo.toml": "5fd535f0bb56eb43757d2eff2bdd74d14240805e0860459dcee618037cf58c88",
+        "Cargo.toml": "68c7946ab34b70e0eee0703146121f599905837e6e7b7e181c67400b4324e314",
         "benches/benchmark.rs": "c69fd76e74644188f25d03beac288f094b22735db58daf00019f812f9400f604",
         "src/arity.rs": "f2b23b274beb55c682496e455c45dab3e6149de49e64e1815ba3288317415d09",
         "src/binary_reader.rs": "14684674cc11c192d1114c1341a68638a519ae3ba29fbfc49583519e04a70a3a",
@@ -51234,7 +51075,7 @@
             "runtime"
           ]
         },
-        "src/foundation/hashbrown-0.16.1": {
+        "src/foundation/hashbrown-0.17.1": {
           "features": [
             "allocator-api2",
             "default",
@@ -51243,19 +51084,6 @@
             "inline-more",
             "raw-entry",
             "serde"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/hashbrown-0.17.1": {
-          "features": [
-            "allocator-api2",
-            "default",
-            "default-hasher",
-            "equivalent",
-            "inline-more",
-            "raw-entry"
           ],
           "roles": [
             "runtime"
@@ -52771,7 +52599,8 @@
             "default-hasher",
             "equivalent",
             "inline-more",
-            "raw-entry"
+            "raw-entry",
+            "serde"
           ],
           "roles": [
             "runtime"
@@ -54131,7 +53960,7 @@
             "compile"
           ]
         },
-        "src/foundation/hashbrown-0.16.1": {
+        "src/foundation/hashbrown-0.17.1": {
           "features": [
             "allocator-api2",
             "default",
@@ -54140,19 +53969,6 @@
             "inline-more",
             "raw-entry",
             "serde"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/hashbrown-0.17.1": {
-          "features": [
-            "allocator-api2",
-            "default",
-            "default-hasher",
-            "equivalent",
-            "inline-more",
-            "raw-entry"
           ],
           "roles": [
             "compile"
@@ -55076,7 +54892,7 @@
             "compile"
           ]
         },
-        "src/foundation/hashbrown-0.16.1": {
+        "src/foundation/hashbrown-0.17.1": {
           "features": [
             "allocator-api2",
             "default",
@@ -55085,19 +54901,6 @@
             "inline-more",
             "raw-entry",
             "serde"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/hashbrown-0.17.1": {
-          "features": [
-            "allocator-api2",
-            "default",
-            "default-hasher",
-            "equivalent",
-            "inline-more",
-            "raw-entry"
           ],
           "roles": [
             "compile"
@@ -57068,6 +56871,174 @@
         "path_in_vcs": ""
       },
       "version": "0.1.3"
+    },
+    "src/foundation/hashbrown-0.16.1": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "A Rust port of Google's SwissTable hash map",
+      "directory": "src/foundation/hashbrown-0.16.1",
+      "files_sha256": {
+        "Cargo.toml": "5781910776989c2e3e73eedaa85103bc90bab26f57d47d8dc523aee5c3553841",
+        "benches/bench.rs": "288e88b0e3021a781a0b49a2a8ca4c390b76a63fd05cd7b524b64a7e988b841a",
+        "benches/insert_unique_unchecked.rs": "dfe644035cad6ff13b280e3d72c9df2569491ecddc84f7c2502daf940814a63e",
+        "benches/set_ops.rs": "936cd15055c25d42aabc6bde738e3135da541520b40633c4fba940eb73e06f4d",
+        "benches/with_capacity.rs": "a017f770f47f7941ac4404c0f4f36d2118949c587ae807302137c321ca911494",
+        "src/control/bitmask.rs": "53dcdac056620f02c475b618d33e69f34152ea559d86bd4545546144f017baa0",
+        "src/control/group/generic.rs": "41163fb7e5b4749f46521a1b142d43205d3e7416c3a85219eb2001577225bf3b",
+        "src/control/group/lsx.rs": "99c308a2e07133dce18b88230fbb054d5d1edcf465b87ee9fb1f409eacc4f241",
+        "src/control/group/mod.rs": "03d5cacaf762fcb0c9878e9f56355c7c9d0935d688d01c5e0d12aa673e16795d",
+        "src/control/group/neon.rs": "bde7726d321bd036cb9001818f962784346b932087b9f655c85ab26667d55fbb",
+        "src/control/group/sse2.rs": "833da90ab3fd72d306d5b999de96a4b6b52aa1a16ee7273c89bd12c9ead3bc45",
+        "src/control/mod.rs": "83fede19e9c5a26fd2c7372e6cf92547d32ade4cd69fde8a0eaaeb1be6ddc2ba",
+        "src/control/tag.rs": "9c94ab42aad3918bd77ffafdeb253f7f773a8f98bf56e36b85ebdc7a11ef676b",
+        "src/external_trait_impls/mod.rs": "d69528827794524cfd9acbeacc1ac4f6131e3c7574311e6d919f818f65fbff07",
+        "src/external_trait_impls/rayon/helpers.rs": "f69637231d76d413bd37c608fafb372e1147f9e9c8be2ba24ec47c6d2f005548",
+        "src/external_trait_impls/rayon/map.rs": "6579a98810e9776d6f807312ed40fee5e28a34040bad3193a61b833a933a4f61",
+        "src/external_trait_impls/rayon/mod.rs": "126edc882501dddd25e442d9236508b5b386eb8c0a9f5d654f2dd081086c1616",
+        "src/external_trait_impls/rayon/raw.rs": "04012fb2e99648819b4bc0044107ed3cb94013e242b7865075c5bd9ebf1b6865",
+        "src/external_trait_impls/rayon/set.rs": "cba2201e9ec424066f761eb2caba212c3e15ab23ae92cfcc728c3864dce3de1b",
+        "src/external_trait_impls/rayon/table.rs": "b5ded99d4014f66ce1eebacf0d842bb17132e8e9ad89c1c9a161227182501808",
+        "src/external_trait_impls/serde.rs": "eb17886c8d8e156b3e4068d87b0eb4900464d5d0a71ffae472fee90c735aaa02",
+        "src/hasher.rs": "939bc4f8c9e2d7e7ace266a8c121360ab4b44ad0540cdee06951e0197d96bc3c",
+        "src/lib.rs": "b60e28111c7f8cf4c2d3b1622dc93a7d3aa80d783617486a4e5149aaf482adbf",
+        "src/macros.rs": "98a26b908fc0fbe6a58d008a317e550013d615eb3cc17a5054a573c62c1d74cb",
+        "src/map.rs": "904dbe29c617ad0e4fa7b6e2185d7903220c564a34c8f24e26b748f8e73cb7a4",
+        "src/raw/alloc.rs": "4a1ba016f0932495bcec6007674bf4043543084cd04f4fe9cd5796013296e857",
+        "src/raw/mod.rs": "511b42ebc425b29eec6799da671264c835ab2155c2668ece0c7a6c81dc60f982",
+        "src/raw_entry.rs": "d06bf4f540412ef51bbb5aeccb3a7084d0c51e689e9cee4990037f433b248e45",
+        "src/rustc_entry.rs": "9c189a957af1ec5ff3549d15176c1608ca1c68330604a50b2ea19316a5dd14e2",
+        "src/scopeguard.rs": "1a246e08a63c06cd8ad934bd7da229421bf804f991ae93cd7e242da27ca6c601",
+        "src/set.rs": "43f59357c6f77e271078298382bb30592a566e0bc2d3cbbb1c490074b84a696f",
+        "src/table.rs": "e7fd15aba85e14c84259c25cfbf30458fd6cc75502e51373bfa266b80b34191e",
+        "src/util.rs": "c929f855589653727016bd8577db7ca234e7e0820f1f2dc0cfe49f13f5056168"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/hashbrown-0.16.1/LICENSE-APACHE",
+        "compliance/licenses/upstream/hashbrown-0.16.1/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "hashbrown",
+      "origin_directory": "vendor/rust/hashbrown-0.16.1",
+      "repository": "https://github.com/rust-lang/hashbrown",
+      "retirement": {
+        "bytes": 688217,
+        "category": "duplicate-implementation-consolidation",
+        "external_tests": {
+          "bytes": 125149,
+          "directory": "src/foundation/hashbrown-0.16.1",
+          "file_count": 14,
+          "files": [
+            {
+              "path": "test/foundation/hashbrown-0.16.1/tests/equivalent_trait.rs",
+              "sha256": "84faa3fe9d67c375d03fec81f0f1412c47862477d42e84e7d235258236338d5b",
+              "source": "src/foundation/hashbrown-0.16.1/tests/equivalent_trait.rs",
+              "source_sha256_before": "84faa3fe9d67c375d03fec81f0f1412c47862477d42e84e7d235258236338d5b"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/tests/hasher.rs",
+              "sha256": "fd06130f011660743202904221f3f7487d8d143d8903c73cd3a76d079ebbe9fb",
+              "source": "src/foundation/hashbrown-0.16.1/tests/hasher.rs",
+              "source_sha256_before": "fd06130f011660743202904221f3f7487d8d143d8903c73cd3a76d079ebbe9fb"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/tests/rayon.rs",
+              "sha256": "39cb24ab45fce8087bb54948715c8b6973ebfba1a325292b5b3cd9aab50b5fd2",
+              "source": "src/foundation/hashbrown-0.16.1/tests/rayon.rs",
+              "source_sha256_before": "39cb24ab45fce8087bb54948715c8b6973ebfba1a325292b5b3cd9aab50b5fd2"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/tests/serde.rs",
+              "sha256": "6bac8054db722dd049901b37a6e006535bac30f425eb5cd91af19b5bc1dfe78e",
+              "source": "src/foundation/hashbrown-0.16.1/tests/serde.rs",
+              "source_sha256_before": "6bac8054db722dd049901b37a6e006535bac30f425eb5cd91af19b5bc1dfe78e"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/tests/set.rs",
+              "sha256": "fd9ffc6f8a435f2fbcada826c33599d682d9f688f0f8dbb14fcd1e442d4c2647",
+              "source": "src/foundation/hashbrown-0.16.1/tests/set.rs",
+              "source_sha256_before": "fd9ffc6f8a435f2fbcada826c33599d682d9f688f0f8dbb14fcd1e442d4c2647"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/external_trait_impls/rayon/map/test_par_map_465.rs",
+              "sha256": "b85c2df626cf78c21dc74188be2d6d1101fa99f315752b0d09d01edf9c2a9554",
+              "source": "src/foundation/hashbrown-0.16.1/src/external_trait_impls/rayon/map.rs",
+              "source_sha256_before": "e1e08653c6c3d2f0586638ab7baf082c06fdc5551b5852b0f9e73aa9484b4955"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/external_trait_impls/rayon/set/test_par_set_394.rs",
+              "sha256": "347fca5cb31ebaf8cb9b109756a65e562ebe7d9bb3f3f592f9f94dcc101f5202",
+              "source": "src/foundation/hashbrown-0.16.1/src/external_trait_impls/rayon/set.rs",
+              "source_sha256_before": "7539348ff7bc6e3cce6b3c019d62dc401eea0138c578fef729c2593e8ead1cfa"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/external_trait_impls/rayon/table/test_par_table_211.rs",
+              "sha256": "30225cd723ee7036761d76c3fd11254d1ed56ecffe82b1147224caf5dab08a1c",
+              "source": "src/foundation/hashbrown-0.16.1/src/external_trait_impls/rayon/table.rs",
+              "source_sha256_before": "aebd92261f44aef2e4c13a80a566e0308655396a3cc6f973d330d2f5ba26fc45"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/map/all_test_map_with_mmap_allocations_4859.rs",
+              "sha256": "8e55b544265696cfbd7116b5677e5b6b28819b15a9b9f7b9029f7d75adef7481",
+              "source": "src/foundation/hashbrown-0.16.1/src/map.rs",
+              "source_sha256_before": "2f42092439f327756317ea15a32983cfd29503add8a6ff9716b92e50c03dfd7b"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/map/test_map_4856.rs",
+              "sha256": "7045266c9b178fe2674c07fa7f67b46767ed4352dbae8998d684d6fac7afbfd8",
+              "source": "src/foundation/hashbrown-0.16.1/src/map.rs",
+              "source_sha256_before": "2f42092439f327756317ea15a32983cfd29503add8a6ff9716b92e50c03dfd7b"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/raw/mod/test_map_4337.rs",
+              "sha256": "445276dfc4e379d0e262c4af024497e73c875a2ad486d7833fcf5a9fe8adc704",
+              "source": "src/foundation/hashbrown-0.16.1/src/raw/mod.rs",
+              "source_sha256_before": "c24d6b9c8a9456505fa7a5b7c42b85468e6dd76bd49af54d17696c16dec4d2e8"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/raw_entry/test_map_1485.rs",
+              "sha256": "09f5eaef855a6fd0190e0df7304119eb8c01b5f5c084e9f929834a5d651dad22",
+              "source": "src/foundation/hashbrown-0.16.1/src/raw_entry.rs",
+              "source_sha256_before": "41f54fabf968b6ba19a6fbb41372f7e86e1ccd221622591816fe48bcc3797369"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/set/test_set_2576.rs",
+              "sha256": "b864620ace97c46eb508ef0168f9cb120c8e60dc6cd219c1c1e6a5e1830e9ecf",
+              "source": "src/foundation/hashbrown-0.16.1/src/set.rs",
+              "source_sha256_before": "1a4f3a1bfc5cfb3707172a1fcf16fc9d2190d97562ad544f8fc581e43a4d57c0"
+            },
+            {
+              "path": "test/foundation/hashbrown-0.16.1/unit/src/table/tests_2952.rs",
+              "sha256": "d463fd1bc1bd29e801be5e4ff44e11f4a619f5d23f9c950332a08e2da0cae517",
+              "source": "src/foundation/hashbrown-0.16.1/src/table.rs",
+              "source_sha256_before": "3bd787d9fe89e1ec9e62d7f70441c6711d9978473b5d7569e91b9a13cbe2b3eb"
+            }
+          ],
+          "origin_directory": "vendor/rust/hashbrown-0.16.1",
+          "roots": [
+            "test/foundation/hashbrown-0.16.1"
+          ]
+        },
+        "file_count": 33,
+        "reason": "Consolidate the three remaining 0.16.1 consumers onto existing hashbrown 0.17.1; preserve hashlink linked-order/LRU semantics and wasmparser std RandomState; dual-version collision/drop/cache and preserved hashlink upstream tests verified in isolated assessment.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100",
+        "archive_url": "https://static.crates.io/crates/hashbrown/hashbrown-0.16.1.crate",
+        "name": "hashbrown",
+        "version": "0.16.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "1876e4f02708b93903d55ef598f68e82a826518f"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.16.1"
     },
     "src/foundation/hex": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -66207,6 +66178,7 @@
     "src/foundation/defmt-parser": "13fb36063c62bb805fbe9a25c5fa8f5867cd67c88399ade25dc43767a9a0b35a",
     "src/foundation/dotenvy": "cd5f14644b5a7aa236d7018bb77f9a1ad3c2fd719762e2320713321205c28e3f",
     "src/foundation/drain_filter_polyfill": "9bd00168d21cdc708296eb316c673e738cfa0a9665c99d49ae248a7331325e99",
+    "src/foundation/hashbrown-0.16.1": "79cdc46d22754ec4dc3289737115e2bceb5bc1ad1fc6863183230495337d6df3",
     "src/foundation/hex": "37146935caac26425e292364a000256037ac1737af648797011f3538a82dccab",
     "src/foundation/is_terminal_polyfill": "c7eff78a05c7f9d66148372cab1c3d140d2ff77b3c35f62f153debcec5831b57",
     "src/foundation/itertools-0.13.0": "4e09c2210957ad9fbb36f0dce993191f39ff0e4c2e85ae0411bc53749ec68ddf",
