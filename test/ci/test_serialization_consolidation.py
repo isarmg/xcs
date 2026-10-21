@@ -24,6 +24,22 @@ class SerializationConsolidationTests(unittest.TestCase):
             self.assertEqual(set(manifest['dependencies']), {'data-serialization'})
             self.assertFalse(manifest['dependencies']['data-serialization']['default-features'])
 
+    def test_generated_consumers_resolve_current_local_packages(self):
+        manifest = tomllib.loads(GATE['manifest'](ROOT, GATE['PROFILES']['full'], tests=True))
+        dependencies = manifest['dependencies']
+        self.assertNotIn('url', dependencies)
+        url = dependencies['url-encoding']
+        self.assertEqual(Path(url['path']), ROOT / 'src/foundation/url-encoding')
+        self.assertFalse(url['default-features'])
+        self.assertEqual(url['features'], ['parser', 'std', 'serialization'])
+        for name, dependency in dependencies.items():
+            self.assertTrue((Path(dependency['path']) / 'Cargo.toml').is_file(), name)
+
+    def test_url_probe_uses_current_public_namespace(self):
+        source = (ROOT / 'test/ci/fixtures/serialization-consolidation.rs').read_text()
+        self.assertIn('url_encoding::address::Url', source)
+        self.assertNotIn('url::Url', source)
+
     def test_native_and_browser_wasm_profiles_are_real(self):
         self.assertEqual(GATE['TARGETS'], ('x86_64-unknown-linux-gnu', 'wasm32-unknown-unknown'))
         self.assertEqual(len(GATE['PROFILES']), 7)

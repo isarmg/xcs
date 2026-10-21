@@ -25,7 +25,7 @@ def manifest(root, features, tests=False):
               f'features={json.dumps(features)}}}\n')
     if tests:
         result += 'log={path='+json.dumps(str(root/'src/foundation/log'))+',features=["serialization"]}\n'
-        result += 'url={path='+json.dumps(str(root/'src/foundation/url'))+',features=["serialization"]}\n'
+        result += 'url-encoding={path='+json.dumps(str(root/'src/foundation/url-encoding'))+',default-features=false,features=["parser","std","serialization"]}\n'
         result += 'fraction={path='+json.dumps(str(root/'src/foundation/fraction'))+',default-features=false,features=["with-serialization-support"]}\n'
         result += 'json-codec={path=' + json.dumps(str(root / 'src/foundation/json-codec')) + ',features=["arbitrary_precision","raw_value"]}\n'
     return result

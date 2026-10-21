@@ -108,13 +108,14 @@ fn original_formatting_tests_cover_all_bytes() {
 
 #[test]
 fn direct_macro_consumers_use_the_unified_entry() {
-    let url = url::Url::parse("https://example.com/path?q=value").unwrap();
+    let url = url_encoding::address::Url::parse("https://example.com/path?q=value").unwrap();
     assert_eq!(
         json_codec::to_string(&url).unwrap(),
         "\"https://example.com/path?q=value\""
     );
     assert_eq!(
-        json_codec::from_str::<url::Url>(&json_codec::to_string(&url).unwrap()).unwrap(),
+        json_codec::from_str::<url_encoding::address::Url>(&json_codec::to_string(&url).unwrap())
+            .unwrap(),
         url
     );
     let value = fraction::GenericFraction::<u64>::new(1u64, 3u64);
@@ -129,8 +130,20 @@ fn direct_macro_consumers_use_the_unified_entry() {
 
 #[test]
 fn log_levels_preserve_serialization_feature_and_wire_names() {
-    assert_eq!(json_codec::to_string(&log::Level::Info).unwrap(), "\"INFO\"");
-    assert_eq!(json_codec::from_str::<log::Level>("\"wArN\"").unwrap(), log::Level::Warn);
-    assert_eq!(json_codec::to_string(&log::LevelFilter::Off).unwrap(), "\"OFF\"");
-    assert_eq!(json_codec::from_str::<log::LevelFilter>("\"dEbUg\"").unwrap(), log::LevelFilter::Debug);
+    assert_eq!(
+        json_codec::to_string(&log::Level::Info).unwrap(),
+        "\"INFO\""
+    );
+    assert_eq!(
+        json_codec::from_str::<log::Level>("\"wArN\"").unwrap(),
+        log::Level::Warn
+    );
+    assert_eq!(
+        json_codec::to_string(&log::LevelFilter::Off).unwrap(),
+        "\"OFF\""
+    );
+    assert_eq!(
+        json_codec::from_str::<log::LevelFilter>("\"dEbUg\"").unwrap(),
+        log::LevelFilter::Debug
+    );
 }

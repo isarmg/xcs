@@ -305,7 +305,8 @@ impl ServerConfig {
         self.external_origin
             .as_ref()
             .map(|origin| {
-                let parsed = url_encoding::address::Url::parse(origin).map_err(ApiError::invalid)?;
+                let parsed =
+                    url_encoding::address::Url::parse(origin).map_err(ApiError::invalid)?;
                 if parsed.scheme() != "https"
                     || parsed.host_str().is_none()
                     || !parsed.username().is_empty()
