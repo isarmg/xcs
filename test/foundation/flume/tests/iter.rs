@@ -1,8 +1,8 @@
 //! Tests for iteration over receivers.
 
-extern crate crossbeam_utils;
+use concurrent_collections::utilities as crossbeam_utils;
 
-use crossbeam_utils::thread::scope;
+use concurrent_collections::utilities::thread::scope;
 use flume::unbounded;
 
 #[test]

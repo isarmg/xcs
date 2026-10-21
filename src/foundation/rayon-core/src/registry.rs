@@ -7,7 +7,7 @@ use crate::{
     ErrorKind, ExitHandler, PanicHandler, StartHandler, ThreadPoolBuildError, ThreadPoolBuilder,
     Yield,
 };
-use crossbeam_deque::{Injector, Steal, Stealer, Worker};
+use concurrent_collections::deque::{Injector, Steal, Stealer, Worker};
 use std::cell::Cell;
 use std::fmt;
 use std::hash::{DefaultHasher, Hasher};

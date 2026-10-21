@@ -329,6 +329,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "concurrent-collections"
+version = "0.8.23"
+
+[[package]]
 name = "console_error_panic_hook"
 version = "0.1.7"
 dependencies = [
@@ -390,32 +394,6 @@ version = "1.5.2"
 dependencies = [
  "cfg-if",
 ]
-
-[[package]]
-name = "crossbeam-deque"
-version = "0.8.8"
-dependencies = [
- "crossbeam-epoch",
- "crossbeam-utils",
-]
-
-[[package]]
-name = "crossbeam-epoch"
-version = "0.9.21"
-dependencies = [
- "crossbeam-utils",
-]
-
-[[package]]
-name = "crossbeam-queue"
-version = "0.3.14"
-dependencies = [
- "crossbeam-utils",
-]
-
-[[package]]
-name = "crossbeam-utils"
-version = "0.8.23"
 
 [[package]]
 name = "cryptographic-core"
@@ -1350,8 +1328,7 @@ dependencies = [
 name = "rayon-core"
 version = "1.13.0"
 dependencies = [
- "crossbeam-deque",
- "crossbeam-utils",
+ "concurrent-collections",
 ]
 
 [[package]]
@@ -1689,7 +1666,7 @@ version = "0.9.0"
 dependencies = [
  "atoi",
  "bytes",
- "crossbeam-queue",
+ "concurrent-collections",
  "either",
  "error-definition",
  "event-listener",

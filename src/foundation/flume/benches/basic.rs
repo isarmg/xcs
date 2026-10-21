@@ -273,7 +273,7 @@ fn test_mpsc_bounded_no_wait<S: Sender>(b: &mut Bencher, thread_num: u64) {
         let (tx, rx) = S::bounded(iters as usize);
         let start = Instant::now();
 
-        crossbeam_utils::thread::scope(|scope| {
+        concurrent_collections::utilities::thread::scope(|scope| {
             for _ in 0..thread_num {
                 let tx = tx.clone();
                 scope.spawn(move |_| {
@@ -302,7 +302,7 @@ fn test_mpsc_bounded<S: Sender>(b: &mut Bencher, bound: usize, thread_num: usize
         let (tx, rx) = S::bounded(bound);
         let start = Instant::now();
 
-        crossbeam_utils::thread::scope(|scope| {
+        concurrent_collections::utilities::thread::scope(|scope| {
             let msgs = iters as usize * bound.max(1);
 
             for _ in 0..thread_num {

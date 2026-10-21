@@ -1,4 +1,4 @@
-use crossbeam_utils::thread;
+use concurrent_collections::utilities::thread;
 use rayon_core::ThreadPoolBuilder;
 
 #[derive(PartialEq, Eq, Debug)]

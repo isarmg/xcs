@@ -48,9 +48,8 @@ version = "0.8"
 optional = true
 path = "../bit-vec"
 
-[dependencies.crossbeam-queue]
-version = "0.3.2"
-path = "../crossbeam-queue"
+[dependencies.concurrent-collections]
+path = "../concurrent-collections"
 
 [dependencies.either]
 version = "1.6.1"

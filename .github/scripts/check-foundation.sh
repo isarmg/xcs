@@ -48,6 +48,7 @@ case "${1:-}" in
     python3 .github/scripts/check-runtime-join-map.py
     python3 .github/scripts/check-futures-consolidation.py
     python3 .github/scripts/check-http-body-consolidation.py
+    python3 .github/scripts/check-concurrent-collections.py
     ;;
   *)
     echo 'Usage: check-foundation.sh {foundation|foundation-platform|foundation-crypto|foundation-data|foundation-language|foundation-async}' >&2

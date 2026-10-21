@@ -23,11 +23,11 @@ flowchart TD
 
 | 入口 | Cargo 根包目录 | 目标 | 来源数 / runtime / compile |
 | --- | --- | --- | --- |
-| root-native | src/auth/Cargo.toml, src/contract/Cargo.toml, src/naming/Cargo.toml, src/platform/Cargo.toml, src/engine/Cargo.toml, src/server/Cargo.toml, src/client/Cargo.toml, src/admin/Cargo.toml | x86_64-unknown-linux-gnu | 176 / 154 / 23 |
+| root-native | src/auth/Cargo.toml, src/contract/Cargo.toml, src/naming/Cargo.toml, src/platform/Cargo.toml, src/engine/Cargo.toml, src/server/Cargo.toml, src/client/Cargo.toml, src/admin/Cargo.toml | x86_64-unknown-linux-gnu | 175 / 153 / 23 |
 | web | src/web/Cargo.toml | wasm32-unknown-unknown | 92 / 55 / 42 |
 | smb | src/smb/Cargo.toml, src/smb-vfs/Cargo.toml | x86_64-unknown-linux-gnu | 38 / 15 / 30 |
-| build-tools | tools/web-build/Cargo.toml, tools/release-tools/Cargo.toml, tools/web-bindings/Cargo.toml | x86_64-unknown-linux-gnu | 69 / 0 / 69 |
-| validation-tools | tools/contract-check/Cargo.toml, tools/browser-smoke/Cargo.toml, tools/unicode-build/Cargo.toml, tools/perf-check/Cargo.toml | x86_64-unknown-linux-gnu | 144 / 0 / 144 |
+| build-tools | tools/web-build/Cargo.toml, tools/release-tools/Cargo.toml, tools/web-bindings/Cargo.toml | x86_64-unknown-linux-gnu | 67 / 0 / 67 |
+| validation-tools | tools/contract-check/Cargo.toml, tools/browser-smoke/Cargo.toml, tools/unicode-build/Cargo.toml, tools/perf-check/Cargo.toml | x86_64-unknown-linux-gnu | 143 / 0 / 143 |
 
 角色可重叠，计数不可相加。显式验证成员：src/foundation/ring。
 
@@ -74,6 +74,7 @@ flowchart TD
 | src/foundation/colorchoice (colorchoice@1.0.5) | src/foundation/anstream [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); build-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/command-derive (command-derive@4.6.7) | src/foundation/command-line [normal, optional] | root-native@x86_64-unknown-linux-gnu: compile; features=default; build-tools@x86_64-unknown-linux-gnu: compile; features=default |
 | src/foundation/command-line (command-line@4.6.7) | src/admin [normal]; src/foundation/bindgen [normal, optional]; tools/web-bindings [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=color,default,derive,env,error-context,help,std,suggestions,usage; build-tools@x86_64-unknown-linux-gnu: compile; features=color,default,derive,env,error-context,help,std,suggestions,usage |
+| src/foundation/concurrent-collections (concurrent-collections@0.8.23) | src/foundation/rayon-core [normal]; src/foundation/sqlite-access [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,default,std; build-tools@x86_64-unknown-linux-gnu: compile; features=alloc,default,std; validation-tools@x86_64-unknown-linux-gnu: compile; features=alloc,default,std |
 | src/foundation/console_error_panic_hook (console_error_panic_hook@0.1.7) | src/interface [normal] | web@wasm32-unknown-unknown: runtime; features=(none) |
 | src/foundation/const-oid (const-oid@0.10.2) | src/foundation/cryptographic-core [normal, optional] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); build-tools@x86_64-unknown-linux-gnu: compile; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/const_str_slice_concat (const_str_slice_concat@0.1.0) | src/foundation/view-renderer [normal] | web@wasm32-unknown-unknown: runtime; features=(none) |
@@ -82,10 +83,6 @@ flowchart TD
 | src/foundation/convert_case_extras (convert_case_extras@0.2.0) | src/macros [normal] | web@wasm32-unknown-unknown: compile; features=(none) |
 | src/foundation/cpu-feature-detect (cpu-feature-detect@0.3.1) | src/foundation/argon2 [normal, cfg(any(target_arch = "x86", target_arch = "x86_64"))]; src/foundation/blake3 [normal, cfg(any(target_arch = "x86", target_arch = "x86_64"))]; src/foundation/sha2 [normal, cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); smb@x86_64-unknown-linux-gnu: runtime; features=(none); build-tools@x86_64-unknown-linux-gnu: compile; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/crc32fast (crc32fast@1.5.2) | src/foundation/flate2 [normal, optional] | build-tools@x86_64-unknown-linux-gnu: compile; features=std |
-| src/foundation/crossbeam-deque (crossbeam-deque@0.8.8) | src/foundation/rayon-core [normal] | build-tools@x86_64-unknown-linux-gnu: compile; features=default,std |
-| src/foundation/crossbeam-epoch (crossbeam-epoch@0.9.21) | src/foundation/crossbeam-deque [normal] | build-tools@x86_64-unknown-linux-gnu: compile; features=alloc,std |
-| src/foundation/crossbeam-queue (crossbeam-queue@0.3.14) | src/foundation/sqlite-access [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,default,std; validation-tools@x86_64-unknown-linux-gnu: compile; features=alloc,default,std |
-| src/foundation/crossbeam-utils (crossbeam-utils@0.8.23) | src/foundation/crossbeam-deque [normal]; src/foundation/crossbeam-epoch [normal]; src/foundation/crossbeam-queue [normal]; src/foundation/rayon-core [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=default,std; build-tools@x86_64-unknown-linux-gnu: compile; features=default,std; validation-tools@x86_64-unknown-linux-gnu: compile; features=default,std |
 | src/foundation/cryptographic-core (cryptographic-core@0.11.3) | src/foundation/blake2 [normal]; src/foundation/blake3 [normal, optional]; src/foundation/hmac [normal]; src/foundation/sha2 [normal] | root-native@x86_64-unknown-linux-gnu: runtime; features=alloc,block-api,default,mac,oid; build-tools@x86_64-unknown-linux-gnu: compile; features=alloc,block-api,default,mac,oid; validation-tools@x86_64-unknown-linux-gnu: compile; features=alloc,block-api,default,mac,oid |
 | src/foundation/ctutils (ctutils@0.4.3) | src/foundation/cryptographic-core [normal, optional]; src/foundation/hybrid-array [normal, optional] | root-native@x86_64-unknown-linux-gnu: runtime; features=(none); build-tools@x86_64-unknown-linux-gnu: compile; features=(none); validation-tools@x86_64-unknown-linux-gnu: compile; features=(none) |
 | src/foundation/data-encoding (data-encoding@2.11.1) | src/foundation/jsonschema [normal] | validation-tools@x86_64-unknown-linux-gnu: compile; features=alloc,default,std |
@@ -336,6 +333,9 @@ flowchart TD
 | block-buffer@0.12.1 | src/foundation/cryptographic-core | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
 | clap_builder@4.6.7 | src/foundation/command-line | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
 | clap_lex@1.1.1 | src/foundation/command-line | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
+| crossbeam-deque@0.8.8 | src/foundation/concurrent-collections | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
+| crossbeam-epoch@0.9.21 | src/foundation/concurrent-collections | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 |
+| crossbeam-queue@0.3.14 | src/foundation/concurrent-collections | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |
 | crypto-common@0.2.2 | src/foundation/cryptographic-core | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 |
 | digest@0.10.7 | src/foundation/blake2 | Adapt fixed-output buffering, conditional reset, runtime variable-output traits/wrapper and std::io::Write to the shared hybrid-array digest traits. Preserve original digest source identity, licenses and advisory coverage; no cryptographic compression code imported. Exact source mapping: docs/components/crypto-consolidation.md. |
 | futures-channel@0.3.34 | src/foundation/futures | Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 |

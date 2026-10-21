@@ -33,11 +33,6 @@ web_spin_lock = []
 name = "rayon_core"
 path = "src/lib.rs"
 
-[dependencies.crossbeam-deque]
-version = "0.8.1"
-path = "../crossbeam-deque"
 
-[dependencies.crossbeam-utils]
-version = "0.8.0"
-path = "../crossbeam-utils"
-
+[dependencies.concurrent-collections]
+path = "../concurrent-collections"

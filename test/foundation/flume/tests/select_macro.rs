@@ -14,7 +14,7 @@
 
 // use crossbeam_channel::{after, bounded, never, tick, unbounded};
 // use crossbeam_channel::{Receiver, RecvError, SendError, Sender, TryRecvError};
-// use crossbeam_utils::thread::scope;
+// use concurrent_collections::utilities::thread::scope;
 
 // fn ms(ms: u64) -> Duration {
 //     Duration::from_millis(ms)

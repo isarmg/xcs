@@ -2,6 +2,7 @@
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "consolidation_records_sha256": {
     "2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61": "2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61",
+    "31e6d886b8add9212549d465739e4e908a9987ac7c96cb88daeaa89938890d63": "31e6d886b8add9212549d465739e4e908a9987ac7c96cb88daeaa89938890d63",
     "42b1278a81520b8ad0f2149965a98ff89ef4a3a9a1606c924213166c5d9b0b3e": "42b1278a81520b8ad0f2149965a98ff89ef4a3a9a1606c924213166c5d9b0b3e",
     "4a98b25902d1eccdf797328137506f3d18f8101bc4b45c6128d831e5b8478eb3": "4a98b25902d1eccdf797328137506f3d18f8101bc4b45c6128d831e5b8478eb3",
     "4d2efffc72662e128c83438024fc54a058196b6625d3de6b3e0c3df0ec71e074": "4d2efffc72662e128c83438024fc54a058196b6625d3de6b3e0c3df0ec71e074",
@@ -1327,6 +1328,913 @@
       "new_files": {},
       "primary_directory": "src/foundation/clap",
       "reason": "Consolidate facade, builder/parser/help and private lexer into one runtime owner; keep procedural macros separate. Preserve all three runtime origins, exact external test history, and archived redundant manifests."
+    },
+    "31e6d886b8add9212549d465739e4e908a9987ac7c96cb88daeaa89938890d63": {
+      "destination_directory": "src/foundation/concurrent-collections",
+      "destination_external_tests": {
+        "bytes": 104364,
+        "directory": "src/foundation/concurrent-collections",
+        "file_count": 23,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+            "path": "test/foundation/concurrent-collections/deque/tests/fifo.rs",
+            "sha256": "91838dc9fd975e43d750bdb991f3b12ad5874e82e5e2f7b447cc5f6ffce3a63f",
+            "source": "src/foundation/crossbeam-deque/tests/fifo.rs",
+            "source_sha256_before": "3d98e0d4ca7cfddf10708b71642cf1ff05543d067ad837e48401d63cc31c0a18"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+            "path": "test/foundation/concurrent-collections/deque/tests/injector.rs",
+            "sha256": "a7eb112f8e6db93868eb47d6a5a800e46657cc4e75b050b35ab855299780fbb7",
+            "source": "src/foundation/crossbeam-deque/tests/injector.rs",
+            "source_sha256_before": "859a0e6fd306e844e8fd660104a994aa894a165f20fa326f4b807e660eaf7878"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+            "path": "test/foundation/concurrent-collections/deque/tests/lifo.rs",
+            "sha256": "93cab8c16f8b30453cb75befa456f5bc0e919d32cedebfde42ca95c60ac4a89a",
+            "source": "src/foundation/crossbeam-deque/tests/lifo.rs",
+            "source_sha256_before": "57abdb3fc5920a422f785ba308b658bdc5400947532eeffb799f2395a2061549"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+            "path": "test/foundation/concurrent-collections/deque/tests/steal.rs",
+            "sha256": "f6ea969bd0b2d932f72cb89d15a5c0f1048a68ba2e86414a86239f8c3434bc64",
+            "source": "src/foundation/crossbeam-deque/tests/steal.rs",
+            "source_sha256_before": "cdf588cc13eeb275ef1231eb18e3245faca7a2d054fa6527bfdba2a34bc8f7bf"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/functions/src/internal/local_size_318.rs",
+            "sha256": "43ac04cc77a6e00389f6fb8bd5f8f9a08feb2e7f3ecc88e83b5e76b6e3a0b4c9",
+            "source": "src/foundation/crossbeam-epoch/src/internal.rs",
+            "source_sha256_before": "fcba7aab8a506b8e9259e30c3edc0af21e4f5675144b1e4d3e9182614be7c326"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/tests/loom.rs",
+            "sha256": "9ef00ce36d074f57b3a4a16f731242276041114d60fb40eec8998e474d872d0a",
+            "source": "src/foundation/crossbeam-epoch/tests/loom.rs",
+            "source_sha256_before": "db772f4478966de6ec98774ca4093171dc942da635822a0d2d3257d31188cb9b"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/unit/src/atomic/all_tests_1669.rs",
+            "sha256": "0184c56f5510f85eafa66dd8733220fb4df4b2f2b3c653c8223eae37bc20e183",
+            "source": "src/foundation/crossbeam-epoch/src/atomic.rs",
+            "source_sha256_before": "5db5c12a916eda8e2d542335fe973af152a14325f92000558d55bcbe2889b1d7"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/unit/src/collector/all_tests_112.rs",
+            "sha256": "fe7ec32164d422d01bb7dc94a6235f28c6e5c9c458e63b91a82dc4875d3d5f97",
+            "source": "src/foundation/crossbeam-epoch/src/collector.rs",
+            "source_sha256_before": "12c6a00496fd702facaff3efdc993f326049d2bbb21fb2c9db1b8ffe6f54cf69"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/unit/src/default/all_tests_64.rs",
+            "sha256": "743aaa4e53e3a65ed4e275581d38bb31b864c98e1017ecb11470adb580feee63",
+            "source": "src/foundation/crossbeam-epoch/src/default.rs",
+            "source_sha256_before": "a153392422d2a473afb01873d83c8d92f34a3bab5dde2f3743d916acce36f9b9"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/unit/src/deferred/all_tests_90.rs",
+            "sha256": "c3987a66b0e946964a1cc72f37aaefd3c8e787f5eb7ae3ed9784cd0df985b344",
+            "source": "src/foundation/crossbeam-epoch/src/deferred.rs",
+            "source_sha256_before": "5ad2032c40f96e32f3bab367c843c3091c4300402e938217d2706070f20c6811"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/unit/src/internal/all_tests_575.rs",
+            "sha256": "baa7fa1fd201083afedf7387a53952cf290658260aefab4c8dfdd5832d0a58ce",
+            "source": "src/foundation/crossbeam-epoch/src/internal.rs",
+            "source_sha256_before": "fcba7aab8a506b8e9259e30c3edc0af21e4f5675144b1e4d3e9182614be7c326"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/unit/src/sync/list/all_tests_298.rs",
+            "sha256": "dc6817b59a86ab2679d44694bd1af438f90304b86e1917a00f68d7fed3dcd7c8",
+            "source": "src/foundation/crossbeam-epoch/src/sync/list.rs",
+            "source_sha256_before": "6950177b01fa6f51d3f4ca22f3ce4e77143eed28bec04579ecc8a8599ab17031"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "path": "test/foundation/concurrent-collections/epoch/unit/src/sync/queue/all_test_217.rs",
+            "sha256": "3224a1ec02ebeb1c2ccaad7a337a895fb5d8b7f84b16a76e501a870ff612aacc",
+            "source": "src/foundation/crossbeam-epoch/src/sync/queue.rs",
+            "source_sha256_before": "0324e9b07dfd0f76ba0058395a4b9ae4b4a6e5ab0aec41d98edab7864bac3157"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
+            "path": "test/foundation/concurrent-collections/queue/tests/array_queue.rs",
+            "sha256": "1ea2eb6deaa19c1c2bde07ec9d77ba73ddf6ef51c2a0a323ecdc77e8e89e4d0d",
+            "source": "src/foundation/crossbeam-queue/tests/array_queue.rs",
+            "source_sha256_before": "f091dc5a4fdaaf47c05c24202a553e96a765110cd77929048ec37351484e820d"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
+            "path": "test/foundation/concurrent-collections/queue/tests/seg_queue.rs",
+            "sha256": "2c1df29232b89dbb7206aec78a8c94fd250ecf62eccb2513de499d46ec828043",
+            "source": "src/foundation/crossbeam-queue/tests/seg_queue.rs",
+            "source_sha256_before": "09f4189e0cad196f369ea0abeadc2e58c34cf7c95f2087c595e3790928654268"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "path": "test/foundation/concurrent-collections/utilities/tests/atomic_cell.rs",
+            "sha256": "cfd7f528d2ab834ca01b5cd2ad48e0a123a5f782bf906848a222c26458ff7cbc",
+            "source": "src/foundation/crossbeam-utils/tests/atomic_cell.rs",
+            "source_sha256_before": "442a8bf4c35c43f0aedd59ba8f7a255af820a4ccd2ecabe8bf260a7322bbf6b1"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "path": "test/foundation/concurrent-collections/utilities/tests/cache_padded.rs",
+            "sha256": "9c00db35e4e04021379e7e39b4327dfb3f6ac9a9b2a33709e4fd83f143a9ae4d",
+            "source": "src/foundation/crossbeam-utils/tests/cache_padded.rs",
+            "source_sha256_before": "1bfaff8354c8184e1ee1f902881ca9400b60effb273b0d3f752801a483d2b66d"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "path": "test/foundation/concurrent-collections/utilities/tests/parker.rs",
+            "sha256": "9461986e1208e79668e7d7c5af18438999ac8e3161b8a88fd0fec441fe2ae35e",
+            "source": "src/foundation/crossbeam-utils/tests/parker.rs",
+            "source_sha256_before": "3564f5b7d046058342e5f242faa1000e30434562b8e12141af8e5d2b593f8cc2"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "path": "test/foundation/concurrent-collections/utilities/tests/sharded_lock.rs",
+            "sha256": "01299ce2e1dd7da4d1ec60e423eab970b7f883cfa984d7f6b6999de9dc81cda9",
+            "source": "src/foundation/crossbeam-utils/tests/sharded_lock.rs",
+            "source_sha256_before": "6f1c2359ebf409c576a2ae74f37b182503d368d65f357f0f6fb4fcdb2a4e2b2a"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "path": "test/foundation/concurrent-collections/utilities/tests/thread.rs",
+            "sha256": "71ad877e2afddc4b8b30d13f1fdf839615e4782e4a1b1e107ea2bb8c07f73fd3",
+            "source": "src/foundation/crossbeam-utils/tests/thread.rs",
+            "source_sha256_before": "9a7d7d3028c552fd834c68598b04a1cc252a816bc20ab62cec060d6cd09cab10"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "path": "test/foundation/concurrent-collections/utilities/tests/wait_group.rs",
+            "sha256": "bb7581ef70f8ada6a0a9d9128430d5d216cb1e3eb6372843bb8911d6840ae645",
+            "source": "src/foundation/crossbeam-utils/tests/wait_group.rs",
+            "source_sha256_before": "2a41533a5f7f113d19cd2bdafcc2abf86509109652274156efdd74abd00896b6"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "path": "test/foundation/concurrent-collections/utilities/unit/src/atomic/seq_lock/tests_97.rs",
+            "sha256": "3cd88c565ac4f09b3b454279303c71a341388ebaca56122be6201ac2679e3066",
+            "source": "src/foundation/crossbeam-utils/src/atomic/seq_lock.rs",
+            "source_sha256_before": "27182e6b87a9db73c5f6831759f8625f9fcdec3c2828204c444aef04f427735a"
+          },
+          {
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "path": "test/foundation/concurrent-collections/utilities/unit/src/atomic/seq_lock_wide/tests_140.rs",
+            "sha256": "3cd88c565ac4f09b3b454279303c71a341388ebaca56122be6201ac2679e3066",
+            "source": "src/foundation/crossbeam-utils/src/atomic/seq_lock_wide.rs",
+            "source_sha256_before": "9888dd03116bb89ca36d4ab8d5a0b5032107a2983a7eb8024454263b09080088"
+          }
+        ],
+        "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+        "roots": [
+          "test/foundation/concurrent-collections"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "945a84385e56ba3f076ba842320a1bd10d1d967581015e8411d8665aeb72e5b6",
+        "benches/atomic_cell.rs": "91865666a2f755471cc8f6be630d2acea9237ba5729936e66c712d7cb5767b24",
+        "build-common.rs": "502cb7494549bed6fa10ac7bea36e880eeb60290dc69b679ac5c92b376469562",
+        "build.rs": "c2a9dec064c0425e1b63830d1b8b845a85ed23ceab5e7d7a57d65ff7a5456f67",
+        "build/deque/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/benches/defer.rs": "f0e07a2e2212ac12e16915a6cc76563d7521affaa8a30937f20aeb4f865e9fb6",
+        "build/epoch/benches/flush.rs": "42264f0ee86d581e5a3a4946f12a69271a130135b7863151ff0162ddf235457d",
+        "build/epoch/benches/pin.rs": "3344fff5ba27d3eb0a7e6f6c8257274bc2e77a91d2136be029f6c3dc299f73ee",
+        "build/epoch/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/examples/sanitize.rs": "9c317171705a4a0889c90da40d50531bc60d9fbb21861a6c84e8fa977aa93658",
+        "no_atomic.rs": "56db0a11d33cdf136df6f3943ddb554c70aa236d0a5515dab7ffb91fac595ec3",
+        "src/deque/deque.rs": "2e4de38be2381099303902a928a72e227830dcd5d4ae6064124f465af10d806d",
+        "src/deque/mod.rs": "27884513736169b6f6917e1cec81c0fce27fd4fa81e469821f0ef836bfb58cfc",
+        "src/epoch/atomic.rs": "bb675fa1c065413c2c13d111370773c5b39c474c03ddaef3753c989362090148",
+        "src/epoch/collector.rs": "3e66a497760e259de24d5cedb3200155405b4db1126a3450b4e9de0bd4cb7801",
+        "src/epoch/default.rs": "2556fc355e3646b935ffc0846ce6e8e352fea7b685daa5f230048edab41785f1",
+        "src/epoch/deferred.rs": "f37fd6d4f09e1afe72e2e31c2eaa3d14df56cd13e922b5920b96698462f1e354",
+        "src/epoch/epoch.rs": "d161ab5ea089e4834362909b108415956e3f2a3ba8595677f72719b575103efc",
+        "src/epoch/guard.rs": "15728313fd16613c4b944990d6e6ec92040168279673dac59ea332996923d48b",
+        "src/epoch/internal.rs": "768f39345800b3101b757e6ad00116a9a0579667a397ceb7a75463e73a83ec1f",
+        "src/epoch/mod.rs": "f9a46024ccd94cc80c2240e3f5d5d44bf778219ee5767ce39e649acd7ef640bc",
+        "src/epoch/sync/list.rs": "ab450c1699acecda6d5826fd215b6ce10f7759c3949698f3ea18461aefb69abb",
+        "src/epoch/sync/mod.rs": "326e32489d467e974c441120640a8338aa55da55c24b20276075ce9053997326",
+        "src/epoch/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/epoch/sync/queue.rs": "675462049d037abf8fe9e12890aa4165495c642dcc25bd6c1e6069a1ab99cbea",
+        "src/lib.rs": "b7a79601cf9453ef171447b5f8c77431f8e06f3ea1b7198f281eb2e8be959563",
+        "src/queue/array_queue.rs": "359c787dab8e5f5f834d37ab19870719ab8191cfb277ba54ee4f4b5eca2c77bd",
+        "src/queue/mod.rs": "6d8d02f0906aad043dc6ffb511fd2fc112f191c1a176f2ffc736e5a28afb0e38",
+        "src/queue/seg_queue.rs": "27afc0f44c2620b30fe4d0fc65722a90670a4f8aac9d1a50aa609a24310b5751",
+        "src/utilities/atomic/atomic_cell.rs": "7ceb49144fb6cbe28a87eb4539fac5e440efd39c4200eee7faf6a59e0fe6898a",
+        "src/utilities/atomic/consume.rs": "c70a9ae064993cc8c077935cf7442f8c11638e731157a1a0e3a792ca2efdda6f",
+        "src/utilities/atomic/mod.rs": "712e2337e710c07116e977154ea4247a1c065bf5599e6bf368138e715b403f6d",
+        "src/utilities/atomic/seq_lock.rs": "b8ac82bb8eafddbcb63d7f8428035da22325aafd06b420f687bbbeb16cc7c600",
+        "src/utilities/atomic/seq_lock_wide.rs": "5702c31b040a6b39bc1bba6ea179d218b75ab42f1c620b77484e42baf5a4bd56",
+        "src/utilities/backoff.rs": "21c814575c5a8b9a8b0f5e2ddc8a1d765c5b8cdd8ce39c9a83f356c0862a32ab",
+        "src/utilities/cache_padded.rs": "0bf39a73e60427c101af5f3a7ca8fc713f9816dc3b210f450cdca860c12a335a",
+        "src/utilities/mod.rs": "92b60ee2fe5141f9ebbe0df6ce2b838b4ed46a4319583497ef8529ddae88b012",
+        "src/utilities/sync/mod.rs": "eca73c04f821859b8434d2b93db87d160dc6a3f65498ca201cd40d732ca4c134",
+        "src/utilities/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/utilities/sync/parker.rs": "f0b126aabf6dbc1bd7c939967c6b5ba2e9fe62a4fa8055f144e10f6df2271efa",
+        "src/utilities/sync/sharded_lock.rs": "bffdd9772e1ad959236120ec00c02f1fe71913c74dee71771cc2b1754beb8d43",
+        "src/utilities/sync/wait_group.rs": "f5c3edcd8e2558b8454b533546ce0204dba85471c5444ce0ac7755506f245afc",
+        "src/utilities/thread.rs": "f1bbdbb8722a2f184bd586e630bc122385382a723465610bdf014509eb445cd6"
+      },
+      "destination_name": "concurrent-collections",
+      "external_file_routes": {
+        "test/foundation/crossbeam-deque/tests/fifo.rs": {
+          "destination": "test/foundation/concurrent-collections/deque/tests/fifo.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmRlcXVlOjpTdGVhbDo6e0VtcHR5LCBTdWNjZXNzfTsKdXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmRlcXVlOjpXb3JrZXI7CnVzZSBjb25jdXJyZW50X2NvbGxlY3Rpb25zOjp1dGlsaXRpZXM6OnRocmVhZDo6c2NvcGU7Cg==",
+              "old": "dXNlIGNyb3NzYmVhbV9kZXF1ZTo6U3RlYWw6OntFbXB0eSwgU3VjY2Vzc307CnVzZSBjcm9zc2JlYW1fZGVxdWU6OldvcmtlcjsKdXNlIGNyb3NzYmVhbV91dGlsczo6dGhyZWFkOjpzY29wZTsK"
+            }
+          ]
+        },
+        "test/foundation/crossbeam-deque/tests/injector.rs": {
+          "destination": "test/foundation/concurrent-collections/deque/tests/injector.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmRlcXVlOjpTdGVhbDo6e0VtcHR5LCBTdWNjZXNzfTsKdXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmRlcXVlOjp7SW5qZWN0b3IsIFdvcmtlcn07CnVzZSBjb25jdXJyZW50X2NvbGxlY3Rpb25zOjp1dGlsaXRpZXM6OnRocmVhZDo6c2NvcGU7Cg==",
+              "old": "dXNlIGNyb3NzYmVhbV9kZXF1ZTo6U3RlYWw6OntFbXB0eSwgU3VjY2Vzc307CnVzZSBjcm9zc2JlYW1fZGVxdWU6OntJbmplY3RvciwgV29ya2VyfTsKdXNlIGNyb3NzYmVhbV91dGlsczo6dGhyZWFkOjpzY29wZTsK"
+            }
+          ]
+        },
+        "test/foundation/crossbeam-deque/tests/lifo.rs": {
+          "destination": "test/foundation/concurrent-collections/deque/tests/lifo.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmRlcXVlOjpTdGVhbDo6e0VtcHR5LCBTdWNjZXNzfTsKdXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmRlcXVlOjpXb3JrZXI7CnVzZSBjb25jdXJyZW50X2NvbGxlY3Rpb25zOjp1dGlsaXRpZXM6OnRocmVhZDo6c2NvcGU7Cg==",
+              "old": "dXNlIGNyb3NzYmVhbV9kZXF1ZTo6U3RlYWw6OntFbXB0eSwgU3VjY2Vzc307CnVzZSBjcm9zc2JlYW1fZGVxdWU6OldvcmtlcjsKdXNlIGNyb3NzYmVhbV91dGlsczo6dGhyZWFkOjpzY29wZTsK"
+            }
+          ]
+        },
+        "test/foundation/crossbeam-deque/tests/steal.rs": {
+          "destination": "test/foundation/concurrent-collections/deque/tests/steal.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmRlcXVlOjpTdGVhbDo6U3VjY2VzczsKdXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmRlcXVlOjp7SW5qZWN0b3IsIFdvcmtlcn07Cg==",
+              "old": "dXNlIGNyb3NzYmVhbV9kZXF1ZTo6U3RlYWw6OlN1Y2Nlc3M7CnVzZSBjcm9zc2JlYW1fZGVxdWU6OntJbmplY3RvciwgV29ya2VyfTsK"
+            }
+          ]
+        },
+        "test/foundation/crossbeam-epoch/functions/src/internal/local_size_318.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/functions/src/internal/local_size_318.rs",
+          "replacements": []
+        },
+        "test/foundation/crossbeam-epoch/tests/loom.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/tests/loom.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OmVwb2NoOwo=",
+              "old": "dXNlIGNyb3NzYmVhbV9lcG9jaCBhcyBlcG9jaDsK"
+            }
+          ]
+        },
+        "test/foundation/crossbeam-epoch/unit/src/atomic/all_tests_1669.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/unit/src/atomic/all_tests_1669.rs",
+          "replacements": []
+        },
+        "test/foundation/crossbeam-epoch/unit/src/collector/all_tests_112.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/unit/src/collector/all_tests_112.rs",
+          "replacements": [
+            {
+              "new": "ICAgIHVzZSBjcmF0ZTo6dXRpbGl0aWVzOjp0aHJlYWQ7CgogICAgdXNlIGNyYXRlOjplcG9jaDo6e0NvbGxlY3RvciwgT3duZWR9Owo=",
+              "old": "ICAgIHVzZSBjcm9zc2JlYW1fdXRpbHM6OnRocmVhZDsKCiAgICB1c2UgY3JhdGU6OntDb2xsZWN0b3IsIE93bmVkfTsK"
+            }
+          ]
+        },
+        "test/foundation/crossbeam-epoch/unit/src/default/all_tests_64.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/unit/src/default/all_tests_64.rs",
+          "replacements": [
+            {
+              "new": "ICAgIHVzZSBjcmF0ZTo6dXRpbGl0aWVzOjp0aHJlYWQ7Cg==",
+              "old": "ICAgIHVzZSBjcm9zc2JlYW1fdXRpbHM6OnRocmVhZDsK"
+            }
+          ]
+        },
+        "test/foundation/crossbeam-epoch/unit/src/deferred/all_tests_90.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/unit/src/deferred/all_tests_90.rs",
+          "replacements": []
+        },
+        "test/foundation/crossbeam-epoch/unit/src/internal/all_tests_575.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/unit/src/internal/all_tests_575.rs",
+          "replacements": []
+        },
+        "test/foundation/crossbeam-epoch/unit/src/sync/list/all_tests_298.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/unit/src/sync/list/all_tests_298.rs",
+          "replacements": [
+            {
+              "new": "ICAgIHVzZSBjcmF0ZTo6ZXBvY2g6OntDb2xsZWN0b3IsIE93bmVkfTsKICAgIHVzZSBjcmF0ZTo6dXRpbGl0aWVzOjp0aHJlYWQ7Cg==",
+              "old": "ICAgIHVzZSBjcmF0ZTo6e0NvbGxlY3RvciwgT3duZWR9OwogICAgdXNlIGNyb3NzYmVhbV91dGlsczo6dGhyZWFkOwo="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-epoch/unit/src/sync/queue/all_test_217.rs": {
+          "destination": "test/foundation/concurrent-collections/epoch/unit/src/sync/queue/all_test_217.rs",
+          "replacements": [
+            {
+              "new": "ICAgIHVzZSBjcmF0ZTo6ZXBvY2g6OnBpbjsKICAgIHVzZSBjcmF0ZTo6dXRpbGl0aWVzOjp0aHJlYWQ7Cg==",
+              "old": "ICAgIHVzZSBjcmF0ZTo6cGluOwogICAgdXNlIGNyb3NzYmVhbV91dGlsczo6dGhyZWFkOwo="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-queue/tests/array_queue.rs": {
+          "destination": "test/foundation/concurrent-collections/queue/tests/array_queue.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnF1ZXVlOjpBcnJheVF1ZXVlOwp1c2UgY29uY3VycmVudF9jb2xsZWN0aW9uczo6dXRpbGl0aWVzOjp0aHJlYWQ6OnNjb3BlOwo=",
+              "old": "dXNlIGNyb3NzYmVhbV9xdWV1ZTo6QXJyYXlRdWV1ZTsKdXNlIGNyb3NzYmVhbV91dGlsczo6dGhyZWFkOjpzY29wZTsK"
+            }
+          ]
+        },
+        "test/foundation/crossbeam-queue/tests/seg_queue.rs": {
+          "destination": "test/foundation/concurrent-collections/queue/tests/seg_queue.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnF1ZXVlOjpTZWdRdWV1ZTsKdXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnV0aWxpdGllczo6dGhyZWFkOjpzY29wZTsK",
+              "old": "dXNlIGNyb3NzYmVhbV9xdWV1ZTo6U2VnUXVldWU7CnVzZSBjcm9zc2JlYW1fdXRpbHM6OnRocmVhZDo6c2NvcGU7Cg=="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-utils/tests/atomic_cell.rs": {
+          "destination": "test/foundation/concurrent-collections/utilities/tests/atomic_cell.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnV0aWxpdGllczo6YXRvbWljOjpBdG9taWNDZWxsOwo=",
+              "old": "dXNlIGNyb3NzYmVhbV91dGlsczo6YXRvbWljOjpBdG9taWNDZWxsOwo="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-utils/tests/cache_padded.rs": {
+          "destination": "test/foundation/concurrent-collections/utilities/tests/cache_padded.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnV0aWxpdGllczo6Q2FjaGVQYWRkZWQ7Cg==",
+              "old": "dXNlIGNyb3NzYmVhbV91dGlsczo6Q2FjaGVQYWRkZWQ7Cg=="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-utils/tests/parker.rs": {
+          "destination": "test/foundation/concurrent-collections/utilities/tests/parker.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnV0aWxpdGllczo6c3luYzo6UGFya2VyOwp1c2UgY29uY3VycmVudF9jb2xsZWN0aW9uczo6dXRpbGl0aWVzOjp0aHJlYWQ7Cg==",
+              "old": "dXNlIGNyb3NzYmVhbV91dGlsczo6c3luYzo6UGFya2VyOwp1c2UgY3Jvc3NiZWFtX3V0aWxzOjp0aHJlYWQ7Cg=="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-utils/tests/sharded_lock.rs": {
+          "destination": "test/foundation/concurrent-collections/utilities/tests/sharded_lock.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnV0aWxpdGllczo6c3luYzo6U2hhcmRlZExvY2s7Cg==",
+              "old": "dXNlIGNyb3NzYmVhbV91dGlsczo6c3luYzo6U2hhcmRlZExvY2s7Cg=="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-utils/tests/thread.rs": {
+          "destination": "test/foundation/concurrent-collections/utilities/tests/thread.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnV0aWxpdGllczo6dGhyZWFkOwo=",
+              "old": "dXNlIGNyb3NzYmVhbV91dGlsczo6dGhyZWFkOwo="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-utils/tests/wait_group.rs": {
+          "destination": "test/foundation/concurrent-collections/utilities/tests/wait_group.rs",
+          "replacements": [
+            {
+              "new": "dXNlIGNvbmN1cnJlbnRfY29sbGVjdGlvbnM6OnV0aWxpdGllczo6c3luYzo6V2FpdEdyb3VwOwo=",
+              "old": "dXNlIGNyb3NzYmVhbV91dGlsczo6c3luYzo6V2FpdEdyb3VwOwo="
+            }
+          ]
+        },
+        "test/foundation/crossbeam-utils/unit/src/atomic/seq_lock/tests_97.rs": {
+          "destination": "test/foundation/concurrent-collections/utilities/unit/src/atomic/seq_lock/tests_97.rs",
+          "replacements": []
+        },
+        "test/foundation/crossbeam-utils/unit/src/atomic/seq_lock_wide/tests_140.rs": {
+          "destination": "test/foundation/concurrent-collections/utilities/unit/src/atomic/seq_lock_wide/tests_140.rs",
+          "replacements": []
+        }
+      },
+      "file_routes": {
+        "src/foundation/crossbeam-deque": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42MSIKbmFtZSA9ICJjcm9zc2JlYW0tZGVxdWUiCnZlcnNpb24gPSAiMC44LjgiCmJ1aWxkID0gImJ1aWxkLnJzIgphdXRvbGliID0gZmFsc2UKYXV0b2JpbnMgPSBmYWxzZQphdXRvZXhhbXBsZXMgPSBmYWxzZQphdXRvdGVzdHMgPSBmYWxzZQphdXRvYmVuY2hlcyA9IGZhbHNlCmRlc2NyaXB0aW9uID0gIkNvbmN1cnJlbnQgd29yay1zdGVhbGluZyBkZXF1ZSIKaG9tZXBhZ2UgPSAiaHR0cHM6Ly9naXRodWIuY29tL2Nyb3NzYmVhbS1ycy9jcm9zc2JlYW0vdHJlZS9tYXN0ZXIvY3Jvc3NiZWFtLWRlcXVlIgpyZWFkbWUgPSAiLi4vLi4vLi4vZG9jcy91cHN0cmVhbS9jcm9zc2JlYW0tZGVxdWUtMC44LjgvUkVBRE1FLm1kIgprZXl3b3JkcyA9IFsKICAgICJjaGFzZS1sZXYiLAogICAgImxvY2stZnJlZSIsCiAgICAic2NoZWR1bGVyIiwKICAgICJzY2hlZHVsaW5nIiwKXQpjYXRlZ29yaWVzID0gWwogICAgImFsZ29yaXRobXMiLAogICAgImNvbmN1cnJlbmN5IiwKICAgICJkYXRhLXN0cnVjdHVyZXMiLApdCmxpY2Vuc2UgPSAiTUlUIE9SIEFwYWNoZS0yLjAiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL2Nyb3NzYmVhbS1ycy9jcm9zc2JlYW0iCgpbZmVhdHVyZXNdCmRlZmF1bHQgPSBbInN0ZCJdCnN0ZCA9IFsiY3Jvc3NiZWFtLWVwb2NoL3N0ZCIsICJjcm9zc2JlYW0tdXRpbHMvc3RkIl0KCltsaWJdCm5hbWUgPSAiY3Jvc3NiZWFtX2RlcXVlIgpwYXRoID0gInNyYy9saWIucnMiCgpbZGVwZW5kZW5jaWVzLmNyb3NzYmVhbS1lcG9jaF0KdmVyc2lvbiA9ICIwLjkuMTciCmRlZmF1bHQtZmVhdHVyZXMgPSBmYWxzZQpwYXRoID0gIi4uL2Nyb3NzYmVhbS1lcG9jaCIKCltkZXBlbmRlbmNpZXMuY3Jvc3NiZWFtLXV0aWxzXQp2ZXJzaW9uID0gIjAuOC4xOCIKZGVmYXVsdC1mZWF0dXJlcyA9IGZhbHNlCnBhdGggPSAiLi4vY3Jvc3NiZWFtLXV0aWxzIgoKW2xpbnRzLmNsaXBweS5kZWNsYXJlX2ludGVyaW9yX211dGFibGVfY29uc3RdCmxldmVsID0gImFsbG93Igpwcmlvcml0eSA9IDEKCltsaW50cy5jbGlwcHkubGludF9ncm91cHNfcHJpb3JpdHldCmxldmVsID0gImFsbG93Igpwcmlvcml0eSA9IDEKCltsaW50cy5ydXN0LnVuZXhwZWN0ZWRfY2Znc10KbGV2ZWwgPSAid2FybiIKcHJpb3JpdHkgPSAwCmNoZWNrLWNmZyA9IFsKICAgICJjZmcoY3Jvc3NiZWFtX2xvb20pIiwKICAgICJjZmcoY3Jvc3NiZWFtX3Nhbml0aXplKSIsCl0K"
+          },
+          "build.rs": {
+            "destination": "build/deque/build.rs"
+          },
+          "src/deque.rs": {
+            "destination": "src/deque/deque.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/deque/mod.rs"
+          }
+        },
+        "src/foundation/crossbeam-epoch": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42MSIKbmFtZSA9ICJjcm9zc2JlYW0tZXBvY2giCnZlcnNpb24gPSAiMC45LjIxIgpidWlsZCA9ICJidWlsZC5ycyIKYXV0b2xpYiA9IGZhbHNlCmF1dG9iaW5zID0gZmFsc2UKYXV0b2V4YW1wbGVzID0gZmFsc2UKYXV0b3Rlc3RzID0gZmFsc2UKYXV0b2JlbmNoZXMgPSBmYWxzZQpkZXNjcmlwdGlvbiA9ICJFcG9jaC1iYXNlZCBnYXJiYWdlIGNvbGxlY3Rpb24iCmhvbWVwYWdlID0gImh0dHBzOi8vZ2l0aHViLmNvbS9jcm9zc2JlYW0tcnMvY3Jvc3NiZWFtL3RyZWUvbWFzdGVyL2Nyb3NzYmVhbS1lcG9jaCIKcmVhZG1lID0gIi4uLy4uLy4uL2RvY3MvdXBzdHJlYW0vY3Jvc3NiZWFtLWVwb2NoLTAuOS4yMS9SRUFETUUubWQiCmtleXdvcmRzID0gWwogICAgImxvY2stZnJlZSIsCiAgICAicmN1IiwKICAgICJhdG9taWMiLAogICAgImdhcmJhZ2UiLApdCmNhdGVnb3JpZXMgPSBbCiAgICAiY29uY3VycmVuY3kiLAogICAgIm1lbW9yeS1tYW5hZ2VtZW50IiwKICAgICJuby1zdGQiLApdCmxpY2Vuc2UgPSAiTUlUIE9SIEFwYWNoZS0yLjAiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL2Nyb3NzYmVhbS1ycy9jcm9zc2JlYW0iCgpbZmVhdHVyZXNdCmFsbG9jID0gW10KZGVmYXVsdCA9IFsic3RkIl0KbmlnaHRseSA9IFsiY3Jvc3NiZWFtLXV0aWxzL25pZ2h0bHkiXQpzdGQgPSBbImFsbG9jIiwgImNyb3NzYmVhbS11dGlscy9zdGQiXQoKW2xpYl0KbmFtZSA9ICJjcm9zc2JlYW1fZXBvY2giCnBhdGggPSAic3JjL2xpYi5ycyIKCltkZXBlbmRlbmNpZXMuY3Jvc3NiZWFtLXV0aWxzXQp2ZXJzaW9uID0gIjAuOC4xOCIKZGVmYXVsdC1mZWF0dXJlcyA9IGZhbHNlCnBhdGggPSAiLi4vY3Jvc3NiZWFtLXV0aWxzIgoKW2xpbnRzLmNsaXBweS5kZWNsYXJlX2ludGVyaW9yX211dGFibGVfY29uc3RdCmxldmVsID0gImFsbG93Igpwcmlvcml0eSA9IDEKCltsaW50cy5jbGlwcHkubGludF9ncm91cHNfcHJpb3JpdHldCmxldmVsID0gImFsbG93Igpwcmlvcml0eSA9IDEKCltsaW50cy5ydXN0LnVuZXhwZWN0ZWRfY2Znc10KbGV2ZWwgPSAid2FybiIKcHJpb3JpdHkgPSAwCmNoZWNrLWNmZyA9IFsKICAgICJjZmcoY3Jvc3NiZWFtX2xvb20pIiwKICAgICJjZmcoY3Jvc3NiZWFtX3Nhbml0aXplKSIsCl0K"
+          },
+          "benches/defer.rs": {
+            "destination": "build/epoch/benches/defer.rs"
+          },
+          "benches/flush.rs": {
+            "destination": "build/epoch/benches/flush.rs"
+          },
+          "benches/pin.rs": {
+            "destination": "build/epoch/benches/pin.rs"
+          },
+          "build.rs": {
+            "destination": "build/epoch/build.rs"
+          },
+          "examples/sanitize.rs": {
+            "destination": "build/epoch/examples/sanitize.rs"
+          },
+          "src/atomic.rs": {
+            "destination": "src/epoch/atomic.rs"
+          },
+          "src/collector.rs": {
+            "destination": "src/epoch/collector.rs"
+          },
+          "src/default.rs": {
+            "destination": "src/epoch/default.rs"
+          },
+          "src/deferred.rs": {
+            "destination": "src/epoch/deferred.rs"
+          },
+          "src/epoch.rs": {
+            "destination": "src/epoch/epoch.rs"
+          },
+          "src/guard.rs": {
+            "destination": "src/epoch/guard.rs"
+          },
+          "src/internal.rs": {
+            "destination": "src/epoch/internal.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/epoch/mod.rs"
+          },
+          "src/sync/list.rs": {
+            "destination": "src/epoch/sync/list.rs"
+          },
+          "src/sync/mod.rs": {
+            "destination": "src/epoch/sync/mod.rs"
+          },
+          "src/sync/once_lock.rs": {
+            "destination": "src/epoch/sync/once_lock.rs"
+          },
+          "src/sync/queue.rs": {
+            "destination": "src/epoch/sync/queue.rs"
+          }
+        },
+        "src/foundation/crossbeam-queue": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42MCIKbmFtZSA9ICJjcm9zc2JlYW0tcXVldWUiCnZlcnNpb24gPSAiMC4zLjE0IgpidWlsZCA9IGZhbHNlCmF1dG9saWIgPSBmYWxzZQphdXRvYmlucyA9IGZhbHNlCmF1dG9leGFtcGxlcyA9IGZhbHNlCmF1dG90ZXN0cyA9IGZhbHNlCmF1dG9iZW5jaGVzID0gZmFsc2UKZGVzY3JpcHRpb24gPSAiQ29uY3VycmVudCBxdWV1ZXMiCmhvbWVwYWdlID0gImh0dHBzOi8vZ2l0aHViLmNvbS9jcm9zc2JlYW0tcnMvY3Jvc3NiZWFtL3RyZWUvbWFzdGVyL2Nyb3NzYmVhbS1xdWV1ZSIKcmVhZG1lID0gIi4uLy4uLy4uL2RvY3MvdXBzdHJlYW0vY3Jvc3NiZWFtLXF1ZXVlLTAuMy4xNC9SRUFETUUubWQiCmtleXdvcmRzID0gWwogICAgInF1ZXVlIiwKICAgICJtcG1jIiwKICAgICJsb2NrLWZyZWUiLAogICAgInByb2R1Y2VyIiwKICAgICJjb25zdW1lciIsCl0KY2F0ZWdvcmllcyA9IFsKICAgICJjb25jdXJyZW5jeSIsCiAgICAiZGF0YS1zdHJ1Y3R1cmVzIiwKICAgICJuby1zdGQiLApdCmxpY2Vuc2UgPSAiTUlUIE9SIEFwYWNoZS0yLjAiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL2Nyb3NzYmVhbS1ycy9jcm9zc2JlYW0iCgpbZmVhdHVyZXNdCmFsbG9jID0gW10KZGVmYXVsdCA9IFsic3RkIl0KbmlnaHRseSA9IFsiY3Jvc3NiZWFtLXV0aWxzL25pZ2h0bHkiXQpzdGQgPSBbImFsbG9jIiwgImNyb3NzYmVhbS11dGlscy9zdGQiXQoKW2xpYl0KbmFtZSA9ICJjcm9zc2JlYW1fcXVldWUiCnBhdGggPSAic3JjL2xpYi5ycyIKCltkZXBlbmRlbmNpZXMuY3Jvc3NiZWFtLXV0aWxzXQp2ZXJzaW9uID0gIjAuOC4xOCIKZGVmYXVsdC1mZWF0dXJlcyA9IGZhbHNlCnBhdGggPSAiLi4vY3Jvc3NiZWFtLXV0aWxzIgoKW2xpbnRzLmNsaXBweS5kZWNsYXJlX2ludGVyaW9yX211dGFibGVfY29uc3RdCmxldmVsID0gImFsbG93Igpwcmlvcml0eSA9IDEKCltsaW50cy5jbGlwcHkubGludF9ncm91cHNfcHJpb3JpdHldCmxldmVsID0gImFsbG93Igpwcmlvcml0eSA9IDEKCltsaW50cy5ydXN0LnVuZXhwZWN0ZWRfY2Znc10KbGV2ZWwgPSAid2FybiIKcHJpb3JpdHkgPSAwCmNoZWNrLWNmZyA9IFsKICAgICJjZmcoY3Jvc3NiZWFtX2xvb20pIiwKICAgICJjZmcoY3Jvc3NiZWFtX3Nhbml0aXplKSIsCl0K"
+          },
+          "src/array_queue.rs": {
+            "destination": "src/queue/array_queue.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/queue/mod.rs"
+          },
+          "src/seg_queue.rs": {
+            "destination": "src/queue/seg_queue.rs"
+          }
+        },
+        "src/foundation/crossbeam-utils": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "benches/atomic_cell.rs": {
+            "destination": "benches/atomic_cell.rs"
+          },
+          "build-common.rs": {
+            "destination": "build-common.rs"
+          },
+          "build.rs": {
+            "destination": "build.rs"
+          },
+          "no_atomic.rs": {
+            "destination": "no_atomic.rs"
+          },
+          "src/atomic/atomic_cell.rs": {
+            "destination": "src/utilities/atomic/atomic_cell.rs"
+          },
+          "src/atomic/consume.rs": {
+            "destination": "src/utilities/atomic/consume.rs"
+          },
+          "src/atomic/mod.rs": {
+            "destination": "src/utilities/atomic/mod.rs"
+          },
+          "src/atomic/seq_lock.rs": {
+            "destination": "src/utilities/atomic/seq_lock.rs"
+          },
+          "src/atomic/seq_lock_wide.rs": {
+            "destination": "src/utilities/atomic/seq_lock_wide.rs"
+          },
+          "src/backoff.rs": {
+            "destination": "src/utilities/backoff.rs"
+          },
+          "src/cache_padded.rs": {
+            "destination": "src/utilities/cache_padded.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/utilities/mod.rs"
+          },
+          "src/sync/mod.rs": {
+            "destination": "src/utilities/sync/mod.rs"
+          },
+          "src/sync/once_lock.rs": {
+            "destination": "src/utilities/sync/once_lock.rs"
+          },
+          "src/sync/parker.rs": {
+            "destination": "src/utilities/sync/parker.rs"
+          },
+          "src/sync/sharded_lock.rs": {
+            "destination": "src/utilities/sync/sharded_lock.rs"
+          },
+          "src/sync/wait_group.rs": {
+            "destination": "src/utilities/sync/wait_group.rs"
+          },
+          "src/thread.rs": {
+            "destination": "src/utilities/thread.rs"
+          }
+        }
+      },
+      "inputs": [
+        {
+          "external_tests": {
+            "bytes": 26897,
+            "directory": "src/foundation/crossbeam-utils",
+            "file_count": 8,
+            "files": [
+              {
+                "path": "test/foundation/crossbeam-utils/tests/atomic_cell.rs",
+                "sha256": "442a8bf4c35c43f0aedd59ba8f7a255af820a4ccd2ecabe8bf260a7322bbf6b1",
+                "source": "src/foundation/crossbeam-utils/tests/atomic_cell.rs",
+                "source_sha256_before": "442a8bf4c35c43f0aedd59ba8f7a255af820a4ccd2ecabe8bf260a7322bbf6b1"
+              },
+              {
+                "path": "test/foundation/crossbeam-utils/tests/cache_padded.rs",
+                "sha256": "1bfaff8354c8184e1ee1f902881ca9400b60effb273b0d3f752801a483d2b66d",
+                "source": "src/foundation/crossbeam-utils/tests/cache_padded.rs",
+                "source_sha256_before": "1bfaff8354c8184e1ee1f902881ca9400b60effb273b0d3f752801a483d2b66d"
+              },
+              {
+                "path": "test/foundation/crossbeam-utils/tests/parker.rs",
+                "sha256": "3564f5b7d046058342e5f242faa1000e30434562b8e12141af8e5d2b593f8cc2",
+                "source": "src/foundation/crossbeam-utils/tests/parker.rs",
+                "source_sha256_before": "3564f5b7d046058342e5f242faa1000e30434562b8e12141af8e5d2b593f8cc2"
+              },
+              {
+                "path": "test/foundation/crossbeam-utils/tests/sharded_lock.rs",
+                "sha256": "6f1c2359ebf409c576a2ae74f37b182503d368d65f357f0f6fb4fcdb2a4e2b2a",
+                "source": "src/foundation/crossbeam-utils/tests/sharded_lock.rs",
+                "source_sha256_before": "6f1c2359ebf409c576a2ae74f37b182503d368d65f357f0f6fb4fcdb2a4e2b2a"
+              },
+              {
+                "path": "test/foundation/crossbeam-utils/tests/thread.rs",
+                "sha256": "9a7d7d3028c552fd834c68598b04a1cc252a816bc20ab62cec060d6cd09cab10",
+                "source": "src/foundation/crossbeam-utils/tests/thread.rs",
+                "source_sha256_before": "9a7d7d3028c552fd834c68598b04a1cc252a816bc20ab62cec060d6cd09cab10"
+              },
+              {
+                "path": "test/foundation/crossbeam-utils/tests/wait_group.rs",
+                "sha256": "2a41533a5f7f113d19cd2bdafcc2abf86509109652274156efdd74abd00896b6",
+                "source": "src/foundation/crossbeam-utils/tests/wait_group.rs",
+                "source_sha256_before": "2a41533a5f7f113d19cd2bdafcc2abf86509109652274156efdd74abd00896b6"
+              },
+              {
+                "path": "test/foundation/crossbeam-utils/unit/src/atomic/seq_lock/tests_97.rs",
+                "sha256": "3cd88c565ac4f09b3b454279303c71a341388ebaca56122be6201ac2679e3066",
+                "source": "src/foundation/crossbeam-utils/src/atomic/seq_lock.rs",
+                "source_sha256_before": "27182e6b87a9db73c5f6831759f8625f9fcdec3c2828204c444aef04f427735a"
+              },
+              {
+                "path": "test/foundation/crossbeam-utils/unit/src/atomic/seq_lock_wide/tests_140.rs",
+                "sha256": "3cd88c565ac4f09b3b454279303c71a341388ebaca56122be6201ac2679e3066",
+                "source": "src/foundation/crossbeam-utils/src/atomic/seq_lock_wide.rs",
+                "source_sha256_before": "9888dd03116bb89ca36d4ab8d5a0b5032107a2983a7eb8024454263b09080088"
+              }
+            ],
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "roots": [
+              "test/foundation/crossbeam-utils"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Utilities for concurrent programming",
+            "directory": "src/foundation/crossbeam-utils",
+            "files_sha256": {
+              "Cargo.toml": "d76ac4fff2054d48b0cdabba7b11175aab4e0530301b93ac6f327c3a28e80267",
+              "benches/atomic_cell.rs": "c927eb3cd1e5ecc4b91adbc3bde98af15ffab4086190792ba64d5cde0e24df3d",
+              "build-common.rs": "502cb7494549bed6fa10ac7bea36e880eeb60290dc69b679ac5c92b376469562",
+              "build.rs": "79cc5363313f77ab76e2de4779e384c672a747fbcd4b96647a79286568714807",
+              "no_atomic.rs": "56db0a11d33cdf136df6f3943ddb554c70aa236d0a5515dab7ffb91fac595ec3",
+              "src/atomic/atomic_cell.rs": "bbce08eac8a92cb8fc04b5db3ebac0270197a175dae4bcebf808d71c48136825",
+              "src/atomic/consume.rs": "381c2a8b13312ca0525d53ca1b7d0d4f525ddb154951fa3e216b061ad22012ff",
+              "src/atomic/mod.rs": "712e2337e710c07116e977154ea4247a1c065bf5599e6bf368138e715b403f6d",
+              "src/atomic/seq_lock.rs": "f5db8f3d56abc047f242ce8b81bb0c9d5f37697905941c8da3e7a60fdc17f620",
+              "src/atomic/seq_lock_wide.rs": "600f411b935ca3f3b110ab3dd6ac0cccf103647bd9451bcfd614c6e89deefd84",
+              "src/backoff.rs": "8715f0303ec91d1847c8ac3fc24bcc002a22a7284ade610e5eff4181f85827c7",
+              "src/cache_padded.rs": "345b41ba26b68e49e669dedb47603510122dc0d65d044aa14c6dbf2ec7678d97",
+              "src/lib.rs": "060dabc6dc07de92a7afa57dcbc47222a95ef5819d543ad854858c3b329d6637",
+              "src/sync/mod.rs": "eca73c04f821859b8434d2b93db87d160dc6a3f65498ca201cd40d732ca4c134",
+              "src/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+              "src/sync/parker.rs": "698996e7530da1f3815df11c89df7d916155229cbfd022cccbd555f1d1d31985",
+              "src/sync/sharded_lock.rs": "8f493c837c6af276bf783e83e32a2fc2dcb3707278835be5db10bd121b8ecdf7",
+              "src/sync/wait_group.rs": "227566971a4c0fe960ec0aacca63f955cf9df07d691df4eba24de871c1810858",
+              "src/thread.rs": "04610787ba88f1f59549874a13fc037f2dcf4d8b5f1daaf08378f05c2b3c0039"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/crossbeam-utils-0.8.23/LICENSE-APACHE",
+              "compliance/licenses/upstream/crossbeam-utils-0.8.23/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "crossbeam-utils",
+            "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+            "repository": "https://github.com/crossbeam-rs/crossbeam",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6",
+              "archive_url": "https://static.crates.io/crates/crossbeam-utils/crossbeam-utils-0.8.23.crate",
+              "name": "crossbeam-utils",
+              "version": "0.8.23"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
+              },
+              "path_in_vcs": "crossbeam-utils"
+            },
+            "version": "0.8.23"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 31501,
+            "directory": "src/foundation/crossbeam-epoch",
+            "file_count": 9,
+            "files": [
+              {
+                "path": "test/foundation/crossbeam-epoch/functions/src/internal/local_size_318.rs",
+                "sha256": "43ac04cc77a6e00389f6fb8bd5f8f9a08feb2e7f3ecc88e83b5e76b6e3a0b4c9",
+                "source": "src/foundation/crossbeam-epoch/src/internal.rs",
+                "source_sha256_before": "fcba7aab8a506b8e9259e30c3edc0af21e4f5675144b1e4d3e9182614be7c326"
+              },
+              {
+                "path": "test/foundation/crossbeam-epoch/tests/loom.rs",
+                "sha256": "db772f4478966de6ec98774ca4093171dc942da635822a0d2d3257d31188cb9b",
+                "source": "src/foundation/crossbeam-epoch/tests/loom.rs",
+                "source_sha256_before": "db772f4478966de6ec98774ca4093171dc942da635822a0d2d3257d31188cb9b"
+              },
+              {
+                "path": "test/foundation/crossbeam-epoch/unit/src/atomic/all_tests_1669.rs",
+                "sha256": "0184c56f5510f85eafa66dd8733220fb4df4b2f2b3c653c8223eae37bc20e183",
+                "source": "src/foundation/crossbeam-epoch/src/atomic.rs",
+                "source_sha256_before": "5db5c12a916eda8e2d542335fe973af152a14325f92000558d55bcbe2889b1d7"
+              },
+              {
+                "path": "test/foundation/crossbeam-epoch/unit/src/collector/all_tests_112.rs",
+                "sha256": "7df62220a96a80ba5ad4d58274ecd031d068b66f1cf1e5767b81fcce2b2ae033",
+                "source": "src/foundation/crossbeam-epoch/src/collector.rs",
+                "source_sha256_before": "12c6a00496fd702facaff3efdc993f326049d2bbb21fb2c9db1b8ffe6f54cf69"
+              },
+              {
+                "path": "test/foundation/crossbeam-epoch/unit/src/default/all_tests_64.rs",
+                "sha256": "1240cdf36f0ef7fc8a4c92b91481e7026785b582ad966709ca45aadef671cce7",
+                "source": "src/foundation/crossbeam-epoch/src/default.rs",
+                "source_sha256_before": "a153392422d2a473afb01873d83c8d92f34a3bab5dde2f3743d916acce36f9b9"
+              },
+              {
+                "path": "test/foundation/crossbeam-epoch/unit/src/deferred/all_tests_90.rs",
+                "sha256": "c3987a66b0e946964a1cc72f37aaefd3c8e787f5eb7ae3ed9784cd0df985b344",
+                "source": "src/foundation/crossbeam-epoch/src/deferred.rs",
+                "source_sha256_before": "5ad2032c40f96e32f3bab367c843c3091c4300402e938217d2706070f20c6811"
+              },
+              {
+                "path": "test/foundation/crossbeam-epoch/unit/src/internal/all_tests_575.rs",
+                "sha256": "baa7fa1fd201083afedf7387a53952cf290658260aefab4c8dfdd5832d0a58ce",
+                "source": "src/foundation/crossbeam-epoch/src/internal.rs",
+                "source_sha256_before": "fcba7aab8a506b8e9259e30c3edc0af21e4f5675144b1e4d3e9182614be7c326"
+              },
+              {
+                "path": "test/foundation/crossbeam-epoch/unit/src/sync/list/all_tests_298.rs",
+                "sha256": "058b87a4b3435260183a0c4540571e3a56e9a045812321149b8f75f8b2536a41",
+                "source": "src/foundation/crossbeam-epoch/src/sync/list.rs",
+                "source_sha256_before": "6950177b01fa6f51d3f4ca22f3ce4e77143eed28bec04579ecc8a8599ab17031"
+              },
+              {
+                "path": "test/foundation/crossbeam-epoch/unit/src/sync/queue/all_test_217.rs",
+                "sha256": "7e19d30df3d8def9c5a7ce414a2a02969dd692de5105a5f68c76183e5322360b",
+                "source": "src/foundation/crossbeam-epoch/src/sync/queue.rs",
+                "source_sha256_before": "0324e9b07dfd0f76ba0058395a4b9ae4b4a6e5ab0aec41d98edab7864bac3157"
+              }
+            ],
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "roots": [
+              "test/foundation/crossbeam-epoch"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
+            "description": "Epoch-based garbage collection",
+            "directory": "src/foundation/crossbeam-epoch",
+            "files_sha256": {
+              "Cargo.toml": "813da5624e219795bcfae27e14186bcf7e203487551f5051ea7afcf6fe34fc5b",
+              "benches/defer.rs": "c330b704d96b2ad1aed29f72c37a99da534adef8cb06a3976d5f93bf567abb20",
+              "benches/flush.rs": "0389ac6c473632f0e93c962f223404cc360257f6699b4ec90b9b3be16bb6d74f",
+              "benches/pin.rs": "2f649a5153745c7930efdb32a52f9dc522f7b8cf548a251c5e2c82ee25dc3fff",
+              "build.rs": "c8c35fc536a2e6481549bc13979293cb51244cd9c72d4ed9e35c22a1d70fa9ae",
+              "examples/sanitize.rs": "a39d1635fa61e643e59192d7a63becc97ff81f03c1f4e03d38cedefb1525026a",
+              "src/atomic.rs": "8f83ad15d1808fc2cf2cdc713778491eabd1a9b246098cde48516b5616215954",
+              "src/collector.rs": "47df5aeea33ac92291023e500f68a097d9af38cde1e3fb1e1c6b34b40fedf75c",
+              "src/default.rs": "4132ca2e07e3e2cc2ac6789a5a87806623ee99bd1e559fcc4bd887e1ac6fefff",
+              "src/deferred.rs": "afe687e77ad7f799fdee3eca10f8075dfbb3f596f3bc6e5ddaffe7a565091f6d",
+              "src/epoch.rs": "42f1e1e83aa58481a7a737d741aa12bd541ba0bf48f3afdec9aade9148955350",
+              "src/guard.rs": "555bb756fe0c422d7f778121226834158cd143c664211a955662c789c867d6d1",
+              "src/internal.rs": "b64c1868265fe58f51f14a42ce517ed06f6ae0cf7d2bb31b95f914652813fafa",
+              "src/lib.rs": "a69c62d04cee1ab25c33f54fa1d289266a69a44d16016b19b4440c055335d9ed",
+              "src/sync/list.rs": "5e57cd36d97e82f02987fe4f8e42bc7039cb138c03fc43dc7a1378080ca595cb",
+              "src/sync/mod.rs": "326e32489d467e974c441120640a8338aa55da55c24b20276075ce9053997326",
+              "src/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+              "src/sync/queue.rs": "57d9643c52806f300b4f85199a05d687b9321e44c335a250b123c2618142e164"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/crossbeam-epoch-0.9.21/LICENSE-APACHE",
+              "compliance/licenses/upstream/crossbeam-epoch-0.9.21/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "crossbeam-epoch",
+            "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+            "repository": "https://github.com/crossbeam-rs/crossbeam",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "dc74980687109a3b14c72fd458107bf0baa1da1a1a805e178d15501ba9b86d9d",
+              "archive_url": "https://static.crates.io/crates/crossbeam-epoch/crossbeam-epoch-0.9.21.crate",
+              "name": "crossbeam-epoch",
+              "version": "0.9.21"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
+              },
+              "path_in_vcs": "crossbeam-epoch"
+            },
+            "version": "0.9.21"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 14268,
+            "directory": "src/foundation/crossbeam-queue",
+            "file_count": 2,
+            "files": [
+              {
+                "path": "test/foundation/crossbeam-queue/tests/array_queue.rs",
+                "sha256": "f091dc5a4fdaaf47c05c24202a553e96a765110cd77929048ec37351484e820d",
+                "source": "src/foundation/crossbeam-queue/tests/array_queue.rs",
+                "source_sha256_before": "f091dc5a4fdaaf47c05c24202a553e96a765110cd77929048ec37351484e820d"
+              },
+              {
+                "path": "test/foundation/crossbeam-queue/tests/seg_queue.rs",
+                "sha256": "09f4189e0cad196f369ea0abeadc2e58c34cf7c95f2087c595e3790928654268",
+                "source": "src/foundation/crossbeam-queue/tests/seg_queue.rs",
+                "source_sha256_before": "09f4189e0cad196f369ea0abeadc2e58c34cf7c95f2087c595e3790928654268"
+              }
+            ],
+            "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
+            "roots": [
+              "test/foundation/crossbeam-queue"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Concurrent queues",
+            "directory": "src/foundation/crossbeam-queue",
+            "files_sha256": {
+              "Cargo.toml": "1a92f0f6716ff303d85e8441160045056106e300b115a0640938e77b29ecd513",
+              "src/array_queue.rs": "29eb637c1666101e3cc37d2098c42bed6d0e109c33f75605a408faf00519e7b4",
+              "src/lib.rs": "e3b6c8dacf2f9f18d66c82cafdc0b2a06d3b13af91a303e66f81f069bbff4627",
+              "src/seg_queue.rs": "5c1b41a44a721b20a5d85d96a258411e055fed6397dd48e4d108b88ff75c1c09"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/crossbeam-queue-0.3.14/LICENSE-APACHE",
+              "compliance/licenses/upstream/crossbeam-queue-0.3.14/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "crossbeam-queue",
+            "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
+            "repository": "https://github.com/crossbeam-rs/crossbeam",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "03e8bd762f7479489c70ed6c768ddca99d7296857de437a68dcb2a94365b3fae",
+              "archive_url": "https://static.crates.io/crates/crossbeam-queue/crossbeam-queue-0.3.14.crate",
+              "name": "crossbeam-queue",
+              "version": "0.3.14"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
+              },
+              "path_in_vcs": "crossbeam-queue"
+            },
+            "version": "0.3.14"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 31312,
+            "directory": "src/foundation/crossbeam-deque",
+            "file_count": 4,
+            "files": [
+              {
+                "path": "test/foundation/crossbeam-deque/tests/fifo.rs",
+                "sha256": "3d98e0d4ca7cfddf10708b71642cf1ff05543d067ad837e48401d63cc31c0a18",
+                "source": "src/foundation/crossbeam-deque/tests/fifo.rs",
+                "source_sha256_before": "3d98e0d4ca7cfddf10708b71642cf1ff05543d067ad837e48401d63cc31c0a18"
+              },
+              {
+                "path": "test/foundation/crossbeam-deque/tests/injector.rs",
+                "sha256": "859a0e6fd306e844e8fd660104a994aa894a165f20fa326f4b807e660eaf7878",
+                "source": "src/foundation/crossbeam-deque/tests/injector.rs",
+                "source_sha256_before": "859a0e6fd306e844e8fd660104a994aa894a165f20fa326f4b807e660eaf7878"
+              },
+              {
+                "path": "test/foundation/crossbeam-deque/tests/lifo.rs",
+                "sha256": "57abdb3fc5920a422f785ba308b658bdc5400947532eeffb799f2395a2061549",
+                "source": "src/foundation/crossbeam-deque/tests/lifo.rs",
+                "source_sha256_before": "57abdb3fc5920a422f785ba308b658bdc5400947532eeffb799f2395a2061549"
+              },
+              {
+                "path": "test/foundation/crossbeam-deque/tests/steal.rs",
+                "sha256": "cdf588cc13eeb275ef1231eb18e3245faca7a2d054fa6527bfdba2a34bc8f7bf",
+                "source": "src/foundation/crossbeam-deque/tests/steal.rs",
+                "source_sha256_before": "cdf588cc13eeb275ef1231eb18e3245faca7a2d054fa6527bfdba2a34bc8f7bf"
+              }
+            ],
+            "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+            "roots": [
+              "test/foundation/crossbeam-deque"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Concurrent work-stealing deque",
+            "directory": "src/foundation/crossbeam-deque",
+            "files_sha256": {
+              "Cargo.toml": "c3c582c8b2e137313071d2f3b2da08eba5c9fa5cb9de7cad5d9b184e59cd1dd3",
+              "build.rs": "c8c35fc536a2e6481549bc13979293cb51244cd9c72d4ed9e35c22a1d70fa9ae",
+              "src/deque.rs": "a27666f94a281fc34337b60f86ea67838575546ce7ce9c2a89c7cb176034ddfe",
+              "src/lib.rs": "3427a4468253e91e09b264e1f8fd6fc67cfda54be5aecbd38f1b0cb7e0d928de"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/crossbeam-deque-0.8.8/LICENSE-APACHE",
+              "compliance/licenses/upstream/crossbeam-deque-0.8.8/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "crossbeam-deque",
+            "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+            "repository": "https://github.com/crossbeam-rs/crossbeam",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "622f3fc73690be383c7214310406f28a90e6edeadc3cea882f9d71e495b9711a",
+              "archive_url": "https://static.crates.io/crates/crossbeam-deque/crossbeam-deque-0.8.8.crate",
+              "name": "crossbeam-deque",
+              "version": "0.8.8"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
+              },
+              "path_in_vcs": "crossbeam-deque"
+            },
+            "version": "0.8.8"
+          }
+        }
+      ],
+      "new_files": {
+        "src/lib.rs": "b7a79601cf9453ef171447b5f8c77431f8e06f3ea1b7198f281eb2e8be959563"
+      },
+      "primary_directory": "src/foundation/crossbeam-utils",
+      "reason": "Consolidate concurrency utilities, epoch reclamation, queues and work-stealing deques using separate modules; preserve algorithm, atomic ordering and all upstream source/test attribution."
     },
     "42b1278a81520b8ad0f2149965a98ff89ef4a3a9a1606c924213166c5d9b0b3e": {
       "destination_directory": "src/foundation/sqlite-access",
@@ -14718,7 +15626,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "08bad02044ecb5a5a1420d34545bda655545222da3b9ea672574ab3ec887d108",
+    "compliance/external-tests/foundation.json": "79d96c0c5621043bb09a6ab1b35a0d6440191b12648abe79faf27e54861aa333",
     "compliance/external-tests/integrated.json": "61167faf558a55d73b6f9312ff3635e5dfb01309856c499e3c4f365c1080c208",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -17972,6 +18880,178 @@
         "test/foundation/command-line"
       ]
     },
+    "src/foundation/concurrent-collections": {
+      "bytes": 104364,
+      "directory": "src/foundation/concurrent-collections",
+      "file_count": 23,
+      "files": [
+        {
+          "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+          "path": "test/foundation/concurrent-collections/deque/tests/fifo.rs",
+          "sha256": "91838dc9fd975e43d750bdb991f3b12ad5874e82e5e2f7b447cc5f6ffce3a63f",
+          "source": "src/foundation/crossbeam-deque/tests/fifo.rs",
+          "source_sha256_before": "3d98e0d4ca7cfddf10708b71642cf1ff05543d067ad837e48401d63cc31c0a18"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+          "path": "test/foundation/concurrent-collections/deque/tests/injector.rs",
+          "sha256": "a7eb112f8e6db93868eb47d6a5a800e46657cc4e75b050b35ab855299780fbb7",
+          "source": "src/foundation/crossbeam-deque/tests/injector.rs",
+          "source_sha256_before": "859a0e6fd306e844e8fd660104a994aa894a165f20fa326f4b807e660eaf7878"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+          "path": "test/foundation/concurrent-collections/deque/tests/lifo.rs",
+          "sha256": "93cab8c16f8b30453cb75befa456f5bc0e919d32cedebfde42ca95c60ac4a89a",
+          "source": "src/foundation/crossbeam-deque/tests/lifo.rs",
+          "source_sha256_before": "57abdb3fc5920a422f785ba308b658bdc5400947532eeffb799f2395a2061549"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+          "path": "test/foundation/concurrent-collections/deque/tests/steal.rs",
+          "sha256": "f6ea969bd0b2d932f72cb89d15a5c0f1048a68ba2e86414a86239f8c3434bc64",
+          "source": "src/foundation/crossbeam-deque/tests/steal.rs",
+          "source_sha256_before": "cdf588cc13eeb275ef1231eb18e3245faca7a2d054fa6527bfdba2a34bc8f7bf"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/functions/src/internal/local_size_318.rs",
+          "sha256": "43ac04cc77a6e00389f6fb8bd5f8f9a08feb2e7f3ecc88e83b5e76b6e3a0b4c9",
+          "source": "src/foundation/crossbeam-epoch/src/internal.rs",
+          "source_sha256_before": "fcba7aab8a506b8e9259e30c3edc0af21e4f5675144b1e4d3e9182614be7c326"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/tests/loom.rs",
+          "sha256": "9ef00ce36d074f57b3a4a16f731242276041114d60fb40eec8998e474d872d0a",
+          "source": "src/foundation/crossbeam-epoch/tests/loom.rs",
+          "source_sha256_before": "db772f4478966de6ec98774ca4093171dc942da635822a0d2d3257d31188cb9b"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/unit/src/atomic/all_tests_1669.rs",
+          "sha256": "0184c56f5510f85eafa66dd8733220fb4df4b2f2b3c653c8223eae37bc20e183",
+          "source": "src/foundation/crossbeam-epoch/src/atomic.rs",
+          "source_sha256_before": "5db5c12a916eda8e2d542335fe973af152a14325f92000558d55bcbe2889b1d7"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/unit/src/collector/all_tests_112.rs",
+          "sha256": "fe7ec32164d422d01bb7dc94a6235f28c6e5c9c458e63b91a82dc4875d3d5f97",
+          "source": "src/foundation/crossbeam-epoch/src/collector.rs",
+          "source_sha256_before": "12c6a00496fd702facaff3efdc993f326049d2bbb21fb2c9db1b8ffe6f54cf69"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/unit/src/default/all_tests_64.rs",
+          "sha256": "743aaa4e53e3a65ed4e275581d38bb31b864c98e1017ecb11470adb580feee63",
+          "source": "src/foundation/crossbeam-epoch/src/default.rs",
+          "source_sha256_before": "a153392422d2a473afb01873d83c8d92f34a3bab5dde2f3743d916acce36f9b9"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/unit/src/deferred/all_tests_90.rs",
+          "sha256": "c3987a66b0e946964a1cc72f37aaefd3c8e787f5eb7ae3ed9784cd0df985b344",
+          "source": "src/foundation/crossbeam-epoch/src/deferred.rs",
+          "source_sha256_before": "5ad2032c40f96e32f3bab367c843c3091c4300402e938217d2706070f20c6811"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/unit/src/internal/all_tests_575.rs",
+          "sha256": "baa7fa1fd201083afedf7387a53952cf290658260aefab4c8dfdd5832d0a58ce",
+          "source": "src/foundation/crossbeam-epoch/src/internal.rs",
+          "source_sha256_before": "fcba7aab8a506b8e9259e30c3edc0af21e4f5675144b1e4d3e9182614be7c326"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/unit/src/sync/list/all_tests_298.rs",
+          "sha256": "dc6817b59a86ab2679d44694bd1af438f90304b86e1917a00f68d7fed3dcd7c8",
+          "source": "src/foundation/crossbeam-epoch/src/sync/list.rs",
+          "source_sha256_before": "6950177b01fa6f51d3f4ca22f3ce4e77143eed28bec04579ecc8a8599ab17031"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+          "path": "test/foundation/concurrent-collections/epoch/unit/src/sync/queue/all_test_217.rs",
+          "sha256": "3224a1ec02ebeb1c2ccaad7a337a895fb5d8b7f84b16a76e501a870ff612aacc",
+          "source": "src/foundation/crossbeam-epoch/src/sync/queue.rs",
+          "source_sha256_before": "0324e9b07dfd0f76ba0058395a4b9ae4b4a6e5ab0aec41d98edab7864bac3157"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
+          "path": "test/foundation/concurrent-collections/queue/tests/array_queue.rs",
+          "sha256": "1ea2eb6deaa19c1c2bde07ec9d77ba73ddf6ef51c2a0a323ecdc77e8e89e4d0d",
+          "source": "src/foundation/crossbeam-queue/tests/array_queue.rs",
+          "source_sha256_before": "f091dc5a4fdaaf47c05c24202a553e96a765110cd77929048ec37351484e820d"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
+          "path": "test/foundation/concurrent-collections/queue/tests/seg_queue.rs",
+          "sha256": "2c1df29232b89dbb7206aec78a8c94fd250ecf62eccb2513de499d46ec828043",
+          "source": "src/foundation/crossbeam-queue/tests/seg_queue.rs",
+          "source_sha256_before": "09f4189e0cad196f369ea0abeadc2e58c34cf7c95f2087c595e3790928654268"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+          "path": "test/foundation/concurrent-collections/utilities/tests/atomic_cell.rs",
+          "sha256": "cfd7f528d2ab834ca01b5cd2ad48e0a123a5f782bf906848a222c26458ff7cbc",
+          "source": "src/foundation/crossbeam-utils/tests/atomic_cell.rs",
+          "source_sha256_before": "442a8bf4c35c43f0aedd59ba8f7a255af820a4ccd2ecabe8bf260a7322bbf6b1"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+          "path": "test/foundation/concurrent-collections/utilities/tests/cache_padded.rs",
+          "sha256": "9c00db35e4e04021379e7e39b4327dfb3f6ac9a9b2a33709e4fd83f143a9ae4d",
+          "source": "src/foundation/crossbeam-utils/tests/cache_padded.rs",
+          "source_sha256_before": "1bfaff8354c8184e1ee1f902881ca9400b60effb273b0d3f752801a483d2b66d"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+          "path": "test/foundation/concurrent-collections/utilities/tests/parker.rs",
+          "sha256": "9461986e1208e79668e7d7c5af18438999ac8e3161b8a88fd0fec441fe2ae35e",
+          "source": "src/foundation/crossbeam-utils/tests/parker.rs",
+          "source_sha256_before": "3564f5b7d046058342e5f242faa1000e30434562b8e12141af8e5d2b593f8cc2"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+          "path": "test/foundation/concurrent-collections/utilities/tests/sharded_lock.rs",
+          "sha256": "01299ce2e1dd7da4d1ec60e423eab970b7f883cfa984d7f6b6999de9dc81cda9",
+          "source": "src/foundation/crossbeam-utils/tests/sharded_lock.rs",
+          "source_sha256_before": "6f1c2359ebf409c576a2ae74f37b182503d368d65f357f0f6fb4fcdb2a4e2b2a"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+          "path": "test/foundation/concurrent-collections/utilities/tests/thread.rs",
+          "sha256": "71ad877e2afddc4b8b30d13f1fdf839615e4782e4a1b1e107ea2bb8c07f73fd3",
+          "source": "src/foundation/crossbeam-utils/tests/thread.rs",
+          "source_sha256_before": "9a7d7d3028c552fd834c68598b04a1cc252a816bc20ab62cec060d6cd09cab10"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+          "path": "test/foundation/concurrent-collections/utilities/tests/wait_group.rs",
+          "sha256": "bb7581ef70f8ada6a0a9d9128430d5d216cb1e3eb6372843bb8911d6840ae645",
+          "source": "src/foundation/crossbeam-utils/tests/wait_group.rs",
+          "source_sha256_before": "2a41533a5f7f113d19cd2bdafcc2abf86509109652274156efdd74abd00896b6"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+          "path": "test/foundation/concurrent-collections/utilities/unit/src/atomic/seq_lock/tests_97.rs",
+          "sha256": "3cd88c565ac4f09b3b454279303c71a341388ebaca56122be6201ac2679e3066",
+          "source": "src/foundation/crossbeam-utils/src/atomic/seq_lock.rs",
+          "source_sha256_before": "27182e6b87a9db73c5f6831759f8625f9fcdec3c2828204c444aef04f427735a"
+        },
+        {
+          "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+          "path": "test/foundation/concurrent-collections/utilities/unit/src/atomic/seq_lock_wide/tests_140.rs",
+          "sha256": "3cd88c565ac4f09b3b454279303c71a341388ebaca56122be6201ac2679e3066",
+          "source": "src/foundation/crossbeam-utils/src/atomic/seq_lock_wide.rs",
+          "source_sha256_before": "9888dd03116bb89ca36d4ab8d5a0b5032107a2983a7eb8024454263b09080088"
+        }
+      ],
+      "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+      "roots": [
+        "test/foundation/concurrent-collections"
+      ]
+    },
     "src/foundation/console_error_panic_hook": {
       "bytes": 1196,
       "directory": "src/foundation/console_error_panic_hook",
@@ -18233,188 +19313,6 @@
       "origin_directory": "vendor/rust/crc32fast-1.5.2",
       "roots": [
         "test/foundation/crc32fast"
-      ]
-    },
-    "src/foundation/crossbeam-deque": {
-      "bytes": 31312,
-      "directory": "src/foundation/crossbeam-deque",
-      "file_count": 4,
-      "files": [
-        {
-          "path": "test/foundation/crossbeam-deque/tests/fifo.rs",
-          "sha256": "3d98e0d4ca7cfddf10708b71642cf1ff05543d067ad837e48401d63cc31c0a18",
-          "source": "src/foundation/crossbeam-deque/tests/fifo.rs",
-          "source_sha256_before": "3d98e0d4ca7cfddf10708b71642cf1ff05543d067ad837e48401d63cc31c0a18"
-        },
-        {
-          "path": "test/foundation/crossbeam-deque/tests/injector.rs",
-          "sha256": "859a0e6fd306e844e8fd660104a994aa894a165f20fa326f4b807e660eaf7878",
-          "source": "src/foundation/crossbeam-deque/tests/injector.rs",
-          "source_sha256_before": "859a0e6fd306e844e8fd660104a994aa894a165f20fa326f4b807e660eaf7878"
-        },
-        {
-          "path": "test/foundation/crossbeam-deque/tests/lifo.rs",
-          "sha256": "57abdb3fc5920a422f785ba308b658bdc5400947532eeffb799f2395a2061549",
-          "source": "src/foundation/crossbeam-deque/tests/lifo.rs",
-          "source_sha256_before": "57abdb3fc5920a422f785ba308b658bdc5400947532eeffb799f2395a2061549"
-        },
-        {
-          "path": "test/foundation/crossbeam-deque/tests/steal.rs",
-          "sha256": "cdf588cc13eeb275ef1231eb18e3245faca7a2d054fa6527bfdba2a34bc8f7bf",
-          "source": "src/foundation/crossbeam-deque/tests/steal.rs",
-          "source_sha256_before": "cdf588cc13eeb275ef1231eb18e3245faca7a2d054fa6527bfdba2a34bc8f7bf"
-        }
-      ],
-      "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
-      "roots": [
-        "test/foundation/crossbeam-deque"
-      ]
-    },
-    "src/foundation/crossbeam-epoch": {
-      "bytes": 31501,
-      "directory": "src/foundation/crossbeam-epoch",
-      "file_count": 9,
-      "files": [
-        {
-          "path": "test/foundation/crossbeam-epoch/functions/src/internal/local_size_318.rs",
-          "sha256": "43ac04cc77a6e00389f6fb8bd5f8f9a08feb2e7f3ecc88e83b5e76b6e3a0b4c9",
-          "source": "src/foundation/crossbeam-epoch/src/internal.rs",
-          "source_sha256_before": "fcba7aab8a506b8e9259e30c3edc0af21e4f5675144b1e4d3e9182614be7c326"
-        },
-        {
-          "path": "test/foundation/crossbeam-epoch/tests/loom.rs",
-          "sha256": "db772f4478966de6ec98774ca4093171dc942da635822a0d2d3257d31188cb9b",
-          "source": "src/foundation/crossbeam-epoch/tests/loom.rs",
-          "source_sha256_before": "db772f4478966de6ec98774ca4093171dc942da635822a0d2d3257d31188cb9b"
-        },
-        {
-          "path": "test/foundation/crossbeam-epoch/unit/src/atomic/all_tests_1669.rs",
-          "sha256": "0184c56f5510f85eafa66dd8733220fb4df4b2f2b3c653c8223eae37bc20e183",
-          "source": "src/foundation/crossbeam-epoch/src/atomic.rs",
-          "source_sha256_before": "5db5c12a916eda8e2d542335fe973af152a14325f92000558d55bcbe2889b1d7"
-        },
-        {
-          "path": "test/foundation/crossbeam-epoch/unit/src/collector/all_tests_112.rs",
-          "sha256": "7df62220a96a80ba5ad4d58274ecd031d068b66f1cf1e5767b81fcce2b2ae033",
-          "source": "src/foundation/crossbeam-epoch/src/collector.rs",
-          "source_sha256_before": "12c6a00496fd702facaff3efdc993f326049d2bbb21fb2c9db1b8ffe6f54cf69"
-        },
-        {
-          "path": "test/foundation/crossbeam-epoch/unit/src/default/all_tests_64.rs",
-          "sha256": "1240cdf36f0ef7fc8a4c92b91481e7026785b582ad966709ca45aadef671cce7",
-          "source": "src/foundation/crossbeam-epoch/src/default.rs",
-          "source_sha256_before": "a153392422d2a473afb01873d83c8d92f34a3bab5dde2f3743d916acce36f9b9"
-        },
-        {
-          "path": "test/foundation/crossbeam-epoch/unit/src/deferred/all_tests_90.rs",
-          "sha256": "c3987a66b0e946964a1cc72f37aaefd3c8e787f5eb7ae3ed9784cd0df985b344",
-          "source": "src/foundation/crossbeam-epoch/src/deferred.rs",
-          "source_sha256_before": "5ad2032c40f96e32f3bab367c843c3091c4300402e938217d2706070f20c6811"
-        },
-        {
-          "path": "test/foundation/crossbeam-epoch/unit/src/internal/all_tests_575.rs",
-          "sha256": "baa7fa1fd201083afedf7387a53952cf290658260aefab4c8dfdd5832d0a58ce",
-          "source": "src/foundation/crossbeam-epoch/src/internal.rs",
-          "source_sha256_before": "fcba7aab8a506b8e9259e30c3edc0af21e4f5675144b1e4d3e9182614be7c326"
-        },
-        {
-          "path": "test/foundation/crossbeam-epoch/unit/src/sync/list/all_tests_298.rs",
-          "sha256": "058b87a4b3435260183a0c4540571e3a56e9a045812321149b8f75f8b2536a41",
-          "source": "src/foundation/crossbeam-epoch/src/sync/list.rs",
-          "source_sha256_before": "6950177b01fa6f51d3f4ca22f3ce4e77143eed28bec04579ecc8a8599ab17031"
-        },
-        {
-          "path": "test/foundation/crossbeam-epoch/unit/src/sync/queue/all_test_217.rs",
-          "sha256": "7e19d30df3d8def9c5a7ce414a2a02969dd692de5105a5f68c76183e5322360b",
-          "source": "src/foundation/crossbeam-epoch/src/sync/queue.rs",
-          "source_sha256_before": "0324e9b07dfd0f76ba0058395a4b9ae4b4a6e5ab0aec41d98edab7864bac3157"
-        }
-      ],
-      "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
-      "roots": [
-        "test/foundation/crossbeam-epoch"
-      ]
-    },
-    "src/foundation/crossbeam-queue": {
-      "bytes": 14268,
-      "directory": "src/foundation/crossbeam-queue",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/crossbeam-queue/tests/array_queue.rs",
-          "sha256": "f091dc5a4fdaaf47c05c24202a553e96a765110cd77929048ec37351484e820d",
-          "source": "src/foundation/crossbeam-queue/tests/array_queue.rs",
-          "source_sha256_before": "f091dc5a4fdaaf47c05c24202a553e96a765110cd77929048ec37351484e820d"
-        },
-        {
-          "path": "test/foundation/crossbeam-queue/tests/seg_queue.rs",
-          "sha256": "09f4189e0cad196f369ea0abeadc2e58c34cf7c95f2087c595e3790928654268",
-          "source": "src/foundation/crossbeam-queue/tests/seg_queue.rs",
-          "source_sha256_before": "09f4189e0cad196f369ea0abeadc2e58c34cf7c95f2087c595e3790928654268"
-        }
-      ],
-      "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
-      "roots": [
-        "test/foundation/crossbeam-queue"
-      ]
-    },
-    "src/foundation/crossbeam-utils": {
-      "bytes": 26897,
-      "directory": "src/foundation/crossbeam-utils",
-      "file_count": 8,
-      "files": [
-        {
-          "path": "test/foundation/crossbeam-utils/tests/atomic_cell.rs",
-          "sha256": "442a8bf4c35c43f0aedd59ba8f7a255af820a4ccd2ecabe8bf260a7322bbf6b1",
-          "source": "src/foundation/crossbeam-utils/tests/atomic_cell.rs",
-          "source_sha256_before": "442a8bf4c35c43f0aedd59ba8f7a255af820a4ccd2ecabe8bf260a7322bbf6b1"
-        },
-        {
-          "path": "test/foundation/crossbeam-utils/tests/cache_padded.rs",
-          "sha256": "1bfaff8354c8184e1ee1f902881ca9400b60effb273b0d3f752801a483d2b66d",
-          "source": "src/foundation/crossbeam-utils/tests/cache_padded.rs",
-          "source_sha256_before": "1bfaff8354c8184e1ee1f902881ca9400b60effb273b0d3f752801a483d2b66d"
-        },
-        {
-          "path": "test/foundation/crossbeam-utils/tests/parker.rs",
-          "sha256": "3564f5b7d046058342e5f242faa1000e30434562b8e12141af8e5d2b593f8cc2",
-          "source": "src/foundation/crossbeam-utils/tests/parker.rs",
-          "source_sha256_before": "3564f5b7d046058342e5f242faa1000e30434562b8e12141af8e5d2b593f8cc2"
-        },
-        {
-          "path": "test/foundation/crossbeam-utils/tests/sharded_lock.rs",
-          "sha256": "6f1c2359ebf409c576a2ae74f37b182503d368d65f357f0f6fb4fcdb2a4e2b2a",
-          "source": "src/foundation/crossbeam-utils/tests/sharded_lock.rs",
-          "source_sha256_before": "6f1c2359ebf409c576a2ae74f37b182503d368d65f357f0f6fb4fcdb2a4e2b2a"
-        },
-        {
-          "path": "test/foundation/crossbeam-utils/tests/thread.rs",
-          "sha256": "9a7d7d3028c552fd834c68598b04a1cc252a816bc20ab62cec060d6cd09cab10",
-          "source": "src/foundation/crossbeam-utils/tests/thread.rs",
-          "source_sha256_before": "9a7d7d3028c552fd834c68598b04a1cc252a816bc20ab62cec060d6cd09cab10"
-        },
-        {
-          "path": "test/foundation/crossbeam-utils/tests/wait_group.rs",
-          "sha256": "2a41533a5f7f113d19cd2bdafcc2abf86509109652274156efdd74abd00896b6",
-          "source": "src/foundation/crossbeam-utils/tests/wait_group.rs",
-          "source_sha256_before": "2a41533a5f7f113d19cd2bdafcc2abf86509109652274156efdd74abd00896b6"
-        },
-        {
-          "path": "test/foundation/crossbeam-utils/unit/src/atomic/seq_lock/tests_97.rs",
-          "sha256": "3cd88c565ac4f09b3b454279303c71a341388ebaca56122be6201ac2679e3066",
-          "source": "src/foundation/crossbeam-utils/src/atomic/seq_lock.rs",
-          "source_sha256_before": "27182e6b87a9db73c5f6831759f8625f9fcdec3c2828204c444aef04f427735a"
-        },
-        {
-          "path": "test/foundation/crossbeam-utils/unit/src/atomic/seq_lock_wide/tests_140.rs",
-          "sha256": "3cd88c565ac4f09b3b454279303c71a341388ebaca56122be6201ac2679e3066",
-          "source": "src/foundation/crossbeam-utils/src/atomic/seq_lock_wide.rs",
-          "source_sha256_before": "9888dd03116bb89ca36d4ab8d5a0b5032107a2983a7eb8024454263b09080088"
-        }
-      ],
-      "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
-      "roots": [
-        "test/foundation/crossbeam-utils"
       ]
     },
     "src/foundation/cryptographic-core": {
@@ -20402,19 +21300,19 @@
       ]
     },
     "src/foundation/flume": {
-      "bytes": 285676,
+      "bytes": 285968,
       "directory": "src/foundation/flume",
       "file_count": 19,
       "files": [
         {
           "path": "test/foundation/flume/tests/after.rs",
-          "sha256": "53e17263eab8eb733f575e4d1d43e054c6d22556d36e105f3f87c4cfb891880c",
+          "sha256": "ebff062c85eae99acdc4db224da70256d7a5168e7259b965ccb2b8a7d75866ee",
           "source": "src/foundation/flume/tests/after.rs",
           "source_sha256_before": "53e17263eab8eb733f575e4d1d43e054c6d22556d36e105f3f87c4cfb891880c"
         },
         {
           "path": "test/foundation/flume/tests/array.rs",
-          "sha256": "84a8d680b22b70e2446ec073d94f4572c68de6a51444d9a74ad8186730861df4",
+          "sha256": "ef2c2b886f81e7ea37a382823ee0432fad7176cc2d7f253b9f6fbc4c2928d9c9",
           "source": "src/foundation/flume/tests/array.rs",
           "source_sha256_before": "84a8d680b22b70e2446ec073d94f4572c68de6a51444d9a74ad8186730861df4"
         },
@@ -20444,13 +21342,13 @@
         },
         {
           "path": "test/foundation/flume/tests/iter.rs",
-          "sha256": "052154989f6c1f0f8ddb0d807e250ec23c1b7552357e2fe5a57df289c16f1c47",
+          "sha256": "4e8883d4149163cca8baaf51747dde8c12d0f8017e1360dbbb0c96f3596c7bfb",
           "source": "src/foundation/flume/tests/iter.rs",
           "source_sha256_before": "052154989f6c1f0f8ddb0d807e250ec23c1b7552357e2fe5a57df289c16f1c47"
         },
         {
           "path": "test/foundation/flume/tests/list.rs",
-          "sha256": "8ff1496b8551af6702536a900e58568f3b91cf74532d5d23e28976505b4517ba",
+          "sha256": "40c65b8c3367af26eb9088073e294d06d05195088276928a9d21d40a3fc007f8",
           "source": "src/foundation/flume/tests/list.rs",
           "source_sha256_before": "8ff1496b8551af6702536a900e58568f3b91cf74532d5d23e28976505b4517ba"
         },
@@ -20474,7 +21372,7 @@
         },
         {
           "path": "test/foundation/flume/tests/ready.rs",
-          "sha256": "5e1234ce49e8cbf89ec4f28bd2f4fe10641891bf6a7915d2fef6f9ab0c343997",
+          "sha256": "6fe423e84512ab56854df27824a48d2f2090d1e295d9d7c282ff6f83eff20b83",
           "source": "src/foundation/flume/tests/ready.rs",
           "source_sha256_before": "5e1234ce49e8cbf89ec4f28bd2f4fe10641891bf6a7915d2fef6f9ab0c343997"
         },
@@ -20486,13 +21384,13 @@
         },
         {
           "path": "test/foundation/flume/tests/select.rs",
-          "sha256": "67f8a647a7976f0d77673f4cc8d03b74690f3e8578c47e1bc64caeab68dd7df7",
+          "sha256": "826fe653d9e1547fe21599d570aba2fdcb63c5e9e15659851b03f5b1ad8258fc",
           "source": "src/foundation/flume/tests/select.rs",
           "source_sha256_before": "67f8a647a7976f0d77673f4cc8d03b74690f3e8578c47e1bc64caeab68dd7df7"
         },
         {
           "path": "test/foundation/flume/tests/select_macro.rs",
-          "sha256": "32793ac9775879e72ae3ce3975aa87f7407c6e7023d3d85f50f06a3ac5e308a3",
+          "sha256": "9975a0598ac37059fbacfd5dafedcfb1c073433ae3f4db8081225195d7070314",
           "source": "src/foundation/flume/tests/select_macro.rs",
           "source_sha256_before": "32793ac9775879e72ae3ce3975aa87f7407c6e7023d3d85f50f06a3ac5e308a3"
         },
@@ -20504,19 +21402,19 @@
         },
         {
           "path": "test/foundation/flume/tests/thread_locals.rs",
-          "sha256": "ad92e07a4ef5c3dd8b6ff8620161ab93963b3de241a680db551f2be60c8e3853",
+          "sha256": "0b1565370afca3e6b943adbc6fa9a3b9e48fc5918689503d8b4cfac94a6a017a",
           "source": "src/foundation/flume/tests/thread_locals.rs",
           "source_sha256_before": "ad92e07a4ef5c3dd8b6ff8620161ab93963b3de241a680db551f2be60c8e3853"
         },
         {
           "path": "test/foundation/flume/tests/tick.rs",
-          "sha256": "35fabd118073decf0cd830e9245c77a1a2e19227f7b4f73d239589728a591601",
+          "sha256": "ad073b6463c3a1abc13e51d04e011b232b5ac6066f472c915e25da4a30068cc5",
           "source": "src/foundation/flume/tests/tick.rs",
           "source_sha256_before": "35fabd118073decf0cd830e9245c77a1a2e19227f7b4f73d239589728a591601"
         },
         {
           "path": "test/foundation/flume/tests/zero.rs",
-          "sha256": "782c9e537a2dc92214c655eb310ddacc34dbf33d6e9ea6480c9f300ff9541a50",
+          "sha256": "65f8ddf0b28e91e54f38ab3070680eb645114e0e3e9d46ea8ae566b728d07b78",
           "source": "src/foundation/flume/tests/zero.rs",
           "source_sha256_before": "782c9e537a2dc92214c655eb310ddacc34dbf33d6e9ea6480c9f300ff9541a50"
         }
@@ -28798,7 +29696,7 @@
       ]
     },
     "src/foundation/rayon-core": {
-      "bytes": 75810,
+      "bytes": 75828,
       "directory": "src/foundation/rayon-core",
       "file_count": 58,
       "files": [
@@ -29128,7 +30026,7 @@
         },
         {
           "path": "test/foundation/rayon-core/tests/scoped_threadpool.rs",
-          "sha256": "24d1293fe65ad5f194bbff9d1ef0486c3440d0a3783f04eaaaae4929adef5cb8",
+          "sha256": "7b2d26b8163ea23f456b1683e6a31a6d7ffd88aedb23e20b7a151ca4d89789d8",
           "source": "src/foundation/rayon-core/tests/scoped_threadpool.rs",
           "source_sha256_before": "24d1293fe65ad5f194bbff9d1ef0486c3440d0a3783f04eaaaae4929adef5cb8"
         },
@@ -41084,7 +41982,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "8aeb6f23f263e70592a4c1b6d84c2e5d0f5da9bdb3ffcf8e25b0a8b42dbd2847"
+    "Cargo.lock": "a6a5ae692ba9c22b4df7b4b3026894e64b862f8e6b765832bff6406707b5afb9"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -41132,6 +42030,7 @@
     "src/foundation/colorchoice/Cargo.toml": "20633f3c901dae63b12e2471ed9d664ac1279442c9d5ffb1f88b57291fc6a3f6",
     "src/foundation/command-derive/Cargo.toml": "6d0dfeaafb92115be48cc129a686ee437a3e5df2855fa5829554377ba44434f3",
     "src/foundation/command-line/Cargo.toml": "f77270f4bed56d7ada01a5646db7c91c235afa4ecedf570595fb0e36ece69147",
+    "src/foundation/concurrent-collections/Cargo.toml": "945a84385e56ba3f076ba842320a1bd10d1d967581015e8411d8665aeb72e5b6",
     "src/foundation/console_error_panic_hook/Cargo.toml": "2100eae4b8d3be580f0939945d12c6aaeca869fcf4cabca009a2a2036b6b3fdb",
     "src/foundation/const-oid/Cargo.toml": "44a39fb088e9d66496e265449f5a29e7902d3e937532ad3747e87f5fc62316f5",
     "src/foundation/const_str_slice_concat/Cargo.toml": "f30e9cd23703e2dc4c74f6244010f4474c7bd91b29b6b60e6ce09e598bbb193a",
@@ -41140,10 +42039,6 @@
     "src/foundation/convert_case_extras/Cargo.toml": "a5d2c9cba481304d4c7c2515007adb57737720f716603d2cf90b20b8c699b16f",
     "src/foundation/cpu-feature-detect/Cargo.toml": "e0e06a8928caa0ed1824825e5915c98f0d99b87b4f7d7340cd10aaa651125025",
     "src/foundation/crc32fast/Cargo.toml": "c7c5ca2266b672c8e0af9d3b7515222ac01e0cdea99cac6d346eeff359de6e2c",
-    "src/foundation/crossbeam-deque/Cargo.toml": "c3c582c8b2e137313071d2f3b2da08eba5c9fa5cb9de7cad5d9b184e59cd1dd3",
-    "src/foundation/crossbeam-epoch/Cargo.toml": "813da5624e219795bcfae27e14186bcf7e203487551f5051ea7afcf6fe34fc5b",
-    "src/foundation/crossbeam-queue/Cargo.toml": "1a92f0f6716ff303d85e8441160045056106e300b115a0640938e77b29ecd513",
-    "src/foundation/crossbeam-utils/Cargo.toml": "d76ac4fff2054d48b0cdabba7b11175aab4e0530301b93ac6f327c3a28e80267",
     "src/foundation/cryptographic-core/Cargo.toml": "ccd38ae8b392c38aee7af0cfd90b62f1a6f2bfcc56802febfa6efd6c85755711",
     "src/foundation/ctutils/Cargo.toml": "cdc1ef4af0617251af94a040855aace3959d098652db9ab223af4fedd0f2927f",
     "src/foundation/data-encoding/Cargo.toml": "6ff883672e9f8e6fbd5c4082c8ca953ba1985777a02013a2733ebc3d542e7456",
@@ -41266,7 +42161,7 @@
     "src/foundation/quote-use/Cargo.toml": "76731ced54f44d7f2df6b48402e3b5c4f9c15d9497bd69201db35f39736c81b4",
     "src/foundation/quote/Cargo.toml": "b56481fbbe2846c7db15fadaee878e62c4b49b0ffb9a30d3d52663b6e7fd8292",
     "src/foundation/random-generator-core/Cargo.toml": "89d80064dc2e7c16d40ba1637d18b291b0e7edb973408c96c65f9a0b22478523",
-    "src/foundation/rayon-core/Cargo.toml": "c122335b729e48d38d0ee041541646974b72ec9d9ebb0a7f4dd6a9e61d91b1ee",
+    "src/foundation/rayon-core/Cargo.toml": "ec99da3c7e92b7454834e615d0a0e2407bb7b1fd1877607c00c8f1e3bc98985f",
     "src/foundation/rayon/Cargo.toml": "fbdb1891ba970b009e5d85e78d8f8ead0e716f2b376fb30bcb04023c1bbba919",
     "src/foundation/reactive-state/Cargo.toml": "97fcef25a6146688dd4322db95696b55f0aceba2ab70149490efeb44dfa1d87a",
     "src/foundation/ref-cast-impl/Cargo.toml": "15ba9d3c503960ea47843072982d4e1c9095fb6a2b67063cd0ccdb94268f992a",
@@ -41305,7 +42200,7 @@
     "src/foundation/smallvec/Cargo.toml": "7f4809c1243c4cb0854b7878cedcbcf9b1b8a30f667333eb9edb76f990b77f05",
     "src/foundation/socket2/Cargo.toml": "a748169b0a61eda1988393bf74d1a3f13b9033cb29b83240a74eb7b2be808a92",
     "src/foundation/spin/Cargo.toml": "dc8a44bf0030e39b3b5fe56e278ad50ba9fa9e67bb46dc1afbbcb7984a4791be",
-    "src/foundation/sqlite-access/Cargo.toml": "c074a1f44d9718ff73eacfef22c887ad0f360a3861bcefd078382319776d85fd",
+    "src/foundation/sqlite-access/Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
     "src/foundation/stable_deref_trait/Cargo.toml": "4f080b924f2ae5fa6c2a7fd2d5fdcc08728c189503b520c2fec8132495f21256",
     "src/foundation/strsim/Cargo.toml": "7312930e6b154cde7b4ab50ba717760e952876c630e36cb82365d5b0a214600c",
     "src/foundation/strum/Cargo.toml": "ce19c4c3938857512107c5ca185a1aba6fed8b5ddc302e82cec8b11727482035",
@@ -42719,7 +43614,7 @@
       "description": "Core of SQLx, the rust SQL toolkit. Not intended to be used directly.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "c074a1f44d9718ff73eacfef22c887ad0f360a3861bcefd078382319776d85fd",
+        "Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -42744,7 +43639,7 @@
         "src/query_engine/mod.rs": "4f73afae2ac68b075c800646d87a8bb09c9208b056200b32146fd4eb3a2ffefa",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
-        "src/query_engine/pool/inner.rs": "ec619b2128bf0109675f9198f46e751e59113f2ba5ec27b955ae7e65b0d348a8",
+        "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
         "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
         "src/query_engine/pool/mod.rs": "14ecc44d608838e53531f3c504d88ee490923d8e47501e6ad75b521eae0bf884",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
@@ -42842,7 +43737,7 @@
       "description": "SQLite driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "c074a1f44d9718ff73eacfef22c887ad0f360a3861bcefd078382319776d85fd",
+        "Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -42867,7 +43762,7 @@
         "src/query_engine/mod.rs": "4f73afae2ac68b075c800646d87a8bb09c9208b056200b32146fd4eb3a2ffefa",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
-        "src/query_engine/pool/inner.rs": "ec619b2128bf0109675f9198f46e751e59113f2ba5ec27b955ae7e65b0d348a8",
+        "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
         "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
         "src/query_engine/pool/mod.rs": "14ecc44d608838e53531f3c504d88ee490923d8e47501e6ad75b521eae0bf884",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
@@ -45595,6 +46490,225 @@
         "path_in_vcs": ""
       },
       "version": "1.1.5"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
+      "description": "Epoch-based garbage collection",
+      "directory": "src/foundation/concurrent-collections",
+      "files_sha256": {
+        "Cargo.toml": "945a84385e56ba3f076ba842320a1bd10d1d967581015e8411d8665aeb72e5b6",
+        "benches/atomic_cell.rs": "91865666a2f755471cc8f6be630d2acea9237ba5729936e66c712d7cb5767b24",
+        "build-common.rs": "502cb7494549bed6fa10ac7bea36e880eeb60290dc69b679ac5c92b376469562",
+        "build.rs": "c2a9dec064c0425e1b63830d1b8b845a85ed23ceab5e7d7a57d65ff7a5456f67",
+        "build/deque/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/benches/defer.rs": "f0e07a2e2212ac12e16915a6cc76563d7521affaa8a30937f20aeb4f865e9fb6",
+        "build/epoch/benches/flush.rs": "42264f0ee86d581e5a3a4946f12a69271a130135b7863151ff0162ddf235457d",
+        "build/epoch/benches/pin.rs": "3344fff5ba27d3eb0a7e6f6c8257274bc2e77a91d2136be029f6c3dc299f73ee",
+        "build/epoch/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/examples/sanitize.rs": "9c317171705a4a0889c90da40d50531bc60d9fbb21861a6c84e8fa977aa93658",
+        "no_atomic.rs": "56db0a11d33cdf136df6f3943ddb554c70aa236d0a5515dab7ffb91fac595ec3",
+        "src/deque/deque.rs": "2e4de38be2381099303902a928a72e227830dcd5d4ae6064124f465af10d806d",
+        "src/deque/mod.rs": "27884513736169b6f6917e1cec81c0fce27fd4fa81e469821f0ef836bfb58cfc",
+        "src/epoch/atomic.rs": "bb675fa1c065413c2c13d111370773c5b39c474c03ddaef3753c989362090148",
+        "src/epoch/collector.rs": "3e66a497760e259de24d5cedb3200155405b4db1126a3450b4e9de0bd4cb7801",
+        "src/epoch/default.rs": "2556fc355e3646b935ffc0846ce6e8e352fea7b685daa5f230048edab41785f1",
+        "src/epoch/deferred.rs": "f37fd6d4f09e1afe72e2e31c2eaa3d14df56cd13e922b5920b96698462f1e354",
+        "src/epoch/epoch.rs": "d161ab5ea089e4834362909b108415956e3f2a3ba8595677f72719b575103efc",
+        "src/epoch/guard.rs": "15728313fd16613c4b944990d6e6ec92040168279673dac59ea332996923d48b",
+        "src/epoch/internal.rs": "768f39345800b3101b757e6ad00116a9a0579667a397ceb7a75463e73a83ec1f",
+        "src/epoch/mod.rs": "f9a46024ccd94cc80c2240e3f5d5d44bf778219ee5767ce39e649acd7ef640bc",
+        "src/epoch/sync/list.rs": "ab450c1699acecda6d5826fd215b6ce10f7759c3949698f3ea18461aefb69abb",
+        "src/epoch/sync/mod.rs": "326e32489d467e974c441120640a8338aa55da55c24b20276075ce9053997326",
+        "src/epoch/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/epoch/sync/queue.rs": "675462049d037abf8fe9e12890aa4165495c642dcc25bd6c1e6069a1ab99cbea",
+        "src/lib.rs": "b7a79601cf9453ef171447b5f8c77431f8e06f3ea1b7198f281eb2e8be959563",
+        "src/queue/array_queue.rs": "359c787dab8e5f5f834d37ab19870719ab8191cfb277ba54ee4f4b5eca2c77bd",
+        "src/queue/mod.rs": "6d8d02f0906aad043dc6ffb511fd2fc112f191c1a176f2ffc736e5a28afb0e38",
+        "src/queue/seg_queue.rs": "27afc0f44c2620b30fe4d0fc65722a90670a4f8aac9d1a50aa609a24310b5751",
+        "src/utilities/atomic/atomic_cell.rs": "7ceb49144fb6cbe28a87eb4539fac5e440efd39c4200eee7faf6a59e0fe6898a",
+        "src/utilities/atomic/consume.rs": "c70a9ae064993cc8c077935cf7442f8c11638e731157a1a0e3a792ca2efdda6f",
+        "src/utilities/atomic/mod.rs": "712e2337e710c07116e977154ea4247a1c065bf5599e6bf368138e715b403f6d",
+        "src/utilities/atomic/seq_lock.rs": "b8ac82bb8eafddbcb63d7f8428035da22325aafd06b420f687bbbeb16cc7c600",
+        "src/utilities/atomic/seq_lock_wide.rs": "5702c31b040a6b39bc1bba6ea179d218b75ab42f1c620b77484e42baf5a4bd56",
+        "src/utilities/backoff.rs": "21c814575c5a8b9a8b0f5e2ddc8a1d765c5b8cdd8ce39c9a83f356c0862a32ab",
+        "src/utilities/cache_padded.rs": "0bf39a73e60427c101af5f3a7ca8fc713f9816dc3b210f450cdca860c12a335a",
+        "src/utilities/mod.rs": "92b60ee2fe5141f9ebbe0df6ce2b838b4ed46a4319583497ef8529ddae88b012",
+        "src/utilities/sync/mod.rs": "eca73c04f821859b8434d2b93db87d160dc6a3f65498ca201cd40d732ca4c134",
+        "src/utilities/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/utilities/sync/parker.rs": "f0b126aabf6dbc1bd7c939967c6b5ba2e9fe62a4fa8055f144e10f6df2271efa",
+        "src/utilities/sync/sharded_lock.rs": "bffdd9772e1ad959236120ec00c02f1fe71913c74dee71771cc2b1754beb8d43",
+        "src/utilities/sync/wait_group.rs": "f5c3edcd8e2558b8454b533546ce0204dba85471c5444ce0ac7755506f245afc",
+        "src/utilities/thread.rs": "f1bbdbb8722a2f184bd586e630bc122385382a723465610bdf014509eb445cd6"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/crossbeam-epoch-0.9.21/LICENSE-APACHE",
+        "compliance/licenses/upstream/crossbeam-epoch-0.9.21/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/concurrent-collections",
+      "name": "crossbeam-epoch",
+      "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
+      "repository": "https://github.com/crossbeam-rs/crossbeam",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "dc74980687109a3b14c72fd458107bf0baa1da1a1a805e178d15501ba9b86d9d",
+        "archive_url": "https://static.crates.io/crates/crossbeam-epoch/crossbeam-epoch-0.9.21.crate",
+        "name": "crossbeam-epoch",
+        "version": "0.9.21"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
+        },
+        "path_in_vcs": "crossbeam-epoch"
+      },
+      "version": "0.9.21"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Concurrent queues",
+      "directory": "src/foundation/concurrent-collections",
+      "files_sha256": {
+        "Cargo.toml": "945a84385e56ba3f076ba842320a1bd10d1d967581015e8411d8665aeb72e5b6",
+        "benches/atomic_cell.rs": "91865666a2f755471cc8f6be630d2acea9237ba5729936e66c712d7cb5767b24",
+        "build-common.rs": "502cb7494549bed6fa10ac7bea36e880eeb60290dc69b679ac5c92b376469562",
+        "build.rs": "c2a9dec064c0425e1b63830d1b8b845a85ed23ceab5e7d7a57d65ff7a5456f67",
+        "build/deque/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/benches/defer.rs": "f0e07a2e2212ac12e16915a6cc76563d7521affaa8a30937f20aeb4f865e9fb6",
+        "build/epoch/benches/flush.rs": "42264f0ee86d581e5a3a4946f12a69271a130135b7863151ff0162ddf235457d",
+        "build/epoch/benches/pin.rs": "3344fff5ba27d3eb0a7e6f6c8257274bc2e77a91d2136be029f6c3dc299f73ee",
+        "build/epoch/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/examples/sanitize.rs": "9c317171705a4a0889c90da40d50531bc60d9fbb21861a6c84e8fa977aa93658",
+        "no_atomic.rs": "56db0a11d33cdf136df6f3943ddb554c70aa236d0a5515dab7ffb91fac595ec3",
+        "src/deque/deque.rs": "2e4de38be2381099303902a928a72e227830dcd5d4ae6064124f465af10d806d",
+        "src/deque/mod.rs": "27884513736169b6f6917e1cec81c0fce27fd4fa81e469821f0ef836bfb58cfc",
+        "src/epoch/atomic.rs": "bb675fa1c065413c2c13d111370773c5b39c474c03ddaef3753c989362090148",
+        "src/epoch/collector.rs": "3e66a497760e259de24d5cedb3200155405b4db1126a3450b4e9de0bd4cb7801",
+        "src/epoch/default.rs": "2556fc355e3646b935ffc0846ce6e8e352fea7b685daa5f230048edab41785f1",
+        "src/epoch/deferred.rs": "f37fd6d4f09e1afe72e2e31c2eaa3d14df56cd13e922b5920b96698462f1e354",
+        "src/epoch/epoch.rs": "d161ab5ea089e4834362909b108415956e3f2a3ba8595677f72719b575103efc",
+        "src/epoch/guard.rs": "15728313fd16613c4b944990d6e6ec92040168279673dac59ea332996923d48b",
+        "src/epoch/internal.rs": "768f39345800b3101b757e6ad00116a9a0579667a397ceb7a75463e73a83ec1f",
+        "src/epoch/mod.rs": "f9a46024ccd94cc80c2240e3f5d5d44bf778219ee5767ce39e649acd7ef640bc",
+        "src/epoch/sync/list.rs": "ab450c1699acecda6d5826fd215b6ce10f7759c3949698f3ea18461aefb69abb",
+        "src/epoch/sync/mod.rs": "326e32489d467e974c441120640a8338aa55da55c24b20276075ce9053997326",
+        "src/epoch/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/epoch/sync/queue.rs": "675462049d037abf8fe9e12890aa4165495c642dcc25bd6c1e6069a1ab99cbea",
+        "src/lib.rs": "b7a79601cf9453ef171447b5f8c77431f8e06f3ea1b7198f281eb2e8be959563",
+        "src/queue/array_queue.rs": "359c787dab8e5f5f834d37ab19870719ab8191cfb277ba54ee4f4b5eca2c77bd",
+        "src/queue/mod.rs": "6d8d02f0906aad043dc6ffb511fd2fc112f191c1a176f2ffc736e5a28afb0e38",
+        "src/queue/seg_queue.rs": "27afc0f44c2620b30fe4d0fc65722a90670a4f8aac9d1a50aa609a24310b5751",
+        "src/utilities/atomic/atomic_cell.rs": "7ceb49144fb6cbe28a87eb4539fac5e440efd39c4200eee7faf6a59e0fe6898a",
+        "src/utilities/atomic/consume.rs": "c70a9ae064993cc8c077935cf7442f8c11638e731157a1a0e3a792ca2efdda6f",
+        "src/utilities/atomic/mod.rs": "712e2337e710c07116e977154ea4247a1c065bf5599e6bf368138e715b403f6d",
+        "src/utilities/atomic/seq_lock.rs": "b8ac82bb8eafddbcb63d7f8428035da22325aafd06b420f687bbbeb16cc7c600",
+        "src/utilities/atomic/seq_lock_wide.rs": "5702c31b040a6b39bc1bba6ea179d218b75ab42f1c620b77484e42baf5a4bd56",
+        "src/utilities/backoff.rs": "21c814575c5a8b9a8b0f5e2ddc8a1d765c5b8cdd8ce39c9a83f356c0862a32ab",
+        "src/utilities/cache_padded.rs": "0bf39a73e60427c101af5f3a7ca8fc713f9816dc3b210f450cdca860c12a335a",
+        "src/utilities/mod.rs": "92b60ee2fe5141f9ebbe0df6ce2b838b4ed46a4319583497ef8529ddae88b012",
+        "src/utilities/sync/mod.rs": "eca73c04f821859b8434d2b93db87d160dc6a3f65498ca201cd40d732ca4c134",
+        "src/utilities/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/utilities/sync/parker.rs": "f0b126aabf6dbc1bd7c939967c6b5ba2e9fe62a4fa8055f144e10f6df2271efa",
+        "src/utilities/sync/sharded_lock.rs": "bffdd9772e1ad959236120ec00c02f1fe71913c74dee71771cc2b1754beb8d43",
+        "src/utilities/sync/wait_group.rs": "f5c3edcd8e2558b8454b533546ce0204dba85471c5444ce0ac7755506f245afc",
+        "src/utilities/thread.rs": "f1bbdbb8722a2f184bd586e630bc122385382a723465610bdf014509eb445cd6"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/crossbeam-queue-0.3.14/LICENSE-APACHE",
+        "compliance/licenses/upstream/crossbeam-queue-0.3.14/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/concurrent-collections",
+      "name": "crossbeam-queue",
+      "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
+      "repository": "https://github.com/crossbeam-rs/crossbeam",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "03e8bd762f7479489c70ed6c768ddca99d7296857de437a68dcb2a94365b3fae",
+        "archive_url": "https://static.crates.io/crates/crossbeam-queue/crossbeam-queue-0.3.14.crate",
+        "name": "crossbeam-queue",
+        "version": "0.3.14"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
+        },
+        "path_in_vcs": "crossbeam-queue"
+      },
+      "version": "0.3.14"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Concurrent work-stealing deque",
+      "directory": "src/foundation/concurrent-collections",
+      "files_sha256": {
+        "Cargo.toml": "945a84385e56ba3f076ba842320a1bd10d1d967581015e8411d8665aeb72e5b6",
+        "benches/atomic_cell.rs": "91865666a2f755471cc8f6be630d2acea9237ba5729936e66c712d7cb5767b24",
+        "build-common.rs": "502cb7494549bed6fa10ac7bea36e880eeb60290dc69b679ac5c92b376469562",
+        "build.rs": "c2a9dec064c0425e1b63830d1b8b845a85ed23ceab5e7d7a57d65ff7a5456f67",
+        "build/deque/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/benches/defer.rs": "f0e07a2e2212ac12e16915a6cc76563d7521affaa8a30937f20aeb4f865e9fb6",
+        "build/epoch/benches/flush.rs": "42264f0ee86d581e5a3a4946f12a69271a130135b7863151ff0162ddf235457d",
+        "build/epoch/benches/pin.rs": "3344fff5ba27d3eb0a7e6f6c8257274bc2e77a91d2136be029f6c3dc299f73ee",
+        "build/epoch/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/examples/sanitize.rs": "9c317171705a4a0889c90da40d50531bc60d9fbb21861a6c84e8fa977aa93658",
+        "no_atomic.rs": "56db0a11d33cdf136df6f3943ddb554c70aa236d0a5515dab7ffb91fac595ec3",
+        "src/deque/deque.rs": "2e4de38be2381099303902a928a72e227830dcd5d4ae6064124f465af10d806d",
+        "src/deque/mod.rs": "27884513736169b6f6917e1cec81c0fce27fd4fa81e469821f0ef836bfb58cfc",
+        "src/epoch/atomic.rs": "bb675fa1c065413c2c13d111370773c5b39c474c03ddaef3753c989362090148",
+        "src/epoch/collector.rs": "3e66a497760e259de24d5cedb3200155405b4db1126a3450b4e9de0bd4cb7801",
+        "src/epoch/default.rs": "2556fc355e3646b935ffc0846ce6e8e352fea7b685daa5f230048edab41785f1",
+        "src/epoch/deferred.rs": "f37fd6d4f09e1afe72e2e31c2eaa3d14df56cd13e922b5920b96698462f1e354",
+        "src/epoch/epoch.rs": "d161ab5ea089e4834362909b108415956e3f2a3ba8595677f72719b575103efc",
+        "src/epoch/guard.rs": "15728313fd16613c4b944990d6e6ec92040168279673dac59ea332996923d48b",
+        "src/epoch/internal.rs": "768f39345800b3101b757e6ad00116a9a0579667a397ceb7a75463e73a83ec1f",
+        "src/epoch/mod.rs": "f9a46024ccd94cc80c2240e3f5d5d44bf778219ee5767ce39e649acd7ef640bc",
+        "src/epoch/sync/list.rs": "ab450c1699acecda6d5826fd215b6ce10f7759c3949698f3ea18461aefb69abb",
+        "src/epoch/sync/mod.rs": "326e32489d467e974c441120640a8338aa55da55c24b20276075ce9053997326",
+        "src/epoch/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/epoch/sync/queue.rs": "675462049d037abf8fe9e12890aa4165495c642dcc25bd6c1e6069a1ab99cbea",
+        "src/lib.rs": "b7a79601cf9453ef171447b5f8c77431f8e06f3ea1b7198f281eb2e8be959563",
+        "src/queue/array_queue.rs": "359c787dab8e5f5f834d37ab19870719ab8191cfb277ba54ee4f4b5eca2c77bd",
+        "src/queue/mod.rs": "6d8d02f0906aad043dc6ffb511fd2fc112f191c1a176f2ffc736e5a28afb0e38",
+        "src/queue/seg_queue.rs": "27afc0f44c2620b30fe4d0fc65722a90670a4f8aac9d1a50aa609a24310b5751",
+        "src/utilities/atomic/atomic_cell.rs": "7ceb49144fb6cbe28a87eb4539fac5e440efd39c4200eee7faf6a59e0fe6898a",
+        "src/utilities/atomic/consume.rs": "c70a9ae064993cc8c077935cf7442f8c11638e731157a1a0e3a792ca2efdda6f",
+        "src/utilities/atomic/mod.rs": "712e2337e710c07116e977154ea4247a1c065bf5599e6bf368138e715b403f6d",
+        "src/utilities/atomic/seq_lock.rs": "b8ac82bb8eafddbcb63d7f8428035da22325aafd06b420f687bbbeb16cc7c600",
+        "src/utilities/atomic/seq_lock_wide.rs": "5702c31b040a6b39bc1bba6ea179d218b75ab42f1c620b77484e42baf5a4bd56",
+        "src/utilities/backoff.rs": "21c814575c5a8b9a8b0f5e2ddc8a1d765c5b8cdd8ce39c9a83f356c0862a32ab",
+        "src/utilities/cache_padded.rs": "0bf39a73e60427c101af5f3a7ca8fc713f9816dc3b210f450cdca860c12a335a",
+        "src/utilities/mod.rs": "92b60ee2fe5141f9ebbe0df6ce2b838b4ed46a4319583497ef8529ddae88b012",
+        "src/utilities/sync/mod.rs": "eca73c04f821859b8434d2b93db87d160dc6a3f65498ca201cd40d732ca4c134",
+        "src/utilities/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/utilities/sync/parker.rs": "f0b126aabf6dbc1bd7c939967c6b5ba2e9fe62a4fa8055f144e10f6df2271efa",
+        "src/utilities/sync/sharded_lock.rs": "bffdd9772e1ad959236120ec00c02f1fe71913c74dee71771cc2b1754beb8d43",
+        "src/utilities/sync/wait_group.rs": "f5c3edcd8e2558b8454b533546ce0204dba85471c5444ce0ac7755506f245afc",
+        "src/utilities/thread.rs": "f1bbdbb8722a2f184bd586e630bc122385382a723465610bdf014509eb445cd6"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/crossbeam-deque-0.8.8/LICENSE-APACHE",
+        "compliance/licenses/upstream/crossbeam-deque-0.8.8/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/concurrent-collections",
+      "name": "crossbeam-deque",
+      "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
+      "repository": "https://github.com/crossbeam-rs/crossbeam",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "622f3fc73690be383c7214310406f28a90e6edeadc3cea882f9d71e495b9711a",
+        "archive_url": "https://static.crates.io/crates/crossbeam-deque/crossbeam-deque-0.8.8.crate",
+        "name": "crossbeam-deque",
+        "version": "0.8.8"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
+        },
+        "path_in_vcs": "crossbeam-deque"
+      },
+      "version": "0.8.8"
     }
   ],
   "origin_records_sha256": {
@@ -47813,6 +48927,79 @@
       },
       "version": "4.6.7"
     },
+    "src/foundation/concurrent-collections": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Utilities for concurrent programming",
+      "directory": "src/foundation/concurrent-collections",
+      "files_sha256": {
+        "Cargo.toml": "945a84385e56ba3f076ba842320a1bd10d1d967581015e8411d8665aeb72e5b6",
+        "benches/atomic_cell.rs": "91865666a2f755471cc8f6be630d2acea9237ba5729936e66c712d7cb5767b24",
+        "build-common.rs": "502cb7494549bed6fa10ac7bea36e880eeb60290dc69b679ac5c92b376469562",
+        "build.rs": "c2a9dec064c0425e1b63830d1b8b845a85ed23ceab5e7d7a57d65ff7a5456f67",
+        "build/deque/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/benches/defer.rs": "f0e07a2e2212ac12e16915a6cc76563d7521affaa8a30937f20aeb4f865e9fb6",
+        "build/epoch/benches/flush.rs": "42264f0ee86d581e5a3a4946f12a69271a130135b7863151ff0162ddf235457d",
+        "build/epoch/benches/pin.rs": "3344fff5ba27d3eb0a7e6f6c8257274bc2e77a91d2136be029f6c3dc299f73ee",
+        "build/epoch/build.rs": "24d96a5cc6ef6c75117d1bfa7cef2c1e484c900e38ad0d725e53c1b22bf905b0",
+        "build/epoch/examples/sanitize.rs": "9c317171705a4a0889c90da40d50531bc60d9fbb21861a6c84e8fa977aa93658",
+        "no_atomic.rs": "56db0a11d33cdf136df6f3943ddb554c70aa236d0a5515dab7ffb91fac595ec3",
+        "src/deque/deque.rs": "2e4de38be2381099303902a928a72e227830dcd5d4ae6064124f465af10d806d",
+        "src/deque/mod.rs": "27884513736169b6f6917e1cec81c0fce27fd4fa81e469821f0ef836bfb58cfc",
+        "src/epoch/atomic.rs": "bb675fa1c065413c2c13d111370773c5b39c474c03ddaef3753c989362090148",
+        "src/epoch/collector.rs": "3e66a497760e259de24d5cedb3200155405b4db1126a3450b4e9de0bd4cb7801",
+        "src/epoch/default.rs": "2556fc355e3646b935ffc0846ce6e8e352fea7b685daa5f230048edab41785f1",
+        "src/epoch/deferred.rs": "f37fd6d4f09e1afe72e2e31c2eaa3d14df56cd13e922b5920b96698462f1e354",
+        "src/epoch/epoch.rs": "d161ab5ea089e4834362909b108415956e3f2a3ba8595677f72719b575103efc",
+        "src/epoch/guard.rs": "15728313fd16613c4b944990d6e6ec92040168279673dac59ea332996923d48b",
+        "src/epoch/internal.rs": "768f39345800b3101b757e6ad00116a9a0579667a397ceb7a75463e73a83ec1f",
+        "src/epoch/mod.rs": "f9a46024ccd94cc80c2240e3f5d5d44bf778219ee5767ce39e649acd7ef640bc",
+        "src/epoch/sync/list.rs": "ab450c1699acecda6d5826fd215b6ce10f7759c3949698f3ea18461aefb69abb",
+        "src/epoch/sync/mod.rs": "326e32489d467e974c441120640a8338aa55da55c24b20276075ce9053997326",
+        "src/epoch/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/epoch/sync/queue.rs": "675462049d037abf8fe9e12890aa4165495c642dcc25bd6c1e6069a1ab99cbea",
+        "src/lib.rs": "b7a79601cf9453ef171447b5f8c77431f8e06f3ea1b7198f281eb2e8be959563",
+        "src/queue/array_queue.rs": "359c787dab8e5f5f834d37ab19870719ab8191cfb277ba54ee4f4b5eca2c77bd",
+        "src/queue/mod.rs": "6d8d02f0906aad043dc6ffb511fd2fc112f191c1a176f2ffc736e5a28afb0e38",
+        "src/queue/seg_queue.rs": "27afc0f44c2620b30fe4d0fc65722a90670a4f8aac9d1a50aa609a24310b5751",
+        "src/utilities/atomic/atomic_cell.rs": "7ceb49144fb6cbe28a87eb4539fac5e440efd39c4200eee7faf6a59e0fe6898a",
+        "src/utilities/atomic/consume.rs": "c70a9ae064993cc8c077935cf7442f8c11638e731157a1a0e3a792ca2efdda6f",
+        "src/utilities/atomic/mod.rs": "712e2337e710c07116e977154ea4247a1c065bf5599e6bf368138e715b403f6d",
+        "src/utilities/atomic/seq_lock.rs": "b8ac82bb8eafddbcb63d7f8428035da22325aafd06b420f687bbbeb16cc7c600",
+        "src/utilities/atomic/seq_lock_wide.rs": "5702c31b040a6b39bc1bba6ea179d218b75ab42f1c620b77484e42baf5a4bd56",
+        "src/utilities/backoff.rs": "21c814575c5a8b9a8b0f5e2ddc8a1d765c5b8cdd8ce39c9a83f356c0862a32ab",
+        "src/utilities/cache_padded.rs": "0bf39a73e60427c101af5f3a7ca8fc713f9816dc3b210f450cdca860c12a335a",
+        "src/utilities/mod.rs": "92b60ee2fe5141f9ebbe0df6ce2b838b4ed46a4319583497ef8529ddae88b012",
+        "src/utilities/sync/mod.rs": "eca73c04f821859b8434d2b93db87d160dc6a3f65498ca201cd40d732ca4c134",
+        "src/utilities/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
+        "src/utilities/sync/parker.rs": "f0b126aabf6dbc1bd7c939967c6b5ba2e9fe62a4fa8055f144e10f6df2271efa",
+        "src/utilities/sync/sharded_lock.rs": "bffdd9772e1ad959236120ec00c02f1fe71913c74dee71771cc2b1754beb8d43",
+        "src/utilities/sync/wait_group.rs": "f5c3edcd8e2558b8454b533546ce0204dba85471c5444ce0ac7755506f245afc",
+        "src/utilities/thread.rs": "f1bbdbb8722a2f184bd586e630bc122385382a723465610bdf014509eb445cd6"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/crossbeam-utils-0.8.23/LICENSE-APACHE",
+        "compliance/licenses/upstream/crossbeam-utils-0.8.23/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "concurrent-collections",
+      "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
+      "repository": "https://github.com/crossbeam-rs/crossbeam",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6",
+        "archive_url": "https://static.crates.io/crates/crossbeam-utils/crossbeam-utils-0.8.23.crate",
+        "name": "crossbeam-utils",
+        "version": "0.8.23"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
+        },
+        "path_in_vcs": "crossbeam-utils"
+      },
+      "version": "0.8.23"
+    },
     "src/foundation/console_error_panic_hook": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "A panic hook for `wasm32-unknown-unknown` that logs panics to `console.error`",
@@ -48108,171 +49295,6 @@
         "path_in_vcs": ""
       },
       "version": "1.5.2"
-    },
-    "src/foundation/crossbeam-deque": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Concurrent work-stealing deque",
-      "directory": "src/foundation/crossbeam-deque",
-      "files_sha256": {
-        "Cargo.toml": "c3c582c8b2e137313071d2f3b2da08eba5c9fa5cb9de7cad5d9b184e59cd1dd3",
-        "build.rs": "c8c35fc536a2e6481549bc13979293cb51244cd9c72d4ed9e35c22a1d70fa9ae",
-        "src/deque.rs": "a27666f94a281fc34337b60f86ea67838575546ce7ce9c2a89c7cb176034ddfe",
-        "src/lib.rs": "3427a4468253e91e09b264e1f8fd6fc67cfda54be5aecbd38f1b0cb7e0d928de"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/crossbeam-deque-0.8.8/LICENSE-APACHE",
-        "compliance/licenses/upstream/crossbeam-deque-0.8.8/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "crossbeam-deque",
-      "origin_directory": "vendor/rust/crossbeam-deque-0.8.8",
-      "repository": "https://github.com/crossbeam-rs/crossbeam",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "622f3fc73690be383c7214310406f28a90e6edeadc3cea882f9d71e495b9711a",
-        "archive_url": "https://static.crates.io/crates/crossbeam-deque/crossbeam-deque-0.8.8.crate",
-        "name": "crossbeam-deque",
-        "version": "0.8.8"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
-        },
-        "path_in_vcs": "crossbeam-deque"
-      },
-      "version": "0.8.8"
-    },
-    "src/foundation/crossbeam-epoch": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
-      "description": "Epoch-based garbage collection",
-      "directory": "src/foundation/crossbeam-epoch",
-      "files_sha256": {
-        "Cargo.toml": "813da5624e219795bcfae27e14186bcf7e203487551f5051ea7afcf6fe34fc5b",
-        "benches/defer.rs": "c330b704d96b2ad1aed29f72c37a99da534adef8cb06a3976d5f93bf567abb20",
-        "benches/flush.rs": "0389ac6c473632f0e93c962f223404cc360257f6699b4ec90b9b3be16bb6d74f",
-        "benches/pin.rs": "2f649a5153745c7930efdb32a52f9dc522f7b8cf548a251c5e2c82ee25dc3fff",
-        "build.rs": "c8c35fc536a2e6481549bc13979293cb51244cd9c72d4ed9e35c22a1d70fa9ae",
-        "examples/sanitize.rs": "a39d1635fa61e643e59192d7a63becc97ff81f03c1f4e03d38cedefb1525026a",
-        "src/atomic.rs": "8f83ad15d1808fc2cf2cdc713778491eabd1a9b246098cde48516b5616215954",
-        "src/collector.rs": "47df5aeea33ac92291023e500f68a097d9af38cde1e3fb1e1c6b34b40fedf75c",
-        "src/default.rs": "4132ca2e07e3e2cc2ac6789a5a87806623ee99bd1e559fcc4bd887e1ac6fefff",
-        "src/deferred.rs": "afe687e77ad7f799fdee3eca10f8075dfbb3f596f3bc6e5ddaffe7a565091f6d",
-        "src/epoch.rs": "42f1e1e83aa58481a7a737d741aa12bd541ba0bf48f3afdec9aade9148955350",
-        "src/guard.rs": "555bb756fe0c422d7f778121226834158cd143c664211a955662c789c867d6d1",
-        "src/internal.rs": "b64c1868265fe58f51f14a42ce517ed06f6ae0cf7d2bb31b95f914652813fafa",
-        "src/lib.rs": "a69c62d04cee1ab25c33f54fa1d289266a69a44d16016b19b4440c055335d9ed",
-        "src/sync/list.rs": "5e57cd36d97e82f02987fe4f8e42bc7039cb138c03fc43dc7a1378080ca595cb",
-        "src/sync/mod.rs": "326e32489d467e974c441120640a8338aa55da55c24b20276075ce9053997326",
-        "src/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
-        "src/sync/queue.rs": "57d9643c52806f300b4f85199a05d687b9321e44c335a250b123c2618142e164"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/crossbeam-epoch-0.9.21/LICENSE-APACHE",
-        "compliance/licenses/upstream/crossbeam-epoch-0.9.21/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "crossbeam-epoch",
-      "origin_directory": "vendor/rust/crossbeam-epoch-0.9.21",
-      "repository": "https://github.com/crossbeam-rs/crossbeam",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "dc74980687109a3b14c72fd458107bf0baa1da1a1a805e178d15501ba9b86d9d",
-        "archive_url": "https://static.crates.io/crates/crossbeam-epoch/crossbeam-epoch-0.9.21.crate",
-        "name": "crossbeam-epoch",
-        "version": "0.9.21"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
-        },
-        "path_in_vcs": "crossbeam-epoch"
-      },
-      "version": "0.9.21"
-    },
-    "src/foundation/crossbeam-queue": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Concurrent queues",
-      "directory": "src/foundation/crossbeam-queue",
-      "files_sha256": {
-        "Cargo.toml": "1a92f0f6716ff303d85e8441160045056106e300b115a0640938e77b29ecd513",
-        "src/array_queue.rs": "29eb637c1666101e3cc37d2098c42bed6d0e109c33f75605a408faf00519e7b4",
-        "src/lib.rs": "e3b6c8dacf2f9f18d66c82cafdc0b2a06d3b13af91a303e66f81f069bbff4627",
-        "src/seg_queue.rs": "5c1b41a44a721b20a5d85d96a258411e055fed6397dd48e4d108b88ff75c1c09"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/crossbeam-queue-0.3.14/LICENSE-APACHE",
-        "compliance/licenses/upstream/crossbeam-queue-0.3.14/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "crossbeam-queue",
-      "origin_directory": "vendor/rust/crossbeam-queue-0.3.14",
-      "repository": "https://github.com/crossbeam-rs/crossbeam",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "03e8bd762f7479489c70ed6c768ddca99d7296857de437a68dcb2a94365b3fae",
-        "archive_url": "https://static.crates.io/crates/crossbeam-queue/crossbeam-queue-0.3.14.crate",
-        "name": "crossbeam-queue",
-        "version": "0.3.14"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
-        },
-        "path_in_vcs": "crossbeam-queue"
-      },
-      "version": "0.3.14"
-    },
-    "src/foundation/crossbeam-utils": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Utilities for concurrent programming",
-      "directory": "src/foundation/crossbeam-utils",
-      "files_sha256": {
-        "Cargo.toml": "d76ac4fff2054d48b0cdabba7b11175aab4e0530301b93ac6f327c3a28e80267",
-        "benches/atomic_cell.rs": "c927eb3cd1e5ecc4b91adbc3bde98af15ffab4086190792ba64d5cde0e24df3d",
-        "build-common.rs": "502cb7494549bed6fa10ac7bea36e880eeb60290dc69b679ac5c92b376469562",
-        "build.rs": "79cc5363313f77ab76e2de4779e384c672a747fbcd4b96647a79286568714807",
-        "no_atomic.rs": "56db0a11d33cdf136df6f3943ddb554c70aa236d0a5515dab7ffb91fac595ec3",
-        "src/atomic/atomic_cell.rs": "bbce08eac8a92cb8fc04b5db3ebac0270197a175dae4bcebf808d71c48136825",
-        "src/atomic/consume.rs": "381c2a8b13312ca0525d53ca1b7d0d4f525ddb154951fa3e216b061ad22012ff",
-        "src/atomic/mod.rs": "712e2337e710c07116e977154ea4247a1c065bf5599e6bf368138e715b403f6d",
-        "src/atomic/seq_lock.rs": "f5db8f3d56abc047f242ce8b81bb0c9d5f37697905941c8da3e7a60fdc17f620",
-        "src/atomic/seq_lock_wide.rs": "600f411b935ca3f3b110ab3dd6ac0cccf103647bd9451bcfd614c6e89deefd84",
-        "src/backoff.rs": "8715f0303ec91d1847c8ac3fc24bcc002a22a7284ade610e5eff4181f85827c7",
-        "src/cache_padded.rs": "345b41ba26b68e49e669dedb47603510122dc0d65d044aa14c6dbf2ec7678d97",
-        "src/lib.rs": "060dabc6dc07de92a7afa57dcbc47222a95ef5819d543ad854858c3b329d6637",
-        "src/sync/mod.rs": "eca73c04f821859b8434d2b93db87d160dc6a3f65498ca201cd40d732ca4c134",
-        "src/sync/once_lock.rs": "aa8f957604d1119c4fc7038a18c14a6281230e81005f31201c099acff284ad4b",
-        "src/sync/parker.rs": "698996e7530da1f3815df11c89df7d916155229cbfd022cccbd555f1d1d31985",
-        "src/sync/sharded_lock.rs": "8f493c837c6af276bf783e83e32a2fc2dcb3707278835be5db10bd121b8ecdf7",
-        "src/sync/wait_group.rs": "227566971a4c0fe960ec0aacca63f955cf9df07d691df4eba24de871c1810858",
-        "src/thread.rs": "04610787ba88f1f59549874a13fc037f2dcf4d8b5f1daaf08378f05c2b3c0039"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/crossbeam-utils-0.8.23/LICENSE-APACHE",
-        "compliance/licenses/upstream/crossbeam-utils-0.8.23/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "crossbeam-utils",
-      "origin_directory": "vendor/rust/crossbeam-utils-0.8.23",
-      "repository": "https://github.com/crossbeam-rs/crossbeam",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6",
-        "archive_url": "https://static.crates.io/crates/crossbeam-utils/crossbeam-utils-0.8.23.crate",
-        "name": "crossbeam-utils",
-        "version": "0.8.23"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "2920c984290229ab4e0ca0452ef09e48a82063f3"
-        },
-        "path_in_vcs": "crossbeam-utils"
-      },
-      "version": "0.8.23"
     },
     "src/foundation/cryptographic-core": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
@@ -49326,7 +50348,7 @@
       "directory": "src/foundation/flume",
       "files_sha256": {
         "Cargo.toml": "824eb0ed39b8a1892ad8a71e19f683f9da9535bda5042f250abf3cfde3575fd7",
-        "benches/basic.rs": "90d95462cc02e920cfcfd14bd6e207911264ba25cd0b05a72d96dcd5048543dd",
+        "benches/basic.rs": "c9c91f10e33530260b335498e74e276fda20abe48b4f7bb80ddafdcab8eaeab8",
         "examples/perf.rs": "52b67c619932a283ad9109c5fe5b47d32f7d3e7533356170047b686dfac330c9",
         "src/async.rs": "fd3dd0871a2b3eed406fc94e5cc27b806e14d2415118c5d6f89d2fd3b8d34fce",
         "src/lib.rs": "16d6a68d97443b7b65d0982342d22fe7501d22af452beb660c486e8ee1f54bcf",
@@ -54305,7 +55327,7 @@
       "description": "Core APIs for Rayon",
       "directory": "src/foundation/rayon-core",
       "files_sha256": {
-        "Cargo.toml": "c122335b729e48d38d0ee041541646974b72ec9d9ebb0a7f4dd6a9e61d91b1ee",
+        "Cargo.toml": "ec99da3c7e92b7454834e615d0a0e2407bb7b1fd1877607c00c8f1e3bc98985f",
         "build.rs": "fa31cb198b772600d100a7c403ddedccef637d2e6b2da431fa7f02ca41307fc6",
         "src/broadcast/mod.rs": "bfa5a2a51321826455d90fa4c3cc32019f3b0a7a6b4f39c98ad1075e172f331e",
         "src/compile_fail/mod.rs": "4d70256295bd64691a8c1994b323559cda1888e85f0b45ca55711541c257dcb6",
@@ -54315,15 +55337,15 @@
         "src/compile_fail/rc_return.rs": "197894803d8df58fc8005d90c86b90cd98f1972f1a4b57438516a565df35903f",
         "src/compile_fail/rc_upvar.rs": "42d110429621f407ef0dada1306dab116583d2c782a99894204dd8e0ccd2312f",
         "src/compile_fail/scope_join_bad.rs": "892959949f77cadfc07458473e7a290301182027ca64428df5a8ce887be0892b",
-        "src/job.rs": "06de0c2add2e303b6383bf11f5f0d75775c1efe6aa7bc16de3992117f1012f09",
+        "src/job.rs": "2002d57a048f20ddf4501053bc82738ab6cfb93225e5c7aeb7d470a60946a145",
         "src/join/mod.rs": "d4cd12b4dc46650fa17054df37b5f4b6af530546b0ad1f05d80dbec1b02342d5",
         "src/latch.rs": "e749d6d15e685ca164cd7f2dcad6b2701ae04bc53cb5144be0c43f012406eddd",
         "src/lib.rs": "f7cf3d1c31763576ff2927d72dae6a6a7bb52299d8b752ad395868b475309d32",
         "src/private.rs": "152f6d65ce4741616a1dec796b9442f78a018d38bb040f76c4cd85008333a3bb",
-        "src/registry.rs": "61674f4cdf39edb26df75435de6925d54c5f864f9e1dcd0fb114ad2cc553a1d7",
+        "src/registry.rs": "d5cb21b9d31785b835f8bd5e36192743c4360136a2a823c94043edcf18537eb2",
         "src/scope/mod.rs": "a00c6aeeb6d18d9b93a743152caff820ab4acd64e03fb7b67f0776b2b98776bc",
         "src/sleep/counters.rs": "3e7880534822abbbd59210c378ca611b75759e8b566b167263fd843cd638dd22",
-        "src/sleep/mod.rs": "937bf9fc0610bf526522e6ef2efeca9b75f65d87cfaf69375277e161a4130e5e",
+        "src/sleep/mod.rs": "b48e01450435c05030c990e5ecf40056b55cda15018dfddeb17c7546f7d254a6",
         "src/spawn/mod.rs": "55b4eaa56b54c544a765761c04f86fb77f1e6dc8b04e172cebc63991d08e78cc",
         "src/thread_pool/mod.rs": "0b00046c4e7e1b3894db64fae033359381c7fe8671e9787d5999d8a6eb1ac361",
         "src/unwind.rs": "7baa4511467d008b14856ea8de7ced92b9251c9df4854f69c81f7efc3cf0cd6c"
@@ -56785,7 +57807,7 @@
       "description": "🧰 The Rust SQL Toolkit. An async, pure Rust SQL crate featuring compile-time checked queries without a DSL. Supports PostgreSQL, MySQL, and SQLite.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "c074a1f44d9718ff73eacfef22c887ad0f360a3861bcefd078382319776d85fd",
+        "Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -56810,7 +57832,7 @@
         "src/query_engine/mod.rs": "4f73afae2ac68b075c800646d87a8bb09c9208b056200b32146fd4eb3a2ffefa",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
-        "src/query_engine/pool/inner.rs": "ec619b2128bf0109675f9198f46e751e59113f2ba5ec27b955ae7e65b0d348a8",
+        "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
         "src/query_engine/pool/maybe.rs": "add426222f6f6ba9f8b2027c0b5ec4bf6fd32de5043488358da45fedd0244dc2",
         "src/query_engine/pool/mod.rs": "14ecc44d608838e53531f3c504d88ee490923d8e47501e6ad75b521eae0bf884",
         "src/query_engine/pool/options.rs": "61b51593070dbc3e87479a6d9d3c4788921128a3795b0720bcb5df28831c9246",
@@ -71783,6 +72805,16 @@
             "runtime"
           ]
         },
+        "src/foundation/concurrent-collections": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "runtime"
+          ]
+        },
         "src/foundation/const-oid": {
           "features": [],
           "roles": [
@@ -71799,25 +72831,6 @@
         },
         "src/foundation/cpu-feature-detect": {
           "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/crossbeam-queue": {
-          "features": [
-            "alloc",
-            "default",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/crossbeam-utils": {
-          "features": [
-            "default",
-            "std"
-          ],
           "roles": [
             "runtime"
           ]
@@ -74483,6 +75496,16 @@
             "compile"
           ]
         },
+        "src/foundation/concurrent-collections": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/const-oid": {
           "features": [],
           "roles": [
@@ -74497,33 +75520,6 @@
         },
         "src/foundation/crc32fast": {
           "features": [
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/crossbeam-deque": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/crossbeam-epoch": {
-          "features": [
-            "alloc",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/crossbeam-utils": {
-          "features": [
-            "default",
             "std"
           ],
           "roles": [
@@ -75144,6 +76140,16 @@
             "compile"
           ]
         },
+        "src/foundation/concurrent-collections": {
+          "features": [
+            "alloc",
+            "default",
+            "std"
+          ],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/const-oid": {
           "features": [],
           "roles": [
@@ -75160,25 +76166,6 @@
         },
         "src/foundation/cpu-feature-detect": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/crossbeam-queue": {
-          "features": [
-            "alloc",
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/crossbeam-utils": {
-          "features": [
-            "default",
-            "std"
-          ],
           "roles": [
             "compile"
           ]

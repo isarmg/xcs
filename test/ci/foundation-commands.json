@@ -230,6 +230,12 @@
       "args": [
         ".github/scripts/check-http-body-consolidation.py"
       ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-concurrent-collections.py"
+      ]
     }
   ]
 }

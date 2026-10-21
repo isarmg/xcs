@@ -1,6 +1,6 @@
 //! Tests for the zero channel flavor.
 
-extern crate crossbeam_utils;
+use concurrent_collections::utilities as crossbeam_utils;
 extern crate rand;
 
 use std::any::Any;
@@ -9,7 +9,7 @@ use std::sync::atomic::Ordering;
 use std::thread;
 use std::time::Duration;
 
-use crossbeam_utils::thread::scope;
+use concurrent_collections::utilities::thread::scope;
 use flume::{bounded, Receiver};
 use flume::{RecvTimeoutError, TryRecvError};
 use flume::{SendError, SendTimeoutError, TrySendError};

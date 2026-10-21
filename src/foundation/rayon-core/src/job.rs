@@ -1,6 +1,6 @@
 use crate::latch::Latch;
 use crate::unwind;
-use crossbeam_deque::{Injector, Steal};
+use concurrent_collections::deque::{Injector, Steal};
 use std::any::Any;
 use std::cell::UnsafeCell;
 use std::mem;

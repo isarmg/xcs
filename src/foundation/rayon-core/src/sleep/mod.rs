@@ -3,7 +3,7 @@
 
 use crate::latch::CoreLatch;
 use crate::sync::{Condvar, Mutex};
-use crossbeam_utils::CachePadded;
+use concurrent_collections::utilities::CachePadded;
 use std::sync::atomic::Ordering;
 use std::thread;
 

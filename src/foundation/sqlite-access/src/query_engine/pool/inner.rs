@@ -4,7 +4,7 @@ use crate::connection::Connection;
 use crate::database::Database;
 use crate::error::Error;
 use crate::pool::{deadline_as_timeout, CloseEvent, Pool, PoolOptions};
-use crossbeam_queue::ArrayQueue;
+use concurrent_collections::queue::ArrayQueue;
 
 use crate::sync::{AsyncSemaphore, AsyncSemaphoreReleaser};
 
