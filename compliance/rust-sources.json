@@ -19728,7 +19728,7 @@
         "src/logging_tests.rs": "209f50042ad6f0b9f05421ab635e2902ca97c1c9fc9be304dfdaeb039b2b5dd9",
         "src/main.rs": "841654e8e75c3e3585e5a8f103f2b94a5bdce8ac15ff5284db71c68bc6909df8",
         "tests/fixtures/contract.rs": "ed0f5d4086663cadeef70ae76153aa4d8e086d2e94f99aa0aa2299eefe63fc2f",
-        "tests/fixtures/csr-template.rs": "f75f032ec8470bd2bb1088b2c660ccb5b332d4910ad4e5f461ee43bb9d6263ce"
+        "tests/fixtures/csr-template.rs": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [

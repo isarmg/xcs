@@ -1,14 +1,14 @@
 {
   "stage": "web-api-closure",
-  "git_head": "0de18785ef56f845096d76419edc346e33874ad7",
+  "git_head": "7b1424e70fdb314a8880f6536c96c5799b97f464",
   "worktree_has_changes": true,
-  "source_receipt_sha256": "be3aa20225b86f540e24b2a55ec794a403df4f94efcefecb816d9bcb9ac9748b",
+  "source_receipt_sha256": "90ea87b0b49a8acefa8eeeb1917fd2ba0d0dc3fbc2e3cdb657f976f741f9f084",
   "web_scope_sha256": "3164d33f35c61602e8aa24c10844177aad9f223b6bf652bb724071f6c073b202",
   "original_provenance_unchanged_from_a04": true,
   "foundation_files": 9007,
   "foundation_bytes": 138493617,
   "locked_packages": 344,
-  "web_manifest_sha256": "736e585b45548b348954edbb075deb2bf90477fcc7b933869535d60df407ef86",
+  "web_manifest_sha256": "ef74f298397c5a5125df6212f06d952fd7f83b28f61417088ad18aafc4af5c1a",
   "wasm_bytes": 2192568,
   "gzip_bytes": 659633,
   "wasm_sha256": "95a7fadac07d8f68411b8722b0f7ded08038690ecf22f1db4a6acd8231e16264",
@@ -39,10 +39,10 @@
     "browser": "154.0.8037.57",
     "sandbox_disabled": false,
     "validation": {
-      "git_head": "0de18785ef56f845096d76419edc346e33874ad7",
-      "git_tree": "69455e37fee3384a01ba1b2892624a9b01d0b673",
+      "git_head": "7b1424e70fdb314a8880f6536c96c5799b97f464",
+      "git_tree": "3c75c5d428f345639146d7ebe8b4f5d31e35541e",
       "worktree_has_changes": true,
-      "source_receipt_sha256": "be3aa20225b86f540e24b2a55ec794a403df4f94efcefecb816d9bcb9ac9748b",
+      "source_receipt_sha256": "90ea87b0b49a8acefa8eeeb1917fd2ba0d0dc3fbc2e3cdb657f976f741f9f084",
       "web_scope_sha256": "3164d33f35c61602e8aa24c10844177aad9f223b6bf652bb724071f6c073b202",
       "retired_api_checks": 28,
       "retired_feature_checks": 13,
@@ -50,7 +50,7 @@
       "fixture_source_sha256": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281",
       "outputs_sha256": {
         "fixture.js": "8e3fa04081b9db7ffadc361886150e5abc5ef4339314223b3667d131c945c3a5",
-        "fixture_bg.wasm": "b2ab0f71ecd12f9cc149582af50717eed90bd60a3d443d2cec9cb306e0bcd490"
+        "fixture_bg.wasm": "5d40e78584e90491915ad72a6496ac6751a098684128e4996a261d160312f8d7"
       }
     }
   },

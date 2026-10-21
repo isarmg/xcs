@@ -95,3 +95,5 @@ foundation 为 10,636 文件 / 148,253,403 字节，本批减少 2 文件 / 11,2
 仍保留的 9 组多版本：base64、hashbrown、getrandom、prettyplease、syn、block-buffer、crypto-common、digest、cpufeatures。密码链 digest 0.10/Argon2/blake2 与较新的 SHA-256 链有真实 API 边界；syn/prettyplease 需要 AST 代际配套迁移；getrandom 0.2 的 rand_core 错误契约与后代不同；base64 的 SIMD 默认策略及 hashbrown/hashlink 的 HashTable、顺序和析构需要单独调用方迁移实证。本轮没有仅改版本号，也未为了包数把并发或密码算法拼成巨型 crate。JSON Schema 子集仍只是候选，契约校验未弱化。
 
 最终产品生产 WASM 为 2,192,568 字节、gzip 659,633 字节；相对上批 WASM 变化 -395 字节。完整 Chrome/G4/字体/六视口/生命周期及 20 组模板/自定义 DOM 断言全部通过。见 [本地验证收据](evidence/foundation-web-api-local-20261021.json)。该记录明确为提交前脏树验证，最终提交的精确 SHA/树与资产对应由该提交 CI 另行记录，不以源码减少推断运行时性能收益。
+
+第八批初次 CI 39552954545 的严格来源校验发现，夹具最后一次 custom_attribute 路径修正后未刷新 tools/web-bindings 的逐文件摘要；运行时和本地夹具已通过，但该提交的 CI 不作成功记录。随后补齐来源收据，静态门禁、生产构建、28/13 负向检查及完整产品/20 组模板浏览器验收重新通过；本地收据同步为修正后的实际资产与摘要。
