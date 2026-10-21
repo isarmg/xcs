@@ -286,82 +286,82 @@
       ]
     },
     {
-      "directory": "src/foundation/any_spawner",
+      "directory": "src/foundation/task-dispatch",
       "roots": [
-        "test/foundation/any_spawner"
+        "test/foundation/task-dispatch"
       ],
       "files": [
         {
           "source": "src/foundation/any_spawner/tests/already_set_error.rs",
           "source_sha256_before": "f48bf800d69813068aaf48b0d91ea91802c9fa3a031f7e5f33b3ccf6ebec1d49",
-          "path": "test/foundation/any_spawner/tests/already_set_error.rs",
-          "sha256": "f48bf800d69813068aaf48b0d91ea91802c9fa3a031f7e5f33b3ccf6ebec1d49"
+          "path": "test/foundation/task-dispatch/tests/already_set_error.rs",
+          "sha256": "ac2226c7be5488757dddef2d7fe2caccd08cfbbf6a2e188a3f508698f4df148e"
         },
         {
           "source": "src/foundation/any_spawner/tests/async_executor.rs",
           "source_sha256_before": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787",
-          "path": "test/foundation/any_spawner/tests/async_executor.rs",
+          "path": "test/foundation/task-dispatch/tests/async_executor.rs",
           "sha256": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787"
         },
         {
           "source": "src/foundation/any_spawner/tests/custom_executor.rs",
           "source_sha256_before": "fdeb4dc73520abcc980ff44d451f225e35e0d84044437e683147806784062c29",
-          "path": "test/foundation/any_spawner/tests/custom_executor.rs",
-          "sha256": "fdeb4dc73520abcc980ff44d451f225e35e0d84044437e683147806784062c29"
+          "path": "test/foundation/task-dispatch/tests/custom_executor.rs",
+          "sha256": "f59bcdfa0a1b16887449ac00c5e38683798287e158091bbad5e86ba4c762b6c7"
         },
         {
           "source": "src/foundation/any_spawner/tests/custom_runtime.rs",
           "source_sha256_before": "67d45a33dd486c22e3ec7e3dc9d84e48d8b20e67895eef49e8543f2830e8e511",
-          "path": "test/foundation/any_spawner/tests/custom_runtime.rs",
-          "sha256": "67d45a33dd486c22e3ec7e3dc9d84e48d8b20e67895eef49e8543f2830e8e511"
+          "path": "test/foundation/task-dispatch/tests/custom_runtime.rs",
+          "sha256": "0fa7b46415ae8eb47ce9c3f94f7d3b769d003d7f8caf9a03388ccd269b715e05"
         },
         {
           "source": "src/foundation/any_spawner/tests/executor_tick.rs",
           "source_sha256_before": "6abc72beac51c04fc3dc4a004e3107858ca15d6cecaaac1cd36a868166284d94",
-          "path": "test/foundation/any_spawner/tests/executor_tick.rs",
-          "sha256": "6abc72beac51c04fc3dc4a004e3107858ca15d6cecaaac1cd36a868166284d94"
+          "path": "test/foundation/task-dispatch/tests/executor_tick.rs",
+          "sha256": "b915be92a018814c3040a5823ae59edde032c37f676940b2c8cdb3245ce93158"
         },
         {
           "source": "src/foundation/any_spawner/tests/futures_executor.rs",
           "source_sha256_before": "2a5864b57f3d7e4418f3c2d96f6a290aa3baed838feab49ee2c23d4be944332a",
-          "path": "test/foundation/any_spawner/tests/futures_executor.rs",
-          "sha256": "2a5864b57f3d7e4418f3c2d96f6a290aa3baed838feab49ee2c23d4be944332a"
+          "path": "test/foundation/task-dispatch/tests/futures_executor.rs",
+          "sha256": "ca6f5f081f38e5610673358ba80834fc52eb9ce23a8005779a0fbc60ca492358"
         },
         {
           "source": "src/foundation/any_spawner/tests/futures_runtime.rs",
           "source_sha256_before": "2282e0f5a828d1dff2a225bbfa8db19cebaff1cfc9f172d1a83d504d7439ba9c",
-          "path": "test/foundation/any_spawner/tests/futures_runtime.rs",
-          "sha256": "2282e0f5a828d1dff2a225bbfa8db19cebaff1cfc9f172d1a83d504d7439ba9c"
+          "path": "test/foundation/task-dispatch/tests/futures_runtime.rs",
+          "sha256": "c6cdb15ff257e8afed61f919e1cb23e7f483176093288f9550a67d41913ea913"
         },
         {
           "source": "src/foundation/any_spawner/tests/glib.rs",
           "source_sha256_before": "ab49fe0b84ca88b9d9f5d96a87d5d58b1291d17ede7659511afdb5c5e4065f84",
-          "path": "test/foundation/any_spawner/tests/glib.rs",
-          "sha256": "ab49fe0b84ca88b9d9f5d96a87d5d58b1291d17ede7659511afdb5c5e4065f84"
+          "path": "test/foundation/task-dispatch/tests/glib.rs",
+          "sha256": "554aef2fe6983b7c2fbfa4670c5982ed01b7d1427e4dba809894a9562e3b2179"
         },
         {
           "source": "src/foundation/any_spawner/tests/local_custom_executor.rs",
           "source_sha256_before": "470d065d0eada3b51117b0762f8bceaea7885ddd35bd0fe9e27e5a4aad59f044",
-          "path": "test/foundation/any_spawner/tests/local_custom_executor.rs",
-          "sha256": "470d065d0eada3b51117b0762f8bceaea7885ddd35bd0fe9e27e5a4aad59f044"
+          "path": "test/foundation/task-dispatch/tests/local_custom_executor.rs",
+          "sha256": "e0d6e9ad648185d331dc0fe4558801d13fd4f4ecdf15c12d159c155ae78f8c09"
         },
         {
           "source": "src/foundation/any_spawner/tests/multiple_tasks.rs",
           "source_sha256_before": "581abd3e70aa0e6c27a37639622b85124aeccb042bd937c575f4577e1604692c",
-          "path": "test/foundation/any_spawner/tests/multiple_tasks.rs",
-          "sha256": "581abd3e70aa0e6c27a37639622b85124aeccb042bd937c575f4577e1604692c"
+          "path": "test/foundation/task-dispatch/tests/multiple_tasks.rs",
+          "sha256": "be12236f90346dc2f166c57f1e925d3e5bad2f0d4afe98712e1c5288ef3c3f4b"
         },
         {
           "source": "src/foundation/any_spawner/tests/tokio_executor.rs",
           "source_sha256_before": "d45ba06a778f86ea416fd0177327783a233940df504dc059812e44df8ee2526a",
-          "path": "test/foundation/any_spawner/tests/tokio_executor.rs",
-          "sha256": "d45ba06a778f86ea416fd0177327783a233940df504dc059812e44df8ee2526a"
+          "path": "test/foundation/task-dispatch/tests/tokio_executor.rs",
+          "sha256": "98f45906c30c2f456095f5ddc63b82145829d5f900d1526f7698d7bb8969c899"
         },
         {
           "source": "src/foundation/any_spawner/tests/wasm_bindgen_tests.rs",
           "source_sha256_before": "55dae3bc232959d2c0dbdf827a4e51a1ef7660f5fa14c60441542a7fcbb3c323",
-          "path": "test/foundation/any_spawner/tests/wasm_bindgen_tests.rs",
-          "sha256": "55dae3bc232959d2c0dbdf827a4e51a1ef7660f5fa14c60441542a7fcbb3c323"
+          "path": "test/foundation/task-dispatch/tests/wasm_bindgen_tests.rs",
+          "sha256": "0f29570e2011d9547895153d1472fc9de8528985c46811ad9ae110e680bfb2e6"
         }
       ]
     },
@@ -4306,15 +4306,15 @@
       ]
     },
     {
-      "directory": "src/foundation/either_of",
+      "directory": "src/foundation/view-alternatives",
       "roots": [
-        "test/foundation/either_of"
+        "test/foundation/view-alternatives"
       ],
       "files": [
         {
           "source": "src/foundation/either_of/src/lib.rs",
           "source_sha256_before": "2e5dface1c4b059e3240d033a256aca794d4ebd5e7b80cef4d5357e4f6171dfc",
-          "path": "test/foundation/either_of/unit/src/lib/tests_1012.rs",
+          "path": "test/foundation/view-alternatives/unit/src/lib/tests_1012.rs",
           "sha256": "78367d995ea1a1942fd01978a0a04a183fea971960062b81cbfdfd1f1681b089"
         }
       ]
@@ -9830,27 +9830,27 @@
       ]
     },
     {
-      "directory": "src/foundation/leptos_dom",
+      "directory": "src/foundation/dom-helpers",
       "roots": [
-        "test/foundation/leptos_dom"
+        "test/foundation/dom-helpers"
       ],
       "files": [
         {
           "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
           "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744",
-          "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_no_serialize_151.rs",
+          "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_no_serialize_151.rs",
           "sha256": "aa97cfc2298501b73de08a69c127a0feac22cc100d26e955cb8eabf867ff45d7"
         },
         {
           "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
           "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744",
-          "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_primitive_75.rs",
+          "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_primitive_75.rs",
           "sha256": "76d24538d5d740ecc53f911ed3792b5466c363251802a6fa217f0bb2b177ddbc"
         },
         {
           "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
           "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744",
-          "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_serialize_132.rs",
+          "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_serialize_132.rs",
           "sha256": "5e0945ef7082a33626d7b903f3982ecfe479c3fdf777ff47d26b750b2a629730"
         }
       ]
@@ -11520,16 +11520,16 @@
       ]
     },
     {
-      "directory": "src/foundation/oco_ref",
+      "directory": "src/foundation/shared-value",
       "roots": [
-        "test/foundation/oco_ref"
+        "test/foundation/shared-value"
       ],
       "files": [
         {
           "source": "src/foundation/oco_ref/src/lib.rs",
           "source_sha256_before": "880b5a5eeb9e9ec4039d13a8e770204549e1a63244fdb81a076d4c52d08cdc9a",
-          "path": "test/foundation/oco_ref/unit/src/lib/tests_613.rs",
-          "sha256": "8f028ac798743c7525e28341ea5bcf39ef9f53796a20dd9fb2c926ce019a2a5c"
+          "path": "test/foundation/shared-value/unit/src/lib/tests_613.rs",
+          "sha256": "ed16f000e93c9d9a3c9925a65433081582261990b5f7136aefa7a1003dae923f"
         }
       ]
     },
@@ -13424,69 +13424,69 @@
       ]
     },
     {
-      "directory": "src/foundation/reactive_graph",
+      "directory": "src/foundation/reactive-state",
       "roots": [
-        "test/foundation/reactive_graph"
+        "test/foundation/reactive-state"
       ],
       "files": [
         {
           "source": "src/foundation/reactive_graph/tests/async_derived.rs",
           "source_sha256_before": "c92e073098b021bdfd391675b6dd823790bf8f3718e1d071dbf66fb6b76d0e62",
-          "path": "test/foundation/reactive_graph/tests/async_derived.rs",
-          "sha256": "c92e073098b021bdfd391675b6dd823790bf8f3718e1d071dbf66fb6b76d0e62"
+          "path": "test/foundation/reactive-state/tests/async_derived.rs",
+          "sha256": "da8e8043ffe2646c21c731d48a9dc245450a979b7c296d9791c9488f1ea12dee"
         },
         {
           "source": "src/foundation/reactive_graph/tests/cleanup.rs",
           "source_sha256_before": "e4528181f0901b2fe05f52ca5c301e9ba2c993970221acb4d4d4986a4f49a8fb",
-          "path": "test/foundation/reactive_graph/tests/cleanup.rs",
-          "sha256": "e4528181f0901b2fe05f52ca5c301e9ba2c993970221acb4d4d4986a4f49a8fb"
+          "path": "test/foundation/reactive-state/tests/cleanup.rs",
+          "sha256": "4ec3d7b47eb71c014c4df58af12124e5728c58a31f59a3bf598965aebba4d014"
         },
         {
           "source": "src/foundation/reactive_graph/tests/effect.rs",
           "source_sha256_before": "d11725d4adf7d4aed7a2a7e596d9f9a372d9fccade9ac034eb1b1602d182794f",
-          "path": "test/foundation/reactive_graph/tests/effect.rs",
-          "sha256": "d11725d4adf7d4aed7a2a7e596d9f9a372d9fccade9ac034eb1b1602d182794f"
+          "path": "test/foundation/reactive-state/tests/effect.rs",
+          "sha256": "0778385268aeed977436dca167c7d2ea1ed7a2bec07e2691f0ebbe8ae4bae567"
         },
         {
           "source": "src/foundation/reactive_graph/tests/effect_immediate.rs",
           "source_sha256_before": "746004607843136c4e06fd57747d64190017036cd2377abd4e6696a7067f7332",
-          "path": "test/foundation/reactive_graph/tests/effect_immediate.rs",
-          "sha256": "746004607843136c4e06fd57747d64190017036cd2377abd4e6696a7067f7332"
+          "path": "test/foundation/reactive-state/tests/effect_immediate.rs",
+          "sha256": "6828f2232abe8d8fa0083d2ba1d630214d4b396529913b35906185a9d27b996e"
         },
         {
           "source": "src/foundation/reactive_graph/tests/memo.rs",
           "source_sha256_before": "69246086007061e4f84773e8170cac98f2f3d97ede65d4f57e309573af3cdae3",
-          "path": "test/foundation/reactive_graph/tests/memo.rs",
-          "sha256": "69246086007061e4f84773e8170cac98f2f3d97ede65d4f57e309573af3cdae3"
+          "path": "test/foundation/reactive-state/tests/memo.rs",
+          "sha256": "7abc071fb0979219087543124d37316ddff502d5a8c0733c7fb6b476e3dc54c6"
         },
         {
           "source": "src/foundation/reactive_graph/tests/signal.rs",
           "source_sha256_before": "9db9229286bc90afa1cd851b324d0ddc647f7f07a5fb764e19ead1a62081f81e",
-          "path": "test/foundation/reactive_graph/tests/signal.rs",
-          "sha256": "9db9229286bc90afa1cd851b324d0ddc647f7f07a5fb764e19ead1a62081f81e"
+          "path": "test/foundation/reactive-state/tests/signal.rs",
+          "sha256": "eae6098c2a4305fc092519ead1789321c589c4b8aba27acce6ccaa965fa5f7d6"
         },
         {
           "source": "src/foundation/reactive_graph/tests/watch.rs",
           "source_sha256_before": "00e0761b13de3126d369a97bacb5aa6f994e899400e1b8adde0d736456c6038c",
-          "path": "test/foundation/reactive_graph/tests/watch.rs",
-          "sha256": "00e0761b13de3126d369a97bacb5aa6f994e899400e1b8adde0d736456c6038c"
+          "path": "test/foundation/reactive-state/tests/watch.rs",
+          "sha256": "b6bac36021606d5c368f506aeac81e5fcaab636abf16ff6708580831c217dc54"
         },
         {
           "source": "src/foundation/reactive_graph/src/callback.rs",
           "source_sha256_before": "711fbecd50e69e9622f055da8662b15eda3711d78040a3fdbee7ae72ba988ea0",
-          "path": "test/foundation/reactive_graph/unit/src/callback/tests_295.rs",
+          "path": "test/foundation/reactive-state/unit/src/callback/tests_295.rs",
           "sha256": "d208cee6247f3b02773110ee60a5803f535c091e308577e458c157353f278ec8"
         },
         {
           "source": "src/foundation/reactive_graph/src/into_reactive_value.rs",
           "source_sha256_before": "fe18a84a56d0183c204951980388b635235142b806ada1fcf12ab10d76ded171",
-          "path": "test/foundation/reactive_graph/unit/src/into_reactive_value/tests_21.rs",
+          "path": "test/foundation/reactive-state/unit/src/into_reactive_value/tests_21.rs",
           "sha256": "29810518beb67eb0923a75dfbbc3f3c2a1da1e7a7da20a2cc83506810253a136"
         },
         {
           "source": "src/foundation/reactive_graph/src/owner.rs",
           "source_sha256_before": "50236f8bdf6764ff2587ccd78c3b2fd37902411f65ed4b422495003474667c48",
-          "path": "test/foundation/reactive_graph/unit/src/owner/tests_594.rs",
+          "path": "test/foundation/reactive-state/unit/src/owner/tests_594.rs",
           "sha256": "6b4c64da4bd36075b8e6d0a76719b25cc5b0d65633c227b7c479148a015a271c"
         }
       ]

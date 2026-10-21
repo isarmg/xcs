@@ -2,7 +2,7 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use tachys::{
+use view_renderer::{
     html::{
         element::{button, div, input, span},
         event,
@@ -45,16 +45,16 @@ async fn settle_properties() {
 
 #[wasm_bindgen]
 pub async fn run_template_probe() -> Result<String, JsValue> {
-    let owner = reactive_graph::owner::Owner::new();
-    owner.with(|| reactive_graph::computed::ScopedFuture::new(async {
+    let owner = reactive_state::owner::Owner::new();
+    owner.with(|| reactive_state::computed::ScopedFuture::new(async {
         let counter = Arc::new(AtomicUsize::new(0));
         let mut state = ViewTemplate::new(template("初始 <&> Ω".into(), counter.clone())).build();
         let document = web_sys::window().unwrap().document().unwrap();
         let parent = document.body().unwrap();
         // The typed API closure must not become a markup or custom-event whitelist.
         let custom_counter = counter.clone();
-        let mut custom = tachys::html::element::custom("zxs-scope-probe")
-            .add_any_attr(tachys::html::attribute::custom::custom_attribute("data-文件", "Ω"))
+        let mut custom = view_renderer::html::element::custom("zxs-scope-probe")
+            .add_any_attr(view_renderer::html::attribute::custom::custom_attribute("data-文件", "Ω"))
             .on(event::Custom::<web_sys::Event>::new("zxs-scope-event"), move |_| {
                 custom_counter.fetch_add(1, Ordering::SeqCst);
             }).build();
@@ -70,7 +70,7 @@ pub async fn run_template_probe() -> Result<String, JsValue> {
         custom_node.dispatch_event(&web_sys::Event::new("zxs-scope-event")?)?;
         if counter.load(Ordering::SeqCst) != 1 { return Err("custom event cleanup".into()); }
         counter.store(0, Ordering::SeqCst);
-        let mut svg = tachys::svg::InertElement::new("<svg xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 0L1 1\"/></svg>").build();
+        let mut svg = view_renderer::svg::InertElement::new("<svg xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 0L1 1\"/></svg>").build();
         svg.mount(parent.as_ref(), None);
         let svg_node = svg.elements().into_iter().next().unwrap();
         if svg_node.namespace_uri().as_deref() != Some("http://www.w3.org/2000/svg") || svg_node.query_selector("path")?.is_none() {

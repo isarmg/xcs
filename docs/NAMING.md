@@ -63,19 +63,22 @@ Base64 旧实现经差异验证合并后，这批不存在同名多版本冲突�
 
 | [base64 0.23.1](https://static.crates.io/crates/base64/base64-0.23.1.crate) | vendor/rust/base64-0.23.1 | [Apache-2.0](../compliance/licenses/upstream/base64-0.23.1/LICENSE-APACHE)、[MIT](../compliance/licenses/upstream/base64-0.23.1/LICENSE-MIT) |
 
+## 第二批实施：界面组件族
+
+DOM 辅助、视图渲染、响应式状态、任务调度、视图分支和共享值六个组件已完成内部协调改名，具体映射和验证见[界面迁移记录](reports/interface-naming-20261021.md)。渲染器内部模块与 SharedValue 类型同步更新，不保留上游品牌兼容别名。
+
 ## 后续组件族：仅为计划
 
 以下是需要联合评审的候选，不是已落地清单，也不要求把所有有明确领域含义的名称强行替换。
 
 | 现有组件族 | 计划方向 | 必须协调的边界 |
 | --- | --- | --- |
-| leptos_dom / tachys / reactive_graph | dom-helpers / view-renderer / reactive-state | web-interface 重导出、view-macros 生成路径、视图和浏览器测试 |
 | tokio / tokio-macros / tokio-util | async-runtime / async-runtime-macros / async-runtime-utils | 属性宏默认 crate 路径、特性转发、调度和取消语义 |
 | serde / serde_core / serde_derive | data-serialization / serialization-core / serialization-derive | 派生宏、辅助属性、生成路径及所有序列化消费者；序列化字段和线格式不变 |
 | thiserror / thiserror-impl | error-definition / error-definition-macros | 宏中硬编码路径及隐藏支持模块 |
 | ring | native-cryptography | 原生符号前缀、预生成汇编、构建脚本和 links；不能仅改 Cargo 名称 |
 
-`src/interface` 和 `src/macros` 自身已经按职责命名，但内部仍存在 `leptos_dom`、`tachys` 重导出和生成的 `web_interface::tachys` 路径。只把依赖文件夹改名不能完成这个组件族的内部化；须在同一批次修改宏生产者和消费者。
+`src/interface` 和 `src/macros` 自身已按职责命名；本批也已协调其重导出和生成的 `web_interface::view_renderer` 路径。内部化同时修改宏生产者和消费者，而不只修改依赖文件夹。
 
 ## 必须保留与逐项审查的例外
 

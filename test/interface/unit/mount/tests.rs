@@ -9,15 +9,15 @@ impl Mountable for TestMount {
     }
     fn mount(
         &mut self,
-        _: &tachys::renderer::types::Element,
-        _: Option<&tachys::renderer::types::Node>,
+        _: &view_renderer::renderer::types::Element,
+        _: Option<&view_renderer::renderer::types::Node>,
     ) {
         unreachable!("this lifecycle test does not mount browser DOM")
     }
     fn insert_before_this(&self, _: &mut dyn Mountable) -> bool {
         false
     }
-    fn elements(&self) -> Vec<tachys::renderer::types::Element> {
+    fn elements(&self) -> Vec<view_renderer::renderer::types::Element> {
         Vec::new()
     }
 }

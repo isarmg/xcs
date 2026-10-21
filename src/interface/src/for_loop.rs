@@ -1,12 +1,12 @@
 use crate::into_view::IntoView;
-use reactive_graph::{
+use reactive_state::{
     owner::Owner,
     signal::{ArcRwSignal, ReadSignal},
     traits::Set,
 };
 use std::hash::Hash;
-use tachys::{reactive_graph::OwnedView, view::keyed::keyed};
 use view_macros::component;
+use view_renderer::{reactive_state::OwnedView, view::keyed::keyed};
 
 /// Iterates over children and displays them, keyed by the `key` function given.
 ///

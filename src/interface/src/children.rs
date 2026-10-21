@@ -3,7 +3,7 @@ use std::{
     fmt::{self, Debug},
     sync::Arc,
 };
-use tachys::view::{
+use view_renderer::view::{
     RenderHtml,
     any_view::{AnyView, IntoAny},
     fragment::{Fragment, IntoFragment},

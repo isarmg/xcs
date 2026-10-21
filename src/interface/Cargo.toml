@@ -7,16 +7,16 @@ description = "Integrated ZXS browser interface, CSR primitives, mounting and pr
 
 [features]
 default = ["csr"]
-csr = ["reactive_graph/effects"]
+csr = ["reactive-state/effects"]
 
 [dependencies]
-any_spawner = { path = "../foundation/any_spawner", version = "0.3.0", features = ["wasm-bindgen"] }
-either_of = { path = "../foundation/either_of", version = "0.1.9" }
-leptos_dom = { path = "../foundation/leptos_dom", version = "0.8.8" }
+task-dispatch = { path = "../foundation/task-dispatch", version = "0.3.0", features = ["wasm-bindgen"] }
+view-alternatives = { path = "../foundation/view-alternatives", version = "0.1.9" }
+dom-helpers = { path = "../foundation/dom-helpers", version = "0.8.8" }
 view_macros = { package = "view-macros", path = "../macros" }
-oco_ref = { path = "../foundation/oco_ref", version = "0.2.1" }
-reactive_graph = { path = "../foundation/reactive_graph", version = "0.2.14", features = ["serde"] }
-tachys = { path = "../foundation/tachys", version = "0.2.15", features = ["reactive_graph", "oco"] }
+shared-value = { path = "../foundation/shared-value", version = "0.2.1" }
+reactive-state = { path = "../foundation/reactive-state", version = "0.2.14", features = ["serde"] }
+view-renderer = { path = "../foundation/view-renderer", version = "0.2.15", features = ["reactive-state", "shared-value"] }
 throw_error = { path = "../foundation/throw_error", version = "0.3.1" }
 typed-builder = {version = "0.23", path = "../foundation/typed-builder"}
 typed-builder-macro = {version = "0.23", path = "../foundation/typed-builder-macro"}

@@ -55,15 +55,6 @@ name = "anstyle-query"
 version = "1.1.5"
 
 [[package]]
-name = "any_spawner"
-version = "0.3.0"
-dependencies = [
- "futures",
- "thiserror",
- "wasm-bindgen-futures",
-]
-
-[[package]]
 name = "anyhow"
 version = "1.0.104"
 
@@ -536,16 +527,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "either"
-version = "1.19.0"
+name = "dom-helpers"
+version = "0.8.8"
+dependencies = [
+ "js-sys",
+ "or_poisoned",
+ "reactive-state",
+ "send_wrapper",
+ "view-renderer",
+ "wasm-bindgen",
+ "web-sys",
+]
 
 [[package]]
-name = "either_of"
-version = "0.1.9"
-dependencies = [
- "pastey",
- "pin-project-lite",
-]
+name = "either"
+version = "1.19.0"
 
 [[package]]
 name = "email_address"
@@ -1154,19 +1150,6 @@ name = "leb128fmt"
 version = "0.1.0"
 
 [[package]]
-name = "leptos_dom"
-version = "0.8.8"
-dependencies = [
- "js-sys",
- "or_poisoned",
- "reactive_graph",
- "send_wrapper",
- "tachys",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
 name = "libc"
 version = "0.2.191"
 
@@ -1364,14 +1347,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "oco_ref"
-version = "0.2.1"
-dependencies = [
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.21.4"
 
@@ -1562,10 +1537,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "reactive_graph"
+name = "reactive-state"
 version = "0.2.16"
 dependencies = [
- "any_spawner",
  "async-lock",
  "futures",
  "guardian",
@@ -1578,6 +1552,7 @@ dependencies = [
  "send_wrapper",
  "serde",
  "slotmap",
+ "task-dispatch",
  "thiserror",
  "web-sys",
 ]
@@ -1850,6 +1825,14 @@ name = "sharded-slab"
 version = "0.1.7"
 dependencies = [
  "lazy_static",
+]
+
+[[package]]
+name = "shared-value"
+version = "0.2.1"
+dependencies = [
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -2136,28 +2119,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "tachys"
-version = "0.2.19"
+name = "task-dispatch"
+version = "0.3.0"
 dependencies = [
- "any_spawner",
- "async-trait",
- "const_str_slice_concat",
- "either_of",
- "erased",
  "futures",
- "indexmap",
- "iterator-toolkit",
- "js-sys",
- "next_tuple",
- "oco_ref",
- "or_poisoned",
- "pastey",
- "reactive_graph",
- "rustc-hash",
- "send_wrapper",
- "throw_error",
- "wasm-bindgen",
- "web-sys",
+ "thiserror",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]
@@ -2491,6 +2458,14 @@ name = "version_check"
 version = "0.9.5"
 
 [[package]]
+name = "view-alternatives"
+version = "0.1.9"
+dependencies = [
+ "pastey",
+ "pin-project-lite",
+]
+
+[[package]]
 name = "view-macros"
 version = "0.8.19"
 dependencies = [
@@ -2505,6 +2480,31 @@ dependencies = [
  "rstml",
  "syn 3.0.9",
  "web-interface",
+]
+
+[[package]]
+name = "view-renderer"
+version = "0.2.19"
+dependencies = [
+ "async-trait",
+ "const_str_slice_concat",
+ "erased",
+ "futures",
+ "indexmap",
+ "iterator-toolkit",
+ "js-sys",
+ "next_tuple",
+ "or_poisoned",
+ "pastey",
+ "reactive-state",
+ "rustc-hash",
+ "send_wrapper",
+ "shared-value",
+ "task-dispatch",
+ "throw_error",
+ "view-alternatives",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
@@ -2674,24 +2674,24 @@ dependencies = [
 name = "web-interface"
 version = "0.1.0"
 dependencies = [
- "any_spawner",
  "console_error_panic_hook",
- "either_of",
+ "dom-helpers",
  "futures",
  "gloo-events",
  "gloo-timers",
  "js-sys",
- "leptos_dom",
- "oco_ref",
- "reactive_graph",
+ "reactive-state",
  "send_wrapper",
  "serde",
  "serde_json",
- "tachys",
+ "shared-value",
+ "task-dispatch",
  "throw_error",
  "typed-builder",
  "typed-builder-macro",
+ "view-alternatives",
  "view-macros",
+ "view-renderer",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",

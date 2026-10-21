@@ -393,7 +393,7 @@ fn inert_element_to_tokens(
     html.finish();
 
     quote! {
-        ::web_interface::tachys::html::InertElement::new(#html)
+        ::web_interface::view_renderer::html::InertElement::new(#html)
     }
 }
 
@@ -500,7 +500,7 @@ fn inert_svg_element_to_tokens(
     html.finish();
 
     quote! {
-        ::web_interface::tachys::svg::InertElement::new(#html)
+        ::web_interface::view_renderer::svg::InertElement::new(#html)
     }
 }
 
@@ -874,7 +874,7 @@ pub(crate) fn element_to_tokens(
             let name = node.name().to_string();
             // link custom ident to name span for IDE docs
             let custom = Ident::new("custom", name.span());
-            quote_spanned! { node.name().span() => ::web_interface::tachys::html::element::#custom(#name) }
+            quote_spanned! { node.name().span() => ::web_interface::view_renderer::html::element::#custom(#name) }
         } else if is_svg_element(&tag) {
             parent_type = TagType::Svg;
             let name = if tag == "use" || tag == "use_" {
@@ -882,7 +882,7 @@ pub(crate) fn element_to_tokens(
             } else {
                 name.to_token_stream()
             };
-            quote_spanned! { node.name().span() => ::web_interface::tachys::svg::#name() }
+            quote_spanned! { node.name().span() => ::web_interface::view_renderer::svg::#name() }
         } else if is_math_ml_element(&tag) {
             return Err(syn::Error::new(
                 node.name().span(),
@@ -893,19 +893,19 @@ pub(crate) fn element_to_tokens(
                 TagType::Unknown => {
                     // We decided this warning was too aggressive.
                     quote_spanned! { node.name().span() =>
-                        ::web_interface::tachys::html::element::#name()
+                        ::web_interface::view_renderer::html::element::#name()
                     }
                 }
                 TagType::Html => {
-                    quote_spanned! { node.name().span() => ::web_interface::tachys::html::element::#name() }
+                    quote_spanned! { node.name().span() => ::web_interface::view_renderer::html::element::#name() }
                 }
                 TagType::Svg => {
-                    quote_spanned! { node.name().span() => ::web_interface::tachys::svg::#name() }
+                    quote_spanned! { node.name().span() => ::web_interface::view_renderer::svg::#name() }
                 }
             }
         } else {
             parent_type = TagType::Html;
-            quote_spanned! { name.span() => ::web_interface::tachys::html::element::#name() }
+            quote_spanned! { name.span() => ::web_interface::view_renderer::html::element::#name() }
         };
 
         let attributes = node.attributes();
@@ -1077,7 +1077,7 @@ fn attribute_to_tokens(
             // 2) custom attributes and data attributes (so, anything with - in it)
             else if is_custom ||
                 (name.contains('-') && !name.starts_with("aria-"))
-                // TODO(web-interface): audit tachys SVG setters before replacing this
+                // TODO(web-interface): audit view_renderer SVG setters before replacing this
                 // unchecked SVG-attribute fallback with typed methods.
                 || (tag_type == TagType::Svg && name != "inner_html")
             {
@@ -1137,7 +1137,7 @@ pub(crate) fn attribute_absolute(
                             let key = &parts[1];
                             let key_name = key.to_string();
                             if key_name == "class" || key_name == "style" {
-                                Some(quote! { ::web_interface::tachys::html::#key::#key(#value) })
+                                Some(quote! { ::web_interface::view_renderer::html::#key::#key(#value) })
                             } else if key_name == "aria" {
                                 let value = attribute_value(node, true);
                                 let mut parts_iter = parts.iter();
@@ -1147,7 +1147,7 @@ pub(crate) fn attribute_absolute(
                                     .collect::<Vec<String>>()
                                     .join("_");
                                 let key = Ident::new(&fn_name, key.span());
-                                Some(quote! { ::web_interface::tachys::html::attribute::#key(#value) })
+                                Some(quote! { ::web_interface::view_renderer::html::attribute::#key(#value) })
                             } else if multipart {
                                 // e.g., attr:data-foo="bar"
                                 let key_name = parts
@@ -1159,10 +1159,10 @@ pub(crate) fn attribute_absolute(
                                     })
                                     .collect::<String>();
                                 Some(
-                                    quote! { ::web_interface::tachys::html::attribute::custom::custom_attribute(#key_name, #value) },
+                                    quote! { ::web_interface::view_renderer::html::attribute::custom::custom_attribute(#key_name, #value) },
                                 )
                             } else {
-                                Some(quote! { ::web_interface::tachys::html::attribute::#key(#value) })
+                                Some(quote! { ::web_interface::view_renderer::html::attribute::#key(#value) })
                             }
                         } else if id == "use" {
                             let key = &parts[1];
@@ -1172,7 +1172,7 @@ pub(crate) fn attribute_absolute(
                                 quote_spanned!(node.key.span()=> ().into())
                             };
                             Some(quote! {
-                                ::web_interface::tachys::html::directive::directive(
+                                ::web_interface::view_renderer::html::directive::directive(
                                     #key,
                                     #[allow(clippy::useless_conversion)] #param
                                 )
@@ -1181,17 +1181,17 @@ pub(crate) fn attribute_absolute(
                             let value = attribute_value(node, false);
                             let key = &node.key.to_string();
                             let key = key.replacen("style:", "", 1).replacen("class:", "", 1);
-                            Some(quote! { ::web_interface::tachys::html::#id::#id((#key, #value)) })
+                            Some(quote! { ::web_interface::view_renderer::html::#id::#id((#key, #value)) })
                         } else if id == "prop" {
                             let value = attribute_value(node, false);
                             let key = &node.key.to_string();
                             let key = key.replacen("prop:", "", 1);
-                            Some(quote! { ::web_interface::tachys::html::property::#id(#key, #value) })
+                            Some(quote! { ::web_interface::view_renderer::html::property::#id(#key, #value) })
                         } else if id == "on" {
                             let key = &node.key.to_string();
                             let key = key.replacen("on:", "", 1);
                             let (on, ty, handler) = event_type_and_handler(&key, node)?;
-                            Some(quote! { ::web_interface::tachys::html::event::#on(#ty, #handler) })
+                            Some(quote! { ::web_interface::view_renderer::html::event::#on(#ty, #handler) })
                         } else {
                             return Err(syn::Error::new(
                                 id.span(),
@@ -1214,19 +1214,19 @@ pub(crate) fn attribute_absolute(
             let name = &node.key.to_string();
             if name == "class" || name == "style" {
                 quote! {
-                    ::web_interface::tachys::html::#key::#key(#value)
+                    ::web_interface::view_renderer::html::#key::#key(#value)
                 }
             } else if name.contains('-') && !name.starts_with("aria-") {
                 quote! {
-                    ::web_interface::tachys::html::attribute::custom::custom_attribute(#name, #value)
+                    ::web_interface::view_renderer::html::attribute::custom::custom_attribute(#name, #value)
                 }
             } else if name == "node_ref" {
                 quote! {
-                    ::web_interface::tachys::html::node_ref::#key(#value)
+                    ::web_interface::view_renderer::html::node_ref::#key(#value)
                 }
             } else {
                 quote! {
-                    ::web_interface::tachys::html::attribute::#key(#value)
+                    ::web_interface::view_renderer::html::attribute::#key(#value)
                 }
             }
         }),
@@ -1240,7 +1240,7 @@ pub(crate) fn two_way_binding_to_tokens(name: &str, node: &KeyedAttribute) -> To
 
     if name == "group" {
         quote! {
-            .bind(web_interface::tachys::reactive_graph::bind::#ident, #value)
+            .bind(web_interface::view_renderer::reactive_state::bind::#ident, #value)
         }
     } else {
         quote! {
@@ -1301,7 +1301,7 @@ pub(crate) fn event_type_and_handler(
     };
 
     let event_type = quote! {
-        ::web_interface::tachys::html::event::#event_type
+        ::web_interface::view_renderer::html::event::#event_type
     };
     let event_type = if options.captured {
         let capture = if let Some(capture) = capture_ident {
@@ -1309,7 +1309,7 @@ pub(crate) fn event_type_and_handler(
         } else {
             quote! { capture }
         };
-        quote! { ::web_interface::tachys::html::event::#capture(#event_type) }
+        quote! { ::web_interface::view_renderer::html::event::#capture(#event_type) }
     } else {
         event_type
     };
@@ -1320,7 +1320,7 @@ pub(crate) fn event_type_and_handler(
         } else {
             quote! { undelegated }
         };
-        quote! { ::web_interface::tachys::html::event::#undelegated(#event_type) }
+        quote! { ::web_interface::view_renderer::html::event::#undelegated(#event_type) }
     } else {
         event_type
     };

@@ -9,8 +9,8 @@ extern crate self as web_interface;
 pub mod prelude {
     // Traits
     // These should always be exported from the prelude
-    pub use reactive_graph::prelude::*;
-    pub use tachys::prelude::*;
+    pub use reactive_state::prelude::*;
+    pub use view_renderer::prelude::*;
 
     // Collect the public types of the integrated CSR interface.
     mod export_types {
@@ -18,9 +18,8 @@ pub mod prelude {
             callback::*, children::*, component::*, control_flow::*, error::*, into_view::*,
             mount::*, text_prop::*,
         };
-        pub use leptos_dom::helpers::*;
-        pub use oco_ref::*;
-        pub use reactive_graph::{
+        pub use dom_helpers::helpers::*;
+        pub use reactive_state::{
             actions::*,
             computed::*,
             effect::*,
@@ -29,17 +28,18 @@ pub mod prelude {
             signal::*,
             wrappers::{read::*, write::*},
         };
-        pub use tachys::{
-            reactive_graph::{Suspend, bind::BindAttribute, node_ref::*},
+        pub use shared_value::*;
+        pub use view_macros::*;
+        pub use view_renderer::{
+            reactive_state::{Suspend, bind::BindAttribute, node_ref::*},
             view::{fragment::Fragment, template::ViewTemplate},
         };
-        pub use view_macros::*;
     }
     pub use export_types::*;
 }
 
 /// A standard way to wrap functions and closures to pass them to components.
-pub use reactive_graph::callback;
+pub use reactive_state::callback;
 
 /// Types that can be passed as the `children` prop of a component.
 pub mod children;
@@ -79,50 +79,50 @@ pub use typed_builder;
 pub use typed_builder_macro;
 pub use view_macros::*;
 mod into_view;
-pub use into_view::IntoView;
 #[doc(inline)]
-pub use leptos_dom;
+pub use dom_helpers;
+pub use into_view::IntoView;
 mod provider;
 #[doc(inline)]
-pub use tachys;
+pub use view_renderer;
 /// Mount a browser CSR tree into the DOM and retain its reactive owner.
 pub mod mount;
 #[doc(inline)]
-pub use either_of as either;
+pub use reactive_state as reactive;
 #[doc(inline)]
-pub use oco_ref as oco;
+pub use shared_value;
 #[doc(inline)]
-pub use reactive_graph as reactive;
+pub use view_alternatives as either;
 
 /// Provide and access data along the reactive graph, sharing data without directly passing arguments.
 pub mod context {
     pub use crate::provider::*;
-    pub use reactive_graph::owner::{provide_context, use_context};
+    pub use reactive_state::owner::{provide_context, use_context};
 }
 
 /// HTML attribute types.
 #[doc(inline)]
-pub use tachys::html::attribute as attr;
+pub use view_renderer::html::attribute as attr;
 /// HTML element types.
 #[doc(inline)]
-pub use tachys::html::element as html;
+pub use view_renderer::html::element as html;
 /// HTML event types.
 #[doc(no_inline)]
-pub use tachys::html::event as ev;
+pub use view_renderer::html::event as ev;
 /// SVG element types.
 #[doc(inline)]
-pub use tachys::svg;
+pub use view_renderer::svg;
 
 /// Utilities for simple isomorphic logging to the console or terminal.
 pub mod logging {
-    pub use leptos_dom::{debug_error, debug_log, debug_warn, error, log, warn};
+    pub use dom_helpers::{debug_error, debug_log, debug_warn, error, log, warn};
 }
 
 /// Utilities for working with asynchronous tasks.
 pub mod task {
-    use any_spawner::Executor;
-    use reactive_graph::computed::ScopedFuture;
+    use reactive_state::computed::ScopedFuture;
     use std::future::Future;
+    use task_dispatch::Executor;
 
     /// Spawns a thread-safe [`Future`].
     ///
@@ -151,7 +151,7 @@ pub mod task {
         Executor::tick().await
     }
 
-    pub use reactive_graph::{spawn_local_scoped, spawn_local_scoped_with_cancellation};
+    pub use reactive_state::{spawn_local_scoped, spawn_local_scoped_with_cancellation};
 }
 
 pub mod components;
@@ -203,7 +203,7 @@ mod browser {
     }
     struct Application {
         // Keep the owner and controller until an uncached page leaves.
-        view: mount::UnmountHandle<tachys::view::any_view::AnyViewState>,
+        view: mount::UnmountHandle<view_renderer::view::any_view::AnyViewState>,
         contours: contours::ContourController,
         _listeners: (EventListener, EventListener),
     }

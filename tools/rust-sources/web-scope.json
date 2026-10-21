@@ -175,7 +175,7 @@
     "PointerEvent",
     "SubmitEvent"
   ],
-  "tachys_web_features": [
+  "view_renderer_web_features": [
     "AddEventListenerOptions",
     "Comment",
     "CssStyleDeclaration",
@@ -334,14 +334,14 @@
       "EventTarget",
       "default"
     ],
-    "src/foundation/leptos_dom/Cargo.toml": [
+    "src/foundation/dom-helpers/Cargo.toml": [
       "Location",
       "default"
     ],
-    "src/foundation/reactive_graph/Cargo.toml": [
+    "src/foundation/reactive-state/Cargo.toml": [
       "console"
     ],
-    "src/foundation/tachys/Cargo.toml": [
+    "src/foundation/view-renderer/Cargo.toml": [
       "AddEventListenerOptions",
       "Comment",
       "CssStyleDeclaration",

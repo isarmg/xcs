@@ -1,6 +1,6 @@
 use crate::{IntoView, children::TypedChildrenFn, mount};
-use leptos_dom::helpers::document;
-use reactive_graph::{effect::Effect, graph::untrack, owner::Owner};
+use dom_helpers::helpers::document;
+use reactive_state::{effect::Effect, graph::untrack, owner::Owner};
 use std::sync::Arc;
 use view_macros::component;
 

@@ -2,9 +2,9 @@ use crate::{
     IntoView,
     children::{TypedChildrenFn, ViewFn},
 };
-use reactive_graph::{computed::ArcMemo, traits::Get};
-use tachys::either::Either;
+use reactive_state::{computed::ArcMemo, traits::Get};
 use view_macros::component;
+use view_renderer::either::Either;
 
 #[component(transparent)]
 pub fn Show<W, C>(

@@ -1,7 +1,8 @@
 """Explicit, lossless source-identity transitions; historical evidence is immutable.
 
 The first migration supports package-root/test-root and manifest-name changes.
-Relative production filenames cannot change, nor can source fragments disappear.
+Relative production filenames change only through explicit bijective file_moves;
+source fragments cannot disappear.
 Call prepare before loading current external mappings; pass its validated history
 into source_prefixes and compare the resulting owners with check_current_external.
 """
@@ -41,6 +42,20 @@ def _inventory(value):
                 or any(p in ('', '.', '..') or ':' in p for p in path.split('/'))
                 or not isinstance(digest, str) or not HEX.fullmatch(digest)):
             raise ValueError('invalid rename file receipt')
+
+
+def mapped_inventory(before, after, moves):
+    """Validate a complete bijection, including unchanged relative filenames."""
+    _inventory(before); _inventory(after)
+    if not isinstance(moves, dict):
+        raise ValueError('invalid explicit rename file_moves')
+    if any(old not in before or not isinstance(new, str) or new not in after or old == new
+           for old, new in moves.items()):
+        raise ValueError('rename file_moves must name distinct exact inventory paths')
+    mapped = [moves.get(path, path) for path in before]
+    if len(set(mapped)) != len(mapped) or set(mapped) != set(after):
+        raise ValueError('rename production file inventory changed without a bijective file map')
+    return {moves.get(path, path): digest for path, digest in before.items()}
 
 
 def _test_prefix(directory):
@@ -125,7 +140,8 @@ def validate_history(root, catalog, check_manifests=True):
     for old, record in records.items():
         required = {'package', 'destination_directory', 'destination_name', 'reason',
                     'files_sha256', 'external_tests', 'destination_external_tests'}
-        if not isinstance(record, dict) or set(record) != required:
+        if (not isinstance(record, dict) or not required <= record.keys()
+                or set(record) - required - {'file_moves'}):
             raise ValueError('invalid source rename record fields')
         package, new = record['package'], record['destination_directory']
         if not isinstance(package, dict):
@@ -146,9 +162,7 @@ def validate_history(root, catalog, check_manifests=True):
             raise ValueError('old renamed source root has returned')
         if _path(root, _test_prefix(old)).exists():
             raise ValueError('old external test root remains after rename')
-        _inventory(package['files_sha256']); _inventory(record['files_sha256'])
-        if set(package['files_sha256']) != set(record['files_sha256']):
-            raise ValueError('rename production file inventory changed')
+        mapped_inventory(package['files_sha256'], record['files_sha256'], record.get('file_moves', {}))
         _external(root, record['external_tests'], record['destination_external_tests'], package, new)
         current = catalog.get('packages', {}).get(new) or catalog.get('retired', {}).get(new)
         if current is None or current.get('origin_directory') != package['origin_directory'] or current.get('upstream') != package['upstream']:
@@ -190,7 +204,8 @@ repeat renames and sources with upgrade histories until their chain model exists
     for item in plan['packages']:
         fields = {'directory', 'package', 'destination_directory', 'destination_name', 'reason',
                   'files_sha256', 'external_tests', 'destination_external_tests'}
-        if not isinstance(item, dict) or set(item) != fields:
+        if (not isinstance(item, dict) or not fields <= item.keys()
+                or set(item) - fields - {'file_moves'}):
             raise ValueError('invalid explicit source rename fields')
         old, new = item['directory'], item['destination_directory']
         old_path, new_path = _foundation(root, old), _foundation(root, new)
@@ -258,5 +273,7 @@ def remap_previous(previous, records):
             raise ValueError('rename previous identity collision')
         value = result.pop(old)
         value['directory'] = new
+        if 'files_sha256' in value:
+            value['files_sha256'] = mapped_inventory(value['files_sha256'], row['files_sha256'], row.get('file_moves', {}))
         result[new] = value
     return result

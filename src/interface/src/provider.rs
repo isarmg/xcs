@@ -1,6 +1,6 @@
 use crate::{IntoView, children::TypedChildren, component};
-use reactive_graph::owner::{Owner, provide_context};
-use tachys::reactive_graph::OwnedView;
+use reactive_state::owner::{Owner, provide_context};
+use view_renderer::reactive_state::OwnedView;
 
 #[component]
 /// Uses the context API to [`provide_context`] to its children and descendants,

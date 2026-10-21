@@ -1,4 +1,4 @@
-use tachys::{
+use view_renderer::{
     html::attribute::Attribute,
     hydration::Cursor,
     view::{Position, PositionState, Render, RenderHtml, ToTemplate, add_attr::AddAnyAttr},

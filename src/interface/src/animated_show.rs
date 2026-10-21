@@ -1,15 +1,15 @@
 use crate::{IntoView, children::ChildrenFn, component, control_flow::Show};
 use core::time::Duration;
-use leptos_dom::helpers::TimeoutHandle;
-use reactive_graph::{
+use dom_helpers::helpers::TimeoutHandle;
+use reactive_state::{
     effect::RenderEffect,
     owner::{StoredValue, on_cleanup},
     signal::RwSignal,
     traits::{Get, GetUntracked, GetValue, Set, SetValue},
     wrappers::read::Signal,
 };
-use tachys::prelude::*;
 use view_macros::view;
+use view_renderer::prelude::*;
 
 /// A component that will show its children when the `when` condition is `true`.
 /// Additionally, you need to specify a `hide_delay`. If the `when` condition changes to `false`,
@@ -84,7 +84,7 @@ pub fn AnimatedShow(
             cls.set(hide_class);
 
             let h =
-                leptos_dom::helpers::set_timeout_with_handle(move || show.set(false), hide_delay)
+                dom_helpers::helpers::set_timeout_with_handle(move || show.set(false), hide_delay)
                     .expect("set timeout in AnimatedShow");
             handle.set_value(Some(h));
         }

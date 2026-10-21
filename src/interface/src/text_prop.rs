@@ -1,16 +1,16 @@
-use oco_ref::Oco;
+use shared_value::SharedValue;
 use std::sync::Arc;
-use tachys::prelude::IntoAttributeValue;
+use view_renderer::prelude::IntoAttributeValue;
 
 /// Describes a value that is either a static or a reactive string, i.e.,
 /// a [`String`], a [`&str`], a `Signal` or a reactive `Fn() -> String`.
 #[derive(Clone)]
-pub struct TextProp(Arc<dyn Fn() -> Oco<'static, str> + Send + Sync>);
+pub struct TextProp(Arc<dyn Fn() -> SharedValue<'static, str> + Send + Sync>);
 
 impl TextProp {
     /// Accesses the current value of the property.
     #[inline(always)]
-    pub fn get(&self) -> Oco<'static, str> {
+    pub fn get(&self) -> SharedValue<'static, str> {
         (self.0)()
     }
 }
@@ -23,27 +23,27 @@ impl core::fmt::Debug for TextProp {
 
 impl From<String> for TextProp {
     fn from(s: String) -> Self {
-        let s: Oco<'_, str> = Oco::Counted(Arc::from(s));
+        let s: SharedValue<'_, str> = SharedValue::Counted(Arc::from(s));
         TextProp(Arc::new(move || s.clone()))
     }
 }
 
 impl From<&'static str> for TextProp {
     fn from(s: &'static str) -> Self {
-        let s: Oco<'_, str> = s.into();
+        let s: SharedValue<'_, str> = s.into();
         TextProp(Arc::new(move || s.clone()))
     }
 }
 
 impl From<Arc<str>> for TextProp {
     fn from(s: Arc<str>) -> Self {
-        let s: Oco<'_, str> = s.into();
+        let s: SharedValue<'_, str> = s.into();
         TextProp(Arc::new(move || s.clone()))
     }
 }
 
-impl From<Oco<'static, str>> for TextProp {
-    fn from(s: Oco<'static, str>) -> Self {
+impl From<SharedValue<'static, str>> for TextProp {
+    fn from(s: SharedValue<'static, str>) -> Self {
         TextProp(Arc::new(move || s.clone()))
     }
 }
@@ -51,7 +51,7 @@ impl From<Oco<'static, str>> for TextProp {
 impl<F, S> From<F> for TextProp
 where
     F: Fn() -> S + 'static + Send + Sync,
-    S: Into<Oco<'static, str>>,
+    S: Into<SharedValue<'static, str>>,
 {
     #[inline(always)]
     fn from(s: F) -> Self {
@@ -61,12 +61,12 @@ where
 
 impl Default for TextProp {
     fn default() -> Self {
-        Self(Arc::new(|| Oco::Borrowed("")))
+        Self(Arc::new(|| SharedValue::Borrowed("")))
     }
 }
 
 impl IntoAttributeValue for TextProp {
-    type Output = Arc<dyn Fn() -> Oco<'static, str> + Send + Sync>;
+    type Output = Arc<dyn Fn() -> SharedValue<'static, str> + Send + Sync>;
 
     fn into_attribute_value(self) -> Self::Output {
         self.0
@@ -79,7 +79,7 @@ macro_rules! textprop_reactive {
         #[allow(deprecated)]
         impl<$($gen),*> From<$name<$($gen),*>> for TextProp
         where
-            $v: Into<Oco<'static, str>>  + Clone + Send + Sync + 'static,
+            $v: Into<SharedValue<'static, str>>  + Clone + Send + Sync + 'static,
             $($where_clause)*
         {
             #[inline(always)]
@@ -92,16 +92,16 @@ macro_rules! textprop_reactive {
 
 mod signal_conversions {
     use super::TextProp;
-    use oco_ref::Oco;
     #[allow(deprecated)]
-    use reactive_graph::wrappers::read::MaybeSignal;
-    use reactive_graph::{
+    use reactive_state::wrappers::read::MaybeSignal;
+    use reactive_state::{
         computed::{ArcMemo, Memo},
         owner::Storage,
         signal::{ArcReadSignal, ArcRwSignal, ReadSignal, RwSignal},
         traits::Get,
         wrappers::read::{ArcSignal, Signal},
     };
+    use shared_value::SharedValue;
     use std::sync::Arc;
 
     textprop_reactive!(
@@ -152,12 +152,12 @@ mod signal_conversions {
 
 /// Extension trait for `Option<TextProp>`
 pub trait OptionTextPropExt {
-    /// Accesses the current value of the `Option<TextProp>` as an `Option<Oco<'static, str>>`.
-    fn get(&self) -> Option<Oco<'static, str>>;
+    /// Accesses the current value of the `Option<TextProp>` as an `Option<SharedValue<'static, str>>`.
+    fn get(&self) -> Option<SharedValue<'static, str>>;
 }
 
 impl OptionTextPropExt for Option<TextProp> {
-    fn get(&self) -> Option<Oco<'static, str>> {
+    fn get(&self) -> Option<SharedValue<'static, str>> {
         self.as_ref().map(|text_prop| text_prop.get())
     }
 }

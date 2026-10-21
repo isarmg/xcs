@@ -1,8 +1,8 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "f802b0b3c27c703276ee2666e6d81bf03501392950224ccfd784e73037c6ae07",
-    "compliance/external-tests/integrated.json": "bcba1d4729b2beb7cb188a6557c2a11f404a8b67b52ba8355b96379ca82ed117",
+    "compliance/external-tests/foundation.json": "2a2b012a4567ef838869512d1aa503e719bc5857c5099bedf557197acf88c1ba",
+    "compliance/external-tests/integrated.json": "67ed91584b1ee64659b809f4e803bd03ffd9d5ff5db9f6f536ef50f5929af604",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
   "external_tests": {
@@ -309,89 +309,6 @@
       "origin_directory": "vendor/rust/anstyle-query-1.1.5",
       "roots": [
         "test/foundation/anstyle-query"
-      ]
-    },
-    "src/foundation/any_spawner": {
-      "bytes": 18928,
-      "directory": "src/foundation/any_spawner",
-      "file_count": 12,
-      "files": [
-        {
-          "path": "test/foundation/any_spawner/tests/already_set_error.rs",
-          "sha256": "f48bf800d69813068aaf48b0d91ea91802c9fa3a031f7e5f33b3ccf6ebec1d49",
-          "source": "src/foundation/any_spawner/tests/already_set_error.rs",
-          "source_sha256_before": "f48bf800d69813068aaf48b0d91ea91802c9fa3a031f7e5f33b3ccf6ebec1d49"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/async_executor.rs",
-          "sha256": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787",
-          "source": "src/foundation/any_spawner/tests/async_executor.rs",
-          "source_sha256_before": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/custom_executor.rs",
-          "sha256": "fdeb4dc73520abcc980ff44d451f225e35e0d84044437e683147806784062c29",
-          "source": "src/foundation/any_spawner/tests/custom_executor.rs",
-          "source_sha256_before": "fdeb4dc73520abcc980ff44d451f225e35e0d84044437e683147806784062c29"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/custom_runtime.rs",
-          "sha256": "67d45a33dd486c22e3ec7e3dc9d84e48d8b20e67895eef49e8543f2830e8e511",
-          "source": "src/foundation/any_spawner/tests/custom_runtime.rs",
-          "source_sha256_before": "67d45a33dd486c22e3ec7e3dc9d84e48d8b20e67895eef49e8543f2830e8e511"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/executor_tick.rs",
-          "sha256": "6abc72beac51c04fc3dc4a004e3107858ca15d6cecaaac1cd36a868166284d94",
-          "source": "src/foundation/any_spawner/tests/executor_tick.rs",
-          "source_sha256_before": "6abc72beac51c04fc3dc4a004e3107858ca15d6cecaaac1cd36a868166284d94"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/futures_executor.rs",
-          "sha256": "2a5864b57f3d7e4418f3c2d96f6a290aa3baed838feab49ee2c23d4be944332a",
-          "source": "src/foundation/any_spawner/tests/futures_executor.rs",
-          "source_sha256_before": "2a5864b57f3d7e4418f3c2d96f6a290aa3baed838feab49ee2c23d4be944332a"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/futures_runtime.rs",
-          "sha256": "2282e0f5a828d1dff2a225bbfa8db19cebaff1cfc9f172d1a83d504d7439ba9c",
-          "source": "src/foundation/any_spawner/tests/futures_runtime.rs",
-          "source_sha256_before": "2282e0f5a828d1dff2a225bbfa8db19cebaff1cfc9f172d1a83d504d7439ba9c"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/glib.rs",
-          "sha256": "ab49fe0b84ca88b9d9f5d96a87d5d58b1291d17ede7659511afdb5c5e4065f84",
-          "source": "src/foundation/any_spawner/tests/glib.rs",
-          "source_sha256_before": "ab49fe0b84ca88b9d9f5d96a87d5d58b1291d17ede7659511afdb5c5e4065f84"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/local_custom_executor.rs",
-          "sha256": "470d065d0eada3b51117b0762f8bceaea7885ddd35bd0fe9e27e5a4aad59f044",
-          "source": "src/foundation/any_spawner/tests/local_custom_executor.rs",
-          "source_sha256_before": "470d065d0eada3b51117b0762f8bceaea7885ddd35bd0fe9e27e5a4aad59f044"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/multiple_tasks.rs",
-          "sha256": "581abd3e70aa0e6c27a37639622b85124aeccb042bd937c575f4577e1604692c",
-          "source": "src/foundation/any_spawner/tests/multiple_tasks.rs",
-          "source_sha256_before": "581abd3e70aa0e6c27a37639622b85124aeccb042bd937c575f4577e1604692c"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/tokio_executor.rs",
-          "sha256": "d45ba06a778f86ea416fd0177327783a233940df504dc059812e44df8ee2526a",
-          "source": "src/foundation/any_spawner/tests/tokio_executor.rs",
-          "source_sha256_before": "d45ba06a778f86ea416fd0177327783a233940df504dc059812e44df8ee2526a"
-        },
-        {
-          "path": "test/foundation/any_spawner/tests/wasm_bindgen_tests.rs",
-          "sha256": "55dae3bc232959d2c0dbdf827a4e51a1ef7660f5fa14c60441542a7fcbb3c323",
-          "source": "src/foundation/any_spawner/tests/wasm_bindgen_tests.rs",
-          "source_sha256_before": "55dae3bc232959d2c0dbdf827a4e51a1ef7660f5fa14c60441542a7fcbb3c323"
-        }
-      ],
-      "origin_directory": "vendor/web/dependencies/any_spawner-0.3.0",
-      "roots": [
-        "test/foundation/any_spawner"
       ]
     },
     "src/foundation/anyhow": {
@@ -4204,6 +4121,35 @@
         "test/foundation/displaydoc"
       ]
     },
+    "src/foundation/dom-helpers": {
+      "bytes": 2382,
+      "directory": "src/foundation/dom-helpers",
+      "file_count": 3,
+      "files": [
+        {
+          "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_no_serialize_151.rs",
+          "sha256": "aa97cfc2298501b73de08a69c127a0feac22cc100d26e955cb8eabf867ff45d7",
+          "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+          "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+        },
+        {
+          "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_primitive_75.rs",
+          "sha256": "76d24538d5d740ecc53f911ed3792b5466c363251802a6fa217f0bb2b177ddbc",
+          "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+          "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+        },
+        {
+          "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_serialize_132.rs",
+          "sha256": "5e0945ef7082a33626d7b903f3982ecfe479c3fdf777ff47d26b750b2a629730",
+          "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+          "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+        }
+      ],
+      "origin_directory": "vendor/web/dependencies/leptos_dom-0.8.8",
+      "roots": [
+        "test/foundation/dom-helpers"
+      ]
+    },
     "src/foundation/either": {
       "bytes": 3661,
       "directory": "src/foundation/either",
@@ -4261,23 +4207,6 @@
       "origin_directory": "vendor/rust/either-1.19.0",
       "roots": [
         "test/foundation/either"
-      ]
-    },
-    "src/foundation/either_of": {
-      "bytes": 8557,
-      "directory": "src/foundation/either_of",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/either_of/unit/src/lib/tests_1012.rs",
-          "sha256": "78367d995ea1a1942fd01978a0a04a183fea971960062b81cbfdfd1f1681b089",
-          "source": "src/foundation/either_of/src/lib.rs",
-          "source_sha256_before": "2e5dface1c4b059e3240d033a256aca794d4ebd5e7b80cef4d5357e4f6171dfc"
-        }
-      ],
-      "origin_directory": "vendor/web/dependencies/either_of-0.1.9",
-      "roots": [
-        "test/foundation/either_of"
       ]
     },
     "src/foundation/email_address": {
@@ -10203,35 +10132,6 @@
         "test/foundation/leb128fmt"
       ]
     },
-    "src/foundation/leptos_dom": {
-      "bytes": 2382,
-      "directory": "src/foundation/leptos_dom",
-      "file_count": 3,
-      "files": [
-        {
-          "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_no_serialize_151.rs",
-          "sha256": "aa97cfc2298501b73de08a69c127a0feac22cc100d26e955cb8eabf867ff45d7",
-          "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
-          "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
-        },
-        {
-          "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_primitive_75.rs",
-          "sha256": "76d24538d5d740ecc53f911ed3792b5466c363251802a6fa217f0bb2b177ddbc",
-          "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
-          "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
-        },
-        {
-          "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_serialize_132.rs",
-          "sha256": "5e0945ef7082a33626d7b903f3982ecfe479c3fdf777ff47d26b750b2a629730",
-          "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
-          "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
-        }
-      ],
-      "origin_directory": "vendor/web/dependencies/leptos_dom-0.8.8",
-      "roots": [
-        "test/foundation/leptos_dom"
-      ]
-    },
     "src/foundation/libc": {
       "bytes": 13786,
       "directory": "src/foundation/libc",
@@ -11969,23 +11869,6 @@
       "origin_directory": "vendor/rust/num-traits-0.2.19",
       "roots": [
         "test/foundation/num-traits"
-      ]
-    },
-    "src/foundation/oco_ref": {
-      "bytes": 4104,
-      "directory": "src/foundation/oco_ref",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/oco_ref/unit/src/lib/tests_613.rs",
-          "sha256": "8f028ac798743c7525e28341ea5bcf39ef9f53796a20dd9fb2c926ce019a2a5c",
-          "source": "src/foundation/oco_ref/src/lib.rs",
-          "source_sha256_before": "880b5a5eeb9e9ec4039d13a8e770204549e1a63244fdb81a076d4c52d08cdc9a"
-        }
-      ],
-      "origin_directory": "vendor/web/dependencies/oco_ref-0.2.1",
-      "roots": [
-        "test/foundation/oco_ref"
       ]
     },
     "src/foundation/once_cell": {
@@ -13941,67 +13824,67 @@
         "test/foundation/rayon-core"
       ]
     },
-    "src/foundation/reactive_graph": {
-      "bytes": 51641,
-      "directory": "src/foundation/reactive_graph",
+    "src/foundation/reactive-state": {
+      "bytes": 51651,
+      "directory": "src/foundation/reactive-state",
       "file_count": 10,
       "files": [
         {
-          "path": "test/foundation/reactive_graph/tests/async_derived.rs",
-          "sha256": "c92e073098b021bdfd391675b6dd823790bf8f3718e1d071dbf66fb6b76d0e62",
+          "path": "test/foundation/reactive-state/tests/async_derived.rs",
+          "sha256": "da8e8043ffe2646c21c731d48a9dc245450a979b7c296d9791c9488f1ea12dee",
           "source": "src/foundation/reactive_graph/tests/async_derived.rs",
           "source_sha256_before": "c92e073098b021bdfd391675b6dd823790bf8f3718e1d071dbf66fb6b76d0e62"
         },
         {
-          "path": "test/foundation/reactive_graph/tests/cleanup.rs",
-          "sha256": "e4528181f0901b2fe05f52ca5c301e9ba2c993970221acb4d4d4986a4f49a8fb",
+          "path": "test/foundation/reactive-state/tests/cleanup.rs",
+          "sha256": "4ec3d7b47eb71c014c4df58af12124e5728c58a31f59a3bf598965aebba4d014",
           "source": "src/foundation/reactive_graph/tests/cleanup.rs",
           "source_sha256_before": "e4528181f0901b2fe05f52ca5c301e9ba2c993970221acb4d4d4986a4f49a8fb"
         },
         {
-          "path": "test/foundation/reactive_graph/tests/effect.rs",
-          "sha256": "d11725d4adf7d4aed7a2a7e596d9f9a372d9fccade9ac034eb1b1602d182794f",
+          "path": "test/foundation/reactive-state/tests/effect.rs",
+          "sha256": "0778385268aeed977436dca167c7d2ea1ed7a2bec07e2691f0ebbe8ae4bae567",
           "source": "src/foundation/reactive_graph/tests/effect.rs",
           "source_sha256_before": "d11725d4adf7d4aed7a2a7e596d9f9a372d9fccade9ac034eb1b1602d182794f"
         },
         {
-          "path": "test/foundation/reactive_graph/tests/effect_immediate.rs",
-          "sha256": "746004607843136c4e06fd57747d64190017036cd2377abd4e6696a7067f7332",
+          "path": "test/foundation/reactive-state/tests/effect_immediate.rs",
+          "sha256": "6828f2232abe8d8fa0083d2ba1d630214d4b396529913b35906185a9d27b996e",
           "source": "src/foundation/reactive_graph/tests/effect_immediate.rs",
           "source_sha256_before": "746004607843136c4e06fd57747d64190017036cd2377abd4e6696a7067f7332"
         },
         {
-          "path": "test/foundation/reactive_graph/tests/memo.rs",
-          "sha256": "69246086007061e4f84773e8170cac98f2f3d97ede65d4f57e309573af3cdae3",
+          "path": "test/foundation/reactive-state/tests/memo.rs",
+          "sha256": "7abc071fb0979219087543124d37316ddff502d5a8c0733c7fb6b476e3dc54c6",
           "source": "src/foundation/reactive_graph/tests/memo.rs",
           "source_sha256_before": "69246086007061e4f84773e8170cac98f2f3d97ede65d4f57e309573af3cdae3"
         },
         {
-          "path": "test/foundation/reactive_graph/tests/signal.rs",
-          "sha256": "9db9229286bc90afa1cd851b324d0ddc647f7f07a5fb764e19ead1a62081f81e",
+          "path": "test/foundation/reactive-state/tests/signal.rs",
+          "sha256": "eae6098c2a4305fc092519ead1789321c589c4b8aba27acce6ccaa965fa5f7d6",
           "source": "src/foundation/reactive_graph/tests/signal.rs",
           "source_sha256_before": "9db9229286bc90afa1cd851b324d0ddc647f7f07a5fb764e19ead1a62081f81e"
         },
         {
-          "path": "test/foundation/reactive_graph/tests/watch.rs",
-          "sha256": "00e0761b13de3126d369a97bacb5aa6f994e899400e1b8adde0d736456c6038c",
+          "path": "test/foundation/reactive-state/tests/watch.rs",
+          "sha256": "b6bac36021606d5c368f506aeac81e5fcaab636abf16ff6708580831c217dc54",
           "source": "src/foundation/reactive_graph/tests/watch.rs",
           "source_sha256_before": "00e0761b13de3126d369a97bacb5aa6f994e899400e1b8adde0d736456c6038c"
         },
         {
-          "path": "test/foundation/reactive_graph/unit/src/callback/tests_295.rs",
+          "path": "test/foundation/reactive-state/unit/src/callback/tests_295.rs",
           "sha256": "d208cee6247f3b02773110ee60a5803f535c091e308577e458c157353f278ec8",
           "source": "src/foundation/reactive_graph/src/callback.rs",
           "source_sha256_before": "711fbecd50e69e9622f055da8662b15eda3711d78040a3fdbee7ae72ba988ea0"
         },
         {
-          "path": "test/foundation/reactive_graph/unit/src/into_reactive_value/tests_21.rs",
+          "path": "test/foundation/reactive-state/unit/src/into_reactive_value/tests_21.rs",
           "sha256": "29810518beb67eb0923a75dfbbc3f3c2a1da1e7a7da20a2cc83506810253a136",
           "source": "src/foundation/reactive_graph/src/into_reactive_value.rs",
           "source_sha256_before": "fe18a84a56d0183c204951980388b635235142b806ada1fcf12ab10d76ded171"
         },
         {
-          "path": "test/foundation/reactive_graph/unit/src/owner/tests_594.rs",
+          "path": "test/foundation/reactive-state/unit/src/owner/tests_594.rs",
           "sha256": "6b4c64da4bd36075b8e6d0a76719b25cc5b0d65633c227b7c479148a015a271c",
           "source": "src/foundation/reactive_graph/src/owner.rs",
           "source_sha256_before": "50236f8bdf6764ff2587ccd78c3b2fd37902411f65ed4b422495003474667c48"
@@ -14009,7 +13892,7 @@
       ],
       "origin_directory": "vendor/web/dependencies/reactive_graph-0.2.16",
       "roots": [
-        "test/foundation/reactive_graph"
+        "test/foundation/reactive-state"
       ]
     },
     "src/foundation/ref-cast": {
@@ -17775,6 +17658,23 @@
         "test/foundation/sharded-slab"
       ]
     },
+    "src/foundation/shared-value": {
+      "bytes": 4400,
+      "directory": "src/foundation/shared-value",
+      "file_count": 1,
+      "files": [
+        {
+          "path": "test/foundation/shared-value/unit/src/lib/tests_613.rs",
+          "sha256": "ed16f000e93c9d9a3c9925a65433081582261990b5f7136aefa7a1003dae923f",
+          "source": "src/foundation/oco_ref/src/lib.rs",
+          "source_sha256_before": "880b5a5eeb9e9ec4039d13a8e770204549e1a63244fdb81a076d4c52d08cdc9a"
+        }
+      ],
+      "origin_directory": "vendor/web/dependencies/oco_ref-0.2.1",
+      "roots": [
+        "test/foundation/shared-value"
+      ]
+    },
     "src/foundation/shell-tokenizer": {
       "bytes": 3501,
       "directory": "src/foundation/shell-tokenizer",
@@ -19165,6 +19065,89 @@
       "origin_directory": "vendor/rust/sysinfo-0.39.6",
       "roots": [
         "test/foundation/sysinfo"
+      ]
+    },
+    "src/foundation/task-dispatch": {
+      "bytes": 18968,
+      "directory": "src/foundation/task-dispatch",
+      "file_count": 12,
+      "files": [
+        {
+          "path": "test/foundation/task-dispatch/tests/already_set_error.rs",
+          "sha256": "ac2226c7be5488757dddef2d7fe2caccd08cfbbf6a2e188a3f508698f4df148e",
+          "source": "src/foundation/any_spawner/tests/already_set_error.rs",
+          "source_sha256_before": "f48bf800d69813068aaf48b0d91ea91802c9fa3a031f7e5f33b3ccf6ebec1d49"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/async_executor.rs",
+          "sha256": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787",
+          "source": "src/foundation/any_spawner/tests/async_executor.rs",
+          "source_sha256_before": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/custom_executor.rs",
+          "sha256": "f59bcdfa0a1b16887449ac00c5e38683798287e158091bbad5e86ba4c762b6c7",
+          "source": "src/foundation/any_spawner/tests/custom_executor.rs",
+          "source_sha256_before": "fdeb4dc73520abcc980ff44d451f225e35e0d84044437e683147806784062c29"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/custom_runtime.rs",
+          "sha256": "0fa7b46415ae8eb47ce9c3f94f7d3b769d003d7f8caf9a03388ccd269b715e05",
+          "source": "src/foundation/any_spawner/tests/custom_runtime.rs",
+          "source_sha256_before": "67d45a33dd486c22e3ec7e3dc9d84e48d8b20e67895eef49e8543f2830e8e511"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/executor_tick.rs",
+          "sha256": "b915be92a018814c3040a5823ae59edde032c37f676940b2c8cdb3245ce93158",
+          "source": "src/foundation/any_spawner/tests/executor_tick.rs",
+          "source_sha256_before": "6abc72beac51c04fc3dc4a004e3107858ca15d6cecaaac1cd36a868166284d94"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/futures_executor.rs",
+          "sha256": "ca6f5f081f38e5610673358ba80834fc52eb9ce23a8005779a0fbc60ca492358",
+          "source": "src/foundation/any_spawner/tests/futures_executor.rs",
+          "source_sha256_before": "2a5864b57f3d7e4418f3c2d96f6a290aa3baed838feab49ee2c23d4be944332a"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/futures_runtime.rs",
+          "sha256": "c6cdb15ff257e8afed61f919e1cb23e7f483176093288f9550a67d41913ea913",
+          "source": "src/foundation/any_spawner/tests/futures_runtime.rs",
+          "source_sha256_before": "2282e0f5a828d1dff2a225bbfa8db19cebaff1cfc9f172d1a83d504d7439ba9c"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/glib.rs",
+          "sha256": "554aef2fe6983b7c2fbfa4670c5982ed01b7d1427e4dba809894a9562e3b2179",
+          "source": "src/foundation/any_spawner/tests/glib.rs",
+          "source_sha256_before": "ab49fe0b84ca88b9d9f5d96a87d5d58b1291d17ede7659511afdb5c5e4065f84"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/local_custom_executor.rs",
+          "sha256": "e0d6e9ad648185d331dc0fe4558801d13fd4f4ecdf15c12d159c155ae78f8c09",
+          "source": "src/foundation/any_spawner/tests/local_custom_executor.rs",
+          "source_sha256_before": "470d065d0eada3b51117b0762f8bceaea7885ddd35bd0fe9e27e5a4aad59f044"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/multiple_tasks.rs",
+          "sha256": "be12236f90346dc2f166c57f1e925d3e5bad2f0d4afe98712e1c5288ef3c3f4b",
+          "source": "src/foundation/any_spawner/tests/multiple_tasks.rs",
+          "source_sha256_before": "581abd3e70aa0e6c27a37639622b85124aeccb042bd937c575f4577e1604692c"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/tokio_executor.rs",
+          "sha256": "98f45906c30c2f456095f5ddc63b82145829d5f900d1526f7698d7bb8969c899",
+          "source": "src/foundation/any_spawner/tests/tokio_executor.rs",
+          "source_sha256_before": "d45ba06a778f86ea416fd0177327783a233940df504dc059812e44df8ee2526a"
+        },
+        {
+          "path": "test/foundation/task-dispatch/tests/wasm_bindgen_tests.rs",
+          "sha256": "0f29570e2011d9547895153d1472fc9de8528985c46811ad9ae110e680bfb2e6",
+          "source": "src/foundation/any_spawner/tests/wasm_bindgen_tests.rs",
+          "source_sha256_before": "55dae3bc232959d2c0dbdf827a4e51a1ef7660f5fa14c60441542a7fcbb3c323"
+        }
+      ],
+      "origin_directory": "vendor/web/dependencies/any_spawner-0.3.0",
+      "roots": [
+        "test/foundation/task-dispatch"
       ]
     },
     "src/foundation/tempfile": {
@@ -24486,6 +24469,23 @@
         "test/foundation/version_check"
       ]
     },
+    "src/foundation/view-alternatives": {
+      "bytes": 8557,
+      "directory": "src/foundation/view-alternatives",
+      "file_count": 1,
+      "files": [
+        {
+          "path": "test/foundation/view-alternatives/unit/src/lib/tests_1012.rs",
+          "sha256": "78367d995ea1a1942fd01978a0a04a183fea971960062b81cbfdfd1f1681b089",
+          "source": "src/foundation/either_of/src/lib.rs",
+          "source_sha256_before": "2e5dface1c4b059e3240d033a256aca794d4ebd5e7b80cef4d5357e4f6171dfc"
+        }
+      ],
+      "origin_directory": "vendor/web/dependencies/either_of-0.1.9",
+      "roots": [
+        "test/foundation/view-alternatives"
+      ]
+    },
     "src/foundation/vsimd": {
       "bytes": 3167,
       "directory": "src/foundation/vsimd",
@@ -26391,7 +26391,7 @@
       ]
     },
     "src/interface": {
-      "bytes": 44619,
+      "bytes": 44640,
       "directory": "src/interface",
       "file_count": 15,
       "files": [
@@ -26451,7 +26451,7 @@
         },
         {
           "path": "test/interface/unit/for_snapshot/tests.rs",
-          "sha256": "d0a09d78a34880c588154c80bb08ad612b77c58b804f641e2980cd6c536bb009",
+          "sha256": "4cfbccbc4ddf8aa48feb4f8201d9689ebf72bac918f014980c5a90474de9206d",
           "source": "src/interface/src/for_snapshot.rs",
           "source_sha256_before": "7eda788d3b08388fb3bc652400f6b506b69eb2d84881485a6a0f3bc4a8a8fa16"
         },
@@ -26469,7 +26469,7 @@
         },
         {
           "path": "test/interface/unit/mount/tests.rs",
-          "sha256": "9eceb55b09eda28dc82b6827cf0e92f18b8448ae64015fd5256e0d2632f79c69",
+          "sha256": "e5033089a1a391b074a8d34ade8030adaaa8ea07d2c79ac974b9d1c642761d38",
           "source": "src/interface/src/mount.rs",
           "source_sha256_before": "fa2cab92e5463e62cad6b02ed28b58189912c27586b2538b578c662f35d0bf22"
         },
@@ -26586,7 +26586,7 @@
       ]
     },
     "tools/web-bindings": {
-      "bytes": 13335,
+      "bytes": 13363,
       "directory": "tools/web-bindings",
       "file_count": 4,
       "files": [
@@ -26598,7 +26598,7 @@
         },
         {
           "path": "test/tools/web-bindings/fixtures/csr-template.rs",
-          "sha256": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281",
+          "sha256": "1bff500e6565c19c77fa97d6629c5bc71b5a3000e3c4ffdb6be32d619fad9a5b",
           "source": "tools/web-bindings/tests/fixtures/csr-template.rs",
           "source_sha256_before": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281"
         },
@@ -26623,7 +26623,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "fccb634139fd9fa8f6e173fa590485fcd651dfd3be1db7440f42781c1b23409f"
+    "Cargo.lock": "fb23e844e5a0c56e673169f302b481f413f316c13adf2dad5646b5496f9b9632"
   },
   "manifests_sha256": {
     "Cargo.toml": "1c6472894378c77e0b3e3c52b586039cdc6b030bada2609b3bbe9f719be96455",
@@ -26640,7 +26640,6 @@
     "src/foundation/anstyle-parse/Cargo.toml": "3068edd1ffeae19bc234a2c022a1609c64f255c472302dd865ee0311e5e5cf1d",
     "src/foundation/anstyle-query/Cargo.toml": "5a1216b5bdadf5cc2e92e6ed6ea6ff442b86dabf1236d6e8afd86401a3f1b0cf",
     "src/foundation/anstyle/Cargo.toml": "02271a80a16c1a9f70d53bf83155f14b44a42fd8269f161b89cdfe20b41d32ee",
-    "src/foundation/any_spawner/Cargo.toml": "c4a4b3361690d55ace543c010d5056e81e3cf544343b0a7e525a18577befd62b",
     "src/foundation/anyhow/Cargo.toml": "e0e454bcb6007aa477275ec737f89c5d6e5b0a3d43c3d08826954945a753542b",
     "src/foundation/argon2/Cargo.toml": "9176d22d8fc6d2c5c6dfc65b1d98ed89ebe54c030088eae0d43c922e081f2b3c",
     "src/foundation/arrayvec/Cargo.toml": "8f3a8bf3d747ef9b5b3a224f2d9f31d39b579330ef31ae83560ed7b0a4f731f0",
@@ -26699,8 +26698,8 @@
     "src/foundation/digest-0.10.7/Cargo.toml": "d6a54b4c2412693f9e3ed76e2aec895eca8c707a2705424f0a5614e488c1d64d",
     "src/foundation/digest-0.11.3/Cargo.toml": "adab346e4fedf7d74f58dab4cd5eacecc8b0449674bbeda512e748d62a1eae8c",
     "src/foundation/displaydoc/Cargo.toml": "4ed665b8774905e9d8628cfa2e675d82c93fc4bf5ac9baa858d13c3df468b58f",
+    "src/foundation/dom-helpers/Cargo.toml": "2293254959543f574d2ed15726d5298e06e2c909d8518477946885214c49893c",
     "src/foundation/either/Cargo.toml": "fb68c207ff8e5bdfcd353e4c029ea261a4f3bf1162fd7e71ed0c5eb08d87d134",
-    "src/foundation/either_of/Cargo.toml": "d27a2340cb4aa94eb70a62469d8759bc6a53c3932a15f53dbe21a4fbf4d227f0",
     "src/foundation/email_address/Cargo.toml": "79f69636c2f2476824dbea81ab6766e43ddcc68eafe4c35af9b16db421f06003",
     "src/foundation/env_filter/Cargo.toml": "7afbf7124e3ae7daf8b3e0a58e60e47cfcb3dcbcff2e137a7c19e8e53aa3f9cb",
     "src/foundation/env_logger/Cargo.toml": "e15628c7b1c5c021c25f4f39220537ce7dba9d5eed145a86ea1654d9a93c5f4e",
@@ -26777,7 +26776,6 @@
     "src/foundation/lazy_static/Cargo.toml": "52e3d1cbd8ad7145b35b8c175ef1a0484e4c3a7e2750f6cde542c1c9e17daca7",
     "src/foundation/leb128/Cargo.toml": "9ae03997e60622923cea16931a313d4b6fa2805224ccdd031d4a90d1abc08148",
     "src/foundation/leb128fmt/Cargo.toml": "b9fb8a6dc7caec07b0bb91b6e2948adceb92c51d6dd4afb7fca372903c3d4414",
-    "src/foundation/leptos_dom/Cargo.toml": "0c46f8c177711ad00998228b8b70ed692793cd22c166506ca92ec2ba7dc8d5c2",
     "src/foundation/libc/Cargo.toml": "785e92ecf42190cc839d22b411fbb3fd8a66ab969c62717e6d69bc1053cf589b",
     "src/foundation/libloading/Cargo.toml": "756740d3836f92c7c7fb86125bd2055b6fd6a1b7dd27743e411415dedcf49731",
     "src/foundation/libsqlite3-sys/Cargo.toml": "879b204cd64b3c0564f2dffa854bce4883d003c3c735bb508418cbb747b0df33",
@@ -26808,7 +26806,6 @@
     "src/foundation/num-rational/Cargo.toml": "3f2a6be121144082d2cd7507e5a67e3c40ec8d7110e0efb376692da2d946ee0d",
     "src/foundation/num-traits/Cargo.toml": "586197636e8503ded5dbff8a5f74e837fc6309992468b40b6f8be004ec3a186c",
     "src/foundation/num/Cargo.toml": "20097ef768b86a9d9edd2713a9f6003e5f7ecba88a8e23523b4af5926880fc84",
-    "src/foundation/oco_ref/Cargo.toml": "57df36c0b6ba51d0297116ca281e1e58e6eaa08c795eb89a2f1f9479531a07ac",
     "src/foundation/once_cell/Cargo.toml": "c058beddc6bf689c254a71c307d519760aea0cf2ac80e9a1209b2f3c1f9814d6",
     "src/foundation/or_poisoned/Cargo.toml": "7c1464d214f3debd34b394ee2a20c67d2d31f501a98c4b56317530e4a34937e2",
     "src/foundation/outref/Cargo.toml": "c0a5c6ed2853888211e6e68b31655b69fc1cd45345a76211d47ca7d3d7026e89",
@@ -26833,7 +26830,7 @@
     "src/foundation/random-generator-core/Cargo.toml": "4b534f6012aaa97e1cff4d12741aca1433dbb162c53749a2ab0755253b80f337",
     "src/foundation/rayon-core/Cargo.toml": "c122335b729e48d38d0ee041541646974b72ec9d9ebb0a7f4dd6a9e61d91b1ee",
     "src/foundation/rayon/Cargo.toml": "fbdb1891ba970b009e5d85e78d8f8ead0e716f2b376fb30bcb04023c1bbba919",
-    "src/foundation/reactive_graph/Cargo.toml": "454ea96a79c43fdc1699f498e8c61ad864a6d0f385f994ddf042a1be2bf58c82",
+    "src/foundation/reactive-state/Cargo.toml": "bb171e1277547ace0cd1bb36d3d11366408e6f59bc32c5029e4a2b56bfa1541b",
     "src/foundation/ref-cast-impl/Cargo.toml": "14dd0654f9cefb90dcc826432ae1b2b7c2801c5aa55832e112b5b99d501eda64",
     "src/foundation/ref-cast/Cargo.toml": "1291fdd6c5162dc8a1dd02103dd516846fdeb82f4b6d8b1f114c32e644a4701f",
     "src/foundation/referencing/Cargo.toml": "f33f69cda8cca8d544e8a27c31ab98e1af6527b31fc88a8399b06be946e9354a",
@@ -26865,6 +26862,7 @@
     "src/foundation/serde_urlencoded/Cargo.toml": "1211a27af13bd1094f66c36b35933ddf43240fb356ddf8c60d85db95cd0c6d72",
     "src/foundation/sha2/Cargo.toml": "787a5562b926e969fb3c3ee0e7847fe590f14b1084c978c0e718135a00bfa12a",
     "src/foundation/sharded-slab/Cargo.toml": "c27d8edf445c0076cdd0e20f3e55603fdec80e68fa661a3e6cec52513400581f",
+    "src/foundation/shared-value/Cargo.toml": "e1a2aba18fa6fb320bdcfcb27ea12f8b0f2f691ad8c35d9785fe663451d5e843",
     "src/foundation/shell-tokenizer/Cargo.toml": "7cd6e6cfd3faee87c284a88d43a2304572c10c59d96e76bad1f92a9ddd787191",
     "src/foundation/signal-hook-registry/Cargo.toml": "9cb7a036cafa5a0b6f12236c11a3fdd1fee7d94696b70be12fbc7ff5919ca95a",
     "src/foundation/simd-adler32/Cargo.toml": "9b5463dcc551eaa5e93b84be1bccd779a293dde25ceb9fdb7bdde57dd0399ec6",
@@ -26886,7 +26884,7 @@
     "src/foundation/sync_wrapper/Cargo.toml": "e74f45c6729234e6b97c1e7ed0fea70917888d30bf58f0c4871b887dd94d6c76",
     "src/foundation/synstructure/Cargo.toml": "10739fab666c381d700794f17a12bb0f9120934bad0c223d32600664aae8daf2",
     "src/foundation/sysinfo/Cargo.toml": "28875c3afae210492846c6103abf4f70f5811e6fa4ff3f819e8061d153d6ae5d",
-    "src/foundation/tachys/Cargo.toml": "4b68f9f48a77fba51ba853c283bebead9d2aead886fe981dd24a5355ee1ecfbc",
+    "src/foundation/task-dispatch/Cargo.toml": "32478b2bf65b58e06c7bf8e01bab47709355ec3838e81bc82ac00e3e2b85de86",
     "src/foundation/tempfile/Cargo.toml": "c4bf18aeccfd20b569c8b74f4d202108ea5fff5466b58614d7a06d55ff3c7f78",
     "src/foundation/thiserror-impl/Cargo.toml": "ffca5b82a7c2364bb69e4950e11e2ac6ab5e1d703f833167ac46f2b7e8d8c6dd",
     "src/foundation/thiserror/Cargo.toml": "cb0c5bb5cf1bd717e3c621fe282756c7e024ef962b06d03baabce50613b5522d",
@@ -26928,6 +26926,8 @@
     "src/foundation/uuid-simd/Cargo.toml": "eb0d0896501394f3d5e824eed0fc84c3d87ae99d6d10d2cc2a403f84ea4e3c19",
     "src/foundation/uuid/Cargo.toml": "5ada494345eecf407ca8c5ee5b05a9ab673096f440d018c0c22e8e3791ffe7c9",
     "src/foundation/version_check/Cargo.toml": "7687d1f1999db3568ef5049ae658291b1c519931f819d1cd47707f9a87d6990e",
+    "src/foundation/view-alternatives/Cargo.toml": "6e5019fd2c08432eb4b5082d751114f98f1700b39b389a8343c024e4a91c87e0",
+    "src/foundation/view-renderer/Cargo.toml": "fccb30e0340d9d4df9ae24f44e81db61d47d47aed728d42652766972541e2cbf",
     "src/foundation/vsimd/Cargo.toml": "74c0c460a11240dad53e1045a669e03c7143f134715cfaad958eb40de244392c",
     "src/foundation/walkdir/Cargo.toml": "44b8a660af8f5e2d3583098e8a1ec3d085bc1e9554a4f7d16c5321bb57a53a65",
     "src/foundation/walrus-macro/Cargo.toml": "d5d9375a57efaf6dc2fd67fc23a2e1dc446e383b2fa97ff9ff4d23e162636f46",
@@ -26955,7 +26955,7 @@
     "src/foundation/zerovec-derive/Cargo.toml": "8d41b2372b3c93b41f46bc8f9d1e32b836094c9c56b05d6f86fc08f38d193b25",
     "src/foundation/zerovec/Cargo.toml": "ae90ef519d64167cb4da2054f1a0efcb99dbb05b2001ef9c36a3c6378c45eb56",
     "src/foundation/zmij/Cargo.toml": "9230831f8b50f7ac0b50a32d458f95f0e758ef847a81b15cbae9b84a6dd44df4",
-    "src/interface/Cargo.toml": "f65c8aaf5178d8d45c6f77c857507956e711e8f4a1f4c84739b204f097ffe3d3",
+    "src/interface/Cargo.toml": "7a7e96654dd7e2106457fb36509f7625df4c3454c9e4a95b214195a5759a1c14",
     "src/macros/Cargo.toml": "3eea4ae2f046f805f2c115ee03b80ed68e464688c5c79f08aa05a7a26d7fc5c8",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "b25f4852264e9a8bd325a05f547199db226bc1569495b71a53f0ae6236649377",
@@ -27030,10 +27030,10 @@
       "description": "Project-specific browser CSR runtime",
       "directory": "src/interface",
       "files_sha256": {
-        "Cargo.toml": "f65c8aaf5178d8d45c6f77c857507956e711e8f4a1f4c84739b204f097ffe3d3",
-        "src/animated_show.rs": "cd43d5486c2667fe2a72f1bbbc1ae2fe6a61f87823ea042d12e225c209fb0a54",
-        "src/attribute_interceptor.rs": "28a58d891932fd6dbbab5844840374207f8d65167fb7e6d385c2ae8b87ef5a9a",
-        "src/children.rs": "9312f9a68d4522b03d9166983157530a0b1508099805812d9897c0c72f5e0d19",
+        "Cargo.toml": "7a7e96654dd7e2106457fb36509f7625df4c3454c9e4a95b214195a5759a1c14",
+        "src/animated_show.rs": "cd95f8823c423be1c48e4c2054872c6ab63b2efad10d091a49786f033afdf59a",
+        "src/attribute_interceptor.rs": "7b148fc2ba4b4a07a078ce2c9e063f8e8a9a02d0cac75dc2d1b78220747a1954",
+        "src/children.rs": "774081a72328ff254cd3f087335688fe63c0925fe8b46e4407c4ffb7cdbd96ff",
         "src/component.rs": "4b2ca289417e0075ad8ea42486daca256505125f6d8a73455ac663fd6f84cec4",
         "src/components/account.rs": "5f4cddd749bfc373c388d053ceee54b15ad267db06ab7814313009ad4b2c501f",
         "src/components/dialog.rs": "4682442941fda719995a9a1f2065b526ef75bfe6703de6c5ed71c5c195d76826",
@@ -27049,20 +27049,20 @@
         "src/contours/mod.rs": "6888d8f0ccf5a84a8a96d493c5fbcfdcd3879d89a7abb1c9ef6f73283d036454",
         "src/contours/paint.rs": "cc08baf9bf598aaf9ca5351ad1240220a3659d5c3ae04d2beaa2b3bbb0399c4c",
         "src/contours/profile.rs": "ff5f8c063bd6e04bf3fd9442c8b9dae5f407799d77c93133010e38b2e3c5225a",
-        "src/for_loop.rs": "16e2b13e8dfc5805ba1391a2b3a17608d17ee4a725fd4cb7652e6bbdaf0f30fd",
-        "src/for_snapshot.rs": "5941b96facebc9794aeb766daa784d4c80b2a6be98d41a9a32711babe4f312e5",
+        "src/for_loop.rs": "5f51f418e79900f4ef45ffeb6dcced7cacb8855ec2beabfd7344ba58a17c65a1",
+        "src/for_snapshot.rs": "06b6e10d666d91305fac3c11e51dbbdf60e770c053b96418940432bd6e4636b3",
         "src/i18n.rs": "48cf957c30e60ee725afcead2ea06e25af00d1e1bf2ae49b12261a3deed2c46c",
-        "src/into_view.rs": "f6923572e1465c27f53c56a4f910a686779a8310a1eeeb0074b21a36a6a14912",
-        "src/lib.rs": "8247e4b74c6be0b566fd503d68e0e125ee30f2242f441d90bf731b4482444eb2",
+        "src/into_view.rs": "63eb8d572837186f8cdd5872e63b78a9bd3142e275d99991f746b1d9c59fabb4",
+        "src/lib.rs": "467bbf53419d5a047d170edf94f599fe1a74a171659e10b5d58b3deb27d307ed",
         "src/lifecycle.rs": "ec0299ee31c65e448febcb099d259c140e57f358910dd398e180d8862dc7f276",
-        "src/mount.rs": "171bf6a61d300620032b1413209a0ebbc81bc4e6c59c9b8ebee55181772cb8de",
-        "src/portal.rs": "9639293120712cf1f48b79d68267a7034f6a5461a03bb1689d6b606ac1b98cf5",
-        "src/provider.rs": "4dbe7631bb76769fca60575fe6c5bda899ae0fe82702058534ae5d0a29f58c4d",
-        "src/show.rs": "ff27b5549b546f3baf43d6e9b0dad8ff95bbe8b257c5a73f640cad932889ee41",
-        "src/show_let.rs": "6f684e9fe7f195847379dc5a45ae8e1e9301a990a1a611197ffccd4fbaae79f7",
+        "src/mount.rs": "e65bb5bb6d950141ee554f978f0d22cb1b8fb08555e4a581ea75d705b1ce1d4a",
+        "src/portal.rs": "96a8961e77f28f255a8abe4ca55376d7cb0267bfc9081e81af6a4d99a88cc310",
+        "src/provider.rs": "fa97124ff6b6592544355be2006821e658e1099d4e44dfa38e7f30cc0f1d13ff",
+        "src/show.rs": "55dd2795f8b7f3774d9ed30cbe70ece101d1421b542b5a9d7f2ce14a7e6349c0",
+        "src/show_let.rs": "7051b187c6b8a1c8932fba741661258ba9a9bb6cbce02b487b55a223f1c74f36",
         "src/startup.rs": "e200c12bd7472a8a5c4bd71bd832510f095161de36deb11fa54aa3ca3ddfa092",
         "src/tasks.rs": "284f2ae64d5854017838234addcf7fa1193186c828c398111f96167fe90fa744",
-        "src/text_prop.rs": "c74225f04bc7f68105d3f0c4108f123e13beb3f79ccc936492fc4428fc12a226",
+        "src/text_prop.rs": "d9a34d8f9a34b0e1c7c230273d3566ad670a731a479f6413b1230bfed53d6c63",
         "src/theme.rs": "f12c38a989d52d05bbed7816d1cf12b0d43b0b2e587824e9ef1b33218a781496"
       },
       "license": "license-file: README.md",
@@ -27099,7 +27099,7 @@
         "src/slice.rs": "277ca38d1afda01dd6058e464f0a0d236507e45da3aa932ce4d902b453c47f4a",
         "src/slot.rs": "1f5f59c8eff9523a341716c01f6dba9431bf1247c8edc604e7e8962aef52b777",
         "src/view/component_builder.rs": "333ea7691bd8527ad2300e4133935d95c91a7a940eba13ca6b26697a204b5eec",
-        "src/view/mod.rs": "d4ed1697088a7f9d3f32b8441b3454bc9b53f0e94c9dabff8c442dc9127d4651",
+        "src/view/mod.rs": "aedf8bce502dfc6b728a3bc0fbb45e25cf42a6ae2d85fcea244249d3845ba414",
         "src/view/slot_helper.rs": "6c15e192889d03d673bb0e9067eb20d7a8ac01a2e5a80b3b0421d1073fe61d6c",
         "src/view/utils.rs": "d4679c4a8984014adb88f61937fc1bebdc5b1b59734cc76b31e23e65534cdf9e",
         "src/view_source.rs": "d1c308a911a1243224c328da0197ad389a8c686abce2fe62c36b6be3627acc43"
@@ -27883,37 +27883,6 @@
         "path_in_vcs": "crates/anstyle-query"
       },
       "version": "1.1.5"
-    },
-    "src/foundation/any_spawner": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Spawn asynchronous tasks in an executor-independent way.",
-      "directory": "src/foundation/any_spawner",
-      "files_sha256": {
-        "Cargo.toml": "c4a4b3361690d55ace543c010d5056e81e3cf544343b0a7e525a18577befd62b",
-        "src/lib.rs": "ffabeb3409bf66fff1290013cb07e6ce69d873218ed2133b431da9f78e30af05"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
-      ],
-      "merged_into": "src/interface + src/macros",
-      "name": "any_spawner",
-      "origin_directory": "vendor/web/dependencies/any_spawner-0.3.0",
-      "repository": "https://github.com/leptos-rs/leptos",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "1384d3fe1eecb464229fcf6eebb72306591c56bf27b373561489458a7c73027d",
-        "archive_url": "https://static.crates.io/crates/any_spawner/any_spawner-0.3.0.crate",
-        "name": "any_spawner",
-        "version": "0.3.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "9b2e313d20c89603ddc0deb7b1133e60c877faed"
-        },
-        "path_in_vcs": "any_spawner"
-      },
-      "version": "0.3.0"
     },
     "src/foundation/anyhow": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -30439,6 +30408,41 @@
       },
       "version": "0.2.7"
     },
+    "src/foundation/dom-helpers": {
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "DOM operations for the Leptos web framework.",
+      "directory": "src/foundation/dom-helpers",
+      "files_sha256": {
+        "Cargo.toml": "2293254959543f574d2ed15726d5298e06e2c909d8518477946885214c49893c",
+        "src/helpers.rs": "0ca12c9851e4d804857a5737f09dad5643d15889ffdfaeac6c0939924487304b",
+        "src/lib.rs": "1caf029d0146e26afad7694d1a4399675fdd26ac7a79ba2fbeeca5e7dda478ac",
+        "src/logging.rs": "c1b3d1f116f3412af1993cdd1c22274ad283b7c665788fc42f19cee310ffab8e",
+        "src/macro_helpers/mod.rs": "89e5b363f18276c7bd1f98bd578c2bd70d6c165269aa280311aba3dd6ac905c7",
+        "src/macro_helpers/tracing_property.rs": "f367ecb83b0be6207f6e8fcd4ec6dfe4ccfb5c3032fda3b79b800febb9aba31b"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+      ],
+      "merged_into": "src/interface + src/macros",
+      "name": "dom-helpers",
+      "origin_directory": "vendor/web/dependencies/leptos_dom-0.8.8",
+      "repository": "https://github.com/leptos-rs/leptos",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "35742e9ed8f8aaf9e549b454c68a7ac0992536e06856365639b111f72ab07884",
+        "archive_url": "https://static.crates.io/crates/leptos_dom/leptos_dom-0.8.8.crate",
+        "name": "leptos_dom",
+        "version": "0.8.8"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "da62c0cb9a1d814cf480c2f1dae5f67f4ea4773f"
+        },
+        "path_in_vcs": "leptos_dom"
+      },
+      "version": "0.8.8"
+    },
     "src/foundation/either": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "The enum `Either` with variants `Left` and `Right` is a general purpose sum type with two cases.",
@@ -30474,37 +30478,6 @@
         "path_in_vcs": ""
       },
       "version": "1.19.0"
-    },
-    "src/foundation/either_of": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Utilities for working with enumerated types that contain one of 2..n other types.",
-      "directory": "src/foundation/either_of",
-      "files_sha256": {
-        "Cargo.toml": "d27a2340cb4aa94eb70a62469d8759bc6a53c3932a15f53dbe21a4fbf4d227f0",
-        "src/lib.rs": "0ada96ea2968d4063a0d838606300aec34d5100c2ba8a55de060448893bb686b"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
-      ],
-      "merged_into": "src/interface + src/macros",
-      "name": "either_of",
-      "origin_directory": "vendor/web/dependencies/either_of-0.1.9",
-      "repository": "https://github.com/leptos-rs/leptos",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "5060e0a4cbf26a87550792688ade88e6b8aec9208613631a7a363bda7bc2d4cd",
-        "archive_url": "https://static.crates.io/crates/either_of/either_of-0.1.9.crate",
-        "name": "either_of",
-        "version": "0.1.9"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "fbc9ed631ff8c19c5eed02a1d4459e202cff7043"
-        },
-        "path_in_vcs": "either_of"
-      },
-      "version": "0.1.9"
     },
     "src/foundation/email_address": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -34289,41 +34262,6 @@
       },
       "version": "0.1.0"
     },
-    "src/foundation/leptos_dom": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "DOM operations for the Leptos web framework.",
-      "directory": "src/foundation/leptos_dom",
-      "files_sha256": {
-        "Cargo.toml": "0c46f8c177711ad00998228b8b70ed692793cd22c166506ca92ec2ba7dc8d5c2",
-        "src/helpers.rs": "bbd94a66530d22d0beeb58c19e30a51c97377cb8aca3ffd86699dde1df987db3",
-        "src/lib.rs": "ce4a5baba94a906661e402c61e0b53cfb8ed4f6f7ca9a90384476ca9532003d2",
-        "src/logging.rs": "c1b3d1f116f3412af1993cdd1c22274ad283b7c665788fc42f19cee310ffab8e",
-        "src/macro_helpers/mod.rs": "89e5b363f18276c7bd1f98bd578c2bd70d6c165269aa280311aba3dd6ac905c7",
-        "src/macro_helpers/tracing_property.rs": "5cda14b41fb67e9a400812b9eecd8d33d153c9b009f639d743687879688009cb"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
-      ],
-      "merged_into": "src/interface + src/macros",
-      "name": "leptos_dom",
-      "origin_directory": "vendor/web/dependencies/leptos_dom-0.8.8",
-      "repository": "https://github.com/leptos-rs/leptos",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "35742e9ed8f8aaf9e549b454c68a7ac0992536e06856365639b111f72ab07884",
-        "archive_url": "https://static.crates.io/crates/leptos_dom/leptos_dom-0.8.8.crate",
-        "name": "leptos_dom",
-        "version": "0.8.8"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "da62c0cb9a1d814cf480c2f1dae5f67f4ea4773f"
-        },
-        "path_in_vcs": "leptos_dom"
-      },
-      "version": "0.8.8"
-    },
     "src/foundation/libc": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20 第二批：仅退役经分派证明不属于 Linux amd64/Web 的 OS、GNU 架构与 x32 绑定 306 文件，同时删除对应模块引用；保留 Linux amd64 GNU、musl/ohos、uclibc 与 linux_l4re_shared 等共享 ABI 及 wasm32 空表面。GNU std/no_std/extra_traits 与 Web 展开代码等价，并对照 GNU C 头文件回归；其他 ABI 不声明已验收。",
       "description": "Raw FFI bindings to platform libraries like libc.",
@@ -35731,37 +35669,6 @@
       },
       "version": "0.2.19"
     },
-    "src/foundation/oco_ref": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "A smart pointer for storing immutable values with relatively-cheap cloning. (Like a `Cow` meets an `Rc`!)",
-      "directory": "src/foundation/oco_ref",
-      "files_sha256": {
-        "Cargo.toml": "57df36c0b6ba51d0297116ca281e1e58e6eaa08c795eb89a2f1f9479531a07ac",
-        "src/lib.rs": "228420d7f6668ffb0b6f230ea4a7d1217ca7079498511e852f442fc1094c00e1"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
-      ],
-      "merged_into": "src/interface + src/macros",
-      "name": "oco_ref",
-      "origin_directory": "vendor/web/dependencies/oco_ref-0.2.1",
-      "repository": "https://github.com/leptos-rs/leptos",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "ed0423ff9973dea4d6bd075934fdda86ebb8c05bdf9d6b0507067d4a1226371d",
-        "archive_url": "https://static.crates.io/crates/oco_ref/oco_ref-0.2.1.crate",
-        "name": "oco_ref",
-        "version": "0.2.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "5f2d5115537d08043bba0293c406c4f9b97a4dae"
-        },
-        "path_in_vcs": "oco"
-      },
-      "version": "0.2.1"
-    },
     "src/foundation/once_cell": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（1036 字节）；保留文档编译、真实测试及性能基准输入。",
       "description": "Single assignment cells and lazy values.",
@@ -36787,75 +36694,75 @@
       },
       "version": "1.13.0"
     },
-    "src/foundation/reactive_graph": {
+    "src/foundation/reactive-state": {
       "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "A fine-grained reactive graph for building user interfaces.",
-      "directory": "src/foundation/reactive_graph",
+      "directory": "src/foundation/reactive-state",
       "files_sha256": {
-        "Cargo.toml": "454ea96a79c43fdc1699f498e8c61ad864a6d0f385f994ddf042a1be2bf58c82",
+        "Cargo.toml": "bb171e1277547ace0cd1bb36d3d11366408e6f59bc32c5029e4a2b56bfa1541b",
         "build.rs": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e",
-        "src/actions/action.rs": "20bea4b8f3fdf31ab27663eeb3970ffcdb611c2aa938c4889170e8c0c2344a3f",
+        "src/actions/action.rs": "db4ecb4ee33b75b83f60eda0926b8942fdf1964e11c10d18d39267f76ea39b4e",
         "src/actions/mod.rs": "d17fbc1f77c4a2ff4f28a73de5979525509be75f96e8e38738c3fd3979d0717d",
-        "src/actions/multi_action.rs": "a76b25c858ea5281ed60406d3308f9e62fb5ff40dd1bd77c886599ddce92483c",
-        "src/callback.rs": "e62a7866b2bfbcee6ecf0d5a21fede038c9a819bf40ab6f9dfcd158e50c6ff1d",
+        "src/actions/multi_action.rs": "d8fb6db4f542c3cef79bd182c29fead40d1c04a66f7895f4233d1ad0b299f97a",
+        "src/callback.rs": "d6b13b33eeb75bb0ba50d5c1de73ca8294458cdfc64d5c84516743aee208959c",
         "src/channel.rs": "70c7d2de63ad0a74faeb89510ad900c0596c05a30c7d0a6b091c18fef7d70dbd",
-        "src/computed.rs": "c87a98ec8bf3e80e3303ebc1b8f1aaed4dd52618a72e6ebb9748af3ebc4998d0",
-        "src/computed/arc_memo.rs": "85c531c475d4e4c176afdb9aaf79d32c4270a059e5321f5b97c09d7e1321b39c",
-        "src/computed/async_derived/arc_async_derived.rs": "ead3fb514b963482fcec0d73ee1143964f5267cfff0feceb5c4051725980fe69",
-        "src/computed/async_derived/async_derived.rs": "1120451da29592639fc83d5ba4c71d3aef4f418ed81cf455f218d32d9e7de750",
-        "src/computed/async_derived/future_impls.rs": "2e293223673b8470c309bbc056a52c146666f385382aa39cc5c18756430cd362",
+        "src/computed.rs": "162e4c76b373bae25995afbeec069a6324d6687db7a567f5294df991a1bc0336",
+        "src/computed/arc_memo.rs": "ad37c5c24d8058c52a2a9f063f00a588af9b4acb0747f8e3cacb57d1b9336976",
+        "src/computed/async_derived/arc_async_derived.rs": "5e1deee95922fc4f361b14865e812133df7a61c9745921faec7c2ada71a5f0af",
+        "src/computed/async_derived/async_derived.rs": "d948b091e66188adc004e52a90272fd3a5beb69f9e1738a2c2833e52efeadd70",
+        "src/computed/async_derived/future_impls.rs": "73bf9bcd4f4698c2d9810a9d3bf23958a127d43123643c2a4c33ad06f9e062ec",
         "src/computed/async_derived/inner.rs": "cb2d5dabad3866f37d63d70e62a00a995a4aaabcbd752a53a7601e0bfb197173",
         "src/computed/async_derived/mod.rs": "97e561a5f564291424312b5d04c3105873914a4cbea154ddb5756df38a893229",
         "src/computed/inner.rs": "43ec7d1f7c1ee1ffca70c6cd2d8a2faacf9bc283b953ce70352e9d1fe25cc028",
-        "src/computed/memo.rs": "3a12b23cd0d275e3f2f054c58a564174af1fc5668728c904ddb7b16758f961b5",
-        "src/computed/selector.rs": "d102cf47f26750b1aaa7c7d94fd8be5d4ccb8e5e14337d3dc096b15833706018",
+        "src/computed/memo.rs": "34d7d6e6dfbde7a3a5a1cf9817d24e17602589c04622f947d32fe70472987533",
+        "src/computed/selector.rs": "44a2f4b3526b95460496769d2bf71648f294501c66cc569b3346a98cf6aa4e17",
         "src/diagnostics.rs": "a082399955de0fadeec80cb856d5c1503f58ec47b90477b6645d0c467b421aa6",
         "src/effect.rs": "79695c0054cc31c15c93d6ec591ff052cdcc91315c54a0d3b69bac1e414e2c4f",
-        "src/effect/effect.rs": "bdf20fe14a3fad779ee0fc0b3623936281ceb659a610b3b50a0a069249380cdd",
+        "src/effect/effect.rs": "4a042155545bc656ca73900704b864adeb2f7309e5cd0e2d5cd00b9799f66b3c",
         "src/effect/effect_function.rs": "301207462962dad1e241e8e45e3bbd1064654aaa348e311f922f18eddd9a8346",
-        "src/effect/immediate.rs": "65d4d61ffb51e679bc83c1c03a38e40586421eac75b162490069ade945974aec",
+        "src/effect/immediate.rs": "4f7d85e3e5539b16a8d8a62b2d43e432bd0ce74473fd0fa3590e81a9a3297f02",
         "src/effect/inner.rs": "22afaca570d46734180ae86301844df61746404d271bfec5dd68be6a7c9eaa6a",
-        "src/effect/render_effect.rs": "2fee429d22faf645fec73d88708954bbac6276a347508dad58eb9bd422cb35fe",
+        "src/effect/render_effect.rs": "ae3db2685b992add12aab290f1d15886eb61e76063340c3a4d002a658f202961",
         "src/graph.rs": "7aa98d6f91b532db8669851cc43a2253ff0f6b34a30e49c7b924b4d39782ee5b",
         "src/graph/node.rs": "a9de4be297d6fcbc2f9b5c3344132b1f85f01d9870ef5adb7ce7ca1ebe46cc6e",
         "src/graph/sets.rs": "b8c466fef5e198f5dea967276f0bc0de916b802d228cd76effdfc5ecf2dfcc16",
-        "src/graph/source.rs": "e061cc0bc58e1f88cc39eaef8ac3b9d9b992f843635f37ef65d2941e8d02ef99",
-        "src/graph/subscriber.rs": "7dae792f5ed7d2d9cce338fc84dc391a2073c48992f396047dadd518cf5e986b",
-        "src/into_reactive_value.rs": "b036743927c883cb4aeeea3d424cb160fc52baa02421d40802ee878d9fe13dcf",
-        "src/lib.rs": "8aaef45f11f4b68d2663c98754ee4bd12d8f3f41178440a96ceafb5fe111e70c",
+        "src/graph/source.rs": "1bdf56f425c2b15885a9dc3ff19fa07beae7f7fafe204b41cbd8b358164b4f8b",
+        "src/graph/subscriber.rs": "479fb6bfeda874dd8a8c51b3dbe385e955f06845f05310751e696ce236a21306",
+        "src/into_reactive_value.rs": "5a961fc94e93b4f22bae93b40c41fa6009abec5683bc6a2c6555e62becbed669",
+        "src/lib.rs": "41caa6a83df084b3586e94c955e9ee417a146eba0845940036286bb9b0ec1e72",
         "src/nightly.rs": "dd5364a38f1c7119bd89ae0a297a7895332e7a21e6c59b158591119f817fc8dd",
-        "src/owner.rs": "9be3388b2f69bfe90275dfe4555a420e53917b9250b37981c8b669df3891227c",
-        "src/owner/arc_stored_value.rs": "a28d0b59a7336c714cffdcde66fbb18dcf174e9ad0600ab901efc2b190f8f625",
+        "src/owner.rs": "614f93d48a527544d6a2340a857146c37c18996da769ea13b19f30f0c3d64c27",
+        "src/owner/arc_stored_value.rs": "62f716a8976c7572cf2b4abc4c613215615e511bdcf9f2d9a3dfb3ddb42b10d4",
         "src/owner/arena.rs": "cf95724fb376d9a6df8717d4176af94887f7db2d7be55250c5499a627f480200",
         "src/owner/arena_item.rs": "905677a8df70ae1db6fd7ad69d27efe04e1a0db354ae41e51f6bba29368ef26a",
-        "src/owner/context.rs": "9574fcb3227d20f46b01651badb924eb89f144997d4d9a6fd9f305691efde616",
+        "src/owner/context.rs": "191f8f1e69e810758a22c53e188932723937a9f6e8b4070d891bb5b51a1ab910",
         "src/owner/storage.rs": "99c232d05a44e4c985bb56f298f3038f833f45d1cc002736fd5ccb8119794e17",
-        "src/owner/stored_value.rs": "b82e9e4fcf53c3d75143daed0376230f5ebb6d78e53584cb9e128cf3d70ea657",
+        "src/owner/stored_value.rs": "95c72612307a3612012740310f2c8a76a65936d36c47f97245dbc99dccbbfd9c",
         "src/send_wrapper_ext.rs": "2d7bf0fde79a02cbe0a51a15a8d1668eff6ac5742ec54259b97cfc268994e057",
         "src/serde.rs": "4885320f67f4e2b5b10248a38105dd5b742f619df0265c734357c6d98c996bba",
-        "src/signal.rs": "6cdcf3fd2656309884dea991eb920b4a44f309aec716b7db90a7b26fa38edeff",
-        "src/signal/arc_read.rs": "216aa0d39c7aac7204b45fcdb1f35e0c6f14105b07bc4f3aa1ffe0d665e293c4",
-        "src/signal/arc_rw.rs": "f1dee545d61e3a6534de273167bc91fa00d498d369d537f0baa62994bafe4844",
-        "src/signal/arc_trigger.rs": "1d0809d015d0377c19dedc68a2601ace7531cfd288d023ea74ff29b8f016bba2",
-        "src/signal/arc_write.rs": "e4e949296ad22fb7ab41cc2cf2d3da3e886071258965296703716d8dd831b13e",
+        "src/signal.rs": "16d13cf4341ba1c418788abae38f79ead083d98f11b44c7d36dde7260bf69351",
+        "src/signal/arc_read.rs": "f01bf2f42943d7950cecda0a53f94c5d7eb7997da9f626ae6a78d8ac1bbaa2cc",
+        "src/signal/arc_rw.rs": "76042cb47ea05cac7336a386128f9fbacf1efaf826138c715bc4d25f6ba23a1c",
+        "src/signal/arc_trigger.rs": "7ce46c660f3324397ec9caa11ca7c094c977128083dd1946ddffbd2c232f3fce",
+        "src/signal/arc_write.rs": "34e819d726d2bb845544d29ee922f8c03c25853dadfcd25472a5acc784cb2126",
         "src/signal/guards.rs": "f30681912c779960fd5f2c719677587b7387ea712ad35e1897167bc4e4ba50aa",
-        "src/signal/mapped.rs": "289846474e8f49acfa85dd8a79b44688e4c116e9b2d00f9107936cad3562a9a7",
-        "src/signal/read.rs": "890a8e47aa9f96ce2d25f89e56d4f770e237de5f532a5f594ef947412da30ede",
-        "src/signal/rw.rs": "10bf8edbfc7af4c8b62b2c476aaafc749c787e921a63e1a49a4f874ce2b6220b",
-        "src/signal/subscriber_traits.rs": "ab6751a22085867e2240a5fb71166cffd098caeab154265cf1890732cf45f102",
-        "src/signal/trigger.rs": "f3a17dffd3c4738d066de684b77776ca3ac5aaa21cd86bc68a8e79e0c07f0754",
-        "src/signal/write.rs": "a50fe0dc5e616a21fcd6ad0eb74c5547f231bb2905e2ed2d5f56c1486a521b24",
+        "src/signal/mapped.rs": "f685825cf2de5e019b2be365ac30a7265dcbb2616780ea7ad2e24232b9968f53",
+        "src/signal/read.rs": "1876e8217af5a410e83fba877e1fcd80c85011c4be31803e664952f6fcaba32a",
+        "src/signal/rw.rs": "796ee89c4500accf7db8c9ad9c67d6de45d862df3114037243be948f69bdcf74",
+        "src/signal/subscriber_traits.rs": "69f9aedb17168b3095e0d8433b12ea928ab4478bbdd242deb844ae1243828107",
+        "src/signal/trigger.rs": "b457ac0c0be3e897f4053ea57bcff80b5a729b7d19eedcae3f139fa83fe77422",
+        "src/signal/write.rs": "20a65523be96082d3421a14847727e9a82fa28ba75b8986f6234fad2f6678ee6",
         "src/trait_options.rs": "001fd4f145f312d50752abf6789396a56092741a323fda57c432614c08c078b8",
-        "src/traits.rs": "fa22d8e92592c1db80bcda4bf4e33ddb8cd7b8ef7ae0df15cd87a87f8c504851",
+        "src/traits.rs": "229452fe30d6d102d9ef33a904d27117f9ae79dbd204190eb8de6ab559cd0860",
         "src/transition.rs": "00bddd1d6f60ace08cdc3ac54c7c58eadd58ef42f5cf69ae1c14c7a7201eb9b2",
-        "src/wrappers.rs": "0d007cfca17b0248b4bbf26a64b4cd55abadf3f15751eaca84225b5bbabd55fa"
+        "src/wrappers.rs": "a9411ae4c90f8b375acd1f979c82b23bf4cf3ef7935669a16ff9255daa5fa431"
       },
       "license": "MIT",
       "license_materials": [
         "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
       ],
       "merged_into": "src/interface + src/macros",
-      "name": "reactive_graph",
+      "name": "reactive-state",
       "origin_directory": "vendor/web/dependencies/reactive_graph-0.2.16",
       "repository": "https://github.com/leptos-rs/leptos",
       "status": "内部维护源码",
@@ -38977,6 +38884,37 @@
       },
       "version": "0.1.7"
     },
+    "src/foundation/shared-value": {
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "A smart pointer for storing immutable values with relatively-cheap cloning. (Like a `Cow` meets an `Rc`!)",
+      "directory": "src/foundation/shared-value",
+      "files_sha256": {
+        "Cargo.toml": "e1a2aba18fa6fb320bdcfcb27ea12f8b0f2f691ad8c35d9785fe663451d5e843",
+        "src/lib.rs": "9a3dfa1cf4a833905e0c2b9ab3efcde24e1a65c143ef8283c3e5612bb9c9c5eb"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+      ],
+      "merged_into": "src/interface + src/macros",
+      "name": "shared-value",
+      "origin_directory": "vendor/web/dependencies/oco_ref-0.2.1",
+      "repository": "https://github.com/leptos-rs/leptos",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "ed0423ff9973dea4d6bd075934fdda86ebb8c05bdf9d6b0507067d4a1226371d",
+        "archive_url": "https://static.crates.io/crates/oco_ref/oco_ref-0.2.1.crate",
+        "name": "oco_ref",
+        "version": "0.2.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "5f2d5115537d08043bba0293c406c4f9b97a4dae"
+        },
+        "path_in_vcs": "oco"
+      },
+      "version": "0.2.1"
+    },
     "src/foundation/shell-tokenizer": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Split a string into shell words, like Python's shlex.",
@@ -39951,84 +39889,36 @@
       },
       "version": "0.39.6"
     },
-    "src/foundation/tachys": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。；CSR 内核保留 ToTemplate/RenderHtml 浏览器克隆与 hydration，删除服务端字符串/流式 HTML、异步服务端解析、SSR/服务端 hydration/islands/分支标记及未支持的 testing/sledgehammer/reactive_stores/error-hook 表面；事件/指令/属性直接持有浏览器值，移除序列化 key 和休眠宏标记；保留 client Suspend 的 owner/abort 生命周期。模板 void 元素真实浏览器回归发现旧缺陷并修复。；真实模板夹具同时修复 void 标签生成占位兄弟节点，以及动态 style hydration 沿用服务端已有样式假设的问题；样式恢复统一复用 build。；修复既有 bool 模板 hydration 将 false 属性也置为存在的问题，复用正常 build 并补 disabled/checked/required 往返浏览器断言；撤销未使用 nightly/Static 文本属性及构建通道探测，不扩大未转义静态输出的支持范围。；按实际 WASM MIR、维护源码及浏览器夹具收窄为 42 个 HTML、17 个 SVG、55 个预定义属性及 10 个事件描述符；撤销 MathML、闲置 SVG use 和内联事件属性，保留 Custom/typed target、模板、原始 DOM/inert/SVG 命名空间；直接 Web API 特性从 116 收窄至 49。详见 tools/rust-sources/web-scope.json 与本轮报告。",
-      "description": "Tools for building reactivity-agnostic, renderer-generic, statically-typed view trees for user interface libraries.",
-      "directory": "src/foundation/tachys",
+    "src/foundation/task-dispatch": {
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Spawn asynchronous tasks in an executor-independent way.",
+      "directory": "src/foundation/task-dispatch",
       "files_sha256": {
-        "Cargo.toml": "4b68f9f48a77fba51ba853c283bebead9d2aead886fe981dd24a5355ee1ecfbc",
-        "src/dom.rs": "581b3fc173e231c53b7d34ac47598aae0b821d05c339438b3479f5e76ff65c7b",
-        "src/erased.rs": "89974a6b9d6711534ff5fec3ac1e12045b7353678927c659091f45dcc93827d6",
-        "src/html/attribute/any_attribute.rs": "6eca4018445b6a4213bd1670a6ab426826c50d89982fb499a969155167e9d628",
-        "src/html/attribute/aria.rs": "f9b976e5850da7da1d093c2151d64012e28de14b96c41b3ce363b6a9ab519b1a",
-        "src/html/attribute/custom.rs": "685ae6082f69b1291db6ca66a057edcfacdce5187ce228d19114fabc63d012d8",
-        "src/html/attribute/global.rs": "bd41d56568910b880c025744bbaaf5deddf735838b657a3a5dc756d715d410f8",
-        "src/html/attribute/key.rs": "d5374c2ab4f7af143b4bec13cbb1dd7caccbe46ca72e0b290364df2a127ec109",
-        "src/html/attribute/maybe_next_attr_erasure_macros.rs": "d8bf8965500dcdf3c832faa843ede714495f3c8f2b3632bdb65e38f51cbea262",
-        "src/html/attribute/mod.rs": "7117fe442d00b5d8556b1c979adef928667a299bd1e9cc394cdc234a47b4f631",
-        "src/html/attribute/value.rs": "f740f89e8df2b06a1a3262f110edb472226c639d4bfc33c0c22188e83fc39f6f",
-        "src/html/class.rs": "f2eaba6d6ef7a20ddf996fe7efeec8cf173b206d3f6cc1d86934cffb09156df7",
-        "src/html/directive.rs": "6bd4092b55f55a727ea1863a65d5a273db768bd8e6812f78a0a480da9d66c6c3",
-        "src/html/element/custom.rs": "fd3cf5f9cec5d7029d26cee541eccceef3dcd9b6a9a8f7448a06d33d8ba60c5d",
-        "src/html/element/element_ext.rs": "264eca830fa794291d882ee11f6ce2167bce36d5900235b8877723ebf5aefae5",
-        "src/html/element/elements.rs": "dd28e111650a1cbb6cf0c8953885d231e55cf840f9861f80c95c54dbd3f27c33",
-        "src/html/element/inner_html.rs": "b4b5025e64e6343985c83f10aae70f9656f4c1b21a7481b24871c112589e858d",
-        "src/html/element/mod.rs": "ceb4aa173670af649d190aca3f8a542c2770635fa300067efec43da2fb5cd7a1",
-        "src/html/event.rs": "bd66dd40ae3523d906dd0f50b896c32dce3474d5d72bdc6321ae889d31796975",
-        "src/html/mod.rs": "fa8fde108e775fbec57b327aaecc25a5d50b038b87273cf8cf54379827533499",
-        "src/html/node_ref.rs": "160e6ad8b5bffd48e2ee45b9661849f2c9ae0f554723ff5b348520b801f057ec",
-        "src/html/property.rs": "193b6672cedeba1419f67c6212104ae55495a2f2125ed891a2bb6bfe67d54388",
-        "src/html/style.rs": "1b1bfaa94907d5d4918e514b9c3af283f0d15798e08f0e5f561ae9119c5c8cf1",
-        "src/hydration.rs": "9850ac1039ba5ec77168dbc928f8d52222e8ae168065a8741a0762f4297b9c96",
-        "src/lib.rs": "35c54f92749f143fa4da12672831c0ad7f130b9e5d914dfc55d099d8d45d5e03",
-        "src/oco.rs": "7fd666bc0a7b13cc50c5ebbfc06e61ccfa3392481a4e6023e776867e18eefb17",
-        "src/reactive_graph/bind.rs": "cf601fb8ff50ae0f21e6d576eac25a0ff3e923cf9c4f0ddea3c8e1b58b12e50d",
-        "src/reactive_graph/class.rs": "f01ac896d834ff858b1b2d17154b845770dd47c9876a631dac2d8310f6b32739",
-        "src/reactive_graph/inner_html.rs": "9bddc9cb9471c114b0ad135710dfa4c630d3106139cf133555e7c0c7393a4bb5",
-        "src/reactive_graph/mod.rs": "560bbd9040ce9d7720ba4d3ed6f2edfd59863faf9beda15accf3045e3c47aa09",
-        "src/reactive_graph/node_ref.rs": "4a4506ec573f07831af53320767169a625b2a0176de7e8d50eda05552ac5d643",
-        "src/reactive_graph/owned.rs": "df9aff800d1eca87476960aeea423f68464d576f972eaf0b847cd7edf8af79fb",
-        "src/reactive_graph/property.rs": "5b10bea631e336dc0204add931b6e56ec0faca796cc01de0bb8121c232e46c05",
-        "src/reactive_graph/style.rs": "4af4b764407c693da4fc149f9420ef707da0decf1d2466db2bbaca73f3c259bd",
-        "src/reactive_graph/suspense.rs": "18dc29c6ca594dec0661334b97a4ceadf062f18cd4cf693b86acba4890a49bb1",
-        "src/renderer/dom.rs": "b008f934a062d9f79f66750cfd1301c5a1e24ea561412e0e91aaeee68a23b6b2",
-        "src/renderer/mod.rs": "8a4521b46751a9f720664e5d954f50e7d0c5272eb53a978e0efbc08551c7d7e2",
-        "src/svg/mod.rs": "6cde6b722a0c83da55c83d30d360c288903ea1aef157be4dccd566c55d089e9e",
-        "src/view/add_attr.rs": "1709ecc464a41b53c162a714b333e7cd123c4a9601641d4f238940bf7734657c",
-        "src/view/any_view.rs": "11a51afb75c988bf2cc2619ea3db666ec188f96934fd1cee0dd3db568c1d490c",
-        "src/view/either.rs": "a3e3713cfe082f2542a1dff18d19df79d8705a8fcb7d9bfdcb5760a0d171dd8b",
-        "src/view/error_boundary.rs": "1815c4a637449e2021dc375d89c530883bc794ef7ce1e4cab0c956e5c02a5b41",
-        "src/view/fragment.rs": "b81b0183c5626d2a4b27b35215f7017f9c1cb5d6220de0dad2ae0e0eff28c09b",
-        "src/view/iterators.rs": "7cea15c502b7ab32cc587158eb1f9f871ca7ee33ae63ff424a67fa0c83e87cbd",
-        "src/view/keyed.rs": "5dbf68b4f9b0da0c93d7224c6c0274e40dbbf5fcf92124b3449c9e53f0470ff7",
-        "src/view/mod.rs": "73771ef27709539720713913726d2d51586d3e18ef2ce69ed7b0eddb02ea8b51",
-        "src/view/primitives.rs": "4f1c0d696d1384e27eb5cb6279485ecca3d50f928e387c68da84cc660c420b59",
-        "src/view/strings.rs": "7cc80961338ea7f4468c7b9627941b5bffd8ebd23ba4ccd52b27b49781b32f60",
-        "src/view/template.rs": "4b7f7ee10e9b25a19dbacffcbfd1e4792aa91b44e86d18cc862f926cdcc73bd5",
-        "src/view/tuples.rs": "b3d61e6708ebd2d6707360d5dcbc43905458cd7f6535aac25abf9e379e63691a"
+        "Cargo.toml": "32478b2bf65b58e06c7bf8e01bab47709355ec3838e81bc82ac00e3e2b85de86",
+        "src/lib.rs": "1841a3972cec6fbce4004a5039add28cfba25eecccba3bc003918d280bd8f174"
       },
       "license": "MIT",
       "license_materials": [
         "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
       ],
       "merged_into": "src/interface + src/macros",
-      "name": "tachys",
-      "origin_directory": "vendor/web/dependencies/tachys-0.2.19",
+      "name": "task-dispatch",
+      "origin_directory": "vendor/web/dependencies/any_spawner-0.3.0",
       "repository": "https://github.com/leptos-rs/leptos",
       "status": "内部维护源码",
       "upstream": {
-        "archive_sha256": "e47e2220bb9d2a3be976a22a0fb7685a0b84499bb11ea5cb3bbc82907675ac68",
-        "archive_url": "https://static.crates.io/crates/tachys/tachys-0.2.19.crate",
-        "name": "tachys",
-        "version": "0.2.19"
+        "archive_sha256": "1384d3fe1eecb464229fcf6eebb72306591c56bf27b373561489458a7c73027d",
+        "archive_url": "https://static.crates.io/crates/any_spawner/any_spawner-0.3.0.crate",
+        "name": "any_spawner",
+        "version": "0.3.0"
       },
       "vcs": {
         "git": {
-          "sha1": "584c3a2d884b0e4dba9e3f822a9b6982cff072c7"
+          "sha1": "9b2e313d20c89603ddc0deb7b1133e60c877faed"
         },
-        "path_in_vcs": "tachys"
+        "path_in_vcs": "any_spawner"
       },
-      "version": "0.2.19"
+      "version": "0.3.0"
     },
     "src/foundation/tempfile": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
@@ -42396,6 +42286,116 @@
       },
       "version": "0.9.5"
     },
+    "src/foundation/view-alternatives": {
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Utilities for working with enumerated types that contain one of 2..n other types.",
+      "directory": "src/foundation/view-alternatives",
+      "files_sha256": {
+        "Cargo.toml": "6e5019fd2c08432eb4b5082d751114f98f1700b39b389a8343c024e4a91c87e0",
+        "src/lib.rs": "904184bba72c8f9af720951584fb43e3445ac840b9a3ca41648bbf3b607668bb"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+      ],
+      "merged_into": "src/interface + src/macros",
+      "name": "view-alternatives",
+      "origin_directory": "vendor/web/dependencies/either_of-0.1.9",
+      "repository": "https://github.com/leptos-rs/leptos",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "5060e0a4cbf26a87550792688ade88e6b8aec9208613631a7a363bda7bc2d4cd",
+        "archive_url": "https://static.crates.io/crates/either_of/either_of-0.1.9.crate",
+        "name": "either_of",
+        "version": "0.1.9"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "fbc9ed631ff8c19c5eed02a1d4459e202cff7043"
+        },
+        "path_in_vcs": "either_of"
+      },
+      "version": "0.1.9"
+    },
+    "src/foundation/view-renderer": {
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。；CSR 内核保留 ToTemplate/RenderHtml 浏览器克隆与 hydration，删除服务端字符串/流式 HTML、异步服务端解析、SSR/服务端 hydration/islands/分支标记及未支持的 testing/sledgehammer/reactive_stores/error-hook 表面；事件/指令/属性直接持有浏览器值，移除序列化 key 和休眠宏标记；保留 client Suspend 的 owner/abort 生命周期。模板 void 元素真实浏览器回归发现旧缺陷并修复。；真实模板夹具同时修复 void 标签生成占位兄弟节点，以及动态 style hydration 沿用服务端已有样式假设的问题；样式恢复统一复用 build。；修复既有 bool 模板 hydration 将 false 属性也置为存在的问题，复用正常 build 并补 disabled/checked/required 往返浏览器断言；撤销未使用 nightly/Static 文本属性及构建通道探测，不扩大未转义静态输出的支持范围。；按实际 WASM MIR、维护源码及浏览器夹具收窄为 42 个 HTML、17 个 SVG、55 个预定义属性及 10 个事件描述符；撤销 MathML、闲置 SVG use 和内联事件属性，保留 Custom/typed target、模板、原始 DOM/inert/SVG 命名空间；直接 Web API 特性从 116 收窄至 49。详见 tools/rust-sources/web-scope.json 与本轮报告。",
+      "description": "Tools for building reactivity-agnostic, renderer-generic, statically-typed view trees for user interface libraries.",
+      "directory": "src/foundation/view-renderer",
+      "files_sha256": {
+        "Cargo.toml": "fccb30e0340d9d4df9ae24f44e81db61d47d47aed728d42652766972541e2cbf",
+        "src/dom.rs": "581b3fc173e231c53b7d34ac47598aae0b821d05c339438b3479f5e76ff65c7b",
+        "src/erased.rs": "89974a6b9d6711534ff5fec3ac1e12045b7353678927c659091f45dcc93827d6",
+        "src/html/attribute/any_attribute.rs": "6eca4018445b6a4213bd1670a6ab426826c50d89982fb499a969155167e9d628",
+        "src/html/attribute/aria.rs": "f9b976e5850da7da1d093c2151d64012e28de14b96c41b3ce363b6a9ab519b1a",
+        "src/html/attribute/custom.rs": "685ae6082f69b1291db6ca66a057edcfacdce5187ce228d19114fabc63d012d8",
+        "src/html/attribute/global.rs": "bd41d56568910b880c025744bbaaf5deddf735838b657a3a5dc756d715d410f8",
+        "src/html/attribute/key.rs": "d5374c2ab4f7af143b4bec13cbb1dd7caccbe46ca72e0b290364df2a127ec109",
+        "src/html/attribute/maybe_next_attr_erasure_macros.rs": "d8bf8965500dcdf3c832faa843ede714495f3c8f2b3632bdb65e38f51cbea262",
+        "src/html/attribute/mod.rs": "7117fe442d00b5d8556b1c979adef928667a299bd1e9cc394cdc234a47b4f631",
+        "src/html/attribute/value.rs": "f740f89e8df2b06a1a3262f110edb472226c639d4bfc33c0c22188e83fc39f6f",
+        "src/html/class.rs": "f2eaba6d6ef7a20ddf996fe7efeec8cf173b206d3f6cc1d86934cffb09156df7",
+        "src/html/directive.rs": "c1148cc594b350facc348bb9f2ae099b7645d7d959f60019a4b73f5929773989",
+        "src/html/element/custom.rs": "90ce97e480c2b7581c877a0cecd3bab95e5a24a86396feb4eb0cf1a070ca6733",
+        "src/html/element/element_ext.rs": "0fa205cca48980a1b8e736ee1e77df5700d3e310e8a88d3f7956aed1dcf11e95",
+        "src/html/element/elements.rs": "ed1977a13d04dee29c410da706181f5287c17506beeed2dfac67f3b6494d18b3",
+        "src/html/element/inner_html.rs": "b4b5025e64e6343985c83f10aae70f9656f4c1b21a7481b24871c112589e858d",
+        "src/html/element/mod.rs": "f1a5cb56d25347495d2f0bbfab12f033b67148938d427d52e1f2fee05de8d4fa",
+        "src/html/event.rs": "ab55e348d12c8e7d0791d63b667f0fee6f96c3dde5595a6a97caf400222cc3e9",
+        "src/html/mod.rs": "fa8fde108e775fbec57b327aaecc25a5d50b038b87273cf8cf54379827533499",
+        "src/html/node_ref.rs": "160e6ad8b5bffd48e2ee45b9661849f2c9ae0f554723ff5b348520b801f057ec",
+        "src/html/property.rs": "193b6672cedeba1419f67c6212104ae55495a2f2125ed891a2bb6bfe67d54388",
+        "src/html/style.rs": "caf5e898ab9e8bba435520a1fbf0e05f349cd8486975ef0d722aa56af64b531e",
+        "src/hydration.rs": "f1c0c73b1f3641d677b403b2184483ea91cf71fba61add49b038abdc1f914d17",
+        "src/lib.rs": "8456dd560fdc67f226838c189d87d9cd3bc4a73209f92b920a5e5c3f4cf82e8f",
+        "src/reactive_state/bind.rs": "610d974285cfc8ac23215fc13d9aaa5db326cdc584b27462a5a187afe48a5c0f",
+        "src/reactive_state/class.rs": "665c8ec6c2b843912ecc49b5a8d5e4390c6c8613eea21f147b276c9a0ec23dca",
+        "src/reactive_state/inner_html.rs": "af4928addd3be26bb0bee51f8b64d7966d3866065ce1c3021530cd2f5087ec52",
+        "src/reactive_state/mod.rs": "799bfb5539802ba0a780c764f4808bdf62b084231eea25d3d49262cebdfcafb2",
+        "src/reactive_state/node_ref.rs": "fcbd955962a7639b256cfec81d706c019c49ebc62932ce0cab23a4d8ad1cfd7e",
+        "src/reactive_state/owned.rs": "cc695e559fd67b3b23ceacd2afac30e0ef4df3f1d62bde54c4e098cfa6ab3212",
+        "src/reactive_state/property.rs": "1a6d0d8b23486018c1f1348bb478479b6780ebcfe67d190702ba420c8f86a67e",
+        "src/reactive_state/style.rs": "f9708641def55d65294c6a61ee8b3e641ce9403d5450a141a9fb89bc14339659",
+        "src/reactive_state/suspense.rs": "bc4140f8d313ef19972284aa25d6058b5c7d3682ac80884e8da47326a120167d",
+        "src/renderer/dom.rs": "b008f934a062d9f79f66750cfd1301c5a1e24ea561412e0e91aaeee68a23b6b2",
+        "src/renderer/mod.rs": "8a4521b46751a9f720664e5d954f50e7d0c5272eb53a978e0efbc08551c7d7e2",
+        "src/shared_value.rs": "553ea41c71bd87c913135e204c591cec17024149e1300e5e8f262a538ab8f9b7",
+        "src/svg/mod.rs": "e7a32c32f82abdf9884b301c786578cd92d5796f6d2294dbd84163c9fb38c225",
+        "src/view/add_attr.rs": "1709ecc464a41b53c162a714b333e7cd123c4a9601641d4f238940bf7734657c",
+        "src/view/any_view.rs": "11a51afb75c988bf2cc2619ea3db666ec188f96934fd1cee0dd3db568c1d490c",
+        "src/view/either.rs": "5d8ba08794a3f59b0c511685263ccc497f9004f9d4a519c238a3226d4215aa4a",
+        "src/view/error_boundary.rs": "7c4d483b1b33eeaca6f9bf631061fa3478ecd804d28defd83ba69c2f8edd8664",
+        "src/view/fragment.rs": "b81b0183c5626d2a4b27b35215f7017f9c1cb5d6220de0dad2ae0e0eff28c09b",
+        "src/view/iterators.rs": "3482e94e327d6572f666d0aaa886e8a9343a55a659d82552c8d318ef1cb4eec0",
+        "src/view/keyed.rs": "5dbf68b4f9b0da0c93d7224c6c0274e40dbbf5fcf92124b3449c9e53f0470ff7",
+        "src/view/mod.rs": "73771ef27709539720713913726d2d51586d3e18ef2ce69ed7b0eddb02ea8b51",
+        "src/view/primitives.rs": "6ce5a37a951be0f38380330b37e19ce3f14df4fc6588770940600050b7c6840b",
+        "src/view/strings.rs": "7cc80961338ea7f4468c7b9627941b5bffd8ebd23ba4ccd52b27b49781b32f60",
+        "src/view/template.rs": "4b7f7ee10e9b25a19dbacffcbfd1e4792aa91b44e86d18cc862f926cdcc73bd5",
+        "src/view/tuples.rs": "b3d61e6708ebd2d6707360d5dcbc43905458cd7f6535aac25abf9e379e63691a"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+      ],
+      "merged_into": "src/interface + src/macros",
+      "name": "view-renderer",
+      "origin_directory": "vendor/web/dependencies/tachys-0.2.19",
+      "repository": "https://github.com/leptos-rs/leptos",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "e47e2220bb9d2a3be976a22a0fb7685a0b84499bb11ea5cb3bbc82907675ac68",
+        "archive_url": "https://static.crates.io/crates/tachys/tachys-0.2.19.crate",
+        "name": "tachys",
+        "version": "0.2.19"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "584c3a2d884b0e4dba9e3f822a9b6982cff072c7"
+        },
+        "path_in_vcs": "tachys"
+      },
+      "version": "0.2.19"
+    },
     "src/foundation/vsimd": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "SIMD utilities",
@@ -44151,7 +44151,7 @@
         "src/slice.rs": "277ca38d1afda01dd6058e464f0a0d236507e45da3aa932ce4d902b453c47f4a",
         "src/slot.rs": "1f5f59c8eff9523a341716c01f6dba9431bf1247c8edc604e7e8962aef52b777",
         "src/view/component_builder.rs": "333ea7691bd8527ad2300e4133935d95c91a7a940eba13ca6b26697a204b5eec",
-        "src/view/mod.rs": "d4ed1697088a7f9d3f32b8441b3454bc9b53f0e94c9dabff8c442dc9127d4651",
+        "src/view/mod.rs": "aedf8bce502dfc6b728a3bc0fbb45e25cf42a6ae2d85fcea244249d3845ba414",
         "src/view/slot_helper.rs": "6c15e192889d03d673bb0e9067eb20d7a8ac01a2e5a80b3b0421d1073fe61d6c",
         "src/view/utils.rs": "d4679c4a8984014adb88f61937fc1bebdc5b1b59734cc76b31e23e65534cdf9e",
         "src/view_source.rs": "d1c308a911a1243224c328da0197ad389a8c686abce2fe62c36b6be3627acc43"
@@ -48042,14 +48042,226 @@
     "docs/upstream/zxs-web-macro-0.8.19/README.md": "cadda70f7c6ae3bf8aecab12b3e8f44507695f00b6e21afd9f5ca61fc239670f"
   },
   "rename_records_sha256": {
+    "src/foundation/any_spawner": "e3c738bbb39ce1a3e05b2a9483440067dbd7f3b5c4fa52fb2718ccdb46b63cbe",
     "src/foundation/base64-0.23.1": "0941b858b2be338d141e29a0deb9f94bf51da898215a6fbe6cc339e66ad51ec4",
     "src/foundation/bitflags-2.13.2": "d7bb66afc5c11e7262e7b99b9f9628146f6f37fd940f2f47a9c127d78109df68",
+    "src/foundation/either_of": "1a1244d4cca0441be6a629f2b32719fed03feb1b3882c5c0f3e2ee33992e4e20",
     "src/foundation/itertools-0.14.0": "90e82dd2ef2db85ef7f1d269e1c0ee363c75a3961e76eed6843e6692c6692ff6",
+    "src/foundation/leptos_dom": "60842b005126467443f3bb816edf69a81c22be2084bc89a96c43098292969a45",
+    "src/foundation/oco_ref": "f910016d4e16016c8f49e071969c09f02b7f60420e84bc5971cd0831d2a27585",
     "src/foundation/rand_core-0.6.4": "2075c8353d02a6fa5bd55b40e0a9d924632df51c4d86cb6918fefd5a1269e388",
+    "src/foundation/reactive_graph": "3f16e35abc379a43ecb8b5ab07f7377db0f77292c596fc0c22397e0ca0851854",
     "src/foundation/sha2-0.11.1": "d1665fd39d9471d40f779cdd8d90a8cd007fcd88214065553ce88a196ee4fe23",
-    "src/foundation/shlex-2.0.1": "1edd68da01868cc8b255b0fa98f30aef8f8513ae4f78992b9bb249e63a7fd7c7"
+    "src/foundation/shlex-2.0.1": "1edd68da01868cc8b255b0fa98f30aef8f8513ae4f78992b9bb249e63a7fd7c7",
+    "src/foundation/tachys": "6536fbef15cbd4f89724703f744f7ec4b24e9bfb11c1e3f6313bae4ad6686294"
   },
   "renames": {
+    "src/foundation/any_spawner": {
+      "destination_directory": "src/foundation/task-dispatch",
+      "destination_external_tests": {
+        "bytes": 18968,
+        "directory": "src/foundation/task-dispatch",
+        "file_count": 12,
+        "files": [
+          {
+            "path": "test/foundation/task-dispatch/tests/already_set_error.rs",
+            "sha256": "ac2226c7be5488757dddef2d7fe2caccd08cfbbf6a2e188a3f508698f4df148e",
+            "source": "src/foundation/any_spawner/tests/already_set_error.rs",
+            "source_sha256_before": "f48bf800d69813068aaf48b0d91ea91802c9fa3a031f7e5f33b3ccf6ebec1d49"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/async_executor.rs",
+            "sha256": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787",
+            "source": "src/foundation/any_spawner/tests/async_executor.rs",
+            "source_sha256_before": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/custom_executor.rs",
+            "sha256": "f59bcdfa0a1b16887449ac00c5e38683798287e158091bbad5e86ba4c762b6c7",
+            "source": "src/foundation/any_spawner/tests/custom_executor.rs",
+            "source_sha256_before": "fdeb4dc73520abcc980ff44d451f225e35e0d84044437e683147806784062c29"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/custom_runtime.rs",
+            "sha256": "0fa7b46415ae8eb47ce9c3f94f7d3b769d003d7f8caf9a03388ccd269b715e05",
+            "source": "src/foundation/any_spawner/tests/custom_runtime.rs",
+            "source_sha256_before": "67d45a33dd486c22e3ec7e3dc9d84e48d8b20e67895eef49e8543f2830e8e511"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/executor_tick.rs",
+            "sha256": "b915be92a018814c3040a5823ae59edde032c37f676940b2c8cdb3245ce93158",
+            "source": "src/foundation/any_spawner/tests/executor_tick.rs",
+            "source_sha256_before": "6abc72beac51c04fc3dc4a004e3107858ca15d6cecaaac1cd36a868166284d94"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/futures_executor.rs",
+            "sha256": "ca6f5f081f38e5610673358ba80834fc52eb9ce23a8005779a0fbc60ca492358",
+            "source": "src/foundation/any_spawner/tests/futures_executor.rs",
+            "source_sha256_before": "2a5864b57f3d7e4418f3c2d96f6a290aa3baed838feab49ee2c23d4be944332a"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/futures_runtime.rs",
+            "sha256": "c6cdb15ff257e8afed61f919e1cb23e7f483176093288f9550a67d41913ea913",
+            "source": "src/foundation/any_spawner/tests/futures_runtime.rs",
+            "source_sha256_before": "2282e0f5a828d1dff2a225bbfa8db19cebaff1cfc9f172d1a83d504d7439ba9c"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/glib.rs",
+            "sha256": "554aef2fe6983b7c2fbfa4670c5982ed01b7d1427e4dba809894a9562e3b2179",
+            "source": "src/foundation/any_spawner/tests/glib.rs",
+            "source_sha256_before": "ab49fe0b84ca88b9d9f5d96a87d5d58b1291d17ede7659511afdb5c5e4065f84"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/local_custom_executor.rs",
+            "sha256": "e0d6e9ad648185d331dc0fe4558801d13fd4f4ecdf15c12d159c155ae78f8c09",
+            "source": "src/foundation/any_spawner/tests/local_custom_executor.rs",
+            "source_sha256_before": "470d065d0eada3b51117b0762f8bceaea7885ddd35bd0fe9e27e5a4aad59f044"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/multiple_tasks.rs",
+            "sha256": "be12236f90346dc2f166c57f1e925d3e5bad2f0d4afe98712e1c5288ef3c3f4b",
+            "source": "src/foundation/any_spawner/tests/multiple_tasks.rs",
+            "source_sha256_before": "581abd3e70aa0e6c27a37639622b85124aeccb042bd937c575f4577e1604692c"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/tokio_executor.rs",
+            "sha256": "98f45906c30c2f456095f5ddc63b82145829d5f900d1526f7698d7bb8969c899",
+            "source": "src/foundation/any_spawner/tests/tokio_executor.rs",
+            "source_sha256_before": "d45ba06a778f86ea416fd0177327783a233940df504dc059812e44df8ee2526a"
+          },
+          {
+            "path": "test/foundation/task-dispatch/tests/wasm_bindgen_tests.rs",
+            "sha256": "0f29570e2011d9547895153d1472fc9de8528985c46811ad9ae110e680bfb2e6",
+            "source": "src/foundation/any_spawner/tests/wasm_bindgen_tests.rs",
+            "source_sha256_before": "55dae3bc232959d2c0dbdf827a4e51a1ef7660f5fa14c60441542a7fcbb3c323"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/any_spawner-0.3.0",
+        "roots": [
+          "test/foundation/task-dispatch"
+        ]
+      },
+      "destination_name": "task-dispatch",
+      "external_tests": {
+        "bytes": 18928,
+        "directory": "src/foundation/any_spawner",
+        "file_count": 12,
+        "files": [
+          {
+            "path": "test/foundation/any_spawner/tests/already_set_error.rs",
+            "sha256": "f48bf800d69813068aaf48b0d91ea91802c9fa3a031f7e5f33b3ccf6ebec1d49",
+            "source": "src/foundation/any_spawner/tests/already_set_error.rs",
+            "source_sha256_before": "f48bf800d69813068aaf48b0d91ea91802c9fa3a031f7e5f33b3ccf6ebec1d49"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/async_executor.rs",
+            "sha256": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787",
+            "source": "src/foundation/any_spawner/tests/async_executor.rs",
+            "source_sha256_before": "62c835e8cc7a28c1d3f359bedc5f5e4f0edea6e04eaf3b4eeaa8a72a98458787"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/custom_executor.rs",
+            "sha256": "fdeb4dc73520abcc980ff44d451f225e35e0d84044437e683147806784062c29",
+            "source": "src/foundation/any_spawner/tests/custom_executor.rs",
+            "source_sha256_before": "fdeb4dc73520abcc980ff44d451f225e35e0d84044437e683147806784062c29"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/custom_runtime.rs",
+            "sha256": "67d45a33dd486c22e3ec7e3dc9d84e48d8b20e67895eef49e8543f2830e8e511",
+            "source": "src/foundation/any_spawner/tests/custom_runtime.rs",
+            "source_sha256_before": "67d45a33dd486c22e3ec7e3dc9d84e48d8b20e67895eef49e8543f2830e8e511"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/executor_tick.rs",
+            "sha256": "6abc72beac51c04fc3dc4a004e3107858ca15d6cecaaac1cd36a868166284d94",
+            "source": "src/foundation/any_spawner/tests/executor_tick.rs",
+            "source_sha256_before": "6abc72beac51c04fc3dc4a004e3107858ca15d6cecaaac1cd36a868166284d94"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/futures_executor.rs",
+            "sha256": "2a5864b57f3d7e4418f3c2d96f6a290aa3baed838feab49ee2c23d4be944332a",
+            "source": "src/foundation/any_spawner/tests/futures_executor.rs",
+            "source_sha256_before": "2a5864b57f3d7e4418f3c2d96f6a290aa3baed838feab49ee2c23d4be944332a"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/futures_runtime.rs",
+            "sha256": "2282e0f5a828d1dff2a225bbfa8db19cebaff1cfc9f172d1a83d504d7439ba9c",
+            "source": "src/foundation/any_spawner/tests/futures_runtime.rs",
+            "source_sha256_before": "2282e0f5a828d1dff2a225bbfa8db19cebaff1cfc9f172d1a83d504d7439ba9c"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/glib.rs",
+            "sha256": "ab49fe0b84ca88b9d9f5d96a87d5d58b1291d17ede7659511afdb5c5e4065f84",
+            "source": "src/foundation/any_spawner/tests/glib.rs",
+            "source_sha256_before": "ab49fe0b84ca88b9d9f5d96a87d5d58b1291d17ede7659511afdb5c5e4065f84"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/local_custom_executor.rs",
+            "sha256": "470d065d0eada3b51117b0762f8bceaea7885ddd35bd0fe9e27e5a4aad59f044",
+            "source": "src/foundation/any_spawner/tests/local_custom_executor.rs",
+            "source_sha256_before": "470d065d0eada3b51117b0762f8bceaea7885ddd35bd0fe9e27e5a4aad59f044"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/multiple_tasks.rs",
+            "sha256": "581abd3e70aa0e6c27a37639622b85124aeccb042bd937c575f4577e1604692c",
+            "source": "src/foundation/any_spawner/tests/multiple_tasks.rs",
+            "source_sha256_before": "581abd3e70aa0e6c27a37639622b85124aeccb042bd937c575f4577e1604692c"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/tokio_executor.rs",
+            "sha256": "d45ba06a778f86ea416fd0177327783a233940df504dc059812e44df8ee2526a",
+            "source": "src/foundation/any_spawner/tests/tokio_executor.rs",
+            "source_sha256_before": "d45ba06a778f86ea416fd0177327783a233940df504dc059812e44df8ee2526a"
+          },
+          {
+            "path": "test/foundation/any_spawner/tests/wasm_bindgen_tests.rs",
+            "sha256": "55dae3bc232959d2c0dbdf827a4e51a1ef7660f5fa14c60441542a7fcbb3c323",
+            "source": "src/foundation/any_spawner/tests/wasm_bindgen_tests.rs",
+            "source_sha256_before": "55dae3bc232959d2c0dbdf827a4e51a1ef7660f5fa14c60441542a7fcbb3c323"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/any_spawner-0.3.0",
+        "roots": [
+          "test/foundation/any_spawner"
+        ]
+      },
+      "files_sha256": {
+        "Cargo.toml": "32478b2bf65b58e06c7bf8e01bab47709355ec3838e81bc82ac00e3e2b85de86",
+        "src/lib.rs": "1841a3972cec6fbce4004a5039add28cfba25eecccba3bc003918d280bd8f174"
+      },
+      "package": {
+        "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+        "description": "Spawn asynchronous tasks in an executor-independent way.",
+        "directory": "src/foundation/any_spawner",
+        "files_sha256": {
+          "Cargo.toml": "c4a4b3361690d55ace543c010d5056e81e3cf544343b0a7e525a18577befd62b",
+          "src/lib.rs": "ffabeb3409bf66fff1290013cb07e6ce69d873218ed2133b431da9f78e30af05"
+        },
+        "license": "MIT",
+        "license_materials": [
+          "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+        ],
+        "merged_into": "src/interface + src/macros",
+        "name": "any_spawner",
+        "origin_directory": "vendor/web/dependencies/any_spawner-0.3.0",
+        "repository": "https://github.com/leptos-rs/leptos",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "1384d3fe1eecb464229fcf6eebb72306591c56bf27b373561489458a7c73027d",
+          "archive_url": "https://static.crates.io/crates/any_spawner/any_spawner-0.3.0.crate",
+          "name": "any_spawner",
+          "version": "0.3.0"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "9b2e313d20c89603ddc0deb7b1133e60c877faed"
+          },
+          "path_in_vcs": "any_spawner"
+        },
+        "version": "0.3.0"
+      },
+      "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
+    },
     "src/foundation/base64-0.23.1": {
       "destination_directory": "src/foundation/base64",
       "destination_external_tests": {
@@ -48830,6 +49042,80 @@
       },
       "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
     },
+    "src/foundation/either_of": {
+      "destination_directory": "src/foundation/view-alternatives",
+      "destination_external_tests": {
+        "bytes": 8557,
+        "directory": "src/foundation/view-alternatives",
+        "file_count": 1,
+        "files": [
+          {
+            "path": "test/foundation/view-alternatives/unit/src/lib/tests_1012.rs",
+            "sha256": "78367d995ea1a1942fd01978a0a04a183fea971960062b81cbfdfd1f1681b089",
+            "source": "src/foundation/either_of/src/lib.rs",
+            "source_sha256_before": "2e5dface1c4b059e3240d033a256aca794d4ebd5e7b80cef4d5357e4f6171dfc"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/either_of-0.1.9",
+        "roots": [
+          "test/foundation/view-alternatives"
+        ]
+      },
+      "destination_name": "view-alternatives",
+      "external_tests": {
+        "bytes": 8557,
+        "directory": "src/foundation/either_of",
+        "file_count": 1,
+        "files": [
+          {
+            "path": "test/foundation/either_of/unit/src/lib/tests_1012.rs",
+            "sha256": "78367d995ea1a1942fd01978a0a04a183fea971960062b81cbfdfd1f1681b089",
+            "source": "src/foundation/either_of/src/lib.rs",
+            "source_sha256_before": "2e5dface1c4b059e3240d033a256aca794d4ebd5e7b80cef4d5357e4f6171dfc"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/either_of-0.1.9",
+        "roots": [
+          "test/foundation/either_of"
+        ]
+      },
+      "files_sha256": {
+        "Cargo.toml": "6e5019fd2c08432eb4b5082d751114f98f1700b39b389a8343c024e4a91c87e0",
+        "src/lib.rs": "904184bba72c8f9af720951584fb43e3445ac840b9a3ca41648bbf3b607668bb"
+      },
+      "package": {
+        "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+        "description": "Utilities for working with enumerated types that contain one of 2..n other types.",
+        "directory": "src/foundation/either_of",
+        "files_sha256": {
+          "Cargo.toml": "d27a2340cb4aa94eb70a62469d8759bc6a53c3932a15f53dbe21a4fbf4d227f0",
+          "src/lib.rs": "0ada96ea2968d4063a0d838606300aec34d5100c2ba8a55de060448893bb686b"
+        },
+        "license": "MIT",
+        "license_materials": [
+          "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+        ],
+        "merged_into": "src/interface + src/macros",
+        "name": "either_of",
+        "origin_directory": "vendor/web/dependencies/either_of-0.1.9",
+        "repository": "https://github.com/leptos-rs/leptos",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "5060e0a4cbf26a87550792688ade88e6b8aec9208613631a7a363bda7bc2d4cd",
+          "archive_url": "https://static.crates.io/crates/either_of/either_of-0.1.9.crate",
+          "name": "either_of",
+          "version": "0.1.9"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "fbc9ed631ff8c19c5eed02a1d4459e202cff7043"
+          },
+          "path_in_vcs": "either_of"
+        },
+        "version": "0.1.9"
+      },
+      "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
+    },
     "src/foundation/itertools-0.14.0": {
       "destination_directory": "src/foundation/iterator-toolkit",
       "destination_external_tests": {
@@ -49191,6 +49477,186 @@
       },
       "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
     },
+    "src/foundation/leptos_dom": {
+      "destination_directory": "src/foundation/dom-helpers",
+      "destination_external_tests": {
+        "bytes": 2382,
+        "directory": "src/foundation/dom-helpers",
+        "file_count": 3,
+        "files": [
+          {
+            "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_no_serialize_151.rs",
+            "sha256": "aa97cfc2298501b73de08a69c127a0feac22cc100d26e955cb8eabf867ff45d7",
+            "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+            "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+          },
+          {
+            "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_primitive_75.rs",
+            "sha256": "76d24538d5d740ecc53f911ed3792b5466c363251802a6fa217f0bb2b177ddbc",
+            "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+            "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+          },
+          {
+            "path": "test/foundation/dom-helpers/functions/src/macro_helpers/tracing_property/match_serialize_132.rs",
+            "sha256": "5e0945ef7082a33626d7b903f3982ecfe479c3fdf777ff47d26b750b2a629730",
+            "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+            "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/leptos_dom-0.8.8",
+        "roots": [
+          "test/foundation/dom-helpers"
+        ]
+      },
+      "destination_name": "dom-helpers",
+      "external_tests": {
+        "bytes": 2382,
+        "directory": "src/foundation/leptos_dom",
+        "file_count": 3,
+        "files": [
+          {
+            "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_no_serialize_151.rs",
+            "sha256": "aa97cfc2298501b73de08a69c127a0feac22cc100d26e955cb8eabf867ff45d7",
+            "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+            "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+          },
+          {
+            "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_primitive_75.rs",
+            "sha256": "76d24538d5d740ecc53f911ed3792b5466c363251802a6fa217f0bb2b177ddbc",
+            "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+            "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+          },
+          {
+            "path": "test/foundation/leptos_dom/functions/src/macro_helpers/tracing_property/match_serialize_132.rs",
+            "sha256": "5e0945ef7082a33626d7b903f3982ecfe479c3fdf777ff47d26b750b2a629730",
+            "source": "src/foundation/leptos_dom/src/macro_helpers/tracing_property.rs",
+            "source_sha256_before": "91b5b917ca5dc4fe6bc8a3f57e2f1efa50cbdc2ff89821777188f01ad78cd744"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/leptos_dom-0.8.8",
+        "roots": [
+          "test/foundation/leptos_dom"
+        ]
+      },
+      "files_sha256": {
+        "Cargo.toml": "2293254959543f574d2ed15726d5298e06e2c909d8518477946885214c49893c",
+        "src/helpers.rs": "0ca12c9851e4d804857a5737f09dad5643d15889ffdfaeac6c0939924487304b",
+        "src/lib.rs": "1caf029d0146e26afad7694d1a4399675fdd26ac7a79ba2fbeeca5e7dda478ac",
+        "src/logging.rs": "c1b3d1f116f3412af1993cdd1c22274ad283b7c665788fc42f19cee310ffab8e",
+        "src/macro_helpers/mod.rs": "89e5b363f18276c7bd1f98bd578c2bd70d6c165269aa280311aba3dd6ac905c7",
+        "src/macro_helpers/tracing_property.rs": "f367ecb83b0be6207f6e8fcd4ec6dfe4ccfb5c3032fda3b79b800febb9aba31b"
+      },
+      "package": {
+        "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+        "description": "DOM operations for the Leptos web framework.",
+        "directory": "src/foundation/leptos_dom",
+        "files_sha256": {
+          "Cargo.toml": "0c46f8c177711ad00998228b8b70ed692793cd22c166506ca92ec2ba7dc8d5c2",
+          "src/helpers.rs": "bbd94a66530d22d0beeb58c19e30a51c97377cb8aca3ffd86699dde1df987db3",
+          "src/lib.rs": "ce4a5baba94a906661e402c61e0b53cfb8ed4f6f7ca9a90384476ca9532003d2",
+          "src/logging.rs": "c1b3d1f116f3412af1993cdd1c22274ad283b7c665788fc42f19cee310ffab8e",
+          "src/macro_helpers/mod.rs": "89e5b363f18276c7bd1f98bd578c2bd70d6c165269aa280311aba3dd6ac905c7",
+          "src/macro_helpers/tracing_property.rs": "5cda14b41fb67e9a400812b9eecd8d33d153c9b009f639d743687879688009cb"
+        },
+        "license": "MIT",
+        "license_materials": [
+          "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+        ],
+        "merged_into": "src/interface + src/macros",
+        "name": "leptos_dom",
+        "origin_directory": "vendor/web/dependencies/leptos_dom-0.8.8",
+        "repository": "https://github.com/leptos-rs/leptos",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "35742e9ed8f8aaf9e549b454c68a7ac0992536e06856365639b111f72ab07884",
+          "archive_url": "https://static.crates.io/crates/leptos_dom/leptos_dom-0.8.8.crate",
+          "name": "leptos_dom",
+          "version": "0.8.8"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "da62c0cb9a1d814cf480c2f1dae5f67f4ea4773f"
+          },
+          "path_in_vcs": "leptos_dom"
+        },
+        "version": "0.8.8"
+      },
+      "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
+    },
+    "src/foundation/oco_ref": {
+      "destination_directory": "src/foundation/shared-value",
+      "destination_external_tests": {
+        "bytes": 4400,
+        "directory": "src/foundation/shared-value",
+        "file_count": 1,
+        "files": [
+          {
+            "path": "test/foundation/shared-value/unit/src/lib/tests_613.rs",
+            "sha256": "ed16f000e93c9d9a3c9925a65433081582261990b5f7136aefa7a1003dae923f",
+            "source": "src/foundation/oco_ref/src/lib.rs",
+            "source_sha256_before": "880b5a5eeb9e9ec4039d13a8e770204549e1a63244fdb81a076d4c52d08cdc9a"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/oco_ref-0.2.1",
+        "roots": [
+          "test/foundation/shared-value"
+        ]
+      },
+      "destination_name": "shared-value",
+      "external_tests": {
+        "bytes": 4104,
+        "directory": "src/foundation/oco_ref",
+        "file_count": 1,
+        "files": [
+          {
+            "path": "test/foundation/oco_ref/unit/src/lib/tests_613.rs",
+            "sha256": "8f028ac798743c7525e28341ea5bcf39ef9f53796a20dd9fb2c926ce019a2a5c",
+            "source": "src/foundation/oco_ref/src/lib.rs",
+            "source_sha256_before": "880b5a5eeb9e9ec4039d13a8e770204549e1a63244fdb81a076d4c52d08cdc9a"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/oco_ref-0.2.1",
+        "roots": [
+          "test/foundation/oco_ref"
+        ]
+      },
+      "files_sha256": {
+        "Cargo.toml": "e1a2aba18fa6fb320bdcfcb27ea12f8b0f2f691ad8c35d9785fe663451d5e843",
+        "src/lib.rs": "9a3dfa1cf4a833905e0c2b9ab3efcde24e1a65c143ef8283c3e5612bb9c9c5eb"
+      },
+      "package": {
+        "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+        "description": "A smart pointer for storing immutable values with relatively-cheap cloning. (Like a `Cow` meets an `Rc`!)",
+        "directory": "src/foundation/oco_ref",
+        "files_sha256": {
+          "Cargo.toml": "57df36c0b6ba51d0297116ca281e1e58e6eaa08c795eb89a2f1f9479531a07ac",
+          "src/lib.rs": "228420d7f6668ffb0b6f230ea4a7d1217ca7079498511e852f442fc1094c00e1"
+        },
+        "license": "MIT",
+        "license_materials": [
+          "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+        ],
+        "merged_into": "src/interface + src/macros",
+        "name": "oco_ref",
+        "origin_directory": "vendor/web/dependencies/oco_ref-0.2.1",
+        "repository": "https://github.com/leptos-rs/leptos",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "ed0423ff9973dea4d6bd075934fdda86ebb8c05bdf9d6b0507067d4a1226371d",
+          "archive_url": "https://static.crates.io/crates/oco_ref/oco_ref-0.2.1.crate",
+          "name": "oco_ref",
+          "version": "0.2.1"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "5f2d5115537d08043bba0293c406c4f9b97a4dae"
+          },
+          "path_in_vcs": "oco"
+        },
+        "version": "0.2.1"
+      },
+      "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
+    },
     "src/foundation/rand_core-0.6.4": {
       "destination_directory": "src/foundation/random-generator-core",
       "destination_external_tests": {
@@ -49346,6 +49812,299 @@
           "path_in_vcs": "rand_core"
         },
         "version": "0.6.4"
+      },
+      "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
+    },
+    "src/foundation/reactive_graph": {
+      "destination_directory": "src/foundation/reactive-state",
+      "destination_external_tests": {
+        "bytes": 51651,
+        "directory": "src/foundation/reactive-state",
+        "file_count": 10,
+        "files": [
+          {
+            "path": "test/foundation/reactive-state/tests/async_derived.rs",
+            "sha256": "da8e8043ffe2646c21c731d48a9dc245450a979b7c296d9791c9488f1ea12dee",
+            "source": "src/foundation/reactive_graph/tests/async_derived.rs",
+            "source_sha256_before": "c92e073098b021bdfd391675b6dd823790bf8f3718e1d071dbf66fb6b76d0e62"
+          },
+          {
+            "path": "test/foundation/reactive-state/tests/cleanup.rs",
+            "sha256": "4ec3d7b47eb71c014c4df58af12124e5728c58a31f59a3bf598965aebba4d014",
+            "source": "src/foundation/reactive_graph/tests/cleanup.rs",
+            "source_sha256_before": "e4528181f0901b2fe05f52ca5c301e9ba2c993970221acb4d4d4986a4f49a8fb"
+          },
+          {
+            "path": "test/foundation/reactive-state/tests/effect.rs",
+            "sha256": "0778385268aeed977436dca167c7d2ea1ed7a2bec07e2691f0ebbe8ae4bae567",
+            "source": "src/foundation/reactive_graph/tests/effect.rs",
+            "source_sha256_before": "d11725d4adf7d4aed7a2a7e596d9f9a372d9fccade9ac034eb1b1602d182794f"
+          },
+          {
+            "path": "test/foundation/reactive-state/tests/effect_immediate.rs",
+            "sha256": "6828f2232abe8d8fa0083d2ba1d630214d4b396529913b35906185a9d27b996e",
+            "source": "src/foundation/reactive_graph/tests/effect_immediate.rs",
+            "source_sha256_before": "746004607843136c4e06fd57747d64190017036cd2377abd4e6696a7067f7332"
+          },
+          {
+            "path": "test/foundation/reactive-state/tests/memo.rs",
+            "sha256": "7abc071fb0979219087543124d37316ddff502d5a8c0733c7fb6b476e3dc54c6",
+            "source": "src/foundation/reactive_graph/tests/memo.rs",
+            "source_sha256_before": "69246086007061e4f84773e8170cac98f2f3d97ede65d4f57e309573af3cdae3"
+          },
+          {
+            "path": "test/foundation/reactive-state/tests/signal.rs",
+            "sha256": "eae6098c2a4305fc092519ead1789321c589c4b8aba27acce6ccaa965fa5f7d6",
+            "source": "src/foundation/reactive_graph/tests/signal.rs",
+            "source_sha256_before": "9db9229286bc90afa1cd851b324d0ddc647f7f07a5fb764e19ead1a62081f81e"
+          },
+          {
+            "path": "test/foundation/reactive-state/tests/watch.rs",
+            "sha256": "b6bac36021606d5c368f506aeac81e5fcaab636abf16ff6708580831c217dc54",
+            "source": "src/foundation/reactive_graph/tests/watch.rs",
+            "source_sha256_before": "00e0761b13de3126d369a97bacb5aa6f994e899400e1b8adde0d736456c6038c"
+          },
+          {
+            "path": "test/foundation/reactive-state/unit/src/callback/tests_295.rs",
+            "sha256": "d208cee6247f3b02773110ee60a5803f535c091e308577e458c157353f278ec8",
+            "source": "src/foundation/reactive_graph/src/callback.rs",
+            "source_sha256_before": "711fbecd50e69e9622f055da8662b15eda3711d78040a3fdbee7ae72ba988ea0"
+          },
+          {
+            "path": "test/foundation/reactive-state/unit/src/into_reactive_value/tests_21.rs",
+            "sha256": "29810518beb67eb0923a75dfbbc3f3c2a1da1e7a7da20a2cc83506810253a136",
+            "source": "src/foundation/reactive_graph/src/into_reactive_value.rs",
+            "source_sha256_before": "fe18a84a56d0183c204951980388b635235142b806ada1fcf12ab10d76ded171"
+          },
+          {
+            "path": "test/foundation/reactive-state/unit/src/owner/tests_594.rs",
+            "sha256": "6b4c64da4bd36075b8e6d0a76719b25cc5b0d65633c227b7c479148a015a271c",
+            "source": "src/foundation/reactive_graph/src/owner.rs",
+            "source_sha256_before": "50236f8bdf6764ff2587ccd78c3b2fd37902411f65ed4b422495003474667c48"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/reactive_graph-0.2.16",
+        "roots": [
+          "test/foundation/reactive-state"
+        ]
+      },
+      "destination_name": "reactive-state",
+      "external_tests": {
+        "bytes": 51641,
+        "directory": "src/foundation/reactive_graph",
+        "file_count": 10,
+        "files": [
+          {
+            "path": "test/foundation/reactive_graph/tests/async_derived.rs",
+            "sha256": "c92e073098b021bdfd391675b6dd823790bf8f3718e1d071dbf66fb6b76d0e62",
+            "source": "src/foundation/reactive_graph/tests/async_derived.rs",
+            "source_sha256_before": "c92e073098b021bdfd391675b6dd823790bf8f3718e1d071dbf66fb6b76d0e62"
+          },
+          {
+            "path": "test/foundation/reactive_graph/tests/cleanup.rs",
+            "sha256": "e4528181f0901b2fe05f52ca5c301e9ba2c993970221acb4d4d4986a4f49a8fb",
+            "source": "src/foundation/reactive_graph/tests/cleanup.rs",
+            "source_sha256_before": "e4528181f0901b2fe05f52ca5c301e9ba2c993970221acb4d4d4986a4f49a8fb"
+          },
+          {
+            "path": "test/foundation/reactive_graph/tests/effect.rs",
+            "sha256": "d11725d4adf7d4aed7a2a7e596d9f9a372d9fccade9ac034eb1b1602d182794f",
+            "source": "src/foundation/reactive_graph/tests/effect.rs",
+            "source_sha256_before": "d11725d4adf7d4aed7a2a7e596d9f9a372d9fccade9ac034eb1b1602d182794f"
+          },
+          {
+            "path": "test/foundation/reactive_graph/tests/effect_immediate.rs",
+            "sha256": "746004607843136c4e06fd57747d64190017036cd2377abd4e6696a7067f7332",
+            "source": "src/foundation/reactive_graph/tests/effect_immediate.rs",
+            "source_sha256_before": "746004607843136c4e06fd57747d64190017036cd2377abd4e6696a7067f7332"
+          },
+          {
+            "path": "test/foundation/reactive_graph/tests/memo.rs",
+            "sha256": "69246086007061e4f84773e8170cac98f2f3d97ede65d4f57e309573af3cdae3",
+            "source": "src/foundation/reactive_graph/tests/memo.rs",
+            "source_sha256_before": "69246086007061e4f84773e8170cac98f2f3d97ede65d4f57e309573af3cdae3"
+          },
+          {
+            "path": "test/foundation/reactive_graph/tests/signal.rs",
+            "sha256": "9db9229286bc90afa1cd851b324d0ddc647f7f07a5fb764e19ead1a62081f81e",
+            "source": "src/foundation/reactive_graph/tests/signal.rs",
+            "source_sha256_before": "9db9229286bc90afa1cd851b324d0ddc647f7f07a5fb764e19ead1a62081f81e"
+          },
+          {
+            "path": "test/foundation/reactive_graph/tests/watch.rs",
+            "sha256": "00e0761b13de3126d369a97bacb5aa6f994e899400e1b8adde0d736456c6038c",
+            "source": "src/foundation/reactive_graph/tests/watch.rs",
+            "source_sha256_before": "00e0761b13de3126d369a97bacb5aa6f994e899400e1b8adde0d736456c6038c"
+          },
+          {
+            "path": "test/foundation/reactive_graph/unit/src/callback/tests_295.rs",
+            "sha256": "d208cee6247f3b02773110ee60a5803f535c091e308577e458c157353f278ec8",
+            "source": "src/foundation/reactive_graph/src/callback.rs",
+            "source_sha256_before": "711fbecd50e69e9622f055da8662b15eda3711d78040a3fdbee7ae72ba988ea0"
+          },
+          {
+            "path": "test/foundation/reactive_graph/unit/src/into_reactive_value/tests_21.rs",
+            "sha256": "29810518beb67eb0923a75dfbbc3f3c2a1da1e7a7da20a2cc83506810253a136",
+            "source": "src/foundation/reactive_graph/src/into_reactive_value.rs",
+            "source_sha256_before": "fe18a84a56d0183c204951980388b635235142b806ada1fcf12ab10d76ded171"
+          },
+          {
+            "path": "test/foundation/reactive_graph/unit/src/owner/tests_594.rs",
+            "sha256": "6b4c64da4bd36075b8e6d0a76719b25cc5b0d65633c227b7c479148a015a271c",
+            "source": "src/foundation/reactive_graph/src/owner.rs",
+            "source_sha256_before": "50236f8bdf6764ff2587ccd78c3b2fd37902411f65ed4b422495003474667c48"
+          }
+        ],
+        "origin_directory": "vendor/web/dependencies/reactive_graph-0.2.16",
+        "roots": [
+          "test/foundation/reactive_graph"
+        ]
+      },
+      "files_sha256": {
+        "Cargo.toml": "bb171e1277547ace0cd1bb36d3d11366408e6f59bc32c5029e4a2b56bfa1541b",
+        "build.rs": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e",
+        "src/actions/action.rs": "db4ecb4ee33b75b83f60eda0926b8942fdf1964e11c10d18d39267f76ea39b4e",
+        "src/actions/mod.rs": "d17fbc1f77c4a2ff4f28a73de5979525509be75f96e8e38738c3fd3979d0717d",
+        "src/actions/multi_action.rs": "d8fb6db4f542c3cef79bd182c29fead40d1c04a66f7895f4233d1ad0b299f97a",
+        "src/callback.rs": "d6b13b33eeb75bb0ba50d5c1de73ca8294458cdfc64d5c84516743aee208959c",
+        "src/channel.rs": "70c7d2de63ad0a74faeb89510ad900c0596c05a30c7d0a6b091c18fef7d70dbd",
+        "src/computed.rs": "162e4c76b373bae25995afbeec069a6324d6687db7a567f5294df991a1bc0336",
+        "src/computed/arc_memo.rs": "ad37c5c24d8058c52a2a9f063f00a588af9b4acb0747f8e3cacb57d1b9336976",
+        "src/computed/async_derived/arc_async_derived.rs": "5e1deee95922fc4f361b14865e812133df7a61c9745921faec7c2ada71a5f0af",
+        "src/computed/async_derived/async_derived.rs": "d948b091e66188adc004e52a90272fd3a5beb69f9e1738a2c2833e52efeadd70",
+        "src/computed/async_derived/future_impls.rs": "73bf9bcd4f4698c2d9810a9d3bf23958a127d43123643c2a4c33ad06f9e062ec",
+        "src/computed/async_derived/inner.rs": "cb2d5dabad3866f37d63d70e62a00a995a4aaabcbd752a53a7601e0bfb197173",
+        "src/computed/async_derived/mod.rs": "97e561a5f564291424312b5d04c3105873914a4cbea154ddb5756df38a893229",
+        "src/computed/inner.rs": "43ec7d1f7c1ee1ffca70c6cd2d8a2faacf9bc283b953ce70352e9d1fe25cc028",
+        "src/computed/memo.rs": "34d7d6e6dfbde7a3a5a1cf9817d24e17602589c04622f947d32fe70472987533",
+        "src/computed/selector.rs": "44a2f4b3526b95460496769d2bf71648f294501c66cc569b3346a98cf6aa4e17",
+        "src/diagnostics.rs": "a082399955de0fadeec80cb856d5c1503f58ec47b90477b6645d0c467b421aa6",
+        "src/effect.rs": "79695c0054cc31c15c93d6ec591ff052cdcc91315c54a0d3b69bac1e414e2c4f",
+        "src/effect/effect.rs": "4a042155545bc656ca73900704b864adeb2f7309e5cd0e2d5cd00b9799f66b3c",
+        "src/effect/effect_function.rs": "301207462962dad1e241e8e45e3bbd1064654aaa348e311f922f18eddd9a8346",
+        "src/effect/immediate.rs": "4f7d85e3e5539b16a8d8a62b2d43e432bd0ce74473fd0fa3590e81a9a3297f02",
+        "src/effect/inner.rs": "22afaca570d46734180ae86301844df61746404d271bfec5dd68be6a7c9eaa6a",
+        "src/effect/render_effect.rs": "ae3db2685b992add12aab290f1d15886eb61e76063340c3a4d002a658f202961",
+        "src/graph.rs": "7aa98d6f91b532db8669851cc43a2253ff0f6b34a30e49c7b924b4d39782ee5b",
+        "src/graph/node.rs": "a9de4be297d6fcbc2f9b5c3344132b1f85f01d9870ef5adb7ce7ca1ebe46cc6e",
+        "src/graph/sets.rs": "b8c466fef5e198f5dea967276f0bc0de916b802d228cd76effdfc5ecf2dfcc16",
+        "src/graph/source.rs": "1bdf56f425c2b15885a9dc3ff19fa07beae7f7fafe204b41cbd8b358164b4f8b",
+        "src/graph/subscriber.rs": "479fb6bfeda874dd8a8c51b3dbe385e955f06845f05310751e696ce236a21306",
+        "src/into_reactive_value.rs": "5a961fc94e93b4f22bae93b40c41fa6009abec5683bc6a2c6555e62becbed669",
+        "src/lib.rs": "41caa6a83df084b3586e94c955e9ee417a146eba0845940036286bb9b0ec1e72",
+        "src/nightly.rs": "dd5364a38f1c7119bd89ae0a297a7895332e7a21e6c59b158591119f817fc8dd",
+        "src/owner.rs": "614f93d48a527544d6a2340a857146c37c18996da769ea13b19f30f0c3d64c27",
+        "src/owner/arc_stored_value.rs": "62f716a8976c7572cf2b4abc4c613215615e511bdcf9f2d9a3dfb3ddb42b10d4",
+        "src/owner/arena.rs": "cf95724fb376d9a6df8717d4176af94887f7db2d7be55250c5499a627f480200",
+        "src/owner/arena_item.rs": "905677a8df70ae1db6fd7ad69d27efe04e1a0db354ae41e51f6bba29368ef26a",
+        "src/owner/context.rs": "191f8f1e69e810758a22c53e188932723937a9f6e8b4070d891bb5b51a1ab910",
+        "src/owner/storage.rs": "99c232d05a44e4c985bb56f298f3038f833f45d1cc002736fd5ccb8119794e17",
+        "src/owner/stored_value.rs": "95c72612307a3612012740310f2c8a76a65936d36c47f97245dbc99dccbbfd9c",
+        "src/send_wrapper_ext.rs": "2d7bf0fde79a02cbe0a51a15a8d1668eff6ac5742ec54259b97cfc268994e057",
+        "src/serde.rs": "4885320f67f4e2b5b10248a38105dd5b742f619df0265c734357c6d98c996bba",
+        "src/signal.rs": "16d13cf4341ba1c418788abae38f79ead083d98f11b44c7d36dde7260bf69351",
+        "src/signal/arc_read.rs": "f01bf2f42943d7950cecda0a53f94c5d7eb7997da9f626ae6a78d8ac1bbaa2cc",
+        "src/signal/arc_rw.rs": "76042cb47ea05cac7336a386128f9fbacf1efaf826138c715bc4d25f6ba23a1c",
+        "src/signal/arc_trigger.rs": "7ce46c660f3324397ec9caa11ca7c094c977128083dd1946ddffbd2c232f3fce",
+        "src/signal/arc_write.rs": "34e819d726d2bb845544d29ee922f8c03c25853dadfcd25472a5acc784cb2126",
+        "src/signal/guards.rs": "f30681912c779960fd5f2c719677587b7387ea712ad35e1897167bc4e4ba50aa",
+        "src/signal/mapped.rs": "f685825cf2de5e019b2be365ac30a7265dcbb2616780ea7ad2e24232b9968f53",
+        "src/signal/read.rs": "1876e8217af5a410e83fba877e1fcd80c85011c4be31803e664952f6fcaba32a",
+        "src/signal/rw.rs": "796ee89c4500accf7db8c9ad9c67d6de45d862df3114037243be948f69bdcf74",
+        "src/signal/subscriber_traits.rs": "69f9aedb17168b3095e0d8433b12ea928ab4478bbdd242deb844ae1243828107",
+        "src/signal/trigger.rs": "b457ac0c0be3e897f4053ea57bcff80b5a729b7d19eedcae3f139fa83fe77422",
+        "src/signal/write.rs": "20a65523be96082d3421a14847727e9a82fa28ba75b8986f6234fad2f6678ee6",
+        "src/trait_options.rs": "001fd4f145f312d50752abf6789396a56092741a323fda57c432614c08c078b8",
+        "src/traits.rs": "229452fe30d6d102d9ef33a904d27117f9ae79dbd204190eb8de6ab559cd0860",
+        "src/transition.rs": "00bddd1d6f60ace08cdc3ac54c7c58eadd58ef42f5cf69ae1c14c7a7201eb9b2",
+        "src/wrappers.rs": "a9411ae4c90f8b375acd1f979c82b23bf4cf3ef7935669a16ff9255daa5fa431"
+      },
+      "package": {
+        "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+        "description": "A fine-grained reactive graph for building user interfaces.",
+        "directory": "src/foundation/reactive_graph",
+        "files_sha256": {
+          "Cargo.toml": "454ea96a79c43fdc1699f498e8c61ad864a6d0f385f994ddf042a1be2bf58c82",
+          "build.rs": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e",
+          "src/actions/action.rs": "20bea4b8f3fdf31ab27663eeb3970ffcdb611c2aa938c4889170e8c0c2344a3f",
+          "src/actions/mod.rs": "d17fbc1f77c4a2ff4f28a73de5979525509be75f96e8e38738c3fd3979d0717d",
+          "src/actions/multi_action.rs": "a76b25c858ea5281ed60406d3308f9e62fb5ff40dd1bd77c886599ddce92483c",
+          "src/callback.rs": "e62a7866b2bfbcee6ecf0d5a21fede038c9a819bf40ab6f9dfcd158e50c6ff1d",
+          "src/channel.rs": "70c7d2de63ad0a74faeb89510ad900c0596c05a30c7d0a6b091c18fef7d70dbd",
+          "src/computed.rs": "c87a98ec8bf3e80e3303ebc1b8f1aaed4dd52618a72e6ebb9748af3ebc4998d0",
+          "src/computed/arc_memo.rs": "85c531c475d4e4c176afdb9aaf79d32c4270a059e5321f5b97c09d7e1321b39c",
+          "src/computed/async_derived/arc_async_derived.rs": "ead3fb514b963482fcec0d73ee1143964f5267cfff0feceb5c4051725980fe69",
+          "src/computed/async_derived/async_derived.rs": "1120451da29592639fc83d5ba4c71d3aef4f418ed81cf455f218d32d9e7de750",
+          "src/computed/async_derived/future_impls.rs": "2e293223673b8470c309bbc056a52c146666f385382aa39cc5c18756430cd362",
+          "src/computed/async_derived/inner.rs": "cb2d5dabad3866f37d63d70e62a00a995a4aaabcbd752a53a7601e0bfb197173",
+          "src/computed/async_derived/mod.rs": "97e561a5f564291424312b5d04c3105873914a4cbea154ddb5756df38a893229",
+          "src/computed/inner.rs": "43ec7d1f7c1ee1ffca70c6cd2d8a2faacf9bc283b953ce70352e9d1fe25cc028",
+          "src/computed/memo.rs": "3a12b23cd0d275e3f2f054c58a564174af1fc5668728c904ddb7b16758f961b5",
+          "src/computed/selector.rs": "d102cf47f26750b1aaa7c7d94fd8be5d4ccb8e5e14337d3dc096b15833706018",
+          "src/diagnostics.rs": "a082399955de0fadeec80cb856d5c1503f58ec47b90477b6645d0c467b421aa6",
+          "src/effect.rs": "79695c0054cc31c15c93d6ec591ff052cdcc91315c54a0d3b69bac1e414e2c4f",
+          "src/effect/effect.rs": "bdf20fe14a3fad779ee0fc0b3623936281ceb659a610b3b50a0a069249380cdd",
+          "src/effect/effect_function.rs": "301207462962dad1e241e8e45e3bbd1064654aaa348e311f922f18eddd9a8346",
+          "src/effect/immediate.rs": "65d4d61ffb51e679bc83c1c03a38e40586421eac75b162490069ade945974aec",
+          "src/effect/inner.rs": "22afaca570d46734180ae86301844df61746404d271bfec5dd68be6a7c9eaa6a",
+          "src/effect/render_effect.rs": "2fee429d22faf645fec73d88708954bbac6276a347508dad58eb9bd422cb35fe",
+          "src/graph.rs": "7aa98d6f91b532db8669851cc43a2253ff0f6b34a30e49c7b924b4d39782ee5b",
+          "src/graph/node.rs": "a9de4be297d6fcbc2f9b5c3344132b1f85f01d9870ef5adb7ce7ca1ebe46cc6e",
+          "src/graph/sets.rs": "b8c466fef5e198f5dea967276f0bc0de916b802d228cd76effdfc5ecf2dfcc16",
+          "src/graph/source.rs": "e061cc0bc58e1f88cc39eaef8ac3b9d9b992f843635f37ef65d2941e8d02ef99",
+          "src/graph/subscriber.rs": "7dae792f5ed7d2d9cce338fc84dc391a2073c48992f396047dadd518cf5e986b",
+          "src/into_reactive_value.rs": "b036743927c883cb4aeeea3d424cb160fc52baa02421d40802ee878d9fe13dcf",
+          "src/lib.rs": "8aaef45f11f4b68d2663c98754ee4bd12d8f3f41178440a96ceafb5fe111e70c",
+          "src/nightly.rs": "dd5364a38f1c7119bd89ae0a297a7895332e7a21e6c59b158591119f817fc8dd",
+          "src/owner.rs": "9be3388b2f69bfe90275dfe4555a420e53917b9250b37981c8b669df3891227c",
+          "src/owner/arc_stored_value.rs": "a28d0b59a7336c714cffdcde66fbb18dcf174e9ad0600ab901efc2b190f8f625",
+          "src/owner/arena.rs": "cf95724fb376d9a6df8717d4176af94887f7db2d7be55250c5499a627f480200",
+          "src/owner/arena_item.rs": "905677a8df70ae1db6fd7ad69d27efe04e1a0db354ae41e51f6bba29368ef26a",
+          "src/owner/context.rs": "9574fcb3227d20f46b01651badb924eb89f144997d4d9a6fd9f305691efde616",
+          "src/owner/storage.rs": "99c232d05a44e4c985bb56f298f3038f833f45d1cc002736fd5ccb8119794e17",
+          "src/owner/stored_value.rs": "b82e9e4fcf53c3d75143daed0376230f5ebb6d78e53584cb9e128cf3d70ea657",
+          "src/send_wrapper_ext.rs": "2d7bf0fde79a02cbe0a51a15a8d1668eff6ac5742ec54259b97cfc268994e057",
+          "src/serde.rs": "4885320f67f4e2b5b10248a38105dd5b742f619df0265c734357c6d98c996bba",
+          "src/signal.rs": "6cdcf3fd2656309884dea991eb920b4a44f309aec716b7db90a7b26fa38edeff",
+          "src/signal/arc_read.rs": "216aa0d39c7aac7204b45fcdb1f35e0c6f14105b07bc4f3aa1ffe0d665e293c4",
+          "src/signal/arc_rw.rs": "f1dee545d61e3a6534de273167bc91fa00d498d369d537f0baa62994bafe4844",
+          "src/signal/arc_trigger.rs": "1d0809d015d0377c19dedc68a2601ace7531cfd288d023ea74ff29b8f016bba2",
+          "src/signal/arc_write.rs": "e4e949296ad22fb7ab41cc2cf2d3da3e886071258965296703716d8dd831b13e",
+          "src/signal/guards.rs": "f30681912c779960fd5f2c719677587b7387ea712ad35e1897167bc4e4ba50aa",
+          "src/signal/mapped.rs": "289846474e8f49acfa85dd8a79b44688e4c116e9b2d00f9107936cad3562a9a7",
+          "src/signal/read.rs": "890a8e47aa9f96ce2d25f89e56d4f770e237de5f532a5f594ef947412da30ede",
+          "src/signal/rw.rs": "10bf8edbfc7af4c8b62b2c476aaafc749c787e921a63e1a49a4f874ce2b6220b",
+          "src/signal/subscriber_traits.rs": "ab6751a22085867e2240a5fb71166cffd098caeab154265cf1890732cf45f102",
+          "src/signal/trigger.rs": "f3a17dffd3c4738d066de684b77776ca3ac5aaa21cd86bc68a8e79e0c07f0754",
+          "src/signal/write.rs": "a50fe0dc5e616a21fcd6ad0eb74c5547f231bb2905e2ed2d5f56c1486a521b24",
+          "src/trait_options.rs": "001fd4f145f312d50752abf6789396a56092741a323fda57c432614c08c078b8",
+          "src/traits.rs": "fa22d8e92592c1db80bcda4bf4e33ddb8cd7b8ef7ae0df15cd87a87f8c504851",
+          "src/transition.rs": "00bddd1d6f60ace08cdc3ac54c7c58eadd58ef42f5cf69ae1c14c7a7201eb9b2",
+          "src/wrappers.rs": "0d007cfca17b0248b4bbf26a64b4cd55abadf3f15751eaca84225b5bbabd55fa"
+        },
+        "license": "MIT",
+        "license_materials": [
+          "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+        ],
+        "merged_into": "src/interface + src/macros",
+        "name": "reactive_graph",
+        "origin_directory": "vendor/web/dependencies/reactive_graph-0.2.16",
+        "repository": "https://github.com/leptos-rs/leptos",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "3bcec36a2d1b9a53a4129b3270b19e3df6f6b88c2e7c97ed9404dc9307f137d7",
+          "archive_url": "https://static.crates.io/crates/reactive_graph/reactive_graph-0.2.16.crate",
+          "name": "reactive_graph",
+          "version": "0.2.16"
+        },
+        "vcs": {
+          "git": {
+            "dirty": true,
+            "sha1": "fa7f7bd30bf3b835c00bf4878339d8672a94490a"
+          },
+          "path_in_vcs": "reactive_graph"
+        },
+        "version": "0.2.16"
       },
       "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
     },
@@ -49764,6 +50523,156 @@
           "path_in_vcs": ""
         },
         "version": "2.0.1"
+      },
+      "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
+    },
+    "src/foundation/tachys": {
+      "destination_directory": "src/foundation/view-renderer",
+      "destination_external_tests": null,
+      "destination_name": "view-renderer",
+      "external_tests": null,
+      "file_moves": {
+        "src/oco.rs": "src/shared_value.rs",
+        "src/reactive_graph/bind.rs": "src/reactive_state/bind.rs",
+        "src/reactive_graph/class.rs": "src/reactive_state/class.rs",
+        "src/reactive_graph/inner_html.rs": "src/reactive_state/inner_html.rs",
+        "src/reactive_graph/mod.rs": "src/reactive_state/mod.rs",
+        "src/reactive_graph/node_ref.rs": "src/reactive_state/node_ref.rs",
+        "src/reactive_graph/owned.rs": "src/reactive_state/owned.rs",
+        "src/reactive_graph/property.rs": "src/reactive_state/property.rs",
+        "src/reactive_graph/style.rs": "src/reactive_state/style.rs",
+        "src/reactive_graph/suspense.rs": "src/reactive_state/suspense.rs"
+      },
+      "files_sha256": {
+        "Cargo.toml": "fccb30e0340d9d4df9ae24f44e81db61d47d47aed728d42652766972541e2cbf",
+        "src/dom.rs": "581b3fc173e231c53b7d34ac47598aae0b821d05c339438b3479f5e76ff65c7b",
+        "src/erased.rs": "89974a6b9d6711534ff5fec3ac1e12045b7353678927c659091f45dcc93827d6",
+        "src/html/attribute/any_attribute.rs": "6eca4018445b6a4213bd1670a6ab426826c50d89982fb499a969155167e9d628",
+        "src/html/attribute/aria.rs": "f9b976e5850da7da1d093c2151d64012e28de14b96c41b3ce363b6a9ab519b1a",
+        "src/html/attribute/custom.rs": "685ae6082f69b1291db6ca66a057edcfacdce5187ce228d19114fabc63d012d8",
+        "src/html/attribute/global.rs": "bd41d56568910b880c025744bbaaf5deddf735838b657a3a5dc756d715d410f8",
+        "src/html/attribute/key.rs": "d5374c2ab4f7af143b4bec13cbb1dd7caccbe46ca72e0b290364df2a127ec109",
+        "src/html/attribute/maybe_next_attr_erasure_macros.rs": "d8bf8965500dcdf3c832faa843ede714495f3c8f2b3632bdb65e38f51cbea262",
+        "src/html/attribute/mod.rs": "7117fe442d00b5d8556b1c979adef928667a299bd1e9cc394cdc234a47b4f631",
+        "src/html/attribute/value.rs": "f740f89e8df2b06a1a3262f110edb472226c639d4bfc33c0c22188e83fc39f6f",
+        "src/html/class.rs": "f2eaba6d6ef7a20ddf996fe7efeec8cf173b206d3f6cc1d86934cffb09156df7",
+        "src/html/directive.rs": "c1148cc594b350facc348bb9f2ae099b7645d7d959f60019a4b73f5929773989",
+        "src/html/element/custom.rs": "90ce97e480c2b7581c877a0cecd3bab95e5a24a86396feb4eb0cf1a070ca6733",
+        "src/html/element/element_ext.rs": "0fa205cca48980a1b8e736ee1e77df5700d3e310e8a88d3f7956aed1dcf11e95",
+        "src/html/element/elements.rs": "ed1977a13d04dee29c410da706181f5287c17506beeed2dfac67f3b6494d18b3",
+        "src/html/element/inner_html.rs": "b4b5025e64e6343985c83f10aae70f9656f4c1b21a7481b24871c112589e858d",
+        "src/html/element/mod.rs": "f1a5cb56d25347495d2f0bbfab12f033b67148938d427d52e1f2fee05de8d4fa",
+        "src/html/event.rs": "ab55e348d12c8e7d0791d63b667f0fee6f96c3dde5595a6a97caf400222cc3e9",
+        "src/html/mod.rs": "fa8fde108e775fbec57b327aaecc25a5d50b038b87273cf8cf54379827533499",
+        "src/html/node_ref.rs": "160e6ad8b5bffd48e2ee45b9661849f2c9ae0f554723ff5b348520b801f057ec",
+        "src/html/property.rs": "193b6672cedeba1419f67c6212104ae55495a2f2125ed891a2bb6bfe67d54388",
+        "src/html/style.rs": "caf5e898ab9e8bba435520a1fbf0e05f349cd8486975ef0d722aa56af64b531e",
+        "src/hydration.rs": "f1c0c73b1f3641d677b403b2184483ea91cf71fba61add49b038abdc1f914d17",
+        "src/lib.rs": "8456dd560fdc67f226838c189d87d9cd3bc4a73209f92b920a5e5c3f4cf82e8f",
+        "src/reactive_state/bind.rs": "610d974285cfc8ac23215fc13d9aaa5db326cdc584b27462a5a187afe48a5c0f",
+        "src/reactive_state/class.rs": "665c8ec6c2b843912ecc49b5a8d5e4390c6c8613eea21f147b276c9a0ec23dca",
+        "src/reactive_state/inner_html.rs": "af4928addd3be26bb0bee51f8b64d7966d3866065ce1c3021530cd2f5087ec52",
+        "src/reactive_state/mod.rs": "799bfb5539802ba0a780c764f4808bdf62b084231eea25d3d49262cebdfcafb2",
+        "src/reactive_state/node_ref.rs": "fcbd955962a7639b256cfec81d706c019c49ebc62932ce0cab23a4d8ad1cfd7e",
+        "src/reactive_state/owned.rs": "cc695e559fd67b3b23ceacd2afac30e0ef4df3f1d62bde54c4e098cfa6ab3212",
+        "src/reactive_state/property.rs": "1a6d0d8b23486018c1f1348bb478479b6780ebcfe67d190702ba420c8f86a67e",
+        "src/reactive_state/style.rs": "f9708641def55d65294c6a61ee8b3e641ce9403d5450a141a9fb89bc14339659",
+        "src/reactive_state/suspense.rs": "bc4140f8d313ef19972284aa25d6058b5c7d3682ac80884e8da47326a120167d",
+        "src/renderer/dom.rs": "b008f934a062d9f79f66750cfd1301c5a1e24ea561412e0e91aaeee68a23b6b2",
+        "src/renderer/mod.rs": "8a4521b46751a9f720664e5d954f50e7d0c5272eb53a978e0efbc08551c7d7e2",
+        "src/shared_value.rs": "553ea41c71bd87c913135e204c591cec17024149e1300e5e8f262a538ab8f9b7",
+        "src/svg/mod.rs": "e7a32c32f82abdf9884b301c786578cd92d5796f6d2294dbd84163c9fb38c225",
+        "src/view/add_attr.rs": "1709ecc464a41b53c162a714b333e7cd123c4a9601641d4f238940bf7734657c",
+        "src/view/any_view.rs": "11a51afb75c988bf2cc2619ea3db666ec188f96934fd1cee0dd3db568c1d490c",
+        "src/view/either.rs": "5d8ba08794a3f59b0c511685263ccc497f9004f9d4a519c238a3226d4215aa4a",
+        "src/view/error_boundary.rs": "7c4d483b1b33eeaca6f9bf631061fa3478ecd804d28defd83ba69c2f8edd8664",
+        "src/view/fragment.rs": "b81b0183c5626d2a4b27b35215f7017f9c1cb5d6220de0dad2ae0e0eff28c09b",
+        "src/view/iterators.rs": "3482e94e327d6572f666d0aaa886e8a9343a55a659d82552c8d318ef1cb4eec0",
+        "src/view/keyed.rs": "5dbf68b4f9b0da0c93d7224c6c0274e40dbbf5fcf92124b3449c9e53f0470ff7",
+        "src/view/mod.rs": "73771ef27709539720713913726d2d51586d3e18ef2ce69ed7b0eddb02ea8b51",
+        "src/view/primitives.rs": "6ce5a37a951be0f38380330b37e19ce3f14df4fc6588770940600050b7c6840b",
+        "src/view/strings.rs": "7cc80961338ea7f4468c7b9627941b5bffd8ebd23ba4ccd52b27b49781b32f60",
+        "src/view/template.rs": "4b7f7ee10e9b25a19dbacffcbfd1e4792aa91b44e86d18cc862f926cdcc73bd5",
+        "src/view/tuples.rs": "b3d61e6708ebd2d6707360d5dcbc43905458cd7f6535aac25abf9e379e63691a"
+      },
+      "package": {
+        "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。；CSR 内核保留 ToTemplate/RenderHtml 浏览器克隆与 hydration，删除服务端字符串/流式 HTML、异步服务端解析、SSR/服务端 hydration/islands/分支标记及未支持的 testing/sledgehammer/reactive_stores/error-hook 表面；事件/指令/属性直接持有浏览器值，移除序列化 key 和休眠宏标记；保留 client Suspend 的 owner/abort 生命周期。模板 void 元素真实浏览器回归发现旧缺陷并修复。；真实模板夹具同时修复 void 标签生成占位兄弟节点，以及动态 style hydration 沿用服务端已有样式假设的问题；样式恢复统一复用 build。；修复既有 bool 模板 hydration 将 false 属性也置为存在的问题，复用正常 build 并补 disabled/checked/required 往返浏览器断言；撤销未使用 nightly/Static 文本属性及构建通道探测，不扩大未转义静态输出的支持范围。；按实际 WASM MIR、维护源码及浏览器夹具收窄为 42 个 HTML、17 个 SVG、55 个预定义属性及 10 个事件描述符；撤销 MathML、闲置 SVG use 和内联事件属性，保留 Custom/typed target、模板、原始 DOM/inert/SVG 命名空间；直接 Web API 特性从 116 收窄至 49。详见 tools/rust-sources/web-scope.json 与本轮报告。",
+        "description": "Tools for building reactivity-agnostic, renderer-generic, statically-typed view trees for user interface libraries.",
+        "directory": "src/foundation/tachys",
+        "files_sha256": {
+          "Cargo.toml": "4b68f9f48a77fba51ba853c283bebead9d2aead886fe981dd24a5355ee1ecfbc",
+          "src/dom.rs": "581b3fc173e231c53b7d34ac47598aae0b821d05c339438b3479f5e76ff65c7b",
+          "src/erased.rs": "89974a6b9d6711534ff5fec3ac1e12045b7353678927c659091f45dcc93827d6",
+          "src/html/attribute/any_attribute.rs": "6eca4018445b6a4213bd1670a6ab426826c50d89982fb499a969155167e9d628",
+          "src/html/attribute/aria.rs": "f9b976e5850da7da1d093c2151d64012e28de14b96c41b3ce363b6a9ab519b1a",
+          "src/html/attribute/custom.rs": "685ae6082f69b1291db6ca66a057edcfacdce5187ce228d19114fabc63d012d8",
+          "src/html/attribute/global.rs": "bd41d56568910b880c025744bbaaf5deddf735838b657a3a5dc756d715d410f8",
+          "src/html/attribute/key.rs": "d5374c2ab4f7af143b4bec13cbb1dd7caccbe46ca72e0b290364df2a127ec109",
+          "src/html/attribute/maybe_next_attr_erasure_macros.rs": "d8bf8965500dcdf3c832faa843ede714495f3c8f2b3632bdb65e38f51cbea262",
+          "src/html/attribute/mod.rs": "7117fe442d00b5d8556b1c979adef928667a299bd1e9cc394cdc234a47b4f631",
+          "src/html/attribute/value.rs": "f740f89e8df2b06a1a3262f110edb472226c639d4bfc33c0c22188e83fc39f6f",
+          "src/html/class.rs": "f2eaba6d6ef7a20ddf996fe7efeec8cf173b206d3f6cc1d86934cffb09156df7",
+          "src/html/directive.rs": "6bd4092b55f55a727ea1863a65d5a273db768bd8e6812f78a0a480da9d66c6c3",
+          "src/html/element/custom.rs": "fd3cf5f9cec5d7029d26cee541eccceef3dcd9b6a9a8f7448a06d33d8ba60c5d",
+          "src/html/element/element_ext.rs": "264eca830fa794291d882ee11f6ce2167bce36d5900235b8877723ebf5aefae5",
+          "src/html/element/elements.rs": "dd28e111650a1cbb6cf0c8953885d231e55cf840f9861f80c95c54dbd3f27c33",
+          "src/html/element/inner_html.rs": "b4b5025e64e6343985c83f10aae70f9656f4c1b21a7481b24871c112589e858d",
+          "src/html/element/mod.rs": "ceb4aa173670af649d190aca3f8a542c2770635fa300067efec43da2fb5cd7a1",
+          "src/html/event.rs": "bd66dd40ae3523d906dd0f50b896c32dce3474d5d72bdc6321ae889d31796975",
+          "src/html/mod.rs": "fa8fde108e775fbec57b327aaecc25a5d50b038b87273cf8cf54379827533499",
+          "src/html/node_ref.rs": "160e6ad8b5bffd48e2ee45b9661849f2c9ae0f554723ff5b348520b801f057ec",
+          "src/html/property.rs": "193b6672cedeba1419f67c6212104ae55495a2f2125ed891a2bb6bfe67d54388",
+          "src/html/style.rs": "1b1bfaa94907d5d4918e514b9c3af283f0d15798e08f0e5f561ae9119c5c8cf1",
+          "src/hydration.rs": "9850ac1039ba5ec77168dbc928f8d52222e8ae168065a8741a0762f4297b9c96",
+          "src/lib.rs": "35c54f92749f143fa4da12672831c0ad7f130b9e5d914dfc55d099d8d45d5e03",
+          "src/oco.rs": "7fd666bc0a7b13cc50c5ebbfc06e61ccfa3392481a4e6023e776867e18eefb17",
+          "src/reactive_graph/bind.rs": "cf601fb8ff50ae0f21e6d576eac25a0ff3e923cf9c4f0ddea3c8e1b58b12e50d",
+          "src/reactive_graph/class.rs": "f01ac896d834ff858b1b2d17154b845770dd47c9876a631dac2d8310f6b32739",
+          "src/reactive_graph/inner_html.rs": "9bddc9cb9471c114b0ad135710dfa4c630d3106139cf133555e7c0c7393a4bb5",
+          "src/reactive_graph/mod.rs": "560bbd9040ce9d7720ba4d3ed6f2edfd59863faf9beda15accf3045e3c47aa09",
+          "src/reactive_graph/node_ref.rs": "4a4506ec573f07831af53320767169a625b2a0176de7e8d50eda05552ac5d643",
+          "src/reactive_graph/owned.rs": "df9aff800d1eca87476960aeea423f68464d576f972eaf0b847cd7edf8af79fb",
+          "src/reactive_graph/property.rs": "5b10bea631e336dc0204add931b6e56ec0faca796cc01de0bb8121c232e46c05",
+          "src/reactive_graph/style.rs": "4af4b764407c693da4fc149f9420ef707da0decf1d2466db2bbaca73f3c259bd",
+          "src/reactive_graph/suspense.rs": "18dc29c6ca594dec0661334b97a4ceadf062f18cd4cf693b86acba4890a49bb1",
+          "src/renderer/dom.rs": "b008f934a062d9f79f66750cfd1301c5a1e24ea561412e0e91aaeee68a23b6b2",
+          "src/renderer/mod.rs": "8a4521b46751a9f720664e5d954f50e7d0c5272eb53a978e0efbc08551c7d7e2",
+          "src/svg/mod.rs": "6cde6b722a0c83da55c83d30d360c288903ea1aef157be4dccd566c55d089e9e",
+          "src/view/add_attr.rs": "1709ecc464a41b53c162a714b333e7cd123c4a9601641d4f238940bf7734657c",
+          "src/view/any_view.rs": "11a51afb75c988bf2cc2619ea3db666ec188f96934fd1cee0dd3db568c1d490c",
+          "src/view/either.rs": "a3e3713cfe082f2542a1dff18d19df79d8705a8fcb7d9bfdcb5760a0d171dd8b",
+          "src/view/error_boundary.rs": "1815c4a637449e2021dc375d89c530883bc794ef7ce1e4cab0c956e5c02a5b41",
+          "src/view/fragment.rs": "b81b0183c5626d2a4b27b35215f7017f9c1cb5d6220de0dad2ae0e0eff28c09b",
+          "src/view/iterators.rs": "7cea15c502b7ab32cc587158eb1f9f871ca7ee33ae63ff424a67fa0c83e87cbd",
+          "src/view/keyed.rs": "5dbf68b4f9b0da0c93d7224c6c0274e40dbbf5fcf92124b3449c9e53f0470ff7",
+          "src/view/mod.rs": "73771ef27709539720713913726d2d51586d3e18ef2ce69ed7b0eddb02ea8b51",
+          "src/view/primitives.rs": "4f1c0d696d1384e27eb5cb6279485ecca3d50f928e387c68da84cc660c420b59",
+          "src/view/strings.rs": "7cc80961338ea7f4468c7b9627941b5bffd8ebd23ba4ccd52b27b49781b32f60",
+          "src/view/template.rs": "4b7f7ee10e9b25a19dbacffcbfd1e4792aa91b44e86d18cc862f926cdcc73bd5",
+          "src/view/tuples.rs": "b3d61e6708ebd2d6707360d5dcbc43905458cd7f6535aac25abf9e379e63691a"
+        },
+        "license": "MIT",
+        "license_materials": [
+          "compliance/licenses/shared/vendor/web/dependencies/LICENSE-MIT"
+        ],
+        "merged_into": "src/interface + src/macros",
+        "name": "tachys",
+        "origin_directory": "vendor/web/dependencies/tachys-0.2.19",
+        "repository": "https://github.com/leptos-rs/leptos",
+        "status": "内部维护源码",
+        "upstream": {
+          "archive_sha256": "e47e2220bb9d2a3be976a22a0fb7685a0b84499bb11ea5cb3bbc82907675ac68",
+          "archive_url": "https://static.crates.io/crates/tachys/tachys-0.2.19.crate",
+          "name": "tachys",
+          "version": "0.2.19"
+        },
+        "vcs": {
+          "git": {
+            "sha1": "584c3a2d884b0e4dba9e3f822a9b6982cff072c7"
+          },
+          "path_in_vcs": "tachys"
+        },
+        "version": "0.2.19"
       },
       "reason": "按功能统一内部组件身份并移除发布版本后缀；上游身份、版本、许可证及原始测试来源保持不变。"
     }
@@ -51563,14 +52472,6 @@
             "runtime"
           ]
         },
-        "src/foundation/any_spawner": {
-          "features": [
-            "wasm-bindgen"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/arrayvec": {
           "features": [],
           "roles": [
@@ -51673,6 +52574,14 @@
             "compile"
           ]
         },
+        "src/foundation/dom-helpers": {
+          "features": [
+            "default"
+          ],
+          "roles": [
+            "runtime"
+          ]
+        },
         "src/foundation/either": {
           "features": [
             "default",
@@ -51681,15 +52590,6 @@
           ],
           "roles": [
             "compile",
-            "runtime"
-          ]
-        },
-        "src/foundation/either_of": {
-          "features": [
-            "default",
-            "no_std"
-          ],
-          "roles": [
             "runtime"
           ]
         },
@@ -51931,14 +52831,6 @@
             "runtime"
           ]
         },
-        "src/foundation/leptos_dom": {
-          "features": [
-            "default"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/manyhow": {
           "features": [
             "default",
@@ -51966,12 +52858,6 @@
           ]
         },
         "src/foundation/next_tuple": {
-          "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/oco_ref": {
           "features": [],
           "roles": [
             "runtime"
@@ -52064,7 +52950,7 @@
             "compile"
           ]
         },
-        "src/foundation/reactive_graph": {
+        "src/foundation/reactive-state": {
           "features": [
             "effects",
             "serde"
@@ -52162,6 +53048,12 @@
             "runtime"
           ]
         },
+        "src/foundation/shared-value": {
+          "features": [],
+          "roles": [
+            "runtime"
+          ]
+        },
         "src/foundation/shell-tokenizer": {
           "features": [
             "default",
@@ -52231,10 +53123,9 @@
             "compile"
           ]
         },
-        "src/foundation/tachys": {
+        "src/foundation/task-dispatch": {
           "features": [
-            "oco",
-            "reactive_graph"
+            "wasm-bindgen"
           ],
           "roles": [
             "runtime"
@@ -52312,6 +53203,24 @@
           "features": [],
           "roles": [
             "compile"
+          ]
+        },
+        "src/foundation/view-alternatives": {
+          "features": [
+            "default",
+            "no_std"
+          ],
+          "roles": [
+            "runtime"
+          ]
+        },
+        "src/foundation/view-renderer": {
+          "features": [
+            "reactive-state",
+            "shared-value"
+          ],
+          "roles": [
+            "runtime"
           ]
         },
         "src/foundation/wasm-bindgen": {

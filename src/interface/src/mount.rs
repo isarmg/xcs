@@ -1,8 +1,8 @@
 //! CSR mounting and reactive ownership. This product has no hydration mode.
 use crate::IntoView;
-use any_spawner::Executor;
-use reactive_graph::owner::Owner;
-use tachys::{
+use reactive_state::owner::Owner;
+use task_dispatch::Executor;
+use view_renderer::{
     dom::body,
     view::{Mountable, Render},
 };
@@ -35,7 +35,7 @@ where
 
 /// Build and mount a CSR view into the engine's DOM renderer.
 pub fn mount_to_renderer<F, N>(
-    parent: &tachys::renderer::types::Element,
+    parent: &view_renderer::renderer::types::Element,
     app: F,
 ) -> UnmountHandle<N::State>
 where

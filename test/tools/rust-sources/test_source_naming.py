@@ -352,6 +352,70 @@ class SourceNaming(unittest.TestCase):
         self.assertEqual(set(active), {self.new})
         self.assertIn(self.old, records)
 
+    def move_internal_file(self):
+        old = self.root / self.new / 'lib.rs'
+        new = self.root / self.new / 'module' / 'value.rs'
+        new.parent.mkdir()
+        old.rename(new)
+        self.item['file_moves'] = {'lib.rs': 'module/value.rs'}
+        self.item['files_sha256'] = inventory(self.root / self.new)
+
+    def test_reviewed_internal_file_move(self):
+        self.move_internal_file()
+        active, records = self.apply()
+        self.assertIn('module/value.rs', active[self.new]['files_sha256'])
+        self.assertEqual(records[self.old]['package']['files_sha256'], self.package['files_sha256'])
+        normalized = naming.remap_previous(self.previous['packages'], records)
+        self.assertEqual(normalized[self.new]['files_sha256']['module/value.rs'], self.package['files_sha256']['lib.rs'])
+        self.assertNotIn('lib.rs', normalized[self.new]['files_sha256'])
+        self.assertEqual(naming.remap_previous(self.previous['external_tests'], records)[self.new]['files'], self.owner['files'])
+        catalog = dict(schema=5, packages=active, renames=records, rename_records_sha256=naming.hashes(records))
+        naming.validate_history(self.root, catalog)
+
+    def test_internal_move_requires_explicit_map(self):
+        self.move_internal_file()
+        self.item.pop('file_moves')
+        self.reject('bijective')
+
+    def test_file_moves_cannot_overwrite_unmoved_file(self):
+        self.item['file_moves'] = {'lib.rs': 'Cargo.toml'}
+        self.reject('bijective')
+
+    def test_file_moves_cannot_invent_source(self):
+        self.item['file_moves'] = {'missing.rs': 'lib.rs'}
+        self.reject('exact inventory paths')
+
+    def test_file_moves_cannot_use_unknown_target(self):
+        self.item['file_moves'] = {'lib.rs': '../escape.rs'}
+        self.reject('exact inventory paths')
+
+    def test_file_moves_reject_redundant_identity(self):
+        self.item['file_moves'] = {'lib.rs': 'lib.rs'}
+        self.reject('distinct exact')
+
+    def test_file_moves_cannot_hide_content_drift(self):
+        self.move_internal_file()
+        (self.root / self.new / 'module/value.rs').write_text('unreviewed')
+        self.reject('content differs')
+
+    def test_file_moves_preserve_current_and_historical_counts(self):
+        self.move_internal_file()
+        self.item['files_sha256']['extra.rs'] = 'a' * 64
+        self.reject('bijective')
+
+    def test_file_moves_cannot_rewrite_history(self):
+        self.move_internal_file()
+        catalog = self.completed_catalog()
+        catalog['renames'][self.old]['file_moves'] = {}
+        with self.assertRaisesRegex(ValueError, 'receipt drift'):
+            naming.validate_history(self.root, catalog)
+
+    def test_bijective_swaps_are_complete_not_overwrites(self):
+        before = {'a.rs': 'a' * 64, 'b.rs': 'b' * 64}
+        after = {'a.rs': 'c' * 64, 'b.rs': 'd' * 64}
+        self.assertEqual(naming.mapped_inventory(before, after, {'a.rs': 'b.rs', 'b.rs': 'a.rs'}),
+                         {'b.rs': 'a' * 64, 'a.rs': 'b' * 64})
+
     def test_no_external_owner_supported(self):
         self.previous['external_tests'] = {}
         self.item['external_tests'] = None

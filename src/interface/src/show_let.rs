@@ -1,8 +1,8 @@
 use crate::{IntoView, children::ViewFn};
-use reactive_graph::traits::Get;
+use reactive_state::traits::Get;
 use std::{marker::PhantomData, sync::Arc};
-use tachys::either::Either;
 use view_macros::component;
+use view_renderer::either::Either;
 
 /// Like `<Show>` but for `Option`. When `some` returns `Some(value)`,
 /// the children receive that value. When it returns `None`, the fallback is

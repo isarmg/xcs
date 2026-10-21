@@ -1,5 +1,5 @@
 use super::*;
-use reactive_graph::{computed::ArcMemo, traits::GetUntracked};
+use reactive_state::{computed::ArcMemo, traits::GetUntracked};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[test]
@@ -23,7 +23,7 @@ fn equal_snapshots_do_not_invalidate_unchanged_row_consumers() {
     let signal = initial[0].1.clone();
     let memo = ArcMemo::new(move |_| {
         observed_runs.fetch_add(1, Ordering::Relaxed);
-        use reactive_graph::traits::Get;
+        use reactive_state::traits::Get;
         signal.get()
     });
     assert_eq!(memo.get_untracked(), "uploading");

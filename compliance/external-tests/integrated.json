@@ -64,7 +64,7 @@
         {
           "source": "src/interface/src/for_snapshot.rs",
           "path": "test/interface/unit/for_snapshot/tests.rs",
-          "sha256": "d0a09d78a34880c588154c80bb08ad612b77c58b804f641e2980cd6c536bb009",
+          "sha256": "4cfbccbc4ddf8aa48feb4f8201d9689ebf72bac918f014980c5a90474de9206d",
           "source_sha256_before": "7eda788d3b08388fb3bc652400f6b506b69eb2d84881485a6a0f3bc4a8a8fa16"
         },
         {
@@ -82,7 +82,7 @@
         {
           "source": "src/interface/src/mount.rs",
           "path": "test/interface/unit/mount/tests.rs",
-          "sha256": "9eceb55b09eda28dc82b6827cf0e92f18b8448ae64015fd5256e0d2632f79c69",
+          "sha256": "e5033089a1a391b074a8d34ade8030adaaa8ea07d2c79ac974b9d1c642761d38",
           "source_sha256_before": "fa2cab92e5463e62cad6b02ed28b58189912c27586b2538b578c662f35d0bf22"
         },
         {
@@ -202,7 +202,7 @@
         {
           "source": "tools/web-bindings/tests/fixtures/csr-template.rs",
           "path": "test/tools/web-bindings/fixtures/csr-template.rs",
-          "sha256": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281",
+          "sha256": "1bff500e6565c19c77fa97d6629c5bc71b5a3000e3c4ffdb6be32d619fad9a5b",
           "source_sha256_before": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281"
         },
         {

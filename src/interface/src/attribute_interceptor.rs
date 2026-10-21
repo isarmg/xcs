@@ -119,8 +119,8 @@ impl<T: IntoView + 'static, A: Attribute> RenderHtml for AttributeInterceptorInn
 
     fn hydrate(
         self,
-        cursor: &web_interface::tachys::hydration::Cursor,
-        position: &web_interface::tachys::view::PositionState,
+        cursor: &web_interface::view_renderer::hydration::Cursor,
+        position: &web_interface::view_renderer::view::PositionState,
     ) -> Self::State {
         self.children.hydrate(cursor, position)
     }

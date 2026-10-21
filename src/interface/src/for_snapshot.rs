@@ -2,7 +2,7 @@
 //! DOM reconciler with per-key reactive payloads. Server snapshots can change a
 //! transfer's status without replacing its DOM, focus, or expanded details.
 use crate::IntoView;
-use reactive_graph::{
+use reactive_state::{
     owner::Owner,
     signal::{ArcRwSignal, ReadSignal},
     traits::{Set, WithUntracked},
@@ -12,8 +12,8 @@ use std::{
     hash::Hash,
     sync::{Arc, Mutex},
 };
-use tachys::{reactive_graph::OwnedView, view::keyed::keyed};
 use view_macros::component;
+use view_renderer::{reactive_state::OwnedView, view::keyed::keyed};
 
 /// Retains keyed row DOM while publishing changed snapshot values to each row.
 ///
