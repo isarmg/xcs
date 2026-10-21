@@ -48,8 +48,8 @@ decompression-full = ["decompression-br", "decompression-deflate", "decompressio
 decompression-gzip = ["dep:futures", "dep:http-body", "http-body/utilities", "tokio-util", "dep:tokio"]
 decompression-zstd = ["dep:futures", "dep:http-body", "http-body/utilities", "tokio-util", "dep:tokio"]
 default = []
-follow-redirect = ["dep:futures", "futures/utilities", "dep:http-body", "dep:url", "service-stack/util"]
-fs = ["dep:tokio", "tokio?/fs", "tokio?/io-util", "dep:futures", "futures/utilities", "dep:http-body", "http-body/utilities", "tokio-util/io", "dep:http-range-header", "mime_guess", "mime", "percent-encoding", "httpdate", "set-status", "futures/alloc"]
+follow-redirect = ["dep:futures", "futures/utilities", "dep:http-body", "url-encoding/parser", "url-encoding/std", "service-stack/util"]
+fs = ["dep:tokio", "tokio?/fs", "tokio?/io-util", "dep:futures", "futures/utilities", "dep:http-body", "http-body/utilities", "tokio-util/io", "dep:http-range-header", "mime_guess", "mime", "url-encoding/std", "httpdate", "set-status", "futures/alloc"]
 full = ["add-extension", "auth", "catch-panic", "compression-full", "cors", "decompression-full", "follow-redirect", "fs", "limit", "map-request-body", "map-response-body", "metrics", "normalize-path", "on-early-drop", "propagate-header", "redirect", "request-id", "sensitive-headers", "set-header", "set-status", "timeout", "trace", "util", "validate-request"]
 limit = ["dep:http-body", "http-body/utilities"]
 map-request-body = []
@@ -125,11 +125,6 @@ optional = true
 default-features = false
 path = "../mime_guess"
 
-[dependencies.percent-encoding]
-version = "2.1.0"
-optional = true
-path = "../percent-encoding"
-
 [dependencies.pin-project-lite]
 version = "0.2.7"
 path = "../pin-project-lite"
@@ -153,11 +148,6 @@ optional = true
 default-features = false
 path = "../tracing"
 
-[dependencies.url]
-version = "2.5"
-optional = true
-path = "../url"
-
 [dependencies.uuid]
 version = "1.0"
 features = ["v4"]
@@ -169,3 +159,8 @@ version = "0.5.3"
 path = "../service-stack"
 default-features = false
 
+[dependencies.url-encoding]
+path = "../url-encoding"
+default-features = false
+features = []
+optional = true

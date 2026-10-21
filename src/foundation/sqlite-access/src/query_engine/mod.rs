@@ -68,9 +68,9 @@ pub mod value_debug;
 pub use either::Either;
 pub use hash_table::{hash_map, HashMap};
 pub use indexmap::IndexMap;
-pub use percent_encoding;
+pub use url_encoding::percent;
 pub use smallvec::SmallVec;
-pub use url::{self, Url};
+pub use url_encoding::address::{self, Url};
 
 /// Helper module to get drivers compiling again that used to be in this crate,
 /// to avoid having to replace tons of `use crate::<...>` imports.

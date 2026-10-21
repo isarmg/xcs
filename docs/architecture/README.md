@@ -27,3 +27,4 @@
 - [读取投影与请求内上下文](read-projections.md)：目录读取的复杂度边界与冻结响应保证。
 - [Tracing instrumentation and collectors](../components/tracing.md): explicit capabilities, direct JSON fields, source origins and retained verification.
 - [Unicode 数据职责包](unicode-data-families.md)：能力边界、来源与验证范围。
+- [URL 与编码职责包](url-encoding.md)：能力边界、来源与验证范围。

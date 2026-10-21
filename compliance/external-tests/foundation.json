@@ -8727,88 +8727,6 @@
       ]
     },
     {
-      "directory": "src/foundation/idna",
-      "roots": [
-        "test/foundation/idna"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/idna/src/punycode.rs",
-          "source_sha256_before": "0cc6fa84989898ccf6de0a665a287d7488a6eba4b178bea065d311ecabd81604",
-          "path": "test/foundation/idna/functions/src/punycode/huge_encode_466.rs",
-          "sha256": "2dc04e2b689cfe8cee1207d7b5d6653818c09fb5fbc91611f624a1fcb91ea57a"
-        },
-        {
-          "source": "src/foundation/idna/tests/IdnaTestV2.txt",
-          "source_sha256_before": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9",
-          "path": "test/foundation/idna/tests/IdnaTestV2.txt",
-          "sha256": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9"
-        },
-        {
-          "source": "src/foundation/idna/tests/bad_punycode_tests.json",
-          "source_sha256_before": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5",
-          "path": "test/foundation/idna/tests/bad_punycode_tests.json",
-          "sha256": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5"
-        },
-        {
-          "source": "src/foundation/idna/tests/deprecated.rs",
-          "source_sha256_before": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2",
-          "path": "test/foundation/idna/tests/deprecated.rs",
-          "sha256": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2"
-        },
-        {
-          "source": "src/foundation/idna/tests/punycode.rs",
-          "source_sha256_before": "75fa73b6429ccacaeb5d72fab0b927cdf9f2173a9fc5fb366697bf7002b73921",
-          "path": "test/foundation/idna/tests/punycode.rs",
-          "sha256": "dc7e08b4b3d08f86713f07c9e3ff4f4766212d6edf5fb3c03d865bef6b735a7b"
-        },
-        {
-          "source": "src/foundation/idna/tests/punycode_tests.json",
-          "source_sha256_before": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a",
-          "path": "test/foundation/idna/tests/punycode_tests.json",
-          "sha256": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a"
-        },
-        {
-          "source": "src/foundation/idna/tests/tests.rs",
-          "source_sha256_before": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12",
-          "path": "test/foundation/idna/tests/tests.rs",
-          "sha256": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12"
-        },
-        {
-          "source": "src/foundation/idna/tests/unit.rs",
-          "source_sha256_before": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1",
-          "path": "test/foundation/idna/tests/unit.rs",
-          "sha256": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1"
-        },
-        {
-          "source": "src/foundation/idna/tests/unitbis.rs",
-          "source_sha256_before": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af",
-          "path": "test/foundation/idna/tests/unitbis.rs",
-          "sha256": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af"
-        },
-        {
-          "source": "src/foundation/idna/tests/uts46.rs",
-          "source_sha256_before": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03",
-          "path": "test/foundation/idna/tests/uts46.rs",
-          "sha256": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/idna_adapter",
-      "roots": [
-        "test/foundation/idna_adapter"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/idna_adapter/src/lib.rs",
-          "source_sha256_before": "fca6f35c8902c91e84e0e9700b86a401b041f1a77912ef7c3d65a1fcdf5bffd8",
-          "path": "test/foundation/idna_adapter/unit/src/lib/all_tests_320.rs",
-          "sha256": "5f8413d25c02387e812ce480ecc485e242475d6ebd49e5b5795aec1ba33b0fc7"
-        }
-      ]
-    },
-    {
       "directory": "src/foundation/indexmap",
       "roots": [
         "test/foundation/indexmap"
@@ -9874,7 +9792,7 @@
           "source": "src/foundation/jsonschema/src/keywords/format.rs",
           "source_sha256_before": "7de31674f4c960a7d4722a99806c08f736d1477d145c6d136833d71097af5adc",
           "path": "test/foundation/jsonschema/unit/src/keywords/format/tests_1773.rs",
-          "sha256": "3c28495c663e592c266b49f3b92fb291a7cf0f1a9aa4187041e756f0d674e3de"
+          "sha256": "abb54e0dd6491e03251efabed3727daa81e3323103dfbe868ab042d445d27e0e"
         },
         {
           "source": "src/foundation/jsonschema/src/keywords/helpers.rs",
@@ -12272,26 +12190,6 @@
           "source_sha256_before": "cb56e09a475ffcd0dd95e78e9cdfcd88cfed767743b6b78322ccc7bd6f6aee77",
           "path": "test/foundation/pastey/unit/src/segment/tests_386.rs",
           "sha256": "b9138810d1009ad3900b7a136ed2784f2ce1888497907dcbb80e13552688f5c6"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/percent-encoding",
-      "roots": [
-        "test/foundation/percent-encoding"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/percent-encoding/src/ascii_set.rs",
-          "source_sha256_before": "f75552e4f446ed240cef64c1367e848cf3ae65f77602085459566d835a1d8587",
-          "path": "test/foundation/percent-encoding/unit/src/ascii_set/tests_172.rs",
-          "sha256": "1d979d944d4a5f4676072088321d052b0f8efcec8bb250d8ac9be7e44de6fcd6"
-        },
-        {
-          "source": "src/foundation/percent-encoding/src/lib.rs",
-          "source_sha256_before": "641903d385581e76f31ef8c991d83c2a5d7fbbc2879d93909c539037e4e1e3e2",
-          "path": "test/foundation/percent-encoding/unit/src/lib/tests_367.rs",
-          "sha256": "81fc03bb33bdcb62f1a228f73a09ca234a124e5bd396b79fd2fe3d8cfcc124f8"
         }
       ]
     },
@@ -14956,7 +14854,7 @@
           "source": "src/foundation/reqwest/src/async_impl/client.rs",
           "source_sha256_before": "2fd19f33f89f8c67c526cd1787620dc8c51ce9ae8b01d0dd0269a6a0219128df",
           "path": "test/foundation/reqwest/unit/src/async_impl/client/tests_2271.rs",
-          "sha256": "685cddba914cdf755c8d09898281dd404db7de42fe4acb4b0d8735c9cfdde45a"
+          "sha256": "f6850d80ffa1d8b7cba4af27b51a299fc7c2fc6b0657a7f0626361d30bfbd3d4"
         },
         {
           "source": "src/foundation/reqwest/src/async_impl/request.rs",
@@ -14968,7 +14866,7 @@
           "source": "src/foundation/reqwest/src/async_impl/response.rs",
           "source_sha256_before": "00acde5961c4e1196d421028c8de1a28f7e63e669d223130e6c0dd3e3761dd24",
           "path": "test/foundation/reqwest/unit/src/async_impl/response/tests_418.rs",
-          "sha256": "c1b5370d606fab8f47e05ee492c8ecc70828f5f9dbaf7f626d7a635194c52c8d"
+          "sha256": "2b5586aeb4356b11b9dbe54cba5b7019562d8bc7daf9f7eb5f0227337d8424ce"
         },
         {
           "source": "src/foundation/reqwest/src/error.rs",
@@ -14992,7 +14890,7 @@
           "source": "src/foundation/reqwest/src/response.rs",
           "source_sha256_before": "12cf82de2499a426686ed4f3719cce73e269b7b9ddc9c88458e7378beb2c58a8",
           "path": "test/foundation/reqwest/unit/src/response/tests_21.rs",
-          "sha256": "5f89c5d0fe77f2c8e47647ef421d5dde1ee0ec036fb8577232a378de364a3bfa"
+          "sha256": "96f6b104d293b5a720505be1f32dfc7fa2125a62bc1f0fcbc218779d2dfb30dd"
         },
         {
           "source": "src/foundation/reqwest/src/tls.rs",
@@ -22453,46 +22351,143 @@
       ]
     },
     {
-      "directory": "src/foundation/url",
+      "directory": "src/foundation/url-encoding",
       "roots": [
-        "test/foundation/url"
+        "test/foundation/url-encoding"
       ],
       "files": [
         {
+          "path": "test/foundation/url-encoding/address/functions/src/slicing/test_count_digits_52.rs",
+          "sha256": "b4694bccd7df37ed43547c8d4585df6190ff7778282ba043adb6c2d369a62c28",
           "source": "src/foundation/url/src/slicing.rs",
           "source_sha256_before": "b59bf2fa4cbfd31619b860766268d4e99b46537d3b9702b73f6d0a979a7de24a",
-          "path": "test/foundation/url/functions/src/slicing/test_count_digits_52.rs",
-          "sha256": "b4694bccd7df37ed43547c8d4585df6190ff7778282ba043adb6c2d369a62c28"
+          "origin_directory": "vendor/rust/url-2.5.8"
         },
         {
+          "path": "test/foundation/url-encoding/address/tests/expected_failures.txt",
+          "sha256": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f",
           "source": "src/foundation/url/tests/expected_failures.txt",
           "source_sha256_before": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f",
-          "path": "test/foundation/url/tests/expected_failures.txt",
-          "sha256": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f"
+          "origin_directory": "vendor/rust/url-2.5.8"
         },
         {
+          "path": "test/foundation/url-encoding/address/tests/setters_tests.json",
+          "sha256": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd",
           "source": "src/foundation/url/tests/setters_tests.json",
           "source_sha256_before": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd",
-          "path": "test/foundation/url/tests/setters_tests.json",
-          "sha256": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd"
+          "origin_directory": "vendor/rust/url-2.5.8"
         },
         {
+          "path": "test/foundation/url-encoding/address/tests/unit.rs",
+          "sha256": "0ceb113e0642819a563cb1f6785b73278002e0c06c92213d4ff33a036901263b",
           "source": "src/foundation/url/tests/unit.rs",
           "source_sha256_before": "7eb96c1194fba03fd7f469c44cbbe28699dae14399be72e4c5c675a90fe08dc7",
-          "path": "test/foundation/url/tests/unit.rs",
-          "sha256": "654528422e7b6608e45f5755579968fdf443c5bf76a8a06a54d42434d286416e"
+          "origin_directory": "vendor/rust/url-2.5.8"
         },
         {
+          "path": "test/foundation/url-encoding/address/tests/urltestdata.json",
+          "sha256": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884",
           "source": "src/foundation/url/tests/urltestdata.json",
           "source_sha256_before": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884",
-          "path": "test/foundation/url/tests/urltestdata.json",
-          "sha256": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884"
+          "origin_directory": "vendor/rust/url-2.5.8"
         },
         {
+          "path": "test/foundation/url-encoding/address/tests/wpt.rs",
+          "sha256": "b7672c921fdb610ddfdbf7d1c0cc84212f0ac11c4dd19b6c7cffba86fea45c7e",
           "source": "src/foundation/url/tests/wpt.rs",
           "source_sha256_before": "2d083ab72ad8cc9b116dd164e63440dd120f07977ac306377633cfe214f34a62",
-          "path": "test/foundation/url/tests/wpt.rs",
-          "sha256": "64ddf45265c602f3ee08b12b0f78aed786798e6a63f1a82fe87ccdbb92cdb38f"
+          "origin_directory": "vendor/rust/url-2.5.8"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/functions/src/punycode/huge_encode_466.rs",
+          "sha256": "2dc04e2b689cfe8cee1207d7b5d6653818c09fb5fbc91611f624a1fcb91ea57a",
+          "source": "src/foundation/idna/src/punycode.rs",
+          "source_sha256_before": "0cc6fa84989898ccf6de0a665a287d7488a6eba4b178bea065d311ecabd81604",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/IdnaTestV2.txt",
+          "sha256": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9",
+          "source": "src/foundation/idna/tests/IdnaTestV2.txt",
+          "source_sha256_before": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/bad_punycode_tests.json",
+          "sha256": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5",
+          "source": "src/foundation/idna/tests/bad_punycode_tests.json",
+          "source_sha256_before": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/deprecated.rs",
+          "sha256": "a381a196df4309d69d1d919795f9265dee7107ad9cac84da07ae69bf00e08c22",
+          "source": "src/foundation/idna/tests/deprecated.rs",
+          "source_sha256_before": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/punycode.rs",
+          "sha256": "d0fa0c3300e9cf4b6e0c4448d72e8f359596325748c685b83b6b86f116fbbc7d",
+          "source": "src/foundation/idna/tests/punycode.rs",
+          "source_sha256_before": "75fa73b6429ccacaeb5d72fab0b927cdf9f2173a9fc5fb366697bf7002b73921",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/punycode_tests.json",
+          "sha256": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a",
+          "source": "src/foundation/idna/tests/punycode_tests.json",
+          "source_sha256_before": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/tests.rs",
+          "sha256": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12",
+          "source": "src/foundation/idna/tests/tests.rs",
+          "source_sha256_before": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/unit.rs",
+          "sha256": "bf67f2ae332060d288c2230ac114fce276e05701d5d42d40cd64b8646e576129",
+          "source": "src/foundation/idna/tests/unit.rs",
+          "source_sha256_before": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/unitbis.rs",
+          "sha256": "1a00aae0bebe3bc7b16a13cbc2ca8c262f05bafc4216ba0defe48911d43fef46",
+          "source": "src/foundation/idna/tests/unitbis.rs",
+          "source_sha256_before": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/domain/tests/uts46.rs",
+          "sha256": "789c9f31f6092c610ffe86a7c18eebaacf8d2145bbce44c97ad1f0c9b76851c1",
+          "source": "src/foundation/idna/tests/uts46.rs",
+          "source_sha256_before": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03",
+          "origin_directory": "vendor/rust/idna-1.1.0"
+        },
+        {
+          "path": "test/foundation/url-encoding/percent/unit/src/ascii_set/tests_172.rs",
+          "sha256": "1d979d944d4a5f4676072088321d052b0f8efcec8bb250d8ac9be7e44de6fcd6",
+          "source": "src/foundation/percent-encoding/src/ascii_set.rs",
+          "source_sha256_before": "f75552e4f446ed240cef64c1367e848cf3ae65f77602085459566d835a1d8587",
+          "origin_directory": "vendor/rust/percent-encoding-2.3.2"
+        },
+        {
+          "path": "test/foundation/url-encoding/percent/unit/src/lib/tests_367.rs",
+          "sha256": "81fc03bb33bdcb62f1a228f73a09ca234a124e5bd396b79fd2fe3d8cfcc124f8",
+          "source": "src/foundation/percent-encoding/src/lib.rs",
+          "source_sha256_before": "641903d385581e76f31ef8c991d83c2a5d7fbbc2879d93909c539037e4e1e3e2",
+          "origin_directory": "vendor/rust/percent-encoding-2.3.2"
+        },
+        {
+          "path": "test/foundation/url-encoding/unicode_backend/unit/src/lib/all_tests_320.rs",
+          "sha256": "933cb51ada4da508b6ced90543b5526853f0bf230b5bf47ee4efce2cf209dde0",
+          "source": "src/foundation/idna_adapter/src/lib.rs",
+          "source_sha256_before": "fca6f35c8902c91e84e0e9700b86a401b041f1a77912ef7c3d65a1fcdf5bffd8",
+          "origin_directory": "vendor/rust/idna_adapter-1.2.2"
         }
       ]
     },

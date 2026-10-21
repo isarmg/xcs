@@ -56,8 +56,8 @@ or no-op implementation is supplied to make those tests appear green.
   comparisons between baked-provider and constant constructors, and 11 retained
   property unit tests using their real dependencies.
 
-The existing product gate still runs the actual IDNA/storage-client
-`property_masks_preserve_all_unicode_scalars` regression. Generated-data package
+After URL consolidation, the URL family gate runs the retained
+`property_masks_preserve_all_unicode_scalars` regression in its Unicode backend. Generated-data package
 removal does not change ICU scalar values, property bit masks or IDNA wire semantics.
 
 

@@ -137,8 +137,8 @@ impl<S: IntoUrl> IntoProxy for S {
                 let mut presumed_to_have_scheme = true;
                 let mut source = e.source();
                 while let Some(err) = source {
-                    if let Some(parse_error) = err.downcast_ref::<url::ParseError>() {
-                        if *parse_error == url::ParseError::RelativeUrlWithoutBase {
+                    if let Some(parse_error) = err.downcast_ref::<url_encoding::address::ParseError>() {
+                        if *parse_error == url_encoding::address::ParseError::RelativeUrlWithoutBase {
                             presumed_to_have_scheme = false;
                             break;
                         }
@@ -711,7 +711,7 @@ impl ProxyScheme {
     /// Supported schemes: HTTP, HTTPS, (SOCKS4, SOCKS5, SOCKS5H if `socks` feature is enabled).
     // Private for now...
     fn parse(url: Url) -> crate::Result<Self> {
-        use url::Position;
+        use url_encoding::address::Position;
 
         // Resolve URL to a host and port
         #[cfg(feature = "socks")]

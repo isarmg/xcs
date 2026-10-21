@@ -18,10 +18,6 @@ autoexamples = false
 
 [lib]
 test = false
-[dependencies.form_urlencoded]
-version = "1"
-path = "../form_urlencoded"
-
 [dependencies.itoa]
 version = "1"
 path = "../itoa"
@@ -35,3 +31,8 @@ version = "1.0.69"
 path = "../data-serialization"
 [badges.travis-ci]
 repository = "nox/serde_urlencoded"
+
+[dependencies.url-encoding]
+path = "../url-encoding"
+default-features = false
+features = ["form", "std"]

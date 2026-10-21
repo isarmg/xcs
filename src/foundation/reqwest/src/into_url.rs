@@ -1,4 +1,4 @@
-use url::Url;
+use url_encoding::address::Url;
 
 /// A trait to try to convert some type into a `Url`.
 ///

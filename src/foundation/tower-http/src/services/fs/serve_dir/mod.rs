@@ -8,7 +8,7 @@ use bytes::Bytes;
 use futures::FutureExt;
 use http::{header, HeaderValue, Method, Request, Response, StatusCode};
 use http_body::{BodyExt, Empty};
-use percent_encoding::percent_decode;
+use url_encoding::percent::percent_decode;
 use std::{
     convert::Infallible,
     io,

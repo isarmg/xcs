@@ -61,12 +61,13 @@ pub struct BackupConfigurationRequest<'a> {
 #[derive(Clone)]
 pub struct Client {
     client: reqwest::Client,
-    base: url::Url,
+    base: url_encoding::address::Url,
     token: Option<String>,
 }
 impl Client {
     pub fn connect(address: &str) -> Result<Self, Error> {
-        let base = url::Url::parse(address).map_err(|error| Error::Address(error.to_string()))?;
+        let base = url_encoding::address::Url::parse(address)
+            .map_err(|error| Error::Address(error.to_string()))?;
         let loopback = base.host_str().is_some_and(|host| {
             host == "localhost" || host == "127.0.0.1" || host == "[::1]" || host == "::1"
         });
@@ -98,7 +99,7 @@ impl Client {
     pub fn origin(&self) -> &str {
         self.base.as_str()
     }
-    fn url(&self, path: &str) -> Result<url::Url, Error> {
+    fn url(&self, path: &str) -> Result<url_encoding::address::Url, Error> {
         storage_contract::validate_api_path(path).map_err(|error| Error::Address(error.message))?;
         let url = self
             .base
@@ -342,7 +343,7 @@ impl Client {
 }
 
 pub fn segment(value: &str) -> String {
-    url::form_urlencoded::byte_serialize(value.as_bytes())
+    url_encoding::form::byte_serialize(value.as_bytes())
         .collect::<String>()
         .replace('+', "%20")
 }

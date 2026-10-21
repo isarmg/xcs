@@ -114,7 +114,7 @@ use std::{
 use service_stack::util::Oneshot;
 use service_stack::Layer;
 use service_stack::Service;
-use url::Url;
+use url_encoding::address::Url;
 
 /// [`Layer`] for retrying requests with a [`Service`] to follow redirection responses.
 ///

@@ -38,7 +38,7 @@ use sync_wrapper as _;
 pub use http::header;
 pub use http::Method;
 pub use http::{StatusCode, Version};
-pub use url::Url;
+pub use url_encoding::address::Url;
 
 // universal mods
 #[macro_use]

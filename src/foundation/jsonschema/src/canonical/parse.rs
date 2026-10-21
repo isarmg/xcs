@@ -928,14 +928,14 @@ fn specialized_key(key: &Arc<str>, env: &DynamicEnv) -> Arc<str> {
         return Arc::clone(key);
     }
     let decoded = match key.strip_prefix(CANONICAL_REFERENCE_PREFIX) {
-        Some(encoded) => percent_encoding::percent_decode_str(encoded)
+        Some(encoded) => url_encoding::percent::percent_decode_str(encoded)
             .decode_utf8_lossy()
             .into_owned(),
         None => key.to_string(),
     };
     // Anchor names from externally registered resources bypass `anchorString` validation, so a
     // component may contain the join delimiters; escaping keeps `(key, env) -> string` injective.
-    let mut key_text = match Cow::from(percent_encoding::utf8_percent_encode(
+    let mut key_text = match Cow::from(url_encoding::percent::utf8_percent_encode(
         &decoded,
         SPECIALIZATION_COMPONENT,
     )) {
@@ -944,26 +944,26 @@ fn specialized_key(key: &Arc<str>, env: &DynamicEnv) -> Arc<str> {
     };
     for (name, resource) in env.iter() {
         key_text.push_str("|dyn=");
-        key_text.extend(percent_encoding::utf8_percent_encode(
+        key_text.extend(url_encoding::percent::utf8_percent_encode(
             name,
             SPECIALIZATION_COMPONENT,
         ));
         key_text.push('@');
-        key_text.extend(percent_encoding::utf8_percent_encode(
+        key_text.extend(url_encoding::percent::utf8_percent_encode(
             resource,
             SPECIALIZATION_COMPONENT,
         ));
     }
     let key_text =
-        percent_encoding::utf8_percent_encode(&key_text, percent_encoding::NON_ALPHANUMERIC);
+        url_encoding::percent::utf8_percent_encode(&key_text, url_encoding::percent::NON_ALPHANUMERIC);
     let uri = format!("{CANONICAL_REFERENCE_PREFIX}{key_text}");
     let uri = referencing::uri::from_str(&uri).expect("a percent-encoded canonical URI is valid");
     Arc::from(uri.as_str())
 }
 
 /// The join delimiters, and `%` so the escaping is itself injective.
-const SPECIALIZATION_COMPONENT: &percent_encoding::AsciiSet =
-    &percent_encoding::CONTROLS.add(b'%').add(b'|').add(b'@');
+const SPECIALIZATION_COMPONENT: &url_encoding::percent::AsciiSet =
+    &url_encoding::percent::CONTROLS.add(b'%').add(b'|').add(b'@');
 
 /// Parse a root or resolved target whose resolver already carries that resource's base URI.
 fn parse_schema_in_scope<'a>(
@@ -3419,7 +3419,7 @@ fn canonical_reference_uri(reference: &str, location: &str, root_base_uri: &str)
                 None | Some(_) => break,
             }
         }
-        if let Ok(decoded) = percent_encoding::percent_decode_str(encoded).decode_utf8() {
+        if let Ok(decoded) = url_encoding::percent::percent_decode_str(encoded).decode_utf8() {
             if decoded.starts_with(CANONICAL_REFERENCE_PREFIX) {
                 let uri = referencing::unescape_segment(&decoded);
                 return Arc::from(uri.as_ref());
@@ -3437,7 +3437,7 @@ fn canonical_reference_uri(reference: &str, location: &str, root_base_uri: &str)
         return Arc::from(location);
     }
     let location =
-        percent_encoding::utf8_percent_encode(location, percent_encoding::NON_ALPHANUMERIC);
+        url_encoding::percent::utf8_percent_encode(location, url_encoding::percent::NON_ALPHANUMERIC);
     let uri = format!("{CANONICAL_REFERENCE_PREFIX}{location}");
     let uri = referencing::uri::from_str(&uri).expect("a percent-encoded canonical URI is valid");
     Arc::from(uri.as_str())

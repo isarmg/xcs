@@ -1,7 +1,7 @@
 //! Deserialization support for the `application/x-www-form-urlencoded` format.
 
-use form_urlencoded::parse;
-use form_urlencoded::Parse as UrlEncodedParse;
+use url_encoding::form::parse;
+use url_encoding::form::Parse as UrlEncodedParse;
 use data_serialization::de::value::MapDeserializer;
 use data_serialization::de::Error as de_Error;
 use data_serialization::de::{self, IntoDeserializer};

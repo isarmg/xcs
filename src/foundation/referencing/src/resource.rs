@@ -95,7 +95,7 @@ impl<'r> ResourceRef<'r> {
         let mut contents = self.contents;
         let mut segments = Segments::new();
         let original_pointer = pointer;
-        let pointer = percent_encoding::percent_decode_str(&pointer[1..])
+        let pointer = url_encoding::percent::percent_decode_str(&pointer[1..])
             .decode_utf8()
             .map_err(|err| Error::invalid_percent_encoding(original_pointer, err))?;
         for segment in pointer.split('/') {

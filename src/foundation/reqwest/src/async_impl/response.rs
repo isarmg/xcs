@@ -12,7 +12,7 @@ use data_serialization::de::DeserializeOwned;
 #[cfg(feature = "json")]
 use json_codec;
 use tokio::time::Sleep;
-use url::Url;
+use url_encoding::address::Url;
 
 use super::body::Body;
 use crate::async_impl::body::ResponseBody;

@@ -313,10 +313,10 @@ dependencies = [
  "data-serialization",
  "json-codec",
  "jsonschema",
- "percent-encoding",
  "regex",
  "storage-contract",
  "toml",
+ "url-encoding",
  "walkdir",
 ]
 
@@ -545,16 +545,9 @@ name = "form-codec"
 version = "0.7.1"
 dependencies = [
  "data-serialization",
- "form_urlencoded",
  "itoa",
  "ryu",
-]
-
-[[package]]
-name = "form_urlencoded"
-version = "1.2.2"
-dependencies = [
- "percent-encoding",
+ "url-encoding",
 ]
 
 [[package]]
@@ -687,7 +680,6 @@ dependencies = [
  "bytes",
  "data-serialization",
  "form-codec",
- "form_urlencoded",
  "futures",
  "http",
  "http-body",
@@ -697,12 +689,12 @@ dependencies = [
  "matchit",
  "memchr",
  "mime",
- "percent-encoding",
  "pin-project-lite",
  "service-stack",
  "sync_wrapper",
  "tokio",
  "tracing",
+ "url-encoding",
 ]
 
 [[package]]
@@ -720,13 +712,13 @@ dependencies = [
  "ipnet",
  "itoa",
  "libc",
- "percent-encoding",
  "pin-project-lite",
  "service-stack",
  "smallvec",
  "socket2",
  "tokio",
  "tracing",
+ "url-encoding",
  "want",
 ]
 
@@ -802,23 +794,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "idna"
-version = "1.1.0"
-dependencies = [
- "idna_adapter",
- "smallvec",
- "utf8_iter",
-]
-
-[[package]]
-name = "idna_adapter"
-version = "1.2.2"
-dependencies = [
- "unicode-normalizer",
- "unicode-properties",
-]
-
-[[package]]
 name = "indexmap"
 version = "2.14.2"
 dependencies = [
@@ -882,12 +857,12 @@ dependencies = [
  "jsonschema-value",
  "num-cmp",
  "numeric",
- "percent-encoding",
  "referencing",
  "regex",
  "strum",
  "system-entropy",
  "unicode-general-category",
+ "url-encoding",
  "uuid-simd",
 ]
 
@@ -1086,10 +1061,6 @@ name = "pastey"
 version = "0.2.3"
 
 [[package]]
-name = "percent-encoding"
-version = "2.3.2"
-
-[[package]]
 name = "perf-check"
 version = "0.1.0"
 dependencies = [
@@ -1259,9 +1230,9 @@ dependencies = [
  "itoa",
  "json-codec",
  "micromap",
- "percent-encoding",
  "synchronization",
  "system-entropy",
+ "url-encoding",
 ]
 
 [[package]]
@@ -1294,7 +1265,6 @@ dependencies = [
  "hyper-rustls",
  "json-codec",
  "log",
- "percent-encoding",
  "pin-project-lite",
  "rustls",
  "rustls-pki-types",
@@ -1304,7 +1274,7 @@ dependencies = [
  "tokio-rustls",
  "tokio-util",
  "tower-http",
- "url",
+ "url-encoding",
  "webpki-roots",
 ]
 
@@ -1549,7 +1519,6 @@ dependencies = [
  "error-definition",
  "event-listener",
  "flume",
- "form_urlencoded",
  "futures",
  "futures-intrusive",
  "hash-table",
@@ -1557,11 +1526,10 @@ dependencies = [
  "indexmap",
  "libsqlite3-sys",
  "log",
- "percent-encoding",
  "smallvec",
  "tokio",
  "tracing",
- "url",
+ "url-encoding",
 ]
 
 [[package]]
@@ -1604,7 +1572,7 @@ dependencies = [
  "tempfile",
  "tokio",
  "tokio-util",
- "url",
+ "url-encoding",
  "webpki-roots",
 ]
 
@@ -1662,7 +1630,7 @@ dependencies = [
  "tokio-util",
  "tower-http",
  "tracing",
- "url",
+ "url-encoding",
 ]
 
 [[package]]
@@ -1856,13 +1824,12 @@ dependencies = [
  "httpdate",
  "mime",
  "mime_guess",
- "percent-encoding",
  "pin-project-lite",
  "service-stack",
  "tokio",
  "tokio-util",
  "tracing",
- "url",
+ "url-encoding",
 ]
 
 [[package]]
@@ -1964,13 +1931,14 @@ name = "untrusted"
 version = "0.9.0"
 
 [[package]]
-name = "url"
+name = "url-encoding"
 version = "2.5.8"
 dependencies = [
  "data-serialization",
- "form_urlencoded",
- "idna",
- "percent-encoding",
+ "smallvec",
+ "unicode-normalizer",
+ "unicode-properties",
+ "utf8_iter",
 ]
 
 [[package]]

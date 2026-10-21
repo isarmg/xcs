@@ -425,7 +425,7 @@ async fn upload(
     path: &str,
     bytes: &[u8],
 ) -> Value {
-    let query = url::form_urlencoded::Serializer::new(String::new())
+    let query = url_encoding::form::Serializer::new(String::new())
         .append_pair("path", path)
         .finish();
     let response = app

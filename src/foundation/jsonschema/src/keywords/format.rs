@@ -917,7 +917,7 @@ fn validate_unicode_label(label: &str) -> bool {
 #[cfg(feature = "idna")]
 #[must_use]
 pub fn is_valid_idn_hostname(hostname: &str) -> bool {
-    use idna::uts46::{AsciiDenyList, DnsLength, Hyphens, Uts46};
+    use url_encoding::domain::uts46::{AsciiDenyList, DnsLength, Hyphens, Uts46};
 
     let Ok(ascii_hostname) = Uts46::new().to_ascii(
         hostname.as_bytes(),

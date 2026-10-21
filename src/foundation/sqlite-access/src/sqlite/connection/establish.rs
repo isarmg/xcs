@@ -8,7 +8,7 @@ use libsqlite3_sys::{
     SQLITE_OPEN_NOMUTEX, SQLITE_OPEN_PRIVATECACHE, SQLITE_OPEN_READONLY, SQLITE_OPEN_READWRITE,
     SQLITE_OPEN_SHAREDCACHE, SQLITE_OPEN_URI,
 };
-use percent_encoding::NON_ALPHANUMERIC;
+use url_encoding::percent::NON_ALPHANUMERIC;
 use std::collections::BTreeMap;
 use std::ffi::CString;
 use std::io;
@@ -94,12 +94,12 @@ impl EstablishParams {
         if !query_params.is_empty() {
             filename = format!(
                 "file:{}?",
-                percent_encoding::percent_encode(filename.as_bytes(), NON_ALPHANUMERIC),
+                url_encoding::percent::percent_encode(filename.as_bytes(), NON_ALPHANUMERIC),
             );
 
             // Suffix serializer automatically handles `&` separators for us.
             let filename_len = filename.len();
-            filename = form_urlencoded::Serializer::for_suffix(filename, filename_len)
+            filename = url_encoding::form::Serializer::for_suffix(filename, filename_len)
                 .extend_pairs(query_params)
                 .finish();
         }

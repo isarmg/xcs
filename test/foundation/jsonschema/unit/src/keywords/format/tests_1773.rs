@@ -139,7 +139,7 @@ mod tests {
                 .map(|_| char::from(alphabet[(next() % alphabet.len() as u64) as usize]))
                 .collect();
             let ours = decode_punycode(&candidate);
-            let theirs = idna::punycode::decode_to_string(&candidate);
+            let theirs = url_encoding::domain::punycode::decode_to_string(&candidate);
             assert_eq!(ours, theirs, "diverged on {candidate:?}");
             checked += 1;
         }

@@ -3,8 +3,8 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use percent_encoding::{percent_decode_str, percent_encode, AsciiSet};
-use url::Url;
+use url_encoding::percent::{percent_decode_str, percent_encode, AsciiSet};
+use url_encoding::address::Url;
 
 use crate::sqlite::error::Error;
 use crate::sqlite::SqliteConnectOptions;
@@ -35,7 +35,7 @@ impl SqliteConnectOptions {
         }
 
         if let Some(params) = params {
-            for (key, value) in url::form_urlencoded::parse(params.as_bytes()) {
+            for (key, value) in url_encoding::form::parse(params.as_bytes()) {
                 match &*key {
                     // The mode query parameter determines if the new database is opened read-only,
                     // read-write, read-write and created if it does not exist, or that the
@@ -117,7 +117,7 @@ impl SqliteConnectOptions {
 
     pub(crate) fn build_url(&self) -> Url {
         // https://url.spec.whatwg.org/#path-percent-encode-set
-        static PATH_ENCODE_SET: AsciiSet = percent_encoding::CONTROLS
+        static PATH_ENCODE_SET: AsciiSet = url_encoding::percent::CONTROLS
             .add(b' ')
             .add(b'"')
             .add(b'#')

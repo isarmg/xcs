@@ -48,7 +48,7 @@ __internal_happy_eyeballs_tests = ["adapters"]
 adapter-client = ["client", "dep:tracing", "dep:futures", "futures/channel", "futures/std", "dep:service-stack", "adapters"]
 client-legacy = ["adapter-client", "tokio/net", "dep:socket2", "tokio/sync", "dep:libc", "dep:futures", "futures/alloc", "futures/utilities", "dep:httparse"]
 client-pool = ["adapter-client", "dep:futures", "futures/alloc", "futures/utilities", "tokio/sync"]
-client-proxy = ["adapter-client", "dep:base64", "dep:ipnet", "dep:percent-encoding"]
+client-proxy = ["adapter-client", "dep:base64", "dep:ipnet", "url-encoding/std"]
 client-proxy-system = ["adapters"]
 rt-tracing-exec-force = ["tokio", "adapter-tracing"]
 adapter-server = ["server", "adapters"]
@@ -236,11 +236,6 @@ version = "0.2"
 optional = true
 path = "../libc"
 
-[dependencies.percent-encoding]
-version = "2.3"
-optional = true
-path = "../percent-encoding"
-
 [dependencies.socket2]
 version = "0.6"
 features = ["all"]
@@ -259,4 +254,10 @@ optional = true
 version = "0.5.3"
 path = "../service-stack"
 default-features = false
+optional = true
+
+[dependencies.url-encoding]
+path = "../url-encoding"
+default-features = false
+features = []
 optional = true

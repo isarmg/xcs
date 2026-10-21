@@ -8,6 +8,7 @@
     "456f0a67c6a6a12bcc70286ce525402679257a11c2bb88965ca13ad5eb5f4652": "456f0a67c6a6a12bcc70286ce525402679257a11c2bb88965ca13ad5eb5f4652",
     "4a98b25902d1eccdf797328137506f3d18f8101bc4b45c6128d831e5b8478eb3": "4a98b25902d1eccdf797328137506f3d18f8101bc4b45c6128d831e5b8478eb3",
     "4d2efffc72662e128c83438024fc54a058196b6625d3de6b3e0c3df0ec71e074": "4d2efffc72662e128c83438024fc54a058196b6625d3de6b3e0c3df0ec71e074",
+    "6b1e593c5c662a39f59782a91f036e5c8139018fefe4c18014e274375fd1c83d": "6b1e593c5c662a39f59782a91f036e5c8139018fefe4c18014e274375fd1c83d",
     "73ddcd8319d5a89f799a3ef4c9e64057eb36e7a1ecbcef4c4938d8ebdfae2557": "73ddcd8319d5a89f799a3ef4c9e64057eb36e7a1ecbcef4c4938d8ebdfae2557",
     "8f4a95d59d1710c958537ee4b6d83e10bab8fb05d20355a264a9dbfaef18452f": "8f4a95d59d1710c958537ee4b6d83e10bab8fb05d20355a264a9dbfaef18452f",
     "914124306c29fc963dad00752c0a5f2f96a20db52dd497053eee3eb52b8d2555": "914124306c29fc963dad00752c0a5f2f96a20db52dd497053eee3eb52b8d2555",
@@ -11413,6 +11414,1002 @@
       "new_files": {},
       "primary_directory": "src/foundation/toml",
       "reason": "Integrate TOML datetime, byte-span values, format-preserving editing and low-level encoding as feature-isolated modules while preserving serialization markers and five original source identities."
+    },
+    "6b1e593c5c662a39f59782a91f036e5c8139018fefe4c18014e274375fd1c83d": {
+      "destination_directory": "src/foundation/url-encoding",
+      "destination_external_tests": {
+        "bytes": 1169358,
+        "directory": "src/foundation/url-encoding",
+        "file_count": 19,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/url-2.5.8",
+            "path": "test/foundation/url-encoding/address/functions/src/slicing/test_count_digits_52.rs",
+            "sha256": "b4694bccd7df37ed43547c8d4585df6190ff7778282ba043adb6c2d369a62c28",
+            "source": "src/foundation/url/src/slicing.rs",
+            "source_sha256_before": "b59bf2fa4cbfd31619b860766268d4e99b46537d3b9702b73f6d0a979a7de24a"
+          },
+          {
+            "origin_directory": "vendor/rust/url-2.5.8",
+            "path": "test/foundation/url-encoding/address/tests/expected_failures.txt",
+            "sha256": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f",
+            "source": "src/foundation/url/tests/expected_failures.txt",
+            "source_sha256_before": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f"
+          },
+          {
+            "origin_directory": "vendor/rust/url-2.5.8",
+            "path": "test/foundation/url-encoding/address/tests/setters_tests.json",
+            "sha256": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd",
+            "source": "src/foundation/url/tests/setters_tests.json",
+            "source_sha256_before": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd"
+          },
+          {
+            "origin_directory": "vendor/rust/url-2.5.8",
+            "path": "test/foundation/url-encoding/address/tests/unit.rs",
+            "sha256": "0ceb113e0642819a563cb1f6785b73278002e0c06c92213d4ff33a036901263b",
+            "source": "src/foundation/url/tests/unit.rs",
+            "source_sha256_before": "7eb96c1194fba03fd7f469c44cbbe28699dae14399be72e4c5c675a90fe08dc7"
+          },
+          {
+            "origin_directory": "vendor/rust/url-2.5.8",
+            "path": "test/foundation/url-encoding/address/tests/urltestdata.json",
+            "sha256": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884",
+            "source": "src/foundation/url/tests/urltestdata.json",
+            "source_sha256_before": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884"
+          },
+          {
+            "origin_directory": "vendor/rust/url-2.5.8",
+            "path": "test/foundation/url-encoding/address/tests/wpt.rs",
+            "sha256": "b7672c921fdb610ddfdbf7d1c0cc84212f0ac11c4dd19b6c7cffba86fea45c7e",
+            "source": "src/foundation/url/tests/wpt.rs",
+            "source_sha256_before": "2d083ab72ad8cc9b116dd164e63440dd120f07977ac306377633cfe214f34a62"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/functions/src/punycode/huge_encode_466.rs",
+            "sha256": "2dc04e2b689cfe8cee1207d7b5d6653818c09fb5fbc91611f624a1fcb91ea57a",
+            "source": "src/foundation/idna/src/punycode.rs",
+            "source_sha256_before": "0cc6fa84989898ccf6de0a665a287d7488a6eba4b178bea065d311ecabd81604"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/IdnaTestV2.txt",
+            "sha256": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9",
+            "source": "src/foundation/idna/tests/IdnaTestV2.txt",
+            "source_sha256_before": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/bad_punycode_tests.json",
+            "sha256": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5",
+            "source": "src/foundation/idna/tests/bad_punycode_tests.json",
+            "source_sha256_before": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/deprecated.rs",
+            "sha256": "a381a196df4309d69d1d919795f9265dee7107ad9cac84da07ae69bf00e08c22",
+            "source": "src/foundation/idna/tests/deprecated.rs",
+            "source_sha256_before": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/punycode.rs",
+            "sha256": "d0fa0c3300e9cf4b6e0c4448d72e8f359596325748c685b83b6b86f116fbbc7d",
+            "source": "src/foundation/idna/tests/punycode.rs",
+            "source_sha256_before": "75fa73b6429ccacaeb5d72fab0b927cdf9f2173a9fc5fb366697bf7002b73921"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/punycode_tests.json",
+            "sha256": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a",
+            "source": "src/foundation/idna/tests/punycode_tests.json",
+            "source_sha256_before": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/tests.rs",
+            "sha256": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12",
+            "source": "src/foundation/idna/tests/tests.rs",
+            "source_sha256_before": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/unit.rs",
+            "sha256": "bf67f2ae332060d288c2230ac114fce276e05701d5d42d40cd64b8646e576129",
+            "source": "src/foundation/idna/tests/unit.rs",
+            "source_sha256_before": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/unitbis.rs",
+            "sha256": "1a00aae0bebe3bc7b16a13cbc2ca8c262f05bafc4216ba0defe48911d43fef46",
+            "source": "src/foundation/idna/tests/unitbis.rs",
+            "source_sha256_before": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af"
+          },
+          {
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "path": "test/foundation/url-encoding/domain/tests/uts46.rs",
+            "sha256": "789c9f31f6092c610ffe86a7c18eebaacf8d2145bbce44c97ad1f0c9b76851c1",
+            "source": "src/foundation/idna/tests/uts46.rs",
+            "source_sha256_before": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03"
+          },
+          {
+            "origin_directory": "vendor/rust/percent-encoding-2.3.2",
+            "path": "test/foundation/url-encoding/percent/unit/src/ascii_set/tests_172.rs",
+            "sha256": "1d979d944d4a5f4676072088321d052b0f8efcec8bb250d8ac9be7e44de6fcd6",
+            "source": "src/foundation/percent-encoding/src/ascii_set.rs",
+            "source_sha256_before": "f75552e4f446ed240cef64c1367e848cf3ae65f77602085459566d835a1d8587"
+          },
+          {
+            "origin_directory": "vendor/rust/percent-encoding-2.3.2",
+            "path": "test/foundation/url-encoding/percent/unit/src/lib/tests_367.rs",
+            "sha256": "81fc03bb33bdcb62f1a228f73a09ca234a124e5bd396b79fd2fe3d8cfcc124f8",
+            "source": "src/foundation/percent-encoding/src/lib.rs",
+            "source_sha256_before": "641903d385581e76f31ef8c991d83c2a5d7fbbc2879d93909c539037e4e1e3e2"
+          },
+          {
+            "origin_directory": "vendor/rust/idna_adapter-1.2.2",
+            "path": "test/foundation/url-encoding/unicode_backend/unit/src/lib/all_tests_320.rs",
+            "sha256": "933cb51ada4da508b6ced90543b5526853f0bf230b5bf47ee4efce2cf209dde0",
+            "source": "src/foundation/idna_adapter/src/lib.rs",
+            "source_sha256_before": "fca6f35c8902c91e84e0e9700b86a401b041f1a77912ef7c3d65a1fcdf5bffd8"
+          }
+        ],
+        "origin_directory": "vendor/rust/url-2.5.8",
+        "roots": [
+          "test/foundation/url-encoding"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "431bc43e0b878050f6ada10cdc50e3f887cb233c8fe838555ff05d77c7bbb513",
+        "benches/domain/all.rs": "0de635135f3cc57d32640954715e5a6f7708b984d83b7ba182d86558b184098b",
+        "src/address/host.rs": "b2cdbe50ee27c0f5b55a31b1118a43db9f1526662b9dc66fe1b91985f4437488",
+        "src/address/mod.rs": "57beb84d0df237a4f3951073ee34ff9133238936d4d63f160f98357c4df25f56",
+        "src/address/origin.rs": "59b1c4deec8498df11da1bf6a406cab291894d0fec05845385fc0b6f30898c98",
+        "src/address/parser.rs": "f3ade316b1420e4623a948f218122be14990f356a0fea3f62e63e94cbb46c102",
+        "src/address/path_segments.rs": "9f44d498a00c5e485215e5f1253c16dae774da1532fb9b09159637edc9ee9f9b",
+        "src/address/quirks.rs": "8ee5f52e4dbc3d8e83eb5367201736520beef1cc5937786c679dc906d7349a83",
+        "src/address/slicing.rs": "59a8e1fa7fef3cbefab3b06ea12308dbc5a3d0e7f7e5c48f512bb741ecd2092b",
+        "src/domain/deprecated.rs": "bfdef55b4d1d722dbb716d0185a8de3754a5e0bc8e148668a6a191e90167bf9e",
+        "src/domain/mod.rs": "6e3acd396b64672aea4215a362af776a26bf5e6915bd71ec469b3f2990b70989",
+        "src/domain/punycode.rs": "a29c206aa01865ccf007533b5a4fd1da0c74ac8c14103c27a514bf8228a89273",
+        "src/domain/uts46.rs": "6bdd39b36f69b4a3c1abcb5fba1ee9dce5414d74b9c990a959d0cde2260e8870",
+        "src/form/mod.rs": "d0bced81fbf62a807f007b0487a83098be1949ab9649251b14f1928880c3d311",
+        "src/lib.rs": "564197417bf462e4b7d3ede62f277311a6f4276dfd375447b677f541c1661e0d",
+        "src/percent/ascii_set.rs": "b54a6ecdce58a995b95466092199dd522e877ea6aed63a78d0d6d0771ec7e9f7",
+        "src/percent/mod.rs": "ad91b023f7bcfd5b5a11f755f6a4ad20fa6da1d6f97b996f46a50d6315ec54f9",
+        "src/unicode_backend/mod.rs": "c173823ca7ecd5e0e7b0f2b9ce666794086678df9a7bb423ec0a0bd4e4b230db"
+      },
+      "destination_name": "url-encoding",
+      "external_file_routes": {
+        "test/foundation/idna/functions/src/punycode/huge_encode_466.rs": {
+          "destination": "test/foundation/url-encoding/domain/functions/src/punycode/huge_encode_466.rs",
+          "replacements": []
+        },
+        "test/foundation/idna/tests/IdnaTestV2.txt": {
+          "destination": "test/foundation/url-encoding/domain/tests/IdnaTestV2.txt",
+          "replacements": []
+        },
+        "test/foundation/idna/tests/bad_punycode_tests.json": {
+          "destination": "test/foundation/url-encoding/domain/tests/bad_punycode_tests.json",
+          "replacements": []
+        },
+        "test/foundation/idna/tests/deprecated.rs": {
+          "destination": "test/foundation/url-encoding/domain/tests/deprecated.rs",
+          "replacements": [
+            {
+              "new": "dXNlIHVybF9lbmNvZGluZzo6ZG9tYWluOjpFcnJvcnM7Cg==",
+              "old": "dXNlIGlkbmE6OkVycm9yczsK"
+            },
+            {
+              "new": "ICAgICAgICAgICAgICAgIGxldCBjb25maWcgPSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6Q29uZmlnOjpkZWZhdWx0KCkK",
+              "old": "ICAgICAgICAgICAgICAgIGxldCBjb25maWcgPSBpZG5hOjpDb25maWc6OmRlZmF1bHQoKQo="
+            }
+          ]
+        },
+        "test/foundation/idna/tests/punycode.rs": {
+          "destination": "test/foundation/url-encoding/domain/tests/punycode.rs",
+          "replacements": [
+            {
+              "new": "dXNlIHVybF9lbmNvZGluZzo6ZG9tYWluOjpwdW55Y29kZTo6e2RlY29kZSwgZGVjb2RlX3RvX3N0cmluZywgZW5jb2RlX3N0cn07Cg==",
+              "old": "dXNlIGlkbmE6OnB1bnljb2RlOjp7ZGVjb2RlLCBkZWNvZGVfdG9fc3RyaW5nLCBlbmNvZGVfc3RyfTsK"
+            }
+          ]
+        },
+        "test/foundation/idna/tests/punycode_tests.json": {
+          "destination": "test/foundation/url-encoding/domain/tests/punycode_tests.json",
+          "replacements": []
+        },
+        "test/foundation/idna/tests/tests.rs": {
+          "destination": "test/foundation/url-encoding/domain/tests/tests.rs",
+          "replacements": []
+        },
+        "test/foundation/idna/tests/unit.rs": {
+          "destination": "test/foundation/url-encoding/domain/tests/unit.rs",
+          "replacements": [
+            {
+              "new": "Zm4gdGVzdF9wdW55Y29kZV9wcmVmaXhfd2l0aF9sZW5ndGhfY2hlY2soKSB7CiAgICBsZXQgY29uZmlnID0gdXJsX2VuY29kaW5nOjpkb21haW46OkNvbmZpZzo6ZGVmYXVsdCgpCg==",
+              "old": "Zm4gdGVzdF9wdW55Y29kZV9wcmVmaXhfd2l0aF9sZW5ndGhfY2hlY2soKSB7CiAgICBsZXQgY29uZmlnID0gaWRuYTo6Q29uZmlnOjpkZWZhdWx0KCkK"
+            },
+            {
+              "new": "Zm4gdGVzdF9wdW55Y29kZV9wcmVmaXhfd2l0aG91dF9sZW5ndGhfY2hlY2soKSB7CiAgICBsZXQgY29uZmlnID0gdXJsX2VuY29kaW5nOjpkb21haW46OkNvbmZpZzo6ZGVmYXVsdCgpCg==",
+              "old": "Zm4gdGVzdF9wdW55Y29kZV9wcmVmaXhfd2l0aG91dF9sZW5ndGhfY2hlY2soKSB7CiAgICBsZXQgY29uZmlnID0gaWRuYTo6Q29uZmlnOjpkZWZhdWx0KCkK"
+            },
+            {
+              "new": "Zm4gdGVzdF9wdW55Y29kZV9pbnZhbGlkX2VuY29kaW5nKCkgewogICAgbGV0IGNvbmZpZyA9IHVybF9lbmNvZGluZzo6ZG9tYWluOjpDb25maWc6OmRlZmF1bHQoKTsK",
+              "old": "Zm4gdGVzdF9wdW55Y29kZV9pbnZhbGlkX2VuY29kaW5nKCkgewogICAgbGV0IGNvbmZpZyA9IGlkbmE6OkNvbmZpZzo6ZGVmYXVsdCgpOwo="
+            },
+            {
+              "new": "ICAgIGxldCBtdXQgY29kZWMgPSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6SWRuYTo6ZGVmYXVsdCgpOwo=",
+              "old": "ICAgIGxldCBtdXQgY29kZWMgPSBpZG5hOjpJZG5hOjpkZWZhdWx0KCk7Cg=="
+            },
+            {
+              "new": "Zm4gdGVzdF92NSgpIHsKICAgIGxldCBjb25maWcgPSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6Q29uZmlnOjpkZWZhdWx0KCkK",
+              "old": "Zm4gdGVzdF92NSgpIHsKICAgIGxldCBjb25maWcgPSBpZG5hOjpDb25maWc6OmRlZmF1bHQoKQo="
+            },
+            {
+              "new": "Zm4gdGVzdF92OF9iaWRpX3J1bGVzKCkgewogICAgbGV0IGNvbmZpZyA9IHVybF9lbmNvZGluZzo6ZG9tYWluOjpDb25maWc6OmRlZmF1bHQoKQo=",
+              "old": "Zm4gdGVzdF92OF9iaWRpX3J1bGVzKCkgewogICAgbGV0IGNvbmZpZyA9IGlkbmE6OkNvbmZpZzo6ZGVmYXVsdCgpCg=="
+            },
+            {
+              "new": "ICAgIC8vIEhPVCBCRVZFUkFHRSBpcyBhbGxvd2VkIGhlcmUuLi4KICAgIGxldCBjb25maWcgPSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6Q29uZmlnOjpkZWZhdWx0KCkK",
+              "old": "ICAgIC8vIEhPVCBCRVZFUkFHRSBpcyBhbGxvd2VkIGhlcmUuLi4KICAgIGxldCBjb25maWcgPSBpZG5hOjpDb25maWc6OmRlZmF1bHQoKQo="
+            },
+            {
+              "new": "Zm4gdW5pY29kZV9iZWZvcmVfZGVsaW1pdGVyKCkgewogICAgbGV0IGNvbmZpZyA9IHVybF9lbmNvZGluZzo6ZG9tYWluOjpDb25maWc6OmRlZmF1bHQoKTsK",
+              "old": "Zm4gdW5pY29kZV9iZWZvcmVfZGVsaW1pdGVyKCkgewogICAgbGV0IGNvbmZpZyA9IGlkbmE6OkNvbmZpZzo6ZGVmYXVsdCgpOwo="
+            }
+          ]
+        },
+        "test/foundation/idna/tests/unitbis.rs": {
+          "destination": "test/foundation/url-encoding/domain/tests/unitbis.rs",
+          "replacements": [
+            {
+              "new": "dXNlIHVybF9lbmNvZGluZzo6ZG9tYWluOjp1dHM0Njo6QXNjaWlEZW55TGlzdDsKdXNlIHVybF9lbmNvZGluZzo6ZG9tYWluOjp1dHM0Njo6RG5zTGVuZ3RoOwp1c2UgdXJsX2VuY29kaW5nOjpkb21haW46OnV0czQ2OjpIeXBoZW5zOwo=",
+              "old": "dXNlIGlkbmE6OnV0czQ2OjpBc2NpaURlbnlMaXN0Owp1c2UgaWRuYTo6dXRzNDY6OkRuc0xlbmd0aDsKdXNlIGlkbmE6OnV0czQ2OjpIeXBoZW5zOwo="
+            },
+            {
+              "new": "Zm4gdGVzdF9wdW55Y29kZV9wcmVmaXhfd2l0aF9sZW5ndGhfY2hlY2soKSB7CiAgICBsZXQgY29uZmlnID0gdXJsX2VuY29kaW5nOjpkb21haW46OnV0czQ2OjpVdHM0Njo6bmV3KCk7Cg==",
+              "old": "Zm4gdGVzdF9wdW55Y29kZV9wcmVmaXhfd2l0aF9sZW5ndGhfY2hlY2soKSB7CiAgICBsZXQgY29uZmlnID0gaWRuYTo6dXRzNDY6OlV0czQ2OjpuZXcoKTsK"
+            },
+            {
+              "new": "Zm4gdGVzdF9wdW55Y29kZV9wcmVmaXhfd2l0aG91dF9sZW5ndGhfY2hlY2soKSB7CiAgICBsZXQgY29uZmlnID0gdXJsX2VuY29kaW5nOjpkb21haW46OnV0czQ2OjpVdHM0Njo6bmV3KCk7Cg==",
+              "old": "Zm4gdGVzdF9wdW55Y29kZV9wcmVmaXhfd2l0aG91dF9sZW5ndGhfY2hlY2soKSB7CiAgICBsZXQgY29uZmlnID0gaWRuYTo6dXRzNDY6OlV0czQ2OjpuZXcoKTsK"
+            },
+            {
+              "new": "ICAgIGxldCBjb2RlYyA9IHVybF9lbmNvZGluZzo6ZG9tYWluOjp1dHM0NmJpczo6VXRzNDY6Om5ldygpOwo=",
+              "old": "ICAgIGxldCBjb2RlYyA9IGlkbmE6OnV0czQ2YmlzOjpVdHM0Njo6bmV3KCk7Cg=="
+            },
+            {
+              "new": "Zm4gdGVzdF92NSgpIHsKICAgIGxldCBjb25maWcgPSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6dXRzNDY6OlV0czQ2OjpuZXcoKTsK",
+              "old": "Zm4gdGVzdF92NSgpIHsKICAgIGxldCBjb25maWcgPSBpZG5hOjp1dHM0Njo6VXRzNDY6Om5ldygpOwo="
+            },
+            {
+              "new": "Zm4gdGVzdF92OF9iaWRpX3J1bGVzKCkgewogICAgbGV0IGNvbmZpZyA9IHVybF9lbmNvZGluZzo6ZG9tYWluOjp1dHM0Njo6VXRzNDY6Om5ldygpOwo=",
+              "old": "Zm4gdGVzdF92OF9iaWRpX3J1bGVzKCkgewogICAgbGV0IGNvbmZpZyA9IGlkbmE6OnV0czQ2OjpVdHM0Njo6bmV3KCk7Cg=="
+            },
+            {
+              "new": "ICAgIC8vIEhPVCBCRVZFUkFHRSBpcyBhbGxvd2VkIGhlcmUuLi4KICAgIGxldCBjb25maWcgPSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6dXRzNDY6OlV0czQ2OjpuZXcoKTsK",
+              "old": "ICAgIC8vIEhPVCBCRVZFUkFHRSBpcyBhbGxvd2VkIGhlcmUuLi4KICAgIGxldCBjb25maWcgPSBpZG5hOjp1dHM0Njo6VXRzNDY6Om5ldygpOwo="
+            },
+            {
+              "new": "Zm4gdW5pY29kZV9iZWZvcmVfZGVsaW1pdGVyKCkgewogICAgbGV0IGNvbmZpZyA9IHVybF9lbmNvZGluZzo6ZG9tYWluOjp1dHM0Njo6VXRzNDY6Om5ldygpOwo=",
+              "old": "Zm4gdW5pY29kZV9iZWZvcmVfZGVsaW1pdGVyKCkgewogICAgbGV0IGNvbmZpZyA9IGlkbmE6OnV0czQ2OjpVdHM0Njo6bmV3KCk7Cg=="
+            },
+            {
+              "new": "Zm4gdXBwZXJfY2FzZV9hc2NpaV9pbl9wdW55Y29kZSgpIHsKICAgIGxldCBjb25maWcgPSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6dXRzNDY6OlV0czQ2OjpuZXcoKTsK",
+              "old": "Zm4gdXBwZXJfY2FzZV9hc2NpaV9pbl9wdW55Y29kZSgpIHsKICAgIGxldCBjb25maWcgPSBpZG5hOjp1dHM0Njo6VXRzNDY6Om5ldygpOwo="
+            }
+          ]
+        },
+        "test/foundation/idna/tests/uts46.rs": {
+          "destination": "test/foundation/url-encoding/domain/tests/uts46.rs",
+          "replacements": [
+            {
+              "new": "dXNlIHVybF9lbmNvZGluZzo6ZG9tYWluOjp1dHM0Njo6dmVyaWZ5X2Ruc19sZW5ndGg7CnVzZSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6dXRzNDY6OlByb2Nlc3NpbmdFcnJvcjsKdXNlIHVybF9lbmNvZGluZzo6ZG9tYWluOjp1dHM0Njo6UHJvY2Vzc2luZ1N1Y2Nlc3M7CnVzZSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6dXRzNDY6OntBc2NpaURlbnlMaXN0LCBEbnNMZW5ndGgsIEVycm9yUG9saWN5LCBIeXBoZW5zfTsKdXNlIHVybF9lbmNvZGluZzo6ZG9tYWluOjpFcnJvcnM7Cg==",
+              "old": "dXNlIGlkbmE6OnV0czQ2Ojp2ZXJpZnlfZG5zX2xlbmd0aDsKdXNlIGlkbmE6OnV0czQ2OjpQcm9jZXNzaW5nRXJyb3I7CnVzZSBpZG5hOjp1dHM0Njo6UHJvY2Vzc2luZ1N1Y2Nlc3M7CnVzZSBpZG5hOjp1dHM0Njo6e0FzY2lpRGVueUxpc3QsIERuc0xlbmd0aCwgRXJyb3JQb2xpY3ksIEh5cGhlbnN9Owp1c2UgaWRuYTo6RXJyb3JzOwo="
+            },
+            {
+              "new": "ICAgICAgICAgICAgICAgIGxldCBjb25maWcgPSB1cmxfZW5jb2Rpbmc6OmRvbWFpbjo6dXRzNDY6OlV0czQ2OjpuZXcoKTsK",
+              "old": "ICAgICAgICAgICAgICAgIGxldCBjb25maWcgPSBpZG5hOjp1dHM0Njo6VXRzNDY6Om5ldygpOwo="
+            }
+          ]
+        },
+        "test/foundation/idna_adapter/unit/src/lib/all_tests_320.rs": {
+          "destination": "test/foundation/url-encoding/unicode_backend/unit/src/lib/all_tests_320.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcoYWxsKHRlc3QsIGZlYXR1cmUgPSAiZG9tYWluIikpXQo=",
+              "old": "I1tjZmcoYWxsKHRlc3QsIGZlYXR1cmUgPSAiY29tcGlsZWRfZGF0YSIpKV0K"
+            }
+          ]
+        },
+        "test/foundation/percent-encoding/unit/src/ascii_set/tests_172.rs": {
+          "destination": "test/foundation/url-encoding/percent/unit/src/ascii_set/tests_172.rs",
+          "replacements": []
+        },
+        "test/foundation/percent-encoding/unit/src/lib/tests_367.rs": {
+          "destination": "test/foundation/url-encoding/percent/unit/src/lib/tests_367.rs",
+          "replacements": []
+        },
+        "test/foundation/url/functions/src/slicing/test_count_digits_52.rs": {
+          "destination": "test/foundation/url-encoding/address/functions/src/slicing/test_count_digits_52.rs",
+          "replacements": []
+        },
+        "test/foundation/url/tests/expected_failures.txt": {
+          "destination": "test/foundation/url-encoding/address/tests/expected_failures.txt",
+          "replacements": []
+        },
+        "test/foundation/url/tests/setters_tests.json": {
+          "destination": "test/foundation/url-encoding/address/tests/setters_tests.json",
+          "replacements": []
+        },
+        "test/foundation/url/tests/unit.rs": {
+          "destination": "test/foundation/url-encoding/address/tests/unit.rs",
+          "replacements": [
+            {
+              "new": "dXNlIHVybF9lbmNvZGluZzo6YWRkcmVzczo6e0hvc3QsIE9yaWdpbiwgVXJsfTsK",
+              "old": "dXNlIHVybDo6e2Zvcm1fdXJsZW5jb2RlZCwgSG9zdCwgT3JpZ2luLCBVcmx9Owo="
+            },
+            {
+              "new": "ICAgIHVzZSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczsK",
+              "old": "ICAgIHVzZSB1cmw6OnF1aXJrczsK"
+            },
+            {
+              "new": "ICAgIF07CiAgICBsZXQgZW5jb2RlZCA9IHVybF9lbmNvZGluZzo6Zm9ybTo6U2VyaWFsaXplcjo6bmV3KFN0cmluZzo6bmV3KCkpCg==",
+              "old": "ICAgIF07CiAgICBsZXQgZW5jb2RlZCA9IGZvcm1fdXJsZW5jb2RlZDo6U2VyaWFsaXplcjo6bmV3KFN0cmluZzo6bmV3KCkpCg=="
+            },
+            {
+              "new": "ICAgICAgICB1cmxfZW5jb2Rpbmc6OmZvcm06OnBhcnNlKGVuY29kZWQuYXNfYnl0ZXMoKSkuY29sbGVjdDo6PFZlYzxfPj4oKSwK",
+              "old": "ICAgICAgICBmb3JtX3VybGVuY29kZWQ6OnBhcnNlKGVuY29kZWQuYXNfYnl0ZXMoKSkuY29sbGVjdDo6PFZlYzxfPj4oKSwK"
+            },
+            {
+              "new": "Zm4gdGVzdF9mb3JtX3NlcmlhbGl6ZSgpIHsKICAgIGxldCBlbmNvZGVkID0gdXJsX2VuY29kaW5nOjpmb3JtOjpTZXJpYWxpemVyOjpuZXcoU3RyaW5nOjpuZXcoKSkK",
+              "old": "Zm4gdGVzdF9mb3JtX3NlcmlhbGl6ZSgpIHsKICAgIGxldCBlbmNvZGVkID0gZm9ybV91cmxlbmNvZGVkOjpTZXJpYWxpemVyOjpuZXcoU3RyaW5nOjpuZXcoKSkK"
+            },
+            {
+              "new": "Zm4gZm9ybV91cmxlbmNvZGVkX2VuY29kaW5nX292ZXJyaWRlKCkgewogICAgbGV0IGVuY29kZWQgPSB1cmxfZW5jb2Rpbmc6OmZvcm06OlNlcmlhbGl6ZXI6Om5ldyhTdHJpbmc6Om5ldygpKQo=",
+              "old": "Zm4gZm9ybV91cmxlbmNvZGVkX2VuY29kaW5nX292ZXJyaWRlKCkgewogICAgbGV0IGVuY29kZWQgPSBmb3JtX3VybGVuY29kZWQ6OlNlcmlhbGl6ZXI6Om5ldyhTdHJpbmc6Om5ldygpKQo="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgdXJsID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OnBhcnNlKHVybF9zdHJpbmcpLnVud3JhcCgpOwo=",
+              "old": "ICAgICAgICBsZXQgdXJsID0gdXJsOjpVcmw6OnBhcnNlKHVybF9zdHJpbmcpLnVud3JhcCgpOwo="
+            },
+            {
+              "new": "ICAgIHVzZSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6c2V0X2hyZWY7Cg==",
+              "old": "ICAgIHVzZSB1cmw6OnF1aXJrczo6c2V0X2hyZWY7Cg=="
+            },
+            {
+              "new": "ICAgIHVzZSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6e2RvbWFpbl90b19hc2NpaSwgZG9tYWluX3RvX3VuaWNvZGV9Owo=",
+              "old": "ICAgIHVzZSB1cmw6OnF1aXJrczo6e2RvbWFpbl90b19hc2NpaSwgZG9tYWluX3RvX3VuaWNvZGV9Owo="
+            },
+            {
+              "new": "ICAgIHVzZSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6aW50ZXJuYWxfY29tcG9uZW50czsKICAgIHVzZSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6SW50ZXJuYWxDb21wb25lbnRzOwo=",
+              "old": "ICAgIHVzZSB1cmw6OnF1aXJrczo6aW50ZXJuYWxfY29tcG9uZW50czsKICAgIHVzZSB1cmw6OnF1aXJrczo6SW50ZXJuYWxDb21wb25lbnRzOwo="
+            },
+            {
+              "new": "Zm4gdGVzdF9zeW50YXhfdmlvbGF0aW9uX2NhbGxiYWNrKCkgewogICAgdXNlIHVybF9lbmNvZGluZzo6YWRkcmVzczo6U3ludGF4VmlvbGF0aW9uOjoqOwo=",
+              "old": "Zm4gdGVzdF9zeW50YXhfdmlvbGF0aW9uX2NhbGxiYWNrKCkgewogICAgdXNlIHVybDo6U3ludGF4VmlvbGF0aW9uOjoqOwo="
+            },
+            {
+              "new": "Zm4gdGVzdF9zeW50YXhfdmlvbGF0aW9uX2NhbGxiYWNrX2xpZmV0aW1lcygpIHsKICAgIHVzZSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OlN5bnRheFZpb2xhdGlvbjo6KjsK",
+              "old": "Zm4gdGVzdF9zeW50YXhfdmlvbGF0aW9uX2NhbGxiYWNrX2xpZmV0aW1lcygpIHsKICAgIHVzZSB1cmw6OlN5bnRheFZpb2xhdGlvbjo6KjsK"
+            },
+            {
+              "new": "Zm4gdGVzdF9zeW50YXhfdmlvbGF0aW9uX2NhbGxiYWNrX3R5cGVzKCkgewogICAgdXNlIHVybF9lbmNvZGluZzo6YWRkcmVzczo6U3ludGF4VmlvbGF0aW9uOjoqOwo=",
+              "old": "Zm4gdGVzdF9zeW50YXhfdmlvbGF0aW9uX2NhbGxiYWNrX3R5cGVzKCkgewogICAgdXNlIHVybDo6U3ludGF4VmlvbGF0aW9uOjoqOwo="
+            },
+            {
+              "new": "Zm4gdGVzdF9vcHRpb25zX3JldXNlKCkgewogICAgdXNlIHVybF9lbmNvZGluZzo6YWRkcmVzczo6U3ludGF4VmlvbGF0aW9uOjoqOwo=",
+              "old": "Zm4gdGVzdF9vcHRpb25zX3JldXNlKCkgewogICAgdXNlIHVybDo6U3ludGF4VmlvbGF0aW9uOjoqOwo="
+            },
+            {
+              "new": "I1tjZmcoYWxsKGZlYXR1cmUgPSAic3RkIiwgd2luZG93cykpXQpmbiB0ZXN0X3VybF9mcm9tX2ZpbGVfcGF0aCgpIHsKICAgIHVzZSBzdGQ6OnBhdGg6OlBhdGhCdWY7CiAgICB1c2UgdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw7Cg==",
+              "old": "I1tjZmcoYWxsKGZlYXR1cmUgPSAic3RkIiwgd2luZG93cykpXQpmbiB0ZXN0X3VybF9mcm9tX2ZpbGVfcGF0aCgpIHsKICAgIHVzZSBzdGQ6OnBhdGg6OlBhdGhCdWY7CiAgICB1c2UgdXJsOjpVcmw7Cg=="
+            },
+            {
+              "new": "I1t0ZXN0XQpmbiB0ZXN0X3VybF9mcm9tX2ZpbGVfcGF0aCgpIHsKICAgIHVzZSBzdGQ6OnBhdGg6OlBhdGhCdWY7CiAgICB1c2UgdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw7Cg==",
+              "old": "I1t0ZXN0XQpmbiB0ZXN0X3VybF9mcm9tX2ZpbGVfcGF0aCgpIHsKICAgIHVzZSBzdGQ6OnBhdGg6OlBhdGhCdWY7CiAgICB1c2UgdXJsOjpVcmw7Cg=="
+            },
+            {
+              "new": "Zm4gdGVzdF9ub25fc3BlY2lhbF9wYXRoKCkgewogICAgbGV0IG11dCBkYl91cmwgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OlVybDo6cGFyc2UoInBvc3RncmVzOi8vcG9zdGdyZXNAbG9jYWxob3N0LyIpLnVud3JhcCgpOwo=",
+              "old": "Zm4gdGVzdF9ub25fc3BlY2lhbF9wYXRoKCkgewogICAgbGV0IG11dCBkYl91cmwgPSB1cmw6OlVybDo6cGFyc2UoInBvc3RncmVzOi8vcG9zdGdyZXNAbG9jYWxob3N0LyIpLnVud3JhcCgpOwo="
+            },
+            {
+              "new": "Zm4gdGVzdF9ub25fc3BlY2lhbF9wYXRoMigpIHsKICAgIGxldCBtdXQgZGJfdXJsID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OnBhcnNlKCJwb3N0Z3JlczovL3Bvc3RncmVzQGxvY2FsaG9zdC8iKS51bndyYXAoKTsK",
+              "old": "Zm4gdGVzdF9ub25fc3BlY2lhbF9wYXRoMigpIHsKICAgIGxldCBtdXQgZGJfdXJsID0gdXJsOjpVcmw6OnBhcnNlKCJwb3N0Z3JlczovL3Bvc3RncmVzQGxvY2FsaG9zdC8iKS51bndyYXAoKTsK"
+            },
+            {
+              "new": "Zm4gdGVzdF9ub25fc3BlY2lhbF9wYXRoMygpIHsKICAgIGxldCBtdXQgZGJfdXJsID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OnBhcnNlKCJwb3N0Z3JlczovL3Bvc3RncmVzQGxvY2FsaG9zdC8iKS51bndyYXAoKTsK",
+              "old": "Zm4gdGVzdF9ub25fc3BlY2lhbF9wYXRoMygpIHsKICAgIGxldCBtdXQgZGJfdXJsID0gdXJsOjpVcmw6OnBhcnNlKCJwb3N0Z3JlczovL3Bvc3RncmVzQGxvY2FsaG9zdC8iKS51bndyYXAoKTsK"
+            },
+            {
+              "new": "ICAgIHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpzZXRfaG9zdG5hbWUoJm11dCB1cmwsICIvL2VvbS9kYXRjb20vXFxcXHRcXDovL2VvbS9kYXRhLmNzIikudW53cmFwKCk7Cg==",
+              "old": "ICAgIHVybDo6cXVpcmtzOjpzZXRfaG9zdG5hbWUoJm11dCB1cmwsICIvL2VvbS9kYXRjb20vXFxcXHRcXDovL2VvbS9kYXRhLmNzIikudW53cmFwKCk7Cg=="
+            },
+            {
+              "new": "ICAgIHVzZSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OlBvc2l0aW9uOjoqOwo=",
+              "old": "ICAgIHVzZSB1cmw6OlBvc2l0aW9uOjoqOwo="
+            },
+            {
+              "new": "ICAgIGZvciAoYmFzZSwgdXJpLCByZWxhdGl2ZSkgaW4gJnRlc3RzIHsKICAgICAgICBsZXQgYmFzZV91cmkgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OlVybDo6cGFyc2UoYmFzZSkudW53cmFwKCk7CiAgICAgICAgbGV0IHJlbGF0aXZlX3VyaSA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6VXJsOjpwYXJzZSh1cmkpLnVud3JhcCgpOwo=",
+              "old": "ICAgIGZvciAoYmFzZSwgdXJpLCByZWxhdGl2ZSkgaW4gJnRlc3RzIHsKICAgICAgICBsZXQgYmFzZV91cmkgPSB1cmw6OlVybDo6cGFyc2UoYmFzZSkudW53cmFwKCk7CiAgICAgICAgbGV0IHJlbGF0aXZlX3VyaSA9IHVybDo6VXJsOjpwYXJzZSh1cmkpLnVud3JhcCgpOwo="
+            },
+            {
+              "new": "ICAgIGZvciAoYmFzZSwgdXJpKSBpbiAmZXJyb3JfdGVzdHMgewogICAgICAgIGxldCBiYXNlX3VyaSA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6VXJsOjpwYXJzZShiYXNlKS51bndyYXAoKTsKICAgICAgICBsZXQgcmVsYXRpdmVfdXJpID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OnBhcnNlKHVyaSkudW53cmFwKCk7Cg==",
+              "old": "ICAgIGZvciAoYmFzZSwgdXJpKSBpbiAmZXJyb3JfdGVzdHMgewogICAgICAgIGxldCBiYXNlX3VyaSA9IHVybDo6VXJsOjpwYXJzZShiYXNlKS51bndyYXAoKTsKICAgICAgICBsZXQgcmVsYXRpdmVfdXJpID0gdXJsOjpVcmw6OnBhcnNlKHVyaSkudW53cmFwKCk7Cg=="
+            },
+            {
+              "new": "ICAgIGxldCBzMSA9ICJmSWxFOnA6Py4uLyI7CiAgICBsZXQgdXJsID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OnBhcnNlKHMxKS51bndyYXAoKTsK",
+              "old": "ICAgIGxldCBzMSA9ICJmSWxFOnA6Py4uLyI7CiAgICBsZXQgdXJsID0gdXJsOjpVcmw6OnBhcnNlKHMxKS51bndyYXAoKTsK"
+            },
+            {
+              "new": "ICAgICAgICBsZXQgdXJsMiA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6VXJsOjpqb2luKCZ1cmwsIGNhc2UuMCkudW53cmFwKCk7Cg==",
+              "old": "ICAgICAgICBsZXQgdXJsMiA9IHVybDo6VXJsOjpqb2luKCZ1cmwsIGNhc2UuMCkudW53cmFwKCk7Cg=="
+            },
+            {
+              "new": "ICAgIGxldCBzMSA9ICJmSWxFOnA6L3h8Py4uLyI7CiAgICBsZXQgdXJsID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OnBhcnNlKHMxKS51bndyYXAoKTsK",
+              "old": "ICAgIGxldCBzMSA9ICJmSWxFOnA6L3h8Py4uLyI7CiAgICBsZXQgdXJsID0gdXJsOjpVcmw6OnBhcnNlKHMxKS51bndyYXAoKTsK"
+            },
+            {
+              "new": "ICAgIGxldCB1cmwyID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OmpvaW4oJnVybCwgczIpLnVud3JhcCgpOwo=",
+              "old": "ICAgIGxldCB1cmwyID0gdXJsOjpVcmw6OmpvaW4oJnVybCwgczIpLnVud3JhcCgpOwo="
+            },
+            {
+              "new": "ICAgIGxldCBtdXQgdXJsID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OnBhcnNlKCJmaWxlOi8vIikudW53cmFwKCk7Cg==",
+              "old": "ICAgIGxldCBtdXQgdXJsID0gdXJsOjpVcmw6OnBhcnNlKCJmaWxlOi8vIikudW53cmFwKCk7Cg=="
+            },
+            {
+              "new": "ICAgIGxldCBtdXQgdXJsID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpVcmw6OnBhcnNlKCJodHRwOi8vZXhhbXBsZS5jb206ODAwMCIpLnVud3JhcCgpOwogICAgbGV0IF8gPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6c2V0X3BvcnQoJm11dCB1cmwsICJcdXswMDAwfTkwMDAiKTsK",
+              "old": "ICAgIGxldCBtdXQgdXJsID0gdXJsOjpVcmw6OnBhcnNlKCJodHRwOi8vZXhhbXBsZS5jb206ODAwMCIpLnVud3JhcCgpOwogICAgbGV0IF8gPSB1cmw6OnF1aXJrczo6c2V0X3BvcnQoJm11dCB1cmwsICJcdXswMDAwfTkwMDAiKTsK"
+            }
+          ]
+        },
+        "test/foundation/url/tests/urltestdata.json": {
+          "destination": "test/foundation/url-encoding/address/tests/urltestdata.json",
+          "replacements": []
+        },
+        "test/foundation/url/tests/wpt.rs": {
+          "destination": "test/foundation/url-encoding/address/tests/wpt.rs",
+          "replacements": [
+            {
+              "new": "dXNlIHVybF9lbmNvZGluZzo6YWRkcmVzczo6VXJsOwo=",
+              "old": "dXNlIHVybDo6VXJsOwo="
+            },
+            {
+              "new": "CiAgICBsZXQgaHJlZiA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpocmVmKCZ1cmwpOwo=",
+              "old": "CiAgICBsZXQgaHJlZiA9IHVybDo6cXVpcmtzOjpocmVmKCZ1cmwpOwo="
+            },
+            {
+              "new": "CiAgICBsZXQgcHJvdG9jb2wgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6cHJvdG9jb2woJnVybCk7Cg==",
+              "old": "CiAgICBsZXQgcHJvdG9jb2wgPSB1cmw6OnF1aXJrczo6cHJvdG9jb2woJnVybCk7Cg=="
+            },
+            {
+              "new": "CiAgICBsZXQgdXNlcm5hbWUgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6dXNlcm5hbWUoJnVybCk7Cg==",
+              "old": "CiAgICBsZXQgdXNlcm5hbWUgPSB1cmw6OnF1aXJrczo6dXNlcm5hbWUoJnVybCk7Cg=="
+            },
+            {
+              "new": "CiAgICBsZXQgcGFzc3dvcmQgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6cGFzc3dvcmQoJnVybCk7Cg==",
+              "old": "CiAgICBsZXQgcGFzc3dvcmQgPSB1cmw6OnF1aXJrczo6cGFzc3dvcmQoJnVybCk7Cg=="
+            },
+            {
+              "new": "CiAgICBsZXQgaG9zdCA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpob3N0KCZ1cmwpOwo=",
+              "old": "CiAgICBsZXQgaG9zdCA9IHVybDo6cXVpcmtzOjpob3N0KCZ1cmwpOwo="
+            },
+            {
+              "new": "CiAgICBsZXQgaG9zdG5hbWUgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6aG9zdG5hbWUoJnVybCk7Cg==",
+              "old": "CiAgICBsZXQgaG9zdG5hbWUgPSB1cmw6OnF1aXJrczo6aG9zdG5hbWUoJnVybCk7Cg=="
+            },
+            {
+              "new": "CiAgICBsZXQgcG9ydCA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpwb3J0KCZ1cmwpOwo=",
+              "old": "CiAgICBsZXQgcG9ydCA9IHVybDo6cXVpcmtzOjpwb3J0KCZ1cmwpOwo="
+            },
+            {
+              "new": "CiAgICBsZXQgcGF0aG5hbWUgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6cGF0aG5hbWUoJnVybCk7Cg==",
+              "old": "CiAgICBsZXQgcGF0aG5hbWUgPSB1cmw6OnF1aXJrczo6cGF0aG5hbWUoJnVybCk7Cg=="
+            },
+            {
+              "new": "CiAgICBsZXQgc2VhcmNoID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNlYXJjaCgmdXJsKTsK",
+              "old": "CiAgICBsZXQgc2VhcmNoID0gdXJsOjpxdWlya3M6OnNlYXJjaCgmdXJsKTsK"
+            },
+            {
+              "new": "CiAgICBsZXQgaGFzaCA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpoYXNoKCZ1cmwpOwo=",
+              "old": "CiAgICBsZXQgaGFzaCA9IHVybDo6cXVpcmtzOjpoYXNoKCZ1cmwpOwo="
+            },
+            {
+              "new": "ICAgICAgICAgICAgdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNldF9wcm90b2NvbCgmbXV0IHVybCwgJm5ld192YWx1ZSkub2soKTsK",
+              "old": "ICAgICAgICAgICAgdXJsOjpxdWlya3M6OnNldF9wcm90b2NvbCgmbXV0IHVybCwgJm5ld192YWx1ZSkub2soKTsK"
+            },
+            {
+              "new": "ICAgICAgICAgICAgdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNldF91c2VybmFtZSgmbXV0IHVybCwgJm5ld192YWx1ZSkub2soKTsK",
+              "old": "ICAgICAgICAgICAgdXJsOjpxdWlya3M6OnNldF91c2VybmFtZSgmbXV0IHVybCwgJm5ld192YWx1ZSkub2soKTsK"
+            },
+            {
+              "new": "ICAgICAgICAgICAgdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNldF9wYXNzd29yZCgmbXV0IHVybCwgJm5ld192YWx1ZSkub2soKTsK",
+              "old": "ICAgICAgICAgICAgdXJsOjpxdWlya3M6OnNldF9wYXNzd29yZCgmbXV0IHVybCwgJm5ld192YWx1ZSkub2soKTsK"
+            },
+            {
+              "new": "ICAgICAgICAgICAgdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNldF9ob3N0KCZtdXQgdXJsLCAmbmV3X3ZhbHVlKS5vaygpOwo=",
+              "old": "ICAgICAgICAgICAgdXJsOjpxdWlya3M6OnNldF9ob3N0KCZtdXQgdXJsLCAmbmV3X3ZhbHVlKS5vaygpOwo="
+            },
+            {
+              "new": "ICAgICAgICAgICAgdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNldF9ob3N0bmFtZSgmbXV0IHVybCwgJm5ld192YWx1ZSkub2soKTsK",
+              "old": "ICAgICAgICAgICAgdXJsOjpxdWlya3M6OnNldF9ob3N0bmFtZSgmbXV0IHVybCwgJm5ld192YWx1ZSkub2soKTsK"
+            },
+            {
+              "new": "ICAgICAgICAgICAgdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNldF9wb3J0KCZtdXQgdXJsLCAmbmV3X3ZhbHVlKS5vaygpOwogICAgICAgIH0KICAgICAgICAicGF0aG5hbWUiID0+IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpzZXRfcGF0aG5hbWUoJm11dCB1cmwsICZuZXdfdmFsdWUpLAogICAgICAgICJzZWFyY2giID0+IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpzZXRfc2VhcmNoKCZtdXQgdXJsLCAmbmV3X3ZhbHVlKSwKICAgICAgICAiaGFzaCIgPT4gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNldF9oYXNoKCZtdXQgdXJsLCAmbmV3X3ZhbHVlKSwK",
+              "old": "ICAgICAgICAgICAgdXJsOjpxdWlya3M6OnNldF9wb3J0KCZtdXQgdXJsLCAmbmV3X3ZhbHVlKS5vaygpOwogICAgICAgIH0KICAgICAgICAicGF0aG5hbWUiID0+IHVybDo6cXVpcmtzOjpzZXRfcGF0aG5hbWUoJm11dCB1cmwsICZuZXdfdmFsdWUpLAogICAgICAgICJzZWFyY2giID0+IHVybDo6cXVpcmtzOjpzZXRfc2VhcmNoKCZtdXQgdXJsLCAmbmV3X3ZhbHVlKSwKICAgICAgICAiaGFzaCIgPT4gdXJsOjpxdWlya3M6OnNldF9oYXNoKCZtdXQgdXJsLCAmbmV3X3ZhbHVlKSwK"
+            },
+            {
+              "new": "ICAgICAgICBsZXQgaHJlZiA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpocmVmKCZ1cmwpOwo=",
+              "old": "ICAgICAgICBsZXQgaHJlZiA9IHVybDo6cXVpcmtzOjpocmVmKCZ1cmwpOwo="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgcHJvdG9jb2wgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6cHJvdG9jb2woJnVybCk7Cg==",
+              "old": "ICAgICAgICBsZXQgcHJvdG9jb2wgPSB1cmw6OnF1aXJrczo6cHJvdG9jb2woJnVybCk7Cg=="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgdXNlcm5hbWUgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6dXNlcm5hbWUoJnVybCk7Cg==",
+              "old": "ICAgICAgICBsZXQgdXNlcm5hbWUgPSB1cmw6OnF1aXJrczo6dXNlcm5hbWUoJnVybCk7Cg=="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgcGFzc3dvcmQgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6cGFzc3dvcmQoJnVybCk7Cg==",
+              "old": "ICAgICAgICBsZXQgcGFzc3dvcmQgPSB1cmw6OnF1aXJrczo6cGFzc3dvcmQoJnVybCk7Cg=="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgaG9zdCA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpob3N0KCZ1cmwpOwo=",
+              "old": "ICAgICAgICBsZXQgaG9zdCA9IHVybDo6cXVpcmtzOjpob3N0KCZ1cmwpOwo="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgaG9zdG5hbWUgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6aG9zdG5hbWUoJnVybCk7Cg==",
+              "old": "ICAgICAgICBsZXQgaG9zdG5hbWUgPSB1cmw6OnF1aXJrczo6aG9zdG5hbWUoJnVybCk7Cg=="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgcG9ydCA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpwb3J0KCZ1cmwpOwo=",
+              "old": "ICAgICAgICBsZXQgcG9ydCA9IHVybDo6cXVpcmtzOjpwb3J0KCZ1cmwpOwo="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgcGF0aG5hbWUgPSB1cmxfZW5jb2Rpbmc6OmFkZHJlc3M6OnF1aXJrczo6cGF0aG5hbWUoJnVybCk7Cg==",
+              "old": "ICAgICAgICBsZXQgcGF0aG5hbWUgPSB1cmw6OnF1aXJrczo6cGF0aG5hbWUoJnVybCk7Cg=="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgc2VhcmNoID0gdXJsX2VuY29kaW5nOjphZGRyZXNzOjpxdWlya3M6OnNlYXJjaCgmdXJsKTsK",
+              "old": "ICAgICAgICBsZXQgc2VhcmNoID0gdXJsOjpxdWlya3M6OnNlYXJjaCgmdXJsKTsK"
+            },
+            {
+              "new": "ICAgICAgICBsZXQgaGFzaCA9IHVybF9lbmNvZGluZzo6YWRkcmVzczo6cXVpcmtzOjpoYXNoKCZ1cmwpOwo=",
+              "old": "ICAgICAgICBsZXQgaGFzaCA9IHVybDo6cXVpcmtzOjpoYXNoKCZ1cmwpOwo="
+            }
+          ]
+        }
+      },
+      "file_routes": {
+        "src/foundation/form_urlencoded": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDE4IgpydXN0LXZlcnNpb24gPSAiMS41MSIKbmFtZSA9ICJmb3JtX3VybGVuY29kZWQiCnZlcnNpb24gPSAiMS4yLjIiCmF1dGhvcnMgPSBbIlRoZSBydXN0LXVybCBkZXZlbG9wZXJzIl0KYnVpbGQgPSBmYWxzZQphdXRvbGliID0gZmFsc2UKYXV0b2JpbnMgPSBmYWxzZQphdXRvZXhhbXBsZXMgPSBmYWxzZQphdXRvdGVzdHMgPSBmYWxzZQphdXRvYmVuY2hlcyA9IGZhbHNlCmRlc2NyaXB0aW9uID0gIlBhcnNlciBhbmQgc2VyaWFsaXplciBmb3IgdGhlIGFwcGxpY2F0aW9uL3gtd3d3LWZvcm0tdXJsZW5jb2RlZCBzeW50YXgsIGFzIHVzZWQgYnkgSFRNTCBmb3Jtcy4iCnJlYWRtZSA9IGZhbHNlCmNhdGVnb3JpZXMgPSBbIm5vLXN0ZCJdCmxpY2Vuc2UgPSAiTUlUIE9SIEFwYWNoZS0yLjAiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL3NlcnZvL3J1c3QtdXJsIgoKW2ZlYXR1cmVzXQphbGxvYyA9IFsicGVyY2VudC1lbmNvZGluZy9hbGxvYyJdCmRlZmF1bHQgPSBbInN0ZCJdCnN0ZCA9IFsiYWxsb2MiLCAicGVyY2VudC1lbmNvZGluZy9zdGQiXQoKW2xpYl0KbmFtZSA9ICJmb3JtX3VybGVuY29kZWQiCnBhdGggPSAic3JjL2xpYi5ycyIKdGVzdCA9IGZhbHNlCgpbZGVwZW5kZW5jaWVzLnBlcmNlbnQtZW5jb2RpbmddCnZlcnNpb24gPSAiMi4zLjAiCmRlZmF1bHQtZmVhdHVyZXMgPSBmYWxzZQpwYXRoID0gIi4uL3BlcmNlbnQtZW5jb2RpbmciCg=="
+          },
+          "src/lib.rs": {
+            "destination": "src/form/mod.rs"
+          }
+        },
+        "src/foundation/idna": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDE4IgpydXN0LXZlcnNpb24gPSAiMS41NyIKbmFtZSA9ICJpZG5hIgp2ZXJzaW9uID0gIjEuMS4wIgphdXRob3JzID0gWyJUaGUgcnVzdC11cmwgZGV2ZWxvcGVycyJdCmJ1aWxkID0gZmFsc2UKYXV0b2xpYiA9IGZhbHNlCmF1dG9iaW5zID0gZmFsc2UKYXV0b2V4YW1wbGVzID0gZmFsc2UKYXV0b3Rlc3RzID0gZmFsc2UKYXV0b2JlbmNoZXMgPSBmYWxzZQpkZXNjcmlwdGlvbiA9ICJJRE5BIChJbnRlcm5hdGlvbmFsaXppbmcgRG9tYWluIE5hbWVzIGluIEFwcGxpY2F0aW9ucykgYW5kIFB1bnljb2RlLiIKcmVhZG1lID0gIi4uLy4uLy4uL2RvY3MvdXBzdHJlYW0vaWRuYS0xLjEuMC9SRUFETUUubWQiCmtleXdvcmRzID0gWwogICAgIm5vLXN0ZCIsCiAgICAid2ViIiwKICAgICJodHRwIiwKXQpsaWNlbnNlID0gIk1JVCBPUiBBcGFjaGUtMi4wIgpyZXBvc2l0b3J5ID0gImh0dHBzOi8vZ2l0aHViLmNvbS9zZXJ2by9ydXN0LXVybC8iCgpbZmVhdHVyZXNdCmFsbG9jID0gW10KY29tcGlsZWRfZGF0YSA9IFsiaWRuYV9hZGFwdGVyL2NvbXBpbGVkX2RhdGEiXQpkZWZhdWx0ID0gWyJzdGQiLCAiY29tcGlsZWRfZGF0YSJdCnN0ZCA9IFsiYWxsb2MiXQoKW2xpYl0KbmFtZSA9ICJpZG5hIgpwYXRoID0gInNyYy9saWIucnMiCmRvY3Rlc3QgPSBmYWxzZQoKW2RlcGVuZGVuY2llcy5pZG5hX2FkYXB0ZXJdCnZlcnNpb24gPSAiMSIKcGF0aCA9ICIuLi9pZG5hX2FkYXB0ZXIiCgpbZGVwZW5kZW5jaWVzLnNtYWxsdmVjXQp2ZXJzaW9uID0gIjEuMTMuMSIKZmVhdHVyZXMgPSBbImNvbnN0X2dlbmVyaWNzIl0KcGF0aCA9ICIuLi9zbWFsbHZlYyIKCltkZXBlbmRlbmNpZXMudXRmOF9pdGVyXQp2ZXJzaW9uID0gIjEuMC40IgpwYXRoID0gIi4uL3V0ZjhfaXRlciIKCg=="
+          },
+          "benches/all.rs": {
+            "destination": "benches/domain/all.rs"
+          },
+          "src/deprecated.rs": {
+            "destination": "src/domain/deprecated.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/domain/mod.rs"
+          },
+          "src/punycode.rs": {
+            "destination": "src/domain/punycode.rs"
+          },
+          "src/uts46.rs": {
+            "destination": "src/domain/uts46.rs"
+          }
+        },
+        "src/foundation/idna_adapter": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDI0IgpydXN0LXZlcnNpb24gPSAiMS44NiIKbmFtZSA9ICJpZG5hX2FkYXB0ZXIiCnZlcnNpb24gPSAiMS4yLjIiCmF1dGhvcnMgPSBbIlRoZSBydXN0LXVybCBkZXZlbG9wZXJzIl0KYnVpbGQgPSBmYWxzZQphdXRvbGliID0gZmFsc2UKYXV0b2JpbnMgPSBmYWxzZQphdXRvZXhhbXBsZXMgPSBmYWxzZQphdXRvdGVzdHMgPSBmYWxzZQphdXRvYmVuY2hlcyA9IGZhbHNlCmRlc2NyaXB0aW9uID0gIkJhY2sgZW5kIGFkYXB0ZXIgZm9yIGlkbmEiCmhvbWVwYWdlID0gImh0dHBzOi8vZG9jcy5ycy9jcmF0ZS9pZG5hX2FkYXB0ZXIvbGF0ZXN0Igpkb2N1bWVudGF0aW9uID0gImh0dHBzOi8vZG9jcy5ycy9pZG5hX2FkYXB0ZXIvbGF0ZXN0L2lkbmFfYWRhcHRlci8iCnJlYWRtZSA9ICIuLi8uLi8uLi9kb2NzL3Vwc3RyZWFtL2lkbmFfYWRhcHRlci0xLjIuMi9SRUFETUUubWQiCmtleXdvcmRzID0gWwogICAgInVuaWNvZGUiLAogICAgImRucyIsCiAgICAiaWRuYSIsCl0KY2F0ZWdvcmllcyA9IFsKICAgICJuby1zdGQiLAogICAgImludGVybmF0aW9uYWxpemF0aW9uIiwKXQpsaWNlbnNlID0gIkFwYWNoZS0yLjAgT1IgTUlUIgpyZXBvc2l0b3J5ID0gImh0dHBzOi8vZ2l0aHViLmNvbS9oc2l2b25lbi9pZG5hX2FkYXB0ZXIiCgpbZmVhdHVyZXNdCmNvbXBpbGVkX2RhdGEgPSBbInVuaWNvZGUtbm9ybWFsaXplci9jb21waWxlZF9kYXRhIiwgInVuaWNvZGUtcHJvcGVydGllcy9jb21waWxlZF9kYXRhIl0KCltsaWJdCm5hbWUgPSAiaWRuYV9hZGFwdGVyIgpwYXRoID0gInNyYy9saWIucnMiCgpbZGVwZW5kZW5jaWVzLnVuaWNvZGUtbm9ybWFsaXplcl0KdmVyc2lvbiA9ICIyLjIiCmRlZmF1bHQtZmVhdHVyZXMgPSBmYWxzZQpwYXRoID0gIi4uL3VuaWNvZGUtbm9ybWFsaXplciIKCltkZXBlbmRlbmNpZXMudW5pY29kZS1wcm9wZXJ0aWVzXQp2ZXJzaW9uID0gIjIuMiIKZGVmYXVsdC1mZWF0dXJlcyA9IGZhbHNlCnBhdGggPSAiLi4vdW5pY29kZS1wcm9wZXJ0aWVzIgo="
+          },
+          "src/lib.rs": {
+            "destination": "src/unicode_backend/mod.rs"
+          }
+        },
+        "src/foundation/percent-encoding": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDE4IgpydXN0LXZlcnNpb24gPSAiMS41MSIKbmFtZSA9ICJwZXJjZW50LWVuY29kaW5nIgp2ZXJzaW9uID0gIjIuMy4yIgphdXRob3JzID0gWyJUaGUgcnVzdC11cmwgZGV2ZWxvcGVycyJdCmJ1aWxkID0gZmFsc2UKYXV0b2xpYiA9IGZhbHNlCmF1dG9iaW5zID0gZmFsc2UKYXV0b2V4YW1wbGVzID0gZmFsc2UKYXV0b3Rlc3RzID0gZmFsc2UKYXV0b2JlbmNoZXMgPSBmYWxzZQpkZXNjcmlwdGlvbiA9ICJQZXJjZW50IGVuY29kaW5nIGFuZCBkZWNvZGluZyIKcmVhZG1lID0gZmFsc2UKY2F0ZWdvcmllcyA9IFsibm8tc3RkIl0KbGljZW5zZSA9ICJNSVQgT1IgQXBhY2hlLTIuMCIKcmVwb3NpdG9yeSA9ICJodHRwczovL2dpdGh1Yi5jb20vc2Vydm8vcnVzdC11cmwvIgoKW2ZlYXR1cmVzXQphbGxvYyA9IFtdCmRlZmF1bHQgPSBbInN0ZCJdCnN0ZCA9IFsiYWxsb2MiXQoKW2xpYl0KbmFtZSA9ICJwZXJjZW50X2VuY29kaW5nIgpwYXRoID0gInNyYy9saWIucnMiCg=="
+          },
+          "src/ascii_set.rs": {
+            "destination": "src/percent/ascii_set.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/percent/mod.rs"
+          }
+        },
+        "src/foundation/url": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "src/host.rs": {
+            "destination": "src/address/host.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/address/mod.rs"
+          },
+          "src/origin.rs": {
+            "destination": "src/address/origin.rs"
+          },
+          "src/parser.rs": {
+            "destination": "src/address/parser.rs"
+          },
+          "src/path_segments.rs": {
+            "destination": "src/address/path_segments.rs"
+          },
+          "src/quirks.rs": {
+            "destination": "src/address/quirks.rs"
+          },
+          "src/slicing.rs": {
+            "destination": "src/address/slicing.rs"
+          }
+        }
+      },
+      "input_history": {},
+      "inputs": [
+        {
+          "external_tests": {
+            "bytes": 339313,
+            "directory": "src/foundation/url",
+            "file_count": 6,
+            "files": [
+              {
+                "path": "test/foundation/url/functions/src/slicing/test_count_digits_52.rs",
+                "sha256": "b4694bccd7df37ed43547c8d4585df6190ff7778282ba043adb6c2d369a62c28",
+                "source": "src/foundation/url/src/slicing.rs",
+                "source_sha256_before": "b59bf2fa4cbfd31619b860766268d4e99b46537d3b9702b73f6d0a979a7de24a"
+              },
+              {
+                "path": "test/foundation/url/tests/expected_failures.txt",
+                "sha256": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f",
+                "source": "src/foundation/url/tests/expected_failures.txt",
+                "source_sha256_before": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f"
+              },
+              {
+                "path": "test/foundation/url/tests/setters_tests.json",
+                "sha256": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd",
+                "source": "src/foundation/url/tests/setters_tests.json",
+                "source_sha256_before": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd"
+              },
+              {
+                "path": "test/foundation/url/tests/unit.rs",
+                "sha256": "654528422e7b6608e45f5755579968fdf443c5bf76a8a06a54d42434d286416e",
+                "source": "src/foundation/url/tests/unit.rs",
+                "source_sha256_before": "7eb96c1194fba03fd7f469c44cbbe28699dae14399be72e4c5c675a90fe08dc7"
+              },
+              {
+                "path": "test/foundation/url/tests/urltestdata.json",
+                "sha256": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884",
+                "source": "src/foundation/url/tests/urltestdata.json",
+                "source_sha256_before": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884"
+              },
+              {
+                "path": "test/foundation/url/tests/wpt.rs",
+                "sha256": "64ddf45265c602f3ee08b12b0f78aed786798e6a63f1a82fe87ccdbb92cdb38f",
+                "source": "src/foundation/url/tests/wpt.rs",
+                "source_sha256_before": "2d083ab72ad8cc9b116dd164e63440dd120f07977ac306377633cfe214f34a62"
+              }
+            ],
+            "origin_directory": "vendor/rust/url-2.5.8",
+            "roots": [
+              "test/foundation/url"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "URL library for Rust, based on the WHATWG URL Standard",
+            "directory": "src/foundation/url",
+            "files_sha256": {
+              "Cargo.toml": "21be87d5f7daa940b8e79e02882ce00e08f8e0248eb6fb4d24e59f23bdf470ef",
+              "src/host.rs": "a83c9e0ebfff6e2b587c403e87da7bb4bc55a3d18771df363dcecc3d454cc8f7",
+              "src/lib.rs": "ad2441d4a79c4c06f7b5616e79f2b475e5be64072313b9b66b171f7d120876c9",
+              "src/origin.rs": "e8ffaf759aa78c92574c6ae49f76999a751064621c399059b3d4eb819cb0d821",
+              "src/parser.rs": "2dd4210e1773fc5d3fdc15ce506ecff30dbf8eb358a79bbbc2835cc30d513c3a",
+              "src/path_segments.rs": "28c8b6ffa880c7da76dcf43af8dcae2c46cd74389472e6e43efdf2973026a462",
+              "src/quirks.rs": "c3c8380f9dbecf65924272e904cad8876bda0c62e0e48a3c6b1344fac258102f",
+              "src/slicing.rs": "23f4a02e4cb2f157fd8711b8a23a24956afa64898b17f9ba6614f58b36c460db"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/url-2.5.8/LICENSE-APACHE",
+              "compliance/licenses/upstream/url-2.5.8/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "url",
+            "origin_directory": "vendor/rust/url-2.5.8",
+            "repository": "https://github.com/servo/rust-url",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "ff67a8a4397373c3ef660812acab3268222035010ab8680ec4215f38ba3d0eed",
+              "archive_url": "https://static.crates.io/crates/url/url-2.5.8.crate",
+              "name": "url",
+              "version": "2.5.8"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "d6ea13c5f8e7e6e627f6390161b3e185bda5e5ce"
+              },
+              "path_in_vcs": "url"
+            },
+            "version": "2.5.8"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 823036,
+            "directory": "src/foundation/idna",
+            "file_count": 10,
+            "files": [
+              {
+                "path": "test/foundation/idna/functions/src/punycode/huge_encode_466.rs",
+                "sha256": "2dc04e2b689cfe8cee1207d7b5d6653818c09fb5fbc91611f624a1fcb91ea57a",
+                "source": "src/foundation/idna/src/punycode.rs",
+                "source_sha256_before": "0cc6fa84989898ccf6de0a665a287d7488a6eba4b178bea065d311ecabd81604"
+              },
+              {
+                "path": "test/foundation/idna/tests/IdnaTestV2.txt",
+                "sha256": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9",
+                "source": "src/foundation/idna/tests/IdnaTestV2.txt",
+                "source_sha256_before": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9"
+              },
+              {
+                "path": "test/foundation/idna/tests/bad_punycode_tests.json",
+                "sha256": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5",
+                "source": "src/foundation/idna/tests/bad_punycode_tests.json",
+                "source_sha256_before": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5"
+              },
+              {
+                "path": "test/foundation/idna/tests/deprecated.rs",
+                "sha256": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2",
+                "source": "src/foundation/idna/tests/deprecated.rs",
+                "source_sha256_before": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2"
+              },
+              {
+                "path": "test/foundation/idna/tests/punycode.rs",
+                "sha256": "dc7e08b4b3d08f86713f07c9e3ff4f4766212d6edf5fb3c03d865bef6b735a7b",
+                "source": "src/foundation/idna/tests/punycode.rs",
+                "source_sha256_before": "75fa73b6429ccacaeb5d72fab0b927cdf9f2173a9fc5fb366697bf7002b73921"
+              },
+              {
+                "path": "test/foundation/idna/tests/punycode_tests.json",
+                "sha256": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a",
+                "source": "src/foundation/idna/tests/punycode_tests.json",
+                "source_sha256_before": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a"
+              },
+              {
+                "path": "test/foundation/idna/tests/tests.rs",
+                "sha256": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12",
+                "source": "src/foundation/idna/tests/tests.rs",
+                "source_sha256_before": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12"
+              },
+              {
+                "path": "test/foundation/idna/tests/unit.rs",
+                "sha256": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1",
+                "source": "src/foundation/idna/tests/unit.rs",
+                "source_sha256_before": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1"
+              },
+              {
+                "path": "test/foundation/idna/tests/unitbis.rs",
+                "sha256": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af",
+                "source": "src/foundation/idna/tests/unitbis.rs",
+                "source_sha256_before": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af"
+              },
+              {
+                "path": "test/foundation/idna/tests/uts46.rs",
+                "sha256": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03",
+                "source": "src/foundation/idna/tests/uts46.rs",
+                "source_sha256_before": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03"
+              }
+            ],
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "roots": [
+              "test/foundation/idna"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "IDNA (Internationalizing Domain Names in Applications) and Punycode.",
+            "directory": "src/foundation/idna",
+            "files_sha256": {
+              "Cargo.toml": "38273e36c25e4b0faa9fd2db2590caf6b35c116eae71e6e54282e201cd8e5a5a",
+              "benches/all.rs": "cb99d454de05c3a72df82d2fca230757595ad25493e790eeb93a44ad43725cb8",
+              "src/deprecated.rs": "1f1954f0314a3ccb631422947a258f42fad7e6939df6ba25057464e2bdd8ae18",
+              "src/lib.rs": "13d06c4bcb530498b5414d948e0b08c987000eb7a0a8c441f5c25b116298633e",
+              "src/punycode.rs": "648c5f6bb2a6b68c9e28738a971aa5ae4c575446847c10af69556283be0dab77",
+              "src/uts46.rs": "9726647c01f315215eca25b7cb706929ff829269d4143de06b4f4718538b6640"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/idna-1.1.0/LICENSE-APACHE",
+              "compliance/licenses/upstream/idna-1.1.0/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "idna",
+            "origin_directory": "vendor/rust/idna-1.1.0",
+            "repository": "https://github.com/servo/rust-url/",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "3b0875f23caa03898994f6ddc501886a45c7d3d62d04d2d90788d47be1b1e4de",
+              "archive_url": "https://static.crates.io/crates/idna/idna-1.1.0.crate",
+              "name": "idna",
+              "version": "1.1.0"
+            },
+            "vcs": {
+              "git": {
+                "dirty": true,
+                "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
+              },
+              "path_in_vcs": "idna"
+            },
+            "version": "1.1.0"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 950,
+            "directory": "src/foundation/idna_adapter",
+            "file_count": 1,
+            "files": [
+              {
+                "path": "test/foundation/idna_adapter/unit/src/lib/all_tests_320.rs",
+                "sha256": "5f8413d25c02387e812ce480ecc485e242475d6ebd49e5b5795aec1ba33b0fc7",
+                "source": "src/foundation/idna_adapter/src/lib.rs",
+                "source_sha256_before": "fca6f35c8902c91e84e0e9700b86a401b041f1a77912ef7c3d65a1fcdf5bffd8"
+              }
+            ],
+            "origin_directory": "vendor/rust/idna_adapter-1.2.2",
+            "roots": [
+              "test/foundation/idna_adapter"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：将 ICU 弃用数值属性访问替换为等价位映射，全部 Unicode 标量对照相等；旧语料历史数据版本差异单独记录。",
+            "description": "Back end adapter for idna",
+            "directory": "src/foundation/idna_adapter",
+            "files_sha256": {
+              "Cargo.toml": "bbca491fa3b5a31a6b1ee80ef0bb273df5199844367104a8843fddaa1226952c",
+              "src/lib.rs": "40579110151bba08786475ef12eb89e1c69731371202c6e432faf760e3302252"
+            },
+            "license": "Apache-2.0 OR MIT",
+            "license_materials": [
+              "compliance/licenses/upstream/idna_adapter-1.2.2/LICENSE-APACHE",
+              "compliance/licenses/upstream/idna_adapter-1.2.2/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "idna_adapter",
+            "origin_directory": "vendor/rust/idna_adapter-1.2.2",
+            "repository": "https://github.com/hsivonen/idna_adapter",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714",
+              "archive_url": "https://static.crates.io/crates/idna_adapter/idna_adapter-1.2.2.crate",
+              "name": "idna_adapter",
+              "version": "1.2.2"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "1d9782f32c9e29218542b4a9411a82b35ec5c8cb"
+              },
+              "path_in_vcs": ""
+            },
+            "version": "1.2.2"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 4561,
+            "directory": "src/foundation/percent-encoding",
+            "file_count": 2,
+            "files": [
+              {
+                "path": "test/foundation/percent-encoding/unit/src/ascii_set/tests_172.rs",
+                "sha256": "1d979d944d4a5f4676072088321d052b0f8efcec8bb250d8ac9be7e44de6fcd6",
+                "source": "src/foundation/percent-encoding/src/ascii_set.rs",
+                "source_sha256_before": "f75552e4f446ed240cef64c1367e848cf3ae65f77602085459566d835a1d8587"
+              },
+              {
+                "path": "test/foundation/percent-encoding/unit/src/lib/tests_367.rs",
+                "sha256": "81fc03bb33bdcb62f1a228f73a09ca234a124e5bd396b79fd2fe3d8cfcc124f8",
+                "source": "src/foundation/percent-encoding/src/lib.rs",
+                "source_sha256_before": "641903d385581e76f31ef8c991d83c2a5d7fbbc2879d93909c539037e4e1e3e2"
+              }
+            ],
+            "origin_directory": "vendor/rust/percent-encoding-2.3.2",
+            "roots": [
+              "test/foundation/percent-encoding"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Percent encoding and decoding",
+            "directory": "src/foundation/percent-encoding",
+            "files_sha256": {
+              "Cargo.toml": "5caf12b5a6b05dab1bd67aa3c8ccd6fe8c673a6700eda159e97ebcc95cbfc5ac",
+              "src/ascii_set.rs": "ba1a470fc9b3fa08e42c0b027942ab06bdf57b18357f8204ab17486968ff2bc2",
+              "src/lib.rs": "2f60e48900250bfdb60874b89a307641984dda8dc7a288983e9e107920066d49"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/percent-encoding-2.3.2/LICENSE-APACHE",
+              "compliance/licenses/upstream/percent-encoding-2.3.2/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "percent-encoding",
+            "origin_directory": "vendor/rust/percent-encoding-2.3.2",
+            "repository": "https://github.com/servo/rust-url/",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220",
+              "archive_url": "https://static.crates.io/crates/percent-encoding/percent-encoding-2.3.2.crate",
+              "name": "percent-encoding",
+              "version": "2.3.2"
+            },
+            "vcs": {
+              "git": {
+                "dirty": true,
+                "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
+              },
+              "path_in_vcs": "percent_encoding"
+            },
+            "version": "2.3.2"
+          }
+        },
+        {
+          "external_tests": null,
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Parser and serializer for the application/x-www-form-urlencoded syntax, as used by HTML forms.",
+            "directory": "src/foundation/form_urlencoded",
+            "files_sha256": {
+              "Cargo.toml": "3bad0dd7b1cb9a4b07446aa3062bd7f16ef1be94da19ca7ff5dd86d7ab32d70f",
+              "src/lib.rs": "766b5d679064e01f7e6cce6f127a23885f79806ce3bccc49e4fe41933b83fd8d"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/form_urlencoded-1.2.2/LICENSE-APACHE",
+              "compliance/licenses/upstream/form_urlencoded-1.2.2/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "form_urlencoded",
+            "origin_directory": "vendor/rust/form_urlencoded-1.2.2",
+            "repository": "https://github.com/servo/rust-url",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf",
+              "archive_url": "https://static.crates.io/crates/form_urlencoded/form_urlencoded-1.2.2.crate",
+              "name": "form_urlencoded",
+              "version": "1.2.2"
+            },
+            "vcs": {
+              "git": {
+                "dirty": true,
+                "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
+              },
+              "path_in_vcs": "form_urlencoded"
+            },
+            "version": "1.2.2"
+          }
+        }
+      ],
+      "new_files": {
+        "src/lib.rs": "564197417bf462e4b7d3ede62f277311a6f4276dfd375447b677f541c1661e0d"
+      },
+      "primary_directory": "src/foundation/url",
+      "reason": "Consolidate project capabilities by function while retaining canonical algorithms, exact source and legal origins, all external test attribution, explicit feature boundaries and receiving-commit provenance."
     },
     "73ddcd8319d5a89f799a3ef4c9e64057eb36e7a1ecbcef4c4938d8ebdfae2557": {
       "destination_directory": "src/foundation/synchronization",
@@ -27429,7 +28426,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "7883ea911a9448bad62f0d4cc1fcffea9f90d445573b33724a6d2d7c1a175987",
+    "compliance/external-tests/foundation.json": "fa811df19d28b159d02e4425af44cc2408ced8612d3ecb3d9713fd2a1cf6f631",
     "compliance/external-tests/integrated.json": "61167faf558a55d73b6f9312ff3635e5dfb01309856c499e3c4f365c1080c208",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -36534,94 +37531,6 @@
         "test/foundation/id-arena"
       ]
     },
-    "src/foundation/idna": {
-      "bytes": 823036,
-      "directory": "src/foundation/idna",
-      "file_count": 10,
-      "files": [
-        {
-          "path": "test/foundation/idna/functions/src/punycode/huge_encode_466.rs",
-          "sha256": "2dc04e2b689cfe8cee1207d7b5d6653818c09fb5fbc91611f624a1fcb91ea57a",
-          "source": "src/foundation/idna/src/punycode.rs",
-          "source_sha256_before": "0cc6fa84989898ccf6de0a665a287d7488a6eba4b178bea065d311ecabd81604"
-        },
-        {
-          "path": "test/foundation/idna/tests/IdnaTestV2.txt",
-          "sha256": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9",
-          "source": "src/foundation/idna/tests/IdnaTestV2.txt",
-          "source_sha256_before": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9"
-        },
-        {
-          "path": "test/foundation/idna/tests/bad_punycode_tests.json",
-          "sha256": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5",
-          "source": "src/foundation/idna/tests/bad_punycode_tests.json",
-          "source_sha256_before": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5"
-        },
-        {
-          "path": "test/foundation/idna/tests/deprecated.rs",
-          "sha256": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2",
-          "source": "src/foundation/idna/tests/deprecated.rs",
-          "source_sha256_before": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2"
-        },
-        {
-          "path": "test/foundation/idna/tests/punycode.rs",
-          "sha256": "dc7e08b4b3d08f86713f07c9e3ff4f4766212d6edf5fb3c03d865bef6b735a7b",
-          "source": "src/foundation/idna/tests/punycode.rs",
-          "source_sha256_before": "75fa73b6429ccacaeb5d72fab0b927cdf9f2173a9fc5fb366697bf7002b73921"
-        },
-        {
-          "path": "test/foundation/idna/tests/punycode_tests.json",
-          "sha256": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a",
-          "source": "src/foundation/idna/tests/punycode_tests.json",
-          "source_sha256_before": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a"
-        },
-        {
-          "path": "test/foundation/idna/tests/tests.rs",
-          "sha256": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12",
-          "source": "src/foundation/idna/tests/tests.rs",
-          "source_sha256_before": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12"
-        },
-        {
-          "path": "test/foundation/idna/tests/unit.rs",
-          "sha256": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1",
-          "source": "src/foundation/idna/tests/unit.rs",
-          "source_sha256_before": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1"
-        },
-        {
-          "path": "test/foundation/idna/tests/unitbis.rs",
-          "sha256": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af",
-          "source": "src/foundation/idna/tests/unitbis.rs",
-          "source_sha256_before": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af"
-        },
-        {
-          "path": "test/foundation/idna/tests/uts46.rs",
-          "sha256": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03",
-          "source": "src/foundation/idna/tests/uts46.rs",
-          "source_sha256_before": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03"
-        }
-      ],
-      "origin_directory": "vendor/rust/idna-1.1.0",
-      "roots": [
-        "test/foundation/idna"
-      ]
-    },
-    "src/foundation/idna_adapter": {
-      "bytes": 950,
-      "directory": "src/foundation/idna_adapter",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/idna_adapter/unit/src/lib/all_tests_320.rs",
-          "sha256": "5f8413d25c02387e812ce480ecc485e242475d6ebd49e5b5795aec1ba33b0fc7",
-          "source": "src/foundation/idna_adapter/src/lib.rs",
-          "source_sha256_before": "fca6f35c8902c91e84e0e9700b86a401b041f1a77912ef7c3d65a1fcdf5bffd8"
-        }
-      ],
-      "origin_directory": "vendor/rust/idna_adapter-1.2.2",
-      "roots": [
-        "test/foundation/idna_adapter"
-      ]
-    },
     "src/foundation/indexmap": {
       "bytes": 115482,
       "directory": "src/foundation/indexmap",
@@ -37157,7 +38066,7 @@
       ]
     },
     "src/foundation/jsonschema": {
-      "bytes": 2654017,
+      "bytes": 2654033,
       "directory": "src/foundation/jsonschema",
       "file_count": 126,
       "files": [
@@ -37703,7 +38612,7 @@
         },
         {
           "path": "test/foundation/jsonschema/unit/src/keywords/format/tests_1773.rs",
-          "sha256": "3c28495c663e592c266b49f3b92fb291a7cf0f1a9aa4187041e756f0d674e3de",
+          "sha256": "abb54e0dd6491e03251efabed3727daa81e3323103dfbe868ab042d445d27e0e",
           "source": "src/foundation/jsonschema/src/keywords/format.rs",
           "source_sha256_before": "7de31674f4c960a7d4722a99806c08f736d1477d145c6d136833d71097af5adc"
         },
@@ -40110,29 +41019,6 @@
       "origin_directory": "vendor/rust/pastey-0.2.3",
       "roots": [
         "test/foundation/pastey"
-      ]
-    },
-    "src/foundation/percent-encoding": {
-      "bytes": 4561,
-      "directory": "src/foundation/percent-encoding",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/percent-encoding/unit/src/ascii_set/tests_172.rs",
-          "sha256": "1d979d944d4a5f4676072088321d052b0f8efcec8bb250d8ac9be7e44de6fcd6",
-          "source": "src/foundation/percent-encoding/src/ascii_set.rs",
-          "source_sha256_before": "f75552e4f446ed240cef64c1367e848cf3ae65f77602085459566d835a1d8587"
-        },
-        {
-          "path": "test/foundation/percent-encoding/unit/src/lib/tests_367.rs",
-          "sha256": "81fc03bb33bdcb62f1a228f73a09ca234a124e5bd396b79fd2fe3d8cfcc124f8",
-          "source": "src/foundation/percent-encoding/src/lib.rs",
-          "source_sha256_before": "641903d385581e76f31ef8c991d83c2a5d7fbbc2879d93909c539037e4e1e3e2"
-        }
-      ],
-      "origin_directory": "vendor/rust/percent-encoding-2.3.2",
-      "roots": [
-        "test/foundation/percent-encoding"
       ]
     },
     "src/foundation/pin-project-lite": {
@@ -42802,7 +43688,7 @@
       ]
     },
     "src/foundation/reqwest": {
-      "bytes": 29546,
+      "bytes": 29618,
       "directory": "src/foundation/reqwest",
       "file_count": 13,
       "files": [
@@ -42838,7 +43724,7 @@
         },
         {
           "path": "test/foundation/reqwest/unit/src/async_impl/client/tests_2271.rs",
-          "sha256": "685cddba914cdf755c8d09898281dd404db7de42fe4acb4b0d8735c9cfdde45a",
+          "sha256": "f6850d80ffa1d8b7cba4af27b51a299fc7c2fc6b0657a7f0626361d30bfbd3d4",
           "source": "src/foundation/reqwest/src/async_impl/client.rs",
           "source_sha256_before": "2fd19f33f89f8c67c526cd1787620dc8c51ce9ae8b01d0dd0269a6a0219128df"
         },
@@ -42850,7 +43736,7 @@
         },
         {
           "path": "test/foundation/reqwest/unit/src/async_impl/response/tests_418.rs",
-          "sha256": "c1b5370d606fab8f47e05ee492c8ecc70828f5f9dbaf7f626d7a635194c52c8d",
+          "sha256": "2b5586aeb4356b11b9dbe54cba5b7019562d8bc7daf9f7eb5f0227337d8424ce",
           "source": "src/foundation/reqwest/src/async_impl/response.rs",
           "source_sha256_before": "00acde5961c4e1196d421028c8de1a28f7e63e669d223130e6c0dd3e3761dd24"
         },
@@ -42874,7 +43760,7 @@
         },
         {
           "path": "test/foundation/reqwest/unit/src/response/tests_21.rs",
-          "sha256": "5f89c5d0fe77f2c8e47647ef421d5dde1ee0ec036fb8577232a378de364a3bfa",
+          "sha256": "96f6b104d293b5a720505be1f32dfc7fa2125a62bc1f0fcbc218779d2dfb30dd",
           "source": "src/foundation/reqwest/src/response.rs",
           "source_sha256_before": "12cf82de2499a426686ed4f3719cce73e269b7b9ddc9c88458e7378beb2c58a8"
         },
@@ -51477,51 +52363,148 @@
         "test/foundation/untrusted"
       ]
     },
-    "src/foundation/url": {
-      "bytes": 339313,
-      "directory": "src/foundation/url",
-      "file_count": 6,
+    "src/foundation/url-encoding": {
+      "bytes": 1169358,
+      "directory": "src/foundation/url-encoding",
+      "file_count": 19,
       "files": [
         {
-          "path": "test/foundation/url/functions/src/slicing/test_count_digits_52.rs",
+          "origin_directory": "vendor/rust/url-2.5.8",
+          "path": "test/foundation/url-encoding/address/functions/src/slicing/test_count_digits_52.rs",
           "sha256": "b4694bccd7df37ed43547c8d4585df6190ff7778282ba043adb6c2d369a62c28",
           "source": "src/foundation/url/src/slicing.rs",
           "source_sha256_before": "b59bf2fa4cbfd31619b860766268d4e99b46537d3b9702b73f6d0a979a7de24a"
         },
         {
-          "path": "test/foundation/url/tests/expected_failures.txt",
+          "origin_directory": "vendor/rust/url-2.5.8",
+          "path": "test/foundation/url-encoding/address/tests/expected_failures.txt",
           "sha256": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f",
           "source": "src/foundation/url/tests/expected_failures.txt",
           "source_sha256_before": "dd016d320be3fe6ad3810c22302f8eabd755d9effc937b2193dbf222855c4b7f"
         },
         {
-          "path": "test/foundation/url/tests/setters_tests.json",
+          "origin_directory": "vendor/rust/url-2.5.8",
+          "path": "test/foundation/url-encoding/address/tests/setters_tests.json",
           "sha256": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd",
           "source": "src/foundation/url/tests/setters_tests.json",
           "source_sha256_before": "a3a4cbd7b798bc2c4d9656dc50be7397a5a5ed1f0b52daa1da1ad654d38c1dcd"
         },
         {
-          "path": "test/foundation/url/tests/unit.rs",
-          "sha256": "654528422e7b6608e45f5755579968fdf443c5bf76a8a06a54d42434d286416e",
+          "origin_directory": "vendor/rust/url-2.5.8",
+          "path": "test/foundation/url-encoding/address/tests/unit.rs",
+          "sha256": "0ceb113e0642819a563cb1f6785b73278002e0c06c92213d4ff33a036901263b",
           "source": "src/foundation/url/tests/unit.rs",
           "source_sha256_before": "7eb96c1194fba03fd7f469c44cbbe28699dae14399be72e4c5c675a90fe08dc7"
         },
         {
-          "path": "test/foundation/url/tests/urltestdata.json",
+          "origin_directory": "vendor/rust/url-2.5.8",
+          "path": "test/foundation/url-encoding/address/tests/urltestdata.json",
           "sha256": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884",
           "source": "src/foundation/url/tests/urltestdata.json",
           "source_sha256_before": "58d67bea710d5f46324fe6841df5fd82090fe4ec2d882bc0fc7c1784d4771884"
         },
         {
-          "path": "test/foundation/url/tests/wpt.rs",
-          "sha256": "64ddf45265c602f3ee08b12b0f78aed786798e6a63f1a82fe87ccdbb92cdb38f",
+          "origin_directory": "vendor/rust/url-2.5.8",
+          "path": "test/foundation/url-encoding/address/tests/wpt.rs",
+          "sha256": "b7672c921fdb610ddfdbf7d1c0cc84212f0ac11c4dd19b6c7cffba86fea45c7e",
           "source": "src/foundation/url/tests/wpt.rs",
           "source_sha256_before": "2d083ab72ad8cc9b116dd164e63440dd120f07977ac306377633cfe214f34a62"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/functions/src/punycode/huge_encode_466.rs",
+          "sha256": "2dc04e2b689cfe8cee1207d7b5d6653818c09fb5fbc91611f624a1fcb91ea57a",
+          "source": "src/foundation/idna/src/punycode.rs",
+          "source_sha256_before": "0cc6fa84989898ccf6de0a665a287d7488a6eba4b178bea065d311ecabd81604"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/IdnaTestV2.txt",
+          "sha256": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9",
+          "source": "src/foundation/idna/tests/IdnaTestV2.txt",
+          "source_sha256_before": "ffcf59f6e97d765caa5ac8315e9511ba3b42955a554cbc431e4c016f20d25ca9"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/bad_punycode_tests.json",
+          "sha256": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5",
+          "source": "src/foundation/idna/tests/bad_punycode_tests.json",
+          "source_sha256_before": "ff0a15479ed2cb08f7b4b39465160da66d1ac7575e5d76990c17e7b76cb5e0f5"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/deprecated.rs",
+          "sha256": "a381a196df4309d69d1d919795f9265dee7107ad9cac84da07ae69bf00e08c22",
+          "source": "src/foundation/idna/tests/deprecated.rs",
+          "source_sha256_before": "98296b0b421bec106042c5c6697c4fa6aa72bf88b6adec29156d88f967046da2"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/punycode.rs",
+          "sha256": "d0fa0c3300e9cf4b6e0c4448d72e8f359596325748c685b83b6b86f116fbbc7d",
+          "source": "src/foundation/idna/tests/punycode.rs",
+          "source_sha256_before": "75fa73b6429ccacaeb5d72fab0b927cdf9f2173a9fc5fb366697bf7002b73921"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/punycode_tests.json",
+          "sha256": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a",
+          "source": "src/foundation/idna/tests/punycode_tests.json",
+          "source_sha256_before": "50859b828d14d5eeba5ab930de25fb72a35310a0b46f421f65d64c7c3e54d08a"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/tests.rs",
+          "sha256": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12",
+          "source": "src/foundation/idna/tests/tests.rs",
+          "source_sha256_before": "ecee59f0b0be27ba1e7b24bb449c681024253d0275065f0f0e258e7ec2977d12"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/unit.rs",
+          "sha256": "bf67f2ae332060d288c2230ac114fce276e05701d5d42d40cd64b8646e576129",
+          "source": "src/foundation/idna/tests/unit.rs",
+          "source_sha256_before": "7e450599b52900baa51ea26ff0cb55a830456f60642985abbc87ec671a91b8e1"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/unitbis.rs",
+          "sha256": "1a00aae0bebe3bc7b16a13cbc2ca8c262f05bafc4216ba0defe48911d43fef46",
+          "source": "src/foundation/idna/tests/unitbis.rs",
+          "source_sha256_before": "545259b767cd045aed01c1515c3b092d1b3f6b3366ce88d1593a2c8e3ffcd2af"
+        },
+        {
+          "origin_directory": "vendor/rust/idna-1.1.0",
+          "path": "test/foundation/url-encoding/domain/tests/uts46.rs",
+          "sha256": "789c9f31f6092c610ffe86a7c18eebaacf8d2145bbce44c97ad1f0c9b76851c1",
+          "source": "src/foundation/idna/tests/uts46.rs",
+          "source_sha256_before": "52438bea2dcf086718d7a78cd48d603e83a89d38f696e6b29baca5f9b7673e03"
+        },
+        {
+          "origin_directory": "vendor/rust/percent-encoding-2.3.2",
+          "path": "test/foundation/url-encoding/percent/unit/src/ascii_set/tests_172.rs",
+          "sha256": "1d979d944d4a5f4676072088321d052b0f8efcec8bb250d8ac9be7e44de6fcd6",
+          "source": "src/foundation/percent-encoding/src/ascii_set.rs",
+          "source_sha256_before": "f75552e4f446ed240cef64c1367e848cf3ae65f77602085459566d835a1d8587"
+        },
+        {
+          "origin_directory": "vendor/rust/percent-encoding-2.3.2",
+          "path": "test/foundation/url-encoding/percent/unit/src/lib/tests_367.rs",
+          "sha256": "81fc03bb33bdcb62f1a228f73a09ca234a124e5bd396b79fd2fe3d8cfcc124f8",
+          "source": "src/foundation/percent-encoding/src/lib.rs",
+          "source_sha256_before": "641903d385581e76f31ef8c991d83c2a5d7fbbc2879d93909c539037e4e1e3e2"
+        },
+        {
+          "origin_directory": "vendor/rust/idna_adapter-1.2.2",
+          "path": "test/foundation/url-encoding/unicode_backend/unit/src/lib/all_tests_320.rs",
+          "sha256": "933cb51ada4da508b6ced90543b5526853f0bf230b5bf47ee4efce2cf209dde0",
+          "source": "src/foundation/idna_adapter/src/lib.rs",
+          "source_sha256_before": "fca6f35c8902c91e84e0e9700b86a401b041f1a77912ef7c3d65a1fcdf5bffd8"
         }
       ],
       "origin_directory": "vendor/rust/url-2.5.8",
       "roots": [
-        "test/foundation/url"
+        "test/foundation/url-encoding"
       ]
     },
     "src/foundation/utf8_iter": {
@@ -53919,13 +54902,13 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "eb54f356af033ea0b163089385704ac83b92d424db2eb3039693dc98ab5ff3ca"
+    "Cargo.lock": "94b8805a02c8facafd114b639ed521eed5d815058303b871c07e3521bfddfbca"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
     "src/admin/Cargo.toml": "a762023b0d0985bbf1c25ca90f28dc0527f69690580dc0a834f8da1b73325bf7",
     "src/auth/Cargo.toml": "801e02ea2837c09f3066fd66ac6d3768d3e912b33cb5b9b54b7ea66f1a486470",
-    "src/client/Cargo.toml": "be8abfad7e33a2796fdc387dc25f59b8578188bda9044716ebdcb2201279ee78",
+    "src/client/Cargo.toml": "0f05b1df018bb55bf68bb6b970d6db9cbe80b7a299af6713bef02a48a4a2efb3",
     "src/contract/Cargo.toml": "3cdb429c2617fb934312c73d89045b838d1329b4db8e317701fa4daa04c95d8f",
     "src/engine/Cargo.toml": "64645023b2f7aef83ded188f12c23cf0c58bbf202181dc17913ea788d3a87745",
     "src/foundation/adler2/Cargo.toml": "6fe5eda8f0c1ccf3225d155f562cb523cf25488e37a34984e856ced9f2dcff1c",
@@ -54002,8 +54985,7 @@
     "src/foundation/fluent-uri/Cargo.toml": "692c6bf23842b7d50b9c79a92611a1b02881d376508b5c41b369d37e25a0fed9",
     "src/foundation/flume/Cargo.toml": "824eb0ed39b8a1892ad8a71e19f683f9da9535bda5042f250abf3cfde3575fd7",
     "src/foundation/foldhash/Cargo.toml": "bc35d02f08be6a083c9d129eddec208b1852b1879fef8c35a5530488df02c11f",
-    "src/foundation/form-codec/Cargo.toml": "366f45b472ccd85f98e1bca7ad024767239cffca7f31e74dd036cb8a2333af72",
-    "src/foundation/form_urlencoded/Cargo.toml": "3bad0dd7b1cb9a4b07446aa3062bd7f16ef1be94da19ca7ff5dd86d7ab32d70f",
+    "src/foundation/form-codec/Cargo.toml": "9e4d18e46086a14de316b64e0715c2e7256ee279bfbde2fd2c419960a0e9a0d2",
     "src/foundation/fraction/Cargo.toml": "b1754c5d5bf8344da47c2d12a04f1d9be05ac46954996b20c6a9b9167c071f57",
     "src/foundation/futures-intrusive/Cargo.toml": "be262a474612f1b367d512c8a8527a05161d8d53f73f26941c73dbd3ff4bd6ad",
     "src/foundation/futures-macro/Cargo.toml": "0d1662f1717dfa40934c1571305a99fa73a6bfccc7ef39ebd5aaa59037bc5665",
@@ -54020,8 +55002,8 @@
     "src/foundation/html-escape/Cargo.toml": "b70fe2ac0acc7a16274f227e9b3d641d442e81680167d832f9af8d1c62719714",
     "src/foundation/http-body/Cargo.toml": "bdcad9dcd84cd7cb82cd4e7babbfd73800cdc8f3d9c6f4accbb17a62261fac83",
     "src/foundation/http-range-header/Cargo.toml": "dc3d237a653a17555e1fd2dad2b45602f242b39a1aae988ca9101c9ac95c4286",
-    "src/foundation/http-routing/Cargo.toml": "bc7cd12ac440a26226132f35005adba5d071cf3e679fdf64cc15e80b269478f7",
-    "src/foundation/http-transport/Cargo.toml": "43f1b24445f2e89334d7424b40dd3942d3f108ad425fb1eff7b62df0f1a8c63d",
+    "src/foundation/http-routing/Cargo.toml": "f8fd61111a60bf79c9b68a59980aa251aac2cd9f02a4b24a0deb267e72794980",
+    "src/foundation/http-transport/Cargo.toml": "d91d982ab6316472c54503989ca7c5816b3b505c0e7da670f690001e9fe1d6eb",
     "src/foundation/http/Cargo.toml": "f154648ebfc7754649b90eda8e48dff28ed6e0d2f13ab4890d9da1de57f45d09",
     "src/foundation/httparse/Cargo.toml": "b35669e68937f41c45c18dc717499f2d22aa14efca8d940b2d9e85b9f6beac1e",
     "src/foundation/httpdate/Cargo.toml": "089a832b1ac0842bb9e6e781877fd49507587a87857f33908e3f9a197d8644d4",
@@ -54031,8 +55013,6 @@
     "src/foundation/icu_locale_core/Cargo.toml": "d2a6f574c2cf852e08a3e44566d7cddfaa8dbc04b1aec889998b2e87f6b8d2fe",
     "src/foundation/icu_provider/Cargo.toml": "fc0796100d6dd3f19e59aa586e8e41a5a6fbc67e3bfd29e817d71cf8bba091f0",
     "src/foundation/id-arena/Cargo.toml": "5fe28f90d672cf4149cbda0c30b05e155b739b290bd3c6273da7ecb5b5004229",
-    "src/foundation/idna/Cargo.toml": "38273e36c25e4b0faa9fd2db2590caf6b35c116eae71e6e54282e201cd8e5a5a",
-    "src/foundation/idna_adapter/Cargo.toml": "bbca491fa3b5a31a6b1ee80ef0bb273df5199844367104a8843fddaa1226952c",
     "src/foundation/indexmap/Cargo.toml": "cf87d849d8c5b88760fb29f0228cacdc8710bb7949ab6d7aca82345eb8a9970b",
     "src/foundation/interpolator/Cargo.toml": "982a77cf5d2de1e56c13ba9ebf3a5d7fb827bc33bc4a0d1d9183cbf82c701762",
     "src/foundation/ipnet/Cargo.toml": "232ccd236b7b3e8f74d2e0032cbd7e9b5bc3b2eef5bde5b9faa6b27139b86201",
@@ -54042,7 +55022,7 @@
     "src/foundation/json-codec/Cargo.toml": "b114d1fd3a3f9bc158cf0d3119e601848d6a47ad7c31c67c587c4b6f90b9d737",
     "src/foundation/jsonschema-regex/Cargo.toml": "dc40fcc0087fa6d212a94be74ee5fdeeb24be92f1563eaddd96ce8d8fab3b0f1",
     "src/foundation/jsonschema-value/Cargo.toml": "733fa89f6954234f8e1d45c26c68101fa962dd33a1a5fe4c1d986cfc0594afc1",
-    "src/foundation/jsonschema/Cargo.toml": "35214cfed9e9a66f45d0f3ff7b4577613e964ad104d440f2680b81e4f6e72432",
+    "src/foundation/jsonschema/Cargo.toml": "25e6ca70939dc08453a60184e398ef4baf3bf7275cffc7e494a63432501e7c7c",
     "src/foundation/lazy_static/Cargo.toml": "52e3d1cbd8ad7145b35b8c175ef1a0484e4c3a7e2750f6cde542c1c9e17daca7",
     "src/foundation/leb128/Cargo.toml": "9ae03997e60622923cea16931a313d4b6fa2805224ccdd031d4a90d1abc08148",
     "src/foundation/leb128fmt/Cargo.toml": "b9fb8a6dc7caec07b0bb91b6e2948adceb92c51d6dd4afb7fca372903c3d4414",
@@ -54074,7 +55054,6 @@
     "src/foundation/parking/Cargo.toml": "1be835d946f46f7f147673d4caa27432b10e929d2c7636ad155ed8fd6c462740",
     "src/foundation/password-hash/Cargo.toml": "09686deaeb147194d2cc2286842d6b0c097214c09bdc876c0e7ee4ef54b55b35",
     "src/foundation/pastey/Cargo.toml": "7c01c4cfa53b556cd03be7ac262bf5b06ed726a078ba6ab9105be4b177519ed7",
-    "src/foundation/percent-encoding/Cargo.toml": "5caf12b5a6b05dab1bd67aa3c8ccd6fe8c673a6700eda159e97ebcc95cbfc5ac",
     "src/foundation/pin-project-lite/Cargo.toml": "e3bf7b881836004c8be84237691474f43e50815fafc73b911c5c7f9065feedf8",
     "src/foundation/pkg-config/Cargo.toml": "8724b0843f65eeb453e40b1e392b856717eda463d1a97d69524664dc43d7f7ec",
     "src/foundation/potential_utf/Cargo.toml": "b32c041b361fcd630cbe5fb94d838c1749a863a02dd1dd89f980c13cc81ecfcb",
@@ -54091,9 +55070,9 @@
     "src/foundation/reactive-state/Cargo.toml": "97fcef25a6146688dd4322db95696b55f0aceba2ab70149490efeb44dfa1d87a",
     "src/foundation/ref-cast-impl/Cargo.toml": "15ba9d3c503960ea47843072982d4e1c9095fb6a2b67063cd0ccdb94268f992a",
     "src/foundation/ref-cast/Cargo.toml": "1291fdd6c5162dc8a1dd02103dd516846fdeb82f4b6d8b1f114c32e644a4701f",
-    "src/foundation/referencing/Cargo.toml": "a9e416fbf7f78521b04a11a4cca76773ab819250abb5e4ee73a315e73bf78e45",
+    "src/foundation/referencing/Cargo.toml": "dfa2a40958bff15ffb11da50a2cad96f815c1f3d5d393db7b61895768d606ba0",
     "src/foundation/regex/Cargo.toml": "7243083d5898fd6ee10adb616bf724f1fe0b9877befcb5b6a76b164b2aa1ae74",
-    "src/foundation/reqwest/Cargo.toml": "a63912f4ebd177aa12558cae2e6c00addc464361fe1ab3dca729640e452c5fb2",
+    "src/foundation/reqwest/Cargo.toml": "bf38a0af2c18a30ae7017a1b926366778591552a2b6425f13ad51874ba581732",
     "src/foundation/ring/Cargo.toml": "e39511b3c2f540b2c7d01191ad8b0fc0d95a624d90d2bd6b22687ca397b4aa54",
     "src/foundation/rstml/Cargo.toml": "4e0405d8bf062a49cce19f873d4efc3786599965457e60324c425a626f4561a9",
     "src/foundation/rust-source-format/Cargo.toml": "295ae9c97d9e1f38df6ba8048c7796a65a6e6d7d062183e4860bfece9a212f15",
@@ -54124,7 +55103,7 @@
     "src/foundation/smallvec/Cargo.toml": "7f4809c1243c4cb0854b7878cedcbcf9b1b8a30f667333eb9edb76f990b77f05",
     "src/foundation/socket2/Cargo.toml": "a748169b0a61eda1988393bf74d1a3f13b9033cb29b83240a74eb7b2be808a92",
     "src/foundation/spin/Cargo.toml": "b5996fae3be64ef8d7b80f6e3880903b3015cdd91f3eb968daf6833c1e0272e9",
-    "src/foundation/sqlite-access/Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
+    "src/foundation/sqlite-access/Cargo.toml": "8047697db6dd987289078fa61bf1a15976591f5ebd41068ea80544892d04d231",
     "src/foundation/stable_deref_trait/Cargo.toml": "4f080b924f2ae5fa6c2a7fd2d5fdcc08728c189503b520c2fec8132495f21256",
     "src/foundation/strsim/Cargo.toml": "7312930e6b154cde7b4ab50ba717760e952876c630e36cb82365d5b0a214600c",
     "src/foundation/strum/Cargo.toml": "ce19c4c3938857512107c5ca185a1aba6fed8b5ddc302e82cec8b11727482035",
@@ -54148,7 +55127,7 @@
     "src/foundation/tokio-util/Cargo.toml": "3c275a9829741cc424e54305ca088e7b6d7e13cf62c6d4c2f52a4d4fe62aeedb",
     "src/foundation/tokio/Cargo.toml": "01891012f5b29830beed385d8d4add8be169c15e8c7bdbb5327a68d571219014",
     "src/foundation/toml/Cargo.toml": "8de176ac1e346ea5c1b2524b12e60c72ae8feae854beb329b239adf03b45b815",
-    "src/foundation/tower-http/Cargo.toml": "b0a3806da6b6271fb699be44fc3ebf582eced74a832892762d1949b92cf90c54",
+    "src/foundation/tower-http/Cargo.toml": "1801be6240409a1ec6ac60d79910ba7a909707a9271905fc61db20616e8e4105",
     "src/foundation/tracing-attributes/Cargo.toml": "18550c405cf241b19ceb4c4ed1de2f11111007204d57bb588f65ae4e9036fd7e",
     "src/foundation/tracing/Cargo.toml": "bfddb7b757e25257e0af2062bd0b48a897655274792d083f57de25a4f65fb907",
     "src/foundation/try-lock/Cargo.toml": "8f95c2bd43685fa16d0b0d7654b5ac215921c5419fc06ae6ee7123446a7cc683",
@@ -54162,7 +55141,7 @@
     "src/foundation/unicode-properties/Cargo.toml": "dad11daf6ae6540a564ca8fb1d9adea40cdced97ab79600dcec6bb92c933ae87",
     "src/foundation/unicode-segmentation/Cargo.toml": "b1507d8cbd8943e1d20c400f1310ecbab9a645a62922fd7fa9d9bdd0bcde6888",
     "src/foundation/untrusted/Cargo.toml": "ae4baf92b3f05a23cf9ef45f780303ed76e4c7d89a543d09c5ea5ea893fadcf9",
-    "src/foundation/url/Cargo.toml": "21be87d5f7daa940b8e79e02882ce00e08f8e0248eb6fb4d24e59f23bdf470ef",
+    "src/foundation/url-encoding/Cargo.toml": "431bc43e0b878050f6ada10cdc50e3f887cb233c8fe838555ff05d77c7bbb513",
     "src/foundation/utf8_iter/Cargo.toml": "7d9b9e216d200199808660be718472f80737d42b5e995cb5e9e59a171f69b321",
     "src/foundation/utf8parse/Cargo.toml": "52ccf4c19a7d0ce3d56c3ae7ff8344ea6e748a5bd53b6d04b0a0b546436b7c4a",
     "src/foundation/uuid-simd/Cargo.toml": "eb0d0896501394f3d5e824eed0fc84c3d87ae99d6d10d2cc2a403f84ea4e3c19",
@@ -54201,12 +55180,12 @@
     "src/macros/Cargo.toml": "fa641aa7517eed12651a1021de7001c5e70316c1f265b133981743cbd5268af9",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "d05e09ce14b91d6e1e0bd96eb6fe0fc2c822edff592fe6dbf4e7f4c5f4404953",
-    "src/server/Cargo.toml": "e000f225a33889d78527118b781c0cb146292b9b50c89d37dd82c645fcbfdf01",
+    "src/server/Cargo.toml": "835f9c3f3b6a83170b85fcb8be49c84a1341408223c756c25b31fe8f788c2ceb",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
     "src/web/Cargo.toml": "9c7d8395c5ba4d89a1b6b38f95f6302262b21acf2f454e14b1a7a55915abffff",
     "tools/browser-smoke/Cargo.toml": "09a7d3f638680b1f0a3b3f56c28f829df299c99e981bece677c5c9ff509c66ad",
-    "tools/contract-check/Cargo.toml": "4a0e0b4fe16226a16c029a8804d7b7f009dda49b37575e79b335c2ef3029d556",
+    "tools/contract-check/Cargo.toml": "a1f25b68fa922317971f55bb1c70836f3c212427dbda889e785f1b1d21bce917",
     "tools/perf-check/Cargo.toml": "1d43415d20414747a8ca1c5bb74a940ac0ff773226778906f4d6a5325a945e02",
     "tools/release-tools/Cargo.toml": "389ade4140b92ee59d358dc15f3b929f743de4d1987313fd1453e6508400676e",
     "tools/unicode-build/Cargo.toml": "dab9e4bdbf7d4ab482690fcfc6c1f2c5792d17b44d56235c52807d4f19cfb955",
@@ -55536,7 +56515,7 @@
       "description": "Core of SQLx, the rust SQL toolkit. Not intended to be used directly.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
+        "Cargo.toml": "8047697db6dd987289078fa61bf1a15976591f5ebd41068ea80544892d04d231",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -55546,7 +56525,7 @@
         "src/query_engine/column.rs": "e0e740058d79fc636e87c1470d965f5a335295b13b18946b34740dc7a86f9a2d",
         "src/query_engine/common/mod.rs": "13ebe463198f937d331f1fc1c0eddfd8f45ac2599925d829b7c9a8fb5f97f080",
         "src/query_engine/common/statement_cache.rs": "14a82d9719afac1abc088809c23c87f07069fafecaf0ba12cf64d02c802c3e62",
-        "src/query_engine/connection.rs": "be74de406b1029ec3b2eba77d3780632d7a8309d4a3237139311155d4fa10f9d",
+        "src/query_engine/connection.rs": "404c1a78ab0be33046e034b1328ca3f145851bfb27683ab1e2b36dac479a86bc",
         "src/query_engine/database.rs": "e242d2c0d1329755871849cd09f676513ca65cd3a5332d9b1996db78b7ba3864",
         "src/query_engine/decode.rs": "942dc7f6fd05a19d4e948d8183f352822f7cb5bd49de59ea5d05e73e9dc0e477",
         "src/query_engine/describe.rs": "e5633f24aaa6348c21a4cea3c0f5fa06e267e96805a91b4108f39146d7894bd7",
@@ -55558,7 +56537,7 @@
         "src/query_engine/ext/ustr.rs": "564da63d89e79fa6cd4299dea2e1a9934b2a2feb0256a8e83b25e6382c3921c5",
         "src/query_engine/from_row.rs": "842604671d17c98ef39ce19dc7fe407d1e8804cc905bd1ab32a5b2635d7e8704",
         "src/query_engine/logger.rs": "3a69f769fcc7e29c85782559c23202f8e0a164ad99b516d0049fa90a543f3926",
-        "src/query_engine/mod.rs": "4f73afae2ac68b075c800646d87a8bb09c9208b056200b32146fd4eb3a2ffefa",
+        "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
         "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
@@ -55588,7 +56567,7 @@
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
         "src/sqlite/connection/deserialize.rs": "fd133b892b08b6e7f33f97754fc13122ef3600fc1063206dcdae2b604c96dec2",
-        "src/sqlite/connection/establish.rs": "5f671bddcc4b0b58de6ddc56f6012f28f0871cbfe08d904f5aeb76c8e505fefd",
+        "src/sqlite/connection/establish.rs": "07384fade06d342080028056c6bf5250790c97807e010e475467b0212edff520",
         "src/sqlite/connection/execute.rs": "58849036c872583ae78626e6fec8cb8836204447ac1cff3b9e5e11117583314d",
         "src/sqlite/connection/executor.rs": "1584255c5671b195a494f638b5f70734072de48c52a740e4e8593002245ed461",
         "src/sqlite/connection/explain.rs": "1afabf11c03958eb6dbec9ac70da80192bb5d2d5b76b070e7fe20757522e012b",
@@ -55602,11 +56581,11 @@
         "src/sqlite/error.rs": "4c3f7ed4bfd6b2411a7343f4ffd1823ba367743b141b3338eb78c2a608685a9c",
         "src/sqlite/mod.rs": "673392a5c10b638e4bfd90dd95b505597cfd17f3803ebcbb7e69bb47b395fac3",
         "src/sqlite/options/auto_vacuum.rs": "959a62df6c1a8da4dd3a99643c180494b9906be72884c0b0767fa876efba2945",
-        "src/sqlite/options/connect.rs": "3d8ad6aa4eef89d5358c0e8049fe1ee211cbd21cd109d8127e0d20a1a39bc93d",
+        "src/sqlite/options/connect.rs": "b2cc3d2528d15ac78f9ec77cac7304c05fac1534a957eb9647b87472e23d2849",
         "src/sqlite/options/journal_mode.rs": "e2621add6bf0f97d2a2c8aab5e896e168bbb2d3fa15a25d6665c6aba467fc8aa",
         "src/sqlite/options/locking_mode.rs": "b488fa79f83fd6196316f4a1cdfd8da963bb7199eb1934ec45789f315b1e16e0",
         "src/sqlite/options/mod.rs": "6ad22380ed895cf635e1e5a481beb59088764dd6e513d53a364f050015e0ec18",
-        "src/sqlite/options/parse.rs": "927cad462e0735f0ae2694d0d817f3df705e25d3508b32333f61818b43fdd0d4",
+        "src/sqlite/options/parse.rs": "27c4cb54fe57419ac1134e9198b9769b8678c3960dd371dac37063b6e0edbc3b",
         "src/sqlite/options/synchronous.rs": "b0760eac136041e2fd25c0f8c4fd8161d515c168dd0e7a1b153d5cb7c2c3f13a",
         "src/sqlite/query_result.rs": "9cff47b8f77ea6502d1e965e07574a756807b34c01144865a00236151f26d1c5",
         "src/sqlite/regexp.rs": "eb12c125ce58cf46beeb5321f6e2c5e62506bf0ec538448c494d4adeb598bac7",
@@ -55659,7 +56638,7 @@
       "description": "SQLite driver implementation for SQLx. Not for direct use; see the `sqlx` crate for details.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
+        "Cargo.toml": "8047697db6dd987289078fa61bf1a15976591f5ebd41068ea80544892d04d231",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -55669,7 +56648,7 @@
         "src/query_engine/column.rs": "e0e740058d79fc636e87c1470d965f5a335295b13b18946b34740dc7a86f9a2d",
         "src/query_engine/common/mod.rs": "13ebe463198f937d331f1fc1c0eddfd8f45ac2599925d829b7c9a8fb5f97f080",
         "src/query_engine/common/statement_cache.rs": "14a82d9719afac1abc088809c23c87f07069fafecaf0ba12cf64d02c802c3e62",
-        "src/query_engine/connection.rs": "be74de406b1029ec3b2eba77d3780632d7a8309d4a3237139311155d4fa10f9d",
+        "src/query_engine/connection.rs": "404c1a78ab0be33046e034b1328ca3f145851bfb27683ab1e2b36dac479a86bc",
         "src/query_engine/database.rs": "e242d2c0d1329755871849cd09f676513ca65cd3a5332d9b1996db78b7ba3864",
         "src/query_engine/decode.rs": "942dc7f6fd05a19d4e948d8183f352822f7cb5bd49de59ea5d05e73e9dc0e477",
         "src/query_engine/describe.rs": "e5633f24aaa6348c21a4cea3c0f5fa06e267e96805a91b4108f39146d7894bd7",
@@ -55681,7 +56660,7 @@
         "src/query_engine/ext/ustr.rs": "564da63d89e79fa6cd4299dea2e1a9934b2a2feb0256a8e83b25e6382c3921c5",
         "src/query_engine/from_row.rs": "842604671d17c98ef39ce19dc7fe407d1e8804cc905bd1ab32a5b2635d7e8704",
         "src/query_engine/logger.rs": "3a69f769fcc7e29c85782559c23202f8e0a164ad99b516d0049fa90a543f3926",
-        "src/query_engine/mod.rs": "4f73afae2ac68b075c800646d87a8bb09c9208b056200b32146fd4eb3a2ffefa",
+        "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
         "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
@@ -55711,7 +56690,7 @@
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
         "src/sqlite/connection/deserialize.rs": "fd133b892b08b6e7f33f97754fc13122ef3600fc1063206dcdae2b604c96dec2",
-        "src/sqlite/connection/establish.rs": "5f671bddcc4b0b58de6ddc56f6012f28f0871cbfe08d904f5aeb76c8e505fefd",
+        "src/sqlite/connection/establish.rs": "07384fade06d342080028056c6bf5250790c97807e010e475467b0212edff520",
         "src/sqlite/connection/execute.rs": "58849036c872583ae78626e6fec8cb8836204447ac1cff3b9e5e11117583314d",
         "src/sqlite/connection/executor.rs": "1584255c5671b195a494f638b5f70734072de48c52a740e4e8593002245ed461",
         "src/sqlite/connection/explain.rs": "1afabf11c03958eb6dbec9ac70da80192bb5d2d5b76b070e7fe20757522e012b",
@@ -55725,11 +56704,11 @@
         "src/sqlite/error.rs": "4c3f7ed4bfd6b2411a7343f4ffd1823ba367743b141b3338eb78c2a608685a9c",
         "src/sqlite/mod.rs": "673392a5c10b638e4bfd90dd95b505597cfd17f3803ebcbb7e69bb47b395fac3",
         "src/sqlite/options/auto_vacuum.rs": "959a62df6c1a8da4dd3a99643c180494b9906be72884c0b0767fa876efba2945",
-        "src/sqlite/options/connect.rs": "3d8ad6aa4eef89d5358c0e8049fe1ee211cbd21cd109d8127e0d20a1a39bc93d",
+        "src/sqlite/options/connect.rs": "b2cc3d2528d15ac78f9ec77cac7304c05fac1534a957eb9647b87472e23d2849",
         "src/sqlite/options/journal_mode.rs": "e2621add6bf0f97d2a2c8aab5e896e168bbb2d3fa15a25d6665c6aba467fc8aa",
         "src/sqlite/options/locking_mode.rs": "b488fa79f83fd6196316f4a1cdfd8da963bb7199eb1934ec45789f315b1e16e0",
         "src/sqlite/options/mod.rs": "6ad22380ed895cf635e1e5a481beb59088764dd6e513d53a364f050015e0ec18",
-        "src/sqlite/options/parse.rs": "927cad462e0735f0ae2694d0d817f3df705e25d3508b32333f61818b43fdd0d4",
+        "src/sqlite/options/parse.rs": "27c4cb54fe57419ac1134e9198b9769b8678c3960dd371dac37063b6e0edbc3b",
         "src/sqlite/options/synchronous.rs": "b0760eac136041e2fd25c0f8c4fd8161d515c168dd0e7a1b153d5cb7c2c3f13a",
         "src/sqlite/query_result.rs": "9cff47b8f77ea6502d1e965e07574a756807b34c01144865a00236151f26d1c5",
         "src/sqlite/regexp.rs": "eb12c125ce58cf46beeb5321f6e2c5e62506bf0ec538448c494d4adeb598bac7",
@@ -58899,7 +59878,7 @@
       "description": "Core types and traits for axum",
       "directory": "src/foundation/http-routing",
       "files_sha256": {
-        "Cargo.toml": "bc7cd12ac440a26226132f35005adba5d071cf3e679fdf64cc15e80b269478f7",
+        "Cargo.toml": "f8fd61111a60bf79c9b68a59980aa251aac2cd9f02a4b24a0deb267e72794980",
         "benches/benches.rs": "49698881e3e2d2506dd35994439d53c41541e860ec6937f6d54e3c2e76251317",
         "src/body/mod.rs": "db840c1f36ba5bc13e3b2fca4545709871de951b0b5705aaf1007fd9d0faece0",
         "src/boxed.rs": "b512dddc84214ee7d838cde64227c919364a8cbc2e2cfc8a43a1074e056db287",
@@ -58913,13 +59892,13 @@
         "src/extract/original_uri.rs": "a019d8197e558efa340665165432313f3d1db2e1f116a38803ba5ac771b89d2e",
         "src/extract/path/de.rs": "2ab7a6d291a5a1ad1825e93da4857902937e7f7e1f3bfa775c1ffd20f12e55e7",
         "src/extract/path/mod.rs": "33a736796c9fe30a36c7f11abae505b7d3c5b7a32f5d5c9e094084846f4d5f3f",
-        "src/extract/query.rs": "f0bfbc449a0061b54642eebf25058770d225b6496b44a7cafc07a12500073828",
+        "src/extract/query.rs": "690c6f458196645cba79f166335a857fa856050fcd1629fb2919e3ff2468f84d",
         "src/extract/raw_form.rs": "a8e6ecda9ed2f7e659652a1e2e383a9f6d0a5cda0c2dda9e7574362e725a4c28",
         "src/extract/raw_query.rs": "266562e81409a28ccddb148c5c6e129203fb11a126324a6b484870be4233d167",
         "src/extract/rejection.rs": "77313ebfc36df4a9f582c9c97f92d4ae1eb802f471e15e1a95395a2b2e3ccf0c",
         "src/extract/state.rs": "fcdff1dfd7b89a2322731e809a94995fde16c0320729b758b027f62897f1fe77",
         "src/extract/ws.rs": "478a826c84392a62d8329552875fed7264257c319fbbb12f187411612d29cdb1",
-        "src/form.rs": "a49c1532fc542c6d0f712a74ea4a9bf2a19b2f7e22833409c22e9d83bcf60f0c",
+        "src/form.rs": "32208f58c907a71a3317715b7aab162090c146b6c506dd23795343bcc1ff169e",
         "src/handler/future.rs": "1dee777f97b9f1016fbdc4f8b0748de2e7ad78409e4b8ad923d275ec7e3b1474",
         "src/handler/mod.rs": "08a53983fbeba1d99df5ff72c1ca0b0320ca4a969302cc8bcebadc708b178f52",
         "src/handler/service.rs": "ea740b909e1069cff4f7823b07ba27b70e30c31a3fee7f286d5e2e7014be518a",
@@ -58968,7 +59947,7 @@
         "src/service_ext.rs": "fef154bece9a3436cdc3ce91f3283fe85e7178fe14fc4e5225e9d879b6b35383",
         "src/test_helpers/mod.rs": "fd8a7c14bbf6e90382db3a0f7362866de35405513d4f8a48970b31bc036e18ac",
         "src/test_helpers/test_client.rs": "0cfd9ad0d6426f9c29c0254cfe49c5395ce8ed75a86380e81edca82aa1d70a95",
-        "src/util.rs": "4bd3d0b46fe39b379150de39deda66ee947ef911f3e0efa17866aa75daca9c9e"
+        "src/util.rs": "20e84f88d163377599b06ec60f52e333ec4e788708ab7f5bf72cfe89020401b0"
       },
       "license": "MIT",
       "license_materials": [
@@ -58998,7 +59977,7 @@
       "description": "hyper utilities",
       "directory": "src/foundation/http-transport",
       "files_sha256": {
-        "Cargo.toml": "43f1b24445f2e89334d7424b40dd3942d3f108ad425fb1eff7b62df0f1a8c63d",
+        "Cargo.toml": "d91d982ab6316472c54503989ca7c5816b3b505c0e7da670f690001e9fe1d6eb",
         "src/adapters/client/legacy/client.rs": "c79f25d0a570d019ce0a05342d82fde5b7e4a89d0dfa87f48e5d9885e1b19c29",
         "src/adapters/client/legacy/connect/capture.rs": "c0ffadb3039eff4b40af320c347f40ef8222384d0ca7e11ff94b5367c035ed92",
         "src/adapters/client/legacy/connect/dns.rs": "b35a28aa296fab4e1eb5d3e72b59d3a9993132023930b0b0e2b70ee878195c12",
@@ -59021,7 +60000,7 @@
         "src/adapters/client/pool/mod.rs": "cedd0f9c035af53e1e41d5b09a811283b81aed573fb42fe6969ac123077283d6",
         "src/adapters/client/pool/negotiate.rs": "cf94a7d6ada369ee896137ba1e39b003c7bb4914a250a12dba4a3854582c279c",
         "src/adapters/client/pool/singleton.rs": "23ea1ee13293358b3ce62cfdfc269c39209cfab7a7268b8c74f194e61618ab46",
-        "src/adapters/client/proxy/matcher.rs": "014a7e44e28d774eefb325052136710322662371aae50e5b65466275b8c648d8",
+        "src/adapters/client/proxy/matcher.rs": "03796d80df9cf2b764fcc83b8a325e059ce49fedde47f01506691c9ec0b2cf7c",
         "src/adapters/client/proxy/mod.rs": "1a6b7fdc17aa57aa356a5b8cd44c8a8401aa0a87258334ff8da62444a1b0885a",
         "src/adapters/common/exec.rs": "b1f3485567b7b0b586b2d8cf7da568813ba129e1bbab5b2dd88f849f80abecee",
         "src/adapters/common/lazy.rs": "e5cc7db5833e00d3926312ec8952b9f190bae940dfcd54bbe8e8bfbd1ffbcc60",
@@ -60239,6 +61218,201 @@
         "path_in_vcs": "provider/data/properties"
       },
       "version": "2.3.0"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "IDNA (Internationalizing Domain Names in Applications) and Punycode.",
+      "directory": "src/foundation/url-encoding",
+      "files_sha256": {
+        "Cargo.toml": "431bc43e0b878050f6ada10cdc50e3f887cb233c8fe838555ff05d77c7bbb513",
+        "benches/domain/all.rs": "0de635135f3cc57d32640954715e5a6f7708b984d83b7ba182d86558b184098b",
+        "src/address/host.rs": "b2cdbe50ee27c0f5b55a31b1118a43db9f1526662b9dc66fe1b91985f4437488",
+        "src/address/mod.rs": "57beb84d0df237a4f3951073ee34ff9133238936d4d63f160f98357c4df25f56",
+        "src/address/origin.rs": "59b1c4deec8498df11da1bf6a406cab291894d0fec05845385fc0b6f30898c98",
+        "src/address/parser.rs": "f3ade316b1420e4623a948f218122be14990f356a0fea3f62e63e94cbb46c102",
+        "src/address/path_segments.rs": "9f44d498a00c5e485215e5f1253c16dae774da1532fb9b09159637edc9ee9f9b",
+        "src/address/quirks.rs": "8ee5f52e4dbc3d8e83eb5367201736520beef1cc5937786c679dc906d7349a83",
+        "src/address/slicing.rs": "59a8e1fa7fef3cbefab3b06ea12308dbc5a3d0e7f7e5c48f512bb741ecd2092b",
+        "src/domain/deprecated.rs": "bfdef55b4d1d722dbb716d0185a8de3754a5e0bc8e148668a6a191e90167bf9e",
+        "src/domain/mod.rs": "6e3acd396b64672aea4215a362af776a26bf5e6915bd71ec469b3f2990b70989",
+        "src/domain/punycode.rs": "a29c206aa01865ccf007533b5a4fd1da0c74ac8c14103c27a514bf8228a89273",
+        "src/domain/uts46.rs": "6bdd39b36f69b4a3c1abcb5fba1ee9dce5414d74b9c990a959d0cde2260e8870",
+        "src/form/mod.rs": "d0bced81fbf62a807f007b0487a83098be1949ab9649251b14f1928880c3d311",
+        "src/lib.rs": "564197417bf462e4b7d3ede62f277311a6f4276dfd375447b677f541c1661e0d",
+        "src/percent/ascii_set.rs": "b54a6ecdce58a995b95466092199dd522e877ea6aed63a78d0d6d0771ec7e9f7",
+        "src/percent/mod.rs": "ad91b023f7bcfd5b5a11f755f6a4ad20fa6da1d6f97b996f46a50d6315ec54f9",
+        "src/unicode_backend/mod.rs": "c173823ca7ecd5e0e7b0f2b9ce666794086678df9a7bb423ec0a0bd4e4b230db"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/idna-1.1.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/idna-1.1.0/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/url-encoding",
+      "name": "idna",
+      "origin_directory": "vendor/rust/idna-1.1.0",
+      "repository": "https://github.com/servo/rust-url/",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "3b0875f23caa03898994f6ddc501886a45c7d3d62d04d2d90788d47be1b1e4de",
+        "archive_url": "https://static.crates.io/crates/idna/idna-1.1.0.crate",
+        "name": "idna",
+        "version": "1.1.0"
+      },
+      "vcs": {
+        "git": {
+          "dirty": true,
+          "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
+        },
+        "path_in_vcs": "idna"
+      },
+      "version": "1.1.0"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：将 ICU 弃用数值属性访问替换为等价位映射，全部 Unicode 标量对照相等；旧语料历史数据版本差异单独记录。",
+      "description": "Back end adapter for idna",
+      "directory": "src/foundation/url-encoding",
+      "files_sha256": {
+        "Cargo.toml": "431bc43e0b878050f6ada10cdc50e3f887cb233c8fe838555ff05d77c7bbb513",
+        "benches/domain/all.rs": "0de635135f3cc57d32640954715e5a6f7708b984d83b7ba182d86558b184098b",
+        "src/address/host.rs": "b2cdbe50ee27c0f5b55a31b1118a43db9f1526662b9dc66fe1b91985f4437488",
+        "src/address/mod.rs": "57beb84d0df237a4f3951073ee34ff9133238936d4d63f160f98357c4df25f56",
+        "src/address/origin.rs": "59b1c4deec8498df11da1bf6a406cab291894d0fec05845385fc0b6f30898c98",
+        "src/address/parser.rs": "f3ade316b1420e4623a948f218122be14990f356a0fea3f62e63e94cbb46c102",
+        "src/address/path_segments.rs": "9f44d498a00c5e485215e5f1253c16dae774da1532fb9b09159637edc9ee9f9b",
+        "src/address/quirks.rs": "8ee5f52e4dbc3d8e83eb5367201736520beef1cc5937786c679dc906d7349a83",
+        "src/address/slicing.rs": "59a8e1fa7fef3cbefab3b06ea12308dbc5a3d0e7f7e5c48f512bb741ecd2092b",
+        "src/domain/deprecated.rs": "bfdef55b4d1d722dbb716d0185a8de3754a5e0bc8e148668a6a191e90167bf9e",
+        "src/domain/mod.rs": "6e3acd396b64672aea4215a362af776a26bf5e6915bd71ec469b3f2990b70989",
+        "src/domain/punycode.rs": "a29c206aa01865ccf007533b5a4fd1da0c74ac8c14103c27a514bf8228a89273",
+        "src/domain/uts46.rs": "6bdd39b36f69b4a3c1abcb5fba1ee9dce5414d74b9c990a959d0cde2260e8870",
+        "src/form/mod.rs": "d0bced81fbf62a807f007b0487a83098be1949ab9649251b14f1928880c3d311",
+        "src/lib.rs": "564197417bf462e4b7d3ede62f277311a6f4276dfd375447b677f541c1661e0d",
+        "src/percent/ascii_set.rs": "b54a6ecdce58a995b95466092199dd522e877ea6aed63a78d0d6d0771ec7e9f7",
+        "src/percent/mod.rs": "ad91b023f7bcfd5b5a11f755f6a4ad20fa6da1d6f97b996f46a50d6315ec54f9",
+        "src/unicode_backend/mod.rs": "c173823ca7ecd5e0e7b0f2b9ce666794086678df9a7bb423ec0a0bd4e4b230db"
+      },
+      "license": "Apache-2.0 OR MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/idna_adapter-1.2.2/LICENSE-APACHE",
+        "compliance/licenses/upstream/idna_adapter-1.2.2/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/url-encoding",
+      "name": "idna_adapter",
+      "origin_directory": "vendor/rust/idna_adapter-1.2.2",
+      "repository": "https://github.com/hsivonen/idna_adapter",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714",
+        "archive_url": "https://static.crates.io/crates/idna_adapter/idna_adapter-1.2.2.crate",
+        "name": "idna_adapter",
+        "version": "1.2.2"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "1d9782f32c9e29218542b4a9411a82b35ec5c8cb"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "1.2.2"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Percent encoding and decoding",
+      "directory": "src/foundation/url-encoding",
+      "files_sha256": {
+        "Cargo.toml": "431bc43e0b878050f6ada10cdc50e3f887cb233c8fe838555ff05d77c7bbb513",
+        "benches/domain/all.rs": "0de635135f3cc57d32640954715e5a6f7708b984d83b7ba182d86558b184098b",
+        "src/address/host.rs": "b2cdbe50ee27c0f5b55a31b1118a43db9f1526662b9dc66fe1b91985f4437488",
+        "src/address/mod.rs": "57beb84d0df237a4f3951073ee34ff9133238936d4d63f160f98357c4df25f56",
+        "src/address/origin.rs": "59b1c4deec8498df11da1bf6a406cab291894d0fec05845385fc0b6f30898c98",
+        "src/address/parser.rs": "f3ade316b1420e4623a948f218122be14990f356a0fea3f62e63e94cbb46c102",
+        "src/address/path_segments.rs": "9f44d498a00c5e485215e5f1253c16dae774da1532fb9b09159637edc9ee9f9b",
+        "src/address/quirks.rs": "8ee5f52e4dbc3d8e83eb5367201736520beef1cc5937786c679dc906d7349a83",
+        "src/address/slicing.rs": "59a8e1fa7fef3cbefab3b06ea12308dbc5a3d0e7f7e5c48f512bb741ecd2092b",
+        "src/domain/deprecated.rs": "bfdef55b4d1d722dbb716d0185a8de3754a5e0bc8e148668a6a191e90167bf9e",
+        "src/domain/mod.rs": "6e3acd396b64672aea4215a362af776a26bf5e6915bd71ec469b3f2990b70989",
+        "src/domain/punycode.rs": "a29c206aa01865ccf007533b5a4fd1da0c74ac8c14103c27a514bf8228a89273",
+        "src/domain/uts46.rs": "6bdd39b36f69b4a3c1abcb5fba1ee9dce5414d74b9c990a959d0cde2260e8870",
+        "src/form/mod.rs": "d0bced81fbf62a807f007b0487a83098be1949ab9649251b14f1928880c3d311",
+        "src/lib.rs": "564197417bf462e4b7d3ede62f277311a6f4276dfd375447b677f541c1661e0d",
+        "src/percent/ascii_set.rs": "b54a6ecdce58a995b95466092199dd522e877ea6aed63a78d0d6d0771ec7e9f7",
+        "src/percent/mod.rs": "ad91b023f7bcfd5b5a11f755f6a4ad20fa6da1d6f97b996f46a50d6315ec54f9",
+        "src/unicode_backend/mod.rs": "c173823ca7ecd5e0e7b0f2b9ce666794086678df9a7bb423ec0a0bd4e4b230db"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/percent-encoding-2.3.2/LICENSE-APACHE",
+        "compliance/licenses/upstream/percent-encoding-2.3.2/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/url-encoding",
+      "name": "percent-encoding",
+      "origin_directory": "vendor/rust/percent-encoding-2.3.2",
+      "repository": "https://github.com/servo/rust-url/",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220",
+        "archive_url": "https://static.crates.io/crates/percent-encoding/percent-encoding-2.3.2.crate",
+        "name": "percent-encoding",
+        "version": "2.3.2"
+      },
+      "vcs": {
+        "git": {
+          "dirty": true,
+          "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
+        },
+        "path_in_vcs": "percent_encoding"
+      },
+      "version": "2.3.2"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Parser and serializer for the application/x-www-form-urlencoded syntax, as used by HTML forms.",
+      "directory": "src/foundation/url-encoding",
+      "files_sha256": {
+        "Cargo.toml": "431bc43e0b878050f6ada10cdc50e3f887cb233c8fe838555ff05d77c7bbb513",
+        "benches/domain/all.rs": "0de635135f3cc57d32640954715e5a6f7708b984d83b7ba182d86558b184098b",
+        "src/address/host.rs": "b2cdbe50ee27c0f5b55a31b1118a43db9f1526662b9dc66fe1b91985f4437488",
+        "src/address/mod.rs": "57beb84d0df237a4f3951073ee34ff9133238936d4d63f160f98357c4df25f56",
+        "src/address/origin.rs": "59b1c4deec8498df11da1bf6a406cab291894d0fec05845385fc0b6f30898c98",
+        "src/address/parser.rs": "f3ade316b1420e4623a948f218122be14990f356a0fea3f62e63e94cbb46c102",
+        "src/address/path_segments.rs": "9f44d498a00c5e485215e5f1253c16dae774da1532fb9b09159637edc9ee9f9b",
+        "src/address/quirks.rs": "8ee5f52e4dbc3d8e83eb5367201736520beef1cc5937786c679dc906d7349a83",
+        "src/address/slicing.rs": "59a8e1fa7fef3cbefab3b06ea12308dbc5a3d0e7f7e5c48f512bb741ecd2092b",
+        "src/domain/deprecated.rs": "bfdef55b4d1d722dbb716d0185a8de3754a5e0bc8e148668a6a191e90167bf9e",
+        "src/domain/mod.rs": "6e3acd396b64672aea4215a362af776a26bf5e6915bd71ec469b3f2990b70989",
+        "src/domain/punycode.rs": "a29c206aa01865ccf007533b5a4fd1da0c74ac8c14103c27a514bf8228a89273",
+        "src/domain/uts46.rs": "6bdd39b36f69b4a3c1abcb5fba1ee9dce5414d74b9c990a959d0cde2260e8870",
+        "src/form/mod.rs": "d0bced81fbf62a807f007b0487a83098be1949ab9649251b14f1928880c3d311",
+        "src/lib.rs": "564197417bf462e4b7d3ede62f277311a6f4276dfd375447b677f541c1661e0d",
+        "src/percent/ascii_set.rs": "b54a6ecdce58a995b95466092199dd522e877ea6aed63a78d0d6d0771ec7e9f7",
+        "src/percent/mod.rs": "ad91b023f7bcfd5b5a11f755f6a4ad20fa6da1d6f97b996f46a50d6315ec54f9",
+        "src/unicode_backend/mod.rs": "c173823ca7ecd5e0e7b0f2b9ce666794086678df9a7bb423ec0a0bd4e4b230db"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/form_urlencoded-1.2.2/LICENSE-APACHE",
+        "compliance/licenses/upstream/form_urlencoded-1.2.2/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/url-encoding",
+      "name": "form_urlencoded",
+      "origin_directory": "vendor/rust/form_urlencoded-1.2.2",
+      "repository": "https://github.com/servo/rust-url",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf",
+        "archive_url": "https://static.crates.io/crates/form_urlencoded/form_urlencoded-1.2.2.crate",
+        "name": "form_urlencoded",
+        "version": "1.2.2"
+      },
+      "vcs": {
+        "git": {
+          "dirty": true,
+          "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
+        },
+        "path_in_vcs": "form_urlencoded"
+      },
+      "version": "1.2.2"
     }
   ],
   "origin_records_sha256": {
@@ -63819,14 +64993,14 @@
       "description": "`x-www-form-urlencoded` meets Serde",
       "directory": "src/foundation/form-codec",
       "files_sha256": {
-        "Cargo.toml": "366f45b472ccd85f98e1bca7ad024767239cffca7f31e74dd036cb8a2333af72",
-        "src/de.rs": "04a2b80df0656be1284fd306f4dde5ff3a3185b5035b40b6f75d0c853665d4e9",
+        "Cargo.toml": "9e4d18e46086a14de316b64e0715c2e7256ee279bfbde2fd2c419960a0e9a0d2",
+        "src/de.rs": "9ade5a43f568d88e288474f8acef3d8bcf5713ebf7f917f1482a34a67991f231",
         "src/lib.rs": "83718fe61b847408cd08da3515ce4f4ec45998615605b6e878461313986d8571",
         "src/ser/key.rs": "7c63549432038fa1162ec7162326a535df8426138233a601666be4451eafd758",
-        "src/ser/mod.rs": "3ade64afe9b502ac3f3677ed9ed6cf1b449177715438c66a5a6071136d07403d",
-        "src/ser/pair.rs": "1051d73c27d812a3193c9127a41be53262c76acdc6bcf3e5b14171217effdbe1",
+        "src/ser/mod.rs": "63a89aab6e00a2df09a7a3b53e32fc9e4847d8d7d129b92c74e7ae854b712dff",
+        "src/ser/pair.rs": "0383ebd43aa1447bb46b8478e679f026fde8fba6cfc1e58e2386b120ee34ada3",
         "src/ser/part.rs": "657d4aa7003c4c532eda7e8b8761b370ad5fd92177518ca5bf1171e0d6254040",
-        "src/ser/value.rs": "94948209838b7da18b010c223c62600ad9d427b6cfa08e8f7f7e7b07d4b06f4a"
+        "src/ser/value.rs": "877ad0db380493f3aeb388eb2c1f9f1d17b1c7eb43cf2b04f6ae51a9c08e7930"
       },
       "license": "MIT/Apache-2.0",
       "license_materials": [
@@ -63851,39 +65025,6 @@
         "path_in_vcs": ""
       },
       "version": "0.7.1"
-    },
-    "src/foundation/form_urlencoded": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Parser and serializer for the application/x-www-form-urlencoded syntax, as used by HTML forms.",
-      "directory": "src/foundation/form_urlencoded",
-      "files_sha256": {
-        "Cargo.toml": "3bad0dd7b1cb9a4b07446aa3062bd7f16ef1be94da19ca7ff5dd86d7ab32d70f",
-        "src/lib.rs": "766b5d679064e01f7e6cce6f127a23885f79806ce3bccc49e4fe41933b83fd8d"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/form_urlencoded-1.2.2/LICENSE-APACHE",
-        "compliance/licenses/upstream/form_urlencoded-1.2.2/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "form_urlencoded",
-      "origin_directory": "vendor/rust/form_urlencoded-1.2.2",
-      "repository": "https://github.com/servo/rust-url",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf",
-        "archive_url": "https://static.crates.io/crates/form_urlencoded/form_urlencoded-1.2.2.crate",
-        "name": "form_urlencoded",
-        "version": "1.2.2"
-      },
-      "vcs": {
-        "git": {
-          "dirty": true,
-          "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
-        },
-        "path_in_vcs": "form_urlencoded"
-      },
-      "version": "1.2.2"
     },
     "src/foundation/fraction": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -64893,7 +66034,7 @@
       "description": "HTTP routing and request handling library that focuses on ergonomics and modularity",
       "directory": "src/foundation/http-routing",
       "files_sha256": {
-        "Cargo.toml": "bc7cd12ac440a26226132f35005adba5d071cf3e679fdf64cc15e80b269478f7",
+        "Cargo.toml": "f8fd61111a60bf79c9b68a59980aa251aac2cd9f02a4b24a0deb267e72794980",
         "benches/benches.rs": "49698881e3e2d2506dd35994439d53c41541e860ec6937f6d54e3c2e76251317",
         "src/body/mod.rs": "db840c1f36ba5bc13e3b2fca4545709871de951b0b5705aaf1007fd9d0faece0",
         "src/boxed.rs": "b512dddc84214ee7d838cde64227c919364a8cbc2e2cfc8a43a1074e056db287",
@@ -64907,13 +66048,13 @@
         "src/extract/original_uri.rs": "a019d8197e558efa340665165432313f3d1db2e1f116a38803ba5ac771b89d2e",
         "src/extract/path/de.rs": "2ab7a6d291a5a1ad1825e93da4857902937e7f7e1f3bfa775c1ffd20f12e55e7",
         "src/extract/path/mod.rs": "33a736796c9fe30a36c7f11abae505b7d3c5b7a32f5d5c9e094084846f4d5f3f",
-        "src/extract/query.rs": "f0bfbc449a0061b54642eebf25058770d225b6496b44a7cafc07a12500073828",
+        "src/extract/query.rs": "690c6f458196645cba79f166335a857fa856050fcd1629fb2919e3ff2468f84d",
         "src/extract/raw_form.rs": "a8e6ecda9ed2f7e659652a1e2e383a9f6d0a5cda0c2dda9e7574362e725a4c28",
         "src/extract/raw_query.rs": "266562e81409a28ccddb148c5c6e129203fb11a126324a6b484870be4233d167",
         "src/extract/rejection.rs": "77313ebfc36df4a9f582c9c97f92d4ae1eb802f471e15e1a95395a2b2e3ccf0c",
         "src/extract/state.rs": "fcdff1dfd7b89a2322731e809a94995fde16c0320729b758b027f62897f1fe77",
         "src/extract/ws.rs": "478a826c84392a62d8329552875fed7264257c319fbbb12f187411612d29cdb1",
-        "src/form.rs": "a49c1532fc542c6d0f712a74ea4a9bf2a19b2f7e22833409c22e9d83bcf60f0c",
+        "src/form.rs": "32208f58c907a71a3317715b7aab162090c146b6c506dd23795343bcc1ff169e",
         "src/handler/future.rs": "1dee777f97b9f1016fbdc4f8b0748de2e7ad78409e4b8ad923d275ec7e3b1474",
         "src/handler/mod.rs": "08a53983fbeba1d99df5ff72c1ca0b0320ca4a969302cc8bcebadc708b178f52",
         "src/handler/service.rs": "ea740b909e1069cff4f7823b07ba27b70e30c31a3fee7f286d5e2e7014be518a",
@@ -64962,7 +66103,7 @@
         "src/service_ext.rs": "fef154bece9a3436cdc3ce91f3283fe85e7178fe14fc4e5225e9d879b6b35383",
         "src/test_helpers/mod.rs": "fd8a7c14bbf6e90382db3a0f7362866de35405513d4f8a48970b31bc036e18ac",
         "src/test_helpers/test_client.rs": "0cfd9ad0d6426f9c29c0254cfe49c5395ce8ed75a86380e81edca82aa1d70a95",
-        "src/util.rs": "4bd3d0b46fe39b379150de39deda66ee947ef911f3e0efa17866aa75daca9c9e"
+        "src/util.rs": "20e84f88d163377599b06ec60f52e333ec4e788708ab7f5bf72cfe89020401b0"
       },
       "license": "MIT",
       "license_materials": [
@@ -64992,7 +66133,7 @@
       "description": "A protective and efficient HTTP library for all.",
       "directory": "src/foundation/http-transport",
       "files_sha256": {
-        "Cargo.toml": "43f1b24445f2e89334d7424b40dd3942d3f108ad425fb1eff7b62df0f1a8c63d",
+        "Cargo.toml": "d91d982ab6316472c54503989ca7c5816b3b505c0e7da670f690001e9fe1d6eb",
         "src/adapters/client/legacy/client.rs": "c79f25d0a570d019ce0a05342d82fde5b7e4a89d0dfa87f48e5d9885e1b19c29",
         "src/adapters/client/legacy/connect/capture.rs": "c0ffadb3039eff4b40af320c347f40ef8222384d0ca7e11ff94b5367c035ed92",
         "src/adapters/client/legacy/connect/dns.rs": "b35a28aa296fab4e1eb5d3e72b59d3a9993132023930b0b0e2b70ee878195c12",
@@ -65015,7 +66156,7 @@
         "src/adapters/client/pool/mod.rs": "cedd0f9c035af53e1e41d5b09a811283b81aed573fb42fe6969ac123077283d6",
         "src/adapters/client/pool/negotiate.rs": "cf94a7d6ada369ee896137ba1e39b003c7bb4914a250a12dba4a3854582c279c",
         "src/adapters/client/pool/singleton.rs": "23ea1ee13293358b3ce62cfdfc269c39209cfab7a7268b8c74f194e61618ab46",
-        "src/adapters/client/proxy/matcher.rs": "014a7e44e28d774eefb325052136710322662371aae50e5b65466275b8c648d8",
+        "src/adapters/client/proxy/matcher.rs": "03796d80df9cf2b764fcc83b8a325e059ce49fedde47f01506691c9ec0b2cf7c",
         "src/adapters/client/proxy/mod.rs": "1a6b7fdc17aa57aa356a5b8cd44c8a8401aa0a87258334ff8da62444a1b0885a",
         "src/adapters/common/exec.rs": "b1f3485567b7b0b586b2d8cf7da568813ba129e1bbab5b2dd88f849f80abecee",
         "src/adapters/common/lazy.rs": "e5cc7db5833e00d3926312ec8952b9f190bae940dfcd54bbe8e8bfbd1ffbcc60",
@@ -65505,75 +66646,6 @@
       },
       "version": "2.3.0"
     },
-    "src/foundation/idna": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "IDNA (Internationalizing Domain Names in Applications) and Punycode.",
-      "directory": "src/foundation/idna",
-      "files_sha256": {
-        "Cargo.toml": "38273e36c25e4b0faa9fd2db2590caf6b35c116eae71e6e54282e201cd8e5a5a",
-        "benches/all.rs": "cb99d454de05c3a72df82d2fca230757595ad25493e790eeb93a44ad43725cb8",
-        "src/deprecated.rs": "1f1954f0314a3ccb631422947a258f42fad7e6939df6ba25057464e2bdd8ae18",
-        "src/lib.rs": "13d06c4bcb530498b5414d948e0b08c987000eb7a0a8c441f5c25b116298633e",
-        "src/punycode.rs": "648c5f6bb2a6b68c9e28738a971aa5ae4c575446847c10af69556283be0dab77",
-        "src/uts46.rs": "9726647c01f315215eca25b7cb706929ff829269d4143de06b4f4718538b6640"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/idna-1.1.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/idna-1.1.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "idna",
-      "origin_directory": "vendor/rust/idna-1.1.0",
-      "repository": "https://github.com/servo/rust-url/",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "3b0875f23caa03898994f6ddc501886a45c7d3d62d04d2d90788d47be1b1e4de",
-        "archive_url": "https://static.crates.io/crates/idna/idna-1.1.0.crate",
-        "name": "idna",
-        "version": "1.1.0"
-      },
-      "vcs": {
-        "git": {
-          "dirty": true,
-          "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
-        },
-        "path_in_vcs": "idna"
-      },
-      "version": "1.1.0"
-    },
-    "src/foundation/idna_adapter": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：将 ICU 弃用数值属性访问替换为等价位映射，全部 Unicode 标量对照相等；旧语料历史数据版本差异单独记录。",
-      "description": "Back end adapter for idna",
-      "directory": "src/foundation/idna_adapter",
-      "files_sha256": {
-        "Cargo.toml": "bbca491fa3b5a31a6b1ee80ef0bb273df5199844367104a8843fddaa1226952c",
-        "src/lib.rs": "40579110151bba08786475ef12eb89e1c69731371202c6e432faf760e3302252"
-      },
-      "license": "Apache-2.0 OR MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/idna_adapter-1.2.2/LICENSE-APACHE",
-        "compliance/licenses/upstream/idna_adapter-1.2.2/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "idna_adapter",
-      "origin_directory": "vendor/rust/idna_adapter-1.2.2",
-      "repository": "https://github.com/hsivonen/idna_adapter",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714",
-        "archive_url": "https://static.crates.io/crates/idna_adapter/idna_adapter-1.2.2.crate",
-        "name": "idna_adapter",
-        "version": "1.2.2"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "1d9782f32c9e29218542b4a9411a82b35ec5c8cb"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "1.2.2"
-    },
     "src/foundation/indexmap": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "A hash table with consistent order and fast iteration.",
@@ -65959,7 +67031,7 @@
       "description": "JSON schema validaton library",
       "directory": "src/foundation/jsonschema",
       "files_sha256": {
-        "Cargo.toml": "35214cfed9e9a66f45d0f3ff7b4577613e964ad104d440f2680b81e4f6e72432",
+        "Cargo.toml": "25e6ca70939dc08453a60184e398ef4baf3bf7275cffc7e494a63432501e7c7c",
         "benches/canonicalize.rs": "5bdc5145914465dfd1b5cfdeb747f67e1683e963088d13244dbefe0d1660b9d2",
         "benches/canonicalize_many.rs": "136b77fa29d67d5e0e58e02a9950d137f7d5cbba1f6c2fe1ac1aab5d425659e5",
         "benches/codegen.rs": "e48a1710ac2c0386ab80357b31da914d6f45d2f8d8c2e178434d2692a7979e68",
@@ -65995,7 +67067,7 @@
         "src/canonical/candidates.rs": "9fb1e02a068224cb4e0b3845d35585742ee801799a1c5ea4499866a49b55e73d",
         "src/canonical/containment.rs": "79c4067033a67469114a3db7b064b041cc64b417454cb38629dd3d5ad5858fc8",
         "src/canonical/context.rs": "338a434fce08c6117b4ea19da774a7f9038bead558cbaa5cc7db6a6a2b4ee0ff",
-        "src/canonical/emit.rs": "ae8a691b6d2995f28f6c20c0e4a99cba445c3e9d25a21bb398a5880096d71033",
+        "src/canonical/emit.rs": "03ca73b5c7cc71c6eb68c087126b1fbf2438d56418fb6a19dab4f579b3652a9b",
         "src/canonical/emptiness.rs": "7d3caabb465969fca7d078136f106d78c68ddfd05149d0b85dddf1b1611c0bbd",
         "src/canonical/error.rs": "b4b7e012684a0c2196d1a9e21e7c12e4110792973a46a8ebac1de2cae5dc1eb3",
         "src/canonical/ir/array_leaves.rs": "6e654c6ba55de9e3e87cf9bb2510029021d6666c077daf433d545f1041fcc66d",
@@ -66017,7 +67089,7 @@
         "src/canonical/mod.rs": "7b4700ed4da5f94328cfdc0d1523010c2cbe6e01491b0bd563d88253d3337dca",
         "src/canonical/negate.rs": "ee475ab5982df500030807d7884ededf9ca4e45ae61ba65480dc4670d95ea389",
         "src/canonical/options.rs": "b2cb5a0ed7e9b7104d23f76b98a9c217794b5770abc16f5faf07c007e754cb6c",
-        "src/canonical/parse.rs": "eec8f8696dd5dc7e852d6ad685e4bc74b8e6e35ab9708aad752b3e73ad63d00a",
+        "src/canonical/parse.rs": "a234c5f1b34c432c7dd61146981bd7cc4aa2e7c22e9b8b468d7e26fba5cee397",
         "src/canonical/refold.rs": "b1fc414d155a85b2fe29c43ca7cf499f4c3b9dee8cb9184fccbf59488d88ec5e",
         "src/canonical/rename.rs": "835882e476a8c00d7ed7c5b0925d35c08fe9eecd15fe80ca00cb7f949495349e",
         "src/canonical/schema.rs": "60740b0497c8e23415723929ed6dddf74259fad066e5345e4f6b89701a67dfae",
@@ -66041,7 +67113,7 @@
         "src/keywords/dependencies.rs": "933a3a06133cba94a74c4d07f5a9b27b969527b606a102d35df46caf4b01412b",
         "src/keywords/discriminator.rs": "e8295fedc5341ba5c3301ac7480a784b999cd7e3e08da288cc38b25bf59c556a",
         "src/keywords/enum_.rs": "8bc1fe442424bcf42f610f86802af6256b43fa2db83a862408c744bf2b544631",
-        "src/keywords/format.rs": "bdbe8ab98bdd87939c19f0359f6cba1e4849072c65365bff3a59f8320dbb5a80",
+        "src/keywords/format.rs": "13369bfebd6a1c9ed2b56faa06c364f026382d440de21074a5f2fc0219aafdc4",
         "src/keywords/helpers.rs": "e431813351377a535a52e9d25189579aaf0d9def61e4ea427448f24ea0174383",
         "src/keywords/if_.rs": "8b7ef0f623d25ffc6e457da4de0788e7192567fcad2360320b04e4acdf600ca5",
         "src/keywords/items.rs": "15159b32045273938a59b035be11d1eb0428e3f644aed67b71944c7e392b407d",
@@ -66065,7 +67137,7 @@
         "src/keywords/prefix_items.rs": "760631e05b6721099fe74197ba3d403264e6df129e4cbd87d46ccd3ded6a8ac9",
         "src/keywords/properties.rs": "09271536be69ccf22522edbb124647f065277daa0cd1bb5a4bb523fdc328dc58",
         "src/keywords/property_names.rs": "d6567d5f39c11099ad46d403c2be7607634349e83426e16d3693d9f70424543b",
-        "src/keywords/ref_.rs": "37982f2292ef276f5267b30c81635c3a73aedde37829e185dd56f116e2e2dc32",
+        "src/keywords/ref_.rs": "94326df9aca3965b1bc29513a0bc04e080d451e850559160073e9633a4c67109",
         "src/keywords/required.rs": "970f7c68cb64cd9aa95704724d8a1772f2d4e29e0af47be0c2be039880bbec95",
         "src/keywords/rfc3986.rs": "574674c6f2b1b4ea093f0688387189266d4f380d49902029ed8404adf80c1604",
         "src/keywords/type_.rs": "fb458ad347a7e32615ff9b790995ec4a7a24b80a4feefdc5c04e3fb93b4a656d",
@@ -66080,7 +67152,7 @@
         "src/paths.rs": "d554a1ff4fb4668a1cd6339484795c28088298f75009146372305c8b8d6c984b",
         "src/properties.rs": "23f9c10e5e868812cfabbd84141ae955e5253aa84ce3db97674e96ead84e8858",
         "src/regex.rs": "91d84e0de73cfb16b56eb78e5f0ea25bcfc921c80c9cf11e0022f31538762a9d",
-        "src/retriever.rs": "a475ce3e94183022727e7cc0f1ac652fc34c8d78e8ae37a7daeeada9f8360089",
+        "src/retriever.rs": "15103926510aa3d114fbfd49dd02eac3a3157e6b42ce8b707682d402e4a80a19",
         "src/validator.rs": "f630c9e9d7c999eeeb492a0518c82aff917be138357e77ce437302398d0bd15a"
       },
       "license": "MIT",
@@ -67662,40 +68734,6 @@
       },
       "version": "0.2.3"
     },
-    "src/foundation/percent-encoding": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Percent encoding and decoding",
-      "directory": "src/foundation/percent-encoding",
-      "files_sha256": {
-        "Cargo.toml": "5caf12b5a6b05dab1bd67aa3c8ccd6fe8c673a6700eda159e97ebcc95cbfc5ac",
-        "src/ascii_set.rs": "ba1a470fc9b3fa08e42c0b027942ab06bdf57b18357f8204ab17486968ff2bc2",
-        "src/lib.rs": "2f60e48900250bfdb60874b89a307641984dda8dc7a288983e9e107920066d49"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/percent-encoding-2.3.2/LICENSE-APACHE",
-        "compliance/licenses/upstream/percent-encoding-2.3.2/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "percent-encoding",
-      "origin_directory": "vendor/rust/percent-encoding-2.3.2",
-      "repository": "https://github.com/servo/rust-url/",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220",
-        "archive_url": "https://static.crates.io/crates/percent-encoding/percent-encoding-2.3.2.crate",
-        "name": "percent-encoding",
-        "version": "2.3.2"
-      },
-      "vcs": {
-        "git": {
-          "dirty": true,
-          "sha1": "91377f48bf35011d042aa5abef9e7f2a0a625aaa"
-        },
-        "path_in_vcs": "percent_encoding"
-      },
-      "version": "2.3.2"
-    },
     "src/foundation/pin-project-lite": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "A lightweight version of pin-project written with declarative macros.",
@@ -68432,7 +69470,7 @@
       "description": "An implementation-agnostic JSON reference resolution library for Rust.",
       "directory": "src/foundation/referencing",
       "files_sha256": {
-        "Cargo.toml": "a9e416fbf7f78521b04a11a4cca76773ab819250abb5e4ee73a315e73bf78e45",
+        "Cargo.toml": "dfa2a40958bff15ffb11da50a2cad96f815c1f3d5d393db7b61895768d606ba0",
         "benches/anchor.rs": "8f1133ec8acb74014b3c7f4785377040a4969aab38463730500502c225e68fa7",
         "benches/pointer.rs": "33c14ca95c803d520c269fd4aed0d702bdb3e7cce64594a1e4636807967697c4",
         "benches/registry.rs": "f55162ae1d19d2970b85d9eb15a4ecd7c220b271ec3dda9ee050b63fd1be0ed5",
@@ -68470,7 +69508,7 @@
         "src/registry/input.rs": "59e34a039cd0b7ebdc8e089e147fb90c9fd95e8ac3e8232b54aab049b7af9d3d",
         "src/registry/mod.rs": "3f9cbbd110bb02bb1852187d91fd7ec87cd5fb9919a72ef7ce37c640178a4602",
         "src/resolver.rs": "070dacb4cb33970e1224390447f1a50112209c7c2da06cf3d0a24590a5123182",
-        "src/resource.rs": "7b339855d590cfbcfe3dd84cf8bf26417bd3dfd7227940dc9ba26c48b0007554",
+        "src/resource.rs": "b192c44b0a91293ee31a88478c29aaf4b9cb1e4786bc11e9f4aba1a5dc2919f4",
         "src/retriever.rs": "340244f3ec93783c215b81703de11c9e0bb50f9d72b68ad282fb38fad4136bf9",
         "src/segments.rs": "f6b363b71d58718d27f2d813087db64017c15fda3ee3b5528b2592ac29fa8d40",
         "src/small_map.rs": "f5e4566b17b9e5edeca940e5251f670e8836fefa5fdb4da7397da7a495c84f3b",
@@ -68690,12 +69728,12 @@
       "description": "higher level HTTP client library",
       "directory": "src/foundation/reqwest",
       "files_sha256": {
-        "Cargo.toml": "a63912f4ebd177aa12558cae2e6c00addc464361fe1ab3dca729640e452c5fb2",
+        "Cargo.toml": "bf38a0af2c18a30ae7017a1b926366778591552a2b6425f13ad51874ba581732",
         "src/async_impl/body.rs": "9ef54d920e1b3b63095e084171f037631b30cedd4aa6707c4856be78457ad3cf",
         "src/async_impl/client.rs": "43bb91f4cbddbbb5a881a88bec2937c59694ca318b6d1c03834474cd28e283ca",
         "src/async_impl/mod.rs": "ed7187a5f3070ef7db9336273387651216d7e3edc5862c4f8273e57874653d88",
-        "src/async_impl/request.rs": "9cbecfaaa51cfa67e9078042e7a8d6fb404f58b5004b3fd5769fdbb1fc0876a9",
-        "src/async_impl/response.rs": "9b471fa3e8de66d6b39822ab52274e739c58cdeea9a925935f99bb04472485f1",
+        "src/async_impl/request.rs": "5de505173d42d186a35b5ad0188d335aa85502fcd068aa2b0b5d6ec1d3a4f676",
+        "src/async_impl/response.rs": "0bf9f63076612ea03721280df36f0eef78bf5c0296d40e48ab12ce0e122307a1",
         "src/async_impl/upgrade.rs": "91cae16652612019b011a612ce8e8e852d86ddac667899f4dab969fac73081fd",
         "src/config.rs": "21d3c917c317e2c56ddc227897f88ee0506b11fdc83d1efdad22d4a9c4796eed",
         "src/connect.rs": "2dc0a2bf45a6df52950213158d6a3084eeadcb2b0a4b97197265ef4db3ba9d03",
@@ -68703,11 +69741,11 @@
         "src/dns/mod.rs": "67f5afd888654b3f0e4e08f48e8125c17eef22284a77967cb2a3903746a40f80",
         "src/dns/resolve.rs": "ed124c340ef7e1abcebae68088f0b9ad1214cdb05c6bbea7565ee0752611e354",
         "src/error.rs": "466f20afa7ac42368cfa2395decfb977c65ab57d605fa3111ba6ff9a58fb9e59",
-        "src/into_url.rs": "868e360b607841a7dd958662bdd5f7bc7b505cc066cbfcf16501f80427dfc122",
-        "src/lib.rs": "d9c6269c60f6fe0d6799c5ff8da5bd6f44eda75acbe5bceb8c788a89bd3820eb",
-        "src/proxy.rs": "bbc0ddb0e981325a7905598ef6bb70c3903075d92c1bf09fe6848fffe628cfed",
+        "src/into_url.rs": "00142f7984cef1af80a5465c77c53a22874ceafcf89f864defe240c332fd2b07",
+        "src/lib.rs": "f8d03ebb0b261694e5da4984a3904f3252fc08372dc45a8aa51b1ffa3ba178e9",
+        "src/proxy.rs": "a4a1087fe9f2d8d24f9e75e9563e6ea3d84615831809a07fdd942461086b72b6",
         "src/redirect.rs": "2b0538a3ddf8d1539541e836f869a52332cbe8d555cbe3c64277570ce228dc28",
-        "src/response.rs": "83ddaba965afc0de9065cb6d52b9a4bee4ab3044ef120fc2f298d236246a4232",
+        "src/response.rs": "f695385e0b9e4595803437ef0245725b23d1f9af4c6b7eb6d04c9cb2bbc51381",
         "src/retry.rs": "b5f963b48e69947e667bc46ae1bab53b3c556be3e109fe7592e45ce15487249f",
         "src/tls.rs": "3780a81b7a743117fbcc01eb1594f99a07f6e98a3212c31fb4ffb0b11e39eb93",
         "src/util.rs": "91bc9a319dd8ccddcd1499de8fda8262880ba8ed7f6a4669ce3d7aefd4ad424e"
@@ -70748,7 +71786,7 @@
       "description": "🧰 The Rust SQL Toolkit. An async, pure Rust SQL crate featuring compile-time checked queries without a DSL. Supports PostgreSQL, MySQL, and SQLite.",
       "directory": "src/foundation/sqlite-access",
       "files_sha256": {
-        "Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
+        "Cargo.toml": "8047697db6dd987289078fa61bf1a15976591f5ebd41068ea80544892d04d231",
         "benches/sqlite/describe.rs": "e3846b1cd17054663e135116aecde934c2d20f3b83592562a3e34596168f0e94",
         "contrib/ide/vscode/settings.json": "af1e5804fd68126c54f709b71aee3c7dd4dca964f509257c2dd331006dda66ad",
         "gen-changelog.sh": "be0292a711d7a7bb03b57b9b3534dbb34d084189ed85d32c528d0a39e2e156a7",
@@ -70758,7 +71796,7 @@
         "src/query_engine/column.rs": "e0e740058d79fc636e87c1470d965f5a335295b13b18946b34740dc7a86f9a2d",
         "src/query_engine/common/mod.rs": "13ebe463198f937d331f1fc1c0eddfd8f45ac2599925d829b7c9a8fb5f97f080",
         "src/query_engine/common/statement_cache.rs": "14a82d9719afac1abc088809c23c87f07069fafecaf0ba12cf64d02c802c3e62",
-        "src/query_engine/connection.rs": "be74de406b1029ec3b2eba77d3780632d7a8309d4a3237139311155d4fa10f9d",
+        "src/query_engine/connection.rs": "404c1a78ab0be33046e034b1328ca3f145851bfb27683ab1e2b36dac479a86bc",
         "src/query_engine/database.rs": "e242d2c0d1329755871849cd09f676513ca65cd3a5332d9b1996db78b7ba3864",
         "src/query_engine/decode.rs": "942dc7f6fd05a19d4e948d8183f352822f7cb5bd49de59ea5d05e73e9dc0e477",
         "src/query_engine/describe.rs": "e5633f24aaa6348c21a4cea3c0f5fa06e267e96805a91b4108f39146d7894bd7",
@@ -70770,7 +71808,7 @@
         "src/query_engine/ext/ustr.rs": "564da63d89e79fa6cd4299dea2e1a9934b2a2feb0256a8e83b25e6382c3921c5",
         "src/query_engine/from_row.rs": "842604671d17c98ef39ce19dc7fe407d1e8804cc905bd1ab32a5b2635d7e8704",
         "src/query_engine/logger.rs": "3a69f769fcc7e29c85782559c23202f8e0a164ad99b516d0049fa90a543f3926",
-        "src/query_engine/mod.rs": "4f73afae2ac68b075c800646d87a8bb09c9208b056200b32146fd4eb3a2ffefa",
+        "src/query_engine/mod.rs": "c5354a07248ce4f0a21170b0653507390329283ad63185df05085b0479f64e4c",
         "src/query_engine/pool/connection.rs": "02a5e46ccbf34257ff0463d6fa840611dd4e2c7d12ebb13c1cc5998210c4ba90",
         "src/query_engine/pool/executor.rs": "75a6851c6196df8faab2f138e5a1f189efb16cc5473fd700186971c4eea7ca83",
         "src/query_engine/pool/inner.rs": "5bb18abf4a47e04ff45b09cd977919f469fe851e1df65486fce0619e57faff1e",
@@ -70800,7 +71838,7 @@
         "src/sqlite/connection/collation.rs": "f4d6f4783804e52f71e6dcdab5c9e680f8e44d03afb64f51ee1552b8e6341299",
         "src/sqlite/connection/describe.rs": "4245e6b8bce8fec1764529ecca126870e84ee8d3fe0340e0fa4149236e72896d",
         "src/sqlite/connection/deserialize.rs": "fd133b892b08b6e7f33f97754fc13122ef3600fc1063206dcdae2b604c96dec2",
-        "src/sqlite/connection/establish.rs": "5f671bddcc4b0b58de6ddc56f6012f28f0871cbfe08d904f5aeb76c8e505fefd",
+        "src/sqlite/connection/establish.rs": "07384fade06d342080028056c6bf5250790c97807e010e475467b0212edff520",
         "src/sqlite/connection/execute.rs": "58849036c872583ae78626e6fec8cb8836204447ac1cff3b9e5e11117583314d",
         "src/sqlite/connection/executor.rs": "1584255c5671b195a494f638b5f70734072de48c52a740e4e8593002245ed461",
         "src/sqlite/connection/explain.rs": "1afabf11c03958eb6dbec9ac70da80192bb5d2d5b76b070e7fe20757522e012b",
@@ -70814,11 +71852,11 @@
         "src/sqlite/error.rs": "4c3f7ed4bfd6b2411a7343f4ffd1823ba367743b141b3338eb78c2a608685a9c",
         "src/sqlite/mod.rs": "673392a5c10b638e4bfd90dd95b505597cfd17f3803ebcbb7e69bb47b395fac3",
         "src/sqlite/options/auto_vacuum.rs": "959a62df6c1a8da4dd3a99643c180494b9906be72884c0b0767fa876efba2945",
-        "src/sqlite/options/connect.rs": "3d8ad6aa4eef89d5358c0e8049fe1ee211cbd21cd109d8127e0d20a1a39bc93d",
+        "src/sqlite/options/connect.rs": "b2cc3d2528d15ac78f9ec77cac7304c05fac1534a957eb9647b87472e23d2849",
         "src/sqlite/options/journal_mode.rs": "e2621add6bf0f97d2a2c8aab5e896e168bbb2d3fa15a25d6665c6aba467fc8aa",
         "src/sqlite/options/locking_mode.rs": "b488fa79f83fd6196316f4a1cdfd8da963bb7199eb1934ec45789f315b1e16e0",
         "src/sqlite/options/mod.rs": "6ad22380ed895cf635e1e5a481beb59088764dd6e513d53a364f050015e0ec18",
-        "src/sqlite/options/parse.rs": "927cad462e0735f0ae2694d0d817f3df705e25d3508b32333f61818b43fdd0d4",
+        "src/sqlite/options/parse.rs": "27c4cb54fe57419ac1134e9198b9769b8678c3960dd371dac37063b6e0edbc3b",
         "src/sqlite/options/synchronous.rs": "b0760eac136041e2fd25c0f8c4fd8161d515c168dd0e7a1b153d5cb7c2c3f13a",
         "src/sqlite/query_result.rs": "9cff47b8f77ea6502d1e965e07574a756807b34c01144865a00236151f26d1c5",
         "src/sqlite/regexp.rs": "eb12c125ce58cf46beeb5321f6e2c5e62506bf0ec538448c494d4adeb598bac7",
@@ -72348,7 +73386,7 @@
       "description": "Tower middleware and utilities for HTTP clients and servers",
       "directory": "src/foundation/tower-http",
       "files_sha256": {
-        "Cargo.toml": "b0a3806da6b6271fb699be44fc3ebf582eced74a832892762d1949b92cf90c54",
+        "Cargo.toml": "1801be6240409a1ec6ac60d79910ba7a909707a9271905fc61db20616e8e4105",
         "src/add_extension.rs": "726ebe513dc701ada130c6b324c3d67f420c17d1645276976a91a42a071a0cf5",
         "src/auth/add_authorization.rs": "290ccb66346152d08fbb918f469c3976f46223ebbf35638a22b1c9b4692d4a12",
         "src/auth/async_require_authorization.rs": "f81fa2e1716edbd59e8884c81dbff6b2ba0d450c36fa5c7a066f9584b028aaa9",
@@ -72388,7 +73426,7 @@
         "src/decompression/request/mod.rs": "dec61a20cbf12f4ec0b4eb55c20289ce80fdbcb3ac922d164c74eeaa24582470",
         "src/decompression/request/service.rs": "208bf0f383cb4dfb49885fb12c0c840c7586d606c3a692e74944086f39f461f8",
         "src/decompression/service.rs": "67bc52e5a47fde28fef787ce6ba5fdba87ad697f4077d280af9722451f86d029",
-        "src/follow_redirect/mod.rs": "b0bf178f4aba74d682392b664b80d7bbb1e585ee05e198506708a42d798e03c8",
+        "src/follow_redirect/mod.rs": "8e6094d8add47f0fa717b2f3623059d61a816bcb09e5ab3461109f1f352f81a6",
         "src/follow_redirect/policy/and.rs": "0d10bafdadd0b959ce78e3ede0f78a6e6be265e3b8d5722056b926a2163c1718",
         "src/follow_redirect/policy/clone_body_fn.rs": "3a78bf37d4bd000d9c2d60d84a2d02d2d0ae584a0790da2dcdb34fab43fcd557",
         "src/follow_redirect/policy/filter_credentials.rs": "0bd9007128cee79eb8a5612914b1c4eee5a2dcdbf8cbaa3a7eebe96244bdc96d",
@@ -72425,7 +73463,7 @@
         "src/services/fs/mod.rs": "170149ca50dd766fe3bf57834176d7388c9a68cc9c2b5202cfcb591eb192dbad",
         "src/services/fs/serve_dir/future.rs": "6e9b08d7b7b313a483050034bdffbe8514e80570148bfca36f84def21ac4c8f8",
         "src/services/fs/serve_dir/headers.rs": "d48fb514ca575e5e380f80eb84521a5fcab0560e57a995f1fef5ca35590400e8",
-        "src/services/fs/serve_dir/mod.rs": "d5307ffa02e3f951f3cd17a7e8a2f9fe61ccb64c3075ec916aaa41e04c58ca6e",
+        "src/services/fs/serve_dir/mod.rs": "b5a9beab6cf5dabf858a29556a5138d818e19bfd9981c83e4174f95c9fbb5389",
         "src/services/fs/serve_dir/open_file.rs": "a75d1efdcea49ef5f4f07c17c1f36c5989799b32e92213d7cdf6b3cf366b2578",
         "src/services/fs/serve_file.rs": "07ff020b988ffeb54e363dffa74fb570b2f4c99449e6452750c5b0ce5a92a43d",
         "src/services/mod.rs": "177bf1406c13c0386c82b247e6d1556c55c7a2f6704de7e50dbc987400713b96",
@@ -73254,19 +74292,29 @@
       },
       "version": "0.9.0"
     },
-    "src/foundation/url": {
+    "src/foundation/url-encoding": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "URL library for Rust, based on the WHATWG URL Standard",
-      "directory": "src/foundation/url",
+      "directory": "src/foundation/url-encoding",
       "files_sha256": {
-        "Cargo.toml": "21be87d5f7daa940b8e79e02882ce00e08f8e0248eb6fb4d24e59f23bdf470ef",
-        "src/host.rs": "a83c9e0ebfff6e2b587c403e87da7bb4bc55a3d18771df363dcecc3d454cc8f7",
-        "src/lib.rs": "ad2441d4a79c4c06f7b5616e79f2b475e5be64072313b9b66b171f7d120876c9",
-        "src/origin.rs": "e8ffaf759aa78c92574c6ae49f76999a751064621c399059b3d4eb819cb0d821",
-        "src/parser.rs": "2dd4210e1773fc5d3fdc15ce506ecff30dbf8eb358a79bbbc2835cc30d513c3a",
-        "src/path_segments.rs": "28c8b6ffa880c7da76dcf43af8dcae2c46cd74389472e6e43efdf2973026a462",
-        "src/quirks.rs": "c3c8380f9dbecf65924272e904cad8876bda0c62e0e48a3c6b1344fac258102f",
-        "src/slicing.rs": "23f4a02e4cb2f157fd8711b8a23a24956afa64898b17f9ba6614f58b36c460db"
+        "Cargo.toml": "431bc43e0b878050f6ada10cdc50e3f887cb233c8fe838555ff05d77c7bbb513",
+        "benches/domain/all.rs": "0de635135f3cc57d32640954715e5a6f7708b984d83b7ba182d86558b184098b",
+        "src/address/host.rs": "b2cdbe50ee27c0f5b55a31b1118a43db9f1526662b9dc66fe1b91985f4437488",
+        "src/address/mod.rs": "57beb84d0df237a4f3951073ee34ff9133238936d4d63f160f98357c4df25f56",
+        "src/address/origin.rs": "59b1c4deec8498df11da1bf6a406cab291894d0fec05845385fc0b6f30898c98",
+        "src/address/parser.rs": "f3ade316b1420e4623a948f218122be14990f356a0fea3f62e63e94cbb46c102",
+        "src/address/path_segments.rs": "9f44d498a00c5e485215e5f1253c16dae774da1532fb9b09159637edc9ee9f9b",
+        "src/address/quirks.rs": "8ee5f52e4dbc3d8e83eb5367201736520beef1cc5937786c679dc906d7349a83",
+        "src/address/slicing.rs": "59a8e1fa7fef3cbefab3b06ea12308dbc5a3d0e7f7e5c48f512bb741ecd2092b",
+        "src/domain/deprecated.rs": "bfdef55b4d1d722dbb716d0185a8de3754a5e0bc8e148668a6a191e90167bf9e",
+        "src/domain/mod.rs": "6e3acd396b64672aea4215a362af776a26bf5e6915bd71ec469b3f2990b70989",
+        "src/domain/punycode.rs": "a29c206aa01865ccf007533b5a4fd1da0c74ac8c14103c27a514bf8228a89273",
+        "src/domain/uts46.rs": "6bdd39b36f69b4a3c1abcb5fba1ee9dce5414d74b9c990a959d0cde2260e8870",
+        "src/form/mod.rs": "d0bced81fbf62a807f007b0487a83098be1949ab9649251b14f1928880c3d311",
+        "src/lib.rs": "564197417bf462e4b7d3ede62f277311a6f4276dfd375447b677f541c1661e0d",
+        "src/percent/ascii_set.rs": "b54a6ecdce58a995b95466092199dd522e877ea6aed63a78d0d6d0771ec7e9f7",
+        "src/percent/mod.rs": "ad91b023f7bcfd5b5a11f755f6a4ad20fa6da1d6f97b996f46a50d6315ec54f9",
+        "src/unicode_backend/mod.rs": "c173823ca7ecd5e0e7b0f2b9ce666794086678df9a7bb423ec0a0bd4e4b230db"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -73274,7 +74322,7 @@
         "compliance/licenses/upstream/url-2.5.8/LICENSE-MIT"
       ],
       "merged_into": "无；通过统一内部源码源接入",
-      "name": "url",
+      "name": "url-encoding",
       "origin_directory": "vendor/rust/url-2.5.8",
       "repository": "https://github.com/servo/rust-url",
       "status": "内部维护源码",
@@ -86101,16 +87149,6 @@
             "runtime"
           ]
         },
-        "src/foundation/form_urlencoded": {
-          "features": [
-            "alloc",
-            "default",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/futures": {
           "features": [
             "alloc",
@@ -86229,7 +87267,8 @@
             "http1",
             "server",
             "service-adapter",
-            "tokio"
+            "tokio",
+            "url-encoding"
           ],
           "roles": [
             "runtime"
@@ -86285,24 +87324,6 @@
         "src/foundation/icu_provider": {
           "features": [
             "baked"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/idna": {
-          "features": [
-            "alloc",
-            "compiled_data",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/idna_adapter": {
-          "features": [
-            "compiled_data"
           ],
           "roles": [
             "runtime"
@@ -86493,16 +87514,6 @@
             "alloc",
             "default",
             "random-generator-core",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/percent-encoding": {
-          "features": [
-            "alloc",
-            "default",
             "std"
           ],
           "roles": [
@@ -86984,11 +87995,11 @@
             "limit",
             "mime",
             "mime_guess",
-            "percent-encoding",
             "set-status",
             "tokio-util",
             "trace",
-            "tracing"
+            "tracing",
+            "url-encoding"
           ],
           "roles": [
             "runtime"
@@ -87072,10 +88083,16 @@
             "runtime"
           ]
         },
-        "src/foundation/url": {
+        "src/foundation/url-encoding": {
           "features": [
+            "alloc",
             "default",
-            "std"
+            "domain",
+            "form",
+            "parser",
+            "std",
+            "unicode-normalizer",
+            "unicode-properties"
           ],
           "roles": [
             "runtime"
@@ -89353,16 +90370,6 @@
             "compile"
           ]
         },
-        "src/foundation/form_urlencoded": {
-          "features": [
-            "alloc",
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/fraction": {
           "features": [
             "with-bigint"
@@ -89453,24 +90460,6 @@
         "src/foundation/icu_provider": {
           "features": [
             "baked"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/idna": {
-          "features": [
-            "alloc",
-            "compiled_data",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/idna_adapter": {
-          "features": [
-            "compiled_data"
           ],
           "roles": [
             "compile"
@@ -89664,16 +90653,6 @@
         },
         "src/foundation/parking": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/percent-encoding": {
-          "features": [
-            "alloc",
-            "default",
-            "std"
-          ],
           "roles": [
             "compile"
           ]
@@ -90129,10 +91108,16 @@
             "compile"
           ]
         },
-        "src/foundation/url": {
+        "src/foundation/url-encoding": {
           "features": [
+            "alloc",
             "default",
-            "std"
+            "domain",
+            "form",
+            "parser",
+            "std",
+            "unicode-normalizer",
+            "unicode-properties"
           ],
           "roles": [
             "compile"

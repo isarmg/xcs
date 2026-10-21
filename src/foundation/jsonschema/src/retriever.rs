@@ -424,7 +424,7 @@ impl referencing::AsyncRetrieve for DefaultRetriever {
 }
 
 #[cfg(all(test, not(target_arch = "wasm32"), feature = "resolve-file"))]
-use percent_encoding::{AsciiSet, CONTROLS};
+use url_encoding::percent::{AsciiSet, CONTROLS};
 
 #[cfg(all(test, not(target_arch = "wasm32"), feature = "resolve-file"))]
 const URI_SEGMENT: &AsciiSet = &CONTROLS
@@ -450,7 +450,7 @@ const UNIX_URI_SEGMENT: &AsciiSet = &URI_SEGMENT.add(b'\\');
 
 #[cfg(all(test, not(target_arch = "wasm32"), feature = "resolve-file"))]
 pub(crate) fn path_to_uri(path: &std::path::Path) -> String {
-    use percent_encoding::percent_encode;
+    use url_encoding::percent::percent_encode;
 
     let mut result = "file://".to_owned();
 

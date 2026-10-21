@@ -215,7 +215,7 @@ fn same_origin(headers: &HeaderMap, config: &ServerConfig, required: bool) -> Re
                 .and_then(|host| host.to_str().ok())
                 .ok_or_else(ApiError::forbidden)?;
             let parsed =
-                url::Url::parse(&format!("http://{host}")).map_err(|_| ApiError::forbidden())?;
+                url_encoding::address::Url::parse(&format!("http://{host}")).map_err(|_| ApiError::forbidden())?;
             if !matches!(
                 parsed.host_str(),
                 Some("localhost") | Some("127.0.0.1") | Some("[::1]") | Some("::1")

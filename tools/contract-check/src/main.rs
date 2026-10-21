@@ -671,7 +671,7 @@ fn run(root: &Path) -> Result<Report> {
             if scheme.is_match(href) {
                 continue;
             }
-            let decoded = percent_encoding::percent_decode_str(href).decode_utf8()?;
+            let decoded = url_encoding::percent::percent_decode_str(href).decode_utf8()?;
             let (relative, anchor) = decoded
                 .split_once('#')
                 .map_or((decoded.as_ref(), None), |(relative, anchor)| {

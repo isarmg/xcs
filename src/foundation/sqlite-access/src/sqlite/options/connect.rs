@@ -7,7 +7,7 @@ use crate::sql_str::AssertSqlSafe;
 use std::fmt::Write;
 use std::str::FromStr;
 use std::time::Duration;
-use url::Url;
+use url_encoding::address::Url;
 
 impl ConnectOptions for SqliteConnectOptions {
     type Connection = SqliteConnection;

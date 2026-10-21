@@ -24,7 +24,7 @@ tokio-util = { version = "0.7", features = ["io"], path = "../foundation/tokio-u
 tower-http = { version = "0.6", features = ["trace", "limit", "fs"], path = "../foundation/tower-http"}
 tracing = {version = "0.1", path = "../foundation/tracing"}
 time = { version = "0.3.55", features = ["formatting"], path = "../foundation/time"}
-url = {version = "2", path = "../foundation/url"}
+url-encoding = { path = "../foundation/url-encoding", default-features = false, features = ["std", "parser"] }
 storage-engine = { path = "../engine", optional = true }
 storage-contract = { path = "../contract" }
 rustix.workspace = true

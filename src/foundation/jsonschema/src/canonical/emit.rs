@@ -18,8 +18,8 @@ use crate::{
     JsonTypeSet,
 };
 
-const CANONICAL_REFERENCE_SEGMENT: &percent_encoding::AsciiSet =
-    &percent_encoding::CONTROLS.add(b'%');
+const CANONICAL_REFERENCE_SEGMENT: &url_encoding::percent::AsciiSet =
+    &url_encoding::percent::CONTROLS.add(b'%');
 
 /// The one-key object `{key: value}`. `json!` would re-copy an already-built `Value` through
 /// `to_value` at every level of the recursion.
@@ -124,7 +124,7 @@ fn emit_reference(uri: &str, draft: Draft) -> Value {
     let mut reference = format!("#/{}/", definition_keyword(draft));
     let mut segment = String::with_capacity(uri.len());
     referencing::write_escaped_str(&mut segment, uri);
-    reference.extend(percent_encoding::utf8_percent_encode(
+    reference.extend(url_encoding::percent::utf8_percent_encode(
         &segment,
         CANONICAL_REFERENCE_SEGMENT,
     ));
@@ -249,7 +249,7 @@ fn rebind_root_pointers(value: &mut Value, pointer: &str) -> bool {
 
 fn definition_name(uri: &str, prefix: &str) -> Option<String> {
     let encoded = uri.strip_prefix(prefix)?;
-    let decoded = percent_encoding::percent_decode_str(encoded)
+    let decoded = url_encoding::percent::percent_decode_str(encoded)
         .decode_utf8()
         .ok()?;
     Some(referencing::unescape_segment(&decoded).into_owned())

@@ -5,8 +5,8 @@ mod pair;
 mod part;
 mod value;
 
-use form_urlencoded::Serializer as UrlEncodedSerializer;
-use form_urlencoded::Target as UrlEncodedTarget;
+use url_encoding::form::Serializer as UrlEncodedSerializer;
+use url_encoding::form::Target as UrlEncodedTarget;
 use data_serialization::ser;
 use std::borrow::Cow;
 use std::error;

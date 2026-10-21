@@ -17,7 +17,7 @@ impl PercentDecodedStr {
     where
         S: AsRef<str>,
     {
-        percent_encoding::percent_decode(s.as_ref().as_bytes())
+        url_encoding::percent::percent_decode(s.as_ref().as_bytes())
             .decode_utf8()
             .ok()
             .map(|decoded| Self(decoded.as_ref().into()))

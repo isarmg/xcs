@@ -1,4 +1,4 @@
-use url::Url;
+use url_encoding::address::Url;
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct ResponseUrl(pub Url);

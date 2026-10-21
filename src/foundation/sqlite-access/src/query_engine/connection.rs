@@ -9,7 +9,7 @@ use std::fmt::Debug;
 use std::future::Future;
 use std::str::FromStr;
 use std::time::Duration;
-use url::Url;
+use url_encoding::address::Url;
 
 /// Represents a single database connection.
 pub trait Connection: Send {

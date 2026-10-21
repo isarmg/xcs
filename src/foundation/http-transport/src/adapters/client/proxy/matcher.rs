@@ -17,7 +17,7 @@ use std::net::IpAddr;
 
 use http::header::HeaderValue;
 use ipnet::IpNet;
-use percent_encoding::percent_decode_str;
+use url_encoding::percent::percent_decode_str;
 
 #[cfg(docsrs)]
 pub use self::builder::IntoValue;

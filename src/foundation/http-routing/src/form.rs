@@ -82,7 +82,7 @@ where
 
         match req.extract().await {
             Ok(RawForm(bytes)) => {
-                let deserializer = form_codec::Deserializer::new(form_urlencoded::parse(&bytes));
+                let deserializer = form_codec::Deserializer::new(url_encoding::form::parse(&bytes));
                 let value = data_serialization::error_path::deserialize(deserializer).map_err(
                     |err| -> FormRejection {
                         if is_get_or_head {

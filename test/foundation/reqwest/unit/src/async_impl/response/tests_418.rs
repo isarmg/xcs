@@ -3,7 +3,7 @@ mod tests {
     use super::Response;
     use crate::ResponseBuilderExt;
     use http::response::Builder;
-    use url::Url;
+    use url_encoding::address::Url;
 
     #[test]
     fn test_from_http_response() {

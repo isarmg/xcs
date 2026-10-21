@@ -26,8 +26,8 @@ resolver = "3"
 [features]
 arbitrary-precision = ["json-codec/arbitrary_precision", "numeric/bigint", "jsonschema-value/arbitrary-precision"]
 conformance = ["jsonschema-value/conformance"]
-default = ["resolve-http", "resolve-file", "tls-aws-lc-rs", "idna"]
-idna = ["dep:idna"]
+default = ["resolve-http", "resolve-file", "tls-aws-lc-rs", "url-encoding/domain", "url-encoding/std"]
+idna = ["url-encoding/domain", "url-encoding/std"]
 jsonb = ["jsonschema-value/jsonb"]
 macros = ["jsonschema-value/macros"]
 magnus = ["jsonschema-value/magnus"]
@@ -75,11 +75,6 @@ features = ["with-bigint"]
 default-features = false
 path = "../fraction"
 
-[dependencies.idna]
-version = "1.0.2"
-optional = true
-path = "../idna"
-
 [dependencies.itoa]
 version = "1"
 path = "../itoa"
@@ -95,10 +90,6 @@ path = "../jsonschema-value"
 [dependencies.num-cmp]
 version = "0.1"
 path = "../num-cmp"
-
-[dependencies.percent-encoding]
-version = "2.3"
-path = "../percent-encoding"
 
 [dependencies.referencing]
 version = "0.58.6"
@@ -185,5 +176,10 @@ unsafe_code = "warn"
 [dependencies.numeric]
 version = "0.2.19"
 path = "../numeric"
+default-features = false
+features = ["std"]
+
+[dependencies.url-encoding]
+path = "../url-encoding"
 default-features = false
 features = ["std"]

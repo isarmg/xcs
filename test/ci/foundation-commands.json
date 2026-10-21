@@ -216,23 +216,15 @@
       ]
     },
     {
-      "tool": "cargo",
+      "tool": "python3",
       "args": [
-        "test",
-        "--locked",
-        "--offline",
-        "--lib",
-        "-p",
-        "idna_adapter",
-        "-p",
-        "storage-client",
-        "property_masks_preserve_all_unicode_scalars"
+        ".github/scripts/check-unicode-data-family.py"
       ]
     },
     {
       "tool": "python3",
       "args": [
-        ".github/scripts/check-unicode-data-family.py"
+        ".github/scripts/check-url-encoding.py"
       ]
     }
   ],

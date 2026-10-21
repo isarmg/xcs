@@ -88,7 +88,7 @@ where
     pub fn try_from_uri(value: &Uri) -> Result<Self, QueryRejection> {
         let query = value.query().unwrap_or_default();
         let deserializer =
-            form_codec::Deserializer::new(form_urlencoded::parse(query.as_bytes()));
+            form_codec::Deserializer::new(url_encoding::form::parse(query.as_bytes()));
         let params = data_serialization::error_path::deserialize(deserializer)
             .map_err(FailedToDeserializeQueryString::from_err)?;
         Ok(Query(params))

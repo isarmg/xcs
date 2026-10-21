@@ -2,7 +2,7 @@
 mod tests {
     use super::{ResponseBuilderExt, ResponseUrl};
     use http::response::Builder;
-    use url::Url;
+    use url_encoding::address::Url;
 
     #[test]
     fn test_response_builder_ext() {

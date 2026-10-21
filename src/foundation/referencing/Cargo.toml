@@ -65,10 +65,6 @@ path = "../synchronization"
 default-features = false
 features = ["locks"]
 
-[dependencies.percent-encoding]
-version = "2.3.1"
-path = "../percent-encoding"
-
 [dependencies.json-codec]
 version = "1"
 path = "../json-codec"
@@ -101,3 +97,8 @@ priority = -2
 [lints.rust]
 unreachable_pub = "warn"
 unsafe_code = "warn"
+
+[dependencies.url-encoding]
+path = "../url-encoding"
+default-features = false
+features = ["std"]

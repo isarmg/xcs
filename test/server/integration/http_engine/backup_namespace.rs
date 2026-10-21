@@ -2,7 +2,7 @@
 use super::*;
 
 fn listing_path(slot: &str, path: &str) -> String {
-    let query = url::form_urlencoded::Serializer::new(String::new())
+    let query = url_encoding::form::Serializer::new(String::new())
         .append_pair("path", path)
         .finish();
     format!("/api/file-manager/disks/{slot}/entries?{query}")
@@ -12,7 +12,7 @@ async fn listing(app: &Router, token: &str, slot: &str, path: &str) -> Value {
 }
 async fn configure(app: &Router, token: &str, repo: &str, path: &str, b: &str, c: &str) -> Value {
     let route = format!("/api/repositories/{repo}/backup-configuration");
-    let query = url::form_urlencoded::Serializer::new(String::new())
+    let query = url_encoding::form::Serializer::new(String::new())
         .append_pair("path", path)
         .finish();
     let old = success(app, token, "GET", &format!("{route}?{query}"), None).await;

@@ -178,7 +178,7 @@ fn extract_ref_target_base(alias: &referencing::Uri<String>) -> Location {
         let fragment = fragment.as_str();
         if fragment.starts_with('/') {
             // Fragment is URI percent-encoded (RFC 3986); Location stores JSON Pointers (RFC 6901).
-            let decoded = percent_encoding::percent_decode_str(fragment).decode_utf8_lossy();
+            let decoded = url_encoding::percent::percent_decode_str(fragment).decode_utf8_lossy();
             return Location::from_escaped(&decoded);
         }
     }

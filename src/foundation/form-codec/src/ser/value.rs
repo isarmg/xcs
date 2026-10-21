@@ -1,7 +1,7 @@
 use crate::ser::part::{PartSerializer, Sink};
 use crate::ser::Error;
-use form_urlencoded::Serializer as UrlEncodedSerializer;
-use form_urlencoded::Target as UrlEncodedTarget;
+use url_encoding::form::Serializer as UrlEncodedSerializer;
+use url_encoding::form::Target as UrlEncodedTarget;
 use data_serialization::ser::Serialize;
 use std::str;
 

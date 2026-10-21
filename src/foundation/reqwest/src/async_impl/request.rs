@@ -538,7 +538,7 @@ fn fmt_request_fields<'a, 'b>(
 /// Check the request URL for a "username:password" type authority, and if
 /// found, remove it from the URL and return it.
 pub(crate) fn extract_authority(url: &mut Url) -> Option<(String, Option<String>)> {
-    use percent_encoding::percent_decode;
+    use url_encoding::percent::percent_decode;
 
     if url.has_authority() {
         let username: String = percent_decode(url.username().as_bytes())
