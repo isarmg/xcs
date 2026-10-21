@@ -72,12 +72,16 @@ pub(crate) fn context_at(state: &State, repository: &str, path: &str) -> Option<
         .commits
         .get(&state.branches.get(&repo.main_branch_id)?.head_commit_id)?;
     let entry = find(&commit.entries, path).filter(|e| e.kind == "file")?;
+    Some(context_for_entry(state, repo, entry))
+}
+
+fn context_for_entry(state: &State, repo: &Repository, entry: &Entry) -> FileContext {
     let branch = state
         .file_selections
         .get(&entry.file_id)
         .cloned()
         .unwrap_or_else(|| repo.main_branch_id.clone());
-    Some(FileContext {
+    FileContext {
         node_id: state
             .branches
             .get(&branch)
@@ -85,7 +89,7 @@ pub(crate) fn context_at(state: &State, repository: &str, path: &str) -> Option<
         selection_generation: 0,
         branch_id: branch,
         inherited_from: state.file_write_origins.get(&entry.file_id).cloned(),
-    })
+    }
 }
 pub(crate) fn branch_context_at(state: &State, namespace: &str, path: &str) -> Option<FileContext> {
     let branch = state.branches.get(namespace)?;
@@ -998,6 +1002,26 @@ pub(crate) fn select_change(
 impl Engine {
     pub fn file_context(&self, repository: &str, path: &str) -> Option<FileContext> {
         context_at(&self.state, repository, path)
+    }
+
+    /// Resolve an entry already borrowed from this repository's current main
+    /// commit. The caller must not pass an entry from another snapshot. Unlike
+    /// `file_context`, this avoids looking the same entry up by path again.
+    pub fn file_context_for_current_entry<'a>(
+        &'a self,
+        repository: &str,
+        entry: &Entry,
+    ) -> Option<std::borrow::Cow<'a, FileContext>> {
+        if let Some(context) = self
+            .state
+            .file_contexts
+            .get(&context_key(repository, &entry.path))
+        {
+            return Some(std::borrow::Cow::Borrowed(context));
+        }
+        let repo = self.state.repositories.get(repository)?;
+        (entry.kind == "file")
+            .then(|| std::borrow::Cow::Owned(context_for_entry(&self.state, repo, entry)))
     }
     /// Explicitly initialize a directory's baseline identity. Used by old
     /// namespaces which predate composed views; registration copies no data.

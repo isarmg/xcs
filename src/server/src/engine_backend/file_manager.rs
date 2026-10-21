@@ -195,12 +195,12 @@ fn listed_entry(
     } else {
         format!("{prefix}/{}", entry.path)
     };
+    let context = engine.file_context(&repo.repository_id, &entry.path);
     let mut response = json!({"entry_id":entry.entry_id,"name":entry.name,"path":display,"kind":entry.kind,
         "repository_id":repo.repository_id,"repository_path":entry.path,
         "container":entry.kind=="file","size":entry.size.to_string(),"file_id":entry.file_id,
-        "version_id":entry.version_id,"selected_branch_id":engine.file_context(&repo.repository_id,&entry.path).map(|context|context.branch_id.clone()).or_else(||engine.state().file_selections.get(&entry.file_id).cloned())});
+        "version_id":entry.version_id,"selected_branch_id":context.as_ref().map(|context|context.branch_id.clone()).or_else(||engine.state().file_selections.get(&entry.file_id).cloned())});
     if entry.kind == "file" {
-        let context = engine.file_context(&repo.repository_id, &entry.path);
         response["read_only"] = context
             .as_ref()
             .is_some_and(|context| {
@@ -212,16 +212,22 @@ fn listed_entry(
                         .is_some_and(|branch| branch.state != "active")
             })
             .into();
-        response["node_id"] = engine
-            .file_context(&repo.repository_id, &entry.path)
-            .and_then(|context| context.node_id)
+        response["node_id"] = context
+            .as_ref()
+            .and_then(|context| context.node_id.clone())
             .unwrap_or_else(|| entry.version_id.clone())
             .into();
         response.as_object_mut().unwrap().extend(
             content_wire(
                 engine,
                 Some(&entry.version_id),
-                current_entry_source(engine, &repo.main_branch_id, entry),
+                super::wire::current_entry_source_with_context(
+                    engine,
+                    &repo.main_branch_id,
+                    &repo.repository_id,
+                    entry,
+                    context.as_ref(),
+                ),
             )
             .as_object()
             .unwrap()

@@ -2,7 +2,8 @@
 //! against the same locked engine; only owned response data crosses the boundary.
 //! This is not a cache or a reusable authorization grant, and carries no State,
 //! private authentication data, content read plan, or publication capability.
-use super::{authorize, encode, error, field, pending_entry_source, repo_for_branch};
+use super::wire::PendingSources;
+use super::{authorize, encode, error, field, repo_for_branch};
 use crate::{ApiError, auth::Identity};
 use data_serialization::Serialize;
 use json_codec::Value;
@@ -38,13 +39,8 @@ impl Tree {
             .filter(|commit| commit.history_tree_id == branch_info.history_tree_id)
             .ok_or_else(|| ApiError::new(404, "NOT_FOUND", "commit not found"))?;
         let entries = engine.list_tree_at(branch, commit).map_err(error)?;
-        let pending_file_versions = entries
-            .iter()
-            .filter_map(|entry| {
-                pending_entry_source(engine, branch, snapshot, entry)
-                    .map(|source| (entry.file_id.clone(), source.to_owned()))
-            })
-            .collect();
+        let pending_file_versions =
+            PendingSources::new(engine, branch, snapshot).pending_versions();
         Ok(Self {
             branch_id: branch.to_owned(),
             commit_id: commit.to_owned(),

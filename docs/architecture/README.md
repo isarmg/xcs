@@ -22,3 +22,5 @@
 
 - [Numeric traits and value types](numeric.md): opt-in arithmetic capabilities and retained upstream identities.
 - [Pattern matching capabilities and maintained verification](pattern-matching.md)
+
+- [读取投影与请求内上下文](read-projections.md)：目录读取的复杂度边界与冻结响应保证。

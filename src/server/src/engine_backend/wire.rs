@@ -164,69 +164,247 @@ pub(super) fn branch_wire(
     }
     Ok(result)
 }
+enum CurrentContext<'a> {
+    Lookup,
+    // A missing context has already been resolved; do not search again.
+    Resolved(Option<&'a storage_contract::FileContext>),
+}
+
+/// Borrowed, request-local source resolution. Only `pending_versions` can use
+/// the direct-entry path, because it iterates this resolver's own snapshot.
+/// External entries always retain the checked first-match lookup semantics.
+pub(super) struct PendingSources<'a> {
+    engine: &'a Engine,
+    branch: &'a str,
+    commit: &'a storage_contract::Commit,
+    current: Option<&'a storage_contract::Branch>,
+    main_repository: Option<&'a str>,
+    #[cfg(test)]
+    matching_visits: std::cell::Cell<usize>,
+}
+
+impl<'a> PendingSources<'a> {
+    pub(super) fn new(
+        engine: &'a Engine,
+        branch: &'a str,
+        commit: &'a storage_contract::Commit,
+    ) -> Self {
+        let state = engine.state();
+        let current = state.branches.get(branch);
+        let main_repository = current
+            .filter(|current| current.head_commit_id == commit.commit_id)
+            .and_then(|_| {
+                state
+                    .repositories
+                    .values()
+                    .find(|repo| repo.main_branch_id == branch)
+            })
+            .map(|repo| repo.repository_id.as_str());
+        Self {
+            engine,
+            branch,
+            commit,
+            current,
+            main_repository,
+            #[cfg(test)]
+            matching_visits: std::cell::Cell::new(0),
+        }
+    }
+
+    fn visible(&self, entry: &storage_contract::Entry) -> Option<&'a storage_contract::Entry> {
+        self.commit.entries.iter().find(|visible| {
+            #[cfg(test)]
+            self.matching_visits.set(self.matching_visits.get() + 1);
+            visible.lookup_key == entry.lookup_key && visible.file_id == entry.file_id
+        })
+    }
+
+    pub(super) fn checked(&self, entry: &storage_contract::Entry) -> Option<&'a str> {
+        if entry.kind != "file" {
+            return None;
+        }
+        self.resolve(entry, self.visible(entry)?, CurrentContext::Lookup, None)
+    }
+
+    pub(super) fn checked_with_context(
+        &self,
+        entry: &storage_contract::Entry,
+        context: Option<&storage_contract::FileContext>,
+    ) -> Option<&'a str> {
+        if entry.kind != "file" {
+            return None;
+        }
+        self.resolve(
+            entry,
+            self.visible(entry)?,
+            CurrentContext::Resolved(context),
+            None,
+        )
+    }
+
+    pub(super) fn pending_versions(&self) -> std::collections::BTreeMap<String, String> {
+        // Published trees are sorted with unique normalized keys. If a caller
+        // supplies a noncanonical snapshot, preserve the old first-match rule.
+        let canonical = self
+            .commit
+            .entries
+            .windows(2)
+            .all(|pair| pair[0].lookup_key < pair[1].lookup_key)
+            && self
+                .commit
+                .entries
+                .iter()
+                .all(|entry| entry.lookup_key == name_policy::path_key(&entry.path));
+        let historical = self
+            .current
+            .filter(|current| current.head_commit_id != self.commit.commit_id)
+            .map(|_| {
+                let mut contexts = std::collections::BTreeMap::new();
+                for tree in self
+                    .engine
+                    .state()
+                    .directory_trees
+                    .values()
+                    .filter(|tree| tree.commit_id == self.commit.commit_id)
+                {
+                    for (key, context) in &tree.file_contexts {
+                        // BTreeMap iteration preserves the original first tree.
+                        contexts.entry(key.as_str()).or_insert(context);
+                    }
+                }
+                contexts
+            });
+        self.commit
+            .entries
+            .iter()
+            .filter(|entry| entry.kind == "file")
+            .filter_map(|entry| {
+                let visible = if canonical {
+                    entry
+                } else {
+                    self.visible(entry)?
+                };
+                let context = self.main_repository.and_then(|repository| {
+                    if canonical {
+                        self.engine
+                            .file_context_for_current_entry(repository, entry)
+                    } else {
+                        self.engine
+                            .file_context(repository, &entry.path)
+                            .map(std::borrow::Cow::Owned)
+                    }
+                });
+                self.resolve(
+                    entry,
+                    visible,
+                    CurrentContext::Resolved(context.as_deref()),
+                    historical.as_ref(),
+                )
+                .map(|source| (entry.file_id.clone(), source.to_owned()))
+            })
+            .collect()
+    }
+
+    fn resolve(
+        &self,
+        entry: &storage_contract::Entry,
+        visible: &'a storage_contract::Entry,
+        context: CurrentContext<'_>,
+        historical: Option<&std::collections::BTreeMap<&str, &'a storage_contract::FileContext>>,
+    ) -> Option<&'a str> {
+        let state = self.engine.state();
+        let current = self.current?;
+        if current.head_commit_id == self.commit.commit_id {
+            if let Some(repository) = self.main_repository {
+                let owned;
+                let context = match context {
+                    CurrentContext::Resolved(context) => context,
+                    CurrentContext::Lookup => {
+                        owned = self.engine.file_context(repository, &entry.path);
+                        owned.as_ref()
+                    }
+                };
+                if let Some(context) = context {
+                    return if context.inherited_from.is_some() {
+                        Some(visible.version_id.as_str())
+                    } else {
+                        state
+                            .branches
+                            .get(&context.branch_id)?
+                            .pending_file_versions
+                            .get(&entry.file_id)
+                            .map(String::as_str)
+                    };
+                }
+            }
+        } else {
+            let context = match historical {
+                Some(contexts) => contexts.get(entry.lookup_key.as_str()).copied(),
+                None => state
+                    .directory_trees
+                    .values()
+                    .filter(|tree| tree.commit_id == self.commit.commit_id)
+                    .find_map(|tree| tree.file_contexts.get(&entry.lookup_key)),
+            };
+            if let Some(context) = context {
+                return context
+                    .inherited_from
+                    .as_ref()
+                    .map(|_| visible.version_id.as_str());
+            }
+        }
+        self.commit
+            .pending_file_versions
+            .get(&entry.file_id)
+            .filter(|version| **version == entry.version_id)
+            .map(String::as_str)
+            .or_else(|| {
+                (current.head_commit_id == self.commit.commit_id)
+                    .then(|| self.engine.pending_file_source(self.branch, &entry.file_id))
+                    .flatten()
+            })
+    }
+
+    #[cfg(test)]
+    pub(super) fn matching_visits(&self) -> usize {
+        self.matching_visits.get()
+    }
+}
+
 pub(super) fn pending_entry_source<'a>(
     engine: &'a Engine,
-    branch: &str,
+    branch: &'a str,
     commit: &'a storage_contract::Commit,
     entry: &storage_contract::Entry,
 ) -> Option<&'a str> {
-    if entry.kind != "file" {
-        return None;
-    }
-    let state = engine.state();
-    let visible = commit.entries.iter().find(|visible| {
-        visible.lookup_key == entry.lookup_key && visible.file_id == entry.file_id
-    })?;
-    let current = state.branches.get(branch)?;
-    if current.head_commit_id == commit.commit_id {
-        if let Some(repo) = state
-            .repositories
-            .values()
-            .find(|repo| repo.main_branch_id == branch)
-            && let Some(context) = engine.file_context(&repo.repository_id, &entry.path)
-        {
-            return if context.inherited_from.is_some() {
-                Some(visible.version_id.as_str())
-            } else {
-                state
-                    .branches
-                    .get(&context.branch_id)?
-                    .pending_file_versions
-                    .get(&entry.file_id)
-                    .map(String::as_str)
-            };
-        }
-    } else if let Some(context) = state
-        .directory_trees
-        .values()
-        .filter(|tree| tree.commit_id == commit.commit_id)
-        .find_map(|tree| tree.file_contexts.get(&entry.lookup_key))
-    {
-        return context
-            .inherited_from
-            .as_ref()
-            .map(|_| visible.version_id.as_str());
-    }
-    commit
-        .pending_file_versions
-        .get(&entry.file_id)
-        .filter(|version| **version == entry.version_id)
-        .map(String::as_str)
-        .or_else(|| {
-            (current.head_commit_id == commit.commit_id)
-                .then(|| engine.pending_file_source(branch, &entry.file_id))
-                .flatten()
-        })
+    PendingSources::new(engine, branch, commit).checked(entry)
 }
 
 pub(super) fn current_entry_source<'a>(
     engine: &'a Engine,
-    branch: &str,
+    branch: &'a str,
     entry: &storage_contract::Entry,
 ) -> Option<&'a str> {
     let current = engine.state().branches.get(branch)?;
     let commit = engine.state().commits.get(&current.head_commit_id)?;
     pending_entry_source(engine, branch, commit, entry)
+}
+
+pub(super) fn current_entry_source_with_context<'a>(
+    engine: &'a Engine,
+    branch: &'a str,
+    repository: &str,
+    entry: &storage_contract::Entry,
+    context: Option<&storage_contract::FileContext>,
+) -> Option<&'a str> {
+    let current = engine.state().branches.get(branch)?;
+    let commit = engine.state().commits.get(&current.head_commit_id)?;
+    let resolver = PendingSources::new(engine, branch, commit);
+    if resolver.main_repository == Some(repository) {
+        resolver.checked_with_context(entry, context)
+    } else {
+        resolver.checked(entry)
+    }
 }
 pub(super) fn field<'a>(value: &'a Value, key: &str) -> Result<&'a str, ApiError> {
     value
