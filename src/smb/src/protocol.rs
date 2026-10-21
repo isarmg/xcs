@@ -66,11 +66,47 @@ pub enum Request {
         path: String,
     },
     Namespace {
+        operation_id: String,
         kind: String,
         path: String,
         destination: Option<String>,
         replace: bool,
     },
+}
+
+/// Allocate the identity before any I/O so a lost reply remains queryable.
+/// This is a new operation, not an automatic retry of an unknown outcome.
+pub fn namespace_request(
+    kind: &str,
+    path: String,
+    destination: Option<String>,
+    replace: bool,
+) -> Request {
+    Request::Namespace {
+        operation_id: storage_contract::new_id("op"),
+        kind: kind.into(),
+        path,
+        destination,
+        replace,
+    }
+}
+
+/// Preserve unlinkat's target-kind contract across the RPC boundary.
+/// Unknown flags are rejected before a request can mutate the namespace.
+pub fn remove_request(path: String, flags: i32) -> io::Result<Request> {
+    if flags & !libc::AT_REMOVEDIR != 0 {
+        return Err(io::Error::from_raw_os_error(libc::EINVAL));
+    }
+    Ok(namespace_request(
+        if flags & libc::AT_REMOVEDIR != 0 {
+            "rmdir"
+        } else {
+            "unlink"
+        },
+        path,
+        None,
+        false,
+    ))
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -262,6 +298,48 @@ impl FrameStream {
 mod tests {
     use super::*;
     use std::{fs::File, io::Seek, os::fd::AsFd};
+
+    #[test]
+    fn namespace_requests_require_a_preallocated_identity_on_the_wire() {
+        for kind in ["mkdir", "rename", "unlink", "rmdir"] {
+            let request = namespace_request(kind, "entry".into(), None, false);
+            let value = serde_json::to_value(&request).unwrap();
+            storage_contract::validate_id(value["operation_id"].as_str().unwrap(), "op").unwrap();
+            let mut missing = value;
+            missing.as_object_mut().unwrap().remove("operation_id");
+            assert!(serde_json::from_value::<Request>(missing).is_err());
+        }
+    }
+
+    #[test]
+    fn unlinkat_flags_preserve_target_kind_and_reject_unknown_flags() {
+        for (flags, expected) in [(0, "unlink"), (libc::AT_REMOVEDIR, "rmdir")] {
+            let request = remove_request("entry".into(), flags).unwrap();
+            let Request::Namespace {
+                operation_id,
+                kind,
+                path,
+                destination,
+                replace,
+            } = request
+            else {
+                panic!("expected namespace request");
+            };
+            storage_contract::validate_id(&operation_id, "op").unwrap();
+            assert_eq!(kind, expected);
+            assert_eq!(path, "entry");
+            assert!(destination.is_none());
+            assert!(!replace);
+        }
+        for flags in [-1, libc::AT_SYMLINK_NOFOLLOW, libc::AT_REMOVEDIR | 1] {
+            assert_eq!(
+                remove_request("entry".into(), flags)
+                    .unwrap_err()
+                    .raw_os_error(),
+                Some(libc::EINVAL)
+            );
+        }
+    }
 
     #[test]
     fn framing_transfers_an_owned_cloexec_descriptor_without_a_path() {

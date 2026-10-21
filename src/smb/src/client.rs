@@ -160,7 +160,21 @@ impl Client {
                 if let Some(stream) = connection.take() {
                     let _ = stream.0.shutdown(Shutdown::Both);
                 }
-                return Err(error);
+                return Err(match request {
+                    Request::Namespace { operation_id, .. } => io::Error::new(
+                        error.kind(),
+                        RemoteError {
+                            code: "RPC_OUTCOME_UNKNOWN".into(),
+                            message: format!(
+                                "{error}; query the original operation before retrying"
+                            ),
+                            operation_id: Some(operation_id),
+                            retryable: false,
+                            errno: error.raw_os_error().unwrap_or(libc::EIO),
+                        },
+                    ),
+                    _ => error,
+                });
             }
         };
         match response {
@@ -206,6 +220,63 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn namespace_transport_failure_retains_identity_and_disconnects_every_clone() {
+        for send_failure in [false, true] {
+            let request = crate::protocol::namespace_request("mkdir", "new".into(), None, false);
+            let Request::Namespace { operation_id, .. } = &request else {
+                unreachable!()
+            };
+            let expected = operation_id.clone();
+            let (one, two) = UnixStream::pair().unwrap();
+            let (done, disconnected) = std::sync::mpsc::channel();
+            let server = std::thread::spawn(move || {
+                if !send_failure {
+                    let mut stream = FrameStream::new(two).unwrap();
+                    let (received, _) = stream.receive::<Request>().unwrap();
+                    assert!(matches!(received, Request::Namespace { .. }));
+                    // The peer consumed the operation, but its reply is lost.
+                } else {
+                    drop(two);
+                }
+                done.send(()).unwrap();
+            });
+            if send_failure {
+                disconnected.recv().unwrap();
+            }
+            let client = Client(Arc::new(Mutex::new(Some(FrameStream::new(one).unwrap()))));
+            let clone = client.clone();
+            let error = client.call(request).unwrap_err();
+            assert_eq!(
+                error.kind(),
+                if send_failure {
+                    io::ErrorKind::BrokenPipe
+                } else {
+                    io::ErrorKind::UnexpectedEof
+                }
+            );
+            assert_eq!(
+                error_errno(&error),
+                if send_failure { libc::EPIPE } else { libc::EIO }
+            );
+            let remote = error
+                .get_ref()
+                .and_then(|error| error.downcast_ref::<RemoteError>())
+                .expect("transport failure lost the caller's operation identity");
+            assert_eq!(remote.operation_id.as_deref(), Some(expected.as_str()));
+            assert_eq!(remote.code, "RPC_OUTCOME_UNKNOWN");
+            assert!(!remote.retryable);
+            assert_eq!(
+                clone
+                    .call(Request::Stat { path: "new".into() })
+                    .unwrap_err()
+                    .kind(),
+                io::ErrorKind::NotConnected
+            );
+            server.join().unwrap();
+        }
+    }
 
     #[test]
     fn terminal_close_releases_descriptor_on_business_error_poison_or_unwind() {

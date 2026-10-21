@@ -784,12 +784,9 @@ unsafe extern "C" fn mkdirat(
         // event-loop thread and does not escape the callback.
         unsafe { context(handle) }?
             .client
-            .call(Request::Namespace {
-                kind: "mkdir".into(),
-                path,
-                destination: None,
-                replace: false,
-            })?;
+            .call(smb_protocol::protocol::namespace_request(
+                "mkdir", path, None, false,
+            ))?;
         Ok(0)
     })
 }
@@ -797,7 +794,7 @@ unsafe extern "C" fn unlinkat(
     handle: *mut sdk::vfs_handle_struct,
     dir: *mut sdk::files_struct,
     file: *const sdk::smb_filename,
-    _flags: i32,
+    flags: i32,
 ) -> i32 {
     guarded(|| {
         // SAFETY: The host supplies live filename/directory objects and their string fields for
@@ -807,12 +804,7 @@ unsafe extern "C" fn unlinkat(
         // event-loop thread and does not escape the callback.
         unsafe { context(handle) }?
             .client
-            .call(Request::Namespace {
-                kind: "delete".into(),
-                path,
-                destination: None,
-                replace: false,
-            })?;
+            .call(smb_protocol::protocol::remove_request(path, flags)?)?;
         Ok(0)
     })
 }
@@ -841,12 +833,12 @@ unsafe extern "C" fn renameat(
         // event-loop thread and does not escape the callback.
         unsafe { context(handle) }?
             .client
-            .call(Request::Namespace {
-                kind: "rename".into(),
+            .call(smb_protocol::protocol::namespace_request(
+                "rename",
                 path,
                 destination,
                 replace,
-            })?;
+            ))?;
         Ok(0)
     })
 }

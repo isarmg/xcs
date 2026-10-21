@@ -11,6 +11,18 @@ pub(super) struct Session {
     pub(super) max_file_bytes: u64,
 }
 
+#[derive(Debug)]
+pub(super) struct DispatchError {
+    pub(super) error: ApiError,
+    pub(super) operation_id: Option<String>,
+}
+impl std::ops::Deref for DispatchError {
+    type Target = ApiError;
+    fn deref(&self) -> &Self::Target {
+        &self.error
+    }
+}
+
 impl Drop for Session {
     fn drop(&mut self) {
         if let Ok(mut writers) = self.shared.file_writers.lock() {
@@ -97,7 +109,52 @@ impl Session {
     pub(super) fn dispatch(
         &mut self,
         request: Request,
-    ) -> Result<(Value, Option<OwnedFd>), ApiError> {
+    ) -> Result<(Value, Option<OwnedFd>), DispatchError> {
+        let is_namespace = matches!(&request, Request::Namespace { .. });
+        let dirty_handle = match &request {
+            Request::Dirty { handle } => Some(*handle),
+            _ => None,
+        };
+        let mut operation_id = match &request {
+            Request::Namespace { operation_id, .. } => {
+                storage_contract::validate_id(operation_id, "op").map_err(|error| {
+                    DispatchError {
+                        error: contract(error),
+                        operation_id: None,
+                    }
+                })?;
+                Some(operation_id.clone())
+            }
+            Request::Flush { handle } | Request::Close { handle } | Request::Dirty { handle } => {
+                match self.handles.get(handle) {
+                    Some(Handle::Write(writer)) => Some(writer.operation_id.clone()),
+                    _ => None,
+                }
+            }
+            _ => None,
+        };
+        let result = self.dispatch_request(request);
+        // Dirty can create a new generation and submit it for write-through.
+        // Report that generation, not the previously published operation.
+        if let Some(handle) = dirty_handle
+            && let Some(Handle::Write(writer)) = self.handles.get(&handle)
+        {
+            operation_id = Some(writer.operation_id.clone());
+        }
+        result.map_err(|mut error| {
+            // Namespace has no replay protocol. Even a transient error must
+            // not advertise that an uncertain mutation can be issued again.
+            if is_namespace {
+                error.retryable = false;
+            }
+            DispatchError {
+                error,
+                operation_id,
+            }
+        })
+    }
+
+    fn dispatch_request(&mut self, request: Request) -> Result<(Value, Option<OwnedFd>), ApiError> {
         let value = match request {
             Request::Hello { .. } => return Err(ApiError::invalid("hello is allowed only once")),
             Request::Open {
@@ -166,73 +223,8 @@ impl Session {
                 path,
                 destination,
                 replace,
-            } => {
-                if !["mkdir", "rename", "delete"].contains(&kind.as_str()) {
-                    return Err(ApiError::unsupported());
-                }
-                let mut affected = vec![path.as_str()];
-                if let Some(target) = destination.as_deref() {
-                    affected.push(target);
-                }
-                let reserved = self.reserve_paths(&affected)?;
-                let mut pending_workspace = None;
-                let result = (|| {
-                    let workspace = self.workspace()?;
-                    pending_workspace = Some(workspace.workspace_id.clone());
-                    let entries = self.entries()?;
-                    let nonempty = |entry: &Entry| {
-                        let prefix = format!("{}/", entry.lookup_key);
-                        entry.kind == "directory"
-                            && entries
-                                .iter()
-                                .any(|child| child.lookup_key.starts_with(&prefix))
-                    };
-                    if kind == "delete" && self.find(&path)?.as_ref().is_some_and(nonempty) {
-                        return Err(ApiError::new(
-                            409,
-                            "DIRECTORY_NOT_EMPTY",
-                            "SMB directory removal requires an empty directory",
-                        ));
-                    }
-                    if kind == "rename"
-                        && replace
-                        && let Some(target) = destination.as_deref()
-                        && let Some(target_entry) = self.find(target)?
-                    {
-                        let source = self.find(&path)?.ok_or_else(|| {
-                            ApiError::new(404, "NOT_FOUND", "rename source missing")
-                        })?;
-                        if source.kind != target_entry.kind {
-                            return Err(ApiError::invalid(
-                                "rename replacement requires matching entry kinds",
-                            ));
-                        }
-                        // A case-only rename addresses the same stable entry.
-                        if source.entry_id != target_entry.entry_id {
-                            if nonempty(&target_entry) {
-                                return Err(ApiError::new(
-                                    409,
-                                    "DIRECTORY_NOT_EMPTY",
-                                    "rename replacement directory is not empty",
-                                ));
-                            }
-                            self.call(crate::BackendAction::Namespace,json!({"workspace_id":workspace.workspace_id,"kind":"delete","path":target,"destination":null}))?;
-                        }
-                    }
-                    self.call(crate::BackendAction::Namespace,json!({"workspace_id":workspace.workspace_id,"kind":kind,"path":path,"destination":destination}))?;
-                    self.call(crate::BackendAction::CommitWorkspaceInternal,json!({"workspace_id":workspace.workspace_id,"operation_id":new_id("op"),"expected_head":workspace.base_head,"fencing_token":workspace.fencing_token.to_string(),"message":"SMB namespace change"}))
-                })();
-                if result.is_err()
-                    && let Some(id) = pending_workspace
-                {
-                    let _ = self.call(
-                        crate::BackendAction::AbortWorkspace,
-                        json!({"workspace_id":id}),
-                    );
-                }
-                self.release_paths(&reserved);
-                result?
-            }
+                operation_id,
+            } => self.namespace(kind, path, destination, replace, &operation_id)?,
         };
         Ok((value, None))
     }

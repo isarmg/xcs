@@ -20,6 +20,7 @@ const MAX_CONNECTIONS: usize = 64;
 const MAX_HANDLES: usize = 1024;
 
 mod handles;
+mod namespace;
 mod publication;
 mod session;
 mod transport;
@@ -36,6 +37,7 @@ struct Shared {
     identities: BTreeMap<String, Identity>,
     spool: PathBuf,
     file_writers: Mutex<BTreeSet<(String, String)>>,
+    namespace_operations: Mutex<BTreeSet<String>>,
 }
 
 enum Handle {

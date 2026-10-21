@@ -8,6 +8,8 @@ use storage_engine::{CommitRequest, Config, Engine};
 
 #[path = "close_tests.rs"]
 mod close_tests;
+#[path = "namespace_tests.rs"]
+mod namespace_tests;
 
 struct LostCommitReply {
     inner: EngineBackend,
@@ -123,6 +125,7 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
         identities: BTreeMap::from([("alice".into(), identity)]),
         spool,
         file_writers: Mutex::new(BTreeSet::new()),
+        namespace_operations: Mutex::new(BTreeSet::new()),
     });
     (temp, shared, backend, repo.main_branch_id)
 }
@@ -331,6 +334,7 @@ fn namespace_move_transfers_only_selected_directory_views_and_keeps_read_handle(
     let reader = File::from(fd.unwrap());
     client
         .dispatch(Request::Namespace {
+            operation_id: new_id("op"),
             kind: "rename".into(),
             path: "a/report.txt".into(),
             destination: Some("b/report.txt".into()),
@@ -831,6 +835,7 @@ fn namespace_locks_cover_only_affected_paths_and_case_only_replace_preserves_ent
     let mut two = session(shared, &branch);
     let before = one.find("report.txt").unwrap().unwrap();
     two.dispatch(Request::Namespace {
+        operation_id: new_id("op"),
         kind: "rename".into(),
         path: "report.txt".into(),
         destination: Some("REPORT.txt".into()),
@@ -848,6 +853,7 @@ fn namespace_locks_cover_only_affected_paths_and_case_only_replace_preserves_ent
     let file = File::from(fd.unwrap());
     assert_eq!(
         two.dispatch(Request::Namespace {
+            operation_id: new_id("op"),
             kind: "rename".into(),
             path: "dir".into(),
             destination: Some("moved".into()),
@@ -858,6 +864,7 @@ fn namespace_locks_cover_only_affected_paths_and_case_only_replace_preserves_ent
         "FILE_WRITE_BUSY"
     );
     two.dispatch(Request::Namespace {
+        operation_id: new_id("op"),
         kind: "mkdir".into(),
         path: "unrelated".into(),
         destination: None,
@@ -871,6 +878,7 @@ fn namespace_locks_cover_only_affected_paths_and_case_only_replace_preserves_ent
     assert!(two.find("dir/file.txt").unwrap().is_some());
     assert_eq!(
         two.dispatch(Request::Namespace {
+            operation_id: new_id("op"),
             kind: "rename".into(),
             path: "REPORT.txt".into(),
             destination: Some("unrelated".into()),
@@ -881,6 +889,7 @@ fn namespace_locks_cover_only_affected_paths_and_case_only_replace_preserves_ent
         "INVALID_REQUEST"
     );
     two.dispatch(Request::Namespace {
+        operation_id: new_id("op"),
         kind: "mkdir".into(),
         path: "after-failure".into(),
         destination: None,
@@ -896,6 +905,7 @@ fn listing_uses_portable_lookup_keys_and_rejects_files_or_missing_directories() 
     for path in ["Straße", "STRASSE/子目录", "Straße-other"] {
         session
             .dispatch(Request::Namespace {
+                operation_id: new_id("op"),
                 kind: "mkdir".into(),
                 path: path.into(),
                 destination: None,
@@ -1149,7 +1159,8 @@ fn writable_open_rejects_entry_changed_before_workspace_snapshot() {
         if missing {
             client
                 .dispatch(Request::Namespace {
-                    kind: "delete".into(),
+                    operation_id: new_id("op"),
+                    kind: "unlink".into(),
                     path: "report.txt".into(),
                     destination: None,
                     replace: false,

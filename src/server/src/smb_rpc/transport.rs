@@ -107,20 +107,11 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
                 "client descriptors forbidden",
             ));
         }
-        let operation_id = match &request {
-            Request::Flush { handle } | Request::Close { handle } => {
-                match session.handles.get(handle) {
-                    Some(Handle::Write(writer)) => Some(writer.operation_id.clone()),
-                    _ => None,
-                }
-            }
-            _ => None,
-        };
         match session.dispatch(request) {
             Ok((result, fd)) => {
                 stream.send(&Response::Ok { result }, fd.as_ref().map(AsFd::as_fd))?
             }
-            Err(error) => stream.send(&response_error(error, operation_id), None)?,
+            Err(error) => stream.send(&response_error(error.error, error.operation_id), None)?,
         }
     }
 }
@@ -219,6 +210,7 @@ pub async fn serve(
         identities,
         spool,
         file_writers: Mutex::new(BTreeSet::new()),
+        namespace_operations: Mutex::new(BTreeSet::new()),
     });
     let admission = Arc::new(tokio::sync::Semaphore::new(MAX_CONNECTIONS));
     let mut next_connection = 1u64;
