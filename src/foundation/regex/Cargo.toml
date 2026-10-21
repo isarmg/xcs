@@ -37,44 +37,63 @@ finite automata and guarantees linear time matching on all inputs.
 """
 homepage = "https://github.com/rust-lang/regex"
 documentation = "https://docs.rs/regex"
-readme = "../../../docs/upstream/regex-1.13.1/README.md"
+readme = "../../../docs/architecture/pattern-matching.md"
 categories = ["text-processing"]
-license = "MIT OR Apache-2.0"
+license = "(MIT OR Apache-2.0) AND (Unlicense OR MIT)"
 repository = "https://github.com/rust-lang/regex"
 
 [features]
-default = ["std", "perf", "unicode", "regex-syntax/default"]
-logging = ["aho-corasick?/logging", "memchr?/logging", "regex-automata/logging"]
-pattern = []
-perf = ["perf-cache", "perf-dfa", "perf-onepass", "perf-backtrack", "perf-inline", "perf-literal"]
-perf-backtrack = ["regex-automata/nfa-backtrack"]
-perf-cache = []
-perf-dfa = ["regex-automata/hybrid"]
-perf-dfa-full = ["regex-automata/dfa-build", "regex-automata/dfa-search"]
-perf-inline = ["regex-automata/perf-inline"]
-perf-literal = ["dep:aho-corasick", "dep:memchr", "regex-automata/perf-literal"]
-perf-onepass = ["regex-automata/dfa-onepass"]
-std = ["aho-corasick?/std", "memchr?/std", "regex-automata/std", "regex-syntax/std"]
-unicode = ["unicode-age", "unicode-bool", "unicode-case", "unicode-gencat", "unicode-perl", "unicode-script", "unicode-segment", "regex-automata/unicode", "regex-syntax/unicode"]
-unicode-age = ["regex-automata/unicode-age", "regex-syntax/unicode-age"]
-unicode-bool = ["regex-automata/unicode-bool", "regex-syntax/unicode-bool"]
-unicode-case = ["regex-automata/unicode-case", "regex-syntax/unicode-case"]
-unicode-gencat = ["regex-automata/unicode-gencat", "regex-syntax/unicode-gencat"]
-unicode-perl = ["regex-automata/unicode-perl", "regex-automata/unicode-word-boundary", "regex-syntax/unicode-perl"]
-unicode-script = ["regex-automata/unicode-script", "regex-syntax/unicode-script"]
-unicode-segment = ["regex-automata/unicode-segment", "regex-syntax/unicode-segment"]
-unstable = ["pattern"]
-use_std = ["std"]
+alloc = []
+automata = []
+automata-full = ["std", "syntax", "engine-perf", "unicode", "meta", "nfa", "dfa", "hybrid"]
+default = ["matcher", "std", "perf", "unicode"]
+engine-perf = ["perf-inline", "perf-literal"]
+dfa = ["dfa-build", "dfa-search", "dfa-onepass"]
+dfa-build = ["nfa-thompson", "dfa-search"]
+dfa-onepass = ["automata", "nfa-thompson"]
+dfa-search = ["automata"]
+hybrid = ["alloc", "automata", "nfa-thompson"]
+internal-instrument = ["internal-instrument-pikevm"]
+internal-instrument-pikevm = ["logging", "std"]
+literal = ["alloc"]
+literal-perf = ["literal", "dep:memchr"]
+logging = ["dep:log", "memchr?/logging"]
+matcher = ["syntax", "meta", "nfa-pikevm"]
+meta = ["automata", "nfa-pikevm", "syntax"]
+nfa = ["nfa-thompson", "nfa-pikevm", "nfa-backtrack"]
+nfa-backtrack = ["nfa-thompson"]
+nfa-pikevm = ["nfa-thompson"]
+nfa-thompson = ["alloc", "automata"]
+perf = ["perf-backtrack", "perf-dfa", "perf-inline", "perf-literal", "perf-onepass"]
+perf-backtrack = ["nfa-backtrack"]
+perf-dfa = ["hybrid"]
+perf-dfa-full = ["dfa-build", "dfa-search"]
+perf-inline = []
+perf-literal = ["dep:memchr", "literal", "perf-literal-multisubstring", "perf-literal-substring"]
+perf-literal-multisubstring = ["literal"]
+perf-literal-substring = ["dep:memchr", "literal-perf"]
+perf-onepass = ["dfa-onepass"]
+std = ["alloc", "memchr?/std"]
+syntax = ["alloc"]
+unicode = ["unicode-age", "unicode-bool", "unicode-case", "unicode-gencat", "unicode-perl", "unicode-script", "unicode-segment", "unicode-word-boundary"]
+unicode-age = []
+unicode-bool = []
+unicode-case = []
+unicode-gencat = []
+unicode-perl = ["unicode-word-boundary"]
+unicode-script = []
+unicode-segment = []
+unicode-word-boundary = []
 
 [lib]
 name = "regex"
 path = "src/lib.rs"
 
-[dependencies.aho-corasick]
-version = "1.0.0"
+
+[dependencies.log]
+version = "0.4.14"
 optional = true
-default-features = false
-path = "../aho-corasick"
+path = "../log"
 
 [dependencies.memchr]
 version = "2.6.0"
@@ -82,24 +101,15 @@ optional = true
 default-features = false
 path = "../memchr"
 
-[dependencies.regex-automata]
-version = "0.4.16"
-features = [
-    "alloc",
-    "syntax",
-    "meta",
-    "nfa-pikevm",
-]
-default-features = false
-path = "../regex-automata"
 
-[dependencies.regex-syntax]
-version = "0.8.11"
-default-features = false
-path = "../regex-syntax"
 
 [lints.rust.unexpected_cfgs]
 level = "allow"
 priority = 0
 check-cfg = ["cfg(docsrs_regex)"]
 
+
+[[test]]
+name = "retained-regressions"
+path = "../../../test/regex-family/retained_regressions.rs"
+required-features = ["matcher", "std", "unicode"]

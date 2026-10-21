@@ -72,7 +72,7 @@ mod tests {
             let unicode =
                 options.syntaxc.get_unicode() && !matches!(options.bytes_mode, BytesMode::Ascii);
             let utf8 = matches!(options.bytes_mode, BytesMode::Unicode);
-            let expected = regex_syntax::ParserBuilder::new()
+            let expected = regex::syntax::ParserBuilder::new()
                 .utf8(utf8)
                 .unicode(unicode)
                 .build()
@@ -121,7 +121,7 @@ mod tests {
             tree.expr.to_str(&mut s, 0);
             s
         };
-        let expected = regex_syntax::ParserBuilder::new().build().parse(&cooked);
+        let expected = regex::syntax::ParserBuilder::new().build().parse(&cooked);
         assert_eq!(expected.unwrap().to_string(), hir.to_string());
     }
 }

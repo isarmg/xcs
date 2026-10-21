@@ -20,3 +20,4 @@
 描述实现时链接实际代码；测量和检查结果保留执行时点，进入 [reports](../reports/README.md) 或对应测试证据目录。未经执行的设备实验保持待验证。
 
 - [Numeric traits and value types](numeric.md): opt-in arithmetic capabilities and retained upstream identities.
+- [Pattern matching capabilities and maintained verification](pattern-matching.md)

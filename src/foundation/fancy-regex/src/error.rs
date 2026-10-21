@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 use alloc::string::String;
 use core::fmt;
-use regex_automata::meta::BuildError as RaBuildError;
+use regex::automata::meta::BuildError as RaBuildError;
 
 /// Result type for this crate with specific error enum.
 pub type Result<T> = ::core::result::Result<T, Error>;

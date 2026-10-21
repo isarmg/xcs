@@ -22,9 +22,6 @@ resolver = "3"
 name = "jsonschema_regex"
 path = "src/lib.rs"
 
-[dependencies.regex-syntax]
-version = "0.8.9"
-path = "../regex-syntax"
 
 [lints.clippy]
 dbg_macro = "warn"
@@ -49,3 +46,9 @@ priority = -2
 [lints.rust]
 unreachable_pub = "warn"
 unsafe_code = "warn"
+
+[dependencies.regex]
+version = "1.13.1"
+path = "../regex"
+default-features = false
+features = ["std", "syntax", "unicode"]

@@ -1,6 +1,6 @@
 use alloc::string::{String, ToString};
 
-use regex_automata::meta;
+use crate::automata::meta;
 
 /// An error that occurred during parsing or compiling a regular expression.
 #[non_exhaustive]

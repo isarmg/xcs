@@ -1,6 +1,6 @@
 use alloc::string::String;
 
-use regex_automata::{meta, Input, PatternID, PatternSet, PatternSetIter};
+use crate::automata::{meta, Input, PatternID, PatternSet, PatternSetIter};
 
 use crate::{bytes::RegexSetBuilder, Error};
 

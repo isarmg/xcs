@@ -28,11 +28,11 @@ use alloc::sync::Arc;
 #[cfg(feature = "variable-lookbehinds")]
 use alloc::vec;
 use alloc::vec::Vec;
-use regex_automata::meta::Regex as RaRegex;
-use regex_automata::meta::{Builder as RaBuilder, Config as RaConfig};
-use regex_automata::nfa::thompson::WhichCaptures;
+use regex::automata::meta::Regex as RaRegex;
+use regex::automata::meta::{Builder as RaBuilder, Config as RaConfig};
+use regex::automata::nfa::thompson::WhichCaptures;
 #[cfg(feature = "variable-lookbehinds")]
-use regex_automata::util::pool::Pool;
+use regex::automata::util::pool::Pool;
 
 #[cfg(not(feature = "std"))]
 use alloc::collections::BTreeMap as Map;
@@ -49,7 +49,7 @@ use crate::LookAround::*;
 use crate::{
     Absent, BacktrackingControlVerb, BytesMode, CompileError, Error, Expr, LookAround, Result,
 };
-use regex_syntax::hir::Hir;
+use regex::syntax::hir::Hir;
 
 /// Maximum recursion depth for subroutine calls (matches Oniguruma's limit)
 pub(crate) const MAX_SUBROUTINE_RECURSION_DEPTH: usize = 19;
@@ -781,8 +781,8 @@ impl<'a> Compiler<'a> {
             .expect("Expected at least one expression");
 
         // Use reverse matching for variable-sized lookbehinds without fancy features
-        use regex_automata::hybrid::dfa;
-        use regex_automata::nfa::thompson;
+        use regex::automata::hybrid::dfa;
+        use regex::automata::nfa::thompson;
         // Build a reverse DFA for the pattern
         let dfa = match dfa::DFA::builder()
             .configure(dfa::Config::new().unicode_word_boundary(true))
@@ -886,7 +886,7 @@ impl<'a> Compiler<'a> {
     /// haystacks can't be decoded per codepoint — so the caller falls back to
     /// a delegate.
     fn try_casei_literal(&self, chars: &[(char, bool)]) -> Option<CaseiLiteral> {
-        use regex_syntax::hir::{ClassUnicode, ClassUnicodeRange};
+        use regex::syntax::hir::{ClassUnicode, ClassUnicodeRange};
 
         if !self.options.unicode || !matches!(self.options.bytes_mode, BytesMode::Unicode) {
             return None;
@@ -1039,7 +1039,7 @@ pub(crate) fn compile_inner(
 /// `options_to_rabuilder` is ignored on this path — the `Hir` must already
 /// encode it (see `to_hir`).
 pub(crate) fn compile_inner_from_hir(
-    hir: &regex_syntax::hir::Hir,
+    hir: &regex::syntax::hir::Hir,
     options: &CompileOptions,
     usage: DelegateUsage,
 ) -> Result<RaRegex> {
@@ -1054,7 +1054,7 @@ pub(crate) fn compile_inner_from_hir(
 }
 
 pub(crate) fn options_to_rabuilder(options: &CompileOptions, usage: DelegateUsage) -> RaBuilder {
-    use regex_automata::util::syntax::Config as SyntaxConfig;
+    use regex::automata::util::syntax::Config as SyntaxConfig;
 
     let mut config = RaConfig::new();
     if let Some(limit) = options.delegate_size_limit {
@@ -1119,7 +1119,7 @@ fn strip_delegate_flags(s: &str) -> &str {
 /// not exactly one character class, or when the class can't be matched natively
 /// for the current bytes mode.
 fn try_char_class_matcher(re: &str, options: &CompileOptions) -> Option<CharClassMatcher> {
-    use regex_syntax::ParserBuilder;
+    use regex::syntax::ParserBuilder;
 
     // Parse with the same flags `options_to_rabuilder` would hand the engine, so
     // the resulting class is exactly the set the delegated engine would accept
@@ -1142,7 +1142,7 @@ fn char_class_matcher_from_hir(
     options: &CompileOptions,
     name: Option<String>,
 ) -> Option<CharClassMatcher> {
-    use regex_syntax::hir::{Class, HirKind};
+    use regex::syntax::hir::{Class, HirKind};
 
     match hir.kind() {
         HirKind::Class(Class::Unicode(cu)) => {

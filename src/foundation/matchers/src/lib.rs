@@ -28,11 +28,11 @@
 
 use std::{fmt, io, str::FromStr};
 
-pub use regex_automata::dfa::dense::BuildError;
-use regex_automata::dfa::dense::DFA;
-use regex_automata::dfa::Automaton;
-use regex_automata::util::primitives::StateID;
-use regex_automata::Anchored;
+pub use regex::automata::dfa::dense::BuildError;
+use regex::automata::dfa::dense::DFA;
+use regex::automata::dfa::Automaton;
+use regex::automata::util::primitives::StateID;
+use regex::automata::Anchored;
 
 /// A compiled match pattern that can match multipe inputs, or return a
 /// [`Matcher`] that matches a single input.
@@ -141,7 +141,7 @@ impl<A: Automaton> Pattern<A> {
     /// `io::Write`/`fmt::Write` to a matcher). Otherwise, the convenience methods on Pattern
     /// suffice.
     pub fn matcher(&self) -> Matcher<&'_ A> {
-        let config = regex_automata::util::start::Config::new().anchored(self.anchored);
+        let config = regex::automata::util::start::Config::new().anchored(self.anchored);
         Matcher {
             automaton: &self.automaton,
             state: self.automaton.start_state(&config).unwrap(),

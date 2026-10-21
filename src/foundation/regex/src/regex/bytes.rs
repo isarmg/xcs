@@ -1,6 +1,6 @@
 use alloc::{borrow::Cow, string::String, sync::Arc, vec::Vec};
 
-use regex_automata::{meta, util::captures, Input, PatternID};
+use crate::automata::{meta, util::captures, Input, PatternID};
 
 use crate::{bytes::RegexBuilder, error::Error};
 
@@ -1608,7 +1608,7 @@ impl<'h> Match<'h> {
 
 impl<'h> core::fmt::Debug for Match<'h> {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        use regex_automata::util::escape::DebugHaystack;
+        use crate::automata::util::escape::DebugHaystack;
 
         let mut fmt = f.debug_struct("Match");
         fmt.field("start", &self.start)
@@ -2025,7 +2025,7 @@ impl<'h> core::fmt::Debug for Captures<'h> {
 
         impl<'a> core::fmt::Debug for Value<'a> {
             fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-                use regex_automata::util::escape::DebugHaystack;
+                use crate::automata::util::escape::DebugHaystack;
 
                 write!(
                     f,

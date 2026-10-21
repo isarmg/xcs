@@ -117,20 +117,20 @@ use crate::CompileOptions;
 use crate::Input;
 use crate::RegexInput;
 use crate::RegexOptionsBuilder;
-use regex_automata::hybrid::dfa;
-use regex_automata::meta::Builder as RaBuilder;
-use regex_automata::meta::Config as RaConfig;
-use regex_automata::meta::Regex as RaRegex;
-use regex_automata::nfa::thompson;
-use regex_automata::nfa::thompson::WhichCaptures;
-use regex_automata::util::pool::Pool;
-use regex_automata::util::syntax::Config as SyntaxConfig;
-use regex_automata::Anchored;
-use regex_automata::Input as RaInput;
-use regex_automata::MatchErrorKind;
-use regex_automata::MatchKind;
-use regex_automata::PatternID;
-use regex_automata::PatternSet;
+use regex::automata::hybrid::dfa;
+use regex::automata::meta::Builder as RaBuilder;
+use regex::automata::meta::Config as RaConfig;
+use regex::automata::meta::Regex as RaRegex;
+use regex::automata::nfa::thompson;
+use regex::automata::nfa::thompson::WhichCaptures;
+use regex::automata::util::pool::Pool;
+use regex::automata::util::syntax::Config as SyntaxConfig;
+use regex::automata::Anchored;
+use regex::automata::Input as RaInput;
+use regex::automata::MatchErrorKind;
+use regex::automata::MatchKind;
+use regex::automata::PatternID;
+use regex::automata::PatternSet;
 
 use crate::vm::OPTION_NOT_CONTINUED_FROM_PREVIOUS_MATCH;
 use crate::CompileError;
@@ -371,7 +371,7 @@ impl RegexSet {
         let syntax_config = SyntaxConfig::new()
             .utf8(utf8)
             .unicode(compile_options.unicode);
-        let hirs = regex_automata::util::syntax::parse_many_with(&patterns, &syntax_config)
+        let hirs = regex::automata::util::syntax::parse_many_with(&patterns, &syntax_config)
             .map_err(|e| {
                 Error::CompileError(Box::new(CompileError::UnexpectedGeneralError(
                     alloc::format!("failed to parse regex set pattern: {}", e),

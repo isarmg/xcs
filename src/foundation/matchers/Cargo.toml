@@ -24,18 +24,15 @@ autotests = false
 autobenches = false
 autoexamples = false
 
-[dependencies.regex-automata]
-version = "0.4"
-features = [
-    "syntax",
-    "dfa-build",
-    "dfa-search",
-]
-default-features = false
-path = "../regex-automata"
 
 [features]
-unicode = ["regex-automata/unicode"]
+unicode = ["regex/unicode"]
 
 [badges.maintenance]
 status = "experimental"
+
+[dependencies.regex]
+version = "1.13.1"
+path = "../regex"
+default-features = false
+features = ["automata", "dfa-build", "dfa-search", "syntax"]

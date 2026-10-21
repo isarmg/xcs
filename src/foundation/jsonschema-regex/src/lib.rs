@@ -2,7 +2,7 @@ mod syntax;
 
 use std::{borrow::Cow, fmt::Write};
 
-use regex_syntax::{
+use regex::syntax::{
     ast::{
         self, parse::Parser, Ast, ClassPerl, ClassPerlKind, ClassSetItem, ErrorKind, Literal,
         LiteralKind, Span, SpecialLiteralKind, Visitor,
@@ -463,7 +463,7 @@ pub fn analyze_pattern(pattern: &str) -> Option<PatternAnalysis<'_>> {
 /// here, and the caller checks the result against the pattern anyway.
 #[must_use]
 pub fn pattern_witness(pattern: &str) -> Option<String> {
-    let hir = regex_syntax::parse(&to_rust_regex(pattern).ok()?).ok()?;
+    let hir = regex::syntax::parse(&to_rust_regex(pattern).ok()?).ok()?;
     let mut witness = String::new();
     write_witness(&hir, &mut witness).then_some(witness)
 }

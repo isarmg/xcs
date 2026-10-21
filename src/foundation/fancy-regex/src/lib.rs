@@ -44,11 +44,11 @@ use core::fmt;
 use core::fmt::{Debug, Formatter};
 use core::ops::{Index, Range};
 use core::str::FromStr;
-use regex_automata::meta::Regex as RaRegex;
-use regex_automata::util::captures::Captures as RaCaptures;
-use regex_automata::util::syntax::Config as SyntaxConfig;
-use regex_automata::Anchored as RaAnchored;
-use regex_automata::Input as RaInput;
+use regex::automata::meta::Regex as RaRegex;
+use regex::automata::util::captures::Captures as RaCaptures;
+use regex::automata::util::syntax::Config as SyntaxConfig;
+use regex::automata::Anchored as RaAnchored;
+use regex::automata::Input as RaInput;
 
 mod analyze;
 mod bytes;

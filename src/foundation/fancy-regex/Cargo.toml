@@ -30,12 +30,12 @@ repository = "https://github.com/fancy-regex/fancy-regex"
 [features]
 default = ["unicode", "perf", "std", "variable-lookbehinds"]
 leftmost_longest = []
-perf = ["regex-automata/perf"]
-perf-dfa-full = ["regex-automata/dfa-build"]
-std = ["regex-automata/std", "regex-syntax/std", "bit-set/std"]
+perf = ["regex/engine-perf"]
+perf-dfa-full = ["regex/dfa-build"]
+std = ["regex/std", "regex/std", "bit-set/std"]
 track_caller = []
-unicode = ["regex-automata/unicode", "regex-syntax/unicode"]
-variable-lookbehinds = ["regex-automata/dfa-search"]
+unicode = ["regex/unicode", "regex/unicode"]
+variable-lookbehinds = ["regex/dfa-search"]
 
 [lib]
 name = "fancy_regex"
@@ -46,22 +46,9 @@ version = "0.8"
 default-features = false
 path = "../bit-set"
 
-[dependencies.regex-automata]
-version = "0.4.16"
-features = [
-    "alloc",
-    "syntax",
-    "meta",
-    "nfa",
-    "dfa-onepass",
-    "dfa-search",
-    "hybrid",
-]
-default-features = false
-path = "../regex-automata"
 
-[dependencies.regex-syntax]
-version = "0.8"
+[dependencies.regex]
+version = "1.13.1"
+path = "../regex"
 default-features = false
-path = "../regex-syntax"
-
+features = ["alloc", "automata", "dfa-onepass", "dfa-search", "hybrid", "meta", "nfa", "syntax"]

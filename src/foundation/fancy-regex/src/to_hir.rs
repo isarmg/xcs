@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-//! Translation of easy `Expr` subtrees directly into `regex_syntax::hir::Hir`.
+//! Translation of easy `Expr` subtrees directly into `regex::syntax::hir::Hir`.
 //!
 //! Delegating a subtree to regex-automata used to mean re-serializing it with
 //! [`Expr::to_str`] and letting the engine parse the string all over again —
@@ -38,7 +38,7 @@ use alloc::string::String;
 use alloc::vec::Vec;
 use core::convert::TryFrom;
 
-use regex_syntax::hir::{Capture, Dot, Hir, Look, Repetition};
+use regex::syntax::hir::{Capture, Dot, Hir, Look, Repetition};
 
 use crate::{push_quoted, Assertion, Expr};
 
@@ -172,7 +172,7 @@ pub(crate) fn expr_to_hir(expr: &Expr, ctx: &mut HirCtx) -> Option<Hir> {
 }
 
 fn parse_fragment(fragment: &str, ctx: &HirCtx) -> Option<Hir> {
-    regex_syntax::ParserBuilder::new()
+    regex::syntax::ParserBuilder::new()
         .utf8(ctx.utf8)
         .unicode(ctx.unicode)
         .build()

@@ -18,13 +18,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aho-corasick"
-version = "1.1.5"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "allocator-api2"
 version = "0.2.21"
 
@@ -572,8 +565,7 @@ name = "fancy-regex"
 version = "0.19.2"
 dependencies = [
  "bit-set",
- "regex-automata",
- "regex-syntax",
+ "regex",
 ]
 
 [[package]]
@@ -1013,7 +1005,7 @@ dependencies = [
 name = "jsonschema-regex"
 version = "0.58.6"
 dependencies = [
- "regex-syntax",
+ "regex",
 ]
 
 [[package]]
@@ -1103,7 +1095,7 @@ dependencies = [
 name = "matchers"
 version = "0.2.0"
 dependencies = [
- "regex-automata",
+ "regex",
 ]
 
 [[package]]
@@ -1418,24 +1410,8 @@ dependencies = [
 name = "regex"
 version = "1.13.1"
 dependencies = [
- "aho-corasick",
  "memchr",
- "regex-automata",
- "regex-syntax",
 ]
-
-[[package]]
-name = "regex-automata"
-version = "0.4.18"
-dependencies = [
- "aho-corasick",
- "memchr",
- "regex-syntax",
-]
-
-[[package]]
-name = "regex-syntax"
-version = "0.8.11"
 
 [[package]]
 name = "release-tools"
@@ -2079,7 +2055,7 @@ dependencies = [
  "matchers",
  "nu-ansi-term",
  "once_cell",
- "regex-automata",
+ "regex",
  "sharded-slab",
  "smallvec",
  "thread_local",

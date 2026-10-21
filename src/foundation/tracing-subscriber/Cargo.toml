@@ -44,7 +44,7 @@ serialization = ["dep:data-serialization"]
 alloc = []
 ansi = ["fmt", "nu-ansi-term"]
 default = ["smallvec", "fmt", "ansi", "tracing-log", "std"]
-env-filter = ["matchers", "once_cell", "tracing", "std", "thread_local", "dep:regex-automata"]
+env-filter = ["matchers", "once_cell", "tracing", "std", "thread_local", "dep:regex"]
 fmt = ["registry", "std"]
 json = ["serialization", "json-codec"]
 local-time = ["time/local-offset"]
@@ -77,12 +77,6 @@ version = "0.12.1"
 optional = true
 path = "../parking_lot"
 
-[dependencies.regex-automata]
-version = "0.4"
-features = ["std"]
-optional = true
-default-features = false
-path = "../regex-automata"
 
 [dependencies.data-serialization]
 version = "1.0.140"
@@ -144,3 +138,10 @@ check-cfg = [
     "cfg(tracing_unstable)",
     "cfg(unsound_local_offset)",
 ]
+
+[dependencies.regex]
+version = "1.13.1"
+path = "../regex"
+default-features = false
+features = ["automata", "std"]
+optional = true

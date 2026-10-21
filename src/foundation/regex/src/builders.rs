@@ -28,7 +28,7 @@ use alloc::{
     vec::Vec,
 };
 
-use regex_automata::{
+use crate::automata::{
     meta, nfa::thompson::WhichCaptures, util::syntax, MatchKind,
 };
 

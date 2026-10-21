@@ -76,16 +76,16 @@ use alloc::sync::Arc;
 use alloc::vec;
 use alloc::vec::Vec;
 use core::fmt;
-use regex_automata::meta::Regex;
-use regex_automata::util::look::LookMatcher;
-use regex_automata::util::pool::Pool;
-use regex_automata::util::primitives::NonMaxUsize;
-use regex_automata::Anchored;
-use regex_automata::Input;
+use regex::automata::meta::Regex;
+use regex::automata::util::look::LookMatcher;
+use regex::automata::util::pool::Pool;
+use regex::automata::util::primitives::NonMaxUsize;
+use regex::automata::Anchored;
+use regex::automata::Input;
 
 #[cfg(feature = "variable-lookbehinds")]
 pub(crate) type CachePoolFn = alloc::boxed::Box<
-    dyn Fn() -> regex_automata::hybrid::dfa::Cache
+    dyn Fn() -> regex::automata::hybrid::dfa::Cache
         + Send
         + Sync
         + core::panic::UnwindSafe
@@ -363,9 +363,9 @@ pub struct ReverseBackwardsDelegate {
     /// The regex pattern as a string which will be matched in reverse, in a backwards direction
     pub pattern: String,
     /// The delegate regex to match backwards (wrapped in Arc for efficient cloning)
-    pub(crate) dfa: Arc<regex_automata::hybrid::dfa::DFA>,
+    pub(crate) dfa: Arc<regex::automata::hybrid::dfa::DFA>,
     /// Cache pool for DFA searches
-    pub(crate) cache_pool: Pool<regex_automata::hybrid::dfa::Cache, CachePoolFn>,
+    pub(crate) cache_pool: Pool<regex::automata::hybrid::dfa::Cache, CachePoolFn>,
     /// The forward regex for capture group extraction
     pub(crate) capture_group_extraction_inner: Option<Regex>,
     /// The range of capture groups. None if there are no capture groups.
@@ -875,7 +875,7 @@ fn matches_literal_casei_unicode(text: &str, literal: &str) -> bool {
 /// Whether two codepoints are equal under Unicode simple case folding — the
 /// same equivalence a case-insensitive engine literal uses.
 fn chars_fold_equal(a: char, b: char) -> bool {
-    use regex_syntax::hir::{ClassUnicode, ClassUnicodeRange};
+    use regex::syntax::hir::{ClassUnicode, ClassUnicodeRange};
     let mut class = ClassUnicode::new([ClassUnicodeRange::new(a, a)]);
     match class.try_case_fold_simple() {
         Ok(()) => class

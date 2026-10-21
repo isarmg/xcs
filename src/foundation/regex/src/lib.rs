@@ -1249,13 +1249,7 @@ default are noted.
 * **perf-literal** -
   Enables the use of literal optimizations for speeding up matches. In some
   cases, literal optimizations can result in speedups of _several_ orders of
-  magnitude. Disabling this drops the `aho-corasick` and `memchr` dependencies.
-* **perf-cache** -
-  This feature used to enable a faster internal cache at the cost of using
-  additional dependencies, but this is no longer an option. A fast internal
-  cache is now used unconditionally with no additional dependencies. This may
-  change in the future.
-
+  magnitude. Disabling this removes literal accelerators unless another selected capability enables them.
 ### Unicode features
 
 * **unicode** -
@@ -1295,92 +1289,76 @@ default are noted.
   This enables using classes like `\p{gcb=Extend}`, `\p{wb=Katakana}` and
   `\p{sb=ATerm}`.
 
-# Other crates
+# Implementation layers
 
-This crate has two required dependencies and several optional dependencies.
-This section briefly describes them with the goal of raising awareness of how
-different components of this crate may be used independently.
+This package owns its parser, literal search and automata implementations.
+[`syntax`] contains AST/HIR parsing and Unicode data, [`literal`] contains
+multi-pattern literal search, and [`automata`] contains DFA/NFA construction
+and execution. The root matching API is enabled by `matcher`.
 
-It is somewhat unusual for a regex engine to have dependencies, as most regex
-libraries are self contained units with no dependencies other than a particular
-environment's standard library. Indeed, for other similarly optimized regex
-engines, most or all of the code in the dependencies of this crate would
-normally just be inseparable or coupled parts of the crate itself. But since
-Rust and its tooling ecosystem make the use of dependencies so easy, it made
-sense to spend some effort de-coupling parts of this crate and making them
-independently useful.
+Parser-only consumers select `syntax` without default features. Precompiled DFA
+consumers select `dfa-search` without default features for allocation-free,
+`no_std` search. The optional `memchr` dependency supplies byte/SIMD accelerators;
+optional `log` supplies diagnostics. There are no required package dependencies.
 
-We only briefly describe each crate here.
-
-* [`regex-lite`](https://docs.rs/regex-lite) is not a dependency of `regex`,
-but rather, a standalone zero-dependency simpler version of `regex` that
-prioritizes compile times and binary size. In exchange, it eschews Unicode
-support and performance. Its match semantics are as identical as possible to
-the `regex` crate, and for the things it supports, its APIs are identical to
-the APIs in this crate. In other words, for a lot of use cases, it is a drop-in
-replacement.
-* [`regex-syntax`](https://docs.rs/regex-syntax) provides a regular expression
-parser via `Ast` and `Hir` types. It also provides routines for extracting
-literals from a pattern. Folks can use this crate to do analysis, or even to
-build their own regex engine without having to worry about writing a parser.
-* [`regex-automata`](https://docs.rs/regex-automata) provides the regex engines
-themselves. One of the downsides of finite automata based regex engines is that
-they often need multiple internal engines in order to have similar or better
-performance than an unbounded backtracking engine in practice. `regex-automata`
-in particular provides public APIs for a PikeVM, a bounded backtracker, a
-one-pass DFA, a lazy DFA, a fully compiled DFA and a meta regex engine that
-combines all them together. It also has native multi-pattern support and
-provides a way to compile and serialize full DFAs such that they can be loaded
-and searched in a no-std no-alloc environment. `regex-automata` itself doesn't
-even have a required dependency on `regex-syntax`!
-* [`memchr`](https://docs.rs/memchr) provides low level SIMD vectorized
-routines for quickly finding the location of single bytes or even substrings
-in a haystack. In other words, it provides fast `memchr` and `memmem` routines.
-These are used by this crate in literal optimizations.
-* [`aho-corasick`](https://docs.rs/aho-corasick) provides multi-substring
-search. It also provides SIMD vectorized routines in the case where the number
-of substrings to search for is relatively small. The `regex` crate also uses
-this for literal optimizations.
+The original regex, regex-syntax, regex-automata and aho-corasick releases remain
+individually attributed in the repository provenance and license records.
 */
 
 #![no_std]
 #![deny(missing_docs)]
-#![cfg_attr(feature = "pattern", feature(pattern))]
 // This adds Cargo feature annotations to items in the rustdoc output. Which is
 // sadly hugely beneficial for this crate due to the number of features.
 #![cfg_attr(docsrs_regex, feature(doc_cfg))]
 #![warn(missing_debug_implementations)]
 
-#[cfg(doctest)]
-doc_comment::doctest!("../README.md");
 
+#[cfg(feature = "alloc")]
 extern crate alloc;
 #[cfg(any(test, feature = "std"))]
 extern crate std;
 
+#[cfg(feature = "matcher")]
 pub use crate::error::Error;
 
+#[cfg(feature = "matcher")]
 pub use crate::{builders::string::*, regex::string::*, regexset::string::*};
 
+#[cfg(feature = "matcher")]
 mod builders;
+#[cfg(feature = "matcher")]
 pub mod bytes;
+#[cfg(feature = "matcher")]
 mod error;
+#[cfg(feature = "matcher")]
 mod find_byte;
-#[cfg(feature = "pattern")]
-mod pattern;
+#[cfg(feature = "matcher")]
 mod regex;
+#[cfg(feature = "matcher")]
 mod regexset;
 
 /// Escapes all regular expression meta characters in `pattern`.
 ///
 /// The string returned may be safely used as a literal in a regular
 /// expression.
+#[cfg(feature = "syntax")]
 pub fn escape(pattern: &str) -> alloc::string::String {
-    regex_syntax::escape(pattern)
+    crate::syntax::escape(pattern)
 }
 
 /// Public-but-unstable API for macro support.
 #[doc(hidden)]
+#[cfg(feature = "matcher")]
 pub mod __private {
-    pub use regex_automata::util::lazy::Lazy;
+    pub use crate::automata::util::lazy::Lazy;
 }
+
+/// Regular-expression parsing without the matching engine.
+#[cfg(feature = "syntax")]
+pub mod syntax;
+/// Finite automata, including allocation-free DFA search.
+#[cfg(feature = "automata")]
+pub mod automata;
+/// Multi-pattern literal substring search.
+#[cfg(feature = "literal")]
+pub mod literal;

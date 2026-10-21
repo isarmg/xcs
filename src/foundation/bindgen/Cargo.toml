@@ -95,6 +95,7 @@ path = "../quote"
 [dependencies.regex]
 version = "1.5.3"
 features = [
+    "matcher",
     "std",
     "unicode-perl",
 ]
