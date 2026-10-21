@@ -12,7 +12,10 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 fn source(root: &Path, name: &str, expected: &str) -> Result<String> {
     let bytes = fs::read(root.join("src/naming/data").join(name))?;
-    let hash = format!("{:x}", Sha256::digest(&bytes));
+    let mut hash = String::with_capacity(64);
+    for byte in Sha256::digest(&bytes) {
+        write!(&mut hash, "{byte:02x}").expect("writing to String cannot fail");
+    }
     if hash != expected {
         return Err(format!("Unicode 16 input checksum differs: {name}").into());
     }

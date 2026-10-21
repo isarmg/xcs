@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "lockfiles_sha256": {
-    "Cargo.lock": "44110b1e45ffff244c596a2f0da807551f38d77460ccc0b8a13dc0f607d0de37"
+    "Cargo.lock": "c1113befcef229d952f3a12c8646c39ce1510dcf18e359be0514f7cba458ce7a"
   },
   "manifests_sha256": {
     "Cargo.toml": "1c6472894378c77e0b3e3c52b586039cdc6b030bada2609b3bbe9f719be96455",
@@ -246,7 +246,6 @@
     "src/foundation/serde_path_to_error/Cargo.toml": "ec23f90d2b46456ea42edd2fdc352d7aa839402f6afa9b7b6da954c321e01bfc",
     "src/foundation/serde_spanned/Cargo.toml": "c362011e4a248b83dfd15c9da159bd3e25441b252dc6fa769040a79a5db1fcec",
     "src/foundation/serde_urlencoded/Cargo.toml": "1211a27af13bd1094f66c36b35933ddf43240fb356ddf8c60d85db95cd0c6d72",
-    "src/foundation/sha2-0.10.9/Cargo.toml": "0c7878f8b205adb423c877419ee02b7ec4bb614a0beda90c8986d38f76e5ce51",
     "src/foundation/sha2-0.11.1/Cargo.toml": "787a5562b926e969fb3c3ee0e7847fe590f14b1084c978c0e718135a00bfa12a",
     "src/foundation/sharded-slab/Cargo.toml": "c27d8edf445c0076cdd0e20f3e55603fdec80e68fa661a3e6cec52513400581f",
     "src/foundation/shlex-1.3.0/Cargo.toml": "c0f82d1645b2187488c986f48aab8e4887ba86cdbe0d478ee21525bb0bb2a007",
@@ -352,9 +351,9 @@
     "tools/contract-check/Cargo.toml": "cd6d94c288a01113737104825e7b806940b822529dd1522f09e96faf74381e30",
     "tools/perf-check/Cargo.toml": "3b2ee0101edb83fd8e5b5f302b17563cb532fb082f351e9b1369dc1154f43619",
     "tools/release-tools/Cargo.toml": "389ade4140b92ee59d358dc15f3b929f743de4d1987313fd1453e6508400676e",
-    "tools/unicode-build/Cargo.toml": "c5173d842d3a7bdb01a4687c3c0958482be3dfdbc89a8ea8e0293102342717e0",
+    "tools/unicode-build/Cargo.toml": "3c227869d2fbee29d0add0f932e6dbeacecb90f3880155fe036e0b6798ccf68e",
     "tools/web-bindings/Cargo.toml": "9e4fa929ef20246d202c133c361afe22fb59f05c90d16f5a3352bf301f5bbf34",
-    "tools/web-build/Cargo.toml": "efb457397643fdb7037759a198e638af0cd823cd234946687b31c3f1f7325ef7"
+    "tools/web-build/Cargo.toml": "fbed4324b27101933a5a616cee0881eb7efcd2961dbf2f6ba1a0864a52110c91"
   },
   "merges": [
     {
@@ -13821,60 +13820,6 @@
       },
       "version": "0.7.1"
     },
-    "src/foundation/sha2-0.10.9": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Pure Rust implementation of the SHA-2 hash function family\nincluding SHA-224, SHA-256, SHA-384, and SHA-512.",
-      "directory": "src/foundation/sha2-0.10.9",
-      "files_sha256": {
-        "Cargo.toml": "0c7878f8b205adb423c877419ee02b7ec4bb614a0beda90c8986d38f76e5ce51",
-        "benches/mod.rs": "c32d9f91a541821ea988c14eee710963e623ef1edf69b02b41a29bc44e04ba95",
-        "src/consts.rs": "2f820349fa7cbf9fecc1d4aabbd1a721bb1badc3f32ef9e903826960b6f42523",
-        "src/core_api.rs": "73b160d98bfa6737688875ad73da5e3c2c93582604dc313d208200e12fdab676",
-        "src/lib.rs": "b519427535b1855bbe8c3d0517b2f3d04a607cf0cb4327cc716cd5d90da5dbf1",
-        "src/sha256.rs": "6ced9112d4ceb4eff20b56d93a063f72ecef4c6ec3b215f08696a853b09083c3",
-        "src/sha256/aarch64.rs": "18121a25867a575fec8ef64da763693ece4e3e3e84da095254b8471234c6f1f8",
-        "src/sha256/loongarch64_asm.rs": "79e2d5e3c039581e2319f8789de9ed13a8dd819ebffd13532dbd83448c7ad662",
-        "src/sha256/soft.rs": "98e765a8e8dfa0af31f2b76570f212e6b3099522bf300e1554cbbd9fd5d02960",
-        "src/sha256/soft_compact.rs": "6273c3f5603de24143f29d0aa08f441b3919acbc251daea5f323a08570a8470f",
-        "src/sha256/x86.rs": "70f1597f2029522b35bfd026df0a8908f086523ab2a80ba3ef35e6231b56353c",
-        "src/sha512.rs": "e088bde0980702a591f8d60dd1d41dc13f0a810e29e1e5a5d6344228b2de965d",
-        "src/sha512/aarch64.rs": "2ed929329a0fa66180e4726d028713a49f99cc223e635078fc1f3252a44981e0",
-        "src/sha512/loongarch64_asm.rs": "58a7b54d95a0e037ba80570d96ffe0dd7c0014c7fcb45b90725e522cc4992d8a",
-        "src/sha512/soft.rs": "0183ad89418b886859d2afa9bf061bc92759ae337c1d26147b4300042e63ef42",
-        "src/sha512/soft_compact.rs": "437ad870b8cd5c5590d6fe85afc63428f1994dffdc9a4592cde46c9ee857ba9f",
-        "src/sha512/x86.rs": "c7dd8bdf3212e1e8c4cc9cc6b380dc0468f79dcfd0f61a445d0d38cead45a03a",
-        "tests/data/sha224.blb": "59b185972521af418fd49a079de3d5f5bed74cd76d80473da51cab3faee6c7d0",
-        "tests/data/sha256.blb": "bb096934bb7e43e41ce143d211397afca6fcdfe243a39811688ea31aae6f800a",
-        "tests/data/sha384.blb": "e8fe66c07ba336fae2c0aa4c87cb768f41bd4ed318ee1a36fbde0a68581946ec",
-        "tests/data/sha512.blb": "1cc0e86571f2f4e3bc81438ce7b6c25c118d2d7437355240113f59cbb782c8d6",
-        "tests/data/sha512_224.blb": "b02dd46741db1034112e0888d0cdb233a21b9a82c319456f806bbaae49acf440",
-        "tests/data/sha512_256.blb": "95195b758e362d92ff0cebebac4cca696512ea5811b635243bc70e29164e5786",
-        "tests/mod.rs": "61be596fd9b45a8db345950ff2ed6f87eaf4d239ac156885f36e819da0597644"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/sha2-0.10.9/LICENSE-APACHE",
-        "compliance/licenses/upstream/sha2-0.10.9/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "sha2",
-      "origin_directory": "vendor/rust/sha2-0.10.9",
-      "repository": "https://github.com/RustCrypto/hashes",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283",
-        "archive_url": "https://static.crates.io/crates/sha2/sha2-0.10.9.crate",
-        "name": "sha2",
-        "version": "0.10.9"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "82c36a428f8d6f05f3bfccdedb243e9d1f85359d"
-        },
-        "path_in_vcs": "sha2"
-      },
-      "version": "0.10.9"
-    },
     "src/foundation/sha2-0.11.1": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Pure Rust implementation of the SHA-2 hash function family\nincluding SHA-224, SHA-256, SHA-384, and SHA-512.",
@@ -25835,9 +25780,7 @@
           ]
         },
         "src/foundation/crypto-common-0.1.7": {
-          "features": [
-            "std"
-          ],
+          "features": [],
           "roles": [
             "runtime"
           ]
@@ -25864,12 +25807,10 @@
         },
         "src/foundation/digest-0.10.7": {
           "features": [
-            "alloc",
             "block-buffer",
             "core-api",
             "default",
             "mac",
-            "std",
             "subtle"
           ],
           "roles": [
@@ -28866,7 +28807,7 @@
             "compile"
           ]
         },
-        "src/foundation/block-buffer-0.10.4": {
+        "src/foundation/block-buffer-0.12.1": {
           "features": [],
           "roles": [
             "compile"
@@ -28922,13 +28863,25 @@
             "compile"
           ]
         },
+        "src/foundation/cmov": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
         "src/foundation/colorchoice": {
           "features": [],
           "roles": [
             "compile"
           ]
         },
-        "src/foundation/cpufeatures-0.2.17": {
+        "src/foundation/const-oid": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/cpufeatures-0.3.1": {
           "features": [],
           "roles": [
             "compile"
@@ -28969,23 +28922,25 @@
             "compile"
           ]
         },
-        "src/foundation/crypto-common-0.1.7": {
-          "features": [
-            "std"
-          ],
+        "src/foundation/crypto-common-0.2.2": {
+          "features": [],
           "roles": [
             "compile"
           ]
         },
-        "src/foundation/digest-0.10.7": {
+        "src/foundation/ctutils": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/digest-0.11.3": {
           "features": [
             "alloc",
-            "block-buffer",
-            "core-api",
+            "block-api",
             "default",
             "mac",
-            "std",
-            "subtle"
+            "oid"
           ],
           "roles": [
             "compile"
@@ -29053,14 +29008,6 @@
             "compile"
           ]
         },
-        "src/foundation/generic-array": {
-          "features": [
-            "more_lengths"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/gimli": {
           "features": [
             "default",
@@ -29104,6 +29051,12 @@
           ]
         },
         "src/foundation/heck": {
+          "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/hybrid-array": {
           "features": [],
           "roles": [
             "compile"
@@ -29355,10 +29308,11 @@
             "compile"
           ]
         },
-        "src/foundation/sha2-0.10.9": {
+        "src/foundation/sha2-0.11.1": {
           "features": [
+            "alloc",
             "default",
-            "std"
+            "oid"
           ],
           "roles": [
             "compile"
@@ -29381,16 +29335,6 @@
         },
         "src/foundation/strsim": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/subtle": {
-          "features": [
-            "default",
-            "i128",
-            "std"
-          ],
           "roles": [
             "compile"
           ]
@@ -29485,12 +29429,6 @@
           "features": [
             "default"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/version_check": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -29669,12 +29607,6 @@
             "compile"
           ]
         },
-        "src/foundation/block-buffer-0.10.4": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/block-buffer-0.12.1": {
           "features": [],
           "roles": [
@@ -29738,12 +29670,6 @@
             "compile"
           ]
         },
-        "src/foundation/cpufeatures-0.2.17": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/cpufeatures-0.3.1": {
           "features": [],
           "roles": [
@@ -29763,14 +29689,6 @@
         "src/foundation/crossbeam-utils": {
           "features": [
             "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/crypto-common-0.1.7": {
-          "features": [
             "std"
           ],
           "roles": [
@@ -29802,20 +29720,6 @@
         "src/foundation/deranged": {
           "features": [
             "default"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/digest-0.10.7": {
-          "features": [
-            "alloc",
-            "block-buffer",
-            "core-api",
-            "default",
-            "mac",
-            "std",
-            "subtle"
           ],
           "roles": [
             "compile"
@@ -30050,14 +29954,6 @@
             "sink",
             "slab",
             "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/generic-array": {
-          "features": [
-            "more_lengths"
           ],
           "roles": [
             "compile"
@@ -30654,15 +30550,6 @@
             "compile"
           ]
         },
-        "src/foundation/sha2-0.10.9": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/sha2-0.11.1": {
           "features": [
             "alloc",
@@ -30773,16 +30660,6 @@
         },
         "src/foundation/strum_macros": {
           "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/subtle": {
-          "features": [
-            "default",
-            "i128",
-            "std"
-          ],
           "roles": [
             "compile"
           ]
@@ -31037,12 +30914,6 @@
             "detect",
             "std"
           ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/version_check": {
-          "features": [],
           "roles": [
             "compile"
           ]
@@ -33301,6 +33172,70 @@
         "path_in_vcs": ""
       },
       "version": "0.5.18"
+    },
+    "src/foundation/sha2-0.10.9": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Pure Rust implementation of the SHA-2 hash function family\nincluding SHA-224, SHA-256, SHA-384, and SHA-512.",
+      "directory": "src/foundation/sha2-0.10.9",
+      "files_sha256": {
+        "Cargo.toml": "0c7878f8b205adb423c877419ee02b7ec4bb614a0beda90c8986d38f76e5ce51",
+        "benches/mod.rs": "c32d9f91a541821ea988c14eee710963e623ef1edf69b02b41a29bc44e04ba95",
+        "src/consts.rs": "2f820349fa7cbf9fecc1d4aabbd1a721bb1badc3f32ef9e903826960b6f42523",
+        "src/core_api.rs": "73b160d98bfa6737688875ad73da5e3c2c93582604dc313d208200e12fdab676",
+        "src/lib.rs": "b519427535b1855bbe8c3d0517b2f3d04a607cf0cb4327cc716cd5d90da5dbf1",
+        "src/sha256.rs": "6ced9112d4ceb4eff20b56d93a063f72ecef4c6ec3b215f08696a853b09083c3",
+        "src/sha256/aarch64.rs": "18121a25867a575fec8ef64da763693ece4e3e3e84da095254b8471234c6f1f8",
+        "src/sha256/loongarch64_asm.rs": "79e2d5e3c039581e2319f8789de9ed13a8dd819ebffd13532dbd83448c7ad662",
+        "src/sha256/soft.rs": "98e765a8e8dfa0af31f2b76570f212e6b3099522bf300e1554cbbd9fd5d02960",
+        "src/sha256/soft_compact.rs": "6273c3f5603de24143f29d0aa08f441b3919acbc251daea5f323a08570a8470f",
+        "src/sha256/x86.rs": "70f1597f2029522b35bfd026df0a8908f086523ab2a80ba3ef35e6231b56353c",
+        "src/sha512.rs": "e088bde0980702a591f8d60dd1d41dc13f0a810e29e1e5a5d6344228b2de965d",
+        "src/sha512/aarch64.rs": "2ed929329a0fa66180e4726d028713a49f99cc223e635078fc1f3252a44981e0",
+        "src/sha512/loongarch64_asm.rs": "58a7b54d95a0e037ba80570d96ffe0dd7c0014c7fcb45b90725e522cc4992d8a",
+        "src/sha512/soft.rs": "0183ad89418b886859d2afa9bf061bc92759ae337c1d26147b4300042e63ef42",
+        "src/sha512/soft_compact.rs": "437ad870b8cd5c5590d6fe85afc63428f1994dffdc9a4592cde46c9ee857ba9f",
+        "src/sha512/x86.rs": "c7dd8bdf3212e1e8c4cc9cc6b380dc0468f79dcfd0f61a445d0d38cead45a03a",
+        "tests/data/sha224.blb": "59b185972521af418fd49a079de3d5f5bed74cd76d80473da51cab3faee6c7d0",
+        "tests/data/sha256.blb": "bb096934bb7e43e41ce143d211397afca6fcdfe243a39811688ea31aae6f800a",
+        "tests/data/sha384.blb": "e8fe66c07ba336fae2c0aa4c87cb768f41bd4ed318ee1a36fbde0a68581946ec",
+        "tests/data/sha512.blb": "1cc0e86571f2f4e3bc81438ce7b6c25c118d2d7437355240113f59cbb782c8d6",
+        "tests/data/sha512_224.blb": "b02dd46741db1034112e0888d0cdb233a21b9a82c319456f806bbaae49acf440",
+        "tests/data/sha512_256.blb": "95195b758e362d92ff0cebebac4cca696512ea5811b635243bc70e29164e5786",
+        "tests/mod.rs": "61be596fd9b45a8db345950ff2ed6f87eaf4d239ac156885f36e819da0597644"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/sha2-0.10.9/LICENSE-APACHE",
+        "compliance/licenses/upstream/sha2-0.10.9/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "sha2",
+      "origin_directory": "vendor/rust/sha2-0.10.9",
+      "repository": "https://github.com/RustCrypto/hashes",
+      "retirement": {
+        "bytes": 89290,
+        "category": "version-consolidation",
+        "file_count": 24,
+        "reason": "SQLx Migrator removed; both remaining build tools now use sha2 0.11 with explicit canonical lower-hex output, fixed vectors and Unicode source digest verification. Argon2/blake2 digest 0.10 retained.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283",
+        "archive_url": "https://static.crates.io/crates/sha2/sha2-0.10.9.crate",
+        "name": "sha2",
+        "version": "0.10.9"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "82c36a428f8d6f05f3bfccdedb243e9d1f85359d"
+        },
+        "path_in_vcs": "sha2"
+      },
+      "version": "0.10.9"
     },
     "src/foundation/sqlx-macros": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -40741,6 +40676,7 @@
     "src/foundation/rand_core-0.10.1": "7fb72e3ec9865643f07151b78ccdaac7ce2b5492f6aacf3a82d0ff171889fd19",
     "src/foundation/rand_pcg": "e1ed8f5e2931a5975e4f3984f42420069cf32a758d02398a0d8364397bfbb7de",
     "src/foundation/redox_syscall": "704f75661ff61ace178b7f5c4e26b52ed723934c8e07ccb9957b79936dca095c",
+    "src/foundation/sha2-0.10.9": "1ead106fffdba3ac43380ddc28538c803d85219acbaafdb59d77bdad3036f120",
     "src/foundation/sqlx-macros": "7958f40c9a91c6129102eafede62655a54e1c3709276c9447e947cb9cce8658a",
     "src/foundation/sqlx-macros-core": "7d055f996523c7558a976130404ba66fecdf0bb4214827ceb269694ed57b062b",
     "src/foundation/time-macros": "e0f74f378003a1f01d62921f14a4c4e5cbd6bedabef941d34af8108f4bc60e8a",

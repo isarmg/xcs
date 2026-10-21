@@ -33,3 +33,12 @@
 | root-native / web / smb / build-tools / validation-tools 来源数 | 205 / 102 / 43 / 85 / 181 | 201 / 102 / 43 / 83 / 178 |
 
 以上体积差额只表示维护输入减少，不作为 WASM 大小、运行内存或性能收益。原始来源、许可证、G4/字体/几何不改。云端真实 Chromium 154/ChromeDriver 154 浏览器套件通过：G4、字体、六种响应式视口、传输记录、快照 DOM/details/focus 保持、真实预检错误和流式下载会话隔离。首次执行隔离上下文内 Chrome 因 SUID 沙箱不可用退出；在同一云端环境的常规执行上下文保留浏览器沙箱运行后通过。截图位于云端 `/workspace/zxs-evidence/sqlx-browser.png` 与 `sqlx-viewports/`。GitHub 13 项 CI 最终结果按精确提交 SHA 回报。
+
+
+## 第二批：构建工具 SHA-256 统一
+
+SQLx 移除迁移摘要后，旧 sha2 的最后两个消费者是 web-build 与 unicode-build。两工具迁至已有 sha2 0.11.1；该版输出 Array 不实现 LowerHex，逐字节使用 02x 生成固定 64 字符小写摘要，而不是只改 manifest 版本号。
+web-build 在同一 helper 中统一文件与目录清单的摘要转换，并使用独立固定的空输入、abc、64 个零字节向量验证。既有复制/清单回归的预期值改为独立固定摘要，不让同一 helper 同时生成实际值和预期值。Unicode 的三个原始输入摘要和生成表全部通过 --check，未修改输入、生成表或密码协议。
+
+sha2 0.10.9 已显式退役，原始材料及最后源码收据保留。digest 0.10.7、blake2、Argon2、旧 block-buffer/crypto-common 和 Argon2 使用的 cpufeatures 0.2 继续保留；它们仍是实际密码消费者，不因另一个消费者消失而删除。
+本批后完整根 metadata 为 349 包，活动来源 331，retired 71，foundation 为 10730 文件 / 149390053 字节。构建工具全套（含日志格式/过滤 48 + 18 项）、Unicode 固定输入、静态门禁及来源/metadata 验证通过；生产 release WASM 分发构建及真实 Chrome 全套再次通过（含 G4、字体、六视口、失效/延迟/已释放字体传输及 owner 生命周期隔离）；截图为云端 `/workspace/zxs-evidence/sha2-browser.png` 和 `sha2-viewports/`。

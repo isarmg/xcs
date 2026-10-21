@@ -12,6 +12,15 @@ use std::{
     process::Command,
 };
 
+fn sha256_hex(bytes: impl AsRef<[u8]>) -> String {
+    use std::fmt::Write as _;
+    let mut hex = String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        write!(&mut hex, "{byte:02x}").expect("writing to String cannot fail");
+    }
+    hex
+}
+
 fn main() -> Result<()> {
     let mut args = std::env::args().skip(1);
     let command = args.next().unwrap_or_else(|| "build".into());
@@ -250,10 +259,7 @@ fn source_inventory(root: &Path) -> Result<BTreeMap<String, String>> {
                 directories.push(path);
                 inventory_tree(root, &root.join(path), &mut inventory)?;
             } else {
-                inventory.insert(
-                    path.into(),
-                    format!("{:x}", Sha256::digest(read_input(&root.join(path))?)),
-                );
+                inventory.insert(path.into(), sha256_hex(read_input(&root.join(path))?));
             }
         }
     }
@@ -316,7 +322,7 @@ fn inventory_tree(
                 path.strip_prefix(root)?
                     .to_string_lossy()
                     .replace('\\', "/"),
-                format!("{:x}", Sha256::digest(read_input(&path)?)),
+                sha256_hex(read_input(&path)?),
             );
         }
     }
@@ -325,6 +331,22 @@ fn inventory_tree(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn sha256_hex_preserves_canonical_checksum_bytes() {
+        assert_eq!(
+            super::sha256_hex(b""),
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        );
+        assert_eq!(
+            super::sha256_hex(b"abc"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
+        assert_eq!(
+            super::sha256_hex([0; 64]),
+            "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b"
+        );
+    }
+
     use super::*;
 
     #[test]
@@ -457,7 +479,7 @@ mod tests {
         inventory_tree(&source, &source, &mut inventory).unwrap();
         assert_eq!(
             inventory["nested/file.css"],
-            format!("{:x}", Sha256::digest(b"body {}"))
+            "62368a1a29259b30bac235c0e75dc700c9b3bacf1513ad5708e4fe4a6c0d6560"
         );
         assert_eq!(
             fs::read(output.join("nested/file.css")).unwrap(),
