@@ -11,7 +11,7 @@ use std::{
 
 use crate::kernel::{body::Body, extract::Request, response::Response};
 use futures::FutureExt;
-use http_transport::adapters::rt::TokioIo;
+use http_transport::adapters::rt::{TokioIo, TokioTimer};
 #[cfg(feature = "http1")]
 use http_transport::adapters::{server::conn::auto::Builder, service::TowerToHyperService};
 use http_transport::body::Incoming;
@@ -387,7 +387,9 @@ async fn handle_connection<L, M, S>(
     let close_rx = close_rx.clone();
 
     tokio::spawn(async move {
-        let builder = Builder::new();
+        let mut builder = Builder::new();
+        // Enforce the transport's existing default header deadline, including protocol detection.
+        builder.http1().timer(TokioTimer::new());
 
         let mut conn = pin!(builder.serve_connection_with_upgrades(io, hyper_service));
         let mut signal_closed = pin!(signal_tx.closed().fuse());

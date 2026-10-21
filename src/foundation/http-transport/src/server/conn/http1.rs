@@ -146,9 +146,6 @@ where
     /// This should only be called after `poll_without_shutdown` signals
     /// that the connection is "done". Otherwise, it may not have finished
     /// flushing all necessary HTTP bytes.
-    ///
-    /// # Panics
-    /// This method will panic if this connection is using an h2 protocol.
     pub fn into_parts(self) -> Parts<I, S> {
         let (io, read_buf, dispatch) = self.conn.into_inner();
         Parts {
@@ -475,6 +472,31 @@ impl Builder {
         <S::ResBody as Body>::Error: Into<Box<dyn StdError + Send + Sync>>,
         I: Read + Write + Unpin,
     {
+        self.serve_connection_with_header_timeout(io, service, None)
+    }
+
+    // Share the existing configured/default/absent-timer policy with protocol detection.
+    pub(crate) fn header_timeout_config(&self) -> (Time, Option<Duration>) {
+        (
+            self.timer.clone(),
+            self.timer
+                .check(self.h1_header_read_timeout, "header_read_timeout"),
+        )
+    }
+
+    pub(crate) fn serve_connection_with_header_timeout<I, S>(
+        &self,
+        io: I,
+        service: S,
+        timeout: Option<Pin<Box<dyn crate::rt::Sleep>>>,
+    ) -> Connection<I, S>
+    where
+        S: HttpService<IncomingBody>,
+        S::Error: Into<Box<dyn StdError + Send + Sync>>,
+        S::ResBody: 'static,
+        <S::ResBody as Body>::Error: Into<Box<dyn StdError + Send + Sync>>,
+        I: Read + Write + Unpin,
+    {
         let mut conn = proto::Conn::new(io);
         conn.set_h1_parser_config(self.h1_parser_config.clone());
         conn.set_timer(self.timer.clone());
@@ -496,11 +518,11 @@ impl Builder {
         if let Some(max_header_size) = self.h1_max_header_size {
             conn.set_http1_max_header_size(max_header_size);
         }
-        if let Some(dur) = self
-            .timer
-            .check(self.h1_header_read_timeout, "header_read_timeout")
-        {
+        if let Some(dur) = self.header_timeout_config().1 {
             conn.set_http1_header_read_timeout(dur);
+        }
+        if let Some(timeout) = timeout {
+            conn.set_http1_header_read_timeout_fut(timeout);
         }
         if let Some(writev) = self.h1_writev {
             if writev {

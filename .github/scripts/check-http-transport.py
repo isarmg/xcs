@@ -49,13 +49,13 @@ def main():
         # Real runtime + HTTP client/server over Tokio's in-memory duplex stream, no sockets.
         (work/'Cargo.toml').write_text('[package]\nname="transport-behavior"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\n'+
             f'http-transport={{path={json.dumps(str(ROOT/"src/foundation/http-transport"))},features=["full"]}}\n'+
-            f'http-routing={{path={json.dumps(str(ROOT/"src/foundation/http-routing"))},default-features=false}}\n'+
-            f'tokio={{path={json.dumps(str(ROOT/"src/foundation/tokio"))},features=["rt","macros","io-util","time"]}}\n'+
+            f'http-routing={{path={json.dumps(str(ROOT/"src/foundation/http-routing"))},default-features=false,features=["tokio","http1"]}}\n'+
+            f'tokio={{path={json.dumps(str(ROOT/"src/foundation/tokio"))},features=["rt","macros","io-util","time","test-util"]}}\n'+
             f'http-body={{path={json.dumps(str(ROOT/"src/foundation/http-body"))},features=["utilities"]}}\n'+
             f'service-stack={{path={json.dumps(str(ROOT/"src/foundation/service-stack"))},features=["util"]}}\n'+
             '[[test]]\nname="behavior"\npath="test/behavior.rs"\n')
-        (work/'test/behavior.rs').write_bytes((ROOT/'test/architecture/http-transport/behavior.rs').read_bytes() + (ROOT/'test/architecture/http-transport/combined.rs').read_bytes() + (ROOT/'test/architecture/http-transport/upgrade.rs').read_bytes() + (ROOT/'test/architecture/http-transport/client_state.rs').read_bytes())
+        (work/'test/behavior.rs').write_bytes((ROOT/'test/architecture/http-transport/behavior.rs').read_bytes() + (ROOT/'test/architecture/http-transport/combined.rs').read_bytes() + (ROOT/'test/architecture/http-transport/upgrade.rs').read_bytes() + (ROOT/'test/architecture/http-transport/client_state.rs').read_bytes() + (ROOT/'test/architecture/http-transport/probe_timeout.rs').read_bytes())
         run(work,'generate-lockfile');output=run(work,'test','--locked','--test','behavior')
-        assert re.search(r'test result: ok\. 15 passed; 0 failed',output),output
-        print(f'http-transport: {count} native/WASM feature checks, absent HTTP2 rejection, 15 transport/routing/readiness/upgrade/state tests and 2 FFI allocation/ABI tests passed')
+        assert re.search(r'test result: ok\. 25 passed; 0 failed',output),output
+        print(f'http-transport: {count} native/WASM feature checks, absent HTTP2 rejection, 25 transport/routing/readiness/upgrade/state tests and 2 FFI allocation/ABI tests passed')
 if __name__=='__main__':main()

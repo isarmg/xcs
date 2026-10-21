@@ -12,7 +12,7 @@ Original sources: Axum 0.8.9 and axum-core 0.5.6. Exact versions, licenses, upst
 
 ## Transport integration boundary
 
-The `http1` feature enables only the protocol engine. Runtime/server adapters are activated by `tokio`, not by the optional transport dependency itself. The maintained gate verifies native and WASM HTTP/1-only graphs without transport adapters or Tokio networking/runtime/time features. Application routing and protocol reception retain distinct body types; readiness-aware middleware is adapted explicitly, not aliased to the protocol service trait.
+The `http1` feature enables only the protocol engine. Runtime/server adapters are activated by `tokio`, not by the optional transport dependency itself. The maintained gate verifies native and WASM HTTP/1-only graphs without transport adapters or Tokio networking/runtime/time features. Application routing and protocol reception retain distinct body types; readiness-aware middleware is adapted explicitly, not aliased to the protocol service trait. The maintained server installs `TokioTimer`, activating the transport’s existing 30-second header deadline, including protocol detection. The timeout is not restarted when detection hands the connection to the HTTP/1 parser.
 
 ## Capability audit and inactive source evidence
 

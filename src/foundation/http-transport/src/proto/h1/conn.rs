@@ -151,6 +151,13 @@ where
         self.state.h1_header_read_timeout = Some(val);
     }
 
+    // The protocol probe already started this first-header deadline. Do not restart it.
+    #[cfg(feature = "server")]
+    pub(crate) fn set_http1_header_read_timeout_fut(&mut self, timeout: Pin<Box<dyn Sleep>>) {
+        self.state.h1_header_read_timeout_fut = Some(timeout);
+        self.state.h1_header_read_timeout_running = true;
+    }
+
     #[cfg(feature = "server")]
     pub(crate) fn set_allow_half_close(&mut self) {
         self.state.allow_half_close = true;

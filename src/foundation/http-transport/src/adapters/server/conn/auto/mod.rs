@@ -11,7 +11,7 @@ use std::{error::Error as StdError, io, time::Duration};
 
 use crate::{
     body::Incoming,
-    rt::{Read, ReadBuf, Timer, Write},
+    rt::{Read, ReadBuf, Sleep, Timer, Write},
     service::Service,
 };
 use bytes::Bytes;
@@ -175,7 +175,7 @@ impl Builder {
 
             #[cfg(feature = "http1")]
             _ => ConnState::ReadVersion {
-                read_version: read_version(io),
+                read_version: read_version(io, &self.http1),
                 builder: Cow::Borrowed(self),
                 service: Some(service),
             },
@@ -208,7 +208,7 @@ impl Builder {
     {
         UpgradeableConnection {
             state: UpgradeableConnState::ReadVersion {
-                read_version: read_version(io),
+                read_version: read_version(io, &self.http1),
                 builder: Cow::Borrowed(self),
                 service: Some(service),
             },
@@ -233,11 +233,15 @@ impl Version {
     }
 }
 
-fn read_version<I>(io: I) -> ReadVersion<I>
+fn read_version<I>(io: I, builder: &http1::Builder) -> ReadVersion<I>
 where
     I: Read + Unpin,
 {
+    let (timer, header_timeout) = builder.header_timeout_config();
     ReadVersion {
+        timer,
+        header_timeout,
+        timeout: None,
         io: Some(io),
         buf: [MaybeUninit::uninit(); 24],
         filled: 0,
@@ -249,6 +253,9 @@ where
 
 pin_project! {
     struct ReadVersion<I> {
+        timer: crate::common::time::Time,
+        header_timeout: Option<Duration>,
+        timeout: Option<Pin<Box<dyn Sleep>>>,
         io: Option<I>,
         buf: [MaybeUninit<u8>; 24],
         // the amount of `buf` thats been filled
@@ -271,14 +278,20 @@ impl<I> Future for ReadVersion<I>
 where
     I: Read + Unpin,
 {
-    type Output = io::Result<(Version, Rewind<I>)>;
+    type Output = Result<(Version, Rewind<I>, Option<Pin<Box<dyn Sleep>>>)>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.project();
         if *this.cancelled {
-            return Poll::Ready(Err(io::Error::new(io::ErrorKind::Interrupted, "Cancelled")));
+            return Poll::Ready(Err(
+                io::Error::new(io::ErrorKind::Interrupted, "Cancelled").into()
+            ));
         }
 
+        // Match HTTP/1's first-poll start and data-before-timeout precedence.
+        if let Some(duration) = this.header_timeout.take() {
+            *this.timeout = Some(this.timer.sleep_until(this.timer.now() + duration));
+        }
         let mut buf = ReadBuf::uninit(&mut *this.buf);
         // SAFETY: `this.filled` tracks how many bytes have been read (and thus initialized) and
         // we're only advancing by that many.
@@ -289,7 +302,17 @@ where
         // We start as H2 and switch to H1 as soon as we don't have the preface.
         while buf.filled().len() < H2_PREFACE.len() {
             let len = buf.filled().len();
-            ready!(Pin::new(this.io.as_mut().unwrap()).poll_read(cx, buf.unfilled()))?;
+            match Pin::new(this.io.as_mut().unwrap()).poll_read(cx, buf.unfilled()) {
+                Poll::Ready(result) => result?,
+                Poll::Pending => {
+                    if let Some(timeout) = this.timeout.as_mut() {
+                        if timeout.as_mut().poll(cx).is_ready() {
+                            return Poll::Ready(Err(crate::Error::new_header_timeout().into()));
+                        }
+                    }
+                    return Poll::Pending;
+                }
+            }
             *this.filled = buf.filled().len();
 
             // We starts as H2 and switch to H1 when we don't get the preface.
@@ -306,6 +329,7 @@ where
         Poll::Ready(Ok((
             *this.version,
             Rewind::new_buffered(io, Bytes::from(buf)),
+            this.timeout.take(),
         )))
     }
 }
@@ -429,12 +453,14 @@ where
                     builder,
                     service,
                 } => {
-                    let (version, io) = ready!(read_version.poll(cx))?;
+                    let (version, io, timeout) = ready!(read_version.poll(cx))?;
                     let service = service.take().unwrap();
                     match version {
                         #[cfg(feature = "http1")]
                         Version::H1 => {
-                            let conn = builder.http1.serve_connection(io, service);
+                            let conn = builder
+                                .http1
+                                .serve_connection_with_header_timeout(io, service, timeout);
                             this.state.set(ConnState::H1 { conn });
                         }
 
@@ -556,12 +582,15 @@ where
                     builder,
                     service,
                 } => {
-                    let (version, io) = ready!(read_version.poll(cx))?;
+                    let (version, io, timeout) = ready!(read_version.poll(cx))?;
                     let service = service.take().unwrap();
                     match version {
                         #[cfg(feature = "http1")]
                         Version::H1 => {
-                            let conn = builder.http1.serve_connection(io, service).with_upgrades();
+                            let conn = builder
+                                .http1
+                                .serve_connection_with_header_timeout(io, service, timeout)
+                                .with_upgrades();
                             this.state.set(UpgradeableConnState::H1 { conn });
                         }
 
