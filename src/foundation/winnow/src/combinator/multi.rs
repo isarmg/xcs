@@ -1,6 +1,5 @@
 //! Combinators applying their child parser multiple times
 
-use crate::combinator::trace;
 use crate::error::FromExternalError;
 use crate::error::ParserError;
 use crate::stream::Accumulate;
@@ -266,23 +265,21 @@ where
             start_inclusive,
             end_inclusive,
         } = self.occurrences;
-        trace("repeat_fold", move |i: &mut Input| {
-            match (start_inclusive, end_inclusive) {
-                (0, None) => fold_repeat0_(&mut self.parser, &mut init, &mut op, i),
-                (1, None) => fold_repeat1_(&mut self.parser, &mut init, &mut op, i),
-                (start, end) if Some(start) == end => {
-                    fold_repeat_n_(start, &mut self.parser, &mut init, &mut op, i)
-                }
-                (start, end) => fold_repeat_m_n_(
-                    start,
-                    end.unwrap_or(usize::MAX),
-                    &mut self.parser,
-                    &mut init,
-                    &mut op,
-                    i,
-                ),
+        move |i: &mut Input| match (start_inclusive, end_inclusive) {
+            (0, None) => fold_repeat0_(&mut self.parser, &mut init, &mut op, i),
+            (1, None) => fold_repeat1_(&mut self.parser, &mut init, &mut op, i),
+            (start, end) if Some(start) == end => {
+                fold_repeat_n_(start, &mut self.parser, &mut init, &mut op, i)
             }
-        })
+            (start, end) => fold_repeat_m_n_(
+                start,
+                end.unwrap_or(usize::MAX),
+                &mut self.parser,
+                &mut init,
+                &mut op,
+                i,
+            ),
+        }
     }
 
     /// Akin to [`Repeat::fold`], but for containers that can reject an element.
@@ -349,7 +346,7 @@ where
             start_inclusive,
             end_inclusive,
         } = self.occurrences;
-        trace("repeat_verify_fold", move |input: &mut Input| {
+        move |input: &mut Input| {
             verify_fold_m_n(
                 start_inclusive,
                 end_inclusive.unwrap_or(usize::MAX),
@@ -358,7 +355,7 @@ where
                 &mut op,
                 input,
             )
-        })
+        }
     }
 
     /// Akin to [`Repeat::fold`], but for containers that can error when an element is accumulated.
@@ -422,7 +419,7 @@ where
             start_inclusive,
             end_inclusive,
         } = self.occurrences;
-        trace("repeat_try_fold", move |input: &mut Input| {
+        move |input: &mut Input| {
             try_fold_m_n(
                 start_inclusive,
                 end_inclusive.unwrap_or(usize::MAX),
@@ -431,7 +428,7 @@ where
                 &mut op,
                 input,
             )
-        })
+        }
     }
 }
 
@@ -448,48 +445,46 @@ where
             start_inclusive,
             end_inclusive,
         } = self.occurrences;
-        trace("repeat", move |i: &mut I| {
-            match (start_inclusive, end_inclusive) {
-                (0, None) => fold_repeat0_(
-                    &mut self.parser,
-                    &mut || C::initial(None),
-                    &mut |mut acc, o| {
-                        acc.accumulate(o);
-                        acc
-                    },
-                    i,
-                ),
-                (1, None) => fold_repeat1_(
-                    &mut self.parser,
-                    &mut || C::initial(None),
-                    &mut |mut acc, o| {
-                        acc.accumulate(o);
-                        acc
-                    },
-                    i,
-                ),
-                (min, end) if Some(min) == end => fold_repeat_n_(
-                    min,
-                    &mut self.parser,
-                    &mut || C::initial(Some(min)),
-                    &mut |mut acc, o| {
-                        acc.accumulate(o);
-                        acc
-                    },
-                    i,
-                ),
-                (min, end) => fold_repeat_m_n_(
-                    min,
-                    end.unwrap_or(usize::MAX),
-                    &mut self.parser,
-                    &mut || C::initial(Some(min)),
-                    &mut |mut acc, o| {
-                        acc.accumulate(o);
-                        acc
-                    },
-                    i,
-                ),
-            }
+        (move |i: &mut I| match (start_inclusive, end_inclusive) {
+            (0, None) => fold_repeat0_(
+                &mut self.parser,
+                &mut || C::initial(None),
+                &mut |mut acc, o| {
+                    acc.accumulate(o);
+                    acc
+                },
+                i,
+            ),
+            (1, None) => fold_repeat1_(
+                &mut self.parser,
+                &mut || C::initial(None),
+                &mut |mut acc, o| {
+                    acc.accumulate(o);
+                    acc
+                },
+                i,
+            ),
+            (min, end) if Some(min) == end => fold_repeat_n_(
+                min,
+                &mut self.parser,
+                &mut || C::initial(Some(min)),
+                &mut |mut acc, o| {
+                    acc.accumulate(o);
+                    acc
+                },
+                i,
+            ),
+            (min, end) => fold_repeat_m_n_(
+                min,
+                end.unwrap_or(usize::MAX),
+                &mut self.parser,
+                &mut || C::initial(Some(min)),
+                &mut |mut acc, o| {
+                    acc.accumulate(o);
+                    acc
+                },
+                i,
+            ),
         })
         .parse_next(i)
     }
@@ -717,7 +712,7 @@ where
                 let Some(res_) = fold(res, output) else {
                     input.reset(&start);
                     let res = Err(ParserError::from_input(input));
-                    super::debug::trace_result("verify_fold", &res);
+
                     return res;
                 };
                 res = res_;
@@ -779,7 +774,7 @@ where
                     Err(err) => {
                         input.reset(&start);
                         let res = Err(E::from_external_error(input, err));
-                        super::debug::trace_result("try_fold", &res);
+
                         return res;
                     }
                 }
@@ -851,18 +846,16 @@ where
         start_inclusive,
         end_inclusive,
     } = occurrences.into();
-    trace("repeat_till", move |i: &mut Input| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => repeat_till0_(&mut parse, &mut terminator, i),
-            (start, end) => repeat_till_m_n_(
-                start,
-                end.unwrap_or(usize::MAX),
-                &mut parse,
-                &mut terminator,
-                i,
-            ),
-        }
-    })
+    move |i: &mut Input| match (start_inclusive, end_inclusive) {
+        (0, None) => repeat_till0_(&mut parse, &mut terminator, i),
+        (start, end) => repeat_till_m_n_(
+            start,
+            end.unwrap_or(usize::MAX),
+            &mut parse,
+            &mut terminator,
+            i,
+        ),
+    }
 }
 
 fn repeat_till0_<I, O, C, P, E, F, G>(f: &mut F, g: &mut G, i: &mut I) -> Result<(C, P), E>
@@ -1084,22 +1077,20 @@ where
         start_inclusive,
         end_inclusive,
     } = occurrences.into();
-    trace("separated", move |input: &mut Input| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => separated0_(&mut parser, &mut separator, input),
-            (1, None) => separated1_(&mut parser, &mut separator, input),
-            (start, end) if Some(start) == end => {
-                separated_n_(start, &mut parser, &mut separator, input)
-            }
-            (start, end) => separated_m_n_(
-                start,
-                end.unwrap_or(usize::MAX),
-                &mut parser,
-                &mut separator,
-                input,
-            ),
+    move |input: &mut Input| match (start_inclusive, end_inclusive) {
+        (0, None) => separated0_(&mut parser, &mut separator, input),
+        (1, None) => separated1_(&mut parser, &mut separator, input),
+        (start, end) if Some(start) == end => {
+            separated_n_(start, &mut parser, &mut separator, input)
         }
-    })
+        (start, end) => separated_m_n_(
+            start,
+            end.unwrap_or(usize::MAX),
+            &mut parser,
+            &mut separator,
+            input,
+        ),
+    }
 }
 
 fn separated0_<I, O, C, O2, E, P, S>(
@@ -1395,7 +1386,7 @@ where
     Error: ParserError<Input>,
     Op: FnMut(Output, Sep, Output) -> Output,
 {
-    trace("separated_foldl1", move |i: &mut Input| {
+    move |i: &mut Input| {
         let mut ol = parser.parse_next(i)?;
 
         loop {
@@ -1429,7 +1420,7 @@ where
                 }
             }
         }
-    })
+    }
 }
 
 /// Alternates between two parsers, merging the results (right associative)
@@ -1467,7 +1458,7 @@ where
     Error: ParserError<Input>,
     Op: FnMut(Output, Sep, Output) -> Output,
 {
-    trace("separated_foldr1", move |i: &mut Input| {
+    move |i: &mut Input| {
         let ol = parser.parse_next(i)?;
         let all: alloc::vec::Vec<(Sep, Output)> =
             repeat(0.., (sep.by_ref(), parser.by_ref())).parse_next(i)?;
@@ -1481,7 +1472,7 @@ where
         } else {
             Ok(ol)
         }
-    })
+    }
 }
 
 /// Repeats the embedded parser, filling the given slice with results.
@@ -1516,7 +1507,7 @@ where
     ParseNext: Parser<Input, Output, Error> + 'i,
     Error: ParserError<Input> + 'i,
 {
-    trace("fill", move |i: &mut Input| {
+    move |i: &mut Input| {
         for elem in buf.iter_mut() {
             let start = i.checkpoint();
             match parser.parse_next(i) {
@@ -1530,5 +1521,5 @@ where
         }
 
         Ok(())
-    })
+    }
 }

@@ -58,34 +58,34 @@
 #[doc(hidden)] // forced to be visible in intended location
 macro_rules! unordered_seq {
     ($($name: ident)::* { $($fields: tt)* }) => {
-        $crate::combinator::trace(stringify!($($name)::*), move |input: &mut _| {
+        move |input: &mut _| {
             $crate::unordered_seq_parse_struct_body!(
                 ( $($name)::* );
                 ( $($fields)* );
                 ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
                 ( input );
             )
-        })
+        }
     };
     (( $($fields: tt)* )) => {
-        $crate::combinator::trace("tuple", move |input: &mut _| {
+        move |input: &mut _| {
             $crate::unordered_seq_parse_tuple_body!(
                 ( );
                 ( $($fields)* );
                 ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
                 ( input );
             )
-        })
+        }
     };
     ($($name: ident)::* ( $($fields: tt)* )) => {
-        $crate::combinator::trace(stringify!($($name)::*), move |input: &mut _| {
+        move |input: &mut _| {
             $crate::unordered_seq_parse_tuple_body!(
                 ( $($name)::* );
                 ( $($fields)* );
                 ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
                 ( input );
             )
-        })
+        }
     };
     ($($fields: tt)*) => {
         $crate::unordered_seq!((

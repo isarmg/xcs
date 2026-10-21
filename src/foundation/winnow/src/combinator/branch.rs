@@ -1,4 +1,3 @@
-use crate::combinator::trace;
 use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::*;
@@ -56,7 +55,7 @@ where
     Alternatives: Alt<Input, Output, Error>,
     Error: ParserError<Input>,
 {
-    trace("alt", move |i: &mut Input| alternatives.choice(i))
+    move |i: &mut Input| alternatives.choice(i)
 }
 
 /// Helper trait for the [`permutation()`] combinator.
@@ -73,7 +72,7 @@ pub trait Permutation<I, O, E> {
 pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
     mut l: List,
 ) -> impl Parser<I, O, E> {
-    trace("permutation", move |i: &mut I| l.permutation(i))
+    move |i: &mut I| l.permutation(i)
 }
 
 impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for [P; N] {

@@ -74,7 +74,7 @@
 #[doc(hidden)] // forced to be visible in intended location
 macro_rules! seq {
     ($($name: ident)::* { $($fields: tt)* }) => {
-        $crate::combinator::trace(stringify!($($name)::*), move |input: &mut _| {
+        move |input: &mut _| {
             $crate::seq_parse_struct_fields!(
                 ( $($fields)* );
                 ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
@@ -84,10 +84,10 @@ macro_rules! seq {
                 ( $($fields)* );
                 $($name)::* ;
             ))
-        })
+        }
     };
     ($($name: ident)::* ( $($fields: tt)* )) => {
-        $crate::combinator::trace(stringify!($($name)::*), move |input: &mut _| {
+        move |input: &mut _| {
             $crate::seq_parse_tuple_fields!(
                 ( $($fields)* );
                 ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
@@ -98,10 +98,10 @@ macro_rules! seq {
                 ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
                 $($name)::*;
             ))
-        })
+        }
     };
     (( $($fields: tt)* )) => {
-        $crate::combinator::trace("tuple", move |input: &mut _| {
+        move |input: &mut _| {
             $crate::seq_parse_tuple_fields!(
                 ( $($fields)* );
                 ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
@@ -112,7 +112,7 @@ macro_rules! seq {
                 ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
                 ;
             ))
-        })
+        }
     };
     ($($fields: tt)*) => {
         $crate::seq!((

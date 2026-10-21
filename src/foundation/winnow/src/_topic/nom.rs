@@ -206,9 +206,8 @@
 //! When writing a closure, you need to annotate the type:
 //! ```rust
 //! # use winnow::prelude::*;
-//! # use winnow::combinator::trace;
 //! fn foo(i: &mut &str) -> ModalResult<usize> {
-//!     trace("foo", |i: &mut _| {
+//!     (|i: &mut _| {
 //!         // ...
 //! #       Ok(0)
 //!     }).parse_next(i)

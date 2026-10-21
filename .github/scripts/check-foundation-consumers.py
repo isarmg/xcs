@@ -47,6 +47,36 @@ mod tests {
     }
 
     #[test]
+    fn parser_keeps_unicode_partial_input_and_binary_contracts_without_tracing() {
+        use winnow::{Parser, ModalResult, error::{ContextError, ErrMode, Needed},
+                     stream::Partial, token::{literal, take_while}};
+        fn assignment<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
+            ("name=", take_while(1.., |c: char| c != ';'), ';')
+                .map(|(_, name, _)| name).parse_next(input)
+        }
+        assert_eq!(assignment.parse("name=文件 Ω;").unwrap(), "文件 Ω");
+        assert!(assignment.parse("name=;").is_err());
+        let mut partial = Partial::new("ab");
+        let result: Result<_, ErrMode<ContextError>> = literal("abc").parse_next(&mut partial);
+        assert_eq!(result, Err(ErrMode::Incomplete(Needed::Unknown)));
+        assert_eq!(*partial, "ab");
+        let mut partial_bytes = Partial::new(&b"ab"[..]);
+        let result: Result<_, ErrMode<ContextError>> = literal(&b"abc"[..]).parse_next(&mut partial_bytes);
+        assert_eq!(result, Err(ErrMode::Incomplete(Needed::Unknown)));
+        assert_eq!(*partial_bytes, &b"ab"[..]);
+        let mut empty = Partial::new(&b""[..]);
+        let result: Result<u8, ErrMode<ContextError>> = winnow::token::any.parse_next(&mut empty);
+        assert_eq!(result, Err(ErrMode::Incomplete(Needed::new(1))));
+        let result: ModalResult<u16> = winnow::binary::be_u16.parse_next(&mut &[0x12, 0x34][..]);
+        assert_eq!(result.unwrap(), 0x1234);
+        let source = "title = \"文件 Ω\"\nvalue = 1_024\n";
+        let document: toml_edit::DocumentMut = source.parse().unwrap();
+        assert_eq!(document["title"].as_str(), Some("文件 Ω"));
+        assert_eq!(document["value"].as_integer(), Some(1024));
+        assert_eq!(document.to_string(), source);
+    }
+
+    #[test]
     fn terminal_output_preserves_unicode_and_explicit_color_policy() {
         let bytes = "\x1b[31m文件 Ω\x1b[0m\n".as_bytes();
         let mut plain = anstream::AutoStream::new(Vec::new(), anstream::ColorChoice::Never);
@@ -95,7 +125,8 @@ def check(root):
         (work / 'src').mkdir()
         dependencies = '\n'.join(f'{name} = {{path = "{root / "src/foundation" / directory}"}}'
                                  for name, directory in [('bindgen', 'bindgen'), ('anstream', 'anstream'),
-                                                         ('attribute-derive', 'attribute-derive'), ('syn', 'syn-3.0.9')])
+                                                         ('attribute-derive', 'attribute-derive'), ('syn', 'syn-3.0.9'),
+                                                         ('winnow', 'winnow'), ('toml_edit', 'toml_edit')])
         manifest = work / 'Cargo.toml'
         manifest.write_text('[package]\nname = "foundation-consumer-regression"\nversion = "0.0.0"\n'
                             'edition = "2021"\n[workspace]\n[dependencies]\n' + dependencies + '\n')
@@ -105,6 +136,18 @@ def check(root):
         subprocess.run(['cargo', 'test', '--locked', '--offline', '--manifest-path', str(manifest),
                         '--target-dir', str(root / 'target/foundation-consumer-check')],
                        cwd=root, env=environment, check=True)
+        command = ['cargo', 'check', '--locked', '--offline', '--manifest-path', str(manifest),
+                   '--target-dir', str(root / 'target/foundation-consumer-check')]
+        (work / 'src/lib.rs').write_text('use winnow::combinator::trace;\n')
+        result = subprocess.run(command, cwd=root, capture_output=True, text=True)
+        if not result.returncode or 'error[E0432]' not in result.stderr:
+            raise AssertionError('retired parser tracing API was accepted or failed for another reason: ' + result.stderr)
+        (work / 'src/lib.rs').write_text('')
+        for feature in ['winnow/debug', 'toml_edit/unstable-debug']:
+            result = subprocess.run(command + ['--features', feature], cwd=root, capture_output=True, text=True)
+            if not result.returncode or 'does not have that feature' not in result.stderr:
+                raise AssertionError('retired parser debug feature was accepted or failed for another reason: ' + result.stderr)
+
 
 
 if __name__ == '__main__':

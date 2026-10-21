@@ -6,7 +6,6 @@ use winnow::combinator::opt;
 use winnow::combinator::peek;
 use winnow::combinator::preceded;
 use winnow::combinator::repeat;
-use winnow::combinator::trace;
 use winnow::token::one_of;
 use winnow::token::rest;
 use winnow::token::take;
@@ -19,7 +18,7 @@ use crate::parser::trivia::from_utf8_unchecked;
 // boolean = true / false
 #[allow(dead_code)] // directly define in `fn value`
 pub(crate) fn boolean(input: &mut Input<'_>) -> ModalResult<bool> {
-    trace("boolean", alt((true_, false_))).parse_next(input)
+    alt((true_, false_)).parse_next(input)
 }
 
 pub(crate) fn true_(input: &mut Input<'_>) -> ModalResult<bool> {
@@ -38,72 +37,31 @@ const FALSE: &[u8] = b"false";
 
 // integer = dec-int / hex-int / oct-int / bin-int
 pub(crate) fn integer(input: &mut Input<'_>) -> ModalResult<i64> {
-    trace("integer",
     dispatch! {peek(opt::<_, &[u8], _, _>(take(2usize)));
         Some(b"0x") => cut_err(hex_int.try_map(|s| i64::from_str_radix(&s.replace('_', ""), 16))),
         Some(b"0o") => cut_err(oct_int.try_map(|s| i64::from_str_radix(&s.replace('_', ""), 8))),
         Some(b"0b") => cut_err(bin_int.try_map(|s| i64::from_str_radix(&s.replace('_', ""), 2))),
         _ => dec_int.and_then(cut_err(rest
             .try_map(|s: &str| s.replace('_', "").parse())))
-    })
+    }
     .parse_next(input)
 }
 
 // dec-int = [ minus / plus ] unsigned-dec-int
 // unsigned-dec-int = DIGIT / digit1-9 1*( DIGIT / underscore DIGIT )
 pub(crate) fn dec_int<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
-    trace(
-        "dec-int",
-        (
-            opt(one_of((b'+', b'-'))),
-            alt((
-                (
-                    one_of(DIGIT1_9),
-                    repeat(
-                        0..,
-                        alt((
-                            digit.void(),
-                            (
-                                one_of(b'_'),
-                                cut_err(digit).context(StrContext::Expected(
-                                    StrContextValue::Description("digit"),
-                                )),
-                            )
-                                .void(),
-                        )),
-                    )
-                    .map(|()| ()),
-                )
-                    .void(),
-                digit.void(),
-            )),
-        )
-            .take()
-            .map(|b: &[u8]| unsafe {
-                from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII")
-            })
-            .context(StrContext::Label("integer")),
-    )
-    .parse_next(input)
-}
-const DIGIT1_9: RangeInclusive<u8> = b'1'..=b'9';
-
-// hex-prefix = %x30.78               ; 0x
-// hex-int = hex-prefix HEXDIG *( HEXDIG / underscore HEXDIG )
-pub(crate) fn hex_int<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
-    trace(
-        "hex-int",
-        preceded(
-            HEX_PREFIX,
-            cut_err((
-                hexdig,
+    (
+        opt(one_of((b'+', b'-'))),
+        alt((
+            (
+                one_of(DIGIT1_9),
                 repeat(
                     0..,
                     alt((
-                        hexdig.void(),
+                        digit.void(),
                         (
                             one_of(b'_'),
-                            cut_err(hexdig).context(StrContext::Expected(
+                            cut_err(digit).context(StrContext::Expected(
                                 StrContextValue::Description("digit"),
                             )),
                         )
@@ -111,12 +69,43 @@ pub(crate) fn hex_int<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
                     )),
                 )
                 .map(|()| ()),
-            ))
-            .take(),
-        )
-        .map(|b| unsafe { from_utf8_unchecked(b, "`hexdig` and `_` filter out non-ASCII") })
-        .context(StrContext::Label("hexadecimal integer")),
+            )
+                .void(),
+            digit.void(),
+        )),
     )
+        .take()
+        .map(|b: &[u8]| unsafe { from_utf8_unchecked(b, "`digit` and `_` filter out non-ASCII") })
+        .context(StrContext::Label("integer"))
+        .parse_next(input)
+}
+const DIGIT1_9: RangeInclusive<u8> = b'1'..=b'9';
+
+// hex-prefix = %x30.78               ; 0x
+// hex-int = hex-prefix HEXDIG *( HEXDIG / underscore HEXDIG )
+pub(crate) fn hex_int<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
+    preceded(
+        HEX_PREFIX,
+        cut_err((
+            hexdig,
+            repeat(
+                0..,
+                alt((
+                    hexdig.void(),
+                    (
+                        one_of(b'_'),
+                        cut_err(hexdig)
+                            .context(StrContext::Expected(StrContextValue::Description("digit"))),
+                    )
+                        .void(),
+                )),
+            )
+            .map(|()| ()),
+        ))
+        .take(),
+    )
+    .map(|b| unsafe { from_utf8_unchecked(b, "`hexdig` and `_` filter out non-ASCII") })
+    .context(StrContext::Label("hexadecimal integer"))
     .parse_next(input)
 }
 const HEX_PREFIX: &[u8] = b"0x";
@@ -124,32 +113,28 @@ const HEX_PREFIX: &[u8] = b"0x";
 // oct-prefix = %x30.6F               ; 0o
 // oct-int = oct-prefix digit0-7 *( digit0-7 / underscore digit0-7 )
 pub(crate) fn oct_int<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
-    trace(
-        "oct-int",
-        preceded(
-            OCT_PREFIX,
-            cut_err((
-                one_of(DIGIT0_7),
-                repeat(
-                    0..,
-                    alt((
-                        one_of(DIGIT0_7).void(),
-                        (
-                            one_of(b'_'),
-                            cut_err(one_of(DIGIT0_7)).context(StrContext::Expected(
-                                StrContextValue::Description("digit"),
-                            )),
-                        )
-                            .void(),
-                    )),
-                )
-                .map(|()| ()),
-            ))
-            .take(),
-        )
-        .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_7` and `_` filter out non-ASCII") })
-        .context(StrContext::Label("octal integer")),
+    preceded(
+        OCT_PREFIX,
+        cut_err((
+            one_of(DIGIT0_7),
+            repeat(
+                0..,
+                alt((
+                    one_of(DIGIT0_7).void(),
+                    (
+                        one_of(b'_'),
+                        cut_err(one_of(DIGIT0_7))
+                            .context(StrContext::Expected(StrContextValue::Description("digit"))),
+                    )
+                        .void(),
+                )),
+            )
+            .map(|()| ()),
+        ))
+        .take(),
     )
+    .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_7` and `_` filter out non-ASCII") })
+    .context(StrContext::Label("octal integer"))
     .parse_next(input)
 }
 const OCT_PREFIX: &[u8] = b"0o";
@@ -158,32 +143,28 @@ const DIGIT0_7: RangeInclusive<u8> = b'0'..=b'7';
 // bin-prefix = %x30.62               ; 0b
 // bin-int = bin-prefix digit0-1 *( digit0-1 / underscore digit0-1 )
 pub(crate) fn bin_int<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
-    trace(
-        "bin-int",
-        preceded(
-            BIN_PREFIX,
-            cut_err((
-                one_of(DIGIT0_1),
-                repeat(
-                    0..,
-                    alt((
-                        one_of(DIGIT0_1).void(),
-                        (
-                            one_of(b'_'),
-                            cut_err(one_of(DIGIT0_1)).context(StrContext::Expected(
-                                StrContextValue::Description("digit"),
-                            )),
-                        )
-                            .void(),
-                    )),
-                )
-                .map(|()| ()),
-            ))
-            .take(),
-        )
-        .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_1` and `_` filter out non-ASCII") })
-        .context(StrContext::Label("binary integer")),
+    preceded(
+        BIN_PREFIX,
+        cut_err((
+            one_of(DIGIT0_1),
+            repeat(
+                0..,
+                alt((
+                    one_of(DIGIT0_1).void(),
+                    (
+                        one_of(b'_'),
+                        cut_err(one_of(DIGIT0_1))
+                            .context(StrContext::Expected(StrContextValue::Description("digit"))),
+                    )
+                        .void(),
+                )),
+            )
+            .map(|()| ()),
+        ))
+        .take(),
     )
+    .map(|b| unsafe { from_utf8_unchecked(b, "`DIGIT0_1` and `_` filter out non-ASCII") })
+    .context(StrContext::Label("binary integer"))
     .parse_next(input)
 }
 const BIN_PREFIX: &[u8] = b"0b";
@@ -195,17 +176,14 @@ const DIGIT0_1: RangeInclusive<u8> = b'0'..=b'1';
 // float =/ special-float
 // float-int-part = dec-int
 pub(crate) fn float(input: &mut Input<'_>) -> ModalResult<f64> {
-    trace(
-        "float",
-        alt((
-            float_.and_then(cut_err(
-                rest.try_map(|s: &str| s.replace('_', "").parse())
-                    .verify(|f: &f64| *f != f64::INFINITY),
-            )),
-            special_float,
-        ))
-        .context(StrContext::Label("floating-point number")),
-    )
+    alt((
+        float_.and_then(cut_err(
+            rest.try_map(|s: &str| s.replace('_', "").parse())
+                .verify(|f: &f64| *f != f64::INFINITY),
+        )),
+        special_float,
+    ))
+    .context(StrContext::Label("floating-point number"))
     .parse_next(input)
 }
 

@@ -80,7 +80,6 @@
 //! - [`backtrack_err`]: Attempts a parse, allowing alternative parsers to be attempted despite
 //!   use of `cut_err`
 //! - [`Parser::context`]: Add context to the error if the parser fails
-//! - [`trace`]: Print the parse state with the `debug` feature flag
 //! - [`todo()`]: Placeholder parser
 //!
 //! ## Remaining combinators
@@ -163,7 +162,6 @@
 
 mod branch;
 mod core;
-mod debug;
 mod expression;
 mod multi;
 mod sequence;
@@ -175,7 +173,6 @@ pub mod impls;
 
 pub use self::branch::*;
 pub use self::core::*;
-pub use self::debug::*;
 pub use self::expression::*;
 pub use self::multi::*;
 pub use self::sequence::*;

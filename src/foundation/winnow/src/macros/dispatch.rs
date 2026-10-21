@@ -78,7 +78,7 @@ macro_rules! dispatch {
         $scrutinee_parser:expr;
         $( $arm_pat:pat $(if $arm_pred:expr)? => $arm_parser: expr ),+ $(,)?
     ) => {
-        $crate::combinator::trace("dispatch", move |i: &mut _|
+        move |i: &mut _|
         {
             use $crate::Parser;
             let initial = $scrutinee_parser.parse_next(i)?;
@@ -87,6 +87,6 @@ macro_rules! dispatch {
                     $arm_pat $(if $arm_pred)? => $arm_parser.parse_next(i),
                 )*
             }
-        })
+        }
     }
 }

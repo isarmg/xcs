@@ -1,4 +1,3 @@
-use crate::combinator::trace;
 use crate::error::{ModalError, ParserError};
 use crate::stream::Stream;
 use crate::*;
@@ -30,7 +29,7 @@ where
     ParseNext: Parser<Input, Output, Error>,
     Error: ParserError<Input>,
 {
-    trace("opt", move |input: &mut Input| {
+    move |input: &mut Input| {
         let start = input.checkpoint();
         match parser.parse_next(input) {
             Ok(o) => Ok(Some(o)),
@@ -40,7 +39,7 @@ where
             }
             Err(e) => Err(e),
         }
-    })
+    }
 }
 
 /// Calls the parser if the condition is met.
@@ -75,13 +74,13 @@ where
     ParseNext: Parser<Input, Output, Error>,
     Error: ParserError<Input>,
 {
-    trace("cond", move |input: &mut Input| {
+    move |input: &mut Input| {
         if cond {
             parser.parse_next(input).map(Some)
         } else {
             Ok(None)
         }
-    })
+    }
 }
 
 /// Apply the parser without advancing the input.
@@ -114,12 +113,12 @@ where
     Error: ParserError<Input>,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("peek", move |input: &mut Input| {
+    move |input: &mut Input| {
         let start = input.checkpoint();
         let res = parser.parse_next(input);
         input.reset(&start);
         res
-    })
+    }
 }
 
 /// Match the end of the [`Stream`]
@@ -157,7 +156,7 @@ where
     Input: Stream,
     Error: ParserError<Input>,
 {
-    trace("eof", move |input: &mut Input| {
+    (move |input: &mut Input| {
         if input.eof_offset() == 0 {
             Ok(input.next_slice(0))
         } else {
@@ -197,7 +196,7 @@ where
     Error: ParserError<Input>,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("not", move |input: &mut Input| {
+    move |input: &mut Input| {
         let start = input.checkpoint();
         let res = parser.parse_next(input);
         input.reset(&start);
@@ -206,7 +205,7 @@ where
             Err(e) if e.is_backtrack() => Ok(()),
             Err(e) => Err(e),
         }
-    })
+    }
 }
 
 /// Transforms an [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack] (recoverable) to [`ErrMode::Cut`][crate::error::ErrMode::Cut] (unrecoverable)
@@ -273,9 +272,7 @@ where
     Error: ParserError<Input> + ModalError,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("cut_err", move |input: &mut Input| {
-        parser.parse_next(input).map_err(|e| e.cut())
-    })
+    move |input: &mut Input| parser.parse_next(input).map_err(|e| e.cut())
 }
 
 /// Transforms an [`ErrMode::Cut`][crate::error::ErrMode::Cut] (unrecoverable) to [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack] (recoverable)
@@ -290,9 +287,7 @@ where
     Error: ParserError<Input> + ModalError,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("backtrack_err", move |input: &mut Input| {
-        parser.parse_next(input).map_err(|e| e.backtrack())
-    })
+    move |input: &mut Input| parser.parse_next(input).map_err(|e| e.backtrack())
 }
 
 /// A placeholder for a not-yet-implemented [`Parser`]
@@ -320,10 +315,7 @@ where
     Error: ParserError<Input>,
 {
     #![allow(clippy::todo)]
-    trace("todo", move |_input: &mut Input| {
-        todo!("unimplemented parse")
-    })
-    .parse_next(input)
+    (move |_input: &mut Input| todo!("unimplemented parse")).parse_next(input)
 }
 
 /// Repeats the embedded parser, lazily returning the results
@@ -502,5 +494,5 @@ where
     Input: Stream,
     Error: ParserError<Input>,
 {
-    trace("fail", |i: &mut Input| Err(ParserError::from_input(i))).parse_next(i)
+    (|i: &mut Input| Err(ParserError::from_input(i))).parse_next(i)
 }

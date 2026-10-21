@@ -358,15 +358,12 @@ pub(crate) fn pratt_parser(i: &mut &str) -> ModalResult<Expr> {
 // Helper parsers
 
 fn identifier<'i>(i: &mut &'i str) -> ModalResult<&'i str> {
-    trace(
-        "identifier",
-        (
-            one_of(|c: char| c.is_alpha() || c == '_'),
-            take_while(0.., |c: char| c.is_alphanum() || c == '_'),
-        ),
+    (
+        one_of(|c: char| c.is_alpha() || c == '_'),
+        take_while(0.., |c: char| c.is_alphanum() || c == '_'),
     )
-    .take()
-    .parse_next(i)
+        .take()
+        .parse_next(i)
 }
 
 // Formatted print implementations

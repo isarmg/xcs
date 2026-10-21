@@ -3,7 +3,6 @@ use winnow::combinator::delimited;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
 use winnow::combinator::separated;
-use winnow::combinator::trace;
 
 use crate::parser::trivia::ws_comment_newline;
 use crate::parser::value::value;
@@ -15,7 +14,7 @@ use crate::parser::prelude::*;
 
 // array = array-open array-values array-close
 pub(crate) fn array<'i>(input: &mut Input<'i>) -> ModalResult<Array> {
-    trace("array", move |input: &mut Input<'i>| {
+    (move |input: &mut Input<'i>| {
         delimited(
             ARRAY_OPEN,
             cut_err(array_values),

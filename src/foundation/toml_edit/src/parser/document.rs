@@ -5,7 +5,6 @@ use winnow::combinator::eof;
 use winnow::combinator::opt;
 use winnow::combinator::peek;
 use winnow::combinator::repeat;
-use winnow::combinator::trace;
 use winnow::token::any;
 use winnow::token::one_of;
 
@@ -98,33 +97,30 @@ fn keyval<'s, 'i>(
 
 // keyval = key keyval-sep val
 fn parse_keyval(input: &mut Input<'_>) -> ModalResult<(Vec<Key>, (Key, Item))> {
-    trace(
-        "keyval",
-        (
-            key,
-            cut_err((
-                one_of(KEYVAL_SEP)
-                    .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
-                    .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
-                (
-                    ws.span(),
-                    value,
-                    line_trailing
-                        .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
-                        .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
-                ),
-            )),
-        )
-            .try_map::<_, _, std::str::Utf8Error>(|(key, (_, v))| {
-                let mut path = key;
-                let key = path.pop().expect("grammar ensures at least 1");
-
-                let (pre, v, suf) = v;
-                let pre = RawString::with_span(pre);
-                let suf = RawString::with_span(suf);
-                let v = v.decorated(pre, suf);
-                Ok((path, (key, Item::Value(v))))
-            }),
+    (
+        key,
+        cut_err((
+            one_of(KEYVAL_SEP)
+                .context(StrContext::Expected(StrContextValue::CharLiteral('.')))
+                .context(StrContext::Expected(StrContextValue::CharLiteral('='))),
+            (
+                ws.span(),
+                value,
+                line_trailing
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('\n')))
+                    .context(StrContext::Expected(StrContextValue::CharLiteral('#'))),
+            ),
+        )),
     )
-    .parse_next(input)
+        .try_map::<_, _, std::str::Utf8Error>(|(key, (_, v))| {
+            let mut path = key;
+            let key = path.pop().expect("grammar ensures at least 1");
+
+            let (pre, v, suf) = v;
+            let pre = RawString::with_span(pre);
+            let suf = RawString::with_span(suf);
+            let v = v.decorated(pre, suf);
+            Ok((path, (key, Item::Value(v))))
+        })
+        .parse_next(input)
 }

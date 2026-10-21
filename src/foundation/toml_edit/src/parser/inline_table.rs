@@ -1,7 +1,6 @@
 use winnow::combinator::cut_err;
 use winnow::combinator::delimited;
 use winnow::combinator::separated;
-use winnow::combinator::trace;
 use winnow::token::one_of;
 
 use crate::key::Key;
@@ -18,7 +17,7 @@ use indexmap::map::Entry;
 
 // inline-table = inline-table-open inline-table-keyvals inline-table-close
 pub(crate) fn inline_table<'i>(input: &mut Input<'i>) -> ModalResult<InlineTable> {
-    trace("inline-table", move |input: &mut Input<'i>| {
+    (move |input: &mut Input<'i>| {
         delimited(
             INLINE_TABLE_OPEN,
             cut_err(inline_table_keyvals.try_map(|(kv, p)| table_from_pairs(kv, p))),

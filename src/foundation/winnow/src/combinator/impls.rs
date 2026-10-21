@@ -1,8 +1,5 @@
 //! Opaque implementations of [`Parser`]
 
-use crate::combinator::trace;
-use crate::combinator::trace_result;
-use crate::combinator::DisplayDebug;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
@@ -96,7 +93,7 @@ where
             input.reset(&start);
             E::from_external_error(input, err)
         });
-        trace_result("verify", &res);
+
         res
     }
 }
@@ -132,7 +129,7 @@ where
             input.reset(&start);
             ParserError::from_input(input)
         });
-        trace_result("verify", &res);
+
         res
     }
 }
@@ -203,7 +200,7 @@ where
             i.reset(&start);
             ParserError::from_input(i)
         });
-        trace_result("verify", &res);
+
         res
     }
 }
@@ -253,14 +250,12 @@ where
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> Result<O, E> {
-        trace("complete_err", |input: &mut I| {
-            match (self.p).parse_next(input) {
-                Err(err) => match err.needed() {
-                    Some(_) => Err(ParserError::from_input(input)),
-                    None => Err(err),
-                },
-                rest => rest,
-            }
+        (|input: &mut I| match (self.p).parse_next(input) {
+            Err(err) => match err.needed() {
+                Some(_) => Err(ParserError::from_input(input)),
+                None => Err(err),
+            },
+            rest => rest,
         })
         .parse_next(input)
     }
@@ -301,7 +296,7 @@ where
             input.reset(&start);
             ParserError::from_input(input)
         });
-        trace_result("verify", &res);
+
         res
     }
 }
@@ -568,7 +563,7 @@ where
     #[inline]
     fn parse_next(&mut self, i: &mut I) -> Result<O, E> {
         let context = self.context.clone();
-        trace(DisplayDebug(self.context.clone()), move |i: &mut I| {
+        (move |i: &mut I| {
             let start = i.checkpoint();
             (self.parser)
                 .parse_next(i)

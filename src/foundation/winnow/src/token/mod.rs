@@ -3,8 +3,6 @@
 #[cfg(test)]
 mod tests;
 
-use crate::combinator::trace;
-use crate::combinator::DisplayDebug;
 use crate::error::Needed;
 use crate::error::ParserError;
 use crate::stream::Range;
@@ -58,7 +56,7 @@ where
     Input: StreamIsPartial + Stream,
     Error: ParserError<Input>,
 {
-    trace("any", move |input: &mut Input| {
+    (move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() {
             any_::<_, _, true>(input)
         } else {
@@ -165,14 +163,14 @@ where
     Literal: Clone + core::fmt::Debug,
     Error: ParserError<Input>,
 {
-    trace(DisplayDebug(literal.clone()), move |i: &mut Input| {
+    move |i: &mut Input| {
         let t = literal.clone();
         if <Input as StreamIsPartial>::is_partial_supported() {
             literal_::<_, _, _, true>(i, t)
         } else {
             literal_::<_, _, _, false>(i, t)
         }
-    })
+    }
 }
 
 fn literal_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
@@ -266,10 +264,7 @@ where
     Set: ContainsToken<<Input as Stream>::Token>,
     Error: ParserError<Input>,
 {
-    trace(
-        "one_of",
-        any.verify(move |t: &<Input as Stream>::Token| set.contains_token(t.clone())),
-    )
+    any.verify(move |t: &<Input as Stream>::Token| set.contains_token(t.clone()))
 }
 
 /// Recognize a token that does not match a [set of tokens][ContainsToken]
@@ -319,10 +314,7 @@ where
     Set: ContainsToken<<Input as Stream>::Token>,
     Error: ParserError<Input>,
 {
-    trace(
-        "none_of",
-        any.verify(move |t: &<Input as Stream>::Token| !set.contains_token(t.clone())),
-    )
+    any.verify(move |t: &<Input as Stream>::Token| !set.contains_token(t.clone()))
 }
 
 /// Recognize the longest (m <= len <= n) input slice that matches a [set of tokens][ContainsToken]
@@ -488,32 +480,30 @@ where
         start_inclusive,
         end_inclusive,
     } = occurrences.into();
-    trace("take_while", move |i: &mut Input| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => {
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_till0::<_, _, _, true>(i, |c| !set.contains_token(c))
-                } else {
-                    take_till0::<_, _, _, false>(i, |c| !set.contains_token(c))
-                }
-            }
-            (1, None) => {
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_till1::<_, _, _, true>(i, |c| !set.contains_token(c))
-                } else {
-                    take_till1::<_, _, _, false>(i, |c| !set.contains_token(c))
-                }
-            }
-            (start, end) => {
-                let end = end.unwrap_or(usize::MAX);
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_till_m_n::<_, _, _, true>(i, start, end, |c| !set.contains_token(c))
-                } else {
-                    take_till_m_n::<_, _, _, false>(i, start, end, |c| !set.contains_token(c))
-                }
+    move |i: &mut Input| match (start_inclusive, end_inclusive) {
+        (0, None) => {
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_till0::<_, _, _, true>(i, |c| !set.contains_token(c))
+            } else {
+                take_till0::<_, _, _, false>(i, |c| !set.contains_token(c))
             }
         }
-    })
+        (1, None) => {
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_till1::<_, _, _, true>(i, |c| !set.contains_token(c))
+            } else {
+                take_till1::<_, _, _, false>(i, |c| !set.contains_token(c))
+            }
+        }
+        (start, end) => {
+            let end = end.unwrap_or(usize::MAX);
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_till_m_n::<_, _, _, true>(i, start, end, |c| !set.contains_token(c))
+            } else {
+                take_till_m_n::<_, _, _, false>(i, start, end, |c| !set.contains_token(c))
+            }
+        }
+    }
 }
 
 fn take_till0<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: bool>(
@@ -679,32 +669,30 @@ where
         start_inclusive,
         end_inclusive,
     } = occurrences.into();
-    trace("take_till", move |i: &mut Input| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => {
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_till0::<_, _, _, true>(i, |c| set.contains_token(c))
-                } else {
-                    take_till0::<_, _, _, false>(i, |c| set.contains_token(c))
-                }
-            }
-            (1, None) => {
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_till1::<_, _, _, true>(i, |c| set.contains_token(c))
-                } else {
-                    take_till1::<_, _, _, false>(i, |c| set.contains_token(c))
-                }
-            }
-            (start, end) => {
-                let end = end.unwrap_or(usize::MAX);
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_till_m_n::<_, _, _, true>(i, start, end, |c| set.contains_token(c))
-                } else {
-                    take_till_m_n::<_, _, _, false>(i, start, end, |c| set.contains_token(c))
-                }
+    move |i: &mut Input| match (start_inclusive, end_inclusive) {
+        (0, None) => {
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_till0::<_, _, _, true>(i, |c| set.contains_token(c))
+            } else {
+                take_till0::<_, _, _, false>(i, |c| set.contains_token(c))
             }
         }
-    })
+        (1, None) => {
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_till1::<_, _, _, true>(i, |c| set.contains_token(c))
+            } else {
+                take_till1::<_, _, _, false>(i, |c| set.contains_token(c))
+            }
+        }
+        (start, end) => {
+            let end = end.unwrap_or(usize::MAX);
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_till_m_n::<_, _, _, true>(i, start, end, |c| set.contains_token(c))
+            } else {
+                take_till_m_n::<_, _, _, false>(i, start, end, |c| set.contains_token(c))
+            }
+        }
+    }
 }
 
 /// Recognize an input slice containing the first N input elements (I[..N]).
@@ -787,13 +775,13 @@ where
     Error: ParserError<Input>,
 {
     let c = token_count.to_usize();
-    trace("take", move |i: &mut Input| {
+    move |i: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() {
             take_::<_, _, true>(i, c)
         } else {
             take_::<_, _, false>(i, c)
         }
-    })
+    }
 }
 
 fn take_<I, Error: ParserError<I>, const PARTIAL: bool>(
@@ -919,32 +907,30 @@ where
         start_inclusive,
         end_inclusive,
     } = occurrences.into();
-    trace("take_until", move |i: &mut Input| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => {
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_until0_::<_, _, _, true>(i, literal.clone())
-                } else {
-                    take_until0_::<_, _, _, false>(i, literal.clone())
-                }
-            }
-            (1, None) => {
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_until1_::<_, _, _, true>(i, literal.clone())
-                } else {
-                    take_until1_::<_, _, _, false>(i, literal.clone())
-                }
-            }
-            (start, end) => {
-                let end = end.unwrap_or(usize::MAX);
-                if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_until_m_n_::<_, _, _, true>(i, start, end, literal.clone())
-                } else {
-                    take_until_m_n_::<_, _, _, false>(i, start, end, literal.clone())
-                }
+    move |i: &mut Input| match (start_inclusive, end_inclusive) {
+        (0, None) => {
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_until0_::<_, _, _, true>(i, literal.clone())
+            } else {
+                take_until0_::<_, _, _, false>(i, literal.clone())
             }
         }
-    })
+        (1, None) => {
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_until1_::<_, _, _, true>(i, literal.clone())
+            } else {
+                take_until1_::<_, _, _, false>(i, literal.clone())
+            }
+        }
+        (start, end) => {
+            let end = end.unwrap_or(usize::MAX);
+            if <Input as StreamIsPartial>::is_partial_supported() {
+                take_until_m_n_::<_, _, _, true>(i, start, end, literal.clone())
+            } else {
+                take_until_m_n_::<_, _, _, false>(i, start, end, literal.clone())
+            }
+        }
+    }
 }
 
 fn take_until0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
@@ -1049,7 +1035,7 @@ where
     Input: Stream,
     Error: ParserError<Input>,
 {
-    trace("rest", move |input: &mut Input| Ok(input.finish())).parse_next(input)
+    (move |input: &mut Input| Ok(input.finish())).parse_next(input)
 }
 
 /// Return the length of the remaining input.
@@ -1086,7 +1072,7 @@ where
     Input: Stream,
     Error: ParserError<Input>,
 {
-    trace("rest_len", move |input: &mut Input| {
+    (move |input: &mut Input| {
         let len = input.eof_offset();
         Ok(len)
     })

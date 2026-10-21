@@ -72,3 +72,5 @@ sha2 0.10.9 已显式退役，原始材料及最后源码收据保留。digest 0
 ## 后续阶段边界
 
 本次低风险阶段没有实施底层 wasm-bindgen-cli-support 输出模式大裁剪、CSR/SSR/模板职责分离或 web-sys HTML/事件 API 闭包收窄。它们仍是后续独立验收单元：浏览器 template 依赖的 RenderHtml/hydration 必须先分离，Safari/Firefox 真实回退继续保留。JSON Schema 子集仅为候选，没有弱化契约校验。未取消 SMB、gzip、多语言/主题、Unicode 文件名、HTTPS、密码和恢复检查；未改 G4/字体/几何，未部署或发布产品，未创建凭据或执行物理盘破坏测试。
+
+前三批之后的实际继续实施及验收记录见 [Web/CSR 接续报告](foundation-web-csr-20261021.md)，包括撤销未支持的 winnow/debug 表面。前述“阶段边界”记录前三批的当时范围，不表示本次全部用户任务已结束。

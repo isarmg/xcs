@@ -42,7 +42,6 @@ parse = ["dep:winnow"]
 perf = []
 serde = ["dep:serde", "toml_datetime/serde", "dep:serde_spanned"]
 unbounded = []
-unstable-debug = ["winnow?/debug"]
 
 [lib]
 name = "toml_edit"

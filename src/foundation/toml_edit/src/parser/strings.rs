@@ -12,7 +12,6 @@ use winnow::combinator::peek;
 use winnow::combinator::preceded;
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
-use winnow::combinator::trace;
 use winnow::prelude::*;
 use winnow::stream::Stream;
 use winnow::token::any;
@@ -29,15 +28,12 @@ use crate::parser::trivia::{from_utf8_unchecked, newline, ws, ws_newlines, NON_A
 
 // string = ml-basic-string / basic-string / ml-literal-string / literal-string
 pub(crate) fn string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
-    trace(
-        "string",
-        alt((
-            ml_basic_string,
-            basic_string,
-            ml_literal_string,
-            literal_string.map(Cow::Borrowed),
-        )),
-    )
+    alt((
+        ml_basic_string,
+        basic_string,
+        ml_literal_string,
+        literal_string.map(Cow::Borrowed),
+    ))
     .parse_next(input)
 }
 
@@ -45,7 +41,7 @@ pub(crate) fn string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
 
 // basic-string = quotation-mark *basic-char quotation-mark
 pub(crate) fn basic_string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
-    trace("basic-string", |input: &mut Input<'i>| {
+    (|input: &mut Input<'i>| {
         let _ = one_of(QUOTATION_MARK).parse_next(input)?;
 
         let mut c = Cow::Borrowed("");
@@ -149,14 +145,11 @@ fn hexescape<const N: usize>(input: &mut Input<'_>) -> ModalResult<char> {
 // ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 //                   ml-basic-string-delim
 fn ml_basic_string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
-    trace(
-        "ml-basic-string",
-        delimited(
-            ML_BASIC_STRING_DELIM,
-            preceded(opt(newline), cut_err(ml_basic_body))
-                .context(StrContext::Label("multiline basic string")),
-            cut_err(ML_BASIC_STRING_DELIM).context(StrContext::Label("multiline basic string")),
-        ),
+    delimited(
+        ML_BASIC_STRING_DELIM,
+        preceded(opt(newline), cut_err(ml_basic_body))
+            .context(StrContext::Label("multiline basic string")),
+        cut_err(ML_BASIC_STRING_DELIM).context(StrContext::Label("multiline basic string")),
     )
     .parse_next(input)
 }
@@ -257,16 +250,13 @@ fn mlb_escaped_nl(input: &mut Input<'_>) -> ModalResult<()> {
 
 // literal-string = apostrophe *literal-char apostrophe
 pub(crate) fn literal_string<'i>(input: &mut Input<'i>) -> ModalResult<&'i str> {
-    trace(
-        "literal-string",
-        delimited(
-            APOSTROPHE,
-            cut_err(take_while(0.., LITERAL_CHAR)),
-            cut_err(APOSTROPHE),
-        )
-        .try_map(std::str::from_utf8)
-        .context(StrContext::Label("literal string")),
+    delimited(
+        APOSTROPHE,
+        cut_err(take_while(0.., LITERAL_CHAR)),
+        cut_err(APOSTROPHE),
     )
+    .try_map(std::str::from_utf8)
+    .context(StrContext::Label("literal string"))
     .parse_next(input)
 }
 
@@ -286,20 +276,17 @@ const LITERAL_CHAR: (
 // ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
 //                     ml-literal-string-delim
 fn ml_literal_string<'i>(input: &mut Input<'i>) -> ModalResult<Cow<'i, str>> {
-    trace(
-        "ml-literal-string",
-        delimited(
-            (ML_LITERAL_STRING_DELIM, opt(newline)),
-            cut_err(ml_literal_body.map(|t| {
-                if t.contains("\r\n") {
-                    Cow::Owned(t.replace("\r\n", "\n"))
-                } else {
-                    Cow::Borrowed(t)
-                }
-            }))
-            .context(StrContext::Label("multiline literal string")),
-            cut_err(ML_LITERAL_STRING_DELIM).context(StrContext::Label("multiline literal string")),
-        ),
+    delimited(
+        (ML_LITERAL_STRING_DELIM, opt(newline)),
+        cut_err(ml_literal_body.map(|t| {
+            if t.contains("\r\n") {
+                Cow::Owned(t.replace("\r\n", "\n"))
+            } else {
+                Cow::Borrowed(t)
+            }
+        }))
+        .context(StrContext::Label("multiline literal string")),
+        cut_err(ML_LITERAL_STRING_DELIM).context(StrContext::Label("multiline literal string")),
     )
     .parse_next(input)
 }

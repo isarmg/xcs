@@ -4,7 +4,6 @@
 #[cfg(test)]
 mod tests;
 
-use crate::combinator::trace;
 use crate::error::{ErrorConvert, Needed, ParserError};
 use crate::stream::{Stream, StreamIsPartial, ToUsize};
 use crate::{Parser, Result};
@@ -56,7 +55,7 @@ where
     Input: Stream + Clone,
     ParseNext: Parser<(Input, usize), Output, BitError>,
 {
-    trace("bits", move |input: &mut Input| {
+    move |input: &mut Input| {
         let mut bit_input = (input.clone(), 0);
         match parser.parse_next(&mut bit_input) {
             Ok(result) => {
@@ -77,7 +76,7 @@ where
                 None => Err(ErrorConvert::convert(e)),
             },
         }
-    })
+    }
 }
 
 /// Convert a [`bits`] stream back into a byte stream
@@ -126,7 +125,7 @@ where
     Input: Stream<Token = u8> + Clone,
     ParseNext: Parser<Input, Output, ByteError>,
 {
-    trace("bytes", move |bit_input: &mut (Input, usize)| {
+    move |bit_input: &mut (Input, usize)| {
         let (mut input, offset) = bit_input.clone();
         let _ = if offset % BYTE != 0 {
             input.next_slice(1 + offset / BYTE)
@@ -150,7 +149,7 @@ where
                 None => Err(ErrorConvert::convert(e)),
             },
         }
-    })
+    }
 }
 
 /// Parse taking `count` bits
@@ -201,13 +200,13 @@ where
     Error: ParserError<(Input, usize)>,
 {
     let count = count.to_usize();
-    trace("take", move |input: &mut (Input, usize)| {
+    move |input: &mut (Input, usize)| {
         if <Input as StreamIsPartial>::is_partial_supported() {
             take_::<_, _, _, true>(input, count)
         } else {
             take_::<_, _, _, false>(input, count)
         }
-    })
+    }
 }
 
 fn take_<I, O, E: ParserError<(I, usize)>, const PARTIAL: bool>(
@@ -334,7 +333,7 @@ where
         + PartialEq,
 {
     let count = count.to_usize();
-    trace("pattern", move |input: &mut (Input, usize)| {
+    move |input: &mut (Input, usize)| {
         let start = input.checkpoint();
 
         take(count).parse_next(input).and_then(|o| {
@@ -345,7 +344,7 @@ where
                 Err(ParserError::from_input(input))
             }
         })
-    })
+    }
 }
 
 /// Parses one specific bit as a bool.
@@ -390,7 +389,7 @@ pub fn bool<Input, Error: ParserError<(Input, usize)>>(
 where
     Input: Stream<Token = u8> + StreamIsPartial + Clone,
 {
-    trace("bool", |input: &mut (Input, usize)| {
+    (|input: &mut (Input, usize)| {
         let bit: u32 = take(1usize).parse_next(input)?;
         Ok(bit != 0)
     })
