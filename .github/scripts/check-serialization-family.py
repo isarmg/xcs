@@ -2,6 +2,7 @@
 """Check serialization protocol bytes and coordinated derives with isolated consumers."""
 from pathlib import Path
 import json
+import re
 import runpy
 import subprocess
 import sys
@@ -24,6 +25,16 @@ def validate_private_family(manifests):
     for name in names[1:]:
         if dependencies[name].get('version') != '=' + version:
             raise AssertionError(f'{name} must be pinned to ={version} for the shared private ABI')
+
+
+def check_source_paths(root):
+    # Also scan strings: derive bounds are Rust paths embedded in attributes.
+    # Underscored external APIs and macro-local aliases are different identities.
+    stale = re.compile(r'(?<![A-Za-z0-9_])serde::')
+    for directory in ('src', 'tools'):
+        for path in (root / directory).rglob('*.rs'):
+            if stale.search(path.read_text()):
+                raise AssertionError(f'old serialization crate path: {path.relative_to(root)}')
 
 
 def check_private_family(root):
@@ -111,6 +122,7 @@ def check_rejections(root, directory, environment):
 
 
 def check(root):
+    check_source_paths(root)
     check_private_family(root)
     environment = runpy.run_path(str(root / '.github/scripts/backend_environment.py'))['matrix_environment']()
     (root / 'target').mkdir(exist_ok=True)

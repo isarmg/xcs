@@ -14,7 +14,7 @@ use std::convert::identity;
     feature = "offline",
     serialization(bound(
         serialize = "DB::TypeInfo: data_serialization::Serialize, DB::Column: data_serialization::Serialize",
-        deserialize = "DB::TypeInfo: serde::de::DeserializeOwned, DB::Column: serde::de::DeserializeOwned",
+        deserialize = "DB::TypeInfo: data_serialization::de::DeserializeOwned, DB::Column: data_serialization::de::DeserializeOwned",
     ))
 )]
 #[doc(hidden)]

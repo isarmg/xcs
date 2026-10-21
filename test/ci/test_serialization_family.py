@@ -13,6 +13,18 @@ CHECKER = runpy.run_path(str(ROOT / '.github/scripts/check-serialization-family.
 
 
 class SerializationGateTests(unittest.TestCase):
+    def test_source_paths_include_derive_bound_strings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'src').mkdir()
+            source = root / 'src/describe.rs'
+            source.write_text('use erased_serde::Serializer; // _serde::local_alias\n')
+            CHECKER['check_source_paths'](root)
+            source.write_text('#[serialization(bound(deserialize = "T: serde::de::DeserializeOwned"))]')
+            with self.assertRaisesRegex(AssertionError, 'old serialization crate path'):
+                CHECKER['check_source_paths'](root)
+        CHECKER['check_source_paths'](ROOT)
+
     def test_private_family_requires_matching_versions_and_exact_pins(self):
         names = ('data-serialization', 'serialization-core', 'serialization-derive')
         manifests = {name: {'package': {'version': '1.2.3'}} for name in names}

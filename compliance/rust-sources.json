@@ -39027,7 +39027,7 @@
         "src/connection.rs": "97c20745c9f08d79baac8d3d18fb29e058b5a3b347eade2c2b794257d53d3f26",
         "src/database.rs": "e242d2c0d1329755871849cd09f676513ca65cd3a5332d9b1996db78b7ba3864",
         "src/decode.rs": "d6d0b300079a0c63855355b6338fc17fba490c26b73653cee2daebf0e77a6a2d",
-        "src/describe.rs": "7204b0234e22b220d861a8fbc9a62b725c36aff78f0e4f42126ed4f51883fa45",
+        "src/describe.rs": "e5633f24aaa6348c21a4cea3c0f5fa06e267e96805a91b4108f39146d7894bd7",
         "src/encode.rs": "68afa36b1394c5d55598fa328d019ee88b08516770567def90e5f52af697a6d0",
         "src/error.rs": "98a775807b8a5ac309445cb439358f0bc8641fce1b93b024ebb6a024f4d60efc",
         "src/executor.rs": "bd4427048da65cb279cfa900173a1d40b9d9154c049467f9f511cac63a05a651",
