@@ -315,8 +315,8 @@ impl<'a, T: ?Sized> DerefMut for MutexGuard<'a, T> {
 }
 
 #[cfg(feature = "lock_api")]
-unsafe impl<R: RelaxStrategy> lock_api_crate::RawMutex for Mutex<(), R> {
-    type GuardMarker = lock_api_crate::GuardSend;
+unsafe impl<R: RelaxStrategy> synchronization::api::RawMutex for Mutex<(), R> {
+    type GuardMarker = synchronization::api::GuardSend;
 
     const INIT: Self = Self::new(());
 

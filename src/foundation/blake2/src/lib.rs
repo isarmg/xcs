@@ -80,7 +80,7 @@ use core::{convert::TryInto, fmt, marker::PhantomData, ops::Div};
 use cryptographic_core::{
     buffer::{Lazy, LazyBuffer},
     consts::{U128, U32, U4, U64},
-    block_api::{
+    bsynchronization::api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser,
         CtOutWrapper, OutputSizeUser, TruncSide, UpdateCore,
         VariableOutputCore,

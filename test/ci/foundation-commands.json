@@ -33,6 +33,12 @@
     {
       "tool": "python3",
       "args": [
+        ".github/scripts/check-synchronization.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
         ".github/scripts/check-linux-search-process.py"
       ]
     },
@@ -48,7 +54,7 @@
         "-p",
         "mio",
         "-p",
-        "parking_lot_core"
+        "synchronization"
       ]
     },
     {

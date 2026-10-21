@@ -25,7 +25,7 @@ version = "0.0.0"
 edition = "2021"
 [workspace]
 [dependencies]
-parking_lot_core = {{ path = "{foundation / 'parking_lot_core'}" }}
+synchronization = {{ path = "{foundation / 'synchronization'}", default-features = false, features = ["parking"] }}
 ''')
         (work / 'src/lib.rs').write_text(CONSUMER)
         subprocess.run(["cargo", "generate-lockfile", "--offline", "--manifest-path",

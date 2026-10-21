@@ -12,7 +12,7 @@ use futures::{
     stream::{FusedStream, Stream},
     task::{Context, Poll, Waker},
 };
-use lock_api::{Mutex, RawMutex};
+use synchronization::api::{Mutex, RawMutex};
 
 use super::{
     ChannelReceiveAccess, ChannelReceiveFuture, ChannelSendAccess,
@@ -92,6 +92,7 @@ where
         }
     }
 
+    #[cfg(feature = "alloc")]
     fn clear(&mut self) {
         while !self.buffer.is_empty() {
             self.buffer.pop();
@@ -652,7 +653,7 @@ pub type LocalUnbufferedChannel<T> = LocalChannel<T, [T; 0]>;
 mod if_std {
     use super::*;
 
-    // Export a thread-safe version using parking_lot::RawMutex
+    // Export a thread-safe version using synchronization::RawMutex
 
     // TODO: We might also want to bind Channel to GenericChannel<..., FixedHeapBuf>,
     // which performs less type-churn.
@@ -665,7 +666,7 @@ mod if_std {
 
     /// A [`GenericChannel`] implementation backed by [`parking_lot`].
     pub type Channel<T, A> =
-        GenericChannel<parking_lot::RawMutex, T, ArrayBuf<T, A>>;
+        GenericChannel<synchronization::RawMutex, T, ArrayBuf<T, A>>;
 
     /// An unbuffered [`GenericChannel`] implementation backed by [`parking_lot`].
     pub type UnbufferedChannel<T> = Channel<T, [T; 0]>;
@@ -1084,7 +1085,7 @@ mod if_alloc {
             ///
             /// [`GrowingHeapBuf`]: ../../buffer/struct.GrowingHeapBuf.html
             pub type Sender<T> =
-                GenericSender<parking_lot::RawMutex, T, GrowingHeapBuf<T>>;
+                GenericSender<synchronization::RawMutex, T, GrowingHeapBuf<T>>;
             /// A [`GenericReceiver`] implementation backed by [`parking_lot`].
             ///
             /// Uses a `GrowingHeapBuf` whose capacity grows dynamically up to
@@ -1092,7 +1093,7 @@ mod if_alloc {
             ///
             /// [`GrowingHeapBuf`]: ../../buffer/struct.GrowingHeapBuf.html
             pub type Receiver<T> =
-                GenericReceiver<parking_lot::RawMutex, T, GrowingHeapBuf<T>>;
+                GenericReceiver<synchronization::RawMutex, T, GrowingHeapBuf<T>>;
 
             /// Creates a new channel with the given buffering capacity
             ///
@@ -1109,16 +1110,16 @@ mod if_alloc {
             where
                 T: Send,
             {
-                generic_channel::<parking_lot::RawMutex, T, GrowingHeapBuf<T>>(
+                generic_channel::<synchronization::RawMutex, T, GrowingHeapBuf<T>>(
                     capacity,
                 )
             }
             /// A [`GenericSender`] implementation backed by [`parking_lot`].
             pub type UnbufferedSender<T> =
-                GenericSender<parking_lot::RawMutex, T, GrowingHeapBuf<T>>;
+                GenericSender<synchronization::RawMutex, T, GrowingHeapBuf<T>>;
             /// A [`GenericReceiver`] implementation backed by [`parking_lot`].
             pub type UnbufferedReceiver<T> =
-                GenericReceiver<parking_lot::RawMutex, T, GrowingHeapBuf<T>>;
+                GenericReceiver<synchronization::RawMutex, T, GrowingHeapBuf<T>>;
 
             /// Creates a new unbuffered channel.
             ///
@@ -1127,7 +1128,7 @@ mod if_alloc {
             where
                 T: Send,
             {
-                generic_channel::<parking_lot::RawMutex, T, GrowingHeapBuf<T>>(
+                generic_channel::<synchronization::RawMutex, T, GrowingHeapBuf<T>>(
                     0,
                 )
             }

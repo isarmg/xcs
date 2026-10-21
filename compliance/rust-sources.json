@@ -7,6 +7,7 @@
     "456f0a67c6a6a12bcc70286ce525402679257a11c2bb88965ca13ad5eb5f4652": "456f0a67c6a6a12bcc70286ce525402679257a11c2bb88965ca13ad5eb5f4652",
     "4a98b25902d1eccdf797328137506f3d18f8101bc4b45c6128d831e5b8478eb3": "4a98b25902d1eccdf797328137506f3d18f8101bc4b45c6128d831e5b8478eb3",
     "4d2efffc72662e128c83438024fc54a058196b6625d3de6b3e0c3df0ec71e074": "4d2efffc72662e128c83438024fc54a058196b6625d3de6b3e0c3df0ec71e074",
+    "73ddcd8319d5a89f799a3ef4c9e64057eb36e7a1ecbcef4c4938d8ebdfae2557": "73ddcd8319d5a89f799a3ef4c9e64057eb36e7a1ecbcef4c4938d8ebdfae2557",
     "8f4a95d59d1710c958537ee4b6d83e10bab8fb05d20355a264a9dbfaef18452f": "8f4a95d59d1710c958537ee4b6d83e10bab8fb05d20355a264a9dbfaef18452f",
     "914124306c29fc963dad00752c0a5f2f96a20db52dd497053eee3eb52b8d2555": "914124306c29fc963dad00752c0a5f2f96a20db52dd497053eee3eb52b8d2555",
     "9a8a096030bfdb1bdb2567d9c7fb019d623295f4587845cde75ee41003ac7dfb": "9a8a096030bfdb1bdb2567d9c7fb019d623295f4587845cde75ee41003ac7dfb",
@@ -10447,6 +10448,577 @@
       "primary_directory": "src/foundation/toml",
       "reason": "Integrate TOML datetime, byte-span values, format-preserving editing and low-level encoding as feature-isolated modules while preserving serialization markers and five original source identities."
     },
+    "73ddcd8319d5a89f799a3ef4c9e64057eb36e7a1ecbcef4c4938d8ebdfae2557": {
+      "destination_directory": "src/foundation/synchronization",
+      "destination_external_tests": {
+        "bytes": 70344,
+        "directory": "src/foundation/synchronization",
+        "file_count": 11,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/tests/issue_203.rs",
+            "sha256": "242a9b93fdc5ca9cb9b9223f4a3031cb197505d2ab8f47a32b3cc8ca87b26b74",
+            "source": "src/foundation/parking_lot/tests/issue_203.rs",
+            "source_sha256_before": "5fbdf6ec63f391d86457df949678c203a1e81e8aa32d4e10037fa76e768702c0"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/tests/issue_392.rs",
+            "sha256": "c93a5db80fe1657d3aa8fdfa6679703102d2838602616a0bf62336b12e51fdc6",
+            "source": "src/foundation/parking_lot/tests/issue_392.rs",
+            "source_sha256_before": "163a423eeea14025ad84958ae12ded4a6fbde3330f689bc3e08ed18e0c58eb8b"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/unit/src/condvar/tests_525.rs",
+            "sha256": "f5c1e9f97faf65b85a77afd6288276098dfe5fe0d215d432f2347f5c8ccaed6a",
+            "source": "src/foundation/parking_lot/src/condvar.rs",
+            "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/unit/src/condvar/webkit_queue_test_916.rs",
+            "sha256": "ad373fe33ad073852c19d9309a9299d3f53cf558e21c146aeb511f82a523b9ba",
+            "source": "src/foundation/parking_lot/src/condvar.rs",
+            "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/unit/src/deadlock/tests_40.rs",
+            "sha256": "8404558e6ff7e1e23e280f4ea086bb9cc7b5c9385765b49b8407337488c56f3a",
+            "source": "src/foundation/parking_lot/src/deadlock.rs",
+            "source_sha256_before": "7d3ebb5b4f63658435df277bb983e352e4bc651a92c4fd48ae68bf103e452d0d"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/unit/src/fair_mutex/tests_102.rs",
+            "sha256": "794972e83074c85939a2ddf886b3596a29c7a718c16d06bb22c98af64d5a03e4",
+            "source": "src/foundation/parking_lot/src/fair_mutex.rs",
+            "source_sha256_before": "2d0c5c2b779492653cad99825180628af95ce5f4bdbcfed57e7a5f2138a55fc0"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/unit/src/mutex/tests_111.rs",
+            "sha256": "987db676fdcfebeae4455fcecc3451016376fcc9fc97f2f707dc95810d07c7c4",
+            "source": "src/foundation/parking_lot/src/mutex.rs",
+            "source_sha256_before": "b7ee456958a3b0dc208dd39be195641ce3998f7906d101ccf284fa0f84c58d14"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/unit/src/once/tests_327.rs",
+            "sha256": "22c43cc935098041e968a0acf3ed5a210ce398814c7a8e9b1e946256d7cb0691",
+            "source": "src/foundation/parking_lot/src/once.rs",
+            "source_sha256_before": "58c78dba952e217c17bd8d5cf3dce32bb78e3e1c38a86860c8edc8c308caeca7"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/unit/src/remutex/tests_71.rs",
+            "sha256": "0cf9845debb7cf2e5d5d3612e964644661e8cc6fa8e2b7034f417dfe1f7ff862",
+            "source": "src/foundation/parking_lot/src/remutex.rs",
+            "source_sha256_before": "f0c0711ed46be67f7736a8500689e37a301ccf0dacb7706e1087513d3e87a432"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "path": "test/foundation/synchronization/locks/unit/src/rwlock/tests_127.rs",
+            "sha256": "2a75f3198062fdda773aa3bf53ad70a911334464bed4955d901b6f856b1163aa",
+            "source": "src/foundation/parking_lot/src/rwlock.rs",
+            "source_sha256_before": "7edd9dd320858a628388c1ebca1ed89cc2984abc30157c4b0c03194ebba7eade"
+          },
+          {
+            "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
+            "path": "test/foundation/synchronization/parking/unit/src/parking_lot/tests_1429.rs",
+            "sha256": "42a43ff06f6071d1491729fe896aacf6753ffe2a1aa4f4960c73c1037dd9c918",
+            "source": "src/foundation/parking_lot_core/src/parking_lot.rs",
+            "source_sha256_before": "ead11d575a1930c241aeec20f0e5e504bcdad637e284449ef4efcb9f9f175777"
+          }
+        ],
+        "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
+        "roots": [
+          "test/foundation/synchronization"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "067b41cc4cc8fc7c098dfa7305910232364ea2820bc2bae431ee299f06b05871",
+        "build.rs": "3698c936b75f8332d9b6b30a8a6838ea116c1ff0a819a025c9ea9696e4d8ce72",
+        "src/api/mod.rs": "442dd321d2f71df5ef6c62b7edfcb7cde8676bf9815ccb51bd3c781dc7bb8277",
+        "src/api/mutex.rs": "ab91ed4b4881ca526dfeb776d53f900c6a25efc33a822763b6fa5fc2dd878980",
+        "src/api/remutex.rs": "1fe63bca10b93cecfbd43cc6d6ff0e6a822e06a6bcd577bc00032e04792abb0a",
+        "src/api/rwlock.rs": "040b4798658b4984de0a158b034786f3e6f58c307f5371a36a2a51238fd376d6",
+        "src/lib.rs": "07e2a3d95346cbc303784051c5579e01745073be44d2469ae6e19c4045639fff",
+        "src/locks/condvar.rs": "36187ba4a575476b49c4845658398036abf043904747fe0eb0c13534a3c3b286",
+        "src/locks/elision.rs": "7070a29080f4c7d3b2c9b6e51a0d8230ebc8e56e4790aaeda1747b6c073a7438",
+        "src/locks/fair_mutex.rs": "61ca2c729996a8473c2faf55770be14e4e2396f4ce02d44a6686d56e1945d75f",
+        "src/locks/mod.rs": "c10567d97426b4cd7072f4355849a269af9cb2fc65355ed8d58e4df03b8e1f4a",
+        "src/locks/mutex.rs": "e01809795a482addd414c9f6181d862e0a7b2cbbc1f596e7d62b120341234e9d",
+        "src/locks/once.rs": "c65130583e24f96eb7873ccd9d58aee8ec83b30868e24ccd69cfa7dcab224e3f",
+        "src/locks/raw_fair_mutex.rs": "f780f52d750259906d067e93c6f0d9158fec0aefdfb9289b10821d211542f3f4",
+        "src/locks/raw_mutex.rs": "6388ad2f95daadecc9df09168b02d274d322627a79b0ce0bdfa3573139d1e787",
+        "src/locks/raw_rwlock.rs": "21f5618f03fb9ffdc6e1384c28a095a525d8d5907a7780ae38487ac20e0ebf18",
+        "src/locks/remutex.rs": "036c02a15f6d4a379869b2e39a3909d9eed9bb0d8f1978a4e92560895f819f68",
+        "src/locks/rwlock.rs": "accd3a2d70fad546de28537adc6e227a7c3898103821ac834d80672e32588508",
+        "src/locks/util.rs": "37a2c8b5c9254df83e8f3a5cd831558c1045061a76c2571bdc4d78eb86e467f2",
+        "src/parking/mod.rs": "314e8cfd04e2e6fc8d2ac0a5b09078fa8e6c263d91c5cc28c151a08717b3d516",
+        "src/parking/parking_lot.rs": "f194599390b5e3d63ed24e036eaa5d45d584967aaea63f033fd0d98f7d529171",
+        "src/parking/spinwait.rs": "5fd572351bb063e849a599327028561a2b867cd47550b5da4373dbbf099c0d2a",
+        "src/parking/thread_parker/generic.rs": "414bd3114b40f7665efe59fa4c5033d2401eafc58b57a9ba5803949d26cc0454",
+        "src/parking/thread_parker/linux.rs": "70bfe6c168fc431965374d921e33b3e04536cb68fde3e807a837aa38a65772b0",
+        "src/parking/thread_parker/mod.rs": "724329cbf54bcfd3c3a05e137b555a6da00bf0414166f751e89a825b23396d34",
+        "src/parking/thread_parker/unix.rs": "4cd468fcee83f29e9c923c5a574d0f5cbff0207741dae2eba99b16509fdb6ffa",
+        "src/parking/thread_parker/wasm.rs": "86e954d009d57d2dfdbca71e5c0f116a99a182af83b7e51ed5b14fc55b2f7b01",
+        "src/parking/thread_parker/wasm_atomic.rs": "6fbc09accc9df9d42444cec6f55d3eed2c7078a474485fa269a9f503da2ee1c5",
+        "src/parking/util.rs": "285e6133150645525f2ca1ece41f6d35bad4e7c5e08b42b20c99d2a97e04a974",
+        "src/parking/word_lock.rs": "dd60d0364afe6790f2e5c992e6e72401dd3a0bda70c40136a6d4176549f04198"
+      },
+      "destination_name": "synchronization",
+      "external_file_routes": {
+        "test/foundation/parking_lot/tests/issue_203.rs": {
+          "destination": "test/foundation/synchronization/locks/tests/issue_203.rs",
+          "replacements": [
+            {
+              "new": "dXNlIHN5bmNocm9uaXphdGlvbjo6UndMb2NrOwp1c2Ugc3RkOjp0aHJlYWQ7CgpzdHJ1Y3QgQmFyKFJ3TG9jazwoKT4pOwo=",
+              "old": "dXNlIHBhcmtpbmdfbG90OjpSd0xvY2s7CnVzZSBzdGQ6OnRocmVhZDsKCnN0cnVjdCBCYXIoUndMb2NrPCgpPik7Cg=="
+            }
+          ]
+        },
+        "test/foundation/parking_lot/tests/issue_392.rs": {
+          "destination": "test/foundation/synchronization/locks/tests/issue_392.rs",
+          "replacements": [
+            {
+              "new": "dXNlIHN5bmNocm9uaXphdGlvbjo6UndMb2NrOwoKc3RydWN0IExvY2soUndMb2NrPGkzMj4pOwoK",
+              "old": "dXNlIHBhcmtpbmdfbG90OjpSd0xvY2s7CgpzdHJ1Y3QgTG9jayhSd0xvY2s8aTMyPik7Cgo="
+            }
+          ]
+        },
+        "test/foundation/parking_lot/unit/src/condvar/tests_525.rs": {
+          "destination": "test/foundation/synchronization/locks/unit/src/condvar/tests_525.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OmxvY2tzOjp7Q29uZHZhciwgTXV0ZXgsIE11dGV4R3VhcmR9OwogICAgdXNlIHN0ZDo6c3luYzo6bXBzYzo6Y2hhbm5lbDsKICAgIHVzZSBzdGQ6OnN5bmM6OkFyYzsKICAgIHVzZSBzdGQ6OnRocmVhZDsK",
+              "old": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OntDb25kdmFyLCBNdXRleCwgTXV0ZXhHdWFyZH07CiAgICB1c2Ugc3RkOjpzeW5jOjptcHNjOjpjaGFubmVsOwogICAgdXNlIHN0ZDo6c3luYzo6QXJjOwogICAgdXNlIHN0ZDo6dGhyZWFkOwo="
+            },
+            {
+              "new": "ICAgICAgICAgICAgbGV0IF9nID0gbTIubG9jaygpOwogICAgICAgICAgICBjMi5ub3RpZnlfb25lKCk7CiAgICAgICAgfSk7CiAgICAgICAgbGV0IHRpbWVvdXRfcmVzID0gYy53YWl0X2ZvcigmbXV0IGcsIER1cmF0aW9uOjpmcm9tX3NlY3ModTY0OjpNQVgpKTsKICAgICAgICBhc3NlcnQhKCF0aW1lb3V0X3Jlcy50aW1lZF9vdXQoKSk7CgogICAgICAgIGRyb3AoZyk7Cg==",
+              "old": "ICAgICAgICAgICAgbGV0IF9nID0gbTIubG9jaygpOwogICAgICAgICAgICBjMi5ub3RpZnlfb25lKCk7CiAgICAgICAgfSk7CiAgICAgICAgbGV0IHRpbWVvdXRfcmVzID0gYy53YWl0X2ZvcigmbXV0IGcsIER1cmF0aW9uOjpmcm9tX3NlY3ModTY0OjptYXhfdmFsdWUoKSkpOwogICAgICAgIGFzc2VydCEoIXRpbWVvdXRfcmVzLnRpbWVkX291dCgpKTsKCiAgICAgICAgZHJvcChnKTsK"
+            },
+            {
+              "new": "ICAgICAgICB9KTsKICAgICAgICBsZXQgdGltZW91dF9yZXMgPSBjLndhaXRfdW50aWwoCiAgICAgICAgICAgICZtdXQgZywKICAgICAgICAgICAgSW5zdGFudDo6bm93KCkgKyBEdXJhdGlvbjo6ZnJvbV9taWxsaXModTMyOjpNQVggYXMgdTY0KSwKICAgICAgICApOwogICAgICAgIGFzc2VydCEoIXRpbWVvdXRfcmVzLnRpbWVkX291dCgpKTsKICAgICAgICBkcm9wKGcpOwo=",
+              "old": "ICAgICAgICB9KTsKICAgICAgICBsZXQgdGltZW91dF9yZXMgPSBjLndhaXRfdW50aWwoCiAgICAgICAgICAgICZtdXQgZywKICAgICAgICAgICAgSW5zdGFudDo6bm93KCkgKyBEdXJhdGlvbjo6ZnJvbV9taWxsaXModTMyOjptYXhfdmFsdWUoKSBhcyB1NjQpLAogICAgICAgICk7CiAgICAgICAgYXNzZXJ0ISghdGltZW91dF9yZXMudGltZWRfb3V0KCkpOwogICAgICAgIGRyb3AoZyk7Cg=="
+            },
+            {
+              "new": "ICAgICAgICBsZXQgbG9ja3MgPSBBcmM6Om5ldygoTXV0ZXg6Om5ldygoKSksIENvbmR2YXI6Om5ldygpKSk7CgogICAgICAgIGxldCAodHgsIHJ4KSA9IGNoYW5uZWwoKTsKICAgICAgICBsZXQgKHJlYWR5X3R4LCByZWFkeV9yeCkgPSBjaGFubmVsKCk7CiAgICAgICAgZm9yIF8gaW4gMC4uNCB7CiAgICAgICAgICAgIGxldCBsb2NrcyA9IGxvY2tzLmNsb25lKCk7CiAgICAgICAgICAgIGxldCB0eCA9IHR4LmNsb25lKCk7CiAgICAgICAgICAgIGxldCByZWFkeV90eCA9IHJlYWR5X3R4LmNsb25lKCk7CiAgICAgICAgICAgIHRocmVhZDo6c3Bhd24obW92ZSB8fCB7CiAgICAgICAgICAgICAgICBsZXQgbXV0IGd1YXJkID0gbG9ja3MuMC5sb2NrKCk7CiAgICAgICAgICAgICAgICByZWFkeV90eC5zZW5kKCgpKS51bndyYXAoKTsKICAgICAgICAgICAgICAgIGxvY2tzLjEud2FpdCgmbXV0IGd1YXJkKTsKICAgICAgICAgICAgICAgIGxvY2tzLjEud2FpdF9mb3IoJm11dCBndWFyZCwgRHVyYXRpb246OmZyb21fbWlsbGlzKDEpKTsKICAgICAgICAgICAgICAgIGxvY2tzLjEubm90aWZ5X29uZSgpOwo=",
+              "old": "ICAgICAgICBsZXQgbG9ja3MgPSBBcmM6Om5ldygoTXV0ZXg6Om5ldygoKSksIENvbmR2YXI6Om5ldygpKSk7CgogICAgICAgIGxldCAodHgsIHJ4KSA9IGNoYW5uZWwoKTsKICAgICAgICBmb3IgXyBpbiAwLi40IHsKICAgICAgICAgICAgbGV0IGxvY2tzID0gbG9ja3MuY2xvbmUoKTsKICAgICAgICAgICAgbGV0IHR4ID0gdHguY2xvbmUoKTsKICAgICAgICAgICAgdGhyZWFkOjpzcGF3bihtb3ZlIHx8IHsKICAgICAgICAgICAgICAgIGxldCBtdXQgZ3VhcmQgPSBsb2Nrcy4wLmxvY2soKTsKICAgICAgICAgICAgICAgIGxvY2tzLjEud2FpdCgmbXV0IGd1YXJkKTsKICAgICAgICAgICAgICAgIGxvY2tzLjEud2FpdF9mb3IoJm11dCBndWFyZCwgRHVyYXRpb246OmZyb21fbWlsbGlzKDEpKTsKICAgICAgICAgICAgICAgIGxvY2tzLjEubm90aWZ5X29uZSgpOwo="
+            },
+            {
+              "new": "ICAgICAgICAgICAgfSk7CiAgICAgICAgfQoKICAgICAgICAvLyBTeW5jaHJvbml6ZSBzdGFydHVwIGluc3RlYWQgb2YgYXNzdW1pbmcgZXZlcnkgd29ya2VyIHN0YXJ0cyB3aXRoaW4gMTAwbXMuCiAgICAgICAgZm9yIF8gaW4gMC4uNCB7IHJlYWR5X3J4LnJlY3ZfdGltZW91dChEdXJhdGlvbjo6ZnJvbV9zZWNzKDUpKS51bndyYXAoKTsgfQogICAgICAgIHsKICAgICAgICAgICAgbGV0IF9ndWFyZCA9IGxvY2tzLjAubG9jaygpOwogICAgICAgICAgICBsb2Nrcy4xLm5vdGlmeV9vbmUoKTsKICAgICAgICB9CgogICAgICAgIGZvciBfIGluIDAuLjQgewogICAgICAgICAgICBhc3NlcnRfZXEhKHJ4LnJlY3ZfdGltZW91dChEdXJhdGlvbjo6ZnJvbV9zZWNzKDUpKSwgT2soKCkpKTsKICAgICAgICB9CiAgICB9Cn0K",
+              "old": "ICAgICAgICAgICAgfSk7CiAgICAgICAgfQoKICAgICAgICB0aHJlYWQ6OnNsZWVwKER1cmF0aW9uOjpmcm9tX21pbGxpcygxMDApKTsKICAgICAgICBsb2Nrcy4xLm5vdGlmeV9vbmUoKTsKCiAgICAgICAgZm9yIF8gaW4gMC4uNCB7CiAgICAgICAgICAgIGFzc2VydF9lcSEocngucmVjdl90aW1lb3V0KER1cmF0aW9uOjpmcm9tX21pbGxpcyg1MDApKSwgT2soKCkpKTsKICAgICAgICB9CiAgICB9Cn0K"
+            }
+          ]
+        },
+        "test/foundation/parking_lot/unit/src/condvar/webkit_queue_test_916.rs": {
+          "destination": "test/foundation/synchronization/locks/unit/src/condvar/webkit_queue_test_916.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcodGVzdCldCm1vZCB3ZWJraXRfcXVldWVfdGVzdCB7CiAgICB1c2UgY3JhdGU6OmxvY2tzOjp7Q29uZHZhciwgTXV0ZXgsIE11dGV4R3VhcmR9OwogICAgdXNlIHN0ZDo6e2NvbGxlY3Rpb25zOjpWZWNEZXF1ZSwgc3luYzo6QXJjLCB0aHJlYWQsIHRpbWU6OkR1cmF0aW9ufTsKCiAgICAjW2Rlcml2ZShDbG9uZSwgQ29weSldCg==",
+              "old": "I1tjZmcodGVzdCldCm1vZCB3ZWJraXRfcXVldWVfdGVzdCB7CiAgICB1c2UgY3JhdGU6OntDb25kdmFyLCBNdXRleCwgTXV0ZXhHdWFyZH07CiAgICB1c2Ugc3RkOjp7Y29sbGVjdGlvbnM6OlZlY0RlcXVlLCBzeW5jOjpBcmMsIHRocmVhZCwgdGltZTo6RHVyYXRpb259OwoKICAgICNbZGVyaXZlKENsb25lLCBDb3B5KV0K"
+            }
+          ]
+        },
+        "test/foundation/parking_lot/unit/src/deadlock/tests_40.rs": {
+          "destination": "test/foundation/synchronization/locks/unit/src/deadlock/tests_40.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcodGVzdCldCiNbY2ZnKGZlYXR1cmUgPSAiZGVhZGxvY2tfZGV0ZWN0aW9uIildCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OmxvY2tzOjp7TXV0ZXgsIFJlZW50cmFudE11dGV4LCBSd0xvY2t9OwogICAgdXNlIHN0ZDo6c3luYzo6e0FyYywgQmFycmllcn07CiAgICB1c2Ugc3RkOjp0aHJlYWQ6OntzZWxmLCBzbGVlcH07CiAgICB1c2Ugc3RkOjp0aW1lOjpEdXJhdGlvbjsKCiAgICAvLyBXZSBuZWVkIHRvIHNlcmlhbGl6ZSB0aGVzZSB0ZXN0cyBzaW5jZSBkZWFkbG9jayBkZXRlY3Rpb24gdXNlcyBnbG9iYWwgc3RhdGUKICAgIHN0YXRpYyBERUFETE9DS19ERVRFQ1RJT05fTE9DSzogTXV0ZXg8KCk+ID0gY3JhdGU6OmxvY2tzOjpjb25zdF9tdXRleCgoKSk7CgogICAgZm4gY2hlY2tfZGVhZGxvY2soKSAtPiBib29sIHsKICAgICAgICB1c2UgY3JhdGU6OnBhcmtpbmc6OmRlYWRsb2NrOjpjaGVja19kZWFkbG9jazsKICAgICAgICAhY2hlY2tfZGVhZGxvY2soKS5pc19lbXB0eSgpCiAgICB9Cgo=",
+              "old": "I1tjZmcodGVzdCldCiNbY2ZnKGZlYXR1cmUgPSAiZGVhZGxvY2tfZGV0ZWN0aW9uIildCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OntNdXRleCwgUmVlbnRyYW50TXV0ZXgsIFJ3TG9ja307CiAgICB1c2Ugc3RkOjpzeW5jOjp7QXJjLCBCYXJyaWVyfTsKICAgIHVzZSBzdGQ6OnRocmVhZDo6e3NlbGYsIHNsZWVwfTsKICAgIHVzZSBzdGQ6OnRpbWU6OkR1cmF0aW9uOwoKICAgIC8vIFdlIG5lZWQgdG8gc2VyaWFsaXplIHRoZXNlIHRlc3RzIHNpbmNlIGRlYWRsb2NrIGRldGVjdGlvbiB1c2VzIGdsb2JhbCBzdGF0ZQogICAgc3RhdGljIERFQURMT0NLX0RFVEVDVElPTl9MT0NLOiBNdXRleDwoKT4gPSBjcmF0ZTo6Y29uc3RfbXV0ZXgoKCkpOwoKICAgIGZuIGNoZWNrX2RlYWRsb2NrKCkgLT4gYm9vbCB7CiAgICAgICAgdXNlIHBhcmtpbmdfbG90X2NvcmU6OmRlYWRsb2NrOjpjaGVja19kZWFkbG9jazsKICAgICAgICAhY2hlY2tfZGVhZGxvY2soKS5pc19lbXB0eSgpCiAgICB9Cgo="
+            }
+          ]
+        },
+        "test/foundation/parking_lot/unit/src/fair_mutex/tests_102.rs": {
+          "destination": "test/foundation/synchronization/locks/unit/src/fair_mutex/tests_102.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OmxvY2tzOjpGYWlyTXV0ZXg7CiAgICB1c2Ugc3RkOjpzeW5jOjphdG9taWM6OntBdG9taWNVc2l6ZSwgT3JkZXJpbmd9OwogICAgdXNlIHN0ZDo6c3luYzo6bXBzYzo6Y2hhbm5lbDsKICAgIHVzZSBzdGQ6OnN5bmM6OkFyYzsK",
+              "old": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OkZhaXJNdXRleDsKICAgIHVzZSBzdGQ6OnN5bmM6OmF0b21pYzo6e0F0b21pY1VzaXplLCBPcmRlcmluZ307CiAgICB1c2Ugc3RkOjpzeW5jOjptcHNjOjpjaGFubmVsOwogICAgdXNlIHN0ZDo6c3luYzo6QXJjOwo="
+            }
+          ]
+        },
+        "test/foundation/parking_lot/unit/src/mutex/tests_111.rs": {
+          "destination": "test/foundation/synchronization/locks/unit/src/mutex/tests_111.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OmxvY2tzOjp7Q29uZHZhciwgTWFwcGVkTXV0ZXhHdWFyZCwgTXV0ZXgsIE11dGV4R3VhcmR9OwogICAgdXNlIHN0ZDo6Y29sbGVjdGlvbnM6Okhhc2hNYXA7CiAgICB1c2Ugc3RkOjpvcHM6OkRlcmVmOwogICAgdXNlIHN0ZDo6c3luYzo6YXRvbWljOjp7QXRvbWljVXNpemUsIE9yZGVyaW5nfTsK",
+              "old": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OntDb25kdmFyLCBNYXBwZWRNdXRleEd1YXJkLCBNdXRleCwgTXV0ZXhHdWFyZH07CiAgICB1c2Ugc3RkOjpjb2xsZWN0aW9uczo6SGFzaE1hcDsKICAgIHVzZSBzdGQ6Om9wczo6RGVyZWY7CiAgICB1c2Ugc3RkOjpzeW5jOjphdG9taWM6OntBdG9taWNVc2l6ZSwgT3JkZXJpbmd9Owo="
+            }
+          ]
+        },
+        "test/foundation/parking_lot/unit/src/once/tests_327.rs": {
+          "destination": "test/foundation/synchronization/locks/unit/src/once/tests_327.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OmxvY2tzOjpPbmNlOwogICAgdXNlIHN0ZDo6cGFuaWM7CiAgICB1c2Ugc3RkOjpzeW5jOjptcHNjOjpjaGFubmVsOwogICAgdXNlIHN0ZDo6dGhyZWFkOwo=",
+              "old": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6Ok9uY2U7CiAgICB1c2Ugc3RkOjpwYW5pYzsKICAgIHVzZSBzdGQ6OnN5bmM6Om1wc2M6OmNoYW5uZWw7CiAgICB1c2Ugc3RkOjp0aHJlYWQ7Cg=="
+            }
+          ]
+        },
+        "test/foundation/parking_lot/unit/src/remutex/tests_71.rs": {
+          "destination": "test/foundation/synchronization/locks/unit/src/remutex/tests_71.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OmxvY2tzOjpSZWVudHJhbnRNdXRleDsKICAgIHVzZSBjcmF0ZTo6bG9ja3M6OlJlZW50cmFudE11dGV4R3VhcmQ7CiAgICB1c2Ugc3RkOjpjZWxsOjpSZWZDZWxsOwogICAgdXNlIHN0ZDo6c3luYzo6bXBzYzo6Y2hhbm5lbDsKICAgIHVzZSBzdGQ6OnN5bmM6OkFyYzsK",
+              "old": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OlJlZW50cmFudE11dGV4OwogICAgdXNlIGNyYXRlOjpSZWVudHJhbnRNdXRleEd1YXJkOwogICAgdXNlIHN0ZDo6Y2VsbDo6UmVmQ2VsbDsKICAgIHVzZSBzdGQ6OnN5bmM6Om1wc2M6OmNoYW5uZWw7CiAgICB1c2Ugc3RkOjpzeW5jOjpBcmM7Cg=="
+            }
+          ]
+        },
+        "test/foundation/parking_lot/unit/src/rwlock/tests_127.rs": {
+          "destination": "test/foundation/synchronization/locks/unit/src/rwlock/tests_127.rs",
+          "replacements": [
+            {
+              "new": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OmxvY2tzOjp7UndMb2NrLCBSd0xvY2tVcGdyYWRhYmxlUmVhZEd1YXJkLCBSd0xvY2tXcml0ZUd1YXJkfTsKICAgIHVzZSBzdGQ6OnN5bmM6OmF0b21pYzo6e0F0b21pY1VzaXplLCBPcmRlcmluZ307CiAgICB1c2Ugc3RkOjpzeW5jOjptcHNjOjpjaGFubmVsOwogICAgdXNlIHN0ZDo6c3luYzo6QXJjOwo=",
+              "old": "I1tjZmcodGVzdCldCm1vZCB0ZXN0cyB7CiAgICB1c2UgY3JhdGU6OntSd0xvY2ssIFJ3TG9ja1VwZ3JhZGFibGVSZWFkR3VhcmQsIFJ3TG9ja1dyaXRlR3VhcmR9OwogICAgdXNlIHJhbmQ6OlJuZzsKICAgIHVzZSBzdGQ6OnN5bmM6OmF0b21pYzo6e0F0b21pY1VzaXplLCBPcmRlcmluZ307CiAgICB1c2Ugc3RkOjpzeW5jOjptcHNjOjpjaGFubmVsOwogICAgdXNlIHN0ZDo6c3luYzo6QXJjOwo="
+            },
+            {
+              "new": "ICAgIH0KCiAgICAjW3Rlc3RdCiAgICBmbiBkZXRlcm1pbmlzdGljX3JlYWRlcl93cml0ZXJfY29udGVudGlvbigpIHsKICAgICAgICBjb25zdCBOOiB1MzIgPSAxMDsKICAgICAgICBjb25zdCBNOiB1MzIgPSAxMDAwOwoKICAgICAgICBsZXQgciA9IEFyYzo6bmV3KFJ3TG9jazo6bmV3KCgpKSk7CgogICAgICAgIGxldCAodHgsIHJ4KSA9IGNoYW5uZWw6OjwoKT4oKTsKICAgICAgICBmb3Igd29ya2VyIGluIDAuLk4gewogICAgICAgICAgICBsZXQgdHggPSB0eC5jbG9uZSgpOwogICAgICAgICAgICBsZXQgciA9IHIuY2xvbmUoKTsKICAgICAgICAgICAgdGhyZWFkOjpzcGF3bihtb3ZlIHx8IHsKICAgICAgICAgICAgICAgIGZvciBpdGVyYXRpb24gaW4gMC4uTSB7CiAgICAgICAgICAgICAgICAgICAgLy8gRml4ZWQgbWl4ZWQgcmVhZGVycy93cml0ZXJzOyBub3QgYSByZXBsYWNlbWVudCBmb3IgcmFuZG9tIHNjaGVkdWxpbmcgY292ZXJhZ2UuCiAgICAgICAgICAgICAgICAgICAgaWYgKGl0ZXJhdGlvbiArIHdvcmtlcikgJSBOID09IDAgewogICAgICAgICAgICAgICAgICAgICAgICBkcm9wKHIud3JpdGUoKSk7CiAgICAgICAgICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgICAgICAgICAgZHJvcChyLnJlYWQoKSk7Cg==",
+              "old": "ICAgIH0KCiAgICAjW3Rlc3RdCiAgICBmbiBmcm9iKCkgewogICAgICAgIGNvbnN0IE46IHUzMiA9IDEwOwogICAgICAgIGNvbnN0IE06IHUzMiA9IDEwMDA7CgogICAgICAgIGxldCByID0gQXJjOjpuZXcoUndMb2NrOjpuZXcoKCkpKTsKCiAgICAgICAgbGV0ICh0eCwgcngpID0gY2hhbm5lbDo6PCgpPigpOwogICAgICAgIGZvciBfIGluIDAuLk4gewogICAgICAgICAgICBsZXQgdHggPSB0eC5jbG9uZSgpOwogICAgICAgICAgICBsZXQgciA9IHIuY2xvbmUoKTsKICAgICAgICAgICAgdGhyZWFkOjpzcGF3bihtb3ZlIHx8IHsKICAgICAgICAgICAgICAgIGxldCBtdXQgcm5nID0gcmFuZDo6dGhyZWFkX3JuZygpOwogICAgICAgICAgICAgICAgZm9yIF8gaW4gMC4uTSB7CiAgICAgICAgICAgICAgICAgICAgaWYgcm5nLmdlbl9ib29sKDEuMCAvIE4gYXMgZjY0KSB7CiAgICAgICAgICAgICAgICAgICAgICAgIGRyb3Aoci53cml0ZSgpKTsKICAgICAgICAgICAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICAgICAgICAgICAgICBkcm9wKHIucmVhZCgpKTsK"
+            }
+          ]
+        },
+        "test/foundation/parking_lot_core/unit/src/parking_lot/tests_1429.rs": {
+          "destination": "test/foundation/synchronization/parking/unit/src/parking_lot/tests_1429.rs",
+          "replacements": []
+        }
+      },
+      "file_routes": {
+        "src/foundation/lock_api": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS43MS4wIgpuYW1lID0gImxvY2tfYXBpIgp2ZXJzaW9uID0gIjAuNC4xNCIKYXV0aG9ycyA9IFsiQW1hbmlldSBkJ0FudHJhcyA8YW1hbmlldUBnbWFpbC5jb20+Il0KYnVpbGQgPSBmYWxzZQphdXRvbGliID0gZmFsc2UKYXV0b2JpbnMgPSBmYWxzZQphdXRvZXhhbXBsZXMgPSBmYWxzZQphdXRvdGVzdHMgPSBmYWxzZQphdXRvYmVuY2hlcyA9IGZhbHNlCmRlc2NyaXB0aW9uID0gIldyYXBwZXJzIHRvIGNyZWF0ZSBmdWxseS1mZWF0dXJlZCBNdXRleCBhbmQgUndMb2NrIHR5cGVzLiBDb21wYXRpYmxlIHdpdGggbm9fc3RkLiIKcmVhZG1lID0gZmFsc2UKa2V5d29yZHMgPSBbCiAgICAibXV0ZXgiLAogICAgInJ3bG9jayIsCiAgICAibG9jayIsCiAgICAibm9fc3RkIiwKXQpjYXRlZ29yaWVzID0gWwogICAgImNvbmN1cnJlbmN5IiwKICAgICJuby1zdGQiLApdCmxpY2Vuc2UgPSAiTUlUIE9SIEFwYWNoZS0yLjAiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL0FtYW5pZXUvcGFya2luZ19sb3QiCgpbZmVhdHVyZXNdCnNlcmlhbGl6YXRpb24gPSBbImRlcDpkYXRhLXNlcmlhbGl6YXRpb24iXQphcmNfbG9jayA9IFtdCmF0b21pY191c2l6ZSA9IFtdCmRlZmF1bHQgPSBbImF0b21pY191c2l6ZSJdCm5pZ2h0bHkgPSBbXQoKW2xpYl0KbmFtZSA9ICJsb2NrX2FwaSIKcGF0aCA9ICJzcmMvbGliLnJzIgoKW2RlcGVuZGVuY2llcy5zY29wZWd1YXJkXQp2ZXJzaW9uID0gIjEuMS4wIgpkZWZhdWx0LWZlYXR1cmVzID0gZmFsc2UKcGF0aCA9ICIuLi9zY29wZWd1YXJkIgoKW2RlcGVuZGVuY2llcy5kYXRhLXNlcmlhbGl6YXRpb25dCnZlcnNpb24gPSAiMS4wLjEyNiIKb3B0aW9uYWwgPSB0cnVlCmRlZmF1bHQtZmVhdHVyZXMgPSBmYWxzZQpwYXRoID0gIi4uL2RhdGEtc2VyaWFsaXphdGlvbiIK"
+          },
+          "src/lib.rs": {
+            "destination": "src/api/mod.rs"
+          },
+          "src/mutex.rs": {
+            "destination": "src/api/mutex.rs"
+          },
+          "src/remutex.rs": {
+            "destination": "src/api/remutex.rs"
+          },
+          "src/rwlock.rs": {
+            "destination": "src/api/rwlock.rs"
+          }
+        },
+        "src/foundation/parking_lot": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS43MSIKbmFtZSA9ICJwYXJraW5nX2xvdCIKdmVyc2lvbiA9ICIwLjEyLjUiCmF1dGhvcnMgPSBbIkFtYW5pZXUgZCdBbnRyYXMgPGFtYW5pZXVAZ21haWwuY29tPiJdCmJ1aWxkID0gZmFsc2UKYXV0b2xpYiA9IGZhbHNlCmF1dG9iaW5zID0gZmFsc2UKYXV0b2V4YW1wbGVzID0gZmFsc2UKYXV0b3Rlc3RzID0gZmFsc2UKYXV0b2JlbmNoZXMgPSBmYWxzZQpkZXNjcmlwdGlvbiA9ICJNb3JlIGNvbXBhY3QgYW5kIGVmZmljaWVudCBpbXBsZW1lbnRhdGlvbnMgb2YgdGhlIHN0YW5kYXJkIHN5bmNocm9uaXphdGlvbiBwcmltaXRpdmVzLiIKcmVhZG1lID0gIi4uLy4uLy4uL2RvY3MvdXBzdHJlYW0vcGFya2luZ19sb3QtMC4xMi41L1JFQURNRS5tZCIKa2V5d29yZHMgPSBbCiAgICAibXV0ZXgiLAogICAgImNvbmR2YXIiLAogICAgInJ3bG9jayIsCiAgICAib25jZSIsCiAgICAidGhyZWFkIiwKXQpjYXRlZ29yaWVzID0gWyJjb25jdXJyZW5jeSJdCmxpY2Vuc2UgPSAiTUlUIE9SIEFwYWNoZS0yLjAiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL0FtYW5pZXUvcGFya2luZ19sb3QiCgpbZmVhdHVyZXNdCmFyY19sb2NrID0gWyJsb2NrX2FwaS9hcmNfbG9jayJdCmRlYWRsb2NrX2RldGVjdGlvbiA9IFsicGFya2luZ19sb3RfY29yZS9kZWFkbG9ja19kZXRlY3Rpb24iXQpkZWZhdWx0ID0gW10KaGFyZHdhcmUtbG9jay1lbGlzaW9uID0gW10KbmlnaHRseSA9IFsicGFya2luZ19sb3RfY29yZS9uaWdodGx5IiwgImxvY2tfYXBpL25pZ2h0bHkiXQpzZW5kX2d1YXJkID0gW10Kc2VyaWFsaXphdGlvbiA9IFsibG9ja19hcGkvc2VyaWFsaXphdGlvbiJdCgpbbGliXQpuYW1lID0gInBhcmtpbmdfbG90IgpwYXRoID0gInNyYy9saWIucnMiCgpbZGVwZW5kZW5jaWVzLmxvY2tfYXBpXQp2ZXJzaW9uID0gIjAuNC4xNCIKcGF0aCA9ICIuLi9sb2NrX2FwaSIKCltkZXBlbmRlbmNpZXMucGFya2luZ19sb3RfY29yZV0KdmVyc2lvbiA9ICIwLjkuMTIiCnBhdGggPSAiLi4vcGFya2luZ19sb3RfY29yZSIKCg=="
+          },
+          "src/condvar.rs": {
+            "destination": "src/locks/condvar.rs"
+          },
+          "src/deadlock.rs": {
+            "archive_base64": "Ly8hIFxbRXhwZXJpbWVudGFsXF0gRGVhZGxvY2sgZGV0ZWN0aW9uCi8vIQovLyEgVGhpcyBmZWF0dXJlIGlzIG9wdGlvbmFsIGFuZCBjYW4gYmUgZW5hYmxlZCB2aWEgdGhlIGBkZWFkbG9ja19kZXRlY3Rpb25gIGZlYXR1cmUgZmxhZy4KLy8hCi8vISAjIEV4YW1wbGUKLy8hCi8vISBgYGAKLy8hICNbY2ZnKGZlYXR1cmUgPSAiZGVhZGxvY2tfZGV0ZWN0aW9uIildCi8vISB7IC8vIG9ubHkgZm9yICNbY2ZnXQovLyEgdXNlIHN0ZDo6dGhyZWFkOwovLyEgdXNlIHN0ZDo6dGltZTo6RHVyYXRpb247Ci8vISB1c2UgcGFya2luZ19sb3Q6OmRlYWRsb2NrOwovLyEKLy8hIC8vIENyZWF0ZSBhIGJhY2tncm91bmQgdGhyZWFkIHdoaWNoIGNoZWNrcyBmb3IgZGVhZGxvY2tzIGV2ZXJ5IDEwcwovLyEgdGhyZWFkOjpzcGF3bihtb3ZlIHx8IHsKLy8hICAgICBsb29wIHsKLy8hICAgICAgICAgdGhyZWFkOjpzbGVlcChEdXJhdGlvbjo6ZnJvbV9zZWNzKDEwKSk7Ci8vISAgICAgICAgIGxldCBkZWFkbG9ja3MgPSBkZWFkbG9jazo6Y2hlY2tfZGVhZGxvY2soKTsKLy8hICAgICAgICAgaWYgZGVhZGxvY2tzLmlzX2VtcHR5KCkgewovLyEgICAgICAgICAgICAgY29udGludWU7Ci8vISAgICAgICAgIH0KLy8hCi8vISAgICAgICAgIHByaW50bG4hKCJ7fSBkZWFkbG9ja3MgZGV0ZWN0ZWQiLCBkZWFkbG9ja3MubGVuKCkpOwovLyEgICAgICAgICBmb3IgKGksIHRocmVhZHMpIGluIGRlYWRsb2Nrcy5pdGVyKCkuZW51bWVyYXRlKCkgewovLyEgICAgICAgICAgICAgcHJpbnRsbiEoIkRlYWRsb2NrICN7fSIsIGkpOwovLyEgICAgICAgICAgICAgZm9yIHQgaW4gdGhyZWFkcyB7Ci8vISAgICAgICAgICAgICAgICAgcHJpbnRsbiEoIlRocmVhZCBJZCB7OiM/fSIsIHQudGhyZWFkX2lkKCkpOwovLyEgICAgICAgICAgICAgICAgIHByaW50bG4hKCJ7OiM/fSIsIHQuYmFja3RyYWNlKCkpOwovLyEgICAgICAgICAgICAgfQovLyEgICAgICAgICB9Ci8vISAgICAgfQovLyEgfSk7Ci8vISB9IC8vIG9ubHkgZm9yICNbY2ZnXQovLyEgYGBgCgojW2NmZyhmZWF0dXJlID0gImRlYWRsb2NrX2RldGVjdGlvbiIpXQpwdWIgdXNlIHBhcmtpbmdfbG90X2NvcmU6OmRlYWRsb2NrOjpjaGVja19kZWFkbG9jazsKcHViKGNyYXRlKSB1c2UgcGFya2luZ19sb3RfY29yZTo6ZGVhZGxvY2s6OnthY3F1aXJlX3Jlc291cmNlLCByZWxlYXNlX3Jlc291cmNlfTsKCiNbY2ZnKHRlc3QpXQppbmNsdWRlIShjb25jYXQhKGVudiEoIkNBUkdPX01BTklGRVNUX0RJUiIpLCAiLy4uLy4uLy4uL3Rlc3QvZm91bmRhdGlvbi9wYXJraW5nX2xvdC91bml0L3NyYy9kZWFkbG9jay90ZXN0c180MC5ycyIpKTsK",
+            "kind": "archived-source",
+            "reason": "Remove unavailable optional deadlock detector implementation and redundant no-op forwarding. Its backtrace and graph providers are absent; lock ordering, parking, fairness and timeout semantics remain unchanged and original licensed bytes stay attributed.",
+            "sha256": "7da7b963d876109dca64a70436b1f356dd55d0a2906cfae3a242f1a130560982"
+          },
+          "src/elision.rs": {
+            "destination": "src/locks/elision.rs"
+          },
+          "src/fair_mutex.rs": {
+            "destination": "src/locks/fair_mutex.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/locks/mod.rs"
+          },
+          "src/mutex.rs": {
+            "destination": "src/locks/mutex.rs"
+          },
+          "src/once.rs": {
+            "destination": "src/locks/once.rs"
+          },
+          "src/raw_fair_mutex.rs": {
+            "destination": "src/locks/raw_fair_mutex.rs"
+          },
+          "src/raw_mutex.rs": {
+            "destination": "src/locks/raw_mutex.rs"
+          },
+          "src/raw_rwlock.rs": {
+            "destination": "src/locks/raw_rwlock.rs"
+          },
+          "src/remutex.rs": {
+            "destination": "src/locks/remutex.rs"
+          },
+          "src/rwlock.rs": {
+            "destination": "src/locks/rwlock.rs"
+          },
+          "src/util.rs": {
+            "destination": "src/locks/util.rs"
+          }
+        },
+        "src/foundation/parking_lot_core": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "build.rs": {
+            "destination": "build.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/parking/mod.rs"
+          },
+          "src/parking_lot.rs": {
+            "destination": "src/parking/parking_lot.rs"
+          },
+          "src/spinwait.rs": {
+            "destination": "src/parking/spinwait.rs"
+          },
+          "src/thread_parker/generic.rs": {
+            "destination": "src/parking/thread_parker/generic.rs"
+          },
+          "src/thread_parker/linux.rs": {
+            "destination": "src/parking/thread_parker/linux.rs"
+          },
+          "src/thread_parker/mod.rs": {
+            "destination": "src/parking/thread_parker/mod.rs"
+          },
+          "src/thread_parker/unix.rs": {
+            "destination": "src/parking/thread_parker/unix.rs"
+          },
+          "src/thread_parker/wasm.rs": {
+            "destination": "src/parking/thread_parker/wasm.rs"
+          },
+          "src/thread_parker/wasm_atomic.rs": {
+            "destination": "src/parking/thread_parker/wasm_atomic.rs"
+          },
+          "src/util.rs": {
+            "destination": "src/parking/util.rs"
+          },
+          "src/word_lock.rs": {
+            "destination": "src/parking/word_lock.rs"
+          }
+        }
+      },
+      "inputs": [
+        {
+          "external_tests": {
+            "bytes": 10097,
+            "directory": "src/foundation/parking_lot_core",
+            "file_count": 1,
+            "files": [
+              {
+                "path": "test/foundation/parking_lot_core/unit/src/parking_lot/tests_1429.rs",
+                "sha256": "42a43ff06f6071d1491729fe896aacf6753ffe2a1aa4f4960c73c1037dd9c918",
+                "source": "src/foundation/parking_lot_core/src/parking_lot.rs",
+                "source_sha256_before": "ead11d575a1930c241aeec20f0e5e504bcdad637e284449ef4efcb9f9f175777"
+              }
+            ],
+            "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
+            "roots": [
+              "test/foundation/parking_lot_core"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
+            "description": "An advanced API for creating custom synchronization primitives.",
+            "directory": "src/foundation/parking_lot_core",
+            "files_sha256": {
+              "Cargo.toml": "1b1b0d11b4832430ff72ac5ca69b4b14e9f303e567afb7354cbe65f52b6b95f1",
+              "build.rs": "3698c936b75f8332d9b6b30a8a6838ea116c1ff0a819a025c9ea9696e4d8ce72",
+              "src/lib.rs": "c8c164deb6369857838b886423918383fb80ab4153e7eac5fffacbed12a533e7",
+              "src/parking_lot.rs": "18a69c32779985db5b71365fa122c7c74cf0c1f0b85378fd486853ddcb7510d6",
+              "src/spinwait.rs": "0d73980c72e84fd75c73693f0b351e097353b46f4b8aaa67b3dde7c721817bf7",
+              "src/thread_parker/generic.rs": "414bd3114b40f7665efe59fa4c5033d2401eafc58b57a9ba5803949d26cc0454",
+              "src/thread_parker/linux.rs": "70bfe6c168fc431965374d921e33b3e04536cb68fde3e807a837aa38a65772b0",
+              "src/thread_parker/mod.rs": "724329cbf54bcfd3c3a05e137b555a6da00bf0414166f751e89a825b23396d34",
+              "src/thread_parker/unix.rs": "4cd468fcee83f29e9c923c5a574d0f5cbff0207741dae2eba99b16509fdb6ffa",
+              "src/thread_parker/wasm.rs": "86e954d009d57d2dfdbca71e5c0f116a99a182af83b7e51ed5b14fc55b2f7b01",
+              "src/thread_parker/wasm_atomic.rs": "6fbc09accc9df9d42444cec6f55d3eed2c7078a474485fa269a9f503da2ee1c5",
+              "src/util.rs": "285e6133150645525f2ca1ece41f6d35bad4e7c5e08b42b20c99d2a97e04a974",
+              "src/word_lock.rs": "57133a9da052d8e86eb38ff1968129149838918d69f52761dc8757b541f9d044"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/parking_lot_core-0.9.12/LICENSE-APACHE",
+              "compliance/licenses/upstream/parking_lot_core-0.9.12/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "parking_lot_core",
+            "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
+            "repository": "https://github.com/Amanieu/parking_lot",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "2621685985a2ebf1c516881c026032ac7deafcda1a2c9b7850dc81e3dfcb64c1",
+              "archive_url": "https://static.crates.io/crates/parking_lot_core/parking_lot_core-0.9.12.crate",
+              "name": "parking_lot_core",
+              "version": "0.9.12"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
+              },
+              "path_in_vcs": "core"
+            },
+            "version": "0.9.12"
+          }
+        },
+        {
+          "external_tests": null,
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+            "description": "Wrappers to create fully-featured Mutex and RwLock types. Compatible with no_std.",
+            "directory": "src/foundation/lock_api",
+            "files_sha256": {
+              "Cargo.toml": "7b2b96faa397353e7fdf18c496a8c3ce17eda2a0d7adea092238d63f7e1b5d4f",
+              "src/lib.rs": "f6dfe0a321e47b5ea9f01a59711e5d3a0442949a829eb4957fa1491fbce63e5c",
+              "src/mutex.rs": "8e2e8459a4a0d5ccaaf376d7aec001492bb502142879a65ad4986007cbeedb0e",
+              "src/remutex.rs": "6d241065c449d166bc571f10add658672d6973278921554db51165ef8ce2f2d2",
+              "src/rwlock.rs": "6fc7e00bad601fd4573462949270a8adadfe0e6c0ee2399483514ba57e843592"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/lock_api-0.4.14/LICENSE-APACHE",
+              "compliance/licenses/upstream/lock_api-0.4.14/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "lock_api",
+            "origin_directory": "vendor/rust/lock_api-0.4.14",
+            "repository": "https://github.com/Amanieu/parking_lot",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965",
+              "archive_url": "https://static.crates.io/crates/lock_api/lock_api-0.4.14.crate",
+              "name": "lock_api",
+              "version": "0.4.14"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
+              },
+              "path_in_vcs": "lock_api"
+            },
+            "version": "0.4.14"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 59794,
+            "directory": "src/foundation/parking_lot",
+            "file_count": 10,
+            "files": [
+              {
+                "path": "test/foundation/parking_lot/tests/issue_203.rs",
+                "sha256": "5fbdf6ec63f391d86457df949678c203a1e81e8aa32d4e10037fa76e768702c0",
+                "source": "src/foundation/parking_lot/tests/issue_203.rs",
+                "source_sha256_before": "5fbdf6ec63f391d86457df949678c203a1e81e8aa32d4e10037fa76e768702c0"
+              },
+              {
+                "path": "test/foundation/parking_lot/tests/issue_392.rs",
+                "sha256": "163a423eeea14025ad84958ae12ded4a6fbde3330f689bc3e08ed18e0c58eb8b",
+                "source": "src/foundation/parking_lot/tests/issue_392.rs",
+                "source_sha256_before": "163a423eeea14025ad84958ae12ded4a6fbde3330f689bc3e08ed18e0c58eb8b"
+              },
+              {
+                "path": "test/foundation/parking_lot/unit/src/condvar/tests_525.rs",
+                "sha256": "90c65b48bb53cd4a1e33b6b2b26d95449c4e7f49c4eae0253bf7dcfb6afb17f8",
+                "source": "src/foundation/parking_lot/src/condvar.rs",
+                "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea"
+              },
+              {
+                "path": "test/foundation/parking_lot/unit/src/condvar/webkit_queue_test_916.rs",
+                "sha256": "91edfb8a160cb3248134bec4db7898f7856a35dfefb0ca97c3c641d848532bc4",
+                "source": "src/foundation/parking_lot/src/condvar.rs",
+                "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea"
+              },
+              {
+                "path": "test/foundation/parking_lot/unit/src/deadlock/tests_40.rs",
+                "sha256": "a57dfd1fa20eb2e6a31b5ef2d82a7cf09d5062da1cdb58ce2819bbec8863a66a",
+                "source": "src/foundation/parking_lot/src/deadlock.rs",
+                "source_sha256_before": "7d3ebb5b4f63658435df277bb983e352e4bc651a92c4fd48ae68bf103e452d0d"
+              },
+              {
+                "path": "test/foundation/parking_lot/unit/src/fair_mutex/tests_102.rs",
+                "sha256": "6402c0b24d6448f594aaeef6f42e14229c5ce3cfdfc15f995aef6046d98e678c",
+                "source": "src/foundation/parking_lot/src/fair_mutex.rs",
+                "source_sha256_before": "2d0c5c2b779492653cad99825180628af95ce5f4bdbcfed57e7a5f2138a55fc0"
+              },
+              {
+                "path": "test/foundation/parking_lot/unit/src/mutex/tests_111.rs",
+                "sha256": "5e3fe24b5477ed2b895848155b24f519ede66eba145d545638c2d4288a19a009",
+                "source": "src/foundation/parking_lot/src/mutex.rs",
+                "source_sha256_before": "b7ee456958a3b0dc208dd39be195641ce3998f7906d101ccf284fa0f84c58d14"
+              },
+              {
+                "path": "test/foundation/parking_lot/unit/src/once/tests_327.rs",
+                "sha256": "73a23f3899ad50ed362bb0793c2256d4ef02d4c01f77a5badad7494ccb89364c",
+                "source": "src/foundation/parking_lot/src/once.rs",
+                "source_sha256_before": "58c78dba952e217c17bd8d5cf3dce32bb78e3e1c38a86860c8edc8c308caeca7"
+              },
+              {
+                "path": "test/foundation/parking_lot/unit/src/remutex/tests_71.rs",
+                "sha256": "b549d00855aa8786dd8c5cf3c16e954be7c29e384e208f15a7be7aba16a12d20",
+                "source": "src/foundation/parking_lot/src/remutex.rs",
+                "source_sha256_before": "f0c0711ed46be67f7736a8500689e37a301ccf0dacb7706e1087513d3e87a432"
+              },
+              {
+                "path": "test/foundation/parking_lot/unit/src/rwlock/tests_127.rs",
+                "sha256": "a82e778588496814308096f5e29b44016dd14bf42a69963be6521887e297888a",
+                "source": "src/foundation/parking_lot/src/rwlock.rs",
+                "source_sha256_before": "7edd9dd320858a628388c1ebca1ed89cc2984abc30157c4b0c03194ebba7eade"
+              }
+            ],
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "roots": [
+              "test/foundation/parking_lot"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
+            "description": "More compact and efficient implementations of the standard synchronization primitives.",
+            "directory": "src/foundation/parking_lot",
+            "files_sha256": {
+              "Cargo.toml": "90799c3130efebb3d76dee62fd8174375ea27c16d1eca88479d1039d35a71f9d",
+              "src/condvar.rs": "5298fb4139f7e3417cce81193dc87bc903e625d444f684dc7db53e03e04ac424",
+              "src/deadlock.rs": "7da7b963d876109dca64a70436b1f356dd55d0a2906cfae3a242f1a130560982",
+              "src/elision.rs": "7070a29080f4c7d3b2c9b6e51a0d8230ebc8e56e4790aaeda1747b6c073a7438",
+              "src/fair_mutex.rs": "9950cae0d42fbeb2e88933e358f70f57ab23367a2eb19a7cd5315a23778c113b",
+              "src/lib.rs": "0ad0d7a416c12f99db0033f22c98baf201878ab40b3cd34fe74e7bd0e5b87cca",
+              "src/mutex.rs": "f8354c960f0c8ccd039137f00e2abc76a479ad12f7647e4963ee22406406c4cf",
+              "src/once.rs": "c34c549ce3f374c9c00723f0483cb7d8053c7081739b49ec72cf7d921d3b3af0",
+              "src/raw_fair_mutex.rs": "316f954d9673ac5b8d6bf4c19f2444800f63daf801c224d986e2d6dac810643c",
+              "src/raw_mutex.rs": "4a79255673f47e167ce28d331c3b51f245017c7023e36c1c9b09baf00cc121c6",
+              "src/raw_rwlock.rs": "bdbb06e1433ea2bc1dbbfd69e66755bcad588f48c6552c0fe125d98419035791",
+              "src/remutex.rs": "f86bfccc65a0660b3be62030f1742078b90ff84e0eac9efa87497de1f81fa4ff",
+              "src/rwlock.rs": "d54a550700e7c0eb98326fdae9c8ad8938205cace385634caf5b61d7f68e985a",
+              "src/util.rs": "37a2c8b5c9254df83e8f3a5cd831558c1045061a76c2571bdc4d78eb86e467f2"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/parking_lot-0.12.5/LICENSE-APACHE",
+              "compliance/licenses/upstream/parking_lot-0.12.5/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "parking_lot",
+            "origin_directory": "vendor/rust/parking_lot-0.12.5",
+            "repository": "https://github.com/Amanieu/parking_lot",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "93857453250e3077bd71ff98b6a65ea6621a19bb0f559a85248955ac12c45a1a",
+              "archive_url": "https://static.crates.io/crates/parking_lot/parking_lot-0.12.5.crate",
+              "name": "parking_lot",
+              "version": "0.12.5"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
+              },
+              "path_in_vcs": ""
+            },
+            "version": "0.12.5"
+          }
+        }
+      ],
+      "new_files": {
+        "src/lib.rs": "07e2a3d95346cbc303784051c5579e01745073be44d2469ae6e19c4045639fff"
+      },
+      "primary_directory": "src/foundation/parking_lot_core",
+      "reason": "Own a single functional synchronization implementation with no_std generic lock contracts, independently selectable parking and concrete locks, no redundant crate forwarding, and removed unavailable deadlock machinery. Preserve exact pinned primary projection, attributed source and tests, lock lifetime and concurrency algorithms."
+    },
     "8f4a95d59d1710c958537ee4b6d83e10bab8fb05d20355a264a9dbfaef18452f": {
       "destination_directory": "src/foundation/numeric",
       "destination_external_tests": {
@@ -20188,7 +20760,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "9404f69eca3c64810b6e059bd2287e140cf76b746aea363221f61e53cf45a76e",
+    "compliance/external-tests/foundation.json": "a9949e189906ae395573fb260086cec2832e4216b72caeae541bfe6e2fc9f1d1",
     "compliance/external-tests/integrated.json": "61167faf558a55d73b6f9312ff3635e5dfb01309856c499e3c4f365c1080c208",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -23562,7 +24134,7 @@
       ]
     },
     "src/foundation/cryptographic-core": {
-      "bytes": 16600,
+      "bytes": 16660,
       "directory": "src/foundation/cryptographic-core",
       "file_count": 3,
       "files": [
@@ -23583,7 +24155,7 @@
         {
           "origin_directory": "vendor/rust/digest-0.11.3",
           "path": "test/foundation/cryptographic-core/hash/tests/dummy_fixed.rs",
-          "sha256": "b4961486a19454c32efed9a5e9fed3b4a7ad3c6c8acc8d0b4cda372fdadc3f66",
+          "sha256": "4b0e35ba5685131ecd602c8d133285aa5e69624559cca52c834e043099c16092",
           "source": "src/foundation/digest-0.11.3/tests/dummy_fixed.rs",
           "source_sha256_before": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab"
         }
@@ -26763,7 +27335,7 @@
       ]
     },
     "src/foundation/futures-intrusive": {
-      "bytes": 167565,
+      "bytes": 167573,
       "directory": "src/foundation/futures-intrusive",
       "file_count": 10,
       "files": [
@@ -26775,7 +27347,7 @@
         },
         {
           "path": "test/foundation/futures-intrusive/tests/mpmc_channel.rs",
-          "sha256": "47935945afd6a9621cca8c16ae901906fa1f4da3498fc9dc9b4d69688e34bcd7",
+          "sha256": "e9b70d5a7d306f48f8320ad90f9e63246239f275f656094de535e7d9d0f5d670",
           "source": "src/foundation/futures-intrusive/tests/mpmc_channel.rs",
           "source_sha256_before": "47935945afd6a9621cca8c16ae901906fa1f4da3498fc9dc9b4d69688e34bcd7"
         },
@@ -32898,94 +33470,6 @@
       "origin_directory": "vendor/rust/parking-2.2.1",
       "roots": [
         "test/foundation/parking"
-      ]
-    },
-    "src/foundation/parking_lot": {
-      "bytes": 59794,
-      "directory": "src/foundation/parking_lot",
-      "file_count": 10,
-      "files": [
-        {
-          "path": "test/foundation/parking_lot/tests/issue_203.rs",
-          "sha256": "5fbdf6ec63f391d86457df949678c203a1e81e8aa32d4e10037fa76e768702c0",
-          "source": "src/foundation/parking_lot/tests/issue_203.rs",
-          "source_sha256_before": "5fbdf6ec63f391d86457df949678c203a1e81e8aa32d4e10037fa76e768702c0"
-        },
-        {
-          "path": "test/foundation/parking_lot/tests/issue_392.rs",
-          "sha256": "163a423eeea14025ad84958ae12ded4a6fbde3330f689bc3e08ed18e0c58eb8b",
-          "source": "src/foundation/parking_lot/tests/issue_392.rs",
-          "source_sha256_before": "163a423eeea14025ad84958ae12ded4a6fbde3330f689bc3e08ed18e0c58eb8b"
-        },
-        {
-          "path": "test/foundation/parking_lot/unit/src/condvar/tests_525.rs",
-          "sha256": "90c65b48bb53cd4a1e33b6b2b26d95449c4e7f49c4eae0253bf7dcfb6afb17f8",
-          "source": "src/foundation/parking_lot/src/condvar.rs",
-          "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea"
-        },
-        {
-          "path": "test/foundation/parking_lot/unit/src/condvar/webkit_queue_test_916.rs",
-          "sha256": "91edfb8a160cb3248134bec4db7898f7856a35dfefb0ca97c3c641d848532bc4",
-          "source": "src/foundation/parking_lot/src/condvar.rs",
-          "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea"
-        },
-        {
-          "path": "test/foundation/parking_lot/unit/src/deadlock/tests_40.rs",
-          "sha256": "a57dfd1fa20eb2e6a31b5ef2d82a7cf09d5062da1cdb58ce2819bbec8863a66a",
-          "source": "src/foundation/parking_lot/src/deadlock.rs",
-          "source_sha256_before": "7d3ebb5b4f63658435df277bb983e352e4bc651a92c4fd48ae68bf103e452d0d"
-        },
-        {
-          "path": "test/foundation/parking_lot/unit/src/fair_mutex/tests_102.rs",
-          "sha256": "6402c0b24d6448f594aaeef6f42e14229c5ce3cfdfc15f995aef6046d98e678c",
-          "source": "src/foundation/parking_lot/src/fair_mutex.rs",
-          "source_sha256_before": "2d0c5c2b779492653cad99825180628af95ce5f4bdbcfed57e7a5f2138a55fc0"
-        },
-        {
-          "path": "test/foundation/parking_lot/unit/src/mutex/tests_111.rs",
-          "sha256": "5e3fe24b5477ed2b895848155b24f519ede66eba145d545638c2d4288a19a009",
-          "source": "src/foundation/parking_lot/src/mutex.rs",
-          "source_sha256_before": "b7ee456958a3b0dc208dd39be195641ce3998f7906d101ccf284fa0f84c58d14"
-        },
-        {
-          "path": "test/foundation/parking_lot/unit/src/once/tests_327.rs",
-          "sha256": "73a23f3899ad50ed362bb0793c2256d4ef02d4c01f77a5badad7494ccb89364c",
-          "source": "src/foundation/parking_lot/src/once.rs",
-          "source_sha256_before": "58c78dba952e217c17bd8d5cf3dce32bb78e3e1c38a86860c8edc8c308caeca7"
-        },
-        {
-          "path": "test/foundation/parking_lot/unit/src/remutex/tests_71.rs",
-          "sha256": "b549d00855aa8786dd8c5cf3c16e954be7c29e384e208f15a7be7aba16a12d20",
-          "source": "src/foundation/parking_lot/src/remutex.rs",
-          "source_sha256_before": "f0c0711ed46be67f7736a8500689e37a301ccf0dacb7706e1087513d3e87a432"
-        },
-        {
-          "path": "test/foundation/parking_lot/unit/src/rwlock/tests_127.rs",
-          "sha256": "a82e778588496814308096f5e29b44016dd14bf42a69963be6521887e297888a",
-          "source": "src/foundation/parking_lot/src/rwlock.rs",
-          "source_sha256_before": "7edd9dd320858a628388c1ebca1ed89cc2984abc30157c4b0c03194ebba7eade"
-        }
-      ],
-      "origin_directory": "vendor/rust/parking_lot-0.12.5",
-      "roots": [
-        "test/foundation/parking_lot"
-      ]
-    },
-    "src/foundation/parking_lot_core": {
-      "bytes": 10097,
-      "directory": "src/foundation/parking_lot_core",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/parking_lot_core/unit/src/parking_lot/tests_1429.rs",
-          "sha256": "42a43ff06f6071d1491729fe896aacf6753ffe2a1aa4f4960c73c1037dd9c918",
-          "source": "src/foundation/parking_lot_core/src/parking_lot.rs",
-          "source_sha256_before": "ead11d575a1930c241aeec20f0e5e504bcdad637e284449ef4efcb9f9f175777"
-        }
-      ],
-      "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
-      "roots": [
-        "test/foundation/parking_lot_core"
       ]
     },
     "src/foundation/password-hash": {
@@ -39584,6 +40068,94 @@
         "test/foundation/subtle"
       ]
     },
+    "src/foundation/synchronization": {
+      "bytes": 70344,
+      "directory": "src/foundation/synchronization",
+      "file_count": 11,
+      "files": [
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/tests/issue_203.rs",
+          "sha256": "242a9b93fdc5ca9cb9b9223f4a3031cb197505d2ab8f47a32b3cc8ca87b26b74",
+          "source": "src/foundation/parking_lot/tests/issue_203.rs",
+          "source_sha256_before": "5fbdf6ec63f391d86457df949678c203a1e81e8aa32d4e10037fa76e768702c0"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/tests/issue_392.rs",
+          "sha256": "c93a5db80fe1657d3aa8fdfa6679703102d2838602616a0bf62336b12e51fdc6",
+          "source": "src/foundation/parking_lot/tests/issue_392.rs",
+          "source_sha256_before": "163a423eeea14025ad84958ae12ded4a6fbde3330f689bc3e08ed18e0c58eb8b"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/unit/src/condvar/tests_525.rs",
+          "sha256": "f5c1e9f97faf65b85a77afd6288276098dfe5fe0d215d432f2347f5c8ccaed6a",
+          "source": "src/foundation/parking_lot/src/condvar.rs",
+          "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/unit/src/condvar/webkit_queue_test_916.rs",
+          "sha256": "ad373fe33ad073852c19d9309a9299d3f53cf558e21c146aeb511f82a523b9ba",
+          "source": "src/foundation/parking_lot/src/condvar.rs",
+          "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/unit/src/deadlock/tests_40.rs",
+          "sha256": "8404558e6ff7e1e23e280f4ea086bb9cc7b5c9385765b49b8407337488c56f3a",
+          "source": "src/foundation/parking_lot/src/deadlock.rs",
+          "source_sha256_before": "7d3ebb5b4f63658435df277bb983e352e4bc651a92c4fd48ae68bf103e452d0d"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/unit/src/fair_mutex/tests_102.rs",
+          "sha256": "794972e83074c85939a2ddf886b3596a29c7a718c16d06bb22c98af64d5a03e4",
+          "source": "src/foundation/parking_lot/src/fair_mutex.rs",
+          "source_sha256_before": "2d0c5c2b779492653cad99825180628af95ce5f4bdbcfed57e7a5f2138a55fc0"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/unit/src/mutex/tests_111.rs",
+          "sha256": "987db676fdcfebeae4455fcecc3451016376fcc9fc97f2f707dc95810d07c7c4",
+          "source": "src/foundation/parking_lot/src/mutex.rs",
+          "source_sha256_before": "b7ee456958a3b0dc208dd39be195641ce3998f7906d101ccf284fa0f84c58d14"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/unit/src/once/tests_327.rs",
+          "sha256": "22c43cc935098041e968a0acf3ed5a210ce398814c7a8e9b1e946256d7cb0691",
+          "source": "src/foundation/parking_lot/src/once.rs",
+          "source_sha256_before": "58c78dba952e217c17bd8d5cf3dce32bb78e3e1c38a86860c8edc8c308caeca7"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/unit/src/remutex/tests_71.rs",
+          "sha256": "0cf9845debb7cf2e5d5d3612e964644661e8cc6fa8e2b7034f417dfe1f7ff862",
+          "source": "src/foundation/parking_lot/src/remutex.rs",
+          "source_sha256_before": "f0c0711ed46be67f7736a8500689e37a301ccf0dacb7706e1087513d3e87a432"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot-0.12.5",
+          "path": "test/foundation/synchronization/locks/unit/src/rwlock/tests_127.rs",
+          "sha256": "2a75f3198062fdda773aa3bf53ad70a911334464bed4955d901b6f856b1163aa",
+          "source": "src/foundation/parking_lot/src/rwlock.rs",
+          "source_sha256_before": "7edd9dd320858a628388c1ebca1ed89cc2984abc30157c4b0c03194ebba7eade"
+        },
+        {
+          "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
+          "path": "test/foundation/synchronization/parking/unit/src/parking_lot/tests_1429.rs",
+          "sha256": "42a43ff06f6071d1491729fe896aacf6753ffe2a1aa4f4960c73c1037dd9c918",
+          "source": "src/foundation/parking_lot_core/src/parking_lot.rs",
+          "source_sha256_before": "ead11d575a1930c241aeec20f0e5e504bcdad637e284449ef4efcb9f9f175777"
+        }
+      ],
+      "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
+      "roots": [
+        "test/foundation/synchronization"
+      ]
+    },
     "src/foundation/synstructure": {
       "bytes": 1162,
       "directory": "src/foundation/synstructure",
@@ -40392,7 +40964,7 @@
       ]
     },
     "src/foundation/tokio": {
-      "bytes": 1279778,
+      "bytes": 1279774,
       "directory": "src/foundation/tokio",
       "file_count": 295,
       "files": [
@@ -40890,7 +41462,7 @@
         },
         {
           "path": "test/foundation/tokio/tests/_require_full.rs",
-          "sha256": "1f58c8125018bd88b9f21647cee3d957b716bcce70f9144af1de58ee6712908f",
+          "sha256": "2d03e65396c968a61b780eebdb1ecbfd734afa6120a82c95595043c48882be62",
           "source": "src/foundation/tokio/tests/_require_full.rs",
           "source_sha256_before": "1f58c8125018bd88b9f21647cee3d957b716bcce70f9144af1de58ee6712908f"
         },
@@ -42190,7 +42762,7 @@
       ]
     },
     "src/foundation/tokio-util": {
-      "bytes": 229425,
+      "bytes": 229429,
       "directory": "src/foundation/tokio-util",
       "file_count": 43,
       "files": [
@@ -42358,7 +42930,7 @@
         },
         {
           "path": "test/foundation/tokio-util/tests/panic.rs",
-          "sha256": "b5b9239906b6d585bdaccbd92a90cce22d89b9b4d1d0db30a88bba53a0d2f031",
+          "sha256": "f011a5ba8ca6fa2bf6d0fb8d6756b53faa8abfbebeebd26e5a08e00e134e0611",
           "source": "src/foundation/tokio-util/tests/panic.rs",
           "source_sha256_before": "b5b9239906b6d585bdaccbd92a90cce22d89b9b4d1d0db30a88bba53a0d2f031"
         },
@@ -46641,7 +47213,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "1ce4fa37f4def38d7828e864822480b8c17a3589103ca2fa92da3461ddc9c170"
+    "Cargo.lock": "5b9dd828ce58b1f639ae89eab6f3219f178d61d5578ae2229d09bf2e184b5ebe"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -46727,7 +47299,7 @@
     "src/foundation/form-codec/Cargo.toml": "366f45b472ccd85f98e1bca7ad024767239cffca7f31e74dd036cb8a2333af72",
     "src/foundation/form_urlencoded/Cargo.toml": "3bad0dd7b1cb9a4b07446aa3062bd7f16ef1be94da19ca7ff5dd86d7ab32d70f",
     "src/foundation/fraction/Cargo.toml": "4328586e728bacb447cead3c963137a80911e359425b10b2140a7acef964b1f1",
-    "src/foundation/futures-intrusive/Cargo.toml": "491b424e22113bf9a577a2c7c7606f31f224110382a5b57f5503a9eae8794610",
+    "src/foundation/futures-intrusive/Cargo.toml": "be262a474612f1b367d512c8a8527a05161d8d53f73f26941c73dbd3ff4bd6ad",
     "src/foundation/futures-macro/Cargo.toml": "0d1662f1717dfa40934c1571305a99fa73a6bfccc7ef39ebd5aaa59037bc5665",
     "src/foundation/futures/Cargo.toml": "8b5ce61ab8e51d8995b4e6c63e411b739663c54fa8b911fbbddcfe8adce6b3d1",
     "src/foundation/getrandom-0.2.17/Cargo.toml": "343a500ff60a657dae7cd4dfbbca349e474473bbeddfa26bab6065d8f842669c",
@@ -46779,7 +47351,6 @@
     "src/foundation/libsqlite3-sys/Cargo.toml": "7b1aae240b33d04997838c64d80f082aa68394b55d49f224e624bbcea53e5d3c",
     "src/foundation/linux-raw-sys/Cargo.toml": "ad0468cc8252281beb0940662c9c8b3e2f7f7b044281c3c3ed4b92ab51787505",
     "src/foundation/litemap/Cargo.toml": "02d95fb3e086d14208d327fa2afcfc1982f30e20cac6adc041e41d7dfa6a16dd",
-    "src/foundation/lock_api/Cargo.toml": "7b2b96faa397353e7fdf18c496a8c3ce17eda2a0d7adea092238d63f7e1b5d4f",
     "src/foundation/log/Cargo.toml": "1e0ac6d4caf1fe4631ebb407bf244fc27acc5788de80de0c6862ebf3959ce9df",
     "src/foundation/manyhow-macros/Cargo.toml": "db7f2237c79b10b4a68612307418b4d02b753eeef15ba024f90e5a52e9d75b09",
     "src/foundation/manyhow/Cargo.toml": "05638c31f318027769be671ad03f2d0ad530c6a149cb9f8f19b33a73f4a1aa17",
@@ -46798,12 +47369,10 @@
     "src/foundation/num-cmp/Cargo.toml": "fe1e95524f089a6b50a2b8a816d847c875e4836cd62dbdd5a59d3802681aa457",
     "src/foundation/num-conv/Cargo.toml": "4cbdc210647f10328143b2c19ccad9ea86c2e3e253c85ad3e2ef67b554b40407",
     "src/foundation/numeric/Cargo.toml": "0f57c006fb35768fa1714d4d8843591f981e5bc73312dc4f89716102e14f6f06",
-    "src/foundation/once_cell/Cargo.toml": "c058beddc6bf689c254a71c307d519760aea0cf2ac80e9a1209b2f3c1f9814d6",
+    "src/foundation/once_cell/Cargo.toml": "8fe31b50f8f66b69e40ed058a7d229eeb0eba3f1cbca92ef96a8035a3234c2f2",
     "src/foundation/or_poisoned/Cargo.toml": "7c1464d214f3debd34b394ee2a20c67d2d31f501a98c4b56317530e4a34937e2",
     "src/foundation/outref/Cargo.toml": "c0a5c6ed2853888211e6e68b31655b69fc1cd45345a76211d47ca7d3d7026e89",
     "src/foundation/parking/Cargo.toml": "1be835d946f46f7f147673d4caa27432b10e929d2c7636ad155ed8fd6c462740",
-    "src/foundation/parking_lot/Cargo.toml": "90799c3130efebb3d76dee62fd8174375ea27c16d1eca88479d1039d35a71f9d",
-    "src/foundation/parking_lot_core/Cargo.toml": "1b1b0d11b4832430ff72ac5ca69b4b14e9f303e567afb7354cbe65f52b6b95f1",
     "src/foundation/password-hash/Cargo.toml": "2ce38d29523fe4594a317bb8d1515ec58d970a0b5baef1e3c4c17c6724e6866b",
     "src/foundation/pastey/Cargo.toml": "7c01c4cfa53b556cd03be7ac262bf5b06ed726a078ba6ab9105be4b177519ed7",
     "src/foundation/percent-encoding/Cargo.toml": "5caf12b5a6b05dab1bd67aa3c8ccd6fe8c673a6700eda159e97ebcc95cbfc5ac",
@@ -46823,7 +47392,7 @@
     "src/foundation/reactive-state/Cargo.toml": "97fcef25a6146688dd4322db95696b55f0aceba2ab70149490efeb44dfa1d87a",
     "src/foundation/ref-cast-impl/Cargo.toml": "15ba9d3c503960ea47843072982d4e1c9095fb6a2b67063cd0ccdb94268f992a",
     "src/foundation/ref-cast/Cargo.toml": "1291fdd6c5162dc8a1dd02103dd516846fdeb82f4b6d8b1f114c32e644a4701f",
-    "src/foundation/referencing/Cargo.toml": "55a96aa1b94a67377aa3a123d9d8d214b453c74f52873bf858aeec7866ceaa83",
+    "src/foundation/referencing/Cargo.toml": "13ea8df027eeca7c1f6b156731bd146958391c6f51fb6e51165cf2e6877b5d5c",
     "src/foundation/regex/Cargo.toml": "7243083d5898fd6ee10adb616bf724f1fe0b9877befcb5b6a76b164b2aa1ae74",
     "src/foundation/reqwest/Cargo.toml": "a63912f4ebd177aa12558cae2e6c00addc464361fe1ab3dca729640e452c5fb2",
     "src/foundation/ring/Cargo.toml": "8f465a642f461a274d10a62a2ffdd58292a1f45b553aa715bcb734864d34d9d2",
@@ -46857,7 +47426,7 @@
     "src/foundation/slotmap/Cargo.toml": "0eb108897e7c0faa48dd0223ffef5faea9307e85b6da824c1ae2c37f45542be0",
     "src/foundation/smallvec/Cargo.toml": "7f4809c1243c4cb0854b7878cedcbcf9b1b8a30f667333eb9edb76f990b77f05",
     "src/foundation/socket2/Cargo.toml": "a748169b0a61eda1988393bf74d1a3f13b9033cb29b83240a74eb7b2be808a92",
-    "src/foundation/spin/Cargo.toml": "dc8a44bf0030e39b3b5fe56e278ad50ba9fa9e67bb46dc1afbbcb7984a4791be",
+    "src/foundation/spin/Cargo.toml": "b5996fae3be64ef8d7b80f6e3880903b3015cdd91f3eb968daf6833c1e0272e9",
     "src/foundation/sqlite-access/Cargo.toml": "36ca10fd6dfb755018be99418f8e8f95d8b3d30f4ef5b7a7053b877f3757c725",
     "src/foundation/stable_deref_trait/Cargo.toml": "4f080b924f2ae5fa6c2a7fd2d5fdcc08728c189503b520c2fec8132495f21256",
     "src/foundation/strsim/Cargo.toml": "7312930e6b154cde7b4ab50ba717760e952876c630e36cb82365d5b0a214600c",
@@ -46865,6 +47434,7 @@
     "src/foundation/strum_macros/Cargo.toml": "7c365d47b935a04e16d53c59ed91690f0a62895cafe77b4dcf504ac8d2b3cef2",
     "src/foundation/subtle/Cargo.toml": "ed89587f785d522bc6c624d57abc038c653bc46353a1174eb0ba331ee13c6ae3",
     "src/foundation/sync_wrapper/Cargo.toml": "f5ce07945b77265d05319c2a68214863fa7abc9f8a20b1ab7ae1fcd243a9c73a",
+    "src/foundation/synchronization/Cargo.toml": "067b41cc4cc8fc7c098dfa7305910232364ea2820bc2bae431ee299f06b05871",
     "src/foundation/synstructure/Cargo.toml": "035e480439f3ce5e9840bcfa08ae1c917ab4322317b89cc2ec5d31c1c805a542",
     "src/foundation/sysinfo/Cargo.toml": "fd035afc120bbd2ae0f1d85a645ed94898c704b040ac0a436163afc1850674b7",
     "src/foundation/task-dispatch/Cargo.toml": "33fd519e179cb46ee3100a11dc6cf7c172beea3c8b5fe2a5ab3297cbcbcbc6d0",
@@ -46878,13 +47448,13 @@
     "src/foundation/tokio-macros/Cargo.toml": "9a842bdb485a4ef793b0911d7d56eb521f774b01acc871bc124a693f07b9b18a",
     "src/foundation/tokio-rustls/Cargo.toml": "ffe52e32ef343a360eb59d8b7e3ba218035be532306d0789168059953eaf6c11",
     "src/foundation/tokio-util/Cargo.toml": "3c275a9829741cc424e54305ca088e7b6d7e13cf62c6d4c2f52a4d4fe62aeedb",
-    "src/foundation/tokio/Cargo.toml": "41dd9aa6a303b0f1c546227bf126784c26f853df595d039b0fd32c0acfb02c06",
+    "src/foundation/tokio/Cargo.toml": "01891012f5b29830beed385d8d4add8be169c15e8c7bdbb5327a68d571219014",
     "src/foundation/toml/Cargo.toml": "8de176ac1e346ea5c1b2524b12e60c72ae8feae854beb329b239adf03b45b815",
     "src/foundation/tower-http/Cargo.toml": "b0a3806da6b6271fb699be44fc3ebf582eced74a832892762d1949b92cf90c54",
     "src/foundation/tracing-attributes/Cargo.toml": "18550c405cf241b19ceb4c4ed1de2f11111007204d57bb588f65ae4e9036fd7e",
     "src/foundation/tracing-core/Cargo.toml": "9483a663d8530a1761e44ba5045c8d78a1ab6787c05446afd59c7dddfc650d8f",
     "src/foundation/tracing-log/Cargo.toml": "a873b74b2638afba2affa767bfb7c4dc6c0e2befc718a0895f559cfd9c1be599",
-    "src/foundation/tracing-subscriber/Cargo.toml": "e23cff7fb9e00069e70974514924abe9ae1d9fade6553ae68a425b3fd406c39b",
+    "src/foundation/tracing-subscriber/Cargo.toml": "9864e2385b03b53a944ef39e5c3017bd5ba9ed4b1e4ce89d36b51a873d5bf3e0",
     "src/foundation/tracing/Cargo.toml": "69da14326ab636609d4346164bb20c019d22fbaf195dd07f61eeac2f43d7397b",
     "src/foundation/try-lock/Cargo.toml": "8f95c2bd43685fa16d0b0d7654b5ac215921c5419fc06ae6ee7123446a7cc683",
     "src/foundation/typed-builder-macro/Cargo.toml": "ec56fc6c0d92a097bf66ad208da2154f5a1a91b004f5700f0caba8ae257c7e09",
@@ -47122,9 +47692,9 @@
         "Cargo.toml": "e0aa604e41e20e2c68c43e02ccddd00d4c33c135607e9acd9a9720959dd0729b",
         "benches/mod.rs": "7471bea770ee4430369760192a51141d82f224a1052f71587e0d4ef2751b6680",
         "src/as_bytes.rs": "4e00472aa326ad60bbaf9fafc8456c886f081ba1a8ae8614b1b6d7dbb93533fc",
-        "src/buffered.rs": "329cfa2f230c97eb9f6dbb7c48d4e6f599fe59568a9af528f9451c1804759984",
+        "src/buffered.rs": "f174a94dc73f6edffbd715480b00721e772aa91074757b5c357bc375d86cc737",
         "src/consts.rs": "03edc1d4697a6074c9389202324444f27625ef11f17d34cc86b83d0dda920e79",
-        "src/lib.rs": "751d91d97fbe74e226bd769fcaf771a0955259dca0966fe3103fe8e0ebf55a46",
+        "src/lib.rs": "605dadb54c250cb1710bde8f11e27df67b25ed3a860f79c45a8a3d4ce26c2151",
         "src/macros.rs": "fb094835a032540296ca9752334734caa33c23372282d90036cba4ddadc8c2bf",
         "src/simd.rs": "79d6d11d14664c908c2f6a2120c23e8de0e0422b610a8b838aa95ba469ef43fc",
         "src/simd/simd_opt.rs": "b254d82005e288f1d07531ef71b2468be0bc70ae9bdba1b46001acac4db283fe",
@@ -47133,7 +47703,7 @@
         "src/simd/simdint.rs": "3b506bb05761752142f61ca8de138958af9a050ddcfe5bbf454dd9a003bf71c3",
         "src/simd/simdop.rs": "6154f31c9675f33ba476eb6d5378deda657afc79ad43be1c9257f4f4306e43ce",
         "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13",
-        "src/variable.rs": "2dbbf27348cfe22c588d1bf46ca6d468d76808967449b0c49e89a0d3f05e948d"
+        "src/variable.rs": "30f275fe60ff4a7140f1f2507f68a965cc7e4f8b8acb5dcd25b534ecae42c0b5"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -47194,9 +47764,9 @@
         "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
         "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
         "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
-        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
-        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
-        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
+        "src/hash/buffer_macros/fixed.rs": "4fc5b83b607fd17f1f4320ab21d90cacc7d3b286c00d9b8c1c9caf6f187ce7e7",
+        "src/hash/buffer_macros/variable.rs": "d2921761290197eb79ad61d2c4a5b2e9b4738ee7a5a079b2a34261e39d222fc9",
+        "src/hash/buffer_macros/xof.rs": "91bfebf405f030fdd5bb8f45c6645185b842626bd8fbb16f4732f345f2dbeb4a",
         "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
         "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
         "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
@@ -47247,9 +47817,9 @@
         "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
         "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
         "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
-        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
-        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
-        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
+        "src/hash/buffer_macros/fixed.rs": "4fc5b83b607fd17f1f4320ab21d90cacc7d3b286c00d9b8c1c9caf6f187ce7e7",
+        "src/hash/buffer_macros/variable.rs": "d2921761290197eb79ad61d2c4a5b2e9b4738ee7a5a079b2a34261e39d222fc9",
+        "src/hash/buffer_macros/xof.rs": "91bfebf405f030fdd5bb8f45c6645185b842626bd8fbb16f4732f345f2dbeb4a",
         "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
         "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
         "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
@@ -51854,6 +52424,126 @@
         "path_in_vcs": ""
       },
       "version": "0.1.21"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Wrappers to create fully-featured Mutex and RwLock types. Compatible with no_std.",
+      "directory": "src/foundation/synchronization",
+      "files_sha256": {
+        "Cargo.toml": "067b41cc4cc8fc7c098dfa7305910232364ea2820bc2bae431ee299f06b05871",
+        "build.rs": "3698c936b75f8332d9b6b30a8a6838ea116c1ff0a819a025c9ea9696e4d8ce72",
+        "src/api/mod.rs": "442dd321d2f71df5ef6c62b7edfcb7cde8676bf9815ccb51bd3c781dc7bb8277",
+        "src/api/mutex.rs": "ab91ed4b4881ca526dfeb776d53f900c6a25efc33a822763b6fa5fc2dd878980",
+        "src/api/remutex.rs": "1fe63bca10b93cecfbd43cc6d6ff0e6a822e06a6bcd577bc00032e04792abb0a",
+        "src/api/rwlock.rs": "040b4798658b4984de0a158b034786f3e6f58c307f5371a36a2a51238fd376d6",
+        "src/lib.rs": "07e2a3d95346cbc303784051c5579e01745073be44d2469ae6e19c4045639fff",
+        "src/locks/condvar.rs": "36187ba4a575476b49c4845658398036abf043904747fe0eb0c13534a3c3b286",
+        "src/locks/elision.rs": "7070a29080f4c7d3b2c9b6e51a0d8230ebc8e56e4790aaeda1747b6c073a7438",
+        "src/locks/fair_mutex.rs": "61ca2c729996a8473c2faf55770be14e4e2396f4ce02d44a6686d56e1945d75f",
+        "src/locks/mod.rs": "c10567d97426b4cd7072f4355849a269af9cb2fc65355ed8d58e4df03b8e1f4a",
+        "src/locks/mutex.rs": "e01809795a482addd414c9f6181d862e0a7b2cbbc1f596e7d62b120341234e9d",
+        "src/locks/once.rs": "c65130583e24f96eb7873ccd9d58aee8ec83b30868e24ccd69cfa7dcab224e3f",
+        "src/locks/raw_fair_mutex.rs": "f780f52d750259906d067e93c6f0d9158fec0aefdfb9289b10821d211542f3f4",
+        "src/locks/raw_mutex.rs": "6388ad2f95daadecc9df09168b02d274d322627a79b0ce0bdfa3573139d1e787",
+        "src/locks/raw_rwlock.rs": "21f5618f03fb9ffdc6e1384c28a095a525d8d5907a7780ae38487ac20e0ebf18",
+        "src/locks/remutex.rs": "036c02a15f6d4a379869b2e39a3909d9eed9bb0d8f1978a4e92560895f819f68",
+        "src/locks/rwlock.rs": "accd3a2d70fad546de28537adc6e227a7c3898103821ac834d80672e32588508",
+        "src/locks/util.rs": "37a2c8b5c9254df83e8f3a5cd831558c1045061a76c2571bdc4d78eb86e467f2",
+        "src/parking/mod.rs": "314e8cfd04e2e6fc8d2ac0a5b09078fa8e6c263d91c5cc28c151a08717b3d516",
+        "src/parking/parking_lot.rs": "f194599390b5e3d63ed24e036eaa5d45d584967aaea63f033fd0d98f7d529171",
+        "src/parking/spinwait.rs": "5fd572351bb063e849a599327028561a2b867cd47550b5da4373dbbf099c0d2a",
+        "src/parking/thread_parker/generic.rs": "414bd3114b40f7665efe59fa4c5033d2401eafc58b57a9ba5803949d26cc0454",
+        "src/parking/thread_parker/linux.rs": "70bfe6c168fc431965374d921e33b3e04536cb68fde3e807a837aa38a65772b0",
+        "src/parking/thread_parker/mod.rs": "724329cbf54bcfd3c3a05e137b555a6da00bf0414166f751e89a825b23396d34",
+        "src/parking/thread_parker/unix.rs": "4cd468fcee83f29e9c923c5a574d0f5cbff0207741dae2eba99b16509fdb6ffa",
+        "src/parking/thread_parker/wasm.rs": "86e954d009d57d2dfdbca71e5c0f116a99a182af83b7e51ed5b14fc55b2f7b01",
+        "src/parking/thread_parker/wasm_atomic.rs": "6fbc09accc9df9d42444cec6f55d3eed2c7078a474485fa269a9f503da2ee1c5",
+        "src/parking/util.rs": "285e6133150645525f2ca1ece41f6d35bad4e7c5e08b42b20c99d2a97e04a974",
+        "src/parking/word_lock.rs": "dd60d0364afe6790f2e5c992e6e72401dd3a0bda70c40136a6d4176549f04198"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/lock_api-0.4.14/LICENSE-APACHE",
+        "compliance/licenses/upstream/lock_api-0.4.14/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/synchronization",
+      "name": "lock_api",
+      "origin_directory": "vendor/rust/lock_api-0.4.14",
+      "repository": "https://github.com/Amanieu/parking_lot",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965",
+        "archive_url": "https://static.crates.io/crates/lock_api/lock_api-0.4.14.crate",
+        "name": "lock_api",
+        "version": "0.4.14"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
+        },
+        "path_in_vcs": "lock_api"
+      },
+      "version": "0.4.14"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
+      "description": "More compact and efficient implementations of the standard synchronization primitives.",
+      "directory": "src/foundation/synchronization",
+      "files_sha256": {
+        "Cargo.toml": "067b41cc4cc8fc7c098dfa7305910232364ea2820bc2bae431ee299f06b05871",
+        "build.rs": "3698c936b75f8332d9b6b30a8a6838ea116c1ff0a819a025c9ea9696e4d8ce72",
+        "src/api/mod.rs": "442dd321d2f71df5ef6c62b7edfcb7cde8676bf9815ccb51bd3c781dc7bb8277",
+        "src/api/mutex.rs": "ab91ed4b4881ca526dfeb776d53f900c6a25efc33a822763b6fa5fc2dd878980",
+        "src/api/remutex.rs": "1fe63bca10b93cecfbd43cc6d6ff0e6a822e06a6bcd577bc00032e04792abb0a",
+        "src/api/rwlock.rs": "040b4798658b4984de0a158b034786f3e6f58c307f5371a36a2a51238fd376d6",
+        "src/lib.rs": "07e2a3d95346cbc303784051c5579e01745073be44d2469ae6e19c4045639fff",
+        "src/locks/condvar.rs": "36187ba4a575476b49c4845658398036abf043904747fe0eb0c13534a3c3b286",
+        "src/locks/elision.rs": "7070a29080f4c7d3b2c9b6e51a0d8230ebc8e56e4790aaeda1747b6c073a7438",
+        "src/locks/fair_mutex.rs": "61ca2c729996a8473c2faf55770be14e4e2396f4ce02d44a6686d56e1945d75f",
+        "src/locks/mod.rs": "c10567d97426b4cd7072f4355849a269af9cb2fc65355ed8d58e4df03b8e1f4a",
+        "src/locks/mutex.rs": "e01809795a482addd414c9f6181d862e0a7b2cbbc1f596e7d62b120341234e9d",
+        "src/locks/once.rs": "c65130583e24f96eb7873ccd9d58aee8ec83b30868e24ccd69cfa7dcab224e3f",
+        "src/locks/raw_fair_mutex.rs": "f780f52d750259906d067e93c6f0d9158fec0aefdfb9289b10821d211542f3f4",
+        "src/locks/raw_mutex.rs": "6388ad2f95daadecc9df09168b02d274d322627a79b0ce0bdfa3573139d1e787",
+        "src/locks/raw_rwlock.rs": "21f5618f03fb9ffdc6e1384c28a095a525d8d5907a7780ae38487ac20e0ebf18",
+        "src/locks/remutex.rs": "036c02a15f6d4a379869b2e39a3909d9eed9bb0d8f1978a4e92560895f819f68",
+        "src/locks/rwlock.rs": "accd3a2d70fad546de28537adc6e227a7c3898103821ac834d80672e32588508",
+        "src/locks/util.rs": "37a2c8b5c9254df83e8f3a5cd831558c1045061a76c2571bdc4d78eb86e467f2",
+        "src/parking/mod.rs": "314e8cfd04e2e6fc8d2ac0a5b09078fa8e6c263d91c5cc28c151a08717b3d516",
+        "src/parking/parking_lot.rs": "f194599390b5e3d63ed24e036eaa5d45d584967aaea63f033fd0d98f7d529171",
+        "src/parking/spinwait.rs": "5fd572351bb063e849a599327028561a2b867cd47550b5da4373dbbf099c0d2a",
+        "src/parking/thread_parker/generic.rs": "414bd3114b40f7665efe59fa4c5033d2401eafc58b57a9ba5803949d26cc0454",
+        "src/parking/thread_parker/linux.rs": "70bfe6c168fc431965374d921e33b3e04536cb68fde3e807a837aa38a65772b0",
+        "src/parking/thread_parker/mod.rs": "724329cbf54bcfd3c3a05e137b555a6da00bf0414166f751e89a825b23396d34",
+        "src/parking/thread_parker/unix.rs": "4cd468fcee83f29e9c923c5a574d0f5cbff0207741dae2eba99b16509fdb6ffa",
+        "src/parking/thread_parker/wasm.rs": "86e954d009d57d2dfdbca71e5c0f116a99a182af83b7e51ed5b14fc55b2f7b01",
+        "src/parking/thread_parker/wasm_atomic.rs": "6fbc09accc9df9d42444cec6f55d3eed2c7078a474485fa269a9f503da2ee1c5",
+        "src/parking/util.rs": "285e6133150645525f2ca1ece41f6d35bad4e7c5e08b42b20c99d2a97e04a974",
+        "src/parking/word_lock.rs": "dd60d0364afe6790f2e5c992e6e72401dd3a0bda70c40136a6d4176549f04198"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/parking_lot-0.12.5/LICENSE-APACHE",
+        "compliance/licenses/upstream/parking_lot-0.12.5/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/synchronization",
+      "name": "parking_lot",
+      "origin_directory": "vendor/rust/parking_lot-0.12.5",
+      "repository": "https://github.com/Amanieu/parking_lot",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "93857453250e3077bd71ff98b6a65ea6621a19bb0f559a85248955ac12c45a1a",
+        "archive_url": "https://static.crates.io/crates/parking_lot/parking_lot-0.12.5.crate",
+        "name": "parking_lot",
+        "version": "0.12.5"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.12.5"
     }
   ],
   "origin_records_sha256": {
@@ -53203,9 +53893,9 @@
         "Cargo.toml": "e0aa604e41e20e2c68c43e02ccddd00d4c33c135607e9acd9a9720959dd0729b",
         "benches/mod.rs": "7471bea770ee4430369760192a51141d82f224a1052f71587e0d4ef2751b6680",
         "src/as_bytes.rs": "4e00472aa326ad60bbaf9fafc8456c886f081ba1a8ae8614b1b6d7dbb93533fc",
-        "src/buffered.rs": "329cfa2f230c97eb9f6dbb7c48d4e6f599fe59568a9af528f9451c1804759984",
+        "src/buffered.rs": "f174a94dc73f6edffbd715480b00721e772aa91074757b5c357bc375d86cc737",
         "src/consts.rs": "03edc1d4697a6074c9389202324444f27625ef11f17d34cc86b83d0dda920e79",
-        "src/lib.rs": "751d91d97fbe74e226bd769fcaf771a0955259dca0966fe3103fe8e0ebf55a46",
+        "src/lib.rs": "605dadb54c250cb1710bde8f11e27df67b25ed3a860f79c45a8a3d4ce26c2151",
         "src/macros.rs": "fb094835a032540296ca9752334734caa33c23372282d90036cba4ddadc8c2bf",
         "src/simd.rs": "79d6d11d14664c908c2f6a2120c23e8de0e0422b610a8b838aa95ba469ef43fc",
         "src/simd/simd_opt.rs": "b254d82005e288f1d07531ef71b2468be0bc70ae9bdba1b46001acac4db283fe",
@@ -53214,7 +53904,7 @@
         "src/simd/simdint.rs": "3b506bb05761752142f61ca8de138958af9a050ddcfe5bbf454dd9a003bf71c3",
         "src/simd/simdop.rs": "6154f31c9675f33ba476eb6d5378deda657afc79ad43be1c9257f4f4306e43ce",
         "src/simd/simdty.rs": "24e6e7eac6005eec0aceec7b96b3a8e04ca695479bfd22e704f51926515f6f13",
-        "src/variable.rs": "2dbbf27348cfe22c588d1bf46ca6d468d76808967449b0c49e89a0d3f05e948d"
+        "src/variable.rs": "30f275fe60ff4a7140f1f2507f68a965cc7e4f8b8acb5dcd25b534ecae42c0b5"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -54326,9 +55016,9 @@
         "src/hash/block_api.rs": "a04f0c9c3cb3645e3a4b17210117662e6b000d138dc81511d9828b256cf92925",
         "src/hash/block_api/ct_variable.rs": "573c0d4ce780b33fb1219b03bfad71a8f2a030b6c1349de5362777798c2197ee",
         "src/hash/buffer_macros.rs": "f67ea0097ecd3d214c538f11f806332a7cd3f42a10ed93d4846b86f3f0f1ae84",
-        "src/hash/buffer_macros/fixed.rs": "7545278da1ed69c27533c21defce9780a31426974470a7fa63bf2784096ff0fb",
-        "src/hash/buffer_macros/variable.rs": "97c680022aeec0364805a6ea7c289a153119f03aa9487ec4a3ae140e33ff88af",
-        "src/hash/buffer_macros/xof.rs": "bb8f91150b5fae53d19ca2970e0d9d31c51c74dbb9bcfa9b1ad3f68bf44313d0",
+        "src/hash/buffer_macros/fixed.rs": "4fc5b83b607fd17f1f4320ab21d90cacc7d3b286c00d9b8c1c9caf6f187ce7e7",
+        "src/hash/buffer_macros/variable.rs": "d2921761290197eb79ad61d2c4a5b2e9b4738ee7a5a079b2a34261e39d222fc9",
+        "src/hash/buffer_macros/xof.rs": "91bfebf405f030fdd5bb8f45c6645185b842626bd8fbb16f4732f345f2dbeb4a",
         "src/hash/dev.rs": "e83308821db2c78e4d07a1db7be5390d62fff55d1e0e84585ca31a5a6b3523db",
         "src/hash/dev/fixed.rs": "570d754208934226a7078f25f2820a372611d7cce4d44cf3e2793a3ac243c5a1",
         "src/hash/dev/mac.rs": "0d8f85fed63624791f61988a7ce7d34d0f0121d2deba37323631d92c276efbb3",
@@ -55834,7 +56524,7 @@
       "description": "Futures based on intrusive data structures - for std and no-std environments.",
       "directory": "src/foundation/futures-intrusive",
       "files_sha256": {
-        "Cargo.toml": "491b424e22113bf9a577a2c7c7606f31f224110382a5b57f5503a9eae8794610",
+        "Cargo.toml": "be262a474612f1b367d512c8a8527a05161d8d53f73f26941c73dbd3ff4bd6ad",
         "benches/bench_mutex.sh": "8a38aad4b38ac53146f3027af22e11dfdca23b3de1f253a37216af664b2b759d",
         "benches/mpmc_channel.rs": "3ac84661034d830f70e5912c4c31456a884b763a86ecea301c0e8a340d55aa52",
         "benches/mutex.rs": "aa3e4469157a7be2c2ab58a16b41c22cc9bcdd8d2b9e6647db5c5fae666bb10c",
@@ -55846,21 +56536,21 @@
         "src/channel/channel_future.rs": "829f31ad537131450a606ed7f154e891c71969911b50ed71eb3e7b8d7130d880",
         "src/channel/error.rs": "43d5a23d7d948e5d6807803d3463e1fc1af52432c3bc47d8d711db25fda537bd",
         "src/channel/mod.rs": "fbc7a7a8e3825e0ecf31458027835167d098b9de4443aff7af95d1e1da2d3136",
-        "src/channel/mpmc.rs": "98a823699351c6fefddfd9616bdf00773beca08517020bc09e56d498d0df51d9",
-        "src/channel/oneshot.rs": "c0596b7b42018cb4da3b34af39989f123e31f145a8f4954f9079152e0cd72b68",
-        "src/channel/oneshot_broadcast.rs": "5d3590f1f6d33f0528dc124d15771cc479aefe77560255b316828ed998163bca",
-        "src/channel/state_broadcast.rs": "207a457dddf174484774193effd903429f7757893293aa2e9f78ec8d7ecda7b4",
+        "src/channel/mpmc.rs": "37b6341019aacb8c1bde881b9e0bd8566ce99aba002ec3ee16dcb05f2c7f35df",
+        "src/channel/oneshot.rs": "d42fefc10432bccc9e6b4ecb44ad172fe82859809f86ffdb3c6ecfd8919310ce",
+        "src/channel/oneshot_broadcast.rs": "0ed9d4a6a8e18a3e9d70b67975af274c8ff3df0d21bc7adb5f05bb222118e6ac",
+        "src/channel/state_broadcast.rs": "ba75b16928813840afa391871cfc8f9247307bf7f988d871b780bf1655e952fa",
         "src/intrusive_double_linked_list.rs": "9245fd5d7b2bd6a58d60638b44e3bb55a91eccd22bfec7a2d6545918daa3841a",
         "src/intrusive_pairing_heap.rs": "14473805f0b7d1571a0f3bae9347fb74eb5953ebf15bf2be7db7f9abcc2b37d0",
-        "src/lib.rs": "1bddd27bcf6988c954766539b4fe2cd2f99d9b46eb7de0abb8abbf1ab0d13d67",
-        "src/noop_lock.rs": "d038bf90e3cb86a3b2cd3a7734bea1b0ae88bde33a9b6a1eb3d86ba391845491",
-        "src/sync/manual_reset_event.rs": "efad3ced8847078783984f609fa62eef4412cfd410b618debf6f6f935a98d4b1",
+        "src/lib.rs": "f1e7e787c7674773feabce5e44e1ed1e056635b08415f33ea0990223e0962792",
+        "src/noop_lock.rs": "e8861c70ad759c8baa8ac9960925f7f5d4f8d7f4f777615e157c320fc795d6f0",
+        "src/sync/manual_reset_event.rs": "02fa09c2ce8c17613eef96b83d56a13a7b08cc27b6487eae4ed8db68881496d0",
         "src/sync/mod.rs": "064213746b5f5205c88e5cb6fdb8df8a1898af9f4f693e3f32a0ce4fec3eb45a",
-        "src/sync/mutex.rs": "15997175508c8747d3ff51688ebd680e675edf9f0c1e2716a36ca497c5d0182c",
-        "src/sync/semaphore.rs": "3684b0d351b283504cdef4d6ba19605af20e84c8b717cd0f820339c1f424bc50",
+        "src/sync/mutex.rs": "25e57f7afde7f60d337432f4a4fc0fbf9638d6a9ef5d8e0e1067778b4e68add6",
+        "src/sync/semaphore.rs": "463cb9f972bf9d4b67ddb7730d6bb6ba18ac1f4667cd1d50d1c4424aed82a8bd",
         "src/timer/clock.rs": "e30bae8c0afda6751c9f749031ac09041a18adb4d4733c1f7a34004add7aaca6",
         "src/timer/mod.rs": "a3aa6e0f94e54e2d5bef80921e886601114aa09a01093896ad61b265ddc27b27",
-        "src/timer/timer.rs": "9f1ec19a6b0deca5d352c26188c23f8b2896ed68ddab1b3d46cf6f2ecb6899f3",
+        "src/timer/timer.rs": "5762b7adbc325b16f8b3cda51767ebf7d6e25761380972ff1afabab99c821fe1",
         "src/utils/mod.rs": "abbc5ca54d78663090d53fbbb9b9e9d89614ab8481ddd791666d41931b988f79"
       },
       "license": "MIT OR Apache-2.0",
@@ -56387,11 +57077,11 @@
       "directory": "src/foundation/hmac",
       "files_sha256": {
         "Cargo.toml": "89c0ceb1bc5264439eb84a729e136f41aa2fe1fec2b48e50922b8d40cf326a48",
-        "src/block_api.rs": "ec324b884dd722784cbdc19c0cd4991eb6b55fa0117afbd30688e2a588d79c97",
-        "src/lib.rs": "4aafe4c10e46707fd9e760947ec92d0af764536d1befeac9ec06b12d78510231",
+        "src/block_api.rs": "579313e8093b52d66a628d372849c7edb1f72d9bd3c07eca2d65d5fe82c7cf12",
+        "src/lib.rs": "8aaed31ba5f64f3a4fbde510799dd10fd1ffb1ca14271c9bc9463183a2971a66",
         "src/simple.rs": "d093d331d50760478c20a446aee858e4193bf103430e712037b4d382beffbeda",
         "src/simple_reset.rs": "625d4d9330edae93829afa03687b2398c768891c34569c185240f383f2b1d4c8",
-        "src/utils.rs": "edacd27afe98c09bd89df95575f5852e20f1a6c1ce4780ef34ddf85a0a01d1a9"
+        "src/utils.rs": "02e935317f7939e9c0f75744b27d0b2f29af2aa44959153bf96d7c80bd339a97"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -58680,41 +59370,6 @@
       },
       "version": "0.8.3"
     },
-    "src/foundation/lock_api": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Wrappers to create fully-featured Mutex and RwLock types. Compatible with no_std.",
-      "directory": "src/foundation/lock_api",
-      "files_sha256": {
-        "Cargo.toml": "7b2b96faa397353e7fdf18c496a8c3ce17eda2a0d7adea092238d63f7e1b5d4f",
-        "src/lib.rs": "f6dfe0a321e47b5ea9f01a59711e5d3a0442949a829eb4957fa1491fbce63e5c",
-        "src/mutex.rs": "8e2e8459a4a0d5ccaaf376d7aec001492bb502142879a65ad4986007cbeedb0e",
-        "src/remutex.rs": "6d241065c449d166bc571f10add658672d6973278921554db51165ef8ce2f2d2",
-        "src/rwlock.rs": "6fc7e00bad601fd4573462949270a8adadfe0e6c0ee2399483514ba57e843592"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/lock_api-0.4.14/LICENSE-APACHE",
-        "compliance/licenses/upstream/lock_api-0.4.14/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "lock_api",
-      "origin_directory": "vendor/rust/lock_api-0.4.14",
-      "repository": "https://github.com/Amanieu/parking_lot",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965",
-        "archive_url": "https://static.crates.io/crates/lock_api/lock_api-0.4.14.crate",
-        "name": "lock_api",
-        "version": "0.4.14"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
-        },
-        "path_in_vcs": "lock_api"
-      },
-      "version": "0.4.14"
-    },
     "src/foundation/log": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "A lightweight logging facade for Rust",
@@ -59549,15 +60204,15 @@
       "description": "Single assignment cells and lazy values.",
       "directory": "src/foundation/once_cell",
       "files_sha256": {
-        "Cargo.toml": "c058beddc6bf689c254a71c307d519760aea0cf2ac80e9a1209b2f3c1f9814d6",
+        "Cargo.toml": "8fe31b50f8f66b69e40ed058a7d229eeb0eba3f1cbca92ef96a8035a3234c2f2",
         "examples/bench.rs": "1597a52529f75d6c5ad0b86759a775b1d723dfa810e2016317283b13594219da",
         "examples/bench_acquire.rs": "9f4912ca262194cb55e893c33739c85c2f4868d07905b9dd3238552b6ce8a6e4",
         "examples/reentrant_init_deadlocks.rs": "2253b208ff63b2ae8a0651eaed2e95601c6a18c10ed096be4ea446f628a1700c",
         "examples/regex.rs": "4a2e0fb093c7f5bbe0fff8689fc0c670c5334344a1bfda376f5faa98a05d459f",
         "examples/test_synchronization.rs": "88abd5c16275bb2f2d77eaecf369d97681404a77b8edd0021f24bfd377c46be3",
-        "src/imp_pl.rs": "b7b10650eda67bc7fec19d4da157c3616ff36df9c533596d130db798a5d490e4",
+        "src/imp_pl.rs": "05d5816683e30211d03a0633111e3222b4fa2b4c5cfcec6fff9641c77097cf02",
         "src/imp_std.rs": "e1bd335af6d1943d039e26e39aa42bf689a9ca2d66dc08a2196b96ae739b1208",
-        "src/lib.rs": "9a47468d72daf89e80bfbb32ec051b85bcd84d38f6734c4d034d159f2a422f40",
+        "src/lib.rs": "ac58b5bafb7adaa9378f1df78ca640baa48988735d064138e01cf7c34efcd183",
         "src/race.rs": "3548a29f12f206c353fa9be2f725162fda96b3a92ea2b6177ebb26f13ea61466"
       },
       "license": "MIT OR Apache-2.0",
@@ -59678,93 +60333,6 @@
         "path_in_vcs": ""
       },
       "version": "2.2.1"
-    },
-    "src/foundation/parking_lot": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。",
-      "description": "More compact and efficient implementations of the standard synchronization primitives.",
-      "directory": "src/foundation/parking_lot",
-      "files_sha256": {
-        "Cargo.toml": "90799c3130efebb3d76dee62fd8174375ea27c16d1eca88479d1039d35a71f9d",
-        "src/condvar.rs": "5298fb4139f7e3417cce81193dc87bc903e625d444f684dc7db53e03e04ac424",
-        "src/deadlock.rs": "7da7b963d876109dca64a70436b1f356dd55d0a2906cfae3a242f1a130560982",
-        "src/elision.rs": "7070a29080f4c7d3b2c9b6e51a0d8230ebc8e56e4790aaeda1747b6c073a7438",
-        "src/fair_mutex.rs": "9950cae0d42fbeb2e88933e358f70f57ab23367a2eb19a7cd5315a23778c113b",
-        "src/lib.rs": "0ad0d7a416c12f99db0033f22c98baf201878ab40b3cd34fe74e7bd0e5b87cca",
-        "src/mutex.rs": "f8354c960f0c8ccd039137f00e2abc76a479ad12f7647e4963ee22406406c4cf",
-        "src/once.rs": "c34c549ce3f374c9c00723f0483cb7d8053c7081739b49ec72cf7d921d3b3af0",
-        "src/raw_fair_mutex.rs": "316f954d9673ac5b8d6bf4c19f2444800f63daf801c224d986e2d6dac810643c",
-        "src/raw_mutex.rs": "4a79255673f47e167ce28d331c3b51f245017c7023e36c1c9b09baf00cc121c6",
-        "src/raw_rwlock.rs": "bdbb06e1433ea2bc1dbbfd69e66755bcad588f48c6552c0fe125d98419035791",
-        "src/remutex.rs": "f86bfccc65a0660b3be62030f1742078b90ff84e0eac9efa87497de1f81fa4ff",
-        "src/rwlock.rs": "d54a550700e7c0eb98326fdae9c8ad8938205cace385634caf5b61d7f68e985a",
-        "src/util.rs": "37a2c8b5c9254df83e8f3a5cd831558c1045061a76c2571bdc4d78eb86e467f2"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/parking_lot-0.12.5/LICENSE-APACHE",
-        "compliance/licenses/upstream/parking_lot-0.12.5/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "parking_lot",
-      "origin_directory": "vendor/rust/parking_lot-0.12.5",
-      "repository": "https://github.com/Amanieu/parking_lot",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "93857453250e3077bd71ff98b6a65ea6621a19bb0f559a85248955ac12c45a1a",
-        "archive_url": "https://static.crates.io/crates/parking_lot/parking_lot-0.12.5.crate",
-        "name": "parking_lot",
-        "version": "0.12.5"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.12.5"
-    },
-    "src/foundation/parking_lot_core": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
-      "description": "An advanced API for creating custom synchronization primitives.",
-      "directory": "src/foundation/parking_lot_core",
-      "files_sha256": {
-        "Cargo.toml": "1b1b0d11b4832430ff72ac5ca69b4b14e9f303e567afb7354cbe65f52b6b95f1",
-        "build.rs": "3698c936b75f8332d9b6b30a8a6838ea116c1ff0a819a025c9ea9696e4d8ce72",
-        "src/lib.rs": "c8c164deb6369857838b886423918383fb80ab4153e7eac5fffacbed12a533e7",
-        "src/parking_lot.rs": "18a69c32779985db5b71365fa122c7c74cf0c1f0b85378fd486853ddcb7510d6",
-        "src/spinwait.rs": "0d73980c72e84fd75c73693f0b351e097353b46f4b8aaa67b3dde7c721817bf7",
-        "src/thread_parker/generic.rs": "414bd3114b40f7665efe59fa4c5033d2401eafc58b57a9ba5803949d26cc0454",
-        "src/thread_parker/linux.rs": "70bfe6c168fc431965374d921e33b3e04536cb68fde3e807a837aa38a65772b0",
-        "src/thread_parker/mod.rs": "724329cbf54bcfd3c3a05e137b555a6da00bf0414166f751e89a825b23396d34",
-        "src/thread_parker/unix.rs": "4cd468fcee83f29e9c923c5a574d0f5cbff0207741dae2eba99b16509fdb6ffa",
-        "src/thread_parker/wasm.rs": "86e954d009d57d2dfdbca71e5c0f116a99a182af83b7e51ed5b14fc55b2f7b01",
-        "src/thread_parker/wasm_atomic.rs": "6fbc09accc9df9d42444cec6f55d3eed2c7078a474485fa269a9f503da2ee1c5",
-        "src/util.rs": "285e6133150645525f2ca1ece41f6d35bad4e7c5e08b42b20c99d2a97e04a974",
-        "src/word_lock.rs": "57133a9da052d8e86eb38ff1968129149838918d69f52761dc8757b541f9d044"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/parking_lot_core-0.9.12/LICENSE-APACHE",
-        "compliance/licenses/upstream/parking_lot_core-0.9.12/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "parking_lot_core",
-      "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
-      "repository": "https://github.com/Amanieu/parking_lot",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "2621685985a2ebf1c516881c026032ac7deafcda1a2c9b7850dc81e3dfcb64c1",
-        "archive_url": "https://static.crates.io/crates/parking_lot_core/parking_lot_core-0.9.12.crate",
-        "name": "parking_lot_core",
-        "version": "0.9.12"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
-        },
-        "path_in_vcs": "core"
-      },
-      "version": "0.9.12"
     },
     "src/foundation/password-hash": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：兼容旧密码编码：用带单一明确理由的私有弃用别名保留原 Crypt 字节编码，历史向量与尾部拒绝行为通过回归。",
@@ -60612,7 +61180,7 @@
       "description": "An implementation-agnostic JSON reference resolution library for Rust.",
       "directory": "src/foundation/referencing",
       "files_sha256": {
-        "Cargo.toml": "55a96aa1b94a67377aa3a123d9d8d214b453c74f52873bf858aeec7866ceaa83",
+        "Cargo.toml": "13ea8df027eeca7c1f6b156731bd146958391c6f51fb6e51165cf2e6877b5d5c",
         "benches/anchor.rs": "8f1133ec8acb74014b3c7f4785377040a4969aab38463730500502c225e68fa7",
         "benches/pointer.rs": "33c14ca95c803d520c269fd4aed0d702bdb3e7cce64594a1e4636807967697c4",
         "benches/registry.rs": "f55162ae1d19d2970b85d9eb15a4ecd7c220b271ec3dda9ee050b63fd1be0ed5",
@@ -60637,7 +61205,7 @@
         "metaschemas/draft6.json": "c29dfce9f54835c3a06c03b3c5d5ec0eda77706568f9c4df7cfbc7566a51006d",
         "metaschemas/draft7.json": "9e786e2198debe6717675ce48e199199f2dba8e3a3e1ffe35cfc0959efd691cb",
         "src/anchor.rs": "1186afefb8830309af296f4cf22d1323429cb1013fba8c90b1020636cb490552",
-        "src/cache.rs": "54393154752a63cb27d6fac4f860481b780de4cbe7f1c047dfdde4925b411171",
+        "src/cache.rs": "f9651cac58bd7c5577fda0b79ad37609f1f36a47e425c5a221cc495b0e12a4ca",
         "src/draft.rs": "ec6264d3e49d4b1677c64c9d6bdb24981309b9372d347ce7ede8cd18a95eb9f0",
         "src/error.rs": "f11cff001366f5e3c14167c1558c92fd98b68018e2a37055a4a8e6eb67630d9f",
         "src/lib.rs": "9270d4e4a95973df3e21d3963094f5aa20c26d7f6b2f5be2331ca43d53f5f941",
@@ -62595,9 +63163,9 @@
       "files_sha256": {
         "Cargo.toml": "2306cf2e5f4a79ea9a0738e879090c445b0802fc14a26245528f0da7c3f345ec",
         "benches/mod.rs": "4a9c0829be58eaf311384d10472d74a3ddb428c3cec7bbefe4516187d6943bd8",
-        "src/block_api.rs": "4de522a068d0422336213053ad2d26f2aba217d7b6a3803ab3247d67f1de5f42",
+        "src/block_api.rs": "831458b8a00309db24d6b717f90a8f79186be03a2a684bcd316f0fb6bbb74d54",
         "src/consts.rs": "a70aa1d4f798b619e5332fd81162b10e73c02b3adbdbb3b69b6d17781437e073",
-        "src/lib.rs": "571550a06332fb6dba10e49bbd4573d27c908dc421f87c23ba332b0f3b8dfe87",
+        "src/lib.rs": "4c1be47c09368b0e050e9a43d95d923df4a910300cb9809b3afb274c61290328",
         "src/sha256.rs": "42a12c10acb714cba558ec7b0e56dfd6e37569ba67916ab1ef228c36592a17c4",
         "src/sha256/aarch64_sha2.rs": "4bddcedd5bb92a3b3768880ec3d077d7495b95c238aab3150ced25cc905a1826",
         "src/sha256/loongarch64_asm.rs": "eda57073e3dbcadca88e908dd261a2782b2bb89c06f1b97468a6ffd1cad407ff",
@@ -62973,19 +63541,19 @@
       "description": "Spin-based synchronization primitives",
       "directory": "src/foundation/spin",
       "files_sha256": {
-        "Cargo.toml": "dc8a44bf0030e39b3b5fe56e278ad50ba9fa9e67bb46dc1afbbcb7984a4791be",
+        "Cargo.toml": "b5996fae3be64ef8d7b80f6e3880903b3015cdd91f3eb968daf6833c1e0272e9",
         "benches/mutex.rs": "2fd79239798e88cab0fd982e04f91a44c7c63282f8703d85fbdd81a8a1e71917",
         "script/doc-upload.cfg": "7383ee022197c1dade9a2e6888261def4a80df08ecb72b1b4db47d1e8a6ff8e0",
         "src/barrier.rs": "8498c51e72d6a4c28ea46bb98072f04afa032c2f7c33b6dab09dcc91f0789f55",
         "src/lazy.rs": "45cf9174ee607e8a9acfa652b95c9b0ac71d98e89e73b9850041c79c5f3a726e",
-        "src/lib.rs": "0ffc6831d2a4b31e03760dd9e5a1e0a31f14a7f29850fb3fc5e380e9ba8b6901",
-        "src/mutex.rs": "60756ab9d338b4013501a5fc76cbd6f422f8ecad9f5e46fbeb976f4fb66314d7",
-        "src/mutex/fair.rs": "d97b39ca86f2ad502ae27d97b11ff5173d384af60a64bf2484013a84fd7bbc2b",
-        "src/mutex/spin.rs": "10a34b54d2732e103d6ea749bdbae8b13672393674500ef6963008e0f00a5246",
-        "src/mutex/ticket.rs": "49d1e374d4184dfdb928ba88d00385d91ece7fa298774fc790cb663b07889796",
+        "src/lib.rs": "4bd78ce38240a6e4205523b824de176a5bb94103008811d1acc7ec576aed522f",
+        "src/mutex.rs": "ad4bc05964c1ca8c4df38d5d36719062599f1dc0e57048aeb2a545c9b2bbc65f",
+        "src/mutex/fair.rs": "884211a6cca1f77c6a0570617b73b8250f0b9322cfa6772e95a6960c60103251",
+        "src/mutex/spin.rs": "a7d489949bbe913195bfe6f3482754a43f2dc76828d8e135d76cd094c962b6b5",
+        "src/mutex/ticket.rs": "e23e5ad9b9bf6e48a6eaf3ae9fc171f7f0c253d447f3064f3fb714de799aa2f3",
         "src/once.rs": "fc3f4c9bb30dd151b92531d7e8d2878cd338f9a87a3a8665dd05eaffce30252f",
         "src/relax.rs": "919c345bf55c3b2f9a7d9cd4aec2b2b3db68b6dc40ee2e4de4f6f32027abc290",
-        "src/rwlock.rs": "067275c6f7e8f965857d2288d8af99f6eb5ce169d2429ae2c6da5ded1dffe908"
+        "src/rwlock.rs": "eb0f6ea7e6b47ddad48776a4e8de2dac7d2b2f163d970d2a507348a34a15b108"
       },
       "license": "MIT",
       "license_materials": [
@@ -63344,6 +63912,66 @@
         "path_in_vcs": ""
       },
       "version": "1.0.2"
+    },
+    "src/foundation/synchronization": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
+      "description": "An advanced API for creating custom synchronization primitives.",
+      "directory": "src/foundation/synchronization",
+      "files_sha256": {
+        "Cargo.toml": "067b41cc4cc8fc7c098dfa7305910232364ea2820bc2bae431ee299f06b05871",
+        "build.rs": "3698c936b75f8332d9b6b30a8a6838ea116c1ff0a819a025c9ea9696e4d8ce72",
+        "src/api/mod.rs": "442dd321d2f71df5ef6c62b7edfcb7cde8676bf9815ccb51bd3c781dc7bb8277",
+        "src/api/mutex.rs": "ab91ed4b4881ca526dfeb776d53f900c6a25efc33a822763b6fa5fc2dd878980",
+        "src/api/remutex.rs": "1fe63bca10b93cecfbd43cc6d6ff0e6a822e06a6bcd577bc00032e04792abb0a",
+        "src/api/rwlock.rs": "040b4798658b4984de0a158b034786f3e6f58c307f5371a36a2a51238fd376d6",
+        "src/lib.rs": "07e2a3d95346cbc303784051c5579e01745073be44d2469ae6e19c4045639fff",
+        "src/locks/condvar.rs": "36187ba4a575476b49c4845658398036abf043904747fe0eb0c13534a3c3b286",
+        "src/locks/elision.rs": "7070a29080f4c7d3b2c9b6e51a0d8230ebc8e56e4790aaeda1747b6c073a7438",
+        "src/locks/fair_mutex.rs": "61ca2c729996a8473c2faf55770be14e4e2396f4ce02d44a6686d56e1945d75f",
+        "src/locks/mod.rs": "c10567d97426b4cd7072f4355849a269af9cb2fc65355ed8d58e4df03b8e1f4a",
+        "src/locks/mutex.rs": "e01809795a482addd414c9f6181d862e0a7b2cbbc1f596e7d62b120341234e9d",
+        "src/locks/once.rs": "c65130583e24f96eb7873ccd9d58aee8ec83b30868e24ccd69cfa7dcab224e3f",
+        "src/locks/raw_fair_mutex.rs": "f780f52d750259906d067e93c6f0d9158fec0aefdfb9289b10821d211542f3f4",
+        "src/locks/raw_mutex.rs": "6388ad2f95daadecc9df09168b02d274d322627a79b0ce0bdfa3573139d1e787",
+        "src/locks/raw_rwlock.rs": "21f5618f03fb9ffdc6e1384c28a095a525d8d5907a7780ae38487ac20e0ebf18",
+        "src/locks/remutex.rs": "036c02a15f6d4a379869b2e39a3909d9eed9bb0d8f1978a4e92560895f819f68",
+        "src/locks/rwlock.rs": "accd3a2d70fad546de28537adc6e227a7c3898103821ac834d80672e32588508",
+        "src/locks/util.rs": "37a2c8b5c9254df83e8f3a5cd831558c1045061a76c2571bdc4d78eb86e467f2",
+        "src/parking/mod.rs": "314e8cfd04e2e6fc8d2ac0a5b09078fa8e6c263d91c5cc28c151a08717b3d516",
+        "src/parking/parking_lot.rs": "f194599390b5e3d63ed24e036eaa5d45d584967aaea63f033fd0d98f7d529171",
+        "src/parking/spinwait.rs": "5fd572351bb063e849a599327028561a2b867cd47550b5da4373dbbf099c0d2a",
+        "src/parking/thread_parker/generic.rs": "414bd3114b40f7665efe59fa4c5033d2401eafc58b57a9ba5803949d26cc0454",
+        "src/parking/thread_parker/linux.rs": "70bfe6c168fc431965374d921e33b3e04536cb68fde3e807a837aa38a65772b0",
+        "src/parking/thread_parker/mod.rs": "724329cbf54bcfd3c3a05e137b555a6da00bf0414166f751e89a825b23396d34",
+        "src/parking/thread_parker/unix.rs": "4cd468fcee83f29e9c923c5a574d0f5cbff0207741dae2eba99b16509fdb6ffa",
+        "src/parking/thread_parker/wasm.rs": "86e954d009d57d2dfdbca71e5c0f116a99a182af83b7e51ed5b14fc55b2f7b01",
+        "src/parking/thread_parker/wasm_atomic.rs": "6fbc09accc9df9d42444cec6f55d3eed2c7078a474485fa269a9f503da2ee1c5",
+        "src/parking/util.rs": "285e6133150645525f2ca1ece41f6d35bad4e7c5e08b42b20c99d2a97e04a974",
+        "src/parking/word_lock.rs": "dd60d0364afe6790f2e5c992e6e72401dd3a0bda70c40136a6d4176549f04198"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/parking_lot_core-0.9.12/LICENSE-APACHE",
+        "compliance/licenses/upstream/parking_lot_core-0.9.12/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "synchronization",
+      "origin_directory": "vendor/rust/parking_lot_core-0.9.12",
+      "repository": "https://github.com/Amanieu/parking_lot",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "2621685985a2ebf1c516881c026032ac7deafcda1a2c9b7850dc81e3dfcb64c1",
+        "archive_url": "https://static.crates.io/crates/parking_lot_core/parking_lot_core-0.9.12.crate",
+        "name": "parking_lot_core",
+        "version": "0.9.12"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "d7828fff7b5d6327ae608e82db45f888b344449a"
+        },
+        "path_in_vcs": "core"
+      },
+      "version": "0.9.12"
     },
     "src/foundation/synstructure": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -63880,7 +64508,7 @@
       "description": "An event-driven, non-blocking I/O platform for writing asynchronous I/O\nbacked applications.",
       "directory": "src/foundation/tokio",
       "files_sha256": {
-        "Cargo.toml": "41dd9aa6a303b0f1c546227bf126784c26f853df595d039b0fd32c0acfb02c06",
+        "Cargo.toml": "01891012f5b29830beed385d8d4add8be169c15e8c7bdbb5327a68d571219014",
         "src/blocking.rs": "8e62b2cdc512fedbca4b4c4f983629af035afea4ee7e918bb1a3e9851c8e034e",
         "src/doc/mod.rs": "fbb5c84915b85f0d6916040b85c4a5d04910c6da957431024b663c90def1d35b",
         "src/doc/os.rs": "6e11b38bbd5a1cb4a6a0858e6eb689ee5b7a175a255c774c10cf4aa58f734e51",
@@ -63992,9 +64620,9 @@
         "src/loom/std/atomic_u64_static_once_cell.rs": "3ed7c98c5f402b09b6e7ab09eed98dc905f12484b201b0b242246c8729b56075",
         "src/loom/std/atomic_usize.rs": "c73696a4b65dd65f9533c3896dc2ec8f91979d15597d6a39091bce644776240b",
         "src/loom/std/barrier.rs": "9beeff33c89c6d7e84fa109a3dd688d2e6172b3a7da023e07e58d3032189e136",
-        "src/loom/std/mod.rs": "adf7432ba5164c78db871c5cff046e790a49671b6dec436d1fda5e74f3050d98",
+        "src/loom/std/mod.rs": "5e7784619eec367b6533da31cedafdfb5b16b3b68c9abaedc7924ea7099fdddf",
         "src/loom/std/mutex.rs": "0ffb1cfcce8b931f5d2ff10704871ed6703c376d8739892b35e612adc0dc0945",
-        "src/loom/std/parking_lot.rs": "d1f142d45d6064143910f8c2aab3ef789f6c3fd1bcbf1e20c39e8b36a5da9a24",
+        "src/loom/std/parking_lot.rs": "048e4b9350c4d2d1b330148b7c4fb5fe30c058343c4e46a4f3119c1a3270b407",
         "src/loom/std/rwlock.rs": "af8f98543e6e740d0398eaa3cac06ac2b751a5eed9279b2b75e512e86314cf99",
         "src/loom/std/unsafe_cell.rs": "789497164c351a563293d82edb82180576471b92ee3aec77de1a92a47423e390",
         "src/macros/addr_of.rs": "fa404c3eb369a63a8ed531b1477e34010c6b1572b36f92fe99f01b89cf41ac06",
@@ -64846,7 +65474,7 @@
       "description": "Utilities for implementing and composing `tracing` subscribers.",
       "directory": "src/foundation/tracing-subscriber",
       "files_sha256": {
-        "Cargo.toml": "e23cff7fb9e00069e70974514924abe9ae1d9fade6553ae68a425b3fd406c39b",
+        "Cargo.toml": "9864e2385b03b53a944ef39e5c3017bd5ba9ed4b1e4ce89d36b51a873d5bf3e0",
         "benches/enter.rs": "4a94a04e2abd07950ef2f0b646f4dcdf4ff00abf6396edb5a53c8b41b7691b1a",
         "benches/filter.rs": "6374005ffa47fa19880bb95e3e37406f40ea72a02c5136f4d5eb4c663d452b18",
         "benches/filter_log.rs": "612716bdf9a188093e84d014a4847f18157f148f7d64e54150cd5c91ac709a8a",
@@ -64880,7 +65508,7 @@
         "src/layer/context.rs": "11841166e9d7be48ff11bb4f686699687069a48f937031ae36d37039109477a2",
         "src/layer/layered.rs": "8cd7c6d7e1d15d36d61a8b43f3b2088a32a26462c8161f354c3c5bb310874b42",
         "src/layer/mod.rs": "94b9586b6d12d5652eb475ca62e9028f782c2562da1d63a0635b3c03239e21f7",
-        "src/lib.rs": "ac0bee56e7dd4d7b5d167e26b9e08a4f9d8d0d4c72029ac3c649d6997947748e",
+        "src/lib.rs": "5dbe64221b2ec5995059acf771324e292ef1cb8c8fdcc5425d0e6dce5a46ac91",
         "src/macros.rs": "6993489ad52c487e2b4df2f1102970af3ef918dfef0479ddcc5e904be7679d65",
         "src/prelude.rs": "088635def33be9a4c4b6ed934dc22540c555e27d62f7625a43aa9c0e525ca467",
         "src/registry/extensions.rs": "393dc6ccbd31fe25eb20209b850ad2a6c1cbdb5921c3d7eda7785e992c063426",
@@ -64888,7 +65516,7 @@
         "src/registry/sharded.rs": "4374976c848042235e6e10828b7d760eb73acf42a2e26ca026700571704543f5",
         "src/registry/stack.rs": "3507b3aafd4985f3cc5eaddcf5bf3257e17f20bd48cd0f652d161678d5753408",
         "src/reload.rs": "7158935b62d885d7c64b98b5524fdb98e7a0984051e14e63f7b7d2036a551cfb",
-        "src/sync.rs": "eb98770a579a279e712e9e78ff51cf5abab316e52b93ec44842273b1ff30992c",
+        "src/sync.rs": "39218e540b24bf53497478b25a4a02a9c078a7ffe13ffb14aa5d6badeb5d243c",
         "src/util.rs": "8c42088ac779a87d54ed9fb339ecdc57ae4978a0f1862104884fefd2199913f5"
       },
       "license": "MIT",
@@ -67404,7 +68032,10 @@
     }
   },
   "policy_sha256": "1068f87354319b7cc37085969d24cd40bb3e2384355aab284ae7a9919d015a58",
-  "proof_routing_receipts": [],
+  "proof_routing_receipts": [
+    "42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0",
+    "f22401d8de23ba2f0f8af6447b300206aa5257f8c9a173b1f47541ec587d3a21"
+  ],
   "provenance_sha256": {
     "compliance/licenses/fonts/UPSTREAM-NOTICES.md": "b75234cc83050a72140d442025ffd696fd7d75c17a08ce974f94ab60f06e5460",
     "compliance/licenses/project/LICENSE-APACHE-2.0.txt": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
@@ -77990,7 +78621,6 @@
           "features": [
             "alloc",
             "default",
-            "parking_lot",
             "std"
           ],
           "roles": [
@@ -78295,15 +78925,6 @@
             "runtime"
           ]
         },
-        "src/foundation/lock_api": {
-          "features": [
-            "atomic_usize",
-            "default"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/log": {
           "features": [
             "alloc",
@@ -78401,20 +79022,6 @@
           ]
         },
         "src/foundation/parking": {
-          "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/parking_lot": {
-          "features": [
-            "default"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/parking_lot_core": {
           "features": [],
           "roles": [
             "runtime"
@@ -78740,7 +79347,6 @@
             "default",
             "lazy",
             "lock_api",
-            "lock_api_crate",
             "mutex",
             "once",
             "rwlock",
@@ -78786,6 +79392,17 @@
         "src/foundation/sync_wrapper": {
           "features": [
             "futures"
+          ],
+          "roles": [
+            "runtime"
+          ]
+        },
+        "src/foundation/synchronization": {
+          "features": [
+            "atomic_usize",
+            "locks",
+            "parking",
+            "std"
           ],
           "roles": [
             "runtime"
@@ -81367,7 +81984,6 @@
           "features": [
             "alloc",
             "default",
-            "parking_lot",
             "std"
           ],
           "roles": [
@@ -81578,15 +82194,6 @@
             "compile"
           ]
         },
-        "src/foundation/lock_api": {
-          "features": [
-            "atomic_usize",
-            "default"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/log": {
           "features": [
             "alloc",
@@ -81669,20 +82276,6 @@
           ]
         },
         "src/foundation/parking": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/parking_lot": {
-          "features": [
-            "default"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/parking_lot_core": {
           "features": [],
           "roles": [
             "compile"
@@ -81923,7 +82516,6 @@
             "default",
             "lazy",
             "lock_api",
-            "lock_api_crate",
             "mutex",
             "once",
             "rwlock",
@@ -81963,6 +82555,17 @@
         },
         "src/foundation/strum_macros": {
           "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/synchronization": {
+          "features": [
+            "atomic_usize",
+            "locks",
+            "parking",
+            "std"
+          ],
           "roles": [
             "compile"
           ]

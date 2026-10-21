@@ -1,7 +1,7 @@
 
 #[cfg(test)]
 mod tests {
-    use parking_lot_core::{park, unpark_one, ParkResult, ParkToken, UnparkToken};
+    use synchronization::parking::{park, unpark_one, ParkResult, ParkToken, UnparkToken};
     use std::time::{Duration, Instant};
     #[test]
     fn timeout_and_validation() {

@@ -165,33 +165,33 @@ pub mod lock_api {
     /// A lock that provides mutually exclusive data access (compatible with [`lock_api`](https://crates.io/crates/lock_api)).
     #[cfg(feature = "mutex")]
     #[cfg_attr(docsrs, doc(cfg(feature = "mutex")))]
-    pub type Mutex<T> = lock_api_crate::Mutex<crate::Mutex<()>, T>;
+    pub type Mutex<T> = synchronization::api::Mutex<crate::Mutex<()>, T>;
 
     /// A guard that provides mutable data access (compatible with [`lock_api`](https://crates.io/crates/lock_api)).
     #[cfg(feature = "mutex")]
     #[cfg_attr(docsrs, doc(cfg(feature = "mutex")))]
-    pub type MutexGuard<'a, T> = lock_api_crate::MutexGuard<'a, crate::Mutex<()>, T>;
+    pub type MutexGuard<'a, T> = synchronization::api::MutexGuard<'a, crate::Mutex<()>, T>;
 
     /// A lock that provides data access to either one writer or many readers (compatible with [`lock_api`](https://crates.io/crates/lock_api)).
     #[cfg(feature = "rwlock")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rwlock")))]
-    pub type RwLock<T> = lock_api_crate::RwLock<crate::RwLock<()>, T>;
+    pub type RwLock<T> = synchronization::api::RwLock<crate::RwLock<()>, T>;
 
     /// A guard that provides immutable data access (compatible with [`lock_api`](https://crates.io/crates/lock_api)).
     #[cfg(feature = "rwlock")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rwlock")))]
-    pub type RwLockReadGuard<'a, T> = lock_api_crate::RwLockReadGuard<'a, crate::RwLock<()>, T>;
+    pub type RwLockReadGuard<'a, T> = synchronization::api::RwLockReadGuard<'a, crate::RwLock<()>, T>;
 
     /// A guard that provides mutable data access (compatible with [`lock_api`](https://crates.io/crates/lock_api)).
     #[cfg(feature = "rwlock")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rwlock")))]
-    pub type RwLockWriteGuard<'a, T> = lock_api_crate::RwLockWriteGuard<'a, crate::RwLock<()>, T>;
+    pub type RwLockWriteGuard<'a, T> = synchronization::api::RwLockWriteGuard<'a, crate::RwLock<()>, T>;
 
     /// A guard that provides immutable data access but can be upgraded to [`RwLockWriteGuard`] (compatible with [`lock_api`](https://crates.io/crates/lock_api)).
     #[cfg(feature = "rwlock")]
     #[cfg_attr(docsrs, doc(cfg(feature = "rwlock")))]
     pub type RwLockUpgradableReadGuard<'a, T> =
-        lock_api_crate::RwLockUpgradableReadGuard<'a, crate::RwLock<()>, T>;
+        synchronization::api::RwLockUpgradableReadGuard<'a, crate::RwLock<()>, T>;
 }
 
 /// In the event of an invalid operation, it's best to abort the current process.

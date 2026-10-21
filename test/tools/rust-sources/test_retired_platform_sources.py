@@ -21,6 +21,9 @@ def sha(data):
 
 class RetiredPlatformArchive(unittest.TestCase):
     def setUp(self):
+        routing = patch.object(history.proof_routing, "RECEIPTS", ())
+        routing.start()
+        self.addCleanup(routing.stop)
         temp = tempfile.TemporaryDirectory(); self.addCleanup(temp.cleanup)
         self.root = Path(temp.name)
         (self.root / 'compliance').mkdir()

@@ -40,6 +40,7 @@ resolver = "2"
 status = "experimental"
 
 [features]
+parking = ["synchronization/locks"]
 serialization = ["dep:data-serialization"]
 alloc = []
 ansi = ["fmt", "nu-ansi-term"]
@@ -72,10 +73,10 @@ version = "1.13.0"
 optional = true
 path = "../once_cell"
 
-[dependencies.parking_lot]
-version = "0.12.1"
+[dependencies.synchronization]
+path = "../synchronization"
+default-features = false
 optional = true
-path = "../parking_lot"
 
 
 [dependencies.data-serialization]

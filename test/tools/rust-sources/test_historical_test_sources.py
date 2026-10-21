@@ -14,6 +14,9 @@ SPEC.loader.exec_module(history)
 
 class HistoricalReconstruction(unittest.TestCase):
     def setUp(self):
+        routing = patch.object(history.proof_routing, "RECEIPTS", ())
+        routing.start()
+        self.addCleanup(routing.stop)
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)

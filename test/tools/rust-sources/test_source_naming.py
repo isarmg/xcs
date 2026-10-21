@@ -7,10 +7,12 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 TOOLS = Path(__file__).resolve().parents[3] / 'tools/rust-sources'
 sys.path.insert(0, str(TOOLS))
 import source_naming as naming
+import proof_routing
 
 
 def digest(data):
@@ -31,6 +33,9 @@ def inventory(path):
 
 class SourceNaming(unittest.TestCase):
     def setUp(self):
+        routing = patch.object(proof_routing, "RECEIPTS", ())
+        routing.start()
+        self.addCleanup(routing.stop)
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         self.root = Path(temp.name)

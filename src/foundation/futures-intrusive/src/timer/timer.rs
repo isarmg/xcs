@@ -11,7 +11,7 @@ use futures::{
     future::{FusedFuture, Future},
     task::{Context, Poll, Waker},
 };
-use lock_api::{Mutex, RawMutex};
+use synchronization::api::{Mutex, RawMutex};
 
 /// Tracks how the future had interacted with the timer
 #[derive(PartialEq)]
@@ -450,10 +450,10 @@ pub type LocalTimerService = GenericTimerService<NoopLock>;
 mod if_std {
     use super::*;
 
-    // Export a thread-safe version using parking_lot::RawMutex
+    // Export a thread-safe version using synchronization::RawMutex
 
     /// A [`GenericTimerService`] implementation backed by [`parking_lot`].
-    pub type TimerService = GenericTimerService<parking_lot::RawMutex>;
+    pub type TimerService = GenericTimerService<synchronization::RawMutex>;
 }
 
 #[cfg(feature = "std")]

@@ -6,7 +6,7 @@ mod atomic_u64;
 mod atomic_usize;
 mod barrier;
 mod mutex;
-#[cfg(all(feature = "parking_lot", not(miri)))]
+#[cfg(all(feature = "parking", not(miri)))]
 mod parking_lot;
 mod rwlock;
 mod unsafe_cell;
@@ -52,20 +52,20 @@ pub(crate) mod sync {
     // consuming code.
 
     // Not using parking_lot in Miri due to <https://github.com/Amanieu/parking_lot/issues/477>.
-    #[cfg(all(feature = "parking_lot", not(miri)))]
+    #[cfg(all(feature = "parking", not(miri)))]
     #[allow(unused_imports)]
     pub(crate) use crate::loom::std::parking_lot::{
         Condvar, Mutex, MutexGuard, RwLock, RwLockReadGuard, WaitTimeoutResult,
     };
 
-    #[cfg(not(all(feature = "parking_lot", not(miri))))]
+    #[cfg(not(all(feature = "parking", not(miri))))]
     #[allow(unused_imports)]
     pub(crate) use std::sync::{Condvar, MutexGuard, RwLockReadGuard, WaitTimeoutResult};
 
-    #[cfg(not(all(feature = "parking_lot", not(miri))))]
+    #[cfg(not(all(feature = "parking", not(miri))))]
     pub(crate) use crate::loom::std::mutex::Mutex;
 
-    #[cfg(not(all(feature = "parking_lot", not(miri))))]
+    #[cfg(not(all(feature = "parking", not(miri))))]
     pub(crate) use crate::loom::std::rwlock::RwLock;
 
     pub(crate) mod atomic {

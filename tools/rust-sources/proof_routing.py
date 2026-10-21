@@ -15,8 +15,8 @@ from pathlib import Path
 from external_tests import safe, inventory
 
 # Append only. Each digest names compliance/proof-routing/<digest>.json.gz.
-# Empty until a reviewed real routing transaction is ready to register.
-RECEIPTS = ()
+# Register only reviewed, exact routing transactions.
+RECEIPTS = ('42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0', 'f22401d8de23ba2f0f8af6447b300206aa5257f8c9a173b1f47541ec587d3a21')
 MAX_COMPRESSED = 2 * 1024 * 1024
 MAX_EXPANDED = 16 * 1024 * 1024
 MAX_FILES = 2048

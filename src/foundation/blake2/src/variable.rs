@@ -4,7 +4,7 @@
 use alloc::{boxed::Box, vec};
 use core::fmt;
 use cryptographic_core::{
-    block_api::{AlgorithmName, TruncSide, UpdateCore, VariableOutputCore},
+    bsynchronization::api::{AlgorithmName, TruncSide, UpdateCore, VariableOutputCore},
     buffer::BlockBuffer,
     typenum::Unsigned,
     HashMarker, InvalidOutputSize, MacMarker, Reset, Update,

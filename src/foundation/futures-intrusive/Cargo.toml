@@ -23,16 +23,12 @@ version = "0.3.34"
 path = "../futures"
 default-features = false
 
-[dependencies.lock_api]
-version = "0.4.1"
-path = "../lock_api"
-
-[dependencies.parking_lot]
-version = "0.12.0"
-optional = true
-path = "../parking_lot"
+[dependencies.synchronization]
+path = "../synchronization"
+default-features = false
+features = ["atomic_usize"]
 
 [features]
 alloc = ["futures/alloc"]
 default = ["std"]
-std = ["alloc", "parking_lot"]
+std = ["alloc", "synchronization/locks"]

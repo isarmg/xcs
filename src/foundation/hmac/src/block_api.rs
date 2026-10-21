@@ -2,7 +2,7 @@ use crate::utils::{IPAD, OPAD, get_der_key};
 use core::{fmt, slice};
 use cryptographic_core::{
     InvalidLength, KeyInit, MacMarker, Output, Reset,
-    block_api::{
+    bsynchronization::api::{
         AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, EagerHash, FixedOutputCore,
         OutputSizeUser, UpdateCore,
     },

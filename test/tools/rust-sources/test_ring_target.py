@@ -25,8 +25,18 @@ class CurrentRingTarget(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory(dir=parent)
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
-        shutil.copytree(checker.ROOT / checker.RING, self.root / checker.RING)
-        shutil.copytree(checker.ROOT / 'test/foundation/ring', self.root / 'test/foundation/ring')
+        # This fixture exercises the frozen pre-routing pruning proof. Read its
+        # exact bytes through authenticated routing, then isolate the registry.
+        # Real current routing remains covered by live metadata and routing tests.
+        view = checker.proof_routing.load(checker.ROOT)
+        for base in (str(checker.RING), 'test/foundation/ring'):
+            for relative in view.inventory(base):
+                destination = self.root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(view.read(relative))
+        routing = mock.patch.object(checker.proof_routing, 'RECEIPTS', ())
+        routing.start()
+        self.addCleanup(routing.stop)
         (self.root / checker.RELOCATION).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(checker.ROOT / checker.RELOCATION, self.root / checker.RELOCATION)
         self.record = json.loads((checker.ROOT / checker.TARGET).read_text())

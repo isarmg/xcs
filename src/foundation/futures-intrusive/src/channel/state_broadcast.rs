@@ -12,7 +12,7 @@ use futures::{
     future::{FusedFuture, Future},
     task::{Context, Poll, Waker},
 };
-use lock_api::{Mutex, RawMutex};
+use synchronization::api::{Mutex, RawMutex};
 
 /// An ID, which allows to differentiate states received from a Channel.
 /// Elements with a bigger state ID (`id > otherId`) have been published more
@@ -432,11 +432,11 @@ pub type LocalStateBroadcastChannel<T> =
 mod if_std {
     use super::*;
 
-    // Export a thread-safe version using parking_lot::RawMutex
+    // Export a thread-safe version using synchronization::RawMutex
 
     /// A [`GenericStateBroadcastChannel`] implementation backed by [`parking_lot`].
     pub type StateBroadcastChannel<T> =
-        GenericStateBroadcastChannel<parking_lot::RawMutex, T>;
+        GenericStateBroadcastChannel<synchronization::RawMutex, T>;
 }
 
 #[cfg(feature = "std")]
@@ -780,10 +780,10 @@ mod if_alloc {
 
             /// A [`GenericStateSender`] implementation backed by [`parking_lot`].
             pub type StateSender<T> =
-                GenericStateSender<parking_lot::RawMutex, T>;
+                GenericStateSender<synchronization::RawMutex, T>;
             /// A [`GenericStateReceiver`] implementation backed by [`parking_lot`].
             pub type StateReceiver<T> =
-                GenericStateReceiver<parking_lot::RawMutex, T>;
+                GenericStateReceiver<synchronization::RawMutex, T>;
 
             /// Creates a new state broadcast channel.
             ///
@@ -800,7 +800,7 @@ mod if_alloc {
             where
                 T: Clone + Send,
             {
-                generic_state_broadcast_channel::<parking_lot::RawMutex, T>()
+                generic_state_broadcast_channel::<synchronization::RawMutex, T>()
             }
         }
 

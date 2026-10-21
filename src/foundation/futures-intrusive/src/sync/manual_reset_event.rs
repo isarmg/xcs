@@ -10,7 +10,7 @@ use futures::{
     future::{FusedFuture, Future},
     task::{Context, Poll, Waker},
 };
-use lock_api::{Mutex, RawMutex};
+use synchronization::api::{Mutex, RawMutex};
 
 /// Tracks how the future had interacted with the event
 #[derive(PartialEq)]
@@ -304,13 +304,13 @@ pub type LocalWaitForEventFuture<'a> = GenericWaitForEventFuture<'a, NoopLock>;
 mod if_std {
     use super::*;
 
-    // Export a thread-safe version using parking_lot::RawMutex
+    // Export a thread-safe version using synchronization::RawMutex
 
     /// A [`GenericManualResetEvent`] implementation backed by [`parking_lot`].
-    pub type ManualResetEvent = GenericManualResetEvent<parking_lot::RawMutex>;
+    pub type ManualResetEvent = GenericManualResetEvent<synchronization::RawMutex>;
     /// A [`GenericWaitForEventFuture`] for [`ManualResetEvent`].
     pub type WaitForEventFuture<'a> =
-        GenericWaitForEventFuture<'a, parking_lot::RawMutex>;
+        GenericWaitForEventFuture<'a, synchronization::RawMutex>;
 }
 
 #[cfg(feature = "std")]

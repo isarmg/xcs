@@ -800,8 +800,8 @@ fn compare_exchange(
 }
 
 #[cfg(feature = "lock_api")]
-unsafe impl<R: RelaxStrategy> lock_api_crate::RawRwLock for RwLock<(), R> {
-    type GuardMarker = lock_api_crate::GuardSend;
+unsafe impl<R: RelaxStrategy> synchronization::api::RawRwLock for RwLock<(), R> {
+    type GuardMarker = synchronization::api::GuardSend;
 
     const INIT: Self = Self::new(());
 
@@ -853,7 +853,7 @@ unsafe impl<R: RelaxStrategy> lock_api_crate::RawRwLock for RwLock<(), R> {
 }
 
 #[cfg(feature = "lock_api")]
-unsafe impl<R: RelaxStrategy> lock_api_crate::RawRwLockUpgrade for RwLock<(), R> {
+unsafe impl<R: RelaxStrategy> synchronization::api::RawRwLockUpgrade for RwLock<(), R> {
     #[inline(always)]
     fn lock_upgradable(&self) {
         // Prevent guard destructor running
@@ -902,7 +902,7 @@ unsafe impl<R: RelaxStrategy> lock_api_crate::RawRwLockUpgrade for RwLock<(), R>
 }
 
 #[cfg(feature = "lock_api")]
-unsafe impl<R: RelaxStrategy> lock_api_crate::RawRwLockDowngrade for RwLock<(), R> {
+unsafe impl<R: RelaxStrategy> synchronization::api::RawRwLockDowngrade for RwLock<(), R> {
     unsafe fn downgrade(&self) {
         let tmp_guard = RwLockWriteGuard {
             inner: self,

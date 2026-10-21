@@ -60,9 +60,10 @@ path = "../itoa"
 version = "0.3.0"
 path = "../micromap"
 
-[dependencies.parking_lot]
-version = "0.12.3"
-path = "../parking_lot"
+[dependencies.synchronization]
+path = "../synchronization"
+default-features = false
+features = ["locks"]
 
 [dependencies.percent-encoding]
 version = "2.3.1"

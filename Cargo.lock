@@ -579,8 +579,7 @@ name = "futures-intrusive"
 version = "0.5.0"
 dependencies = [
  "futures",
- "lock_api",
- "parking_lot",
+ "synchronization",
 ]
 
 [[package]]
@@ -1005,13 +1004,6 @@ name = "litemap"
 version = "0.8.3"
 
 [[package]]
-name = "lock_api"
-version = "0.4.14"
-dependencies = [
- "scopeguard",
-]
-
-[[package]]
 name = "log"
 version = "0.4.34"
 
@@ -1138,23 +1130,6 @@ version = "0.5.2"
 [[package]]
 name = "parking"
 version = "2.2.1"
-
-[[package]]
-name = "parking_lot"
-version = "0.12.5"
-dependencies = [
- "lock_api",
- "parking_lot_core",
-]
-
-[[package]]
-name = "parking_lot_core"
-version = "0.9.12"
-dependencies = [
- "cfg-if",
- "libc",
- "smallvec",
-]
 
 [[package]]
 name = "password-hash"
@@ -1344,8 +1319,8 @@ dependencies = [
  "itoa",
  "json-codec",
  "micromap",
- "parking_lot",
  "percent-encoding",
+ "synchronization",
 ]
 
 [[package]]
@@ -1631,7 +1606,7 @@ dependencies = [
 name = "spin"
 version = "0.9.9"
 dependencies = [
- "lock_api",
+ "synchronization",
 ]
 
 [[package]]
@@ -1791,6 +1766,16 @@ name = "sync_wrapper"
 version = "1.0.2"
 dependencies = [
  "futures",
+]
+
+[[package]]
+name = "synchronization"
+version = "0.9.12"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "scopeguard",
+ "smallvec",
 ]
 
 [[package]]

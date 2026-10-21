@@ -16,45 +16,45 @@ use std::time::Duration;
 // See <https://github.com/tokio-rs/tokio/pull/4359> for more info.
 
 // Types that do not need wrapping
-pub(crate) use parking_lot::WaitTimeoutResult;
+pub(crate) use synchronization::WaitTimeoutResult;
 
 #[derive(Debug)]
-pub(crate) struct Mutex<T: ?Sized>(PhantomData<std::sync::Mutex<T>>, parking_lot::Mutex<T>);
+pub(crate) struct Mutex<T: ?Sized>(PhantomData<std::sync::Mutex<T>>, synchronization::Mutex<T>);
 
 #[derive(Debug)]
-pub(crate) struct RwLock<T>(PhantomData<std::sync::RwLock<T>>, parking_lot::RwLock<T>);
+pub(crate) struct RwLock<T>(PhantomData<std::sync::RwLock<T>>, synchronization::RwLock<T>);
 
 #[derive(Debug)]
-pub(crate) struct Condvar(PhantomData<std::sync::Condvar>, parking_lot::Condvar);
+pub(crate) struct Condvar(PhantomData<std::sync::Condvar>, synchronization::Condvar);
 
 #[derive(Debug)]
 pub(crate) struct MutexGuard<'a, T: ?Sized>(
     PhantomData<std::sync::MutexGuard<'a, T>>,
-    parking_lot::MutexGuard<'a, T>,
+    synchronization::MutexGuard<'a, T>,
 );
 
 #[derive(Debug)]
 pub(crate) struct RwLockReadGuard<'a, T: ?Sized>(
     PhantomData<std::sync::RwLockReadGuard<'a, T>>,
-    parking_lot::RwLockReadGuard<'a, T>,
+    synchronization::RwLockReadGuard<'a, T>,
 );
 
 #[derive(Debug)]
 pub(crate) struct RwLockWriteGuard<'a, T: ?Sized>(
     PhantomData<std::sync::RwLockWriteGuard<'a, T>>,
-    parking_lot::RwLockWriteGuard<'a, T>,
+    synchronization::RwLockWriteGuard<'a, T>,
 );
 
 impl<T> Mutex<T> {
     #[inline]
     pub(crate) fn new(t: T) -> Mutex<T> {
-        Mutex(PhantomData, parking_lot::Mutex::new(t))
+        Mutex(PhantomData, synchronization::Mutex::new(t))
     }
 
     #[inline]
 
     pub(crate) const fn const_new(t: T) -> Mutex<T> {
-        Mutex(PhantomData, parking_lot::const_mutex(t))
+        Mutex(PhantomData, synchronization::const_mutex(t))
     }
 
     #[inline]
@@ -93,7 +93,7 @@ impl<'a, T: ?Sized> DerefMut for MutexGuard<'a, T> {
 
 impl<T> RwLock<T> {
     pub(crate) fn new(t: T) -> RwLock<T> {
-        RwLock(PhantomData, parking_lot::RwLock::new(t))
+        RwLock(PhantomData, synchronization::RwLock::new(t))
     }
 
     pub(crate) fn read(&self) -> RwLockReadGuard<'_, T> {
@@ -140,7 +140,7 @@ impl<'a, T: ?Sized> DerefMut for RwLockWriteGuard<'a, T> {
 impl Condvar {
     #[inline]
     pub(crate) fn new() -> Condvar {
-        Condvar(PhantomData, parking_lot::Condvar::new())
+        Condvar(PhantomData, synchronization::Condvar::new())
     }
 
     #[inline]

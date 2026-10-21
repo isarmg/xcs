@@ -1,6 +1,6 @@
 use cryptographic_core::{
     Digest,
-    block_api::{Block, BlockSizeUser},
+    bsynchronization::api::{Block, BlockSizeUser},
 };
 
 pub(crate) const IPAD: u8 = 0x36;

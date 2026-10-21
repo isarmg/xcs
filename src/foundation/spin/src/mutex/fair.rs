@@ -550,8 +550,8 @@ impl fmt::Display for LockRejectReason {
 impl std::error::Error for LockRejectReason {}
 
 #[cfg(feature = "lock_api")]
-unsafe impl<R: RelaxStrategy> lock_api_crate::RawMutex for FairMutex<(), R> {
-    type GuardMarker = lock_api_crate::GuardSend;
+unsafe impl<R: RelaxStrategy> synchronization::api::RawMutex for FairMutex<(), R> {
+    type GuardMarker = synchronization::api::GuardSend;
 
     const INIT: Self = Self::new(());
 

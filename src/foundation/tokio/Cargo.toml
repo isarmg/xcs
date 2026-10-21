@@ -32,9 +32,10 @@ license = "MIT"
 repository = "https://github.com/tokio-rs/tokio"
 
 [features]
+parking = ["synchronization/locks"]
 default = []
 fs = []
-full = ["fs", "io-util", "io-std", "macros", "net", "parking_lot", "process", "rt", "rt-multi-thread", "signal", "sync", "time"]
+full = ["fs", "io-util", "io-std", "macros", "net", "parking", "process", "rt", "rt-multi-thread", "signal", "sync", "time"]
 io-std = []
 io-uring = ["libc", "mio/os-poll", "mio/os-ext", "dep:slab"]
 io-util = ["bytes"]
@@ -65,10 +66,10 @@ optional = true
 default-features = false
 path = "../mio"
 
-[dependencies.parking_lot]
-version = "0.12.0"
+[dependencies.synchronization]
+path = "../synchronization"
+default-features = false
 optional = true
-path = "../parking_lot"
 
 [dependencies.pin-project-lite]
 version = "0.2.11"

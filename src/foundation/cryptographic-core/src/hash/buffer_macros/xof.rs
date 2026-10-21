@@ -14,7 +14,7 @@ macro_rules! buffer_xof {
         $(#[$hasher_attr])*
         $hasher_vis struct $hasher_name {
             core: $hasher_core,
-            buffer: $crate::block_api::Buffer<$hasher_core>,
+            buffer: $crate::bsynchronization::api::Buffer<$hasher_core>,
         }
 
         impl $crate::ExtendableOutput for $hasher_name {
@@ -23,7 +23,7 @@ macro_rules! buffer_xof {
             #[inline]
             fn finalize_xof(mut self) -> Self::Reader {
                 let Self { core, buffer } = &mut self;
-                let core = <$hasher_core as $crate::block_api::ExtendableOutputCore>::finalize_xof_core(core, buffer);
+                let core = <$hasher_core as $crate::bsynchronization::api::ExtendableOutputCore>::finalize_xof_core(core, buffer);
                 let buffer = Default::default();
                 Self::Reader { core, buffer }
             }
@@ -45,7 +45,7 @@ macro_rules! buffer_xof {
         $(#[$reader_attr])*
         $reader_vis struct $reader_name {
             core: $reader_core,
-            buffer: $crate::buffer::ReadBuffer<<$reader_core as $crate::block_api::BlockSizeUser>::BlockSize>,
+            buffer: $crate::buffer::ReadBuffer<<$reader_core as $crate::bsynchronization::api::BlockSizeUser>::BlockSize>,
         }
 
         impl $crate::XofReader for $reader_name {
@@ -53,7 +53,7 @@ macro_rules! buffer_xof {
             fn read(&mut self, buf: &mut [u8]) {
                 let Self { core, buffer } = self;
                 buffer.read(buf, |block| {
-                    *block = $crate::block_api::XofReaderCore::read_block(core);
+                    *block = $crate::bsynchronization::api::XofReaderCore::read_block(core);
                 });
             }
         }
@@ -180,7 +180,7 @@ macro_rules! buffer_xof {
         impl_inner: $name:ident($core_ty:ty);
         BlockSizeUser $($trait_name:ident)*;
     ) => {
-        impl $crate::block_api::BlockSizeUser for $name {
+        impl $crate::bsynchronization::api::BlockSizeUser for $name {
             type BlockSize = <$core_ty as $crate::common_types::BlockSizeUser>::BlockSize;
         }
 
@@ -192,12 +192,12 @@ macro_rules! buffer_xof {
         impl_inner: $name:ident($core_ty:ty);
         CoreProxy $($trait_name:ident)*;
     ) => {
-        impl $crate::block_api::CoreProxy for $name {
+        impl $crate::bsynchronization::api::CoreProxy for $name {
             type Core = $core_ty;
-            fn compose(core: Self::Core, buffer: $crate::block_api::Buffer<Self::Core>) -> Self {
+            fn compose(core: Self::Core, buffer: $crate::bsynchronization::api::Buffer<Self::Core>) -> Self {
                 Self { core, buffer }
             }
-            fn decompose(self) -> (Self::Core, $crate::block_api::Buffer<Self::Core>) {
+            fn decompose(self) -> (Self::Core, $crate::bsynchronization::api::Buffer<Self::Core>) {
                 let Self { core, buffer } = self;
                 (core, buffer)
             }
@@ -233,7 +233,7 @@ macro_rules! buffer_xof {
             fn update(&mut self, data: &[u8]) {
                 let Self { core, buffer } = self;
                 buffer.digest_blocks(data, |blocks| {
-                    $crate::block_api::UpdateCore::update_blocks(core, blocks)
+                    $crate::bsynchronization::api::UpdateCore::update_blocks(core, blocks)
                 });
             }
         }
@@ -266,7 +266,7 @@ macro_rules! buffer_xof {
             #[inline]
             fn finalize_xof_reset(&mut self) -> Self::Reader {
                 let Self { core, buffer } = self;
-                let core = <$core_ty as $crate::block_api::ExtendableOutputCore>::finalize_xof_core(core, buffer);
+                let core = <$core_ty as $crate::bsynchronization::api::ExtendableOutputCore>::finalize_xof_core(core, buffer);
                 $crate::Reset::reset(self);
                 let buffer = Default::default();
                 Self::Reader { core, buffer }
@@ -285,8 +285,8 @@ macro_rules! buffer_xof {
             type SerializedStateSize = $crate::typenum::Sum<
                 <$core_ty as $crate::common_types::hazmat::SerializableState>::SerializedStateSize,
                 $crate::buffer::SerializedBufferSize<
-                    <$core_ty as $crate::block_api::BlockSizeUser>::BlockSize,
-                    <$core_ty as $crate::block_api::BufferKindUser>::BufferKind,
+                    <$core_ty as $crate::bsynchronization::api::BlockSizeUser>::BlockSize,
+                    <$core_ty as $crate::bsynchronization::api::BufferKindUser>::BufferKind,
                 >
             >;
 

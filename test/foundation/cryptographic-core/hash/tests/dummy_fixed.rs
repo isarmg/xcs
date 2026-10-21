@@ -6,7 +6,7 @@ mod block_api {
     use core::fmt;
     use cryptographic_core::{
         HashMarker, Output, OutputSizeUser, Reset,
-        block_api::{
+        bsynchronization::api::{
             AlgorithmName, Block, BlockSizeUser, Buffer, BufferKindUser, FixedOutputCore,
             UpdateCore,
         },
@@ -94,23 +94,23 @@ mod block_api {
 
 cryptographic_core::buffer_fixed!(
     /// Primitive XOR hasher for testing purposes
-    pub struct FixedHash(block_api::FixedHashCore);
+    pub struct FixedHash(bsynchronization::api::FixedHashCore);
     impl: BaseFixedTraits Default Clone HashMarker Reset FixedOutputReset;
 );
 cryptographic_core::buffer_fixed!(
     /// Primitive XOR hasher for testing purposes
-    pub struct FixedHashWithSer(block_api::FixedHashCore);
+    pub struct FixedHashWithSer(bsynchronization::api::FixedHashCore);
     impl: FixedHashTraits;
 );
 cryptographic_core::buffer_fixed!(
     /// Primitive XOR hasher for testing purposes
-    pub struct FixedHashWithOid(block_api::FixedHashCore);
+    pub struct FixedHashWithOid(bsynchronization::api::FixedHashCore);
     oid: "0.1.2.3.4.5";
     impl: BaseFixedTraits Default Clone HashMarker Reset FixedOutputReset;
 );
 cryptographic_core::buffer_fixed!(
     /// Primitive XOR hasher for testing purposes
-    pub struct FixedHashWithOidSer(block_api::FixedHashCore);
+    pub struct FixedHashWithOidSer(bsynchronization::api::FixedHashCore);
     oid: "0.1.2.3.4.5";
     impl: FixedHashTraits;
 );

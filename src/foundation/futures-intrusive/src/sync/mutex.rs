@@ -15,7 +15,7 @@ use futures::{
     future::{FusedFuture, Future},
     task::{Context, Poll, Waker},
 };
-use lock_api::{Mutex as LockApiMutex, RawMutex};
+use synchronization::api::{Mutex as LockApiMutex, RawMutex};
 
 /// Tracks how the future had interacted with the mutex
 #[derive(PartialEq)]
@@ -489,16 +489,16 @@ pub type LocalMutexLockFuture<'a, T> = GenericMutexLockFuture<'a, NoopLock, T>;
 mod if_std {
     use super::*;
 
-    // Export a thread-safe version using parking_lot::RawMutex
+    // Export a thread-safe version using synchronization::RawMutex
 
     /// A [`GenericMutex`] backed by [`parking_lot`].
-    pub type Mutex<T> = GenericMutex<parking_lot::RawMutex, T>;
+    pub type Mutex<T> = GenericMutex<synchronization::RawMutex, T>;
     /// A [`GenericMutexGuard`] for [`Mutex`].
     pub type MutexGuard<'a, T> =
-        GenericMutexGuard<'a, parking_lot::RawMutex, T>;
+        GenericMutexGuard<'a, synchronization::RawMutex, T>;
     /// A [`GenericMutexLockFuture`] for [`Mutex`].
     pub type MutexLockFuture<'a, T> =
-        GenericMutexLockFuture<'a, parking_lot::RawMutex, T>;
+        GenericMutexLockFuture<'a, synchronization::RawMutex, T>;
 }
 
 #[cfg(feature = "std")]

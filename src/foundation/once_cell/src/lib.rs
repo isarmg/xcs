@@ -300,7 +300,7 @@
 //! those APIs.
 //!
 //! To implement a sync flavor of `OnceCell`, this crates uses either a custom
-//! re-implementation of `std::sync::Once` or `parking_lot::Mutex`. This is
+//! re-implementation of `std::sync::Once` or `synchronization::Mutex`. This is
 //! controlled by the `parking_lot` feature (disabled by default). Performance
 //! is the same for both cases, but the `parking_lot` based `OnceCell<T>` is
 //! smaller by up to 16 bytes.
@@ -379,11 +379,11 @@ extern crate alloc;
 
 
 
-#[cfg(all(feature = "std", feature = "parking_lot"))]
+#[cfg(all(feature = "std", feature = "parking"))]
 #[path = "imp_pl.rs"]
 mod imp;
 
-#[cfg(all(feature = "std", not(feature = "parking_lot")))]
+#[cfg(all(feature = "std", not(feature = "parking")))]
 #[path = "imp_std.rs"]
 mod imp;
 

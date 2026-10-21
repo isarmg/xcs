@@ -15,8 +15,9 @@ case "${1:-}" in
     python3 .github/scripts/check-linux-syscalls.py
     python3 .github/scripts/check-linux-system-backends.py
     python3 .github/scripts/check-linux-parking.py
+    python3 .github/scripts/check-synchronization.py
     python3 .github/scripts/check-linux-search-process.py
-    cargo test --locked --offline --lib -p socket2 -p mio -p parking_lot_core
+    cargo test --locked --offline --lib -p socket2 -p mio -p synchronization
     cargo test --locked --offline --lib -p bit-set -p bit-vec -p id-arena -p rustc-demangle
     ;;
   foundation-crypto)

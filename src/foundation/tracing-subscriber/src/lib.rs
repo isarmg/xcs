@@ -73,7 +73,7 @@
 //!   formatting in the `fmt` subscriber.
 //! - [`smallvec`]: Causes the `EnvFilter` type to use the `smallvec` crate (rather
 //!   than `Vec`) as a performance optimization. Enabled by default.
-//! - [`parking_lot`]: Use the `parking_lot` crate's `RwLock` implementation
+//! - `parking`: Use the project synchronization package's `RwLock` implementation
 //!   rather than the Rust standard library's implementation.
 //!
 //! ### `no_std` Support
@@ -157,7 +157,6 @@
 //! [`tracing-log`]: https://crates.io/crates/tracing-log
 //! [`smallvec`]: https://crates.io/crates/smallvec
 //! [`env_logger` crate]: https://crates.io/crates/env_logger
-//! [`parking_lot`]: https://crates.io/crates/parking_lot
 //! [`time` crate]: https://crates.io/crates/time
 //! [`liballoc`]: https://doc.rust-lang.org/alloc/index.html
 //! [`libstd`]: https://doc.rust-lang.org/std/index.html

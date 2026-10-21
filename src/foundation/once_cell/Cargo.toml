@@ -36,7 +36,7 @@ repository = "https://github.com/matklad/once_cell"
 alloc = ["race"]
 atomic-polyfill = []
 default = ["std"]
-parking_lot = ["dep:parking_lot_core"]
+parking = ["synchronization/parking"]
 race = []
 std = ["alloc"]
 unstable = []
@@ -45,8 +45,8 @@ unstable = []
 name = "once_cell"
 path = "src/lib.rs"
 
-[dependencies.parking_lot_core]
-version = "0.9.10"
-optional = true
+[dependencies.synchronization]
+path = "../synchronization"
 default-features = false
-path = "../parking_lot_core"
+optional = true
+features = ["parking"]

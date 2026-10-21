@@ -2,7 +2,7 @@
 #![cfg(all(feature = "full", not(target_os = "wasi")))] // Wasi doesn't support panic recovery
 #![cfg(panic = "unwind")]
 
-use parking_lot::{const_mutex, Mutex};
+use synchronization::{const_mutex, Mutex};
 use std::error::Error;
 use std::panic;
 use std::sync::Arc;

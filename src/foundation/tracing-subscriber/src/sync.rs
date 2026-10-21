@@ -1,35 +1,35 @@
 //! Abstracts over sync primitive implementations.
 //!
 //! Optionally, we allow the Rust standard library's `RwLock` to be replaced
-//! with the `parking_lot` crate's implementation. This may provide improved
-//! performance in some cases. However, the `parking_lot` dependency is an
-//! opt-in feature flag. Because `parking_lot::RwLock` has a slightly different
+//! with the `synchronization` crate's implementation. This may provide improved
+//! performance in some cases. However, the `synchronization` dependency is an
+//! opt-in feature flag. Because `synchronization::RwLock` has a slightly different
 //! API than `std::sync::RwLock` (it does not support poisoning on panics), we
 //! wrap it with a type that provides the same method signatures. This allows us
-//! to transparently swap `parking_lot` in without changing code at the callsite.
+//! to transparently swap `synchronization` in without changing code at the callsite.
 #[allow(unused_imports)] // may be used later;
 pub(crate) use std::sync::{LockResult, PoisonError, TryLockResult};
 
-#[cfg(not(feature = "parking_lot"))]
+#[cfg(not(feature = "parking"))]
 pub(crate) use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-#[cfg(feature = "parking_lot")]
-pub(crate) use self::parking_lot_impl::*;
+#[cfg(feature = "parking")]
+pub(crate) use self::parking_impl::*;
 
-#[cfg(feature = "parking_lot")]
-mod parking_lot_impl {
-    pub(crate) use parking_lot::{RwLockReadGuard, RwLockWriteGuard};
+#[cfg(feature = "parking")]
+mod parking_impl {
+    pub(crate) use synchronization::{RwLockReadGuard, RwLockWriteGuard};
     use std::sync::{LockResult, TryLockError, TryLockResult};
 
     #[derive(Debug)]
     pub(crate) struct RwLock<T> {
-        inner: parking_lot::RwLock<T>,
+        inner: synchronization::RwLock<T>,
     }
 
     impl<T> RwLock<T> {
         pub(crate) fn new(val: T) -> Self {
             Self {
-                inner: parking_lot::RwLock::new(val),
+                inner: synchronization::RwLock::new(val),
             }
         }
 
@@ -58,7 +58,7 @@ mod parking_lot_impl {
     impl<T: Default> Default for RwLock<T> {
         fn default() -> Self {
             RwLock {
-                inner: parking_lot::RwLock::default(),
+                inner: synchronization::RwLock::default(),
             }
         }
     }

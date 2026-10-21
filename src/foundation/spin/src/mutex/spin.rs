@@ -352,8 +352,8 @@ impl<'a, T: ?Sized> Drop for SpinMutexGuard<'a, T> {
 }
 
 #[cfg(feature = "lock_api")]
-unsafe impl<R: RelaxStrategy> lock_api_crate::RawMutex for SpinMutex<(), R> {
-    type GuardMarker = lock_api_crate::GuardSend;
+unsafe impl<R: RelaxStrategy> synchronization::api::RawMutex for SpinMutex<(), R> {
+    type GuardMarker = synchronization::api::GuardSend;
 
     const INIT: Self = Self::new(());
 

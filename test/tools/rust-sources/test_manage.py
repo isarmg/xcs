@@ -19,6 +19,9 @@ SPEC.loader.exec_module(manager)
 
 class SourcePolicy(unittest.TestCase):
     def setUp(self):
+        routing = patch.object(manager.proof_routing, "RECEIPTS", ())
+        routing.start()
+        self.addCleanup(routing.stop)
         temporary = tempfile.TemporaryDirectory(prefix="source-policy-test-")
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)

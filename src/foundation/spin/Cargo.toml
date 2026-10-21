@@ -1,6 +1,7 @@
 # Internal source component. Original manifest and origin: compliance/provenance.
 
 [package]
+edition = "2015"
 rust-version = "1.38"
 name = "spin"
 version = "0.9.9"
@@ -30,7 +31,7 @@ barrier = ["mutex"]
 default = ["lock_api", "mutex", "spin_mutex", "rwlock", "once", "lazy", "barrier"]
 fair_mutex = ["mutex"]
 lazy = ["once"]
-lock_api = ["lock_api_crate"]
+lock_api = ["dep:synchronization"]
 mutex = []
 once = []
 rwlock = []
@@ -43,8 +44,7 @@ use_ticket_mutex = ["mutex", "ticket_mutex"]
 name = "spin"
 path = "src/lib.rs"
 
-[dependencies.lock_api_crate]
-version = "0.4"
+[dependencies.synchronization]
 optional = true
-package = "lock_api"
-path = "../lock_api"
+path = "../synchronization"
+default-features = false

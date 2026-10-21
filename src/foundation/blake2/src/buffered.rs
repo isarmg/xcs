@@ -2,7 +2,7 @@
 // Original license and source provenance remain under compliance/provenance.
 use core::fmt;
 use cryptographic_core::{
-    block_api::{AlgorithmName, Buffer, BufferKindUser, FixedOutputCore, UpdateCore},
+    bsynchronization::api::{AlgorithmName, Buffer, BufferKindUser, FixedOutputCore, UpdateCore},
     buffer::BlockBuffer,
     common_types::{BlockSizeUser, InvalidLength, Key, KeyInit, KeySizeUser},
     FixedOutput, FixedOutputReset, HashMarker, MacMarker, Output, OutputSizeUser, Reset, Update,
@@ -160,7 +160,7 @@ where
     }
 }
 
-impl<T: BufferKindUser> cryptographic_core::block_api::CoreProxy for BufferedHash<T> {
+impl<T: BufferKindUser> cryptographic_core::bsynchronization::api::CoreProxy for BufferedHash<T> {
     type Core = T;
     fn compose(core: T, buffer: Buffer<T>) -> Self {
         Self { core, buffer }

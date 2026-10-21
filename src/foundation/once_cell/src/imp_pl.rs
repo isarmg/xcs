@@ -81,12 +81,12 @@ impl<T> OnceCell<T> {
         let key = &self.state as *const _ as usize;
         unsafe {
             while self.state.load(Ordering::Acquire) != COMPLETE {
-                parking_lot_core::park(
+                synchronization::parking::park(
                     key,
                     || self.state.load(Ordering::Acquire) != COMPLETE,
                     || (),
                     |_, _| (),
-                    parking_lot_core::DEFAULT_PARK_TOKEN,
+                    synchronization::parking::DEFAULT_PARK_TOKEN,
                     None,
                 );
             }
@@ -131,7 +131,7 @@ impl<'a> Drop for Guard<'a> {
         self.state.store(self.new_state, Ordering::Release);
         unsafe {
             let key = self.state as *const AtomicU8 as usize;
-            parking_lot_core::unpark_all(key, parking_lot_core::DEFAULT_UNPARK_TOKEN);
+            synchronization::parking::unpark_all(key, synchronization::parking::DEFAULT_UNPARK_TOKEN);
         }
     }
 }
@@ -153,12 +153,12 @@ fn initialize_inner(state: &AtomicU8, init: &mut dyn FnMut() -> bool) {
             Err(COMPLETE) => return,
             Err(RUNNING) => unsafe {
                 let key = state as *const AtomicU8 as usize;
-                parking_lot_core::park(
+                synchronization::parking::park(
                     key,
                     || state.load(Ordering::Relaxed) == RUNNING,
                     || (),
                     |_, _| (),
-                    parking_lot_core::DEFAULT_PARK_TOKEN,
+                    synchronization::parking::DEFAULT_PARK_TOKEN,
                     None,
                 );
             },

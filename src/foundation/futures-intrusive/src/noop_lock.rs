@@ -1,7 +1,7 @@
 //! An unsafe (non-thread-safe) lock, equivalent to UnsafeCell
 
 use core::marker::PhantomData;
-use lock_api::{GuardSend, RawMutex};
+use synchronization::api::{GuardSend, RawMutex};
 
 /// An unsafe (non-thread-safe) lock, equivalent to UnsafeCell
 #[derive(Debug)]

@@ -1156,7 +1156,7 @@ mod if_std {
         T: 'static,
     {
         type Output = Option<T>;
-        type Next = ChannelReceiveFuture<parking_lot::RawMutex, T>;
+        type Next = ChannelReceiveFuture<synchronization::RawMutex, T>;
 
         fn next(&self) -> Self::Next {
             self.receive()
@@ -1169,7 +1169,7 @@ mod if_std {
     {
         type Input = T;
         type Error = ChannelSendError<T>;
-        type Next = ChannelSendFuture<parking_lot::RawMutex, T>;
+        type Next = ChannelSendFuture<synchronization::RawMutex, T>;
 
         fn send(&self, value: T) -> Self::Next {
             self.send(value)

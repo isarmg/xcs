@@ -157,7 +157,7 @@
 //!
 //! The non-local flavors can be used between arbitrary tasks and threads.  They
 //! use internal synchronization for this in form of an embedded `Mutex` of
-//! [`parking_lot::Mutex`] type.
+//! [`synchronization::Mutex`] type.
 //!
 //! The non-local flavors are only available in `alloc` environments.
 //!
@@ -180,14 +180,14 @@
 //! ### Generic flavor
 //!
 //! The generic flavors of provided types are parameterized around a
-//! [`lock_api::RawMutex`] type. These form the base for the non-local and shared
+//! [`synchronization::api::RawMutex`] type. These form the base for the non-local and shared
 //! flavors which simply parameterize the generic flavor in either a
 //! non-thread-safe or thread-safe fashion.
 //!
 //! Users can directly use the generic flavors to adapt the provided thread-safe
 //! types for use in `no-std` environments.
 //!
-//! E.g. by providing a custom [`lock_api::RawMutex`]
+//! E.g. by providing a custom [`synchronization::api::RawMutex`]
 //! implementation, the following platforms can be supported:
 //!
 //! - For RTOS platforms, RTOS-specific mutexes can be wrapped.

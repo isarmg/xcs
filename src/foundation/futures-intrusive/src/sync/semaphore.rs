@@ -11,7 +11,7 @@ use futures::{
     future::{FusedFuture, Future},
     task::{Context, Poll, Waker},
 };
-use lock_api::{Mutex as LockApiMutex, RawMutex};
+use synchronization::api::{Mutex as LockApiMutex, RawMutex};
 
 /// Tracks how the future had interacted with the semaphore
 #[derive(PartialEq)]
@@ -545,16 +545,16 @@ pub type LocalSemaphoreAcquireFuture<'a> =
 mod if_std {
     use super::*;
 
-    // Export a thread-safe version using parking_lot::RawMutex
+    // Export a thread-safe version using synchronization::RawMutex
 
     /// A [`GenericSemaphore`] backed by [`parking_lot`].
-    pub type Semaphore = GenericSemaphore<parking_lot::RawMutex>;
+    pub type Semaphore = GenericSemaphore<synchronization::RawMutex>;
     /// A [`GenericSemaphoreReleaser`] for [`Semaphore`].
     pub type SemaphoreReleaser<'a> =
-        GenericSemaphoreReleaser<'a, parking_lot::RawMutex>;
+        GenericSemaphoreReleaser<'a, synchronization::RawMutex>;
     /// A [`GenericSemaphoreAcquireFuture`] for [`Semaphore`].
     pub type SemaphoreAcquireFuture<'a> =
-        GenericSemaphoreAcquireFuture<'a, parking_lot::RawMutex>;
+        GenericSemaphoreAcquireFuture<'a, synchronization::RawMutex>;
 }
 
 #[cfg(feature = "std")]
@@ -829,13 +829,13 @@ mod if_alloc {
 
         /// A [`GenericSharedSemaphore`] backed by [`parking_lot`].
         pub type SharedSemaphore =
-            GenericSharedSemaphore<parking_lot::RawMutex>;
+            GenericSharedSemaphore<synchronization::RawMutex>;
         /// A [`GenericSharedSemaphoreReleaser`] for [`SharedSemaphore`].
         pub type SharedSemaphoreReleaser =
-            GenericSharedSemaphoreReleaser<parking_lot::RawMutex>;
+            GenericSharedSemaphoreReleaser<synchronization::RawMutex>;
         /// A [`GenericSharedSemaphoreAcquireFuture`] for [`SharedSemaphore`].
         pub type SharedSemaphoreAcquireFuture =
-            GenericSharedSemaphoreAcquireFuture<parking_lot::RawMutex>;
+            GenericSharedSemaphoreAcquireFuture<synchronization::RawMutex>;
     }
 
     #[cfg(feature = "std")]

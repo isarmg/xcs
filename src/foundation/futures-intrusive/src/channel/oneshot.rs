@@ -11,7 +11,7 @@ use crate::{
 };
 use core::marker::PhantomData;
 use futures::task::{Context, Poll};
-use lock_api::{Mutex, RawMutex};
+use synchronization::api::{Mutex, RawMutex};
 
 fn wake_waiters(waiters: &mut LinkedList<RecvWaitQueueEntry>) {
     // Remove all waiters from the waiting list in reverse order and wake them.
@@ -235,11 +235,11 @@ pub type LocalOneshotChannel<T> = GenericOneshotChannel<NoopLock, T>;
 #[cfg(feature = "std")]
 mod if_std {
     use super::*;
-    // Export a thread-safe version using parking_lot::RawMutex
+    // Export a thread-safe version using synchronization::RawMutex
 
     /// A [`GenericOneshotChannel`] implementation backed by [`parking_lot`].
     pub type OneshotChannel<T> =
-        GenericOneshotChannel<parking_lot::RawMutex, T>;
+        GenericOneshotChannel<synchronization::RawMutex, T>;
 }
 
 #[cfg(feature = "std")]
@@ -418,10 +418,10 @@ mod if_alloc {
 
             /// A [`GenericOneshotSender`] implementation backed by [`parking_lot`].
             pub type OneshotSender<T> =
-                GenericOneshotSender<parking_lot::RawMutex, T>;
+                GenericOneshotSender<synchronization::RawMutex, T>;
             /// A [`GenericOneshotReceiver`] implementation backed by [`parking_lot`].
             pub type OneshotReceiver<T> =
-                GenericOneshotReceiver<parking_lot::RawMutex, T>;
+                GenericOneshotReceiver<synchronization::RawMutex, T>;
 
             /// Creates a new oneshot channel.
             ///
@@ -437,7 +437,7 @@ mod if_alloc {
             where
                 T: Send,
             {
-                generic_oneshot_channel::<parking_lot::RawMutex, T>()
+                generic_oneshot_channel::<synchronization::RawMutex, T>()
             }
         }
 

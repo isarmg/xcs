@@ -3439,7 +3439,7 @@
         },
         {
           "path": "test/foundation/cryptographic-core/hash/tests/dummy_fixed.rs",
-          "sha256": "b4961486a19454c32efed9a5e9fed3b4a7ad3c6c8acc8d0b4cda372fdadc3f66",
+          "sha256": "4b0e35ba5685131ecd602c8d133285aa5e69624559cca52c834e043099c16092",
           "source": "src/foundation/digest-0.11.3/tests/dummy_fixed.rs",
           "source_sha256_before": "1de134a99c0e5533afd4950b4440a0f9de05419567c211bdfe2a756185f864ab",
           "origin_directory": "vendor/rust/digest-0.11.3"
@@ -6553,7 +6553,7 @@
           "source": "src/foundation/futures-intrusive/tests/mpmc_channel.rs",
           "source_sha256_before": "47935945afd6a9621cca8c16ae901906fa1f4da3498fc9dc9b4d69688e34bcd7",
           "path": "test/foundation/futures-intrusive/tests/mpmc_channel.rs",
-          "sha256": "47935945afd6a9621cca8c16ae901906fa1f4da3498fc9dc9b4d69688e34bcd7"
+          "sha256": "e9b70d5a7d306f48f8320ad90f9e63246239f275f656094de535e7d9d0f5d670"
         },
         {
           "source": "src/foundation/futures-intrusive/tests/mutex.rs",
@@ -12133,84 +12133,87 @@
       ]
     },
     {
-      "directory": "src/foundation/parking_lot",
+      "directory": "src/foundation/synchronization",
       "roots": [
-        "test/foundation/parking_lot"
+        "test/foundation/synchronization"
       ],
       "files": [
         {
+          "path": "test/foundation/synchronization/locks/tests/issue_203.rs",
+          "sha256": "242a9b93fdc5ca9cb9b9223f4a3031cb197505d2ab8f47a32b3cc8ca87b26b74",
           "source": "src/foundation/parking_lot/tests/issue_203.rs",
           "source_sha256_before": "5fbdf6ec63f391d86457df949678c203a1e81e8aa32d4e10037fa76e768702c0",
-          "path": "test/foundation/parking_lot/tests/issue_203.rs",
-          "sha256": "5fbdf6ec63f391d86457df949678c203a1e81e8aa32d4e10037fa76e768702c0"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/tests/issue_392.rs",
+          "sha256": "c93a5db80fe1657d3aa8fdfa6679703102d2838602616a0bf62336b12e51fdc6",
           "source": "src/foundation/parking_lot/tests/issue_392.rs",
           "source_sha256_before": "163a423eeea14025ad84958ae12ded4a6fbde3330f689bc3e08ed18e0c58eb8b",
-          "path": "test/foundation/parking_lot/tests/issue_392.rs",
-          "sha256": "163a423eeea14025ad84958ae12ded4a6fbde3330f689bc3e08ed18e0c58eb8b"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/unit/src/condvar/tests_525.rs",
+          "sha256": "f5c1e9f97faf65b85a77afd6288276098dfe5fe0d215d432f2347f5c8ccaed6a",
           "source": "src/foundation/parking_lot/src/condvar.rs",
           "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea",
-          "path": "test/foundation/parking_lot/unit/src/condvar/tests_525.rs",
-          "sha256": "90c65b48bb53cd4a1e33b6b2b26d95449c4e7f49c4eae0253bf7dcfb6afb17f8"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/unit/src/condvar/webkit_queue_test_916.rs",
+          "sha256": "ad373fe33ad073852c19d9309a9299d3f53cf558e21c146aeb511f82a523b9ba",
           "source": "src/foundation/parking_lot/src/condvar.rs",
           "source_sha256_before": "182e5a2f6c06cf665bb7723c2780580647a73d9de5ff319f26c0fbbf5e7280ea",
-          "path": "test/foundation/parking_lot/unit/src/condvar/webkit_queue_test_916.rs",
-          "sha256": "91edfb8a160cb3248134bec4db7898f7856a35dfefb0ca97c3c641d848532bc4"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/unit/src/deadlock/tests_40.rs",
+          "sha256": "8404558e6ff7e1e23e280f4ea086bb9cc7b5c9385765b49b8407337488c56f3a",
           "source": "src/foundation/parking_lot/src/deadlock.rs",
           "source_sha256_before": "7d3ebb5b4f63658435df277bb983e352e4bc651a92c4fd48ae68bf103e452d0d",
-          "path": "test/foundation/parking_lot/unit/src/deadlock/tests_40.rs",
-          "sha256": "a57dfd1fa20eb2e6a31b5ef2d82a7cf09d5062da1cdb58ce2819bbec8863a66a"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/unit/src/fair_mutex/tests_102.rs",
+          "sha256": "794972e83074c85939a2ddf886b3596a29c7a718c16d06bb22c98af64d5a03e4",
           "source": "src/foundation/parking_lot/src/fair_mutex.rs",
           "source_sha256_before": "2d0c5c2b779492653cad99825180628af95ce5f4bdbcfed57e7a5f2138a55fc0",
-          "path": "test/foundation/parking_lot/unit/src/fair_mutex/tests_102.rs",
-          "sha256": "6402c0b24d6448f594aaeef6f42e14229c5ce3cfdfc15f995aef6046d98e678c"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/unit/src/mutex/tests_111.rs",
+          "sha256": "987db676fdcfebeae4455fcecc3451016376fcc9fc97f2f707dc95810d07c7c4",
           "source": "src/foundation/parking_lot/src/mutex.rs",
           "source_sha256_before": "b7ee456958a3b0dc208dd39be195641ce3998f7906d101ccf284fa0f84c58d14",
-          "path": "test/foundation/parking_lot/unit/src/mutex/tests_111.rs",
-          "sha256": "5e3fe24b5477ed2b895848155b24f519ede66eba145d545638c2d4288a19a009"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/unit/src/once/tests_327.rs",
+          "sha256": "22c43cc935098041e968a0acf3ed5a210ce398814c7a8e9b1e946256d7cb0691",
           "source": "src/foundation/parking_lot/src/once.rs",
           "source_sha256_before": "58c78dba952e217c17bd8d5cf3dce32bb78e3e1c38a86860c8edc8c308caeca7",
-          "path": "test/foundation/parking_lot/unit/src/once/tests_327.rs",
-          "sha256": "73a23f3899ad50ed362bb0793c2256d4ef02d4c01f77a5badad7494ccb89364c"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/unit/src/remutex/tests_71.rs",
+          "sha256": "0cf9845debb7cf2e5d5d3612e964644661e8cc6fa8e2b7034f417dfe1f7ff862",
           "source": "src/foundation/parking_lot/src/remutex.rs",
           "source_sha256_before": "f0c0711ed46be67f7736a8500689e37a301ccf0dacb7706e1087513d3e87a432",
-          "path": "test/foundation/parking_lot/unit/src/remutex/tests_71.rs",
-          "sha256": "b549d00855aa8786dd8c5cf3c16e954be7c29e384e208f15a7be7aba16a12d20"
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
         },
         {
+          "path": "test/foundation/synchronization/locks/unit/src/rwlock/tests_127.rs",
+          "sha256": "2a75f3198062fdda773aa3bf53ad70a911334464bed4955d901b6f856b1163aa",
           "source": "src/foundation/parking_lot/src/rwlock.rs",
           "source_sha256_before": "7edd9dd320858a628388c1ebca1ed89cc2984abc30157c4b0c03194ebba7eade",
-          "path": "test/foundation/parking_lot/unit/src/rwlock/tests_127.rs",
-          "sha256": "a82e778588496814308096f5e29b44016dd14bf42a69963be6521887e297888a"
-        }
-      ]
-    },
-    {
-      "directory": "src/foundation/parking_lot_core",
-      "roots": [
-        "test/foundation/parking_lot_core"
-      ],
-      "files": [
+          "origin_directory": "vendor/rust/parking_lot-0.12.5"
+        },
         {
+          "path": "test/foundation/synchronization/parking/unit/src/parking_lot/tests_1429.rs",
+          "sha256": "42a43ff06f6071d1491729fe896aacf6753ffe2a1aa4f4960c73c1037dd9c918",
           "source": "src/foundation/parking_lot_core/src/parking_lot.rs",
           "source_sha256_before": "ead11d575a1930c241aeec20f0e5e504bcdad637e284449ef4efcb9f9f175777",
-          "path": "test/foundation/parking_lot_core/unit/src/parking_lot/tests_1429.rs",
-          "sha256": "42a43ff06f6071d1491729fe896aacf6753ffe2a1aa4f4960c73c1037dd9c918"
+          "origin_directory": "vendor/rust/parking_lot_core-0.9.12"
         }
       ]
     },
@@ -18935,7 +18938,7 @@
           "source": "src/foundation/tokio/tests/_require_full.rs",
           "source_sha256_before": "1f58c8125018bd88b9f21647cee3d957b716bcce70f9144af1de58ee6712908f",
           "path": "test/foundation/tokio/tests/_require_full.rs",
-          "sha256": "1f58c8125018bd88b9f21647cee3d957b716bcce70f9144af1de58ee6712908f"
+          "sha256": "2d03e65396c968a61b780eebdb1ecbfd734afa6120a82c95595043c48882be62"
         },
         {
           "source": "src/foundation/tokio/tests/async_send_sync.rs",
@@ -20397,7 +20400,7 @@
           "source": "src/foundation/tokio-util/tests/panic.rs",
           "source_sha256_before": "b5b9239906b6d585bdaccbd92a90cce22d89b9b4d1d0db30a88bba53a0d2f031",
           "path": "test/foundation/tokio-util/tests/panic.rs",
-          "sha256": "b5b9239906b6d585bdaccbd92a90cce22d89b9b4d1d0db30a88bba53a0d2f031"
+          "sha256": "f011a5ba8ca6fa2bf6d0fb8d6756b53faa8abfbebeebd26e5a08e00e134e0611"
         },
         {
           "source": "src/foundation/tokio-util/tests/poll_semaphore.rs",

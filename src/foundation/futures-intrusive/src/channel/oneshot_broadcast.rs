@@ -12,7 +12,7 @@ use crate::{
 };
 use core::marker::PhantomData;
 use futures::task::{Context, Poll};
-use lock_api::{Mutex, RawMutex};
+use synchronization::api::{Mutex, RawMutex};
 
 fn wake_waiters(waiters: &mut LinkedList<RecvWaitQueueEntry>) {
     // Remove all waiters from the waiting list in reverse order and wake them.
@@ -246,11 +246,11 @@ pub type LocalOneshotBroadcastChannel<T> =
 mod if_std {
     use super::*;
 
-    // Export a thread-safe version using parking_lot::RawMutex
+    // Export a thread-safe version using synchronization::RawMutex
 
     /// A [`GenericOneshotBroadcastChannel`] implementation backed by [`parking_lot`].
     pub type OneshotBroadcastChannel<T> =
-        GenericOneshotBroadcastChannel<parking_lot::RawMutex, T>;
+        GenericOneshotBroadcastChannel<synchronization::RawMutex, T>;
 }
 
 #[cfg(feature = "std")]
@@ -454,10 +454,10 @@ mod if_alloc {
 
             /// A [`GenericOneshotBroadcastSender`] implementation backed by [`parking_lot`].
             pub type OneshotBroadcastSender<T> =
-                GenericOneshotBroadcastSender<parking_lot::RawMutex, T>;
+                GenericOneshotBroadcastSender<synchronization::RawMutex, T>;
             /// A [`GenericOneshotBroadcastReceiver`] implementation backed by [`parking_lot`].
             pub type OneshotBroadcastReceiver<T> =
-                GenericOneshotBroadcastReceiver<parking_lot::RawMutex, T>;
+                GenericOneshotBroadcastReceiver<synchronization::RawMutex, T>;
 
             /// Creates a new oneshot broadcast channel.
             ///
@@ -474,7 +474,7 @@ mod if_alloc {
             where
                 T: Send + Clone,
             {
-                generic_oneshot_broadcast_channel::<parking_lot::RawMutex, T>()
+                generic_oneshot_broadcast_channel::<synchronization::RawMutex, T>()
             }
         }
 

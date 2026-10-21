@@ -6,8 +6,8 @@
 //! [`HmacReset`]: HmacReset
 //! [`SimpleHmac`]: SimpleHmac
 //! [`SimpleHmacReset`]: SimpleHmacReset
-//! [`block_api::HmacCore`]: block_api::HmacCore
-//! [`block_api::HmacResetCore`]: block_api::HmacResetCore
+//! [`bsynchronization::api::HmacCore`]: bsynchronization::api::HmacCore
+//! [`bsynchronization::api::HmacResetCore`]: bsynchronization::api::HmacResetCore
 
 #![no_std]
 #![doc = include_str!("../../../../docs/upstream/hmac-0.13.0/README.md")]
@@ -17,7 +17,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-pub use cryptographic_core::{self, KeyInit, Mac, block_api::EagerHash};
+pub use cryptographic_core::{self, KeyInit, Mac, bsynchronization::api::EagerHash};
 
 /// Block-level implementation.
 pub mod block_api;
@@ -29,12 +29,12 @@ pub use simple::SimpleHmac;
 pub use simple_reset::SimpleHmacReset;
 
 use core::fmt;
-use cryptographic_core::block_api::{AlgorithmName, CoreProxy};
+use cryptographic_core::bsynchronization::api::{AlgorithmName, CoreProxy};
 
 cryptographic_core::buffer_fixed!(
     /// Generic HMAC instance.
     #[derive(Clone)]
-    pub struct Hmac<D: EagerHash>(block_api::HmacCore<D>);
+    pub struct Hmac<D: EagerHash>(bsynchronization::api::HmacCore<D>);
     impl: MacTraits KeyInit;
 );
 
@@ -47,7 +47,7 @@ impl<D: EagerHash + AlgorithmName> AlgorithmName for Hmac<D> {
 cryptographic_core::buffer_fixed!(
     /// Generic HMAC instance with reset support.
     #[derive(Clone)]
-    pub struct HmacReset<D: EagerHash>(block_api::HmacResetCore<D>);
+    pub struct HmacReset<D: EagerHash>(bsynchronization::api::HmacResetCore<D>);
     impl: ResetMacTraits KeyInit;
 );
 
