@@ -1,9 +1,9 @@
 //! Bounded evaluation of product-owned trusted DDL for build fingerprints.
 
 use crate::schema_identity::schema_fingerprint;
+use error_definition::Error;
 use sqlx::{Connection, SqliteConnection, sqlite::SqliteConnectOptions};
 use std::time::{Duration, Instant};
-use thiserror::Error;
 
 const MAX_FRAGMENTS: usize = 128;
 const MAX_DDL_BYTES: usize = 1024 * 1024;

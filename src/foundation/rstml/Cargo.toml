@@ -71,9 +71,9 @@ features = [
 ]
 path = "../rust-syntax"
 
-[dependencies.thiserror]
+[dependencies.error-definition]
 version = "2.0.11"
-path = "../thiserror"
+path = "../error-definition"
 
 [lints.rust.unexpected_cfgs]
 level = "allow"

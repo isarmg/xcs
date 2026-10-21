@@ -9,7 +9,7 @@ rust-version.workspace = true
 reqwest = { version = "0.12.28", default-features = false, features = ["json", "rustls-tls", "stream"], path = "../foundation/reqwest"}
 data-serialization.workspace = true
 json-codec.workspace = true
-thiserror.workspace = true
+error-definition.workspace = true
 tokio = { version = "1.53.2", features = ["fs", "io-util"], path = "../foundation/tokio"}
 tokio-util = { version = "0.7", features = ["io"], path = "../foundation/tokio-util"}
 futures-util = {version = "0.3", path = "../foundation/futures-util"}

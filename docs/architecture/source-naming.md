@@ -48,7 +48,7 @@ web-interface 现重导出 dom-helpers、view-renderer，并使用 reactive-stat
 
 ### 派生与运行时宏
 
-错误派生实现存在硬编码的 ::thiserror 路径；序列化派生和异步入口宏也有辅助属性、默认 crate 路径和隐藏支持模块。按完整组件族迁移，并编译真实消费者与文档示例。数据字段、错误语义和协议表示保持不变。
+错误定义组件族现使用 ::error_definition 路径与稳定的 __derive_support 隐藏模块；运行时和派生实现必须保持完整版本一致并精确固定依赖。真实消费者、文档示例及 backtrace 路径联合验证，详见[组件记录](error-definition-naming.md)。序列化派生已协调迁移；异步入口宏仍需按完整组件族评审。数据字段、错误语义和协议表示保持不变。
 
 ### 原生密码与 WASM 绑定
 

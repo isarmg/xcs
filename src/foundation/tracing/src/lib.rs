@@ -500,7 +500,7 @@
 //!         warn!("could not locate yak!");
 //!         // note that this is intended to demonstrate `tracing`'s features, not idiomatic
 //!         // error handling! in a library or application, you should consider returning
-//!         // a dedicated `YakError`. libraries like snafu or thiserror make this easy.
+//!         // a dedicated `YakError`. libraries like snafu or error_definition make this easy.
 //!         return Err(io::Error::new(io::ErrorKind::Other, "shaving yak failed!").into());
 //!     } else {
 //!         debug!("yak shaved successfully");

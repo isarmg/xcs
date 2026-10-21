@@ -19,7 +19,7 @@
 //! ```rust
 //! use std::io;
 //! use displaydoc::Display;
-//! use thiserror::Error;
+//! use error_definition::Error;
 //!
 //! #[derive(Display, Error, Debug)]
 //! pub enum DataStoreError {

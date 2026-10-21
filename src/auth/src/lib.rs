@@ -11,13 +11,13 @@ use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, Salt, SaltString},
 };
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+use error_definition::Error;
 use sha2::{Digest, Sha256};
 use std::{
     net::{Ipv4Addr, Ipv6Addr},
     str::{self, FromStr},
 };
 use subtle::ConstantTimeEq;
-use thiserror::Error;
 
 pub const ADMINISTRATOR_USERNAME_MIN_BYTES: usize = 3;
 pub const ADMINISTRATOR_USERNAME_MAX_BYTES: usize = 64;

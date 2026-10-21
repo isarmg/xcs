@@ -14,4 +14,4 @@ hmac = {version = "0.13", path = "../foundation/hmac"}
 json-codec.workspace = true
 sha2 = {version = "0.11", path = "../foundation/sha2"}
 subtle = {version = "2.6", path = "../foundation/subtle"}
-thiserror.workspace = true
+error-definition.workspace = true

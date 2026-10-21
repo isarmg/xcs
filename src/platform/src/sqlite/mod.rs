@@ -8,12 +8,12 @@ use crate::schema_identity::{
     schema_fingerprint as fingerprint_rows, schema_identity_from_metadata_rows,
     validate_product_metadata_columns, validate_product_metadata_ddl,
 };
+use error_definition::Error;
 use sqlx::{
     Connection, Executor, Row, Sqlite, SqliteConnection, SqlitePool,
     sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous},
 };
 use std::{io, path::Path, path::PathBuf, time::Duration};
-use thiserror::Error;
 
 mod blocking;
 pub use blocking::block_on_sqlite_connection;

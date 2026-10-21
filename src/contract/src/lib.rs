@@ -13,7 +13,7 @@ pub use text::{MAX_FILE_TAGS, MAX_NOTE_BYTES, MAX_TAG_BYTES, validate_note, vali
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, error_definition::Error)]
 #[error("{code}: {message}")]
 pub struct Error {
     pub code: String,

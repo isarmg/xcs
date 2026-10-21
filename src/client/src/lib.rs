@@ -8,7 +8,7 @@ mod transfer;
 use response::decode;
 pub use transfer::PreparedUpload;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, error_definition::Error)]
 pub enum Error {
     #[error("invalid server address: {0}")]
     Address(String),

@@ -8,6 +8,6 @@ rust-version.workspace = true
 [dependencies]
 data-serialization.workspace = true
 json-codec.workspace = true
-thiserror.workspace = true
+error-definition.workspace = true
 blake3.workspace = true
 uuid.workspace = true

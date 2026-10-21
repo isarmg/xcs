@@ -582,7 +582,7 @@ impl Error {
     ///
     /// use anyhow::anyhow;
     /// use std::backtrace::Backtrace;
-    /// use thiserror::Error;
+    /// use error_definition::Error;
     ///
     /// #[derive(Error, Debug)]
     /// #[error("...")]
@@ -624,7 +624,7 @@ impl Error {
     ///
     /// use anyhow::anyhow;
     /// use std::backtrace::Backtrace;
-    /// use thiserror::Error;
+    /// use error_definition::Error;
     ///
     /// #[derive(Error, Debug)]
     /// #[error("...")]
@@ -658,14 +658,14 @@ impl Error {
         unsafe { ErrorImpl::provide(self.inner.by_ref(), request) }
     }
 
-    // Called by thiserror when you have `#[source] anyhow::Error`. This provide
+    // Called by error_definition when you have `#[source] anyhow::Error`. This provide
     // implementation includes the anyhow::Error's Backtrace if any, unlike
     // deref'ing to dyn Error where the provide implementation would include
     // only the original error's Backtrace from before it got wrapped into an
     // anyhow::Error.
     #[cfg(error_generic_member_access)]
     #[doc(hidden)]
-    pub fn thiserror_provide<'a>(&'a self, request: &mut Request<'a>) {
+    pub fn error_definition_provide<'a>(&'a self, request: &mut Request<'a>) {
         Self::provide(self, request);
     }
 }

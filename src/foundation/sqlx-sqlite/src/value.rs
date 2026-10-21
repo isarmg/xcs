@@ -233,7 +233,7 @@ struct Blob {
     len: usize,
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, error_definition::Error)]
 #[error("given `SqliteValue` was previously decoded as BLOB or TEXT; `SqliteValue::reset_borrow()` must be called first")]
 pub(crate) struct BorrowedBlobError;
 

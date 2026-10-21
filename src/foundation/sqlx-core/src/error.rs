@@ -22,12 +22,12 @@ pub type BoxDynError = Box<dyn StdError + 'static + Send + Sync>;
 ///
 /// Returned from [`Row::get`](crate::row::Row::get) if the value from the database is `NULL`,
 /// and you are not decoding into an `Option`.
-#[derive(thiserror::Error, Debug)]
+#[derive(error_definition::Error, Debug)]
 #[error("unexpected null; try decoding as an `Option`")]
 pub struct UnexpectedNullError;
 
 /// Represents all the ways a method can fail within SQLx.
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, error_definition::Error)]
 #[non_exhaustive]
 pub enum Error {
     /// Error occurred while parsing a connection string.

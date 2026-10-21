@@ -1,6 +1,6 @@
 //! One-way connection hardening through SQLx's exclusive native handle.
+use error_definition::Error;
 use sqlx::{SqliteConnection, sqlite::LockedSqliteHandle};
-use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum ConnectionSecurityError {

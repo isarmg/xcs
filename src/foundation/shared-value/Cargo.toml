@@ -29,10 +29,10 @@ version = "1.0.219"
 default-features = true
 path = "../data-serialization"
 
-[dependencies.thiserror]
+[dependencies.error-definition]
 version = "2.0.12"
 default-features = true
-path = "../thiserror"
+path = "../error-definition"
 
 
 [dev-dependencies.json-codec]

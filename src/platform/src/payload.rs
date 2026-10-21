@@ -6,12 +6,12 @@
 //! storage engine. A returned receipt attests this file publication only.
 
 use crate::fs_safety::{EntryName, NoClobberPublish, PrivateDirectory, RelativePath};
+use error_definition::Error;
 use rustix::fs::{AtFlags, Mode, OFlags, openat, unlinkat};
 use std::{
     fs::File,
     io::{self, Read, Seek, SeekFrom, Write},
 };
-use thiserror::Error;
 
 /// Sealed upload expectation. A byte limit is mandatory even without a digest.
 #[derive(Clone, Copy, Debug)]

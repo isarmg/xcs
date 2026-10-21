@@ -1,7 +1,7 @@
 //! Connection-local SQLite limits; no process-global memory settings.
 
+use error_definition::Error;
 use sqlx::{SqliteConnection, sqlite::LockedSqliteHandle};
-use thiserror::Error;
 
 /// Limits to apply before preparing product statements on a connection.
 ///

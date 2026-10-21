@@ -405,7 +405,7 @@
           "source": "src/foundation/anyhow/tests/test_boxed.rs",
           "source_sha256_before": "6b26db0e2eb72afe9af7352ea820837aab90f8d486294616dd5dc34c1b94038c",
           "path": "test/foundation/anyhow/tests/test_boxed.rs",
-          "sha256": "6b26db0e2eb72afe9af7352ea820837aab90f8d486294616dd5dc34c1b94038c"
+          "sha256": "49fab98dde39f8395eeaf2c804efbc0eadf54e1b3b207770490383f89f5d335a"
         },
         {
           "source": "src/foundation/anyhow/tests/test_chain.rs",
@@ -417,7 +417,7 @@
           "source": "src/foundation/anyhow/tests/test_context.rs",
           "source_sha256_before": "a4cb7d9a6d488d902eb5ac516d2b5e4135f46caaa2d151580ed9ba83c2a90b57",
           "path": "test/foundation/anyhow/tests/test_context.rs",
-          "sha256": "a4cb7d9a6d488d902eb5ac516d2b5e4135f46caaa2d151580ed9ba83c2a90b57"
+          "sha256": "52600c964edc6a920d814f40960c1bda559a8f64ef5a85e421a58d84b3d8652d"
         },
         {
           "source": "src/foundation/anyhow/tests/test_convert.rs",
@@ -13387,7 +13387,7 @@
           "source": "src/foundation/ref-cast/tests/ui/no-custom.stderr",
           "source_sha256_before": "e22d6f86771a95cd5c6436de330bf26009c437e60e09481cf0e9e0294fce68bc",
           "path": "test/foundation/ref-cast/tests/ui/no-custom.stderr",
-          "sha256": "e22d6f86771a95cd5c6436de330bf26009c437e60e09481cf0e9e0294fce68bc"
+          "sha256": "2a5a9ab8ac4b29346c2314cf25378c5e13a0789ff9e5ed961d2105d87bebec51"
         },
         {
           "source": "src/foundation/ref-cast/tests/ui/no-repr.rs",
@@ -13411,7 +13411,7 @@
           "source": "src/foundation/ref-cast/tests/ui/not-trivial.stderr",
           "source_sha256_before": "95f96c368587ff6dade9da429b73d22c1b80b83d0abc818a93c0d83aac731b21",
           "path": "test/foundation/ref-cast/tests/ui/not-trivial.stderr",
-          "sha256": "95f96c368587ff6dade9da429b73d22c1b80b83d0abc818a93c0d83aac731b21"
+          "sha256": "9b322ea603ac175cbb46adc6b16bdbc98b1d4762d5e91a64a92b30c0718f19da"
         },
         {
           "source": "src/foundation/ref-cast/tests/ui/private.rs",
@@ -17304,525 +17304,525 @@
       ]
     },
     {
-      "directory": "src/foundation/thiserror",
+      "directory": "src/foundation/error-definition",
       "roots": [
-        "test/foundation/thiserror"
+        "test/foundation/error-definition"
       ],
       "files": [
         {
           "source": "src/foundation/thiserror/tests/compiletest.rs",
           "source_sha256_before": "4e381aa8ca3eabb7ac14d1e0c3700b3223e47640547a6988cfa13ad68255f60f",
-          "path": "test/foundation/thiserror/tests/compiletest.rs",
-          "sha256": "fbcc17d27fdb8d501a2e294453c16b7940b902c55f0bef32ba1c4950e492c0bf"
+          "path": "test/foundation/error-definition/tests/compiletest.rs",
+          "sha256": "85938d8b4a9f595f230c1419c6a57dc1186d7c923395985ad86a6205cf76bf93"
         },
         {
           "source": "src/foundation/thiserror/tests/test_backtrace.rs",
           "source_sha256_before": "b4b2ab8057b76a46491503da7326a2411df824eab34d7d4c853081f6887b6f2f",
-          "path": "test/foundation/thiserror/tests/test_backtrace.rs",
-          "sha256": "b4b2ab8057b76a46491503da7326a2411df824eab34d7d4c853081f6887b6f2f"
+          "path": "test/foundation/error-definition/tests/test_backtrace.rs",
+          "sha256": "ba0b9c2b0bf93caf74e67a04cc635901c919073b487b30a9a3d481f13d54262b"
         },
         {
           "source": "src/foundation/thiserror/tests/test_display.rs",
           "source_sha256_before": "27ea50c27ed4ee8b3bb089a76ea5c5556d2ae9d3b623a3796d09424f4b6382a1",
-          "path": "test/foundation/thiserror/tests/test_display.rs",
-          "sha256": "27ea50c27ed4ee8b3bb089a76ea5c5556d2ae9d3b623a3796d09424f4b6382a1"
+          "path": "test/foundation/error-definition/tests/test_display.rs",
+          "sha256": "84a60d5b2b4b56a01b1a2ff60b10ce1f582678abeebf9e56b48e707ea51f48fc"
         },
         {
           "source": "src/foundation/thiserror/tests/test_error.rs",
           "source_sha256_before": "eba9a2bae06e45365dc9f1be39d00e5cdee57127909c5f4b1f5558fe1dbb60ef",
-          "path": "test/foundation/thiserror/tests/test_error.rs",
-          "sha256": "eba9a2bae06e45365dc9f1be39d00e5cdee57127909c5f4b1f5558fe1dbb60ef"
+          "path": "test/foundation/error-definition/tests/test_error.rs",
+          "sha256": "67089a2c4a557d083d51619b35c48996370d59b4faaaeb64c30c1ddce041bd76"
         },
         {
           "source": "src/foundation/thiserror/tests/test_expr.rs",
           "source_sha256_before": "99057bf3928d35c03289d464029bc4d6158c3acaeff34baf78dbf8fb22e600e3",
-          "path": "test/foundation/thiserror/tests/test_expr.rs",
-          "sha256": "99057bf3928d35c03289d464029bc4d6158c3acaeff34baf78dbf8fb22e600e3"
+          "path": "test/foundation/error-definition/tests/test_expr.rs",
+          "sha256": "906e816779cddfae775ebd0eb241e5cbe6a722c0f8026fe96925fdd9b0a4b5fe"
         },
         {
           "source": "src/foundation/thiserror/tests/test_from.rs",
           "source_sha256_before": "36bd22be7b048cd187a19076aeac1456040f20a0b677b01c6003998b63439ea1",
-          "path": "test/foundation/thiserror/tests/test_from.rs",
-          "sha256": "36bd22be7b048cd187a19076aeac1456040f20a0b677b01c6003998b63439ea1"
+          "path": "test/foundation/error-definition/tests/test_from.rs",
+          "sha256": "6f6b2b826116ee0ee6c1c3342aa604011b8effb1f18bc8a14945bce121fca046"
         },
         {
           "source": "src/foundation/thiserror/tests/test_generics.rs",
           "source_sha256_before": "219d0e2ad94f65134ca9b8b4735a211addbbff0dd6820a40a227fc6e5bf6960a",
-          "path": "test/foundation/thiserror/tests/test_generics.rs",
-          "sha256": "219d0e2ad94f65134ca9b8b4735a211addbbff0dd6820a40a227fc6e5bf6960a"
+          "path": "test/foundation/error-definition/tests/test_generics.rs",
+          "sha256": "56971f06d77a4c44c692c66b0b4952a8830eff82904bb1380aecb997fc800835"
         },
         {
           "source": "src/foundation/thiserror/tests/test_lints.rs",
           "source_sha256_before": "6039037e5d76702e5538105ac113e5d38293650244d70aca67e513e63b0ff472",
-          "path": "test/foundation/thiserror/tests/test_lints.rs",
-          "sha256": "6039037e5d76702e5538105ac113e5d38293650244d70aca67e513e63b0ff472"
+          "path": "test/foundation/error-definition/tests/test_lints.rs",
+          "sha256": "c892a0b682a6863de8dad62006f482e687585aad1d5f4a0cacb94b13bf11b13d"
         },
         {
           "source": "src/foundation/thiserror/tests/test_option.rs",
           "source_sha256_before": "71606cb816c15d5373065579d8ab3c9206bb6f3738b0bfbea56511c43bcb05e7",
-          "path": "test/foundation/thiserror/tests/test_option.rs",
-          "sha256": "71606cb816c15d5373065579d8ab3c9206bb6f3738b0bfbea56511c43bcb05e7"
+          "path": "test/foundation/error-definition/tests/test_option.rs",
+          "sha256": "8024d04fea9fe0f892ffc381045906c605e9cadc51667a5c9432b01cf14620be"
         },
         {
           "source": "src/foundation/thiserror/tests/test_path.rs",
           "source_sha256_before": "92f218304955022aec69d5ce09c9454cf62e17b05eb795c1ffb80d46fa42758c",
-          "path": "test/foundation/thiserror/tests/test_path.rs",
-          "sha256": "92f218304955022aec69d5ce09c9454cf62e17b05eb795c1ffb80d46fa42758c"
+          "path": "test/foundation/error-definition/tests/test_path.rs",
+          "sha256": "299405d10f69d711f6d435bb13164fe87182157fcc59ca07607739153794e1b0"
         },
         {
           "source": "src/foundation/thiserror/tests/test_source.rs",
           "source_sha256_before": "1fa0fb00eb8d953a1c6263c2334a34e46dd1bd48acfa213fa4a8bb3a62b4f014",
-          "path": "test/foundation/thiserror/tests/test_source.rs",
-          "sha256": "1fa0fb00eb8d953a1c6263c2334a34e46dd1bd48acfa213fa4a8bb3a62b4f014"
+          "path": "test/foundation/error-definition/tests/test_source.rs",
+          "sha256": "6106961d200de230d6bdb2c4968368377ee5c67a1e8715dc0017e1208f09e980"
         },
         {
           "source": "src/foundation/thiserror/tests/test_transparent.rs",
           "source_sha256_before": "8c9bb79d1e7b851c41f12daeae7034c7b9df017889925f9fd2c6142f5030bf0b",
-          "path": "test/foundation/thiserror/tests/test_transparent.rs",
-          "sha256": "8c9bb79d1e7b851c41f12daeae7034c7b9df017889925f9fd2c6142f5030bf0b"
+          "path": "test/foundation/error-definition/tests/test_transparent.rs",
+          "sha256": "ec472661d72115c933998fbb022a462f6de98c6639a1f1aa7ade75264631072f"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/bad-field-attr.rs",
           "source_sha256_before": "c5b567e3091969a01061843fb2d95c5e1aa3fa81edfeecdf416a84a6fba40aa8",
-          "path": "test/foundation/thiserror/tests/ui/bad-field-attr.rs",
-          "sha256": "c5b567e3091969a01061843fb2d95c5e1aa3fa81edfeecdf416a84a6fba40aa8"
+          "path": "test/foundation/error-definition/tests/ui/bad-field-attr.rs",
+          "sha256": "d37e108c4fcfa3bcd55f0abc12e73414d2918dcd9ef8dd120749e0e9c81a73a4"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/bad-field-attr.stderr",
           "source_sha256_before": "78f576d5ec66464a77f1cdf0f5bb7dcdf18f7f04f1165983a6239ec59d908ea3",
-          "path": "test/foundation/thiserror/tests/ui/bad-field-attr.stderr",
+          "path": "test/foundation/error-definition/tests/ui/bad-field-attr.stderr",
           "sha256": "78f576d5ec66464a77f1cdf0f5bb7dcdf18f7f04f1165983a6239ec59d908ea3"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/concat-display.rs",
           "source_sha256_before": "3995bd6b3bdd67df7bb16499775d89600c0dd20895633fe807396a64c117078d",
-          "path": "test/foundation/thiserror/tests/ui/concat-display.rs",
-          "sha256": "3995bd6b3bdd67df7bb16499775d89600c0dd20895633fe807396a64c117078d"
+          "path": "test/foundation/error-definition/tests/ui/concat-display.rs",
+          "sha256": "fc7e4f05afd25a496de103c2f47dfb59b34d805a7a14c7afad816b537b3d05b5"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/concat-display.stderr",
           "source_sha256_before": "018c340414238e83d249182a8d9fb4931417e31bfe55abddba1a593b3d0aeeec",
-          "path": "test/foundation/thiserror/tests/ui/concat-display.stderr",
+          "path": "test/foundation/error-definition/tests/ui/concat-display.stderr",
           "sha256": "018c340414238e83d249182a8d9fb4931417e31bfe55abddba1a593b3d0aeeec"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/display-underscore.rs",
           "source_sha256_before": "0cab8048b4a37a676b00c5f68414c235573c920423d9a2f4dfac887a6f805399",
-          "path": "test/foundation/thiserror/tests/ui/display-underscore.rs",
-          "sha256": "0cab8048b4a37a676b00c5f68414c235573c920423d9a2f4dfac887a6f805399"
+          "path": "test/foundation/error-definition/tests/ui/display-underscore.rs",
+          "sha256": "d34710e7f2d90ad4eff6befba9326411d424e47e0a845786c5a19eaf5a51d547"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/display-underscore.stderr",
           "source_sha256_before": "bb11d3c000cbd110e3539cc3fee053f824f1bdd3a8b1d7ad9548f6ceae96e684",
-          "path": "test/foundation/thiserror/tests/ui/display-underscore.stderr",
+          "path": "test/foundation/error-definition/tests/ui/display-underscore.stderr",
           "sha256": "bb11d3c000cbd110e3539cc3fee053f824f1bdd3a8b1d7ad9548f6ceae96e684"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/duplicate-enum-source.rs",
           "source_sha256_before": "bfe28ce18042d446a76c7411aa233598211ce1157fdd3cb87bff3b3fa7c33131",
-          "path": "test/foundation/thiserror/tests/ui/duplicate-enum-source.rs",
-          "sha256": "bfe28ce18042d446a76c7411aa233598211ce1157fdd3cb87bff3b3fa7c33131"
+          "path": "test/foundation/error-definition/tests/ui/duplicate-enum-source.rs",
+          "sha256": "60058e68b3f2f8c7d6649ea2010149a76639b305ce7543adb4e6b5ef70c05e6a"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/duplicate-enum-source.stderr",
           "source_sha256_before": "3d32fead420b27b4497be49080bc3b78f7f0ba339ead3de6c94e5dc20302c18f",
-          "path": "test/foundation/thiserror/tests/ui/duplicate-enum-source.stderr",
+          "path": "test/foundation/error-definition/tests/ui/duplicate-enum-source.stderr",
           "sha256": "3d32fead420b27b4497be49080bc3b78f7f0ba339ead3de6c94e5dc20302c18f"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/duplicate-fmt.rs",
           "source_sha256_before": "ba89e292892043fdc7dfefec13f0f8bc5f52b3ab03cd0278a019612ce34dcd85",
-          "path": "test/foundation/thiserror/tests/ui/duplicate-fmt.rs",
-          "sha256": "ba89e292892043fdc7dfefec13f0f8bc5f52b3ab03cd0278a019612ce34dcd85"
+          "path": "test/foundation/error-definition/tests/ui/duplicate-fmt.rs",
+          "sha256": "13a54196cf1aa43a09d6a73b7a4ee9d15fe8e98fa3a9c9c8b88b8f089ede8f09"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/duplicate-fmt.stderr",
           "source_sha256_before": "65e78d22526d30a37e663ffe63aaa1c37576aba81c6a8dc5b9ee65cc00956872",
-          "path": "test/foundation/thiserror/tests/ui/duplicate-fmt.stderr",
+          "path": "test/foundation/error-definition/tests/ui/duplicate-fmt.stderr",
           "sha256": "65e78d22526d30a37e663ffe63aaa1c37576aba81c6a8dc5b9ee65cc00956872"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/duplicate-struct-source.rs",
           "source_sha256_before": "f3d5f8e3d6fccfcdbb630db291353709583a920c6bf46f9f9de9966b67ea4c0f",
-          "path": "test/foundation/thiserror/tests/ui/duplicate-struct-source.rs",
-          "sha256": "f3d5f8e3d6fccfcdbb630db291353709583a920c6bf46f9f9de9966b67ea4c0f"
+          "path": "test/foundation/error-definition/tests/ui/duplicate-struct-source.rs",
+          "sha256": "01738e92ec8af07c925dac75743f4581d9fc1a96417584cc83778dccf6a054ac"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/duplicate-struct-source.stderr",
           "source_sha256_before": "fb761d76668ac42357cf37b03c0abdbae5de0a828034990850291c9cb6ab766d",
-          "path": "test/foundation/thiserror/tests/ui/duplicate-struct-source.stderr",
+          "path": "test/foundation/error-definition/tests/ui/duplicate-struct-source.stderr",
           "sha256": "fb761d76668ac42357cf37b03c0abdbae5de0a828034990850291c9cb6ab766d"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/duplicate-transparent.rs",
           "source_sha256_before": "41a9447e85f1a47027023442acde55c3d8610ec46d91b39bd43a42d7a004d747",
-          "path": "test/foundation/thiserror/tests/ui/duplicate-transparent.rs",
-          "sha256": "41a9447e85f1a47027023442acde55c3d8610ec46d91b39bd43a42d7a004d747"
+          "path": "test/foundation/error-definition/tests/ui/duplicate-transparent.rs",
+          "sha256": "88562cd956148980f7123346141d29efbd92147af64de932a472e145ff8ebc71"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/duplicate-transparent.stderr",
           "source_sha256_before": "4975abad43e973df158f18098d9bcb9dc39f8e75d3e733ed5d6620d1ee065c11",
-          "path": "test/foundation/thiserror/tests/ui/duplicate-transparent.stderr",
+          "path": "test/foundation/error-definition/tests/ui/duplicate-transparent.stderr",
           "sha256": "4975abad43e973df158f18098d9bcb9dc39f8e75d3e733ed5d6620d1ee065c11"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/expression-fallback.rs",
           "source_sha256_before": "00fcfa22a9860feb3c737cc4eca44512de85412d2cce69a690afa9e4bdc8758b",
-          "path": "test/foundation/thiserror/tests/ui/expression-fallback.rs",
-          "sha256": "00fcfa22a9860feb3c737cc4eca44512de85412d2cce69a690afa9e4bdc8758b"
+          "path": "test/foundation/error-definition/tests/ui/expression-fallback.rs",
+          "sha256": "95f2ba8383ff9e7eef3708692b3c8ef5f188c6d3d5527dcf6f23049b14dac3d2"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/expression-fallback.stderr",
           "source_sha256_before": "f1901b1f0329e4ea0e7ad14fedfb9225aad105310d85eed4169598e624690dbd",
-          "path": "test/foundation/thiserror/tests/ui/expression-fallback.stderr",
+          "path": "test/foundation/error-definition/tests/ui/expression-fallback.stderr",
           "sha256": "f1901b1f0329e4ea0e7ad14fedfb9225aad105310d85eed4169598e624690dbd"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/fallback-impl-with-display.rs",
           "source_sha256_before": "0b8ce57ba958008f90aaa078fa1066b47b8d4a5146b6a91ec7d8d96122f0637a",
-          "path": "test/foundation/thiserror/tests/ui/fallback-impl-with-display.rs",
-          "sha256": "0b8ce57ba958008f90aaa078fa1066b47b8d4a5146b6a91ec7d8d96122f0637a"
+          "path": "test/foundation/error-definition/tests/ui/fallback-impl-with-display.rs",
+          "sha256": "2403a67803d40ca55f92b754807af8b690451a0d147bd418b6563ef02cba634a"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/fallback-impl-with-display.stderr",
           "source_sha256_before": "1b3dad712b97598fbee70125471de1a8106eb161d42ce1f790ae07be8c8984ba",
-          "path": "test/foundation/thiserror/tests/ui/fallback-impl-with-display.stderr",
+          "path": "test/foundation/error-definition/tests/ui/fallback-impl-with-display.stderr",
           "sha256": "1b3dad712b97598fbee70125471de1a8106eb161d42ce1f790ae07be8c8984ba"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/from-backtrace-backtrace.rs",
           "source_sha256_before": "0caac64486c0eb9c076553c0502d468fbc477602a9a2595165a1dcd95524e5ff",
-          "path": "test/foundation/thiserror/tests/ui/from-backtrace-backtrace.rs",
-          "sha256": "0caac64486c0eb9c076553c0502d468fbc477602a9a2595165a1dcd95524e5ff"
+          "path": "test/foundation/error-definition/tests/ui/from-backtrace-backtrace.rs",
+          "sha256": "b0f2998a2ecaea71a02334c17bc9f414f64004eed5061f54cb5bae3d8a416c5a"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/from-backtrace-backtrace.stderr",
           "source_sha256_before": "e24156ae0828878f3282341732b6e032eaa8cb4b4db366a6b5437ed0731d40a7",
-          "path": "test/foundation/thiserror/tests/ui/from-backtrace-backtrace.stderr",
+          "path": "test/foundation/error-definition/tests/ui/from-backtrace-backtrace.stderr",
           "sha256": "e24156ae0828878f3282341732b6e032eaa8cb4b4db366a6b5437ed0731d40a7"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/from-not-source.rs",
           "source_sha256_before": "a8dff2e92c21b1b97c48af89b7832bfb6b3bb4437a691bb882779e63fc792869",
-          "path": "test/foundation/thiserror/tests/ui/from-not-source.rs",
-          "sha256": "a8dff2e92c21b1b97c48af89b7832bfb6b3bb4437a691bb882779e63fc792869"
+          "path": "test/foundation/error-definition/tests/ui/from-not-source.rs",
+          "sha256": "24af974e11f606c1804930b7e9e9de415c170cb0991dc519370264043c19961b"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/from-not-source.stderr",
           "source_sha256_before": "525038e8b841707b927434cca4549168f73bd305faca17552a0d1fffa542ccc4",
-          "path": "test/foundation/thiserror/tests/ui/from-not-source.stderr",
+          "path": "test/foundation/error-definition/tests/ui/from-not-source.stderr",
           "sha256": "525038e8b841707b927434cca4549168f73bd305faca17552a0d1fffa542ccc4"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/invalid-input-impl-anyway.rs",
           "source_sha256_before": "6de91f71ddf038dffa3b9da33763a2ec3a5aa0047528e19ba998d5efe3aada5b",
-          "path": "test/foundation/thiserror/tests/ui/invalid-input-impl-anyway.rs",
-          "sha256": "6de91f71ddf038dffa3b9da33763a2ec3a5aa0047528e19ba998d5efe3aada5b"
+          "path": "test/foundation/error-definition/tests/ui/invalid-input-impl-anyway.rs",
+          "sha256": "92bb9ad22f593d0c8af8265078d1a376d7f1fa64b4f2df74eb10fc3ace2cf595"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/invalid-input-impl-anyway.stderr",
           "source_sha256_before": "fa2725053cd87fc37f87546b377e6e5eed95c45e2a960863303b21a1935fdddb",
-          "path": "test/foundation/thiserror/tests/ui/invalid-input-impl-anyway.stderr",
+          "path": "test/foundation/error-definition/tests/ui/invalid-input-impl-anyway.stderr",
           "sha256": "fa2725053cd87fc37f87546b377e6e5eed95c45e2a960863303b21a1935fdddb"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/lifetime.rs",
           "source_sha256_before": "1da6748767b9a5b25ad7c013becb2e243b39c7c764cbdf00487794f6fc812890",
-          "path": "test/foundation/thiserror/tests/ui/lifetime.rs",
-          "sha256": "1da6748767b9a5b25ad7c013becb2e243b39c7c764cbdf00487794f6fc812890"
+          "path": "test/foundation/error-definition/tests/ui/lifetime.rs",
+          "sha256": "9db8730e36c042b1f8ce6e6e4977ff52e5cf9dfe8e602e342f4c43846d2d4bd5"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/lifetime.stderr",
           "source_sha256_before": "d889a23f71324afe95dafc5f9d15337fbdbc9977cb8924f0cafe3a3becf4ced7",
-          "path": "test/foundation/thiserror/tests/ui/lifetime.stderr",
+          "path": "test/foundation/error-definition/tests/ui/lifetime.stderr",
           "sha256": "d889a23f71324afe95dafc5f9d15337fbdbc9977cb8924f0cafe3a3becf4ced7"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/missing-display.rs",
           "source_sha256_before": "c1fd1bc0ec0fb103d7f7b128837f717d49485662839899d570b3c983f1332888",
-          "path": "test/foundation/thiserror/tests/ui/missing-display.rs",
-          "sha256": "c1fd1bc0ec0fb103d7f7b128837f717d49485662839899d570b3c983f1332888"
+          "path": "test/foundation/error-definition/tests/ui/missing-display.rs",
+          "sha256": "a8ccf9951d816a4a0211c780efaa33d134e80a626f34941576b7f99f70abe360"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/missing-display.stderr",
           "source_sha256_before": "dfaed229ae28069bac5791e714a9b5a3e32faddf8517291c4c4e0f4cc2f07e1a",
-          "path": "test/foundation/thiserror/tests/ui/missing-display.stderr",
+          "path": "test/foundation/error-definition/tests/ui/missing-display.stderr",
           "sha256": "dfaed229ae28069bac5791e714a9b5a3e32faddf8517291c4c4e0f4cc2f07e1a"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/missing-fmt.rs",
           "source_sha256_before": "bc9e2830e54c2474ff6c27a766ed3dee88d29e40f93f30e8d64d63233866c17d",
-          "path": "test/foundation/thiserror/tests/ui/missing-fmt.rs",
-          "sha256": "bc9e2830e54c2474ff6c27a766ed3dee88d29e40f93f30e8d64d63233866c17d"
+          "path": "test/foundation/error-definition/tests/ui/missing-fmt.rs",
+          "sha256": "1b9e91423f6398c264ffeed80ddda16ed9312b08343dfe6881c6e469f1986912"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/missing-fmt.stderr",
           "source_sha256_before": "9a20ccee9b660fe31a5b3199307b48580bb8305cb9ce33d97d3fc767a0cfc614",
-          "path": "test/foundation/thiserror/tests/ui/missing-fmt.stderr",
+          "path": "test/foundation/error-definition/tests/ui/missing-fmt.stderr",
           "sha256": "9a20ccee9b660fe31a5b3199307b48580bb8305cb9ce33d97d3fc767a0cfc614"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/no-display.rs",
           "source_sha256_before": "0525bbaf69d6badec85ad92dfe0dc9a4dcabb28a859f4caac40a52f1d37d9e25",
-          "path": "test/foundation/thiserror/tests/ui/no-display.rs",
-          "sha256": "0525bbaf69d6badec85ad92dfe0dc9a4dcabb28a859f4caac40a52f1d37d9e25"
+          "path": "test/foundation/error-definition/tests/ui/no-display.rs",
+          "sha256": "4ce2f86331cf1d320bb734645b771cc777b18e0967b888f846417f393c3d296f"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/no-display.stderr",
           "source_sha256_before": "9f508a3bafa5c7d75be3f2f5b4a2faf67cca49060f7e1f2d0af27663a21cb3a7",
-          "path": "test/foundation/thiserror/tests/ui/no-display.stderr",
-          "sha256": "9f508a3bafa5c7d75be3f2f5b4a2faf67cca49060f7e1f2d0af27663a21cb3a7"
+          "path": "test/foundation/error-definition/tests/ui/no-display.stderr",
+          "sha256": "5b4b0277f99291b335e43462f06eda028764563c83cd54786a4c5152438b2364"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/numbered-positional-tuple.rs",
           "source_sha256_before": "7d000b1abcde04abcfe21bd592144e8cbcd953608895aef934d4655e2349e63a",
-          "path": "test/foundation/thiserror/tests/ui/numbered-positional-tuple.rs",
-          "sha256": "7d000b1abcde04abcfe21bd592144e8cbcd953608895aef934d4655e2349e63a"
+          "path": "test/foundation/error-definition/tests/ui/numbered-positional-tuple.rs",
+          "sha256": "dd56b7d0e813b03d1465eabd405961b7f126c8283c0b84b40e91a5901ab36465"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/numbered-positional-tuple.stderr",
           "source_sha256_before": "58b2dde4578862b3d2ca9d8f309b05dbbce059e7b6bb8ad3096a702b0f63c5cf",
-          "path": "test/foundation/thiserror/tests/ui/numbered-positional-tuple.stderr",
+          "path": "test/foundation/error-definition/tests/ui/numbered-positional-tuple.stderr",
           "sha256": "58b2dde4578862b3d2ca9d8f309b05dbbce059e7b6bb8ad3096a702b0f63c5cf"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/raw-identifier.rs",
           "source_sha256_before": "2593eb4bee6a2b20f36ccd08a7265f2e284a4f020f8381c325bb8fe630213e8d",
-          "path": "test/foundation/thiserror/tests/ui/raw-identifier.rs",
-          "sha256": "2593eb4bee6a2b20f36ccd08a7265f2e284a4f020f8381c325bb8fe630213e8d"
+          "path": "test/foundation/error-definition/tests/ui/raw-identifier.rs",
+          "sha256": "832afa2ec65e0b3a38703d20c90c8bf83d0ad3f0fa12010fa36827c047bde32e"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/raw-identifier.stderr",
           "source_sha256_before": "0461c9c5a2f2630734822940d543df7f32cd4ed2e34bb323f6edbd13335dbf2f",
-          "path": "test/foundation/thiserror/tests/ui/raw-identifier.stderr",
+          "path": "test/foundation/error-definition/tests/ui/raw-identifier.stderr",
           "sha256": "0461c9c5a2f2630734822940d543df7f32cd4ed2e34bb323f6edbd13335dbf2f"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/same-from-type.rs",
           "source_sha256_before": "6db0bcbe507f3204d6bc8d4cf382b9e36228bccaca01c199a89cd6df87bcae0c",
-          "path": "test/foundation/thiserror/tests/ui/same-from-type.rs",
-          "sha256": "6db0bcbe507f3204d6bc8d4cf382b9e36228bccaca01c199a89cd6df87bcae0c"
+          "path": "test/foundation/error-definition/tests/ui/same-from-type.rs",
+          "sha256": "f8b74b5dbb31db838ef890670d9fc775a7e0d58f72e683e7605388b0c1e30e4b"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/same-from-type.stderr",
           "source_sha256_before": "e0084050070564e7d22a13db8b401a145e4e3311ae5ac2f8f83b998cadd079a8",
-          "path": "test/foundation/thiserror/tests/ui/same-from-type.stderr",
+          "path": "test/foundation/error-definition/tests/ui/same-from-type.stderr",
           "sha256": "e0084050070564e7d22a13db8b401a145e4e3311ae5ac2f8f83b998cadd079a8"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/source-enum-not-error.rs",
           "source_sha256_before": "3add5e7b4503d964bcae0848904822e1473c1d08c5a146c2df5347314ce1b8df",
-          "path": "test/foundation/thiserror/tests/ui/source-enum-not-error.rs",
-          "sha256": "3add5e7b4503d964bcae0848904822e1473c1d08c5a146c2df5347314ce1b8df"
+          "path": "test/foundation/error-definition/tests/ui/source-enum-not-error.rs",
+          "sha256": "ce1b2a6c66c080a9d90de98e238313aa40b71b0098d4617ad751aa2b3e364c44"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/source-enum-not-error.stderr",
           "source_sha256_before": "561346dcb870338b37197785200e96eccb429e11e9177c2908617500af018229",
-          "path": "test/foundation/thiserror/tests/ui/source-enum-not-error.stderr",
-          "sha256": "561346dcb870338b37197785200e96eccb429e11e9177c2908617500af018229"
+          "path": "test/foundation/error-definition/tests/ui/source-enum-not-error.stderr",
+          "sha256": "551cfa2816e1faa3ee2475a19e885a7a5360d980cf64080b0e85847267ff5309"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/source-enum-unnamed-field-not-error.rs",
           "source_sha256_before": "a98989e908b84a8e6e6dceef02af7bdd1098a444d229950f67ed4f54d55c62e7",
-          "path": "test/foundation/thiserror/tests/ui/source-enum-unnamed-field-not-error.rs",
-          "sha256": "a98989e908b84a8e6e6dceef02af7bdd1098a444d229950f67ed4f54d55c62e7"
+          "path": "test/foundation/error-definition/tests/ui/source-enum-unnamed-field-not-error.rs",
+          "sha256": "4502e3153a711a861d37b5a7a9dfb5f02802ae8a19211f519497a3d84b96fdce"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/source-enum-unnamed-field-not-error.stderr",
           "source_sha256_before": "a0008d9765945b9b810ceed4bd01e5bf38e73f4493f6e0f9d6c2e466360345e7",
-          "path": "test/foundation/thiserror/tests/ui/source-enum-unnamed-field-not-error.stderr",
-          "sha256": "a0008d9765945b9b810ceed4bd01e5bf38e73f4493f6e0f9d6c2e466360345e7"
+          "path": "test/foundation/error-definition/tests/ui/source-enum-unnamed-field-not-error.stderr",
+          "sha256": "e3bebe335eae5bc9636fd23f749639b7050189e511aca4ce97e5c16959cc43af"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/source-struct-not-error.rs",
           "source_sha256_before": "09fb7713637242dca9192585a6daeb8d732dc1c1d0fa522b74f1c98618e6d949",
-          "path": "test/foundation/thiserror/tests/ui/source-struct-not-error.rs",
-          "sha256": "09fb7713637242dca9192585a6daeb8d732dc1c1d0fa522b74f1c98618e6d949"
+          "path": "test/foundation/error-definition/tests/ui/source-struct-not-error.rs",
+          "sha256": "0d4f6891759750ba8e3dae822b214e32e32bddf9684422e57e7880bcdd8ac8c8"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/source-struct-not-error.stderr",
           "source_sha256_before": "d1c2031a4424ca3cafb0d56b834af7ed06714dbb7d446fe8da95e4335d5bced9",
-          "path": "test/foundation/thiserror/tests/ui/source-struct-not-error.stderr",
-          "sha256": "d1c2031a4424ca3cafb0d56b834af7ed06714dbb7d446fe8da95e4335d5bced9"
+          "path": "test/foundation/error-definition/tests/ui/source-struct-not-error.stderr",
+          "sha256": "ba11e202086e39a037e19df75f5e9fcc78416c15a777a06ae0ca856ae07d5457"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/source-struct-unnamed-field-not-error.rs",
           "source_sha256_before": "eee605a9aafbb093666393e25cef4f7d7b8e90d518b9fadbdbed9685c66ccfcd",
-          "path": "test/foundation/thiserror/tests/ui/source-struct-unnamed-field-not-error.rs",
-          "sha256": "eee605a9aafbb093666393e25cef4f7d7b8e90d518b9fadbdbed9685c66ccfcd"
+          "path": "test/foundation/error-definition/tests/ui/source-struct-unnamed-field-not-error.rs",
+          "sha256": "9d2dfec7a993a3d6ad18ac433ac39638e92420eef490756a05a967f1131ac543"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/source-struct-unnamed-field-not-error.stderr",
           "source_sha256_before": "bc9c4bd30d6c9fd46d0b4a73b8215f3ffbf378fa91184879260c9c8cc620701e",
-          "path": "test/foundation/thiserror/tests/ui/source-struct-unnamed-field-not-error.stderr",
-          "sha256": "bc9c4bd30d6c9fd46d0b4a73b8215f3ffbf378fa91184879260c9c8cc620701e"
+          "path": "test/foundation/error-definition/tests/ui/source-struct-unnamed-field-not-error.stderr",
+          "sha256": "9406421192b97545fb0ef0c6e5e49acf527ecd8b33c13f4c2c54ae267760c18e"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/struct-with-fmt.rs",
           "source_sha256_before": "a681659e0c161c8dd7b9f42e3ac026759ed085948cfb42458247eb96a2122a69",
-          "path": "test/foundation/thiserror/tests/ui/struct-with-fmt.rs",
-          "sha256": "a681659e0c161c8dd7b9f42e3ac026759ed085948cfb42458247eb96a2122a69"
+          "path": "test/foundation/error-definition/tests/ui/struct-with-fmt.rs",
+          "sha256": "004ca9882eeced4192c28bb3a370e1afc22325b488f9832319065c979329e1fc"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/struct-with-fmt.stderr",
           "source_sha256_before": "e560ce1e6a696b404f729ec317d6793ccb2a72fe8a508f0adb807b3982c1c9ff",
-          "path": "test/foundation/thiserror/tests/ui/struct-with-fmt.stderr",
+          "path": "test/foundation/error-definition/tests/ui/struct-with-fmt.stderr",
           "sha256": "e560ce1e6a696b404f729ec317d6793ccb2a72fe8a508f0adb807b3982c1c9ff"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-display.rs",
           "source_sha256_before": "b3c59583eb64b0b5a246444456d03cf52d51bcdc08885023600dbb44fd87e5f2",
-          "path": "test/foundation/thiserror/tests/ui/transparent-display.rs",
-          "sha256": "b3c59583eb64b0b5a246444456d03cf52d51bcdc08885023600dbb44fd87e5f2"
+          "path": "test/foundation/error-definition/tests/ui/transparent-display.rs",
+          "sha256": "00eafd48e58b3783bb06a2c141f973beb64b1475efaa639569d31a0a5567d2c4"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-display.stderr",
           "source_sha256_before": "16d538914e0d92026bde4b4bec75660217da9ecc6b621d12d2eb81d33ed1d1da",
-          "path": "test/foundation/thiserror/tests/ui/transparent-display.stderr",
+          "path": "test/foundation/error-definition/tests/ui/transparent-display.stderr",
           "sha256": "16d538914e0d92026bde4b4bec75660217da9ecc6b621d12d2eb81d33ed1d1da"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-enum-many.rs",
           "source_sha256_before": "2a40a764fb4683bff57973eec61507a6c00f7d4d7a32da6e7bd0190c2e445434",
-          "path": "test/foundation/thiserror/tests/ui/transparent-enum-many.rs",
-          "sha256": "2a40a764fb4683bff57973eec61507a6c00f7d4d7a32da6e7bd0190c2e445434"
+          "path": "test/foundation/error-definition/tests/ui/transparent-enum-many.rs",
+          "sha256": "7fa3adf5afdee7d4fb15fd5f36a8d3dce5043cd256d96a2b35310c216928fa1a"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-enum-many.stderr",
           "source_sha256_before": "f1d78c1d6d8edbef153420db4fb9ca3dc6076fa043b5b1bc0cd291daa417a3ea",
-          "path": "test/foundation/thiserror/tests/ui/transparent-enum-many.stderr",
+          "path": "test/foundation/error-definition/tests/ui/transparent-enum-many.stderr",
           "sha256": "f1d78c1d6d8edbef153420db4fb9ca3dc6076fa043b5b1bc0cd291daa417a3ea"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-enum-not-error.rs",
           "source_sha256_before": "f6315993e68bc71d6d4d39afa4d059695308ef785f92cc0d1df3e9ff55be2a9a",
-          "path": "test/foundation/thiserror/tests/ui/transparent-enum-not-error.rs",
-          "sha256": "f6315993e68bc71d6d4d39afa4d059695308ef785f92cc0d1df3e9ff55be2a9a"
+          "path": "test/foundation/error-definition/tests/ui/transparent-enum-not-error.rs",
+          "sha256": "289502deb074a0838fc211e7fb5b444e4a7ccba8a04491f9dbfef886211f3d79"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-enum-not-error.stderr",
           "source_sha256_before": "39656b6eaf55f27b8698be267f699ad3853f364606e0fd8338a5df995509f662",
-          "path": "test/foundation/thiserror/tests/ui/transparent-enum-not-error.stderr",
-          "sha256": "39656b6eaf55f27b8698be267f699ad3853f364606e0fd8338a5df995509f662"
+          "path": "test/foundation/error-definition/tests/ui/transparent-enum-not-error.stderr",
+          "sha256": "255de5e2cf464291c12598e0729768b73ffac0d212e8b12a1b4acf24cb6b0d84"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-enum-source.rs",
           "source_sha256_before": "18f606a98ac0a53f08dc56f5f923b9cbe75d25ed34479c777b48dac305d5968c",
-          "path": "test/foundation/thiserror/tests/ui/transparent-enum-source.rs",
-          "sha256": "18f606a98ac0a53f08dc56f5f923b9cbe75d25ed34479c777b48dac305d5968c"
+          "path": "test/foundation/error-definition/tests/ui/transparent-enum-source.rs",
+          "sha256": "5035dee61a7eaf2c003c7343e1f5d45adfed717db37f5a8e0794996daf050f89"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-enum-source.stderr",
           "source_sha256_before": "1b2e0ac53951034575d43ec0396c4e2b3cfb272db2aef8d6baa13a7e1632cc84",
-          "path": "test/foundation/thiserror/tests/ui/transparent-enum-source.stderr",
+          "path": "test/foundation/error-definition/tests/ui/transparent-enum-source.stderr",
           "sha256": "1b2e0ac53951034575d43ec0396c4e2b3cfb272db2aef8d6baa13a7e1632cc84"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-enum-unnamed-field-not-error.rs",
           "source_sha256_before": "0c720567e9e0f87921055dfa9f607661725377633445e01a4b5048c7a7a50a85",
-          "path": "test/foundation/thiserror/tests/ui/transparent-enum-unnamed-field-not-error.rs",
-          "sha256": "0c720567e9e0f87921055dfa9f607661725377633445e01a4b5048c7a7a50a85"
+          "path": "test/foundation/error-definition/tests/ui/transparent-enum-unnamed-field-not-error.rs",
+          "sha256": "836d54090d2c12c5aee421a38a824f77ff77976fd1a90023d2be78c87cb213cd"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-enum-unnamed-field-not-error.stderr",
           "source_sha256_before": "b07434b0cceffbe51f9b27df80204c2e8563bee5757f79a67590a1fffb8ae0c7",
-          "path": "test/foundation/thiserror/tests/ui/transparent-enum-unnamed-field-not-error.stderr",
-          "sha256": "b07434b0cceffbe51f9b27df80204c2e8563bee5757f79a67590a1fffb8ae0c7"
+          "path": "test/foundation/error-definition/tests/ui/transparent-enum-unnamed-field-not-error.stderr",
+          "sha256": "d87ca5d5a7276b3324d400039e4eec15872af39adb8b18d005deec1c609a6540"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-struct-many.rs",
           "source_sha256_before": "72c6b6c1a44c203d3bc68989b2f1ec092531ef75b745432824c3776c290326f6",
-          "path": "test/foundation/thiserror/tests/ui/transparent-struct-many.rs",
-          "sha256": "72c6b6c1a44c203d3bc68989b2f1ec092531ef75b745432824c3776c290326f6"
+          "path": "test/foundation/error-definition/tests/ui/transparent-struct-many.rs",
+          "sha256": "66b3149d1c305dbf5a8b2f01b53fe5075a13103a6f3014c1099c70868fc751b1"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-struct-many.stderr",
           "source_sha256_before": "7bd0536dbb54a0ce7d4a8e66ca7624a1b132d8a1d1e4fecca642ec77494ac01c",
-          "path": "test/foundation/thiserror/tests/ui/transparent-struct-many.stderr",
+          "path": "test/foundation/error-definition/tests/ui/transparent-struct-many.stderr",
           "sha256": "7bd0536dbb54a0ce7d4a8e66ca7624a1b132d8a1d1e4fecca642ec77494ac01c"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-struct-not-error.rs",
           "source_sha256_before": "fd814d3141c9182b1267b558d9daef8dd6e8b6462e1ad42b197f3a1c0703dce2",
-          "path": "test/foundation/thiserror/tests/ui/transparent-struct-not-error.rs",
-          "sha256": "fd814d3141c9182b1267b558d9daef8dd6e8b6462e1ad42b197f3a1c0703dce2"
+          "path": "test/foundation/error-definition/tests/ui/transparent-struct-not-error.rs",
+          "sha256": "44af367c2fbcd36d92455491e0af5a552e6656a564129d253d20189e6084c1b8"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-struct-not-error.stderr",
           "source_sha256_before": "957de3109973d96f6db1827b2d700212174f066a91e5530b1ca0f1a362706221",
-          "path": "test/foundation/thiserror/tests/ui/transparent-struct-not-error.stderr",
-          "sha256": "957de3109973d96f6db1827b2d700212174f066a91e5530b1ca0f1a362706221"
+          "path": "test/foundation/error-definition/tests/ui/transparent-struct-not-error.stderr",
+          "sha256": "29543c12eb1a456aa177a41880c6fc8c5b3b0e88e4bfe8996ea8dc6de19ba001"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-struct-source.rs",
           "source_sha256_before": "863fa691ed7d27e8767da58d9ee11fd40d6642274b36338ca1074c07964ea2b3",
-          "path": "test/foundation/thiserror/tests/ui/transparent-struct-source.rs",
-          "sha256": "863fa691ed7d27e8767da58d9ee11fd40d6642274b36338ca1074c07964ea2b3"
+          "path": "test/foundation/error-definition/tests/ui/transparent-struct-source.rs",
+          "sha256": "c15595c41af46b2f6f3798df5309b5f29d7f81aea8b9f82e0ad624043e0ca3fd"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-struct-source.stderr",
           "source_sha256_before": "267dab65929e67d32347fb467a00b43af931f8205d727d7671938580217fc70e",
-          "path": "test/foundation/thiserror/tests/ui/transparent-struct-source.stderr",
+          "path": "test/foundation/error-definition/tests/ui/transparent-struct-source.stderr",
           "sha256": "267dab65929e67d32347fb467a00b43af931f8205d727d7671938580217fc70e"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-struct-unnamed-field-not-error.rs",
           "source_sha256_before": "fbff5874be44a5dcc347693d7929537256b187dfec467ed72c9968c095228d8d",
-          "path": "test/foundation/thiserror/tests/ui/transparent-struct-unnamed-field-not-error.rs",
-          "sha256": "fbff5874be44a5dcc347693d7929537256b187dfec467ed72c9968c095228d8d"
+          "path": "test/foundation/error-definition/tests/ui/transparent-struct-unnamed-field-not-error.rs",
+          "sha256": "d3a24314b649e5548d60a374f78eee5e465359b29ee29f6ac9abbdcc0e8f1955"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/transparent-struct-unnamed-field-not-error.stderr",
           "source_sha256_before": "f8867fbc84adcca4a53596c94ca956307032d255fb6a1607ebc0e949f1fb0370",
-          "path": "test/foundation/thiserror/tests/ui/transparent-struct-unnamed-field-not-error.stderr",
-          "sha256": "f8867fbc84adcca4a53596c94ca956307032d255fb6a1607ebc0e949f1fb0370"
+          "path": "test/foundation/error-definition/tests/ui/transparent-struct-unnamed-field-not-error.stderr",
+          "sha256": "e14be148fffb31ba2fbe706c07ffb42c80b1fa26517d2d874f3e41a199f07004"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/unconditional-recursion.rs",
           "source_sha256_before": "a6cc8c97a95644b4c5979fbc2fc5e18bdb58ff1e8a8ab471c9e3bb64a8ddddc4",
-          "path": "test/foundation/thiserror/tests/ui/unconditional-recursion.rs",
-          "sha256": "a6cc8c97a95644b4c5979fbc2fc5e18bdb58ff1e8a8ab471c9e3bb64a8ddddc4"
+          "path": "test/foundation/error-definition/tests/ui/unconditional-recursion.rs",
+          "sha256": "b1514a04727d259105508150160db82b89f7f46fd677ac7ea7b9687749209679"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/unconditional-recursion.stderr",
           "source_sha256_before": "7349acab2499b55cd48d86b8c0ac65b080225f3d43d6582653259d7b9e085a52",
-          "path": "test/foundation/thiserror/tests/ui/unconditional-recursion.stderr",
+          "path": "test/foundation/error-definition/tests/ui/unconditional-recursion.stderr",
           "sha256": "7349acab2499b55cd48d86b8c0ac65b080225f3d43d6582653259d7b9e085a52"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/unexpected-field-fmt.rs",
           "source_sha256_before": "29fba7b4d81c642ec8e47cfe053aa515acf9080a86d65e685363a48993becfe3",
-          "path": "test/foundation/thiserror/tests/ui/unexpected-field-fmt.rs",
-          "sha256": "29fba7b4d81c642ec8e47cfe053aa515acf9080a86d65e685363a48993becfe3"
+          "path": "test/foundation/error-definition/tests/ui/unexpected-field-fmt.rs",
+          "sha256": "0e44ee4c09258af6cbe8511ff75d7f3dd1228ace52c053ea59a7b05576011f75"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/unexpected-field-fmt.stderr",
           "source_sha256_before": "20731c4a08af04bed3ff513903adadd690b6bc532b15604557e7f25575a8338f",
-          "path": "test/foundation/thiserror/tests/ui/unexpected-field-fmt.stderr",
+          "path": "test/foundation/error-definition/tests/ui/unexpected-field-fmt.stderr",
           "sha256": "20731c4a08af04bed3ff513903adadd690b6bc532b15604557e7f25575a8338f"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/unexpected-struct-source.rs",
           "source_sha256_before": "c6cbe882d622635c216feb8290b1bd536ce0ec4feee16bc087667a21b3641d5c",
-          "path": "test/foundation/thiserror/tests/ui/unexpected-struct-source.rs",
-          "sha256": "c6cbe882d622635c216feb8290b1bd536ce0ec4feee16bc087667a21b3641d5c"
+          "path": "test/foundation/error-definition/tests/ui/unexpected-struct-source.rs",
+          "sha256": "c8da5352a82985e862165206549c79da74787fb912406523e4150a64de0a445b"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/unexpected-struct-source.stderr",
           "source_sha256_before": "7c8227513478f6cc09e8a28be337c8a0e758a06ca5978d774c91bd43c4a54043",
-          "path": "test/foundation/thiserror/tests/ui/unexpected-struct-source.stderr",
+          "path": "test/foundation/error-definition/tests/ui/unexpected-struct-source.stderr",
           "sha256": "7c8227513478f6cc09e8a28be337c8a0e758a06ca5978d774c91bd43c4a54043"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/union.rs",
           "source_sha256_before": "331adff27cebd8b95b03b6742cc8247331fda1f961e1590ed39c8d39f50cf1d8",
-          "path": "test/foundation/thiserror/tests/ui/union.rs",
-          "sha256": "331adff27cebd8b95b03b6742cc8247331fda1f961e1590ed39c8d39f50cf1d8"
+          "path": "test/foundation/error-definition/tests/ui/union.rs",
+          "sha256": "267c390cde0d53e463243c4736e44c95ceb3185039d64711e8899ca3ae69cd27"
         },
         {
           "source": "src/foundation/thiserror/tests/ui/union.stderr",
           "source_sha256_before": "5f67ad29753d6fb14bc03aef7d4a1f660ee7796e469c037efbf8b13456934ad3",
-          "path": "test/foundation/thiserror/tests/ui/union.stderr",
+          "path": "test/foundation/error-definition/tests/ui/union.stderr",
           "sha256": "5f67ad29753d6fb14bc03aef7d4a1f660ee7796e469c037efbf8b13456934ad3"
         }
       ]

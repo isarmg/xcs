@@ -92,10 +92,10 @@ version = "1.1"
 default-features = true
 path = "../slotmap"
 
-[dependencies.thiserror]
+[dependencies.error-definition]
 version = "2.0"
 default-features = true
-path = "../thiserror"
+path = "../error-definition"
 
 [dependencies.tracing]
 version = "0.1"

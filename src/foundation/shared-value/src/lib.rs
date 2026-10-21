@@ -497,7 +497,7 @@ impl<'a> From<SharedValue<'a, str>> for SharedValue<'a, [u8]> {
 
 /// Error returned from `SharedValue::try_from` for unsuccessful
 /// conversion from `SharedValue<'_, [u8]>` to `SharedValue<'_, str>`.
-#[derive(Debug, Clone, thiserror::Error)]
+#[derive(Debug, Clone, error_definition::Error)]
 #[error("invalid utf-8 sequence: {_0}")]
 pub enum FromUtf8Error {
     /// Error for conversion of [`SharedValue::Borrowed`] and [`SharedValue::Counted`] variants

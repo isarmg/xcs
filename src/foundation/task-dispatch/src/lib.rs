@@ -28,7 +28,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 use std::{future::Future, pin::Pin, sync::OnceLock};
-use thiserror::Error;
+use error_definition::Error;
 
 /// A future that has been pinned.
 pub type PinnedFuture<T> = Pin<Box<dyn Future<Output = T> + Send>>;

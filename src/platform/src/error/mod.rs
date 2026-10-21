@@ -1,8 +1,8 @@
 use std::{fmt, str::FromStr};
 
 use data_serialization::{Deserialize, Deserializer, Serialize};
+use error_definition::Error;
 use json_codec::{Map, Value};
-use thiserror::Error;
 
 pub const MAX_ERROR_CODE_BYTES: usize = 128;
 pub const MAX_REQUEST_ID_BYTES: usize = 128;

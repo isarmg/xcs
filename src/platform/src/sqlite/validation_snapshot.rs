@@ -493,7 +493,7 @@ fn lock_read(file: &File, start: libc::off_t, length: libc::off_t) -> Result<(),
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, error_definition::Error)]
 pub enum SnapshotError {
     #[error("SQLite validation connection limits failed")]
     ConnectionLimits(#[from] crate::sqlite::ConnectionLimitError),

@@ -516,7 +516,7 @@ fn temporary_name() -> Result<String, Error> {
 #[cfg(target_os = "linux")]
 pub mod linux;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, error_definition::Error)]
 pub enum Error {
     #[error("secure randomness unavailable")]
     Randomness,

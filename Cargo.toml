@@ -53,7 +53,7 @@ storage-client = { path = "src/client" }
 storage-server = { path = "src/server" }
 data-serialization = { version = "1", features = ["derive"], path = "src/foundation/data-serialization"}
 json-codec = {version = "1", path = "src/foundation/json-codec"}
-thiserror = {version = "2", path = "src/foundation/thiserror"}
+error-definition = {version = "2", path = "src/foundation/error-definition"}
 blake3 = {version = "=1.8.7", path = "src/foundation/blake3"}
 uuid = { version = "1", features = ["v4"], path = "src/foundation/uuid"}
 sqlx = { version = "=0.9.0", default-features = false, features = ["sqlite-bundled"], path = "src/foundation/sqlx"}

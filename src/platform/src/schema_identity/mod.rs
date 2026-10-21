@@ -5,9 +5,9 @@
 //! the byte-exact schema fingerprint shared by products and offline tooling.
 
 use data_serialization::{Deserialize, Deserializer, Serialize};
+use error_definition::Error;
 use sha2::{Digest, Sha256};
 use std::fmt;
-use thiserror::Error;
 
 pub const SCHEMA_FINGERPRINT_ALGORITHM_VERSION: u32 = 1;
 pub const SCHEMA_FINGERPRINT_GOLDEN_VECTORS_JSON: &str =

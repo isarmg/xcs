@@ -78,6 +78,10 @@ DOM 辅助、视图渲染、响应式状态、任务调度、视图分支和共�
 
 重复实现合并后，存续组件采用 `rust-syntax`、`rust-source-format`、`cpu-feature-detect` 功能名；依赖、生成代码、内部模块、外置测试和维护门禁同步迁移。来源及契约例外见[迁移记录](reports/syntax-cpu-naming-20261021.md)。
 
+## 第六批实施：错误定义组件族
+
+`error-definition` 与 `error-definition-macros` 协调替换运行时、派生实现及消费者路径。隐藏支持模块统一为 `__derive_support`，由完整版本一致性与精确依赖门禁保护；错误文本、Display、source 和 backtrace 语义不变。原始 thiserror / thiserror-impl 2.0.21 来源保留，验证范围见[组件记录](architecture/error-definition-naming.md)。
+
 ## 后续组件族：仅为计划
 
 以下是需要联合评审的候选，不是已落地清单，也不要求把所有有明确领域含义的名称强行替换。
@@ -85,7 +89,6 @@ DOM 辅助、视图渲染、响应式状态、任务调度、视图分支和共�
 | 现有组件族 | 计划方向 | 必须协调的边界 |
 | --- | --- | --- |
 | tokio / tokio-macros / tokio-util | async-runtime / async-runtime-macros / async-runtime-utils | 属性宏默认 crate 路径、特性转发、调度和取消语义 |
-| thiserror / thiserror-impl | error-definition / error-definition-macros | 宏中硬编码路径及隐藏支持模块 |
 | ring | native-cryptography | 原生符号前缀、预生成汇编、构建脚本和 links；不能仅改 Cargo 名称 |
 
 `src/interface` 和 `src/macros` 自身已按职责命名；本批也已协调其重导出和生成的 `web_interface::view_renderer` 路径。内部化同时修改宏生产者和消费者，而不只修改依赖文件夹。

@@ -107,11 +107,11 @@ path = "../json-codec"
 version = "1.13.1"
 path = "../smallvec"
 
-[dependencies.thiserror]
+[dependencies.error-definition]
 version = "2.0.18"
 features = ["std"]
 default-features = false
-path = "../thiserror"
+path = "../error-definition"
 
 [dependencies.tokio]
 version = "1.25.0"

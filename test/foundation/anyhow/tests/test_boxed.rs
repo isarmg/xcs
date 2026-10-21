@@ -6,7 +6,7 @@
 use anyhow::anyhow;
 use std::error::Error as StdError;
 use std::io;
-use thiserror::Error;
+use error_definition::Error;
 
 #[derive(Error, Debug)]
 #[error("outer")]
@@ -29,7 +29,7 @@ fn test_boxed_str() {
 }
 
 #[test]
-fn test_boxed_thiserror() {
+fn test_boxed_error_definition() {
     let error = MyError {
         source: io::Error::new(io::ErrorKind::Other, "oh no!"),
     };

@@ -131,12 +131,12 @@ version = "0.1.0"
 dependencies = [
  "argon2",
  "base64",
+ "error-definition",
  "getrandom 0.4.3",
  "hmac",
  "json-codec",
  "sha2",
  "subtle",
- "thiserror",
 ]
 
 [[package]]
@@ -558,6 +558,22 @@ name = "errno"
 version = "0.3.14"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "error-definition"
+version = "2.0.21"
+dependencies = [
+ "error-definition-macros",
+]
+
+[[package]]
+name = "error-definition-macros"
+version = "2.0.21"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rust-syntax",
 ]
 
 [[package]]
@@ -1391,6 +1407,7 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "data-serialization",
+ "error-definition",
  "futures-executor",
  "getrandom 0.4.3",
  "json-codec",
@@ -1400,7 +1417,6 @@ dependencies = [
  "sha2",
  "sqlx",
  "tempfile",
- "thiserror",
  "tokio",
  "zeroize",
 ]
@@ -1496,6 +1512,7 @@ version = "0.2.16"
 dependencies = [
  "async-lock",
  "data-serialization",
+ "error-definition",
  "futures",
  "guardian",
  "indexmap",
@@ -1507,7 +1524,6 @@ dependencies = [
  "send_wrapper",
  "slotmap",
  "task-dispatch",
- "thiserror",
  "web-sys",
 ]
 
@@ -1622,11 +1638,11 @@ name = "rstml"
 version = "0.13.1"
 dependencies = [
  "derive-where",
+ "error-definition",
  "proc-macro2",
  "proc-macro2-diagnostics",
  "quote",
  "rust-syntax",
- "thiserror",
 ]
 
 [[package]]
@@ -1768,7 +1784,7 @@ name = "shared-value"
 version = "0.2.1"
 dependencies = [
  "data-serialization",
- "thiserror",
+ "error-definition",
 ]
 
 [[package]]
@@ -1858,6 +1874,7 @@ version = "0.9.0"
 dependencies = [
  "crossbeam-queue",
  "either",
+ "error-definition",
  "event-listener",
  "futures-core",
  "futures-util",
@@ -1867,7 +1884,6 @@ dependencies = [
  "log",
  "percent-encoding",
  "smallvec",
- "thiserror",
  "tokio",
  "tracing",
  "url",
@@ -1879,6 +1895,7 @@ version = "0.9.0"
 dependencies = [
  "atoi",
  "bytes",
+ "error-definition",
  "flume",
  "form_urlencoded",
  "futures-channel",
@@ -1890,7 +1907,6 @@ dependencies = [
  "log",
  "percent-encoding",
  "sqlx-core",
- "thiserror",
  "tracing",
  "url",
 ]
@@ -1923,6 +1939,7 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "data-serialization",
+ "error-definition",
  "futures-util",
  "json-codec",
  "reqwest",
@@ -1932,7 +1949,6 @@ dependencies = [
  "rustls-webpki",
  "storage-contract",
  "tempfile",
- "thiserror",
  "tokio",
  "tokio-util",
  "url",
@@ -1945,8 +1961,8 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "data-serialization",
+ "error-definition",
  "json-codec",
- "thiserror",
  "uuid",
 ]
 
@@ -2050,8 +2066,8 @@ dependencies = [
 name = "task-dispatch"
 version = "0.3.0"
 dependencies = [
+ "error-definition",
  "futures",
- "thiserror",
  "wasm-bindgen-futures",
 ]
 
@@ -2063,22 +2079,6 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
-]
-
-[[package]]
-name = "thiserror"
-version = "2.0.21"
-dependencies = [
- "thiserror-impl",
-]
-
-[[package]]
-name = "thiserror-impl"
-version = "2.0.21"
-dependencies = [
- "proc-macro2",
- "quote",
- "rust-syntax",
 ]
 
 [[package]]

@@ -46,6 +46,7 @@ case "${1:-}" in
     python3 .github/scripts/check-sqlite-scope.py
     python3 .github/scripts/check-foundation-consumers.py
     python3 .github/scripts/check-serialization-family.py
+    python3 .github/scripts/check-error-definition-family.py
     python3 .github/scripts/check-crypto-consolidation.py
     python3 .github/scripts/check-web-bindgen-scope.py
     # Focused regressions for maintained foundation changes. Do not restore

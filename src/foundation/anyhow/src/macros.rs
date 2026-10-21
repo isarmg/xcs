@@ -30,7 +30,7 @@
 ///
 /// ```
 /// # use anyhow::{bail, Result};
-/// # use thiserror::Error;
+/// # use error_definition::Error;
 /// #
 /// # const MAX_DEPTH: usize = 1;
 /// #
@@ -98,7 +98,7 @@ macro_rules! __ensure {
         ///
         /// ```
         /// # use anyhow::{ensure, Result};
-        /// # use thiserror::Error;
+        /// # use error_definition::Error;
         /// #
         /// # const MAX_DEPTH: usize = 1;
         /// #

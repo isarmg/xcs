@@ -144,12 +144,12 @@
 //! - Anyhow works with any error type that has an impl of `std::error::Error`,
 //!   including ones defined in your crate. We do not bundle a `derive(Error)`
 //!   macro but you can write the impls yourself or use a standalone macro like
-//!   [thiserror].
+//!   [error_definition].
 //!
 //!   [thiserror]: https://github.com/dtolnay/thiserror
 //!
 //!   ```
-//!   use thiserror::Error;
+//!   use error_definition::Error;
 //!
 //!   #[derive(Error, Debug)]
 //!   pub enum FormatError {
@@ -542,7 +542,7 @@ pub type Result<T, E = Error> = core::result::Result<T, E>;
 ///
 ///     ```
 ///     # use anyhow::bail;
-///     # use thiserror::Error;
+///     # use error_definition::Error;
 ///     #
 ///     # #[derive(Error, Debug)]
 ///     # #[error("???")]
@@ -582,7 +582,7 @@ pub type Result<T, E = Error> = core::result::Result<T, E>;
 ///
 ///     ```
 ///     # use anyhow::bail;
-///     # use thiserror::Error;
+///     # use error_definition::Error;
 ///     #
 ///     # #[derive(Error, Debug)]
 ///     # #[error("???")]

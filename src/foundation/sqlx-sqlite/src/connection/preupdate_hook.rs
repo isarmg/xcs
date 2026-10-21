@@ -12,7 +12,7 @@ use std::panic::catch_unwind;
 use std::ptr;
 use std::ptr::NonNull;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, error_definition::Error)]
 pub enum PreupdateError {
     /// Error returned from the database.
     #[error("error returned from database: {0}")]
