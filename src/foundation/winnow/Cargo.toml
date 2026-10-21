@@ -35,7 +35,7 @@ repository = "https://github.com/winnow-rs/winnow"
 
 [features]
 alloc = []
-debug = ["std", "dep:anstyle", "dep:is_terminal_polyfill"]
+debug = ["std", "dep:anstyle"]
 default = ["std"]
 simd = ["dep:memchr"]
 std = ["alloc", "memchr?/std"]
@@ -51,10 +51,6 @@ version = "1.0.8"
 optional = true
 path = "../anstyle"
 
-[dependencies.is_terminal_polyfill]
-version = "1.48.1"
-optional = true
-path = "../is_terminal_polyfill"
 
 [dependencies.memchr]
 version = "2.7"

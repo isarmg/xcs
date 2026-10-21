@@ -35,9 +35,6 @@ name = "attribute_derive_macro"
 path = "src/lib.rs"
 proc-macro = true
 
-[dependencies.collection_literals]
-version = "1"
-path = "../collection_literals"
 
 [dependencies.interpolator]
 version = "0.5.0"

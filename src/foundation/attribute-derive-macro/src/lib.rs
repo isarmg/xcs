@@ -4,12 +4,11 @@ use std::fmt::Display;
 use std::iter;
 use std::ops::Range;
 
-use collection_literals::hash;
-use interpolator::{Formattable, format};
-use manyhow::{ErrorMessage, Result, bail, error_message, manyhow, span_range};
-use proc_macro_utils::{TokenParser, TokenStream2Ext};
+use interpolator::{format, Formattable};
+use manyhow::{bail, error_message, manyhow, span_range, ErrorMessage, Result};
 use proc_macro2::{Literal, Span, TokenStream};
-use quote::{ToTokens, format_ident};
+use proc_macro_utils::{TokenParser, TokenStream2Ext};
+use quote::{format_ident, ToTokens};
 use quote_use::quote_use as quote;
 use syn::spanned::Spanned;
 use syn::{DataStruct, DeriveInput, Field, Fields, Generics, Ident, LitStr, Type, Visibility};
@@ -116,10 +115,11 @@ impl StructError {
             0 => self.unknown_field_empty().format(HashMap::new()),
             1 => self
                 .unknown_field_single()
-                .format(hash!("expected_field" => fields[0])),
-            _ => self
-                .unknown_field()
-                .format(hash!("expected_fields" => Formattable::iter(&fields))),
+                .format(HashMap::from([("expected_field", fields[0])])),
+            _ => self.unknown_field().format(HashMap::from([(
+                "expected_fields",
+                Formattable::iter(&fields),
+            )])),
         }
     }
 }
@@ -474,11 +474,11 @@ impl Conflicts {
 
                 let error_a_to_b = struct_error
                     .conflict()
-                    .format(hash!("first" => af, "second" => bf))?;
+                    .format(HashMap::from([("first", af), ("second", bf)]))?;
 
                 let error_b_to_a = struct_error
                     .conflict()
-                    .format(hash!("first" => bf, "second" => af))?;
+                    .format(HashMap::from([("first", bf), ("second", af)]))?;
 
                 Ok(quote! {
                     # use ::attribute_derive::__private::proc_macro2;
@@ -582,20 +582,23 @@ impl AttrField {
                             );
                         }
 
-                        let duplicate = struct_error
-                            .duplicate_field()
-                            .format(hash!("field" => Formattable::display(&field_name)))?;
+                        let duplicate =
+                            struct_error.duplicate_field().format(HashMap::from([(
+                                "field",
+                                Formattable::display(&field_name),
+                            )]))?;
 
                         let help = if let Some(help) = struct_error.field_help() {
                             if attribute_ident.is_none() && help.default {
                                 None
                             } else {
                                 let example = &example.as_deref().unwrap_or("...");
-                                let mut context = hash!(
-                                "field" => Formattable::display(&field_name), 
-                                "example" => Formattable::display(example), 
-                                "open_or_eq" => Formattable::display(&"{open_or_eq}"), 
-                                "close_or_empty" => Formattable::display(&"{close_or_empty}"));
+                                let mut context = HashMap::from([
+                                    ("field", Formattable::display(&field_name)),
+                                    ("example", Formattable::display(example)),
+                                    ("open_or_eq", Formattable::display(&"{open_or_eq}")),
+                                    ("close_or_empty", Formattable::display(&"{close_or_empty}")),
+                                ]);
                                 if let Some(ident) = &attribute_ident {
                                     context.insert("attribute", Formattable::display(ident));
                                 }
@@ -607,7 +610,10 @@ impl AttrField {
 
                         let missing = struct_error
                             .missing_field()
-                            .format(hash!("field" => Formattable::display(&field_name)))?
+                            .format(HashMap::from([(
+                                "field",
+                                Formattable::display(&field_name),
+                            )]))?
                             .value()
                             + help.as_deref().unwrap_or_default();
 

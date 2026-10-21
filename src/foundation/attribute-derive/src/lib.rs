@@ -119,7 +119,7 @@
 //! - `optional` If field is not specified, the default value is used instead.
 //! - `default = <default expr>` provides a default to be used instead of
 //!   [`Default::default()`]. Enables `optional`.
-//! - `conflicts(<field>, ...)` Conflicting fields
+//! - `conflicts = [<field>, ...]` Conflicting fields
 //! - `example = "<example>"`
 //!
 //! # Parse methods

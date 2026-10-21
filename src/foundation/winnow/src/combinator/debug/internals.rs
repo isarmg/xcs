@@ -289,7 +289,7 @@ fn term_width() -> usize {
 }
 
 fn query_width() -> Option<usize> {
-    use is_terminal_polyfill::IsTerminal;
+    use std::io::IsTerminal;
     if std::io::stderr().is_terminal() {
         terminal_size::terminal_size().map(|(w, _h)| w.0.into())
     } else {

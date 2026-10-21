@@ -1,7 +1,7 @@
 {
   "config_sha256": "95c97c0734c86015d5d33b4f3fa40a32d3c2218a08b8c25a4325d1127e671b23",
   "lockfiles_sha256": {
-    "Cargo.lock": "c1113befcef229d952f3a12c8646c39ce1510dcf18e359be0514f7cba458ce7a"
+    "Cargo.lock": "5a77406758f909f2f359d7afac62296ebb6999bbce8c4d24a65a8bef890a2ad4"
   },
   "manifests_sha256": {
     "Cargo.toml": "1c6472894378c77e0b3e3c52b586039cdc6b030bada2609b3bbe9f719be96455",
@@ -14,7 +14,7 @@
     "src/foundation/ahash/Cargo.toml": "57975d1fef1abd92d478feb15244cd25376ae20a00e07d0db08e0e3ff8709b73",
     "src/foundation/aho-corasick/Cargo.toml": "9e02f34d2fc0d8cef568a463881053f8037fe4ecfe3a32175fe781ea6aa3d0ce",
     "src/foundation/allocator-api2/Cargo.toml": "f60856ad89db6774871a4634bd8dd0c95c80337e94d2192ca061afd410cbe7cc",
-    "src/foundation/anstream/Cargo.toml": "7e10aa0bb0a0b2f09804907ce9cdcd28ef35294085106adf7e8c6857dbf5fe2f",
+    "src/foundation/anstream/Cargo.toml": "1b4a5447407982ffd2b6c19c44c84145968f8110461026fd2927ff6d598ff3c8",
     "src/foundation/anstyle-parse/Cargo.toml": "3068edd1ffeae19bc234a2c022a1609c64f255c472302dd865ee0311e5e5cf1d",
     "src/foundation/anstyle-query/Cargo.toml": "5a1216b5bdadf5cc2e92e6ed6ea6ff442b86dabf1236d6e8afd86401a3f1b0cf",
     "src/foundation/anstyle/Cargo.toml": "02271a80a16c1a9f70d53bf83155f14b44a42fd8269f161b89cdfe20b41d32ee",
@@ -26,7 +26,7 @@
     "src/foundation/async-trait/Cargo.toml": "3b965a3b596149963c126d4bdaa69029661bad26de546b2a9396cb8f35b83a7f",
     "src/foundation/atoi/Cargo.toml": "e5b8fa1f94ef341747463bf133e21483129de43d7486516a42686a59a38c28e8",
     "src/foundation/atomic-waker/Cargo.toml": "d6992d3e7b2190b1226fa1d3e7638899cbcfaafb68912dd2a70b0e50ac6c4a9b",
-    "src/foundation/attribute-derive-macro/Cargo.toml": "925c056db383d52bc094b3da5474c483fe4fa1b03efd10d2993009ca5ee2e90d",
+    "src/foundation/attribute-derive-macro/Cargo.toml": "87893da6d90b77647e12907885ed1fc2c5dff59852c4153ee6d683b68f167753",
     "src/foundation/attribute-derive/Cargo.toml": "9ca45eb21a60f890e4e083c8f63e0ede8b0114893d28a1f4a1b7c6cc6d200460",
     "src/foundation/autocfg/Cargo.toml": "fbd42d1ec63c097ed7f545ca974fabcce7a8634a7131fc47b83d3fe9b190b79a",
     "src/foundation/axum-core/Cargo.toml": "ebf926a8d1f72dbda92715080302162208f0f4770e0cc2db7f77ef37b63b1ee5",
@@ -35,7 +35,7 @@
     "src/foundation/base64-0.22.1/Cargo.toml": "ec589369f8c2ab4dbd165f3ad570e56c8995624f7a8b23dea7991277e61028ca",
     "src/foundation/base64-0.23.1/Cargo.toml": "9504252614940f1a708e69e97f94dc912c59c6fcc10b172dc6a7bafcf32a2976",
     "src/foundation/base64ct/Cargo.toml": "760135ed9ff49f6ef8786078e6881e0457b4298913b752ce55bf4554101b0998",
-    "src/foundation/bindgen/Cargo.toml": "009ea8a274217ee78820ea9f720c8bf6dc636cb94232ee119f3b89a3e1bdffde",
+    "src/foundation/bindgen/Cargo.toml": "484059457f0fdd4f7aebddf713131447504d6e200913e863c8cb4e7c97b6927d",
     "src/foundation/bit-set/Cargo.toml": "9174d753036671dfa194edac1bc2d99daf63d74f9e56cf94a43ccbc19ebd9847",
     "src/foundation/bit-vec/Cargo.toml": "85efc41b804b05460d04edce4f87556092eae85bab08c8096a7434ea775264c3",
     "src/foundation/bitflags-2.13.2/Cargo.toml": "7f415c5992db4ee785126eba4cf7965a18d177dfa0e23bb30e72ac1f25197451",
@@ -56,7 +56,6 @@
     "src/foundation/clap_derive/Cargo.toml": "03056237c10a9a085b749fad4d8915e462e350028ded9a05620fe434646fb482",
     "src/foundation/clap_lex/Cargo.toml": "825ca42e19f2c1a340ad36a8360584e97111d8ae582b5aedc5081705551cecc2",
     "src/foundation/cmov/Cargo.toml": "e2803f1992f1b5a75658a0df51a52ea581d4af99146e86dbefee19cbfdf4c68f",
-    "src/foundation/collection_literals/Cargo.toml": "5a63b7fbb189d4053cbd9803deff7f05bdfeb4b001e90a23d404bd3c03a67193",
     "src/foundation/colorchoice/Cargo.toml": "20633f3c901dae63b12e2471ed9d664ac1279442c9d5ffb1f88b57291fc6a3f6",
     "src/foundation/console_error_panic_hook/Cargo.toml": "2100eae4b8d3be580f0939945d12c6aaeca869fcf4cabca009a2a2036b6b3fdb",
     "src/foundation/const-oid/Cargo.toml": "44a39fb088e9d66496e265449f5a29e7902d3e937532ad3747e87f5fc62316f5",
@@ -80,7 +79,6 @@
     "src/foundation/digest-0.10.7/Cargo.toml": "a5c7eae87da1cb29824c5c53f8b50ab964506355fb3d9b07d98fd8c0d7a4188a",
     "src/foundation/digest-0.11.3/Cargo.toml": "adab346e4fedf7d74f58dab4cd5eacecc8b0449674bbeda512e748d62a1eae8c",
     "src/foundation/displaydoc/Cargo.toml": "4ed665b8774905e9d8628cfa2e675d82c93fc4bf5ac9baa858d13c3df468b58f",
-    "src/foundation/drain_filter_polyfill/Cargo.toml": "9774ecf4d2fb7466d33e5e3c4d952142c5636b4008e36fd1ab3b8f9e0775d132",
     "src/foundation/either/Cargo.toml": "fb68c207ff8e5bdfcd353e4c029ea261a4f3bf1162fd7e71ed0c5eb08d87d134",
     "src/foundation/either_of/Cargo.toml": "d27a2340cb4aa94eb70a62469d8759bc6a53c3932a15f53dbe21a4fbf4d227f0",
     "src/foundation/email_address/Cargo.toml": "79f69636c2f2476824dbea81ab6766e43ddcc68eafe4c35af9b16db421f06003",
@@ -149,8 +147,6 @@
     "src/foundation/indexmap/Cargo.toml": "03d6bd823b7b611bb52e2f28d56c29a87ad561233a6a45efda5622cce902c0da",
     "src/foundation/interpolator/Cargo.toml": "982a77cf5d2de1e56c13ba9ebf3a5d7fb827bc33bc4a0d1d9183cbf82c701762",
     "src/foundation/ipnet/Cargo.toml": "8eff54f5c3dc1e278e5a65334b8dc5cb69b538ac56cb5a9e9cfe0c59de3f006c",
-    "src/foundation/is_terminal_polyfill/Cargo.toml": "ea8917c63f9d001ec11b33baf67328335b42d603762b83bca4810c67a2ff655d",
-    "src/foundation/itertools-0.13.0/Cargo.toml": "a5685fc3649df7bbaa29cbc2530846efbe8b24ee8c434d9d884c5bd3be9f6f61",
     "src/foundation/itertools-0.14.0/Cargo.toml": "6285d8db16db663fdf3c9a9a72072597c59cee04faa3db569a84e4f3e83918df",
     "src/foundation/itoa/Cargo.toml": "91e17d7f7f5a0353ea808436775e7c02ddb18e4fc5c0e1126ee2f507574c541a",
     "src/foundation/js-sys/Cargo.toml": "378a0a3c01b93d9aef98924e7c96a97d269a70566d8542f2aa19754144b09e55",
@@ -248,7 +244,6 @@
     "src/foundation/serde_urlencoded/Cargo.toml": "1211a27af13bd1094f66c36b35933ddf43240fb356ddf8c60d85db95cd0c6d72",
     "src/foundation/sha2-0.11.1/Cargo.toml": "787a5562b926e969fb3c3ee0e7847fe590f14b1084c978c0e718135a00bfa12a",
     "src/foundation/sharded-slab/Cargo.toml": "c27d8edf445c0076cdd0e20f3e55603fdec80e68fa661a3e6cec52513400581f",
-    "src/foundation/shlex-1.3.0/Cargo.toml": "c0f82d1645b2187488c986f48aab8e4887ba86cdbe0d478ee21525bb0bb2a007",
     "src/foundation/shlex-2.0.1/Cargo.toml": "7123850f07f5534d8f7c6969b888f163a9a74a7cd5e7c2210d1ac035c7ea1ba4",
     "src/foundation/signal-hook-registry/Cargo.toml": "9cb7a036cafa5a0b6f12236c11a3fdd1fee7d94696b70be12fbc7ff5919ca95a",
     "src/foundation/simd-adler32/Cargo.toml": "9b5463dcc551eaa5e93b84be1bccd779a293dde25ceb9fdb7bdde57dd0399ec6",
@@ -270,7 +265,7 @@
     "src/foundation/sync_wrapper/Cargo.toml": "e74f45c6729234e6b97c1e7ed0fea70917888d30bf58f0c4871b887dd94d6c76",
     "src/foundation/synstructure/Cargo.toml": "10739fab666c381d700794f17a12bb0f9120934bad0c223d32600664aae8daf2",
     "src/foundation/sysinfo/Cargo.toml": "28875c3afae210492846c6103abf4f70f5811e6fa4ff3f819e8061d153d6ae5d",
-    "src/foundation/tachys/Cargo.toml": "097f09f1d002be3ae1f55f2c913e75cbb6af7bb05e169a8d9624ce3afd47c23c",
+    "src/foundation/tachys/Cargo.toml": "39b9d49da39205828e59d7405b19c2e567f46ce6e925c4281846ce7de53264c4",
     "src/foundation/tempfile/Cargo.toml": "c4bf18aeccfd20b569c8b74f4d202108ea5fff5466b58614d7a06d55ff3c7f78",
     "src/foundation/thiserror-impl/Cargo.toml": "ffca5b82a7c2364bb69e4950e11e2ac6ab5e1d703f833167ac46f2b7e8d8c6dd",
     "src/foundation/thiserror/Cargo.toml": "cb0c5bb5cf1bd717e3c621fe282756c7e024ef962b06d03baabce50613b5522d",
@@ -327,7 +322,7 @@
     "src/foundation/wasmparser/Cargo.toml": "3297d055b1aad3621a2da1c3b8f87ceba96281d05bfc5139aee219f067207438",
     "src/foundation/web-sys/Cargo.toml": "2a4eceddedbfe936a4d82101d5a5197da0398755a4dd8b01d6fd316524dc9470",
     "src/foundation/webpki-roots/Cargo.toml": "655e506d8dbfec7d359a53129c0da03b84ecf68f31bbfa09ee1a56f4aaf59644",
-    "src/foundation/winnow/Cargo.toml": "def4ba55649b411890969079243811f764a4c9fdb5ffd32028d92bd2e570a1f0",
+    "src/foundation/winnow/Cargo.toml": "e07f5a3696853b8ed319b5e3d0a0e8d9d7ae847a48091502840ac8a6fdca97f1",
     "src/foundation/writeable/Cargo.toml": "e4568e1888afbe6af344da9132182809403f0aed0e56e907eb84050888b920a7",
     "src/foundation/yoke-derive/Cargo.toml": "585d6cfd320426e27bd45e58443cb2d6e6c669fbdb9f33074fcfad0f01558814",
     "src/foundation/yoke/Cargo.toml": "dbe6096b229a5d7ad2fbc6a4f20f4b5dbc0c6fc0715748264076f244df86f8b8",
@@ -1135,11 +1130,11 @@
       "version": "0.2.21"
     },
     "src/foundation/anstream": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（5013 字节）；保留文档编译、真实测试及性能基准输入。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（5013 字节）；保留文档编译、真实测试及性能基准输入。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
       "description": "IO stream adapters for writing colored text that will gracefully degrade according to your terminal's capabilities.",
       "directory": "src/foundation/anstream",
       "files_sha256": {
-        "Cargo.toml": "7e10aa0bb0a0b2f09804907ce9cdcd28ef35294085106adf7e8c6857dbf5fe2f",
+        "Cargo.toml": "1b4a5447407982ffd2b6c19c44c84145968f8110461026fd2927ff6d598ff3c8",
         "src/_macros.rs": "04590ef86f86bb67fb11580ab101caffde4d36da84652537da20424b72c8729a",
         "src/adapter/mod.rs": "baf4237ea0b18df63609e49d93572ca27c2202a4cbec0220adb5a7e815c7d8ed",
         "src/adapter/strip.rs": "642375f9dc5836eb5aa6eba7be849a84786d22764d470672bf1f646061254c1c",
@@ -1148,7 +1143,7 @@
         "src/buffer.rs": "f223bf9622044b86dbb3ed64fd51359f40bc5f0c1b9467d789143a0fa4b0ed80",
         "src/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
         "src/lib.rs": "f23e8840dd266e4ff43dcfa2f6c69f839ec436aae407cc9221c9e4d3a6b2695f",
-        "src/stream.rs": "b4fa48d39d15c30950c51b248a26bf164ec5bbe2f58b8347e72b6b6d061d2737",
+        "src/stream.rs": "c7d9526dd1ca217f6f5462780f3d1bf4a32b22ff7285284fd4fc8c4164e1791a",
         "src/strip.rs": "0268bdc9155fc91bd7e92337c5e3ba96999780b46fab311b00922c7a3047233c",
         "src/wincon.rs": "46067373ab01154b014bb3cf77edbc5fa9abea6633c90e4cc02235b31c19bf74"
       },
@@ -1677,7 +1672,7 @@
         "Cargo.toml": "9ca45eb21a60f890e4e083c8f63e0ede8b0114893d28a1f4a1b7c6cc6d200460",
         "docs/traits.html": "e4cc3f6cd577623236e969907f420331d4679ad6b5c6d3903f826386de606a95",
         "src/from_partial.rs": "c8695862e07d4319b02750bf4c82df947907e593f58ca67fada9ce7fad5e5ac6",
-        "src/lib.rs": "50c1b4a9ad6ef4f2dad1448e3552ea55148a2dab87bdb1eb8dd9996a6e1e4973",
+        "src/lib.rs": "cb656e58b7b27aa9f6f1a8a24d131f0ea54890eee9801e510c61b03848e979ea",
         "src/parsing.rs": "b90b80198aa958e2d06828510df75305f8b701527769c98d29ed0423af766b77",
         "src/std_impls.rs": "0153092f39ff0b4a38c25f4f89e27fc5723282f0327b58b40b0d88917982c417",
         "src/syn_impls.rs": "332a562aaa0bd8c7fa6f07806f10a0d245c8cca63f0647ce796855c0a2bbe5f5",
@@ -1708,12 +1703,12 @@
       "version": "0.11.0"
     },
     "src/foundation/attribute-derive-macro": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
       "description": "Clap for proc macro attributes",
       "directory": "src/foundation/attribute-derive-macro",
       "files_sha256": {
-        "Cargo.toml": "925c056db383d52bc094b3da5474c483fe4fa1b03efd10d2993009ca5ee2e90d",
-        "src/lib.rs": "e3b91a17e24656d10b2839c66cc437883adc9c6e64a311a1c3fcece500b72ae4"
+        "Cargo.toml": "87893da6d90b77647e12907885ed1fc2c5dff59852c4153ee6d683b68f167753",
+        "src/lib.rs": "195d21516e96be587c87a3f2328a6debfa424297328d8284cd62717ac1297dad"
       },
       "license": "MIT",
       "license_materials": [
@@ -2284,11 +2279,11 @@
       "version": "1.8.3"
     },
     "src/foundation/bindgen": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
       "description": "Automatically generates Rust FFI bindings to C and C++ libraries.",
       "directory": "src/foundation/bindgen",
       "files_sha256": {
-        "Cargo.toml": "009ea8a274217ee78820ea9f720c8bf6dc636cb94232ee119f3b89a3e1bdffde",
+        "Cargo.toml": "484059457f0fdd4f7aebddf713131447504d6e200913e863c8cb4e7c97b6927d",
         "build.rs": "f7a10af0a21662e104e0058da7e3471a20be328eef6c7c41988525be90fdfe92",
         "callbacks.rs": "de8bbe96753b6c5107984f2d26f13abf8fd2dd914ca688a989bf90c8e63c435f",
         "clang.rs": "e991300ce9b1f0b9fb4a0b4bd32e899b6cfa546f034858f08bf57678b3d7044c",
@@ -3398,40 +3393,6 @@
       },
       "version": "0.5.4"
     },
-    "src/foundation/collection_literals": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Easy-to-use macros for initializing any collection",
-      "directory": "src/foundation/collection_literals",
-      "files_sha256": {
-        "Cargo.toml": "5a63b7fbb189d4053cbd9803deff7f05bdfeb4b001e90a23d404bd3c03a67193",
-        "src/lib.rs": "5eea2b2491b7bc189cb355b819e6224643b30bfc9e73af39c07604117a8feec4",
-        "tests/btree.rs": "4bf58e82ddfb6b1323c537e4a74a7558f44ba8205f21535ef7317df15a56005f",
-        "tests/collection.rs": "4d96654fe23391e1f2668d971fefa0850e5811504ee4ebef27f404bc35b604bf",
-        "tests/hash.rs": "68d520dcb88de1054f4d7b31023b4f120845bfbc339a211de873995e040691d9"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/collection_literals-1.0.3/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "collection_literals",
-      "origin_directory": "vendor/rust/collection_literals-1.0.3",
-      "repository": "https://github.com/staedoix/collection_literals",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "2550f75b8cfac212855f6b1885455df8eaee8fe8e246b647d69146142e016084",
-        "archive_url": "https://static.crates.io/crates/collection_literals/collection_literals-1.0.3.crate",
-        "name": "collection_literals",
-        "version": "1.0.3"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "80f470d4f506076b36dc8eaf995a6fe469f01598"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "1.0.3"
-    },
     "src/foundation/colorchoice": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Global override of color control",
@@ -4384,43 +4345,6 @@
         "path_in_vcs": ""
       },
       "version": "0.2.7"
-    },
-    "src/foundation/drain_filter_polyfill": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "current nightly implementation of Vec::drain_filter, copypasted out for use on stable",
-      "directory": "src/foundation/drain_filter_polyfill",
-      "files_sha256": {
-        "Cargo.toml": "9774ecf4d2fb7466d33e5e3c4d952142c5636b4008e36fd1ab3b8f9e0775d132",
-        "src/copypasted_impl.rs": "ca450b4527beb6e07a0ea883fd35f5f426d7fc9a592773a2950253d376e9740d",
-        "src/lib.rs": "424dad43ee5a7268d81fcfc16a87e51902ef044d8e7195950cadf9596b786817"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "drain_filter_polyfill",
-      "origin_directory": "vendor/rust/drain_filter_polyfill-0.1.3",
-      "repository": "https://github.com/whentze/drain_filter_polyfill.git",
-      "status": "内部维护源码",
-      "supplemental_notice": {
-        "commit": "9dc585f3eec048bfc3faf8656e07c4a19273c38f",
-        "directory": "vendor/rust/drain_filter_polyfill-0.1.3",
-        "repository": "https://github.com/whentze/drain_filter_polyfill",
-        "review_note": "The complete upstream Git tree at the recorded commit provides no separate license/copyright file. Preserve all published source and package license metadata; independent license review remains open.",
-        "status": "requires-manual-notice-review"
-      },
-      "upstream": {
-        "archive_sha256": "669a445ee724c5c69b1b06fe0b63e70a1c84bc9bb7d9696cd4f4e3ec45050408",
-        "archive_url": "https://static.crates.io/crates/drain_filter_polyfill/drain_filter_polyfill-0.1.3.crate",
-        "name": "drain_filter_polyfill",
-        "version": "0.1.3"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "9dc585f3eec048bfc3faf8656e07c4a19273c38f"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.1.3"
     },
     "src/foundation/either": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -7971,139 +7895,6 @@
         "path_in_vcs": ""
       },
       "version": "2.12.2"
-    },
-    "src/foundation/is_terminal_polyfill": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Polyfill for `is_terminal` stdlib feature for use with older MSRVs",
-      "directory": "src/foundation/is_terminal_polyfill",
-      "files_sha256": {
-        "Cargo.toml": "ea8917c63f9d001ec11b33baf67328335b42d603762b83bca4810c67a2ff655d",
-        "src/lib.rs": "044427e96cbad88731e590da30c5c1ce376f4cc8d676f434c0c59c731ed121f2"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/is_terminal_polyfill-1.70.2/LICENSE-APACHE",
-        "compliance/licenses/upstream/is_terminal_polyfill-1.70.2/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "is_terminal_polyfill",
-      "origin_directory": "vendor/rust/is_terminal_polyfill-1.70.2",
-      "repository": "https://github.com/polyfill-rs/is_terminal_polyfill",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695",
-        "archive_url": "https://static.crates.io/crates/is_terminal_polyfill/is_terminal_polyfill-1.70.2.crate",
-        "name": "is_terminal_polyfill",
-        "version": "1.70.2"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "9ed4c24ea4e9202cb38a6564368252ed35197a08"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "1.70.2"
-    },
-    "src/foundation/itertools-0.13.0": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：SDK 工具链：六处借用迭代器及 formatter 返回值显式标注输入生命周期，保留迭代与格式语义。 清理独立演示：移除 2 个独立示例程序及专属输入（8515 字节）；保留文档编译、真实测试及性能基准输入。",
-      "description": "Extra iterator adaptors, iterator methods, free functions, and macros.",
-      "directory": "src/foundation/itertools-0.13.0",
-      "files_sha256": {
-        "Cargo.toml": "a5685fc3649df7bbaa29cbc2530846efbe8b24ee8c434d9d884c5bd3be9f6f61",
-        "benches/bench1.rs": "d632c8b839d7b318d1cb7b81b9c62570c77dcdf0696b8ce3d52067c79c930f78",
-        "benches/combinations.rs": "5b3bd243336d6b6bdc111d66218f3f0a4ecdb10fb72e90db79959e3d8bb2cf6f",
-        "benches/combinations_with_replacement.rs": "11f29160652a2d90ce7ca4b1c339c4457888ab6867e2456ce1c62e3adf9be737",
-        "benches/fold_specialization.rs": "66ab13fd8576a662afb59ef72c5565f5c3d27f7f30a976450ee5a14958654fa2",
-        "benches/powerset.rs": "dc1fd729584147e5d8e4d19c6ca6f8706087d41c3c5beb7293d9ea43b4beab14",
-        "benches/specializations.rs": "d8320071a692147c1239881725079003be2f924f6124c3aa3bdf6a4596d66a66",
-        "benches/tree_reduce.rs": "fa4f22f042b76df89094ddf6e925ba42c4c3992f8195e719ed035f2e7cfa05bd",
-        "benches/tuple_combinations.rs": "16366158743307a0289fc1df423a3cec45009807d410a9fe9922d5b6f8b7d002",
-        "benches/tuples.rs": "5ab542aca40df4390de0ebf3819665df402d924a7dd6f4280e6ffc942bbd25c4",
-        "src/adaptors/coalesce.rs": "b57157c205ae077dd398740b61c7f49023aa80868abd8a071a6fe89ae6ecc9ad",
-        "src/adaptors/map.rs": "4952ee770cb54e98b2f649efd9c98f18951689358eb9b6bee10f139d056353ae",
-        "src/adaptors/mod.rs": "bb151baf99cafed22676ff34adaa8bc970c7f2a169a2e7fe459f7f4d292c1f4d",
-        "src/adaptors/multi_product.rs": "ad501e8ae4e5089b9d2f2be1f9a4713da6a2103b14daa759e09918409f88e321",
-        "src/combinations.rs": "6c1cd55051eb59c595780b055ccabb07db72add134120dd8b2f5aa60c0f5fa6e",
-        "src/combinations_with_replacement.rs": "cad1885ca51e52a1dc324a0b06bd0d1d911f1dd58cf5d76bd9a9c78a09853b86",
-        "src/concat_impl.rs": "6094463eb57f77e115f6a3fe7f469992eef81c0c4caa9585b99a426d87f794fb",
-        "src/cons_tuples_impl.rs": "3ceee1ff0dbd4c3b43195a490b8f38b05de3a46e0fb691ba11fbbe1e7e3ad746",
-        "src/diff.rs": "046b3ac4a22036b9ec8741aba4e8f6729ae44bf14346b61c23192b88d9fc7c88",
-        "src/duplicates_impl.rs": "1be37249b4566edc8da611ed9766ec851a526e7513bd13d80fe97482dcfcf7f3",
-        "src/either_or_both.rs": "cac278666b5d3c1fd103d97d15ce4c40960ea459441aeae83c6502087fd2ad8d",
-        "src/exactly_one_err.rs": "90b6204551161d27394af72107765dbfe3b51a77f4770c2e506fa4938985a184",
-        "src/extrema_set.rs": "7e0d92ca1aafc1221e08d0297087b35373463d03228a0e65628cfd1734273e90",
-        "src/flatten_ok.rs": "62c18e5221a27949a00de49414306d6dfd601515817c1c8ae6189e3275756dd3",
-        "src/format.rs": "94675a6ac4500ec52bbf8463b2241b870fea8b5dd6b113accb8a00b2c1174871",
-        "src/free.rs": "6f3597a5ccf8a9b0606da7df6803f7368152ebcf7b7bcfd31b17fcff3a286139",
-        "src/group_map.rs": "c9da201137c6bb479b9308bfc38398b76950e39905f4ce8bc435c5318371522c",
-        "src/groupbylazy.rs": "5862629719258703aad47977ba1060f20fff15e962e18e6142758ebf6cd4a61c",
-        "src/grouping_map.rs": "8dac807a6cbf1893fdc147b4160000c452bfb5e533e1c774ed6bd3af91cf46da",
-        "src/impl_macros.rs": "97fc5f39574805e0c220aa462cf1ae7dcac5c1082d6ee5500e7d71c120db5f88",
-        "src/intersperse.rs": "55031819e985c3184275e254c9600ecbe01e9fb49f198039c5da82a87ea5b90e",
-        "src/iter_index.rs": "1b0ff8376a4ad855d44db8c662450c777db84e0f4997b53ca575c65b107bb83b",
-        "src/k_smallest.rs": "6a665742f6665e350a54ae3ff821252e7c599b57aee3239a03fa56a9d1930467",
-        "src/kmerge_impl.rs": "2e425d4189898566c5146e8f5bd258045c246f6babbe3ac5fef10ca08ae2efd2",
-        "src/lazy_buffer.rs": "a065f73c228f156bdf901824977ea9375f912823af4f9b05378e3f633d3b20e4",
-        "src/lib.rs": "4294de16700da8944005d488cc4862c3d18a86c5282c9f4be11287f0e9a4b2c1",
-        "src/merge_join.rs": "bb1fccddcc647fe21da1895a8808c06596d49900f5cf60a69a9c9141fc12af11",
-        "src/minmax.rs": "0ec34b172ca8efc4aacb96f3e5771bdc5e8ac882876ee0f59d698c3924717c48",
-        "src/multipeek_impl.rs": "79eef0be49ad66f15d41808e72c03976c4f7cff5838b69d17975d3ece266f3f8",
-        "src/pad_tail.rs": "e6bb5b086478600b0dbb8726cae8364bf83ab36d989ef467e1264eea43933b50",
-        "src/peek_nth.rs": "093f1a157b1c917f041af5244a5a46311affa2922126e36dc0ee2c501c79b58c",
-        "src/peeking_take_while.rs": "2365952faf362f034b21a99353c6a02db7441541c7780413a49a6e86908fec9d",
-        "src/permutations.rs": "b316084ee14e9e138d22f177367b3bfa24cb3e5e90ab20b9b00a9a23d653496f",
-        "src/powerset.rs": "7ab24fefc914b339dd92a6c8e639d0cad34479e09293b3346078856d6bc02d34",
-        "src/process_results_impl.rs": "a6f91aec53c56b042e15ecb8f8ca489c81e3ee92347dc9fa8352a5baac44a247",
-        "src/put_back_n_impl.rs": "5a58d7a31c03029f0726e4d42de3be869580cf76b73c6d1ef70dd40c240b03a0",
-        "src/rciter_impl.rs": "9a50cdc0106587be8ee49c2af5fcf84436b74d353c2846b401eb638c23b4733c",
-        "src/repeatn.rs": "dd9a5bf5a63ef9cc6ec5c8a6137c7ffba80f13568b6d001e189daaa29ffbaf39",
-        "src/size_hint.rs": "6022c2327ddc6df7e7b939eb60a93ee66ea9aa4d3aab49b9952e663ff4bff10b",
-        "src/sources.rs": "ef942af209ca1effcd28a95abedad8c45b659ae2a15b66c2158cb604f6e325f8",
-        "src/take_while_inclusive.rs": "1973a9f5322b3dae3b5ccded5912a08a8e2e975b9a5eac666192b118b230d305",
-        "src/tee.rs": "dad50ca162627cf0a67786f0993ef27d06cdefc14d412463e58c07824ef409d8",
-        "src/tuple_impl.rs": "0213261109e7c65746ccc22425d19141907bf7ea1e3dd4c40e9f278e6148e272",
-        "src/unique_impl.rs": "1efc280226f13ddd7dd5f7eedeec0093b704596652c942f3a0b2f8c90fa2e2f7",
-        "src/unziptuple.rs": "f3f6a2ee2658fa07db7592f2c344c2e3b1263a21fc75e1325f2be32c9dc1e750",
-        "src/with_position.rs": "9ca1eb195d04690b0c3a62a6c0eea349b8042e11c4ca4b80744f54103e1c7355",
-        "src/zip_eq_impl.rs": "4e0d38266c26982ea8b8d055994cb1298e93b7749caadbd7f25d2b6e0c8ce0d7",
-        "src/zip_longest.rs": "5572699564dd5717cc074b7733333ed238c2e9f3e6819d45e33e3a2dbda74478",
-        "src/ziptuple.rs": "d3a12221d39c8a5514574adb3ad2ccd1803d514b1cb09fbcd9253e3ddd628310",
-        "tests/adaptors_no_collect.rs": "7e6240878b1fc13b6384fdde0317d5d7ccca3e417b10a201ba61eb5255400fda",
-        "tests/flatten_ok.rs": "b7894874132918b8229c7150b2637511d8e3e14197d8eeb9382d46b2a514efa2",
-        "tests/laziness.rs": "89e6caec10da3d7aeadf9e30d5caf03cda36d07cee8415ff134b5b8e2a2cf144",
-        "tests/macros_hygiene.rs": "c9e9f0546a8c12ea52311c0eadd77d75c782d4e10ae9e74d410ea2861d526c66",
-        "tests/merge_join.rs": "5fb506b989f4a331d46cdec5775ea594656985134196099eaf8d3905bdddcdd5",
-        "tests/peeking_take_while.rs": "f834361c5520dda15eb9e9ebe87507c905462201412b21859d9f83dab91d0e0b",
-        "tests/quick.rs": "60b1ca6d820aa505545f20d6082fd08c1e0470b5326b711567ec1c93d07f9ced",
-        "tests/specializations.rs": "7c6a461850a2b4f783801ef23b2303ad985c58f2295c569001369b3c9d4c6e33",
-        "tests/test_core.rs": "482e077e0c5fe78ba0a8a126d8c0821162d820a21936855fadede713b1d4e70a",
-        "tests/test_std.rs": "f788573adc9ae19eb4bd2886c3967b273dd881982af407f6f5b6276434df0f00",
-        "tests/tuples.rs": "014e4da776174bfe923270e2a359cd9c95b372fce4b952b8138909d6e2c52762",
-        "tests/zip.rs": "2f68d531170fa2f106efafaf38ae854281d93305bf1b2b8d4bea833072518ecd"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/itertools-0.13.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/itertools-0.13.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "itertools",
-      "origin_directory": "vendor/rust/itertools-0.13.0",
-      "repository": "https://github.com/rust-itertools/itertools",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186",
-        "archive_url": "https://static.crates.io/crates/itertools/itertools-0.13.0.crate",
-        "name": "itertools",
-        "version": "0.13.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "d5084d15e959b85d89a49e5cd33ad6267bc541a3"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.13.0"
     },
     "src/foundation/itertools-0.14.0": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（8515 字节）；保留文档编译、真实测试及性能基准输入。",
@@ -13941,39 +13732,6 @@
       },
       "version": "0.1.7"
     },
-    "src/foundation/shlex-1.3.0": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：SDK 工具链：四处 Cow 返回值显式标注借用；精确登记本地 manual_codegen_check，不改变分词或引号处理。",
-      "description": "Split a string into shell words, like Python's shlex.",
-      "directory": "src/foundation/shlex-1.3.0",
-      "files_sha256": {
-        "Cargo.toml": "c0f82d1645b2187488c986f48aab8e4887ba86cdbe0d478ee21525bb0bb2a007",
-        "src/bytes.rs": "a9346b251ec43f369e742afad5efb1c99b76e7ff0aad0b54d294ae55c7567b2c",
-        "src/lib.rs": "5e530ed7a212108b56b8cab996ed3ae41f538bcfd7190ad8c85ec7bd24822093"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/shlex-1.3.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/shlex-1.3.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "shlex",
-      "origin_directory": "vendor/rust/shlex-1.3.0",
-      "repository": "https://github.com/comex/rust-shlex",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64",
-        "archive_url": "https://static.crates.io/crates/shlex/shlex-1.3.0.crate",
-        "name": "shlex",
-        "version": "1.3.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "4a0724b0b62ef715467875b040a890ce75a8a829"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "1.3.0"
-    },
     "src/foundation/shlex-2.0.1": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Split a string into shell words, like Python's shlex.",
@@ -15087,11 +14845,11 @@
       "version": "0.39.6"
     },
     "src/foundation/tachys": {
-      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "changes": "Leptos 族内部 path 依赖、本地 workspace 边界；部分包以 pastey 替代停止维护的 paste；逐文件差异见 compliance/provenance/shared/vendor/web/dependencies/patches.json；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
       "description": "Tools for building reactivity-agnostic, renderer-generic, statically-typed view trees for user interface libraries.",
       "directory": "src/foundation/tachys",
       "files_sha256": {
-        "Cargo.toml": "097f09f1d002be3ae1f55f2c913e75cbb6af7bb05e169a8d9624ce3afd47c23c",
+        "Cargo.toml": "39b9d49da39205828e59d7405b19c2e567f46ce6e925c4281846ce7de53264c4",
         "build.rs": "11ccc42a6266f3bb42677ff796dd8f456a72460f0a20a83cce22bb29dfec534e",
         "src/dom.rs": "581b3fc173e231c53b7d34ac47598aae0b821d05c339438b3479f5e76ff65c7b",
         "src/erased.rs": "89974a6b9d6711534ff5fec3ac1e12045b7353678927c659091f45dcc93827d6",
@@ -15141,7 +14899,7 @@
         "src/view/error_boundary.rs": "b972d8ec6d2298c29c0f330ff41c05a9cb1a37b03c211ffd4fbe6a3f98f1c8c6",
         "src/view/fragment.rs": "b81b0183c5626d2a4b27b35215f7017f9c1cb5d6220de0dad2ae0e0eff28c09b",
         "src/view/iterators.rs": "4be4ef1cc4a280e93dc1c8971ea98be03d5c84dd81b4eef59fa1a50b22687119",
-        "src/view/keyed.rs": "61b747ed56686ddd2d74f309cb7635ff9394bb994d090a8650516a0bfb76ff0a",
+        "src/view/keyed.rs": "0f65afde19f1937fa4f4cdf44b7eeae02d385734d25bd11ee6a64a558077f12c",
         "src/view/mod.rs": "a34c57998dec7797159e2f921e7bbbe714ab964f06344954b056bc793adb6bca",
         "src/view/primitives.rs": "c1f8b8536f3622c9ec60b501b65a8e5d0ec3c6de997a26dc20b626df6505a9dd",
         "src/view/static_types.rs": "ee195065be138dcdba443bc10d22e89f10b9ee016bcd843302a17e00ab21adae",
@@ -20546,11 +20304,11 @@
       "version": "1.0.10"
     },
     "src/foundation/winnow": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
       "description": "A byte-oriented, zero-copy, parser combinators library",
       "directory": "src/foundation/winnow",
       "files_sha256": {
-        "Cargo.toml": "def4ba55649b411890969079243811f764a4c9fdb5ffd32028d92bd2e570a1f0",
+        "Cargo.toml": "e07f5a3696853b8ed319b5e3d0a0e8d9d7ae847a48091502840ac8a6fdca97f1",
         "examples/arithmetic/bench.rs": "a162e4f91ce2ed19b5b53f79d77c92eb52278f0788da9af8fee3ee62cebfe0a9",
         "examples/arithmetic/main.rs": "42982ed3cc995b5ee0aa0b0d8eb1dc656550a5a7d4e8d2099ea0c89654ae0136",
         "examples/arithmetic/parser.rs": "cc2ee2de1e10bca9fc10ab7b22bc77f7690b0bc287dabfdf006c61c51a44ee9b",
@@ -20622,7 +20380,7 @@
         "src/binary/tests.rs": "d42de0af252e18e7725a90a8ea082d97052e227648bd725cc0bae72914dacb70",
         "src/combinator/branch.rs": "5bed38dd2222a70332f1bc05b22ea25087f274f68dd3141291720b7a463219b5",
         "src/combinator/core.rs": "6c53923e4a81e2fdd0f0297cc6499b5e2dd9cf0f5706dd5959ffb22c3e72d472",
-        "src/combinator/debug/internals.rs": "f92a1c7799afdea51706c682799718ceae2ad1a4ebceeb19c39ac306a0ef23a3",
+        "src/combinator/debug/internals.rs": "384e746724f3b2d4fbb2a838841ca0d728dc273849b2ebaccca33060d30724a9",
         "src/combinator/debug/mod.rs": "4cefa4513e285eb441654b4d3b94cbffbc752c2d307f66a1892317adb3e61ef5",
         "src/combinator/expression.rs": "924938c38e92cfbc80f7d85e3dd5d1479a69f5223b58b0839335b49d585c81bb",
         "src/combinator/impls.rs": "b4e37d3a85043368ef1123a14436a96b361d7e9b04447147f1b37e2e3f611599",
@@ -26252,14 +26010,6 @@
             "runtime"
           ]
         },
-        "src/foundation/is_terminal_polyfill": {
-          "features": [
-            "default"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/itoa": {
           "features": [],
           "roles": [
@@ -27350,12 +27100,6 @@
             "runtime"
           ]
         },
-        "src/foundation/collection_literals": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/console_error_panic_hook": {
           "features": [],
           "roles": [
@@ -27392,12 +27136,6 @@
           "features": [],
           "roles": [
             "compile"
-          ]
-        },
-        "src/foundation/drain_filter_polyfill": {
-          "features": [],
-          "roles": [
-            "runtime"
           ]
         },
         "src/foundation/either": {
@@ -28405,8 +28143,12 @@
             "compile"
           ]
         },
-        "src/foundation/itertools-0.13.0": {
-          "features": [],
+        "src/foundation/itertools-0.14.0": {
+          "features": [
+            "default",
+            "use_alloc",
+            "use_std"
+          ],
           "roles": [
             "compile"
           ]
@@ -28623,15 +28365,6 @@
           "roles": [
             "compile",
             "runtime"
-          ]
-        },
-        "src/foundation/shlex-1.3.0": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
           ]
         },
         "src/foundation/shlex-2.0.1": {
@@ -29077,14 +28810,6 @@
             "default",
             "serde",
             "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/is_terminal_polyfill": {
-          "features": [
-            "default"
           ],
           "roles": [
             "compile"
@@ -31304,6 +31029,50 @@
       },
       "version": "0.10.2"
     },
+    "src/foundation/collection_literals": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Easy-to-use macros for initializing any collection",
+      "directory": "src/foundation/collection_literals",
+      "files_sha256": {
+        "Cargo.toml": "5a63b7fbb189d4053cbd9803deff7f05bdfeb4b001e90a23d404bd3c03a67193",
+        "src/lib.rs": "5eea2b2491b7bc189cb355b819e6224643b30bfc9e73af39c07604117a8feec4",
+        "tests/btree.rs": "4bf58e82ddfb6b1323c537e4a74a7558f44ba8205f21535ef7317df15a56005f",
+        "tests/collection.rs": "4d96654fe23391e1f2668d971fefa0850e5811504ee4ebef27f404bc35b604bf",
+        "tests/hash.rs": "68d520dcb88de1054f4d7b31023b4f120845bfbc339a211de873995e040691d9"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/collection_literals-1.0.3/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "collection_literals",
+      "origin_directory": "vendor/rust/collection_literals-1.0.3",
+      "repository": "https://github.com/staedoix/collection_literals",
+      "retirement": {
+        "bytes": 16426,
+        "category": "standard-library-replacement",
+        "file_count": 5,
+        "reason": "Only attribute-derive-macro used seven hash! calls; replace their exact HashMap::from expansions at actual diagnostic construction sites.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "2550f75b8cfac212855f6b1885455df8eaee8fe8e246b647d69146142e016084",
+        "archive_url": "https://static.crates.io/crates/collection_literals/collection_literals-1.0.3.crate",
+        "name": "collection_literals",
+        "version": "1.0.3"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "80f470d4f506076b36dc8eaf995a6fe469f01598"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "1.0.3"
+    },
     "src/foundation/crc": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Rust implementation of CRC with support of various standards",
@@ -31717,6 +31486,53 @@
       },
       "version": "0.15.7"
     },
+    "src/foundation/drain_filter_polyfill": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "current nightly implementation of Vec::drain_filter, copypasted out for use on stable",
+      "directory": "src/foundation/drain_filter_polyfill",
+      "files_sha256": {
+        "Cargo.toml": "9774ecf4d2fb7466d33e5e3c4d952142c5636b4008e36fd1ab3b8f9e0775d132",
+        "src/copypasted_impl.rs": "ca450b4527beb6e07a0ea883fd35f5f426d7fc9a592773a2950253d376e9740d",
+        "src/lib.rs": "424dad43ee5a7268d81fcfc16a87e51902ef044d8e7195950cadf9596b786817"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "drain_filter_polyfill",
+      "origin_directory": "vendor/rust/drain_filter_polyfill-0.1.3",
+      "repository": "https://github.com/whentze/drain_filter_polyfill.git",
+      "retirement": {
+        "bytes": 9264,
+        "category": "standard-library-replacement",
+        "file_count": 3,
+        "reason": "Only Tachys keyed-list hole compaction used drain_filter and immediately discarded the iterator; eager retain(Option::is_some) keeps order and live states without an iterator-drop side effect.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "supplemental_notice": {
+        "commit": "9dc585f3eec048bfc3faf8656e07c4a19273c38f",
+        "directory": "vendor/rust/drain_filter_polyfill-0.1.3",
+        "repository": "https://github.com/whentze/drain_filter_polyfill",
+        "review_note": "The complete upstream Git tree at the recorded commit provides no separate license/copyright file. Preserve all published source and package license metadata; independent license review remains open.",
+        "status": "requires-manual-notice-review"
+      },
+      "upstream": {
+        "archive_sha256": "669a445ee724c5c69b1b06fe0b63e70a1c84bc9bb7d9696cd4f4e3ec45050408",
+        "archive_url": "https://static.crates.io/crates/drain_filter_polyfill/drain_filter_polyfill-0.1.3.crate",
+        "name": "drain_filter_polyfill",
+        "version": "0.1.3"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "9dc585f3eec048bfc3faf8656e07c4a19273c38f"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.1.3"
+    },
     "src/foundation/hex": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Encoding and decoding data into/from hexadecimal representation.",
@@ -31763,6 +31579,159 @@
         }
       },
       "version": "0.4.3"
+    },
+    "src/foundation/is_terminal_polyfill": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Polyfill for `is_terminal` stdlib feature for use with older MSRVs",
+      "directory": "src/foundation/is_terminal_polyfill",
+      "files_sha256": {
+        "Cargo.toml": "ea8917c63f9d001ec11b33baf67328335b42d603762b83bca4810c67a2ff655d",
+        "src/lib.rs": "044427e96cbad88731e590da30c5c1ce376f4cc8d676f434c0c59c731ed121f2"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/is_terminal_polyfill-1.70.2/LICENSE-APACHE",
+        "compliance/licenses/upstream/is_terminal_polyfill-1.70.2/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "is_terminal_polyfill",
+      "origin_directory": "vendor/rust/is_terminal_polyfill-1.70.2",
+      "repository": "https://github.com/polyfill-rs/is_terminal_polyfill",
+      "retirement": {
+        "bytes": 4280,
+        "category": "standard-library-replacement",
+        "file_count": 2,
+        "reason": "Both active anstream and dormant winnow debug call std::io::IsTerminal directly; the retired library itself only forwarded that std API.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695",
+        "archive_url": "https://static.crates.io/crates/is_terminal_polyfill/is_terminal_polyfill-1.70.2.crate",
+        "name": "is_terminal_polyfill",
+        "version": "1.70.2"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "9ed4c24ea4e9202cb38a6564368252ed35197a08"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "1.70.2"
+    },
+    "src/foundation/itertools-0.13.0": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：SDK 工具链：六处借用迭代器及 formatter 返回值显式标注输入生命周期，保留迭代与格式语义。 清理独立演示：移除 2 个独立示例程序及专属输入（8515 字节）；保留文档编译、真实测试及性能基准输入。",
+      "description": "Extra iterator adaptors, iterator methods, free functions, and macros.",
+      "directory": "src/foundation/itertools-0.13.0",
+      "files_sha256": {
+        "Cargo.toml": "a5685fc3649df7bbaa29cbc2530846efbe8b24ee8c434d9d884c5bd3be9f6f61",
+        "benches/bench1.rs": "d632c8b839d7b318d1cb7b81b9c62570c77dcdf0696b8ce3d52067c79c930f78",
+        "benches/combinations.rs": "5b3bd243336d6b6bdc111d66218f3f0a4ecdb10fb72e90db79959e3d8bb2cf6f",
+        "benches/combinations_with_replacement.rs": "11f29160652a2d90ce7ca4b1c339c4457888ab6867e2456ce1c62e3adf9be737",
+        "benches/fold_specialization.rs": "66ab13fd8576a662afb59ef72c5565f5c3d27f7f30a976450ee5a14958654fa2",
+        "benches/powerset.rs": "dc1fd729584147e5d8e4d19c6ca6f8706087d41c3c5beb7293d9ea43b4beab14",
+        "benches/specializations.rs": "d8320071a692147c1239881725079003be2f924f6124c3aa3bdf6a4596d66a66",
+        "benches/tree_reduce.rs": "fa4f22f042b76df89094ddf6e925ba42c4c3992f8195e719ed035f2e7cfa05bd",
+        "benches/tuple_combinations.rs": "16366158743307a0289fc1df423a3cec45009807d410a9fe9922d5b6f8b7d002",
+        "benches/tuples.rs": "5ab542aca40df4390de0ebf3819665df402d924a7dd6f4280e6ffc942bbd25c4",
+        "src/adaptors/coalesce.rs": "b57157c205ae077dd398740b61c7f49023aa80868abd8a071a6fe89ae6ecc9ad",
+        "src/adaptors/map.rs": "4952ee770cb54e98b2f649efd9c98f18951689358eb9b6bee10f139d056353ae",
+        "src/adaptors/mod.rs": "bb151baf99cafed22676ff34adaa8bc970c7f2a169a2e7fe459f7f4d292c1f4d",
+        "src/adaptors/multi_product.rs": "ad501e8ae4e5089b9d2f2be1f9a4713da6a2103b14daa759e09918409f88e321",
+        "src/combinations.rs": "6c1cd55051eb59c595780b055ccabb07db72add134120dd8b2f5aa60c0f5fa6e",
+        "src/combinations_with_replacement.rs": "cad1885ca51e52a1dc324a0b06bd0d1d911f1dd58cf5d76bd9a9c78a09853b86",
+        "src/concat_impl.rs": "6094463eb57f77e115f6a3fe7f469992eef81c0c4caa9585b99a426d87f794fb",
+        "src/cons_tuples_impl.rs": "3ceee1ff0dbd4c3b43195a490b8f38b05de3a46e0fb691ba11fbbe1e7e3ad746",
+        "src/diff.rs": "046b3ac4a22036b9ec8741aba4e8f6729ae44bf14346b61c23192b88d9fc7c88",
+        "src/duplicates_impl.rs": "1be37249b4566edc8da611ed9766ec851a526e7513bd13d80fe97482dcfcf7f3",
+        "src/either_or_both.rs": "cac278666b5d3c1fd103d97d15ce4c40960ea459441aeae83c6502087fd2ad8d",
+        "src/exactly_one_err.rs": "90b6204551161d27394af72107765dbfe3b51a77f4770c2e506fa4938985a184",
+        "src/extrema_set.rs": "7e0d92ca1aafc1221e08d0297087b35373463d03228a0e65628cfd1734273e90",
+        "src/flatten_ok.rs": "62c18e5221a27949a00de49414306d6dfd601515817c1c8ae6189e3275756dd3",
+        "src/format.rs": "94675a6ac4500ec52bbf8463b2241b870fea8b5dd6b113accb8a00b2c1174871",
+        "src/free.rs": "6f3597a5ccf8a9b0606da7df6803f7368152ebcf7b7bcfd31b17fcff3a286139",
+        "src/group_map.rs": "c9da201137c6bb479b9308bfc38398b76950e39905f4ce8bc435c5318371522c",
+        "src/groupbylazy.rs": "5862629719258703aad47977ba1060f20fff15e962e18e6142758ebf6cd4a61c",
+        "src/grouping_map.rs": "8dac807a6cbf1893fdc147b4160000c452bfb5e533e1c774ed6bd3af91cf46da",
+        "src/impl_macros.rs": "97fc5f39574805e0c220aa462cf1ae7dcac5c1082d6ee5500e7d71c120db5f88",
+        "src/intersperse.rs": "55031819e985c3184275e254c9600ecbe01e9fb49f198039c5da82a87ea5b90e",
+        "src/iter_index.rs": "1b0ff8376a4ad855d44db8c662450c777db84e0f4997b53ca575c65b107bb83b",
+        "src/k_smallest.rs": "6a665742f6665e350a54ae3ff821252e7c599b57aee3239a03fa56a9d1930467",
+        "src/kmerge_impl.rs": "2e425d4189898566c5146e8f5bd258045c246f6babbe3ac5fef10ca08ae2efd2",
+        "src/lazy_buffer.rs": "a065f73c228f156bdf901824977ea9375f912823af4f9b05378e3f633d3b20e4",
+        "src/lib.rs": "4294de16700da8944005d488cc4862c3d18a86c5282c9f4be11287f0e9a4b2c1",
+        "src/merge_join.rs": "bb1fccddcc647fe21da1895a8808c06596d49900f5cf60a69a9c9141fc12af11",
+        "src/minmax.rs": "0ec34b172ca8efc4aacb96f3e5771bdc5e8ac882876ee0f59d698c3924717c48",
+        "src/multipeek_impl.rs": "79eef0be49ad66f15d41808e72c03976c4f7cff5838b69d17975d3ece266f3f8",
+        "src/pad_tail.rs": "e6bb5b086478600b0dbb8726cae8364bf83ab36d989ef467e1264eea43933b50",
+        "src/peek_nth.rs": "093f1a157b1c917f041af5244a5a46311affa2922126e36dc0ee2c501c79b58c",
+        "src/peeking_take_while.rs": "2365952faf362f034b21a99353c6a02db7441541c7780413a49a6e86908fec9d",
+        "src/permutations.rs": "b316084ee14e9e138d22f177367b3bfa24cb3e5e90ab20b9b00a9a23d653496f",
+        "src/powerset.rs": "7ab24fefc914b339dd92a6c8e639d0cad34479e09293b3346078856d6bc02d34",
+        "src/process_results_impl.rs": "a6f91aec53c56b042e15ecb8f8ca489c81e3ee92347dc9fa8352a5baac44a247",
+        "src/put_back_n_impl.rs": "5a58d7a31c03029f0726e4d42de3be869580cf76b73c6d1ef70dd40c240b03a0",
+        "src/rciter_impl.rs": "9a50cdc0106587be8ee49c2af5fcf84436b74d353c2846b401eb638c23b4733c",
+        "src/repeatn.rs": "dd9a5bf5a63ef9cc6ec5c8a6137c7ffba80f13568b6d001e189daaa29ffbaf39",
+        "src/size_hint.rs": "6022c2327ddc6df7e7b939eb60a93ee66ea9aa4d3aab49b9952e663ff4bff10b",
+        "src/sources.rs": "ef942af209ca1effcd28a95abedad8c45b659ae2a15b66c2158cb604f6e325f8",
+        "src/take_while_inclusive.rs": "1973a9f5322b3dae3b5ccded5912a08a8e2e975b9a5eac666192b118b230d305",
+        "src/tee.rs": "dad50ca162627cf0a67786f0993ef27d06cdefc14d412463e58c07824ef409d8",
+        "src/tuple_impl.rs": "0213261109e7c65746ccc22425d19141907bf7ea1e3dd4c40e9f278e6148e272",
+        "src/unique_impl.rs": "1efc280226f13ddd7dd5f7eedeec0093b704596652c942f3a0b2f8c90fa2e2f7",
+        "src/unziptuple.rs": "f3f6a2ee2658fa07db7592f2c344c2e3b1263a21fc75e1325f2be32c9dc1e750",
+        "src/with_position.rs": "9ca1eb195d04690b0c3a62a6c0eea349b8042e11c4ca4b80744f54103e1c7355",
+        "src/zip_eq_impl.rs": "4e0d38266c26982ea8b8d055994cb1298e93b7749caadbd7f25d2b6e0c8ce0d7",
+        "src/zip_longest.rs": "5572699564dd5717cc074b7733333ed238c2e9f3e6819d45e33e3a2dbda74478",
+        "src/ziptuple.rs": "d3a12221d39c8a5514574adb3ad2ccd1803d514b1cb09fbcd9253e3ddd628310",
+        "tests/adaptors_no_collect.rs": "7e6240878b1fc13b6384fdde0317d5d7ccca3e417b10a201ba61eb5255400fda",
+        "tests/flatten_ok.rs": "b7894874132918b8229c7150b2637511d8e3e14197d8eeb9382d46b2a514efa2",
+        "tests/laziness.rs": "89e6caec10da3d7aeadf9e30d5caf03cda36d07cee8415ff134b5b8e2a2cf144",
+        "tests/macros_hygiene.rs": "c9e9f0546a8c12ea52311c0eadd77d75c782d4e10ae9e74d410ea2861d526c66",
+        "tests/merge_join.rs": "5fb506b989f4a331d46cdec5775ea594656985134196099eaf8d3905bdddcdd5",
+        "tests/peeking_take_while.rs": "f834361c5520dda15eb9e9ebe87507c905462201412b21859d9f83dab91d0e0b",
+        "tests/quick.rs": "60b1ca6d820aa505545f20d6082fd08c1e0470b5326b711567ec1c93d07f9ced",
+        "tests/specializations.rs": "7c6a461850a2b4f783801ef23b2303ad985c58f2295c569001369b3c9d4c6e33",
+        "tests/test_core.rs": "482e077e0c5fe78ba0a8a126d8c0821162d820a21936855fadede713b1d4e70a",
+        "tests/test_std.rs": "f788573adc9ae19eb4bd2886c3967b273dd881982af407f6f5b6276434df0f00",
+        "tests/tuples.rs": "014e4da776174bfe923270e2a359cd9c95b372fce4b952b8138909d6e2c52762",
+        "tests/zip.rs": "2f68d531170fa2f106efafaf38ae854281d93305bf1b2b8d4bea833072518ecd"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/itertools-0.13.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/itertools-0.13.0/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "itertools",
+      "origin_directory": "vendor/rust/itertools-0.13.0",
+      "repository": "https://github.com/rust-itertools/itertools",
+      "retirement": {
+        "bytes": 626839,
+        "category": "version-consolidation",
+        "file_count": 71,
+        "reason": "Only bindgen used this generation; its two peeking_take_while calls now use existing itertools 0.14, with real mixed C bitfield binding regression.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186",
+        "archive_url": "https://static.crates.io/crates/itertools/itertools-0.13.0.crate",
+        "name": "itertools",
+        "version": "0.13.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "d5084d15e959b85d89a49e5cd33ad6267bc541a3"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.13.0"
     },
     "src/foundation/jiff": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -33236,6 +33205,49 @@
         "path_in_vcs": "sha2"
       },
       "version": "0.10.9"
+    },
+    "src/foundation/shlex-1.3.0": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：SDK 工具链：四处 Cow 返回值显式标注借用；精确登记本地 manual_codegen_check，不改变分词或引号处理。",
+      "description": "Split a string into shell words, like Python's shlex.",
+      "directory": "src/foundation/shlex-1.3.0",
+      "files_sha256": {
+        "Cargo.toml": "c0f82d1645b2187488c986f48aab8e4887ba86cdbe0d478ee21525bb0bb2a007",
+        "src/bytes.rs": "a9346b251ec43f369e742afad5efb1c99b76e7ff0aad0b54d294ae55c7567b2c",
+        "src/lib.rs": "5e530ed7a212108b56b8cab996ed3ae41f538bcfd7190ad8c85ec7bd24822093"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/shlex-1.3.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/shlex-1.3.0/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "shlex",
+      "origin_directory": "vendor/rust/shlex-1.3.0",
+      "repository": "https://github.com/comex/rust-shlex",
+      "retirement": {
+        "bytes": 36199,
+        "category": "version-consolidation",
+        "file_count": 3,
+        "reason": "Only bindgen used shlex 1 split; migrated to existing shlex 2 with shell-quoted clang definition regression and SQLite header generation.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64",
+        "archive_url": "https://static.crates.io/crates/shlex/shlex-1.3.0.crate",
+        "name": "shlex",
+        "version": "1.3.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "4a0724b0b62ef715467875b040a890ce75a8a829"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "1.3.0"
     },
     "src/foundation/sqlx-macros": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -40650,13 +40662,17 @@
     "src/foundation/camino": "e01c43d23e823827c1d36e74f3e07b18152c3f34fabe9b17349fedac73ba5293",
     "src/foundation/cfg_aliases": "b31405fde7e9450ac4f6e6d8e00d8b93c7725cf821bc2724675421b636ce87b5",
     "src/foundation/chacha20": "9abe1e2a5d044b44929e83ea540b127980e98f97f20e4cbfcb2445e572449a6f",
+    "src/foundation/collection_literals": "0c7480aaefb0ca1397b4bcd26cb79b307f462875e91a254ec23f1030190c3cf8",
     "src/foundation/crc": "328f7f6a88b18c2c953b175c8db47ed903e4110aabcac455075f1ac97aaca0d8",
     "src/foundation/crc-catalog": "0e12c31129186b5d0d295f4b3e64dab001950032bd688d22e2c3a96cae75a9f8",
     "src/foundation/defmt": "cbe4bc06b61a18683eda2187eb48c07105aa29ffefb487dd5f5a53a64ffe8eea",
     "src/foundation/defmt-macros": "9b6077c02155b4bf14c5496c9b1752f3d9f3f15be57afc9bdf8ad8dc4db9ff81",
     "src/foundation/defmt-parser": "13fb36063c62bb805fbe9a25c5fa8f5867cd67c88399ade25dc43767a9a0b35a",
     "src/foundation/dotenvy": "cd5f14644b5a7aa236d7018bb77f9a1ad3c2fd719762e2320713321205c28e3f",
+    "src/foundation/drain_filter_polyfill": "9bd00168d21cdc708296eb316c673e738cfa0a9665c99d49ae248a7331325e99",
     "src/foundation/hex": "37146935caac26425e292364a000256037ac1737af648797011f3538a82dccab",
+    "src/foundation/is_terminal_polyfill": "c7eff78a05c7f9d66148372cab1c3d140d2ff77b3c35f62f153debcec5831b57",
+    "src/foundation/itertools-0.13.0": "4e09c2210957ad9fbb36f0dce993191f39ff0e4c2e85ae0411bc53749ec68ddf",
     "src/foundation/jiff": "897579d87e1f93cdc3350b1e28126d371c8d8ace10305016e130362e1cc0c928",
     "src/foundation/jiff-core": "84153b337c3b4d6a08ae32b16e48148c4ae55028eb9d8f729d6a85ee71335f26",
     "src/foundation/jiff-static": "a5c7f332c971252392426c6cba3d526166cc12fe3675a67671e1d9c64134db35",
@@ -40677,6 +40693,7 @@
     "src/foundation/rand_pcg": "e1ed8f5e2931a5975e4f3984f42420069cf32a758d02398a0d8364397bfbb7de",
     "src/foundation/redox_syscall": "704f75661ff61ace178b7f5c4e26b52ed723934c8e07ccb9957b79936dca095c",
     "src/foundation/sha2-0.10.9": "1ead106fffdba3ac43380ddc28538c803d85219acbaafdb59d77bdad3036f120",
+    "src/foundation/shlex-1.3.0": "a198aca124ac3353a3eca07d3efd506de43cb5e442873120c1d5f55723bf4dfd",
     "src/foundation/sqlx-macros": "7958f40c9a91c6129102eafede62655a54e1c3709276c9447e947cb9cce8658a",
     "src/foundation/sqlx-macros-core": "7d055f996523c7558a976130404ba66fecdf0bb4214827ceb269694ed57b062b",
     "src/foundation/time-macros": "e0f74f378003a1f01d62921f14a4c4e5cbd6bedabef941d34af8108f4bc60e8a",

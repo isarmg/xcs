@@ -59,9 +59,6 @@ path = "../anstyle-query"
 version = "1.0.0"
 path = "../colorchoice"
 
-[dependencies.is_terminal_polyfill]
-version = "1.48"
-path = "../is_terminal_polyfill"
 
 [dependencies.utf8parse]
 version = "0.2.2"

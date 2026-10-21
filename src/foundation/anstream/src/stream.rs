@@ -58,28 +58,28 @@ impl<T: IsTerminal + ?Sized> IsTerminal for Box<T> {
 impl IsTerminal for std::io::Stdout {
     #[inline]
     fn is_terminal(&self) -> bool {
-        is_terminal_polyfill::IsTerminal::is_terminal(self)
+        std::io::IsTerminal::is_terminal(self)
     }
 }
 
 impl IsTerminal for std::io::StdoutLock<'_> {
     #[inline]
     fn is_terminal(&self) -> bool {
-        is_terminal_polyfill::IsTerminal::is_terminal(self)
+        std::io::IsTerminal::is_terminal(self)
     }
 }
 
 impl IsTerminal for std::io::Stderr {
     #[inline]
     fn is_terminal(&self) -> bool {
-        is_terminal_polyfill::IsTerminal::is_terminal(self)
+        std::io::IsTerminal::is_terminal(self)
     }
 }
 
 impl IsTerminal for std::io::StderrLock<'_> {
     #[inline]
     fn is_terminal(&self) -> bool {
-        is_terminal_polyfill::IsTerminal::is_terminal(self)
+        std::io::IsTerminal::is_terminal(self)
     }
 }
 
@@ -114,7 +114,7 @@ impl IsTerminal for Vec<u8> {
 impl IsTerminal for std::fs::File {
     #[inline]
     fn is_terminal(&self) -> bool {
-        is_terminal_polyfill::IsTerminal::is_terminal(self)
+        std::io::IsTerminal::is_terminal(self)
     }
 }
 

@@ -51,10 +51,6 @@ path = "../async-trait"
 path = "../const_str_slice_concat"
 version = "0.1"
 
-[dependencies.drain_filter_polyfill]
-version = "0.1"
-default-features = true
-path = "../drain_filter_polyfill"
 
 [dependencies.either_of]
 path = "../either_of"
