@@ -36,14 +36,14 @@ resolver = "2"
 
 [features]
 cargo = []
-color = ["dep:anstream"]
+color = ["terminal-style/output"]
 debug = ["command-derive?/debug"]
 default = ["std", "color", "help", "usage", "error-context", "suggestions"]
 deprecated = ["command-derive?/deprecated"]
 env = []
 error-context = []
 help = []
-std = ["anstyle/std"]
+std = ["terminal-style/std"]
 string = []
 suggestions = ["dep:strsim", "error-context"]
 unstable-doc = ["cargo", "env", "string", "unstable-ext", "derive"]
@@ -69,15 +69,9 @@ version = "=4.6.7"
 optional = true
 path = "../command-derive"
 
-[dependencies.anstream]
-version = "1.0.0"
-optional = true
-path = "../anstream"
-
-[dependencies.anstyle]
-version = "1.0.14"
-path = "../anstyle"
-
+[dependencies.terminal-style]
+path = "../terminal-style"
+default-features = false
 
 [dependencies.strsim]
 version = "0.11.1"

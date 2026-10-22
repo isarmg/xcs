@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
-FEATURES = {"attribute-derive": ["syntax-full"]}
+FEATURES = {"terminal-style": ["output"], "attribute-derive": ["syntax-full"]}
 CONSUMER = (ROOT / "test/ci/fixtures/foundation-consumers.rs").read_text()
 
 
@@ -17,7 +17,7 @@ def check(root):
         work = Path(temporary)
         (work / 'src').mkdir()
         dependencies = '\n'.join(f'{name} = {{path = "{root / "src/foundation" / directory}", features = {json.dumps(FEATURES.get(name, []))}}}'
-                                 for name, directory in [('bindgen', 'bindgen'), ('anstream', 'anstream'),
+                                 for name, directory in [('bindgen', 'bindgen'), ('terminal-style', 'terminal-style'),
                                                          ('attribute-derive', 'attribute-derive'), ('rust-syntax', 'rust-syntax'),
                                                          ('winnow', 'winnow'), ('toml', 'toml')])
         manifest = work / 'Cargo.toml'

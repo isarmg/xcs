@@ -71,7 +71,7 @@ use log::Record;
 mod kv;
 
 #[cfg(feature = "color")]
-pub use anstyle as style;
+pub use terminal_style as style;
 
 #[cfg(feature = "kv")]
 pub use self::kv::*;

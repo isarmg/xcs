@@ -9,7 +9,7 @@ mod wrap_tests {
     #[test]
     #[cfg(feature = "wrap_help")]
     fn wrap_unstyled() {
-        let style = anstyle::Style::new();
+        let style = terminal_style::Style::new();
         let input = format!(
             "{style}12345{style:#} {style}12345{style:#} {style}12345{style:#} {style}12345{style:#}"
         );
@@ -28,7 +28,7 @@ mod wrap_tests {
     #[test]
     #[cfg(feature = "wrap_help")]
     fn wrap_styled() {
-        let style = anstyle::Style::new().bold();
+        let style = terminal_style::Style::new().bold();
         let input = format!(
             "{style}12345{style:#} {style}12345{style:#} {style}12345{style:#} {style}12345{style:#}"
         );

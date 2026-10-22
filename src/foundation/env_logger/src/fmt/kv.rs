@@ -4,7 +4,7 @@ use std::io::{self, Write};
 use super::WriteStyle;
 use super::{Formatter, StyledValue};
 #[cfg(feature = "color")]
-use anstyle::Style;
+use terminal_style::Style;
 use log::kv::{Error, Key, Source, Value, VisitSource};
 
 /// Format function for serializing key/value pairs

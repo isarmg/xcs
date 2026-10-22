@@ -82,14 +82,14 @@ mod tests {
     #[test]
     fn terminal_output_preserves_unicode_and_explicit_color_policy() {
         let bytes = "\x1b[31m文件 Ω\x1b[0m\n".as_bytes();
-        let mut plain = anstream::AutoStream::new(Vec::new(), anstream::ColorChoice::Never);
+        let mut plain = terminal_style::output::AutoStream::new(Vec::new(), terminal_style::ColorChoice::Never);
         plain.write_all(bytes).unwrap();
         assert_eq!(plain.into_inner(), "文件 Ω\n".as_bytes());
-        let mut color = anstream::AutoStream::new(Vec::new(), anstream::ColorChoice::Always);
+        let mut color = terminal_style::output::AutoStream::new(Vec::new(), terminal_style::ColorChoice::Always);
         color.write_all(bytes).unwrap();
         assert_eq!(color.into_inner(), bytes);
         let file = std::fs::File::open("/dev/null").unwrap();
-        assert!(!anstream::stream::IsTerminal::is_terminal(&file));
+        assert!(!terminal_style::output::stream::IsTerminal::is_terminal(&file));
     }
 
     #[test]

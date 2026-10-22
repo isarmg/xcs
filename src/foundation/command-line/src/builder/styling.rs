@@ -1,6 +1,6 @@
 //! Terminal [`Styles`] for help and error output
 
-pub use anstyle::*;
+pub use terminal_style::*;
 
 /// Terminal styling definitions
 ///

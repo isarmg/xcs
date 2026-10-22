@@ -1,0 +1,25 @@
+[package]
+name = "terminal-style"
+version = "1.0.14"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+autotests = false
+[features]
+default = []
+std = []
+parser = []
+parser-core = ["parser", "dep:arrayvec"]
+parser-utf8 = ["parser", "dep:utf8parse"]
+output = ["std", "parser-utf8"]
+[dependencies.arrayvec]
+path = "../arrayvec"
+optional = true
+default-features = false
+[dependencies.utf8parse]
+path = "../utf8parse"
+optional = true
+[lib]
+doctest = false
+[[test]]
+name = "capabilities"
+path = "../../../test/ci/fixtures/terminal-style-capabilities.rs"

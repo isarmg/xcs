@@ -35,20 +35,20 @@ impl Colorizer {
     #[cfg(feature = "color")]
     pub(crate) fn print(&self) -> std::io::Result<()> {
         let color_when = match self.color_when {
-            ColorChoice::Always => anstream::ColorChoice::Always,
-            ColorChoice::Auto => anstream::ColorChoice::Auto,
-            ColorChoice::Never => anstream::ColorChoice::Never,
+            ColorChoice::Always => terminal_style::ColorChoice::Always,
+            ColorChoice::Auto => terminal_style::ColorChoice::Auto,
+            ColorChoice::Never => terminal_style::ColorChoice::Never,
         };
 
         let mut stdout;
         let mut stderr;
         let writer: &mut dyn std::io::Write = match self.stream {
             Stream::Stderr => {
-                stderr = anstream::AutoStream::new(std::io::stderr().lock(), color_when);
+                stderr = terminal_style::output::AutoStream::new(std::io::stderr().lock(), color_when);
                 &mut stderr
             }
             Stream::Stdout => {
-                stdout = anstream::AutoStream::new(std::io::stdout().lock(), color_when);
+                stdout = terminal_style::output::AutoStream::new(std::io::stdout().lock(), color_when);
                 &mut stdout
             }
         };

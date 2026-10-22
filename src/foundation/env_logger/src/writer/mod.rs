@@ -23,24 +23,24 @@ pub enum WriteStyle {
 }
 
 #[cfg(feature = "color")]
-impl From<anstream::ColorChoice> for WriteStyle {
-    fn from(choice: anstream::ColorChoice) -> Self {
+impl From<terminal_style::ColorChoice> for WriteStyle {
+    fn from(choice: terminal_style::ColorChoice) -> Self {
         match choice {
-            anstream::ColorChoice::Auto => Self::Auto,
-            anstream::ColorChoice::Always => Self::Always,
-            anstream::ColorChoice::AlwaysAnsi => Self::Always,
-            anstream::ColorChoice::Never => Self::Never,
+            terminal_style::ColorChoice::Auto => Self::Auto,
+            terminal_style::ColorChoice::Always => Self::Always,
+            terminal_style::ColorChoice::AlwaysAnsi => Self::Always,
+            terminal_style::ColorChoice::Never => Self::Never,
         }
     }
 }
 
 #[cfg(feature = "color")]
-impl From<WriteStyle> for anstream::ColorChoice {
+impl From<WriteStyle> for terminal_style::ColorChoice {
     fn from(choice: WriteStyle) -> Self {
         match choice {
-            WriteStyle::Auto => anstream::ColorChoice::Auto,
-            WriteStyle::Always => anstream::ColorChoice::Always,
-            WriteStyle::Never => anstream::ColorChoice::Never,
+            WriteStyle::Auto => terminal_style::ColorChoice::Auto,
+            WriteStyle::Always => terminal_style::ColorChoice::Always,
+            WriteStyle::Never => terminal_style::ColorChoice::Never,
         }
     }
 }
@@ -124,8 +124,8 @@ impl Builder {
         #[cfg(feature = "auto-color")]
         let color_choice = if color_choice == WriteStyle::Auto {
             match &self.target {
-                Target::Stdout => anstream::AutoStream::choice(&io::stdout()).into(),
-                Target::Stderr => anstream::AutoStream::choice(&io::stderr()).into(),
+                Target::Stdout => terminal_style::output::AutoStream::choice(&io::stdout()).into(),
+                Target::Stderr => terminal_style::output::AutoStream::choice(&io::stderr()).into(),
                 Target::Pipe(_) => color_choice,
             }
         } else {

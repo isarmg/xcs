@@ -98,7 +98,7 @@ impl StyledStr {
 
     #[cfg(feature = "color")]
     pub(crate) fn iter_text(&self) -> impl Iterator<Item = &str> {
-        anstream::adapter::strip_str(&self.0)
+        terminal_style::output::adapter::strip_str(&self.0)
     }
 
     #[cfg(not(feature = "color"))]

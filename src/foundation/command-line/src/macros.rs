@@ -564,7 +564,7 @@ macro_rules! arg {
 macro_rules! debug {
     ($($arg:tt)*) => ({
         use std::fmt::Write as _;
-        let hint = anstyle::Style::new().dimmed();
+        let hint = terminal_style::Style::new().dimmed();
 
         let module_path = module_path!();
         let body = format!($($arg)*);

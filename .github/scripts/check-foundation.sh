@@ -50,6 +50,7 @@ case "${1:-}" in
     python3 .github/scripts/check-wasm-binding-macros.py
     python3 .github/scripts/check-unicode-data-family.py
     python3 .github/scripts/check-url-encoding.py
+    python3 .github/scripts/check-terminal-style.py
     ;;
   foundation-async)
     python3 .github/scripts/check-tracing-family.py

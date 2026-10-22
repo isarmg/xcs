@@ -17,6 +17,7 @@
     "9a8a096030bfdb1bdb2567d9c7fb019d623295f4587845cde75ee41003ac7dfb": "9a8a096030bfdb1bdb2567d9c7fb019d623295f4587845cde75ee41003ac7dfb",
     "b9eb2e8fc755fd61e0f6150127a360f2520a1fc69698df9c374e58365ff8fdbb": "b9eb2e8fc755fd61e0f6150127a360f2520a1fc69698df9c374e58365ff8fdbb",
     "c0106826dcd6a6018d2cd31dfc91db21c0466af5a93692ba0cc86b63baaec222": "c0106826dcd6a6018d2cd31dfc91db21c0466af5a93692ba0cc86b63baaec222",
+    "dd6c7498dd42d13067bc3b6e0903bbb03de79331644cf36996294fb399ce5e4b": "dd6c7498dd42d13067bc3b6e0903bbb03de79331644cf36996294fb399ce5e4b",
     "eafb0b4185a7c210506e15a28d87995a7ff4898a240281ec013b11ec70a2acd3": "eafb0b4185a7c210506e15a28d87995a7ff4898a240281ec013b11ec70a2acd3",
     "f8932c62a4c5148866ef0a7651507467033344188f02694bfbffced61db248e4": "f8932c62a4c5148866ef0a7651507467033344188f02694bfbffced61db248e4",
     "f9ca98767ea1270edde6843571ba5055ac95a067a2e57d9312293364a299ac0b": "f9ca98767ea1270edde6843571ba5055ac95a067a2e57d9312293364a299ac0b",
@@ -27260,6 +27261,746 @@
       "primary_directory": "src/foundation/time",
       "reason": "Consolidate date/time semantics, calendar units, ranged integers, display formatting, and numeric conversions into one date-time source package; remove redundant package boundaries without compatibility packages. Retain all upstream provenance and benchmark bytes, preserve every external test with exact reversible relocation edits, and archive only the unsupported optional random/property-testing and local OS timezone implementation files, plus unused standalone formatting utilities outside the date-time capability."
     },
+    "dd6c7498dd42d13067bc3b6e0903bbb03de79331644cf36996294fb399ce5e4b": {
+      "destination_directory": "src/foundation/terminal-style",
+      "destination_external_tests": {
+        "bytes": 24474,
+        "directory": "src/foundation/terminal-style",
+        "file_count": 13,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/anstyle-1.0.14",
+            "path": "test/foundation/terminal-style/anstyle/functions/src/style/print_size_of_431.rs",
+            "sha256": "c72c793f33efbe5c52b09ac6e9e8b26f1ad874d455d7ee679659fab716175894",
+            "source": "src/foundation/anstyle/src/style.rs",
+            "source_sha256_before": "6f5eee7892f10df47bc07dd8f5715ee5d0c438cba53b63b72dce0843423b42bd"
+          },
+          {
+            "origin_directory": "vendor/rust/anstyle-1.0.14",
+            "path": "test/foundation/terminal-style/anstyle/unit/src/color/test_644.rs",
+            "sha256": "db8af56a49188afee161285aa4ab7311c1442afa8ed69aea5750fb0b832e73fe",
+            "source": "src/foundation/anstyle/src/color.rs",
+            "source_sha256_before": "fc82bbfc225372584c1985ecb11e744ec0e59d8c208ad404c98846759eb01f4b"
+          },
+          {
+            "origin_directory": "vendor/rust/anstyle-1.0.14",
+            "path": "test/foundation/terminal-style/anstyle/unit/src/effect/test_381.rs",
+            "sha256": "a8c226114b3a6fb278a566174c689abf8fe482c21036116662cbab32994ff5f3",
+            "source": "src/foundation/anstyle/src/effect.rs",
+            "source_sha256_before": "ed72ba456c4804ff6669f41ee0754bf8e2d974c2217e3eeac0d4d23202b81289"
+          },
+          {
+            "origin_directory": "vendor/rust/anstyle-1.0.14",
+            "path": "test/foundation/terminal-style/anstyle/unit/src/reset/test_24.rs",
+            "sha256": "6b5fc2c86d9d719299188070778db30360d0c75dce62be13c60f951eef21d242",
+            "source": "src/foundation/anstyle/src/reset.rs",
+            "source_sha256_before": "456baf708f7d595369d2d852427d1891208a9fad5e21291be3217c4e69114faf"
+          },
+          {
+            "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+            "path": "test/foundation/terminal-style/anstyle-parse/modules/src/state/codegen.rs",
+            "sha256": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787",
+            "source": "src/foundation/anstyle-parse/src/state/codegen.rs",
+            "source_sha256_before": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787"
+          },
+          {
+            "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+            "path": "test/foundation/terminal-style/anstyle-parse/unit/src/state/definitions/tests_132.rs",
+            "sha256": "350f009901ee90f1abae0b00171fc4c4b98687c591635ad0e83e96eef7a80d47",
+            "source": "src/foundation/anstyle-parse/src/state/definitions.rs",
+            "source_sha256_before": "8a819bd7238edeb02aff3697e07fadfb8978a00f9f255812838326b904010e82"
+          },
+          {
+            "origin_directory": "vendor/rust/anstyle-query-1.1.5",
+            "path": "test/foundation/terminal-style/anstyle-query/unit/src/lib/test_141.rs",
+            "sha256": "3d4c498ab71e61bff9961c81ba71197becc57d9d773f20b3643f15ce07c2ba3a",
+            "source": "src/foundation/anstyle-query/src/lib.rs",
+            "source_sha256_before": "d5479a2adc069f5433bec10f7275c56a7406589b98c6c313efea2bfa6e31bdbd"
+          },
+          {
+            "origin_directory": "vendor/rust/colorchoice-1.0.5",
+            "path": "test/foundation/terminal-style/colorchoice/unit/src/lib/test_87.rs",
+            "sha256": "b5bf729cfde820084a3240b8b4eb9400e86b06d096c26e67192216cd7265fd66",
+            "source": "src/foundation/colorchoice/src/lib.rs",
+            "source_sha256_before": "d623c7405a52e1fd0d62149e862ab66ff643086ce915dfda0adb1c2c0046f987"
+          },
+          {
+            "origin_directory": "vendor/rust/anstream-1.0.0",
+            "path": "test/foundation/terminal-style/anstream/unit/src/adapter/strip/test_369.rs",
+            "sha256": "b2e95af85f9358b810deb703c745bf443d35ae9b9d7fd5cda3b93b31b2118657",
+            "source": "src/foundation/anstream/src/adapter/strip.rs",
+            "source_sha256_before": "642375f9dc5836eb5aa6eba7be849a84786d22764d470672bf1f646061254c1c"
+          },
+          {
+            "origin_directory": "vendor/rust/anstream-1.0.0",
+            "path": "test/foundation/terminal-style/anstream/unit/src/adapter/wincon/test_301.rs",
+            "sha256": "1899ffde1d7f7efe0a5cc738524fc2d5ac23b9a06a07cf42463e8c217990c0dd",
+            "source": "src/foundation/anstream/src/adapter/wincon.rs",
+            "source_sha256_before": "88607742fb7bbfb85e122a8dcc3188ef7c15ef332063af3a8939701dad05b90a"
+          },
+          {
+            "origin_directory": "vendor/rust/anstream-1.0.0",
+            "path": "test/foundation/terminal-style/anstream/unit/src/stream/tests_283.rs",
+            "sha256": "36cf91f18a72cd0aa69c6534cae2ffc974c57632505523f5c75c1b3454c05117",
+            "source": "src/foundation/anstream/src/stream.rs",
+            "source_sha256_before": "c7d9526dd1ca217f6f5462780f3d1bf4a32b22ff7285284fd4fc8c4164e1791a"
+          },
+          {
+            "origin_directory": "vendor/rust/anstream-1.0.0",
+            "path": "test/foundation/terminal-style/anstream/unit/src/strip/test_172.rs",
+            "sha256": "814f8bfd838533962e5c614afbc665af134e7dd398f885380a2aef12dacf735a",
+            "source": "src/foundation/anstream/src/strip.rs",
+            "source_sha256_before": "0268bdc9155fc91bd7e92337c5e3ba96999780b46fab311b00922c7a3047233c"
+          },
+          {
+            "origin_directory": "vendor/rust/anstream-1.0.0",
+            "path": "test/foundation/terminal-style/anstream/unit/src/wincon/test_171.rs",
+            "sha256": "55d0bc926e028b3cd26d9844287ba05f865687dc43438d96c974d3ab087b1cea",
+            "source": "src/foundation/anstream/src/wincon.rs",
+            "source_sha256_before": "46067373ab01154b014bb3cf77edbc5fa9abea6633c90e4cc02235b31c19bf74"
+          }
+        ],
+        "origin_directory": "vendor/rust/anstyle-1.0.14",
+        "roots": [
+          "test/foundation/terminal-style"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "59e41ab1e50ff1e08081d17440717c16401b7909dd88a2df39000de807674aa9",
+        "src/choice.rs": "92a7998603f0083c43e1c5d054478e01439b5fe22721a9b4c28cda06f2c3e542",
+        "src/color.rs": "6c30449bd12ac4b22834cb63d8cc1691843474bc185685fa4ce30200db24d674",
+        "src/effect.rs": "0804c98c78706be139b82c2441b827d907ec3f515c19cf667e9fcace82e75999",
+        "src/lib.rs": "934a5b563a584714e6c5745eb0b9fc3a0a0a886a75457dc7fe4a4e371a91aae5",
+        "src/macros.rs": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
+        "src/output/adapter/mod.rs": "6d34ac324cbbc51c7f3d3750e0cf277491c90af87deaf07c100457681a28a7e3",
+        "src/output/adapter/strip.rs": "c15aab55b654a0d05ac90f8df14e88eec58986ebafed16e7278dfb29ed6265d5",
+        "src/output/auto.rs": "cc77defd75b9585808c616beafe39f59e4f449ddd133550719b62d844aecec2f",
+        "src/output/buffer.rs": "e8da130c918a47b922e1a467496747f1af14840551af79d79774d5645b165d59",
+        "src/output/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
+        "src/output/mod.rs": "cccecdbe39d49c6b51dcc1969b420c445ff7f9d5f499a8e1ecae4385f4b89cda",
+        "src/output/stream.rs": "c14b76eb432a5d6c128e19e72d02974553e8a720cc2a8f522d6e75f893723afb",
+        "src/output/strip.rs": "ec7efc9ea3fc3d2d4075d0482300513dcee71f06d905a1880d5530e4762b8018",
+        "src/parser/mod.rs": "ae194effa38b8805071f4cdaea1eeed2fde14dcba4150e7225844e96afe84a4e",
+        "src/parser/params.rs": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
+        "src/parser/state/definitions.rs": "c854149add7382ed8c3d025503de8d2ce0a64006905dfb67098938055ae34e2a",
+        "src/parser/state/mod.rs": "e4af6f0293d0514fb456cc3591f2a10e6590716175abd46c0cd88d55d74e128e",
+        "src/parser/state/table.rs": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c",
+        "src/query.rs": "6a97a3ae12a275a25c3a2ff43de37efbdd6c4c94e979ece5852bc886055852aa",
+        "src/reset.rs": "d5f985622531647c0503abd8285f9a393a7c93d98a0bf198bcbd62e543238201",
+        "src/style.rs": "7ebce7c6d8131c828418048b5b4d23e0d1fd90dee6b74fd93931353285256f5c"
+      },
+      "destination_name": "terminal-style",
+      "external_file_routes": {
+        "test/foundation/anstream/unit/src/adapter/strip/test_369.rs": {
+          "destination": "test/foundation/terminal-style/anstream/unit/src/adapter/strip/test_369.rs",
+          "replacements": [
+            {
+              "new": "ZXQgbXV0IHBhcnNlciA9IGFuc3R5bGVfcGFyc2U6OlBhcnNlcjo6PGNyYXRlOjpwYXJzZXI6OkRlZmF1bHRDaGFyQWNjdW11bGF0b3I+OjpuZXcoKTsKICAgICAgICA=",
+              "old": "ZXQgbXV0IHBhcnNlciA9IGFuc3R5bGVfcGFyc2U6OlBhcnNlcjo6PGFuc3R5bGVfcGFyc2U6OkRlZmF1bHRDaGFyQWNjdW11bGF0b3I+OjpuZXcoKTsKICAgICAgICA="
+            },
+            {
+              "new": "KGJ5dGVzLmxlbigpKTsKICAgICAgICBsZXQgbXV0IHBhcnNlciA9IGNyYXRlOjpwYXJzZXI6OlBhcnNlcjo6PGNyYXRlOjpwYXJzZXI6OkRlZmF1bHRDaGFyQWNjdW0=",
+              "old": "KGJ5dGVzLmxlbigpKTsKICAgICAgICBsZXQgbXV0IHBhcnNlciA9IGFuc3R5bGVfcGFyc2U6OlBhcnNlcjo6PGNyYXRlOjpwYXJzZXI6OkRlZmF1bHRDaGFyQWNjdW0="
+            },
+            {
+              "new": "KSkKICAgICAgICAgICAgfQogICAgICAgIH0KICAgICAgICBpbXBsIGNyYXRlOjpwYXJzZXI6OlBlcmZvcm0gZm9yIFN0cmlwIHsKICAgICAgICAgICAgZm4gcHJpbnQ=",
+              "old": "KSkKICAgICAgICAgICAgfQogICAgICAgIH0KICAgICAgICBpbXBsIGFuc3R5bGVfcGFyc2U6OlBlcmZvcm0gZm9yIFN0cmlwIHsKICAgICAgICAgICAgZm4gcHJpbnQ="
+            },
+            {
+              "new": "Y2ZnKHRlc3QpXQptb2QgdGVzdCB7CiAgICB1c2Ugc3VwZXI6Oio7CiAgICAvLyBVcHN0cmVhbSBwcm9wZXJ0eSBnZW5lcmF0b3IgdW5hdmFpbGFibGUgaW4gdGhlIG1haW50YWluZWQgb2ZmbGluZSBncmFwaC4KICAgICNbY2ZnKGFueSgpKV0KICAgIHVzZSBwcm9wdGVzdDo6cHJlbHVkZTo6KjsKCiAgICAvLy8gTW9kZWwgYmFzZWQgb2ZmIGZ1bGwgcGFyc2VyCiAg",
+              "old": "Y2ZnKHRlc3QpXQptb2QgdGVzdCB7CiAgICB1c2Ugc3VwZXI6Oio7CiAgICB1c2UgcHJvcHRlc3Q6OnByZWx1ZGU6Oio7CgogICAgLy8vIE1vZGVsIGJhc2VkIG9mZiBmdWxsIHBhcnNlcgogIA=="
+            },
+            {
+              "new": "mIBnb29kYnllIiwgaXQubmV4dCgpLnVud3JhcCgpKTsKICAgIH0KCiAgICAjW2NmZyhhbnkoKSldCiAgICBwcm9wdGVzdCEgewogICAgICAgICNbdGVzdF0KICAgICAgICAjW2NmZ19hdHRyKG1pcmk=",
+              "old": "mIBnb29kYnllIiwgaXQubmV4dCgpLnVud3JhcCgpKTsKICAgIH0KCiAgICBwcm9wdGVzdCEgewogICAgICAgICNbdGVzdF0KICAgICAgICAjW2NmZ19hdHRyKG1pcmk="
+            }
+          ]
+        },
+        "test/foundation/anstream/unit/src/adapter/wincon/test_301.rs": {
+          "destination": "test/foundation/terminal-style/anstream/unit/src/adapter/wincon/test_301.rs",
+          "replacements": [
+            {
+              "new": "ICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIHZlYyFbKGNyYXRlOjpTdHlsZTo6ZGVmYXVsdCgpLCBzLmNsb25lKCkpXQogICAgICAgICAg",
+              "old": "ICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIHZlYyFbKGFuc3R5bGU6OlN0eWxlOjpkZWZhdWx0KCksIHMuY2xvbmUoKSldCiAgICAgICAgICA="
+            },
+            {
+              "new": "ICAgICAgIChhbnNpXzExLCAid29ybGQiKSwKICAgICAgICAgICAgKGNyYXRlOjpTdHlsZTo6ZGVmYXVsdCgpLCAiISIpLAogICAgICAgIF07CiAgICAg",
+              "old": "ICAgICAgIChhbnNpXzExLCAid29ybGQiKSwKICAgICAgICAgICAgKGFuc3R5bGU6OlN0eWxlOjpkZWZhdWx0KCksICIhIiksCiAgICAgICAgXTsKICAgICA="
+            },
+            {
+              "new": "KCJIZWxsbyB7YW5zaV8xMX13b3JsZHthbnNpXzExOiN9ISIpOwogICAgICAgIGxldCBleHBlY3RlZCA9IHZlYyFbCiAgICAgICAgICAgIChjcmF0ZTo6U3R5bGU6OmRlZmF1bHQoKSwgIkhlbGxvICIpLAogICAgICAgICAgICAoYW5zaV8xMSwgIndvcmxkIiksCiAgICAgICAgICAgIChjcmF0ZTo=",
+              "old": "KCJIZWxsbyB7YW5zaV8xMX13b3JsZHthbnNpXzExOiN9ISIpOwogICAgICAgIGxldCBleHBlY3RlZCA9IHZlYyFbCiAgICAgICAgICAgIChhbnN0eWxlOjpTdHlsZTo6ZGVmYXVsdCgpLCAiSGVsbG8gIiksCiAgICAgICAgICAgIChhbnNpXzExLCAid29ybGQiKSwKICAgICAgICAgICAgKGNyYXRlOg=="
+            },
+            {
+              "new": "bnNpMjU2X2NvbG9ycygpIHsKICAgICAgICBsZXQgYW5zaV8xMSA9IGNyYXRlOjpBbnNpMjU2Q29sb3IoMTEpLm9uX2RlZmF1bHQoKTsKICAgICAgICAv",
+              "old": "bnNpMjU2X2NvbG9ycygpIHsKICAgICAgICBsZXQgYW5zaV8xMSA9IGFuc3R5bGU6OkFuc2kyNTZDb2xvcigxMSkub25fZGVmYXVsdCgpOwogICAgICAgIC8="
+            },
+            {
+              "new": "cmVlbl9vbl9yZWR9d29ybGQhe2dyZWVuX29uX3JlZDojfSIpOwogICAgICAgIGxldCBleHBlY3RlZCA9IHZlYyFbCiAgICAgICAgICAgIChjcmF0ZTo6U3R5bGU6OmRlZmF1bHQoKSwgIkhlbGxvICIpLAogICAgICAgICAgICAoZ3JlZW5fb25fcmVkLCAid29ybGQhIiksCiAgICAgICAgXTsKICA=",
+              "old": "cmVlbl9vbl9yZWR9d29ybGQhe2dyZWVuX29uX3JlZDojfSIpOwogICAgICAgIGxldCBleHBlY3RlZCA9IHZlYyFbCiAgICAgICAgICAgIChhbnN0eWxlOjpTdHlsZTo6ZGVmYXVsdCgpLCAiSGVsbG8gIiksCiAgICAgICAgICAgIChncmVlbl9vbl9yZWQsICJ3b3JsZCEiKSwKICAgICAgICBdOwogIA=="
+            },
+            {
+              "new": "ICNbdGVzdF0KICAgIGZuIGVuZCgpIHsKICAgICAgICBsZXQgZ3JlZW5fb25fcmVkID0gYW5zdHlsZTo6QW5zaUNvbG9yOjpHcmVlbi5vbihjcmF0ZTo6QW5zaUNvbG9yOjpSZWQpOwogICAgICAgIGxldCBpbnB1dCA9IGZvcm1hdCEoIkhlbGxvIHtncmVlbl9vbl9yZWR9d29ybGQhe2dyZWVuX28=",
+              "old": "ICNbdGVzdF0KICAgIGZuIGVuZCgpIHsKICAgICAgICBsZXQgZ3JlZW5fb25fcmVkID0gYW5zdHlsZTo6QW5zaUNvbG9yOjpHcmVlbi5vbihhbnN0eWxlOjpBbnNpQ29sb3I6OlJlZCk7CiAgICAgICAgbGV0IGlucHV0ID0gZm9ybWF0ISgiSGVsbG8ge2dyZWVuX29uX3JlZH13b3JsZCF7Z3JlZW5fbw=="
+            },
+            {
+              "new": "ICBmbiBlbmQoKSB7CiAgICAgICAgbGV0IGdyZWVuX29uX3JlZCA9IGNyYXRlOjpBbnNpQ29sb3I6OkdyZWVuLm9uKGNyYXRlOjpBbnNpQ29sb3I6OlJl",
+              "old": "ICBmbiBlbmQoKSB7CiAgICAgICAgbGV0IGdyZWVuX29uX3JlZCA9IGFuc3R5bGU6OkFuc2lDb2xvcjo6R3JlZW4ub24oY3JhdGU6OkFuc2lDb2xvcjo6UmU="
+            },
+            {
+              "new": "ICAoZ3JlZW5fb25fcmVkLCAid29ybGQiKSwKICAgICAgICAgICAgKGNyYXRlOjpTdHlsZTo6ZGVmYXVsdCgpLCAiISIpLAogICAgICAgIF07CiAgICAg",
+              "old": "ICAoZ3JlZW5fb25fcmVkLCAid29ybGQiKSwKICAgICAgICAgICAgKGFuc3R5bGU6OlN0eWxlOjpkZWZhdWx0KCksICIhIiksCiAgICAgICAgXTsKICAgICA="
+            },
+            {
+              "new": "cmVlbl9vbl9yZWR9d29ybGR7Z3JlZW5fb25fcmVkOiN9ISIpOwogICAgICAgIGxldCBleHBlY3RlZCA9IHZlYyFbCiAgICAgICAgICAgIChjcmF0ZTo6U3R5bGU6OmRlZmF1bHQoKSwgIkhlbGxvICIpLAogICAgICAgICAgICAoZ3JlZW5fb25fcmVkLCAid29ybGQiKSwKICAgICAgICAgICAgKGM=",
+              "old": "cmVlbl9vbl9yZWR9d29ybGR7Z3JlZW5fb25fcmVkOiN9ISIpOwogICAgICAgIGxldCBleHBlY3RlZCA9IHZlYyFbCiAgICAgICAgICAgIChhbnN0eWxlOjpTdHlsZTo6ZGVmYXVsdCgpLCAiSGVsbG8gIiksCiAgICAgICAgICAgIChncmVlbl9vbl9yZWQsICJ3b3JsZCIpLAogICAgICAgICAgICAoYw=="
+            },
+            {
+              "new": "dGVzdF0KICAgIGZuIG1pZGRsZSgpIHsKICAgICAgICBsZXQgZ3JlZW5fb25fcmVkID0gYW5zdHlsZTo6QW5zaUNvbG9yOjpHcmVlbi5vbihjcmF0ZTo6QW5zaUNvbG9yOjpSZWQpOwogICAgICAgIGxldCBpbnB1dCA9IGZvcm1hdCEoIkhlbGxvIHtncmVlbl9vbl9yZWR9d29ybGR7Z3JlZW5fb24=",
+              "old": "dGVzdF0KICAgIGZuIG1pZGRsZSgpIHsKICAgICAgICBsZXQgZ3JlZW5fb25fcmVkID0gYW5zdHlsZTo6QW5zaUNvbG9yOjpHcmVlbi5vbihhbnN0eWxlOjpBbnNpQ29sb3I6OlJlZCk7CiAgICAgICAgbGV0IGlucHV0ID0gZm9ybWF0ISgiSGVsbG8ge2dyZWVuX29uX3JlZH13b3JsZHtncmVlbl9vbg=="
+            },
+            {
+              "new": "biBtaWRkbGUoKSB7CiAgICAgICAgbGV0IGdyZWVuX29uX3JlZCA9IGNyYXRlOjpBbnNpQ29sb3I6OkdyZWVuLm9uKGNyYXRlOjpBbnNpQ29sb3I6OlJl",
+              "old": "biBtaWRkbGUoKSB7CiAgICAgICAgbGV0IGdyZWVuX29uX3JlZCA9IGFuc3R5bGU6OkFuc2lDb2xvcjo6R3JlZW4ub24oY3JhdGU6OkFuc2lDb2xvcjo6UmU="
+            },
+            {
+              "new": "ICAoZ3JlZW5fb25fcmVkLCAiSGVsbG8iKSwKICAgICAgICAgICAgKGNyYXRlOjpTdHlsZTo6ZGVmYXVsdCgpLCAiIHdvcmxkISIpLAogICAgICAgIF07",
+              "old": "ICAoZ3JlZW5fb25fcmVkLCAiSGVsbG8iKSwKICAgICAgICAgICAgKGFuc3R5bGU6OlN0eWxlOjpkZWZhdWx0KCksICIgd29ybGQhIiksCiAgICAgICAgXTs="
+            },
+            {
+              "new": "bl9vbl9yZWQgPSBhbnN0eWxlOjpBbnNpQ29sb3I6OkdyZWVuLm9uKGNyYXRlOjpBbnNpQ29sb3I6OlJlZCk7CiAgICAgICAgbGV0IGlucHV0ID0gZm9y",
+              "old": "bl9vbl9yZWQgPSBhbnN0eWxlOjpBbnNpQ29sb3I6OkdyZWVuLm9uKGFuc3R5bGU6OkFuc2lDb2xvcjo6UmVkKTsKICAgICAgICBsZXQgaW5wdXQgPSBmb3I="
+            },
+            {
+              "new": "Zm4gc3RhcnQoKSB7CiAgICAgICAgbGV0IGdyZWVuX29uX3JlZCA9IGNyYXRlOjpBbnNpQ29sb3I6OkdyZWVuLm9uKGNyYXRlOjpBbnNpQ29sb3I6OlJl",
+              "old": "Zm4gc3RhcnQoKSB7CiAgICAgICAgbGV0IGdyZWVuX29uX3JlZCA9IGFuc3R5bGU6OkFuc2lDb2xvcjo6R3JlZW4ub24oY3JhdGU6OkFuc2lDb2xvcjo6UmU="
+            },
+            {
+              "new": "ICBmbiB2ZXJpZnkoaW5wdXQ6ICZzdHIsIGV4cGVjdGVkOiBWZWM8KGNyYXRlOjpTdHlsZSwgJnN0cik+KSB7CiAgICAgICAgbGV0IGV4cGVjdGVkID0g",
+              "old": "ICBmbiB2ZXJpZnkoaW5wdXQ6ICZzdHIsIGV4cGVjdGVkOiBWZWM8KGFuc3R5bGU6OlN0eWxlLCAmc3RyKT4pIHsKICAgICAgICBsZXQgZXhwZWN0ZWQgPSA="
+            },
+            {
+              "new": "Y2ZnKHRlc3QpXQptb2QgdGVzdCB7CiAgICB1c2Ugc3VwZXI6Oio7CiAgICAvLyBVcHN0cmVhbSBwcm9wZXJ0eSBnZW5lcmF0b3IgdW5hdmFpbGFibGUgaW4gdGhlIG1haW50YWluZWQgb2ZmbGluZSBncmFwaC4KICAgICNbY2ZnKGFueSgpKV0KICAgIHVzZSBwcm9wdGVzdDo6cHJlbHVkZTo6KjsKCiAgICAjW3RyYWNrX2NhbGxlcl0KICAgIGZuIHZlcmlmeShpbnB1",
+              "old": "Y2ZnKHRlc3QpXQptb2QgdGVzdCB7CiAgICB1c2Ugc3VwZXI6Oio7CiAgICB1c2UgcHJvcHRlc3Q6OnByZWx1ZGU6Oio7CgogICAgI1t0cmFja19jYWxsZXJdCiAgICBmbiB2ZXJpZnkoaW5wdQ=="
+            },
+            {
+              "new": "ICAgICAgIHZlcmlmeSgmaW5wdXQsIGV4cGVjdGVkKTsKICAgIH0KCiAgICAjW2NmZyhhbnkoKSldCiAgICBwcm9wdGVzdCEgewogICAgICAgICNbdGVzdF0KICAgICAgICAjW2NmZ19hdHRyKG1pcmk=",
+              "old": "ICAgICAgIHZlcmlmeSgmaW5wdXQsIGV4cGVjdGVkKTsKICAgIH0KCiAgICBwcm9wdGVzdCEgewogICAgICAgICNbdGVzdF0KICAgICAgICAjW2NmZ19hdHRyKG1pcmk="
+            }
+          ]
+        },
+        "test/foundation/anstream/unit/src/stream/tests_283.rs": {
+          "destination": "test/foundation/terminal-style/anstream/unit/src/stream/tests_283.rs",
+          "replacements": [
+            {
+              "new": "dHJlYW08VDogUmF3U3RyZWFtPigpCiAgICB3aGVyZQogICAgICAgIGNyYXRlOjpvdXRwdXQ6OkF1dG9TdHJlYW08VD46IHN0ZDo6aW86OldyaXRlLAogICAgewogICAgfQoKICAgICNb",
+              "old": "dHJlYW08VDogUmF3U3RyZWFtPigpCiAgICB3aGVyZQogICAgICAgIGNyYXRlOjpBdXRvU3RyZWFtPFQ+OiBzdGQ6OmlvOjpXcml0ZSwKICAgIHsKICAgIH0KCiAgICAjWw=="
+            }
+          ]
+        },
+        "test/foundation/anstream/unit/src/strip/test_172.rs": {
+          "destination": "test/foundation/terminal-style/anstream/unit/src/strip/test_172.rs",
+          "replacements": [
+            {
+              "new": "Y2ZnKHRlc3QpXQptb2QgdGVzdCB7CiAgICB1c2Ugc3VwZXI6Oio7CiAgICAvLyBVcHN0cmVhbSBwcm9wZXJ0eSBnZW5lcmF0b3IgdW5hdmFpbGFibGUgaW4gdGhlIG1haW50YWluZWQgb2ZmbGluZSBncmFwaC4KICAgICNbY2ZnKGFueSgpKV0KICAgIHVzZSBwcm9wdGVzdDo6cHJlbHVkZTo6KjsKICAgIHVzZSBzdGQ6OmlvOjpXcml0ZSBhcyBfOwoKICAgIHByb3B0",
+              "old": "Y2ZnKHRlc3QpXQptb2QgdGVzdCB7CiAgICB1c2Ugc3VwZXI6Oio7CiAgICB1c2UgcHJvcHRlc3Q6OnByZWx1ZGU6Oio7CiAgICB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKCiAgICBwcm9wdA=="
+            },
+            {
+              "new": "ZWx1ZGU6Oio7CiAgICB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKCiAgICAjW2NmZyhhbnkoKSldCiAgICBwcm9wdGVzdCEgewogICAgICAgICNbdGVzdF0KICAgICAgICAjW2NmZ19hdHRyKG1pcmk=",
+              "old": "ZWx1ZGU6Oio7CiAgICB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKCiAgICBwcm9wdGVzdCEgewogICAgICAgICNbdGVzdF0KICAgICAgICAjW2NmZ19hdHRyKG1pcmk="
+            }
+          ]
+        },
+        "test/foundation/anstream/unit/src/wincon/test_171.rs": {
+          "destination": "test/foundation/terminal-style/anstream/unit/src/wincon/test_171.rs",
+          "replacements": [
+            {
+              "new": "Y2ZnKHRlc3QpXQptb2QgdGVzdCB7CiAgICB1c2Ugc3VwZXI6Oio7CiAgICAvLyBVcHN0cmVhbSBwcm9wZXJ0eSBnZW5lcmF0b3IgdW5hdmFpbGFibGUgaW4gdGhlIG1haW50YWluZWQgb2ZmbGluZSBncmFwaC4KICAgICNbY2ZnKGFueSgpKV0KICAgIHVzZSBwcm9wdGVzdDo6cHJlbHVkZTo6KjsKICAgIHVzZSBzdGQ6OmlvOjpXcml0ZSBhcyBfOwoKICAgIHByb3B0",
+              "old": "Y2ZnKHRlc3QpXQptb2QgdGVzdCB7CiAgICB1c2Ugc3VwZXI6Oio7CiAgICB1c2UgcHJvcHRlc3Q6OnByZWx1ZGU6Oio7CiAgICB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKCiAgICBwcm9wdA=="
+            },
+            {
+              "new": "ZWx1ZGU6Oio7CiAgICB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKCiAgICAjW2NmZyhhbnkoKSldCiAgICBwcm9wdGVzdCEgewogICAgICAgICNbdGVzdF0KICAgICAgICAjW2NmZ19hdHRyKG1pcmk=",
+              "old": "ZWx1ZGU6Oio7CiAgICB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKCiAgICBwcm9wdGVzdCEgewogICAgICAgICNbdGVzdF0KICAgICAgICAjW2NmZ19hdHRyKG1pcmk="
+            }
+          ]
+        },
+        "test/foundation/anstyle-parse/modules/src/state/codegen.rs": {
+          "destination": "test/foundation/terminal-style/anstyle-parse/modules/src/state/codegen.rs",
+          "replacements": []
+        },
+        "test/foundation/anstyle-parse/unit/src/state/definitions/tests_132.rs": {
+          "destination": "test/foundation/terminal-style/anstyle-parse/unit/src/state/definitions/tests_132.rs",
+          "replacements": []
+        },
+        "test/foundation/anstyle-query/unit/src/lib/test_141.rs": {
+          "destination": "test/foundation/terminal-style/anstyle-query/unit/src/lib/test_141.rs",
+          "replacements": []
+        },
+        "test/foundation/anstyle/functions/src/style/print_size_of_431.rs": {
+          "destination": "test/foundation/terminal-style/anstyle/functions/src/style/print_size_of_431.rs",
+          "replacements": []
+        },
+        "test/foundation/anstyle/unit/src/color/test_644.rs": {
+          "destination": "test/foundation/terminal-style/anstyle/unit/src/color/test_644.rs",
+          "replacements": []
+        },
+        "test/foundation/anstyle/unit/src/effect/test_381.rs": {
+          "destination": "test/foundation/terminal-style/anstyle/unit/src/effect/test_381.rs",
+          "replacements": []
+        },
+        "test/foundation/anstyle/unit/src/reset/test_24.rs": {
+          "destination": "test/foundation/terminal-style/anstyle/unit/src/reset/test_24.rs",
+          "replacements": []
+        },
+        "test/foundation/colorchoice/unit/src/lib/test_87.rs": {
+          "destination": "test/foundation/terminal-style/colorchoice/unit/src/lib/test_87.rs",
+          "replacements": []
+        }
+      },
+      "file_routes": {
+        "src/foundation/anstream": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42Ni4wIgpuYW1lID0gImFuc3RyZWFtIgp2ZXJzaW9uID0gIjEuMC4wIgpidWlsZCA9IGZhbHNlCmluY2x1ZGUgPSBbCiAgICAiYnVpbGQucnMiLAogICAgInNyYy8qKi8qIiwKICAgICJDYXJnby50b21sIiwKICAgICJDYXJnby5sb2NrIiwKICAgICJMSUNFTlNFKiIsCiAgICAiUkVBRE1FLm1kIiwKICAgICJleGFtcGxlcy8qKi8qIiwKXQphdXRvbGliID0gZmFsc2UKYXV0b2JpbnMgPSBmYWxzZQphdXRvZXhhbXBsZXMgPSBmYWxzZQphdXRvdGVzdHMgPSBmYWxzZQphdXRvYmVuY2hlcyA9IGZhbHNlCmRlc2NyaXB0aW9uID0gIklPIHN0cmVhbSBhZGFwdGVycyBmb3Igd3JpdGluZyBjb2xvcmVkIHRleHQgdGhhdCB3aWxsIGdyYWNlZnVsbHkgZGVncmFkZSBhY2NvcmRpbmcgdG8geW91ciB0ZXJtaW5hbCdzIGNhcGFiaWxpdGllcy4iCnJlYWRtZSA9ICIuLi8uLi8uLi9kb2NzL3Vwc3RyZWFtL2Fuc3RyZWFtLTEuMC4wL1JFQURNRS5tZCIKa2V5d29yZHMgPSBbCiAgICAiYW5zaSIsCiAgICAidGVybWluYWwiLAogICAgImNvbG9yIiwKICAgICJzdHJpcCIsCiAgICAid2luY29uIiwKXQpjYXRlZ29yaWVzID0gWyJjb21tYW5kLWxpbmUtaW50ZXJmYWNlIl0KbGljZW5zZSA9ICJNSVQgT1IgQXBhY2hlLTIuMCIKcmVwb3NpdG9yeSA9ICJodHRwczovL2dpdGh1Yi5jb20vcnVzdC1jbGkvYW5zdHlsZS5naXQiCgpbZmVhdHVyZXNdCmF1dG8gPSBbImRlcDphbnN0eWxlLXF1ZXJ5Il0KZGVmYXVsdCA9IFsiYXV0byJdCnRlc3QgPSBbXQoKW2xpYl0KbmFtZSA9ICJhbnN0cmVhbSIKcGF0aCA9ICJzcmMvbGliLnJzIgoKW2RlcGVuZGVuY2llcy5hbnN0eWxlXQp2ZXJzaW9uID0gIjEuMC4wIgpwYXRoID0gIi4uL2Fuc3R5bGUiCgpbZGVwZW5kZW5jaWVzLmFuc3R5bGUtcGFyc2VdCnZlcnNpb24gPSAiMS4wLjAiCnBhdGggPSAiLi4vYW5zdHlsZS1wYXJzZSIKCltkZXBlbmRlbmNpZXMuYW5zdHlsZS1xdWVyeV0KdmVyc2lvbiA9ICIxLjAuMCIKb3B0aW9uYWwgPSB0cnVlCnBhdGggPSAiLi4vYW5zdHlsZS1xdWVyeSIKCltkZXBlbmRlbmNpZXMuY29sb3JjaG9pY2VdCnZlcnNpb24gPSAiMS4wLjAiCnBhdGggPSAiLi4vY29sb3JjaG9pY2UiCgoKW2RlcGVuZGVuY2llcy51dGY4cGFyc2VdCnZlcnNpb24gPSAiMC4yLjIiCnBhdGggPSAiLi4vdXRmOHBhcnNlIgoKW2xpbnRzLmNsaXBweV0KYm9vbF9hc3NlcnRfY29tcGFyaXNvbiA9ICJhbGxvdyIKYnJhbmNoZXNfc2hhcmluZ19jb2RlID0gImFsbG93IgpjaGVja2VkX2NvbnZlcnNpb25zID0gIndhcm4iCmNvbGxhcHNpYmxlX2Vsc2VfaWYgPSAiYWxsb3ciCmNyZWF0ZV9kaXIgPSAid2FybiIKZGJnX21hY3JvID0gIndhcm4iCmRlYnVnX2Fzc2VydF93aXRoX211dF9jYWxsID0gIndhcm4iCmRvY19tYXJrZG93biA9ICJ3YXJuIgplbXB0eV9lbnVtcyA9ICJ3YXJuIgplbnVtX2dsb2JfdXNlID0gIndhcm4iCmV4cGxfaW1wbF9jbG9uZV9vbl9jb3B5ID0gIndhcm4iCmV4cGxpY2l0X2RlcmVmX21ldGhvZHMgPSAid2FybiIKZXhwbGljaXRfaW50b19pdGVyX2xvb3AgPSAid2FybiIKZmFsbGlibGVfaW1wbF9mcm9tID0gIndhcm4iCmZpbHRlcl9tYXBfbmV4dCA9ICJ3YXJuIgpmbGF0X21hcF9vcHRpb24gPSAid2FybiIKZmxvYXRfY21wX2NvbnN0ID0gIndhcm4iCmZuX3BhcmFtc19leGNlc3NpdmVfYm9vbHMgPSAid2FybiIKZnJvbV9pdGVyX2luc3RlYWRfb2ZfY29sbGVjdCA9ICJ3YXJuIgppZl9zYW1lX3RoZW5fZWxzZSA9ICJhbGxvdyIKaW1wbGljaXRfY2xvbmUgPSAid2FybiIKaW1wcmVjaXNlX2Zsb3BzID0gIndhcm4iCmluY29uc2lzdGVudF9zdHJ1Y3RfY29uc3RydWN0b3IgPSAid2FybiIKaW5lZmZpY2llbnRfdG9fc3RyaW5nID0gIndhcm4iCmluZmluaXRlX2xvb3AgPSAid2FybiIKaW52YWxpZF91cGNhc3RfY29tcGFyaXNvbnMgPSAid2FybiIKbGFyZ2VfZGlnaXRfZ3JvdXBzID0gIndhcm4iCmxhcmdlX3N0YWNrX2FycmF5cyA9ICJ3YXJuIgpsYXJnZV90eXBlc19wYXNzZWRfYnlfdmFsdWUgPSAid2FybiIKbGV0X2FuZF9yZXR1cm4gPSAiYWxsb3ciCmxpbmtlZGxpc3QgPSAid2FybiIKbG9zc3lfZmxvYXRfbGl0ZXJhbCA9ICJ3YXJuIgptYWNyb191c2VfaW1wb3J0cyA9ICJ3YXJuIgptZW1fZm9yZ2V0ID0gIndhcm4iCm11dGV4X2ludGVnZXIgPSAid2FybiIKbmVlZGxlc3NfY29udGludWUgPSAiYWxsb3ciCm5lZWRsZXNzX2Zvcl9lYWNoID0gIndhcm4iCm5lZ2F0aXZlX2ZlYXR1cmVfbmFtZXMgPSAid2FybiIKcGF0aF9idWZfcHVzaF9vdmVyd3JpdGUgPSAid2FybiIKcHRyX2FzX3B0ciA9ICJ3YXJuIgpyY19tdXRleCA9ICJ3YXJuIgpyZWR1bmRhbnRfZmVhdHVyZV9uYW1lcyA9ICJ3YXJuIgpyZWZfb3B0aW9uX3JlZiA9ICJ3YXJuIgpyZXN0X3BhdF9pbl9mdWxseV9ib3VuZF9zdHJ1Y3RzID0gIndhcm4iCnJlc3VsdF9sYXJnZV9lcnIgPSAiYWxsb3ciCnNhbWVfZnVuY3Rpb25zX2luX2lmX2NvbmRpdGlvbiA9ICJ3YXJuIgpzZWxmX25hbWVkX21vZHVsZV9maWxlcyA9ICJ3YXJuIgpzZW1pY29sb25faWZfbm90aGluZ19yZXR1cm5lZCA9ICJ3YXJuIgpzdHJfdG9fc3RyaW5nID0gIndhcm4iCnN0cmluZ19hZGQgPSAid2FybiIKc3RyaW5nX2FkZF9hc3NpZ24gPSAid2FybiIKc3RyaW5nX2xpdF9hc19ieXRlcyA9ICJ3YXJuIgp0b2RvID0gIndhcm4iCnRyYWl0X2R1cGxpY2F0aW9uX2luX2JvdW5kcyA9ICJ3YXJuIgp1bmlubGluZWRfZm9ybWF0X2FyZ3MgPSAid2FybiIKdmVyYm9zZV9maWxlX3JlYWRzID0gIndhcm4iCndpbGRjYXJkX2ltcG9ydHMgPSAid2FybiIKemVyb19zaXplZF9tYXBfdmFsdWVzID0gIndhcm4iCgpbbGludHMucnVzdF0KdW5uYW1lYWJsZV90eXBlcyA9ICJ3YXJuIgp1bnJlYWNoYWJsZV9wdWIgPSAid2FybiIKdW5zYWZlX29wX2luX3Vuc2FmZV9mbiA9ICJ3YXJuIgp1bnVzZWRfbGlmZXRpbWVzID0gIndhcm4iCnVudXNlZF9tYWNyb19ydWxlcyA9ICJ3YXJuIgp1bnVzZWRfcXVhbGlmaWNhdGlvbnMgPSAid2FybiIKCltsaW50cy5ydXN0LnJ1c3RfMjAxOF9pZGlvbXNdCmxldmVsID0gIndhcm4iCnByaW9yaXR5ID0gLTEK"
+          },
+          "src/_macros.rs": {
+            "archive_base64": "Ly8vIFByaW50cyB0byBbYHN0ZG91dGBdW2NyYXRlOjpzdGRvdXRdLgovLy8KLy8vIEVxdWl2YWxlbnQgdG8gdGhlIFtgcHJpbnRsbiFgXSBtYWNybyBleGNlcHQgdGhhdCBhIG5ld2xpbmUgaXMgbm90IHByaW50ZWQgYXQKLy8vIHRoZSBlbmQgb2YgdGhlIG1lc3NhZ2UuCi8vLwovLy8gTm90ZSB0aGF0IHN0ZG91dCBpcyBmcmVxdWVudGx5IGxpbmUtYnVmZmVyZWQgYnkgZGVmYXVsdCBzbyBpdCBtYXkgYmUKLy8vIG5lY2Vzc2FyeSB0byB1c2UgW2BzdGQ6OmlvOjpXcml0ZTo6Zmx1c2goKWBdIHRvIGVuc3VyZSB0aGUgb3V0cHV0IGlzIGVtaXR0ZWQKLy8vIGltbWVkaWF0ZWx5LgovLy8KLy8vICoqTk9URToqKiBUaGUgYHByaW50IWAgbWFjcm8gd2lsbCBsb2NrIHRoZSBzdGFuZGFyZCBvdXRwdXQgb24gZWFjaCBjYWxsLiBJZiB5b3UgY2FsbAovLy8gYHByaW50IWAgd2l0aGluIGEgaG90IGxvb3AsIHRoaXMgYmVoYXZpb3IgbWF5IGJlIHRoZSBib3R0bGVuZWNrIG9mIHRoZSBsb29wLgovLy8gVG8gYXZvaWQgdGhpcywgbG9jayBzdGRvdXQgd2l0aCBbYEF1dG9TdHJlYW06OmxvY2tgXVtjcmF0ZTo6QXV0b1N0cmVhbTo6bG9ja106Ci8vLyBgYGAKLy8vICMgICNbY2ZnKGZlYXR1cmUgPSAiYXV0byIpXSB7Ci8vLyB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKLy8vCi8vLyBsZXQgbXV0IGxvY2sgPSBhbnN0cmVhbTo6c3Rkb3V0KCkubG9jaygpOwovLy8gd3JpdGUhKGxvY2ssICJoZWxsbyB3b3JsZCIpLnVud3JhcCgpOwovLy8gIyB9Ci8vLyBgYGAKLy8vCi8vLyBVc2UgYHByaW50IWAgb25seSBmb3IgdGhlIHByaW1hcnkgb3V0cHV0IG9mIHlvdXIgcHJvZ3JhbS4gVXNlCi8vLyBbYGVwcmludCFgXSBpbnN0ZWFkIHRvIHByaW50IGVycm9yIGFuZCBwcm9ncmVzcyBtZXNzYWdlcy4KLy8vCi8vLyAqKk5PVEU6KiogTm90IGFsbCBgcHJpbnQhYCBjYWxscyB3aWxsIGJlIGNhcHR1cmVkIGluIHRlc3RzIGxpa2UgW2BzdGQ6OnByaW50IWBdCi8vLyAtIENhcHR1cmluZyB3aWxsIGF1dG9tYXRpY2FsbHkgYmUgYWN0aXZhdGVkIGluIHRlc3QgYmluYXJpZXMKLy8vIC0gT3RoZXJ3aXNlLCBvbmx5IHdoZW4gdGhlIGB0ZXN0YCBmZWF0dXJlIGlzIGVuYWJsZWQKLy8vCi8vLyAjIFBhbmljcwovLy8KLy8vIFBhbmljcyBpZiB3cml0aW5nIHRvIGBzdGRvdXRgIGZhaWxzIGZvciBhbnkgcmVhc29uICoqZXhjZXB0KiogYnJva2VuIHBpcGUuCi8vLwovLy8gV3JpdGluZyB0byBub24tYmxvY2tpbmcgc3Rkb3V0IGNhbiBjYXVzZSBhbiBlcnJvciwgd2hpY2ggd2lsbCBsZWFkCi8vLyB0aGlzIG1hY3JvIHRvIHBhbmljLgovLy8KLy8vICMgRXhhbXBsZXMKLy8vCi8vLyBgYGAKLy8vICMgICNbY2ZnKGZlYXR1cmUgPSAiYXV0byIpXSB7Ci8vLyB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKLy8vIHVzZSBhbnN0cmVhbTo6cHJpbnQ7Ci8vLyB1c2UgYW5zdHJlYW06OnN0ZG91dDsKLy8vCi8vLyBwcmludCEoInRoaXMgIik7Ci8vLyBwcmludCEoIndpbGwgIik7Ci8vLyBwcmludCEoImJlICIpOwovLy8gcHJpbnQhKCJvbiAiKTsKLy8vIHByaW50ISgidGhlICIpOwovLy8gcHJpbnQhKCJzYW1lICIpOwovLy8gcHJpbnQhKCJsaW5lICIpOwovLy8KLy8vIHN0ZG91dCgpLmZsdXNoKCkudW53cmFwKCk7Ci8vLwovLy8gcHJpbnQhKCJ0aGlzIHN0cmluZyBoYXMgYSBuZXdsaW5lLCB3aHkgbm90IGNob29zZSBwcmludGxuISBpbnN0ZWFkP1xuIik7Ci8vLwovLy8gc3Rkb3V0KCkuZmx1c2goKS51bndyYXAoKTsKLy8vICMgfQovLy8gYGBgCiNbY2ZnKGZlYXR1cmUgPSAiYXV0byIpXQojW21hY3JvX2V4cG9ydF0KbWFjcm9fcnVsZXMhIHByaW50IHsKICAgICgkKCRhcmc6dHQpKikgPT4ge3sKICAgICAgICBpZiBjZmchKHRlc3QpIHx8ICRjcmF0ZTo6X21hY3Jvczo6RkVBVFVSRV9URVNUX0FDVElWQVRFRCB7CiAgICAgICAgICAgIGxldCB0YXJnZXRfc3RyZWFtID0gc3RkOjppbzo6c3Rkb3V0KCk7CiAgICAgICAgICAgIGxldCBidWZmZXIgPSAkY3JhdGU6Ol9tYWNyb3M6OnRvX2FkYXB0ZWRfc3RyaW5nKCZmb3JtYXRfYXJncyEoJCgkYXJnKSopLCAmdGFyZ2V0X3N0cmVhbSk7CiAgICAgICAgICAgIDo6c3RkOjpwcmludCEoInt9IiwgYnVmZmVyKQogICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgIHVzZSBzdGQ6OmlvOjpXcml0ZSBhcyBfOwoKICAgICAgICAgICAgbGV0IG11dCBzdHJlYW0gPSAkY3JhdGU6OnN0ZG91dCgpOwogICAgICAgICAgICBtYXRjaCA6OnN0ZDo6d3JpdGUhKCZtdXQgc3RyZWFtLCAkKCRhcmcpKikgewogICAgICAgICAgICAgICAgRXJyKGUpIGlmIGUua2luZCgpICE9IDo6c3RkOjppbzo6RXJyb3JLaW5kOjpCcm9rZW5QaXBlID0+IHsKICAgICAgICAgICAgICAgICAgICA6OnN0ZDo6cGFuaWMhKCJmYWlsZWQgcHJpbnRpbmcgdG8gc3Rkb3V0OiB7ZX0iKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIEVycihfKSB8IE9rKF8pID0+IHt9CiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICB9fTsKfQoKLy8vIFByaW50cyB0byBbYHN0ZG91dGBdW2NyYXRlOjpzdGRvdXRdLCB3aXRoIGEgbmV3bGluZS4KLy8vCi8vLyBPbiBhbGwgcGxhdGZvcm1zLCB0aGUgbmV3bGluZSBpcyB0aGUgTElORSBGRUVEIGNoYXJhY3RlciAoYFxuYC9gVSswMDBBYCkgYWxvbmUKLy8vIChubyBhZGRpdGlvbmFsIENBUlJJQUdFIFJFVFVSTiAoYFxyYC9gVSswMDBEYCkpLgovLy8KLy8vIFRoaXMgbWFjcm8gdXNlcyB0aGUgc2FtZSBzeW50YXggYXMgW2Bmb3JtYXQhYF0sIGJ1dCB3cml0ZXMgdG8gdGhlIHN0YW5kYXJkIG91dHB1dCBpbnN0ZWFkLgovLy8gU2VlIFtgc3RkOjpmbXRgXSBmb3IgbW9yZSBpbmZvcm1hdGlvbi4KLy8vCi8vLyAqKk5PVEU6KiogVGhlIGBwcmludGxuIWAgbWFjcm8gd2lsbCBsb2NrIHRoZSBzdGFuZGFyZCBvdXRwdXQgb24gZWFjaCBjYWxsLiBJZiB5b3UgY2FsbAovLy8gYHByaW50bG4hYCB3aXRoaW4gYSBob3QgbG9vcCwgdGhpcyBiZWhhdmlvciBtYXkgYmUgdGhlIGJvdHRsZW5lY2sgb2YgdGhlIGxvb3AuCi8vLyBUbyBhdm9pZCB0aGlzLCBsb2NrIHN0ZG91dCB3aXRoIFtgQXV0b1N0cmVhbTo6bG9ja2BdW2NyYXRlOjpBdXRvU3RyZWFtOjpsb2NrXToKLy8vIGBgYAovLy8gIyAgI1tjZmcoZmVhdHVyZSA9ICJhdXRvIildIHsKLy8vIHVzZSBzdGQ6OmlvOjpXcml0ZSBhcyBfOwovLy8KLy8vIGxldCBtdXQgbG9jayA9IGFuc3RyZWFtOjpzdGRvdXQoKS5sb2NrKCk7Ci8vLyB3cml0ZWxuIShsb2NrLCAiaGVsbG8gd29ybGQiKS51bndyYXAoKTsKLy8vICMgfQovLy8gYGBgCi8vLwovLy8gVXNlIGBwcmludGxuIWAgb25seSBmb3IgdGhlIHByaW1hcnkgb3V0cHV0IG9mIHlvdXIgcHJvZ3JhbS4gVXNlCi8vLyBbYGVwcmludGxuIWBdIGluc3RlYWQgdG8gcHJpbnQgZXJyb3IgYW5kIHByb2dyZXNzIG1lc3NhZ2VzLgovLy8KLy8vICoqTk9URToqKiBOb3QgYWxsIGBwcmludGxuIWAgY2FsbHMgd2lsbCBiZSBjYXB0dXJlZCBpbiB0ZXN0cyBsaWtlIFtgc3RkOjpwcmludGxuIWBdCi8vLyAtIENhcHR1cmluZyB3aWxsIGF1dG9tYXRpY2FsbHkgYmUgYWN0aXZhdGVkIGluIHRlc3QgYmluYXJpZXMKLy8vIC0gT3RoZXJ3aXNlLCBvbmx5IHdoZW4gdGhlIGB0ZXN0YCBmZWF0dXJlIGlzIGVuYWJsZWQKLy8vCi8vLyAjIFBhbmljcwovLy8KLy8vIFBhbmljcyBpZiB3cml0aW5nIHRvIGBzdGRvdXRgIGZhaWxzIGZvciBhbnkgcmVhc29uICoqZXhjZXB0KiogYnJva2VuIHBpcGUuCi8vLwovLy8gV3JpdGluZyB0byBub24tYmxvY2tpbmcgc3Rkb3V0IGNhbiBjYXVzZSBhbiBlcnJvciwgd2hpY2ggd2lsbCBsZWFkCi8vLyB0aGlzIG1hY3JvIHRvIHBhbmljLgovLy8KLy8vICMgRXhhbXBsZXMKLy8vCi8vLyBgYGAKLy8vICMgICNbY2ZnKGZlYXR1cmUgPSAiYXV0byIpXSB7Ci8vLyB1c2UgYW5zdHJlYW06OnByaW50bG47Ci8vLwovLy8gcHJpbnRsbiEoKTsgLy8gcHJpbnRzIGp1c3QgYSBuZXdsaW5lCi8vLyBwcmludGxuISgiaGVsbG8gdGhlcmUhIik7Ci8vLyBwcmludGxuISgiZm9ybWF0IHt9IGFyZ3VtZW50cyIsICJzb21lIik7Ci8vLyBsZXQgbG9jYWxfdmFyaWFibGUgPSAic29tZSI7Ci8vLyBwcmludGxuISgiZm9ybWF0IHtsb2NhbF92YXJpYWJsZX0gYXJndW1lbnRzIik7Ci8vLyAjIH0KLy8vIGBgYAojW2NmZyhmZWF0dXJlID0gImF1dG8iKV0KI1ttYWNyb19leHBvcnRdCm1hY3JvX3J1bGVzISBwcmludGxuIHsKICAgICgpID0+IHsKICAgICAgICAkY3JhdGU6OnByaW50ISgiXG4iKQogICAgfTsKICAgICgkKCRhcmc6dHQpKikgPT4ge3sKICAgICAgICBpZiBjZmchKHRlc3QpIHx8ICRjcmF0ZTo6X21hY3Jvczo6RkVBVFVSRV9URVNUX0FDVElWQVRFRCB7CiAgICAgICAgICAgIGxldCB0YXJnZXRfc3RyZWFtID0gc3RkOjppbzo6c3Rkb3V0KCk7CiAgICAgICAgICAgIGxldCBidWZmZXIgPSAkY3JhdGU6Ol9tYWNyb3M6OnRvX2FkYXB0ZWRfc3RyaW5nKCZmb3JtYXRfYXJncyEoJCgkYXJnKSopLCAmdGFyZ2V0X3N0cmVhbSk7CiAgICAgICAgICAgIDo6c3RkOjpwcmludGxuISgie30iLCBidWZmZXIpCiAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgdXNlIHN0ZDo6aW86OldyaXRlIGFzIF87CgogICAgICAgICAgICBsZXQgbXV0IHN0cmVhbSA9ICRjcmF0ZTo6c3Rkb3V0KCk7CiAgICAgICAgICAgIG1hdGNoIDo6c3RkOjp3cml0ZWxuISgmbXV0IHN0cmVhbSwgJCgkYXJnKSopIHsKICAgICAgICAgICAgICAgIEVycihlKSBpZiBlLmtpbmQoKSAhPSA6OnN0ZDo6aW86OkVycm9yS2luZDo6QnJva2VuUGlwZSA9PiB7CiAgICAgICAgICAgICAgICAgICAgOjpzdGQ6OnBhbmljISgiZmFpbGVkIHByaW50aW5nIHRvIHN0ZG91dDoge2V9Iik7CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBFcnIoXykgfCBPayhfKSA9PiB7fQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfX07Cn0KCi8vLyBQcmludHMgdG8gW2BzdGRlcnJgXVtjcmF0ZTo6c3RkZXJyXS4KLy8vCi8vLyBFcXVpdmFsZW50IHRvIHRoZSBbYHByaW50IWBdIG1hY3JvLCBleGNlcHQgdGhhdCBvdXRwdXQgZ29lcyB0bwovLy8gYHN0ZGVycmAgaW5zdGVhZCBvZiBgc3Rkb3V0YC4gU2VlIFtgcHJpbnQhYF0gZm9yCi8vLyBleGFtcGxlIHVzYWdlLgovLy8KLy8vIFVzZSBgZXByaW50IWAgb25seSBmb3IgZXJyb3IgYW5kIHByb2dyZXNzIG1lc3NhZ2VzLiBVc2UgYHByaW50IWAKLy8vIGluc3RlYWQgZm9yIHRoZSBwcmltYXJ5IG91dHB1dCBvZiB5b3VyIHByb2dyYW0uCi8vLwovLy8gKipOT1RFOioqIE5vdCBhbGwgYGVwcmludCFgIGNhbGxzIHdpbGwgYmUgY2FwdHVyZWQgaW4gdGVzdHMgbGlrZSBbYHN0ZDo6ZXByaW50IWBdCi8vLyAtIENhcHR1cmluZyB3aWxsIGF1dG9tYXRpY2FsbHkgYmUgYWN0aXZhdGVkIGluIHRlc3QgYmluYXJpZXMKLy8vIC0gT3RoZXJ3aXNlLCBvbmx5IHdoZW4gdGhlIGB0ZXN0YCBmZWF0dXJlIGlzIGVuYWJsZWQKLy8vCi8vLyAjIFBhbmljcwovLy8KLy8vIFBhbmljcyBpZiB3cml0aW5nIHRvIGBzdGRlcnJgIGZhaWxzIGZvciBhbnkgcmVhc29uICoqZXhjZXB0KiogYnJva2VuIHBpcGUuCi8vLwovLy8gV3JpdGluZyB0byBub24tYmxvY2tpbmcgc3Rkb3V0IGNhbiBjYXVzZSBhbiBlcnJvciwgd2hpY2ggd2lsbCBsZWFkCi8vLyB0aGlzIG1hY3JvIHRvIHBhbmljLgovLy8KLy8vICMgRXhhbXBsZXMKLy8vCi8vLyBgYGAKLy8vICMgICNbY2ZnKGZlYXR1cmUgPSAiYXV0byIpXSB7Ci8vLyB1c2UgYW5zdHJlYW06OmVwcmludDsKLy8vCi8vLyBlcHJpbnQhKCJFcnJvcjogQ291bGQgbm90IGNvbXBsZXRlIHRhc2siKTsKLy8vICMgfQovLy8gYGBgCiNbY2ZnKGZlYXR1cmUgPSAiYXV0byIpXQojW21hY3JvX2V4cG9ydF0KbWFjcm9fcnVsZXMhIGVwcmludCB7CiAgICAoJCgkYXJnOnR0KSopID0+IHt7CiAgICAgICAgaWYgY2ZnISh0ZXN0KSB8fCAkY3JhdGU6Ol9tYWNyb3M6OkZFQVRVUkVfVEVTVF9BQ1RJVkFURUQgewogICAgICAgICAgICBsZXQgdGFyZ2V0X3N0cmVhbSA9IHN0ZDo6aW86OnN0ZGVycigpOwogICAgICAgICAgICBsZXQgYnVmZmVyID0gJGNyYXRlOjpfbWFjcm9zOjp0b19hZGFwdGVkX3N0cmluZygmZm9ybWF0X2FyZ3MhKCQoJGFyZykqKSwgJnRhcmdldF9zdHJlYW0pOwogICAgICAgICAgICA6OnN0ZDo6ZXByaW50ISgie30iLCBidWZmZXIpCiAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgdXNlIHN0ZDo6aW86OldyaXRlIGFzIF87CgogICAgICAgICAgICBsZXQgbXV0IHN0cmVhbSA9ICRjcmF0ZTo6c3RkZXJyKCk7CiAgICAgICAgICAgIG1hdGNoIDo6c3RkOjp3cml0ZSEoJm11dCBzdHJlYW0sICQoJGFyZykqKSB7CiAgICAgICAgICAgICAgICBFcnIoZSkgaWYgZS5raW5kKCkgIT0gOjpzdGQ6OmlvOjpFcnJvcktpbmQ6OkJyb2tlblBpcGUgPT4gewogICAgICAgICAgICAgICAgICAgIDo6c3RkOjpwYW5pYyEoImZhaWxlZCBwcmludGluZyB0byBzdGRlcnI6IHtlfSIpOwogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgRXJyKF8pIHwgT2soXykgPT4ge30KICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH19Owp9CgovLy8gUHJpbnRzIHRvIFtgc3RkZXJyYF1bY3JhdGU6OnN0ZGVycl0sIHdpdGggYSBuZXdsaW5lLgovLy8KLy8vIEVxdWl2YWxlbnQgdG8gdGhlIFtgcHJpbnRsbiFgXSBtYWNybywgZXhjZXB0IHRoYXQgb3V0cHV0IGdvZXMgdG8KLy8vIGBzdGRlcnJgIGluc3RlYWQgb2YgYHN0ZG91dGAuIFNlZSBbYHByaW50bG4hYF0gZm9yCi8vLyBleGFtcGxlIHVzYWdlLgovLy8KLy8vIFVzZSBgZXByaW50bG4hYCBvbmx5IGZvciBlcnJvciBhbmQgcHJvZ3Jlc3MgbWVzc2FnZXMuIFVzZSBgcHJpbnRsbiFgCi8vLyBpbnN0ZWFkIGZvciB0aGUgcHJpbWFyeSBvdXRwdXQgb2YgeW91ciBwcm9ncmFtLgovLy8KLy8vICoqTk9URToqKiBOb3QgYWxsIGBlcHJpbnRsbiFgIGNhbGxzIHdpbGwgYmUgY2FwdHVyZWQgaW4gdGVzdHMgbGlrZSBbYHN0ZDo6ZXByaW50bG4hYF0KLy8vIC0gQ2FwdHVyaW5nIHdpbGwgYXV0b21hdGljYWxseSBiZSBhY3RpdmF0ZWQgaW4gdGVzdCBiaW5hcmllcwovLy8gLSBPdGhlcndpc2UsIG9ubHkgd2hlbiB0aGUgYHRlc3RgIGZlYXR1cmUgaXMgZW5hYmxlZAovLy8KLy8vICMgUGFuaWNzCi8vLwovLy8gUGFuaWNzIGlmIHdyaXRpbmcgdG8gYHN0ZGVycmAgZmFpbHMgZm9yIGFueSByZWFzb24gKipleGNlcHQqKiBicm9rZW4gcGlwZS4KLy8vCi8vLyBXcml0aW5nIHRvIG5vbi1ibG9ja2luZyBzdGRvdXQgY2FuIGNhdXNlIGFuIGVycm9yLCB3aGljaCB3aWxsIGxlYWQKLy8vIHRoaXMgbWFjcm8gdG8gcGFuaWMuCi8vLwovLy8gIyBFeGFtcGxlcwovLy8KLy8vIGBgYAovLy8gIyAgI1tjZmcoZmVhdHVyZSA9ICJhdXRvIildIHsKLy8vIHVzZSBhbnN0cmVhbTo6ZXByaW50bG47Ci8vLwovLy8gZXByaW50bG4hKCJFcnJvcjogQ291bGQgbm90IGNvbXBsZXRlIHRhc2siKTsKLy8vICMgfQovLy8gYGBgCiNbY2ZnKGZlYXR1cmUgPSAiYXV0byIpXQojW21hY3JvX2V4cG9ydF0KbWFjcm9fcnVsZXMhIGVwcmludGxuIHsKICAgICgpID0+IHsKICAgICAgICAkY3JhdGU6OmVwcmludCEoIlxuIikKICAgIH07CiAgICAoJCgkYXJnOnR0KSopID0+IHt7CiAgICAgICAgaWYgY2ZnISh0ZXN0KSB8fCAkY3JhdGU6Ol9tYWNyb3M6OkZFQVRVUkVfVEVTVF9BQ1RJVkFURUQgewogICAgICAgICAgICBsZXQgdGFyZ2V0X3N0cmVhbSA9IHN0ZDo6aW86OnN0ZGVycigpOwogICAgICAgICAgICBsZXQgYnVmZmVyID0gJGNyYXRlOjpfbWFjcm9zOjp0b19hZGFwdGVkX3N0cmluZygmZm9ybWF0X2FyZ3MhKCQoJGFyZykqKSwgJnRhcmdldF9zdHJlYW0pOwogICAgICAgICAgICA6OnN0ZDo6ZXByaW50bG4hKCJ7fSIsIGJ1ZmZlcikKICAgICAgICB9IGVsc2UgewogICAgICAgICAgICB1c2Ugc3RkOjppbzo6V3JpdGUgYXMgXzsKCiAgICAgICAgICAgIGxldCBtdXQgc3RyZWFtID0gJGNyYXRlOjpzdGRlcnIoKTsKICAgICAgICAgICAgbWF0Y2ggOjpzdGQ6OndyaXRlbG4hKCZtdXQgc3RyZWFtLCAkKCRhcmcpKikgewogICAgICAgICAgICAgICAgRXJyKGUpIGlmIGUua2luZCgpICE9IDo6c3RkOjppbzo6RXJyb3JLaW5kOjpCcm9rZW5QaXBlID0+IHsKICAgICAgICAgICAgICAgICAgICA6OnN0ZDo6cGFuaWMhKCJmYWlsZWQgcHJpbnRpbmcgdG8gc3RkZXJyOiB7ZX0iKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIEVycihfKSB8IE9rKF8pID0+IHt9CiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICB9fTsKfQoKLy8vIFBhbmljcyB0aGUgY3VycmVudCB0aHJlYWQuCi8vLwovLy8gVGhpcyBhbGxvd3MgYSBwcm9ncmFtIHRvIHRlcm1pbmF0ZSBpbW1lZGlhdGVseSBhbmQgcHJvdmlkZSBmZWVkYmFjawovLy8gdG8gdGhlIGNhbGxlciBvZiB0aGUgcHJvZ3JhbS4KLy8vCi8vLyBUaGlzIG1hY3JvIGlzIHRoZSBwZXJmZWN0IHdheSB0byBhc3NlcnQgY29uZGl0aW9ucyBpbiBleGFtcGxlIGNvZGUgYW5kIGluCi8vLyB0ZXN0cy4gYHBhbmljIWAgaXMgY2xvc2VseSB0aWVkIHdpdGggdGhlIGB1bndyYXBgIG1ldGhvZCBvZiBib3RoCi8vLyBbYE9wdGlvbmBdW291bndyYXBdIGFuZCBbYFJlc3VsdGBdW3J1bndyYXBdIGVudW1zLiBCb3RoIGltcGxlbWVudGF0aW9ucyBjYWxsCi8vLyBgcGFuaWMhYCB3aGVuIHRoZXkgYXJlIHNldCB0byBbYE5vbmVgXSBvciBbYEVycmBdIHZhcmlhbnRzLgovLy8KLy8vIFdoZW4gdXNpbmcgYHBhbmljISgpYCB5b3UgY2FuIHNwZWNpZnkgYSBzdHJpbmcgcGF5bG9hZCwgdGhhdCBpcyBidWlsdCB1c2luZwovLy8gdGhlIFtgZm9ybWF0IWBdIHN5bnRheC4gVGhhdCBwYXlsb2FkIGlzIHVzZWQgd2hlbiBpbmplY3RpbmcgdGhlIHBhbmljIGludG8KLy8vIHRoZSBjYWxsaW5nIFJ1c3QgdGhyZWFkLCBjYXVzaW5nIHRoZSB0aHJlYWQgdG8gcGFuaWMgZW50aXJlbHkuCi8vLwovLy8gVGhlIGJlaGF2aW9yIG9mIHRoZSBkZWZhdWx0IGBzdGRgIGhvb2ssIGkuZS4gdGhlIGNvZGUgdGhhdCBydW5zIGRpcmVjdGx5Ci8vLyBhZnRlciB0aGUgcGFuaWMgaXMgaW52b2tlZCwgaXMgdG8gcHJpbnQgdGhlIG1lc3NhZ2UgcGF5bG9hZCB0bwovLy8gYHN0ZGVycmAgYWxvbmcgd2l0aCB0aGUgZmlsZS9saW5lL2NvbHVtbiBpbmZvcm1hdGlvbiBvZiB0aGUgYHBhbmljISgpYAovLy8gY2FsbC4gWW91IGNhbiBvdmVycmlkZSB0aGUgcGFuaWMgaG9vayB1c2luZyBbYHN0ZDo6cGFuaWM6OnNldF9ob29rKClgXS4KLy8vIEluc2lkZSB0aGUgaG9vayBhIHBhbmljIGNhbiBiZSBhY2Nlc3NlZCBhcyBhIGAmZHluIEFueSArIFNlbmRgLAovLy8gd2hpY2ggY29udGFpbnMgZWl0aGVyIGEgYCZzdHJgIG9yIGBTdHJpbmdgIGZvciByZWd1bGFyIGBwYW5pYyEoKWAgaW52b2NhdGlvbnMuCi8vLyBUbyBwYW5pYyB3aXRoIGEgdmFsdWUgb2YgYW5vdGhlciBvdGhlciB0eXBlLCBbYHBhbmljX2FueWBdIGNhbiBiZSB1c2VkLgovLy8KLy8vIFNlZSBhbHNvIHRoZSBtYWNybyBbYGNvbXBpbGVfZXJyb3IhYF0sIGZvciByYWlzaW5nIGVycm9ycyBkdXJpbmcgY29tcGlsYXRpb24uCi8vLwovLy8gIyBXaGVuIHRvIHVzZSBgcGFuaWMhYCB2cyBgUmVzdWx0YAovLy8KLy8vIFRoZSBSdXN0IGxhbmd1YWdlIHByb3ZpZGVzIHR3byBjb21wbGVtZW50YXJ5IHN5c3RlbXMgZm9yIGNvbnN0cnVjdGluZyAvCi8vLyByZXByZXNlbnRpbmcsIHJlcG9ydGluZywgcHJvcGFnYXRpbmcsIHJlYWN0aW5nIHRvLCBhbmQgZGlzY2FyZGluZyBlcnJvcnMuIFRoZXNlCi8vLyByZXNwb25zaWJpbGl0aWVzIGFyZSBjb2xsZWN0aXZlbHkga25vd24gYXMgImVycm9yIGhhbmRsaW5nLiIgYHBhbmljIWAgYW5kCi8vLyBgUmVzdWx0YCBhcmUgc2ltaWxhciBpbiB0aGF0IHRoZXkgYXJlIGVhY2ggdGhlIHByaW1hcnkgaW50ZXJmYWNlIG9mIHRoZWlyCi8vLyByZXNwZWN0aXZlIGVycm9yIGhhbmRsaW5nIHN5c3RlbXM7IGhvd2V2ZXIsIHRoZSBtZWFuaW5nIHRoZXNlIGludGVyZmFjZXMgYXR0YWNoCi8vLyB0byB0aGVpciBlcnJvcnMgYW5kIHRoZSByZXNwb25zaWJpbGl0aWVzIHRoZXkgZnVsZmlsbCB3aXRoaW4gdGhlaXIgcmVzcGVjdGl2ZQovLy8gZXJyb3IgaGFuZGxpbmcgc3lzdGVtcyBkaWZmZXIuCi8vLwovLy8gVGhlIGBwYW5pYyFgIG1hY3JvIGlzIHVzZWQgdG8gY29uc3RydWN0IGVycm9ycyB0aGF0IHJlcHJlc2VudCBhIGJ1ZyB0aGF0IGhhcwovLy8gYmVlbiBkZXRlY3RlZCBpbiB5b3VyIHByb2dyYW0uIFdpdGggYHBhbmljIWAgeW91IHByb3ZpZGUgYSBtZXNzYWdlIHRoYXQKLy8vIGRlc2NyaWJlcyB0aGUgYnVnIGFuZCB0aGUgbGFuZ3VhZ2UgdGhlbiBjb25zdHJ1Y3RzIGFuIGVycm9yIHdpdGggdGhhdCBtZXNzYWdlLAovLy8gcmVwb3J0cyBpdCwgYW5kIHByb3BhZ2F0ZXMgaXQgZm9yIHlvdS4KLy8vCi8vLyBgUmVzdWx0YCBvbiB0aGUgb3RoZXIgaGFuZCBpcyB1c2VkIHRvIHdyYXAgb3RoZXIgdHlwZXMgdGhhdCByZXByZXNlbnQgZWl0aGVyCi8vLyB0aGUgc3VjY2Vzc2Z1bCByZXN1bHQgb2Ygc29tZSBjb21wdXRhdGlvbiwgYE9rKFQpYCwgb3IgZXJyb3IgdHlwZXMgdGhhdAovLy8gcmVwcmVzZW50IGFuIGFudGljaXBhdGVkIHJ1bnRpbWUgZmFpbHVyZSBtb2RlIG9mIHRoYXQgY29tcHV0YXRpb24sIGBFcnIoRSlgLgovLy8gYFJlc3VsdGAgaXMgdXNlZCBhbG9uZ3NpZGUgdXNlciBkZWZpbmVkIHR5cGVzIHdoaWNoIHJlcHJlc2VudCB0aGUgdmFyaW91cwovLy8gYW50aWNpcGF0ZWQgcnVudGltZSBmYWlsdXJlIG1vZGVzIHRoYXQgdGhlIGFzc29jaWF0ZWQgY29tcHV0YXRpb24gY291bGQKLy8vIGVuY291bnRlci4gYFJlc3VsdGAgbXVzdCBiZSBwcm9wYWdhdGVkIG1hbnVhbGx5LCBvZnRlbiB3aXRoIHRoZSBoZWxwIG9mIHRoZQovLy8gYD9gIG9wZXJhdG9yIGFuZCBgVHJ5YCB0cmFpdCwgYW5kIHRoZXkgbXVzdCBiZSByZXBvcnRlZCBtYW51YWxseSwgb2Z0ZW4gd2l0aAovLy8gdGhlIGhlbHAgb2YgdGhlIGBFcnJvcmAgdHJhaXQuCi8vLwovLy8gRm9yIG1vcmUgZGV0YWlsZWQgaW5mb3JtYXRpb24gYWJvdXQgZXJyb3IgaGFuZGxpbmcgY2hlY2sgb3V0IHRoZSBbYm9va10gb3IgdGhlCi8vLyBbYHN0ZDo6cmVzdWx0YF0gbW9kdWxlIGRvY3MuCi8vLwovLy8gW291bndyYXBdOiBPcHRpb246OnVud3JhcAovLy8gW3J1bndyYXBdOiBSZXN1bHQ6OnVud3JhcAovLy8gW2BzdGQ6OnBhbmljOjpzZXRfaG9vaygpYF06IC4uL3N0ZC9wYW5pYy9mbi5zZXRfaG9vay5odG1sCi8vLyBbYHBhbmljX2FueWBdOiAuLi9zdGQvcGFuaWMvZm4ucGFuaWNfYW55Lmh0bWwKLy8vIFtgQm94YF06IC4uL3N0ZC9ib3hlZC9zdHJ1Y3QuQm94Lmh0bWwKLy8vIFtgZm9ybWF0IWBdOiAuLi9zdGQvbWFjcm8uZm9ybWF0Lmh0bWwKLy8vIFtib29rXTogLi4vYm9vay9jaDA5LTAwLWVycm9yLWhhbmRsaW5nLmh0bWwKLy8vIFtgc3RkOjpyZXN1bHRgXTogLi4vc3RkL3Jlc3VsdC9pbmRleC5odG1sCi8vLwovLy8gIyBDdXJyZW50IGltcGxlbWVudGF0aW9uCi8vLwovLy8gSWYgdGhlIG1haW4gdGhyZWFkIHBhbmljcyBpdCB3aWxsIHRlcm1pbmF0ZSBhbGwgeW91ciB0aHJlYWRzIGFuZCBlbmQgeW91cgovLy8gcHJvZ3JhbSB3aXRoIGNvZGUgYDEwMWAuCi8vLwovLy8gIyBFeGFtcGxlcwovLy8KLy8vIGBgYHNob3VsZF9wYW5pYwovLy8gIyAjIVthbGxvdyh1bnJlYWNoYWJsZV9jb2RlKV0KLy8vIHVzZSBhbnN0cmVhbTo6cGFuaWM7Ci8vLyBwYW5pYyEoKTsKLy8vIHBhbmljISgidGhpcyBpcyBhIHRlcnJpYmxlIG1pc3Rha2UhIik7Ci8vLyBwYW5pYyEoInRoaXMgaXMgYSB7fSB7bWVzc2FnZX0iLCAiZmFuY3kiLCBtZXNzYWdlID0gIm1lc3NhZ2UiKTsKLy8vIGBgYAojW2NmZyhmZWF0dXJlID0gImF1dG8iKV0KI1ttYWNyb19leHBvcnRdCm1hY3JvX3J1bGVzISBwYW5pYyB7CiAgICAoKSA9PiB7CiAgICAgICAgOjpzdGQ6OnBhbmljISgpCiAgICB9OwogICAgKCQoJGFyZzp0dCkqKSA9PiB7ewogICAgICAgIGxldCB0YXJnZXRfc3RyZWFtID0gc3RkOjppbzo6c3RkZXJyKCk7CiAgICAgICAgbGV0IGJ1ZmZlciA9ICRjcmF0ZTo6X21hY3Jvczo6dG9fYWRhcHRlZF9zdHJpbmcoJmZvcm1hdF9hcmdzISgkKCRhcmcpKiksICZ0YXJnZXRfc3RyZWFtKTsKICAgICAgICA6OnN0ZDo6cGFuaWMhKCJ7fSIsIGJ1ZmZlcikKICAgIH19Owp9CgojW2NmZyhmZWF0dXJlID0gImF1dG8iKV0KcHViIGNvbnN0IEZFQVRVUkVfVEVTVF9BQ1RJVkFURUQ6IGJvb2wgPSBjZmchKGZlYXR1cmUgPSAidGVzdCIpOwoKI1tjZmcoZmVhdHVyZSA9ICJhdXRvIildCnB1YiBmbiB0b19hZGFwdGVkX3N0cmluZygKICAgIGRpc3BsYXk6ICZkeW4gc3RkOjpmbXQ6OkRpc3BsYXksCiAgICBzdHJlYW06ICZpbXBsIGNyYXRlOjpzdHJlYW06OlJhd1N0cmVhbSwKKSAtPiBTdHJpbmcgewogICAgdXNlIHN0ZDo6aW86OldyaXRlIGFzIF87CgogICAgbGV0IGNob2ljZSA9IGNyYXRlOjpBdXRvU3RyZWFtOjpjaG9pY2Uoc3RyZWFtKTsKICAgIGxldCBidWZmZXIgPSBWZWM6Om5ldygpOwogICAgbGV0IG11dCBzdHJlYW0gPSBjcmF0ZTo6QXV0b1N0cmVhbTo6bmV3KGJ1ZmZlciwgY2hvaWNlKTsKICAgIC8vIElnbm9yZSBlcnJvcnMgcmF0aGVyIHRoYW4gcGFuaWMKICAgIGxldCBfID0gOjpzdGQ6OndyaXRlISgmbXV0IHN0cmVhbSwgIntkaXNwbGF5fSIpOwogICAgbGV0IGJ1ZmZlciA9IHN0cmVhbS5pbnRvX2lubmVyKCk7CiAgICAvLyBTaG91bGQgYmUgVVRGLTggYnV0IG5vdCB3YW50aW5nIHRvIHBhbmljCiAgICBsZXQgYnVmZmVyID0gU3RyaW5nOjpmcm9tX3V0ZjhfbG9zc3koJmJ1ZmZlcikuaW50b19vd25lZCgpOwogICAgYnVmZmVyCn0K",
+            "kind": "archived-source",
+            "reason": "Retire unsupported Windows output/query implementation or unused output macros. Complete original source bytes are preserved in this authenticated receipt, not replaced by compatibility stubs.",
+            "sha256": "04590ef86f86bb67fb11580ab101caffde4d36da84652537da20424b72c8729a"
+          },
+          "src/adapter/mod.rs": {
+            "destination": "src/output/adapter/mod.rs"
+          },
+          "src/adapter/strip.rs": {
+            "destination": "src/output/adapter/strip.rs"
+          },
+          "src/adapter/wincon.rs": {
+            "archive_base64": "Ly8vIEluY3JlbWVudGFsbHkgY29udmVydCB0byB3aW5jb24gY2FsbHMgZm9yIG5vbi1jb250aWd1b3VzIGRhdGEKI1tkZXJpdmUoRGVmYXVsdCwgQ2xvbmUsIERlYnVnLCBQYXJ0aWFsRXEsIEVxKV0KcHViIHN0cnVjdCBXaW5jb25CeXRlcyB7CiAgICBwYXJzZXI6IGFuc3R5bGVfcGFyc2U6OlBhcnNlciwKICAgIGNhcHR1cmU6IFdpbmNvbkNhcHR1cmUsCn0KCmltcGwgV2luY29uQnl0ZXMgewogICAgLy8vIEluaXRpYWwgc3RhdGUKICAgIHB1YiBmbiBuZXcoKSAtPiBTZWxmIHsKICAgICAgICBEZWZhdWx0OjpkZWZhdWx0KCkKICAgIH0KCiAgICAvLy8gU3RyaXAgdGhlIG5leHQgc2VnbWVudCBvZiBkYXRhCiAgICBwdWIgZm4gZXh0cmFjdF9uZXh0PCdzPigmJ3MgbXV0IHNlbGYsIGJ5dGVzOiAmJ3MgW3U4XSkgLT4gV2luY29uQnl0ZXNJdGVyPCdzPiB7CiAgICAgICAgc2VsZi5jYXB0dXJlLnJlc2V0KCk7CiAgICAgICAgc2VsZi5jYXB0dXJlLnByaW50YWJsZS5yZXNlcnZlKGJ5dGVzLmxlbigpKTsKICAgICAgICBXaW5jb25CeXRlc0l0ZXIgewogICAgICAgICAgICBieXRlcywKICAgICAgICAgICAgcGFyc2VyOiAmbXV0IHNlbGYucGFyc2VyLAogICAgICAgICAgICBjYXB0dXJlOiAmbXV0IHNlbGYuY2FwdHVyZSwKICAgICAgICB9CiAgICB9Cn0KCi8vLyBTZWUgW2BXaW5jb25CeXRlc2BdCiNbZGVyaXZlKERlYnVnLCBQYXJ0aWFsRXEsIEVxKV0KcHViIHN0cnVjdCBXaW5jb25CeXRlc0l0ZXI8J3M+IHsKICAgIGJ5dGVzOiAmJ3MgW3U4XSwKICAgIHBhcnNlcjogJidzIG11dCBhbnN0eWxlX3BhcnNlOjpQYXJzZXIsCiAgICBjYXB0dXJlOiAmJ3MgbXV0IFdpbmNvbkNhcHR1cmUsCn0KCmltcGwgSXRlcmF0b3IgZm9yIFdpbmNvbkJ5dGVzSXRlcjwnXz4gewogICAgdHlwZSBJdGVtID0gKGFuc3R5bGU6OlN0eWxlLCBTdHJpbmcpOwoKICAgICNbaW5saW5lXQogICAgZm4gbmV4dCgmbXV0IHNlbGYpIC0+IE9wdGlvbjxTZWxmOjpJdGVtPiB7CiAgICAgICAgbmV4dF9ieXRlcygmbXV0IHNlbGYuYnl0ZXMsIHNlbGYucGFyc2VyLCBzZWxmLmNhcHR1cmUpCiAgICB9Cn0KCiNbaW5saW5lXQpmbiBuZXh0X2J5dGVzKAogICAgYnl0ZXM6ICZtdXQgJlt1OF0sCiAgICBwYXJzZXI6ICZtdXQgYW5zdHlsZV9wYXJzZTo6UGFyc2VyLAogICAgY2FwdHVyZTogJm11dCBXaW5jb25DYXB0dXJlLAopIC0+IE9wdGlvbjwoYW5zdHlsZTo6U3R5bGUsIFN0cmluZyk+IHsKICAgIGNhcHR1cmUucmVzZXQoKTsKICAgIHdoaWxlIGNhcHR1cmUucmVhZHkuaXNfbm9uZSgpIHsKICAgICAgICBsZXQgYnl0ZSA9IGlmIGxldCBTb21lKChieXRlLCByZW1haW5kZXIpKSA9ICgqYnl0ZXMpLnNwbGl0X2ZpcnN0KCkgewogICAgICAgICAgICAqYnl0ZXMgPSByZW1haW5kZXI7CiAgICAgICAgICAgICpieXRlCiAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgYnJlYWs7CiAgICAgICAgfTsKICAgICAgICBwYXJzZXIuYWR2YW5jZShjYXB0dXJlLCBieXRlKTsKICAgIH0KICAgIGlmIGNhcHR1cmUucHJpbnRhYmxlLmlzX2VtcHR5KCkgewogICAgICAgIHJldHVybiBOb25lOwogICAgfQoKICAgIGxldCBzdHlsZSA9IGNhcHR1cmUucmVhZHkudW53cmFwX29yKGNhcHR1cmUuc3R5bGUpOwogICAgU29tZSgoc3R5bGUsIHN0ZDo6bWVtOjp0YWtlKCZtdXQgY2FwdHVyZS5wcmludGFibGUpKSkKfQoKI1tkZXJpdmUoRGVmYXVsdCwgQ2xvbmUsIERlYnVnLCBQYXJ0aWFsRXEsIEVxKV0Kc3RydWN0IFdpbmNvbkNhcHR1cmUgewogICAgc3R5bGU6IGFuc3R5bGU6OlN0eWxlLAogICAgcHJpbnRhYmxlOiBTdHJpbmcsCiAgICByZWFkeTogT3B0aW9uPGFuc3R5bGU6OlN0eWxlPiwKfQoKaW1wbCBXaW5jb25DYXB0dXJlIHsKICAgIGZuIHJlc2V0KCZtdXQgc2VsZikgewogICAgICAgIHNlbGYucmVhZHkgPSBOb25lOwogICAgfQp9CgppbXBsIGFuc3R5bGVfcGFyc2U6OlBlcmZvcm0gZm9yIFdpbmNvbkNhcHR1cmUgewogICAgLy8vIERyYXcgYSBjaGFyYWN0ZXIgdG8gdGhlIHNjcmVlbiBhbmQgdXBkYXRlIHN0YXRlcy4KICAgIGZuIHByaW50KCZtdXQgc2VsZiwgYzogY2hhcikgewogICAgICAgIHNlbGYucHJpbnRhYmxlLnB1c2goYyk7CiAgICB9CgogICAgLy8vIEV4ZWN1dGUgYSBDMCBvciBDMSBjb250cm9sIGZ1bmN0aW9uLgogICAgZm4gZXhlY3V0ZSgmbXV0IHNlbGYsIGJ5dGU6IHU4KSB7CiAgICAgICAgaWYgYnl0ZS5pc19hc2NpaV93aGl0ZXNwYWNlKCkgewogICAgICAgICAgICBzZWxmLnByaW50YWJsZS5wdXNoKGJ5dGUgYXMgY2hhcik7CiAgICAgICAgfQogICAgfQoKICAgIGZuIGNzaV9kaXNwYXRjaCgKICAgICAgICAmbXV0IHNlbGYsCiAgICAgICAgcGFyYW1zOiAmYW5zdHlsZV9wYXJzZTo6UGFyYW1zLAogICAgICAgIF9pbnRlcm1lZGlhdGVzOiAmW3U4XSwKICAgICAgICBpZ25vcmU6IGJvb2wsCiAgICAgICAgYWN0aW9uOiB1OCwKICAgICkgewogICAgICAgIGlmIGlnbm9yZSB7CiAgICAgICAgICAgIHJldHVybjsKICAgICAgICB9CiAgICAgICAgaWYgYWN0aW9uICE9IGInbScgewogICAgICAgICAgICByZXR1cm47CiAgICAgICAgfQoKICAgICAgICBsZXQgbXV0IHN0eWxlID0gc2VsZi5zdHlsZTsKICAgICAgICAvLyBwYXJhbS92YWx1ZSBkaWZmZXJlbmNlcyBhcmUgZGVwZW5kZW50IG9uIHRoZSBlc2NhcGUgY29kZQogICAgICAgIGxldCBtdXQgc3RhdGUgPSBDc2lTdGF0ZTo6Tm9ybWFsOwogICAgICAgIGxldCBtdXQgciA9IE5vbmU7CiAgICAgICAgbGV0IG11dCBnID0gTm9uZTsKICAgICAgICBsZXQgbXV0IGNvbG9yX3RhcmdldCA9IENvbG9yVGFyZ2V0OjpGZzsKICAgICAgICBmb3IgcGFyYW0gaW4gcGFyYW1zIHsKICAgICAgICAgICAgZm9yIHZhbHVlIGluIHBhcmFtIHsKICAgICAgICAgICAgICAgIG1hdGNoIChzdGF0ZSwgKnZhbHVlKSB7CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDApID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUgPSBhbnN0eWxlOjpTdHlsZTo6ZGVmYXVsdCgpOwogICAgICAgICAgICAgICAgICAgICAgICBicmVhazsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDEpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUgPSBzdHlsZS5ib2xkKCk7CiAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAoQ3NpU3RhdGU6Ok5vcm1hbCwgMikgPT4gewogICAgICAgICAgICAgICAgICAgICAgICBzdHlsZSA9IHN0eWxlLmRpbW1lZCgpOwogICAgICAgICAgICAgICAgICAgICAgICBicmVhazsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDMpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUgPSBzdHlsZS5pdGFsaWMoKTsKICAgICAgICAgICAgICAgICAgICAgICAgYnJlYWs7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIChDc2lTdGF0ZTo6Tm9ybWFsLCA0KSA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHN0eWxlID0gc3R5bGUudW5kZXJsaW5lKCk7CiAgICAgICAgICAgICAgICAgICAgICAgIHN0YXRlID0gQ3NpU3RhdGU6OlVuZGVybGluZTsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDIxKSA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHN0eWxlIHw9IGFuc3R5bGU6OkVmZmVjdHM6OkRPVUJMRV9VTkRFUkxJTkU7CiAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAoQ3NpU3RhdGU6Ok5vcm1hbCwgNykgPT4gewogICAgICAgICAgICAgICAgICAgICAgICBzdHlsZSA9IHN0eWxlLmludmVydCgpOwogICAgICAgICAgICAgICAgICAgICAgICBicmVhazsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDgpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUgPSBzdHlsZS5oaWRkZW4oKTsKICAgICAgICAgICAgICAgICAgICAgICAgYnJlYWs7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIChDc2lTdGF0ZTo6Tm9ybWFsLCA5KSA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHN0eWxlID0gc3R5bGUuc3RyaWtldGhyb3VnaCgpOwogICAgICAgICAgICAgICAgICAgICAgICBicmVhazsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDMwLi49MzcpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgbGV0IGNvbG9yID0gdG9fYW5zaV9jb2xvcih2YWx1ZSAtIDMwKS5leHBlY3QoIndpdGhpbiA0LWJpdCByYW5nZSIpOwogICAgICAgICAgICAgICAgICAgICAgICBzdHlsZSA9IHN0eWxlLmZnX2NvbG9yKFNvbWUoY29sb3IuaW50bygpKSk7CiAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAoQ3NpU3RhdGU6Ok5vcm1hbCwgMzgpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgY29sb3JfdGFyZ2V0ID0gQ29sb3JUYXJnZXQ6OkZnOwogICAgICAgICAgICAgICAgICAgICAgICBzdGF0ZSA9IENzaVN0YXRlOjpQcmVwYXJlQ3VzdG9tQ29sb3I7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIChDc2lTdGF0ZTo6Tm9ybWFsLCAzOSkgPT4gewogICAgICAgICAgICAgICAgICAgICAgICBzdHlsZSA9IHN0eWxlLmZnX2NvbG9yKE5vbmUpOwogICAgICAgICAgICAgICAgICAgICAgICBicmVhazsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDQwLi49NDcpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgbGV0IGNvbG9yID0gdG9fYW5zaV9jb2xvcih2YWx1ZSAtIDQwKS5leHBlY3QoIndpdGhpbiA0LWJpdCByYW5nZSIpOwogICAgICAgICAgICAgICAgICAgICAgICBzdHlsZSA9IHN0eWxlLmJnX2NvbG9yKFNvbWUoY29sb3IuaW50bygpKSk7CiAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAoQ3NpU3RhdGU6Ok5vcm1hbCwgNDgpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgY29sb3JfdGFyZ2V0ID0gQ29sb3JUYXJnZXQ6OkJnOwogICAgICAgICAgICAgICAgICAgICAgICBzdGF0ZSA9IENzaVN0YXRlOjpQcmVwYXJlQ3VzdG9tQ29sb3I7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIChDc2lTdGF0ZTo6Tm9ybWFsLCA0OSkgPT4gewogICAgICAgICAgICAgICAgICAgICAgICBzdHlsZSA9IHN0eWxlLmJnX2NvbG9yKE5vbmUpOwogICAgICAgICAgICAgICAgICAgICAgICBicmVhazsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDU4KSA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgIGNvbG9yX3RhcmdldCA9IENvbG9yVGFyZ2V0OjpVbmRlcmxpbmU7CiAgICAgICAgICAgICAgICAgICAgICAgIHN0YXRlID0gQ3NpU3RhdGU6OlByZXBhcmVDdXN0b21Db2xvcjsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpOb3JtYWwsIDkwLi49OTcpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgbGV0IGNvbG9yID0gdG9fYW5zaV9jb2xvcih2YWx1ZSAtIDkwKQogICAgICAgICAgICAgICAgICAgICAgICAgICAgLmV4cGVjdCgid2l0aGluIDQtYml0IHJhbmdlIikKICAgICAgICAgICAgICAgICAgICAgICAgICAgIC5icmlnaHQodHJ1ZSk7CiAgICAgICAgICAgICAgICAgICAgICAgIHN0eWxlID0gc3R5bGUuZmdfY29sb3IoU29tZShjb2xvci5pbnRvKCkpKTsKICAgICAgICAgICAgICAgICAgICAgICAgYnJlYWs7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIChDc2lTdGF0ZTo6Tm9ybWFsLCAxMDAuLj0xMDcpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgbGV0IGNvbG9yID0gdG9fYW5zaV9jb2xvcih2YWx1ZSAtIDEwMCkKICAgICAgICAgICAgICAgICAgICAgICAgICAgIC5leHBlY3QoIndpdGhpbiA0LWJpdCByYW5nZSIpCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAuYnJpZ2h0KHRydWUpOwogICAgICAgICAgICAgICAgICAgICAgICBzdHlsZSA9IHN0eWxlLmJnX2NvbG9yKFNvbWUoY29sb3IuaW50bygpKSk7CiAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAoQ3NpU3RhdGU6OlByZXBhcmVDdXN0b21Db2xvciwgNSkgPT4gewogICAgICAgICAgICAgICAgICAgICAgICBzdGF0ZSA9IENzaVN0YXRlOjpBbnNpMjU2OwogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAoQ3NpU3RhdGU6OlByZXBhcmVDdXN0b21Db2xvciwgMikgPT4gewogICAgICAgICAgICAgICAgICAgICAgICBzdGF0ZSA9IENzaVN0YXRlOjpSZ2I7CiAgICAgICAgICAgICAgICAgICAgICAgIHIgPSBOb25lOwogICAgICAgICAgICAgICAgICAgICAgICBnID0gTm9uZTsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpBbnNpMjU2LCBuKSA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgIGxldCBjb2xvciA9IGFuc3R5bGU6OkFuc2kyNTZDb2xvcihuIGFzIHU4KTsKICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUgPSBtYXRjaCBjb2xvcl90YXJnZXQgewogICAgICAgICAgICAgICAgICAgICAgICAgICAgQ29sb3JUYXJnZXQ6OkZnID0+IHN0eWxlLmZnX2NvbG9yKFNvbWUoY29sb3IuaW50bygpKSksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBDb2xvclRhcmdldDo6QmcgPT4gc3R5bGUuYmdfY29sb3IoU29tZShjb2xvci5pbnRvKCkpKSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgIENvbG9yVGFyZ2V0OjpVbmRlcmxpbmUgPT4gc3R5bGUudW5kZXJsaW5lX2NvbG9yKFNvbWUoY29sb3IuaW50bygpKSksCiAgICAgICAgICAgICAgICAgICAgICAgIH07CiAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAoQ3NpU3RhdGU6OlJnYiwgYikgPT4gbWF0Y2ggKHIsIGcpIHsKICAgICAgICAgICAgICAgICAgICAgICAgKE5vbmUsIF8pID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHIgPSBTb21lKGIpOwogICAgICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgICAgIChTb21lKF8pLCBOb25lKSA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBnID0gU29tZShiKTsKICAgICAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgICAgICAoU29tZShyKSwgU29tZShnKSkgPT4gewogICAgICAgICAgICAgICAgICAgICAgICAgICAgbGV0IGNvbG9yID0gYW5zdHlsZTo6UmdiQ29sb3IociBhcyB1OCwgZyBhcyB1OCwgYiBhcyB1OCk7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdHlsZSA9IG1hdGNoIGNvbG9yX3RhcmdldCB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgQ29sb3JUYXJnZXQ6OkZnID0+IHN0eWxlLmZnX2NvbG9yKFNvbWUoY29sb3IuaW50bygpKSksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgQ29sb3JUYXJnZXQ6OkJnID0+IHN0eWxlLmJnX2NvbG9yKFNvbWUoY29sb3IuaW50bygpKSksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgQ29sb3JUYXJnZXQ6OlVuZGVybGluZSA9PiBzdHlsZS51bmRlcmxpbmVfY29sb3IoU29tZShjb2xvci5pbnRvKCkpKSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgIH07CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBicmVhazsKICAgICAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpVbmRlcmxpbmUsIDApID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUgPQogICAgICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUuZWZmZWN0cyhzdHlsZS5nZXRfZWZmZWN0cygpLnJlbW92ZShhbnN0eWxlOjpFZmZlY3RzOjpVTkRFUkxJTkUpKTsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpVbmRlcmxpbmUsIDEpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgLy8gdW5kZXJsaW5lIGFscmVhZHkgc2V0CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIChDc2lTdGF0ZTo6VW5kZXJsaW5lLCAyKSA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHN0eWxlID0gc3R5bGUKICAgICAgICAgICAgICAgICAgICAgICAgICAgIC5lZmZlY3RzKHN0eWxlLmdldF9lZmZlY3RzKCkucmVtb3ZlKGFuc3R5bGU6OkVmZmVjdHM6OlVOREVSTElORSkpCiAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IGFuc3R5bGU6OkVmZmVjdHM6OkRPVUJMRV9VTkRFUkxJTkU7CiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIChDc2lTdGF0ZTo6VW5kZXJsaW5lLCAzKSA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgIHN0eWxlID0gc3R5bGUKICAgICAgICAgICAgICAgICAgICAgICAgICAgIC5lZmZlY3RzKHN0eWxlLmdldF9lZmZlY3RzKCkucmVtb3ZlKGFuc3R5bGU6OkVmZmVjdHM6OlVOREVSTElORSkpCiAgICAgICAgICAgICAgICAgICAgICAgICAgICB8IGFuc3R5bGU6OkVmZmVjdHM6OkNVUkxZX1VOREVSTElORTsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpVbmRlcmxpbmUsIDQpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUgPSBzdHlsZQogICAgICAgICAgICAgICAgICAgICAgICAgICAgLmVmZmVjdHMoc3R5bGUuZ2V0X2VmZmVjdHMoKS5yZW1vdmUoYW5zdHlsZTo6RWZmZWN0czo6VU5ERVJMSU5FKSkKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgYW5zdHlsZTo6RWZmZWN0czo6RE9UVEVEX1VOREVSTElORTsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgKENzaVN0YXRlOjpVbmRlcmxpbmUsIDUpID0+IHsKICAgICAgICAgICAgICAgICAgICAgICAgc3R5bGUgPSBzdHlsZQogICAgICAgICAgICAgICAgICAgICAgICAgICAgLmVmZmVjdHMoc3R5bGUuZ2V0X2VmZmVjdHMoKS5yZW1vdmUoYW5zdHlsZTo6RWZmZWN0czo6VU5ERVJMSU5FKSkKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgYW5zdHlsZTo6RWZmZWN0czo6REFTSEVEX1VOREVSTElORTsKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgXyA9PiB7CiAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwogICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgIH0KCiAgICAgICAgaWYgc3R5bGUgIT0gc2VsZi5zdHlsZSAmJiAhc2VsZi5wcmludGFibGUuaXNfZW1wdHkoKSB7CiAgICAgICAgICAgIHNlbGYucmVhZHkgPSBTb21lKHNlbGYuc3R5bGUpOwogICAgICAgIH0KICAgICAgICBzZWxmLnN0eWxlID0gc3R5bGU7CiAgICB9Cn0KCiNbZGVyaXZlKENvcHksIENsb25lLCBQYXJ0aWFsRXEsIEVxLCBEZWJ1ZyldCmVudW0gQ3NpU3RhdGUgewogICAgTm9ybWFsLAogICAgUHJlcGFyZUN1c3RvbUNvbG9yLAogICAgQW5zaTI1NiwKICAgIFJnYiwKICAgIFVuZGVybGluZSwKfQoKI1tkZXJpdmUoQ29weSwgQ2xvbmUsIFBhcnRpYWxFcSwgRXEsIERlYnVnKV0KZW51bSBDb2xvclRhcmdldCB7CiAgICBGZywKICAgIEJnLAogICAgVW5kZXJsaW5lLAp9CgpmbiB0b19hbnNpX2NvbG9yKGRpZ2l0OiB1MTYpIC0+IE9wdGlvbjxhbnN0eWxlOjpBbnNpQ29sb3I+IHsKICAgIG1hdGNoIGRpZ2l0IHsKICAgICAgICAwID0+IFNvbWUoYW5zdHlsZTo6QW5zaUNvbG9yOjpCbGFjayksCiAgICAgICAgMSA9PiBTb21lKGFuc3R5bGU6OkFuc2lDb2xvcjo6UmVkKSwKICAgICAgICAyID0+IFNvbWUoYW5zdHlsZTo6QW5zaUNvbG9yOjpHcmVlbiksCiAgICAgICAgMyA9PiBTb21lKGFuc3R5bGU6OkFuc2lDb2xvcjo6WWVsbG93KSwKICAgICAgICA0ID0+IFNvbWUoYW5zdHlsZTo6QW5zaUNvbG9yOjpCbHVlKSwKICAgICAgICA1ID0+IFNvbWUoYW5zdHlsZTo6QW5zaUNvbG9yOjpNYWdlbnRhKSwKICAgICAgICA2ID0+IFNvbWUoYW5zdHlsZTo6QW5zaUNvbG9yOjpDeWFuKSwKICAgICAgICA3ID0+IFNvbWUoYW5zdHlsZTo6QW5zaUNvbG9yOjpXaGl0ZSksCiAgICAgICAgXyA9PiBOb25lLAogICAgfQp9CgojW2NmZyh0ZXN0KV0KaW5jbHVkZSEoY29uY2F0IShlbnYhKCJDQVJHT19NQU5JRkVTVF9ESVIiKSwgIi8uLi8uLi8uLi90ZXN0L2ZvdW5kYXRpb24vYW5zdHJlYW0vdW5pdC9zcmMvYWRhcHRlci93aW5jb24vdGVzdF8zMDEucnMiKSk7Cg==",
+            "kind": "archived-source",
+            "reason": "Retire unsupported Windows output/query implementation or unused output macros. Complete original source bytes are preserved in this authenticated receipt, not replaced by compatibility stubs.",
+            "sha256": "b469f081e6d2f81d6e5d544e01f432e589bbc3d6a367176f3217dfddd5289741"
+          },
+          "src/auto.rs": {
+            "destination": "src/output/auto.rs"
+          },
+          "src/buffer.rs": {
+            "destination": "src/output/buffer.rs"
+          },
+          "src/fmt.rs": {
+            "destination": "src/output/fmt.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/output/mod.rs"
+          },
+          "src/stream.rs": {
+            "destination": "src/output/stream.rs"
+          },
+          "src/strip.rs": {
+            "destination": "src/output/strip.rs"
+          },
+          "src/wincon.rs": {
+            "archive_base64": "dXNlIGNyYXRlOjphZGFwdGVyOjpXaW5jb25CeXRlczsKdXNlIGNyYXRlOjpzdHJlYW06OkFzTG9ja2VkV3JpdGU7CnVzZSBjcmF0ZTo6c3RyZWFtOjpJc1Rlcm1pbmFsOwoKCgppbXBsPFM+IFdpbmNvblN0cmVhbTxTPgp3aGVyZQogICAgUzogYW5zdHlsZV93aW5jb246OldpbmNvblN0cmVhbSwKewogICAgLy8vIE9ubHkgcGFzcyBwcmludGFibGUgZGF0YSB0byB0aGUgaW5uZXIgYFdyaXRlYAogICAgI1tpbmxpbmVdCiAgICBwdWIgZm4gbmV3KHJhdzogUykgLT4gU2VsZiB7CiAgICAgICAgU2VsZiB7CiAgICAgICAgICAgIHJhdywKICAgICAgICAgICAgc3RhdGU6IERlZmF1bHQ6OmRlZmF1bHQoKSwKICAgICAgICB9CiAgICB9CgogICAgLy8vIEdldCB0aGUgd3JhcHBlZCBbYGFuc3R5bGVfd2luY29uOjpXaW5jb25TdHJlYW1gXQogICAgI1tpbmxpbmVdCiAgICBwdWIgZm4gaW50b19pbm5lcihzZWxmKSAtPiBTIHsKICAgICAgICBzZWxmLnJhdwogICAgfQoKICAgIC8vLyBHZXQgdGhlIHdyYXBwZWQgW2BzdGQ6OmlvOjpXcml0ZWBdCiAgICAjW2lubGluZV0KICAgIHB1YiBmbiBhc19pbm5lcigmc2VsZikgLT4gJlMgewogICAgICAgICZzZWxmLnJhdwogICAgfQp9CgppbXBsPFM+IFdpbmNvblN0cmVhbTxTPgp3aGVyZQogICAgUzogYW5zdHlsZV93aW5jb246OldpbmNvblN0cmVhbSwKICAgIFM6IElzVGVybWluYWwsCnsKICAgIC8vLyBSZXR1cm5zIGB0cnVlYCBpZiB0aGUgZGVzY3JpcHRvci9oYW5kbGUgcmVmZXJzIHRvIGEgdGVybWluYWwvdHR5LgogICAgI1tpbmxpbmVdCiAgICBwdWIgZm4gaXNfdGVybWluYWwoJnNlbGYpIC0+IGJvb2wgewogICAgICAgIHNlbGYucmF3LmlzX3Rlcm1pbmFsKCkKICAgIH0KfQoKaW1wbCBXaW5jb25TdHJlYW08c3RkOjppbzo6U3Rkb3V0PiB7CiAgICAvLy8gR2V0IGV4Y2x1c2l2ZSBhY2Nlc3MgdG8gdGhlIGBXaW5jb25TdHJlYW1gCiAgICAvLy8KICAgIC8vLyBXaHk/CiAgICAvLy8gLSBGYXN0ZXIgcGVyZm9ybWFuY2Ugd2hlbiB3cml0aW5nIGluIGEgbG9vcAogICAgLy8vIC0gQXZvaWQgb3RoZXIgdGhyZWFkcyBpbnRlcmxlYXZpbmcgb3V0cHV0IHdpdGggdGhlIGN1cnJlbnQgdGhyZWFkCiAgICAjW2lubGluZV0KICAgIHB1YiBmbiBsb2NrKHNlbGYpIC0+IFdpbmNvblN0cmVhbTxzdGQ6OmlvOjpTdGRvdXRMb2NrPCdzdGF0aWM+PiB7CiAgICAgICAgV2luY29uU3RyZWFtIHsKICAgICAgICAgICAgcmF3OiBzZWxmLnJhdy5sb2NrKCksCiAgICAgICAgICAgIHN0YXRlOiBzZWxmLnN0YXRlLAogICAgICAgIH0KICAgIH0KfQoKaW1wbCBXaW5jb25TdHJlYW08c3RkOjppbzo6U3RkZXJyPiB7CiAgICAvLy8gR2V0IGV4Y2x1c2l2ZSBhY2Nlc3MgdG8gdGhlIGBXaW5jb25TdHJlYW1gCiAgICAvLy8KICAgIC8vLyBXaHk/CiAgICAvLy8gLSBGYXN0ZXIgcGVyZm9ybWFuY2Ugd2hlbiB3cml0aW5nIGluIGEgbG9vcAogICAgLy8vIC0gQXZvaWQgb3RoZXIgdGhyZWFkcyBpbnRlcmxlYXZpbmcgb3V0cHV0IHdpdGggdGhlIGN1cnJlbnQgdGhyZWFkCiAgICAjW2lubGluZV0KICAgIHB1YiBmbiBsb2NrKHNlbGYpIC0+IFdpbmNvblN0cmVhbTxzdGQ6OmlvOjpTdGRlcnJMb2NrPCdzdGF0aWM+PiB7CiAgICAgICAgV2luY29uU3RyZWFtIHsKICAgICAgICAgICAgcmF3OiBzZWxmLnJhdy5sb2NrKCksCiAgICAgICAgICAgIHN0YXRlOiBzZWxmLnN0YXRlLAogICAgICAgIH0KICAgIH0KfQoKaW1wbDxTPiBzdGQ6OmlvOjpXcml0ZSBmb3IgV2luY29uU3RyZWFtPFM+CndoZXJlCiAgICBTOiBhbnN0eWxlX3dpbmNvbjo6V2luY29uU3RyZWFtLAogICAgUzogQXNMb2NrZWRXcml0ZSwKewogICAgLy8gTXVzdCBmb3J3YXJkIGFsbCBjYWxscyB0byBlbnN1cmUgbG9ja2luZyBoYXBwZW5zIGFwcHJvcHJpYXRlbHkKICAgICNbaW5saW5lXQogICAgZm4gd3JpdGUoJm11dCBzZWxmLCBidWY6ICZbdThdKSAtPiBzdGQ6OmlvOjpSZXN1bHQ8dXNpemU+IHsKICAgICAgICB3cml0ZSgmbXV0IHNlbGYucmF3LmFzX2xvY2tlZF93cml0ZSgpLCAmbXV0IHNlbGYuc3RhdGUsIGJ1ZikKICAgIH0KICAgICNbaW5saW5lXQogICAgZm4gd3JpdGVfdmVjdG9yZWQoJm11dCBzZWxmLCBidWZzOiAmW3N0ZDo6aW86OklvU2xpY2U8J18+XSkgLT4gc3RkOjppbzo6UmVzdWx0PHVzaXplPiB7CiAgICAgICAgbGV0IGJ1ZiA9IGJ1ZnMKICAgICAgICAgICAgLml0ZXIoKQogICAgICAgICAgICAuZmluZCh8YnwgIWIuaXNfZW1wdHkoKSkKICAgICAgICAgICAgLm1hcCh8YnwgJioqYikKICAgICAgICAgICAgLnVud3JhcF9vcigmW11bLi5dKTsKICAgICAgICBzZWxmLndyaXRlKGJ1ZikKICAgIH0KICAgIC8vIGlzX3dyaXRlX3ZlY3RvcmVkOiBuaWdodGx5IG9ubHkKICAgICNbaW5saW5lXQogICAgZm4gZmx1c2goJm11dCBzZWxmKSAtPiBzdGQ6OmlvOjpSZXN1bHQ8KCk+IHsKICAgICAgICBzZWxmLnJhdy5hc19sb2NrZWRfd3JpdGUoKS5mbHVzaCgpCiAgICB9CiAgICAjW2lubGluZV0KICAgIGZuIHdyaXRlX2FsbCgmbXV0IHNlbGYsIGJ1ZjogJlt1OF0pIC0+IHN0ZDo6aW86OlJlc3VsdDwoKT4gewogICAgICAgIHdyaXRlX2FsbCgmbXV0IHNlbGYucmF3LmFzX2xvY2tlZF93cml0ZSgpLCAmbXV0IHNlbGYuc3RhdGUsIGJ1ZikKICAgIH0KICAgIC8vIHdyaXRlX2FsbF92ZWN0b3JlZDogbmlnaHRseSBvbmx5CiAgICAjW2lubGluZV0KICAgIGZuIHdyaXRlX2ZtdCgmbXV0IHNlbGYsIGFyZ3M6IHN0ZDo6Zm10OjpBcmd1bWVudHM8J18+KSAtPiBzdGQ6OmlvOjpSZXN1bHQ8KCk+IHsKICAgICAgICB3cml0ZV9mbXQoJm11dCBzZWxmLnJhdy5hc19sb2NrZWRfd3JpdGUoKSwgJm11dCBzZWxmLnN0YXRlLCBhcmdzKQogICAgfQp9CgpmbiB3cml0ZSgKICAgIHJhdzogJm11dCBkeW4gYW5zdHlsZV93aW5jb246OldpbmNvblN0cmVhbSwKICAgIHN0YXRlOiAmbXV0IFdpbmNvbkJ5dGVzLAogICAgYnVmOiAmW3U4XSwKKSAtPiBzdGQ6OmlvOjpSZXN1bHQ8dXNpemU+IHsKICAgIGZvciAoc3R5bGUsIHByaW50YWJsZSkgaW4gc3RhdGUuZXh0cmFjdF9uZXh0KGJ1ZikgewogICAgICAgIGxldCBmZyA9IHN0eWxlLmdldF9mZ19jb2xvcigpLmFuZF90aGVuKGNhcF93aW5jb25fY29sb3IpOwogICAgICAgIGxldCBiZyA9IHN0eWxlLmdldF9iZ19jb2xvcigpLmFuZF90aGVuKGNhcF93aW5jb25fY29sb3IpOwogICAgICAgIGxldCB3cml0dGVuID0gcmF3LndyaXRlX2NvbG9yZWQoZmcsIGJnLCBwcmludGFibGUuYXNfYnl0ZXMoKSk/OwogICAgICAgIGxldCBwb3NzaWJsZSA9IHByaW50YWJsZS5sZW4oKTsKICAgICAgICBpZiBwb3NzaWJsZSAhPSB3cml0dGVuIHsKICAgICAgICAgICAgLy8gSEFDSzogVW5zdXBwb3J0ZWQgYXRtCiAgICAgICAgICAgIGJyZWFrOwogICAgICAgIH0KICAgIH0KICAgIE9rKGJ1Zi5sZW4oKSkKfQoKZm4gd3JpdGVfYWxsKAogICAgcmF3OiAmbXV0IGR5biBhbnN0eWxlX3dpbmNvbjo6V2luY29uU3RyZWFtLAogICAgc3RhdGU6ICZtdXQgV2luY29uQnl0ZXMsCiAgICBidWY6ICZbdThdLAopIC0+IHN0ZDo6aW86OlJlc3VsdDwoKT4gewogICAgZm9yIChzdHlsZSwgcHJpbnRhYmxlKSBpbiBzdGF0ZS5leHRyYWN0X25leHQoYnVmKSB7CiAgICAgICAgbGV0IG11dCBidWYgPSBwcmludGFibGUuYXNfYnl0ZXMoKTsKICAgICAgICBsZXQgZmcgPSBzdHlsZS5nZXRfZmdfY29sb3IoKS5hbmRfdGhlbihjYXBfd2luY29uX2NvbG9yKTsKICAgICAgICBsZXQgYmcgPSBzdHlsZS5nZXRfYmdfY29sb3IoKS5hbmRfdGhlbihjYXBfd2luY29uX2NvbG9yKTsKICAgICAgICB3aGlsZSAhYnVmLmlzX2VtcHR5KCkgewogICAgICAgICAgICBtYXRjaCByYXcud3JpdGVfY29sb3JlZChmZywgYmcsIGJ1ZikgewogICAgICAgICAgICAgICAgT2soMCkgPT4gewogICAgICAgICAgICAgICAgICAgIHJldHVybiBFcnIoc3RkOjppbzo6RXJyb3I6Om5ldygKICAgICAgICAgICAgICAgICAgICAgICAgc3RkOjppbzo6RXJyb3JLaW5kOjpXcml0ZVplcm8sCiAgICAgICAgICAgICAgICAgICAgICAgICJmYWlsZWQgdG8gd3JpdGUgd2hvbGUgYnVmZmVyIiwKICAgICAgICAgICAgICAgICAgICApKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIE9rKG4pID0+IGJ1ZiA9ICZidWZbbi4uXSwKICAgICAgICAgICAgICAgIEVycihyZWYgZSkgaWYgZS5raW5kKCkgPT0gc3RkOjppbzo6RXJyb3JLaW5kOjpJbnRlcnJ1cHRlZCA9PiB7fQogICAgICAgICAgICAgICAgRXJyKGUpID0+IHJldHVybiBFcnIoZSksCiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICB9CiAgICBPaygoKSkKfQoKZm4gd3JpdGVfZm10KAogICAgcmF3OiAmbXV0IGR5biBhbnN0eWxlX3dpbmNvbjo6V2luY29uU3RyZWFtLAogICAgc3RhdGU6ICZtdXQgV2luY29uQnl0ZXMsCiAgICBhcmdzOiBzdGQ6OmZtdDo6QXJndW1lbnRzPCdfPiwKKSAtPiBzdGQ6OmlvOjpSZXN1bHQ8KCk+IHsKICAgIGxldCB3cml0ZV9hbGwgPSB8YnVmOiAmW3U4XXwgd3JpdGVfYWxsKHJhdywgc3RhdGUsIGJ1Zik7CiAgICBjcmF0ZTo6Zm10OjpBZGFwdGVyOjpuZXcod3JpdGVfYWxsKS53cml0ZV9mbXQoYXJncykKfQoKZm4gY2FwX3dpbmNvbl9jb2xvcihjb2xvcjogYW5zdHlsZTo6Q29sb3IpIC0+IE9wdGlvbjxhbnN0eWxlOjpBbnNpQ29sb3I+IHsKICAgIG1hdGNoIGNvbG9yIHsKICAgICAgICBhbnN0eWxlOjpDb2xvcjo6QW5zaShjKSA9PiBTb21lKGMpLAogICAgICAgIGFuc3R5bGU6OkNvbG9yOjpBbnNpMjU2KGMpID0+IGMuaW50b19hbnNpKCksCiAgICAgICAgYW5zdHlsZTo6Q29sb3I6OlJnYihfKSA9PiBOb25lLAogICAgfQp9CgojW2NmZyh0ZXN0KV0KaW5jbHVkZSEoY29uY2F0IShlbnYhKCJDQVJHT19NQU5JRkVTVF9ESVIiKSwgIi8uLi8uLi8uLi90ZXN0L2ZvdW5kYXRpb24vYW5zdHJlYW0vdW5pdC9zcmMvd2luY29uL3Rlc3RfMTcxLnJzIikpOwo=",
+            "kind": "archived-source",
+            "reason": "Retire unsupported Windows output/query implementation or unused output macros. Complete original source bytes are preserved in this authenticated receipt, not replaced by compatibility stubs.",
+            "sha256": "661258dc394e90e815cfc31c3c0f7bb2863a3c04d1566532c64f96b8cb3a61b2"
+          }
+        },
+        "src/foundation/anstyle": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "src/color.rs": {
+            "destination": "src/color.rs"
+          },
+          "src/effect.rs": {
+            "destination": "src/effect.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/lib.rs"
+          },
+          "src/macros.rs": {
+            "destination": "src/macros.rs"
+          },
+          "src/reset.rs": {
+            "destination": "src/reset.rs"
+          },
+          "src/style.rs": {
+            "destination": "src/style.rs"
+          }
+        },
+        "src/foundation/anstyle-parse": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42Ni4wIgpuYW1lID0gImFuc3R5bGUtcGFyc2UiCnZlcnNpb24gPSAiMS4wLjAiCmJ1aWxkID0gZmFsc2UKaW5jbHVkZSA9IFsKICAgICJidWlsZC5ycyIsCiAgICAic3JjLyoqLyoiLAogICAgIkNhcmdvLnRvbWwiLAogICAgIkNhcmdvLmxvY2siLAogICAgIkxJQ0VOU0UqIiwKICAgICJSRUFETUUubWQiLAogICAgImV4YW1wbGVzLyoqLyoiLApdCmF1dG9saWIgPSBmYWxzZQphdXRvYmlucyA9IGZhbHNlCmF1dG9leGFtcGxlcyA9IGZhbHNlCmF1dG90ZXN0cyA9IGZhbHNlCmF1dG9iZW5jaGVzID0gZmFsc2UKZGVzY3JpcHRpb24gPSAiUGFyc2UgQU5TSSBTdHlsZSBFc2NhcGVzIgpyZWFkbWUgPSAiLi4vLi4vLi4vZG9jcy91cHN0cmVhbS9hbnN0eWxlLXBhcnNlLTEuMC4wL1JFQURNRS5tZCIKa2V5d29yZHMgPSBbCiAgICAiYW5zaSIsCiAgICAidGVybWluYWwiLAogICAgImNvbG9yIiwKICAgICJ2dGUiLApdCmNhdGVnb3JpZXMgPSBbImNvbW1hbmQtbGluZS1pbnRlcmZhY2UiXQpsaWNlbnNlID0gIk1JVCBPUiBBcGFjaGUtMi4wIgpyZXBvc2l0b3J5ID0gImh0dHBzOi8vZ2l0aHViLmNvbS9ydXN0LWNsaS9hbnN0eWxlLmdpdCIKCltmZWF0dXJlc10KY29yZSA9IFsiZGVwOmFycmF5dmVjIl0KZGVmYXVsdCA9IFsidXRmOCJdCnV0ZjggPSBbImRlcDp1dGY4cGFyc2UiXQoKW2xpYl0KbmFtZSA9ICJhbnN0eWxlX3BhcnNlIgpwYXRoID0gInNyYy9saWIucnMiCgpbZGVwZW5kZW5jaWVzLmFycmF5dmVjXQp2ZXJzaW9uID0gIjAuNy42IgpvcHRpb25hbCA9IHRydWUKZGVmYXVsdC1mZWF0dXJlcyA9IGZhbHNlCnBhdGggPSAiLi4vYXJyYXl2ZWMiCgpbZGVwZW5kZW5jaWVzLnV0ZjhwYXJzZV0KdmVyc2lvbiA9ICIwLjIuMiIKb3B0aW9uYWwgPSB0cnVlCnBhdGggPSAiLi4vdXRmOHBhcnNlIgoKW2xpbnRzLmNsaXBweV0KYm9vbF9hc3NlcnRfY29tcGFyaXNvbiA9ICJhbGxvdyIKYnJhbmNoZXNfc2hhcmluZ19jb2RlID0gImFsbG93IgpjaGVja2VkX2NvbnZlcnNpb25zID0gIndhcm4iCmNvbGxhcHNpYmxlX2Vsc2VfaWYgPSAiYWxsb3ciCmNyZWF0ZV9kaXIgPSAid2FybiIKZGJnX21hY3JvID0gIndhcm4iCmRlYnVnX2Fzc2VydF93aXRoX211dF9jYWxsID0gIndhcm4iCmRvY19tYXJrZG93biA9ICJ3YXJuIgplbXB0eV9lbnVtcyA9ICJ3YXJuIgplbnVtX2dsb2JfdXNlID0gIndhcm4iCmV4cGxfaW1wbF9jbG9uZV9vbl9jb3B5ID0gIndhcm4iCmV4cGxpY2l0X2RlcmVmX21ldGhvZHMgPSAid2FybiIKZXhwbGljaXRfaW50b19pdGVyX2xvb3AgPSAid2FybiIKZmFsbGlibGVfaW1wbF9mcm9tID0gIndhcm4iCmZpbHRlcl9tYXBfbmV4dCA9ICJ3YXJuIgpmbGF0X21hcF9vcHRpb24gPSAid2FybiIKZmxvYXRfY21wX2NvbnN0ID0gIndhcm4iCmZuX3BhcmFtc19leGNlc3NpdmVfYm9vbHMgPSAid2FybiIKZnJvbV9pdGVyX2luc3RlYWRfb2ZfY29sbGVjdCA9ICJ3YXJuIgppZl9zYW1lX3RoZW5fZWxzZSA9ICJhbGxvdyIKaW1wbGljaXRfY2xvbmUgPSAid2FybiIKaW1wcmVjaXNlX2Zsb3BzID0gIndhcm4iCmluY29uc2lzdGVudF9zdHJ1Y3RfY29uc3RydWN0b3IgPSAid2FybiIKaW5lZmZpY2llbnRfdG9fc3RyaW5nID0gIndhcm4iCmluZmluaXRlX2xvb3AgPSAid2FybiIKaW52YWxpZF91cGNhc3RfY29tcGFyaXNvbnMgPSAid2FybiIKbGFyZ2VfZGlnaXRfZ3JvdXBzID0gIndhcm4iCmxhcmdlX3N0YWNrX2FycmF5cyA9ICJ3YXJuIgpsYXJnZV90eXBlc19wYXNzZWRfYnlfdmFsdWUgPSAid2FybiIKbGV0X2FuZF9yZXR1cm4gPSAiYWxsb3ciCmxpbmtlZGxpc3QgPSAid2FybiIKbG9zc3lfZmxvYXRfbGl0ZXJhbCA9ICJ3YXJuIgptYWNyb191c2VfaW1wb3J0cyA9ICJ3YXJuIgptZW1fZm9yZ2V0ID0gIndhcm4iCm11dGV4X2ludGVnZXIgPSAid2FybiIKbmVlZGxlc3NfY29udGludWUgPSAiYWxsb3ciCm5lZWRsZXNzX2Zvcl9lYWNoID0gIndhcm4iCm5lZ2F0aXZlX2ZlYXR1cmVfbmFtZXMgPSAid2FybiIKcGF0aF9idWZfcHVzaF9vdmVyd3JpdGUgPSAid2FybiIKcHRyX2FzX3B0ciA9ICJ3YXJuIgpyY19tdXRleCA9ICJ3YXJuIgpyZWR1bmRhbnRfZmVhdHVyZV9uYW1lcyA9ICJ3YXJuIgpyZWZfb3B0aW9uX3JlZiA9ICJ3YXJuIgpyZXN0X3BhdF9pbl9mdWxseV9ib3VuZF9zdHJ1Y3RzID0gIndhcm4iCnJlc3VsdF9sYXJnZV9lcnIgPSAiYWxsb3ciCnNhbWVfZnVuY3Rpb25zX2luX2lmX2NvbmRpdGlvbiA9ICJ3YXJuIgpzZWxmX25hbWVkX21vZHVsZV9maWxlcyA9ICJ3YXJuIgpzZW1pY29sb25faWZfbm90aGluZ19yZXR1cm5lZCA9ICJ3YXJuIgpzdHJfdG9fc3RyaW5nID0gIndhcm4iCnN0cmluZ19hZGQgPSAid2FybiIKc3RyaW5nX2FkZF9hc3NpZ24gPSAid2FybiIKc3RyaW5nX2xpdF9hc19ieXRlcyA9ICJ3YXJuIgp0b2RvID0gIndhcm4iCnRyYWl0X2R1cGxpY2F0aW9uX2luX2JvdW5kcyA9ICJ3YXJuIgp1bmlubGluZWRfZm9ybWF0X2FyZ3MgPSAid2FybiIKdmVyYm9zZV9maWxlX3JlYWRzID0gIndhcm4iCndpbGRjYXJkX2ltcG9ydHMgPSAid2FybiIKemVyb19zaXplZF9tYXBfdmFsdWVzID0gIndhcm4iCgpbbGludHMucnVzdF0KdW5uYW1lYWJsZV90eXBlcyA9ICJ3YXJuIgp1bnJlYWNoYWJsZV9wdWIgPSAid2FybiIKdW5zYWZlX29wX2luX3Vuc2FmZV9mbiA9ICJ3YXJuIgp1bnVzZWRfbGlmZXRpbWVzID0gIndhcm4iCnVudXNlZF9tYWNyb19ydWxlcyA9ICJ3YXJuIgp1bnVzZWRfcXVhbGlmaWNhdGlvbnMgPSAid2FybiIKCltsaW50cy5ydXN0LnJ1c3RfMjAxOF9pZGlvbXNdCmxldmVsID0gIndhcm4iCnByaW9yaXR5ID0gLTEK"
+          },
+          "src/lib.rs": {
+            "destination": "src/parser/mod.rs"
+          },
+          "src/params.rs": {
+            "destination": "src/parser/params.rs"
+          },
+          "src/state/definitions.rs": {
+            "destination": "src/parser/state/definitions.rs"
+          },
+          "src/state/mod.rs": {
+            "destination": "src/parser/state/mod.rs"
+          },
+          "src/state/table.rs": {
+            "destination": "src/parser/state/table.rs"
+          }
+        },
+        "src/foundation/anstyle-query": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42Ni4wIgpuYW1lID0gImFuc3R5bGUtcXVlcnkiCnZlcnNpb24gPSAiMS4xLjUiCmJ1aWxkID0gZmFsc2UKaW5jbHVkZSA9IFsKICAgICJidWlsZC5ycyIsCiAgICAic3JjLyoqLyoiLAogICAgIkNhcmdvLnRvbWwiLAogICAgIkNhcmdvLmxvY2siLAogICAgIkxJQ0VOU0UqIiwKICAgICJSRUFETUUubWQiLAogICAgImV4YW1wbGVzLyoqLyoiLApdCmF1dG9saWIgPSBmYWxzZQphdXRvYmlucyA9IGZhbHNlCmF1dG9leGFtcGxlcyA9IGZhbHNlCmF1dG90ZXN0cyA9IGZhbHNlCmF1dG9iZW5jaGVzID0gZmFsc2UKZGVzY3JpcHRpb24gPSAiTG9vayB1cCBjb2xvcmVkIGNvbnNvbGUgY2FwYWJpbGl0aWVzIgpyZWFkbWUgPSAiLi4vLi4vLi4vZG9jcy91cHN0cmVhbS9hbnN0eWxlLXF1ZXJ5LTEuMS41L1JFQURNRS5tZCIKa2V5d29yZHMgPSBbCiAgICAiY2xpIiwKICAgICJjb2xvciIsCiAgICAibm8tc3RkIiwKICAgICJ0ZXJtaW5hbCIsCiAgICAiYW5zaSIsCl0KY2F0ZWdvcmllcyA9IFsiY29tbWFuZC1saW5lLWludGVyZmFjZSJdCmxpY2Vuc2UgPSAiTUlUIE9SIEFwYWNoZS0yLjAiCnJlcG9zaXRvcnkgPSAiaHR0cHM6Ly9naXRodWIuY29tL3J1c3QtY2xpL2Fuc3R5bGUuZ2l0IgoKW2xpYl0KbmFtZSA9ICJhbnN0eWxlX3F1ZXJ5IgpwYXRoID0gInNyYy9saWIucnMiCgpbbGludHMuY2xpcHB5XQpib29sX2Fzc2VydF9jb21wYXJpc29uID0gImFsbG93IgpicmFuY2hlc19zaGFyaW5nX2NvZGUgPSAiYWxsb3ciCmNoZWNrZWRfY29udmVyc2lvbnMgPSAid2FybiIKY29sbGFwc2libGVfZWxzZV9pZiA9ICJhbGxvdyIKY3JlYXRlX2RpciA9ICJ3YXJuIgpkYmdfbWFjcm8gPSAid2FybiIKZGVidWdfYXNzZXJ0X3dpdGhfbXV0X2NhbGwgPSAid2FybiIKZG9jX21hcmtkb3duID0gIndhcm4iCmVtcHR5X2VudW0gPSAid2FybiIKZW51bV9nbG9iX3VzZSA9ICJ3YXJuIgpleHBsX2ltcGxfY2xvbmVfb25fY29weSA9ICJ3YXJuIgpleHBsaWNpdF9kZXJlZl9tZXRob2RzID0gIndhcm4iCmV4cGxpY2l0X2ludG9faXRlcl9sb29wID0gIndhcm4iCmZhbGxpYmxlX2ltcGxfZnJvbSA9ICJ3YXJuIgpmaWx0ZXJfbWFwX25leHQgPSAid2FybiIKZmxhdF9tYXBfb3B0aW9uID0gIndhcm4iCmZsb2F0X2NtcF9jb25zdCA9ICJ3YXJuIgpmbl9wYXJhbXNfZXhjZXNzaXZlX2Jvb2xzID0gIndhcm4iCmZyb21faXRlcl9pbnN0ZWFkX29mX2NvbGxlY3QgPSAid2FybiIKaWZfc2FtZV90aGVuX2Vsc2UgPSAiYWxsb3ciCmltcGxpY2l0X2Nsb25lID0gIndhcm4iCmltcHJlY2lzZV9mbG9wcyA9ICJ3YXJuIgppbmNvbnNpc3RlbnRfc3RydWN0X2NvbnN0cnVjdG9yID0gIndhcm4iCmluZWZmaWNpZW50X3RvX3N0cmluZyA9ICJ3YXJuIgppbmZpbml0ZV9sb29wID0gIndhcm4iCmludmFsaWRfdXBjYXN0X2NvbXBhcmlzb25zID0gIndhcm4iCmxhcmdlX2RpZ2l0X2dyb3VwcyA9ICJ3YXJuIgpsYXJnZV9zdGFja19hcnJheXMgPSAid2FybiIKbGFyZ2VfdHlwZXNfcGFzc2VkX2J5X3ZhbHVlID0gIndhcm4iCmxldF9hbmRfcmV0dXJuID0gImFsbG93IgpsaW5rZWRsaXN0ID0gIndhcm4iCmxvc3N5X2Zsb2F0X2xpdGVyYWwgPSAid2FybiIKbWFjcm9fdXNlX2ltcG9ydHMgPSAid2FybiIKbWVtX2ZvcmdldCA9ICJ3YXJuIgptdXRleF9pbnRlZ2VyID0gIndhcm4iCm5lZWRsZXNzX2NvbnRpbnVlID0gImFsbG93IgpuZWVkbGVzc19mb3JfZWFjaCA9ICJ3YXJuIgpuZWdhdGl2ZV9mZWF0dXJlX25hbWVzID0gIndhcm4iCnBhdGhfYnVmX3B1c2hfb3ZlcndyaXRlID0gIndhcm4iCnB0cl9hc19wdHIgPSAid2FybiIKcmNfbXV0ZXggPSAid2FybiIKcmVkdW5kYW50X2ZlYXR1cmVfbmFtZXMgPSAid2FybiIKcmVmX29wdGlvbl9yZWYgPSAid2FybiIKcmVzdF9wYXRfaW5fZnVsbHlfYm91bmRfc3RydWN0cyA9ICJ3YXJuIgpyZXN1bHRfbGFyZ2VfZXJyID0gImFsbG93IgpzYW1lX2Z1bmN0aW9uc19pbl9pZl9jb25kaXRpb24gPSAid2FybiIKc2VsZl9uYW1lZF9tb2R1bGVfZmlsZXMgPSAid2FybiIKc2VtaWNvbG9uX2lmX25vdGhpbmdfcmV0dXJuZWQgPSAid2FybiIKc3RyX3RvX3N0cmluZyA9ICJ3YXJuIgpzdHJpbmdfYWRkID0gIndhcm4iCnN0cmluZ19hZGRfYXNzaWduID0gIndhcm4iCnN0cmluZ19saXRfYXNfYnl0ZXMgPSAid2FybiIKdG9kbyA9ICJ3YXJuIgp0cmFpdF9kdXBsaWNhdGlvbl9pbl9ib3VuZHMgPSAid2FybiIKdW5pbmxpbmVkX2Zvcm1hdF9hcmdzID0gIndhcm4iCnZlcmJvc2VfZmlsZV9yZWFkcyA9ICJ3YXJuIgp3aWxkY2FyZF9pbXBvcnRzID0gIndhcm4iCnplcm9fc2l6ZWRfbWFwX3ZhbHVlcyA9ICJ3YXJuIgoKW2xpbnRzLnJ1c3RdCnVubmFtZWFibGVfdHlwZXMgPSAid2FybiIKdW5yZWFjaGFibGVfcHViID0gIndhcm4iCnVuc2FmZV9vcF9pbl91bnNhZmVfZm4gPSAid2FybiIKdW51c2VkX2xpZmV0aW1lcyA9ICJ3YXJuIgp1bnVzZWRfbWFjcm9fcnVsZXMgPSAid2FybiIKdW51c2VkX3F1YWxpZmljYXRpb25zID0gIndhcm4iCgpbbGludHMucnVzdC5ydXN0XzIwMThfaWRpb21zXQpsZXZlbCA9ICJ3YXJuIgpwcmlvcml0eSA9IC0xCg=="
+          },
+          "src/lib.rs": {
+            "destination": "src/query.rs"
+          },
+          "src/windows.rs": {
+            "archive_base64": "Ly8hIFdpbmRvd3Mtc3BlY2lmaWMgc3R5bGUgcXVlcmllcwoKI1tjZmcod2luZG93cyldCm1vZCB3aW5kb3dzX2NvbnNvbGUgewogICAgdXNlIHN0ZDo6b3M6OndpbmRvd3M6OmlvOjpBc1Jhd0hhbmRsZTsKICAgIHVzZSBzdGQ6Om9zOjp3aW5kb3dzOjppbzo6UmF3SGFuZGxlOwoKICAgIHVzZSB3aW5kb3dzX3N5czo6V2luMzI6OkZvdW5kYXRpb246OkhBTkRMRTsKICAgIHVzZSB3aW5kb3dzX3N5czo6V2luMzI6OlN5c3RlbTo6Q29uc29sZTo6Q09OU09MRV9NT0RFOwogICAgdXNlIHdpbmRvd3Nfc3lzOjpXaW4zMjo6U3lzdGVtOjpDb25zb2xlOjpFTkFCTEVfVklSVFVBTF9URVJNSU5BTF9QUk9DRVNTSU5HOwoKICAgIGZuIGVuYWJsZV92dChoYW5kbGU6IFJhd0hhbmRsZSkgLT4gc3RkOjppbzo6UmVzdWx0PCgpPiB7CiAgICAgICAgdW5zYWZlIHsKICAgICAgICAgICAgbGV0IGhhbmRsZTogSEFORExFID0gaGFuZGxlIGFzIEhBTkRMRTsKICAgICAgICAgICAgaWYgaGFuZGxlLmlzX251bGwoKSB7CiAgICAgICAgICAgICAgICByZXR1cm4gRXJyKHN0ZDo6aW86OkVycm9yOjpuZXcoCiAgICAgICAgICAgICAgICAgICAgc3RkOjppbzo6RXJyb3JLaW5kOjpCcm9rZW5QaXBlLAogICAgICAgICAgICAgICAgICAgICJjb25zb2xlIGlzIGRldGFjaGVkIiwKICAgICAgICAgICAgICAgICkpOwogICAgICAgICAgICB9CgogICAgICAgICAgICBsZXQgbXV0IGR3bW9kZTogQ09OU09MRV9NT0RFID0gMDsKICAgICAgICAgICAgaWYgd2luZG93c19zeXM6OldpbjMyOjpTeXN0ZW06OkNvbnNvbGU6OkdldENvbnNvbGVNb2RlKGhhbmRsZSwgJm11dCBkd21vZGUpID09IDAgewogICAgICAgICAgICAgICAgcmV0dXJuIEVycihzdGQ6OmlvOjpFcnJvcjo6bGFzdF9vc19lcnJvcigpKTsKICAgICAgICAgICAgfQoKICAgICAgICAgICAgZHdtb2RlIHw9IEVOQUJMRV9WSVJUVUFMX1RFUk1JTkFMX1BST0NFU1NJTkc7CiAgICAgICAgICAgIGlmIHdpbmRvd3Nfc3lzOjpXaW4zMjo6U3lzdGVtOjpDb25zb2xlOjpTZXRDb25zb2xlTW9kZShoYW5kbGUsIGR3bW9kZSkgPT0gMCB7CiAgICAgICAgICAgICAgICByZXR1cm4gRXJyKHN0ZDo6aW86OkVycm9yOjpsYXN0X29zX2Vycm9yKCkpOwogICAgICAgICAgICB9CgogICAgICAgICAgICBPaygoKSkKICAgICAgICB9CiAgICB9CgogICAgcHViKGNyYXRlKSBmbiBlbmFibGVfdmlydHVhbF90ZXJtaW5hbF9wcm9jZXNzaW5nKCkgLT4gc3RkOjppbzo6UmVzdWx0PCgpPiB7CiAgICAgICAgbGV0IHN0ZG91dCA9IHN0ZDo6aW86OnN0ZG91dCgpOwogICAgICAgIGxldCBzdGRvdXRfaGFuZGxlID0gc3Rkb3V0LmFzX3Jhd19oYW5kbGUoKTsKICAgICAgICBsZXQgc3RkZXJyID0gc3RkOjppbzo6c3RkZXJyKCk7CiAgICAgICAgbGV0IHN0ZGVycl9oYW5kbGUgPSBzdGRlcnIuYXNfcmF3X2hhbmRsZSgpOwoKICAgICAgICBlbmFibGVfdnQoc3Rkb3V0X2hhbmRsZSk/OwogICAgICAgIGlmIHN0ZG91dF9oYW5kbGUgIT0gc3RkZXJyX2hhbmRsZSB7CiAgICAgICAgICAgIGVuYWJsZV92dChzdGRlcnJfaGFuZGxlKT87CiAgICAgICAgfQoKICAgICAgICBPaygoKSkKICAgIH0KCiAgICAjW2lubGluZV0KICAgIHB1YihjcmF0ZSkgZm4gZW5hYmxlX2Fuc2lfY29sb3JzKCkgLT4gT3B0aW9uPGJvb2w+IHsKICAgICAgICBTb21lKAogICAgICAgICAgICBlbmFibGVfdmlydHVhbF90ZXJtaW5hbF9wcm9jZXNzaW5nKCkKICAgICAgICAgICAgICAgIC5tYXAofF98IHRydWUpCiAgICAgICAgICAgICAgICAudW53cmFwX29yKGZhbHNlKSwKICAgICAgICApCiAgICB9Cn0KCiNbY2ZnKG5vdCh3aW5kb3dzKSldCm1vZCB3aW5kb3dzX2NvbnNvbGUgewogICAgI1tpbmxpbmVdCiAgICBwdWIoY3JhdGUpIGZuIGVuYWJsZV9hbnNpX2NvbG9ycygpIC0+IE9wdGlvbjxib29sPiB7CiAgICAgICAgTm9uZQogICAgfQp9CgovLy8gRW5hYmxlIEFOU0kgZXNjYXBlIGNvZGVzIChbYEVOQUJMRV9WSVJUVUFMX1RFUk1JTkFMX1BST0NFU1NJTkdgXShodHRwczovL2xlYXJuLm1pY3Jvc29mdC5jb20vZW4tdXMvd2luZG93cy9jb25zb2xlL2NvbnNvbGUtdmlydHVhbC10ZXJtaW5hbC1zZXF1ZW5jZXMjb3V0cHV0LXNlcXVlbmNlcykpCi8vLwovLy8gRm9yIG5vbi13aW5kb3dzIHN5c3RlbXMsIHJldHVybnMgYE5vbmVgCnB1YiBmbiBlbmFibGVfYW5zaV9jb2xvcnMoKSAtPiBPcHRpb248Ym9vbD4gewogICAgd2luZG93c19jb25zb2xlOjplbmFibGVfYW5zaV9jb2xvcnMoKQp9CgovLy8gUmF3IGBFTkFCTEVfVklSVFVBTF9URVJNSU5BTF9QUk9DRVNTSU5HYCBvbiBzdGRvdXQvc3RkZXJyCiNbY2ZnKHdpbmRvd3MpXQpwdWIgZm4gZW5hYmxlX3ZpcnR1YWxfdGVybWluYWxfcHJvY2Vzc2luZygpIC0+IHN0ZDo6aW86OlJlc3VsdDwoKT4gewogICAgd2luZG93c19jb25zb2xlOjplbmFibGVfdmlydHVhbF90ZXJtaW5hbF9wcm9jZXNzaW5nKCkKfQo=",
+            "kind": "archived-source",
+            "reason": "Retire unsupported Windows output/query implementation or unused output macros. Complete original source bytes are preserved in this authenticated receipt, not replaced by compatibility stubs.",
+            "sha256": "76a8355df494a8152395377b7b9568615ea8fd9d6ab8ec998c6de1deb271697e"
+          }
+        },
+        "src/foundation/colorchoice": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDIxIgpydXN0LXZlcnNpb24gPSAiMS42Ni4wIgpuYW1lID0gImNvbG9yY2hvaWNlIgp2ZXJzaW9uID0gIjEuMC41IgpidWlsZCA9IGZhbHNlCmluY2x1ZGUgPSBbCiAgICAiYnVpbGQucnMiLAogICAgInNyYy8qKi8qIiwKICAgICJDYXJnby50b21sIiwKICAgICJDYXJnby5sb2NrIiwKICAgICJMSUNFTlNFKiIsCiAgICAiUkVBRE1FLm1kIiwKICAgICJleGFtcGxlcy8qKi8qIiwKXQphdXRvbGliID0gZmFsc2UKYXV0b2JpbnMgPSBmYWxzZQphdXRvZXhhbXBsZXMgPSBmYWxzZQphdXRvdGVzdHMgPSBmYWxzZQphdXRvYmVuY2hlcyA9IGZhbHNlCmRlc2NyaXB0aW9uID0gIkdsb2JhbCBvdmVycmlkZSBvZiBjb2xvciBjb250cm9sIgpyZWFkbWUgPSAiLi4vLi4vLi4vZG9jcy91cHN0cmVhbS9jb2xvcmNob2ljZS0xLjAuNS9SRUFETUUubWQiCmtleXdvcmRzID0gWwogICAgImNsaSIsCiAgICAiY29sb3IiLAogICAgIm5vLXN0ZCIsCiAgICAidGVybWluYWwiLAogICAgImFuc2kiLApdCmNhdGVnb3JpZXMgPSBbImNvbW1hbmQtbGluZS1pbnRlcmZhY2UiXQpsaWNlbnNlID0gIk1JVCBPUiBBcGFjaGUtMi4wIgpyZXBvc2l0b3J5ID0gImh0dHBzOi8vZ2l0aHViLmNvbS9ydXN0LWNsaS9hbnN0eWxlLmdpdCIKCltsaWJdCm5hbWUgPSAiY29sb3JjaG9pY2UiCnBhdGggPSAic3JjL2xpYi5ycyIKCltsaW50cy5jbGlwcHldCmJvb2xfYXNzZXJ0X2NvbXBhcmlzb24gPSAiYWxsb3ciCmJyYW5jaGVzX3NoYXJpbmdfY29kZSA9ICJhbGxvdyIKY2hlY2tlZF9jb252ZXJzaW9ucyA9ICJ3YXJuIgpjb2xsYXBzaWJsZV9lbHNlX2lmID0gImFsbG93IgpjcmVhdGVfZGlyID0gIndhcm4iCmRiZ19tYWNybyA9ICJ3YXJuIgpkZWJ1Z19hc3NlcnRfd2l0aF9tdXRfY2FsbCA9ICJ3YXJuIgpkb2NfbWFya2Rvd24gPSAid2FybiIKZW1wdHlfZW51bXMgPSAid2FybiIKZW51bV9nbG9iX3VzZSA9ICJ3YXJuIgpleHBsX2ltcGxfY2xvbmVfb25fY29weSA9ICJ3YXJuIgpleHBsaWNpdF9kZXJlZl9tZXRob2RzID0gIndhcm4iCmV4cGxpY2l0X2ludG9faXRlcl9sb29wID0gIndhcm4iCmZhbGxpYmxlX2ltcGxfZnJvbSA9ICJ3YXJuIgpmaWx0ZXJfbWFwX25leHQgPSAid2FybiIKZmxhdF9tYXBfb3B0aW9uID0gIndhcm4iCmZsb2F0X2NtcF9jb25zdCA9ICJ3YXJuIgpmbl9wYXJhbXNfZXhjZXNzaXZlX2Jvb2xzID0gIndhcm4iCmZyb21faXRlcl9pbnN0ZWFkX29mX2NvbGxlY3QgPSAid2FybiIKaWZfc2FtZV90aGVuX2Vsc2UgPSAiYWxsb3ciCmltcGxpY2l0X2Nsb25lID0gIndhcm4iCmltcHJlY2lzZV9mbG9wcyA9ICJ3YXJuIgppbmNvbnNpc3RlbnRfc3RydWN0X2NvbnN0cnVjdG9yID0gIndhcm4iCmluZWZmaWNpZW50X3RvX3N0cmluZyA9ICJ3YXJuIgppbmZpbml0ZV9sb29wID0gIndhcm4iCmludmFsaWRfdXBjYXN0X2NvbXBhcmlzb25zID0gIndhcm4iCmxhcmdlX2RpZ2l0X2dyb3VwcyA9ICJ3YXJuIgpsYXJnZV9zdGFja19hcnJheXMgPSAid2FybiIKbGFyZ2VfdHlwZXNfcGFzc2VkX2J5X3ZhbHVlID0gIndhcm4iCmxldF9hbmRfcmV0dXJuID0gImFsbG93IgpsaW5rZWRsaXN0ID0gIndhcm4iCmxvc3N5X2Zsb2F0X2xpdGVyYWwgPSAid2FybiIKbWFjcm9fdXNlX2ltcG9ydHMgPSAid2FybiIKbWVtX2ZvcmdldCA9ICJ3YXJuIgptdXRleF9pbnRlZ2VyID0gIndhcm4iCm5lZWRsZXNzX2NvbnRpbnVlID0gImFsbG93IgpuZWVkbGVzc19mb3JfZWFjaCA9ICJ3YXJuIgpuZWdhdGl2ZV9mZWF0dXJlX25hbWVzID0gIndhcm4iCnBhdGhfYnVmX3B1c2hfb3ZlcndyaXRlID0gIndhcm4iCnB0cl9hc19wdHIgPSAid2FybiIKcmNfbXV0ZXggPSAid2FybiIKcmVkdW5kYW50X2ZlYXR1cmVfbmFtZXMgPSAid2FybiIKcmVmX29wdGlvbl9yZWYgPSAid2FybiIKcmVzdF9wYXRfaW5fZnVsbHlfYm91bmRfc3RydWN0cyA9ICJ3YXJuIgpyZXN1bHRfbGFyZ2VfZXJyID0gImFsbG93IgpzYW1lX2Z1bmN0aW9uc19pbl9pZl9jb25kaXRpb24gPSAid2FybiIKc2VsZl9uYW1lZF9tb2R1bGVfZmlsZXMgPSAid2FybiIKc2VtaWNvbG9uX2lmX25vdGhpbmdfcmV0dXJuZWQgPSAid2FybiIKc3RyX3RvX3N0cmluZyA9ICJ3YXJuIgpzdHJpbmdfYWRkID0gIndhcm4iCnN0cmluZ19hZGRfYXNzaWduID0gIndhcm4iCnN0cmluZ19saXRfYXNfYnl0ZXMgPSAid2FybiIKdG9kbyA9ICJ3YXJuIgp0cmFpdF9kdXBsaWNhdGlvbl9pbl9ib3VuZHMgPSAid2FybiIKdW5pbmxpbmVkX2Zvcm1hdF9hcmdzID0gIndhcm4iCnZlcmJvc2VfZmlsZV9yZWFkcyA9ICJ3YXJuIgp3aWxkY2FyZF9pbXBvcnRzID0gIndhcm4iCnplcm9fc2l6ZWRfbWFwX3ZhbHVlcyA9ICJ3YXJuIgoKW2xpbnRzLnJ1c3RdCnVubmFtZWFibGVfdHlwZXMgPSAid2FybiIKdW5yZWFjaGFibGVfcHViID0gIndhcm4iCnVuc2FmZV9vcF9pbl91bnNhZmVfZm4gPSAid2FybiIKdW51c2VkX2xpZmV0aW1lcyA9ICJ3YXJuIgp1bnVzZWRfbWFjcm9fcnVsZXMgPSAid2FybiIKdW51c2VkX3F1YWxpZmljYXRpb25zID0gIndhcm4iCgpbbGludHMucnVzdC5ydXN0XzIwMThfaWRpb21zXQpsZXZlbCA9ICJ3YXJuIgpwcmlvcml0eSA9IC0xCg=="
+          },
+          "src/lib.rs": {
+            "destination": "src/choice.rs"
+          }
+        }
+      },
+      "input_history": {},
+      "inputs": [
+        {
+          "external_tests": {
+            "bytes": 2511,
+            "directory": "src/foundation/anstyle",
+            "file_count": 4,
+            "files": [
+              {
+                "path": "test/foundation/anstyle/functions/src/style/print_size_of_431.rs",
+                "sha256": "c72c793f33efbe5c52b09ac6e9e8b26f1ad874d455d7ee679659fab716175894",
+                "source": "src/foundation/anstyle/src/style.rs",
+                "source_sha256_before": "6f5eee7892f10df47bc07dd8f5715ee5d0c438cba53b63b72dce0843423b42bd"
+              },
+              {
+                "path": "test/foundation/anstyle/unit/src/color/test_644.rs",
+                "sha256": "db8af56a49188afee161285aa4ab7311c1442afa8ed69aea5750fb0b832e73fe",
+                "source": "src/foundation/anstyle/src/color.rs",
+                "source_sha256_before": "fc82bbfc225372584c1985ecb11e744ec0e59d8c208ad404c98846759eb01f4b"
+              },
+              {
+                "path": "test/foundation/anstyle/unit/src/effect/test_381.rs",
+                "sha256": "a8c226114b3a6fb278a566174c689abf8fe482c21036116662cbab32994ff5f3",
+                "source": "src/foundation/anstyle/src/effect.rs",
+                "source_sha256_before": "ed72ba456c4804ff6669f41ee0754bf8e2d974c2217e3eeac0d4d23202b81289"
+              },
+              {
+                "path": "test/foundation/anstyle/unit/src/reset/test_24.rs",
+                "sha256": "6b5fc2c86d9d719299188070778db30360d0c75dce62be13c60f951eef21d242",
+                "source": "src/foundation/anstyle/src/reset.rs",
+                "source_sha256_before": "456baf708f7d595369d2d852427d1891208a9fad5e21291be3217c4e69114faf"
+              }
+            ],
+            "origin_directory": "vendor/rust/anstyle-1.0.14",
+            "roots": [
+              "test/foundation/anstyle"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（4463 字节）；保留文档编译、真实测试及性能基准输入。",
+            "description": "ANSI text styling",
+            "directory": "src/foundation/anstyle",
+            "files_sha256": {
+              "Cargo.toml": "02271a80a16c1a9f70d53bf83155f14b44a42fd8269f161b89cdfe20b41d32ee",
+              "src/color.rs": "83c799980fd4f9b93d3b61c8f039589cf41b0d9d35de236aaeaffa65fcf7ca8f",
+              "src/effect.rs": "67a05c2a4a4173920ce093485439172d374980bbec08d804f5a45d0b20397d88",
+              "src/lib.rs": "d4b426d4bdba644829afcdc88cc711794b0f5efa27963127ec946ce943fb57ef",
+              "src/macros.rs": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
+              "src/reset.rs": "3f73556d3ba00e5af4951823d9ef158d7c9a42e7f01604fa7a76c03aa7976be1",
+              "src/style.rs": "687ef7d0ae6db4635bfe9e48c315e93bca69f1a7e16f994f846f7f114c5d77ab"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/anstyle-1.0.14/LICENSE-APACHE",
+              "compliance/licenses/upstream/anstyle-1.0.14/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "anstyle",
+            "origin_directory": "vendor/rust/anstyle-1.0.14",
+            "repository": "https://github.com/rust-cli/anstyle.git",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000",
+              "archive_url": "https://static.crates.io/crates/anstyle/anstyle-1.0.14.crate",
+              "name": "anstyle",
+              "version": "1.0.14"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "0fe6f0ff6d52e9f91d4071199bd0b24bd46f3d35"
+              },
+              "path_in_vcs": "crates/anstyle"
+            },
+            "version": "1.0.14"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 8129,
+            "directory": "src/foundation/anstyle-parse",
+            "file_count": 2,
+            "files": [
+              {
+                "path": "test/foundation/anstyle-parse/modules/src/state/codegen.rs",
+                "sha256": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787",
+                "source": "src/foundation/anstyle-parse/src/state/codegen.rs",
+                "source_sha256_before": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787"
+              },
+              {
+                "path": "test/foundation/anstyle-parse/unit/src/state/definitions/tests_132.rs",
+                "sha256": "350f009901ee90f1abae0b00171fc4c4b98687c591635ad0e83e96eef7a80d47",
+                "source": "src/foundation/anstyle-parse/src/state/definitions.rs",
+                "source_sha256_before": "8a819bd7238edeb02aff3697e07fadfb8978a00f9f255812838326b904010e82"
+              }
+            ],
+            "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+            "roots": [
+              "test/foundation/anstyle-parse"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（1961 字节）；保留文档编译、真实测试及性能基准输入。",
+            "description": "Parse ANSI Style Escapes",
+            "directory": "src/foundation/anstyle-parse",
+            "files_sha256": {
+              "Cargo.toml": "3068edd1ffeae19bc234a2c022a1609c64f255c472302dd865ee0311e5e5cf1d",
+              "src/lib.rs": "af2c77e90996cb02cab0298cf391938dc8e7e96cc535306289f2e352e2ea8be3",
+              "src/params.rs": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
+              "src/state/definitions.rs": "931bacbf54f7f52d4b1b6604f6b62169bc2db26bb66bfcb2f7178475be3d8f8f",
+              "src/state/mod.rs": "7df733fde70950ce9cc52dd8ed24973de485ccfd1dd31ff7a8678d9a508ff5f9",
+              "src/state/table.rs": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/anstyle-parse-1.0.0/LICENSE-APACHE",
+              "compliance/licenses/upstream/anstyle-parse-1.0.0/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "anstyle-parse",
+            "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+            "repository": "https://github.com/rust-cli/anstyle.git",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "52ce7f38b242319f7cabaa6813055467063ecdc9d355bbb4ce0c68908cd8130e",
+              "archive_url": "https://static.crates.io/crates/anstyle-parse/anstyle-parse-1.0.0.crate",
+              "name": "anstyle-parse",
+              "version": "1.0.0"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "3048fe7820055a6c995170d822e725c62b3d63e1"
+              },
+              "path_in_vcs": "crates/anstyle-parse"
+            },
+            "version": "1.0.0"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 349,
+            "directory": "src/foundation/anstyle-query",
+            "file_count": 1,
+            "files": [
+              {
+                "path": "test/foundation/anstyle-query/unit/src/lib/test_141.rs",
+                "sha256": "3d4c498ab71e61bff9961c81ba71197becc57d9d773f20b3643f15ce07c2ba3a",
+                "source": "src/foundation/anstyle-query/src/lib.rs",
+                "source_sha256_before": "d5479a2adc069f5433bec10f7275c56a7406589b98c6c313efea2bfa6e31bdbd"
+              }
+            ],
+            "origin_directory": "vendor/rust/anstyle-query-1.1.5",
+            "roots": [
+              "test/foundation/anstyle-query"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（835 字节）；保留文档编译、真实测试及性能基准输入。",
+            "description": "Look up colored console capabilities",
+            "directory": "src/foundation/anstyle-query",
+            "files_sha256": {
+              "Cargo.toml": "5a1216b5bdadf5cc2e92e6ed6ea6ff442b86dabf1236d6e8afd86401a3f1b0cf",
+              "src/lib.rs": "dadb681c4c5f30a3287c7a46560bdf48bd2f6be3b5339b7e5b73e752baed190b",
+              "src/windows.rs": "76a8355df494a8152395377b7b9568615ea8fd9d6ab8ec998c6de1deb271697e"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/anstyle-query-1.1.5/LICENSE-APACHE",
+              "compliance/licenses/upstream/anstyle-query-1.1.5/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "anstyle-query",
+            "origin_directory": "vendor/rust/anstyle-query-1.1.5",
+            "repository": "https://github.com/rust-cli/anstyle.git",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc",
+              "archive_url": "https://static.crates.io/crates/anstyle-query/anstyle-query-1.1.5.crate",
+              "name": "anstyle-query",
+              "version": "1.1.5"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "368a8719474357f9d54be800b4163c9074561e37"
+              },
+              "path_in_vcs": "crates/anstyle-query"
+            },
+            "version": "1.1.5"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 605,
+            "directory": "src/foundation/colorchoice",
+            "file_count": 1,
+            "files": [
+              {
+                "path": "test/foundation/colorchoice/unit/src/lib/test_87.rs",
+                "sha256": "b5bf729cfde820084a3240b8b4eb9400e86b06d096c26e67192216cd7265fd66",
+                "source": "src/foundation/colorchoice/src/lib.rs",
+                "source_sha256_before": "d623c7405a52e1fd0d62149e862ab66ff643086ce915dfda0adb1c2c0046f987"
+              }
+            ],
+            "origin_directory": "vendor/rust/colorchoice-1.0.5",
+            "roots": [
+              "test/foundation/colorchoice"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "Global override of color control",
+            "directory": "src/foundation/colorchoice",
+            "files_sha256": {
+              "Cargo.toml": "20633f3c901dae63b12e2471ed9d664ac1279442c9d5ffb1f88b57291fc6a3f6",
+              "src/lib.rs": "4d8858bff495c86ab4df45eb03a0dbe3c5bd3884b166113df9e0dc7e889c78f8"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/colorchoice-1.0.5/LICENSE-APACHE",
+              "compliance/licenses/upstream/colorchoice-1.0.5/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "colorchoice",
+            "origin_directory": "vendor/rust/colorchoice-1.0.5",
+            "repository": "https://github.com/rust-cli/anstyle.git",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570",
+              "archive_url": "https://static.crates.io/crates/colorchoice/colorchoice-1.0.5.crate",
+              "name": "colorchoice",
+              "version": "1.0.5"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "0fe6f0ff6d52e9f91d4071199bd0b24bd46f3d35"
+              },
+              "path_in_vcs": "crates/colorchoice"
+            },
+            "version": "1.0.5"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 12438,
+            "directory": "src/foundation/anstream",
+            "file_count": 5,
+            "files": [
+              {
+                "path": "test/foundation/anstream/unit/src/adapter/strip/test_369.rs",
+                "sha256": "5914cd74a1219f42c2df1f1fffd2ac23f9db6ee40887743bf043a47c6ddf27e5",
+                "source": "src/foundation/anstream/src/adapter/strip.rs",
+                "source_sha256_before": "642375f9dc5836eb5aa6eba7be849a84786d22764d470672bf1f646061254c1c"
+              },
+              {
+                "path": "test/foundation/anstream/unit/src/adapter/wincon/test_301.rs",
+                "sha256": "cd680fe9b6db26ff6bc4ba2035da6281e033e1162876b52edfb160909ce980d8",
+                "source": "src/foundation/anstream/src/adapter/wincon.rs",
+                "source_sha256_before": "88607742fb7bbfb85e122a8dcc3188ef7c15ef332063af3a8939701dad05b90a"
+              },
+              {
+                "path": "test/foundation/anstream/unit/src/stream/tests_283.rs",
+                "sha256": "e8a48131eeea6b0fe5956e442e94b3289d247ab080d97faa8be26b5b9cbca196",
+                "source": "src/foundation/anstream/src/stream.rs",
+                "source_sha256_before": "c7d9526dd1ca217f6f5462780f3d1bf4a32b22ff7285284fd4fc8c4164e1791a"
+              },
+              {
+                "path": "test/foundation/anstream/unit/src/strip/test_172.rs",
+                "sha256": "3b2a5925faeb00667c4b6a006ebed5bcd96ed0f2d976bd56d4b4d8eed9bc4b72",
+                "source": "src/foundation/anstream/src/strip.rs",
+                "source_sha256_before": "0268bdc9155fc91bd7e92337c5e3ba96999780b46fab311b00922c7a3047233c"
+              },
+              {
+                "path": "test/foundation/anstream/unit/src/wincon/test_171.rs",
+                "sha256": "45e91c478a8f7d5ba567dbddd5ecd1e8bdd3e8ce6620d8e2c05aaeb026ff271b",
+                "source": "src/foundation/anstream/src/wincon.rs",
+                "source_sha256_before": "46067373ab01154b014bb3cf77edbc5fa9abea6633c90e4cc02235b31c19bf74"
+              }
+            ],
+            "origin_directory": "vendor/rust/anstream-1.0.0",
+            "roots": [
+              "test/foundation/anstream"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（5013 字节）；保留文档编译、真实测试及性能基准输入。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
+            "description": "IO stream adapters for writing colored text that will gracefully degrade according to your terminal's capabilities.",
+            "directory": "src/foundation/anstream",
+            "files_sha256": {
+              "Cargo.toml": "1b4a5447407982ffd2b6c19c44c84145968f8110461026fd2927ff6d598ff3c8",
+              "src/_macros.rs": "04590ef86f86bb67fb11580ab101caffde4d36da84652537da20424b72c8729a",
+              "src/adapter/mod.rs": "baf4237ea0b18df63609e49d93572ca27c2202a4cbec0220adb5a7e815c7d8ed",
+              "src/adapter/strip.rs": "04679b14e96eae85a2c764e54906978d025f9c33ab53f69ae470299995845e69",
+              "src/adapter/wincon.rs": "b469f081e6d2f81d6e5d544e01f432e589bbc3d6a367176f3217dfddd5289741",
+              "src/auto.rs": "95d6a56aeabac70fef9b6453b6d51355c7ecd6b1fb56d3072d9ae6cfca849aaa",
+              "src/buffer.rs": "f223bf9622044b86dbb3ed64fd51359f40bc5f0c1b9467d789143a0fa4b0ed80",
+              "src/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
+              "src/lib.rs": "f23e8840dd266e4ff43dcfa2f6c69f839ec436aae407cc9221c9e4d3a6b2695f",
+              "src/stream.rs": "fe6fc62a12178948d4a0c2b38df1aed415f9283e23c0d9d99d69c79c2d607fc3",
+              "src/strip.rs": "453acaefd6cc139a0536d6729e36fe3d13fc078c08f12f097b8a569ceb0adc07",
+              "src/wincon.rs": "661258dc394e90e815cfc31c3c0f7bb2863a3c04d1566532c64f96b8cb3a61b2"
+            },
+            "license": "MIT OR Apache-2.0",
+            "license_materials": [
+              "compliance/licenses/upstream/anstream-1.0.0/LICENSE-APACHE",
+              "compliance/licenses/upstream/anstream-1.0.0/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "anstream",
+            "origin_directory": "vendor/rust/anstream-1.0.0",
+            "repository": "https://github.com/rust-cli/anstyle.git",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "824a212faf96e9acacdbd09febd34438f8f711fb84e09a8916013cd7815ca28d",
+              "archive_url": "https://static.crates.io/crates/anstream/anstream-1.0.0.crate",
+              "name": "anstream",
+              "version": "1.0.0"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "3048fe7820055a6c995170d822e725c62b3d63e1"
+              },
+              "path_in_vcs": "crates/anstream"
+            },
+            "version": "1.0.0"
+          }
+        }
+      ],
+      "new_files": {},
+      "primary_directory": "src/foundation/anstyle",
+      "reason": "Consolidate ANSI style, parser, native output and global color choice behind explicit capabilities; remove unsupported Windows backends and unused exported macros, retaining exact original source archives and all external tests."
+    },
     "eafb0b4185a7c210506e15a28d87995a7ff4898a240281ec013b11ec70a2acd3": {
       "destination_directory": "src/foundation/futures",
       "destination_external_tests": {
@@ -33036,7 +33777,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "36c503c3afcaaaf0c4aa91ae41213c9751df1689f3fd62079eb2ad048200bf27",
+    "compliance/external-tests/foundation.json": "dc9b9189c1ccd8bd922466c312d69b166e5ca0b303f0f4fff678c65fb505df6f",
     "compliance/external-tests/integrated.json": "b9d3cdc7b7678cb7dec3dff2b120b11d1754ddc86ec66194ce97d53a4f8d2033",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -33134,122 +33875,6 @@
       "origin_directory": "vendor/rust/ahash-0.8.12",
       "roots": [
         "test/foundation/ahash"
-      ]
-    },
-    "src/foundation/anstream": {
-      "bytes": 12438,
-      "directory": "src/foundation/anstream",
-      "file_count": 5,
-      "files": [
-        {
-          "path": "test/foundation/anstream/unit/src/adapter/strip/test_369.rs",
-          "sha256": "5914cd74a1219f42c2df1f1fffd2ac23f9db6ee40887743bf043a47c6ddf27e5",
-          "source": "src/foundation/anstream/src/adapter/strip.rs",
-          "source_sha256_before": "642375f9dc5836eb5aa6eba7be849a84786d22764d470672bf1f646061254c1c"
-        },
-        {
-          "path": "test/foundation/anstream/unit/src/adapter/wincon/test_301.rs",
-          "sha256": "cd680fe9b6db26ff6bc4ba2035da6281e033e1162876b52edfb160909ce980d8",
-          "source": "src/foundation/anstream/src/adapter/wincon.rs",
-          "source_sha256_before": "88607742fb7bbfb85e122a8dcc3188ef7c15ef332063af3a8939701dad05b90a"
-        },
-        {
-          "path": "test/foundation/anstream/unit/src/stream/tests_283.rs",
-          "sha256": "e8a48131eeea6b0fe5956e442e94b3289d247ab080d97faa8be26b5b9cbca196",
-          "source": "src/foundation/anstream/src/stream.rs",
-          "source_sha256_before": "c7d9526dd1ca217f6f5462780f3d1bf4a32b22ff7285284fd4fc8c4164e1791a"
-        },
-        {
-          "path": "test/foundation/anstream/unit/src/strip/test_172.rs",
-          "sha256": "3b2a5925faeb00667c4b6a006ebed5bcd96ed0f2d976bd56d4b4d8eed9bc4b72",
-          "source": "src/foundation/anstream/src/strip.rs",
-          "source_sha256_before": "0268bdc9155fc91bd7e92337c5e3ba96999780b46fab311b00922c7a3047233c"
-        },
-        {
-          "path": "test/foundation/anstream/unit/src/wincon/test_171.rs",
-          "sha256": "45e91c478a8f7d5ba567dbddd5ecd1e8bdd3e8ce6620d8e2c05aaeb026ff271b",
-          "source": "src/foundation/anstream/src/wincon.rs",
-          "source_sha256_before": "46067373ab01154b014bb3cf77edbc5fa9abea6633c90e4cc02235b31c19bf74"
-        }
-      ],
-      "origin_directory": "vendor/rust/anstream-1.0.0",
-      "roots": [
-        "test/foundation/anstream"
-      ]
-    },
-    "src/foundation/anstyle": {
-      "bytes": 2511,
-      "directory": "src/foundation/anstyle",
-      "file_count": 4,
-      "files": [
-        {
-          "path": "test/foundation/anstyle/functions/src/style/print_size_of_431.rs",
-          "sha256": "c72c793f33efbe5c52b09ac6e9e8b26f1ad874d455d7ee679659fab716175894",
-          "source": "src/foundation/anstyle/src/style.rs",
-          "source_sha256_before": "6f5eee7892f10df47bc07dd8f5715ee5d0c438cba53b63b72dce0843423b42bd"
-        },
-        {
-          "path": "test/foundation/anstyle/unit/src/color/test_644.rs",
-          "sha256": "db8af56a49188afee161285aa4ab7311c1442afa8ed69aea5750fb0b832e73fe",
-          "source": "src/foundation/anstyle/src/color.rs",
-          "source_sha256_before": "fc82bbfc225372584c1985ecb11e744ec0e59d8c208ad404c98846759eb01f4b"
-        },
-        {
-          "path": "test/foundation/anstyle/unit/src/effect/test_381.rs",
-          "sha256": "a8c226114b3a6fb278a566174c689abf8fe482c21036116662cbab32994ff5f3",
-          "source": "src/foundation/anstyle/src/effect.rs",
-          "source_sha256_before": "ed72ba456c4804ff6669f41ee0754bf8e2d974c2217e3eeac0d4d23202b81289"
-        },
-        {
-          "path": "test/foundation/anstyle/unit/src/reset/test_24.rs",
-          "sha256": "6b5fc2c86d9d719299188070778db30360d0c75dce62be13c60f951eef21d242",
-          "source": "src/foundation/anstyle/src/reset.rs",
-          "source_sha256_before": "456baf708f7d595369d2d852427d1891208a9fad5e21291be3217c4e69114faf"
-        }
-      ],
-      "origin_directory": "vendor/rust/anstyle-1.0.14",
-      "roots": [
-        "test/foundation/anstyle"
-      ]
-    },
-    "src/foundation/anstyle-parse": {
-      "bytes": 8129,
-      "directory": "src/foundation/anstyle-parse",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/anstyle-parse/modules/src/state/codegen.rs",
-          "sha256": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787",
-          "source": "src/foundation/anstyle-parse/src/state/codegen.rs",
-          "source_sha256_before": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787"
-        },
-        {
-          "path": "test/foundation/anstyle-parse/unit/src/state/definitions/tests_132.rs",
-          "sha256": "350f009901ee90f1abae0b00171fc4c4b98687c591635ad0e83e96eef7a80d47",
-          "source": "src/foundation/anstyle-parse/src/state/definitions.rs",
-          "source_sha256_before": "8a819bd7238edeb02aff3697e07fadfb8978a00f9f255812838326b904010e82"
-        }
-      ],
-      "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
-      "roots": [
-        "test/foundation/anstyle-parse"
-      ]
-    },
-    "src/foundation/anstyle-query": {
-      "bytes": 349,
-      "directory": "src/foundation/anstyle-query",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/anstyle-query/unit/src/lib/test_141.rs",
-          "sha256": "3d4c498ab71e61bff9961c81ba71197becc57d9d773f20b3643f15ce07c2ba3a",
-          "source": "src/foundation/anstyle-query/src/lib.rs",
-          "source_sha256_before": "d5479a2adc069f5433bec10f7275c56a7406589b98c6c313efea2bfa6e31bdbd"
-        }
-      ],
-      "origin_directory": "vendor/rust/anstyle-query-1.1.5",
-      "roots": [
-        "test/foundation/anstyle-query"
       ]
     },
     "src/foundation/anyhow": {
@@ -35754,25 +36379,8 @@
         "test/foundation/cmov"
       ]
     },
-    "src/foundation/colorchoice": {
-      "bytes": 605,
-      "directory": "src/foundation/colorchoice",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/colorchoice/unit/src/lib/test_87.rs",
-          "sha256": "b5bf729cfde820084a3240b8b4eb9400e86b06d096c26e67192216cd7265fd66",
-          "source": "src/foundation/colorchoice/src/lib.rs",
-          "source_sha256_before": "d623c7405a52e1fd0d62149e862ab66ff643086ce915dfda0adb1c2c0046f987"
-        }
-      ],
-      "origin_directory": "vendor/rust/colorchoice-1.0.5",
-      "roots": [
-        "test/foundation/colorchoice"
-      ]
-    },
     "src/foundation/command-line": {
-      "bytes": 37783,
+      "bytes": 37797,
       "directory": "src/foundation/command-line",
       "file_count": 25,
       "files": [
@@ -35856,7 +36464,7 @@
         {
           "origin_directory": "vendor/rust/clap_builder-4.6.7",
           "path": "test/foundation/command-line/builder/unit/src/builder/styled_str/wrap_tests_223.rs",
-          "sha256": "19af71afca78b4adf6df490163c1b1df23e1bb77c091c0c1959516a0f1f97701",
+          "sha256": "335c3ba4a2b430c429da2ac2dca64f48855d22317cf48c5be7787bc1bcac8f12",
           "source": "src/foundation/clap_builder/src/builder/styled_str.rs",
           "source_sha256_before": "e09663bcbd99b283794618331a8c31cbbf0f321ddd63c1bf5f118c45e084d751"
         },
@@ -52886,6 +53494,108 @@
         "test/foundation/tempfile"
       ]
     },
+    "src/foundation/terminal-style": {
+      "bytes": 24474,
+      "directory": "src/foundation/terminal-style",
+      "file_count": 13,
+      "files": [
+        {
+          "origin_directory": "vendor/rust/anstyle-1.0.14",
+          "path": "test/foundation/terminal-style/anstyle/functions/src/style/print_size_of_431.rs",
+          "sha256": "c72c793f33efbe5c52b09ac6e9e8b26f1ad874d455d7ee679659fab716175894",
+          "source": "src/foundation/anstyle/src/style.rs",
+          "source_sha256_before": "6f5eee7892f10df47bc07dd8f5715ee5d0c438cba53b63b72dce0843423b42bd"
+        },
+        {
+          "origin_directory": "vendor/rust/anstyle-1.0.14",
+          "path": "test/foundation/terminal-style/anstyle/unit/src/color/test_644.rs",
+          "sha256": "db8af56a49188afee161285aa4ab7311c1442afa8ed69aea5750fb0b832e73fe",
+          "source": "src/foundation/anstyle/src/color.rs",
+          "source_sha256_before": "fc82bbfc225372584c1985ecb11e744ec0e59d8c208ad404c98846759eb01f4b"
+        },
+        {
+          "origin_directory": "vendor/rust/anstyle-1.0.14",
+          "path": "test/foundation/terminal-style/anstyle/unit/src/effect/test_381.rs",
+          "sha256": "a8c226114b3a6fb278a566174c689abf8fe482c21036116662cbab32994ff5f3",
+          "source": "src/foundation/anstyle/src/effect.rs",
+          "source_sha256_before": "ed72ba456c4804ff6669f41ee0754bf8e2d974c2217e3eeac0d4d23202b81289"
+        },
+        {
+          "origin_directory": "vendor/rust/anstyle-1.0.14",
+          "path": "test/foundation/terminal-style/anstyle/unit/src/reset/test_24.rs",
+          "sha256": "6b5fc2c86d9d719299188070778db30360d0c75dce62be13c60f951eef21d242",
+          "source": "src/foundation/anstyle/src/reset.rs",
+          "source_sha256_before": "456baf708f7d595369d2d852427d1891208a9fad5e21291be3217c4e69114faf"
+        },
+        {
+          "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+          "path": "test/foundation/terminal-style/anstyle-parse/modules/src/state/codegen.rs",
+          "sha256": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787",
+          "source": "src/foundation/anstyle-parse/src/state/codegen.rs",
+          "source_sha256_before": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787"
+        },
+        {
+          "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+          "path": "test/foundation/terminal-style/anstyle-parse/unit/src/state/definitions/tests_132.rs",
+          "sha256": "350f009901ee90f1abae0b00171fc4c4b98687c591635ad0e83e96eef7a80d47",
+          "source": "src/foundation/anstyle-parse/src/state/definitions.rs",
+          "source_sha256_before": "8a819bd7238edeb02aff3697e07fadfb8978a00f9f255812838326b904010e82"
+        },
+        {
+          "origin_directory": "vendor/rust/anstyle-query-1.1.5",
+          "path": "test/foundation/terminal-style/anstyle-query/unit/src/lib/test_141.rs",
+          "sha256": "3d4c498ab71e61bff9961c81ba71197becc57d9d773f20b3643f15ce07c2ba3a",
+          "source": "src/foundation/anstyle-query/src/lib.rs",
+          "source_sha256_before": "d5479a2adc069f5433bec10f7275c56a7406589b98c6c313efea2bfa6e31bdbd"
+        },
+        {
+          "origin_directory": "vendor/rust/colorchoice-1.0.5",
+          "path": "test/foundation/terminal-style/colorchoice/unit/src/lib/test_87.rs",
+          "sha256": "b5bf729cfde820084a3240b8b4eb9400e86b06d096c26e67192216cd7265fd66",
+          "source": "src/foundation/colorchoice/src/lib.rs",
+          "source_sha256_before": "d623c7405a52e1fd0d62149e862ab66ff643086ce915dfda0adb1c2c0046f987"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/adapter/strip/test_369.rs",
+          "sha256": "b2e95af85f9358b810deb703c745bf443d35ae9b9d7fd5cda3b93b31b2118657",
+          "source": "src/foundation/anstream/src/adapter/strip.rs",
+          "source_sha256_before": "642375f9dc5836eb5aa6eba7be849a84786d22764d470672bf1f646061254c1c"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/adapter/wincon/test_301.rs",
+          "sha256": "1899ffde1d7f7efe0a5cc738524fc2d5ac23b9a06a07cf42463e8c217990c0dd",
+          "source": "src/foundation/anstream/src/adapter/wincon.rs",
+          "source_sha256_before": "88607742fb7bbfb85e122a8dcc3188ef7c15ef332063af3a8939701dad05b90a"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/stream/tests_283.rs",
+          "sha256": "36cf91f18a72cd0aa69c6534cae2ffc974c57632505523f5c75c1b3454c05117",
+          "source": "src/foundation/anstream/src/stream.rs",
+          "source_sha256_before": "c7d9526dd1ca217f6f5462780f3d1bf4a32b22ff7285284fd4fc8c4164e1791a"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/strip/test_172.rs",
+          "sha256": "814f8bfd838533962e5c614afbc665af134e7dd398f885380a2aef12dacf735a",
+          "source": "src/foundation/anstream/src/strip.rs",
+          "source_sha256_before": "0268bdc9155fc91bd7e92337c5e3ba96999780b46fab311b00922c7a3047233c"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/wincon/test_171.rs",
+          "sha256": "55d0bc926e028b3cd26d9844287ba05f865687dc43438d96c974d3ab087b1cea",
+          "source": "src/foundation/anstream/src/wincon.rs",
+          "source_sha256_before": "46067373ab01154b014bb3cf77edbc5fa9abea6633c90e4cc02235b31c19bf74"
+        }
+      ],
+      "origin_directory": "vendor/rust/anstyle-1.0.14",
+      "roots": [
+        "test/foundation/terminal-style"
+      ]
+    },
     "src/foundation/thread_local": {
       "bytes": 6314,
       "directory": "src/foundation/thread_local",
@@ -59559,7 +60269,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "89d3ed283d4b97441fcca0cb62ba36908ac118f442e08d8ec82a16fd5f752c5b"
+    "Cargo.lock": "87976bf4978fe0bbd664df0ad8b14b7cd00e196c00fce4eb85379263fface528"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -59570,10 +60280,6 @@
     "src/engine/Cargo.toml": "1e52337ca8e1cf2f67344d35294f5064b383c3b1dd02cd9ac43bc76caf749706",
     "src/foundation/ahash/Cargo.toml": "389da41047121eca069180e5c73a5b5d408bbd171b59e5c4c72c8a85ab8455f1",
     "src/foundation/allocator-api2/Cargo.toml": "d3a2e919bdfed4776e9d0c68c6467d30335ca7d78f30ef277da034fce35afe69",
-    "src/foundation/anstream/Cargo.toml": "1b4a5447407982ffd2b6c19c44c84145968f8110461026fd2927ff6d598ff3c8",
-    "src/foundation/anstyle-parse/Cargo.toml": "3068edd1ffeae19bc234a2c022a1609c64f255c472302dd865ee0311e5e5cf1d",
-    "src/foundation/anstyle-query/Cargo.toml": "5a1216b5bdadf5cc2e92e6ed6ea6ff442b86dabf1236d6e8afd86401a3f1b0cf",
-    "src/foundation/anstyle/Cargo.toml": "02271a80a16c1a9f70d53bf83155f14b44a42fd8269f161b89cdfe20b41d32ee",
     "src/foundation/anyhow/Cargo.toml": "e0e454bcb6007aa477275ec737f89c5d6e5b0a3d43c3d08826954945a753542b",
     "src/foundation/argon2/Cargo.toml": "cf5aadb2ab7b0a2a71f26dcaade31903949b4aacc15bd801b83d4d4df761e70d",
     "src/foundation/arrayvec/Cargo.toml": "13233aaeb3ab6c046247cc29964b024e4c93388b25b6081fd415168edb5cdb96",
@@ -59601,9 +60307,8 @@
     "src/foundation/cfg-if/Cargo.toml": "5e6e62b7a2f061788516151826275f98605b95936d388934ab3e89b3a2fa453e",
     "src/foundation/clang-sys/Cargo.toml": "0b65c0125b0ae44a48e790f7fb12cc9a8d0704573a37df2acfc5da76da9653b2",
     "src/foundation/cmov/Cargo.toml": "e2803f1992f1b5a75658a0df51a52ea581d4af99146e86dbefee19cbfdf4c68f",
-    "src/foundation/colorchoice/Cargo.toml": "20633f3c901dae63b12e2471ed9d664ac1279442c9d5ffb1f88b57291fc6a3f6",
     "src/foundation/command-derive/Cargo.toml": "6d0dfeaafb92115be48cc129a686ee437a3e5df2855fa5829554377ba44434f3",
-    "src/foundation/command-line/Cargo.toml": "f77270f4bed56d7ada01a5646db7c91c235afa4ecedf570595fb0e36ece69147",
+    "src/foundation/command-line/Cargo.toml": "171aa6b5b9f0d017466e13b81ba8440a7c5b6999ebc0642188d968a34124e32f",
     "src/foundation/compression/Cargo.toml": "ec895e07da1cce9a439914b3eb9135c2695854e78355c258269c4eefcf68756d",
     "src/foundation/concurrent-collections/Cargo.toml": "945a84385e56ba3f076ba842320a1bd10d1d967581015e8411d8665aeb72e5b6",
     "src/foundation/console_error_panic_hook/Cargo.toml": "2100eae4b8d3be580f0939945d12c6aaeca869fcf4cabca009a2a2036b6b3fdb",
@@ -59624,7 +60329,7 @@
     "src/foundation/either/Cargo.toml": "2ba22fccbda9c75dbb61faa588046507eb28c7d71daa0302b7c3a142b59ce9bc",
     "src/foundation/email_address/Cargo.toml": "5bf588a3c1e7b9d1c50d4f73f4aa5eaed8fb320d5724fc63676c2806a5700765",
     "src/foundation/env_filter/Cargo.toml": "7fe801d55e1d54b3163bc5bcc06a2177fc011cd107d5bc52b67480b90ade475d",
-    "src/foundation/env_logger/Cargo.toml": "e15628c7b1c5c021c25f4f39220537ce7dba9d5eed145a86ea1654d9a93c5f4e",
+    "src/foundation/env_logger/Cargo.toml": "21d0fae4fb9b25dcca380edb88d8d3395ff0dd9c64965ca208263bc238153fe0",
     "src/foundation/equivalent/Cargo.toml": "aa0ce4f3911f935d92dc95ec1e0ff23ddde7bc2079f4bdbec220053fbd66cd94",
     "src/foundation/erased/Cargo.toml": "8f61e858b325f73d075c22e770c6e3c922768c5f5f9879c1034ff1e9bfe69130",
     "src/foundation/errno/Cargo.toml": "6124cd43b52f4fc37ca8d3153197e8a5f8d47769b48dad4f8a115d2040053e98",
@@ -59767,6 +60472,7 @@
     "src/foundation/system-entropy/Cargo.toml": "6f80d8b67297956fe84dded22c94656eec80a824c9aadf1a7e86975e659d2221",
     "src/foundation/task-dispatch/Cargo.toml": "33fd519e179cb46ee3100a11dc6cf7c172beea3c8b5fe2a5ab3297cbcbcbc6d0",
     "src/foundation/tempfile/Cargo.toml": "fa30af4edb4e6ea33aa4812a0fd00c3bce99a818372538976dc43fd3aa14b1cb",
+    "src/foundation/terminal-style/Cargo.toml": "59e41ab1e50ff1e08081d17440717c16401b7909dd88a2df39000de807674aa9",
     "src/foundation/thread_local/Cargo.toml": "7efef2ab12c7f2b364ab0d12a9bbf10144b943eee6d23629fdc88a69937e033c",
     "src/foundation/throw_error/Cargo.toml": "706e50e541bc1be149097732096bdfb9dd42f118036f65acfb9d742abe03aedb",
     "src/foundation/tinystr/Cargo.toml": "b57aba82d8a308d81297457bf036b3cd490b3f20e9b8ce4c0c9c7b17279fbb32",
@@ -60185,7 +60891,7 @@
       "description": "A simple to use, efficient, and full-featured Command Line Argument Parser",
       "directory": "src/foundation/command-line",
       "files_sha256": {
-        "Cargo.toml": "f77270f4bed56d7ada01a5646db7c91c235afa4ecedf570595fb0e36ece69147",
+        "Cargo.toml": "171aa6b5b9f0d017466e13b81ba8440a7c5b6999ebc0642188d968a34124e32f",
         "examples/cargo-example-derive.rs": "e5be7d57310b3e4a8413325552435cd3c1a944eaced1f78bcc95094ab112bfb8",
         "examples/cargo-example.rs": "7e7cf2a773dcc52d8abbecfaff380fa7fa4936e713742b388c11567faf60788b",
         "examples/demo.rs": "cfa40f6b0eedd137196557bc3f51ec23d6323e74f0113cdbaceefa8199ed74ea",
@@ -60286,21 +60992,21 @@
         "src/builder/range.rs": "15b81036a7fa9b1cd817f1946e1e1058ac9e8f4833808a2a2b320d8a342a2067",
         "src/builder/resettable.rs": "fc1565abcfacb4b19d6f1d3774fc3fa5d4b67a7024082a3e485e9386fd1a40fe",
         "src/builder/str.rs": "bd452447ebf41c1e0193e735d4d387887cde56b4972703147a8f19accd5bd533",
-        "src/builder/styled_str.rs": "cd16fd9feaf0853d392a355e631d94149bbdcc3d3f862b4ee990e195e973492b",
-        "src/builder/styling.rs": "df051af337a0e20a8dd8e02391137680cc0e62367111e3b017f1725b0d604566",
+        "src/builder/styled_str.rs": "5a2886b17de7e3928fafb046f2796204bafe3abcbcbf29205a15ded9a36f51c3",
+        "src/builder/styling.rs": "0a23b434edf9db03e8f8a7b0dde32a6f25ca5b39b801e66fb32515dd57c44b1d",
         "src/builder/value_hint.rs": "f5c39816ba558acc065810a8b37234005e23a7c836d8e44d26e1bb015cf9e78d",
         "src/builder/value_parser.rs": "15b656a2b9b54f6144fcbf4c48812380a3ae4cce646154cc35e9d0b0f83f5674",
         "src/derive.rs": "b13443d773bbd74da38f156b03d2b870e4edbc5860ce4b78818dc2d2e30a8425",
         "src/error/context.rs": "156d2611a349ce826378476c9dcb3242a01ad834a095baad096a10cc2f73e1ed",
-        "src/error/format.rs": "4d6ebf19760331de05cabcedffe33a297fab82c9252949d904e2fe88620ec50e",
+        "src/error/format.rs": "51e24294829c1d3b20d1eea396a775a66aa68a5d43565a6d082d5a5ff0863853",
         "src/error/kind.rs": "d7b11667622bdf8957b4ffbed89a9e1cd6af92390006c16214bb1dea19c3694e",
         "src/error/mod.rs": "b7ef1e30a074197276bbc63944662f4d6bc7724ad59f47ee53dd62d9bee8e4fe",
         "src/lexer/ext.rs": "ba417a08f66e02e005d5ba9b3b4bf6965db05402b01f48fdda900fd0953ecfe0",
         "src/lexer/mod.rs": "8c11d7c36844aba4a7021fa704da269fbea722cb59b5638cd28bc85d23a96a20",
         "src/lib.rs": "d1db0263ce1b7589d6540f472003e666b9fed243647ebda45e6c430d83f0fdc6",
-        "src/macros.rs": "d42d2dbd3c0e25c040660d1529e048a9d7380c7c2f85e8fc633390d3f290e32d",
+        "src/macros.rs": "5fa1fe229b5c9831f45449e7d7eec678f62248ae8331423cb649d5c36d558d5a",
         "src/mkeymap.rs": "7911271311ef9ab092069fe93e6b9d6b86d2637c50655f335a81361694c2edc9",
-        "src/output/fmt.rs": "7404d4b7a284d858c33b479dcc87e1197f5575481a77105b3ffc8c604b9a8f0e",
+        "src/output/fmt.rs": "ceaa54d8d3d311bb7cfd287b3c394638963828b9141edd641f9ee313ac40cd46",
         "src/output/help.rs": "b3bb6cfffe9c1113d377f1f4951a22b6ad2ba2813dcc55a146899c808cd393d3",
         "src/output/help_template.rs": "1bcb8d6907503c160f3488bb91207a25bf7b5f8d6671d17b06b1d347a69ad5fd",
         "src/output/mod.rs": "74ea52be8981c30d10fda3f6c80cf51aafb15700de99aa73bc94700bca25ae11",
@@ -60357,7 +61063,7 @@
       "description": "Minimal, flexible command line parser",
       "directory": "src/foundation/command-line",
       "files_sha256": {
-        "Cargo.toml": "f77270f4bed56d7ada01a5646db7c91c235afa4ecedf570595fb0e36ece69147",
+        "Cargo.toml": "171aa6b5b9f0d017466e13b81ba8440a7c5b6999ebc0642188d968a34124e32f",
         "examples/cargo-example-derive.rs": "e5be7d57310b3e4a8413325552435cd3c1a944eaced1f78bcc95094ab112bfb8",
         "examples/cargo-example.rs": "7e7cf2a773dcc52d8abbecfaff380fa7fa4936e713742b388c11567faf60788b",
         "examples/demo.rs": "cfa40f6b0eedd137196557bc3f51ec23d6323e74f0113cdbaceefa8199ed74ea",
@@ -60458,21 +61164,21 @@
         "src/builder/range.rs": "15b81036a7fa9b1cd817f1946e1e1058ac9e8f4833808a2a2b320d8a342a2067",
         "src/builder/resettable.rs": "fc1565abcfacb4b19d6f1d3774fc3fa5d4b67a7024082a3e485e9386fd1a40fe",
         "src/builder/str.rs": "bd452447ebf41c1e0193e735d4d387887cde56b4972703147a8f19accd5bd533",
-        "src/builder/styled_str.rs": "cd16fd9feaf0853d392a355e631d94149bbdcc3d3f862b4ee990e195e973492b",
-        "src/builder/styling.rs": "df051af337a0e20a8dd8e02391137680cc0e62367111e3b017f1725b0d604566",
+        "src/builder/styled_str.rs": "5a2886b17de7e3928fafb046f2796204bafe3abcbcbf29205a15ded9a36f51c3",
+        "src/builder/styling.rs": "0a23b434edf9db03e8f8a7b0dde32a6f25ca5b39b801e66fb32515dd57c44b1d",
         "src/builder/value_hint.rs": "f5c39816ba558acc065810a8b37234005e23a7c836d8e44d26e1bb015cf9e78d",
         "src/builder/value_parser.rs": "15b656a2b9b54f6144fcbf4c48812380a3ae4cce646154cc35e9d0b0f83f5674",
         "src/derive.rs": "b13443d773bbd74da38f156b03d2b870e4edbc5860ce4b78818dc2d2e30a8425",
         "src/error/context.rs": "156d2611a349ce826378476c9dcb3242a01ad834a095baad096a10cc2f73e1ed",
-        "src/error/format.rs": "4d6ebf19760331de05cabcedffe33a297fab82c9252949d904e2fe88620ec50e",
+        "src/error/format.rs": "51e24294829c1d3b20d1eea396a775a66aa68a5d43565a6d082d5a5ff0863853",
         "src/error/kind.rs": "d7b11667622bdf8957b4ffbed89a9e1cd6af92390006c16214bb1dea19c3694e",
         "src/error/mod.rs": "b7ef1e30a074197276bbc63944662f4d6bc7724ad59f47ee53dd62d9bee8e4fe",
         "src/lexer/ext.rs": "ba417a08f66e02e005d5ba9b3b4bf6965db05402b01f48fdda900fd0953ecfe0",
         "src/lexer/mod.rs": "8c11d7c36844aba4a7021fa704da269fbea722cb59b5638cd28bc85d23a96a20",
         "src/lib.rs": "d1db0263ce1b7589d6540f472003e666b9fed243647ebda45e6c430d83f0fdc6",
-        "src/macros.rs": "d42d2dbd3c0e25c040660d1529e048a9d7380c7c2f85e8fc633390d3f290e32d",
+        "src/macros.rs": "5fa1fe229b5c9831f45449e7d7eec678f62248ae8331423cb649d5c36d558d5a",
         "src/mkeymap.rs": "7911271311ef9ab092069fe93e6b9d6b86d2637c50655f335a81361694c2edc9",
-        "src/output/fmt.rs": "7404d4b7a284d858c33b479dcc87e1197f5575481a77105b3ffc8c604b9a8f0e",
+        "src/output/fmt.rs": "ceaa54d8d3d311bb7cfd287b3c394638963828b9141edd641f9ee313ac40cd46",
         "src/output/help.rs": "b3bb6cfffe9c1113d377f1f4951a22b6ad2ba2813dcc55a146899c808cd393d3",
         "src/output/help_template.rs": "1bcb8d6907503c160f3488bb91207a25bf7b5f8d6671d17b06b1d347a69ad5fd",
         "src/output/mod.rs": "74ea52be8981c30d10fda3f6c80cf51aafb15700de99aa73bc94700bca25ae11",
@@ -66910,6 +67616,214 @@
         "path_in_vcs": ""
       },
       "version": "0.2.2"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（1961 字节）；保留文档编译、真实测试及性能基准输入。",
+      "description": "Parse ANSI Style Escapes",
+      "directory": "src/foundation/terminal-style",
+      "files_sha256": {
+        "Cargo.toml": "59e41ab1e50ff1e08081d17440717c16401b7909dd88a2df39000de807674aa9",
+        "src/choice.rs": "92a7998603f0083c43e1c5d054478e01439b5fe22721a9b4c28cda06f2c3e542",
+        "src/color.rs": "6c30449bd12ac4b22834cb63d8cc1691843474bc185685fa4ce30200db24d674",
+        "src/effect.rs": "0804c98c78706be139b82c2441b827d907ec3f515c19cf667e9fcace82e75999",
+        "src/lib.rs": "934a5b563a584714e6c5745eb0b9fc3a0a0a886a75457dc7fe4a4e371a91aae5",
+        "src/macros.rs": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
+        "src/output/adapter/mod.rs": "6d34ac324cbbc51c7f3d3750e0cf277491c90af87deaf07c100457681a28a7e3",
+        "src/output/adapter/strip.rs": "c15aab55b654a0d05ac90f8df14e88eec58986ebafed16e7278dfb29ed6265d5",
+        "src/output/auto.rs": "cc77defd75b9585808c616beafe39f59e4f449ddd133550719b62d844aecec2f",
+        "src/output/buffer.rs": "e8da130c918a47b922e1a467496747f1af14840551af79d79774d5645b165d59",
+        "src/output/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
+        "src/output/mod.rs": "cccecdbe39d49c6b51dcc1969b420c445ff7f9d5f499a8e1ecae4385f4b89cda",
+        "src/output/stream.rs": "c14b76eb432a5d6c128e19e72d02974553e8a720cc2a8f522d6e75f893723afb",
+        "src/output/strip.rs": "ec7efc9ea3fc3d2d4075d0482300513dcee71f06d905a1880d5530e4762b8018",
+        "src/parser/mod.rs": "ae194effa38b8805071f4cdaea1eeed2fde14dcba4150e7225844e96afe84a4e",
+        "src/parser/params.rs": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
+        "src/parser/state/definitions.rs": "c854149add7382ed8c3d025503de8d2ce0a64006905dfb67098938055ae34e2a",
+        "src/parser/state/mod.rs": "e4af6f0293d0514fb456cc3591f2a10e6590716175abd46c0cd88d55d74e128e",
+        "src/parser/state/table.rs": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c",
+        "src/query.rs": "6a97a3ae12a275a25c3a2ff43de37efbdd6c4c94e979ece5852bc886055852aa",
+        "src/reset.rs": "d5f985622531647c0503abd8285f9a393a7c93d98a0bf198bcbd62e543238201",
+        "src/style.rs": "7ebce7c6d8131c828418048b5b4d23e0d1fd90dee6b74fd93931353285256f5c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/anstyle-parse-1.0.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/anstyle-parse-1.0.0/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/terminal-style",
+      "name": "anstyle-parse",
+      "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+      "repository": "https://github.com/rust-cli/anstyle.git",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "52ce7f38b242319f7cabaa6813055467063ecdc9d355bbb4ce0c68908cd8130e",
+        "archive_url": "https://static.crates.io/crates/anstyle-parse/anstyle-parse-1.0.0.crate",
+        "name": "anstyle-parse",
+        "version": "1.0.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "3048fe7820055a6c995170d822e725c62b3d63e1"
+        },
+        "path_in_vcs": "crates/anstyle-parse"
+      },
+      "version": "1.0.0"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（835 字节）；保留文档编译、真实测试及性能基准输入。",
+      "description": "Look up colored console capabilities",
+      "directory": "src/foundation/terminal-style",
+      "files_sha256": {
+        "Cargo.toml": "59e41ab1e50ff1e08081d17440717c16401b7909dd88a2df39000de807674aa9",
+        "src/choice.rs": "92a7998603f0083c43e1c5d054478e01439b5fe22721a9b4c28cda06f2c3e542",
+        "src/color.rs": "6c30449bd12ac4b22834cb63d8cc1691843474bc185685fa4ce30200db24d674",
+        "src/effect.rs": "0804c98c78706be139b82c2441b827d907ec3f515c19cf667e9fcace82e75999",
+        "src/lib.rs": "934a5b563a584714e6c5745eb0b9fc3a0a0a886a75457dc7fe4a4e371a91aae5",
+        "src/macros.rs": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
+        "src/output/adapter/mod.rs": "6d34ac324cbbc51c7f3d3750e0cf277491c90af87deaf07c100457681a28a7e3",
+        "src/output/adapter/strip.rs": "c15aab55b654a0d05ac90f8df14e88eec58986ebafed16e7278dfb29ed6265d5",
+        "src/output/auto.rs": "cc77defd75b9585808c616beafe39f59e4f449ddd133550719b62d844aecec2f",
+        "src/output/buffer.rs": "e8da130c918a47b922e1a467496747f1af14840551af79d79774d5645b165d59",
+        "src/output/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
+        "src/output/mod.rs": "cccecdbe39d49c6b51dcc1969b420c445ff7f9d5f499a8e1ecae4385f4b89cda",
+        "src/output/stream.rs": "c14b76eb432a5d6c128e19e72d02974553e8a720cc2a8f522d6e75f893723afb",
+        "src/output/strip.rs": "ec7efc9ea3fc3d2d4075d0482300513dcee71f06d905a1880d5530e4762b8018",
+        "src/parser/mod.rs": "ae194effa38b8805071f4cdaea1eeed2fde14dcba4150e7225844e96afe84a4e",
+        "src/parser/params.rs": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
+        "src/parser/state/definitions.rs": "c854149add7382ed8c3d025503de8d2ce0a64006905dfb67098938055ae34e2a",
+        "src/parser/state/mod.rs": "e4af6f0293d0514fb456cc3591f2a10e6590716175abd46c0cd88d55d74e128e",
+        "src/parser/state/table.rs": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c",
+        "src/query.rs": "6a97a3ae12a275a25c3a2ff43de37efbdd6c4c94e979ece5852bc886055852aa",
+        "src/reset.rs": "d5f985622531647c0503abd8285f9a393a7c93d98a0bf198bcbd62e543238201",
+        "src/style.rs": "7ebce7c6d8131c828418048b5b4d23e0d1fd90dee6b74fd93931353285256f5c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/anstyle-query-1.1.5/LICENSE-APACHE",
+        "compliance/licenses/upstream/anstyle-query-1.1.5/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/terminal-style",
+      "name": "anstyle-query",
+      "origin_directory": "vendor/rust/anstyle-query-1.1.5",
+      "repository": "https://github.com/rust-cli/anstyle.git",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc",
+        "archive_url": "https://static.crates.io/crates/anstyle-query/anstyle-query-1.1.5.crate",
+        "name": "anstyle-query",
+        "version": "1.1.5"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "368a8719474357f9d54be800b4163c9074561e37"
+        },
+        "path_in_vcs": "crates/anstyle-query"
+      },
+      "version": "1.1.5"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Global override of color control",
+      "directory": "src/foundation/terminal-style",
+      "files_sha256": {
+        "Cargo.toml": "59e41ab1e50ff1e08081d17440717c16401b7909dd88a2df39000de807674aa9",
+        "src/choice.rs": "92a7998603f0083c43e1c5d054478e01439b5fe22721a9b4c28cda06f2c3e542",
+        "src/color.rs": "6c30449bd12ac4b22834cb63d8cc1691843474bc185685fa4ce30200db24d674",
+        "src/effect.rs": "0804c98c78706be139b82c2441b827d907ec3f515c19cf667e9fcace82e75999",
+        "src/lib.rs": "934a5b563a584714e6c5745eb0b9fc3a0a0a886a75457dc7fe4a4e371a91aae5",
+        "src/macros.rs": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
+        "src/output/adapter/mod.rs": "6d34ac324cbbc51c7f3d3750e0cf277491c90af87deaf07c100457681a28a7e3",
+        "src/output/adapter/strip.rs": "c15aab55b654a0d05ac90f8df14e88eec58986ebafed16e7278dfb29ed6265d5",
+        "src/output/auto.rs": "cc77defd75b9585808c616beafe39f59e4f449ddd133550719b62d844aecec2f",
+        "src/output/buffer.rs": "e8da130c918a47b922e1a467496747f1af14840551af79d79774d5645b165d59",
+        "src/output/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
+        "src/output/mod.rs": "cccecdbe39d49c6b51dcc1969b420c445ff7f9d5f499a8e1ecae4385f4b89cda",
+        "src/output/stream.rs": "c14b76eb432a5d6c128e19e72d02974553e8a720cc2a8f522d6e75f893723afb",
+        "src/output/strip.rs": "ec7efc9ea3fc3d2d4075d0482300513dcee71f06d905a1880d5530e4762b8018",
+        "src/parser/mod.rs": "ae194effa38b8805071f4cdaea1eeed2fde14dcba4150e7225844e96afe84a4e",
+        "src/parser/params.rs": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
+        "src/parser/state/definitions.rs": "c854149add7382ed8c3d025503de8d2ce0a64006905dfb67098938055ae34e2a",
+        "src/parser/state/mod.rs": "e4af6f0293d0514fb456cc3591f2a10e6590716175abd46c0cd88d55d74e128e",
+        "src/parser/state/table.rs": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c",
+        "src/query.rs": "6a97a3ae12a275a25c3a2ff43de37efbdd6c4c94e979ece5852bc886055852aa",
+        "src/reset.rs": "d5f985622531647c0503abd8285f9a393a7c93d98a0bf198bcbd62e543238201",
+        "src/style.rs": "7ebce7c6d8131c828418048b5b4d23e0d1fd90dee6b74fd93931353285256f5c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/colorchoice-1.0.5/LICENSE-APACHE",
+        "compliance/licenses/upstream/colorchoice-1.0.5/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/terminal-style",
+      "name": "colorchoice",
+      "origin_directory": "vendor/rust/colorchoice-1.0.5",
+      "repository": "https://github.com/rust-cli/anstyle.git",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570",
+        "archive_url": "https://static.crates.io/crates/colorchoice/colorchoice-1.0.5.crate",
+        "name": "colorchoice",
+        "version": "1.0.5"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "0fe6f0ff6d52e9f91d4071199bd0b24bd46f3d35"
+        },
+        "path_in_vcs": "crates/colorchoice"
+      },
+      "version": "1.0.5"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（5013 字节）；保留文档编译、真实测试及性能基准输入。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
+      "description": "IO stream adapters for writing colored text that will gracefully degrade according to your terminal's capabilities.",
+      "directory": "src/foundation/terminal-style",
+      "files_sha256": {
+        "Cargo.toml": "59e41ab1e50ff1e08081d17440717c16401b7909dd88a2df39000de807674aa9",
+        "src/choice.rs": "92a7998603f0083c43e1c5d054478e01439b5fe22721a9b4c28cda06f2c3e542",
+        "src/color.rs": "6c30449bd12ac4b22834cb63d8cc1691843474bc185685fa4ce30200db24d674",
+        "src/effect.rs": "0804c98c78706be139b82c2441b827d907ec3f515c19cf667e9fcace82e75999",
+        "src/lib.rs": "934a5b563a584714e6c5745eb0b9fc3a0a0a886a75457dc7fe4a4e371a91aae5",
+        "src/macros.rs": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
+        "src/output/adapter/mod.rs": "6d34ac324cbbc51c7f3d3750e0cf277491c90af87deaf07c100457681a28a7e3",
+        "src/output/adapter/strip.rs": "c15aab55b654a0d05ac90f8df14e88eec58986ebafed16e7278dfb29ed6265d5",
+        "src/output/auto.rs": "cc77defd75b9585808c616beafe39f59e4f449ddd133550719b62d844aecec2f",
+        "src/output/buffer.rs": "e8da130c918a47b922e1a467496747f1af14840551af79d79774d5645b165d59",
+        "src/output/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
+        "src/output/mod.rs": "cccecdbe39d49c6b51dcc1969b420c445ff7f9d5f499a8e1ecae4385f4b89cda",
+        "src/output/stream.rs": "c14b76eb432a5d6c128e19e72d02974553e8a720cc2a8f522d6e75f893723afb",
+        "src/output/strip.rs": "ec7efc9ea3fc3d2d4075d0482300513dcee71f06d905a1880d5530e4762b8018",
+        "src/parser/mod.rs": "ae194effa38b8805071f4cdaea1eeed2fde14dcba4150e7225844e96afe84a4e",
+        "src/parser/params.rs": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
+        "src/parser/state/definitions.rs": "c854149add7382ed8c3d025503de8d2ce0a64006905dfb67098938055ae34e2a",
+        "src/parser/state/mod.rs": "e4af6f0293d0514fb456cc3591f2a10e6590716175abd46c0cd88d55d74e128e",
+        "src/parser/state/table.rs": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c",
+        "src/query.rs": "6a97a3ae12a275a25c3a2ff43de37efbdd6c4c94e979ece5852bc886055852aa",
+        "src/reset.rs": "d5f985622531647c0503abd8285f9a393a7c93d98a0bf198bcbd62e543238201",
+        "src/style.rs": "7ebce7c6d8131c828418048b5b4d23e0d1fd90dee6b74fd93931353285256f5c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/anstream-1.0.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/anstream-1.0.0/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/terminal-style",
+      "name": "anstream",
+      "origin_directory": "vendor/rust/anstream-1.0.0",
+      "repository": "https://github.com/rust-cli/anstyle.git",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "824a212faf96e9acacdbd09febd34438f8f711fb84e09a8916013cd7815ca28d",
+        "archive_url": "https://static.crates.io/crates/anstream/anstream-1.0.0.crate",
+        "name": "anstream",
+        "version": "1.0.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "3048fe7820055a6c995170d822e725c62b3d63e1"
+        },
+        "path_in_vcs": "crates/anstream"
+      },
+      "version": "1.0.0"
     }
   ],
   "origin_records_sha256": {
@@ -67410,154 +68324,6 @@
         "path_in_vcs": ""
       },
       "version": "0.2.21"
-    },
-    "src/foundation/anstream": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 2 个独立示例程序及专属输入（5013 字节）；保留文档编译、真实测试及性能基准输入。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
-      "description": "IO stream adapters for writing colored text that will gracefully degrade according to your terminal's capabilities.",
-      "directory": "src/foundation/anstream",
-      "files_sha256": {
-        "Cargo.toml": "1b4a5447407982ffd2b6c19c44c84145968f8110461026fd2927ff6d598ff3c8",
-        "src/_macros.rs": "04590ef86f86bb67fb11580ab101caffde4d36da84652537da20424b72c8729a",
-        "src/adapter/mod.rs": "baf4237ea0b18df63609e49d93572ca27c2202a4cbec0220adb5a7e815c7d8ed",
-        "src/adapter/strip.rs": "04679b14e96eae85a2c764e54906978d025f9c33ab53f69ae470299995845e69",
-        "src/adapter/wincon.rs": "b469f081e6d2f81d6e5d544e01f432e589bbc3d6a367176f3217dfddd5289741",
-        "src/auto.rs": "95d6a56aeabac70fef9b6453b6d51355c7ecd6b1fb56d3072d9ae6cfca849aaa",
-        "src/buffer.rs": "f223bf9622044b86dbb3ed64fd51359f40bc5f0c1b9467d789143a0fa4b0ed80",
-        "src/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
-        "src/lib.rs": "f23e8840dd266e4ff43dcfa2f6c69f839ec436aae407cc9221c9e4d3a6b2695f",
-        "src/stream.rs": "fe6fc62a12178948d4a0c2b38df1aed415f9283e23c0d9d99d69c79c2d607fc3",
-        "src/strip.rs": "453acaefd6cc139a0536d6729e36fe3d13fc078c08f12f097b8a569ceb0adc07",
-        "src/wincon.rs": "661258dc394e90e815cfc31c3c0f7bb2863a3c04d1566532c64f96b8cb3a61b2"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/anstream-1.0.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/anstream-1.0.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "anstream",
-      "origin_directory": "vendor/rust/anstream-1.0.0",
-      "repository": "https://github.com/rust-cli/anstyle.git",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "824a212faf96e9acacdbd09febd34438f8f711fb84e09a8916013cd7815ca28d",
-        "archive_url": "https://static.crates.io/crates/anstream/anstream-1.0.0.crate",
-        "name": "anstream",
-        "version": "1.0.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "3048fe7820055a6c995170d822e725c62b3d63e1"
-        },
-        "path_in_vcs": "crates/anstream"
-      },
-      "version": "1.0.0"
-    },
-    "src/foundation/anstyle": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（4463 字节）；保留文档编译、真实测试及性能基准输入。",
-      "description": "ANSI text styling",
-      "directory": "src/foundation/anstyle",
-      "files_sha256": {
-        "Cargo.toml": "02271a80a16c1a9f70d53bf83155f14b44a42fd8269f161b89cdfe20b41d32ee",
-        "src/color.rs": "83c799980fd4f9b93d3b61c8f039589cf41b0d9d35de236aaeaffa65fcf7ca8f",
-        "src/effect.rs": "67a05c2a4a4173920ce093485439172d374980bbec08d804f5a45d0b20397d88",
-        "src/lib.rs": "d4b426d4bdba644829afcdc88cc711794b0f5efa27963127ec946ce943fb57ef",
-        "src/macros.rs": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
-        "src/reset.rs": "3f73556d3ba00e5af4951823d9ef158d7c9a42e7f01604fa7a76c03aa7976be1",
-        "src/style.rs": "687ef7d0ae6db4635bfe9e48c315e93bca69f1a7e16f994f846f7f114c5d77ab"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/anstyle-1.0.14/LICENSE-APACHE",
-        "compliance/licenses/upstream/anstyle-1.0.14/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "anstyle",
-      "origin_directory": "vendor/rust/anstyle-1.0.14",
-      "repository": "https://github.com/rust-cli/anstyle.git",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000",
-        "archive_url": "https://static.crates.io/crates/anstyle/anstyle-1.0.14.crate",
-        "name": "anstyle",
-        "version": "1.0.14"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "0fe6f0ff6d52e9f91d4071199bd0b24bd46f3d35"
-        },
-        "path_in_vcs": "crates/anstyle"
-      },
-      "version": "1.0.14"
-    },
-    "src/foundation/anstyle-parse": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（1961 字节）；保留文档编译、真实测试及性能基准输入。",
-      "description": "Parse ANSI Style Escapes",
-      "directory": "src/foundation/anstyle-parse",
-      "files_sha256": {
-        "Cargo.toml": "3068edd1ffeae19bc234a2c022a1609c64f255c472302dd865ee0311e5e5cf1d",
-        "src/lib.rs": "af2c77e90996cb02cab0298cf391938dc8e7e96cc535306289f2e352e2ea8be3",
-        "src/params.rs": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
-        "src/state/definitions.rs": "931bacbf54f7f52d4b1b6604f6b62169bc2db26bb66bfcb2f7178475be3d8f8f",
-        "src/state/mod.rs": "7df733fde70950ce9cc52dd8ed24973de485ccfd1dd31ff7a8678d9a508ff5f9",
-        "src/state/table.rs": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/anstyle-parse-1.0.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/anstyle-parse-1.0.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "anstyle-parse",
-      "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
-      "repository": "https://github.com/rust-cli/anstyle.git",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "52ce7f38b242319f7cabaa6813055467063ecdc9d355bbb4ce0c68908cd8130e",
-        "archive_url": "https://static.crates.io/crates/anstyle-parse/anstyle-parse-1.0.0.crate",
-        "name": "anstyle-parse",
-        "version": "1.0.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "3048fe7820055a6c995170d822e725c62b3d63e1"
-        },
-        "path_in_vcs": "crates/anstyle-parse"
-      },
-      "version": "1.0.0"
-    },
-    "src/foundation/anstyle-query": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（835 字节）；保留文档编译、真实测试及性能基准输入。",
-      "description": "Look up colored console capabilities",
-      "directory": "src/foundation/anstyle-query",
-      "files_sha256": {
-        "Cargo.toml": "5a1216b5bdadf5cc2e92e6ed6ea6ff442b86dabf1236d6e8afd86401a3f1b0cf",
-        "src/lib.rs": "dadb681c4c5f30a3287c7a46560bdf48bd2f6be3b5339b7e5b73e752baed190b",
-        "src/windows.rs": "76a8355df494a8152395377b7b9568615ea8fd9d6ab8ec998c6de1deb271697e"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/anstyle-query-1.1.5/LICENSE-APACHE",
-        "compliance/licenses/upstream/anstyle-query-1.1.5/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "anstyle-query",
-      "origin_directory": "vendor/rust/anstyle-query-1.1.5",
-      "repository": "https://github.com/rust-cli/anstyle.git",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc",
-        "archive_url": "https://static.crates.io/crates/anstyle-query/anstyle-query-1.1.5.crate",
-        "name": "anstyle-query",
-        "version": "1.1.5"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "368a8719474357f9d54be800b4163c9074561e37"
-        },
-        "path_in_vcs": "crates/anstyle-query"
-      },
-      "version": "1.1.5"
     },
     "src/foundation/anyhow": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -68713,38 +69479,6 @@
       },
       "version": "0.5.4"
     },
-    "src/foundation/colorchoice": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Global override of color control",
-      "directory": "src/foundation/colorchoice",
-      "files_sha256": {
-        "Cargo.toml": "20633f3c901dae63b12e2471ed9d664ac1279442c9d5ffb1f88b57291fc6a3f6",
-        "src/lib.rs": "4d8858bff495c86ab4df45eb03a0dbe3c5bd3884b166113df9e0dc7e889c78f8"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/colorchoice-1.0.5/LICENSE-APACHE",
-        "compliance/licenses/upstream/colorchoice-1.0.5/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "colorchoice",
-      "origin_directory": "vendor/rust/colorchoice-1.0.5",
-      "repository": "https://github.com/rust-cli/anstyle.git",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570",
-        "archive_url": "https://static.crates.io/crates/colorchoice/colorchoice-1.0.5.crate",
-        "name": "colorchoice",
-        "version": "1.0.5"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "0fe6f0ff6d52e9f91d4071199bd0b24bd46f3d35"
-        },
-        "path_in_vcs": "crates/colorchoice"
-      },
-      "version": "1.0.5"
-    },
     "src/foundation/command-derive": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Parse command line argument by defining a struct, derive crate.",
@@ -68797,7 +69531,7 @@
       "description": "A simple to use, efficient, and full-featured Command Line Argument Parser",
       "directory": "src/foundation/command-line",
       "files_sha256": {
-        "Cargo.toml": "f77270f4bed56d7ada01a5646db7c91c235afa4ecedf570595fb0e36ece69147",
+        "Cargo.toml": "171aa6b5b9f0d017466e13b81ba8440a7c5b6999ebc0642188d968a34124e32f",
         "examples/cargo-example-derive.rs": "e5be7d57310b3e4a8413325552435cd3c1a944eaced1f78bcc95094ab112bfb8",
         "examples/cargo-example.rs": "7e7cf2a773dcc52d8abbecfaff380fa7fa4936e713742b388c11567faf60788b",
         "examples/demo.rs": "cfa40f6b0eedd137196557bc3f51ec23d6323e74f0113cdbaceefa8199ed74ea",
@@ -68898,21 +69632,21 @@
         "src/builder/range.rs": "15b81036a7fa9b1cd817f1946e1e1058ac9e8f4833808a2a2b320d8a342a2067",
         "src/builder/resettable.rs": "fc1565abcfacb4b19d6f1d3774fc3fa5d4b67a7024082a3e485e9386fd1a40fe",
         "src/builder/str.rs": "bd452447ebf41c1e0193e735d4d387887cde56b4972703147a8f19accd5bd533",
-        "src/builder/styled_str.rs": "cd16fd9feaf0853d392a355e631d94149bbdcc3d3f862b4ee990e195e973492b",
-        "src/builder/styling.rs": "df051af337a0e20a8dd8e02391137680cc0e62367111e3b017f1725b0d604566",
+        "src/builder/styled_str.rs": "5a2886b17de7e3928fafb046f2796204bafe3abcbcbf29205a15ded9a36f51c3",
+        "src/builder/styling.rs": "0a23b434edf9db03e8f8a7b0dde32a6f25ca5b39b801e66fb32515dd57c44b1d",
         "src/builder/value_hint.rs": "f5c39816ba558acc065810a8b37234005e23a7c836d8e44d26e1bb015cf9e78d",
         "src/builder/value_parser.rs": "15b656a2b9b54f6144fcbf4c48812380a3ae4cce646154cc35e9d0b0f83f5674",
         "src/derive.rs": "b13443d773bbd74da38f156b03d2b870e4edbc5860ce4b78818dc2d2e30a8425",
         "src/error/context.rs": "156d2611a349ce826378476c9dcb3242a01ad834a095baad096a10cc2f73e1ed",
-        "src/error/format.rs": "4d6ebf19760331de05cabcedffe33a297fab82c9252949d904e2fe88620ec50e",
+        "src/error/format.rs": "51e24294829c1d3b20d1eea396a775a66aa68a5d43565a6d082d5a5ff0863853",
         "src/error/kind.rs": "d7b11667622bdf8957b4ffbed89a9e1cd6af92390006c16214bb1dea19c3694e",
         "src/error/mod.rs": "b7ef1e30a074197276bbc63944662f4d6bc7724ad59f47ee53dd62d9bee8e4fe",
         "src/lexer/ext.rs": "ba417a08f66e02e005d5ba9b3b4bf6965db05402b01f48fdda900fd0953ecfe0",
         "src/lexer/mod.rs": "8c11d7c36844aba4a7021fa704da269fbea722cb59b5638cd28bc85d23a96a20",
         "src/lib.rs": "d1db0263ce1b7589d6540f472003e666b9fed243647ebda45e6c430d83f0fdc6",
-        "src/macros.rs": "d42d2dbd3c0e25c040660d1529e048a9d7380c7c2f85e8fc633390d3f290e32d",
+        "src/macros.rs": "5fa1fe229b5c9831f45449e7d7eec678f62248ae8331423cb649d5c36d558d5a",
         "src/mkeymap.rs": "7911271311ef9ab092069fe93e6b9d6b86d2637c50655f335a81361694c2edc9",
-        "src/output/fmt.rs": "7404d4b7a284d858c33b479dcc87e1197f5575481a77105b3ffc8c604b9a8f0e",
+        "src/output/fmt.rs": "ceaa54d8d3d311bb7cfd287b3c394638963828b9141edd641f9ee313ac40cd46",
         "src/output/help.rs": "b3bb6cfffe9c1113d377f1f4951a22b6ad2ba2813dcc55a146899c808cd393d3",
         "src/output/help_template.rs": "1bcb8d6907503c160f3488bb91207a25bf7b5f8d6671d17b06b1d347a69ad5fd",
         "src/output/mod.rs": "74ea52be8981c30d10fda3f6c80cf51aafb15700de99aa73bc94700bca25ae11",
@@ -69943,13 +70677,13 @@
       "description": "A logging implementation for `log` which is configured via an environment\nvariable.",
       "directory": "src/foundation/env_logger",
       "files_sha256": {
-        "Cargo.toml": "e15628c7b1c5c021c25f4f39220537ce7dba9d5eed145a86ea1654d9a93c5f4e",
-        "src/fmt/kv.rs": "1a15b740f4b5a67014e3627bd30b5c7583d576ba06fdf6484a2bd95f20f05eb1",
-        "src/fmt/mod.rs": "4584d2056c408f3530cdd4939dfa97364dae1f219a2355a835b8efc7d92e07b6",
+        "Cargo.toml": "21d0fae4fb9b25dcca380edb88d8d3395ff0dd9c64965ca208263bc238153fe0",
+        "src/fmt/kv.rs": "15d2246a1d2624f297c96653d0eb19d2e408a521fb31d7f239572e9e76b2535c",
+        "src/fmt/mod.rs": "16185db1d85e69b092eaee2b836a46113c00fa7224373a5cbb0836ebe6a48b69",
         "src/lib.rs": "02d8003c277909ea4917da6f9ed7f9f58c5586e91a07d0b612ce19170f5ba53a",
         "src/logger.rs": "d16f4e38e43fb131bec8108414a6218b0ec318c9c5d06e7e4d99511a683b9cd2",
-        "src/writer/buffer.rs": "ccb9e7962e707c66aafd36df471f11843f15c8026b1b8c53204f7d8efbe4ecff",
-        "src/writer/mod.rs": "5c9750e0e7c96e8da38bbc560ffe8b40e33b4ab189a6c3f68f5d27ea718ea14a",
+        "src/writer/buffer.rs": "61e4ec5a4fc1f78b1289fc54ad0c3c10c5cc3f8c050a16ccd2353adeb6b13ec9",
+        "src/writer/mod.rs": "1c7eecd146e5cb055ea9f26c68e0d5124e1ba1c6f859b606fe410c8888c6a6cd",
         "src/writer/target.rs": "34d65a0db699a3848d26027c08246dd2753e395841a5614bf8325f23ed08c206"
       },
       "license": "MIT OR Apache-2.0",
@@ -77820,6 +78554,58 @@
       },
       "version": "3.27.0"
     },
+    "src/foundation/terminal-style": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 1 个独立示例程序及专属输入（4463 字节）；保留文档编译、真实测试及性能基准输入。",
+      "description": "ANSI text styling",
+      "directory": "src/foundation/terminal-style",
+      "files_sha256": {
+        "Cargo.toml": "59e41ab1e50ff1e08081d17440717c16401b7909dd88a2df39000de807674aa9",
+        "src/choice.rs": "92a7998603f0083c43e1c5d054478e01439b5fe22721a9b4c28cda06f2c3e542",
+        "src/color.rs": "6c30449bd12ac4b22834cb63d8cc1691843474bc185685fa4ce30200db24d674",
+        "src/effect.rs": "0804c98c78706be139b82c2441b827d907ec3f515c19cf667e9fcace82e75999",
+        "src/lib.rs": "934a5b563a584714e6c5745eb0b9fc3a0a0a886a75457dc7fe4a4e371a91aae5",
+        "src/macros.rs": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
+        "src/output/adapter/mod.rs": "6d34ac324cbbc51c7f3d3750e0cf277491c90af87deaf07c100457681a28a7e3",
+        "src/output/adapter/strip.rs": "c15aab55b654a0d05ac90f8df14e88eec58986ebafed16e7278dfb29ed6265d5",
+        "src/output/auto.rs": "cc77defd75b9585808c616beafe39f59e4f449ddd133550719b62d844aecec2f",
+        "src/output/buffer.rs": "e8da130c918a47b922e1a467496747f1af14840551af79d79774d5645b165d59",
+        "src/output/fmt.rs": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
+        "src/output/mod.rs": "cccecdbe39d49c6b51dcc1969b420c445ff7f9d5f499a8e1ecae4385f4b89cda",
+        "src/output/stream.rs": "c14b76eb432a5d6c128e19e72d02974553e8a720cc2a8f522d6e75f893723afb",
+        "src/output/strip.rs": "ec7efc9ea3fc3d2d4075d0482300513dcee71f06d905a1880d5530e4762b8018",
+        "src/parser/mod.rs": "ae194effa38b8805071f4cdaea1eeed2fde14dcba4150e7225844e96afe84a4e",
+        "src/parser/params.rs": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
+        "src/parser/state/definitions.rs": "c854149add7382ed8c3d025503de8d2ce0a64006905dfb67098938055ae34e2a",
+        "src/parser/state/mod.rs": "e4af6f0293d0514fb456cc3591f2a10e6590716175abd46c0cd88d55d74e128e",
+        "src/parser/state/table.rs": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c",
+        "src/query.rs": "6a97a3ae12a275a25c3a2ff43de37efbdd6c4c94e979ece5852bc886055852aa",
+        "src/reset.rs": "d5f985622531647c0503abd8285f9a393a7c93d98a0bf198bcbd62e543238201",
+        "src/style.rs": "7ebce7c6d8131c828418048b5b4d23e0d1fd90dee6b74fd93931353285256f5c"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/anstyle-1.0.14/LICENSE-APACHE",
+        "compliance/licenses/upstream/anstyle-1.0.14/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "terminal-style",
+      "origin_directory": "vendor/rust/anstyle-1.0.14",
+      "repository": "https://github.com/rust-cli/anstyle.git",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000",
+        "archive_url": "https://static.crates.io/crates/anstyle/anstyle-1.0.14.crate",
+        "name": "anstyle",
+        "version": "1.0.14"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "0fe6f0ff6d52e9f91d4071199bd0b24bd46f3d35"
+        },
+        "path_in_vcs": "crates/anstyle"
+      },
+      "version": "1.0.14"
+    },
     "src/foundation/thread_local": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Per-object thread-local storage",
@@ -84763,6 +85549,50 @@
     "compliance/provenance/supplemental/ring-0.17.14-original-overlap.json": "dd87ef13c68d741f46273ce92dbf65ac30310170386e9204869886c48d182382",
     "compliance/provenance/supplemental/ring-0.17.14-style-patches.json": "d8a9a8f5ac387a4fa64ab8a046455105929c15e6720443d3daf27eeb4351e06d",
     "compliance/provenance/supplemental/ring-0.17.14-test-materials.json": "d83ab07c2c877b621a02ed2ec76a892e5f0e4830aa3894e4a44d97024ae46273",
+    "compliance/provenance/terminal-style/anstream/Cargo.toml.txt": "1b4a5447407982ffd2b6c19c44c84145968f8110461026fd2927ff6d598ff3c8",
+    "compliance/provenance/terminal-style/anstream/src/_macros.rs.txt": "04590ef86f86bb67fb11580ab101caffde4d36da84652537da20424b72c8729a",
+    "compliance/provenance/terminal-style/anstream/src/adapter/mod.rs.txt": "baf4237ea0b18df63609e49d93572ca27c2202a4cbec0220adb5a7e815c7d8ed",
+    "compliance/provenance/terminal-style/anstream/src/adapter/strip.rs.txt": "04679b14e96eae85a2c764e54906978d025f9c33ab53f69ae470299995845e69",
+    "compliance/provenance/terminal-style/anstream/src/adapter/wincon.rs.txt": "b469f081e6d2f81d6e5d544e01f432e589bbc3d6a367176f3217dfddd5289741",
+    "compliance/provenance/terminal-style/anstream/src/auto.rs.txt": "95d6a56aeabac70fef9b6453b6d51355c7ecd6b1fb56d3072d9ae6cfca849aaa",
+    "compliance/provenance/terminal-style/anstream/src/buffer.rs.txt": "f223bf9622044b86dbb3ed64fd51359f40bc5f0c1b9467d789143a0fa4b0ed80",
+    "compliance/provenance/terminal-style/anstream/src/fmt.rs.txt": "cc11b005c4559843bd908a57958a13c8d0922fae6aff5261f3583c90e60da73c",
+    "compliance/provenance/terminal-style/anstream/src/lib.rs.txt": "f23e8840dd266e4ff43dcfa2f6c69f839ec436aae407cc9221c9e4d3a6b2695f",
+    "compliance/provenance/terminal-style/anstream/src/stream.rs.txt": "fe6fc62a12178948d4a0c2b38df1aed415f9283e23c0d9d99d69c79c2d607fc3",
+    "compliance/provenance/terminal-style/anstream/src/strip.rs.txt": "453acaefd6cc139a0536d6729e36fe3d13fc078c08f12f097b8a569ceb0adc07",
+    "compliance/provenance/terminal-style/anstream/src/wincon.rs.txt": "661258dc394e90e815cfc31c3c0f7bb2863a3c04d1566532c64f96b8cb3a61b2",
+    "compliance/provenance/terminal-style/anstyle-parse/Cargo.toml.txt": "3068edd1ffeae19bc234a2c022a1609c64f255c472302dd865ee0311e5e5cf1d",
+    "compliance/provenance/terminal-style/anstyle-parse/src/lib.rs.txt": "af2c77e90996cb02cab0298cf391938dc8e7e96cc535306289f2e352e2ea8be3",
+    "compliance/provenance/terminal-style/anstyle-parse/src/params.rs.txt": "8cfef4e2ab1961ca2d9f210da553fc6ac64bb6dbd03321f0ee7d6089ab45389c",
+    "compliance/provenance/terminal-style/anstyle-parse/src/state/definitions.rs.txt": "931bacbf54f7f52d4b1b6604f6b62169bc2db26bb66bfcb2f7178475be3d8f8f",
+    "compliance/provenance/terminal-style/anstyle-parse/src/state/mod.rs.txt": "7df733fde70950ce9cc52dd8ed24973de485ccfd1dd31ff7a8678d9a508ff5f9",
+    "compliance/provenance/terminal-style/anstyle-parse/src/state/table.rs.txt": "673b7e9242c5248efc076086cc6923578ec2f059c0c26da21363528e20e4285c",
+    "compliance/provenance/terminal-style/anstyle-query/Cargo.toml.txt": "5a1216b5bdadf5cc2e92e6ed6ea6ff442b86dabf1236d6e8afd86401a3f1b0cf",
+    "compliance/provenance/terminal-style/anstyle-query/src/lib.rs.txt": "dadb681c4c5f30a3287c7a46560bdf48bd2f6be3b5339b7e5b73e752baed190b",
+    "compliance/provenance/terminal-style/anstyle-query/src/windows.rs.txt": "76a8355df494a8152395377b7b9568615ea8fd9d6ab8ec998c6de1deb271697e",
+    "compliance/provenance/terminal-style/anstyle/Cargo.toml.txt": "02271a80a16c1a9f70d53bf83155f14b44a42fd8269f161b89cdfe20b41d32ee",
+    "compliance/provenance/terminal-style/anstyle/src/color.rs.txt": "83c799980fd4f9b93d3b61c8f039589cf41b0d9d35de236aaeaffa65fcf7ca8f",
+    "compliance/provenance/terminal-style/anstyle/src/effect.rs.txt": "67a05c2a4a4173920ce093485439172d374980bbec08d804f5a45d0b20397d88",
+    "compliance/provenance/terminal-style/anstyle/src/lib.rs.txt": "d4b426d4bdba644829afcdc88cc711794b0f5efa27963127ec946ce943fb57ef",
+    "compliance/provenance/terminal-style/anstyle/src/macros.rs.txt": "0c90b45626fe8331d5b3326abb831f4ba6e04bcc975b1b9c01e465715050caa2",
+    "compliance/provenance/terminal-style/anstyle/src/reset.rs.txt": "3f73556d3ba00e5af4951823d9ef158d7c9a42e7f01604fa7a76c03aa7976be1",
+    "compliance/provenance/terminal-style/anstyle/src/style.rs.txt": "687ef7d0ae6db4635bfe9e48c315e93bca69f1a7e16f994f846f7f114c5d77ab",
+    "compliance/provenance/terminal-style/colorchoice/Cargo.toml.txt": "20633f3c901dae63b12e2471ed9d664ac1279442c9d5ffb1f88b57291fc6a3f6",
+    "compliance/provenance/terminal-style/colorchoice/src/lib.rs.txt": "4d8858bff495c86ab4df45eb03a0dbe3c5bd3884b166113df9e0dc7e889c78f8",
+    "compliance/provenance/terminal-style/sources.json": "d7711cda12c5e14475278bec3cff1d042c038a0bbae96f06f4e8d1eca066ed95",
+    "compliance/provenance/terminal-style/tests/anstream/unit/src/adapter/strip/test_369.rs.txt": "5914cd74a1219f42c2df1f1fffd2ac23f9db6ee40887743bf043a47c6ddf27e5",
+    "compliance/provenance/terminal-style/tests/anstream/unit/src/adapter/wincon/test_301.rs.txt": "cd680fe9b6db26ff6bc4ba2035da6281e033e1162876b52edfb160909ce980d8",
+    "compliance/provenance/terminal-style/tests/anstream/unit/src/stream/tests_283.rs.txt": "e8a48131eeea6b0fe5956e442e94b3289d247ab080d97faa8be26b5b9cbca196",
+    "compliance/provenance/terminal-style/tests/anstream/unit/src/strip/test_172.rs.txt": "3b2a5925faeb00667c4b6a006ebed5bcd96ed0f2d976bd56d4b4d8eed9bc4b72",
+    "compliance/provenance/terminal-style/tests/anstream/unit/src/wincon/test_171.rs.txt": "45e91c478a8f7d5ba567dbddd5ecd1e8bdd3e8ce6620d8e2c05aaeb026ff271b",
+    "compliance/provenance/terminal-style/tests/anstyle-parse/modules/src/state/codegen.rs.txt": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787",
+    "compliance/provenance/terminal-style/tests/anstyle-parse/unit/src/state/definitions/tests_132.rs.txt": "350f009901ee90f1abae0b00171fc4c4b98687c591635ad0e83e96eef7a80d47",
+    "compliance/provenance/terminal-style/tests/anstyle-query/unit/src/lib/test_141.rs.txt": "3d4c498ab71e61bff9961c81ba71197becc57d9d773f20b3643f15ce07c2ba3a",
+    "compliance/provenance/terminal-style/tests/anstyle/functions/src/style/print_size_of_431.rs.txt": "c72c793f33efbe5c52b09ac6e9e8b26f1ad874d455d7ee679659fab716175894",
+    "compliance/provenance/terminal-style/tests/anstyle/unit/src/color/test_644.rs.txt": "db8af56a49188afee161285aa4ab7311c1442afa8ed69aea5750fb0b832e73fe",
+    "compliance/provenance/terminal-style/tests/anstyle/unit/src/effect/test_381.rs.txt": "a8c226114b3a6fb278a566174c689abf8fe482c21036116662cbab32994ff5f3",
+    "compliance/provenance/terminal-style/tests/anstyle/unit/src/reset/test_24.rs.txt": "6b5fc2c86d9d719299188070778db30360d0c75dce62be13c60f951eef21d242",
+    "compliance/provenance/terminal-style/tests/colorchoice/unit/src/lib/test_87.rs.txt": "b5bf729cfde820084a3240b8b4eb9400e86b06d096c26e67192216cd7265fd66",
     "compliance/provenance/unicode-source-merge.json": "70030b402e7da4205249744e1a27c8211d078c4e57ee4c7d573819e9d6104bed",
     "compliance/provenance/web-source-merge.json": "3e4a1ba2585b5cec5a9a3e2f875367b3e5f77b6aebeb5e3701519e196d368b58",
     "docs/upstream/README.md": "d6aab59a090e29116a448dce49205d57c045341fb3840356d28136fa8d05f3c6",
@@ -92001,39 +92831,6 @@
             "runtime"
           ]
         },
-        "src/foundation/anstream": {
-          "features": [
-            "auto",
-            "default"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/anstyle": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/anstyle-parse": {
-          "features": [
-            "default",
-            "utf8"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/anstyle-query": {
-          "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/argon2": {
           "features": [
             "alloc",
@@ -92138,12 +92935,6 @@
           ]
         },
         "src/foundation/cmov": {
-          "features": [],
-          "roles": [
-            "runtime"
-          ]
-        },
-        "src/foundation/colorchoice": {
           "features": [],
           "roles": [
             "runtime"
@@ -93077,6 +93868,17 @@
           "features": [
             "default",
             "system-entropy"
+          ],
+          "roles": [
+            "runtime"
+          ]
+        },
+        "src/foundation/terminal-style": {
+          "features": [
+            "output",
+            "parser",
+            "parser-utf8",
+            "std"
           ],
           "roles": [
             "runtime"
@@ -94595,39 +95397,6 @@
             "compile"
           ]
         },
-        "src/foundation/anstream": {
-          "features": [
-            "auto",
-            "default"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/anstyle": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/anstyle-parse": {
-          "features": [
-            "default",
-            "utf8"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/anstyle-query": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/anyhow": {
           "features": [
             "default",
@@ -94644,12 +95413,6 @@
           ]
         },
         "src/foundation/cmov": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/colorchoice": {
           "features": [],
           "roles": [
             "compile"
@@ -94776,7 +95539,8 @@
           "features": [
             "auto-color",
             "color",
-            "regex"
+            "regex",
+            "terminal-style"
           ],
           "roles": [
             "compile"
@@ -95055,6 +95819,17 @@
         },
         "src/foundation/strsim": {
           "features": [],
+          "roles": [
+            "compile"
+          ]
+        },
+        "src/foundation/terminal-style": {
+          "features": [
+            "output",
+            "parser",
+            "parser-utf8",
+            "std"
+          ],
           "roles": [
             "compile"
           ]

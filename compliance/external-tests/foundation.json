@@ -93,107 +93,102 @@
       ]
     },
     {
-      "directory": "src/foundation/anstream",
+      "directory": "src/foundation/terminal-style",
       "files": [
         {
-          "path": "test/foundation/anstream/unit/src/adapter/strip/test_369.rs",
-          "sha256": "5914cd74a1219f42c2df1f1fffd2ac23f9db6ee40887743bf043a47c6ddf27e5",
-          "source": "src/foundation/anstream/src/adapter/strip.rs",
-          "source_sha256_before": "642375f9dc5836eb5aa6eba7be849a84786d22764d470672bf1f646061254c1c"
-        },
-        {
-          "path": "test/foundation/anstream/unit/src/adapter/wincon/test_301.rs",
-          "sha256": "cd680fe9b6db26ff6bc4ba2035da6281e033e1162876b52edfb160909ce980d8",
-          "source": "src/foundation/anstream/src/adapter/wincon.rs",
-          "source_sha256_before": "88607742fb7bbfb85e122a8dcc3188ef7c15ef332063af3a8939701dad05b90a"
-        },
-        {
-          "path": "test/foundation/anstream/unit/src/stream/tests_283.rs",
-          "sha256": "e8a48131eeea6b0fe5956e442e94b3289d247ab080d97faa8be26b5b9cbca196",
-          "source": "src/foundation/anstream/src/stream.rs",
-          "source_sha256_before": "c7d9526dd1ca217f6f5462780f3d1bf4a32b22ff7285284fd4fc8c4164e1791a"
-        },
-        {
-          "path": "test/foundation/anstream/unit/src/strip/test_172.rs",
-          "sha256": "3b2a5925faeb00667c4b6a006ebed5bcd96ed0f2d976bd56d4b4d8eed9bc4b72",
-          "source": "src/foundation/anstream/src/strip.rs",
-          "source_sha256_before": "0268bdc9155fc91bd7e92337c5e3ba96999780b46fab311b00922c7a3047233c"
-        },
-        {
-          "path": "test/foundation/anstream/unit/src/wincon/test_171.rs",
-          "sha256": "45e91c478a8f7d5ba567dbddd5ecd1e8bdd3e8ce6620d8e2c05aaeb026ff271b",
-          "source": "src/foundation/anstream/src/wincon.rs",
-          "source_sha256_before": "46067373ab01154b014bb3cf77edbc5fa9abea6633c90e4cc02235b31c19bf74"
-        }
-      ],
-      "roots": [
-        "test/foundation/anstream"
-      ]
-    },
-    {
-      "directory": "src/foundation/anstyle",
-      "files": [
-        {
-          "path": "test/foundation/anstyle/functions/src/style/print_size_of_431.rs",
+          "origin_directory": "vendor/rust/anstyle-1.0.14",
+          "path": "test/foundation/terminal-style/anstyle/functions/src/style/print_size_of_431.rs",
           "sha256": "c72c793f33efbe5c52b09ac6e9e8b26f1ad874d455d7ee679659fab716175894",
           "source": "src/foundation/anstyle/src/style.rs",
           "source_sha256_before": "6f5eee7892f10df47bc07dd8f5715ee5d0c438cba53b63b72dce0843423b42bd"
         },
         {
-          "path": "test/foundation/anstyle/unit/src/color/test_644.rs",
+          "origin_directory": "vendor/rust/anstyle-1.0.14",
+          "path": "test/foundation/terminal-style/anstyle/unit/src/color/test_644.rs",
           "sha256": "db8af56a49188afee161285aa4ab7311c1442afa8ed69aea5750fb0b832e73fe",
           "source": "src/foundation/anstyle/src/color.rs",
           "source_sha256_before": "fc82bbfc225372584c1985ecb11e744ec0e59d8c208ad404c98846759eb01f4b"
         },
         {
-          "path": "test/foundation/anstyle/unit/src/effect/test_381.rs",
+          "origin_directory": "vendor/rust/anstyle-1.0.14",
+          "path": "test/foundation/terminal-style/anstyle/unit/src/effect/test_381.rs",
           "sha256": "a8c226114b3a6fb278a566174c689abf8fe482c21036116662cbab32994ff5f3",
           "source": "src/foundation/anstyle/src/effect.rs",
           "source_sha256_before": "ed72ba456c4804ff6669f41ee0754bf8e2d974c2217e3eeac0d4d23202b81289"
         },
         {
-          "path": "test/foundation/anstyle/unit/src/reset/test_24.rs",
+          "origin_directory": "vendor/rust/anstyle-1.0.14",
+          "path": "test/foundation/terminal-style/anstyle/unit/src/reset/test_24.rs",
           "sha256": "6b5fc2c86d9d719299188070778db30360d0c75dce62be13c60f951eef21d242",
           "source": "src/foundation/anstyle/src/reset.rs",
           "source_sha256_before": "456baf708f7d595369d2d852427d1891208a9fad5e21291be3217c4e69114faf"
-        }
-      ],
-      "roots": [
-        "test/foundation/anstyle"
-      ]
-    },
-    {
-      "directory": "src/foundation/anstyle-parse",
-      "files": [
+        },
         {
-          "path": "test/foundation/anstyle-parse/modules/src/state/codegen.rs",
+          "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+          "path": "test/foundation/terminal-style/anstyle-parse/modules/src/state/codegen.rs",
           "sha256": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787",
           "source": "src/foundation/anstyle-parse/src/state/codegen.rs",
           "source_sha256_before": "0820bb4e54d9b3f1e0e80c1935ca57466cfe60e98f556c31f19e5e1b6ed31787"
         },
         {
-          "path": "test/foundation/anstyle-parse/unit/src/state/definitions/tests_132.rs",
+          "origin_directory": "vendor/rust/anstyle-parse-1.0.0",
+          "path": "test/foundation/terminal-style/anstyle-parse/unit/src/state/definitions/tests_132.rs",
           "sha256": "350f009901ee90f1abae0b00171fc4c4b98687c591635ad0e83e96eef7a80d47",
           "source": "src/foundation/anstyle-parse/src/state/definitions.rs",
           "source_sha256_before": "8a819bd7238edeb02aff3697e07fadfb8978a00f9f255812838326b904010e82"
-        }
-      ],
-      "roots": [
-        "test/foundation/anstyle-parse"
-      ]
-    },
-    {
-      "directory": "src/foundation/anstyle-query",
-      "files": [
+        },
         {
-          "path": "test/foundation/anstyle-query/unit/src/lib/test_141.rs",
+          "origin_directory": "vendor/rust/anstyle-query-1.1.5",
+          "path": "test/foundation/terminal-style/anstyle-query/unit/src/lib/test_141.rs",
           "sha256": "3d4c498ab71e61bff9961c81ba71197becc57d9d773f20b3643f15ce07c2ba3a",
           "source": "src/foundation/anstyle-query/src/lib.rs",
           "source_sha256_before": "d5479a2adc069f5433bec10f7275c56a7406589b98c6c313efea2bfa6e31bdbd"
+        },
+        {
+          "origin_directory": "vendor/rust/colorchoice-1.0.5",
+          "path": "test/foundation/terminal-style/colorchoice/unit/src/lib/test_87.rs",
+          "sha256": "b5bf729cfde820084a3240b8b4eb9400e86b06d096c26e67192216cd7265fd66",
+          "source": "src/foundation/colorchoice/src/lib.rs",
+          "source_sha256_before": "d623c7405a52e1fd0d62149e862ab66ff643086ce915dfda0adb1c2c0046f987"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/adapter/strip/test_369.rs",
+          "sha256": "b2e95af85f9358b810deb703c745bf443d35ae9b9d7fd5cda3b93b31b2118657",
+          "source": "src/foundation/anstream/src/adapter/strip.rs",
+          "source_sha256_before": "642375f9dc5836eb5aa6eba7be849a84786d22764d470672bf1f646061254c1c"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/adapter/wincon/test_301.rs",
+          "sha256": "1899ffde1d7f7efe0a5cc738524fc2d5ac23b9a06a07cf42463e8c217990c0dd",
+          "source": "src/foundation/anstream/src/adapter/wincon.rs",
+          "source_sha256_before": "88607742fb7bbfb85e122a8dcc3188ef7c15ef332063af3a8939701dad05b90a"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/stream/tests_283.rs",
+          "sha256": "36cf91f18a72cd0aa69c6534cae2ffc974c57632505523f5c75c1b3454c05117",
+          "source": "src/foundation/anstream/src/stream.rs",
+          "source_sha256_before": "c7d9526dd1ca217f6f5462780f3d1bf4a32b22ff7285284fd4fc8c4164e1791a"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/strip/test_172.rs",
+          "sha256": "814f8bfd838533962e5c614afbc665af134e7dd398f885380a2aef12dacf735a",
+          "source": "src/foundation/anstream/src/strip.rs",
+          "source_sha256_before": "0268bdc9155fc91bd7e92337c5e3ba96999780b46fab311b00922c7a3047233c"
+        },
+        {
+          "origin_directory": "vendor/rust/anstream-1.0.0",
+          "path": "test/foundation/terminal-style/anstream/unit/src/wincon/test_171.rs",
+          "sha256": "55d0bc926e028b3cd26d9844287ba05f865687dc43438d96c974d3ab087b1cea",
+          "source": "src/foundation/anstream/src/wincon.rs",
+          "source_sha256_before": "46067373ab01154b014bb3cf77edbc5fa9abea6633c90e4cc02235b31c19bf74"
         }
       ],
       "roots": [
-        "test/foundation/anstyle-query"
+        "test/foundation/terminal-style"
       ]
     },
     {
@@ -2975,20 +2970,6 @@
       ],
       "roots": [
         "test/foundation/cmov"
-      ]
-    },
-    {
-      "directory": "src/foundation/colorchoice",
-      "files": [
-        {
-          "path": "test/foundation/colorchoice/unit/src/lib/test_87.rs",
-          "sha256": "b5bf729cfde820084a3240b8b4eb9400e86b06d096c26e67192216cd7265fd66",
-          "source": "src/foundation/colorchoice/src/lib.rs",
-          "source_sha256_before": "d623c7405a52e1fd0d62149e862ab66ff643086ce915dfda0adb1c2c0046f987"
-        }
-      ],
-      "roots": [
-        "test/foundation/colorchoice"
       ]
     },
     {
@@ -24701,7 +24682,7 @@
         {
           "origin_directory": "vendor/rust/clap_builder-4.6.7",
           "path": "test/foundation/command-line/builder/unit/src/builder/styled_str/wrap_tests_223.rs",
-          "sha256": "19af71afca78b4adf6df490163c1b1df23e1bb77c091c0c1959516a0f1f97701",
+          "sha256": "335c3ba4a2b430c429da2ac2dca64f48855d22317cf48c5be7787bc1bcac8f12",
           "source": "src/foundation/clap_builder/src/builder/styled_str.rs",
           "source_sha256_before": "e09663bcbd99b283794618331a8c31cbbf0f321ddd63c1bf5f118c45e084d751"
         },

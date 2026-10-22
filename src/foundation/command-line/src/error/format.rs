@@ -374,7 +374,7 @@ fn write_dynamic_context(
 fn write_values_list(
     list_name: &'static str,
     styled: &mut StyledStr,
-    valid: &anstyle::Style,
+    valid: &terminal_style::Style,
     possible_values: Option<&ContextValue>,
 ) {
     use std::fmt::Write as _;

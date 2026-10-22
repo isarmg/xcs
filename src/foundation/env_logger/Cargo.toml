@@ -35,8 +35,8 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/rust-cli/env_logger"
 
 [features]
-auto-color = ["color", "anstream/auto"]
-color = ["dep:anstream", "dep:anstyle"]
+auto-color = ["color", "terminal-style/output"]
+color = ["terminal-style/output"]
 default = ["auto-color", "regex"]
 kv = ["log/kv"]
 regex = ["env_filter/regex"]
@@ -46,17 +46,10 @@ unstable-kv = ["kv"]
 name = "env_logger"
 path = "src/lib.rs"
 
-[dependencies.anstream]
-version = "1.0.0"
-features = []
-optional = true
+[dependencies.terminal-style]
+path = "../terminal-style"
 default-features = false
-path = "../anstream"
-
-[dependencies.anstyle]
-version = "1.0.13"
 optional = true
-path = "../anstyle"
 
 [dependencies.env_filter]
 version = "2.0.0"

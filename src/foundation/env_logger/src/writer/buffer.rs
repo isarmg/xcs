@@ -60,7 +60,7 @@ impl BufferWriter {
             WritableTarget::WriteStdout => {
                 let stream = io::stdout();
                 #[cfg(feature = "color")]
-                let stream = anstream::AutoStream::new(stream, self.write_style.into());
+                let stream = terminal_style::output::AutoStream::new(stream, self.write_style.into());
                 let mut stream = stream.lock();
                 stream.write_all(buf)?;
                 stream.flush()?;
@@ -76,7 +76,7 @@ impl BufferWriter {
             WritableTarget::WriteStderr => {
                 let stream = io::stderr();
                 #[cfg(feature = "color")]
-                let stream = anstream::AutoStream::new(stream, self.write_style.into());
+                let stream = terminal_style::output::AutoStream::new(stream, self.write_style.into());
                 let mut stream = stream.lock();
                 stream.write_all(buf)?;
                 stream.flush()?;
@@ -109,7 +109,7 @@ fn adapt(buf: &[u8], write_style: WriteStyle) -> io::Result<Vec<u8>> {
     use std::io::Write as _;
 
     let adapted = Vec::with_capacity(buf.len());
-    let mut stream = anstream::AutoStream::new(adapted, write_style.into());
+    let mut stream = terminal_style::output::AutoStream::new(adapted, write_style.into());
     stream.write_all(buf)?;
     let adapted = stream.into_inner();
     Ok(adapted)
