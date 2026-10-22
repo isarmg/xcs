@@ -25,6 +25,9 @@ extern crate quote;
 #[macro_use]
 extern crate log;
 
+#[path = "src/cexpr/mod.rs"]
+mod cexpr;
+
 #[cfg(not(feature = "logging"))]
 #[macro_use]
 mod log_stubs;

@@ -354,7 +354,7 @@ pub(crate) struct BindgenContext {
     /// expression parsing.
     ///
     /// This needs to be an `std::HashMap` because the `cexpr` API requires it.
-    parsed_macros: StdHashMap<Vec<u8>, cexpr::expr::EvalResult>,
+    parsed_macros: StdHashMap<Vec<u8>, crate::cexpr::expr::EvalResult>,
 
     /// A map with all include locations.
     ///
@@ -2132,7 +2132,7 @@ If you encounter an error missing from this list, please file an issue or a PR!"
     /// Get the currently parsed macros.
     pub(crate) fn parsed_macros(
         &self,
-    ) -> &StdHashMap<Vec<u8>, cexpr::expr::EvalResult> {
+    ) -> &StdHashMap<Vec<u8>, crate::cexpr::expr::EvalResult> {
         debug_assert!(!self.in_codegen_phase());
         &self.parsed_macros
     }
@@ -2141,7 +2141,7 @@ If you encounter an error missing from this list, please file an issue or a PR!"
     pub(crate) fn note_parsed_macro(
         &mut self,
         id: Vec<u8>,
-        value: cexpr::expr::EvalResult,
+        value: crate::cexpr::expr::EvalResult,
     ) {
         self.parsed_macros.insert(id, value);
     }

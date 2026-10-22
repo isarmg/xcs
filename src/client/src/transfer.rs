@@ -3,8 +3,8 @@ use super::{Client, Error, response::decode, segment};
 use futures::StreamExt;
 use json_codec::Value;
 use std::path::Path;
-use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 use tokio::adapters::io::ReaderStream;
+use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 
 // Match the hashing pass's maximum read size without reserving a large body
 // buffer for tiny files. Clamp before converting to usize (including on wasm).

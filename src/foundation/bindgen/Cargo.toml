@@ -52,10 +52,6 @@ path = "lib.rs"
 version = "2.2.1"
 path = "../flag-set"
 
-[dependencies.cexpr]
-version = "0.6"
-path = "../cexpr"
-
 [dependencies.clang-sys]
 version = "1"
 features = ["clang_11_0"]

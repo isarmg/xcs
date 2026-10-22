@@ -30,6 +30,7 @@ case "${1:-}" in
     cargo test --locked --offline --lib -p password-hash
     ;;
   foundation-data)
+    python3 .github/scripts/check-binding-expressions.py --clang
     python3 .github/scripts/check-sqlite-scope.py
     cargo test --locked --offline --lib -p sqlite-access
     python3 .github/scripts/check-sqlite-family.py
@@ -40,6 +41,7 @@ case "${1:-}" in
     python3 .github/scripts/check-date-time-family.py
     ;;
   foundation-language)
+    python3 .github/scripts/check-binding-expressions.py
     python3 .github/scripts/check-foundation-consumers.py
     python3 .github/scripts/check-serialization-family.py
     python3 .github/scripts/check-serialization-consolidation.py

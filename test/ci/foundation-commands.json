@@ -128,6 +128,13 @@
     {
       "tool": "python3",
       "args": [
+        ".github/scripts/check-binding-expressions.py",
+        "--clang"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
         ".github/scripts/check-sqlite-scope.py"
       ]
     },
@@ -185,6 +192,12 @@
     }
   ],
   "foundation-language": [
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-binding-expressions.py"
+      ]
+    },
     {
       "tool": "python3",
       "args": [

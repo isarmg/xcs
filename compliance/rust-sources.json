@@ -6,6 +6,7 @@
     "2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61": "2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61",
     "31e6d886b8add9212549d465739e4e908a9987ac7c96cb88daeaa89938890d63": "31e6d886b8add9212549d465739e4e908a9987ac7c96cb88daeaa89938890d63",
     "42b1278a81520b8ad0f2149965a98ff89ef4a3a9a1606c924213166c5d9b0b3e": "42b1278a81520b8ad0f2149965a98ff89ef4a3a9a1606c924213166c5d9b0b3e",
+    "42e53f76335dda5915e9f4108d5286467d7da0947c5bf25b3f483702921db386": "42e53f76335dda5915e9f4108d5286467d7da0947c5bf25b3f483702921db386",
     "456f0a67c6a6a12bcc70286ce525402679257a11c2bb88965ca13ad5eb5f4652": "456f0a67c6a6a12bcc70286ce525402679257a11c2bb88965ca13ad5eb5f4652",
     "4a98b25902d1eccdf797328137506f3d18f8101bc4b45c6128d831e5b8478eb3": "4a98b25902d1eccdf797328137506f3d18f8101bc4b45c6128d831e5b8478eb3",
     "4d2efffc72662e128c83438024fc54a058196b6625d3de6b3e0c3df0ec71e074": "4d2efffc72662e128c83438024fc54a058196b6625d3de6b3e0c3df0ec71e074",
@@ -13322,6 +13323,947 @@
       "new_files": {},
       "primary_directory": "src/foundation/sqlx",
       "reason": "Consolidate the safe query engine, SQLite driver and facade into one functional SQLite access package; preserve all three upstream origins, unsafe module boundaries and exact external test attribution."
+    },
+    "42e53f76335dda5915e9f4108d5286467d7da0947c5bf25b3f483702921db386": {
+      "destination_directory": "src/foundation/bindgen",
+      "destination_external_tests": {
+        "bytes": 38128,
+        "directory": "src/foundation/bindgen",
+        "file_count": 30,
+        "files": [
+          {
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "path": "test/foundation/bindgen/cexpr/tests/clang.rs",
+            "sha256": "1b54f03f929c9f87d20565c70dcafcc463be906d106d71f2a9a8c9e4c5c69a77",
+            "source": "src/foundation/cexpr/tests/clang.rs",
+            "source_sha256_before": "5bb9807f35f760065d15cb9dfb7d8b79c2f734aef7ba5fe3737154155ed8ee73"
+          },
+          {
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "path": "test/foundation/bindgen/cexpr/tests/input/chars.h",
+            "sha256": "69c8141870872b795b5174bad125b748732c2b01d0e98ffcfc37b19f3f791f69",
+            "source": "src/foundation/cexpr/tests/input/chars.h",
+            "source_sha256_before": "69c8141870872b795b5174bad125b748732c2b01d0e98ffcfc37b19f3f791f69"
+          },
+          {
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "path": "test/foundation/bindgen/cexpr/tests/input/fail.h",
+            "sha256": "b0b6cffd2dd17410b5eb02ee79ab75754820480b960db8a9866cc9983bd36b65",
+            "source": "src/foundation/cexpr/tests/input/fail.h",
+            "source_sha256_before": "b0b6cffd2dd17410b5eb02ee79ab75754820480b960db8a9866cc9983bd36b65"
+          },
+          {
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "path": "test/foundation/bindgen/cexpr/tests/input/floats.h",
+            "sha256": "28ec664e793c494e1a31f3bc5b790014e9921fc741bf475a86319b9a9eee5915",
+            "source": "src/foundation/cexpr/tests/input/floats.h",
+            "source_sha256_before": "28ec664e793c494e1a31f3bc5b790014e9921fc741bf475a86319b9a9eee5915"
+          },
+          {
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "path": "test/foundation/bindgen/cexpr/tests/input/int_signed.h",
+            "sha256": "934199eded85dd7820ca08c0beb1381ee6d9339970d2720a69c23025571707ce",
+            "source": "src/foundation/cexpr/tests/input/int_signed.h",
+            "source_sha256_before": "934199eded85dd7820ca08c0beb1381ee6d9339970d2720a69c23025571707ce"
+          },
+          {
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "path": "test/foundation/bindgen/cexpr/tests/input/int_unsigned.h",
+            "sha256": "7b8023ba468ec76b184912692bc40e8fbcdd92ad86ec5a7c0dbcb02f2b8d961d",
+            "source": "src/foundation/cexpr/tests/input/int_unsigned.h",
+            "source_sha256_before": "7b8023ba468ec76b184912692bc40e8fbcdd92ad86ec5a7c0dbcb02f2b8d961d"
+          },
+          {
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "path": "test/foundation/bindgen/cexpr/tests/input/strings.h",
+            "sha256": "2dd11bc066f34e8cb1916a28353e9e9a3a21cd406651b2f94fc47e89c95d9cba",
+            "source": "src/foundation/cexpr/tests/input/strings.h",
+            "source_sha256_before": "2dd11bc066f34e8cb1916a28353e9e9a3a21cd406651b2f94fc47e89c95d9cba"
+          },
+          {
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "path": "test/foundation/bindgen/cexpr/tests/input/test_llvm_bug_9069.h",
+            "sha256": "8d9ae1d1eadc8f6d5c14296f984547fe894d0f2ce5cd6d7aa8caad40a56bc5e1",
+            "source": "src/foundation/cexpr/tests/input/test_llvm_bug_9069.h",
+            "source_sha256_before": "8d9ae1d1eadc8f6d5c14296f984547fe894d0f2ce5cd6d7aa8caad40a56bc5e1"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_get_bit_26.rs",
+            "sha256": "9a12fef5110e291d9d5654d9974fcbd5ffffadc0fda94935a832d80d765eca84",
+            "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
+            "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_set_bit_48.rs",
+            "sha256": "7500e1e29c3227e7b3381829e2d002941e02d620773174ccab689e130044a670",
+            "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
+            "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/codegen/struct_layout/test_align_to_65.rs",
+            "sha256": "7427defbec461e4af34089011e8bd29b63c3bfef4eb7fcb11d5811531b0d54bc",
+            "source": "src/foundation/bindgen/codegen/struct_layout.rs",
+            "source_sha256_before": "78b38cc064491d854516dcf36e268b45e549d2bd3150ea4cb390529f656b2132"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/codegen/struct_layout/test_bytes_from_bits_pow2_74.rs",
+            "sha256": "6b13d0ca604bd833d298f90469e6a472b3a7522c99bb00d7b705782d561f49e8",
+            "source": "src/foundation/bindgen/codegen/struct_layout.rs",
+            "source_sha256_before": "78b38cc064491d854516dcf36e268b45e549d2bd3150ea4cb390529f656b2132"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/ir/layout/test_layout_for_size_20.rs",
+            "sha256": "fe90309dfe444efa4ec61e5b1ce44aa5f9eef0a28fe79fb6213d178a7c320091",
+            "source": "src/foundation/bindgen/ir/layout.rs",
+            "source_sha256_before": "5b2958eb3d5e5d96bd85ce02925d936e89d3147c62cd225e3a0ae7f042b74fca"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_empty_name_513.rs",
+            "sha256": "6359e92ad4b7cab4c1354d719f79f6063ac0898a5ec76b86d653b3a761ad36d2",
+            "source": "src/foundation/bindgen/ir/ty.rs",
+            "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_remaining_500.rs",
+            "sha256": "e1c90c85377b3f1a1ecd03644466bb47668da28d81d62437f60620d3c8ea21b4",
+            "source": "src/foundation/bindgen/ir/ty.rs",
+            "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_start_494.rs",
+            "sha256": "e904acc3c1a144acfac43d9d11512bb725e5c19237acc893f317586c77c79bf5",
+            "source": "src/foundation/bindgen/ir/ty.rs",
+            "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_unnamed_506.rs",
+            "sha256": "929df7b1f75b8e11ee22a5f4af83530bfa67dfa2a9d691e57a85f623d9c576db",
+            "source": "src/foundation/bindgen/ir/ty.rs",
+            "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_471.rs",
+            "sha256": "f6c44dc09d1579445ebd23369e73c1382961c89e25e215017ee66ca32b606973",
+            "source": "src/foundation/bindgen/ir/ty.rs",
+            "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_underscore_and_numbers_477.rs",
+            "sha256": "a50aa8e254efb3bac87ff4cc3b8377e27463a4ea5f5aaacd886222c5cb9e5040",
+            "source": "src/foundation/bindgen/ir/ty.rs",
+            "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_unnamed_kind_488.rs",
+            "sha256": "dde488b398d033d764473667eecafd62bb9f4e0f362c223951449faa3125f855",
+            "source": "src/foundation/bindgen/ir/ty.rs",
+            "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/lib/commandline_flag_unit_test_function_1315.rs",
+            "sha256": "4ed9a9ce7ab2e05a617e3f0e60fa81ed9ddee454ded708326eec9a805158c4f3",
+            "source": "src/foundation/bindgen/lib.rs",
+            "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_1360.rs",
+            "sha256": "eea35784f1c5d6114a89ea6eea91666a5cedb616870450fa47ec4f79a5f4fcb4",
+            "source": "src/foundation/bindgen/lib.rs",
+            "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_espidf_1396.rs",
+            "sha256": "f8f0b609ee5b6cd749afdb654fc135b86a265850b8706321217bd657de08c6ae",
+            "source": "src/foundation/bindgen/lib.rs",
+            "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_riscv_1368.rs",
+            "sha256": "0160698a8eaf7e4000c8466079642eb1882779559207cf96d064ffe4630b2eb1",
+            "source": "src/foundation/bindgen/lib.rs",
+            "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_simulator_1408.rs",
+            "sha256": "b7a5be0a5e25c6ee7b0deed166565abfda351fdf5cfaedc818c0007283b3c17a",
+            "source": "src/foundation/bindgen/lib.rs",
+            "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/modules/codegen/bitfield_unit_tests.rs",
+            "sha256": "b5ceca02f13d0554c5d4d02bc52b921736b5ce4cd59ad4ce0bde91b6e7087300",
+            "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
+            "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/unit/deps/tests_27.rs",
+            "sha256": "69666f8fa646ea778cc5b9aea827915405e1088d271939484104f437d6f30868",
+            "source": "src/foundation/bindgen/deps.rs",
+            "source_sha256_before": "297dcc2be53af1a3ea4f77e16902a641f3e6f0baad09c06a6ea26050a0281c18"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/unit/features/test_473.rs",
+            "sha256": "7cf74ca31962e9a4b20833575a10c171e2b7a4fdc724a971c548cef6127dd490",
+            "source": "src/foundation/bindgen/features.rs",
+            "source_sha256_before": "ad17b96bf6b97cecb33d2b4710261341b1e3828263531708157d2b206af65c77"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/unit/ir/analysis/mod/tests_211.rs",
+            "sha256": "f126d90359e62d8591bc3609a5dd8a88b2de14d495df667b9223f1785b04dc27",
+            "source": "src/foundation/bindgen/ir/analysis/mod.rs",
+            "source_sha256_before": "93edca96d765dfa19ac231198027b0ba48c623502a8be1dbf799a241cd6b304b"
+          },
+          {
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "path": "test/foundation/bindgen/unit/ir/comment/test_68.rs",
+            "sha256": "464207fbe56b789fade8053e5fac61990c68b0d52af355f5b7a1223b691c8e26",
+            "source": "src/foundation/bindgen/ir/comment.rs",
+            "source_sha256_before": "57863204d329ae82872ecc4829cc299969ff07da3a32a4a13d7d84429f55b84d"
+          }
+        ],
+        "origin_directory": "vendor/rust/bindgen-0.72.1",
+        "roots": [
+          "test/foundation/bindgen"
+        ]
+      },
+      "destination_files_sha256": {
+        "Cargo.toml": "40f598dd523207ec682528897d8142bbc557fb7fe17afe13e1d99e0275c3b128",
+        "build.rs": "f7a10af0a21662e104e0058da7e3471a20be328eef6c7c41988525be90fdfe92",
+        "callbacks.rs": "9359c4eaeb8820845acb0b8ebba1565bac92588a2e20437fb857156b3cc94ff2",
+        "clang.rs": "7ed95ef7bcac8f0daff04c57d4afe71904c0ca2113f00135388b622b76a79c81",
+        "codegen/bitfield_unit.rs": "bcec32a8289eb8643bdc7aae0636aecac9f28e83895ebd330a4b0d1d3468bb4c",
+        "codegen/bitfield_unit_raw_ref_macros.rs": "cd9a02db7a0f0d2db79dc6b54c64eec2b438d2124928127266a5e30cf451696e",
+        "codegen/dyngen.rs": "1b42f7fa9fb65ff2fa898b289a3b934d7b21c5ba6c1b3e37aa97f0faa87769a0",
+        "codegen/error.rs": "67680c4d171d63848d9eb4ddd5f100be7463564e8c1c9203fefc0e61a19dfdec",
+        "codegen/helpers.rs": "46645977102a62aa7ca3fb4c7edb06579eac2c1a30081f8f615e5fa4e24754d1",
+        "codegen/impl_debug.rs": "dff9ca17a9397f327841f6321056cc0bdffe1f52106ec08879bcc74c22d4f383",
+        "codegen/impl_partialeq.rs": "60623e75c079ccadc4b928acd2cf78449db84591b720e242fc10ee1417678981",
+        "codegen/mod.rs": "456477a65fbf95689049d020642a9b1d120c12c9e1e54310cfba74a5623b40f9",
+        "codegen/postprocessing/merge_extern_blocks.rs": "2641f9c8d67ec4ca83d440c15fe554def8c7f566c478daaf4bd82c93590f8283",
+        "codegen/postprocessing/mod.rs": "4f927f1c72b013948c4ec00bfb1d34ba589fe33bd9191b81ec4be5852dfd185f",
+        "codegen/postprocessing/sort_semantically.rs": "b26c0656a0b0ec94bbf3c427ba00516a540e0e338c6c8a5dd9df67822208a38a",
+        "codegen/serialize.rs": "d57eb31ba0fda825241f886336279573050b396e52badf3886e0bc76a15110ad",
+        "codegen/struct_layout.rs": "cf791f1169067ce9f4c0eacda10c9dd87f42bd90b315ed6a504331eb119dc79f",
+        "deps.rs": "882c2aacc90630629f002fd1f4e38176356f412f5c069029a5853822a57f87f2",
+        "diagnostics.rs": "9c80043ac9fa8f683019577f311853a0d5929e41a95b3255736f80105914cdfa",
+        "extra_assertions.rs": "1596b7e7f031714dc699ebda135e795f1ecfc971ce9de6861a3c00e77fcef011",
+        "features.rs": "454bc7047978cecdad14e86da6a244a3d199dbdc1380ccfbc04ee361c7716a18",
+        "ir/analysis/derive.rs": "f0bd1b6362ed9a8e8bc6933bf1af29cceabde84015dc34d76f34d3e4c56a4103",
+        "ir/analysis/has_destructor.rs": "64dc142ff8c56db94b464f0f03ecd25317c8c1d6cd2a7304d2d3a0ff0a0db890",
+        "ir/analysis/has_float.rs": "9fb88d05c5920e9000e5cb6e87775c0d1042a6b11205577e281ba281e6e6acdb",
+        "ir/analysis/has_type_param_in_array.rs": "0975d1ce43bcba97eb303635118e74d494d46ac67cf5ee53faf6f6584a556cef",
+        "ir/analysis/has_vtable.rs": "3e1a807feccb55d6148e81512417b56cd1d70a70783508b65a3ff2abde461d2b",
+        "ir/analysis/mod.rs": "0c361e0a94cca0c3a9bb4196773795cf94251243b1729c0d92fc3f4c5235cdfb",
+        "ir/analysis/sizedness.rs": "0b78e70737e038ebdee2c3d195194a060c9287000b9059ded0686728a89b4ff2",
+        "ir/analysis/template_params.rs": "a8dfd3e02b1745a5b7c6faa16309bd0b8a88d76b7fedca27c322782cc9e77177",
+        "ir/annotations.rs": "8397ced62808fe99dfdde35792cd8b2389e7828d752a6c8aa3a70c1e14595e11",
+        "ir/comment.rs": "34be16c23a7e4d90f8858d2000f6f152cf71bf21a9eeb33ebaea9507eb321aee",
+        "ir/comp.rs": "0aba7a7c1a3582e563a7fd2120e3729d278e9931cd7f963f6dc9452ced710d30",
+        "ir/context.rs": "7737b663d9859e29af835910d83cef20688eb8393d25489f57e1f4195f3efe05",
+        "ir/derive.rs": "09860cffec0ebecce31da0c6c9ea0cf9a0d4784262ff4eb16ea459c0d0782ac9",
+        "ir/dot.rs": "8b8f6dd13e662fcb4114949025cb43467b34fa4998a3371c101db5dd82688f44",
+        "ir/enum_ty.rs": "5d7ae2e3de172d9812425e8cc6e30d559b0743620b3b09f7d72f3b05a7e1ce98",
+        "ir/function.rs": "a8296565624f1be38eaa01cea638e39eb1e2ee9de6859fc63a070f5a190c4c8c",
+        "ir/int.rs": "1bf1e4d87eca13ee2fc38ff4d56c266f303f188796f5c0d290f53162798d2d01",
+        "ir/item.rs": "d11623c01e1a9128063be4e4bde5c459a0a2f10fd9e323fced3cd4bc8d394b6c",
+        "ir/item_kind.rs": "799fab994b5ed35045786a68003c2c12b6601cf3b07e8ccc0b9acd6f921217e0",
+        "ir/layout.rs": "ed8d4e193bce095853edbefc6d71213b44c19fabd838fea7f3c3c4953385eac3",
+        "ir/mod.rs": "a3b98b1732111a980a795c72eaf1e09101e842ef2de76b4f2d4a7857f8d4cee4",
+        "ir/module.rs": "617867617ebd7e56157a9ba057441ce11a33c25138a1da64646f44ccaae7c762",
+        "ir/objc.rs": "f37af6ea0361905ad6dc5753dbf82cc828822b9d092b6c941c37d089463e615a",
+        "ir/template.rs": "1114c0924323f8b30bb32dbb3f6730dd7f5bc1f0771ad5099738e8e57111c07d",
+        "ir/traversal.rs": "3ebde94ead0fe69d51541ab61d700c7c1f6382574e4c110b8c7fe3e2c6218f19",
+        "ir/ty.rs": "e2d84ab90fc87ac2c290e0a589dab27c84f236ec819f6e432cb134d19a0e9524",
+        "ir/var.rs": "424a2faa2920f788f365ea64da3d1f1a906ec852d0289e91654089ed949dc3ce",
+        "lib.rs": "b0f6e07e4e4e50dc5befb22579e38d04ff9ddc4ac6a0298dd9765de275b6025f",
+        "log_stubs.rs": "a636d59af2fd3745c2e416e1ab8a1e1a3888ea84cd4657a321ce22f15e0c5a87",
+        "options/as_args.rs": "a1a5e7f0dde82590371fc1a9ea5fde7f3e2252530ca74d98bb49a8ce06cc864f",
+        "options/cli.rs": "51fc8ed7a8e10919672d7920ac70b799578ba78ac44b58e47ea7e1c263c9366b",
+        "options/helpers.rs": "f4a7681e29b2dcc3be9249478c499d685b9e29d4f4ca4ae8bff7a91668cd8f15",
+        "options/mod.rs": "95f1b4aa28af4791d9197b155d02c152618dd34b9db66e629fa32354f0056298",
+        "parse.rs": "fce3616e0464aa7414888e5d00d4df18c83bb3034a1c807d36a07a3c586e475a",
+        "regex_set.rs": "d8995adb9e5cecc2d738e662a62d5081150bf967cb67e1206070e22b7265578a",
+        "src/cexpr/expr.rs": "99b9568801b11b94ba165329c6dcc4ff83058a5a235f03a8d54bd7d08d11169a",
+        "src/cexpr/literal.rs": "2c0f3ed1e972f99c533f174bf467878fe25a444165586fec270dae4214e9f310",
+        "src/cexpr/mod.rs": "477faf5812214fd11e9be4ff86aaf8c6b9f566a0578893bb80b394e8afa7468b",
+        "src/cexpr/parser.rs": "36d45471c0c2e25b0fb50bab549cb5b03e624ea0bce79ef0a07f03c5fea4318d",
+        "src/cexpr/token.rs": "cd1ba6315b0137de9a0711670dd1840ac76c41f3b88dcd1a93ad77e1800c703f",
+        "time.rs": "1429af446b2b38c70ceec82c4202d4822c618cad47ba502dce72dbdc4cbb425e"
+      },
+      "destination_name": "bindgen",
+      "external_file_routes": {
+        "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_get_bit_26.rs": {
+          "destination": "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_get_bit_26.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_set_bit_48.rs": {
+          "destination": "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_set_bit_48.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/codegen/struct_layout/test_align_to_65.rs": {
+          "destination": "test/foundation/bindgen/functions/codegen/struct_layout/test_align_to_65.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/codegen/struct_layout/test_bytes_from_bits_pow2_74.rs": {
+          "destination": "test/foundation/bindgen/functions/codegen/struct_layout/test_bytes_from_bits_pow2_74.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/ir/layout/test_layout_for_size_20.rs": {
+          "destination": "test/foundation/bindgen/functions/ir/layout/test_layout_for_size_20.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_empty_name_513.rs": {
+          "destination": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_empty_name_513.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_remaining_500.rs": {
+          "destination": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_remaining_500.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_start_494.rs": {
+          "destination": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_start_494.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_unnamed_506.rs": {
+          "destination": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_unnamed_506.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_471.rs": {
+          "destination": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_471.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_underscore_and_numbers_477.rs": {
+          "destination": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_underscore_and_numbers_477.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_unnamed_kind_488.rs": {
+          "destination": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_unnamed_kind_488.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/lib/commandline_flag_unit_test_function_1315.rs": {
+          "destination": "test/foundation/bindgen/functions/lib/commandline_flag_unit_test_function_1315.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_1360.rs": {
+          "destination": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_1360.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_espidf_1396.rs": {
+          "destination": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_espidf_1396.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_riscv_1368.rs": {
+          "destination": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_riscv_1368.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_simulator_1408.rs": {
+          "destination": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_simulator_1408.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/modules/codegen/bitfield_unit_tests.rs": {
+          "destination": "test/foundation/bindgen/modules/codegen/bitfield_unit_tests.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/unit/deps/tests_27.rs": {
+          "destination": "test/foundation/bindgen/unit/deps/tests_27.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/unit/features/test_473.rs": {
+          "destination": "test/foundation/bindgen/unit/features/test_473.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/unit/ir/analysis/mod/tests_211.rs": {
+          "destination": "test/foundation/bindgen/unit/ir/analysis/mod/tests_211.rs",
+          "replacements": []
+        },
+        "test/foundation/bindgen/unit/ir/comment/test_68.rs": {
+          "destination": "test/foundation/bindgen/unit/ir/comment/test_68.rs",
+          "replacements": []
+        },
+        "test/foundation/cexpr/tests/clang.rs": {
+          "destination": "test/foundation/bindgen/cexpr/tests/clang.rs",
+          "replacements": [
+            {
+              "new": "I1twYXRoID0gIi4uLy4uLy4uLy4uLy4uL3NyYy9mb3VuZGF0aW9uL2JpbmRnZW4vc3JjL2NleHByL21vZC5ycyJdCm1vZCBjZXhwcjsKZXh0ZXJuIGNyYXRlIGNsYW5nX3N5czsKCnVzZSBzdGQ6OmNvbGxlY3Rpb25zOjpIYXNoTWFwOwp1c2Ugc3RkOjppbzo6V3JpdGU7CnVzZSBzdGQ6OnN0cjo6e3NlbGYsIEZyb21TdHJ9Owp1c2Ugc3RkOjp7Y2hhciwgZmZpLCBtZW0sIHB0ciwgc2xpY2V9OwoKdXNlIGNleHByOjphc3NlcnRfZnVsbF9wYXJzZTsKdXNlIGNleHByOjpleHByOjp7Zm5fbWFjcm9fZGVjbGFyYXRpb24sIEV2YWxSZXN1bHQsIElkZW50aWZpZXJQYXJzZXJ9Owp1c2UgY2V4cHI6OmxpdGVyYWw6OkNDaGFyOwp1c2UgY2V4cHI6OnRva2VuOjpUb2tlbjsKdXNlIGNsYW5nX3N5czo6KjsKCi8vIG1haW4gdGVzdGluZyByb3V0aW5lCmZuIHRlc3RfZGVmaW5pdGlvbigKICAgIGlkZW50OiBWZWM8dTg+LAogICAgdG9rZW5zOiAmW1Rva2VuXSwKICAgIGlkZW50czogJm11dCBIYXNoTWFwPFZlYzx1OD4sIEV2YWxSZXN1bHQ+LAopIC0+IGJvb2wgewogICAgZm4gYnl0ZXNfdG9faW50KHZhbHVlOiAmW3U4XSkgLT4gT3B0aW9uPEV2YWxSZXN1bHQ+IHsKICAgICAgICBzdHI6OmZyb21fdXRmOCh2YWx1ZSkKICAgICAgICAgICAgLm9rKCkKICAgICAgICAgICAgLm1hcCh8c3wgcy5yZXBsYWNlKCJuIiwgIi0iKSkKICAgICAgICAgICAgLm1hcCh8c3wgcy5yZXBsYWNlKCJfIiwgIiIpKQogICAgICAgICAgICAuYW5kX3RoZW4ofHZ8IGk2NDo6ZnJvbV9zdHIoJnYpLm9rKCkpCiAgICAgICAgICAgIC5tYXAoOjpzdGQ6Om51bTo6V3JhcHBpbmcpCiAgICAgICAgICAgIC5tYXAoSW50KQogICAgfQoKICAgIHVzZSBjZXhwcjo6ZXhwcjo6RXZhbFJlc3VsdDo6KjsKCiAgICBsZXQgZGlzcGxheV9uYW1lID0gU3RyaW5nOjpmcm9tX3V0ZjhfbG9zc3koJmlkZW50KS5pbnRvX293bmVkKCk7CgogICAgbGV0IGZ1bmN0aW9uYWw7CiAgICBsZXQgdGVzdCA9IHsKICAgICAgICAvLyBTcGxpdCBuYW1lIHN1Y2ggYXMgU3RyX3Rlc3Rfc3RyaW5nIGludG8gKFN0cix0ZXN0X3N0cmluZykKICAgICAgICBsZXQgcG9zID0gaWRlbnQKICAgICAgICAgICAgLml0ZXIoKQogICAgICAgICAgICAucG9zaXRpb24ofGN8ICpjID09IGInXycpCiAgICAgICAgICAgIC5leHBlY3QoJmZvcm1hdCEoIkludmFsaWQgZGVmaW5pdGlvbiBpbiB0ZXN0Y2FzZToge30iLCBkaXNwbGF5X25hbWUpKTsKICAgICAgICBsZXQgbXV0IGV4cGVjdGVkID0gJmlkZW50Wy4ucG9zXTsKICAgICAgICBsZXQgbXV0IHZhbHVlID0gJmlkZW50Wyhwb3MgKyAxKS4uXTsKCiAgICAgICAgZnVuY3Rpb25hbCA9IGV4cGVjdGVkID09IGIiRm4iOwoKICAgICAgICBpZiBmdW5jdGlvbmFsIHsKICAgICAgICAgICAgbGV0IGlkZW50ID0gdmFsdWU7CiAgICAgICAgICAgIGxldCBwb3MgPSBpZGVudAogICAgICAgICAgICAgICAgLml0ZXIoKQogICAgICAgICAgICAgICAgLnBvc2l0aW9uKHxjfCAqYyA9PSBiJ18nKQogICAgICAgICAgICAgICAgLmV4cGVjdCgmZm9ybWF0ISgiSW52YWxpZCBkZWZpbml0aW9uIGluIHRlc3RjYXNlOiB7fSIsIGRpc3BsYXlfbmFtZSkpOwogICAgICAgICAgICBleHBlY3RlZCA9ICZpZGVudFsuLnBvc107CiAgICAgICAgICAgIHZhbHVlID0gJmlkZW50Wyhwb3MgKyAxKS4uXTsKICAgICAgICB9CgogICAgICAgIGlmIGV4cGVjdGVkID09IGIiU3RyIiB7CiAgICAgICAgICAgIGxldCBtdXQgc3BsaXRzID0gdmFsdWUuc3BsaXQofGN8ICpjID09IGInVScpOwogICAgICAgICAgICBsZXQgbXV0IHMgPSBWZWM6OndpdGhfY2FwYWNpdHkodmFsdWUubGVuKCkpOwogICAgICAgICAgICBzLmV4dGVuZF9mcm9tX3NsaWNlKHNwbGl0cy5uZXh0KCkudW53cmFwKCkpOwogICAgICAgICAgICBmb3Igc3BsaXQgaW4gc3BsaXRzIHsKICAgICAgICAgICAgICAgIGxldCAoY2hyLCByZXN0KSA9IHNwbGl0LnNwbGl0X2F0KDYpOwogICAgICAgICAgICAgICAgbGV0IGNociA9IHUzMjo6ZnJvbV9zdHJfcmFkaXgoc3RyOjpmcm9tX3V0ZjgoY2hyKS51bndyYXAoKSwgMTYpLnVud3JhcCgpOwogICAgICAgICAgICAgICAgd3JpdGUhKHMsICJ7fSIsIGNoYXI6OmZyb21fdTMyKGNocikudW53cmFwKCkpLnVud3JhcCgpOwogICAgICAgICAgICAgICAgcy5leHRlbmRfZnJvbV9zbGljZShyZXN0KTsKICAgICAgICAgICAgfQogICAgICAgICAgICBTb21lKFN0cihzKSkKICAgICAgICB9IGVsc2UgaWYgZXhwZWN0ZWQgPT0gYiJJbnQiIHsKICAgICAgICAgICAgYnl0ZXNfdG9faW50KHZhbHVlKQogICAgICAgIH0gZWxzZSBpZiBleHBlY3RlZCA9PSBiIkZsb2F0IiB7CiAgICAgICAgICAgIHN0cjo6ZnJvbV91dGY4KHZhbHVlKQogICAgICAgICAgICAgICAgLm9rKCkKICAgICAgICAgICAgICAgIC5tYXAofHN8IHMucmVwbGFjZSgibiIsICItIikucmVwbGFjZSgicCIsICIuIikpCiAgICAgICAgICAgICAgICAuYW5kX3RoZW4ofHZ8IGY2NDo6ZnJvbV9zdHIoJnYpLm9rKCkpCiAgICAgICAgICAgICAgICAubWFwKEZsb2F0KQogICAgICAgIH0gZWxzZSBpZiBleHBlY3RlZCA9PSBiIkNoYXJSYXciIHsKICAgICAgICAgICAgc3RyOjpmcm9tX3V0ZjgodmFsdWUpCiAgICAgICAgICAgICAgICAub2soKQogICAgICAgICAgICAgICAgLmFuZF90aGVuKHx2fCB1NjQ6OmZyb21fc3RyKHYpLm9rKCkpCiAgICAgICAgICAgICAgICAubWFwKENDaGFyOjpSYXcpCiAgICAgICAgICAgICAgICAubWFwKENoYXIpCiAgICAgICAgfSBlbHNlIGlmIGV4cGVjdGVkID09IGIiQ2hhckNoYXIiIHsKICAgICAgICAgICAgc3RyOjpmcm9tX3V0ZjgodmFsdWUpCiAgICAgICAgICAgICAgICAub2soKQogICAgICAgICAgICAgICAgLmFuZF90aGVuKHx2fCB1MzI6OmZyb21fc3RyKHYpLm9rKCkpCiAgICAgICAgICAgICAgICAuYW5kX3RoZW4oY2hhcjo6ZnJvbV91MzIpCiAgICAgICAgICAgICAgICAubWFwKENDaGFyOjpDaGFyKQogICAgICAgICAgICAgICAgLm1hcChDaGFyKQogICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgIFNvbWUoSW52YWxpZCkKICAgICAgICB9CiAgICAgICAgLmV4cGVjdCgmZm9ybWF0ISgiSW52YWxpZCBkZWZpbml0aW9uIGluIHRlc3RjYXNlOiB7fSIsIGRpc3BsYXlfbmFtZSkpCiAgICB9OwoKICAgIGxldCByZXN1bHQgPSBpZiBmdW5jdGlvbmFsIHsKICAgICAgICBsZXQgbXV0IGZuaWRlbnRzOwogICAgICAgIGxldCBleHByX3Rva2VuczsKICAgICAgICBtYXRjaCBmbl9tYWNyb19kZWNsYXJhdGlvbigmdG9rZW5zKSB7CiAgICAgICAgICAgIE9rKChyZXN0LCAoXywgYXJncykpKSA9PiB7CiAgICAgICAgICAgICAgICBmbmlkZW50cyA9IGlkZW50cy5jbG9uZSgpOwogICAgICAgICAgICAgICAgZXhwcl90b2tlbnMgPSByZXN0OwogICAgICAgICAgICAgICAgZm9yIGFyZyBpbiBhcmdzIHsKICAgICAgICAgICAgICAgICAgICBsZXQgdmFsID0gbWF0Y2ggdGVzdCB7CiAgICAgICAgICAgICAgICAgICAgICAgIEludChfKSA9PiBieXRlc190b19pbnQoJmFyZyksCiAgICAgICAgICAgICAgICAgICAgICAgIFN0cihfKSA9PiBTb21lKFN0cihhcmcudG9fb3duZWQoKSkpLAogICAgICAgICAgICAgICAgICAgICAgICBfID0+IHVuaW1wbGVtZW50ZWQhKCksCiAgICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgICAgIC5leHBlY3QoJmZvcm1hdCEoCiAgICAgICAgICAgICAgICAgICAgICAgICJJbnZhbGlkIGFyZ3VtZW50IGluIGZ1bmN0aW9uYWwgbWFjcm8gdGVzdGNhc2U6IHt9IiwKICAgICAgICAgICAgICAgICAgICAgICAgZGlzcGxheV9uYW1lCiAgICAgICAgICAgICAgICAgICAgKSk7CiAgICAgICAgICAgICAgICAgICAgZm5pZGVudHMuaW5zZXJ0KGFyZy50b19vd25lZCgpLCB2YWwpOwogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgICAgIGUgPT4gewogICAgICAgICAgICAgICAgcHJpbnRsbiEoCiAgICAgICAgICAgICAgICAgICAgIkZhaWxlZCB0ZXN0IGZvciB7fSwgdW5hYmxlIHRvIHBhcnNlIGZ1bmN0aW9uYWwgbWFjcm8gZGVjbGFyYXRpb246IHs6P30iLAogICAgICAgICAgICAgICAgICAgIGRpc3BsYXlfbmFtZSwgZQogICAgICAgICAgICAgICAgKTsKICAgICAgICAgICAgICAgIHJldHVybiBmYWxzZTsKICAgICAgICAgICAgfQogICAgICAgIH0KICAgICAgICBhc3NlcnRfZnVsbF9wYXJzZShJZGVudGlmaWVyUGFyc2VyOjpuZXcoJmZuaWRlbnRzKS5leHByKCZleHByX3Rva2VucykpCiAgICB9IGVsc2UgewogICAgICAgIElkZW50aWZpZXJQYXJzZXI6Om5ldyhpZGVudHMpCiAgICAgICAgICAgIC5tYWNyb19kZWZpbml0aW9uKCZ0b2tlbnMpCiAgICAgICAgICAgIC5tYXAofChpLCAoXywgdmFsKSl8IChpLCB2YWwpKQogICAgfTsKCiAgICBtYXRjaCByZXN1bHQgewogICAgICAgIE9rKChfLCB2YWwpKSA9PiB7CiAgICAgICAgICAgIGlmIHZhbCA9PSB0ZXN0IHsKICAgICAgICAgICAgICAgIGlmIGxldCBTb21lKF8pID0gaWRlbnRzLmluc2VydChpZGVudCwgdmFsKSB7CiAgICAgICAgICAgICAgICAgICAgcGFuaWMhKCJEdXBsaWNhdGUgZGVmaW5pdGlvbiBmb3IgdGVzdGNhc2U6IHt9IiwgZGlzcGxheV9uYW1lKTsKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHRydWUKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIHByaW50bG4hKAogICAgICAgICAgICAgICAgICAgICJGYWlsZWQgdGVzdCBmb3Ige30sIGV4cGVjdGVkIHs6P30sIGdvdCB7Oj99IiwKICAgICAgICAgICAgICAgICAgICBkaXNwbGF5X25hbWUsIHRlc3QsIHZhbAogICAgICAgICAgICAgICAgKTsKICAgICAgICAgICAgICAgIGZhbHNlCiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICAgICAgZSA9PiB7CiAgICAgICAgICAgIGlmIHRlc3QgPT0gSW52YWxpZCB7CiAgICAgICAgICAgICAgICB0cnVlCiAgICAgICAgICAgIH0gZWxzZSB7CiAgICAgICAgICAgICAgICBwcmludGxuISgKICAgICAgICAgICAgICAgICAgICAiRmFpbGVkIHRlc3QgZm9yIHt9LCBleHBlY3RlZCB7Oj99LCBnb3Qgezo/fSIsCiAgICAgICAgICAgICAgICAgICAgZGlzcGxheV9uYW1lLCB0ZXN0LCBlCiAgICAgICAgICAgICAgICApOwogICAgICAgICAgICAgICAgZmFsc2UKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KfQoKLy8gc3VwcG9ydCBjb2RlIGZvciB0aGUgY2xhbmcgbGV4ZXIKdW5zYWZlIGZuIGNsYW5nX3N0cl90b192ZWMoczogQ1hTdHJpbmcpIC0+IFZlYzx1OD4gewogICAgbGV0IHZlYyA9IGZmaTo6Q1N0cjo6ZnJvbV9wdHIoY2xhbmdfZ2V0Q1N0cmluZyhzKSkKICAgICAgICAudG9fYnl0ZXMoKQogICAgICAgIC50b19vd25lZCgpOwogICAgY2xhbmdfZGlzcG9zZVN0cmluZyhzKTsKICAgIHZlYwp9CgojW2FsbG93KG5vbl91cHBlcl9jYXNlX2dsb2JhbHMpXQp1bnNhZmUgZm4gdG9rZW5fY2xhbmdfdG9fY2V4cHIodHU6IENYVHJhbnNsYXRpb25Vbml0LCBvcmlnOiAmQ1hUb2tlbikgLT4gVG9rZW4gewogICAgVG9rZW4gewogICAgICAgIGtpbmQ6IG1hdGNoIGNsYW5nX2dldFRva2VuS2luZCgqb3JpZykgewogICAgICAgICAgICBDWFRva2VuX0NvbW1lbnQgPT4gY2V4cHI6OnRva2VuOjpLaW5kOjpDb21tZW50LAogICAgICAgICAgICBDWFRva2VuX0lkZW50aWZpZXIgPT4gY2V4cHI6OnRva2VuOjpLaW5kOjpJZGVudGlmaWVyLAogICAgICAgICAgICBDWFRva2VuX0tleXdvcmQgPT4gY2V4cHI6OnRva2VuOjpLaW5kOjpLZXl3b3JkLAogICAgICAgICAgICBDWFRva2VuX0xpdGVyYWwgPT4gY2V4cHI6OnRva2VuOjpLaW5kOjpMaXRlcmFsLAogICAgICAgICAgICBDWFRva2VuX1B1bmN0dWF0aW9uID0+IGNleHByOjp0b2tlbjo6S2luZDo6UHVuY3R1YXRpb24sCiAgICAgICAgICAgIF8gPT4gcGFuaWMhKCJpbnZhbGlkIHRva2VuIGtpbmQ6IHs6P30iLCAqb3JpZyksCiAgICAgICAgfSwKICAgICAgICByYXc6IGNsYW5nX3N0cl90b192ZWMoY2xhbmdfZ2V0VG9rZW5TcGVsbGluZyh0dSwgKm9yaWcpKS5pbnRvX2JveGVkX3NsaWNlKCksCiAgICB9Cn0KCmV4dGVybiAiQyIgZm4gdmlzaXRfY2hpbGRyZW5fdGh1bms8Rj4oCiAgICBjdXI6IENYQ3Vyc29yLAogICAgcGFyZW50OiBDWEN1cnNvciwKICAgIGNsb3N1cmU6IENYQ2xpZW50RGF0YSwKKSAtPiBDWENoaWxkVmlzaXRSZXN1bHQKd2hlcmUKICAgIEY6IEZuTXV0KENYQ3Vyc29yLCBDWEN1cnNvcikgLT4gQ1hDaGlsZFZpc2l0UmVzdWx0LAp7CiAgICB1bnNhZmUgeyAoJm11dCAqKGNsb3N1cmUgYXMgKm11dCBGKSkoY3VyLCBwYXJlbnQpIH0KfQoKdW5zYWZlIGZuIHZpc2l0X2NoaWxkcmVuPEY+KGN1cnNvcjogQ1hDdXJzb3IsIG11dCBmOiBGKQp3aGVyZQogICAgRjogRm5NdXQoQ1hDdXJzb3IsIENYQ3Vyc29yKSAtPiBDWENoaWxkVmlzaXRSZXN1bHQsCnsKICAgIGNsYW5nX3Zpc2l0Q2hpbGRyZW4oCiAgICAgICAgY3Vyc29yLAogICAgICAgIHZpc2l0X2NoaWxkcmVuX3RodW5rOjo8Rj4gYXMgXywKICAgICAgICAmbXV0IGYgYXMgKm11dCBGIGFzIENYQ2xpZW50RGF0YSwKICAgICk7Cn0KCnVuc2FmZSBmbiBsb2NhdGlvbl9pbl9zY29wZShyOiBDWFNvdXJjZVJhbmdlKSAtPiBib29sIHsKICAgIGxldCBzdGFydCA9IGNsYW5nX2dldFJhbmdlU3RhcnQocik7CiAgICBsZXQgbXV0IGZpbGUgPSBwdHI6Om51bGxfbXV0KCk7CiAgICBjbGFuZ19nZXRTcGVsbGluZ0xvY2F0aW9uKAogICAgICAgIHN0YXJ0LAogICAgICAgICZtdXQgZmlsZSwKICAgICAgICBwdHI6Om51bGxfbXV0KCksCiAgICAgICAgcHRyOjpudWxsX211dCgpLAogICAgICAgIHB0cjo6bnVsbF9tdXQoKSwKICAgICk7CiAgICBjbGFuZ19Mb2NhdGlvbl9pc0Zyb21NYWluRmlsZShzdGFydCkgIT0gMAogICAgICAgICYmIGNsYW5nX0xvY2F0aW9uX2lzSW5TeXN0ZW1IZWFkZXIoc3RhcnQpID09IDAKICAgICAgICAmJiBmaWxlICE9IHB0cjo6bnVsbF9tdXQoKQp9CgovLy8gdG9rZW5pemVfcmFuZ2VfYWRqdXN0IGNhbiBiZSB1c2VkIHRvIHdvcmsgYXJvdW5kIExMVk0gYnVnIDkwNjkKLy8vIGh0dHBzOi8vYnVncy5sbHZtLm9yZy8vc2hvd19idWcuY2dpP2lkPTkwNjkKZm4gZmlsZV92aXNpdF9tYWNyb3M8RjogRm5NdXQoVmVjPHU4PiwgVmVjPFRva2VuPik+KAogICAgZmlsZTogJnN0ciwKICAgIHRva2VuaXplX3JhbmdlX2FkanVzdDogYm9vbCwKICAgIG11dCB2aXNpdG9yOiBGLAopIHsKICAgIHVuc2FmZSB7CiAgICAgICAgbGV0IHR1ID0gewogICAgICAgICAgICBsZXQgaW5kZXggPSBjbGFuZ19jcmVhdGVJbmRleCh0cnVlIGFzIF8sIGZhbHNlIGFzIF8pOwogICAgICAgICAgICBsZXQgY2ZpbGUgPSBmZmk6OkNTdHJpbmc6Om5ldyhmaWxlKS51bndyYXAoKTsKICAgICAgICAgICAgbGV0IG11dCB0dSA9IG1lbTo6TWF5YmVVbmluaXQ6OnVuaW5pdCgpOwogICAgICAgICAgICBhc3NlcnQhKAogICAgICAgICAgICAgICAgY2xhbmdfcGFyc2VUcmFuc2xhdGlvblVuaXQyKAogICAgICAgICAgICAgICAgICAgIGluZGV4LAogICAgICAgICAgICAgICAgICAgIGNmaWxlLmFzX3B0cigpLAogICAgICAgICAgICAgICAgICAgIFtiIi1zdGQ9YzExXDAiLmFzX3B0cigpIGFzICpjb25zdCA6OnN0ZDo6b3M6OnJhdzo6Y19jaGFyXS5hc19wdHIoKSwKICAgICAgICAgICAgICAgICAgICAxLAogICAgICAgICAgICAgICAgICAgIHB0cjo6bnVsbF9tdXQoKSwKICAgICAgICAgICAgICAgICAgICAwLAogICAgICAgICAgICAgICAgICAgIENYVHJhbnNsYXRpb25Vbml0X0RldGFpbGVkUHJlcHJvY2Vzc2luZ1JlY29yZCwKICAgICAgICAgICAgICAgICAgICAmbXV0ICp0dS5hc19tdXRfcHRyKCkKICAgICAgICAgICAgICAgICkgPT0gQ1hFcnJvcl9TdWNjZXNzLAogICAgICAgICAgICAgICAgIkZhaWx1cmUgcmVhZGluZyB0ZXN0IGNhc2Uge30iLAogICAgICAgICAgICAgICAgZmlsZQogICAgICAgICAgICApOwogICAgICAgICAgICB0dS5hc3N1bWVfaW5pdCgpCiAgICAgICAgfTsKICAgICAgICB2aXNpdF9jaGlsZHJlbihjbGFuZ19nZXRUcmFuc2xhdGlvblVuaXRDdXJzb3IodHUpLCB8Y3VyLCBfcGFyZW50fCB7CiAgICAgICAgICAgIGlmIGN1ci5raW5kID09IENYQ3Vyc29yX01hY3JvRGVmaW5pdGlvbiB7CiAgICAgICAgICAgICAgICBsZXQgbXV0IHJhbmdlID0gY2xhbmdfZ2V0Q3Vyc29yRXh0ZW50KGN1cik7CiAgICAgICAgICAgICAgICBpZiAhbG9jYXRpb25faW5fc2NvcGUocmFuZ2UpIHsKICAgICAgICAgICAgICAgICAgICByZXR1cm4gQ1hDaGlsZFZpc2l0X0NvbnRpbnVlOwogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcmFuZ2UuZW5kX2ludF9kYXRhIC09IGlmIHRva2VuaXplX3JhbmdlX2FkanVzdCB7IDEgfSBlbHNlIHsgMCB9OwogICAgICAgICAgICAgICAgbGV0IG11dCB0b2tlbl9wdHIgPSBwdHI6Om51bGxfbXV0KCk7CiAgICAgICAgICAgICAgICBsZXQgbXV0IG51bSA9IDA7CiAgICAgICAgICAgICAgICBjbGFuZ190b2tlbml6ZSh0dSwgcmFuZ2UsICZtdXQgdG9rZW5fcHRyLCAmbXV0IG51bSk7CiAgICAgICAgICAgICAgICBpZiB0b2tlbl9wdHIgIT0gcHRyOjpudWxsX211dCgpIHsKICAgICAgICAgICAgICAgICAgICBsZXQgdG9rZW5zID0gc2xpY2U6OmZyb21fcmF3X3BhcnRzKHRva2VuX3B0ciwgbnVtIGFzIHVzaXplKTsKICAgICAgICAgICAgICAgICAgICBsZXQgdG9rZW5zOiBWZWM8Xz4gPSB0b2tlbnMKICAgICAgICAgICAgICAgICAgICAgICAgLml0ZXIoKQogICAgICAgICAgICAgICAgICAgICAgICAuZmlsdGVyX21hcCh8dHwgewogICAgICAgICAgICAgICAgICAgICAgICAgICAgaWYgY2xhbmdfZ2V0VG9rZW5LaW5kKCp0KSAhPSBDWFRva2VuX0NvbW1lbnQgewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFNvbWUodG9rZW5fY2xhbmdfdG9fY2V4cHIodHUsIHQpKQogICAgICAgICAgICAgICAgICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBOb25lCiAgICAgICAgICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgICAgIH0pCiAgICAgICAgICAgICAgICAgICAgICAgIC5jb2xsZWN0KCk7CiAgICAgICAgICAgICAgICAgICAgY2xhbmdfZGlzcG9zZVRva2Vucyh0dSwgdG9rZW5fcHRyLCBudW0pOwogICAgICAgICAgICAgICAgICAgIHZpc2l0b3IoY2xhbmdfc3RyX3RvX3ZlYyhjbGFuZ19nZXRDdXJzb3JTcGVsbGluZyhjdXIpKSwgdG9rZW5zKQogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgICAgIENYQ2hpbGRWaXNpdF9Db250aW51ZQogICAgICAgIH0pOwogICAgICAgIGNsYW5nX2Rpc3Bvc2VUcmFuc2xhdGlvblVuaXQodHUpOwogICAgfTsKfQoKZm4gdGVzdF9maWxlKGZpbGU6ICZzdHIpIC0+IGJvb2wgewogICAgbGV0IG11dCBpZGVudHMgPSBIYXNoTWFwOjpuZXcoKTsKICAgIGxldCBtdXQgYWxsX3N1Y2NlZWRlZCA9IHRydWU7CiAgICBmaWxlX3Zpc2l0X21hY3JvcyhmaWxlLCBmaXhfYnVnXzkwNjkoKSwgfGlkZW50LCB0b2tlbnN8IHsKICAgICAgICBhbGxfc3VjY2VlZGVkICY9IHRlc3RfZGVmaW5pdGlvbihpZGVudCwgJnRva2VucywgJm11dCBpZGVudHMpCiAgICB9KTsKICAgIGFsbF9zdWNjZWVkZWQKfQoKZm4gZml4X2J1Z185MDY5KCkgLT4gYm9vbCB7CiAgICBmbiBjaGVja19idWdfOTA2OSgpIC0+IGJvb2wgewogICAgICAgIGxldCBtdXQgdG9rZW5fc2V0cyA9IHZlYyFbXTsKICAgICAgICBmaWxlX3Zpc2l0X21hY3JvcygKICAgICAgICAgICAgInRlc3QvZm91bmRhdGlvbi9iaW5kZ2VuL2NleHByL3Rlc3RzL2lucHV0L3Rlc3RfbGx2bV9idWdfOTA2OS5oIiwKICAgICAgICAgICAgZmFsc2UsCiAgICAgICAgICAgIHxpZGVudCwgdG9rZW5zfCB7CiAgICAgICAgICAgICAgICBhc3NlcnRfZXEhKCZpZGVudCwgYiJBIik7CiAgICAgICAgICAgICAgICB0b2tlbl9zZXRzLnB1c2godG9rZW5zKTsKICAgICAgICAgICAgfSwKICAgICAgICApOwogICAgICAgIGFzc2VydF9lcSEodG9rZW5fc2V0cy5sZW4oKSwgMik7CiAgICAgICAgdG9rZW5fc2V0c1swXSAhPSB0b2tlbl9zZXRzWzFdCiAgICB9CgogICAgdXNlIHN0ZDo6c3luYzo6YXRvbWljOjp7QXRvbWljQm9vbCwgT3JkZXJpbmd9OwogICAgdXNlIHN0ZDo6c3luYzo6T25jZTsKCiAgICBzdGF0aWMgQ0hFQ0tfRklYOiBPbmNlID0gT25jZTo6bmV3KCk7CiAgICBzdGF0aWMgRklYOiBBdG9taWNCb29sID0gQXRvbWljQm9vbDo6bmV3KGZhbHNlKTsKCiAgICBDSEVDS19GSVguY2FsbF9vbmNlKHx8IEZJWC5zdG9yZShjaGVja19idWdfOTA2OSgpLCBPcmRlcmluZzo6U2VxQ3N0KSk7CgogICAgRklYLmxvYWQoT3JkZXJpbmc6OlNlcUNzdCkKfQoKbWFjcm9fcnVsZXMhIHRlc3RfZmlsZSB7CiAgICAoJGY6aWRlbnQpID0+IHsKICAgICAgICAjW3Rlc3RdCiAgICAgICAgZm4gJGYoKSB7CiAgICAgICAgICAgIGFzc2VydCEoCiAgICAgICAgICAgICAgICB0ZXN0X2ZpbGUoY29uY2F0ISgidGVzdC9mb3VuZGF0aW9uL2JpbmRnZQ==",
+              "old": "ZXh0ZXJuIGNyYXRlIGNleHByOwpleHRlcm4gY3JhdGUgY2xhbmdfc3lzOwoKdXNlIHN0ZDo6Y29sbGVjdGlvbnM6Okhhc2hNYXA7CnVzZSBzdGQ6OmlvOjpXcml0ZTsKdXNlIHN0ZDo6c3RyOjp7c2VsZiwgRnJvbVN0cn07CnVzZSBzdGQ6OntjaGFyLCBmZmksIG1lbSwgcHRyLCBzbGljZX07Cgp1c2UgY2V4cHI6OmFzc2VydF9mdWxsX3BhcnNlOwp1c2UgY2V4cHI6OmV4cHI6Ontmbl9tYWNyb19kZWNsYXJhdGlvbiwgRXZhbFJlc3VsdCwgSWRlbnRpZmllclBhcnNlcn07CnVzZSBjZXhwcjo6bGl0ZXJhbDo6Q0NoYXI7CnVzZSBjZXhwcjo6dG9rZW46OlRva2VuOwp1c2UgY2xhbmdfc3lzOjoqOwoKLy8gbWFpbiB0ZXN0aW5nIHJvdXRpbmUKZm4gdGVzdF9kZWZpbml0aW9uKAogICAgaWRlbnQ6IFZlYzx1OD4sCiAgICB0b2tlbnM6ICZbVG9rZW5dLAogICAgaWRlbnRzOiAmbXV0IEhhc2hNYXA8VmVjPHU4PiwgRXZhbFJlc3VsdD4sCikgLT4gYm9vbCB7CiAgICBmbiBieXRlc190b19pbnQodmFsdWU6ICZbdThdKSAtPiBPcHRpb248RXZhbFJlc3VsdD4gewogICAgICAgIHN0cjo6ZnJvbV91dGY4KHZhbHVlKQogICAgICAgICAgICAub2soKQogICAgICAgICAgICAubWFwKHxzfCBzLnJlcGxhY2UoIm4iLCAiLSIpKQogICAgICAgICAgICAubWFwKHxzfCBzLnJlcGxhY2UoIl8iLCAiIikpCiAgICAgICAgICAgIC5hbmRfdGhlbih8dnwgaTY0Ojpmcm9tX3N0cigmdikub2soKSkKICAgICAgICAgICAgLm1hcCg6OnN0ZDo6bnVtOjpXcmFwcGluZykKICAgICAgICAgICAgLm1hcChJbnQpCiAgICB9CgogICAgdXNlIGNleHByOjpleHByOjpFdmFsUmVzdWx0OjoqOwoKICAgIGxldCBkaXNwbGF5X25hbWUgPSBTdHJpbmc6OmZyb21fdXRmOF9sb3NzeSgmaWRlbnQpLmludG9fb3duZWQoKTsKCiAgICBsZXQgZnVuY3Rpb25hbDsKICAgIGxldCB0ZXN0ID0gewogICAgICAgIC8vIFNwbGl0IG5hbWUgc3VjaCBhcyBTdHJfdGVzdF9zdHJpbmcgaW50byAoU3RyLHRlc3Rfc3RyaW5nKQogICAgICAgIGxldCBwb3MgPSBpZGVudAogICAgICAgICAgICAuaXRlcigpCiAgICAgICAgICAgIC5wb3NpdGlvbih8Y3wgKmMgPT0gYidfJykKICAgICAgICAgICAgLmV4cGVjdCgmZm9ybWF0ISgiSW52YWxpZCBkZWZpbml0aW9uIGluIHRlc3RjYXNlOiB7fSIsIGRpc3BsYXlfbmFtZSkpOwogICAgICAgIGxldCBtdXQgZXhwZWN0ZWQgPSAmaWRlbnRbLi5wb3NdOwogICAgICAgIGxldCBtdXQgdmFsdWUgPSAmaWRlbnRbKHBvcyArIDEpLi5dOwoKICAgICAgICBmdW5jdGlvbmFsID0gZXhwZWN0ZWQgPT0gYiJGbiI7CgogICAgICAgIGlmIGZ1bmN0aW9uYWwgewogICAgICAgICAgICBsZXQgaWRlbnQgPSB2YWx1ZTsKICAgICAgICAgICAgbGV0IHBvcyA9IGlkZW50CiAgICAgICAgICAgICAgICAuaXRlcigpCiAgICAgICAgICAgICAgICAucG9zaXRpb24ofGN8ICpjID09IGInXycpCiAgICAgICAgICAgICAgICAuZXhwZWN0KCZmb3JtYXQhKCJJbnZhbGlkIGRlZmluaXRpb24gaW4gdGVzdGNhc2U6IHt9IiwgZGlzcGxheV9uYW1lKSk7CiAgICAgICAgICAgIGV4cGVjdGVkID0gJmlkZW50Wy4ucG9zXTsKICAgICAgICAgICAgdmFsdWUgPSAmaWRlbnRbKHBvcyArIDEpLi5dOwogICAgICAgIH0KCiAgICAgICAgaWYgZXhwZWN0ZWQgPT0gYiJTdHIiIHsKICAgICAgICAgICAgbGV0IG11dCBzcGxpdHMgPSB2YWx1ZS5zcGxpdCh8Y3wgKmMgPT0gYidVJyk7CiAgICAgICAgICAgIGxldCBtdXQgcyA9IFZlYzo6d2l0aF9jYXBhY2l0eSh2YWx1ZS5sZW4oKSk7CiAgICAgICAgICAgIHMuZXh0ZW5kX2Zyb21fc2xpY2Uoc3BsaXRzLm5leHQoKS51bndyYXAoKSk7CiAgICAgICAgICAgIGZvciBzcGxpdCBpbiBzcGxpdHMgewogICAgICAgICAgICAgICAgbGV0IChjaHIsIHJlc3QpID0gc3BsaXQuc3BsaXRfYXQoNik7CiAgICAgICAgICAgICAgICBsZXQgY2hyID0gdTMyOjpmcm9tX3N0cl9yYWRpeChzdHI6OmZyb21fdXRmOChjaHIpLnVud3JhcCgpLCAxNikudW53cmFwKCk7CiAgICAgICAgICAgICAgICB3cml0ZSEocywgInt9IiwgY2hhcjo6ZnJvbV91MzIoY2hyKS51bndyYXAoKSkudW53cmFwKCk7CiAgICAgICAgICAgICAgICBzLmV4dGVuZF9mcm9tX3NsaWNlKHJlc3QpOwogICAgICAgICAgICB9CiAgICAgICAgICAgIFNvbWUoU3RyKHMpKQogICAgICAgIH0gZWxzZSBpZiBleHBlY3RlZCA9PSBiIkludCIgewogICAgICAgICAgICBieXRlc190b19pbnQodmFsdWUpCiAgICAgICAgfSBlbHNlIGlmIGV4cGVjdGVkID09IGIiRmxvYXQiIHsKICAgICAgICAgICAgc3RyOjpmcm9tX3V0ZjgodmFsdWUpCiAgICAgICAgICAgICAgICAub2soKQogICAgICAgICAgICAgICAgLm1hcCh8c3wgcy5yZXBsYWNlKCJuIiwgIi0iKS5yZXBsYWNlKCJwIiwgIi4iKSkKICAgICAgICAgICAgICAgIC5hbmRfdGhlbih8dnwgZjY0Ojpmcm9tX3N0cigmdikub2soKSkKICAgICAgICAgICAgICAgIC5tYXAoRmxvYXQpCiAgICAgICAgfSBlbHNlIGlmIGV4cGVjdGVkID09IGIiQ2hhclJhdyIgewogICAgICAgICAgICBzdHI6OmZyb21fdXRmOCh2YWx1ZSkKICAgICAgICAgICAgICAgIC5vaygpCiAgICAgICAgICAgICAgICAuYW5kX3RoZW4ofHZ8IHU2NDo6ZnJvbV9zdHIodikub2soKSkKICAgICAgICAgICAgICAgIC5tYXAoQ0NoYXI6OlJhdykKICAgICAgICAgICAgICAgIC5tYXAoQ2hhcikKICAgICAgICB9IGVsc2UgaWYgZXhwZWN0ZWQgPT0gYiJDaGFyQ2hhciIgewogICAgICAgICAgICBzdHI6OmZyb21fdXRmOCh2YWx1ZSkKICAgICAgICAgICAgICAgIC5vaygpCiAgICAgICAgICAgICAgICAuYW5kX3RoZW4ofHZ8IHUzMjo6ZnJvbV9zdHIodikub2soKSkKICAgICAgICAgICAgICAgIC5hbmRfdGhlbihjaGFyOjpmcm9tX3UzMikKICAgICAgICAgICAgICAgIC5tYXAoQ0NoYXI6OkNoYXIpCiAgICAgICAgICAgICAgICAubWFwKENoYXIpCiAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgU29tZShJbnZhbGlkKQogICAgICAgIH0KICAgICAgICAuZXhwZWN0KCZmb3JtYXQhKCJJbnZhbGlkIGRlZmluaXRpb24gaW4gdGVzdGNhc2U6IHt9IiwgZGlzcGxheV9uYW1lKSkKICAgIH07CgogICAgbGV0IHJlc3VsdCA9IGlmIGZ1bmN0aW9uYWwgewogICAgICAgIGxldCBtdXQgZm5pZGVudHM7CiAgICAgICAgbGV0IGV4cHJfdG9rZW5zOwogICAgICAgIG1hdGNoIGZuX21hY3JvX2RlY2xhcmF0aW9uKCZ0b2tlbnMpIHsKICAgICAgICAgICAgT2soKHJlc3QsIChfLCBhcmdzKSkpID0+IHsKICAgICAgICAgICAgICAgIGZuaWRlbnRzID0gaWRlbnRzLmNsb25lKCk7CiAgICAgICAgICAgICAgICBleHByX3Rva2VucyA9IHJlc3Q7CiAgICAgICAgICAgICAgICBmb3IgYXJnIGluIGFyZ3MgewogICAgICAgICAgICAgICAgICAgIGxldCB2YWwgPSBtYXRjaCB0ZXN0IHsKICAgICAgICAgICAgICAgICAgICAgICAgSW50KF8pID0+IGJ5dGVzX3RvX2ludCgmYXJnKSwKICAgICAgICAgICAgICAgICAgICAgICAgU3RyKF8pID0+IFNvbWUoU3RyKGFyZy50b19vd25lZCgpKSksCiAgICAgICAgICAgICAgICAgICAgICAgIF8gPT4gdW5pbXBsZW1lbnRlZCEoKSwKICAgICAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICAgICAgLmV4cGVjdCgmZm9ybWF0ISgKICAgICAgICAgICAgICAgICAgICAgICAgIkludmFsaWQgYXJndW1lbnQgaW4gZnVuY3Rpb25hbCBtYWNybyB0ZXN0Y2FzZToge30iLAogICAgICAgICAgICAgICAgICAgICAgICBkaXNwbGF5X25hbWUKICAgICAgICAgICAgICAgICAgICApKTsKICAgICAgICAgICAgICAgICAgICBmbmlkZW50cy5pbnNlcnQoYXJnLnRvX293bmVkKCksIHZhbCk7CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgICAgICAgICAgZSA9PiB7CiAgICAgICAgICAgICAgICBwcmludGxuISgKICAgICAgICAgICAgICAgICAgICAiRmFpbGVkIHRlc3QgZm9yIHt9LCB1bmFibGUgdG8gcGFyc2UgZnVuY3Rpb25hbCBtYWNybyBkZWNsYXJhdGlvbjogezo/fSIsCiAgICAgICAgICAgICAgICAgICAgZGlzcGxheV9uYW1lLCBlCiAgICAgICAgICAgICAgICApOwogICAgICAgICAgICAgICAgcmV0dXJuIGZhbHNlOwogICAgICAgICAgICB9CiAgICAgICAgfQogICAgICAgIGFzc2VydF9mdWxsX3BhcnNlKElkZW50aWZpZXJQYXJzZXI6Om5ldygmZm5pZGVudHMpLmV4cHIoJmV4cHJfdG9rZW5zKSkKICAgIH0gZWxzZSB7CiAgICAgICAgSWRlbnRpZmllclBhcnNlcjo6bmV3KGlkZW50cykKICAgICAgICAgICAgLm1hY3JvX2RlZmluaXRpb24oJnRva2VucykKICAgICAgICAgICAgLm1hcCh8KGksIChfLCB2YWwpKXwgKGksIHZhbCkpCiAgICB9OwoKICAgIG1hdGNoIHJlc3VsdCB7CiAgICAgICAgT2soKF8sIHZhbCkpID0+IHsKICAgICAgICAgICAgaWYgdmFsID09IHRlc3QgewogICAgICAgICAgICAgICAgaWYgbGV0IFNvbWUoXykgPSBpZGVudHMuaW5zZXJ0KGlkZW50LCB2YWwpIHsKICAgICAgICAgICAgICAgICAgICBwYW5pYyEoIkR1cGxpY2F0ZSBkZWZpbml0aW9uIGZvciB0ZXN0Y2FzZToge30iLCBkaXNwbGF5X25hbWUpOwogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgdHJ1ZQogICAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICAgICAgcHJpbnRsbiEoCiAgICAgICAgICAgICAgICAgICAgIkZhaWxlZCB0ZXN0IGZvciB7fSwgZXhwZWN0ZWQgezo/fSwgZ290IHs6P30iLAogICAgICAgICAgICAgICAgICAgIGRpc3BsYXlfbmFtZSwgdGVzdCwgdmFsCiAgICAgICAgICAgICAgICApOwogICAgICAgICAgICAgICAgZmFsc2UKICAgICAgICAgICAgfQogICAgICAgIH0KICAgICAgICBlID0+IHsKICAgICAgICAgICAgaWYgdGVzdCA9PSBJbnZhbGlkIHsKICAgICAgICAgICAgICAgIHRydWUKICAgICAgICAgICAgfSBlbHNlIHsKICAgICAgICAgICAgICAgIHByaW50bG4hKAogICAgICAgICAgICAgICAgICAgICJGYWlsZWQgdGVzdCBmb3Ige30sIGV4cGVjdGVkIHs6P30sIGdvdCB7Oj99IiwKICAgICAgICAgICAgICAgICAgICBkaXNwbGF5X25hbWUsIHRlc3QsIGUKICAgICAgICAgICAgICAgICk7CiAgICAgICAgICAgICAgICBmYWxzZQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9CgovLyBzdXBwb3J0IGNvZGUgZm9yIHRoZSBjbGFuZyBsZXhlcgp1bnNhZmUgZm4gY2xhbmdfc3RyX3RvX3ZlYyhzOiBDWFN0cmluZykgLT4gVmVjPHU4PiB7CiAgICBsZXQgdmVjID0gZmZpOjpDU3RyOjpmcm9tX3B0cihjbGFuZ19nZXRDU3RyaW5nKHMpKQogICAgICAgIC50b19ieXRlcygpCiAgICAgICAgLnRvX293bmVkKCk7CiAgICBjbGFuZ19kaXNwb3NlU3RyaW5nKHMpOwogICAgdmVjCn0KCiNbYWxsb3cobm9uX3VwcGVyX2Nhc2VfZ2xvYmFscyldCnVuc2FmZSBmbiB0b2tlbl9jbGFuZ190b19jZXhwcih0dTogQ1hUcmFuc2xhdGlvblVuaXQsIG9yaWc6ICZDWFRva2VuKSAtPiBUb2tlbiB7CiAgICBUb2tlbiB7CiAgICAgICAga2luZDogbWF0Y2ggY2xhbmdfZ2V0VG9rZW5LaW5kKCpvcmlnKSB7CiAgICAgICAgICAgIENYVG9rZW5fQ29tbWVudCA9PiBjZXhwcjo6dG9rZW46OktpbmQ6OkNvbW1lbnQsCiAgICAgICAgICAgIENYVG9rZW5fSWRlbnRpZmllciA9PiBjZXhwcjo6dG9rZW46OktpbmQ6OklkZW50aWZpZXIsCiAgICAgICAgICAgIENYVG9rZW5fS2V5d29yZCA9PiBjZXhwcjo6dG9rZW46OktpbmQ6OktleXdvcmQsCiAgICAgICAgICAgIENYVG9rZW5fTGl0ZXJhbCA9PiBjZXhwcjo6dG9rZW46OktpbmQ6OkxpdGVyYWwsCiAgICAgICAgICAgIENYVG9rZW5fUHVuY3R1YXRpb24gPT4gY2V4cHI6OnRva2VuOjpLaW5kOjpQdW5jdHVhdGlvbiwKICAgICAgICAgICAgXyA9PiBwYW5pYyEoImludmFsaWQgdG9rZW4ga2luZDogezo/fSIsICpvcmlnKSwKICAgICAgICB9LAogICAgICAgIHJhdzogY2xhbmdfc3RyX3RvX3ZlYyhjbGFuZ19nZXRUb2tlblNwZWxsaW5nKHR1LCAqb3JpZykpLmludG9fYm94ZWRfc2xpY2UoKSwKICAgIH0KfQoKZXh0ZXJuICJDIiBmbiB2aXNpdF9jaGlsZHJlbl90aHVuazxGPigKICAgIGN1cjogQ1hDdXJzb3IsCiAgICBwYXJlbnQ6IENYQ3Vyc29yLAogICAgY2xvc3VyZTogQ1hDbGllbnREYXRhLAopIC0+IENYQ2hpbGRWaXNpdFJlc3VsdAp3aGVyZQogICAgRjogRm5NdXQoQ1hDdXJzb3IsIENYQ3Vyc29yKSAtPiBDWENoaWxkVmlzaXRSZXN1bHQsCnsKICAgIHVuc2FmZSB7ICgmbXV0ICooY2xvc3VyZSBhcyAqbXV0IEYpKShjdXIsIHBhcmVudCkgfQp9Cgp1bnNhZmUgZm4gdmlzaXRfY2hpbGRyZW48Rj4oY3Vyc29yOiBDWEN1cnNvciwgbXV0IGY6IEYpCndoZXJlCiAgICBGOiBGbk11dChDWEN1cnNvciwgQ1hDdXJzb3IpIC0+IENYQ2hpbGRWaXNpdFJlc3VsdCwKewogICAgY2xhbmdfdmlzaXRDaGlsZHJlbigKICAgICAgICBjdXJzb3IsCiAgICAgICAgdmlzaXRfY2hpbGRyZW5fdGh1bms6OjxGPiBhcyBfLAogICAgICAgICZtdXQgZiBhcyAqbXV0IEYgYXMgQ1hDbGllbnREYXRhLAogICAgKTsKfQoKdW5zYWZlIGZuIGxvY2F0aW9uX2luX3Njb3BlKHI6IENYU291cmNlUmFuZ2UpIC0+IGJvb2wgewogICAgbGV0IHN0YXJ0ID0gY2xhbmdfZ2V0UmFuZ2VTdGFydChyKTsKICAgIGxldCBtdXQgZmlsZSA9IHB0cjo6bnVsbF9tdXQoKTsKICAgIGNsYW5nX2dldFNwZWxsaW5nTG9jYXRpb24oCiAgICAgICAgc3RhcnQsCiAgICAgICAgJm11dCBmaWxlLAogICAgICAgIHB0cjo6bnVsbF9tdXQoKSwKICAgICAgICBwdHI6Om51bGxfbXV0KCksCiAgICAgICAgcHRyOjpudWxsX211dCgpLAogICAgKTsKICAgIGNsYW5nX0xvY2F0aW9uX2lzRnJvbU1haW5GaWxlKHN0YXJ0KSAhPSAwCiAgICAgICAgJiYgY2xhbmdfTG9jYXRpb25faXNJblN5c3RlbUhlYWRlcihzdGFydCkgPT0gMAogICAgICAgICYmIGZpbGUgIT0gcHRyOjpudWxsX211dCgpCn0KCi8vLyB0b2tlbml6ZV9yYW5nZV9hZGp1c3QgY2FuIGJlIHVzZWQgdG8gd29yayBhcm91bmQgTExWTSBidWcgOTA2OQovLy8gaHR0cHM6Ly9idWdzLmxsdm0ub3JnLy9zaG93X2J1Zy5jZ2k/aWQ9OTA2OQpmbiBmaWxlX3Zpc2l0X21hY3JvczxGOiBGbk11dChWZWM8dTg+LCBWZWM8VG9rZW4+KT4oCiAgICBmaWxlOiAmc3RyLAogICAgdG9rZW5pemVfcmFuZ2VfYWRqdXN0OiBib29sLAogICAgbXV0IHZpc2l0b3I6IEYsCikgewogICAgdW5zYWZlIHsKICAgICAgICBsZXQgdHUgPSB7CiAgICAgICAgICAgIGxldCBpbmRleCA9IGNsYW5nX2NyZWF0ZUluZGV4KHRydWUgYXMgXywgZmFsc2UgYXMgXyk7CiAgICAgICAgICAgIGxldCBjZmlsZSA9IGZmaTo6Q1N0cmluZzo6bmV3KGZpbGUpLnVud3JhcCgpOwogICAgICAgICAgICBsZXQgbXV0IHR1ID0gbWVtOjpNYXliZVVuaW5pdDo6dW5pbml0KCk7CiAgICAgICAgICAgIGFzc2VydCEoCiAgICAgICAgICAgICAgICBjbGFuZ19wYXJzZVRyYW5zbGF0aW9uVW5pdDIoCiAgICAgICAgICAgICAgICAgICAgaW5kZXgsCiAgICAgICAgICAgICAgICAgICAgY2ZpbGUuYXNfcHRyKCksCiAgICAgICAgICAgICAgICAgICAgW2IiLXN0ZD1jMTFcMCIuYXNfcHRyKCkgYXMgKmNvbnN0IDo6c3RkOjpvczo6cmF3OjpjX2NoYXJdLmFzX3B0cigpLAogICAgICAgICAgICAgICAgICAgIDEsCiAgICAgICAgICAgICAgICAgICAgcHRyOjpudWxsX211dCgpLAogICAgICAgICAgICAgICAgICAgIDAsCiAgICAgICAgICAgICAgICAgICAgQ1hUcmFuc2xhdGlvblVuaXRfRGV0YWlsZWRQcmVwcm9jZXNzaW5nUmVjb3JkLAogICAgICAgICAgICAgICAgICAgICZtdXQgKnR1LmFzX211dF9wdHIoKQogICAgICAgICAgICAgICAgKSA9PSBDWEVycm9yX1N1Y2Nlc3MsCiAgICAgICAgICAgICAgICAiRmFpbHVyZSByZWFkaW5nIHRlc3QgY2FzZSB7fSIsCiAgICAgICAgICAgICAgICBmaWxlCiAgICAgICAgICAgICk7CiAgICAgICAgICAgIHR1LmFzc3VtZV9pbml0KCkKICAgICAgICB9OwogICAgICAgIHZpc2l0X2NoaWxkcmVuKGNsYW5nX2dldFRyYW5zbGF0aW9uVW5pdEN1cnNvcih0dSksIHxjdXIsIF9wYXJlbnR8IHsKICAgICAgICAgICAgaWYgY3VyLmtpbmQgPT0gQ1hDdXJzb3JfTWFjcm9EZWZpbml0aW9uIHsKICAgICAgICAgICAgICAgIGxldCBtdXQgcmFuZ2UgPSBjbGFuZ19nZXRDdXJzb3JFeHRlbnQoY3VyKTsKICAgICAgICAgICAgICAgIGlmICFsb2NhdGlvbl9pbl9zY29wZShyYW5nZSkgewogICAgICAgICAgICAgICAgICAgIHJldHVybiBDWENoaWxkVmlzaXRfQ29udGludWU7CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICByYW5nZS5lbmRfaW50X2RhdGEgLT0gaWYgdG9rZW5pemVfcmFuZ2VfYWRqdXN0IHsgMSB9IGVsc2UgeyAwIH07CiAgICAgICAgICAgICAgICBsZXQgbXV0IHRva2VuX3B0ciA9IHB0cjo6bnVsbF9tdXQoKTsKICAgICAgICAgICAgICAgIGxldCBtdXQgbnVtID0gMDsKICAgICAgICAgICAgICAgIGNsYW5nX3Rva2VuaXplKHR1LCByYW5nZSwgJm11dCB0b2tlbl9wdHIsICZtdXQgbnVtKTsKICAgICAgICAgICAgICAgIGlmIHRva2VuX3B0ciAhPSBwdHI6Om51bGxfbXV0KCkgewogICAgICAgICAgICAgICAgICAgIGxldCB0b2tlbnMgPSBzbGljZTo6ZnJvbV9yYXdfcGFydHModG9rZW5fcHRyLCBudW0gYXMgdXNpemUpOwogICAgICAgICAgICAgICAgICAgIGxldCB0b2tlbnM6IFZlYzxfPiA9IHRva2VucwogICAgICAgICAgICAgICAgICAgICAgICAuaXRlcigpCiAgICAgICAgICAgICAgICAgICAgICAgIC5maWx0ZXJfbWFwKHx0fCB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICBpZiBjbGFuZ19nZXRUb2tlbktpbmQoKnQpICE9IENYVG9rZW5fQ29tbWVudCB7CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgU29tZSh0b2tlbl9jbGFuZ190b19jZXhwcih0dSwgdCkpCiAgICAgICAgICAgICAgICAgICAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIE5vbmUKICAgICAgICAgICAgICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgICAgICAgICAgfSkKICAgICAgICAgICAgICAgICAgICAgICAgLmNvbGxlY3QoKTsKICAgICAgICAgICAgICAgICAgICBjbGFuZ19kaXNwb3NlVG9rZW5zKHR1LCB0b2tlbl9wdHIsIG51bSk7CiAgICAgICAgICAgICAgICAgICAgdmlzaXRvcihjbGFuZ19zdHJfdG9fdmVjKGNsYW5nX2dldEN1cnNvclNwZWxsaW5nKGN1cikpLCB0b2tlbnMpCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgICAgICAgICAgQ1hDaGlsZFZpc2l0X0NvbnRpbnVlCiAgICAgICAgfSk7CiAgICAgICAgY2xhbmdfZGlzcG9zZVRyYW5zbGF0aW9uVW5pdCh0dSk7CiAgICB9Owp9CgpmbiB0ZXN0X2ZpbGUoZmlsZTogJnN0cikgLT4gYm9vbCB7CiAgICBsZXQgbXV0IGlkZW50cyA9IEhhc2hNYXA6Om5ldygpOwogICAgbGV0IG11dCBhbGxfc3VjY2VlZGVkID0gdHJ1ZTsKICAgIGZpbGVfdmlzaXRfbWFjcm9zKGZpbGUsIGZpeF9idWdfOTA2OSgpLCB8aWRlbnQsIHRva2Vuc3wgewogICAgICAgIGFsbF9zdWNjZWVkZWQgJj0gdGVzdF9kZWZpbml0aW9uKGlkZW50LCAmdG9rZW5zLCAmbXV0IGlkZW50cykKICAgIH0pOwogICAgYWxsX3N1Y2NlZWRlZAp9CgpmbiBmaXhfYnVnXzkwNjkoKSAtPiBib29sIHsKICAgIGZuIGNoZWNrX2J1Z185MDY5KCkgLT4gYm9vbCB7CiAgICAgICAgbGV0IG11dCB0b2tlbl9zZXRzID0gdmVjIVtdOwogICAgICAgIGZpbGVfdmlzaXRfbWFjcm9zKAogICAgICAgICAgICAiLi4vLi4vLi4vdGVzdC9mb3VuZGF0aW9uL2NleHByL3Rlc3RzL2lucHV0L3Rlc3RfbGx2bV9idWdfOTA2OS5oIiwKICAgICAgICAgICAgZmFsc2UsCiAgICAgICAgICAgIHxpZGVudCwgdG9rZW5zfCB7CiAgICAgICAgICAgICAgICBhc3NlcnRfZXEhKCZpZGVudCwgYiJBIik7CiAgICAgICAgICAgICAgICB0b2tlbl9zZXRzLnB1c2godG9rZW5zKTsKICAgICAgICAgICAgfSwKICAgICAgICApOwogICAgICAgIGFzc2VydF9lcSEodG9rZW5fc2V0cy5sZW4oKSwgMik7CiAgICAgICAgdG9rZW5fc2V0c1swXSAhPSB0b2tlbl9zZXRzWzFdCiAgICB9CgogICAgdXNlIHN0ZDo6c3luYzo6YXRvbWljOjp7QXRvbWljQm9vbCwgT3JkZXJpbmd9OwogICAgdXNlIHN0ZDo6c3luYzo6T25jZTsKCiAgICBzdGF0aWMgQ0hFQ0tfRklYOiBPbmNlID0gT25jZTo6bmV3KCk7CiAgICBzdGF0aWMgRklYOiBBdG9taWNCb29sID0gQXRvbWljQm9vbDo6bmV3KGZhbHNlKTsKCiAgICBDSEVDS19GSVguY2FsbF9vbmNlKHx8IEZJWC5zdG9yZShjaGVja19idWdfOTA2OSgpLCBPcmRlcmluZzo6U2VxQ3N0KSk7CgogICAgRklYLmxvYWQoT3JkZXJpbmc6OlNlcUNzdCkKfQoKbWFjcm9fcnVsZXMhIHRlc3RfZmlsZSB7CiAgICAoJGY6aWRlbnQpID0+IHsKICAgICAgICAjW3Rlc3RdCiAgICAgICAgZm4gJGYoKSB7CiAgICAgICAgICAgIGFzc2VydCEoCiAgICAgICAgICAgICAgICB0ZXN0X2ZpbGUoY29uY2F0ISgiLi4vLi4vLi4vdGVzdC9mb3VuZGF0aW8="
+            }
+          ]
+        },
+        "test/foundation/cexpr/tests/input/chars.h": {
+          "destination": "test/foundation/bindgen/cexpr/tests/input/chars.h",
+          "replacements": []
+        },
+        "test/foundation/cexpr/tests/input/fail.h": {
+          "destination": "test/foundation/bindgen/cexpr/tests/input/fail.h",
+          "replacements": []
+        },
+        "test/foundation/cexpr/tests/input/floats.h": {
+          "destination": "test/foundation/bindgen/cexpr/tests/input/floats.h",
+          "replacements": []
+        },
+        "test/foundation/cexpr/tests/input/int_signed.h": {
+          "destination": "test/foundation/bindgen/cexpr/tests/input/int_signed.h",
+          "replacements": []
+        },
+        "test/foundation/cexpr/tests/input/int_unsigned.h": {
+          "destination": "test/foundation/bindgen/cexpr/tests/input/int_unsigned.h",
+          "replacements": []
+        },
+        "test/foundation/cexpr/tests/input/strings.h": {
+          "destination": "test/foundation/bindgen/cexpr/tests/input/strings.h",
+          "replacements": []
+        },
+        "test/foundation/cexpr/tests/input/test_llvm_bug_9069.h": {
+          "destination": "test/foundation/bindgen/cexpr/tests/input/test_llvm_bug_9069.h",
+          "replacements": []
+        }
+      },
+      "file_routes": {
+        "src/foundation/bindgen": {
+          "Cargo.toml": {
+            "destination": "Cargo.toml"
+          },
+          "build.rs": {
+            "destination": "build.rs"
+          },
+          "callbacks.rs": {
+            "destination": "callbacks.rs"
+          },
+          "clang.rs": {
+            "destination": "clang.rs"
+          },
+          "codegen/bitfield_unit.rs": {
+            "destination": "codegen/bitfield_unit.rs"
+          },
+          "codegen/bitfield_unit_raw_ref_macros.rs": {
+            "destination": "codegen/bitfield_unit_raw_ref_macros.rs"
+          },
+          "codegen/dyngen.rs": {
+            "destination": "codegen/dyngen.rs"
+          },
+          "codegen/error.rs": {
+            "destination": "codegen/error.rs"
+          },
+          "codegen/helpers.rs": {
+            "destination": "codegen/helpers.rs"
+          },
+          "codegen/impl_debug.rs": {
+            "destination": "codegen/impl_debug.rs"
+          },
+          "codegen/impl_partialeq.rs": {
+            "destination": "codegen/impl_partialeq.rs"
+          },
+          "codegen/mod.rs": {
+            "destination": "codegen/mod.rs"
+          },
+          "codegen/postprocessing/merge_extern_blocks.rs": {
+            "destination": "codegen/postprocessing/merge_extern_blocks.rs"
+          },
+          "codegen/postprocessing/mod.rs": {
+            "destination": "codegen/postprocessing/mod.rs"
+          },
+          "codegen/postprocessing/sort_semantically.rs": {
+            "destination": "codegen/postprocessing/sort_semantically.rs"
+          },
+          "codegen/serialize.rs": {
+            "destination": "codegen/serialize.rs"
+          },
+          "codegen/struct_layout.rs": {
+            "destination": "codegen/struct_layout.rs"
+          },
+          "deps.rs": {
+            "destination": "deps.rs"
+          },
+          "diagnostics.rs": {
+            "destination": "diagnostics.rs"
+          },
+          "extra_assertions.rs": {
+            "destination": "extra_assertions.rs"
+          },
+          "features.rs": {
+            "destination": "features.rs"
+          },
+          "ir/analysis/derive.rs": {
+            "destination": "ir/analysis/derive.rs"
+          },
+          "ir/analysis/has_destructor.rs": {
+            "destination": "ir/analysis/has_destructor.rs"
+          },
+          "ir/analysis/has_float.rs": {
+            "destination": "ir/analysis/has_float.rs"
+          },
+          "ir/analysis/has_type_param_in_array.rs": {
+            "destination": "ir/analysis/has_type_param_in_array.rs"
+          },
+          "ir/analysis/has_vtable.rs": {
+            "destination": "ir/analysis/has_vtable.rs"
+          },
+          "ir/analysis/mod.rs": {
+            "destination": "ir/analysis/mod.rs"
+          },
+          "ir/analysis/sizedness.rs": {
+            "destination": "ir/analysis/sizedness.rs"
+          },
+          "ir/analysis/template_params.rs": {
+            "destination": "ir/analysis/template_params.rs"
+          },
+          "ir/annotations.rs": {
+            "destination": "ir/annotations.rs"
+          },
+          "ir/comment.rs": {
+            "destination": "ir/comment.rs"
+          },
+          "ir/comp.rs": {
+            "destination": "ir/comp.rs"
+          },
+          "ir/context.rs": {
+            "destination": "ir/context.rs"
+          },
+          "ir/derive.rs": {
+            "destination": "ir/derive.rs"
+          },
+          "ir/dot.rs": {
+            "destination": "ir/dot.rs"
+          },
+          "ir/enum_ty.rs": {
+            "destination": "ir/enum_ty.rs"
+          },
+          "ir/function.rs": {
+            "destination": "ir/function.rs"
+          },
+          "ir/int.rs": {
+            "destination": "ir/int.rs"
+          },
+          "ir/item.rs": {
+            "destination": "ir/item.rs"
+          },
+          "ir/item_kind.rs": {
+            "destination": "ir/item_kind.rs"
+          },
+          "ir/layout.rs": {
+            "destination": "ir/layout.rs"
+          },
+          "ir/mod.rs": {
+            "destination": "ir/mod.rs"
+          },
+          "ir/module.rs": {
+            "destination": "ir/module.rs"
+          },
+          "ir/objc.rs": {
+            "destination": "ir/objc.rs"
+          },
+          "ir/template.rs": {
+            "destination": "ir/template.rs"
+          },
+          "ir/traversal.rs": {
+            "destination": "ir/traversal.rs"
+          },
+          "ir/ty.rs": {
+            "destination": "ir/ty.rs"
+          },
+          "ir/var.rs": {
+            "destination": "ir/var.rs"
+          },
+          "lib.rs": {
+            "destination": "lib.rs"
+          },
+          "log_stubs.rs": {
+            "destination": "log_stubs.rs"
+          },
+          "options/as_args.rs": {
+            "destination": "options/as_args.rs"
+          },
+          "options/cli.rs": {
+            "destination": "options/cli.rs"
+          },
+          "options/helpers.rs": {
+            "destination": "options/helpers.rs"
+          },
+          "options/mod.rs": {
+            "destination": "options/mod.rs"
+          },
+          "parse.rs": {
+            "destination": "parse.rs"
+          },
+          "regex_set.rs": {
+            "destination": "regex_set.rs"
+          },
+          "time.rs": {
+            "destination": "time.rs"
+          }
+        },
+        "src/foundation/cexpr": {
+          "Cargo.toml": {
+            "archive_base64": "IyBJbnRlcm5hbCBzb3VyY2UgY29tcG9uZW50LiBPcmlnaW5hbCBtYW5pZmVzdCBhbmQgb3JpZ2luOiBjb21wbGlhbmNlL3Byb3ZlbmFuY2UuCgpbcGFja2FnZV0KZWRpdGlvbiA9ICIyMDE4IgpuYW1lID0gImNleHByIgp2ZXJzaW9uID0gIjAuNi4wIgphdXRob3JzID0gWyJKZXRocm8gQmVla21hbiA8amV0aHJvQGpiZWVrbWFuLm5sPiJdCmRlc2NyaXB0aW9uID0gIkEgQyBleHByZXNzaW9uIHBhcnNlciBhbmQgZXZhbHVhdG9yIgpkb2N1bWVudGF0aW9uID0gImh0dHBzOi8vZG9jcy5ycy9jZXhwci8iCmtleXdvcmRzID0gWyJDIiwgImV4cHJlc3Npb24iLCAicGFyc2VyIl0KbGljZW5zZSA9ICJBcGFjaGUtMi4wL01JVCIKcmVwb3NpdG9yeSA9ICJodHRwczovL2dpdGh1Yi5jb20vamV0aHJvZ2IvcnVzdC1jZXhwciIKYXV0b3Rlc3RzID0gZmFsc2UKYXV0b2JlbmNoZXMgPSBmYWxzZQphdXRvZXhhbXBsZXMgPSBmYWxzZQpbZGVwZW5kZW5jaWVzLm5vbV0KdmVyc2lvbiA9ICI3IgpmZWF0dXJlcyA9IFsic3RkIl0KZGVmYXVsdC1mZWF0dXJlcyA9IGZhbHNlCnBhdGggPSAiLi4vbm9tIgpbYmFkZ2VzLnRyYXZpcy1jaV0KcmVwb3NpdG9yeSA9ICJqZXRocm9nYi9ydXN0LWNleHByIgo="
+          },
+          "src/expr.rs": {
+            "destination": "src/cexpr/expr.rs"
+          },
+          "src/lib.rs": {
+            "destination": "src/cexpr/mod.rs"
+          },
+          "src/literal.rs": {
+            "destination": "src/cexpr/literal.rs"
+          },
+          "src/token.rs": {
+            "destination": "src/cexpr/token.rs"
+          }
+        }
+      },
+      "inputs": [
+        {
+          "external_tests": {
+            "bytes": 24629,
+            "directory": "src/foundation/bindgen",
+            "file_count": 22,
+            "files": [
+              {
+                "path": "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_get_bit_26.rs",
+                "sha256": "9a12fef5110e291d9d5654d9974fcbd5ffffadc0fda94935a832d80d765eca84",
+                "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
+                "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_set_bit_48.rs",
+                "sha256": "7500e1e29c3227e7b3381829e2d002941e02d620773174ccab689e130044a670",
+                "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
+                "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/codegen/struct_layout/test_align_to_65.rs",
+                "sha256": "7427defbec461e4af34089011e8bd29b63c3bfef4eb7fcb11d5811531b0d54bc",
+                "source": "src/foundation/bindgen/codegen/struct_layout.rs",
+                "source_sha256_before": "78b38cc064491d854516dcf36e268b45e549d2bd3150ea4cb390529f656b2132"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/codegen/struct_layout/test_bytes_from_bits_pow2_74.rs",
+                "sha256": "6b13d0ca604bd833d298f90469e6a472b3a7522c99bb00d7b705782d561f49e8",
+                "source": "src/foundation/bindgen/codegen/struct_layout.rs",
+                "source_sha256_before": "78b38cc064491d854516dcf36e268b45e549d2bd3150ea4cb390529f656b2132"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/ir/layout/test_layout_for_size_20.rs",
+                "sha256": "fe90309dfe444efa4ec61e5b1ce44aa5f9eef0a28fe79fb6213d178a7c320091",
+                "source": "src/foundation/bindgen/ir/layout.rs",
+                "source_sha256_before": "5b2958eb3d5e5d96bd85ce02925d936e89d3147c62cd225e3a0ae7f042b74fca"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_empty_name_513.rs",
+                "sha256": "6359e92ad4b7cab4c1354d719f79f6063ac0898a5ec76b86d653b3a761ad36d2",
+                "source": "src/foundation/bindgen/ir/ty.rs",
+                "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_remaining_500.rs",
+                "sha256": "e1c90c85377b3f1a1ecd03644466bb47668da28d81d62437f60620d3c8ea21b4",
+                "source": "src/foundation/bindgen/ir/ty.rs",
+                "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_start_494.rs",
+                "sha256": "e904acc3c1a144acfac43d9d11512bb725e5c19237acc893f317586c77c79bf5",
+                "source": "src/foundation/bindgen/ir/ty.rs",
+                "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_unnamed_506.rs",
+                "sha256": "929df7b1f75b8e11ee22a5f4af83530bfa67dfa2a9d691e57a85f623d9c576db",
+                "source": "src/foundation/bindgen/ir/ty.rs",
+                "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_471.rs",
+                "sha256": "f6c44dc09d1579445ebd23369e73c1382961c89e25e215017ee66ca32b606973",
+                "source": "src/foundation/bindgen/ir/ty.rs",
+                "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_underscore_and_numbers_477.rs",
+                "sha256": "a50aa8e254efb3bac87ff4cc3b8377e27463a4ea5f5aaacd886222c5cb9e5040",
+                "source": "src/foundation/bindgen/ir/ty.rs",
+                "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_unnamed_kind_488.rs",
+                "sha256": "dde488b398d033d764473667eecafd62bb9f4e0f362c223951449faa3125f855",
+                "source": "src/foundation/bindgen/ir/ty.rs",
+                "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/lib/commandline_flag_unit_test_function_1315.rs",
+                "sha256": "4ed9a9ce7ab2e05a617e3f0e60fa81ed9ddee454ded708326eec9a805158c4f3",
+                "source": "src/foundation/bindgen/lib.rs",
+                "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_1360.rs",
+                "sha256": "eea35784f1c5d6114a89ea6eea91666a5cedb616870450fa47ec4f79a5f4fcb4",
+                "source": "src/foundation/bindgen/lib.rs",
+                "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_espidf_1396.rs",
+                "sha256": "f8f0b609ee5b6cd749afdb654fc135b86a265850b8706321217bd657de08c6ae",
+                "source": "src/foundation/bindgen/lib.rs",
+                "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_riscv_1368.rs",
+                "sha256": "0160698a8eaf7e4000c8466079642eb1882779559207cf96d064ffe4630b2eb1",
+                "source": "src/foundation/bindgen/lib.rs",
+                "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+              },
+              {
+                "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_simulator_1408.rs",
+                "sha256": "b7a5be0a5e25c6ee7b0deed166565abfda351fdf5cfaedc818c0007283b3c17a",
+                "source": "src/foundation/bindgen/lib.rs",
+                "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
+              },
+              {
+                "path": "test/foundation/bindgen/modules/codegen/bitfield_unit_tests.rs",
+                "sha256": "b5ceca02f13d0554c5d4d02bc52b921736b5ce4cd59ad4ce0bde91b6e7087300",
+                "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
+                "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
+              },
+              {
+                "path": "test/foundation/bindgen/unit/deps/tests_27.rs",
+                "sha256": "69666f8fa646ea778cc5b9aea827915405e1088d271939484104f437d6f30868",
+                "source": "src/foundation/bindgen/deps.rs",
+                "source_sha256_before": "297dcc2be53af1a3ea4f77e16902a641f3e6f0baad09c06a6ea26050a0281c18"
+              },
+              {
+                "path": "test/foundation/bindgen/unit/features/test_473.rs",
+                "sha256": "7cf74ca31962e9a4b20833575a10c171e2b7a4fdc724a971c548cef6127dd490",
+                "source": "src/foundation/bindgen/features.rs",
+                "source_sha256_before": "ad17b96bf6b97cecb33d2b4710261341b1e3828263531708157d2b206af65c77"
+              },
+              {
+                "path": "test/foundation/bindgen/unit/ir/analysis/mod/tests_211.rs",
+                "sha256": "f126d90359e62d8591bc3609a5dd8a88b2de14d495df667b9223f1785b04dc27",
+                "source": "src/foundation/bindgen/ir/analysis/mod.rs",
+                "source_sha256_before": "93edca96d765dfa19ac231198027b0ba48c623502a8be1dbf799a241cd6b304b"
+              },
+              {
+                "path": "test/foundation/bindgen/unit/ir/comment/test_68.rs",
+                "sha256": "464207fbe56b789fade8053e5fac61990c68b0d52af355f5b7a1223b691c8e26",
+                "source": "src/foundation/bindgen/ir/comment.rs",
+                "source_sha256_before": "57863204d329ae82872ecc4829cc299969ff07da3a32a4a13d7d84429f55b84d"
+              }
+            ],
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "roots": [
+              "test/foundation/bindgen"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-21：实际消费者标准库整合与依赖去重；详见 docs/reports/foundation-sqlite-cloud-20261021.md，原始身份和法律材料保留。",
+            "description": "Automatically generates Rust FFI bindings to C and C++ libraries.",
+            "directory": "src/foundation/bindgen",
+            "files_sha256": {
+              "Cargo.toml": "eac9af7e09c6222656b9e522fd421c0e157ec2cba9c3190b53ce80aaf15bb5a6",
+              "build.rs": "f7a10af0a21662e104e0058da7e3471a20be328eef6c7c41988525be90fdfe92",
+              "callbacks.rs": "de8bbe96753b6c5107984f2d26f13abf8fd2dd914ca688a989bf90c8e63c435f",
+              "clang.rs": "e991300ce9b1f0b9fb4a0b4bd32e899b6cfa546f034858f08bf57678b3d7044c",
+              "codegen/bitfield_unit.rs": "bcec32a8289eb8643bdc7aae0636aecac9f28e83895ebd330a4b0d1d3468bb4c",
+              "codegen/bitfield_unit_raw_ref_macros.rs": "cd9a02db7a0f0d2db79dc6b54c64eec2b438d2124928127266a5e30cf451696e",
+              "codegen/dyngen.rs": "1b42f7fa9fb65ff2fa898b289a3b934d7b21c5ba6c1b3e37aa97f0faa87769a0",
+              "codegen/error.rs": "67680c4d171d63848d9eb4ddd5f100be7463564e8c1c9203fefc0e61a19dfdec",
+              "codegen/helpers.rs": "46645977102a62aa7ca3fb4c7edb06579eac2c1a30081f8f615e5fa4e24754d1",
+              "codegen/impl_debug.rs": "dff9ca17a9397f327841f6321056cc0bdffe1f52106ec08879bcc74c22d4f383",
+              "codegen/impl_partialeq.rs": "60623e75c079ccadc4b928acd2cf78449db84591b720e242fc10ee1417678981",
+              "codegen/mod.rs": "456477a65fbf95689049d020642a9b1d120c12c9e1e54310cfba74a5623b40f9",
+              "codegen/postprocessing/merge_extern_blocks.rs": "2641f9c8d67ec4ca83d440c15fe554def8c7f566c478daaf4bd82c93590f8283",
+              "codegen/postprocessing/mod.rs": "4f927f1c72b013948c4ec00bfb1d34ba589fe33bd9191b81ec4be5852dfd185f",
+              "codegen/postprocessing/sort_semantically.rs": "b26c0656a0b0ec94bbf3c427ba00516a540e0e338c6c8a5dd9df67822208a38a",
+              "codegen/serialize.rs": "d57eb31ba0fda825241f886336279573050b396e52badf3886e0bc76a15110ad",
+              "codegen/struct_layout.rs": "cf791f1169067ce9f4c0eacda10c9dd87f42bd90b315ed6a504331eb119dc79f",
+              "deps.rs": "882c2aacc90630629f002fd1f4e38176356f412f5c069029a5853822a57f87f2",
+              "diagnostics.rs": "9c80043ac9fa8f683019577f311853a0d5929e41a95b3255736f80105914cdfa",
+              "extra_assertions.rs": "1596b7e7f031714dc699ebda135e795f1ecfc971ce9de6861a3c00e77fcef011",
+              "features.rs": "454bc7047978cecdad14e86da6a244a3d199dbdc1380ccfbc04ee361c7716a18",
+              "ir/analysis/derive.rs": "f0bd1b6362ed9a8e8bc6933bf1af29cceabde84015dc34d76f34d3e4c56a4103",
+              "ir/analysis/has_destructor.rs": "64dc142ff8c56db94b464f0f03ecd25317c8c1d6cd2a7304d2d3a0ff0a0db890",
+              "ir/analysis/has_float.rs": "9fb88d05c5920e9000e5cb6e87775c0d1042a6b11205577e281ba281e6e6acdb",
+              "ir/analysis/has_type_param_in_array.rs": "0975d1ce43bcba97eb303635118e74d494d46ac67cf5ee53faf6f6584a556cef",
+              "ir/analysis/has_vtable.rs": "3e1a807feccb55d6148e81512417b56cd1d70a70783508b65a3ff2abde461d2b",
+              "ir/analysis/mod.rs": "0c361e0a94cca0c3a9bb4196773795cf94251243b1729c0d92fc3f4c5235cdfb",
+              "ir/analysis/sizedness.rs": "0b78e70737e038ebdee2c3d195194a060c9287000b9059ded0686728a89b4ff2",
+              "ir/analysis/template_params.rs": "a8dfd3e02b1745a5b7c6faa16309bd0b8a88d76b7fedca27c322782cc9e77177",
+              "ir/annotations.rs": "8397ced62808fe99dfdde35792cd8b2389e7828d752a6c8aa3a70c1e14595e11",
+              "ir/comment.rs": "34be16c23a7e4d90f8858d2000f6f152cf71bf21a9eeb33ebaea9507eb321aee",
+              "ir/comp.rs": "0aba7a7c1a3582e563a7fd2120e3729d278e9931cd7f963f6dc9452ced710d30",
+              "ir/context.rs": "59b73ef695f98adda0b54828a820739121d0f2c869f06b75a0cbc1a84c3ca887",
+              "ir/derive.rs": "09860cffec0ebecce31da0c6c9ea0cf9a0d4784262ff4eb16ea459c0d0782ac9",
+              "ir/dot.rs": "8b8f6dd13e662fcb4114949025cb43467b34fa4998a3371c101db5dd82688f44",
+              "ir/enum_ty.rs": "5d7ae2e3de172d9812425e8cc6e30d559b0743620b3b09f7d72f3b05a7e1ce98",
+              "ir/function.rs": "a8296565624f1be38eaa01cea638e39eb1e2ee9de6859fc63a070f5a190c4c8c",
+              "ir/int.rs": "1bf1e4d87eca13ee2fc38ff4d56c266f303f188796f5c0d290f53162798d2d01",
+              "ir/item.rs": "d11623c01e1a9128063be4e4bde5c459a0a2f10fd9e323fced3cd4bc8d394b6c",
+              "ir/item_kind.rs": "799fab994b5ed35045786a68003c2c12b6601cf3b07e8ccc0b9acd6f921217e0",
+              "ir/layout.rs": "ed8d4e193bce095853edbefc6d71213b44c19fabd838fea7f3c3c4953385eac3",
+              "ir/mod.rs": "a3b98b1732111a980a795c72eaf1e09101e842ef2de76b4f2d4a7857f8d4cee4",
+              "ir/module.rs": "617867617ebd7e56157a9ba057441ce11a33c25138a1da64646f44ccaae7c762",
+              "ir/objc.rs": "f37af6ea0361905ad6dc5753dbf82cc828822b9d092b6c941c37d089463e615a",
+              "ir/template.rs": "1114c0924323f8b30bb32dbb3f6730dd7f5bc1f0771ad5099738e8e57111c07d",
+              "ir/traversal.rs": "3ebde94ead0fe69d51541ab61d700c7c1f6382574e4c110b8c7fe3e2c6218f19",
+              "ir/ty.rs": "e2d84ab90fc87ac2c290e0a589dab27c84f236ec819f6e432cb134d19a0e9524",
+              "ir/var.rs": "2a94decd3adfdccd3bd0015b460d180838e3c92b122b632eed44032b80cad120",
+              "lib.rs": "4124d2e62545a3531576e20b79572b669db757fa3c7e916061657f6cca1e61d8",
+              "log_stubs.rs": "a636d59af2fd3745c2e416e1ab8a1e1a3888ea84cd4657a321ce22f15e0c5a87",
+              "options/as_args.rs": "a1a5e7f0dde82590371fc1a9ea5fde7f3e2252530ca74d98bb49a8ce06cc864f",
+              "options/cli.rs": "51fc8ed7a8e10919672d7920ac70b799578ba78ac44b58e47ea7e1c263c9366b",
+              "options/helpers.rs": "f4a7681e29b2dcc3be9249478c499d685b9e29d4f4ca4ae8bff7a91668cd8f15",
+              "options/mod.rs": "95f1b4aa28af4791d9197b155d02c152618dd34b9db66e629fa32354f0056298",
+              "parse.rs": "fce3616e0464aa7414888e5d00d4df18c83bb3034a1c807d36a07a3c586e475a",
+              "regex_set.rs": "d8995adb9e5cecc2d738e662a62d5081150bf967cb67e1206070e22b7265578a",
+              "time.rs": "1429af446b2b38c70ceec82c4202d4822c618cad47ba502dce72dbdc4cbb425e"
+            },
+            "license": "BSD-3-Clause",
+            "license_materials": [
+              "compliance/licenses/upstream/bindgen-0.72.1/LICENSE"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "bindgen",
+            "origin_directory": "vendor/rust/bindgen-0.72.1",
+            "repository": "https://github.com/rust-lang/rust-bindgen",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "993776b509cfb49c750f11b8f07a46fa23e0a1386ffc01fb1e7d343efc387895",
+              "archive_url": "https://static.crates.io/crates/bindgen/bindgen-0.72.1.crate",
+              "name": "bindgen",
+              "version": "0.72.1"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "d874de8d646d9b8a3e7ba2db2bcd52f2fba8f1f5"
+              },
+              "path_in_vcs": "bindgen"
+            },
+            "version": "0.72.1"
+          }
+        },
+        {
+          "external_tests": {
+            "bytes": 13443,
+            "directory": "src/foundation/cexpr",
+            "file_count": 8,
+            "files": [
+              {
+                "path": "test/foundation/cexpr/tests/clang.rs",
+                "sha256": "0da00e3e05fce62091365a8bb75fa06ebf84834375856c948f1f3287d590d4a4",
+                "source": "src/foundation/cexpr/tests/clang.rs",
+                "source_sha256_before": "5bb9807f35f760065d15cb9dfb7d8b79c2f734aef7ba5fe3737154155ed8ee73"
+              },
+              {
+                "path": "test/foundation/cexpr/tests/input/chars.h",
+                "sha256": "69c8141870872b795b5174bad125b748732c2b01d0e98ffcfc37b19f3f791f69",
+                "source": "src/foundation/cexpr/tests/input/chars.h",
+                "source_sha256_before": "69c8141870872b795b5174bad125b748732c2b01d0e98ffcfc37b19f3f791f69"
+              },
+              {
+                "path": "test/foundation/cexpr/tests/input/fail.h",
+                "sha256": "b0b6cffd2dd17410b5eb02ee79ab75754820480b960db8a9866cc9983bd36b65",
+                "source": "src/foundation/cexpr/tests/input/fail.h",
+                "source_sha256_before": "b0b6cffd2dd17410b5eb02ee79ab75754820480b960db8a9866cc9983bd36b65"
+              },
+              {
+                "path": "test/foundation/cexpr/tests/input/floats.h",
+                "sha256": "28ec664e793c494e1a31f3bc5b790014e9921fc741bf475a86319b9a9eee5915",
+                "source": "src/foundation/cexpr/tests/input/floats.h",
+                "source_sha256_before": "28ec664e793c494e1a31f3bc5b790014e9921fc741bf475a86319b9a9eee5915"
+              },
+              {
+                "path": "test/foundation/cexpr/tests/input/int_signed.h",
+                "sha256": "934199eded85dd7820ca08c0beb1381ee6d9339970d2720a69c23025571707ce",
+                "source": "src/foundation/cexpr/tests/input/int_signed.h",
+                "source_sha256_before": "934199eded85dd7820ca08c0beb1381ee6d9339970d2720a69c23025571707ce"
+              },
+              {
+                "path": "test/foundation/cexpr/tests/input/int_unsigned.h",
+                "sha256": "7b8023ba468ec76b184912692bc40e8fbcdd92ad86ec5a7c0dbcb02f2b8d961d",
+                "source": "src/foundation/cexpr/tests/input/int_unsigned.h",
+                "source_sha256_before": "7b8023ba468ec76b184912692bc40e8fbcdd92ad86ec5a7c0dbcb02f2b8d961d"
+              },
+              {
+                "path": "test/foundation/cexpr/tests/input/strings.h",
+                "sha256": "2dd11bc066f34e8cb1916a28353e9e9a3a21cd406651b2f94fc47e89c95d9cba",
+                "source": "src/foundation/cexpr/tests/input/strings.h",
+                "source_sha256_before": "2dd11bc066f34e8cb1916a28353e9e9a3a21cd406651b2f94fc47e89c95d9cba"
+              },
+              {
+                "path": "test/foundation/cexpr/tests/input/test_llvm_bug_9069.h",
+                "sha256": "8d9ae1d1eadc8f6d5c14296f984547fe894d0f2ce5cd6d7aa8caad40a56bc5e1",
+                "source": "src/foundation/cexpr/tests/input/test_llvm_bug_9069.h",
+                "source_sha256_before": "8d9ae1d1eadc8f6d5c14296f984547fe894d0f2ce5cd6d7aa8caad40a56bc5e1"
+              }
+            ],
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "roots": [
+              "test/foundation/cexpr"
+            ]
+          },
+          "package": {
+            "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+            "description": "A C expression parser and evaluator",
+            "directory": "src/foundation/cexpr",
+            "files_sha256": {
+              "Cargo.toml": "f1edf129aadabddb43a51c8c24803bded38e6a2948d2d3a9f5f8c1e68d0e6dc2",
+              "src/expr.rs": "dad9327dac3af9d2f5818937aac91000e02d835dc600da6185c06e9e12047b1e",
+              "src/lib.rs": "ff218b9b734ab2eaef813a6ee3a907cb5cd71d483dfaa28d44926824a5b6d804",
+              "src/literal.rs": "6fdefc0357b8a14444df21b05c90556861dc0466e63a57669786f3ef3a3dc1c3",
+              "src/token.rs": "cd1ba6315b0137de9a0711670dd1840ac76c41f3b88dcd1a93ad77e1800c703f"
+            },
+            "license": "Apache-2.0/MIT",
+            "license_materials": [
+              "compliance/licenses/upstream/cexpr-0.6.0/LICENSE-APACHE",
+              "compliance/licenses/upstream/cexpr-0.6.0/LICENSE-MIT"
+            ],
+            "merged_into": "无；通过统一内部源码源接入",
+            "name": "cexpr",
+            "origin_directory": "vendor/rust/cexpr-0.6.0",
+            "repository": "https://github.com/jethrogb/rust-cexpr",
+            "status": "内部维护源码",
+            "upstream": {
+              "archive_sha256": "6fac387a98bb7c37292057cffc56d62ecb629900026402633ae9160df93a8766",
+              "archive_url": "https://static.crates.io/crates/cexpr/cexpr-0.6.0.crate",
+              "name": "cexpr",
+              "version": "0.6.0"
+            },
+            "vcs": {
+              "git": {
+                "sha1": "c7ccdfbc37b508cfda1171ab4f89afaeb72e82f3"
+              }
+            },
+            "version": "0.6.0"
+          }
+        }
+      ],
+      "new_files": {
+        "src/cexpr/parser.rs": "36d45471c0c2e25b0fb50bab549cb5b03e624ea0bce79ef0a07f03c5fea4318d"
+      },
+      "primary_directory": "src/foundation/bindgen",
+      "reason": "Integrate the C constant-expression evaluator into its only production consumer, bindgen, with a bounded slice-only parser instead of generic parser combinators. Preserve both upstream identities, exact production routing and reversible per-origin transfers for every external regression file."
     },
     "456f0a67c6a6a12bcc70286ce525402679257a11c2bb88965ca13ad5eb5f4652": {
       "destination_directory": "src/foundation/http-transport",
@@ -46482,7 +47424,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "759e90e2b7cd1d0a6d66a45900d0b5da20edbeb5dd2f81c6fdf0fb51bd475ce4",
+    "compliance/external-tests/foundation.json": "52315fdfc5a780ac7825829037a8f95dc588c13deea6b57fbcd8b8cd9edd09c4",
     "compliance/external-tests/integrated.json": "976578b7514d285c9214c408327f9b344f3c7649b4ae3b63839e8806b4677d96",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -48425,137 +49367,215 @@
       ]
     },
     "src/foundation/bindgen": {
-      "bytes": 24629,
+      "bytes": 38128,
       "directory": "src/foundation/bindgen",
-      "file_count": 22,
+      "file_count": 30,
       "files": [
         {
+          "origin_directory": "vendor/rust/cexpr-0.6.0",
+          "path": "test/foundation/bindgen/cexpr/tests/clang.rs",
+          "sha256": "1b54f03f929c9f87d20565c70dcafcc463be906d106d71f2a9a8c9e4c5c69a77",
+          "source": "src/foundation/cexpr/tests/clang.rs",
+          "source_sha256_before": "5bb9807f35f760065d15cb9dfb7d8b79c2f734aef7ba5fe3737154155ed8ee73"
+        },
+        {
+          "origin_directory": "vendor/rust/cexpr-0.6.0",
+          "path": "test/foundation/bindgen/cexpr/tests/input/chars.h",
+          "sha256": "69c8141870872b795b5174bad125b748732c2b01d0e98ffcfc37b19f3f791f69",
+          "source": "src/foundation/cexpr/tests/input/chars.h",
+          "source_sha256_before": "69c8141870872b795b5174bad125b748732c2b01d0e98ffcfc37b19f3f791f69"
+        },
+        {
+          "origin_directory": "vendor/rust/cexpr-0.6.0",
+          "path": "test/foundation/bindgen/cexpr/tests/input/fail.h",
+          "sha256": "b0b6cffd2dd17410b5eb02ee79ab75754820480b960db8a9866cc9983bd36b65",
+          "source": "src/foundation/cexpr/tests/input/fail.h",
+          "source_sha256_before": "b0b6cffd2dd17410b5eb02ee79ab75754820480b960db8a9866cc9983bd36b65"
+        },
+        {
+          "origin_directory": "vendor/rust/cexpr-0.6.0",
+          "path": "test/foundation/bindgen/cexpr/tests/input/floats.h",
+          "sha256": "28ec664e793c494e1a31f3bc5b790014e9921fc741bf475a86319b9a9eee5915",
+          "source": "src/foundation/cexpr/tests/input/floats.h",
+          "source_sha256_before": "28ec664e793c494e1a31f3bc5b790014e9921fc741bf475a86319b9a9eee5915"
+        },
+        {
+          "origin_directory": "vendor/rust/cexpr-0.6.0",
+          "path": "test/foundation/bindgen/cexpr/tests/input/int_signed.h",
+          "sha256": "934199eded85dd7820ca08c0beb1381ee6d9339970d2720a69c23025571707ce",
+          "source": "src/foundation/cexpr/tests/input/int_signed.h",
+          "source_sha256_before": "934199eded85dd7820ca08c0beb1381ee6d9339970d2720a69c23025571707ce"
+        },
+        {
+          "origin_directory": "vendor/rust/cexpr-0.6.0",
+          "path": "test/foundation/bindgen/cexpr/tests/input/int_unsigned.h",
+          "sha256": "7b8023ba468ec76b184912692bc40e8fbcdd92ad86ec5a7c0dbcb02f2b8d961d",
+          "source": "src/foundation/cexpr/tests/input/int_unsigned.h",
+          "source_sha256_before": "7b8023ba468ec76b184912692bc40e8fbcdd92ad86ec5a7c0dbcb02f2b8d961d"
+        },
+        {
+          "origin_directory": "vendor/rust/cexpr-0.6.0",
+          "path": "test/foundation/bindgen/cexpr/tests/input/strings.h",
+          "sha256": "2dd11bc066f34e8cb1916a28353e9e9a3a21cd406651b2f94fc47e89c95d9cba",
+          "source": "src/foundation/cexpr/tests/input/strings.h",
+          "source_sha256_before": "2dd11bc066f34e8cb1916a28353e9e9a3a21cd406651b2f94fc47e89c95d9cba"
+        },
+        {
+          "origin_directory": "vendor/rust/cexpr-0.6.0",
+          "path": "test/foundation/bindgen/cexpr/tests/input/test_llvm_bug_9069.h",
+          "sha256": "8d9ae1d1eadc8f6d5c14296f984547fe894d0f2ce5cd6d7aa8caad40a56bc5e1",
+          "source": "src/foundation/cexpr/tests/input/test_llvm_bug_9069.h",
+          "source_sha256_before": "8d9ae1d1eadc8f6d5c14296f984547fe894d0f2ce5cd6d7aa8caad40a56bc5e1"
+        },
+        {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_get_bit_26.rs",
           "sha256": "9a12fef5110e291d9d5654d9974fcbd5ffffadc0fda94935a832d80d765eca84",
           "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
           "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/codegen/bitfield_unit_tests/bitfield_unit_set_bit_48.rs",
           "sha256": "7500e1e29c3227e7b3381829e2d002941e02d620773174ccab689e130044a670",
           "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
           "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/codegen/struct_layout/test_align_to_65.rs",
           "sha256": "7427defbec461e4af34089011e8bd29b63c3bfef4eb7fcb11d5811531b0d54bc",
           "source": "src/foundation/bindgen/codegen/struct_layout.rs",
           "source_sha256_before": "78b38cc064491d854516dcf36e268b45e549d2bd3150ea4cb390529f656b2132"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/codegen/struct_layout/test_bytes_from_bits_pow2_74.rs",
           "sha256": "6b13d0ca604bd833d298f90469e6a472b3a7522c99bb00d7b705782d561f49e8",
           "source": "src/foundation/bindgen/codegen/struct_layout.rs",
           "source_sha256_before": "78b38cc064491d854516dcf36e268b45e549d2bd3150ea4cb390529f656b2132"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/ir/layout/test_layout_for_size_20.rs",
           "sha256": "fe90309dfe444efa4ec61e5b1ce44aa5f9eef0a28fe79fb6213d178a7c320091",
           "source": "src/foundation/bindgen/ir/layout.rs",
           "source_sha256_before": "5b2958eb3d5e5d96bd85ce02925d936e89d3147c62cd225e3a0ae7f042b74fca"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_empty_name_513.rs",
           "sha256": "6359e92ad4b7cab4c1354d719f79f6063ac0898a5ec76b86d653b3a761ad36d2",
           "source": "src/foundation/bindgen/ir/ty.rs",
           "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_remaining_500.rs",
           "sha256": "e1c90c85377b3f1a1ecd03644466bb47668da28d81d62437f60620d3c8ea21b4",
           "source": "src/foundation/bindgen/ir/ty.rs",
           "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_invalid_start_494.rs",
           "sha256": "e904acc3c1a144acfac43d9d11512bb725e5c19237acc893f317586c77c79bf5",
           "source": "src/foundation/bindgen/ir/ty.rs",
           "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_unnamed_506.rs",
           "sha256": "929df7b1f75b8e11ee22a5f4af83530bfa67dfa2a9d691e57a85f623d9c576db",
           "source": "src/foundation/bindgen/ir/ty.rs",
           "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_471.rs",
           "sha256": "f6c44dc09d1579445ebd23369e73c1382961c89e25e215017ee66ca32b606973",
           "source": "src/foundation/bindgen/ir/ty.rs",
           "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_underscore_and_numbers_477.rs",
           "sha256": "a50aa8e254efb3bac87ff4cc3b8377e27463a4ea5f5aaacd886222c5cb9e5040",
           "source": "src/foundation/bindgen/ir/ty.rs",
           "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/ir/ty/is_invalid_type_param_valid_unnamed_kind_488.rs",
           "sha256": "dde488b398d033d764473667eecafd62bb9f4e0f362c223951449faa3125f855",
           "source": "src/foundation/bindgen/ir/ty.rs",
           "source_sha256_before": "e2516217fa439e65ef38dce2acd712a89879045e21e64b6f317a81b0d22927dc"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/lib/commandline_flag_unit_test_function_1315.rs",
           "sha256": "4ed9a9ce7ab2e05a617e3f0e60fa81ed9ddee454ded708326eec9a805158c4f3",
           "source": "src/foundation/bindgen/lib.rs",
           "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_1360.rs",
           "sha256": "eea35784f1c5d6114a89ea6eea91666a5cedb616870450fa47ec4f79a5f4fcb4",
           "source": "src/foundation/bindgen/lib.rs",
           "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_espidf_1396.rs",
           "sha256": "f8f0b609ee5b6cd749afdb654fc135b86a265850b8706321217bd657de08c6ae",
           "source": "src/foundation/bindgen/lib.rs",
           "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_riscv_1368.rs",
           "sha256": "0160698a8eaf7e4000c8466079642eb1882779559207cf96d064ffe4630b2eb1",
           "source": "src/foundation/bindgen/lib.rs",
           "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/functions/lib/test_rust_to_clang_target_simulator_1408.rs",
           "sha256": "b7a5be0a5e25c6ee7b0deed166565abfda351fdf5cfaedc818c0007283b3c17a",
           "source": "src/foundation/bindgen/lib.rs",
           "source_sha256_before": "fe023071fb5e39938173ee7e160a4c7f6b735afc71c8d164c397842d69b055de"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/modules/codegen/bitfield_unit_tests.rs",
           "sha256": "b5ceca02f13d0554c5d4d02bc52b921736b5ce4cd59ad4ce0bde91b6e7087300",
           "source": "src/foundation/bindgen/codegen/bitfield_unit_tests.rs",
           "source_sha256_before": "9915cb19bf37fc1013fc72753bae153f7c249280daec94b25fb461f9936dffa4"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/unit/deps/tests_27.rs",
           "sha256": "69666f8fa646ea778cc5b9aea827915405e1088d271939484104f437d6f30868",
           "source": "src/foundation/bindgen/deps.rs",
           "source_sha256_before": "297dcc2be53af1a3ea4f77e16902a641f3e6f0baad09c06a6ea26050a0281c18"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/unit/features/test_473.rs",
           "sha256": "7cf74ca31962e9a4b20833575a10c171e2b7a4fdc724a971c548cef6127dd490",
           "source": "src/foundation/bindgen/features.rs",
           "source_sha256_before": "ad17b96bf6b97cecb33d2b4710261341b1e3828263531708157d2b206af65c77"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/unit/ir/analysis/mod/tests_211.rs",
           "sha256": "f126d90359e62d8591bc3609a5dd8a88b2de14d495df667b9223f1785b04dc27",
           "source": "src/foundation/bindgen/ir/analysis/mod.rs",
           "source_sha256_before": "93edca96d765dfa19ac231198027b0ba48c623502a8be1dbf799a241cd6b304b"
         },
         {
+          "origin_directory": "vendor/rust/bindgen-0.72.1",
           "path": "test/foundation/bindgen/unit/ir/comment/test_68.rs",
           "sha256": "464207fbe56b789fade8053e5fac61990c68b0d52af355f5b7a1223b691c8e26",
           "source": "src/foundation/bindgen/ir/comment.rs",
@@ -48965,65 +49985,6 @@
       "origin_directory": "vendor/rust/cc-1.8.0",
       "roots": [
         "test/foundation/cc"
-      ]
-    },
-    "src/foundation/cexpr": {
-      "bytes": 13443,
-      "directory": "src/foundation/cexpr",
-      "file_count": 8,
-      "files": [
-        {
-          "path": "test/foundation/cexpr/tests/clang.rs",
-          "sha256": "0da00e3e05fce62091365a8bb75fa06ebf84834375856c948f1f3287d590d4a4",
-          "source": "src/foundation/cexpr/tests/clang.rs",
-          "source_sha256_before": "5bb9807f35f760065d15cb9dfb7d8b79c2f734aef7ba5fe3737154155ed8ee73"
-        },
-        {
-          "path": "test/foundation/cexpr/tests/input/chars.h",
-          "sha256": "69c8141870872b795b5174bad125b748732c2b01d0e98ffcfc37b19f3f791f69",
-          "source": "src/foundation/cexpr/tests/input/chars.h",
-          "source_sha256_before": "69c8141870872b795b5174bad125b748732c2b01d0e98ffcfc37b19f3f791f69"
-        },
-        {
-          "path": "test/foundation/cexpr/tests/input/fail.h",
-          "sha256": "b0b6cffd2dd17410b5eb02ee79ab75754820480b960db8a9866cc9983bd36b65",
-          "source": "src/foundation/cexpr/tests/input/fail.h",
-          "source_sha256_before": "b0b6cffd2dd17410b5eb02ee79ab75754820480b960db8a9866cc9983bd36b65"
-        },
-        {
-          "path": "test/foundation/cexpr/tests/input/floats.h",
-          "sha256": "28ec664e793c494e1a31f3bc5b790014e9921fc741bf475a86319b9a9eee5915",
-          "source": "src/foundation/cexpr/tests/input/floats.h",
-          "source_sha256_before": "28ec664e793c494e1a31f3bc5b790014e9921fc741bf475a86319b9a9eee5915"
-        },
-        {
-          "path": "test/foundation/cexpr/tests/input/int_signed.h",
-          "sha256": "934199eded85dd7820ca08c0beb1381ee6d9339970d2720a69c23025571707ce",
-          "source": "src/foundation/cexpr/tests/input/int_signed.h",
-          "source_sha256_before": "934199eded85dd7820ca08c0beb1381ee6d9339970d2720a69c23025571707ce"
-        },
-        {
-          "path": "test/foundation/cexpr/tests/input/int_unsigned.h",
-          "sha256": "7b8023ba468ec76b184912692bc40e8fbcdd92ad86ec5a7c0dbcb02f2b8d961d",
-          "source": "src/foundation/cexpr/tests/input/int_unsigned.h",
-          "source_sha256_before": "7b8023ba468ec76b184912692bc40e8fbcdd92ad86ec5a7c0dbcb02f2b8d961d"
-        },
-        {
-          "path": "test/foundation/cexpr/tests/input/strings.h",
-          "sha256": "2dd11bc066f34e8cb1916a28353e9e9a3a21cd406651b2f94fc47e89c95d9cba",
-          "source": "src/foundation/cexpr/tests/input/strings.h",
-          "source_sha256_before": "2dd11bc066f34e8cb1916a28353e9e9a3a21cd406651b2f94fc47e89c95d9cba"
-        },
-        {
-          "path": "test/foundation/cexpr/tests/input/test_llvm_bug_9069.h",
-          "sha256": "8d9ae1d1eadc8f6d5c14296f984547fe894d0f2ce5cd6d7aa8caad40a56bc5e1",
-          "source": "src/foundation/cexpr/tests/input/test_llvm_bug_9069.h",
-          "source_sha256_before": "8d9ae1d1eadc8f6d5c14296f984547fe894d0f2ce5cd6d7aa8caad40a56bc5e1"
-        }
-      ],
-      "origin_directory": "vendor/rust/cexpr-0.6.0",
-      "roots": [
-        "test/foundation/cexpr"
       ]
     },
     "src/foundation/cfg-if": {
@@ -57365,89 +58326,6 @@
         "test/foundation/mime_guess"
       ]
     },
-    "src/foundation/minimal-lexical": {
-      "bytes": 97646,
-      "directory": "src/foundation/minimal-lexical",
-      "file_count": 12,
-      "files": [
-        {
-          "path": "test/foundation/minimal-lexical/tests/bellerophon.rs",
-          "sha256": "b17b87b8963ebcd71f684e4d48c1ce619964e4fb719a5875b0ce4514ed528674",
-          "source": "src/foundation/minimal-lexical/tests/bellerophon.rs",
-          "source_sha256_before": "b17b87b8963ebcd71f684e4d48c1ce619964e4fb719a5875b0ce4514ed528674"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/bellerophon_tests.rs",
-          "sha256": "76b71efa2f4cec56a79535e2d292788a5e1b443c901ec7a234800782f36ddb68",
-          "source": "src/foundation/minimal-lexical/tests/bellerophon_tests.rs",
-          "source_sha256_before": "76b71efa2f4cec56a79535e2d292788a5e1b443c901ec7a234800782f36ddb68"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/integration_tests.rs",
-          "sha256": "ed1a1fc46fc239eb4ea718057ad6e9869f633797ef72fc6f05b1757ab80e1641",
-          "source": "src/foundation/minimal-lexical/tests/integration_tests.rs",
-          "source_sha256_before": "ed1a1fc46fc239eb4ea718057ad6e9869f633797ef72fc6f05b1757ab80e1641"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/lemire_tests.rs",
-          "sha256": "6213bcd9b44def655b44a6b760cee0c0ad82d3bb494f48c2ff100698da34625b",
-          "source": "src/foundation/minimal-lexical/tests/lemire_tests.rs",
-          "source_sha256_before": "6213bcd9b44def655b44a6b760cee0c0ad82d3bb494f48c2ff100698da34625b"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/libm_tests.rs",
-          "sha256": "6941e74d7d0adf021edc93b9919275e82810687ff33147a10361613073b22669",
-          "source": "src/foundation/minimal-lexical/tests/libm_tests.rs",
-          "source_sha256_before": "6941e74d7d0adf021edc93b9919275e82810687ff33147a10361613073b22669"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/mask_tests.rs",
-          "sha256": "8c2a3daf434815389b6bf88837e3f382d74d97250104b925d70779366bd3d537",
-          "source": "src/foundation/minimal-lexical/tests/mask_tests.rs",
-          "source_sha256_before": "8c2a3daf434815389b6bf88837e3f382d74d97250104b925d70779366bd3d537"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/number_tests.rs",
-          "sha256": "df4b4f0c65478f2f6193bd918fa4aad7163e40598c58df44547c4559e4a8b0c7",
-          "source": "src/foundation/minimal-lexical/tests/number_tests.rs",
-          "source_sha256_before": "df4b4f0c65478f2f6193bd918fa4aad7163e40598c58df44547c4559e4a8b0c7"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/parse_tests.rs",
-          "sha256": "bc0066b9257368f0365276fcffa2662c4699a033eaf9a4a7d6faa0e9b915094a",
-          "source": "src/foundation/minimal-lexical/tests/parse_tests.rs",
-          "source_sha256_before": "bc0066b9257368f0365276fcffa2662c4699a033eaf9a4a7d6faa0e9b915094a"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/rounding_tests.rs",
-          "sha256": "99f38b768ad15e726559c446825f9f1bad67935cdd28ffcc1cbcd3e031a901ea",
-          "source": "src/foundation/minimal-lexical/tests/rounding_tests.rs",
-          "source_sha256_before": "99f38b768ad15e726559c446825f9f1bad67935cdd28ffcc1cbcd3e031a901ea"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/slow_tests.rs",
-          "sha256": "36c4c2538d2f5a1c1af5deb26ec4eba47f19f9a3c280a13d10704267a16d3b3f",
-          "source": "src/foundation/minimal-lexical/tests/slow_tests.rs",
-          "source_sha256_before": "36c4c2538d2f5a1c1af5deb26ec4eba47f19f9a3c280a13d10704267a16d3b3f"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/stackvec.rs",
-          "sha256": "f040611995bcd1bd2cb47694e74aa02ff4fabdffe007f712c9bb788d82dfb8a7",
-          "source": "src/foundation/minimal-lexical/tests/stackvec.rs",
-          "source_sha256_before": "f040611995bcd1bd2cb47694e74aa02ff4fabdffe007f712c9bb788d82dfb8a7"
-        },
-        {
-          "path": "test/foundation/minimal-lexical/tests/vec_tests.rs",
-          "sha256": "09b561160df3b1385876db452bb5a67ef2c9fd2cc36b5687e1dfaf8c58947782",
-          "source": "src/foundation/minimal-lexical/tests/vec_tests.rs",
-          "source_sha256_before": "09b561160df3b1385876db452bb5a67ef2c9fd2cc36b5687e1dfaf8c58947782"
-        }
-      ],
-      "origin_directory": "vendor/rust/minimal-lexical-0.2.1",
-      "roots": [
-        "test/foundation/minimal-lexical"
-      ]
-    },
     "src/foundation/mio": {
       "bytes": 1975,
       "directory": "src/foundation/mio",
@@ -57469,221 +58347,6 @@
       "origin_directory": "vendor/rust/mio-1.2.4",
       "roots": [
         "test/foundation/mio"
-      ]
-    },
-    "src/foundation/nom": {
-      "bytes": 177119,
-      "directory": "src/foundation/nom",
-      "file_count": 34,
-      "files": [
-        {
-          "path": "test/foundation/nom/modules/src/branch/tests.rs",
-          "sha256": "9a4a7b0c38fc28881d904f8ad6757a23e543f47a4c2d6fd6a9589eeb97209088",
-          "source": "src/foundation/nom/src/branch/tests.rs",
-          "source_sha256_before": "9a4a7b0c38fc28881d904f8ad6757a23e543f47a4c2d6fd6a9589eeb97209088"
-        },
-        {
-          "path": "test/foundation/nom/modules/src/bytes/tests.rs",
-          "sha256": "f0d9eb90d72873346e47e5592d30093eb38cbbb5fbf2e769cda776ccfff4f887",
-          "source": "src/foundation/nom/src/bytes/tests.rs",
-          "source_sha256_before": "f0d9eb90d72873346e47e5592d30093eb38cbbb5fbf2e769cda776ccfff4f887"
-        },
-        {
-          "path": "test/foundation/nom/modules/src/character/tests.rs",
-          "sha256": "38958a709f96f077f93a72b32d8ded0a2ad6e488d9aadbe3cf1cfd8adaec06c8",
-          "source": "src/foundation/nom/src/character/tests.rs",
-          "source_sha256_before": "38958a709f96f077f93a72b32d8ded0a2ad6e488d9aadbe3cf1cfd8adaec06c8"
-        },
-        {
-          "path": "test/foundation/nom/modules/src/combinator/tests.rs",
-          "sha256": "1e56e2c1263d93bfbd244d24160a0bea41731e5158d57382e69c215427770b94",
-          "source": "src/foundation/nom/src/combinator/tests.rs",
-          "source_sha256_before": "1e56e2c1263d93bfbd244d24160a0bea41731e5158d57382e69c215427770b94"
-        },
-        {
-          "path": "test/foundation/nom/modules/src/multi/tests.rs",
-          "sha256": "806f89f5f347978c22e9b8cc7f8a49ad1d1fe23bff5974725b643a2ceffe8cb0",
-          "source": "src/foundation/nom/src/multi/tests.rs",
-          "source_sha256_before": "806f89f5f347978c22e9b8cc7f8a49ad1d1fe23bff5974725b643a2ceffe8cb0"
-        },
-        {
-          "path": "test/foundation/nom/modules/src/sequence/tests.rs",
-          "sha256": "8dc4ca519b274d4e0694b373b2710c2e947e6074d43ec6a738a74113a09379f5",
-          "source": "src/foundation/nom/src/sequence/tests.rs",
-          "source_sha256_before": "8dc4ca519b274d4e0694b373b2710c2e947e6074d43ec6a738a74113a09379f5"
-        },
-        {
-          "path": "test/foundation/nom/modules/src/str.rs",
-          "sha256": "a1bc40522caa7737d64084320af70909345f63f8742f3a81686cdec9f3bbaf98",
-          "source": "src/foundation/nom/src/str.rs",
-          "source_sha256_before": "f26aa11f43e8a4a300ea0f310d599fab3f809102cfb29033ddf84f299ee8010c"
-        },
-        {
-          "path": "test/foundation/nom/tests/arithmetic.rs",
-          "sha256": "725efba4fc6cc811f542f3bcc8c7afd52702a66f64319d4f2796225e2e75d0ca",
-          "source": "src/foundation/nom/tests/arithmetic.rs",
-          "source_sha256_before": "725efba4fc6cc811f542f3bcc8c7afd52702a66f64319d4f2796225e2e75d0ca"
-        },
-        {
-          "path": "test/foundation/nom/tests/arithmetic_ast.rs",
-          "sha256": "c7c28c988640405dd250c86045bbda75fc6ead2a769fb05eafbfbe74d97e0485",
-          "source": "src/foundation/nom/tests/arithmetic_ast.rs",
-          "source_sha256_before": "c7c28c988640405dd250c86045bbda75fc6ead2a769fb05eafbfbe74d97e0485"
-        },
-        {
-          "path": "test/foundation/nom/tests/css.rs",
-          "sha256": "36a2198e42e601efc611ebd6b3c6861f3ccb6a63525829ae6a2603bcdc4c2b11",
-          "source": "src/foundation/nom/tests/css.rs",
-          "source_sha256_before": "36a2198e42e601efc611ebd6b3c6861f3ccb6a63525829ae6a2603bcdc4c2b11"
-        },
-        {
-          "path": "test/foundation/nom/tests/custom_errors.rs",
-          "sha256": "354d5a82a4f5a24b97901a3b411b4eab038c4d034047971956b9cdc12538e50d",
-          "source": "src/foundation/nom/tests/custom_errors.rs",
-          "source_sha256_before": "354d5a82a4f5a24b97901a3b411b4eab038c4d034047971956b9cdc12538e50d"
-        },
-        {
-          "path": "test/foundation/nom/tests/escaped.rs",
-          "sha256": "c25987ea6d9a7dde74d58a49c332d223da3a495569cb79e3fe921bce51729ead",
-          "source": "src/foundation/nom/tests/escaped.rs",
-          "source_sha256_before": "c25987ea6d9a7dde74d58a49c332d223da3a495569cb79e3fe921bce51729ead"
-        },
-        {
-          "path": "test/foundation/nom/tests/float.rs",
-          "sha256": "cdac92fb14afb75cba9d6b8f568e272a630b2cfb9f096b76c91909a3cd016869",
-          "source": "src/foundation/nom/tests/float.rs",
-          "source_sha256_before": "cdac92fb14afb75cba9d6b8f568e272a630b2cfb9f096b76c91909a3cd016869"
-        },
-        {
-          "path": "test/foundation/nom/tests/fnmut.rs",
-          "sha256": "dc9b6140eb3405d1497b05675fc4d3050785771a2afa81990d684b2edd0c9746",
-          "source": "src/foundation/nom/tests/fnmut.rs",
-          "source_sha256_before": "dc9b6140eb3405d1497b05675fc4d3050785771a2afa81990d684b2edd0c9746"
-        },
-        {
-          "path": "test/foundation/nom/tests/ini.rs",
-          "sha256": "f0ce38b90057e9e0fd2329819395c420cbf1400457f9c4279414301faa38b19c",
-          "source": "src/foundation/nom/tests/ini.rs",
-          "source_sha256_before": "f0ce38b90057e9e0fd2329819395c420cbf1400457f9c4279414301faa38b19c"
-        },
-        {
-          "path": "test/foundation/nom/tests/ini_str.rs",
-          "sha256": "4c8f6ce3a2a245e8365837b873c25d2d8f24887313b791e2edd09a76a2d98947",
-          "source": "src/foundation/nom/tests/ini_str.rs",
-          "source_sha256_before": "4c8f6ce3a2a245e8365837b873c25d2d8f24887313b791e2edd09a76a2d98947"
-        },
-        {
-          "path": "test/foundation/nom/tests/issues.rs",
-          "sha256": "1322ffc270ba1bedf39b295eb622ead2715ab7d60db0181af5305a0429c7819e",
-          "source": "src/foundation/nom/tests/issues.rs",
-          "source_sha256_before": "1322ffc270ba1bedf39b295eb622ead2715ab7d60db0181af5305a0429c7819e"
-        },
-        {
-          "path": "test/foundation/nom/tests/json.rs",
-          "sha256": "8672fca70b889d6243a2f0f4c99389e22200e4363f253e83a3f26620b92f765e",
-          "source": "src/foundation/nom/tests/json.rs",
-          "source_sha256_before": "8672fca70b889d6243a2f0f4c99389e22200e4363f253e83a3f26620b92f765e"
-        },
-        {
-          "path": "test/foundation/nom/tests/mp4.rs",
-          "sha256": "db6568ee9ccad70a7b567295831b961b369011f66dc2dd406851208007588600",
-          "source": "src/foundation/nom/tests/mp4.rs",
-          "source_sha256_before": "db6568ee9ccad70a7b567295831b961b369011f66dc2dd406851208007588600"
-        },
-        {
-          "path": "test/foundation/nom/tests/multiline.rs",
-          "sha256": "aef9768beaf5042b8629599b2094712646abb23eb11fa662b5a9bf3dfa432547",
-          "source": "src/foundation/nom/tests/multiline.rs",
-          "source_sha256_before": "aef9768beaf5042b8629599b2094712646abb23eb11fa662b5a9bf3dfa432547"
-        },
-        {
-          "path": "test/foundation/nom/tests/overflow.rs",
-          "sha256": "a249ebeebfc5228faf9bfd5241a54a8181df476c4699ef87bb7d8a2161b9fc72",
-          "source": "src/foundation/nom/tests/overflow.rs",
-          "source_sha256_before": "a249ebeebfc5228faf9bfd5241a54a8181df476c4699ef87bb7d8a2161b9fc72"
-        },
-        {
-          "path": "test/foundation/nom/tests/reborrow_fold.rs",
-          "sha256": "66230bacd8d36e1559f1dc919ae8eab3515963c4aef85a079ec56218c9a6e676",
-          "source": "src/foundation/nom/tests/reborrow_fold.rs",
-          "source_sha256_before": "66230bacd8d36e1559f1dc919ae8eab3515963c4aef85a079ec56218c9a6e676"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/bits/complete/test_131.rs",
-          "sha256": "3749e5f3784a51b8bcd47b2b1c00ce2109631f27fa0b1b443624e121d4e89c3b",
-          "source": "src/foundation/nom/src/bits/complete.rs",
-          "source_sha256_before": "640bdcad311a05d94e4b3a1a8b2105c540f80864edb75de0a570f03d4055e5ed"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/bits/mod/test_113.rs",
-          "sha256": "f7bc4e0f277a11ee7d96465f46853641c32a1dff0e45e75439567e30efe30257",
-          "source": "src/foundation/nom/src/bits/mod.rs",
-          "source_sha256_before": "1c6aa26887d379384c1c823684e6f8e91b59df72664eefd8ddf0b6ca5517e669"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/bits/streaming/test_105.rs",
-          "sha256": "ba3e1787eabd227ff4875c0f8a2359c9540a98c340d34b952440808586be8bb7",
-          "source": "src/foundation/nom/src/bits/streaming.rs",
-          "source_sha256_before": "304cc5d565cfa30075827c1d6cb173b7cb92b101d8ebe9bc50476a00c92fd5dc"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/bytes/complete/tests_707.rs",
-          "sha256": "10bdf9edb9c51ec7224560378e581a765e40ad3442fabee9c5f22a875d35e135",
-          "source": "src/foundation/nom/src/bytes/complete.rs",
-          "source_sha256_before": "666fa037c63292b1616cbc04c5b414a53c705d0d2ccd8d84399bbe78f573b7e9"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/character/complete/tests_831.rs",
-          "sha256": "d3e7fdfd5abc40017d24ed5317c10380ffe78f4f7c58b066a473ac26a23852c9",
-          "source": "src/foundation/nom/src/character/complete.rs",
-          "source_sha256_before": "7eeb5f00baab7aeaf7f392e5872d141d352951a146c0396721dab71e29b4c87b"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/character/streaming/tests_737.rs",
-          "sha256": "7910f6fea9d2bd382c81aea8b6baa9a418c5325aed4b06d7459ba0539548f5f9",
-          "source": "src/foundation/nom/src/character/streaming.rs",
-          "source_sha256_before": "de67ec5663475bc5ffa16f12d121ce9181353b16656b90216704197fca3010fc"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/error/tests_607.rs",
-          "sha256": "21f81f42b5c279ed82d92d003e5e58281dafcd1351c43dff57327279aea7a9bb",
-          "source": "src/foundation/nom/src/error.rs",
-          "source_sha256_before": "9d9bf87e76b47cfd9170f8ae50b6deeb02ff1c296aac3eb4f71ee1474dc0fba5"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/internal/tests_459.rs",
-          "sha256": "2662c24491be207ab3ad24083b55d088d0e621003af1da1e119151bc368875be",
-          "source": "src/foundation/nom/src/internal.rs",
-          "source_sha256_before": "31d7179ed140a33880db44e47fcf1a03e0523fe49308949087a4c2eb9fd9cd33"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/number/complete/tests_1647.rs",
-          "sha256": "d37d8d806f72aa2a361c4f27c183ccfa0cc133e1771d83dd3c94a2b87fc7cdd5",
-          "source": "src/foundation/nom/src/number/complete.rs",
-          "source_sha256_before": "a4f312c200710a446986142d19ebc78727265cf2c3b07b70dd84339051040bdd"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/number/streaming/tests_1620.rs",
-          "sha256": "b5a8dc59ad240e1245afa08ab4f6cfbcf38a3cf8ea1fd9327234b6e1eaad30ad",
-          "source": "src/foundation/nom/src/number/streaming.rs",
-          "source_sha256_before": "1c2137235f093857e545069d687f50712ea457fac03961f3f6ac15c0f7e40c2a"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/str/test_1.rs",
-          "sha256": "f26aa11f43e8a4a300ea0f310d599fab3f809102cfb29033ddf84f299ee8010c",
-          "source": "src/foundation/nom/src/str.rs",
-          "source_sha256_before": "f26aa11f43e8a4a300ea0f310d599fab3f809102cfb29033ddf84f299ee8010c"
-        },
-        {
-          "path": "test/foundation/nom/unit/src/traits/tests_1414.rs",
-          "sha256": "b7a8f10b7c6a2fb37e6a7444a1606574d1f56a64cf00b2be074b77909b0b37d2",
-          "source": "src/foundation/nom/src/traits.rs",
-          "source_sha256_before": "01934f8a61fc3cc5a03438a10751d3b074c89e5f3bcc96df8e43cf6b09be2308"
-        }
-      ],
-      "origin_directory": "vendor/rust/nom-7.1.3",
-      "roots": [
-        "test/foundation/nom"
       ]
     },
     "src/foundation/nu-ansi-term": {
@@ -73564,7 +74227,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "c2d54b669c5a2a7f1bf859cc97d9ebd70fbaaa75dd3bd3fb502c9a3f0069fab4"
+    "Cargo.lock": "f39fa897313bf221618696bb492445393a917d419d9c4c2f982a1ad32d5193cc"
   },
   "manifests_sha256": {
     "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
@@ -73587,7 +74250,7 @@
     "src/foundation/axum-macros/Cargo.toml": "20f720e15596ce27f016da9d4592f80946335bd1731c20d270d034c52d6eb17c",
     "src/foundation/base64/Cargo.toml": "9504252614940f1a708e69e97f94dc912c59c6fcc10b172dc6a7bafcf32a2976",
     "src/foundation/base64ct/Cargo.toml": "760135ed9ff49f6ef8786078e6881e0457b4298913b752ce55bf4554101b0998",
-    "src/foundation/bindgen/Cargo.toml": "eac9af7e09c6222656b9e522fd421c0e157ec2cba9c3190b53ce80aaf15bb5a6",
+    "src/foundation/bindgen/Cargo.toml": "40f598dd523207ec682528897d8142bbc557fb7fe17afe13e1d99e0275c3b128",
     "src/foundation/bit-set/Cargo.toml": "1e3169fd3e633b901a185cc0c4c813290bb23dbf07d47e69621aefd49b5c179e",
     "src/foundation/bit-vec/Cargo.toml": "2689339b3f38bb7be614995e19e1c50d36e5fbd8753fd3af44911a183fecaab7",
     "src/foundation/blake2/Cargo.toml": "e0aa604e41e20e2c68c43e02ccddd00d4c33c135607e9acd9a9720959dd0729b",
@@ -73597,7 +74260,6 @@
     "src/foundation/bytecount/Cargo.toml": "2f5c85dc6f296dcdba075bafc6a2cadb30292083fe0163e458e9ffe7bc07f8f4",
     "src/foundation/bytes/Cargo.toml": "dc580e9f36356c8c45c31b375ec888458c01554f523c928b9c5c6944a7a9f372",
     "src/foundation/cc/Cargo.toml": "25381a2c9080199e8d8bf11a3aba92f97a0be47a35a8ad6028c05b83feccc3bc",
-    "src/foundation/cexpr/Cargo.toml": "f1edf129aadabddb43a51c8c24803bded38e6a2948d2d3a9f5f8c1e68d0e6dc2",
     "src/foundation/cfg-if/Cargo.toml": "5e6e62b7a2f061788516151826275f98605b95936d388934ab3e89b3a2fa453e",
     "src/foundation/clang-sys/Cargo.toml": "0b65c0125b0ae44a48e790f7fb12cc9a8d0704573a37df2acfc5da76da9653b2",
     "src/foundation/cmov/Cargo.toml": "e2803f1992f1b5a75658a0df51a52ea581d4af99146e86dbefee19cbfdf4c68f",
@@ -73686,10 +74348,8 @@
     "src/foundation/micromap/Cargo.toml": "fba67cdeb7108f0108693a6dba37f38e53acbc7d6c5007ed2527da574b8cb435",
     "src/foundation/mime/Cargo.toml": "86ede3fa61257b7f5194fca2b98f60049135ad1a6d74b1602548f99f1e436176",
     "src/foundation/mime_guess/Cargo.toml": "ba884827b045d8ea84e59fee387d61312e6f63e1d22f9394bc8ba6ee2290427d",
-    "src/foundation/minimal-lexical/Cargo.toml": "ac24990a2c4bc045dcb66fdfa19cea00988127e0afec059e7370121416fb2622",
     "src/foundation/mio/Cargo.toml": "7e8fa29098dd62de6512596df405e01ee1957e1670760a819a059e7d5cbeb8ea",
     "src/foundation/next_tuple/Cargo.toml": "eacc4b43530edf4651f555f5c083abcbdfebfa4fdad4000d00ea103a9c9f4dc1",
-    "src/foundation/nom/Cargo.toml": "dca2307e41bcf007bb1c02287f527d78e9af11da557e62fa6952cbca6428e10b",
     "src/foundation/nu-ansi-term/Cargo.toml": "ff429b45dea4a2ebf3948d6fc33a4bb2e6a33a22216c27f45214d23431a159cb",
     "src/foundation/num-cmp/Cargo.toml": "fe1e95524f089a6b50a2b8a816d847c875e4836cd62dbdd5a59d3802681aa457",
     "src/foundation/numeric/Cargo.toml": "0f57c006fb35768fa1714d4d8843591f981e5bc73312dc4f89716102e14f6f06",
@@ -82214,6 +82874,97 @@
         "path_in_vcs": "tokio-util"
       },
       "version": "0.7.20"
+    },
+    {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "A C expression parser and evaluator",
+      "directory": "src/foundation/bindgen",
+      "files_sha256": {
+        "Cargo.toml": "40f598dd523207ec682528897d8142bbc557fb7fe17afe13e1d99e0275c3b128",
+        "build.rs": "f7a10af0a21662e104e0058da7e3471a20be328eef6c7c41988525be90fdfe92",
+        "callbacks.rs": "9359c4eaeb8820845acb0b8ebba1565bac92588a2e20437fb857156b3cc94ff2",
+        "clang.rs": "7ed95ef7bcac8f0daff04c57d4afe71904c0ca2113f00135388b622b76a79c81",
+        "codegen/bitfield_unit.rs": "bcec32a8289eb8643bdc7aae0636aecac9f28e83895ebd330a4b0d1d3468bb4c",
+        "codegen/bitfield_unit_raw_ref_macros.rs": "cd9a02db7a0f0d2db79dc6b54c64eec2b438d2124928127266a5e30cf451696e",
+        "codegen/dyngen.rs": "1b42f7fa9fb65ff2fa898b289a3b934d7b21c5ba6c1b3e37aa97f0faa87769a0",
+        "codegen/error.rs": "67680c4d171d63848d9eb4ddd5f100be7463564e8c1c9203fefc0e61a19dfdec",
+        "codegen/helpers.rs": "46645977102a62aa7ca3fb4c7edb06579eac2c1a30081f8f615e5fa4e24754d1",
+        "codegen/impl_debug.rs": "dff9ca17a9397f327841f6321056cc0bdffe1f52106ec08879bcc74c22d4f383",
+        "codegen/impl_partialeq.rs": "60623e75c079ccadc4b928acd2cf78449db84591b720e242fc10ee1417678981",
+        "codegen/mod.rs": "456477a65fbf95689049d020642a9b1d120c12c9e1e54310cfba74a5623b40f9",
+        "codegen/postprocessing/merge_extern_blocks.rs": "2641f9c8d67ec4ca83d440c15fe554def8c7f566c478daaf4bd82c93590f8283",
+        "codegen/postprocessing/mod.rs": "4f927f1c72b013948c4ec00bfb1d34ba589fe33bd9191b81ec4be5852dfd185f",
+        "codegen/postprocessing/sort_semantically.rs": "b26c0656a0b0ec94bbf3c427ba00516a540e0e338c6c8a5dd9df67822208a38a",
+        "codegen/serialize.rs": "d57eb31ba0fda825241f886336279573050b396e52badf3886e0bc76a15110ad",
+        "codegen/struct_layout.rs": "cf791f1169067ce9f4c0eacda10c9dd87f42bd90b315ed6a504331eb119dc79f",
+        "deps.rs": "882c2aacc90630629f002fd1f4e38176356f412f5c069029a5853822a57f87f2",
+        "diagnostics.rs": "9c80043ac9fa8f683019577f311853a0d5929e41a95b3255736f80105914cdfa",
+        "extra_assertions.rs": "1596b7e7f031714dc699ebda135e795f1ecfc971ce9de6861a3c00e77fcef011",
+        "features.rs": "454bc7047978cecdad14e86da6a244a3d199dbdc1380ccfbc04ee361c7716a18",
+        "ir/analysis/derive.rs": "f0bd1b6362ed9a8e8bc6933bf1af29cceabde84015dc34d76f34d3e4c56a4103",
+        "ir/analysis/has_destructor.rs": "64dc142ff8c56db94b464f0f03ecd25317c8c1d6cd2a7304d2d3a0ff0a0db890",
+        "ir/analysis/has_float.rs": "9fb88d05c5920e9000e5cb6e87775c0d1042a6b11205577e281ba281e6e6acdb",
+        "ir/analysis/has_type_param_in_array.rs": "0975d1ce43bcba97eb303635118e74d494d46ac67cf5ee53faf6f6584a556cef",
+        "ir/analysis/has_vtable.rs": "3e1a807feccb55d6148e81512417b56cd1d70a70783508b65a3ff2abde461d2b",
+        "ir/analysis/mod.rs": "0c361e0a94cca0c3a9bb4196773795cf94251243b1729c0d92fc3f4c5235cdfb",
+        "ir/analysis/sizedness.rs": "0b78e70737e038ebdee2c3d195194a060c9287000b9059ded0686728a89b4ff2",
+        "ir/analysis/template_params.rs": "a8dfd3e02b1745a5b7c6faa16309bd0b8a88d76b7fedca27c322782cc9e77177",
+        "ir/annotations.rs": "8397ced62808fe99dfdde35792cd8b2389e7828d752a6c8aa3a70c1e14595e11",
+        "ir/comment.rs": "34be16c23a7e4d90f8858d2000f6f152cf71bf21a9eeb33ebaea9507eb321aee",
+        "ir/comp.rs": "0aba7a7c1a3582e563a7fd2120e3729d278e9931cd7f963f6dc9452ced710d30",
+        "ir/context.rs": "7737b663d9859e29af835910d83cef20688eb8393d25489f57e1f4195f3efe05",
+        "ir/derive.rs": "09860cffec0ebecce31da0c6c9ea0cf9a0d4784262ff4eb16ea459c0d0782ac9",
+        "ir/dot.rs": "8b8f6dd13e662fcb4114949025cb43467b34fa4998a3371c101db5dd82688f44",
+        "ir/enum_ty.rs": "5d7ae2e3de172d9812425e8cc6e30d559b0743620b3b09f7d72f3b05a7e1ce98",
+        "ir/function.rs": "a8296565624f1be38eaa01cea638e39eb1e2ee9de6859fc63a070f5a190c4c8c",
+        "ir/int.rs": "1bf1e4d87eca13ee2fc38ff4d56c266f303f188796f5c0d290f53162798d2d01",
+        "ir/item.rs": "d11623c01e1a9128063be4e4bde5c459a0a2f10fd9e323fced3cd4bc8d394b6c",
+        "ir/item_kind.rs": "799fab994b5ed35045786a68003c2c12b6601cf3b07e8ccc0b9acd6f921217e0",
+        "ir/layout.rs": "ed8d4e193bce095853edbefc6d71213b44c19fabd838fea7f3c3c4953385eac3",
+        "ir/mod.rs": "a3b98b1732111a980a795c72eaf1e09101e842ef2de76b4f2d4a7857f8d4cee4",
+        "ir/module.rs": "617867617ebd7e56157a9ba057441ce11a33c25138a1da64646f44ccaae7c762",
+        "ir/objc.rs": "f37af6ea0361905ad6dc5753dbf82cc828822b9d092b6c941c37d089463e615a",
+        "ir/template.rs": "1114c0924323f8b30bb32dbb3f6730dd7f5bc1f0771ad5099738e8e57111c07d",
+        "ir/traversal.rs": "3ebde94ead0fe69d51541ab61d700c7c1f6382574e4c110b8c7fe3e2c6218f19",
+        "ir/ty.rs": "e2d84ab90fc87ac2c290e0a589dab27c84f236ec819f6e432cb134d19a0e9524",
+        "ir/var.rs": "424a2faa2920f788f365ea64da3d1f1a906ec852d0289e91654089ed949dc3ce",
+        "lib.rs": "b0f6e07e4e4e50dc5befb22579e38d04ff9ddc4ac6a0298dd9765de275b6025f",
+        "log_stubs.rs": "a636d59af2fd3745c2e416e1ab8a1e1a3888ea84cd4657a321ce22f15e0c5a87",
+        "options/as_args.rs": "a1a5e7f0dde82590371fc1a9ea5fde7f3e2252530ca74d98bb49a8ce06cc864f",
+        "options/cli.rs": "51fc8ed7a8e10919672d7920ac70b799578ba78ac44b58e47ea7e1c263c9366b",
+        "options/helpers.rs": "f4a7681e29b2dcc3be9249478c499d685b9e29d4f4ca4ae8bff7a91668cd8f15",
+        "options/mod.rs": "95f1b4aa28af4791d9197b155d02c152618dd34b9db66e629fa32354f0056298",
+        "parse.rs": "fce3616e0464aa7414888e5d00d4df18c83bb3034a1c807d36a07a3c586e475a",
+        "regex_set.rs": "d8995adb9e5cecc2d738e662a62d5081150bf967cb67e1206070e22b7265578a",
+        "src/cexpr/expr.rs": "99b9568801b11b94ba165329c6dcc4ff83058a5a235f03a8d54bd7d08d11169a",
+        "src/cexpr/literal.rs": "2c0f3ed1e972f99c533f174bf467878fe25a444165586fec270dae4214e9f310",
+        "src/cexpr/mod.rs": "477faf5812214fd11e9be4ff86aaf8c6b9f566a0578893bb80b394e8afa7468b",
+        "src/cexpr/parser.rs": "36d45471c0c2e25b0fb50bab549cb5b03e624ea0bce79ef0a07f03c5fea4318d",
+        "src/cexpr/token.rs": "cd1ba6315b0137de9a0711670dd1840ac76c41f3b88dcd1a93ad77e1800c703f",
+        "time.rs": "1429af446b2b38c70ceec82c4202d4822c618cad47ba502dce72dbdc4cbb425e"
+      },
+      "license": "Apache-2.0/MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/cexpr-0.6.0/LICENSE-APACHE",
+        "compliance/licenses/upstream/cexpr-0.6.0/LICENSE-MIT"
+      ],
+      "merged_into": "src/foundation/bindgen",
+      "name": "cexpr",
+      "origin_directory": "vendor/rust/cexpr-0.6.0",
+      "repository": "https://github.com/jethrogb/rust-cexpr",
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "6fac387a98bb7c37292057cffc56d62ecb629900026402633ae9160df93a8766",
+        "archive_url": "https://static.crates.io/crates/cexpr/cexpr-0.6.0.crate",
+        "name": "cexpr",
+        "version": "0.6.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "c7ccdfbc37b508cfda1171ab4f89afaeb72e82f3"
+        }
+      },
+      "version": "0.6.0"
     }
   ],
   "origin_records_sha256": {
@@ -83229,10 +83980,10 @@
       "description": "Automatically generates Rust FFI bindings to C and C++ libraries.",
       "directory": "src/foundation/bindgen",
       "files_sha256": {
-        "Cargo.toml": "eac9af7e09c6222656b9e522fd421c0e157ec2cba9c3190b53ce80aaf15bb5a6",
+        "Cargo.toml": "40f598dd523207ec682528897d8142bbc557fb7fe17afe13e1d99e0275c3b128",
         "build.rs": "f7a10af0a21662e104e0058da7e3471a20be328eef6c7c41988525be90fdfe92",
-        "callbacks.rs": "de8bbe96753b6c5107984f2d26f13abf8fd2dd914ca688a989bf90c8e63c435f",
-        "clang.rs": "e991300ce9b1f0b9fb4a0b4bd32e899b6cfa546f034858f08bf57678b3d7044c",
+        "callbacks.rs": "9359c4eaeb8820845acb0b8ebba1565bac92588a2e20437fb857156b3cc94ff2",
+        "clang.rs": "7ed95ef7bcac8f0daff04c57d4afe71904c0ca2113f00135388b622b76a79c81",
         "codegen/bitfield_unit.rs": "bcec32a8289eb8643bdc7aae0636aecac9f28e83895ebd330a4b0d1d3468bb4c",
         "codegen/bitfield_unit_raw_ref_macros.rs": "cd9a02db7a0f0d2db79dc6b54c64eec2b438d2124928127266a5e30cf451696e",
         "codegen/dyngen.rs": "1b42f7fa9fb65ff2fa898b289a3b934d7b21c5ba6c1b3e37aa97f0faa87769a0",
@@ -83261,7 +84012,7 @@
         "ir/annotations.rs": "8397ced62808fe99dfdde35792cd8b2389e7828d752a6c8aa3a70c1e14595e11",
         "ir/comment.rs": "34be16c23a7e4d90f8858d2000f6f152cf71bf21a9eeb33ebaea9507eb321aee",
         "ir/comp.rs": "0aba7a7c1a3582e563a7fd2120e3729d278e9931cd7f963f6dc9452ced710d30",
-        "ir/context.rs": "59b73ef695f98adda0b54828a820739121d0f2c869f06b75a0cbc1a84c3ca887",
+        "ir/context.rs": "7737b663d9859e29af835910d83cef20688eb8393d25489f57e1f4195f3efe05",
         "ir/derive.rs": "09860cffec0ebecce31da0c6c9ea0cf9a0d4784262ff4eb16ea459c0d0782ac9",
         "ir/dot.rs": "8b8f6dd13e662fcb4114949025cb43467b34fa4998a3371c101db5dd82688f44",
         "ir/enum_ty.rs": "5d7ae2e3de172d9812425e8cc6e30d559b0743620b3b09f7d72f3b05a7e1ce98",
@@ -83276,8 +84027,8 @@
         "ir/template.rs": "1114c0924323f8b30bb32dbb3f6730dd7f5bc1f0771ad5099738e8e57111c07d",
         "ir/traversal.rs": "3ebde94ead0fe69d51541ab61d700c7c1f6382574e4c110b8c7fe3e2c6218f19",
         "ir/ty.rs": "e2d84ab90fc87ac2c290e0a589dab27c84f236ec819f6e432cb134d19a0e9524",
-        "ir/var.rs": "2a94decd3adfdccd3bd0015b460d180838e3c92b122b632eed44032b80cad120",
-        "lib.rs": "4124d2e62545a3531576e20b79572b669db757fa3c7e916061657f6cca1e61d8",
+        "ir/var.rs": "424a2faa2920f788f365ea64da3d1f1a906ec852d0289e91654089ed949dc3ce",
+        "lib.rs": "b0f6e07e4e4e50dc5befb22579e38d04ff9ddc4ac6a0298dd9765de275b6025f",
         "log_stubs.rs": "a636d59af2fd3745c2e416e1ab8a1e1a3888ea84cd4657a321ce22f15e0c5a87",
         "options/as_args.rs": "a1a5e7f0dde82590371fc1a9ea5fde7f3e2252530ca74d98bb49a8ce06cc864f",
         "options/cli.rs": "51fc8ed7a8e10919672d7920ac70b799578ba78ac44b58e47ea7e1c263c9366b",
@@ -83285,6 +84036,11 @@
         "options/mod.rs": "95f1b4aa28af4791d9197b155d02c152618dd34b9db66e629fa32354f0056298",
         "parse.rs": "fce3616e0464aa7414888e5d00d4df18c83bb3034a1c807d36a07a3c586e475a",
         "regex_set.rs": "d8995adb9e5cecc2d738e662a62d5081150bf967cb67e1206070e22b7265578a",
+        "src/cexpr/expr.rs": "99b9568801b11b94ba165329c6dcc4ff83058a5a235f03a8d54bd7d08d11169a",
+        "src/cexpr/literal.rs": "2c0f3ed1e972f99c533f174bf467878fe25a444165586fec270dae4214e9f310",
+        "src/cexpr/mod.rs": "477faf5812214fd11e9be4ff86aaf8c6b9f566a0578893bb80b394e8afa7468b",
+        "src/cexpr/parser.rs": "36d45471c0c2e25b0fb50bab549cb5b03e624ea0bce79ef0a07f03c5fea4318d",
+        "src/cexpr/token.rs": "cd1ba6315b0137de9a0711670dd1840ac76c41f3b88dcd1a93ad77e1800c703f",
         "time.rs": "1429af446b2b38c70ceec82c4202d4822c618cad47ba502dce72dbdc4cbb425e"
       },
       "license": "BSD-3-Clause",
@@ -83730,40 +84486,6 @@
         "path_in_vcs": ""
       },
       "version": "1.8.0"
-    },
-    "src/foundation/cexpr": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "A C expression parser and evaluator",
-      "directory": "src/foundation/cexpr",
-      "files_sha256": {
-        "Cargo.toml": "f1edf129aadabddb43a51c8c24803bded38e6a2948d2d3a9f5f8c1e68d0e6dc2",
-        "src/expr.rs": "dad9327dac3af9d2f5818937aac91000e02d835dc600da6185c06e9e12047b1e",
-        "src/lib.rs": "ff218b9b734ab2eaef813a6ee3a907cb5cd71d483dfaa28d44926824a5b6d804",
-        "src/literal.rs": "6fdefc0357b8a14444df21b05c90556861dc0466e63a57669786f3ef3a3dc1c3",
-        "src/token.rs": "cd1ba6315b0137de9a0711670dd1840ac76c41f3b88dcd1a93ad77e1800c703f"
-      },
-      "license": "Apache-2.0/MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/cexpr-0.6.0/LICENSE-APACHE",
-        "compliance/licenses/upstream/cexpr-0.6.0/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "cexpr",
-      "origin_directory": "vendor/rust/cexpr-0.6.0",
-      "repository": "https://github.com/jethrogb/rust-cexpr",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "6fac387a98bb7c37292057cffc56d62ecb629900026402633ae9160df93a8766",
-        "archive_url": "https://static.crates.io/crates/cexpr/cexpr-0.6.0.crate",
-        "name": "cexpr",
-        "version": "0.6.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "c7ccdfbc37b508cfda1171ab4f89afaeb72e82f3"
-        }
-      },
-      "version": "0.6.0"
     },
     "src/foundation/cfg-if": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -88362,56 +89084,6 @@
       },
       "version": "2.0.5"
     },
-    "src/foundation/minimal-lexical": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：SDK 工具链：改用 i32::MAX，ReverseView 明确输入借用生命周期，保留数值边界。",
-      "description": "Fast float parsing conversion routines.",
-      "directory": "src/foundation/minimal-lexical",
-      "files_sha256": {
-        "Cargo.toml": "ac24990a2c4bc045dcb66fdfa19cea00988127e0afec059e7370121416fb2622",
-        "src/bellerophon.rs": "bbabeccfa7a70ec314a894d968b424d1162df1b9e5e659baa1fd3a37d985fe75",
-        "src/bigint.rs": "3adeb5f13da2450e78f342acb3e6484ed315c4062c48e751735abc96df09748a",
-        "src/extended_float.rs": "6040bdd49c03f11f8607b2da1703e1b7b5f57ddac9b02322c6958f9c1684496f",
-        "src/fpu.rs": "72d63bac2bbfc545128aa59dc35cfad3c553bac64bf575880775b3c4ace415bc",
-        "src/heapvec.rs": "836a49d40e5da90d195508e963d869afd78aaf9adb9cd60a0cb8f92b4e105c4f",
-        "src/lemire.rs": "100f3cb293deed0b0d1e7ca6b23152ba160f92f887f8924620b28c9ab77326db",
-        "src/lib.rs": "626dfc61992c42d4996dddcbfff5775ff2ffae44d116d2d70f6564a3209c0a9a",
-        "src/libm.rs": "ed5a3856eaa44a8a05aa123e27c2048b92ff42e4af1ef3f9fa1aff2a50190f4a",
-        "src/mask.rs": "63bcda92d14169a55ac54798f45365cef64a1aecd9625c3c3bc3deae202b2a07",
-        "src/num.rs": "dbcab14a5fe8e40e381829426dd75a7db672882592b5c4a08897a2fb6d2ae7ea",
-        "src/number.rs": "49d0880a99816ecf904fb88f607a821d6770ec270825b96e800a297ab1a01d78",
-        "src/parse.rs": "668d5383a16bb431ebbcd9fb36455fa9dcda8cd4cc84a6658a02025bf6c839e9",
-        "src/rounding.rs": "8ba42d31618db1e6a381f8b60ffe1f9d216aaccb931b8fac5f279d8465e35cb7",
-        "src/slow.rs": "f096e7f83e8372e71568ec1724bc1c9d2c67ca39b80290ba062e60ae94b1f8d1",
-        "src/stackvec.rs": "0c921eb3adbd42cbe7be0f363e08ac85b6d5f1dabd4a7b077becddeff731da16",
-        "src/table.rs": "e4288891e9b1d8ba60dcc73edc639754cc2351d3219df8c625e694f3f0e58c5a",
-        "src/table_bellerophon.rs": "a2102292b27223a81e60a8a6607c42587efde3424526156921167742a0d5937c",
-        "src/table_lemire.rs": "c101c353c38b594f5b8987263b759927095b5dcd72e65607cc1c6a7de0bfd0c8",
-        "src/table_small.rs": "61b00e13eb3945622bf8bed374c88e29c63dfedb7384b31b35dd4e543cbe62c1"
-      },
-      "license": "MIT/Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/minimal-lexical-0.2.1/LICENSE-APACHE",
-        "compliance/licenses/upstream/minimal-lexical-0.2.1/LICENSE-MIT",
-        "compliance/licenses/upstream/minimal-lexical-0.2.1/LICENSE.md"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "minimal-lexical",
-      "origin_directory": "vendor/rust/minimal-lexical-0.2.1",
-      "repository": "https://github.com/Alexhuszagh/minimal-lexical",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a",
-        "archive_url": "https://static.crates.io/crates/minimal-lexical/minimal-lexical-0.2.1.crate",
-        "name": "minimal-lexical",
-        "version": "0.2.1"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "e997c46656ebe83e696b866bd954da1fa3f64eef"
-        }
-      },
-      "version": "0.2.1"
-    },
     "src/foundation/mio": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 3 个独立示例程序及专属输入（18378 字节）；保留文档编译、真实测试及性能基准输入。；2026-10-20第三批Linux amd64收敛：移除Windows主机后端及入口；保留Linux epoll、强制poll/pipe、shell与os-ext；原生guard为Linux/x86_64/64位，仅GNU已验收 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。",
       "description": "Lightweight non-blocking I/O.",
@@ -88515,57 +89187,6 @@
         "path_in_vcs": "next_tuple"
       },
       "version": "0.1.0"
-    },
-    "src/foundation/nom": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：SDK 工具链：移除固定稳定工具链不启用的 nightly 文档 lint；移除空字符串模块公共导出，保留其测试。",
-      "description": "A byte-oriented, zero-copy, parser combinators library",
-      "directory": "src/foundation/nom",
-      "files_sha256": {
-        "Cargo.toml": "dca2307e41bcf007bb1c02287f527d78e9af11da557e62fa6952cbca6428e10b",
-        "src/bits/complete.rs": "97e00c86e1adb3c5c1173f14bcecc814f7d5582fc893266b3e34d45c5173635b",
-        "src/bits/mod.rs": "947fe43a4fb2e980b31f972fec52880d95aff2036490a9f2888b085e059918fe",
-        "src/bits/streaming.rs": "1068492f50c99b65f2a7f1f4b7a8bcd6140ff40275d073563232d7ed64f4fd6e",
-        "src/branch/mod.rs": "6c2ee411bb9574881c65a0a67c01813f1441ab0b1204a3207ba8e4737b4dee96",
-        "src/bytes/complete.rs": "029344fec950f9755c81e66c6164b21af4456d463963ee53a5da29e80fc7366a",
-        "src/bytes/mod.rs": "9a2218cd778feae7d5a7fc7d7377d5ad0a3b7511ad4fc7192795bc119a0a43bc",
-        "src/bytes/streaming.rs": "e716e6555fbde14bfc2d7358a3edc2191df0522bc55b1f7735f9809ceb235829",
-        "src/character/complete.rs": "bbb721b24436ae7871c3f9a17af348d943e55eabc41624eca7f15d0a4f919e44",
-        "src/character/mod.rs": "71f9a23192fe810bb1b7499409ca7879852f8e16c6af13faefef0ff07b2af89d",
-        "src/character/streaming.rs": "07cc98f240dbf3da3558f5051995fc4681beaa7bc4531a6004d873c326e90c49",
-        "src/combinator/mod.rs": "be17a481bdf0f151325e0de9ac2b7c42ba1f8cac705255f0a93f899602362411",
-        "src/error.rs": "8019202b4bbdab6d7a943c35c95620c4af6d69c0549d46c046b0f5c06cfb6c1e",
-        "src/internal.rs": "d987a93b0cc429d60189d990f48ac6922ac33a450af415e3f5f38188a915c79d",
-        "src/lib.rs": "98d70ee1b32701f21a676d1dd6eff55129131080c2418cedee572e34a2ce1fcd",
-        "src/macros.rs": "11ac3dee346e5bf61015f328975cf6ea6f438683eb3b8b6c7c8e6383b0c5b7af",
-        "src/multi/mod.rs": "c33d075bab27c2972faf521d24c9ed4a75d5c1e3df57d764fd5d19c1ad921a94",
-        "src/number/complete.rs": "04a8dd37aafccfd96fdb2a91079e873bb2c9e6dc10ca87dfb1983215800cff30",
-        "src/number/mod.rs": "ba6eb439ee0befcc0872be7ce43b4836622af45c3dc2fc003b0d909ee42d7b20",
-        "src/number/streaming.rs": "8e7eca99787a57df6ad24e14621058693584d409686e5b96578bacf05fb82731",
-        "src/sequence/mod.rs": "6b76d40703a131626bcd6633fc26e4b7e2eea2734159b8b5c4c91fce42437f25",
-        "src/traits.rs": "3875ee10f15f73f93a507f339920a59026ac045ea0340d8171c22e706564b9a3"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/nom-7.1.3/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "nom",
-      "origin_directory": "vendor/rust/nom-7.1.3",
-      "repository": "https://github.com/Geal/nom",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a",
-        "archive_url": "https://static.crates.io/crates/nom/nom-7.1.3.crate",
-        "name": "nom",
-        "version": "7.1.3"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "869f8972a4383b13cf89574fda28cb7dbfd56517"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "7.1.3"
     },
     "src/foundation/nu-ansi-term": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 7 个独立示例程序及专属输入（7104 字节）；保留文档编译、真实测试及性能基准输入。",
@@ -109033,12 +109654,6 @@
             "compile"
           ]
         },
-        "src/foundation/cexpr": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/cfg-if": {
           "features": [],
           "roles": [
@@ -109197,23 +109812,6 @@
           "roles": [
             "compile",
             "runtime"
-          ]
-        },
-        "src/foundation/minimal-lexical": {
-          "features": [
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/nom": {
-          "features": [
-            "alloc",
-            "std"
-          ],
-          "roles": [
-            "compile"
           ]
         },
         "src/foundation/proc-macro2": {
@@ -113554,6 +114152,425 @@
       },
       "vcs": null,
       "version": "0.1.3"
+    },
+    "src/foundation/minimal-lexical": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：SDK 工具链：改用 i32::MAX，ReverseView 明确输入借用生命周期，保留数值边界。",
+      "description": "Fast float parsing conversion routines.",
+      "directory": "src/foundation/minimal-lexical",
+      "files_sha256": {
+        "Cargo.toml": "ac24990a2c4bc045dcb66fdfa19cea00988127e0afec059e7370121416fb2622",
+        "src/bellerophon.rs": "bbabeccfa7a70ec314a894d968b424d1162df1b9e5e659baa1fd3a37d985fe75",
+        "src/bigint.rs": "3adeb5f13da2450e78f342acb3e6484ed315c4062c48e751735abc96df09748a",
+        "src/extended_float.rs": "6040bdd49c03f11f8607b2da1703e1b7b5f57ddac9b02322c6958f9c1684496f",
+        "src/fpu.rs": "72d63bac2bbfc545128aa59dc35cfad3c553bac64bf575880775b3c4ace415bc",
+        "src/heapvec.rs": "836a49d40e5da90d195508e963d869afd78aaf9adb9cd60a0cb8f92b4e105c4f",
+        "src/lemire.rs": "100f3cb293deed0b0d1e7ca6b23152ba160f92f887f8924620b28c9ab77326db",
+        "src/lib.rs": "626dfc61992c42d4996dddcbfff5775ff2ffae44d116d2d70f6564a3209c0a9a",
+        "src/libm.rs": "ed5a3856eaa44a8a05aa123e27c2048b92ff42e4af1ef3f9fa1aff2a50190f4a",
+        "src/mask.rs": "63bcda92d14169a55ac54798f45365cef64a1aecd9625c3c3bc3deae202b2a07",
+        "src/num.rs": "dbcab14a5fe8e40e381829426dd75a7db672882592b5c4a08897a2fb6d2ae7ea",
+        "src/number.rs": "49d0880a99816ecf904fb88f607a821d6770ec270825b96e800a297ab1a01d78",
+        "src/parse.rs": "668d5383a16bb431ebbcd9fb36455fa9dcda8cd4cc84a6658a02025bf6c839e9",
+        "src/rounding.rs": "8ba42d31618db1e6a381f8b60ffe1f9d216aaccb931b8fac5f279d8465e35cb7",
+        "src/slow.rs": "f096e7f83e8372e71568ec1724bc1c9d2c67ca39b80290ba062e60ae94b1f8d1",
+        "src/stackvec.rs": "0c921eb3adbd42cbe7be0f363e08ac85b6d5f1dabd4a7b077becddeff731da16",
+        "src/table.rs": "e4288891e9b1d8ba60dcc73edc639754cc2351d3219df8c625e694f3f0e58c5a",
+        "src/table_bellerophon.rs": "a2102292b27223a81e60a8a6607c42587efde3424526156921167742a0d5937c",
+        "src/table_lemire.rs": "c101c353c38b594f5b8987263b759927095b5dcd72e65607cc1c6a7de0bfd0c8",
+        "src/table_small.rs": "61b00e13eb3945622bf8bed374c88e29c63dfedb7384b31b35dd4e543cbe62c1"
+      },
+      "license": "MIT/Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/minimal-lexical-0.2.1/LICENSE-APACHE",
+        "compliance/licenses/upstream/minimal-lexical-0.2.1/LICENSE-MIT",
+        "compliance/licenses/upstream/minimal-lexical-0.2.1/LICENSE.md"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "minimal-lexical",
+      "origin_directory": "vendor/rust/minimal-lexical-0.2.1",
+      "repository": "https://github.com/Alexhuszagh/minimal-lexical",
+      "retirement": {
+        "bytes": 191008,
+        "category": "consumer-specialization",
+        "external_tests": {
+          "bytes": 97646,
+          "directory": "src/foundation/minimal-lexical",
+          "file_count": 12,
+          "files": [
+            {
+              "path": "test/foundation/minimal-lexical/tests/bellerophon.rs",
+              "sha256": "b17b87b8963ebcd71f684e4d48c1ce619964e4fb719a5875b0ce4514ed528674",
+              "source": "src/foundation/minimal-lexical/tests/bellerophon.rs",
+              "source_sha256_before": "b17b87b8963ebcd71f684e4d48c1ce619964e4fb719a5875b0ce4514ed528674"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/bellerophon_tests.rs",
+              "sha256": "76b71efa2f4cec56a79535e2d292788a5e1b443c901ec7a234800782f36ddb68",
+              "source": "src/foundation/minimal-lexical/tests/bellerophon_tests.rs",
+              "source_sha256_before": "76b71efa2f4cec56a79535e2d292788a5e1b443c901ec7a234800782f36ddb68"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/integration_tests.rs",
+              "sha256": "ed1a1fc46fc239eb4ea718057ad6e9869f633797ef72fc6f05b1757ab80e1641",
+              "source": "src/foundation/minimal-lexical/tests/integration_tests.rs",
+              "source_sha256_before": "ed1a1fc46fc239eb4ea718057ad6e9869f633797ef72fc6f05b1757ab80e1641"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/lemire_tests.rs",
+              "sha256": "6213bcd9b44def655b44a6b760cee0c0ad82d3bb494f48c2ff100698da34625b",
+              "source": "src/foundation/minimal-lexical/tests/lemire_tests.rs",
+              "source_sha256_before": "6213bcd9b44def655b44a6b760cee0c0ad82d3bb494f48c2ff100698da34625b"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/libm_tests.rs",
+              "sha256": "6941e74d7d0adf021edc93b9919275e82810687ff33147a10361613073b22669",
+              "source": "src/foundation/minimal-lexical/tests/libm_tests.rs",
+              "source_sha256_before": "6941e74d7d0adf021edc93b9919275e82810687ff33147a10361613073b22669"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/mask_tests.rs",
+              "sha256": "8c2a3daf434815389b6bf88837e3f382d74d97250104b925d70779366bd3d537",
+              "source": "src/foundation/minimal-lexical/tests/mask_tests.rs",
+              "source_sha256_before": "8c2a3daf434815389b6bf88837e3f382d74d97250104b925d70779366bd3d537"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/number_tests.rs",
+              "sha256": "df4b4f0c65478f2f6193bd918fa4aad7163e40598c58df44547c4559e4a8b0c7",
+              "source": "src/foundation/minimal-lexical/tests/number_tests.rs",
+              "source_sha256_before": "df4b4f0c65478f2f6193bd918fa4aad7163e40598c58df44547c4559e4a8b0c7"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/parse_tests.rs",
+              "sha256": "bc0066b9257368f0365276fcffa2662c4699a033eaf9a4a7d6faa0e9b915094a",
+              "source": "src/foundation/minimal-lexical/tests/parse_tests.rs",
+              "source_sha256_before": "bc0066b9257368f0365276fcffa2662c4699a033eaf9a4a7d6faa0e9b915094a"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/rounding_tests.rs",
+              "sha256": "99f38b768ad15e726559c446825f9f1bad67935cdd28ffcc1cbcd3e031a901ea",
+              "source": "src/foundation/minimal-lexical/tests/rounding_tests.rs",
+              "source_sha256_before": "99f38b768ad15e726559c446825f9f1bad67935cdd28ffcc1cbcd3e031a901ea"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/slow_tests.rs",
+              "sha256": "36c4c2538d2f5a1c1af5deb26ec4eba47f19f9a3c280a13d10704267a16d3b3f",
+              "source": "src/foundation/minimal-lexical/tests/slow_tests.rs",
+              "source_sha256_before": "36c4c2538d2f5a1c1af5deb26ec4eba47f19f9a3c280a13d10704267a16d3b3f"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/stackvec.rs",
+              "sha256": "f040611995bcd1bd2cb47694e74aa02ff4fabdffe007f712c9bb788d82dfb8a7",
+              "source": "src/foundation/minimal-lexical/tests/stackvec.rs",
+              "source_sha256_before": "f040611995bcd1bd2cb47694e74aa02ff4fabdffe007f712c9bb788d82dfb8a7"
+            },
+            {
+              "path": "test/foundation/minimal-lexical/tests/vec_tests.rs",
+              "sha256": "09b561160df3b1385876db452bb5a67ef2c9fd2cc36b5687e1dfaf8c58947782",
+              "source": "src/foundation/minimal-lexical/tests/vec_tests.rs",
+              "source_sha256_before": "09b561160df3b1385876db452bb5a67ef2c9fd2cc36b5687e1dfaf8c58947782"
+            }
+          ],
+          "origin_directory": "vendor/rust/minimal-lexical-0.2.1",
+          "roots": [
+            "test/foundation/minimal-lexical"
+          ]
+        },
+        "file_count": 20,
+        "reason": "Replace the sole C-expression evaluator use with a bounded token/byte-slice parser inside bindgen; no generic parser-combinator or floating-point lexical API remains in the active dependency graph.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a",
+        "archive_url": "https://static.crates.io/crates/minimal-lexical/minimal-lexical-0.2.1.crate",
+        "name": "minimal-lexical",
+        "version": "0.2.1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "e997c46656ebe83e696b866bd954da1fa3f64eef"
+        }
+      },
+      "version": "0.2.1"
+    },
+    "src/foundation/nom": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：SDK 工具链：移除固定稳定工具链不启用的 nightly 文档 lint；移除空字符串模块公共导出，保留其测试。",
+      "description": "A byte-oriented, zero-copy, parser combinators library",
+      "directory": "src/foundation/nom",
+      "files_sha256": {
+        "Cargo.toml": "dca2307e41bcf007bb1c02287f527d78e9af11da557e62fa6952cbca6428e10b",
+        "src/bits/complete.rs": "97e00c86e1adb3c5c1173f14bcecc814f7d5582fc893266b3e34d45c5173635b",
+        "src/bits/mod.rs": "947fe43a4fb2e980b31f972fec52880d95aff2036490a9f2888b085e059918fe",
+        "src/bits/streaming.rs": "1068492f50c99b65f2a7f1f4b7a8bcd6140ff40275d073563232d7ed64f4fd6e",
+        "src/branch/mod.rs": "6c2ee411bb9574881c65a0a67c01813f1441ab0b1204a3207ba8e4737b4dee96",
+        "src/bytes/complete.rs": "029344fec950f9755c81e66c6164b21af4456d463963ee53a5da29e80fc7366a",
+        "src/bytes/mod.rs": "9a2218cd778feae7d5a7fc7d7377d5ad0a3b7511ad4fc7192795bc119a0a43bc",
+        "src/bytes/streaming.rs": "e716e6555fbde14bfc2d7358a3edc2191df0522bc55b1f7735f9809ceb235829",
+        "src/character/complete.rs": "bbb721b24436ae7871c3f9a17af348d943e55eabc41624eca7f15d0a4f919e44",
+        "src/character/mod.rs": "71f9a23192fe810bb1b7499409ca7879852f8e16c6af13faefef0ff07b2af89d",
+        "src/character/streaming.rs": "07cc98f240dbf3da3558f5051995fc4681beaa7bc4531a6004d873c326e90c49",
+        "src/combinator/mod.rs": "be17a481bdf0f151325e0de9ac2b7c42ba1f8cac705255f0a93f899602362411",
+        "src/error.rs": "8019202b4bbdab6d7a943c35c95620c4af6d69c0549d46c046b0f5c06cfb6c1e",
+        "src/internal.rs": "d987a93b0cc429d60189d990f48ac6922ac33a450af415e3f5f38188a915c79d",
+        "src/lib.rs": "98d70ee1b32701f21a676d1dd6eff55129131080c2418cedee572e34a2ce1fcd",
+        "src/macros.rs": "11ac3dee346e5bf61015f328975cf6ea6f438683eb3b8b6c7c8e6383b0c5b7af",
+        "src/multi/mod.rs": "c33d075bab27c2972faf521d24c9ed4a75d5c1e3df57d764fd5d19c1ad921a94",
+        "src/number/complete.rs": "04a8dd37aafccfd96fdb2a91079e873bb2c9e6dc10ca87dfb1983215800cff30",
+        "src/number/mod.rs": "ba6eb439ee0befcc0872be7ce43b4836622af45c3dc2fc003b0d909ee42d7b20",
+        "src/number/streaming.rs": "8e7eca99787a57df6ad24e14621058693584d409686e5b96578bacf05fb82731",
+        "src/sequence/mod.rs": "6b76d40703a131626bcd6633fc26e4b7e2eea2734159b8b5c4c91fce42437f25",
+        "src/traits.rs": "3875ee10f15f73f93a507f339920a59026ac045ea0340d8171c22e706564b9a3"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/nom-7.1.3/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "nom",
+      "origin_directory": "vendor/rust/nom-7.1.3",
+      "repository": "https://github.com/Geal/nom",
+      "retirement": {
+        "bytes": 386135,
+        "category": "consumer-specialization",
+        "external_tests": {
+          "bytes": 177119,
+          "directory": "src/foundation/nom",
+          "file_count": 34,
+          "files": [
+            {
+              "path": "test/foundation/nom/modules/src/branch/tests.rs",
+              "sha256": "9a4a7b0c38fc28881d904f8ad6757a23e543f47a4c2d6fd6a9589eeb97209088",
+              "source": "src/foundation/nom/src/branch/tests.rs",
+              "source_sha256_before": "9a4a7b0c38fc28881d904f8ad6757a23e543f47a4c2d6fd6a9589eeb97209088"
+            },
+            {
+              "path": "test/foundation/nom/modules/src/bytes/tests.rs",
+              "sha256": "f0d9eb90d72873346e47e5592d30093eb38cbbb5fbf2e769cda776ccfff4f887",
+              "source": "src/foundation/nom/src/bytes/tests.rs",
+              "source_sha256_before": "f0d9eb90d72873346e47e5592d30093eb38cbbb5fbf2e769cda776ccfff4f887"
+            },
+            {
+              "path": "test/foundation/nom/modules/src/character/tests.rs",
+              "sha256": "38958a709f96f077f93a72b32d8ded0a2ad6e488d9aadbe3cf1cfd8adaec06c8",
+              "source": "src/foundation/nom/src/character/tests.rs",
+              "source_sha256_before": "38958a709f96f077f93a72b32d8ded0a2ad6e488d9aadbe3cf1cfd8adaec06c8"
+            },
+            {
+              "path": "test/foundation/nom/modules/src/combinator/tests.rs",
+              "sha256": "1e56e2c1263d93bfbd244d24160a0bea41731e5158d57382e69c215427770b94",
+              "source": "src/foundation/nom/src/combinator/tests.rs",
+              "source_sha256_before": "1e56e2c1263d93bfbd244d24160a0bea41731e5158d57382e69c215427770b94"
+            },
+            {
+              "path": "test/foundation/nom/modules/src/multi/tests.rs",
+              "sha256": "806f89f5f347978c22e9b8cc7f8a49ad1d1fe23bff5974725b643a2ceffe8cb0",
+              "source": "src/foundation/nom/src/multi/tests.rs",
+              "source_sha256_before": "806f89f5f347978c22e9b8cc7f8a49ad1d1fe23bff5974725b643a2ceffe8cb0"
+            },
+            {
+              "path": "test/foundation/nom/modules/src/sequence/tests.rs",
+              "sha256": "8dc4ca519b274d4e0694b373b2710c2e947e6074d43ec6a738a74113a09379f5",
+              "source": "src/foundation/nom/src/sequence/tests.rs",
+              "source_sha256_before": "8dc4ca519b274d4e0694b373b2710c2e947e6074d43ec6a738a74113a09379f5"
+            },
+            {
+              "path": "test/foundation/nom/modules/src/str.rs",
+              "sha256": "a1bc40522caa7737d64084320af70909345f63f8742f3a81686cdec9f3bbaf98",
+              "source": "src/foundation/nom/src/str.rs",
+              "source_sha256_before": "f26aa11f43e8a4a300ea0f310d599fab3f809102cfb29033ddf84f299ee8010c"
+            },
+            {
+              "path": "test/foundation/nom/tests/arithmetic.rs",
+              "sha256": "725efba4fc6cc811f542f3bcc8c7afd52702a66f64319d4f2796225e2e75d0ca",
+              "source": "src/foundation/nom/tests/arithmetic.rs",
+              "source_sha256_before": "725efba4fc6cc811f542f3bcc8c7afd52702a66f64319d4f2796225e2e75d0ca"
+            },
+            {
+              "path": "test/foundation/nom/tests/arithmetic_ast.rs",
+              "sha256": "c7c28c988640405dd250c86045bbda75fc6ead2a769fb05eafbfbe74d97e0485",
+              "source": "src/foundation/nom/tests/arithmetic_ast.rs",
+              "source_sha256_before": "c7c28c988640405dd250c86045bbda75fc6ead2a769fb05eafbfbe74d97e0485"
+            },
+            {
+              "path": "test/foundation/nom/tests/css.rs",
+              "sha256": "36a2198e42e601efc611ebd6b3c6861f3ccb6a63525829ae6a2603bcdc4c2b11",
+              "source": "src/foundation/nom/tests/css.rs",
+              "source_sha256_before": "36a2198e42e601efc611ebd6b3c6861f3ccb6a63525829ae6a2603bcdc4c2b11"
+            },
+            {
+              "path": "test/foundation/nom/tests/custom_errors.rs",
+              "sha256": "354d5a82a4f5a24b97901a3b411b4eab038c4d034047971956b9cdc12538e50d",
+              "source": "src/foundation/nom/tests/custom_errors.rs",
+              "source_sha256_before": "354d5a82a4f5a24b97901a3b411b4eab038c4d034047971956b9cdc12538e50d"
+            },
+            {
+              "path": "test/foundation/nom/tests/escaped.rs",
+              "sha256": "c25987ea6d9a7dde74d58a49c332d223da3a495569cb79e3fe921bce51729ead",
+              "source": "src/foundation/nom/tests/escaped.rs",
+              "source_sha256_before": "c25987ea6d9a7dde74d58a49c332d223da3a495569cb79e3fe921bce51729ead"
+            },
+            {
+              "path": "test/foundation/nom/tests/float.rs",
+              "sha256": "cdac92fb14afb75cba9d6b8f568e272a630b2cfb9f096b76c91909a3cd016869",
+              "source": "src/foundation/nom/tests/float.rs",
+              "source_sha256_before": "cdac92fb14afb75cba9d6b8f568e272a630b2cfb9f096b76c91909a3cd016869"
+            },
+            {
+              "path": "test/foundation/nom/tests/fnmut.rs",
+              "sha256": "dc9b6140eb3405d1497b05675fc4d3050785771a2afa81990d684b2edd0c9746",
+              "source": "src/foundation/nom/tests/fnmut.rs",
+              "source_sha256_before": "dc9b6140eb3405d1497b05675fc4d3050785771a2afa81990d684b2edd0c9746"
+            },
+            {
+              "path": "test/foundation/nom/tests/ini.rs",
+              "sha256": "f0ce38b90057e9e0fd2329819395c420cbf1400457f9c4279414301faa38b19c",
+              "source": "src/foundation/nom/tests/ini.rs",
+              "source_sha256_before": "f0ce38b90057e9e0fd2329819395c420cbf1400457f9c4279414301faa38b19c"
+            },
+            {
+              "path": "test/foundation/nom/tests/ini_str.rs",
+              "sha256": "4c8f6ce3a2a245e8365837b873c25d2d8f24887313b791e2edd09a76a2d98947",
+              "source": "src/foundation/nom/tests/ini_str.rs",
+              "source_sha256_before": "4c8f6ce3a2a245e8365837b873c25d2d8f24887313b791e2edd09a76a2d98947"
+            },
+            {
+              "path": "test/foundation/nom/tests/issues.rs",
+              "sha256": "1322ffc270ba1bedf39b295eb622ead2715ab7d60db0181af5305a0429c7819e",
+              "source": "src/foundation/nom/tests/issues.rs",
+              "source_sha256_before": "1322ffc270ba1bedf39b295eb622ead2715ab7d60db0181af5305a0429c7819e"
+            },
+            {
+              "path": "test/foundation/nom/tests/json.rs",
+              "sha256": "8672fca70b889d6243a2f0f4c99389e22200e4363f253e83a3f26620b92f765e",
+              "source": "src/foundation/nom/tests/json.rs",
+              "source_sha256_before": "8672fca70b889d6243a2f0f4c99389e22200e4363f253e83a3f26620b92f765e"
+            },
+            {
+              "path": "test/foundation/nom/tests/mp4.rs",
+              "sha256": "db6568ee9ccad70a7b567295831b961b369011f66dc2dd406851208007588600",
+              "source": "src/foundation/nom/tests/mp4.rs",
+              "source_sha256_before": "db6568ee9ccad70a7b567295831b961b369011f66dc2dd406851208007588600"
+            },
+            {
+              "path": "test/foundation/nom/tests/multiline.rs",
+              "sha256": "aef9768beaf5042b8629599b2094712646abb23eb11fa662b5a9bf3dfa432547",
+              "source": "src/foundation/nom/tests/multiline.rs",
+              "source_sha256_before": "aef9768beaf5042b8629599b2094712646abb23eb11fa662b5a9bf3dfa432547"
+            },
+            {
+              "path": "test/foundation/nom/tests/overflow.rs",
+              "sha256": "a249ebeebfc5228faf9bfd5241a54a8181df476c4699ef87bb7d8a2161b9fc72",
+              "source": "src/foundation/nom/tests/overflow.rs",
+              "source_sha256_before": "a249ebeebfc5228faf9bfd5241a54a8181df476c4699ef87bb7d8a2161b9fc72"
+            },
+            {
+              "path": "test/foundation/nom/tests/reborrow_fold.rs",
+              "sha256": "66230bacd8d36e1559f1dc919ae8eab3515963c4aef85a079ec56218c9a6e676",
+              "source": "src/foundation/nom/tests/reborrow_fold.rs",
+              "source_sha256_before": "66230bacd8d36e1559f1dc919ae8eab3515963c4aef85a079ec56218c9a6e676"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/bits/complete/test_131.rs",
+              "sha256": "3749e5f3784a51b8bcd47b2b1c00ce2109631f27fa0b1b443624e121d4e89c3b",
+              "source": "src/foundation/nom/src/bits/complete.rs",
+              "source_sha256_before": "640bdcad311a05d94e4b3a1a8b2105c540f80864edb75de0a570f03d4055e5ed"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/bits/mod/test_113.rs",
+              "sha256": "f7bc4e0f277a11ee7d96465f46853641c32a1dff0e45e75439567e30efe30257",
+              "source": "src/foundation/nom/src/bits/mod.rs",
+              "source_sha256_before": "1c6aa26887d379384c1c823684e6f8e91b59df72664eefd8ddf0b6ca5517e669"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/bits/streaming/test_105.rs",
+              "sha256": "ba3e1787eabd227ff4875c0f8a2359c9540a98c340d34b952440808586be8bb7",
+              "source": "src/foundation/nom/src/bits/streaming.rs",
+              "source_sha256_before": "304cc5d565cfa30075827c1d6cb173b7cb92b101d8ebe9bc50476a00c92fd5dc"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/bytes/complete/tests_707.rs",
+              "sha256": "10bdf9edb9c51ec7224560378e581a765e40ad3442fabee9c5f22a875d35e135",
+              "source": "src/foundation/nom/src/bytes/complete.rs",
+              "source_sha256_before": "666fa037c63292b1616cbc04c5b414a53c705d0d2ccd8d84399bbe78f573b7e9"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/character/complete/tests_831.rs",
+              "sha256": "d3e7fdfd5abc40017d24ed5317c10380ffe78f4f7c58b066a473ac26a23852c9",
+              "source": "src/foundation/nom/src/character/complete.rs",
+              "source_sha256_before": "7eeb5f00baab7aeaf7f392e5872d141d352951a146c0396721dab71e29b4c87b"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/character/streaming/tests_737.rs",
+              "sha256": "7910f6fea9d2bd382c81aea8b6baa9a418c5325aed4b06d7459ba0539548f5f9",
+              "source": "src/foundation/nom/src/character/streaming.rs",
+              "source_sha256_before": "de67ec5663475bc5ffa16f12d121ce9181353b16656b90216704197fca3010fc"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/error/tests_607.rs",
+              "sha256": "21f81f42b5c279ed82d92d003e5e58281dafcd1351c43dff57327279aea7a9bb",
+              "source": "src/foundation/nom/src/error.rs",
+              "source_sha256_before": "9d9bf87e76b47cfd9170f8ae50b6deeb02ff1c296aac3eb4f71ee1474dc0fba5"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/internal/tests_459.rs",
+              "sha256": "2662c24491be207ab3ad24083b55d088d0e621003af1da1e119151bc368875be",
+              "source": "src/foundation/nom/src/internal.rs",
+              "source_sha256_before": "31d7179ed140a33880db44e47fcf1a03e0523fe49308949087a4c2eb9fd9cd33"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/number/complete/tests_1647.rs",
+              "sha256": "d37d8d806f72aa2a361c4f27c183ccfa0cc133e1771d83dd3c94a2b87fc7cdd5",
+              "source": "src/foundation/nom/src/number/complete.rs",
+              "source_sha256_before": "a4f312c200710a446986142d19ebc78727265cf2c3b07b70dd84339051040bdd"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/number/streaming/tests_1620.rs",
+              "sha256": "b5a8dc59ad240e1245afa08ab4f6cfbcf38a3cf8ea1fd9327234b6e1eaad30ad",
+              "source": "src/foundation/nom/src/number/streaming.rs",
+              "source_sha256_before": "1c2137235f093857e545069d687f50712ea457fac03961f3f6ac15c0f7e40c2a"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/str/test_1.rs",
+              "sha256": "f26aa11f43e8a4a300ea0f310d599fab3f809102cfb29033ddf84f299ee8010c",
+              "source": "src/foundation/nom/src/str.rs",
+              "source_sha256_before": "f26aa11f43e8a4a300ea0f310d599fab3f809102cfb29033ddf84f299ee8010c"
+            },
+            {
+              "path": "test/foundation/nom/unit/src/traits/tests_1414.rs",
+              "sha256": "b7a8f10b7c6a2fb37e6a7444a1606574d1f56a64cf00b2be074b77909b0b37d2",
+              "source": "src/foundation/nom/src/traits.rs",
+              "source_sha256_before": "01934f8a61fc3cc5a03438a10751d3b074c89e5f3bcc96df8e43cf6b09be2308"
+            }
+          ],
+          "origin_directory": "vendor/rust/nom-7.1.3",
+          "roots": [
+            "test/foundation/nom"
+          ]
+        },
+        "file_count": 22,
+        "reason": "Replace the sole C-expression evaluator use with a bounded token/byte-slice parser inside bindgen; no generic parser-combinator or floating-point lexical API remains in the active dependency graph.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a",
+        "archive_url": "https://static.crates.io/crates/nom/nom-7.1.3.crate",
+        "name": "nom",
+        "version": "7.1.3"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "869f8972a4383b13cf89574fda28cb7dbfd56517"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "7.1.3"
     },
     "src/foundation/ntapi": {
       "changes": "锁文件超集保留，未在登记的 normal/build 闭包选中；未声称属于生产运行代码。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -122812,6 +123829,8 @@
     "src/foundation/jiff-core": "84153b337c3b4d6a08ae32b16e48148c4ae55028eb9d8f729d6a85ee71335f26",
     "src/foundation/jiff-static": "a5c7f332c971252392426c6cba3d526166cc12fe3675a67671e1d9c64134db35",
     "src/foundation/lru-slab": "3e22d7677884e82f33389c358d993d081571bd032c688d442c058ee9703ecc70",
+    "src/foundation/minimal-lexical": "0b873669d019a362d2496cad313a79ebd60059af4cff98fe4548170c41fb902a",
+    "src/foundation/nom": "c0b2544bae316a8d8b97b7947b2659c93720efa8a6d54e7be463957178b3c5aa",
     "src/foundation/ntapi": "9d9471eee04e049fbe93c13484d10bad6a3e7d688c64b426d902b8a817612b99",
     "src/foundation/objc2-core-foundation": "ec697ab990217962867e390af6bfb202cfde9541bbd034a633ac76ab168139e6",
     "src/foundation/objc2-io-kit": "5405770a4addd59dfd73508ddfa8d85919abcc7daf0983b60f9975b2aa1a278e",

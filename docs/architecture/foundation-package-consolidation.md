@@ -178,6 +178,17 @@ does not reintroduce removed Web upload, download or preview interfaces.
 The reviewed consolidation records 398 production-file routes and preserves
 338 external upstream test files with exact unchanged hashes and explicit
 per-origin attribution. This is preservation evidence, not an assertion that
-338 upstream tests executed. The active source count is 244 (242 foundation
-packages), with 90 retired and 2 superseded origins; all original licenses,
+338 upstream tests executed. After this runtime stage the active source count
+was 244 (242 foundation packages), with 90 retired and 2 superseded origins; all original licenses,
 versions, archive hashes and historical source inventories remain unchanged.
+
+## C binding parser ownership (2026-10-22)
+
+The subsequent [binding expression parser consolidation](binding-expression-parser.md)
+folds cexpr into its actual bindgen consumer and replaces the unused generic
+nom/minimal-lexical dependency chain with a slice-only implementation. The
+clang-sys ABI boundary remains separate. Exact origin snapshots and reversible
+external-test transfers retain cexpr attribution; the removed nom and
+minimal-lexical production/test bytes are authenticated in complete retirement
+archives. SDK-independent and actual-libclang checks have distinct foundation
+shards; the existing system-SQLite and Samba SDK gates are not weakened.

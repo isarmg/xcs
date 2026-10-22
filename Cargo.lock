@@ -126,7 +126,6 @@ version = "1.8.3"
 name = "bindgen"
 version = "0.72.1"
 dependencies = [
- "cexpr",
  "clang-sys",
  "flag-set",
  "iterator-toolkit",
@@ -201,13 +200,6 @@ name = "cc"
 version = "1.8.0"
 dependencies = [
  "shell-tokenizer",
-]
-
-[[package]]
-name = "cexpr"
-version = "0.6.0"
-dependencies = [
- "nom",
 ]
 
 [[package]]
@@ -857,10 +849,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "minimal-lexical"
-version = "0.2.1"
-
-[[package]]
 name = "mio"
 version = "1.2.4"
 dependencies = [
@@ -878,14 +866,6 @@ dependencies = [
 [[package]]
 name = "next_tuple"
 version = "0.1.0"
-
-[[package]]
-name = "nom"
-version = "7.1.3"
-dependencies = [
- "memchr",
- "minimal-lexical",
-]
 
 [[package]]
 name = "nu-ansi-term"

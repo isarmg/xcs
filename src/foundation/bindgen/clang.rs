@@ -950,7 +950,7 @@ impl Cursor {
     }
 
     /// Gets the tokens that correspond to that cursor as  `cexpr` tokens.
-    pub(crate) fn cexpr_tokens(self) -> Vec<cexpr::token::Token> {
+    pub(crate) fn cexpr_tokens(self) -> Vec<crate::cexpr::token::Token> {
         self.tokens()
             .iter()
             .filter_map(|token| token.as_cexpr_token())
@@ -1050,8 +1050,8 @@ impl ClangToken {
     }
 
     /// Converts a `ClangToken` to a `cexpr` token if possible.
-    pub(crate) fn as_cexpr_token(&self) -> Option<cexpr::token::Token> {
-        use cexpr::token;
+    pub(crate) fn as_cexpr_token(&self) -> Option<crate::cexpr::token::Token> {
+        use crate::cexpr::token;
 
         let kind = match self.kind {
             CXToken_Punctuation => token::Kind::Punctuation,

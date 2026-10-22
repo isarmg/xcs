@@ -177,8 +177,8 @@ impl ClangSubItemParser for Var {
         cursor: clang::Cursor,
         ctx: &mut BindgenContext,
     ) -> Result<ParseResult<Self>, ParseError> {
-        use cexpr::expr::EvalResult;
-        use cexpr::literal::CChar;
+        use crate::cexpr::expr::EvalResult;
+        use crate::cexpr::literal::CChar;
         use clang_sys::*;
         match cursor.kind() {
             CXCursor_MacroDefinition => {
@@ -390,7 +390,7 @@ impl ClangSubItemParser for Var {
 fn parse_macro_clang_fallback(
     ctx: &mut BindgenContext,
     cursor: &clang::Cursor,
-) -> Option<(Vec<u8>, cexpr::expr::EvalResult)> {
+) -> Option<(Vec<u8>, crate::cexpr::expr::EvalResult)> {
     if !ctx.options().clang_macro_fallback {
         return None;
     }
@@ -416,7 +416,7 @@ fn parse_macro_clang_fallback(
 
     Some((
         cursor.spelling().into_bytes(),
-        cexpr::expr::EvalResult::Int(Wrapping(paren.evaluate()?.as_int()?)),
+        crate::cexpr::expr::EvalResult::Int(Wrapping(paren.evaluate()?.as_int()?)),
     ))
 }
 
@@ -424,8 +424,8 @@ fn parse_macro_clang_fallback(
 fn parse_macro(
     ctx: &mut BindgenContext,
     cursor: &clang::Cursor,
-) -> Option<(Vec<u8>, cexpr::expr::EvalResult)> {
-    use cexpr::expr;
+) -> Option<(Vec<u8>, crate::cexpr::expr::EvalResult)> {
+    use crate::cexpr::expr;
 
     let mut cexpr_tokens = cursor.cexpr_tokens();
 
@@ -442,8 +442,8 @@ fn parse_macro(
 }
 
 fn parse_int_literal_tokens(cursor: &clang::Cursor) -> Option<i64> {
-    use cexpr::expr;
-    use cexpr::expr::EvalResult;
+    use crate::cexpr::expr;
+    use crate::cexpr::expr::EvalResult;
 
     let cexpr_tokens = cursor.cexpr_tokens();
 

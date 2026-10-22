@@ -4,8 +4,8 @@ pub use crate::ir::analysis::DeriveTrait;
 pub use crate::ir::derive::CanDerive as ImplementsTrait;
 pub use crate::ir::enum_ty::{EnumVariantCustomBehavior, EnumVariantValue};
 pub use crate::ir::int::IntKind;
-pub use cexpr::token::Kind as TokenKind;
-pub use cexpr::token::Token;
+pub use crate::cexpr::token::Kind as TokenKind;
+pub use crate::cexpr::token::Token;
 use std::fmt;
 
 /// An enum to allow ignoring parsing of macros.

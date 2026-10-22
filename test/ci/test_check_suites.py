@@ -197,6 +197,17 @@ class SuiteCoverageTests(unittest.TestCase):
             with self.subTest(suite=name):
                 self.assertEqual(self.suite(name), expected)
 
+    def test_binding_parser_gates_run_in_language_and_sdk_data_shards(self):
+        inventory = json.loads((Path(__file__).with_name("foundation-commands.json")).read_text())
+        for owner, arguments in (("foundation-language", []), ("foundation-data", ["--clang"])):
+            expected = {"tool": "python3", "args": [".github/scripts/check-binding-expressions.py", *arguments]}
+            self.assertEqual(self.suite(owner).count(expected), 1)
+            self.assertEqual(self.suite("foundation").count(expected), 1)
+            for name in inventory:
+                if name != owner:
+                    with self.subTest(suite=name, arguments=arguments):
+                        self.assertNotIn(expected, self.suite(name))
+
     def test_toml_gate_runs_once_in_language_and_aggregate_only(self):
         expected = {"tool": "python3", "args": [".github/scripts/check-toml-consolidation.py"]}
         inventory = json.loads((Path(__file__).with_name("foundation-commands.json")).read_text())
