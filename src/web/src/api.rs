@@ -127,12 +127,14 @@ pub fn session_changed() -> Error {
 }
 
 pub fn clear_session() {
+    download::cancel();
     CREDENTIALS.with(|saved| saved.borrow_mut().replace(None, None));
 }
 
 // Stop later stages of in-flight transfers before logout reaches the server.
 // Keep the credential until revocation is confirmed so failed logout can retry.
 pub(crate) fn invalidate_session_work() {
+    download::cancel();
     CREDENTIALS.with(|saved| saved.borrow_mut().generation += 1);
 }
 
@@ -225,6 +227,16 @@ async fn fetch(
     body: Option<JsValue>,
     content_type: Option<&str>,
 ) -> Result<Fetched, Error> {
+    fetch_with_upload(method, path, body, content_type, None).await
+}
+
+async fn fetch_with_upload(
+    method: &str,
+    path: &str,
+    body: Option<JsValue>,
+    content_type: Option<&str>,
+    upload: Option<&upload_source::UploadMetadata>,
+) -> Result<Fetched, Error> {
     validate_path(path)?;
     let controller = web_sys::AbortController::new().map_err(js_error)?;
     let options = RequestInit::new();
@@ -247,16 +259,10 @@ async fn fetch(
             .set("Content-Type", content_type)
             .map_err(js_error)?;
     }
-    if method == "PUT" && content_type == Some("application/octet-stream") {
-        let bytes = Uint8Array::new(body.as_ref().ok_or_else(|| {
-            error(
-                "EMPTY_UPLOAD",
-                t("上传缺少内容", "The upload has no content"),
-            )
-        })?);
+    if let Some(upload) = upload {
         request
             .headers()
-            .set("X-ZXS-Logical-Size", &bytes.length().to_string())
+            .set("X-ZXS-Logical-Size", &upload.size.to_string())
             .map_err(js_error)?;
         request
             .headers()
@@ -264,10 +270,7 @@ async fn fetch(
             .map_err(js_error)?;
         request
             .headers()
-            .set(
-                "X-ZXS-Content-Hash",
-                &blake3::hash(&bytes.to_vec()).to_hex(),
-            )
+            .set("X-ZXS-Content-Hash", &upload.hash)
             .map_err(js_error)?;
     }
     let credentials = CREDENTIALS.with(|saved| saved.borrow().clone());
@@ -285,7 +288,8 @@ async fn fetch(
             .set("X-CSRF-Token", token)
             .map_err(js_error)?;
     }
-    let timer = gloo_timers::callback::Timeout::new(120_000, move || controller.abort());
+    let timeout_ms = upload.map_or(120_000, |upload| upload.total_timeout_ms);
+    let timer = gloo_timers::callback::Timeout::new(timeout_ms, move || controller.abort());
     let window = web_sys::window().ok_or_else(|| {
         error(
             "NO_WINDOW",
@@ -484,6 +488,7 @@ fn error_from_contract(value: storage_contract::Error) -> Error {
 
 mod upload_source;
 pub use upload_source::UploadSource;
+pub(crate) use upload_source::upload_limit;
 
 pub async fn upload(
     workspace: &str,
@@ -492,116 +497,62 @@ pub async fn upload(
     source: UploadSource,
 ) -> Result<Value, Error> {
     source.preflight()?;
-    let file = source.into_file();
     let admission = SessionAdmission::capture();
-    let data = JsFuture::from(file.array_buffer())
-        .await
-        .map_err(js_error)?;
-    // Reading a browser file is asynchronous too: do not send its bytes under
-    // a different session if authentication changed while buffering it.
+    let limits = upload_source::upload_limits().await;
+    upload_source::check_completion(admission, &limits)?;
+    let limits = limits?;
+    source.preflight_limit(limits.max_upload_bytes)?;
+    let prepared = source
+        .prepare(admission, limits.transfer.total_timeout_ms)
+        .await;
     admission.check()?;
-    let bytes = Uint8Array::new(&data);
+    let metadata = prepared?;
     let endpoint = format!(
         "/api/workspaces/{}/files/{}/content?path={}",
         segment(workspace),
         segment(item),
         segment(path)
     );
-    decode(
-        fetch(
-            "PUT",
-            &endpoint,
-            Some(bytes.into()),
-            Some("application/octet-stream"),
-        )
-        .await?,
+    let fetched = fetch_with_upload(
+        "PUT",
+        &endpoint,
+        Some(source.into_file().into()),
+        Some("application/octet-stream"),
+        Some(&metadata),
     )
-    .await
-}
-
-pub async fn download(path: &str, filename: &str) -> Result<String, Error> {
-    let fetched = fetch("GET", path, None, None).await?;
-    if !fetched.response.ok() {
-        return decode(fetched).await.map(|_| String::new());
-    }
-    let length = fetched
-        .response
-        .headers()
-        .get("Content-Length")
-        .ok()
-        .flatten()
-        .and_then(|v| v.parse::<u64>().ok())
-        .ok_or_else(|| {
-            error(
-                "INVALID_RESPONSE",
-                t(
-                    "下载响应缺少长度",
-                    "The download response has no content length",
-                ),
-            )
-        })?;
-    if length > 64 * 1024 * 1024 {
-        return Err(error(
-            "BROWSER_DOWNLOAD_LIMIT",
-            t(
-                "网页校验下载上限 64 MiB；较大文件请通过 SMB 访问",
-                "Verified browser downloads are limited to 64 MiB. Access larger files through SMB.",
-            ),
-        ));
-    }
-    let hash = fetched
-        .response
-        .headers()
-        .get("ETag")
-        .ok()
-        .flatten()
-        .map(|v| v.trim_matches('"').to_owned())
-        .ok_or_else(|| {
-            error(
-                "INVALID_RESPONSE",
-                t(
-                    "下载响应缺少完整性摘要",
-                    "The download response has no integrity hash",
-                ),
-            )
-        })?;
-    let bytes = verified_download_bytes(
-        read_body(&fetched.response, 64 * 1024 * 1024),
-        length,
-        &hash,
-        SessionAdmission(fetched.credential_generation),
-    )
-    .await?;
-    let parts = js_sys::Array::new();
-    parts.push(&Uint8Array::from(bytes.as_slice()).buffer());
-    let blob = web_sys::Blob::new_with_buffer_source_sequence(&parts).map_err(js_error)?;
-    let url = web_sys::Url::create_object_url_with_blob(&blob).map_err(js_error)?;
-    let result = (|| {
-        let document = web_sys::window()
-            .and_then(|w| w.document())
-            .ok_or_else(|| error("NO_DOCUMENT", t("页面不可用", "The page is unavailable")))?;
-        let anchor = document
-            .create_element("a")
-            .map_err(js_error)?
-            .dyn_into::<web_sys::HtmlAnchorElement>()
-            .map_err(|value| js_error(value.into()))?;
-        anchor.set_href(&url);
-        anchor.set_download(filename);
-        anchor.click();
-        Ok(t(
-            "下载已校验并交给浏览器；此操作不会创建服务器版本",
-            "The download was verified and sent to the browser.",
-        ))
-    })();
-    gloo_timers::callback::Timeout::new(30_000, move || {
-        let _ = web_sys::Url::revoke_object_url(&url);
-    })
-    .forget();
+    .await;
+    admission.check()?;
+    let result = decode(fetched?).await;
+    upload_source::check_completion(admission, &result)?;
     result
 }
 
-/// Keep asynchronous body acquisition, integrity verification, and session
-/// admission together, so no browser delivery can accidentally skip the fence.
+mod download;
+pub(crate) fn observe_downloads(callback: impl Fn() + 'static) -> impl Drop {
+    download::observe(callback)
+}
+pub(crate) fn cancel_download() {
+    download::cancel();
+}
+pub(crate) fn download_copy() -> Option<(String, bool)> {
+    download::retained_copy()
+}
+pub(crate) fn export_download() -> Result<String, Error> {
+    download::export()
+}
+pub(crate) async fn cleanup_download() -> Result<(), Error> {
+    download::cleanup().await
+}
+pub fn download(
+    path: &str,
+    filename: &str,
+) -> impl std::future::Future<Output = Result<String, Error>> + 'static {
+    download::start(path, filename)
+}
+
+/// Delayed-body test fixture exercising the same integrity/session completion
+/// gate as both production streaming sinks. Production never buffers this way.
+#[cfg(test)]
 async fn verified_download_bytes(
     body: impl std::future::Future<Output = Result<Vec<u8>, Error>>,
     length: u64,
@@ -609,16 +560,9 @@ async fn verified_download_bytes(
     admission: SessionAdmission,
 ) -> Result<Vec<u8>, Error> {
     let bytes = body.await?;
-    if bytes.len() as u64 != length || blake3::hash(&bytes).to_hex().as_str() != hash {
-        return Err(error(
-            "CHECKSUM_MISMATCH",
-            t(
-                "下载长度或 BLAKE3 摘要不一致，未交付文件",
-                "The downloaded size or BLAKE3 hash does not match. The file was not delivered.",
-            ),
-        ));
-    }
-    admission.check()?;
+    let mut integrity = download::Integrity::new(length);
+    integrity.update(&bytes)?;
+    integrity.finish_for_session(hash, admission)?;
     Ok(bytes)
 }
 

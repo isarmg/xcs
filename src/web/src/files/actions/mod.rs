@@ -12,7 +12,8 @@ pub(crate) use mutation::{
 };
 pub(crate) use operation::{check_upload, poll, record_operation, record_receipt};
 pub(crate) use transfer::{
-    PickerContext, cancel_picker, download, pick_upload, preview, upload_files,
+    PickerContext, cancel_picker, cleanup_download, download, export_download, pick_upload,
+    preview, upload_files,
 };
 
 use super::model::{SaveStatus, operation_status};

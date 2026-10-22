@@ -3633,7 +3633,7 @@
       },
       "put": {
         "operationId": "selectDefaultDirectoryBranch",
-        "description": "以普通仓库写权限选择根目录分支作为Web/App/SMB共享默认视图。该分支保存的子树不因设置默认而改写；旧读句柄固定版本，受影响旧写会话冲突并保留暂存内容。",
+        "description": "以普通仓库写权限选择根目录分支作为Web/SMB 共享默认视图。该分支保存的子树不因设置默认而改写；旧读句柄固定版本，受影响旧写会话冲突并保留暂存内容。",
         "parameters": [
           {
             "name": "repo",

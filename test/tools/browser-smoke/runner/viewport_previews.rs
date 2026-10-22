@@ -48,13 +48,31 @@ fn pause_upload(browser: &Browser) -> Result<UploadGate<'_>> {
 }
 
 pub(super) fn run(browser: &Browser, temp: &Path, output: Option<&Path>) -> Result<()> {
-    // A sparse real file exercises the product's real browser-size validation.
+    // A sparse real file exceeds the real server-advertised maximum.
     // It is never uploaded, and no application model or API reply is injected.
     let too_large = temp.join("超过网页上传上限的合成测试文件.bin");
-    File::create(&too_large)?.set_len(64 * 1024 * 1024 + 1)?;
+    let capabilities = browser.script("return fetch('/api/capabilities').then(r=>{if(!r.ok)throw Error('capabilities failed');return r.json()})")?;
+    let limit: u64 = capabilities["max_upload_bytes"]
+        .as_str()
+        .ok_or("missing advertised upload limit")?
+        .parse()?;
+    let oversized = limit
+        .checked_add(1)
+        .filter(|n| *n < (1u64 << 53))
+        .ok_or("advertised limit cannot be tested using exact browser File size")?;
+    File::create(&too_large)?.set_len(oversized)?;
+    let limit_probe = large_upload::observe(browser)?;
     browser.upload_file(&too_large, false)?;
     browser.click(&browser.button("Transfers", "传输任务")?)?;
     browser.css(".zxs-transfer-card[data-status='rejected']")?;
+    if browser.script("return window.__zxsLargeUpload.workspaces")? != 0
+        || browser.script("return window.__zxsLargeUpload.slices")? != 0
+    {
+        return Err(
+            "oversized upload created a workspace or read file content before rejection".into(),
+        );
+    }
+    drop(limit_probe);
     browser.css(".zxs-transfer-card[data-status='published']")?;
     browser.click(&browser.css(".zxs-transfer-filters button[data-status='rejected']")?)?;
     if browser.script(

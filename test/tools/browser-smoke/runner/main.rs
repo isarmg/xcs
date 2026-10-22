@@ -22,8 +22,10 @@ mod base64_compatibility_tests;
 
 mod accessibility;
 mod diagnostics;
+mod download_faults;
 mod file_rows;
 mod fonts;
+mod large_upload;
 mod lifecycle;
 mod session_delivery;
 mod session_logout;
@@ -369,6 +371,7 @@ fn exercise(
         fs::write(path, png)?;
         println!("PASS real browser screenshot saved to {}", path.display());
     }
+    large_upload::run(browser, temp)?;
     viewport_previews::run(browser, temp, viewport_previews.as_deref())?;
     // Transfer fixtures rerender the table; resolve the original smoke file again.
     let file = {
@@ -379,16 +382,14 @@ fn exercise(
     };
     browser.click(&file)?;
     browser.css(".zxs-entry-version-history")?;
-    browser.click(&browser.button("Download", "下载")?)?;
-    let downloaded = temp.join("downloads/browser-smoke.txt");
-    wait_for("verified byte-for-byte browser download", || {
-        if fs::read(&downloaded)? == payload {
-            Ok(())
-        } else {
-            Err("download content differs".into())
-        }
-    })?;
-    println!("PASS file details, version history and byte-identical download");
+    let initial_download = session_delivery::begin_paused_download(browser)?;
+    session_delivery::finish(initial_download, 1, payload.len())?;
+    if browser.script("return window.__zxsDelivery.saved")? != json!(payload.to_vec()) {
+        return Err("OPFS transactional download differs from real server bytes".into());
+    }
+    println!(
+        "PASS real server bytes committed to OPFS writable via controlled save picker (native dialog unverified)"
+    );
     browser.click(&browser.button("History", "历史记录")?)?;
     wait_for("uploaded file in activity history", || {
         if browser.script("return Array.from(document.querySelectorAll('.zxs-history-path')).some(e=>e.textContent.includes('browser-smoke.txt'))")? == true { Ok(()) } else { Err("history missing uploaded file".into()) }
@@ -402,16 +403,13 @@ fn exercise(
     browser.click(&file)?;
     // The same timing fixture must still deliver a complete real download
     // when credentials remain current, before testing the logout fence.
-    fs::remove_file(&downloaded)?;
     let current_download = session_delivery::begin_paused_download(browser)?;
     session_delivery::finish(current_download, 1, payload.len())?;
-    wait_for("unblocked same-session download bytes", || {
-        if fs::read(&downloaded)? == payload {
-            Ok(())
-        } else {
-            Err("unblocked download differs".into())
-        }
-    })?;
+    let saved = browser.script("return window.__zxsDelivery.saved")?;
+    if saved != json!(payload.to_vec()) {
+        return Err("OPFS transactional download differs from real server bytes".into());
+    }
+    download_faults::run(browser, temp)?;
     session_logout::run(browser, password)?;
     let stale_download = session_delivery::begin_paused_download(browser)?;
     browser.click(&browser.button("Sign out", "退出")?)?;

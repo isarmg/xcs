@@ -713,3 +713,69 @@ mod spool_budget_tests;
 
 #[path = "tests/http_boundary.rs"]
 mod http_boundary_tests;
+
+#[tokio::test]
+async fn capabilities_publish_validated_transfer_timeouts_as_decimal_strings() {
+    let defaults = ServerConfig::loopback(Path::new("unused-test-root"));
+    assert_eq!(defaults.max_upload_bytes, 1024 * 1024 * 1024);
+    assert_eq!(
+        defaults.http_transfer_limits.idle_timeout,
+        Duration::from_secs(60)
+    );
+    assert_eq!(
+        defaults.http_transfer_limits.total_timeout,
+        Duration::from_secs(3600)
+    );
+    for (idle, total, expected_idle, expected_total) in [
+        (
+            Duration::from_secs(60),
+            Duration::from_secs(3600),
+            "60000",
+            "3600000",
+        ),
+        (
+            Duration::from_millis(1250),
+            Duration::from_secs(7200),
+            "1250",
+            "7200000",
+        ),
+        (
+            Duration::from_nanos(1),
+            Duration::from_nanos(1_000_001),
+            "1",
+            "2",
+        ),
+        (
+            Duration::from_secs(604800),
+            Duration::from_secs(604800),
+            "604800000",
+            "604800000",
+        ),
+    ] {
+        let root = tempfile::tempdir().unwrap();
+        let mut config = ServerConfig::loopback(root.path());
+        config.max_upload_bytes = 123456;
+        config.http_transfer_limits.idle_timeout = idle;
+        config.http_transfer_limits.total_timeout = total;
+        let app = application_config(root.path(), config);
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/capabilities")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let value: Value = json_codec::from_slice(
+            &http_routing::body::to_bytes(response.into_body(), 8192)
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(value["max_upload_bytes"], "123456");
+        assert_eq!(value["transfer_idle_timeout_ms"], expected_idle);
+        assert_eq!(value["transfer_total_timeout_ms"], expected_total);
+    }
+}

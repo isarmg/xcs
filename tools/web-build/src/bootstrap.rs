@@ -12,7 +12,7 @@ pub fn loader() -> String {
 }
 
 pub fn index() -> &'static str {
-    r#"<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><title>ZXS · 文件与历史</title><link rel="stylesheet" href="./styles/startup.css"><link rel="stylesheet" href="./zxs.css"><link rel="modulepreload" href="./pkg/zxs.js"></head><body><div id="root"><p role="status">正在启动 ZXS。若此提示持续显示，请检查浏览器是否支持 WebAssembly 及服务端资源是否完整。</p></div><script type="module" src="./boot.js"></script></body></html>"#
+    r#"<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><title>ZXS · 文件与历史</title><link rel="stylesheet" href="./styles/startup.css"><link rel="stylesheet" href="./zxs.css"><link rel="modulepreload" href="./pkg/zxs.js"></head><body><div id="root"><p role="status">正在启动 ZXS。若此提示持续显示，请检查浏览器是否支持 WebAssembly SIMD 及服务端资源是否完整。</p></div><script type="module" src="./boot.js"></script></body></html>"#
 }
 
 // Generated glue owns resource loading and fallback rendering only. The Rust
@@ -70,8 +70,8 @@ function fail(stage, error) {
   title.textContent = chinese ? "页面启动失败" : "Page could not start";
   const message = document.createElement("p");
   message.textContent = chinese
-    ? "页面所需资源加载失败或超时。请检查网络连接，然后重新加载页面。"
-    : "Required page resources failed to load or timed out. Check your connection, then reload the page.";
+    ? "页面需要支持 WebAssembly SIMD 的现代浏览器。所需资源加载失败或超时，请检查浏览器支持、网络连接和服务端资源，然后重新加载页面。"
+    : "This page requires a modern browser with WebAssembly SIMD. Required resources failed to load or timed out. Check browser support, your connection and server resources, then reload.";
   const retry = document.createElement("button");
   retry.type = "button";
   retry.textContent = chinese ? "重新加载页面" : "Reload page";

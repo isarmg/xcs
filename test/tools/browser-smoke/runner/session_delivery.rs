@@ -1,5 +1,5 @@
-//! Timing-only fixture around real server responses. The browser still runs the
-//! production WASM download handler and receives the unmodified response bytes.
+//! Real response timing fixture with an actual OPFS transactional writable.
+//! The controlled picker does not verify the native OS save dialog.
 use super::*;
 
 pub(super) struct Fixture<'a>(&'a Browser);
@@ -13,18 +13,35 @@ impl Drop for Fixture<'_> {
 pub(super) fn begin_paused_download(browser: &Browser) -> Result<Fixture<'_>> {
     browser.script(r#"
         const originalFetch = window.fetch;
-        const originalClick = HTMLAnchorElement.prototype.click;
-        const state = window.__zxsDelivery = { waiting: false, finished: false, clicks: 0, bytes: 0, error: null };
+        const originalPicker = window.showSaveFilePicker;
+        const state = window.__zxsDelivery = { waiting: false, finished: false, closed: 0, aborted: 0, bytes: 0, error: null, saved: null };
         let release;
         const gate = new Promise(resolve => release = resolve);
         state.release = release;
-        state.restore = () => {
-            window.fetch = originalFetch;
-            HTMLAnchorElement.prototype.click = originalClick;
-        };
-        HTMLAnchorElement.prototype.click = function() {
-            if (this.download === 'browser-smoke.txt') state.clicks++;
-            return originalClick.call(this);
+        state.restore = () => { window.fetch = originalFetch; window.showSaveFilePicker = originalPicker; };
+        window.showSaveFilePicker = async () => {
+            state.activation = navigator.userActivation.isActive;
+            const root = await navigator.storage.getDirectory();
+            const handle = await root.getFileHandle('zxs-smoke-picker-output', {create:true});
+            return {createWritable: async () => {
+                const writable = await handle.createWritable();
+                return {
+                    write: bytes => writable.write(bytes),
+                    close: async () => {
+                        await writable.close();
+                        state.closed++;
+                        state.saved = Array.from(new Uint8Array(await (await handle.getFile()).arrayBuffer()));
+                        await root.removeEntry('zxs-smoke-picker-output');
+                        state.finished = true;
+                    },
+                    abort: async () => {
+                        await writable.abort();
+                        state.aborted++;
+                        await root.removeEntry('zxs-smoke-picker-output');
+                        state.finished = true;
+                    }
+                };
+            }};
         };
         window.fetch = async function(...args) {
             const response = await originalFetch.apply(this, args);
@@ -34,10 +51,12 @@ pub(super) fn begin_paused_download(browser: &Browser) -> Result<Fixture<'_>> {
             // Intercept exactly this response, not logout or any future request.
             window.fetch = originalFetch;
             const reader = response.body.getReader();
+            let cancelled = false;
             const stream = new ReadableStream({
                 async start(controller) {
                     state.waiting = true;
                     await gate;
+                    if (cancelled) return;
                     try {
                         while (true) {
                             const part = await reader.read();
@@ -51,9 +70,10 @@ pub(super) fn begin_paused_download(browser: &Browser) -> Result<Fixture<'_>> {
                         reader.releaseLock();
                         // Let the production Rust future consume the terminal
                         // chunk and run its synchronous verification/delivery.
-                        setTimeout(() => { state.finished = true; }, 500);
+                        // Sink close/abort, not a timer, establishes the outcome.
                     }
-                }
+                },
+                cancel(reason) { cancelled = true; return reader.cancel(reason); }
             });
             return new Response(stream, {status: response.status, statusText: response.statusText, headers: response.headers});
         };
@@ -80,7 +100,7 @@ pub(super) fn begin_paused_download(browser: &Browser) -> Result<Fixture<'_>> {
 
 pub(super) fn finish(
     fixture: Fixture<'_>,
-    expected_clicks: u64,
+    expected_closes: u64,
     expected_bytes: usize,
 ) -> Result<()> {
     let browser = fixture.0;
@@ -94,17 +114,26 @@ pub(super) fn finish(
     })?;
     let transfer = browser
         .script("return {bytes:window.__zxsDelivery.bytes,error:window.__zxsDelivery.error}")?;
-    if transfer["bytes"] != expected_bytes || !transfer["error"].is_null() {
+    // Logout now actively aborts the network body. No delivery is required;
+    // allow the reader to reject rather than require a full stale body read.
+    if expected_closes > 0 && (transfer["bytes"] != expected_bytes || !transfer["error"].is_null())
+    {
         return Err(format!(
             "paused download did not deliver its complete response body: {transfer}"
         )
         .into());
     }
-    let clicks = browser.script("return window.__zxsDelivery.clicks")?;
+    let closes = browser.script("return window.__zxsDelivery.closed")?;
+    if expected_closes == 0 && browser.script("return window.__zxsDelivery.aborted")? != 1 {
+        return Err("stale-session writable was not aborted".into());
+    }
+    if browser.script("return window.__zxsDelivery.activation")? != true {
+        return Err("save picker was not called during user activation".into());
+    }
     browser.script("window.__zxsDelivery.restore(); return true")?;
-    if clicks != expected_clicks {
+    if closes != expected_closes {
         return Err(format!(
-            "session download admission: expected {expected_clicks} click(s), observed {clicks}"
+            "session download admission: expected {expected_closes} close(s), observed {closes}"
         )
         .into());
     }

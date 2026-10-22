@@ -262,6 +262,26 @@ fn queue_uploads(state: RwSignal<State>, sources: Vec<api::UploadSource>, contex
     });
     let epoch = snapshot.session_epoch;
     let task = async move {
+        // Validate the whole batch against the advertised server limit before
+        // creating any workspace. The upload rechecks it before reading bytes.
+        let limit = api::upload_limit().await;
+        if !current_session(state, epoch) {
+            return;
+        }
+        let preflight = limit.and_then(|limit| {
+            queue
+                .iter()
+                .try_for_each(|(source, _)| source.preflight_limit(limit))
+        });
+        if let Err(error) = preflight {
+            for (_, row) in &queue {
+                update_upload(state, &row.operation_id, |row| {
+                    apply_upload_error(row, false, &error)
+                });
+            }
+            fail(state, error);
+            return;
+        }
         for (source, row) in queue {
             if !current_session(state, epoch) {
                 return;
@@ -453,23 +473,63 @@ pub(crate) fn preview(state: RwSignal<State>, entry: Value) {
     });
 }
 pub(crate) fn download(state: RwSignal<State>, entry: Value) {
-    if !state.with_untracked(State::session_active) || !visible_content(&entry) {
+    if !state.with_untracked(State::session_active)
+        || state.with_untracked(|s| s.files.download_pending)
+        || !visible_content(&entry)
+    {
         return;
     }
     let version = text(&entry, &["version_id"]);
     let name = text(&entry, &["name"]);
     let epoch = state.with_untracked(|s| s.session_epoch);
+    state.update(|s| s.files.download_pending = true);
+    // Start the save picker during the click, before scheduling asynchronous work.
+    let download = api::download(
+        &format!("/api/versions/{}/content", api::segment(&version)),
+        &name,
+    );
     spawn_local(async move {
-        let result = api::download(
-            &format!("/api/versions/{}/content", api::segment(&version)),
-            &name,
-        )
-        .await;
+        let result = download.await;
         if !current_session(state, epoch) {
             return;
         }
+        state.update(|s| {
+            s.files.download_pending = false;
+            s.files.download_copy = api::download_copy();
+        });
         match result {
             Ok(message) => set_notice(state, message),
+            Err(error) => fail(state, error),
+        }
+    });
+}
+
+pub(crate) fn export_download(state: RwSignal<State>) {
+    if !state.with_untracked(State::session_active) {
+        return;
+    }
+    match api::export_download() {
+        Ok(message) => set_notice(state, message),
+        Err(error) => fail(state, error),
+    }
+}
+pub(crate) fn cleanup_download(state: RwSignal<State>) {
+    if state.with_untracked(|s| s.files.download_cleanup_pending) {
+        return;
+    }
+    let epoch = state.with_untracked(|s| s.session_epoch);
+    state.update(|s| s.files.download_cleanup_pending = true);
+    spawn_local(async move {
+        let result = api::cleanup_download().await;
+        if !current_session(state, epoch) {
+            return;
+        }
+        state.update(|s| {
+            s.files.download_copy = api::download_copy();
+            s.files.download_cleanup_pending = false;
+        });
+        match result {
+            Ok(()) => set_notice(state, t("临时副本已清理。", "Temporary copy removed.")),
             Err(error) => fail(state, error),
         }
     });

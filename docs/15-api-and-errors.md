@@ -198,6 +198,8 @@ Web 和内部远程 CLI 使用统一 HTTPS 业务契约；SMB 基础操作经 Sa
 
 客户端通过 `/api/capabilities` 读取 `name_policy`、`path_policy`、`unicode_data_version`、支持的操作、`max_upload_bytes` 和平台能力。项目采用单一当前协议与格式，不声明数字协议版本或可读旧格式列表；Unicode 版本用于标识固定的外部字符数据，不是项目协议版本。拓扑代际、备份路由和具体资源状态通过各自查询接口读取。
 
+HTTP 能力同时返回 `transfer_idle_timeout_ms` 和 `transfer_total_timeout_ms`，与 `max_upload_bytes` 一样采用规范十进制 u64 字符串，不是 JSON 数字。它们来自已验证的 HTTP 传输配置，默认分别为 `"60000"` 和 `"3600000"`，满足 `0 < idle <= total <= 604800000`；不足一毫秒的余数向上取整。客户端应为文件正文采用这些时限而不是普通元数据请求的短超时。总时限包含服务端准备读取/接收正文阶段，空闲时限按正文进度重置；它们不是吞吐量或成功保证。配置不改变默认并发名额（总计 8、每账号 2，上传和读取独立池）、上传大小限制、持久暂存或校验要求，也不引入更大缓存。缺失、非规范或越界字段必须按客户端明确的兼容/拒绝策略处理，不得解释为无限时限。
+
 遇到不能正确执行的规则或操作应拒绝相关写入并说明原因，不用其他规则静默近似。服务器不能因为客户端缺少某个按钮就省去权限检查。
 
 当前能力声明 `full_only:true`、`full_branches:false`、`branch_creation:"record-until-write"`、`branch_content:"inherit-parent-until-first-write"`，`directory_branch_creation:"inherit-directory-tree"`、`namespace_batch:true`，区分内容必须 FULL 与登记分支只保存冻结引用。历史另存、合并关系标记、清除、独立树拆分和用户备份拓扑按各自能力及已开放入口报告。SMB 暴露用户所选默认根目录分支的基础操作，管理 API 能力不能被解释为 SMB 也支持。画线请求固定节点，不要求固定当前 HEAD、解决冲突或提供文件内容。客户端请求不支持的保存方式或操作时明确拒绝，不能近似执行。

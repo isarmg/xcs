@@ -17,6 +17,7 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     let slot = Memo::new(move |_| state.with(|s| s.files.slot.clone()));
     view! {
         <section class="zxs-content-stack zxs-file-manager zxs-stack">
+            {download_copy(state)}
             {move ||if slot.get().is_empty(){disk_roots(state).into_any()}else{directory(state).into_any()}}
             {upload_queue(state)}
         </section>
@@ -195,5 +196,23 @@ fn file_row(
 fn upload_queue(state: RwSignal<State>) -> impl IntoView {
     view! {
         {crate::transfers::summary(state)}
+    }
+}
+
+/// Kept on both the listing and details page so navigation cannot hide a retained
+/// private copy. Export is a fresh click; cleanup explicitly warns about handoff.
+pub(super) fn download_copy(state: RwSignal<State>) -> impl IntoView {
+    view! {
+        <Show when=move ||state.with(|s|s.files.download_copy.is_some())>
+            <section class="zxs-stack" aria-label=t("下载临时副本","Temporary download copy")>
+                <p class="zxs-row" role="status">{move ||state.with(|s|s.files.download_copy.as_ref().map(|(name,_)|format!("{}: {name}",t("临时副本","Temporary copy"))).unwrap_or_default())}</p>
+                <p class="zxs-row">{t("保存完成前请保持页面打开。清理或退出登录可能中断浏览器仍在进行的保存；请先检查下载记录。","Keep this page open until saving finishes. Cleanup or sign out may interrupt an in-progress browser save; check your downloads first.")}</p>
+                <div class="zxs-file-toolbar zxs-flow">
+                    <button class="zxs-button" disabled=move ||state.with(|s|s.files.download_cleanup_pending||!s.files.download_copy.as_ref().is_some_and(|(_,ready)|*ready)) on:click=move |_|actions::export_download(state)>{t("保存到设备","Save to device")}</button>
+                    <button class="zxs-button" disabled=move ||state.with(|s|s.files.download_cleanup_pending) on:click=move |_|actions::cleanup_download(state)>{t("保存完成后清理临时副本","Clean up after saving")}</button>
+                    <button class="zxs-button" disabled=move ||state.with(|s|s.files.download_cleanup_pending) on:click=move |_|actions::cleanup_download(state)>{t("取消并清理","Cancel and clean up")}</button>
+                </div>
+            </section>
+        </Show>
     }
 }

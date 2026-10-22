@@ -888,6 +888,11 @@ async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiE
         repositories: Default::default(),
     };
     let limit = state.config.max_upload_bytes;
+    // Validation bounds both durations to seven days. Round up sub-millisecond
+    // values so positive deadlines remain positive in the wire contract.
+    let limits = &state.config.http_transfer_limits;
+    let idle_ms = limits.idle_timeout.as_nanos().div_ceil(1_000_000);
+    let total_ms = limits.total_timeout.as_nanos().div_ceil(1_000_000);
     let Json(mut value) = call(
         state,
         identity,
@@ -901,6 +906,8 @@ async fn capabilities(State(state): State<AppState>) -> Result<Json<Value>, ApiE
         .and_then(|value| value.parse::<u64>().ok())
         .unwrap_or(limit);
     value["max_upload_bytes"] = limit.min(core_limit).to_string().into();
+    value["transfer_idle_timeout_ms"] = idle_ms.to_string().into();
+    value["transfer_total_timeout_ms"] = total_ms.to_string().into();
     Ok(Json(value))
 }
 

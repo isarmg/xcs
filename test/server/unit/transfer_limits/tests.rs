@@ -205,3 +205,17 @@ async fn explicit_drop_releases_idle_stream_without_waiting_for_timer() {
     drop(body);
     assert_eq!(dropped.load(Ordering::SeqCst), 1);
 }
+
+#[test]
+fn transfer_defaults_and_seven_day_boundary_remain_bounded() {
+    let mut limits = TransferLimits::default();
+    assert_eq!(limits.slots_total, 8);
+    assert_eq!(limits.slots_per_account, 2);
+    assert_eq!(limits.idle_timeout, Duration::from_secs(60));
+    assert_eq!(limits.total_timeout, Duration::from_secs(3600));
+    limits.total_timeout = Duration::from_secs(7 * 24 * 3600);
+    limits.idle_timeout = limits.total_timeout;
+    assert!(limits.validate().is_ok());
+    limits.total_timeout += Duration::from_nanos(1);
+    assert!(limits.validate().is_err());
+}

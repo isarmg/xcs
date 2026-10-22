@@ -77,10 +77,28 @@ pub(crate) fn set_notice(state: RwSignal<State>, notice: String) {
     state.update(|s| s.notice = notice);
 }
 
+fn refresh_download_copy(state: RwSignal<State>) {
+    // Derive labels/export permission from the current API session, never from
+    // a worker's captured session or a previous UI snapshot.
+    let copy = api::download_copy();
+    let _ = state.try_update(|s| {
+        s.files.download_copy = if s.session_active() { copy } else { None };
+    });
+}
+
 pub fn app() -> impl IntoView {
     let state = RwSignal::new(State {
         page: "files".into(),
         ..Default::default()
+    });
+    let observer = api::observe_downloads(move || refresh_download_copy(state));
+    let observer = send_wrapper::SendWrapper::new(observer);
+    on_cleanup(move || drop(observer));
+    let download_session =
+        Memo::new(move |_| state.with(|s| (s.session_epoch, s.session_active())));
+    Effect::new(move |_| {
+        let _ = download_session.get();
+        refresh_download_copy(state);
     });
     restore_session(state);
     let poller = gloo_timers::callback::Interval::new(2_000, move || {

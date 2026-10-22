@@ -20,7 +20,12 @@ wasm-bindgen-futures = {version = "=0.4.79", path = "../foundation/wasm-bindgen-
 js-sys = {version = "=0.3.106", path = "../foundation/js-sys"}
 gloo-timers = { version = "0.3", features = ["futures"], path = "../foundation/gloo-timers"}
 send_wrapper = {version = "0.6", path = "../foundation/send_wrapper"}
-web-sys = { version = "=0.3.106", features = ["Window", "Document", "Element", "HtmlElement", "HtmlInputElement", "HtmlAnchorElement", "File", "FileList", "Blob", "Crypto", "AbortController", "AbortSignal", "Request", "RequestInit", "RequestMode", "RequestCredentials", "RequestRedirect", "Response", "ReadableStream", "ReadableStreamDefaultReader", "Headers", "Url", "UrlSearchParams", "Storage", "Event", "MouseEvent", "SubmitEvent", "console"], path = "../foundation/web-sys"}
+web-sys = { version = "=0.3.106", features = ["Window", "Performance", "Document", "Element", "HtmlElement", "HtmlInputElement", "HtmlAnchorElement", "File", "FileList", "Blob", "Crypto", "AbortController", "AbortSignal", "Request", "RequestInit", "RequestMode", "RequestCredentials", "RequestRedirect", "Response", "ReadableStream", "ReadableStreamDefaultReader", "Headers", "Url", "UrlSearchParams", "Storage", "Event", "MouseEvent", "SubmitEvent", "console"], path = "../foundation/web-sys"}
+
+# Modern browser builds require WebAssembly SIMD; keep native host tests and
+# Linux server feature resolution on the existing native BLAKE3 dispatch.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+blake3 = {version = "1.8.7", path = "../foundation/blake3", features = ["wasm32_simd"]}
 
 [lints.rust]
 unsafe_code = "forbid"
