@@ -5685,9 +5685,9 @@
             "items": {
               "$ref": "#/components/schemas/MemberReceipt"
             },
-            "minItems": 3,
-            "maxItems": 3,
-            "uniqueItems": true
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "Sorted unique receipts for every member of the trusted configured membership. The server must match identities and count against that fixed membership; receipt count alone never authorizes shrinking membership."
           },
           "content_proofs": {
             "type": "array",

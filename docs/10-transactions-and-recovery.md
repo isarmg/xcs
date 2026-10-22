@@ -120,7 +120,7 @@ sequenceDiagram
     participant C as 客户端
     participant S as 唯一协调器
     participant D as 各版本目标数据盘
-    participant L as 三个元数据成员
+    participant L as 全部配置元数据成员
     participant I as 索引与命名空间
 
     C->>S: 提交冻结代际及operation_id

@@ -15,10 +15,10 @@ exclusive Engine ownership locks; unsupported concurrent external writers are
 not made safe by a cache. Metadata fingerprints are not cryptographic evidence
 against silent storage corruption or adversarial timestamp/inode manipulation.
 
-The append cache is **not a durable checkpoint**. The separate version-2
+The append cache is **not a durable checkpoint**. The separate durable
 replay checkpoint is implemented in `engine/recovery_checkpoint.rs`. After a
 successful full or suffix recovery, it writes identical content-hashed envelopes
-to all three metadata members. Selection requires agreement between all three
+to all configured metadata members. Selection requires agreement between all configured
 copies, the same pool/configuration, and each saved tip appearing in that
 member's fully verified journal chain. Startup still scans journals from byte
 zero and rejects forks and candidate-linkage errors.
@@ -83,7 +83,7 @@ The current bounded inline coverage format deliberately falls back once its
 size limit is reached. A paged, independently hash-bound coverage tree could
 extend acceleration to larger stores without an unbounded checkpoint object.
 Incremental coverage refresh could reduce checkpoint construction work. Degraded
-(two-member) opens currently keep ordinary recovery and its visibility rules;
+(missing configured members) opens currently keep ordinary recovery and its visibility rules;
 they do not use the replay shortcut. Further optimization must preserve those
 rules and all historical repair obligations.
 

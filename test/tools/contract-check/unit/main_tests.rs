@@ -566,3 +566,72 @@ fn monitoring_contracts_share_snapshots_and_preserve_unavailable_values_and_auth
     too_many["samples"] = json!(vec![response["samples"][0].clone(); 362]);
     assert!(!history_schema.is_valid(&too_many));
 }
+
+#[test]
+fn variable_membership_contract_keeps_fixed_quorum_and_publication_barriers() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
+    let config = read(&root.join("config-constraints.schema.json")).unwrap();
+    let vectors = read(&root.join("vectors.json")).unwrap();
+    let base = vectors["positive"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["schema"] == "config")
+        .unwrap()["value"]
+        .clone();
+    for members in [1u64, 2, 3, 4, 9] {
+        let mut value = base.clone();
+        value["metadata"]["replica_members"] = members.into();
+        for key in ["decision_members", "recovery_evidence_members"] {
+            value["metadata"][key] = (members / 2 + 1).into();
+        }
+        schema_valid(&config, &value).unwrap();
+        semantics("config", &value).unwrap();
+        for key in ["decision_members", "recovery_evidence_members"] {
+            let mut wrong = value.clone();
+            wrong["metadata"][key] = (members / 2 + 2).into();
+            assert!(semantics("config", &wrong).is_err());
+        }
+        for key in [
+            "publish_after_all_members",
+            "acknowledge_after_all_members",
+            "require_fenced_membership_change",
+        ] {
+            let mut wrong = value.clone();
+            wrong["metadata"][key] = false.into();
+            assert!(schema_valid(&config, &wrong).is_err());
+        }
+        value["metadata"]["allow_automatic_degraded_writes"] = true.into();
+        assert!(schema_valid(&config, &value).is_err());
+    }
+}
+
+#[test]
+fn publication_receipts_reject_duplicate_identity_even_with_different_contents() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/contracts");
+    let mut core = read(&root.join("core.schema.json")).unwrap();
+    core["$ref"] = "#/$defs/Publication".into();
+    let vectors = read(&root.join("vectors.json")).unwrap();
+    let value = &vectors["negative"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["name"] == "same-physical-member")
+        .unwrap()["value"];
+    let receipts = value["finalize_receipts"].as_array().unwrap();
+    assert_ne!(receipts[0], receipts[1]);
+    assert_eq!(receipts[0]["disk_id"], receipts[1]["disk_id"]);
+    schema_valid(&core, value).unwrap();
+    assert!(semantics("Publication", value).is_err());
+}
+
+#[test]
+fn configuration_projection_failure_names_document_and_schema() {
+    let schema = json!({"type":"object","properties":{"members":{"const":1}}});
+    let error = validate_configuration_projection(&schema, &json!({"members":3}))
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("docs/21-configuration.md"));
+    assert!(error.contains("docs/contracts/config-constraints.schema.json"));
+    assert!(error.contains("1 was expected"));
+}

@@ -13,13 +13,16 @@
       "type": "object",
       "properties": {
         "replica_members": {
-          "const": 3
+          "type": "integer",
+          "minimum": 1
         },
         "decision_members": {
-          "const": 2
+          "type": "integer",
+          "minimum": 1
         },
         "recovery_evidence_members": {
-          "const": 2
+          "type": "integer",
+          "minimum": 1
         },
         "publish_after_all_members": {
           "const": true
@@ -61,7 +64,7 @@
       "type": "object",
       "properties": {
         "minimum_disks_for_protected_write": {
-          "const": 3
+          "const": 1
         },
         "allow_cross_version_reflink": {
           "const": false

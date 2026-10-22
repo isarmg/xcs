@@ -135,6 +135,15 @@ fn validate_content_view(value: &Value) -> Result {
 fn semantics(name: &str, value: &Value) -> Result {
     match name {
         "config" => {
+            let metadata = &value["metadata"];
+            let members = small(&metadata["replica_members"])?;
+            let majority = members / 2 + 1;
+            require(
+                members > 0
+                    && small(&metadata["decision_members"])? == majority
+                    && small(&metadata["recovery_evidence_members"])? == majority,
+                "metadata quorum must match fixed configured membership",
+            )?;
             let r = &value["resource_limits"];
             let o = &value["observability"];
             for key in ["uploads", "staging_bytes"] {
@@ -236,7 +245,7 @@ fn semantics(name: &str, value: &Value) -> Result {
                 .map(|receipt| text(&receipt["disk_id"]))
                 .collect::<Result<Vec<_>>>()?;
             require(
-                members.len() == 3
+                !members.is_empty()
                     && members
                         .iter()
                         .copied()
@@ -484,6 +493,16 @@ struct Report {
     result: &'static str,
     scope: &'static str,
 }
+fn validate_configuration_projection(schema: &Value, projection: &Value) -> Result {
+    schema_valid(schema, projection).map_err(|error| {
+        format!(
+            "docs/21-configuration.md TOML projection against docs/contracts/config-constraints.schema.json: {error}"
+        )
+    })?;
+    semantics("config", projection).map_err(|error| {
+        format!("docs/21-configuration.md TOML projection semantics: {error}").into()
+    })
+}
 fn run(root: &Path) -> Result<Report> {
     let root = root.canonicalize()?;
     let directory = root.join("docs/contracts");
@@ -617,8 +636,7 @@ fn run(root: &Path) -> Result<Report> {
         projection.insert(section.clone(), Value::Object(value));
     }
     let projection = Value::Object(projection);
-    schema_valid(&config, &projection)?;
-    semantics("config", &projection)?;
+    validate_configuration_projection(&config, &projection)?;
     let expected = array(&vectors["positive"])?
         .iter()
         .find(|case| case["schema"] == "config")

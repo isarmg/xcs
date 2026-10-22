@@ -1,6 +1,6 @@
 //! Conservative durable replay checkpoint. Journals remain authoritative.
 //!
-//! Three trusted members must agree on a checkpoint whose tips occur in the
+//! All configured trusted members must agree on a checkpoint whose tips occur in the
 //! fully verified journal prefixes. Covered metadata/proofs and sensitive layout
 //! are reverified; unrelated append-only additions permit normal suffix replay.
 //! Missing or changed covered dependencies fall back to full repair. This bounds
