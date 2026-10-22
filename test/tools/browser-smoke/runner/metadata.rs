@@ -1,49 +1,5 @@
-//! Seed a disposable pool through the supported CLI, never a removed Web upload.
+//! Real-browser assertions for file browsing and metadata management.
 use super::*;
-
-fn cli(binary: &Path, pool: &Path, args: &[&str]) -> Result<Value> {
-    let output = Command::new(binary)
-        .arg("--root")
-        .arg(pool)
-        .args(["--principal", "smoke-admin"])
-        .args(args)
-        .output()?;
-    if !output.status.success() {
-        return Err(format!(
-            "fixture CLI {} failed: {}",
-            args[0],
-            String::from_utf8_lossy(&output.stderr)
-        )
-        .into());
-    }
-    Ok(json_codec::from_slice(&output.stdout)?)
-}
-
-pub(super) fn seed_files(binary: &Path, pool: &Path, root: &Path) -> Result<()> {
-    let repository = cli(
-        binary,
-        pool,
-        &["create-repo", "browser-fixtures", "--primary-slot", "P01"],
-    )?;
-    let branch = repository["main_branch_id"]
-        .as_str()
-        .ok_or("fixture repository has no branch")?;
-    let input = root.join("seed.txt");
-    for payload in ["first real version\n", "second real version: 测试\n"] {
-        fs::write(&input, payload)?;
-        cli(
-            binary,
-            pool,
-            &[
-                "put",
-                branch,
-                "browser-smoke.txt",
-                input.to_str().ok_or("non-UTF8 fixture path")?,
-            ],
-        )?;
-    }
-    Ok(())
-}
 
 pub(super) fn open_fixture_directory(browser: &Browser) -> Result<()> {
     browser.click(&browser.element(

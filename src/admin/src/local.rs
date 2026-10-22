@@ -1,4 +1,4 @@
-//! Local administration and engine operations. Remote API calls live separately.
+//! Local service bootstrap, administration and offline recovery.
 use crate::{
     Result,
     args::{Args, Command},
@@ -266,9 +266,7 @@ pub(crate) async fn run(args: Args) -> Result<()> {
                 json!({"slot_id":slot,"draft":config,"backup":backup,"live_binding_changed":false}),
             )
         }
-        Command::Login { .. } | Command::Logout | Command::Whoami => {
-            Err("login/logout/whoami require --server".into())
-        }
+
         command => local_operation(&root, &args.principal, command),
     }
 }
@@ -374,31 +372,6 @@ fn local_operation(root: &Path, principal: &str, command: Command) -> Result<()>
         Command::Topology => print(
             json!({"generation":engine.state().topology_generation.to_string(),"disks":engine.config().disks}),
         ),
-        Command::Put {
-            branch,
-            path,
-            source,
-            expected_head,
-            message,
-            operation_id,
-        } => {
-            let workspace = engine.create_workspace(&branch, principal)?;
-            let head = expected_head.unwrap_or_else(|| workspace.base_head.clone());
-            engine.stage_file(&workspace.workspace_id, &path, &source)?;
-            print(engine.commit_workspace(CommitRequest {
-                workspace_id: workspace.workspace_id,
-                operation_id: op(operation_id),
-                principal: principal.into(),
-                expected_head: head,
-                fencing_token: workspace.fencing_token,
-                message: message.unwrap_or_else(|| format!("Save {path}")),
-                request_digest: None,
-            })?)
-        }
-        Command::Get { version, output } | Command::Export { version, output } => {
-            engine.export_version(&version, &output)?;
-            print(json!({"version_id":version,"exported":output}))
-        }
         Command::List { branch } => print(engine.list_tree(&branch)?),
         Command::History { file } => print(engine.file_history(&file)?),
         Command::Graph { history } => print(engine.graph(&history)?),
@@ -548,8 +521,6 @@ fn local_operation(root: &Path, principal: &str, command: Command) -> Result<()>
             source_commit,
             name,
             workspace,
-            source,
-            path,
             primary_slot,
             copies,
             execute,
@@ -566,9 +537,6 @@ fn local_operation(root: &Path, principal: &str, command: Command) -> Result<()>
                 Some(id) => engine.workspace(&id)?,
                 None => engine.create_historical_workspace(&branch, &source_commit, principal)?,
             };
-            if let (Some(source), Some(path)) = (source.as_deref(), path.as_deref()) {
-                engine.stage_file(&workspace.workspace_id, path, source)?;
-            }
             let plan = engine.create_historical_save_plan(
                 &history,
                 storage_engine::HistoricalSaveOptions {

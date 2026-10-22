@@ -11,6 +11,8 @@ cp .github/scripts/release-package.sh .github/scripts/release-assemble.sh "$fixt
 cp rust-toolchain.toml "$fixture/"
 printf '#!/bin/sh\nexit 0\n' > "$fixture/target/native/release/zxs"
 chmod +x "$fixture/target/native/release/zxs"
+# Validation tools must never leak into either product archive.
+printf 'test-only engine fixture\n' > "$fixture/target/native/release/browser-smoke"
 printf '<html>fixture</html>\n' > "$fixture/build/web/index.html"
 printf '{"runtime":"web-interface"}\n' > "$fixture/build/web/build-manifest.json"
 printf 'wasm fixture\n' > "$fixture/build/web/pkg/zxs_bg.wasm"
@@ -28,6 +30,9 @@ RELEASE_VERSION=0.1.0 bash "$fixture/.github/scripts/release-package.sh"
 for archive in "$fixture"/release-assets/*.tar.gz; do
   output=$(mktemp -d "$fixture/extract.XXXXXX")
   tar -xzf "$archive" -C "$output"
+  test -z "$(find "$output" -name browser-smoke -print -quit)"
+  test ! -d "$output/test"
+  test ! -d "$output/tools"
   for path in compliance/NOTICE.md compliance/licenses/upstream/sample/LICENSE \
     compliance/provenance/origins.json docs/25-operation-manual.md \
     docs/components/smb.md docs/templates/release-install.md; do

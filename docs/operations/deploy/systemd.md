@@ -1,6 +1,6 @@
 # Linux 服务部署审阅样例
 
-[zxs.service](../../../deploy/systemd/zxs.service) 是供部署前修改和审阅的 systemd 单元，没有安装、启用或启动。它默认只监听回环 HTTP，提供 API 和显式指定的 Web 静态目录；通过配置正确的 HTTPS 反向代理开放浏览器及远程运维 CLI 接入。`zxs.example.com`、程序路径和三个盘位路径必须换成实际配置。
+[zxs.service](../../../deploy/systemd/zxs.service) 是供部署前修改和审阅的 systemd 单元，没有安装、启用或启动。它默认只监听回环 HTTP，提供 API 和显式指定的 Web 静态目录；通过配置正确的 HTTPS 反向代理开放浏览器接入；远程运维 CLI 已移除。`zxs.example.com`、程序路径和三个盘位路径必须换成实际配置。
 
 ## 部署前条件
 

@@ -5,25 +5,21 @@ use std::{net::SocketAddr, path::PathBuf};
 #[command(
     name = "zxs",
     version,
-    about = "Full-file versioned storage and recovery"
+    about = "Local storage service, setup, administration and offline rescue",
+    after_help = "Service/setup: config-template, init, init-auth, register-disk, serve.\nOffline rescue: restore-system, recovery-preview, recovery-commit, offline-check, offline-export, export-history, check-history-package, restore-history-package.\nOther commands are local administration; stop the service before opening its pool.\nNo remote client or ordinary file transfer commands. Use SMB for file contents."
 )]
 pub(crate) struct Args {
     #[arg(long, default_value = "./zxs-data", global = true)]
     pub(crate) root: PathBuf,
     #[arg(long, default_value = "admin", global = true)]
     pub(crate) principal: String,
-    /// Use the authenticated remote API instead of opening a local pool.
-    #[arg(long, global = true)]
-    pub(crate) server: Option<String>,
-    /// Read a bearer token from a private file. Tokens are never accepted on the command line.
-    #[arg(long, global = true)]
-    pub(crate) token_file: Option<PathBuf>,
     #[command(subcommand)]
     pub(crate) command: Command,
 }
 #[derive(Subcommand)]
 pub(crate) enum Command {
     /// Produce a configuration draft without accessing or initializing any device.
+    #[command(display_order = 0)]
     ConfigTemplate {
         #[arg(long)]
         production: bool,
@@ -33,6 +29,7 @@ pub(crate) enum Command {
         output: Option<PathBuf>,
     },
     /// Explicitly initialize a new pool. Development disks simulate independent devices.
+    #[command(display_order = 1)]
     Init {
         #[arg(long, conflicts_with = "development_disks")]
         config: Option<PathBuf>,
@@ -44,23 +41,27 @@ pub(crate) enum Command {
         password_file: Option<PathBuf>,
     },
     /// Initialize credentials for an existing local pool that has no credential store.
+    #[command(display_order = 2)]
     InitAuth {
         #[arg(long)]
         username: String,
         #[arg(long)]
         password_file: Option<PathBuf>,
     },
+    #[command(display_order = 5)]
     RestoreSystem {
         #[arg(long,num_args=2..,required=true)]
         disks: Vec<PathBuf>,
     },
     /// Inspect an already decided, unpublished operation using all original members.
+    #[command(display_order = 6)]
     RecoveryPreview {
         operation: String,
         #[arg(long)]
         reason: String,
     },
     /// Publish only the previously reviewed recovery plan after explicit loss acknowledgement.
+    #[command(display_order = 7)]
     RecoveryCommit {
         recovery: String,
         #[arg(long)]
@@ -68,19 +69,14 @@ pub(crate) enum Command {
         #[arg(long)]
         accept_permanent_loss: bool,
     },
-    RetryCommit {
-        request_file: PathBuf,
-    },
+
+    #[command(display_order = 29)]
     HistoricalSave {
         branch: String,
         source_commit: String,
         name: String,
         #[arg(long)]
         workspace: Option<String>,
-        #[arg(long, requires = "path")]
-        source: Option<PathBuf>,
-        #[arg(long, requires = "source")]
-        path: Option<String>,
         #[arg(long)]
         primary_slot: Option<String>,
         #[arg(long)]
@@ -90,6 +86,7 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 30)]
     PlanCommit {
         id: String,
         #[arg(long)]
@@ -97,19 +94,21 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 31)]
     PlanCancel {
         id: String,
         #[arg(long)]
         operation_id: Option<String>,
     },
-    OfflineCheck {
-        disk: PathBuf,
-    },
+    #[command(display_order = 8)]
+    OfflineCheck { disk: PathBuf },
+    #[command(display_order = 9)]
     OfflineExport {
         disk: PathBuf,
         version: String,
         output: PathBuf,
     },
+    #[command(display_order = 4)]
     Serve {
         #[arg(long, default_value = "127.0.0.1:7400")]
         listen: SocketAddr,
@@ -146,17 +145,9 @@ pub(crate) enum Command {
         #[arg(long, requires = "smb_socket")]
         smb_user: Vec<String>,
     },
-    Login {
-        #[arg(long)]
-        username: String,
-        #[arg(long)]
-        password_file: Option<PathBuf>,
-        #[arg(long)]
-        output: PathBuf,
-    },
-    Logout,
-    Whoami,
+
     /// Add or revoke an account locally; changing grants revokes all of its existing sessions.
+    #[command(display_order = 13)]
     Account {
         #[arg(long)]
         username: String,
@@ -170,6 +161,7 @@ pub(crate) enum Command {
         repository: Vec<String>,
     },
     /// Add a disk to an uninitialized JSON configuration draft. Does not migrate a live pool.
+    #[command(display_order = 3)]
     RegisterDisk {
         #[arg(long)]
         config: PathBuf,
@@ -186,6 +178,7 @@ pub(crate) enum Command {
         #[arg(long)]
         metadata_member: bool,
     },
+    #[command(display_order = 14)]
     CreateRepo {
         name: String,
         #[arg(long)]
@@ -195,6 +188,7 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 16)]
     Policy {
         id: String,
         repository: String,
@@ -207,6 +201,7 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 17)]
     Rule {
         id: String,
         repository: String,
@@ -219,6 +214,7 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 15)]
     SmbBinding {
         repository: String,
         branch: String,
@@ -229,39 +225,27 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 18)]
     Repositories,
+    #[command(display_order = 19)]
     Disks,
+    #[command(display_order = 20)]
     Topology,
-    Put {
-        branch: String,
-        path: String,
-        source: PathBuf,
-        #[arg(long)]
-        expected_head: Option<String>,
-        #[arg(long)]
-        message: Option<String>,
-        #[arg(long)]
-        operation_id: Option<String>,
-    },
-    Get {
-        version: String,
-        output: PathBuf,
-    },
-    List {
-        branch: String,
-    },
-    History {
-        file: String,
-    },
-    Graph {
-        history: String,
-    },
+
+    #[command(display_order = 21)]
+    List { branch: String },
+    #[command(display_order = 22)]
+    History { file: String },
+    #[command(display_order = 23)]
+    Graph { history: String },
+    #[command(display_order = 24)]
     Branch {
         source_commit: String,
         name: String,
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 25)]
     Link {
         source_branch: String,
         source_commit: String,
@@ -270,6 +254,7 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 26)]
     Namespace {
         branch: String,
         kind: String,
@@ -278,6 +263,7 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 27)]
     Purge {
         history: String,
         #[arg(required = true)]
@@ -287,6 +273,7 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
+    #[command(display_order = 28)]
     Split {
         history: String,
         cut_commit: String,
@@ -295,22 +282,20 @@ pub(crate) enum Command {
         #[arg(long)]
         operation_id: Option<String>,
     },
-    Operation {
-        id: String,
-    },
+    #[command(display_order = 32)]
+    Operation { id: String },
+    #[command(display_order = 33)]
     Check,
-    Export {
-        version: String,
-        output: PathBuf,
-    },
+
     /// Export a complete independently verifiable history package. Destination must not exist; its parent must be owned by this user and mode 0700.
+    #[command(display_order = 10)]
     ExportHistory {
         history: String,
         destination: PathBuf,
     },
-    CheckHistoryPackage {
-        package: PathBuf,
-    },
+    #[command(display_order = 11)]
+    CheckHistoryPackage { package: PathBuf },
+    #[command(display_order = 12)]
     RestoreHistoryPackage {
         package: PathBuf,
         #[arg(long)]

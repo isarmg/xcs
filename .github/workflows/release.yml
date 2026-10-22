@@ -99,7 +99,7 @@ jobs:
           export CHROME_BIN="$(command -v google-chrome)"
           export CHROMEDRIVER="$(command -v chromedriver)"
           bash .github/scripts/check.sh browser-smoke
-      - name: Build Linux server and CLI
+      - name: Build Linux service and local maintenance entrypoint
         run: |
           python3 .github/scripts/check-rust-diagnostics.py -- \
             cargo build --locked --offline --release --package storage-admin --message-format=json

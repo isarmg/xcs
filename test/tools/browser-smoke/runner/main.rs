@@ -23,11 +23,13 @@ mod base64_compatibility_tests;
 mod accessibility;
 mod diagnostics;
 mod file_rows;
+mod fixture;
+use fixture::seed_files;
 mod fonts;
 mod lifecycle;
 mod metadata;
 mod session_delivery;
-use metadata::{assert_metadata_only, metadata_edit, open_fixture_directory, seed_files};
+use metadata::{assert_metadata_only, metadata_edit, open_fixture_directory};
 mod file_viewports;
 mod session_logout;
 
@@ -274,7 +276,7 @@ fn exercise(
     browser.click(&disk)?;
     open_fixture_directory(browser)?;
     assert_metadata_only(browser)?;
-    println!("PASS CLI-seeded file browsing in the real server namespace");
+    println!("PASS engine-seeded file browsing in the real server namespace");
     file_rows::run(browser)?;
     if let Some(path) = screenshot {
         // Save the real regression view without adding presentation-only data.
@@ -455,7 +457,7 @@ fn run() -> Result<()> {
         .into());
     }
     fs::remove_file(password_file)?;
-    seed_files(&cli_binary, &pool, root)?;
+    seed_files(&temp)?;
     let server_port = port()?;
     let driver_port = port()?;
     let origin = format!("http://127.0.0.1:{server_port}");

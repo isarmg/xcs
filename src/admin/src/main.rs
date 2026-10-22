@@ -3,7 +3,6 @@ mod credentials;
 mod local;
 mod pending;
 mod private_io;
-mod remote;
 
 use args::Args;
 use command_line::Parser;
@@ -36,9 +35,5 @@ async fn run_with_runtime(args: Args) {
     }
 }
 async fn run(args: Args) -> Result<()> {
-    if let Some(address) = &args.server {
-        remote::run(&args, address).await
-    } else {
-        local::run(args).await
-    }
+    local::run(args).await
 }

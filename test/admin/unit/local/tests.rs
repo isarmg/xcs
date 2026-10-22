@@ -4,8 +4,6 @@ fn registration(root: &Path, config: std::path::PathBuf) -> Args {
     Args {
         root: root.join("system"),
         principal: "admin".into(),
-        server: None,
-        token_file: None,
         command: Command::RegisterDisk {
             config,
             slot: "D01".into(),
@@ -182,8 +180,6 @@ async fn unsafe_password_input_is_rejected_before_pool_or_disk_initialization() 
     let args = Args {
         root: system.clone(),
         principal: "admin".into(),
-        server: None,
-        token_file: None,
         command: Command::Init {
             config: None,
             development_disks: disks.to_vec(),

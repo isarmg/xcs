@@ -1,5 +1,5 @@
 //! Production-WASM file-browser screenshots at explicit responsive viewport sizes.
-//! CLI-seeded server metadata remains real; no file-content UI or injected model.
+//! Engine-seeded server metadata remains real; no file-content UI or injected model.
 use super::*;
 
 const VIEWS: [(u32, u32); 6] = [
@@ -99,7 +99,7 @@ fn capture_views(browser: &Browser, output: Option<&Path>) -> Result<()> {
                 "source_worktree_dirty":!dirty.stdout.is_empty(),"browser":browser_version,
                 "renderer":"real Chrome rendering production WASM against a real temporary ZXS service",
                 "user_agent_override":false,"mobile_emulation":false,
-                "fixtures":"two file versions seeded by the internal CLI before server startup; real file list and metadata controls, no upload/download/preview UI",
+                "fixtures":"two persisted file versions seeded by the test-only engine fixture before server startup; real file list and metadata controls, no upload/download/preview UI",
                 "previews":previews
             }))?,
         )?;

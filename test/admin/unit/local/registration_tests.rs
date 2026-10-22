@@ -10,8 +10,6 @@ fn registration(root: &Path, config: PathBuf) -> Args {
     Args {
         root: root.join("unrelated-system"),
         principal: "admin".into(),
-        server: None,
-        token_file: None,
         command: Command::RegisterDisk {
             config,
             slot: "P02".into(),

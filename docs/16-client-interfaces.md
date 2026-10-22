@@ -10,9 +10,9 @@
 
 - [16.1 用户界面](#s16-01)
 - [16.2 文档打开方式](#s16-02)
-- [16.3 拟定 CLI 示例](#s16-03)
+- [16.3 本机维护入口](#s16-03)
 
-Web 是统一的浏览器用户界面，文件操作及获授权的高级功能均通过 HTTPS 业务 API 提供，布局适配桌面和移动浏览器。独立 SMB 入口由 Samba 和服务端桥接提供。CLI 供内部管理、运维和自动化使用，并遵守相同授权体系。
+Web 是统一的浏览器用户界面，文件操作及获授权的高级功能均通过 HTTPS 业务 API 提供，布局适配桌面和移动浏览器。独立 SMB 入口由 Samba 和服务端桥接提供。CLI 仅提供本机服务、初始化、必要管理和离线救援，不再作为远程客户端。
 
 <a id="s16-01"></a>
 
@@ -38,62 +38,19 @@ Web 是统一的浏览器用户界面，文件操作及获授权的高级功能�
 
 Web 打开文件详情只展示元数据、分支与版本树，不读取或预览正文，不提供上传、下载或“写入当前分支”入口。SMB 按标准协议提供文件读写，关联编辑器与文件交接由 SMB 客户端处理，并按实际客户端组合验收。
 
-文件正文通过 SMB 或受控内部管理 CLI/API 读写；这些接口不因 Web 入口移除而改变。不能绕过权限或改成从物理盘直接共享路径。项目不提供原生 App。
+文件正文通过 SMB 或受控 HTTP API 读写；这些接口不因 Web 入口移除而改变。不能绕过权限或改成从物理盘直接共享路径。项目不提供原生 App。
 
 <a id="s16-03"></a>
 
-## 16.3 拟定 CLI 示例
+## 16.3 本机维护入口
 
-以下命令用于表达内部管理目标接口，盘位/设备均为占位，不是已发布命令。内容清除和树拆分先返回预览计划，提交时须携带所审查计划的摘要及代际；历史清除只删除payload并保留拓扑。
+当前命令以 [本机维护说明](components/admin.md) 和 `zxs --help` 为准：
 
-```bash
-# 查看服务端配置的独立 SMB 共享。
-zxs smb shares --repository personal
+- 服务与初始化：`config-template`、`init`、`init-auth`、`register-disk`、`serve`。
+- 离线救援：系统目录恢复、单盘检查与救援导出、降级恢复及独立历史包。
+- 必要本机管理：账户、仓库、SMB 绑定、策略、状态查询和计划操作；打开本地池前先停服。
 
-# 从历史提交元数据创建引用分支，不复制来源正文。
-zxs branch create plan-a --repository personal --from-commit commit-example-0012
-
-# 查看历史并比较两个提交，不修改分支。
-zxs history --repository personal --branch main --path '文档/报告.docx'
-zxs compare --repository personal --left commit-example-0012 --right commit-example-0015
-
-# 超时后查询原操作状态。
-zxs operation status op-example-0007
-
-# 从历史节点另存新分支，只有工作区实际写入的文件生成 FULL。
-zxs history save preview --history history-example --from-commit commit-example-0012 --new-branch recovered-work --workspace ws-example-recovery
-
-# 查看硬盘和副本健康状态。
-zxs disk list
-zxs replica status --repository personal
-
-# 查看用户指定的级别与来源映射。
-zxs backup-topology show topology-example
-
-# 预览来源分配，并以已确认计划的摘要执行。
-zxs backup-topology preview --target-slot B01 --level 2 --sources P01,P02
-zxs plan commit plan-topology-example --expected-digest digest-example
-
-# 指定目录后续新版本的一级盘位。
-zxs primary-rule preview --history history-example --path / --primary-slot P01
-
-# 为既定盘位更换物理盘，保留来源职责。
-zxs slot replace preview --slot B01 --new-disk disk-example-replacement
-
-# 仅记录两个指定版本的关系线，不保存文件或推进分支。
-zxs merge link --history history-example --from-branch plan-a --from-commit commit-example-a2 --to-branch main --to-commit commit-example-0012
-
-# 检查活动引用后清除历史内容，保留历史节点。
-zxs history purge preview --history history-example --versions version-example-001
-zxs plan commit plan-purge-example --expected-digest digest-example
-
-# 按选定节点及其实际后代拆分为独立历史树。
-zxs tree split preview --history history-example --at commit-example-0012 --new-name independent-tree
-zxs plan commit plan-split-example --expected-digest digest-example
-
-```
-
-创建分支、拓扑/盘位迁移、合并连线记录、树拆分、内容墓碑发布、物理清理、下载、提交和逐级副本修复完成必须是不同事件。CLI 的结构化输出应包含明确状态，便于脚本判断而不是解析自然语言“成功”。
+远程客户端与普通文件传输入口已移除；不能把仍保留的 HTTP API 或客户端库误认为产品 CLI。Web 尚未覆盖全部管理能力，因此本机管理命令暂时保留。线上换盘和拓扑迁移也不因曾有目标接口示例而视为已实现。内容清除和树拆分仍须先审查预览计划，再携带摘要执行。结构化结果明确区分事务发布、保护及恢复状态。
 
 ---
 

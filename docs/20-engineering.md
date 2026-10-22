@@ -117,7 +117,8 @@ Web 界面 → web-interface（共享组件、生命周期和直接合入的 CSR
 界面编译 → view-macros（过程宏）
 服务端认证 / 平台凭据 → authentication（无 Linux 或数据库依赖）
 Web → HTTPS 业务 API
-运维 CLI → storage-client → HTTPS 业务 API + storage-contract
+本机 zxs → 服务启动 / 初始化 / 必要管理 / 离线恢复
+保留的 storage-client 库 → HTTPS 业务 API + storage-contract（不再由 zxs 暴露）
 HTTP / 本机 SMB RPC → storage-engine
 Samba VFS → smb-protocol → 受保护 Unix socket
 storage-engine → storage-contract + name-policy + platform-io

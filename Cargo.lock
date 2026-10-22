@@ -180,6 +180,7 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "json-codec",
+ "storage-engine",
  "tempfile",
 ]
 
@@ -1450,7 +1451,6 @@ dependencies = [
  "json-codec",
  "platform-io",
  "rustix",
- "storage-client",
  "storage-engine",
  "storage-server",
  "tempfile",
