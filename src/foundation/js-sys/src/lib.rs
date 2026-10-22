@@ -14240,5 +14240,5 @@ arrays! {
 /// Bridging between JavaScript `Promise`s and Rust `Future`s.
 ///
 /// Enables `promise.await` directly on any [`Promise`].
-/// This module is also re-exported by `wasm-bindgen-futures` for backwards compatibility.
+/// This is the canonical browser executor used by generated async bindings.
 pub mod futures;

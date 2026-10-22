@@ -96,7 +96,7 @@ pub fn spawn_local(future: impl Future<Output = ()> + 'static) {
         .with(|current| current.borrow().upgrade())
         .map(TaskScope);
     if let Some(task) = scope.and_then(|scope| scope.wrap(future)) {
-        wasm_bindgen_futures::spawn_local(task);
+        js_sys::futures::spawn_local(task);
     }
 }
 

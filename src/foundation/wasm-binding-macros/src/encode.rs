@@ -1,10 +1,10 @@
 use proc_macro2::{Ident, Span};
+use rust_syntax::ext::IdentExt;
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use rust_syntax::ext::IdentExt;
 
 use crate::ast;
 use crate::Diagnostic;
@@ -219,31 +219,29 @@ fn shared_export<'a>(
 }
 
 fn shared_function<'a>(func: &'a ast::Function, _intern: &'a Interner) -> Function<'a> {
-    let args =
-        func.arguments
-            .iter()
-            .enumerate()
-            .map(|(idx, arg)| FunctionArgumentData {
-                // use argument's "js_name" if it was provided via attributes
-                // if not use the original Rust argument ident
-                name: arg.js_name.clone().unwrap_or(
-                    if let rust_syntax::Pat::Ident(x) = &*arg.pat_type.pat {
-                        x.ident.unraw().to_string()
-                    } else {
-                        format!("arg{idx}")
-                    },
-                ),
-                ty_override: arg.js_type.as_deref(),
-                optional: arg.optional,
-                desc: arg.desc.as_deref(),
-            })
-            .collect::<Vec<_>>();
+    let args = func
+        .arguments
+        .iter()
+        .enumerate()
+        .map(|(idx, arg)| FunctionArgumentData {
+            // use argument's "js_name" if it was provided via attributes
+            // if not use the original Rust argument ident
+            name: arg.js_name.clone().unwrap_or(
+                if let rust_syntax::Pat::Ident(x) = &*arg.pat_type.pat {
+                    x.ident.unraw().to_string()
+                } else {
+                    format!("arg{idx}")
+                },
+            ),
+            ty_override: arg.js_type.as_deref(),
+            optional: arg.optional,
+            desc: arg.desc.as_deref(),
+        })
+        .collect::<Vec<_>>();
 
     Function {
         args,
-        // `jspi, experimental_tokio` runs the future to completion inside the
-        // export with `block_on`, so to JS it is a sync jspi export.
-        asyncness: func.r#async && !(func.jspi && func.tokio.is_some()),
+        asyncness: func.r#async,
         // Reported truthfully alongside `asyncness`: every jspi export is a
         // JSPI context root (the CLI wraps its activation with the in-wasm
         // fiber wrapper), while only sync jspi exports are additionally

@@ -111,10 +111,8 @@ macro_rules! attrgen {
             (fallback, false, Fallback(Span)),
             (main, false, Main(Span)),
             (start, false, Start(Span)),
-            (experimental_tokio, false, ExperimentalTokio(Span, Option<String>)),
             (wasm_bindgen, false, WasmBindgen(Span, rust_syntax::Path)),
             (js_sys, false, JsSys(Span, rust_syntax::Path)),
-            (wasm_bindgen_futures, false, WasmBindgenFutures(Span, rust_syntax::Path)),
             (skip, false, Skip(Span)),
             (slice_to_array, false, SliceToArray(Span)),
             (typescript_type, false, TypeScriptType(Span, String, Span)),
@@ -342,7 +340,10 @@ impl Parse for BindgenAttrs {
             return Ok(attrs);
         }
 
-        let opts = rust_syntax::punctuated::Punctuated::<_, rust_syntax::token::Comma>::parse_terminated(input)?;
+        let opts =
+            rust_syntax::punctuated::Punctuated::<_, rust_syntax::token::Comma>::parse_terminated(
+                input,
+            )?;
         attrs.attrs = opts.into_iter().map(|c| (Cell::new(false), c)).collect();
         Ok(attrs)
     }
@@ -367,6 +368,20 @@ impl Parse for BindgenAttr {
         let attr_span = attr.span();
         let attr_string = attr.to_string();
         let raw_attr_string = format!("r#{attr_string}");
+
+        // These removed routes must not silently fall back to the browser executor.
+        if attr_string == "experimental_tokio" {
+            return Err(rust_syntax::Error::new(
+                attr_span,
+                "experimental_tokio is unsupported: only the browser js_sys::futures executor is supported",
+            ));
+        }
+        if attr_string == "wasm_bindgen_futures" {
+            return Err(rust_syntax::Error::new(
+                attr_span,
+                "wasm_bindgen_futures is retired; configure the canonical executor with js_sys = path",
+            ));
+        }
 
         macro_rules! parsers {
             ($(($name:ident, $_:literal, $($contents:tt)*),)*) => {
@@ -684,7 +699,10 @@ impl ConvertToAst<&ast::Program> for &mut rust_syntax::ItemStruct {
             }
 
             let (js_field_name, member) = match &field.ident {
-                Some(ident) => (ident.unraw().to_string(), rust_syntax::Member::Named(ident.clone())),
+                Some(ident) => (
+                    ident.unraw().to_string(),
+                    rust_syntax::Member::Named(ident.clone()),
+                ),
                 None => (i.to_string(), rust_syntax::Member::Unnamed(i.into())),
             };
 
@@ -1106,7 +1124,9 @@ impl<'a>
         // supporting it; see `codegen::try_to_tokens_generic`).
         let is_generic = self.sig.generics.type_params().next().is_some()
             || self.sig.inputs.iter().any(|arg| match arg {
-                rust_syntax::FnArg::Typed(pat_type) => crate::generics::has_impl_trait(&pat_type.ty),
+                rust_syntax::FnArg::Typed(pat_type) => {
+                    crate::generics::has_impl_trait(&pat_type.ty)
+                }
                 rust_syntax::FnArg::Receiver(_) => false,
             });
         let generic_per_mono = fn_generic_per_mono || (block_generic_per_mono && is_generic);
@@ -1262,7 +1282,7 @@ impl<'a>
             shim: Ident::new(&shim, Span::call_site()),
             doc_comment,
             wasm_bindgen: program.wasm_bindgen.clone(),
-            wasm_bindgen_futures: program.wasm_bindgen_futures.clone(),
+
             js_sys: program.js_sys.clone(),
             generics: self.sig.generics,
             generic_per_mono,
@@ -1333,7 +1353,8 @@ impl ConvertToAst<(&ast::Program, BindgenAttrs)> for rust_syntax::ForeignItemTyp
             if param.default.is_none() {
                 let generics = generics.get_or_insert_with(|| self.generics.clone());
                 let type_param_mut = generics.type_params_mut().nth(n).unwrap();
-                type_param_mut.default = Some((Default::default(), rust_syntax::parse_quote! { JsValue }));
+                type_param_mut.default =
+                    Some((Default::default(), rust_syntax::parse_quote! { JsValue }));
             }
         }
 
@@ -1725,37 +1746,6 @@ fn function_from_decl(
             r#unsafe: matches!(sig.safety, rust_syntax::Safety::Unsafe(_)),
             r#async: sig.asyncness.is_some(),
             jspi: opts.jspi().is_some(),
-            tokio: match opts.experimental_tokio() {
-                Some(mode) => {
-                    let span = opts
-                        .attrs
-                        .iter()
-                        .find_map(|(_, attr)| match attr {
-                            BindgenAttr::ExperimentalTokio(span, _) => Some(*span),
-                            _ => None,
-                        })
-                        .unwrap();
-                    if sig.asyncness.is_none() {
-                        return Err(Diagnostic::span_error(
-                            span,
-                            "#[wasm_bindgen(experimental_tokio)] can only be applied to `async` functions",
-                        ));
-                    }
-                    match mode.as_deref() {
-                        None => Some(ast::TokioMode::Ambient),
-                        Some("isolated") => Some(ast::TokioMode::Isolated),
-                        Some(other) => {
-                            return Err(Diagnostic::span_error(
-                                span,
-                                format!(
-                                    "unknown tokio mode `{other}`; expected `experimental_tokio` or `experimental_tokio = \"isolated\"`"
-                                ),
-                            ))
-                        }
-                    }
-                }
-                None => None,
-            },
             generate_typescript: opts.skip_typescript().is_none(),
             generate_jsdoc: opts.skip_jsdoc().is_none(),
             variadic: opts.variadic().is_some(),
@@ -1811,7 +1801,10 @@ struct FnArgAttrs {
 ///   `<#elem_ty as VectorRefIntoWasmAbi>`, which no user-writable bound can
 ///   satisfy since the impls are keyed on concrete ABI shapes. Left
 ///   unchecked, the user sees `E0277`s naming private traits.
-fn check_slice_to_array_arg(ty: &rust_syntax::Type, type_param_names: &[&Ident]) -> Result<(), Diagnostic> {
+fn check_slice_to_array_arg(
+    ty: &rust_syntax::Type,
+    type_param_names: &[&Ident],
+) -> Result<(), Diagnostic> {
     let Some(slice) = crate::codegen::detect_slice_or_option_slice(ty) else {
         return Ok(());
     };
@@ -1990,9 +1983,6 @@ impl<'a> MacroParse<(Option<BindgenAttrs>, &'a mut TokenStream)> for rust_syntax
                 if let Some(path) = opts.js_sys() {
                     program.js_sys = path.clone();
                 }
-                if let Some(path) = opts.wasm_bindgen_futures() {
-                    program.wasm_bindgen_futures = path.clone();
-                }
 
                 if opts.main().is_some() {
                     opts.check_used();
@@ -2059,7 +2049,7 @@ impl<'a> MacroParse<(Option<BindgenAttrs>, &'a mut TokenStream)> for rust_syntax
                     rust_name,
                     start,
                     wasm_bindgen: program.wasm_bindgen.clone(),
-                    wasm_bindgen_futures: program.wasm_bindgen_futures.clone(),
+
                     js_sys: program.js_sys.clone(),
                 });
             }
@@ -2072,9 +2062,6 @@ impl<'a> MacroParse<(Option<BindgenAttrs>, &'a mut TokenStream)> for rust_syntax
                 }
                 if let Some(path) = opts.js_sys() {
                     program.js_sys = path.clone();
-                }
-                if let Some(path) = opts.wasm_bindgen_futures() {
-                    program.wasm_bindgen_futures = path.clone();
                 }
                 (&mut i).macro_parse(program, opts)?;
                 i.to_tokens(tokens);
@@ -2246,7 +2233,6 @@ fn prepare_for_impl_recursion(
     };
 
     let wasm_bindgen = &program.wasm_bindgen;
-    let wasm_bindgen_futures = &program.wasm_bindgen_futures;
     let js_sys = &program.js_sys;
     method.attrs.insert(
         0,
@@ -2254,7 +2240,7 @@ fn prepare_for_impl_recursion(
             pound_token: Default::default(),
             style: rust_syntax::AttrStyle::Outer,
             bracket_token: Default::default(),
-            meta: rust_syntax::parse_quote! { #wasm_bindgen::prelude::__wasm_bindgen_class_marker(#class = #js_class #js_namespace_tokens, wasm_bindgen = #wasm_bindgen, wasm_bindgen_futures = #wasm_bindgen_futures, js_sys = #js_sys) },
+            meta: rust_syntax::parse_quote! { #wasm_bindgen::prelude::__wasm_bindgen_class_marker(#class = #js_class #js_namespace_tokens, wasm_bindgen = #wasm_bindgen, js_sys = #js_sys) },
         },
     );
 
@@ -2270,12 +2256,10 @@ impl MacroParse<&ClassMarker> for &mut rust_syntax::ImplItemFn {
             js_class,
             js_namespace,
             wasm_bindgen,
-            wasm_bindgen_futures,
             js_sys,
         }: &ClassMarker,
     ) -> Result<(), Diagnostic> {
         program.wasm_bindgen = wasm_bindgen.clone();
-        program.wasm_bindgen_futures = wasm_bindgen_futures.clone();
         program.js_sys = js_sys.clone();
 
         match self.vis {
@@ -2377,7 +2361,7 @@ impl MacroParse<&ClassMarker> for &mut rust_syntax::ImplItemFn {
             rust_name: self.sig.ident.clone(),
             start: ast::StartKind::None,
             wasm_bindgen: program.wasm_bindgen.clone(),
-            wasm_bindgen_futures: program.wasm_bindgen_futures.clone(),
+
             js_sys: program.js_sys.clone(),
         });
         opts.check_used();
@@ -2923,8 +2907,8 @@ impl MacroParse<ForeignItemCtx> for rust_syntax::ForeignItem {
                 rust_syntax::ForeignItem::Type(ref mut t) => &mut t.attrs,
                 rust_syntax::ForeignItem::Static(ref mut s) => &mut s.attrs,
                 rust_syntax::ForeignItem::Verbatim(v) => {
-                    let mut item: rust_syntax::ItemStatic =
-                        rust_syntax::parse(v.into()).expect("only foreign functions/types allowed for now");
+                    let mut item: rust_syntax::ItemStatic = rust_syntax::parse(v.into())
+                        .expect("only foreign functions/types allowed for now");
                     let item_opts = BindgenAttrs::find(&mut item.attrs)?;
                     let reexport = item_opts.reexport().cloned();
                     let kind = item.convert((program, item_opts, &ctx.module))?;
@@ -3076,10 +3060,6 @@ pub fn module_from_opts(
         program.js_sys = path.clone();
     }
 
-    if let Some(path) = opts.wasm_bindgen_futures() {
-        program.wasm_bindgen_futures = path.clone();
-    }
-
     let mut errors = Vec::new();
     let module = if let Some((name, span)) = opts.module() {
         if opts.inline_js().is_some() {
@@ -3109,7 +3089,9 @@ pub fn module_from_opts(
 }
 
 /// Get the first type parameter of a generic type, errors on incorrect input.
-fn extract_first_ty_param(ty: Option<&rust_syntax::Type>) -> Result<Option<rust_syntax::Type>, Diagnostic> {
+fn extract_first_ty_param(
+    ty: Option<&rust_syntax::Type>,
+) -> Result<Option<rust_syntax::Type>, Diagnostic> {
     let t = match ty {
         Some(t) => t,
         None => return Ok(None),
@@ -3156,7 +3138,9 @@ fn extract_doc_comments(attrs: &[rust_syntax::Attribute]) -> Vec<String> {
                 let tokens = match &a.meta {
                     rust_syntax::Meta::Path(_) => None,
                     rust_syntax::Meta::List(list) => Some(list.tokens.clone()),
-                    rust_syntax::Meta::NameValue(name_value) => Some(name_value.value.to_token_stream()),
+                    rust_syntax::Meta::NameValue(name_value) => {
+                        Some(name_value.value.to_token_stream())
+                    }
                 };
 
                 Some(
@@ -3257,7 +3241,9 @@ fn bail_generic_unsupported(span: impl Spanned + ToTokens) -> Result<(), Diagnos
     bail_span!(span, "unsupported in wasm-bindgen generics");
 }
 
-fn validate_generic_type_param_bound(bound: &rust_syntax::TypeParamBound) -> Result<(), Diagnostic> {
+fn validate_generic_type_param_bound(
+    bound: &rust_syntax::TypeParamBound,
+) -> Result<(), Diagnostic> {
     match bound {
         rust_syntax::TypeParamBound::Trait(trait_bound) => {
             // Higher-ranked trait bounds (for<'a>) are now supported
@@ -3407,13 +3393,8 @@ fn main(program: &ast::Program, mut f: ItemFn, tokens: &mut TokenStream) -> Resu
     let body = f.block.as_ref();
 
     let wasm_bindgen = &program.wasm_bindgen;
-    let wasm_bindgen_futures = &program.wasm_bindgen_futures;
     let js_sys = &program.js_sys;
-    let futures = if ast::use_js_sys_futures() {
-        quote::quote! { #js_sys::futures }
-    } else {
-        quote::quote! { #wasm_bindgen_futures }
-    };
+    let futures = quote::quote! { #js_sys::futures };
 
     if f.sig.asyncness.take().is_some() {
         *f.block = rust_syntax::parse2(quote::quote! {
@@ -3447,4 +3428,7 @@ fn main(program: &ast::Program, mut f: ItemFn, tokens: &mut TokenStream) -> Resu
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/wasm-binding-macros/unit/src/parser/tests_3446.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/wasm-binding-macros/unit/src/parser/tests_3446.rs"
+));

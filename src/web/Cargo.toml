@@ -15,7 +15,6 @@ system-entropy = { version = "0.4", features = ["wasm_js"], path = "../foundatio
 uuid = { version = "1", features = ["js"], path = "../foundation/uuid"}
 json-codec = {version = "1", path = "../foundation/json-codec"}
 wasm-bindgen = {version = "=0.2.129", path = "../foundation/wasm-bindgen"}
-wasm-bindgen-futures = {version = "=0.4.79", path = "../foundation/wasm-bindgen-futures"}
 js-sys = {version = "=0.3.106", path = "../foundation/js-sys"}
 gloo-timers = { version = "0.3", features = ["futures"], path = "../foundation/gloo-timers"}
 send_wrapper = {version = "0.6", path = "../foundation/send_wrapper"}

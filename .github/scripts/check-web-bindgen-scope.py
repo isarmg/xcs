@@ -3,13 +3,51 @@
 from pathlib import Path
 import subprocess
 import tempfile
+import functools
+import http.server
+import json
+import os
+import threading
 
 ROOT = Path(__file__).resolve().parents[2]
+TARGET = Path(os.environ.get('CARGO_TARGET_DIR', ROOT / 'target/web-bindgen-scope-check'))
 
 
 def cargo(*arguments, capture=False):
     return subprocess.run(['cargo', *arguments], cwd=ROOT, check=not capture,
                           capture_output=capture, text=capture)
+
+
+def browser_check(output):
+    """Opt-in actual Chromium execution, never a Node/native substitute."""
+    browser = os.environ.get('ZXS_CHROMIUM')
+    if not browser:
+        return 'browser execution not requested'
+    (output / 'index.html').write_text(
+        (ROOT / 'test/wasm-binding-macros/browser-runtime.html').read_text())
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, *_args):
+            pass
+    handler = functools.partial(Handler, directory=str(output))
+    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with tempfile.TemporaryDirectory(prefix='zxs-browser-futures-') as profile:
+            result = subprocess.run([
+                browser, '--headless', '--no-first-run', '--no-default-browser-check',
+                '--user-data-dir=' + profile, '--virtual-time-budget=10000', '--dump-dom',
+                f'http://127.0.0.1:{server.server_port}/index.html',
+            ], text=True, capture_output=True, timeout=60)
+            assert result.returncode == 0, result.stderr
+            assert '"status":"passed"' in result.stdout, result.stdout + result.stderr
+            body = result.stdout.split('<body>', 1)[1].split('</body>', 1)[0]
+            checks = json.loads(body)['checks']
+            return f'{len(checks)} actual Chromium async runtime checks passed'
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
 
 
 def check():
@@ -25,7 +63,7 @@ def check():
         source.write_text('pub fn generator() { let _ = wasm_bindgen_cli_support::Bindgen::new(); }')
         cargo('generate-lockfile', '--offline', '--manifest-path', str(manifest))
         command = ['check', '--locked', '--offline', '--manifest-path', str(manifest),
-                   '--target-dir', str(ROOT / 'target/web-bindgen-scope-check')]
+                   '--target-dir', str(TARGET)]
         cargo(*command)
         retired = {
             'typescript': 'pub fn old() { wasm_bindgen_cli_support::Bindgen::new().typescript(true); }',
@@ -48,10 +86,12 @@ def check():
         fixture_manifest = fixture / 'Cargo.toml'
         fixture_manifest.write_text('[package]\nname="web-binding-contract-fixture"\nversion="0.0.0"\nedition="2021"\n'
                                     '[workspace]\n[lib]\ncrate-type=["cdylib"]\n[dependencies]\nwasm-bindgen={path="' +
-                                    str(ROOT / 'src/foundation/wasm-bindgen') + '"}\n')
-        (fixture / 'src/lib.rs').write_text((ROOT / 'test/tools/web-bindings/fixtures/contract.rs').read_text())
+                                    str(ROOT / 'src/foundation/wasm-bindgen') + '"}\njs-sys={path="' +
+                                    str(ROOT / 'src/foundation/js-sys') + '",default-features=false,features=["std"]}\n')
+        (fixture / 'src/lib.rs').write_text((ROOT / 'test/tools/web-bindings/fixtures/contract.rs').read_text() + '\n' +
+                                              (ROOT / 'test/wasm-binding-macros/async-runtime.rs').read_text())
         cargo('generate-lockfile', '--offline', '--manifest-path', str(fixture_manifest))
-        target = ROOT / 'target/web-binding-contract'
+        target = TARGET
         cargo('build', '--locked', '--offline', '--release', '--target', 'wasm32-unknown-unknown',
               '--manifest-path', str(fixture_manifest), '--target-dir', str(target))
         output = work / 'output'
@@ -62,11 +102,13 @@ def check():
         js = (output / 'fixture.js').read_text()
         for required in ['get value()', 'set value(', 'class Widget', 'Object.freeze(',
                          '__wbindgen_enum_Mode', '文件 Ω', 'function mode_roundtrip(',
-                         'function message_roundtrip(', 'function unicode_roundtrip(']:
+                         'function message_roundtrip(', 'function unicode_roundtrip(',
+                         'function async_roundtrip(', 'class AsyncCounter']:
             assert required in js, f'missing runtime binding: {required}'
         for forbidden in ['DeclarationMustNotLeak', '@ts-self-types', 'addToLibrary(', 'require(', 'Deno.']:
             assert forbidden not in js, f'unsupported output returned: {forbidden}'
-        print(f'Web/no-TypeScript contract: runtime fixture and {len(retired)} negative API groups passed')
+        browser_result = browser_check(output)
+        print(f'Web/no-TypeScript contract: runtime fixture and {len(retired)} negative API groups passed; {browser_result}')
 
 
 if __name__ == '__main__':

@@ -7,14 +7,14 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::format_ident;
 use quote::quote_spanned;
 use quote::{quote, ToTokens};
-use std::borrow::Cow;
-use std::cell::RefCell;
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use rust_syntax::ext::IdentExt;
 use rust_syntax::parse_quote;
 use rust_syntax::spanned::Spanned;
 use rust_syntax::visit_mut::{self, VisitMut};
 use rust_syntax::{Attribute, Meta, MetaList};
+use std::borrow::Cow;
+use std::cell::RefCell;
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use wasm_bindgen_shared as shared;
 
 /// A trait for converting AST structs into Tokens and adding them to a TokenStream,
@@ -241,7 +241,10 @@ impl TryToTokens for ast::Program {
 fn imported_class_generics<'a>(
     function: &ast::ImportFunction,
     types: &HashMap<String, Vec<&'a ast::ImportType>>,
-) -> Vec<(Option<&'a rust_syntax::Generics>, Vec<rust_syntax::Attribute>)> {
+) -> Vec<(
+    Option<&'a rust_syntax::Generics>,
+    Vec<rust_syntax::Attribute>,
+)> {
     let ast::ImportFunctionKind::Method {
         ty: class_ty, kind, ..
     } = &function.kind
@@ -889,13 +892,8 @@ impl TryToTokens for ast::Export {
         } else {
             0
         };
-        let wasm_bindgen_futures = &self.wasm_bindgen_futures;
         let js_sys = &self.js_sys;
-        let futures = if ast::use_js_sys_futures() {
-            quote! { #js_sys::futures }
-        } else {
-            quote! { #wasm_bindgen_futures }
-        };
+        let futures = quote! { #js_sys::futures };
         let receiver = match self.method_self {
             Some(ast::MethodSelf::ByValue) => {
                 let class = self.rust_class.as_ref().unwrap();
@@ -973,8 +971,12 @@ impl TryToTokens for ast::Export {
             let ident = Ident::new(&format!("arg{i}"), Span::call_site());
             fn unwrap_nested_types(ty: &rust_syntax::Type) -> &rust_syntax::Type {
                 match &ty {
-                    rust_syntax::Type::Group(rust_syntax::TypeGroup { ref elem, .. }) => unwrap_nested_types(elem),
-                    rust_syntax::Type::Paren(rust_syntax::TypeParen { ref elem, .. }) => unwrap_nested_types(elem),
+                    rust_syntax::Type::Group(rust_syntax::TypeGroup { ref elem, .. }) => {
+                        unwrap_nested_types(elem)
+                    }
+                    rust_syntax::Type::Paren(rust_syntax::TypeParen { ref elem, .. }) => {
+                        unwrap_nested_types(elem)
+                    }
                     _ => ty,
                 }
             }
@@ -1076,29 +1078,16 @@ impl TryToTokens for ast::Export {
             .map(|ret| &ret.r#type)
             .unwrap_or(&syntax_unit);
         if let rust_syntax::Type::Reference(_) = syntax_ret {
-            bail_span!(syntax_ret, "cannot return a borrowed ref with #[wasm_bindgen]",)
+            bail_span!(
+                syntax_ret,
+                "cannot return a borrowed ref with #[wasm_bindgen]",
+            )
         }
-
-        // `#[wasm_bindgen(jspi, experimental_tokio)]`: the export is a
-        // promising activation that runs the future to completion with
-        // `block_on` on a tokio runtime which parks by JSPI suspension, so
-        // it returns the value directly like a sync `jspi` export.
-        let parked = self.function.r#async && self.function.jspi && self.function.tokio.is_some();
 
         // For an `async` function we always run it through `future_to_promise`
         // since we're returning a promise to JS, and this will implicitly
         // require that the function returns a `Future<Output = Result<...>>`
-        let (ret_ty, inner_ret_ty, ret_expr) = if parked {
-            let block_on = match self.function.tokio {
-                Some(ast::TokioMode::Isolated) => quote! { block_on_isolated },
-                _ => quote! { block_on },
-            };
-            (
-                quote! { #syntax_ret },
-                quote! { #syntax_ret },
-                quote! { #wasm_bindgen_futures::tokio::#block_on(async move { #ret.await }) },
-            )
-        } else if self.function.r#async {
+        let (ret_ty, inner_ret_ty, ret_expr) = if self.function.r#async {
             if self.start.is_start() {
                 (
                     quote! { () },
@@ -1123,7 +1112,11 @@ impl TryToTokens for ast::Export {
                 quote! { <#syntax_ret as #wasm_bindgen::__rt::Start>::start(#ret) },
             )
         } else {
-            (quote! { #syntax_ret }, quote! { #syntax_ret }, quote! { #ret })
+            (
+                quote! { #syntax_ret },
+                quote! { #syntax_ret },
+                quote! { #ret },
+            )
         };
 
         let mut call = quote! {
@@ -1134,66 +1127,12 @@ impl TryToTokens for ast::Export {
             }
         };
 
-        if self.function.r#async && !parked {
+        if self.function.r#async {
             if self.start.is_start() {
                 call = quote! {
                     #futures::spawn_local(async move {
                         #call
                     })
-                }
-            } else if let Some(tokio_mode) = self.function.tokio {
-                // Drive the exported future on a tokio event-loop
-                // runtime (so `tokio::spawn`, timers, and IO inside it
-                // work), bridging its outcome to the returned `Promise`:
-                // the thread's shared ambient runtime, or with
-                // `experimental_tokio = "isolated"` a fresh runtime owned by
-                // this invocation. `schedule` drives before returning when
-                // safe. Off emscripten (or without the unstable cfg)
-                // `wasm_bindgen_futures::tokio` is a stub whose bound
-                // reports the unsupported target at the attribute.
-                let promise = if ast::use_js_sys_futures() {
-                    quote! { #js_sys::Promise }
-                } else {
-                    quote! { #wasm_bindgen_futures::js_sys::Promise }
-                };
-                let schedule = match tokio_mode {
-                    ast::TokioMode::Ambient => quote! { schedule },
-                    ast::TokioMode::Isolated => quote! { schedule_isolated },
-                };
-                call = quote! {
-                    {
-                        // `AssertUnwindSafe` so the executor closure satisfies the
-                        // `UnwindSafe` bound `Promise::new` imposes under
-                        // panic=unwind (mirrors `future_to_promise`). A panic in
-                        // the future is caught by tokio's task harness and arrives
-                        // as `Err(JoinError)`, so we don't catch_unwind here.
-                        let mut __wbg_fut = ::core::panic::AssertUnwindSafe(
-                            ::core::option::Option::Some(async move {
-                                #call
-                            })
-                        );
-                        #promise::new(&mut move |resolve, reject| {
-                            let __wbg_fut = __wbg_fut
-                                .take()
-                                .expect("Promise executor invoked more than once");
-                            #wasm_bindgen_futures::tokio::#schedule(__wbg_fut, move |__wbg_out| {
-                                match __wbg_out {
-                                    ::core::result::Result::Ok(::core::result::Result::Ok(__wbg_val)) => {
-                                        let _ = resolve.call(&#wasm_bindgen::JsValue::UNDEFINED, (&__wbg_val,));
-                                    }
-                                    ::core::result::Result::Ok(::core::result::Result::Err(__wbg_val)) => {
-                                        let _ = reject.call(&#wasm_bindgen::JsValue::UNDEFINED, (&__wbg_val,));
-                                    }
-                                    ::core::result::Result::Err(__wbg_join_err) => {
-                                        let __wbg_err = #wasm_bindgen::JsValue::from(
-                                            ::std::format!("exported async task failed: {}", __wbg_join_err)
-                                        );
-                                        let _ = reject.call(&#wasm_bindgen::JsValue::UNDEFINED, (&__wbg_err,));
-                                    }
-                                }
-                            });
-                        }).into()
-                    }
                 }
             } else {
                 call = quote! {
@@ -1451,7 +1390,9 @@ impl TryToTokens for ast::ImportType {
         let mut reference_generics = declaration_generics.clone();
         reference_generics.params.insert(
             0,
-            rust_syntax::GenericParam::Lifetime(rust_syntax::LifetimeParam::new(reference_lifetime.clone())),
+            rust_syntax::GenericParam::Lifetime(rust_syntax::LifetimeParam::new(
+                reference_lifetime.clone(),
+            )),
         );
         let (reference_impl_generics, _, _) = reference_generics.split_for_impl();
 
@@ -1532,7 +1473,8 @@ impl TryToTokens for ast::ImportType {
                     predicates: Default::default(),
                 });
             let self_ty_generics = &ty_generics;
-            let self_ty: rust_syntax::Type = rust_syntax::parse_quote!(#rust_name #self_ty_generics);
+            let self_ty: rust_syntax::Type =
+                rust_syntax::parse_quote!(#rust_name #self_ty_generics);
             let wasm_bindgen_path: rust_syntax::Path = rust_syntax::parse_quote!(#wasm_bindgen);
             clause.predicates.push(rust_syntax::parse_quote!(
                 #self_ty: #wasm_bindgen_path::JsGeneric
@@ -1894,9 +1836,11 @@ impl TryToTokens for ast::ImportType {
 
                 for (type_param, target_name) in type_params.iter().zip(&target_param_names) {
                     let param_ident = &type_param.ident;
-                    where_clause_extended.predicates.push(rust_syntax::parse_quote!(
-                        #target_name: #wasm_bindgen::convert::UpcastFrom<#param_ident>
-                    ));
+                    where_clause_extended
+                        .predicates
+                        .push(rust_syntax::parse_quote!(
+                            #target_name: #wasm_bindgen::convert::UpcastFrom<#param_ident>
+                        ));
                 }
 
                 let (impl_generics_split, _, _) = impl_generics_extended.split_for_impl();
@@ -2497,18 +2441,9 @@ impl ast::ImportFunction {
 
         let ret_ident = Ident::new("_ret", Span::call_site());
         let wasm_bindgen = &self.wasm_bindgen;
-        let wasm_bindgen_futures = &self.wasm_bindgen_futures;
         let js_sys = &self.js_sys;
-        let futures = if ast::use_js_sys_futures() {
-            quote! { #js_sys::futures }
-        } else {
-            quote! { #wasm_bindgen_futures }
-        };
-        let promise = if ast::use_js_sys_futures() {
-            quote! { #js_sys::Promise }
-        } else {
-            quote! { #wasm_bindgen_futures::js_sys::Promise }
-        };
+        let futures = quote! { #js_sys::futures };
+        let promise = quote! { #js_sys::Promise };
 
         for (i, arg) in self.function.arguments.iter().enumerate() {
             let ty = &*arg.pat_type.ty;
@@ -2519,7 +2454,9 @@ impl ast::ImportFunction {
                     subpat: None,
                     ..
                 }) => ident.clone(),
-                rust_syntax::Pat::Wild(_) => rust_syntax::Ident::new(&format!("__genarg_{i}"), Span::call_site()),
+                rust_syntax::Pat::Wild(_) => {
+                    rust_syntax::Ident::new(&format!("__genarg_{i}"), Span::call_site())
+                }
                 _ => bail_span!(
                     arg.pat_type.pat,
                     "unsupported pattern in #[wasm_bindgen] imported function",
@@ -3083,18 +3020,9 @@ impl ast::ImportFunction {
         class_cfg_attrs: &[rust_syntax::Attribute],
     ) -> Result<(), Diagnostic> {
         let wasm_bindgen = &self.wasm_bindgen;
-        let wasm_bindgen_futures = &self.wasm_bindgen_futures;
         let js_sys = &self.js_sys;
-        let futures = if ast::use_js_sys_futures() {
-            quote! { #js_sys::futures }
-        } else {
-            quote! { #wasm_bindgen_futures }
-        };
-        let promise = if ast::use_js_sys_futures() {
-            quote! { #js_sys::Promise }
-        } else {
-            quote! { #wasm_bindgen_futures::js_sys::Promise }
-        };
+        let futures = quote! { #js_sys::futures };
+        let promise = quote! { #js_sys::Promise };
 
         // --- Generic-parameter guards (opt-in path, so bailing is safe) ---
         //
@@ -3372,7 +3300,9 @@ impl ast::ImportFunction {
                     subpat: None,
                     ..
                 }) => ident.clone(),
-                rust_syntax::Pat::Wild(_) => Ident::new(&format!("__genarg_{i}"), Span::call_site()),
+                rust_syntax::Pat::Wild(_) => {
+                    Ident::new(&format!("__genarg_{i}"), Span::call_site())
+                }
                 _ => bail_span!(
                     arg.pat_type.pat,
                     "unsupported pattern in experimental_generic_mono imported function",
@@ -4157,7 +4087,10 @@ impl<'a> FnClassGenerics<'a> {
         let mut arguments = arguments.iter();
         for parameter in &class_generics.params {
             match (parameter, arguments.next()) {
-                (rust_syntax::GenericParam::Type(parameter), Some(rust_syntax::GenericArgument::Type(ty))) => {
+                (
+                    rust_syntax::GenericParam::Type(parameter),
+                    Some(rust_syntax::GenericArgument::Type(ty)),
+                ) => {
                     type_replacements.insert(parameter.ident.clone(), ty.clone());
                 }
                 (
@@ -4178,7 +4111,9 @@ impl<'a> FnClassGenerics<'a> {
                     );
                 }
                 // Omitted type arguments use the default added by the parser.
-                (rust_syntax::GenericParam::Type(parameter), None) if parameter.default.is_some() => {
+                (rust_syntax::GenericParam::Type(parameter), None)
+                    if parameter.default.is_some() =>
+                {
                     let mut default = parameter.default.clone().unwrap().1;
                     if !substitute_class_type(
                         &mut default,
@@ -4454,14 +4389,16 @@ impl ast::ImportFunction {
                                                 continue;
                                             };
                                             for segment in &trait_bound.path.segments {
-                                                let rust_syntax::PathArguments::AngleBracketed(arguments) =
-                                                    &segment.arguments
+                                                let rust_syntax::PathArguments::AngleBracketed(
+                                                    arguments,
+                                                ) = &segment.arguments
                                                 else {
                                                     continue;
                                                 };
                                                 for argument in &arguments.args {
-                                                    let rust_syntax::GenericArgument::AssocType(binding) =
-                                                        argument
+                                                    let rust_syntax::GenericArgument::AssocType(
+                                                        binding,
+                                                    ) = argument
                                                     else {
                                                         continue;
                                                     };
@@ -4526,10 +4463,11 @@ impl ast::ImportFunction {
                         // not leave the wrapper referring to an undeclared
                         // lifetime after the class lifetime moves to the impl.
                         if let rust_syntax::WherePredicate::Lifetime(_) = bound.as_ref() {
-                            let class_lifetimes: Vec<&rust_syntax::Lifetime> = class_lifetime_params_set
-                                .iter()
-                                .chain(class_bound_lifetime_params_set.iter())
-                                .collect();
+                            let class_lifetimes: Vec<&rust_syntax::Lifetime> =
+                                class_lifetime_params_set
+                                    .iter()
+                                    .chain(class_bound_lifetime_params_set.iter())
+                                    .collect();
                             if !generics::used_lifetimes_in_predicate(bound, &class_lifetimes)
                                 .is_empty()
                             {
@@ -5259,7 +5197,11 @@ fn thread_local_import(
     }
 }
 
-fn static_init(wasm_bindgen: &rust_syntax::Path, ty: &rust_syntax::Type, shim_name: &Ident) -> TokenStream {
+fn static_init(
+    wasm_bindgen: &rust_syntax::Path,
+    ty: &rust_syntax::Type,
+    shim_name: &Ident,
+) -> TokenStream {
     let abi_ret = quote! {
         #wasm_bindgen::convert::WasmRet<<#ty as #wasm_bindgen::convert::FromWasmAbi>::Abi>
     };
@@ -5585,7 +5527,10 @@ fn result_err_ty(ty: &rust_syntax::Type) -> Option<&rust_syntax::Type> {
 /// view". This must stay in lockstep with the ABI rewrite in
 /// [`slice_to_array_rewrite`]: the descriptor is what selects the JS shim, and
 /// the ABI is what the shim is handed.
-fn slice_to_array_describe_ty(wasm_bindgen: &rust_syntax::Path, ty: &rust_syntax::Type) -> Option<rust_syntax::Type> {
+fn slice_to_array_describe_ty(
+    wasm_bindgen: &rust_syntax::Path,
+    ty: &rust_syntax::Type,
+) -> Option<rust_syntax::Type> {
     let SliceArg {
         elem_ty, is_option, ..
     } = detect_slice_or_option_slice(ty)?;
@@ -5724,7 +5669,10 @@ fn detect_raw_fn_trait_obj(
 
 /// Extracts the argument and return types from a `Fn`/`FnMut` trait bound.
 fn fn_trait_bound_sig(
-    bounds: &rust_syntax::punctuated::Punctuated<rust_syntax::TypeParamBound, rust_syntax::token::Plus>,
+    bounds: &rust_syntax::punctuated::Punctuated<
+        rust_syntax::TypeParamBound,
+        rust_syntax::token::Plus,
+    >,
 ) -> Option<(Vec<rust_syntax::Type>, rust_syntax::Type, bool)> {
     for bound in bounds {
         let rust_syntax::TypeParamBound::Trait(tb) = bound else {
@@ -5745,4 +5693,7 @@ fn fn_trait_bound_sig(
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/wasm-binding-macros/unit/src/codegen/tests_5747.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/wasm-binding-macros/unit/src/codegen/tests_5747.rs"
+));

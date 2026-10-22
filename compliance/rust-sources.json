@@ -47425,7 +47425,7 @@
   },
   "external_test_mappings_sha256": {
     "compliance/external-tests/foundation.json": "939d6def31d60e797f5037f2f0250d291952804fc4d05f11adeda450f08b84fa",
-    "compliance/external-tests/integrated.json": "976578b7514d285c9214c408327f9b344f3c7649b4ae3b63839e8806b4677d96",
+    "compliance/external-tests/integrated.json": "029fd33a9d77c8ba8c7fa0d73f9febf9682235914bec93b64c05cc7c65565395",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
   "external_tests": {
@@ -74050,7 +74050,7 @@
       ]
     },
     "tools/web-bindings": {
-      "bytes": 13345,
+      "bytes": 13340,
       "directory": "tools/web-bindings",
       "file_count": 4,
       "files": [
@@ -74062,7 +74062,7 @@
         },
         {
           "path": "test/tools/web-bindings/fixtures/csr-template.rs",
-          "sha256": "1bff500e6565c19c77fa97d6629c5bc71b5a3000e3c4ffdb6be32d619fad9a5b",
+          "sha256": "6bcd4d63ef20fd46d8fdbd9a7f7048f7ff60035a2f177f3c8a14b788370b230d",
           "source": "tools/web-bindings/tests/fixtures/csr-template.rs",
           "source_sha256_before": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281"
         },
@@ -74087,7 +74087,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "7ba1a5faad4a3725a3ceaa1837352f016ed2b14091494a2166bbd06f8f7c63d7"
+    "Cargo.lock": "de9f49bbcd4ff8816dfd971e14501846c06499bf387c7e59dcc258b8870acfe3"
   },
   "manifests_sha256": {
     "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
@@ -74274,7 +74274,7 @@
     "src/foundation/synstructure/Cargo.toml": "035e480439f3ce5e9840bcfa08ae1c917ab4322317b89cc2ec5d31c1c805a542",
     "src/foundation/sysinfo/Cargo.toml": "fd035afc120bbd2ae0f1d85a645ed94898c704b040ac0a436163afc1850674b7",
     "src/foundation/system-entropy/Cargo.toml": "6f80d8b67297956fe84dded22c94656eec80a824c9aadf1a7e86975e659d2221",
-    "src/foundation/task-dispatch/Cargo.toml": "33fd519e179cb46ee3100a11dc6cf7c172beea3c8b5fe2a5ab3297cbcbcbc6d0",
+    "src/foundation/task-dispatch/Cargo.toml": "f40539c80ab3d96544e05708d2a8494638f6abe9a25d2a6e496c4b36ad011d02",
     "src/foundation/tempfile/Cargo.toml": "fa30af4edb4e6ea33aa4812a0fd00c3bce99a818372538976dc43fd3aa14b1cb",
     "src/foundation/terminal-style/Cargo.toml": "59e41ab1e50ff1e08081d17440717c16401b7909dd88a2df39000de807674aa9",
     "src/foundation/thread_local/Cargo.toml": "7efef2ab12c7f2b364ab0d12a9bbf10144b943eee6d23629fdc88a69937e033c",
@@ -74310,10 +74310,9 @@
     "src/foundation/walrus/Cargo.toml": "000bec3ce31caa7077b94965a98356edc2a3808ed2b3da2a0c667a0002643895",
     "src/foundation/want/Cargo.toml": "8e577e9914b75b840b6f0e14c46cf59495c2504d62921e329b517d3ca6a77e9e",
     "src/foundation/wasm-bindgen-cli-support/Cargo.toml": "ba84120c4b38b78580d989dcd34ea2f569424c20113f698b2b476a412beee686",
-    "src/foundation/wasm-bindgen-futures/Cargo.toml": "0eaec7e0850444e2c9622f213641a8920bcb01fa47a3be9e802e605d349df9b8",
     "src/foundation/wasm-bindgen-shared/Cargo.toml": "2ac59793219a07b62a58cba208e349310ab05a4faedc8a1bd4824296d84f7b74",
     "src/foundation/wasm-bindgen/Cargo.toml": "5f2307d7fd0aad9a5aad3559c09c690aa1264e5b8c721b51c56409fd0f4156af",
-    "src/foundation/wasm-binding-macros/Cargo.toml": "2185ec235c19160cdf244f0caeb3828408f97cf3e6b1426cbade6df78bd6b424",
+    "src/foundation/wasm-binding-macros/Cargo.toml": "3484d5b2e0d974b0cffb4b4ed447e7abf57b1d41aabc17168153e382bc77af1c",
     "src/foundation/wasm-encoder/Cargo.toml": "e1d54f6793283fc8d13eae42277dd7a843884d8de6be845d08478f9789a90b86",
     "src/foundation/wasmparser/Cargo.toml": "501b29ecbf9c428fbaab6afed7479400e1f2ad19c3e871ceeef687d456f34c81",
     "src/foundation/web-sys/Cargo.toml": "77f1cb6dc9dbed3bdf9983483c8fb1087a6e8e9c309dc1e177ec99f6993fceb8",
@@ -74330,7 +74329,7 @@
     "src/foundation/zerovec-derive/Cargo.toml": "70021b640066523d26b51d533c6cd9f9f591e4177dbe2b1427d63b1968049101",
     "src/foundation/zerovec/Cargo.toml": "dd088e3746a936ee712ff6f9aacc6b5d40b68a1ec14a0c57f58a7eb0e1aedcf6",
     "src/foundation/zmij/Cargo.toml": "9230831f8b50f7ac0b50a32d458f95f0e758ef847a81b15cbae9b84a6dd44df4",
-    "src/interface/Cargo.toml": "610da0e4dc1ef135758334ed121d4955da88c373736655140ea3f6459ac9b872",
+    "src/interface/Cargo.toml": "4285805516dd931ac504c09dee0819647816e4bb8dc82e79581ff3ca02de0285",
     "src/macros/Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "d485ed3e1fb2989a7576a2ec74d9e6bcaafe01813867c9f55949b380b726a4d7",
@@ -74338,7 +74337,7 @@
     "src/server/Cargo.toml": "f731d0326c6120887c050b5727cc44eefce4d854d91a95ab8ffb3cfe6dae2096",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
-    "src/web/Cargo.toml": "9b95bebf076be95b6e4d3e04c7de7dd2a4079906695446b525b4f1cfe13cf5f8",
+    "src/web/Cargo.toml": "72540b25ed28ac3b9814fdde17baf447c7805351541fb47034c99a2b806cb2ed",
     "tools/browser-smoke/Cargo.toml": "1fb2aa0063e3ea53e9db74334e3b2d7812ea4e2dc1d3e389e22573e85d8269ee",
     "tools/contract-check/Cargo.toml": "0e96a9fcd06731392db429a5a5b548fc7981ca5cc5942f49a5f5c00389f3d70e",
     "tools/perf-check/Cargo.toml": "1d43415d20414747a8ca1c5bb74a940ac0ff773226778906f4d6a5325a945e02",
@@ -74406,7 +74405,7 @@
       "description": "Project-specific browser CSR runtime",
       "directory": "src/interface",
       "files_sha256": {
-        "Cargo.toml": "610da0e4dc1ef135758334ed121d4955da88c373736655140ea3f6459ac9b872",
+        "Cargo.toml": "4285805516dd931ac504c09dee0819647816e4bb8dc82e79581ff3ca02de0285",
         "src/animated_show.rs": "cd95f8823c423be1c48e4c2054872c6ab63b2efad10d091a49786f033afdf59a",
         "src/attribute_interceptor.rs": "7b148fc2ba4b4a07a078ce2c9e063f8e8a9a02d0cac75dc2d1b78220747a1954",
         "src/children.rs": "774081a72328ff254cd3f087335688fe63c0925fe8b46e4407c4ffb7cdbd96ff",
@@ -74429,7 +74428,7 @@
         "src/for_snapshot.rs": "06b6e10d666d91305fac3c11e51dbbdf60e770c053b96418940432bd6e4636b3",
         "src/i18n.rs": "48cf957c30e60ee725afcead2ea06e25af00d1e1bf2ae49b12261a3deed2c46c",
         "src/into_view.rs": "63eb8d572837186f8cdd5872e63b78a9bd3142e275d99991f746b1d9c59fabb4",
-        "src/lib.rs": "467bbf53419d5a047d170edf94f599fe1a74a171659e10b5d58b3deb27d307ed",
+        "src/lib.rs": "ea0aea89e210a9c4288ac9892b2e11cce29fb2fc9522e284f5686cc726115d3b",
         "src/lifecycle.rs": "ec0299ee31c65e448febcb099d259c140e57f358910dd398e180d8862dc7f276",
         "src/mount.rs": "e65bb5bb6d950141ee554f978f0d22cb1b8fb08555e4a581ea75d705b1ce1d4a",
         "src/portal.rs": "96a8961e77f28f255a8abe4ca55376d7cb0267bfc9081e81af6a4d99a88cc310",
@@ -74437,7 +74436,7 @@
         "src/show.rs": "55dd2795f8b7f3774d9ed30cbe70ece101d1421b542b5a9d7f2ce14a7e6349c0",
         "src/show_let.rs": "7051b187c6b8a1c8932fba741661258ba9a9bb6cbce02b487b55a223f1c74f36",
         "src/startup.rs": "e200c12bd7472a8a5c4bd71bd832510f095161de36deb11fa54aa3ca3ddfa092",
-        "src/tasks.rs": "284f2ae64d5854017838234addcf7fa1193186c828c398111f96167fe90fa744",
+        "src/tasks.rs": "0eda02693c3c1768a3886513d8ea94e5dda4fa1096c8e2ae9bcac0aa522017b4",
         "src/text_prop.rs": "d9a34d8f9a34b0e1c7c230273d3566ad670a731a479f6413b1230bfed53d6c63",
         "src/theme.rs": "f12c38a989d52d05bbed7816d1cf12b0d43b0b2e587824e9ef1b33218a781496"
       },
@@ -80807,15 +80806,15 @@
       "description": "Implementation APIs for the `#[wasm_bindgen]` attribute",
       "directory": "src/foundation/wasm-binding-macros",
       "files_sha256": {
-        "Cargo.toml": "2185ec235c19160cdf244f0caeb3828408f97cf3e6b1426cbade6df78bd6b424",
-        "src/ast.rs": "71f29778b186f3bf1276ba12779009bd27f9d33c15f0408d4f470ac3eb75260e",
-        "src/codegen.rs": "665a85e1b720b05e50b35a8162e397f587e1163a28571c7db7c4e9e862289d62",
-        "src/encode.rs": "d6ef124ccea39626616dec87434913035cb1cee4001754f6d823b878268dfb6f",
+        "Cargo.toml": "3484d5b2e0d974b0cffb4b4ed447e7abf57b1d41aabc17168153e382bc77af1c",
+        "src/ast.rs": "1711699d3c2196b17b5cee7173686994d6470b1199b76420157cbf4eb1e69884",
+        "src/codegen.rs": "f87f41bd3cf763ef653e5b13fe6c0fcfcdc63b92323ec6caf133988d734f29f9",
+        "src/encode.rs": "c5a4fe7951852808c46484970f2547b05445efe24219178f5b45a0f75a061155",
         "src/error.rs": "92ad4a2b83ac4ea826d5f1a5b88d3446fae16934216d49b0aee9aa617649d783",
         "src/generics.rs": "c8103531b6b1e55601f2c8d4ebecb0d3dd7650040ce50fa5c5bba26586853aee",
         "src/hash.rs": "9858c07a0d17b5c3b8fda8009392dc534eecabb701eaf44e9aa9fee643a07fab",
-        "src/lib.rs": "40a43b32e8e4efc000d3632dd6ac0300b9d497972ce6163dc61a1274816f23d3",
-        "src/parser.rs": "7ac8e8e62486cbfd21b5332f7dc32bf36f6dab521ce2e1c1b6b9cf21fa35582e",
+        "src/lib.rs": "bfe2b18517c0eed8f1774c5afe53de2b427c12a2bc976798582e38dacced447a",
+        "src/parser.rs": "5aac88beca02259b27ddaf5a7bfbede98f3f66dca86245d33f8b8319bb1812e2",
         "src/worker.js": "cb5c33dd41cfad622abce5464a3ceae478904ea16ddc3c6c769ee33e0c086692"
       },
       "license": "MIT OR Apache-2.0",
@@ -86673,8 +86672,8 @@
       "files_sha256": {
         "Cargo.toml": "1ce90a48daadbe17c8c213c3f84ba66a7245579f130cb716537066751092f4b8",
         "src/callback.rs": "96c4f95a7e6b962dbfbeb5ccf3b78db7e7e7497e4b236c903b7543eeab54609a",
-        "src/future.rs": "584128a2b77e3c8ea07fd98b660a8b72a63cf0045932de6e2f95cc710d6bce53",
-        "src/lib.rs": "45e2413fa20c82e3c8d979445d9221fc604c8b5a96b6e79aebef55134816dc9d"
+        "src/future.rs": "19b047037522600630abcc6192d77b58d02e778205b8dfcfb72c346484422786",
+        "src/lib.rs": "66c04aaba15014f4114dd302890aa1bb1ab99244f686365200659b35c2dd5038"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -88001,7 +88000,7 @@
         "src/futures/task/singlethread.rs": "a487dbadfe7d12d3d6de59e363b4c6485612df71982a2b9750ac8b93ba71c7cf",
         "src/futures/task/wait_async_polyfill.rs": "a4b4f5caf80f7d73dc268baee32eca34c6b140d92ee2ce4ea3b4fc25c99a8011",
         "src/futures/task/worker.js": "1f1b207b7f45925d8c50f51538d3c23caf14073080bfe6e6bc64a3689b93db78",
-        "src/lib.rs": "bf73965d676de7a8175a8c8b846e1859e82c9341c9f2555be0d718a9f6aa7e4d"
+        "src/lib.rs": "a278b1295eaeb3cf43c8d6e00327e394444ce58652640f5dd8d0b915b1879256"
       },
       "license": "MIT OR Apache-2.0",
       "license_materials": [
@@ -89966,7 +89965,7 @@
         "src/graph/source.rs": "1bdf56f425c2b15885a9dc3ff19fa07beae7f7fafe204b41cbd8b358164b4f8b",
         "src/graph/subscriber.rs": "479fb6bfeda874dd8a8c51b3dbe385e955f06845f05310751e696ce236a21306",
         "src/into_reactive_value.rs": "5a961fc94e93b4f22bae93b40c41fa6009abec5683bc6a2c6555e62becbed669",
-        "src/lib.rs": "820e0e062349c43ca4f049ceece43c464c806bd857c27a078188252b7abe3699",
+        "src/lib.rs": "7921e5dce1f0b44050feee3112061ba95a86c5228cb72525f2f28ff2ab96a1e2",
         "src/nightly.rs": "dd5364a38f1c7119bd89ae0a297a7895332e7a21e6c59b158591119f817fc8dd",
         "src/owner.rs": "614f93d48a527544d6a2340a857146c37c18996da769ea13b19f30f0c3d64c27",
         "src/owner/arc_stored_value.rs": "62f716a8976c7572cf2b4abc4c613215615e511bdcf9f2d9a3dfb3ddb42b10d4",
@@ -92960,8 +92959,8 @@
       "description": "Spawn asynchronous tasks in an executor-independent way.",
       "directory": "src/foundation/task-dispatch",
       "files_sha256": {
-        "Cargo.toml": "33fd519e179cb46ee3100a11dc6cf7c172beea3c8b5fe2a5ab3297cbcbcbc6d0",
-        "src/lib.rs": "916b9fc2920f3f2b1cd6b4c6e009c45c9a9abbec95d6bbb2109a0c302a20e1e7"
+        "Cargo.toml": "f40539c80ab3d96544e05708d2a8494638f6abe9a25d2a6e496c4b36ad011d02",
+        "src/lib.rs": "1a5294a79d7f181d795ec480438f461b6f2a8b6a641ad792aca4185fb4a75346"
       },
       "license": "MIT",
       "license_materials": [
@@ -95303,39 +95302,6 @@
       },
       "version": "0.2.129"
     },
-    "src/foundation/wasm-bindgen-futures": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Bridging the gap between Rust Futures and JavaScript Promises",
-      "directory": "src/foundation/wasm-bindgen-futures",
-      "files_sha256": {
-        "Cargo.toml": "0eaec7e0850444e2c9622f213641a8920bcb01fa47a3be9e802e605d349df9b8",
-        "src/lib.rs": "56f6c5553a8c44df3e092eb6ddf11498e0545d8bc93abd99111cb8b3f2394529",
-        "src/tokio.rs": "bceffbc9495fd5b2ffc4b0cf9c289acfd0ecca8cae7df897135ecf1a986869f2"
-      },
-      "license": "MIT OR Apache-2.0",
-      "license_materials": [
-        "compliance/licenses/upstream/wasm-bindgen-futures-0.4.79/LICENSE-APACHE",
-        "compliance/licenses/upstream/wasm-bindgen-futures-0.4.79/LICENSE-MIT"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "wasm-bindgen-futures",
-      "origin_directory": "vendor/rust/wasm-bindgen-futures-0.4.79",
-      "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/futures",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "3cbab34de2d982e9b48e18d216d04c4a6f641066ff19ffb699980f591ee3610e",
-        "archive_url": "https://static.crates.io/crates/wasm-bindgen-futures/wasm-bindgen-futures-0.4.79.crate",
-        "name": "wasm-bindgen-futures",
-        "version": "0.4.79"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
-        },
-        "path_in_vcs": "crates/futures"
-      },
-      "version": "0.4.79"
-    },
     "src/foundation/wasm-bindgen-shared": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Shared support between wasm-bindgen and wasm-bindgen cli, an internal\ndependency.",
@@ -95376,15 +95342,15 @@
       "description": "Definition of the `#[wasm_bindgen]` attribute, an internal dependency",
       "directory": "src/foundation/wasm-binding-macros",
       "files_sha256": {
-        "Cargo.toml": "2185ec235c19160cdf244f0caeb3828408f97cf3e6b1426cbade6df78bd6b424",
-        "src/ast.rs": "71f29778b186f3bf1276ba12779009bd27f9d33c15f0408d4f470ac3eb75260e",
-        "src/codegen.rs": "665a85e1b720b05e50b35a8162e397f587e1163a28571c7db7c4e9e862289d62",
-        "src/encode.rs": "d6ef124ccea39626616dec87434913035cb1cee4001754f6d823b878268dfb6f",
+        "Cargo.toml": "3484d5b2e0d974b0cffb4b4ed447e7abf57b1d41aabc17168153e382bc77af1c",
+        "src/ast.rs": "1711699d3c2196b17b5cee7173686994d6470b1199b76420157cbf4eb1e69884",
+        "src/codegen.rs": "f87f41bd3cf763ef653e5b13fe6c0fcfcdc63b92323ec6caf133988d734f29f9",
+        "src/encode.rs": "c5a4fe7951852808c46484970f2547b05445efe24219178f5b45a0f75a061155",
         "src/error.rs": "92ad4a2b83ac4ea826d5f1a5b88d3446fae16934216d49b0aee9aa617649d783",
         "src/generics.rs": "c8103531b6b1e55601f2c8d4ebecb0d3dd7650040ce50fa5c5bba26586853aee",
         "src/hash.rs": "9858c07a0d17b5c3b8fda8009392dc534eecabb701eaf44e9aa9fee643a07fab",
-        "src/lib.rs": "40a43b32e8e4efc000d3632dd6ac0300b9d497972ce6163dc61a1274816f23d3",
-        "src/parser.rs": "7ac8e8e62486cbfd21b5332f7dc32bf36f6dab521ce2e1c1b6b9cf21fa35582e",
+        "src/lib.rs": "bfe2b18517c0eed8f1774c5afe53de2b427c12a2bc976798582e38dacced447a",
+        "src/parser.rs": "5aac88beca02259b27ddaf5a7bfbede98f3f66dca86245d33f8b8319bb1812e2",
         "src/worker.js": "cb5c33dd41cfad622abce5464a3ceae478904ea16ddc3c6c769ee33e0c086692"
       },
       "license": "MIT OR Apache-2.0",
@@ -109130,15 +109096,6 @@
             "runtime"
           ]
         },
-        "src/foundation/wasm-bindgen-futures": {
-          "features": [
-            "default",
-            "std"
-          ],
-          "roles": [
-            "runtime"
-          ]
-        },
         "src/foundation/wasm-bindgen-shared": {
           "features": [],
           "roles": [
@@ -117703,6 +117660,49 @@
       },
       "version": "1.0.4+wasi-0.2.12"
     },
+    "src/foundation/wasm-bindgen-futures": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Bridging the gap between Rust Futures and JavaScript Promises",
+      "directory": "src/foundation/wasm-bindgen-futures",
+      "files_sha256": {
+        "Cargo.toml": "0eaec7e0850444e2c9622f213641a8920bcb01fa47a3be9e802e605d349df9b8",
+        "src/lib.rs": "56f6c5553a8c44df3e092eb6ddf11498e0545d8bc93abd99111cb8b3f2394529",
+        "src/tokio.rs": "bceffbc9495fd5b2ffc4b0cf9c289acfd0ecca8cae7df897135ecf1a986869f2"
+      },
+      "license": "MIT OR Apache-2.0",
+      "license_materials": [
+        "compliance/licenses/upstream/wasm-bindgen-futures-0.4.79/LICENSE-APACHE",
+        "compliance/licenses/upstream/wasm-bindgen-futures-0.4.79/LICENSE-MIT"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "wasm-bindgen-futures",
+      "origin_directory": "vendor/rust/wasm-bindgen-futures-0.4.79",
+      "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/futures",
+      "retirement": {
+        "bytes": 11415,
+        "category": "compatibility-shim-removal",
+        "file_count": 3,
+        "reason": "Retire the obsolete wasm-bindgen-futures compatibility re-export package. Browser consumers and generated bindings now use the existing canonical js-sys::futures implementation directly with unchanged std and atomics scheduling semantics. The unsupported experimental_tokio and Emscripten routes are rejected explicitly; exact final shim and Tokio implementation bytes, upstream identity, licenses, and archives remain available for provenance review.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "3cbab34de2d982e9b48e18d216d04c4a6f641066ff19ffb699980f591ee3610e",
+        "archive_url": "https://static.crates.io/crates/wasm-bindgen-futures/wasm-bindgen-futures-0.4.79.crate",
+        "name": "wasm-bindgen-futures",
+        "version": "0.4.79"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "165586f854c852bcbc4d14d8a75a0a0e0d0abc12"
+        },
+        "path_in_vcs": "crates/futures"
+      },
+      "version": "0.4.79"
+    },
     "src/foundation/wasm-streams": {
       "changes": "锁文件超集保留，未在登记的 normal/build 闭包选中；未声称属于生产运行代码。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Bridging between web streams and Rust streams using WebAssembly",
@@ -123866,6 +123866,7 @@
     "src/foundation/walkdir": "e9ebee64bc59bc8291ba6d98d17df03e2c3146b42f0fcb5bafe73d3430e6cc6c",
     "src/foundation/wasi": "7d6527ad787c0cbcba880a574a3af007af42dbc2d4b751e981f369e0ea3dc94f",
     "src/foundation/wasip2": "f1372bdd80c5c551f767e8ec93d31f55d9693b019593aff01f00e786cf6b5a9e",
+    "src/foundation/wasm-bindgen-futures": "f2ec42415a982ce97a7080522be7f86e71169c2c40b0bd8831d57c9b59d4c122",
     "src/foundation/wasm-streams": "242e8380921fcfa5d4b73a6697abfbbaa735fc2fab94a0a90af667be96f2439b",
     "src/foundation/web-time": "973472091910d420967deb32f08024fc9af33bf570709a50f626cc4e8f2f3e17",
     "src/foundation/winapi": "6936980c761f3514b5a4551a16fc5d8f428e47420a9a1f295fbf2f64149760f8",

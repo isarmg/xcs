@@ -1,7 +1,5 @@
 //! Host-side implementation of the canonical wasm-bindgen macro protocol.
 
-
-
 #[macro_use]
 mod error;
 
@@ -37,8 +35,9 @@ fn cfg_gate_conditions(meta: &rust_syntax::Meta) -> Vec<TokenStream> {
     if !list.path.is_ident("cfg_attr") {
         return Vec::new();
     }
-    let Ok(args) = rust_syntax::punctuated::Punctuated::<rust_syntax::Meta, Token![,]>::parse_terminated
-        .parse2(list.tokens.clone())
+    let Ok(args) =
+        rust_syntax::punctuated::Punctuated::<rust_syntax::Meta, Token![,]>::parse_terminated
+            .parse2(list.tokens.clone())
     else {
         return Vec::new();
     };
@@ -144,10 +143,7 @@ fn expand_link_to(input: TokenStream) -> Result<TokenStream, Diagnostic> {
 }
 
 /// Takes the parsed input from a `#[wasm_bindgen]` macro and returns the generated bindings
-fn expand_class_marker(
-    attr: TokenStream,
-    input: TokenStream,
-) -> Result<TokenStream, Diagnostic> {
+fn expand_class_marker(attr: TokenStream, input: TokenStream) -> Result<TokenStream, Diagnostic> {
     parser::reset_attrs_used();
     let mut item = rust_syntax::parse2::<rust_syntax::ImplItemFn>(input)?;
     let opts: ClassMarker = rust_syntax::parse2(attr)?;
@@ -200,7 +196,6 @@ struct ClassMarker {
     js_class: String,
     js_namespace: Option<Vec<String>>,
     wasm_bindgen: rust_syntax::Path,
-    wasm_bindgen_futures: rust_syntax::Path,
     js_sys: rust_syntax::Path,
 }
 
@@ -216,7 +211,6 @@ impl Parse for ClassMarker {
 
         let mut js_namespace: Option<Vec<String>> = None;
         let mut wasm_bindgen = None;
-        let mut wasm_bindgen_futures = None;
         let mut js_sys = None;
 
         loop {
@@ -233,8 +227,11 @@ impl Parse for ClassMarker {
                     input.parse::<Token![=]>()?;
                     let content;
                     rust_syntax::bracketed!(content in input);
-                    let segs: rust_syntax::punctuated::Punctuated<rust_syntax::LitStr, Token![,]> = content
-                        .parse_terminated(|p: ParseStream| p.parse::<rust_syntax::LitStr>(), Token![,])?;
+                    let segs: rust_syntax::punctuated::Punctuated<rust_syntax::LitStr, Token![,]> =
+                        content.parse_terminated(
+                            |p: ParseStream| p.parse::<rust_syntax::LitStr>(),
+                            Token![,],
+                        )?;
                     js_namespace = Some(segs.into_iter().map(|s| s.value()).collect());
                 } else if ident == "wasm_bindgen" {
                     if wasm_bindgen.is_some() {
@@ -246,19 +243,12 @@ impl Parse for ClassMarker {
 
                     input.parse::<Token![=]>()?;
                     wasm_bindgen = Some(input.parse::<rust_syntax::Path>()?);
-                } else if ident == "wasm_bindgen_futures" {
-                    if wasm_bindgen_futures.is_some() {
-                        return Err(rust_syntax::Error::new(
-                            ident.span(),
-                            "found duplicate `wasm_bindgen_futures`",
-                        ));
-                    }
-
-                    input.parse::<Token![=]>()?;
-                    wasm_bindgen_futures = Some(input.parse::<rust_syntax::Path>()?);
                 } else if ident == "js_sys" {
                     if js_sys.is_some() {
-                        return Err(rust_syntax::Error::new(ident.span(), "found duplicate `js_sys`"));
+                        return Err(rust_syntax::Error::new(
+                            ident.span(),
+                            "found duplicate `js_sys`",
+                        ));
                     }
 
                     input.parse::<Token![=]>()?;
@@ -266,7 +256,7 @@ impl Parse for ClassMarker {
                 } else {
                     return Err(rust_syntax::Error::new(
                         ident.span(),
-                        "expected `js_namespace`, `wasm_bindgen`, `wasm_bindgen_futures`, or `js_sys`",
+                        "expected `js_namespace`, `wasm_bindgen`, or `js_sys`",
                     ));
                 }
             } else {
@@ -278,9 +268,8 @@ impl Parse for ClassMarker {
             class,
             js_class,
             js_namespace,
-            wasm_bindgen: wasm_bindgen.unwrap_or_else(|| rust_syntax::parse_quote! { wasm_bindgen }),
-            wasm_bindgen_futures: wasm_bindgen_futures
-                .unwrap_or_else(|| rust_syntax::parse_quote! { wasm_bindgen_futures }),
+            wasm_bindgen: wasm_bindgen
+                .unwrap_or_else(|| rust_syntax::parse_quote! { wasm_bindgen }),
             js_sys: js_sys.unwrap_or_else(|| rust_syntax::parse_quote! { js_sys }),
         })
     }
@@ -350,7 +339,10 @@ pub fn link_to(input: MacroTokenStream) -> MacroTokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn __wasm_bindgen_class_marker(attr: MacroTokenStream, input: MacroTokenStream) -> MacroTokenStream {
+pub fn __wasm_bindgen_class_marker(
+    attr: MacroTokenStream,
+    input: MacroTokenStream,
+) -> MacroTokenStream {
     match expand_class_marker(attr.into(), input.into()) {
         Ok(tokens) => {
             if cfg!(xxx_debug_only_print_generated_code) {
@@ -374,3 +366,7 @@ pub fn __wasm_bindgen_struct_marker(item: MacroTokenStream) -> MacroTokenStream 
         Err(diagnostic) => (quote! { #diagnostic }).into(),
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/wasm-binding-macros/browser_futures.rs"]
+mod browser_futures;

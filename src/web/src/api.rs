@@ -1,8 +1,8 @@
+use js_sys::futures::JsFuture;
 use js_sys::{Reflect, Uint8Array};
 use json_codec::{Value, json};
 use std::cell::RefCell;
 use wasm_bindgen::{JsCast, JsValue};
-use wasm_bindgen_futures::JsFuture;
 use web_interface::i18n::t;
 use web_sys::{RequestCredentials, RequestInit, RequestMode, RequestRedirect, Response};
 

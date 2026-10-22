@@ -26,7 +26,7 @@ use wasm_bindgen::prelude::*;
 /// ```no_run
 /// use gloo_timers::future::TimeoutFuture;
 /// use futures::future::{select, Either};
-/// use wasm_bindgen_futures::spawn_local;
+/// use js_sys::futures::spawn_local;
 ///
 /// spawn_local(async {
 ///     match select(TimeoutFuture::new(1_000), TimeoutFuture::new(2_000)).await {
@@ -51,14 +51,14 @@ impl TimeoutFuture {
     /// Create a new timeout future.
     ///
     /// Remember that futures do nothing unless polled or spawned, so either
-    /// pass this future to `wasm_bindgen_futures::spawn_local` or use it inside
+    /// pass this future to `js_sys::futures::spawn_local` or use it inside
     /// another future.
     ///
     /// # Example
     ///
     /// ```no_run
     /// use gloo_timers::future::TimeoutFuture;
-    /// use wasm_bindgen_futures::spawn_local;
+    /// use js_sys::futures::spawn_local;
     ///
     /// spawn_local(async {
     ///     TimeoutFuture::new(1_000).await;
@@ -123,7 +123,7 @@ impl IntervalStream {
     /// Create a new interval stream.
     ///
     /// Remember that streams do nothing unless polled or spawned, so either
-    /// spawn this stream via `wasm_bindgen_futures::spawn_local` or use it inside
+    /// spawn this stream via `js_sys::futures::spawn_local` or use it inside
     /// another stream or future.
     ///
     /// # Example
@@ -131,7 +131,7 @@ impl IntervalStream {
     /// ```compile_fail
     /// use futures::stream::StreamExt;
     /// use gloo_timers::future::IntervalStream;
-    /// use wasm_bindgen_futures::spawn_local;
+    /// use js_sys::futures::spawn_local;
     ///
     /// spawn_local(async {
     ///     IntervalStream::new(1_000).for_each(|_| {

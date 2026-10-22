@@ -295,7 +295,7 @@ fn logout(state: RwSignal<State>) {
         return;
     };
     // Finish the requested logout even if the UI is disposed while it is pending.
-    wasm_bindgen_futures::spawn_local(async move {
+    js_sys::futures::spawn_local(async move {
         let result = api::request("POST", "/api/auth/logout", Some(json!({}))).await;
         if !state
             .try_with_untracked(|s| s.session_epoch == epoch && s.logout_pending)

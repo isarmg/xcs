@@ -214,7 +214,7 @@
         {
           "source": "tools/web-bindings/tests/fixtures/csr-template.rs",
           "path": "test/tools/web-bindings/fixtures/csr-template.rs",
-          "sha256": "1bff500e6565c19c77fa97d6629c5bc71b5a3000e3c4ffdb6be32d619fad9a5b",
+          "sha256": "6bcd4d63ef20fd46d8fdbd9a7f7048f7ff60035a2f177f3c8a14b788370b230d",
           "source_sha256_before": "422436b26afc21cfbb9fc30b3544ea18f965f8680555131a1c38808c5e6bb281"
         },
         {

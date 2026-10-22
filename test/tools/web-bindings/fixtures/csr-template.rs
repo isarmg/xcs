@@ -40,7 +40,7 @@ fn boolean_template(value: bool) -> impl RenderHtml + ToTemplate {
 
 async fn settle_properties() {
     let _ =
-        wasm_bindgen_futures::JsFuture::from(js_sys::Promise::resolve(&JsValue::UNDEFINED)).await;
+        js_sys::futures::JsFuture::from(js_sys::Promise::resolve(&JsValue::UNDEFINED)).await;
 }
 
 #[wasm_bindgen]

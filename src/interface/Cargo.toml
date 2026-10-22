@@ -29,7 +29,6 @@ send_wrapper = {version = "0.6", path = "../foundation/send_wrapper"}
 data-serialization = { version = "1", features = ["derive"], path = "../foundation/data-serialization"}
 json-codec = {version = "1", path = "../foundation/json-codec"}
 wasm-bindgen = {version = "=0.2.129", path = "../foundation/wasm-bindgen"}
-wasm-bindgen-futures = {version = "=0.4.79", path = "../foundation/wasm-bindgen-futures"}
 web-sys = { version = "=0.3.106", features = [
   "Window", "Document", "DocumentFragment", "HtmlElement", "Element", "Node", "NodeList", "HtmlCollection", "DomTokenList",
   "Storage", "Location", "Url", "UrlSearchParams", "Navigator", "MediaQueryList", "MediaQueryListEvent", "Event", "EventTarget",

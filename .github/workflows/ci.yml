@@ -60,6 +60,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y libsqlite3-dev clang libclang-dev pkg-config
+      - name: Enable sandboxed Chrome for browser future runtime checks
+        if: matrix.suite == 'foundation-language'
+        run: |
+          chrome="$(command -v google-chrome)"
+          "$chrome" --version
+          echo "ZXS_CHROMIUM=$chrome" >> "$GITHUB_ENV"
       - name: Run locked test suite
         run: bash .github/scripts/check.sh "${{ matrix.suite }}"
       - name: Verify isolated system SQLite consumer

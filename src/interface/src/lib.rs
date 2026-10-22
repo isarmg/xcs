@@ -193,9 +193,9 @@ mod browser {
     use crate::prelude::IntoAny;
     use futures::{FutureExt, channel::oneshot};
     use gloo_events::EventListener;
+    use js_sys::futures::JsFuture;
     use std::{cell::RefCell, rc::Rc};
     use wasm_bindgen::JsCast;
-    use wasm_bindgen_futures::JsFuture;
 
     thread_local! {
         static APPLICATION: RefCell<lifecycle::Lifecycle<Box<Application>>> =
@@ -266,7 +266,7 @@ mod browser {
         });
         i18n::initialize();
         theme::initialize();
-        wasm_bindgen_futures::spawn_local(async move {
+        js_sys::futures::spawn_local(async move {
             let result: Result<(), JsValue> = async {
                 ensure_starting()?;
                 startup::ensure_pending(&document)?;
@@ -302,7 +302,7 @@ mod browser {
                 // Font download/decoding is enhancement work, not an application
                 // startup dependency. Start it only after publishing ownership.
                 let font_document = document.clone();
-                wasm_bindgen_futures::spawn_local(async move {
+                js_sys::futures::spawn_local(async move {
                     if let Some(result) = wait_for_fonts(&font_document, cancelled).await
                         && APPLICATION.with(|slot| slot.borrow().is_mounted())
                         && let Some(html) = font_document.document_element()

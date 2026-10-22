@@ -4,19 +4,9 @@
 
 use crate::{hash::ShortHash, Diagnostic};
 use proc_macro2::{Ident, Span};
-use std::hash::{Hash, Hasher};
 use rust_syntax::Path;
+use std::hash::{Hash, Hasher};
 use wasm_bindgen_shared as shared;
-
-pub fn use_js_sys_futures() -> bool {
-    // Honor either the build-time cfg or an expansion-time environment variable.
-    // The env-var form is necessary because `cfg!(...)` is resolved when this
-    // proc-macro crate is itself compiled (on the host), and Cargo does not pass
-    // `--cfg`/`RUSTFLAGS` to host proc-macros when `--target` is used. Reading
-    // an env var at expansion time provides a stable workflow that works
-    // regardless of how the consumer configures Cargo.
-    cfg!(wasm_bindgen_use_js_sys) || std::env::var_os("WASM_BINDGEN_USE_JS_SYS").is_some()
-}
 
 /// Whether a function is a start function, and if so, whether it
 /// should be exported to JS.
@@ -57,8 +47,6 @@ pub struct Program {
     pub wasm_bindgen: Path,
     /// Path to js_sys
     pub js_sys: Path,
-    /// Path to wasm_bindgen_futures
-    pub wasm_bindgen_futures: Path,
 }
 
 impl Default for Program {
@@ -73,7 +61,6 @@ impl Default for Program {
             inline_js: Default::default(),
             wasm_bindgen: rust_syntax::parse_quote! { wasm_bindgen },
             js_sys: rust_syntax::parse_quote! { js_sys },
-            wasm_bindgen_futures: rust_syntax::parse_quote! { wasm_bindgen_futures },
         }
     }
 }
@@ -123,8 +110,6 @@ pub struct Export {
     pub start: StartKind,
     /// Path to wasm_bindgen
     pub wasm_bindgen: Path,
-    /// Path to wasm_bindgen_futures
-    pub wasm_bindgen_futures: Path,
     /// Path to js_sys
     pub js_sys: Path,
 }
@@ -227,8 +212,6 @@ pub struct ImportFunction {
     pub doc_comment: String,
     /// Path to wasm_bindgen
     pub wasm_bindgen: Path,
-    /// Path to wasm_bindgen_futures
-    pub wasm_bindgen_futures: Path,
     /// Path to js_sys
     pub js_sys: Path,
     /// Generic parameters as validated simple type parameters for this function
@@ -446,19 +429,6 @@ pub struct DynamicUnion {
     pub wasm_bindgen: Path,
 }
 
-/// Which tokio runtime a `#[wasm_bindgen(experimental_tokio)]` export runs on.
-#[cfg_attr(feature = "extra-traits", derive(Debug))]
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum TokioMode {
-    /// The thread's shared ambient runtime (bare `experimental_tokio`).
-    Ambient,
-    /// A fresh runtime owned by each invocation
-    /// (`experimental_tokio = "isolated"`), so
-    /// its reactor and tasks are isolated from other invocations —
-    /// e.g. multiplexed hosts where I/O must not cross request contexts.
-    Isolated,
-}
-
 /// Information about a function being imported or exported
 #[cfg_attr(feature = "extra-traits", derive(Debug))]
 #[derive(Clone)]
@@ -482,10 +452,6 @@ pub struct Function {
     /// Whether this export should be wrapped with `WebAssembly.promising` so
     /// it returns a JS Promise and can suspend via JSPI.
     pub jspi: bool,
-    /// Whether the `experimental_tokio` attribute was applied: drive the
-    /// exported async function on tokio's emscripten event-loop runtime
-    /// instead of `wasm-bindgen-futures`' executor.
-    pub tokio: Option<TokioMode>,
     /// Whether to generate a typescript definition for this function
     pub generate_typescript: bool,
     /// Whether to generate jsdoc documentation for this function

@@ -10,7 +10,7 @@ import tempfile
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
-TARGET = ROOT / 'target/csr-template-check'
+TARGET = Path(os.environ.get('CARGO_TARGET_DIR', ROOT / 'target/csr-template-check'))
 
 
 def cargo(*args, capture=False):
@@ -30,7 +30,6 @@ def check():
             'dom-helpers={path="' + str(ROOT / 'src/foundation/dom-helpers') + '"}',
             'reactive-state={path="' + str(ROOT / 'src/foundation/reactive-state') + '",features=["effects"]}',
             'wasm-bindgen={path="' + str(ROOT / 'src/foundation/wasm-bindgen') + '"}',
-            'wasm-bindgen-futures={path="' + str(ROOT / 'src/foundation/wasm-bindgen-futures') + '"}',
             'js-sys={path="' + str(ROOT / 'src/foundation/js-sys') + '"}',
 
             'web-sys={path="' + str(ROOT / 'src/foundation/web-sys') + '",features=["Window","Document","HtmlInputElement","Event"]}',

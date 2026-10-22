@@ -61,7 +61,7 @@
 //!   that while updating a signal will immediately update its value, effects that depend on it
 //!   will not run until the next "tick" of the async runtime. (This in turn means that the
 //!   reactive system is *async runtime agnostic*: it can be used in the browser with
-//!   `wasm-bindgen-futures`, in a native binary with `tokio`, in a GTK application with `glib`,
+//!   `js_sys::futures`, in a native binary with `tokio`, in a GTK application with `glib`,
 //!   etc.)
 //!
 //! The reactive-graph algorithm used in this crate is based on that of

@@ -191,7 +191,7 @@ impl Executor {
             .map_err(|_| ExecutorError::AlreadySet)
     }
 
-    /// Globally sets the [`wasm-bindgen-futures`] runtime as the executor used to spawn tasks.
+    /// Globally sets the [`js_sys::futures`] runtime as the executor used to spawn tasks.
     ///
     /// Returns `Err(_)` if a global executor has already been set.
     ///
@@ -200,10 +200,10 @@ impl Executor {
     #[cfg_attr(docsrs, doc(cfg(feature = "wasm-bindgen")))]
     pub fn init_wasm_bindgen() -> Result<(), ExecutorError> {
         let executor_impl = ExecutorFns {
-            // wasm-bindgen-futures only supports spawn_local
+            // The browser executor only supports spawn_local
             spawn: no_op_spawn,
             spawn_local: |fut| {
-                wasm_bindgen_futures::spawn_local(fut);
+                js_sys::futures::spawn_local(fut);
             },
             poll_local: no_op_poll,
         };
