@@ -5,7 +5,6 @@ use convert_case::{
     Case::{Pascal, Snake},
     Casing,
 };
-use convert_case_extras::is_case;
 use iterator_toolkit::Itertools;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, quote_spanned, ToTokens, TokenStreamExt};
@@ -105,7 +104,7 @@ pub fn drain_filter<T>(vec: &mut Vec<T>, mut some_predicate: impl FnMut(&mut T) 
 
 pub fn convert_from_snake_case(name: &Ident) -> Ident {
     let name_str = name.to_string();
-    if !is_case(&name_str, Snake) {
+    if name_str != name_str.to_case(Snake) {
         name.clone()
     } else {
         Ident::new(&name_str.to_case(Pascal), name.span())
@@ -969,3 +968,7 @@ fn convert_impl_trait_to_generic(sig: &mut Signature) {
         }));
     }
 }
+
+#[cfg(test)]
+#[path = "../../../test/macros/unit/component/case_normalization_tests.rs"]
+mod case_normalization_tests;

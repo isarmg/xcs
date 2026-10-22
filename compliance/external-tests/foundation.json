@@ -3151,20 +3151,6 @@
       ]
     },
     {
-      "directory": "src/foundation/convert_case_extras",
-      "roots": [
-        "test/foundation/convert_case_extras"
-      ],
-      "files": [
-        {
-          "source": "src/foundation/convert_case_extras/src/lib.rs",
-          "source_sha256_before": "e3667afa91b91016e99b100c290df7fb7def12cf1005c05366092b093eff3fcc",
-          "path": "test/foundation/convert_case_extras/unit/src/lib/test_433.rs",
-          "sha256": "41385f3198872f4e6c7b0aa3af6bb986e704b3d81d4bd1ba2c341856d01b9e2b"
-        }
-      ]
-    },
-    {
       "directory": "src/foundation/cpu-feature-detect",
       "roots": [
         "test/foundation/cpu-feature-detect"

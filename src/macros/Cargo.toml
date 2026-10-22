@@ -13,7 +13,6 @@ proc-macro = true
 [dependencies]
 attribute-derive = { version = "0.11", features = ["syntax-full"], path = "../foundation/attribute-derive"}
 convert_case = {version = "0.11", path = "../foundation/convert_case"}
-convert_case_extras = {version = "0.2", path = "../foundation/convert_case_extras"}
 html-escape = {version = "0.2", path = "../foundation/html-escape"}
 iterator-toolkit = {version = "0.14", path = "../foundation/iterator-toolkit"}
 rust-source-format = {version = "0.3", path = "../foundation/rust-source-format"}

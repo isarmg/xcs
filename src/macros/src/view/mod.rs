@@ -12,7 +12,6 @@ use convert_case::{
     Case::{Snake, UpperCamel},
     Casing,
 };
-use convert_case_extras::is_case;
 use proc_macro2::{Ident, Span, TokenStream, TokenTree};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use rstml::node::{
@@ -1754,11 +1753,7 @@ pub(crate) fn parse_event_name(
 }
 
 fn convert_to_snake_case(name: String) -> String {
-    if !is_case(&name, Snake) {
-        name.to_case(Snake)
-    } else {
-        name
-    }
+    name.to_case(Snake)
 }
 
 #[cfg(debug_assertions)]
@@ -1871,3 +1866,7 @@ mod attribute_order_tests;
 #[cfg(test)]
 #[path = "../../../../test/macros/unit/view/event_modifier_tests.rs"]
 mod event_modifier_tests;
+
+#[cfg(test)]
+#[path = "../../../../test/macros/unit/view/case_normalization_tests.rs"]
+mod case_normalization_tests;

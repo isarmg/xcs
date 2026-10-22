@@ -29943,8 +29943,8 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "4426777727f6172db4fc490712ab00aa95132bd4a85a76d581fe61bbc751d35b",
-    "compliance/external-tests/integrated.json": "61167faf558a55d73b6f9312ff3635e5dfb01309856c499e3c4f365c1080c208",
+    "compliance/external-tests/foundation.json": "fd4846dbf45a10c4e32367fc9bebb35932da37be937ee84ef180ba1128d0fa2a",
+    "compliance/external-tests/integrated.json": "b9d3cdc7b7678cb7dec3dff2b120b11d1754ddc86ec66194ce97d53a4f8d2033",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
   "external_tests": {
@@ -33474,23 +33474,6 @@
       "origin_directory": "vendor/rust/convert_case-0.11.0",
       "roots": [
         "test/foundation/convert_case"
-      ]
-    },
-    "src/foundation/convert_case_extras": {
-      "bytes": 1263,
-      "directory": "src/foundation/convert_case_extras",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/convert_case_extras/unit/src/lib/test_433.rs",
-          "sha256": "41385f3198872f4e6c7b0aa3af6bb986e704b3d81d4bd1ba2c341856d01b9e2b",
-          "source": "src/foundation/convert_case_extras/src/lib.rs",
-          "source_sha256_before": "e3667afa91b91016e99b100c290df7fb7def12cf1005c05366092b093eff3fcc"
-        }
-      ],
-      "origin_directory": "vendor/rust/convert_case_extras-0.2.0",
-      "roots": [
-        "test/foundation/convert_case_extras"
       ]
     },
     "src/foundation/cpu-feature-detect": {
@@ -56292,10 +56275,16 @@
       ]
     },
     "src/macros": {
-      "bytes": 7167,
+      "bytes": 10977,
       "directory": "src/macros",
-      "file_count": 5,
+      "file_count": 7,
       "files": [
+        {
+          "path": "test/macros/unit/component/case_normalization_tests.rs",
+          "sha256": "26c5b668504d508b532b4bcf9cf2b0170991ea61b1e862b3b5781ab01336530c",
+          "source": "src/macros/src/component.rs",
+          "source_sha256_before": "6ef126dd2fd3001ddcfbfbc60778d33e1a5bdf5237ac93429921a6e1a319fbc1"
+        },
         {
           "path": "test/macros/unit/lib/documentation_diagnostics.rs",
           "sha256": "92437fbf2224cf0065a3e59d12eaa3c49349e6bce61cb948ea15d3da5bc64511",
@@ -56307,6 +56296,12 @@
           "sha256": "c8a169bc32283759ed6885c30d4ec5516a0afa814ad65330d5f6ab1d154d591e",
           "source": "src/macros/src/view/mod.rs",
           "source_sha256_before": "8089ceb3b8b1b78cc7872f987792e0bafea8b395364ee674beca880df955d7fd"
+        },
+        {
+          "path": "test/macros/unit/view/case_normalization_tests.rs",
+          "sha256": "8a2a5295160e554e3d072350f9dc56d6b299e0199ec8b0a11cbc330bdbc75818",
+          "source": "src/macros/src/view/mod.rs",
+          "source_sha256_before": "c6b3860f30fe11885aa99dcc8c2c58482001cb121ea7a5b71196b63fc64f4b7d"
         },
         {
           "path": "test/macros/unit/view/component_builder/tests.rs",
@@ -56423,7 +56418,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "44e1c35e4b5fabbfdc241478d3d6a1453459f293e4a26a08deae31bb428b95a0"
+    "Cargo.lock": "8e8321b58be8936d776d39bfab5f5a4b7774338fd57b845e8ba6e473f15a89e0"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -56475,7 +56470,6 @@
     "src/foundation/const_str_slice_concat/Cargo.toml": "f30e9cd23703e2dc4c74f6244010f4474c7bd91b29b6b60e6ce09e598bbb193a",
     "src/foundation/constant_time_eq/Cargo.toml": "f9f3ef7de6bf2d5e66e05a8a14a5544e2dd4710256adc0c39813f957e1e6321f",
     "src/foundation/convert_case/Cargo.toml": "4b0f3ad11698a6b1866abcda3a159219796d1067b44ac21a82168b514ab47887",
-    "src/foundation/convert_case_extras/Cargo.toml": "a5d2c9cba481304d4c7c2515007adb57737720f716603d2cf90b20b8c699b16f",
     "src/foundation/cpu-feature-detect/Cargo.toml": "e0e06a8928caa0ed1824825e5915c98f0d99b87b4f7d7340cd10aaa651125025",
     "src/foundation/crc32fast/Cargo.toml": "c7c5ca2266b672c8e0af9d3b7515222ac01e0cdea99cac6d346eeff359de6e2c",
     "src/foundation/cryptographic-core/Cargo.toml": "ccd38ae8b392c38aee7af0cfd90b62f1a6f2bfcc56802febfa6efd6c85755711",
@@ -56695,10 +56689,10 @@
     "src/foundation/zerovec/Cargo.toml": "dd088e3746a936ee712ff6f9aacc6b5d40b68a1ec14a0c57f58a7eb0e1aedcf6",
     "src/foundation/zmij/Cargo.toml": "9230831f8b50f7ac0b50a32d458f95f0e758ef847a81b15cbae9b84a6dd44df4",
     "src/interface/Cargo.toml": "610da0e4dc1ef135758334ed121d4955da88c373736655140ea3f6459ac9b872",
-    "src/macros/Cargo.toml": "fa641aa7517eed12651a1021de7001c5e70316c1f265b133981743cbd5268af9",
+    "src/macros/Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
     "src/naming/Cargo.toml": "6599ac90d88b7a74eeb47444aa4fdad2002161798ae72cfe4b18e3d42eae1a9a",
     "src/platform/Cargo.toml": "d05e09ce14b91d6e1e0bd96eb6fe0fc2c822edff592fe6dbf4e7f4c5f4404953",
-    "src/server/Cargo.toml": "835f9c3f3b6a83170b85fcb8be49c84a1341408223c756c25b31fe8f788c2ceb",
+    "src/server/Cargo.toml": "243f7b285a962b29e6c5e978af49e02547c67df04ce76ca4772b6d27c2a38677",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
     "src/web/Cargo.toml": "9c7d8395c5ba4d89a1b6b38f95f6302262b21acf2f454e14b1a7a55915abffff",
@@ -56830,15 +56824,15 @@
       "description": "Utility types used for dev mode and hot-reloading for the Leptos web framework.",
       "directory": "src/macros",
       "files_sha256": {
-        "Cargo.toml": "fa641aa7517eed12651a1021de7001c5e70316c1f265b133981743cbd5268af9",
-        "src/component.rs": "6ef126dd2fd3001ddcfbfbc60778d33e1a5bdf5237ac93429921a6e1a319fbc1",
+        "Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
+        "src/component.rs": "2de5b2edb467395f8ee4cda35d3ce0488671fd0c4b70c7a28a469a1a7c3ccf92",
         "src/diagnostics.rs": "b501d80659ee3202adc4f60e6eec000389fe34eeb19cc0fb60e02c15aaabd03e",
         "src/lib.rs": "e9927ff107dd16a29bdec54b6e188b26cf9d69fe04795d1e405056dbd244abe6",
         "src/memo.rs": "9ac1857a33a83f73eafb576895ce02f3d0c0898ca869ae8741747fa281a01539",
         "src/slice.rs": "496a010eedcb7f8c4b74a9aed209f2ff5c435d3efba6f9d3d877864eb18fc943",
         "src/slot.rs": "323e72f091b67fea8b7cf0b8706821ad1a8deebec7ab3f4bfe79163c62b6039f",
         "src/view/component_builder.rs": "2cb6a02c28818b01533485afc2431d210cbf1784b5bff25315d4a870737acf5c",
-        "src/view/mod.rs": "c6b3860f30fe11885aa99dcc8c2c58482001cb121ea7a5b71196b63fc64f4b7d",
+        "src/view/mod.rs": "bfdf3d476685542b5a5b4438e4077562dd4e53baa44ac35a238a2b6db9d0826b",
         "src/view/slot_helper.rs": "09aef49e24e87d876ef884c911dcef068b809d2d0756ca23e2f7da7b5fa90203",
         "src/view/utils.rs": "4341268b1fe90e265706be1e6e9d3a3cbd748b86df562b1a56306b7ff737fff8",
         "src/view_source.rs": "ed741a25dcdc421ede6900d03f82de4067b14b8a18f0843855e8a6a1762776c5"
@@ -65551,42 +65545,6 @@
         "path_in_vcs": ""
       },
       "version": "0.11.0"
-    },
-    "src/foundation/convert_case_extras": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "Extra features for convert_case",
-      "directory": "src/foundation/convert_case_extras",
-      "files_sha256": {
-        "Cargo.toml": "a5d2c9cba481304d4c7c2515007adb57737720f716603d2cf90b20b8c699b16f",
-        "src/lib.rs": "66d24e8073f97215eb3948b48f2b2b5be8a2cab536658565faac4b4089c91c40"
-      },
-      "license": "MIT",
-      "license_materials": [],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "convert_case_extras",
-      "origin_directory": "vendor/rust/convert_case_extras-0.2.0",
-      "repository": "https://github.com/rutrum/convert-case-extras",
-      "status": "内部维护源码",
-      "supplemental_notice": {
-        "commit": "d523585a01afddd13944be1d88faa4d1db6a3eb4",
-        "directory": "vendor/rust/convert_case_extras-0.2.0",
-        "repository": "https://github.com/rutrum/convert-case-extras",
-        "review_note": "The complete upstream Git tree at the recorded commit provides no separate license/copyright file. Preserve all published source and package license metadata; independent license review remains open.",
-        "status": "requires-manual-notice-review"
-      },
-      "upstream": {
-        "archive_sha256": "589c70f0faf8aa9d17787557d5eae854d7755cac50f5c3d12c81d3d57661cebb",
-        "archive_url": "https://static.crates.io/crates/convert_case_extras/convert_case_extras-0.2.0.crate",
-        "name": "convert_case_extras",
-        "version": "0.2.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "d523585a01afddd13944be1d88faa4d1db6a3eb4"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.2.0"
     },
     "src/foundation/cpu-feature-detect": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
@@ -78051,15 +78009,15 @@
       "description": "Project CSR view and component macros",
       "directory": "src/macros",
       "files_sha256": {
-        "Cargo.toml": "fa641aa7517eed12651a1021de7001c5e70316c1f265b133981743cbd5268af9",
-        "src/component.rs": "6ef126dd2fd3001ddcfbfbc60778d33e1a5bdf5237ac93429921a6e1a319fbc1",
+        "Cargo.toml": "34ae205cb1da53da61bfa0e625f47e99dc524011aa56d26452234c48cbd9f5c7",
+        "src/component.rs": "2de5b2edb467395f8ee4cda35d3ce0488671fd0c4b70c7a28a469a1a7c3ccf92",
         "src/diagnostics.rs": "b501d80659ee3202adc4f60e6eec000389fe34eeb19cc0fb60e02c15aaabd03e",
         "src/lib.rs": "e9927ff107dd16a29bdec54b6e188b26cf9d69fe04795d1e405056dbd244abe6",
         "src/memo.rs": "9ac1857a33a83f73eafb576895ce02f3d0c0898ca869ae8741747fa281a01539",
         "src/slice.rs": "496a010eedcb7f8c4b74a9aed209f2ff5c435d3efba6f9d3d877864eb18fc943",
         "src/slot.rs": "323e72f091b67fea8b7cf0b8706821ad1a8deebec7ab3f4bfe79163c62b6039f",
         "src/view/component_builder.rs": "2cb6a02c28818b01533485afc2431d210cbf1784b5bff25315d4a870737acf5c",
-        "src/view/mod.rs": "c6b3860f30fe11885aa99dcc8c2c58482001cb121ea7a5b71196b63fc64f4b7d",
+        "src/view/mod.rs": "bfdf3d476685542b5a5b4438e4077562dd4e53baa44ac35a238a2b6db9d0826b",
         "src/view/slot_helper.rs": "09aef49e24e87d876ef884c911dcef068b809d2d0756ca23e2f7da7b5fa90203",
         "src/view/utils.rs": "4341268b1fe90e265706be1e6e9d3a3cbd748b86df562b1a56306b7ff737fff8",
         "src/view_source.rs": "ed741a25dcdc421ede6900d03f82de4067b14b8a18f0843855e8a6a1762776c5"
@@ -89974,12 +89932,6 @@
             "compile"
           ]
         },
-        "src/foundation/convert_case_extras": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/data-serialization": {
           "features": [
             "alloc",
@@ -93432,6 +93384,69 @@
         "path_in_vcs": ""
       },
       "version": "1.0.3"
+    },
+    "src/foundation/convert_case_extras": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "Extra features for convert_case",
+      "directory": "src/foundation/convert_case_extras",
+      "files_sha256": {
+        "Cargo.toml": "a5d2c9cba481304d4c7c2515007adb57737720f716603d2cf90b20b8c699b16f",
+        "src/lib.rs": "66d24e8073f97215eb3948b48f2b2b5be8a2cab536658565faac4b4089c91c40"
+      },
+      "license": "MIT",
+      "license_materials": [],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "convert_case_extras",
+      "origin_directory": "vendor/rust/convert_case_extras-0.2.0",
+      "repository": "https://github.com/rutrum/convert-case-extras",
+      "retirement": {
+        "bytes": 14985,
+        "category": "unused-wrapper",
+        "external_tests": {
+          "bytes": 1263,
+          "directory": "src/foundation/convert_case_extras",
+          "file_count": 1,
+          "files": [
+            {
+              "path": "test/foundation/convert_case_extras/unit/src/lib/test_433.rs",
+              "sha256": "41385f3198872f4e6c7b0aa3af6bb986e704b3d81d4bd1ba2c341856d01b9e2b",
+              "source": "src/foundation/convert_case_extras/src/lib.rs",
+              "source_sha256_before": "e3667afa91b91016e99b100c290df7fb7def12cf1005c05366092b093eff3fcc"
+            }
+          ],
+          "origin_directory": "vendor/rust/convert_case_extras-0.2.0",
+          "roots": [
+            "test/foundation/convert_case_extras"
+          ]
+        },
+        "file_count": 2,
+        "reason": "Remove the unused case helper wrapper after view-macros replaces its only two is_case calls with direct convert_case operations; do not retain unused extras APIs or compatibility forwarding.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "supplemental_notice": {
+        "commit": "d523585a01afddd13944be1d88faa4d1db6a3eb4",
+        "directory": "vendor/rust/convert_case_extras-0.2.0",
+        "repository": "https://github.com/rutrum/convert-case-extras",
+        "review_note": "The complete upstream Git tree at the recorded commit provides no separate license/copyright file. Preserve all published source and package license metadata; independent license review remains open.",
+        "status": "requires-manual-notice-review"
+      },
+      "upstream": {
+        "archive_sha256": "589c70f0faf8aa9d17787557d5eae854d7755cac50f5c3d12c81d3d57661cebb",
+        "archive_url": "https://static.crates.io/crates/convert_case_extras/convert_case_extras-0.2.0.crate",
+        "name": "convert_case_extras",
+        "version": "0.2.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "d523585a01afddd13944be1d88faa4d1db6a3eb4"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.2.0"
     },
     "src/foundation/cpufeatures-0.2.17": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -104014,6 +104029,7 @@
     "src/foundation/cfg_aliases": "b31405fde7e9450ac4f6e6d8e00d8b93c7725cf821bc2724675421b636ce87b5",
     "src/foundation/chacha20": "9abe1e2a5d044b44929e83ea540b127980e98f97f20e4cbfcb2445e572449a6f",
     "src/foundation/collection_literals": "0c7480aaefb0ca1397b4bcd26cb79b307f462875e91a254ec23f1030190c3cf8",
+    "src/foundation/convert_case_extras": "1f504cf8c8420067a9ea09ba4d973a225d768022efafb5d0b8a8da41f628aac6",
     "src/foundation/cpufeatures-0.2.17": "4a07d523fbf0b74595fc2a52ed83b336175cf2dde3fe4215282254bf40a6356a",
     "src/foundation/crc": "328f7f6a88b18c2c953b175c8db47ed903e4110aabcac455075f1ac97aaca0d8",
     "src/foundation/crc-catalog": "0e12c31129186b5d0d295f4b3e64dab001950032bd688d22e2c3a96cae75a9f8",

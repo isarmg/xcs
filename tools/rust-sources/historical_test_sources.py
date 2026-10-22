@@ -56,6 +56,7 @@ def corrected_view(root, view=None):
 
 # Only these explicitly reviewed retired identities may supply historical bytes.
 RETIREMENT_ARCHIVES = {
+    'src/foundation/convert_case_extras': ('compliance/convert_case_extras-0.2.0-retirement.json.gz', 'aa4b0a2dd745da8f4d7a64627a08ccadcda54974de3e93a2c6187a29c0ba98fe'),
     'src/foundation/getrandom-0.2.17': ('compliance/getrandom-0.2.17-retirement.json.gz', 'f3d9f7987cbb0961c094e884a33938ab3684079d8c23a595c85eca906c36a304'),
     'src/foundation/getrandom-0.3.4': (
         'compliance/getrandom-0.3.4-retirement.json.gz', 'd77bfee293adbab44ad01ebb7991f88ad6a13dd0a98833110269215aa52ceae5'),

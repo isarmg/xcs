@@ -156,6 +156,12 @@
       ],
       "files": [
         {
+          "source": "src/macros/src/component.rs",
+          "path": "test/macros/unit/component/case_normalization_tests.rs",
+          "sha256": "26c5b668504d508b532b4bcf9cf2b0170991ea61b1e862b3b5781ab01336530c",
+          "source_sha256_before": "6ef126dd2fd3001ddcfbfbc60778d33e1a5bdf5237ac93429921a6e1a319fbc1"
+        },
+        {
           "source": "src/macros/src/lib.rs",
           "path": "test/macros/unit/lib/documentation_diagnostics.rs",
           "sha256": "92437fbf2224cf0065a3e59d12eaa3c49349e6bce61cb948ea15d3da5bc64511",
@@ -166,6 +172,12 @@
           "path": "test/macros/unit/view/attribute_order_tests.rs",
           "sha256": "c8a169bc32283759ed6885c30d4ec5516a0afa814ad65330d5f6ab1d154d591e",
           "source_sha256_before": "8089ceb3b8b1b78cc7872f987792e0bafea8b395364ee674beca880df955d7fd"
+        },
+        {
+          "source": "src/macros/src/view/mod.rs",
+          "path": "test/macros/unit/view/case_normalization_tests.rs",
+          "sha256": "8a2a5295160e554e3d072350f9dc56d6b299e0199ec8b0a11cbc330bdbc75818",
+          "source_sha256_before": "c6b3860f30fe11885aa99dcc8c2c58482001cb121ea7a5b71196b63fc64f4b7d"
         },
         {
           "source": "src/macros/src/view/component_builder.rs",

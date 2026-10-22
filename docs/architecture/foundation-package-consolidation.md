@@ -124,3 +124,25 @@ run passed 182 focused history/naming/consolidation/move tests, independent
 baseline/candidate corruption comparisons, full metadata verification and the
 consumer-index check. This removes redundant verification work; it is not a
 claim of a measured application-runtime or end-to-end build speedup.
+
+## Consumer-led case normalization and dependency removal
+
+The view macro's slot-name normalization now performs one Snake-case conversion.
+Previously its `is_case` predicate converted the entire string, then the helper
+converted it again when the input was not already canonical. Canonical inputs
+still require one conversion. The component-name predicate keeps its exact
+conditional Pascal-case semantics; it is not the same double-conversion case.
+
+The only product consumer of `convert_case_extras` needed that equality predicate,
+not its broader case-detection API. The macro now uses the existing converter
+directly. The unused wrapper is retired with its exact source and external test
+bytes preserved by the pinned historical archive, alongside unchanged upstream
+origin and license records. Regression cases include Unicode, acronym/digit
+boundaries, raw identifiers, and 1,331 boundary combinations against the former
+normalization behavior. This establishes one fewer conversion on noncanonical
+slot names, not an unmeasured claim about application runtime or total build time.
+
+The server's unused direct `tokio-util` dependency is also removed. The client
+still legitimately uses `ReaderStream`, and server transitive consumers may still
+need the package. This removes an inaccurate ownership edge, not the runtime
+adapter package itself or a claimed whole-program dependency closure.

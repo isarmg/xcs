@@ -331,13 +331,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "convert_case_extras"
-version = "0.2.0"
-dependencies = [
- "convert_case",
-]
-
-[[package]]
 name = "cpu-feature-detect"
 version = "0.3.1"
 dependencies = [
@@ -1610,7 +1603,6 @@ dependencies = [
  "tempfile",
  "time",
  "tokio",
- "tokio-util",
  "tower-http",
  "tracing",
  "url-encoding",
@@ -1967,7 +1959,6 @@ version = "0.8.19"
 dependencies = [
  "attribute-derive",
  "convert_case",
- "convert_case_extras",
  "html-escape",
  "iterator-toolkit",
  "proc-macro2",
