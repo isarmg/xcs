@@ -928,3 +928,107 @@ fn single_disk_interrupted_setup_still_requires_bound_completion_proof() {
         .unwrap();
     assert!(!f.service.status().completion_available);
 }
+
+thread_local! {
+    static AFTER_RESTORE: std::cell::RefCell<Option<Box<dyn FnOnce()>>> =
+        const { std::cell::RefCell::new(None) };
+}
+
+pub(super) fn after_restore() {
+    if let Some(action) = AFTER_RESTORE.with(|hook| hook.borrow_mut().take()) {
+        action();
+    }
+}
+
+#[test]
+fn bootstrap_restore_rechecks_authorization_after_disk_recovery() {
+    for change in ["delete", "rotate", "expire", "revoke"] {
+        let f = recoverable_fixture();
+        let recovery = &f.service;
+        let authorization = permit(recovery);
+        let key = recovery.management_root.join("bootstrap.key");
+        AFTER_RESTORE.with(|hook| {
+            *hook.borrow_mut() = Some(Box::new(move || match change {
+                "delete" => fs::remove_file(key).unwrap(),
+                "rotate" => fs::write(key, "f".repeat(64)).unwrap(),
+                "expire" => fs::File::open(key)
+                    .unwrap()
+                    .set_times(fs::FileTimes::new().set_modified(
+                        std::time::SystemTime::now() - std::time::Duration::from_secs(1801),
+                    ))
+                    .unwrap(),
+                "revoke" => fs::set_permissions(key, fs::Permissions::from_mode(0o644)).unwrap(),
+                _ => unreachable!(),
+            }));
+        });
+        let result = recovery.restore_system(
+            &authorization,
+            RestoreRequest {
+                disk_ids: vec!["one".into()],
+                accept_stale_credentials: true,
+            },
+            |_| panic!("revoked local authorization must not publish credentials: {change}"),
+        );
+        assert!(result.is_err(), "{change}");
+        assert!(
+            recovery.data_root.join("config.json").exists(),
+            "disk recovery completed: {change}"
+        );
+        assert!(
+            !recovery
+                .management_root
+                .join("management-auth.json")
+                .exists()
+        );
+        assert!(AFTER_RESTORE.with(|hook| hook.borrow().is_none()));
+    }
+}
+
+fn recoverable_fixture() -> Fixture {
+    let mut f = fixture_with_disks(&["one"]);
+    let mut engine = Engine::initialize(
+        &f.service.data_root,
+        Config::development(vec![f.service.disks["one"].clone()]),
+    )
+    .unwrap();
+    engine
+        .persist_auth_state(
+            json_codec::json!({"accounts": {}, "sessions": {}}),
+            "system_auth",
+            &storage_engine::new_id("op"),
+        )
+        .unwrap();
+    drop(engine);
+    let restored = f._temp.path().join("restored-system");
+    fs::create_dir(&restored).unwrap();
+    fs::set_permissions(&restored, fs::Permissions::from_mode(0o700)).unwrap();
+    f.service = SetupRecovery::new(
+        restored.clone(),
+        f.service.management_root.clone(),
+        f.service.disks.clone(),
+    )
+    .unwrap();
+    f
+}
+
+#[test]
+fn authenticated_restore_does_not_require_bootstrap_authorization() {
+    let f = recoverable_fixture();
+    fs::remove_file(f.service.management_root.join("bootstrap.key")).unwrap();
+    let mut published = false;
+    f.service
+        .restore_authenticated(
+            &admin(),
+            RestoreRequest {
+                disk_ids: vec!["one".into()],
+                accept_stale_credentials: false,
+            },
+            |engine| {
+                assert!(engine.auth_state().is_some());
+                published = true;
+                Ok(())
+            },
+        )
+        .unwrap();
+    assert!(published);
+}

@@ -179,7 +179,7 @@ fn full_store_rejects_login_without_pruning_sessions_or_blocking_recovery() {
                 "account0000",
                 None,
                 false,
-                BTreeSet::from(["r".repeat(6901)]),
+                BTreeSet::from(["r".repeat(7900)]),
                 false,
             )
             .unwrap_err()

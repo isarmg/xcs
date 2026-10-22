@@ -853,7 +853,12 @@ impl SetupRecovery {
                 "acknowledge that restored credentials and grants may be stale; restored sessions are always revoked",
             ));
         }
-        self.restore_locked(request, restore)
+        self.restore_locked(request, |engine| {
+            // Recovery can outlive local authorization. Recheck at the authority
+            // publication boundary, not just before slow disk recovery begins.
+            self.verify_permit(permit)?;
+            restore(engine)
+        })
     }
 
     /// Normal restore uses a freshly authenticated system administrator.
@@ -899,6 +904,8 @@ impl SetupRecovery {
                 "storage configuration was restored but authoritative credentials are absent; initialization remains blocked and explicit local recovery is required",
             ));
         }
+        #[cfg(test)]
+        tests::after_restore();
         restore(engine)
     }
 }

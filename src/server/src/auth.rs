@@ -18,6 +18,8 @@ use std::{
 pub(crate) const SESSION_TTL_SECONDS: u64 = 12 * 60 * 60;
 const MAX_ACCOUNTS: usize = 1024;
 const MAX_SESSIONS: usize = 4096;
+// One account must not consume the entire shared admission budget.
+const MAX_SESSIONS_PER_ACCOUNT: usize = 64;
 /// Successful writes must remain admissible to the same bounded restart reader.
 const MAX_STORE_BYTES: usize = 4 * 1024 * 1024;
 
@@ -559,29 +561,46 @@ impl AuthStore {
             generation: account.generation,
             expires_at,
         };
-        let current_time = now();
-        let expired = self
-            .db
-            .sessions
-            .iter()
-            .filter(|(_, session)| session.expires_at <= current_time)
-            .map(|(key, session)| (key.clone(), session.clone()))
-            .collect::<Vec<_>>();
-        self.db
-            .sessions
-            .retain(|_, session| session.expires_at > current_time);
-        if self.db.sessions.len() >= MAX_SESSIONS {
-            self.db.sessions.extend(expired);
+        let removed = self.prune_invalid_sessions();
+        if self.db.sessions.len() >= MAX_SESSIONS
+            || self
+                .db
+                .sessions
+                .values()
+                .filter(|session| session.username == verified.username)
+                .count()
+                >= MAX_SESSIONS_PER_ACCOUNT
+        {
+            self.db.sessions.extend(removed);
             return Err(ApiError::limit("session limit reached"));
         }
         let key = primitives::token_hash_hex(&token);
         self.db.sessions.insert(key.clone(), session);
         if let Err(error) = self.persist(false) {
             self.db.sessions.remove(&key);
-            self.db.sessions.extend(expired);
+            self.db.sessions.extend(removed);
             return Err(error);
         }
         Ok(result)
+    }
+
+    /// Return removed records so a failed publication can restore the exact
+    /// pre-mutation state, including sessions that were already inadmissible.
+    fn prune_invalid_sessions(&mut self) -> BTreeMap<String, Session> {
+        let current_time = now();
+        let accounts = &self.db.accounts;
+        let mut removed = BTreeMap::new();
+        self.db.sessions.retain(|key, session| {
+            let valid = session.expires_at > current_time
+                && accounts.get(&session.username).is_some_and(|account| {
+                    !account.disabled && account.generation == session.generation
+                });
+            if !valid {
+                removed.insert(key.clone(), session.clone());
+            }
+            valid
+        });
+        removed
     }
 
     pub fn authenticate(&self, token: &str) -> Result<Identity, ApiError> {
@@ -709,8 +728,13 @@ impl AuthStore {
                 .transpose()?
                 .unwrap_or(1),
         };
+        // Prune before insertion as well: an orphaned session must not become
+        // valid merely because a new account reuses its username/generation.
+        let mut removed = self.prune_invalid_sessions();
         self.db.accounts.insert(username.clone(), account);
+        removed.extend(self.prune_invalid_sessions());
         if let Err(error) = self.persist(false) {
+            self.db.sessions.extend(removed);
             match previous {
                 Some(account) => {
                     self.db.accounts.insert(username, account);
@@ -736,3 +760,7 @@ mod budget_tests;
 #[cfg(test)]
 #[path = "../../../test/server/unit/auth/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../test/server/unit/auth/capacity_tests.rs"]
+mod capacity_tests;
