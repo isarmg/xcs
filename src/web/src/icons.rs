@@ -2,13 +2,11 @@ use web_interface::prelude::*;
 #[component]
 pub fn FileIcon(name: &'static str) -> impl IntoView {
     let path = match name {
-        "upload" => "M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6",
         "folder" => "M3 20V5h6l3 3h8v3M3 20h16l3-9H7l-4 9",
         "file" => "M6 3h8l4 4v14H6V3m8 0v5h4M9 12h6m-6 4h6",
         "back" => "m10 5-7 7 7 7M3 12h18",
         "home" => "m3 10 9-8 9 8M5 8v13h14V8M9 21v-8h6v8",
         "move" => "M4 4v7a5 5 0 0 0 5 5h11m-5-5 5 5-5 5",
-        "download" => "M12 3v13m-5-5 5 5 5-5M4 18v3h16v-3",
         "delete" => "M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7",
         "rename" => "m4 17-1 4 4-1L21 6l-4-4L4 17m10-12 4 4",
         "tags" => "M3 3h8l10 10-8 8L3 11V3m4 4h.01",

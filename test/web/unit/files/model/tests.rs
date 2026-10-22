@@ -1,30 +1,26 @@
 use super::*;
 
 #[test]
-fn refreshed_selection_invalidates_old_history_and_preview_only_when_context_changes() {
+fn refreshed_selection_invalidates_old_history_only_when_context_changes() {
     let original = json_codec::json!({"entry_id":"entry", "file_id":"file", "path":"a.txt", "version_id":"v1", "selected_branch_id":"main"});
     let mut model = Model {
         selected: Some(original.clone()),
         entries: vec![original.clone()].into(),
         file_history: json_codec::json!({"selected_branch_id":"main"}),
-        preview: Some(("a.txt".into(), "old content".into())),
         history_loading: true,
         ..Default::default()
     };
     model.reconcile_selection();
-    assert!(model.preview.is_some());
     assert_eq!(model.history_generation, 0);
     Arc::make_mut(&mut model.entries)[0]["selected_branch_id"] = "draft".into();
     Arc::make_mut(&mut model.entries)[0]["version_id"] = "v2".into();
     model.checked_nodes.insert("old-node".into());
     model.reconcile_selection();
     assert_eq!(model.selected.as_ref().unwrap()["version_id"], "v2");
-    assert!(model.preview.is_none());
     assert!(model.file_history.is_null());
     assert!(!model.history_loading);
     assert!(model.checked_nodes.is_empty());
     assert_eq!(model.history_generation, 1);
-    assert_eq!(model.preview_generation, 1);
 }
 #[test]
 fn backup_context_never_guesses_a_primary_alias_from_its_prefix() {
@@ -73,7 +69,6 @@ fn backup_history_keeps_its_stored_body_and_current_node() {
         ..Default::default()
     };
     assert!(selected_entry_read_only(&model));
-    assert!(selected_file_read_only(&model));
     model.selected = Some(json_codec::json!({"read_only":true}));
     assert!(selected_entry_read_only(&model));
 }
@@ -102,8 +97,6 @@ fn uncertain_save_cannot_be_relabelled_as_a_failure() {
         operation_status(&json_codec::json!({"state":"in_doubt"})),
         SaveStatus::Unknown
     );
-    assert!(SaveStatus::Unknown.pending());
-    assert!(!SaveStatus::Rejected.pending());
 }
 #[test]
 fn breadcrumbs_stay_relative_to_the_selected_disk() {
@@ -284,14 +277,12 @@ fn two_aliases_of_one_file_keep_the_selected_logical_path() {
     assert!(model.selected.is_none());
 }
 #[test]
-fn a_removed_entry_discards_metadata_and_pending_preview() {
+fn a_removed_entry_discards_metadata() {
     let mut model = Model {
         selected: Some(json_codec::json!({"entry_id":"file-a"})),
         file_history: json_codec::json!({"versions":[{"version_id":"v1"}]}),
         history_loading: true,
         history_generation: 4,
-        preview: Some(("old.txt".into(), "old content".into())),
-        preview_generation: 2,
 
         ..Default::default()
     };
@@ -300,6 +291,4 @@ fn a_removed_entry_discards_metadata_and_pending_preview() {
     assert!(model.file_history.is_null());
     assert!(!model.history_loading);
     assert_eq!(model.history_generation, 5);
-    assert_eq!(model.preview_generation, 3);
-    assert!(model.preview.is_none());
 }

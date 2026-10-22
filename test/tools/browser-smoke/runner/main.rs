@@ -25,9 +25,11 @@ mod diagnostics;
 mod file_rows;
 mod fonts;
 mod lifecycle;
+mod metadata;
 mod session_delivery;
+use metadata::{assert_metadata_only, metadata_edit, open_fixture_directory, seed_files};
+mod file_viewports;
 mod session_logout;
-mod viewport_previews;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 const ELEMENT: &str = "element-6066-11e4-a52e-4f735466cecf";
@@ -198,65 +200,6 @@ impl Browser {
         )?;
         Ok(())
     }
-    /// Follow the real UI entry point before assigning the OS-selected file.
-    /// A bare send-keys to the hidden input has no captured upload destination.
-    fn upload_file(&self, file: &Path, replace: bool) -> Result<()> {
-        let button = if replace {
-            self.button("Write to current branch", "写入当前分支")?
-        } else {
-            self.button("Upload files", "上传文件")?
-        };
-        wait_for("upload entry point enabled", || {
-            if self.command("GET", &format!("/element/{button}/enabled"), None)? == true {
-                Ok(())
-            } else {
-                Err("upload entry point disabled".into())
-            }
-        })?;
-        // Headless Chrome otherwise cancels its OS chooser immediately. Keep
-        // the real button/input click and captured destination, but let the
-        // standard WebDriver file selection satisfy the intercepted chooser.
-        self.cdp(
-            "Page.setInterceptFileChooserDialog",
-            json!({"enabled":true}),
-        )?;
-        with_cleanup(
-            || {
-                let started = self.script("return performance.now()")?;
-                let started = started.as_f64().ok_or("missing chooser start time")?;
-                diagnostics::upload_snapshot(self, "before-button-click");
-                self.click(&button)?;
-                diagnostics::upload_snapshot(self, "after-button-click");
-                let selector = if replace {
-                    ".zxs-entry-content input[type='file']"
-                } else {
-                    "input[type='file']"
-                };
-                self.keys(
-                    &self.css(selector)?,
-                    file.to_str().ok_or("non-UTF8 upload fixture path")?,
-                )?;
-                diagnostics::upload_snapshot(self, "after-file-selection");
-                let cancelled = self.script(&format!(
-                    "return (window.__zxsSmokeUploadEvents||[]).some(e=>e.time>={started}&&e.type==='cancel')"
-                ))?;
-                if cancelled == true {
-                    return Err(
-                        "file chooser cancelled before WebDriver selection completed".into(),
-                    );
-                }
-                Ok(())
-            },
-            || {
-                self.cdp(
-                    "Page.setInterceptFileChooserDialog",
-                    json!({"enabled":false}),
-                )
-                .map(|_| ())
-            },
-        )
-    }
-
     fn cdp(&self, cmd: &str, params: Value) -> Result<Value> {
         self.command(
             "POST",
@@ -278,7 +221,7 @@ impl Drop for Browser {
     }
 }
 
-// Always restore Chrome's chooser behavior, including on click/selection errors.
+// Always restore fault-injection hooks, including on browser/assertion errors.
 fn with_cleanup(
     action: impl FnOnce() -> Result<()>,
     cleanup: impl FnOnce() -> Result<()>,
@@ -287,7 +230,7 @@ fn with_cleanup(
     let cleanup_result = cleanup();
     match (result, cleanup_result) {
         (Err(error), Err(cleanup_error)) => {
-            eprintln!("file chooser cleanup also failed: {cleanup_error}");
+            eprintln!("fixture cleanup also failed: {cleanup_error}");
             Err(error)
         }
         (Err(error), _) | (_, Err(error)) => Err(error),
@@ -299,7 +242,6 @@ fn exercise(
     browser: &Browser,
     origin: &str,
     password: &str,
-    temp: &Path,
     screenshot: Option<&Path>,
 ) -> Result<()> {
     diagnostics::install(browser)?;
@@ -330,24 +272,9 @@ fn exercise(
     }
     println!("PASS login and three real disk directories");
     browser.click(&disk)?;
-    let upload = browser.button("Upload files", "上传文件")?;
-    wait_for("writable disk", || {
-        if browser.command("GET", &format!("/element/{upload}/enabled"), None)? == true {
-            Ok(())
-        } else {
-            Err("upload disabled".into())
-        }
-    })?;
-    let payload =
-        b"ZXS real browser smoke: complete file content\nUTF-8: \xe6\xb5\x8b\xe8\xaf\x95\n";
-    let input = temp.join("browser-smoke.txt");
-    fs::write(&input, payload)?;
-    browser.upload_file(&input, false)?;
-    browser.element(
-        "xpath",
-        "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
-    )?;
-    println!("PASS browser file upload and directory publication");
+    open_fixture_directory(browser)?;
+    assert_metadata_only(browser)?;
+    println!("PASS CLI-seeded file browsing in the real server namespace");
     file_rows::run(browser)?;
     if let Some(path) = screenshot {
         // Save the real regression view without adding presentation-only data.
@@ -369,55 +296,27 @@ fn exercise(
         fs::write(path, png)?;
         println!("PASS real browser screenshot saved to {}", path.display());
     }
-    viewport_previews::run(browser, temp, viewport_previews.as_deref())?;
-    // Transfer fixtures rerender the table; resolve the original smoke file again.
-    let file = {
-        browser.element(
-            "xpath",
-            "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
-        )?
-    };
-    browser.click(&file)?;
-    browser.css(".zxs-entry-version-history")?;
-    browser.click(&browser.button("Download", "下载")?)?;
-    let downloaded = temp.join("downloads/browser-smoke.txt");
-    wait_for("verified byte-for-byte browser download", || {
-        if fs::read(&downloaded)? == payload {
-            Ok(())
-        } else {
-            Err("download content differs".into())
-        }
-    })?;
-    println!("PASS file details, version history and byte-identical download");
+    file_viewports::run(browser, viewport_previews.as_deref())?;
+    let current_history = session_delivery::begin_paused_history(browser)?;
+    session_delivery::finish(current_history, true)?;
+    assert_metadata_only(browser)?;
+    metadata_edit(browser)?;
     browser.click(&browser.button("History", "历史记录")?)?;
-    wait_for("uploaded file in activity history", || {
-        if browser.script("return Array.from(document.querySelectorAll('.zxs-history-path')).some(e=>e.textContent.includes('browser-smoke.txt'))")? == true { Ok(()) } else { Err("history missing uploaded file".into()) }
+    wait_for("seeded file in activity history", || {
+        if browser.script("return Array.from(document.querySelectorAll('.zxs-history-path')).some(e=>e.textContent.includes('browser-smoke.txt'))")? == true { Ok(()) } else { Err("history missing seeded file".into()) }
     })?;
+    browser.click(&browser.button("Status", "状态")?)?;
+    browser.css(".zxs-monitor-page .zxs-metric-card")?;
+    assert_metadata_only(browser)?;
+    println!("PASS administrator status page retains real telemetry controls");
     accessibility::run(browser)?;
-    browser.click(&browser.button("Files", "文件")?)?;
-    let file = browser.element(
-        "xpath",
-        "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
-    )?;
-    browser.click(&file)?;
-    // The same timing fixture must still deliver a complete real download
-    // when credentials remain current, before testing the logout fence.
-    fs::remove_file(&downloaded)?;
-    let current_download = session_delivery::begin_paused_download(browser)?;
-    session_delivery::finish(current_download, 1, payload.len())?;
-    wait_for("unblocked same-session download bytes", || {
-        if fs::read(&downloaded)? == payload {
-            Ok(())
-        } else {
-            Err("unblocked download differs".into())
-        }
-    })?;
     session_logout::run(browser, password)?;
-    let stale_download = session_delivery::begin_paused_download(browser)?;
+    browser.click(&browser.button("Files", "文件")?)?;
+    let stale_history = session_delivery::begin_paused_history(browser)?;
     browser.click(&browser.button("Sign out", "退出")?)?;
     browser.css("input[autocomplete='current-password']")?;
-    session_delivery::finish(stale_download, 0, payload.len())?;
-    println!("PASS real streamed download delivers only in its original session");
+    session_delivery::finish(stale_history, false)?;
+    println!("PASS late file metadata response cannot escape its original session");
     if browser.script("return window.__zxsSmokeErrors")? != json!([]) {
         return Err("uncaught error before logout/reload".into());
     }
@@ -443,6 +342,16 @@ fn exercise(
                 .as_str()
                 .ok_or("missing network log message")?,
         )?;
+        if event["message"]["method"] == "Network.requestWillBeSent" {
+            let url = event["message"]["params"]["request"]["url"]
+                .as_str()
+                .unwrap_or_default();
+            if metadata::is_file_body_request(url, origin) {
+                return Err(
+                    format!("metadata-only Web requested a file-content route: {url}").into(),
+                );
+            }
+        }
         if event["message"]["method"] == "Network.responseReceived" {
             let r = &event["message"]["params"]["response"];
             let url = r["url"].as_str().unwrap_or_default();
@@ -546,6 +455,7 @@ fn run() -> Result<()> {
         .into());
     }
     fs::remove_file(password_file)?;
+    seed_files(&cli_binary, &pool, root)?;
     let server_port = port()?;
     let driver_port = port()?;
     let origin = format!("http://127.0.0.1:{server_port}");
@@ -589,14 +499,12 @@ fn run() -> Result<()> {
                 Err("driver not ready".into())
             }
         })?;
-        let downloads = root.join("downloads");
-        fs::create_dir(&downloads)?;
         let window_size = if screenshot.is_some() {
             "--window-size=1440,1000"
         } else {
             "--window-size=1280,900"
         };
-        let mut chrome = json!({"args":["--headless=new","--disable-dev-shm-usage",window_size],"prefs":{"download.default_directory":downloads,"download.prompt_for_download":false}});
+        let mut chrome = json!({"args":["--headless=new","--disable-dev-shm-usage",window_size]});
         if let Some(binary) = env::var_os("CHROME_BIN") {
             chrome["binary"] = binary.to_string_lossy().into_owned().into();
         }
@@ -619,11 +527,7 @@ fn run() -> Result<()> {
                 .ok_or("missing WebDriver session")?
                 .to_owned(),
         };
-        browser.cdp(
-            "Browser.setDownloadBehavior",
-            json!({"behavior":"allow","downloadPath":downloads}),
-        )?;
-        let result = exercise(&browser, &origin, &password, root, screenshot.as_deref());
+        let result = exercise(&browser, &origin, &password, screenshot.as_deref());
         if result.is_err() {
             let diagnostics_dir = PathBuf::from("artifacts/browser-smoke/diagnostics");
             diagnostics::failure(&browser, &diagnostics_dir, &password);

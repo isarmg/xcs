@@ -106,16 +106,6 @@ fn error(code: &str, message: impl Into<String>) -> Error {
     }
 }
 
-pub fn invalid_response() -> Error {
-    error(
-        "INVALID_RESPONSE",
-        t(
-            "服务端响应缺少必要字段",
-            "The server response is missing required fields",
-        ),
-    )
-}
-
 pub fn session_changed() -> Error {
     error(
         "SESSION_CHANGED",
@@ -130,45 +120,14 @@ pub fn clear_session() {
     CREDENTIALS.with(|saved| saved.borrow_mut().replace(None, None));
 }
 
-// Stop later stages of in-flight transfers before logout reaches the server.
+// Stop later stages of in-flight operations before logout reaches the server.
 // Keep the credential until revocation is confirmed so failed logout can retry.
 pub(crate) fn invalidate_session_work() {
     CREDENTIALS.with(|saved| saved.borrow_mut().generation += 1);
 }
 
-fn credential_generation() -> u64 {
-    CREDENTIALS.with(|saved| saved.borrow().generation)
-}
-
-fn ensure_credential_generation(generation: u64) -> Result<(), Error> {
-    if credential_generation() == generation {
-        Ok(())
-    } else {
-        Err(session_changed())
-    }
-}
-
-/// Admission ticket for multi-stage browser work. Keep the original identity
-/// across awaits and check it immediately before publishing or delivering data.
-/// Browser JavaScript runs synchronously between this check and the final action.
-#[derive(Clone, Copy)]
-struct SessionAdmission(u64);
-impl SessionAdmission {
-    fn capture() -> Self {
-        Self(credential_generation())
-    }
-
-    fn check(self) -> Result<(), Error> {
-        ensure_credential_generation(self.0)
-    }
-}
-
 pub fn operation_id() -> String {
     fresh_id("op")
-}
-
-pub fn entry_id() -> String {
-    fresh_id("entry")
 }
 
 fn fresh_id(prefix: &str) -> String {
@@ -219,12 +178,7 @@ struct Fetched {
     _timeout: gloo_timers::callback::Timeout,
 }
 
-async fn fetch(
-    method: &str,
-    path: &str,
-    body: Option<JsValue>,
-    content_type: Option<&str>,
-) -> Result<Fetched, Error> {
+async fn fetch(method: &str, path: &str, body: Option<Value>) -> Result<Fetched, Error> {
     validate_path(path)?;
     let controller = web_sys::AbortController::new().map_err(js_error)?;
     let options = RequestInit::new();
@@ -233,43 +187,18 @@ async fn fetch(
     options.set_credentials(RequestCredentials::SameOrigin);
     options.set_redirect(RequestRedirect::Error);
     options.set_signal(Some(&controller.signal()));
-    if let Some(body) = body.as_ref() {
-        options.set_body(body);
+    if let Some(body) = body {
+        options.set_body(&JsValue::from_str(&body.to_string()));
     }
     let request = web_sys::Request::new_with_str_and_init(path, &options).map_err(js_error)?;
     request
         .headers()
         .set("Accept", "application/json")
         .map_err(js_error)?;
-    if let Some(content_type) = content_type {
-        request
-            .headers()
-            .set("Content-Type", content_type)
-            .map_err(js_error)?;
-    }
-    if method == "PUT" && content_type == Some("application/octet-stream") {
-        let bytes = Uint8Array::new(body.as_ref().ok_or_else(|| {
-            error(
-                "EMPTY_UPLOAD",
-                t("上传缺少内容", "The upload has no content"),
-            )
-        })?);
-        request
-            .headers()
-            .set("X-ZXS-Logical-Size", &bytes.length().to_string())
-            .map_err(js_error)?;
-        request
-            .headers()
-            .set("X-ZXS-Upload-Generation", "1")
-            .map_err(js_error)?;
-        request
-            .headers()
-            .set(
-                "X-ZXS-Content-Hash",
-                &blake3::hash(&bytes.to_vec()).to_hex(),
-            )
-            .map_err(js_error)?;
-    }
+    request
+        .headers()
+        .set("Content-Type", "application/json")
+        .map_err(js_error)?;
     let credentials = CREDENTIALS.with(|saved| saved.borrow().clone());
     if let Some(token) = credentials.token.as_ref() {
         request
@@ -380,16 +309,7 @@ async fn decode(fetched: Fetched) -> Result<Value, Error> {
 
 pub async fn request(method: &str, path: &str, body: Option<Value>) -> Result<Value, Error> {
     validate_path(path)?;
-    decode(
-        fetch(
-            method,
-            path,
-            body.map(|v| JsValue::from_str(&v.to_string())),
-            Some("application/json"),
-        )
-        .await?,
-    )
-    .await
+    decode(fetch(method, path, body).await?).await
 }
 
 pub async fn login(username: &str, password: &str) -> Result<Value, Error> {
@@ -435,238 +355,6 @@ pub async fn restore() -> Result<Value, Error> {
         }
     });
     Ok(value)
-}
-
-pub async fn commit_workspace(
-    workspace: &str,
-    operation_id: &str,
-    message: &str,
-    expected_head: &str,
-    on_commit: impl FnOnce(),
-) -> Result<Value, Error> {
-    let admission = SessionAdmission::capture();
-    let body = request(
-        "POST",
-        &format!("/api/workspaces/{}/seal", segment(workspace)),
-        Some(json!({})),
-    )
-    .await?;
-    // Sealing can outlive logout or a replacement login. Never publish the old
-    // workspace using credentials installed while that request was in flight.
-    admission.check()?;
-    let body = storage_contract::client_protocol::prepare_commit(
-        body,
-        workspace,
-        operation_id,
-        message,
-        Some(expected_head),
-    )
-    .map_err(error_from_contract)?;
-    // A failed seal (including a lost seal response) has not submitted this
-    // operation ID. Only publication errors require querying that operation.
-    on_commit();
-    request(
-        "POST",
-        &format!("/api/workspaces/{}/commit", segment(workspace)),
-        Some(body),
-    )
-    .await
-}
-fn error_from_contract(value: storage_contract::Error) -> Error {
-    Error {
-        code: value.code,
-        message: value.message,
-        retryable: value.retryable,
-        status: 0,
-        request_id: None,
-    }
-}
-
-mod upload_source;
-pub use upload_source::UploadSource;
-
-pub async fn upload(
-    workspace: &str,
-    item: &str,
-    path: &str,
-    source: UploadSource,
-) -> Result<Value, Error> {
-    source.preflight()?;
-    let file = source.into_file();
-    let admission = SessionAdmission::capture();
-    let data = JsFuture::from(file.array_buffer())
-        .await
-        .map_err(js_error)?;
-    // Reading a browser file is asynchronous too: do not send its bytes under
-    // a different session if authentication changed while buffering it.
-    admission.check()?;
-    let bytes = Uint8Array::new(&data);
-    let endpoint = format!(
-        "/api/workspaces/{}/files/{}/content?path={}",
-        segment(workspace),
-        segment(item),
-        segment(path)
-    );
-    decode(
-        fetch(
-            "PUT",
-            &endpoint,
-            Some(bytes.into()),
-            Some("application/octet-stream"),
-        )
-        .await?,
-    )
-    .await
-}
-
-pub async fn download(path: &str, filename: &str) -> Result<String, Error> {
-    let fetched = fetch("GET", path, None, None).await?;
-    if !fetched.response.ok() {
-        return decode(fetched).await.map(|_| String::new());
-    }
-    let length = fetched
-        .response
-        .headers()
-        .get("Content-Length")
-        .ok()
-        .flatten()
-        .and_then(|v| v.parse::<u64>().ok())
-        .ok_or_else(|| {
-            error(
-                "INVALID_RESPONSE",
-                t(
-                    "下载响应缺少长度",
-                    "The download response has no content length",
-                ),
-            )
-        })?;
-    if length > 64 * 1024 * 1024 {
-        return Err(error(
-            "BROWSER_DOWNLOAD_LIMIT",
-            t(
-                "网页校验下载上限 64 MiB；较大文件请通过 SMB 访问",
-                "Verified browser downloads are limited to 64 MiB. Access larger files through SMB.",
-            ),
-        ));
-    }
-    let hash = fetched
-        .response
-        .headers()
-        .get("ETag")
-        .ok()
-        .flatten()
-        .map(|v| v.trim_matches('"').to_owned())
-        .ok_or_else(|| {
-            error(
-                "INVALID_RESPONSE",
-                t(
-                    "下载响应缺少完整性摘要",
-                    "The download response has no integrity hash",
-                ),
-            )
-        })?;
-    let bytes = verified_download_bytes(
-        read_body(&fetched.response, 64 * 1024 * 1024),
-        length,
-        &hash,
-        SessionAdmission(fetched.credential_generation),
-    )
-    .await?;
-    let parts = js_sys::Array::new();
-    parts.push(&Uint8Array::from(bytes.as_slice()).buffer());
-    let blob = web_sys::Blob::new_with_buffer_source_sequence(&parts).map_err(js_error)?;
-    let url = web_sys::Url::create_object_url_with_blob(&blob).map_err(js_error)?;
-    let result = (|| {
-        let document = web_sys::window()
-            .and_then(|w| w.document())
-            .ok_or_else(|| error("NO_DOCUMENT", t("页面不可用", "The page is unavailable")))?;
-        let anchor = document
-            .create_element("a")
-            .map_err(js_error)?
-            .dyn_into::<web_sys::HtmlAnchorElement>()
-            .map_err(|value| js_error(value.into()))?;
-        anchor.set_href(&url);
-        anchor.set_download(filename);
-        anchor.click();
-        Ok(t(
-            "下载已校验并交给浏览器；此操作不会创建服务器版本",
-            "The download was verified and sent to the browser.",
-        ))
-    })();
-    gloo_timers::callback::Timeout::new(30_000, move || {
-        let _ = web_sys::Url::revoke_object_url(&url);
-    })
-    .forget();
-    result
-}
-
-/// Keep asynchronous body acquisition, integrity verification, and session
-/// admission together, so no browser delivery can accidentally skip the fence.
-async fn verified_download_bytes(
-    body: impl std::future::Future<Output = Result<Vec<u8>, Error>>,
-    length: u64,
-    hash: &str,
-    admission: SessionAdmission,
-) -> Result<Vec<u8>, Error> {
-    let bytes = body.await?;
-    if bytes.len() as u64 != length || blake3::hash(&bytes).to_hex().as_str() != hash {
-        return Err(error(
-            "CHECKSUM_MISMATCH",
-            t(
-                "下载长度或 BLAKE3 摘要不一致，未交付文件",
-                "The downloaded size or BLAKE3 hash does not match. The file was not delivered.",
-            ),
-        ));
-    }
-    admission.check()?;
-    Ok(bytes)
-}
-
-pub async fn preview_version(version: &str) -> Result<String, Error> {
-    let fetched = fetch(
-        "GET",
-        &format!("/api/versions/{}/content", segment(version)),
-        None,
-        None,
-    )
-    .await?;
-    if !fetched.response.ok() {
-        return decode(fetched).await.map(|_| String::new());
-    }
-    let hash = fetched
-        .response
-        .headers()
-        .get("ETag")
-        .ok()
-        .flatten()
-        .map(|v| v.trim_matches('"').to_owned())
-        .ok_or_else(|| {
-            error(
-                "INVALID_RESPONSE",
-                t(
-                    "预览响应缺少摘要",
-                    "The preview response has no integrity hash",
-                ),
-            )
-        })?;
-    let bytes = read_body(&fetched.response, 2 * 1024 * 1024).await?;
-    if blake3::hash(&bytes).to_hex().as_str() != hash {
-        return Err(error(
-            "CHECKSUM_MISMATCH",
-            t(
-                "预览完整性校验失败",
-                "Preview integrity verification failed",
-            ),
-        ));
-    }
-    let text = String::from_utf8(bytes).map_err(|_| {
-        error(
-            "BINARY_PREVIEW",
-            t("预览仅支持 UTF-8 文本；请下载此文件后打开。", "Preview supports UTF-8 text. Download this file to open it in another application."),
-        )
-    })?;
-    SessionAdmission(fetched.credential_generation).check()?;
-    Ok(text)
 }
 
 #[cfg(test)]

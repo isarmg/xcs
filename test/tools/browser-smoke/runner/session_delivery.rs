@@ -1,112 +1,70 @@
-//! Timing-only fixture around real server responses. The browser still runs the
-//! production WASM download handler and receives the unmodified response bytes.
+//! Delay one real file-history response, preserving its status, headers and body.
+//! The production WASM must accept current metadata and fence it after logout.
 use super::*;
 
 pub(super) struct Fixture<'a>(&'a Browser);
 impl Drop for Fixture<'_> {
     fn drop(&mut self) {
-        // Restore interception even when a browser command/assertion fails.
-        let _ = self.0.script("if(window.__zxsDelivery){window.__zxsDelivery.release(); window.__zxsDelivery.restore();} return true");
+        let _ = self.0.script("if(window.__zxsDelivery){window.__zxsDelivery.release();window.__zxsDelivery.restore();}return true");
     }
 }
 
-pub(super) fn begin_paused_download(browser: &Browser) -> Result<Fixture<'_>> {
+pub(super) fn begin_paused_history(browser: &Browser) -> Result<Fixture<'_>> {
     browser.script(r#"
         const originalFetch = window.fetch;
-        const originalClick = HTMLAnchorElement.prototype.click;
-        const state = window.__zxsDelivery = { waiting: false, finished: false, clicks: 0, bytes: 0, error: null };
         let release;
         const gate = new Promise(resolve => release = resolve);
-        state.release = release;
-        state.restore = () => {
-            window.fetch = originalFetch;
-            HTMLAnchorElement.prototype.click = originalClick;
-        };
-        HTMLAnchorElement.prototype.click = function() {
-            if (this.download === 'browser-smoke.txt') state.clicks++;
-            return originalClick.call(this);
-        };
+        const state = window.__zxsDelivery = {waiting:false,finished:false,status:null,release,restore:()=>{window.fetch=originalFetch;}};
         window.fetch = async function(...args) {
-            const response = await originalFetch.apply(this, args);
+            const response = await originalFetch.apply(this,args);
             const request = args[0];
             const url = typeof request === 'string' ? request : request.url;
-            if (!new URL(url, location.href).pathname.match(/^\/api\/versions\/[^/]+\/content$/)) return response;
-            // Intercept exactly this response, not logout or any future request.
+            if (!/^\/api\/file-manager\/files\/[^/]+\/history$/.test(new URL(url,location.href).pathname)) return response;
             window.fetch = originalFetch;
-            const reader = response.body.getReader();
-            const stream = new ReadableStream({
-                async start(controller) {
-                    state.waiting = true;
-                    await gate;
-                    try {
-                        while (true) {
-                            const part = await reader.read();
-                            if (part.done) break;
-                            state.bytes += part.value.byteLength;
-                            controller.enqueue(part.value);
-                        }
-                        controller.close();
-                    } catch (error) { state.error = String(error); controller.error(error); }
-                    finally {
-                        reader.releaseLock();
-                        // Let the production Rust future consume the terminal
-                        // chunk and run its synchronous verification/delivery.
-                        setTimeout(() => { state.finished = true; }, 500);
-                    }
-                }
-            });
-            return new Response(stream, {status: response.status, statusText: response.statusText, headers: response.headers});
+            state.status = response.status;
+            state.waiting = true;
+            await gate;
+            setTimeout(()=>{state.finished=true;},500);
+            return response;
         };
+        return true;
     "#)?;
     let fixture = Fixture(browser);
-    let button = browser.button("Download", "下载")?;
-    wait_for("download control ready", || {
-        if browser.command("GET", &format!("/element/{button}/enabled"), None)? == true {
+    browser.click(&browser.element(
+        "xpath",
+        "//button[contains(@class,'zxs-file-name')][normalize-space(.)='browser-smoke.txt']",
+    )?)?;
+    wait_for("real file history paused before delivery", || {
+        if browser
+            .script("return window.__zxsDelivery.waiting && window.__zxsDelivery.status === 200")?
+            == true
+        {
             Ok(())
         } else {
-            Err("download control is disabled".into())
-        }
-    })?;
-    browser.click(&button)?;
-    wait_for("real download paused before body delivery", || {
-        if browser.script("return window.__zxsDelivery.waiting")? == true {
-            Ok(())
-        } else {
-            Err("download has not reached response body".into())
+            Err("file history has not reached its original successful response".into())
         }
     })?;
     Ok(fixture)
 }
 
-pub(super) fn finish(
-    fixture: Fixture<'_>,
-    expected_clicks: u64,
-    expected_bytes: usize,
-) -> Result<()> {
+pub(super) fn finish(fixture: Fixture<'_>, current_session: bool) -> Result<()> {
     let browser = fixture.0;
-    browser.script("window.__zxsDelivery.release(); return true")?;
-    wait_for("paused download continuation", || {
+    browser.script("window.__zxsDelivery.release();return true")?;
+    wait_for("file history continuation", || {
         if browser.script("return window.__zxsDelivery.finished")? == true {
             Ok(())
         } else {
-            Err("download continuation is still pending".into())
+            Err("file history continuation still pending".into())
         }
     })?;
-    let transfer = browser
-        .script("return {bytes:window.__zxsDelivery.bytes,error:window.__zxsDelivery.error}")?;
-    if transfer["bytes"] != expected_bytes || !transfer["error"].is_null() {
-        return Err(format!(
-            "paused download did not deliver its complete response body: {transfer}"
-        )
-        .into());
+    if current_session {
+        wait_for("current-session real version tree", || {
+            if browser.script("return document.querySelectorAll('.zxs-version-node').length >= 2")? == true { Ok(()) }
+            else { Err("current metadata did not render its two seeded versions".into()) }
+        })?;
+    } else if browser.script("return !!document.querySelector('input[autocomplete=current-password]') && !document.querySelector('.zxs-entry-content,.zxs-version-node')")? != true {
+        return Err("stale metadata response restored private file details after logout".into());
     }
-    let clicks = browser.script("return window.__zxsDelivery.clicks")?;
-    browser.script("window.__zxsDelivery.restore(); return true")?;
-    if clicks != expected_clicks {
-        return Err(format!(
-            "session download admission: expected {expected_clicks} click(s), observed {clicks}"
-        )
-        .into());
-    }
+    assert_metadata_only(browser)?;
     Ok(())
 }

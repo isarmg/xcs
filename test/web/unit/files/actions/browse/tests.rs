@@ -30,7 +30,6 @@ fn directory_navigation_drops_the_previous_write_permission_before_loading() {
         state.update(|s| {
             s.files.writable = true;
             s.files.loaded = true;
-            s.files.preview = Some(("old.txt".into(), "old".into()));
         });
         // No disk is selected, so this exercises the synchronous transition
         // without starting a browser request on the native test runner.
@@ -38,7 +37,6 @@ fn directory_navigation_drops_the_previous_write_permission_before_loading() {
         state.with_untracked(|s| {
             assert!(!s.files.writable);
             assert!(!s.files.loaded);
-            assert!(s.files.preview.is_none());
             assert_eq!(s.files.directory, "another");
         });
     });

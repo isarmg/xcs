@@ -4,7 +4,6 @@ mod format;
 mod history;
 mod icons;
 mod monitor;
-mod transfers;
 mod ui;
 
 use wasm_bindgen::prelude::*;
@@ -13,3 +12,7 @@ use wasm_bindgen::prelude::*;
 pub fn start() -> Result<(), JsValue> {
     web_interface::mount("root", ui::app)
 }
+
+#[cfg(test)]
+#[path = "../../../test/web/unit/scope/tests.rs"]
+mod scope_tests;

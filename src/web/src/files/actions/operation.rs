@@ -1,8 +1,5 @@
 //! Publication receipts and polling of unconfirmed operations.
-use super::{
-    browse::load_entries,
-    transfer::{apply_upload_result, update_upload},
-};
+use super::browse::load_entries;
 use crate::{
     api,
     files::model::{SaveStatus, operation_status, publication_notice},
@@ -49,52 +46,12 @@ pub(crate) fn record_operation(state: RwSignal<State>, value: Value) {
         load_entries(state);
     }
 }
-pub(crate) fn check_upload(state: RwSignal<State>, id: &str) {
-    let allowed = state.with_untracked(|s| {
-        s.authenticated
-            && !s.logout_pending
-            && s.transfers
-                .rows
-                .iter()
-                .any(|row| row.operation_id == id && row.queryable())
-    });
-    if !allowed {
-        return;
-    }
-    let epoch = state.with_untracked(|s| s.session_epoch);
-    let id = id.to_owned();
-    update_upload(state, &id, |row| row.polling = true);
-    spawn_local(async move {
-        let result = api::request(
-            "GET",
-            &format!("/api/operations/{}", api::segment(&id)),
-            None,
-        )
-        .await;
-        if !current_session(state, epoch) {
-            return;
-        }
-        match result {
-            Ok(value) => apply_upload_result(state, &id, value),
-            Err(error) => {
-                update_upload(state, &id, |row| {
-                    row.polling = false;
-                    row.message = error.to_string();
-                    row.request_id = error.request_id.clone();
-                });
-                if error.status == 401 {
-                    fail(state, error);
-                }
-            }
-        }
-    });
-}
 pub(crate) fn poll(state: RwSignal<State>) {
     let snapshot = state.get_untracked();
-    let epoch = snapshot.session_epoch;
-    for row in snapshot.transfers.rows.iter().filter(|row| row.queryable()) {
-        check_upload(state, &row.operation_id);
+    if !snapshot.session_active() {
+        return;
     }
+    let epoch = snapshot.session_epoch;
     for operation in snapshot
         .files
         .operations

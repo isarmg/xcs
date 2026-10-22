@@ -149,7 +149,7 @@ fn pending_session_response(browser: &Browser, origin: &str) -> Result<()> {
     await gate;
     state.delivered = true;
     // Yield through the production fetch/JSON continuations and error event
-    // delivery, as in the existing real-response download timing fixture.
+    // delivery, as in the real-response metadata timing fixture.
     setTimeout(() => {state.finished = true;}, 500);
     return response;
   };

@@ -4,7 +4,7 @@ fn decode_http(response: &[u8]) -> Result<(u16, Vec<u8>)> {
 
 use super::*;
 #[test]
-fn chooser_interception_cleanup_runs_after_success_and_failure() {
+fn fault_injection_cleanup_runs_after_success_and_failure() {
     for succeed in [true, false] {
         let cleaned = std::cell::Cell::new(false);
         let result = with_cleanup(
@@ -12,7 +12,7 @@ fn chooser_interception_cleanup_runs_after_success_and_failure() {
                 if succeed {
                     Ok(())
                 } else {
-                    Err("selection failed".into())
+                    Err("browser assertion failed".into())
                 }
             },
             || {
@@ -87,4 +87,39 @@ fn framing_rejects_truncated_missing_duplicate_or_excessive_lengths() {
             .1,
         b"{}"
     );
+}
+
+#[test]
+fn metadata_only_network_guard_distinguishes_content_and_metadata() {
+    let origin = "http://127.0.0.1:2345";
+    for path in [
+        "/api/versions/v1/content",
+        "/api/workspaces/w1/files/f1/content?offset=0",
+        "/api/file-manager/disks/P01/write-sessions",
+    ] {
+        assert!(metadata::is_file_body_request(
+            &format!("{origin}{path}"),
+            origin
+        ));
+    }
+    for path in [
+        "/api/file-manager/files/f1/history",
+        "/api/file-manager/disks/P01/namespace",
+        "/api/auth/logout",
+        "/styles/content-blocks.css",
+        "/api/file-manager/files/f1/history?path=content",
+    ] {
+        assert!(!metadata::is_file_body_request(
+            &format!("{origin}{path}"),
+            origin
+        ));
+    }
+    assert!(!metadata::is_file_body_request(
+        "http://other.test/api/versions/v1/content",
+        origin
+    ));
+    assert!(!metadata::is_file_body_request(
+        "http://127.0.0.1:23456/api/versions/v1/content",
+        origin
+    ));
 }

@@ -6,29 +6,8 @@ use std::path::Path;
 
 const OBSERVER: &str = r#"
 window.__zxsSmokeErrors = [];
-window.__zxsSmokeUploadEvents = [];
 addEventListener('error', e => window.__zxsSmokeErrors.push(String(e.message)));
 addEventListener('unhandledrejection', e => window.__zxsSmokeErrors.push(String(e.reason)));
-const snapshot = (event, phase) => {
-  const target = event.target;
-  const inputs = [...document.querySelectorAll('input[type=file]')].map(e => ({
-    connected:e.isConnected, multiple:e.multiple, filesLength:e.files?.length,
-    files:[...(e.files || [])].map(f=>({name:f.name,size:f.size}))
-  }));
-  const record = {time:performance.now(),type:event.type,phase,trusted:event.isTrusted,
-    target:target?.tagName,targetType:target?.type,targetText:target?.textContent?.trim().slice(0,160),
-    inputs,buttons:[...document.querySelectorAll('button')].filter(e=>/Upload files|上传文件|Write to current branch|写入当前分支/.test(e.textContent)).map(e=>({text:e.textContent,disabled:e.disabled})),
-    fileNames:[...document.querySelectorAll('.zxs-file-name')].map(e=>e.textContent),
-    branches:[...document.querySelectorAll('.zxs-file-branches')].map(e=>e.textContent)};
-  window.__zxsSmokeUploadEvents.push(record);
-  if(window.__zxsSmokeUploadEvents.length>200) window.__zxsSmokeUploadEvents.shift();
-};
-for(const type of ['click','input','change','cancel']) addEventListener(type,event=>{
-  const t=event.target;
-  if(t?.matches?.('input[type=file]') || (type==='click' && t?.closest?.('button') && /Upload files|上传文件|Write to current branch|写入当前分支/.test(t.closest('button').textContent))) {
-    snapshot(event,'capture'); queueMicrotask(()=>snapshot(event,'after-handler'));
-  }
-},true);
 "#;
 
 pub(super) fn install(browser: &Browser) -> Result<()> {
@@ -37,12 +16,6 @@ pub(super) fn install(browser: &Browser) -> Result<()> {
         json!({"source":OBSERVER}),
     )?;
     Ok(())
-}
-pub(super) fn upload_snapshot(browser: &Browser, phase: &str) {
-    match browser.script("return {events:window.__zxsSmokeUploadEvents||[],errors:window.__zxsSmokeErrors||[],text:document.body.innerText,requests:performance.getEntriesByType('resource').filter(e=>e.name.includes('/api/')).map(e=>({name:e.name,start:e.startTime,duration:e.duration}))}") {
-        Ok(value) => eprintln!("--- upload diagnostic {phase} ---\n{value}"),
-        Err(error) => eprintln!("upload diagnostic {phase} unavailable: {error}"),
-    }
 }
 pub(super) fn failure(browser: &Browser, directory: &Path, password: &str) {
     if let Err(error) = fs::create_dir_all(directory) {
@@ -60,7 +33,7 @@ pub(super) fn failure(browser: &Browser, directory: &Path, password: &str) {
         }
         Err(error) => eprintln!("browser failure {name} unavailable: {error}"),
     };
-    save("page.json", browser.script("return {url:location.href,title:document.title,text:document.body.innerText,events:window.__zxsSmokeUploadEvents||[],errors:window.__zxsSmokeErrors||[],inputs:[...document.querySelectorAll('input[type=file]')].map(e=>({multiple:e.multiple,filesLength:e.files?.length,files:[...(e.files||[])].map(f=>({name:f.name,size:f.size}))})),requests:performance.getEntriesByType('resource').filter(e=>e.name.includes('/api/')).map(e=>({name:e.name,start:e.startTime,duration:e.duration}))}"));
+    save("page.json", browser.script("return {url:location.href,title:document.title,text:document.body.innerText,errors:window.__zxsSmokeErrors||[],inputs:[...document.querySelectorAll('input[type=file]')].map(e=>({multiple:e.multiple,filesLength:e.files?.length,files:[...(e.files||[])].map(f=>({name:f.name,size:f.size}))})),requests:performance.getEntriesByType('resource').filter(e=>e.name.includes('/api/')).map(e=>({name:e.name,start:e.startTime,duration:e.duration}))}"));
     save("dom.json", browser.script("const root=document.documentElement.cloneNode(true);root.querySelectorAll('input[type=password]').forEach(e=>e.removeAttribute('value'));return root.outerHTML"));
     save(
         "console.json",
