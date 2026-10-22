@@ -24,6 +24,9 @@ class NamingGate(unittest.TestCase):
             (p / 'Cargo.toml').write_text(f'''[package]\nname="{new}"\n[lib]\nname="{new.replace('-', '_')}"\n''')
             (p / 'src/lib.rs').write_text('attributes(command, arg, group)' if new == 'command-derive' else 'mod lexer;')
             packages['src/foundation/' + new] = {'directory': 'src/foundation/' + new, 'origin_directory': old + '-4.6.7'}
+        suggestions = self.root / 'src/foundation/command-line/src/parser/features/suggestions/mod.rs'
+        suggestions.parent.mkdir(parents=True)
+        suggestions.write_text('mod similarity;\nfn compare(v: &str, pv: &String) -> f64 { similarity::jaro(v, pv.as_ref()) }\n')
         for component in ('server', 'rescue'):
             p = self.root / 'src' / component / 'src/main.rs'
             p.parent.mkdir(parents=True, exist_ok=True)
@@ -33,6 +36,27 @@ class NamingGate(unittest.TestCase):
 
     def test_accepts_functional_identity(self):
         self.assertEqual(gate.check(self.root), 2)
+
+    def test_rejects_missing_private_similarity_module(self):
+        path = self.root / 'src/foundation/command-line/src/parser/features/suggestions/mod.rs'
+        path.write_text(path.read_text().replace('mod similarity;', 'mod other;'))
+        with self.assertRaisesRegex(AssertionError, 'missing private similarity module'):
+            gate.check(self.root)
+
+    def test_rejects_public_similarity_module(self):
+        path = self.root / 'src/foundation/command-line/src/parser/features/suggestions/mod.rs'
+        original = path.read_text()
+        for visibility in ('pub', 'pub(crate)'):
+            with self.subTest(visibility=visibility):
+                path.write_text(original.replace('mod similarity;', visibility + ' mod similarity;'))
+                with self.assertRaisesRegex(AssertionError, 'similarity module became public'):
+                    gate.check(self.root)
+
+    def test_rejects_bypassed_moved_similarity_implementation(self):
+        path = self.root / 'src/foundation/command-line/src/parser/features/suggestions/mod.rs'
+        path.write_text(path.read_text().replace('similarity::jaro(v, pv.as_ref())', '0.0'))
+        with self.assertRaisesRegex(AssertionError, 'suggestions bypass moved Jaro implementation'):
+            gate.check(self.root)
 
     def test_rejects_removed_capabilities(self):
         for name in ('unicode', 'wrap_help', 'unstable-markdown'):
