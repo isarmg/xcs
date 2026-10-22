@@ -33,6 +33,7 @@ pub(crate) mod property_names;
 pub(crate) mod ref_;
 pub(crate) mod required;
 pub(crate) mod rfc3986;
+mod uuid_format;
 pub(crate) mod type_;
 pub(crate) mod unevaluated_items;
 pub(crate) mod unevaluated_properties;

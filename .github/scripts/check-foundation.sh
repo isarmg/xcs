@@ -41,6 +41,7 @@ case "${1:-}" in
     python3 .github/scripts/check-date-time-family.py
     ;;
   foundation-language)
+    python3 .github/scripts/check-uuid-format.py
     python3 .github/scripts/check-form-floats.py
     python3 .github/scripts/check-binding-expressions.py
     python3 .github/scripts/check-foundation-consumers.py

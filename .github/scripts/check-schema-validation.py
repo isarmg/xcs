@@ -22,6 +22,9 @@ def check(manifest):
         data = json.loads(subprocess.check_output(['cargo', 'metadata', *args, '--format-version', '1'], cwd=ROOT))
         names = {package['id']: package['name'] for package in data['packages']}
         graph = {names[node['id']]: node['features'] for node in data['resolve']['nodes']}
+        retired = set(graph) & {'uuid-simd', 'vsimd', 'outref'}
+        if retired:
+            raise ValueError(f'retired UUID dependency in schema graph: {sorted(retired)}')
         assert not set(graph) & {'url', 'idna', 'reqwest', 'pyo3', 'magnus', 'jsonschema-macros', 'jsonschema', 'jsonschema-value', 'jsonschema-regex', 'referencing'}, graph
         if feature == 'pattern':
             assert set(graph) == {'schema-validation', 'regex'}, graph
@@ -36,6 +39,7 @@ def check(manifest):
     common = ['--offline', '--manifest-path', str(manifest)]
     run('cargo', 'check', *common, '--all-features')
     run('cargo', 'test', *common, '--test', 'canonical')
+    run('cargo', 'test', *common, '--test', 'uuid_format')
     run('cargo', 'test', *common, '--features', 'arbitrary-precision', '--test', 'canonical')
     run('cargo', 'test', *common, '--features', 'resolve-async,jsonb-testkit,arbitrary-precision', '--test', 'capabilities')
     print('Schema capability graph, canonical fixture assertions, async retrieval and typed JSONB: PASS')

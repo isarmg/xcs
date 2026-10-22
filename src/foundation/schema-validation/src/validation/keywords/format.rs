@@ -11,7 +11,6 @@ use email_address::{EmailAddress, Options as EmailAddressOptions};
 use json_codec::{Map, Value};
 use strum::VariantArray;
 use unicode_general_category::{get_general_category, GeneralCategory};
-use uuid_simd::{parse_hyphenated, Out};
 
 use crate::validation::{
     compiler,
@@ -1083,8 +1082,7 @@ pub fn is_valid_uri_reference(uri_reference: &str) -> bool {
 
 #[must_use]
 pub fn is_valid_uuid(uuid: &str) -> bool {
-    let mut out = [0; 16];
-    parse_hyphenated(uuid.as_bytes(), Out::from_mut(&mut out)).is_ok()
+    super::uuid_format::is_valid(uuid.as_bytes())
 }
 
 /// Validate that a string is a valid ECMAScript regular expression.

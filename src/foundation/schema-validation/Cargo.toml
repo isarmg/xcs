@@ -14,7 +14,7 @@ default = ["validator"]
 value = ["dep:ahash", "dep:bytecount", "dep:fraction", "dep:json-codec", "dep:num-cmp", "dep:numeric", "dep:zmij"]
 pattern = ["dep:regex"]
 reference = ["dep:ahash", "dep:fluent-uri", "dep:hash-table", "dep:itoa", "dep:json-codec", "dep:micromap", "dep:synchronization", "dep:url-encoding"]
-validator = ["dep:ahash", "dep:bytecount", "dep:data-encoding", "dep:data-serialization", "dep:email_address", "dep:fancy-regex", "dep:fraction", "dep:itoa", "dep:json-codec", "dep:num-cmp", "dep:numeric", "dep:regex", "dep:strum", "dep:unicode-general-category", "dep:url-encoding", "dep:uuid-simd", "json-codec", "pattern", "reference", "regex/matcher", "regex/perf", "regex/std", "value"]
+validator = ["dep:ahash", "dep:bytecount", "dep:data-encoding", "dep:data-serialization", "dep:email_address", "dep:fancy-regex", "dep:fraction", "dep:itoa", "dep:json-codec", "dep:num-cmp", "dep:numeric", "dep:regex", "dep:strum", "dep:unicode-general-category", "dep:url-encoding", "json-codec", "pattern", "reference", "regex/matcher", "regex/perf", "regex/std", "value"]
 json-codec = ["value"]
 jsonb-testkit = ["jsonb"]
 jsonb = ["json-codec", "value"]
@@ -102,13 +102,6 @@ version = "1.1"
 path = "../unicode-general-category"
 optional = true
 
-[dependencies.uuid-simd]
-version = "0.8"
-features = ["std", "detect"]
-default-features = false
-path = "../uuid-simd"
-optional = true
-
 [dependencies.numeric]
 version = "0.2.19"
 path = "../numeric"
@@ -165,3 +158,8 @@ required-features = ["validator"]
 name = "capabilities"
 path = "../../../test/schema-validation/capabilities.rs"
 required-features = ["validator", "resolve-async", "jsonb-testkit"]
+
+[[test]]
+name = "uuid_format"
+path = "../../../test/schema-validation/uuid_format.rs"
+required-features = ["validator"]

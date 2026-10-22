@@ -11347,20 +11347,6 @@
       ]
     },
     {
-      "directory": "src/foundation/outref",
-      "files": [
-        {
-          "path": "test/foundation/outref/unit/src/lib/tests_252.rs",
-          "sha256": "eb49dcd2ed749f4c68546cc97f90e188247c55896a756702f92cda00534aef13",
-          "source": "src/foundation/outref/src/lib.rs",
-          "source_sha256_before": "12be1b793dd2fed9e464395520300b63fde79e29375a4b65de555bf493653244"
-        }
-      ],
-      "roots": [
-        "test/foundation/outref"
-      ]
-    },
-    {
       "directory": "src/foundation/parking",
       "files": [
         {
@@ -23190,26 +23176,6 @@
       ]
     },
     {
-      "directory": "src/foundation/uuid-simd",
-      "files": [
-        {
-          "path": "test/foundation/uuid-simd/tests/it.rs",
-          "sha256": "5c052189df24c6c7f0955cf887fc351df7ce0a57152fba80b64d644eb444476e",
-          "source": "src/foundation/uuid-simd/tests/it.rs",
-          "source_sha256_before": "5c052189df24c6c7f0955cf887fc351df7ce0a57152fba80b64d644eb444476e"
-        },
-        {
-          "path": "test/foundation/uuid-simd/unit/src/ext/tests_166.rs",
-          "sha256": "cfac311e63cf788f30c78e61fac5f332b528ab7f0587b3308f9018cd3ef1d758",
-          "source": "src/foundation/uuid-simd/src/ext.rs",
-          "source_sha256_before": "80945ed1cc7be221d10f2056480b9aa8e82ae5191c53fa8b01a1e598891291f9"
-        }
-      ],
-      "roots": [
-        "test/foundation/uuid-simd"
-      ]
-    },
-    {
       "directory": "src/foundation/version_check",
       "files": [
         {
@@ -23247,32 +23213,6 @@
       ],
       "roots": [
         "test/foundation/view-alternatives"
-      ]
-    },
-    {
-      "directory": "src/foundation/vsimd",
-      "files": [
-        {
-          "path": "test/foundation/vsimd/tests/it.rs",
-          "sha256": "425dbe8289dcc82237446fc4f106e0959e8dfccd7bf4e0e5eeae018a136adc10",
-          "source": "src/foundation/vsimd/tests/it.rs",
-          "source_sha256_before": "425dbe8289dcc82237446fc4f106e0959e8dfccd7bf4e0e5eeae018a136adc10"
-        },
-        {
-          "path": "test/foundation/vsimd/unit/src/ascii/algorithm_32.rs",
-          "sha256": "4becb5a7135e689bb4b1b7547f958b160bd9a5142036e7dfeb66cbad04181562",
-          "source": "src/foundation/vsimd/src/ascii.rs",
-          "source_sha256_before": "7708ebdd107c38fcbd9bf348183d8d48ffd14f129b9d4517cbae5f8d42aa9659"
-        },
-        {
-          "path": "test/foundation/vsimd/unit/src/hex/algorithm_278.rs",
-          "sha256": "7519c78e49bb5c99f0fafc37995b491ed49e27428c9f4876833539555e12d4bc",
-          "source": "src/foundation/vsimd/src/hex.rs",
-          "source_sha256_before": "491f82beee3bcd7c9ff1ef7188202350fe7dea0877a7d8d311927614a6a7352d"
-        }
-      ],
-      "roots": [
-        "test/foundation/vsimd"
       ]
     },
     {

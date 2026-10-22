@@ -201,3 +201,12 @@ source/test bytes archived and authenticated. Positive exponents intentionally
 use a plus sign, percent-encoded as `%2B` in forms; this unreleased format has no
 legacy-spelling compatibility adapter. Numerical bit round-trips and actual
 HTTP form/query consumers are checked independently of archival preservation.
+
+## Consumer-led UUID syntax specialization (2026-10-22)
+
+[UUID format validation](uuid-format-validation.md) replaces decoding whose
+output was discarded with a safe exact syntax predicate. The uuid-simd, vsimd
+and outref implementations remain available only in authenticated historical
+archives. Correctness, real schema consumers and native/WASM boundaries are
+validated separately; the measured small predicate cost is disclosed, not
+presented as a speed improvement.

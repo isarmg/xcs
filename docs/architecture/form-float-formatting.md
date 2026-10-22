@@ -47,3 +47,13 @@ The checker is registered exactly once in the foundation-language shard and
 once through the aggregate foundation gate. The explicit command inventory
 and suite-routing regression enforce this placement. Existing SDK, platform,
 SQLite, Samba, feature-isolation and browser gates remain unchanged.
+
+For full audit replay, run
+`python3 .github/scripts/check-form-floats.py --differential` instead of the fast
+consumer gate. It restores ryu exclusively from the authenticated retirement
+archive and runs `test/architecture/form-floats/differential.rs` against current
+zmij/form-codec. No Git history or network is needed. The original output is
+retained at `test/evidence/form-floats/differential-native.txt`; a fresh archived
+oracle replay reproduced the same boundary/random and nonfinite counts after
+retirement. This opt-in audit does not replace the default native/WASM consumer
+checks or add retired code to any production dependency graph.

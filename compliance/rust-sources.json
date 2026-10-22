@@ -47424,7 +47424,7 @@
     }
   },
   "external_test_mappings_sha256": {
-    "compliance/external-tests/foundation.json": "fadf63553191114814bc890a1be43976dc7e1e23c6d0f43a71749573c05e5bf1",
+    "compliance/external-tests/foundation.json": "939d6def31d60e797f5037f2f0250d291952804fc4d05f11adeda450f08b84fa",
     "compliance/external-tests/integrated.json": "976578b7514d285c9214c408327f9b344f3c7649b4ae3b63839e8806b4677d96",
     "compliance/external-tests/ring.json": "3e5a834ea832ea11a0da5cdeab898e9c2e2d5229becc1988edc3462cfb51dab1"
   },
@@ -59085,23 +59085,6 @@
       "origin_directory": "vendor/rust/once_cell-1.21.4",
       "roots": [
         "test/foundation/once_cell"
-      ]
-    },
-    "src/foundation/outref": {
-      "bytes": 1349,
-      "directory": "src/foundation/outref",
-      "file_count": 1,
-      "files": [
-        {
-          "path": "test/foundation/outref/unit/src/lib/tests_252.rs",
-          "sha256": "eb49dcd2ed749f4c68546cc97f90e188247c55896a756702f92cda00534aef13",
-          "source": "src/foundation/outref/src/lib.rs",
-          "source_sha256_before": "12be1b793dd2fed9e464395520300b63fde79e29375a4b65de555bf493653244"
-        }
-      ],
-      "origin_directory": "vendor/rust/outref-0.5.2",
-      "roots": [
-        "test/foundation/outref"
       ]
     },
     "src/foundation/parking": {
@@ -71964,29 +71947,6 @@
         "test/foundation/uuid"
       ]
     },
-    "src/foundation/uuid-simd": {
-      "bytes": 4632,
-      "directory": "src/foundation/uuid-simd",
-      "file_count": 2,
-      "files": [
-        {
-          "path": "test/foundation/uuid-simd/tests/it.rs",
-          "sha256": "5c052189df24c6c7f0955cf887fc351df7ce0a57152fba80b64d644eb444476e",
-          "source": "src/foundation/uuid-simd/tests/it.rs",
-          "source_sha256_before": "5c052189df24c6c7f0955cf887fc351df7ce0a57152fba80b64d644eb444476e"
-        },
-        {
-          "path": "test/foundation/uuid-simd/unit/src/ext/tests_166.rs",
-          "sha256": "cfac311e63cf788f30c78e61fac5f332b528ab7f0587b3308f9018cd3ef1d758",
-          "source": "src/foundation/uuid-simd/src/ext.rs",
-          "source_sha256_before": "80945ed1cc7be221d10f2056480b9aa8e82ae5191c53fa8b01a1e598891291f9"
-        }
-      ],
-      "origin_directory": "vendor/rust/uuid-simd-0.8.0",
-      "roots": [
-        "test/foundation/uuid-simd"
-      ]
-    },
     "src/foundation/version_check": {
       "bytes": 11593,
       "directory": "src/foundation/version_check",
@@ -72031,35 +71991,6 @@
       "origin_directory": "vendor/web/dependencies/either_of-0.1.9",
       "roots": [
         "test/foundation/view-alternatives"
-      ]
-    },
-    "src/foundation/vsimd": {
-      "bytes": 3167,
-      "directory": "src/foundation/vsimd",
-      "file_count": 3,
-      "files": [
-        {
-          "path": "test/foundation/vsimd/tests/it.rs",
-          "sha256": "425dbe8289dcc82237446fc4f106e0959e8dfccd7bf4e0e5eeae018a136adc10",
-          "source": "src/foundation/vsimd/tests/it.rs",
-          "source_sha256_before": "425dbe8289dcc82237446fc4f106e0959e8dfccd7bf4e0e5eeae018a136adc10"
-        },
-        {
-          "path": "test/foundation/vsimd/unit/src/ascii/algorithm_32.rs",
-          "sha256": "4becb5a7135e689bb4b1b7547f958b160bd9a5142036e7dfeb66cbad04181562",
-          "source": "src/foundation/vsimd/src/ascii.rs",
-          "source_sha256_before": "7708ebdd107c38fcbd9bf348183d8d48ffd14f129b9d4517cbae5f8d42aa9659"
-        },
-        {
-          "path": "test/foundation/vsimd/unit/src/hex/algorithm_278.rs",
-          "sha256": "7519c78e49bb5c99f0fafc37995b491ed49e27428c9f4876833539555e12d4bc",
-          "source": "src/foundation/vsimd/src/hex.rs",
-          "source_sha256_before": "491f82beee3bcd7c9ff1ef7188202350fe7dea0877a7d8d311927614a6a7352d"
-        }
-      ],
-      "origin_directory": "vendor/rust/vsimd-0.8.0",
-      "roots": [
-        "test/foundation/vsimd"
       ]
     },
     "src/foundation/walrus": {
@@ -74156,7 +74087,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "c8c8e6ab67730aec283f6754f5f576588b46c4fef93e7bbe4f9460b29d79a45c"
+    "Cargo.lock": "7ba1a5faad4a3725a3ceaa1837352f016ed2b14091494a2166bbd06f8f7c63d7"
   },
   "manifests_sha256": {
     "Cargo.toml": "4fa15cfe7d2baf5436dbc9b9c42bd6acb37fa93bd5d03823f8d09715fe4e6e6e",
@@ -74284,7 +74215,6 @@
     "src/foundation/numeric/Cargo.toml": "0f57c006fb35768fa1714d4d8843591f981e5bc73312dc4f89716102e14f6f06",
     "src/foundation/once_cell/Cargo.toml": "8fe31b50f8f66b69e40ed058a7d229eeb0eba3f1cbca92ef96a8035a3234c2f2",
     "src/foundation/or_poisoned/Cargo.toml": "7c1464d214f3debd34b394ee2a20c67d2d31f501a98c4b56317530e4a34937e2",
-    "src/foundation/outref/Cargo.toml": "c0a5c6ed2853888211e6e68b31655b69fc1cd45345a76211d47ca7d3d7026e89",
     "src/foundation/parking/Cargo.toml": "1be835d946f46f7f147673d4caa27432b10e929d2c7636ad155ed8fd6c462740",
     "src/foundation/password-hash/Cargo.toml": "09686deaeb147194d2cc2286842d6b0c097214c09bdc876c0e7ee4ef54b55b35",
     "src/foundation/pastey/Cargo.toml": "7c01c4cfa53b556cd03be7ac262bf5b06ed726a078ba6ab9105be4b177519ed7",
@@ -74317,7 +74247,7 @@
     "src/foundation/rustls-webpki/Cargo.toml": "c458316c514704512744182403f378af437e697453b3108acda2e217a4652f93",
     "src/foundation/rustls/Cargo.toml": "655395f275d51fe335f55c1a05cf6143771062774862715c184df13528493ee2",
     "src/foundation/rustversion/Cargo.toml": "9249b48982e3bc0add712bb704fe2641ab11f6af228340085379b7ef512248b0",
-    "src/foundation/schema-validation/Cargo.toml": "0ba61d144f7fe9d1e76c1aa9ccd7767d1cf863aee3c66da565afc409ba10220a",
+    "src/foundation/schema-validation/Cargo.toml": "80bdc1dc922cd57daa23efcd0e68ff06536540b38c47f134c01e29adecd1efa6",
     "src/foundation/scopeguard/Cargo.toml": "bddc43c330d01a5c952cce813d647e74b3d17a9f08455af27f9b7c8bf21f0ba2",
     "src/foundation/semver/Cargo.toml": "f8e1816795cfed32f5d6bbea8ca33af4634b9a2d9d9b3aa0b7038cbfe2d9ccb7",
     "src/foundation/send_wrapper/Cargo.toml": "5c26d7abc4defcb2da3547c27d098fdc8e680bb7e67af314cdc94d15ec9857ff",
@@ -74372,12 +74302,10 @@
     "src/foundation/url-encoding/Cargo.toml": "431bc43e0b878050f6ada10cdc50e3f887cb233c8fe838555ff05d77c7bbb513",
     "src/foundation/utf8_iter/Cargo.toml": "7d9b9e216d200199808660be718472f80737d42b5e995cb5e9e59a171f69b321",
     "src/foundation/utf8parse/Cargo.toml": "52ccf4c19a7d0ce3d56c3ae7ff8344ea6e748a5bd53b6d04b0a0b546436b7c4a",
-    "src/foundation/uuid-simd/Cargo.toml": "eb0d0896501394f3d5e824eed0fc84c3d87ae99d6d10d2cc2a403f84ea4e3c19",
     "src/foundation/uuid/Cargo.toml": "129632951beb2377a53756c9d4b76a470481cccda4a213c867c2958b96cf13f9",
     "src/foundation/version_check/Cargo.toml": "7687d1f1999db3568ef5049ae658291b1c519931f819d1cd47707f9a87d6990e",
     "src/foundation/view-alternatives/Cargo.toml": "6e5019fd2c08432eb4b5082d751114f98f1700b39b389a8343c024e4a91c87e0",
     "src/foundation/view-renderer/Cargo.toml": "e1a0774563898f664a99446d36d54f76f8027a4737b9e222d40bda208b7ebafe",
-    "src/foundation/vsimd/Cargo.toml": "74c0c460a11240dad53e1045a669e03c7143f134715cfaad958eb40de244392c",
     "src/foundation/walrus-macro/Cargo.toml": "2f1cb1a5bafa0fefaaefc6190efbd2ce8db66ee1b13732287126a7fd76a9242d",
     "src/foundation/walrus/Cargo.toml": "000bec3ce31caa7077b94965a98356edc2a3808ed2b3da2a0c667a0002643895",
     "src/foundation/want/Cargo.toml": "8e577e9914b75b840b6f0e14c46cf59495c2504d62921e329b517d3ca6a77e9e",
@@ -81635,7 +81563,7 @@
       "description": "JSON value representations and semantics shared by the jsonschema validator and its bindings",
       "directory": "src/foundation/schema-validation",
       "files_sha256": {
-        "Cargo.toml": "0ba61d144f7fe9d1e76c1aa9ccd7767d1cf863aee3c66da565afc409ba10220a",
+        "Cargo.toml": "80bdc1dc922cd57daa23efcd0e68ff06536540b38c47f134c01e29adecd1efa6",
         "metaschemas/reference/draft2019-09/meta/applicator.json": "9c356a52b0ad5da7d4c1b69f61dff5277c2af46221bc0b0521bbdbf3a12d3a2a",
         "metaschemas/reference/draft2019-09/meta/content.json": "cf4792ae93f4a4580ec9523640945f7756f75fd624935ebf15194b0ac3909267",
         "metaschemas/reference/draft2019-09/meta/core.json": "629c017994ffaa33f573a96cf01b9dac6cae80c7d5d17dad5e823a3afa18d5fe",
@@ -81754,7 +81682,7 @@
         "src/validation/keywords/dependencies.rs": "559d30953d1c2a1ca16a805bfffaef076ae5df7ddf0647faa4e0f6392a9e74ca",
         "src/validation/keywords/discriminator.rs": "a4010253c965dc04a3fcf4f3947f2f4adc3398f70c0a0b2fe67747fd60704e2c",
         "src/validation/keywords/enum_.rs": "86c8f1c4beb7f5469fe3d0d65a749adb0557767edc00f0c2485612fcaaea2d82",
-        "src/validation/keywords/format.rs": "583e01b463882b5cf3f4e0fc1c0a15d7944f03c55ab2c90ceeae59886940dc49",
+        "src/validation/keywords/format.rs": "c9a53a427c8f22682faf87d1019d2ed16c798aa3b89d62aa44b46db8425b5fe5",
         "src/validation/keywords/helpers.rs": "8349a65c4b5a4a803cca459ed173f8ca029c890a1615c5146e01c7b7db9c59a0",
         "src/validation/keywords/if_.rs": "7a12c420cfea9eb7e3affb354331fa5acf0b9da0c80fd7f982501bf08e7bc656",
         "src/validation/keywords/items.rs": "3c0b43b1f941953651614f555d9ff6bb19ad3a013688d14fb3ff1ff43cc72634",
@@ -81769,7 +81697,7 @@
         "src/validation/keywords/min_length.rs": "8e68e09b9acba4bd717661c23bddbd56dbf4f6d466ea24bd14fdd9d39f0de7d3",
         "src/validation/keywords/min_properties.rs": "cfab83347e517efeecc11cc7c65b9e27de10bb95471c15f65a067c36c3332335",
         "src/validation/keywords/minmax.rs": "707c3bc51c7074baf43b17d7e78ba589a327ba05bc3060d4013d8c8f70773ec5",
-        "src/validation/keywords/mod.rs": "6aad1bcea44fc253d67777117641111c920edf92c7ae42f1657e512e63d97a7f",
+        "src/validation/keywords/mod.rs": "cdf333a855bb66c2306e7db7d8ed6dbc0b505174b7448162ed5b86c8b8eb60b4",
         "src/validation/keywords/multiple_of.rs": "95d81e95aca79e9f26c5d14721c70b0b39cf84b3b32f1869c76ca6d9aeede738",
         "src/validation/keywords/not.rs": "d49bae9b67b61e2a9d6f176880e8bea0ff1ca8a3d96c9c58de8de47dc48fc10a",
         "src/validation/keywords/one_of.rs": "3d3ed62ecf868710ec3f0ef8be376df01c56c44a422799999b46a8aaf45849a7",
@@ -81785,6 +81713,7 @@
         "src/validation/keywords/unevaluated_items.rs": "1df87f35698b051b271cf711eb273110340fdf1ae29eb4e2d4cd2946838782ba",
         "src/validation/keywords/unevaluated_properties.rs": "d7154281924286ab8e10bf4f405eb7bc55fc09ec4bc96e0e4a3c24455d306847",
         "src/validation/keywords/unique_items.rs": "b04ccd5234d1b29b19c0ecec1f263be9d552a8e51d6e47c4df9860a640a08344",
+        "src/validation/keywords/uuid_format.rs": "4625f6a37ad02d56f1963a4755bd15b17ddb993b18c85329fbf6ec84c3b40479",
         "src/validation/mod.rs": "004b7e305477745d594fa4d60e255a32daa5cf391b603205b6df27162ccc9205",
         "src/validation/node.rs": "18c0d4abcb294da9befda539324620c0b4e57522e0e6a34026346298e07d026e",
         "src/validation/options.rs": "6e89a8c177e05586ae9b529b6b5f04eddf0f351da0046e3c90dc0b60399f20d0",
@@ -81843,7 +81772,7 @@
       "description": "ECMA 262 regex translation for the jsonschema crate",
       "directory": "src/foundation/schema-validation",
       "files_sha256": {
-        "Cargo.toml": "0ba61d144f7fe9d1e76c1aa9ccd7767d1cf863aee3c66da565afc409ba10220a",
+        "Cargo.toml": "80bdc1dc922cd57daa23efcd0e68ff06536540b38c47f134c01e29adecd1efa6",
         "metaschemas/reference/draft2019-09/meta/applicator.json": "9c356a52b0ad5da7d4c1b69f61dff5277c2af46221bc0b0521bbdbf3a12d3a2a",
         "metaschemas/reference/draft2019-09/meta/content.json": "cf4792ae93f4a4580ec9523640945f7756f75fd624935ebf15194b0ac3909267",
         "metaschemas/reference/draft2019-09/meta/core.json": "629c017994ffaa33f573a96cf01b9dac6cae80c7d5d17dad5e823a3afa18d5fe",
@@ -81962,7 +81891,7 @@
         "src/validation/keywords/dependencies.rs": "559d30953d1c2a1ca16a805bfffaef076ae5df7ddf0647faa4e0f6392a9e74ca",
         "src/validation/keywords/discriminator.rs": "a4010253c965dc04a3fcf4f3947f2f4adc3398f70c0a0b2fe67747fd60704e2c",
         "src/validation/keywords/enum_.rs": "86c8f1c4beb7f5469fe3d0d65a749adb0557767edc00f0c2485612fcaaea2d82",
-        "src/validation/keywords/format.rs": "583e01b463882b5cf3f4e0fc1c0a15d7944f03c55ab2c90ceeae59886940dc49",
+        "src/validation/keywords/format.rs": "c9a53a427c8f22682faf87d1019d2ed16c798aa3b89d62aa44b46db8425b5fe5",
         "src/validation/keywords/helpers.rs": "8349a65c4b5a4a803cca459ed173f8ca029c890a1615c5146e01c7b7db9c59a0",
         "src/validation/keywords/if_.rs": "7a12c420cfea9eb7e3affb354331fa5acf0b9da0c80fd7f982501bf08e7bc656",
         "src/validation/keywords/items.rs": "3c0b43b1f941953651614f555d9ff6bb19ad3a013688d14fb3ff1ff43cc72634",
@@ -81977,7 +81906,7 @@
         "src/validation/keywords/min_length.rs": "8e68e09b9acba4bd717661c23bddbd56dbf4f6d466ea24bd14fdd9d39f0de7d3",
         "src/validation/keywords/min_properties.rs": "cfab83347e517efeecc11cc7c65b9e27de10bb95471c15f65a067c36c3332335",
         "src/validation/keywords/minmax.rs": "707c3bc51c7074baf43b17d7e78ba589a327ba05bc3060d4013d8c8f70773ec5",
-        "src/validation/keywords/mod.rs": "6aad1bcea44fc253d67777117641111c920edf92c7ae42f1657e512e63d97a7f",
+        "src/validation/keywords/mod.rs": "cdf333a855bb66c2306e7db7d8ed6dbc0b505174b7448162ed5b86c8b8eb60b4",
         "src/validation/keywords/multiple_of.rs": "95d81e95aca79e9f26c5d14721c70b0b39cf84b3b32f1869c76ca6d9aeede738",
         "src/validation/keywords/not.rs": "d49bae9b67b61e2a9d6f176880e8bea0ff1ca8a3d96c9c58de8de47dc48fc10a",
         "src/validation/keywords/one_of.rs": "3d3ed62ecf868710ec3f0ef8be376df01c56c44a422799999b46a8aaf45849a7",
@@ -81993,6 +81922,7 @@
         "src/validation/keywords/unevaluated_items.rs": "1df87f35698b051b271cf711eb273110340fdf1ae29eb4e2d4cd2946838782ba",
         "src/validation/keywords/unevaluated_properties.rs": "d7154281924286ab8e10bf4f405eb7bc55fc09ec4bc96e0e4a3c24455d306847",
         "src/validation/keywords/unique_items.rs": "b04ccd5234d1b29b19c0ecec1f263be9d552a8e51d6e47c4df9860a640a08344",
+        "src/validation/keywords/uuid_format.rs": "4625f6a37ad02d56f1963a4755bd15b17ddb993b18c85329fbf6ec84c3b40479",
         "src/validation/mod.rs": "004b7e305477745d594fa4d60e255a32daa5cf391b603205b6df27162ccc9205",
         "src/validation/node.rs": "18c0d4abcb294da9befda539324620c0b4e57522e0e6a34026346298e07d026e",
         "src/validation/options.rs": "6e89a8c177e05586ae9b529b6b5f04eddf0f351da0046e3c90dc0b60399f20d0",
@@ -82051,7 +81981,7 @@
       "description": "An implementation-agnostic JSON reference resolution library for Rust.",
       "directory": "src/foundation/schema-validation",
       "files_sha256": {
-        "Cargo.toml": "0ba61d144f7fe9d1e76c1aa9ccd7767d1cf863aee3c66da565afc409ba10220a",
+        "Cargo.toml": "80bdc1dc922cd57daa23efcd0e68ff06536540b38c47f134c01e29adecd1efa6",
         "metaschemas/reference/draft2019-09/meta/applicator.json": "9c356a52b0ad5da7d4c1b69f61dff5277c2af46221bc0b0521bbdbf3a12d3a2a",
         "metaschemas/reference/draft2019-09/meta/content.json": "cf4792ae93f4a4580ec9523640945f7756f75fd624935ebf15194b0ac3909267",
         "metaschemas/reference/draft2019-09/meta/core.json": "629c017994ffaa33f573a96cf01b9dac6cae80c7d5d17dad5e823a3afa18d5fe",
@@ -82170,7 +82100,7 @@
         "src/validation/keywords/dependencies.rs": "559d30953d1c2a1ca16a805bfffaef076ae5df7ddf0647faa4e0f6392a9e74ca",
         "src/validation/keywords/discriminator.rs": "a4010253c965dc04a3fcf4f3947f2f4adc3398f70c0a0b2fe67747fd60704e2c",
         "src/validation/keywords/enum_.rs": "86c8f1c4beb7f5469fe3d0d65a749adb0557767edc00f0c2485612fcaaea2d82",
-        "src/validation/keywords/format.rs": "583e01b463882b5cf3f4e0fc1c0a15d7944f03c55ab2c90ceeae59886940dc49",
+        "src/validation/keywords/format.rs": "c9a53a427c8f22682faf87d1019d2ed16c798aa3b89d62aa44b46db8425b5fe5",
         "src/validation/keywords/helpers.rs": "8349a65c4b5a4a803cca459ed173f8ca029c890a1615c5146e01c7b7db9c59a0",
         "src/validation/keywords/if_.rs": "7a12c420cfea9eb7e3affb354331fa5acf0b9da0c80fd7f982501bf08e7bc656",
         "src/validation/keywords/items.rs": "3c0b43b1f941953651614f555d9ff6bb19ad3a013688d14fb3ff1ff43cc72634",
@@ -82185,7 +82115,7 @@
         "src/validation/keywords/min_length.rs": "8e68e09b9acba4bd717661c23bddbd56dbf4f6d466ea24bd14fdd9d39f0de7d3",
         "src/validation/keywords/min_properties.rs": "cfab83347e517efeecc11cc7c65b9e27de10bb95471c15f65a067c36c3332335",
         "src/validation/keywords/minmax.rs": "707c3bc51c7074baf43b17d7e78ba589a327ba05bc3060d4013d8c8f70773ec5",
-        "src/validation/keywords/mod.rs": "6aad1bcea44fc253d67777117641111c920edf92c7ae42f1657e512e63d97a7f",
+        "src/validation/keywords/mod.rs": "cdf333a855bb66c2306e7db7d8ed6dbc0b505174b7448162ed5b86c8b8eb60b4",
         "src/validation/keywords/multiple_of.rs": "95d81e95aca79e9f26c5d14721c70b0b39cf84b3b32f1869c76ca6d9aeede738",
         "src/validation/keywords/not.rs": "d49bae9b67b61e2a9d6f176880e8bea0ff1ca8a3d96c9c58de8de47dc48fc10a",
         "src/validation/keywords/one_of.rs": "3d3ed62ecf868710ec3f0ef8be376df01c56c44a422799999b46a8aaf45849a7",
@@ -82201,6 +82131,7 @@
         "src/validation/keywords/unevaluated_items.rs": "1df87f35698b051b271cf711eb273110340fdf1ae29eb4e2d4cd2946838782ba",
         "src/validation/keywords/unevaluated_properties.rs": "d7154281924286ab8e10bf4f405eb7bc55fc09ec4bc96e0e4a3c24455d306847",
         "src/validation/keywords/unique_items.rs": "b04ccd5234d1b29b19c0ecec1f263be9d552a8e51d6e47c4df9860a640a08344",
+        "src/validation/keywords/uuid_format.rs": "4625f6a37ad02d56f1963a4755bd15b17ddb993b18c85329fbf6ec84c3b40479",
         "src/validation/mod.rs": "004b7e305477745d594fa4d60e255a32daa5cf391b603205b6df27162ccc9205",
         "src/validation/node.rs": "18c0d4abcb294da9befda539324620c0b4e57522e0e6a34026346298e07d026e",
         "src/validation/options.rs": "6e89a8c177e05586ae9b529b6b5f04eddf0f351da0046e3c90dc0b60399f20d0",
@@ -89351,37 +89282,6 @@
       },
       "version": "0.1.0"
     },
-    "src/foundation/outref": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
-      "description": "Out reference",
-      "directory": "src/foundation/outref",
-      "files_sha256": {
-        "Cargo.toml": "c0a5c6ed2853888211e6e68b31655b69fc1cd45345a76211d47ca7d3d7026e89",
-        "src/lib.rs": "f015e944f681fba5eb95d1aa06b8a29501079ed23cefa630d9614246c34cd78f"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/upstream/outref-0.5.2/LICENSE"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "outref",
-      "origin_directory": "vendor/rust/outref-0.5.2",
-      "repository": "https://github.com/Nugine/outref",
-      "status": "内部维护源码",
-      "upstream": {
-        "archive_sha256": "1a80800c0488c3a21695ea981a54918fbb37abf04f4d0720c453632255e2ff0e",
-        "archive_url": "https://static.crates.io/crates/outref/outref-0.5.2.crate",
-        "name": "outref",
-        "version": "0.5.2"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "cbbce9e3977ef154023bbda0660027c5e523766a"
-        },
-        "path_in_vcs": ""
-      },
-      "version": "0.5.2"
-    },
     "src/foundation/parking": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
       "description": "Thread parking and unparking",
@@ -91627,7 +91527,7 @@
       "description": "JSON schema validaton library",
       "directory": "src/foundation/schema-validation",
       "files_sha256": {
-        "Cargo.toml": "0ba61d144f7fe9d1e76c1aa9ccd7767d1cf863aee3c66da565afc409ba10220a",
+        "Cargo.toml": "80bdc1dc922cd57daa23efcd0e68ff06536540b38c47f134c01e29adecd1efa6",
         "metaschemas/reference/draft2019-09/meta/applicator.json": "9c356a52b0ad5da7d4c1b69f61dff5277c2af46221bc0b0521bbdbf3a12d3a2a",
         "metaschemas/reference/draft2019-09/meta/content.json": "cf4792ae93f4a4580ec9523640945f7756f75fd624935ebf15194b0ac3909267",
         "metaschemas/reference/draft2019-09/meta/core.json": "629c017994ffaa33f573a96cf01b9dac6cae80c7d5d17dad5e823a3afa18d5fe",
@@ -91746,7 +91646,7 @@
         "src/validation/keywords/dependencies.rs": "559d30953d1c2a1ca16a805bfffaef076ae5df7ddf0647faa4e0f6392a9e74ca",
         "src/validation/keywords/discriminator.rs": "a4010253c965dc04a3fcf4f3947f2f4adc3398f70c0a0b2fe67747fd60704e2c",
         "src/validation/keywords/enum_.rs": "86c8f1c4beb7f5469fe3d0d65a749adb0557767edc00f0c2485612fcaaea2d82",
-        "src/validation/keywords/format.rs": "583e01b463882b5cf3f4e0fc1c0a15d7944f03c55ab2c90ceeae59886940dc49",
+        "src/validation/keywords/format.rs": "c9a53a427c8f22682faf87d1019d2ed16c798aa3b89d62aa44b46db8425b5fe5",
         "src/validation/keywords/helpers.rs": "8349a65c4b5a4a803cca459ed173f8ca029c890a1615c5146e01c7b7db9c59a0",
         "src/validation/keywords/if_.rs": "7a12c420cfea9eb7e3affb354331fa5acf0b9da0c80fd7f982501bf08e7bc656",
         "src/validation/keywords/items.rs": "3c0b43b1f941953651614f555d9ff6bb19ad3a013688d14fb3ff1ff43cc72634",
@@ -91761,7 +91661,7 @@
         "src/validation/keywords/min_length.rs": "8e68e09b9acba4bd717661c23bddbd56dbf4f6d466ea24bd14fdd9d39f0de7d3",
         "src/validation/keywords/min_properties.rs": "cfab83347e517efeecc11cc7c65b9e27de10bb95471c15f65a067c36c3332335",
         "src/validation/keywords/minmax.rs": "707c3bc51c7074baf43b17d7e78ba589a327ba05bc3060d4013d8c8f70773ec5",
-        "src/validation/keywords/mod.rs": "6aad1bcea44fc253d67777117641111c920edf92c7ae42f1657e512e63d97a7f",
+        "src/validation/keywords/mod.rs": "cdf333a855bb66c2306e7db7d8ed6dbc0b505174b7448162ed5b86c8b8eb60b4",
         "src/validation/keywords/multiple_of.rs": "95d81e95aca79e9f26c5d14721c70b0b39cf84b3b32f1869c76ca6d9aeede738",
         "src/validation/keywords/not.rs": "d49bae9b67b61e2a9d6f176880e8bea0ff1ca8a3d96c9c58de8de47dc48fc10a",
         "src/validation/keywords/one_of.rs": "3d3ed62ecf868710ec3f0ef8be376df01c56c44a422799999b46a8aaf45849a7",
@@ -91777,6 +91677,7 @@
         "src/validation/keywords/unevaluated_items.rs": "1df87f35698b051b271cf711eb273110340fdf1ae29eb4e2d4cd2946838782ba",
         "src/validation/keywords/unevaluated_properties.rs": "d7154281924286ab8e10bf4f405eb7bc55fc09ec4bc96e0e4a3c24455d306847",
         "src/validation/keywords/unique_items.rs": "b04ccd5234d1b29b19c0ecec1f263be9d552a8e51d6e47c4df9860a640a08344",
+        "src/validation/keywords/uuid_format.rs": "4625f6a37ad02d56f1963a4755bd15b17ddb993b18c85329fbf6ec84c3b40479",
         "src/validation/mod.rs": "004b7e305477745d594fa4d60e255a32daa5cf391b603205b6df27162ccc9205",
         "src/validation/node.rs": "18c0d4abcb294da9befda539324620c0b4e57522e0e6a34026346298e07d026e",
         "src/validation/options.rs": "6e89a8c177e05586ae9b529b6b5f04eddf0f351da0046e3c90dc0b60399f20d0",
@@ -95016,52 +94917,6 @@
       },
       "version": "1.28.0"
     },
-    "src/foundation/uuid-simd": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "SIMD-accelerated UUID operations",
-      "directory": "src/foundation/uuid-simd",
-      "files_sha256": {
-        "Cargo.toml": "eb0d0896501394f3d5e824eed0fc84c3d87ae99d6d10d2cc2a403f84ea4e3c19",
-        "src/error.rs": "f46cda8a58a53dc73a464b7f82d8a4a1ad26eb761d6cd67a1b5703d24806473c",
-        "src/ext.rs": "1c8d90a42b5128aa32474f36412597bade715150b4b66c644bce00de098e3cf5",
-        "src/format.rs": "d8ff564ae4fbdb6720f78915deeae39237929a3063568dc3fe4235bb7a4551b3",
-        "src/lib.rs": "c992c11499fa98d7a8deaa2ac86cadde1e54c4067609031320b2fd4523c57104",
-        "src/multiversion.rs": "55719a7132aed901d194ff66b74825f6224bada050ec69d8329ea9b29fdb92ad",
-        "src/parse.rs": "546b2abfba7e9a7aa2ef987fc2491549f4af58e5b4c655c62b5c35116080c6a8",
-        "src/spec.rs": "7c052b50d254e70b992e88f419bfb01312e023562b412051421487c1a66c2b03"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/supplemental/71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d.txt"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "uuid-simd",
-      "origin_directory": "vendor/rust/uuid-simd-0.8.0",
-      "repository": "https://github.com/Nugine/simd",
-      "status": "内部维护源码",
-      "supplemental_notice": {
-        "commit": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
-        "directory": "vendor/rust/uuid-simd-0.8.0",
-        "file": "vendor/rust-notices/71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d.txt",
-        "repository": "https://github.com/Nugine/simd",
-        "sha256": "71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d",
-        "status": "upstream-notice-retained",
-        "url": "https://raw.githubusercontent.com/Nugine/simd/d74c030d9dc4f3cae02146d1f497ff62726ef09a/LICENSE"
-      },
-      "upstream": {
-        "archive_sha256": "23b082222b4f6619906941c17eb2297fff4c2fb96cb60164170522942a200bd8",
-        "archive_url": "https://static.crates.io/crates/uuid-simd/uuid-simd-0.8.0.crate",
-        "name": "uuid-simd",
-        "version": "0.8.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "d74c030d9dc4f3cae02146d1f497ff62726ef09a"
-        },
-        "path_in_vcs": "crates/uuid-simd"
-      },
-      "version": "0.8.0"
-    },
     "src/foundation/version_check": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Tiny crate to check the version of the installed/running rustc.",
@@ -95206,66 +95061,6 @@
         "path_in_vcs": "tachys"
       },
       "version": "0.2.19"
-    },
-    "src/foundation/vsimd": {
-      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
-      "description": "SIMD utilities",
-      "directory": "src/foundation/vsimd",
-      "files_sha256": {
-        "Cargo.toml": "74c0c460a11240dad53e1045a669e03c7143f134715cfaad958eb40de244392c",
-        "src/algorithm.rs": "2a8a5770374d659ab31646cf5a8c4f99097aa6b5cbe7126cf38441a3b40875cf",
-        "src/alsw.rs": "0160b74a177404e7c548224ade7b0a1112754aac7665672a3d16710a08f2747f",
-        "src/ascii.rs": "bb1e17bf0c8c4be3d7ac51f9c9fb3df0639424918c693a77d70f9098ba4fd9e3",
-        "src/bswap.rs": "85c552322138ff0d83591f364c4365b1128a7b379ce78a271a34b58d60d6233b",
-        "src/hex.rs": "787a821e4b8f48293448c76642b02c7bd9904a88c1f123a69c54e6c9e31ba4f1",
-        "src/isa.rs": "efbadc9e885fe0908477d6f747f759c97adb9723559fecccea4f3688fa6d6320",
-        "src/lib.rs": "057139c222f0eef7ba11c94920a04fc2c1bb29b6bc1f9114896d92e39fa65ab2",
-        "src/macros.rs": "d170db6c42df45aae2a6976b7390bf3eb46a42c571e46978f60e0bcab3bbdeb0",
-        "src/mask.rs": "699b434c2dcdd8d50d6e42222676903c204822c60b5645015151ac4e81b4a93f",
-        "src/native.rs": "c50ddcbd3f63b593bcd310f0666ccb1744f535a9d2be305f2cd5d2df85eeaebb",
-        "src/pod.rs": "77c4c2568f35e9dcaced149162583f0189d85e4bebe31dd366e8b05f153b503f",
-        "src/scalable.rs": "a1da70460b1562eec9585c73df9ab967b8b846b2c040bcd98420cec297a386eb",
-        "src/simd128.rs": "b6ca237963d50eb6be66d24514b7c15aefa3245d6d543ccb934dbbe3a5cd6f80",
-        "src/simd256.rs": "31e9e9f19bdeef950cf5ca7a3ad170d8224a35cb1b640a4a87af91983d94410b",
-        "src/simd64.rs": "b14c4ba221956e1363477d08705bd9bf16922ebb1c3edc107474b57f27670e66",
-        "src/simulation.rs": "a92cc1d04e60548db2dcee3da0f7510d31eca0bbab32600fb99e26182e63324f",
-        "src/table.rs": "7a8a10c4257f8bb9a84b3d4d89084af951598533909dafe7db48c9550e2922be",
-        "src/tools.rs": "1801cf64cadd609d55775aa347bc2cd4e1438af657b34c5994d9ecad17394392",
-        "src/unified.rs": "d7ab4b9be03caa699afb392b8b780a7a050fa0bac44fe00422352472abb29033",
-        "src/unstable.rs": "3c80b04787a10aa34892e81be23d423a3294bfe4720eac2cfac594c433a2b677",
-        "src/vector.rs": "a8271700ffe607d49e42e5eab74afe1f558d762d318c266ac268e4739ab42690"
-      },
-      "license": "MIT",
-      "license_materials": [
-        "compliance/licenses/supplemental/71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d.txt"
-      ],
-      "merged_into": "无；通过统一内部源码源接入",
-      "name": "vsimd",
-      "origin_directory": "vendor/rust/vsimd-0.8.0",
-      "repository": "https://github.com/Nugine/simd",
-      "status": "内部维护源码",
-      "supplemental_notice": {
-        "commit": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
-        "directory": "vendor/rust/vsimd-0.8.0",
-        "file": "vendor/rust-notices/71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d.txt",
-        "repository": "https://github.com/Nugine/simd",
-        "sha256": "71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d",
-        "status": "upstream-notice-retained",
-        "url": "https://raw.githubusercontent.com/Nugine/simd/d74c030d9dc4f3cae02146d1f497ff62726ef09a/LICENSE"
-      },
-      "upstream": {
-        "archive_sha256": "5c3082ca00d5a5ef149bb8b555a72ae84c9c59f7250f013ac822ac2e49b19c64",
-        "archive_url": "https://static.crates.io/crates/vsimd/vsimd-0.8.0.crate",
-        "name": "vsimd",
-        "version": "0.8.0"
-      },
-      "vcs": {
-        "git": {
-          "sha1": "d74c030d9dc4f3cae02146d1f497ff62726ef09a"
-        },
-        "path_in_vcs": "crates/vsimd"
-      },
-      "version": "0.8.0"
     },
     "src/foundation/walrus": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 3 个独立示例程序及专属输入（4331 字节）；保留文档编译、真实测试及性能基准输入。",
@@ -111146,12 +110941,6 @@
             "compile"
           ]
         },
-        "src/foundation/outref": {
-          "features": [],
-          "roles": [
-            "compile"
-          ]
-        },
         "src/foundation/parking": {
           "features": [],
           "roles": [
@@ -111732,26 +111521,6 @@
             "rng",
             "std",
             "v4"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/uuid-simd": {
-          "features": [
-            "alloc",
-            "detect",
-            "std"
-          ],
-          "roles": [
-            "compile"
-          ]
-        },
-        "src/foundation/vsimd": {
-          "features": [
-            "alloc",
-            "detect",
-            "std"
           ],
           "roles": [
             "compile"
@@ -114753,6 +114522,64 @@
       },
       "version": "1.70.2"
     },
+    "src/foundation/outref": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
+      "description": "Out reference",
+      "directory": "src/foundation/outref",
+      "files_sha256": {
+        "Cargo.toml": "c0a5c6ed2853888211e6e68b31655b69fc1cd45345a76211d47ca7d3d7026e89",
+        "src/lib.rs": "f015e944f681fba5eb95d1aa06b8a29501079ed23cefa630d9614246c34cd78f"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/upstream/outref-0.5.2/LICENSE"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "outref",
+      "origin_directory": "vendor/rust/outref-0.5.2",
+      "repository": "https://github.com/Nugine/outref",
+      "retirement": {
+        "bytes": 7521,
+        "category": "consumer-specialization",
+        "external_tests": {
+          "bytes": 1349,
+          "directory": "src/foundation/outref",
+          "file_count": 1,
+          "files": [
+            {
+              "path": "test/foundation/outref/unit/src/lib/tests_252.rs",
+              "sha256": "eb49dcd2ed749f4c68546cc97f90e188247c55896a756702f92cda00534aef13",
+              "source": "src/foundation/outref/src/lib.rs",
+              "source_sha256_before": "12be1b793dd2fed9e464395520300b63fde79e29375a4b65de555bf493653244"
+            }
+          ],
+          "origin_directory": "vendor/rust/outref-0.5.2",
+          "roots": [
+            "test/foundation/outref"
+          ]
+        },
+        "file_count": 2,
+        "reason": "Specialize schema UUID format validation to its exact safe ASCII syntax predicate; decoding output is unused, so retire the uuid-simd decoder and its sole-consumer vsimd/outref chain while retaining authenticated differential replay evidence.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "upstream": {
+        "archive_sha256": "1a80800c0488c3a21695ea981a54918fbb37abf04f4d0720c453632255e2ff0e",
+        "archive_url": "https://static.crates.io/crates/outref/outref-0.5.2.crate",
+        "name": "outref",
+        "version": "0.5.2"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "cbbce9e3977ef154023bbda0660027c5e523766a"
+        },
+        "path_in_vcs": ""
+      },
+      "version": "0.5.2"
+    },
     "src/foundation/portable-atomic": {
       "changes": "锁文件超集保留，未在登记的 normal/build 闭包选中；未声称属于生产运行代码。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Portable atomic types including support for 128-bit atomics, atomic float, etc.",
@@ -116588,6 +116415,85 @@
       },
       "version": "0.1.19"
     },
+    "src/foundation/uuid-simd": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "SIMD-accelerated UUID operations",
+      "directory": "src/foundation/uuid-simd",
+      "files_sha256": {
+        "Cargo.toml": "eb0d0896501394f3d5e824eed0fc84c3d87ae99d6d10d2cc2a403f84ea4e3c19",
+        "src/error.rs": "f46cda8a58a53dc73a464b7f82d8a4a1ad26eb761d6cd67a1b5703d24806473c",
+        "src/ext.rs": "1c8d90a42b5128aa32474f36412597bade715150b4b66c644bce00de098e3cf5",
+        "src/format.rs": "d8ff564ae4fbdb6720f78915deeae39237929a3063568dc3fe4235bb7a4551b3",
+        "src/lib.rs": "c992c11499fa98d7a8deaa2ac86cadde1e54c4067609031320b2fd4523c57104",
+        "src/multiversion.rs": "55719a7132aed901d194ff66b74825f6224bada050ec69d8329ea9b29fdb92ad",
+        "src/parse.rs": "546b2abfba7e9a7aa2ef987fc2491549f4af58e5b4c655c62b5c35116080c6a8",
+        "src/spec.rs": "7c052b50d254e70b992e88f419bfb01312e023562b412051421487c1a66c2b03"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/supplemental/71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d.txt"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "uuid-simd",
+      "origin_directory": "vendor/rust/uuid-simd-0.8.0",
+      "repository": "https://github.com/Nugine/simd",
+      "retirement": {
+        "bytes": 23782,
+        "category": "consumer-specialization",
+        "external_tests": {
+          "bytes": 4632,
+          "directory": "src/foundation/uuid-simd",
+          "file_count": 2,
+          "files": [
+            {
+              "path": "test/foundation/uuid-simd/tests/it.rs",
+              "sha256": "5c052189df24c6c7f0955cf887fc351df7ce0a57152fba80b64d644eb444476e",
+              "source": "src/foundation/uuid-simd/tests/it.rs",
+              "source_sha256_before": "5c052189df24c6c7f0955cf887fc351df7ce0a57152fba80b64d644eb444476e"
+            },
+            {
+              "path": "test/foundation/uuid-simd/unit/src/ext/tests_166.rs",
+              "sha256": "cfac311e63cf788f30c78e61fac5f332b528ab7f0587b3308f9018cd3ef1d758",
+              "source": "src/foundation/uuid-simd/src/ext.rs",
+              "source_sha256_before": "80945ed1cc7be221d10f2056480b9aa8e82ae5191c53fa8b01a1e598891291f9"
+            }
+          ],
+          "origin_directory": "vendor/rust/uuid-simd-0.8.0",
+          "roots": [
+            "test/foundation/uuid-simd"
+          ]
+        },
+        "file_count": 8,
+        "reason": "Specialize schema UUID format validation to its exact safe ASCII syntax predicate; decoding output is unused, so retire the uuid-simd decoder and its sole-consumer vsimd/outref chain while retaining authenticated differential replay evidence.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "supplemental_notice": {
+        "commit": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
+        "directory": "vendor/rust/uuid-simd-0.8.0",
+        "file": "vendor/rust-notices/71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d.txt",
+        "repository": "https://github.com/Nugine/simd",
+        "sha256": "71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d",
+        "status": "upstream-notice-retained",
+        "url": "https://raw.githubusercontent.com/Nugine/simd/d74c030d9dc4f3cae02146d1f497ff62726ef09a/LICENSE"
+      },
+      "upstream": {
+        "archive_sha256": "23b082222b4f6619906941c17eb2297fff4c2fb96cb60164170522942a200bd8",
+        "archive_url": "https://static.crates.io/crates/uuid-simd/uuid-simd-0.8.0.crate",
+        "name": "uuid-simd",
+        "version": "0.8.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "d74c030d9dc4f3cae02146d1f497ff62726ef09a"
+        },
+        "path_in_vcs": "crates/uuid-simd"
+      },
+      "version": "0.8.0"
+    },
     "src/foundation/valuable": {
       "changes": "锁文件超集保留，未在登记的 normal/build 闭包选中；未声称属于生产运行代码。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
       "description": "Object-safe value inspection, used to pass un-typed structured data across trait-object boundaries.",
@@ -117512,6 +117418,105 @@
         }
       },
       "version": "0.2.15"
+    },
+    "src/foundation/vsimd": {
+      "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。",
+      "description": "SIMD utilities",
+      "directory": "src/foundation/vsimd",
+      "files_sha256": {
+        "Cargo.toml": "74c0c460a11240dad53e1045a669e03c7143f134715cfaad958eb40de244392c",
+        "src/algorithm.rs": "2a8a5770374d659ab31646cf5a8c4f99097aa6b5cbe7126cf38441a3b40875cf",
+        "src/alsw.rs": "0160b74a177404e7c548224ade7b0a1112754aac7665672a3d16710a08f2747f",
+        "src/ascii.rs": "bb1e17bf0c8c4be3d7ac51f9c9fb3df0639424918c693a77d70f9098ba4fd9e3",
+        "src/bswap.rs": "85c552322138ff0d83591f364c4365b1128a7b379ce78a271a34b58d60d6233b",
+        "src/hex.rs": "787a821e4b8f48293448c76642b02c7bd9904a88c1f123a69c54e6c9e31ba4f1",
+        "src/isa.rs": "efbadc9e885fe0908477d6f747f759c97adb9723559fecccea4f3688fa6d6320",
+        "src/lib.rs": "057139c222f0eef7ba11c94920a04fc2c1bb29b6bc1f9114896d92e39fa65ab2",
+        "src/macros.rs": "d170db6c42df45aae2a6976b7390bf3eb46a42c571e46978f60e0bcab3bbdeb0",
+        "src/mask.rs": "699b434c2dcdd8d50d6e42222676903c204822c60b5645015151ac4e81b4a93f",
+        "src/native.rs": "c50ddcbd3f63b593bcd310f0666ccb1744f535a9d2be305f2cd5d2df85eeaebb",
+        "src/pod.rs": "77c4c2568f35e9dcaced149162583f0189d85e4bebe31dd366e8b05f153b503f",
+        "src/scalable.rs": "a1da70460b1562eec9585c73df9ab967b8b846b2c040bcd98420cec297a386eb",
+        "src/simd128.rs": "b6ca237963d50eb6be66d24514b7c15aefa3245d6d543ccb934dbbe3a5cd6f80",
+        "src/simd256.rs": "31e9e9f19bdeef950cf5ca7a3ad170d8224a35cb1b640a4a87af91983d94410b",
+        "src/simd64.rs": "b14c4ba221956e1363477d08705bd9bf16922ebb1c3edc107474b57f27670e66",
+        "src/simulation.rs": "a92cc1d04e60548db2dcee3da0f7510d31eca0bbab32600fb99e26182e63324f",
+        "src/table.rs": "7a8a10c4257f8bb9a84b3d4d89084af951598533909dafe7db48c9550e2922be",
+        "src/tools.rs": "1801cf64cadd609d55775aa347bc2cd4e1438af657b34c5994d9ecad17394392",
+        "src/unified.rs": "d7ab4b9be03caa699afb392b8b780a7a050fa0bac44fe00422352472abb29033",
+        "src/unstable.rs": "3c80b04787a10aa34892e81be23d423a3294bfe4720eac2cfac594c433a2b677",
+        "src/vector.rs": "a8271700ffe607d49e42e5eab74afe1f558d762d318c266ac268e4739ab42690"
+      },
+      "license": "MIT",
+      "license_materials": [
+        "compliance/licenses/supplemental/71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d.txt"
+      ],
+      "merged_into": "无；通过统一内部源码源接入",
+      "name": "vsimd",
+      "origin_directory": "vendor/rust/vsimd-0.8.0",
+      "repository": "https://github.com/Nugine/simd",
+      "retirement": {
+        "bytes": 166143,
+        "category": "consumer-specialization",
+        "external_tests": {
+          "bytes": 3167,
+          "directory": "src/foundation/vsimd",
+          "file_count": 3,
+          "files": [
+            {
+              "path": "test/foundation/vsimd/tests/it.rs",
+              "sha256": "425dbe8289dcc82237446fc4f106e0959e8dfccd7bf4e0e5eeae018a136adc10",
+              "source": "src/foundation/vsimd/tests/it.rs",
+              "source_sha256_before": "425dbe8289dcc82237446fc4f106e0959e8dfccd7bf4e0e5eeae018a136adc10"
+            },
+            {
+              "path": "test/foundation/vsimd/unit/src/ascii/algorithm_32.rs",
+              "sha256": "4becb5a7135e689bb4b1b7547f958b160bd9a5142036e7dfeb66cbad04181562",
+              "source": "src/foundation/vsimd/src/ascii.rs",
+              "source_sha256_before": "7708ebdd107c38fcbd9bf348183d8d48ffd14f129b9d4517cbae5f8d42aa9659"
+            },
+            {
+              "path": "test/foundation/vsimd/unit/src/hex/algorithm_278.rs",
+              "sha256": "7519c78e49bb5c99f0fafc37995b491ed49e27428c9f4876833539555e12d4bc",
+              "source": "src/foundation/vsimd/src/hex.rs",
+              "source_sha256_before": "491f82beee3bcd7c9ff1ef7188202350fe7dea0877a7d8d311927614a6a7352d"
+            }
+          ],
+          "origin_directory": "vendor/rust/vsimd-0.8.0",
+          "roots": [
+            "test/foundation/vsimd"
+          ]
+        },
+        "file_count": 22,
+        "reason": "Specialize schema UUID format validation to its exact safe ASCII syntax predicate; decoding output is unused, so retire the uuid-simd decoder and its sole-consumer vsimd/outref chain while retaining authenticated differential replay evidence.",
+        "targets": [
+          "wasm32-unknown-unknown",
+          "x86_64-unknown-linux-gnu"
+        ]
+      },
+      "status": "内部维护源码",
+      "supplemental_notice": {
+        "commit": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
+        "directory": "vendor/rust/vsimd-0.8.0",
+        "file": "vendor/rust-notices/71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d.txt",
+        "repository": "https://github.com/Nugine/simd",
+        "sha256": "71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d",
+        "status": "upstream-notice-retained",
+        "url": "https://raw.githubusercontent.com/Nugine/simd/d74c030d9dc4f3cae02146d1f497ff62726ef09a/LICENSE"
+      },
+      "upstream": {
+        "archive_sha256": "5c3082ca00d5a5ef149bb8b555a72ae84c9c59f7250f013ac822ac2e49b19c64",
+        "archive_url": "https://static.crates.io/crates/vsimd/vsimd-0.8.0.crate",
+        "name": "vsimd",
+        "version": "0.8.0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "d74c030d9dc4f3cae02146d1f497ff62726ef09a"
+        },
+        "path_in_vcs": "crates/vsimd"
+      },
+      "version": "0.8.0"
     },
     "src/foundation/walkdir": {
       "changes": "Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。",
@@ -123832,6 +123837,7 @@
     "src/foundation/objc2-core-foundation": "ec697ab990217962867e390af6bfb202cfde9541bbd034a633ac76ab168139e6",
     "src/foundation/objc2-io-kit": "5405770a4addd59dfd73508ddfa8d85919abcc7daf0983b60f9975b2aa1a278e",
     "src/foundation/once_cell_polyfill": "ed99beb25fc337b17214bc4bcd6577e93e5c7db2a1bbc51565e6d14eabd85005",
+    "src/foundation/outref": "5a4230a7994d70e08c268fed05dbd4d654f1067eb0170de9bed7a118a53ab9c1",
     "src/foundation/portable-atomic": "1d73293acff1a0f5e411f6d97486c7e3f904506173215796e225e162aaf2b917",
     "src/foundation/portable-atomic-util": "a9605f66c9314e638d0f74816bb1be4642607937e42971b0cce4f42798775428",
     "src/foundation/prettyplease-0.2.37": "be950a57cef2c9ee14d470e08fb41fa18c07f6431a085d7bc5c6e6db166a3328",
@@ -123853,8 +123859,10 @@
     "src/foundation/syn-2.0.119": "21c96498ebc8f591c2fbc51b952dd4954cbdc35971a8cf59460b9906db93b169",
     "src/foundation/time-macros": "e0f74f378003a1f01d62921f14a4c4e5cbd6bedabef941d34af8108f4bc60e8a",
     "src/foundation/tokio-stream": "d59440b128d9939d6c0d707ff0a0413efec9db3ba3257584cfdd4e42d8e3b8c3",
+    "src/foundation/uuid-simd": "bf52a4fd8f6ac9f97633b1295e73f7283196485d1e1eb34786d567248552194c",
     "src/foundation/valuable": "92165393b90a97d9f5807076595f4f8558d9ca1845f7eabcf7171a85b459dd42",
     "src/foundation/vcpkg": "070f28ea70171838168e08eb024d79d86c7e94436574ebdf14b25db655662225",
+    "src/foundation/vsimd": "17f4edca04809c3840b1bd7d69ec485ca3d84964c27d7623b92ec4fe7b12f5db",
     "src/foundation/walkdir": "e9ebee64bc59bc8291ba6d98d17df03e2c3146b42f0fcb5bafe73d3430e6cc6c",
     "src/foundation/wasi": "7d6527ad787c0cbcba880a574a3af007af42dbc2d4b751e981f369e0ea3dc94f",
     "src/foundation/wasip2": "f1372bdd80c5c551f767e8ec93d31f55d9693b019593aff01f00e786cf6b5a9e",
