@@ -52,6 +52,17 @@ class SerializationGateTests(unittest.TestCase):
             if no_std:
                 self.assertTrue(all(not dependency['default-features'] for dependency in dependencies.values()))
 
+    def test_build_honors_explicit_isolated_target_directory(self):
+        with patch.object(CHECKER['subprocess'], 'Popen') as popen:
+            process = popen.return_value.__enter__.return_value
+            process.stdout = ['{"reason":"build-finished","success":true}\n']
+            process.wait.return_value = 0
+            CHECKER['build'](ROOT, Path('/tmp/serialization-probe'),
+                             {'CARGO_TARGET_DIR': '/tmp/consumer-target'}, CHECKER['NATIVE'])
+            command = popen.call_args.args[0]
+            self.assertEqual(command[command.index('--target-dir') + 1], '/tmp/consumer-target')
+            self.assertIn('-j2', command)
+
     def test_rejection_target_exists_before_lock_generation(self):
         def run(command, **kwargs):
             manifest = Path(command[command.index('--manifest-path') + 1])

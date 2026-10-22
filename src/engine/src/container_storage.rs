@@ -1,5 +1,6 @@
 //! Ordinary version files in one renameable directory per stable file identity.
 use crate::{disk::*, *};
+use date_time::{OffsetDateTime, format_description::well_known::Rfc3339};
 use json_codec::json;
 use platform_io::fs_safety::linux::{MountPolicy, OpenAt2Root};
 use std::{
@@ -9,7 +10,6 @@ use std::{
     os::unix::fs::MetadataExt,
     path::{Path, PathBuf},
 };
-use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
 fn invalid(message: &str) -> Error {
     Error::new("CONTAINER_LAYOUT_INVALID", message)
@@ -120,9 +120,10 @@ pub(crate) fn version_identity(
     let timestamp = now
         .format(&Rfc3339)
         .map_err(|error| invalid(&error.to_string()))?;
-    let format =
-        time::format_description::parse_borrowed::<3>("[year][month][day]T[hour][minute][second]Z")
-            .map_err(|error| invalid(&error.to_string()))?;
+    let format = date_time::format_description::parse_borrowed::<3>(
+        "[year][month][day]T[hour][minute][second]Z",
+    )
+    .map_err(|error| invalid(&error.to_string()))?;
     let stamp = now
         .format(&format)
         .map_err(|error| invalid(&error.to_string()))?;

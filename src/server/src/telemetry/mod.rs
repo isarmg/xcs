@@ -138,7 +138,7 @@ impl Telemetry {
         backend: Arc<dyn Backend>,
         directory: &Path,
     ) -> Result<Arc<Self>, ApiError> {
-        let now = time::OffsetDateTime::now_utc().unix_timestamp();
+        let now = date_time::OffsetDateTime::now_utc().unix_timestamp();
         let service = Arc::new(Self {
             backend,
             sampler: Mutex::new(SystemSampler::new()),
@@ -189,7 +189,7 @@ impl Telemetry {
             .lock()
             .map_err(|_| unavailable("host sampling is unavailable"))?
             .sample();
-        let now = time::OffsetDateTime::now_utc().unix_timestamp();
+        let now = date_time::OffsetDateTime::now_utc().unix_timestamp();
         Ok(Sample {
             unix_seconds: now,
             observations: 1,
@@ -229,9 +229,9 @@ fn unavailable(message: &str) -> ApiError {
 }
 
 fn timestamp(unix_seconds: i64) -> Result<String, ApiError> {
-    time::OffsetDateTime::from_unix_timestamp(unix_seconds)
+    date_time::OffsetDateTime::from_unix_timestamp(unix_seconds)
         .map_err(|_| unavailable("sample time is unavailable"))?
-        .format(&time::format_description::well_known::Rfc3339)
+        .format(&date_time::format_description::well_known::Rfc3339)
         .map_err(|_| unavailable("sample time is unavailable"))
 }
 
@@ -283,7 +283,7 @@ pub(crate) async fn history(
     tokio::task::spawn_blocking(move || {
         require_current_administrator(&state.auth, &identity)?;
         let (seconds, interval) = range_parameters(&query.range)?;
-        let to = time::OffsetDateTime::now_utc().unix_timestamp();
+        let to = date_time::OffsetDateTime::now_utc().unix_timestamp();
         let from = to - seconds;
         let samples = state.telemetry.history.lock().map_err(|_| unavailable("history sampling is unavailable"))?.samples(from, to, interval);
         require_current_administrator(&state.auth, &identity)?;

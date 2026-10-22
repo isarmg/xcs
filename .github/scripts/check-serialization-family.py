@@ -54,7 +54,7 @@ def manifest(root, no_std=False):
                      'derive-where'):
             dependencies[name] = (['serialization'], True)
         dependencies['toml'] = (['serialization'], False)
-        dependencies['time'] = (['serialization', 'serialization-human-readable'], True)
+        dependencies['date-time'] = (['serialization', 'serialization-human-readable'], True)
         dependencies['form-codec'] = ([], True)
     lines = ['[package]', 'name = "serialization-family-regression"', 'version = "0.0.0"',
              'edition = "2021"', '[workspace]', '[dependencies]']
@@ -68,7 +68,7 @@ def build(root, work, environment, target, tests=False):
     diagnostics_type = runpy.run_path(str(root / '.github/scripts/check-rust-diagnostics.py'))['CargoDiagnostics']
     command = ['cargo', 'test' if tests else 'check', '--locked', '--offline',
                '--manifest-path', str(work / 'Cargo.toml'), '--target', target,
-               '--target-dir', str(work.parent / 'target'), '--message-format=json', '-j2']
+               '--target-dir', environment.get('CARGO_TARGET_DIR', str(work.parent / 'target')), '--message-format=json', '-j2']
     if tests:
         command.append('--no-run')
     diagnostics = diagnostics_type(sys.stderr)
@@ -112,7 +112,7 @@ def check_rejections(root, directory, environment):
         (work / 'src/lib.rs').write_text(source)
         result = subprocess.run(['cargo', 'check', '--locked', '--offline', '--manifest-path',
                                  str(work / 'Cargo.toml'), '--target', NATIVE,
-                                 '--target-dir', str(directory / 'target'), '-j2'],
+                                 '--target-dir', environment.get('CARGO_TARGET_DIR', str(directory / 'target')), '-j2'],
                                 cwd=root, env=environment, capture_output=True, text=True)
         if result.returncode == 0 or expected not in result.stderr:
             raise AssertionError(f'expected rejection {expected!r}: {result.stdout} {result.stderr}')

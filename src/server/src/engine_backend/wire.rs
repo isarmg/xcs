@@ -451,7 +451,7 @@ pub(super) fn operation_wire(op: storage_engine::OperationResult) -> Result<Valu
         "HEALTHY" | "DEGRADED" | "UNAVAILABLE" | "UNKNOWN" => op.current_health.as_str(),
         _ => "UNKNOWN",
     };
-    let current_health = json!({"state":health,"checked_at":time::OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).map_err(ApiError::invalid)?});
+    let current_health = json!({"state":health,"checked_at":date_time::OffsetDateTime::now_utc().format(&date_time::format_description::well_known::Rfc3339).map_err(ApiError::invalid)?});
     let content_save = op.kind == "workspace.commit"
         && op.protection_at_publish != storage_contract::ProtectionAtPublish::NotApplicable;
     if content_save {

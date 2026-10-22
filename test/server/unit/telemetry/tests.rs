@@ -63,7 +63,7 @@ fn unavailable_cache_falls_back_to_bounded_memory_without_losing_live_metrics() 
     assert!(live.memory.total_bytes.is_some());
     let history = service.history.lock().unwrap();
     assert!(!history.is_persistent());
-    let now = time::OffsetDateTime::now_utc().unix_timestamp();
+    let now = date_time::OffsetDateTime::now_utc().unix_timestamp();
     assert!(!history.samples(now - 60, now, 5).is_empty());
     assert_eq!(std::fs::read(directory).unwrap(), b"unwritable cache path");
 }

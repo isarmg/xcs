@@ -30,6 +30,10 @@ def structure(root):
     assert all(not (root / 'src/foundation' / name).exists() for name in ABSORBED)
     assert not set(ABSORBED) & package['dependencies'].keys()
     assert not {'tracing-serde', 'lru'} & package['dependencies'].keys()
+    assert package['dependencies']['date-time']['path'] == '../date-time'
+    assert package['dependencies']['date-time']['optional']
+    assert 'time' not in package['dependencies']
+    assert 'dep:date-time' in package['features']['time']
     assert package['dependencies']['log']['optional']
     assert 'parking_lot' not in package['features']
     assert package['dependencies']['synchronization']['default-features'] is False

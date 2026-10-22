@@ -14,7 +14,7 @@ blake3.workspace = true
 rustix.workspace = true
 sqlite-access.workspace = true
 tempfile.workspace = true
-time = { version = "=0.3.55", features = ["formatting", "parsing"], path = "../foundation/time"}
+date-time = { version = "=0.3.55", features = ["formatting", "parsing"], path = "../foundation/date-time"}
 
 [[test]]
 name = "branch_alias_operations"

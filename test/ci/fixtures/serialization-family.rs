@@ -64,3 +64,14 @@ fn bitflag_reexport() {
     assert_eq!(json, "\"A\"");
     assert_eq!(json_codec::from_str::<Bits>(&json).unwrap(), Bits::A);
 }
+
+#[test]
+fn date_time_human_readable_round_trip_uses_owned_capability() {
+    let value = date_time::OffsetDateTime::from_unix_timestamp_nanos(-1)
+        .unwrap()
+        .to_offset(date_time::UtcOffset::from_hms(5, 30, 0).unwrap());
+    let json = json_codec::to_string(&value).unwrap();
+    let restored = json_codec::from_str::<date_time::OffsetDateTime>(&json).unwrap();
+    assert_eq!(restored.unix_timestamp_nanos(), -1);
+    assert_eq!(restored.offset(), value.offset());
+}

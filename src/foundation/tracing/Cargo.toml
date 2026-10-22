@@ -57,7 +57,7 @@ json = ["fmt", "serialization", "dep:json-codec"]
 log-bridge = ["std", "dep:log", "log/std", "dep:once_cell"]
 log-tracer = ["log-bridge"]
 collector-default = ["fmt", "ansi", "log-tracer", "smallvec"]
-time = ["fmt", "dep:time"]
+time = ["fmt", "dep:date-time"]
 parking = ["collector", "std", "dep:synchronization", "synchronization/locks"]
 smallvec = ["collector", "dep:smallvec"]
 
@@ -130,11 +130,11 @@ version = "1.1.4"
 optional = true
 path = "../thread_local"
 
-[dependencies.time]
+[dependencies.date-time]
 version = "0.3.2"
 features = ["formatting"]
 optional = true
-path = "../time"
+path = "../date-time"
 
 [lints]
 

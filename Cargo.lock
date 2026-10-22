@@ -373,8 +373,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "deranged"
-version = "0.5.9"
+name = "date-time"
+version = "0.3.55"
+dependencies = [
+ "data-serialization",
+]
 
 [[package]]
 name = "derive-where"
@@ -1001,10 +1004,6 @@ name = "num-cmp"
 version = "0.1.0"
 
 [[package]]
-name = "num-conv"
-version = "0.2.2"
-
-[[package]]
 name = "numeric"
 version = "0.2.19"
 dependencies = [
@@ -1085,10 +1084,6 @@ version = "0.1.6"
 dependencies = [
  "zerovec",
 ]
-
-[[package]]
-name = "powerfmt"
-version = "0.2.1"
 
 [[package]]
 name = "proc-macro-utils"
@@ -1569,6 +1564,7 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "data-serialization",
+ "date-time",
  "hash-table",
  "hashlink",
  "json-codec",
@@ -1578,7 +1574,6 @@ dependencies = [
  "sqlite-access",
  "storage-contract",
  "tempfile",
- "time",
 ]
 
 [[package]]
@@ -1589,6 +1584,7 @@ dependencies = [
  "blake3",
  "bytes",
  "data-serialization",
+ "date-time",
  "futures",
  "http",
  "http-routing",
@@ -1601,7 +1597,6 @@ dependencies = [
  "storage-engine",
  "sysinfo",
  "tempfile",
- "time",
  "tokio",
  "tower-http",
  "tracing",
@@ -1709,21 +1704,6 @@ version = "0.3.1"
 dependencies = [
  "pin-project-lite",
 ]
-
-[[package]]
-name = "time"
-version = "0.3.55"
-dependencies = [
- "data-serialization",
- "deranged",
- "num-conv",
- "powerfmt",
- "time-core",
-]
-
-[[package]]
-name = "time-core"
-version = "0.1.9"
 
 [[package]]
 name = "tinystr"

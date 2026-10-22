@@ -170,6 +170,12 @@
       "args": [
         ".github/scripts/check-compression-family.py"
       ]
+    },
+    {
+      "tool": "python3",
+      "args": [
+        ".github/scripts/check-date-time-family.py"
+      ]
     }
   ],
   "foundation-language": [
