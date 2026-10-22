@@ -79,6 +79,7 @@ impl Session {
             self.reserve_paths(&[path.as_str()])?;
             let mut pending_workspace = None;
             let mut pending_source = None;
+            let mut pending_reservation = None;
             let result = (|| {
                 let workspace = self.workspace()?;
                 pending_workspace = Some(workspace.workspace_id.clone());
@@ -116,14 +117,31 @@ impl Session {
                     .map_err(ApiError::io)?;
                 let (mut file, source) = temp.keep().map_err(|error| ApiError::io(error.error))?;
                 pending_source = Some(source.clone());
-                if let Some(version) = version.as_deref().filter(|_| !truncate) {
-                    let mut content = self.shared.backend.content(&self.identity, version)?;
+                let content = version
+                    .as_deref()
+                    .filter(|_| !truncate)
+                    .map(|version| self.shared.backend.content(&self.identity, version))
+                    .transpose()?;
+                let initial_size = content.as_ref().map_or(0, |content| content.size);
+                pending_reservation = Some(self.shared.budget.reserve(
+                    &self.identity.principal,
+                    &source,
+                    initial_size,
+                    self.max_file_bytes,
+                )?);
+                let reservation = pending_reservation.as_ref().unwrap();
+                if let Some(mut content) = content {
+                    let mut copied = 0u64;
                     let mut buffer = [0u8; 65536];
                     loop {
                         let length = content.file.read(&mut buffer).map_err(ApiError::io)?;
                         if length == 0 {
                             break;
                         }
+                        copied = copied
+                            .checked_add(length as u64)
+                            .ok_or_else(|| ApiError::limit("SMB byte count overflow"))?;
+                        reservation.before_write(copied, length as u64)?;
                         file.write_all(&buffer[..length]).map_err(ApiError::io)?;
                     }
                 }
@@ -147,6 +165,7 @@ impl Session {
                 let fd = OwnedFd::from(file.try_clone().map_err(ApiError::io)?);
                 let workspace_id = workspace.workspace_id.clone();
                 let writer = Writer {
+                    reservation: pending_reservation.take().unwrap(),
                     file,
                     source,
                     path: path.clone(),
@@ -158,8 +177,14 @@ impl Session {
                     operation_id: new_id("op"),
                     write_through,
                 };
-                writer.file.sync_all().map_err(ApiError::io)?;
-                recovery_record(&writer, &self.identity.principal, &self.branch)?;
+                if let Err(error) =
+                    writer.file.sync_all().map_err(ApiError::io).and_then(|()| {
+                        recovery_record(&writer, &self.identity.principal, &self.branch)
+                    })
+                {
+                    publication::cleanup_writer(&writer);
+                    return Err(error);
+                }
                 Ok((
                     Handle::Write(Box::new(writer)),
                     fd,
@@ -177,6 +202,9 @@ impl Session {
                 if let Some(path) = pending_source {
                     let _ = fs::remove_file(path.with_extension("work.json"));
                     let _ = fs::remove_file(path);
+                }
+                if let Some(reservation) = &pending_reservation {
+                    reservation.cleanup_record();
                 }
                 self.release_paths(&[name_policy::path_key(&path)]);
             }

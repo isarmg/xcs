@@ -25,6 +25,7 @@ fn connect(shared: Arc<Shared>) -> (FrameStream, JoinHandle<()>) {
         &mut client,
         Request::Hello {
             protocol: PROTOCOL.into(),
+            capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
             username: "alice".into(),
             repository_id: repository,
         },
@@ -145,6 +146,9 @@ fn namespace_submission_errors_retain_original_operation_without_abort() {
             backend: backend.clone(),
             identities: original.identities.clone(),
             spool: original.spool.clone(),
+            budget: original.budget.clone(),
+            max_file_bytes: original.max_file_bytes,
+            sessions_per_account: Mutex::new(BTreeMap::new()),
             file_writers: Mutex::new(BTreeSet::new()),
             namespace_operations: Mutex::new(BTreeSet::new()),
         });
@@ -237,6 +241,9 @@ fn uncertain_namespace_dispatch_never_aborts_its_workspace() {
             backend: backend.clone(),
             identities: original.identities.clone(),
             spool: original.spool.clone(),
+            budget: original.budget.clone(),
+            max_file_bytes: original.max_file_bytes,
+            sessions_per_account: Mutex::new(BTreeMap::new()),
             file_writers: Mutex::new(BTreeSet::new()),
             namespace_operations: Mutex::new(BTreeSet::new()),
         });
@@ -513,6 +520,9 @@ fn preparation_and_record_sync_failures_keep_unresolved_recovery_evidence() {
                 backend: backend.clone(),
                 identities: original.identities.clone(),
                 spool: original.spool.clone(),
+                budget: original.budget.clone(),
+                max_file_bytes: original.max_file_bytes,
+                sessions_per_account: Mutex::new(BTreeMap::new()),
                 file_writers: Mutex::new(BTreeSet::new()),
                 namespace_operations: Mutex::new(BTreeSet::new()),
             });

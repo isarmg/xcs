@@ -31,62 +31,53 @@ pub(crate) async fn upload_status(
     http_routing::Extension(identity): http_routing::Extension<Identity>,
     ApiPath((workspace, item)): ApiPath<(String, String)>,
 ) -> Result<Json<Value>, ApiError> {
-    let backend = state.backend.clone();
-    let owner = identity.clone();
-    let ws = workspace.clone();
-    let item_id = item.clone();
+    let read_permit = state.read_slots.acquire(&identity.principal)?;
+    let backend_permit = state
+        .backend_slots
+        .clone()
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("HTTP backend capacity reached"))?;
     tokio::task::spawn_blocking(move || {
-        backend.call(
+        // Both quotas cover authorization, engine status and local spool reads.
+        // Keep them until actual work ends, even if the requester disconnects.
+        let _read_permit = read_permit;
+        let _backend_permit = backend_permit;
+        let input = json!({"workspace_id":workspace,"item_id":item});
+        state.backend.call(
             crate::BackendAction::WorkspaceAuthorize,
-            &owner,
-            json!({"workspace_id":ws,"item_id":item_id}),
-        )
-    })
-    .await
-    .map_err(ApiError::join)??;
-    let backend = state.backend.clone();
-    let owner = identity.clone();
-    let ws = workspace.clone();
-    let item_id = item.clone();
-    let published = match tokio::task::spawn_blocking(move || {
-        backend.call(
-            crate::BackendAction::UploadStatus,
-            &owner,
-            json!({"workspace_id":ws,"item_id":item_id}),
-        )
+            &identity,
+            input.clone(),
+        )?;
+        let published =
+            match state
+                .backend
+                .call(crate::BackendAction::UploadStatus, &identity, input)
+            {
+                Ok(status) => Ok(status),
+                Err(error) if error.status == 404 => Err(error),
+                Err(error) => return Err(error),
+            };
+        if let Some(record) = uploads::load(&state.config.spool_dir, &workspace, &item)? {
+            if record.principal != identity.principal && !identity.admin {
+                return Err(ApiError::forbidden());
+            }
+            // A replacement can be durably receiving while the engine still owns
+            // the previous completed generation. Equal/newer engine generations
+            // remain authoritative, including their completed publication state.
+            let published_generation = published
+                .as_ref()
+                .ok()
+                .and_then(|status| status.get("upload_generation"))
+                .and_then(Value::as_str)
+                .and_then(|generation| storage_contract::parse_u64_decimal(generation).ok());
+            if published_generation.is_none_or(|generation| record.generation > generation) {
+                return Ok(Json(uploads::status(&record)));
+            }
+        }
+        published.map(Json)
     })
     .await
     .map_err(ApiError::join)?
-    {
-        Ok(status) => Ok(status),
-        Err(error) if error.status == 404 => Err(error),
-        Err(error) => return Err(error),
-    };
-    let root = state.config.spool_dir.clone();
-    let ws = workspace.clone();
-    let item_id = item.clone();
-    if let Some(record) = tokio::task::spawn_blocking(move || uploads::load(&root, &ws, &item_id))
-        .await
-        .map_err(ApiError::join)??
-    {
-        if record.principal != identity.principal && !identity.admin {
-            return Err(ApiError::forbidden());
-        }
-        // A replacement can be durably receiving while the engine still owns
-        // the previous completed generation. Do not report that old content as
-        // the current upload. Equal/newer engine generations remain authoritative,
-        // including their sealed manifest and completed publication state.
-        let published_generation = published
-            .as_ref()
-            .ok()
-            .and_then(|status| status.get("upload_generation"))
-            .and_then(Value::as_str)
-            .and_then(|generation| storage_contract::parse_u64_decimal(generation).ok());
-        if published_generation.is_none_or(|generation| record.generation > generation) {
-            return Ok(Json(uploads::status(&record)));
-        }
-    }
-    published.map(Json)
 }
 
 #[derive(Deserialize)]

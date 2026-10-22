@@ -6,6 +6,8 @@ use std::{
 };
 use storage_engine::{CommitRequest, Config, Engine};
 
+#[path = "admission_tests.rs"]
+mod admission_tests;
 #[path = "close_tests.rs"]
 mod close_tests;
 #[path = "namespace_tests.rs"]
@@ -121,7 +123,19 @@ fn fixture() -> (tempfile::TempDir, Arc<Shared>, Arc<LostCommitReply>, String) {
         revoked: AtomicBool::new(false),
         change_before_workspace: AtomicBool::new(false),
     });
+    let budget = budget::Budget::recover(
+        &spool,
+        crate::SpoolLimits {
+            bytes_per_account: 16 * 1024 * 1024,
+            bytes_total: 64 * 1024 * 1024,
+            recovery_reserve_bytes: 1,
+        },
+    )
+    .unwrap();
     let shared = Arc::new(Shared {
+        budget,
+        max_file_bytes: 4096,
+        sessions_per_account: Mutex::new(BTreeMap::new()),
         backend: backend.clone(),
         identities: BTreeMap::from([("alice".into(), identity)]),
         spool,
@@ -138,7 +152,7 @@ fn session(shared: Arc<Shared>, branch: &str) -> Session {
         handles: BTreeMap::new(),
         next_handle: 1,
         writer_locks: BTreeSet::new(),
-        max_file_bytes: 1 << 30,
+        max_file_bytes: 4096,
     }
 }
 fn open_file(session: &mut Session, writable: bool) -> (OpenResult, File) {
@@ -498,6 +512,7 @@ fn unix_rpc_default_switch_preserves_read_fds_and_targets_new_writes() {
         &mut wire,
         Request::Hello {
             protocol: PROTOCOL.into(),
+            capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
             username: "alice".into(),
             repository_id: repository.clone(),
         },
@@ -1076,6 +1091,8 @@ async fn cancellation_closes_blocked_rpc_sessions_and_removes_its_socket() {
             smb_protocol::protocol::effective_uid(),
             identities,
             backend,
+            crate::SpoolLimits::default(),
+            4096,
         )
         .await
     });
@@ -1250,5 +1267,195 @@ fn unchanged_writable_close_cleans_up_but_disconnect_remains_uncertain() {
         assert_eq!(source.exists(), disconnect);
         assert_eq!(source.with_extension("work.json").exists(), disconnect);
         assert_eq!(backend.uploads.load(Ordering::SeqCst), 0);
+    }
+}
+
+#[test]
+fn established_sessions_preserve_idle_no_handle_read_and_unsaved_write() {
+    use std::time::Duration;
+    let (_temp, shared, _backend, _branch) = fixture();
+    let repository = shared.identities["alice"]
+        .repositories
+        .iter()
+        .next()
+        .unwrap()
+        .clone();
+    let (client, server) = std::os::unix::net::UnixStream::pair().unwrap();
+    let worker = std::thread::spawn(move || {
+        run_connection(
+            FrameStream::with_timeout(server, Duration::from_millis(30)).unwrap(),
+            shared,
+        )
+    });
+    let mut wire = FrameStream::new(client).unwrap();
+    let rpc = |wire: &mut FrameStream, request: Request| {
+        wire.send(&request, None).unwrap();
+        let (response, fd) = wire.receive::<Response>().unwrap();
+        let Response::Ok { result } = response else {
+            panic!("RPC failed: {response:?}")
+        };
+        (result, fd)
+    };
+    rpc(
+        &mut wire,
+        Request::Hello {
+            protocol: PROTOCOL.into(),
+            capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+            username: "alice".into(),
+            repository_id: repository,
+        },
+    );
+    std::thread::sleep(Duration::from_millis(100));
+    rpc(
+        &mut wire,
+        Request::Stat {
+            path: "report.txt".into(),
+        },
+    );
+    for writable in [false, true] {
+        let (result, fd) = rpc(
+            &mut wire,
+            Request::Open {
+                path: "report.txt".into(),
+                writable,
+                create: false,
+                truncate: false,
+                exclusive: false,
+                write_through: false,
+            },
+        );
+        let opened: OpenResult = json_codec::from_value(result).unwrap();
+        let file = File::from(fd.unwrap());
+        if writable {
+            file.write_all_at(b"new", 0).unwrap();
+        }
+        std::thread::sleep(Duration::from_millis(100));
+        if writable {
+            rpc(
+                &mut wire,
+                Request::Dirty {
+                    handle: opened.handle,
+                },
+            );
+            rpc(
+                &mut wire,
+                Request::Flush {
+                    handle: opened.handle,
+                },
+            );
+        } else {
+            rpc(
+                &mut wire,
+                Request::AuthorizeRead {
+                    handle: opened.handle,
+                },
+            );
+            let mut bytes = [0; 3];
+            file.read_exact_at(&mut bytes, 0).unwrap();
+            assert_eq!(&bytes, b"old");
+        }
+        rpc(
+            &mut wire,
+            Request::Close {
+                handle: opened.handle,
+            },
+        );
+    }
+    drop(wire);
+    worker.join().unwrap().unwrap();
+}
+
+#[test]
+fn flush_disconnect_cycles_keep_full_spool_reservations() {
+    let (_temp, shared, _backend, branch) = fixture();
+    for generation in 0..2 {
+        let mut session = session(shared.clone(), &branch);
+        let (opened, file) = open_file(&mut session, true);
+        session
+            .dispatch(Request::PrepareWrite {
+                handle: opened.handle,
+                end: 11,
+                bytes: 11,
+            })
+            .unwrap();
+        file.write_all_at(&[b'a' + generation], 0).unwrap();
+        session.dirty(opened.handle).unwrap();
+        session.flush(opened.handle).unwrap();
+        // Publication does not prove that the peer's FD cannot change again.
+        drop(session);
+        file.write_all_at(b"after flush", 0).unwrap();
+        drop(file);
+    }
+    let records = fs::read_dir(&shared.spool)
+        .unwrap()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().to_string_lossy().ends_with(".budget.json"))
+        .collect::<Vec<_>>();
+    assert_eq!(records.len(), 2);
+    for record in records {
+        let value: Value = json_codec::from_slice(&fs::read(record.path()).unwrap()).unwrap();
+        assert_eq!(value["admitted_end"].as_str(), Some("11"));
+    }
+}
+
+#[test]
+fn oversized_existing_file_is_rejected_before_private_copy() {
+    let (_temp, shared, _backend, branch) = fixture();
+    let mut session = session(shared.clone(), &branch);
+    session.max_file_bytes = 2;
+    assert!(
+        session
+            .open("report.txt".into(), true, false, false, false, false)
+            .is_err()
+    );
+    let retained = fs::read_dir(&shared.spool)
+        .unwrap()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().unwrap().is_file() && entry.file_name() != ".budget.lock")
+        .count();
+    assert_eq!(retained, 0);
+}
+
+#[test]
+fn hello_rejects_missing_write_reservations_before_admitting_a_session() {
+    let (_temp, shared, _backend, _branch) = fixture();
+    let repository = shared.identities["alice"]
+        .repositories
+        .iter()
+        .next()
+        .unwrap()
+        .clone();
+    for capabilities in [None, Some(json!([])), Some(json!(["unrelated"]))] {
+        let mut hello = json!({
+            "op":"hello","protocol":PROTOCOL,"username":"alice","repository_id":repository
+        });
+        let missing = capabilities.is_none();
+        if let Some(capabilities) = capabilities {
+            hello["capabilities"] = capabilities;
+        }
+        let (client, server) = std::os::unix::net::UnixStream::pair().unwrap();
+        let server_shared = shared.clone();
+        let worker = std::thread::spawn(move || {
+            run_connection(FrameStream::new(server).unwrap(), server_shared)
+        });
+        let mut wire = FrameStream::new(client).unwrap();
+        wire.send(&hello, None).unwrap();
+        if missing {
+            assert_eq!(
+                wire.receive::<Response>().unwrap_err().kind(),
+                io::ErrorKind::UnexpectedEof
+            );
+            assert!(worker.join().unwrap().is_err());
+        } else {
+            let (response, descriptor) = wire.receive::<Response>().unwrap();
+            assert!(descriptor.is_none());
+            assert!(matches!(response, Response::Error { code, .. } if code == "INVALID_REQUEST"));
+            assert_eq!(
+                wire.receive::<Response>().unwrap_err().kind(),
+                io::ErrorKind::UnexpectedEof
+            );
+            worker.join().unwrap().unwrap();
+        }
+        assert_eq!(fs::read_dir(&shared.spool).unwrap().count(), 2);
     }
 }

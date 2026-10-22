@@ -298,15 +298,39 @@ pub(crate) async fn authorize(
             return Err(ApiError::forbidden());
         }
     }
-    let auth = state.auth.clone();
-    let credential = token.clone();
-    let identity = tokio::task::spawn_blocking(move || lock(&auth)?.authenticate(&credential))
-        .await
-        .map_err(ApiError::join)??;
+    let identity = authenticate(state.auth, state.authorization_slots, token.clone()).await?;
     request.extensions_mut().insert(identity);
     request.extensions_mut().insert(SessionToken(token));
     Ok(next.run(request).await)
 }
+// Bound jobs before scheduling, including time waiting for the credential lock.
+// Ownership moves into the job so canceled HTTP futures cannot free its slot.
+async fn authenticate(
+    auth: Arc<Mutex<crate::auth::AuthStore>>,
+    slots: Arc<tokio::sync::Semaphore>,
+    credential: String,
+) -> Result<Identity, ApiError> {
+    if !authentication::is_token_shape(&credential) {
+        return Err(ApiError::unauthorized());
+    }
+    auth_job(slots, move || lock(&auth)?.authenticate(&credential)).await
+}
+
+async fn auth_job<T: Send + 'static>(
+    slots: Arc<tokio::sync::Semaphore>,
+    job: impl FnOnce() -> Result<T, ApiError> + Send + 'static,
+) -> Result<T, ApiError> {
+    let permit = slots
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("authentication capacity reached"))?;
+    tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        job()
+    })
+    .await
+    .map_err(ApiError::join)?
+}
+
 #[derive(Clone)]
 pub(crate) struct SessionToken(String);
 
@@ -336,7 +360,9 @@ pub(crate) async fn login(
     let result = tokio::task::spawn_blocking(move || {
         let _pending = pending;
         let _permit = permit;
-        lock(&auth)?.login(&body.username, &body.password)
+        let challenge = lock(&auth)?.login_challenge(&body.username)?;
+        let verified = challenge.verify(&body.password)?;
+        lock(&auth)?.finish_login(verified)
     })
     .await
     .map_err(ApiError::join)??;
@@ -372,9 +398,10 @@ pub(crate) async fn logout(
     http_routing::Extension(token): http_routing::Extension<SessionToken>,
 ) -> Result<Response, ApiError> {
     let auth = state.auth.clone();
-    tokio::task::spawn_blocking(move || lock(&auth)?.logout(&token.0))
-        .await
-        .map_err(ApiError::join)??;
+    auth_job(state.authorization_slots, move || {
+        lock(&auth)?.logout(&token.0)
+    })
+    .await?;
     let mut response = Json(json!({"logged_out":true})).into_response();
     response.headers_mut().insert(
         header::SET_COOKIE,
@@ -436,13 +463,12 @@ pub(crate) async fn accounts(
 ) -> Result<Json<Value>, ApiError> {
     identity.require_admin()?;
     let auth = state.auth.clone();
-    let accounts = tokio::task::spawn_blocking(move || {
+    let accounts = auth_job(state.authorization_slots, move || {
         let auth = lock(&auth)?;
         auth.revalidate_identity(&identity)?.require_admin()?;
-        Ok::<_, ApiError>(auth.list_accounts())
+        Ok(auth.list_accounts())
     })
-    .await
-    .map_err(ApiError::join)??;
+    .await?;
     Ok(Json(json!({"accounts": accounts})))
 }
 #[derive(Deserialize)]

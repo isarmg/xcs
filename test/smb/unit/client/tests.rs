@@ -1,6 +1,58 @@
 use super::*;
 
 #[test]
+fn module_client_negotiates_durable_write_reservations_before_open() {
+    for response in [
+        json_codec::json!({"protocol":PROTOCOL,"capabilities":[WRITE_RESERVATION_CAPABILITY]}),
+        json_codec::json!({"protocol":PROTOCOL}),
+        json_codec::json!({"protocol":PROTOCOL,"capabilities":[]}),
+        json_codec::json!({"protocol":PROTOCOL,"capabilities":["unrelated"]}),
+        json_codec::json!({"protocol":"unsupported","capabilities":[WRITE_RESERVATION_CAPABILITY]}),
+    ] {
+        let accepted = response["protocol"] == PROTOCOL
+            && response["capabilities"] == json_codec::json!([WRITE_RESERVATION_CAPABILITY]);
+        let (one, two) = UnixStream::pair().unwrap();
+        let server = std::thread::spawn(move || {
+            let mut stream = FrameStream::new(two).unwrap();
+            let (request, descriptor) = stream.receive::<Request>().unwrap();
+            assert!(descriptor.is_none());
+            let Request::Hello {
+                protocol,
+                capabilities,
+                username,
+                repository_id,
+            } = request
+            else {
+                panic!("client must negotiate before issuing handle requests");
+            };
+            assert_eq!(protocol, PROTOCOL);
+            assert_eq!(capabilities, vec![WRITE_RESERVATION_CAPABILITY]);
+            assert_eq!(username, "alice");
+            assert_eq!(repository_id, "repository");
+            stream
+                .send(&Response::Ok { result: response }, None)
+                .unwrap();
+            assert_eq!(
+                stream.receive::<Request>().unwrap_err().kind(),
+                io::ErrorKind::UnexpectedEof,
+                "rejected negotiation must close the connection without opening a handle"
+            );
+        });
+        // connect() used by the actual VFS module delegates this handshake
+        // unchanged after creating its UnixStream.
+        let connected = Client::connect_stream(one, "alice", "repository");
+        if accepted {
+            assert!(connected.is_ok());
+            drop(connected);
+        } else {
+            let error = connected.err().expect("unsupported peer was accepted");
+            assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+        }
+        server.join().unwrap();
+    }
+}
+
+#[test]
 fn namespace_transport_failure_retains_identity_and_disconnects_every_clone() {
     for send_failure in [false, true] {
         let request = crate::protocol::namespace_request("mkdir", "new".into(), None, false);

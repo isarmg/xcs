@@ -123,3 +123,89 @@ fn monitoring_rechecks_current_administrator_instead_of_captured_role() {
         );
     }
 }
+
+#[tokio::test]
+async fn telemetry_admission_survives_cancellation_without_consuming_management_capacity() {
+    use http_routing::{
+        Router,
+        body::Body,
+        http::{Request, StatusCode},
+    };
+    use service_stack::ServiceExt;
+    async fn request(app: &Router, path: &str, token: &str) -> StatusCode {
+        app.clone()
+            .oneshot(
+                Request::builder()
+                    .uri(path)
+                    .header("authorization", format!("Bearer {token}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+            .status()
+    }
+    let root = tempfile::tempdir().unwrap();
+    let config = crate::ServerConfig::loopback(root.path());
+    config.prepare_spool().unwrap();
+    let backend = Arc::new(MonitorBackend);
+    let service = Telemetry::start(backend.clone(), &root.path().join("cache")).unwrap();
+    let mut auth =
+        crate::auth::AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let token = auth.login("admin", "a-long-test-password").unwrap().token;
+    let app =
+        crate::router_shared(backend, Arc::new(Mutex::new(auth)), config, service.clone()).unwrap();
+    let started = Arc::new(tokio::sync::Semaphore::new(0));
+    let mut releases = Vec::new();
+    let mut jobs = Vec::new();
+    for _ in 0..2 {
+        let (release, wait) = std::sync::mpsc::channel();
+        releases.push(release);
+        let started = started.clone();
+        jobs.push(tokio::spawn(telemetry_job(
+            service.request_slots.clone(),
+            move || {
+                started.add_permits(1);
+                wait.recv_timeout(Duration::from_secs(10))
+                    .map_err(ApiError::invalid)?;
+                Ok(())
+            },
+        )));
+    }
+    tokio::time::timeout(Duration::from_secs(3), started.acquire_many(2))
+        .await
+        .unwrap()
+        .unwrap()
+        .forget();
+    for path in ["/api/system/status", "/api/system/history?range=1min"] {
+        assert_eq!(
+            request(&app, path, &token).await,
+            StatusCode::TOO_MANY_REQUESTS
+        );
+    }
+    let canceled = jobs.pop().unwrap();
+    canceled.abort();
+    assert!(canceled.await.unwrap_err().is_cancelled());
+    assert_eq!(service.request_slots.available_permits(), 0);
+    assert_eq!(
+        request(&app, "/api/system/status", &token).await,
+        StatusCode::TOO_MANY_REQUESTS
+    );
+    for path in ["/healthz", "/api/management/status"] {
+        assert_eq!(request(&app, path, &token).await, StatusCode::OK);
+    }
+    for release in releases {
+        release.send(()).unwrap();
+    }
+    jobs.pop().unwrap().await.unwrap().unwrap();
+    tokio::time::timeout(Duration::from_secs(3), async {
+        while service.request_slots.available_permits() != 2 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    for path in ["/api/system/status", "/api/system/history?range=1min"] {
+        assert_eq!(request(&app, path, &token).await, StatusCode::OK);
+    }
+}

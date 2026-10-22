@@ -337,3 +337,89 @@ async fn cancellation_and_missing_router_state_are_internal_errors() {
     )
     .await;
 }
+
+#[tokio::test]
+async fn ordinary_body_deadline_rejects_a_stalled_sender() {
+    let body = Body::from_stream(futures::stream::pending::<Result<Bytes, std::io::Error>>());
+    let error = crate::http_boundary::read_body_with_timeout(
+        Request::builder().body(body).unwrap(),
+        4096,
+        Duration::from_millis(20),
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(error.status, 408);
+    assert_eq!(error.code, "REQUEST_TIMEOUT");
+}
+
+#[tokio::test]
+async fn ingress_admission_bounds_slow_bodies_without_blocking_health() {
+    let slots = Arc::new(tokio::sync::Semaphore::new(1));
+    let app = Router::new()
+        .route(
+            "/api/body",
+            post(|request: Request| async {
+                read_body(request, 4096).await.map(|_| Json(json!({})))
+            }),
+        )
+        .route("/healthz", get(|| async { Json(json!({})) }))
+        .layer(middleware::from_fn_with_state(
+            slots.clone(),
+            crate::http_boundary::admit_request,
+        ));
+    let stalled = tokio::spawn(
+        app.clone().oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/body")
+                .body(Body::from_stream(futures::stream::pending::<
+                    Result<Bytes, std::io::Error>,
+                >()))
+                .unwrap(),
+        ),
+    );
+    tokio::time::timeout(Duration::from_secs(3), async {
+        while slots.available_permits() != 0 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/body")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/healthz")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    stalled.abort();
+    assert!(stalled.await.unwrap_err().is_cancelled());
+    assert_eq!(slots.available_permits(), 1);
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/body")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+}

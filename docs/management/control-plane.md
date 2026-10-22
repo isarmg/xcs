@@ -12,7 +12,7 @@ At actual engine dispatch, after acquiring the engine lock, managed requests rev
 
 ## States and recovery
 
-Public `/api/management/status` exposes only management liveness, authentication availability and storage state: `ready`, `read_only`, `unavailable`, `unconfigured`, or `recovery_required`. It does not disclose disk paths or credentials. Missing storage configuration alone does not authorize setup.
+Public `/api/management/status` exposes only management liveness, authentication availability and storage state: `ready`, `read_only`, `unavailable`, `unconfigured`, or `recovery_required`. Authentication availability is `ready`, `busy` (a credential operation currently owns the state lock), or `recovery_required`. `busy` is transient, does not diagnose credential corruption, and must not trigger logout or recovery. Status probing never waits for that lock. It does not disclose disk paths or credentials. Missing storage configuration alone does not authorize setup.
 
 Storage observations and capabilities are cached. A stale observation closes storage admission after fifteen seconds rather than leaving readiness advertised indefinitely. Host telemetry remains available with disk sampling marked unavailable. Data operations fail closed when admission is unavailable. Readiness/capabilities and protected setup use management capacity independently of blocked data requests.
 
@@ -23,3 +23,30 @@ First setup and explicit disaster recovery use the separately documented protect
 Initialization completion is deliberately narrower than credential recovery: only a pristine pool bound to this Web setup's durable intent and post-initialization proof, before any authority or credential publication, can complete. Existing authority markers always block this path, even if the primary is missing. Other interrupted stages remain fail-closed for explicit local diagnosis.
 
 Locally provisioned configuration presets are identifiers, not browser-supplied paths or arbitrary JSON. Their files are not read during HTTP startup or preset listing. An authorized preview reads only the selected protected file, hides disk paths, and returns a configuration digest. Initialization checks that digest again before writing so a changed local preset cannot silently substitute another topology or policy.
+
+## HTTP resource isolation
+
+Password verification runs outside the shared credential-state lock. Session
+publication rechecks the account generation, password hash, enabled state and
+recovery fence under the lock; a concurrent password/role change cannot issue a
+session from the old proof. Durable publication remains serialized.
+
+Each router admits at most eight ordinary authorization, account-list and logout
+jobs before scheduling blocking work. Upload-status authorization, backend status and spool inspection
+share one job holding both backend and account-scoped read admission. These
+permits remain owned by actual blocking work after HTTP cancellation.
+
+Telemetry status and history share an independent two-job pool, with admission
+retained until blocking work completes, including after HTTP cancellation. They
+do not consume data-backend or management-readiness capacity.
+
+Mutating API requests have a separate 64-request ingress bound before body
+collection. Ordinary JSON/login body collection has a 30-second total deadline
+as well as its existing byte limit. Setup bodies retain their stricter 10-second outer
+deadline. Streaming uploads retain their separate upload limits and deadlines. Read-only health and management status
+requests do not consume the mutating-request pool.
+
+Optional SMB startup waits and directory preparation run off async workers. An
+HTTP exit stops and joins the optional bridge task even on error. This does not
+cancel an already-running filesystem system call or claim a bounded process
+shutdown when a kernel I/O operation cannot return.

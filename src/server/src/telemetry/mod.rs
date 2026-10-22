@@ -133,6 +133,7 @@ pub(crate) struct Telemetry {
     backend: Arc<dyn Backend>,
     sampler: Mutex<SystemSampler>,
     history: Mutex<HistoryStore>,
+    request_slots: Arc<tokio::sync::Semaphore>,
 }
 
 impl Telemetry {
@@ -143,6 +144,7 @@ impl Telemetry {
         let now = date_time::OffsetDateTime::now_utc().unix_timestamp();
         let service = Arc::new(Self {
             backend,
+            request_slots: Arc::new(tokio::sync::Semaphore::new(2)),
             sampler: Mutex::new(SystemSampler::new()),
             history: Mutex::new(match HistoryStore::open(directory, now) {
                 Ok(history) => history,
@@ -243,11 +245,28 @@ fn timestamp(unix_seconds: i64) -> Result<String, ApiError> {
         .map_err(|_| unavailable("sample time is unavailable"))
 }
 
+// Keep diagnostics independent of data-backend and management-readiness pools.
+// The blocking job owns its permit even after its HTTP future is canceled.
+async fn telemetry_job<T: Send + 'static>(
+    slots: Arc<tokio::sync::Semaphore>,
+    work: impl FnOnce() -> Result<T, ApiError> + Send + 'static,
+) -> Result<T, ApiError> {
+    let permit = slots
+        .try_acquire_owned()
+        .map_err(|_| ApiError::limit("monitoring request capacity reached"))?;
+    tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        work()
+    })
+    .await
+    .map_err(|_| unavailable("monitoring request was interrupted"))?
+}
+
 pub(crate) async fn status(
     State(state): State<AppState>,
     Extension(identity): Extension<Identity>,
 ) -> Result<Json<Value>, ApiError> {
-    tokio::task::spawn_blocking(move || {
+    telemetry_job(state.telemetry.request_slots.clone(), move || {
         require_current_administrator(&state.auth, &identity)?;
         state.telemetry.current().and_then(|status| {
             require_current_administrator(&state.auth, &identity)?;
@@ -257,7 +276,6 @@ pub(crate) async fn status(
         })
     })
     .await
-    .map_err(|_| unavailable("host sampling was interrupted"))?
 }
 
 #[derive(Deserialize)]
@@ -288,7 +306,7 @@ pub(crate) async fn history(
     Extension(identity): Extension<Identity>,
     ApiQuery(query): ApiQuery<HistoryQuery>,
 ) -> Result<Json<Value>, ApiError> {
-    tokio::task::spawn_blocking(move || {
+    telemetry_job(state.telemetry.request_slots.clone(), move || {
         require_current_administrator(&state.auth, &identity)?;
         let (seconds, interval) = range_parameters(&query.range)?;
         let to = date_time::OffsetDateTime::now_utc().unix_timestamp();
@@ -296,7 +314,7 @@ pub(crate) async fn history(
         let samples = state.telemetry.history.lock().map_err(|_| unavailable("history sampling is unavailable"))?.samples(from, to, interval);
         require_current_administrator(&state.auth, &identity)?;
         Ok(Json(json!({"range": query.range, "interval_seconds": interval, "from": timestamp(from)?, "to": timestamp(to)?, "samples": samples})))
-    }).await.map_err(|_| unavailable("history sampling was interrupted"))?
+    }).await
 }
 
 fn require_current_administrator(

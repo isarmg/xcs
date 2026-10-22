@@ -166,6 +166,20 @@ impl Session {
                 write_through,
             } => return self.open(path, writable, create, truncate, exclusive, write_through),
             Request::AuthorizeRead { handle } => self.authorize_read(handle)?,
+            Request::PrepareWrite { handle, end, bytes } => {
+                let Some(Handle::Write(writer)) = self.handles.get(&handle) else {
+                    return Err(ApiError::forbidden());
+                };
+                self.call(
+                    crate::BackendAction::WorkspaceSelectionAuthorize,
+                    json!({"workspace_id":writer.workspace.workspace_id,"path":writer.path}),
+                )?;
+                let current = writer.file.metadata().map_err(ApiError::io)?.len();
+                writer
+                    .reservation
+                    .before_write(end, bytes.max(end.saturating_sub(current)))?;
+                json!({"ready":true})
+            }
             Request::Dirty { handle } => self.dirty(handle)?,
             Request::Flush { handle } => self.flush(handle)?,
             Request::Close { handle } => self.close(handle, false)?,

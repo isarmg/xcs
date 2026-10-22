@@ -7,10 +7,13 @@ use std::{
         fd::{AsRawFd, BorrowedFd, FromRawFd, OwnedFd},
         unix::net::UnixStream,
     },
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 pub const PROTOCOL: &str = "smb-protocol-rpc";
+/// Writable descriptors are safe to admit only when both peers require a
+/// durable PrepareWrite reservation before every descriptor mutation.
+pub const WRITE_RESERVATION_CAPABILITY: &str = "durable-write-reservations";
 pub const MAX_FRAME_BYTES: usize = 8 * 1024 * 1024;
 
 pub fn effective_uid() -> u32 {
@@ -23,6 +26,7 @@ pub fn effective_uid() -> u32 {
 pub enum Request {
     Hello {
         protocol: String,
+        capabilities: Vec<String>,
         username: String,
         repository_id: String,
     },
@@ -33,6 +37,15 @@ pub enum Request {
         truncate: bool,
         exclusive: bool,
         write_through: bool,
+    },
+    /// Check the already-reserved write ceiling and recovery headroom before FD I/O.
+    PrepareWrite {
+        #[serialization(with = "storage_contract::u64_string")]
+        handle: u64,
+        #[serialization(with = "storage_contract::u64_string")]
+        end: u64,
+        #[serialization(with = "storage_contract::u64_string")]
+        bytes: u64,
     },
     Dirty {
         #[serialization(with = "storage_contract::u64_string")]
@@ -141,13 +154,25 @@ pub struct OpenResult {
 
 /// One serialized request/response stream. The descriptor, when present, is
 /// attached to the four-byte frame header using SCM_RIGHTS, never a JSON path.
-pub struct FrameStream(pub UnixStream);
+pub struct FrameStream(pub UnixStream, Duration);
+
+/// Only an authenticated server session may wait indefinitely for a new frame.
+/// Handshakes and replies must arrive within the configured frame deadline.
+#[derive(Clone, Copy)]
+pub enum ReadMode {
+    Deadline,
+    EstablishedSession,
+}
 
 impl FrameStream {
     pub fn new(stream: UnixStream) -> io::Result<Self> {
-        stream.set_read_timeout(Some(Duration::from_secs(120)))?;
-        stream.set_write_timeout(Some(Duration::from_secs(120)))?;
-        Ok(Self(stream))
+        Self::with_timeout(stream, Duration::from_secs(120))
+    }
+
+    pub fn with_timeout(stream: UnixStream, timeout: Duration) -> io::Result<Self> {
+        stream.set_read_timeout(Some(timeout))?;
+        stream.set_write_timeout(Some(timeout))?;
+        Ok(Self(stream, timeout))
     }
 
     pub fn send<T: Serialize>(&mut self, value: &T, fd: Option<BorrowedFd<'_>>) -> io::Result<()> {
@@ -206,10 +231,22 @@ impl FrameStream {
     }
 
     pub fn receive<T: DeserializeOwned>(&mut self) -> io::Result<(T, Option<OwnedFd>)> {
+        self.receive_with_mode(ReadMode::Deadline)
+    }
+
+    pub fn receive_with_mode<T: DeserializeOwned>(
+        &mut self,
+        mode: ReadMode,
+    ) -> io::Result<(T, Option<OwnedFd>)> {
+        let mut deadline = match mode {
+            ReadMode::Deadline => Some(Instant::now() + self.1),
+            ReadMode::EstablishedSession => None,
+        };
         let mut header = [0u8; 4];
         let mut received = 0;
         let mut descriptor = None;
         while received < header.len() {
+            self.set_remaining_timeout(deadline)?;
             let mut vector = libc::iovec {
                 iov_base: header[received..].as_mut_ptr().cast(),
                 iov_len: header.len() - received,
@@ -278,6 +315,7 @@ impl FrameStream {
                     "too many RPC descriptors",
                 ));
             }
+            deadline.get_or_insert_with(|| Instant::now() + self.1);
             received += count as usize;
         }
         let length = u32::from_be_bytes(header) as usize;
@@ -288,9 +326,30 @@ impl FrameStream {
             ));
         }
         let mut payload = vec![0u8; length];
-        self.0.read_exact(&mut payload)?;
+        let mut received = 0;
+        while received < payload.len() {
+            self.set_remaining_timeout(deadline)?;
+            match self.0.read(&mut payload[received..]) {
+                Ok(0) => return Err(io::ErrorKind::UnexpectedEof.into()),
+                Ok(count) => received += count,
+                Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
+                Err(error) => return Err(error),
+            }
+        }
         let value = storage_contract::decode_strict(&payload).map_err(io::Error::other)?;
         Ok((value, descriptor))
+    }
+
+    fn set_remaining_timeout(&self, deadline: Option<Instant>) -> io::Result<()> {
+        let remaining = deadline
+            .map(|deadline| {
+                deadline
+                    .checked_duration_since(Instant::now())
+                    .filter(|remaining| !remaining.is_zero())
+                    .ok_or_else(|| io::Error::from(io::ErrorKind::TimedOut))
+            })
+            .transpose()?;
+        self.0.set_read_timeout(remaining)
     }
 }
 

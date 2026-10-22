@@ -30,8 +30,12 @@ impl Drop for Release {
 struct BackendProbe {
     gate: Arc<Gate>,
     outcome: u8,
+    auth: Mutex<Option<Arc<Mutex<AuthStore>>>>,
 }
 impl Backend for BackendProbe {
+    fn start_management(&self, auth: Arc<Mutex<AuthStore>>) {
+        *self.auth.lock().unwrap() = Some(auth);
+    }
     fn call(&self, action: BackendAction, _: &Identity, _: Value) -> Result<Value, ApiError> {
         if matches!(action, BackendAction::Capabilities | BackendAction::Ready) {
             return Ok(json!({}));
@@ -68,6 +72,7 @@ fn fixture(root: &Path, outcome: u8, open: bool) -> (Router, Arc<Gate>, Release)
         Arc::new(BackendProbe {
             gate: gate.clone(),
             outcome,
+            auth: Mutex::new(None),
         }),
         auth,
         ServerConfig::loopback(root),
@@ -124,6 +129,7 @@ async fn backend_admission_saturates_without_waiters_and_survives_http_cancellat
     .unwrap()
     .forget();
     overloaded(app.clone(), "/api/repositories").await;
+    overloaded(app.clone(), "/api/workspaces/ws/files/item/upload-status").await;
     overloaded(app.clone(), "/api/repositories").await;
     assert_eq!(
         request(app.clone(), "/readyz").await.status(),
@@ -201,4 +207,96 @@ async fn backend_admission_releases_after_success_error_and_panic() {
         }
         assert_eq!(gate.calls.load(Ordering::SeqCst), HTTP_BACKEND_SLOTS * 2);
     }
+}
+
+// A single worker makes accidental synchronous lock waits observable. The
+// holder has an independent wall-clock escape so regressions cannot hang CI.
+#[tokio::test(flavor = "current_thread")]
+async fn management_status_remains_live_during_authentication_contention() {
+    let root = tempfile::tempdir().unwrap();
+    let gate = Arc::new(Gate {
+        open: Mutex::new(true),
+        changed: Condvar::new(),
+        started: tokio::sync::Semaphore::new(0),
+        calls: AtomicUsize::new(0),
+        finished: tokio::sync::Semaphore::new(0),
+    });
+    let backend = Arc::new(BackendProbe {
+        gate,
+        outcome: 0,
+        auth: Mutex::new(None),
+    });
+    let auth = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    let app = router(backend.clone(), auth, ServerConfig::loopback(root.path())).unwrap();
+    let auth = backend.auth.lock().unwrap().clone().unwrap();
+    let held = Arc::new(tokio::sync::Semaphore::new(0));
+    let (release, wait) = std::sync::mpsc::channel();
+    let holder = std::thread::spawn({
+        let auth = auth.clone();
+        let held = held.clone();
+        move || {
+            let _guard = auth.lock().unwrap();
+            held.add_permits(1);
+            let _ = wait.recv_timeout(Duration::from_secs(3));
+        }
+    });
+    held.acquire().await.unwrap().forget();
+    let bridge = tokio::spawn(bridge_identities(
+        auth.clone(),
+        BTreeMap::from([("share-user".into(), "admin".into())]),
+    ));
+    let status = tokio::spawn(request(app.clone(), "/api/management/status"));
+    let health = tokio::spawn(request(app.clone(), "/healthz"));
+    tokio::time::sleep(Duration::from_millis(20)).await;
+    // Both requests and this independent timer progress before releasing auth.
+    assert!(matches!(
+        auth.try_lock(),
+        Err(std::sync::TryLockError::WouldBlock)
+    ));
+    assert!(status.is_finished());
+    assert!(health.is_finished());
+    assert!(!bridge.is_finished());
+    assert_eq!(health.await.unwrap().status(), StatusCode::OK);
+    let response = status.await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = http_routing::body::to_bytes(response.into_body(), 8192)
+        .await
+        .unwrap();
+    let value: Value = json_codec::from_slice(&bytes).unwrap();
+    assert_eq!(value["authentication"], "busy");
+    release.send(()).unwrap();
+    holder.join().unwrap();
+    let identities = bridge.await.unwrap().unwrap().unwrap();
+    assert_eq!(identities["share-user"].principal, "admin");
+    let response = request(app, "/api/management/status").await;
+    let bytes = http_routing::body::to_bytes(response.into_body(), 8192)
+        .await
+        .unwrap();
+    let value: Value = json_codec::from_slice(&bytes).unwrap();
+    assert_eq!(value["authentication"], "ready");
+}
+
+#[tokio::test]
+async fn upload_status_retains_read_admission_after_cancellation() {
+    let root = tempfile::tempdir().unwrap();
+    let (app, gate, _release) = fixture(root.path(), 0, false);
+    let path = "/api/workspaces/ws/files/item/upload-status";
+    let mut jobs = Vec::new();
+    for _ in 0..2 {
+        jobs.push(tokio::spawn(request(app.clone(), path)));
+    }
+    tokio::time::timeout(Duration::from_secs(5), gate.started.acquire_many(2))
+        .await
+        .unwrap()
+        .unwrap()
+        .forget();
+    overloaded(app.clone(), path).await;
+    let canceled = jobs.pop().unwrap();
+    canceled.abort();
+    assert!(canceled.await.unwrap_err().is_cancelled());
+    overloaded(app.clone(), path).await;
+    assert_eq!(gate.calls.load(Ordering::SeqCst), 2);
+    assert_eq!(request(app, "/healthz").await.status(), StatusCode::OK);
+    gate.release();
+    assert_eq!(jobs.pop().unwrap().await.unwrap().status(), StatusCode::OK);
 }

@@ -133,6 +133,33 @@ pub struct AuthStore {
     blocked: AtomicBool,
 }
 
+/// Immutable password challenge. Expensive verification needs no store lock;
+/// successful proofs remain bound to the exact account generation and hash.
+pub(crate) struct LoginChallenge {
+    username: String,
+    password_hash: String,
+    generation: Option<u64>,
+}
+pub(crate) struct VerifiedLogin {
+    username: String,
+    password_hash: String,
+    generation: u64,
+}
+impl LoginChallenge {
+    pub(crate) fn verify(self, password: &str) -> Result<VerifiedLogin, ApiError> {
+        let valid = primitives::verify_password(password, &self.password_hash);
+        let generation = self
+            .generation
+            .filter(|_| valid)
+            .ok_or_else(ApiError::unauthorized)?;
+        Ok(VerifiedLogin {
+            username: self.username,
+            password_hash: self.password_hash,
+            generation,
+        })
+    }
+}
+
 fn now() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -482,18 +509,41 @@ impl AuthStore {
     }
 
     pub fn login(&mut self, username: &str, password: &str) -> Result<LoginResult, ApiError> {
+        let verified = self.login_challenge(username)?.verify(password)?;
+        self.finish_login(verified)
+    }
+
+    pub(crate) fn login_challenge(&self, username: &str) -> Result<LoginChallenge, ApiError> {
         self.require_available()?;
-        let canonical = primitives::normalize_administrator_username(username).unwrap_or_default();
-        let account = self.db.accounts.get(&canonical);
-        let valid = primitives::verify_password(
-            password,
-            account
-                .map(|a| a.password_hash.as_str())
-                .unwrap_or(&self.dummy_hash),
-        );
-        let Some(account) = account.filter(|a| !a.disabled && valid) else {
-            return Err(ApiError::unauthorized());
-        };
+        let username = primitives::normalize_administrator_username(username).unwrap_or_default();
+        let account = self.db.accounts.get(&username);
+        Ok(LoginChallenge {
+            username,
+            password_hash: account
+                .map(|a| &a.password_hash)
+                .unwrap_or(&self.dummy_hash)
+                .clone(),
+            generation: account.filter(|a| !a.disabled).map(|a| a.generation),
+        })
+    }
+
+    pub(crate) fn finish_login(
+        &mut self,
+        verified: VerifiedLogin,
+    ) -> Result<LoginResult, ApiError> {
+        // Password/role changes, disablement and uncertain publication may race
+        // verification. Recheck everything before creating or persisting a session.
+        self.require_available()?;
+        let account = self
+            .db
+            .accounts
+            .get(&verified.username)
+            .filter(|a| {
+                !a.disabled
+                    && a.generation == verified.generation
+                    && a.password_hash == verified.password_hash
+            })
+            .ok_or_else(ApiError::unauthorized)?;
         let token = primitives::random_token().map_err(ApiError::invalid)?;
         let csrf_token = primitives::derive_csrf_token(&token).map_err(ApiError::invalid)?;
         let expires_at = now() + SESSION_TTL_SECONDS;

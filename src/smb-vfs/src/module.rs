@@ -372,6 +372,11 @@ fn write_data(
     {
         return Err(std::io::Error::from_raw_os_error(libc::EFBIG));
     }
+    client.call(Request::PrepareWrite {
+        handle: info.handle,
+        end: offset as u64 + count as u64,
+        bytes: count as u64,
+    })?;
     // SAFETY: The borrowed slice supplies count initialized bytes and remains live throughout
     // pwrite; the caller serializes descriptor I/O.
     let result = unsafe { libc::pwrite(fd, data.as_ptr().cast(), count, offset) };
@@ -402,6 +407,11 @@ unsafe extern "C" fn truncate(
             .io
             .lock()
             .map_err(|_| std::io::Error::from_raw_os_error(libc::EIO))?;
+        context.client.call(Request::PrepareWrite {
+            handle: opened.info.handle,
+            end: length as u64,
+            bytes: 0,
+        })?;
         // SAFETY: The descriptor remains owned while the I/O lock is held; length has been
         // validated.
         if unsafe { libc::ftruncate(opened.fd, length) } < 0 {

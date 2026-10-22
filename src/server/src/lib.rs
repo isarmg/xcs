@@ -298,6 +298,7 @@ impl Backend for AuthorizedBackend {
 pub struct SmbConfig {
     pub socket: PathBuf,
     pub allowed_uid: u32,
+    pub spool_limits: SpoolLimits,
     pub users: BTreeMap<String, String>,
 }
 #[derive(Clone)]
@@ -409,6 +410,7 @@ struct AppState {
     attempts: Arc<Mutex<HashMap<String, http_auth::Attempts>>>,
     pending_logins: Arc<Mutex<std::collections::HashSet<String>>>,
     password_slots: Arc<tokio::sync::Semaphore>,
+    authorization_slots: Arc<tokio::sync::Semaphore>,
     backend_slots: Arc<tokio::sync::Semaphore>,
     management_slots: Arc<tokio::sync::Semaphore>,
     upload_slots: Arc<transfer_limits::Admission>,
@@ -466,6 +468,7 @@ fn router_shared(
         attempts: Arc::new(Mutex::new(HashMap::new())),
         pending_logins: Arc::new(Mutex::new(std::collections::HashSet::new())),
         password_slots: Arc::new(tokio::sync::Semaphore::new(4)),
+        authorization_slots: Arc::new(tokio::sync::Semaphore::new(8)),
         backend_slots: Arc::new(tokio::sync::Semaphore::new(HTTP_BACKEND_SLOTS)),
         management_slots: Arc::new(tokio::sync::Semaphore::new(2)),
         upload_slots: transfer_limits::Admission::new(&config.http_transfer_limits),
@@ -597,6 +600,10 @@ fn router_shared(
             state.clone(),
             web_assets::static_validation,
         ))
+        .layer(middleware::from_fn_with_state(
+            Arc::new(tokio::sync::Semaphore::new(64)),
+            http_boundary::admit_request,
+        ))
         .layer(middleware::from_fn(security_headers))
         .with_state(state))
 }
@@ -625,6 +632,7 @@ pub async fn serve(
     });
     // Keep optional bridge setup isolated from management lifecycle failures.
     let smb = config.smb.clone();
+    let smb_max_file_bytes = config.max_upload_bytes;
     let bridge_auth = auth.clone();
     let app = router_shared(backend.clone(), auth, config, telemetry)?;
     let http = async move {
@@ -640,47 +648,84 @@ pub async fn serve(
             let run = async move {
                 // Recovery may import credentials after HTTP is already online.
                 // Until then no SMB identity is admitted.
-                loop {
-                    if lock(&bridge_auth)?.is_available() {
-                        break;
+                let identities = loop {
+                    if let Some(identities) =
+                        bridge_identities(bridge_auth.clone(), smb.users.clone()).await?
+                    {
+                        break identities;
                     }
                     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                }
-                let mut identities = BTreeMap::new();
-                for (alias, principal) in &smb.users {
-                    identities.insert(
-                        alias.clone(),
-                        lock(&bridge_auth)?.identity_for_principal(principal)?,
-                    );
-                }
-                let parent = smb
-                    .socket
-                    .parent()
-                    .ok_or_else(|| ApiError::invalid("SMB socket needs a parent directory"))?;
-                if !parent.exists() {
-                    std::fs::create_dir_all(parent).map_err(ApiError::io)?;
-                    #[cfg(unix)]
-                    {
-                        use std::os::unix::fs::PermissionsExt;
-                        std::fs::set_permissions(parent, std::fs::Permissions::from_mode(0o700))
+                };
+                let socket = smb.socket.clone();
+                tokio::task::spawn_blocking(move || {
+                    let parent = socket
+                        .parent()
+                        .ok_or_else(|| ApiError::invalid("SMB socket needs a parent directory"))?;
+                    if !parent.exists() {
+                        std::fs::create_dir_all(parent).map_err(ApiError::io)?;
+                        #[cfg(unix)]
+                        {
+                            use std::os::unix::fs::PermissionsExt;
+                            std::fs::set_permissions(
+                                parent,
+                                std::fs::Permissions::from_mode(0o700),
+                            )
                             .map_err(ApiError::io)?;
+                        }
                     }
-                }
-                smb_rpc::serve(&smb.socket, smb.allowed_uid, identities, backend)
-                    .await
-                    .map_err(|_| ApiError::new(503, "SMB_UNAVAILABLE", "SMB bridge stopped"))
+                    Ok::<_, ApiError>(())
+                })
+                .await
+                .map_err(ApiError::join)??;
+                smb_rpc::serve(
+                    &smb.socket,
+                    smb.allowed_uid,
+                    identities,
+                    backend,
+                    smb.spool_limits,
+                    smb_max_file_bytes,
+                )
+                .await
+                .map_err(|_| ApiError::new(503, "SMB_UNAVAILABLE", "SMB bridge stopped"))
             };
             if let Err(error) = run.await {
                 tracing::error!(%error, "SMB bridge stopped; management HTTP remains available");
             }
         });
-        http.await?;
+        let result = http.await;
+        // HTTP errors must also stop the optional listener instead of detaching it.
         bridge.abort();
+        let _ = bridge.await;
+        result?;
     } else {
         http.await?;
     }
     Ok(())
 }
+async fn bridge_identities(
+    auth: Arc<Mutex<AuthStore>>,
+    users: BTreeMap<String, String>,
+) -> Result<Option<BTreeMap<String, Identity>>, ApiError> {
+    // At most one bridge startup job is outstanding. Slow credentials must not
+    // pin a Tokio worker or prevent management HTTP from accepting requests.
+    tokio::task::spawn_blocking(move || {
+        let auth = lock(&auth)?;
+        if !auth.is_available() {
+            return Ok(None);
+        }
+        users
+            .into_iter()
+            .map(|(alias, principal)| {
+                auth.identity_for_principal(&principal)
+                    .map(|identity| (alias, identity))
+            })
+            .collect::<Result<BTreeMap<_, _>, _>>()
+            .map(Some)
+    })
+    .await
+    .map_err(ApiError::join)?
+}
+
 async fn shutdown() {
     #[cfg(unix)]
     {
@@ -970,9 +1015,15 @@ id_post_handler!(plan_commit, crate::BackendAction::PlanCommit, "plan_id");
 id_post_handler!(plan_cancel, crate::BackendAction::PlanCancel, "plan_id");
 
 async fn management_status(State(state): State<AppState>) -> Json<Value> {
-    let available = lock(&state.auth).is_ok_and(|auth| auth.is_available());
+    // Never wait on password verification or credential publication on a Tokio
+    // worker. Contention is temporary and is not evidence of corrupt credentials.
+    let authentication = match state.auth.try_lock() {
+        Ok(auth) if auth.is_available() => "ready",
+        Ok(_) | Err(std::sync::TryLockError::Poisoned(_)) => "recovery_required",
+        Err(std::sync::TryLockError::WouldBlock) => "busy",
+    };
     Json(
-        json!({"management":"alive", "authentication":if available {"ready"} else {"recovery_required"},
+        json!({"management":"alive", "authentication":authentication,
         "storage":state.backend.management_status()}),
     )
 }

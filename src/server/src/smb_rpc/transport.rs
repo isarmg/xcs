@@ -33,6 +33,43 @@ impl Drop for ConnectionGuard {
     }
 }
 
+/// Account for the mapped principal, not the Samba username or repository:
+/// aliases and multiple shares must not bypass the authenticated session cap.
+struct SessionPermit {
+    shared: Arc<Shared>,
+    principal: String,
+}
+impl SessionPermit {
+    fn acquire(shared: &Arc<Shared>, principal: &str) -> Result<Self, ApiError> {
+        let mut sessions = shared
+            .sessions_per_account
+            .lock()
+            .map_err(|_| ApiError::new(503, "SMB_UNAVAILABLE", "SMB session registry poisoned"))?;
+        let count = sessions.entry(principal.to_owned()).or_default();
+        if *count >= MAX_SESSIONS_PER_ACCOUNT {
+            return Err(ApiError::limit("too many SMB sessions for this account"));
+        }
+        *count += 1;
+        Ok(Self {
+            shared: shared.clone(),
+            principal: principal.to_owned(),
+        })
+    }
+}
+impl Drop for SessionPermit {
+    fn drop(&mut self) {
+        if let Ok(mut sessions) = self.shared.sessions_per_account.lock()
+            && let Some(count) = sessions.get_mut(&self.principal)
+        {
+            if *count > 1 {
+                *count -= 1;
+            } else {
+                sessions.remove(&self.principal);
+            }
+        }
+    }
+}
+
 pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io::Result<()> {
     let (request, fd) = stream.receive::<Request>()?;
     if fd.is_some() {
@@ -44,6 +81,7 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
     let setup = (|| {
         let Request::Hello {
             protocol,
+            capabilities,
             username,
             repository_id,
         } = request
@@ -53,11 +91,20 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
         if protocol != PROTOCOL {
             return Err(ApiError::invalid("unsupported SMB bridge protocol"));
         }
+        if !capabilities
+            .iter()
+            .any(|capability| capability == WRITE_RESERVATION_CAPABILITY)
+        {
+            return Err(ApiError::invalid(
+                "SMB bridge requires durable write reservations",
+            ));
+        }
         let identity = shared
             .identities
             .get(&username)
             .cloned()
             .ok_or_else(ApiError::forbidden)?;
+        let permit = SessionPermit::acquire(&shared, &identity.principal)?;
         let repo = shared.backend.call(
             crate::BackendAction::Repository,
             &identity,
@@ -75,28 +122,42 @@ pub(super) fn run_connection(mut stream: FrameStream, shared: Arc<Shared>) -> io
             shared
                 .backend
                 .call(crate::BackendAction::Capabilities, &identity, json!({}))?;
-        let max_file_bytes =
-            parse_u64_decimal(field(&capabilities, "max_upload_bytes")?).map_err(contract)?;
-        Ok(Session {
-            shared: shared.clone(),
-            identity,
-            branch,
-            handles: BTreeMap::new(),
-            next_handle: 1,
-            writer_locks: BTreeSet::new(),
-            max_file_bytes,
-        })
+        let max_file_bytes = parse_u64_decimal(field(&capabilities, "max_upload_bytes")?)
+            .map_err(contract)?
+            .min(shared.max_file_bytes);
+        Ok((
+            Session {
+                shared: shared.clone(),
+                identity,
+                branch,
+                handles: BTreeMap::new(),
+                next_handle: 1,
+                writer_locks: BTreeSet::new(),
+                max_file_bytes,
+            },
+            permit,
+        ))
     })();
-    let mut session = match setup {
+    let (mut session, _permit) = match setup {
         Ok(session) => session,
         Err(error) => {
             stream.send(&response_error(error, None), None)?;
             return Ok(());
         }
     };
-    stream.send(&Response::Ok{result:json!({"protocol":PROTOCOL,"principal":session.identity.principal,"main_branch_id":session.branch})},None)?;
+    stream.send(
+        &Response::Ok {
+            result: json!({
+                "protocol":PROTOCOL,"capabilities":[WRITE_RESERVATION_CAPABILITY],
+                "principal":session.identity.principal,"main_branch_id":session.branch
+            }),
+        },
+        None,
+    )?;
     loop {
-        let (request, fd) = match stream.receive::<Request>() {
+        let (request, fd) = match stream
+            .receive_with_mode::<Request>(smb_protocol::protocol::ReadMode::EstablishedSession)
+        {
             Ok(request) => request,
             Err(error) if error.kind() == io::ErrorKind::UnexpectedEof => return Ok(()),
             Err(error) => return Err(error),
@@ -163,21 +224,17 @@ fn private_directory(path: &Path) -> io::Result<()> {
     Ok(())
 }
 
-/// Serve only on an existing service-owned private directory. Existing socket
-/// names are never unlinked automatically. The trusted Samba daemon must connect
-/// using the configured peer uid before impersonating a remote SMB user.
-pub async fn serve(
-    socket: &Path,
-    allowed_uid: u32,
-    identities: BTreeMap<String, Identity>,
-    backend: Arc<dyn Backend>,
-) -> io::Result<()> {
-    if identities.is_empty() || identities.values().any(|identity| identity.admin) {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "SMB requires explicit non-administrator user mappings",
-        ));
-    }
+struct PreparedSocket {
+    listener: std::os::unix::net::UnixListener,
+    guard: SocketGuard,
+    connections: Arc<Mutex<BTreeMap<u64, std::os::unix::net::UnixStream>>>,
+    spool: PathBuf,
+    budget: Arc<budget::Budget>,
+}
+
+// Keep all path traversal, creation, bind/chmod and budget recovery on a
+// blocking worker. Only Tokio reactor registration belongs on the async side.
+fn prepare_socket(socket: &Path, limits: crate::SpoolLimits) -> io::Result<PreparedSocket> {
     let parent = socket
         .parent()
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "socket parent missing"))?;
@@ -196,16 +253,66 @@ pub async fn serve(
         Err(error) => return Err(error),
     };
     private_directory(&sentinel)?;
-    let listener = tokio::net::UnixListener::bind(socket)?;
+    let listener = std::os::unix::net::UnixListener::bind(socket)?;
     let metadata = fs::symlink_metadata(socket)?;
     let connections = Arc::new(Mutex::new(BTreeMap::new()));
-    let _socket_guard = SocketGuard {
+    let guard = SocketGuard {
         path: socket.to_owned(),
         identity: (metadata.dev(), metadata.ino()),
         connections: connections.clone(),
     };
     fs::set_permissions(socket, fs::Permissions::from_mode(0o600))?;
+    listener.set_nonblocking(true)?;
+    let budget = budget::Budget::recover(&spool, limits).map_err(io::Error::other)?;
+    Ok(PreparedSocket {
+        listener,
+        guard,
+        connections,
+        spool,
+        budget,
+    })
+}
+
+async fn startup_io<T: Send + 'static>(
+    work: impl FnOnce() -> io::Result<T> + Send + 'static,
+) -> io::Result<T> {
+    tokio::task::spawn_blocking(work)
+        .await
+        .map_err(io::Error::other)?
+}
+
+/// Serve only on an existing service-owned private directory. Existing socket
+/// names are never unlinked automatically. The trusted Samba daemon must connect
+/// using the configured peer uid before impersonating a remote SMB user.
+pub async fn serve(
+    socket: &Path,
+    allowed_uid: u32,
+    identities: BTreeMap<String, Identity>,
+    backend: Arc<dyn Backend>,
+    limits: crate::SpoolLimits,
+    max_file_bytes: u64,
+) -> io::Result<()> {
+    if identities.is_empty() || identities.values().any(|identity| identity.admin) {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "SMB requires explicit non-administrator user mappings",
+        ));
+    }
+    let socket = socket.to_owned();
+    let PreparedSocket {
+        listener,
+        guard: _socket_guard,
+        connections,
+        spool,
+        budget,
+    } = startup_io(move || prepare_socket(&socket, limits)).await?;
+    // The descriptor is already nonblocking and mode 0600 before registration;
+    // no connection is accepted until preparation and budget recovery succeed.
+    let listener = tokio::net::UnixListener::from_std(listener)?;
     let shared = Arc::new(Shared {
+        budget,
+        max_file_bytes,
+        sessions_per_account: Mutex::new(BTreeMap::new()),
         backend,
         identities,
         spool,
@@ -249,3 +356,7 @@ pub async fn serve(
         });
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/server/unit/smb_rpc/startup_tests.rs"]
+mod startup_tests;

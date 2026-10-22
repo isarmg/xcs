@@ -2,7 +2,9 @@
 //! mutable files remain unpublished until the normal core commit succeeds.
 use crate::{ApiError, Backend, Content, auth::Identity};
 use json_codec::{Value, json};
-use smb_protocol::protocol::{FrameStream, OpenResult, PROTOCOL, Request, Response};
+use smb_protocol::protocol::{
+    FrameStream, OpenResult, PROTOCOL, Request, Response, WRITE_RESERVATION_CAPABILITY,
+};
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs::{self, File},
@@ -17,8 +19,10 @@ use std::{
 use storage_contract::{Entry, Workspace, new_id, parse_u64_decimal};
 
 const MAX_CONNECTIONS: usize = 64;
+const MAX_SESSIONS_PER_ACCOUNT: usize = 8;
 const MAX_HANDLES: usize = 1024;
 
+mod budget;
 mod handles;
 mod namespace;
 mod publication;
@@ -37,6 +41,9 @@ struct Shared {
     backend: Arc<dyn Backend>,
     identities: BTreeMap<String, Identity>,
     spool: PathBuf,
+    budget: Arc<budget::Budget>,
+    max_file_bytes: u64,
+    sessions_per_account: Mutex<BTreeMap<String, usize>>,
     file_writers: Mutex<BTreeSet<(String, String)>>,
     namespace_operations: Mutex<BTreeSet<String>>,
 }
@@ -48,6 +55,7 @@ enum Handle {
 }
 
 struct Writer {
+    reservation: budget::Lease,
     file: File,
     source: PathBuf,
     path: String,

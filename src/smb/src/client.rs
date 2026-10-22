@@ -1,4 +1,6 @@
-use crate::protocol::{FrameStream, OpenResult, PROTOCOL, Request, Response};
+use crate::protocol::{
+    FrameStream, OpenResult, PROTOCOL, Request, Response, WRITE_RESERVATION_CAPABILITY,
+};
 use json_codec::Value;
 use std::{
     io,
@@ -124,11 +126,13 @@ pub fn close_descriptor(
 
 impl Client {
     pub fn connect(socket: &Path, username: &str, repository_id: &str) -> io::Result<Self> {
-        let client = Self(Arc::new(Mutex::new(Some(FrameStream::new(
-            UnixStream::connect(socket)?,
-        )?))));
-        let (_, fd) = client.call(Request::Hello {
+        Self::connect_stream(UnixStream::connect(socket)?, username, repository_id)
+    }
+    fn connect_stream(stream: UnixStream, username: &str, repository_id: &str) -> io::Result<Self> {
+        let client = Self(Arc::new(Mutex::new(Some(FrameStream::new(stream)?))));
+        let (result, fd) = client.call(Request::Hello {
             protocol: PROTOCOL.into(),
+            capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
             username: username.into(),
             repository_id: repository_id.into(),
         })?;
@@ -136,6 +140,21 @@ impl Client {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "hello returned a descriptor",
+            ));
+        }
+        if result.get("protocol").and_then(Value::as_str) != Some(PROTOCOL)
+            || !result
+                .get("capabilities")
+                .and_then(Value::as_array)
+                .is_some_and(|capabilities| {
+                    capabilities
+                        .iter()
+                        .any(|capability| capability.as_str() == Some(WRITE_RESERVATION_CAPABILITY))
+                })
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "SMB bridge did not negotiate durable write reservations",
             ));
         }
         Ok(client)

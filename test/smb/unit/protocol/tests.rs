@@ -2,6 +2,20 @@ use super::*;
 use std::{fs::File, io::Seek, os::fd::AsFd};
 
 #[test]
+fn hello_requires_an_explicit_capability_list() {
+    let request = Request::Hello {
+        protocol: PROTOCOL.into(),
+        capabilities: vec![WRITE_RESERVATION_CAPABILITY.into()],
+        username: "alice".into(),
+        repository_id: "repository".into(),
+    };
+    let mut value = json_codec::to_value(&request).unwrap();
+    assert!(json_codec::from_value::<Request>(value.clone()).is_ok());
+    value.as_object_mut().unwrap().remove("capabilities");
+    assert!(json_codec::from_value::<Request>(value).is_err());
+}
+
+#[test]
 fn namespace_requests_require_a_preallocated_identity_on_the_wire() {
     for kind in ["mkdir", "rename", "unlink", "rmdir"] {
         let request = namespace_request(kind, "entry".into(), None, false);
@@ -79,4 +93,83 @@ fn oversized_length_is_rejected_before_allocating_payload() {
         .receive::<Request>()
         .unwrap_err();
     assert_eq!(error.kind(), io::ErrorKind::InvalidData);
+}
+
+#[test]
+fn established_idle_wait_is_cancellable_and_does_not_consume_frame_deadline() {
+    let (one, two) = UnixStream::pair().unwrap();
+    let cancel = two.try_clone().unwrap();
+    let receiver = std::thread::spawn(move || {
+        FrameStream::with_timeout(two, Duration::from_millis(30))
+            .unwrap()
+            .receive_with_mode::<Request>(ReadMode::EstablishedSession)
+    });
+    std::thread::sleep(Duration::from_millis(100));
+    let mut sender = FrameStream::new(one).unwrap();
+    sender
+        .send(
+            &Request::Stat {
+                path: "file".into(),
+            },
+            None,
+        )
+        .unwrap();
+    assert!(matches!(
+        receiver.join().unwrap().unwrap().0,
+        Request::Stat { .. }
+    ));
+    let receiver = std::thread::spawn(move || {
+        sender.receive_with_mode::<Request>(ReadMode::EstablishedSession)
+    });
+    cancel.shutdown(std::net::Shutdown::Both).unwrap();
+    assert!(receiver.join().unwrap().is_err());
+}
+
+#[test]
+fn handshake_and_partial_frames_have_deadlines() {
+    for (mode, prefix) in [
+        (ReadMode::Deadline, Vec::new()),
+        (ReadMode::EstablishedSession, vec![0]),
+        (ReadMode::EstablishedSession, 100u32.to_be_bytes().to_vec()),
+    ] {
+        let (mut one, two) = UnixStream::pair().unwrap();
+        one.write_all(&prefix).unwrap();
+        let started = Instant::now();
+        let error = FrameStream::with_timeout(two, Duration::from_millis(30))
+            .unwrap()
+            .receive_with_mode::<Request>(mode)
+            .unwrap_err();
+        assert!(matches!(
+            error.kind(),
+            io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut
+        ));
+        assert!(started.elapsed() < Duration::from_secs(2));
+    }
+}
+
+#[test]
+fn partial_payload_progress_does_not_restart_the_frame_deadline() {
+    let (mut one, two) = UnixStream::pair().unwrap();
+    one.write_all(&100u32.to_be_bytes()).unwrap();
+    let reader = std::thread::spawn(move || {
+        FrameStream::with_timeout(two, Duration::from_millis(100))
+            .unwrap()
+            .receive_with_mode::<Request>(ReadMode::EstablishedSession)
+    });
+    // Progress every 20 ms would keep a per-read timeout alive, but must not
+    // extend the one deadline covering this incomplete payload.
+    let mut sent = 0;
+    for _ in 0..20 {
+        std::thread::sleep(Duration::from_millis(20));
+        if one.write_all(b" ").is_err() {
+            break;
+        }
+        sent += 1;
+    }
+    let error = reader.join().unwrap().unwrap_err();
+    assert!(matches!(
+        error.kind(),
+        io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut
+    ));
+    assert!(sent < 20, "progress must not keep this frame alive");
 }

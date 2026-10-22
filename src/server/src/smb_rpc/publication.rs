@@ -88,6 +88,7 @@ pub(super) fn cleanup_writer(writer: &Writer) {
             tracing::warn!(%error,path=%path.display(),"SMB staging cleanup failed");
         }
     }
+    writer.reservation.cleanup_record();
 }
 
 pub(super) fn finish_publication(

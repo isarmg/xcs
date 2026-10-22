@@ -88,6 +88,12 @@ impl Session {
             Err(error) if error.kind() == io::ErrorKind::NotFound => {}
             Err(error) => return Err(ApiError::io(error)),
         }
+        let _budget = self.shared.budget.reserve(
+            &self.identity.principal,
+            &self.shared.spool.join(operation_id),
+            0,
+            0,
+        )?;
         let mut affected = vec![path.as_str()];
         if let Some(target) = destination.as_deref() {
             affected.push(target);

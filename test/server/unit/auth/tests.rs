@@ -135,3 +135,106 @@ fn uncertain_backup_blocks_authentication_until_recovery() {
     );
     assert_eq!(store.snapshot().unwrap(), before);
 }
+
+#[test]
+fn detached_login_verification_cannot_cross_account_changes_or_recovery() {
+    let root = tempfile::tempdir().unwrap();
+    let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    store
+        .upsert_account(
+            "reader",
+            Some("reader-old-password"),
+            false,
+            BTreeSet::new(),
+            false,
+        )
+        .unwrap();
+    // Verify first, then mutate as a second request could while hashing runs.
+    let proof = store
+        .login_challenge("reader")
+        .unwrap()
+        .verify("reader-old-password")
+        .unwrap();
+    store
+        .upsert_account(
+            "reader",
+            Some("reader-new-password"),
+            false,
+            BTreeSet::new(),
+            false,
+        )
+        .unwrap();
+    assert_eq!(store.finish_login(proof).err().unwrap().status, 401);
+    let proof = store
+        .login_challenge("reader")
+        .unwrap()
+        .verify("reader-new-password")
+        .unwrap();
+    store
+        .upsert_account("reader", None, true, BTreeSet::new(), false)
+        .unwrap();
+    assert_eq!(store.finish_login(proof).err().unwrap().status, 401);
+    let proof = store
+        .login_challenge("reader")
+        .unwrap()
+        .verify("reader-new-password")
+        .unwrap();
+    store
+        .upsert_account("reader", None, true, BTreeSet::new(), true)
+        .unwrap();
+    assert_eq!(store.finish_login(proof).err().unwrap().status, 401);
+    let proof = store
+        .login_challenge("admin")
+        .unwrap()
+        .verify("a-long-test-password")
+        .unwrap();
+    store.blocked.store(true, Ordering::SeqCst);
+    assert_eq!(
+        store.finish_login(proof).err().unwrap().code,
+        "RECOVERY_REQUIRED"
+    );
+    assert!(store.db.sessions.is_empty());
+}
+
+#[test]
+fn detached_login_challenge_keeps_unknown_disabled_and_wrong_password_rejected() {
+    let root = tempfile::tempdir().unwrap();
+    let mut store = AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap();
+    assert!(
+        store
+            .login_challenge("unknown")
+            .unwrap()
+            .verify("a-long-test-password")
+            .is_err()
+    );
+    assert!(
+        store
+            .login_challenge("admin")
+            .unwrap()
+            .verify("wrong-password")
+            .is_err()
+    );
+    store
+        .upsert_account(
+            "disabled",
+            Some("a-long-test-password"),
+            false,
+            BTreeSet::new(),
+            true,
+        )
+        .unwrap();
+    assert!(
+        store
+            .login_challenge("disabled")
+            .unwrap()
+            .verify("a-long-test-password")
+            .is_err()
+    );
+    let proof = store
+        .login_challenge("admin")
+        .unwrap()
+        .verify("a-long-test-password")
+        .unwrap();
+    let session = store.finish_login(proof).unwrap();
+    assert!(store.authenticate(&session.token).unwrap().admin);
+}

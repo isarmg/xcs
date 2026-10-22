@@ -362,3 +362,83 @@ fn expired_attempts_are_removed_and_key_capacity_is_never_exceeded() {
     assert_eq!(attempts.lock().unwrap().len(), MAX_ATTEMPT_KEYS - 1);
     assert!(!attempts.lock().unwrap().contains_key("new:one"));
 }
+
+#[tokio::test]
+async fn authorization_admission_survives_cancellation_and_rejects_without_waiting() {
+    let root = tempfile::tempdir().unwrap();
+    let auth = Arc::new(Mutex::new(
+        crate::auth::AuthStore::initialize(root.path(), "admin", "a-long-test-password").unwrap(),
+    ));
+    let slots = Arc::new(tokio::sync::Semaphore::new(2));
+    let token = authentication::random_token().unwrap();
+    let held = Arc::new(tokio::sync::Semaphore::new(0));
+    let (release, wait) = std::sync::mpsc::channel();
+    let holder = std::thread::spawn({
+        let auth = auth.clone();
+        let held = held.clone();
+        move || {
+            let _guard = auth.lock().unwrap();
+            held.add_permits(1);
+            let _ = wait.recv_timeout(Duration::from_secs(10));
+        }
+    });
+    held.acquire().await.unwrap().forget();
+    let mut jobs = Vec::new();
+    for _ in 0..2 {
+        jobs.push(tokio::spawn(authenticate(
+            auth.clone(),
+            slots.clone(),
+            token.clone(),
+        )));
+    }
+    tokio::time::timeout(Duration::from_secs(3), async {
+        while slots.available_permits() != 0 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    assert_eq!(
+        authenticate(auth.clone(), slots.clone(), token.clone())
+            .await
+            .unwrap_err()
+            .status,
+        429
+    );
+    for job in jobs {
+        job.abort();
+        assert!(job.await.unwrap_err().is_cancelled());
+    }
+    assert_eq!(slots.available_permits(), 0);
+    assert_eq!(
+        auth_job(slots.clone(), || Ok(())).await.unwrap_err().status,
+        429
+    );
+    assert_eq!(
+        authenticate(auth.clone(), slots.clone(), token.clone())
+            .await
+            .unwrap_err()
+            .status,
+        429
+    );
+    assert_eq!(
+        authenticate(auth.clone(), slots.clone(), "malformed".into())
+            .await
+            .unwrap_err()
+            .status,
+        401
+    );
+    release.send(()).unwrap();
+    holder.join().unwrap();
+    tokio::time::timeout(Duration::from_secs(3), async {
+        while slots.available_permits() != 2 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    assert_eq!(
+        authenticate(auth, slots, token).await.unwrap_err().status,
+        401
+    );
+}

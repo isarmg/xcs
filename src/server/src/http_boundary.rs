@@ -124,15 +124,53 @@ where
 
 /// Use Axum's bounded byte extractor so both fixed and chunked bodies report
 /// 413 on overflow, without relying on Content-Length or collecting unbounded data.
-pub(crate) async fn read_body(mut request: Request, limit: usize) -> Result<Bytes, ApiError> {
+pub(crate) async fn read_body(request: Request, limit: usize) -> Result<Bytes, ApiError> {
+    read_body_with_timeout(request, limit, std::time::Duration::from_secs(30)).await
+}
+
+pub(crate) async fn read_body_with_timeout(
+    mut request: Request,
+    limit: usize,
+    timeout: std::time::Duration,
+) -> Result<Bytes, ApiError> {
     DefaultBodyLimit::max(limit).apply(&mut request);
-    Bytes::from_request(request, &()).await.map_err(|error| {
-        if error.status() == StatusCode::PAYLOAD_TOO_LARGE {
-            ApiError::new(413, "PAYLOAD_TOO_LARGE", "request body exceeds limit")
-        } else {
-            ApiError::invalid("failed to read request body")
-        }
-    })
+    tokio::time::timeout(timeout, Bytes::from_request(request, &()))
+        .await
+        .map_err(|_| ApiError::new(408, "REQUEST_TIMEOUT", "request body deadline exceeded"))?
+        .map_err(|error| {
+            if error.status() == StatusCode::PAYLOAD_TOO_LARGE {
+                ApiError::new(413, "PAYLOAD_TOO_LARGE", "request body exceeds limit")
+            } else {
+                ApiError::invalid("failed to read request body")
+            }
+        })
+}
+
+/// Bound slow body senders before decoding or password-rate-limit state exists.
+/// Read-only management/health requests keep independent admission.
+pub(crate) async fn admit_request(
+    http_routing::extract::State(slots): http_routing::extract::State<
+        std::sync::Arc<tokio::sync::Semaphore>,
+    >,
+    request: Request,
+    next: http_routing::middleware::Next,
+) -> Result<Response, ApiError> {
+    let _permit = if is_api_path(request.uri().path())
+        && !matches!(
+            *request.method(),
+            http_routing::http::Method::GET
+                | http_routing::http::Method::HEAD
+                | http_routing::http::Method::OPTIONS
+        ) {
+        Some(
+            slots
+                .try_acquire_owned()
+                .map_err(|_| ApiError::limit("HTTP request capacity reached"))?,
+        )
+    } else {
+        None
+    };
+    Ok(next.run(request).await)
 }
 
 pub(crate) async fn not_found() -> ApiError {

@@ -56,6 +56,13 @@ struct Args {
     pub(crate) smb_peer_uid: Option<u32>,
     #[arg(long, requires = "smb_socket")]
     pub(crate) smb_user: Vec<String>,
+    /// SMB admitted private-copy extents, including retained disconnected descriptors.
+    #[arg(long, default_value_t = 107_374_182_400)]
+    pub(crate) smb_spool_bytes_per_account: u64,
+    #[arg(long, default_value_t = 536_870_912_000)]
+    pub(crate) smb_spool_bytes_total: u64,
+    #[arg(long, default_value_t = 1_073_741_824)]
+    pub(crate) smb_spool_recovery_reserve_bytes: u64,
 }
 
 fn main() {
@@ -99,6 +106,9 @@ async fn run(args: Args) -> Result<()> {
         smb_socket,
         smb_peer_uid,
         smb_user,
+        smb_spool_bytes_per_account,
+        smb_spool_bytes_total,
+        smb_spool_recovery_reserve_bytes,
     } = args;
     // Resolve operator-supplied relative paths without touching unavailable data members.
     let current = std::env::current_dir()?;
@@ -147,6 +157,11 @@ async fn run(args: Args) -> Result<()> {
             authentication::require_canonical_administrator_username(principal)?;
         }
         config.smb = Some(storage_server::SmbConfig {
+            spool_limits: storage_server::SpoolLimits {
+                bytes_per_account: smb_spool_bytes_per_account,
+                bytes_total: smb_spool_bytes_total,
+                recovery_reserve_bytes: smb_spool_recovery_reserve_bytes,
+            },
             socket,
             allowed_uid,
             users,
