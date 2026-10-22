@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class WorkflowTargetSetupTests(unittest.TestCase):
-    def test_quality_and_foundation_shards_install_wasm_before_running(self):
+    def test_cross_target_suites_install_wasm_before_running(self):
         workflow = (ROOT / ".github/workflows/ci.yml").read_text()
         matrix_job = workflow.split("\n  tests:\n", 1)[1].split(
             "\n  web-production:\n", 1
@@ -22,7 +22,7 @@ class WorkflowTargetSetupTests(unittest.TestCase):
         self.assertIsNotNone(setup, "matrix jobs need explicit WASM target setup")
         self.assertEqual(
             setup[1].strip(),
-            "matrix.suite == 'quality' || startsWith(matrix.suite, 'foundation-')",
+            "matrix.suite == 'quality' || matrix.suite == 'build-tools' || startsWith(matrix.suite, 'foundation-')",
         )
         self.assertLess(setup.end(), matrix_job.index("Run locked test suite"))
 

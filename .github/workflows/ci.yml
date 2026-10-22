@@ -50,7 +50,7 @@ jobs:
           rustc --version
           cargo --version
       - name: Install WASM standard library for cross-target checks
-        if: matrix.suite == 'quality' || startsWith(matrix.suite, 'foundation-')
+        if: matrix.suite == 'quality' || matrix.suite == 'build-tools' || startsWith(matrix.suite, 'foundation-')
         run: rustup target add wasm32-unknown-unknown
       - name: Install system SQLite SDK for unbundled validation
         if: matrix.suite == 'foundation-data'
