@@ -72,13 +72,27 @@ def validate(root, record, catalog=None):
                     or not consolidation._stable(old, package)):
                 raise ValueError('consolidation move input lineage mismatch')
     if catalog is not None:
-        source_moves.validate_history(root, catalog)
-        if source_naming.hashes(catalog.get('renames', {})) != catalog.get('rename_records_sha256', {}):
-            raise ValueError('immutable source rename receipt drift')
-        wanted = expected(catalog, {k: v['package'] for k, v in inputs.items()}, record['destination_directory'])
-        if links != wanted:
-            raise ValueError('consolidation input history differs from exact immutable catalog receipts')
+        _validate_catalog_links(root, (record,), catalog)
     return links
+
+
+def _validate_catalog_links(root, records, catalog):
+    source_moves.validate_history(root, catalog)
+    if source_naming.hashes(catalog.get('renames', {})) != catalog.get('rename_records_sha256', {}):
+        raise ValueError('immutable source rename receipt drift')
+    for record in records:
+        inputs = {item['package']['directory']: item['package'] for item in record['inputs']}
+        wanted = expected(catalog, inputs, record['destination_directory'])
+        if record.get('input_history', {}) != wanted:
+            raise ValueError('consolidation input history differs from exact immutable catalog receipts')
+
+
+def validate_all(root, records, catalog):
+    """Authenticate all links with one fresh shared catalog scan per operation."""
+    records = tuple(records)
+    for record in records:
+        validate(root, record)
+    _validate_catalog_links(root, records, catalog)
 
 
 def renames_for(root, record, directory):

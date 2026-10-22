@@ -30,6 +30,16 @@ class ConsolidatedProofRouting(unittest.TestCase):
 
     def view(self):return routing.load(self.root,self.catalog)
 
+    def test_load_authenticates_full_history_once_and_rechecks_next_call(self):
+        from unittest.mock import patch
+        with patch.object(source_consolidation, 'validate_history', wraps=source_consolidation.validate_history) as check:
+            for count in (1, 2):
+                self.view()
+                self.assertEqual(check.call_count, count)
+        (self.root / self.destination / 'Cargo.toml').write_text('tampered')
+        with self.assertRaises(ValueError):
+            self.view()
+
     def test_exact_primary_bijection_and_foreign_union_are_both_verified(self):
         view=self.view()
         expected={p:b for p,b in self.before_bytes.items() if p.startswith(self.primary+'/') or p.startswith('test/foundation/mini/')}

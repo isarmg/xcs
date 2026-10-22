@@ -143,6 +143,20 @@ Prospective mode accepts no registration as authorization: the caller must match
 before against the previous catalog and bind the exact pending reviewed plan.
 This function never calls proof_routing.load or validates a following chain step.
 """
+    return validate_bindings(root, (row,), catalog, prospective)[0]
+
+
+def validate_bindings(root, rows, catalog=None, prospective=False):
+    """Check every binding and authenticate shared history once for this call."""
+    rows = tuple(rows)
+    if rows and not prospective:
+        if not isinstance(catalog, dict):
+            raise ValueError('consolidation proof requires registered current catalog')
+        source_consolidation.validate_history(Path(root), catalog, validate_external=external_transfers.validate)
+    return [_validate_binding(root, row, catalog, prospective) for row in rows]
+
+
+def _validate_binding(root, row, catalog, prospective):
     if not isinstance(row, dict):
         raise ValueError('invalid consolidation proof binding row')
     binding = row.get('binding')
@@ -183,7 +197,6 @@ This function never calls proof_routing.load or validates a following chain step
         key = source_consolidation.receipt_id(record)
         if catalog.get('consolidations', {}).get(key) != record:
             raise ValueError('consolidation proof registered immutable binding differs')
-        source_consolidation.validate_history(Path(root), catalog, validate_external=external_transfers.validate)
         destination = record['destination_directory']
         expected = deepcopy(primary['package'])
         expected.update(directory=destination, name=record['destination_name'],

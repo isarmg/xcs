@@ -410,7 +410,6 @@ def validate_history(root, catalog, check_manifests=True, validate_external=None
         if not isinstance(key, str) or not HEX.fullmatch(key) or key != receipt_id(record):
             raise ValueError('immutable content-addressed consolidation receipt drift')
         inputs = _record(root, record)
-        source_history_chain.validate(root, record, catalog)
         primary, destination = record['primary_directory'], record['destination_directory']
         origins = {row['origin_directory'] for row in inputs.values()}
         if (seen_inputs & set(inputs) or seen_origins & origins
@@ -441,6 +440,7 @@ def validate_history(root, catalog, check_manifests=True, validate_external=None
         _external(root, record, validate_external, check_current=False)
         if check_manifests:
             _manifest(root, record, inputs[primary])
+    source_history_chain.validate_all(root, records.values(), catalog)
     return records
 
 

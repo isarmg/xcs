@@ -266,8 +266,8 @@ def load(root, catalog=None, prospective=False):
             if before['directory'] != after['directory'] or before['name'] != after['name'] or binding['record'] is not None:
                 raise ValueError('same-root proof edit changed identity')
         elif binding['kind'] == 'consolidation':
-            from proof_consolidation import validate_binding
-            validate_binding(root, row, catalog, prospective=prospective)
+            # Authenticate these together below, before returning any live view.
+            pass
         else:
             bound = binding['record']
             if (not isinstance(bound, dict) or bound.get('package') != before
@@ -278,16 +278,17 @@ def load(root, catalog=None, prospective=False):
             if not prospective and catalog.get('renames', {}).get(before['directory']) != bound:
                 raise ValueError('proof routing registered rename differs')
         tips[origin] = sha; chain.append((sha, row, old_roots, new_roots)); view.records.append((sha, row))
+    from proof_consolidation import validate_bindings
+    bound = [(sha, row) for sha, row in view.records if row['binding']['kind'] == 'consolidation']
+    projections = dict(zip((sha for sha, _ in bound),
+                           validate_bindings(root, (row for _, row in bound), catalog, prospective)))
     all_current = set()
     live_bytes = 0
     for origin, chain in chains.items():
-        _, last, _, live_roots = chain[-1]
+        last_sha, last, _, live_roots = chain[-1]
         package = last['after']; directory = package['directory']
         expected, _ = _package(root, package, last['external_after'], chain[0][1]['before']['directory'])
-        projection = None
-        if last['binding']['kind'] == 'consolidation':
-            from proof_consolidation import validate_binding
-            projection = validate_binding(root, last, catalog, prospective=prospective)
+        projection = projections.get(last_sha)
         if not prospective and projection is None:
             active = catalog.get('packages', {}).get(directory)
             if active != package or catalog.get('external_tests', {}).get(directory) != last['external_after']:

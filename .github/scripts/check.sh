@@ -22,7 +22,7 @@ case "${1:-}" in
   rust-sources)
     python3 tools/rust-sources/manage.py verify --metadata
     python3 tools/rust-sources/architecture.py verify
-    python3 -m unittest discover -s test/tools/rust-sources -p 'test_*.py'
+    python3 -m unittest discover -s test/tools/rust-sources -p 'test_*.py' -v
     python3 -m unittest discover -s test/ci -p 'test_offline_builds.py'
     python3 -m unittest discover -s test/ci -p 'test_check_suites.py'
     python3 -m unittest discover -s test/ci -p 'test_rust_diagnostics.py'

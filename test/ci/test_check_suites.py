@@ -103,7 +103,7 @@ class SuiteCoverageTests(unittest.TestCase):
         full_discovery = {
             "tool": "python3",
             "args": ["-m", "unittest", "discover", "-s",
-                     "test/tools/rust-sources", "-p", "test_*.py"],
+                     "test/tools/rust-sources", "-p", "test_*.py", "-v"],
         }
         self.assertNotIn(full_discovery, self.suite("static"))
         self.assertEqual(self.suite("rust-sources").count(full_discovery), 1)

@@ -142,6 +142,25 @@ class ProofConsolidation(ProjectionFixture):
         self.assertEqual(projection.validate_binding(self.root,self.row,self.catalog), selected)
         self.assertEqual(projection.validate_binding(self.root,self.row,self.previous,prospective=True), selected)
 
+    def test_batch_authenticates_shared_history_once_and_fresh_each_call(self):
+        rows = (self.row, deepcopy(self.row))
+        with patch.object(source_consolidation, 'validate_history', wraps=source_consolidation.validate_history) as check:
+            for count in (1, 2):
+                results = projection.validate_bindings(self.root, rows, self.catalog)
+                self.assertEqual(len(results), 2)
+                self.assertEqual(check.call_count, count)
+        self.catalog['consolidation_records_sha256'] = {}
+        with self.assertRaises(ValueError):
+            projection.validate_bindings(self.root, rows, self.catalog)
+        with self.assertRaises(ValueError):
+            projection.validate_binding(self.root, self.row, self.catalog)
+
+    def test_batch_rejects_tampered_second_binding(self):
+        changed = deepcopy(self.row)
+        changed['before']['origin_directory'] = 'vendor/foreign'
+        with self.assertRaisesRegex(ValueError, 'projection mismatch'):
+            projection.validate_bindings(self.root, (self.row, changed), self.catalog)
+
     def test_unregistered_binding_rejected(self):
         with self.assertRaisesRegex(ValueError,'registered immutable binding'):
             projection.validate_binding(self.root,self.row,self.previous)

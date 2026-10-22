@@ -59,6 +59,41 @@ class SourceHistoryChain(unittest.TestCase):
         self.bind()
         return new, row
 
+    def test_batch_uses_one_fresh_full_catalog_scan(self):
+        from unittest.mock import patch
+        self.move(); catalog = self.catalog()
+        records = (self.item, deepcopy(self.item))
+        with patch.object(source_moves, 'validate_history', wraps=source_moves.validate_history) as check:
+            for expected_calls in (1, 2):
+                chain.validate_all(self.root, records, catalog)
+                full_scans = [call for call in check.call_args_list if call.args[1] is catalog]
+                self.assertEqual(len(full_scans), expected_calls)
+
+    def test_batch_checks_every_record_exact_catalog_binding(self):
+        self.move(); catalog = self.catalog()
+        changed = deepcopy(self.item)
+        changed['input_history'] = {}
+        with self.assertRaisesRegex(ValueError, 'exact immutable catalog receipts'):
+            chain.validate_all(self.root, (self.item, changed), catalog)
+
+    def test_shared_move_corruption_outside_record_is_rejected(self):
+        self.move(); catalog = self.catalog()
+        unrelated = deepcopy(next(iter(catalog['source_moves'].values())))
+        unrelated['directory'] = 'src/foundation/unrelated-history'
+        catalog['source_moves']['0' * 64] = unrelated
+        for operation in (
+                lambda: chain.validate(self.root, self.item, catalog),
+                lambda: chain.validate_all(self.root, (self.item,), catalog)):
+            with self.assertRaises(ValueError):
+                operation()
+
+    def test_batch_rechecks_catalog_after_prior_success(self):
+        self.move(); catalog = self.catalog()
+        chain.validate_all(self.root, (self.item,), catalog)
+        next(iter(catalog['source_moves'].values()))['reason'] = 'tampered receipt'
+        with self.assertRaises(ValueError):
+            chain.validate_all(self.root, (self.item,), catalog)
+
     def test_move_history_allows_later_trimmed_files(self):
         directory, row = self.move()
         catalog = self.catalog()
