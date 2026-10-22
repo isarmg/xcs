@@ -2,9 +2,10 @@ use super::*;
 use web_interface::components::{Select, SelectOption};
 pub(crate) fn chips(state: RwSignal<State>, id: String) -> impl IntoView {
     let id = StoredValue::new(id);
+    let history = Memo::new(move |_| state.with(|s| s.files.file_history.clone()));
     let labels = Memo::new(move |_| {
-        state.with(|s| {
-            history_nodes(&s.files.file_history)
+        history.with(|history| {
+            super::super::model::history_nodes_ref(history)
                 .iter()
                 .find(|node| history_node_id(node) == id.get_value())
                 .map(tags)

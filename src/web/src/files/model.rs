@@ -22,7 +22,7 @@ pub(crate) struct Model {
     pub loading: bool,
     pub generation: u64,
     pub selected: Option<Value>,
-    pub file_history: Value,
+    pub file_history: crate::snapshot::Snapshot<Value>,
     pub history_loading: bool,
     pub history_generation: u64,
     pub checked_entries: BTreeSet<String>,
@@ -44,7 +44,7 @@ impl Model {
         self.tag_edit = None;
         self.checked_nodes.clear();
         self.selected = None;
-        self.file_history = Value::Null;
+        self.file_history = Value::Null.into();
         self.history_loading = false;
         self.history_generation += 1;
     }
@@ -89,7 +89,7 @@ impl Model {
                 // A refreshed branch or renamed logical path invalidates both
                 // visible metadata and in-flight reads of the previous context.
                 if content_changed {
-                    self.file_history = Value::Null;
+                    self.file_history = Value::Null.into();
                 }
                 self.history_loading = false;
                 self.history_generation += 1;
@@ -285,10 +285,13 @@ pub(crate) fn history_for_entry(mut history: Value, entry: &Value) -> Value {
 
 /// Path/content ancestry is the canonical node graph, not the body-version list.
 pub(crate) fn history_nodes(history: &Value) -> Vec<Value> {
+    history_nodes_ref(history).to_vec()
+}
+pub(crate) fn history_nodes_ref(history: &Value) -> &[Value] {
     history
         .get("nodes")
         .and_then(Value::as_array)
-        .cloned()
+        .map(Vec::as_slice)
         .unwrap_or_default()
 }
 pub(crate) fn history_node_id(node: &Value) -> String {

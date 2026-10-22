@@ -1,7 +1,7 @@
 use super::{
     actions, backup, batch, branch, inline, merge,
     model::{
-        Model, branch_name, branch_writable, file_kind, history_nodes, inherited_content,
+        Model, branch_name, branch_writable, file_kind, history_nodes_ref, inherited_content,
         join_path, selected_branch, selected_entry_read_only, selected_file_branch_record,
         visible_content,
     },
@@ -118,7 +118,7 @@ fn entry_view(state: RwSignal<State>, entry: Value) -> impl IntoView {
                     <Show when=move ||can_modify.get()>{tags::view(state)}</Show>
                     {version_tree::view(state)}
                     {merge::history(state)}
-                    <Show when=move ||state.with(|s|!s.files.history_loading&&history_nodes(&s.files.file_history).is_empty())><p class="zxs-row">{t("尚无版本记录。","No versions have been recorded.")}</p></Show>
+                    <Show when=move ||state.with(|s|!s.files.history_loading&&history_nodes_ref(&s.files.file_history).is_empty())><p class="zxs-row">{t("尚无版本记录。","No versions have been recorded.")}</p></Show>
                 </section>
             })}
         </article>

@@ -2,7 +2,7 @@
 use super::{actions, model::NamespaceAction};
 use crate::{
     icons::FileIcon,
-    ui::{State, list, text},
+    ui::{State, text},
 };
 use json_codec::Value;
 use web_interface::{html, i18n::t, prelude::*};
@@ -55,13 +55,15 @@ impl Target {
                 })
                 .unwrap_or_default()
                 .to_owned(),
-            Self::NodeNote(id) => super::model::history_nodes(&state.files.file_history)
+            Self::NodeNote(id) => super::model::history_nodes_ref(&state.files.file_history)
                 .iter()
                 .find(|node| super::model::history_node_id(node) == *id)
                 .map(|node| text(node, &["note"]))
                 .unwrap_or_default(),
-            Self::VersionNote(id) => list(&state.files.file_history, "versions")
-                .iter()
+            Self::VersionNote(id) => state.files.file_history["versions"]
+                .as_array()
+                .into_iter()
+                .flatten()
                 .find(|version| text(version, &["version_id"]) == *id)
                 .map(|version| text(version, &["note"]))
                 .unwrap_or_default(),
@@ -74,7 +76,7 @@ impl Target {
             return value;
         }
         if let Self::NodeNote(id) = self
-            && let Some(node) = super::model::history_nodes(&state.files.file_history)
+            && let Some(node) = super::model::history_nodes_ref(&state.files.file_history)
                 .iter()
                 .find(|node| super::model::history_node_id(node) == *id)
         {

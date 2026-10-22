@@ -62,6 +62,7 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
         }
         Ok(())
     })?;
+    assert_language_reload_blocked(browser)?;
     // Click the real retained DOM controls, rather than bypassing the action
     // with a direct API call. Disabled controls must not open either UI.
     browser.script(
@@ -84,7 +85,9 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
     }
     assert_metadata_only(browser)?;
     browser.script("window.__zxsLogout.release(); return true")?;
-    browser.click(&browser.button("Retry sign out", "重试退出")?)?;
+    let retry = browser.button("Retry sign out", "重试退出")?;
+    assert_language_reload_blocked(browser)?;
+    browser.click(&retry)?;
     browser.css("input[autocomplete='current-password']")?;
     wait_for("real logout retry settled", || {
         if browser.script(
@@ -98,6 +101,12 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
     })?;
     if browser.script("return window.__zxsLogout.writes")? != json!([]) {
         return Err("a business mutation was sent during the failed logout/retry".into());
+    }
+    if browser
+        .script("return document.querySelector('[data-language-toggle]')?.disabled === false")?
+        != true
+    {
+        return Err("settled logout retained the language reload fence".into());
     }
     drop(fixture);
     browser.keys(
@@ -127,5 +136,15 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
     println!(
         "PASS slow logout blocks new writes, failed revocation retries, and login restores admission"
     );
+    Ok(())
+}
+
+fn assert_language_reload_blocked(browser: &Browser) -> Result<()> {
+    if browser.script("const button = document.querySelector('[data-language-toggle]'); if (!button?.disabled) return false; button.dispatchEvent(new MouseEvent('click', {bubbles:true})); return true")? != true {
+        return Err("language reload remained enabled while logout was pending or unconfirmed".into());
+    }
+    if browser.script("return !!window.__zxsLogout && !!document.querySelector('[data-language-toggle]:disabled')")? != true {
+        return Err("language click discarded the original operation/session fence".into());
+    }
     Ok(())
 }

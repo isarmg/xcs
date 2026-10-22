@@ -151,3 +151,69 @@ fn single_disk_submission_contains_only_selected_authorized_id() {
     m.allow_development = true;
     assert_eq!(submission(&m, "secret".into()).1["mode"], "development");
 }
+
+#[test]
+fn setup_outcome_blocks_app_owned_reload_until_confirmed() {
+    let mut model = Model::default();
+    assert!(!model.reload_blocked());
+    model.pending = true;
+    assert!(model.reload_blocked());
+    model.pending = false;
+    model.unknown = true;
+    assert!(model.reload_blocked());
+    model.unknown = false;
+    model.complete = true;
+    assert!(!model.reload_blocked());
+}
+
+#[test]
+fn verified_completion_releases_reload_guard_without_readmitting_initialization() {
+    for success in [
+        json!({"accepted":true}),
+        json!({"initialized":true,"restart_required":true}),
+    ] {
+        let mut model = authorized();
+        finish_initialization(&mut model, Ok(json!({})));
+        assert!(model.unknown);
+        assert!(model.reload_blocked());
+        assert!(!can_initialize(&model));
+        accept_status(
+            &mut model,
+            &json!({"state":"existing","csrf_token":"csrf","completion_available":true}),
+        );
+        choose(&mut model, Action::Complete);
+        model.confirmed = true;
+        assert!(can_initialize(&model));
+        assert!(
+            model.reload_blocked(),
+            "proof alone cannot settle the outcome"
+        );
+        model.pending = true;
+        finish_initialization(&mut model, Ok(success));
+        assert!(model.complete);
+        assert!(!model.unknown);
+        assert!(!model.reload_blocked());
+        assert!(!can_initialize(&model));
+    }
+}
+
+#[test]
+fn failed_completion_preserves_the_original_unknown_reload_fence() {
+    let mut model = authorized();
+    model.unknown = true;
+    model.pending = true;
+    finish_initialization(
+        &mut model,
+        Err(api::Error {
+            code: "INVALID_REQUEST".into(),
+            message: "rejected".into(),
+            retryable: false,
+            status: 400,
+            request_id: None,
+        }),
+    );
+    assert!(!model.pending);
+    assert!(model.unknown);
+    assert!(!model.complete);
+    assert!(model.reload_blocked());
+}

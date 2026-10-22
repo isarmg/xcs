@@ -232,11 +232,12 @@ pub(crate) fn load_file_history(state: RwSignal<State>) {
                     .selected
                     .as_ref()
                     .map(|entry| crate::files::model::history_for_entry(value.clone(), entry))
-                    .unwrap_or(value);
+                    .unwrap_or(value)
+                    .into();
             }),
             Err(error) => {
                 // A failed refresh must not re-enable controls for stale heads.
-                state.update(|s| s.files.file_history = Value::Null);
+                state.update(|s| s.files.file_history = Value::Null.into());
                 fail(state, error);
             }
         }

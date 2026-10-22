@@ -48,3 +48,20 @@ fn health_failure_does_not_revoke_session_or_overwrite_data_outcomes() {
     assert!(state.management.storage.readable());
     assert!(!state.management.storage.writable());
 }
+
+#[test]
+fn authentication_lock_contention_is_not_recovery_or_session_revocation() {
+    let mut state = State {
+        authenticated: true,
+        principal: "admin".into(),
+        admin: true,
+        ..Default::default()
+    };
+    accept(
+        &mut state.management,
+        &json!({"authentication":"busy", "storage":{"state":"ready"}}),
+    );
+    assert!(!state.management.auth_recovery);
+    assert!(state.session_active());
+    assert_eq!(state.principal, "admin");
+}

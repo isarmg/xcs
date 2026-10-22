@@ -1,5 +1,15 @@
 use super::*;
 #[test]
+fn segment_encoding_is_native_safe_and_matches_uri_component_semantics() {
+    assert_eq!(segment("AZaz09-_.!~*'()"), "AZaz09-_.!~*'()");
+    assert_eq!(
+        segment("a/b c?d=e&f#%+\\\u{0}"),
+        "a%2Fb%20c%3Fd%3De%26f%23%25%2B%5C%00"
+    );
+    assert_eq!(segment("历史📁"), "%E5%8E%86%E5%8F%B2%F0%9F%93%81");
+    assert_eq!(segment(""), "");
+}
+#[test]
 fn late_login_cannot_restore_cleared_or_replace_newer_credentials() {
     let mut saved = Credentials::default();
     let request_generation = saved.generation;

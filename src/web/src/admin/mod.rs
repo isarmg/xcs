@@ -1,5 +1,6 @@
 //! Daily management, with system-account administration independent of data disks.
 mod request;
+mod response;
 use crate::{
     api,
     ui::{State, current_session, fail, list},
@@ -19,6 +20,11 @@ pub(crate) struct Model {
     plan: Value,
     acknowledged: bool,
     uncertain_operation: String,
+}
+impl Model {
+    pub(crate) fn reload_blocked(&self) -> bool {
+        self.busy || !self.uncertain_operation.is_empty()
+    }
 }
 fn permitted(state: &State, storage: bool) -> bool {
     state.session_active()
@@ -59,58 +65,63 @@ fn execute(
         s.admin_console.error.clear();
     });
     spawn_local(async move {
-        let result = api::request(method, &path, body).await;
+        let contract = state.with_untracked(|s| {
+            response::Contract::new(method, &path, body.as_ref(), &operation, &s.principal)
+        });
+        let result = api::request(method, &path, body)
+            .await
+            .and_then(|value| contract.validate(value));
         if !current_session(state, epoch) {
             return;
         }
         state.update(|s| s.admin_console.busy = false);
         match result {
-            Ok(value) => state.update(|s| {
-                let m = &mut s.admin_console;
-                if path == "/api/admin/accounts" && method == "GET" {
-                    m.accounts = list(&value, "accounts");
-                }
-                if plan {
-                    m.plan = value.clone();
-                    m.acknowledged = false;
-                }
-                if path.ends_with("/commit") || path.ends_with("/cancel") {
-                    m.plan = Value::Null;
-                    m.acknowledged = false;
-                }
-                m.result = json_codec::to_string_pretty(&value).unwrap_or_default();
-                if method != "GET"
-                    || (path == "/api/admin/accounts" && m.uncertain_operation == "unknown")
-                    || (path == format!("/api/operations/{}", api::segment(&m.uncertain_operation))
-                        && matches!(
-                            value["commit_state"].as_str(),
-                            Some("PUBLISHED" | "ACKED" | "PUBLISHED_DEGRADED" | "ABORTED")
-                        ))
-                {
-                    m.uncertain_operation.clear();
-                    if method == "GET" {
-                        m.plan = Value::Null;
-                        m.acknowledged = false;
-                    }
-                }
-            }),
+            Ok(value) => state.update(|s| accept(&mut s.admin_console, method, &path, plan, value)),
             Err(error) => {
-                state.update(|s| {
-                    s.admin_console.error = error.to_string();
-                    if method != "GET" && !plan && error.mutation_outcome_unknown() {
-                        s.admin_console.uncertain_operation = if operation.is_empty() {
-                            "unknown".into()
-                        } else {
-                            operation
-                        };
-                    }
-                });
+                state.update(|s| reject(&mut s.admin_console, method, plan, &operation, &error));
                 if error.status == 401 {
                     fail(state, error)
                 }
             }
         }
     });
+}
+fn reject(m: &mut Model, method: &str, plan: bool, operation: &str, error: &api::Error) {
+    m.error = error.to_string();
+    if method != "GET" && !plan && error.mutation_outcome_unknown() {
+        m.uncertain_operation = if operation.is_empty() {
+            "unknown".into()
+        } else {
+            operation.into()
+        };
+    }
+}
+
+/// Call only after validating the endpoint-specific contract.
+fn accept(m: &mut Model, method: &str, path: &str, plan: bool, value: Value) {
+    if path == "/api/admin/accounts" && method == "GET" {
+        m.accounts = list(&value, "accounts");
+    }
+    if plan {
+        m.plan = value.clone();
+        m.acknowledged = false;
+    }
+    if path.ends_with("/commit") || path.ends_with("/cancel") {
+        m.plan = Value::Null;
+        m.acknowledged = false;
+    }
+    m.result = json_codec::to_string_pretty(&value).unwrap_or_default();
+    if method != "GET"
+        || (path == "/api/admin/accounts" && m.uncertain_operation == "unknown")
+        || (path == format!("/api/operations/{}", api::segment(&m.uncertain_operation))
+            && response::terminal(&value, &m.uncertain_operation))
+    {
+        m.uncertain_operation.clear();
+        if method == "GET" {
+            m.plan = Value::Null;
+            m.acknowledged = false;
+        }
+    }
 }
 fn submit(state: RwSignal<State>) {
     let (kind, fields, uncertain) = state.with_untracked(|s| {

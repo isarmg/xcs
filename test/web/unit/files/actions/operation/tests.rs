@@ -78,3 +78,30 @@ fn metadata_polling_requires_an_active_session_before_scheduling_network_work() 
         }
     });
 }
+
+#[test]
+fn poll_projection_copies_only_unpolled_operation_ids_and_keeps_session_epoch() {
+    let mut state = State {
+        authenticated: true,
+        session_epoch: 17,
+        ..Default::default()
+    };
+    state.files.file_history = json!({"nodes":[{"note":"x".repeat(100_000)}]}).into();
+    state.monitor.history = json!({"samples":[{"extra":"y".repeat(100_000)}]}).into();
+    state.files.operations = vec![
+        json!({"operation_id":"pending","commit_state":"IN_DOUBT"}),
+        json!({"operation_id":"in-flight","commit_state":"IN_DOUBT"}),
+        json!({"operation_id":"done","commit_state":"PUBLISHED"}),
+        json!({"commit_state":"IN_DOUBT"}),
+    ];
+    state.files.polling_operations.push("in-flight".into());
+    crate::snapshot::CLONES.with(|c| c.set(0));
+    assert_eq!(poll_work(&state), Some((17, vec!["pending".into()])));
+    assert_eq!(
+        crate::snapshot::CLONES.with(|c| c.get()),
+        0,
+        "polling must not clone State or its history snapshots"
+    );
+    state.logout_pending = true;
+    assert_eq!(poll_work(&state), None);
+}

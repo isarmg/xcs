@@ -20,7 +20,7 @@ pub(crate) struct Model {
     pub loading: bool,
     pub loaded: bool,
     pub failure: Option<Feedback>,
-    pub history: Value,
+    pub history: crate::snapshot::Snapshot<Value>,
     pub range: String,
     pub history_loading: bool,
     pub history_loaded: bool,
@@ -34,7 +34,7 @@ impl Default for Model {
             loading: false,
             loaded: false,
             failure: None,
-            history: Value::Null,
+            history: Value::Null.into(),
             range: "1min".into(),
             history_loading: false,
             history_loaded: false,
@@ -92,7 +92,7 @@ fn load_history(state: RwSignal<State>) {
         }
         match result {
             Ok(value) => state.update(|s| {
-                s.monitor.history = value;
+                s.monitor.history = value.into();
                 s.monitor.history_loaded = true;
                 s.monitor.history_failure = None;
             }),
@@ -116,7 +116,7 @@ fn select_range(state: RwSignal<State>, range: String) {
         s.monitor.history_generation += 1;
         s.monitor.history_loading = false;
         s.monitor.history_loaded = false;
-        s.monitor.history = Value::Null;
+        s.monitor.history = Value::Null.into();
         s.monitor.history_failure = None;
     });
     load_history(state);

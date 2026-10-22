@@ -46,22 +46,36 @@ pub(crate) fn record_operation(state: RwSignal<State>, value: Value) {
         load_entries(state);
     }
 }
-pub(crate) fn poll(state: RwSignal<State>) {
-    let snapshot = state.get_untracked();
-    if !snapshot.session_active() {
-        return;
+/// Project only scheduling identities; never clone histories, drafts or State.
+fn poll_work(state: &State) -> Option<(u64, Vec<String>)> {
+    if !state.session_active() {
+        return None;
     }
-    let epoch = snapshot.session_epoch;
-    for operation in snapshot
+    let ids = state
         .files
         .operations
         .iter()
         .filter(|operation| operation_status(operation) == SaveStatus::Unknown)
-    {
-        let id = text(operation, &["operation_id"]);
-        if id.is_empty() || snapshot.files.polling_operations.contains(&id) {
-            continue;
-        }
+        .filter_map(|operation| {
+            let id = operation["operation_id"]
+                .as_str()
+                .filter(|id| !id.is_empty())?;
+            (!state
+                .files
+                .polling_operations
+                .iter()
+                .any(|pending| pending == id))
+            .then(|| id.to_owned())
+        })
+        .collect();
+    Some((state.session_epoch, ids))
+}
+
+pub(crate) fn poll(state: RwSignal<State>) {
+    let Some((epoch, operations)) = state.with_untracked(poll_work) else {
+        return;
+    };
+    for id in operations {
         state.update(|s| s.files.polling_operations.push(id.clone()));
         spawn_local(async move {
             let result = api::request(

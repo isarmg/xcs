@@ -38,9 +38,10 @@ fn file_source(model: &super::model::Model, target: &Target) -> Option<(String, 
             .as_ref()
             .filter(|entry| super::model::visible_content(entry))?
             .clone(),
-        Target::HistoryNode(id) => super::model::history_nodes(&model.file_history)
-            .into_iter()
-            .find(|node| super::model::history_node_id(node) == *id)?,
+        Target::HistoryNode(id) => super::model::history_nodes_ref(&model.file_history)
+            .iter()
+            .find(|node| super::model::history_node_id(node) == *id)?
+            .clone(),
         _ => return None,
     };
     let version = record["version_id"]

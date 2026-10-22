@@ -164,8 +164,14 @@ pub fn ThemeToggle() -> impl IntoView {
 )
 }
 
+/// The application owns operation lifetimes; a locale reload must not discard
+/// pending requests or unresolved publication receipts.
+#[derive(Clone, Copy)]
+pub struct LanguageSwitchGuard(pub Signal<bool>);
+
 #[component]
 pub fn LanguageToggle() -> impl IntoView {
+    let guard = use_context::<LanguageSwitchGuard>();
     let label = t("切换为英文", "Switch to Chinese");
     View::new(
     web_interface::html::button()
@@ -193,13 +199,21 @@ pub fn LanguageToggle() -> impl IntoView {
             },
         )
         .class("zxs-button")
+        .attr("data-language-toggle", "")
         .r#type("button")
         .aria_label(
             ::web_interface::prelude::IntoAttributeValue::into_attribute_value(
                 label.clone(),
             ),
         )
-        .title(::web_interface::prelude::IntoAttributeValue::into_attribute_value(label))
-        .on(web_interface::ev::click, move |_| switch_language()),
+        .title(move || if guard.is_some_and(|guard| guard.0.get()) {
+            t("操作结果确认前不能切换语言", "Language switching is unavailable until the operation outcome is confirmed")
+        } else { label.clone() })
+        .disabled(move || guard.is_some_and(|guard| guard.0.get()))
+        .on(web_interface::ev::click, move |_| {
+            if !guard.is_some_and(|guard| guard.0.get_untracked()) {
+                switch_language();
+            }
+        }),
 )
 }

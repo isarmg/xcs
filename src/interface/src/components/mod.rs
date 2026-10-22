@@ -9,7 +9,9 @@ mod shell;
 mod state;
 pub use account::AccountPage;
 pub use dialog::*;
-pub use header::{HeaderActions, HeaderNavigation, LanguageToggle, ThemeToggle};
+pub use header::{
+    HeaderActions, HeaderNavigation, LanguageSwitchGuard, LanguageToggle, ThemeToggle,
+};
 pub use login::LoginPage;
 pub use notification::notify;
 pub use select::{Select, SelectOption};

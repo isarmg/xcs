@@ -17,7 +17,7 @@ use web_interface::{
 };
 
 #[derive(Clone, Default)]
-struct Model {
+pub(crate) struct Model {
     key: String,
     action: Action,
     completion_available: bool,
@@ -193,17 +193,33 @@ fn initialize(state: RwSignal<Model>) {
         {
             return;
         }
-        state.update(|s| {
-            s.pending = false;
-            s.empty = false;
-            s.confirmed = false;
-            match result {
-                Ok(value) if value["accepted"] == true || value["initialized"] == true => { s.complete = true; s.restart_required = value["restart_required"] == true; },
-                Ok(_) => { s.unknown = true; s.failure = Some(t("设置响应未确认。请在服务器本地检查，勿重复初始化。", "Setup was not confirmed. Check locally on the server; do not initialize again.")); }
-                Err(error) => { s.unknown |= error.mutation_outcome_unknown(); s.failure = Some(error.to_string()); }
-            }
-        });
+        state.update(|s| finish_initialization(s, result));
     });
+}
+fn finish_initialization(s: &mut Model, result: Result<Value, api::Error>) {
+    s.pending = false;
+    s.empty = false;
+    s.confirmed = false;
+    match result {
+        Ok(value) if value["accepted"] == true || value["initialized"] == true => {
+            s.complete = true;
+            // A successful authorized completion resolves the earlier unknown
+            // initialization. Keep complete set to prevent fresh initialization.
+            s.unknown = false;
+            s.restart_required = value["restart_required"] == true;
+        }
+        Ok(_) => {
+            s.unknown = true;
+            s.failure = Some(t(
+                "设置响应未确认。请在服务器本地检查，勿重复初始化。",
+                "Setup was not confirmed. Check locally on the server; do not initialize again.",
+            ));
+        }
+        Err(error) => {
+            s.unknown |= error.mutation_outcome_unknown();
+            s.failure = Some(error.to_string());
+        }
+    }
 }
 fn preview_preset(state: RwSignal<Model>) {
     let Some((key, csrf, id, generation)) = state
@@ -295,8 +311,22 @@ fn preset_view(state: RwSignal<Model>) -> impl IntoView {
     }
 }
 
-pub(crate) fn view() -> impl IntoView {
-    let state = RwSignal::new(Model::default());
+impl Model {
+    pub(crate) fn reload_blocked(&self) -> bool {
+        self.pending || self.unknown
+    }
+}
+
+pub(crate) fn view(state: RwSignal<Model>) -> impl IntoView {
+    // Keep only recovery state when the login/setup view disappears. Moving
+    // the model to the app owner must not extend the lifetime of its secrets.
+    on_cleanup(move || {
+        state.update(|s| {
+            s.key.clear();
+            s.password.clear();
+            s.csrf.clear();
+        });
+    });
     view! {
         <details class="zxs-content-panel zxs-stack"><summary>{t("受保护的首次设置","Protected first-time setup")}</summary>
         <p>{t("仅用于全新安装。现有配置、缺失挂载或认证恢复不会被当作新安装。先在服务器本地配置授权密钥和允许的硬盘；这里只接受允许的硬盘或方案 ID。","For new installations only. Existing configuration, missing mounts and authentication recovery are never treated as a new installation. Provision an authorization key and allowed disks locally first; this form accepts approved disk or preset IDs only.")}</p>

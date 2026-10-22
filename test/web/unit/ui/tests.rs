@@ -128,3 +128,40 @@ fn logout_clears_management_and_administration_state() {
         });
     });
 }
+
+#[test]
+fn language_reload_waits_for_pending_or_uncertain_work() {
+    let mut state = State::default();
+    assert!(!state.reload_blocked());
+    state.files.mutation_pending = true;
+    assert!(state.reload_blocked());
+    state.files.mutation_pending = false;
+    state
+        .files
+        .operations
+        .push(json!({"operation_id":"original", "commit_state":"IN_DOUBT"}));
+    assert!(state.reload_blocked());
+    state.files.operations[0]["commit_state"] = "PUBLISHED".into();
+    assert!(!state.reload_blocked());
+    state.password_pending = true;
+    assert!(state.reload_blocked());
+    state.password_pending = false;
+    state.logout_unconfirmed = true;
+    assert!(state.reload_blocked());
+}
+
+#[test]
+fn language_reload_preserves_storage_retry_admission_until_resolved() {
+    let mut state = State::default();
+    state.management.retrying = true;
+    assert!(state.reload_blocked());
+    state.management.retrying = false;
+    state.management.retry_unknown = true;
+    assert!(state.reload_blocked());
+    state.management.retry_unknown = false;
+    assert!(!state.reload_blocked());
+    // A known asynchronous recovery is visible in server status, not a lost
+    // request outcome, and therefore does not need to prevent locale changes.
+    state.management.recovering = true;
+    assert!(!state.reload_blocked());
+}

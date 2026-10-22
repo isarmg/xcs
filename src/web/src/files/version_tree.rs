@@ -1,7 +1,7 @@
 //! File history ancestry, including body and path nodes, laid out once per identity/edge change. Notes never
 //! participate in layout keys, so refreshing metadata preserves active editors.
 use super::model::{
-    Model, history_node_id, history_nodes, inherited_content, materialized, visible_content,
+    Model, history_node_id, history_nodes_ref, inherited_content, materialized, visible_content,
 };
 use super::{actions, branch, inline};
 use crate::{
@@ -546,17 +546,42 @@ fn observe(root: NodeRef<html::Div>, layout: Memo<Layout>, geometry: RwSignal<Ge
     });
 }
 
+fn index_nodes(history: &Value) -> BTreeMap<String, Value> {
+    let mut index = BTreeMap::new();
+    for node in history_nodes_ref(history) {
+        // Preserve the previous first-match behavior for duplicate identities.
+        index.entry(history_node_id(node)).or_insert_with(|| {
+            #[cfg(test)]
+            INDEX_COPIES.with(|count| count.set(count.get() + 1));
+            node.clone()
+        });
+    }
+    index
+}
+
+#[cfg(test)]
+thread_local! { static INDEX_COPIES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
+
+fn index_projection(
+    history: Memo<crate::snapshot::Snapshot<Value>>,
+) -> Memo<BTreeMap<String, Value>> {
+    Memo::new(move |_| history.with(|history| index_nodes(history)))
+}
+
 pub(super) fn view(state: RwSignal<State>) -> impl IntoView {
-    let versions = Memo::new(move |_| {
+    let history = Memo::new(move |_| state.with(|s| s.files.file_history.clone()));
+    let selected_file = Memo::new(move |_| {
         state.with(|s| {
-            let id = s
-                .files
+            s.files
                 .selected
                 .as_ref()
                 .map(|entry| text(entry, &["file_id", "entry_id"]))
-                .unwrap_or_default();
-            metadata(&history_nodes(&s.files.file_history), &id)
+                .unwrap_or_default()
         })
+    });
+    let records = index_projection(history);
+    let versions = Memo::new(move |_| {
+        history.with(|history| metadata(history_nodes_ref(history), &selected_file.get()))
     });
     let tree = Memo::new(move |_| layout(&versions.get()));
     let geometry = RwSignal::new(Geometry::default());
@@ -575,7 +600,7 @@ pub(super) fn view(state: RwSignal<State>) -> impl IntoView {
                 </svg>
                 <For each=move ||tree.with(|tree|tree.levels.iter().enumerate().map(|(depth,ids)|(depth,ids.clone())).collect::<Vec<_>>()) key=|level|level.0 children=move |(depth,_)| {
                     view!{<div class="zxs-version-tree-level" data-version-depth=depth.to_string()>
-                        <For each=move ||tree.with(|tree|tree.levels.get(depth).cloned().unwrap_or_default()) key=|id|id.clone() children=move |id|node(state,id)/>
+                        <For each=move ||tree.with(|tree|tree.levels.get(depth).cloned().unwrap_or_default()) key=|id|id.clone() children=move |id|node(state,records,id)/>
                     </div>}
                 }/>
             </div>
@@ -583,15 +608,14 @@ pub(super) fn view(state: RwSignal<State>) -> impl IntoView {
     }
 }
 
-fn node(state: RwSignal<State>, version_id: String) -> impl IntoView {
+fn node(
+    state: RwSignal<State>,
+    records: Memo<BTreeMap<String, Value>>,
+    version_id: String,
+) -> impl IntoView {
     let id = StoredValue::new(version_id);
     let version = Memo::new(move |_| {
-        state.with(|s| {
-            history_nodes(&s.files.file_history)
-                .into_iter()
-                .find(|v| history_node_id(v) == id.get_value())
-                .unwrap_or(Value::Null)
-        })
+        records.with(|records| id.with_value(|id| records.get(id).cloned().unwrap_or(Value::Null)))
     });
     let can_modify = Signal::derive(move || {
         state.with(|s| s.files.writable && !super::model::selected_entry_read_only(&s.files))

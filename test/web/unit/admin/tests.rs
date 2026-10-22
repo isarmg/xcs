@@ -29,3 +29,59 @@ fn account_administration_survives_data_failure_but_storage_writes_fail_closed()
     state.admin = false;
     assert!(!permitted(&state, false));
 }
+
+#[test]
+fn language_reload_preserves_admin_operation_fences() {
+    let mut model = Model::default();
+    assert!(!model.reload_blocked());
+    model.busy = true;
+    assert!(model.reload_blocked());
+    model.busy = false;
+    model.uncertain_operation = "original".into();
+    assert!(model.reload_blocked());
+    model.uncertain_operation = "unknown".into();
+    assert!(model.reload_blocked());
+}
+
+#[test]
+fn invalid_success_and_early_not_found_preserve_review_and_uncertainty() {
+    let reviewed = json_codec::json!({"plan_id":"p", "digest":"reviewed", "state":"ready"});
+    for response in [
+        Value::Null,
+        json_codec::json!({}),
+        json_codec::json!({"operation_id":"wrong","commit_state":"PUBLISHED"}),
+    ] {
+        let mut model = Model {
+            plan: reviewed.clone(),
+            acknowledged: true,
+            uncertain_operation: "original".into(),
+            ..Default::default()
+        };
+        let contract =
+            response::Contract::new("POST", "/api/plans/p/commit", None, "original", "admin");
+        match contract.validate(response) {
+            Ok(value) => accept(&mut model, "POST", "/api/plans/p/commit", false, value),
+            Err(error) => reject(&mut model, "POST", false, "original", &error),
+        }
+        assert_eq!(model.plan, reviewed);
+        assert!(model.acknowledged);
+        assert_eq!(model.uncertain_operation, "original");
+    }
+    // The operation may not be indexed yet. A lookup error is not evidence of
+    // rejection and never enters the success reducer.
+    let error = api::Error {
+        code: "NOT_FOUND".into(),
+        message: "not indexed".into(),
+        status: 404,
+        retryable: false,
+        request_id: None,
+    };
+    let mut model = Model {
+        plan: reviewed.clone(),
+        uncertain_operation: "original".into(),
+        ..Default::default()
+    };
+    reject(&mut model, "GET", false, "", &error);
+    assert_eq!(model.plan, reviewed);
+    assert!(model.reload_blocked());
+}

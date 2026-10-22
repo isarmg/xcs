@@ -97,7 +97,7 @@ pub(crate) fn history(state: RwSignal<State>) -> impl IntoView {
                             .unwrap_or_else(|| t("历史分支", "Historical branch"))
                     };
                     let node_name = |id: &str| {
-                        history_nodes(history)
+                        super::super::model::history_nodes_ref(history)
                             .iter()
                             .enumerate()
                             .find(|(_, node)| history_node_id(node) == id)

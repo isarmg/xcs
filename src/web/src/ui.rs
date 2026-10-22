@@ -32,6 +32,19 @@ pub(crate) struct State {
 }
 
 impl State {
+    /// App-owned reloads must not destroy in-memory operation recovery fences.
+    fn reload_blocked(&self) -> bool {
+        self.busy > 0
+            || self.restoring
+            || self.logout_pending
+            || self.logout_unconfirmed
+            || self.password_pending
+            || self.management.retrying
+            || self.management.retry_unknown
+            || self.admin_console.reload_blocked()
+            || files::pending(self)
+    }
+
     /// Business work belongs only to a settled, authenticated session. Logout
     /// retains credentials for revocation retries, not for admitting new work.
     pub(crate) fn session_active(&self) -> bool {
@@ -82,6 +95,13 @@ pub fn app() -> impl IntoView {
         page: "files".into(),
         ..Default::default()
     });
+    let setup_state = RwSignal::new(crate::setup::Model::default());
+    provide_context(web_interface::components::LanguageSwitchGuard(
+        Signal::derive(move || {
+            state.with(State::reload_blocked)
+                || setup_state.with(crate::setup::Model::reload_blocked)
+        }),
+    ));
     restore_session(state);
     let poller = gloo_timers::callback::Interval::new(2_000, move || {
         if state.with_untracked(|s| s.authenticated) {
@@ -137,7 +157,7 @@ pub fn app() -> impl IntoView {
         });
     });
     let login: ChildrenFn = ToChildren::to_children(
-        move || view! { {management::summary(state)} {move ||state.with(|s|s.session_failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})} <LoginPage pending=login_pending.into() remote_failure=login_failure.into() on_submit=on_login/> {crate::setup::view()} },
+        move || view! { {management::summary(state)} {move ||state.with(|s|s.session_failure.clone()).map(|failure|view!{<ErrorState message=failure.message request_id=failure.request_id/>})} <LoginPage pending=login_pending.into() remote_failure=login_failure.into() on_submit=on_login/> {crate::setup::view(setup_state)} },
     );
     view! {
         <AppShell product="zxs" session=session.into() pending_logout=logout_pending.into() on_logout=Callback::new(move |_|logout(state)) on_account=Callback::new(move |_|navigate(state,"account")) on_restore=Callback::new(move |_|restore_session(state)) login=login>

@@ -48,7 +48,7 @@ fn unrelated_updates_do_not_project_sort_or_filter_entries() {
                     s.notice = i.to_string();
                     s.files.selected = Some(s.files.entries[i % size].clone());
                     s.files.checked_entries.insert(i.to_string());
-                    s.files.file_history = json!({"history":i});
+                    s.files.file_history = json!({"history":i}).into();
                 });
                 assert_eq!(rows.with_untracked(Vec::len), size);
             }

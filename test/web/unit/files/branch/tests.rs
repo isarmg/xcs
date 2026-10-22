@@ -36,7 +36,7 @@ fn branching_from_a_path_node_keeps_the_body_id_and_explicit_node_parent_separat
         selected: Some(
             json_codec::json!({"file_id":"file","version_id":"ver-one","node_id":"fnode-rename"}),
         ),
-        file_history: json_codec::json!({"nodes":[{"node_id":"fnode-rename","version_id":"ver-one","kind":"rename"}]}),
+        file_history: json_codec::json!({"nodes":[{"node_id":"fnode-rename","version_id":"ver-one","kind":"rename"}]}).into(),
         ..Default::default()
     };
     assert_eq!(

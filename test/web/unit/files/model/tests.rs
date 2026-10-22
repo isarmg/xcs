@@ -6,7 +6,7 @@ fn refreshed_selection_invalidates_old_history_only_when_context_changes() {
     let mut model = Model {
         selected: Some(original.clone()),
         entries: vec![original.clone()].into(),
-        file_history: json_codec::json!({"selected_branch_id":"main"}),
+        file_history: json_codec::json!({"selected_branch_id":"main"}).into(),
         history_loading: true,
         ..Default::default()
     };
@@ -65,7 +65,7 @@ fn backup_history_keeps_its_stored_body_and_current_node() {
     let mut model = Model {
         writable: true,
         selected: Some(entry),
-        file_history: json_codec::json!({"branches":[{"branch_id":"main","current":true}]}),
+        file_history: json_codec::json!({"branches":[{"branch_id":"main","current":true}]}).into(),
         ..Default::default()
     };
     assert!(selected_entry_read_only(&model));
@@ -150,11 +150,11 @@ fn visible_inherited_content_is_readable_without_becoming_owned_content() {
 #[test]
 fn current_branch_identity_does_not_require_a_content_version() {
     let mut model = Model {
-        file_history: json_codec::json!({"selected_branch_id":"pending","branches":[{"branch_id":"pending","materialized":false,"version_id":null}]}),
+        file_history: json_codec::json!({"selected_branch_id":"pending","branches":[{"branch_id":"pending","materialized":false,"version_id":null}]}).into(),
         ..Default::default()
     };
     assert_eq!(selected_branch(&model), "pending");
-    model.file_history = Value::Null;
+    model.file_history = Value::Null.into();
     model.selected = Some(json_codec::json!({"selected_branch_id":"entry-pending"}));
     assert_eq!(selected_branch(&model), "entry-pending");
 }
@@ -176,7 +176,7 @@ fn generated_public_file_branch_names_are_editable_only_after_loading_a_real_rec
         ..Default::default()
     };
     assert!(selected_file_branch_record(&model).is_none());
-    model.file_history = json_codec::json!({"selected_branch_id":"generated-a","branches":[{"branch_id":"generated-a","name":"方案甲-7c2a","materialized":true},{"branch_id":"other","name":"other"}]});
+    model.file_history = json_codec::json!({"selected_branch_id":"generated-a","branches":[{"branch_id":"generated-a","name":"方案甲-7c2a","materialized":true},{"branch_id":"other","name":"other"}]}).into();
     assert_eq!(
         selected_file_branch_record(&model),
         Some(("file-a".into(), "generated-a".into(), "方案甲-7c2a".into()))
@@ -227,7 +227,7 @@ fn renaming_an_entry_preserves_selection_and_file_history() {
         selected: Some(json_codec::json!({"entry_id":"file-a","name":"old.txt","path":"old.txt"})),
         entries: vec![json_codec::json!({"entry_id":"file-a","name":"new.txt","path":"new.txt"})]
             .into(),
-        file_history: json_codec::json!({"versions":[{"version_id":"v1"}]}),
+        file_history: json_codec::json!({"versions":[{"version_id":"v1"}]}).into(),
         ..Default::default()
     };
     model.reconcile_selection();
@@ -280,7 +280,7 @@ fn two_aliases_of_one_file_keep_the_selected_logical_path() {
 fn a_removed_entry_discards_metadata() {
     let mut model = Model {
         selected: Some(json_codec::json!({"entry_id":"file-a"})),
-        file_history: json_codec::json!({"versions":[{"version_id":"v1"}]}),
+        file_history: json_codec::json!({"versions":[{"version_id":"v1"}]}).into(),
         history_loading: true,
         history_generation: 4,
 

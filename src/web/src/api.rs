@@ -145,9 +145,20 @@ fn fresh_id(prefix: &str) -> String {
 }
 
 pub fn segment(value: &str) -> String {
-    js_sys::encode_uri_component(value)
-        .as_string()
-        .unwrap_or_default()
+    // Match encodeURIComponent for UTF-8 Rust strings without depending on a
+    // browser runtime. Contract validation uses the same path encoding.
+    const HEX: &[u8; 16] = b"0123456789ABCDEF";
+    let mut encoded = String::with_capacity(value.len());
+    for byte in value.bytes() {
+        if byte.is_ascii_alphanumeric() || b"-_.!~*'()".contains(&byte) {
+            encoded.push(char::from(byte));
+        } else {
+            encoded.push('%');
+            encoded.push(char::from(HEX[usize::from(byte >> 4)]));
+            encoded.push(char::from(HEX[usize::from(byte & 15)]));
+        }
+    }
+    encoded
 }
 
 fn validate_path(path: &str) -> Result<(), Error> {

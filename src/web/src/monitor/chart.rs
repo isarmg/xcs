@@ -103,6 +103,43 @@ fn axis_max(value: f64) -> String {
     }
 }
 
+#[derive(Clone, Debug, Default, PartialEq)]
+struct Series {
+    points: Vec<(f64, Option<f64>)>,
+    from: f64,
+    to: f64,
+    interval: f64,
+}
+fn series(history: &Value, metric: &Metric, parse: fn(&Value) -> Option<f64>) -> Series {
+    Series {
+        points: history["samples"]
+            .as_array()
+            .map(|samples| {
+                samples
+                    .iter()
+                    .filter_map(|sample| {
+                        Some((
+                            parse(&sample["collected_at"])? / 1000.,
+                            metric.value(sample),
+                        ))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+        from: parse(&history["from"]).unwrap_or(0.) / 1000.,
+        to: parse(&history["to"]).unwrap_or(0.) / 1000.,
+        interval: history["interval_seconds"].as_f64().unwrap_or(5.),
+    }
+}
+fn series_projection(
+    state: RwSignal<State>,
+    metric: Metric,
+    parse: fn(&Value) -> Option<f64>,
+) -> Memo<Series> {
+    let history = Memo::new(move |_| state.with(|s| s.monitor.history.clone()));
+    Memo::new(move |_| history.with(|history| series(history, &metric, parse)))
+}
+
 pub(super) fn view(state: RwSignal<State>, metric: Metric) -> impl IntoView {
     let root = NodeRef::<html::Div>::new();
     let dimensions = RwSignal::new((280.0f64, 110.0f64));
@@ -135,15 +172,22 @@ pub(super) fn view(state: RwSignal<State>, metric: Metric) -> impl IntoView {
     });
     let label = metric.label();
     let aria_label = format!("{} {}", label, t("历史图表", "history chart"));
-    let metric = StoredValue::new(metric);
+    let is_power = metric.is_power();
+    let samples = series_projection(state, metric, milliseconds);
+    let presentation = Memo::new(move |_| {
+        state.with(|s| {
+            (
+                s.monitor.history_loading,
+                s.monitor.history_loaded,
+                s.monitor.range.clone(),
+            )
+        })
+    });
     view! {<div class="zxs-metric-chart" node_ref=root aria-label=aria_label>
         {move ||{
             let (width,height)=dimensions.get();
-            let (history,loading,loaded,range)=state.with(|s|(s.monitor.history.clone(),s.monitor.history_loading,s.monitor.history_loaded,s.monitor.range.clone()));
-            let points=history["samples"].as_array().map(|samples|samples.iter().filter_map(|sample|Some((milliseconds(&sample["collected_at"])?/1000.,metric.with_value(|metric|metric.value(sample))))).collect::<Vec<_>>()).unwrap_or_default();
-            let to=milliseconds(&history["to"]).unwrap_or(0.)/1000.;let from=milliseconds(&history["from"]).unwrap_or(0.)/1000.;
-            let interval=history["interval_seconds"].as_f64().unwrap_or(5.);
-            let plot=plot(&points,from,to,interval,width,height,metric.with_value(Metric::is_power));
+            let (loading,loaded,range)=presentation.get();
+            let plot=samples.with(|series| plot(&series.points,series.from,series.to,series.interval,width,height,is_power));
             if plot.paths.is_empty()&&plot.dots.is_empty(){return view!{<p class="zxs-chart-empty">{if loading&&!loaded{t("正在读取历史…","Loading history…")}else{t("暂无可用历史","No available history yet")}}</p>}.into_any();}
             let axis_y=(height-4.).max(14.4);
             view!{<svg viewBox=format!("0 0 {width} {height}") preserveAspectRatio="none" role="img" aria-label=format!("{} · {}",label,range)>

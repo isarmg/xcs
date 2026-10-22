@@ -7,6 +7,7 @@ mod icons;
 mod management;
 mod monitor;
 mod setup;
+mod snapshot;
 mod ui;
 
 use wasm_bindgen::prelude::*;
