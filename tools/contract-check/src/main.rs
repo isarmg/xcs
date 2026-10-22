@@ -384,7 +384,8 @@ fn openapi(api: &Value) -> Result {
                 }
                 for (key, child) in map {
                     if key == "schema" {
-                        schema_validation::meta::validate(child).map_err(|error| error.to_string())?;
+                        schema_validation::meta::validate(child)
+                            .map_err(|error| error.to_string())?;
                     }
                     references(root, child)?;
                 }
