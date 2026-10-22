@@ -88,7 +88,7 @@ DOM 辅助、视图渲染、响应式状态、任务调度、视图分支和共�
 
 | 现有组件族 | 计划方向 | 必须协调的边界 |
 | --- | --- | --- |
-| tokio / tokio-macros / tokio-util | async-runtime / async-runtime-macros / async-runtime-utils | 属性宏默认 crate 路径、特性转发、调度和取消语义 |
+| tokio / tokio-macros | runtime package with tokio::adapters / separate proc-macro | tokio-util 已合入运行时；保留属性宏编译边界，adapters-* 特性独立于核心运行时特性 |
 | ring | native-cryptography | 原生符号前缀、预生成汇编、构建脚本和 links；不能仅改 Cargo 名称 |
 
 `src/interface` 和 `src/macros` 自身已按职责命名；本批也已协调其重导出和生成的 `web_interface::view_renderer` 路径。内部化同时修改宏生产者和消费者，而不只修改依赖文件夹。

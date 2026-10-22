@@ -24,7 +24,7 @@ use std::{
     pin::Pin,
     task::{ready, Poll},
 };
-use tokio_util::io::StreamReader;
+use tokio::adapters::io::StreamReader;
 
 pin_project! {
     /// Response body of [`RequestDecompression`] and [`Decompression`].

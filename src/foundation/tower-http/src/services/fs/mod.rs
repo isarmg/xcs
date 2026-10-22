@@ -10,7 +10,7 @@ use std::{
     task::{Context, Poll},
 };
 use tokio::io::{AsyncRead, AsyncReadExt, Take};
-use tokio_util::io::ReaderStream;
+use tokio::adapters::io::ReaderStream;
 
 mod serve_dir;
 mod serve_file;

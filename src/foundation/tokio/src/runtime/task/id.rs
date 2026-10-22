@@ -12,8 +12,8 @@ use std::{fmt, num::NonZeroU64};
 ///
 /// A [`JoinHandle`] is considered active in the following situations:
 /// - You are explicitly holding a [`JoinHandle`], [`AbortHandle`], or
-///   `tokio_util::task::AbortOnDropHandle`.
-/// - The task is being tracked by a [`JoinSet`] or `tokio_util::task::JoinMap`.
+///   `tokio::adapters::task::AbortOnDropHandle`.
+/// - The task is being tracked by a [`JoinSet`] or `tokio::adapters::task::JoinMap`.
 ///
 /// # Notes
 ///

@@ -4,7 +4,7 @@ use futures::StreamExt;
 use json_codec::Value;
 use std::path::Path;
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
-use tokio_util::io::ReaderStream;
+use tokio::adapters::io::ReaderStream;
 
 // Match the hashing pass's maximum read size without reserving a large body
 // buffer for tiny files. Clamp before converting to usize (including on wasm).

@@ -40,9 +40,9 @@ class RuntimeJoinMapGateTests(unittest.TestCase):
                 self.assertGreater(kwargs["timeout"], 0)
                 self.assertEqual(kwargs["cwd"], root)
                 self.assertEqual(manifest["workspace"], {})
-                for dependency in ("tokio", "tokio-util"):
+                for dependency in ("tokio",):
                     self.assertEqual(
-                        manifest["dependencies"][dependency]["features"], ["full"]
+                        manifest["dependencies"][dependency]["features"], ["full", "adapters-full"]
                     )
             self.assertEqual(list((root / "target/scope-consumers").iterdir()), [])
 

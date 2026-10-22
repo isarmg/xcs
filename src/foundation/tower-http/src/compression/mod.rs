@@ -11,7 +11,7 @@
 //! use http_body::Frame;
 //! use std::convert::Infallible;
 //! use tokio::fs::{self, File};
-//! use tokio_util::io::ReaderStream;
+//! use tokio::adapters::io::ReaderStream;
 //! use service_stack::{Service, ServiceExt, ServiceBuilder, service_fn};
 //! use tower_http::{compression::CompressionLayer, BoxError};
 //! use futures::TryStreamExt;

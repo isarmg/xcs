@@ -12,7 +12,7 @@ use std::{
     task::{ready, Context, Poll},
 };
 use tokio::io::AsyncRead;
-use tokio_util::io::StreamReader;
+use tokio::adapters::io::StreamReader;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct AcceptEncoding {
@@ -200,7 +200,7 @@ where
                 this.buf.reserve(Self::INTERNAL_BUF_CAPACITY);
             }
 
-            let result = tokio_util::io::poll_read_buf(this.read.as_mut(), cx, &mut this.buf);
+            let result = tokio::adapters::io::poll_read_buf(this.read.as_mut(), cx, &mut this.buf);
 
             match ready!(result) {
                 Ok(0) => {

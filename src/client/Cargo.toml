@@ -10,8 +10,7 @@ reqwest = { version = "0.12.28", default-features = false, features = ["json", "
 data-serialization.workspace = true
 json-codec.workspace = true
 error-definition.workspace = true
-tokio = { version = "1.53.2", features = ["fs", "io-util"], path = "../foundation/tokio"}
-tokio-util = { version = "0.7", features = ["io"], path = "../foundation/tokio-util"}
+tokio = { version = "1.53.2", features = ["fs", "io-util", "adapters-io"], path = "../foundation/tokio"}
 futures = { version = "0.3.34", path = "../foundation/futures", default-features = false, features = ["async-await-macro", "shared-state", "std", "utilities"] }
 url-encoding = { path = "../foundation/url-encoding", default-features = false, features = ["std", "parser"] }
 blake3.workspace = true

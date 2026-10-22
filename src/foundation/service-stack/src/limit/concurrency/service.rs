@@ -1,6 +1,6 @@
 use super::future::ResponseFuture;
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
-use tokio_util::sync::PollSemaphore;
+use tokio::adapters::sync::PollSemaphore;
 use crate::Service;
 
 use std::{

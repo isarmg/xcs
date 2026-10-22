@@ -145,17 +145,17 @@
 //! [`Stream`] or [`Sink`] of data.
 //!
 //! Tokio provides simple wrappers for converting [`AsyncRead`] to [`Stream`]
-//! and vice-versa in the [tokio-util] crate, see [`ReaderStream`] and
+//! and vice-versa in the runtime [adapters] module, see [`ReaderStream`] and
 //! [`StreamReader`].
 //!
 //! There are also utility traits that abstract the asynchronous buffering
 //! necessary to write your own adaptors for encoding and decoding bytes to/from
 //! your structured data, allowing to transform something that implements
 //! [`AsyncRead`]/[`AsyncWrite`] into a [`Stream`]/[`Sink`], see [`Decoder`] and
-//! [`Encoder`] in the [tokio-util::codec] module.
+//! [`Encoder`] in the [adapters::codec] module.
 //!
-//! [tokio-util]: https://docs.rs/tokio-util
-//! [tokio-util::codec]: https://docs.rs/tokio-util/latest/tokio_util/codec/index.html
+//! [adapters]: https://docs.rs/tokio-util
+//! [adapters::codec]: https://docs.rs/tokio-util/latest/tokio_util/codec/index.html
 //!
 //! # Standard input and output
 //!

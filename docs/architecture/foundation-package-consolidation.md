@@ -142,7 +142,42 @@ boundaries, raw identifiers, and 1,331 boundary combinations against the former
 normalization behavior. This establishes one fewer conversion on noncanonical
 slot names, not an unmeasured claim about application runtime or total build time.
 
-The server's unused direct `tokio-util` dependency is also removed. The client
-still legitimately uses `ReaderStream`, and server transitive consumers may still
-need the package. This removes an inaccurate ownership edge, not the runtime
-adapter package itself or a claimed whole-program dependency closure.
+At that earlier normalization stage, the server's unused direct `tokio-util`
+dependency was removed while client `ReaderStream` and transitive consumers
+still needed the package. The subsequent runtime integration below replaces
+those remaining edges and removes the standalone adapter package.
+
+
+## Runtime and adapter ownership (2026-10-22)
+
+`tokio` now owns the runtime and its actual adapters under `tokio::adapters`.
+`tokio-util` is no longer a package or dependency; client transfer primitives,
+reqwest streams, service-stack buffer/concurrency and tower-http use the runtime
+implementation directly. The proc-macro `tokio-macros` remains separate because
+it executes in the host compiler, not the runtime target.
+
+Core `rt`, `sync`, `time`, and `io-util` features retain their original meanings.
+Optional `adapters-*` features deliberately distinguish codec, compatibility,
+I/O streams and blocking bridges, task management, timers and keyed tasks from
+the similarly named core features. `full` covers the runtime;
+`adapters-full` adds the adapter capability set. Minimal runtime configurations
+have no futures, bytes or hash-table dependency. Plain synchronization adapters
+also avoid bytes; keyed tasks alone opt into hash-table. Browser-WASM checks use
+only supported single-threaded runtime features, never native networking,
+processes or signals.
+
+The regression gates check minimal and independent feature combinations on
+Linux amd64 and browser WASM, ReaderStream buffering and EOF/error fusion,
+semaphore fairness/cancellation/permit release, sender reservation cancellation
+and close semantics, and keyed-task lifecycle behavior. Original upstream tests
+remain preserved as provenance evidence; unavailable upstream test-only helper
+packages are not replaced by unsupported claims that every upstream test runs.
+The retained transfer primitives are internal native-client functionality; this
+does not reintroduce removed Web upload, download or preview interfaces.
+
+The reviewed consolidation records 398 production-file routes and preserves
+338 external upstream test files with exact unchanged hashes and explicit
+per-origin attribution. This is preservation evidence, not an assertion that
+338 upstream tests executed. The active source count is 244 (242 foundation
+packages), with 90 retired and 2 superseded origins; all original licenses,
+versions, archive hashes and historical source inventories remain unchanged.

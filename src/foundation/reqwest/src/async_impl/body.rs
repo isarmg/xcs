@@ -12,7 +12,7 @@ use pin_project_lite::pin_project;
 use tokio::fs::File;
 use tokio::time::Sleep;
 #[cfg(feature = "stream")]
-use tokio_util::io::ReaderStream;
+use tokio::adapters::io::ReaderStream;
 
 /// An asynchronous request body.
 pub struct Body {

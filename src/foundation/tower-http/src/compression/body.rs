@@ -24,7 +24,7 @@ use std::{
     pin::Pin,
     task::{ready, Context, Poll},
 };
-use tokio_util::io::StreamReader;
+use tokio::adapters::io::StreamReader;
 
 use super::pin_project_cfg::pin_project_cfg;
 

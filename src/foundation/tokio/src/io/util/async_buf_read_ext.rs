@@ -144,7 +144,7 @@ cfg_io_util! {
         ///  * Call [`read_until`] with a newline character and manually perform the utf-8 check.
         ///  * The stream returned by [`lines`] has a cancellation safe
         ///    [`next_line`] method.
-        ///  * Use [`tokio_util::codec::LinesCodec`][LinesCodec].
+        ///  * Use [`tokio::adapters::codec::LinesCodec`][LinesCodec].
         ///
         /// [LinesCodec]: https://docs.rs/tokio-util/latest/tokio_util/codec/struct.LinesCodec.html
         /// [`read_until`]: Self::read_until

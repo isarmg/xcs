@@ -9,7 +9,7 @@ use std::{
     task::{Context, Poll},
 };
 use tokio::sync::{mpsc, oneshot};
-use tokio_util::sync::PollSender;
+use tokio::adapters::sync::PollSender;
 use crate::Service;
 
 /// Adds an mpsc buffer in front of an inner service.

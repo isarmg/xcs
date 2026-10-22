@@ -218,7 +218,6 @@ runtime 是统一工作区特性图中 normal 边可达的运行候选；compile
 | tokio@1.53.3；https://static.crates.io/crates/tokio/tokio-1.53.3.crate；SHA256 ce3335fa71841cda333a58d7615b03901380ecf09d59b3296d21f8bbac0dde4e | tokio@1.53.3；src/foundation/tokio | MIT；compliance/licenses/upstream/tokio-1.53.3/LICENSE | compile+runtime；root-native@x86_64-unknown-linux-gnu, validation-tools@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 2026-10-20：最终runtime平台收敛，退役与Linux amd64/browser wasm互斥的实现；保留历史fallback、未来Linux API与文档壳，选中实现展开等价证据见linux-amd64-runtime-final报告。；无；通过统一内部源码源接入 |
 | tokio-macros@2.7.2；https://static.crates.io/crates/tokio-macros/tokio-macros-2.7.2.crate；SHA256 78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e | tokio-macros@2.7.2；src/foundation/tokio-macros | MIT；compliance/licenses/upstream/tokio-macros-2.7.2/LICENSE | compile；root-native@x86_64-unknown-linux-gnu, validation-tools@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
 | tokio-rustls@0.26.6；https://static.crates.io/crates/tokio-rustls/tokio-rustls-0.26.6.crate；SHA256 c9cc2678c2cdd569ef8215e2afd7954ada2ae20b4fdd2c5fe6139a3b02d105db | tokio-rustls@0.26.6；src/foundation/tokio-rustls | MIT OR Apache-2.0；compliance/licenses/upstream/tokio-rustls-0.26.6/LICENSE-APACHE, compliance/licenses/upstream/tokio-rustls-0.26.6/LICENSE-MIT | runtime；root-native@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。；无；通过统一内部源码源接入 |
-| tokio-util@0.7.20；https://static.crates.io/crates/tokio-util/tokio-util-0.7.20.crate；SHA256 e464cf451ba96ebfc6f9b6542f17ee8b8956e33f1e40d9690624e59d7a7f8a4b | tokio-util@0.7.20；src/foundation/tokio-util | MIT；compliance/licenses/upstream/tokio-util-0.7.20/LICENSE | compile+runtime；root-native@x86_64-unknown-linux-gnu, validation-tools@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。；无；通过统一内部源码源接入 |
 | toml@0.8.23；https://static.crates.io/crates/toml/toml-0.8.23.crate；SHA256 dc1beb996b9d83529a9e75c17a1686767d148d70663143c7854d8b4a09ced362 | toml@0.8.23；src/foundation/toml | MIT OR Apache-2.0；compliance/licenses/upstream/toml-0.8.23/LICENSE-APACHE, compliance/licenses/upstream/toml-0.8.23/LICENSE-MIT | compile；build-tools@x86_64-unknown-linux-gnu, validation-tools@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 清理独立演示：移除 3 个独立示例程序及专属输入（3543 字节）；保留文档编译、真实测试及性能基准输入。；无；通过统一内部源码源接入 |
 | tower-http@0.6.11；https://static.crates.io/crates/tower-http/tower-http-0.6.11.crate；SHA256 4cfcf7e2740e6fc6d4d688b4ef00650406bb94adf4731e43c096c3a19fe40840 | tower-http@0.6.11；src/foundation/tower-http | MIT；compliance/licenses/upstream/tower-http-0.6.11/LICENSE | compile+runtime；root-native@x86_64-unknown-linux-gnu, validation-tools@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；无；通过统一内部源码源接入 |
 | tracing@0.1.44；https://static.crates.io/crates/tracing/tracing-0.1.44.crate；SHA256 63e71662fa4b2a2c3a26f570f037eb95bb1f85397f3cd8076caed2f026a6d100 | tracing@0.1.44；src/foundation/tracing | MIT；compliance/licenses/upstream/tracing-0.1.44/LICENSE | compile+runtime；root-native@x86_64-unknown-linux-gnu, validation-tools@x86_64-unknown-linux-gnu | 内部维护源码；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。；无；通过统一内部源码源接入 |
@@ -344,6 +343,7 @@ runtime 是统一工作区特性图中 normal 边可达的运行候选；compile
 - `env_filter@2.0.0` → `src/foundation/logging`；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。；保留上游全部过滤/解析用例与错误预期，将仅比较字符串的 snapbox 断言改为标准 assert_eq，离线测试不恢复上游测试框架依赖。；实际闭包：build-tools@x86_64-unknown-linux-gnu (compile)；法律材料：compliance/licenses/upstream/env_filter-2.0.0/LICENSE-APACHE, compliance/licenses/upstream/env_filter-2.0.0/LICENSE-MIT。
 - `event-listener@5.4.2` → `src/foundation/async-notification`；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。 清理独立演示：移除 1 个独立示例程序及专属输入（4930 字节）；保留文档编译、真实测试及性能基准输入。；实际闭包：root-native@x86_64-unknown-linux-gnu (runtime), web@wasm32-unknown-unknown (runtime), validation-tools@x86_64-unknown-linux-gnu (compile)；法律材料：compliance/licenses/upstream/event-listener-5.4.2/LICENSE-APACHE, compliance/licenses/upstream/event-listener-5.4.2/LICENSE-MIT。
 - `event-listener-strategy@0.5.4` → `src/foundation/async-notification`；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：裁剪不支持平台与缺失后端的依赖/feature边；当前逐文件摘要记录本地实现差异。；实际闭包：root-native@x86_64-unknown-linux-gnu (runtime), web@wasm32-unknown-unknown (runtime), validation-tools@x86_64-unknown-linux-gnu (compile)；法律材料：compliance/licenses/upstream/event-listener-strategy-0.5.4/LICENSE-APACHE, compliance/licenses/upstream/event-listener-strategy-0.5.4/LICENSE-MIT。
+- `tokio-util@0.7.20` → `src/foundation/tokio`；Rust 发布包保留；无业务算法修改。稳定实现未发现经验证的替换收益，保留安全/平台分支。；统一路径依赖、集中许可证与文档，裁剪上游独立仓库和开发构建脚手架。 2026-10-20：移除不可达条件实现并修复稳定工具链编译诊断；当前逐文件摘要记录本地实现差异。；实际闭包：root-native@x86_64-unknown-linux-gnu (runtime), validation-tools@x86_64-unknown-linux-gnu (compile)；法律材料：compliance/licenses/upstream/tokio-util-0.7.20/LICENSE。
 
 ## 已升级替换的历史来源
 
@@ -453,7 +453,7 @@ runtime 是统一工作区特性图中 normal 边可达的运行候选；compile
 
 ## 根测试目录的来源核算
 
-包内当前文件 12318 个，另有 219 个原始身份所属的外置测试文件 3882 个、39976736 字节；当前来源文件总计 16200 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。
+包内当前文件 6558 个，另有 218 个归属目录登记的外置测试文件 3882 个、39976736 字节；当前来源文件总计 10440 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。
 
 JSON external_tests 按原包目录和原始身份登记精确根目录、原路径、当前路径及逐文件摘要；external_test_mappings_sha256 固定当前映射文档。refresh 先验证外置清单，不能静默吞入新增文件或因目录迁移缩减来源核算。独立说明见 docs/EXTERNAL_TEST_SOURCES.md。
 
@@ -542,6 +542,8 @@ JSON external_tests 按原包目录和原始身份登记精确根目录、原路
 | --- | --- | --- | --- |
 | src/foundation/unicode-properties | icu_properties@2.3.0 | 4 | 0370cbc712e60a95abc07a7d2553132c2761e28b07bb16daad571e76126ac6d1 |
 | src/foundation/unicode-properties | icu_properties_data@2.3.0 | 0 | 0370cbc712e60a95abc07a7d2553132c2761e28b07bb16daad571e76126ac6d1 |
+| src/foundation/tokio | tokio@1.53.3 | 295 | 17b234dd03ba09415d48dd7cc7319ec4d791b61697c06d2d0ada1dce81522b0b |
+| src/foundation/tokio | tokio-util@0.7.20 | 43 | 17b234dd03ba09415d48dd7cc7319ec4d791b61697c06d2d0ada1dce81522b0b |
 | src/foundation/command-line | clap@4.6.7 | 3 | 2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61 |
 | src/foundation/command-line | clap_builder@4.6.7 | 22 | 2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61 |
 | src/foundation/command-line | clap_lex@1.1.1 | 0 | 2f07ccfb6dcef6f3775abe81e8a68f8072fca31a73bb283e480317a40efc2c61 |
@@ -634,6 +636,6 @@ JSON external_tests 按原包目录和原始身份登记精确根目录、原路
 
 ## 完整性、安全与验收
 
-共 245 个活动源码树、90 个已移除来源、2 个已升级替换来源，5 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。
+共 244 个活动源码树、90 个已移除来源、2 个已升级替换来源，5 个入口/目标解析组合。原始 archive SHA-256 和原始逐文件摘要独立保留；当前修改、裁剪及合并后的文件另存摘要，不再声称其逐字节等同上游发布包。合并记录见 JSON merges，法律复核状态见 compliance/NOTICE.md。
 
 `.cargo/config.toml` 默认离线，并用空 registry 兜底拒绝遗漏的 registry 边。CI 检查所有活动 manifest 的本地路径、全部特性转发、单锁文件、工作区/嵌套 Git 边界、中央原始材料及空 Cargo home 的目标闭包。保留源码必须至少进入一个登记入口的保守可达超集；该记录不证明每个入口实际编译或链接了这些源码。安全门禁扫描全部保留和合并实现的原始身份；已移除实现单列历史记录，本地路径或改名不形成豁免。安全扫描、构建、真实浏览器、真实 Samba SDK 和物理盘故障验证分别提供证据。

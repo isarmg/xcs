@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Check full runtime utility features and keyed task lifecycle semantics."""
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -13,7 +14,9 @@ def check(root):
     temporary_root = root / "target" / "scope-consumers"
     temporary_root.mkdir(parents=True, exist_ok=True)
     runtime = json.dumps(str(root / "src/foundation/tokio"))
-    utilities = json.dumps(str(root / "src/foundation/tokio-util"))
+    service = json.dumps(str(root / "src/foundation/service-stack"))
+    futures = json.dumps(str(root / "src/foundation/futures"))
+    adapters = json.dumps(str(root / "test/ci/fixtures/runtime-adapters.rs"))
     fixture = json.dumps(str(root / "test/ci/fixtures/runtime-join-map.rs"))
     manifest = f'''[package]
 name = "retained-runtime-join-map-consumer"
@@ -23,12 +26,17 @@ edition = "2021"
 [workspace]
 
 [dependencies]
-tokio = {{ path = {runtime}, features = ["full"] }}
-tokio-util = {{ path = {utilities}, features = ["full"] }}
+tokio = {{ path = {runtime}, features = ["full", "adapters-full"] }}
+futures = {{ path = {futures}, default-features = false, features = ["std"] }}
+service-stack = {{ path = {service}, default-features = false, features = ["buffer", "limit", "util"] }}
 
 [[test]]
 name = "join_map"
 path = {fixture}
+
+[[test]]
+name = "adapters"
+path = {adapters}
 
 [profile.dev]
 debug = 0
@@ -50,9 +58,9 @@ incremental = false
         )
         subprocess.run(
             [
-                "cargo", "test", *common, "--locked", "--jobs", "2",
+                "cargo", "test", *common, "--locked", "--jobs", "1",
                 "--target", "x86_64-unknown-linux-gnu",
-                "--target-dir", str(root / "target/runtime-join-map-consumer"),
+                "--target-dir", os.environ.get("CARGO_TARGET_DIR", str(root / "target/runtime-join-map-consumer")),
             ],
             cwd=root, check=True, timeout=300,
         )

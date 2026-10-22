@@ -286,6 +286,12 @@
     {
       "tool": "python3",
       "args": [
+        ".github/scripts/check-runtime-features.py"
+      ]
+    },
+    {
+      "tool": "python3",
+      "args": [
         ".github/scripts/check-futures-consolidation.py"
       ]
     },

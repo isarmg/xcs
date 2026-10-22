@@ -16,7 +16,7 @@ from external_tests import safe, inventory
 
 # Append only. Each digest names compliance/proof-routing/<digest>.json.gz.
 # Register only reviewed, exact routing transactions.
-RECEIPTS = ('42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0', 'f22401d8de23ba2f0f8af6447b300206aa5257f8c9a173b1f47541ec587d3a21', '1c36e75fd2f038976efc3d62f0137291aa8129c58d904c0052be5197bbb32174', '21b9ca69f0feeb8a6c30ad45ab630d900f1a6fdab01478182f5a9c6f0a1bbbee')
+RECEIPTS = ('42cbfc30f0e5db58801c1806abba6926e34a3279dd0697bc1b4cdf2c98fbcce0', 'f22401d8de23ba2f0f8af6447b300206aa5257f8c9a173b1f47541ec587d3a21', '1c36e75fd2f038976efc3d62f0137291aa8129c58d904c0052be5197bbb32174', '21b9ca69f0feeb8a6c30ad45ab630d900f1a6fdab01478182f5a9c6f0a1bbbee', '441ceffc9c12e0bd2cd7daf2f248e1d4b94e76b8ebcfe67d22258a6500ba2d86')
 MAX_COMPRESSED = 2 * 1024 * 1024
 MAX_EXPANDED = 16 * 1024 * 1024
 MAX_FILES = 2048

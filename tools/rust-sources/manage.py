@@ -860,9 +860,13 @@ def document(catalog, policy):
     external = catalog.get("external_tests", {})
     external_count = sum(item["file_count"] for item in external.values())
     external_bytes = sum(item["bytes"] for item in external.values())
-    production_count = sum(len(item["files_sha256"]) for item in catalog["packages"].values()) + sum(len(item["files_sha256"]) for item in catalog.get("merges", []))
+    # Several original identities may share one consolidated physical tree.
+    production_paths = {item["directory"] + "/" + path
+                        for item in (*catalog["packages"].values(), *catalog.get("merges", []))
+                        for path in item["files_sha256"]}
+    production_count = len(production_paths)
     lines += ["", "## 根测试目录的来源核算", "",
-              f"包内当前文件 {production_count} 个，另有 {len(external)} 个原始身份所属的外置测试文件 {external_count} 个、{external_bytes} 字节；当前来源文件总计 {production_count + external_count} 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。", "",
+              f"包内当前文件 {production_count} 个，另有 {len(external)} 个归属目录登记的外置测试文件 {external_count} 个、{external_bytes} 字节；当前来源文件总计 {production_count + external_count} 个。测试从源码目录迁移至 test/，不是删除、裁剪或空间优化，仍完整计入来源覆盖、许可及安全审计。", "",
               "JSON external_tests 按原包目录和原始身份登记精确根目录、原路径、当前路径及逐文件摘要；external_test_mappings_sha256 固定当前映射文档。refresh 先验证外置清单，不能静默吞入新增文件或因目录迁移缩减来源核算。独立说明见 docs/EXTERNAL_TEST_SOURCES.md。", ""]
     if catalog.get('renames'):
         lines += ["", "## 已登记的职责命名迁移", "",

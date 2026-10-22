@@ -2,7 +2,7 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use tokio_util::task::JoinMap;
+use tokio::adapters::task::JoinMap;
 
 struct DropCounter(Arc<AtomicUsize>);
 

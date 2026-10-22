@@ -32,6 +32,18 @@ license = "MIT"
 repository = "https://github.com/tokio-rs/tokio"
 
 [features]
+adapters = ["sync", "dep:futures"]
+adapters-codec = ["adapters", "libc", "bytes"]
+adapters-compat = ["adapters", "futures/std"]
+adapters-io = ["adapters", "bytes"]
+adapters-io-util = ["adapters-io", "rt", "io-util"]
+adapters-net = ["adapters", "net"]
+adapters-rt = ["adapters", "rt", "futures/async-await-macro", "futures/shared-state", "futures/std", "futures/utilities"]
+adapters-time = ["adapters", "time", "dep:slab"]
+adapters-join-map = ["adapters-rt", "dep:hash-table"]
+adapters-tracing = ["adapters", "tracing"]
+adapters-full = ["adapters-codec", "adapters-compat", "adapters-io-util", "adapters-time", "adapters-net", "adapters-rt", "adapters-join-map"]
+
 parking = ["synchronization/locks"]
 default = []
 fs = []
@@ -95,7 +107,7 @@ optional = true
 default-features = false
 path = "../mio"
 
-[target.'cfg(all(tokio_unstable, target_os = "linux"))'.dependencies.slab]
+[dependencies.slab]
 version = "0.4.9"
 optional = true
 path = "../slab"
@@ -111,7 +123,7 @@ version = "0.2.168"
 optional = true
 path = "../libc"
 
-[target."cfg(tokio_unstable)".dependencies.tracing]
+[dependencies.tracing]
 version = "0.1.29"
 features = ["std"]
 optional = true
@@ -142,3 +154,16 @@ check-cfg = [
     "cfg(tokio_unstable)",
     'cfg(target_os, values("cygwin"))',
 ]
+
+[dependencies.futures]
+version = "0.3.34"
+path = "../futures"
+default-features = false
+features = ["std"]
+optional = true
+
+[dependencies.hash-table]
+version = "0.17.1"
+path = "../hash-table"
+default-features = false
+optional = true

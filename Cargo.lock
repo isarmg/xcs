@@ -1124,7 +1124,6 @@ dependencies = [
  "sync_wrapper",
  "tokio",
  "tokio-rustls",
- "tokio-util",
  "tower-http",
  "url-encoding",
  "webpki-roots",
@@ -1424,7 +1423,6 @@ dependencies = [
  "storage-contract",
  "tempfile",
  "tokio",
- "tokio-util",
  "url-encoding",
  "webpki-roots",
 ]
@@ -1627,6 +1625,7 @@ name = "tokio"
 version = "1.53.3"
 dependencies = [
  "bytes",
+ "futures",
  "libc",
  "mio",
  "pin-project-lite",
@@ -1649,16 +1648,6 @@ name = "tokio-rustls"
 version = "0.26.6"
 dependencies = [
  "rustls",
- "tokio",
-]
-
-[[package]]
-name = "tokio-util"
-version = "0.7.20"
-dependencies = [
- "bytes",
- "futures",
- "pin-project-lite",
  "tokio",
 ]
 
@@ -1687,7 +1676,6 @@ dependencies = [
  "pin-project-lite",
  "service-stack",
  "tokio",
- "tokio-util",
  "tracing",
  "url-encoding",
 ]

@@ -41,7 +41,7 @@ json = ["dep:json-codec"]
 rustls-tls = ["rustls-tls-webpki-roots"]
 rustls-tls-webpki-roots = ["rustls-tls-webpki-roots-no-provider", "__rustls-ring"]
 rustls-tls-webpki-roots-no-provider = ["dep:webpki-roots", "hyper-rustls?/webpki-tokio", "__rustls"]
-stream = ["tokio/fs", "futures/utilities", "dep:tokio-util"]
+stream = ["tokio/fs", "futures/utilities", "tokio/adapters-io"]
 default = []
 
 [lib]
@@ -139,13 +139,6 @@ features = ["tls12"]
 optional = true
 default-features = false
 path = "../tokio-rustls"
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies.tokio-util]
-version = "0.7.9"
-features = ["io"]
-optional = true
-default-features = false
-path = "../tokio-util"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.tower-http]
 version = "0.6.8"

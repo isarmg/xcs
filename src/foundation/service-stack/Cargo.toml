@@ -34,11 +34,11 @@ repository = "https://github.com/tower-rs/tower"
 
 [features]
 balance = ["discover", "load", "ready-cache", "make", "slab", "util"]
-buffer = ["tokio/sync", "tokio/rt", "tokio-util", "tracing", "pin-project-lite"]
+buffer = ["tokio/sync", "tokio/rt", "tokio/adapters", "tracing", "pin-project-lite"]
 discover = ["dep:futures", "futures/std", "pin-project-lite"]
 filter = ["dep:futures", "futures/alloc", "futures/utilities", "pin-project-lite"]
 full = ["balance", "buffer", "discover", "filter", "limit", "load", "load-shed", "make", "ready-cache", "reconnect", "retry", "spawn-ready", "steer", "timeout", "util"]
-limit = ["tokio/time", "tokio/sync", "tokio-util", "tracing", "pin-project-lite"]
+limit = ["tokio/time", "tokio/sync", "tokio/adapters", "tracing", "pin-project-lite"]
 load = ["tokio/time", "tracing", "pin-project-lite"]
 load-shed = ["pin-project-lite"]
 log = ["tracing/log"]
@@ -86,12 +86,6 @@ path = "../sync_wrapper"
 version = "1.6.2"
 optional = true
 path = "../tokio"
-
-[dependencies.tokio-util]
-version = "0.7.0"
-optional = true
-default-features = false
-path = "../tokio-util"
 
 [dependencies.tracing]
 version = "0.1.2"

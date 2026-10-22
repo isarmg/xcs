@@ -50,7 +50,7 @@ pin_project! {
     /// #[tokio::main]
     /// async fn main() {
     ///     // Next, we need a Stream of requests.
-    // TODO(eliza): when `tokio-util` has a nice way to convert MPSCs to streams,
+    // TODO(eliza): when `tokio::adapters` has a nice way to convert MPSCs to streams,
     //              tokio::sync::mpsc again?
     ///     let (mut reqs, rx) = mpsc::unbounded();
     ///     // Note that we have to help Rust out here by telling it what error type to use.
