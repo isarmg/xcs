@@ -436,10 +436,8 @@ fn run() -> Result<()> {
         fs::DirBuilder::new().mode(0o700).create(disk)?;
     }
     // Test-only initialization: no product setup or transfer command dispatcher.
-    let engine = storage_engine::Engine::initialize(
-        &pool,
-        storage_engine::Config::development(disks.try_into().unwrap()),
-    )?;
+    let engine =
+        storage_engine::Engine::initialize(&pool, storage_engine::Config::development(disks))?;
     let backend = std::sync::Arc::new(storage_server::engine_backend::EngineBackend::new(engine));
     backend.protect_auth(storage_server::auth::AuthStore::initialize(
         &pool,

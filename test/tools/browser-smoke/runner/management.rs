@@ -144,14 +144,13 @@ pub(super) fn setup(
         .args(["--listen", &format!("127.0.0.1:{server_port}"), "--web-dir"])
         .arg(web)
         .arg("--allow-development-setup");
-    for id in ["fixture-primary", "fixture-backup", "fixture-third"] {
-        let disk = fresh.join(id);
-        fs::DirBuilder::new().mode(0o700).create(&disk)?;
-        command
-            .arg("--setup-disk")
-            .arg(format!("{id}={}", disk.display()));
-    }
-    let _server = spawn(&mut command, &fresh.join("server.log"))?;
+    let id = "fixture-primary";
+    let disk = fresh.join(id);
+    fs::DirBuilder::new().mode(0o700).create(&disk)?;
+    command
+        .arg("--setup-disk")
+        .arg(format!("{id}={}", disk.display()));
+    let server = spawn(&mut command, &fresh.join("server.log"))?;
     wait_for("fresh setup listener", || {
         if http(server_port, "GET", "/", None)?.0 == 200 {
             Ok(())
@@ -171,8 +170,8 @@ pub(super) fn setup(
         "/elements",
         Some(json!({"using":"css selector","value":"[data-setup-disk]"})),
     )?;
-    if disks.as_array().map(Vec::len) != Some(3) {
-        return Err("setup allowlist must expose exactly three test disks".into());
+    if disks.as_array().map(Vec::len) != Some(1) {
+        return Err("single-disk setup must expose exactly one authorized storage disk".into());
     }
     for disk in disks.as_array().ok_or("missing setup disk selectors")? {
         browser.click(
@@ -180,6 +179,9 @@ pub(super) fn setup(
                 .as_str()
                 .ok_or("missing setup disk element")?,
         )?;
+    }
+    if browser.script("return document.body.textContent.includes('no disk redundancy') || document.body.textContent.includes('没有磁盘冗余')")? != true {
+        return Err("single-disk setup must explicitly warn about no redundancy".into());
     }
     browser.click(&browser.css("[data-setup-development]")?)?;
     browser.keys(&browser.css("[data-setup-user]")?, "fresh-admin")?;
@@ -218,8 +220,55 @@ pub(super) fn setup(
     browser.css(".zxs-disk-entry[data-slot='P01']:not([disabled])")?;
     browser.click(&browser.button("Sign out", "退出")?)?;
     browser.css("input[autocomplete='current-password']")?;
+    let config: storage_engine::Config =
+        json_codec::from_slice(&fs::read(pool.join("config.json"))?)?;
+    if config.disks.len() != 1
+        || config.disks[0].level != 1
+        || config.disks[0].upstream_slot_id.is_some()
+    {
+        return Err("single-disk wizard invented backup levels".into());
+    }
+    drop(server);
+    let disk = fresh.join("fixture-primary");
+    fs::rename(&disk, fresh.join("fixture-primary-offline"))?;
+    let _restarted = spawn(&mut command, &fresh.join("missing-disk-server.log"))?;
+    wait_for("single missing disk leaves management online", || {
+        let (status, bytes) = http(server_port, "GET", "/api/management/status", None)?;
+        let value: json_codec::Value = json_codec::from_slice(&bytes)?;
+        if status == 200
+            && value["authentication"] == "ready"
+            && value["storage"]["state"] == "unavailable"
+            && value["storage"]["recovering"] == false
+        {
+            Ok(())
+        } else {
+            Err("single-disk management restart not ready".into())
+        }
+    })?;
+    browser.command("POST", "/url", Some(json!({"url":origin})))?;
+    browser.keys(
+        &browser.css(".authentication-card input[autocomplete='username']")?,
+        "fresh-admin",
+    )?;
+    browser.keys(
+        &browser.css("input[autocomplete='current-password']")?,
+        password,
+    )?;
+    browser.click(&browser.button("Sign in", "登录")?)?;
+    browser.button("Sign out", "退出")?;
+    wait_for("single-disk failure warning visible after login", || {
+        if browser.script("return document.body.textContent.includes('Data storage is unavailable') || document.body.textContent.includes('数据存储不可用')")? == true { Ok(()) } else { Err("single-disk failure warning absent".into()) }
+    })?;
+    browser.click(&browser.button("Status", "状态")?)?;
+    browser.css(".zxs-monitor-page [data-metric='cpu']")?;
+    browser.css(".zxs-monitor-page [data-metric='memory']")?;
+    if disk.exists() {
+        return Err("missing storage disk was silently recreated".into());
+    }
+    browser.click(&browser.button("Sign out", "退出")?)?;
+    browser.css("input[autocomplete='current-password']")?;
     println!(
-        "PASS protected Web setup: local key + CSRF, explicit disk allowlist and simulation, hot reopen, new administrator login, no persisted browser secrets"
+        "PASS protected single-disk Web setup: no backup levels, explicit no-redundancy warning, key + CSRF, hot ready reopen, administrator login, no persisted secrets; missing only disk preserves browser login and monitoring without recreating storage"
     );
     preset_setup(browser, daemon, web, root, password)?;
     complete_setup(browser, daemon, web, root, password)
@@ -504,7 +553,7 @@ fn prepare_interruption(fixture: &SetupFixture, password: &str) -> Result<()> {
     let result = service.initialize(
         &permit,
         SetupRequest {
-            disk_ids: [
+            disk_ids: vec![
                 "candidate-0".into(),
                 "candidate-1".into(),
                 "candidate-2".into(),

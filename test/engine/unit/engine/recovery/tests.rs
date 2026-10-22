@@ -432,3 +432,297 @@ fn shared_pages_are_repaired_once_per_recovery_and_rechecked_next_time() {
         drop(engine);
     }
 }
+
+#[test]
+fn single_storage_disk_publishes_reopens_rebuilds_index_and_restores_system() {
+    use std::io::Read;
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("system");
+    let disk = temp.path().join("only-storage");
+    let config = Config::development([disk.clone()]);
+    let mut engine = Engine::initialize(&root, config).unwrap();
+    let repo = engine
+        .create_repository("single", "P01", 1, "admin", &new_id("op"))
+        .unwrap();
+    let workspace = engine
+        .create_workspace(&repo.main_branch_id, "admin")
+        .unwrap();
+    engine
+        .stage_bytes(&workspace.workspace_id, "only.txt", b"one durable copy")
+        .unwrap();
+    let result = engine
+        .commit_workspace(CommitRequest {
+            workspace_id: workspace.workspace_id,
+            operation_id: new_id("op"),
+            principal: "admin".into(),
+            expected_head: workspace.base_head,
+            fencing_token: workspace.fencing_token,
+            message: "single disk".into(),
+            request_digest: None,
+        })
+        .unwrap();
+    assert_eq!(
+        result.commit_state,
+        storage_contract::CommitState::Published
+    );
+    let version = engine.list_tree(&repo.main_branch_id).unwrap()[0]
+        .version_id
+        .clone();
+    let state = canonical_json(&engine.state).unwrap();
+    drop(engine);
+    std::fs::remove_file(root.join("index.sqlite")).unwrap();
+    let engine = Engine::open(&root).unwrap();
+    assert!(!engine.blocked);
+    assert_eq!(canonical_json(&engine.state).unwrap(), state);
+    let mut bytes = Vec::new();
+    engine
+        .open_content(&version)
+        .unwrap()
+        .file
+        .read_to_end(&mut bytes)
+        .unwrap();
+    assert_eq!(bytes, b"one durable copy");
+    drop(engine);
+    let restored = Engine::restore_from_disks(&temp.path().join("new-system"), &[disk]).unwrap();
+    assert_eq!(canonical_json(&restored.state).unwrap(), state);
+    let mut bytes = Vec::new();
+    restored
+        .open_content(&version)
+        .unwrap()
+        .file
+        .read_to_end(&mut bytes)
+        .unwrap();
+    assert_eq!(bytes, b"one durable copy");
+}
+
+#[test]
+fn configured_metadata_majority_does_not_shrink_when_disks_disappear() {
+    for (count, lost, expected_available) in
+        [(1, 1, false), (2, 1, false), (3, 1, true), (4, 2, false)]
+    {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("system");
+        let disks: Vec<_> = (0..count)
+            .map(|n| temp.path().join(format!("disk-{n}")))
+            .collect();
+        let mut engine = Engine::initialize(&root, Config::development(disks.clone())).unwrap();
+        engine
+            .create_repository("majority", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+        drop(engine);
+        for disk in disks.iter().rev().take(lost) {
+            std::fs::remove_dir_all(disk).unwrap();
+        }
+        match Engine::open(&root) {
+            Ok(engine) => {
+                assert!(expected_available);
+                assert!(engine.blocked);
+            }
+            Err(error) => {
+                assert!(!expected_available);
+                assert_eq!(error.code(), "METADATA_QUORUM_UNAVAILABLE");
+            }
+        }
+        if !expected_available && count > 1 {
+            assert!(
+                Engine::restore_from_disks(&temp.path().join("restored"), &disks[..count - lost])
+                    .is_err()
+            );
+        }
+    }
+}
+
+#[test]
+fn publication_proofs_require_exact_nonempty_unique_membership() {
+    for count in [1, 2, 3, 4] {
+        let temp = tempfile::tempdir().unwrap();
+        let disks = (0..count).map(|n| temp.path().join(format!("disk-{n}")));
+        let mut engine =
+            Engine::initialize(&temp.path().join("system"), Config::development(disks)).unwrap();
+        engine
+            .create_repository("proof", "P01", 1, "admin", &new_id("op"))
+            .unwrap();
+        let member = &engine.members()[0];
+        let record = scan(member)
+            .unwrap()
+            .records
+            .into_iter()
+            .find(|(r, _)| r.record_type == "PUBLICATION")
+            .unwrap()
+            .0;
+        let candidate: Candidate =
+            load_object(member, "candidate", &record.candidate_hash).unwrap();
+        let publication: Publication =
+            load_object(member, "publication", &record.object_hash).unwrap();
+        let seal: PublicationSeal =
+            read_json(&publication_seal_path(member, &record.candidate_hash)).unwrap();
+        verify_publication_seal(&candidate, &publication, &seal).unwrap();
+        let mut bad = candidate.clone();
+        bad.metadata_disk_ids.clear();
+        assert!(engine.verify_candidate_membership(&bad).is_err());
+        assert!(verify_publication_seal(&bad, &publication, &seal).is_err());
+        bad.metadata_disk_ids = vec![candidate.metadata_disk_ids[0].clone(); count + 1];
+        assert!(engine.verify_candidate_membership(&bad).is_err());
+        assert!(verify_publication_seal(&bad, &publication, &seal).is_err());
+        let mut incomplete = seal.clone();
+        incomplete.receipts.pop();
+        assert!(verify_publication_seal(&candidate, &publication, &incomplete).is_err());
+        if count > 1 {
+            bad.metadata_disk_ids = vec![candidate.metadata_disk_ids[0].clone()];
+            assert!(engine.verify_candidate_membership(&bad).is_err());
+        }
+    }
+}
+
+#[test]
+fn single_storage_disk_completes_pending_accept_but_never_invents_lost_metadata() {
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("system");
+    let mut engine =
+        Engine::initialize(&root, Config::development([temp.path().join("disk")])).unwrap();
+    let operation = new_id("op");
+    engine.inject_fault_once("after_accept_1");
+    assert!(
+        engine
+            .create_repository("pending", "P01", 1, "admin", &operation)
+            .is_err()
+    );
+    let member = engine.members().remove(0);
+    drop(engine);
+    let engine = Engine::open(&root).unwrap();
+    assert_eq!(
+        engine.operation(&operation).unwrap().commit_state,
+        storage_contract::CommitState::Published
+    );
+    let record = scan(&member)
+        .unwrap()
+        .records
+        .into_iter()
+        .find(|(r, _)| r.record_type == "ACCEPT")
+        .unwrap()
+        .0;
+    let candidate_path = object_path(&member, "candidate", &record.candidate_hash);
+    drop(engine);
+    std::fs::write(candidate_path, b"corrupted sole metadata copy").unwrap();
+    assert!(Engine::open(&root).is_err());
+}
+
+#[test]
+fn self_consistent_one_member_seal_cannot_downgrade_configured_three_members() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = Config::development((0..3).map(|n| temp.path().join(format!("disk-{n}"))));
+    let engine = Engine::initialize(&temp.path().join("system"), config.clone()).unwrap();
+    // Build an internally consistent proof that claims the same pool and first
+    // disk, but omits two configured members. Hash consistency is not authority.
+    let mut reduced = config;
+    reduced.disks.truncate(1);
+    reduced.disks[0].root = temp.path().join("forged-disk");
+    let mut forged = Engine::initialize(&temp.path().join("forged-system"), reduced).unwrap();
+    forged
+        .create_repository("forged", "P01", 1, "admin", &new_id("op"))
+        .unwrap();
+    let member = forged.members().remove(0);
+    let record = scan(&member)
+        .unwrap()
+        .records
+        .into_iter()
+        .find(|(r, _)| r.record_type == "PUBLICATION")
+        .unwrap()
+        .0;
+    let candidate: Candidate = load_object(&member, "candidate", &record.candidate_hash).unwrap();
+    let publication: Publication =
+        load_object(&member, "publication", &record.object_hash).unwrap();
+    let seal: PublicationSeal =
+        read_json(&publication_seal_path(&member, &record.candidate_hash)).unwrap();
+    verify_publication_seal(&candidate, &publication, &seal).unwrap();
+    assert_eq!(candidate.pool_id, engine.config.pool_id);
+    assert_eq!(
+        engine
+            .verify_candidate_membership(&candidate)
+            .unwrap_err()
+            .code(),
+        "PUBLICATION_INVALID"
+    );
+    let target = engine.members().remove(0);
+    store_object(&target, "candidate", &candidate).unwrap();
+    append(
+        &target,
+        "ACCEPT",
+        candidate.sequence,
+        &record.candidate_hash,
+        &record.candidate_hash,
+    )
+    .unwrap();
+    let root = engine.root.clone();
+    drop(engine);
+    assert_eq!(
+        Engine::open(&root).err().unwrap().code(),
+        "PUBLICATION_INVALID"
+    );
+}
+
+#[test]
+fn nonmetadata_payload_disk_offline_proofs_require_saved_membership() {
+    let temp = tempfile::tempdir().unwrap();
+    let mut config = Config::development((0..4).map(|n| temp.path().join(format!("disk-{n}"))));
+    config.disks[3].metadata_member = false;
+    let payload_disk = config.disks[3].clone();
+    let mut engine = Engine::initialize(&temp.path().join("system"), config).unwrap();
+    let repo = engine
+        .create_repository("offline", "P01", 4, "admin", &new_id("op"))
+        .unwrap();
+    let mut old = None;
+    for content in [b"old", b"new"] {
+        let workspace = engine
+            .create_workspace(&repo.main_branch_id, "admin")
+            .unwrap();
+        engine
+            .stage_bytes(&workspace.workspace_id, "file.txt", content)
+            .unwrap();
+        engine
+            .commit_workspace(CommitRequest {
+                workspace_id: workspace.workspace_id,
+                operation_id: new_id("op"),
+                principal: "admin".into(),
+                expected_head: workspace.base_head,
+                fencing_token: workspace.fencing_token,
+                message: "offline proof".into(),
+                request_digest: None,
+            })
+            .unwrap();
+        if old.is_none() {
+            old = Some(
+                engine.list_tree(&repo.main_branch_id).unwrap()[0]
+                    .version_id
+                    .clone(),
+            );
+        }
+    }
+    let old = old.unwrap();
+    let version = engine.state.versions[&old].clone();
+    let directory = version_dir(&payload_disk, &repo.history_tree_id, &old);
+    verify_local_publication(&directory, &version).unwrap();
+    assert!(offline_check(&payload_disk.root).unwrap().issues.is_empty());
+    let exported = temp.path().join("exported.txt");
+    offline_export(&payload_disk.root, &old, &exported).unwrap();
+    assert_eq!(std::fs::read(exported).unwrap(), b"old");
+    let anchor = payload_disk
+        .root
+        .join("metadata/pool-membership/config.json");
+    let saved = std::fs::read(&anchor).unwrap();
+    std::fs::remove_file(&anchor).unwrap();
+    assert!(verify_local_publication(&directory, &version).is_err());
+    assert!(offline_export(&payload_disk.root, &old, &temp.path().join("denied.txt")).is_err());
+    assert!(!anchor.exists());
+    std::fs::write(&anchor, &saved).unwrap();
+    let plan = engine
+        .create_purge_plan(&repo.history_tree_id, vec![old], "admin")
+        .unwrap();
+    engine
+        .commit_plan(&plan.plan_id, "admin", &new_id("op"))
+        .unwrap();
+    verify_tombstone(&directory, &version).unwrap();
+    std::fs::remove_file(&anchor).unwrap();
+    assert!(verify_tombstone(&directory, &version).is_err());
+    assert!(!anchor.exists());
+}

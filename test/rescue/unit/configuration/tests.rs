@@ -156,3 +156,47 @@ fn invalid_upstream_level_is_an_error_and_never_modifies_the_draft() {
     assert_eq!(std::fs::read(&path).unwrap(), original);
     assert!(!path.with_extension("json.before-registration").exists());
 }
+
+#[test]
+fn templates_accept_one_or_many_disks_without_initializing_them() {
+    for count in 1..=5 {
+        let root = tempfile::tempdir().unwrap();
+        let output = root.path().join("draft.json");
+        run(Command::Template {
+            production: false,
+            disks: (0..count)
+                .map(|i| root.path().join(format!("disk{i}")))
+                .collect(),
+            output: Some(output.clone()),
+        })
+        .unwrap();
+        let config: Config =
+            storage_engine::decode_strict(&std::fs::read(output).unwrap()).unwrap();
+        assert_eq!(config.disks.len(), count);
+        Engine::validate_configuration(&config).unwrap();
+        assert!(config.disks.iter().all(|disk| !disk.root.exists()));
+    }
+}
+
+#[test]
+fn invalid_templates_do_not_write_an_output() {
+    let root = tempfile::tempdir().unwrap();
+    let output = root.path().join("draft.json");
+    for disks in [
+        vec![],
+        vec![PathBuf::from("relative")],
+        vec![root.path().join("disk"), root.path().join("disk")],
+        vec![root.path().join("disk"), root.path().join("disk/nested")],
+        vec![root.path().join("disk/../other")],
+    ] {
+        assert!(
+            run(Command::Template {
+                production: false,
+                disks,
+                output: Some(output.clone())
+            })
+            .is_err()
+        );
+        assert!(!output.exists());
+    }
+}

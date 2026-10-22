@@ -13,7 +13,7 @@ StateDirectoryMode=0700
 RuntimeDirectory=zxs
 RuntimeDirectoryMode=0700
 WorkingDirectory=/var/lib/zxs
-ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --setup-disk P01=/srv/zxs/disks/P01 --setup-disk B01=/srv/zxs/disks/B01 --setup-disk C01=/srv/zxs/disks/C01
+ExecStart=/opt/zxs/bin/zxs --root /var/lib/zxs/state --management-root /var/lib/zxs/management --listen 127.0.0.1:7400 --external-origin https://zxs.example.com --web-dir /opt/zxs/web --setup-disk P01=/srv/zxs/disks/P01
 KillSignal=SIGINT
 TimeoutStopSec=60
 Restart=on-failure
@@ -25,7 +25,7 @@ PrivateMounts=yes
 PrivateTmp=yes
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=/var/lib/zxs /run/zxs -/srv/zxs/disks/P01 -/srv/zxs/disks/B01 -/srv/zxs/disks/C01
+ReadWritePaths=/var/lib/zxs /run/zxs -/srv/zxs/disks/P01
 DevicePolicy=closed
 ProtectKernelTunables=yes
 ProtectKernelModules=yes

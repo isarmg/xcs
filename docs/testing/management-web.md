@@ -9,8 +9,9 @@ unconfigured, recovery-required and unknown states remain distinct.
 Protected setup is an explicit form, not a fallback login action. The local
 bootstrap key is held in component memory and sent only as `X-ZXS-Bootstrap` to
 the same-origin setup endpoints. The status response supplies the CSRF token and
-allowlisted disk IDs. Exactly three distinct IDs and an explicit confirmation
-are required. Development mode appears only when deployment explicitly enables
+allowlisted disk IDs. At least one distinct allowlisted ID and an explicit confirmation
+are required (maximum 32). One storage disk is usable without any backup level;
+the wizard explicitly warns that one disk has no redundancy. Development mode appears only when deployment explicitly enables
 it. Password/key inputs clear at submission. An ambiguous response permanently
 blocks repeat initialization within that mounted form; the operator must verify
 server state rather than blindly resubmit. No arbitrary host path is accepted.
@@ -24,9 +25,11 @@ server state rather than blindly resubmit. No arbitrary host path is accepted.
   `runner/management.rs` starts a second real daemon with corrupt pool config and
   a verified management-authority file, checks existing-admin login, health,
   CPU/memory, retry and logout; it then provisions a disposable bootstrap key and
-  disk allowlist, completes real development setup in the browser, waits for
-  storage reopen, logs in the new administrator and checks URL/browser storage
-  for leaked credentials.
+  one-disk allowlist, checks the no-redundancy warning, completes real development
+  setup in the browser, waits for storage reopen, logs in the new administrator
+  and checks URL/browser storage for leaked credentials. It then stops the daemon,
+  moves the only storage directory out of place, restarts and verifies browser
+  login and CPU/memory monitoring still work without recreating the missing disk.
 
 Do not substitute static source checks for browser acceptance. If local Chrome
 is blocked by the environment's sandbox, report that limitation and require the
@@ -49,8 +52,7 @@ read-only, replaces disk roots with candidate IDs, and preserves all parameters.
 Initialize submits only the selected ID, its reviewed `config_digest`, and the
 administrator credentials. It never submits configuration JSON, host paths, the
 wizard's disk selection, or mode overrides. The backend rejects a locally
-changed preset until reviewed again. Preset disk count is not restricted to the
-three-disk wizard.
+changed preset until reviewed again. Preset configuration is independent of the wizard selection.
 
 Focused Web unit regressions cover proof-only completion (including uncertain
 outcomes), no authority-reset inference, explicit reconfirmation, unreviewed or
@@ -65,3 +67,16 @@ debug endpoint or filesystem-permission trick is used. A native unit test checks
 that the fixture has genuine completion proof without published authority.
 These Chrome scenarios are implemented, not yet executed; native compilation
 and unit tests must not be reported as real browser acceptance.
+
+## Single-disk regression boundary
+
+HTTP tests initialize a genuinely one-member development pool using the same
+bootstrap/Origin/CSRF path, sign in, wait for storage-ready, and create a repository
+with target_copies=1. After removing that only storage directory and reopening
+the daemon, login, health, account management and storage diagnostics still work,
+while storage access fails closed and the directory is not recreated. This is
+simulated-directory coverage, not physical Btrfs unplug/power-loss acceptance.
+Web request-builder tests cover one-disk setup and explicit one-copy repository
+defaults, retain explicit multi-copy choices, and reject empty, duplicate and
+unapproved disk selections. Historical-save requests retain inherited policy
+unless the user explicitly overrides it.

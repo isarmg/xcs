@@ -43,13 +43,14 @@ struct Model {
     status: String,
 }
 fn valid_selection(model: &Model) -> bool {
-    model.selected.len() == 3
+    !model.selected.is_empty()
+        && model.selected.len() <= 32
         && model
             .selected
             .iter()
             .collect::<std::collections::BTreeSet<_>>()
             .len()
-            == 3
+            == model.selected.len()
         && model.selected.iter().all(|id| model.disks.contains(id))
 }
 fn check(state: RwSignal<Model>) {
@@ -302,17 +303,18 @@ pub(crate) fn view() -> impl IntoView {
         <form class="zxs-stack" on:submit=move |event|{event.prevent_default();initialize(state);}>
             <label>{t("本地授权密钥","Local authorization key")}<input class="zxs-input" data-setup-key="" type="password" autocomplete="off" prop:value=move ||state.with(|s|s.key.clone()) disabled=move ||state.with(|s|s.pending||s.complete) on:input=move |event|state.update(|s|{s.key=event_target_value(&event);s.empty=false;s.completion_available=false;s.confirmed=false;})/></label>
             <button type="button" class="zxs-button" disabled=move ||state.with(|s|s.pending||s.complete) on:click=move |_|check(state)>{t("验证授权并检查磁盘","Authorize and check disks")}</button>
-            <p role="status">{move ||state.with(|s|match s.status.as_str(){"empty"=>t("已确认空白安装。请选择三盘向导或已允许的本地预置方案。","Empty installation confirmed. Choose the three-disk wizard or an allowed local preset."),"existing"=>t("已存在安装；禁止初始化。","An installation already exists; initialization is blocked."),"recovery_required"=>t("需要本地恢复；禁止初始化。","Local recovery is required; initialization is blocked."),"unavailable"=>t("磁盘不可用；禁止初始化。","Disks are unavailable; initialization is blocked."),_=>String::new()})}</p>
+            <p role="status">{move ||state.with(|s|match s.status.as_str(){"empty"=>t("已确认空白安装。至少选择一个存储盘；备份盘可选，也可选择已允许的本地预置方案。","Empty installation confirmed. Select at least one storage disk; backup disks are optional. You may also choose an allowed local preset."),"existing"=>t("已存在安装；禁止初始化。","An installation already exists; initialization is blocked."),"recovery_required"=>t("需要本地恢复；禁止初始化。","Local recovery is required; initialization is blocked."),"unavailable"=>t("磁盘不可用；禁止初始化。","Disks are unavailable; initialization is blocked."),_=>String::new()})}</p>
             <Show when=move ||state.with(|s|s.completion_available&&!s.complete)><p role="status">{t("已验证的中断初始化可以受保护补全，请明确选择下方操作。","Verified interrupted initialization can be completed with local authorization. Explicitly select the completion action below.")}</p></Show>
             <Show when=move ||state.with(|s|!s.complete&&((s.empty&&!s.unknown)||s.completion_available))>
                 <div class="zxs-flow">
-                    <Show when=move ||state.with(|s|s.empty&&!s.unknown)><button type="button" class="zxs-button" disabled=move ||state.with(|s|s.pending) on:click=move |_|state.update(|s|choose(s,Action::Wizard))>{t("三盘设置向导","Three-disk setup wizard")}</button>
+                    <Show when=move ||state.with(|s|s.empty&&!s.unknown)><button type="button" class="zxs-button" disabled=move ||state.with(|s|s.pending) on:click=move |_|state.update(|s|choose(s,Action::Wizard))>{t("存储盘设置向导","Storage disk setup wizard")}</button>
                     <Show when=move ||state.with(|s|!s.presets.is_empty())><button type="button" class="zxs-button" disabled=move ||state.with(|s|s.pending) on:click=move |_|state.update(|s|choose(s,Action::Preset))>{t("使用本地预置方案","Use local configuration preset")}</button></Show></Show>
                     <Show when=move ||state.with(|s|s.completion_available)><button data-setup-completion="" type="button" class="zxs-button" disabled=move ||state.with(|s|s.pending) on:click=move |_|state.update(|s|choose(s,Action::Complete))>{t("完成中断的初始化","Complete interrupted initialization")}</button></Show>
                 </div>
                 <Show when=move ||state.with(|s|s.action==Action::Complete)><p role="status">{t("服务器已验证原始授权对应的首次初始化中断证明。此操作仅补全尚未建立认证权威的初始化，不重置已有管理员；权威标记已存在但凭据缺失时仍禁止补全。","The server verified proof of interrupted first-time initialization bound to the original authorization. This only completes initialization before authentication authority exists; it never resets an existing administrator. A missing primary with an existing authority marker remains blocked.")}</p></Show>
                 <Show when=move ||state.with(|s|s.action==Action::Preset)>{preset_view(state)}</Show>
                 <Show when=move ||state.with(|s|s.action==Action::Wizard&&s.empty&&!s.unknown)>
+                <p>{t("最少一个存储盘，不需要配置二级或后续备份。单盘仅保存一份，没有磁盘冗余；该盘损坏可能导致数据丢失，但系统盘上的 Web 管理仍可使用。多盘向导按选择顺序建立备份链，自定义布局请用本地预置方案。","One storage disk is sufficient; second-level and later backups are optional. A single disk holds one copy with no disk redundancy: its failure can lose data, while system-disk Web management remains accessible. Multiple selected disks form a backup chain in selection order; use local presets for custom layouts.")}</p>
                 <fieldset disabled=move ||state.with(|s|s.pending)><legend>{t("允许的硬盘 ID","Allowed disk IDs")}</legend>
                 {move ||state.with(|s|s.disks.clone()).into_iter().map(move |id|{let label=id.clone();let selected_id=id.clone();view!{<label><input data-setup-disk="" type="checkbox" prop:checked=move ||state.with(|s|s.selected.contains(&selected_id)) on:change=move |event|{let checked=event_target_checked(&event);state.update(|s|{s.selected.retain(|value|value!=&id);if checked{s.selected.push(id.clone());}s.confirmed=false;});}/>{label}</label>}}).collect_view()}
                 </fieldset>

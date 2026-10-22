@@ -271,6 +271,7 @@ fn suffix_rebuilt_containers(
         };
         let disk = engine.disk(slot)?;
         let c: Candidate = load_object(disk, "candidate", hash)?;
+        engine.verify_candidate_membership(&c)?;
         let p: Publication = load_object(disk, "publication", &r.object_hash)?;
         if c.pool_id != engine.config.pool_id
             || c.sequence != *sequence

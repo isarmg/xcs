@@ -295,6 +295,13 @@ impl Backend for EngineBackend {
                         "storage is open for verified recovery reads only",
                     ));
                 }
+                let configured_members = engine
+                    .config()
+                    .disks
+                    .iter()
+                    .filter(|disk| disk.metadata_member)
+                    .count();
+                let storage_disks = engine.config().disks.len();
                 let mode = engine.config().mode.clone();
                 let sequence = engine.state().sequence;
                 let observation = engine.prepare_disk_observation();
@@ -304,14 +311,16 @@ impl Backend for EngineBackend {
                     .iter()
                     .filter(|disk| disk.metadata_member && disk.online)
                     .count();
-                if members < 3 {
+                if members != configured_members {
                     return Err(ApiError::new(
                         503,
                         "METADATA_UNAVAILABLE",
-                        "all three metadata members are required for normal writes",
+                        "all configured metadata members are required for normal writes",
                     ));
                 }
-                Ok(json!({"ready":true,"mode":mode,"sequence":sequence.to_string()}))
+                Ok(
+                    json!({"ready":true,"mode":mode,"sequence":sequence.to_string(),"storage_disk_count":storage_disks,"metadata_member_count":configured_members,"metadata_redundancy":if configured_members == 1 { "none" } else { "multiple-copies" }}),
+                )
             }
             crate::BackendAction::Repositories => {
                 let values = engine
@@ -1252,6 +1261,9 @@ impl Backend for EngineBackend {
 #[cfg(test)]
 #[path = "../../../test/server/unit/engine_backend/authorization_tests.rs"]
 mod authorization_tests;
+#[cfg(test)]
+#[path = "../../../test/server/unit/engine_backend/readiness_tests.rs"]
+mod readiness_tests;
 #[cfg(test)]
 #[path = "../../../test/server/unit/engine_backend/revocation_tests.rs"]
 mod revocation_tests;

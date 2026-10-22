@@ -176,7 +176,7 @@ fn select(state: RwSignal<State>, kind: &'static str) {
     }
     state.update(|s| {
         s.admin_console.kind = kind.into();
-        s.admin_console.fields.clear();
+        s.admin_console.fields = request::initial_fields(kind);
         s.admin_console.plan = Value::Null;
         s.admin_console.acknowledged = false;
         s.admin_console.error.clear();
@@ -231,10 +231,10 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
         <p>"保存会撤销该账户已有会话；最后一个管理员不能被禁用。 Saving revokes existing sessions. The last administrator is protected."</p>
     </Show>
     {move ||{let kind=state.with(|s|s.admin_console.kind.clone()); let fields:Vec<(&'static str,&'static str)>=match kind.as_str(){
-        "repository"=>vec![("name","名称 Name"),("slot","主盘槽位 Primary slot"),("copies","副本数 Copies")],
+        "repository"=>vec![("name","名称 Name"),("slot","主盘槽位 Primary slot"),("copies","份数（含主盘；1 份无冗余） Copies including primary; 1 has no redundancy")],
         "grants"=>vec![("repository","仓库 ID"),("read","读取用户 Read principals"),("write","写入用户 Write principals"),("manage","管理用户 Manage principals")],
         "smb"=>vec![("repository","仓库 ID"),("branch","分支 ID"),("generation","Expected history generation")],
-        "policy"=>vec![("id","策略 ID"),("repository","仓库 ID"),("prefix","路径前缀 Path prefix"),("copies","副本数 Copies"),("generation","Expected generation (0 for new)")],
+        "policy"=>vec![("id","策略 ID"),("repository","仓库 ID"),("prefix","路径前缀 Path prefix"),("copies","份数（含主盘；1 份无冗余） Copies including primary; 1 has no redundancy"),("generation","Expected generation (0 for new)")],
         "rule"=>vec![("id","规则 ID"),("repository","仓库 ID"),("prefix","路径前缀 Path prefix"),("slot","主盘槽位 Primary slot"),("generation","Expected generation (0 for new)")],
         "branch"=>vec![("repository","仓库 ID"),("commit","来源提交 Source commit"),("name","名称 Name")],
         "link"=>vec![("history","历史树 History ID"),("source_branch","来源分支 Source branch"),("source_commit","来源提交 Source commit"),("target_branch","目标分支 Target branch"),("target_commit","目标提交 Target commit")],
@@ -251,36 +251,5 @@ pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::management::Storage;
-    #[test]
-    fn account_administration_survives_data_failure_but_storage_writes_fail_closed() {
-        let mut state = State {
-            authenticated: true,
-            admin: true,
-            ..Default::default()
-        };
-        for storage in [
-            Storage::Unknown,
-            Storage::ReadOnly,
-            Storage::Unavailable,
-            Storage::Unconfigured,
-            Storage::RecoveryRequired,
-        ] {
-            state.management.storage = storage;
-            assert!(permitted(&state, false));
-            assert!(!permitted(&state, true));
-        }
-        state.management.storage = Storage::Ready;
-        assert!(permitted(&state, true));
-        state.admin_console.busy = true;
-        assert!(!permitted(&state, false));
-        state.admin_console.busy = false;
-        state.logout_pending = true;
-        assert!(!permitted(&state, false));
-        state.logout_pending = false;
-        state.admin = false;
-        assert!(!permitted(&state, false));
-    }
-}
+#[path = "../../../../test/web/unit/admin/tests.rs"]
+mod tests;

@@ -99,7 +99,12 @@ fn invalid_registration_candidates_preserve_the_draft_and_backup_namespace() {
             "disk_id" => *disk_id = "not-a-disk-id".into(),
             "relative" => *disk = PathBuf::from("relative-root"),
             "overlap" => *disk = config.disks[0].root.join("nested"),
-            "membership" => *metadata_member = true,
+            "membership" => {
+                for disk in &mut config.disks {
+                    disk.metadata_member = false;
+                }
+                *metadata_member = false;
+            }
             "forked_route" => {
                 *level = 2;
                 *upstream = Some("P01".into());

@@ -85,6 +85,25 @@ impl Engine {
         validate_config(config)
     }
 
+    /// Candidate membership is immutable and must never shrink with availability.
+    pub(crate) fn verify_candidate_membership(
+        &self,
+        candidate: &crate::journal::Candidate,
+    ) -> Result<()> {
+        let expected: BTreeSet<_> = self.members().into_iter().map(|d| d.disk_id).collect();
+        let actual: BTreeSet<_> = candidate.metadata_disk_ids.iter().cloned().collect();
+        if expected.is_empty()
+            || actual != expected
+            || actual.len() != candidate.metadata_disk_ids.len()
+        {
+            return Err(Error::new(
+                "PUBLICATION_INVALID",
+                "candidate membership differs from configured metadata members",
+            ));
+        }
+        Ok(())
+    }
+
     pub fn initialize(root: &Path, mut config: Config) -> Result<Self> {
         if root.join("config.json").exists() {
             return Err(Error::new(
@@ -132,7 +151,8 @@ impl Engine {
             }
             sync_dir(&d.root)?;
         }
-        for d in config.disks.iter().filter(|d| d.metadata_member) {
+        // Every payload disk retains the fixed membership anchor for offline proofs.
+        for d in &config.disks {
             write_json(
                 &d.root.join("metadata/pool-membership/config.json"),
                 &config,
@@ -207,10 +227,10 @@ impl Engine {
                 "restore requires a new system state directory",
             ));
         }
-        if disks.len() < 2 {
+        if disks.is_empty() {
             return Err(Error::new(
                 "METADATA_QUORUM_UNAVAILABLE",
-                "restore requires at least two trusted old metadata members",
+                "restore requires trusted old metadata members",
             ));
         }
         let mut configs = BTreeMap::<String, (Config, usize)>::new();
@@ -246,12 +266,12 @@ impl Engine {
         }
         let mut agreed = configs
             .into_values()
-            .filter(|(_, n)| *n >= 2)
+            .filter(|(c, n)| *n >= c.metadata_quorum())
             .map(|(c, _)| c);
         let mut config = agreed.next().ok_or_else(|| {
             Error::new(
                 "CONFIG_CONFLICT",
-                "two metadata members do not agree on pool configuration",
+                "a configured metadata majority does not agree on pool configuration",
             )
         })?;
         if agreed.next().is_some()

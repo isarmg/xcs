@@ -10,7 +10,7 @@ pub(crate) enum Command {
     Template {
         #[arg(long)]
         production: bool,
-        #[arg(long, num_args = 3, required = true)]
+        #[arg(long, num_args = 1.., required = true)]
         disks: Vec<PathBuf>,
         #[arg(long)]
         output: Option<PathBuf>,
@@ -40,16 +40,8 @@ pub(crate) fn run(command: Command) -> Result<()> {
             disks,
             output,
         } => {
-            if disks.iter().any(|path| !path.is_absolute())
-                || disks
-                    .iter()
-                    .collect::<std::collections::BTreeSet<_>>()
-                    .len()
-                    != 3
-            {
-                return Err("provide three distinct absolute disk roots".into());
-            }
-            let mut config = Config::development(disks.try_into().unwrap());
+            let mut config = Config::development(disks);
+            Engine::validate_configuration(&config)?;
             if production {
                 config.mode = storage_engine::Mode::Production;
             }

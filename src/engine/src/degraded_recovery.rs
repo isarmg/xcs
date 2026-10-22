@@ -225,12 +225,14 @@ impl RecoveryProof {
             || plan.operation_id != c.operation_id
             || plan.reason.trim().is_empty()
             || plan.principal.is_empty()
-            || plan.members.len() != 3
-            || plan.original_accepts.len() < 2
-            || plan.original_accepts.len() > 3
+            || ids.is_empty()
+            || ids.len() != c.metadata_disk_ids.len()
+            || plan.members.len() != ids.len()
+            || plan.original_accepts.len() < ids.len() / 2 + 1
+            || plan.original_accepts.len() > ids.len()
             || receipts_ids(&plan.original_accepts).len() != plan.original_accepts.len()
             || !receipts_ids(&plan.original_accepts).is_subset(&ids)
-            || self.reprotect.len() != 3
+            || self.reprotect.len() != ids.len()
             || receipts_ids(&self.reprotect) != ids
             || p.finalize.recovery_id.as_deref() != Some(plan.recovery_id.as_str())
             || canonical_json(&p.finalize.accepts)? != canonical_json(&plan.original_accepts)?
@@ -367,8 +369,9 @@ impl Engine {
                 }
             }
             let c = found.ok_or_else(|| {
-                required("candidate must be present in all three original member logs")
+                required("candidate must be present in all configured original member logs")
             })?;
+            self.verify_candidate_membership(&c)?;
             let hash = object_hash("candidate", &c)?;
             if candidate.as_ref().is_some_and(|existing: &Candidate| {
                 object_hash("candidate", existing).ok().as_deref() != Some(hash.as_str())
@@ -467,9 +470,11 @@ impl Engine {
             }
             candidate = Some(c);
         }
-        if accepts.len() < 2 || receipts_ids(&accepts).len() != accepts.len() {
+        if accepts.len() < self.config.metadata_quorum()
+            || receipts_ids(&accepts).len() != accepts.len()
+        {
             return Err(required(
-                "at least two original durable ACCEPT receipts are required",
+                "a configured majority of original durable ACCEPT receipts is required",
             ));
         }
         let candidate = candidate.ok_or_else(|| required("candidate missing"))?;

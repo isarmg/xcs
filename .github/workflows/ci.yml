@@ -33,7 +33,10 @@ jobs:
     name: Tests (${{ matrix.suite }})
     needs: static
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # Cold crypto runs include ten packaged/local-generated ring cases, including
+    # both release slow-test matrices; the measured run exceeded 30 minutes.
+    # Match the release verification budget without relaxing other shards.
+    timeout-minutes: ${{ matrix.suite == 'foundation-crypto' && 60 || 30 }}
     strategy:
       fail-fast: false
       matrix:

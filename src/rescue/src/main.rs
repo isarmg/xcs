@@ -11,7 +11,7 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>
     name = "zxs-rescue",
     version,
     about = "Offline verified recovery; stop ZXS before use",
-    after_help = "restore-system requires at least two trusted original metadata members.
+    after_help = "restore-system requires a majority of the configured original metadata members (one for a single-disk pool).
 Recovery preview/commit only accepts decided, unpublished operations with all original disks accessible. It requires a reviewed digest and explicit permanent-loss acknowledgement; it is not a reset or missing-disk replacement.
 Offline export validates one published version, not the entire pool or current permissions."
 )]
@@ -31,7 +31,7 @@ enum Command {
         command: configuration::Command,
     },
     RestoreSystem {
-        #[arg(long,num_args=2..,required=true)]
+        #[arg(long,num_args=1..,required=true)]
         disks: Vec<PathBuf>,
     },
     RecoveryPreview {
@@ -74,7 +74,7 @@ enum PackageCommand {
         package: PathBuf,
         #[arg(long)]
         primary_slot: String,
-        #[arg(long, default_value_t = 3)]
+        #[arg(long, default_value_t = 1)]
         copies: u32,
         #[arg(long)]
         operation_id: Option<String>,
@@ -170,3 +170,7 @@ fn run(args: Args) -> Result<()> {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "../../../test/rescue/unit/main/args_tests.rs"]
+mod args_tests;

@@ -36,15 +36,24 @@ fn initialization_requires_explicit_empty_confirmation_and_settled_outcome() {
     assert!(!can_initialize(&m));
 }
 #[test]
-fn exactly_three_unique_allowlisted_disk_ids_are_required() {
+fn one_or_more_unique_allowlisted_disk_ids_are_required() {
     let mut m = authorized();
     assert!(valid_selection(&m));
     m.selected.push("D".into());
+    assert!(valid_selection(&m));
+    m.selected = vec!["A".into()];
+    assert!(valid_selection(&m));
+    m.selected.clear();
     assert!(!valid_selection(&m));
     m.selected = vec!["A".into(), "B".into(), "/tmp/unsafe".into()];
     assert!(!valid_selection(&m));
     m.selected = vec!["A".into(), "A".into(), "B".into()];
     assert!(!valid_selection(&m));
+    m.disks = (0..33).map(|n| format!("disk-{n}")).collect();
+    m.selected = m.disks.clone();
+    assert!(!valid_selection(&m));
+    m.selected.pop();
+    assert!(valid_selection(&m));
 }
 
 #[test]
@@ -98,7 +107,7 @@ fn preset_requires_exact_review_and_does_not_rewrite_configuration() {
     m.selected.clear();
     assert!(
         can_initialize(&m),
-        "preset disk count is not the wizard's fixed three"
+        "preset disk count does not depend on wizard selection"
     );
     let (path, body) = submission(&m, "secret".into());
     assert_eq!(path, "/api/setup/initialize-preset");
@@ -123,4 +132,22 @@ fn changing_setup_action_invalidates_confirmation_and_completion_is_bounded() {
     assert_eq!(body, json!({"username":"admin","password":"secret"}));
     choose(&mut m, Action::Preset);
     assert!(!m.confirmed);
+}
+
+#[test]
+fn single_disk_submission_contains_only_selected_authorized_id() {
+    let mut m = authorized();
+    m.disks = vec!["A".into()];
+    m.selected = vec!["A".into()];
+    assert!(can_initialize(&m));
+    let (path, body) = submission(&m, "secret".into());
+    assert_eq!(path, "/api/setup/initialize");
+    assert_eq!(
+        body,
+        json!({"disk_ids":["A"],"mode":"production","username":"admin","password":"secret"})
+    );
+    m.development = true;
+    assert_eq!(submission(&m, "secret".into()).1["mode"], "production");
+    m.allow_development = true;
+    assert_eq!(submission(&m, "secret".into()).1["mode"], "development");
 }

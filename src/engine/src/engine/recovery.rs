@@ -55,13 +55,13 @@ impl Engine {
             }
             online.push(d.clone());
         }
-        if online.len() < 2 {
+        if online.len() < self.config.metadata_quorum() {
             return Err(Error::new(
                 "METADATA_QUORUM_UNAVAILABLE",
-                "online service requires at least two trusted metadata members; use offline recovery",
+                "online service requires a majority of the configured metadata members; use offline recovery",
             ));
         }
-        let checkpoint = if online.len() == 3 && !torn_tail {
+        let checkpoint = if online.len() == members.len() && !torn_tail {
             super::recovery_checkpoint::load(self, &prefixes, &records).filter(|c| {
                 records
                     .get(&c.sequence)
@@ -93,6 +93,7 @@ impl Engine {
                 continue;
             };
             let candidate: Candidate = verified_object(&online, "candidate", &hash)?;
+            self.verify_candidate_membership(&candidate)?;
             if candidate.pool_id != self.config.pool_id
                 || candidate.previous_snapshot != self.snapshot
             {
@@ -153,7 +154,7 @@ impl Engine {
                 self.blocked = true;
                 break;
             }
-            if publication.is_none() && complete_unpublished && online.len() == 3 {
+            if publication.is_none() && complete_unpublished && online.len() == members.len() {
                 let result = next
                     .operations
                     .get(&candidate.operation_id)
@@ -168,7 +169,7 @@ impl Engine {
                 )?;
                 self.repair_pending_payloads(&candidate)?;
             }
-            if online.len() == 3 {
+            if online.len() == members.len() {
                 // Repair only replicas of the exact hash-bound snapshot. Never
                 // manufacture a replacement state from an unverifiable copy.
                 repair_snapshot_copies(
@@ -214,7 +215,7 @@ impl Engine {
                     ));
                 }
                 // A PUBLICATION object or a single frame is not the complete
-                // barrier. Preserve the old visible state until all three
+                // barrier. Preserve the old visible state until all configured
                 // synchronized receipts can be checked after restart.
                 let sealed = verified_publication_seal(&online, &candidate, &p).is_ok();
                 if !sealed {
@@ -233,7 +234,7 @@ impl Engine {
                 break;
             }
         }
-        if online.len() != 3 {
+        if online.len() != members.len() {
             self.blocked = true;
         }
         self.cleanup_purged()?;

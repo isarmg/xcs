@@ -1,7 +1,7 @@
 use crate::{disk::*, *};
 use data_serialization::{Deserialize, Serialize};
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     io::{Read, Write},
     os::unix::fs::MetadataExt,
     path::{Path, PathBuf},
@@ -716,14 +716,14 @@ pub(crate) fn verify_publication_seal(
         out.dedup();
         out
     };
-    if ids.len() != 3
-        || c.metadata_disk_ids.len() != 3
+    if ids.is_empty()
+        || c.metadata_disk_ids.len() != ids.len()
         || actual != ids
         || (p.recovery.is_none()
-            && (member_ids(&p.finalize.accepts) != ids || p.finalize.accepts.len() != 3))
+            && (member_ids(&p.finalize.accepts) != ids || p.finalize.accepts.len() != ids.len()))
         || member_ids(&p.finalize_receipts) != ids
-        || p.finalize_receipts.len() != 3
-        || seal.receipts.len() != 3
+        || p.finalize_receipts.len() != ids.len()
+        || seal.receipts.len() != ids.len()
         || seal.candidate_hash != candidate
         || seal.publication_hash != publication
         || p.candidate_hash != candidate
@@ -737,7 +737,7 @@ pub(crate) fn verify_publication_seal(
     {
         return Err(Error::new(
             "PUBLICATION_INVALID",
-            "three synchronized publication receipts are required",
+            "synchronized publication receipts from every configured member are required",
         ));
     }
     if let Some(recovery) = &p.recovery {
@@ -815,6 +815,40 @@ pub(crate) struct ContentTombstone {
     pub snapshot: Snapshot,
     pub content_state_page: json_codec::Map<String, json_codec::Value>,
 }
+/// Offline receipts must bind the saved pool membership, not a smaller set
+/// declared by their own candidate. Verification never creates a missing anchor.
+fn verify_local_membership(root: &Path, candidate: &Candidate, seal: &DiskSeal) -> Result<()> {
+    let config: Config = read_json(&root.join("metadata/pool-membership/config.json"))?;
+    Engine::validate_configuration(&config)?;
+    let expected = config
+        .disks
+        .iter()
+        .filter(|d| d.metadata_member)
+        .map(|d| d.disk_id.clone())
+        .collect::<BTreeSet<_>>();
+    let actual = candidate
+        .metadata_disk_ids
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    if config.pool_id != candidate.pool_id
+        || seal.pool_id != config.pool_id
+        || actual != expected
+        || actual.len() != candidate.metadata_disk_ids.len()
+        || !config.disks.iter().any(|d| {
+            d.disk_id == seal.disk_id
+                && d.slot_id == seal.slot_id
+                && d.binding_generation == seal.binding_generation
+        })
+    {
+        return Err(Error::new(
+            "PUBLICATION_INVALID",
+            "local proof differs from saved pool membership",
+        ));
+    }
+    Ok(())
+}
+
 pub(crate) fn verify_tombstone(directory: &Path, version: &FileVersion) -> Result<()> {
     let t: ContentTombstone = read_json(&directory.join("purged.json"))?;
     verify_publication_seal(&t.candidate, &t.publication, &t.publication_seal)?;
@@ -823,6 +857,7 @@ pub(crate) fn verify_tombstone(directory: &Path, version: &FileVersion) -> Resul
         .nth(4)
         .ok_or_else(|| Error::new("PUBLICATION_INVALID", "invalid version location"))?;
     let seal: DiskSeal = read_json(&root.join("disk.json"))?;
+    verify_local_membership(root, &t.candidate, &seal)?;
     if t.version_id != version.version_id
         || !["PURGED", "MIGRATED"].contains(&t.state.as_str())
         || t.candidate.pool_id != seal.pool_id
@@ -903,6 +938,7 @@ pub(crate) fn verify_local_publication(directory: &Path, version: &FileVersion) 
         .nth(4)
         .ok_or_else(|| Error::new("PUBLICATION_INVALID", "version is outside disk layout"))?;
     let seal: DiskSeal = read_json(&root.join("disk.json"))?;
+    verify_local_membership(root, c, &seal)?;
     let finalize_hash = object_hash("finalize", &p.finalize)?;
     if p.candidate_hash != candidate_hash
         || proof.candidate_hash != candidate_hash

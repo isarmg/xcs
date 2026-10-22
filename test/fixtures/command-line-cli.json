@@ -70,7 +70,7 @@
       "--help"
     ],
     "code": 0,
-    "stdout": "Offline verified recovery; stop ZXS before use\n\nUsage: zxs-rescue [OPTIONS] <COMMAND>\n\nCommands:\n  configuration     Prepare or safely edit uninitialized topology drafts; never mutates a live pool\n  restore-system    \n  recovery-preview  \n  recovery-commit   \n  package           Export, verify or restore a complete independently validated history package\n  offline-check     \n  offline-export    \n  help              Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n  -V, --version                Print version\n\nrestore-system requires at least two trusted original metadata members.\nRecovery preview/commit only accepts decided, unpublished operations with all original disks accessible. It requires a reviewed digest and explicit permanent-loss acknowledgement; it is not a reset or missing-disk replacement.\nOffline export validates one published version, not the entire pool or current permissions.\n",
+    "stdout": "Offline verified recovery; stop ZXS before use\n\nUsage: zxs-rescue [OPTIONS] <COMMAND>\n\nCommands:\n  configuration     Prepare or safely edit uninitialized topology drafts; never mutates a live pool\n  restore-system    \n  recovery-preview  \n  recovery-commit   \n  package           Export, verify or restore a complete independently validated history package\n  offline-check     \n  offline-export    \n  help              Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n  -V, --version                Print version\n\nrestore-system requires a majority of the configured original metadata members (one for a single-disk pool).\nRecovery preview/commit only accepts decided, unpublished operations with all original disks accessible. It requires a reviewed digest and explicit permanent-loss acknowledgement; it is not a reset or missing-disk replacement.\nOffline export validates one published version, not the entire pool or current permissions.\n",
     "stderr": ""
   },
   {
@@ -87,7 +87,7 @@
     "args": [],
     "code": 2,
     "stdout": "",
-    "stderr": "Offline verified recovery; stop ZXS before use\n\nUsage: zxs-rescue [OPTIONS] <COMMAND>\n\nCommands:\n  configuration     Prepare or safely edit uninitialized topology drafts; never mutates a live pool\n  restore-system    \n  recovery-preview  \n  recovery-commit   \n  package           Export, verify or restore a complete independently validated history package\n  offline-check     \n  offline-export    \n  help              Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n  -V, --version                Print version\n\nrestore-system requires at least two trusted original metadata members.\nRecovery preview/commit only accepts decided, unpublished operations with all original disks accessible. It requires a reviewed digest and explicit permanent-loss acknowledgement; it is not a reset or missing-disk replacement.\nOffline export validates one published version, not the entire pool or current permissions.\n"
+    "stderr": "Offline verified recovery; stop ZXS before use\n\nUsage: zxs-rescue [OPTIONS] <COMMAND>\n\nCommands:\n  configuration     Prepare or safely edit uninitialized topology drafts; never mutates a live pool\n  restore-system    \n  recovery-preview  \n  recovery-commit   \n  package           Export, verify or restore a complete independently validated history package\n  offline-check     \n  offline-export    \n  help              Print this message or the help of the given subcommand(s)\n\nOptions:\n      --root <ROOT>            [default: ./zxs-data]\n      --principal <PRINCIPAL>  [default: admin]\n  -h, --help                   Print help\n  -V, --version                Print version\n\nrestore-system requires a majority of the configured original metadata members (one for a single-disk pool).\nRecovery preview/commit only accepts decided, unpublished operations with all original disks accessible. It requires a reviewed digest and explicit permanent-loss acknowledgement; it is not a reset or missing-disk replacement.\nOffline export validates one published version, not the entire pool or current permissions.\n"
   },
   {
     "binary": "zxs-rescue",
@@ -122,12 +122,11 @@
     "binary": "zxs-rescue",
     "args": [
       "restore-system",
-      "--disks",
-      "/only-one"
+      "--disks"
     ],
     "code": 2,
     "stdout": "",
-    "stderr": "error: 2 values required by '--disks <DISKS> <DISKS>...'; only 1 was provided\n\nUsage: zxs-rescue restore-system [OPTIONS] --disks <DISKS> <DISKS>...\n\nFor more information, try '--help'.\n"
+    "stderr": "error: a value is required for '--disks <DISKS>...' but none was supplied\n\nFor more information, try '--help'.\n"
   },
   {
     "binary": "zxs-rescue",
@@ -144,13 +143,11 @@
     "args": [
       "configuration",
       "template",
-      "--disks",
-      "/one",
-      "/two"
+      "--disks"
     ],
     "code": 2,
     "stdout": "",
-    "stderr": "error: 3 values required for '--disks <DISKS> <DISKS> <DISKS>' but 2 were provided\n\nUsage: zxs-rescue configuration template [OPTIONS] --disks <DISKS> <DISKS> <DISKS>\n\nFor more information, try '--help'.\n"
+    "stderr": "error: a value is required for '--disks <DISKS>...' but none was supplied\n\nFor more information, try '--help'.\n"
   },
   {
     "binary": "zxs-rescue",

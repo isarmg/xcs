@@ -418,6 +418,7 @@ impl Engine {
                     "candidate",
                     &record.candidate_hash,
                 )?;
+                self.verify_candidate_membership(&candidate)?;
                 let publication: Publication = crate::publication_evidence::verified_object(
                     &members,
                     "publication",

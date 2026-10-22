@@ -152,6 +152,28 @@ class SuiteCoverageTests(unittest.TestCase):
                     self.assertIn("    needs: [version, verify, linux-web]\n", jobs["assemble"])
                     self.assertIn("    needs: [version, assemble]\n", jobs["publish"])
 
+    def test_crypto_budget_retains_full_ring_matrix(self):
+        root = Path(__file__).resolve().parents[2]
+        workflow = (root / ".github/workflows/ci.yml").read_text()
+        body = workflow.split("\n  tests:\n", 1)[1].split("\n  web-production:\n", 1)[0]
+        self.assertIn(
+            "    timeout-minutes: ${{ matrix.suite == 'foundation-crypto' && 60 || 30 }}\n",
+            body,
+        )
+        self.assertEqual(body.count("timeout-minutes:"), 1)
+        self.assertNotIn("continue-on-error", body)
+        # Keep the default 'both' ring modes, including their release slow tests;
+        # the larger budget must not be paired with reduced test coverage.
+        calls = self.suite("foundation-crypto")
+        self.assertEqual(calls.count({
+            "tool": "python3",
+            "args": ["tools/rust-sources/check_ring_tests.py"],
+        }), 1)
+        self.assertIn({
+            "tool": "cargo",
+            "args": ["test", "--locked", "--offline", "--lib", "-p", "password-hash"],
+        }, calls)
+
     def test_build_tools_cover_report_parsing_without_running_a_workload(self):
         calls = self.suite("build-tools")
         tests = [call for call in calls

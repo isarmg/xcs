@@ -220,8 +220,10 @@ async fn blocked_replication_never_blocks_login_and_queued_sessions_revalidate()
         .unwrap()
         .upsert_account("reader", None, false, Default::default(), true)
         .unwrap();
+    // This is a deadlock guard, not a latency benchmark. The engine remains
+    // locked until the result is captured, even on slower test runners.
     let login = tokio::time::timeout(
-        std::time::Duration::from_secs(5),
+        std::time::Duration::from_secs(30),
         request(
             &app,
             "/api/auth/login",
@@ -245,12 +247,21 @@ async fn blocked_replication_never_blocks_login_and_queued_sessions_revalidate()
 
 #[tokio::test]
 async fn protected_web_setup_installs_primary_then_allows_login_without_restart() {
+    exercise_web_setup(&["one", "two", "three"], false).await;
+}
+
+#[tokio::test]
+async fn single_disk_web_setup_ready_then_missing_disk_preserves_management() {
+    exercise_web_setup(&["one"], true).await;
+}
+
+async fn exercise_web_setup(ids: &[&str], remove_data_disk: bool) {
     use std::os::unix::fs::PermissionsExt;
     let root = tempfile::tempdir().unwrap();
     let data = root.path().join("pool");
     let management = data.join("management");
     let mut disks = std::collections::BTreeMap::new();
-    for id in ["one", "two", "three"] {
+    for &id in ids {
         let path = root.path().join(id);
         std::fs::create_dir(&path).unwrap();
         std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700)).unwrap();
@@ -296,7 +307,7 @@ async fn protected_web_setup_installs_primary_then_allows_login_without_restart(
     }
     let response=app.clone().oneshot(Request::builder().method("POST").uri("/api/setup/initialize")
         .header("host","127.0.0.1:7400").header("origin","http://127.0.0.1:7400").header("x-zxs-bootstrap",&key).header("x-csrf-token",status["csrf_token"].as_str().unwrap()).header("content-type","application/json")
-        .body(Body::from(json_codec::to_vec(&json!({"mode":"development","disk_ids":["one","two","three"],"username":"admin","password":"a-long-test-password"})).unwrap())).unwrap()).await.unwrap();
+        .body(Body::from(json_codec::to_vec(&json!({"mode":"development","disk_ids":ids,"username":"admin","password":"a-long-test-password"})).unwrap())).unwrap()).await.unwrap();
     let code = response.status();
     let value: Value = json_codec::from_slice(
         &http_routing::body::to_bytes(response.into_body(), 65536)
@@ -319,6 +330,70 @@ async fn protected_web_setup_installs_primary_then_allows_login_without_restart(
         .0,
         StatusCode::OK
     );
+
+    for _ in 0..200 {
+        if !backend.management_status()["recovering"].as_bool().unwrap() {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    assert_eq!(backend.management_status()["state"], "ready");
+    let config: storage_contract::Config =
+        json_codec::from_slice(&std::fs::read(data.join("config.json")).unwrap()).unwrap();
+    assert_eq!(config.disks.len(), ids.len());
+    assert_eq!(
+        config.disks.iter().filter(|d| d.metadata_member).count(),
+        ids.len()
+    );
+    let (_, login) = request(
+        &app,
+        "/api/auth/login",
+        None,
+        Some(json!({"username":"admin","password":"a-long-test-password"})),
+    )
+    .await;
+    let token = login["token"].as_str().unwrap();
+    let (code, repository) = request(&app, "/api/repositories", Some(token), Some(json!({"name":"single-copy","primary_slot_id":"P01","target_copies":1,"operation_id":storage_contract::new_id("op")}))).await;
+    assert_eq!(code, StatusCode::OK, "{repository:?}");
+    if remove_data_disk {
+        drop(app);
+        drop(backend);
+        std::fs::remove_dir_all(root.path().join(ids[0])).unwrap();
+        let (backend, auth) = open_service(&data, &management).unwrap();
+        let app = router(backend.clone(), auth, ServerConfig::loopback(&management)).unwrap();
+        let (code, login) = request(
+            &app,
+            "/api/auth/login",
+            None,
+            Some(json!({"username":"admin","password":"a-long-test-password"})),
+        )
+        .await;
+        assert_eq!(code, StatusCode::OK);
+        let token = login["token"].as_str().unwrap();
+        assert_eq!(
+            request(&app, "/healthz", None, None).await.0,
+            StatusCode::OK
+        );
+        assert_eq!(
+            request(&app, "/api/admin/accounts", Some(token), None)
+                .await
+                .0,
+            StatusCode::OK
+        );
+        assert_eq!(
+            request(&app, "/api/system/storage", Some(token), None)
+                .await
+                .0,
+            StatusCode::OK
+        );
+        assert_eq!(
+            request(&app, "/api/repositories", Some(token), None)
+                .await
+                .0,
+            StatusCode::SERVICE_UNAVAILABLE
+        );
+        assert!(!root.path().join(ids[0]).exists());
+    }
 }
 
 #[tokio::test]

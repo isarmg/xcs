@@ -6,6 +6,9 @@ struct Fixture {
     service: SetupRecovery,
 }
 fn fixture() -> Fixture {
+    fixture_with_disks(&["one", "two", "three"])
+}
+fn fixture_with_disks(ids: &[&str]) -> Fixture {
     let temp = tempfile::tempdir().unwrap();
     let data = temp.path().join("system");
     let management = temp.path().join("management");
@@ -13,7 +16,7 @@ fn fixture() -> Fixture {
     fs::set_permissions(&data, fs::Permissions::from_mode(0o700)).unwrap();
     fs::create_dir(&management).unwrap();
     let mut disks = BTreeMap::new();
-    for id in ["one", "two", "three"] {
+    for &id in ids {
         let path = temp.path().join(id);
         fs::create_dir(&path).unwrap();
         fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
@@ -41,7 +44,7 @@ fn permit(service: &SetupRecovery) -> LocalBootstrapPermit {
 }
 fn request() -> SetupRequest {
     SetupRequest {
-        disk_ids: ["one".into(), "two".into(), "three".into()],
+        disk_ids: vec!["one".into(), "two".into(), "three".into()],
         mode: Mode::Development,
         username: "admin".into(),
         password: "long-valid-password".into(),
@@ -757,4 +760,171 @@ fn preset_builder_never_exposes_path_shaped_identifiers() {
         ("safe_id".into(), PathBuf::from("/unavailable")),
     ]));
     assert_eq!(service.status().config_presets, vec!["safe_id".to_string()]);
+}
+
+#[test]
+fn single_disk_setup_is_empty_and_creates_exactly_one_member() {
+    let f = fixture_with_disks(&["one"]);
+    assert_eq!(f.service.status().state, InstallationState::Empty);
+    let mut input = request();
+    input.disk_ids = vec!["one".into()];
+    f.service
+        .initialize(&permit(&f.service), input, |engine, _, _| {
+            assert_eq!(engine.config().disks.len(), 1);
+            assert_eq!(
+                engine
+                    .config()
+                    .disks
+                    .iter()
+                    .filter(|d| d.metadata_member)
+                    .count(),
+                1
+            );
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(f.service.status().state, InstallationState::Existing);
+}
+
+#[test]
+fn single_disk_setup_retains_selection_and_mount_fences() {
+    for ids in [vec![], vec!["one", "one"], vec!["unapproved"]] {
+        let f = fixture_with_disks(&["one"]);
+        let mut input = request();
+        input.disk_ids = ids.into_iter().map(str::to_owned).collect();
+        assert!(
+            f.service
+                .initialize(&permit(&f.service), input, |_, _, _| panic!())
+                .is_err()
+        );
+        assert!(!f.service.data_root.join("config.json").exists());
+        assert!(!f.service.data_root.join("setup-intent.json").exists());
+    }
+    let f = fixture_with_disks(&["one"]);
+    let mut input = request();
+    input.disk_ids = vec!["one".into()];
+    input.mode = Mode::Production;
+    assert!(
+        f.service
+            .initialize(&permit(&f.service), input, |_, _, _| panic!())
+            .is_err()
+    );
+    assert!(!f.service.data_root.join("config.json").exists());
+    fs::remove_dir(&f.service.disks["one"]).unwrap();
+    assert_eq!(f.service.status().state, InstallationState::Unavailable);
+    assert!(!f.service.disks["one"].exists());
+}
+
+#[test]
+fn setup_rejects_storage_overlapping_system_control_directories() {
+    for placement in [
+        "management-child",
+        "management",
+        "system-child",
+        "system",
+        "ancestor",
+    ] {
+        let f = fixture_with_disks(&["one"]);
+        let path = match placement {
+            "management-child" => f.service.management_root.join("disk"),
+            "management" => f.service.management_root.clone(),
+            "system-child" => f.service.data_root.join("disk"),
+            "system" => f.service.data_root.clone(),
+            _ => f.service.data_root.parent().unwrap().to_owned(),
+        };
+        fs::create_dir_all(&path).unwrap();
+        let service = SetupRecovery::new(
+            f.service.data_root.clone(),
+            f.service.management_root.clone(),
+            [("one".into(), path)].into_iter().collect(),
+        )
+        .unwrap()
+        .allow_development_mode();
+        assert!(service.selected(&["one".into()]).is_err(), "{placement}");
+        let mut input = request();
+        input.disk_ids = vec!["one".into()];
+        assert!(
+            service
+                .initialize(&permit(&service), input, |_, _, _| panic!())
+                .is_err()
+        );
+        assert!(!service.data_root.join("setup-intent.json").exists());
+    }
+}
+
+#[test]
+fn restore_single_member_uses_original_membership_not_survivor_count() {
+    for ids in [&["one"][..], &["one", "two", "three"][..]] {
+        let f = fixture_with_disks(ids);
+        drop(
+            Engine::initialize(
+                &f.service.data_root,
+                Config::development(
+                    ids.iter()
+                        .map(|id| f.service.disks[*id].clone())
+                        .collect::<Vec<_>>(),
+                ),
+            )
+            .unwrap(),
+        );
+        let restored = f._temp.path().join("restored-system");
+        fs::create_dir(&restored).unwrap();
+        fs::set_permissions(&restored, fs::Permissions::from_mode(0o700)).unwrap();
+        let recovery = SetupRecovery::new(
+            restored.clone(),
+            f.service.management_root.clone(),
+            f.service.disks.clone(),
+        )
+        .unwrap();
+        let error = recovery
+            .restore_system(
+                &permit(&recovery),
+                RestoreRequest {
+                    disk_ids: vec!["one".into()],
+                    accept_stale_credentials: true,
+                },
+                |_| panic!("fixture contains no administrator credentials"),
+            )
+            .unwrap_err();
+        if ids.len() == 1 {
+            assert_eq!(error.code, "AUTH_RECOVERY_REQUIRED");
+            assert!(restored.join("config.json").exists());
+        } else {
+            assert_ne!(
+                error.code, "AUTH_RECOVERY_REQUIRED",
+                "one surviving member must not shrink a three-member quorum"
+            );
+            assert!(!restored.join("config.json").exists());
+        }
+    }
+}
+
+#[test]
+fn single_disk_interrupted_setup_still_requires_bound_completion_proof() {
+    let f = fixture_with_disks(&["one"]);
+    let mut input = request();
+    input.disk_ids = vec!["one".into()];
+    assert_eq!(
+        f.service
+            .initialize(&permit(&f.service), input, |_, _, _| Err(
+                ApiError::conflict("INTERRUPTED", "test interruption")
+            ))
+            .unwrap_err()
+            .code,
+        "INTERRUPTED"
+    );
+    assert!(f.service.status().completion_available);
+    f.service
+        .complete_initialization(&permit(&f.service), completion(), |engine, user, _| {
+            assert_eq!(engine.config().disks.len(), 1);
+            assert_eq!(user, "admin");
+            fs::write(
+                f.service.data_root.join("management-authority.json"),
+                b"claimed",
+            )
+            .unwrap();
+            Ok(())
+        })
+        .unwrap();
+    assert!(!f.service.status().completion_available);
 }

@@ -21,6 +21,8 @@
 
 Samba 配置由经版本验收的部署模板另行生成。设备清单通过登记工具产生，不在示例中填写真实设备路径。
 
+除系统盘外最低只需一块存储盘，二级及后续备份层均为可选。单盘配置只有一级盘、一个元数据成员和一份业务内容；没有磁盘冗余，也不承诺唯一盘丢失后的恢复。下列多层、三元数据成员示例展示可选扩展，不是最小部署要求。
+
 示例是完整有效配置的展示，包含协议常量断言、运行参数和初始化目标；不表示每个字段都可由运维自由切换。分类及冲突处理见[第 21.3 节](#s21-03)。
 
 ```toml
@@ -58,7 +60,7 @@ share_generation = "1"
 [storage]
 filesystem = "btrfs-single-device"
 disk_inventory = "registered-physical-disks"
-minimum_disks_for_protected_write = 3
+minimum_disks_for_protected_write = 1
 allow_explicit_disk_enrollment = true
 content_layout = "full-file"
 writable_disk_format = 2
@@ -300,7 +302,7 @@ queue_warning_seconds = 30
 
 `case_sensitive=false` 只影响约定的逻辑命名空间，不要求把底层 Btrfs 变成另一种文件系统。内部对象通过 ID 定位，名称比较由核心负责。
 
-`decision_members=2` 不能改解释为两成员可以正常写入。三个成员保护、发布和确认仍须全部完成；两个成员仅建立决定并支持指定恢复流程。`maximum_target="primary-route-depth"`按具体一级来源的连续链深计算；总盘数只给出全局上界。离线、满盘或映射缺失不能擅自降低目标或使用别的来源盘。
+本例配置三个元数据成员，所以恢复/准入多数为2；任意非空配置的多数固定为 floor(N/2)+1，N 为已配置成员数。`decision_members=2` 不能解释为本例两成员即可正常写入。正常保护、发布和确认始终要求全部已配置成员完成；不按可访问数量缩减门槛。单成员池要求该成员，双成员池要求两个成员。`maximum_target="primary-route-depth"`按具体一级来源的连续链深计算；总盘数只给出全局上界。离线、满盘或映射缺失不能擅自降低目标或使用别的来源盘。
 
 `supported_save_modes=["full"]` 约束实际内容保存；`creation_mode="record-until-write"`、`content_mode="inherit-parent-until-first-write"` 与 `materialize_all_files_on_create=false` 约束分支只登记冻结来源、首写前继承父内容。目录分支直接引用父子树，不提前创建自己的子树或后代文件分支。历史另存建立新分支，但只为实际 staged 文件生成独立 FULL，其余文件继续继承冻结来源。这些是目标配置的受检断言，不是当前 JSON `Config` 的运行开关；实际能力声明见[API 能力发现](15-api-and-errors.md#s15-05)。
 
@@ -310,7 +312,7 @@ queue_warning_seconds = 30
 
 上述示例有4个一级、2个二级、1个三级和1个四级盘位。primary_placement按规范目录的最长匹配规则解析，`/media`落在P03，其余由根规则落在P01；不同目录规则冲突必须拒绝，不能用规则声明顺序猜测。disk_id仅为占位，实际必须通过设备登记与物理身份校验。
 
-`member_slot_ids`是用户另外指定的三个控制元数据成员，不等于每个业务版本都保存三份。盘位配置、业务路由和控制成员发生变更时分别校验并按需要组合迁移，普通启动不重新随机选成员。
+`member_slot_ids`在本例是用户另外指定的三个控制元数据成员；一般配置可指定任意非空成员集合，不等于每个业务版本都保存三份。盘位配置、业务路由和控制成员发生变更时分别校验并按需要组合迁移，普通启动不重新随机选成员。
 
 `verification_mode` 是默认服务端校验模式，保留的受控 HTTP 客户端库支持完整性验证，产品 CLI 不提供正文传输或验证协商入口；SMB 客户端不需要实现本系统校验协议，由服务端在返回字节前校验。段参数仅对新版本生效；读取旧版本时以其描述为准。容量阈值与校验段默认值都是待实测的初始配置，不能宣称为适合所有设备的最优参数。
 
@@ -322,7 +324,7 @@ queue_warning_seconds = 30
 
 | 类别 | 示例 | 修改与校验规则 |
 | --- | --- | --- |
-| 协议常量或构建能力断言 | metadata 的 3/2/2、max_inflight_decision_slots=1、全部成员发布/确认、禁止自动降级、full-only、旧MergeLink的link-only语义、禁历史改写与跨树依赖 | schema 使用 const 或固定枚举；冲突返回 CONFIG_INVARIANT_VIOLATION，不能当作可调布尔开关；文件分支合并能力单独声明 |
+| 协议常量或构建能力断言 | metadata 的非空配置成员集合及固定多数 floor(N/2)+1、max_inflight_decision_slots=1、全部成员发布/确认、禁止自动降级、full-only、旧MergeLink的link-only语义、禁历史改写与跨树依赖 | schema 使用 const 或固定枚举；冲突返回 CONFIG_INVARIANT_VIOLATION，不能当作可调布尔开关；文件分支合并能力单独声明 |
 | 运行参数 | 网络监听、缓存及维护并发、resource_limits、observability、容量告警与安全预留 | 进行类型、范围和交叉检查；仅明确支持的字段允许热更新，记录配置修订号 |
 | 受事务管理的持久状态 | 成员集合、盘位/物理绑定、拓扑代际、共享归属、命名策略、一级规则和保护策略 | 配置只提出初始化目标或变更计划；有效检查点和日志决定当前值，必须经对应业务事务修改 |
 

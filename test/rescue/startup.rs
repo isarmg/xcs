@@ -251,3 +251,28 @@ fn configuration_commands_edit_only_an_uninitialized_draft() {
         .unwrap();
     assert!(!result.status.success());
 }
+
+#[test]
+fn template_cli_accepts_one_disk_and_rejects_no_disks() {
+    let directory = tempfile::tempdir().unwrap();
+    let disk = directory.path().join("only");
+    let output = Command::new(env!("CARGO_BIN_EXE_zxs-rescue"))
+        .args(["configuration", "template", "--disks"])
+        .arg(&disk)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let config: storage_engine::Config = storage_engine::decode_strict(&output.stdout).unwrap();
+    assert_eq!(config.disks.len(), 1);
+    assert_eq!(config.disks[0].level, 1);
+    assert!(!disk.exists());
+    let output = Command::new(env!("CARGO_BIN_EXE_zxs-rescue"))
+        .args(["configuration", "template", "--disks"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+}

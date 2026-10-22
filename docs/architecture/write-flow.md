@@ -49,7 +49,7 @@ sequenceDiagram
 
 [decide_publication](../../src/engine/src/engine/publication.rs) 先复查根目录、快照、序号、决定槽、配置、正文凭据与空间。失配返回可重试的 `PREPARATION_STALE`；尚未写 ACCEPT。各成员写入 Candidate 与 PREPARE 后，进入可能产生不可撤销决定的区域。
 
-[complete_candidate_verified](../../src/engine/src/engine/publication.rs) 收集 ACCEPT、写 FINALIZE，再同步名称和正文提交证明，形成包含结果及各类收据的 Publication。三成员 PUBLICATION、PublicationSeal 和正文盘本地发布证明都完成后，才替换内存状态并更新 [SQLite 投影](../../src/engine/src/engine/index.rs)。SQLite 仍是可重建投影，权威证据在日志及不可变对象中。
+[complete_candidate_verified](../../src/engine/src/engine/publication.rs) 收集 ACCEPT、写 FINALIZE，再同步名称和正文提交证明，形成包含结果及各类收据的 Publication。全部配置成员 PUBLICATION、PublicationSeal 和正文盘本地发布证明都完成后，才替换内存状态并更新 [SQLite 投影](../../src/engine/src/engine/index.rs)。SQLite 仍是可重建投影，权威证据在日志及不可变对象中。
 
 ## 4. 失败后怎么判断
 

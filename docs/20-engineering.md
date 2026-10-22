@@ -125,7 +125,7 @@ storage-engine → storage-contract + name-policy + platform-io
 platform-io → 文件系统 / SQLite / 凭据算法依赖
 ```
 
-`storage-contract` 不依赖操作系统或 UI；`name-policy` 将 Unicode 规范化算法与项目映射放在同一编译组件，使用固定 Unicode 数据，不跟随编译器 Unicode 版本漂移。SQLite 为可删除后重建的索引，三成员日志和不可变对象承担恢复依据。复制必须显式读写完整字节，不使用硬链接、reflink 或去重冒充独立副本。
+`storage-contract` 不依赖操作系统或 UI；`name-policy` 将 Unicode 规范化算法与项目映射放在同一编译组件，使用固定 Unicode 数据，不跟随编译器 Unicode 版本漂移。SQLite 为可删除后重建的索引，全部配置成员日志和不可变对象承担恢复依据。复制必须显式读写完整字节，不使用硬链接、reflink 或去重冒充独立副本。
 
 真实文件容器的目录名、文件备注和版本备注由 State 恢复，`container.json` 只是派生缓存；不可变版本描述、内容散列和发布证明留在独立证明目录。`time` 负责 UTC 时间格式，`rustix` 负责已有安全文件系统原语。旧载荷继续按缺省可选字段的旧路径读取，本次布局扩展不等于完成全盘格式迁移；详见[第 8.2 节](08-full-storage-and-disk-format.md#s08-02)。
 
@@ -139,7 +139,7 @@ API 与 SMB 只映射认证主体、输入、句柄和传输错误。最终授�
 
 `zxs offline-check <disk>` 验证本盘版本、内容清单、发布回执和带状态页包含证明的内容墓碑；不修改盘数据。`zxs offline-export <disk> <version> <output>` 独立验证后输出完整文件，拒绝覆盖已有目标。导出不修改目标父目录权限，失败不把未完成复制发布成完整文件。
 
-`zxs --root <new-root> restore-system --disks <disk1> <disk2> …` 从至少两个一致的原元数据成员配置恢复系统目录，随后重放日志、恢复凭据控制状态及可发现的待提交工作区。它不会重新初始化数据盘，也不绕过设备身份核验。缺少成员时维持受限状态，不能据单份 PUBLICATION 开放正常写入。
+`zxs-rescue --root <new-root> restore-system --disks <disk1> …` 从固定配置的至少 Q = floor(N/2)+1 个一致、可信的原元数据成员配置恢复系统目录，随后重放日志、恢复凭据控制状态及可发现的待提交工作区。它不会重新初始化数据盘，也不绕过设备身份核验。N ≥ 1，单成员池须核验唯一原成员；多成员池不能按幸存数降低 Q。正常写入仍须全部配置成员及发布闭包，不因一份 PUBLICATION 就放行。所有新初始化盘均保存配置锚，缺锚旧盘不兼容且不自动迁移。
 
 离线工具不依赖在线服务或原服务器 SQLite。实际只恢复本盘持有且证明、字节均有效的版本，不推断全局最新状态。格式、设备或日志冲突必须明确失败；检查命令不得隐式修复或清理。
 

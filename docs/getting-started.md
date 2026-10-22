@@ -12,12 +12,12 @@ cargo build --locked --offline --target-dir target/native -p storage-server -p s
 target/native/debug/zxs --root "$PWD/runtime/pool" \
   --management-root "$PWD/runtime/management" --listen 127.0.0.1:7400 \
   --web-dir /absolute/path/to/verified-web-output \
-  --setup-disk "P01=$PWD/runtime/disks/P01" \
-  --setup-disk "B01=$PWD/runtime/disks/B01" \
-  --setup-disk "C01=$PWD/runtime/disks/C01" --allow-development-setup
+  --setup-disk "P01=$PWD/runtime/disks/P01" --allow-development-setup
 ```
 
-运行前准备三个现有、独立、私有的测试目录和管理目录，并替换 Web 输出路径。操作员在管理目录安全预置 `bootstrap.key`：服务 UID 所有、普通单链接文件、0600、恰好64个十六进制 ASCII 字节且无换行，mtime起30分钟有效。不要将密钥写进命令行、日志或版本库。打开 Web 的首次初始化页，输入引导密钥，选择批准的三盘 ID，并设置首次管理员；引导授权不保存在浏览器持久存储中。缺少有效授权时拒绝初始化，不自动生成管理员或数据池。
+最低配置为系统盘加一个存储盘，二级、三级、四级及后续备份均可不配置。运行前准备一个现有、私有的测试存储目录和管理目录，并替换 Web 输出路径。操作员在管理目录安全预置 `bootstrap.key`：服务 UID 所有、普通单链接文件、0600、恰好64个十六进制 ASCII 字节且无换行，mtime起30分钟有效。不要将密钥写进命令行、日志或版本库。打开 Web 的首次初始化页，输入引导密钥，选择至少一个批准的存储盘 ID，并设置首次管理员；引导授权不保存在浏览器持久存储中。缺少有效授权时拒绝初始化，不自动生成管理员或数据池。
+
+单盘池只保存一份数据，没有磁盘冗余；该盘损坏可能导致数据永久丢失。新建仓库默认目标份数为 1（包含主盘），不要把“目标已满足”理解为有备份。可选多盘向导按选择顺序建立备份链，高级预置可以指定自定义多盘布局；已有多成员池不会因丢盘自动缩减成员或降低发布证明要求。
 
 `--allow-development-setup` 只用于目录模拟，不证明物理盘独立性。生产必须省略该开关，使用已挂载的独立 Btrfs 数据设备，并核对盘位与物理身份。高级初始配置由本机 `--setup-config ID=/absolute/private-config.json` 预置，再在 Web 选择；浏览器不能传任意路径或配置 JSON。
 

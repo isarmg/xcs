@@ -1637,6 +1637,7 @@ impl Engine {
                     "candidate",
                     &record.candidate_hash,
                 )?;
+                self.verify_candidate_membership(&candidate)?;
                 if candidate.pool_id != self.config.pool_id || candidate.sequence != record.sequence
                 {
                     return Err(Error::new(

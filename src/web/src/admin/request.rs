@@ -15,6 +15,15 @@ fn segment(value: &str) -> String {
         .collect()
 }
 pub(super) type Fields = BTreeMap<String, String>;
+pub(super) fn initial_fields(kind: &str) -> Fields {
+    if matches!(kind, "repository" | "policy") {
+        [("copies".to_owned(), "1".to_owned())]
+            .into_iter()
+            .collect()
+    } else {
+        Fields::new()
+    }
+}
 pub(super) fn items(value: &str) -> Vec<String> {
     value
         .split(|c: char| c == ',' || c.is_whitespace())
@@ -160,3 +169,7 @@ pub(super) fn plan_action(
         ))
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../test/web/unit/admin/request_tests.rs"]
+mod single_disk_tests;

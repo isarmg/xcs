@@ -46,8 +46,17 @@ pub struct Config {
     pub workspace_ttl_seconds: u64,
 }
 impl Config {
-    pub fn development(disks: [PathBuf; 3]) -> Self {
-        let slots = ["P01", "B01", "C01"];
+    /// Build a development draft with one primary and optional ordered backup tiers.
+    /// Validate the draft before use; an empty iterator is not a valid pool.
+    pub fn development(disks: impl IntoIterator<Item = PathBuf>) -> Self {
+        fn slot(index: usize) -> String {
+            match index {
+                0 => "P01".into(),
+                1 => "B01".into(),
+                2 => "C01".into(),
+                _ => format!("D{:02}", index + 1),
+            }
+        }
         Self {
             pool_id: crate::new_id("pool"),
             mode: Mode::Development,
@@ -55,11 +64,11 @@ impl Config {
                 .into_iter()
                 .enumerate()
                 .map(|(i, root)| DiskConfig {
-                    slot_id: slots[i].into(),
+                    slot_id: slot(i),
                     disk_id: crate::new_id("disk"),
                     root,
                     level: i as u32 + 1,
-                    upstream_slot_id: i.checked_sub(1).map(|n| slots[n].into()),
+                    upstream_slot_id: i.checked_sub(1).map(slot),
                     metadata_member: true,
                     binding_generation: 1,
                     capacity_bytes: None,
@@ -73,6 +82,18 @@ impl Config {
             metadata_reserve_bytes: 64 << 20,
             workspace_ttl_seconds: 86_400,
         }
+    }
+
+    /// Recovery/admission majority of the configured membership, never the
+    /// currently reachable disks. Normal publication still requires all members.
+    /// Empty memberships are invalid and cannot obtain this minimum quorum.
+    pub fn metadata_quorum(&self) -> usize {
+        self.disks
+            .iter()
+            .filter(|disk| disk.metadata_member)
+            .count()
+            / 2
+            + 1
     }
 }
 
@@ -741,3 +762,7 @@ mod repository_access_tests;
 #[cfg(test)]
 #[path = "../../../test/contract/unit/model/operation_status_tests.rs"]
 mod operation_status_tests;
+
+#[cfg(test)]
+#[path = "../../../test/contract/unit/model/config_tests.rs"]
+mod config_tests;

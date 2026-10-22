@@ -25,3 +25,32 @@ fn impossible_upstream_level_is_rejected_without_overflow() {
     config.disks[1].upstream_slot_id = Some("C01".into());
     assert!(validate_config(&config).is_err());
 }
+
+#[test]
+fn one_disk_and_optional_backup_chains_are_valid_without_creating_paths() {
+    let root = tempfile::tempdir().unwrap();
+    for count in 1..=6 {
+        let config = Config::development((0..count).map(|i| root.path().join(format!("disk{i}"))));
+        Engine::validate_configuration(&config).unwrap();
+    }
+    assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 0);
+}
+
+#[test]
+fn empty_membership_is_rejected_even_with_data_disks() {
+    let mut config = Config::development(Vec::new());
+    assert!(validate_config(&config).is_err());
+    config = Config::development(["/draft/only".into()]);
+    config.disks[0].metadata_member = false;
+    assert!(validate_config(&config).is_err());
+}
+
+#[test]
+fn optional_backup_membership_does_not_require_three_voters() {
+    let mut config = Config::development(["/draft/p".into(), "/draft/b".into()]);
+    config.disks[1].metadata_member = false;
+    validate_config(&config).unwrap();
+    assert_eq!(config.metadata_quorum(), 1);
+    config.disks[1].upstream_slot_id = None;
+    assert!(validate_config(&config).is_err());
+}

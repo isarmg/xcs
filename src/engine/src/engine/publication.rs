@@ -323,11 +323,13 @@ impl Engine {
         existing: Option<Publication>,
         verified: Option<&VerifiedPayloadSet>,
     ) -> Result<()> {
+        self.verify_candidate_membership(c)?;
         if let Some(publication) = existing {
             if publication.candidate_hash != hash
                 || publication.result.request_digest != c.request_digest
-                || (publication.recovery.is_none() && publication.finalize.accepts.len() != 3)
-                || publication.finalize_receipts.len() != 3
+                || (publication.recovery.is_none()
+                    && publication.finalize.accepts.len() != c.metadata_disk_ids.len())
+                || publication.finalize_receipts.len() != c.metadata_disk_ids.len()
             {
                 return Err(Error::new(
                     "PUBLICATION_INVALID",

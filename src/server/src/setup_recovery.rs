@@ -41,7 +41,7 @@ pub struct SetupStatus {
 #[derive(Deserialize)]
 #[serialization(deny_unknown_fields)]
 pub struct SetupRequest {
-    pub disk_ids: [String; 3],
+    pub disk_ids: Vec<String>,
     pub mode: Mode,
     pub username: String,
     pub password: String,
@@ -270,7 +270,7 @@ impl SetupRecovery {
     }
 
     fn empty_installation(&self) -> Result<bool, ApiError> {
-        if self.disks.len() < 3 {
+        if self.disks.is_empty() {
             return Ok(false);
         }
         match fs::read_dir(&self.data_root) {
@@ -414,6 +414,16 @@ impl SetupRecovery {
                 let expected = self.identities.get(id).ok_or_else(|| {
                     ApiError::new(503, "DISK_UNAVAILABLE", "selected disk is unavailable")
                 })?;
+                // Check only selected usable roots: unavailable unrelated descriptors
+                // cannot block management or recovery from healthy survivors.
+                if [&self.data_root, &self.management_root]
+                    .into_iter()
+                    .any(|root| path.starts_with(root) || root.starts_with(path))
+                {
+                    return Err(ApiError::invalid(
+                        "storage disk overlaps system or management directory",
+                    ));
+                }
                 if checked_directory(path)? != *path || directory_identity(path)? != *expected {
                     return Err(ApiError::conflict("DISK_CHANGED", "disk identity changed"));
                 }
@@ -447,10 +457,12 @@ impl SetupRecovery {
                 "only a verified empty installation can be initialized",
             ));
         }
-        let paths: [PathBuf; 3] = self
-            .selected(&request.disk_ids)?
-            .try_into()
-            .map_err(|_| ApiError::invalid("three disks required"))?;
+        if request.disk_ids.is_empty() || request.disk_ids.len() > 32 {
+            return Err(ApiError::invalid(
+                "select between one and 32 authorized storage disks",
+            ));
+        }
+        let paths = self.selected(&request.disk_ids)?;
         if request.mode == Mode::Development && !self.allow_development {
             return Err(ApiError::forbidden());
         }
@@ -810,7 +822,7 @@ impl SetupRecovery {
     }
 
     /// Requires explicit local authorization when the system state is lost.
-    /// Recovery itself enforces two independent trusted old metadata members.
+    /// Recovery itself enforces the quorum fixed by the original metadata membership.
     /// The callback restores EXISTING authoritative credentials only; it must
     /// never initialize credentials if the recovered pool has no auth snapshot.
     pub fn restore_system<F>(
@@ -863,9 +875,9 @@ impl SetupRecovery {
     where
         F: FnOnce(Engine) -> Result<(), ApiError>,
     {
-        if request.disk_ids.len() < 2 || request.disk_ids.len() > 32 {
+        if request.disk_ids.is_empty() || request.disk_ids.len() > 32 {
             return Err(ApiError::invalid(
-                "restore requires two or more authorized metadata members",
+                "restore requires authorized metadata members; the original configuration determines quorum",
             ));
         }
         if self

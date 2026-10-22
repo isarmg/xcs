@@ -46,7 +46,7 @@ pub(super) fn acquire_locks(
 }
 pub(super) fn validate_config(c: &Config) -> Result<()> {
     validate_id(&c.pool_id, "pool")?;
-    if c.disks.iter().filter(|d| d.metadata_member).count() != 3
+    if !c.disks.iter().any(|d| d.metadata_member)
         || c.max_file_bytes == 0
         || c.max_workspace_bytes == 0
         || c.max_file_bytes > c.max_workspace_bytes
