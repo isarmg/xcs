@@ -10,7 +10,7 @@ pub(crate) struct Model {
     pub slot: String,
     pub directory: String,
     pub writable: bool,
-    /// Immutable server listing, shared by rows and pending picker contexts.
+    /// Immutable server listing, shared by listing rows.
     pub entries: Arc<[Value]>,
     pub directory_branches: Vec<Value>,
     pub directory_file_count: u64,
@@ -32,20 +32,12 @@ pub(crate) struct Model {
     pub tag_edit: Option<super::tags::Draft>,
     pub checked_nodes: BTreeSet<String>,
     pub publications: super::review::Publications,
-    pub preview: Option<(String, String)>,
-    pub preview_generation: u64,
-    pub upload_picker: Option<super::actions::PickerContext>,
     pub operations: Vec<Value>,
     pub polling_operations: Vec<String>,
     pub mutation_pending: bool,
     pub query: String,
 }
 impl Model {
-    pub(crate) fn close_overlays(&mut self) {
-        self.preview = None;
-        self.preview_generation += 1;
-    }
-
     pub(crate) fn clear_selection(&mut self) {
         self.merge = None;
         self.backup = None;
@@ -55,7 +47,6 @@ impl Model {
         self.file_history = Value::Null;
         self.history_loading = false;
         self.history_generation += 1;
-        self.close_overlays();
     }
 
     pub(crate) fn reconcile_selection(&mut self) {
@@ -96,14 +87,13 @@ impl Model {
             let entry = entry.clone();
             if changed {
                 // A refreshed branch or renamed logical path invalidates both
-                // visible content and in-flight reads of the previous context.
+                // visible metadata and in-flight reads of the previous context.
                 if content_changed {
                     self.file_history = Value::Null;
                 }
                 self.history_loading = false;
                 self.history_generation += 1;
                 self.checked_nodes.clear();
-                self.close_overlays();
             }
             self.selected = Some(entry);
         } else {
@@ -116,35 +106,12 @@ pub(crate) enum NamespaceAction {
     CreateDirectory,
     Rename(Value),
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum SaveStatus {
-    #[default]
-    Waiting,
-    Uploading,
-    Saving,
     Unknown,
     Published,
     Degraded,
     Rejected,
-}
-impl SaveStatus {
-    pub fn pending(self) -> bool {
-        matches!(
-            self,
-            Self::Waiting | Self::Uploading | Self::Saving | Self::Unknown
-        )
-    }
-    pub fn label(self) -> String {
-        match self {
-            Self::Waiting => t("等待上传", "Queued"),
-            Self::Uploading => t("正在上传", "Uploading"),
-            Self::Saving => t("正在保存", "Saving"),
-            Self::Unknown => t("正在确认保存结果", "Checking save result"),
-            Self::Published => t("已保存", "Saved"),
-            Self::Degraded => t("已保存，保护不足", "Saved with reduced protection"),
-            Self::Rejected => t("未保存", "Not saved"),
-        }
-    }
 }
 pub(crate) fn operation_status(value: &Value) -> SaveStatus {
     let value = value.get("operation").unwrap_or(value);
@@ -182,8 +149,8 @@ pub(crate) fn publication_notice(status: SaveStatus) -> String {
             "The save did not complete. Staged content was retained on the server.",
         ),
         _ => t(
-            "保存结果尚未确认，正在查询原操作。请勿重复上传。",
-            "The save is not yet confirmed. The original operation is being checked; do not upload it again.",
+            "保存结果尚未确认，正在查询原操作。请勿重复提交。",
+            "The save is not yet confirmed. The original operation is being checked; do not submit it again.",
         ),
     }
 }
@@ -360,18 +327,6 @@ pub(crate) fn branch_writable(branch: &Value) -> bool {
         && branch["alias_of"].as_str().is_none_or(str::is_empty)
         && branch["status"] != "ARCHIVED"
         && branch["status"] != "CONSUMED"
-}
-pub(crate) fn selected_file_read_only(model: &Model) -> bool {
-    if model.file_history["read_only"] == true || selected_entry_read_only(model) {
-        return true;
-    }
-    let id = selected_branch(model);
-    model.file_history["branches"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .find(|branch| branch["branch_id"] == id)
-        .is_some_and(|branch| !branch_writable(branch))
 }
 pub(crate) fn selected_file_branch_record(model: &Model) -> Option<(String, String, String)> {
     let file = model

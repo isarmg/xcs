@@ -40,7 +40,6 @@ fn content_and_account_completion_require_the_original_active_session() {
             assert_eq!(s.session_epoch, 6);
             assert_eq!(s.notice, "Password changed");
             assert!(!s.authenticated);
-            assert!(s.transfers.rows.is_empty());
         });
     });
 }
@@ -60,16 +59,6 @@ fn detached_completion_rejects_a_disposed_root() {
     assert_eq!(state.try_with_untracked(|s| s.logout_pending), None);
 }
 #[test]
-fn logout_clears_transfer_metadata_before_the_network_result() {
-    let mut state = State::default();
-    state.transfers.rows.push(crate::transfers::UploadRow {
-        name: "private-file".into(),
-        ..Default::default()
-    });
-    assert_eq!(begin_logout(&mut state), Some(1));
-    assert!(state.transfers.rows.is_empty());
-}
-#[test]
 fn shell_identity_does_not_change_with_file_progress() {
     let mut state = State {
         authenticated: true,
@@ -79,7 +68,7 @@ fn shell_identity_does_not_change_with_file_progress() {
     let session = session_view(&state);
     state.busy = 3;
     state.password_pending = true;
-    state.notice = "uploading".into();
+    state.notice = "saving".into();
     assert_eq!(session_view(&state), session);
     assert_eq!(session.phase, SessionPhase::Authenticated);
 }

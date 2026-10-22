@@ -69,7 +69,7 @@ fn metadata_completion_keeps_the_current_detail_controls_mounted() {
         assert_eq!(
             mounts.load(Ordering::SeqCst),
             2,
-            "renaming the container must refresh version download names"
+            "renaming the container must refresh displayed metadata"
         );
     });
 }

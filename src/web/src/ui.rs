@@ -25,7 +25,6 @@ pub(crate) struct State {
     pub errors: Vec<Feedback>,
     pub notice: String,
     pub files: files::Model,
-    pub transfers: crate::transfers::Model,
     pub monitor: monitor::Model,
     pub activity: history::Model,
 }
@@ -67,7 +66,6 @@ pub(crate) fn fail(state: RwSignal<State>, error: api::Error) {
     state.update(|s| {
         if error.status == 401 {
             s.authenticated = false;
-            s.transfers = Default::default();
         }
         s.errors.insert(0, feedback(&error));
         s.errors.truncate(5);
@@ -148,7 +146,6 @@ pub fn app() -> impl IntoView {
 }
 pub(crate) fn navigate(state: RwSignal<State>, page: &str) {
     state.update(|s| {
-        s.files.close_overlays();
         s.page = page.into();
     });
     match page {
@@ -161,7 +158,7 @@ fn workspace(state: RwSignal<State>) -> impl IntoView {
     let page = Memo::new(move |_| state.with(|s| s.page.clone()));
     view! {
         <HeaderNavigation label=t("主导航","Main navigation")>
-            {[ ("files",t("文件","Files")), ("details",t("详情","Details")), ("transfers",t("传输任务","Transfers")), ("status",t("状态","Status")), ("history",t("历史记录","History")) ].into_iter().map(move |(page,title)|view! {
+            {[ ("files",t("文件","Files")), ("details",t("详情","Details")), ("status",t("状态","Status")), ("history",t("历史记录","History")) ].into_iter().map(move |(page,title)|view! {
                 <button class="zxs-button" aria-current=move ||(state.with(|s|s.page==page)).then_some("page") on:click=move |_|navigate(state,page)>{title}</button>
             }).collect_view()}
         </HeaderNavigation>
@@ -171,8 +168,7 @@ fn workspace(state: RwSignal<State>) -> impl IntoView {
             </Show>
             <span class="zxs-session-identity">{move ||state.with(|s|s.principal.clone())}</span>
         </div></HeaderActions>
-        {move ||match page.get().as_str() { "details"=>files::details(state).into_any(),"transfers"=>crate::transfers::view(state).into_any(),"status"=>monitor::view(state).into_any(),"history"=>history::view(state).into_any(),"account"=>account(state).into_any(),_=>files::view(state).into_any() }}
-        {files::overlays(state)}
+        {move ||match page.get().as_str() { "details"=>files::details(state).into_any(),"status"=>monitor::view(state).into_any(),"history"=>history::view(state).into_any(),"account"=>account(state).into_any(),_=>files::view(state).into_any() }}
     }
 }
 fn session_view(state: &State) -> SessionView {
@@ -259,7 +255,6 @@ pub(crate) fn begin_logout(state: &mut State) -> Option<u64> {
     if state.logout_pending {
         return None;
     }
-    state.transfers = Default::default();
     state.logout_pending = true;
     state.session_epoch += 1;
     api::invalidate_session_work();

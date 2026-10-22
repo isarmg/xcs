@@ -14,13 +14,10 @@ impl Drop for Fixture<'_> {
 
 pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
     browser.click(&browser.button("Files", "文件")?)?;
-    let upload = browser.button("Upload files", "上传文件")?;
     let create = browser.button("New folder", "新建文件夹")?;
     wait_for("write controls enabled before sign out", || {
-        for button in [&upload, &create] {
-            if browser.command("GET", &format!("/element/{button}/enabled"), None)? != true {
-                return Err("write control was already disabled before sign out".into());
-            }
+        if browser.command("GET", &format!("/element/{create}/enabled"), None)? != true {
+            return Err("write control was already disabled before sign out".into());
         }
         Ok(())
     })?;
@@ -30,7 +27,7 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
         let release;
         const gate = new Promise(resolve => release = resolve);
         const state = window.__zxsLogout = {
-            waiting: false, attempts: 0, writes: [], downloads: 0, release,
+            waiting: false, attempts: 0, writes: [], release,
             restore: () => { window.fetch = originalFetch; }
         };
         window.fetch = async function(...args) {
@@ -38,7 +35,6 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
             const url = typeof request === 'string' ? request : request.url;
             const path = new URL(url, location.href).pathname;
             const method = (args[1]?.method || request.method || 'GET').toUpperCase();
-            if (/^\/api\/versions\/[^/]+\/content$/.test(path)) state.downloads++;
             if (path === '/api/auth/logout') {
                 state.attempts++;
                 if (state.attempts === 1) {
@@ -61,17 +57,15 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
         if browser.script("return window.__zxsLogout.waiting")? != true {
             return Err("logout has not started".into());
         }
-        for button in [&upload, &create] {
-            if browser.command("GET", &format!("/element/{button}/enabled"), None)? != false {
-                return Err("business write control remains enabled during logout".into());
-            }
+        if browser.command("GET", &format!("/element/{create}/enabled"), None)? != false {
+            return Err("business write control remains enabled during logout".into());
         }
         Ok(())
     })?;
     // Click the real retained DOM controls, rather than bypassing the action
     // with a direct API call. Disabled controls must not open either UI.
     browser.script(
-        "for (const button of document.querySelectorAll('button')) { if (['Upload files','上传文件','New folder','新建文件夹'].includes(button.textContent.trim())) button.click(); } return true",
+        "for (const button of document.querySelectorAll('button')) { if (['New folder','新建文件夹'].includes(button.textContent.trim())) button.click(); } return true",
     )?;
     if browser.script("return window.__zxsLogout.writes")? != json!([]) {
         return Err("a business mutation was sent after logout began".into());
@@ -80,20 +74,15 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
         return Err("sign out admitted a new namespace editor".into());
     }
     browser.click(&browser.button("Details", "详情")?)?;
-    let download = browser.button("Download", "下载")?;
-    wait_for("new download disabled during logout", || {
-        if browser.command("GET", &format!("/element/{download}/enabled"), None)? == false {
-            Ok(())
-        } else {
-            Err("content delivery remains enabled during logout".into())
-        }
-    })?;
-    browser.script(
-        "for (const button of document.querySelectorAll('button')) { if (['Download','下载'].includes(button.textContent.trim())) button.click(); } return true",
-    )?;
-    if browser.script("return window.__zxsLogout.downloads")? != 0 {
-        return Err("a new content download started after logout began".into());
+    let note = browser.button("Edit file note", "编辑文件备注")?;
+    if browser.command("GET", &format!("/element/{note}/enabled"), None)? != false {
+        return Err("metadata editor remains enabled during logout".into());
     }
+    browser.script("for(const b of document.querySelectorAll('button')){if(['Edit file note','编辑文件备注'].includes(b.getAttribute('aria-label')))b.click();}return true")?;
+    if browser.script("return document.querySelector('.zxs-inline-input') === null")? != true {
+        return Err("logout admitted a file note editor".into());
+    }
+    assert_metadata_only(browser)?;
     browser.script("window.__zxsLogout.release(); return true")?;
     browser.click(&browser.button("Retry sign out", "重试退出")?)?;
     browser.css("input[autocomplete='current-password']")?;
@@ -121,9 +110,10 @@ pub(super) fn run(browser: &Browser, password: &str) -> Result<()> {
     )?;
     browser.click(&browser.button("Sign in", "登录")?)?;
     browser.click(&browser.css(".zxs-disk-entry[data-slot='P01']:not([disabled])")?)?;
-    let upload = browser.button("Upload files", "上传文件")?;
+    open_fixture_directory(browser)?;
+    let create = browser.button("New folder", "新建文件夹")?;
     wait_for("replacement session restores write admission", || {
-        if browser.command("GET", &format!("/element/{upload}/enabled"), None)? == true {
+        if browser.command("GET", &format!("/element/{create}/enabled"), None)? == true {
             Ok(())
         } else {
             Err("new session still has stale logout/write lock".into())

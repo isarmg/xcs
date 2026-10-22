@@ -36,7 +36,7 @@ HTTP 监听地址必须是回环地址。对外部署由同机反向代理终止
 
 `POST /api/auth/login` 接受 `{"username":"admin","password":"..."}`，返回内存使用的 Bearer token、`csrf_token`、账号和到期时间，同时设置 HttpOnly、SameSite=Strict Cookie。会话默认 12 小时有效。密码采用 Argon2id；持久状态仅保存会话 token 的摘要。每个来源 IP 与用户名组合每分钟最多尝试登录 10 次。
 
-Bearer 请求使用 `Authorization: Bearer ...`。Cookie 写请求必须同时提供精确匹配的 `Origin` 和 `X-CSRF-Token`；若 Bearer 请求显式提供跨源 Origin，也会拒绝。浏览器下载可直接使用同源 Cookie，不需要把 token 放进 URL。没有开放跨源 CORS。
+Bearer 请求使用 `Authorization: Bearer ...`。Cookie 写请求必须同时提供精确匹配的 `Origin` 和 `X-CSRF-Token`；若 Bearer 请求显式提供跨源 Origin，也会拒绝。内容 API 可使用同源 Cookie，不需要把 token 放进 URL；这是服务端认证协议能力，当前 Web 产品不提供文件下载或预览入口。没有开放跨源 CORS。
 
 `POST /api/auth/password` 允许当前账号提交 `current_password`、`new_password` 自助改密；新密码沿用至少 12 字节的准入要求。不接受用户名、角色或仓库范围变更。旧密码不正确返回 `403 CURRENT_PASSWORD_INVALID` 并保留会话；成功后通过账号代际撤销该账号所有会话、清除浏览器 Cookie，要求重新登录。每个来源 IP 和账号分别限制每分钟 10 次改密尝试，与登录共享密码计算并发上限。改密使用相同的三成员认证备份事务。
 

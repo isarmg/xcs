@@ -47,3 +47,34 @@ fn matching_wrapped_receipts_preserve_rejection_and_publication_evidence() {
         assert_eq!(receipt("original", value.clone()), value);
     }
 }
+
+#[test]
+fn metadata_polling_requires_an_active_session_before_scheduling_network_work() {
+    Owner::new().with(|| {
+        for (authenticated, logout_pending, restoring) in [
+            (false, false, false),
+            (true, true, false),
+            (true, false, true),
+        ] {
+            let mut initial = State {
+                authenticated,
+                logout_pending,
+                restoring,
+                ..Default::default()
+            };
+            initial
+                .files
+                .operations
+                .push(json!({"operation_id":"pending-rename","state":"in_doubt"}));
+            let state = RwSignal::new(initial);
+            // Native tests cannot schedule browser requests; returning here also
+            // proves that inactive sessions do not admit a metadata poll.
+            poll(state);
+            state.with_untracked(|s| {
+                assert!(s.files.polling_operations.is_empty());
+                assert!(super::super::pending(s));
+                assert!(!super::super::write_allowed(s));
+            });
+        }
+    });
+}

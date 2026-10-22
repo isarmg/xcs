@@ -1,4 +1,4 @@
-//! Immutable listing projections. Selection and transfer state are deliberately
+//! Immutable listing projections. Selection and operation state are deliberately
 //! not inputs: they must not rebuild, sort, or filter the listing.
 use super::model::{entry_key, file_kind};
 use crate::ui::{State, text};

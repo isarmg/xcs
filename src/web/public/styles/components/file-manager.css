@@ -53,7 +53,6 @@
 .zxs-file-properties > div { display: contents; }
 .zxs-file-properties :is(dt,dd) { display: flex; align-items: center; }
 .zxs-file-properties dt { color: var(--zxs-block-muted); }
-.zxs-file-preview { max-width: 100%; max-height: 60vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: var(--zxs-list-content-inset); background: var(--zxs-bg-page); font: var(--zxs-compact-font-size)/1.6 var(--zxs-font-mono); }
 .zxs-file-empty { margin: 0; padding: var(--zxs-block-gap); color: var(--zxs-block-muted); text-align: center; }
 .zxs-file-manager .zxs-select,.zxs-entry-page .zxs-select { max-width: min(24rem,100%); }
 @media (max-width: 36rem) {

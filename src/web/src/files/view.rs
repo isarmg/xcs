@@ -10,15 +10,14 @@ use crate::{
     icons::FileIcon,
     ui::{State, text},
 };
-use web_interface::components::{Dialog, EmptyState, LoadingState, Select, SelectOption};
-use web_interface::{html, i18n::t, prelude::*};
+use web_interface::components::{EmptyState, LoadingState, Select, SelectOption};
+use web_interface::{i18n::t, prelude::*};
 
 pub(crate) fn view(state: RwSignal<State>) -> impl IntoView {
     let slot = Memo::new(move |_| state.with(|s| s.files.slot.clone()));
     view! {
         <section class="zxs-content-stack zxs-file-manager zxs-stack">
             {move ||if slot.get().is_empty(){disk_roots(state).into_any()}else{directory(state).into_any()}}
-            {upload_queue(state)}
         </section>
     }
 }
@@ -48,14 +47,7 @@ fn disk_roots(state: RwSignal<State>) -> impl IntoView {
         }}
     }
 }
-pub(crate) fn overlays(state: RwSignal<State>) -> impl IntoView {
-    let preview = Memo::new(move |_| state.with(|s| s.files.preview.clone()));
-    view! {
-        {move ||preview.get().map(|(name,content)|view!{<Dialog title=name close=Callback::new(move |_|state.update(|s|s.files.close_overlays()))><p class="zxs-row">{t("文本预览 · 已校验内容完整性","Text preview · Content integrity verified")}</p><pre class="zxs-file-preview">{content.clone()}</pre></Dialog>})}
-    }
-}
 fn directory(state: RwSignal<State>) -> impl IntoView {
-    let file_input = NodeRef::<html::Input>::new();
     let default_scope = Memo::new(move |_| state.with(|s| s.files.default_branch_scope));
     let rename_branch = Memo::new(move |_| state.with(|s| selected_directory_branch(&s.files)));
     let folder_options = Signal::derive(move || {
@@ -107,8 +99,6 @@ fn directory(state: RwSignal<State>) -> impl IntoView {
             {move ||breadcrumbs(&state.with(|s|s.files.directory.clone())).into_iter().map(move |(name,path)|view!{<span aria-hidden="true">"/"</span><button class="zxs-button" on:click=move |_|actions::go_directory(state,path.clone())>{name}</button>}).collect_view()}
         </nav>
         <div class="zxs-file-toolbar zxs-flow">
-            <button class="zxs-button" disabled=move ||state.with(|s|!actions::write_allowed(s)) on:click=move |_|{if actions::pick_upload(state,false)&& let Some(input)=file_input.get_untracked(){input.click();}}><FileIcon name="upload"/>{t("上传文件","Upload files")}</button>
-            <input node_ref=file_input hidden type="file" on:cancel=move |_: web_sys::Event|actions::cancel_picker(state) multiple on:change=move |_|{if let Some(input)=file_input.get_untracked(){actions::upload_files(state,input.files());input.set_value("");}}/>
             {inline::control(state,t("新建文件夹","New folder"),Some("create"),inline::Target::CreateDirectory,mutation_disabled)}
             <button class="zxs-button" disabled=move ||batch_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Move,None)>{t("移动","Move")}</button>
             <button class="zxs-button" disabled=move ||batch_disabled.get() on:click=move |_|batch::start(state,batch::Kind::Copy,None)>{t("复制","Copy")}</button>
@@ -190,10 +180,5 @@ fn file_row(
             <td>{move ||row.with(|row|if row.directory{t("文件夹","Folder")}else{t("文件","File")})}</td><td>{move ||row.with(|row|if row.directory{"—".into()}else{row.size.map(format::bytes).unwrap_or_else(||"—".into())})}</td>
             <td><div class="zxs-entry-actions zxs-flow"><button class="zxs-button" on:click=move |event|{event.stop_propagation();activate_row(state,row,false)}>{t("详情","Details")}</button></div></td>
         </tr>
-    }
-}
-fn upload_queue(state: RwSignal<State>) -> impl IntoView {
-    view! {
-        {crate::transfers::summary(state)}
     }
 }

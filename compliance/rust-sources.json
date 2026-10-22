@@ -60269,7 +60269,7 @@
   },
   "initial_test_relocation_sha256": "791ad728a408677dd54ef98e3feaffe825c5fc5670e888440615933d9498ecc3",
   "lockfiles_sha256": {
-    "Cargo.lock": "87976bf4978fe0bbd664df0ad8b14b7cd00e196c00fce4eb85379263fface528"
+    "Cargo.lock": "10961fc91b384465afa01701429e20452542abb3d1c9d49f55a1d2efe6a0266d"
   },
   "manifests_sha256": {
     "Cargo.toml": "d4eb9ad428c26f50546105c8704f7ed0b4b75d50632a800c76a3256279001869",
@@ -60537,7 +60537,7 @@
     "src/server/Cargo.toml": "aa88c8bf79899c0597cb728a2fc9860d471cf3671bd7e2824abb18c1ebd9cc3d",
     "src/smb-vfs/Cargo.toml": "51a70ac5f679a92b4b781fdd3d92f4827eae29cf6548591f92749a7fcac26c7b",
     "src/smb/Cargo.toml": "0230542f6e28f238d877f417d3931941df428d65086cfe8d0005c15ebefcdb82",
-    "src/web/Cargo.toml": "9c7d8395c5ba4d89a1b6b38f95f6302262b21acf2f454e14b1a7a55915abffff",
+    "src/web/Cargo.toml": "9b95bebf076be95b6e4d3e04c7de7dd2a4079906695446b525b4f1cfe13cf5f8",
     "tools/browser-smoke/Cargo.toml": "09a7d3f638680b1f0a3b3f56c28f829df299c99e981bece677c5c9ff509c66ad",
     "tools/contract-check/Cargo.toml": "a1f25b68fa922317971f55bb1c70836f3c212427dbda889e785f1b1d21bce917",
     "tools/perf-check/Cargo.toml": "1d43415d20414747a8ca1c5bb74a940ac0ff773226778906f4d6a5325a945e02",
@@ -94900,8 +94900,6 @@
             "Element",
             "Event",
             "EventTarget",
-            "File",
-            "FileList",
             "FocusEvent",
             "FontFace",
             "FontFaceSet",
