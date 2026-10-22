@@ -3,7 +3,7 @@ mod tests {
     use json_codec::Number;
     #[cfg(feature = "validator")]
     use json_codec::Value;
-    use jsonschema_value::{cmp, numeric};
+    use schema_validation::values::{cmp, numeric};
 
     fn number(text: &str) -> Number { json_codec::from_str(text).unwrap() }
 
@@ -47,7 +47,7 @@ mod tests {
     #[cfg(feature = "validator")]
     fn validate(schema: &str, accepted: &[&str], rejected: &[&str]) {
         let schema: Value = json_codec::from_str(schema).unwrap();
-        let validator = jsonschema::validator_for(&schema).unwrap();
+        let validator = schema_validation::validator_for(&schema).unwrap();
         for literal in accepted {
             let instance: Value = json_codec::from_str(literal).unwrap();
             assert!(validator.is_valid(&instance), "must accept {literal} for {schema}");

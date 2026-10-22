@@ -351,9 +351,9 @@ fn bundle(value: &Value) -> Value {
         _ => value.clone(),
     }
 }
-fn validator(schema: &Value) -> Result<jsonschema::Validator> {
-    jsonschema::options()
-        .with_draft(jsonschema::Draft::Draft202012)
+fn validator(schema: &Value) -> Result<schema_validation::Validator> {
+    schema_validation::options()
+        .with_draft(schema_validation::Draft::Draft202012)
         .should_validate_formats(true)
         .build(schema)
         .map_err(|error| error.to_string().into())
@@ -384,7 +384,7 @@ fn openapi(api: &Value) -> Result {
                 }
                 for (key, child) in map {
                     if key == "schema" {
-                        jsonschema::meta::validate(child).map_err(|error| error.to_string())?;
+                        schema_validation::meta::validate(child).map_err(|error| error.to_string())?;
                     }
                     references(root, child)?;
                 }
@@ -491,7 +491,7 @@ fn run(root: &Path) -> Result<Report> {
     let api = read(&directory.join("openapi.json"))?;
     let vectors = read(&directory.join("vectors.json"))?;
     for schema in [&core, &config] {
-        jsonschema::meta::validate(schema).map_err(|error| error.to_string())?;
+        schema_validation::meta::validate(schema).map_err(|error| error.to_string())?;
     }
     openapi(&api)?;
     require(

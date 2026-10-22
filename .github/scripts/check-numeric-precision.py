@@ -11,13 +11,10 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def check(root=ROOT):
-    for name in ('jsonschema', 'jsonschema-value'):
-        manifest = tomllib.loads((root / 'src/foundation' / name / 'Cargo.toml').read_text())
-        forwarding = manifest['features']['arbitrary-precision']
-        assert 'numeric/bigint' in forwarding, (name, forwarding)
-        assert 'json-codec/arbitrary_precision' in forwarding, (name, forwarding)
-        if name == 'jsonschema':
-            assert 'jsonschema-value/arbitrary-precision' in forwarding
+    manifest = tomllib.loads((root / 'src/foundation/schema-validation/Cargo.toml').read_text())
+    forwarding = manifest['features']['arbitrary-precision']
+    assert 'numeric/bigint' in forwarding
+    assert 'json-codec/arbitrary_precision' in forwarding
     with tempfile.TemporaryDirectory(prefix='zxs-numeric-precision-') as directory:
         work = Path(directory)
         (work / 'src').mkdir()
@@ -29,11 +26,10 @@ version = "0.0.0"
 edition = "2021"
 [workspace]
 [features]
-value-only = ["jsonschema-value/arbitrary-precision"]
-validator = ["dep:jsonschema", "jsonschema/arbitrary-precision"]
+value-only = ["schema-validation/arbitrary-precision"]
+validator = ["schema-validation/validator", "schema-validation/arbitrary-precision"]
 [dependencies]
-jsonschema = {{ path = "{foundation / 'jsonschema'}", default-features = false, optional = true }}
-jsonschema-value = {{ path = "{foundation / 'jsonschema-value'}", default-features = false, features = ["json-codec"] }}
+schema-validation = {{ path = "{foundation / 'schema-validation'}", default-features = false, features = ["value", "json-codec"] }}
 json-codec = {{ path = "{foundation / 'json-codec'}" }}
 [profile.dev]
 debug = 0
@@ -52,14 +48,14 @@ incremental = false
             active = {packages[n['id']]: n['features'] for n in metadata['resolve']['nodes']}
             assert 'bigint' in active['numeric'], active
             assert 'arbitrary_precision' in active['json-codec'], active
-            assert 'arbitrary-precision' in active['jsonschema-value'], active
+            assert 'arbitrary-precision' in active['schema-validation'], active
             if features == 'value-only':
-                assert 'jsonschema' not in active
+                assert 'validator' not in active['schema-validation']
             else:
-                assert 'arbitrary-precision' in active['jsonschema']
+                assert 'arbitrary-precision' in active['schema-validation']
             assert not ({'num', 'num-traits', 'num-bigint', 'num-rational', 'num-integer', 'num-complex', 'num-iter'} & active.keys())
             subprocess.run(['cargo', 'test', *args, '--locked', '--lib'], check=True, cwd=root, env=env)
-            print(features, {name: active[name] for name in ('numeric', 'json-codec', 'jsonschema-value')}, flush=True)
+            print(features, {name: active[name] for name in ('numeric', 'json-codec', 'schema-validation')}, flush=True)
     print('Arbitrary-precision value and validator forwarding, large integers, exact rationals and extreme exponents verified.')
 
 

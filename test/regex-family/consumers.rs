@@ -14,7 +14,7 @@ fn fancy_backreference_and_lookbehind() {
 
 #[test]
 fn schema_parser_translation_uses_shared_syntax() {
-    let translated = jsonschema_regex::to_rust_regex(r"\cA").unwrap();
+    let translated = schema_validation::patterns::to_rust_regex(r"\cA").unwrap();
     let pattern = regex::Regex::new(&translated).unwrap();
     assert!(pattern.is_match("\x01"));
     assert!(!pattern.is_match("A"));
