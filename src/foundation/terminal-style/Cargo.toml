@@ -9,15 +9,12 @@ default = []
 std = []
 parser = []
 parser-core = ["parser", "dep:arrayvec"]
-parser-utf8 = ["parser", "dep:utf8parse"]
+parser-utf8 = ["parser"]
 output = ["std", "parser-utf8"]
 [dependencies.arrayvec]
 path = "../arrayvec"
 optional = true
 default-features = false
-[dependencies.utf8parse]
-path = "../utf8parse"
-optional = true
 [lib]
 doctest = false
 [[test]]

@@ -1,6 +1,4 @@
-extern crate strsim;
-
-use strsim::{
+use super::{
     damerau_levenshtein, hamming, jaro, jaro_winkler, levenshtein, normalized_damerau_levenshtein,
     normalized_levenshtein, osa_distance,
 };

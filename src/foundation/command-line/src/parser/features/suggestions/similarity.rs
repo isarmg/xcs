@@ -1,6 +1,8 @@
 //! This library implements string similarity metrics.
 
 #![forbid(unsafe_code)]
+// Keep all reviewed similarity metrics and their tests together; CLI uses Jaro.
+#![allow(dead_code, unreachable_pub)]
 #![allow(
     // these casts are sometimes needed. They restrict the length of input iterators
     // but there isn't really any way around this except for always working with
@@ -35,12 +37,12 @@ pub enum StrSimError {
 }
 
 impl Display for StrSimError {
-    fn fmt(&self, fmt: &mut Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         let text = match self {
-            StrSimError::DifferentLengthArgs => "Differing length arguments provided",
+            Self::DifferentLengthArgs => "Differing length arguments provided",
         };
 
-        write!(fmt, "{}", text)
+        write!(fmt, "{text}")
     }
 }
 
@@ -75,11 +77,14 @@ where
 /// differ. Returns an error if the strings have different lengths.
 ///
 /// ```
-/// use strsim::{hamming, StrSimError::DifferentLengthArgs};
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::{hamming, StrSimError::DifferentLengthArgs};
 ///
 /// assert_eq!(Ok(3), hamming("hamming", "hammers"));
 ///
 /// assert_eq!(Err(DifferentLengthArgs), hamming("hamming", "ham"));
+/// # }
 /// ```
 pub fn hamming(a: &str, b: &str) -> HammingResult {
     generic_hamming(a.chars(), b.chars())
@@ -113,11 +118,7 @@ where
 
     for (i, a_elem) in a.into_iter().enumerate() {
         // prevent integer wrapping
-        let min_bound = if i > search_range {
-            i - search_range
-        } else {
-            0
-        };
+        let min_bound = i.saturating_sub(search_range);
 
         let max_bound = min(b_len, i + search_range + 1);
 
@@ -165,7 +166,7 @@ where
 
 struct StringWrapper<'a>(&'a str);
 
-impl<'a, 'b> IntoIterator for &'a StringWrapper<'b> {
+impl<'b> IntoIterator for &StringWrapper<'b> {
     type Item = char;
     type IntoIter = Chars<'b>;
 
@@ -178,10 +179,13 @@ impl<'a, 'b> IntoIterator for &'a StringWrapper<'b> {
 /// is between 0.0 and 1.0 (higher value means more similar).
 ///
 /// ```
-/// use strsim::jaro;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::jaro;
 ///
 /// assert!((0.392 - jaro("Friedrich Nietzsche", "Jean-Paul Sartre")).abs() <
 ///         0.001);
+/// # }
 /// ```
 pub fn jaro(a: &str, b: &str) -> f64 {
     generic_jaro(&StringWrapper(a), &StringWrapper(b))
@@ -213,10 +217,13 @@ where
 /// Like Jaro but gives a boost to strings that have a common prefix.
 ///
 /// ```
-/// use strsim::jaro_winkler;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::jaro_winkler;
 ///
 /// assert!((0.866 - jaro_winkler("cheeseburger", "cheese fries")).abs() <
 ///         0.001);
+/// # }
 /// ```
 pub fn jaro_winkler(a: &str, b: &str) -> f64 {
     generic_jaro_winkler(&StringWrapper(a), &StringWrapper(b))
@@ -226,9 +233,12 @@ pub fn jaro_winkler(a: &str, b: &str) -> f64 {
 /// required to change one sequence into the other.
 ///
 /// ```
-/// use strsim::generic_levenshtein;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::generic_levenshtein;
 ///
 /// assert_eq!(3, generic_levenshtein(&[1,2,3], &[1,2,3,4,5,6]));
+/// # }
 /// ```
 pub fn generic_levenshtein<'a, 'b, Iter1, Iter2, Elem1, Elem2>(a: &'a Iter1, b: &'b Iter2) -> usize
 where
@@ -262,9 +272,12 @@ where
 /// required to change one string into the other.
 ///
 /// ```
-/// use strsim::levenshtein;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::levenshtein;
 ///
 /// assert_eq!(3, levenshtein("kitten", "sitting"));
+/// # }
 /// ```
 pub fn levenshtein(a: &str, b: &str) -> usize {
     generic_levenshtein(&StringWrapper(a), &StringWrapper(b))
@@ -274,13 +287,16 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
 /// 1.0 (inclusive), where 1.0 means the strings are the same.
 ///
 /// ```
-/// use strsim::normalized_levenshtein;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::normalized_levenshtein;
 ///
 /// assert!((normalized_levenshtein("kitten", "sitting") - 0.57142).abs() < 0.00001);
 /// assert!((normalized_levenshtein("", "") - 1.0).abs() < 0.00001);
 /// assert!(normalized_levenshtein("", "second").abs() < 0.00001);
 /// assert!(normalized_levenshtein("first", "").abs() < 0.00001);
 /// assert!((normalized_levenshtein("string", "string") - 1.0).abs() < 0.00001);
+/// # }
 /// ```
 pub fn normalized_levenshtein(a: &str, b: &str) -> f64 {
     if a.is_empty() && b.is_empty() {
@@ -293,9 +309,12 @@ pub fn normalized_levenshtein(a: &str, b: &str) -> f64 {
 /// only be edited once.
 ///
 /// ```
-/// use strsim::osa_distance;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::osa_distance;
 ///
 /// assert_eq!(3, osa_distance("ab", "bca"));
+/// # }
 /// ```
 pub fn osa_distance(a: &str, b: &str) -> usize {
     let b_len = b.chars().count();
@@ -346,9 +365,12 @@ fn flat_index(i: usize, j: usize, width: usize) -> usize {
 /// number of times, and the triangle inequality holds.
 ///
 /// ```
-/// use strsim::generic_damerau_levenshtein;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::generic_damerau_levenshtein;
 ///
 /// assert_eq!(2, generic_damerau_levenshtein(&[1,2], &[2,3,1]));
+/// # }
 /// ```
 pub fn generic_damerau_levenshtein<Elem>(a_elems: &[Elem], b_elems: &[Elem]) -> usize
 where
@@ -540,7 +562,7 @@ where
         self.fill = self.used;
         self.mask = new_size - 1;
 
-        let old_map = std::mem::replace(
+        let old_map = mem::replace(
             self.map
                 .as_mut()
                 .expect("callers have to ensure map is allocated"),
@@ -599,7 +621,7 @@ where
     ValueType: Default + Clone + Copy + Eq,
 {
     fn default() -> Self {
-        HybridGrowingHashmapChar {
+        Self {
             map: GrowingHashmapChar::default(),
             extended_ascii: [Default::default(); 256],
         }
@@ -670,9 +692,12 @@ where
 /// number of times, and the triangle inequality holds.
 ///
 /// ```
-/// use strsim::damerau_levenshtein;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::damerau_levenshtein;
 ///
 /// assert_eq!(2, damerau_levenshtein("ab", "bca"));
+/// # }
 /// ```
 pub fn damerau_levenshtein(a: &str, b: &str) -> usize {
     damerau_levenshtein_impl(a.chars(), a.chars().count(), b.chars(), b.chars().count())
@@ -682,13 +707,16 @@ pub fn damerau_levenshtein(a: &str, b: &str) -> usize {
 /// 0.0 and 1.0 (inclusive), where 1.0 means the strings are the same.
 ///
 /// ```
-/// use strsim::normalized_damerau_levenshtein;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::normalized_damerau_levenshtein;
 ///
 /// assert!((normalized_damerau_levenshtein("levenshtein", "löwenbräu") - 0.27272).abs() < 0.00001);
 /// assert!((normalized_damerau_levenshtein("", "") - 1.0).abs() < 0.00001);
 /// assert!(normalized_damerau_levenshtein("", "flower").abs() < 0.00001);
 /// assert!(normalized_damerau_levenshtein("tree", "").abs() < 0.00001);
 /// assert!((normalized_damerau_levenshtein("sunglasses", "sunglasses") - 1.0).abs() < 0.00001);
+/// # }
 /// ```
 pub fn normalized_damerau_levenshtein(a: &str, b: &str) -> f64 {
     if a.is_empty() && b.is_empty() {
@@ -710,13 +738,16 @@ fn bigrams(s: &str) -> impl Iterator<Item = (char, char)> + '_ {
 /// See <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>.
 ///
 /// ```
-/// use strsim::sorensen_dice;
+/// # include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/ci/fixtures/command-line-similarity-doctest.rs"));
+/// # fn main() {
+/// use similarity::sorensen_dice;
 ///
 /// assert_eq!(1.0, sorensen_dice("", ""));
 /// assert_eq!(0.0, sorensen_dice("", "a"));
 /// assert_eq!(0.0, sorensen_dice("french", "quebec"));
 /// assert_eq!(1.0, sorensen_dice("ferris", "ferris"));
 /// assert_eq!(0.8888888888888888, sorensen_dice("feris", "ferris"));
+/// # }
 /// ```
 pub fn sorensen_dice(a: &str, b: &str) -> f64 {
     // implementation guided by
@@ -754,4 +785,15 @@ pub fn sorensen_dice(a: &str, b: &str) -> f64 {
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/strsim/unit/src/lib/tests_756.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/command-line/similarity/unit/src/lib/tests_756.rs"
+));
+
+#[cfg(test)]
+mod integration_tests {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../test/foundation/command-line/similarity/tests/lib.rs"
+    ));
+}

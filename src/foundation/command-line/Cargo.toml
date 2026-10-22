@@ -45,7 +45,7 @@ error-context = []
 help = []
 std = ["terminal-style/std"]
 string = []
-suggestions = ["dep:strsim", "error-context"]
+suggestions = ["error-context"]
 unstable-doc = ["cargo", "env", "string", "unstable-ext", "derive"]
 unstable-ext = []
 unstable-styles = ["color"]
@@ -72,11 +72,6 @@ path = "../command-derive"
 [dependencies.terminal-style]
 path = "../terminal-style"
 default-features = false
-
-[dependencies.strsim]
-version = "0.11.1"
-optional = true
-path = "../strsim"
 
 
 [lints.clippy]

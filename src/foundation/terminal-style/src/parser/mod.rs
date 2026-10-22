@@ -35,10 +35,10 @@ extern crate alloc;
 
 use core::mem::MaybeUninit;
 
+#[cfg(feature = "parser-utf8")]
+use crate::utf8;
 #[cfg(feature = "parser-core")]
 use arrayvec::ArrayVec;
-#[cfg(feature = "parser-utf8")]
-use utf8parse as utf8;
 
 mod params;
 pub(crate) mod state;

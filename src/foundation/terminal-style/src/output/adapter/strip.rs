@@ -330,7 +330,7 @@ fn next_bytes<'s>(
 
 #[derive(Default, Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Utf8Parser {
-    utf8_parser: utf8parse::Parser,
+    utf8_parser: crate::utf8::Parser,
 }
 
 impl Utf8Parser {
@@ -344,7 +344,7 @@ impl Utf8Parser {
 
 struct VtUtf8Receiver<'a>(&'a mut bool);
 
-impl utf8parse::Receiver for VtUtf8Receiver<'_> {
+impl crate::utf8::Receiver for VtUtf8Receiver<'_> {
     fn codepoint(&mut self, _: char) {
         *self.0 = true;
     }

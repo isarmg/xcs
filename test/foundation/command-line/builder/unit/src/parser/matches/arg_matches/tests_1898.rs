@@ -6,7 +6,8 @@ mod tests {
 
     #[test]
     fn check_auto_traits() {
-        static_assertions::assert_impl_all!(ArgMatches: Send, Sync, Unpin);
+        fn assert_traits<T: Send + Sync + Unpin>() {}
+        assert_traits::<ArgMatches>();
     }
 
     #[test]

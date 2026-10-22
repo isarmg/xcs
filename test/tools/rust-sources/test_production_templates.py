@@ -30,7 +30,7 @@ class ProductionTemplates(unittest.TestCase):
 class RelocatedFixturePaths(unittest.TestCase):
     def test_retained_fixture_references_resolve_after_test_extraction(self):
         cases = {
-            "test/foundation/utf8parse/unit/src/lib/guarded_benches_94.rs": ["UTF-8-demo.txt"],
+            "test/foundation/terminal-style/utf8/unit/src/lib/guarded_benches_94.rs": ["UTF-8-demo.txt"],
             "test/foundation/mime_guess/unit/src/lib/tests_429.rs": ["mime_types.rs"],
             "test/foundation/rustc-demangle/unit/src/v0/tests_1289.rs": ["early-recursion-limit"],
             "test/foundation/wasm-bindgen-cli-support/unit/src/transforms/catch_handler/tests_619.rs": [

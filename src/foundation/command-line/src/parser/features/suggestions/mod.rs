@@ -1,4 +1,7 @@
 // Internal
+#[cfg(feature = "suggestions")]
+mod similarity;
+
 use crate::builder::Command;
 
 /// Find strings from an iterable of `possible_values` similar to a given value `v`
@@ -16,7 +19,7 @@ where
     for pv in possible_values {
         // GH #4660: using `jaro` because `jaro_winkler` implementation in `strsim-rs` is wrong
         // causing strings with common prefix >=10 to be considered perfectly similar
-        let confidence = strsim::jaro(v, pv.as_ref());
+        let confidence = similarity::jaro(v, pv.as_ref());
 
         if confidence > 0.7 {
             let new_elem = (confidence, pv.as_ref().to_owned());
@@ -86,4 +89,7 @@ where
 }
 
 #[cfg(test)]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/command-line/builder/unit/src/parser/features/suggestions/all_test_88.rs"));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/command-line/builder/unit/src/parser/features/suggestions/all_test_88.rs"
+));

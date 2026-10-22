@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compile capability boundaries and execute native terminal/CLI/logging consumers."""
 from pathlib import Path
-import json, os, subprocess, tempfile
+import json, os, re, subprocess, tempfile
 ROOT=Path(__file__).resolve().parents[2]
 
 def run(args, **kw):
@@ -9,7 +9,22 @@ def run(args, **kw):
 
 def check():
     manifest=ROOT/'src/foundation/terminal-style/Cargo.toml'
+    assert not (ROOT/'src/foundation/utf8parse').exists(), 'standalone UTF-8 package remains'
+    assert not (ROOT/'test/foundation/utf8parse').exists(), 'UTF-8 tests not transferred'
+    for base in ('src', 'tools'):
+        for candidate in (ROOT/base).rglob('Cargo.toml'):
+            assert 'utf8parse' not in candidate.read_text(), f'stale UTF-8 package declaration: {candidate}'
+    library=(manifest.parent/'src/lib.rs').read_text()
+    assert 'mod utf8;' in library, 'missing private UTF-8 module'
+    assert not re.search(r'\bpub(?:\([^)]*\))?\s+mod\s+utf8', library), 'UTF-8 module became public'
     env=dict(os.environ,CARGO_BUILD_JOBS=os.environ.get('CARGO_BUILD_JOBS','2'))
+    source_tests=['cargo','test','--offline','--manifest-path',str(manifest),'--lib','--no-default-features','--features','parser-utf8']
+    listed=subprocess.check_output(source_tests+['--','--list'],cwd=ROOT,env=env,text=True)
+    names=[line.removesuffix(': test') for line in listed.splitlines() if line.endswith(': test')]
+    assert sum(name.startswith('utf8::demo_tests::') for name in names)==1, 'retained UTF-8 demo not executable'
+    assert sum(name.startswith('utf8::benches::') for name in names)==2, 'retained UTF-8 benchmark smoke bodies not executable'
+    assert sum(name.startswith('utf8::regression_tests::') for name in names)==3, 'incremental/invalid UTF-8 regressions not executable'
+    run(source_tests,env=env)
     for features in ['', 'std','parser','parser-core','parser-utf8','output','parser-core,output']:
         args=['cargo','test','--offline','--manifest-path',str(manifest),'--no-default-features']
         if features: args+=['--features',features]
@@ -35,7 +50,7 @@ def check():
             assert actual==expected,(variables,actual)
         (work/'src/main.rs').unlink()
         (work/'Cargo.toml').write_text(base+f'terminal-style={{path="{dep("terminal-style")}"}}\n')
-        negatives=[('use terminal_style::output::AutoStream;',[]),('use terminal_style::parser::Parser;',[]),('use terminal_style::parser::state::State;',['parser']),('use terminal_style::query::no_color;',['output']),('use terminal_style::output::WinconStream;',['output'])]
+        negatives=[('use terminal_style::utf8::Parser;',['parser-utf8']),('use terminal_style::output::AutoStream;',[]),('use terminal_style::parser::Parser;',[]),('use terminal_style::parser::state::State;',['parser']),('use terminal_style::query::no_color;',['output']),('use terminal_style::output::WinconStream;',['output'])]
         for source,features in negatives:
             (work/'src/lib.rs').write_text(source)
             result=subprocess.run(command+(['--features',','.join('terminal-style/'+x for x in features)] if features else []),cwd=ROOT,env=env,capture_output=True,text=True)

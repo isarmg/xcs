@@ -2577,21 +2577,21 @@
         {
           "origin_directory": "vendor/rust/clap_builder-4.6.7",
           "path": "test/foundation/command-line/builder/functions/src/builder/command/check_auto_traits_5293.rs",
-          "sha256": "41c6fab355b9281bc6b98b1e9e063d1ae31877fa4b3361a263d888e58184360c",
+          "sha256": "086548ed82af05dec991c809bcae554fdff5b83d2218086370fa49ab20c0c786",
           "source": "src/foundation/clap_builder/src/builder/command.rs",
           "source_sha256_before": "495d471f5b60b0c61e926ac729f0ba34f835cff1119f8b0f87aee642b70cea11"
         },
         {
           "origin_directory": "vendor/rust/clap_builder-4.6.7",
           "path": "test/foundation/command-line/builder/functions/src/error/mod/check_auto_traits_943.rs",
-          "sha256": "92ad451533da0add05dce334ea29937f463e745fe6557c6ae10ee4935adfcb1c",
+          "sha256": "70b44f73e6dc91d3b8637ecbc6b8e6f62dbb73e6a187a9e50094d2e6a4ea0e96",
           "source": "src/foundation/clap_builder/src/error/mod.rs",
           "source_sha256_before": "e1884c15bf526ad1334c39494a0ba0cf9652c2fa5b0a554367bc3c6373e93fe8"
         },
         {
           "origin_directory": "vendor/rust/clap_builder-4.6.7",
           "path": "test/foundation/command-line/builder/functions/src/parser/error/check_auto_traits_57.rs",
-          "sha256": "d6fd7bd5a11b6c9505cdef05da6f9aceb111655175efb1e3e2d64190ed7c354e",
+          "sha256": "332dc036bdd5bd6dd9022c3dc9d200d840435dda97eb5c22d17f91e1af997f80",
           "source": "src/foundation/clap_builder/src/parser/error.rs",
           "source_sha256_before": "3b5d9cd00d37b62b9185ed264676993d28591112cdfe3475f89b1e476696da4d"
         },
@@ -2675,7 +2675,7 @@
         {
           "origin_directory": "vendor/rust/clap_builder-4.6.7",
           "path": "test/foundation/command-line/builder/unit/src/output/textwrap/core/tests_86.rs",
-          "sha256": "2fb7cae8c94976bcd34c1913ac2fe0ce2ed9657fc310368a17376dd93162c052",
+          "sha256": "dd8dd02ca9a2b920c71ea31e1d5d88589c155518118885ddffc2a36c4d210f16",
           "source": "src/foundation/clap_builder/src/output/textwrap/core.rs",
           "source_sha256_before": "0d45b1ebe8bba3e54e8bcbfec015be626d55803a0a46aef753eb3a4be3cabab4"
         },
@@ -2703,7 +2703,7 @@
         {
           "origin_directory": "vendor/rust/clap_builder-4.6.7",
           "path": "test/foundation/command-line/builder/unit/src/parser/matches/arg_matches/tests_1898.rs",
-          "sha256": "90196cfd19773ef56d21995a48477bc7500c28bd9e498c19c0b2a682ccc8ba92",
+          "sha256": "12df92eb87759d5792da011ba109f153eba5fd0346cd62cde2133f51ecca8c65",
           "source": "src/foundation/clap_builder/src/parser/matches/arg_matches.rs",
           "source_sha256_before": "d024ce60b6bfeda2da51a0deb8086460bdca42657efadfcbeb35a595725e9176"
         },
@@ -2748,6 +2748,20 @@
           "sha256": "3c32766312d625c268680a97b7dab874b19bf99b7e2bcc43dbdbf41492529b53",
           "source": "src/foundation/clap/examples/pacman.rs",
           "source_sha256_before": "11c16d16868aa848f6f1ee57ca35e5cfc04309131fe8845c4d94bd364b56a227"
+        },
+        {
+          "origin_directory": "vendor/rust/strsim-0.11.1",
+          "path": "test/foundation/command-line/similarity/tests/lib.rs",
+          "sha256": "85f48cdea0b5dedafed0f74575be6aec41568a044c5e847084caf42637f4148c",
+          "source": "src/foundation/strsim/tests/lib.rs",
+          "source_sha256_before": "4c8207a5728b82836795e2f87d7d7834db7276082f5ded640f34822feb750cb4"
+        },
+        {
+          "origin_directory": "vendor/rust/strsim-0.11.1",
+          "path": "test/foundation/command-line/similarity/unit/src/lib/tests_756.rs",
+          "sha256": "b313ccc6d4fad17f79ec4c35d5e3d974cc8198c2fdb6490ae42b0d8088c2f8d5",
+          "source": "src/foundation/strsim/src/lib.rs",
+          "source_sha256_before": "6f0b31f95526ccc0a88ed788b6be9b929bd8ee32fd0c3f38b0399cb7e63954e3"
         }
       ],
       "roots": [
@@ -17910,26 +17924,6 @@
       ]
     },
     {
-      "directory": "src/foundation/strsim",
-      "files": [
-        {
-          "path": "test/foundation/strsim/tests/lib.rs",
-          "sha256": "4c8207a5728b82836795e2f87d7d7834db7276082f5ded640f34822feb750cb4",
-          "source": "src/foundation/strsim/tests/lib.rs",
-          "source_sha256_before": "4c8207a5728b82836795e2f87d7d7834db7276082f5ded640f34822feb750cb4"
-        },
-        {
-          "path": "test/foundation/strsim/unit/src/lib/tests_756.rs",
-          "sha256": "b313ccc6d4fad17f79ec4c35d5e3d974cc8198c2fdb6490ae42b0d8088c2f8d5",
-          "source": "src/foundation/strsim/src/lib.rs",
-          "source_sha256_before": "6f0b31f95526ccc0a88ed788b6be9b929bd8ee32fd0c3f38b0399cb7e63954e3"
-        }
-      ],
-      "roots": [
-        "test/foundation/strsim"
-      ]
-    },
-    {
       "directory": "src/foundation/strum_macros",
       "files": [
         {
@@ -18469,6 +18463,27 @@
           "sha256": "55d0bc926e028b3cd26d9844287ba05f865687dc43438d96c974d3ab087b1cea",
           "source": "src/foundation/anstream/src/wincon.rs",
           "source_sha256_before": "46067373ab01154b014bb3cf77edbc5fa9abea6633c90e4cc02235b31c19bf74"
+        },
+        {
+          "origin_directory": "vendor/rust/utf8parse-0.2.2",
+          "path": "test/foundation/terminal-style/utf8/tests/UTF-8-demo.txt",
+          "sha256": "e0084609a607b4a2cb0ed0cd8ca4f25f01e72b356bbf4d8c49329a440ea946dd",
+          "source": "src/foundation/utf8parse/tests/UTF-8-demo.txt",
+          "source_sha256_before": "e0084609a607b4a2cb0ed0cd8ca4f25f01e72b356bbf4d8c49329a440ea946dd"
+        },
+        {
+          "origin_directory": "vendor/rust/utf8parse-0.2.2",
+          "path": "test/foundation/terminal-style/utf8/tests/utf-8-demo.rs",
+          "sha256": "d9de19a6022f66027ec1b3aed52fd2d8c7eab19efbf385e45f21c2d53b456004",
+          "source": "src/foundation/utf8parse/tests/utf-8-demo.rs",
+          "source_sha256_before": "beb91c3933180ce69fa6dcbaa5459ba3a3a8a8d0496804069d3666645d7f8eff"
+        },
+        {
+          "origin_directory": "vendor/rust/utf8parse-0.2.2",
+          "path": "test/foundation/terminal-style/utf8/unit/src/lib/guarded_benches_94.rs",
+          "sha256": "52bc580d75dd0605d09db22b37f08e305c03a2ad85c73db7fb8575d6c14a2cc3",
+          "source": "src/foundation/utf8parse/src/lib.rs",
+          "source_sha256_before": "161f74913ee618b6b059360122c5ca500c8f5d8521014ad06b558693e3a4f7d3"
         }
       ],
       "roots": [
@@ -23000,32 +23015,6 @@
       ],
       "roots": [
         "test/foundation/utf8_iter"
-      ]
-    },
-    {
-      "directory": "src/foundation/utf8parse",
-      "files": [
-        {
-          "path": "test/foundation/utf8parse/tests/UTF-8-demo.txt",
-          "sha256": "e0084609a607b4a2cb0ed0cd8ca4f25f01e72b356bbf4d8c49329a440ea946dd",
-          "source": "src/foundation/utf8parse/tests/UTF-8-demo.txt",
-          "source_sha256_before": "e0084609a607b4a2cb0ed0cd8ca4f25f01e72b356bbf4d8c49329a440ea946dd"
-        },
-        {
-          "path": "test/foundation/utf8parse/tests/utf-8-demo.rs",
-          "sha256": "beb91c3933180ce69fa6dcbaa5459ba3a3a8a8d0496804069d3666645d7f8eff",
-          "source": "src/foundation/utf8parse/tests/utf-8-demo.rs",
-          "source_sha256_before": "beb91c3933180ce69fa6dcbaa5459ba3a3a8a8d0496804069d3666645d7f8eff"
-        },
-        {
-          "path": "test/foundation/utf8parse/unit/src/lib/guarded_benches_94.rs",
-          "sha256": "58b6c8014ee0264f80f0b0beae82ca215cffea3f65d2b7c3eb77342c7e9daa59",
-          "source": "src/foundation/utf8parse/src/lib.rs",
-          "source_sha256_before": "161f74913ee618b6b059360122c5ca500c8f5d8521014ad06b558693e3a4f7d3"
-        }
-      ],
-      "roots": [
-        "test/foundation/utf8parse"
       ]
     },
     {

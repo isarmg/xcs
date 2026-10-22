@@ -1,4 +1,4 @@
-use utf8parse::{Parser, Receiver};
+use super::{Parser, Receiver};
 
 static UTF8_DEMO: &[u8] = include_bytes!("UTF-8-demo.txt");
 

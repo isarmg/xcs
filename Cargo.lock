@@ -230,7 +230,6 @@ name = "command-line"
 version = "4.6.7"
 dependencies = [
  "command-derive",
- "strsim",
  "terminal-style",
 ]
 
@@ -1465,10 +1464,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "strsim"
-version = "0.11.1"
-
-[[package]]
 name = "strum"
 version = "0.28.0"
 dependencies = [
@@ -1555,9 +1550,6 @@ dependencies = [
 [[package]]
 name = "terminal-style"
 version = "1.0.14"
-dependencies = [
- "utf8parse",
-]
 
 [[package]]
 name = "thread_local"
@@ -1753,10 +1745,6 @@ dependencies = [
 [[package]]
 name = "utf8_iter"
 version = "1.0.4"
-
-[[package]]
-name = "utf8parse"
-version = "0.2.2"
 
 [[package]]
 name = "uuid"

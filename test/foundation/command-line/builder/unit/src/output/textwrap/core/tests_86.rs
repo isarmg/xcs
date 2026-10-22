@@ -7,13 +7,15 @@ mod tests {
 
     #[test]
     fn emojis_have_correct_width() {
-        use unic_emoji_char::is_emoji;
+        // The supported layout contract counts every scalar as one column.
+        // Cover all scalars in these ranges, a strict superset of the original
+        // emoji-only checks, without an unrelated emoji-table dependency.
 
         // Emojis in the Basic Latin (ASCII) and Latin-1 Supplement
         // blocks all have a width of 1 column. This includes
         // characters such as '#' and '©'.
         for ch in '\u{1}'..'\u{FF}' {
-            if is_emoji(ch) {
+            {
                 let desc = format!("{:?} U+{:04X}", ch, ch as u32);
 
                 #[cfg(feature = "unicode")]
@@ -27,11 +29,11 @@ mod tests {
         // Emojis in the remaining blocks of the Basic Multilingual
         // Plane (BMP), in the Supplementary Multilingual Plane (SMP),
         // and in the Supplementary Ideographic Plane (SIP), are all 1
-        // or 2 columns wide when unicode-width is used, and always 2
-        // columns wide otherwise. This includes all of our favorite
+        // or 2 columns wide when unicode-width is used, and always 1
+        // column wide otherwise. This includes all of our favorite
         // emojis such as 😊.
         for ch in '\u{FF}'..'\u{2FFFF}' {
-            if is_emoji(ch) {
+            {
                 let desc = format!("{:?} U+{:04X}", ch, ch as u32);
 
                 #[cfg(feature = "unicode")]

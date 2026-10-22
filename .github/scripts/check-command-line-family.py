@@ -16,7 +16,7 @@ N = {
     "clap": "command-line",
     "clap_derive": "command-derive",
 }
-REMOVED_COMPONENTS = ("clap_builder", "clap_lex", "command-builder", "command-lexer")
+REMOVED_COMPONENTS = ("clap_builder", "clap_lex", "command-builder", "command-lexer", "strsim")
 DEPENDENCY_SECTIONS = {"dependencies", "dev-dependencies", "build-dependencies"}
 LEGACY_HELPERS = ("clap", "structopt", "command_line")
 GROUPED_VALUE_TEST = '''
@@ -72,6 +72,10 @@ def check(root):
     for name in REMOVED_COMPONENTS:
         assert not (root / "src/foundation" / name).exists(), f"unmerged source root: {name}"
     runtime = root / "src/foundation/command-line/src/lib.rs"
+    suggestions = root / "src/foundation/command-line/src/parser/features/suggestions/mod.rs"
+    assert "mod similarity;" in suggestions.read_text(), "missing private similarity module"
+    assert not re.search(r"\bpub(?:\([^)]*\))?\s+mod\s+similarity", suggestions.read_text()), "similarity module became public"
+    assert "similarity::jaro(v, pv.as_ref())" in suggestions.read_text(), "suggestions bypass moved Jaro implementation"
     assert "mod lexer;" in runtime.read_text(), "missing private lexer module"
     assert "pub mod lexer" not in runtime.read_text(), "lexer exposed as separate public API"
     for base in ("src", "tools"):
@@ -152,6 +156,36 @@ def prepare_fixture(root, temporary):
     return manifest, source
 
 
+def check_similarity_source_tests(root):
+    """Run, and count, the retained source tests in the actual owning crate."""
+    component = root / "src/foundation/command-line"
+    lock = component / "Cargo.lock"
+    existed = lock.exists()
+    manifest = component / "Cargo.toml"
+    try:
+        if not existed:
+            subprocess.run(["cargo", "generate-lockfile", "--offline", "--manifest-path", str(manifest)], cwd=root, check=True)
+        command = cargo_command("test", "--manifest-path", str(manifest), "--lib")
+        listed = subprocess.check_output([*command, "--", "--list"], cwd=root, text=True)
+        names = [line.removesuffix(": test") for line in listed.splitlines() if line.endswith(": test")]
+        assert sum("suggestions::similarity::tests::" in name for name in names) == 88, "retained similarity unit tests not executable"
+        assert sum("suggestions::similarity::integration_tests::" in name for name in names) == 8, "retained similarity integration tests not executable"
+        assert sum("suggestions::test::" in name for name in names) == 9, "suggestion ordering/threshold tests not executable"
+        subprocess.run(command, cwd=root, check=True)
+        doctests = cargo_command("test", "--manifest-path", str(manifest), "--doc", "parser::features::suggestions::similarity")
+        listed_docs = subprocess.check_output([*doctests, "--", "--list"], cwd=root, text=True)
+        assert sum("suggestions::similarity::" in line and line.endswith(": test") for line in listed_docs.splitlines()) == 11, "retained similarity doctests not executable"
+        subprocess.run(doctests, cwd=root, check=True)
+        for features in ("std", "std,suggestions"):
+            subprocess.run(cargo_command("check", "--manifest-path", str(manifest),
+                                         "--no-default-features", "--features", features),
+                           cwd=root, check=True)
+    finally:
+        if not existed and lock.exists():
+            lock.unlink()
+    print("executed all 96 moved similarity tests, 11 doctests, and 9 suggestion contract tests")
+
+
 def check_runtime_fixture(root):
     with tempfile.TemporaryDirectory(prefix="command-line-regression-") as directory:
         manifest, source = prepare_fixture(root, Path(directory))
@@ -207,7 +241,7 @@ def check_unsafe_boundary(root):
             cwd=root,
             check=True,
         )
-        for relative in ("src/lib.rs", "src/builder/mod.rs"):
+        for relative in ("src/lib.rs", "src/builder/mod.rs", "src/parser/features/suggestions/similarity.rs"):
             source = component / relative
             before = source.read_bytes()
             injection = (
@@ -224,7 +258,7 @@ def check_unsafe_boundary(root):
             )
             source.write_bytes(before)
             require_unsafe_rejection(result, relative)
-    print("actual root and builder compiler probes reject unsafe code")
+    print("actual root, builder, and similarity compiler probes reject unsafe code")
 
 
 def check_retained_features(root):
@@ -331,6 +365,7 @@ def main():
     root = Path(__file__).resolve().parents[2]
     print("validated command family identities:", check(root))
     if not arguments.static_only:
+        check_similarity_source_tests(root)
         check_runtime_fixture(root)
         check_unsafe_boundary(root)
         check_retained_features(root)

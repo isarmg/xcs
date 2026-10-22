@@ -28,3 +28,6 @@ pub mod output;
 pub mod parser;
 #[cfg(feature = "output")]
 mod query;
+
+#[cfg(feature = "parser-utf8")]
+mod utf8;

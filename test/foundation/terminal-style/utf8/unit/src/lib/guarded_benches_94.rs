@@ -1,11 +1,18 @@
-#[cfg(all(feature = "nightly", test))]
+#[cfg(test)]
 mod benches {
     extern crate std;
-    extern crate test;
 
     use super::{Parser, Receiver};
 
-    use self::test::{black_box, Bencher};
+    use self::std::hint::black_box;
+
+    // Execute the retained benchmark bodies as stable smoke tests.
+    struct Bencher;
+    impl Bencher {
+        fn iter(&mut self, mut body: impl FnMut()) {
+            body();
+        }
+    }
 
     static UTF8_DEMO: &[u8] = include_bytes!("../../../tests/UTF-8-demo.txt");
 
@@ -17,8 +24,9 @@ mod benches {
         fn invalid_sequence(&mut self) {}
     }
 
-    #[bench]
-    fn parse_bench_utf8_demo(b: &mut Bencher) {
+    #[test]
+    fn parse_bench_utf8_demo() {
+        let b = &mut Bencher;
         let mut parser = Parser::new();
 
         b.iter(|| {
@@ -28,8 +36,9 @@ mod benches {
         })
     }
 
-    #[bench]
-    fn std_string_parse_utf8(b: &mut Bencher) {
+    #[test]
+    fn std_string_parse_utf8() {
+        let b = &mut Bencher;
         b.iter(|| {
             for c in std::str::from_utf8(UTF8_DEMO).unwrap().chars() {
                 black_box(c);

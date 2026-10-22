@@ -4,14 +4,12 @@
 //! theoretically contain the minimal number of branches (1). The only branch is
 //! on the `Action` returned from unpacking a transition.
 #![deny(clippy::all, clippy::if_not_else, clippy::enum_glob_use)]
-#![cfg_attr(all(feature = "nightly", test), feature(test))]
-#![no_std]
 
 use core::char;
 
 mod types;
 
-use types::{Action, State};
+use self::types::{Action, State};
 
 /// Handles codepoint and invalid sequence events from the parser.
 pub trait Receiver {
@@ -25,10 +23,16 @@ pub trait Receiver {
 /// A parser for Utf8 Characters
 ///
 /// Repeatedly call `advance` with bytes to emit Utf8 characters
-#[derive(Clone, Default, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Parser {
     point: u32,
     state: State,
+}
+
+impl Default for Parser {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /// Continuation bytes are masked with this value.
@@ -37,7 +41,10 @@ const CONTINUATION_MASK: u8 = 0b0011_1111;
 impl Parser {
     /// Create a new Parser
     pub fn new() -> Parser {
-        Parser { point: 0, state: State::Ground }
+        Parser {
+            point: 0,
+            state: State::Ground,
+        }
     }
 
     /// Advance the parser
@@ -61,35 +68,54 @@ impl Parser {
             Action::InvalidSequence => {
                 self.point = 0;
                 receiver.invalid_sequence();
-            },
+            }
             Action::EmitByte => {
                 receiver.codepoint(byte as char);
-            },
+            }
             Action::SetByte1 => {
                 let point = self.point | ((byte & CONTINUATION_MASK) as u32);
                 let c = unsafe { char::from_u32_unchecked(point) };
                 self.point = 0;
 
                 receiver.codepoint(c);
-            },
+            }
             Action::SetByte2 => {
                 self.point |= ((byte & CONTINUATION_MASK) as u32) << 6;
-            },
+            }
             Action::SetByte2Top => {
                 self.point |= ((byte & 0b0001_1111) as u32) << 6;
-            },
+            }
             Action::SetByte3 => {
                 self.point |= ((byte & CONTINUATION_MASK) as u32) << 12;
-            },
+            }
             Action::SetByte3Top => {
                 self.point |= ((byte & 0b0000_1111) as u32) << 12;
-            },
+            }
             Action::SetByte4 => {
                 self.point |= ((byte & 0b0000_0111) as u32) << 18;
-            },
+            }
         }
     }
 }
 
-#[cfg(all(feature = "nightly", test))]
-include!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../../test/foundation/utf8parse/unit/src/lib/guarded_benches_94.rs"));
+#[cfg(test)]
+mod demo_tests {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../test/foundation/terminal-style/utf8/tests/utf-8-demo.rs"
+    ));
+}
+
+#[cfg(test)]
+mod regression_tests {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../test/ci/fixtures/terminal-style-utf8.rs"
+    ));
+}
+
+#[cfg(test)]
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../test/foundation/terminal-style/utf8/unit/src/lib/guarded_benches_94.rs"
+));

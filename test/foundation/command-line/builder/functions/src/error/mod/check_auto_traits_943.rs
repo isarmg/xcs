@@ -1,4 +1,5 @@
 #[test]
 fn check_auto_traits() {
-    static_assertions::assert_impl_all!(Error: Send, Sync, Unpin);
+    fn assert_traits<T: Send + Sync + Unpin>() {}
+    assert_traits::<Error>();
 }
